@@ -88,6 +88,8 @@ usage()
   echo "  -S name of the system for which the initramfs is built"
   echo "  -s theme (for splash)"
   echo "  -t tpm support (client security)"
+  echo "  -w include (list of) WLAN driver modules. WLAN specific tools are"
+  echo "        added to the initramfs"
   exit 0
 }
 
@@ -110,7 +112,6 @@ precheck() {
     exit 1
   fi
 }
-
 
 # replaces which command to find executables inside ROOTDIR
 binfinder()
@@ -309,21 +310,22 @@ cp -a ${themes}* ${INSTDIR}/usr/share/themes
 #########################################################################
 # End of function declaration
 
-while getopts :dhk:c:i:r:o:s:f:n:m:S:tu:I:a: a ; do
+while getopts :dhk:c:i:r:o:s:f:n:m:S:tu:w:I:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
       c)  echo "-c requires location of machine-setup file";;
       k)  echo "-k requires kernel version parameter";;
-      i)  echo "-i requires initrd path parameter";;
-      f)  echo "-f requires file system module list parameter";;
-      n)  echo "-n requires network module list parameter";;
-      m)  echo "-m requires misc module list parameter";;
+      i)  echo "-i requires initramfs path parameter";;
+      f)  echo "-f requires file system module (list) parameter";;
+      n)  echo "-n requires network module (list) parameter";;
+      m)  echo "-m requires misc module (list) parameter";;
       r)  echo "-r requires root dir parameter";;
       s)  echo "-s may require theme name";;
       I)  echo "-I requires network interface parameter";;
       S)  echo "-S requires the system name";;
       V)  echo "-V requires an executable to run inside linuxrc";;
+      w)  echo "-w requires WLAN module (list) parameter";; 
       *)  echo "Unknown option: -$OPTARG"
           echo "Try mkinitrd -h";;
     esac
@@ -332,10 +334,11 @@ while getopts :dhk:c:i:r:o:s:f:n:m:S:tu:I:a: a ; do
     c)  CLCONFFILE=$OPTARG;;
     d)  use_dhclient=1;;
     k)  KERNVER=$OPTARG;;
-    i)  INITRD_PATH=$OPTARG ;;
+    i)  INITRD_PATH=$OPTARG;;
     f)  FSMODULES=$OPTARG;;
-    n)  NWMODULES=$OPTARG ;;
-    m)  MISCMODULES=$OPTARG ;;
+    n)  NWMODULES=$OPTARG;;
+    m)  MISCMODULES=$OPTARG;;
+    w)  WLANMODULES==$OPTARG;;
     r)  ROOTDIR=$OPTARG;;
     s)  theme=$OPTARG;;
     S)  SYSTEM_NAME=$OPTARG;;
@@ -470,6 +473,11 @@ for i in ${FSMODULES}; do
 done
 fi
 
+# if wlan should be supported in stage3
+if [ -n "${WLANMODULES}" ] ; then
+  cobi iwconfig bin 
+fi
+  
 # if tpm should be used within InitRamFS ...
 if [ -n "${use_tpm}" ] ; then
   MISCMODULES="${MISCMODULES} tpm"
@@ -536,9 +544,9 @@ fi
 # put all needed modules into initial ramdisk
 mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
 for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
-  ${DEBUGMODULES} usbcore usbhid uhci-hcd ohci-hcd; do
-  mod=`cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
-2>/dev/null`
+  ${WLANMODULES} ${DEBUGMODULES} usbcore usbhid uhci-hcd ohci-hcd; do
+  mod=$(cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
+2>/dev/null)
 
   if [ -n "$mod" ] ; then
     mpath=${INSTDIR}/${mod%/*}
@@ -553,6 +561,9 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
         cp ${rdirprefix}/drivers/net/mii.ko \
            ${ddirprefix}/drivers/net &>/dev/null
       ;;
+      #ipw3945|...)
+      # cp ${rdirprefix}/net/wireless ...
+      #;;
       nfs)
         # create directory structure for modules needed and copy them
         # to the proper place (as expected by modprobe/modules.dep)
