@@ -329,8 +329,6 @@ echo "dhcp finished at $(sysup)" > /tmp/dhcp-done
 unpack () {
 # $1 is  config file name to get, $2 IP of server to get file from
 local dst=$1
-echo "unpacking $dst" >>/tmp/fileblub
-ls -al $dst >>/tmp/fileblub
 if [ -s $dst ] ; then
   # fixme: handle different types of packaging (gzip/bzip2)??
   if ! tar -xpzf $dst 2> /tmp/ConfTGZ-tar-error ; then
@@ -346,16 +344,26 @@ fi
 }
 fileget () {
 # get type of tftp available, alternatively use wget for ftp or http
+# if local device file is specified - mount and unmount after copying
 local cfgfile
-echo "$fileprot $filepath $filepath" > /tmp/fileblub
 [ "x$fileprot" = "x" ] && fileprot=tftp
 if [ "x$filepath" != "x" ] ; then
   cfgfile=${filepath}
   [ "x$fileserv" = "x" ] && fileserv=$(checkip ${serverip})
   case "$fileprot" in
    ftp|http)
-      wget $fileprot://$fileserv/$cfgfile -O /tmp/$(basename $cfgfile) \
-        2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
+     wget $fileprot://$fileserv/$cfgfile -O /tmp/$(basename $cfgfile) \
+       2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
+   ;;
+   file)
+     local ldev=$fileserv
+     echo "Waiting for /dev/$ldev ...."
+     waitfor /dev/$ldev 10000
+     mkdir /tmp/$ldev
+     echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
+     mount /dev/$ldev /tmp/$ldev || error "$init_errlfg"
+     unpack $cfgfile
+     umount /dev/$ldev
    ;;
    *)
      tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv  \

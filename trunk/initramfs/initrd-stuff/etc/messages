@@ -105,6 +105,9 @@ init_infldcfg="  You decided not to recreate \
 after this file was created on server."
 init_errcfg="of this client did not finish in\n  time. You might check the \
 process list and list the modules loaded until\n  now."
+init_errlfg="  The ConfTGZ filesource was some local device which was not \
+mounted successfully.\n  Either the wrong device was given or the filesystem \
+is not known to the kernel."
 init_errhw="  For some reason the hardware autoconfig $init_errcfg"
 init_errxorg="  For some reason no xorg.conf appeared" 
 init_errsw="  For some reason the software configuration  $init_errcfg"
