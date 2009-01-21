@@ -20,6 +20,7 @@ use base qw(OpenSLX::MetaDB::Base);
 
 use DBI;
 use OpenSLX::Basics;
+use OpenSLX::Utils;
 
 ################################################################################
 ### basics
@@ -87,9 +88,13 @@ sub _buildFilterClause
 		$connector = !length($filterClause) ? 'WHERE' : 'AND';
 		if (defined $filter->{$col}) {
 			$quotedVal = $self->{dbh}->quote($filter->{$col});
-			$filterClause .= " $connector $col = $quotedVal";
+			$filterClause .= unshiftHereDoc(<<"			End-of-Here");
+				$connector $col = $quotedVal
+			End-of-Here
 		} else {
-			$filterClause .= " $connector $col IS NULL";
+			$filterClause .= unshiftHereDoc(<<"			End-of-Here");
+				$connector $col IS NULL
+			End-of-Here
 		}
 	}
 	
@@ -115,7 +120,7 @@ sub _buildAttrFilterClause
 		$quotedName = $self->{dbh}->quote($name);
 		if (defined $attrFilter->{$name}) {
 			$quotedValue = $self->{dbh}->quote($attrFilter->{$name});
-			$filterClause .= <<"			End-of-Here";
+			$filterClause .= unshiftHereDoc(<<"			End-of-Here");
 				$connector EXISTS (
 					SELECT name FROM ${table}_attr
 					WHERE name = $quotedName 
@@ -124,7 +129,7 @@ sub _buildAttrFilterClause
 				)
 			End-of-Here
 		} else {
-			$filterClause .= <<"			End-of-Here";
+			$filterClause .= unshiftHereDoc(<<"			End-of-Here");
 				$connector NOT EXISTS (
 					SELECT name FROM ${table}_attr
 					WHERE name = $quotedName 
@@ -254,7 +259,7 @@ sub fetchSystemByFilter
 	$filterClause = $self->_buildAttrFilterClause(
 		$attrFilter, 'system', $filterClause
 	);
-	my $sql = <<"	End-of-Here";
+	my $sql = unshiftHereDoc(<<"	End-of-Here");
 		SELECT $resultCols FROM system
 		$filterClause
 	End-of-Here
@@ -279,7 +284,7 @@ sub fetchSystemAttrs
 	my $self      = shift;
 	my $systemID  = $self->{dbh}->quote(shift);
 
-	my $sql = <<"	End-of-Here";
+	my $sql = unshiftHereDoc(<<"	End-of-Here");
 		SELECT name, value FROM system_attr
 		WHERE system_id = $systemID
 	End-of-Here
@@ -336,7 +341,7 @@ sub fetchClientByFilter
 	$filterClause = $self->_buildAttrFilterClause(
 		$attrFilter, 'client', $filterClause
 	);
-	my $sql = <<"	End-of-Here";
+	my $sql = unshiftHereDoc(<<"	End-of-Here");
 		SELECT $resultCols FROM client
 		$filterClause
 	End-of-Here
@@ -361,7 +366,7 @@ sub fetchClientAttrs
 	my $self     = shift;
 	my $clientID = $self->{dbh}->quote(shift);
 
-	my $sql = <<"	End-of-Here";
+	my $sql = unshiftHereDoc(<<"	End-of-Here");
 		SELECT name, value FROM client_attr
 		WHERE client_id = $clientID
 	End-of-Here
@@ -407,7 +412,7 @@ sub fetchGroupByFilter
 	$filterClause = $self->_buildAttrFilterClause(
 		$attrFilter, 'group', $filterClause
 	);
-	my $sql = <<"	End-of-Here";
+	my $sql = unshiftHereDoc(<<"	End-of-Here");
 		SELECT $resultCols FROM groups
 		$filterClause
 	End-of-Here
@@ -432,7 +437,7 @@ sub fetchGroupAttrs
 	my $self    = shift;
 	my $groupID = $self->{dbh}->quote(shift);
 
-	my $sql = <<"	End-of-Here";
+	my $sql = unshiftHereDoc(<<"	End-of-Here");
 		SELECT name, value FROM group_attr
 		WHERE group_id = $groupID
 	End-of-Here
@@ -763,7 +768,7 @@ sub setSystemAttrs
 	my $attrs    = shift;
 
 	# for now we take the simple path and remove all attributes ...
-	return if !$self->_doDelete('system_attr', [ $systemID ], 'system_id');
+	$self->_doDelete('system_attr', [ $systemID ], 'system_id');
 
 	# ... and (re-)insert the given ones
 	my @attrData 
@@ -776,7 +781,8 @@ sub setSystemAttrs
 			}
 			grep { defined $attrs->{$_} }
 			keys %$attrs;
-	return $self->_doInsert('system_attr', [ @attrData ]);
+	$self->_doInsert('system_attr', \@attrData);
+	return 1;
 }
 
 sub setClientIDsOfSystem
@@ -857,7 +863,7 @@ sub setClientAttrs
 	my $attrs    = shift;
 
 	# for now we take the simple path and remove all attributes ...
-	return if !$self->_doDelete('client_attr', [ $clientID ], 'client_id');
+	$self->_doDelete('client_attr', [ $clientID ], 'client_id');
 
 	# ... and (re-)insert the given ones
 	my @attrData 
@@ -870,7 +876,7 @@ sub setClientAttrs
 			}
 			grep { defined $attrs->{$_} }
 			keys %$attrs;
-	return $self->_doInsert('client_attr', [ @attrData ]);
+	$self->_doInsert('client_attr', \@attrData);
 	return 1;
 }
 
@@ -952,7 +958,7 @@ sub setGroupAttrs
 	my $attrs   = shift;
 
 	# for now we take the simple path and remove all attributes ...
-	return if !$self->_doDelete('group_attr', [ $groupID ], 'group_id');
+	$self->_doDelete('group_attr', [ $groupID ], 'group_id');
 
 	# ... and (re-)insert the given ones
 	my @attrData 
@@ -965,7 +971,7 @@ sub setGroupAttrs
 			}
 			grep { defined $attrs->{$_} }
 			keys %$attrs;
-	return $self->_doInsert('group_attr', [ @attrData ]);
+	$self->_doInsert('group_attr', \@attrData);
 	return 1;
 }
 

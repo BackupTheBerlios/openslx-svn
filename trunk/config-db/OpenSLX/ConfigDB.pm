@@ -967,7 +967,8 @@ sub addVendorOS
 
 	_checkCols($valRows, 'vendor_os', 'name');
 
-	return $self->{'meta-db'}->addVendorOS($valRows);
+	my @IDs = $self->{'meta-db'}->addVendorOS($valRows);
+	return wantarray() ? @IDs : $IDs[0];
 }
 
 =item C<removeVendorOS(@$vendorOSIDs)>
@@ -1052,7 +1053,8 @@ sub addExport
 
 	_checkCols($valRows, 'export', qw(name vendor_os_id type));
 
-	return $self->{'meta-db'}->addExport($valRows);
+	my @IDs = $self->{'meta-db'}->addExport($valRows);
+	return wantarray() ? @IDs : $IDs[0];
 }
 
 =item C<removeExport(@$exportIDs)>
@@ -1221,7 +1223,8 @@ sub addSystem
 		}
 	}
 
-	return $self->{'meta-db'}->addSystem($valRows, $attrValRows);
+	my @IDs = $self->{'meta-db'}->addSystem($valRows, $attrValRows);
+	return wantarray() ? @IDs : $IDs[0];
 }
 
 =item C<removeSystem(@$systemIDs)>
@@ -1580,7 +1583,8 @@ sub addClient
 		}
 	}
 
-	return $self->{'meta-db'}->addClient($valRows, $attrValRows);
+	my @IDs = $self->{'meta-db'}->addClient($valRows, $attrValRows);
+	return wantarray() ? @IDs : $IDs[0];
 }
 
 =item C<removeClient(@$clientIDs)>
@@ -1932,7 +1936,8 @@ sub addGroup
 			$valRow->{priority} = '50';
 		}
 	}
-	return $self->{'meta-db'}->addGroup($valRows, $attrValRows);
+	my @IDs = $self->{'meta-db'}->addGroup($valRows, $attrValRows);
+	return wantarray() ? @IDs : $IDs[0];
 }
 
 =item C<removeGroup(@$groupIDs)>

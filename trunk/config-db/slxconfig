@@ -914,7 +914,6 @@ sub addSystemToConfigDB
 	my $systemConfigPath =
 		"$openslxConfig{'private-path'}/config/$systemName/default";
 	if (!-e $systemConfigPath) {
-
 		# create the default (empty) config folders for this system:
 		createConfigFolderForSystem($systemName);
 	}
