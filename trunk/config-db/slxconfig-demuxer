@@ -567,6 +567,12 @@ sub makeInitRamFS
 		'slx-version'    => $slxVersion,
 		'system-name'    => $info->{name},
 	};
+	# TODO: make this an explicit attribute, it's used at many places!
+	my $kernelParams = $info->{kernel_params} || '';
+	if ($kernelParams =~ m{debug(?:=(\d+))?}) {
+		my $debugLevel = defined $1 ? $1 : '1';
+		$params->{'debug-level'} = $debugLevel;
+	}
 
 	my $makeInitRamFSEngine = OpenSLX::MakeInitRamFS::Engine->new($params);
 	$makeInitRamFSEngine->execute()		unless $dryRun;
