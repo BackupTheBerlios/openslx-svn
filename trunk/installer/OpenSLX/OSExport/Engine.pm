@@ -103,7 +103,7 @@ sub initializeForNew
 		die _tr("vendor-OS '%s' not found in DB, giving up!", $vendorOSName);
 	}
 
-	my $exportName = "$vendorOSName:$exportType";
+	my $exportName = "${vendorOSName}::${exportType}";
 
 	$openslxDB->disconnect();
 
@@ -187,7 +187,7 @@ sub _initialize
 	$exportType =~ m[^(\w+)(?:-(\w+))?$];
 	my $exportFS = lc($1);
 	my $exportBD = lc($2);
-	vlog(2, "export-fs='$exportFS' export-bd='$exportBD'");
+	vlog(2, "export-filesys='$exportFS' export-blockdev='$exportBD'");
 
 	$self->{'vendor-os-name'} = $vendorOSName;
 	$self->{'vendor-os-id'}   = $vendorOSId;
