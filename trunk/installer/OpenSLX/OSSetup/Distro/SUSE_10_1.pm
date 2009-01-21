@@ -112,7 +112,7 @@ sub initDistroInfo
 		i586/info-4.8-20.i586.rpm
 		i586/insserv-1.04.0-18.i586.rpm
 		i586/irqbalance-0.09-58.i586.rpm
-		i586/kernel-default-2.6.16.21-0.25.i586.rpm
+		i586/kernel-default-2.6.16.13-4.i586.rpm i586/kernel-default-2.6.16.21-0.25.i586.rpm
 		i586/libacl-2.2.34-12.i586.rpm
 		i586/libattr-2.4.28-14.i586.rpm
 		i586/libcom_err-1.38-25.i586.rpm
