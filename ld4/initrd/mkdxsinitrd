@@ -3,7 +3,7 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-03-2006
 #		Nico Dietrich
 #		Blub
 #
@@ -28,6 +28,7 @@ COMDIRINDXS="/tmp/scratch /var/lib/nobody"
 # anyhow
 # D_BINDMNT - any code which is specific in bind mount environment
 # D_RCDIRS - runlevel directories relative to /etc
+# D_HWMODTOIGNORE - 
 
 D_SYSCONFDIR="<set in ~/distro-config/distro file>"
 D_ETCEXCL="<set in ~/distro-config/distro file>"

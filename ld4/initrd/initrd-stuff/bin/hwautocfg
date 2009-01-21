@@ -4,7 +4,7 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 21-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-03-2006
 #		Blabla
 #		Blub
 #
@@ -277,9 +277,12 @@ fi
 modprobe ${MODPRV} usbcore &
 
 # "drivers" (pseudo, placeholder strings, ...) to exclude from loading
-DRIVERLIST=" disabled unknown ignore pcspkr synaptics keybdev"
+# depending on distro more hw modules have to be excluded too. use the
+# D_HWMODTOIGNORE for that purpose
+DRIVERLIST=" disabled unknown ignore pcspkr synaptics keybdev\
+  ${D_HWMODTOIGNORE} "
 # driver blacklist (real modules which fail to load)
-DRIVERLIST=${DRIVERLIST}" hw_random ichxrom kanotix genericwheelusb "
+DRIVERLIST=${DRIVERLIST}"hw_random kanotix genericwheelusb "
 # hack for pseudo modules (not to load)
 for i in $DRIVERLIST ; do 
   echo -e "alias\t$i\tusbcore" >> /etc/modprobe.conf
@@ -430,7 +433,7 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
         sed -n -e "/ 44 /p"|sed -e "s/[[:space:]].*//") ; do
     # ugly message from ext2 mount :-(
     ( mkfs.ext2 -q $hdpartnr; mount -n $hdpartnr /mnt/tmp; \
-      echo "finished" > /tmp/tmpready ) &
+      echo "$hdpartnr" > /tmp/tmpready ) &
     echo -e "$hdpartnr\t/tmp\t\text2\t\tdefaults\t 0 0" >> /mnt/etc/fstab
     part44=yes
     break

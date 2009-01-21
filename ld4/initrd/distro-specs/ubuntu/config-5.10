@@ -21,6 +21,8 @@
 # /etc/X11/xorg.conf or /etc/X11/XF86config, ...
 # D_XFONTPATH - path(es) where X11 fonts are installed (with trailing /*)
 # D_DEFAULTCOUNTRY - localization (see common functions)
+# D_HWMODTOIGNORE - hardware modules which should not tried to load (because
+# already in kernel, nonexistent, ...)
 
 D_SYSCONFDIR=/default
 D_ETCEXCL="etc/gconf/*\n*.old\n*-\n\

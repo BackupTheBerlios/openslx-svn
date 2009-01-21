@@ -1,6 +1,6 @@
 # Description:  distro specific settings for Gentoo
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 21-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-03-2006
 #
 # Copyright:    (c) 2005,6 - RZ Universitaet Freiburg
 
@@ -16,6 +16,10 @@
 # anyhow
 # D_BINDMNT - any code which is specific in bind mount environment
 # D_RCDIRS - runlevel directories relative to /etc
+# D_HWMODTOIGNORE - hardware modules which should not tried to load (because
+# already in kernel, nonexistent, ...)
+
+
 D_SYSCONFDIR=conf.d
 D_ETCEXCL="opt/gnome/gconf/*\n*.old\n*-\n\
 etc/autoinstall\nlogrotate*\nbootloader\n*~\n\

@@ -338,6 +338,19 @@ config_nscd
 # preparation of /tmp directory (partition 44, nfs scratch, ramdisk)
 waitfor /tmp/tmpready 10000
 # create some directories and correct permissions
+tmpisdisk=`sed -n '/\/tmp/p' /mnt/etc/fstab`
+# if there is no local disk partition for /tmp then try to mount a rw
+# NFS scratch space (if defined in $scratch) and prepared on server
+if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
+  mkdir -p /tmp/scratch >/dev/null 2>&1
+  mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid ${scratch} \
+      /tmp/scratch >/dev/null 2>&1 && {
+    mkdir -p /tmp/scratch/${clientip} >/dev/null 2>&1
+    umount /tmp/scratch
+    mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid \
+      ${scratch}/${clientip} /mnt/tmp >/dev/null 2>&1; }
+fi
+chmod 1777 /mnt/tmp
 for i in \
   /tmp/.ICE-unix \
   /tmp/.X11-unix; do testmkd /mnt/$i; done

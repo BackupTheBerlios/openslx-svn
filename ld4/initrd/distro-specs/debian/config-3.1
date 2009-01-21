@@ -1,6 +1,6 @@
 # Description:  distro specific settings for Debian/Sarge
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-03-2006
 #               Blablub
 #
 # Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
@@ -21,6 +21,8 @@
 # /etc/X11/xorg.conf or /etc/X11/XF86config, ...
 # D_XFONTPATH - path(es) where X11 fonts are installed (with trailing /*)
 # D_DEFAULTCOUNTRY - localization (see common functions)
+# D_HWMODTOIGNORE - hardware modules which should not tried to load (because
+# already in kernel, nonexistent, ...)
 
 D_SYSCONFDIR=/default
 D_ETCEXCL="etc/gconf/*\n*.old\n*-\n\

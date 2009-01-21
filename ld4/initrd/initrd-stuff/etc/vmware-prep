@@ -29,34 +29,19 @@
 # Declaration of default variables
 vmdir="/var/lib/vmware"
 path="/var/X11R6/bin"
-part44=
 sessions=
 session_name=
 
 
 
 ### FUNCTIONS SECTION ##########################################################
-# mount scratch on server, but only if no 44 partition mounted
-mount_scratch () {
-  part44=$(grep -i "/tmp.*ext2" /etc/fstab)
-  if [ -n "${scratch}" -a -z "${part44}" ]; then
-    mkdir -p /tmp/scratch >/dev/null 2>&1
-    mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid ${scratch} \
-      /tmp/scratch >/dev/null 2>&1 
-    mkdir -p /tmp/scratch/${clientip} >/dev/null 2>&1
-    mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid \
-      ${scratch}/${clientip} /tmp >/dev/null 2>&1 &
-    chmod 1777 /tmp 2>&1
-  fi
-}
-
-
 # loop file for exchanging information between linux and vmware
 mount_loop () {
+  modprobe loop >/dev/null 2>&1
   mkdir -p /media/loop0
-  cp ${vmdir}/templ/fd0.img /tmp/scratch/${clientip}-fd0.img
-  chmod a+rw /tmp/scratch/${clientip}-fd0.img
-  mount -t msdos -o loop,umask=000 /tmp/scratch/${clientip}-fd0.img \
+  cp ${vmdir}/templ/fd0.img /tmp/${clientip}-fd0.img
+  chmod a+rw /tmp/${clientip}-fd0.img
+  mount -t msdos -o loop,umask=000 /tmp/${clientip}-fd0.img \
     /media/loop0
 }
 
@@ -72,14 +57,15 @@ vmnet () {
 
 # special start script for vmware with predefined image
 Xpath () {
-  if test -w /usr/X11R6/bin ; then
+  if `touch /usr/X11R6/bin/touch >/dev/null 2>&1`; then
+    rm /usr/X11R6/bin/touch >/dev/null 2>&1
     path="/usr/X11R6/bin"
-    cp ${vmdir}/import/templ/runvmware \
+    cp ${vmdir}/templ/runvmware \
        /usr/X11R6/bin
   else
     path="/var/X11R6/bin"
     test -d /var/X11R6/bin || mkdir -p /var/X11R6/bin
-    cp ${vmdir}/import/templ/runvmware \
+    cp ${vmdir}/templ/runvmware \
        /var/X11R6/bin
   fi
 }
@@ -103,9 +89,10 @@ vmsession2desktop_session () {
   sessions=$(ls ${vmdir}/vmsessions/*.desktop)
   if [ -n "${sessions}" ]; then
     for i in ${vmdir}/vmsessions/*.desktop; do
-      session_name=$(cat ${vmdir}/vmsessions/${i} | grep -iw "exec" \
+      session_name=$(cat ${i} | grep -iw "exec" \
         | awk -F "=" '{print $2}')
       cp ${path}/desktop-session ${path}/${session_name}
+      chmod 755 ${path}/${session_name} >/dev/null 2>&1
     done
   fi
 }
@@ -114,14 +101,11 @@ vmsession2desktop_session () {
 
 ### START SCRIPT ###############################################################
 
-echo -n "Starting preparation of vmware environment"
-
 # create vmdir
 mkdir -p /var/lib/vmware 2>&1
 
 # mount von zeugs
-mount -t nfs -o ro,nolock,intr,nodev,soft,timeo=2,nosuid ${imgsrv} ${vmdir} &
-mount_scratch
+mount -t nfs -o ro,nolock,intr,nodev,soft,timeo=2,nosuid ${imgsrv} ${vmdir}
 
 # device creation - the module does not trigger udev properly
 vmnet
