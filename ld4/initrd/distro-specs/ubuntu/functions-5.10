@@ -2,7 +2,7 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-03-2006
 #		Nico Dietrich
 #		Felix Endres
 #
@@ -66,12 +66,6 @@ for i in rc3.d/K$stop$script rc5.d/K$stop$script \
   ln -sf ../$script /mnt/etc/init.d/$i
   echo "Linked $script"
 done
-}
-
-# extended system users
-extpasswd () {
-echo -e "" >> /mnt/etc/passwd
-echo -e "" >> /mnt/etc/shadow
 }
 
 # group of functions for the normal runlevels - first parameter is start
