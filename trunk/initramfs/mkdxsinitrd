@@ -69,23 +69,20 @@ testmkd () {
 
 usage()
 {
-  echo -e "mkdxsinitrd  [-dh] [-k kernel version] [-i path/file] \
+  echo -e "mkdxsinitrd [-C] [-dh] [-k kernel version] [-i path/file] \
 [-f module(s)] [-n module(s)] [-m module(s)] -r path [-s theme]\n\
 [-c initramfs-setup] -S system_name"
   echo "OPTIONEN"
+  echo "  -C create special initramfs for CD/DVD syslinux demo mode"
   echo "  -c location of initramfs configuration file (initramfs-setup)"
   echo "  -d use ISC dhclient instead of udhcpcd of busybox"
   echo "  -h show usage information"
   echo "  -k kernel version"
-  echo "  -i path/file"
-  echo "        Optionale  Angabe wo die erstellte ramdisk hingeschrieben werden"
-  echo "        soll."
+  echo "  -i path/file optional information where to write initramfs file"
   echo "  -f list of blockdev/filesystem modules"
   echo "  -n list of network adaptor modules"
   echo "  -m list of misc modules not covered by -f or -n"
-  echo "  -r path"
-  echo "        Pfad zum Wurzelverzeichnis des Ausgangssystems (Vendor-OS)"
-  echo "        (z.B. /var/opt/openslx/stage1/suse-10.2)."
+  echo "  -r path to stage1 root (vendor OS, e.g. /var/opt/openslx/stage1/suse-..."
   echo "  -S name of the system for which the initramfs is built"
   echo "  -s theme (for splash)"
   echo "  -t tpm support (client security)"
@@ -319,7 +316,7 @@ cp -a ${themes}* ${INSTDIR}/usr/share/themes
 #########################################################################
 # End of function declaration
 
-while getopts :dhk:c:i:r:o:s:f:n:m:S:tu:wI:a: a ; do
+while getopts :Cdhk:c:i:r:o:s:f:n:m:S:tu:wI:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
@@ -339,6 +336,7 @@ while getopts :dhk:c:i:r:o:s:f:n:m:S:tu:wI:a: a ; do
     esac
     exit 1
     ;;
+    c)  cdboot=1;;
     c)  CLCONFFILE=$OPTARG;;
     d)  use_dhclient=1;;
     k)  KERNVER=$OPTARG;;
@@ -388,31 +386,36 @@ mkdir -p ${INSTDIR}/usr/share
 # needed for KNOPPIX hwsetup tool not to be confused with ${D_SYSCONFDIR}
 mkdir -p ${INSTDIR}/etc/sysconfig
 
-# set DISTRO_NAME & DISTRO_VER from ROOTDIR:
-VENDOR_OS=$(basename $ROOTDIR)
-DISTRO_NAME=${VENDOR_OS%%-*}
+# slx init or cdboot init 
+if [ -z "$cdboot" ] ; then
+  # set DISTRO_NAME & DISTRO_VER from ROOTDIR:
+  VENDOR_OS=$(basename $ROOTDIR)
+  DISTRO_NAME=${VENDOR_OS%%-*}
 	# select distro type
-DISTRO_VER=${VENDOR_OS#*-}
+  DISTRO_VER=${VENDOR_OS#*-}
 	# drop distro type, keep from version onwards
-DISTRO_VER=${DISTRO_VER%%-*}
+  DISTRO_VER=${DISTRO_VER%%-*}
 	# remove any optional stuff after version
-DISTRO_VER=${DISTRO_VER%%_*}
+  DISTRO_VER=${DISTRO_VER%%_*}
 	# remove any architecture specification after version
+  copy_distro_stuff ${DISTRO_NAME} ${DISTRO_VER}
 
-copy_distro_stuff ${DISTRO_NAME} ${DISTRO_VER}
+  if [ -z "$NWMODULES" ] ; then
+    #NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32 8139too 8139cp"
+    NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32"
+  fi
 
-if [ -z "$NWMODULES" ] ; then
-  #NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32 8139too 8139cp"
-  NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32"
+  # initial ramdisk scripts: init, functions, servconfig, hwautocfg, ...
+  # copy and replace variable names
+  for dirs in `find ${SLX_SHARE_PATH}/initramfs/* ! -regex ".*/\..*"` ; do
+    repco ${dirs##*initramfs/}
+  done
+  chmod 755 ${INSTDIR}/init \
+    ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
+else
+  cp ${SLX_SHARE_PATH}/cdboot/init ${INSTDIR}/init
+  chmod 755 ${INSTDIR}/init
 fi
-
-# initial ramdisk scripts: init, functions, servconfig, hwautocfg, ...
-# copy and replace variable names
-for dirs in `find ${SLX_SHARE_PATH}/initramfs/* ! -regex ".*/\..*"` ; do
-  repco ${dirs##*initramfs/}
-done
-chmod 755 ${INSTDIR}/init \
-  ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
 
 # quickhack architecture detection of target system
 if [ -d ${ROOTDIR}/lib64 ] ; then
@@ -451,72 +454,67 @@ if [ $IRFSDEBUG -gt 2 ] ; then
   done
 fi
 
-# one of the dhcp clients (do we really need any other dhcp client?)
-if [ -n "${use_dhclient}" ] ; then
-  if binfinder dhclient ; then
-    cobi dhclient bin
-    if [ "$DISTRO_NAME" = "ubuntu" ] ; then
-      #Dhclient auf Ubu 6.10 streikt ohne libnss_compat
-      echo "/lib/libnss_compat.so.2" >> ${INSTDIR}/tmp/libraries
-      echo "/lib/libnsl.so.1" >> ${INSTDIR}/tmp/libraries
+# slx init or cdboot init 
+if [ -z "$cdboot" ] ; then
+  # one of the dhcp clients (do we really need any other dhcp client?)
+  if [ -n "${use_dhclient}" ] ; then
+    if binfinder dhclient ; then
+      cobi dhclient bin
+      if [ "$DISTRO_NAME" = "ubuntu" ] ; then
+        #Dhclient auf Ubu 6.10 streikt ohne libnss_compat
+        echo "/lib/libnss_compat.so.2" >> ${INSTDIR}/tmp/libraries
+        echo "/lib/libnsl.so.1" >> ${INSTDIR}/tmp/libraries
+      fi
+    else
+      echo "dhclient is not available"
     fi
-  else
-    echo "dhclient is not available"
   fi
-fi
 
-# hotplug/udev type and related stuff / any need for that?
-# cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
+  # if nbd or dnbd is used as clients root filesystem
+  if [ -n "${FSMODULES}" ] ; then
+  for i in ${FSMODULES}; do
+    case "$i" in
+      dnbd)
+        cobi dnbd-client bin
+      ;;
+      nbd)
+        cobi nbd-client bin
+      ;;
+    esac
+  done
+  fi
+  # if tpm should be used within InitRamFS ...
+  if [ -n "${use_tpm}" ] ; then
+    MISCMODULES="${MISCMODULES} tpm"
+    # copy the other stuff
+  fi
+  # if unionfs
+  cobi unionctl bin &>/dev/null || \
+    echo "Program unionctl not found; could be ignored ..."
 
-# type of hotplug/udev/dev (for etc directories see above!!)
-#  for bbins in udev udevd udevstart udevtrigger udevsend ; do
-#    cobi ${bbins} bin &>/dev/null || \
-#    echo "Program ${bbins} not found; could be most probably ignored"
-#  done
+  # if cowloop
+  cobi cowdev bin &>/dev/null || \
+    echo "Program cowdev not found; could be ignored ..."
 
-# if nbd or dnbd is used as clients root filesystem
-if [ -n "${FSMODULES}" ] ; then
-for i in ${FSMODULES}; do
-  case "$i" in
-    dnbd)
-      cobi dnbd-client bin
-    ;;
-    nbd)
-      cobi nbd-client bin
-    ;;
+  # if iscsi (or just with modules)??
+  # cobi iscsiadm iscsid bin &>/dev/null || \
+  #  echo "Program iscsid not found; could be ignored ..."
+
+  # distro specific additional stuff
+  case "${DISTRO_NAME}" in
+    debian*)
+      cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib;;
   esac
-done
+else
+  # fast kernel switch tool
+  cobi kexec bin
 fi
-
+  
 # if wlan should be supported in stage3
 if [ -n "${enable_wlan}" ] ; then
   cobi iwconfig bin
 fi
   
-# if tpm should be used within InitRamFS ...
-if [ -n "${use_tpm}" ] ; then
-  MISCMODULES="${MISCMODULES} tpm"
-  # copy the other stuff
-fi
-
-# if unionfs
-cobi unionctl bin &>/dev/null || \
-  echo "Program unionctl not found; could be ignored ..."
-
-# if cowloop
-cobi cowdev bin &>/dev/null || \
-  echo "Program cowdev not found; could be ignored ..."
-
-# if iscsi (or just with modules)??
-# cobi iscsiadm iscsid bin &>/dev/null || \
-#  echo "Program iscsid not found; could be ignored ..."
-
-# distro specific additional stuff
-case "${DISTRO_NAME}" in
-  debian*)
-    cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib;;
-esac
-
 # add libpci.so to the libraries, as we are going to copy it manually:
 slxldd --root-path=${ROOTDIR} ${SLX_SHARE_PATH}/initramfs/lib/libpci.so.2 \
 	>>${INSTDIR}/tmp/libraries
@@ -553,102 +551,127 @@ if [ -z "$KERNVER" ] ; then
   echo "No kernel version set or detected - please use the -k flag! Exiting..."
   exit 1
 fi
-if [ -z "$FSMODULES" ] ; then
-  FSMODULES="nbd nfs"
-fi
 if [ -z "$INITRD_PATH" ] ; then
   INITRD_PATH="/tmp/slxinitramfs.gz"
 fi
 
-# put all needed modules into initial ramdisk
-mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
-for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
-  ${DEBUGMODULES} usbcore hid usbhid uhci-hcd ohci-hcd; do
-  mod=$(cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
+# slx init or cdboot init 
+if [ -z "$cdboot" ] ; then
+  # base filesystem modules
+  if [ -z "$FSMODULES" ] ; then
+    FSMODULES="nbd squashfs nfs"
+  fi
+  # put all needed modules into initial ramdisk
+  mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
+  for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
+    ${DEBUGMODULES} usbcore hid usbhid uhci-hcd ohci-hcd; do
+    mod=$(cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
 2>/dev/null)
 
-  if [ -n "$mod" ] ; then
+    if [ -n "$mod" ] ; then
+      mpath=${INSTDIR}/${mod%/*}
+      mkdir -p ${mpath}
+      # specific function which can follow a link
+      modcp ${ROOTDIR}/$mod ${mpath} ${ROOTDIR}
+      # fixmee!! selection of dependent modules could be handled a little bit
+      # more clever
+      rdirprefix="${ROOTDIR}/lib/modules/${KERNVER}/kernel"
+      ddirprefix="${INSTDIR}/lib/modules/${KERNVER}/kernel"
+      case "$module" in
+        e100|8139too|via-rhine|sis900|epic100|sundance|8139cp|eepro100|pcnet32)
+          cp ${rdirprefix}/drivers/net/mii.ko \
+             ${ddirprefix}/drivers/net &>/dev/null
+        ;;
+        # WLAN module block
+        #ipw3945|...)
+        # cp ${rdirprefix}/net/wireless ...
+        #;;
+        ath_pci)
+          for wlanmodule in ath_rate_sample ath_hal wlan wlan_scan_sta ; do
+            mod=$(cd /${ROOTDIR}; find "lib/modules/${KERNVER}" \
+              -name ${wlanmodule}.ko 2>/dev/null)
+            mkdir -p ${INSTDIR}/${mod%/*}
+            # specific function which can follow a link
+            modcp ${ROOTDIR}/$mod ${INSTDIR}/${mod%/*} ${ROOTDIR}
+          done
+        ;;
+        # for unsupported WLAN devices
+        ndiswrapper)
+          cp -a ${ROOTDIR}/etc/ndiswrapper ${INSTDIR}/etc
+        ;;
+        nfs)
+          # create directory structure for modules needed and copy them
+          # to the proper place (as expected by modprobe/modules.dep)
+          mkdir -p ${ddirprefix}/net/sunrpc
+	  mkdir -p ${ddirprefix}/fs/lockd ${ddirprefix}/fs/nfs_common
+          cp ${rdirprefix}/net/sunrpc/sunrpc.ko \
+            ${ddirprefix}/net/sunrpc &>/dev/null
+          cp ${rdirprefix}/fs/lockd/lockd.ko \
+            ${ddirprefix}/fs/lockd &>/dev/null
+          cp ${rdirprefix}/fs/nfs_common/nfs_acl.ko \
+	    ${ddirprefix}/fs/nfs_common &>/dev/null
+        ;;
+        ext3)
+          # needed for ext2 support
+          mkdir -p ${ddirprefix}/fs/jbd
+          cp ${rdirprefix}/fs/jbd/jbd.ko \
+            ${ddirprefix}/fs/jbd
+        ;;
+        netloop)
+          # needed for xen stuff
+          cobi brctl bin &>/dev/null || \
+            echo "Program brctl not found; could be ignored ..."
+          mkdir -p ${ddirprefix}/drivers/xen/netback
+          mkdir -p ${ddirprefix}/net/bridge
+          cp ${rdirprefix}/drivers/xen/netback/netloop.ko \
+            ${ddirprefix}/drivers/xen/netback &>/dev/null
+          cp ${rdirprefix}/net/bridge/bridge.ko \
+            ${ddirprefix}/net/bridge &>/dev/null
+        ;;
+        iscsi_tcp)
+          # iscsi modules
+          # cobi cobi iscsiadm iscsid bin &>/dev/null
+          #mkdir -p ${ddirprefix}/drivers/scsi
+          #for i in scsi_mod scsi_transport_iscsi libiscsi iscsi_tcp; do
+          #  cp ${rdirprefix}/drivers/scsi/$i.ko
+          #    ${ddirprefix}/drivers/scsi
+          #done
+        ;;
+        tpm)
+          # tpm module stuff
+        ;;
+        sata_sil|sata_nv|sata_via)
+          # serial ata local disk support
+          mkdir -p ${ddirprefix}/drivers/scsi ${ddirprefix}/drivers/ata
+          cp ${rdirprefix}/drivers/scsi/{scsi,sd}_mod.ko \
+            ${ddirprefix}/drivers/scsi
+          cp ${rdirprefix}/drivers/ata/libata.ko ${ddirprefix}/drivers/ata
+        ;;
+      esac
+    fi
+  done
+  # copy user-supplied preinit files. The client specific one overwrites the
+  # system default one. postinit.local may be part of fileget tgz (in stage3)
+  for cfg in default/initramfs/preinit.local \
+           ${SYSTEM_NAME}/initramfs/preinit.local \
+           default/initramfs/postinit.local \
+           ${SYSTEM_NAME}/initramfs/postinit.local ; do
+    test -f ${SLX_PRIVATE_PATH}/config/$cfg && \
+      cp ${SLX_PRIVATE_PATH}/config/$cfg ${INSTDIR}/bin
+  done
+else
+  # just copy the several ethernet drivers
+  mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/drivers/net
+  for module in af_packet unix ${NWMODULES} mii ; do
+    mod=$(cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
+2>/dev/null)
     mpath=${INSTDIR}/${mod%/*}
     mkdir -p ${mpath}
     # specific function which can follow a link
     modcp ${ROOTDIR}/$mod ${mpath} ${ROOTDIR}
-    # fixmee!! selection of dependent modules could be handled a little bit
-    # more clever
-    rdirprefix="${ROOTDIR}/lib/modules/${KERNVER}/kernel"
-    ddirprefix="${INSTDIR}/lib/modules/${KERNVER}/kernel"
-    case "$module" in
-      e100|8139too|via-rhine|sis900|epic100|sundance|8139cp|eepro100|pcnet32)
-        cp ${rdirprefix}/drivers/net/mii.ko \
-           ${ddirprefix}/drivers/net &>/dev/null
-      ;;
-      # WLAN module block
-      #ipw3945|...)
-      # cp ${rdirprefix}/net/wireless ...
-      #;;
-      ath_pci)
-        for wlanmodule in ath_rate_sample ath_hal wlan wlan_scan_sta ; do
-          mod=$(cd /${ROOTDIR}; find "lib/modules/${KERNVER}" \
-            -name ${wlanmodule}.ko 2>/dev/null)
-          mkdir -p ${INSTDIR}/${mod%/*}
-          # specific function which can follow a link
-          modcp ${ROOTDIR}/$mod ${INSTDIR}/${mod%/*} ${ROOTDIR}
-        done
-      ;;
-      # for unsupported WLAN devices
-      ndiswrapper)
-        cp -a ${ROOTDIR}/etc/ndiswrapper ${INSTDIR}/etc
-      ;;
-      nfs)
-        # create directory structure for modules needed and copy them
-        # to the proper place (as expected by modprobe/modules.dep)
-	mkdir -p ${ddirprefix}/net/sunrpc
-	mkdir -p ${ddirprefix}/fs/lockd ${ddirprefix}/fs/nfs_common
-        cp ${rdirprefix}/net/sunrpc/sunrpc.ko \
-	  ${ddirprefix}/net/sunrpc &>/dev/null
-	cp ${rdirprefix}/fs/lockd/lockd.ko \
-          ${ddirprefix}/fs/lockd &>/dev/null
-	cp ${rdirprefix}/fs/nfs_common/nfs_acl.ko \
-	  ${ddirprefix}/fs/nfs_common &>/dev/null
-      ;;
-      ext3)
-        # needed for ext2 support
-        mkdir -p ${ddirprefix}/fs/jbd
-        cp ${rdirprefix}/fs/jbd/jbd.ko \
-          ${ddirprefix}/fs/jbd
-      ;;
-      netloop)
-        # needed for xen stuff
-        cobi brctl bin &>/dev/null || \
-          echo "Program brctl not found; could be ignored ..."
-        mkdir -p ${ddirprefix}/drivers/xen/netback
-        mkdir -p ${ddirprefix}/net/bridge
-        cp ${rdirprefix}/drivers/xen/netback/netloop.ko \
-          ${ddirprefix}/drivers/xen/netback &>/dev/null
-        cp ${rdirprefix}/net/bridge/bridge.ko \
-          ${ddirprefix}/net/bridge &>/dev/null
-      ;;
-      iscsi_tcp)
-        # iscsi modules
-        # cobi cobi iscsiadm iscsid bin &>/dev/null
-        #mkdir -p ${ddirprefix}/drivers/scsi
-        #for i in scsi_mod scsi_transport_iscsi libiscsi iscsi_tcp; do
-        #  cp ${rdirprefix}/drivers/scsi/$i.ko
-        #    ${ddirprefix}/drivers/scsi
-        #done
-      ;;
-      tpm)
-        # tpm module stuff
-      ;;
-      sata_sil|sata_nv|sata_via)
-        # serial ata local disk support
-        mkdir -p ${ddirprefix}/drivers/scsi ${ddirprefix}/drivers/ata
-        cp ${rdirprefix}/drivers/scsi/{scsi,sd}_mod.ko \
-          ${ddirprefix}/drivers/scsi
-        cp ${rdirprefix}/drivers/ata/libata.ko ${ddirprefix}/drivers/ata
-      ;;
-    esac
-  fi
-done
+  done
+fi
+  
 cp ${ROOTDIR}/lib/modules/${KERNVER}/modules.* \
   ${INSTDIR}/lib/modules/${KERNVER}
 
@@ -680,17 +703,6 @@ if [ -f ${SLX_SHARE_PATH}/templates/Cards.local ] ; then
   mv ${INSTDIR}/usr/share/hwdata/Cards.new \
     ${INSTDIR}/usr/share/hwdata/Cards
 fi
-
-# finally copy user-supplied preinit files. The client specific one
-# overwrites the system default one. postinit.local may be part of
-# fileget tgz (in stage3)
-for cfg in default/initramfs/preinit.local \
-           ${SYSTEM_NAME}/initramfs/preinit.local \
-           default/initramfs/postinit.local \
-           ${SYSTEM_NAME}/initramfs/postinit.local ; do
-  test -f ${SLX_PRIVATE_PATH}/config/$cfg && \
-    cp ${SLX_PRIVATE_PATH}/config/$cfg ${INSTDIR}/bin
-done
 
 #########################################################################
 # End of file copy procedures
