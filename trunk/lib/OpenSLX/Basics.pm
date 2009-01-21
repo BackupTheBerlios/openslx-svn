@@ -65,9 +65,6 @@ my %translations;
 	# extended settings follow, which are only supported by slxsettings,
 	# but not by any other script:
 	#
-	'system-default-nicmods'
-		=> 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
-	'system-default-fsmods' => '',
 	'ossetup-max-try-count' => '5',
 );
 chomp($openslxConfig{'locale-charmap'});
