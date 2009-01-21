@@ -36,7 +36,9 @@ foreach my $id (1..10) {
 		'label' => "label of $id",
 		'comment' => "comment of $id",
 		'vendor_os_id' => 1 + $id % 3,
-		'ramfs_flags' => $id,
+		'ramfs_debug_level' => $id%2,
+		'ramfs_use_glibc' => 0,
+		'ramfs_use_busybox' => 0,
 		'ramfs_nicmods' => ($id % 3) ? 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32' : '',
 		'ramfs_fsmods' => ($id % 3)==2 ? 'nbd ext3 nfs reiserfs xfs' : '',
 		'kernel' => "boot/vmlinuz-2.6.13-15-default",
@@ -143,6 +145,7 @@ my $clientG02ID = addClient($openslxDB, {
 		'name' => "PC-G-02",
 		'mac' => "00:50:56:0D:03:36",
 		'boot_type' => 'pxe',
+		'unbootable' => 1,
 });
 
 my $clientG03ID = addClient($openslxDB, {
@@ -155,7 +158,7 @@ my $clientG04ID = addClient($openslxDB, {
 		'name' => "PC-G-04",
 		'mac' => "00:50:56:0D:03:38",
 		'boot_type' => 'pxe',
-		'unbootable' => 1,
+		'kernel_params' => 'console=ttyS0,19200',
 });
 
 my $clientF01ID = addClient($openslxDB, {
