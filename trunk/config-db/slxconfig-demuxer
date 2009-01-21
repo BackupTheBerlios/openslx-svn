@@ -436,6 +436,11 @@ sub writeClientConfigurationsForSystem
 		my $clientConfigPath
 			= "$clientConfigPath/$externalSystemID/$externalClientName";
 
+		# merge configurations of client, it's groups, default client and
+		# system and write the resulting attributes to a configuration file:
+		$openslxDB->mergeDefaultAndGroupAttributesIntoClient($client);
+		mergeAttributes($client, $info);
+
 		my $clientAttrDigest = digestAttributes($client);
 		vlog 2, _tr("attribute-digest for client '%s' is '%s'", $client->{name},
 				$clientAttrDigest);
@@ -448,16 +453,12 @@ sub writeClientConfigurationsForSystem
 						$client->{name});
 			$clientSystemConfCount++;
 
-			# merge configurations of client, it's groups, default client and
-			# system and write the resulting attributes to a configuration file:
-			$openslxDB->mergeDefaultAndGroupAttributesIntoClient($client);
-			mergeAttributes($client, $info);
-			writeAttributesToFile($client, $attrFile);
-
 			# merge default, system and client configuration files into
 			# the system configuration for the current client:
 			copyExternalSystemConfig($externalSystemID, $buildPath,
 									$externalClientName);
+
+			writeAttributesToFile($client, $attrFile);
 
 			# create tar containing external system configuration
 			# and client attribute file, this time referring to the client
