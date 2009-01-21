@@ -126,7 +126,7 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   elif strinstr "/" "$vmware" ; then
     vmimgprot=$(uri_token $vmware prot)
     vmimgserv=$(uri_token $vmware server)
-    vmimgpath="/$(uri_token $vmware path)"
+    vmimgpath="$(uri_token $vmware path)"
   fi
   if [ -n "${vmimgserv}" ] ; then
   testmkd /mnt/var/lib/vmware

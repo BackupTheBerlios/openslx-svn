@@ -204,7 +204,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       case $srvproto in
         nfs)
           # nfsroot consists now of two different parts
-          nfspath=/$(uri_token $rootfs path)
+          nfspath=$(uri_token $rootfs path)
           nfsserver=$(uri_token $rootfs server)
           echo -e "\n# nfs root information gotten via kernel command \
 line in $0\n#nfsroot=\"${nfsserver}:${nfspath}\"\n" >> /etc/machine-setup
@@ -212,10 +212,11 @@ line in $0\n#nfsroot=\"${nfsserver}:${nfspath}\"\n" >> /etc/machine-setup
         *nbd*)
           nbdmod=$srvproto
           # get settings for nbd-client, filesystem equals to path in URI
-          # notation
+          # notation (remove leading slash from filesystem at the end)
           nbdhost=$(uri_token $rootfs server)
           nbdport=$(uri_token $rootfs port)
           nbdrfst=$(uri_token $rootfs path)
+          nbdrfst=${nbdrfst#/*}
         ;;
         aoe)
           echo "Not implemented yet"
@@ -385,7 +386,7 @@ if [ -n "${nbdmod}" ] ; then
   # load block device driver if needed
   modprobe ${MODPRV} ${nbdmod} || error "$init_errnbd"
   [ -x /bin/mdev ] && mdev -s
-  [ -z "$nbdrfst" ] && nbdrfst=ext2
+  [ -z "$nbdrfst" ] && nbdrfst=squashfs
   nbdhost=$(checkip $nbdhost)
   if [ $DEBUGLEVEL -eq 20 ] ; then
     echo "** starting setup of ${nbdmod} at $(sysup)"

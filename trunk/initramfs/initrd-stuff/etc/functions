@@ -104,8 +104,8 @@ if strinstr ":" "$rest" ; then
 else
   tmpval=$rest
   rest="${rest#*/}"
-  path="${tmpval#*/}"
-  server="${tmpval%/$path}"
+  server="$(echo $tmpval|sed 's,/.*,,')"
+  path="${tmpval#${server}}"
   port=""
 fi
 # get path and query components - URI path, query
@@ -350,7 +350,7 @@ local cfgfile
 echo "$fileprot $filepath $filepath" > /tmp/fileblub
 [ "x$fileprot" = "x" ] && fileprot=tftp
 if [ "x$filepath" != "x" ] ; then
-  cfgfile=/${filepath}
+  cfgfile=${filepath}
   [ "x$fileserv" = "x" ] && fileserv=$(checkip ${serverip})
   case "$fileprot" in
    ftp|http)
@@ -358,8 +358,8 @@ if [ "x$filepath" != "x" ] ; then
         2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
    ;;
    *)
-echo "tftp -g -r /$cfgfile -l /tmp/$(basename $cfgfile) $fileserv" >> /tmp/fileblub
-     tftp -g -r /$cfgfile -l /tmp/$(basename $cfgfile) $fileserv  \
+echo "tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv" >> /tmp/fileblub
+     tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv  \
        && unpack /tmp/$(basename $cfgfile)
      ls -la /tmp/$(basename $cfgfile) >> /tmp/fileblub
      echo "F: /tmp/$(basename $cfgfile)" >>/tmp/fileblub
@@ -385,8 +385,8 @@ and as last\n# distro/default" >> /tmp/confviafile
           2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
       tftp)
-echo "tftp -g -r /$cfgfile -l /tmp/$(basename $cfgfile) $fileserv" >> /tmp/fileblub
-        tftp -g -r /$cfgfile -l /tmp/$(basename $cfgfile) $fileserv \
+echo "tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv" >> /tmp/fileblub
+        tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv \
            && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
     esac
@@ -848,7 +848,7 @@ include_in_fsroot_union () {
     case $srvproto in
           nfs)
             # nfsroot consists now of two different parts
-            root_path=/$(uri_token $ROOTFS path)
+            root_path=$(uri_token $ROOTFS path)
             nfsserver=$(uri_token $ROOTFS server)
             mkdir -p /mnt/tmp/${root_path}_${union_id}
             for proto in tcp udp fail; do
