@@ -72,7 +72,7 @@ usage()
 [-c machine-setup]"
   echo "OPTIONEN"
   echo "  -c location of client configuration file (machine-setup)"
-  echo "  -d use ISC dhclient instead of udhcpcd of busybox" 
+  echo "  -d use ISC dhclient instead of udhcpcd of busybox"
   echo "  -h show usage information"
   echo "  -k kernel version"
   echo "  -i path/file"
@@ -170,6 +170,9 @@ else
   elif [ -L ${SLX_SHARE_PATH}/initramfs/${FILENAME} ] ; then
     cp -a ${SLX_SHARE_PATH}/initramfs/${FILENAME} ${INSTDIR}/${FILENAME%/*}
   else
+	if [ -z ${SLX_VERSION} ] ; then
+		SLX_VERSION=$(slxversion)
+	fi
     sed -e "s,@@@INSTDIR@@@,${INSTDIR},g;s,@@@KERNVER@@@,${KERNVER},g" \
         -e "s,@@@DISTRO@@@,${DISTRO}-${DISTRO_VER},g;s,@@@NETIF@@@,${NET_IF},g" \
         -e "s,@@@NWMODULES@@@,${NWMODULES},g" \
@@ -181,7 +184,7 @@ else
      # the stage3 init - fixme: version string should be added in a more clever way
      echo -e "slxconf_date=${DATE}\nslxconf_kernver=${KERNVER}\n\
 slxconf_listnwmod=\"${NWMODULES}\"\nslxconf_distro=${DISTRO}-${DISTRO_VER}\n\
-slxconf_slxver=\"4.0.8b\"" > ${INSTDIR}/etc/sysconfig/slxsystem.conf
+slxconf_slxver=\"${SLX_VERSION}\"" > ${INSTDIR}/etc/sysconfig/slxsystem.conf
      sed -e "s,^#!/bin/sh,#!/bin/ash," -i ${INSTDIR}/${FILENAME}
   fi
 fi
@@ -305,7 +308,7 @@ cp -a ${themes}* ${INSTDIR}/usr/share/themes
 #########################################################################
 # End of function declaration
 
-while getopts :hk:c:i:r:o:s:f:n:m:Sut:d:v:I:V:a: a ; do
+while getopts :hk:c:i:r:o:s:f:n:m:Sut:d:v:I:D:V:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
