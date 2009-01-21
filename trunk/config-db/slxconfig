@@ -564,8 +564,8 @@ and you can create clients for that system, too.
       --version                show version
 
   Actions:
-      add-client name=<client-name> mac=<client-MAC> ...
-      add-system export=<export-name> ...
+      add-client name=<client-name> mac=<client-MAC> [<key-value-pair>] ...
+      add-system export=<export-name> [<key-value-pair>] ...
       change-client name=<client-name> [<key-value-pair>] ...
       change-system name=<system-name> [<key-value-pair>] ...
       list-clients [<key-value-pair>] ...
@@ -628,7 +628,7 @@ Prints the version and exits.
 
 =head2 Adding a new Client
 
-  slxconfig add-client [systems=<system-names> [<attribute=value> ...]
+  slxconfig add-client [systems=<system-names>] [<attribute=value> ...]
 
       adds a new client to the config-DB.
 
@@ -637,7 +637,7 @@ Prints the version and exits.
 
 =head2 Changing a Client
 
-  slxconfig change-client [add-systems=<new system-names>
+  slxconfig change-client [add-systems=<new system-names>]
                           [remove-systems=<system-names>]
                           [<attribute=value> ...]
 
@@ -651,7 +651,7 @@ Prints the version and exits.
 
 =head2 Changing a System
 
-  slxconfig change-system [add-clients=<new client-names>
+  slxconfig change-system [add-clients=<new client-names>]
                           [remove-clients=<client-names>]
                           [<attribute=value> ...]
 
