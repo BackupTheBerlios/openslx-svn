@@ -77,8 +77,8 @@ my %openslxCmdlineArgs = (
 		# and all local extensions [system specific scripts])
 	'share-path=s' => \$cmdlineConfig{'share-path'},
 		# path to sharable data (functionality templates and distro-specs)
-	'temp-basepath=s' => \$cmdlineConfig{'temp-basepath'},
-		# basic path to temporary data (used during demuxing)
+	'temp-path=s' => \$cmdlineConfig{'temp-path'},
+		# path to temporary data (used during demuxing)
 	'tftpboot-path=s' => \$cmdlineConfig{'tftpboot-path'},
 		# path to root of tftp-server, tftpable data will be stored there
 	'verbose-level=i' => \$cmdlineConfig{'verbose-level'},
