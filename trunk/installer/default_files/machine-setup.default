@@ -22,6 +22,9 @@
 # a passwd file via extended config tgz
 root_pw=@@@root_pw@@@
 
+# SLX-Group
+#slxgrp=default
+
 ## name service configuration defaults
 #
 # host and domain name

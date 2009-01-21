@@ -7,12 +7,9 @@ TryExec=/var/X11R6/bin/vmware-image
 Name=My VMware Image
 Comment=NEW VMware Image with this and that
 SLXGrp=default
-# Dies ist ein Template wie .desktop-Dateien aussehen sollen, deren VMware-
-# Images über kdm bzw. runvmvare interactive mode gestartet werden sollen.
-# Diese dateien müssen in .../vmware/vmsessions liegen.
-# VMware Images die auch unter kdm angezeigt werden sollen müssen nach
-# .../vmsessions/kdm kopiert werden. Falls nicht alle Images unter .../kdm
-# landen, können alle images noch über die vmimages.desktop-Datei angezeigt 
-# werden.
-# Der KDM Menüpunkt heißt wie unter NAme= definiert und startet Xdialog mit
-# allen VMware-Images.
+XDM=false
+# Dies ist ein Template für .desktop-Dateien, deren VMware-Images über kdm bzw.
+# runvmware-interactive-mode gestartet werden sollen. Diese Dateien müssen in 
+# .../vmware/vmsessions liegen.
+# Bei VMware-Images die auch unter XDM angezeigt werden sollen, muss zudem die Variable
+# XDM auf 'true' gesetzt werden.

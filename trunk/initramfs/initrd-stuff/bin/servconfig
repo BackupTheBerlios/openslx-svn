@@ -5,7 +5,7 @@
 # system is setup when servconfig starts
 #
 # Dirk von Suchodoletz <dvs@OpenSLX.com>, 29-10-2006
-# Michael Janczyk <mj0@uni-freiburg.de>, 09-11-2006
+# Michael Janczyk <mj0@uni-freiburg.de>, 10-11-2006
 # Lars Mueller <lm@OpenSLX.com>, 23-06-2006
 # Oliver Tappe <ot@OpenSLX.com>, 23-06-2006
 #
@@ -332,13 +332,13 @@ Type=Application" >/mnt/etc/X11/sessions/default.desktop
   if [ -n "${sessions}" ]; then
     for i in /mnt/var/lib/vmware/vmsessions/*.desktop; do
       # only link if in right slxgrp
-      slxgrpstr=$(cat ${i} | sed -e "s/.*/\L&/;s/slxgrp=/ /;s/$/ /" \
-        | sed -n "/^slxgrp/p")
-      [ `strinstr " ${slxgrp} " "${slxgrpstr}"` ] && slxgrptest="TRUE"
+      slxgrpstr=$(cat ${i} | sed -e "s/.*/\L&/" | sed -n "/^slxgrp/p" \
+        | sed -e "s/slxgrp=/ /;s/$/ /")
+      slxgrptest="false"
+      if strinstr " ${slxgrp} " "${slxgrpstr}"; then slxgrptest="true"; fi
       xdmshow=$(cat ${i}|sed -e "s/.*/\L&/" | sed -n "/^xdm/p"\
         |sed -e "s,xdm=,,")
-      if [ -z "${slxgrp}" -o "${slxgrptest}" = "TRUE" \
-        -o "${slxgrp}" = "default" ]; then
+      if [ -z "${slxgrp}" -o "${slxgrptest}" = "true" ]; then
         #session_name=$(cat ${i} | grep -iw "exec" \
         #  | awk -F "=" '{print $2}')
         session_name=$(cat ${i} | sed -e "s/.*/\L&/" \
