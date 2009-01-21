@@ -25,10 +25,8 @@ function ErrorMsg()
 	exit $1
 }
 
-if test -z "${SLX_SYSTEM_BASENAME}"; then
-	echo "$0: Error, <system-name> not provided! "
-	exit 1
-fi
+test -z "${SLX_SYSTEM_BASENAME}" && \
+	ErrorMsg 1 "Error, <system-name> not provided! "
 
 for dir in . ${SLX_CONFIG_PATH}; do
 	if test -d "${dir}/systems/${SLX_SYSTEM_BASENAME}"; then
@@ -57,12 +55,8 @@ done
 
 function setup_busybox_init()
 {
-	for dir in ${SLX_STAGE1_PATH}; do
-		if test -d "${dir}"; then
-			echo "$0: Error, ${dir} already exists! "
-			exit 1
-		fi
-	done
+	test -d "${SLX_STAGE1_PATH}" && \
+		ErrorMsg 1 "Error, ${dir} already exists! "
 }
 
 function setup_busybox_chroot()
@@ -75,10 +69,8 @@ function setup_busybox_chroot()
 	case "${REPO_TYPE}" in
 		*deb*)
 			PERL_PATH=$( type -p perl)
-			if test -z "${PERL_PATH}"; then
-				echo "$0: Error, perl is not in your path, $PATH."
-				exit 1
-			fi
+			test -z "${PERL_PATH}" && \
+				ErrorMsg 1 "Error, perl is not in your path, $PATH. "
 			test -d "${CHROOT_DIR}/usr/bin/" || \
 				mkdir -p "${CHROOT_DIR}/usr/bin/"
 			cp -p "${PERL_PATH}" "${CHROOT_DIR}/usr/bin/"
@@ -179,10 +171,8 @@ function setup_busybox_install_prereq_file()
 function setup_bootstrap_1b()
 {
 	chroot "${CHROOT_DIR}" /bin/slxbootstrap
-	if test $? != 0; then
-		echo "$0: Error while calling /bin/slxbootstrap inside chroot, ${CHROOT_DIR}. "
-		exit 1
-	fi
+	test $? != 0 && \
+		ErrorMsg 1 "Error while calling /bin/slxbootstrap inside chroot, ${CHROOT_DIR}. "
 }
 
 function create_package_list()
@@ -351,10 +341,8 @@ function setup_package_sources()
 # Before we have to ensure to have the install sources up to date.
 function update_system()
 {
-	if test -z "${SLX_STAGE1_PATH}"; then
-		echo "Error: SLX_STAGE1_PATH is not set."
-		exit 1
-	fi
+	test -z "${SLX_STAGE1_PATH}" && \
+		ErrorMsg 1 "Error: SLX_STAGE1_PATH is not set. "
 
 	case "${META_PACKAGER}" in
 		apt-get)
@@ -378,10 +366,8 @@ function update_system()
 
 function install_slxselection()
 {
-	if test -z "${SLX_STAGE1_PATH}"; then
-		echo "Error: SLX_STAGE1_PATH is not set."
-		exit 1
-	fi
+	test -z "${SLX_STAGE1_PATH}" && \
+		ErrorMsg 1 "Error: SLX_STAGE1_PATH is not set. "
 
 	local packages packagelist variable
 	for variable in ${!SLX_INSTALL_PACKAGES_*}; do
@@ -414,10 +400,9 @@ function slxossetup_busybox()
 	local CHROOT_DIR
 
 	setup_busybox_init
-	if test -z "${SLX_STAGE1_PATH}" -o -z "${SLX_BUSYBOX_CHROOT_NAME}"; then
-		echo "Error: SLX_STAGE1_PATH or SLX_BUSYBOX_CHROOT_NAME is not set."
-		exit 1
-	fi
+	test -z "${SLX_STAGE1_PATH}" -o -z "${SLX_BUSYBOX_CHROOT_NAME}" && \
+		ErrorMsg 1 "Error: SLX_STAGE1_PATH or SLX_BUSYBOX_CHROOT_NAME is not set. "
+
 	CHROOT_DIR="${SLX_STAGE1_PATH}/${SLX_BUSYBOX_CHROOT_NAME}"
 	setup_busybox_chroot
 	setup_busybox_stage1_config
