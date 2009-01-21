@@ -32,9 +32,12 @@ mem=
 totalmem=
 permem=66
 
-# virtual devices
+# virtual cd/dvd and drive devices
 cdr_1="FALSE"
 cdr_2="FALSE"
+ide="TRUE"
+scsi="FALSE"
+hddrv="lsilogic"
 
 # Displayresolution needed for vmware.config
 hostres=$(xvidtune -show 2>/dev/null| grep -ve "^$")
@@ -92,6 +95,23 @@ filecheck=
 # vmware image file
 imagename="CHANGEIT"
 diskfile="${vmdir}/$imagename"
+
+#TODO: check for a faster way, perhaps we should put this into XML
+#grepping every file could take much (network) resources. And if its
+#an IDE Image, but has somewhere the string ddb.adapterType stuff can
+#become screwed
+# check if IDE or SCSI
+hddrv=$(grep -m 1 -ia "ddb.adapterType" ${diskfile} | awk -F "\"" '{print $2}')
+if [ "${hddrv}" = "ide" ]; then
+  ide="TRUE"
+  scsi="FALSE"
+elif [ "${hddrv}" = "lsilogic" ]; then
+  ide="FALSE"
+  scsi="TRUE"  
+elif [ "${hddrv}" = "buslogic" ]; then
+  ide="FALSE"
+  scsi="TRUE"  
+fi
 
 # define name for VMware window
 displayname="CHANGIT"
@@ -207,8 +227,11 @@ runvmwareconfheader ()
 
   ###### ide-disks #############################################################
   ide0:0.mode = \"${np}\"
-  ide0:0.present = \"TRUE\"
-  ide0:0.fileName = \"${tmpdir}/disk\" 
+  #volker.currentchage
+  #ide0:0.present = \"TRUE\"
+  #ide0:0.fileName = \"${tmpdir}/disk\" 
+  ide0:0.present = \"${ide}\"
+  ide0:0.fileName = \"${diskfile}\" 
 
   ide1:0.present = \"${cdr_1}\"
   ide1:0.autodetect = \"TRUE\"
@@ -221,7 +244,11 @@ runvmwareconfheader ()
   ide1:1.deviceType = \"cdrom-raw\"
 
   ###### scsi-disks ############################################################
-  scsi0.present = \"FALSE\"
+  scsi0.present = \"${scsi}\"
+  scsi0.virtualDev = \"lsilogic\"
+  scsi0:0.mode = \"${np}\"
+  scsi0:0.present = \"${scsi}\"
+  scsi0:0.fileName = \"${diskfile}\
 
   ###### nics ##################################################################
   ethernet0.present = \"TRUE\"
@@ -417,14 +444,8 @@ fi
 ## Write all results to logfile
 writelog "finished\nResults:\n\tMAC:\t\t00:50:56:0D:${mac}\n\tMem:\t\t${mem} MB
   \tMax. res.:\t${xres}x${yres}\n\t\tCD-ROM_1:\t${cdr_1}\n\tCD-ROM_2:\t${cdr_2}\n"
-writelog "finished\nResults:\n\tDiskfile:\t${diskfile}
+writelog "finished\nResults:\n\tDiskfile:\t${diskfile}\n\tDisktype:\t${hddrv}
   \tVMostype:\t${vmostype}\n\tDisplayname:\t${displayname}\n"
-
-# link to windows image
-writelog "Linking \"ln -fs ${diskfile}
-  \t${tmpdir}/disk\"...\c"
-ln -fs ${diskfile} ${tmpdir}/disk
-writelog "finished\nResult:\n$(ls -l ${tmpdir}/disk)\n"
 
 # check if image exists, etc...
 filecheck
