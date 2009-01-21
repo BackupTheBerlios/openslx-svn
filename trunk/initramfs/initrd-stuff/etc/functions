@@ -345,25 +345,15 @@ echo "dhcp finished at $(sysup)" > /tmp/dhcp-done
 # tftpget is helper function for fileget
 tftpgetunpack () {
 # $1 is  config file name to get, $2 IP of server to get file from
-for tftp in /bin/atftp /bin/tftp ; do
-  test -x $tftp && break
-done
 echo -e "tftp\t69/tcp\ntftp\t69/udp" > /etc/services
 local dst=/tmp/$(basename $1)
 # tftp get part
-case "$tftp" in
-    */atftp)
-      atftp -g -r $1 -l $dst $2 >/dev/null 2>&1
-    ;;
-    */tftp)
-      # distinguish between busybox tftp and standalone (in.tftp) client
-      if [ -x /bin/busybox ] ; then
-        tftp -g -r $1 -l $dst $2 2>/dev/null
-      else
-        echo "get $1 $dst" | tftp $2 >/dev/null 2>&1
-      fi
-    ;;
-esac
+# distinguish between busybox tftp and standalone (in.tftp) client
+if [ -x /bin/busybox ] ; then
+  tftp -g -r $1 -l $dst $2 2>/dev/null
+else
+  echo "get $1 $dst" | tftp $2 >/dev/null 2>&1
+fi
 # unpack part
 if [ -s $dst ] ; then
   # fixme: handle different types of packaging (gzip/bzip2)??
@@ -381,14 +371,15 @@ fileget () {
 if [ -n "$filesrc" ] ; then
   local srvproto=$(uri_token $filesrc prot)
   local cfgfile="/$(uri_token $filesrc path)"
-  local tftpserver=$(uri_token $filesrc server)
+  local tftpserver=$(checkip $(uri_token $filesrc server))
   tftpgetunpack $tftp $cfgfile $tftpserver
+  echo "tftpgetunpack $tftp $cfgfile $tftpserver" >> /tmp/confviafile
 else
   # predefined value for openslx environment; it is expected that this
   # directory is just below the tftpboot/tftproot (path to which the 
   # daemon is restricted to)
   local cfgdir="client-config"
-  local tftpserver=$serverip
+  local tftpserver=$(checkip ${serverip})
   # try to get configuration files successively; start with distro client
   # and try last distro default ...
   echo -e "\n## Configuration via fileget: Hierarchy is distro client \
