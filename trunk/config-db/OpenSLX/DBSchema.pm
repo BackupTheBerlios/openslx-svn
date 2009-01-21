@@ -135,9 +135,9 @@ $DbSchema = {
 			'comment:s.1024',		# internal comment (optional, for admins)
 			'kernel:s.128',			# path to kernel file, relative to /boot
 			'kernel_params:s.512',	# kernel-param string for pxe
-			'ramfs_nicmods:s.128',	# list of network interface card modules
-			'ramfs_fsmods:s.128',	# list of filesystem modules
-			'ramfs_screen:s.10',	# screen size for splash
+			'attr_ramfs_nicmods:s.128',	# list of network interface card modules
+			'attr_ramfs_fsmods:s.128',	# list of filesystem modules
+			'attr_ramfs_screen:s.10',	# screen size for splash
 			'hidden:b',				# hidden systems won't be offered for booting
 			@sharedAttributes,
 		],
@@ -259,6 +259,11 @@ if ($lang =~ m[^\w\w_(\w\w)]) {
 					'id' => 0,
 					'name' => '<<<default>>>',
 					'comment' => 'internal system that holds default values',
+					# system-only attributes:
+					'attr_ramfs_nicmods'
+						=> 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
+					'attr_ramfs_fsmods' => '',
+					# real attributes:
 					'attr_automnt_dir' => '',
 					'attr_automnt_src' => '',
 					'attr_country' => "$country",
