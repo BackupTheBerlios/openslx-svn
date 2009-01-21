@@ -55,6 +55,9 @@ start_rwhod="no"
 # start log server (remote log servers could be either passed via dhcp option
 # or by giving the server URI instead of yes. udp and tcp are possible)
 # start_syslog="syslog://@@@serverip@@@:port/udp"
+# syslog to file (standard location depending on distribution)
+# start_syslog="file"
+# setting syslog to yes, info is written to console 10
 start_syslog="yes"
 
 # start cron service
@@ -82,7 +85,7 @@ netbios_workgroup="dxs-network"
 # if openslx server and server for the home is the same machine, you can
 # use @@@serverip@@@ instead of a fixed setting here
 #automnt_dir="/home"
-#automnt_src="serverip/home"
+#automnt_src="(proto://)serverip/home"
 
 # scratch space on server "proto://serverip/slx/tmp"
 # if openslx server and server for the remote rw scratch is the same 

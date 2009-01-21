@@ -495,15 +495,14 @@ syslogngcfg=$1
 echo -e "# File written by $0 within InitRamFS\n\
 source src {\n\tfile(\"/proc/kmsg\") log_prefix(\"kernel: \");\n\
 \tunix-stream(\"/dev/log\");\n\tinternal();\n};\ndestination console_all {\
-file(\"/dev/tty10\"); };" >$syslogngcfg
+\n\tfile(\"/dev/tty10\");\n};" >$syslogngcfg
 case "$start_syslog" in
   yes|Yes|YES)
     : # already defined
   ;;
   file)
-    echo -e "destination allmessages { file(\"/var/log/allmessages\"); };\n\
-log { source(src); destination(allmessages); };" \
-      >>$syslogngcfg
+    echo -e "destination allmessages {\n\tfile(\"/var/log/allmessages\");\n};\
+\nlog {\n\tsource(src); destination(allmessages);\n};" >>$syslogngcfg
   ;;
   *)
     syslogsrv=$(uri_token $start_syslog server)
