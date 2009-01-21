@@ -387,6 +387,7 @@ sub _doDelete
 	my $table = shift;
 	my $IDs = shift;
 	my $idCol = shift;
+	my $additionalWhereClause = shift;
 
 	my $dbh = $self->{'dbh'};
 
@@ -396,6 +397,9 @@ sub _doDelete
 		my $sql = "DELETE FROM $table";
 		if (defined $id) {
 			$sql .= " WHERE $idCol = ".$self->quote($id);
+			if (defined $additionalWhereClause) {
+				$sql .= $additionalWhereClause;
+			}
 		}
 		my $sth = $dbh->prepare($sql)
 			or confess _tr(q[Can't delete from table <%s> (%s)], $table,
@@ -474,7 +478,8 @@ sub _updateRefTable
 
 	# all the remaining value-IDs need to be removed:
 	if (scalar keys %lastValueIDs) {
-		$self->_doDelete($table, [ keys %lastValueIDs ], $valueCol);
+		$self->_doDelete($table, [ keys %lastValueIDs ], $valueCol,
+						 " AND $keyCol='$keyID'");
 	}
 	return 1;
 }
