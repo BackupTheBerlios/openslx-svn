@@ -84,7 +84,7 @@ if ($action =~ m[^list-ex]i) {
 } elsif ($action =~ m[^list-ty]i) {
 	print _tr("List of supported export types:\n\t");
 	print join("\n\t", sort keys %supportedExportTypes)."\n";
-} elsif ($action =~ m[^(add|export)]i) {
+} elsif ($action =~ m[^export]i) {
 	if (scalar(@ARGV) != 2) {
 		print STDERR _tr("You need to specify exactly one vendor-os-name and one export-type!\n");
 		pod2usage(2);
@@ -105,29 +105,9 @@ if ($action =~ m[^list-ex]i) {
 				$engine->{'vendor-os-path'});
 	}
 	$engine->exportVendorOS();
-} elsif ($action =~ m[^(update)]i) {
-	if (scalar(@ARGV) != 1) {
-		print STDERR _tr("You need to specify exactly one export-name!\n");
-		pod2usage(2);
-	}
-	my $exportName = shift @ARGV;
-
-	# we chdir into the script's folder such that all relative paths have
-	# a known starting point:
-	chdir($FindBin::RealBin)
-		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
-
-	# create OSExport-engine for given export type and start it:
-	my $engine = OpenSLX::OSExport::Engine->new;
-	$engine->initializeFromExisting($exportName);
-	if (!-e $engine->{'vendor-os-path'}) {
-		die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
-				$engine->{'vendor-os-path'});
-	}
-	$engine->updateExportedVendorOS();
 } elsif ($action =~ m[^remove]i) {
 	if (scalar(@ARGV) != 1) {
-		print STDERR _tr("You need to specify exactly one export-name and one export-type!\n");
+		print STDERR _tr("You need to specify exactly one export-name!\n");
 		pod2usage(2);
 	}
 	my $exportName = shift @ARGV;
@@ -143,11 +123,10 @@ if ($action =~ m[^list-ex]i) {
 	$engine->purgeExport();
 } else {
 	print STDERR _tr("You need to specify exactly one action:
-	add
+	export
 	list-exported
 	list-installed
 	list-types
-	update
 	remove
 Try '%s --help' for more info.\n", $0);
 }
@@ -173,12 +152,12 @@ slxos-export [options] <action>
 
 =over 8
 
-=item B<<     add <vendor-OS-name> <export-type> >>
+=item B<<     export <vendor-OS-name> <export-type> >>
 
 exports the vendor-OS with the given name using the given export type and
 adds it to the config-DB, too. The export will be named as the vendor-OS,
 but with an additional '-<X>' appended to it (where <X> will be replaced
-by the letter A,B,C ...).
+by the chosen export-type).
 
 =item B<<     list-exported >>
 
@@ -191,11 +170,6 @@ list all installed vendor-OSes
 =item B<<     list-types >>
 
 list all supported export types
-
-=item B<<     update <export-name> >>
-
-updates the export with the given name, i.e. the contents of the vendor-OS
-is synced to the export
 
 =item B<<     remove <export-name> >>
 

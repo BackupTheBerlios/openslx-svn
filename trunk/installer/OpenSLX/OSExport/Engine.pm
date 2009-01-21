@@ -108,9 +108,7 @@ sub initializeForNew
 		die _tr("vendor-OS '%s' not found in DB, giving up!", $vendorOSName);
 	}
 
-	my $exportCounter
-		= $openslxDB->incrementExportCounterForVendorOS($vendorOS->{id});
-	my $exportName = sprintf "$vendorOSName-%c", 64+$exportCounter;
+	my $exportName = "$vendorOSName-$exportType";
 
 	$openslxDB->disconnect();
 
@@ -133,22 +131,6 @@ sub exportVendorOS
 	vlog 0, _tr("vendor-OS '%s' successfully exported to '%s'!",
 				$self->{'vendor-os-path'}, $self->{'export-path'});
 	$self->addExportToConfigDB();
-}
-
-sub updateExportedVendorOS
-{
-	my $self = shift;
-	my $exportName = shift;
-
-	if (!$self->{'exporter'}->checkRequirements($self->{'vendor-os-path'})) {
-		die _tr("clients wouldn't be able to access the exported root-fs!\nplease install the missing module(s) or use another export-type.");
-	}
-
-	$self->{'exporter'}->exportVendorOS(
-		$self->{'vendor-os-path'},
-		$self->{'export-path'}
-	);
-	vlog 0, _tr("export '%s' successfully updated!", $self->{'export-path'});
 }
 
 sub purgeExport
@@ -236,7 +218,7 @@ sub _initialize
 	$self->{'vendor-os-path'}
 		= "$openslxConfig{'stage1-path'}/$vendorOSName";
 	$self->{'export-path'}
-		= "$openslxConfig{'export-path'}/$exportType/$exportName";
+		= "$openslxConfig{'export-path'}/$exportType/$vendorOSName";
 	vlog 1, _tr("vendor-OS from '%s' will be exported to '%s'",
 				$self->{'vendor-os-path'}, $self->{'export-path'});
 }
@@ -248,17 +230,31 @@ sub addExportToConfigDB
 	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
 	$openslxDB->connect();
 
-	my $export = {
-		'vendor_os_id' => $self->{'vendor-os-id'},
-		'name' => $self->{'export-name'},
-		'type' => $self->{'export-type'},
-	};
+ 	my $export
+ 		= $openslxDB->fetchExportByFilter({
+ 			'name' => $self->{'export-name'},
+			'vendor_os_id' => $self->{'vendor-os-id'},
+ 		});
+	if (defined $export) {
+		vlog 0, _tr("No need to change export '%s' in OpenSLX-database.\n",
+					$self->{'export-name'});
+		$self->{exporter}->showExportConfigInfo($export);
+	} else {
+		$export = {
+			'vendor_os_id' => $self->{'vendor-os-id'},
+			'name' => $self->{'export-name'},
+			'type' => $self->{'export-type'},
+		};
+	
+		my $id = $self->{exporter}->addExportToConfigDB($export, $openslxDB);
+		vlog 0, _tr("Export '%s' has been added to DB (ID=%s)...\n",
+					$self->{'export-name'}, $id);
 
-	my $id = $self->{exporter}->addExportToConfigDB($export, $openslxDB);
-	vlog 0, _tr("Export '%s' has been added to DB (ID=%s)...\n",
-				$self->{'export-name'}, $id);
-	# now create a default system for that export, using the standard kernel:
-	system("slxconfig add-system $self->{'export-name'}");
+		$self->{exporter}->showExportConfigInfo($export)		if $id;
+
+		# now create a default system for that export, using the standard kernel:
+		system("slxconfig add-system $self->{'export-name'}");
+	}
 
 	$openslxDB->disconnect();
 }
@@ -275,7 +271,6 @@ sub removeExportFromConfigDB
  	my $export
  		= $openslxDB->fetchExportByFilter({
  			'name' => $exportName,
- 			'type' => $self->{'export-type'},
  		});
 	if (!defined $export) {
 		vlog 0, _tr("Export '%s' doesn't exist in OpenSLX-database.\n",

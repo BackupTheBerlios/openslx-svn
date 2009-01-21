@@ -113,7 +113,6 @@ sub addExportToConfigDB
 		= $openslxDB->incrementGlobalCounter('next-nbd-server-port');
 
 	my $res = $openslxDB->addExport($export);
-	$self->showNbdParams($export)		if $res;
 	return $res;
 }
 
@@ -136,6 +135,17 @@ sub requiredFSMods
 	my $self = shift;
 
 	return 'nbd squashfs';
+}
+
+sub showExportConfigInfo
+{
+	my $self = shift;
+	my $export = shift;
+
+	print (('#' x 80)."\n");
+	print _tr("Please make sure you start a corresponding nbd-server:\n\t%s\n",
+			  "nbd-server $export->{port} $self->{engine}->{'export-path'} -r");
+	print (('#' x 80)."\n");
 }
 
 ################################################################################
@@ -180,17 +190,6 @@ sub createSquashFS
 		die _tr("unable to create squashfs for source '%s' as target '%s', giving up! (%s)",
 				$source, $target, $!);
 	}
-}
-
-sub showNbdParams
-{
-	my $self = shift;
-	my $export = shift;
-
-	print (('#' x 80)."\n");
-	print _tr("Please make sure you start a corresponding nbd-server:\n\t%s\n",
-			  "nbd-server $export->{port} $self->{engine}->{'export-path'} -r");
-	print (('#' x 80)."\n");
 }
 
 sub mapRsyncFilter2Regex

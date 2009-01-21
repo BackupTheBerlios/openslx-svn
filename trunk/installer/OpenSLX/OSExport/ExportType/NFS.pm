@@ -44,7 +44,6 @@ sub exportVendorOS
 	my $target = shift;
 
 	$self->copyViaRsync($source, $target);
-	$self->addTargetToNfsExports($target);
 }
 
 sub purgeExport
@@ -80,6 +79,20 @@ sub requiredFSMods
 	return 'nfs';
 }
 
+sub showExportConfigInfo
+{
+	my $self = shift;
+	my $export = shift;
+
+	print (('#' x 80)."\n");
+	print _tr("Please make sure the following line is contained in /etc/exports\nin order to activate the NFS-export of this vendor-OS:\n\t%s\n",
+			  "$self->{engine}->{'export-path'}\t*(ro,no_root_squash,async,no_subtree_check)");
+	print (('#' x 80)."\n");
+
+# TODO : add something a bit more clever here...
+#	my $exports = slurpFile("/etc/exports");
+}
+
 ################################################################################
 ### implementation methods
 ################################################################################
@@ -103,20 +116,6 @@ sub copyViaRsync
 		die _tr("unable to export to target '%s', giving up! (%s)",
 				$target, $!);
 	}
-}
-
-sub addTargetToNfsExports
-{
-	my $self = shift;
-	my $target = shift;
-
-	print (('#' x 80)."\n");
-	print _tr("Please make sure the following line is contained in /etc/exports\nin order to activate the NFS-export of this vendor-OS:\n\t%s\n",
-			  "$self->{engine}->{'export-path'}\t*(ro,no_root_squash,async,no_subtree_check)");
-	print (('#' x 80)."\n");
-
-# TODO : add something a bit more clever here...
-#	my $exports = slurpFile("/etc/exports");
 }
 
 1;
