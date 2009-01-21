@@ -32,7 +32,7 @@ use lib "$FindBin::RealBin";
 	# development path to config-db stuff
 
 use OpenSLX::Basics;
-use OpenSLX::ConfigDB qw(:access :manipulation);
+use OpenSLX::ConfigDB;
 
 my (
 	$noShow,
@@ -68,8 +68,9 @@ if ($versionReq) {
 openslxInit() or pod2usage(2);
 
 # fetch slxconf entries...
-my $openslxDB = connectConfigDB();
-my $currSettings = fetchSettings($openslxDB);
+my $openslxDB = OpenSLX::ConfigDB->new();
+$openslxDB->connect();
+my $currSettings = $openslxDB->fetchSettings();
 
 # ...and fetch current content of local settings file...
 open(SETTINGS, "< $openslxConfig{'config-path'}/settings.local");
@@ -119,13 +120,13 @@ if ($changeCount) {
 if (scalar(keys %cmdlineSettings) > 0) {
 	foreach my $key (keys %cmdlineSettings) {
 		if (exists $currSettings->{$key}) {
-			changeSettings($openslxDB, { $key => $cmdlineSettings{$key} });
+			$openslxDB->changeSettings({ $key => $cmdlineSettings{$key} });
 			$changeCount++;
 		} else {
 			die _tr("unknown settings key <%s>!\n", $key);
 		}
 	}
-	$currSettings = fetchSettings($openslxDB);
+	$currSettings = $openslxDB->fetchSettings();
 }
 
 if (!($noShow || $quiet)) {
@@ -139,6 +140,8 @@ if (!($noShow || $quiet)) {
 		print qq[\t$key="$currSettings->{$key}"\n];
 	}
 }
+
+$openslxDB->disconnect();
 
 __END__
 
