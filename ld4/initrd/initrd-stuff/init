@@ -2,12 +2,12 @@
 # Description:  main script for new type of initial ramdisk for
 #               linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 05-07-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - odlx.org project
 #
-# Version:      0.2.4k
+# Version:      0.2.5a
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -357,6 +357,7 @@ if [ -n "${UNIONFS}" ] ; then
   echo "Using UnionFS for rw access"
   mkdir -p ${RWDIR}/union ${RWDIR}/uniontmp /rorootfs
   mount -n -t tmpfs none ${RWDIR}/uniontmp
+  # hack for handling unionfs with patched run-init
   mount --move /mnt /rorootfs
   mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/rorootfs=${NFSRO}ro \
     none /mnt
