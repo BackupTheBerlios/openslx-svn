@@ -136,7 +136,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       DEBUGLEVEL=${opts#debug=}
       [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
         echo "** SLX init started near $(sysup)"
-      nosplash=1
+      [ ${DEBUGLEVEL} != 0 ] && nosplash=1
     ;;
     # essid for WLAN boot (experimental, might be moved to a module component
     # in later versions
