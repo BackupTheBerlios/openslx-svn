@@ -31,7 +31,7 @@ fi
 # for this example plugin, we simply take a filename from the configuration ...
 . /initramfs/plugin-conf/Example.conf
 
-if ! [ -n $active]; then
+if ! [ -n $active ]; then
 	exit 0
 fi
 
