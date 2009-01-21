@@ -103,7 +103,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     ;;
     # if (external, via tftp) configuration file retrieval should be
     # triggered, if no source is given try dhcp server and predefined
-    # standard path (~/tftpboot/client-conf/ ...)
+    # standard path (.../tftpboot/client-config/ ...)
     file)
       FILE="yes"
       rm /tmp/file-done

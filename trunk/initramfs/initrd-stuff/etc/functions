@@ -431,8 +431,9 @@ if [ -n "$FILESRC" ] ; then
   tftpserver=$(uri_token $FILESRC server)
   tftpgetunpack $tftp $cfgfile $tftpserver
 else
-  # fixme: We need to know the prefix somehow
-  cfgdir="/tftpboot/client-conf"
+  # we expect the tftp-server to serve from $SLX_TFTPBOOT_PATH, so we
+  # just use the relative path from that here:
+  cfgdir="client-config"
   local tftpserver=$serverip
   # try to get configuration files successively; start with distro client
   # and try last distro default ...
