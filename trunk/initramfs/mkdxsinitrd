@@ -503,7 +503,7 @@ done
 for lib in $(fgrep -v /lib64/ ${INSTDIR}/tmp/libraries 2>/dev/null|sort -u); do
   cp ${lib} ${INSTDIR}/lib
 done
-rm ${INSTDIR}/tmp/libraries
+rm -f ${INSTDIR}/tmp/libraries
 
 # add kernel modules and dependency files
 if [ -z "$KERNVER" ] ; then
