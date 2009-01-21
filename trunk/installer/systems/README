@@ -1,10 +1,5 @@
 In this sub directory of /etc/opt/openslx/ we store the configuration files
 for operating systems installed with slxossetup.
 
-Any file named BASE_FILE_* is installed into the destination directory before
-any package install action takes place.
-
-Therfore the suffix of BASE_FILE has the destination path encoded in the
-filename.  Any __ is replaced by a single /.  Therfore BASE_FILE_etc__passwd
-for example will be copied to the destination, stage1 directory,
-/var/opt/openslx/stage1/<system-name>/etc/passwd
+Any file from the prereqfiles sub directory is copied into the stage1 diectory
+before any install action takes place.

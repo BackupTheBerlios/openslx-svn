@@ -131,19 +131,12 @@ function slxossetup_rpm()
 		popd >/dev/null
 	fi
 
-	# Install base system files
-	for file in ${SLX_SYSTEM_CONFIG_PATH}/BASE_FILE_*; do
-		# We might not have any BASE_FILE_* at all.
-		test -f "${file}" || continue
-		suffix="${file#${SLX_SYSTEM_CONFIG_PATH}/BASE_FILE_}"
-		dest_path=${suffix%__*}
-		dest_path="${dest_path//__//}"
-		dest_file="${suffix//__//}"
-		test -d "${SLX_STAGE1_PATH}/${dest_path}" || \
-			mkdir "${SLX_STAGE1_PATH}/${dest_path}"
-		cp -p "${file}" "${SLX_STAGE1_PATH}/${dest_file}"
-		chown root: "${SLX_STAGE1_PATH}/${dest_file}"
-	done
+	# Install prerequired files
+	cp -a "${SLX_SYSTEM_CONFIG_PATH}"/prereqfiles/* "${SLX_STAGE1_PATH}"
+	find "${SLX_STAGE1_PATH}" -type d -name .svn -print0 | \
+		xargs -0 rm -rf
+	test -x "${SLX_SYSTEM_CONFIG_PATH}"/scripts/postprereq && \
+		"${SLX_SYSTEM_CONFIG_PATH}"/scripts/postprereq "${SLX_STAGE1_PATH}"
 
 	for file in ${SLX_INSTALL_FAKE_FILE}; do
 		dir="${file%/*}"
