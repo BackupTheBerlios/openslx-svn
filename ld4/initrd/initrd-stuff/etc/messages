@@ -26,6 +26,9 @@ init_errldap="  Unable to setup at \
 least basic functionality, because no IP configuration\n  available. Please \
 beware - ldap works only in combination of either\n  ipappend or similar or \
 with dhcp!"
+init_errnwad="  Failed to load the network \
+adaptor modules defined via mkdxsinitrd\n  run. Please rerun and list the \
+appropriate modules (without .ko)."
 
 # messages from functions
 error_msg="An error occured during execution of $0 script:\n\n"

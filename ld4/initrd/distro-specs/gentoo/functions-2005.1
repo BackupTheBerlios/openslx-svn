@@ -47,12 +47,12 @@ local script="$1"
 local need="$2"
 # empty runlevel links - decision on running certain services is
 # passed via configuration
-ln -s /etc/init.d/$1 /mnt/etc/runlevels/default/$1
+ln -s /etc/${D_INITDIR}/$1 /mnt/etc/runlevels/default/$1
 echo $1 >> /mnt/etc/runlevels/default/.critical
 # hack to remove unneeded dependency stuff
 #if [ "$script" != "vmware-prep" ] ; then
-#  sed "/depend/,/}/d" /mnt/etc/init.d/$1 > /etc/rls
-#  cp /etc/rls /mnt/etc/init.d/$1
+#  sed "/depend/,/}/d" /mnt/etc/${D_INITDIR}/$1 > /etc/rls
+#  cp /etc/rls /mnt/etc/${D_INITDIR}/$1
 #fi
 }
 
@@ -84,7 +84,7 @@ esac
 # group of functions for the normal runlevels
 # function for ntp configuration (unchecked)
 config_ntp () {
-if [ -f /mnt/etc/init.d/ntp ] ; then
+if [ -f /mnt/etc/${D_INITDIR}/ntp ] ; then
   if ! strinfile "ntp:" /mnt/etc/passwd ; then
     echo -e "ntp:x:74:65534:NTP daemon:/var/lib/ntp:/bin/false" \
       >>/mnt/etc/passwd
@@ -112,7 +112,7 @@ fi
 # cron service
 config_cron () {
 if [ "x$start_cron" = "xyes" ] ; then
-  if [ -f /mnt/etc/init.d/cron ] ; then
+  if [ -f /mnt/etc/${D_INITDIR}/cron ] ; then
     :
   else
     error $df_errcron nonfatal
@@ -123,7 +123,7 @@ fi
 # syslog service
 config_syslog () {
 if [ "x$start_syslog" = "xyes" ] ; then
-  if [ -f /mnt/etc/init.d/syslog-ng ] ; then
+  if [ -f /mnt/etc/${D_INITDIR}/syslog-ng ] ; then
     rllinker syslog-ng
   else
     error $df_errsysl nonfatal
@@ -134,7 +134,7 @@ fi
 # secure shell service
 config_sshd () {
 if [ "x$start_sshd" = "xyes" ] ; then
-  if [ -f /mnt/etc/init.d/sshd ] ; then
+  if [ -f /mnt/etc/${D_INITDIR}/sshd ] ; then
     rllinker "sshd"
   else
     error $df_errsshd nonfatal
@@ -145,7 +145,7 @@ fi
 # snmp agent for remote monitoring (unchecked)
 config_snmp () {
 if [ "x$start_snmp" = "xyes" ] ; then
-  if [ -f /mnt/etc/init.d/snmpd ] ; then
+  if [ -f /mnt/etc/${D_INITDIR}/snmpd ] ; then
     rllinker "snmpd"
     testmkd /mnt/var/lib/net-snmp >/dev/null 2>&1
   fi
@@ -156,12 +156,12 @@ if [ "x$start_snmp" = "xyes" ] ; then
 
 # configure X display manager (runlevel links and kind of manager)
 config_xdm () {
-if [ -f /mnt/etc/init.d/xdm ] ; then
+if [ -f /mnt/etc/${D_INITDIR}/xdm ] ; then
   sed -e "s,DISPLAYMANAGER=.*,DISPLAYMANAGER=\"xdm\"," /mnt/etc/rc.conf \
     > /etc/rc.conf
   cp /etc/rc.conf /mnt/etc/rc.conf
-  ln -s /etc/init.d/xdm /mnt/etc/runlevels/boot/xdm
-  ln -s /etc/init.d/xdm /mnt/etc/runlevels/default/xdm
+  ln -s /etc/${D_INITDIR}/xdm /mnt/etc/runlevels/boot/xdm
+  ln -s /etc/${D_INITDIR}/xdm /mnt/etc/runlevels/default/xdm
   echo "xdm" >> /mnt/etc/runlevels/boot/.critical
 fi
 }
@@ -210,8 +210,8 @@ config_rc_entry "CONSOLEFONT" "${CONSOLE_FONT}"
 config_acpi () {
 rllinker acpid
 # remove dependencies (runs unneeded services ...)
-sed "/depend/,/}/d" /mnt/etc/init.d/acpid > /etc/rls
-cp /etc/rls /mnt/etc/init.d/acpid
+sed "/depend/,/}/d" /mnt/etc/${D_INITDIR}/acpid > /etc/rls
+cp /etc/rls /mnt/etc/${D_INITDIR}/acpid
 }
 
 # configure dbus (inter application communication for kde and gnome), hal
@@ -223,14 +223,12 @@ config_dreshal () {
 
 # configure automounter
 config_automount () {
-if [ -f /mnt/etc/init.d/autofs ] ; then
+if [ -f /mnt/etc/${D_INITDIR}/autofs ] ; then
   rllinker autofs
   if [ -n "${automnt_src}" ] ; then
     # local directory and home directory server from machine-setup
     [ -z "${automnt_dir}" ] && automnt_dir="/home"
-    strinstr "/" "${automnt_dir}" && error "  Only toplevel directories \
-are allowed as mount points for user home\n  directories. Please set the \
-variable \${automnt_dir} appropriately in\n  machine-setup file." nonfatal
+    strinstr "/" "${automnt_dir}" && error $df_erratpld nonfatal
     automnt_dir=${automnt_dir#/}
     echo -e "/home\t/etc/auto.${automnt_dir}\n" >> /mnt/etc/auto.master
     echo -e "# /etc/auto.${automnt_dir} created by $0:\n" \
@@ -247,7 +245,7 @@ fi
 # start name service caching daemon (recommended in combination with 
 # ldap source as user admin base)
 config_nscd () {
-if [ -f /mnt/etc/init.d/nscd ] ; then
+if [ -f /mnt/etc/${D_INITDIR}/nscd ] ; then
   #testmkd /mnt/var/run/nscd
   rllinker "nscd"
 fi
