@@ -54,7 +54,7 @@ binfinder()
 {
   local PROGRAM="$1"
   local RET=1
-  for ELEMENT in sbin bin usr/bin usr/local/bin usr/bin/X11; do
+  for ELEMENT in sbin bin usr/bin usr/sbin usr/local/bin usr/bin/X11; do
     if [ -f "${ROOTDIR}/$ELEMENT/$PROGRAM" ] && [ -x "${ROOTDIR}/$ELEMENT/$PROGRAM" ]; then
       printf '%s\n' "${ROOTDIR}/$ELEMENT/$PROGRAM"
       RET=0
@@ -296,9 +296,9 @@ if [ -z "${DISTRO}" ] ; then
   if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
     DISTRO=suse
     DISTRO_VER=`grep "VERSION" ${ROOTDIR}/etc/SuSE-release | sed "s/.*= //"`
-  elif [ -e ${ROOTDIR}/etc/debian-version ] ; then
+  elif [ -e ${ROOTDIR}/etc/debian_version ] ; then
     DISTRO=debian
-    DISTRO_VER=`cat ${ROOTDIR}/etc/debian-version`
+    DISTRO_VER=`cat ${ROOTDIR}/etc/debian_version`
   fi
 fi
 
@@ -458,6 +458,14 @@ for module in af_packet ${NWMODULES} ${FSMODULES}; do
       e100|8139too|via-rhine|sis900|epic100|sundance|8139cp|eepro100.ko|pcnet32)
         cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/drivers/net/mii.ko \
           ${INSTDIR}/lib/modules/${KERNVER}/kernel/drivers/net &>/dev/null
+      ;;
+      nfs)
+	mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc/
+	mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd
+        cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc/sunrpc.ko \
+	 ${INSTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc/ # &>/dev/null
+	cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd/lockd.ko \
+         ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd #&>/dev/null
       ;;
     esac
   fi

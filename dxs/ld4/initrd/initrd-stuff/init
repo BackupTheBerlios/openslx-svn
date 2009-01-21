@@ -377,8 +377,7 @@ and list the modules loaded until\n  now."
 waitfor /tmp/svcfg 20000 || error "  For some reason the software config \
 of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
-date
-#bash
+bash
 # IP configuration is made and should not be updated automatically
 killall -9 dhcpcd dhclient pump 2>/dev/null
 # unmount the bind mounted modules directory
@@ -400,6 +399,7 @@ umount -n /proc
 [ -n "${UNIONFS}" ] && mount -n --move /root /mnt/mnt 
 pivot_root . mnt || error "  Could not execute pivot_root due to missing \
 command or wrong\n  parameters given."
+echo "Exiting the initial ramdisk init"
 exec `which chroot` . sh -c 'rm -rf mnt/*; exec /sbin/init' \
   <dev/console >dev/console 2>&1
 
