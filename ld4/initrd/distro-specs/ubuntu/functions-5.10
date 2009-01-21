@@ -16,7 +16,8 @@ preinit () {
   echo "dhcp:x:101:">>/etc/group
   echo "dhcp:x:101:101::/nonexistent:/bin/false" >>/etc/passwd
 
-  # load unix module to provide sockets
+  # load unix module to provide sockets (is compiled into kernel on
+  # the live CDs!?)
   modprobe ${MODPRV} unix || error "$df_errumod" nonfatal
 }
 

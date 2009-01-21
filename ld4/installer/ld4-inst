@@ -489,7 +489,7 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
         [ -z "$keep" ] && unlink ${2}
       fi
       # linking files 
-      # if SuSE und DHCP dann Kopie statt Link
+      # fixme!! if SuSE und DHCP dann Kopie statt Link
       if [ ${server_distro} = "suse" ] && echo ${dxs_dhcpd_conf}|\
         grep dhcp &>/dev/null; then
         rm ${2}${extension} &>/dev/null
