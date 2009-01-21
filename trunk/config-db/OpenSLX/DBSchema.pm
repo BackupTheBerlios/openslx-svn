@@ -33,6 +33,7 @@ my @sharedAttributes = (
 #	'attr_auth_type:s.64',
 		# not used currently!
 	'attr_country:s.64',
+	'attr_dm_allow_shutdown:s.16',
 #	'attr_home_type:s.64',
 		# not used currently!
 	'attr_hw_graphic:s.64',
@@ -207,6 +208,14 @@ $DbSchema = {
 ### 			'cols'	=> contains a full list of resulting column descriptions
 ################################################################################
 
+my $lang = setlocale(LC_LANG);
+my $country;
+if ($lang =~ m[\w\w_(\w\w)]) {
+	$country = lc($1);
+} else {
+	$country = 'us';
+}
+
 %DbSchemaHistory = (
 	'0.01' => [
 		# the initial schema version simply adds a couple of tables:
@@ -239,6 +248,37 @@ $DbSchema = {
 					'id' => 0,
 					'name' => '<<<default>>>',
 					'comment' => 'internal system that holds default values',
+					'attr_automnt_dir' => '',
+					'attr_automnt_src' => '',
+					'attr_country' => "$country",
+					'attr_dm_allow_shutdown' => 'user',
+					'attr_hw_graphic' => '',
+					'attr_hw_monitor' => '',
+					'attr_hw_mouse' => '',
+					'attr_late_dm' => 'no',
+					'attr_netbios_workgroup' => 'slx-network',
+					'attr_nis_domain' => '',
+					'attr_nis_servers' => '',
+					'attr_sane_scanner' => '',
+					'attr_scratch' => '',
+					'attr_slxgrp' => '',
+					'attr_start_alsasound' => 'yes',
+					'attr_start_atd' => 'no',
+					'attr_start_cron' => 'no',
+					'attr_start_dreshal' => 'yes',
+					'attr_start_ntp' => 'initial',
+					'attr_start_nfsv4' => 'no',
+					'attr_start_printer' => 'no',
+					'attr_start_samba' => 'may',
+					'attr_start_snmp' => 'no',
+					'attr_start_sshd' => 'yes',
+					'attr_start_syslog' => 'yes',
+					'attr_start_x' => 'yes',
+					'attr_start_xdmcp' => 'kde',
+					'attr_tex_enable' => 'no',
+					'attr_timezone' => 'Europe/Berlin',
+					'attr_tvout' => 'no',
+					'attr_vmware' => 'no',
 				},
 			],
 		},
