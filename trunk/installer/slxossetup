@@ -223,7 +223,7 @@ function setup_bootstrap_1c()
 			test ${rc} -eq 0 || \
 				ErrorMsg ${rc} "Bootstrap failed! "
 		;;
-		*suse*|*fedora*)
+		*suse*|*fedora*|*mandriva*)
 			test -d "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/etc" || \
 				mkdir "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/etc"
 			touch "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/etc/mtab"
@@ -263,6 +263,8 @@ function setup_bootstrap_1c()
 
 function setup_package_sources()
 {
+	local SOURCES_LIST URPMI_ADDMEDIA_ARG
+
 	case "${SLX_SYSTEM_BASENAME}" in
 		*debian*|*ubuntu*)
 			SOURCES_LIST="${SLX_STAGE1_PATH}/etc/apt/sources.list"
@@ -292,6 +294,7 @@ function setup_package_sources()
 		test "${INST_SOURCE_NAME}" || \
 			INST_SOURCE_NAME="${INST_SOURCE_CHANNEL}"
 
+		INST_SOURCE_PACKAGE_SUBDIR=$( eval echo \$SLX_INST_SOURCE_PACKAGE_SUBDIR${INST_SOURCE_CHANNEL})
 		INST_SOURCE_REPO_SUBDIR=$( eval echo \$SLX_INST_SOURCE_REPO_SUBDIR_${INST_SOURCE_CHANNEL})
 		INST_SOURCE_TYPE=$( eval echo \$SLX_INST_SOURCE_TYPE_${INST_SOURCE_CHANNEL})
 		# Use default repo type if not available from settings config file
@@ -329,6 +332,17 @@ function setup_package_sources()
 					baseurl=\"${INST_SOURCE_BASEURL}\" \
 					${INST_SOURCE_PRIORITY} \
 					-y
+			;;
+			urpmi)
+				case "${INST_SOURCE_PACKAGE_SUBDIR}" in
+					*/updates) URPMI_ADDMEDIA_ARG="--update" ;;
+					*) URPMI_ADDMEDIA_ARG="" ;;
+				esac
+				eval LC_ALL=POSIX chroot ${SLX_STAGE1_PATH} urpmi.addmedia \
+					${URPMI_ADDMEDIA_ARG} \
+					\"${INST_SOURCE_CHANNEL}\" \
+					\"${INST_SOURCE_BASEURL}/${INST_SOURCE_PACKAGE_SUBDIR}\" \
+					with media_info/hdlist.cz
 			;;
 			yum)
 				echo -e "[${INST_SOURCE_CHANNEL}]\nname=${INST_SOURCE_NAME}\nbaseurl=${INST_SOURCE_BASEURL}${INST_SOURCE_REPO_SUBDIR:+/${INST_SOURCE_REPO_SUBDIR}}" \
@@ -447,6 +461,13 @@ function slxossetup()
 			test "${SLX_META_PACKAGER}" && \
 				META_PACKAGER="${SLX_META_PACKAGER}" || \
 				META_PACKAGER="yum"
+			REPO_TYPE="rpm-md"
+			;;
+		*mandriva*)
+			GLOBAL_SETTINGS="PACKAGE_SUBDIR"
+			test "${SLX_META_PACKAGER}" && \
+				META_PACKAGER="${SLX_META_PACKAGER}" || \
+				META_PACKAGER="urpmi"
 			REPO_TYPE="rpm-md"
 			;;
 		*debian*|*ubuntu*)
