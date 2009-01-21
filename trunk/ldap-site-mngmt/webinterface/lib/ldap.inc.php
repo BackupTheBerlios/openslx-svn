@@ -34,31 +34,37 @@ function uniLdapConnect($userRdn = "", $userPwd = "") {
        # Connect zum LDAP-Server OK
        if(ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3)) {
            # Optionen gesetzt
-           if($userRdn != "" && $userPwd != "") {
-             # Anmeldung als User.
-             if($result = @ldap_bind($ds, "uid=".$userRdn.",ou=people,".$suffix, $userPwd)) {
-               # Bind erfolgreich ausgeführt
-               return $ds;
-             } else {
-               # Bind nicht erfolreich.
-               if(ldap_error($ds) == "Invalid credentials") {
-                 $ldapError .= "Bind nicht erfolgreich: die Zugangsdaten sind nicht korrekt.<br>\n";
-               } else {
-                 $ldapError .= "Bind als User nicht erfolgreich: ".ldap_error($ds)."<br>\n";
-               }
-               return false;
-             }
-           } else {
-             # Anonymer Bind.
-             if($result = ldap_bind($ds)) {
-               # Anonymer Bind erfolgreich ausgeführt
-               return $ds;
-             } else {
-               # Anonymer Bind nicht erfolreich.
-               $ldapError .= "Anonymer Bind nicht erfolgreich: ".ldap_error($ds)."<br>\n";
-               return false;
-             }
-           }
+           if (ldap_start_tls($ds)){
+              if($userRdn != "" && $userPwd != "") {
+                # Anmeldung als User.
+                if($result = @ldap_bind($ds, "uid=".$userRdn.",ou=people,".$suffix, $userPwd)) {
+                  # Bind erfolgreich ausgeführt
+                  return $ds;
+                } else {
+                  # Bind nicht erfolreich.
+                  if(ldap_error($ds) == "Invalid credentials") {
+                    $ldapError .= "Bind nicht erfolgreich: die Zugangsdaten sind nicht korrekt.<br>\n";
+                  } else {
+                    $ldapError .= "Bind als User nicht erfolgreich: ".ldap_error($ds)."<br>\n";
+                  }
+                  #print_r(ldap_error($ds));echo "<br><br>";
+                  return false;
+                }
+              } else {
+                # Anonymer Bind.
+                if($result = ldap_bind($ds)) {
+                  # Anonymer Bind erfolgreich ausgeführt
+                  return $ds;
+                } else {
+                  # Anonymer Bind nicht erfolreich.
+                  $ldapError .= "Anonymer Bind nicht erfolgreich: ".ldap_error($ds)."<br>\n";
+                  return false;
+                }
+              }
+          } else {
+             # TLS starten fehlgeschlagen
+             $ldapError .= "TLS starten fehlgeschlagen: ".ldap_error($ds)."<br>\n";
+          }
        } else {
          # Optionen setzen fehlgeschlagen
          $ldapError .= "Protokollversion setzen fehlgeschlagen: ".ldap_error($ds)."<br>\n";

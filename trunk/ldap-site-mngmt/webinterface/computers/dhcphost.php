@@ -122,18 +122,18 @@ if ($dhcphlpcont == ""){
    $rbs_dhcpopt = "";
    $altrbs = alternative_rbservices($rbsDN);
    
-   if (count($altrbs) != 0){
+   
       $rbs_selectbox .= "<td class='tab_d'>
 		   		            <select name='rbs' size='4' class='medium_form_selectbox'> 
 		   			            <option selected value='none'>----------</option>";
-   
+   if (count($altrbs) != 0){
       foreach ($altrbs as $item){
          $rbs_selectbox .= "
          <option value='".$item['dn']."'>".$item['cn']." ".$item['au']."</option>";
       }
-      $rbs_selectbox .= "<option value=''>Kein RBS</option>
-           					</select></td>";
    }
+   $rbs_selectbox .= "<option value=''>Kein RBS</option>
+           					</select></td>";
 
    # RBS Daten
    if ($rbsDN == ""){

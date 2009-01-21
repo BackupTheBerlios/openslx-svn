@@ -3,17 +3,30 @@
 function createIPMenu($rollen , $mnr) {
     global $template;
     global $START_PATH;
+    global $auDN;
+    
+    $mipb_array = get_maxipblocks_au($auDN);
+    #print_r($mipb_array);
+    if ( $mipb_array[0] == "" ){
+       $iprechnerlink = "no_ip.php?mnr=1";
+       $ipdhcplink = "no_ip.php?mnr=2";
+       $ipdeleglink = "no_ip.php?mnr=3";
+    }else{
+       $iprechnerlink = "ip_rechner.php";
+       $ipdhcplink = "ip_dhcp.php";
+       $ipdeleglink = "ip_deleg.php";
+    }
     # Struktur der Registerkartenleiste
     $hauptmenu = array(array("link" => "ip.php",
                              "text" => "&Uuml;bersicht",
                              "zugriff" => "alle"),
-    						  array("link" => "ip_rechner.php",
+    						  array("link" => $iprechnerlink,
                              "text" => "IP Adressen Rechner",
                              "zugriff" => array("MainAdmin","HostAdmin")),
-                       array("link" => "ip_dhcp.php",
+                       array("link" => $ipdhcplink,
                              "text" => "IP Adressen DHCP",
                              "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")),
-                       array("link" => "ip_deleg.php",
+                       array("link" => $ipdeleglink,
                              "text" => "Delegierte IP Bereiche",
                              "zugriff" => array("MainAdmin")));
 	 

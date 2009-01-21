@@ -29,6 +29,7 @@ $template->define(array("Vorlage" => "index.dwt",
 
 $template->assign(array("SEITENTITEL" => $titel));
 
+
 ############################################################ 
 
 # Daten in die Vorlage parsen
