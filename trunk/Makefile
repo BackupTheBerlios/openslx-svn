@@ -43,9 +43,6 @@ endif
 ifeq ($(SLX_TFTPBOOT_PATH),)
 	SLX_TFTPBOOT_PATH = ${SLX_PUBLIC_PATH}/tftpboot
 endif
-ifeq ($(SLX_USE_ABSOLUTE_TFTP_PATH),)
-	SLX_USE_ABSOLUTE_TFTP_PATH = 1
-endif
 
 ifeq ($(SLX_TEMP_PATH),)
 	SLX_TEMP_PATH = /tmp
@@ -147,7 +144,6 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 \nSLX_SHARE_PATH=${SLX_SHARE_PATH}\
 \nSLX_TEMP_PATH=${SLX_TEMP_PATH}\
 \nSLX_TFTPBOOT_PATH=${SLX_TFTPBOOT_PATH}\
-\nSLX_USE_ABSOLUTE_TFTP_PATH=${SLX_USE_ABSOLUTE_TFTP_PATH}\
 \nSLX_VMWARE_PATH=${SLX_VMWARE_PATH}\n" \
 	  > $(SLX_CONFIG_PATH)/settings.default
 	@echo -e "# local setup for openslx (overrides settings.default)\n" \
