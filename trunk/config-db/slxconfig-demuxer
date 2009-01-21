@@ -587,8 +587,9 @@ you can learn from the logging output what would have been done.
 
 =item B<<     --verbose-level=N >>
 
-Prints debugging output while running. N is a number between 1 and 3. Level 1
-gives ... 2 ... In level 3 the database commands are printed.
+Prints additional output for debugging.  N is a number between 1 and 3.  Level
+1 provides more information than the default, while 2 provides traces.  With
+level 3 you get extreme debug output, e.g. database commands are printed.
 
 =back
 
