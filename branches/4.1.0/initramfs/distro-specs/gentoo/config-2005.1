@@ -1,0 +1,34 @@
+# Copyright (c) 2006 - RZ Uni Freiburg
+# Copyright (c) 2007 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# distro specific settings for Gentoo 2005.1
+
+# D_SYSCONFDIR - system wide configuration settings in /etc - sysconfig in  
+# SuSE and RedHat, default in Debian and Ubuntu, conf.d in Gentoo
+# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using 
+# bind mounts
+# D_DIRINBINDMNT - lists of directories to be created in bind mounted rw
+# part of the client filesystem
+# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# TempFS usage
+# D_DIRINDXS - directories in client filesystem which should be present 
+# anyhow
+# D_RCDIRS - runlevel directories relative to /etc
+# D_HWMODTOIGNORE - hardware modules which should not tried to load (because
+# already in kernel, nonexistent, ...)
+# D_BOOTLOCAL - script for user specified stuff which should be started 
+# during client bootup, path and file relative to /etc
+
+D_DIRINDXS="/var/run/xauth /var/lib/init.d/started /var/lib/nobody \
+/var/lib/texmf /var/lib/nfs/sm \
+/var/lib/misc /var/lib/acpi /var/spool/cron /var/lock/subsys"
+D_INITSCRIPTS="localmount keymaps clock urandom serial alsasound"
+

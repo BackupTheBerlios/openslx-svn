@@ -1,0 +1,73 @@
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# configuration script for Gentoo linux distribution version 2005.1 to
+# configure OpenSLX linux diskless clients (executed within initialramfs
+# after genconfig). These settings/functions will overwrite settings within
+# the gentoo/functions-default script 
+
+# empty functions are defined at the beginning of /etc/functions
+
+# distro specific general function called from servconfig script
+config_distro () {
+echo -e "OpenSLX version 4.0.6\ninitramfs generation date $date" \
+  >> /mnt/etc/gentoo-release
+echo -e "# changes made to this file by $0 (initrd from $date)" \
+  > /etc/rc.conf
+# keytable is set by hwautocfg script (added just for convenience here)
+config_rc_entry "KEYMAP" "${KEYTABLE}"
+}
+
+# udev service - not verified!
+udev_hotplug () {
+ln -s /bin/udevd /bin/udevstart && udevstart &
+if [ -x /bin/udevd ] ; then
+  export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)
+  export UDEVD_EVENT_TIMEOUT=1
+  echo "" > /proc/sys/kernel/hotplug
+  udevd &
+else error "$df_errudev" nonfatal
+fi
+}
+
+# set consolefont
+consolefont () {
+echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
+  >>/mnt/etc/${D_INITDIR}/boot.slx
+config_rc_entry "CONSOLEFONT" "${CONSOLE_FONT}"
+}
+
+# acpi and powersave
+config_acpi () {
+rllinker acpid
+}
+
+# configure automounter
+config_automount () {
+if [ -f /mnt/etc/${D_INITDIR}/autofs ] ; then
+  rllinker autofs
+  if [ -n "${automnt_src}" ] ; then
+    # local directory and home directory server from machine-setup
+    [ -z "${automnt_dir}" ] && automnt_dir="/home"
+    strinstr "/" "${automnt_dir}" && error "$df_erratpld" nonfatal
+    automnt_dir=${automnt_dir#/}
+    echo -e "/home\t/etc/auto.${automnt_dir}\n" >> /mnt/etc/auto.master
+    echo -e "# /etc/auto.${automnt_dir} created by $0:\n" \
+      > /mnt/etc/auto.${automnt_dir}
+    echo -e "*\t-rsize=32768,wsize=32768,rw\t${automnt_src}/&" \
+      >> /mnt/etc/auto.${automnt_dir}
+    config_portmap
+  fi
+else
+  error "$df_erramnt" nonfatal
+fi
+}
+

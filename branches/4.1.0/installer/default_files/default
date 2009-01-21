@@ -1,0 +1,37 @@
+# ~/pxelinux.cfg/default (main-menu)
+#
+# Description:  Boot selection with the new Syslinux/PXElinux by Peter Anwin
+#               selection is done by cursor up and down keys
+DEFAULT @@@server@@@::/menu.c32
+
+PROMPT 0
+NOESCAPE 1
+TIMEOUT 600
+#IMPLICIT 1
+#ALLOWOPTIONS 1
+#ONERROR menu
+
+MENU MASTER PASSWD @@@pxe_passwd@@@ 
+
+MENU TITLE Diskless X-Stations
+
+
+#####
+LABEL Bitte waehlen Sie mit den Pfeil-Tasten aus:
+   KERNEL ::/menu.c32
+   APPEND @@@server@@@::/pxelinux.cfg/default
+LABEL
+   KERNEL @@@server@@@::/menu.c32
+   APPEND @@@server@@@::/pxelinux.cfg/default
+#####
+
+LABEL local
+   MENU LABEL -1. ^Lokal booten
+#   MENU PASSWD lokal
+   localboot 0
+
+#####
+LABEL
+  KERNEL @@@server@@@::/menu.c32
+  APPEND @@@server@@@::/pxelinux.cfg/default
+#####

@@ -1,0 +1,5 @@
+In this sub directory of /etc/opt/openslx/ we store the configuration files
+for operating systems installed with slxossetup.
+
+Any file from the prereqfiles sub directory is copied into the stage1 diectory
+before any install action takes place.

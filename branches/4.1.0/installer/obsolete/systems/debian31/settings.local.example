@@ -1,0 +1,6 @@
+SLX_INST_SOURCE_BASEURL="ftp://gab/pub/debian"
+SLX_INST_SOURCE_COMPONENTS_sarge31dvd="main restricted"
+SLX_INST_SOURCE_NAME_sarge31dvd="Debian 3.1 DVD"
+SLX_INST_SOURCE_PRIORITY_sarge31dvd="10"
+SLX_INST_SOURCE_BASEURL_sarge31="http://ftp-1.gwdg.de/pub/linux/debian/debian"
+SLX_INST_SOURCE_BASEURL_sarge31security="http://ftp-1.gwdg.de/pub/linux/debian/debian"

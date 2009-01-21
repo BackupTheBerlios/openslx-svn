@@ -1,0 +1,81 @@
+#! /bin/ash
+
+PATH="/bin:/sbin:/usr/bin:/usr/sbin"
+
+: ${SLX_BOOTSTRAP_FAIL_WGET:="yes"}
+: ${SLX_BOOTSTRAP_PATH:="/slxbootstrap"}
+: ${SLX_STAGE1_FINAL_PATH:="/slxfinal"}
+
+test -f /etc/slxbootstrap.conf
+. /etc/slxbootstrap.conf
+
+test "${SLX_INST_SOURCE_PACKAGE_SUBDIR}" && \
+	SLX_INST_SOURCE_PACKAGE_SUBDIR="/${SLX_INST_SOURCE_PACKAGE_SUBDIR}"
+
+download_file () {
+	case ${file} in
+		ftp://*|http://*)
+			wget "${file}"
+			;;
+		*)
+			wget "${SLX_INST_SOURCE_BASEURL}${SLX_INST_SOURCE_PACKAGE_SUBDIR}/${file}"
+			;;
+	esac
+	if test $? != 0; then
+		if test "${SLX_BOOTSTRAP_FAIL_WGET}" = "no"; then
+			continue
+		else
+			echo "Error: Unable to download ${SLX_INST_SOURCE_BASEURL}/${file}"
+			exit 1
+		fi
+	fi
+}
+
+for dir in / ${SLX_BOOTSTRAP_PATH}/${SLX_STAGE1_FINAL_PATH}; do
+	test -d "${dir}/dev" || \
+		mkdir -p "${dir}/dev"
+	mknod "${dir}/dev/null" c 1 3
+done
+
+test -d /etc/prereqfiles && \
+	cp -pr /etc/prereqfiles/* "${SLX_BOOTSTRAP_PATH}/${SLX_STAGE1_FINAL_PATH}/"
+
+test -d "${SLX_BOOTSTRAP_PATH}" || \
+	mkdir -p "${SLX_BOOTSTRAP_PATH}"
+cd "${SLX_BOOTSTRAP_PATH}"
+
+for file in ${SLX_BASE_PREREQ_PACKAGES}; do
+	download_file
+	case "${file}" in
+		*.deb)
+			ar x "${file##*/}"
+			if test $? != 0; then
+				echo "Error: Unable to unpack archive ${file##*/}"
+				exit 1
+			fi
+			tar xzf data.tar.gz
+			rm -f debian-binary *.tar.gz
+			;;
+		*.rpm)
+			rpm2cpio "${file##*/}" | \
+				cpio -i -d
+# Enable error check as soon as busybox 1.3.1 is used.
+#			if test $? != 0; then
+#				echo "Error: Unable to rpm2cpio | cpio $file"
+#				exit 1
+#			fi
+			;;
+	esac
+done
+
+for file in ${SLX_BASE_BOOTSTRAP_PACKAGES} ${SLX_BASE_BOOTSTRAP_PREREQ_PACKAGES}; do
+	download_file
+done
+
+for file in ${SLX_INST_SOURCE_PACKAGEKEYS}; do
+	wget "${SLX_INST_SOURCE_BASEURL}/${file}"
+	if test $? != 0; then
+		echo "Error: Unable to download ${SLX_INST_SOURCE_BASEURL}/${file}"
+		exit 1
+	fi
+done

@@ -1,0 +1,26 @@
+rewrite of runvmware and all other scripts needed for virtualisation
+with vmware or virtualbox.
+Project not finished yet! Everything not enough testet!
+
+Earlier checkin, cause it was requested.
+
+Structure and files:
+- menulist-creator:
+            creates desktop entrys, runvmwares runscripts and
+            xdialog skript for the different Pools from template using
+            xml files
+- templates/runvmware-v2:
+            runvmware-v2 template, needed by menulist-creator
+- templates/Vorlage_VMWareImageAdministrator.xml:
+            example xml file with verbose description
+- templates/xdialog.sh:
+            template with major program configuration of Xdialog
+            needed by menulist-creator
+
+Goal:
+- better documentation of source and virtualisation
+- easier source, unneeded parts removed
+- better understanding for persons who are new to the project, without
+  reading 1k lines of source
+- no complicated vmmenu structure, preventing easy integration of new
+  features depending on the image

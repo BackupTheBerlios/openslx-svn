@@ -1,0 +1,26 @@
+#
+# this is an include file for runvmware
+#
+# create Windows config file
+
+# VMplayer does not need resolution change
+#if [ `which vmplayer 2>/dev/null` ] && [ -z "${vmrun}" ] \
+#  || [ "${vmrun}" = "vmplayer" ]; then
+#  resolution=
+#fi
+
+# sync is needed to ensure that data is really written to virtual disk
+# insert '\r${resolution}' after </username> when resolution needed
+sync
+echo -e "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r
+<settings>\r
+  <eintrag>\r
+    <computername param=\"${hostname}\">\r
+    </computername>\r
+    <username param=\"${USER}\">\r
+    </username>
+  </eintrag>\r
+</settings>\r" \
+> /etc/vmware/fd-loop/config.xml
+
+sync

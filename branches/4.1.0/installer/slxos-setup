@@ -1,0 +1,374 @@
+#! /usr/bin/perl
+# -----------------------------------------------------------------------------
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+use strict;
+
+my $abstract = q[
+slxos-setup
+    This script installs an operating system into a folder that can be used as
+    a stage1 system for OpenSLX.
+];
+
+use Getopt::Long qw(:config pass_through);
+use Pod::Usage;
+
+# add the folder this script lives in and the lib-folder to perl's
+# search path for modules:
+use FindBin;
+use lib "$FindBin::RealBin";
+use lib "$FindBin::RealBin/../lib";
+
+use lib "$FindBin::RealBin/../config-db";
+	# development path to config-db
+
+use OpenSLX::Basics;
+use OpenSLX::OSSetup::Engine;
+
+my (
+	$helpReq,
+	$manReq,
+	$verbose,
+	$versionReq,
+);
+
+GetOptions(
+	'help|?' => \$helpReq,
+	'man' => \$manReq,
+	'verbose' => \$verbose,
+	'version' => \$versionReq,
+) or pod2usage(2);
+pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
+if ($manReq) {
+	$ENV{LANG} = 'en_EN';
+		# avoid dubious problem with perldoc in combination with UTF-8 that
+		# leads to strange dashes and single-quotes being used
+	pod2usage(-verbose => 2)
+}
+if ($versionReq) {
+	system('slxversion');
+	exit 1;
+}
+
+if ($> != 0) {
+	die _tr("Sorry, this script can only be executed by the superuser!\n");
+}
+
+openslxInit();
+
+my $action = shift @ARGV;
+
+# create ossetup-engine for given distro and start it:
+my $engine = OpenSLX::OSSetup::Engine->new;
+if ($action =~ m[^import]i) {
+	my $vendorOSName = shift @ARGV;
+	if (!defined $vendorOSName) {
+		print STDERR _tr("You need to give the name of the vendor-os you'd like to import!\n");
+		pod2usage(2);
+	}
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	$engine->initialize($vendorOSName, 'import');
+	if (!-e $engine->{'vendor-os-path'}) {
+		die _tr("'%s' doesn't exist, giving up!\n", $engine->{'vendor-os-path'});
+	}
+	$engine->addInstalledVendorOSToConfigDB();
+} elsif ($action =~ m[^update]i) {
+	my $vendorOSName = shift @ARGV;
+	if (!defined $vendorOSName) {
+		print STDERR _tr("You need to give the name of the vendor-os you'd like to update!\n");
+		pod2usage(2);
+	}
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	$engine->initialize($vendorOSName, 'update');
+	$engine->updateVendorOS();
+} elsif ($action =~ m[^install]i) {
+	my $vendorOSName = shift @ARGV;
+	if (!defined $vendorOSName) {
+		print STDERR _tr("You need to give the name of the vendor-os you'd like to install!\n");
+		pod2usage(2);
+	}
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	$engine->initialize($vendorOSName, 'install');
+	$engine->installVendorOS();
+} elsif ($action =~ m[^clone]i) {
+	my $source = shift @ARGV;
+	my $vendorOSName = shift @ARGV;
+	if (!defined $source || !defined $vendorOSName) {
+		print STDERR _tr("You need to specify exactly one source and one vendor-OS-name!\n");
+		pod2usage(2);
+	}
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	$engine->initialize($vendorOSName, 'clone');
+	$engine->cloneVendorOS($source);
+} elsif ($action =~ m[^remove]i) {
+	my $vendorOSName = shift @ARGV;
+	if (!defined $vendorOSName) {
+		print STDERR _tr("You need to specify exactly one vendor-OS-name!\n");
+		pod2usage(2);
+	}
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	$engine->initialize($vendorOSName, 'remove');
+	$engine->removeVendorOS();
+} elsif ($action =~ m[^list-su]i) {
+	print _tr("List of supported distros:\n");
+	print join('', map {
+					"\t$_"
+					 .(' 'x(20-length($_)))
+					 ."\t($supportedDistros{$_}->{support})\n"
+				   }
+				   sort keys %supportedDistros);
+} elsif ($action =~ m[^list-in]i) {
+	print _tr("List of installed vendor-OSes:\n");
+	print join('', map {
+					s[^.+/][];
+					"\t$_\n";
+				   }
+				   sort <$openslxConfig{'stage1-path'}/*>);
+} else {
+	print STDERR _tr("You need to specify exactly one action:
+	clone
+	import-into-db
+	install
+	list-supported
+	list-installed
+	remove
+	update
+Try '%s --help' for more info.\n", $0);
+}
+
+
+
+=head1 NAME
+
+slxos-setup - OpenSLX-script to install a vendor-OS.
+
+=head1 SYNOPSIS
+
+slxos-setup [options] <action> <action-params> ...
+
+=head3 Options
+
+    --help          brief help message
+    --man           show full documentation
+    --verbose       show more information during execution
+    --version       show version
+
+=head3 Actions
+
+=over 8
+
+=item B<<     clone <rsync-source-uri> <vendor-os-name> >>
+
+clones an existing operating system via rsync
+
+=item B<<     import-into-db <vendor-os-name> >>
+
+imports a vendor-OS into the openslx-db
+
+=item B<<     install <vendor-os-name> >>
+
+installs a vendor-OS into a folder
+
+=item B<<     list-installed >>
+
+show installed vendor-OSes
+
+=item B<<     list-supported >>
+
+show supported distros
+
+=item B<<     remove <vendor-os-name> >>
+
+removes an installed vendor-OS
+
+=item B<<     update <vendor-os-name> >>
+
+updates an installed vendor-OS
+
+=back
+
+=head1 DESCRIPTION
+
+B<slxos-setup> installs an operating system into a folder which
+will be used as a OpenSLX-stage1-system (a.k.a. a I<vendor-OS>).
+
+You can either install a vendor-OS from scratch (causing the required
+packages to be downloaded or copied from a local source). Installing
+is supported for several different LINUX distributions, but not for all
+of them.
+
+Alternatively, a locally installed operating system can be cloned
+into a vendor-OS.
+
+When invoking slxos-setup, you have to pass it the name of the vendor-OS
+you wish to create.
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--help>
+
+Prints a brief help message and exits.
+
+=item B<--man>
+
+Prints the manual page and exits.
+
+=item B<--verbose>
+
+Prints more information during execution of any action.
+
+=item B<--version>
+
+Prints the version and exits.
+
+=item B<vendor-os-name>
+
+The vendor-os-name is the name of the vendor-OS that shall be installed,
+cloned, imported or updated. It corresponds to a folder in the OpenSLX-
+stage1-path (usually /var/opt/openslx/stage1).
+The general format of a vendor-os-name is:
+
+	<distro-name>-<release-version>
+or
+	<distro-name>-<release-version>-<selection>
+
+The distro-name is something like 'suse' or 'fedora', and the release-version
+is a numerical version, e.g. '10.1' or '6'.
+
+If you specify a selection, too, you state that you want all the packages
+that are provided by the specific selection (many distributions offer several
+different package selections for installation, like 'kde' or 'gnome').
+If you do not specify any selection, you will get the default selection of
+that distribution.
+
+If you pass an unknown selection, you will see a list of the selections
+that are available.
+
+In clone-mode, it is a good idea to specify some unqiue string as the selection
+part of the vendor-os-name, such that you will easily recognize the vendor-OS
+at a later stage. We recommend something like '-cloned-from-<name-of-rsync-source>'.
+
+=item B<rsync-source-uri>
+
+When cloning a vendor-OS, slxos-setup needs to know where to fetch
+the existing OS-files from. Please check the 'rsync' docs for what
+format an rsync-uri has.
+
+=back
+
+=head1 EXAMPLES
+
+=head3 Installing a Vendor-OS
+
+=over 8
+
+=item B<<     slxos-setup install suse-10.2 >>
+
+Installs the distro suse-10.2 as a new vendor-OS.
+
+=item B<<     slxos-setup install suse-10.2-gnome >>
+
+Installs the 'gnome'-selection of distro suse-10.2 as a new
+vendor-OS.
+
+=back
+
+=head3 Cloning an Operating System to Make a New Vendor-OS
+
+=over 8
+
+=item B<<     slxos-setup clone my_server:/ suse-10.2-clone-my_server >>
+
+Clones the suse-10.2 system from server 'my_server' as a new
+vendor-OS, which will be named 'suse-10.2-clone-my_server'.
+
+=back
+
+=head3 Updating a Vendor-OS
+
+=over 8
+
+=item B<<     slxos-setup update suse-10.2 >>
+
+Updates the (existing) vendor-OS 'suse-10.2'.
+
+=back
+
+=head3 Importing an Existing Vendor-OS into the Config-DB
+
+=over 8
+
+=item B<<     slxos-setup import-into-db suse-10.2 >>
+
+Imports the (existing) vendor-OS 'suse-10.2' into the config-DB.
+
+=back
+
+=head3 Removing a Vendor-OS
+
+=over 8
+
+=item B<<     slxos-setup remove suse-10.2 >>
+
+Wipes the (existing) vendor-OS 'suse-10.2' from disk and removes it
+from the config-DB, too.
+
+=back
+
+=head1 SEE ALSO
+
+slxsettings, slxos-export, slxconfig, slxconfig-demuxer
+
+=head1 GENERAL OPENSLX OPTIONS
+
+Being a part of OpenSLX, this script supports several other options
+which can be used to overrule the OpenSLX settings:
+
+    --base-path=<string>       basic path to project files
+    --bin-path=<string>        path to binaries and scripts
+    --config-path=<string>     path to configuration files
+    --db-basepath=<string>     basic path to openslx database
+    --db-datadir=<string>      data folder created under db-basepath
+    --db-name=<string>         name of database
+    --db-spec=<string>         full DBI-specification of database
+    --db-type=<string>         type of database to connect to
+    --export-path=<string>     path to root of all exported filesystems
+    --locale=<string>          locale to use for translations
+    --logfile=<string>         file to write logging output to
+    --private-path=<string>    path to private data
+    --public-path=<string>     path to public (client-accesible) data
+    --share-path=<string>      path to sharable data
+    --stage1-path=<string>     path to stage1 systems
+    --temp-path=<string>       path to temporary data
+    --tftpboot-path=<string>   path to root of tftp-server
+    --verbose-level=<int>      level of logging verbosity (0-3)
+
+Please refer to the C<slxsettings>-manpage for a more detailed description
+of these options.
+
+=cut

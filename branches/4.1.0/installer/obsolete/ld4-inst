@@ -1,0 +1,570 @@
+#!/bin/bash
+#
+# Description:  Script for generating dxs filesystem by
+#               cloning from rsync source for Diskless X Stations (v4.0)
+#
+# Author(s):    Nico Dietrich, 04-04-2006
+#		Dirk von Suchodoletz <dirk@goe.net>, 31-01-2007
+#               Michael Janczyk, <mj0>, 06-07-2006
+#
+# Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
+#
+# Version:	0.2.1e
+DEBUG=0
+
+header() {
+  echo
+  echo "Welcome to the LD4 installation (please use lower case in input)"
+  echo
+}
+
+# This function makes the directory of this script to the present working
+# directory. It is called within precheck()
+# Does also work when called by a symbolic link. Even works for nested links.
+goto_script_dir()
+{
+  [ $DEBUG -ge 2 ] && echo "Aufgerufen wurde $0, checking if it is a link"
+  calleddetails=`ls -l $0` # get the file flags (e.g. lrwxrwxrwx)
+  [ $DEBUG -ge 2 ] && echo $calleddetails
+
+  calleddir=${0%/*}  # Strip the filename from path
+  [ $DEBUG -ge 2 ] && echo "Changing into directory of called scripts/links \
+($calleddir)"
+  cd $calleddir
+
+  while index=`expr index "$calleddetails" "l"`;
+        [ $index -eq 1 ]; do
+
+    [ $DEBUG -ge 2 ] && echo "It is a link"
+    target=`echo $calleddetails | awk '{print $NF}'`
+    [ $DEBUG -ge 2 ] && echo "The target of the link is: $target"
+    hasslash=`expr index "$target" "/"`
+    if [ $hasslash -ne 0 ]; then
+        targetpath=${target%/*} # extract the pathname
+        [ $DEBUG -ge 2 ] && echo "Following link to $targetpath"
+        cd $targetpath
+    else
+        [ $DEBUG -ge 2 ] && echo "It is in the same directory as the link"
+    fi
+    targetfile=`basename $target`
+    [ $DEBUG -ge 2 ] && echo "The target file of the link is: $targetfile"
+    calleddetails=`ls -l $targetfile` # get the file flags (e.g. lrwxrwxrwx)
+    [ $DEBUG -ge 2 ] && echo $calleddetails
+  done
+  [ $DEBUG -ge 2 ] && pwd
+
+}
+
+
+# check needed things for installation
+precheck() {
+  # check if running as root
+  if [ "`id -u`" != "0" ]; then
+    echo -e "\nYou don't have the needed permission. Please rerun as root user!\n"
+    exit 1
+  fi
+
+  # switch pwd to this scripts location
+  goto_script_dir
+
+  # check for existing programs:
+  # rsync (server-side)
+  which rsync >/dev/null
+  if [ $? != 0 ] ; then
+    echo -e "\nYou need to install rsync on server side before installing!\n"
+    exit 1
+  fi
+
+  # ssh, rsync (referenz-system-side) -> not possible in precheck
+
+  # nfs-kernel-server, atftpd
+  #  -> not needed for installation
+  # but should be checked here, so the admin has just to restart
+}
+
+# bolean yes of different kinds of spelling
+isyes () {
+if [ "$1" = "yes" -o "$1" = "y" -o "$1" = "Y" -o "$1" = "Yes" ] ; then
+  return 0
+else
+  return 1
+fi
+}
+
+# ask question variable_name default_value
+ask() {
+  echo
+  echo "$1"
+  echo -n "* [ $3 ] "
+  read userinput
+  if [ -z "$userinput" ] ; then
+    local back="$3"
+  else
+    local back="$userinput"
+  fi
+  eval "$2=\"$back\""
+  sed -e '/'$2'=.*/d' -i .config
+  echo "$2=\"$back\"" >> .config
+}
+
+
+distro_check() {
+  case "${!1}" in
+    Debian*|debian*|Sarge*|sarge*)
+    eval "$1=\"debian\""
+    case "${!2}" in
+      Sarge*|sarge*|3.1*|*)
+      eval "$2=\"3.1\""
+      ;;
+    esac
+    ;;
+    Ubuntu*|ubuntu*)
+    eval "$1=\"ubuntu\""
+    case "${!2}" in
+      Breezy*|breezy*)
+      eval "$2=\"5.10\""
+      ;;
+      Dapper*|dapper*)
+      eval "$2=\"6.06\""
+      ;;
+      Edgy*|edgy*|*)
+      eval "$2=\"6.10\""
+      ;;
+    esac
+    ;;
+    Gentoo*|gentoo*)
+    eval "$1=\"gentoo\""
+    case "${!2}" in
+      2005*)
+      eval "$2=\"2005.1\""
+      ;;
+      2006*)
+      eval "$2=\"2006.1\""
+      ;;
+    esac
+    ;;
+    SuSE*|suse*|Suse*|SuSe*|SUSE*|opensuse*|*)
+    eval "$1=\"suse\""
+    case "${!2}" in
+      9*)
+      eval "$2=\"9.3\""
+      ;;
+      10.0)
+      eval "$2=\"10.0\""
+      ;;
+      10.1)
+      eval "$2=\"10.1\""
+      ;;
+      10.2)
+      eval "$2=\"10.2\""
+      ;;
+    esac
+    ;;
+  esac
+}
+
+# what do we do here??
+configure() {
+  export LANG="c"
+
+  if [ -f .config ] ; then
+    echo -n "Use values from last installation? [Y/n] "
+    read userinput
+    if [ "x$userinput" = "xn" ] ; then
+      cp .config.default .config
+    fi
+  else
+    cp .config.default .config
+#  # FIXME!! network autodetection seems not to work correctly
+
+# ---> Variablenraten macht eigentlich nur hier Sinn, da sonst ja Werte vom
+# letzten Mal
+#  if ! [ -z "${netmask}" -a -z "${broadcast}" -a -z "${netname}" -a -z "${server}" ] ; then
+#    ipcfg=( `ifconfig eth0 | grep "inet " | sed -e "s,[a-zA-Z]*:,,g"` )
+#    netmask=${ipcfg[3]}
+#    broadcast=${ipcfg[2]}
+#    # quickhack (more intelligent solution needed ...)
+#    netname=`route -n | grep -m 1 eth0 | grep -v "UG" | awk '{ print $1 }'`
+#    server=${ipcfg[1]}
+#  fi
+  fi
+  . .config
+
+  [ -z $overwrite_configs ] && overwrite_configs="y"
+  ask "Overwrite server configs (y) or write *.new files (n)? " overwrite_configs $overwrite_configs
+  if [ "$overwrite_configs" = "no" -o "$overwrite_configs" = "n" -o \
+       "$overwrite_configs" = "N" -o "$overwrite_configs" = "No" ] ; then
+    overwrite_configs="no"
+  fi
+
+  # try to detect server architecture
+  if [ -z "${server_distro}" ] ; then
+    for i in /bin/lsb_release /usr/bin/lsb_release; do
+      if [ -e $i ] ; then
+        $i > /dev/null 2>&1 || break
+        server_distro=`$i -i | sed "s/.*\t//"`
+        server_distro_ver=`$i -r | sed "s/.*\t//"`
+        break
+      fi
+    done
+  fi
+
+  # if still no distro name set, try to find it using significant files
+  if [ -z "${server_distro}" ] ; then
+    if [ -e ${rootdir}/etc/SuSE-release ] ; then
+      server_distro=suse
+      server_distro_ver=`grep "VERSION" /etc/SuSE-release | sed "s/.*= //"`
+    elif [ -e /etc/lsb-release ] ; then
+      . /etc/lsb-release
+      server_distro=${DISTRIB_ID}
+      server_distro_ver=${DISTRIB_RELEASE}
+    elif [ -e /etc/debian_version ] ; then
+      server_distro=debian
+      server_distro_ver=`cat /etc/debian_version`
+    fi
+  fi
+
+  # das grosse frage-antwort-spiel:
+  ask "Server distribution (e.g. debian): " server_distro ${server_distro}
+  #ask "Server distribution version: " server_distro_ver ${server_distro_ver}
+  distro_check server_distro server_distro_ver
+  echo "Using ${server_distro} as server distribution"
+
+  # ask for client distro
+  if [ -z ${client_distro} ] ; then
+    client_distro=$server_distro
+  fi
+  ask "Client distribution (e.g. debian): " client_distro ${client_distro}
+  ask "Client distribution version (numerical - e.g. 3.1): " \
+    client_distro_ver ${client_distro_ver}
+  distro_check client_distro client_distro_ver
+  echo "Using ${client_distro}-$client_distro_ver as client distribution"
+
+  if [ -z ${rootdir} ] ; then
+    rootdir="/srv/openslx/export/"${client_distro}-${client_distro_ver}
+  fi
+
+  . distro-specs/config-${server_distro}
+  . distro-specs/config-client-${client_distro}
+
+  ask "Path for client system: " rootdir $rootdir
+  ask "Path for tftpboot: " tftpbootdir $tftpbootdir
+  ask "Which network do you want to use for DXS? (A.B.C.0): " netname $netname
+  ask "Which netmask should be used? (255.B.C.0): " netmask $netmask
+  ask "What is your servers IP for NFS, DHCP and TFTP? " server $server
+  # noetig??
+  ask "Broadcast Address: " broadcast $broadcast
+
+  # optional, komplexere Konfiguration via TGZ und nicht Skriptomatik
+  ask "Where automount home directories from? (A.B.C.D:/home-dir): " \
+    amt $server":/home"
+
+  # more information here!! set useful default
+  ask "Which debug level should be used? " debuglevel $debuglevel
+  [ -z "$debuglevel" ] && debuglevel=0
+  while [ "101" -lt "$debuglevel" ]; do
+    echo "The debug level has to be a number from 0 to 100"
+    ask "Which debug level should be used? " debuglevel $debuglevel
+    [ -z "$debuglevel" ] && debuglevel=0
+  done
+
+  # wo ist das referenzsystem? - was ist default ???
+  if [ -z ${rsyncsource} ] ; then rsyncsource="localhost:/" ; fi
+  ask "IP + Path to reference system: " rsyncsource $rsyncsource
+
+  # dns-server
+  # domain-name
+  # evtl. ntp-server
+
+  # which kernel(s) to use to generate initial ramdisk(s)
+  # list available kernels and allow to chose from
+
+  # nfs / nbd / squash-fs?
+  ask "Would you like to use NBD? (y/N): " nbdyes $nbdyes
+  if isyes $nbdyes ; then
+    ask "Which kind of NBD export (ext2/squashfs)?: " nbdfs $nbdfs
+  fi
+
+  # password for pxeboot-menu (caution: you can easily retrieve it in clear
+  # text!!)
+  pxe_passwd="master"
+}
+
+copy_system() {
+  # allow generic (identical over different versions) or specific exclude
+  # files
+  if [ -e distro-specs/exclude-${client_distro}-${client_distro_ver} ] ; then
+    local file="distro-specs/exclude-${client_distro}-${client_distro_ver}"
+  else
+    local file="distro-specs/exclude-${client_distro}"
+  fi
+  # put specific an common exclude list into one file, add includes (+)
+  # before excludes (-)
+  cat $file distro-specs/exclude-common|grep -e "^+ " > /tmp/dxs-exclude-list
+  cat $file distro-specs/exclude-common|grep -e "^- " >> /tmp/dxs-exclude-list
+
+  test -d ${rootdir} || mkdir -p ${rootdir}
+  echo -e "\n\nSyncing system now\nPlease enter root password of client \
+machine\n"
+  rsync -avDe ssh --delete --exclude-from=/tmp/dxs-exclude-list \
+    ${rsyncsource} ${rootdir} || { echo "Rsync failed" ; exit 1 ; }
+  rm /tmp/dxs-exclude-list
+  # generate error message in case rsync didn't work and exit.
+
+}
+
+create_nbd() {
+  if isyes $nbdyes ; then
+    # TODO: mksquashfs (background process)
+    if [ "$nbdfs" = "squashfs" ] ; then
+      if ps aux|grep -v grep|grep mksquashfs &>/dev/null ; then
+        echo "Found other mksquashfs process running, skipping this step."
+      else
+        echo -e "\nGenerating SquashFS image ${rootdir}.squashfs (ca. 30 min.)"
+        if `which mksquashfs &>/dev/null` ; then
+          mv ${rootdir}.squashfs ${rootdir}.squashfs.old
+          echo "mksquashfs ${rootdir} ${rootdir}.squashfs"
+          mksquashfs ${rootdir} ${rootdir}.squashfs &
+        else
+          echo -e "Tool 'mksquashfs' not found, skipping"
+        fi
+      fi
+    else
+      # to be extended
+      # check for space occupied in ${rootdir}, add 10%, setup container
+      # ext2 formatting ...
+      echo -e "\nGenerating ..."
+    fi
+  fi
+}
+
+create_initrd() {
+  # find existing kernels
+  declare -i i=0
+  for kern in `find ${rootdir}/boot |grep vmlinuz` ; do
+    if ! [ -L $kern ] ; then
+      kernel[$i]=$kern
+      i=$i+1
+    fi
+  done
+
+  if [ $i -eq 0 ] ; then
+    echo "No kernels found in ${rootdir}/boot, so no initial ramdisk is \
+created and linked to ${tftpbootdir}."
+    kernel_choice=""
+  elif [ $i -eq 1 ] ; then
+    echo "Found one kernel in ${rootdir}/boot."
+    kernel_choice="0"
+  else
+    echo -e "\n\nThis is a list of existing kernels in your client OS: \n"
+    declare -i j=0
+    while [ $j -lt $i ] ; do
+      echo "$j: ${kernel[$j]}"
+      j=$j+1
+    done
+    ask "Please chose kernel(s) to create initial ramdisk(s) for.
+First named will be the default boot. Separate multiple kernels w/ space." \
+kernel_choice "${kernel_choice}"
+  fi
+  choice=( ${kernel_choice} )
+  # make sure /$tftbootdir exists
+  mkdir -p ${tftpbootdir}/pxelinux.cfg 2>/dev/null
+
+  declare -i j=0
+  # add nfs modules nevertheless
+  fsmod=nfs
+  # add nbd module and the selected filesystem ontop
+  isyes "$nbdyes" && fsmod=$fsmod" nbd $nbdfs"
+  # one big initrd or several smaller "specialized" ones!?
+
+  while [ $j -lt ${#choice[@]} ] ; do
+    current_kernel=${kernel[${choice[$j]}]#${rootdir}/boot/vmlinuz-}
+    echo "Creating initialramfs for ${current_kernel}"
+    current_initramfs=${tftpbootdir}/initrd-dxs-${current_kernel}
+    [ -f ${current_initramfs} ] && rm ${current_initramfs}
+    echo "mkdxsinitrd -f \"$fsmod\" -r ${rootdir} -k ${current_kernel} -i ${current_initramfs} -d ${debuglevel}"
+    mkdxsinitrd -f "$fsmod" -r ${rootdir} -k ${current_kernel} \
+      -i ${current_initramfs} -d ${debuglevel}
+
+    ln -sf ${kernel[${choice[$j]}]} ${tftpbootdir}/vmlinuz-${current_kernel}
+    j=$j+1
+  done
+}
+
+# setting up server site configuration files etc.
+setup_server () {
+  echo -e "\n\nSetting up server configuration\n"
+
+  timestamp=`date +%Y%m%d-%H%M`
+
+  # creating central dxs configuration directory structure if it doesn't exist
+  for dir in dhcp nfs atftpd pxelinux init.local ; do
+    [ -d ${dxs_conf}/${dir} ] || mkdir -p ${dxs_conf}/${dir}
+  done
+
+  # copy the client configuration default file and replace root_pw -
+  # machine-setup
+  # echo "setting root password: ${root_pw}"
+  sed -e "s,@@@root_pw@@@,'${root_pw}'," default_files/machine-setup.default \
+    > ${dxs_cl_dir}/${dxs_client_conf}
+
+  # creating new configuration files in $dxs_conf
+  # dhcp
+  sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g" \
+      -e "s,@@@netmask@@@,${netmask},g;s,@@@broadcast@@@,${broadcast},g" \
+      -e "s,@@@rootdir@@@,${rootdir},g;s,@@@netname@@@,${netname},g" \
+      default_files/dhcpd.conf > ${dxs_conf}/${dxs_dhcpd_conf}-${timestamp}
+  # TODO: sed -e @@@example1@@@, netname+1 etc. - which ip addresses are
+  # safe to use?
+
+  # atftpd
+  sed -e "s,@@@tftpbootdir@@@,${tftpbootdir}," \
+    default_files/${atftpd_conf_name} \
+    > ${dxs_conf}/${dxs_atftpd_conf}-${timestamp}
+
+  # nfs
+  echo -e "#/etc/exports - file generated by $0\n\
+# for backups of this file please check /etc/dxs directory\n\
+# NFS export entry for DXS\n\
+${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
+  >> ${dxs_conf}/${dxs_exports_conf}-${timestamp}
+
+  # pxe
+  [ -d ${tftpbootdir} ] || mkdir -p ${tftpbootdir}
+  rsync -a --exclude=.svn default_files/tftpboot/* ${tftpbootdir}
+
+  sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g" \
+      -e "s,@@@pxe_passwd@@@,${pxe_passwd},g" \
+      -e "s,@@@client_distro@@@,${client_distro},g" \
+      -e "s,@@@client_distro_ver@@@,${client_distro_ver},g" \
+      -e "s,@@@rootdir@@@,${rootdir},g" default_files/default \
+         > ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
+
+  declare -i j=0
+  while [ $j -lt ${#choice[@]} ] ; do
+    current_kernel=${kernel[${choice[$j]}]#${rootdir}/boot/vmlinuz-}
+    current_initramfs=initrd-dxs-${current_kernel}
+
+    if [ $j -eq 0 ] ; then
+      default_string="  MENU DEFAULT\n"
+    else
+      default_string=""
+    fi
+    # because of restricted length of kernel commandline put the initrd token
+    # last (needed only for loading with pxelinux)
+    echo -e "LABEL ${client_distro}-${current_kernel}\n${default_string}\
+  MENU LABEL $j. ${client_distro}-${client_distro_ver} ${current_kernel} Diskless\n\
+  KERNEL ${server}::vmlinuz-${current_kernel}\n\
+  APPEND rootfs=nfs://${server}${rootdir} apic dhcp noldsc debug=$debuglevel vci=DXS \
+  initrd=${server}::initrd-dxs-${current_kernel} \n\
+  ipappend 1\n" >> ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
+
+    if isyes "$nbdyes" ; then
+      j=$j+1
+      # create configs for nbd/squashfs kernels too
+      echo -e "LABEL ${client_distro}-${current_kernel}-nbd\n\
+  MENU LABEL $j. ${client_distro}-${client_distro_ver} ${current_kernel} Diskless NBD\n\
+  KERNEL ${server}::vmlinuz-${current_kernel}\n\
+  APPEND rootfs=nbd://${server}:5000/${nbdfs} apic dhcp noldsc debug=$debuglevel elevator=\"noop\" vci=DXS \
+  initrd=${server}::initrd-dxs-${current_kernel}\n\
+  ipappend 1\n" >> ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
+    fi
+
+    j=$j+1
+  done
+
+  # if files should not be overwritten keep them
+  # in place and create files with ".new" extension
+  if [ "$overwrite_configs" = "no" ] ; then
+    extension=".new"
+    keep="yes"
+  fi
+
+  for cfile in "${dxs_dhcpd_conf} ${dhcpd_conf}" \
+               "${dxs_atftpd_conf} ${atftpd_conf}" \
+               "${dxs_pxedefault_conf} ${tftpbootdir}/${pxedefault_conf}" \
+               "${dxs_exports_conf} ${exports_conf}" ; do
+    set -- $cfile
+
+    # check if file changed
+    lastfile=`ls -lt ${dxs_conf}/${1}* | sed -n "2,2s%.*"${1}"%"${1}"%p"`
+    ! [ -z $lastfile ] && diff ${dxs_conf}/${1}-${timestamp} ${dxs_conf}/${lastfile} >/dev/null
+    if [ $? -eq 0 ] ; then
+      echo "Configuration file ${2} didn't change - leaving unchanged"
+      rm ${dxs_conf}/${1}-${timestamp}
+    else
+      # backing up orginial files / create files with .new extension
+      if [ -f ${2} -a ! -L ${2} ] ; then
+        if [ -z "$keep" ] ; then
+          echo "Copying old ${2} to ${2}.original"
+          mv ${2} ${2}.original
+        else
+          echo "Keeping old ${2} and generate ${2}.new instead"
+        fi
+      elif [ -L ${2} ] ; then
+        [ -z "$keep" ] && unlink ${2}
+      fi
+      # linking files
+      # fixme!! if SuSE und DHCP dann Kopie statt Link
+      if [ ${server_distro} = "suse" ] && echo ${dxs_conf}|\
+        grep dhcp &>/dev/null; then
+        rm ${2}${extension} &>/dev/null
+	cp ${dxs_conf}/${1}-${timestamp} ${2}${extension}
+      else
+        ln -sf ${dxs_conf}/${1}-${timestamp} ${2}${extension}
+      fi
+    fi
+  done
+}
+
+
+
+footer() {
+  echo -e "\nPlease assure to restart atftpd, nfs-kernel-server and dhcpd!\n"
+  echo -e "\nInstallation finished.\n"
+
+  # TODO: tell user things he's got to configure afterwards - point to README
+  #  * in dhcpd.conf - put in clients mac and ip addresses
+  #  * make services start (automatically at server boot)
+
+}
+
+
+
+
+## ------ MAIN ------ ##
+
+pxedefault_conf="pxelinux.cfg/default"
+
+# config directory for the server side
+dxs_conf="/etc/dxs"
+dxs_dhcpd_conf="dhcp/dhcpd.conf"
+dxs_atftpd_conf="atftpd/atftpd"
+dxs_exports_conf="nfs/exports"
+dxs_pxedefault_conf="pxelinux/default"
+# config directory for the client side
+dxs_cl_dir="/var/opt/openslx/config/default/initramfs"
+dxs_client_conf="machine-setup.pls-configure"
+
+# Quick and dirty: rebuild the ramdisk  
+if [ "x$1" = "x-g" ]; then
+  echo "Creating initial ramdisk from last runs settings (if possible...)"
+  precheck
+  if [ -f .config ] ; then
+    . .config
+    create_initrd
+    exit 0
+  else
+    echo "No previous settings found. Please configure your installation first"
+  fi
+fi
+
+header
+precheck #(run as root, rsync etc.)
+configure
+#do not sync if "-o" was specified
+[ "$1" = "-o" ] || copy_system
+create_nbd
+create_initrd
+setup_server
+footer

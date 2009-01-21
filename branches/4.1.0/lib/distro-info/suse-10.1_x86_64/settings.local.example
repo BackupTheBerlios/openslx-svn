@@ -1,0 +1,8 @@
+# Use local installation sources.
+$repository{base}->{url} = 'ftp://localhost/pub/opensuse/distribution/SL-10.1/inst-source';
+$repository{base_update}->{url} = 'ftp://localhost/pub/suse/update/10.1';
+
+# Add a new selection:
+# $selection{'my-kde'} = "$selection{default}
+# foo
+# bar";

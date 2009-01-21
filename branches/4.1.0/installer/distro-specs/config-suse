@@ -1,0 +1,8 @@
+dhcpd_conf="/etc/dhcpd.conf"
+atftpd_conf="/etc/sysconfig/atftpd"
+exports_conf="/etc/exports"
+client_conf="/etc/dxs/client.cfg/machine-setup.default"
+
+# this variable choses which atftpd template file to chose
+atftpd_conf_name="atftpd_sysconfig"
+

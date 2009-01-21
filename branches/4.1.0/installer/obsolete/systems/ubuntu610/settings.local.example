@@ -1,0 +1,7 @@
+SLX_INST_SOURCE_BASEURL="ftp://gab/pub/ubuntu"
+SLX_INST_SOURCE_COMPONENTS_ubuntu610dvd="main restricted"
+SLX_INST_SOURCE_NAME_ubuntu610dvd="Ubuntu 6.10 DVD"
+SLX_INST_SOURCE_PRIORITY_ubuntu610dvd="10"
+SLX_INST_SOURCE_BASEURL_ubuntu610="http://ftp-1.gwdg.de/pub/linux/debian/ubuntu"
+SLX_INST_SOURCE_BASEURL_ubuntu610updates="http://ftp-1.gwdg.de/pub/linux/debian/ubuntu"
+SLX_INST_SOURCE_BASEURL_ubuntu610security="http://ftp-1.gwdg.de/pub/linux/debian/ubuntu"

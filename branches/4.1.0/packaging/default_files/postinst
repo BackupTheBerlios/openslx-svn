@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+#
+if [ "$1" = "configure" ]; then
+  if [ -d /usr/doc -a ! -e /usr/doc/dxs -a -d /usr/share/doc/dxs ]; then
+    ln -sf ../share/doc/dxs /usr/doc/dxs
+  fi
+fi
+#

@@ -1,0 +1,12 @@
+- /initrd*
+- /lib/klibc/events/*
+- /boot/initrd*
+- /boot/grub
+- /etc/cron.*/*
+- /var/cache/man/*
+- /var/tmp/*
+- /var/log/*
+- /var/run/*
+- /var/spool/*
+- /var/lib/xdm
+- /usr/share/vmware/*

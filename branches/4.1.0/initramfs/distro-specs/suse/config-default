@@ -1,0 +1,63 @@
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# Distro specific settings for general SuSE. This configuration is the base
+# for following (Open)SuSE versions: 9.3 - 10.2
+
+# D_SYSCONFDIR - system wide configuration settings - /etc/sysconfig in SuSE 
+# and RedHat, /etc/default in Debian and Ubuntu
+# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using 
+# bind mounts
+# D_DIRINBINDMNT - lists of directories to be created in bind mounted rw
+# part of the client filesystem
+# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# TempFS usage
+# D_DIRINDXS - directories in client filesystem which should be present 
+# anyhow
+# D_RCDIRS - runlevel directories relative to /etc
+# D_XF86CONFFILE - name and location of XFree/Xorg config file, e.g.
+# /etc/X11/xorg.conf or /etc/X11/XF86config, ...
+# D_XORGBIN - name of XFree/Xorg server with absolute path
+# D_XFONTPATH - path(es) where X11 fonts are installed (with trailing /*)
+# D_DEFAULTCOUNTRY - localization (see common functions)
+# D_HWMODTOIGNORE - hardware modules which should not tried to load (because
+# already in kernel, nonexistent, ...)
+# D_BOOTLOCAL - script for user specified stuff which should be started
+# during client bootup, path and file relative to /etc
+
+D_SYSCONFDIR=/sysconfig
+D_ETCEXCL="opt/gnome/gconf/*\n*.old\n*-\n*.rpmorig\n*.rpmnew\n\
+*.YaST2save\netc/autoinstall\nlogrotate*\nbootloader\n*~\n\
+*.SuSEconfig.saved\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
+X11/xdm/pixmaps\n*.rpmsave\ndhclient*script\nxorg.conf.*"
+D_BINDMPTS="tmp root media home"
+D_DIRINBINDMNT="/var/run /var/log /var/tmp"
+D_RODIRSINRW="/etc/opt/gnome/gconf /etc/X11/xkb /var/adm /var/lib/texmf \
+/var/lib/rpm"
+D_DIRINDXS="/var/X11R6/compose-cache \
+/var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
+/var/lib/pam_devperm /var/lib/bluetooth \
+/var/lib/texmf /var/lib/nfs/sm \
+/var/lib/misc /var/lib/acpi /var/spool/cron \
+/var/lock/subsys/sysconfig"
+D_INITDIR="/init.d"
+D_INITBOOTD="${D_INITDIR}/boot.d"
+D_INITDEFAULT="5"
+D_RCDIRS="/init.d/rc0.d /init.d/rc1.d /init.d/rc2.d /init.d/rc3.d \
+/init.d/rc4.d /init.d/rc5.d /init.d/rc6.d /init.d/rcS.d"
+D_INITSCRIPTS="boot.udev boot.proc boot.shm boot.klog boot.loadmodules \
+boot.clock boot.sysctl boot.ipconfig boot.swap"
+D_XF86CONFFILE="/etc/X11/xorg.conf"
+D_XORGBIN=/usr/X11R6/bin/Xorg
+D_XFONTPATH="/usr/X11R6/lib/X11/fonts/*"
+D_DEFAULTCOUNTRY="de"
+D_HWMODTOIGNORE="i8xx-tco ichxrom snd-atiixp-modem intel-rng"
+D_BOOTLOCAL="init.d/boot.local"

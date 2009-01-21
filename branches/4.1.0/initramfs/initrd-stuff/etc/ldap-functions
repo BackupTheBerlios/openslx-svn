@@ -1,0 +1,75 @@
+#######################################################################
+# configuration via ldap
+# get_timeranges: helper function for ldapconf, retrieving timeranges
+# of machineconfig-objects under search base $1 (Host,Group,Default)
+get_timeranges(){
+trquery=`ldapsearch -x -H ldap://$ldapserver -b $1 -D $user -w $pwd -LLL \
+"(objectclass=machineconfig)" Timerange|sed -n '/Tim*/p'|sed 's/TimeRange: /#/'`
+}
+# matching_timerange: helper function for ldapconf to get "most 
+# specific timerange" matching actual time
+matching_timerange(){
+match=0
+lines=$[`echo $trquery | sed 's/#/\n#/g'|wc -l` -1]
+for ((i=0;i<$lines;i++)) ; do
+  timerange[$i]=`echo $trquery | cut -d "#" -f $[$i+2] | sed 's/ //g'`
+done
+while true ; do
+  for ((i=0;i<$lines;i++)) ; do
+    trday=`echo ${timerange[i]} | cut -d "_" -f 1`
+    trbegin=`echo ${timerange[i]} | cut -d "_" -f 2`
+    trend=`echo ${timerange[i]} | cut -d "_" -f 3`
+    if [ $trday == $wday ] && [ $trday != "X" ] && [ $trbegin != "X" ] && \
+        [ $trbegin -le $time ] && [ $time -le $trend ]; then
+      echo $wday $time "[D H H]match ->" ${timerange[i]}
+      tr=${timerange[i]}
+      match=1 && break
+    fi
+  done
+  if [ $match == 1 ] ; then break ; fi
+  for ((i=0;i<$lines;i++)) ; do
+    trday=`echo ${timerange[i]} | cut -d "_" -f 1`
+    trbegin=`echo ${timerange[i]} | cut -d "_" -f 2`
+    trend=`echo ${timerange[i]} | cut -d "_" -f 3`
+    if [ $trday == $wday ] && [ $trbegin == "X" ] && [ $trend == "X" ]; then
+        echo $wday $time "[D _ _]match ->" ${timerange[i]}
+      tr=${timerange[i]}
+      match=1 && break
+    fi
+  done
+  if [ $match == 1 ] ; then break ; fi
+  for ((i=0;i<$lines;i++)) ; do
+    trday=`echo ${timerange[i]} | cut -d "_" -f 1`
+    trbegin=`echo ${timerange[i]} | cut -d "_" -f 2`
+    trend=`echo ${timerange[i]} | cut -d "_" -f 3`
+    if [ $trday == "X" ] && [ $trbegin != "X" ] && [ $trbegin -le $time ] && \
+        [ $time -le $trend ]; then
+      echo $wday $time "[_ H H]match ->" ${timerange[i]}
+      tr=${timerange[i]}
+      match=1 && break
+    else
+      if [ ${timerange[$i]} == "X_X_X" ]; then
+        echo $wday $time "[_ _ _]match ->" ${timerange[i]}
+        tr="X_X_X" && match=1
+      else
+      match=0
+      fi
+    fi
+  done
+  if [ $match == 1 ] || [ $match == 0 ] ; then	break ; fi
+done
+}
+# get_machineconfig: helper function for ldapconf, writing machine
+# config data of one timerange $tr into file "tmp/confvialdap/$tr"
+get_machineconfig(){
+ldapsearch -x -H ldap://$ldapserver -b $1 -D $user -w $pwd -LLL \
+"(&(objectclass=machineconfig)(timerange=$tr))"|sed '/dn:/d'|sed '/ou=/d'|\
+sed '/dc=/d'|sed '/objectC*/d'|sed '/Tim*/d'|sed '/cn:/d'|sed '/desc*/d'|sed \
+'s/: /=/g'|sed 's/-/_/g' > tmp/confvialdap/$tr
+}
+
+ldapconf () {
+local ldapserver=$1
+error "$error_ldapcfg"
+echo "not implemented" > /tmp/ldap-done
+}

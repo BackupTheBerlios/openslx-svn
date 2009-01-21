@@ -1,0 +1,81 @@
+.\" Man page for mkdxsinitrd
+.\"
+.\" Copyright (C), 2006, Felix Endres
+.\"
+.\" You may distribute under the terms of the GNU General Public
+.\" License as specified in the file COPYING that comes with the man
+.\" distribution.
+.\"
+.\" 
+.TH mkdxsinitrd 1 "2006-05-05" "4.0.1" ""
+.LO 1
+.SH NAME
+mkdxsinitrd \- erstellt eine initial ramdisk fuer diskless clients
+.SH SYNTAX
+.B mkdxsinitrd 
+.RB [\| \-gh \|] 
+.RB [\| \-k 
+.IR Kernelversion\|] 
+.RB [\| \-i 
+.IR Pfad \|] 
+.RB [\| \-f 
+.IR Module \|] 
+.RB [\| \-n 
+.IR Module\|] 
+.RB [\| \-r 
+.IR Pfad \|] 
+.RB [\| \-s 
+.IR Bildgroesse \|] 
+
+.SH BESCHREIBUNG
+Damit Clients ein Betriebssystem nutzen koennen dass ueber ein 
+Netzwerk bereitgestellt wird, brauchen diese eine initial ramdisk, 
+in der Vorkonfigurationsschritte stattfinden. Diese sind noetig,
+damit das Betriebssystem eine Umgebung vorfindet in der es seine 
+gewohnte Initialisierung betreiben kann.  
+.B mkdxsinitrd 
+erstellt eine solche ramdisk, die von PXE-faehigen zum Booten benutzt
+werden kann.
+
+
+.SH OPTIONEN
+.TP
+.B \-g 
+Benutze glibc als Basisbibliothek in der ramdisk.
+.TP
+.B \-h
+Zeige Informationen zur Benutzung.
+.TP
+.BI \-k\  Kernelversion
+.B mkdxsinitrd
+versucht die aktuellste Kernelversion zu finden. Falls dies nicht klappt, 
+oder eine andere Kernelversion gewuenscht ist kann diese hier angegeben werden 
+(funktioniert natuerlich nur fuer auf dem Hostsystem vorhandene Kernelversionen).
+.TP
+.BI \-i\  Pfad 
+Optionale Angabe wo die erstellte ramdisk hingeschrieben werden soll.
+.TP
+.BI \-f\  Modulliste 
+Kernelmodule die benutzt werden sollen um das Rootfilesystem ueber das dem Netzwerk zu mounten (z.B. nfs, nbd dnbd).
+.TP
+.BI \-n\  Modulliste
+Kernelmodule zum Betrieb der Clientnetzwerkkarten (z.B. e100 tg3 via-rhine).
+.TP
+.BI \-r\  Pfad
+Pfad zum Wurzelverzeichnis des zu exportierenden Betriebsystems (z.B. /nfsroot).
+.TP
+.BI \-s\  Bildgroesse
+Groessenangabe des splash images.
+.TP
+.BI \-d\  Name
+Name der Distribution der Betriebsystemvorlage
+.TP
+.BI \-v\  Version
+Versionskennung der Distribution der Betriebsystemvorlage
+
+.SH SIEHE AUCH
+.BR ld4-inst "(1).
+.SH FEHLER
+Sicherlich allerhand. Feedback ist sehr willkommen.
+.SH AUTOR
+Felix Endres (felix-dxs@256bit.org)

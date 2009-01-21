@@ -1,0 +1,10 @@
+# alias file to use with runvmware 
+#
+# -NO DUPLICATE ENTRIES!!!-
+
+###### 
+# -VMware-Image name-           | -aliases separated through spaces-
+#####
+winxppro-kursversion    	winxppro windowsxp winxp
+suse-9.3	        	suse
+

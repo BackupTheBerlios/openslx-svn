@@ -1,0 +1,9 @@
+# Description:  distro specific settings for SuSE 10.0. This file merily
+#               contains changes from the SuSE base configuration file
+#               (suse/config-default)
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 26-01-2006
+#
+# Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
+
+# nothing changed yet

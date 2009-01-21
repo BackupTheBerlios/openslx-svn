@@ -1,0 +1,41 @@
+.\" Man page for ld4-inst
+.\"
+.\" Copyright (C), 2006, Felix Endres
+.\"
+.\" You may distribute under the terms of the GNU General Public
+.\" License as specified in the file COPYING that comes with the man
+.\" distribution.
+.\"
+.\" 
+.TH ld4-inst 1 "2006-05-05" "4.0.1" ""
+.LO 1
+.SH NAME
+ld4-inst \- Setup of the bootserver for a diskless client network environment
+.SH SYNTAX
+.B ld4-inst
+
+.SH DESCRIPTION
+ld
+.B ld4-inst
+guides the user through the setup of a server providing the operating system
+template to (diskless) clients booting via PXE.
+
+The steps taken are as follows:
+
+- Ask user about system specifics and desired results
+
+- Create the OS template by rsyncing from an installed instance
+
+- Create the initial ramdisk vor boottime configuration of the clients
+
+- If desired: Configure necessary servers (i.e tftp, nfs)
+
+.SH SEE ALSO
+.BR ld4-inst "(1).
+.SH BUGS
+The project is under heavy development, thus bugs are likely to appear.
+
+Your Feedback is appreciated.
+.SH AUTHOR
+dxs project manager is Dirk von Suchodoletz (dirk.von.suchodoletz@rz.uni-freiburg.de)
+This manpage was written by Felix Endres (felix-dxs@256bit.org)
