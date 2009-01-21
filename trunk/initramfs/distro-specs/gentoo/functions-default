@@ -88,6 +88,43 @@ cat >>/mnt/etc/${D_INITDIR}/boot <<EOF
             esac
           done < /proc/filesystems
         fi
+        # Function try() needed by udev, since it's a critical task...
+        # Originally from /sbin/rc gentoo-sysinit-script
+        try() {
+        	local errstr
+        	local retval=0
+        	
+        	if [ -c /dev/null ]; then
+        		errstr="\$((eval \$*) 2>&1 >/dev/null)"
+        	else
+        		errstr="\$((eval \$*) 2>&1)"
+        	fi
+        	retval=\$?
+        	if [ "\${retval}" -ne 0 ]
+        	then
+        		splash "critical" &
+        
+        		echo -e "\${ENDCOL}\${NORMAL}[\${BAD} oops \${NORMAL}]"
+        		echo
+        		eerror "The \"\${1}\" command failed with error:"
+        		echo
+        		echo "\${errstr#*: }"
+        		echo
+        		eerror "Since this is a critical task, startup cannot continue."
+        		echo
+        		/sbin/sulogin \${CONSOLE}
+        		einfo "Unmounting filesystems"
+        		if [ -c /dev/null ]; then
+        			/bin/mount -a -o remount,ro &>/dev/null
+        		else
+        			/bin/mount -a -o remount,ro
+        		fi
+        		einfo "Rebooting"
+        		/sbin/reboot -f
+        	fi
+        	
+        	return \${retval}
+        }
         # Starting udev (normally handled by /sbin/rc sysinit)
         source "\${svclib}/addons/udev-start.sh"
         rm -rf /dev/.rcsysinit
