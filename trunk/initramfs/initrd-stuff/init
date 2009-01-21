@@ -192,6 +192,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     rootfs=*)
       rootfs=${opts#rootfs=}
       rootfs=${rootfs#\"}
+      rootfs=${rootfs%%\"}
       srvproto=$(uri_token $rootfs prot)
       case $srvproto in
         nfs)
