@@ -53,7 +53,7 @@ sub connectConfigDB
 				or die _tr("unable to create db-datadir %s! (%s)\n",
 						    $dbPath, $!);
 		}
-		$dbSpec = "f_dir=$dbPath";
+		$dbSpec = "f_dir=$dbPath;csv_eol=\n;";
 	}
 	vlog 1, "trying to connect to CSV-database <$dbSpec>";
 	eval ('require DBD::CSV; 1;')
