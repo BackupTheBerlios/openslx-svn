@@ -3,11 +3,11 @@
 # Description:  Script for preparing VMware environment Diskless
 #               X Stations (v3.3,v3.4)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 05-08-2005
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-03-2006
 #               Michael Janczyk <mj0@uni-freiburg.de>, 09-03-2006
 # Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
 #
-VERSION=0.13.2; LAST_CHANGES=09.03.06
+VERSION=0.13.2a; LAST_CHANGES=18.03.06
 ################################################################################
 
 
@@ -196,6 +196,7 @@ preferencesheader ()
 # Create Windows 98 config files
 win98header ()
  {
+ sync
  echo -e "\tREGEDIT4\r
 
  [HKEY_CURRENT_USER\Networ\Persistent\H]\r
@@ -226,11 +227,14 @@ ComputerName]\r
  \"PrimaryProvider\"=\"Microsoft Network\"\r
  \"LMLogon\"=hex:00,00,00,00\r" \
  > /media/loop0/logon.reg
+ # sync is needed to ensure that data is really written to virtual disk
+ sync
  }
 
 
 winresheader ()
  {
+ sync
  echo -e "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r
  <settings>\r
    <eintrag>\r
@@ -243,6 +247,8 @@ winresheader ()
    </eintrag>\r
  </settings>\r" \
  > /media/loop0/config.xml
+ # sync is needed to ensure that data is really written to virtual disk
+ sync
  }
 
 
