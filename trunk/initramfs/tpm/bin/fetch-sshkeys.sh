@@ -18,7 +18,7 @@ mkdir -p "$KEYTRG"
 PRIVKEY="id_rsa.tpm-${MAC_ETH0}.sealed"
 
 echo -n "trying to fetch private key (via tftp):"
-tftp -r tpm/$PRIVKEY -l $KEYTRG/id_rsa -g $RHOST
+tftp -r client-config/tpm/$PRIVKEY -l $KEYTRG/id_rsa -g $RHOST
 if [ "$?" -gt 0 ] ; then
 	echo "  FAILED!"
 	echo "ERROR: can't find private key for this MAC-address: $MAC_ETH0."
