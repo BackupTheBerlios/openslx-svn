@@ -336,7 +336,7 @@ while getopts :Cdhk:c:i:r:o:s:f:n:m:S:tu:wI:a: a ; do
     esac
     exit 1
     ;;
-    c)  cdboot=1;;
+    C)  cdboot=1;;
     c)  CLCONFFILE=$OPTARG;;
     d)  use_dhclient=1;;
     k)  KERNVER=$OPTARG;;
@@ -505,6 +505,9 @@ if [ -z "$cdboot" ] ; then
     debian*)
       cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib;;
   esac
+  # add libpci.so to the libraries, as we are going to copy it manually:
+  slxldd --root-path=${ROOTDIR} ${SLX_SHARE_PATH}/initramfs/lib/libpci.so.2 \
+    >>${INSTDIR}/tmp/libraries
 else
   # fast kernel switch tool
   cobi kexec bin
@@ -515,10 +518,6 @@ if [ -n "${enable_wlan}" ] ; then
   cobi iwconfig bin
 fi
   
-# add libpci.so to the libraries, as we are going to copy it manually:
-slxldd --root-path=${ROOTDIR} ${SLX_SHARE_PATH}/initramfs/lib/libpci.so.2 \
-	>>${INSTDIR}/tmp/libraries
-
 # now copy all libraries that have been determined to be required:
 # first we handle all 64-bit libs...
 for lib in $(fgrep /lib64/ ${INSTDIR}/tmp/libraries 2>/dev/null|sort -u); do
@@ -659,6 +658,24 @@ if [ -z "$cdboot" ] ; then
     test -f ${SLX_PRIVATE_PATH}/config/$cfg && \
       cp ${SLX_PRIVATE_PATH}/config/$cfg ${INSTDIR}/bin
   done
+  # custom hardware configuration files pcitable.local and Cards.local
+  # fixme!! New source for these files (instead of templates)!
+  if [ -f ${SLX_SHARE_PATH}/templates/pcitable.local ] ; then
+    cat ${SLX_SHARE_PATH}/templates/pcitable.local > \
+      ${INSTDIR}/usr/share/hwdata/pcitable.new
+    cat ${INSTDIR}/usr/share/hwdata/pcitable >>\
+      ${INSTDIR}/usr/share/hwdata/pcitable.new
+    mv ${INSTDIR}/usr/share/hwdata/pcitable.new \
+      ${INSTDIR}/usr/share/hwdata/pcitable
+  fi
+  if [ -f ${SLX_SHARE_PATH}/templates/Cards.local ] ; then
+    cat ${SLX_SHARE_PATH}/templates/Cards.local > \
+      ${INSTDIR}/usr/share/hwdata/Cards.new
+    cat ${INSTDIR}/usr/share/hwdata/Cards >>\
+      ${INSTDIR}/usr/share/hwdata/Cards.new
+    mv ${INSTDIR}/usr/share/hwdata/Cards.new \
+      ${INSTDIR}/usr/share/hwdata/Cards
+  fi
 else
   # just copy the several ethernet drivers
   mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/drivers/net
@@ -684,25 +701,6 @@ if [ -n "${CLCONFFILE}" ] ; then
   echo "Using ${CLCONFFILE}"
 fi
 echo "## end of common initramfs-setup" >>${INSTDIR}/etc/initramfs-setup
-
-# custom hardware configuration files pcitable.local and Cards.local
-# fixme!! New source for these files (instead of templates)!
-if [ -f ${SLX_SHARE_PATH}/templates/pcitable.local ] ; then
-  cat ${SLX_SHARE_PATH}/templates/pcitable.local > \
-    ${INSTDIR}/usr/share/hwdata/pcitable.new
-  cat ${INSTDIR}/usr/share/hwdata/pcitable >>\
-    ${INSTDIR}/usr/share/hwdata/pcitable.new
-  mv ${INSTDIR}/usr/share/hwdata/pcitable.new \
-    ${INSTDIR}/usr/share/hwdata/pcitable
-fi
-if [ -f ${SLX_SHARE_PATH}/templates/Cards.local ] ; then
-  cat ${SLX_SHARE_PATH}/templates/Cards.local > \
-    ${INSTDIR}/usr/share/hwdata/Cards.new
-  cat ${INSTDIR}/usr/share/hwdata/Cards >>\
-    ${INSTDIR}/usr/share/hwdata/Cards.new
-  mv ${INSTDIR}/usr/share/hwdata/Cards.new \
-    ${INSTDIR}/usr/share/hwdata/Cards
-fi
 
 #########################################################################
 # End of file copy procedures
