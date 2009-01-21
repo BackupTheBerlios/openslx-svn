@@ -144,7 +144,6 @@ function setup_busybox_stage1_config()
 		SLX_BASE_PREREQ_PACKAGES \
 		SLX_STAGE1_FINAL_PATH \
 		SLX_INST_ARCH \
-		SLX_INSTALL_FAKE_FILE \
 		SLX_INST_SOURCE_BASEURL \
 		SLX_INST_SOURCE_DISTRIBUTION \
 		SLX_INST_SOURCE_PACKAGEKEYS \
@@ -179,11 +178,15 @@ function setup_busybox_install_prereq_file()
 function setup_bootstrap_1b()
 {
 	chroot "${CHROOT_DIR}" /bin/slxbootstrap
+	if test $? != 0; then
+		echo "$0: Error while calling /bin/slxbootstrap inside chroot, ${CHROOT_DIR}. "
+		exit 1
+	fi
 }
 
 function setup_bootstrap_1c()
 {
-	local packagekey	
+	local dir file packagekey	
 
 	case "${SLX_SYSTEM_BASENAME}" in
 		*ubuntu*)
@@ -198,10 +201,16 @@ function setup_bootstrap_1c()
 				"${SLX_BOOTSTRAP_PATH}/${SLX_STAGE1_FINAL_PATH}" \
 				"${SLX_INST_SOURCE_BASEURL}"
 		;;
-		*suse*)
+		*suse*|*fedora*)
 			test -d "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/etc" || \
 				mkdir "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/etc"
 			touch "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/etc/mtab"
+			for file in ${SLX_INSTALL_FAKE_FILE}; do
+				dir="${file%/*}"
+				test -d "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/${SLX_STAGE1_FINAL_PATH}/${dir}" || \
+					mkdir -p "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/${SLX_STAGE1_FINAL_PATH}/${dir}"
+				touch "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/${SLX_STAGE1_FINAL_PATH}/${file}"
+			done
 			for packagekey in ${SLX_INST_SOURCE_PACKAGEKEYS}; do
 				chroot "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}" \
 					/bin/rpm --root="${SLX_STAGE1_FINAL_PATH}" --import "${packagekey}"
@@ -222,11 +231,14 @@ function setup_package_sources()
 			SOURCES_LIST="${SLX_STAGE1_PATH}/etc/apt/sources.list"
 			rm -f "${SOURCES_LIST}"
 		;;
+		*fedora*)
+			rm -f "${SLX_STAGE1_PATH}/etc/yum.repos.d/"*
+		;;
 	esac
 	# Add available installation sources to an installed system.
 	# For systems using apt we're able to do this from outside.
 	for variable in ${!SLX_INST_SOURCE_NAME_*}; do
-		# Unset INST_SOURCE_* to let smart fail if they are not set for a particular
+		# Unset INST_SOURCE_* to let the meta packager fail if they are not set for a particular
 		# channel; unset PACKAGEKEYS to prevent adding them multiple times.
 		unset INST_SOURCE_COMPONENTS \
 			INST_SOURCE_DISTRIBUTION \
@@ -278,6 +290,10 @@ function setup_package_sources()
 					${INST_SOURCE_PRIORITY} \
 					-y
 			;;
+			*fedora*)
+				echo -e "[${INST_SOURCE_CHANNEL}]\nname=${INST_SOURCE_NAME}\nbaseurl=${INST_SOURCE_BASEURL}" \
+					>${SLX_STAGE1_PATH}/etc/yum.repos.d/${INST_SOURCE_CHANNEL}.repo
+			;;
 		esac
 	done
 }
@@ -295,12 +311,18 @@ function update_system()
 		*ubuntu*)
 			: ${SLX_STAGE1_UPDATE_OPTIONS:=-y}
 			: ${SLX_STAGE1_UPGRADE_OPTIONS:=-y}
-			chroot "${SLX_STAGE1_PATH}" apt-get update "${SLX_STAGE1_UPDATE_OPTIONS}"
-			chroot "${SLX_STAGE1_PATH}" apt-get upgrade "${SLX_STAGE1_UPGRADE_OPTIONS}"
+			chroot "${SLX_STAGE1_PATH}" apt-get update ${SLX_STAGE1_UPDATE_OPTIONS}
+			chroot "${SLX_STAGE1_PATH}" apt-get upgrade ${SLX_STAGE1_UPGRADE_OPTIONS}
 		;;
 		*suse*)
 			: ${SLX_STAGE1_UPGRADE_OPTIONS:=-y}
-			LC_ALL=POSIX chroot "${SLX_STAGE1_PATH}" smart upgrade --update "${SLX_STAGE1_UPGRADE_OPTIONS}"
+			LC_ALL=POSIX chroot "${SLX_STAGE1_PATH}" smart upgrade --update ${SLX_STAGE1_UPGRADE_OPTIONS}
+		;;
+		*fedora*)
+			: ${SLX_STAGE1_UPDATE_OPTIONS:=-y}
+			cp -p /proc/cpuinfo "${SLX_STAGE1_PATH}/proc/cpuinfo"
+			chroot "${SLX_STAGE1_PATH}" yum ${SLX_STAGE1_UPDATE_OPTIONS} update
+			rm "${SLX_STAGE1_PATH}/proc/cpuinfo"
 		;;
 	esac
 }
@@ -322,11 +344,17 @@ function install_slxselection()
 	case "${SLX_SYSTEM_BASENAME}" in
 		*ubuntu*)
 			: ${SLX_STAGE1_INSTALL_OPTIONS:=-y}
-			chroot "${SLX_STAGE1_PATH}" apt-get install "${SLX_STAGE1_INSTALL_OPTIONS}" ${packagelist}
+			chroot "${SLX_STAGE1_PATH}" apt-get install ${SLX_STAGE1_INSTALL_OPTIONS} ${packagelist}
 		;;
 		*suse*)
-			: ${SLX_STAGE1_UPGRADE_OPTIONS:=-y}
-			LC_ALL=POSIX chroot "${SLX_STAGE1_PATH}" smart install "${SLX_STAGE1_UPGRADE_OPTIONS}" ${packagelist}
+			: ${SLX_STAGE1_INSTALL_OPTIONS:=-y}
+			LC_ALL=POSIX chroot "${SLX_STAGE1_PATH}" smart install ${SLX_STAGE1_INSTALL_OPTIONS} ${packagelist}
+		;;
+		*fedora*)
+			: ${SLX_STAGE1_INSTALL_OPTIONS:=-y}
+			cp -p /proc/cpuinfo "${SLX_STAGE1_PATH}/proc/cpuinfo"
+			chroot "${SLX_STAGE1_PATH}" yum ${SLX_STAGE1_INSTALL_OPTIONS} install ${packagelist}
+			rm "${SLX_STAGE1_PATH}/proc/cpuinfo"
 		;;
 	esac
 }
@@ -588,6 +616,7 @@ function slxossetup()
 			NAME_DEST_ROOT="rpm-root"
 			;;
 		*fedora*)
+			GLOBAL_SETTINGS="BASEURL PACKAGEKEYS"
 			REPO_TYPE="rpm-md"
 			NAME_DEST_ROOT="rpm-root"
 			;;
