@@ -49,21 +49,20 @@ udev_hotplug () {
 
 #}
 
-# linking runlevel scripts
+# linking runlevel 2,3 scripts
 rllinker () {
 local script="$1"
 local start="$2"
 local stop="$3"
 # empty runlevel links - decision on running certain services is
 # passed via configuration
-for i in rc0.d/K$stop$script rc.S/S$start$script \
-	 rc2.d/K$stop$script rc3.d/K$stop$script \
+for i in rc2.d/K$stop$script rc3.d/K$stop$script \
          rc2.d/S$start$script rc3.d/S$start$script ; do
   if ! [ -f /mnt/etc/init.d/$script ]; then
     echo "Target `pwd`../$script does not exist. Skipping links"
     break
   else 
-    ln -sf /mnt/etc/init.d/$script /mnt/etc/$i
+    ln -sf ../init.d/$script /mnt/etc/$i
     echo "Linked $script"
   fi
 done
@@ -74,48 +73,7 @@ done
 # function for ntp configuration
 
 config_ntp () {
-
- local start=13
- local stop=14
-
-echo -e "#!/bin/sh
-PATH=/sbin:/bin
-
-test -f /usr/sbin/ntpdate || exit 0
-
-if test -f /etc/default/ntpdate ; then
-. /etc/default/ntpdate
-else
-NTPSERVERS=\"pool.ntp.org\"
-fi
-
-test -n \"\$NTPSERVERS\" || exit 0
-
-. /lib/lsb/init-functions
-
-case \"\$1\" in
-start|force-reload)
-  log_begin_msg \"Synchronizing clock to \$NTPSERVERS...\"
-  /usr/sbin/ntpdate -b -s \$NTPOPTIONS \$NTPSERVERS
-  log_end_msg \$?
-  ;;
-restart|reload)
-  # Drop -b to slew clock rather than step it if called after system is up
-  log_begin_msg \"Synchronizing clock to \$NTPSERVERS...\"
-  /usr/sbin/ntpdate -s \$NTPOPTIONS \$NTPSERVERS
-  log_end_msg \$?
-  ;;
-stop)
-  ;;
-*)
-  log_success_msg \"Usage: /etc/init.d/ntpdate {start|stop|restart|reload|force-reload}\"
-  exit 1
-esac
-
-exit 0" > /mnt/etc/init.d/ntpdate
-
- chmod a+x /mnt/etc/init.d/ntpdate
- rllinker "ntpdate" "$start" "$stop"
+:
 }
 
 # function for atd
