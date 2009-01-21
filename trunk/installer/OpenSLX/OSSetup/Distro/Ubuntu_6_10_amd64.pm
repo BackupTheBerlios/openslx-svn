@@ -8,10 +8,10 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Ubuntu_6_10.pm
-#	- provides Ubuntu-6.10-specific overrides of the OpenSLX OSSetup API.
+# Ubuntu_6_10_amd64.pm
+#	- provides Ubuntu-6.10_amd64-specific overrides of the OpenSLX OSSetup API.
 # -----------------------------------------------------------------------------
-package OpenSLX::OSSetup::Distro::Ubuntu_6_10;
+package OpenSLX::OSSetup::Distro::Ubuntu_6_10_amd64;
 
 use strict;
 use warnings;
@@ -27,8 +27,8 @@ sub new
 {
 	my $class = shift;
 	my $self = {
-		'base-name'    => 'ubuntu-6.10',
-		'arch'         => 'i386',
+		'base-name'    => 'ubuntu-6.10_amd64',
+		'arch'         => 'amd64',
 		'release-name' => 'edgy',
 	};
 	return bless $self, $class;

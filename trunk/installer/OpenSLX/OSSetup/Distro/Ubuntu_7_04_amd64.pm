@@ -8,10 +8,10 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Ubuntu_6_10.pm
-#	- provides Ubuntu-6.10-specific overrides of the OpenSLX OSSetup API.
+# Ubuntu_7_04_amd64.pm
+#	- provides Ubuntu-7.04_amd64-specific overrides of the OpenSLX OSSetup API.
 # -----------------------------------------------------------------------------
-package OpenSLX::OSSetup::Distro::Ubuntu_6_10;
+package OpenSLX::OSSetup::Distro::Ubuntu_7_04_amd64;
 
 use strict;
 use warnings;
@@ -27,9 +27,9 @@ sub new
 {
 	my $class = shift;
 	my $self = {
-		'base-name'    => 'ubuntu-6.10',
-		'arch'         => 'i386',
-		'release-name' => 'edgy',
+		'base-name'    => 'ubuntu-7.04_amd64',
+		'arch'         => 'amd64',
+		'release-name' => 'feisty',
 	};
 	return bless $self, $class;
 }
@@ -42,27 +42,27 @@ sub initDistroInfo
 			'urls' => "
 				http://ubuntu.intergenia.de/ubuntu
 			",
-			'name' => 'Ubuntu 6.10',
+			'name' => 'Ubuntu 7.04',
 			'repo-subdir'  => 'dists',
-			'distribution' => 'edgy',
+			'distribution' => 'feisty',
 			'components'   => 'main restricted',
 		},
 		'base_updates' => {
 			'urls' => "
 				ftp://localhost/pub/ubuntu
 			",
-			'name' => 'Ubuntu 6.10 Updates',
+			'name' => 'Ubuntu 7.04 Updates',
 			'repo-subdir'  => 'dists',
-			'distribution' => 'edgy-updates',
+			'distribution' => 'feisty-updates',
 			'components'   => 'main restricted',
 		},
 		'base_security' => {
 			'urls' => "
 				ftp://localhost/pub/ubuntu
 			",
-			'name' => 'Ubuntu 6.10 Security',
+			'name' => 'Ubuntu 7.04 Security',
 			'repo-subdir'  => 'dists',
-			'distribution' => 'edgy-security',
+			'distribution' => 'feisty-security',
 			'components'   => 'main restricted',
 		},
 	};
@@ -81,6 +81,7 @@ sub initDistroInfo
 			language-pack-de
 			linux-image-generic
 		",
+
 		'gnome' => "
 			<<<default>>>
 			ubuntu-desktop

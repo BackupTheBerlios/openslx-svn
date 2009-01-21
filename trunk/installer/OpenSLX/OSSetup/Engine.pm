@@ -34,55 +34,64 @@ use vars qw(%supportedDistros);
 
 %supportedDistros = (
 	'debian-3.1' => {
-		module => 'Debian_3_1',       support => 'clone,install'
+		module => 'Debian_3_1',       	support => 'clone,install'
 	},
 	'debian-4.0' => {
-		module => 'Debian_4_0',       support => 'clone,install'
+		module => 'Debian_4_0',       	support => 'clone,install'
+	},
+	'debian-4.0_amd64' => {
+		module => 'Debian_4_0_amd64', 	support => 'clone,install'
 	},
 	'fedora-6' => {
-		module => 'Fedora_6',         support => 'clone,install'
+		module => 'Fedora_6',         	support => 'clone,install'
 	},
 	'fedora-6_x86_64' => {
-		module => 'Fedora_6_x86_64',  support => 'clone,install'
+		module => 'Fedora_6_x86_64',  	support => 'clone,install'
 	},
 	'gentoo-2005.1' => {
-		module => 'Gentoo',    		  support => 'clone'
+		module => 'Gentoo',    		  	support => 'clone'
 	},
 	'gentoo-2006.1' => {
-		module => 'Gentoo',           support => 'clone'
+		module => 'Gentoo',           	support => 'clone'
 	},
 	'mandriva-2007.0' => {
-		module => 'Mandriva_2007_0',  support => 'clone'
+		module => 'Mandriva_2007_0',  	support => 'clone'
 	},
 	'suse-9.3' => {
-		module => 'SUSE_9_3',         support => 'clone'
+		module => 'SUSE_9_3',         	support => 'clone'
 	},
 	'suse-10.0'	=> {
-		module => 'SUSE_10_0',        support => 'clone'
+		module => 'SUSE_10_0',        	support => 'clone'
 	},
 	'suse-10.0_x86_64' => {
-		module => 'SUSE_10_0_x86_64', support => 'clone'
+		module => 'SUSE_10_0_x86_64', 	support => 'clone'
 	},
 	'suse-10.1' => {
-		module => 'SUSE_10_1',        support => 'clone,install'
+		module => 'SUSE_10_1',        	support => 'clone,install'
 	},
 	'suse-10.1_x86_64' => {
-		module => 'SUSE_10_1_x86_64', support => 'clone,install'
+		module => 'SUSE_10_1_x86_64', 	support => 'clone,install'
 	},
 	'suse-10.2' => {
-		module => 'SUSE_10_2',        support => 'clone,install'
+		module => 'SUSE_10_2',        	support => 'clone,install'
 	},
 	'suse-10.2_x86_64' => {
-		module => 'SUSE_10_2_x86_64', support => 'clone,install'
+		module => 'SUSE_10_2_x86_64', 	support => 'clone,install'
 	},
 	'ubuntu-6.06' => {
-		module => 'Ubuntu_6_06',      support => 'clone'
+		module => 'Ubuntu_6_06',      	support => 'clone'
 	},
 	'ubuntu-6.10' => {
-		module => 'Ubuntu_6_10',      support => 'clone,install'
+		module => 'Ubuntu_6_10',      	support => 'clone,install'
+	},
+	'ubuntu-6.10_amd64' => {
+		module => 'Ubuntu_6_10_amd64',	support => 'clone,install'
 	},
 	'ubuntu-7.04' => { 
-		module => 'Ubuntu_7_04',      support => 'clone,install'
+		module => 'Ubuntu_7_04',      	support => 'clone,install'
+	},
+	'ubuntu-7.04_amd64' => { 
+		module => 'Ubuntu_7_04_amd64',	support => 'clone,install'
 	},
 );
 

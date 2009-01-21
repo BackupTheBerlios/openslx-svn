@@ -8,15 +8,15 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Ubuntu_6_10.pm
-#	- provides Ubuntu-6.10-specific overrides of the OpenSLX OSSetup API.
+# Debian_4_0_amd64.pm
+#	- provides Debian-4.0_amd64-specific overrides of the OpenSLX OSSetup API.
 # -----------------------------------------------------------------------------
-package OpenSLX::OSSetup::Distro::Ubuntu_6_10;
+package OpenSLX::OSSetup::Distro::Debian_4_0_amd64;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::OSSetup::Distro::Ubuntu);
+use base qw(OpenSLX::OSSetup::Distro::Debian);
 
 use OpenSLX::Basics;
 
@@ -27,9 +27,9 @@ sub new
 {
 	my $class = shift;
 	my $self = {
-		'base-name'    => 'ubuntu-6.10',
-		'arch'         => 'i386',
-		'release-name' => 'edgy',
+		'base-name'    => 'debian-4.0_amd64',
+		'arch'         => 'amd64',
+		'release-name' => 'etch',
 	};
 	return bless $self, $class;
 }
@@ -37,40 +37,23 @@ sub new
 sub initDistroInfo
 {
 	my $self = shift;
+
 	$self->{config}->{'repository'} = {
 		'base' => {
 			'urls' => "
-				http://ubuntu.intergenia.de/ubuntu
+				http://debian.intergenia.de/debian
 			",
-			'name' => 'Ubuntu 6.10',
+			'name' => 'Debian 4.0',
 			'repo-subdir'  => 'dists',
-			'distribution' => 'edgy',
-			'components'   => 'main restricted',
-		},
-		'base_updates' => {
-			'urls' => "
-				ftp://localhost/pub/ubuntu
-			",
-			'name' => 'Ubuntu 6.10 Updates',
-			'repo-subdir'  => 'dists',
-			'distribution' => 'edgy-updates',
-			'components'   => 'main restricted',
-		},
-		'base_security' => {
-			'urls' => "
-				ftp://localhost/pub/ubuntu
-			",
-			'name' => 'Ubuntu 6.10 Security',
-			'repo-subdir'  => 'dists',
-			'distribution' => 'edgy-security',
-			'components'   => 'main restricted',
+			'distribution' => 'etch',
+			'components'   => 'main',
 		},
 	};
 
 	$self->{config}->{'package-subdir'} = 'pool';
 
 	$self->{config}->{'prereq-packages'} = "
-		main/d/debootstrap/debootstrap_0.3.3.2ubuntu3_all.deb
+		main/d/debootstrap/debootstrap_0.3.3.2etch1_all.deb
 	";
 
 	$self->{config}->{'bootstrap-packages'} = "
@@ -78,24 +61,30 @@ sub initDistroInfo
 
 	$self->{config}->{'selection'} = {
 		'default' => "
-			language-pack-de
-			linux-image-generic
+			linux-image-amd64
+			locales-all
 		",
+
 		'gnome' => "
 			<<<default>>>
-			ubuntu-desktop
+			gnome
 		",
 
 		'kde' => "
 			<<<default>>>
-			kubuntu-desktop
+			kde
 		",
 
-		'xfce' => "
+		# current 64-bit build platform for OpenSLX:
+		'openslx-build' => "
 			<<<default>>>
-			xubuntu-desktop
+			bzip2
+			gcc
+			libc6-dev
+			make
 		",
 	};
+
 	return;
 }
 
