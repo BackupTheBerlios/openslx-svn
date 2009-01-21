@@ -69,7 +69,7 @@ Xpath () {
     test -d /var/X11R6/bin || mkdir -p /var/X11R6/bin
     cp ${vmdir}/templ/runvmware \
        /var/X11R6/bin
-    chmod 755 /var1R6/bin/runvmware >/dev/null 2>&1
+    chmod 755 /var/X11R6/bin/runvmware >/dev/null 2>&1
   fi
 }
 
@@ -127,7 +127,8 @@ desktop_session
 # copy nach blabla
 vmsession2desktop_session
 
+# default kdm session. Xdialog with WM and VMware images
+cp ${vmdir}/templ/defaultwm /var/X11R6/bin/defaultwm
+chmod 755 /var/X11R6/bin/defaultwm >/dev/null 2>&1
 
-
-#exit 0
 
