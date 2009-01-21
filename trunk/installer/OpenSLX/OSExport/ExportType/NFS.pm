@@ -21,6 +21,7 @@ use strict;
 use Carp;
 use File::Basename;
 use OpenSLX::Basics;
+use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::Utils;
 use OpenSLX::OSExport::ExportType::Base 1.01;
 
@@ -56,6 +57,20 @@ sub purgeExport
 		return 0;
 	}
 	1;
+}
+
+sub generateExportURI
+{
+	my $self = shift;
+	my $export = shift;
+
+	my $server
+		= length($export->{server_ip})
+			? $export->{server_ip}
+			: generatePlaceholderFor('serverip');
+	$server .= ":$export->{port}"		if length($export->{port});
+
+	return "nfs://$server$openslxConfig{'export-path'}/nfs/$export->{name}"
 }
 
 sub requiredFSMods

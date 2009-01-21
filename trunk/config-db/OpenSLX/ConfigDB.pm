@@ -940,41 +940,36 @@ sub aggregatedSystemFileInfoFor
 	my $self = shift;
 	my $system = shift;
 
+	my $info = { %$system };
+
 	my $export = $self->fetchExportByID($system->{export_id});
 	if (!defined $export) {
 		die _tr("DB-problem: system '%s' references export with id=%s, but that doesn't exist!",
 				$system->{name}, $system->{export_id});
 	}
+	$info->{'export'} = $export;
+
 	my $vendorOS = $self->fetchVendorOSByID($export->{vendor_os_id});
 	if (!defined $vendorOS) {
 		die _tr("DB-problem: export '%s' references vendor-OS with id=%s, but that doesn't exist!",
 				$export->{name}, $export->{vendor_os_id});
 	}
+	$info->{'vendor-os'} = $vendorOS;
+
 	my $kernelPath
 		= "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}/boot";
+	$info->{'kernel-file'} = "$kernelPath/$system->{kernel}";
 
 	my $exportURI = $export->{'uri'};
 	if ($exportURI !~ m[\w]) {
 		# auto-generate export_uri if none has been given:
 		my $type = $export->{'type'};
-		my $serverIpToken
-			= length($export->{server_ip})
-				? $export->{server_ip}
-				: generatePlaceholderFor('serverip');
-		my $port
-			= length($export->{port})
-				? ":$export->{port}"
-				: '';
-		$exportURI
-			= $type.'://'.$serverIpToken.$port.$openslxConfig{'export-path'}
-				.'/'.$type.'/'.$export->{name};
+		my $osExportEngine = instantiateClass("OpenSLX::OSExport::Engine");
+		$osExportEngine->initializeFromExisting($export->{name});
+		$exportURI = $osExportEngine->generateExportURI($export);
 	}
-
-	my $info = { %$system };
-	$info->{'kernel-file'} = "$kernelPath/$system->{kernel}";
 	$info->{'export-uri'} = $exportURI;
-	$info->{'export'} = $export;
-	$info->{'vendor-os'} = $vendorOS;
+
 	return $info;
 }
 

@@ -39,6 +39,10 @@ use vars qw(%supportedExportTypes %supportedDistros);
 		=> { module => 'NBD_Squash' },
 );
 
+my %aliasedExportTypes = (
+	'nbd' => 'nbd-squash',
+);
+
 %supportedDistros = (
 	'<any>'
 		=> { module => 'Any' },
@@ -158,6 +162,14 @@ sub purgeExport
 	$self->removeExportFromConfigDB();
 }
 
+sub generateExportURI
+{
+	my $self = shift;
+	my $export = shift;
+
+	return $self->{exporter}->generateExportURI($export);
+}
+
 sub requiredFSMods
 {
 	my $self = shift;
@@ -176,6 +188,9 @@ sub _initialize
 	my $exportName = shift;
 	my $exportType = lc(shift);
 
+	if (exists $aliasedExportTypes{lc($exportType)}) {
+		$exportType = $aliasedExportTypes{lc($exportType)};
+	}
 	if (!exists $supportedExportTypes{lc($exportType)}) {
 		print _tr("Sorry, export type '%s' is unsupported.\n", $exportType);
 		print _tr("List of supported export types:\n\t");

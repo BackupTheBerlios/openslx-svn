@@ -21,6 +21,7 @@ use strict;
 use Carp;
 use File::Basename;
 use OpenSLX::Basics;
+use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::OSExport::ExportType::Base 1.01;
 
 ################################################################################
@@ -109,6 +110,20 @@ sub addExportToConfigDB
 	my $res = $openslxDB->addExport($export);
 	$self->showNbdParams($export)		if $res;
 	return $res;
+}
+
+sub generateExportURI
+{
+	my $self = shift;
+	my $export = shift;
+
+	my $server
+		= length($export->{server_ip})
+			? $export->{server_ip}
+			: generatePlaceholderFor('serverip');
+	$server .= ":$export->{port}"		if length($export->{port});
+
+	return "nbd://$server/squashfs";
 }
 
 sub requiredFSMods
