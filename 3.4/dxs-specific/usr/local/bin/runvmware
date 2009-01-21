@@ -231,7 +231,7 @@ winresheader ()
  echo -e "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r
  <settings>\r
    <eintrag>\r
-     <computername param=\"${hostname}\">\r
+     <computername param=\"$HOSTNAME\">\r
      </computername>
      <resolution_x param=\"$X_PARAM\">\r
      </resolution_x>\r
