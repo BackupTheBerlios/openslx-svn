@@ -178,7 +178,7 @@ sub dumpElements
 
 sub listClients
 {
-	my $name = shift;
+	my $name = _cleanName(shift);
 
 	my %nameSpec;
     # set verbose mode if any params have been passed in:
@@ -206,7 +206,7 @@ sub listClients
 
 sub listExports
 {
-	my $name = shift;
+	my $name = _cleanName(shift);
 
 	my %nameSpec;
     # set verbose mode if any params have been passed in:
@@ -236,7 +236,7 @@ sub listExports
 
 sub listSystems
 {
-	my $name = shift;
+	my $name = _cleanName(shift);
 
 	my %nameSpec;
     # set verbose mode if any params have been passed in:
@@ -268,7 +268,7 @@ sub listSystems
 
 sub listVendorOSes
 {
-	my $name = shift;
+	my $name = _cleanName(shift);
 
 	my %nameSpec;
     # set verbose mode if any params have been passed in:
@@ -390,7 +390,7 @@ sub searchVendorOSes
 
 sub addClientToConfigDB
 {
-	my $clientName = shift;
+	my $clientName = _cleanName(shift || '');
 
 	if (!length($clientName)) {
 		die _tr("you have to specify the name for the new client\n");
@@ -418,7 +418,7 @@ sub addClientToConfigDB
 		delete $clientData->{systems};
 	}
 
-	if (!length($clientData->{mac})) {
+	if (!$clientData->{mac}) {
 		die _tr("you have to specify the MAC for the new client\n");
 	}
 	if ($clientData->{mac} !~ m[^(?:[[:xdigit:]][[:xdigit:]]:){5}?[[:xdigit:]][[:xdigit:]]$]) {
@@ -447,7 +447,7 @@ sub addClientToConfigDB
 
 sub addSystemToConfigDB
 {
-	my $systemName = shift;
+	my $systemName = _cleanName(shift || '');
 
 	if (!length($systemName)) {
         die _tr("you have to specify the name of the new system!\n");
@@ -534,7 +534,7 @@ sub addSystemToConfigDB
 
 sub changeClientInConfigDB
 {
-	my $clientName = shift;
+	my $clientName = _cleanName(shift || '');
 
 	if (!length($clientName)) {
 		die _tr("you have to specify the name for the client you'd like to change!\n");
@@ -611,7 +611,7 @@ sub changeClientInConfigDB
 
 sub changeSystemInConfigDB
 {
-	my $systemName = shift;
+	my $systemName = _cleanName(shift || '');
 
 	if (!length($systemName)) {
 		die _tr("you have to specify the name of the system you'd like to change!\n");
@@ -682,7 +682,7 @@ sub changeSystemInConfigDB
 
 sub removeClientFromConfigDB
 {
-	my $clientName = shift;
+	my $clientName = _cleanName(shift || '');
 
 	if (!length($clientName)) {
 		die _tr("you have to specify the name of the client you'd like to remove!\n");
@@ -706,7 +706,7 @@ sub removeClientFromConfigDB
 
 sub removeSystemFromConfigDB
 {
-	my $systemName = shift;
+	my $systemName = _cleanName(shift || '');
 
 	if (!length($systemName)) {
 		die _tr("you have to specify the name of the system you'd like to remove!\n");
@@ -726,6 +726,19 @@ sub removeSystemFromConfigDB
 	vlog(0, _tr("system '%s' has been successfully removed from DB\n",
 				$systemName));
 	return;
+}
+
+sub _cleanName 
+{	# removes 'name=""' constructs from the name, as it is rather tempting
+	# for the user to type that ... (and we'd like to play along with DWIM)
+	my $name = shift;
+	
+	return unless defined $name;
+	
+	if ($name =~ m[^name=(.+)$]) {
+		return $1;
+	}
+	return $name;
 }
 
 =head1 NAME
