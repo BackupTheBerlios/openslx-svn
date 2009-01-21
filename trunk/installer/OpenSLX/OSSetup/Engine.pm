@@ -119,14 +119,14 @@ sub initialize
 	}
 	unless (eval "require $distroModule") {
 		if ($! == 2) {
-			die _tr("Distro-module <%s> not found!\n", $distroModule);
+			die _tr("Distro-module '%s' not found!\n", $distroModule);
 		} else {
-			die _tr("Unable to load distro-module <%s> (%s)\n", $distroModule, $@);
+			die _tr("Unable to load distro-module '%s' (%s)\n", $distroModule, $@);
 		}
 	}
 	my $modVersion = $distroModule->VERSION;
 	if ($modVersion < 1.01) {
-		die _tr("Could not load module <%s> (Version <%s> required, but <%s> found)\n",
+		die _tr("Could not load module '%s' (Version '%s' required, but '%s' found)\n",
 				$distroModule, 1.01, $modVersion);
 	}
 	my $distro = $distroModule->new;
@@ -187,7 +187,7 @@ sub installVendorOS
 	});
 	slxsystem("touch $installInfoFile");
 		# just touch the file, in order to indicate a proper installation
-	vlog 0, _tr("Vendor-OS <%s> installed succesfully.\n",
+	vlog 0, _tr("Vendor-OS '%s' installed succesfully.\n",
 				$self->{'vendor-os-name'});
 
 	$self->addInstalledVendorOSToConfigDB();
@@ -243,10 +243,10 @@ sub cloneVendorOS
 		close CLONE_INFO;
 	}
 	if ($isReClone) {
-		vlog 0, _tr("Vendor-OS <%s> has been re-cloned succesfully.\n",
+		vlog 0, _tr("Vendor-OS '%s' has been re-cloned succesfully.\n",
 					$self->{'vendor-os-name'});
 	} else {
-		vlog 0, _tr("Vendor-OS <%s> has been cloned succesfully.\n",
+		vlog 0, _tr("Vendor-OS '%s' has been cloned succesfully.\n",
 					$self->{'vendor-os-name'});
 	}
 
@@ -265,8 +265,22 @@ sub updateVendorOS
 		changePersonalityIfNeeded($self->{distro}->{'base-name'});
 		$self->updateStage1D();
 	});
-	vlog 0, _tr("Vendor-OS <%s> updated succesfully.\n",
+	vlog 0, _tr("Vendor-OS '%s' updated succesfully.\n",
 				$self->{'vendor-os-name'});
+}
+
+sub removeVendorOS
+{
+	my $self = shift;
+
+	vlog 0, _tr("removing vendor-OS folder '%s'...", $self->{'vendor-os-path'});
+	if (system("rm -r $self->{'vendor-os-path'}")) {
+		vlog 0, _tr("* unable to remove vendor-OS '%s'!", $self->{'vendor-os-path'});
+	} else {
+		vlog 0, _tr("Vendor-OS '%s' removed succesfully.\n",
+					$self->{'vendor-os-name'});
+	}
+	$self->removeVendorOSFromConfigDB();
 }
 
 sub addInstalledVendorOSToConfigDB
@@ -277,51 +291,37 @@ sub addInstalledVendorOSToConfigDB
 		die _tr("can't import vendor-OS '%s', since it doesn't exist!\n",
 				$self->{'vendor-os-path'});
 	}
-	my $configDBModule = "OpenSLX::ConfigDB";
-	unless (eval "require $configDBModule") {
-		if ($! == 2) {
-			vlog 1, _tr("ConfigDB-module not found, unable to access OpenSLX-database.\n");
+	my $openslxDB = accessConfigDB();
+	$openslxDB->connect();
+	# insert new vendor-os if it doesn't already exist in DB:
+	my $vendorOSName = $self->{'vendor-os-name'};
+	my $vendorOS
+		= $openslxDB->fetchVendorOSByFilter({ 'name' => $vendorOSName });
+	if (defined $vendorOS) {
+		if ($self->{'clone-source'} ne $vendorOS->{'clone_source'}) {
+			$openslxDB->changeVendorOS($vendorOS->{id}, {
+				'clone_source' => $self->{'clone-source'},
+			});
+			vlog 0, _tr("Vendor-OS '%s' has been updated in OpenSLX-database.\n",
+						$vendorOSName);
 		} else {
-			die _tr("Unable to load ConfigDB-module <%s> (%s)\n", $configDBModule, $@);
+			vlog 0, _tr("No need to change vendor-OS '%s' in OpenSLX-database.\n",
+						$vendorOSName);
 		}
 	} else {
-		my $modVersion = $configDBModule->VERSION;
-		if ($modVersion < 1.01) {
-			die _tr("Could not load module <%s> (Version <%s> required, but <%s> found)\n",
-					$configDBModule, 1.01, $modVersion);
+		my $data = {
+			'name' => $vendorOSName,
+		};
+		if (length($self->{'clone-source'})) {
+			$data->{'clone_source'} = $self->{'clone-source'};
 		}
-		my $openslxDB = $configDBModule->new();
-		$openslxDB->connect();
-		# insert new vendor-os if it doesn't already exist in DB:
-		my $vendorOSName = $self->{'vendor-os-name'};
-		my $vendorOS
-			= $openslxDB->fetchVendorOSByFilter({ 'name' => $vendorOSName });
-		if (defined $vendorOS) {
-			if ($self->{'clone-source'} ne $vendorOS->{'clone_source'}) {
-				$openslxDB->changeVendorOS($vendorOS->{id}, {
-					'clone_source' => $self->{'clone-source'},
-				});
-				vlog 0, _tr("Vendor-OS '%s' has been updated in OpenSLX-database.\n",
-							$vendorOSName);
-			} else {
-				vlog 0, _tr("No need to change vendor-OS '%s' in OpenSLX-database.\n",
-							$vendorOSName);
-			}
-		} else {
-			my $data = {
-				'name' => $vendorOSName,
-			};
-			if (length($self->{'clone-source'})) {
-				$data->{'clone_source'} = $self->{'clone-source'};
-			}
-			my $id = $openslxDB->addVendorOS($data);
+		my $id = $openslxDB->addVendorOS($data);
 
-			vlog 0, _tr("Vendor-OS '%s' has been added to DB (ID=%s).\n",
-						$vendorOSName, $id);
-		}
-
-		$openslxDB->disconnect();
+		vlog 0, _tr("Vendor-OS '%s' has been added to DB (ID=%s).\n",
+					$vendorOSName, $id);
 	}
+
+	$openslxDB->disconnect();
 }
 
 ################################################################################
@@ -345,7 +345,7 @@ sub readDistroInfo
 		vlog 3, "reading configuration file $file...";
 		my $config = slurpFile($file);
 		if (!eval $config && length($@)) {
-			die _tr("error in config-file <%s> (%s)", $file, $@)."\n";
+			die _tr("error in config-file '%s' (%s)", $file, $@)."\n";
 		}
 	}
 	# ...and store merged config:
@@ -394,14 +394,14 @@ sub createPackager
 		= "OpenSLX::OSSetup::Packager::$self->{distro}->{'packager-type'}";
 	unless (eval "require $packagerModule") {
 		if ($! == 2) {
-			die _tr("Packager-module <%s> not found!\n", $packagerModule);
+			die _tr("Packager-module '%s' not found!\n", $packagerModule);
 		} else {
-			die _tr("Unable to load packager-module <%s> (%s)\n", $packagerModule, $@);
+			die _tr("Unable to load packager-module '%s' (%s)\n", $packagerModule, $@);
 		}
 	}
 	my $modVersion = $packagerModule->VERSION;
 	if ($modVersion < 1.01) {
-		die _tr("Could not load module <%s> (Version <%s> required, but <%s> found)\n",
+		die _tr("Could not load module '%s' (Version '%s' required, but '%s' found)\n",
 				$packagerModule, 1.01, $modVersion);
 	}
 	my $packager = $packagerModule->new;
@@ -417,14 +417,14 @@ sub createMetaPackager
 		= "OpenSLX::OSSetup::MetaPackager::$self->{distro}->{'meta-packager-type'}";
 	unless (eval "require $metaPackagerModule") {
 		if ($! == 2) {
-			die _tr("Meta-packager-module <%s> not found!\n", $metaPackagerModule);
+			die _tr("Meta-packager-module '%s' not found!\n", $metaPackagerModule);
 		} else {
-			die _tr("Unable to load meta-packager-module <%s> (%s)\n", $metaPackagerModule, $@);
+			die _tr("Unable to load meta-packager-module '%s' (%s)\n", $metaPackagerModule, $@);
 		}
 	}
 	my $modVersion = $metaPackagerModule->VERSION;
 	if ($modVersion < 1.01) {
-		die _tr("Could not load module <%s> (Version <%s> required, but <%s> found)\n",
+		die _tr("Could not load module '%s' (Version '%s' required, but '%s' found)\n",
 				$metaPackagerModule, 1.01, $modVersion);
 	}
 	my $metaPackager = $metaPackagerModule->new;
@@ -527,7 +527,7 @@ sub stage1A_copyPrerequiredFiles
 		| tar -xp -C $stage1cDir
 	];
 	if (slxsystem($cmd)) {
-		die _tr("unable to copy folder with pre-required files to folder <%s> (%s)\n",
+		die _tr("unable to copy folder with pre-required files to folder '%s' (%s)\n",
 				$stage1cDir, $!);
 	}
 	$self->{distro}->fixPrerequiredFiles($stage1cDir);
@@ -547,7 +547,7 @@ sub stage1A_copyTrustedPackageKeys
 		| tar -xp -C $stage1bDir
 	];
 	if (slxsystem($cmd)) {
-		die _tr("unable to copy folder with trusted package keys to folder <%s> (%s)\n",
+		die _tr("unable to copy folder with trusted package keys to folder '%s' (%s)\n",
 				$stage1bDir, $!);
 	}
 	slxsystem("chmod 444 $stage1bDir/trusted-package-keys/*");
@@ -582,7 +582,7 @@ sub stage1A_createRequiredFiles
 
 	mkdir "$stage1cDir/dev";
 	if (!-e "$stage1cDir/dev/null" && slxsystem("mknod $stage1cDir/dev/null c 1 3")) {
-		die _tr("unable to create node <%s> (%s)\n", "$stage1cDir/dev/null", $!);
+		die _tr("unable to create node '%s' (%s)\n", "$stage1cDir/dev/null", $!);
 	}
 }
 
@@ -601,16 +601,16 @@ sub stage1B_chrootAndBootstrap
 	vlog 2, "chrooting into $self->{stage1aDir}...";
 	# chdir into stage1aDir...
 	chdir $self->{stage1aDir}
-		or die _tr("unable to chdir into <%s> (%s)\n", $self->{stage1aDir}, $!);
+		or die _tr("unable to chdir into '%s' (%s)\n", $self->{stage1aDir}, $!);
 	# ...do chroot
 	chroot "."
-		or die _tr("unable to chroot into <%s> (%s)\n", $self->{stage1aDir}, $!);
+		or die _tr("unable to chroot into '%s' (%s)\n", $self->{stage1aDir}, $!);
 
 	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
 
 	# chdir into slxbootstrap, as we want to drop packages into there:
 	chdir "/$self->{stage1bSubdir}"
-		or die _tr("unable to chdir into <%s> (%s)\n", "/$self->{stage1bSubdir}", $!);
+		or die _tr("unable to chdir into '%s' (%s)\n", "/$self->{stage1bSubdir}", $!);
 
 	# fetch prerequired packages:
 	my $baseURL
@@ -649,10 +649,10 @@ sub stage1C_chrootAndInstallBasicVendorOS
 	vlog 2, "chrooting into $stage1bDir...";
 	# chdir into stage1bDir...
 	chdir $stage1bDir
-		or die _tr("unable to chdir into <%s> (%s)\n", $stage1bDir, $!);
+		or die _tr("unable to chdir into '%s' (%s)\n", $stage1bDir, $!);
 	# ...do chroot
 	chroot "."
-		or die _tr("unable to chroot into <%s> (%s)\n", $stage1bDir, $!);
+		or die _tr("unable to chroot into '%s' (%s)\n", $stage1bDir, $!);
 
 	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
 	my $stage1cDir = "/$self->{stage1cSubdir}";
@@ -665,7 +665,7 @@ sub stage1C_chrootAndInstallBasicVendorOS
 	# import any additional trusted package keys to rpm-DB:
 	my $keyDir = "/trusted-package-keys";
 	opendir(KEYDIR, $keyDir)
-		or die _tr("unable to opendir <%s> (%s)\n", $keyDir, $!);
+		or die _tr("unable to opendir '%s' (%s)\n", $keyDir, $!);
 	my @keyFiles
 		= map { "$keyDir/$_" }
 		  grep { $_ !~ m[^(\.\.?|pubring.gpg)$] }
@@ -686,11 +686,11 @@ sub stage1C_cleanupBasicVendorOS
 	my $stage1cDir
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
 	if (slxsystem("mv $stage1cDir/* $self->{'vendor-os-path'}/")) {
-		die _tr("unable to move final setup to <%s> (%s)\n",
+		die _tr("unable to move final setup to '%s' (%s)\n",
 				$self->{'vendor-os-path'}, $!);
 	}
 	if (slxsystem("rm -rf $self->{stage1aDir}")) {
-		die _tr("unable to remove temporary folder <%s> (%s)\n",
+		die _tr("unable to remove temporary folder '%s' (%s)\n",
 				$self->{stage1aDir}, $!);
 	}
 }
@@ -736,10 +736,10 @@ sub stage1D_updateBasicVendorOS()
 	my $osDir = $self->{'vendor-os-path'};
 	vlog 2, "chrooting into $osDir...";
 	chdir $osDir
-		or die _tr("unable to chdir into <%s> (%s)\n", $osDir, $!);
+		or die _tr("unable to chdir into '%s' (%s)\n", $osDir, $!);
 	# ...do chroot
 	chroot "."
-		or die _tr("unable to chroot into <%s> (%s)\n", $osDir, $!);
+		or die _tr("unable to chroot into '%s' (%s)\n", $osDir, $!);
 
 	vlog 1, "updating basic vendor-os...";
 	$self->{'meta-packager'}->updateBasicVendorOS();
@@ -758,7 +758,7 @@ sub stage1D_installPackageSelection
 		  map { $_ =~ s[^\s*(.*?)\s*$][$1]; $_ }
 		  split "\n", $pkgSelection;
 	if (scalar(@pkgs) == 0) {
-		vlog 0, _tr("No packages listed for selection <%s>, nothing to do.",
+		vlog 0, _tr("No packages listed for selection '%s', nothing to do.",
 					$selectionName);
 	} else {
 		$self->{'meta-packager'}->installSelection(join " ", @pkgs);
@@ -796,6 +796,46 @@ sub clone_determineIncludeExcludeList
 	return $includeExcludeList;
 }
 
+sub accessConfigDB
+{
+	my $configDBModule = "OpenSLX::ConfigDB";
+	unless (eval "require $configDBModule") {
+		if ($! == 2) {
+			vlog 1, _tr("ConfigDB-module not found, unable to access OpenSLX-database.\n");
+		} else {
+			die _tr("Unable to load ConfigDB-module '%s' (%s)\n", $configDBModule, $@);
+		}
+	} else {
+		my $modVersion = $configDBModule->VERSION;
+		if ($modVersion < 1.01) {
+			die _tr("Could not load module '%s' (Version '%s' required, but '%s' found)",
+					$configDBModule, 1.01, $modVersion);
+		}
+	}
+	return $configDBModule->new();
+}
+
+sub removeVendorOSFromConfigDB
+{
+	my $self = shift;
+
+	my $openslxDB = accessConfigDB();
+	$openslxDB->connect();
+
+	my $vendorOSName = $self->{'vendor-os-name'};
+	my $vendorOS
+		= $openslxDB->fetchVendorOSByFilter({ 'name' => $vendorOSName });
+	if (!defined $vendorOS) {
+		vlog 0, _tr("Vendor-OS '%s' didn't exist in OpenSLX-database.\n",
+					$vendorOSName);
+	} else {
+		$openslxDB->removeVendorOS($vendorOS->{id});
+		vlog 0, _tr("Vendor-OS '%s' has been removed from DB!\n",
+					$vendorOSName);
+	}
+
+	$openslxDB->disconnect();
+}
 
 ################################################################################
 ### utility functions
@@ -836,7 +876,7 @@ retry:
 			}
 		}
 		if (!defined $foundFile) {
-			die _tr("unable to fetch <%s> from <%s> (%s)\n", $fileVariantStr,
+			die _tr("unable to fetch '%s' from '%s' (%s)\n", $fileVariantStr,
 					$baseURL, $!);
 		}
 		push @foundFiles, $foundFile;

@@ -123,6 +123,18 @@ if ($action =~ m[^import]i) {
 		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 	$engine->initialize($vendorOSName, 'clone');
 	$engine->cloneVendorOS($source);
+} elsif ($action =~ m[^remove]i) {
+	my $vendorOSName = shift @ARGV;
+	if (!defined $vendorOSName) {
+		print STDERR _tr("You need to specify exactly one vendor-OS-name!\n");
+		pod2usage(2);
+	}
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	$engine->initialize($vendorOSName, 'remove');
+	$engine->removeVendorOS();
 } elsif ($action =~ m[^list-su]i) {
 	print _tr("List of supported distros:\n");
 	print join('', map {
@@ -145,6 +157,7 @@ if ($action =~ m[^import]i) {
 	install
 	list-supported
 	list-installed
+	remove
 	update
 Try '%s --help' for more info.\n", $0);
 }
@@ -190,6 +203,10 @@ show installed vendor-OSes
 =item B<<     list-supported >>
 
 show supported distros
+
+=item B<<     remove <vendor-os-name> >>
+
+removes an installed vendor-OS
 
 =item B<<     update <vendor-os-name> >>
 
@@ -260,12 +277,12 @@ format an rsync-uri has.
 
 =item B<<     slxos-setup install suse-10.2 >>
 
-installs the distro suse-10.2 as a new vendor-OS
+Installs the distro suse-10.2 as a new vendor-OS.
 
 =item B<<     slxos-setup install suse-10.2-gnome >>
 
-installs the 'gnome'-selection of distro suse-10.2 as a new
-vendor-OS
+Installs the 'gnome'-selection of distro suse-10.2 as a new
+vendor-OS.
 
 =back
 
@@ -275,8 +292,8 @@ vendor-OS
 
 =item B<<     slxos-setup clone my_server:/ suse-10.2-clone-my_server >>
 
-clones the suse-10.2 system from server 'my_server' as a new
-vendor-OS, which will be named 'suse-10.2-clone-my_server'
+Clones the suse-10.2 system from server 'my_server' as a new
+vendor-OS, which will be named 'suse-10.2-clone-my_server'.
 
 =back
 
@@ -286,7 +303,7 @@ vendor-OS, which will be named 'suse-10.2-clone-my_server'
 
 =item B<<     slxos-setup update suse-10.2 >>
 
-updates the (existing) vendor-OS 'suse-10.2'
+Updates the (existing) vendor-OS 'suse-10.2'.
 
 =back
 
@@ -296,7 +313,18 @@ updates the (existing) vendor-OS 'suse-10.2'
 
 =item B<<     slxos-setup import-into-db suse-10.2 >>
 
-imports the (existing) vendor-OS 'suse-10.2' into the config-DB
+Imports the (existing) vendor-OS 'suse-10.2' into the config-DB.
+
+=back
+
+=head3 Removing a Vendor-OS
+
+=over 8
+
+=item B<<     slxos-setup remove suse-10.2 >>
+
+Wipes the (existing) vendor-OS 'suse-10.2' from disk and removes it
+from the config-DB, too.
 
 =back
 
