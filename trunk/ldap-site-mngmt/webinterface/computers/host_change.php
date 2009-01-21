@@ -57,7 +57,7 @@ echo "Host DN:"; print_r($hostDN); echo "<br>";
 echo "submenuNR:"; print_r($submenu); echo "<br><br>";
 */
 
-$seconds = 2;
+$seconds = 200;
 $url = 'host.php?dn='.$hostDN.'&sbmnr='.$sbmnr;
  
 echo "  
@@ -255,6 +255,7 @@ if ( $oldip != "" && $ip != "" && $oldip != $ip ){
 			if ($dhcptype == "subnet"){
    			adjust_hostip_dhcpsubnet($ip,$hostDN,$dhcphlpcont);
 		   }
+		   adjust_hostip_tftpserverip($oldip,$ip);
 		}else{
 			$mesg = "Fehler beim aendern der IP<br><br>";
 			# oldip die schon gelöscht wurde wieder einfügen
@@ -269,6 +270,7 @@ if ( $oldip != "" && $ip == "" ){
 
 	if(delete_ip_host($hostDN,$auDN)){
 		$mesg = "IP erfolgreich geloescht<br><br>";
+		adjust_hostip_tftpserverip($oldip,"");
 	}else{
 		$mesg = "Fehler beim loeschen der IP<br><br>";
 	}
@@ -388,6 +390,7 @@ if (count($entrydel) != 0 ){
 
 */
 
+update_dhcpmtime();
 
 $mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>				
 			Falls nicht, klicken Sie hier <a href=".$url." style='publink'>back</a>";

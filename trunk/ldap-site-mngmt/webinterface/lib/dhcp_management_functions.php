@@ -18,6 +18,22 @@ $ldapError = null;
 
 ###################################################################################################
 
+# immer wenn ein DHCP Objekt geändert wird (DHCP modify time aktualisieren)
+function update_dhcpmtime(){
+
+   global $ds, $auDN, $ldapError;
+   
+   $entry ['dhcpmtime'] = time();
+   $results = ldap_mod_replace($ds,$auDN,$entry);
+	if ($results){
+      echo "<br><b>dhcpMTime</b> erfolgreich aktualisiert!<br>" ;
+      return 1;
+   }else{
+      echo "<br>Fehler beim Aktualisieren der <b>dhcpMTime</b>!<br>" ;
+   }
+}
+
+
 # freie x.x.x.0/24 Netzwerke einer AU holen
 function get_networks(){
 
@@ -397,12 +413,11 @@ function alternative_dhcpobjects($objecttype,$objectDN,$ip){
 # Funktionen zur Verwaltung von DHCP Subnet Objekten
 #
 
-function add_dhcpsubnet ($cn,$dhcpservice,$netmask,$range1,$range2,$atts){
+function add_dhcpsubnet ($cn,$dhcpservice,$netmask,$atts){
 
    global $ds, $suffix, $auDN, $ldapError;
    
-   $cnarray = array($cn,$cn);
-   $subnet = implode('_',$cnarray);
+   $subnet = implode('_',array($cn,$cn));
    
    # IP checken und FIBS anpassen
    $fipb_array = get_freeipblocks_au($auDN);
@@ -445,18 +460,21 @@ function add_dhcpsubnet ($cn,$dhcpservice,$netmask,$range1,$range2,$atts){
       	print_r($dhcpsubnetDN); echo "<br>";
       	
       	if ($result = ldap_add($ds, $dhcpsubnetDN, $entrydhcp)){
-      	   if ( check_ip_in_subnet($range1,$cn) && check_ip_in_subnet($range2,$cn)){
-      	      $dhcprange = implode('_',array($range1,$range2));
-				   if ( $range = new_ip_dhcprange($dhcprange,$dhcpsubnetDN,$auDN) ){
-				      echo "DHCP Range <b>".$range1." - ".$range2."</b> erfolgreich im Subnetobjekt eingetragen";
-				   }else{
-				      echo "DHCP Range <b>".$range1." - ".$range2."</b> konnte nicht im Subnetobjekt eingetragen werden!";
-				   }
-				   return 1;
-				}else{
-				   echo "DHCP Range nicht in Subnetz ".$cn." enthalten.<br>Keine DHCP Range angelegt.<br>";
-				   return 1;
-				}
+      	   printf("Subnet <b>%s / %s</b> erfolgreich eingetragen",$cn,$netmask);
+      	   return 1;
+      	   update_dhcpmtime();
+      	   #if ( check_ip_in_subnet($range1,$cn) && check_ip_in_subnet($range2,$cn)){
+      	   #   $dhcprange = implode('_',array($range1,$range2));
+				#   if ( $range = new_ip_dhcprange($dhcprange,$dhcpsubnetDN,$auDN) ){
+				#      echo "DHCP Range <b>".$range1." - ".$range2."</b> erfolgreich im Subnetobjekt eingetragen";
+				#   }else{
+				#      echo "DHCP Range <b>".$range1." - ".$range2."</b> konnte nicht im Subnetobjekt eingetragen werden!";
+				#   }
+				#   return 1;
+				#}else{
+				#   echo "DHCP Range nicht in Subnetz ".$cn." enthalten.<br>Keine DHCP Range angelegt.<br>";
+				#   return 1;
+				#}
 	   	}else{ 
 	   		echo "<br>Fehler beim anlegen des DHCP Subnet Objekts!<br>";
 	   		return 0;
@@ -485,6 +503,7 @@ function delete_dhcpsubnet($subnetDN,$cn){
       $results = ldap_mod_add($ds,$auDN,$entry);
    	if ($results){
    	   merge_ipranges($auDN);
+   	   update_dhcpmtime();
    	   return 1;
 		}else{
 	      return 0;
@@ -536,6 +555,7 @@ function modify_subnet_dn($subnetDN,$newsubnetDN){
    		$results = ldap_mod_replace($ds,$auDN,$entry);
    		if ($results){
    		   merge_ipranges($auDN);
+   		   update_dhcpmtime();
    	      echo "<br>FIPBs erfolgreich angepasst!<br>" ;
    	      return 1;
    	   }else{
@@ -550,7 +570,7 @@ function modify_subnet_dn($subnetDN,$newsubnetDN){
 	}
 }
 
-
+# wird eigentlich nicht benötigt wenn host deklarationen nicht in subnet scope sind ...
 function cleanup_del_dhcpsubnet ($dhcpsubnetDN){
 
    global $ds, $suffix, $auDN, $ldapError;
@@ -569,7 +589,7 @@ function cleanup_del_dhcpsubnet ($dhcpsubnetDN){
 }
 
 
-
+# wird eigentlich nicht benötigt wenn host deklarationen nicht in subnet scope sind ...
 function adjust_dhcpsubnet_dn ($newdhcpsubnetDN,$dhcpsubnetDN){
    
    global $ds, $suffix, $auDN, $ldapError;
@@ -590,6 +610,7 @@ function adjust_dhcpsubnet_dn ($newdhcpsubnetDN,$dhcpsubnetDN){
 
 # Nach Änderung der Host IP Adresse, überprüfen ob neue IP noch mit Subnet übereinstimmt
 # Falls keine Übereinstimmung mehr, dann Subnetzuordnung aus Host löschen.
+# wird eigentlich nicht benötigt wenn host deklarationen nicht in subnet scope sind ...
 function adjust_hostip_dhcpsubnet($ip,$hostDN,$dhcphlpcont) {
 
    global $ds, $suffix, $auDN, $ldapError;
@@ -622,4 +643,56 @@ function check_ip_in_subnet($ip,$subnet) {
    }
    if ($return) { return 1; }else{ return 0; }
 }
+
+#########################
+# Pools
+function add_dhcppool ($dhcpsubnetdn,$range,$unknownclients,$dhcpservicedn){
+
+   global $ds, $suffix, $auDN, $ldapError;
+   
+   if(!($result = uniLdapSearch($ds, "cn=dhcp,".$auDN,"(objectclass=*)", array("cn"), "dn", "list", 0, 0))) {
+ 		# redirect(5, "", $ldapError, FALSE);
+  		echo "no search";
+  		die;
+	}
+	$result = ldapArraySauber($result);
+
+   $dhcpcn_array = array();
+   foreach ($result as $item){
+      $dhcpcn_array [] = $item['cn'];
+   }
+   print_r($dhcpcn_array);echo "<br><br>";
+   for ($i=0;$i<100;$i++){
+	   if ( array_search ( "Pool".$i, $dhcpcn_array ) === false ){
+	      $cn = "Pool".$i;
+	      break;
+	   }
+	}
+   $dhcppoolDN = "cn=".$cn.",cn=dhcp,".$auDN;
+   
+   $entrydhcp ['objectclass'][0] = "dhcpPool";
+   $entrydhcp ['objectclass'][1] = "dhcpOptions";
+   $entrydhcp ['objectclass'][2] = "top";
+	$entrydhcp ['cn'] = $cn;
+   $entrydhcp ['dhcphlpcont'] = $dhcpsubnetdn;
+   $entrydhcp ['dhcprange'] = $range;
+   if ($unknownclients == "allow"){
+      $entrydhcp ['dhcpoptallow'] = "unknown-clients";
+   }elseif ($unknownclients == "ignore"){
+      $entrydhcp ['dhcpoptignore'] = "unknown-clients";
+   }else{
+      $entrydhcp ['dhcpoptdeny'] = "unknown-clients";
+   }
+	
+   print_r($dhcppoolDN);echo "<br><br>";
+   print_r($entrydhcp);echo "<br><br>";
+   
+   if ($result = ldap_add($ds,$dhcppoolDN,$entrydhcp)){
+     return 1;
+   }else{return 0;}
+	
+	
+}
+
+
 ?>

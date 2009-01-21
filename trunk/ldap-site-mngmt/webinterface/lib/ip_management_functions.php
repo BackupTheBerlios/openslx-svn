@@ -93,11 +93,12 @@ function split_iprange($iprange1,$iprange2)
 		if ($ipr3s <= $ipr3e){$iprange3 = long2ip($ipr3s)."_".long2ip($ipr3e); $ipranges[] = $iprange3;}
 		if ($ipr4s <= $ipr4e){$iprange4 = long2ip($ipr4s)."_".long2ip($ipr4e); $ipranges[] = $iprange4;}
 		
+		#echo "MATCH!<br>";
 		return $ipranges;
 	}
 	else
 	{
-		echo "IPRange1 not in IPRange2: ";
+		#echo "IPRange1 not in IPRange2: ";
 		return 0;
 	}
 }
@@ -246,6 +247,86 @@ function get_maxipblocks_au($auDN)
    return $mipb_array;
 }
 
+# benutze IP Ranges (Rechner, Ranges, Delegs)
+function get_used_ipblocks_au($auDN)
+{
+	global $ds, $suffix, $ldapError;
+   
+   $host_ips = array();
+   $dhcps_ips = array();
+   $dhcpr_ips = array(); 
+   $deleg_ips = array(); 
+   # Rechner IPs
+	if(!($result = uniLdapSearch($ds, "cn=computers,".$auDN, "(objectclass=Host)", array("IPAddress"), "", "list", 0, 0))) {
+      # redirect(5, "", $ldapError, FALSE);
+      echo "no search";
+      die;
+   } else {
+   	$result = ldapArraySauber($result);
+		foreach ($result as $item){
+			if (count($item['ipaddress']) != 0){
+	   		$host_ips [] = $item['ipaddress'];
+   		}
+   	}
+   }
+   echo "Rechner IPs:<br>"; print_r($host_ips); echo "<br><br>";
+   
+   # DHCP Subnets
+   if(!($result = uniLdapSearch($ds, "cn=dhcp,".$auDN, "(objectclass=dhcpSubnet)", array("cn"), "", "list", 0, 0))) {
+      # redirect(5, "", $ldapError, FALSE);
+      echo "no search";
+      die;
+   } else {
+   	$result = ldapArraySauber($result);
+		foreach ($result as $item){
+   		$dhcps_ips [] = $item['cn']."_".$item['cn'];
+   	}
+   }
+   echo "DHCP Subnets:<br>"; print_r($dhcps_ips); echo "<br><br>";
+   
+   # DHCP Pool Ranges
+   if(!($result = uniLdapSearch($ds, "cn=dhcp,".$auDN, "(objectclass=dhcpPool)", array("dhcpRange"), "", "list", 0, 0))) {
+      # redirect(5, "", $ldapError, FALSE);
+      echo "no search";
+      die;
+   } else {
+   	$result = ldapArraySauber($result);
+		foreach ($result as $item){
+			if (count($item['dhcprange']) > 1){
+			   foreach ($item['dhcprange'] as $range){
+   	   		$dhcpr_ips [] = $range;
+   	      }
+   		}
+   		elseif (count($item['dhcprange']) == 1){
+   			$dhcpr_ips [] = $item['dhcprange']; 
+   		}
+   	}
+   }
+   echo "DHCP Pool Ranges:<br>"; print_r($dhcpr_ips); echo "<br><br>";
+   
+   # Delegierte IPs
+   $childau_array = get_childau($auDN,array("dn","ou","maxipblock"));
+   #print_r($childau_array);
+   if (count($childau_array) != 0){
+      foreach ($childau_array as $childau){
+         if (count($childau['maxipblock']) > 1){
+            foreach ($childau['maxipblock'] as $mipb){
+               $deleg_ips [] = $mipb;
+            }
+         }elseif (count($childau['maxipblock']) == 1){
+            $deleg_ips [] = $childau['maxipblock'];
+         }
+      }
+   }
+   echo "Delegiert IP Blocks:<br>"; print_r($deleg_ips); echo "<br><br>";
+   
+   $used_ips = array_merge($host_ips, $dhcps_ips, $dhcpr_ips, $deleg_ips);
+   sort($used_ips);
+   $used_ips = merge_ipranges_array($used_ips);
+   
+   return $used_ips;
+}
+
 
 /**
 * get_host_ip($hostDN)  
@@ -316,6 +397,33 @@ function get_dhcp_range($dhcpobjectDN)
 	}
 }
 
+function get_dhcp_range2($dhcpobjectDN)
+{
+	global $ds, $suffix, $ldapError;
+	
+	if(!($result = uniLdapSearch($ds, $dhcpobjectDN, "(objectclass=*)", array("dhcpRange"), "", "one", 0, 0))) {
+ 		# redirect(5, "", $ldapError, FALSE);
+  		echo "no search"; 
+  		die;
+  		return 0;
+	} 
+	else {
+		$result = ldapArraySauber($result);
+		$dhcp_array = array();
+		foreach ($result as $item){
+		   if ( count($item['dhcprange']) == 1 ){
+   	      $dhcp_array[] = $item['dhcprange'];
+   	   }
+   	   if ( count($item['dhcprange']) > 1 ){
+   	      foreach ($item['dhcprange'] as $range){
+   	         $dhcp_array[] = $range;
+   	      }
+   	   }
+   	}
+   	return $dhcp_array;
+	}
+}
+
 
 /**
 * merge_ipranges($auDN)  
@@ -349,8 +457,8 @@ function merge_ipranges($auDN)
    }
    print_r($fipb_array);printf("<br>");
    foreach ( $fipb_array as $item ){
-		 	$entry ['FreeIPBlock'][] = $item;
-		}
+		$entry ['FreeIPBlock'][] = $item;
+	}
 	$results = ldap_mod_replace($ds,$auDN,$entry);
 	if ($results) echo "<br>FIPBs erfolgreich zusammengefasst!<br><br>" ;
    else echo "<br>Fehler beim eintragen der FIPBs!<br><br>";	  
@@ -375,6 +483,55 @@ function merge_ipranges($auDN)
 	if ($results) echo "<br>MIPBs erfolgreich zusammengefasst!<br><br>" ;
    else echo "<br>Fehler beim eintragen der MIPBs!<br><br>";	  
 }
+
+function merge_dhcpranges($dhcpobjectDN)
+{
+	global $ds, $suffix, $ldapError;
+   
+   $dhcp_array = get_dhcp_range2($dhcpobjectDN);
+   if ( count($dhcp_array) > 1) sort($dhcp_array);
+   
+   $c = count($dhcp_array);
+   for ($i=0; $i < $c; $i++){
+   	for ($j=$i+1; $j < $c; $j++){
+   		if ( merge_2_ipranges($dhcp_array[$i],$dhcp_array[$j])){
+	   		$dhcp_array[$i] = merge_2_ipranges($dhcp_array[$i],$dhcp_array[$j]);
+   			array_splice($dhcp_array, $j, 1); 
+   			$c--;
+   			$i=-1;
+   			break;
+   		}
+   	}
+   }
+   foreach ( $dhcp_array as $item ){
+		$entry ['dhcprange'][] = $item;
+	}
+	$results = ldap_mod_replace($ds,$dhcpobjectDN,$entry);
+	if ($results) echo "<br>DHCP Ranges erfolgreich zusammengefasst!<br><br>" ;
+   else echo "<br>Fehler beim eintragen der DHCP Ranges!<br><br>";	  
+}
+
+function merge_ipranges_array($ipranges_array)
+{
+	global $ds, $suffix, $ldapError;
+   
+   sort($ipranges_array);
+   $c = count($ipranges_array);
+   for ($i=0; $i < $c; $i++){
+   	for ($j=$i+1; $j < $c; $j++){
+   		if ( merge_2_ipranges($ipranges_array[$i],$ipranges_array[$j])){
+	   		$ipranges_array[$i] = merge_2_ipranges($ipranges_array[$i],$ipranges_array[$j]);
+   			array_splice($ipranges_array, $j, 1); 
+   			$c--;
+   			$i=-1;
+   			break;
+   		}
+   	}
+   }
+   return $ipranges_array;
+   # Rückgabewert ...  
+}
+
 
  
 /**
@@ -454,7 +611,7 @@ function new_ip_dhcprange($ip,$dhcpobjectDN,$auDN)
    
    $fipb_array = get_freeipblocks_au($auDN);
    
-   print_r($fipb_array);
+   #print_r($fipb_array);
    
 	for ($i=0; $i < count($fipb_array); $i++){
 		if ( split_iprange($ip,$fipb_array[$i]) != 0 ){
@@ -493,6 +650,55 @@ function new_ip_dhcprange($ip,$dhcpobjectDN,$auDN)
 		return 0;
 	}	
 }
+
+## Add Dhcprange in DHCP Pool
+function add_dhcprange($newrange,$pooldn) {
+   
+   global $ds, $auDN, $suffix, $ldapError;
+   
+   # Freie IP Bereiche testen
+   $fipb_array = get_freeipblocks_au($auDN);
+   $test = 0;
+	for ($f=0; $f < count($fipb_array); $f++){
+		if ( split_iprange($newrange,$fipb_array[$f]) != 0 ){
+			$ipranges = split_iprange($newrange,$fipb_array[$f]);
+			array_splice($fipb_array, $f, 1, $ipranges);
+			$test = 1;
+			break;
+		}		
+	}
+	if ( $test ){
+		foreach ( $fipb_array as $item ){
+		 	$entry ['FreeIPBlock'][] = $item;
+		}
+		$result1 = ldap_mod_replace($ds,$auDN,$entry);
+		if ($result1){
+			echo "<br>Neue FIPBs erfolgreich eingetragen!<br>";
+			$rangeentry ['dhcprange'] = $newrange;
+			print_r($rangeentry);echo "<br><br>";
+			$result2 = ldap_mod_add($ds,$pooldn,$rangeentry);
+			if ($result2){
+			      merge_dhcpranges($pooldn);
+   				#printf("Neue dynamische IP Range %s - %s erfolgreich in Subnetz %s0 eingetragen!<br>",$addrange1[$i],$addrange2[$i],$net);
+   				return 1;
+	   	}else{
+	   		# echo "<br>Fehler beim eintragen des dynamischen DHCP Pools!<br>";
+	   		# Range wieder in FIPBs aufnehmen.
+	   		$entry2 ['FreeIPBlock'] = $newrange;
+	   		ldap_mod_add($ds,$auDN,$entry2);
+	   		merge_ipranges($auDN);
+	   		return 0;
+	   	}
+		}else{
+	   	echo "<br>Fehler beim eintragen der FIPBs!<br>";
+	   	return 0;
+	   }	  		
+	}else{
+		printf("<br>IP Range %s ist nicht im verfuegbaren Bereich!<br>", $range );
+		return 0;
+	}
+}
+
 
 /**
 * delete_ip_host($hostDN,$auDN)  

@@ -3,9 +3,10 @@ include('../standard_header.inc.php');
 
 $subnetDN = $_POST['dn'];
 $cn = $_POST['name'];
+$mnr = $_POST['mnr'];
 
-$seconds = 100;
-$url = "dhcpsubnets.php?mnr=2";
+$seconds = 1;
+$url = "dhcpsubnets.php?mnr=".$mnr;
 
 echo "
 <html>
@@ -20,6 +21,7 @@ echo "
 if ( $subnetDN != ""){
    if( delete_dhcpsubnet($subnetDN,$cn)){
       $mesg = "Subnet <b>".$cn."</b> erfolgreich gel&ouml;scht!<br><br>";
+      update_dhcpmtime();
    }else{
       $mesg = "Fehler beim l&ouml;schen des Subnets <b>".$cn."</b> !<br><br>";
    }

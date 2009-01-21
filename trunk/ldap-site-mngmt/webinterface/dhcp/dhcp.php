@@ -20,6 +20,8 @@ include('dhcp_header.inc.php');
 createMainMenu($rollen, $mainnr);
 createDhcpMenu($rollen, $mnr, $auDN, $sbmnr);
 
+include("ip_blocks.inc.php");
+
 ###################################################################################
 
 include("dhcp_footer.inc.php");

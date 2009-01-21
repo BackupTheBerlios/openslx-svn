@@ -75,9 +75,8 @@ $name = array_slice($expcn,1);
 $rbscn = implode('_',$name);
 
 # Server Hostnamen holen
-$tftpserver = get_hostname_from_ip($rbs_data['tftpserverip'],$auDN);
-$nfsserver = get_hostname_from_ip($rbs_data['nfsserverip'],$auDN);
-$nbdserver = get_hostname_from_ip($rbs_data['nbdserverip'],$auDN);
+$tftpserver = get_hostname_from_ip($rbs_data['tftpserverip']);
+#print_r($tftpserver);
 
 $template->assign(array("RBSDN" => $rbs_data['dn'],
 								"RBSCN" => $rbscn,
@@ -127,21 +126,14 @@ $hostorgroup = $exp[0];
 $hosts_array = get_hosts($auDN,array("dn","hostname","ipaddress"));
 
 $template->define_dynamic("TftpHosts", "Webseite");
-$template->define_dynamic("NfsHosts", "Webseite");
-$template->define_dynamic("NbdHosts", "Webseite");
 foreach ($hosts_array as $item){
-	$template->assign(array("HDN" => $item['dn'],
-                           "HN" => $item['hostname'],
-                           "IP" => $item['ipaddress']));
-   $template->parse("TFTPHOSTS_LIST", ".TftpHosts");
-   $template->assign(array("HDN" => $item['dn'],
-                           "HN" => $item['hostname'],
-                           "IP" => $item['ipaddress']));
-   $template->parse("NFSHOSTS_LIST", ".NfsHosts");	
-   $template->assign(array("HDN" => $item['dn'],
-                           "HN" => $item['hostname'],
-                           "IP" => $item['ipaddress']));
-   $template->parse("NBDHOSTS_LIST", ".NbdHosts");	
+   if ($item['ipaddress'] != "" && $item['hostname'] != $tftpserver['hostname']){
+      $hostip = explode("_",$item['ipaddress']);
+	   $template->assign(array("HDN" => $item['dn'],
+                              "HN" => $item['hostname'],
+                              "IP" => $hostip[0]));
+      $template->parse("TFTPHOSTS_LIST", ".TftpHosts");
+   }
 }
 
 ################################################

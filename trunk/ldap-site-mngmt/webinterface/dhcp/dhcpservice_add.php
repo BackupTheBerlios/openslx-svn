@@ -19,7 +19,7 @@ $sbmnr = $_POST['sbmnr'];
 $mcnr = $_POST['mcnr'];
 
 $get_dhcpcn = str_replace ( " ", "_", $cn );
-$seconds = 200;
+$seconds = 2;
 $url = "new_dhcpservice.php?&mnr=1";
  
 echo "

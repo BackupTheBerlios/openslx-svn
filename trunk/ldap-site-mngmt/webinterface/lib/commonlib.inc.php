@@ -171,11 +171,13 @@ function getRoles($ds, $userDN) {
 */
 
 function createMainMenu($rollen , $mainnr) {
-   global $template;
-   global $START_PATH;
+   
+   global $template, $START_PATH, $auDN;
     
-   # pre-checks 
-   if ( check_if_max_networks() ){
+   # pre-checks
+   $mipbs = get_maxipblocks_au($auDN);
+   #echo "MIPB: "; print_r ($mipbs); echo "<br>";
+   if ($mipbs[0] != ""){
       $dhcplink = "dhcp/dhcp.php";
    }else{
       $dhcplink = "dhcp/no_dhcp.php";

@@ -22,6 +22,8 @@ $mnr = $_GET['mnr'];
 createMainMenu($rollen, $mainnr);
 createDhcpMenu($rollen, $mnr, $auDN, $sbmnr);
 
+include("ip_blocks.inc.php");
+
 ###################################################################################
 
 $template->assign(array("DHCPDN" => "",

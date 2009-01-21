@@ -163,6 +163,16 @@ h4 {
  padding-left: 10px;
  margin: 5px;
 }
+.tftp_form_selectbox {
+ font-family: Arial;
+ font-size: 10pt;
+ border-style: solid;
+ border-width: 1px 1px;
+ border-color: #000000;
+ width: 250;
+ padding-left: 10px;
+ margin: 5px;
+}
 .rootfs_form_selectbox {
  font-family: Arial;
  font-size: 10pt;

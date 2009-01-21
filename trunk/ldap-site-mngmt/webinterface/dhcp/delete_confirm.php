@@ -6,6 +6,7 @@ $name = $_POST['name'];
 $delurl = $_POST['delurl'];
 $backurl = $_POST['backurl'];
 $successurl = $_POST['successurl'];
+$mnr = $_POST['mnr'];
 
 echo "
 <html> 
@@ -23,6 +24,7 @@ echo "
 				<input type='hidden' name='dn' value='".$dn."'>
 				<input type='hidden' name='name' value='".$name."'>
 				<input type='hidden' name='successurl' value='".$successurl."'>
+				<input type='hidden' name='mnr' value='".$mnr."'>
 				<input type='Submit' name='apply' value='l&ouml;schen' class='small_loginform_button'><br><br>
 			</form>
 			<form action='".$backurl."' method='post'>

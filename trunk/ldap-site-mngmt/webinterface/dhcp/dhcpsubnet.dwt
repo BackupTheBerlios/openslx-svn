@@ -1,9 +1,11 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	
+  	<tr>
+  		<td colspan='4' height='20'><h4><a href='dhcpsubnets.php?mnr={MNR}' class='headerlink'><< Zur&uuml;ck zur &Uuml;bersicht </a></h4></td>
+  	</tr>
+  	
   	<tr>
   		<td colspan='2'><h3>DHCP Subnet &nbsp;<code class='font_object'> {CN} </code> </h3></td>
-  	</tr>
-  	<tr>
-  		<td height='20'></td>
   	</tr>
   	<tr><td>
   		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
@@ -31,7 +33,7 @@
 			</tr>
 			<tr valign='top'>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'><b>Eingebunden in DHCP Dienst: <b></td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>Service <b>{DHCPSVNOW}</b> / AU <b>{DHCPSVNOWAU}</b> &nbsp;
+				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>{DHCPSVNOW}&nbsp;
 				</td>
 			</tr>
 			<tr height='50' valign='top'>
@@ -60,7 +62,7 @@
 		</table></td>
 	</tr>
 	
-	<tr>
+	<!--<tr>
   		<td height='40'></td>
   	</tr>		
 	<tr>
@@ -88,16 +90,13 @@
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>&nbsp;</td>
 			</tr>
   	   </table></td>
-	</tr>
+	</tr>-->
 	
 	<tr>
   		<td height='40'></td>
   	</tr>		
 	<tr>
   		<td colspan='2'><h4>DHCP Optionen des Subnets (Subnet Scope):</h4></td>
-  	</tr>
-  	<tr>
-  		<td height='10'></td>
   	</tr>
   	<tr><td>
   		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
@@ -203,6 +202,7 @@
   			
   			<input type='hidden' name='dn' value='{SUBNETDN}'>
   			<input type='hidden' name='name' value='{CN}'>
+  			<input type='hidden' name='mnr' value='{MNR}'>
   			<input type='hidden' name='type' value='dhcp'>
   			<input type='hidden' name='delurl' value='dhcpsubnet_delete.php'>
   			<input type='hidden' name='backurl' value='dhcpsubnet.php?dn={SUBNETDN}&mnr={MNR}&sbmnr{SBMNR}'>

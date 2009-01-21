@@ -23,14 +23,14 @@ $sbmnr = $_GET['sbmnr'];
 createMainMenu($rollen, $mainnr);
 createDhcpMenu($rollen, $mnr, $auDN, $sbmnr);
 
+include("ip_blocks.inc.php");
+
 ###################################################################################
 
 $subnetcn = str_replace ( "_", " ", $_GET['subnetcn']);
 $netmask = str_replace ( "_", " ", $_GET['netmask']);
 $template->assign(array("CN" => $subnetcn,
 								"NETMASK" => $netmask,
-								"RANGE1" => "",
-								"RANGE2" => "",
 								"DESCRIPTION" => "",
 								"STATEMENTS" => "",
 								"ALLOW" => "",
@@ -57,6 +57,30 @@ $template->assign(array("CN" => $subnetcn,
 
 
 
+$freenets = get_networks();
+#print_r($freenets);
+$subnets = array();
+if (count($freenets) != 0){
+   $template->define_dynamic("Dhcpsubnets", "Webseite");
+
+   foreach ($freenets as $subnet){
+      $netexp = explode(".",$subnet);
+      $mask = array(255,255,255,255);
+      for ($i=0; $i<count($netexp); $i++){
+         if ($netexp[$i] == "0"){
+            $mask[$i] = "0";
+         }
+      }
+      $netmask = implode(".", $mask);
+      $subnets[] = $subnet."|".$netmask;
+      
+      $template->assign(array("SUBNET" => $subnet."|".$netmask,
+   	                  "CN" => $subnet,
+   	                  "NETMASK" => $netmask));
+   	$template->parse("DHCPSUBNETS_LIST", ".Dhcpsubnets");	  
+   }
+   #print_r($subnets);
+   
 # DHCP Services
 $dhcpservices = get_dhcpoffers($auDN);
 #print_r($dhcpservices); echo "<br>";
@@ -76,6 +100,13 @@ $template->define_dynamic("Dhcpservices", "Webseite");
 	} 
 }
 
+$template->assign(array("SUBLIST" => count($freenets)+1,
+								"SRVLIST" => count($dhcpservices)+1));
+
+}else{
+   # keine freie Netze mehr zur Verfügung
+   # wird schon über das DHCP Menu abgefangen ...
+}
 
 ###################################################################################
 

@@ -1,57 +1,72 @@
 <?php
 
 function createDhcpMenu($rollen , $mnr, $auDN, $sbmnr) {
-   global $template;
-   global $START_PATH;
    
-   # falls keine kompletten Netze delegiert, dann keine DHCP Service und Subnet Links
-   if (!( check_if_max_networks() )){
+   global $template, $START_PATH, $rootAU; 
+   
+   $mipbs = get_maxipblocks_au($auDN);
+   #echo "MIPB: "; print_r ($mipbs); echo "<br>";
+   if ($mipbs[0] != ""){
+      $hauptmenu = array(array("link" => "dhcp.php",
+                             "text" => "&Uuml;bersicht",
+                             "zugriff" => "alle"));
+   }else{
       $hauptmenu = array(array("link" => "no_dhcp.php",
                              "text" => "&Uuml;bersicht",
                              "zugriff" => "alle"));
-      $submenu = array(array());
-   }else{
-      # DHCP Services (momentan nur für einen DHCP konzipiert)
-    	$dhcpservice_array = get_dhcpservices($auDN,array("dn","cn"));
+   }
+   $i=1;
+   if ( $auDN == $rootAU ) {
+      $dhcpservice_array = get_dhcpservices($auDN,array("dn","cn"));
       if (count($dhcpservice_array) == 0){
       	$dhcpsvlink = "new_dhcpservice.php?mnr=1";
       }
       else {
       	$dhcpsvlink = "dhcpservice.php?mnr=1";
       }
-      $dhcpsubnet_array = get_dhcpsubnets($auDN,array("dn","cn"));
-       
-       # Struktur der Registerkartenleiste
-       $hauptmenu = array(array("link" => "dhcp.php",
-                             "text" => "&Uuml;bersicht",
-                             "zugriff" => "alle"),
-       						  array("link" => $dhcpsvlink,
+      $hauptmenu []= array("link" => $dhcpsvlink,
                              "text" => "DHCP Service",
-                             "zugriff" => array("MainAdmin","DhcpAdmin")),
-                          array("link" => "dhcpsubnets.php?mnr=2",
-                             "text" => "DHCP Subnets",
-                             "zugriff" => array("MainAdmin","DhcpAdmin")));
-       
-      # DHCP Subnets
-    	$subnets = array();
-   	  	for ($i=0;$i<count($dhcpsubnet_array);$i++){
-   	  		$subnets[] = array("link" => "dhcpsubnet.php?dn=".$dhcpsubnet_array[$i]['dn']."&mnr=2&sbmnr=".$i,
-   	  							"text" => $dhcpsubnet_array[$i]['cn'],
-   								"zugriff" => array("MainAdmin","DhcpAdmin"));
-   	  	}
-   	   
+                             "zugriff" => array("MainAdmin","DhcpAdmin"));
+      $i++;
+   }
+   if ($mipbs[0] != ""){
+      if ( check_if_max_networks() ){
+         $hauptmenu [] = array("link" => "dhcpsubnets.php?mnr=".$i,
+                                "text" => "DHCP Subnets",
+                                "zugriff" => array("MainAdmin","DhcpAdmin"));
+         
+         $subnets = array();
    	   # falls komplette Netze verfügbar, link zum Neuanlegen
    	   if ( check_if_free_networks() ){
-      	   $subnets[] = array("link" => "new_dhcpsubnet.php?mnr=2&sbmnr=".$i,
-      	                   "text" => "Neues DHCP Subnet",
+   	      #$dhcpsubnet_array = get_dhcpsubnets($auDN,array("dn","cn"));
+   	      /*for ($j=0;$j<count($dhcpsubnet_array);$j++){
+      	  		$subnets[] = array("link" => "dhcpsubnet.php?dn=".$dhcpsubnet_array[$j]['dn']."&mnr=".$i."&sbmnr=".$j,
+      	  							"text" => $dhcpsubnet_array[$j]['cn'],
+      								"zugriff" => array("MainAdmin","DhcpAdmin"));
+      	  	}*/
+      	   $subnets[] = array("link" => "new_dhcpsubnet.php?mnr=".$i."&sbmnr=0",
+      	                   "text" => "Neues DHCP Subnet anlegen",
       	                   "zugriff" => array("MainAdmin","DhcpAdmin"));
-   	   }                
-      $submenu = array(array(),
-      					  array(),
-       	              $subnets);
-   	 
-	} 
-	# $rollen = array_keys($roles);
+   	   }
+   	   $i++;
+         $hauptmenu [] = array("link" => "dhcppool.php?mnr=".$i,
+                                "text" => "Dynamische DHCP Pools",
+                                "zugriff" => "alle");
+   	                  
+         $submenu = array(array(),
+          	              $subnets,
+          	              array());                       
+                                
+      }else{
+         $hauptmenu [] = array("link" => "dhcppool.php?mnr=".$i,
+                                "text" => "Dynamische DHCP Pools",
+                                "zugriff" => "alle");
+      }
+   }
+   
+	#print_r ($hauptmenu);cho "<br>";
+   #print_r ($submenu);
+	#$rollen = array_keys($roles);
 
    # Zusammenstellen der Menuleiste
    $template->define_dynamic("Hauptmenu", "Menu");
@@ -80,29 +95,29 @@ function createDhcpMenu($rollen , $mnr, $auDN, $sbmnr) {
    		   		else{
       		   		if ($j==0) {
       		         	if ($sbmnr==0) { 
-      		               if($maxsub == 1){$zwisch="branchbottom2";}
-      		               else {$zwisch="branch2";}
+      		               if($maxsub == 1){$zwisch="";}
+      		               else {$zwisch="";}
       		               $lastaktive=true;
       		               $farb="#505050";
       		            }
       		            else{
-      		               if($maxsub == 1){$zwisch="branchbottom2";}
-      		               else {$zwisch="branch2";}
+      		               if($maxsub == 1){$zwisch="";}
+      		               else {$zwisch="";}
       		               $farb="#A0A0A0";  
       		               $lastaktive=false;
       		            }
       		         }
       		         else {
       		         	if ($sbmnr==$j) { 
-      		            	if($maxsub == $j+1){$zwisch="branchbottom2";}
-      		               else {$zwisch="branch2";}
+      		            	if($maxsub == $j+1){$zwisch="";}
+      		               else {$zwisch="";}
       		               $lastaktive=true; 
       		               $farb="#505050"; 
       		            }
       		            else {
       		               $farb="#A0A0A0";
-      		               if($maxsub == $j+1){$zwisch="branchbottom2";}
-      		               else {$zwisch="branch2";}
+      		               if($maxsub == $j+1){$zwisch="";}
+      		               else {$zwisch="";}
       		               # if ($lastaktive) {$zwisch="branch";} 
       		               # else {$zwisch="branch";}
       		               $lastaktive=false;
@@ -110,12 +125,12 @@ function createDhcpMenu($rollen , $mnr, $auDN, $sbmnr) {
       		        	}
       		   		$htmlcode= "
       		   		<tr height='4'>
-      						<td></td><td align='right'><img src='../pics/line2.gif' height='4'></td><td></td><td></td>
+      						<td></td><td></td><td></td><td></td>
       		   		</tr>
       		   		<tr>
       						<td width='8%'>&nbsp;</td>
-      						<td width='8%' align='right'><img src='../pics/".$zwisch.".gif'></td>
-      		     			<td width='74%' align='left' style='border-width:1 1 1 1;border-color:#000000;border-style:solid;padding:2;padding-left:30px;background-color:{FARBE_S}'> 
+      						<td width='8%' align='right'>".$zwisch."</td>
+      		     			<td width='74%' align='left' style='border-width:1 1 1 1;border-color:#000000;border-style:solid;padding:2;padding-left:15px;background-color:{FARBE_S}'> 
       		     			<a href='".$item2['link']."' style='text-decoration:none'><b class='standard_schrift'>".$item2['text']."</b></a></td>
       						<td width='10%'>&nbsp;</td> 						
       					</tr>

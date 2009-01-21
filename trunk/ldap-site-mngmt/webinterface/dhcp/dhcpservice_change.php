@@ -35,7 +35,7 @@ $mcnr = $_POST['mcnr'];
 
 #$deltr = $_POST['deltr'];
 
-$seconds = 200;
+$seconds = 2;
 $url = "dhcpservice.php?dn=".$dhcpdn."&mnr=1";
  
 echo "
@@ -133,6 +133,7 @@ if ( $adddhcpoptdefinition != "" ){
    $entryadd['optiondefinition'] = $adddhcpoptdefinition;
    if(ldap_mod_add($ds,$dhcpDN,$entryadd)){
 		$mesg = "Selbst-definierte DHCP Option erfolgreich eingetragen<br><br>";
+		update_dhcpmtime();
 	}else{
 		$mesg = "Fehler beim eintragen Selbst-definierte DHCP Option<br><br>";
 	}
@@ -175,6 +176,7 @@ if (count($entryadd) != 0 ){
 	}
 	if(ldap_mod_add($ds,$dhcpDN,$entryadd)){
 		$mesg = "Attribute ".$addatts." erfolgreich eingetragen<br><br>";
+		update_dhcpmtime();
 	}else{
 		$mesg = "Fehler beim eintragen der Attribute ".$addatts."<br><br>";
 	}
@@ -186,6 +188,7 @@ if (count($entrymod) != 0 ){
 	}
 	if(ldap_mod_replace($ds,$dhcpDN,$entrymod)){
 		$mesg = "Attribute ".$modatts." erfolgreich geaendert<br><br>";
+		update_dhcpmtime();
 	}else{
 		$mesg = "Fehler beim aendern der Attribute ".$modatts."<br><br>";
 	}
@@ -197,6 +200,7 @@ if (count($entrydel) != 0 ){
 	}
 	if(ldap_mod_del($ds,$dhcpDN,$entrydel)){
 		$mesg = "Attribute ".$delatts." erfolgreich geloescht<br><br>";
+      update_dhcpmtime();
 	}else{
 		$mesg = "Fehler beim loeschen der Attribute ".$delatts."<br><br>";
 	}

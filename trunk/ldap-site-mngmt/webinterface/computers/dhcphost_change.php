@@ -27,7 +27,7 @@ echo "Host DN:"; print_r($hostDN); echo "<br>";
 echo "submenuNR:"; print_r($sbmnr); echo "<br><br>";*/
 
 
-$seconds = 40;
+$seconds = 2;
 $url = 'dhcphost.php?dn='.$hostDN.'&sbmnr='.$sbmnr;
  
 echo "  
@@ -53,6 +53,7 @@ if ($dhcp != "none" && $dhcp != $olddhcp){
 	   if ($olddhcp != ""){
 	      echo "DHCP replace "; print_r($olddhcp); echo " with "; print_r($entrydhcp); echo "<br>";
    	   if ($result = ldap_mod_replace($ds,$hostDN,$entrydhcp)){
+   	      update_dhcpmtime();
    	   	$mesg = "Rechner erfolgreich in DHCP <b>".$dhcpcn." [Abt.: ".$dhcpau."]</b> angemeldet<br><br>";
    	   }else{
    	   	$mesg = "Fehler beim &auml;ndern des DHCP Dienstes zu <b>".$dhcpcn."</b>!<br><br>";
@@ -63,6 +64,7 @@ if ($dhcp != "none" && $dhcp != $olddhcp){
 	      }
 	      echo "DHCP add "; print_r($entrydhcp); echo "<br>";
 	      if ($result = ldap_mod_add($ds,$hostDN,$entrydhcp)){
+	         update_dhcpmtime();
    	   	$mesg = "Rechner erfolgreich in DHCP <b>".$dhcpcn." [Abt.: ".$dhcpau."]</b> angemeldet<br><br>";
    	   }else{
    	   	$mesg = "Fehler beim &auml;ndern des DHCP Dienstes zu <b>".$dhcpcn."</b>!<br><br>";
@@ -78,6 +80,7 @@ if ($dhcp != "none" && $dhcp != $olddhcp){
 	   #}
 	   echo "DHCP delete "; echo "<br>";
 	   if ($result = ldap_mod_del($ds,$hostDN,$entrydhcp)){
+	      update_dhcpmtime();
 	   	$mesg = "Rechner erfolgreich aus DHCP gel&ouml;scht<br><br>";
 	   }else{
 	   	$mesg = "Fehler beim l&ouml;schen aus DHCP Dienst!<br><br>";
@@ -96,6 +99,7 @@ if ($fixedaddress != "none" && $fixedaddress != $oldfixedaddress){
       if ($oldfixedaddress != ""){
          echo "Fixed Address &auml;ndern"; echo "<br>";
          if ($result = ldap_mod_replace($ds,$hostDN,$entryfixadd)){
+            update_dhcpmtime();
    	   	$mesg = "Option Fixed-Address erfolgreich auf <b>".$fixedaddress."</b> ge&auml;ndert<br><br>";
    	   }else{
    	   	$mesg = "Fehler beim &auml;ndern der Option Fixed-Address auf <b>".$fixedaddress."</b>!<br><br>";
@@ -103,6 +107,7 @@ if ($fixedaddress != "none" && $fixedaddress != $oldfixedaddress){
    	}else{
          echo "Fixed Address auf IP Adresse setzen"; echo "<br>";
          if ($result = ldap_mod_add($ds,$hostDN,$entryfixadd)){
+            update_dhcpmtime();
    	   	$mesg = "Option Fixed-Address erfolgreich auf <b>".$fixedaddress."</b> gesetzt<br><br>";
    	   }else{
    	   	$mesg = "Fehler beim setzen der Option Fixed-Address auf <b>".$fixedaddress."</b>!<br><br>";
@@ -112,6 +117,7 @@ if ($fixedaddress != "none" && $fixedaddress != $oldfixedaddress){
       $entryfixadd ['dhcpoptfixed-address'] = array();
       echo "No Fixed Address"; echo "<br>";
 	   if ($result = ldap_mod_del($ds,$hostDN,$entryfixadd)){
+	      update_dhcpmtime();
 	   	$mesg = "Option Fixed-Address erfolgreich gel&ouml;scht<br><br>";
 	   }else{
 	   	$mesg = "Fehler beim l&ouml;schen der Option Fixed-Address!<br><br>";

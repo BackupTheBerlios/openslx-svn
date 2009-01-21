@@ -22,21 +22,9 @@ if (count($oldattribs) != 0){
 }
 #print_r($oldatts); echo "<br><br>";
 
-/*
-echo "new hostname:"; print_r($hostname); echo "<br>";
-echo "old hostname:"; print_r($oldhostname); echo "<br>";
-echo "new mac:"; print_r($mac); echo "<br>";
-echo "old mac:"; print_r($oldmac); echo "<br>";
-echo "new ip:"; print_r($ip); echo "<br>";
-echo "old ip:"; print_r($oldip); echo "<br>";
-echo "new desc:"; print_r($desc); echo "<br>";
-echo "old desc:"; print_r($olddesc); echo "<br><br>";
-echo "Host DN:"; print_r($hostDN); echo "<br>";
-echo "submenuNR:"; print_r($submenu); echo "<br><br>";
-*/
 
 $seconds = 2;
-$url = 'host.php?dn='.$hostDN.'&sbmnr='.$sbmnr;
+$url = 'hwhost.php?dn='.$hostDN.'&sbmnr='.$sbmnr;
  
 echo "  
 <html>
@@ -116,6 +104,7 @@ if (count($entrydel) != 0 ){
 	}
 }
 
+update_dhcpmtime();
 
 
 $mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>				

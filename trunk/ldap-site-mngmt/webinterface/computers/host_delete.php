@@ -28,6 +28,7 @@ echo "
 if ( $hostDN != ""){
 	
 	if ( delete_host($hostDN) ){
+      update_dhcpmtime();
 		$mesg = "Rechner <b>".$hostname."</b> erfolgreich gel&ouml;scht!<br><br>";
 	}
 	else{

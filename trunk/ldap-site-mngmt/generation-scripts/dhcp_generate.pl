@@ -2,12 +2,12 @@
 
 # Generate ISC DHCP Configuration File
 # 
-# generates an include file "dhcp.master.inc" included in dhcpd.conf
-# with: 
+# Reads DHCP Config Data form LDAP Directory and generates an 
+# include file "dhcp.master.inc" included in dhcpd.conf with: 
 # - Definitions of User-defined DHCP Options
 # - DHCP Service Global Options
-# - DHCP Subnet Deklarations and Options
-# - DHCP Host Deklarations and Options
+# - DHCP Subnet Declarations, Options and Dynamic Pools
+# - DHCP Host Declarations and Options
 
 
 use strict;
@@ -17,13 +17,13 @@ use warnings;
 use Net::LDAP;
 use Net::LDAP::LDIF;
 
+# Configuration Variables for Perl-Script
 our ( $ldaphost, $basedn, $userdn, $passwd, $dhcpdn, $dhcpdconfpath, $dhcpdconffile );
-my ( $ldap, $mesg );
-
-# Read Configuration Variables for LDAP/
+# Read Configuration Variables ...
 require "dhcpgen.conf.pl";
 #use dhcpgenconfig;
 
+my ( $ldap, $mesg, $mesg2 );
 
 # Bind with LDAP Server
 $ldap = Net::LDAP->new( $ldaphost ) or die "$@";
@@ -67,10 +67,17 @@ if ($dhcpsrventry->exists( 'OptionDefinition' )) {
 		printf DATEI "%s\n", $optdef;
 	}
 }
+# Failover Information of DHCP Service
+my $failoverpeer;
+if ($dhcpsrventry->exists( 'dhcpFailoverPeer' )) {
+	$failoverpeer = $dhcpsrventry->get_value( 'dhcpFailoverPeer' );
+}
 
+
+my $indent = "";
 printf DATEI "\n\n######################\n# Global Options\n######################\n\n";
 # write DHCP Options in global Scope
-dhcpoptions( $dhcpsrventry );
+dhcpoptions( $dhcpsrventry, $indent );
 printf DATEI "\n";
 
 
@@ -95,13 +102,36 @@ foreach my $subnetentry ( @subnets ) {
 	my $netmask = $subnetentry->get_value( 'dhcpoptnetmask' );
 	printf DATEI "subnet %s netmask %s {\n", $subnet, $netmask;
 	# write DHCP Options in Subnet Scope
-	dhcpoptions($subnetentry);
-	# Range
-	if ($subnetentry->exists( 'dhcpRange' )) {
-		my @range = split /_/,$subnetentry->get_value( 'dhcpRange' );
-		printf DATEI "  range %s %s;\n", $range[0], $range[1];
+	my $optindent = "  ";
+	dhcpoptions($subnetentry,$optindent);
+	
+	# write Pool Declarations in Subnet Declaration
+	# ldapsearch on Pool Objects referencing to DHCP Subnet Object
+	$mesg2 = $ldap->search(base=>$basedn,
+								scope => 'sub',
+								filter => '(&(objectclass=dhcpPool)(dhcphlpcont:dn:='.$subnetdn.'))');
+	#Net::LDAP::LDIF->new( \*STDOUT,"w" )->write( $mesg->entries );
+	$mesg2->code && die $mesg2->error;
+	my @pools = $mesg2->sorted('cn');
+	
+	foreach my $poolentry ( @pools ) {
+		printf DATEI "%spool {\n", $optindent;
+		# write DHCP Options in Pool Scope
+		my $poolindent = "    ";
+		if ( $failoverpeer ){
+			printf DATEI "%sfailover peer \"%s\";\n", $poolindent, $failoverpeer;
+			printf DATEI "%sdeny dynamic bootp clients;\n", $poolindent;
+		}
+		if ($poolentry->exists( 'dhcpRange' )) {
+			#foreach my $ranges ( @) {
+			my @range = split /_/,$poolentry->get_value( 'dhcpRange' );
+			printf DATEI "%srange %s %s;\n", $poolindent, $range[0], $range[1];
+		}
+		dhcpoptions($poolentry,$poolindent);
+		printf DATEI "%s}\n", $optindent;
 	}
-
+	
+	# close Subnet Declaration
 	printf DATEI "}\n\n";
 }
 
@@ -130,13 +160,14 @@ foreach my $hostentry ( @hosts ) {
 	my @auarray = split /=/,$dnarray[2];
 	my $hostauactual = $auarray[1];
 	if ( $hostau ne $hostauactual) {
-		# hier neues handle und pfad falls eigene includedatei ...
+		# hier neues Datei Handle und neuer Pfad falls eigene includedatei ...
 		printf DATEI "\n################################################\n# AU: %s \n", $hostauactual;
 		$hostau = $hostauactual;
 	}
 	# DHCP Options in Host Scope
 	dhcphost($hostentry);
 }
+
 
 close DATEI;
 
@@ -153,6 +184,7 @@ exit (0);
 # write DHCP Options, Parameter: DHCP Object LDAP Entry
 sub dhcpoptions {
 	my $entry = shift;
+	my $indent = shift;
 	my @atts = $entry->attributes;	
 	
 	# DHCP Optionen mit 'option' vorne dran
@@ -163,9 +195,9 @@ sub dhcpoptions {
 			my $value = $entry->get_value( $option );
 			$option =~ s/dhcpopt//;
 			if ( $option eq "Domain-name"){
-				printf DATEI "  option %s \"%s\";\n", lc($option), $value;
+				printf DATEI "%soption %s \"%s\";\n", $indent, lc($option), $value;
 			}else{
-				printf DATEI "  option %s %s;\n", lc($option), $value;
+				printf DATEI "%soption %s %s;\n", $indent, lc($option), $value;
 			}
 		}
 	}
@@ -177,9 +209,9 @@ sub dhcpoptions {
 			my $value = $entry->get_value( $option );
 			$option =~ s/dhcpOpt//;
 			if ( $option eq "Filename"){
-				printf DATEI "  %s \"%s\";\n", lc($option), $value;
+				printf DATEI "%s%s \"%s\";\n", $indent, lc($option), $value;
 			}else{
-				printf DATEI "  %s %s;\n", lc($option), $value;
+				printf DATEI "%s%s %s;\n", $indent, lc($option), $value;
 			}
 		}
 	}
@@ -210,6 +242,7 @@ sub dhcphost {
 		printf DATEI "  option %s \"%s\";\n", lc($hwoption), $entry->get_value($hwoption);
 	}
 	# remaining DHCP Options
-	dhcpoptions ($entry);
+	my $optindent = "  ";
+	dhcpoptions ($entry, $optindent);
 	printf DATEI "}\n";
 }

@@ -10,12 +10,13 @@
 
     # einige LDAP-Angaben:
     # der Anwendungs-LDAP
-    define('LDAP_HOST', 'ldap://oranje.ruf.uni-freiburg.de');
-    #define('LDAP_HOST', 'ldaps://oranje.ruf.uni-freiburg.de');
+    define('LDAP_HOST', 'ldap://foo.ruf.uni-freiburg.de');
+    #define('LDAP_HOST', 'ldaps://foo.ruf.uni-freiburg.de');
     define('LDAP_PORT', 389);
     #define('LDAP_PORT', 636);
     $suffix = "dc=uni-freiburg,dc=de";
 	 $domsuffix = "uni-freiburg.de";
+	 $rootAU = "ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
     
     # der LDAP-Server für die Authentisierung der User
     #define('LDAP_HOST_RZ', '132.230.1.61');
@@ -26,5 +27,5 @@
     #$dummyUid      = "rz-ldap";  // Dummy-User für einige Aktionen - muss angelegt werden!!!
     #$dummyPassword = "dummy";
 
-    #$standardPassword = "dipman02";  // das Passwort mit dem alle User im Anwendungsldap angelegt werden!!!
+    #$standardPassword = "...";  // das Passwort mit dem alle User im Anwendungsldap angelegt werden!!!
 ?>

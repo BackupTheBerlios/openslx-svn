@@ -23,7 +23,7 @@ echo "Host DN:"; print_r($hostDN); echo "<br>";
 echo "submenuNR:"; print_r($sbmnr); echo "<br><br>";*/
 
 
-$seconds = 40;
+$seconds = 2;
 $url = 'rbshost.php?dn='.$hostDN.'&sbmnr='.$sbmnr;
  
 echo "  
@@ -53,6 +53,7 @@ if ($rbs != "none" && $rbs != $oldrbs){
 	   if ($oldrbs != ""){
 	      echo "RBS replace "; print_r($oldrbs); echo " with "; print_r($entryrbs); echo "<br>";
    	   if ($result = ldap_mod_replace($ds,$hostDN,$entryrbs)){
+      	   update_dhcpmtime();
    	      rbs_adjust_host($hostDN, $rbs);
          	$mesg = "Remote Boot Service erfolgreich zu <b>".$rbscn." [Abt.: ".$rbsau."]</b> ge&auml;ndert<br><br>";
    	   }else{
@@ -61,6 +62,7 @@ if ($rbs != "none" && $rbs != $oldrbs){
    	}else{
    	   echo "RBS add "; print_r($entryrbs); echo "<br>";
    	   if ($result = ldap_mod_add($ds,$hostDN,$entryrbs)){
+   	      update_dhcpmtime();
    	      rbs_adjust_host($hostDN, $rbs);
          	$mesg = "Remote Boot Service erfolgreich zu <b>".$rbscn." [Abt.: ".$rbsau."]</b> ge&auml;ndert<br><br>";
    	   }else{
@@ -73,6 +75,7 @@ if ($rbs != "none" && $rbs != $oldrbs){
 	   $entryrbs ['dhcpoptfilename'] = array();
 	   echo "RBS delete "; echo "<br>";
 	   if ($result = ldap_mod_del($ds,$hostDN,$entryrbs)){
+	      update_dhcpmtime();
 	   	$mesg = "Rechner erfolgreich aus RBS gel&ouml;scht<br><br>";
 	   }else{
 	   	$mesg = "Fehler beim l&ouml;schen aus RBS!<br><br>";

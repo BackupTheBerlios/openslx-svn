@@ -4,7 +4,7 @@ include('../standard_header.inc.php');
 $dhcpDN = $_POST['dn'];
 $dhcpcn = $_POST['name'];
 
-$seconds = 100;
+$seconds = 2;
 $url = "dhcpservice.php?mnr=1";
 
 echo "

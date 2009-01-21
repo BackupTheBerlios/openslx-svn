@@ -206,9 +206,33 @@ function adjust_dhcpnextserver($tftpIP, $rbsDN){
   		die;
 	}
 	$result = ldapArraySauber($result);
-	$modtftpentry ['dhcpoptnext-server'] = $tftpIP;
-	foreach ($result as $item){
-		ldap_mod_replace($ds, $item['dn'], $modtftpentry);
+	$host_au = array();
+	if ($tftpIP == ""){
+	   $deltftpentry ['dhcpoptnext-server'] = array();
+      foreach ($result as $item){
+   		ldap_mod_del($ds, $item['dn'], array());
+	   	$expdn = array_slice(ldap_explode_dn($item['dn'], 0), 3);
+	   	$host_au [] = implode(",", $expdn);
+	   }  
+	}else{
+	   $modtftpentry ['dhcpoptnext-server'] = $tftpIP;
+	   foreach ($result as $item){
+   		ldap_mod_replace($ds, $item['dn'], $modtftpentry);
+	   	$expdn = array_slice(ldap_explode_dn($item['dn'], 0), 3);
+	   	$host_au [] = implode(",", $expdn);
+	   }
+	}
+	if ( count($host_au) != 0 ){
+	   $host_au = array_unique($host_au);
+	   $entry ['dhcpmtime'] = time();
+	   foreach ($host_au as $au){
+         $results = ldap_mod_replace($ds,$au,$entry);
+         if ($results){
+            #echo "<br><b>dhcpMTime</b> erfolgreich aktualisiert!<br>" ;
+         }else{
+            echo "<br>Fehler beim Aktualisieren der <b>dhcpMTime</b>!<br>" ;
+      	}
+      }
 	}
 }
 
@@ -224,6 +248,7 @@ function adjust_dhcpfilename($initbootfile, $rbsDN, $type){
   		die;
 	}
 	$result = ldapArraySauber($result);
+	$host_au = array();
 	if ($type == "add"){
    	$modentry ['dhcpoptfilename'] = $initbootfile;
    	foreach ($result as $item){
@@ -239,36 +264,71 @@ function adjust_dhcpfilename($initbootfile, $rbsDN, $type){
    elseif ($type == "replace"){
       $modentry ['dhcpoptfilename'] = $initbootfile;
    	foreach ($result as $item){
-   		ldap_mod_replace($ds, $item['dn'], $modentry);
+   		ldap_mod_replace($ds, $item['dn'], $modentry);   		
+		   $expdn = array_slice(ldap_explode_dn($item['dn'], 0), 3);
+		   $host_au [] = implode(",", $expdn);
    	}
    }
+   if ( count($host_au) != 0 ){
+	   $host_au = array_unique($host_au);
+	   $entry ['dhcpmtime'] = time();
+	   foreach ($host_au as $au){
+         $results = ldap_mod_replace($ds,$au,$entry);
+         if ($results){
+            #echo "<br><b>dhcpMTime</b> erfolgreich aktualisiert!<br>" ;
+         }else{
+            echo "<br>Fehler beim Aktualisieren der <b>dhcpMTime</b>!<br>" ;
+      	}
+      }
+	}
 }
 
+# IP Adresse eines Host ändern -> RBS TFTP Server IP anpassen (inkl. dhcpNext-server)
+function adjust_hostip_tftpserverip($oldip,$newip){
+
+   global $ds, $suffix, $ldapError, $auDN;
+
+   if(!($result = uniLdapSearch($ds, "cn=rbs,".$auDN, "(&(objectclass=RBService)(tftpserverip=$oldip))", array("dn","tftpserverip"), "dn", "sub", 0, 0))) {
+ 		# redirect(5, "", $ldapError, FALSE);
+  		echo "no search";
+  		die;
+	}
+	$result = ldapArraySauber($result);
+	if (count($result) != 0){
+   	foreach ($result as $item){
+	      if ($newip == ""){
+	         $delentry ['tftpserverip'] = array();
+	         ldap_mod_del($ds, $item['dn'], $delentry);
+	         adjust_dhcpnextserver("", $item['dn']);
+	      }else{
+	         $modentry ['tftpserverip'] = $newip;
+	         ldap_mod_replace($ds, $item['dn'], $modentry);
+	         adjust_dhcpnextserver($newip, $item['dn']);
+	      }
+	   }  
+	}
+}
 
 # 
 # Sucht den Hostname zu einer IP im Rechnerteilbaum der AU
 # Verwaltung der am RBS beteiligten Server
 # 
-function get_hostname_from_ip($ip,$auDN){
+function get_hostname_from_ip($ip){
 	
-	global $ds, $suffix, $ldapError;
+	global $ds, $suffix, $ldapError, $auDN;
 	
 	$ipp = array($ip,$ip);
 	$ipaddress = implode('_',$ipp); 
-	
-	if(!($result = uniLdapSearch($ds, "cn=computers,".$auDN, "(&(objectclass=Host)(ipaddress=$ipaddress))", array("hostname"), "", "list", 0, 0))) {
+	if(!($result = uniLdapSearch($ds, "cn=computers,".$auDN, "(&(objectclass=Host)(ipaddress=$ipaddress))", array("dn","hostname"), "", "list", 0, 0))) {
  		# redirect(5, "", $ldapError, FALSE);
   		echo "no search";
   		die;
 	}
-	elseif(count($result) == 0){echo "kein Rechner mit dieser IP"; return "";}
-	else{
-		$result = ldapArraySauber($result);
-		#print_r($result);
-		$host ['hostname'] = $result[0]['hostname'];
-		$host ['dn'] = $result[0]['dn'];
-		return $host;
-	}
+	$result = ldapArraySauber($result);
+	#print_r($result);
+	$host ['hostname'] = $result[0]['hostname'];
+	$host ['dn'] = $result[0]['dn'];
+	return $host;
 }
 
 

@@ -629,6 +629,58 @@ function get_dhcppools($auDN,$attributes)
 		if($attributes != false ){return $pool_array;}
 		else{return $result;}
    }
+}
+
+function get_dhcppools_subnet($subnetDN,$attributes)
+{ 
+	global $ds, $suffix, $auDN, $ldapError;
+	
+	if(!($result = uniLdapSearch($ds, $auDN, "(&(objectclass=dhcpPool)(dhcphlpcont=$subnetDN))", $attributes, "cn", "sub", 0, 0))) {
+ 		# redirect(5, "", $ldapError, FALSE);
+  		echo "no search";  
+  		die;
+	} 
+	else {
+		$result = ldapArraySauber($result); 
+	
+		$pool_array = array();
+   	foreach ($result as $item){
+   	   $poolexpdn = ldap_explode_dn($item['dn'], 1);
+   	   $poolau = $poolexpdn[2];
+			foreach ($attributes as $att){
+   			$atts[$att] = $item[$att];
+   		}
+   		$atts['poolAU'] = $poolau;
+   		$pool_array[] = $atts;
+   	}  
+		if($attributes != false ){return $pool_array;}
+		else{return $result;}
+   }
+}
+
+function get_dhcppoolranges($poolDN)
+{ 
+	global $ds, $suffix, $ldapError;
+	
+	if(!($result = uniLdapSearch($ds, $poolDN, "(objectclass=dhcpPool)", array("dhcprange"), "", "one", 0, 0))) {
+ 		# redirect(5, "", $ldapError, FALSE);
+  		echo "no search";  
+  		die;
+	} 
+	else {
+		$result = ldapArraySauber($result); 
+	   #print_r($result); echo "<br><br>";
+		$ranges_array = array();
+		if ( count($result[0]['dhcprange']) == 1 ){
+		   $ranges_array [] = $result[0]['dhcprange'];
+		}
+		elseif ( count($result[0]['dhcprange']) > 1 ){
+		   foreach ($result[0]['dhcprange'] as $range){
+	   	   $ranges_array [] = $range;
+	   	}
+		}
+		return $ranges_array;
+   }
 } 
 
 function get_childau($auDN,$attributes)
@@ -999,4 +1051,5 @@ function get_service_subnets($dhcpserviceDN,$attributes)
 		else{return $result;}
 	}
 }
+
 ?> 

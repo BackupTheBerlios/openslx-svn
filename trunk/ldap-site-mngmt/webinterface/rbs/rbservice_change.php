@@ -9,27 +9,26 @@ $oldrbsoffer = $_POST['oldrbsoffer'];
 
 $tftpserverip = $_POST['tftpserverip'];
 $oldtftpserverip = $_POST['oldtftpserverip'];
-$nfsserverip = $_POST['nfsserverip'];
-$oldnfsserverip = $_POST['oldnfsserverip'];
-$nbdserverip = $_POST['nbdserverip'];
-$oldnbdserverip = $_POST['oldnbdserverip'];
+#$nfsserverip = $_POST['nfsserverip'];
+#$oldnfsserverip = $_POST['oldnfsserverip'];
+#$nbdserverip = $_POST['nbdserverip'];
+#$oldnbdserverip = $_POST['oldnbdserverip'];
 
 $tftpserver = $_POST['tftpserver'];
-$nfsserver = $_POST['nfsserver'];
-$nbdserver = $_POST['nbdserver'];
+#$nfsserver = $_POST['nfsserver'];
+#$nbdserver = $_POST['nbdserver'];
 $oldtftpserverdn = $_POST['oldtftpserverdn'];
-$oldnfsserverdn = $_POST['oldnfsserverdn'];
-$oldnbdserverdn = $_POST['oldnbdserverdn'];
-
-$delfsuri = $_POST['delfsuri'];
-$addfsuri = $_POST['addfsuri'];
-
-$fstype = $_POST['fstype'];
-$fsip = $_POST['fsip'];
-$fspath = $_POST['fspath'];
+#$oldnfsserverdn = $_POST['oldnfsserverdn'];
+#$oldnbdserverdn = $_POST['oldnbdserverdn'];
 
 $initbootfile = $_POST['initbootfile'];
 $oldinitbootfile = $_POST['oldinitbootfile'];
+
+$delfsuri = $_POST['delfsuri'];
+$addfsuri = $_POST['addfsuri'];
+$fstype = $_POST['fstype'];
+$fsip = $_POST['fsip'];
+$fspath = $_POST['fspath'];
 
 $host_array = get_hosts($auDN,array("dn","hostname","ipaddress"));
 
@@ -133,8 +132,39 @@ if ( $rbsoffer != "none" && $rbsoffer != $oldrbsoffer ){
 
 
 #####################################
-# Server ändern über IP Feld
+# TFTP Server ändern 
 
+# über IP Feld
+/*if ( $tftpserverip == $oldtftpserverip ){
+	# $mesg = "keine Aenderung<br>";
+}
+
+if ( $tftpserverip != "" && $oldtftpserverip == "" ){
+   if ($syntax->check_ip_syntax($tftpserverip)){
+		$tftpserverip = htmlentities($tftpserverip);
+		
+		$mesg .= "Suche nach dem Rechner mit IP ".$tftpserverip." :<br>";
+		foreach ($host_array as $host){
+			$hostipexp = explode('_',$host['ipaddress']);
+			$hostip = $hostipexp[0];
+			if ($tftpserverip == $hostip){
+				$entrytftp ['tftpserverip'] = $tftpserverip;			
+				if (ldap_mod_add($ds,$rbsDN,$entrytftp)){
+				   adjust_dhcpnextserver($tftpserverip, $rbsDN);
+					$mesg .= "Treffer: Rechner ".$host['hostname']."<br>TFTP Server erfolgreich eingetragen<br>";
+				}else{
+					$mesg .= "Fehler beim  Eintragen des TFTP Servers!<br>";
+				}
+				break;
+			}else{
+				 $mesg .= "Rechner ".$host['hostname'].":  keine &Uuml;bereinstimmung mit eingegebener IP ".$tftpserverip."!<br>";
+			}
+		}
+	}
+	else{
+		$mesg .= "Falsche IP Syntax!<br>";
+	}
+}
 
 if ( $tftpserverip != "" && $tftpserverip != $oldtftpserverip ){
 	
@@ -164,144 +194,29 @@ if ( $tftpserverip != "" && $tftpserverip != $oldtftpserverip ){
 	}
 }
 
-#######################################
-# Fileserver URI anlegen
-
-if ( $addfsuri[1] != "" ){
-   # tests: ipsyntax, und spezifische URI-Syntax-Checks...
-   if( $syntax->check_ip_syntax($addfsuri[1]) ){
-      
-      $newfsuri = $addfsuri[0]."://".$addfsuri[1].$addfsuri[2];
-      echo "FS URI <b>".$newfsuri."</b> anlegen<br>";
-      
-      $entryfsadd ['fileserveruri'] = $newfsuri;
-      if(ldap_mod_add($ds,$rbsDN,$entryfsadd)){
-			$mesg = "FS URI erfolgreich eingetragen<br><br>";
-		}else{
-			$mesg = "Fehler beim eintragen der FS URI<br><br>";
-		}
-	}
-	else{echo "Falsche IP Syntax<br><br>";}
-}
-
-#####################################
-# Fileserver URIs löschen
-if ( count($delfsuri) != 0 ){
-	echo "Fileserver URI l&ouml;schen<br>";
-	
-	$i = 0;
-	foreach ($delfsuri as $fsuri){
-		$entry['fileserveruri'][$i] = $fsuri;
-		$i++;
-	}
-	#print_r($entry); echo "<br><br>";
-	
-	if ($result = ldap_mod_del($ds,$rbsDN,$entry)){
-		$mesg = "Zu l&ouml;schende Fileserver URIs erfolgreich gel&ouml;scht<br><br>";
+if ( $tftpserverip == "" && $oldtftpserverip != "" ){
+   $entrytftp ['tftpserverip'] = array();			
+	if (ldap_mod_del($ds,$rbsDN,$entrytftp)){
+	   adjust_dhcpnextserver($tftpserverip, $rbsDN);
+		$mesg .= "Treffer: Rechner ".$host['hostname']."<br>TFTP Server erfolgreich gel&ouml;scht<br>";
 	}else{
-		$mesg = "Fehler beim l&ouml;schen der Fileserver URIs<br><br>";
+		$mesg .= "Fehler beim  l&ouml;schen des TFTP Servers!<br>";
 	}
-} 
+}*/
 
-if ( $nfsserverip != "" && $nfsserverip != $oldnfsserverip ){
-	
-	if ($syntax->check_ip_syntax($nfsserverip)){
-		$nfsserverip = htmlentities($nfsserverip);
-		
-		$mesg .= "Suche nach dem Rechner mit IP ".$nfsserverip." :<br>";
-		foreach ($host_array as $host){
-			$hostipexp = explode('_',$host['ipaddress']);
-			$hostip = $hostipexp[0];
-			if ($nfsserverip == $hostip){
-				$entrytnfs ['nfsserverip'] = $nfsserverip;			
-				if (ldap_mod_replace($ds,$rbsDN,$entrytnfs)){
-					$mesg .= "Treffer: Rechner ".$host['hostname']."<br>NFS Server erfolgreich ge&auml;ndert<br>";
-				}else{
-					$mesg .= "Fehler beim  &auml;ndern des NFS Servers!<br>";
-				}
-				break;
-			}else{
-				 $mesg .= "Rechner ".$host['hostname'].":  keine &Uuml;bereinstimmung mit eingegebener IP ".$nfsserverip."!<br>";
-			}
-		}
-	}
-	else{
-		$mesg .= "Falsche IP Syntax!<br>";
-	}
-}
-
-if ( $nbdserverip != "" && $nbdserverip != $oldnbdserverip ){
-	
-	if ($syntax->check_ip_syntax($nbdserverip)){
-		$nbdserverip = htmlentities($nbdserverip);
-		
-		$mesg .= "Suche nach dem Rechner mit IP ".$nbdserverip." :<br>";
-		foreach ($host_array as $host){
-			$hostipexp = explode('_',$host['ipaddress']);
-			$hostip = $hostipexp[0];
-			if ($nbdserverip == $hostip){
-				$entrytnbd ['nbdserverip'] = $nbdserverip;			
-				if (ldap_mod_replace($ds,$rbsDN,$entrytnbd)){
-					$mesg .= "Treffer: Rechner ".$host['hostname']."<br>NBD Server erfolgreich ge&auml;ndert<br>";
-				}else{
-					$mesg .= "Fehler beim  &auml;ndern des NBD Servers!<br>";
-				}
-				break;
-			}else{
-				 $mesg .= "Rechner ".$host['hostname'].":  keine &Uuml;bereinstimmung mit eingegebener IP ".$nbdserverip."!<br>";
-			}
-		}
-	}
-	else{
-		$mesg .= "Falsche IP Syntax!<br>";
-	}
-}
-
-#####################################
-# Server ändern über Hostname 
-
+#über Selectbox an verfügbaren alternativen Rechnern mit IPs
 if ($tftpserver != "none" && $tftpserver != $oldtftpserverdn){
-
 	$host = get_host_ip($tftpserver);
 	$hostipexp = explode('_',$host['ipaddress']);
-	$hostip = $hostipexp[0];
-	$entrytftp ['tftpserverip'] = $hostip;
+	$entrytftp ['tftpserverip'] = $hostipexp[0];
 	if (ldap_mod_replace($ds,$rbsDN,$entrytftp)){
-	   adjust_dhcpnextserver($tftpserverip, $rbsDN);
+	   adjust_dhcpnextserver($hostipexp[0], $rbsDN);
 		$mesg .= "TFTP Server erfolgreich ge&auml;ndert<br>";
 	}else{
 		$mesg .= "Fehler beim  &auml;ndern des TFTP Servers!<br>";
-	}
-	
+	}	
 }		
 
-if ($nfsserver != "none" && $nfsserver != $oldnfsserverdn){
-
-	$host = get_host_ip($nfsserver);
-	$hostipexp = explode('_',$host['ipaddress']);
-	$hostip = $hostipexp[0];
-	$entrynfs ['nfsserverip'] = $hostip;
-	if (ldap_mod_replace($ds,$rbsDN,$entrynfs)){
-		$mesg .= "NFS Server erfolgreich ge&auml;ndert<br>";
-	}else{
-		$mesg .= "Fehler beim  &auml;ndern des NFS Servers!<br>";
-	}
-	
-}		
-
-if ($nbdserver != "none" && $nbdserver != $oldnbdserverdn){
-
-	$host = get_host_ip($nbdserver);
-	$hostipexp = explode('_',$host['ipaddress']);
-	$hostip = $hostipexp[0];
-	$entrytnbd ['nbdserverip'] = $hostip;
-	if (ldap_mod_replace($ds,$rbsDN,$entrytnbd)){
-		$mesg .= "NBD Server erfolgreich ge&auml;ndert<br>";
-	}else{
-		$mesg .= "Fehler beim  &auml;ndern des NBD Servers!<br>";
-	}
-	
-}
 
 #####################################
 # Init Boot File
@@ -344,6 +259,45 @@ if ( $initbootfile != "" && $initbootfile != $oldinitbootfile ){
 }
 
 
+#######################################
+# Fileserver URI anlegen
+
+if ( $addfsuri[1] != "" ){
+   # tests: ipsyntax, und spezifische URI-Syntax-Checks...
+   if( $syntax->check_ip_syntax($addfsuri[1]) ){
+      
+      $newfsuri = $addfsuri[0]."://".$addfsuri[1].$addfsuri[2];
+      echo "FS URI <b>".$newfsuri."</b> anlegen<br>";
+      
+      $entryfsadd ['fileserveruri'] = $newfsuri;
+      if(ldap_mod_add($ds,$rbsDN,$entryfsadd)){
+			$mesg = "FS URI erfolgreich eingetragen<br><br>";
+		}else{
+			$mesg = "Fehler beim eintragen der FS URI<br><br>";
+		}
+	}
+	else{echo "Falsche IP Syntax<br><br>";}
+}
+
+#####################################
+# Fileserver URIs löschen
+
+if ( count($delfsuri) != 0 ){
+	echo "Fileserver URI l&ouml;schen<br>";
+	
+	$i = 0;
+	foreach ($delfsuri as $fsuri){
+		$entry['fileserveruri'][$i] = $fsuri;
+		$i++;
+	}
+	#print_r($entry); echo "<br><br>";
+	
+	if ($result = ldap_mod_del($ds,$rbsDN,$entry)){
+		$mesg = "Zu l&ouml;schende Fileserver URIs erfolgreich gel&ouml;scht<br><br>";
+	}else{
+		$mesg = "Fehler beim l&ouml;schen der Fileserver URIs<br><br>";
+	}
+} 
 
  
 #####################################

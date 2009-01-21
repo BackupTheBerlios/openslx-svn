@@ -37,7 +37,7 @@ $mnr = $_POST['mnr'];
 $sbmnr = $_POST['sbmnr'];
 $mcnr = $_POST['mcnr'];
 
-$seconds = 200;
+$seconds = 2;
 $url = "dhcpsubnet.php?dn=".$subnetDN."&mnr=".$mnr."&sbmnr=".$sbmnr;
  
 echo "
@@ -282,6 +282,8 @@ if (count($entrydel) != 0 ){
 	}
 }
 
+
+update_dhcpmtime();
 
 $mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>				
 			Falls nicht, klicken Sie hier <a href=".$url." style='publink'>back</a>";

@@ -3,12 +3,17 @@ include('../standard_header.inc.php');
 
 $syntax = new Syntaxcheck;
 
-$cn = $_POST['cn'];
-$netmask = $_POST['netmask'];
-$dhcpservice = $_POST['dhcpservice'];
-$range1 = $_POST['range1'];
-$range2 = $_POST['range2'];
+$subnet = $_POST['dhcpsubnet'];
+$subnetexp = explode("|",$subnet);
+$cn = $subnetexp[0];
+$netmask = $subnetexp[1];
+#print_r($subnet); echo "<br><br>";
+#print_r($cn); echo "<br><br>";
+#print_r($netmask); echo "<br><br>";
 
+$dhcpservice = $_POST['dhcpservice'];
+#$range1 = $_POST['range1'];
+#$range2 = $_POST['range2'];
 # sonstige Attribute
 $attribs = $_POST['attribs'];
 if (count($attribs) != 0){
@@ -23,7 +28,7 @@ $mnr = $_POST['mnr'];
 $sbmnr = $_POST['sbmnr'];
 
 $get_dhcpcn = str_replace ( " ", "_", $cn );
-$seconds = 200;
+$seconds = 2;
 $url = "new_dhcpsubnet.php?&mnr=2";
  
 echo "
@@ -40,16 +45,16 @@ if ( $cn != "" && $cn != "Hier_Subnetz_eintragen" && $netmask != "" && $netmask 
 
 	if ( $syntax->check_netip_syntax($cn) && $syntax->check_ip_syntax($netmask) ){
 	   
-   	if (add_dhcpsubnet ($cn,$dhcpservice,$netmask,$range1,$range2,$atts)){			
+   	if (add_dhcpsubnet ($cn,$dhcpservice,$netmask,$atts)){			
    		$mesg .= "<br>DHCP Subnet erfolgreich angelegt<br>";
-   		$url = "dhcpsubnets.php?mnr=2";
+   		$url = "dhcpsubnets.php?mnr=".$mnr;
    	}else{
    		$mesg .= "<br>Fehler beim anlegen des DHCP Subnets!<br>";
    	}
 	
 	}else{
 	   $mesg .= "Falsche IP Syntax! Geben Sie eine korrekte IP Adresse als Subnet Name oder Netzmaske ein.";
-	   $url = "new_dhcpsubnet.php?subnetcn=Hier_Subnetz_eintragen&netmask=".$netmask."&mnr=2";
+	   $url = "new_dhcpsubnet.php?subnetcn=Hier_Subnetz_eintragen&netmask=".$netmask."&mnr=".$mnr;
 	}
 }
 
@@ -59,7 +64,7 @@ elseif ( $cn == "" || $cn == "Hier_Subnetz_eintragen" || $netmask == "" || $netm
    if ( $netmask == ""){ $netmask = "Hier_Netzmaske_eintragen";}
 	$mesg = "Sie haben die notwendigen Attribute: Name (IP) und Netzmaske des neuen DHCP Subnets nicht angegeben.<br>
 				Bitte geben Sie fehlende ein.<br><br>";
-	$url = "new_dhcpsubnet.php?subnetcn=".$cn."&netmask=".$netmask."&mnr=2";
+	$url = "new_dhcpsubnet.php?subnetcn=".$cn."&netmask=".$netmask."&mnr=".$mnr;
 }
 
 $mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>				

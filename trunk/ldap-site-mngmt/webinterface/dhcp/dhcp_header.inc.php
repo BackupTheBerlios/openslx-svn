@@ -8,6 +8,7 @@ $definedTemplates = array("Vorlage" => "dhcp.dwt",
 								  "Login" => "../logout_form.inc.dwt",
 								  "Mmenu" => "../hauptmenue.dwt",
                           "Menu" => "menu.dwt",
+                          "IPBlocks" => "ipblocks.dwt",
                           "Webseite" => $webseite);
 if (isset($additionalTemplates)) {
     foreach ($additionalTemplates as $templateKey => $templateFile) {
