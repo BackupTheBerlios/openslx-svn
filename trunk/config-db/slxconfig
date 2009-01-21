@@ -359,7 +359,7 @@ sub listVendorOSes
 
 sub searchClients
 {
-	my @clientKeys = $openslxDB->getColumnsForTable('client');
+	my @clientKeys = $openslxDB->getColumnsOfTable('client');
 	my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
 
 	# set verbose mode if any params have been passed in:
@@ -384,7 +384,7 @@ sub searchClients
 
 sub searchGroups
 {
-	my @groupKeys = $openslxDB->getColumnsForTable('groups');
+	my @groupKeys = $openslxDB->getColumnsOfTable('groups');
 	my $groupData = parseKeyValueArgs(\@groupKeys, 'groups', @_);
 
 	# set verbose mode if any params have been passed in:
@@ -414,7 +414,7 @@ sub searchGroups
 
 sub searchExports
 {
-	my @exportKeys = $openslxDB->getColumnsForTable('export');
+	my @exportKeys = $openslxDB->getColumnsOfTable('export');
 	my $exportData = parseKeyValueArgs(\@exportKeys, 'export', @_);
 
 	# set verbose mode if any params have been passed in:
@@ -444,7 +444,7 @@ sub searchExports
 
 sub searchSystems
 {
-	my @systemKeys = $openslxDB->getColumnsForTable('system');
+	my @systemKeys = $openslxDB->getColumnsOfTable('system');
 	my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
 
 	# set verbose mode if any params have been passed in:
@@ -472,7 +472,7 @@ sub searchSystems
 
 sub searchVendorOSes
 {
-	my @vendorOSKeys = $openslxDB->getColumnsForTable('vendor_os');
+	my @vendorOSKeys = $openslxDB->getColumnsOfTable('vendor_os');
 	my $vendorOSData = parseKeyValueArgs(\@vendorOSKeys, 'vendor_os', @_);
 
 	# set verbose mode if any params have been passed in:
@@ -495,7 +495,7 @@ sub changeVendorOSInConfigDB
 		);
 	}
 
-	my @keys = $openslxDB->getColumnsForTable('vendor_os');
+	my @keys = $openslxDB->getColumnsOfTable('vendor_os');
 	my $vendorOSData = parseKeyValueArgs(\@keys, 'vendor_os', @_);
 
 	my $vendorOS = $openslxDB->fetchVendorOSByFilter({'name' => $vendorOSName});
@@ -523,7 +523,7 @@ sub changeExportInConfigDB
 		);
 	}
 
-	my @exportKeys = $openslxDB->getColumnsForTable('export');
+	my @exportKeys = $openslxDB->getColumnsOfTable('export');
 	my $exportData = parseKeyValueArgs(\@exportKeys, 'export', @_);
 
 	my $export = $openslxDB->fetchExportByFilter({'name' => $exportName});
@@ -549,7 +549,7 @@ sub addClientToConfigDB
 		die _tr("you have to specify the name for the new client\n");
 	}
 
-	my @clientKeys = $openslxDB->getColumnsForTable('client');
+	my @clientKeys = $openslxDB->getColumnsOfTable('client');
 	push @clientKeys, 'systems';
 	my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
 	$clientData->{name} = $clientName;
@@ -614,7 +614,7 @@ sub addGroupToConfigDB
 		die _tr("you have to specify the name for the new group\n");
 	}
 
-	my @groupKeys = $openslxDB->getColumnsForTable('groups');
+	my @groupKeys = $openslxDB->getColumnsOfTable('groups');
 	push @groupKeys, 'systems', 'clients';
 	my $groupData = parseKeyValueArgs(\@groupKeys, 'groups', @_);
 	$groupData->{name} = $groupName;
@@ -682,7 +682,7 @@ sub addSystemToConfigDB
 		die _tr("you have to specify the name of the new system!\n");
 	}
 
-	my @systemKeys = $openslxDB->getColumnsForTable('system');
+	my @systemKeys = $openslxDB->getColumnsOfTable('system');
 	push @systemKeys, 'clients', 'export';
 	my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
 	$systemData->{name} = $systemName;
@@ -780,7 +780,7 @@ sub changeClientInConfigDB
 		);
 	}
 
-	my @clientKeys = $openslxDB->getColumnsForTable('client');
+	my @clientKeys = $openslxDB->getColumnsOfTable('client');
 	push @clientKeys, 'systems', 'add-systems', 'remove-systems';
 	my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
 
@@ -862,7 +862,7 @@ sub changeGroupInConfigDB
 		);
 	}
 
-	my @groupKeys = $openslxDB->getColumnsForTable('group');
+	my @groupKeys = $openslxDB->getColumnsOfTable('group');
 	push @groupKeys, qw(
 		systems add-systems remove-systems clients add-clients remove-clients
 	);
@@ -975,7 +975,7 @@ sub changeSystemInConfigDB
 		);
 	}
 
-	my @systemKeys = $openslxDB->getColumnsForTable('system');
+	my @systemKeys = $openslxDB->getColumnsOfTable('system');
 	push @systemKeys, 'clients', 'add-clients', 'remove-clients';
 	my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
 
