@@ -479,7 +479,8 @@ slxconfig-demuxer [options]
     --dhpc-type=<string>       specifies the type of DHCP-server
                                (ISC,...)
     --dry-run                  avoids writing anything, for testing
-
+    --verbose-level=<int>      sets level of debugging output (1,...3)
+    
 =head3 General Options
 
     --help                     brief help message
@@ -583,6 +584,11 @@ supported.
 
 Runs the script but avoids writing anything. This is useful for testing, as
 you can learn from the logging output what would have been done.
+
+=item B<<     --verbose-level=N >>
+
+Prints debugging output while running. N is a number between 1 and 3. Level 1
+gives ... 2 ... In level 3 the database commands are printed.
 
 =back
 
