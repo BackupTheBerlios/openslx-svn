@@ -416,8 +416,8 @@ mkdir -p ${INSTDIR}/var/lib/nfs/state
 
 # if nbd
 # cobi nbd-client bin
-if [ -n ${FSMODULES} ] ; then
-  case ${FSMODULES} in
+if [ -n "${FSMODULES}" ] ; then
+  case "${FSMODULES}" in
     dnbd*)
       cobi dnbd-client bin
     ;;
@@ -463,9 +463,13 @@ if [ -z "$INITRD_PATH" ] ; then
   INITRD_PATH="/tmp/dxsinitrd.gz"
 fi
 
+# define modules to put into initial ramdisk for debugging
+#DEBUGMODULES="uhci_hcd usbhid"
+DEBUGMODULES=""
+
 # put all needed modules into initial ramdisk
 mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
-for module in af_packet ${NWMODULES} ${FSMODULES}; do
+for module in af_packet ${NWMODULES} ${FSMODULES} ${DEBUGMODULES}; do
   mod=`cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
 2>/dev/null`
   if [ -n "$mod" ] ; then
@@ -475,7 +479,7 @@ for module in af_packet ${NWMODULES} ${FSMODULES}; do
     # fixmee!! selection of dependent modules could be handled a little bi
     # more clever
     case "$module" in
-      e100|8139too|via-rhine|sis900|epic100|sundance|8139cp|eepro100.ko|pcnet32)
+      e100|8139too|via-rhine|sis900|epic100|sundance|8139cp|eepro100|pcnet32)
         cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/drivers/net/mii.ko \
           ${INSTDIR}/lib/modules/${KERNVER}/kernel/drivers/net &>/dev/null
       ;;

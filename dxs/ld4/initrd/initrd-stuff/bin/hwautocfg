@@ -336,8 +336,12 @@ for DRIVER in ohci-hcd uhci-hcd ehci-hcd ohci1394; do
     modprobe ${MODPRV} ${DRIVER}
     DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
 done
-# remove usb core if USB not present
-[ -z "$USB" ] && rmmod usbcore
+# load usbhid (for USB keyboard/mouse) or remove usbcore module if USB 
+# not present
+if [ -n "$USB" ] ; then
+  modprobe ${MODPRV} usbhid &
+else rmmod usbcore
+fi
 # remove unneeded network card modules
 for DRIVER in ${NWMODULES}; do
   strinfile " ${DRIVER}" /tmp/hwsetup.info || {
@@ -380,14 +384,12 @@ done
 # is initialized 
 test -f /proc/bus/usb/devices || mount -n -t usbfs usbfs /proc/bus/usb
 usleep 10 && hwsetup -v > /tmp/hwsetup.info
-# check if USB mouse and/or keyboard is connected
-if strinfile "genericwheelusb" /tmp/hwsetup.info ; then
-  modprobe ${MODPRV} usbhid
-elif strinfile "keybdev" /tmp/hwsetup.info ; then
-  modprobe ${MODPRV} usbhid
-fi
+# check if USB mouse and/or keyboard is connected and remove usbhid if
+# not
+strinfile "genericwheelusb" /tmp/hwsetup.info || \
+  strinfile "keybdev" /tmp/hwsetup.info || rmmod usbhid
 
-# fixme - usb keyboard??
+# load IDE high level drivers
 if [ -n "$IDE" ] ; then
   # you might want to check /etc/sysconfig/floppy for more info
   strinfile "ZIP" /tmp/hwsetup.info && modprobe ${MODPRV} ide_floppy

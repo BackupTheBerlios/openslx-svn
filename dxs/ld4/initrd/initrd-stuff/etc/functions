@@ -121,7 +121,7 @@ esac
 nfsmnt()
 {
 local nfsroot=$1
-errmsg="Mount of root filesystem via NFS was requested via kernel command \
+errmsg="  Mount of root filesystem via NFS was requested via kernel command \
 line\nbut failed. There might be the following reasons for that:\n\
 * No nfs.ko module could be loaded and no NFS support was present in the\n\
 running kernel - see error messages above\n\

@@ -102,6 +102,9 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     dnbdroot=*)
       NBD=dnbd # name of kernel module
       NBDOPT=${opts#dnbdroot=};;
+    dcsize=*)
+      # size of cache dnbd should use within ram
+      DNBDCACHESIZE=${opts#dcsize=};;
     # nbd server:port,filesystem (filesystem is optional)
     nbdroot=*)
       NBD=nbd # name of kernel module
@@ -122,6 +125,10 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       VCI=${opts#vci=};;
   esac
 done
+# load block device driver if needed
+[ -n "$NBD" ] && modprobe ${MODPRV} ${NBD} || error "  Failed to load \
+module ${NBD}.ko. It is needed if you intend to use\n  network block \
+device (D)NBD for the client as root filesystem."
 # check if at least one type of IP configuration is availabe
 if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
   if strinfile "clientip" /etc/machine-setup ; then
@@ -205,14 +212,11 @@ fi
 
 # if root filesystem should be imported via (d) network block device 
 if [ -n "${NBD}" ] ; then
-  modprobe ${MODPRV} ${NBD} || error "  Failed to load module ${NBD}.ko. It \
-is needed if you intend to use\n  network block device (D)NBD for the client \
-as root filesystem."
   nbdhost=${NBDOPT%:*}
   nbdopt=${NBDOPT#*:}
-  nbdport=${NBDOPT%,*}
-  nbdfs=${NBDOPT#*,}
-  echo "Diskless client using ${NBD} server $nbdhost:$nbdport,$nbdfs"
+  nbdport=${nbdopt%,*}
+  nbdfs=${nbdopt#*,}
+  echo "Diskless client using ${NBD} on $nbdhost:$nbdport with $nbdfs"
   if [ -z "$nbdfs" ]; then 
     RFST=ext2; 
   else
@@ -220,16 +224,23 @@ as root filesystem."
     modprobe ${MODPRV} ${RFST} || error "  Failed to load the requested \
 filesystem module for the client root\n  filesystem ontop of the (D)NBD."
   fi
+  errmsg="  For some reason the network block device /dev/${NBD}0 never \
+appeared.\n  You might want to check udev or your list of static device \
+files."
+
   case "${NBD}" in
     # network block device present in standard kernel
     nbd)
-      nbd-client $nbdhost $nbdport /dev/nbd0
+      waitfor /dev/nbd0 10000 || error $errmsg
+      nbd-client $nbdhost $nbdport /dev/nbd0 || error "  Failed to start \
+the network block device client. Unable to mount root\n  filesystem."
       RDEV=/dev/nbd0
     ;;
     # dnbd by Thorsten Zitterell
     dnbd)
-      mkdir /dnbd
-      mount -t tmpfs tmpfs /dnbd
+      #mkdir /dnbd
+      #mount -n -t tmpfs tmpfs /dnbd
+      waitfor /dev/dnbd0 10000 || error $errmsg
       while ! dnbd-client -b $dnbdhost -d /dev/dnbd0; do # -c /dnbd/cache
         usleep 10
       done
@@ -238,7 +249,7 @@ filesystem module for the client root\n  filesystem ontop of the (D)NBD."
       usleep 20
     ;;
   esac
-  mount -o ro $RDEV /mnt
+  mount -n -t $RFST -o ro $RDEV /mnt
 fi
 # if no type of root filesystem is passed via kernel command line try
 # information gathered from dhcp process
