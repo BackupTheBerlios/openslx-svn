@@ -4,11 +4,11 @@
 #               cloning from rsync source for Diskless X Stations (v4.0)
 #
 # Author(s):    Nico Dietrich, 04-04-2006
-#		Dirk von Suchodoletz <dirk@goe.net>, 11-06-2006
+#		Dirk von Suchodoletz <dirk@goe.net>, 20-05-2006
 #
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:	0.2.0e
+# Version:	0.2.1a
 DEBUG=0
 
 header() {
@@ -300,13 +300,17 @@ create_nbd() {
   if isyes $nbdyes ; then
     # TODO: mksquashfs (background process)
     if [ "$nbdfs" = "squashfs" ] ; then
-      echo -e "\nGenerating SquashFS image ${rootdir}.squashfs (ca. 30 min.)"
-      if `which mksquashfs &>/dev/null` ; then
-        mv ${rootdir}.squashfs ${rootdir}.squashfs.old
-        echo "mksquashfs ${rootdir} ${rootdir}.squashfs"
-        mksquashfs ${rootdir} ${rootdir}.squashfs &
-      else
-        echo -e "Tool 'mksquashfs' not found, skipping"
+      if ps aux|grep -v grep|grep mksquashfs &>/dev/null ; then
+        echo "Found other mksquashfs process running, skipping this step."
+      else 
+        echo -e "\nGenerating SquashFS image ${rootdir}.squashfs (ca. 30 min.)"
+        if `which mksquashfs &>/dev/null` ; then
+          mv ${rootdir}.squashfs ${rootdir}.squashfs.old
+          echo "mksquashfs ${rootdir} ${rootdir}.squashfs"
+          mksquashfs ${rootdir} ${rootdir}.squashfs &
+        else
+          echo -e "Tool 'mksquashfs' not found, skipping"
+        fi
       fi
     else
       # to be extended
@@ -328,7 +332,8 @@ create_initrd() {
   done
 
   if [ $i -eq 0 ] ; then
-    echo "No kernels found in ${rootdir}/boot, so no initial ramdisk is created and linked to ${tftpbootdir}."
+    echo "No kernels found in ${rootdir}/boot, so no initial ramdisk is \
+created and linked to ${tftpbootdir}."
     kernel_choice=""
   elif [ $i -eq 1 ] ; then
     echo "Found one kernel in ${rootdir}/boot."
@@ -340,7 +345,8 @@ create_initrd() {
       echo "$j: ${kernel[$j]}"
       j=$j+1
     done
-    ask "Please chose kernels to create initial ramdisks for (space separated numbers) " kernel_choice "${kernel_choice}"
+    ask "Please chose kernels to create initial ramdisks for (space \
+separated numbers) " kernel_choice "${kernel_choice}"
   fi
   choice=( ${kernel_choice} )
   # make sure /$tftbootdir exists
@@ -483,8 +489,14 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
       fi
       # linking files 
       # if SuSE und DHCP dann Kopie statt Link
-      #if ! expr index ${dxs_conf} "dhcp" 
-      ln -sf ${dxs_conf}/${1}-${timestamp} ${2}${extension}
+      echo "SD:  ${server_distro}, ${dxs_dhcpd_conf}"
+      if [ ${server_distro} = "suse" ] && echo ${dxs_dhcpd_conf}|\
+        grep dhcp &>/dev/null; then
+        rm ${2}${extension} &>/dev/null
+	cp ${dxs_conf}/${1}-${timestamp} ${2}${extension}
+      else
+        ln -sf ${dxs_conf}/${1}-${timestamp} ${2}${extension}
+      fi
     fi
   done
 }
@@ -520,7 +532,7 @@ dxs_client_conf="client.cfg/machine-setup.default"
 header
 precheck #(run as root, rsync etc.)
 configure
-copy_system
+#copy_system
 create_nbd
 create_initrd
 setup_server

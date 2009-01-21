@@ -50,7 +50,7 @@ echo "
                  |  |___ |  ||  |    ||  |_|  | /  _        __
                  |______||__||__| |__|  _____/ |__| |__|   |__|
 
-            Diskless Workstation (v4.0/$dstr  (c) <dirk@goe.net>
+            Diskless Workstation (v4.0/$dstr (c) <dirk@goe.net>
 ">/mnt/etc/issue
 
 #######################################################################
