@@ -276,7 +276,8 @@ xdmdir=/etc/X11/xdm
 testmkd /mnt/${kdmrcdir}
 
 # setting the path for kdmrc-file 
-# FIXME: hack - there is no other way in gentoo?!?
+# FIXME: hack - there is no other way in gentoo?!? Why the hell in "themes"
+# directory??
 sed -e 's,\(PIDFILE:.*\)|| \\$,\1 -- -config /var/lib/openslx/themes/displaymanager/kdmrc || \\,g'\
     -i /mnt/etc/X11/startDM.sh
 

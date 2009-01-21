@@ -59,6 +59,23 @@ if [ "x$start_dreshal" = "xyes" ]; then
   fi
 fi
 }
+# secure shell service
+config_sshd () {
+if [ "x$start_sshd" = "xyes" ] ; then
+  if [ -f /mnt/etc/${D_INITDIR}/sshd ] ; then
+    testmkd /mnt/var/lib/sshd
+    testmkd /mnt/var/lib/empty
+    if ! strinfile "sshd:" /mnt/etc/passwd ; then
+      echo -e "sshd:x:71:65::/var/run/sshd:/bin/false" \
+        >>/mnt/etc/passwd
+      echo -e "sshd:!:13099:0:99999:7:::" >>/mnt/etc/shadow
+    fi
+    rllinker "sshd" 20 10
+  else
+    error "$df_errsshd" nonfatal
+  fi
+fi
+}
 # Xorg variable settings. Lots of stuff has changed for newer Xorg servers
 displayvars () {
 synapticsdrv="/usr/X11R6/lib/modules/input/synaptics_drv.o"

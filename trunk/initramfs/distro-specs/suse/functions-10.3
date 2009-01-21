@@ -13,6 +13,19 @@
 # defined in general SuSE base definitions ...  General changes should be done
 # there, version specific changes for the 10.3 go here.
 
+# display manager configuration
+config_kdm () {
+# first define directories for kdm
+kdmrcdir=/etc/opt/kde3/share/config/kdm
+xdmdir=/etc/X11/xdm
+# use different kdmrc than default, since 10.2 in /opt/kde/...
+echo 'XDMOPTIONS="-config /etc/opt/kde3/share/config/kdm/kdmrc"' \
+  >> /mnt/etc/sysconfig/displaymanager
+testmkd /mnt/${kdmrcdir}
+config_dm_entry yes
+# write configuration file with general config from /etc/functions
+config_kdm_template
+}
 # config nfsv4
 config_nfsv4 () {
 if [ "x$start_nfsv4" = "xyes" ]; then

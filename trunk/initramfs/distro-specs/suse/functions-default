@@ -51,8 +51,6 @@ ln -sf ../halt /mnt/etc/${D_INITDIR}/rc6.d/S20reboot
 # running stuff in parallel seems to be rather useless and generates some
 # difficult to solve problems. If you want to try nevertheless enable the
 # following line and disable the latter one (switching off that feature)
-#sed -e "s,TARGETS =,TARGETS = xdm boot.slx," \
-#  -i /mnt/etc/${D_INITDIR}/.depend.boot
 sed -e "s,RUN_PARALLEL=.*,RUN_PARALLEL=\"no\"," \
     -i /mnt/etc/${D_SYSCONFDIR}/boot
 # if YaST2 should be runnable (without much effect anyway) on the client
@@ -137,9 +135,17 @@ fi
 config_sshd () {
 if [ "x$start_sshd" = "xyes" ] ; then
   if [ -f /mnt/etc/${D_INITDIR}/sshd ] ; then
-    testmkd /mnt/var/lib/sshd
+    testmkd /mnt/var/run/sshd
     testmkd /mnt/var/lib/empty
-    rllinker "sshd" 12 10
+    if ! strinfile "sshd:" /mnt/etc/passwd ; then
+      echo -e "sshd:x:117:65534::/var/run/sshd:/usr/sbin/nologin" \
+        >>/mnt/etc/passwd
+      echo -e "sshd:!:13099:0:99999:7:::" >>/mnt/etc/shadow
+    fi
+    # set permissions with userid
+    #echo -e "\tchown sshd:nogroup /var/run/sshd /var/lib/empty 2>/dev/null" \
+    #  >>/mnt/etc/${D_INITDIR}/boot.slx 
+    rllinker "sshd" 25 10
   else
     error "$df_errsshd" nonfatal
   fi
@@ -164,12 +170,12 @@ if [ "x${start_printdaemon}" != "x" ] && \
     yes|cups*|CUPS*)
       rllinker "cups" 25 1
       testmkd /mnt/var/spool/cups/tmp
-      chown -R lp:lp /var/spool/cups
+      #chown -R lp:lp /var/spool/cups
     ;;
     lp*|LP*|PLP*)
       rllinker "lpd" 25 1
       testmkd /mnt/var/spool/lpd
-      chown -R lp:lp /var/spool/lpd
+      #chown -R lp:lp /var/spool/lpd
     ;;
     *)
     #logwrite "Do not know print-server $start_printdaemon; \
