@@ -7,7 +7,7 @@
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-09-2006
 #               Nico Dietrich
 #               Felix Endres
-#               mj0, 12-09-2006 theming added
+#               mj0, 13-09-2006 theming added
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - openslx.org project
@@ -247,7 +247,8 @@ if [ -n "$splashsizes" -a -n "$splash_bin" ]; then
   #fixme: very ugly ;)
   mkdir -p $ROOTDIR/tmp/bootsplash
   cp -a $themes_dir/* $ROOTDIR/tmp/bootsplash
-  themes=${themes_dir}
+  themes=${themes_dir%bootsplash}
+  echo -e "\n\tUsing ${themes} for themes.\n"
   themes_dir=$ROOTDIR/tmp/bootsplash
 
   if [ -n "$themes_dir" -a \
@@ -279,7 +280,7 @@ done
 rm -rf $ROOTDIR/tmp/bootsplash
 
 # kdm/Xdialog theme
-cp -a ${themes%bootsplash}* ${INSTDIR}/usr/share/themes
+cp -a ${themes}* ${INSTDIR}/usr/share/themes
 }
 
 
