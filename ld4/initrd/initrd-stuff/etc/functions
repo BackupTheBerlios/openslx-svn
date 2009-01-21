@@ -2,7 +2,7 @@
 #		linux diskless clients (included by init, hwautocfg,
 #		servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 11-04-2006
 #	 	Felix Endres, 21-03-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
@@ -56,6 +56,9 @@ if [ -n "$2" ] ; then
 else
   echo -e "${error_msg}${e_msg}${error_shell}"
   /bin/sh
+  echo "Rebooting now ..."
+  usleep 5
+  echo "b" > /proc/sysrq_trigger
 fi
 }
 msg () {
@@ -69,6 +72,12 @@ local count=`expr $1 \* 10`
 while [ $count -gt 0 ] ; do count=`expr $count \- 1` ; done
 return 0
 }
+#######################################################################
+# (re)generate dynamic linked libraries cache from /etc/ld.so.conf
+ldcfg () {
+[ -z "${NOLDSC}" ] && echo "$init_ldcfg" && ldconfig /tmp/ld.so.cache &
+}
+
 #######################################################################
 # load a certain module - name of module with path in argument one, the
 # error message in second argument

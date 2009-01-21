@@ -280,7 +280,7 @@ if [ -n "${NBD}" ] ; then
     RWRO="rw"
     RDEV=/dev/cow/0
     # run ldconfig if not switched off via kernel command line
-    [ -z "${NOLDSC}" ] && echo $init_ldcfg && ldconfig /etc/ld.so.cache &
+    ldcfg
   fi
   # finally mount the block device
   mount -n -t $RFST -o $RWRO $RDEV /mnt
@@ -315,12 +315,6 @@ if [ -n "${UNIONFS}" -o -n "${UNION}" ] ; then
     UNIONFS=""; }
 fi
 
-# if additional sources should be used for a combined root filesystem
-# probably more sources should be merged into union (${UNION} is defined)
-if [ -n "${UNION}" ] ; then
-  # unionctl
-  :
-fi
 
 # setup of client root filesystem dependent on the availability of UnionFS
 if [ -n "${UNIONFS}" ] ; then
@@ -333,8 +327,14 @@ if [ -n "${UNIONFS}" ] ; then
     none /mnt
   mkdir -p /mnt/uniontmp
   mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp
+  # if additional sources should be used for a combined root filesystem
+  # probably more sources should be merged into union (${UNION} is defined)
+  if [ -n "${UNION}" ] ; then
+    # unionctl
+    :
+  fi
   # run ldconfig if not switched off via kernel command line
-  [ -z "${NOLDSC}" ] && echo "$init_ldcfg" && ldconfig /etc/ld.so.cache &
+  ldcfg
 elif [ -z "$COWLOOP" ] ; then
   echo "Using bind mounts to ramdisk for rw access"
   mount -n -t tmpfs -o size=${TMPFSSIZE} ramfs ${RWDIR}
@@ -343,7 +343,7 @@ elif [ -z "$COWLOOP" ] ; then
     mount -n --bind ${RWDIR}/${path} /mnt/${path}
   done
   # see above ...
-  [ -z "${NOLDSC}" ] && echo "$init_ldcfg" && ldconfig /tmp/ld.so.cache &
+  ldcfg
   for path in ${D_RODIRSINRW}; do
     if [ -d /mnt/${path} ] ; then
       LIST=${path}" "$LIST
