@@ -4,16 +4,12 @@
 #               X Stations and interactive session chooser (v4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-03-2006
-#               Michael Janczyk <mj0@uni-freiburg.de>, 27-10-2006
+#               Michael Janczyk <mj0@uni-freiburg.de>, 09-11-2006
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.16.473
+# Version:      0.16.504
 #
 ################################################################################
-
-
-### read from machine-setup (for slxgrp) #######################################
-. /etc/machine-setup
 
 
 ### VERBOSE? ###################################################################
@@ -40,7 +36,6 @@ runvmwareconfheader ()
   memsize = \"${mem}\"
   numvcpus = \"1\"
 
- 
   ###### ide-disks #############################################################
   ide0:0.mode = \"${np}\"
   ide0:0.present = \"TRUE\"
@@ -54,10 +49,8 @@ runvmwareconfheader ()
   ide1:1.fileName = \"${cdr_2_name}\"
   ide1:1.deviceType = \"cdrom-raw\"
 
- 
   ###### scsi-disks ############################################################
   scsi0.present = \"FALSE\"
-
 
   ###### nics ##################################################################
   ethernet0.present = \"TRUE\"
@@ -65,16 +58,13 @@ runvmwareconfheader ()
   ethernet0.connectionType = \"bridged\"
   ethernet0.address = \"00:50:56:0D:${mac}\"
 
- 
   ###### sound #################################################################
   sound.present = \"TRUE\"
   sound.virtualDev = \"es1371\"
 
-
   ###### usb ###################################################################
   usb.present = \"TRUE\"
   usb.generic.autoconnect = \"TRUE\"
-
 
   ###### floppies ##############################################################
   floppy0.present = \"${floppya}\"
@@ -85,12 +75,10 @@ runvmwareconfheader ()
   floppy1.fileName = \"${floppybname}\"
   floppy1.startConnected = \"TRUE\"
 
-
   ###### ports #################################################################
   parallel0.present = \"FALSE\"
 
   serial0.present = \"FALSE\"
-
 
   ###### shared folders ########################################################
   sharedFolder0.present = \"TRUE\"
@@ -101,7 +89,6 @@ runvmwareconfheader ()
   sharedFolder0.readAccess = \"TRUE\"
   sharedFolder0.writeAccess = \"TRUE\"
   sharedFolder.maxNum = \"1\"
-
 
   ###### misc ##################################################################
   tmpDirectory = \"${tmpdir}\"
@@ -121,7 +108,6 @@ runvmwareconfheader ()
   pref.hotkey.alt = \"TRUE\"
   svga.maxWidth = \"${xres}\"
   svga.maxHeight = \"${yres}\"
-  
   " \
   >${confile}
 
@@ -141,7 +127,8 @@ preferencesheader ()
   ###### *.vmem wird immer angelegt und frisst soviel Speicher, wie fuer  ######
   ###### den Gast vorgesehen. Sollte nicht im tempfs liegen. NFS OK, da   ######
   ###### IO nur einmal beim Start erheblich. Wird gesteuert ueber         ######
-  ###### tmpDirectory = /nfs-viel-platz und darin wird dann vmware-\$user ######  ###### angelegt.                                                        ######
+  ###### tmpDirectory = /nfs-viel-platz und darin wird dann vmware-\$user ######
+  ###### angelegt.                                                        ######
 
   hints.hideAll = \"TRUE\"
   pref.exchangeSelections = \"TRUE\"
@@ -159,7 +146,6 @@ preferencesheader ()
   pref.eula.0.buildNumber = \"${vmbuild}\"
   pref.eula.1.appName = \"VMware Workstation\"
   pref.eula.1.buildNumber = \"${vmbuild}\"
-
   " \
   >${vmhome}/preferences
 }
@@ -195,7 +181,7 @@ floppyb="FALSE"
 # place for the virtual floppy "B:"
 floppybname="/etc/vmware/loopimg/fd1.img"
 # resolution
-hostres=$(xvidtune -show | grep -ve "^$")
+hostres=$(xvidtune -show 2>/dev/null| grep -ve "^$")
 xres=$(echo "${hostres}" | awk '{print $3}')
 yres=$(echo "${hostres}" | awk '{print $7}')
 guestres=
@@ -215,13 +201,11 @@ vmdir="/var/lib/vmware"
 vmtempl="${vmdir}/templ"
 # .desktop files directory
 xsessions="/usr/share/xsessions"
-vmsessions="${vmdir}/vmsessions"
+vmsessions="/etc/X11/sessions/runvmware"
 themesdir="/var/lib/openslx/themes"
 desktops=( `ls ${vmsessions}/*.desktop 2>/dev/null` )
 desktopsnr=$(echo "${#desktops[*]}")
 dialogtitle='--title "VMware Image Menu"'
-slxgrp=$(echo ${slxgrp} | tr [A-Z] [a-z])
-slxgrptest=
 execute=()
 menu=
 # special Variables
@@ -386,33 +370,25 @@ x_dialog ()
 
   while [ "${desktopsnr}" -gt "${args}" ]; do
 
-    # check for slxgrp
-    slxgrptest=$(grep -m 1 -i "slxgrp" ${desktops[${args}]} \
-      | awk -F "=" '{print $2}' | tr [A-Z] [a-z])
-    if [ -z "${slxgrp}" -o "${slxgrp}" = "${slxgrptest}" -o "${slxgrp}" = "default"  ]; \
-      then
+    # exec in .desktop
+    execute[${i}]=$(grep -m 1 -i "exec" ${desktops[${args}]} \
+      | awk -F "=" '{print $2}')
+    menu="$menu \"\${execute[${i}]}\""
+    i=${i}+1
 
-      # exec in .desktop
-      execute[${i}]=$(grep -m 1 -i "exec" ${desktops[${args}]} \
-        | awk -F "=" '{print $2}')
-      menu="$menu \"\${execute[${i}]}\""
-      i=${i}+1
+    # name in .desktop
+    execute[${i}]=$(grep -m 1 -i "name" ${desktops[${args}]} \
+      | awk -F "=" '{print $2}')
+    execute[${i}]=${execute[${i}]:-`echo ${execute[${i}-1]} | sed -e "s,-, ,g"`}
+    menu="$menu \"\${execute[${i}]}\""
+    i=${i}+1
 
-      # name in .desktop
-      execute[${i}]=$(grep -m 1 -i "name" ${desktops[${args}]} \
-        | awk -F "=" '{print $2}')
-      execute[${i}]=${execute[${i}]:-`echo ${execute[${i}-1]} | sed -e "s,-, ,g"`}
-      menu="$menu \"\${execute[${i}]}\""
-      i=${i}+1
-
-      # comment in .desktop
-      execute[${i}]=$(grep -m 1 -i "comment" ${desktops[${args}]} \
-        | awk -F "=" '{print $2}')
-      execute[${i}]=${execute[${i}]:-"No comment"}
-      menu="$menu \"\${execute[${i}]}\""
-      i=${i}+1
-
-    fi
+    # comment in .desktop
+    execute[${i}]=$(grep -m 1 -i "comment" ${desktops[${args}]} \
+      | awk -F "=" '{print $2}')
+    execute[${i}]=${execute[${i}]:-"No comment"}
+    menu="$menu \"\${execute[${i}]}\""
+    i=${i}+1
 
     (( args=${args}+1 ))
   done
@@ -441,6 +417,19 @@ x_dialog ()
   
 . ${tmpdir}/Xdialog
 rm -f ${tmpdir}/Xdialog
+}
+
+x_dialog_check ()
+{
+  if ! [ `which Xdialog 2>/dev/null` ]; then
+    writelog "\rXdialog not found!      " 0 99
+    writelog "Please install Xdialog for interactive mode, \c" 0 0
+    writelog "or use option -s.\n" 0 0
+    # for non-console starts
+    xterm -e 'echo -e "\n\n\n\n\n\n\t\t\tNo Xdialog installed!!!\
+      \n\n\t\t\tClosing in 3 seconds."; sleep 3'
+    exit 1
+  fi
 }
 
 
@@ -589,7 +578,7 @@ while [ ${nofclopt} -gt "${args}" ]; do
       vmopt=$(echo ${vmopt} | sed -e "s,-q,,")
     ;;
     *)
-    echo -e "\n\tOption \"${lineopts[${args}]}\" not found, please correct.\n"
+    echo -e "\n\tOption\"${lineopts[${args}]}\" not found, please correct.\n"
     sleep 1
     help
   ;;
@@ -599,21 +588,12 @@ done
 
 
 ### STARTING ###################################################################
-# create environment
-# remove leftover locks from former runs,
-# problems may occure if you run more then one vmware with this script
-rm -f ${tmpdir}/*LOCK >/dev/null 2>&1
-rm -f ${tmpdir}/*.${debug}.log >/dev/null 2>&1
-
-# create vmware directories
-mkdir -p ${tmpdir} >/dev/null 2>&1
-mkdir -p ${vmhome} >/dev/null 2>&1
-
 # NO X-server no runvmware ;)
 [ -z "$DISPLAY" ] && echo -e "\n\tStart only within a desktop!\n" && exit 1
 
 # if --xdm set don't go further, only used for xdm starts
 if [ "${xdm}" = "all" -o "${xdm}" = "vm" ]; then
+  x_dialog_check
   xdm_mode
   args_dial=$(x_dialog 2>&1) # 2>&1, see function
   exec ${args_dial}
@@ -623,6 +603,16 @@ elif [ -n "${xdmstart}" -a -z "${xdm}" ]; then
     \n\t\t\tOnly all or vm possible.\
     \n\n\t\t\tClosing in 3 seconds."; sleep 3' && exit 1
 fi
+
+# create environment
+# remove leftover locks from former runs,
+# problems may occure if you run more then one vmware with this script
+rm -f ${tmpdir}/*LOCK >/dev/null 2>&1
+rm -f ${tmpdir}/*.${debug}.log >/dev/null 2>&1
+
+# create vmware directories
+mkdir -p ${tmpdir} >/dev/null 2>&1
+mkdir -p ${vmhome} >/dev/null 2>&1
 
 # if not interactive mode or image spezified via command line stop
 if [ -z "${istart}" -a -z "${sstart}" ]; then
@@ -747,15 +737,7 @@ if [ -n "${istart}" ]; then
   fi
 
   # check for Xdialog
-  if ! [ `which Xdialog 2>/dev/null` ]; then
-    writelog "\rXdialog not found!      " 0 99
-    writelog "Please install Xdialog for interactive mode, \c" 0 0
-    writelog "or use option -s.\n" 0 0
-    # for non-console starts
-    xterm -e 'echo -e "\n\n\n\n\n\n\t\t\tNo Xdialog installed!!!\
-      \n\n\t\t\tClosing in 3 seconds."; sleep 3'
-    exit 1
-  fi
+  x_dialog_check
 
   # create menu, etc...
   startvm=$(x_dialog 2>&1) # 2>&1, see function
@@ -790,7 +772,7 @@ fi
 
 # define name for VMware window
 displayname=$(grep -m 1 -i "name" \
-  ${vmsessions}/*${startvm}.desktop | awk -F "=" '{print $2}')
+  ${vmsessions}/${startvm}.desktop | awk -F "=" '{print $2}')
 # if variable not set
 displayname=${displayname:-"VMware Image"}
 

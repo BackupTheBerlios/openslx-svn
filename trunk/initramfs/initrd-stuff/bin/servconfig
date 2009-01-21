@@ -5,7 +5,7 @@
 # system is setup when servconfig starts
 #
 # Dirk von Suchodoletz <dvs@OpenSLX.com>, 29-10-2006
-# Michael Janczyk <mj0>, 27-10-2006
+# Michael Janczyk <mj0@uni-freiburg.de>, 09-11-2006
 # Lars Mueller <lm@OpenSLX.com>, 23-06-2006
 # Oliver Tappe <ot@OpenSLX.com>, 23-06-2006
 #
@@ -284,7 +284,7 @@ config_nscd
 # create needed directories and files
 if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   for i in /var/X11R6/bin /etc/vmware/vmnet1 /etc/vmware/vmnet8 \
-           /var/run/vmware /etc/X11/sessions ; do
+           /var/run/vmware /etc/X11/sessions/runvmware ; do
     testmkd /mnt/$i
   done
   # generate a runlevel script
@@ -324,23 +324,54 @@ Type=Application" >/mnt/etc/X11/sessions/default.desktop
     > /mnt/var/X11R6/bin/desktop-session
   chmod 755 /mnt/var/X11R6/bin/runvmware /mnt/var/X11R6/bin/desktop-session \
     >/dev/null 2>&1
+  # add script for default.desktop
+  cd /mnt/var/X11R6/bin
+  ln -s desktop-session xdmmenu
   sessions=$(ls /mnt/var/lib/vmware/vmsessions/*.desktop 2>/dev/null)
   # fixme: the following part is to be tested!!
   if [ -n "${sessions}" ]; then
-    cd /mnt/var/X11R6/bin
     for i in /mnt/var/lib/vmware/vmsessions/*.desktop; do
-      #session_name=$(cat ${i} | grep -iw "exec" \
-      #  | awk -F "=" '{print $2}')
-      session_name=$(cat ${i}|sed -n "/^[Ee]xec/p"|sed -e "s,Exec=,,")
-      # create session links so that they con be startet via xdm
-      ln -s desktop-session ${session_name}
+      # only link if in right slxgrp
+      slxgrpstr=$(cat ${i} | sed -e "s/.*/\L&/;s/slxgrp=/ /;s/$/ /" \
+        | sed -n "/^slxgrp/p")
+      [ `strinstr " ${slxgrp} " "${slxgrpstr}"` ] && slxgrptest="TRUE"
+      xdmshow=$(cat ${i}|sed -e "s/.*/\L&/" | sed -n "/^xdm/p"\
+        |sed -e "s,xdm=,,")
+      if [ -z "${slxgrp}" -o "${slxgrptest}" = "TRUE" \
+        -o "${slxgrp}" = "default" ]; then
+        #session_name=$(cat ${i} | grep -iw "exec" \
+        #  | awk -F "=" '{print $2}')
+        session_name=$(cat ${i} | sed -e "s/.*/\L&/" \
+          | sed -n "/^exec/p"|sed -e "s,exec=,,")
+        # create session links so that they con be startet via xdm
+        cd /mnt/var/X11R6/bin
+        ln -s desktop-session ${session_name}
+        cd /mnt/etc/X11/sessions/runvmware
+        ln -s ${i#/mnt} ${i#/mnt/var/lib/vmware/vmsessions/}
+        vmsessionsnr=$(expr `echo ${vmsessionsnr}` + 1)
+        # only show in xdm if xdmshow=true
+        if [ "${xdmshow}" = "true" ]; then
+          cd /mnt/etc/X11/sessions
+          ln -s ${i#/mnt} ${i#/mnt/var/lib/vmware/vmsessions/}
+          xdmsessionsnr=$(expr `echo ${xdmsessionsnr}` + 1)
+        fi
+      fi
     done
+    # add script vmimages.desktop only if more windowsimages than shown in xdm
+    if [ "${vmsessionsnr}" -gt "${xdmsessionsnr}" ]; then
+      echo -e "[Desktop Entry]\nEncoding=UTF-8\nName=Virtual Windows XP Menu\n\
+Name[de]=Virtual Windows XP Menü\nExec=vmmenu\nTryExec=/var/X11R6/bin/vmmenu\n\
+pplication" >/mnt/etc/X11/sessions/vmmenu.desktop
+      cd /mnt/var/X11R6/bin
+      ln -s desktop-session vmmenu
+    fi
   fi
-  # add scripts for default.desktop and vmimages.desktop
-  cd /mnt/var/X11R6/bin
-  ln -s desktop-session xdmmenu
-  ln -s desktop-session vmmenu
 fi
+
+# theming
+testmkd /mnt/var/lib/openslx/themes/displaymanager
+cp -a /usr/share/themes/displaymanager /usr/share/themes/Xdialog \
+  /usr/share/themes/bootsplash /mnt/var/lib/openslx/themes >/dev/null 2>&1
 
 #############################################################################
 # preparation of /tmp directory (partition 44, nfs scratch, ramdisk). there
@@ -502,12 +533,6 @@ DisplayManager.*.reset:\t\t/etc/X11/xdm/Xreset" \
     ;;
   esac
 fi
-
-# theming
-mkdir -p /mnt/var/lib/openslx/themes
-cp -a /usr/share/themes/kdm /usr/share/themes/Xdialog \
-  /usr/share/themes/bootsplash /mnt/var/lib/openslx/themes >/dev/null 2>&1
-cp /usr/share/themes/kdm/kdmrc /mnt/etc/opt/kde3/share/config/kdm >/dev/null 2>&1
 
 # script run timer
 [ $DEBUGLEVEL -eq 8 ] && echo "** SW setup finished at $(sysup)"
