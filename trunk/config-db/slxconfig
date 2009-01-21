@@ -194,13 +194,14 @@ sub parseKeyValueArgs
 			die _tr("unknown key '%s' specified for %s\n", $key, $table);
 		}
 
-		if ($value eq '-') {
-			$value = undef;
-		}
-
 		# replace escaped newlines and tab chars by the respective real thing
 		$value =~ s{\\n}{\n}gms;
 		$value =~ s{\\t}{\t}gms;
+
+		# accept '-' as placeholder for undefined
+		if ($value eq '-') {
+			$value = undef;
+		}
 
 		$dataHash{$key} = $value;
 	}
