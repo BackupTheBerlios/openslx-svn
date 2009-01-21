@@ -46,8 +46,8 @@ mkdir -p ${DEVDIR}/.udevdb
 [ ! -f /proc/cpuinfo ] && mount -n -t proc proc /proc
 [ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
 
-# redirect console (after /dev/console is available, and /dev mounted)
-#exec < /dev/console > /dev/console 2>&1
+# fixme: shut down if script fails
+#trap "exec echo o>/proc/sysrq-trigger" EXIT SIGHUP SIGINT SIGPIPE SIGTERM SIGIO
 
 # if no kernel version is set, try to get it directly from /proc
 if [ -z $KERNEL ] ; then
@@ -64,9 +64,10 @@ NFSRO="nfs"
 
 # load usb modules for keyboard (reenable usb keyboards, otherwise the
 # admin has to wait until second run of hwsetup late in stage3)
+echo "0 0 0 0" >/proc/sys/kernel/printk
 ( for mod in usbcore uhci-hcd ohci-hcd usbhid; do
   modprobe -q $mod 2>/dev/null
-done ) &
+done; echo "1 4 1 7" >/proc/sys/kernel/printk ) &
 
 
 # run pre init script and user defined preinit.local, copied by mkdxsinitrd
@@ -99,8 +100,6 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     # ... or a specified debug level
     debug=*)
       DEBUGLEVEL=${opts#debug=}
-      # Handle empty, extremly large or non-numeric input
-      [ -z "$DEBUGLEVEL" ] && DEBUGLEVEL=0
       [ $DEBUGLEVEL -eq 8 ] && echo "** SLX init started near $(sysup)"
     ;;
     # if configuration should be gathered by dhcp client
@@ -261,6 +260,8 @@ else
   # modprobe should stay quiet
   MODPRV="-q"
   LOGFILE="/dev/null"
+  # redirect console (after /dev/null is available, and /dev mounted)
+  exec < /dev/null > /dev/null 2>&1
 fi
 # load network adaptor modules
 for mod in ${NWMODULES}; do
@@ -583,11 +584,11 @@ umount -n /proc/bus/usb >/dev/null 2>&1
 mount -n --move /dev /mnt/dev
 chmod a+rwxt /mnt/dev/shm /mnt/tmp /mnt/tmp/scratch 2>/dev/null
 
-killall -9 udevd 2>/dev/null
-# kill the watchdog (autopoweroff, if stage3 init never finishes)
-[ -f /tmp/watchdogpid ] && kill $(cat /tmp/watchdogpid) 2>/dev/null
+killall -9 udevd 2>/mnt/dev/null
 # runtimer
 [ $DEBUGLEVEL -eq 8 ] && echo "** SLX init ended near $(sysup)"
+# kill the watchdog (autopoweroff, if stage3 init never finishes)
+[ -f /tmp/watchdogpid ] && kill $(cat /tmp/watchdogpid) 2>/mnt/dev/null
 umount -n /proc
 # unset old environment variables
 unset debug date initrd ip dnbdroot nbdroot nfsroot vci vga
