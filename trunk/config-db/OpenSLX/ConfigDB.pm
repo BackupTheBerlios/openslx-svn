@@ -1246,6 +1246,9 @@ sub setClientIDsOfSystem
 	my $systemID  = shift;
 	my $clientIDs = _aref(shift);
 
+	# associating a client to the default system makes no sense
+	return 0 if $systemID == 0;
+
 	my @uniqueClientIDs = _unique(@$clientIDs);
 
 	return $self->{'meta-db'}->setClientIDsOfSystem(
@@ -1354,6 +1357,9 @@ sub setGroupIDsOfSystem
 	my $self     = shift;
 	my $systemID = shift;
 	my $groupIDs = _aref(shift);
+
+	# associating a group to the default system makes no sense
+	return 0 if $systemID == 0;
 
 	my @uniqueGroupIDs = _unique(@$groupIDs);
 
@@ -1558,7 +1564,8 @@ sub setSystemIDsOfClient
 	my $clientID  = shift;
 	my $systemIDs = _aref(shift);
 
-	my @uniqueSystemIDs = _unique(@$systemIDs);
+	# filter out the default system, as no client should be associated to it
+	my @uniqueSystemIDs = grep { $_ > 0; } _unique(@$systemIDs);
 
 	return $self->{'meta-db'}->setSystemIDsOfClient(
 		$clientID, \@uniqueSystemIDs
@@ -1972,7 +1979,8 @@ sub setSystemIDsOfGroup
 	my $groupID   = shift;
 	my $systemIDs = _aref(shift);
 
-	my @uniqueSystemIDs = _unique(@$systemIDs);
+	# filter out the default system, as no group should be associated to it
+	my @uniqueSystemIDs = grep { $_ > 0; } _unique(@$systemIDs);
 
 	return $self->{'meta-db'}->setSystemIDsOfGroup($groupID, \@uniqueSystemIDs);
 }

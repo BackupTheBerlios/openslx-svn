@@ -260,6 +260,7 @@ if ($lang =~ m[^\w\w_(\w\w)]) {
 				{	# add default system
 					'id' => 0,
 					'name' => '<<<default>>>',
+					'hidden' => 1,
 					'comment' => 'internal system that holds default values',
 					# system-only attributes:
 					'attr_ramfs_nicmods'

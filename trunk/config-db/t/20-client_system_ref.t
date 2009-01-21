@@ -111,13 +111,22 @@ is(
 );
 is(
 	@systemIDs = sort($configDB->fetchSystemIDsOfClient(1)),
-	0, "client 1 should have no more system-IDs"
+	0, "client 1 should have no system-IDs"
 );
 is(
 	@systemIDs = sort($configDB->fetchSystemIDsOfClient(3)),
 	1, "client 3 should have one system-ID"
 );
 is($systemIDs[0], 1, "first system of client 3 should have ID 1");
+
+ok(
+	$configDB->addSystemIDsToClient(1, [0]),
+	'associating the default system should have no effect'
+);
+is(
+	@systemIDs = sort($configDB->fetchSystemIDsOfClient(1)),
+	0, "client 1 should still have no system-ID"
+);
 
 ok(
 	$configDB->removeClientIDsFromSystem(1, [1]),
@@ -135,4 +144,62 @@ is(
 	@clientIDs = sort($configDB->fetchClientIDsOfSystem(1)),
 	0, "system 1 should have no more client-ID"
 );
+
+$configDB->addSystem({
+	'name'      => 'sys-4',
+	'export_id' => 1,
+	'comment'   => 'shortlived',
+});
+ok(
+	$configDB->addClientIDsToSystem(4, [0]),
+	'default client has been associated to system 4'
+);
+is(
+	@systemIDs = sort($configDB->fetchSystemIDsOfClient(0)),
+	1, "default client should have one system-ID"
+);
+is($systemIDs[0], 4, "first system of default client should have ID 4");
+is(
+	@systemIDs = sort($configDB->fetchSystemIDsOfClient(1)),
+	0, "client 1 should have no system-ID"
+);
+is(
+	@systemIDs = sort($configDB->fetchSystemIDsOfClient(3)),
+	0, "client 3 should have no system-ID"
+);
+is(
+	@clientIDs = sort($configDB->fetchClientIDsOfSystem(0)),
+	0, "default system should have no client-IDs"
+);
+is(
+	@clientIDs = sort($configDB->fetchClientIDsOfSystem(1)),
+	0, "system 1 should have no client-ID"
+);
+is(
+	@clientIDs = sort($configDB->fetchClientIDsOfSystem(3)),
+	0, "system 3 should have no client-IDs"
+);
+is(
+	@clientIDs = sort($configDB->fetchClientIDsOfSystem(4)),
+	1, "system 4 should have one client-ID"
+);
+is($clientIDs[0], 0, "first client of system 4 should have ID 0");
+
+ok(
+	$configDB->removeSystemIDsFromClient(0, [6]),
+	'removing an unassociated system-ID should have no effect'
+);
+is(
+	@clientIDs = sort($configDB->fetchSystemIDsOfClient(0)),
+	1, "default client should have one system-ID"
+);
+ok(
+	$configDB->removeSystem(4),
+	'removing a system should drop client associations, too'
+);
+is(
+	@clientIDs = sort($configDB->fetchSystemIDsOfClient(0)),
+	0, "default client should have no more system-ID"
+);
+
 $configDB->disconnect();
