@@ -58,6 +58,10 @@ sub exportViaRsync
 	my $source = shift;
 	my $target = shift;
 
+	if (system("mkdir -p $target")) {
+		die _tr("unable to create directory '%s', giving up! (%s)\n",
+				$target, $!);
+	}
 	my $includeExcludeList = $self->determineIncludeExcludeList();
 	vlog 1, "using include-exclude-filter:\n$includeExcludeList\n";
 	open(RSYNC, "| rsync -av --delete --exclude-from=- $source/ $target")
@@ -91,8 +95,13 @@ sub addTargetToNfsExports
 	my $self = shift;
 	my $target = shift;
 
-	my $exports = slurpFile("/etc/exports");
-print "$exports\n";
+	print (('#' x 80)."\n");
+	print _tr("Please make sure the following line is contained in /etc/exports\nin order to activate the NFS-export of this vendor-OS:\n\t%s\n",
+			  "$self->{engine}->{'export-path'}\t*(ro,root_squash,sync,no_subtree_check)");
+	print (('#' x 80)."\n");
+
+# TODO : add something a bit more clever here...
+#	my $exports = slurpFile("/etc/exports");
 }
 
 1;

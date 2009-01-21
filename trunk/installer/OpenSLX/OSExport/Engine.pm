@@ -167,6 +167,9 @@ sub addExportToConfigDB
 {
 	my $self = shift;
 
+print "adding the export to the config-DB is not implemented yet, sorry!\n";
+return;
+
 	my $configDBModule = "OpenSLX::ConfigDB";
 	unless (eval "require $configDBModule") {
 		if ($! == 2) {
@@ -184,6 +187,7 @@ sub addExportToConfigDB
 		my $openslxDB = connectConfigDB();
 		# insert new export if it doesn't already exist in DB:
 		my $exportName = $self->{'vendor-os-name'};
+
 		my $export = fetchExportsByFilter(
 			$openslxDB, { 'name' => $exportName }, 'id'
 		);

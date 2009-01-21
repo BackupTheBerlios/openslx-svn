@@ -73,7 +73,7 @@ chdir($FindBin::RealBin)
 	or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 
 
-# create ossetup-engine for given distro and start it:
+# create OSExport-engine for given export type and start it:
 my $engine = OpenSLX::OSExport::Engine->new;
 $engine->initialize($vendorOSName, $exportType);
 if (!-e $engine->{'vendor-os-path'}) {
@@ -109,28 +109,13 @@ slxos-export [options] <vendor-os-name> <export-type>
 
 Prints a brief help message and exits.
 
+=item B<--list>
+
+Lists all supported export types and exits.
+
 =item B<--man>
 
 Prints the manual page and exits.
-
-=item B<--selection=<string>>
-
-Many distributions offer several different package selections for
-installation. With this option you can specify which of these you
-would like to use.
-
-If you pass an unknown selection, you will see a list of the selections
-that are available.
-
-In clone-mode, the selection specifies the name by which the cloned system
-will be known (exact name will be '<distro>-<selection>' instead of
-'<distro>-cloned-from-<rsync-source>').
-
-=item B<--source=<string>>
-
-When cloning a vendor-OS, slxos-export needs to know where to fetch
-the existing OS-files from. You can specify the rsync-uri with this
-option.
 
 =item B<--version>
 
