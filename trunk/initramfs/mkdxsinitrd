@@ -488,6 +488,12 @@ mknod ${INSTDIR}/tmp/ctl b 241 255 &>/dev/null
 # suse specific, but might be usable with other distros too
 mknod ${INSTDIR}/tmp/bootsplash p &>/dev/null
 
+
+if [ -z "$NWMODULES" ] ; then
+  #NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32 8139too 8139cp"
+  NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32"
+fi
+
 # initial ramdisk scripts: init, functions, servconfig, hwautocfg, ...
 # copy and replace variable names
 for dirs in `find ${SLX_SHARE_PATH}/initramfs/* ! -regex ".*/\..*"` ; do
@@ -657,11 +663,6 @@ fi
 if [ -z "$KERNVER" ] ; then
   echo "No kernel version set or detected - please use the -k flag! Exiting..."
   exit 1
-fi
-
-if [ -z "$NWMODULES" ] ; then
-  #NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32 8139too 8139cp"
-  NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32"
 fi
 if [ -z "$FSMODULES" ] ; then
   FSMODULES="nbd nfs"
