@@ -318,7 +318,7 @@ setup_server () {
 
   # copy the client configuration default file and replace root_pw - machine-setup
   sed -e "s,@@@root_pw@@@,${root_pw}," \ 
-      default_files/machine-setup_default > ${client_conf}-${timestamp}
+      default_files/machine-setup.default > ${dxs_conf}/${dxs_client_conf}-${timestamp}
 
   # creating new configuration files in $dxs_conf  
   # dhcp
