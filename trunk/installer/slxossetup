@@ -121,8 +121,7 @@ function setup_busybox_chroot()
 	cp -p /etc/resolv.conf "${CHROOT_DIR}/etc/"
 
 	# FIXME this might not be enough to satisfy the resolver
-#	for file in /lib/libnss_dns* /lib/libresolv*; do
-	for file in /lib/xxlib_dns* /lib/xxlibresolv*; do
+	for file in /lib/libnss_dns* /lib/libresolv*; do
 		test -e "${file}" || \
 			continue
 		dir="${CHROOT_DIR}/${file%/*}"
