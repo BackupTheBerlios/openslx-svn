@@ -2,11 +2,11 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 07-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.4c
+# Version:      0.2.4d
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -183,12 +183,16 @@ ipsetup 127.0.0.1 255.0.0.0 0.0.0.0 127.255.255.255 lo
 # analyze ip information from the kernel command line and put parts
 # of it into several variables
 if [ -n "$IPINFO" ] ; then
-  IP=`echo $IPINFO|sed -e "s/:.*//"`
-  SERVER=`echo $IPINFO|sed -e "s/[0-9\.]\{3,\}://;s/:.*//"`
-  GW=`echo $IPINFO|sed -e "s/[0-9\.]\{3,\}:[0-9\.]\{3,\}://;s/:.*//"`
-  # remove last colon after netmask if it was left there ...
-  IPINFO=`echo $IPINFO|sed -e "s/:$//"`
-  NM=`echo $IPINFO|sed -e "s/.*://"`
+  getip () { 
+    val=$IPINFO; i=$(expr $1 - 1); 
+    while [ $i -gt 0 ] ; do 
+      val=${val#*:} ; i=$(expr $i - 1); 
+    done; 
+  echo $val|sed "s/:.*//"; }
+  IP=$(getip 1)
+  SERVER=$(getip 2)
+  GW=$(getip 3)
+  NM=$(getip 4)
   echo -e "# ip configuration written by $0 script\nclientip=$IP\n\
 sub_netmask=$NM\ngateway=$GW\nserverip=$SERVER" \
     >>/etc/machine-setup
@@ -442,5 +446,6 @@ umount -n /proc
 [ -n "${UNIONFS}" ] && mount -n --move /root /mnt/mnt 
 # unset old environment variables
 unset debug date initrd ip nfsroot vci
-# new style of pivoting
+unset KERNEL NWMODULES
+# new style of pivoting (exec -c would set an empty environment in bash)
 exec run-init -c dev/console /mnt /sbin/init || error "$init_runinit"
