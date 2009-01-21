@@ -142,6 +142,12 @@ config_dreshal
 # acpi and powersave - distro dependent function config_acpi
 config_acpi
 
+# configure automounter
+config_automount
+
+# configure bluetooth services
+config_bt
+
 #######################################################################
 # network(ed) services
 

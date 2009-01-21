@@ -6,7 +6,7 @@
 #		New settings are simply appended, so that they might 
 #		overwrite previously defined variables 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 30-01-2006
 #		Blabla
 #		Blub
 #
@@ -76,6 +76,10 @@ cell_server="132.230.6.237 132.230.6.236 132.230.6.235"
 start_samba="may"
 netbios_workgroup="dxs-network"
 
+# automounter home (/local_dir - top level directories only) and source 
+# (server:/path)
+automnt_dir="/home"
+automnt_src="10.8.4.254:/home"
 
 # configure and start vmware services
 vmware="no"
