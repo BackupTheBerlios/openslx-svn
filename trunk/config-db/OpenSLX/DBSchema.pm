@@ -311,7 +311,7 @@ sub synchronizeAttributesWithDefaultSystem
 
 	# fetch all known attributes from attribute roster and merge these 
 	# into the existing attributes of the default system
-	my $attrInfo = OpenSLX::AttributeRoster::getAttrInfo();
+	my $attrInfo = OpenSLX::AttributeRoster->getAttrInfo();
 	foreach my $attr (keys %$attrInfo) {
 		next if exists $defaultSystem->{attrs}->{$attr};
 		$defaultSystem->{attrs}->{$attr} = $attrInfo->{$attr}->{default};
