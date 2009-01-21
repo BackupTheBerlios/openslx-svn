@@ -22,7 +22,8 @@ preinit () {
 }
 
 postinit () {
-  # Nothing to do yet
+  # A command seems to be necessary here
+  echo ""  
 }
 
 # AUS SuSE-9.3
