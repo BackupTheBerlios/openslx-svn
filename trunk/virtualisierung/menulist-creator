@@ -1,0 +1,206 @@
+#!/bin/bash
+
+################################################################################
+## Creates vmware and vbox (script creation for vbox is not implented yet)
+## runscripts from xmlfiles.
+## Use template file runvmware-v2 for executeables
+##
+##
+## Structure:
+##   ${vmdir}/$image.xml                    configurationfile
+##   ${vmdir}/$image.vmdk                   vmware image file 
+##   ${vmdir}/$image.vbox                   vbox image file 
+##   ${vmdir}/runscripts/$pool/*.vmware     vmware runscript 
+##   ${vmdir}/runscripts/$pool/*.vbox       virtualbox runscript 
+##   ${vmdir}/templates/runvmware-v2        image exec template script
+################################################################################
+
+#TODO: check first if this xml file should be used, if not jump out of the
+# while loop. reducee checks and resources
+
+# Just needed if vmdir is somewhere else
+vmdir="." && cd ${vmdir}
+
+# File for dektopentrys
+#TODO: where to put?
+desktopentry="/todø/fuck"
+
+# template for runvmware
+templatevmware="./templates/runvmware-v2"
+
+
+# Take all xml files and work with them
+for xml in *.xml;do
+  
+  # converts the XML file to utf-8, whyever we need that
+  # inefficient here, because we don't need utf-8 for every xml file
+  # but most secure place. Else the structure gets screwed.
+  #TODO: perhaps we can kick out the whole UTF-8 shit, if the admins
+  # are not able to give us the correct format, we shouldnt fix it
+  iconv -c -f utf-8 -t utf-8 < ${xml} > ${xml}.utf
+
+
+  ##############################################################################
+  ## get needed information from xml file and check them if needed
+  ##############################################################################
+
+ 
+  # get image name
+  image=`grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
+
+  # Test if correct defined
+  image_type=`echo $image|sed 's/.*\.//'`
+  if [ ${image} != "vmdk"  -o  ${image} != "vdi" ]; then
+    # TODO: Test
+    echo "PANIC, image is not correct defined in ${xml}."
+    echo "Image has to end with vdi or vmdk!"
+    exit 0
+  fi
+
+
+  # get information if the current image should be used
+  # active when active=1 image, else disabled
+  active=`grep -i "<active param=\"true\"" ${xml} | wc -l`
+
+
+  # get list where the current image should be used
+  pools=`grep -i "<pools param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
+
+ 
+  # Virtualmachine (vmware or virtualbox)?
+  vm=`grep -i "<virtualmachine param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
+  # Test if correct defined
+  if [ ${vm} != "vbox"  -o  ${vm} != "vmware" ]; then
+    # TODO: Test
+    echo "PANIC, virtualmachine not correct defined in ${xml}"
+    exit 0
+  fi
+
+  # Test if vbox and wrong image
+  if [ ${vm} = "vbox"  -a  ${image_type} != "vdi" ]; then
+    # TODO: Test
+    echo "PANIC, virtualmachine vbox cant use image type defined in ${xml}"
+    exit 0
+  fi
+
+  # Test if vmware and wrong image 
+  if [ ${vm} = "vmware"  -a  ${image_type} != "vmdk" ]; then
+    # TODO: Test
+    echo "PANIC, virtualmachine vmware cant use image type defined in ${xml}"
+    exit 0
+  fi
+
+  
+  # Connectiontype of vm (nat or bridged)?
+  network=`grep -i "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
+
+  # Test if correct defined
+  if [ ${network} != "nat"  -a  ${network} != "bridged" ]; then
+    # TODO: test
+    echo "PANIC, network connection not correct defined in ${xml}"
+    exit 0
+  fi
+
+  
+  # os running in vmware?
+  os=`grep -i "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
+  if [ ${os} != "Linux"  -a  ${os} != "Windows XP" ]; then
+    # TODO: test
+    echo "PANIC, os in virtual machine not correct defined in ${xml}"
+    exit 0
+  fi
+    
+   
+  # get short image description
+  short_description=`grep "short_description param=\"" ${xml}.utf | sed -e "s/&.*;/; /g" | awk -F "\"" '{print $2}'`
+  # if ${short_description} not defined use ${image}
+  short_description=${short_description:-"${image}"}
+ 
+
+  # Get the long image description
+  long_description=`grep "long_description param=\"" ${xml}.utf | sed -e "s/&.*;/; /g" | awk -F "\"" '{print $2}'`
+
+
+  # Informations if we need for XDM
+  xdm=`grep "xdm param=\"" ${xml} | awk -F "\"" '{print $2}'`
+
+  # Test if correct defined
+  if [ ${xdm} != "true"  -a  ${xdm} != "false" ]; then
+    # TODO: test
+    echo "PANIC, XDM usage not correct defined in ${xml}"
+    exit 0
+  fi
+
+  
+  ##############################################################################
+  ## main part,
+  ##############################################################################
+  # Main part, creates desktopentry and image run script
+
+ 
+  # work with the different pools and...
+  for i in ${pools}; do 
+    # ... make sure we have the different pool directorys, else create it
+    if [ ! -d ${i} ]; then
+      mkdir -p ${i}
+    fi
+    # ... remove startscript if it isn't active.
+    if [ ${active} -ne 1 ]; then
+      if [ -f runscripts/${i}/${image}.vmware -o runscripts/${i}/${image}.virtualbox ]; then
+        rm -rf runscripts/${i}/${image}.*
+      fi
+    fi
+
+
+    # ... create desktopentry
+    if [ ${active} -eq 1 ]; then
+
+      # create desktopentry
+      echo -e "\nCreating runfiles for ${image}\n"
+      # create the desktopentry
+      #TODO: change it with < EOF, >> isnt nice for so much lines
+      echo "Desktop entry for ${image}" >> ${desktopentry}
+      echo "[Desktop Entry]" >> ${desktopentry}
+      echo "X-SuSE-translate=true" >> ${desktopentry}
+      echo "Encoding=UTF-8" >> ${desktopentry}
+      echo "Type=XSession" >> ${meulist}
+      #TODO: Fix path
+      echo "Exec=/path/to/the/execfile/${image}" >> ${desktopentry}
+      echo "Name=${short_description}" >> ${desktopentry}
+      echo "Comment=${comment}" >> ${desktopentry}
+      #TODO: I dont like SLXGrp as variable herein, why we need it here?  echo "SLXGrp=${pools}" >> ${desktopentry} echo "XDM=${xdm}" >> ${desktopentry}
+      echo "" >> ${desktopentry}
+    fi
+
+    
+################################################################################
+## TODO: remember default/ chemie/ option
+## delete old desktop list
+## fucking pools/directory hirarchy... test it with running script and find
+## that way the error
+################################################################################
+    # If we have vmware
+
+    if [ ${vm} = "vmware" ]; then
+
+      sed -e "s/imagename=\"CHANGEIT\"/imagename=\"${image}\"/" \
+          -e "s/displayname=\"CHANGEIT\"/displayname=\"${short_description}\"" \
+          -e "s/vmostype=\"CHANGEIT\"/vmostype=\"${os}\"" \
+          -e "s/network=\"CHANGEIT\"/network=\"${network}\"" \
+      ${templatevmware} \
+      > runscripts/${i}/${image}.runvmware
+
+    # if we have virtualbox, can only be vbox cause checked above
+    else 
+      echo "Currently Virtualbox isn't implented"
+      exit 0
+    fi
+
+
+  done
+
+done
+
+
+# Delete all .utf files, we dont need them anymore
+rm -f *.xml.utf
