@@ -97,7 +97,6 @@ else
   echo -e "${error_msg}${e_msg}${error_shell}"
   # load usb modules to have keyboard enabled - they might have to be
   # copied into initramfs with mkdxsinitramfs ...
-  modprobe -a usbcore uhci-hcd ohci-hcd usbhid >/dev/null 2>&1
   /bin/sh
   echo -n "Reboot now? [y]"
   exec < /dev/console > /dev/console

@@ -82,6 +82,7 @@ after this file was created on server."
 init_errcfg="of this client did not finish in\n  time. You might check the \
 process list and list the modules loaded until\n  now."
 init_errhw="  For some reason the hardware autoconfig $init_errcfg"
+init_errxorg="  For some reason no xorg.conf appeared" 
 init_errsw="  For some reason the software configuration  $init_errcfg"
 init_wait="  Waited $i ticks to unmount kernel module directory ..."
 init_errumnt="  Unmount of the kernel modules directory \

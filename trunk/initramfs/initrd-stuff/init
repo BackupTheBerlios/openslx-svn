@@ -593,6 +593,9 @@ fi
 waitfor /tmp/hwcfg 30000 || error "$init_errhw"
 [ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
   >> /mnt/etc/udev/rules.d/04-scanner.rules
+# wait for completion of Xorg configuration and finalize it
+waitfor /tmp/xready 20000 || error "$init_errxorg" nonfatal
+cp /etc/xorg.conf /mnt/${D_XF86CONFFILE}
 # wait a while for services setup to complete
 waitfor /tmp/svcfg 20000 || error "$init_errsw"
 # IP configuration is complete and should not be updated automatically
