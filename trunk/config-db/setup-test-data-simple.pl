@@ -18,14 +18,18 @@ openslxInit();
 
 my $openslxDB = connectConfigDB();
 
-if (!$clobber) {
+my @systems = fetchSystemsByFilter($openslxDB);
+my $systemCount = scalar(@systems)-1;
+	# ignore default system
+my @clients = fetchClientsByFilter($openslxDB);
+my $clientCount = scalar(@clients)-1;
+	# ignore default client
+if ($systemCount && $clientCount && !$clobber) {
 	my $yes = _tr('yes');
 	my $no = _tr('no');
-	my @systems = fetchSystemsByFilter($openslxDB);
-	my @clients = fetchClientsByFilter($openslxDB);
 	print _tr(qq[This will overwrite the current OpenSLX-database with an example dataset.
 All your data (%s systems and %s clients) will be lost!
-Do you want to continue(%s/%s)? ], scalar(@systems), scalar(@clients), $yes, $no);
+Do you want to continue(%s/%s)? ], $systemCount, $clientCount, $yes, $no);
 	my $answer = <>;
 	if ($answer !~ m[^\s*$yes]i) {
 		print "no - stopping\n";
@@ -77,7 +81,7 @@ my $system2Id = addSystem($openslxDB, {
 	'ramfs_nicmods' => '',
 	'ramfs_fsmods' => '',
 	'kernel' => "boot/vmlinuz-2.6.16.21-0.21-default",
-	'kernel_params' => "debug=3",
+	'kernel_params' => "debug=0",
 	'export_type' => 'nfs',
 	'attr_start_xdmcp' => 'kdm',
 });
