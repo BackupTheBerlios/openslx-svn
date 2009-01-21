@@ -35,7 +35,7 @@ use OpenSLX::Basics;
 ### 		fk		=> foreign key (integer)
 ################################################################################
 
-my $VERSION = 0.22;
+my $VERSION = 0.23;
 
 my $DbSchema = {
 	'version' => $VERSION,
@@ -189,6 +189,7 @@ my $DbSchema = {
 				'kernel:s.128',		# path to kernel file, relative to /boot
 				'kernel_params:s.512',	# kernel-param string for pxe
 				'hidden:b',				# hidden systems won't be offered for booting
+				'description:s.512',# visible description (for PXE TEXT)
 				'comment:s.1024',	# internal comment (optional, for admins)
 			],
 			'vals' => [
@@ -332,273 +333,297 @@ sub _synchronizeAttributesWithDefaultSystem
 ### methods for upgrading the DB schema
 ###
 ################################################################################
+my %DbSchemaHistory;
+
 sub _schemaUpgradeDBFrom
 {
 	my $self        = shift;
 	my $metaDB      = shift;
 	my $currVersion = shift;
 
-	$self->_upgradeDBTo0_2($metaDB) if $currVersion < 0.2;
-	$self->_upgradeDBTo0_21($metaDB) if $currVersion < 0.21;
-	$self->_upgradeDBTo0_22($metaDB) if $currVersion < 0.22;
-
-	return 1;
-}
-
-sub _upgradeDBTo0_2
-{
-	my $self   = shift;
-	my $metaDB = shift;
-
-	vlog(0, "upgrading schema version to 0.2");
-
-	# move attributes into separate tables ...
-	#
-	# ... system attributes ...
-	$metaDB->schemaAddTable(
-		'system_attr', 
-		[
-			'id:pk',
-			'system_id:fk',
-			'name:s.128',
-			'value:s.255',
-		]
-	);
-	foreach my $system ($metaDB->fetchSystemByFilter()) {
-		my %attrs;
-		foreach my $key (keys %$system) {
-			next if substr($key, 0, 5) ne 'attr_';
-			my $attrValue = $system->{$key} || '';
-			next if $system->{id} > 0 && !length($attrValue);
-			my $newAttrName = substr($key, 5);
-			$attrs{$newAttrName} = $attrValue;
-		}
-		$metaDB->setSystemAttrs($system->{id}, \%attrs);
+	foreach my $version (sort { $a cmp $b } keys %DbSchemaHistory) {
+		next if $currVersion >= $version;
+		$DbSchemaHistory{$version}->($metaDB);
 	}
-	$metaDB->schemaDropColumns(
-		'system',
-		[
-			'attr_automnt_dir',
-			'attr_automnt_src',
-			'attr_country',
-			'attr_dm_allow_shutdown',
-			'attr_hw_graphic',
-			'attr_hw_monitor',
-			'attr_hw_mouse',
-			'attr_late_dm',
-			'attr_netbios_workgroup',
-			'attr_nis_domain',
-			'attr_nis_servers',
-			'attr_ramfs_fsmods',
-			'attr_ramfs_miscmods',
-			'attr_ramfs_nicmods',
-			'attr_ramfs_screen',
-			'attr_sane_scanner',
-			'attr_scratch',
-			'attr_slxgrp',
-			'attr_start_alsasound',
-			'attr_start_atd',
-			'attr_start_cron',
-			'attr_start_dreshal',
-			'attr_start_ntp',
-			'attr_start_nfsv4',
-			'attr_start_printer',
-			'attr_start_samba',
-			'attr_start_snmp',
-			'attr_start_sshd',
-			'attr_start_syslog',
-			'attr_start_x',
-			'attr_start_xdmcp',
-			'attr_tex_enable',
-			'attr_timezone',
-			'attr_tvout',
-			'attr_vmware',
-		],
-		[
-			'id:pk',
-			'export_id:fk',
-			'name:s.64',
-			'label:s.64',
-			'kernel:s.128',
-			'kernel_params:s.512',
-			'hidden:b',
-			'comment:s.1024',
-		]
-	);
-	#
-	# ... client attributes ...
-	$metaDB->schemaAddTable(
-		'client_attr',
-		[
-			'id:pk',
-			'client_id:fk',
-			'name:s.128',
-			'value:s.255',
-		]
-	);
-	foreach my $client ($metaDB->fetchClientByFilter()) {
-		my %attrs;
-		foreach my $key (keys %$client) {
-			next if substr($key, 0, 5) ne 'attr_';
-			my $attrValue = $client->{$key} || '';
-			next if !length($attrValue);
-			my $newAttrName = substr($key, 5);
-			$attrs{$newAttrName} = $attrValue;
+
+	return 1;
+}
+
+%DbSchemaHistory = (
+	0.2 => sub {
+		my $metaDB = shift;
+	
+		vlog(0, "upgrading schema version to 0.2");
+	
+		# move attributes into separate tables ...
+		#
+		# ... system attributes ...
+		$metaDB->schemaAddTable(
+			'system_attr', 
+			[
+				'id:pk',
+				'system_id:fk',
+				'name:s.128',
+				'value:s.255',
+			]
+		);
+		foreach my $system ($metaDB->fetchSystemByFilter()) {
+			my %attrs;
+			foreach my $key (keys %$system) {
+				next if substr($key, 0, 5) ne 'attr_';
+				my $attrValue = $system->{$key} || '';
+				next if $system->{id} > 0 && !length($attrValue);
+				my $newAttrName = substr($key, 5);
+				$attrs{$newAttrName} = $attrValue;
+			}
+			$metaDB->setSystemAttrs($system->{id}, \%attrs);
 		}
-		$metaDB->setClientAttrs($client->{id}, \%attrs);
-	}
-	$metaDB->schemaDropColumns(
-		'client',
-		[
-			'attr_automnt_dir',
-			'attr_automnt_src',
-			'attr_country',
-			'attr_dm_allow_shutdown',
-			'attr_hw_graphic',
-			'attr_hw_monitor',
-			'attr_hw_mouse',
-			'attr_late_dm',
-			'attr_netbios_workgroup',
-			'attr_nis_domain',
-			'attr_nis_servers',
-			'attr_sane_scanner',
-			'attr_scratch',
-			'attr_slxgrp',
-			'attr_start_alsasound',
-			'attr_start_atd',
-			'attr_start_cron',
-			'attr_start_dreshal',
-			'attr_start_ntp',
-			'attr_start_nfsv4',
-			'attr_start_printer',
-			'attr_start_samba',
-			'attr_start_snmp',
-			'attr_start_sshd',
-			'attr_start_syslog',
-			'attr_start_x',
-			'attr_start_xdmcp',
-			'attr_tex_enable',
-			'attr_timezone',
-			'attr_tvout',
-			'attr_vmware',
-		],
-		[
-			'id:pk',
-			'name:s.128',
-			'mac:s.20',
-			'boot_type:s.20',
-			'unbootable:b',
-			'kernel_params:s.128',
-			'comment:s.1024',
-		]
-	);
-	#
-	# ... group attributes ...
-	$metaDB->schemaAddTable(
-		'group_attr',
-		[
-			'id:pk',
-			'group_id:fk',
-			'name:s.128',
-			'value:s.255',
-		]
-	);
-	foreach my $group ($metaDB->fetchGroupByFilter()) {
-		my %attrs;
-		foreach my $key (keys %$group) {
-			next if substr($key, 0, 5) ne 'attr_';
-			my $attrValue = $group->{$key} || '';
-			next if !length($attrValue);
-			my $newAttrName = substr($key, 5);
-			$attrs{$newAttrName} = $attrValue;
+		$metaDB->schemaDropColumns(
+			'system',
+			[
+				'attr_automnt_dir',
+				'attr_automnt_src',
+				'attr_country',
+				'attr_dm_allow_shutdown',
+				'attr_hw_graphic',
+				'attr_hw_monitor',
+				'attr_hw_mouse',
+				'attr_late_dm',
+				'attr_netbios_workgroup',
+				'attr_nis_domain',
+				'attr_nis_servers',
+				'attr_ramfs_fsmods',
+				'attr_ramfs_miscmods',
+				'attr_ramfs_nicmods',
+				'attr_ramfs_screen',
+				'attr_sane_scanner',
+				'attr_scratch',
+				'attr_slxgrp',
+				'attr_start_alsasound',
+				'attr_start_atd',
+				'attr_start_cron',
+				'attr_start_dreshal',
+				'attr_start_ntp',
+				'attr_start_nfsv4',
+				'attr_start_printer',
+				'attr_start_samba',
+				'attr_start_snmp',
+				'attr_start_sshd',
+				'attr_start_syslog',
+				'attr_start_x',
+				'attr_start_xdmcp',
+				'attr_tex_enable',
+				'attr_timezone',
+				'attr_tvout',
+				'attr_vmware',
+			],
+			[
+				'id:pk',
+				'export_id:fk',
+				'name:s.64',
+				'label:s.64',
+				'kernel:s.128',
+				'kernel_params:s.512',
+				'hidden:b',
+				'comment:s.1024',
+			]
+		);
+		#
+		# ... client attributes ...
+		$metaDB->schemaAddTable(
+			'client_attr',
+			[
+				'id:pk',
+				'client_id:fk',
+				'name:s.128',
+				'value:s.255',
+			]
+		);
+		foreach my $client ($metaDB->fetchClientByFilter()) {
+			my %attrs;
+			foreach my $key (keys %$client) {
+				next if substr($key, 0, 5) ne 'attr_';
+				my $attrValue = $client->{$key} || '';
+				next if !length($attrValue);
+				my $newAttrName = substr($key, 5);
+				$attrs{$newAttrName} = $attrValue;
+			}
+			$metaDB->setClientAttrs($client->{id}, \%attrs);
 		}
-		$metaDB->setGroupAttrs($group->{id}, \%attrs);
-	}
-	$metaDB->schemaDropColumns(
-		'groups',
-		[
-			'attr_automnt_dir',
-			'attr_automnt_src',
-			'attr_country',
-			'attr_dm_allow_shutdown',
-			'attr_hw_graphic',
-			'attr_hw_monitor',
-			'attr_hw_mouse',
-			'attr_late_dm',
-			'attr_netbios_workgroup',
-			'attr_nis_domain',
-			'attr_nis_servers',
-			'attr_sane_scanner',
-			'attr_scratch',
-			'attr_slxgrp',
-			'attr_start_alsasound',
-			'attr_start_atd',
-			'attr_start_cron',
-			'attr_start_dreshal',
-			'attr_start_ntp',
-			'attr_start_nfsv4',
-			'attr_start_printer',
-			'attr_start_samba',
-			'attr_start_snmp',
-			'attr_start_sshd',
-			'attr_start_syslog',
-			'attr_start_x',
-			'attr_start_xdmcp',
-			'attr_tex_enable',
-			'attr_timezone',
-			'attr_tvout',
-			'attr_vmware',
-		],
-		[
-			'id:pk',
-			'name:s.128',
-			'priority:i',
-			'comment:s.1024',
-		]
-	);
+		$metaDB->schemaDropColumns(
+			'client',
+			[
+				'attr_automnt_dir',
+				'attr_automnt_src',
+				'attr_country',
+				'attr_dm_allow_shutdown',
+				'attr_hw_graphic',
+				'attr_hw_monitor',
+				'attr_hw_mouse',
+				'attr_late_dm',
+				'attr_netbios_workgroup',
+				'attr_nis_domain',
+				'attr_nis_servers',
+				'attr_sane_scanner',
+				'attr_scratch',
+				'attr_slxgrp',
+				'attr_start_alsasound',
+				'attr_start_atd',
+				'attr_start_cron',
+				'attr_start_dreshal',
+				'attr_start_ntp',
+				'attr_start_nfsv4',
+				'attr_start_printer',
+				'attr_start_samba',
+				'attr_start_snmp',
+				'attr_start_sshd',
+				'attr_start_syslog',
+				'attr_start_x',
+				'attr_start_xdmcp',
+				'attr_tex_enable',
+				'attr_timezone',
+				'attr_tvout',
+				'attr_vmware',
+			],
+			[
+				'id:pk',
+				'name:s.128',
+				'mac:s.20',
+				'boot_type:s.20',
+				'unbootable:b',
+				'kernel_params:s.128',
+				'comment:s.1024',
+			]
+		);
+		#
+		# ... group attributes ...
+		$metaDB->schemaAddTable(
+			'group_attr',
+			[
+				'id:pk',
+				'group_id:fk',
+				'name:s.128',
+				'value:s.255',
+			]
+		);
+		foreach my $group ($metaDB->fetchGroupByFilter()) {
+			my %attrs;
+			foreach my $key (keys %$group) {
+				next if substr($key, 0, 5) ne 'attr_';
+				my $attrValue = $group->{$key} || '';
+				next if !length($attrValue);
+				my $newAttrName = substr($key, 5);
+				$attrs{$newAttrName} = $attrValue;
+			}
+			$metaDB->setGroupAttrs($group->{id}, \%attrs);
+		}
+		$metaDB->schemaDropColumns(
+			'groups',
+			[
+				'attr_automnt_dir',
+				'attr_automnt_src',
+				'attr_country',
+				'attr_dm_allow_shutdown',
+				'attr_hw_graphic',
+				'attr_hw_monitor',
+				'attr_hw_mouse',
+				'attr_late_dm',
+				'attr_netbios_workgroup',
+				'attr_nis_domain',
+				'attr_nis_servers',
+				'attr_sane_scanner',
+				'attr_scratch',
+				'attr_slxgrp',
+				'attr_start_alsasound',
+				'attr_start_atd',
+				'attr_start_cron',
+				'attr_start_dreshal',
+				'attr_start_ntp',
+				'attr_start_nfsv4',
+				'attr_start_printer',
+				'attr_start_samba',
+				'attr_start_snmp',
+				'attr_start_sshd',
+				'attr_start_syslog',
+				'attr_start_x',
+				'attr_start_xdmcp',
+				'attr_tex_enable',
+				'attr_timezone',
+				'attr_tvout',
+				'attr_vmware',
+			],
+			[
+				'id:pk',
+				'name:s.128',
+				'priority:i',
+				'comment:s.1024',
+			]
+		);
+	
+		$metaDB->schemaSetDBVersion(0.2);
+	
+		return 1;
+	},
+	0.21 => sub {
+		my $metaDB = shift;
+	
+		vlog(0, "upgrading schema version to 0.21");
+	
+		# add new table installed_plugins
+		$metaDB->schemaAddTable(
+			'installed_plugin', 
+			[
+				'id:pk',
+				'vendor_os_id:fk',
+				'plugin_name:s.64',
+			]
+		);
+	
+		$metaDB->schemaSetDBVersion(0.21);
+	
+		return 1;
+	},
+	0.22 => sub {
+		my $metaDB = shift;
+	
+		vlog(0, "upgrading schema version to 0.22");
+	
+		# dummy schema change, just to trigger the attribute synchronization
+		# into the default system
+	
+		$metaDB->schemaSetDBVersion(0.22);
+	
+		return 1;
+	},
+	0.23 => sub {
+		my $metaDB = shift;
 
-	$metaDB->schemaSetDBVersion(0.2);
-
-	return 1;
-}
-
-sub _upgradeDBTo0_21
-{
-	my $self   = shift;
-	my $metaDB = shift;
-
-	vlog(0, "upgrading schema version to 0.21");
-
-	# move attributes into separate tables ...
-	#
-	# ... system attributes ...
-	$metaDB->schemaAddTable(
-		'installed_plugin', 
-		[
-			'id:pk',
-			'vendor_os_id:fk',
-			'plugin_name:s.64',
-		]
-	);
-
-	$metaDB->schemaSetDBVersion(0.21);
-
-	return 1;
-}
-
-sub _upgradeDBTo0_22
-{
-	my $self   = shift;
-	my $metaDB = shift;
-
-	vlog(0, "upgrading schema version to 0.22");
-
-	# dummy schema change, just to trigger the attribute synchronization
-	# into the default system
-
-	$metaDB->schemaSetDBVersion(0.22);
-
-	return 1;
-}
+		vlog(0, "upgrading schema version to 0.23");
+	
+		# add new column system.descripion
+		$metaDB->schemaAddColumns(
+			'system',
+			[
+				'description:s.512',
+			],
+			undef,
+			[
+				'id:pk',
+				'export_id:fk',
+				'name:s.64',
+				'label:s.64',
+				'kernel:s.128',
+				'kernel_params:s.512',
+				'hidden:b',
+				'description:s.512',
+				'comment:s.1024',
+			]
+		);
+	
+		$metaDB->schemaSetDBVersion(0.23);
+	
+		return 1;
+	},
+);
 
 1;
