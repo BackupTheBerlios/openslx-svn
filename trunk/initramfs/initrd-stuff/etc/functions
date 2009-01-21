@@ -125,19 +125,19 @@ esac
 #############################################################################
 # compute prefix bit number from netmask
 nm2pref () {
-set `IFS="."; echo $1`
+set $(IFS="."; echo $1)
 local n=0
 local i
   for i in $1 $2 $3 $4 ; do
     case $i in
         0) break ;;
-      128) n=`expr $n + 1` ; break ;;
-      192) n=`expr $n + 2` ; break ;;
-      224) n=`expr $n + 3` ; break ;;
-      240) n=`expr $n + 4` ; break ;;
-      252) n=`expr $n + 6` ; break ;;
-      254) n=`expr $n + 7` ; break ;;
-      255) n=`expr $n + 8` ; continue ;;
+      128) n=$(($n + 1)) ; break ;;
+      192) n=$(($n + 2)) ; break ;;
+      224) n=$(($n + 3)) ; break ;;
+      240) n=$(($n + 4)) ; break ;;
+      252) n=$(($n + 6)) ; break ;;
+      254) n=$(($n + 7)) ; break ;;
+      255) n=$(($n + 8)) ; continue ;;
     esac
   done
 echo $n
@@ -193,23 +193,6 @@ if [ -n "$if" ] ; then
 else
   error "$init_nowlan"
 fi
-}
-#############################################################################
-# nfs mounter for root filesystem and other sources
-nfsmnt ()
-{
-local nfsroot=$1
-local dest=$2
-local ret=0
-[ -z "$dest" ] && dest="/mnt"
-# often nfs is just a module and not compiled directly into the kernel
-[ -f /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko ]  && \
-  { modprobe ${MODPRV} nfs || error "$error_modnfs"; }
-# busybox mount has to be compiled with nfs mount support otherwise
-# --> error "$error_mntt"
-mount -n -t nfs -o ro,nolock,tcp $nfsroot $dest || \
-  mount -n -t nfs -o ro,nolock,udp $nfsroot $dest || ret=1
-return $ret
 }
 #############################################################################
 # disk formatter and mounter. some proper error message output should be
@@ -457,7 +440,7 @@ local count=0
 [ -z $maxwait ] && maxwait=5000
 while [ ! -e $file ] ; do
   echo "waiting ........." > /dev/null
-  count=$(expr $count + 1)
+  count=$(($count + 1))
   [ $count -gt $maxwait ] && return 1
 done
 return 0
@@ -805,8 +788,8 @@ local count=10
 # should be executed before the normal runlevel scripts. Proper shutdown is
 # not needed!?
 for i in boot.slx ${D_INITSCRIPTS}; do
-  count=`expr $count + 1`
-  revcnt=`expr 41 - $count`
+  count=$(($count + 1))
+  revcnt=$((41 - $count))
   ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/S${count}$i
   # uncomment if proper shutdown of bootup scripts is required
   #ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/K${revcnt}$i
@@ -818,19 +801,20 @@ done
 include_in_fsroot_union () {
   union_id=0 # used to have guarantee differing names for the unions mount point
   union_type=$1
-  for ROOTFS in `echo $2 |sed 's/,/ /g'`; do
-    union_id=$(( $union_id + 1 ))
+  for ROOTFS in $(echo $2 |sed 's/,/ /g'); do
+    union_id=$(($union_id + 1))
     srvproto=$(uri_token $ROOTFS prot)
     case $srvproto in
           nfs)
             # nfsroot consists now of two different parts
             root_path=/$(uri_token $ROOTFS path)
             nfsserver=$(uri_token $ROOTFS server)
-            echo -e "NFS $ROOTFS parsed to $srvproto - $nfsserver - \
-              $root_path" >> /tmp/felixtestlog
             mkdir -p /mnt/tmp/${root_path}_${union_id}
-            nfsmnt $nfsserver:$root_path /mnt/tmp/${root_path}_${union_id} || error \
-	      "Fehler beim mounten der zusatzunion (FIXME)"
+            for proto in tcp udp fail; do
+              [ $proto = "fail" ] && { error "$scfg_nfs"; break; }
+              mount -n -t nfs -o ro,nolock,$proto $nfsserver:$root_path \
+                /mnt/tmp/${root_path}_${union_id} && break
+            done
           ;;
           *nbd)
 	    echo "Not working yet"

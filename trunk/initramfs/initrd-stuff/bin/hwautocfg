@@ -285,18 +285,18 @@ fi
 [ $DEBUGLEVEL -eq 21 ] && echo "** 1st hwdetection finished at $(sysup)"
 # load ide drivers first, takes a while to initialize
 for driver in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
-    ahci triflex aec62xx cs5530 ns87415 sc1200 trm290 alim15x3 \
+    ahci triflex aec62xx cs5530 cs5535 ns87415 sc1200 trm290 alim15x3 \
     cy82c693 opti621 serverworks via82cxxx amd74xx pata_amd \
     pdc202xx_new siimage atiixp hpt34x pdc202xx_old sis5513; do
   strinfile " ${driver}" /tmp/hwsetup.info && {
     ide="yes"
-    #modwaittime=$(expr 10 + ${modwaittime})
+    #modwaittime=$((10 + ${modwaittime}))
     modprobe ${MODPRV} ${driver} &
     driverlist="${driverlist} ${driver}"; usleep ${modwaittime}; }
 done
-# check for IDE/SCSI (SATA)
-for driver in ata_piix sata_via sata_nv sata_sil sata_sis sata_svw \
-    sata_sx4 sata_uli sata_vsc sata_qstor sata_promise sata_mv ahci; do
+# check for IDE/SCSI (SATA); changes in newer kernels prefix pata/sata
+for driver in ata_piix sata_via sata_mv sata_nv sata_sil sata_sis sata_svw \
+    sata_sx4 sata_uli sata_vsc sata_qstor sata_promise ahci; do
   strinfile " ${driver}" /tmp/hwsetup.info && {
     #SCSIIDE="yes"
     modprobe ${MODPRV} ${driver} &

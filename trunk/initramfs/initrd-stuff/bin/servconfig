@@ -69,12 +69,12 @@ else
 fi
 while [ $len -le $smax ] ; do
   vdstr="$vdstr "
-  len=$(expr $len + 1)
+  len=$(($len + 1))
 done
 len=$(expr length $host_name)
 while [ $len -le 30 ] ; do
   space="$space "
-  len=$(expr $len + 1)
+  len=$(($len + 1))
 done
 echo "
    WELCOME TO                 $space        \n (\l)
@@ -135,8 +135,11 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
     ;;
     *)
     # we expect nfs mounts here ...
-    nfsmnt ${vmimgserv}:${vmimgpath} /mnt/var/lib/vmware || {
-      error "${scfg_nfs}" nonfatal; noimg=yes; }
+    for proto in tcp udp fail; do
+      [ $proto = "fail" ] && { error "$scfg_nfs" nonfatal; noimg=yes; break;}
+      mount -n -t nfs -o ro,nolock,$proto ${vmimgserv}:${vmimgpath} \
+        /mnt/var/lib/vmware && break
+    done
     ;;
   esac
   # if only the path is given expect a local source within exported
