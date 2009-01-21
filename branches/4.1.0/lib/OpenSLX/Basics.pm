@@ -26,6 +26,7 @@ $VERSION = 1.01;
 	&warn &die &executeInSubprocess &slxsystem
 	&vlog
 	&instantiateClass
+	&addCleanupFunction &removeCleanupFunction
 );
 
 use vars qw(%openslxConfig %cmdlineConfig);
@@ -134,6 +135,8 @@ my %openslxCmdlineArgs = (
 	'verbose-level=i' => \$cmdlineConfig{'verbose-level'},
 		# level of logging verbosity (0-3)
 );
+
+my %cleanupFunctions;
 
 # filehandle used for logging:
 my $openslxLog = *STDERR;
@@ -321,6 +324,33 @@ sub executeInSubprocess
 }
 
 # ------------------------------------------------------------------------------
+sub addCleanupFunction
+{
+	my $name = shift;
+	my $func = shift;
+
+	$cleanupFunctions{$name} = $func;
+}
+
+# ------------------------------------------------------------------------------
+sub removeCleanupFunction
+{
+	my $name = shift;
+
+	delete $cleanupFunctions{$name};
+}
+
+# ------------------------------------------------------------------------------
+sub invokeCleanupFunctions
+{
+	my @funcNames = keys %cleanupFunctions;
+	foreach my $name (@funcNames) {
+		vlog 2, "invoking cleanup function '$name'...";
+		$cleanupFunctions{$name}->();
+	}
+}
+
+# ------------------------------------------------------------------------------
 sub slxsystem
 {
 	vlog 2, _tr("executing: %s", join ' ', @_);
@@ -350,6 +380,8 @@ sub warn
 # ------------------------------------------------------------------------------
 sub die
 {
+	invokeCleanupFunctions();
+
 	my $msg = shift;
 	$msg =~ s[^\*\*\* ][]igms;
 	$msg =~ s[^][*** ]igms;
