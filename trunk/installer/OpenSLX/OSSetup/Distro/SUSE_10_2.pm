@@ -147,6 +147,7 @@ sub initDistroInfo
 		i586/mkinitrd-1.2-149.i586.rpm
 		i586/mktemp-1.5-763.i586.rpm
 		i586/module-init-tools-3.2.2-62.i586.rpm
+		i586/nbd-2.8.7-14.i586.rpm
 		i586/ncurses-5.5-42.i586.rpm
 		i586/net-tools-1.60-606.i586.rpm
 		i586/openldap2-client-2.3.27-25.i586.rpm
@@ -162,6 +163,7 @@ sub initDistroInfo
 		i586/readline-5.1-55.i586.rpm
 		i586/reiserfs-3.6.19-37.i586.rpm
 		i586/sed-4.1.5-21.i586.rpm
+		i586/squashfs-kmp-default-3.1_2.6.18.2_34-34.i586.rpm
 		i586/sysvinit-2.86-47.i586.rpm
 		i586/udev-103-12.i586.rpm
 		i586/util-linux-2.12r-61.i586.rpm
