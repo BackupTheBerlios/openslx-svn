@@ -38,8 +38,7 @@ config_distro () {
 # udev/hotplug - auto device discovery service
 udev_hotplug () {
   local result=0
-  [ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "  Hotplug subdirectory \
-  is missing! udev(d) might not work as expected." nonfatal
+  [ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "$df_errhotpl" nonfatal
   echo "Enabling hotplug/udev"
   udevstart || result=1
   udevd -d || result=1
@@ -56,8 +55,7 @@ udev_hotplug () {
 #  export UDEVD_EVENT_TIMEOUT=1
 #  echo "" > /proc/sys/kernel/hotplug
 #  udevd --daemon || result=1
-#else error "  udev daemon is not available. Some devices might not \
-#apprear." nonfatal
+#else error "df_errudev" nonfatal
 #fi
 #return $result
 #}

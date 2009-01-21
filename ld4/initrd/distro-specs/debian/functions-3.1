@@ -90,8 +90,7 @@ if [ "x$start_cron" = "xyes" ] ; then
 \nMAILTO=\n-*/15 * * * *\troot\ttest -x /usr/lib/cron/run-crons && \
 /usr/lib/cron/run-crons >/dev/null 2>&1\n" >/mnt/etc/crontab
   else
-    error "  The cron start script seems not to be installed, so requesting \
-\n  the start of cron services make no sense." nonfatal
+    error "$df_errcron" nonfatal
   fi 
 fi
 }

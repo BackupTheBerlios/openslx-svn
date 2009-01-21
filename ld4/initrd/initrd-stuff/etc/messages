@@ -120,7 +120,7 @@ df_errumod="    Failed to load the \"unix\" module. \
 df_errserv="seems not to be installed or start script is not available\n  \
 so requesting the start of service make no sense. Please disable service\n  \
 or install the files needed."
-df_errudev="  udev daemon is not available. Some devices might not apprear."
+df_errudev="  udev daemon is not available.  devices might not appear."
 df_errhotpl="  Hotplug subdirectory is missing! udev(d) might not work as \
 expected."
 df_errcron="  The cron start script $df_errserv" 
