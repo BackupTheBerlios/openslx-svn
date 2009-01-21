@@ -325,6 +325,9 @@ fi
 # configure kdm as display manager
 config_kdm () {
  rllinker "kdm" "25" "01"
+ if [ "x$start_xdmcp" = "xkdm" ]; then 
+   echo /usr/bin/kdm > /mnt/etc/X11/default-display-manager
+ fi
 #  ln -sf ../${D_INITDIR}/kdm /mnt/etc/rc3.d/K20kdm
 #  echo -e "\t/etc/${D_INITDIR}/kdm start >${LOGFILE} 2>&1\n\
 #    \t( sleep 120; ln -sf /etc/${D_INITDIR}/kdm /etc/rc3.d/S01kdm \
@@ -335,9 +338,6 @@ config_kdm () {
 config_dreshal () {
 if [ "x$start_dreshal" = "xyes" ]; then
   rllinker "dbus" "17" "20" 
-fi
-if [ "x$start_xdmcp" = "xkdm" ]; then 
-  echo /usr/bin/kdm > /mnt/etc/X11/default-display-manager
 fi
 }
 
