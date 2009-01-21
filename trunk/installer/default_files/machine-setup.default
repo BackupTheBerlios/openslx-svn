@@ -73,6 +73,10 @@ start_atd="no"
 # simple network management protocol for system monitoring
 start_snmp="no"
 
+# configure print service (may require additional files in ConfTGZ)
+# cups|lpd|no
+start_printer="no"
+
 # dbus, resource manager, hal (hardware abstraction layer) interoperate
 # tighly. There might be little different solutions within each distro
 start_dreshal="yes"

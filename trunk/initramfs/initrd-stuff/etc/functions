@@ -1170,8 +1170,13 @@ config_dreshal () {
 :
 }
 
-# configure automounter
+# configure automounter, simple NFSv3 imports only
 config_automount () {
+:
+}
+
+# configure print services / start requested printer daemon
+config_printer () {
 :
 }
 
@@ -1199,6 +1204,12 @@ config_vmware () {
 config_automount () {
 :
 }
+
+# configure samba service (not winbind, but nmbd, smbd)
+config_samba () {
+:
+}
+
 
 # start portmapper (needed at least for nfs and nis services)
 config_portmap () {

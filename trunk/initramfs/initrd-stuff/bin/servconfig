@@ -174,8 +174,8 @@ test -n "$domain_name_servers" && {
 
 #############################################################################
 # initial boot scripts
-# delete and create runlevel links for initial booting (SuSE, Debian,
-# ...)
+# delete and create runlevel links for initial booting (SuSE, Debian, Ubuntu,
+# Fedora, ...)
 initial_boot
 
 #############################################################################
@@ -251,6 +251,9 @@ fi
 config_automount
 # fi
 
+# configure print services / start requested printer daemon
+config_printer
+
 # configure bluetooth services
 config_bt
 
@@ -283,9 +286,10 @@ config_snmp
 config_afs
 
 # setup nfsv4/krb stuff
-# if nfsv4 required
 config_nfsv4
-# fi
+
+# configure samba service
+config_samba
 
 #############################################################################
 # NIS
