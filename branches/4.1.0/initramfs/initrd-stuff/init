@@ -259,9 +259,10 @@ if [ -n "$nodhcp" -a -z "$ldap" -a -z "$ipinfo" ] ; then
 clients. You\n# might want to add the token 'dhcp' for DHCP configuration, \
 'file(=source)'\n# for config file get via TFTP or 'ldap(=source)' for LDAP \
 configuration to\n# your kernel command line." >> /etc/machine-setup
-  if strinfile "clientip" /etc/machine-setup ; then
+  if strinfile "clientip" /etc/initramfs-setup ; then
     # IP configuration seems to be present in machine-setup file
-    . /etc/machine-setup
+    # TODO: FIX this, as it will clobber all kernel-cmdline values!
+    . /etc/initramfs-setup
     ipinfo="ip=$clientip:$serverip:$gateway:$subnet_mask"
   else
     error "$init_errip"
@@ -680,12 +681,13 @@ postinit
 
 # unmount the bind mounted modules directory
 export ticks
-for ticks in 0 400 1000 2000 5000 10000 ; do
-  usleep $ticks && umount -n /lib/modules/${KERNEL} 2>/dev/null && break
+for ticks in 0 1 2 5 10 20 30; do
+  sleep $ticks && umount -n /lib/modules/${KERNEL} 2>/dev/null && break
   error "$init_wait" nonfatal
 done
 
-[ $ticks -gt 1000 ] && error "$init_errumnt"
+mount 2>/dev/null | grep /lib/modules/${KERNEL} >/dev/null 2>&1 \
+  && error "$init_errumnt"
 # check for inittab file (might fail for new style init -> upstart)
 test -f /mnt/etc/inittab || test -d /mnt/etc/event.d || error "$init_erritab"
 # close runlevel script for stuff to execute during early bootup
