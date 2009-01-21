@@ -38,19 +38,23 @@ mkdir -p ${DEVDIR}/.udevdb
 echo 256 > /proc/sys/kernel/real-root-dev
 [ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
 
-# start device auto discovery (just the first case is tested yet)
-if [ -x /bin/udev -a -x /bin/udevstart ] ; then
+# start device auto discovery (just the second case is tested yet)
+if [ -d /etc/hotplug -a -d /etc/hotplug.d ] ; then
+  # older style udev/hotplug e.g. SuSE9.3
+  echo "Enabling hotplug/udev"
+  #echo "/bin/hotplug" > /proc/sys/kernel/hotplug
+  udevstart
+  udevd -d
+elif [ -x /bin/udev -a -x /bin/udevstart ] ; then
+  # new style udev e.g. SuSE10.0, Ubuntu5.10(?)
   echo "Starting udev"
   /bin/udevstart 
   if [ -x /bin/udevd ] ; then
     export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)
     export UDEVD_EVENT_TIMEOUT=1
     echo "" > /proc/sys/kernel/hotplug
-    udevd --daemon &
+    udevd --daemon
   fi
-elif [ -x /bin/hotplug ] ; then
-  echo "Enabling hotplug"
-  echo "/bin/hotplug" > /proc/sys/kernel/hotplug
 elif [ -s /dev.tgz ] ; then
   echo "Using traditional static /dev entries"
   tar -xpzf /dev.tgz -C / &

@@ -332,6 +332,8 @@ case "${DISTRO}" in
     case "${DISTRO_VER}" in
       9*)
         DISTRO_VER=9.3
+        # might be needed for older udev/hotplug
+        # cp -a ${ROOTDIR}/etc/hotplug* ${INSTDIR}/etc
       ;;
       10*|*)
         DISTRO_VER=10.0
