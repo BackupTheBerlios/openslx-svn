@@ -2,13 +2,13 @@
 #		linux diskless clients (included by init, hwautocfg,
 #		servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 07-03-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.4.1b
+# Version:      0.4.2a
 
 #######################################################################
 # generate events with the sysfs trigger
@@ -252,6 +252,33 @@ $commonerr"
   ;;
 esac
 echo "finished" > /tmp/dhcp-done
+}
+
+#######################################################################
+# function for retrieving configuration file (machine-setup) via tftp
+# from a predefined server or given source (file=tftp-server:/path via
+# kernel command line) 
+fileget () {
+for tftp in /bin/atftp /bin/tftp ; do
+  test -x $tftp && break
+done
+if [ -n "$FILESRC" ] ; then
+  cfgfile=${FILESRC#*:}
+  tftpserver=${FILESRC%:*}
+else
+  cfgfile="/tftpboot/dxs-config/$clientip.cfg"
+  tftpserver=$serverip
+fi
+# 
+case "$tftp" in
+  atftp)
+    atftp -g -r $cfgfile $tftpserver
+    ;;
+  tftp)
+    echo "get $cfgfile" | tftp $tftpserver
+    ;;
+esac
+echo "finished" > /tmp/file-done
 }
 
 #######################################################################

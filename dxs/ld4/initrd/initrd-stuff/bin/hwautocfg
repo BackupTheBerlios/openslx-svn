@@ -4,13 +4,13 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-03-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.3.1a
+# Version:      0.3.1b
 
 # local functions used within hwautocfg
 displaysetup () {
@@ -315,6 +315,10 @@ Please check that\n  hwsetup is properly installed and executable."
 DRIVERLIST=" disabled unknown ignore pcspkr synaptics keybdev"
 # driver blacklist (real modules which fail to load)
 DRIVERLIST=${DRIVERLIST}" hw_random ichxrom kanotix genericwheelusb "
+# hack for pseudo modules (not to load)
+for i in $DRIVERLIST ; do 
+  echo -e "alias\t$i\tusbcore" >> /etc/modprobe.conf
+done
 # load ide drivers first, takes a while to initialize
 for DRIVER in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
     triflex aec62xx cs5530 ns87415 sc1200 trm290 alim15x3 \

@@ -3,11 +3,11 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-03-2006
 #		Nico Dietrich
 #		Blub
 #
-# Version:      0.3.1b
+# Version:      0.3.1c
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 
@@ -244,19 +244,6 @@ mkdir -p ${INSTDIR}/usr/share
 # needed for KNOPPIX hwsetup not to confuse with ${D_SYSCONFDIR}
 mkdir -p ${INSTDIR}/etc/sysconfig
 
-# fixme!! Funktion ermittelt die Distro des Servers NICHT des Clients!!
-# if no distro name is set, try to find the correct one via lsb_release
-#if [ -z "${DISTRO}" ] ; then
-#  for i in ${ROOTDIR}/bin/lsb_release ${ROOTDIR}/usr/bin/lsb_release; do
-#    if [ -e $i ] ; then
-#      $i > /dev/null 2>&1 || break
-#      DISTRO=`. $i -i | sed "s/.*\t//"`
-#      DISTRO_VER=`. $i -r | sed "s/.*\t//"`
-#      break
-#    fi
-#  done
-#fi
-
 # if still no distro name set, try to find it using significant files
 if [ -z "${DISTRO}" ] ; then
   if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
@@ -366,6 +353,13 @@ for dhcp in dhclient dhcpcd pump ipconfig ; do
 done
 cobi $dhcp bin
 mkdir -p ${INSTDIR}/var/{lib,run}
+
+# tftp client binary for configuration via file - get machine-setup per
+# tftp from dhcp (or specified other) server
+for tftp in atftp tftp ; do
+  binfinder $tftp && break
+done
+cobi $tftp bin
 
 # debug binaries
 for bbins in \

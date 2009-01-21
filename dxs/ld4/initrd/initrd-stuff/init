@@ -2,13 +2,13 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 10-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-03-2006
 #		Bla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.2b
+# Version:      0.2.3a
 
 # functions common for all distros
 errmsg="functions file contains a lot of script \
@@ -53,6 +53,7 @@ udev_hotplug
 TMPFSSIZE="50%"
 echo "noldap" > /tmp/ldap-done
 echo "nodhcp" > /tmp/dhcp-done
+echo "nofile" > /tmp/file-done
 read KCMDLINE < /proc/cmdline
 export KCMDLINE
 for opts in ${KCMDLINE} ; do
@@ -81,6 +82,17 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     ldap*)
       LDAP="yes"
       rm /tmp/ldap-done;;
+    # if (external, via tftp) configuration file retrieval should 
+    # be triggered, if no source is given try dhcp server and
+    # predefined standard path
+    file)
+      FILE="yes"
+      rm /tmp/file-done;;
+    # file source with tftp server and file location on the server
+    file*)
+      FILE="yes"
+      FILESRC=${opts#file=}
+      rm /tmp/file-done;;
     # if ld.so.cache should not be generated
     noldsc)
       NOLDSC=yes;;
@@ -185,8 +197,8 @@ sub_netmask=$NM\ngateway=$GW\nserverip=$SERVER" \
 else
   noipyet="yes"
 fi
-# get configuration data via dhcp (with vendor code identifier if present in 
-# ${VCI} or ldap if available (in background)
+# get configuration data via dhcp (with vendor code identifier if present
+# in ${VCI} (from kernel command line) ...
 [ -n "$DHCP" ] && rundhcp ${VCI} &
 if [ -n "$noipyet" ] ; then
   waitfor /tmp/dhcp-done 20000
@@ -197,7 +209,10 @@ configuration via DHCP. You may want to add\n  a vendor code identifier \
 via kernel commandline (vci=VCI)."
   ipsetup $clientip $subnet_mask $gateway $broadcast_address eth0
 fi
+# ... or ldap if available (in background)
 [ -n "$LDAP" ] && ldapconf &
+# ... or via tftp file get (in background)
+[ -n "$FILE" ] && fileget &
 
 # if root filesystem should be imported via (d) network block device 
 if [ -n "${NBD}" ] ; then
@@ -398,8 +413,7 @@ d_mkbootld close
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null
 
-
-#bash
+bash
 
 # post init for some distro specific
 postinit

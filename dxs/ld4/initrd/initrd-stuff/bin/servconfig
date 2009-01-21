@@ -4,13 +4,13 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 07-03-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.0.2c
+# Version:      0.0.2e
 
 # check for configuration files to source
 
@@ -61,6 +61,9 @@ Using default\ncountry setting '${D_DEFAULTCOUNTRY}' defined in $0."
   country=${D_DEFAULTCOUNTRY}
 fi
 localization $country
+
+#######################################################################
+# setup passwd and shadow for local system users
 
 #######################################################################
 # dns and ip configuration
