@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/bash
 #
 # Description:  Script for generating dxs filesystem by
 #               cloning from rsync source for Diskless X Stations (v4.0)

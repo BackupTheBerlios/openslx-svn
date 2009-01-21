@@ -58,7 +58,7 @@ tarball:
 	case "$${OPENSLX_SVN_SNAPSHOT}" in \
 		yes|y|1) OPENSLX_VERSION_SVNREV=$$( svnversion) ;; \
 	esac; \
-	. VERSIONS; \
+	. ./VERSIONS; \
 	echo "Creating OpenSLX $${OPENSLX_VERSION_STRING} tar ball "; \
 	if test -e "../openslx-$${OPENSLX_VERSION_STRING}" -a \
 	! -L "../openslx-$${OPENSLX_VERSION_STRING}"; then \
@@ -68,19 +68,19 @@ tarball:
 	svn_repo_name=$$( pwd); \
 	svn_repo_name="$${svn_repo_name##*/}"; \
 	if ! test -L "../openslx-$${OPENSLX_VERSION_STRING}"; then \
-		pushd .. >/dev/null; \
+		cd .. >/dev/null; \
 		ln -s "$${svn_repo_name}" "openslx-$${OPENSLX_VERSION_STRING}"; \
-		popd >/dev/null; \
+		cd - >/dev/null; \
 		OPENSLX_SOURCEDIR_SYMLINK_CREATED="yes"; \
 	fi; \
-	pushd .. >/dev/null; \
+	cd .. >/dev/null; \
 	tar cfhj \
 		"$${svn_repo_name}/openslx-$${OPENSLX_VERSION_STRING}.tar.bz2" \
 		--exclude-from="$${svn_repo_name}/tools/tar_exclude_from" \
 		"openslx-$${OPENSLX_VERSION_STRING}/"; \
 	test "$${OPENSLX_SOURCEDIR_SYMLINK_CREATED}" = "yes" && \
 		rm -f "openslx-$${OPENSLX_VERSION_STRING}"; \
-	popd >/dev/null
+	cd - >/dev/null
 
 install:
 	@echo "Checking installation requirements..."; \
@@ -121,7 +121,8 @@ supported."; \
 	@# copy license
 	@cp COPYING $(SLX_BASE_PATH)
 	@# copy initramfs generator scripts (and inject SLX_CONFIG_PATH on the way):
-	@cp initramfs/{mkdxsinitrd,slxmkramfs} $(SLX_BIN_PATH)
+	@cp ./initramfs/mkdxsinitrd $(SLX_BIN_PATH)
+	@cp ./initramfs/slxmkramfs $(SLX_BIN_PATH)
 	@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
 	  -i $(SLX_BIN_PATH)/mkdxsinitrd
 	@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
@@ -181,7 +182,7 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 
 	@# create slxversion script:
 	@OPENSLX_VERSION_SVNREV=$$(svnversion .); \
-	. VERSIONS; \
+	. ./VERSIONS; \
 	  echo "echo $${OPENSLX_VERSION_STRING}" \
 	    > ${SLX_BIN_PATH}/slxversion
 	@chmod a+x ${SLX_BIN_PATH}/slxversion
@@ -195,11 +196,13 @@ vmware_install:
 	@echo -e "Please configure your exports (add $(SLX_VMWARE_PATH) to your list).\nCopy your *.vmdk files into $(SLX_VMWARE_PATH). For interactive mode add for each virtual machine (*.vmdk) a .desktop file into ./vmsessions (example file $(SLX_VMWARE_PATH)/templ/desktop.template). Don't forget to install Xdialog!"
 
 uninstall:
-	@echo -e "Uninstalling openslx.org project files but keeping configs \
-and stage1\nfiles in $(SLX_PRIVATE_PATH) (please remove manually)"
+	@echo "Uninstalling openslx.org project files but keeping configs \
+and stage1"
+	@echo "files in $(SLX_PRIVATE_PATH) (please remove manually)"
 	@rm -rf $(SLX_BASE_PATH)
 	@rm -rf $(SLX_PUBLIC_PATH)
-	@rm $(USR_BIN_PATH)/{mkdxsinitrd,slx*}
+	@rm -f $(USR_BIN_PATH)/slx*
+	@rm -f $(USR_BIN_PATH)/mkdxsinitrd
 
 clean:
 	@echo "Cleanup OpenSLX source directory "
