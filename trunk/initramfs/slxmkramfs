@@ -5,10 +5,10 @@
 # successor of mkdxsinitrd. It expects all project files to be installed. It
 # does not work directly out of repository any more.
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 2006, 2007
 #
 # (c) 2003 - 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.org Project
+# (c) 2006, 2007 - OpenSLX.org Project
 
 # NOTE (zooey):
 #   this whole file should be reimplemented in perl in order to
@@ -73,14 +73,16 @@ usage()
 [-f module(s)] [-n module(s)] [-s splashsize] \n\t   \
 [-D name of distribution] -v [version of distribution] -r path\n"
   echo "OPTIONS"
+  echo "  -b   Use busybox instead of separate binaries."
+  echo "  -f   list of filesystem modules (like, nfs, nbd, squashfs)"
   echo "  -g   use glibc as base library in initramfs"
   echo "  -b   use busybox instead of separate binaries"
   echo "  -h   show usage information"
+  echo "  -i   path/file, provide information where to write initramfs"
   echo "  -k   kernel version (without linux-)"
   echo "       slxmkramfs tries to find the most recent kernel version,"
   echo "       If this fails a version can provided here"
-  echo "  -i   path/file, provide information where to write initramfs"
-  echo "  -f   list of filesystem modules (like, nfs, nbd, squashfs)"
+  echo "  -m   module list of otherwise uncovered modules, e.g. xen stuff"
   echo "  -n   module list of client network adaptors to support"
   echo "  -r   path to the root of the stage1 system you are preparing"
   echo "       ramdisk for"
@@ -181,27 +183,27 @@ copy_distro_stuff() {
 
 # add a bootsplash image to the initial ramdisk, only SuSE at the moment
 add_theme() {
-
 theme="${theme}"
 splashsizes="640x480 800x600 1024x768 1280x1024 1400x1050 1600x1200"
 splash_image=
 splash_bin=$(chroot $ROOTDIR which splash)
+themes_dir="${SLX_SHARE_PATH}/themes/openslx/bootsplash"
+if [ -d "${SLX_SHARE_PATH}/themes/${theme}/bootsplash" ]; then
+  themes_dir="${SLX_SHARE_PATH}/themes/${theme}/bootsplash"
+elif [ -d "$ROOTDIR/etc/bootsplash/themes/${theme}" ]; then
+  themes_dir="/etc/bootsplash/themes/${theme}"
+elif [ -d "$ROOTDIR/usr/share/splash/themes/${theme}" ]; then
+  themes_dir="/usr/share/splash/themes/${theme}"
+fi
+
+#fixme: very ugly ;)
+mkdir -p $ROOTDIR/tmp/bootsplash
+cp -a $themes_dir/* $ROOTDIR/tmp/bootsplash
+themes=${themes_dir%bootsplash}
+echo -e "\n\tUsing ${themes} for themes.\n"
+themes_dir=$ROOTDIR/tmp/bootsplash
+
 if [ -n "$splashsizes" -a -n "$splash_bin" ]; then
-  if [ -d "$SLX_SHARE_PATH/themes/${theme}/bootsplash" ]; then
-    themes_dir="$SLX_SHARE_PATH/themes/${theme}/bootsplash"
-  elif [ -d "$ROOTDIR/etc/bootsplash/themes/${theme}" ]; then
-    themes_dir="/etc/bootsplash/themes/${theme}"
-  elif [ -d "$ROOTDIR/usr/share/splash/themes/${theme}" ]; then
-    themes_dir="/usr/share/splash/themes/${theme}"
-  fi
-
-  #fixme: very ugly ;)
-  mkdir -p $ROOTDIR/tmp/bootsplash
-  cp -a $themes_dir/* $ROOTDIR/tmp/bootsplash
-  themes=${themes_dir%bootsplash}
-  echo -e "\n\tUsing ${themes} for themes.\n"
-  themes_dir=$ROOTDIR/tmp/bootsplash
-
   if [ -n "$themes_dir" -a \
      -d "$themes_dir" -o -L "$themes_dir" ]; then
     for size in $splashsizes; do
@@ -227,18 +229,23 @@ for image in $splash_image; do
   # fixme: ugly hack to have the splash binary
   chroot $ROOTDIR $splash_bin -s -f $image >> ${INSTDIR}/bootsplash
 done
+
+rm -rf $ROOTDIR/tmp/bootsplash
+# kdm/Xdialog theme
+cp -a ${themes}* ${INSTDIR}/usr/share/themes
 }
 
 #########################################################################
 # End of function declaration
 
-while getopts :bhgk:i:r:o:s:T:f:n:Sut:d:D:v:I:V:a: a ; do
+while getopts :bhgk:i:r:o:s:T:f:m:n:Sut:d:D:v:I:V:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
       k)  echo "-k requires kernel version parameter";;
       i)  echo "-i requires initrd path parameter";;
       f)  echo "-f requires file system module list parameter";;
+      m)  echo "-m requires misc module list parameter";;
       n)  echo "-n requires network module list parameter";;
       r)  echo "-r requires root dir parameter";;
       s)  echo "-s requires setings file name";;
@@ -352,16 +359,22 @@ case "${DISTRO}" in
         DISTRO_VER=5.10
         cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib
       ;;
-     Dapper*|dapper*)
-	DISTRO_VER=6.06
+      Dapper*|dapper*)
+	    DISTRO_VER=6.06
+      ;;
+	  Edgy*|edgy*)
+	    DISTRO_VER=6.10
       ;;
     esac
     ;;
   Gentoo*|gentoo*)
     DISTRO=gentoo
     case "${DISTRO_VER}" in
-      2005*|*)
+      2005*)
         DISTRO_VER=2005.1
+      ;;
+	  2006*|*)
+        DISTRO_VER=2006.1
       ;;
     esac
   ;;
@@ -386,9 +399,6 @@ esac
 # at this point ${DISTRO} ${DISTRO_VER} should be fixed
 copy_distro_stuff ${DISTRO} ${DISTRO_VER}
 
-# hotplug/udev type and related stuff
-cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
-
 # binary and corresponding library copies could be avoided if a small
 # initial ramdisk environment of its own is generated from busybox,
 # dietlibc and similar, see OpenSLX project page ...
@@ -401,22 +411,30 @@ mknod ${INSTDIR}/tmp/ctl b 241 255 &>/dev/null
 # suse specific, but might be usable with other distros too
 mknod ${INSTDIR}/tmp/bootsplash p &>/dev/null
 
+# initial ramdisk scripts: init, functions, servconfig, hwautocfg, ...
+# copy and replace variable names
+for dirs in `find ${SLX_SHARE_PATH}/initramfs/* ! -regex ".*/\..*"` ; do
+  repco ${dirs##*initramfs/}
+done
+chmod 755 ${INSTDIR}/init \
+  ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
+
 # test for the existance of busybox
 if [ "$use_busybox" = 1 ]; then
-  [ -x busybox ] || {
+  [ -x ${SLX_SHARE_PATH}/busybox/busybox ] || {
     unset use_busybox
     echo "You wanted to include busybox, but did not provide it in \
-  initrd/ directory."; }
+${SLX_SHARE_PATH}/busybox directory."; }
 fi
 if [ -n "$use_busybox" ] ; then
-  cp busybox ${INSTDIR}/bin
-  for bbins in [ arping ash cat chmod chown chroot cp date \
-        dd df dmesg echo expr fdisk free hwclock insmod ip \
-        kill killall ln ls lsmod mkdir mke2fs mkfs.ext2 \
-        mkfs.ext3 mknod modprobe mount mv ps rdate rm rmmod \
-        sed sort switch_root tar test tftp time udhcpc \
-        umount uname usleep vconfig vi; do
-    ln -s /bin/busybox ${INSTDIR}/bin/$bbins
+  cp ${SLX_SHARE_PATH}/busybox/busybox ${INSTDIR}/bin
+  for bbins in [ arping ash bunzip2 cat chmod chown chroot cp cut date \
+        dd df dmesg du echo env expr fdisk free gunzip hwclock insmod ip \
+        kill killall ln ls lsmod mdev mkdir mke2fs mkfs.ext2 mkfs.ext3 \
+        mknod mkswap modprobe mount mv nice ping ps rdate rm rmmod sed \
+        sleep sort swapoff swapon switch_root tar test tftp time udhcpc \
+        umount uptime usleep vconfig vi zcat zcip; do
+    ln -fs /bin/busybox ${INSTDIR}/bin/$bbins
   done
   # fake the sh link in busybox environment
   echo -e "#!/bin/ash\n/bin/ash \$@" > ${INSTDIR}/bin/sh
@@ -464,25 +482,24 @@ else
   done
   cobi $tftp bin || echo "Program ${tftp} not found"
   cp /lib/libnss_files.so.2 ${INSTDIR}/lib
+  # one of the dhcp clients
+  for dhcp in dhclient dhcpcd pump ipconfig ; do
+    binfinder $dhcp && break;
+  done
+  cobi $dhcp bin
+
+  # hotplug/udev type and related stuff
+  cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
+
+  # type of hotplug/udev/dev (for etc directories see above!!)
+  for bbins in udev udevd udevstart udevtrigger udevsend ; do
+    cobi ${bbins} bin &>/dev/null || \
+    echo "Program ${bbins} not found; could be most probably ignored"
+  done
+  # if nfs is used as clients root filesystem
+  cobi portmap bin
+  mkdir -p ${INSTDIR}/var/lib/nfs/state
 fi
-
-# one of the dhcp clients
-for dhcp in dhclient dhcpcd pump ipconfig ; do
-  binfinder $dhcp && break;
-done
-cobi $dhcp bin
-mkdir -p ${INSTDIR}/var/{lib,run}
-
-# type of hotplug/udev/dev (for etc directories see above!!)
-for bbins in udev udevd udevstart udevtrigger udevsend
-  do
-  cobi ${bbins} bin &>/dev/null || \
-  echo "Program ${bbins} not found; could be most probably ignored"
-done
-
-# if nfs is used as clients root filesystem
-cobi portmap bin
-mkdir -p ${INSTDIR}/var/lib/nfs/state
 
 # if nbd or dnbd is used as clients root filesystem
 if [ -n "${FSMODULES}" ] ; then
@@ -506,6 +523,10 @@ cobi unionctl bin &>/dev/null || \
 cobi cowdev bin &>/dev/null || \
   echo "Program cowdev not found; could be ignored ..."
 
+# if iscsi (or just with modules)??
+# cobi iscsiadm iscsid bin &>/dev/null || \
+#  echo "Program iscsid not found; could be ignored ..."
+
 # distro specific additional stuff
 case "${DISTRO}" in
   debian*)
@@ -514,29 +535,29 @@ esac
 
 # copy all libraries that have been determined to be required:
 # first we handle all 64-bit libs...
-for lib in `fgrep /lib64/ ${INSTDIR}/tmp/libraries 2>/dev/null | sort -u` ; do
+for lib in $(fgrep /lib64/ ${INSTDIR}/tmp/libraries 2>/dev/null|sort -u); do
   if ! [ -d ${INSTDIR}/lib64 ] ; then
     mkdir ${INSTDIR}/lib64
   fi
   cp ${lib} ${INSTDIR}/lib64
 done
 # ...now copy 32-bit libs:
-for lib in `fgrep -v /lib64/ ${INSTDIR}/tmp/libraries 2>/dev/null | sort -u` ; do
+for lib in $(fgrep -v /lib64/ ${INSTDIR}/tmp/libraries 2>/dev/null|sort -u); do
   cp ${lib} ${INSTDIR}/lib
 done
 rm ${INSTDIR}/tmp/libraries
 
 # add kernel modules and dependency files
 if [ -z "$KERNVER" ] ; then
-  KERNVER=`ls -l ${ROOTDIR}/boot/vmlinuz|grep vmlinuz|sed "s/.*vmlinuz-//"`
+  KERNVER=$(ls -l ${ROOTDIR}/boot/vmlinuz|grep vmlinuz|sed "s/.*vmlinuz-//")
 fi
 if [ -z "$KERNVER" ] ; then
-  KERNVER=`ls -l ${ROOTDIR}/vmlinuz|grep vmlinuz|sed "s/.*vmlinuz-//"`
+  KERNVER=$(ls -l ${ROOTDIR}/vmlinuz|grep vmlinuz|sed "s/.*vmlinuz-//")
 fi
 # if no vmlinuz found, go for vmlinuz-x.yz.uv...
 if [ -z "$KERNVER" ] ; then
-  KERNVER=`ls -lt ${ROOTDIR}/boot/vmlinuz*|grep vmlinuz| \
-    sed -n "1,1s/.*vmlinuz-//p"`
+  KERNVER=$(ls -lt ${ROOTDIR}/boot/vmlinuz*|grep vmlinuz| \
+    sed -n "1,1s/.*vmlinuz-//p")
   echo "No vmlinuz-link found. Using kernel version "$KERNVER
 fi
 
@@ -566,7 +587,8 @@ fi
 # put all needed modules into initial ramfs
 # fixme: check if ext2 is present in every distro kernel
 mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
-for module in af_packet unix ${NWMODULES} ${FSMODULES} ${DEBUGMODULES}; do
+for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
+  ${DEBUGMODULES}; do
   mod=`cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
 2>/dev/null`
 
@@ -600,19 +622,31 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${DEBUGMODULES}; do
         cp ${rdirprefix}/fs/jbd/jbd.ko \
           ${ddirprefix}/fs/jbd
       ;;
+      netloop)
+        # needed for xen stuff
+        cobi brctl bin &>/dev/null || \
+          echo "Program brctl not found; could be ignored ..."
+        mkdir -p ${ddirprefix}/drivers/xen/netback
+        mkdir -p ${ddirprefix}/net/bridge
+        cp ${rdirprefix}/drivers/xen/netback/netloop.ko \
+          ${ddirprefix}/drivers/xen/netback &>/dev/null
+        cp ${rdirprefix}/net/bridge/bridge.ko \
+          ${ddirprefix}/net/bridge &>/dev/null
+      ;;
+      iscsi_tcp)
+        # iscsi modules
+        # cobi cobi iscsiadm iscsid bin &>/dev/null
+        #mkdir -p ${ddirprefix}/drivers/scsi
+        #for i in scsi_mod scsi_transport_iscsi libiscsi iscsi_tcp; do 
+        #  cp ${rdirprefix}/drivers/scsi/$i.ko
+        #    ${ddirprefix}/drivers/scsi
+        #done
+      ;;
     esac
   fi
 done
 cp ${ROOTDIR}/lib/modules/${KERNVER}/modules.* \
   ${INSTDIR}/lib/modules/${KERNVER}
-
-# initialramfs scripts: init, functions, servconfig, hwautocfg, ...
-# copy and replace variable names
-for dirs in `find ${SLX_SHARE_PATH}/initramfs/* ! -regex ".*/\..*"`; do
-  repco ${dirs#*initramfs/}
-done
-chmod 755 ${INSTDIR}/init \
-  ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
 
 # add the common default client configuration file - just to ensure to
 # have all major variables defined. !!These settings are most probably
@@ -659,7 +693,7 @@ strip  ${INSTDIR}/bin/*  ${INSTDIR}/lib/* &>/dev/null
 #########################################################################
 # End of file copy procedures
 
-[ -n "$theme" ] && add_theme
+[ -n "${theme}" ] && add_theme
 
 # finally create the compressed initial ramdisk cpio archive
 pushd . > /dev/null 2>&1

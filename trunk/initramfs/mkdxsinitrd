@@ -4,13 +4,13 @@
 #               ramdisks for linux diskless clients (stage2 system
 #               setup)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 17-12-2006
+# Author(s):    Dirk von Suchodoletz <dvs@OpenSLX.com>, 05-01-2007
 #               Nico Dietrich
 #               Felix Endres
 #               <mj0@uni-freiburg.de> (xenbr), 12-12-2006
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
-#               (c) 2006 - openslx.org project
+#               (c) 2006, 2007 - OpenSLX GmbH
 #
 # Version:      0.4.5d
 
@@ -163,13 +163,7 @@ elif [ -L ${FPTB} ] ; then
 else
   cp ${FPTB} ${INSTDIR}/${DEST}
 fi
-# get an idea which libraries are needed
-# fixme: that might not work if executed on different architecture than
-# client root is
-chroot ${ROOTDIR} ldd ${FPTB#${ROOTDIR}*} >> ${INSTDIR}/tmp/libraries
-# possible solution: use the server binary, get library names and look
-# them up manually - fixme: does ldd understand foreign architecture
-# binaries
+slxldd --root-path=${ROOTDIR} ${FPTB#${ROOTDIR}*} >>${INSTDIR}/tmp/libraries
 }
 
 # replace copy
@@ -386,6 +380,7 @@ if [ -z "$INSTDIR" ] ; then
 fi
 rm -rf ${INSTDIR}
 mkdir -p ${INSTDIR}/{dev,proc,tmp,mnt,root,bin,sys,lib}
+mkdir -p ${INSTDIR}/var/{lib,run}
 ln -s /bin ${INSTDIR}/sbin
 mkdir -p ${INSTDIR}/usr/share
 # needed for KNOPPIX hwsetup tool not to be confused with ${D_SYSCONFDIR}
@@ -439,16 +434,22 @@ case "${DISTRO}" in
         DISTRO_VER=5.10
         cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib
       ;;
-     Dapper*|dapper*)
-	DISTRO_VER=6.06
+      Dapper*|dapper*)
+	    DISTRO_VER=6.06
+      ;;
+	  Edgy*|edgy*)
+	    DISTRO_VER=6.10
       ;;
     esac
     ;;
   Gentoo*|gentoo*)
     DISTRO=gentoo
     case "${DISTRO_VER}" in
-      2005*|*)
+      2005*)
         DISTRO_VER=2005.1
+      ;;
+	  2006*|*)
+        DISTRO_VER=2006.1
       ;;
     esac
   ;;
@@ -475,7 +476,7 @@ copy_distro_stuff ${DISTRO} ${DISTRO_VER}
 
 # binary and corresponding library copies could be avoided if a small
 # initial ramdisk environment of its own is generated from busybox,
-# dietlibc and similar, see odlx project page ...
+# dietlibc and similar, see OpenSLX project page ...
 
 # devices needed rather early (copied from /tmp to /dev in init)
 mknod ${INSTDIR}/tmp/console c 5 1 &>/dev/null
@@ -498,7 +499,7 @@ if [ "$use_busybox" = 1 ]; then
   [ -x ${SLX_SHARE_PATH}/busybox/busybox ] || {
     unset use_busybox
     echo "You wanted to include busybox, but did not provide it in \
-  initrd/ directory."; }
+${SLX_SHARE_PATH}/busybox directory."; }
 fi
 if [ -n "$use_busybox" ] ; then
   cp ${SLX_SHARE_PATH}/busybox/busybox ${INSTDIR}/bin
@@ -583,8 +584,6 @@ else
   mkdir -p ${INSTDIR}/var/lib/nfs/state
 fi
 
-mkdir -p ${INSTDIR}/var/{lib,run}
-
 # if nbd or dnbd is used as clients root filesystem
 if [ -n "${FSMODULES}" ] ; then
 for i in ${FSMODULES}; do
@@ -609,7 +608,7 @@ cobi cowdev bin &>/dev/null || \
 
 # if iscsi (or just with modules)??
 # cobi iscsiadm iscsid bin &>/dev/null || \
-#  echo "Program cowdev not found; could be ignored ..."
+#  echo "Program iscsid not found; could be ignored ..."
 
 # distro specific additional stuff
 case "${DISTRO}" in
@@ -617,29 +616,31 @@ case "${DISTRO}" in
     cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib;;
 esac
 
-# add needed libraries depending on choosen binaries. use chroot
-# on ldd, otherwise the detection does not work properly. ldd has to be
-# static linked binary
-# fixme: procedure might have to be changed
-for lib in `cat ${INSTDIR}/tmp/libraries 2>/dev/null | \
-  sed -e "s,tls,,;s,i686/cmov,," \
-  -ne 's:\t\(.* => \)\?\(/.*\) (0x[0-9a-f]*):\2:p' | sort -u` ; do
-  baselib=`basename ${lib}`
-  test -e  ${INSTDIR}/lib/${baselib} || \
-    cp /${ROOTDIR}/${lib} ${INSTDIR}/lib
+# copy all libraries that have been determined to be required:
+# first we handle all 64-bit libs...
+for lib in $(fgrep /lib64/ ${INSTDIR}/tmp/libraries 2>/dev/null|sort -u); do
+  if ! [ -d ${INSTDIR}/lib64 ] ; then
+    mkdir ${INSTDIR}/lib64
+  fi
+  cp ${lib} ${INSTDIR}/lib64
+done
+# ...now copy 32-bit libs:
+for lib in $(fgrep -v /lib64/ ${INSTDIR}/tmp/libraries 2>/dev/null|sort -u); do
+  cp ${lib} ${INSTDIR}/lib
 done
 rm ${INSTDIR}/tmp/libraries
 
 # add kernel modules and dependency files
 if [ -z "$KERNVER" ] ; then
-  KERNVER=`ls -l ${ROOTDIR}/boot/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
+  KERNVER=$(ls -l ${ROOTDIR}/boot/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//")
 fi
 if [ -z "$KERNVER" ] ; then
-  KERNVER=`ls -l ${ROOTDIR}/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
+  KERNVER=$(ls -l ${ROOTDIR}/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//")
 fi
 # if no vmlinuz found, go for vmlinuz-x.yz.uv...
 if [ -z "$KERNVER" ] ; then
-  KERNVER=`ls -lt ${ROOTDIR}/boot/vmlinuz* | grep vmlinuz | sed -n "1,1s/.*vmlinuz-//p"`
+  KERNVER=$(ls -lt ${ROOTDIR}/boot/vmlinuz* | grep vmlinuz | \
+    sed -n "1,1s/.*vmlinuz-//p")
   echo "No vmlinuz-link found. Using kernel version "$KERNVER
 fi
 
