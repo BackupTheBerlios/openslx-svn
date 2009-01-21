@@ -161,33 +161,37 @@ copy_distro_stuff() {
 }
 
 # This function makes the directory of this script to the present working directory
-# Does also work when called by a link. FIXME: Breaks when called by a link to a link
+# It is called within precheck()
+# Does also work when called by symbolic links (even for nested links). 
 goto_script_dir()
 {
   [ $DEBUG -ge 2 ] && echo "Aufgerufen wurde $0, checking if it is a link"
   calleddetails=`ls -l $0` # get the file flags (e.g. lrwxrwxrwx)
   [ $DEBUG -ge 2 ] && echo $calleddetails
-  index=`expr index "$calleddetails" "l"`
-
+  
   calleddir=${0%/*}  # Strip the filename from path
   [ $DEBUG -ge 2 ] && echo "Wechsele ins Verzeichnis des aufgerufenen scripts/links ($calleddir)"
   cd $calleddir
+ 
+  while index=`expr index "$calleddetails" "l"`; 
+        [ $index -eq 1 ]; do
 
-
-  if [ $index -eq 1 ]; then
     [ $DEBUG -ge 2 ] && echo "It is a link"
-
-    script=`echo $calleddetails | awk '{print $NF}'`
-    [ $DEBUG -ge 2 ] && echo "The script is: $script"
-    hasslash=`expr index "$script" "/"`
+    target=`echo $calleddetails | awk '{print $NF}'`
+    [ $DEBUG -ge 2 ] && echo "The target of the link is: $target"
+    hasslash=`expr index "$target" "/"`
     if [ $hasslash -ne 0 ]; then 
-      scriptdir=${script%/*}
-      [ $DEBUG -ge 2 ] && echo "Following link to $scriptdir"
-      cd $scriptdir
+        targetpath=${target%/*} # extract the pathname
+        [ $DEBUG -ge 2 ] && echo "Following link to $targetpath"
+        cd $targetpath
     else
-      [ $DEBUG -ge 2 ] && echo "It is in the same directory as the link"
+        [ $DEBUG -ge 2 ] && echo "It is in the same directory as the link"
     fi
-  fi
+    targetfile=`basename $target`
+    [ $DEBUG -ge 2 ] && echo "The target file of the link is: $targetfile"
+    calleddetails=`ls -l $targetfile` # get the file flags (e.g. lrwxrwxrwx)
+    [ $DEBUG -ge 2 ] && echo $calleddetails
+  done
   [ $DEBUG -ge 2 ] && pwd
 
 }
