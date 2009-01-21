@@ -447,7 +447,7 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
   MENU LABEL $j. ${client_distro}-${client_distro_ver} ${current_kernel} Diskless NBD\n\
   KERNEL ${server}::${tftpbootdir}/vmlinuz-${current_kernel}\n\
   APPEND nbdroot=${server}:5000,${nbdfs} initrd=${server}::${tftpbootdir}/initrd-dxs-${current_kernel} \
-  apic dhcp noldsc debug=$debuglevel vci=DXS\n\
+  apic dhcp noldsc debug=$debuglevel elevator=\"noop\" vci=DXS\n\
   ipappend 1\n" >> ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
     fi
 
@@ -488,7 +488,6 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
       fi
       # linking files 
       # if SuSE und DHCP dann Kopie statt Link
-      echo "SD:  ${server_distro}, ${dxs_dhcpd_conf}"
       if [ ${server_distro} = "suse" ] && echo ${dxs_dhcpd_conf}|\
         grep dhcp &>/dev/null; then
         rm ${2}${extension} &>/dev/null
