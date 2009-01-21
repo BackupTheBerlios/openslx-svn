@@ -188,7 +188,7 @@ sed -e "s,LANGUAGE=.*,LANGUAGE=\"${LANG}\" # set within initramfs," \
 # configure gdm as display manager
 config_gdm () {
 ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/K20gdm
-if [ "x$late_dm" != "xyes" ] ; then
+if [ "x$late_dm" = "xyes" ] ; then
   ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/S01gdm
 else
   echo -e "\t/etc/${D_INITDIR}/gdm start >${LOGFILE} 2>&1\n\
