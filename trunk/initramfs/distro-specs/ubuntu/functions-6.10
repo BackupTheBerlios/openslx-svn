@@ -103,18 +103,15 @@ rllinker "console-screen.sh" 31 3
 # configure kdm as display manager
 config_kdm () {
 # first define directories for kdm
-kdmrcdir=/etc/kde3/kdm
-xdmdir=/etc/kde3/kdm
-
+local kdmrcdir=/etc/kde3/kdm
+local xdmdir=/etc/kde3/kdm
 testmkd /mnt/${kdmrcdir}
 
-#if [ "x$late_dm" = "xyes" ] ; then
- rllinker "kdm" 3 1
- if [ "x$start_xdmcp" = "xkdm" ]; then 
-   echo /usr/bin/kdm > /mnt/etc/X11/default-display-manager
- fi
-# write configuration file
-# use general config in /etc/functions
+rllinker "kdm" 3 1
+if [ "x$start_xdmcp" = "xkdm" ]; then 
+  echo /usr/bin/kdm > /mnt/etc/X11/default-display-manager
+fi
+# write configuration file; use general config in /etc/functions
 config_kdm_template
 }
 
