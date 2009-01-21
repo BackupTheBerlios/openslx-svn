@@ -170,17 +170,20 @@ else
 		SLX_VERSION=$(slxversion)
 	fi
     sed -e "s,@@@INSTDIR@@@,${INSTDIR},g;s,@@@KERNVER@@@,${KERNVER},g" \
-        -e "s,@@@DISTRO@@@,${DISTRO}-${DISTRO_VER},g;s,@@@NETIF@@@,${NET_IF},g" \
+        -e "s,@@@DISTRO_NAME@@@,${DISTRO_NAME},g" \
+		-e "s,@@@DISTRO_VER@@@,${DISTRO_VER},g" \
+		-e "s,@@@NETIF@@@,${NET_IF},g" \
         -e "s,@@@NWMODULES@@@,${NWMODULES},g" \
         -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
         -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
         -e "s,@@@DATE@@@,${DATE},g;/^#[^!].*/d" \
           ${SLX_SHARE_PATH}/initramfs/${FILENAME} >> ${INSTDIR}/${FILENAME}
      # ugly hack for creating a general slx config file instead of "patching"
-     # the stage3 init - fixme: version string should be added in a more clever way
+     # the stage3 init
      echo -e "slxconf_date=${DATE}\nslxconf_kernver=${KERNVER}\n\
-slxconf_listnwmod=\"${NWMODULES}\"\nslxconf_distro=${DISTRO}-${DISTRO_VER}\n\
-slxconf_slxver=\"${SLX_VERSION}\"" > ${INSTDIR}/etc/sysconfig/slxsystem.conf
+slxconf_listnwmod=\"${NWMODULES}\"\nslxconf_distro_name=${DISTRO_NAME}\n\
+slxconf_distro_ver=${DISTRO_VER}\nslxconf_system_name=${SYSTEM_NAME}\n\
+slxconf_slxver=\"${SLX_VERSION}\"" \ > ${INSTDIR}/etc/sysconfig/slxsystem.conf
      sed -e "s,^#!/bin/sh,#!/bin/ash," -i ${INSTDIR}/${FILENAME}
   fi
 fi
@@ -304,7 +307,7 @@ cp -a ${themes}* ${INSTDIR}/usr/share/themes
 #########################################################################
 # End of function declaration
 
-while getopts :dhk:c:i:r:o:s:f:n:m:Sut:I:a: a ; do
+while getopts :dhk:c:i:r:o:s:f:n:m:S:ut:I:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
@@ -317,6 +320,7 @@ while getopts :dhk:c:i:r:o:s:f:n:m:Sut:I:a: a ; do
       r)  echo "-r requires root dir parameter";;
       s)  echo "-s may require theme name";;
       I)  echo "-I requires network interface parameter";;
+      S)  echo "-S requires the system name";;
       V)  echo "-V requires an executable to run inside linuxrc";;
       *)  echo "Unknown option: -$OPTARG"
           echo "Try mkinitrd -h";;
@@ -332,6 +336,7 @@ while getopts :dhk:c:i:r:o:s:f:n:m:Sut:I:a: a ; do
     m)  MISCMODULES=$OPTARG ;;
     r)  ROOTDIR=$OPTARG;;
     s)  theme=$OPTARG;;
+    S)  SYSTEM_NAME=$OPTARG;;
     t)  use_tpm=1;;
     d)  IRFSDEBUG=$OPTARG;;
     l)  local_init_script="$OPTARG";; # use for pre/postinit.local?
@@ -349,6 +354,14 @@ precheck
 #Change to the directory this script is located in
 goto_script_dir
 
+if [ -z "$ROOTDIR" ] ; then
+  echo "No ROOTDIR given - please use the -r flag! Exiting..."
+  exit 1
+fi
+if [ -z "$SYSTEM_NAME" ] ; then
+  echo "No system name given - please use the -S flag! Exiting..."
+  exit 1
+fi
 # set temporary setup directory, clean it and setup basic directory
 # structure
 if [ -z "$INSTDIR" ] ; then
@@ -362,16 +375,16 @@ mkdir -p ${INSTDIR}/usr/share
 # needed for KNOPPIX hwsetup tool not to be confused with ${D_SYSCONFDIR}
 mkdir -p ${INSTDIR}/etc/sysconfig
 
-# set DISTRO & DISTRO_VER from ROOTDIR:
+# set DISTRO_NAME & DISTRO_VER from ROOTDIR:
 VENDOR_OS=$(basename $ROOTDIR)
-DISTRO=${VENDOR_OS%%-*}
+DISTRO_NAME=${VENDOR_OS%%-*}
 	# select distro type
 DISTRO_VER=${VENDOR_OS#*-}
 	# drop distro type, keep from version onwards
 DISTRO_VER=${DISTRO_VER%%-*}
 	# remove any optional stuff after version
 
-copy_distro_stuff ${DISTRO} ${DISTRO_VER}
+copy_distro_stuff ${DISTRO_NAME} ${DISTRO_VER}
 
 if [ -z "$NWMODULES" ] ; then
   #NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32 8139too 8139cp"
@@ -472,7 +485,7 @@ cobi cowdev bin &>/dev/null || \
 #  echo "Program iscsid not found; could be ignored ..."
 
 # distro specific additional stuff
-case "${DISTRO}" in
+case "${DISTRO_NAME}" in
   debian*)
     cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib;;
 esac
@@ -639,9 +652,9 @@ fi
 # overwrites the system default one. postinit.local may be part of
 # fileget tgz (in stage3)
 for cfg in default/initramfs/preinit.local \
-           ${DISTRO}-${DISTRO_VER}/initramfs/preinit.local \
+           ${SYSTEM_NAME}/initramfs/preinit.local \
            default/initramfs/postinit.local \
-           ${DISTRO}-${DISTRO_VER}/initramfs/postinit.local ; do
+           ${SYSTEM_NAME}/initramfs/postinit.local ; do
   test -f ${SLX_PRIVATE_PATH}/config/$cfg && \
     cp ${SLX_PRIVATE_PATH}/config/$cfg ${INSTDIR}/bin
 done

@@ -63,7 +63,7 @@ trigger_device_events () {
 }
 
 #############################################################################
-# mini udev of busybox (most probably obsolete: or distro specific 
+# mini udev of busybox (most probably obsolete: or distro specific
 # udev_hotplug)
 runudev () {
 if [ -x /bin/mdev ] ; then
@@ -243,7 +243,7 @@ done
 brctl addif ${bridge} ${pdev}
 }
 #############################################################################
-# replace @@@serverip@@@ with real serverip. Allows the usage of a variable 
+# replace @@@serverip@@@ with real serverip. Allows the usage of a variable
 # for the server ip address (e.g. in machine-setup or kernel commandline)
 checkip ()
 {
@@ -341,7 +341,7 @@ echo "dhcp finished at $(sysup)" > /tmp/dhcp-done
 
 #############################################################################
 # function for retrieving configuration file (machine-setup) via tftp from a
-# predefined server or given source (file=tftp-server:/path via kernel 
+# predefined server or given source (file=tftp-server:/path via kernel
 # command line)
 # tftpget is helper function for fileget
 tftpgetunpack () {
@@ -376,7 +376,7 @@ if [ -n "$filesrc" ] ; then
   tftpgetunpack $tftp $cfgfile $tftpserver
 else
   # predefined value for openslx environment; it is expected that this
-  # directory is just below the tftpboot/tftproot (path to which the 
+  # directory is just below the tftpboot/tftproot (path to which the
   # daemon is restricted to)
   local cfgdir="client-config"
   local tftpserver=$(checkip ${serverip})
@@ -385,8 +385,8 @@ else
   echo -e "\n## Configuration via fileget: Hierarchy is distro client \
 and as last\n# distro/default" >> /tmp/confviafile
   mac=$(echo $macaddr|sed "s/:/-/g")
-  for cfgfile in $cfgdir/$DISTRO/01-$mac.tgz $cfgdir/$DISTRO/default.tgz \
-                 $cfgdir/01-$mac.tgz $cfgdir/default.tgz ; do
+  for cfgfile in $cfgdir/$SYSTEM_NAME/01-$mac.tgz \
+                 $cfgdir/$SYSTEM_NAME/default.tgz ; do
     tftpgetunpack $cfgfile $tftpserver && break
   done
 fi
@@ -403,7 +403,7 @@ testmkd () {
 }
 
 #############################################################################
-# function for writing a syslog-ng.conf file. First parameter is absolute 
+# function for writing a syslog-ng.conf file. First parameter is absolute
 # destination (incl. /mnt prefix)
 # sysngwriter $dest $start_syslog
 sysngwriter () {
@@ -482,7 +482,7 @@ return 0
 }
 
 #############################################################################
-# ldconfig is needed if rootfilesystem is composed of several parts search 
+# ldconfig is needed if rootfilesystem is composed of several parts search
 # for ldconfig and execute it
 # check that /mnt/etc/ld.so.conf is never lost
 ldconfig () {
@@ -876,14 +876,14 @@ include_in_fsroot_union () {
     if [ "X$union_type" == "XUnionFS" ]; then
 	[ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && echo "Using unionctl to mount ${root_path}_${union_id} (type: $union_type)"
 	unionctl /mnt/ --add --after 1 --mode ro /mnt/tmp/${root_path}_${union_id}
-    elif [ "X$union_type" == "XAUFS" ]; then 
+    elif [ "X$union_type" == "XAUFS" ]; then
 	#unionctl for aufs is a sh script needing tools not included in our initrd
 	[ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && echo "Using aufs-mount to mount ${root_path}_${union_id} (type: $union_type)"
 	mount -n -o remount,add:1:/mnt/tmp/${root_path}_${union_id}=ro none /mnt
     else
 	error $init_loadunions nonfatal
     fi
- done 
+ done
 }
 
 # kdmrc template started from distro specific functions files
@@ -1084,7 +1084,7 @@ config_samba () {
 config_portmap () {
 :
 }
-# start nis/ypbind 
+# start nis/ypbind
 config_nis () {
 :
 }

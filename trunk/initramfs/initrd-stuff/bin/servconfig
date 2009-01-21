@@ -58,10 +58,9 @@ cfgcomplete
 # ... in the near future ...
 cp -a /rootfs/* /mnt 2>/dev/null
 
-# set greeting and add information on booted system (distro)
-distroname=${DISTRO%-*}
-len=$(expr length ${SLXVERSION}${distroname})
-vdstr="V${SLXVERSION}/${distroname})"
+# set greeting and add information on booted system
+len=$(expr length ${SLXVERSION}${SYSTEM_NAME})
+vdstr="V${SLXVERSION}/${SYSTEM_NAME})"
 while [ $len -le 28 ] ; do
   vdstr="$vdstr "
   len=$(expr $len + 1)

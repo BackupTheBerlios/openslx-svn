@@ -365,6 +365,8 @@ sub generateInitalRamFS
 	my $rootPath
 		= "$openslxConfig{'stage1-path'}/$vendorOS->{name}";
 	$cmd .= "-i $pxeVendorOSPath/$info->{'initramfs-name'} -r $rootPath ";
+	$cmd .= "-S $info->{name} ";
+		# pass in system name
 	$cmd .= "-s openslx ";
 		# use theme 'openslx'
 	$cmd .= "-d ";

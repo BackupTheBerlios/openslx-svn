@@ -37,7 +37,9 @@ export date="${slxconf_date}"
 export DEBUGLEVEL=0
 export KERNEL="${slxconf_kernver}"
 export NWMODULES="${slxconf_listnwmod}"
-export DISTRO="${slxconf_distro}"
+export DISTRO_NAME="${slxconf_distro_name}"
+export DISTRO_VER="${slxconf_distro_ver}"
+export SYSTEM_NAME="${slxconf_system_name}"
 export SLXVERSION="${slxconf_slxver}"
 
 # do not use dnbd cache file
@@ -480,9 +482,9 @@ fi
 
 union_type=""
 # try to use unionfs for rw access if available
-if [ -n "${unionfs}" ]; then 
+if [ -n "${unionfs}" ]; then
   modprobe ${MODPRV} unionfs  && union_type="UnionFS"
-  if [ -z "$union_type" ]; then 
+  if [ -z "$union_type" ]; then
 	error "$init_loadufs" nonfatal
 	unset unionfs
 	# if unionfs is not available, check for aufs and inform user
@@ -490,9 +492,9 @@ if [ -n "${unionfs}" ]; then
   fi
 fi
 # try to use aufs for rw access if available
-if [ -n "${aufs}" ]; then 
+if [ -n "${aufs}" ]; then
   modprobe ${MODPRV} aufs   && union_type="AUFS"
-  if [ -z "$union_type" ]; then 
+  if [ -z "$union_type" ]; then
 	error "$init_loadaufs" nonfatal
 	unset aufs
 	# if aufs is not available, check for unionfs and inform user
@@ -509,13 +511,13 @@ if [ -n "${unionfs}" -o -n "${aufs}" ] ; then
   if [ "$union_type" == "UnionFS" ]; then
   	mount -n -t unionfs -o dirs=${rwdir}/uniontmp:/rorootfs=${nfsro}ro \
 	none /mnt
-  elif [ "$union_type" == "AUFS" ]; then   
+  elif [ "$union_type" == "AUFS" ]; then
 	mount -n -t aufs -o br:/${rwdir}/uniontmp:/rorootfs=ro none /mnt
   fi
   mkdir -p /mnt/uniontmp
   mount -n --move ${rwdir}/uniontmp /mnt/uniontmp
   chmod 0755 /mnt/uniontmp /mnt
-  # run ldconfig if switched on via kernel command line (token ldsc) or 
+  # run ldconfig if switched on via kernel command line (token ldsc) or
   # triggered by unionized root filesystem
   ldcfg
   # runlevel directories should contain no links
@@ -643,12 +645,12 @@ if [ -z "$uniondirs" ]; then
     # does it contain "://"?
     if [ "$aufs" != "${aufs#*://}" ]; then
       uniondirs="$aufs"
-    fi    
+    fi
   elif [ "$union_type" == "UnionFS" ]; then
     # does it contain "://"?
     if [ "$unionfs" != "${unionfs#*://}" ]; then
       uniondirs="$unionfs"
-    fi    
+    fi
   fi
 fi
 # if locations are given that should be unioned with the fs root, do it
