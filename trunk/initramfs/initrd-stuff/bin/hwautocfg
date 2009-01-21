@@ -3,7 +3,7 @@
 # universal (distro independent) hardware autoconfiguration script for 
 # OpenSLX linux diskless clients, using hwconfig from knoppix as base tool 
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 29-10-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 07-11-2006
 #
 # (c) 2003 - 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.org Project
@@ -368,7 +368,11 @@ fi
 # not rather precise ...
 if strinfile "SCSI" /tmp/hwsetup.info ; then
   strinfile "CDROM" /tmp/hwsetup.info && { modprobe ${MODPRV} sr_mod;
-    modprobe ${MODPRV} sg; }
+    modprobe ${MODPRV} sg;
+    # just for compatibility to hwsetup (which generates links to scd*)
+    test -b /dev/sr0 && { for i in /dev/sr* ; do 
+      ln -s $i /dev/scd${i#/dev/sr} ; done; }
+    }
   strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} sd_mod
   # check if a (scsi) scanner was detected
   strinfile "SCANNER" /tmp/hwsetup.info && \
