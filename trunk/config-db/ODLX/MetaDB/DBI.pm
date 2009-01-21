@@ -555,7 +555,7 @@ sub setSystemIDsOfClient
 	my $clientID = shift;
 	my $systemIDs = shift;
 
-	my @currSystems = $self->fetchSystemsOfClient($clientID);
+	my @currSystems = $self->fetchSystemIDsOfClient($clientID);
 	$self->_updateRefTable('client_system_ref', $clientID, $systemIDs,
 						   'client_id', 'system_id', \@currSystems);
 }
@@ -566,7 +566,7 @@ sub setGroupIDsOfClient
 	my $clientID = shift;
 	my $groupIDs = shift;
 
-	my @currGroups = $self->fetchGroupsOfClient($clientID);
+	my @currGroups = $self->fetchGroupIDsOfClient($clientID);
 	$self->_updateRefTable('group_client_ref', $clientID, $groupIDs,
 						   'client_id', 'group_id', \@currGroups);
 }
@@ -602,7 +602,7 @@ sub setClientIDsOfGroup
 	my $groupID = shift;
 	my $clientIDs = shift;
 
-	my @currClients = $self->fetchClientsOfGroup($groupID);
+	my @currClients = $self->fetchClientIDsOfGroup($groupID);
 	$self->_updateRefTable('group_client_ref', $groupID, $clientIDs,
 						   'group_id', 'client_id', \@currClients);
 }
@@ -613,7 +613,7 @@ sub setSystemIDsOfGroup
 	my $groupID = shift;
 	my $systemIDs = shift;
 
-	my @currSystems = $self->fetchSystemsOfGroup($groupID);
+	my @currSystems = $self->fetchSystemIDsOfGroup($groupID);
 	$self->_updateRefTable('group_system_ref', $groupID, $systemIDs,
 						   'group_id', 'system_id', \@currSystems);
 }
