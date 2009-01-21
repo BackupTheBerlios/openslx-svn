@@ -94,7 +94,7 @@ sub getInstalledPackages
 {
 	my $self = shift;
 
-	my $rpmCmd = 'dpkg-query -f "\${package}\n" --show';
+	my $rpmCmd = 'dpkg-query --showformat "\${package}\n" --show';
 	my $pkgList = qx{$rpmCmd};
 	return split "\n", $pkgList;
 }

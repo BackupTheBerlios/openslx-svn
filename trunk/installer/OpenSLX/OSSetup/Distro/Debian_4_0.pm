@@ -53,7 +53,7 @@ sub initDistroInfo
 	$self->{config}->{'package-subdir'} = 'pool';
 
 	$self->{config}->{'prereq-packages'} = "
-		main/d/debootstrap/debootstrap_1.0.0_all.deb
+		main/d/debootstrap/debootstrap_0.3.3.2etch1_all.deb
 	";
 
 	$self->{config}->{'bootstrap-packages'} = "
@@ -61,8 +61,8 @@ sub initDistroInfo
 
 	$self->{config}->{'selection'} = {
 		'default' => "
-			kernel-image-2.6-386
-			kmail
+			linux-image-486
+			locales-all
 		",
 	};
 

@@ -34,7 +34,7 @@ use vars qw(%supportedDistros);
 
 %supportedDistros = (
 	'debian-3.1' => {
-		module => 'Debian_3_1',       support => 'clone,install'
+		module => 'Debian_3_1',       support => 'clone'
 	},
 	'debian-4.0' => {
 		module => 'Debian_4_0',       support => 'clone,install'
@@ -79,10 +79,10 @@ use vars qw(%supportedDistros);
 		module => 'Ubuntu_6_06',      support => 'clone'
 	},
 	'ubuntu-6.10' => {
-		module => 'Ubuntu_6_10',      support => 'clone'
+		module => 'Ubuntu_6_10',      support => 'clone,install'
 	},
 	'ubuntu-7.04' => { 
-		module => 'Ubuntu_7_04',      support => 'clone' 
+		module => 'Ubuntu_7_04',      support => 'clone,install'
 	},
 );
 
@@ -1189,7 +1189,7 @@ sub _startChrootedShellInStage1D
 		chrootDir    => $self->{'vendor-os-path'},
 		function     => sub {
 			# will hang until user exits manually:
-			slxsystem('sh');
+			slxsystem($openslxConfig{'default-shell'});
 		},
 		updateConfig => 1,
 	});
