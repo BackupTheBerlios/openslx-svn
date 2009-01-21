@@ -114,7 +114,7 @@ echo "${uptime} s."
 #############################################################################
 # (re)generate dynamic linked libraries cache from /etc/ld.so.conf
 ldcfg () {
-[ -z "${noldsc}" ] && echo -e "$init_ldcfg" && ldconfig /tmp/ld.so.cache &
+[ -n "${ldsc}" ] && echo -e "$init_ldcfg" && ldconfig /tmp/ld.so.cache &
 }
 #############################################################################
 # URI interpreter $1 variable to interprete, $2 type of token to return

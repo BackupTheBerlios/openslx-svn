@@ -145,9 +145,10 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       filesrc=${opts#file=}
       rm /tmp/file-done
     ;;
-    # if ld.so.cache should not be generated
-    noldsc)
-      noldsc=yes;;
+    # if ld.so.cache should be generated; should be switched on when composing
+    # rootfs from more than one source
+    ldsc)
+      ldsc="yes";;
     # simple union of base ro rootdir with tempfs on top
     unionfs)
       unionfs=1;;
@@ -518,7 +519,7 @@ if [ -n "${unionfs}" -o -n "${aufs}" ] ; then
     # mount $dir unionadd/$dir
     # unionctl mnt --add --after /mnt --mode ro /unionadd/$dir
     # most probably it is a good idea to run ldconfig, so enable it
-    unset noldsc
+    ldsc="yes"
   fi
   # run ldconfig if not switched off via kernel command line
   ldcfg
@@ -560,7 +561,7 @@ elif [ -z "${cowloop}" ] ; then
   # add list of files to be excluded and common excludes to the filter list
   echo -e "${D_ETCEXCL}\n@@@COMETCEXCL@@@" >>/tmp/etc.exclude
   # if ld.so.cache is to be generated then do not copy the file
-  [ -z "${noldsc}" ] && echo -e "ld.so.cache*" >>/tmp/etc.exclude
+  [ -n "${ldsc}" ] && echo -e "ld.so.cache*" >>/tmp/etc.exclude
   # for tar exclude lists might be used, more difficult for cp
   cd /mnt
   tar -X /tmp/etc.exclude -cp etc/* | \
@@ -617,7 +618,8 @@ echo -e "rootfs / rootfs rw 0 0\ninitramdevs /dev tmpfs rw\
  0 0" > /mnt/etc/mtab
 
 # copy library cache if generated
-if [ -z "${noldsc}" ] ; then
+if [ -n "${ldsc}" ] ; then
+  # creating library cache takes a while ...
   if waitfor /tmp/ldcfg 50000 ; then
     test -s /mnt/tmp/ld.so.cache && \
       mv /mnt/tmp/ld.so.cache /mnt/etc/ld.so.cache
