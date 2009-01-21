@@ -264,8 +264,8 @@ ipsetup 127.0.0.1 255.0.0.0 0.0.0.0 127.255.255.255 lo
 # of it into several variables
 if [ -n "$IPINFO" ] ; then
   getip () {
-    val=$IPINFO; i=$(expr $1 - 1);
-    while [ $i -ge 0 ] ; do
+    val="$IPINFO:"; i=$(expr $1 - 1);
+    while [ $i -gt 0 ] ; do
       val=${val#*:} ; i=$(expr $i - 1);
     done;
   echo $val|sed "s/:.*//"; }
