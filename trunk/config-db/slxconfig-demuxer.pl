@@ -135,8 +135,15 @@ sub lockScript
 			unlink $lockFile;
 		}
 	}
-	sysopen(LOCKFILE, $lockFile, O_RDWR|O_CREAT|O_EXCL)
-		or die _tr(qq[Lock-file <%s> exists, script is already running.\nPlease remove the logfile and try again if you are sure that no one else is executing this script.], $lockFile);
+	if (!sysopen(LOCKFILE, $lockFile, O_RDWR|O_CREAT|O_EXCL)) {
+		if ($! == 13) {
+			die _tr(qq[Unable to create lock-file <%s>, exiting!\n], $lockFile);
+		} else {
+			die _tr(qq[Lock-file <%s> exists, script is already running.
+Please remove the logfile and try again if you are sure that no one else
+is executing this script.\n], $lockFile);
+		}
+	}
 }
 
 sub unlockScript
