@@ -35,18 +35,16 @@ use OpenSLX::Basics;
 use OpenSLX::ConfigDB;
 
 my (
-	$noShow,
 	$quiet,
 	@remove,
 	%cmdlineSettings,
 	$helpReq,
 	$manReq,
+	$verbose,
 	$versionReq,
 );
 
 GetOptions(
-	'noshow' => \$noShow,
-		# will display current configuration
 	'quiet' => \$quiet,
 		# will avoid printing anything
 	'remove=s' => \@remove,
@@ -56,6 +54,7 @@ GetOptions(
 
 	'help|?' => \$helpReq,
 	'man' => \$manReq,
+	'verbose' => \$verbose,
 	'version' => \$versionReq,
 );
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
@@ -74,7 +73,7 @@ my $currSettings = $openslxDB->fetchSettings();
 
 # ...and fetch current content of local settings file...
 open(SETTINGS, "< $openslxConfig{'config-path'}/settings.local");
-$/ = undef;
+local $/ = undef;
 my $settings = <SETTINGS>;
 close(SETTINGS);
 
@@ -129,7 +128,9 @@ if (scalar(keys %cmdlineSettings) > 0) {
 	$currSettings = $openslxDB->fetchSettings();
 }
 
-if (!($noShow || $quiet)) {
+$openslxDB->disconnect();
+
+if ($verbose || !$changeCount) {
 	my $text = $changeCount ? "resulting settings:" : "current settings:";
 	print "\n"._tr($text)."\n";
 	foreach my $key (sort keys %openslxConfig) {
@@ -140,8 +141,6 @@ if (!($noShow || $quiet)) {
 		print qq[\t$key="$currSettings->{$key}"\n];
 	}
 }
-
-$openslxDB->disconnect();
 
 __END__
 
@@ -154,7 +153,6 @@ slxsettings - OpenSLX-script to show & change local settings
 slxsettings [options]
 
   Script Options:
-      --noshow                   do not print resulting settings
       --quiet                    do not print anything
       --remove=<string>          remove given key from settings
 
@@ -180,6 +178,7 @@ slxsettings [options]
   General Options:
       --help                     brief help message
       --man                      full documentation
+      --verbose                  show more information
       --version                  show version
 
 =head1 OPTIONS
@@ -187,10 +186,6 @@ slxsettings [options]
 =head3 Script Options
 
 =over 8
-
-=item B<--noshow>
-
-Avoids printing the resulting settings after any changes have been applied.
 
 =item B<--quiet>
 
@@ -200,6 +195,9 @@ Runs the script without printing anything.
 
 Removes given key from settings (apply more than once to remove several keys).
 
+=item B<--verbose>
+
+Prints the resulting settings after changes have been applied.
 =back
 
 =head3 OpenSLX Options
