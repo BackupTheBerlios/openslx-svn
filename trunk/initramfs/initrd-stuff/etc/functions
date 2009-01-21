@@ -364,9 +364,9 @@ case "$tftp" in
       fi
     ;;
 esac
-# unpack part (only gzip is supported, bzip binary not present in
-# initramfs)
+# unpack part
 if [ -s $dst ] ; then
+  # fixme: handle different types of packaging (gzip/bzip2)??
   tar -xpzf $dst 2>/dev/null
   [ "$DEBUGLEVEL" -le 2 -o "$DEBUGLEVEL" -eq 8  ] && rm $dst
   return 0
