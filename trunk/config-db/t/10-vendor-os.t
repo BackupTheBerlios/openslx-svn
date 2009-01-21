@@ -190,6 +190,64 @@ ok(
 
 ok(! $configDB->changeVendorOS(1, { id => 23 }), 'changing id should fail');
 
+# test adding & removing of installed plugins
+is(
+	$configDB->fetchInstalledPlugins(3), 
+	0, 'there should be no installed plugins'
+);
+ok($configDB->addInstalledPlugin(3, 'Example'), 'adding installed plugin');
+is(
+	my @plugins = $configDB->fetchInstalledPlugins(3), 
+	1,
+	'should have 1 installed plugin'
+);
+ok(
+	!$configDB->addInstalledPlugin(3, 'Example'), 
+	'adding plugin again should fail (but do not harm)'
+);
+is(
+	@plugins = $configDB->fetchInstalledPlugins(3), 
+	1,
+	'should have 1 installed plugin'
+);
+is($plugins[0], 'Example', 'should have got plugin "Example"');
+ok($configDB->addInstalledPlugin(3, 'Test'), 'adding a second plugin');
+is(
+	@plugins = $configDB->fetchInstalledPlugins(3), 
+	2,
+	'should have 2 installed plugin'
+);
+ok(
+	!$configDB->removeInstalledPlugin(3, 'xxx'), 
+	'removing unknown plugin should fail'
+);
+ok(
+	@plugins = $configDB->fetchInstalledPlugins(3, 'Example'), 
+	'fetching specific plugin'
+);
+is($plugins[0], 'Example', 'should have got plugin "Example"');
+ok(
+	@plugins = $configDB->fetchInstalledPlugins(3, 'Test'), 
+	'fetching another specific plugin'
+);
+is($plugins[0], 'Test', 'should have got plugin "Test"');
+is(
+	@plugins = $configDB->fetchInstalledPlugins(3, 'xxx'), 0,
+	'fetching unknown specific plugin'
+);
+ok($configDB->removeInstalledPlugin(3, 'Example'), 'removing installed plugin');
+is(
+	@plugins = $configDB->fetchInstalledPlugins(3), 
+	1,
+	'should have 1 installed plugin'
+);
+ok($configDB->removeInstalledPlugin(3, 'Test'), 'removing second plugin');
+is(
+	@plugins = $configDB->fetchInstalledPlugins(3), 
+	0,
+	'should have no installed plugins'
+);
+
 # now remove a vendor-OS and check if that worked
 ok($configDB->removeVendorOS(3), 'removing vendor-OS 3 should be ok');
 is($configDB->fetchVendorOSByID(3, 'id'), undef, 'vendor-OS 3 should be gone');

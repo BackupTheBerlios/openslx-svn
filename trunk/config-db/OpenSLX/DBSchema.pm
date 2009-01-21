@@ -38,7 +38,7 @@ use POSIX qw(locale_h);
 my $lang = setlocale(LC_MESSAGES);
 my $country = $lang =~ m[^\w\w_(\w\w)] ? lc($1) : 'us';
 
-my $VERSION = 0.2;
+my $VERSION = 0.21;
 
 my $DbSchema = {
 	'version' => $VERSION,
@@ -150,6 +150,19 @@ my $DbSchema = {
 			'cols' => [
 				'group_id:fk',		# foreign key
 				'system_id:fk',		# foreign key
+			],
+		},
+		'installed_plugin' => {
+			# holds the plugins that have been installed into a specific 
+			# vendor-OS
+			'cols' => [
+				'id:pk',			# primary key
+				'vendor_os_id:fk',	# foreign key
+				'plugin_name:s.64',	# name of installed plugin
+									# (e.g. suse-9.3-kde, debian-3.1-ppc,
+									# suse-10.2-cloned-from-kiwi).
+									# This is used as the folder name for the
+									# corresponding stage1, too.
 			],
 		},
 		'meta' => {
@@ -624,6 +637,26 @@ sub _upgradeDBTo0_2
 			'name:s.128',
 			'priority:i',
 			'comment:s.1024',
+		]
+	);
+
+	return 1;
+}
+
+sub _upgradeDBTo0_21
+{
+	my $self   = shift;
+	my $metaDB = shift;
+
+	# move attributes into separate tables ...
+	#
+	# ... system attributes ...
+	$metaDB->schemaAddTable(
+		'installed_plugin', 
+		[
+			'id:pk',
+			'vendor_os_id:fk',
+			'plugin_name:s.64',
 		]
 	);
 

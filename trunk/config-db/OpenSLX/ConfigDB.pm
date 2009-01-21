@@ -356,6 +356,41 @@ sub fetchVendorOSByID
 	return wantarray() ? @vendorOS : shift @vendorOS;
 }
 
+=item C<fetchInstalledPlugins($vendorOSID)>
+
+Returns the names of all plugins that have been installed into the given
+vendor-OS.
+
+=over
+
+=item Param C<vendorOSID>
+
+The id of the vendor-OS whose plugins you are interested in
+
+=item Param C<pluginName> [Optional]
+
+The name of a specific plugin you are interested in
+
+=item Return Value
+
+An array with the plugin names.
+
+=back
+
+=cut
+
+sub fetchInstalledPlugins
+{
+	my $self       = shift;
+	my $vendorOSID = shift;
+	my $pluginName = shift;
+
+	return map {
+		$_->{plugin_name}
+	}
+	$self->{'meta-db'}->fetchInstalledPlugins($vendorOSID, $pluginName);
+}
+
 =item C<fetchExportByFilter([%$filter], [$resultCols])>
 
 Fetches and returns information about all exports that match the given
@@ -1026,6 +1061,68 @@ sub changeVendorOS
 	my $valRows     = _aref(shift);
 
 	return $self->{'meta-db'}->changeVendorOS($vendorOSIDs, $valRows);
+}
+
+=item C<addInstalledPlugin($vendorOSID, $pluginName)>
+
+Adds a freshly installed plugin to a vendor-OS.
+
+=over
+
+=item Param C<vendorOSID>
+
+The id of the vendor-OS the given plugin has been installed into
+
+=item Param C<pluginName>
+
+The name of the plugin that has been installed
+
+=item Return Value
+
+The ID of the new reference entry, C<undef> if the creation failed.
+
+=back
+
+=cut
+
+sub addInstalledPlugin
+{
+	my $self       = shift;
+	my $vendorOSID = shift;
+	my $pluginName = shift;
+
+	return $self->{'meta-db'}->addInstalledPlugin($vendorOSID, $pluginName);
+}
+
+=item C<removeInstalledPlugin($vendorOSID, $pluginName)>
+
+Removes a uninstalled plugin for a vendor-OS.
+
+=over
+
+=item Param C<vendorOSID>
+
+The id of the vendor-OS the given plugin has been uninstalled from
+
+=item Param C<pluginName>
+
+The name of the plugin that has been uninstalled
+
+=item Return Value
+
+1 if it worked, C<undef> if it didn't.
+
+=back
+
+=cut
+
+sub removeInstalledPlugin
+{
+	my $self       = shift;
+	my $vendorOSID = shift;
+	my $pluginName = shift;
+
+	return $self->{'meta-db'}->removeInstalledPlugin($vendorOSID, $pluginName);
 }
 
 =item C<addExport(@$valRows)>

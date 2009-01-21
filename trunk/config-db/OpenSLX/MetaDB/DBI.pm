@@ -201,6 +201,25 @@ sub fetchVendorOSByID
 	return $self->_doSelect($sql);
 }
 
+sub fetchInstalledPlugins
+{
+	my $self       = shift;
+	my $vendorOSID = shift;
+	my $pluginName = shift;
+
+	return if !$vendorOSID;
+	my $nameClause 
+		= defined $pluginName 
+			? "AND plugin_name = '$pluginName'" 
+			: '';
+	my $sql = unshiftHereDoc(<<"	End-of-Here");
+		SELECT * FROM installed_plugin
+		WHERE vendor_os_id = '$vendorOSID'
+		$nameClause
+	End-of-Here
+	return $self->_doSelect($sql);
+}
+
 sub fetchExportByFilter
 {
 	my $self       = shift;
@@ -680,6 +699,34 @@ sub changeVendorOS
 	my $valRows     = shift;
 
 	return $self->_doUpdate('vendor_os', $vendorOSIDs, $valRows);
+}
+
+sub addInstalledPlugin
+{
+	my $self       = shift;
+	my $vendorOSID = shift;
+	my $pluginName = shift;
+
+	return if !$vendorOSID || !$pluginName;
+
+	return if $self->fetchInstalledPlugins($vendorOSID, $pluginName);
+	return $self->_doInsert('installed_plugin', [ {
+		vendor_os_id => $vendorOSID,
+		plugin_name  => $pluginName,
+	} ] );
+}
+
+sub removeInstalledPlugin
+{
+	my $self       = shift;
+	my $vendorOSID = shift;
+	my $pluginName = shift;
+
+	return if !$vendorOSID || !$pluginName;
+
+	my $plugin = $self->fetchInstalledPlugins($vendorOSID, $pluginName);
+	return if !$plugin;
+	return $self->_doDelete('installed_plugin', [ $plugin->{id} ] );
 }
 
 sub addExport
