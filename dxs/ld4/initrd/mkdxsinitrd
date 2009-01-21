@@ -49,6 +49,13 @@ D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 # End of global variable declaration, nothing needed to be changed at 
 # default below that line
 
+
+usage()
+{
+  echo Here is how to use mkdxsinitrd
+  exit 0
+}
+
 # replaces which to find executables inside ROOTDIR
 binfinder()
 {

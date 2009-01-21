@@ -1,0 +1,3 @@
+rootdir="/nfsroot"
+tftpbootdir="/tftpboot"
+
