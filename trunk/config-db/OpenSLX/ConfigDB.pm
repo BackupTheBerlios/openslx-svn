@@ -138,7 +138,20 @@ sub connect
 		# specific metadb-module (not used yet)
 
 	my $dbType = $openslxConfig{'db-type'};
-		# name of underlying database module
+		# name of underlying database module...
+
+	# map db-type to name of module, such that the user doesn't have
+	# to type the correct case:
+	my %dbTypeMap = (
+		'csv' => 'CSV',
+		'mysql' => 'mysql',
+		'sqlite' => 'SQLite',
+	);
+	my $lcType = lc($dbType);
+	if (exists $dbTypeMap{$lcType}) {
+		$dbType = $dbTypeMap{$lcType};
+	}
+
 	my $dbModule = "OpenSLX::MetaDB::$dbType";
 	unless (eval "require $dbModule") {
 		if ($! == 2) {
