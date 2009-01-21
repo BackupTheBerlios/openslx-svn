@@ -1,0 +1,18 @@
+#! /bin/sh
+#
+# Copyright (c) 2002 SuSE Linux AG Nuernberg, Germany.  All rights reserved.
+#
+# Author: Werner Fink <werner@suse.de>, 1996
+#         Burchard Steinbild, 1996
+#
+# /etc/init.d/boot.local
+#
+# script with local commands to be executed from init on system startup
+#
+# Here you should add things, that should happen directly after booting
+# before we're going to the first run level.
+
+# read configuration information. machine-setup.default defines default
+# values which might be overwritten by machine-setup
+
+### !!! the content of this file was moved to vmware-prep !!! ###

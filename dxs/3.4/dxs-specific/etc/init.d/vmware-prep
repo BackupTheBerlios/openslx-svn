@@ -1,0 +1,119 @@
+#! /bin/sh
+#
+# Description:  Adaptation of SuSE runlevel script file for use with
+#               Diskless X Stations (v3.3) - script for preparing vmware
+#               environment
+#
+# Author(s):    Michael Janczyk, 26-08-2005
+#		Dirk von Suchodoletz <dirk@goe.net>, 01-11-2005
+# Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
+#
+# Version:      0.1d
+#
+# /etc/init.d/vmware-prep
+
+# read configuration information. machine-setup.default defines default
+# values which might be overwritten by machine-setup
+. /etc/rc.status
+. /etc/sysconfig/logfile
+. /etc/sysconfig/machine-setup.default
+. /etc/sysconfig/machine-setup
+
+
+logwrite () {
+  # self explanatory
+  echo -e "vmware-prep: $1" >> $LOGFILE
+}
+
+testmkd () {
+  # script for creating directories after testing of their existance
+  test -d $1 || mkdir -p $1 &>/dev/null
+}
+
+
+case "$1" in
+  start)
+	echo -n "Starting preparation of vmware environment "
+	# portmap should be started already!!
+	# set nfs server IP properly 
+	server=`cat /proc/mounts | grep -e " / " | grep  " nfs" | awk -F ":" '{print $1}' | awk -F "." '{print $4}'`
+	server="132.230.4.`expr $server + 1`"
+	#server=192.168.1.20
+	mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid $server:/dxs/tmp /tmp/scratch || \
+	  logwrite "Mount of tmp scratch directory from $server failed"
+	mount -t nfs -o ro,nolock,intr,nodev,soft,timeo=2,nosuid $server:/dxs/vmware /usr/share/vmware &
+
+	# configuring vmware service (copy from boot.servconf)
+	if [ "x$vmware" != "x" ] || [ "x$vmware" != "xno" ] ; then
+	   logwrite "\n--> Starting configuration of vmware service\n"
+	   # create directories needed for vmware
+	   testmkd /etc/vmware/vmnet{1,8} 
+	   testmkd /var/run/vmware
+	   chmod 1777 /var/run/vmware
+	   rm /etc/vmware/not_configured /tmp/vmware_temporary &>/dev/null
+	   # device creation might not be needed any longer!?
+	   for i in 0 1 2 3 4 5 6 7 8 9; do
+	     [ -c /dev/vmnet$i ] || mknod /dev/vmnet$i c 119 $i; done
+	   chmod 0700 /dev/vmnet*
+	   # check installation of parallel port if needed for the virtual machines
+	   # mknod -m 666 /dev/parport0 c 99 0
+	   if cp /usr/share/dxs/VMware/locations /etc/vmware &>/dev/null ; then
+	     logwrite "using config from /usr/share/dxs/VMware (locations)\n\
+for vmware service. If you want to change anything you should\ndo it there."
+	   else
+	     logwrite "no vmware configuration present. Service might fail."
+	   fi
+	   # loop preparations
+	   # check space
+	   for i in `ls -d /tmp/disks/disk* &2>/dev/null`; do
+	   TMPDISKSPACE=`df | grep $i | awk '{print $4}'`
+	   TMPDISKSPACE=${TMPDISKSPACE:-0}
+	   TMPDSK=`echo $i|sed -e "s,tmp/disks,tmp,"`
+	      if touch $TMPDSK/touch.$host_name &>/dev/null && \
+	         [ $TMPDISKSPACE -gt 500000 ] ; then
+        	 rm -f $TMPDSK/touch.$host_name
+	         TMPDIR=$TMPDSK/$host_name
+	      fi
+	   done
+	   if [ -z $TMPDIR ] ; then  
+	      if touch /tmp/scratch/touch.$host_name &2>/dev/null; then
+        	 rm -f /tmp/scratch/touch.$host_name
+	         TMPDIR=/tmp/scratch/$host_name
+	      else TMPDIR=/tmp/$host_name
+	      fi
+	   fi
+	   rm -f $TMPDIR/*-1440.img* &>/dev/null
+	   mkdir -p /media/loop0 >> $LOGFILE 2>&1
+	   mkdir -m 1777 -p $TMPDIR >> $LOGFILE 2>&1
+	   chmod 1777 $TMPDIR >> $LOGFILE 2>&1
+	   ln -s $TMPDIR /tmp/vmware_temporary &>/dev/null
+	   cp /usr/share/dxs/VMware/empty1440.img.gz \
+	      $TMPDIR/$host_name-1440.img.gz >> $LOGFILE 2>&1
+	   gzip -d $TMPDIR/$host_name-1440.img.gz
+	   chmod a+rw $TMPDIR/$host_name-1440.img >> $LOGFILE 2>&1
+	   mount -t msdos -o loop,umask=000 $TMPDIR/$host_name-1440.img \
+	      /media/loop0 >> $LOGFILE 2>&1
+	else
+	   logwrite "Loading of VMWARE modules and configuration of service was \
+disabled via\nvmware=\"no\" or empty/not set variable."
+	fi
+
+	rc_status -v
+	;;
+  stop)
+	rc_failed 3
+	umount /tmp/scratch /usr/share/vmware /media/loop0
+	rc_status -v
+	;;
+  status)
+	rc_failed 4
+	rc_status -v
+	;;
+  *)
+	echo "Usage: $0 {start|stop|status}"
+	exit 1
+	;;
+esac
+                                                                       
+rc_exit
+                                                                

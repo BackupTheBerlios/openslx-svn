@@ -1,0 +1,66 @@
+05/09/2005
+
+Dieses ist die neueste Fassung der Diskless X Stations. Sie ist an
+die aktuelle SuSE 9.3 angepasst und daher nicht ohne weiteres für 
+eine andere Version verwendbar.
+
+Die wesentlichen Veränderungen:
+
+Einsatz des neuen 2.6er Kernels
+* die aktuelle Version ist NICHT rückwärtskompatibel zu 9.2 und 
+  Vorgängern
+* Verwendung von udev (verbesserter devfs Nachfolger im Userspace)
+
+Einsatz von mkinitrd
+* ersetzt das mkinitramfs von 9.1 & 9.2, zusätzliche Optionen sind
+  notwendig: -I eth0 und -d nfsserver/nfsroot
+* dafür entfällt der Eintrag von nfsserver/nfsroot in der pxelinux.cfg/*
+* letztere scheint egal zu sein, wenn man aus der Initrd DHCP verwendet;
+  Option -D eth0 statt -I eth0, in dhcpd.conf ist option root-path dann
+  wieder entscheidend
+* Wichtig: in der /etc/sysconfig/hotplug muss HOTPLUG_DEV_ON_TMPFS="yes"
+  eingeschaltet sein. Sonst schlaegt init fehl wegen fehlender /dev/console
+* /lib/mkinitrd/vendor_init.sh in der Initial Ramdisk ist nur bei DHCP
+  wichtig (sonst nicht!!)
+* vendor_init.sh wird wohl längerfristig auch für DHCP obsolet
+* boot.ld bereitet alle dateisystemspezifischen Sachen vor (ehemals
+  in der vendor_init.sh)
+
+Anpassung von boot.ld
+* veränderte Vorgaben durch Initial Ramdisk
+* Integrationsschritte fuer LDAP-Konfiguration
+
+Anpassung von boot.servconfig
+* veränderter Start für Hotplug
+* aufgeraeumtere Struktur fuer den Start von Diensten
+
+Anpassung von boot.hwconfig
+* kleine Änderungen durch neuen Kernel und udev
+
+Das Skript d2dl verfuegt inzwischen ueber eine Updatefunktion, 
+die mit der Option "-u" eingeschaltet werden kann. Dateien, die 
+beim Update nicht beruehrt, geloescht werden sollen, sind in der
+exclude.local einzutragen. Verzeichnisse auf der obersten Ebene
+sind gesondert zu behandeln!!
+
+HOTPLUG_DEV_ON_TMPFS in /etc/sysconfig/hotplug to 'yes'
+
+Wichtiger Patch in mkinitrd!! Angepasste Version ist bis zur Korrektur
+seitens 
+SuSE im Paket enthalten.
+
+        |# tell kernel root is /dev/ram0, prevents remount after initrd
+        |echo 256 > /proc/sys/kernel/real-root-dev
+        |# mount the actual root device below /root
+        |echo "Mounting root $rootdev"
+### Einbauen
+        |rootfstype="nfs"
+        |[ -n "$rootfstype" ] && opt="${opt} -t $rootfstype"
+        |if [ "$rootfstype" = "nfs" ]; then
+### Option -o ro hinzufuegen
+        |    nfsmount -o ro $rootdev /root || die 1
+        |else
+        |    mount $opt $rootdev /root || die 1
+        |fi
+
+Diskussionen etc. auch über die Mailingliste: lts@linux-terminalserver.de

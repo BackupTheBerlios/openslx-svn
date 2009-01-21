@@ -1,0 +1,19 @@
+# Aliases for /bin/runvmware
+#
+# Michael Janczyk <mj0@uni-freiburg.de> 25-08-2005
+#
+# -NO DUPLICATE ENTRIES!!!-
+#
+###### 
+# -OSType-     | -aliases separated through spaces-
+#####
+windows98	win98
+windows2000	win2k
+windowsxp	winxppro winxp
+suse		suse93
+
+#####
+# -Spec names- | -aliases separated through spaces-
+#####
+kursversion	kurs k
+

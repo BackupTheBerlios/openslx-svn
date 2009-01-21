@@ -1,0 +1,126 @@
+
+# /etc/dhcpd.example
+#
+# Example configuration file for ISC dhcpd
+#
+# (c) Dirk von Suchodoletz <dirk@goe.net>, 2005
+#
+# -- user defined vendor options --
+option o128 code 128              = string;
+option o129 code 129              = string;
+option menudflts code 160         = string;
+option motdline1 code 184         = string;
+option menuline1 code 192         = string;
+option menuline2 code 193         = string;
+option menuline3 code 194         = string;
+option bootlocal-script code 221  = string;
+option language code 222          = string;
+option start-x code 223           = string;
+option start-snmp code 224        = string;
+option start-sshd code 225        = string;
+option start-xdmcp code 226       = string;
+option start-cron code 227        = string;
+option crontab-entries code 228   = string;
+option start-rwhod code 229       = string;
+option start-printdaemon code 230 = string;
+option tex-enable code 232	  = string;
+option netbios-workgroup code 233 = string;
+option vmware code 234   	  = string;
+option hw-mouse code 252          = string;
+option hw-graphic code 253        = string;
+option hw-monitor code 254        = string;
+
+# -- global options --
+
+option o128                        E4:45:74:68:00:00;
+deny                               unknown-clients;
+default-lease-time                 160000;
+max-lease-time                     200000;
+use-host-decl-names                on;
+option dhcp-max-message-size       1024;
+ddns-update-style                  none;
+
+
+# -- vendor identifier dependend settings --
+class "Etherboot" {
+    match if substring (option vendor-class-identifier, 0, 9) = "Etherboot";
+        option motdline1  = "Welcome to Guru Labs classroom";
+ 	option vendor-encapsulated-options 3c:09:45:74:68:65:72:62:6f:6f:74:ff;
+}
+
+# example for PXE boot selection
+class "PXEClient:" {
+    match if substring (option vendor-class-identifier, 0, 10) = "PXEClient:";
+        filename "/nfsroot/dxs/boot/3c905c-tpo.pxe";
+}
+
+# -- client specific --
+
+subnet 10.30.9.124 netmask 255.255.255.0 {
+    server-identifier 10.30.9.1;
+    next-server 10.30.9.1;
+}
+#
+# client group
+#
+group {
+    filename "/your_path_here/boot/bootimg";
+    option root-path "/your_path_here";
+    option broadcast-address 10.30.9.255;
+    option routers 10.30.9.254;
+    option domain-name-servers 10.30.200.200,10.76.60.21;
+    option domain-name "dxs.local";
+    option lpr-servers 10.22.9.254;
+#    option nis-servers 10.16.10.11;
+#    option nis-domain "linuxpc";
+#    option font-servers 10.16.10.61;
+
+   option o129 "vga=0x0317 apic debug=2";
+
+#
+# you will need the x-display-manager because it is required by
+# dhclient.conf. change "require" within this file
+#
+    option x-display-manager server01,server02,server03;
+    option netbios-name-servers 10.30.19.254;
+    option ntp-servers ntps1,ntps2,ntps3;
+#
+# type of graphical login/operation - indirect for chooser, query for login
+# kde,gnome,... for direct graphical session (managed by startgui script)
+#
+    option start-x "direct";
+#
+# type of displaymanager to use (it should be installed correctly on the
+# server: XDMCP must be enabled then!)
+#
+    option start-xdmcp "kdm";
+    option start-rwhod "yes";
+    option start-cron "no";
+    option start-snmp "yes";
+    option netbios-workgroup "tux-net";
+    option tex-enable "yes";
+    option vmware "no";
+    #
+    host test01 {
+	hardware ethernet 00:00:00:00:01:01;
+#	option x-server-defs "de imps/2 psaux 150 110 1280x1024 nv 16";
+        option language "de_DE.UTF-8 de-latin1-nodeadkeys";
+        option hw-mouse "ps/2 psaux";
+        option hw-monitor "30-64kHz 50-100Hz 1024x768";
+	option hw-graphic "i810 16";
+	option bootlocal-script "";
+	option o129 "vga=0x0317 apic debug=2";
+	fixed-address 10.30.19.11;
+    }
+    host test02 {
+	hardware ethernet 00:00:00:00:01:02;
+	if substring (option vendor-class-identifier,0,3)="PXE"
+	    { filename "/nfsroot/dxs/boot/rtl8139.pxe"; }
+#	option x-server-defs "de imps/2 psaux 150 110 1280x1024 nv 16";
+	option bootlocal-script "";
+	option o129 "vga=0x0317 apic";
+#	option o129 "vga=0x0301 console=/dev/tty2 CONSOLE=/dev/tty2";
+	fixed-address 10.30.19.11;
+    }
+
+}

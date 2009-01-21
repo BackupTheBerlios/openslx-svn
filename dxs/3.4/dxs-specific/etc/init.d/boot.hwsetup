@@ -1,0 +1,634 @@
+#! /bin/sh
+#
+# Description:  adaptation of SuSE runlevel script file for use with 
+#		Diskless X Stations (v3.4)
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 13-11-2005
+# Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
+#
+version="0.3.7e"
+#
+# /etc/init.d/boot.hwsetup
+#
+### BEGIN INIT INFO
+# Provides:          boot.hwsetup
+# Required-Start:    boot.servconf boot.loadmodules
+# X-UnitedLinux-Should-Start:
+# Required-Stop:
+# Default-Start:     B
+# Default-Stop:
+# Description:       start hardware autoconfiguration
+### END INIT INFO
+
+### BEGIN script functions
+# write debugging information into the logfile
+logwrite () {
+    echo -e "hwsetup: $1" >> $HWLOG
+}
+# check if nvidias kernel driver and libraries are installed
+glx_check () {
+    [ $DEBUGLEVEL -gt 1 ] && logwrite "checking for the existence of glx \
+library files. they should be installed\nbecause a lot of todays software \
+makes use of it."
+    LIBGLX=`ls /usr/X11R6/lib/modules/extensions/libglx.a 2>/dev/null` || \
+    LIBGLX=`ls /usr/X11R6/lib/modules/extensions/libglx.so.* 2>/dev/null`
+    LIBGLC=`ls /usr/X11R6/lib/modules/extensions/libGLcore.a 2>/dev/null` || \
+    LIBGLC=`ls /usr/X11R6/lib/modules/extensions/libGLcore.a*xf86_glx* \
+        2>/dev/null`
+    if [ "$LIBGLX" ] ; then
+	ln -fs $LIBGLX /etc/X11/modules/libglx.a >> $HWLOG 2>&1
+	if [ "$LIBGLC" ] ; then
+	    ln -fs $LIBGLC /etc/X11/modules/libGLcore.a >> $HWLOG 2>&1
+	fi
+        return 0
+    else
+        return 1
+    fi
+}
+# link and add removable device
+rmd_add () {
+    rmddev=$1
+    statdev=$2
+    fstab=$3
+    ln -sf $rmddev /dev/$statdev
+    if [ "x$fstab" != "x" ] ; then
+	grep "$statdev[[:space:]]" /etc/fstab &>/dev/null || \
+	echo -e "/dev/$statdev\t/media/$statdev\tauto\t\t\
+noauto,rw,users  0 0" >>/etc/fstab
+    else
+	grep "$statdev[[:space:]]" /etc/fstab &>/dev/null || \
+	echo -e "#/dev/$statdev\t/media/$statdev\tauto\t\t\
+noauto,rw,users  0 0" >>/etc/fstab
+    fi
+    grep "$statdev[[:space:]]" /etc/auto.misc &>/dev/null || \
+	echo -e "$statdev\t\t-fstype=auto,norock,umask=000 :$rmddev"\
+	>>/etc/auto.misc
+}
+
+# setup preparations
+setupprep() {
+# load some important modules, like usb controller and agpgart stuff
+modprobe=`hwinfo --usb-ctrl | grep "Cmd: \"modprobe " | \
+	sed -e "s,.*probe,," -e "s,\",,"`
+modprobe -a $modprobe >> $HWLOG 2>&1 &
+hwinfo --bridge >/tmp/hw.bridge
+modprobe=`cat /tmp/hw.bridge | grep "Cmd: \"modprobe " | \
+	sed -e "s,.*probe,," -e "s,\",,"`
+rm /tmp/hw.bridge
+modprobe -a $modprobe >> $HWLOG 2>&1
+# end of preparations
+}
+
+# the X.org setup function
+hwsetup() {
+# predifine some variables for XF86Config (if no dhcp variable or auto
+# detected info is available)
+LD_LIBRARY_PATH=/usr/lib
+XF86CONFFILE="/etc/X11/xorg.conf"
+HSYNCRANGE="31.5-63.5"
+VSYNCRANGE="60-90"
+DEFAULTLANG="de"
+DEFAULTCOLORDPT=24
+
+# get some additional variables
+. /etc/sysconfig/machine-setup
+
+# set variables representing the xorg.conf sections (version 6.8.x)
+Module='\tLoad\t\t"dbe"\n
+\tLoad\t\t"extmod"\n
+\tLoad\t\t"type1"\n
+\tLoad\t\t"speedo"\n
+\tLoad\t\t"freetype"\n
+\tLoad\t\t"v4l"'
+ServerFlags='\tOption\t\t"AllowMouseOpenFail"\n
+\tOption\t\t"blank time"\t\t"5"\n
+\tOption\t\t"standby time"\t\t"10"\n
+\tOption\t\t"suspend time"\t\t"15"\n
+\tOption\t\t"off time"\t\t"20"'
+Files='\tRgbPath\t\t"/usr/X11R6/lib/X11/rgb"\n
+\tModulePath\t"/etc/X11/modules"\n
+\t#ModulePath\t"/usr/X11R6/lib64/modules"\n
+\tModulePath\t"/usr/X11R6/lib/modules"\n
+\tFontPath\t"/usr/X11R6/lib/X11/fonts/misc/:unscaled"\n
+\tFontPath\t"/usr/X11R6/lib/X11/fonts/75dpi/:unscaled"\n
+\tFontPath\t"/usr/X11R6/lib/X11/fonts/100dpi/:unscaled"'
+InputDevice='\tIdentifier\t"Keyboard1"\n
+\tDriver\t\t"keyboard"\n
+\tOption\t\t"XkbRules"      "xfree86"\n
+\tOption\t\t"XkbLayout"     "LANG"\n
+\tOption\t\t"XkbModel"      "pc105"'
+#InputMouse='\tIdentifier  "Mouse2"\n
+#\tDriver      "mouse"\n
+#\tOption      "Protocol"      "MP"\n
+#\tOption      "Device"        "/dev/MD"\n
+#\tOption      "Emulate3Buttons"\n
+#\tOption      "ZAxisMapping"  "4 5"\n
+#\tOption      "Buttons"       "3"'
+InputMouseDef='\tIdentifier  "Mouse1"\n
+\tDriver      "mouse"\n
+\tOption      "Protocol"      "imps/2"\n
+\tOption      "Device"        "/dev/input/mice"\n
+\tOption      "Emulate3Buttons"\n
+\tOption      "ZAxisMapping"  "4 5"\n
+\tOption      "Buttons"       "3"'
+Monitor='\tIdentifier "Default"\n
+\tOption\t"CalcAlgorithm" "CheckDesktopGeometry"\n
+\tHorizSync\tHS\n
+\tVertRefresh\tVS\n
+\tUseModes\t"Default"\n
+\tOption\t"DPMS"\t"true"'
+Modes='\tIdentifier "Default"'
+Modelines='
+\t# crt modelines (refreshrates should be above 72Hz or enable uncommented lines)\n
+\tModeline "640x400"    25.175 640  664  760  800  400  409  411  450\n
+\tModeline "640x400"    31.5   640  672 736   832  400  401  404  445\n
+\tModeline "640x480"     31.50   640  680  720  864   480  488  491  521\n
+\tModeline "640x480"     45.80   640  672  768  864   480  488  494  530\n
+\tModeline "800x600"     50.00   800  856  976 1040   600  637  643  666\n
+\tModeline "800x600"     69.65   800  864  928 1088   600  604  610  640\n
+\t#Modeline "1024x768"    44.90  1024 1048 1208 1264   768  776  784  817 interlace\n
+\tModeline "1024x768"    80.00  1024 1052 1164 1360   768  784  787  823\n
+\tModeline "1024x768"    86.00  1024 1040 1152 1360   768  784  787  823\n
+\tModeline "1024x768"    98.90  1024 1056 1216 1408   768  782  788  822\n
+\tModeline "1024x768"   115.50  1024 1056 1248 1440   768  771  781  802\n
+\tModeline "1152x864"    92.00  1152 1208 1368 1474   864  865  875  895\n
+\tModeline "1152x864"   110.00  1152 1240 1324 1552   864  864  876  908\n
+\tModeline "1280x960"   112.00  1280 1312 1456 1704   960  963  970 1064\n
+\tModeline "1280x960"   142.00  1280 1312 1456 1712   960  963  970 1064\n
+\tModeline "1280x1024"  145.00  1280 1312 1456 1712  1024 1027 1030 1064\n
+\tModeline "1280x1024"  157.50  1280 1344 1504 1728  1024 1025 1028 1072\n
+\tModeline "1400x1050"  180.00  1400 1472 1672 1880  1050 1052 1055 1100\n
+\tModeline "1600x1200"  202.50  1600 1664 1856 2160  1200 1201 1204 1250\n
+\t# tft modlines (refreshrates of 60Hz schould be ok)\n
+\tModeline "lcd1024x768"    67.90  1024 1052 1164 1360   768  784  787  823\n
+\tModeline "lcd1280x1024"  108.00  1280 1328 1440 1688  1024 1025 1028 1066\n
+\tModeline "lcd1400x1050"  160.00  1400 1472 1672 1880  1050 1052 1055 1100'
+Device='\tIdentifier\t"StdGraphics"\n
+\tDriver\t\t"DRV"'
+Screen='\tIdentifier\t"Screen 1"\n
+\tDevice\t"StdGraphics"\n
+\tMonitor\t"Default"\n
+\tDefaultColorDepth CDP'
+ServerLayout='\tIdentifier\t"Simple Layout"\n
+\tScreen\t"Screen 1"\n
+\tInputDevice "Keyboard1"\t"CoreKeyboard"\n
+\tInputDevice "Mouse1"\t"CorePointer"\n
+\tOption\t"BlankTime"\t"5"\n
+\tOption\t"StandbyTime"\t"10"\n
+\tOption\t"SuspendTime"\t"20"\n
+\tOption\t"OffTime"\t"30"'
+DRI='\tGroup\t\t"video"\n
+\tMode\t\t0666'
+# end of predefinitions
+#
+
+# get X server definitions
+LANG=`echo $language|sed -e 's,.* ,,'|sed -e 's,-.*,,'`
+MOUSEDEF=( $hw_mouse )
+MP=${MOUSEDEF[0]}
+MD="/dev/"${MOUSEDEF[1]}
+if [ -n "$hw_monitor" ] ; then
+    MONITORDEF=( $hw_monitor )
+    # little bit more sophisticated settings
+    HS=`echo ${MONITORDEF[0]}| sed -e 's,k[hHz]*,,'`
+    VS=`echo ${MONITORDEF[1]}| sed -e 's,[hH]z*,,'`
+    monmanual=yes
+fi
+MAXRES=${MONITORDEF[2]}
+GRAPHICDEF=( $hw_graphic )
+DRV=${GRAPHICDEF[0]}
+CDP=${GRAPHICDEF[1]}
+
+# write info to log file
+logwrite "Setting up XF86Config ->\nThe following variables are set:\
+\nLanguage: $LANG\nMouseProtocol: $MP\nMouseDevice: $MD\n\
+HorizontalSync: $HS\nVerticalRefr: $VS\nMaxResolution: $MAXRES\n\
+XFreeDriver: $DRV\nDefColorDepth: $CDP"
+
+# do some checks on variables and commands needed for XF86Config setup
+[ -z $LANG ] && LANG=$DEFAULTLANG
+if [ -z $CDP ] ; then CDP=$DEFAULTCOLORDPT
+else
+    [ $CDP != "8" ] && [ $CDP != "15" ] && [ $CDP != "16" ] && \
+    [ $CDP != "24" ] && [ $CDP != "32" ] && { CDP=$DEFAULTCOLORDPT; \
+    logwrite "Colordepth variable (set to $CDP at the moment) \
+should be\n8,15,16,24 or 32 bpp."; }
+fi
+[ -x /bin/sed ] || \
+logwrite "'sed' not found or not executable. It is used to \
+create the XF86Config file."
+[ -x /bin/grep ] || \
+logwrite "'grep' not found or not executable. It is used to \
+create the XF86Config file."
+
+# trying to identify the mouse
+# !! changes in device logic ---> mechanism no longer needed?!!! 
+# check this if you have old serial mice!!
+#[ "$MD" = "/dev/" ] && [ -z "$MP" ] && [ x$HWINFO != "xno" ] && {
+#hwinfo --mouse >/tmp/hwmouse.tmp
+#MOUSE=`cat /tmp/hwmouse.tmp | grep -e "File:" -e XFree86`
+#[ $DEBUGLEVEL -gt 1 ] && { logwrite "---> output of 'hwinfo --mouse':\n" ;
+#    cat /tmp/hwmouse.tmp >> $HWLOG 2>&1 ; }
+#ADMD=`echo $MOUSE | sed -e "s/.*e: //g" -e "s/ XFree.*//g" -e "s/(.*)//g"`
+#ADMP=`echo $MOUSE | sed -e "s/.*l: //g"`
+#logwrite "got mousedev: $ADMD, mouseprotocol: $ADMP from autodetection"
+#[ "$ADMD" ] && { MD=$ADMD; logwrite "Using $ADMD as mouse device \
+#gotten via 'hwinfo'"; }
+#[ "$ADMP" ] && { MP=$ADMP; logwrite "Using $ADMP as mouse protocol \
+#gotten via 'hwinfo'"; }
+#}
+# if mouse couldn't be detected set defaults
+#[ "$MD" = "/dev/" ] && MD="/dev/input/mice"
+#[ -z "$MP" ] && MP="PS/2"
+
+# unload serial driver if not needed for mouse operation
+#expr $MD : .*ttyS.* >> $HWLOG 2>&1 || \
+#	rmmod -a serial generic_serial >> $HWLOG 2>&1
+
+# trying to identify the graphics adaptor
+[ x$HWINFO != "xno" ] && hwinfo --display >/tmp/hwgraphic.tmp
+[ $DEBUGLEVEL -gt 1 ] && { logwrite "---> output of 'hwinfo --display':\n" ;
+    cat /tmp/hwgraphic.tmp >> $HWLOG 2>&1 ; }
+
+#
+for i in `cat /tmp/hwgraphic.tmp | grep " v4 " | sed -e "s,.*: ,,g"`
+    do HWIDRV=$i; break
+done
+for i in `cat /tmp/hwgraphic.tmp|grep "BusID:"|sed -e "s,.*000:,," \
+    -e "s,\.,:,"`
+    do busid=$i; break
+done
+
+[ -z $DRV ] && DRV="vesa"
+if [ $HWIDRV ] ; then
+    if [ $DRV != $HWIDRV ] ; then DRV=$HWIDRV; fi
+fi
+
+# configure software/hardware opengl extension
+GLX="glx"
+mkdir -p /etc/X11/modules &>/dev/null
+if [ $DRV = "nv" ] || [ $DRV = "nvidia" ] ; then
+    KVER=`uname -r 2>/dev/null`
+    KMOD=`ls /lib/modules/$KVER/kernel/drivers/video/nvidia.o 2>/dev/null`
+    LIBGLX=`ls /usr/X11R6/lib/modules/extensions/libglx.so 2>/dev/null` || \
+    LIBGLX=`ls /usr/X11R6/lib/modules/extensions/libglx.so.* \
+	2>/dev/null`
+    if ([ "x$KMOD" != "x" ] && [ "x$LIBGLX" != "x" ]); then
+	GLXLIBVER=`strings $LIBGLX|grep " id:"|awk '{print$7}'`
+	GLXKERNEL=`strings $KMOD|grep " id:"|awk '{print$9}'`
+	if [ "$GLXKERNEL" = "$GLXLIBVER" ] ; then
+	    rmmod agpgart >> $HWLOG 2>&1
+	    if insmod nvidia >> $HWLOG 2>&1 ; then
+		DRV=nvidia
+		if [ "$LIBGLX" ] ; then
+		    ln -s $LIBGLX /etc/X11/modules/libglx.a >> $HWLOG 2>&1
+		    [ $DEBUGLEVEL -gt 1 ] && logwrite "All nvidia related \
+stuff seems to be configured. if Xfree86 isn't working\nproperly there may \
+be some hardware incompatibilities left... Remove nvidia\n kernel module then \
+or modify the hwsetup script."
+		    logwrite "Check if problems occur that libglx.so nvidia \
+XFree86 module is of the same version as the library used!";
+		else
+		    GLX=no ;
+		    logwrite "Check libglx.so nvidia XFree86 module! Unable to \
+properly link this file (not existing/several versions etc.) ...";
+		    glx_check && GLX=glx; DRV=nv;
+		fi
+	    else
+		logwrite "Failed to load detected nvidia.o kernel module.";
+		modprobe agpgart >> $HWLOG 2>&1
+	    fi
+    else DRV=nv ;
+
+	glx_check || \
+	{ GLX=no ; logwrite "Unable to locate XFree86 libglx module"; }
+    fi
+    fi
+else
+    glx_check || { GLX=no ;
+    logwrite "No glx extension libraries found. Disabling glx."; }
+fi
+# check for dri extension
+[ x$HWINFO != "xno" ] && cat /tmp/hwgraphic.tmp | grep " dri" >/dev/null \
+    && DRM=yes
+
+# try to gather monitor data, take given values or set save defaults
+if [ "$monmanual" != "yes" ] ; then
+    [ x$HWINFO != "xno" ] && { hwinfo --monitor >/tmp/hwgraphic.tmp
+    [ $DEBUGLEVEL -gt 1 ] && { logwrite "---> output of 'hwinfo --monitor':\n" ;
+	cat /tmp/hwgraphic.tmp >> $HWLOG 2>&1 ; }
+    MONITOR=`cat /tmp/hwgraphic.tmp | grep -e Vert -e Hor`
+    VS=`echo $MONITOR | sed -e "s,Vert. Sync Range: ,,i" -e "s, Hz.*,,i"`
+    HS=`echo $MONITOR | sed -e "s,.*Hor. Sync Range: ,,i" -e "s, kHz.*,,i"`
+    [ x$HS = "x" ] && HS=$HSYNCRANGE
+    [ x$VS = "x" ] && VS=$VSYNCRANGE
+    }
+fi
+
+# compute max resolution
+for MR in 640x400 640x480 800x600 1024x768 1280x1024 1400x1050 1600x1200
+    do MODES="\"$MR\" \"lcd$MR\" $MODES"
+    if [ $MR = "$MAXRES" ] ; then break ; fi
+done
+# write XF86Config file
+echo -en "#\n# autogenerated XF86Config by hwsetup\n# \
+Dirk von Suchodoletz <dirk@goe.net>, " >$XF86CONFFILE || \
+logwrite "unable to create the XF86Config file."
+date >>$XF86CONFFILE
+echo -e "# DO NOT EDIT THIS FILE BUT '$0' INSTEAD!\n#" \
+>>$XF86CONFFILE
+for section in Files ServerFlags Module InputDevice Monitor \
+    Modes Screen Device ServerLayout DRI ; do
+    echo "Section \"$section\"" >>$XF86CONFFILE
+    echo -e ${!section} | sed -e "s,LANG,$LANG,g" -e "s,HS,$HS,g"    \
+         -e "s,VS,$VS,g" -e "s,MODES,$MODES,g" -e "s,MODES,$MODES,g" \
+         -e "s,DRV,$DRV,g" -e "s,CDP,$CDP,g" >>$XF86CONFFILE
+    case "$section" in
+        Files)
+            for i in /usr/X11R6/lib/X11/fonts/* ; do
+            echo -e "\tFontPath\t\"$i/\"" >>$XF86CONFFILE ; done
+        ;;
+        Device)
+            # special options may be needed for some drivers
+            [ $DEBUGLEVEL -gt 1 ] && logwrite "adding for some Xfree86 modules \
+(radeon, s3virge, nvidia) special options to\nthe 'Device' section. Consult \
+hwsetup if you like to add more or remove some."
+            [ x$DRV = "xs3virge" ] && {
+            echo -e "\tOption\t\t\"XVideo\" \"Off\"\n" >>$XF86CONFFILE
+            [ $DEBUGLEVEL -gt 1 ] && logwrite "added special option for \
+the s3virge module -> 'XVideo Off'. remove the\nappropriate line in hwsetup \
+if you like not to use it." ; }
+            [ x$DRV = "xnvidia" ] && {
+            echo -e "\tOption\t\t\"NvAGP\" \"3\"" >>$XF86CONFFILE
+            echo -e "\tOption\t\t\"NoLogo\" \"1\"" >>$XF86CONFFILE
+            [ $DEBUGLEVEL -gt 1 ] && logwrite "added special option for \
+the nvidia module -> 'NvAGP '. it sets the use\nof internal or external \
+agpgart support." ; }
+            [ "$busid" ] && {
+            echo -e "\tOption\t\t\"BusID\" \"$busid\"" >>$XF86CONFFILE
+            [ $DEBUGLEVEL -gt 1 ] && logwrite "added special option for \
+the 'BusID' information - it\ndefines the npostion of graphics adaptor in \
+pci/agp bus needed for acceleration." ; }
+        ;;
+        Module)
+            [ x$DRM = "xyes" ] && \
+            echo -e "\tLoad\t\t\"dri\"" >>$XF86CONFFILE
+            [ x$GLX != "xno" ] && \
+            echo -e "\tLoad\t\t\"$GLX\"" >>$XF86CONFFILE
+        ;;
+        InputDevice)
+            [ $LANG = "de" ] && \
+            echo -e '\tOption\t\t"XkbVariant"    "nodeadkeys"' >>$XF86CONFFILE
+            echo -e "EndSection\n\nSection \"$section\"" >>$XF86CONFFILE
+	    #[ "$MP" ] && [ "/dev/" != $MD ] && {
+	    #	echo -e $InputMouse | sed -e "s,MP,$MP,g"    \
+            #    -e "s,/dev/MD,$MD,g" >>$XF86CONFFILE
+	    #	echo -e "EndSection\n\nSection \"$section\"" >>$XF86CONFFILE;
+	    # 	secondmouse=yes; }
+	    echo -e $InputMouseDef >>$XF86CONFFILE
+        ;;
+        Modes)
+            for MR in 640x400 640x480 800x600 1024x768 1280x1024 1400x1050 1600x1200
+                do echo -e $Modelines | grep -e "lcd"$MR -e $MR >>$XF86CONFFILE
+                if [ $MR = "$MAXRES" ] ; then break ; fi
+            done
+        ;;
+        Screen)
+            for BPP in 15 16 24 32
+                do echo -e '\tSubSection "Display"\n\t\tDepth\t'\
+                $BPP'\n\t\tModes\t'$MODES'\n\tEndSubSection' >>$XF86CONFFILE
+                if [ $BPP = "$CDP" ] ; then break ; fi
+            done
+        ;;
+        esac
+        echo -e "EndSection\n" >>$XF86CONFFILE
+done
+
+# produce lower resolution XF86Config
+if [ $MR=1280x1024 ] || [ $MR=1400x1050 ] || [ $MR=1600x1200 ] ; then \
+    sed -e "s,Modes[ ]*\"$MAXRES\" \"lcd$MAXRES\",Modes       ,g" \
+        $XF86CONFFILE >$XF86CONFFILE.lowres
+fi
+# linking the XFree86 executable
+ln -sf /usr/X11R6/bin/XFree86 /var/X11R6/bin/X >> $HWLOG 2>&1 || \
+logwrite "'ln' command not found or failed"
+
+# preparing inittab for enabling graphical user interface
+sed -e "s,#7:,7:,g" /etc/inittab >/etc/inittab.new
+mv /etc/inittab.new /etc/inittab
+telinit q
+}
+soundsetup () {
+# setting up sound module
+[ x$HWINFO != "xno" ] && {
+    # oss and kernel modules named with activation command
+    hwinfo --sound  >/tmp/hwsound.tmp
+    [ $DEBUGLEVEL -gt 1 ] && { logwrite "---> output of 'hwinfo --sound':\n" ;
+        cat /tmp/hwsound.tmp >> $HWLOG 2>&1 ; }
+
+    # prefer alsa sound modules
+    cmd=`cat /tmp/hwsound.tmp|grep -e "Cmd:" -e "Info:"|grep -e "snd[-_]"| \
+	awk -F : {'print $2'}|sed -e 's,",,g' -e 's,modprobe,,'`
+    # if no one is offered try for the others
+    echo -en "# /etc/modprobe.d/sound\n#\n\
+# created by $0\nalias snd-card-0 " >/etc/modprobe.d/sound
+    # fixme - does OSS modules still used!?
+    if [ -z "$cmd" ] ; then
+        cmd=`cat /tmp/hwsound.tmp|grep "Cmd:"| awk -F \" {'print $2'}`
+	[ -z "$cmd" ] && cmd="snd-dummy"
+	logwrite "Unable to find an audio device, using snd-dummy.";
+       [ $DEBUGLEVEL -gt 1 ] && logwrite "check the name of your \
+soundcard with 'lspci' or similar, the type\nof chip used with it and if \
+it is supported by some driver."
+    fi
+    echo -e "$cmd" >>/etc/modprobe.d/sound
+    # sound module has to be loaded here ...
+    modprobe $cmd >> $HWLOG 2>&1 &
+   }
+}
+
+othersetup () {
+# load some important modules like ide and scsi controllers
+modprobe=`hwinfo --storage-ctrl|grep "Cmd: \"modprobe "| \
+    sed -e "s,.*probe,," -e "s,\",,"`
+modprobe -a $modprobe >> $HWLOG 2>&1
+lsmod|grep "ide_core" &>/dev/null && modprobe -a ide-floppy ide-disk \
+    >> $HWLOG 2>&1
+# try to identify installed harddrives
+logwrite "configuring hard disk partitions"
+hwinfo --disk | grep "Device File:" | awk '{print $3}' | \
+        sed -e "s/ //g" > /tmp/hwdisk.tmp
+[ $DEBUGLEVEL -gt 1 ] && { logwrite "---> output of 'hwinfo --disk':\n" ;
+    cat /tmp/hwdisk.tmp; }
+COUNTER=$(cat /tmp/hwdisk.tmp 2>/dev/null | wc -l)
+if [ $COUNTER -ge 1 ]; then
+    modprobe -q ext3 &>/dev/null
+    declare -i i=0
+    in_use=no
+    for DEVICE_DISK in $(cat /tmp/hwdisk.tmp); do
+        # check for dma enabled
+        hdparm -d $DEVICE_DISK|grep "off" &>/dev/null && { \
+           logwrite "enabling dma for $DEVICE_DISK"
+           hdparm -d 1 $DEVICE_DISK &>/dev/null; }
+        # check for swap signature (partition type 82)
+        fdisk -l $DEVICE_DISK | sed -n "/^\/dev\//p" | \
+            awk '{if ($5 == "82"){print $1}}' > /tmp/hd_devs
+        for DEVICE_DISK_NUMBER in $(cat /tmp/hd_devs); do
+            mkswap $DEVICE_DISK_NUMBER
+            swapon $DEVICE_DISK_NUMBER
+            in_use=yes
+        done
+        # check for linux signature (partition type 83)
+        fdisk -l $DEVICE_DISK | sed -n "/^\/dev\//p" | \
+            sed -e "s/\*//" | awk '{if ($5 == "83"){print $1}}' \
+            > /tmp/hd_devs
+        # mount linux partitions found before
+        for DEVICE_DISK_NUMBER in $(cat /tmp/hd_devs); do
+            #mkdir /tmp/disk$i >>$HWLOG
+            [ $DEBUGLEVEL -gt 1 ] && logwrite "mounting $DEVICE_DISK_NUMBER \
+to directory /mediadisk0$i"
+            ( mkdir -p /tmp/disks/disk0$i
+            fsck -y $DEVICE_DISK_NUMBER
+            mount $DEVICE_DISK_NUMBER /tmp/disks/disk0$i
+            if [ -d /tmp/disks/disk0$i/tmp ] ; then
+                ln -fs /tmp/disks/disk0$i/tmp /tmp/disk0$i
+                chmod 0755 /tmp/disks/disk0$i
+                chmod 1777 /tmp/disks/disk0$i/tmp
+            else
+                ln -fs /tmp/disks/disk0$i /tmp/disk0$i
+                chmod 1777 /tmp/disks/disk0$i
+            fi; ) &
+            i=$i+1
+            in_use=yes
+        done
+        # put disks into powersave if not used as swap or scratch
+        if [ x$in_use = "xno" ] ; then
+          #hdparm -Y $DEVICE_DISK &>/dev/null &
+          logwrite "put $DEVICE_DISK into power off"
+        fi
+    done
+fi
+
+# setting up cdrom/dvd device(s)
+hwinfo --cdrom >/tmp/hwcdr.tmp
+[ $DEBUGLEVEL -gt 1 ] && { logwrite "---> output of 'hwinfo --cdrom':\n" ;
+    cat /tmp/hwcdr.tmp >> $HWLOG 2>&1 ; }
+# remove devices links (installed if detected later on)
+rm /dev/dvd* /dev/cd* /dev/brenner &>/dev/null
+declare -i i=0 dvd=0 cdr=0
+while read line
+do
+    case "$line" in
+        *Device\ File:*)
+            i=$i+1
+            DEV=`echo $line|grep "Device File:"\
+                |sed -e "s,.*: ,,g" -e "s, .*,,g"`
+            status=dev-found
+            if [ $i -eq 1 ] ; then
+                rmd_add "$DEV" "cdrom" fstab
+                rmd_add "$DEV" "cdrom$i"
+            else
+                rmd_add "$DEV" "cdrom$i" fstab
+            fi
+                ;;
+        *Features*)
+            case "$line" in
+                *DVD*)
+                    dvd=$dvd+1
+                    [ x$status = "xdev-found" ] && rmd_add "$DEV" "dvd$dvd" && \
+                        [ $dvd -eq 1 ] && rmd_add "$DEV" "dvd" fstab
+                    [ $dvd -eq 1 ] && rmd_add "$DEV" "dvd" fstab
+                ;;
+	    esac
+            case "$line" in
+                *CD-R*)
+                    cdr=$cdr+1
+                    [ x$status = "xdev-found" ] && \
+                        rmd_add "$DEV" "cdrecorder$cdr" && [ $cdr -eq 1 ] && {
+                            rmd_add "$DEV" "cdrecorder"
+                            modprobe sg &>/dev/null
+                            # quickhack for device translation
+                            DEV=`echo $DEV | tr r g` &>/dev/null
+                            chmod a+rw $DEV &>/dev/null; }
+                    ;;
+                esac
+                status=empty
+        ;;
+
+        esac
+done < /tmp/hwcdr.tmp
+rm /tmp/hwcdr.tmp &>/dev/null
+
+# load firewire module if device is present
+( hwinfo --pci|grep "modprobe ohci1394" &>/dev/null && modprobe  ohci1394; ) &
+
+}
+### END script functions
+
+### main part of the script
+. /etc/rc.status
+
+test -f /etc/sysconfig/logfile && . /etc/sysconfig/logfile
+# disable the writing of a logfile if loglevel equals to zero, enable much
+# kernel level debugging output if loglevel is higher then one
+PRINTK=`cat /proc/sys/kernel/printk`
+echo "0 0 0 0" >/proc/sys/kernel/printk
+if [ "$DEBUGLEVEL" != "0" ]; then
+    HWLOG="/var/log/hwsetup.log"
+    logwrite "Running version $version"
+    # script runtime computing
+    cat /proc/uptime >/tmp/hwconf.runtime
+    [ "$DEBUGLEVEL" = "2" ] && { logwrite "\n\t!! not all output produced \
+within $0 makes sense in all means.\n\t!! But you may find some useful \
+information about module loading and\n\t!! errors produces within this \
+context. The kernel message output will\n\t!! be rised to a very high \
+level.\n\n";
+    echo "7 7 7 7" >/proc/sys/kernel/printk; }
+else
+    HWLOG="/dev/null"
+fi
+
+rc_reset
+
+case "$1" in
+  start)
+ 	echo -n "Starting hardware setup "
+	if [ $DEBUGLEVEL = "2" ]; then
+		echo "as foreground process ..."
+		setupprep >> $HWLOG 2>&1 || {
+		    rc_failed
+		    logwrite "subroutine setupprep produced error status"; }
+		hwsetup >> $HWLOG 2>&1 || {
+		    rc_failed
+		    logwrite "subroutine hwsetup produced error status"; }
+		soundsetup >> $HWLOG 2>&1 || {
+		    rc_failed
+		    logwrite "subroutine soundsetup produced error status"; }
+		othersetup >> $HWLOG 2>&1 ||{
+		    rc_failed
+		    logwrite "subroutine othersetup produced error status"; }
+	else
+		echo "as background process ..."
+		setupprep >> $HWLOG 2>&1
+		hwsetup >> $HWLOG 2>&1 &
+		( soundsetup >> $HWLOG 2>&1; 
+		othersetup >> $HWLOG 2>&1; ) &
+ 	fi
+        rc_status -v1; rc_reset
+	#
+	;;
+    stop)
+	rc_failed 3
+	rc_status -v
+	;;
+    status)
+	rc_failed 4
+	rc_status -v
+	;;
+    *)
+	echo "Usage: $0 {start|stop|status}"
+	exit 1
+	;;
+esac
+
+rc_exit

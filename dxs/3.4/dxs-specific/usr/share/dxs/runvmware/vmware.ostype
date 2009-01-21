@@ -1,0 +1,20 @@
+# OSTYPE for /bin/runvmware (DO NOT DELETE!!!)
+#
+# Michael Janczyk <mj0@uni-freiburg.de> 30-08-2005
+#
+###### 
+# For OSType use the first part of the image-name.
+# -OSType-     | -VMWare name- | -Description (use "-" for space)-
+#####
+windows98	win98		Windows-98
+windows2000	win2000pro	Windows-2000-Professional
+windowsxp	winxppro	Windows-XP-Professional
+suse		suse		Novell-SuSe-Linux
+
+#####
+# What to boot if none of the obove is found, equivalent to *
+# -else-       | -VMWare name- | -Description (use "-" for space)-
+#####
+
+else		other26xlinux	Linux-2.6.x-OS
+

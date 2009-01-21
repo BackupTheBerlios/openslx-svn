@@ -1,0 +1,588 @@
+#!/bin/sh
+#
+# Description:  Script for preparing VMware environment Diskless
+#               X Stations (v3.3)
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 05-08-2005
+#               Michael Janczyk <mj0@uni-freiburg.de>, 31-10-2005
+# Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
+#
+VERSION=0.12d
+#
+LAST_CHANGES=31.10.05
+#
+
+
+
+### VERBOSE? ###
+# set verbose mode (set -x(v))
+#set -xv
+
+
+
+
+### VARIABLES SECTION ###
+
+# Declaration of default variables
+
+# Hardware variables
+# Temporary disk space for logs, etc...
+export TMPDIR=/tmp/vmware_temporary/$USER/tmp
+# ;)
+MAC=
+declare -i MEM=0
+declare -i MEMOPT=0
+declare -i MEMTEST=0
+# Virtual Devices
+VMSCSI=FALSE
+CDR_1=FALSE
+CDR_2=FALSE
+FLOPPYA="floppy0.present = \"FALSE\""
+# Resolution
+HOSTRES=`xvidtune -show | grep -ve "^$"`
+X_PARAM=`echo "$HOSTRES" | awk '{print $3}'`
+Y_PARAM=`echo "$HOSTRES" | awk '{print $7}'`
+
+
+# VMware variables
+# VMware start options
+VMOPT="-X -q"
+# Config directory and file
+RUNVMDIR="/usr/share/dxs/runvmware"
+CONFDIR=/tmp/vmware_temporary/$USER/vmware
+CONFILE=$CONFDIR/runvmware.conf
+VMDIR=$HOME/.vmware
+# Zenity
+SESS_ZEN="/etc/X11/sessions"
+# VMware version
+VM_VER=5
+# Special Variables
+#UNDOPOINT="keep" 
+CONFVER=7
+NP="independent-nonpersistent"
+# Set hostname: using original hostname and adding string "-vm"
+HOSTNAME=`hostname`"-vm"
+# Set samba workgroup
+WORKGROUP="tux-net"
+# Place for the virtual floppy "B:"
+FILENAME=`mount | grep -i "$HOST-1440.img" | awk '{print $1}'`
+COMMENT="Diskless Workstation VMware-Image"
+# Image Variables
+IMGDIR="/usr/share/vmware"
+OSFILE="$RUNVMDIR/vmware.ostype"
+ALIASFILE="$RUNVMDIR/vmware.aliases"
+ALIAS=
+SPEC=
+ENDING="vmdk"
+DISKFILE=
+RIGHTSFILE=
+NOIMAGE=0
+OSTYPE=
+DISPLAYNAME="Unknown OS"
+# Image checking variable
+FILECHECK=
+
+
+# Command line variables
+# Command line options, transform to lower case
+LINEOPTS=( `echo $@ | tr [A-Z] [a-z]` )
+DEBUG=0
+INTER=
+COMDEF=
+NARG=
+
+
+
+
+### FUNCTIONS SECTION ###
+
+# Function to write to stdout/logfile
+# Logs labeled with $2=0 write to stdout, if debug set, write to logfile
+writelog ()
+ {
+ # Write to stdout
+ [ "$2" = "0" ] && echo -e "$1"
+
+ # Check if range given e.g. 0 0
+ if [ -z "$2" ] || [ -z "$3" ];then
+    echo -e "\n\nNO RANGE IN WRITELOG STATEMENT:\n$1\n\tPlease correct!\n"
+    exit 1
+ fi
+
+ # Log if level greater than 1 and log only from level $2 to level $3
+ [ "$DEBUG" -ge "1" ] && [ "$DEBUG" -ge "$2" ] && [ "$DEBUG" -le "$3" ] && \
+ echo -e "$1" >>$CONFDIR/runvmware.$DEBUG.log
+ }
+
+
+help ()
+ {
+ cat <<EOH
+
+ USAGE: $0 [--options]
+
+Image options:
+	-i			interactive mode with image selection
+	-o ostype		start ostype, e.g. windowsxp, suse,...
+				(first part of image name)
+	-s specification	specify your image, e.g. standard
+				(second part of image name)
+	-a 			use aliases in
+				$ALIASFILE
+	--displayaliases	aliases you can use with option -a
+        --memory n MB		override autoallocation of memory
+	--delay n seconds	delay the start of the script n seconds
+	--image directory	specify image directory
+	--persistent		use persistent mode
+	--define-vm-ostype	overwrite vmware ostype
+VMware options:
+	--windowed		start in windowed mode
+	--edit			only open config file in vmware (only VMware)
+	--donotquit		do not quit after image stopped (only VMware)
+runvmware options:
+	-h|--help		this help
+	--debug level		level 1 -> print stdout to file
+
+		Dirk von Suchodoletz,     Michael Janczyk
+		  <dirk@goe.net>,      <mj0@uni-freiburg.de>
+
+	$0: LAST CHANGES $LAST_CHANGES / VERSION $VERSION
+
+EOH
+
+   exit 0
+ }
+
+
+checkalias ()
+ {
+ writelog "Checking alias for $OSTYPE${SPEC:+" $SPEC"}...\c" 0 1
+ if [ -r "$ALIASFILE" ]; then
+
+    # OSTYPE=
+    OSALIAS=`cat $ALIASFILE 2>&1 | grep -xv "#.*" | grep "$OSTYPE" | awk '{print $1}'`
+    [ -n "$OSALIAS" ] && OSTYPE=$OSALIAS
+
+    # SPEC=
+    [ -n "$SPEC" ] && \
+    SPECALIAS=`cat $ALIASFILE 2>&1 | grep -xv "#.*" | grep "$SPEC" | awk '{print $1}'`
+    [ -n "$SPECALIAS" ] && SPEC=$SPECALIAS
+
+    writelog "finished\nResult:\n\tOS=$OSTYPE${SPEC:+"\n\tspec=$SPEC"}\n" 0 1
+
+ else writelog "\rNo readable $ALIASFILE existing, try without -a\n" 0 1; exit 1
+
+ fi
+ }
+
+
+dialog_zen ()
+ {
+ MENU=`ls $SESS_ZEN 2>/dev/null | sed -e "s,.desktop,,"`
+
+ # Zenity
+ zenity --title "VMware Image Select" --width 300 --height 350 \
+        --list --list-text "Please select one image to start" \
+        --column "Image names" $MENU
+ }
+
+
+filecheck ()
+ {
+ FILECHECK=`LANG=us ls -lh $DISKFILE 2>&1`
+ writelog "Filecheck:\n$FILECHECK\n" 0 1
+ NOIMAGE=`echo $FILECHECK | grep -i "No such file or directory" | wc -l`
+ RIGHTSFILE=$DISKFILE
+
+ # Check if link
+ if [ -L "$DISKFILE" ]; then
+    writelog "Vmware Image Problem:\tThe image you've specified, is a link.\n" 0 1
+    writelog "\tContinuing to start VMware, but it may cause problems!\n" 0 0
+    sleep 1
+    RIGHTSFILE=`ls -lh $DISKFILE 2>&1 | awk -F "->" '{print $2}'` # Take link target
+    FILECHECK=`LANG=us ls -lh $RIGHTSFILE 2>&1`
+ fi
+
+ # Does file exist
+ if [ "$NOIMAGE" -ge "1" ]; then
+    writelog "Vmware Image Problem:\tThe image you've specified, doesn't exist." 0 0
+    writelog "Filecheck says:\t\t$DISKFILE:\n\t\t\tNo such file or directory" 0 1
+    writelog "Hint:\t\t\tCompare the spelling of the image with your options.\n" 0 0
+    exit 1
+ fi
+
+ # Readable?
+ if ! [ -r "$DISKFILE" ]; then # $RIGHTSFILE see above
+    writelog "Vmware Image Problem:\tThe image you've specified, has wrong rights." 0 1
+    writelog "Filecheck says:\t\t`echo $FILECHECK | awk '{print $1" "$3" "$4}'` $RIGHTSFILE" 0 1
+    writelog "Hint:\t\t\tChange rights with: chmod a+r $RIGHTSFILE\n" 0 0
+    exit 1
+ fi
+ }
+
+
+
+
+#### INTERPRET COMMAND LINE OPTIONS ###
+# Print help if no clo
+if [ $# = "0" ]; then
+   help
+   exit 0
+fi
+
+(( NARG=0 ))
+while [ $# -gt "$NARG" ]; do
+ case "${LINEOPTS[$NARG]}" in
+  -h|--help)
+     help;
+  ;;
+  -o)
+     OSTYPE=${LINEOPTS[(( $NARG +1 ))]}
+  ;;
+  -s)
+     SPEC=${LINEOPTS[(( $NARG +1 ))]}
+  ;;
+  -a)
+     ALIAS="yes"
+  ;;
+  --displayaliases)
+     echo "#"; cat $ALIASFILE; exit 0
+  ;;
+  --delay)
+     sleep ${LINEOPTS[(( $NARG +1 ))]}
+  ;;
+  --image)
+     IMGDIR=${LINEOPTS[(( $NARG +1 ))]}
+  ;;
+  --persistent)
+     NP="independent-persistent"
+  ;;
+  --define-vm-ostype)
+     VMOSTYPE=${LINEOPTS[(( $NARG +1 ))]}
+     COMDEF="yes"
+  ;;
+  --mem)
+     MEMOPT=${LINEOPTS[(( $NARG +1 ))]}
+  ;;
+  --debug)
+     DEBUG=${LINEOPTS[(( $NARG +1 ))]}
+  ;;
+  --windowed)
+     VMOPT=`echo $VMOPT | sed -e "s,-X,-x,"`
+  ;;
+  --edit)
+     VMOPT=""
+  ;;
+  --donotquit)
+     VMOPT=`echo $VMOPT | sed -e "s,-q,,"`
+  ;;
+  -i)
+     INTER="yes"
+  ;;
+ esac
+ (( NARG=$NARG+1 ))
+done
+
+
+
+
+### STARTING ###
+
+# Logo for console
+cat <<EOL
+
+           .----.--.--.-----.--.--.--------.--.--.--.---.-.----.-----.
+           |   _|  |  |     |  |  |        |  |  |  |  _  |   _|  -__|
+           |__| |_____|__|__|\___/|__|__|__|________|___._|__| |_____|
+                Script for preparing VMware environment...(v$VERSION)
+
+
+EOL
+writelog "Starting...`echo $NP|sed -e \"s,i.*-,,g\"|tr [a-z] [A-z]`-mode\n" 0 0
+
+
+
+
+### CHECK MACHINE SETUP ###
+
+# Create environment
+# Remove leftover locks from former runs, 
+# problems may occure if you run more then one vmware with this script
+rm -rf $TMPDIR >/dev/null 2>&1
+rm -f $CONFDIR/*LOCK >/dev/null 2>&1
+rm -f $CONFDIR/*.$DEBUG.log >/dev/null 2>&1
+
+
+# Create vmware config file directory
+mkdir -p $TMPDIR >/dev/null 2>&1
+mkdir -p $CONFDIR >/dev/null 2>&1
+mkdir -p $VMDIR >/dev/null 2>&1
+
+
+# Start logging, because now we have the directories created ;)
+writelog "##################################################" 1 99
+writelog "#\n# File created by $0 (v.$VERSION)\n# on `date`\n# LOGLEVEL=$DEBUG\n#" 1 99
+writelog "##################################################\n" 1 99
+# Repeat only for logfile ;)
+writelog "Starting...`echo $NP|sed -e \"s,i.*-,,g\"|tr [a-z] [A-z]`-mode\n" 1 1
+
+
+# Log disksetup
+writelog "Directories:\n\tTMPDIR=$TMPDIR\n\tCONFDIR=$CONFDIR\n\tVMDIR=$VMDIR\n" 0 1
+writelog "vmware_temporary:\n`ls -l /tmp/vmware_temporary`\n" 0 1
+
+
+# Configuring MAC address: first four bytes are fixed (00:50:56:0D) the
+# last two bytes are taken from the local network adaptor
+writelog "Starting hardware/device detection...\c" 0 1
+
+MAC=`/sbin/ifconfig eth0 | grep eth0 | sed -e "s, ,,g" | \
+     awk -F : '{print $(NF-1)":"$NF}'`
+
+
+# Gather memory info and set virtual machine memory size accordingly
+MEM=`cat /proc/meminfo | grep MemTotal | sed -e 's,[0-9][0-9][0-9] kB,,' \
+	-e 's,MemTotal: *,,'`
+
+# Check if command option $MEMOPT possible
+MEMTEST=$MEM-$MEMOPT
+
+# Memory allocation
+if [ "$MEM" -le "110" ]; then
+   writelog "\nYour memory is too low: $MEM\n\t\t\t\tExiting\n" 0 1
+   exit 1
+elif [ "$MEM" -le "200" ]; then
+   writelog "\nYour memory is too low: $MEM" 0 1
+   writelog "\tContinuing but it may cause problems!\n" 0 0
+   sleep 1
+   MEM=$MEM-64
+elif [ "$MEM" -le "260" ]; then
+   writelog "\nYour memory is too low: $MEM" 0 1
+   writelog "\tContinuing but it may cause problems!\n" 0 0
+   sleep 1
+   MEM=$MEM-96
+elif [ "$MEM" -le "330" ]; then
+   MEM=$MEM-128
+elif [ "$MEM" -le "390" ]; then
+   MEM=$MEM-192
+elif [ "$MEM" -le "520" ]; then
+   MEM=$MEM-256
+elif [ "$MEM" -gt "520" ]; then
+   MEM=$MEM-256
+fi
+
+# If possible use $MEMOPT
+[ "$MEMOPT" -gt "0" ] && \
+writelog "Min. 64MB for host and guest, else memory is auto allocated" 0 0
+
+[ "$MEMOPT" -ge "64" ] && [ "$MEMTEST" -ge "60" ] && MEM=$MEMTEST
+
+# To get 4MByte boundary
+MEM=$MEM/4*4
+
+
+# Look for cdrom,dvd and floppy and add them to the vm config file
+if [ -L /dev/cdrom1 ] ; then
+   VMSCSI=TRUE
+   CDR_1=TRUE
+   CDR_1_NAME="/dev/cdrom1"
+fi
+
+if [ -L /dev/cdrom2 ] ; then
+   VMSCSI=TRUE
+   CDR_2=TRUE
+   CDR_2_NAME="/dev/cdrom2"
+fi
+
+
+# Floppy
+if [ -L /dev/floppy ] ; then
+   FLOPPYA="floppy0\.fileName = /dev/fd0"
+fi
+
+
+writelog "finished\nResults:\n\tMAC=$MAC\n\tMEM=$MEM\n\tVMSCSI=$VMSCSI
+	CDR_1=$CDR_1\n\tCDR_2=$CDR_2\n" 0 1
+
+
+
+
+### SELECT VIRTUAL IMAGE ###
+
+# Interactive mode
+if [ -n "$INTER" ]; then
+   writelog "Starting interactive mode...\c" 0 0
+
+   MENUTEST=`ls $SESS_ZEN 2>/dev/null | wc -l`
+   # Check for session files
+   if [ "$MENUTEST" = "0" ]; then
+      writelog "\rNo session files found in /etc/X11/sessions with option -i" 0 99
+      writelog "Please use option -o and contact the developer of $0\n" 0 0 
+      exit 1
+   fi
+
+   # Create Menu, etc...
+   ARGS=`dialog_zen | tr [A-Z] [a-z] | sed -e "s,-, ,"`
+   OSTYPE=`echo $ARGS | awk '{print $1}'`
+   SPEC=`echo $ARGS | awk '{print $2}'`
+   if [ -z "$ARGS" ]; then
+      writelog "\rNo image selected, please retry or use option -o / -s\n" 0 0
+      writelog "No image was selected with opton -i; return value was: $ARGS\n" 2 2
+      exit 1
+   fi
+
+   writelog "finished.\nResult:\n\tostype=$OSTYPE${SPEC:+\n\tspec=$SPEC}\n" 0 1
+fi
+
+
+# Aliases
+[ -n "$ALIAS" ] && checkalias
+
+
+# Image allocation
+writelog "Starting image detection...\c" 0 1
+
+DISKFILE="$IMGDIR/$OSTYPE${SPEC:+"-$SPEC"}.$ENDING"
+# Check if VMOSTYPE defined via command line
+if [ -r "$OSFILE" -a -z "$COMDEF" ]; then
+   VMOSTYPE=`grep -xv "#.*" $OSFILE | grep "$OSTYPE" | awk '{print $2}'`
+   DISPLAYNAME=`grep -xv "#.*" $OSFILE | grep "$OSTYPE" | awk '{print $3}' | \
+                sed -e "s,-, ,g"`
+   # If OSTYPE not found use else statement
+   VMOSTYPE=${VMOSTYPE:-`grep -xv "#.*" $OSFILE | grep "else" | \
+                         awk '{print $2}'`}
+   DISPLAYNAME=${DISPLAYNAME:-`grep -xv "#.*" $OSFILE | grep "else" | \
+                               awk '{print $3}'`}
+elif ! [ -r "$OSFILE" -o -n "$COMDEF" ]; then # ( !r && z ) <=> !( r || !z(=n) )
+   writelog "\rNo readable $OSFILE existing,\nTry with --define-vm-ostype." 0 1;
+   writelog "\rStarting with OStype \"other\".\n" 0 1;
+   VMOSTYPE="other"
+fi
+
+writelog "finished\nResults:\n\tDISKFILE=$DISKFILE\n\tVMOSTYPE=$VMOSTYPE
+	DISPLAYNAME=$DISPLAYNAME\n" 0 1
+
+
+# Link to windows image
+writelog "Linking \"ln -fs $DISKFILE $TMPDIR/disk\"...\c" 0 1
+ln -fs $DISKFILE $TMPDIR/disk
+writelog "finished\nResult:\n`ls -l $TMPDIR/disk`\n" 0 1
+
+
+# Check if image exists, etc...
+filecheck
+
+
+
+
+### WRITE CONFIGURATION FILES ###
+
+# Copy licence file and virtual bios to VMware directory
+cp /usr/share/dxs/VMware/license.ws.5.0 $VMDIR >/dev/null 2>&1
+cp /usr/share/dxs/VMware/nvram.5.0 $CONFDIR/nvram  >/dev/null 2>&1
+
+
+sed -e "s,prefvmx.mru.config =.*,prefvmx.mru.config = \"$CONFILE\"," \
+    -e "s,tmpDirectory =.*,tmpDirectory = \"$CONFDIR\"," \
+    /usr/share/dxs/VMware/preferences >$VMDIR/preferences
+
+
+# Create VMware startup file
+#    -e "s,undopoint.action = .*,undopoint.action = \"$UNDOPOINT\"," \
+sed -e "s,00:00,$MAC," \
+    -e "s,FLOPPY-B,$FILENAME," \
+    -e "s,floppy0\.fileName =.*,$FLOPPYA," \
+    -e "s,memsize = .*,memsize = \"$MEM\"," \
+    -e "s,ide0:0.fileName = .*,ide0:0.fileName = \"$TMPDIR/disk\"," \
+    -e "s,redoLogDir.*,redoLogDir = \"$TMPDIR\"," \
+    -e "s,tmpDirectory.*,tmpDirectory = \"$TMPDIR\"," \
+    -e "s,scsi0\.present =.*,scsi0\.present = \"$VMSCSI\"," \
+    -e "s,scsi0:0\.present =.*,scsi0:0\.present = \"$CDR_1\"," \
+    -e "s,scsi0:0\.fileName =.*,scsi0:0\.fileName = \"$CDR_1_NAME\"," \
+    -e "s,scsi0:1\.present =.*,scsi0:1\.present = \"$CDR_2\"," \
+    -e "s,scsi0:1\.fileName =.*,scsi0:1\.fileName = \"$CDR_2_NAME\"," \
+    -e "s,displayName =.*,displayName = \"$DISPLAYNAME\"," \
+    -e "s,guestOS =.*,guestOS = \"$VMOSTYPE\"," \
+    -e "s,config.version =.*,config.version = \"$CONFVER\"," \
+    -e "s,ide0:0.mode.*,ide0:0.mode = \"$NP\"," \
+    -e "s,sharedFolder0.hostPath =.*,sharedFolder0.hostPath = \"$HOME\"," \
+   /usr/share/dxs/VMware/vmware.conf.default >$CONFILE
+
+# Set the appropriate permissions for the vmware config file
+chmod u+rwx $CONFILE >/dev/null 2>&1
+
+
+# Prepare config files for the clientOS (win)
+if [ "$VMOSTYPE" = "win98" ]; then # Windows 98 specific
+   echo -e "\tREGEDIT4
+
+	[HKEY_CURRENT_USER\Network\Persistent\H]
+	\"RemotePath\"=\"\\\\192.168.1.2\\$USER\"
+	\"UserName\"=\"$USER\"
+	\"ProviderName\"=\"Microsoft Network\"" \
+   > /media/loop0/home.reg
+
+   echo -e "\tREGEDIT4
+
+	[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\VxD\VNETSUP]
+	\"ComputerName\"=\"$HOSTNAME\"
+	\"Workgroup\"=\"$WORKGROUP\"
+	\"Comment\"=\"$COMMENT\"
+	\"StaticVxD\"=\"vnetsup.vxd\"
+	\"Start\"=hex:00
+	\"NetClean\"=hex:01
+
+	[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\ComputerName\ComputerName]
+	\"ComputerName\"=\"$HOSTNAME\"" \
+   > /media/loop0/rechner.reg
+
+   echo -e "\tREGEDIT4
+
+	[HKEY_LOCAL_MACHINE\Network\Logon]
+	\"username\"=\"$USER\"
+	\"PrimaryProvider\"=\"Microsoft Network\"
+	\"LMLogon\"=hex:00,00,00,00" \
+   > /media/loop0/logon.reg
+fi
+
+# Set Resolution
+echo -e "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r
+<settings>\r
+  <eintrag>\r
+    <resolution_x param=\"$X_PARAM\">\r
+    </resolution_x>\r
+    <resolution_y param=\"$Y_PARAM\">\r
+    </resolution_y>\r
+    <username param=\"$USER\">\r
+    </username>\r
+  </eintrag>\r
+</settings>\r" > /media/loop0/config.xml
+
+
+##################################################################
+# old, delete when obsolete
+xvidtune -show | grep -v -e "^$"| \
+awk {'print "[resolution]\r\nx="$3"\r\ny="$7"\r\n\r\n[username]\r\n\
+      user_name="ENVIRON["USER"]"\r\n"'} \
+   > /media/loop0/config.ini
+
+
+
+
+### RUN VMWARE(-Player) ###
+
+# ...with the automatically written config file
+if [ `which vmware 2>/dev/null` ]; then
+   writelog "\nStarting VMware...\n" 0 0
+   vmware $VMOPT $CONFILE 2>&1
+elif [ `which vmplayer 2>/dev/null` ]; then
+   writelog "\nStarting VMplayer...\n" 0 0
+   VMOPT=`echo $VMOPT | sed -e "s,-q,," -e "s,-x,,"`
+   vmplayer $VMOPT $CONFILE 2>&1
+else
+   writelog "\nNo VMware/VMPlayer found!\n" 0 99
+fi
+
+
+exit 0
+

@@ -1,0 +1,91 @@
+#!/bin/sh
+#
+# Description: startgui runs as script replacement for xinit
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 26-08-2005 by mj0
+# Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
+#
+# Version:      0.1.0a
+#
+# /etc/init.d/startgui
+# 
+###########################################################################
+
+# functions
+error () {
+	$2 $1
+}
+
+sysresources=/usr/X11R6/lib/X11/Xresources
+sysmodmap=/usr/X11R6/lib/X11/Xmodmap
+
+# merge in defaults and keymaps
+
+if [ -f $sysresources ]; then
+    xrdb -merge $sysresources
+fi
+
+#if [ -f $sysmodmap ]; then
+#    xmodmap $sysmodmap
+#fi
+
+#if [ -f $userresources ]; then
+#    xrdb -merge $userresources
+#fi
+
+#if [ -f $usermodmap ]; then
+#    xmodmap $usermodmap
+#fi
+WM=$1
+[ $WM ] || WM=kde
+case "$WM" in
+	*fvwm*)
+    	fvwm2
+		;;
+	*kde*)
+		mkdir ~/.kde
+		cp -a /usr/share/dxs/WMsettings/kde ~/.kde
+		/opt/kde3/bin/startkde
+		;;
+	*wmaker*|*windowmaker*)
+		mkdir ~/GNUstep
+		cp -a /usr/share/dxs/WMsettings/windowmaker ~/GNUstep
+		wmaker
+		;;
+	*ice*)
+		/usr/X11R6/bin/icewm
+		;;
+	*gnome*)
+		cp -a /usr/share/dxs/WMsettings/gnome/.* ~/
+		/usr/X11R6/bin/gnome
+		;;
+	*citrix|Citrix|ICAClient|*wfica)
+		xsetroot -solid black
+		cp -a /etc/dxs/ICAClient/ ~/.ICAClient 
+		/usr/lib/ICAClient/wfica
+		;;
+	*citrix-mgr|*citrix-indirect|*wfcmgr)
+		xsetroot -solid black
+		cp -a /etc/dxs/ICAClient/ ~/.ICAClient
+		#
+		# indirect bauen
+		#
+		;;
+	*vmware*)
+		#. /etc/rc.config
+		xsetroot -solid black
+		mkdir -p $HOME/.vmware
+		xterm -bg black -fg white -geometry 170x30+0-0 +sb -e \
+		  "runvmware -i --debug 1"
+		;;
+	*)
+		if which $WM; then
+		  $WM
+		  error "Session ended ... Click OK to restart X" xmessage
+		else
+		  error "Tried: $WM - Kein sinnvoller wm angegeb." xmessage
+		  xterm
+		fi
+		;;
+esac
+exit 0

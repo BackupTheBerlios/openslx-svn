@@ -1,0 +1,184 @@
+#!/bin/bash
+
+# Copyright (c) 2004 Lars Mueller.
+# All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place, Suite 330, Boston, MA 02111-1307 USA
+#
+# Author: Lars Mueller <lars@m5r.de>
+# Based on y2pmbuild from Ludwig Nussel as part of the y2pmsh package.
+
+if test -z "$packageSelection"; then
+    echo "You have to set packageSelection."
+    exit 1
+fi
+
+: ${rootdir:=/srv/nfsroot}
+: ${debug:=0}
+
+dxsLogDir="/var/log/dxs/"
+
+success=0;
+
+if [ -z "$DIST" ]; then
+    have_repo=0;
+elif ! . "$y2pmbuildconfdir/dists/$DIST" ; then
+    have_repo=0
+else
+    have_repo=1
+fi
+
+if [ -z "$rootdir" ]; then
+    user=`id -un`
+    [ "$user" = root -a -n "$SUDO_USER" -a "$SUDO_USER" != root ] && user="$SUDO_USER"
+    rootdir="/var/tmp/build-root.$user"
+    [ -n "$DIST" ] && rootdir="$rootdir.$DIST"
+fi
+
+cleanup()
+{
+    set +e
+    trap EXIT
+
+    rm -f "$rootdir/.locked"
+}
+
+installpackages()
+{
+    local logfile
+    local instlog
+    # FIXME log file should use dist and arch info for filename
+    test -d "${dxsLogDir}" || \
+    	mkdir -p "${dxsLogDir}"
+    logfile="$dxsLogDir/y2log"
+    instlog="$dxsLogDir/y2logRPM"
+    test -d /dev/shm && \
+    	TMP_DIR="/dev/shm" || \
+	TMP_DIR="/var/tmp"
+    y2pmshcmds=$( mktemp ${TMP_DIR}/y2pmshcmds.XXXXXX)
+    if test $? -ne 0; then
+    	echo "Can't create temp y2pmsh command file."
+	exit 1
+    fi
+    > "$logfile"
+    > "$instlog"
+    cat > "$y2pmshcmds" <<-EOF
+	set root $rootdir
+	set logfile $logfile
+	set instlog $instlog
+	set quitonfail 1
+	set verbose 1
+	EOF
+
+#    regenrepository --init
+
+#    addsourcesfromrepository >> "$y2pmshcmds"
+	
+    cat >> "$y2pmshcmds" <<-EOF
+	source -s
+	set debug $debug
+	selinstall $packageSelection
+	EOF
+    if test "${additionalPackages}"; then
+	cat >> "$y2pmshcmds" <<-EOF
+	install $additionalPackages
+	EOF
+    fi
+    if test "${obsoletPackages}"; then
+	cat >> "$y2pmshcmds" <<-EOF
+	remove $obsoletPackages
+	EOF
+    fi
+    cat >> "$y2pmshcmds" <<-EOF
+	selsolve
+	set debug 0
+	summary
+	commit
+	EOF
+
+    # don't restart daemons etc.
+    export YAST_IS_RUNNING=instsys
+
+    y2pmsh < "$y2pmshcmds"
+}
+
+setuptimezone()
+{
+    # FIXME sucks
+    if [ -e "$rootdir/usr/sbin/zic" -a -e "$rootdir/bin/su" -a -e "$rootdir/etc/passwd" ]; then
+	chroot "$rootdir" su - -c "/usr/sbin/zic -l GMT"
+    else
+	install -m 755 -d "$rootdir/etc"
+	install -m 644 /etc/localtime "$rootdir/etc/localtime"
+    fi
+}
+
+runsuseconfig()
+{
+    echo "SuSEconfig ..."
+    chroot "$rootdir" su - -c /sbin/SuSEconfig
+}
+
+runldconfig()
+{
+    echo "ldconfig ..."
+    chroot "$rootdir" su - -c /sbin/ldconfig
+}
+
+
+set -e
+
+unset ${!LC_*}
+export LANG=POSIX
+
+if [ `id -nu` != "root" ]; then
+    echo "only root can build packages this way" >&2
+    exit 2
+fi
+
+if [ "$rootdir" = / -o -z "$rootdir" ]; then
+    echo "invalid build root: $rootdir" >&2
+    exit 1
+fi
+
+mkdir -p "$rootdir"
+
+if [ ! -e "$rootdir" ]; then
+    echo "couldn't create $rootdir" >&2
+    exit 1
+elif [ ! -d "$rootdir" ]; then
+    echo "$rootdir is no directory" >&2
+    exit 1
+elif [ ! -O "$rootdir" ]; then
+    echo "$rootdir is not owned by `id -nu`" >&2
+    exit 1
+fi
+
+if [ -e "$rootdir/.locked" ]; then
+    echo -n "$rootdir already locked by pid " >&2
+    cat "$rootdir/.locked" >&2
+    exit 1
+fi
+
+echo $$ > "$rootdir/.locked"
+
+trap cleanup EXIT
+
+setuptimezone
+installpackages
+#runsuseconfig
+runldconfig
+
+# vim:sw=4

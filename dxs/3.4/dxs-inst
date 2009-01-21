@@ -1,0 +1,624 @@
+#! /bin/bash
+# 
+# Description:  Script for generating dxs filesystem from scratch or 
+#		clone from rsync source for Diskless X Stations (v3.4)
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 02-11-2005
+# Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
+#
+version="ldc-v3.4 0.10c"
+distVersion="10.0"
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place, Suite 330, Boston, MA 02111-1307 USA
+#
+# The rpm installation heavily bases on the y2pmdxs script from Lars Mueller
+# <lars@m5r.de>.
+
+updateTreeURL=$( test -f /etc/youservers && grep -v ^# /etc/youservers | head -n 1)
+test -z ${updateTreeURL} && \
+	updateTreeURL="http://ftp.gwdg.de/pub/suse"
+#
+# We assume (one) two nfs shares exported:
+# 1) the diskless linux root filesystem
+# 2) /tmp/dxs as a special rw exported share for temporary files
+# 3) the client does have only one ethernet interface ---> eth0
+#    this is passed via the mkinitrd
+#
+################################################################################
+
+# otherwise some ip detection wouldn't work
+LANG=us
+
+# how this script was called
+called=`basename $0`
+if [ "x$called" = "xd2dl" ]; then 
+	d2dl="yes";
+	which rsync &>/dev/null || echo "rsync is missing!"
+	[ "x$1" = "x-u" ] && {
+	  update="yes";
+	  rsexcl="--exclude-from=exclude.local --exclude=/etc/passwd* --exclude=/etc/shadow* "; }
+fi
+
+# declare some variables and set some defaults
+rootdir="/nfsroot/dxs"
+debuglevel="2"
+initdef="5"
+modulelist="e1000 e100 b44 tg3 8139too"
+if [ $d2dl ]; then
+  rsrc="/"
+else
+  install_source="/suse-install"
+fi
+idef="3"
+ipcfg=( `ifconfig eth0 | grep "inet addr" | sed -e "s,[a-zA-Z]*:,,g"` )
+netmask=${ipcfg[3]}
+broadcast=${ipcfg[2]}
+# quickhack (more intelligent solution needed ...)
+netname=`route -n | grep -m 1 eth0 | grep -v "UG" | awk '{ print $1 }'`
+server=${ipcfg[1]}
+# default passwords (un)crypted
+rpw="geheim"
+dpw="TEST"
+pwr='$2a$10$YUfF8ppp5YU3IkwJLsZtW.lc6dqC8pV/.TkpMK98opNt9/MtRo61a'
+pwa='$2a$10$NiRMNlzpwIVA7RmpF2IygeKocRmll8n.1HYnMR4f2dztUE9SINdrK'
+
+echo "installation log for $0 $version">installation.log
+
+if [ -z $netname ] ; then
+        netname="192.168.2.0"
+fi
+# ask for some info interactively
+echo
+if [ $d2dl ]; then
+  # dxs-inst
+  if [ $update ] ; then
+    echo "Welcome to version $version of d2dl! Script called for update!"
+    echo "!! Remember !! Put all files which should be excluded from update"
+    echo "into exclude.local file (this directory) !! See installation.log"
+  else
+    echo "Welcome to version $version of d2dl!"
+  fi
+  echo -n "Checking for rsync: "
+  rpm -q rsync || exit 5
+else
+  # d2dl
+  echo "Welcome to version $version of dxs-inst! This installation method"
+  echo "is heavily dependent on the servers software and architecture!!"
+  echo "It works for the most recent SuSE linux versions 9.1 and 9.2. For"
+  echo "older versions use previous script versions or the other installation"
+  echo "method (d2dl - clone installed system). You will need an installed"
+  echo "version of 'y2pmsh' and 'rsync' - otherwise the procedure would fail"
+  echo "(this script simply exits) ..."
+  echo -en "\nChecking for y2pmsh: "
+  rpm -q y2pmsh || exit 5
+  # FIXME: at the moment fixed external settings are used
+  echo "This script requires a valid installation source set with servers"
+  echo "yast2 - otherwise no package selections could be made!!"
+fi
+echo "See installation.log for errors ..."
+echo -ne "\nChecking for rsync: "
+rpm -q rsync || exit 5
+echo -en "\nPrechecks passed!!\nPlease answer the following questions: "
+echo "(Enter takes defaults)"
+[ -f .config ] && { 
+    echo "Reading settings from .config file!!"
+    . .config
+}
+echo
+if [ $update ] ; then
+  echo "Which dxs root path should be updated?"
+else
+  echo "Which dxs root path should be used?"
+fi
+echo -n "* [ ${rootdir} ] "
+read rp
+if [ $rp ] ; then 
+    rootdir=$rp;
+    echo "rootdir=\"$rootdir\"" >> .config
+fi
+
+# do not ask a set of questions if in update mode
+if [ ! $update ] ; then
+  echo "Which network do you want to use for DXS? (A.B.C.0)"
+  echo -n "* [ $netname ] "
+  read nn
+  if [ $nn ] ; then 
+    netname=$nn;
+    echo "netname=\"$netname\"" >> .config 
+  fi
+  echo "Which netmask should be used? (255.B.C.0)"
+  echo -n "* [ $netmask ] "
+  read nm
+  if [ $nm ] ; then
+    netmask=$nm;
+    echo "netmask=\"$netmask\"" >> .config
+  fi
+  echo "Using $netname/$netmask !"
+  echo "What is your servers IP for NFS, DHCP and TFTP?"
+  echo -n "* [ $server ] "
+  read srv
+  if [ $srv ] ; then
+    server=$srv;
+    echo "server=\"$server\"" >> .config
+  fi
+  echo "Where automount home directories from? (A.B.C.D:/home-dir)"
+  echo -n "* [ $server:/home ] "
+  read am
+  if [ $am ] ; then amt=am;
+    else amt=$server:/home;
+  fi
+
+  if [ -x tools/cryptpw ] ; then
+    echo "Please type the "root" password for DXS!"
+    echo -n "* [$rpw] "
+    pwr=`tools/cryptpw $rpw`
+    read newpw
+    if [ "$newpw" != "" ] ; then
+      pwr=`tools/cryptpw $newpw`
+      echo "rpw=\"$newpw\"" >> .config
+    fi
+    echo "Please type the password for dxs-user (normal test user)!"
+    echo -n "* [$dpw] "
+    pwa=`tools/cryptpw $dpw`
+    unset newpw
+    read newpw
+    if [ "$newpw" != "" ] ; then
+      pwa=`tools/cryptpw $newpw`
+      echo "dpw=\"$newpw\"" >> .config
+    fi
+  fi
+fi
+if [ $d2dl ]; then
+  # d2dl specific
+  if [ $update ] ; then
+    echo "Which update source should be used for rsync?"
+  else
+    echo "Which source should be used for rsync?"
+  fi
+  echo "format [server:]/path (without trailing / or *)"
+  echo -n "* [ ${rsrc} ] "
+  read sc
+  if [ $sc ] ; then 
+    rsrc=$sc;
+    echo "rsrc=\"$rsrc\"" >> .config
+  fi
+else
+  # dxs-inst specific
+  # echo "Which source directory should be used for installation?"
+  echo "The following source is used for intallation:"
+  install_source=`echo "source -s"|y2pmsh|grep -e "[0-9]: "`
+  # echo -n "${install_source} [ (r)eplace, (a)dd, (d)elete ] "
+  # URL format for adding sources: 
+  #	e.g. ftp://ftp-suse.uni-freiburg.de//pub/suse/i386/9.1
+  echo "${install_source}"
+  #read sc
+  #if [ $sc ] ; then install_source=$sc; fi
+  echo "Which SuSE online update source should be used?"
+  echo -n "* [ ${updateTreeURL} ] "
+  read updatesrc
+  if [ $updatesrc ] ; then 
+    updateTreeURL=$updatesrc;
+    echo "updateTreeURL=\"${updateTreeURL}\"" >> .config
+  fi
+  echo "Collecting available package selections from source media.  Please wait."
+    availableSelections=$( echo -e "set root ${rootdir}\nselstate -a" | \
+    	y2pmsh | \
+	grep "^     " | cut -f 6 -d ' ')
+    unset selection
+    echo "Please select package groups for installation!"
+    for sel in $availableSelections; do
+      echo -n "  Add selection $sel? [yN] "
+      read answer
+      case "${answer}" in
+        y|Y) selection="${selection} ${sel}" ;;
+	*) : ;;
+      esac
+    done
+    if test "${selection}"; then
+      echo "We have selected: ${selection}"
+      #if ! echo ${selection} | grep Minimal -q; then
+      #	echo "Selection 'Minimal' not selected.  Adding it ..."
+      #	selection="${selection} Minimal"
+      # fi
+    else
+      echo "No package selection accepted.  Using 'Minimal' as default."
+      selection="Minimal"
+    fi
+fi
+
+if [ ! $update ] ; then
+  echo "Which debug level should be used?"
+  echo -n "* [ $debuglevel ] "
+  read dl
+  if [ $dl ] ; then 
+    debuglevel=$dl
+     echo "debuglevel=\"$debuglevel\"" >> .config
+  fi
+  echo "Which default init you would like to use?"
+  echo -n "* [ $initdef ] "
+  read id
+  if [ $id ] ; then 
+    initdef=$id
+    echo "initdef=\"$initdef\"" >> .config
+  fi
+  # which vendor-class-identifier??
+  #
+  echo
+
+  echo "This script sets up the basic filesystem structure for diskless"
+  echo "X-stations now. Please enable the NFS-Share ${rootdir} in your"
+  echo "servers /etc/exports file, i.e.:"
+  echo -e "${rootdir}\t$netname/$netmask(ro,no_root_squash,async)"
+  echo -e "/tmp/dxs\t\t$netname/$netmask(rw,no_root_squash,async)"
+  echo -e "/home\t\t$netname/$netmask(rw,async)"
+  echo
+  echo "... and (re)start your nfs server."
+  echo
+fi
+
+echo "Which ethernet card modules should be included in initrd?"
+echo -n "* [ $modulelist ] "
+read ml
+if [ "$ml" ]; then
+  modulelist=$ml
+  echo "modulelist=\"$modulelist\"" >> .config
+fi
+
+# create installation directory
+test -d ${rootdir} || mkdir -p ${rootdir}
+
+if [ ! $d2dl ]; then
+  rootdir=${rootdir} \
+  packageSelection="${selection}" \
+  additionalPackages="dhcp-client kernel-default bootsplash bootsplash-theme-SuSE" \
+  obsoletPackages="grub devs" \
+  	./y2pmdxs
+  if test $? != 0; then
+  	echo "Error: y2pmdxs failed."
+      exit 1
+  fi
+
+  # Ensure to install the latest updates.
+  echo -e "Calling onlineupdate for version: ${distVersion}\nSource: ${updateTreeURL}"
+  # Ensure to have a working DNS inside the installed system.
+  test -f ${rootdir}/etc/resolv.conf || \
+  	cp -p /etc/resolv.conf ${rootdir}/etc
+  chroot ${rootdir} /usr/bin/test -x /usr/bin/online_update && \
+    chroot ${rootdir} online_update --version ${distVersion} --url ${updateTreeURL}
+else
+  # d2dl specific
+  # exclude list piped to rsync ("+" includes, "-" excludes)
+  touch ./exclude.local &>/dev/null
+# fixme!! modify exclude list and remove files via find
+  exclude="+ /bin\n+ /boot\n+ /etc\n+ /home\n+ /lib\n\
++ /media\n+ /mnt\n+ /opt\n+ /root\n+ /sbin\n+ /tmp\n+ /usr\n\
++ /var\n\
+- *~\n- *.rpmsave\n- *.rpmnew\n- *.YaST2save\n- *.old\n- *.bak\n\
+- /boot/initrd*\n- /boot/grub\n- /tmp/*\n- /root/*\n- /home/*\n\
+- /var/lib/YaST2/you/mnt/*\n- .svn\n- /var/tmp/*\n\
+- /usr/share/vmware/*\n- *lost+found*\n- /mnt/*\n- /media/*\n- /*"
+  # 64bit systems
+  # fixme!!
+  # if 64bit; then exclude="+ lib64\n"${exclude}
+  # fi  
+  if  echo ${rsrc} |grep ":"&>/dev/null  ; then
+    echo "Wait for root password dialog from the rsync source server! "
+    echo -e "$exclude" | rsync -avDe ssh --delete --exclude-from=- \
+      $rsexcl ${rsrc}/* ${rootdir}
+  else
+    echo -e "$exclude" | rsync -avD --delete --exclude-from=- $rsexcl \
+      ${rsrc}/ ${rootdir}
+  fi
+  # several scripts and configurations do not make much sense to be
+  # setup or started in diskless environment
+  rm -rf ${rootdir}/etc/init.d/{SuSEfirewall2*,dhcpd,rpmconfigcheck,autoyast,\
+boot.{md,localfs,crypto,local,rootfsck,device-mapper}} \
+${rootdir}/etc/init.d/boot.d/*{md,localfs,crypto,rootfsck,\
+device-mapper,coldplug,idedma} ${rootdir}/etc/cron.*/* \
+${rootdir}/etc/sysconfig/ifcfg-eth* /etc/modprobe.d/* /etc/X11/XF86Conf* \
+${rootdir}/lib/klibc/events/*
+
+  # empty some of the /var subdirectories
+  find  ${rootdir}/var/X11R6 ${rootdir}/var/tmp ${rootdir}/var/cache \
+	${rootdir}/var/lib/{ldap,slurpd,nfs,sax,mysql,YaST2,kdm,apache2,\
+asterisk,update-messages,autoinstall} \
+	${rootdir}/var/run ${rootdir}/var/log \
+	${rootdir}/var/spool ${rootdir}/var/lib/hardware \
+	${rootdir}/var/adm/backup -type f \
+	-exec rm {} \;
+fi
+
+# add the later mounts point for rw filesystem part and several devices
+mkdir -p ${rootdir}/ram ${rootdir}/dev ${rootdir}/misc ${rootdir}/proc \
+	${rootdir}/sys ${rootdir}/events &>/dev/null
+#cp -a dxs-specific/* ${rootdir}/
+rsync -avxD $rsexcl --exclude=.svn dxs-specific/* ${rootdir}/
+rm ${rootdir}/etc/fstab &>/dev/null; touch ${rootdir}/etc/fstab
+
+# remove some unneeded files/links (setup within client itself, or to be
+# done by admin
+rm ${rootdir}/etc/mtab ${rootdir}/etc/X11/xorg.conf* \
+	${rootdir}/etc/X11/XF86Config &>/dev/null
+touch ${rootdir}/etc/mtab
+# services like network are already configured, other are not of much
+# sense like dhcpd
+rm ${rootdir}/etc/init.d/boot.d/* \
+	${rootdir}/etc/init.d/rc{2,3,5}.d/* &>/dev/null
+
+# touch the modules.dep files (so no error is shown if moduls.conf is newer)
+touch ${rootdir}/lib/modules/*/modules.* &>/dev/null
+
+# remove "not_configured" from vmware directory (proper configuration
+# from the diskless X station is not possible)
+rm ${rootdir}/etc/vmware/not_configured &>/dev/null
+# redirect the standard VMware temporary directory
+[ -f ${rootdir}/usr/lib/vmware/config ] && {
+  grep "tmpDirectory" ${rootdir}/usr/lib/vmware/config &>/dev/null || \
+	echo -e "tmpDirectory\t= /tmp/vmware_temporary" \
+	>> ${rootdir}/usr/lib/vmware/config; }
+
+# setting passwords in shadow file
+if [ ! $update ] ; then
+  grep dxs-user ${rootdir}/etc/passwd &>/dev/null || echo \
+	"dxs-user:x:500:100:DXS  Admin:/tmp/dxs-user:/bin/bash" \
+	>>${rootdir}/etc/passwd
+  grep dxs-user ${rootdir}/etc/shadow &>/dev/null || echo \
+	"dxs-user::11768:0:99999:7:-1::" >>${rootdir}/etc/shadow
+  sed -e "s,root:[^:]*:,root:$pwr:," -e "s,dxs-user:[^:]*:,dxs-user:$pwa:," \
+        ${rootdir}/etc/shadow >${rootdir}/etc/shadow.new
+  mv ${rootdir}/etc/shadow.new ${rootdir}/etc/shadow
+
+  # configuring automounter for home directories
+  echo -e "# /etc/auto.home\n#\n# created by $0 version $version\n" \
+    >${rootdir}/etc/auto.home
+  echo -e "*\t-rsize=32768,wsize=32768,rw\t$amt/&" \
+    >>${rootdir}/etc/auto.home
+
+  # remove superfluous services from the kde & gnome desktop
+  for i in SUSEgreeter.desktop kinternet.desktop suseplugger.desktop \
+           susewatcher.desktop ktip.desktop ; do
+	rm ${rootdir}/opt/kde3/share/autostart/$i &>/dev/null
+  done
+
+  # configure inittab (remove all gui related entries, set default runlevel,
+  # and exchange boot for boot.ld script
+  echo -e "# /etc/inittab - file modified by $0 version $version"\
+	> ${rootdir}/etc/inittab.new
+  grep -v -e "7:[35]" -e "/etc/inittab" ${rootdir}/etc/inittab \
+	>> ${rootdir}/etc/inittab.new
+  sed -e "s,id:.*,id:$initdef:initdefault:," \
+      -e "s,/etc/init.d/boot,/etc/init.d/boot.ld," \
+	${rootdir}/etc/inittab.new > ${rootdir}/etc/inittab
+
+  # switch on bluetooth
+  echo -e "# /etc/sysconfig/bluetooth - file modified by $0 version $version"\
+        > ${rootdir}/etc/sysconfig/bluetooth.new
+  sed -e "s,START_SERVICES.*,START_SERVICES=\"yes\"," \
+	${rootdir}/etc/sysconfig/bluetooth >> \
+	${rootdir}/etc/sysconfig/bluetooth.new
+  mv ${rootdir}/etc/sysconfig/bluetooth.new ${rootdir}/etc/sysconfig/bluetooth  
+
+  # enable magic sysrequest for the clients
+  echo -e "# /etc/sysconfig/sysctl - file modified by $0 version $version"\
+        > ${rootdir}/etc/sysconfig/sysctl.new
+  sed -e "s,ENABLE_SYSRQ=.*,ENABLE_SYSRQ=\"yes\"," \
+        ${rootdir}/etc/sysconfig/sysctl >> \
+        ${rootdir}/etc/sysconfig/sysctl.new
+  mv ${rootdir}/etc/sysconfig/sysctl.new ${rootdir}/etc/sysconfig/sysctl
+
+  # add entry to have udev in initial ramdisk in /etc/sysconfig/hotplug
+  # and switch off debugging completely
+  # echo -e "# /etc/sysconfig/hotplug - file modified by $0 version $version"\
+  #       > ${rootdir}/etc/sysconfig/hotplug.new
+  # sed -e "s,HOTPLUG_DEV_ON_TMPFS.*,HOTPLUG_DEV_ON_TMPFS=\"yes\"," \
+  #     -e "s,HOTPLUG_DEBUG.*,HOTPLUG_DEBUG=\"off\"," \
+  #	${rootdir}/etc/sysconfig/hotplug >> \
+  #	${rootdir}/etc/sysconfig/hotplug.new
+  # mv ${rootdir}/etc/sysconfig/hotplug.new ${rootdir}/etc/sysconfig/hotplug
+
+  # configure services, X11 fonts et. al.
+  rm ${rootdir}/etc/init.d/boot.d/* \
+  	${rootdir}/etc/init.d/rc{0,6}.d/*{halt,reboot} &>/dev/null
+  for i in /etc/init.d/rc6.d/S20reboot \
+         /etc/init.d/rc0.d/S20halt   \
+         /etc/init.d/reboot          \
+         /etc/init.d/halt
+        do ln -sf /etc/init.d/halt.ld ${rootdir}${i}
+  done
+  # vmware-prepare should be added to .depends.start
+  sed -e "s,TARGETS =,TARGETS = vmware-prep," \
+	${rootdir}/etc/init.d/.depend.start >> \
+	${rootdir}/etc/init.d/.depend.start.new
+  echo "vmware-prep: " >> ${rootdir}/etc/init.d/.depend.start.new
+  mv ${rootdir}/etc/init.d/.depend.start.new ${rootdir}/etc/init.d/.depend.start
+  if [ ! $d2dl ]; then 
+    chroot ${rootdir} /sbin/SuSEconfig
+    for service in udev proc shm servconf hwsetup klog \
+      loadmodules clock localnet sysctl ipconfig; do
+      chroot ${rootdir} insserv -f boot.${service}
+    done
+    # done earlier (simple rm at the moment)
+    # Disable superflous services (network is needed/setup much earlier, machine
+    # is a nfs-client but not a server)
+
+
+  else
+    count=10
+    for i in proc servconf shm udev hwsetup klog loadmodules \
+	  localnet sysctl ipconfig; do
+	(( count=$count+1 ))
+	(( revcnt=41-$count ))
+	ln -sf /etc/init.d/boot.$i ${rootdir}/etc/init.d/boot.d/S${count}boot.$i
+	ln -sf /etc/init.d/boot.$i ${rootdir}/etc/init.d/boot.d/K${revcnt}boot.$i
+    done
+  fi
+
+  # generate host ssh host key
+  echo "generating common host key for all diskless machines"
+  if ! test -f ${rootdir}/etc/ssh/ssh_host_key ; then
+    ssh-keygen -t rsa1 -b 1024 -f ${rootdir}/etc/ssh/ssh_host_key -N ''
+  fi
+  if ! test -f ${rootdir}/etc/ssh/ssh_host_dsa_key ; then
+    ssh-keygen -t dsa -b 1024 -f ${rootdir}/etc/ssh/ssh_host_dsa_key -N ''
+  fi
+  if ! test -f ${rootdir}/etc/ssh/ssh_host_rsa_key ; then
+    ssh-keygen -t rsa -b 1024 -f ${rootdir}/etc/ssh/ssh_host_rsa_key -N ''
+  fi
+fi
+
+# bind mount some directories needed for creation of initrd by mkinitrd
+# not if mkinitrd is patched!!
+for i in dev sys proc ; do
+	# multiple bind mounts might occur ...
+	#mount |grep -q "${rootdir}/$i " || 
+	umount ${rootdir}/$i &>/dev/null
+	mount --bind /$i ${rootdir}/$i
+done
+
+# generate initrd
+if [ -x ${rootdir}/sbin/mkinitrd ]; then
+	echo "creating new initial ramdisk $modulelist"
+	mknod ${rootdir}/dev/null c 1 3 &>/dev/null
+	chroot ${rootdir} mkinitrd \
+		-b /boot \
+		-m "$modulelist" -s 1024x768 -I eth0 \
+		-d ${server}:/${rootdir}
+	chroot ${rootdir} mkinitrd \
+		-b /boot -k vmlinuz -i initrd-800x600 \
+		-m "$modulelist" -s 800x600 -I eth0 \
+		-d ${server}:/${rootdir}
+	chroot ${rootdir} mkinitrd \
+		-b /boot -k vmlinuz -i initrd-1280x1024 \
+		-m "$modulelist" -s 1024x768 -I eth0 \
+		-d ${server}:/${rootdir}
+else
+	echo "please install mkinitrd package for the clients!!"
+fi
+			
+# and etherboot compatible image
+mkelf-linux --ip=rom --output=${rootdir}/boot/bootimg \
+	${rootdir}/boot/vmlinuz ${rootdir}/boot/initrd || \
+echo "mkelf/mknbi is needed only for etherboot enabled network adaptors"
+
+if [ ! $update ] ; then
+# create PXElinux configuration
+ldcver=`cat VERSION`
+echo "writing ${rootdir}/boot/pxelinux.cfg/default"
+echo -e "# pxelinux.cfg/default - file created by $0 version ${version}\n\
+#\n# config file for PXElinux booting\n#\n#\tDirk von Suchodoletz \
+<dirk@goe.net>, 2005" > ${rootdir}/boot/pxelinux.cfg/default
+echo -e "\nNOESCAPE 0\nPROMPT 0\nTIMEOUT 100\nDEFAULT menu\
+\nIMPLICIT 1\nALLOWOPTIONS 1\nONERROR menu\nMENU TITLE \
+What would you like to do? (use cursor to select)\n\
+MENU MASTER PASSWD $rpw\n\
+LABEL menu\n\tMENU HIDE\n\tKERNEL ${server}::${rootdir}/boot/menu.c32\n\
+LABEL dxs\n\tMENU DEFAULT\n\tMENU LABEL ^Linux Diskless Client \
+(DXS ${ldcver})\n\tKERNEL ${server}::${rootdir}/boot/vmlinuz\n\
+\tappend vga=0x317 splash=silent initrd=initrd apic dhcp \
+nfsroot=${server}:${rootdir}\n\tipappend 1\n\
+#LABEL dxs-nbd\n#\tMENU LABEL ^Linux Diskless Client \
+(DXS-NBD ${ldcver})\n#\tKERNEL ${server}::${rootdir}/boot/vmlinuz\n\
+#\tappend vga=0x314 splash=silent initrd=initrd apic dhcp \
+nbdroot=${server}:5000\n#\tipappend 1\n\
+#LABEL dxs-800\n#\tMENU LABEL ^Linux Diskless Client \
+(DXS-800x600 ${ldcver})\n#\tKERNEL ${server}::${rootdir}/boot/vmlinuz\n\
+#\tappend vga=0x314 splash=silent initrd=initrd-800x600 apic dhcp \
+nfsroot=${server}:${rootdir}\n#\tipappend 1\n\
+#LABEL dxs-1280\n#\tMENU LABEL ^Linux Diskless Client \
+(DXS-1280x1024 ${ldcver})\n#\tKERNEL ${server}::${rootdir}/boot/vmlinuz\n\
+#\tappend vga=0x31A splash=silent initrd=initrd-1280x1024 apic dhcp \
+nfsroot=${server}:${rootdir}\n#\tipappend 1\n\
+LABEL debug\n\tMENU LABEL Linux Diskless Client (DXS ${ldcver} - \
+^Debug Mode)\n\tKERNEL vmlinuz\n\
+\tappend vga=normal initrd=initrd debug linuxrc=trace dhcp \
+nfsroot=${server}:${rootdir}\n\tipappend 1\nLABEL local\n\
+\tMENU LABEL Boot ^local device next in BIOS order\n\
+\tlocalboot 0\nLABEL halt\n\tMENU LABEL Power ^off machine\n\
+\tKERNEL $server::${rootdir}/boot/atxoff.com" \
+	>> ${rootdir}/boot/pxelinux.cfg/default
+
+# create simple dhcpd.conf example file
+echo "writing a ISC dhcpd configuration example (/etc/dhcpd.conf.example)"
+echo -e "# /etc/dhcpd.conf  - file created by $0 version $version"\
+	> /etc/dhcpd.conf.example
+echo -e "# Example configuration file for ISC dhcpd\n#\n\
+# (c) Dirk von Suchodoletz <dirk@goe.net>, 2004\n#\n\
+# -- user defined vendor options --\n\
+option o128 code 128              = string;\n\
+option o129 code 129              = string;\n\
+option menudflts code 160         = string;\n\
+option motdline1 code 184         = string;\n\
+option menuline1 code 192         = string;\n\
+option menuline2 code 193         = string;\n\
+option menuline3 code 194         = string;\n\
+option bootlocal-script code 221  = string;\n\
+option language code 222          = string;\n\
+option start-x code 223           = string;\n\
+option start-snmp code 224        = string;\n\
+option start-sshd code 225        = string;\n\
+option start-xdmcp code 226       = string;\n\
+option start-cron code 227        = string;\n\
+option crontab-entries code 228   = string;\n\
+option start-rwhod code 229       = string;\n\
+option start-printdaemon code 230 = string;\n\
+option tex-enable code 232        = string;\n\
+option netbios-workgroup code 233 = string;\n\
+option vmware code 234            = string;\n\
+option hw-mouse code 252          = string;\n\
+option hw-graphic code 253        = string;\n\
+option hw-monitor code 254        = string;\n\n\
+# -- global options --\n\n\
+option o128                        E4:45:74:68:00:00;\n\
+deny                               unknown-clients;\n\
+default-lease-time                 160000;\n\
+max-lease-time                     200000;\n\
+use-host-decl-names                on;\n\
+option dhcp-max-message-size       1024;\n\
+ddns-update-style                  none;\n\n\
+# -- client specific --\n\n\
+subnet $netname netmask $netmask {\n\
+    server-identifier $server;\n
+    next-server $server;\n}\n\
+# please check the settings, some of them have to be changed!\n\
+group {\n\
+    filename \"${rootdir}/boot/bootimg\";\n\
+    option root-path \"${rootdir}\";\n\
+    option broadcast-address $broadcast;\n\
+#   option routers X.Y.Z.254;\n\
+    option domain-name-servers $server;\n\
+    option domain-name \"dxs.local\";\n\
+#   option desktop-session \"winxptest\";\n\
+#   option lpr-servers $server;\n\
+#   option x-display-manager $server;\n\
+#   option netbios-name-servers netbios-ns;\n\
+#   option ntp-servers ntps1,ntps2,ntps3;\n\
+    option start-x \"direct\";\n    option start-xdmcp \"kdm\";\n\
+    option start-rwhod \"yes\";\n    option start-cron \"no\";\n\
+    option start-snmp \"yes\";\n    option netbios-workgroup \"tux-net\";\n\
+    option tex-enable \"yes\";\n    option vmware \"no\";\n\n\
+    host ldc01 {\n\
+        hardware ethernet 00:00:00:00:01:01;\n\
+        if substring (option vendor-class-identifier,0,3)=\"PXE\"\n\
+            { filename \"${rootdir}/boot/pxelinux.0\"; }\n\
+#       option hw-monitor \"30-65kHz 50-90Hz \ 1280x1024\";\n\
+        option bootlocal-script \"\";\n\
+	option o129 \"vga=0x0317 apic\";\n\
+#       fixed-address $netname;\n    }\n}" >> /etc/dhcpd.conf.example
+fi
+
+# /dev, /sys, /proc are needed for mkinitrd 
+umount ${rootdir}/proc # &>/dev/null
+umount ${rootdir}/dev #&>/dev/null
+umount ${rootdir}/sys #&>/dev/null

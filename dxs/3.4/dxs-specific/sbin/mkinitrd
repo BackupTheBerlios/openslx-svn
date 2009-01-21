@@ -1,0 +1,3062 @@
+#! /bin/bash
+
+# mkinitrd - create the inital ramdisk images
+# usage: see below usage() or call with -h
+#
+# Copyright (C) 1999-2005 SuSE Linux Products GmbH, Nuernberg, Germany
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+# USA.
+
+# This file is kept in the following CVS repository:
+#
+# $Source: /suse/yast2/cvsroot/mkinitrd/mkinitrd,v $
+# $Revision: 1.225 $
+
+#
+# Print usage and exit
+#
+usage() {
+    cat<<EOF
+	Create initial ramdisk images that contain all kernel modules
+	needed in the early boot process, before the root file system
+	becomes available. This usually includes SCSI and/or RAID
+	modules, a file system module for the root file system, or
+	a network interface driver module for dhcp.
+
+        mkinitrd [options]
+
+        options:
+          -h               This Text.
+          -k "kernel list" List of kernel images for which initrd files
+                           are created. Defaults to all kernels found
+			   in /boot.
+          -i "initrd list" List of file names for the initrd; position
+	  		   have match to "kernel list". Defaults to all
+			   all kernels found in /boot.
+          -m "module list" Modules to include in initrd. Defaults to the
+                           INITRD_MODULES variable in /etc/sysconfig/kernel.
+          -b boot_dir      Boot directory. Defaults to /boot.
+          -d root_device   Root device. Defaults to the device from which
+                           / is mounted. Overrides the rootdev enviroment
+			   variable if set.
+	  -s size          Add splash animation and bootscreen to initrd.
+	  -t tmp_dir       Temporary directory. Defaults to /var/tmp.
+	  -D interface     Run dhcp on the specified interface.
+	  -I interface     Configure the specified interface statically.
+	  -a acpi_dsdt     Attach compiled ACPI DSDT (Differentiated System
+	  		   Description Table) to initrd. This replaces the
+			   DSDT of the BIOS. Defaults to the ACPI_DSDT
+			   variable in /etc/sysconfig/kernel.
+          -R               Use initrd instead of initramfs.
+          -g               Use glibc instead of klibc binaries.
+          -u               Do not use udev for root device discovery.
+	  -S               Load policy file for SELinux if exist.
+	  -V script        Vendor specific script to run in linuxrc.
+EOF
+    exit
+}
+
+# Readlink is not present on some older distributions: emulate it.
+readlink() {
+    local path=$1 ll
+
+    if [ -L "$path" ]; then
+	ll="$(LC_ALL=C ls -l "$path" 2> /dev/null)"
+	echo "${ll/* -> }"
+    else
+	return 1
+    fi
+}
+
+default_kernel_images() {
+    local regex kernel_image kernel_version version_version initrd_image
+    local qf='%{NAME}-%{VERSION}-%{RELEASE}\n'
+
+    case "$(uname -m)" in
+	s390|s390x)
+	    regex='image'
+	    ;;
+	ppc|ppc64)
+	    regex='vmlinux'
+	    ;;
+	*)  regex='vmlinuz'
+	    ;;
+    esac
+
+    # user mode linux
+    if grep -q UML /proc/cpuinfo; then
+	    regex='linux'
+    fi
+
+    kernel_images=""
+    initrd_images=""
+    for kernel_image in $(ls /boot \
+	    | sed -ne "\|^$regex\(-[0-9.]\+-[0-9]\+-[a-z0-9]\+$\)\?|p") ; do
+
+	# Note that we cannot check the RPM database here -- this
+	# script is itself called from within the binary kernel
+	# packages, and rpm does not allow recursive calls.
+
+	[ -L "/boot/$kernel_image" ] && continue
+	kernel_version=$(/sbin/get_kernel_version \
+			 /boot/$kernel_image 2> /dev/null)
+	initrd_image=$(echo $kernel_image | sed -e "s|${regex}|initrd|")
+	if [ "$kernel_image" != "$initrd_image" -a \
+	     -n "$kernel_version" -a \
+	     -d "/lib/modules/$kernel_version" ]; then
+		kernel_images="$kernel_images /boot/$kernel_image"
+		initrd_images="$initrd_images /boot/$initrd_image"
+	fi
+    done
+}
+
+# You can specify the root device via the environment variable rootdev (e.g.
+# "rootdev=/dev/hda mkinitrd").
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# general configurable parameters
+
+kernel_images=
+initrd_images=
+modules=
+modules_set=
+boot_dir=
+splash="auto"
+use_pivot_root=
+use_static_binaries=1
+acpi_dsdt=
+use_selinux=
+use_glibc=
+use_udev=1
+mkinit_type="ramfs"
+
+case $0 in
+    *initramfs)
+	mkinit_type="rd"
+	;;
+esac
+
+# architecture dependend changes:
+case "$(uname -m)" in
+    s390|s390x)
+	splash=off
+	;;
+esac
+
+while getopts :hgMRk:i:m:b:d:o:s:Sut:D:I:V:a: a ; do
+    case $a in
+	\:|\?)	case $OPTARG in
+		k)  echo "-k requires kernel list parameter"
+		    ;;
+		i)  echo "-i requires initrd list parameter"
+		    ;;
+		m)  echo "-m requires module list parameter"
+		    ;;
+		b)  echo "-b requires boot dir parameter"
+		    ;;
+		d)  echo "-d requires root device parameter"
+		    ;;
+		s)  echo "-s requires image size(s)"
+		    ;;
+		t)  echo "-t requires tmp dir parameter"
+		    ;;
+		D)  echo "-D requires dhcp interface parameter"
+		    ;;
+		I)  echo "-I requires network interface parameter"
+		    ;;
+		a)  echo "-a requires a DSDT parameter"
+		    ;;
+		V)  echo "-V requires an executable to run inside linuxrc"
+		    ;;
+		*)  echo "Unknown option: -$OPTARG"
+		    echo "Try mkinitrd -h"
+		    ;;
+	    esac
+	    exit 1
+	    ;;
+	g)  use_glibc=1
+	    ;;
+	k)  kernel_images=$OPTARG
+	    ;;
+	i)  initrd_images=$OPTARG
+	    ;;
+	m)  modules=$OPTARG
+	    modules_set=1
+	    ;;
+	b)  boot_dir=$OPTARG
+	    ;;
+	d)  rootdev=$OPTARG
+	    ;;
+	s)  splash=$OPTARG
+	    ;;
+	t)  tmp_dir=$OPTARG
+	    ;;
+	D)  interface=$OPTARG
+	    interface=${interface#/dev/}
+	    use_dhcp=1
+	    ;;
+ 	I)  interface=$OPTARG
+ 	    interface=${interface#/dev/}
+ 	    use_ipconfig=1
+	    ;;
+	a)  acpi_dsdt="$OPTARG"
+	    ;;
+	S)  use_selinux=1
+	    ;;
+	V)  vendor_init_script="$OPTARG"
+	    ;;
+	R)  mkinit_type="rd"
+	    ;;
+	u)  sysfs_root=1
+	    use_udev=
+	    ;;
+	h)  usage
+	    ;;
+    esac
+done
+shift $(expr $OPTIND - 1)
+
+mkinit_name="mkinit$mkinit_type"
+
+if [ -n "$1" ]; then
+    root_dir=${1%/}  # strip trailing slash
+else
+    root_dir=
+fi
+
+if [ -n "$boot_dir" ]; then
+    boot_dir="${boot_dir#/}"
+    boot_dir="/${boot_dir%/}"
+else
+    boot_dir="/boot"
+fi
+if [ ! -d "$boot_dir" ]; then
+    echo "$boot_dir is not a directory" >&2
+    exit 1
+fi
+
+if [ -n "$tmp_dir" ]; then
+    tmp_dir="/${tmp_dir#/}"  # make sure it is an absolute path
+else
+    tmp_dir=/var/tmp
+fi
+if [ ! -d "$tmp_dir" ]; then
+    echo "$tmp_dir is not a directory" >&2
+    exit 1
+fi
+
+# Check if the -k and -i settings are valid.
+if [ $(set -- $kernel_images ; echo $#) -ne \
+     $(set -- $initrd_images ; echo $#) ]; then
+    echo "You have to specify -k and -i, or none of both. The -k" \
+         "and -i options must each contain the same number of items." >&2
+    exit 1
+fi
+
+if [ -z "$kernel_images" -o -z "$initrd_images" ]; then
+    default_kernel_images
+fi
+
+
+# Check which shell and insmod binaries to use in initrd.
+[ -x /bin/ash ] \
+    && initrd_shell_dynamic=/bin/ash
+if [ -n "$use_static_binaries" ]; then
+    if [ -x /bin/ash.static ]; then
+	initrd_shell=/bin/ash.static
+    else
+	initrd_shell=/bin/ash.static
+    fi
+else
+    initrd_shell=$initrd_shell_dynamic
+fi
+# The shell-bang line to use inside initrd.
+shebang=$initrd_shell
+shebang=${shebang%.static}
+
+if [ -z "$use_glibc" -a -x /lib/klibc/bin/sh ]; then
+    initrd_shell="/lib/klibc/bin/sh"
+    shebang="/bin/sh"
+fi
+
+[ -x /sbin/insmod ] \
+    && initrd_insmod_dynamic=/sbin/insmod
+if [ -n "$use_static_binaries" ]; then
+    initrd_insmod=/sbin/insmod.static
+else
+    initrd_insmod=$initrd_insmod_dynamic
+fi
+
+[ -x /sbin/modprobe ] \
+    && initrd_modprobe_dynamic=/sbin/modprobe
+if [ -n "$use_static_binaries" ]; then
+    initrd_modprobe=/sbin/modprobe.static
+else
+    initrd_modprobe=$initrd_modprobe_dynamic
+fi
+
+# maximum initrd size
+image_blocks=40960
+image_inodes=2048
+
+# handle splash screen
+case "$splash" in
+off)
+    splashsizes= ;;
+auto)
+    unset ${!splash_size_*}
+    modes=
+    for file in $root_dir/{etc/lilo.conf,boot/grub/menu.lst,proc/cmdline}; do
+	[ -e $file ] || continue
+ 	modes="$modes $(sed -e '/^[ \t]*#/d' $file \
+			| sed -ne 's/^.*vga[ \t]*=[ \t]*\([^ \t]*\).*/\1/p' \
+			| sed -ne '/^\([0-9]\+\|0[xX][0-9a-fA-F]\+\)$/p')"
+    done
+
+    for mode in $modes; do
+	case $(($mode)) in  # $((...)) : Convert 0xFOO to decimal
+	785|786) splash_size_640x480=1 ;;
+	788|789) splash_size_800x600=1 ;;
+	791|792) splash_size_1024x768=1 ;;
+	794|795) splash_size_1280x1024=1 ;;
+	*)       vgahex=$(printf 0x%04x "$(($mode))")
+		 size=$(hwinfo --framebuffer | \
+		     sed -ne 's/^.*Mode '$vgahex': \([^ ]\+\) .*$/\1/p' \
+			2>/dev/null)
+		 eval splash_size_$size=1 ;;
+        esac
+    done
+    splashsizes="$(for x in ${!splash_size_*}; do
+			echo ${x#splash_size_}
+		   done)"
+    unset ${!splash_size_*}
+    ;;
+*)
+    splashsizes=$splash ;;
+esac
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# should be nothing to change below...
+
+PATH=/sbin:/usr/sbin:$PATH
+
+work_dir=$(mktemp -qd $tmp_dir/${mkinit_name}.XXXXXX)
+if [ $? -ne 0 ]; then
+	echo "$0: Can't create temp dir, exiting." >&2
+	exit 1
+fi
+is_mounted=
+is_mounted_small=
+
+umount_proc() {
+    [ "$mounted_proc" ] && umount $mounted_proc
+    mounted_proc=
+}
+
+cleanup() {
+    if [ "$mkinit_type" = "rd" ]; then
+	[ "$is_mounted" ] && umount $tmp_mnt
+	is_mounted=
+	[ "$is_mounted_small" ] && umount $tmp_mnt_small
+	is_mounted_small=
+	rm -f $tmp_msg tmp_initrd_small $tmp_initrd_small.gz
+	[ -d "$tmp_mnt" ] && rmdir $tmp_mnt
+	[ -d "$tmp_mnt_small" ] && rmdir $tmp_mnt_small
+    fi
+    rm -f $tmp_initrd $tmp_initrd.gz
+    initrd_bins=()
+}
+
+cleanup_finish() {
+    umount_proc
+    [ -d "$work_dir" ] && rm -rf $work_dir
+}
+
+handle_terminate() {
+    echo "(received signal)
+
+Interrupted, cleaning up." >&2
+    cleanup
+    cleanup_finish
+    exit 255
+}
+
+trap handle_terminate 1 2 3 15
+
+error() {
+    echo "$2" >&2
+    cleanup
+    cleanup_finish
+    exit $1
+}
+
+oops() {
+    exit_code=$1
+    shift
+    echo "$@" >&2
+}
+
+# Check if module $1 is listed in $modules.
+has_module() {
+    case " $modules " in
+	*" $1 "*)   return 0 ;;
+    esac
+    return 1
+}
+
+# Check if any of the modules in $* are listed in $modules.
+has_any_module() {
+    local module
+    for module in "$@"; do
+	has_module "$module" && return 0
+    done
+}
+
+# Add module $1 at the end of the module list.
+add_module() {
+    local module
+    for module in "$@"; do
+	has_module "$module" || modules="$modules $module"
+    done
+}
+
+# Install a binary file
+cp_bin() {
+    cp -a "$@" \
+    || exit_code=1
+
+    # Remember the binaries installed. We need the list for checking
+    # for dynamic libraries.
+    while [ $# -gt 1 ]; do
+	initrd_bins[${#initrd_bins[@]}]=$1
+	shift
+   done
+}
+
+# Resolve dynamic library dependencies. Returns a list of symbolic links
+# to shared objects and shared object files for the binaries in $*.
+shared_object_files() {
+    local LDD CHROOT initrd_libs lib_files lib_links lib link
+
+    LDD=/usr/bin/ldd
+    if [ ! -x $LDD ]; then
+	error 2 "I need $LDD."
+    fi
+
+    initrd_libs=( $(
+	$LDD "$@" \
+	| sed -ne 's:\t\(.* => \)\?\(/.*\) (0x[0-9a-f]*):\2:p'
+    ) )
+
+    # Evil hack: On some systems we have generic as well as optimized
+    # libraries, but the optimized libraries may not work with all
+    # kernel versions (e.g., the NPTL glibc libraries don't work with
+    # a 2.4 kernel). Use the generic versions of the libraries in the
+    # initrd (and guess the name).
+    local n optimized
+    for ((n=0; $n<${#initrd_libs[@]}; n++)); do
+	lib=${initrd_libs[$n]}
+	optimized="$(echo "$lib" | sed -e 's:.*/\([^/]\+/\)[^/]\+$:\1:')"
+	lib=${lib/$optimized/}
+	if [ "${optimized:0:3}" != "lib" -a -f "$lib" ]; then
+	    #echo "[Using $lib instead of ${initrd_libs[$n]}]" >&2
+	    initrd_libs[$n]="${lib/$optimized/}"
+	fi
+    done
+
+    for lib in "${initrd_libs[@]}"; do
+	case "$lib" in
+	linux-gate*)
+	    # This library is mapped into the process by the kernel
+	    # for vsyscalls (i.e., syscalls that don't need a user/
+	    # kernel address space transition) in 2.6 kernels.
+	    continue ;;
+	/*)
+	    lib="${lib:1}" ;;
+	*)
+	    # Library could not be found.
+	    oops 7 "Dynamic library $lib not found"
+	    continue ;;
+	esac
+
+	while [ -L "/$lib" ]; do
+	    echo $lib
+	    link="$(readlink "/$lib")"
+	    if [ x"${link:0:1}" == x"/" ]; then
+	        lib=${link#/}
+	    else
+	        lib="${lib%/*}/$link"
+	    fi
+	done
+	echo $lib
+    done \
+    | sort -u
+}
+
+# Resolve module dependencies and parameters. Returns a list of modules and
+# their parameters.
+resolve_modules() {
+    local kernel_version=$1 module
+    shift
+
+    for module in "$@"; do
+	local with_modprobe_conf
+	module=${module%.o}  # strip trailing ".o" just in case.
+	module=${module%.ko}  # strip trailing ".ko" just in case.
+	if [ -e /etc/modprobe.conf ]; then
+	    with_modprobe_conf="-C /etc/modprobe.conf"
+	fi
+	module_list=$(/sbin/modprobe $with_modprobe_conf \
+	    --set-version $kernel_version --ignore-install \
+	    --show-depends $module 2> /dev/null \
+	    | sed -ne 's:.*insmod /\?::p' )
+	if [ -z "$module_list" ]; then
+	    oops 7 "Cannot determine dependencies of module $module." \
+		"Is modules.dep up to date?"
+	fi
+	echo "$module_list"
+    done \
+    | awk ' # filter duplicates: we must not reorder modules here!
+	NF == 0     { next }
+	$1 in seen  { next }
+		    { seen[$1]=1
+		      print
+		    }
+    '
+    rm -f $temp
+}
+
+# Test if file $1 is smaller than file $2 (kilobyte granularity)
+smaller_file() {
+    local size1=$(ls -l "$1" |awk '{print $5}')
+    local size2=$(ls -l "$2" |awk '{print $5}')
+    [ $size1 -lt $size2 ]
+}
+
+# Cat from stdin to linuxrc, removing leading whitespace up to pipe symbol.
+# Note that here documents can only be indented with tabs, not with spaces.
+cat_linuxrc() {
+    sed 's/^[ \t]*|//' >> $linuxrc
+    echo >> $linuxrc
+}
+
+# Attach ACPI DSDT if necessary.
+attach_dsdt() {
+    local initrd_image=$1
+
+    if [ -z "$acpi_dsdt" ]; then
+	if [ -f /etc/sysconfig/kernel ]; then
+	    . /etc/sysconfig/kernel
+	    acpi_dsdt="$ACPI_DSDT"
+	fi
+    fi
+    if [ -z "$acpi_dsdt" ]; then
+	return
+    fi
+    if [ ! -f "$acpi_dsdt" ]; then
+	oops 2 "ACPI DSDT $acpi_dsdt does not exist."
+	return
+    fi
+    if ! grep -q "DSDT" "$acpi_dsdt" ; then
+	oops 2 "File $acpi_dsdt is not a valid ACPI DSDT. Ignoring."
+	return
+    elif grep -qE 'DefinitionBlock' "$acpi_dsdt" ; then
+    	oops 2 "ACPI DSDT $acpi_dsdt does not seem to be in binary form." \
+	       "Will not attach this to $initrd_image."
+	return
+    fi
+    if [ "$mkinit_type" = "rd" ]; then
+	{   echo -ne "INITRDDSDT123DSDT123\0"
+	    cat "$acpi_dsdt"
+	} >> $initrd_image
+    else
+	cp "$acpi_dsdt" $tmp_mnt/DSDT.aml
+    fi
+    echo -e "ACPI DSDT:\t$acpi_dsdt"
+}
+
+# Check for IDE module
+check_ide_modules_pcimap() {
+    local ide_modules
+
+    pcimap_file=$1
+    vendor_id=$2
+    device_id=$3
+	
+    pci_vendor_id=$(printf "0x%08x" $(($2)))
+    pci_device_id=$(printf "0x%08x" $(($3)))
+    while read pcimap_module rest; do
+	if [ "$pcimap_module" == "ata_piix" ]; then
+	    add_module "ahci"
+	    ide_modules="$ide_modules ahci"
+	fi
+	ide_modules="$ide_modules $pcimap_module"
+    done < <(grep "$pci_vendor_id $pci_device_id" $pcimap_file)
+
+    echo "$ide_modules"
+}
+
+check_ide_modules_hwinfo() {
+    local ide_modules
+    local kernel_version
+
+    kernel_version=$(basename ${modules_dir})
+
+    pci_id_vendor=$1
+    pci_id_device=$2
+    pci_revision=$3
+    pci_subid_vendor=$4
+    pci_subid_device=$5
+
+    while read hwinfo_module; do
+	if [ "$hwinfo_module" == "ata_piix" ]; then
+	    # Always add ahci prior to ata_piix
+	    ide_modules="$ide_modules ahci $hwinfo_module"
+	elif [ "$hwinfo_module" != "ahci" ]; then
+	    # Skip ahci module from hwinfo output
+	    ide_modules="$ide_modules $hwinfo_module"
+	fi
+    done < <(hwinfo --kernel-version $kernel_version \
+	            --db "pci ${pci_id_vendor:+vendor=$pci_id_vendor} 
+                         ${pci_id_device:+device=$pci_id_device} 
+                         ${pci_subid_vendor:+subvendor=$pci_subid_vendor}  
+                         ${pci_subid_device:+subdevice=$pci_subid_device} 
+                         ${pci_revision:+revision=$pci_revision}")
+
+    echo "$ide_modules"
+}
+
+# Check for IDE modules, new version
+# We'll be asking hwinfo to return the proper module for us
+check_ide_modules() {
+    local modules_dir=$1 ide_modules
+
+    # Check for PCI bus
+    if [ ! -d /proc/bus/pci ]; then
+        # Not found, no error
+        return
+    fi
+
+    pcimap_file="${modules_dir}/modules.pcimap"
+
+    if [ ! -f "$pcimap_file" ] ; then
+	echo "No modules.pcimap file found" >&2
+	return
+    fi
+
+    while read pci_id none class_id dev_id rev_id; do
+	if [ "$class_id" == "0101:" ] ; then
+	    ide_slots="$ide_slots $pci_id"
+	fi
+    done < <(/sbin/lspci -n)
+
+    for pci_id in $ide_slots; do
+	set -- $(/sbin/lspci -nm -s $pci_id)
+	eval id=$4
+	pci_id_vendor=$(printf "0x%x" $((0x$id)))
+	eval id=$5
+	pci_id_device=$(printf "0x%x" $((0x$id)))
+	id=${6#-r}
+	pci_revision=$(printf "0x%x" $((0x$id)))
+	case "$7" in
+	    -*)
+		shift
+		;;
+	    *)
+		;;
+	esac
+	if [ "$7" ] ; then
+	    eval id=$7
+	    pci_subid_vendor=$(printf "0x%x" $((0x$id)))
+	fi
+	if [ "$8" ] ; then
+	    eval id=$8
+	    pci_subid_device=$(printf "0x%x" $((0x$id)))
+	fi
+	: Slot ${pci_id}: $pci_id_vendor $pci_id_device $pci_subid_vendor $pci_subid_device
+	ide_modules=$(check_ide_modules_hwinfo $pci_id_vendor $pci_id_device $pci_revision $pci_subid_vendor $pci_subid_device)
+	if [ -z "$ide_modules" ]; then
+	    ide_modules=$(check_ide_modules_pcimap $pcimap_file $pci_id_vendor $pci_id_device)
+	fi
+    done
+
+    if [ "$ide_modules" ]; then
+	for module in $ide_modules; do
+	    # Only add ahci module if ata_piix is not loaded already
+	    if [ "$module" == "ahci" ]; then
+		has_module ata_piix || add_module $module
+	    else
+		add_module $module
+	    fi
+	done
+	# All IDE modules are now loaded later
+	# if grep -q ide-disk ${modules_dir}/modules.dep; then
+	#     add_module ide-disk
+	# fi
+	# IDE-floppy is considered obsolete
+	# if grep -q ide-floppy ${modules_dir}/modules.dep; then
+	#     add_module ide-floppy
+	# fi
+	# if grep -q ide-cd ${modules_dir}/modules.dep; then
+	#     add_module ide-cd
+	# fi
+	echo
+    fi
+
+}
+
+# NOTE: The mkdevn, devmajor and block_driver functions are reused
+#       inside the initrd, so keep them compatible with ash !!!
+#
+
+# Convert a major:minor pair into a device number
+mkdevn() {
+    local major=$1 minor=$2 minorhi minorlo
+    major=$(($major * 256))
+    minorhi=$(($minor / 256))
+    minorlo=$(($minor % 256))
+    minor=$(($minorhi * 256 * 4096))
+    echo $(( $minorlo + $major + $minor ))
+}
+
+# Extract the major part from a device number
+devmajor() {
+    local devn=$(($1 / 256))
+    echo $(( $devn % 4096 ))
+}
+
+# Extract the minor part from a device number
+devminor() {
+    local devn=$1
+    echo $(( $devn % 256 )) 
+}
+
+block_driver() {
+    local devn block major driver
+    case "$1" in
+    /dev/*) devn=$(devnumber $1 2> /dev/null) ;;
+
+    *:*)    # major:minor
+	    set -- $(IFS=: ; echo $1)
+	    devn=$(mkdevn $1 $2) ;;
+
+    [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])
+	    # hex device number
+	    devn=$((0x$1)) ;;
+    esac
+
+    [ -z "$devn" ] && return 1
+    while read major driver; do
+	[ "$major" = Block ] && block=1  # in block device section
+	[ -z "$driver" -o -z "$block" ] && continue
+	if [ $(devmajor $devn) = $major ]; then
+	    echo $driver
+	    return 0
+	fi
+    done < /proc/devices
+    return 1
+}
+
+# (We are using a devnumber binary inside the initrd.)
+devnumber() {
+    set -- $(ls -lL $1)
+    mkdevn ${5%,} $6
+}
+
+# Get the interface information for ipconfig
+get_ip_config() {
+    local iface
+    local iplink
+    local iproute
+
+    iface=$1
+    iplink=$(ifconfig $iface | grep "inet ")
+
+    set -- $iplink
+    if [ "$1" == "inet" ]; then
+	shift
+
+	while [ "$1" ]; do
+	    case "$1" in
+		addr:*)
+		    ipaddr=${1#addr:}
+		    ;;
+		Bcast:*)
+		    bcast=${1#Bcast:}
+		    ;;
+		P-t-P:*)
+		    srvaddr=${1#P-t-P:}
+		    ;;
+		Mask:*)
+		    netmask=${1#Mask:}
+		    ;;
+	    esac
+	    shift
+	done
+    fi
+    iproute=$(route -n | grep $iface | grep UG)
+    if [ $? -eq 0 ]; then
+	set -- $iproute
+	gwaddr=$2
+    fi
+    hostname=$(hostname)
+    echo "$ipaddr:$srvaddr:$gwaddr:$netmask:$hostname:$iface:none"
+}  
+
+###################################################################
+#
+# S/390 specific procedures
+#
+s390_check_lvm2() {
+    local vgname
+    local devname
+    
+    # Check whether the LVM is on zfcp or DASD
+    vgname=$(lvdisplay -c $1 | cut -d : -f 2)
+
+    if [ "$vgname" ]; then
+	for devname in $(pvdisplay -c | grep $vgname | cut -d : -f 1); do
+	    case "$devname" in
+		*/dasd*)
+		    s390_enable_dasd=1
+		    ;;
+		*/sd*)
+		    s390_enable_zfcp=1
+		    ;;
+		*)
+		    ;;
+	    esac
+	done
+    fi
+}
+
+s390_check_evms() {
+    local evms_cmd
+    local evms_reg
+    local evms_cont
+    local evms_seg
+    local evms_dsk
+
+    if [ ! -x /sbin/evms ]; then
+	return 1
+    fi
+
+    if [ -n "$1" ]; then
+	evms_cmd="q:r,v=$1"
+
+	while read a b c d; do
+	    if [ "$a $b" = "Region Name:" ]; then
+		evms_reg="$evms_reg $c"
+	    fi
+	done < <( echo "$evms_cmd" | /sbin/evms -s )
+    fi
+
+    for reg in $evms_reg; do
+	evms_cmd="q:c,r=$reg"
+	
+	while read a b c d; do
+	    if [ "$a $b" = "Container Name:" ]; then
+		evms_cont="$evms_cont $c"
+	    fi
+	done < <(echo "$evms_cmd" | /sbin/evms -s )
+    done
+    
+    for cont in $evms_cont; do
+	evms_cmd="q:s,c=$cont"
+	
+	while read a b c d; do
+	    if [ "$a $b" = "Segment Name:" ]; then
+		evms_seg="$evms_seg $c"
+	    fi
+	done < <(echo "$evms_cmd" | /sbin/evms -s )
+    done
+
+    for seg in $evms_seg; do
+	evms_cmd="q:d,s=$seg"
+	while read a b c d; do
+	    if [ "$a $b $c" = "Logical Disk Name:" ]; then
+		evms_dsk="$evms_dsk $d"
+	    fi
+	done < <(echo "$evms_cmd" | /sbin/evms -s )
+    done
+
+    for dsk in $evms_dsk; do
+	case $dsk in
+	    dasd*)
+		s390_enable_dasd=1;
+		;;
+	    sd*)
+		s390_enable_zfcp=1
+		;;
+	esac
+    done
+}
+
+s390_check_dasd() {
+    local devn=$(devnumber $1)
+
+    for dir in /sys/block/*/*; do
+	if [ -d "$dir" ] && [ -f "$dir/dev" ]; then
+	    IFS=":" read major minor < $dir/dev
+	    if (($devn == $(mkdevn $major $minor) )); then
+		path=$dir
+		break;
+	    fi
+	fi
+    done
+    if [ "$path" ] && [ -d ${path}/../device ]; then
+	if [ -r ${path}/../device/discipline ]; then
+	    s390_enable_dasd=1
+	fi
+    fi
+}
+
+s390_check_zfcp() {
+    local devn=$(devnumber $1)
+
+    for dir in /sys/block/*/*; do
+	if [ -d "$dir" ] && [ -f "$dir/dev" ]; then
+	    IFS=":" read major minor < $dir/dev
+	    if (($devn == $(mkdevn $major $minor) )); then
+		path=$dir
+		break;
+	    fi
+	fi
+    done
+    
+    if [ "$path" ] && [ -d "$path/../device" ] && [ -e "$path/../device/scsi_level" ] ; then
+	s390_enable_zfcp=1
+    fi
+}
+
+# Detect all zfcp disks
+# We need to activate all disks in the same order
+# as found in the running system to get the same
+# behaviour during booting.
+s390_zfcp_sysfs() {
+    local dev_dir
+    local fcp_disk_hba
+    local fcp_disk_wwpn
+    local fcp_disk_lun
+
+    if [ "$s390_enable_zfcp" ] ; then
+	# Root is on SCSI, detect all SCSI devices
+	for dev_dir in /sys/class/scsi_device/*; do
+	    if [ -d "$dev_dir" ] && [ -e "$dev_dir/device" ]; then
+		cd $dev_dir;
+		cd $(readlink device);
+		if [ -r ./hba_id ]; then
+		    read fcp_disk_hba < ./hba_id
+		    read fcp_disk_wwpn < ./wwpn
+		    read fcp_disk_lun < ./fcp_lun
+	    
+		    s390_zfcp_disks="$s390_zfcp_disks $fcp_disk_hba:$fcp_disk_wwpn:$fcp_disk_lun"
+
+		    for id in $s390_zfcp_hbas; do
+			if [ "$id" == "$fcp_disk_hba" ]; then
+			    fcp_disk_hba=
+			fi
+		    done
+		    [ "$fcp_disk_hba" ] && s390_zfcp_hbas="$s390_zfcp_hbas $fcp_disk_hba"
+		fi
+	    fi
+	done
+	if [ "$s390_zfcp_hbas" ]; then
+	    add_module sd_mod
+	    add_module zfcp
+	fi
+    fi
+
+}
+
+s390_dasd_sysfs() {
+    local type
+    local use_diag
+
+    if [ "$s390_enable_dasd" ]; then
+	# Root device is on a dasd device, enable all dasd disks
+	for dir in /sys/block/dasd*; do
+	    if [ -d "$dir" ] && [ -d ${dir}/device ]; then
+		cd $dir
+		cd $(readlink device)
+		if [ -r ./discipline ]; then
+		    read type < ./discipline
+		    
+		    case $type in
+			ECKD)
+			    add_module dasd_eckd_mod
+			    use_diag=0
+			    ;;
+			FBA)
+			    add_module dasd_fba_mod
+			    use_diag=0
+			    ;;
+			DIAG)
+			    add_module dasd_diag_mod
+			    use_diag=1
+			    ;;
+			*)
+			    ;;
+		    esac
+		    s390_dasd_disks="$s390_dasd_disks $(basename $PWD):$use_diag"
+		fi
+	    fi
+	done
+
+    fi
+}
+
+s390_dasd_proc() {
+    local zipl_conf_with_dasd dasd_module
+
+    if [ -f /etc/zipl.conf ] \
+       && grep -q '^[[:space:]]*parameters[[:space:]]*=' \
+	    /etc/zipl.conf; then
+	    zipl_conf_with_dasd=1
+    fi
+
+    if modprobe -c \
+       | grep -q '^[[:space:]]*options[[:space:]]\+dasd_mod' ; then
+	dasd_module=1
+    fi
+
+    if grep -q -e "^dasd" /proc/modules \
+       || [ -n "$zipl_conf_with_dasd" ] \
+       || [ -n "$dasd_module" ] \
+       || has_module dasd_mod ; then
+
+	if [ ! "$zipl_conf_with_dasd" -a ! "$dasd_module" ]; then
+	    error 1 "\
+The dasd module is required, but no dasd configuration was found in
+root_dir/etc/zipl.conf or root_dir/etc/modules.conf."
+	fi
+
+	if grep -q ECKD /proc/dasd/devices ; then
+	    add_module dasd_eckd_mod
+	fi
+
+	if grep -q FBA  /proc/dasd/devices ; then
+	    add_module dasd_fba_mod
+	fi
+
+	if grep -q DIAG /proc/dasd/devices ; then
+	    add_module dasd_diag_mod
+	fi
+    else
+	# /proc not mounted or somesuch. Enable all dasd modules
+	add_module dasd_mod
+	add_module dasd_eckd_mod
+	add_module dasd_fba_mod
+	add_module dasd_diag_mod
+    fi
+}
+
+###################################################################
+#
+# Create the initrd image $2 for kernel $1 (both are absolute path names).
+#
+mkinitrd_kernel() {
+    local kernel_image=$1 initrd_image=$2
+    local kernel_version need_block_driver
+    local need_raidautorun
+    local -a features
+    local fs_modules drv_modules uld_modules
+
+    tmp_mnt=$work_dir/mnt
+    tmp_mnt_small=${tmp_mnt}_small
+    tmp_msg=$work_dir/msg$$
+    vendor_script=$tmp_mnt/vendor_init.sh
+
+    if [ "$mkinit_type" = "rd" ]; then
+	linuxrc=$tmp_mnt/linuxrc
+    else
+	linuxrc=$tmp_mnt/init
+    fi
+
+    if ! [ -f "$kernel_image" ] ; then
+	echo "No kernel image $kernel_image found" >&2
+	return
+    fi
+
+    kernel_version=$(/sbin/get_kernel_version $kernel_image)
+
+    #echo -e "Kernel version:\t$kernel_version"
+    echo -e "Kernel image:\t$kernel_image"
+    echo -e "Initrd image:\t$initrd_image"
+
+    if [ ! -d "/lib/modules/$kernel_version/misc" -a \
+	 ! -d "/lib/modules/$kernel_version/kernel" ]; then
+	oops 2 "No modules found for kernel $kernel_version"
+        return
+    fi
+
+    # create an empty initrd
+    if ! mkdir $tmp_mnt ; then
+	error 1 "could not create temporary directory"
+    fi
+    if [ "$mkinit_type" = "rd" ]; then
+	dd if=/dev/zero of=$tmp_initrd bs=1k count=$image_blocks 2>/dev/null
+	mke2fs -q -F -b 1024 -m 0 -N $image_inodes $tmp_initrd 2>/dev/null 1>&2
+	tune2fs -i 0 $tmp_initrd >/dev/null 2>&1
+
+        # check for loop device
+	grep -q loop /proc/devices
+	if [ $? != 0 ] ; then
+	    if [ -f /lib/loop.o ] ; then
+		insmod /lib/loop.o
+	    else
+		modprobe loop
+	    fi
+	fi
+        # mount it
+	if ! mount -t ext2 -oloop $tmp_initrd $tmp_mnt ; then
+	    error 3 "failed to mount image"
+	fi
+	is_mounted=1
+	rmdir $tmp_mnt/lost+found
+    fi
+    # fill the initrd
+    mkdir -p $tmp_mnt/{sbin,bin,etc,dev,proc,sys}
+
+    # Create a dummy /etc/mtab for mount/umount
+    echo -n > $tmp_mnt/etc/mtab
+
+    if [ "$mkinit_type" = "rd" ]; then
+	initrd_devices=$(echo dev/{zero,null,ram0,ram1,ram2,console})
+	# These device might not have been created by udev
+	for dev in ram ramdisk md0; do
+	    if [ -f dev/$dev ]; then
+		initrd_devices="$initrd_devices $(echo dev/$dev)"
+	    fi
+	done
+
+	case "$(uname -m)" in
+	    s390|s390x)
+		;;
+	    *)  initrd_devices="$initrd_devices $(echo dev/{fb0,tty1,tty2})"
+		;;
+	esac
+	(cd ${root_dir:-/} ; cp -R --parents $initrd_devices $tmp_mnt )
+    else
+	mkdir -p $tmp_mnt/{tmp,root,lib/klibc/dev}
+	mknod $tmp_mnt/dev/console c 5 1
+	mknod $tmp_mnt/dev/null c 1 3
+	mknod $tmp_mnt/dev/kmsg c 1 11
+	mknod $tmp_mnt/lib/klibc/dev/console c 5 1
+	mknod $tmp_mnt/lib/klibc/dev/null c 1 3
+	mknod $tmp_mnt/lib/klibc/dev/kmsg c 1 11
+    fi
+
+    mkdir -p $tmp_mnt${initrd_shell%/*}
+    cp_bin $initrd_shell $tmp_mnt$initrd_shell
+    if [ $shebang != $initrd_shell ]; then
+	ln -s $initrd_shell $tmp_mnt$shebang
+    fi
+    if [ $shebang != /bin/sh ]; then
+	ln -s $shebang $tmp_mnt/bin/sh
+    fi
+    if ! cp_bin $initrd_insmod $tmp_mnt/sbin/insmod 2>/dev/null ; then
+	error 5 "no static insmod"
+    fi
+    if ! cp_bin $initrd_modprobe $tmp_mnt/sbin/modprobe 2>/dev/null ; then
+	error 5 "no static modprobe"
+    fi
+    # SELinux: Binary policy file and load_policy utility for loading it.
+    if [ -n "$use_selinux" ] ; then
+	if [ -f /etc/security/selinux/policy.15 -a \
+	     -f /usr/sbin/load_policy ] ; then
+	   echo -e "SELinux policy:\tadded"
+	   mkdir -p $tmp_mnt/selinux
+	   mkdir -p $tmp_mnt/etc/security/selinux
+	   cp -p /etc/security/selinux/policy.15 \
+	       $tmp_mnt/etc/security/selinux
+	   cp_bin /usr/sbin/load_policy $tmp_mnt/sbin/load_policy
+	else
+	   echo -e "SELinux policy:\tnot found"
+	fi
+    fi
+
+    if [ ! -z "$vendor_init_script" ] ; then
+	features=(${features[@]} script\($vendor_script\))
+	cp_bin $vendor_init_script $vendor_script
+    fi
+
+    if has_module nbd ; then
+        if test -x /usr/sbin/nbd-client; then
+            cp_bin /usr/sbin/nbd-client $tmp_mnt/sbin/nbd-client
+        fi
+        need_mount=1
+        use_pivot_root=
+    fi
+
+    if has_module iscsi ; then
+	features=(${features[@]} iscsi)
+	if test -x /usr/sbin/iscsid; then
+	    cp_bin /usr/sbin/iscsid $tmp_mnt/sbin/iscsid
+	elif test -x /sbin/iscsid; then
+	    cp_bin /sbin/iscsid $tmp_mnt/sbin/iscsid
+	else
+	    echo -e "iSCSI error:\tcan't find iscsid"
+	fi
+	cp_bin /bin/usleep $tmp_mnt/bin/usleep
+	need_mount=1
+	use_pivot_root=
+    fi
+
+    if [ -n "$s390_dasd_disks" ]; then
+	cp_bin /sbin/dasd_configure $tmp_mnt/sbin
+	cp_bin /sbin/dasdview $tmp_mnt/sbin
+    fi
+
+    if [ -n "$s390_zfcp_disks" ]; then
+	cp_bin /sbin/zfcp_host_configure $tmp_mnt/sbin
+	cp_bin /sbin/zfcp_disk_configure $tmp_mnt/sbin
+	cp_bin /bin/sed $tmp_mnt/bin
+    fi
+
+    if [ "$use_glibc" ] ; then
+	features=(${features[@]} glibc)
+    else
+	features=(${features[@]} klibc)
+    fi
+    if [ "$mkinit_type" != "rd" ] ; then
+	features=(${features[@]} initramfs)
+    fi
+    
+    if [ -z "$use_glibc" ] ; then
+	mkdir -p $tmp_mnt/lib/klibc/bin
+	for klibc_bin in devnumber chroot run-init sed sleep \
+	    cat ln mount umount nfsmount printf; do
+	  cp_bin /lib/klibc/bin/$klibc_bin \
+	      $tmp_mnt/lib/klibc/bin
+	  if [ ! -e $tmp_mnt/bin/$klibc_bin ]; then
+	      ln -sf /lib/klibc/bin/$klibc_bin $tmp_mnt/bin
+	  fi
+	done
+	mkdir -p $tmp_mnt/lib/klibc/sbin
+	for klibc_bin in ata_id scsi_id usb_id vol_id dasd_id; do
+	  cp_bin /lib/klibc/sbin/$klibc_bin \
+	    $tmp_mnt/lib/klibc/sbin
+	  if [ ! -e $tmp_mnt/sbin/$klibc_bin ]; then
+	      ln -sf /lib/klibc/sbin/$klibc_bin $tmp_mnt/sbin
+	  fi
+	done
+    else
+	for glibc_bin in sed sleep ln mount umount; do
+	    cp_bin /bin/$glibc_bin $tmp_mnt/bin
+	done
+	cp_bin /usr/bin/printf $tmp_mnt/printf
+	cp_bin /sbin/scsi_id $tmp_mnt/sbin
+	cp_bin /sbin/ata_id $tmp_mnt/sbin
+	cp_bin /sbin/vol_id $tmp_mnt/sbin
+	# this must be a static binary because /lib is already gone when it runs
+	cp_bin /lib/klibc/sbin/run-init $tmp_mnt/bin/run-init
+	# always use the klibc binary as this doesn't need portmap
+	cp_bin /lib/klibc/bin/nfsmount $tmp_mnt/bin
+    fi
+
+    # cat might not be present as klibc binary
+    if [ ! -e $tmp_mnt/bin/cat ] ; then
+	cp_bin /bin/cat $tmp_mnt/bin
+    fi
+
+    # copy common utilities
+    for bin in chmod mkdir mknod rm; do
+	cp_bin /bin/$bin $tmp_mnt/bin
+    done
+    
+    if [ -x /usr/share/mkinitrd/hotplug.sh ] ; then
+	cp_bin /usr/share/mkinitrd/hotplug.sh $tmp_mnt/sbin/hotplug.sh
+    fi
+
+    # all dev nodes belong to root, but some may be
+    # owned by a group other than root
+    # getent passwd | sed '/^root:/s/^\([^:]\+\):[^:]*:\([^:]\+\):\([^:]\+\):.*/\1::\2:\3:::/p;d' > $tmp_mnt/etc/passwd
+    echo 'root::0:0:::' > $tmp_mnt/etc/passwd
+    getent group | sed 's/^\([^:]\+\):[^:]*:\([^:]\+\):.*/\1::\2:/' > $tmp_mnt/etc/group
+    (echo 'passwd: files';echo 'group: files') > $tmp_mnt/etc/nsswitch.conf
+    
+    # FIXME: We should only include those if glibc binaries are used.
+    # $use_glibc doesn't work as even without it some programs are
+    # only present as glibc binaries (eg lvm)
+    if [ -d /lib64 ]; then
+	mkdir -p $tmp_mnt/lib64
+	for nss_lib in /lib64/libnss_files*; do
+	    if [ -f "$nss_lib" ]; then
+		cp_bin $nss_lib $tmp_mnt/lib64
+	    fi
+	done
+    fi
+
+    mkdir -p $tmp_mnt/lib
+    for nss_lib in /lib/libnss_files*; do
+	if [ -f "$nss_lib" ]; then
+	    cp_bin $nss_lib $tmp_mnt/lib
+	fi
+    done
+
+    if [ -n "$use_pivot_root" ] ; then
+	features=(${features[@]} pivot-root)
+	cp_bin /sbin/pivot_root $tmp_mnt/bin
+	cp_bin /bin/cat $tmp_mnt/bin
+	echo "#! $shebang" > $tmp_mnt/bin/init
+	echo 'echo initrd failed, goodbye...' >> $tmp_mnt/bin/init
+	chmod 755 $tmp_mnt/bin/init
+	mkdir -p $tmp_mnt/mnt
+	use_udev=
+	need_mount=1
+    fi
+
+    if [ -n "$use_udev" ] ; then
+	features=(${features[@]} udev)
+	if [ -z "$use_glibc" ] ; then
+	    if [ -x /lib/klibc/sbin/udev ]; then
+		klibc_sbin_dir=/lib/klibc/sbin
+		klibc_bin_dir=/lib/klibc/bin
+		klibc_suffix=
+	    elif [ -x /lib/klibc/bin/udev ]; then
+		klibc_sbin_dir=/lib/klibc/bin
+		klibc_bin_dir=/lib/klibc/bin
+		klibc_suffix=
+	    elif [ -x /sbin/udev.static ]; then
+		klibc_sbin_dir=/sbin
+		klibc_bin_dir=/sbin
+		klibc_suffix=".static"
+	    else
+		klibc_sbin_dir=/sbin
+		klibc_bin_dir=/usr/bin
+		klibc_suffix=
+	    fi
+
+	    cp_bin $klibc_sbin_dir/udev$klibc_suffix $tmp_mnt/sbin/
+	    cp_bin $klibc_bin_dir/udevinfo$klibc_suffix $tmp_mnt/sbin/
+	    if [ ! -L $klibc_sbin_dir/udevstart$klibc_suffix ] ; then
+		cp_bin $klibc_sbin_dir/udevstart$klibc_suffix $tmp_mnt/sbin/
+	    fi
+	    if [ -n "$klibc_suffix" ]; then
+		ln -s udev$klibc_suffix $tmp_mnt/sbin/udev
+		ln -s udevinfo$klibc_suffix $tmp_mnt/sbin/udevinfo
+		if [ ! -L $klibc_sbin_dir/udevstart.static ] ; then
+		    ln -s udevstart$klibc_suffix $tmp_mnt/sbin/udevstart
+		else
+		    ln -s udev$klibc_suffix $tmp_mnt/sbin/udevstart
+		fi
+	    else
+		if [ -L $klibc_sbin_dir/udevstart ]; then
+		    ln -s udev $tmp_mnt/sbin/udevstart
+		fi
+	    fi
+	else
+	    cp_bin /sbin/udev $tmp_mnt/sbin/
+	    cp_bin /usr/bin/udevinfo $tmp_mnt/sbin/
+	    if [ ! -L /sbin/udevstart ] ; then
+		cp_bin /sbin/udevstart $tmp_mnt/sbin/
+	    else
+		ln -s udev $tmp_mnt/sbin/udevstart
+	    fi
+	    
+	fi
+	cp_bin /sbin/path_id $tmp_mnt/sbin
+	for udev_script in /sbin/udev.*.sh; do
+		# we don't have bash in initramfs
+		if grep -q /bin/bash $udev_script; then
+			continue
+		fi
+		cp_bin $udev_script $tmp_mnt/sbin
+	done
+	mkdir -p $tmp_mnt/etc/udev/rules.d
+	# Create our own udev.conf
+	echo "udev_root=\"/dev\"" > $tmp_mnt/etc/udev/udev.conf
+	echo "udev_db=\"/dev/.udevdb\"" >> $tmp_mnt/etc/udev/udev.conf
+	echo "udev_rules=\"/etc/udev/rules.d\"" >> $tmp_mnt/etc/udev/udev.conf
+	cp /etc/udev/rules.d/*.rules $tmp_mnt/etc/udev/rules.d
+    fi
+
+    if [ "$mkinit_type" = "ramfs" ] ; then
+	mkdir -p $tmp_mnt/events
+	if [ -z "$use_glibc" ] ; then
+	    if [ -x /lib/klibc/sbin/hotplugeventrecorder ]; then
+		cp_bin /lib/klibc/sbin/hotplugeventrecorder $tmp_mnt/sbin
+	    else
+		cp_bin /lib/klibc/bin/hotplugeventrecorder $tmp_mnt/sbin
+	    fi
+	else
+	    cp_bin /sbin/hotplugeventrecorder $tmp_mnt/sbin
+	fi
+	(cd $tmp_mnt/sbin; ln -s hotplugeventrecorder hotplug)
+    fi
+    need_block_driver=1
+
+    if [ -n "$root_lvm" ] ; then
+	features=(${features[@]} lvm)
+	mkdir -p $tmp_mnt/etc/lvmtab.d
+	cp_bin /sbin/{vgscan,vgchange} $tmp_mnt/sbin
+	need_block_driver=1
+    fi
+
+    if [ -n "$root_dm" ] ; then
+	features=(${features[@]} dm/lvm2)
+	mkdir -p $tmp_mnt/etc/lvm
+	mkdir -p $tmp_mnt/var/lock/lvm
+	cp_bin /sbin/{vgscan,vgchange,lvm} $tmp_mnt/sbin
+	cp_bin /bin/{sed,mkdir,mknod,ls} $tmp_mnt/bin
+	cp -a /etc/lvm/lvm.conf $tmp_mnt/etc/lvm
+	need_block_driver=1
+    fi
+
+    if [ -n "$root_evms" ] ; then
+	features=(${features[@]} dm/evms2)
+	cp_bin /sbin/{evms_activate,dmsetup} $tmp_mnt/sbin
+	cp_bin /bin/{sed,mkdir,mknod,rm} $tmp_mnt/bin
+	cp_bin /usr/bin/expr $tmp_mnt/bin
+	mkdir -p $tmp_mnt/mnt
+	cp -a /etc/evms.conf $tmp_mnt/etc
+	mkdir -p $tmp_mnt/lib/evms
+	SD=$(ls -A /lib/evms | tail -n 1)
+	(cd $tmp_mnt/lib/evms && mkdir -p $SD)
+	cp_bin /lib/evms/$SD/* $tmp_mnt/lib/evms/$SD
+	rm -f $tmp_mnt/lib/evms/*/*{ext2,jfs,ogfs,reiser,swap,xfs}*so
+	need_block_driver=1
+    fi
+
+    if has_any_module raid0 raid1 raid5 linear multipath; then
+	cp_bin /sbin/raidautorun $tmp_mnt/sbin
+	need_raidautorun=1
+    fi
+
+    if [ -n "$use_dhcp" ] ; then
+	features=(${features[@]} dhcp\($interface\))
+	cp_bin /sbin/dhcpcd $tmp_mnt/bin
+	cp_bin /bin/kill $tmp_mnt/bin
+	mkdir -p $tmp_mnt/var/lib/dhcpcd
+	mkdir -p $tmp_mnt/var/run
+	need_mount=1
+    fi
+
+    if [ -n "$use_ipconfig" ] ; then
+	features=(${features[@]} static\($interface\))
+	cp_bin $root_dir/lib/klibc/bin/ipconfig $tmp_mnt/bin
+	need_mount=1
+    fi
+  
+    if has_module ext2 ; then
+	features=(${features[@]} fsck.ext2)
+	cp_bin /sbin/fsck $tmp_mnt/bin
+	cp_bin /sbin/fsck.ext2 $tmp_mnt/bin
+    fi
+
+    if has_module ext3 ; then
+	features=(${features[@]} fsck.ext3)
+	cp_bin /sbin/fsck $tmp_mnt/bin
+	cp_bin /sbin/fsck.ext3 $tmp_mnt/bin
+    fi
+
+    if has_module reiserfs ; then
+	features=(${features[@]} fsck.reiserfs)
+	cp_bin /sbin/fsck $tmp_mnt/bin
+	cp_bin /sbin/fsck.reiserfs $tmp_mnt/bin
+    fi
+
+    if has_module jfs ; then
+	features=(${features[@]} fsck.jfs)
+	cp_bin /sbin/fsck $tmp_mnt/bin
+	cp_bin /sbin/fsck.jfs $tmp_mnt/bin
+    fi
+
+    if has_module xfs ; then
+	features=(${features[@]} fsck.xfs)
+	cp_bin /sbin/fsck $tmp_mnt/bin
+	cp_bin /sbin/fsck.xfs $tmp_mnt/bin
+    fi
+
+    if [ -n "$debug_mkinit" ]; then
+	features=(${features[@]} debug)
+	cp_bin /bin/ls $tmp_mnt/bin
+    fi
+
+    echo -ne "Shared libs:\t"
+    # Copy all required shared libraries and the symlinks that
+    # refer to them.
+    lib_files=$(shared_object_files "${initrd_bins[@]}")
+    if [ -n "$lib_files" ]; then
+	for lib in $lib_files; do
+	    [ -L $root_dir/$lib ] || echo -n "$lib "
+	    ( cd ${root_dir:-/} ; cp -dp --parents $lib $tmp_mnt )
+	done
+	echo
+    else
+	echo "none"
+    fi
+
+    if [ -n "$lib_files" -a -n "$initrd_shell_dynamic" ]; then
+	# If we have already have all dynamic libraries that
+	# $initrd_shell_dynamic is using, and if $initrd_shell_dynamic
+	# is smaller than $initrd_shell, we can save a little space
+	# by using the dynamic version. The benefit is marginal, though.
+
+	if smaller_file $initrd_shell_dynamic $initrd_shell ; then
+	    for lib in $(shared_object_files $initrd_shell_dynamic) ; do
+		case $lib_files in
+		    *$lib*) ;;
+		    *)	initrd_shell_dynamic=
+		    	break ;;
+		esac
+	    done
+	    if [ -n "$initrd_shell_dynamic" ]; then
+		#echo " - Using dynamically linked $shebang"
+		cp_bin $initrd_shell_dynamic $tmp_mnt$shebang
+	    fi
+	fi
+    fi
+
+    if [ -n "$lib_files" -a -n "$initrd_insmod_dynamic" ]; then
+	# If we have already have all dynamic libraries that
+	# $initrd_insmod_dynamic is using, and if $initrd_insmod_dynamic
+	# is smaller than $initrd_insmod, we can save a little space
+	# by using the dynamic version. The benefit is marginal, though.
+
+	if smaller_file $initrd_insmod_dynamic $initrd_insmod ; then
+	    for lib in $(shared_object_files $initrd_insmod_dynamic); do
+		case $lib_files in
+		    *$lib*) ;;
+		    *)	initrd_insmod_dynamic=
+		    	break ;;
+		esac
+	    done
+	    if [ -n "$initrd_insmod_dynamic" ]; then
+		#echo " - Using dynamically linked /sbin/insmod"
+		cp_bin $initrd_insmod_dynamic $tmp_mnt/sbin/insmod
+		cp_bin $initrd_modprobe_dynamic $tmp_mnt/sbin/modprobe
+	    fi
+	fi
+    fi
+
+    if [ -n "$use_udev" ] ; then
+	# comment out rules with tools not available in initramfs
+	for tool in $(sed 's:.*"\(/.*bin/[^ "]*\).*:\1:' /etc/udev/rules.d/*.rules | grep '^/.*bin/' | sort -u); do
+		if [ -x "$tmp_mnt$tool" ]; then
+			# tool exists, keep the rule
+			continue
+		fi
+		# comment out all rules using this tool
+		for file in $tmp_mnt/etc/udev/rules.d/*.rules; do
+			sed "s@\(.*$tool.*\)@#(mkinitrd) \1@" -i $file
+		done;
+	done
+    fi
+
+    cat /dev/null > $linuxrc
+    chmod 755 $linuxrc
+
+    # Note that the in-place documents must be indented with tabs, not spaces.
+    if [ "$mkinit_type" = "rd" ]; then
+	cat_linuxrc <<-EOF
+	|#! $shebang
+	|
+	|export PATH=/sbin:/bin:/usr/bin
+	|
+	|die() {
+	|    umount /proc
+	|    umount /sys
+	|    umount /dev/shm
+	|    exit \$1
+	|}
+	|
+	|mount -tproc proc /proc
+	|mount -tsysfs sysfs /sys > /dev/null 2>&1
+	|mount -ttmpfs tmpfs /dev/shm
+	EOF
+    else
+	cat_linuxrc <<-EOF
+	|#! $shebang
+	|
+	|export PATH=/sbin:/usr/sbin:/bin:/usr/bin:/lib/klibc/bin
+	|
+	|die() {
+	|    umount /proc
+	|    umount /sys
+	|    umount /dev
+	|    exit \$1
+	|}
+	|
+	|exec < /dev/console > /dev/console 2>&1
+	|
+	|devdir="/dev"
+	|mount -t tmpfs -o 'size=25%,mode=0755' initramfsdevs \$devdir
+	|mkdir -p \$devdir/pts
+	|mkdir -p \$devdir/shm
+	|mkdir -p \$devdir/.udevdb
+	|
+	|[ ! -f /proc/cpuinfo ] && mount -tproc proc /proc
+	|[ ! -d /sys/class ] && mount -tsysfs sysfs /sys
+	EOF
+    fi
+    cat_linuxrc <<-EOF
+	|
+	|kernel_cmdline="\$@"
+	|
+	|for o in \$(cat /proc/cmdline); do
+	|    case \$o in
+	|    linuxrc=trace)
+	|	echo -n "cmdline: "
+	|	for arg in \$@; do
+	|	    echo -n "\$arg "
+	|	done
+	|	echo ""
+	|	set -x
+	|	debug_linuxrc=1
+	|	;;
+	|    noresume)
+	|	resume_mode=no
+	|	;;
+	|    sysrq=yes|sysrq=1)
+	|	echo 1 > /proc/sys/kernel/sysrq
+	|	;;
+	|    1|2|3|4|5|S|s|single)
+	|	runlevel=\$o
+	|	;;
+	|    rw)
+	|       read_write=1
+	|       ;;
+	|    esac
+	|done
+	|
+	|# Fallback root device number
+	|rootdevn=$rootdevn
+	|
+	|for o in \$(cat /proc/cmdline); do
+	|    case \$o in
+	|    root=*)
+	|	rootdev=\${o#root=}
+	|	rootdev_cmdline=1
+	|	;;
+	|    nfsroot=*)
+	|	rootdev=\${o#nfsroot=}
+	|	rootdev_cmdline=1
+	|	;;
+	|    resume=*)
+	|	set -- \$(IFS== ; echo \$o)
+	|	resumedev=\$2
+	|	;;
+	|    init=*)
+	|	set -- \$(IFS== ; echo \$o)
+	|	init=\$2
+	|	;;
+	|    esac
+	|done
+	|if [ -z "\$rootdev" ]; then
+	|    rootdev=$rootdev
+	|else
+	|    # lilo strips off the /dev/prefix from device names!
+	|    case \$rootdev in
+	|	/dev/*)
+	|	    ;;
+	|	LABEL=*)
+	|	    label=\${rootdev#LABEL=}
+	|	    echo "SUBSYSTEM=\"block\", SYSFS{start}=\"*\", PROGRAM=\"/sbin/vol_id -l %N\", RESULT=\"\$label\", SYMLINK=\"root\"" > /etc/udev/rules.d/01-label.rules
+	|	    echo "KERNEL=\"dm-[0-9]*\", PROGRAM=\"/sbin/vol_id -l %N\", RESULT=\"\$label\", SYMLINK=\"root\"" >> /etc/udev/rules.d/01-label.rules
+	|	    rootdev=/dev/root
+	|	    ;;
+	|	UUID=*)
+	|	    uuid=\${rootdev#UUID=}
+	|	    echo "SUBSYSTEM=\"block\", SYSFS{start}=\"*\", PROGRAM=\"/sbin/vol_id -u %N\", RESULT=\"\$uuid\", SYMLINK=\"root\"" > /etc/udev/rules.d/02-uuid.rules
+	|	    echo "KERNEL=\"dm-[0-9]*\", PROGRAM=\"/sbin/vol_id -u %N\", RESULT=\"\$uuid\", SYMLINK=\"root\"" >> /etc/udev/rules.d/02-uuid.rules
+	|	    rootdev=/dev/root
+	|	    ;;
+	|	[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])
+	|	    maj=\$((0x0\$rootdev >> 8))
+	|	    min=\$((0x0\$rootdev & 0xff))
+	|	    echo "SUBSYSTEM=\"block\", SYSFS{dev}=\"\$maj:\$min\", SYMLINK=\"root\"" > /etc/udev/rules.d/05-lilo.rules
+	|	    rootdevn=\$maj:\$min
+	|	    rootdev=/dev/root ;;
+	|	[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])
+	|	    maj=\$((0x\$rootdev >> 8))
+	|	    min=\$((0x\$rootdev & 0xff))
+	|	    echo "SUBSYSTEM=\"block\", SYSFS{dev}=\"\$maj:\$min\", SYMLINK=\"root\"" > /etc/udev/rules.d/05-lilo.rules
+	|	    rootdevn=\$maj:\$min
+	|	    rootdev=/dev/root ;;
+	|	0x[0-9a-fA-F][0-9a-fA-F]*)
+	|	    maj=\$((\$rootdev >> 8))
+	|	    min=\$((\$rootdev & 0xff))
+	|	    echo "SUBSYSTEM=\"block\", SYSFS{dev}=\"\$maj:\$min\", SYMLINK=\"root\"" > /etc/udev/rules.d/05-lilo.rules
+	|	    rootdevn=\$maj:\$min
+	|	    rootdev=/dev/root ;;
+	|	*:*)
+	|	    rootfstype="nfs"
+	|	    ;;
+	|	*)
+	|	    rootdev=/dev/\$rootdev
+	|	    ;;
+	|    esac
+	|fi
+	|
+	|# Verify manual resume mode
+	|if [ "$resume_mode" != "off" -a -n "\$resumedev" ]; then
+	|    if [ -w /sys/power/resume ]; then
+	|	echo "Trying manual resume from \$resumedev"
+	|	resume_mode=1
+	|    else
+	|	resumedev=
+	|    fi
+	|else
+	|    resume_mode=
+	|fi
+	|
+	|# Check for debugging
+	|if [ -n "\$debug_linuxrc" ]; then
+	|    echo "udev_log=\"debug\"" >> /etc/udev/udev.conf
+	|else
+	|    echo "udev_log=\"error\"" >> /etc/udev/udev.conf
+	|fi
+	EOF
+
+    if [ -n "$need_block_driver" ]; then
+	# Transfer the the block_driver function into the initrd
+	type mkdevn | sed -e '1d' >> $linuxrc
+	echo >> $linuxrc
+	type devmajor | sed -e '1d' >> $linuxrc
+	echo >> $linuxrc
+	type devminor | sed -e '1d' >> $linuxrc
+	echo >> $linuxrc
+	type block_driver | sed -e '1d' >> $linuxrc
+	echo >> $linuxrc
+    fi
+
+    # Start udev
+    cat_linuxrc <<-EOF
+	|
+	|echo "Starting udev"
+	|if [ -x /sbin/hotplug.sh ]; then
+	|    echo "/sbin/hotplug.sh" > /proc/sys/kernel/hotplug
+	|else
+	|    echo "/sbin/udev" > /proc/sys/kernel/hotplug
+	|fi
+	|echo "Creating devices"
+	|/sbin/udevstart
+	|
+	|# workaround chicken/egg bug in mdadm and raidautorun
+	|# they do the ioctl on the not yet existing device node...
+	|for i in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 ; do
+	|  mknod -m 660 /dev/md\$i b 9 \$i
+	|done
+	|
+	EOF
+
+    # FIXME: we should only load IDE modules if we need them for booting
+    # Check for IDE modules
+    if [ -z "$interface" ]; then
+	check_ide_modules $root_dir/lib/modules/$kernel_version
+    fi
+
+    resolved_modules="$(resolve_modules $kernel_version $modules)"
+
+    # If a SCSI module is loaded, we will have a dependency on scsi_mod
+    # for kernels which don't have this built in. In that case, assume
+    # that the root file system is on a SCSI device, and also include
+    # sd_mod.
+    local have_scsi have_sd
+    case "$resolved_modules" in
+	*/scsi_mod.*)   have_scsi=1
+			;;
+	*/sd_mod.*)	have_sd=1
+			;;
+    esac
+    if [ -n "$have_scsi" -a -z "$have_sd" ]; then
+	modules="sd_mod $modules"
+	# Re-evaluate module dependencies
+	resolved_modules="$(resolve_modules $kernel_version $modules)"
+    fi
+
+    # The same reasoning goes for IDE modules
+    local have_ide have_ide_disk
+    case "$resolved_modules" in
+	*/ide-core.*)   have_ide=1
+			;;
+	*/ide-disk.*)	have_ide_disk=1
+			;;
+    esac
+    if [ -n "$have_ide" -a -z "$have_ide_disk" ]; then
+	modules="ide-disk $modules"
+	# Re-evaluate module dependencies
+	resolved_modules="$(resolve_modules $kernel_version $modules)"
+    fi
+
+    # Filter modules into fs and non-fs (driver) modules
+    # We _must not_ load filesystem modules as this breaks
+    # resume. For some weird reasons loading a filesystem module
+    # changes the internal kernel state in such a way that
+    # resume doesn't work anymore. Ask Pavel for details
+    fs_modules="$(echo "$resolved_modules" | grep -e '/kernel/fs/')"
+    drv_modules="$(echo "$resolved_modules" | grep -v -e '/kernel/fs/')"
+
+    # Copy the modules to the initrd
+    echo -ne "Driver modules:\t"
+    initrd_is_using_modules=
+    while read module params ; do
+	[ -z "$module" ] && continue
+	echo -n "${module#lib/modules/$kernel_version/} "
+	if [ ! -r $root_dir/$module ]; then
+	    oops 9 "Module $module not found."
+	    continue
+	fi
+	if ! ( cd ${root_dir:-/} ; cp -p --parents $module $tmp_mnt ) ; then
+	    oops 6 "Failed to add module $module."
+	    return
+	fi
+
+	case "$module" in
+	    */dasd_mod.*)
+		# kernel cmdline dasd parameter is placed into the environment.
+		# This is tricky. The only reliably way to check whether the
+		# dasd parameter is set is to indeed check for it within the
+		# initrd environment itself. Unfortunately the dasd module
+		# refuses to load when the dasd parameter is empty, so we
+		# need introduce an intermediate parameter which might be
+		# set to empty entirely so as not to confuse the dasd module.
+		#
+		# This checks whether the dasd parameter is present
+		cat_linuxrc <<-EOF
+		|# check for DASD parameter in /proc/cmdline
+		|for p in \$(cat /proc/cmdline) ; do
+		|  case \$p in
+		|    dasd=*)
+		|      dasd_params="\$p"
+		|      ;;
+		|  esac
+		|done
+		|mp="/$module\${dasd_params:+ dasd=\"\$dasd_params\"}"
+		|echo "Loading \${mp#/lib/modules/$kernel_version/}"	
+		|insmod \$mp
+		EOF
+		;;
+	    */ide?core.*)
+		# This checks whether an ide= parameter is present
+		cat_linuxrc <<-EOF
+		|# check for IDE parameter in /proc/cmdline
+		|for p in \$(cat /proc/cmdline) ; do
+		|  case \$p in
+		|    ide=*)
+		|      ide_params="\$ide_params \$p"
+		|      ;;
+		|    hd?=*)
+		|      ide_params="\$ide_params \$p"
+		|      ;;
+		|  esac
+		|done
+		|mp="/$module\${ide_params:+ options=\"\$ide_params\"}"
+		|echo "Loading \${mp#/lib/modules/$kernel_version/}"	
+		|insmod \$mp
+		EOF
+		;;
+	    */scsi_mod*)
+		# We may have SCSI parameters on the kernel command line,
+		# but because scsi_mod is a module, those would be ignored.
+		# Hack around this by scanning /proc/cmdline in linuxrc.
+
+		cat_linuxrc <<-EOF
+		|# check for SCSI parameters in /proc/cmdline
+		|devflags=0
+		|for p in \$(cat /proc/cmdline) ; do
+		|  case \$p in
+		|    scsi_mod.*)
+		|	extra_scsi_params="\$extra_scsi_params \${p#scsi_mod.}"
+		|	;;
+		|    scsi_reportlun2=1)
+		|	echo "scsi_reportlun2 compat: Use scsi_mod.default_dev_flags=0x20000 instead"
+		|	devflags=\$((131072+\$devflags))
+		|	;;
+		|    scsi_noreportlun=1)
+		|	echo "scsi_noreportlun compat: Use scsi_mod.default_dev_flags=0x40000 instead"
+		|	devflags=\$((262144+\$devflags))
+		|	;;
+		|    scsi_sparselun=1)
+		|	echo "scsi_sparselun compat: Use scsi_mod.default_dev_flags=0x40 instead"
+		|	devflags=\$((64+\$devflags))
+		|	;;
+		|    scsi_largelun=1)
+		|	echo "scsi_largelun compat: Use scsi_mod.default_dev_flags=0x200 instead"
+		|	devflags=\$((512+\$devflags))
+		|	;;
+		|    llun_blklst=*)
+		|	echo "llun_blklst is not supported any more"
+		|	echo "use scsi_mod.dev_flags=VENDOR:MODEL:0x240[,V:M:0x240[,...]]"
+		|	;;
+		|    max_ghost_devices=*)
+		|	echo "max_ghost_devices is not needed any more"
+		|	;;
+		|    max_sparseluns=*)
+		|	echo "max_sparseluns not supported any more"
+		|	echo "use scsi_mod.max_luns or enable the new REPORT_LUNS scsi"
+		|	echo "scanning methods; try scsi_mod.default_dev_flags=0x20000"
+		|	;;
+		|    max_luns=*|max_report_luns=*|inq_timeout=*|dev_flags=*|default_dev_flags=*)
+		|	echo "scsi_mod compat: Please use prefix: scsi_mod.\$p"
+		|	extra_scsi_params="\$extra_scsi_params \$p"
+		|      ;;
+		|  esac
+		|done
+		|if [ \$devflags != 0 ]; then 
+		|    extra_scsi_params="default_dev_flags=\$devflags \$extra_scsi_params"
+		|fi
+		|mp="/$module\${extra_scsi_params:+ $extra_scsi_params}"
+		|echo "Loading \${mp#/lib/modules/$kernel_version/}"	
+		|insmod \$mp
+		EOF
+		;;
+	    *)
+		mp="/$module${params:+ $params}"
+		cat_linuxrc <<-EOF
+		|echo "Loading ${mp#/lib/modules/$kernel_version/}"
+		|insmod $mp
+		EOF
+		;;
+	esac
+
+	initrd_is_using_modules=1
+    done < <(echo "$drv_modules")
+    echo
+
+    if [ -z "$initrd_is_using_modules" ]; then
+	echo "none"
+    fi
+
+    # Add modules which might be loaded via udev during booting
+    uld_modules=
+    for module in sd_mod osst st sr_mod sg ide-disk ide-scsi \
+	          ide-cd ide-tape ide-floppy cdrom; do
+	grep -qw $module $root_dir/lib/modules/$kernel_version/modules.dep \
+	&& uld_modules="$uld_modules $module"
+    done
+    uld_modules="$(resolve_modules $kernel_version $uld_modules)"
+
+    # Now copy the upper level driver modules
+    while read module params ; do
+	if [ ! -f $tmp_mnt/$module ]; then
+	    if ! ( cd ${root_dir:-/} ; cp -p --parents $module $tmp_mnt ) ; then
+		oops 6 "Failed to add module $module."
+		return
+	    fi
+	fi
+    done < <(echo "$uld_modules")
+
+    if [ -n "$s390_dasd_disks" ]; then
+	# We only need to activate DASDs manually if it
+	# is not done via the kernel command line
+	echo -e -n "DASDs:\t\t"
+	cat_linuxrc <<-EOF
+	|if test -z "\$dasd_params"; then
+	|    echo -n "Activating DASDs:"
+	EOF
+	s390_dasd_disk_num=0
+	for disk in $s390_dasd_disks; do
+	    set -- $(IFS=":"; echo $disk)
+	    if [ "$2" -eq 0 ]; then
+		echo -n " $1(ECKD)"
+	    else
+		echo -n " $1(DIAG)"
+	    fi
+	    cat_linuxrc <<-EOF
+	|    echo -n " $disk"
+	|    /sbin/dasd_configure $1 1 $2
+	EOF
+	    s390_dasd_disk_num=$(expr $s390_dasd_disk_num + 1)
+	done
+	echo ""
+	cat_linuxrc <<-EOF
+	|    echo " : done"
+	|fi
+	EOF
+    fi
+
+    if [ -n "$s390_zfcp_disks" ]; then
+	echo -e -n "zfcp HBAs:\t"
+	for hba in $s390_zfcp_hbas; do
+	    echo -n "$hba "
+	    cat_linuxrc <<-EOF
+	|echo "Activating zfcp host $hba"
+	|/sbin/zfcp_host_configure $hba 1
+	EOF
+	done
+	echo
+
+	echo -e "zfcp disks:\t"
+	s390_zfcp_disk_num=0
+	for disk in $s390_zfcp_disks; do
+	    s390_zfcp_disk_num=$(expr $s390_zfcp_disk_num + 1)
+	    set -- $(IFS=":"; echo $disk)
+	    echo -e "\t\t$1:$2:$3"
+	    cat_linuxrc <<-EOF
+	|echo "Activating zfcp disk $1:$2:$3"
+	|/sbin/zfcp_disk_configure $1 $2 $3 1
+	EOF
+	done
+    fi
+
+    case "$(uname -m)" in
+	s390|s390x)
+	    if [ -z "$s390_zfcp_disks" -a -z "$s390_dasd_disks" ]; then
+		echo ""
+		echo "WARNING: No boot devices found."
+		echo "Make sure to add 'dasd=<dasd-range>' to" \
+		     "the kernel command line"
+	    fi
+	    ;;
+    esac
+
+    if [ -n "$use_dhcp" ] ; then
+	cat_linuxrc <<-'EOF'
+	|case $rootdev in
+	|/dev/nfs|*:/*|"")
+	|   dhcp_mode=1 ;;
+	|esac
+	EOF
+    fi
+
+    if has_module nbd ; then
+	cat_linuxrc <<-'EOF'
+	|for o in $(cat /proc/cmdline); do
+	|  case $o in
+	|    nbdroot=*)
+	|      nbdopt=${o#nbdroot=}
+	|      nbdhost=${nbdopt%:*}
+	|      nbdopt=${nbdopt#*:}
+	|      nbdport=${nbdopt%,*}
+	|      nbdfs=${nbdopt#*,}
+	|      nbd_boot=1 ;;
+	|  esac
+	|done
+	EOF
+    fi
+
+    if has_module iscsi ; then
+	cat_linuxrc <<-'EOF'
+	|for o in $(cat /proc/cmdline); do
+	|  case $o in
+	|    DiscoveryAddress=*)
+	|      target="$o" ; iscsi_boot=1 ;;
+	|    InitiatorName=*)
+	|      initiatorname="$o" ; iscsi_boot=1 ;;
+	|  esac
+	|done
+	|# iscsi boot requires dhcp, regardless of root= format
+	|if [ -n "$iscsi_boot" ]; then
+	|  dhcp_mode=1
+	|fi
+	EOF
+    fi
+
+    if [ -n "$use_dhcp" ] ; then
+	cat_linuxrc <<-EOF
+	|# run dhcp
+	|if [ -n "\$dhcp_mode" ]; then
+	|  # ifconfig lo 127.0.0.1 netmask 255.0.0.0 broadcast 127.255.255.255 up
+	|  # portmap
+	|  echo "running dhcpcd on interface $interface"
+	|  dhcpcd -R -Y -N -t 100000000 $interface
+	|  [ -s /var/lib/dhcpcd/dhcpcd-$interface.info ] || {
+	|    echo "no response from dhcp server."
+	|    echo 256 > /proc/sys/kernel/real-root-dev
+	|    die 0
+	|  }
+	|  . /var/lib/dhcpcd/dhcpcd-$interface.info
+	|  kill -9 \$(cat /var/run/dhcpcd-$interface.pid)
+	|  if [ -n "\$DNS" ]; then
+	|    oifs="\$IFS"
+	|    IFS=","
+	|    for ns in \$DNS ; do
+	|      echo "nameserver \$ns" >> /etc/resolv.conf
+	|    done
+	|    IFS="\$oifs"
+	|    if [ -n "\$DOMAIN" ]; then
+	|	echo "search \$DOMAIN" >> /etc/resolv.conf
+	|    fi
+	|    echo 'hosts: dns' > /etc/nsswitch.conf
+	|  fi
+	|fi
+	EOF
+    fi
+
+    if [ -n "$use_ipconfig" ]; then
+	ipinterface=$(get_ip_config $interface)
+	cat_linuxrc <<-EOF
+	|# configure interface
+	|for o in \$(cat /proc/cmdline); do
+	|  case \$o in
+	|    ip=*)
+	|      ifspec=\${o#ip=};;
+	|  esac
+	|done
+	|if [ -z "\$ifspec" ]; then
+	|    # Fallback to configured interface
+	|    ifspec=$ipinterface
+	|fi
+	|if [ -n "\$ifspec" ]; then
+	|  ipconfig \$ifspec
+	|fi
+	EOF
+    fi
+
+    if has_module iscsi ; then
+	cat_linuxrc <<-'EOF'
+	|if [ -n "$iscsi_boot" ]; then
+	|  echo "Continuous=no" >> /etc/iscsi.conf
+	|  echo "ImmediateData=no" >> /etc/iscsi.conf
+	|  echo "$target" >> /etc/iscsi.conf
+	|  echo "$initiatorname" >> /etc/initiatorname.iscsi
+	|
+	|  echo "Starting iSCSI"
+	|  iscsid
+	|  usleep 5000000
+	|
+	|  # need to redo-this setting up the root dev now that the disk is present
+	|  discover_root
+	|  # clear dhcp_mode so it looks like we're disk booted...
+	|  dhcp_mode=
+	|fi
+	EOF
+    fi
+
+    if has_module nbd ; then
+        cat_linuxrc <<-'EOF'
+	| if [ -n "$nbd_boot" ]; then
+	|   echo "Diskless client using nbd server $nbdhost:$nbdport,$nbdfs"
+        |   test -b /dev/nbd0 || mknod /dev/nbd0 b 43 0
+	|   nbd-client $nbdhost $nbdport /dev/nbd0
+        |   rootdev=/dev/nbd0
+        |   if [ -z "$nbdfs" ]; then rootfstype=ext2; else rootfstype=$nbdfs; fi
+        |   sleep 4
+        | fi
+	EOF
+    fi
+
+    if [ "$rootfstype" = "nfs" ]; then
+	cat_linuxrc <<-'EOF'
+	|if [ -z "$rootdev_cmdline" ]; then
+	|  case "$ROOTPATH" in
+	|    "") ;;
+	|    *:*)
+	|	rootfstype="nfs"
+	|	rootdev="$ROOTPATH" ;;
+	|    *)
+	|	if [ -n "$DHCPSIADDR" ]; then
+	|	    rootdev="$DHCPSIADDR:$ROOTPATH"
+	|	    rootfstype="nfs"
+	|	elif [ -n "$DHCPSNAME" ]; then
+	|	    rootdev="$DHCPSNAME:$ROOTPATH"
+	|	    rootfstype="nfs"
+	|	fi ;;
+	|   esac
+	|   if [ -z "$rootdev" ]; then
+	|	echo "no local root= kernel option given and no root" \
+	|	     "server set by the dhcp server."
+	|	echo 256 > /proc/sys/kernel/real-root-dev
+	|	die 0
+	|   fi
+	|fi
+	EOF
+    fi
+
+    if [ -n "$root_dm" -o -n "$root_evms" ]; then
+	cat_linuxrc <<-'EOF'
+	|echo -n "Waiting for /dev/mapper/control to appear: "
+	|for i in 1 2 3 4 5; do
+	|    [ -e /dev/mapper/control ] && break
+	|    sleep 1
+	|    echo -n "."
+	|done
+	|if [ -e /dev/mapper/control ]; then
+	|    echo " ok"
+	|else
+	|    echo " failed"
+	|fi
+	EOF
+    fi
+
+    if [ -n "$use_udev" ] ; then
+	cat_linuxrc <<-'EOF'
+	|# Waiting for a device to appear
+	|# device node will be created by udev
+	|udev_wait_for_device() {
+	|    local root
+	|    local vg
+	|    local retval=1
+	|    local timeout=$udev_timeout
+	|    root=$1
+	|    vg=$2
+	|    if [ -n "$root" ]; then
+	|	echo -n "Waiting for device /dev/$root to appear: "
+	|	while [ $timeout -gt 0 ]; do
+	|	    if [ -e /dev/$root ]; then
+	|		echo " ok"
+	|		retval=0
+	|		break;
+	|	    fi
+	|	    sleep 1
+	|	    echo -n "."
+	|	    [ -n "$vg" ] && vgchange -a y $vg
+	|	    timeout=$(( $timeout - 1 ))
+	|	done
+	|    fi
+	|    # Rescan for LVM1
+	|    if [ -n "$vg" -a $retval -eq 1 ]; then
+	|        vgscan
+	|        vgchange -a y $vg
+	|    fi
+	|    return $retval;
+	|}
+	|
+	|# Reads the major:minor pair from a sysfs path
+	|# and converts it into a devno
+	|udev_read_devn() {
+	|    local dev;
+	|    local devn;
+	|
+	|    if [ -z "$1" ]; then
+	|	echo ""
+	|	return
+	|    fi
+	|
+	|    dev=/sys$1/dev
+	|    if [ -f $dev ]; then
+	|	local major minor devn
+	|	IFS=":" read major minor < $dev
+	|	devn=$(mkdevn $major $minor)
+	|	echo "$devn $major $minor"
+	|    else
+	|	echo ""
+	|    fi
+	|}
+	|
+	|udev_discover_resume() {
+	|    local resume
+	|    # Waits for the resume device to appear
+	|    if [ -n "$resume_mode" ]; then
+	|	resume=${resumedev#/dev/}
+	|	if udev_wait_for_device $resume; then
+	|	    path=$(/sbin/udevinfo -q path -n $resume)
+	|	    if [ $? -eq 0 -a -n "$path" ]; then
+	|		set -- $(udev_read_devn $path)
+	|		if [ -n "$1" ]; then
+	|		    devn=$1
+	|		    major=$2
+	|		    minor=$3
+	|		fi
+	|	    else
+	|		# Try major:minor number of the device node
+	|		devn=$(devnumber $resumedev)
+	|		major=$(devmajor $devn)
+	|		minor=$(devminor $devn)
+	|	    fi
+	|	    path=
+	|	    devn=
+	|       fi
+	|       if [ -n "$major" -a -n "$minor" ]; then
+	|	    echo "$major:$minor" > /sys/power/resume
+	|	    major=
+	|	    minor=
+	|	else
+	|	    echo "resume device $resumedev not found (ignoring)"
+	|       fi
+	|    fi
+	|}
+	|
+	|udev_discover_root() {
+	|    local root
+	|    case "$rootdev" in
+	|	*:*) root= ;;
+	|	/dev/nfs) root= ;;
+	|	/dev/*)	root=${rootdev#/dev/} ;;
+	|    esac
+	|    if [ -z "$root" ]; then
+	|	return 0
+	|    fi
+	|    if udev_wait_for_device $root $vg_root; then
+	|	path=$(/sbin/udevinfo -q path -n $root)
+	|	if [ $? -eq 0 -a -n "$path" ]; then
+	|	    set -- $(udev_read_devn $path)
+	|	    if [ -n "$1" ]; then
+	|	        devn=$1
+	|	        major=$2
+	|	        minor=$3
+	|	    fi
+	|	else
+	|	    # Try major:minor number of the device node
+	|	    devn=$(devnumber $rootdev)
+	|	    major=$(devmajor $devn)
+	|	    minor=$(devminor $devn)
+	|	fi
+	|    fi
+	|    if [ -n "$devn" ]; then
+	|	echo "rootfs: $entry major=$major minor=$minor" \
+	|	    "devn=$devn"
+	|	echo $devn > /proc/sys/kernel/real-root-dev
+	|	return 0
+	|    else
+	|	return 1
+	|    fi
+	|}
+	|
+	|# Default timeout is 5 seconds
+	|udev_timeout=5
+	|# Override timeout from commandline
+	|for o in $(cat /proc/cmdline); do
+	|    case $o in
+	|    udev_timeout=*)
+	|	set -- $(IFS== ; echo $o)
+	|	udev_timeout=$2
+	|	;;
+	|    esac
+	|done
+	|
+	|# wait for the resume device
+	|udev_discover_resume
+	|
+	EOF
+    fi
+
+    # Load fs modules _after_ resume
+    echo -ne "Filesystem modules:\t"
+    initrd_is_using_modules=
+    while read module params ; do
+	[ -z "$module" ] && continue
+	echo -n "${module#lib/modules/$kernel_version/} "
+	if [ ! -r $root_dir/$module ]; then
+	    oops 9 "Module $module not found."
+	    continue
+	fi
+	if ! ( cd ${root_dir:-/} ; cp -p --parents $module $tmp_mnt ) ; then
+	    oops 6 "Failed to add module $module."
+	    return
+	fi
+
+	mp="/$module${params:+ $params}"
+	cat_linuxrc <<-EOF
+	|echo "Loading ${mp#/lib/modules/$kernel_version/}"
+	|insmod $mp
+	EOF
+	initrd_is_using_modules=1
+    done < <(echo "$fs_modules")
+    echo
+
+    # And run depmod to ensure proper loading
+    map=$root_dir/boot/System.map-$kernel_version
+    if [ ! -f $map ]; then
+	map=$root_dir/boot/System.map
+    fi
+    ( cd $tmp_mnt; /sbin/depmod -b $tmp_mnt -e -F $map $kernel_version )
+
+    if [ -n "$need_raidautorun" ]; then
+	features=(${features[@]} raidautorun)
+	cat_linuxrc <<-EOF
+	|echo "raidautorun ..."
+	|raidautorun
+	|echo "done..."
+	EOF
+    fi
+
+    if [ -n "$root_lvm" ] ; then
+	# Name of the volume containing the root filesystem
+        local vg_root=${rootdev#/dev/}
+        vg_root=${vg_root%%/*}
+
+	cat_linuxrc <<-EOF
+	|#need space for lvm data
+	|mount -tramfs none /etc/lvmtab.d
+	|vgscan
+	|for o in \$(cat /proc/cmdline); do
+	|  case \$o in
+	|    root=/dev/*)
+	|	set -- \$(IFS=/ ; echo \$o)
+	|	vg_root=\$3
+	|	;;
+	|  esac
+	|done
+	|if [ -z "\$vg_root" ]; then
+	|  vg_root=$vg_root
+	|fi
+	|
+	|vgchange -a y \$vg_root
+	|umount /etc/lvmtab.d
+	EOF
+    fi
+
+    if [ -n "$root_dm" ] ; then
+	# Name of the volume containing the root filesystem
+        local vg_root=${rootdev#/dev/}
+        vg_root=${vg_root%%/*}
+	cat_linuxrc <<-EOF
+	|
+	|for o in \$(cat /proc/cmdline); do
+	|  case \$o in
+	|    root=/dev/*)
+	|       set -- \$(IFS=/ ; echo \$o)
+	|       vg_root=\$3
+	|       ;;
+	|  esac
+	|done
+	|if [ -z "\$vg_root" ]; then
+	|  vg_root=$vg_root
+	|fi
+	|
+	EOF
+    fi
+
+    if [ -n "$root_evms" ] ; then
+	cat_linuxrc <<-EOF
+	|fix_evms_root_node()
+	|    {
+	|    CURDEV=\$(devnumber \$2)
+	|    OLDDEV=\$(devnumber \$1\$2)
+	|    if [ ! -b \$1\$2 -o "\$CURDEV" -ne "\$OLDDEV" ]
+	|    then
+	|	mount -oremount,rw \$2 \$1
+	|	rm -f \$1\$2
+	|	mknod -m 640 \$1\$2 b \$(devmajor \$CURDEV) \$(devminor \$CURDEV)
+	|	mount -oremount,ro \$2 \$1
+	|    fi
+	|    }
+	|
+	|remove_evms_fstab()
+	|    {
+	|    for i in \$*
+	|    do
+	|	dmsetup remove "\$i"
+	|    done
+	|    }
+	|
+	|get_fstab_entries()
+	|    {
+	|    FSTLIST=\$(sed -n "\:^/dev/:p" <\$1 | sed -e "\:/media/:d" -e "s:/dev/::" -e "s:[   ].*::")
+	|    for i in \$FSTLIST
+	|    do
+	|	LINES=\$(dmsetup ls | sed -n "\:^\$i:p")
+	|        [ -n "\$LINES" ] && RETLIST="\$RETLIST \$i"
+	|    done
+	|    echo \$RETLIST
+	|    }
+	|
+	|create_evms_save_table()
+	|    {
+	|    TNAME=\$1
+	|    shift
+	|    COUNT=0
+	|    rm -f /table_file
+	|    for i in \$*
+	|    do
+	|	echo \$(expr \$COUNT "*" 100) 100 linear /dev/\$i 0 >> /table_file
+	|	COUNT=\$(expr \$COUNT + 1)
+	|    done
+	|    dmsetup create \$TNAME </table_file
+	|    rm -f /table_file
+	|    }
+	|
+	|/sbin/evms_activate
+	|mkdir -p /mnt
+	|mount -oro \$rootdev /mnt
+	|FSTAB_ITEMS=\$(get_fstab_entries /mnt/etc/fstab)
+	|umount /mnt
+	|dmsetup remove_all
+	|create_evms_save_table wrzlbrnft \$FSTAB_ITEMS
+	|/sbin/evms_activate
+	|dmsetup remove wrzlbrnft
+	|# set the right root device if user specified a lvm root
+	|if [ "\$(block_driver "\$rootdev")" = device-mapper ]; then
+	|    case \$rootdev in
+	|    /dev/*)
+	|	mkdir -p /mnt
+	|	mount -oro \$rootdev /mnt
+	|	fix_evms_root_node /mnt \$rootdev
+	|	remove_evms_fstab \$FSTAB_ITEMS
+	|	umount /mnt
+	|	echo \$(devnumber \$rootdev) > /proc/sys/kernel/real-root-dev ;;
+	|    *)
+	|	# hex number or major:minor pair
+	|	echo \$rootdev > /proc/sys/kernel/real-root-dev ;;
+	|    esac
+	|fi
+	EOF
+    fi
+
+    if [ -n "$use_udev" ] ; then
+	cat_linuxrc <<-'EOF'
+	|if ! udev_discover_root ; then
+	|    echo "not found -- exiting to /bin/sh"
+	|    cd /
+	|    PATH=$PATH PS1='$ ' /bin/sh -i
+	|fi
+	EOF
+    fi
+
+    if [ -n "$sysfs_root" ]; then
+	cat_linuxrc <<-'EOF'
+	|basename() {
+	|	local IFS=/
+	|
+	|	set -- $1
+	|	eval echo \${$#}
+	|}
+	|
+	|sysfs_set_root_dir() {
+	|	local entry name dir=$1 search=$2
+	|
+	|	for entry in $dir/*; do
+	|	  [ -L $entry ] && continue
+	|	  [ -d $entry ] || continue
+	|
+	|	  name=$(basename $entry)
+	|	  if [ -f $entry/dev -a $name = $search ]; then
+	|		local major minor devn
+	|		IFS=: read major minor < $entry/dev
+	|		devn=$(mkdevn $major $minor)
+	|		echo "rootfs: $entry major=$major minor=$minor" \
+	|		     "devn=$devn"
+	|		echo $devn > /proc/sys/kernel/real-root-dev
+	|		return 0
+	|	  else
+	|	    sysfs_set_root_dir $entry $search \
+	|		&& return 0
+	|	  fi
+	|	done
+	|	return 1
+	|}
+	|
+	|sysfs_set_root() {
+	|	local root=$1
+	|
+	|	sysfs_set_root_dir /sys/block $root
+	|}
+	|
+	|discover_root() {
+	|	local root
+	|	case $rootdev in
+	|	/dev/*)	root=${rootdev#/dev/} ;;
+	|	*)	
+	|	esac
+	|	if [ -n "$root" ]; then
+	|	    while :; do
+	|		case "$root" in
+	|		*/*)
+	|			root=${root%%/*}!${root#*/}
+	|			;;
+	|		*)
+	|			break
+	|			;;
+	|		esac
+	|	    done
+	|	    sysfs_set_root $root
+	|	fi
+	|}
+	|
+	|if ! discover_root ; then
+	|    if [ -n "$rootdev" ]; then
+	|	echo $rootdev > /proc/sys/kernel/real-root-dev
+	|    elif [ -n "$rootdevn" ]; then
+	|	echo $rootdevn > /proc/sys/kernel/real-root-dev
+	|    else
+	|	: # let the kernel do its internal root device scan
+	|	  # (we don't get here.)
+	|    fi
+	|fi
+	EOF
+    fi
+
+    if [ "$mkinit_type" = "ramfs" -o -n "$pivot_root" ]; then
+	cat_linuxrc <<-'EOF'
+	|if [ -z "$rootfstype" ]; then
+	|    rootfstype=$(/sbin/vol_id -t $rootdev)
+	|    [ $? -ne 0 ] && $rootfstype=
+	|    [ "$rootfstype" = "unknown" ] && $rootfstype=
+	|fi
+	|
+	|# check filesystem if possible
+	|if [ -n "$rootfstype" -a -x /bin/fsck.${rootfstype} ]; then
+	|    # fsck is unhappy without it
+	|    echo "$rootdev / $rootfstype defaults 1 1" > /etc/fstab
+	|    fsck -t $rootfstype -a $rootdev
+	|    # Return the fsck status
+	|    ROOTFS_FSCK=$?
+	|    export ROOTFS_FSCK
+	|    ROOTFS_FSTYPE=$rootfstype
+	|    export ROOTFS_FSTYPE
+	|    if [ $ROOTFS_FSCK -gt 1 -a $ROOTFS_FSCK -lt 4 ]; then
+	|        # reboot needed
+	|        echo "fsck succeeded, but reboot is required."
+	|        echo "Rebooting system."
+	|        /bin/reboot -d -f
+	|    elif [ $ROOTFS_FSCK -gt 3 ] ; then
+	|        echo "fsck failed. Mounting root device read-only."
+	|        read_write=
+	|    else
+	|        echo "fsck succeeded. Mounting root device read-write."
+	|        read_write=1
+	|    fi
+	|fi
+	EOF
+    fi
+
+    if [ -n "$use_selinux" -a -d $tmp_mnt/selinux ]; then
+	cat_linuxrc <<-'EOF'
+	|echo -n "Loading SELinux policy	"
+	|if mount -t selinuxfs none /selinux >/dev/null 2>/dev/null ; then
+	|  /sbin/load_policy /etc/security/selinux/policy.15
+	|  umount /selinux
+	|  echo "successful"
+	|else
+	|  echo "skipped"
+	|fi
+	EOF
+    fi
+
+    if [ "$mkinit_type" = "ramfs" ]; then
+	cat_linuxrc <<-'EOF'
+	|opt="-o ro"
+	|[ -n "$read_write" ] && opt="-o rw"
+	|[ "$rootfstype" = "nfs" ] && opt="${opt},nolock"
+	|
+	|# tell kernel root is /dev/ram0, prevents remount after initrd
+	|echo 256 > /proc/sys/kernel/real-root-dev
+	|# mount the actual root device below /root
+	|echo "Mounting root $rootdev"
+	|[ -n "$rootfstype" ] && opt="${opt} -t $rootfstype"
+	|if [ "$rootfstype" = "nfs" ]; then
+	|    nfsmount -o ro $rootdev /root || die 1
+	|else
+	|    mount $opt $rootdev /root || die 1
+	|fi
+	|
+	|# Look for an init binary on the root filesystem
+	|if [ -n "$init" ] ; then
+	|    if [ ! -f "/root$init" ]; then
+	|        init=
+	|    fi
+	|fi
+	|
+	|if [ -z "$init" ] ; then
+	|    for i in /sbin/init /etc/init /bin/init /bin/sh ; do
+	|        if [ ! -f "/root$i" ] ; then continue ; fi
+	|        init="$i"
+	|        break
+	|    done
+	|fi
+	|
+	|if [ -z "$init" ] ; then
+	|    echo "No init found. Try passing init= optino to the kernel."
+	|    die 1
+	|fi
+	|
+	|# Setup dynamic device nodes directory
+	|dev_on_tmpfs="yes"
+	|if [ -n "$DEV_ON_TMPFS" -a "$DEV_ON_TMPFS" != "yes" ]; then
+	|    dev_on_tmpfs=
+	|fi
+	|
+	|if [ -n "$dev_on_tmpfs" ]; then
+	|    # Create framebuffer devices
+	|    if [ -f /proc/fb ]; then
+	|        cat /proc/fb | while read fbnum fbtype; do
+	|            if [ $(($fbnum < 32)) ] ; then
+	|                [ -c /dev/fb$fbnum ] || mknod /dev/fb$fbnum c 29 $fbnum
+	|            fi
+	|        done
+	|    fi
+	|
+	|    # These links are required by devices.txt
+	|    (cd /dev; ln -s /proc/self/fd fd)
+	|    (cd /dev; ln -s fd/0 stdin; ln -s fd/1 stdout; ln -s fd/2 stderr)
+	|
+	|    # ISDN requires /dev/isdninfo
+	|    mknod /dev/isdninfo c 45 255
+	|fi
+	|
+	|# Save all events
+	|if [ -d /root/lib/klibc/events ]; then
+	|    mount -t tmpfs -o 'size=5%,mode=0755' eventfs /root/lib/klibc/events
+	|    cd /events
+	|    for ev in *; do
+	|        if [ -f "$ev" ]; then cat $ev > /root/lib/klibc/events/$ev ; fi
+	|    done
+	|fi
+	|
+	|if [ -n "$dev_on_tmpfs" ] ; then
+	|    /bin/mount -o move /dev /root/dev
+	|else
+	|    /bin/mount -o move /dev /root/lib/klibc/dev
+	|fi
+	|
+	|# Reset hotplug
+	|echo "/sbin/hotplug" > /proc/sys/kernel/hotplug
+	|
+	|# Call vendor-specific init script
+	|if [ -x /vendor_init.sh ] ; then
+	|    /vendor_init.sh
+	|fi
+	|
+	|# ready to leave
+	|cd /root
+	|umount /proc
+	|umount /sys
+	|
+	|# Export root fs information
+	|ROOTFS_BLKDEV="$rootdev"
+	|export ROOTFS_BLKDEV
+	|
+	|if [ -z "$dev_on_tmpfs" ] ; then
+	|    ROOTFS_REALDEV="/lib/klibc/$rootdev"
+	|    export ROOTFS_REALDEV
+	|fi
+	|
+	|exec /bin/run-init -c ./dev/console /root $init $runlevel
+	|echo could not exec run-init!
+	EOF
+    fi
+
+    if [ -n "$use_pivot_root" ] ; then
+	cat_linuxrc <<-'EOF'
+	|case "$rootdev" in
+	|LABEL=*|UUID=*)
+	|   pivotroot=1 ;;
+	|*)
+	|   pivotroot=$dhcp_mode ;;
+	|esac
+	|
+	|if [ -n "$pivotroot" ]; then
+	|   opt=-oro
+	|   [ -n "$read_write" ] && opt=-orw
+	|   [ -n "$dhcp_mode" ] && opt="${opt},nolock"
+	|
+	|   # tell kernel root is /dev/ram0, prevents remount after initrd
+	|   echo 256 > /proc/sys/kernel/real-root-dev
+	|   # mount the actual root device below /mnt
+	|   echo "Mounting root $rootdev"
+	|   [ -n "$rootfstype" ] && opt="${opt} -t $rootfstype"
+	|   mount $opt $rootdev /mnt || die 1
+	|
+	|   # do pivot-root call
+	|   cd /mnt
+	|   exec <lib/klibc/dev/console >lib/klibc/dev/console 2>&1
+	|   if [ -d initrd ]; then
+	|	exec pivot_root . initrd
+	|   elif [ -d mnt ]; then
+	|	pivot_root . mnt
+	|	exec /bin/umount /mnt
+	|   else
+	|	pivot_root . tmp
+	|	exec /bin/umount /tmp
+	|   fi
+	|fi
+	EOF
+    fi
+
+    cat_linuxrc <<-'EOF'
+	|die 0
+	EOF
+
+    [ ${#features[@]} -gt 0 ] \
+	&& echo -e "Including:\t${features[@]}"
+
+    splash_bin=
+    [ -x /sbin/splash.bin ] && splash_bin=/sbin/splash.bin
+    [ -x /bin/splash ] && splash_bin=/bin/splash
+    splash_image=
+    if [ -n "$splashsizes" -a -n "$splash_bin" ]; then
+	if [ -f /etc/sysconfig/bootsplash ]; then
+	    . /etc/sysconfig/bootsplash
+	fi
+
+	themes_dir=
+	if [ -d "$root_dir/etc/bootsplash/themes" ]; then
+	    themes_dir="$root_dir/etc/bootsplash/themes"
+	elif [ -d "$root_dir/usr/share/splash/themes" ]; then
+	    themes_dir="$root_dir/usr/share/splash/themes"
+	fi
+
+	echo -ne "Bootsplash:\t"
+	if [ -n "$themes_dir" -a \
+	     -d "$themes_dir/$THEME" -o -L "$themes_dir/$THEME" ]; then
+	    for size in $splashsizes; do
+		bootsplash_picture="$themes_dir/$THEME/images/bootsplash-$size.jpg"
+		cfgname="$themes_dir/$THEME/config/bootsplash-$size.cfg"
+		if [ ! -r $cfgname ] ; then
+		    echo "disabled for resolution $size"
+		elif [ ! -r $bootsplash_picture ] ; then
+		    echo "no image for resolution $size"
+		else
+		    echo -n "${splash_image:+, }$THEME ($size)"
+		    splash_image="$splash_image $cfgname"
+		fi
+	    done
+	    echo
+	else
+	    echo "no theme selected"
+	fi
+    fi
+
+    if [ "$mkinit_type" = "rd" ]; then
+        # Create a second initrd with minimal size
+
+	img_size=$(expr $(df -kP $tmp_mnt | sed '1d' | awk '{print $3}') + 2000)
+	mkdir $tmp_mnt_small
+
+	dd if=/dev/zero of=$tmp_initrd_small bs=1k count=$img_size 2>/dev/null
+	mke2fs -q -F -b 1024 -m 0 -N $image_inodes $tmp_initrd_small \
+	    2>/dev/null 1>&2
+	tune2fs -i 0 $tmp_initrd_small >/dev/null 2>&1
+
+	if ! mount -t ext2 -oloop $tmp_initrd_small $tmp_mnt_small ; then
+	    error 3 "failed to mount image"
+	fi
+	is_mounted_small=1
+	
+	rmdir $tmp_mnt_small/lost+found
+	if ! cp -a $tmp_mnt/* $tmp_mnt_small ; then
+	    error 6 "copy big image to small image failed"
+	fi
+	chown -R 0:0 $tmp_mnt
+
+	umount $tmp_mnt_small
+	is_mounted_small=
+
+	umount $tmp_mnt
+	is_mounted=
+
+	gzip -9 $tmp_initrd_small
+
+	if ! cp -f $tmp_initrd_small.gz $initrd_image ; then
+	    oops 8 "Failed to install initrd"
+	    return
+	fi
+	
+	for image in $splash_image; do
+	    $splash_bin -s -f $image >> $initrd_image
+	done
+    else
+	# Include bootsplash image
+	for image in $splash_image; do
+	    $splash_bin -s -f $image >> $tmp_mnt/bootsplash
+	done
+
+	attach_dsdt
+
+	pushd . > /dev/null 2>&1
+	cd $tmp_mnt
+	find . ! -name "*~" | cpio -H newc --create | gzip -9 > $tmp_initrd.gz
+	popd > /dev/null 2>&1
+	if ! cp -f $tmp_initrd.gz $initrd_image ; then
+	    oops 8 "Failed to install initrd"
+	    rm -rf $tmp_mnt
+	    return
+	fi
+	rm -rf $tmp_mnt
+    fi
+
+
+}
+
+###################################################################
+
+# working directories
+tmp_initrd=$work_dir/initrd
+tmp_initrd_small=${tmp_initrd}_small
+
+mounted_proc=
+if [ ! -r /proc/mounts ]; then
+  mounted_proc=/proc
+  mount -t proc proc $mounted_proc
+fi
+
+if [ -z "$rootdev" ] ; then
+  # no rootdev specified, get current root from /etc/fstab
+  while read fstab_device fstab_mountpoint fstab_type fstab_options dummy ; do
+    if [ "$fstab_mountpoint" = "/" ]; then
+      rootdev="$fstab_device"
+      rootfstype="$fstab_type"
+      break
+    fi
+  done < <( sed -e '/^[ 	]*#/d' < $root_dir/etc/fstab)
+else
+  # get type from /etc/fstab or /proc/mounts (actually not needed)
+  x1=$(cat $root_dir/etc/fstab /proc/mounts 2>/dev/null \
+       | grep -E "$rootdev[[:space:]]" | tail -n 1)
+  rootfstype=$(echo $x1 | cut -f 3 -d " ")
+fi
+
+if [ -z "$use_dhcp" ]; then
+    if [ -z "$rootdev" ] ; then
+	error 1 "No '/' mountpoint specified in $root_dir/etc/fstab"
+    fi
+else
+    rootdev=
+    rootfstype=nfs
+fi
+
+realrootdev="$rootdev"
+case "$rootdev" in
+    *:*)
+	rootdev=
+	rootfstype=nfs
+	;;
+    LABEL=*|UUID=*)
+	# get real root via fsck hack
+	realrootdev=$(fsck -N "$rootdev" \
+		      | sed -ne '2s/.* \/dev/\/dev/p' \
+		      | sed -e 's/  *//g')
+	if [ -z "$realrootdev" ] ; then
+	    error 1 "Could not expand $rootdev to real device"
+	fi
+	;;
+esac
+
+# check if the root device is an lvm device
+root_lvm=
+root_dm=
+root_evms=
+if [ -n "$realrootdev" -a -b "$root_dir/${realrootdev#/}" ] ; then
+    rootdevn=$(devnumber $root_dir/${realrootdev#/})
+
+    [ "$(block_driver "$root_dir/${realrootdev#/}")" = lvm ] \
+	&& root_lvm=1
+    [ "$(block_driver "$root_dir/${realrootdev#/}")" = device-mapper ] \
+    	&& root_dm=1
+    [ "${realrootdev:0:10}" = /dev/evms/ ] \
+    	&& root_evms=1 && root_dm=
+fi
+
+###################################################################
+
+x="$rootdev"
+[ "$rootfstype" = "nfs" ] && x="nfs-root"
+[ "$rootdev" != "$realrootdev" ] && x="$x ($realrootdev)"
+echo -e "Root device:\t$x (mounted on ${root_dir:-/} as $rootfstype)"
+
+if [ -z "$modules_set" ]; then
+    # get INITRD_MODULES from system configuration
+    . $root_dir/etc/sysconfig/kernel
+    modules="$INITRD_MODULES"
+fi
+
+###################################################################
+# add modules required by features
+if [ -n "$root_lvm" ] ; then
+    add_module lvm-mod
+fi
+
+if [ -n "$root_dm" -o -n "$root_evms" ] ; then
+    add_module dm-mod
+    add_module dm-snapshot
+fi
+
+if [ -n "$use_dhcp" ]; then
+    # dhcpd reqires the af_packet module, we include it here
+    # in case the root FS will be mounted via NFS
+    add_module af_packet
+fi
+
+case "$(uname -m)" in
+    s390|s390x)
+	# Check if zfcp or dasd modules need to be added automatically:
+	if [ -d /sys/block ]; then
+	    # Always enable all devices, hotplug is completely garbled
+	    s390_enable_dasd=1
+	    s390_enable_zfcp=1
+	    # if [ "$root_evms" ]; then
+	    #     s390_check_evms $rootdev
+	    # elif [ "$root_dm" ]; then
+	    #     s390_check_lvm2 $rootdev
+	    # else
+	    #     s390_check_dasd $rootdev
+	    #     s390_check_zfcp $rootdev
+	    # fi
+	    # Activate devices
+	    s390_dasd_sysfs
+	    s390_zfcp_sysfs
+	else
+	    echo ""
+	    echo "WARNING: sysfs not mounted on /sys."
+	    echo "Booting from zfcp will _not_ work."
+	    s390_dasd_proc
+	fi
+    ;;
+esac
+
+###################################################################
+
+exit_code=0
+
+initrd_images=( $initrd_images )
+kernel_images=( $kernel_images )
+
+boot_modules="$modules"
+echo -e "Module list:\t$boot_modules"
+for ((i=0 ; $i<${#kernel_images[@]} ; i++)); do
+    echo
+    modules="$boot_modules"
+    kernel_image=${kernel_images[$i]}
+    [ ${kernel_image:0:1} != '/' ] \
+    	&& kernel_image=$boot_dir/$kernel_image
+
+    initrd_image=${initrd_images[$i]}
+    [ ${initrd_image:0:1} != '/' ] \
+    	&& initrd_image=$boot_dir/$initrd_image
+
+    mkinitrd_kernel $kernel_image $initrd_image
+    if [ "$mkinit_type" = "rd" ]; then
+	attach_dsdt $initrd_image
+    fi
+
+    # If the current $kernel_image has a symlink without "-<version>" (e.g.
+    # "vmlinuz") pointing to it, create an "initrd" symlink for the
+    # corresponding $initrd_image.
+    if [ "$(readlink ${kernel_image%%-*})" = \
+	 "${kernel_image#$boot_dir/}" ]; then
+	rm -f $root_dir/$boot_dir/initrd
+	ln -s "${initrd_image#$boot_dir/}" $root_dir/$boot_dir/initrd
+    fi
+    cleanup
+done
+
+
+cleanup_finish
+
+if [ -e $root_dir/etc/sysconfig/bootloader ]; then
+    . $root_dir/etc/sysconfig/bootloader
+fi
+case $LOADER_TYPE in
+  lilo)
+    echo "
+Run lilo now to update the boot loader configuration."
+    ;;
+  elilo)
+    if [ -x /sbin/elilo ]; then
+      /sbin/elilo
+    else
+      echo "
+You may now have to update the elilo boot loader configuration."
+    fi
+    ;;
+  grub)
+    ;;
+  *)
+    if [ -f "$root_dir/etc/zipl.conf" ]; then
+	echo "
+initrd updated, zipl needs to update the IPL record before IPL!"
+    else
+	echo "
+You may now have to update your boot loader configuration."
+    fi
+    ;;
+esac
+
+exit $exit_code
