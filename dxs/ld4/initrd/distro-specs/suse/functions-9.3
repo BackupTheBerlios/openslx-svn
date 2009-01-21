@@ -14,15 +14,13 @@
 
 # distro specific stuff to initialize
 preinit () {
-# do nothing yet
+# do nothing here (might be needed for other versions) 
 :
 }
 postinit () {
 # for some reason the udev daemon does not create the needed device files
 udevstart
 }
-
-
 
 # udev/hotplug - auto device discovery service
 udev_hotplug () {
@@ -48,6 +46,19 @@ for i in rc3.d/K$stop$script rc5.d/K$stop$script \
 done
 }
 
+# extended system users
+extpasswd () {
+echo -e "bin:x:1:1:bin:/bin:/bin/bash\ndaemon:x:2:2:Daemon:/sbin:\
+/bin/bash\nman:x:13:62:Manual pages viewer:/var/cache/man:/bin/bash\n\
+at:x:25:25:Batch jobs daemon:/var/spool/atjobs:/bin/bash\n\
+sshd:x:71:65:SSH daemon:/var/lib/sshd:/bin/false\n\
+nobody:x:65534:65533:nobody:/var/lib/nobody:/bin/bash" \
+  >> /mnt/etc/passwd
+echo -e "bin:*:8902:0:10000::::\ndaemon:*:8902:0:10000::::\n\
+man:*:8902:0:10000::::\nat:!:13078:0:99999:7:::\n\
+sshd:!:13078:0:99999:7:::\nnobody:*:13078::::::" >> /mnt/etc/shadow
+}
+
 # group of functions for the normal runlevels - first parameter is start
 # second stop
 # function for ntp configuration
@@ -55,9 +66,11 @@ config_ntp () {
 local start="07"
 local stop="14"
 if [ -f /mnt/etc/init.d/ntp ] ; then
-  strinfile "ntp:" /mnt/etc/passwd || \
+  if ! strinfile "ntp:" /mnt/etc/passwd ; then
     echo -e "ntp:x:74:65534:NTP daemon:/var/lib/ntp:/bin/false" \
       >>/mnt/etc/passwd
+    echo -e "ntp:!:13099:0:99999:7:::" >>/mnt/etc/shadow
+  fi
   testmkd /mnt/var/lib/ntp/var/run/ntp &>/dev/null
   if [ "x$start_ntp" = "xinitial" ] ; then
     echo -e "\t# entry added by $0: $date" \

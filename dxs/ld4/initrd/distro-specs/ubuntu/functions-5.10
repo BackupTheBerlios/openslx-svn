@@ -65,6 +65,12 @@ for i in rc3.d/K$stop$script rc5.d/K$stop$script \
 done
 }
 
+# extended system users
+extpasswd () {
+echo -e "" >> /mnt/etc/passwd
+echo -e "" >> /mnt/etc/shadow
+}
+
 # group of functions for the normal runlevels - first parameter is start
 # second stop
 # function for ntp configuration

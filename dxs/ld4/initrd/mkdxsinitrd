@@ -3,7 +3,7 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-03-2006
 #		Nico Dietrich
 #		Blub
 #
@@ -356,6 +356,7 @@ mkdir -p ${INSTDIR}/var/{lib,run}
 
 # tftp client binary for configuration via file - get machine-setup per
 # tftp from dhcp (or specified other) server
+## irgendwann mal nur konditional ...
 for tftp in atftp tftp ; do
   binfinder $tftp && break
 done

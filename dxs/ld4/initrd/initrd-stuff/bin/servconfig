@@ -63,7 +63,10 @@ fi
 localization $country
 
 #######################################################################
-# setup passwd and shadow for local system users
+# setup passwd and shadow for local system users like root, bin, daemon
+# ...
+basepasswd
+extpasswd
 
 #######################################################################
 # dns and ip configuration

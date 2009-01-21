@@ -413,7 +413,7 @@ d_mkbootld close
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null
 
-bash
+#bash
 
 # post init for some distro specific
 postinit

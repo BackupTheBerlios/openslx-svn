@@ -362,6 +362,15 @@ echo "not implemented" > /tmp/ldap-done
 } 
 
 #######################################################################
+# base passwd/shadow, the standard user present in every system. All
+# other system users should be generated within the service function
+basepasswd () {
+echo -e "root:x:0:0:System Administrator:/root:/bin/bash" \
+  > /mnt/etc/passwd
+echo -e "root:"$root_pw":12958:0:10000::::" > /mnt/etc/shadow
+}
+
+#######################################################################
 # localization simply derived from $language variable set in 
 # machine-setup or other sources - mostly taken from knoppix
 localization () {
