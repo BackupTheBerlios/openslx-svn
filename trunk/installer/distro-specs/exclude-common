@@ -14,6 +14,9 @@
 + /tmp
 + /usr
 + /var
++ /lib/modules/*/misc/vmnet.o
++ /lib/modules/*/misc/vmmon.o
++ /lib/modules/*/misc/vmblock.o
 - /usr/lib/vmware/modules/*
 - /var/tmp/*
 - /etc/shadow*
