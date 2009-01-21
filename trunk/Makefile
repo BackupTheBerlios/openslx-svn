@@ -174,8 +174,9 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 \nSLX_TFTPBOOT_PATH=${SLX_TFTPBOOT_PATH}\
 \nSLX_VMWARE_PATH=${SLX_VMWARE_PATH}\n" \
 	  > $(SLX_CONFIG_PATH)/settings.default
-	@echo -e "# local setup for openslx (overrides settings.default)\n" \
-	  > $(SLX_CONFIG_PATH)/settings.local
+	@test -e $(SLX_CONFIG_PATH)/settings.local || \
+	  echo -e "# local setup for openslx (overrides settings.default)\n" \
+	    > $(SLX_CONFIG_PATH)/settings.local
 
 	@# create slxversion script:
 	@OPENSLX_VERSION_SVNREV=$$(svnversion) . VERSIONS; \
