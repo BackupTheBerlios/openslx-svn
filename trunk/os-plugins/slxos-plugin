@@ -1,0 +1,246 @@
+#! /usr/bin/perl
+# -----------------------------------------------------------------------------
+# Copyright (c) 2007 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+use strict;
+use warnings;
+
+my $abstract = q[
+slxos-plugin
+    OpenSLX-script to install/remove plugin modules into/from a vendor-OS.
+];
+
+# add the folder this script lives in and the lib-folder to perl's
+# search path for modules:
+use FindBin;
+use lib "$FindBin::RealBin";
+use lib "$FindBin::RealBin/../lib";
+
+use lib "$FindBin::RealBin/../config-db";
+# development path to config-db
+
+use Getopt::Long qw(:config pass_through);
+use Pod::Usage;
+
+use OpenSLX::Basics;
+use OpenSLX::OSPlugin::Engine;
+
+my ($helpReq, $manReq, $verbose, $versionReq,);
+
+GetOptions(
+	'help|?'  => \$helpReq,
+	'man'     => \$manReq,
+	'verbose' => \$verbose,
+	'version' => \$versionReq,
+  )
+  or pod2usage(2);
+pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
+if ($manReq) {
+	$ENV{LANG} = 'en_EN';
+	# avoid dubious problem with perldoc in combination with UTF-8 that
+	# leads to strange dashes and single-quotes being used
+	pod2usage(-verbose => 2);
+}
+if ($versionReq) {
+	system('slxversion');
+	exit 1;
+}
+
+openslxInit();
+
+my $action = shift @ARGV;
+
+if ($action =~ m[^list-av]i) {
+	my @pluginFolders = glob("$openslxConfig{'base-path'}/lib/plugins/*");
+	print _tr("List of available plugins:\n");
+	print join(
+		'', 
+		map { "\t$_\n" } OpenSLX::OSPlugin::Engine->getAvailablePlugins()
+	);
+} elsif ($action =~ m[^install]i) {
+	if (scalar(@ARGV) != 2) {
+		print STDERR _tr(
+			"You need to specify exactly one plugin-name and one vendor-os!\n"
+		);
+		pod2usage(2);
+	}
+	my $pluginName   = shift @ARGV;
+	my $vendorOSName = shift @ARGV;
+
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+
+	# create OSPlugin-engine for given plugin and vendor-OS and start it:
+	my $engine = OpenSLX::OSPlugin::Engine->new;
+	$engine->initialize($pluginName, $vendorOSName);
+	if (!-e $engine->{'plugin-path'}) {
+		die _tr("plugin '%s' doesn't exist, giving up!\n",
+			$engine->{'plugin-path'});
+	}
+	if (!-e $engine->{'vendor-os-path'}) {
+		die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
+			$engine->{'vendor-os-path'});
+	}
+	$engine->installPlugin();
+} elsif ($action =~ m[^remove]i) {
+	if (scalar(@ARGV) != 2) {
+		print STDERR _tr(
+			"You need to specify exactly one plugin-name and one vendor-os!\n"
+		);
+		pod2usage(2);
+	}
+	my $pluginName   = shift @ARGV;
+	my $vendorOSName = shift @ARGV;
+
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+
+	# create OSPlugin-engine for given plugin and vendor-OS and start it:
+	my $engine = OpenSLX::OSPlugin::Engine->new;
+	$engine->initialize($pluginName, $vendorOSName);
+	if (!-e $engine->{'plugin-path'}) {
+		die _tr("plugin '%s' doesn't exist, giving up!\n",
+			$engine->{'plugin-path'});
+	}
+	if (!-e $engine->{'vendor-os-path'}) {
+		die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
+			$engine->{'vendor-os-path'});
+	}
+	$engine->removePlugin();
+} else {
+	print STDERR _tr(
+		"You need to specify exactly one action:
+	install
+	list-available
+	remove
+Try '%s --help' for more info.\n", $0
+	);
+}
+
+=head1 NAME
+
+slxos-plugin - OpenSLX-script to install/remove an OS-plugin into/from an 
+installed vendor-OS.
+
+=head1 SYNOPSIS
+
+slxos-plugin [options] <action>
+
+=head3 Options
+
+    --help          brief help message
+    --man           show full documentation
+    --verbose       show more information during execution
+    --version       show version
+
+=head3 Actions
+
+=over 8
+
+=item B<<     install <plugin-name> <vendor-OS-name> >>
+
+installs the OS-plugin with the given name into the specified vendor-OS
+
+=item B<<     list-available >>
+
+list all available OS-plugins
+
+=item B<<     remove <plugin-name> <vendor-OS-name> >>
+
+removes the OS-plugin with the given name from the specified vendor-OS
+
+=back
+
+=head1 DESCRIPTION
+
+B<slxos-plugin> installs or removes specific functionality extensions into/from
+an installed vendor-OS. That extension can be something rather simple (like
+a boot-splash) or something rather complicated (e.g. the automatic detection,
+installation and activation of the graphics driver most appropriate for the
+booting client).
+
+Installation of any plugin will result in some files being added to the 
+vendor-OS (they will live in /opt/openslx/plugins/<plugin-name>/). These files
+can be accessed by the booting client.in order to integrate the required
+functionality into the system.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--help>
+
+Prints a brief help message and exits.
+
+=item B<--man>
+
+Prints the manual page and exits.
+
+=item B<--verbose>
+
+Prints more information during execution of any action.
+
+=item B<--version>
+
+Prints the version and exits.
+
+=back
+
+=head1 EXAMPLES
+
+=over 8
+
+=head3 Installing a Plugin
+
+=item B<<     slxos-plugin install Example suse-10.2 >>
+
+installs the plugin named 'Example' into the installed vendor-OS 'suse-10.2'.
+
+=back
+
+=head3 Removing a Plugin
+
+=over 8
+
+=item B<<     slxos-plugin remove Example suse-10.2 >>
+
+removes the plugin named 'Example' from the installed vendor-OS 'suse-10.2'.
+
+=back
+
+=head1 SEE ALSO
+
+slxsettings, slxos-setup, slxconfig, slxconfig-demuxer
+
+=head1 GENERAL OPENSLX OPTIONS
+
+Being a part of OpenSLX, this script supports several other options
+which can be used to overrule the OpenSLX settings:
+
+    --db-name=<string>         name of database
+    --db-spec=<string>         full DBI-specification of database
+    --db-type=<string>         type of database to connect to
+    --locale=<string>          locale to use for translations
+    --logfile=<string>         file to write logging output to
+    --private-path=<string>    path to private data
+    --public-path=<string>     path to public (client-accesible) data
+    --temp-path=<string>       path to temporary data
+    --verbose-level=<int>      level of logging verbosity (0-3)
+
+Please refer to the C<slxsettings>-manpage for a more detailed description
+of these options.
+
+=cut
+
