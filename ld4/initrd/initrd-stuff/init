@@ -187,12 +187,12 @@ ipsetup 127.0.0.1 255.0.0.0 0.0.0.0 127.255.255.255 lo
 # analyze ip information from the kernel command line and put parts
 # of it into several variables
 if [ -n "$IPINFO" ] ; then
-  IP=`echo $IPINFO|sed -e "s,:.*,,"`
-  SERVER=`echo $IPINFO|sed -e "s;[0-9\.]\{3,\}:;;" -e "s,:.*,,"`
-  GW=`echo $IPINFO|sed -e "s;[0-9\.]\{3,\}:[0-9\.]\{3,\}:;;" -e "s,:.*,,"`
+  IP=`echo $IPINFO|sed -e "s/:.*//"`
+  SERVER=`echo $IPINFO|sed -e "s/[0-9\.]\{3,\}://;s/:.*//"`
+  GW=`echo $IPINFO|sed -e "s/[0-9\.]\{3,\}:[0-9\.]\{3,\}://;s/:.*//"`
   # remove last colon after netmask if it was left there ...
-  IPINFO=`echo $IPINFO|sed -e "s,:$,,"`
-  NM=`echo $IPINFO|sed -e "s,.*:,,"`
+  IPINFO=`echo $IPINFO|sed -e "s/:$//"`
+  NM=`echo $IPINFO|sed -e "s/.*://"`
   echo -e "# ip configuration written by $0 script\nclientip=$IP\n\
 sub_netmask=$NM\ngateway=$GW\nserverip=$SERVER" \
     >>/etc/machine-setup
@@ -368,7 +368,7 @@ else
   # run some specific stuff !?
 fi
 # script for stuff to execute during early bootup
-d_mkbootld init
+d_mkrlscript init boot.ld "Running post configuration required by init"
 echo "fs complete" >/tmp/fscmpl
 
 # write debug file information after filesystem setup completed
@@ -420,13 +420,11 @@ and list the modules loaded until\n  now."
 waitfor /tmp/svcfg 20000 || error "  For some reason the software config \
 of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
-# close runlevel script for stuff to execute during early bootup
-d_mkbootld close
 # IP configuration is made and should not be updated automatically, udevd
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null
 
-bash
+[ $DEBUGLEVEL -gt 1 ] && sh
 
 # post init for some distro specific
 postinit
@@ -442,6 +440,9 @@ failed for some reason. Some\n  modprobe still active!?"
 # check for inittab file
 test -f /mnt/etc/inittab || error "  The file /etc/inittab does not exist or \
 is no regular one. It is needed\n  for the bootup procedure to follow."
+# close runlevel script for stuff to execute during early bootup
+d_mkrlscript close boot.ld ""
+# preparations to leave initrd - umounting ...
 umount -n /sys || error "  Unmount of the kernel sys directory \
 failed for some\nreason.  You will get some error messages that some files \
 could not be\n  removed." nonfatal

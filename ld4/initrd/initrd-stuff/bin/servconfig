@@ -4,7 +4,7 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 25-03-2006
 #		Blabla
 #		Blub
 #
@@ -54,7 +54,7 @@ data via dhcp until now ..." nonfatal
 . /etc/machine-setup
 # hack for replacing variables ($serverip, $clientip, $host_name) in 
 # machine-setup
-sed -e "s/\$serverip/$serverip/" -e "s/\$clientip/$clientip/" \
+sed -e "s/\$serverip/$serverip/;s/\$clientip/$clientip/" \
   /etc/machine-setup > /etc/machine-setup.new
 cp /etc/machine-setup.new /etc/machine-setup
 . /etc/machine-setup
@@ -191,6 +191,15 @@ config_snmp 24 02
 
 # create needed directories and files
 if [ "x$vmware" != "x" ] || [ "x$vmware" != "xno" ] ; then
+  # in the future other types of sources besides NFS should be supported
+  mount -t nfs -o ro,nolock,intr,nodev,soft,timeo=2,nosuid \
+    ${imgsrv} /mnt/${vmdir} &
+  # generate a runlevel script
+  d_mkrlscript init vmware-prep "Starting preparation of vmware environment"
+  sed "s,^#.*,,;/^$/d;s,^,\t," /etc/vmware-prep >> \
+    /mnt/etc/${D_INITDIR}/vmware-prep
+  d_mkrlscript close vmware-prep ""
+  chmod u+x /mnt/etc/${D_INITDIR}/vmware-prep
   config_vmware
   for i in /var/lib/vmware /etc/vmware/vmnet1 /etc/vmware/vmnet8 \
            /var/run/vmware ; do

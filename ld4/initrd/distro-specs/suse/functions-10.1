@@ -65,11 +65,15 @@ local start="05"
 local stop="18"
 if [ "x$start_dreshal" = "xyes" ]; then
   if [ -f /mnt/etc/init.d/dbus ] ; then
-  strinfile "messagebus:" /mnt/etc/passwd || \
-    echo "messagebus:x:100:101:User for D-BUS:/var/run/dbus:/bin/false" \
-      >> /mnt/etc/passwd
+    strinfile "messagebus:" /mnt/etc/passwd || \
+      echo "messagebus:x:100:101:User for D-BUS:/var/run/dbus:/bin/false" \
+        >> /mnt/etc/passwd
+    strinfile "messagebus:" /mnt/etc/group || \
+      echo "messagebus:!:101:" >> /mnt/etc/group
     testmkd /mnt/var/run/dbus
-    # chown 100:101 /mnt/var/run/dbus
+    # set permissions with userid
+    echo -e "\tchown messagebus:messagebus /var/run/dbus 2>/dev/null" \
+      >>/mnt/etc/${D_INITDIR}/boot.ld
     rllinker "dbus" "$start" "$stop"
   fi
   if [ -f /mnt/etc/init.d/resmgr ] ; then
@@ -82,6 +86,12 @@ if [ "x$start_dreshal" = "xyes" ]; then
     strinfile "haldaemon:" /mnt/etc/passwd || \
       echo "haldaemon:x:105:103:User for haldaemon:/var/run/hal:/bin/false" \
         >> /mnt/etc/passwd
+    strinfile "haldaemon:" /mnt/etc/group || \
+      echo "haldaemon:!:103:" >> /mnt/etc/group
+    testmkd /mnt/var/run/hal
+    # set permissions with userid
+    echo -e "\tchown haldaemon:haldaemon /var/run/hal 2>/dev/null" \
+      >>/mnt/etc/${D_INITDIR}/boot.ld
     start="0"`expr $start + 1`
     stop="0"`expr $start - 1`
     rllinker "haldaemon" "$start" "$stop"

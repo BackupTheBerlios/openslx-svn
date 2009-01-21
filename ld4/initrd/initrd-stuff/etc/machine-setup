@@ -85,14 +85,14 @@ netbios_workgroup="dxs-network"
 # automounter home (/local_dir - top level directories only) and source 
 # (server:/path)
 automnt_dir="/home"
-automnt_src="10.8.4.254:/home"
+automnt_src="$serverip:/home"
 
 # scratch space on server
-scratch="132.230.4.71:/dxs/tmp"
+scratch="$serverip:/dxs/tmp"
 
 # configure and start vmware services
-vmware="yes"
-imgsrv="132.230.4.71:/dxs/vmware"
+vmware="no"
+imgsrv="$serverip:/dxs/vmware"
 
 # kind of X11 display manager to run 
 start_xdmcp="xdm"

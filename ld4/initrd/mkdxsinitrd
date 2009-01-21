@@ -59,16 +59,17 @@ usage()
 # replaces which to find executables inside ROOTDIR
 binfinder()
 {
-  local PROGRAM="$1"
-  local RET=1
-  for ELEMENT in bin sbin usr/bin usr/sbin usr/local/bin usr/bin/X11; do
-    if [ -f "${ROOTDIR}/$ELEMENT/$PROGRAM" ] && [ -x "${ROOTDIR}/$ELEMENT/$PROGRAM" ]; then
-      printf '%s\n' "${ROOTDIR}/$ELEMENT/$PROGRAM"
-      RET=0
-      break
-    fi
-  done
-  return "$RET"  
+local PROGRAM="$1"
+local RET=1
+for ELEMENT in bin sbin usr/bin usr/sbin usr/local/bin usr/bin/X11; do
+  if [ -f "${ROOTDIR}/$ELEMENT/$PROGRAM" ] && \
+     [ -x "${ROOTDIR}/$ELEMENT/$PROGRAM" ]; then
+    printf '%s\n' "${ROOTDIR}/$ELEMENT/$PROGRAM"
+    RET=0
+    break
+  fi
+done
+return "$RET"  
 }
 
 # copy some binary to given destination. Takes binary in $1 and 
@@ -108,13 +109,11 @@ else
   elif [ -L initrd-stuff/${FILENAME} ] ; then
     cp -a initrd-stuff/${FILENAME} ${INSTDIR}/${FILENAME%/*}
   else
-    sed -e "s,@@@INSTDIR@@@,${INSTDIR},g" \
+    sed -e "s,@@@INSTDIR@@@,${INSTDIR},g;s,@@@KERNVER@@@,${KERNVER},g" \
+        -e "s,@@@DISTRO@@@,${DISTRO},g;s,@@@NETIF@@@,${NET_IF},g" \
         -e "s,@@@NWMODULES@@@,${NWMODULES},g" \
-        -e "s,@@@KERNVER@@@,${KERNVER},g" \
         -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
         -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
-        -e "s,@@@DISTRO@@@,${DISTRO},g" \
-        -e "s,@@@NETIF@@@,${NET_IF},g" \
 	-e "/^# .*/d" \
           initrd-stuff/${FILENAME} >> ${INSTDIR}/${FILENAME}
   fi
@@ -124,7 +123,6 @@ fi
 # this function incrementally concats and copies distro-specific functions, 
 # configuration variables and files
 copy_distro_stuff() {
-
   # first insert dependencies
   case $1 in
     suse)
@@ -152,80 +150,53 @@ copy_distro_stuff() {
   cat distro-specs/$1/functions-$2 >>${INSTDIR}/etc/distro-functions
   # would be cool not to copy .svn here ...
   cp -a distro-specs/$1/files-$2 ${INSTDIR}/etc/sysconfig/files 2>/dev/null
+  # ... so remove them afterwards ...
+  find ${INSTDIR}/etc/sysconfig/files \
+    -regex ".*/\..*" -exec rm -rf {} 2>/dev/null \;
 }
 
 #########################################################################
 # End of function declaration
 
 while getopts :hgk:i:r:o:s:f:n:Sut:d:v:I:V:a: a ; do
-    case $a in
-	\:|\?)	case $OPTARG in
-		k)  echo "-k requires kernel version parameter"
-		    ;;
-		i)  echo "-i requires initrd path parameter"
-		    ;;
-                f)  echo "-f requires file system module list parameter"
-		    ;;
-                n)  echo "-n requires network module list parameter"
-		    ;;
-		r)  echo "-r requires root dir parameter"
-		    ;;
-		s)  echo "-s requires image size(s)"
-		    ;;
-		t)  echo "-t requires tmp dir parameter"
-		    ;;
-                d)  echo "-d requires linux distribution name"
-                    ;;
-                v)  echo "-v requires linux distribution version"
-                    ;;
-		I)  echo "-I requires network interface parameter"
-		    ;;
-		a)  echo "-a requires a DSDT parameter"
-		    ;;
-		V)  echo "-V requires an executable to run inside linuxrc"
-		    ;;
-		*)  echo "Unknown option: -$OPTARG"
-		    echo "Try mkinitrd -h"
-		    ;;
-	    esac
-	    exit 1
-	    ;;
-	g)  use_glibc=1
-	    ;;
-	k)  KERNVER=$OPTARG
-	    ;;
-	i)  INITRD_PATH=$OPTARG
-	    ;;
-	f)  FSMODULES=$OPTARG
-	    ;;
-	n)  NWMODULES=$OPTARG
-	    ;;
-	r)  ROOTDIR=$OPTARG
-	    ;;
-	s)  SPLASH=$OPTARG
-	    ;;
-	t)  INSTDIR=$OPTARG
-	    ;;
-        d)  DISTRO=$OPTARG
-            ;;
-        v)  DISTRO_VER=$OPTARG
-            ;;
- 	I)  NET_IF=$OPTARG
-	    ;;
-	a)  acpi_dsdt="$OPTARG"
-	    ;;
-	S)  use_selinux=1
-	    ;;
-	V)  vendor_init_script="$OPTARG"
-	    ;;
-	R)  mkinit_type="rd"
-	    ;;
-	u)  sysfs_root=1
+  case $a in
+    \:|\?) 
+    case $OPTARG in
+      k)  echo "-k requires kernel version parameter";;
+      i)  echo "-i requires initrd path parameter";;
+      f)  echo "-f requires file system module list parameter";;
+      n)  echo "-n requires network module list parameter";;
+      r)  echo "-r requires root dir parameter";;
+      s)  echo "-s requires image size(s)";;
+      t)  echo "-t requires tmp dir parameter";;
+      d)  echo "-d requires linux distribution name";;
+      v)  echo "-v requires linux distribution version";;
+      I)  echo "-I requires network interface parameter";;
+      V)  echo "-V requires an executable to run inside linuxrc";;
+      *)  echo "Unknown option: -$OPTARG"
+          echo "Try mkinitrd -h";;
+    esac
+    exit 1
+    ;;
+    g)  use_glibc=1;;
+    k)  KERNVER=$OPTARG;;
+    i)  INITRD_PATH=$OPTARG ;;
+    f)  FSMODULES=$OPTARG;;
+    n)  NWMODULES=$OPTARG ;;
+    r)  ROOTDIR=$OPTARG;;
+    s)  SPLASH=$OPTARG;;
+    t)  INSTDIR=$OPTARG;;
+    d)  DISTRO=$OPTARG;;
+    v)  DISTRO_VER=$OPTARG;;
+    I)  NET_IF=$OPTARG;;
+    a)  acpi_dsdt="$OPTARG";;
+    S)  use_selinux=1;;
+    V)  vendor_init_script="$OPTARG";;
+    u)  sysfs_root=1
 	    use_udev=
 	    ;;
-	h)  usage
-	    ;;
-    esac
+    h)  usage;;
+  esac
 done
 shift $(expr $OPTIND - 1)
 
@@ -257,7 +228,8 @@ if [ -z "${DISTRO}" ] ; then
     DISTRO=debian
     DISTRO_VER=`cat ${ROOTDIR}/etc/debian_version`
   else
-    echo "Could not detect client distribution type and version. Please specify as command line argument (-d <distro-name> -v <distro-version)"
+    echo "Could not detect client distribution type and version. Please \
+specify\nas command line argument (-d <distro-name> -v <distro-version)"
     exit 1;
   fi  
 fi
@@ -313,13 +285,11 @@ cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
 
 # an dieser stelle sollte jetzt sichergestellt sein, dass sowohl DISTRO als auch DISTRO_VER eindeutig gesetzt sind!
 
-
-
 copy_distro_stuff ${DISTRO} ${DISTRO_VER}
 
 # devices needed rather early (copied from /tmp to /dev in init)
-mknod ${INSTDIR}/tmp/console c 5 1 #&>/dev/null
-mknod ${INSTDIR}/tmp/null c 1 3 #&>/dev/null
+mknod ${INSTDIR}/tmp/console c 5 1 &>/dev/null
+mknod ${INSTDIR}/tmp/null c 1 3 &>/dev/null
 mknod ${INSTDIR}/tmp/kmsg c 1 11 &>/dev/null
 
 #if no klibc - klibc shell seems not to have enough functionality :-(
@@ -375,13 +345,6 @@ for bbins in udev udevd udevstart
   cobi ${bbins} bin &>/dev/null || echo "Program ${bbins} not found"
 done
 
-# in suse 9.3 it could be better to use udev.static etc
-#for bbins in udev udevd udevstart
-#do
-#  cobi ${bbins}.static bin || echo "Program ${bbins}.static not found"
-#  ln -s /bin/${bbins}.static ${INSTDIR}/bin/${bbins}
-#done
-
 # if nfs
 mkdir -p ${INSTDIR}/var/lib/nfs/state
 
@@ -407,7 +370,8 @@ case "${DISTRO}" in
 esac
 
 # add needed libraries depending on choosen binaries
-for lib in `ldd /tmp/dxs-instrd/bin/* 2>/dev/null | sed -e "s,tls,," -e "s,i686/cmov,," \
+for lib in `ldd /tmp/dxs-instrd/bin/* 2>/dev/null | \
+  sed -e "s,tls,,;s,i686/cmov,," \
   -ne 's:\t\(.* => \)\?\(/.*\) (0x[0-9a-f]*):\2:p' | sort -u` ; do
   baselib=`basename ${lib}`
   test -e  ${INSTDIR}/lib/${baselib} || \

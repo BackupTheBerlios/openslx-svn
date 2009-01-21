@@ -30,15 +30,11 @@ for i in rc3.d/K$stop$script rc5.d/K$stop$script \
 done
 }
 
-# extended system users
-extpasswd () {
-echo -e "daemon:x:1:1:daemon:/usr/sbin:/bin/sh\nbin:x:2:2:bin:/bin:\n\
-/bin/sh\nsys:x:3:3:sys:/dev:/bin/sh\nman:x:6:12:man:/var/cache/man:/bin/sh\n\
-sshd:x:100:65534::/var/run/sshd:/bin/false\nnobody:x:65534:65534:nobody:\n\
-/nonexistent:/bin/sh" >> /mnt/etc/passwd
-echo -e "daemon:*:13021:0:99999:7:::\nbin:*:13021:0:99999:7:::\n\
-sys:*:13021:0:99999:7:::\nman:*:13021:0:99999:7:::sshd:!:13021:0:99999:7:::\n\
-nobody:*:13021:0:99999:7:::" >> /mnt/etc/shadow
+# make a runlevel script
+d_mkrlscript () {
+local switch=$1
+local name=$2
+local info=$3
 }
 
 # group of functions for the normal runlevels - first parameter is start
