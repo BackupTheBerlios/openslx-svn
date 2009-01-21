@@ -1,17 +1,14 @@
-# Description:  configuration script for Ubuntu V5.10 to configure
+# Description:  configuration script for Gentoo V2005.1 to configure
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 30-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 28-05-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
 # Version:      0.0.2b
 
-# distro specific stuff to initialize
-preinit () {
-  :
-}
+# empty functions are defined at the beginning of /etc/functions
 
 postinit () {
 # rm -rf /mnt/etc/runlevels/default/*
@@ -28,7 +25,7 @@ echo -e "# changes made to this file by $0 (initrd from $date)" \
 config_rc_entry "KEYMAP" "${KEYTABLE}"
 }
 
-# udev service - not checked!
+# udev service - not verified!
 udev_hotplug () {
 echo "Starting udev"
 ln -s /bin/udevd /bin/udevstart && udevstart &

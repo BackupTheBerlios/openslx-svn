@@ -2,12 +2,32 @@
 #		linux diskless clients (included by init, hwautocfg,
 #		servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 30-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 28-05-2006
 #	 	Felix Endres, 30-04-2006
+#		Tobias Maier
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
 # Version:      0.4.2d
+
+#######################################################################
+# set of empty dummy functions (loaded before real functions in the 
+# distro specific files - to have no undeclared function in init, serv-
+# config, hwautocfg, ...
+
+# distro specific funtion called at the beginning of init script
+preinit () {
+  :
+}
+# distro specific funtion called at the end of init script
+postinit () {
+  :
+}
+# distro specific general function called from servconfig script
+config_distro () {
+  :
+}
+
 
 #######################################################################
 # generate events with the sysfs trigger

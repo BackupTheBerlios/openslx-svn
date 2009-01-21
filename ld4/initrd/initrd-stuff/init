@@ -2,11 +2,11 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 28-05-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.4h
+# Version:      0.2.4i
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -154,10 +154,6 @@ nfsroot=\"${NFSROOT}\"\n" >> /etc/machine-setup
       VCI=${opts#vci=};;
   esac
 done
-# load block device driver if needed
-if [ -n "${NBD}" ] ; then
-  modprobe ${MODPRV} ${NBD} || error "$init_errnbd"
-fi
 # check if at least one type of IP configuration is availabe
 if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
   echo -e "# You did not specify any advanced configuration mode for your \
@@ -238,6 +234,9 @@ fi
 
 # if root filesystem should be imported via (d) network block device 
 if [ -n "${NBD}" ] ; then
+  # load block device driver if needed
+  modprobe ${MODPRV} ${NBD} || error "$init_errnbd"
+  # get settings for nbd-client
   nbdhost=${NBDOPT%:*}
   nbdopt=${NBDOPT#*:}
   nbdport=${nbdopt%,*}
