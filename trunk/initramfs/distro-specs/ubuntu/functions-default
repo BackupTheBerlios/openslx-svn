@@ -64,7 +64,6 @@ config_distro () {
 udev_hotplug () {
   local result=0
   [ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "$df_errhotpl" nonfatal
-  echo "Enabling hotplug/udev"
   udevstart || result=1
   udevd -d || result=1
   return $result

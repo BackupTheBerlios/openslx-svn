@@ -1,13 +1,11 @@
-# Description:  configuration functions for SuSE 10.0 which differ from
-#               functions defined in general SuSE base settings ... General
-#               changes should be done there, version specific changes for
-#               the 10.0 here.
+# OpenSLX configuration functions for SuSE 10.0 which differ from functions
+# defined in general SuSE base settings ... General changes should be done
+# there, version specific changes for the 10.0 here.
 #
-# Author(s):    Dirk von Suchodoletz <dvs@openslx.com>, 28-10-2006
+# Dirk von Suchodoletz <dvs@openslx.com>, 28-10-2006
 #
-# Copyright:    (c) 2006 - RZ Universitaet Freiburg
-# 
-# Version:      0.3.0a
+# (c) 2006 - RZ Universitaet Freiburg
+# (c) 2006 - OpenSLX.ORG Project
 
 # udev service
 udev_hotplug () {

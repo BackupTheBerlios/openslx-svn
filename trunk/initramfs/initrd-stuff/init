@@ -65,8 +65,8 @@ NFSRO="nfs"
 preinit
 [ -x /bin/preinit.local ] && /bin/preinit.local
 
-# start device auto discovery service - distro specific function
-udev_hotplug
+# start device auto discovery service - busybox or distro specific function
+runudev
 
 # switch off the several configuration methods, will be switched on
 # according to kernel commandline settings
@@ -301,6 +301,7 @@ fi
 if [ -n "${nbdmod}" ] ; then
   # load block device driver if needed
   modprobe ${MODPRV} ${nbdmod} || error "$init_errnbd"
+  [ -x /bin/mdev ] && mdev -s
   [ -z "$nbdrfst" ] && nbdrfst=ext2
   nbdhost=$(checkip $nbdhost)
   echo "Diskless client using ${nbdmod} on $nbdhost:$nbdport with $nbdrfst"
@@ -311,7 +312,7 @@ if [ -n "${nbdmod}" ] ; then
     # network block device present in standard kernel
     nbd)
       RDEV=/dev/nbd0
-      waitfor "${RDEV}" 30000 || error "$init_nbddev"
+      waitfor "${RDEV}" 20000 || error "$init_nbddev"
       while ! nbd-client $nbdhost $nbdport ${RDEV} ; do
         usleep 10
       done
@@ -342,6 +343,7 @@ if [ -n "${nbdmod}" ] ; then
     modprobe ${MODPRV} cowloop || {
       error "$init_loadcow" nonfatal
       COWLOOP=""; }
+    [ -x /bin/mdev ] && mdev -s
   fi
   if [ -n "${COWLOOP}" ] ; then
     if [ -n "${UNIONFS}" ] ; then

@@ -32,6 +32,7 @@ udev_hotplug () {
 :
 }
 
+
 #############################################################################
 # generate events with the sysfs trigger
 trigger_device_events () {
@@ -58,6 +59,29 @@ trigger_device_events () {
   for i in $first $default $last; do
     echo "add" > "$i"
   done
+}
+
+#############################################################################
+# mini udev of busybox or distro specific udev_hotplug
+runudev () {
+if [ -x /bin/mdev ] ; then
+  # simple shell daemon which runs for 100 seconds and stops if hwautocfg is
+  # completed
+  #miniudev () {
+  #  local maxwait=100
+  #  local count=0
+  #  while [ ! -e /tmp/hwcfg ] ; do
+      mdev -s
+  #    sleep 1
+  #    count=`expr $count + 1`
+  #    [ $count -gt $maxwait ] && return 0
+  #  done
+  #}
+  #miniudev &
+else
+  udev_hotplug
+fi
+echo "Started udev"
 }
 
 #############################################################################

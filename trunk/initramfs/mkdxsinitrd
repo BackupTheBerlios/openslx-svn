@@ -569,19 +569,18 @@ else
     binfinder $dhcp && break;
   done
   cobi $dhcp bin
+
+  # hotplug/udev type and related stuff
+  cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
+
+  # type of hotplug/udev/dev (for etc directories see above!!)
+  for bbins in udev udevd udevstart udevtrigger udevsend ; do
+    cobi ${bbins} bin &>/dev/null || \
+    echo "Program ${bbins} not found; could be most probably ignored"
+  done
 fi
 
 mkdir -p ${INSTDIR}/var/{lib,run}
-
-# hotplug/udev type and related stuff
-cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
-
-# type of hotplug/udev/dev (for etc directories see above!!)
-for bbins in udev udevd udevstart udevtrigger udevsend
-  do
-  cobi ${bbins} bin &>/dev/null || \
-  echo "Program ${bbins} not found; could be most probably ignored"
-done
 
 # if nfs is used as clients root filesystem
 cobi portmap bin

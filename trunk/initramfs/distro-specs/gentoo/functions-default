@@ -1,12 +1,10 @@
-# Description:  configuration script for Gentoo V2005.1 to configure
-#               linux diskless clients (executed within initial ramdisk 
-#               after genconfig) 
+# configuration script for Gentoo linux distribution to configure OpenSLX
+# linux diskless clients (executed within initialramfs after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-07-2006
+# Dirk von Suchodoletz <dirk@goe.net>, 08-07-2006
 #
-# Copyright:    (c) 2006 - RZ Universitaet Freiburg
-# 
-# Version:      0.0.2c
+# (c) 2006 - RZ Universitaet Freiburg
+# (c) 2006 - OpenSLX.ORG Project
 
 # empty functions are defined at the beginning of /etc/functions
 
@@ -22,7 +20,6 @@ config_rc_entry "KEYMAP" "${KEYTABLE}"
 
 # udev service - not verified!
 udev_hotplug () {
-echo "Starting udev"
 ln -s /bin/udevd /bin/udevstart && udevstart &
 if [ -x /bin/udevd ] ; then
   export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)

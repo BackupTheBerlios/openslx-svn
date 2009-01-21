@@ -1,14 +1,12 @@
-# Description:  configuration script for SuSE 9.3 to configure linux 
-#               diskless clients (included by init, hwautocfg, servconfig
-#               within initial ramdisk after inclusion of the main 
-#               functions file). This file might overwrite settings from 
-#               the main base for the several SuSE distro versions
+# configuration script for SuSE 9.3 to configure OpenSLX linux diskless 
+# clients (included by init, hwautocfg, servconfig within initialramdfs after
+# inclusion of the main functions file). This file might overwrite settings 
+# from the main base for the several SuSE distro versions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 16-12-2006
 #
-# Copyright:    (c) 2006 - RZ Universitaet Freiburg
-# 
-# Version:      0.3.0a
+# (c) 2006 - RZ Universitaet Freiburg
+# (c) 2006 - OpenSLX.ORG Project
 
 # distro specific stuff to initialize
 postinit () {
@@ -20,7 +18,6 @@ postinit () {
 udev_hotplug () {
 local result=0
 [ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "$df_errhotpl" nonfatal
-echo "Enabling hotplug/udev"
 udevstart || result=1
 udevd -d || result=1
 return $result
