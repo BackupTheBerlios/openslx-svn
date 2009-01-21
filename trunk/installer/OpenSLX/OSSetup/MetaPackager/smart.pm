@@ -72,7 +72,8 @@ sub setupPackageSource
 	if (slxsystem("smart channel -y --add $repoDescr")) {
 		die _tr("unable to add channel '%s' (%s)\n", $repoName, $!);
 	}
-	unless ($ENV{SLX_NO_MIRRORS}) {
+	my $avoidMirrors = $repoInfo->{'avoid-mirrors'} || 0;
+	unless ($ENV{SLX_NO_MIRRORS} || $avoidMirrors) {
 		my $mirrorDescr;
 		foreach my $mirrorURL (@$repoURLs) {
 			$mirrorDescr .= " --add $baseURL$repoSubdir $mirrorURL$repoSubdir";

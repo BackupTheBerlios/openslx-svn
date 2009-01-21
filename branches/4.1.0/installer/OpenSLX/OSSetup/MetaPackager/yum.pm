@@ -66,7 +66,8 @@ sub setupPackageSource
 
 	my $repoDescr 
 		= "[$repoName]\nname=$repoInfo->{name}\nbaseurl=$baseURL$repoSubdir\n";
-	unless ($ENV{SLX_NO_MIRRORS}) {
+	my $avoidMirrors = $repoInfo->{'avoid-mirrors'} || 0;
+	unless ($ENV{SLX_NO_MIRRORS} || $avoidMirrors) {
 		foreach my $mirrorURL (@$repoURLs) {
 			$repoDescr .= "        $mirrorURL$repoSubdir\n";
 		}

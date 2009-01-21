@@ -555,12 +555,12 @@ sub readDistroInfo
 	my $bootstrap_packages = $self->{distro}->{config}->{'bootstrap-packages'};
 	my $metapackager_packages =
 		$self->{distro}->{config}->{'metapackager-packages'};
-	my $file = "$self->{'config-distro-info-dir'}/settings";
 
+	my $file = "$self->{'config-distro-info-dir'}/settings";
 	if (-e $file) {
 		vlog(2, "reading configuration file $file...");
 		my $config = slurpFile($file);
-		if (!eval { $config } && length($@)) {
+		if (!eval "$config" && length($@)) {
 			die _tr("error in config-file '%s' (%s)", $file, $@) . "\n";
 		}
 	}
@@ -752,9 +752,10 @@ sub startLocalURLServersAsNeeded
 
 	$self->{'local-http-server-master-pid'} = $$;
 
+	my $port = 5080;
 	foreach my $repoInfo (values %{$self->{'distro-info'}->{repository}}) {
 		my $localURL = $repoInfo->{url} || '';
-		next unless $localURL =~ m[^local:];
+		next if $localURL =~ m[^\w+:];
 		if (!exists $self->{'local-http-servers'}->{$localURL}) {
 			my $busyboxName =
 				$self->hostIs64Bit()
@@ -762,16 +763,20 @@ sub startLocalURLServersAsNeeded
 				: 'busybox.i586';
 			my $busybox =
 				"$openslxConfig{'base-path'}/share/busybox/$busyboxName";
-			my $port = 5080;
-			if ($localURL =~ m[:(\d+)/]) {
-				$port = $1;
-			}
 			my $pid 
 				= executeInSubprocess(
 					$busybox, "httpd", '-p', $port, '-h', '/', '-f'
 				);
-			vlog(1, _tr("started local HTTP-server for URL '%s'.", $localURL));
+			vlog(1, 
+				_tr(
+					"started local HTTP-server for URL '%s' on port '%s'.", 
+					$localURL, $port
+				)
+			);
 			$self->{'local-http-servers'}->{$localURL} = $pid;
+			$repoInfo->{'url'} = "http://localhost:$port$localURL";
+			$repoInfo->{'avoid-mirrors'} = 1;
+			$port++;
 		}
 	}
 }
