@@ -316,7 +316,7 @@ case "${DISTRO}" in
           esac
 
         # hotplug/udev style and stuff
-	cp -a /etc/udev /etc/hotplug ${INSTDIR}/etc
+	cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
 	#cp -a /etc/sysconfig/{hardware,network}  ${INSTDIR}/etc/sysconfig
 	;;
   Debian*|debian*|Sarge*|sarge*)
