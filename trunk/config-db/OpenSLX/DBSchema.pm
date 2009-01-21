@@ -16,6 +16,7 @@ package OpenSLX::DBSchema;
 use strict;
 use warnings;
 
+use OpenSLX::AttributeRoster;
 use OpenSLX::Basics;
 
 ################################################################################
@@ -34,11 +35,7 @@ use OpenSLX::Basics;
 ### 		fk		=> foreign key (integer)
 ################################################################################
 
-use POSIX qw(locale_h);
-my $lang = setlocale(LC_MESSAGES);
-my $country = $lang =~ m[^\w\w_(\w\w)] ? lc($1) : 'us';
-
-my $VERSION = 0.21;
+my $VERSION = 0.22;
 
 my $DbSchema = {
 	'version' => $VERSION,
@@ -211,120 +208,6 @@ my $DbSchema = {
 				'name:s.128',		# attribute name
 				'value:s.255',		# attribute value
 			],
-			'vals' => [
-				# attributes of default system
-				{
-					'system_id' => 0,
-					'name' => 'country',
-					'value' => "$country",
-				},
-				{
-					'system_id' => 0,
-					'name' => 'dm_allow_shutdown',
-					'value' => 'user',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'late_dm',
-					'value' => 'no',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'netbios_workgroup',
-					'value' => 'slx-network',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'ramfs_nicmods',
-					'value' 
-						=> 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'start_alsasound',
-					'value' => 'yes',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'start_atd',
-					'value' => 'no',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'start_cron',
-					'value' => 'no',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'start_dreshal',
-					'value' => 'yes',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'start_ntp',
-					'value' => 'initial',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'start_nfsv4',
-					'value' => 'no',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'start_printer',
-					'value' => 'no',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'start_samba',
-					'value' => 'may',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'start_snmp',
-					'value' => 'no',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'start_sshd',
-					'value' => 'yes',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'start_syslog',
-					'value' => 'yes',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'start_x',
-					'value' => 'yes',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'start_xdmcp',
-					'value' => 'kdm',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'tex_enable',
-					'value' => 'no',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'timezone',
-					'value' => 'Europe/Berlin',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'tvout',
-					'value' => 'no',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'vmware',
-					'value' => 'no',
-				},
-			],
 		},
 		'vendor_os' => {
 			# a vendor-OS describes a folder containing an operating system as
@@ -361,8 +244,10 @@ sub new
 
 sub checkAndUpgradeDBSchemaIfNecessary
 {
-	my $self   = shift;
-	my $metaDB = shift;
+	my $self     = shift;
+	my $configDB = shift;
+
+	my $metaDB = $configDB->{'meta-db'};
 
 	vlog(2, "trying to determine schema version...");
 	my $currVersion = $metaDB->schemaFetchDBVersion();
@@ -385,6 +270,7 @@ sub checkAndUpgradeDBSchemaIfNecessary
 			);
 		}
 		$metaDB->schemaSetDBVersion($DbSchema->{version});
+		$self->_synchronizeAttributesWithDefaultSystem($configDB);
 		vlog(1, _tr('DB has been created successfully'));
 	} elsif ($currVersion < $DbSchema->{version}) {
 		vlog(
@@ -395,6 +281,7 @@ sub checkAndUpgradeDBSchemaIfNecessary
 			)
 		);
 		$self->_schemaUpgradeDBFrom($metaDB, $currVersion);
+		$self->_synchronizeAttributesWithDefaultSystem($configDB);
 		vlog(1, _tr('upgrade done'));
 	} else {
 		vlog(1, _tr('DB matches current schema version (%s)', $currVersion));
@@ -413,6 +300,33 @@ sub getColumnsOfTable
 		@{$DbSchema->{tables}->{$tableName}->{cols}};
 }
 
+sub _synchronizeAttributesWithDefaultSystem
+{
+	my $self     = shift;
+	my $configDB = shift;
+
+	my $defaultSystem = $configDB->fetchSystemByID(0);
+	return if !$defaultSystem;
+
+	# fetch all known attributes from attribute roster and merge these 
+	# into the existing attributes of the default system
+	my $attrInfo = OpenSLX::AttributeRoster::getAttrInfo();
+	foreach my $attr (keys %$attrInfo) {
+		next if exists $defaultSystem->{attrs}->{$attr};
+		$defaultSystem->{attrs}->{$attr} = $attrInfo->{$attr}->{default};
+	}
+	
+	# remove unknown attributes from default system
+	my @unknownAttrs 
+		= grep { !exists $attrInfo->{$_} } keys %{$defaultSystem->{attrs}};
+	foreach my $unknownAttr (@unknownAttrs) {
+		delete $defaultSystem->{attrs}->{$unknownAttr};
+	}
+	
+	# now write back the updated default system
+	return $configDB->changeSystem(0, $defaultSystem);
+}
+
 ################################################################################
 ###
 ### methods for upgrading the DB schema
@@ -426,6 +340,7 @@ sub _schemaUpgradeDBFrom
 
 	$self->_upgradeDBTo0_2($metaDB) if $currVersion < 0.2;
 	$self->_upgradeDBTo0_21($metaDB) if $currVersion < 0.21;
+	$self->_upgradeDBTo0_22($metaDB) if $currVersion < 0.22;
 
 	return 1;
 }
@@ -667,6 +582,21 @@ sub _upgradeDBTo0_21
 	);
 
 	$metaDB->schemaSetDBVersion(0.21);
+
+	return 1;
+}
+
+sub _upgradeDBTo0_22
+{
+	my $self   = shift;
+	my $metaDB = shift;
+
+	vlog(0, "upgrading schema version to 0.22");
+
+	# dummy schema change, just to trigger the attribute synchronization
+	# into the default system
+
+	$metaDB->schemaSetDBVersion(0.22);
 
 	return 1;
 }

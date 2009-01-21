@@ -185,7 +185,7 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 	$self->{'db-type'} = $dbType;
 	$self->{'meta-db'} = $metaDB;
 
-	$self->{'db-schema'}->checkAndUpgradeDBSchemaIfNecessary($metaDB);
+	$self->{'db-schema'}->checkAndUpgradeDBSchemaIfNecessary($self);
 
 	return 1;
 }

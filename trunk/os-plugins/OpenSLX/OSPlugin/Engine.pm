@@ -64,6 +64,9 @@ sub initialize
 	vlog(1, "plugin path is '$self->{'plugin-path'}'");
 	
 	$self->{'plugin'} = $self->_loadPlugin();
+	return if !$self->{'plugin'};
+
+	return 1;
 }
 
 sub installPlugin
@@ -98,6 +101,10 @@ sub installPlugin
 	);
 	
 	$self->{plugin}->postInstallationPhase($pluginRepoPath, $pluginTempPath);
+	
+	$self->_addInstalledPluginToDB();
+
+	return 1;
 }
 
 sub getPlugin
@@ -119,6 +126,51 @@ sub _loadPlugin
 	my $plugin = instantiateClass(
 		$pluginModule, { pathToClass => $self->{'plugin-path'} }
 	);
+	return if !$plugin;
+
 	$plugin->initialize($self);
+
 	return $plugin;
 }
+
+sub _addInstalledPluginToDB
+{
+	my $self = shift;
+	
+	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
+	$openslxDB->connect();
+	my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
+		name => $self->{'vendor-os-name'},
+	} );
+	if (!$vendorOS) {
+		die _tr(
+			'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
+		);
+	}
+	$openslxDB->addInstalledPlugin($vendorOS->{id}, $self->{'plugin-name'});
+	$openslxDB->disconnect();
+
+	return 1;
+}
+
+sub _removeInstalledPluginFromDB
+{
+	my $self = shift;
+	
+	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
+	$openslxDB->connect();
+	my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
+		name => $self->{'vendor-os-name'},
+	} );
+	if (!$vendorOS) {
+		die _tr(
+			'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
+		);
+	}
+	$openslxDB->removeInstalledPlugin($vendorOS->{id}, $self->{'plugin-name'});
+	$openslxDB->disconnect();
+
+	return 1;
+}
+
+1;

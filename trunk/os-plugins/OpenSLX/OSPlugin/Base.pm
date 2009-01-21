@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - OpenSLX GmbH
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -8,41 +8,49 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Example.pm
-#	- an example implementation of the OSPlugin API (i.e. an os-plugin)
+# Base.pm
+#	- provides empty base of the OpenSLX OSPlugin API.
 # -----------------------------------------------------------------------------
-package OpenSLX::OSPlugin::Example;
+package OpenSLX::OSPlugin::Base;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::OSPlugin::Base);
+our $VERSION = 1.01;		# API-version . implementation-version
 
 use OpenSLX::Basics;
-use OpenSLX::Utils;
 
 ################################################################################
 # if you have any questions regarding the concept of OS-plugins and their
 # implementation, please drop a mail to: ot@openslx.com, or join the IRC-channel
 # '#openslx' (on freenode).
 ################################################################################
+
 sub new
 {
-	my $class = shift;
-
-	my $self = {};
-
-	return bless $self, $class;
+	confess "Creating OpenSLX::OSPlugin::Base-objects directly makes no sense!";
 }
 
-sub getInfo
+sub initialize
 {
 	my $self = shift;
 
+	# The os-plugin-engine drives us, it provides some useful services relevant 
+	# to installing stuff into the vendor-OS, like downloading functionality, 
+	# access to meta-packager, ...
+	$self->{'os-plugin-engine'} = shift;
+}
+
+sub getInfo
+{	# returns a hash-ref with administrative information about this plugin
+	# (what does it do and how does it relate to other plugins)
+	my $self = shift;
+
 	return {
-		description => unshiftHereDoc(<<'		End-of-Here'),
-			just an exemplary plugin that prints a smiley when the client boots
-		End-of-Here
+		# a short (one-liner) description of this plugin
+		description => '',
+		# a list of plugins that must have completed before this plugin can 
+		# be executed
 		mustRunAfter => [],
 	};
 }
@@ -57,40 +65,7 @@ sub getAttrInfo
 	# by means of slxconfig.
 	return {
 		# attribute 'active' is mandatory for all plugins
-		'example::active' => {
-			applies_to_systems => 1,
-			applies_to_clients => 1,
-			description => unshiftHereDoc(<<'			End-of-Here'),
-				should the 'Example'-plugin be executed during boot?
-			End-of-Here
-			content_regex => qr{^(0|1)$},
-			content_descr => '1 means active - 0 means inactive',
-			default => '1',
-		},
 		# attribute 'precedence' is mandatory for all plugins
-		'example::precedence' => {
-			applies_to_systems => 1,
-			applies_to_clients => 1,
-			description => unshiftHereDoc(<<'			End-of-Here'),
-				the execution precedence of the 'Example' plugin
-			End-of-Here
-			content_regex => qr{^\d\d$},
-			content_descr => 'allowed range is from 01-99',
-			default => 50,
-		},
-
-		# plugin specific attributes start here ...
-		'example::preferred_side' => {
-			applies_to_systems => 1,
-			applies_to_clients => 1,
-			description => unshiftHereDoc(<<'			End-of-Here'),
-				determines to which side you have to tilt your head in order
-				to read the smiley
-			End-of-Here
-			content_regex => qr{^(left|right)$},
-			content_descr => q{'left' will print ';-)' - 'right' will print '(-;'},
-			default => 'left',
-		},
 	};
 }
 
@@ -104,8 +79,6 @@ sub preInstallationPhase
 		# required by the corresponding stage3 runlevel script
 	my $pluginTempPath = shift;
 		# a temporary playground that will be cleaned up automatically
-	
-	# in this example plugin, there's no need to do anything here ...
 }
 
 sub installationPhase
@@ -116,10 +89,6 @@ sub installationPhase
 		# the repository folder, this time from inside the chroot
 	my $pluginTempPath = shift;
 		# the temporary folder, this time from inside the chroot
-	
-	# for this example plugin, we simply create two files:
-	spitFile("$pluginRepositoryPath/right", "(-;\n");
-	spitFile("$pluginRepositoryPath/left", ";-)\n");
 }
 
 sub postInstallationPhase
@@ -128,8 +97,6 @@ sub postInstallationPhase
 	my $self                 = shift;
 	my $pluginRepositoryPath = shift;
 	my $pluginTempPath       = shift;
-	
-	# in this example plugin, there's no need to do anything here ...
 }
 
 sub preRemovalPhase
@@ -161,5 +128,3 @@ sub postRemovalPhase
 	my $pluginRepositoryPath = shift;
 	my $pluginTempPath       = shift;
 }
-
-1;
