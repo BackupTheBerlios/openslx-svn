@@ -65,13 +65,29 @@ sub importTrustedPackageKeys
 	return;
 }
 
+sub installPrerequiredPackages
+{
+	my $self = shift;
+	my $pkgs = shift;
+	my $finalPath = shift;
+
+	return unless defined $pkgs && scalar(@$pkgs);
+
+	if (slxsystem("rpm", "--root=$finalPath", "-ivh", "--nodeps", "--noscripts",
+			   "--force", @$pkgs)) {
+		die _tr("error during prerequired-package-installation (%s)\n", $!);
+	}
+	slxsystem("rm", "-rf", "$finalPath/var/lib/rpm");
+	return;
+}
+
 sub installPackages
 {
 	my $self = shift;
 	my $pkgs = shift;
 	my $finalPath = shift;
 
-	return unless defined $pkgs && @$pkgs;
+	return unless defined $pkgs && scalar(@$pkgs);
 
 	if (slxsystem("rpm", "--root=$finalPath", "-ivh", @$pkgs)) {
 		die _tr("error during package-installation (%s)\n", $!);

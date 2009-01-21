@@ -49,6 +49,10 @@ sub importTrustedPackageKeys
 {
 }
 
+sub installPrerequiredPackages
+{
+}
+
 sub installPackages
 {
 }
