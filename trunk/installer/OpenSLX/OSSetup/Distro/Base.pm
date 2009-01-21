@@ -1,9 +1,16 @@
-# Base.pm - provides empty base of the OpenSLX OSSetup API.
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
 #
-# (c) 2006 - OpenSLX.com
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
 #
-# Oliver Tappe <ot@openslx.com>
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
 #
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+# Base.pm
+#	- provides empty base of the OpenSLX OSSetup API.
+# -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::Base;
 
 use vars qw($VERSION);

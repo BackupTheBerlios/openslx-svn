@@ -1,12 +1,19 @@
 #! /usr/bin/perl
+# -----------------------------------------------------------------------------
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
 #
-# extractTranslations.pl - OpenSLX-script to extract translatable strings from
-#                          other scripts and modules.
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
 #
-# (c) 2006 - OpenSLX.com
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
 #
-# Oliver Tappe <ot@openslx.com>
-#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+# extractTranslations.pl
+#	- OpenSLX-script to extract translatable strings from other scripts
+#	  and modules.
+# -----------------------------------------------------------------------------
 use strict;
 
 my $abstract = q[

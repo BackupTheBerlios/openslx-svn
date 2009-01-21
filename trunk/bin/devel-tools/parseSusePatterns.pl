@@ -1,12 +1,19 @@
 #! /usr/bin/perl
+# -----------------------------------------------------------------------------
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
 #
-# parseSusePatterns.pl - OpenSLX script to extract a package list from
-#						 a given list of SUSE-pattern-files (*.pat).
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
 #
-# (c) 2007 - OpenSLX.com
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
 #
-# Oliver Tappe <ot@openslx.com>
-#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+# parseSusePatterns.pl
+#	- OpenSLX script to extract a package list from a given list of
+#	  SUSE-pattern-files (*.pat).
+# -----------------------------------------------------------------------------
 use strict;
 
 my $abstract = q[

@@ -1,10 +1,16 @@
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
 # SUSE_10_2_x86_64.pm
 #	- provides SUSE-10.2-x86_64-specific overrides of the OpenSLX OSSetup API.
-#
-# (c) 2006 - OpenSLX.com
-#
-# Oliver Tappe <ot@openslx.com>
-#
+# -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::SUSE_10_2_x86_64;
 
 use vars qw(@ISA $VERSION);

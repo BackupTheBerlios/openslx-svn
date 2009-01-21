@@ -1,9 +1,16 @@
-# Basics.pm - provides basic functionality of the OpenSLX config-db.
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
 #
-# (c) 2006 - OpenSLX.com
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
 #
-# Oliver Tappe <ot@openslx.com>
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
 #
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+# Basics.pm
+#	- provides basic functionality of the OpenSLX config-db.
+# -----------------------------------------------------------------------------
 package OpenSLX::Basics;
 
 use strict;
@@ -15,7 +22,7 @@ $VERSION = 1.01;
 
 @EXPORT = qw(
 	&openslxInit %openslxConfig %cmdlineConfig
-	&_tr &trInit 
+	&_tr &trInit
 	&die &executeInSubprocess &slxsystem
 	&vlog
 );
@@ -290,9 +297,9 @@ sub executeInSubprocess
 
 	# parent...
 	# ...pass on interrupt- and terminate-signals to child...
-	local $SIG{INT} 
+	local $SIG{INT}
 		= sub { kill 'INT', $pid; waitpid($pid, 0); exit $? };
-	local $SIG{TERM} 
+	local $SIG{TERM}
 		= sub { kill 'TERM', $pid; waitpid($pid, 0); exit $? };
 	# ...and wait for child to do its work:
 	waitpid($pid, 0);
