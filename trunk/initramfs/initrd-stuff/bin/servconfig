@@ -78,7 +78,7 @@ echo "
          |  |_|  |  |    |  |___|  |  |  |   ____|  |  |___ /  /
            _____/|__|    |______|__|  |__|  |_______|______|__|  |__|
 
-   Diskless Workstation (v4.0.6/$dstr (c) <OpenSLX.ORG project>
+   Diskless Workstation (v4.0.8/$dstr (c) <OpenSLX.ORG project>
 ">/mnt/etc/issue
 
 #############################################################################
@@ -365,7 +365,7 @@ Type=Application" >/mnt/etc/X11/sessions/default.desktop
         #  | awk -F "=" '{print $2}')
         session_name=$(sed \
           'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/;/^exec=/!d' ${i} \
-          | sed '$!d;s/exec=//')
+          | sed '$!d;s,exec.*[/=],,')
         # create session links so that they con be startet via xdm
         cd /mnt/var/X11R6/bin
         ln -s desktop-session ${session_name}
