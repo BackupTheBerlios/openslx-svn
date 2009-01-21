@@ -37,7 +37,7 @@ use Carp::Heavy;
 	# use it here to have it loaded immediately, not at the time when
 	# carp() is being invoked (which might be at a point in time where
 	# the script executes in a chrooted environment, such that the module
-	# can't be loaded anymore). 
+	# can't be loaded anymore).
 use FindBin;
 use Getopt::Long;
 use POSIX qw(locale_h);
@@ -329,13 +329,13 @@ sub slxsystem
 sub warn
 {
 	my $msg = shift;
+	$msg =~ s[^\*\*\* ][]igms;
+	$msg =~ s[^][*** ]igms;
 	if ($openslxConfig{'croak'}) {
-		print STDERR "*** ";
 		carp $msg;
 	} else {
-		$msg =~ s[^][*** ]igms;
 		chomp $msg;
-		print STDERR "$msg\n";
+		CORE::warn "$msg\n";
 	}
 }
 
@@ -343,15 +343,13 @@ sub warn
 sub die
 {
 	my $msg = shift;
+	$msg =~ s[^\*\*\* ][]igms;
+	$msg =~ s[^][*** ]igms;
 	if ($openslxConfig{'croak'}) {
-		print STDERR "*** ";
 		croak $msg;
 	} else {
-		$msg =~ s[^][*** ]igms;
 		chomp $msg;
-		print STDERR "$msg\n";
-		exit 5 unless ($!);
-		exit $!;
+		CORE::die "$msg\n";
 	}
 }
 
