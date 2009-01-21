@@ -41,6 +41,7 @@ $VERSION = 1.01;
 use File::Basename;
 use Socket;
 use Sys::Hostname;
+use Term::ReadLine;
 
 use OpenSLX::Basics;
 
@@ -281,12 +282,11 @@ sub readPassword
 {
 	my $prompt = shift;
 	
-	use Term::ReadLine;
 	my $term = Term::ReadLine->new('slx');
 	my $attribs = $term->Attribs;
 	$attribs->{redisplay_function} = $attribs->{shadow_redisplay};
+
     return $term->readline($prompt);
-    
 }
 
 1;
