@@ -487,8 +487,8 @@ syslogngcfg=$1
 # fixme!? only first logserver from dhcp variable is used
 [ -n "$log_servers" ] && start_syslog="syslog://${log_servers% *}:514/udp"
 echo -e "# File written by $0 within InitRamFS\n\
-source src {\n\tfile(\"/proc/kmsg\") log_prefix(\"kernel: \");\n\
-\tunix-stream(\"/dev/log\");\n\tinternal();\n};\ndestination console_all {\
+source src {\n\tfile(\"/proc/kmsg\");\n\
+\tunix-dgram(\"/dev/log\");\n\tinternal();\n};\ndestination console_all {\
 \n\tfile(\"/dev/tty10\");\n};" >$syslogngcfg
 case "$start_syslog" in
   yes|Yes|YES)

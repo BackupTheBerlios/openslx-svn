@@ -374,11 +374,13 @@ case "${DISTRO}" in
       10.0)
         DISTRO_VER=10.0
       ;;
-      10*)
+      10.1)
         DISTRO_VER=10.1
       ;;
+      10.2)
+        DISTRO_VER=10.2
+      ;;
     esac
-
   ;;
 esac
 # at this point ${DISTRO} ${DISTRO_VER} should be fixed

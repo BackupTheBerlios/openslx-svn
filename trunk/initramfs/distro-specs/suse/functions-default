@@ -3,7 +3,7 @@
 # inclusion of the main functions file). This file is the main base for the
 # several SuSE distro versions
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 29-10-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-12-2006
 # mj0 09-11-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
@@ -295,6 +295,7 @@ config_kdm () {
 config_dm_entry yes
 usetheme=false
 themeconf=$(ls /mnt/var/lib/openslx/themes/displaymanager/*.xml 2>/dev/null)
+testmkd /mnt/etc/opt/kde3/share/config/kdm
 [ -r "${themeconf}" ] && usetheme=true
 # check if a kdmrc was provided via ConfTGZ
 [ -f /rootfs/etc/opt/kde3/share/config/kdm/kdmrc ] || \
@@ -398,11 +399,15 @@ WallpaperMode=NoWallpaper" \
 
 # configure bluetooth services
 config_bt () {
-echo -e "# /etc/${D_SYSCONFDIR}/bluetooth - file modified by $0"\
-  > /etc/bluetooth
-sed -e "s,START_SERVICES.*,START_SERVICES=\"yes\"," \
-  /mnt/etc/${D_SYSCONFDIR}/bluetooth >> /etc/bluetooth
-cp /etc/bluetooth /mnt/etc/${D_SYSCONFDIR}/bluetooth
+if [ -e /mnt/etc/${D_SYSCONFDIR}/bluetooth ] ; then
+  echo -e "# /etc/${D_SYSCONFDIR}/bluetooth - file modified by $0"\
+    > /etc/bluetooth
+  sed -e "s,START_SERVICES.*,START_SERVICES=\"yes\"," \
+    /mnt/etc/${D_SYSCONFDIR}/bluetooth >> /etc/bluetooth
+  cp /etc/bluetooth /mnt/etc/${D_SYSCONFDIR}/bluetooth
+else
+  : # no bluetooth components installed
+fi
 }
 
 # set up keytable (function run in hwautocfg)

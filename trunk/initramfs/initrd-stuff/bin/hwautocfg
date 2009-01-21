@@ -3,7 +3,7 @@
 # universal (distro independent) hardware autoconfiguration script for 
 # OpenSLX linux diskless clients, using hwconfig from knoppix as base tool 
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 20-11-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-12-2006
 #
 # (c) 2003 - 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.org Project
@@ -18,6 +18,7 @@ local VSYNCRANGE="60-90"
 local DEFAULTMODES='"1024x768" "800x600" "640x480"'
 local DEFAULTCOLORDPT=24
 # set variables representing the xorg.conf sections (version 6.9.x)
+# variables might be overwritten via displayvars function
 local Module='\tLoad\t\t"dbe"\n
 \tLoad\t\t"extmod"\n
 \tLoad\t\t"type1"\n
@@ -29,6 +30,7 @@ local ServerFlags='\tOption\t\t"AllowMouseOpenFail"\n
 \tOption\t\t"standby time"\t\t"10"\n
 \tOption\t\t"suspend time"\t\t"15"\n
 \tOption\t\t"off time"\t\t"20"'
+# fixme: Do we really need FontPath, RgbPath!?!
 local Files='\tRgbPath\t\t"/usr/X11R6/lib/X11/rgb"\n
 \tModulePath\t"/etc/X11/modules"\n
 \tModulePath\t"/usr/X11R6/lib/modules"\n
@@ -236,7 +238,8 @@ else
   error "$hcfg_xcfg" nonfatal
 fi
 
-# USB core is needed for presence of /proc/bus/usb
+# USB core is needed for presence of /proc/bus/usb (path seems to be deprecated
+# in recent kernels!?)
 modprobe ${MODPRV} usbcore &
 
 # "drivers" (pseudo, placeholder strings, ...) to exclude from loading

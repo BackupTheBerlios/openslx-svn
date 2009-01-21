@@ -1,6 +1,6 @@
-# configuration functions for SuSE 10.1 which differ from functions defined
+# configuration functions for SuSE 10.2 which differ from functions defined
 # in general SuSE base definitions ...  General changes should be done there,
-# version specific changes for the 10.1 go here.
+# version specific changes for the 10.2 go here.
 #
 # Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-12-2006
 #
@@ -13,12 +13,12 @@ preinit () {
 # within initialramfs)
 shell="/bin/sh"
 [ -x /bin/busybox ] && shell="/bin/ash"
-for i in usb_id scsi_id vol_id edd_id ata_id path_id hwup ifup ; do
+for i in hwup ifup ; do
   echo -e "#!$shell\n:" >/sbin/$i
 done
 mkdir /lib/udev /usr/sbin
-for i in idedma.sh mount.sh rename_netiface \
-         firmware.sh create_floppy_devices ; do
+for i in usb_id scsi_id vol_id edd_id ata_id path_id cdrom_id idedma.sh mount.sh \
+         rename_netiface firmware.sh create_floppy_devices ; do
   echo -e "#!$shell\n:" >/lib/udev/$i
 done
 echo -e "#!$shell\n:" >/usr/sbin/alsactl
@@ -160,11 +160,20 @@ case "${XMODULE}" in
           ln -sf /usr/X11R6/lib/modules/updates/drivers/nvidia_drv.so \
             /mnt/etc/X11/modules/nvidia_drv.so || fail=1
           [ -z $fail ] && XMODULE=nvidia
-          # ensure proper permissions for nvidia devices - does not work for some reason
-          #echo -e "# nvidia stuff added by $0 in InitRamFS\nKERNEL==\"nvidia*|nvidiactl*\",\
-#GROUP=\"video\",MODE=\"0666\"" > /mnt/etc/udev/rules.d/10-nvidia-devperms.rules
+          # ensure proper permissions for nvidia devices
+          echo -e "# nvidia stuff added by $0 in InitRamFS\nKERNEL==\"nvidia*|nvidiactl*\",\
+GROUP=\"video\",MODE=\"0666\"" > /mnt/etc/udev/rules.d/10-nvidia-devperms.rules
        fi
        }
   ;;
 esac
+}
+
+# Xorg variable settings. Lots of stuff changed from 10.1 to 10.2
+displayvars () {
+Files='\tModulePath\t"/etc/X11/modules"\n
+\tModulePath\t"/usr/lib/xorg/modules"\n
+\tFontPath\t"/usr/share/fonts/misc/:unscaled"\n
+\tFontPath\t"/usr/share/fonts/75dpi/:unscaled"\n
+\tFontPath\t"/usr/share/fonts/100dpi/:unscaled"'
 }

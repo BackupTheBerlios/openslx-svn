@@ -4,7 +4,7 @@
 # diskless clients (executed in stage3 within initial ramfs). The file-
 # system is setup when servconfig starts
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 29-10-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-12-2006
 # Michael Janczyk <mj0@uni-freiburg.de>, 10-11-2006
 # Lars Mueller <lm@OpenSLX.com>, 23-06-2006
 # Oliver Tappe <ot@OpenSLX.com>, 23-06-2006
@@ -412,7 +412,7 @@ chmod 1777 /mnt/tmp
 if [ "x$start_x" != "xno" ] ; then
   # creating directories commonly needed for X11 in all distros
   # rest should be done via config_x11 function (distro specific)
-  for i in /var/lib/xkb/ \
+  for i in /var/lib/xkb/compiled \
            /etc/X11/xdm \
            /etc/X11/sessions \
            /var/X11R6/bin \
