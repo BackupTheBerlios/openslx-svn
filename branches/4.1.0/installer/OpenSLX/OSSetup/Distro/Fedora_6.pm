@@ -16,7 +16,7 @@ package OpenSLX::OSSetup::Distro::Fedora_6;
 use strict;
 use warnings;
 
-use base qw(OpenSLX::OSSetup::Distro::Base);
+use base qw(OpenSLX::OSSetup::Distro::Fedora);
 
 use OpenSLX::Basics;
 
@@ -30,21 +30,6 @@ sub new
 		'base-name' => 'fedora-6',
 	};
 	return bless $self, $class;
-}
-
-sub initialize
-{
-	my $self = shift;
-	my $engine = shift;
-
-	$self->SUPER::initialize($engine);
-	$self->{'packager-type'} = 'rpm';
-	$self->{'meta-packager-type'} = $ENV{SLX_META_PACKAGER} || 'yum';
-	$self->{'stage1c-faked-files'} = [
-		'/etc/fstab',
-		'/etc/mtab',
-	];
-	return;
 }
 
 sub initDistroInfo

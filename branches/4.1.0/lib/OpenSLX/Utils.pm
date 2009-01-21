@@ -23,7 +23,13 @@ $VERSION = 1.01;
 @ISA     = qw(Exporter);
 
 @EXPORT = qw(
-  copyFile fakeFile linkFile slurpFile spitFile followLink unshiftHereDoc
+  copyFile fakeFile linkFile 
+  copyBinaryWithRequiredLibs
+  slurpFile spitFile 
+  followLink 
+  unshiftHereDoc
+  string2Array
+  chrootInto
 );
 
 ################################################################################
@@ -88,7 +94,7 @@ sub slurpFile
 	my $fileName = shift || confess 'need to pass in fileName!';
 	my $flags    = shift || {};
 
-	checkFlags($flags, ['failIfMissing']);
+	checkParams($flags, { 'failIfMissing' => '?' });
 	my $failIfMissing 
 		= exists $flags->{failIfMissing} ? $flags->{failIfMissing} : 1;
 
@@ -137,6 +143,39 @@ sub followLink
 	return $path;
 }
 
+sub copyBinaryWithRequiredLibs {
+	my $params = shift;
+	
+	checkParams($params, {
+		'binary'       	  => '!',	# file to copy
+		'targetFolder'    => '!',	# where file shall be copied to
+		'libTargetFolder' => '!',	# base target folder for libs
+		'targetName'      => '?',	# name of binary in target folder
+	});
+	copyFile($params->{binary}, $params->{targetFolder}, $params->{targetName});
+
+	# determine all required libraries and copy those, too:
+	vlog(1, _tr("calling slxldd for $params->{binary}"));
+	my $slxlddCmd = "slxldd $params->{binary}";
+	vlog(2, "executing: $slxlddCmd");
+	my $requiredLibsStr = qx{$slxlddCmd};
+	if ($?) {
+		die _tr(
+			"slxldd couldn't determine the libs required by '%s'! (%s)", 
+			$params->{binary}, $?
+		);
+	}
+	chomp $requiredLibsStr;
+	vlog(2, "slxldd results:\n$requiredLibsStr");
+	
+	foreach my $lib (split "\n", $requiredLibsStr) {
+		vlog(3, "copying lib '$lib'");
+		my $libDir = dirname($lib);
+		copyFile($lib, "$params->{libTargetFolder}$libDir");
+	}
+	return $requiredLibsStr;
+}
+
 sub unshiftHereDoc
 {
 	my $content = shift;
@@ -146,6 +185,36 @@ sub unshiftHereDoc
 		join "\n", 
 		map { substr($_, $shift); } 
 		split m{\n}, $content;
+}
+
+sub string2Array
+{
+	my $string = shift || '';
+
+	my @lines = split m[\n], $string;
+	for my $line (@lines) {
+		# remove leading and trailing whitespace:
+		$line =~ s{^\s*(.*?)\s*$}{$1};
+	}
+
+	# drop empty lines and comments:
+	return grep { length($_) > 0 && $_ !~ m[^\s*#]; } @lines;
+}
+
+sub chrootInto
+{
+	my $osDir = shift;
+
+	vlog(2, "chrooting into $osDir...");
+	chdir $osDir
+		or die _tr("unable to chdir into '%s' (%s)\n", $osDir, $!);
+
+	# ...do chroot
+	chroot "."
+		or die _tr("unable to chroot into '%s' (%s)\n", $osDir, $!);
+
+	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
+	return;
 }
 
 1;

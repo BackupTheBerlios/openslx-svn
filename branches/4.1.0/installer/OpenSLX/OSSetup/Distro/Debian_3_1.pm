@@ -16,7 +16,7 @@ package OpenSLX::OSSetup::Distro::Debian_3_1;
 use strict;
 use warnings;
 
-use base qw(OpenSLX::OSSetup::Distro::Base);
+use base qw(OpenSLX::OSSetup::Distro::Debian);
 
 use OpenSLX::Basics;
 
@@ -30,25 +30,6 @@ sub new
 		'base-name' => 'debian-3.1',
 	};
 	return bless $self, $class;
-}
-
-sub initialize
-{
-	my $self = shift;
-	my $engine = shift;
-
-	$self->SUPER::initialize($engine);
-	$self->{'packager-type'} = 'dpkg';
-	$self->{'meta-packager-type'} = $ENV{SLX_META_PACKAGER} || 'apt';
-	$self->{'stage1c-faked-files'} = [];
-	return;
-}
-
-sub fixPrerequiredFiles
-{
-	my $self = shift;
-	my $stage1cDir = shift;
-	return;
 }
 
 sub initDistroInfo

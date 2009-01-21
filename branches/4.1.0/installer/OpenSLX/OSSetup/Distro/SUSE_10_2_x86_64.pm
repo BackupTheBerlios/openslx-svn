@@ -16,7 +16,7 @@ package OpenSLX::OSSetup::Distro::SUSE_10_2_x86_64;
 use strict;
 use warnings;
 
-use base qw(OpenSLX::OSSetup::Distro::Base);
+use base qw(OpenSLX::OSSetup::Distro::SUSE);
 
 use OpenSLX::Basics;
 
@@ -30,44 +30,6 @@ sub new
 		'base-name' => 'suse-10.2_x86_64',
 	};
 	return bless $self, $class;
-}
-
-sub initialize
-{
-	my $self = shift;
-	my $engine = shift;
-
-	$self->SUPER::initialize($engine);
-	$self->{'packager-type'} = 'rpm';
-	$self->{'meta-packager-type'} = $ENV{SLX_META_PACKAGER} || 'smart';
-	$ENV{YAST_IS_RUNNING} = "instsys";
-	return;
-}
-
-sub fixPrerequiredFiles
-{
-	my $self = shift;
-	my $stage1cDir = shift;
-
-	chown(0, 0, "$stage1cDir/etc/group", "$stage1cDir/etc/passwd",
-		"$stage1cDir/etc/shadow");    
-	return;
-}
-
-sub updateDistroConfig
-{
-	my $self = shift;
-
-	# make sure there's a /dev/zero, as SuSEconfig requires it:
-	if (!-e "/dev/zero" && slxsystem("mknod /dev/zero c 1 5")) {
-		die _tr("unable to create node '%s' (%s)\n", "/dev/zero", $!);
-	}
-	# invoke SuSEconfig in order to allow it to update the configuration:
-	if (slxsystem("SuSEconfig")) {
-		die _tr("unable to run SuSEconfig (%s)", $!);
-	}
-	$self->SUPER::updateDistroConfig();
-	return;
 }
 
 sub initDistroInfo

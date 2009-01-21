@@ -165,7 +165,7 @@ sub initialize
 	my $distro;
 	my $distroClass = $supportedDistros{lc($distroName)}->{module};
 	if ($actionType =~ m{^(install|update|shell)}) {
-		$distro = instantiateClass($distroClass);
+		$distro = instantiateClass("OpenSLX::OSSetup::Distro::$distroClass");
 	}
 	else {
 		if (!eval { 
@@ -201,7 +201,7 @@ sub initialize
 			);
 		}
 		$self->{'config-distro-info-dir'} = $configDistroInfoDir;
-		$self->readDistroInfo();
+		$self->_readDistroInfo();
 	}
 
 	if (!$self->{'action-type'} eq 'install'
@@ -223,8 +223,8 @@ sub initialize
 	vlog(1, "vendor-OS path is '$self->{'vendor-os-path'}'");
 
 	if ($actionType =~ m{^(install|update|shell)}) {
-		$self->createPackager();
-		$self->createMetaPackager();
+		$self->_createPackager();
+		$self->_createMetaPackager();
 	}
 	return;
 }
@@ -238,9 +238,9 @@ sub installVendorOS
 		die _tr("vendor-OS '%s' already exists, giving up!\n",
 			$self->{'vendor-os-path'});
 	}
-	$self->createVendorOSPath();
+	$self->_createVendorOSPath();
 
-	$self->startLocalURLServersAsNeeded();
+	$self->_startLocalURLServersAsNeeded();
 
 	my $baseSystemFile = "$self->{'vendor-os-path'}/.openslx-base-system";
 	if (-e $baseSystemFile) {
@@ -248,24 +248,24 @@ sub installVendorOS
 	}
 	else {
 		# basic setup, stage1a-c:
-		$self->setupStage1A();
+		$self->_setupStage1A();
 		callInSubprocess(
 			sub {
 				# some tasks that involve a chrooted environment:
-				$self->changePersonalityIfNeeded();
-				$self->setupStage1B();
-				$self->setupStage1C();
+				$self->_changePersonalityIfNeeded();
+				$self->_setupStage1B();
+				$self->_setupStage1C();
 			}
 		);
-		$self->stage1C_cleanupBasicVendorOS();
+		$self->_stage1C_cleanupBasicVendorOS();
 		# just touch the file, in order to indicate a basic system:
 		slxsystem("touch $baseSystemFile");
 	}
 	callInSubprocess(
 		sub {
 			# another task that involves a chrooted environment:
-			$self->changePersonalityIfNeeded();
-			$self->setupStage1D();
+			$self->_changePersonalityIfNeeded();
+			$self->_setupStage1D();
 		}
 	);
 
@@ -283,7 +283,7 @@ sub installVendorOS
 		)
 	);
 
-	$self->touchVendorOS();
+	$self->_touchVendorOS();
 	$self->addInstalledVendorOSToConfigDB();
 	return;
 }
@@ -341,9 +341,9 @@ sub cloneVendorOS
 		}
 	}
 
-	$self->createVendorOSPath();
+	$self->_createVendorOSPath();
 
-	$self->clone_fetchSource($source);
+	$self->_clone_fetchSource($source);
 	if ($source ne $lastCloneSource) {
 		spitFile($cloneInfoFile, "source=$source\n");
 	}
@@ -366,7 +366,7 @@ sub cloneVendorOS
 		);
 	}
 
-	$self->touchVendorOS();
+	$self->_touchVendorOS();
 	$self->addInstalledVendorOSToConfigDB();
 	return;
 }
@@ -380,16 +380,16 @@ sub updateVendorOS
 			$self->{'vendor-os-path'});
 	}
 
-	$self->startLocalURLServersAsNeeded();
+	$self->_startLocalURLServersAsNeeded();
 
 	callInSubprocess(
 		sub {
-			$self->changePersonalityIfNeeded();
-			$self->updateStage1D();
+			$self->_changePersonalityIfNeeded();
+			$self->_updateStage1D();
 		}
 	);
 
-	$self->touchVendorOS();
+	$self->_touchVendorOS();
 	vlog(
 		0,
 		_tr("Vendor-OS '%s' updated succesfully.\n", $self->{'vendor-os-name'})
@@ -408,16 +408,16 @@ sub startChrootedShellForVendorOS
 		);
 	}
 
-	$self->startLocalURLServersAsNeeded();
+	$self->_startLocalURLServersAsNeeded();
 
 	callInSubprocess(
 		sub {
-			$self->changePersonalityIfNeeded();
-			$self->startChrootedShellInStage1D();
+			$self->_changePersonalityIfNeeded();
+			$self->_startChrootedShellInStage1D();
 		}
 	);
 
-	$self->touchVendorOS();
+	$self->_touchVendorOS();
 	vlog(
 		0,
 		_tr(
@@ -1248,7 +1248,7 @@ sub clone_fetchSource
 			$self->{'vendor-os-path'}
 		)
 	);
-	my $excludeIncludeList = $self->clone_determineIncludeExcludeList();
+	my $excludeIncludeList = $self->_clone_determineIncludeExcludeList();
 	vlog(1, "using exclude-include-filter:\n$excludeIncludeList\n");
 	my $rsyncCmd 
 		= "rsync -av --delete --exclude-from=- $source $self->{'vendor-os-path'}";

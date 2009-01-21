@@ -31,13 +31,17 @@ sub new
 sub initialize
 {
 	my $self = shift;
-	my $distro = shift;
+	my $engine = shift;
 
-	$self->{'distro'} = $distro;
+	$self->{'engine'} = $engine;
 	return;
 }
 
-sub unpackPackages
+sub prepareBootstrap
+{
+}
+
+sub bootstrap
 {
 }
 

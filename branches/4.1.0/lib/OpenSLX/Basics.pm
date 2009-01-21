@@ -28,7 +28,7 @@ $VERSION = 1.01;
 	&warn &die &croak &carp &confess &cluck
 	&callInSubprocess &executeInSubprocess &slxsystem
 	&vlog
-	&checkFlags
+	&checkParams
 	&instantiateClass
 	&addCleanupFunction &removeCleanupFunction
 );
@@ -469,19 +469,111 @@ sub _doThrowOrWarn
 	return;
 }
 
-# ------------------------------------------------------------------------------
-sub checkFlags
-{
-	my $flags = shift || confess 'need to pass in flags-hashref!';
-	my $knownFlags  = shift || confess 'need to pass in knownFlags-arrayref!';
+=item checkParams()
 
-	my %known;
-	@known{@$knownFlags} = ();
-	foreach my $flag (keys %$flags) {
-		next if exists $known{$flag};
-		cluck("flag '$flag' not known!");
-	}
-	return;
+Utility function that can be used by any method that accepts param-hashes
+to check if the given parameters actually match the expectations.
+
+Each individual parameter has a specification that describes the expectation
+that the calling function has towards this param. The following specifications
+are supported:
+
+* '!'          - the parameter is required
+* '?'          - the parameter is optional
+* 'm{regex}'   - the parameter must match the given regex
+* '!class=...' - the parameter is required and must be an object of the given class
+* '?class=...' - if the parameter has been given, it must be an object of the given class
+
+The function will confess for any unknown, missing, or non-matching param.
+
+If accepted as useful, this function could be moved to a utility module of
+the framework in order to be available to all other OTRS-modules.
+
+=cut
+
+sub checkParams
+{
+    my $params     = shift or confess('need to pass in params-hashref!');
+    my $paramsSpec = shift or confess('need to pass in params-spec-hashref!');
+
+    # print a warning for any unknown parameters that have been given:
+    my @unknownParams
+        =   grep { !exists $paramsSpec->{$_}; }
+            keys %$params;
+    if (@unknownParams) {
+        my $unknownParamsStr = join ',', @unknownParams;
+        confess("Enocuntered unknown params: '$unknownParamsStr'!\n");
+    }
+
+    # check if all required params have been specified:
+    foreach my $param (keys %$paramsSpec) {
+        my $spec = $paramsSpec->{$param};
+        if (ref($spec) eq 'HASH') {
+            # Handle nested specs by recursion:
+            my $subParams = $params->{$param};
+            if (!defined $subParams) {
+                confess("Required param '$param' is missing!");
+            }
+            checkParams($subParams, $spec);
+        }
+        elsif (ref($spec) eq 'ARRAY') {
+            # Handle nested spec arrays by looped recursion:
+            my $subParams = $params->{$param};
+            if (!defined $subParams) {
+                confess("Required param '$param' is missing!");
+            }
+            elsif (ref($subParams) ne 'ARRAY') {
+                confess("Value for param '$param' must be an array-ref!");
+            }
+            foreach my $subParam (@$subParams) {
+                checkParams($subParam, $spec->[0]);
+            }
+        }
+        elsif ($spec eq '!') {
+            # required parameter:
+            if (!exists $params->{$param}) {
+                confess("Required param '$param' is missing!");
+            }
+        }
+        elsif ($spec =~ m{^\!class=(.+)$}i) {
+            my $class = $1;
+            # required parameter ...
+            if (!exists $params->{$param}) {
+                confess("Required param '$param' is missing!");
+            }
+            # ... of specific class
+            if (!$params->{$param}->isa($class)) {
+                confess("Param '$param' is not a '$class', but that is required!");
+            }
+        }
+        elsif ($spec eq '?') {
+            # optional parameter - nothing to do
+        }
+        elsif ($spec =~ m{^\?class=(.+)$}i) {
+            my $class = $1;
+            # optional parameter ...
+            if (exists $params->{$param}) {
+                # ... has been given, so it must match specific class
+                if (!$params->{$param}->isa($class)) {
+                    confess("Param '$param' is not a '$class', but that is required!");
+                }
+            }
+        }
+        elsif ($spec =~ m{^m{(.+)}$}) {
+            # try to match given regex:
+            my $regex = $1;
+            my $value = $params->{$param};
+            if ($value !~ m{$regex}) {
+                confess("Required param '$param' isn't matching regex '$regex' (given value was '$value')!");
+            }
+        }
+        else {
+            # complain about unknown spec:
+            confess("Unknown param-spec '$spec' encountered!");
+        }
+    }
+
+    return scalar 1;
 }
 
 # ------------------------------------------------------------------------------
@@ -490,7 +582,10 @@ sub instantiateClass
 	my $class = shift;
 	my $flags = shift || {};
 
-	checkFlags($flags, ['pathToClass', 'version']);
+	checkParams($flags, { 
+		'pathToClass' => '?', 
+		'version'     => '?' 
+	});
 	my $pathToClass      = $flags->{pathToClass};
 	my $requestedVersion = $flags->{version};
 
@@ -499,10 +594,10 @@ sub instantiateClass
 	$moduleName .= '.pm';
 	unless (eval { require $moduleName } ) {
 		if ($! == 2) {
-			die _tr("Module <%s> not found!\n", $moduleName);
+			die _tr("Module '%s' not found!\n", $moduleName);
 		}
 		else {
-			die _tr("Unable to load module <%s> (%s)\n", $moduleName, $@);
+			die _tr("Unable to load module '%s' (%s)\n", $moduleName, $@);
 		}
 	}
 	if (defined $requestedVersion) {
