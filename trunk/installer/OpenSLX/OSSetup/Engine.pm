@@ -365,14 +365,14 @@ sub readDistroInfo
 		foreach my $r (sort keys %repository) {
 			vlog 2, "repository '$r':";
 			foreach my $k (sort keys %{$repository{$r}}) {
-				vlog 2, "\t$k = '$repository{$r}->{$k}'";
+				vlog 3, "\t$k = '$repository{$r}->{$k}'";
 			}
 		}
 		foreach my $s (sort keys %selection) {
 			my @selLines = split "\n", $selection{$s};
 			vlog 2, "selection '$s':";
 			foreach my $sl (@selLines) {
-				vlog 2, "\t$sl";
+				vlog 3, "\t$sl";
 			}
 		}
 	}
@@ -464,8 +464,14 @@ sub stage1A_createBusyboxEnvironment
 			 "$self->{stage1aDir}/bin", 'busybox');
 
 	# determine all required libraries and copy those, too:
-	vlog 2, "calling slxldd for busybox";
-	my $requiredLibsStr = `slxldd $openslxConfig{'share-path'}/busybox/busybox`;
+	vlog 1, _tr("calling slxldd for $busyboxName");
+	my $slxlddCmd 
+		= "slxldd $openslxConfig{'share-path'}/busybox/$busyboxName";
+	vlog 2, "executing: $slxlddCmd";
+	my $requiredLibsStr = `$slxlddCmd`;
+	if ($?) {
+		die _tr("slxldd couldn't determine the libs required by busybox! (%s)", $?);
+	}
 	chomp $requiredLibsStr;
 	vlog 2, "slxldd results:\n$requiredLibsStr";
 	foreach my $lib (split "\n", $requiredLibsStr) {
@@ -479,6 +485,12 @@ sub stage1A_createBusyboxEnvironment
 		= slurpFile("$openslxConfig{'share-path'}/busybox/busybox.links");
 	foreach my $linkTarget (split "\n", $links) {
 		linkFile('/bin/busybox', "$self->{stage1aDir}/$linkTarget");
+	}
+	if ($self->hostIs64Bit() && !-e "$self->{stage1aDir}/lib64") {
+		linkFile('/lib', "$self->{stage1aDir}/lib64");
+	}
+	if ($self->hostIs64Bit() && !-e "$self->{stage1aDir}/usr/lib64") {
+		linkFile('/usr/lib', "$self->{stage1aDir}/usr/lib64");
 	}
 }
 
