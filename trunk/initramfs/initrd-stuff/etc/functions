@@ -1,14 +1,16 @@
-# common function script for the configuration of linux diskless clients
-# (included by init, hwautocfg, servconfig, ... within OpenSLX initial
-# ramfs)
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 17-12-2006
-# Felix Endres, 30-04-2006
-# <mj0@uni-freiburg.de> (xenbr), 12-12-2006
-# Tobias Maier
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
 #
-# (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.ORG Project
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# common functions file for the configuration of linux diskless clients
+# (included by init, hwautocfg, servconfig, ... within OpenSLX initialramfs)
 
 #############################################################################
 # set of empty dummy functions (loaded before real functions in the
@@ -100,7 +102,7 @@ if [ -n "$2" ] ; then
     echo -e "${error_msg}${e_msg}${error_nfe}" >> ${LOGFILE}
   [ "$DEBUGLEVEL" -gt 1 -a "$DEBUGLEVEL" != 8 ] && \
     echo -e "${error_msg}${e_msg}${error_nfe}"
-  [ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && usleep 20
+  [ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && sleep 10
 else
   echo -e "${error_msg}${e_msg}${error_shell}"
   # load usb modules to have keyboard enabled - they might have to be
@@ -110,7 +112,7 @@ else
   echo -n "Reboot now? [y]"
   read input
 #  [ -z "$input" -o "$input" = "y" -o "$input" = "Y" ] && {
-#    usleep 100
+#    usleep 5000
 #    [ -f /proc/sysrq-trigger ] || mount -t proc none /proc
 #    echo "b" > /proc/sysrq-trigger
 #  }
@@ -126,14 +128,17 @@ echo "${uptime} s."
 
 
 #############################################################################
-# micro sleep - either busybox command or simply loop and delete 1 from
-# the first argument gotten until zero
+# micro sleep - argument takes number of milliseconds. either busybox command
+# or simply use uptime information
 usleep () {
 if [ -x /bin/usleep ]; then
-  /bin/usleep `expr $1 \* 60000`
+  /bin/usleep `expr $1 \* 1000`
 else
-  local count=`expr $1 \* 10`
-  while [ $count -gt 0 ] ; do count=`expr $count \- 1` ; done
+  local starttime=$(sed -e "s, .*,,;s,\.,," /proc/uptime)
+  while [ $(sed -e "s, .*,,;s,\.,," /proc/uptime) -le \
+    $(expr $starttime + $1 - 2) ]
+    do :
+  done
 fi
 return 0
 }
@@ -144,7 +149,7 @@ if [ -x /bin/sleep ]; then
 #elif [ -x /bin/bash ]; then
 #  TMOUT=$1 read
 else
-  usleep `expr $1 \* 100`
+  usleep `expr $1 \* 1000`
 fi 
 }
 #############################################################################
@@ -902,13 +907,15 @@ for i in ${D_RCDIRS} ${D_INITBOOTD} ; do
   rm -f /mnt/etc/$i/*
 done
 count=10
-# boot.ld is a special runlevel script generated within initial ramdisk
-# which should be executed before the rest
+# boot.ld is a special runlevel script generated within initialramfs which
+# should be executed before the normal runlevel scripts. Proper shutdown is
+# not needed!?
 for i in boot.ld ${D_INITSCRIPTS}; do
   count=`expr $count + 1`
   revcnt=`expr 41 - $count`
   ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/S${count}$i
-  ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/K${revcnt}$i
+  # uncomment if proper shutdown of bootup scripts is required
+  #ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/K${revcnt}$i
 done
 }
 

@@ -1,25 +1,29 @@
 #!/bin/sh
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
 # main script for new type of initial ramdisk for OpenSLX linux diskless
 # clients version 4
-#
-# this file is distributed under the GPLv2, see ~/openslx/COPYING
-#
-# Dirk von Suchodoletz <dirk@goe.net>, 10-01-2007
-# <mj0@uni-freiburg.de> (xenbr), 27-09-2006
-#
-# (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX GmbH
 
+#############################################################################
 # functions common for all distros, messages contains all error and info
 # output (for some reason the error output is not produced properly - crash)
 . /etc/messages
-. /etc/functions || ( echo -e $init_mff && usleep 10000 )
-. /etc/distro-functions || ( echo -e $init_dff && usleep 10000 )
+. /etc/functions || ( echo -e $init_mff && sleep 100 )
+. /etc/distro-functions || ( echo -e $init_dff && sleep 100 )
 # configuration settings (several file and directory variables)
-. /etc/sysconfig/config || ( echo -e $init_dscf && usleep 10000 )
+. /etc/sysconfig/config || ( echo -e $init_dscf && sleep 100 )
 # configuration settings for slx environment
 . /etc/sysconfig/slxconfig 2>/dev/null || ( echo -e $init_sscf && \
-  usleep 10000 )
+  sleep 100 )
 
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
 export date="$slxconf_date"
@@ -261,7 +265,7 @@ else
   MODPRV="-q"
   LOGFILE="/dev/null"
   # redirect console (after /dev/null is available, and /dev mounted)
-  exec < /dev/null > /dev/null 2>&1
+  [ "${DEBUGLEVEL}" != 8 ] && exec < /dev/null > /dev/null 2>&1
 fi
 # load network adaptor modules
 for mod in ${NWMODULES}; do
@@ -328,9 +332,9 @@ if [ -n "${nbdmod}" ] ; then
       RDEV=/dev/nbd0
       waitfor "${RDEV}" 20000 || error "$init_nbddev"
       while ! nbd-client $nbdhost $nbdport ${RDEV} ; do
-        usleep 10
+        usleep 100
       done
-      usleep 10
+      usleep 100
       # switch off unneeded block read ahead
       echo "0" > /sys/block/nbd0/queue/read_ahead_kb
       ;;
@@ -346,7 +350,7 @@ if [ -n "${nbdmod}" ] ; then
       fi
       waitfor /dev/dnbd0 10000 || error "$init_nbddev"
       while ! dnbd-client -b $nbdhost -d /dev/dnbd0 $clientopt ; do
-        usleep 20
+        usleep 100
       done
       echo "0" > /sys/block/dnbd0/queue/read_ahead_kb
       RDEV=/dev/dnbd0
@@ -367,10 +371,10 @@ if [ -n "${nbdmod}" ] ; then
     echo "Using Copy-on-Write block device for rw access"
     mount -n -t tmpfs -o size=${COWSIZE} ramfs ${RWDIR}
     mkdir /dev/cow && cp -a /tmp/ctl /dev/cow
-    usleep 10
+    usleep 200
     ln -s /dev/cowloop0 /dev/cow/0
     cowdev -a /dev/nbd0 ${RWDIR}/nbd.cow
-    usleep 10
+    usleep 200
     RWRO="rw"
     RDEV=/dev/cow/0
     # run ldconfig if not switched off via kernel command line
@@ -380,7 +384,7 @@ if [ -n "${nbdmod}" ] ; then
     NFSRO=""
   fi
   # finally mount the block device
-  for i in 5 40 60 ; do
+  for i in 1 50 100 200 400 1000 ; do
     usleep $i
     mount -n -t $nbdrfst -o $RWRO $RDEV /mnt 2>/dev/null && break
   done
@@ -546,8 +550,8 @@ else
 fi
 # copy machine configuration (from global settings, additions made within
 # here and from dhcp/ldap sources) to client /etc for later checks
-waitfor /tmp/hwcfg 20000 || error "$init_errhw"
 waitfor /tmp/svcfg 20000 || error "$init_errsw"
+waitfor /tmp/hwcfg 30000 || error "$init_errhw"
 # IP configuration is made and should not be updated automatically, udevd
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump udhcpc 2>/dev/null
@@ -566,7 +570,7 @@ postinit
 [ $DEBUGLEVEL -gt 2 -a $DEBUGLEVEL != 8 ] && /bin/sh
 
 # unmount the bind mounted modules directory
-for i in 0 40 100 200 300 500 800 1000 1200; do
+for i in 0 200 300 500 800 1000 1200 2000 5000 ; do
   usleep $i && umount -n /lib/modules/${KERNEL} 2>/dev/null && break
   error "$init_wait" nonfatal
 done

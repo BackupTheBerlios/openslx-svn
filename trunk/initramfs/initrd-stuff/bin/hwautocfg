@@ -1,13 +1,19 @@
 #!/bin/sh
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
 #
 # universal (distro independent) hardware autoconfiguration script for 
 # OpenSLX linux diskless clients, using hwconfig from knoppix as base tool 
-#
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 16-12-2006
-#
-# (c) 2003 - 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.org Project
 
+#############################################################################
 # local functions used within hwautocfg
 displaysetup () {
 # (temporary) configuration file
@@ -348,7 +354,7 @@ modprobe ${MODPRV} snd-mixer-oss
 test -f /proc/bus/usb/devices || \
   mount -n -t usbfs usbfs /proc/bus/usb 2>/dev/null
 [ -n "$IDE" ] && modprobe -q ide_generic 2>/dev/null 
-usleep 10 && hwsetup -v > /tmp/hwsetup.info
+usleep 200 && hwsetup -v > /tmp/hwsetup.info
 # remaining drivers listed in /tmp/hwsetup.info
 cat /tmp/hwsetup.info| while read LINE ; do
   if strinstr "driver:" "${LINE}"; then
@@ -356,7 +362,7 @@ cat /tmp/hwsetup.info| while read LINE ; do
     if ! strinstr " ${DRIVER} " "${DRIVERLIST}"; then
       strinstr "Card:" "${DRIVER}" || strinstr "ps/2" "${DRIVER}" || {
         modprobe ${MODPRV} ${DRIVER} &
-        usleep 8; }
+        usleep 100; }
       DRIVERLIST="${DRIVERLIST} ${DRIVER}"
     fi
   fi

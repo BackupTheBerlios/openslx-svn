@@ -1,17 +1,20 @@
 #!/bin/sh
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
 #
 # universal (distro independent) configuration script for OpenSLX linux
 # diskless clients (executed in stage3 within initial ramfs). The file-
 # system is setup when servconfig starts
-#
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-12-2006
-# Michael Janczyk <mj0@uni-freiburg.de>, 10-01-2007
-# Lars Mueller <lm@OpenSLX.com>, 23-06-2006
-# Oliver Tappe <ot@OpenSLX.com>, 23-06-2006
-#
-# (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.ORG Project
 
+#############################################################################
 # check for configuration files to source
 
 # functions common for all distros, messages contains all error and
