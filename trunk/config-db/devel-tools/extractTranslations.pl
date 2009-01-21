@@ -9,6 +9,17 @@
 #
 use strict;
 
+my $abstract = q[
+extractTranslations.pl
+    This script is a tool for OpenSLX developers as it allows to extract
+    translatable strings from all OpenSLX perl-scripts and modules found
+    in and below a given path.
+
+    Optionally, all the translatable strings that were found can automatically
+    be integrated into all existing translation modules. During this process,
+    any translations already existing in these modules will be preserved.
+];
+
 use File::Find;
 use Getopt::Long;
 use Pod::Usage;
@@ -33,7 +44,7 @@ GetOptions(
 	'verbose' => \$verbose,
 	'version' => \$versionReq,
 ) or pod2usage(2);
-pod2usage(1) if $helpReq;
+pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
 if ($versionReq) {
 	system('slxversion');
 	exit 1;
@@ -183,11 +194,12 @@ all scripts and modules found in and below the given path.
 extractTranslations.pl [options] path
 
   Options:
-      --help              brief help message
-      --update-path=s     update the OpenSLX locale modules in given path
-      --show              show overview of all strings found
-      --verbose           show for each file which strings are found
-      --version           show version
+      --help                   brief help message
+      --update-path=<string>   update the OpenSLX locale modules in given
+                               path
+      --show                   show overview of all strings found
+      --verbose                show for each file which strings are found
+      --version                show version
 
 =head1 OPTIONS
 
@@ -201,7 +213,7 @@ Prints a brief help message and exits.
 
 Prints sorted list of all translatable strings that were found.
 
-=item B<--update-path=s>
+=item B<--update-path=<string>>
 
 Integrates the found translatable strings into all OpenSLX locale modules found
 in path (which should end in 'Translations').
@@ -219,6 +231,4 @@ Prints the version and exits.
 
 =back
 
-=head1 DESCRIPTION
-
-B<extractTranslations.pl> can be used to
+=cut

@@ -8,6 +8,19 @@
 #
 use strict;
 
+my $abstract = q[
+slxsetup.pl
+    This script can be used to show or change the local settings for OpenSLX.
+
+    Any cmdline-argument passed to this script will change the local OpenSLX
+    settings file (usually /etc/opt/openslx/settings.local).
+
+    If you invoke the script without any arguments, it will print the current
+    settings and exit.
+
+    Please use the --man option in order to read the full manual.
+];
+
 use Getopt::Long qw(:config pass_through);
 use Pod::Usage;
 
@@ -20,17 +33,6 @@ use lib "$FindBin::RealBin";
 	# development path
 
 use OpenSLX::Basics;
-
-my $abstract = q[
-slxsetup.pl
-    This script can be used to show or change the local settings for OpenSLX.
-
-    Any cmdline-argument passed to this script will change the local OpenSLX
-    settings file (usually /etc/opt/openslx/settings.local).
-
-    If you invoke the script without any arguments, it will print the current
-    settings and exit.
-];
 
 my (
 	$noShow,

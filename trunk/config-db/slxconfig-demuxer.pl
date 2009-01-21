@@ -8,6 +8,21 @@
 #
 use strict;
 
+my $abstract = q[
+slxconfig-demuxer.pl
+    This script will read information about all systems, clients and
+    groups from the OpenSLX configuration database, mix & match the individual
+    configurational attributes and then demultiplex the resulting information
+    to a set of configuration files. These files are used by any OpenSLX-client
+    during boot to find out which systems to offer for booting.
+
+    The resulting files will be put into the OpenSLX-tftpboot-path (you can use
+    the option --tftpboot-path to override the default taken from the OpenSLX
+    default settings).
+
+    Please use the --man option in order to read the full manual.
+];
+
 use Fcntl qw(:DEFAULT :flock);
 use File::Basename;
 use Getopt::Long qw(:config pass_through);
@@ -55,7 +70,7 @@ GetOptions(
 	'man' => \$manReq,
 	'version' => \$versionReq,
 ) or pod2usage(2);
-pod2usage(1) if $helpReq;
+pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
 pod2usage(-verbose => 2) if $manReq;
 if ($versionReq) {
 	system('slxversion');
@@ -374,31 +389,31 @@ slxconfig-demuxer.pl - OpenSLX configuration demultiplexer
 slxconfig-demuxer.pl [options]
 
   Script Options:
-      --dry-run           avoids writing anything, for testing
+      --dry-run                  avoids writing anything, for testing
 
   OpenSLX Options:
-      --base-path=s       basic path to project files
-      --bin-path=s        path to binaries and scripts
-      --config-path=s     path to configuration files
-      --db-basepath=s     basic path to openslx database
-      --db-datadir=s      data folder created under db-basepath
-      --db-name=s         name of database
-      --db-spec=s         full DBI-specification of database
-      --db-type=s         type of database to connect to
-      --export-path=s     path to root of all exported filesystems
-      --locale=s          locale to use for translations
-      --logfile=s         file to write logging output to
-      --private-path=s    path to private data
-      --public-path=s     path to public (client-accesible) data
-      --share-path=s      path to sharable data
-      --temp-path=s       path to temporary data
-      --tftpboot-path=s   path to root of tftp-server
-      --verbose-level=i   level of logging verbosity (0-3)
+      --base-path=<string>       basic path to project files
+      --bin-path=<string>        path to binaries and scripts
+      --config-path=<string>     path to configuration files
+      --db-basepath=<string>     basic path to openslx database
+      --db-datadir=<string>      data folder created under db-basepath
+      --db-name=<string>         name of database
+      --db-spec=<string>         full DBI-specification of database
+      --db-type=<string>         type of database to connect to
+      --export-path=<string>     path to root of all exported filesystems
+      --locale=<string>          locale to use for translations
+      --logfile=<string>         file to write logging output to
+      --private-path=<string>    path to private data
+      --public-path=<string>     path to public (client-accesible) data
+      --share-path=<string>      path to sharable data
+      --temp-path=<string>       path to temporary data
+      --tftpboot-path=<string>   path to root of tftp-server
+      --verbose-level=<int>      level of logging verbosity (0-3)
 
   General Options:
-      --help              brief help message
-      --man               full documentation
-      --version           show version
+      --help                     brief help message
+      --man                      full documentation
+      --version                  show version
 
 =head1 OPTIONS
 
@@ -417,108 +432,108 @@ you can learn from the logging output what would have been done.
 
 =over 8
 
-=item B<--base-path=s>
+=item B<--base-path=<string>>
 
 Sets basic path to project files.
 
 Default is $SLX_BASE_PATH (usually F</opt/openslx>).
 
-=item B<--bin-path=s>
+=item B<--bin-path=<string>>
 
 Sets path to binaries and scripts.
 
 Default is $SLX_BASE_PATH/bin (usually F</opt/openslx/bin>).
 
-=item B<--config-path=s>
+=item B<--config-path=<string>>
 
 Sets path to configuration files.
 
 Default is $SLX_CONFIG_PATH (usually F</etc/opt/openslx>).
 
-=item B<--db-basepath=s>
+=item B<--db-basepath=<string>>
 
 Sets basic path to openslx database.
 
 Default is $SLX_DB_PATH (usually F</var/opt/openslx/db>).
 
-=item B<--db-datadir=s>
+=item B<--db-datadir=<string>>
 
 Sets data folder created under db-basepath.
 
 Default is $SLX_DB_DATADIR (usually empty as it depends on db-type
 whether or not such a directory is required at all).
 
-=item B<--db-name=s>
+=item B<--db-name=<string>>
 
 Gives the name of the database to connect to.
 
 Default is $SLX_DB_NAME (usually C<openslx>).
 
-=item B<--db-spec=s>
+=item B<--db-spec=<string>>
 
 Gives the full DBI-specification of database to connect to. Content depends
 on the db-type.
 
 Default is $SLX_DB_SPEC (usually empty as it will be built automatically).
 
-=item B<--db-type=s>
+=item B<--db-type=<string>>
 
 Sets the type of database to connect to (CSV, SQLite, mysql, ...).
 
 Default $SLX_DB_TYPE (usually C<CSV>).
 
-=item B<--export-path=s>
+=item B<--export-path=<string>>
 
 Sets path to root of all exported filesystems. For each type of export (NFS,
 NBD, ...) a separate folder will be created in here.
 
 Default is $SLX_EXPORT_PATH (usually F</srv/openslx/export>.
 
-=item B<--locale=s>
+=item B<--locale=<string>>
 
 Sets the locale to use for translations.
 
 Defaults to the system's standard locale.
 
-=item B<--logfile=s>
+=item B<--logfile=<string>>
 
 Specifies a file where logging output will be written to.
 
 Default is to log to STDERR.
 
-=item B<--private-path=s>
+=item B<--private-path=<string>>
 
 Sets path to private data, where the config-db, vendor_oses and configurational
 extensions will be stored.
 
 Default is $SLX_PRIVATE_PATH (usually F</var/opt/openslx>.
 
-=item B<--public-path=s>
+=item B<--public-path=<string>>
 
 Sets path to public (client-accesible) data.
 
 Default is $SLX_PUBLIC_PATH (usually F</srv/openslx>.
 
-=item B<--share-path=s>
+=item B<--share-path=<string>>
 
 Sets path to sharable data, where distro-specs and functionality templates
 will be stored.
 
 Default is $SLX_SHARE_PATH (usually F</opt/openslx/share>.
 
-=item B<--temp-path=s>
+=item B<--temp-path=<string>>
 
 Sets path to temporary data.
 
 Default is $SLX_TEMP_PATH (usually F</tmp>.
 
-=item B<--tftpboot-path=s>
+=item B<--tftpboot-path=<string>>
 
 Sets path to root of tftp-server from which clients will access their files.
 
 Default is $SLX_TFTPBOOT_PATH (usually F</srv/openslx/tftpboot>.
 
-=item B<--verbose-level=i>
+=item B<--verbose-level=<int>>
 
 Sets the level of logging verbosity (0-3).
 
