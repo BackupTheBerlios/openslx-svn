@@ -475,11 +475,9 @@ fi
 config_automount () {
 if [ -e /mnt/etc/${D_SYSCONFDIR}/autofs ] ; then
   testmkd /var/lock/subsys
-  echo -e "# /etc/${D_SYSCONFDIR}/autofs - file modified by\n#\t$0:\n#" \
-  > /etc/autofs
-  sed -e "s,AUTOFS_OPTIONS.*,AUTOFS_OPTIONS=\"--timeout 3\"," \
-    /mnt/etc/${D_SYSCONFDIR}/autofs >> /etc/autofs
-  cp /etc/autofs /mnt/etc/${D_SYSCONFDIR}/autofs
+  sed -e "1i# /etc/${D_SYSCONFDIR}/autofs - file modified by\n#\t$0:\n#" \
+      -e "s,AUTOFS_OPTIONS.*,AUTOFS_OPTIONS=\"--timeout 3\"," \
+      -i /mnt/etc/${D_SYSCONFDIR}/autofs
   rllinker "autofs" "18" "04"
 else
   error "$df_erramt" nonfatal
@@ -526,11 +524,6 @@ if [ -f /mnt/etc/${D_SYSCONFDIR}/vmware ] ; then
     /mnt/etc/${D_INITDIR}/.depend.start >> /etc/.depend.start
   echo "vmware-prep: " >> /etc/.depend.start
   cp /etc/.depend.start /mnt/etc/${D_INITDIR}/.depend.start
-  # this line should be added to /etc/hotplug.d/usb/50-usb.hotplug
-  # to block linux from handling usb events during vmware sessions
-  #sed -e '/USB-specific/{;i\' \
-  #  -e 'ps aux |grep -i vmware| grep -v "grep" >/dev/null 2>&1 && exit 0' \
-  #  -e ' }' -i /mnt/etc/hotplug.d/usb/50-usb.hotplug
 else
   error "df_errvmw" nonfatal
 fi

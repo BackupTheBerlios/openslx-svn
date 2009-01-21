@@ -441,11 +441,9 @@ if [ -f /mnt/etc/init.d/autofs ] ; then
     echo -e "*\t-rsize=32768,wsize=32768,tcp,rw\t${automnt_src}/&" \
       >> /mnt/etc/auto.${automnt_dir}
   fi
-  echo -e "# /etc/sysconfig/autofs - file modified by\n#\t$0:\n#" \
-    > /etc/autofs
-  sed -e "s,AUTOFS_OPTIONS.*,AUTOFS_OPTIONS=\"--timeout 3\"," \
-    /mnt/etc/${D_SYSCONFDIR}/autofs >> /etc/autofs
-  cp /etc/autofs /mnt/etc/${D_SYSCONFDIR}/autofs
+  sed -e "1i# /etc/${D_SYSCONFDIR}/autofs - file modified by\n#\t$0:\n#" \
+      -e "s,AUTOFS_OPTIONS.*,AUTOFS_OPTIONS=\"--timeout 3\"," \
+      -i /mnt/etc/${D_SYSCONFDIR}/autofs
   config_portmap
   rllinker "autofs" "18" "04"
 fi

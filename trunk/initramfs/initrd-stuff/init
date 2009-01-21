@@ -142,22 +142,22 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     # if ld.so.cache should not be generated
     noldsc)
       noldsc=yes;;
-    # additional source to unify root filesystem with
+    # simple union of base ro rootdir with tempfs on top
+    unionfs)
+      unionfs=1;;
+    # additional source to unify root filesystem with; the top layer will be
+    # the tempfs
     unionfs=*)
       unionfs=1
       uniondirs=${opts#unionfs=}
     ;;
-    # if unionfs should be used over the complete root filesystem
-    unionfs)
-      unionfs=1;;
-    # Same for AUFS
+    # same for AUFS; alternative to unionfs
+    aufs)
+      aufs=1;;
     aufs=*)
       aufs=1
       uniondirs=${opts#aufs=}
     ;;
-    # if unionfs should be used over the complete root filesystem
-    aufs)
-      aufs=1;;
     # if cowloop should be used, only ontop of network block device and in
     # combination with classical fs, like ext2 useful
     cowloop=*)
@@ -384,14 +384,13 @@ if [ -n "${nbdmod}" ] ; then
   if [ -n "${cowloop}" -a -x /bin/cowdev ] ; then
     modprobe ${MODPRV} cowloop || {
       error "$init_loadcow" nonfatal
-      cowloop=""; }
+      unset cowloop; }
     [ -x /bin/mdev ] && mdev -s
   fi
   if [ -n "${cowloop}" ] ; then
     if [ -n "${unionfs}" -o -n "${aufs}" ] ; then
       error "$init_cownonbd"
-      unionfs="";
-      aufs="";
+      unset unionfs aufs
     fi
     echo "Using Copy-on-Write block device for rw access"
     mount -n -t tmpfs -o size=${cowsize} ramfs ${rwdir}
@@ -406,7 +405,7 @@ if [ -n "${nbdmod}" ] ; then
     ldcfg
   else
     # use normal UnionFS behaviour because rootfs is not NFS
-    nfsro=""
+    unset nfsro
   fi
   # finally mount the block device
   for i in 1 50 100 200 400 1000 ; do
@@ -466,7 +465,7 @@ if [ -n "${unionfs}" ]; then
   modprobe ${MODPRV} unionfs  && union_type="UnionFS"
   if [ -z "$union_type" ]; then 
 	error "$init_loadufs" nonfatal
-	unionfs="";
+	unset unionfs
 	# if unionfs is not available, check for aufs and inform user
         modprobe ${MODPRV} -n aufs && error $init_noufs_butaufs
   fi
@@ -476,7 +475,7 @@ if [ -n "${aufs}" ]; then
   modprobe ${MODPRV} aufs   && union_type="AUFS"
   if [ -z "$union_type" ]; then 
 	error "$init_loadaufs" nonfatal
-	aufs="";
+	unset aufs
 	# if aufs is not available, check for unionfs and inform user
         modprobe ${MODPRV} -n unionfs && error $init_noaufs_butufs
   fi
