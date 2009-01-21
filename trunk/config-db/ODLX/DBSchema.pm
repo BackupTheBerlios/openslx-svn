@@ -107,6 +107,7 @@ $DbSchema = {
 			'name:s.128',		# name of group
 			'descr:s.1024',		# internal description (for admins)
 			'priority:i',		# priority, used for order in group-list
+								# (from 0-lowest to 10-highest)
 			@sharedAttributes,
 		],
 		'group_client_ref' => [
@@ -208,6 +209,11 @@ $DbSchema = {
 			'cmd' => 'add-table',
 			'table' => 'group_client_ref',
 			'cols' => $DbSchema->{'tables'}->{'group_client_ref'},
+		},
+		{
+			'cmd' => 'add-table',
+			'table' => 'group_system_ref',
+			'cols' => $DbSchema->{'tables'}->{'group_system_ref'},
 		},
 	],
 );
