@@ -541,7 +541,7 @@ sub setSystemIDsOfClient
 
 	my @uniqueSystemIDs = _unique(@$systemIDs);
 	return $self->{'meta-db'}->setSystemIDsOfClient($clientID,
-													   \@uniqueSystemIDs);
+													\@uniqueSystemIDs);
 }
 
 sub addSystemIDsToClient
