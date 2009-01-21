@@ -12,6 +12,15 @@ is(
 	my $vendorOS = $configDB->fetchVendorOSByFilter, undef, 
 	'no vendor-OS yet (scalar context)'
 );
+
+my $wrongVendorOS = {
+	'comment' => 'test',
+};
+ok(
+	! eval { my $vendorOSID = $configDB->addVendorOS($wrongVendorOS); },
+	'trying to insert an unnamed vendor-OS should fail'
+);
+
 is(
 	my @vendorOSes = $configDB->fetchVendorOSByFilter, 0, 
 	'no vendor-OS yet (array context)'
@@ -173,7 +182,13 @@ ok(
 	'changing unknown colum should fail'
 );
 
-ok($configDB->changeVendorOS(1, { id => 23 }), 'changing id should fail');
+ok(! $configDB->changeVendorOS(1, { id => 23 }), 'changing id should fail');
+
+# now remove a vendor-OS and check if that worked
+ok($configDB->removeVendorOS(3), 'removing vendor-OS 3 should be ok');
+is($configDB->fetchVendorOSByID(3, 'id'), undef, 'vendor-OS 3 should be gone');
+is($configDB->fetchVendorOSByID(1)->{id}, 1, 'vendor-OS 1 should still exist');
+is($configDB->fetchVendorOSByID(2)->{id}, 2, 'vendor-OS 2 should still exist');
 
 $configDB->disconnect();
 

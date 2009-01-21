@@ -10,6 +10,8 @@ use FindBin;
 use lib "$FindBin::RealBin/../";
 use lib "$FindBin::RealBin/../../lib";
 
+chdir "$FindBin::RealBin" or die "unable to chdir to $FindBin::RealBin! ($!)\n";
+
 use OpenSLX::Basics;
 
 use OpenSLX::MetaDB::SQLite;
@@ -20,6 +22,8 @@ $cmdlineConfig{'db-name'}      = $ENV{SLX_DB_NAME}      = 'slx-test';
 $cmdlineConfig{'db-type'}      = $ENV{SLX_DB_TYPE}      = 'SQLite';
 
 openslxInit();
+
+$Test::Harness::Verbose = 1 if $openslxConfig{'verbose-level'};
 
 # remove the test-db if it already exists 
 my $metaDB = OpenSLX::MetaDB::SQLite->new();

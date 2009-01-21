@@ -115,6 +115,7 @@ sub new
 
 	my $self = {
 	};
+
 	return bless $self, $class;
 }
 
@@ -218,6 +219,7 @@ sub startTransaction
 	my $self = shift;
 
 	$self->{'meta-db'}->startTransaction();
+
 	return 1;
 }
 
@@ -233,6 +235,7 @@ sub commitTransaction
 	my $self = shift;
 
 	$self->{'meta-db'}->commitTransaction();
+
 	return 1;
 }
 
@@ -248,6 +251,7 @@ sub rollbackTransaction
 	my $self = shift;
 
 	$self->{'meta-db'}->rollbackTransaction();
+
 	return 1;
 }
 
@@ -317,6 +321,7 @@ sub fetchVendorOSByFilter
 
 	my @vendorOS =
 	  $self->{'meta-db'}->fetchVendorOSByFilter($filter, $resultCols);
+
 	return wantarray() ? @vendorOS : shift @vendorOS;
 }
 
@@ -349,6 +354,7 @@ sub fetchVendorOSByID
 	my $resultCols = shift;
 
 	my @vendorOS = $self->{'meta-db'}->fetchVendorOSByID($ids, $resultCols);
+
 	return wantarray() ? @vendorOS : shift @vendorOS;
 }
 
@@ -383,6 +389,7 @@ sub fetchExportByFilter
 	my $resultCols = shift;
 
 	my @exports = $self->{'meta-db'}->fetchExportByFilter($filter, $resultCols);
+
 	return wantarray() ? @exports : shift @exports;
 }
 
@@ -415,6 +422,7 @@ sub fetchExportByID
 	my $resultCols = shift;
 
 	my @exports = $self->{'meta-db'}->fetchExportByID($ids, $resultCols);
+
 	return wantarray() ? @exports : shift @exports;
 }
 
@@ -501,6 +509,7 @@ sub fetchSystemByFilter
 	my $resultCols = shift;
 
 	my @systems = $self->{'meta-db'}->fetchSystemByFilter($filter, $resultCols);
+
 	return wantarray() ? @systems : shift @systems;
 }
 
@@ -533,6 +542,7 @@ sub fetchSystemByID
 	my $resultCols = shift;
 
 	my @systems = $self->{'meta-db'}->fetchSystemByID($ids, $resultCols);
+
 	return wantarray() ? @systems : shift @systems;
 }
 
@@ -646,6 +656,7 @@ sub fetchClientByFilter
 	my $filter = shift;
 
 	my @clients = $self->{'meta-db'}->fetchClientByFilter($filter);
+
 	return wantarray() ? @clients : shift @clients;
 }
 
@@ -678,6 +689,7 @@ sub fetchClientByID
 	my $resultCols = shift;
 
 	my @clients = $self->{'meta-db'}->fetchClientByID($ids, $resultCols);
+
 	return wantarray() ? @clients : shift @clients;
 }
 
@@ -766,6 +778,7 @@ sub fetchGroupByFilter
 	my $resultCols = shift;
 
 	my @groups = $self->{'meta-db'}->fetchGroupByFilter($filter, $resultCols);
+
 	return wantarray() ? @groups : shift @groups;
 }
 
@@ -798,6 +811,7 @@ sub fetchGroupByID
 	my $resultCols = shift;
 
 	my @groups = $self->{'meta-db'}->fetchGroupByID($ids, $resultCols);
+
 	return wantarray() ? @groups : shift @groups;
 }
 
@@ -884,6 +898,8 @@ sub addVendorOS
 	my $self    = shift;
 	my $valRows = _aref(shift);
 
+	_checkCols($valRows, 'vendor_os', 'name');
+
 	return $self->{'meta-db'}->addVendorOS($valRows);
 }
 
@@ -966,6 +982,8 @@ sub addExport
 {
 	my $self    = shift;
 	my $valRows = _aref(shift);
+
+	_checkCols($valRows, 'export', qw(name vendor_os_id type));
 
 	return $self->{'meta-db'}->addExport($valRows);
 }
@@ -1114,6 +1132,8 @@ sub addSystem
 	my $self    = shift;
 	my $valRows = _aref(shift);
 
+	_checkCols($valRows, 'system', qw(name export_id));
+
 	foreach my $valRow (@$valRows) {
 		if (!$valRow->{kernel}) {
 			$valRow->{kernel} = 'vmlinuz';
@@ -1224,8 +1244,10 @@ sub setClientIDsOfSystem
 	my $clientIDs = _aref(shift);
 
 	my @uniqueClientIDs = _unique(@$clientIDs);
-	return $self->{'meta-db'}
-	  ->setClientIDsOfSystem($systemID, \@uniqueClientIDs);
+
+	return $self->{'meta-db'}->setClientIDsOfSystem(
+		$systemID, \@uniqueClientIDs
+	);
 }
 
 =item C<addClientIDsToSystem($systemID, @$clientIDs)>
@@ -1259,6 +1281,7 @@ sub addClientIDsToSystem
 
 	my @clientIDs = $self->{'meta-db'}->fetchClientIDsOfSystem($systemID);
 	push @clientIDs, @$newClientIDs;
+
 	return $self->setClientIDsOfSystem($systemID, \@clientIDs);
 }
 
@@ -1296,6 +1319,7 @@ sub removeClientIDsFromSystem
 	my @clientIDs =
 	  grep { !exists $toBeRemoved{$_} }
 	  $self->{'meta-db'}->fetchClientIDsOfSystem($systemID);
+
 	return $self->setClientIDsOfSystem($systemID, \@clientIDs);
 }
 
@@ -1329,6 +1353,7 @@ sub setGroupIDsOfSystem
 	my $groupIDs = _aref(shift);
 
 	my @uniqueGroupIDs = _unique(@$groupIDs);
+
 	return $self->{'meta-db'}->setGroupIDsOfSystem($systemID, \@uniqueGroupIDs);
 }
 
@@ -1363,6 +1388,7 @@ sub addGroupIDsToSystem
 
 	my @groupIDs = $self->{'meta-db'}->fetchGroupIDsOfSystem($systemID);
 	push @groupIDs, @$newGroupIDs;
+
 	return $self->setGroupIDsOfSystem($systemID, \@groupIDs);
 }
 
@@ -1400,6 +1426,7 @@ sub removeGroupIDsFromSystem
 	my @groupIDs =
 	  grep { !exists $toBeRemoved{$_} }
 	  $self->{'meta-db'}->fetchGroupIDsOfSystem($systemID);
+
 	return $self->setGroupIDsOfSystem($systemID, \@groupIDs);
 }
 
@@ -1425,6 +1452,8 @@ sub addClient
 {
 	my $self    = shift;
 	my $valRows = _aref(shift);
+
+	_checkCols($valRows, 'client', qw(name mac));
 
 	foreach my $valRow (@$valRows) {
 		if (!$valRow->{boot_type}) {
@@ -1527,8 +1556,10 @@ sub setSystemIDsOfClient
 	my $systemIDs = _aref(shift);
 
 	my @uniqueSystemIDs = _unique(@$systemIDs);
-	return $self->{'meta-db'}
-	  ->setSystemIDsOfClient($clientID, \@uniqueSystemIDs);
+
+	return $self->{'meta-db'}->setSystemIDsOfClient(
+		$clientID, \@uniqueSystemIDs
+	);
 }
 
 =item C<addSystemIDsToClient($clientID, @$systemIDs)>
@@ -1562,6 +1593,7 @@ sub addSystemIDsToClient
 
 	my @systemIDs = $self->{'meta-db'}->fetchSystemIDsOfClient($clientID);
 	push @systemIDs, @$newSystemIDs;
+
 	return $self->setSystemIDsOfClient($clientID, \@systemIDs);
 }
 
@@ -1599,6 +1631,7 @@ sub removeSystemIDsFromClient
 	my @systemIDs =
 	  grep { !exists $toBeRemoved{$_} }
 	  $self->{'meta-db'}->fetchSystemIDsOfClient($clientID);
+
 	return $self->setSystemIDsOfClient($clientID, \@systemIDs);
 }
 
@@ -1631,6 +1664,7 @@ sub setGroupIDsOfClient
 	my $groupIDs = _aref(shift);
 
 	my @uniqueGroupIDs = _unique(@$groupIDs);
+
 	return $self->{'meta-db'}->setGroupIDsOfClient($clientID, \@uniqueGroupIDs);
 }
 
@@ -1665,6 +1699,7 @@ sub addGroupIDsToClient
 
 	my @groupIDs = $self->{'meta-db'}->fetchGroupIDsOfClient($clientID);
 	push @groupIDs, @$newGroupIDs;
+
 	return $self->setGroupIDsOfClient($clientID, \@groupIDs);
 }
 
@@ -1702,6 +1737,7 @@ sub removeGroupIDsFromClient
 	my @groupIDs =
 	  grep { !exists $toBeRemoved{$_} }
 	  $self->{'meta-db'}->fetchGroupIDsOfClient($clientID);
+
 	return $self->setGroupIDsOfClient($clientID, \@groupIDs);
 }
 
@@ -1822,6 +1858,7 @@ sub setClientIDsOfGroup
 	my $clientIDs = _aref(shift);
 
 	my @uniqueClientIDs = _unique(@$clientIDs);
+
 	return $self->{'meta-db'}->setClientIDsOfGroup($groupID, \@uniqueClientIDs);
 }
 
@@ -1855,6 +1892,7 @@ sub addClientIDsToGroup
 
 	my @clientIDs = $self->{'meta-db'}->fetchClientIDsOfGroup($groupID);
 	push @clientIDs, @$newClientIDs;
+
 	return $self->setClientIDsOfGroup($groupID, \@clientIDs);
 }
 
@@ -1891,6 +1929,7 @@ sub removeClientIDsFromGroup
 	my @clientIDs =
 	  grep { !exists $toBeRemoved{$_} }
 	  $self->{'meta-db'}->fetchClientIDsOfGroup($groupID);
+
 	return $self->setClientIDsOfGroup($groupID, \@clientIDs);
 }
 
@@ -1924,6 +1963,7 @@ sub setSystemIDsOfGroup
 	my $systemIDs = _aref(shift);
 
 	my @uniqueSystemIDs = _unique(@$systemIDs);
+
 	return $self->{'meta-db'}->setSystemIDsOfGroup($groupID, \@uniqueSystemIDs);
 }
 
@@ -1957,6 +1997,7 @@ sub addSystemIDsToGroup
 
 	my @systemIDs = $self->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
 	push @systemIDs, @$newSystemIDs;
+
 	return $self->setSystemIDsOfGroup($groupID, \@systemIDs);
 }
 
@@ -1993,6 +2034,7 @@ sub removeSystemIDsFromGroup
 	my @systemIDs =
 	  grep { !exists $toBeRemoved{$_} }
 	  $self->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
+
 	return $self->setSystemIDsOfGroup($groupID, \@systemIDs);
 }
 
@@ -2030,6 +2072,7 @@ sub emptyDatabase
 
 	my @vendorOSIDs = map { $_->{id} } $self->fetchVendorOSByFilter();
 	$self->removeVendorOS(\@vendorOSIDs);
+
 	return 1;
 }
 
@@ -2068,6 +2111,7 @@ sub mergeDefaultAttributesIntoSystem
 
 	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
 	pushAttributes($system, $defaultClient);
+
 	return 1;
 }
 
@@ -2111,6 +2155,7 @@ sub mergeDefaultAndGroupAttributesIntoClient
 	vlog(3, _tr('merging from default client...'));
 	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
 	mergeAttributes($client, $defaultClient);
+
 	return 1;
 }
 
@@ -2354,6 +2399,7 @@ sub mergeAttributes
 			$target->{$key} = $sourceVal;
 		}
 	}
+
 	return 1;
 }
 
@@ -2391,6 +2437,7 @@ sub pushAttributes
 			$target->{$key} = $sourceVal;
 		}
 	}
+
 	return 1;
 }
 
@@ -2421,6 +2468,7 @@ sub externalIDForSystem
 
 	my $name = $system->{name};
 	$name =~ tr[/][_];
+
 	return $name;
 }
 
@@ -2452,6 +2500,7 @@ sub externalIDForClient
 	my $mac = lc($client->{mac});
 	# PXE seems to expect MACs being all lowercase
 	$mac =~ tr[:][-];
+
 	return "01-$mac";
 }
 
@@ -2482,6 +2531,7 @@ sub externalConfigNameForClient
 
 	my $name = $client->{name};
 	$name =~ tr[/][_];
+
 	return $name;
 }
 
@@ -2507,9 +2557,11 @@ The external name of the given attribute.
 sub externalAttrName
 {
 	my $attr = shift;
+
 	if ($attr =~ m[^attr_]) {
 		return substr($attr, 5);
 	}
+
 	return $attr;
 }
 
@@ -2534,6 +2586,7 @@ The given variable as a placeholder string.
 sub generatePlaceholderFor
 {
 	my $varName = shift;
+
 	return '@@@' . $varName . '@@@';
 }
 
@@ -2606,6 +2659,7 @@ sub _checkAndUpgradeDBSchemaIfNecessary
 	} else {
 		vlog(1, _tr('DB matches current schema version %s', $currVersion));
 	}
+
 	return 1;
 }
 
@@ -2614,13 +2668,30 @@ sub _aref
 	my $ref = shift;
 	return [] unless defined $ref;
 	$ref = [$ref] unless ref($ref) eq 'ARRAY';
+
 	return $ref;
 }
 
 sub _unique
 {    # return given array filtered to unique elements
 	my %seenIDs;
+
 	return grep { !$seenIDs{$_}++; } @_;
+}
+
+sub _checkCols
+{
+	my $valRows  = shift;
+	my $table    = shift;
+	my @colNames = @_;
+
+	foreach my $valRow (@$valRows) {
+		foreach my $col (@colNames) {
+			die "need to set '$col' for $table!" if !$valRow->{$col};
+		}
+	}
+
+	return 1;
 }
 
 1;

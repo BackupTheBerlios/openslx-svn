@@ -144,10 +144,11 @@ sub fetchExportByFilter
 
 	$resultCols = '*' unless (defined $resultCols);
 	my $sql = "SELECT $resultCols FROM export";
-	my $connector;
+	my ($connector, $quotedVal);
 	foreach my $col (keys %$filter) {
 		$connector = !defined $connector ? 'WHERE' : 'AND';
-		$sql .= " $connector $col = '$filter->{$col}'";
+		$quotedVal = $self->{dbh}->quote($filter->{$col});
+		$sql .= " $connector $col = $quotedVal";
 	}
 	return $self->_doSelect($sql);
 }
@@ -194,10 +195,11 @@ sub fetchSystemByFilter
 
 	$resultCols = '*' unless (defined $resultCols);
 	my $sql = "SELECT $resultCols FROM system";
-	my $connector;
+	my ($connector, $quotedVal);
 	foreach my $col (keys %$filter) {
 		$connector = !defined $connector ? 'WHERE' : 'AND';
-		$sql .= " $connector $col = '$filter->{$col}'";
+		$quotedVal = $self->{dbh}->quote($filter->{$col});
+		$sql .= " $connector $col = $quotedVal";
 	}
 	return $self->_doSelect($sql);
 }
@@ -256,10 +258,11 @@ sub fetchClientByFilter
 
 	$resultCols = '*' unless (defined $resultCols);
 	my $sql = "SELECT $resultCols FROM client";
-	my $connector;
+	my ($connector, $quotedVal);
 	foreach my $col (keys %$filter) {
 		$connector = !defined $connector ? 'WHERE' : 'AND';
-		$sql .= " $connector $col = '$filter->{$col}'";
+		$quotedVal = $self->{dbh}->quote($filter->{$col});
+		$sql .= " $connector $col = $quotedVal";
 	}
 	return $self->_doSelect($sql);
 }
@@ -450,11 +453,13 @@ sub _doUpdate
 		my %valData = %$valRow;
 		delete $valData{'id'};
 		# filter column 'id' if present, as we don't want to update it
-		my $cols = join ', ', map { "$_ = " . $self->quote($valRow->{$_}) }
+		my @cols = map { "$_ = " . $self->quote($valRow->{$_}) }
 		  grep { $_ ne 'id' }
 		  # filter column 'id' if present, as we don't want
 		  # to update it!
 		  keys %$valRow;
+		return if !@cols;
+		my $cols = join ', ', @cols;
 		my $sql = "UPDATE $table SET $cols";
 		if (defined $id) {
 			$sql .= " WHERE id = " . $self->quote($id);
