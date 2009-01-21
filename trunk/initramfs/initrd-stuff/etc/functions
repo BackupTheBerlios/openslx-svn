@@ -588,11 +588,12 @@ done
 # get_machineconfig: helper function for ldapconf, writing machine
 # config data of one timerange $tr into file "tmp/confvialdap/$tr"
 get_machineconfig(){
-ldapsearch -x -H ldap://$ldapserver -b $1 -D $user -w $pwd -LLL "(&(objectclass
- =machineconfig)(timerange=$tr))"|sed '/dn:/d'|sed '/ou=/d'|sed '/dc=/d'|\
- sed '/objectC*/d'|sed '/Tim*/d'|sed '/cn:/d'|sed '/desc*/d'|sed 's/: /=/g' \
- |sed 's/-/_/g'` > tmp/confvialdap/$tr
+ldapsearch -x -H ldap://$ldapserver -b $1 -D $user -w $pwd -LLL \
+"(&(objectclass=machineconfig)(timerange=$tr))"|sed '/dn:/d'|sed '/ou=/d'|\
+sed '/dc=/d'|sed '/objectC*/d'|sed '/Tim*/d'|sed '/cn:/d'|sed '/desc*/d'|sed \
+'s/: /=/g'|sed 's/-/_/g' > tmp/confvialdap/$tr
 }
+
 ldapconf () {
 local ldapserver=$1
 error "$error_ldapcfg"
