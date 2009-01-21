@@ -28,11 +28,16 @@ if ! [ -e /initramfs/plugin-conf/Example.conf ]; then
 	exit 1
 fi
 
-echo "executing the 'Example' os-plugin ...";
 # for this example plugin, we simply take a filename from the configuration ...
 . /initramfs/plugin-conf/Example.conf
 
-# ... and cat that file:
+if ! [ -n $active]; then
+	exit 0
+fi
+
+echo "executing the 'Example' os-plugin ...";
+
+# ... and cat that file (output the smiley):
 cat /mnt/opt/openslx/plugin-repo/Example/$preferred_side
 
 echo "done with 'Example' os-plugin ...";

@@ -84,8 +84,8 @@ sub installationPhase
 		# the temporary folder, this time from inside the chroot
 	
 	# for this example plugin, we simply create two files:
-	spitFile("$pluginRepositoryPath/left", "(-;\n");
-	spitFile("$pluginRepositoryPath/right", ";-)\n");
+	spitFile("$pluginRepositoryPath/right", "(-;\n");
+	spitFile("$pluginRepositoryPath/left", ";-)\n");
 }
 
 sub postInstallationPhase
