@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 #
-# slxos-setup -
+# slxos-setup
 #
 # (c) 2006 - OpenSLX.com
 #
@@ -37,7 +37,6 @@ my (
 	$helpReq,
 	$manReq,
 	$listReq,
-	$selection,
 	$source,
 	$verbose,
 	$versionReq,
@@ -47,7 +46,6 @@ GetOptions(
 	'help|?' => \$helpReq,
 	'list' => \$listReq,
 	'man' => \$manReq,
-	'selection=s' => \$selection,
 	'source=s' => \$source,
 	'verbose' => \$verbose,
 	'version' => \$versionReq,
@@ -68,40 +66,26 @@ if ($listReq) {
 }
 
 if (scalar(@ARGV) != 2) {
-	print STDERR _tr("You need to specify exactly one action and one distro name!\n");
+	print STDERR _tr("You need to specify exactly one action and one vendor-OS name!\n");
 	pod2usage(2);
 }
 my $action = $ARGV[0];
-my $distroName = $ARGV[1];
 if ($action !~ m[^clone|import-into-db|install|update$]i) {
 	print STDERR _tr("You need to specify exactly one action:\n\tinstall, update, clone or import-into-db\n");
 	pod2usage(2);
 }
-
-if ($action =~ m[clone]i) {
-	if (!length($source)) {
-		die _tr("You need to specify a source you'd like to clone!\n");
-	}
-	if ($source !~ m[^.+::?.+$]) {
-		die _tr("Unkown source format given, expected '<hostname>:<path>' or '<hostname>::<module>'!\n");
-	}
-	if (!defined $selection) {
-		$selection = "cloned-from-$source";
-		$selection =~ tr[:/][_];
-			# mask : and /
-		$selection =~ s[_+$][];
-			# remove any trailing underscores, as they're ugly
-	}
-} else {
-	$selection = 'default'		unless defined $selection;
+my $vendorOSName = $ARGV[1];
+if ($vendorOSName !~ m[^(\w+\-[\d.]+)(\-.+)?]) {
+	print STDERR _tr("Given vendor-OS has unknown format, expected '<name>-<release>[-<selection>]'\n");
+	pod2usage(2);
 }
-
+my $distroName = $1;
+my $selection = $2;
 
 # we chdir into the script's folder such that all relative paths have
 # a known starting point:
 chdir($FindBin::RealBin)
 	or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
-
 
 # create ossetup-engine for given distro and start it:
 my $engine = OpenSLX::OSSetup::Engine->new;
@@ -118,6 +102,19 @@ if ($action =~ m[import]i) {
 	$engine->initialize($distroName, $selection, 1);
 	$engine->installVendorOS();
 } elsif ($action =~ m[clone]i) {
+	if (!length($source)) {
+		die _tr("You need to specify a source you'd like to clone!\n");
+	}
+	if ($source !~ m[^.+::?.+$]) {
+		die _tr("Unkown source format given, expected '<hostname>:<path>' or '<hostname>::<module>'!\n");
+	}
+	if (!defined $selection) {
+		$selection = "cloned-from-$source";
+		$selection =~ tr[:/][_];
+			# mask : and /
+		$selection =~ s[_+$][];
+			# remove any trailing underscores, as they're ugly
+	}
 	$engine->initialize($distroName, $selection, 0, 1);
 	$engine->cloneVendorOS($source);
 }
@@ -127,21 +124,38 @@ __END__
 =head1 NAME
 
 slxos-setup - OpenSLX-script to install an operating system into a folder which
-will be used as a stage1 system for OpenSLX.
+will be used as a OpenSLX-stage1-system (a.k.a. vendor-OS).
 
 =head1 SYNOPSIS
 
-slxos-setup [options] <action> <distro-name>
+=head2 Installing a Vendor-OS
+
+  slxos-setup install <vendor-os-name>
+
+=head2 Cloning an Operating System to Make a New Vendor-OS
+
+  slxos-setup clone <vendor-os-name> --source=<rsync-source>
+
+=head2 Updating a Vendor-OS
+
+  slxos-setup update <vendor-os-name>
+
+=head2 Importing an Existing Vendor-OS into the Config-DB
+
+  slxos-setup import-into-db <vendor-os-name>
+
+=head2 General Format
+
+  slxos-setup [options] <action> <vendor-os-name>
 
   Options:
       --help                   brief help message
       --man                    show full documentation
-      --selection=<string>     specific selection for vendor-OS
       --source=<string>        (rsync-)source to clone vendor-OS from
       --version                show version
 
   Actions:
-      clone                    clones an existing system via rsync
+      clone                    clones an existing operating system via rsync
       import-into-db           imports a vendor-OS into the openslx-db
       install                  installs a vendor-OS into a folder
       update                   updates an installed vendor-OS
@@ -158,19 +172,6 @@ Prints a brief help message and exits.
 
 Prints the manual page and exits.
 
-=item B<--selection=<string>>
-
-Many distributions offer several different package selections for
-installation. With this option you can specify which of these you
-would like to use.
-
-If you pass an unknown selection, you will see a list of the selections
-that are available.
-
-In clone-mode, the selection specifies the name by which the cloned system
-will be known (exact name will be '<distro>-<selection>' instead of
-'<distro>-cloned-from-<rsync-source>').
-
 =item B<--source=<string>>
 
 When cloning a vendor-OS, slxos-setup needs to know where to fetch
@@ -180,6 +181,32 @@ option.
 =item B<--version>
 
 Prints the version and exits.
+
+=item B<vendor-os-name>
+
+The vendor-os-name is the name of the vendor-OS that shall be installed,
+cloned, imported or updated. It corresponds to a folder in the OpenSLX-
+stage1-path (usually /var/opt/openslx/stage1).
+The general format of a vendor-os-name is this:
+
+	<distro-name>-<release-version>
+or
+	<distro-name>-<release-version>-<selection>
+
+The distro-name is something like 'suse' or 'fedora', and the release-version
+is a numerical version, e.g. '10.1' or '6'.
+
+If you specify a selection, too, you state that you want all the packages
+that are provided by the specific selection (many distributions offer several
+different package selections for installation, like 'kde' or 'gnome').
+If you do not specify any selection, you will get the default selection of
+that distribution.
+
+If you pass an unknown selection, you will see a list of the selections
+that are available.
+
+In clone-mode, leaving the selection empty will cause slxos-setup to generate
+a special name for the vendor-os, like '<distro>-cloned-from-<rsync-source>'.
 
 =back
 
