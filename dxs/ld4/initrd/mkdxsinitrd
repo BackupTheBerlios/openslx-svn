@@ -371,9 +371,9 @@ copy_distro_stuff() {
   esac
 
   # now insert the current stuff
-  cat distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig
+  cat distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig/config
   cat distro-specs/$1/functions-$2 >>${INSTDIR}/etc/distro-functions
-  cp -a distro-specs/$1/files-$2 ${INSTDIR}
+  cp -a distro-specs/$1/files-$2 ${INSTDIR} 2>/dev/null
 }
 
 copy_distro_stuff ${DISTRO} ${DISTRO_VER}
