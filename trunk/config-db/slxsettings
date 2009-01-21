@@ -54,8 +54,6 @@ my (
 GetOptions(
 	'quiet' => \$quiet,
 		# will avoid printing anything
-	'remove=s' => \@remove,
-		# will avoid printing anything
 	'setting=s' => \%cmdlineSettings,
 		# accepts setting for db-table 'settings'
 
@@ -72,6 +70,17 @@ if ($versionReq) {
 }
 
 openslxInit() or pod2usage(2);
+
+# if there are still arguments in the cmdline left, it must be 'remove'-actions:
+while (scalar @ARGV) {
+	my $action = shift;
+	my $key = shift;
+	if ($action !~ m[^remove$]) {
+		print STDERR _tr("Action '%s' is not understood!\n\n", $action);
+		pod2usage();
+	}
+	push @remove, $key;
+}
 
 # fetch slxconf entries...
 my $openslxDB = OpenSLX::ConfigDB->new();
@@ -93,8 +102,7 @@ foreach my $key (sort keys %cmdlineConfig) {
 	my $value = $cmdlineConfig{$key};
 	next if !defined $value;
 	vlog 0, _tr("setting %s to '%s'", $key, $value) unless $quiet;
-	$key =~ tr[-][_];
-	my $externalKey = "SLX_".uc($key);
+	my $externalKey = externalKeyFor($key);
 	if (!($settings =~ s[^\s*$externalKey=.*?$][$externalKey=$value]ms)) {
 		$settings .= "$externalKey=$value\n";
 	}
@@ -107,10 +115,12 @@ foreach my $key (@remove) {
 		vlog 0, _tr("ignoring unknown key '%s'", $key);
 		next;
 	}
-	vlog 0, _tr('removing %s', $key) unless $quiet;
-	$key =~ tr[-][_];
-	my $externalKey = "SLX_".uc($key);
-	$settings =~ s[^\s*$externalKey=.*?$][]ms;
+	my $externalKey = externalKeyFor($key);
+	if ($settings =~ s[^\s*$externalKey=.*?$][]ms) {
+		vlog 0, _tr("removing option '%s' from local settings", $key) unless $quiet;
+	} else {
+		vlog 0, _tr("option '%s' didn't exist in local settings!", $key) unless $quiet;
+	}
 	$changeCount++;
 }
 
@@ -147,6 +157,14 @@ if ($verbose || !$changeCount) {
 	foreach my $key (sort keys %$currSettings) {
 		print qq[\t$key='$currSettings->{$key}'\n];
 	}
+}
+
+sub externalKeyFor
+{
+	my $key = shift;
+
+	$key =~ tr[-][_];
+	return "SLX_".uc($key);
 }
 
 __END__
@@ -195,9 +213,10 @@ slxsettings [options] [action ...]
 
 sets the specified openslx-option to the given value
 
-=item B<<     remove=<openslx-option> >>
+=item B<<     remove <openslx-option> [remove ...] >>
 
-removes given openslx-option (sets it to an empty string)
+removes given openslx-option from the local settings (resets it to the
+default value)
 
 =back
 
