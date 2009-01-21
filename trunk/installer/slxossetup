@@ -17,6 +17,13 @@ test "$2" && \
 
 PATH="/bin:/usr/bin"
 
+for binary in smart; do
+	if ! type -p "${binary}" >/dev/null; then
+		echo "$0: Error, required binary, ${binary} not found in PATH, ${PATH}! "
+		exit 1
+	fi
+done
+
 if test -z "${SLX_SYSTEM_NAME}"; then
 	echo "$0: Error, <system-name> not provided! "
 	exit 1
