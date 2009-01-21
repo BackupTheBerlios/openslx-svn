@@ -21,13 +21,6 @@ use base qw(OpenSLX::OSPlugin::Base);
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
-################################################################################
-# if you have any questions regarding the concept of OS-plugins and their
-# implementation, please drop a mail to: ot@openslx.com, or join the IRC-channel
-# '#openslx' (on freenode).
-################################################################################
-### interface methods
-################################################################################
 sub new
 {
 	my $class = shift;

@@ -245,12 +245,13 @@ sub writeAttributesToFile
 
 	my $content = "# attributes set by slxconfig-demuxer:\n";
 	my $attrs = $object->{attrs} || {};
-	foreach my $attr (sort keys %$attrs) {
-		my $attrVal = $attrs->{$attr} || '';
-		if (length($attrVal) > 0) {
-			my $externalAttrName = externalAttrName($attr);
-			$content .= qq[$externalAttrName="$attrVal"\n];
-		}
+	# filter out any plugin-specific attributes (we only want to handle
+	# the attributes relevant to the core here)
+	my @attrs = sort grep { index($_, '::') == -1 } keys %$attrs;
+	foreach my $attr (@attrs) {
+		my $attrVal = $attrs->{$attr};
+		next if !defined $attrVal;
+		$content .= qq[$attr="$attrVal"\n];
 	}
 	# Overwrite attribute file even if it exists, to make sure that our users
 	# will never again try to fiddle with machine-setup directly the
@@ -560,8 +561,9 @@ sub writeClientConfigurationsForSystem
 
 			# merge default, system and client configuration files into
 			# the system configuration for the current client:
-			copyExternalSystemConfig($externalSystemID, $buildPath,
-				$externalClientName);
+			copyExternalSystemConfig(
+				$externalSystemID, $buildPath, $externalClientName
+			);
 
 			writeAttributesToFile($client, $attrFile);
 
@@ -571,8 +573,10 @@ sub writeClientConfigurationsForSystem
 			# be accessed from the client-PC, which doesn't know about the
 			# name it is referred to in the openslx-config-DB:
 			my $externalClientID = externalIDForClient($client);
-			createTarOfPath($buildPath, "${externalClientID}.tgz",
-				"$tftpbootPath/client-config/$info->{'external-id'}");
+			createTarOfPath(
+				$buildPath, "${externalClientID}.tgz",
+				"$tftpbootPath/client-config/$info->{'external-id'}"
+			);
 		}
 	}
 	return;
@@ -589,25 +593,25 @@ sub writePluginConfigurationsForSystem
 	my $pluginInitdPath = "$buildPath/initramfs/plugin-init.d";
 	slxsystem("mkdir -p $pluginInitdPath") unless -d $pluginInitdPath;
 	
+	my $attrs = $info->{attrs} || {};
+
 	foreach my $pluginName (OpenSLX::OSPlugin::Engine->getAvailablePlugins()) {
-		vlog(2, _tr("writing configuration file for plugin '%s'", $pluginName));
+		vlog(2, _tr("checking configuration of plugin '%s'", $pluginName));
 
-		# create plugin engine and fetch specific plugin module config hash:
-		my $pluginEngine = OpenSLX::OSPlugin::Engine->new();
-		$pluginEngine->initialize($pluginName, $info->{'vendor-os'}->{name});
-		my $config = $pluginEngine->getPlugin()->getConfig();
-		
 		# skip inactive plugins
-		next unless $config->{active};
+		my $pluginScope = lc($pluginName);
+		next unless $attrs->{"${pluginScope}::active"};
 
+		vlog(2, _tr("writing configuration file for plugin '%s'", $pluginName));
 		# write plugin configuration to a file:
 		my $content;
-		foreach my $attr (sort keys %$config) {
-			my $attrVal = $config->{$attr} || '';
-			if (length($attrVal) > 0) {
-				my $externalAttrName = externalAttrName($attr);
-				$content .= qq[$externalAttrName="$attrVal"\n];
-			}
+		my @pluginAttrs = grep { $_ =~ m{^${pluginScope}::} } keys %$attrs;
+		foreach my $attr (sort @pluginAttrs) {
+			my $attrVal = $attrs->{$attr};
+			next if !defined $attrVal;
+			my $attrName = substr($attr, index($attr, '::')+2);
+			next if $attrName eq 'active' || $attrName eq 'precedence';
+			$content .= qq[$attrName="$attrVal"\n];
 		}
 		my $fileName = "$pluginConfPath/${pluginName}.conf";
 		spitFile($fileName, $content);
@@ -618,7 +622,8 @@ sub writePluginConfigurationsForSystem
 		}
 		
 		# copy runlevel script to be used in stage3:
-		my $precedence = sprintf('%02d', $config->{precedence});
+		my $precedence 
+			= sprintf('%02d', $attrs->{"${pluginScope}::precedence"});
 		my $scriptFolder 
 			= "$openslxConfig{'base-path'}/lib/plugins/$pluginName";
 		my $scriptName = "$scriptFolder/XX_${pluginName}.sh";

@@ -61,8 +61,8 @@ sub getAttrInfo
 	my $self = shift;
 
 	# This default configuration will be added as attributes to the default
-	# system, such that it can be overruled for any specific system & client
-	# by means of slxconfig.
+	# system, such that it can be overruled for any specific system by means 
+	# of slxconfig.
 	return {
 		# attribute 'active' is mandatory for all plugins
 		# attribute 'precedence' is mandatory for all plugins

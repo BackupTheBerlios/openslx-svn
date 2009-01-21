@@ -53,13 +53,13 @@ sub getAttrInfo
 	my $self = shift;
 
 	# This default configuration will be added as attributes to the default
-	# system, such that it can be overruled for any specific system & client
-	# by means of slxconfig.
+	# system, such that it can be overruled for any specific system by means
+	# of slxconfig.
 	return {
 		# attribute 'active' is mandatory for all plugins
 		'example::active' => {
 			applies_to_systems => 1,
-			applies_to_clients => 1,
+			applies_to_clients => 0,
 			description => unshiftHereDoc(<<'			End-of-Here'),
 				should the 'Example'-plugin be executed during boot?
 			End-of-Here
@@ -70,7 +70,7 @@ sub getAttrInfo
 		# attribute 'precedence' is mandatory for all plugins
 		'example::precedence' => {
 			applies_to_systems => 1,
-			applies_to_clients => 1,
+			applies_to_clients => 0,
 			description => unshiftHereDoc(<<'			End-of-Here'),
 				the execution precedence of the 'Example' plugin
 			End-of-Here
@@ -82,7 +82,7 @@ sub getAttrInfo
 		# plugin specific attributes start here ...
 		'example::preferred_side' => {
 			applies_to_systems => 1,
-			applies_to_clients => 1,
+			applies_to_clients => 0,
 			description => unshiftHereDoc(<<'			End-of-Here'),
 				determines to which side you have to tilt your head in order
 				to read the smiley

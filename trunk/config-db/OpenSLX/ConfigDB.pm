@@ -85,7 +85,7 @@ to filtering (with boolean operators and hierarchical expressions)].
 my @supportExports = qw(
   mergeAttributes pushAttributes
   externalIDForSystem externalIDForClient externalConfigNameForClient
-  externalAttrName generatePlaceholderFor
+  generatePlaceholderFor
 );
 
 @EXPORT_OK   = (@supportExports);
@@ -2834,36 +2834,6 @@ sub externalConfigNameForClient
 	$name =~ tr[/][_];
 
 	return $name;
-}
-
-=item C<externalAttrName($attr)>
-
-Returns the given attribute as it is referenced externally - without the
-'attr'_-prefix.
-
-=over
-
-=item Param C<attr>
-
-The attribute you are interested in.
-
-=item Return Value
-
-The external name of the given attribute.
-
-=back
-
-=cut
-
-sub externalAttrName
-{
-	my $attr = shift;
-
-	if ($attr =~ m[^attr_]) {
-		return substr($attr, 5);
-	}
-
-	return $attr;
 }
 
 =item C<generatePlaceholdersFor($varName)>
