@@ -103,6 +103,27 @@ usage()
   exit 0
 }
 
+# check needed things for installation
+precheck() {
+  # check if running as root
+  if [ "`id -u`" != "0" ]; then
+    echo -e "\nYou don't have the needed permission. Please rerun as root user!\n"
+    exit 1
+  fi
+  # Check for correct settings of SLX-Variables
+  if [ "x" == "x$SLX_BASE_PATH" ]; then
+    if [ "x$SLX_CONFIG_PATH" == "x@@@SLX_CONFIG_PATH@@@" ]; then
+       echo "Please make sure you install the Open SLX Software properly,"
+       echo "i.e. install it using the provided Makefile. Thanks."
+    else
+       echo "Essential configuration is missing. Please verify"
+       echo "existence and correctness of $SLX_CONFIG_PATH/settings.default"
+    fi
+    exit 1
+  fi
+}
+
+
 # replaces which command to find executables inside ROOTDIR
 binfinder()
 {
@@ -156,13 +177,13 @@ local FILENAME=$1
 DATE=`date +%m-%d-%Y`
 # do not forget to define all variables which should be replaced within
 # the start and configuration scripts. All comment lines will be deleted.
-if [ -d initrd-stuff/${FILENAME} ] ; then
+if [ -d ${SLX_SHARE_PATH}/initramfs/${FILENAME} ] ; then
   [ -d ${INSTDIR}/${FILENAME} ] || mkdir -p ${INSTDIR}/${FILENAME}
 else
-  if file initrd-stuff/${FILENAME}| grep "ELF" &>/dev/null ; then
-    cp initrd-stuff/${FILENAME} ${INSTDIR}/${FILENAME}
-  elif [ -L initrd-stuff/${FILENAME} ] ; then
-    cp -a initrd-stuff/${FILENAME} ${INSTDIR}/${FILENAME%/*}
+  if file ${SLX_SHARE_PATH}/initramfs/${FILENAME}| grep "ELF" &>/dev/null ; then
+    cp ${SLX_SHARE_PATH}/initramfs/${FILENAME} ${INSTDIR}/${FILENAME}
+  elif [ -L ${SLX_SHARE_PATH}/initramfs/${FILENAME} ] ; then
+    cp -a ${SLX_SHARE_PATH}/initramfs/${FILENAME} ${INSTDIR}/${FILENAME%/*}
   else
     sed -e "s,@@@INSTDIR@@@,${INSTDIR},g;s,@@@KERNVER@@@,${KERNVER},g" \
         -e "s,@@@DISTRO@@@,${DISTRO}-${DISTRO_VER},g;s,@@@NETIF@@@,${NET_IF},g" \
@@ -170,7 +191,7 @@ else
         -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
         -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
         -e "s,@@@DATE@@@,${DATE},g;/^#[^!].*/d" \
-          initrd-stuff/${FILENAME} >> ${INSTDIR}/${FILENAME}
+          ${SLX_SHARE_PATH}/initramfs/${FILENAME} >> ${INSTDIR}/${FILENAME}
      # ugly hack for creating a general slx config file instead of "patching"
      # the stage3 init
      echo -e "slxconf_date=${DATE}\nslxconf_kernver=${KERNVER}\nslxconf_listnwmod=\"${NWMODULES}\"\nslxconf_distro=${DISTRO}-${DISTRO_VER}" > ${INSTDIR}/etc/sysconfig/slxconfig
@@ -185,15 +206,14 @@ copy_distro_stuff() {
   # function files, then append to each the distro/version specific file
   # variables, functions set in default might that way be overwritten by
   # definitions in distro/version specific files
-  # fixme!! files should be taken from /usr/share/openslx/distro-specs
-  cat distro-specs/$1/config-default >${INSTDIR}/etc/sysconfig/config
-  cat distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig/config
+  cat ${SLX_SHARE_PATH}/distro-specs/$1/config-default >${INSTDIR}/etc/sysconfig/config
+  cat ${SLX_SHARE_PATH}/distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig/config
   #[ -f $SLX_CONFIG_PATH/settings.default ] && \
   #   cat $SLX_CONFIG_PATH/settings.default >>${INSTDIR}/etc/sysconfig/config
   #[ -f $SLX_CONFIG_PATH/settings.local ] && \
   #   cat $SLX_CONFIG_PATH/settings.local >>${INSTDIR}/etc/sysconfig/config
-  cat distro-specs/$1/functions-default >${INSTDIR}/etc/distro-functions
-  cat distro-specs/$1/functions-$2 >>${INSTDIR}/etc/distro-functions
+  cat ${SLX_SHARE_PATH}/distro-specs/$1/functions-default >${INSTDIR}/etc/distro-functions
+  cat ${SLX_SHARE_PATH}/distro-specs/$1/functions-$2 >>${INSTDIR}/etc/distro-functions
   # would be cool not to copy .svn here ...
   # fixme!! works only for etc directories. If dir exists then next copy places
   # file into the existing dir
@@ -205,7 +225,6 @@ copy_distro_stuff() {
 
 # This function makes the directory of this script to the present working
 # directory
-# It is called within precheck()
 # Does also work when called by symbolic links (even for nested links).
 goto_script_dir()
 {
@@ -251,9 +270,9 @@ splash_image=
 splash_bin=$(chroot $ROOTDIR which splash)
 if [ -n "$splashsizes" -a -n "$splash_bin" ]; then
 
-  themes_dir="../theming/openslx/bootsplash"
-  if [ -d "/opt/openslx/share/themes/${theme}/bootsplash" ]; then
-    themes_dir="/opt/openslx/share/themes/${theme}/bootsplash"
+  themes_dir="${SLX_SHARE_PATH}/themes/openslx/bootsplash"
+  if [ -d "${SLX_SHARE_PATH}/themes/${theme}/bootsplash" ]; then
+    themes_dir="${SLX_SHARE_PATH}/themes/${theme}/bootsplash"
   elif [ -d "$ROOTDIR/etc/bootsplash/themes/${theme}" ]; then
     themes_dir="/etc/bootsplash/themes/${theme}"
   elif [ -d "$ROOTDIR/usr/share/splash/themes/${theme}" ]; then
@@ -354,6 +373,8 @@ shift $(expr $OPTIND - 1)
 #########################################################################
 # End of parameter, argument interpretation
 
+# Check for superuser id 
+precheck
 #Change to the directory this script is located in
 goto_script_dir
 
@@ -694,8 +715,8 @@ cp ${ROOTDIR}/lib/modules/${KERNVER}/modules.* \
 
 # initial ramdisk scripts: init, functions, servconfig, hwautocfg, ...
 # copy and replace variable names
-for dirs in `find initrd-stuff/* ! -regex ".*/\..*"` ; do
-  repco ${dirs##initrd-stuff/}
+for dirs in `find ${SLX_SHARE_PATH}/initramfs/* ! -regex ".*/\..*"` ; do
+  repco ${dirs##*initramfs/}
 done
 chmod 755 ${INSTDIR}/init \
   ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
@@ -703,15 +724,16 @@ chmod 755 ${INSTDIR}/init \
 # add the common default client configuration file - just to ensure to
 # have all major variables defined. !!These settings are most probably
 # are overwritten by fileget in stage3 within initramfs!!
-if [ -f /var/opt/openslx/config/default/initramfs/machine-setup ] ; then
-  cp /var/opt/openslx/config/default/initramfs/machine-setup \
+if [ -f ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup ] ; then
+  cp ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup \
     ${INSTDIR}/etc/machine-setup
-  echo "Using /var/opt/openslx/config/default/initramfs/machine-setup"
+  echo "Using ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup"
+
 # use the installed default machine-setup.default
-elif [ -f /opt/openslx/share/templates/machine-setup.default ] ; then
-  cp /opt/openslx/share/templates/machine-setup.default \
+elif [ -f ${SLX_SHARE_PATH}/templates/machine-setup.default ] ; then
+  cp ${SLX_SHARE_PATH}/templates/machine-setup.default \
     ${INSTDIR}/etc/machine-setup
-  echo "Using /opt/openslx/share/templates/machine-setup.default"
+  echo "Using ${SLX_SHARE_PATH}/templates/machine-setup.default"
 # just compatibility for older versions
 elif [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
   cp /etc/dxs/client.cfg/machine-setup.default \
@@ -724,7 +746,7 @@ elif [ -f /etc/dxs/client.cfg/machine-setup.default.new ] ; then
 elif [ -f ../installer/default_files/machine-setup.default ] ; then
   cp ../installer/default_files/machine-setup.default \
     ${INSTDIR}/etc/machine-setup
-  echo "Using ../installer/default_files/machine-setup.default"
+  echo "Warning: Using ../installer/default_files/machine-setup.default"
 else
   #inserted password for root for debugging purposes
   echo -e "# default for machine-setup does not exist\n# root logins are \
@@ -734,12 +756,12 @@ fi
 
 # custom hardware configuration files pcitable.local and Cards.local
 # fixme!! New source for these files (instead of templates)!
-if [ -f /opt/openslx/share/templates/pcitable.local ] ; then
-  cat /opt/openslx/share/templates/pcitable.local >> \
+if [ -f ${SLX_SHARE_PATH}/templates/pcitable.local ] ; then
+  cat ${SLX_SHARE_PATH}/templates/pcitable.local >> \
     ${INSTDIR}/usr/share/hwdata/pcitable
 fi
-if [ -f /opt/openslx/share/templates/Cards.local ] ; then
-  cat /opt/openslx/share/templates/Cards.local >> \
+if [ -f ${SLX_SHARE_PATH}/templates/Cards.local ] ; then
+  cat ${SLX_SHARE_PATH}/templates/Cards.local >> \
     ${INSTDIR}/usr/share/hwdata/Cards
 fi
 
@@ -750,8 +772,8 @@ for cfg in default/initramfs/preinit.local \
            ${DISTRO}-${DISTRO_VER}/initramfs/preinit.local \
            default/initramfs/postinit.local \
            ${DISTRO}-${DISTRO_VER}/initramfs/postinit.local ; do
-  test -f /var/opt/openslx/config/$cfg && \
-    cp /var/opt/openslx/config/$cfg ${INSTDIR}/bin
+  test -f ${SLX_PRIVATE_PATH}/config/$cfg && \
+    cp ${SLX_PRIVATE_PATH}/config/$cfg ${INSTDIR}/bin
 done
 
 # remove unneeded debug info, fixme not really tested yet

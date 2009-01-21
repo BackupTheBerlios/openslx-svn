@@ -195,7 +195,7 @@ vmware_install:
 
 uninstall:
 	@echo -e "Uninstalling openslx.org project files but keeping configs \
-and stage1\nfiles in $SLX_PRIVATE_PATH (please remove manually)"
+and stage1\nfiles in $(SLX_PRIVATE_PATH) (please remove manually)"
 	@rm -rf $(SLX_BASE_PATH)
 	@rm -rf $(SLX_PUBLIC_PATH)
 	@rm $(USR_BIN_PATH)/{mkdxsinitrd,slx*}
