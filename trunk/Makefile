@@ -110,7 +110,7 @@ rootfs has the\n# prefix '/mnt'. But you might use some special slx \
 functions via\n# inclusion: '. /etc/functions' ..." \
 	  > $(SLX_PRIVATE_PATH)/config/default/initramfs/postinit.local
 	@chmod u+x $(SLX_PRIVATE_PATH)/config/default/initramfs/*init.local
-	@echo -e "# default setup for OpenSLX-installation
+	@echo -e "# default setup for OpenSLX-installation\
 \nSLX_BASE_PATH=${SLX_BASE_PATH}\
 \nSLX_BIN_PATH=${SLX_BIN_PATH}\
 \nSLX_CONFIG_PATH=${SLX_CONFIG_PATH}\
