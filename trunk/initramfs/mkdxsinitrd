@@ -4,7 +4,7 @@
 #               ramdisks for linux diskless clients (stage2 system
 #               setup)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 14-12-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-12-2006
 #               Nico Dietrich
 #               Felix Endres
 #               <mj0@uni-freiburg.de> (xenbr), 12-12-2006
@@ -197,8 +197,8 @@ else
      # ugly hack for creating a general slx config file instead of "patching"
      # the stage3 init
      echo -e "slxconf_date=${DATE}\nslxconf_kernver=${KERNVER}\nslxconf_listnwmod=\"${NWMODULES}\"\nslxconf_distro=${DISTRO}-${DISTRO_VER}" > ${INSTDIR}/etc/sysconfig/slxconfig
-    [ -x busybox -a "$use_busybox" = 1 ] && sed -e "s,^#!/bin/sh,#!/bin/ash," \
-      -i ${INSTDIR}/${FILENAME}
+     [ "$use_busybox" = 1 ] && sed -e "s,^#!/bin/sh,#!/bin/ash," \
+       -i ${INSTDIR}/${FILENAME}
   fi
 fi
 }
@@ -490,13 +490,13 @@ mknod ${INSTDIR}/tmp/bootsplash p &>/dev/null
 
 # test for the existance of busybox
 if [ "$use_busybox" = 1 ]; then
-  [ -x busybox ] || {
+  [ -x ${SLX_SHARE_PATH}/busybox/busybox ] || {
     unset use_busybox
     echo "You wanted to include busybox, but did not provide it in \
   initrd/ directory."; }
 fi
 if [ -n "$use_busybox" ] ; then
-  cp busybox ${INSTDIR}/bin
+  cp ${SLX_SHARE_PATH}/busybox/busybox ${INSTDIR}/bin
   for bbins in [ arping ash cat chmod chown chroot cp date \
         dd df dmesg echo expr fdisk free hwclock insmod ip \
         kill killall ln ls lsmod mkdir mke2fs mkfs.ext2 \
@@ -551,13 +551,13 @@ else
   done
   cobi $tftp bin || echo "Program ${tftp} not found"
   cp /lib/libnss_files.so.2 ${INSTDIR}/lib
+  # one of the dhcp clients
+  for dhcp in dhclient dhcpcd pump ipconfig ; do
+    binfinder $dhcp && break;
+  done
+  cobi $dhcp bin
 fi
 
-# one of the dhcp clients
-for dhcp in dhclient dhcpcd pump ipconfig ; do
-  binfinder $dhcp && break;
-done
-cobi $dhcp bin
 mkdir -p ${INSTDIR}/var/{lib,run}
 
 # type of hotplug/udev/dev (for etc directories see above!!)

@@ -2,7 +2,7 @@
 # (included by init, hwautocfg, servconfig, ... within OpenSLX initial
 # ramfs)
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-12-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 15-12-2006
 # Felix Endres, 30-04-2006
 # <mj0@uni-freiburg.de> (xenbr), 12-12-2006
 # Tobias Maier
@@ -318,7 +318,7 @@ case $mnt in
     portmap || { echo "$error_portm"; ret=1; }
     # fixme: busybox mount uses nfs ...
     mount -n -t nfs -o ro,nolock $nfsroot $dest || ret=1
-    killall -9 portmap
+    killall -9 portmap 2>/dev/null
   ;;
   none)
     error "$error_mntt"
@@ -406,7 +406,7 @@ command line)." >> /etc/machine-setup
     [ -n $vci ] && vci="-V $vci"
     testmkd /usr/share/udhcpc
     ln -s /bin/dhcpmkconfig /usr/share/udhcpc/default.script
-    udhcpc -b -q $vci -s /usr/share/udhcpc/default.script -i eth0
+    udhcpc -b -q $vci -s /usr/share/udhcpc/default.script -i eth0 2>/dev/null
   ;;
   *)
   ;;

@@ -5,7 +5,7 @@
 # Dirk von Suchodoletz <dvs@openslx.com>, 2006
 # Michael Janczyk, 2006
 #
-# (c) 2006 - OpenSLX.com
+# (c) 2006 - OpenSLX.ORG Project
 
 # the following defaults should be filled via 'configure'
 # and each of them can be overriden by setting the environment variable
@@ -113,6 +113,7 @@ supported."; \
 	       -p $(SLX_BIN_PATH) \
 	       -p $(SLX_SHARE_PATH)/templates \
 	       -p $(SLX_SHARE_PATH)/initramfs \
+	       -p $(SLX_SHARE_PATH)/busybox \
 	       -p $(SLX_PRIVATE_PATH)/config/default/initramfs \
 	       -p $(SLX_PRIVATE_PATH)/config/default/rootfs \
 	       -p $(SLX_PRIVATE_PATH)/db \
@@ -150,6 +151,7 @@ supported."; \
 	  tar -xp -C $(SLX_SHARE_PATH)
 	@cd theming; tar --exclude=.svn -cp * | \
 	  tar -xp -C $(SLX_SHARE_PATH)/themes; cd ..
+	@cp tools/busybox $(SLX_SHARE_PATH)/busybox
 
 	@# create pre-/postinit scripts for us in initramfs:
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
@@ -191,7 +193,8 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 	@ln -sf $(SLX_BIN_PATH)/slxversion $(USR_BIN_PATH)/
 
 vmware_install:
-	@# we should read the config file here!!
+	@# we should read the config file here or better have a separate
+	@# script for installing vmware related stuff
 	@echo "Installing VMware files to $(SLX_VMWARE_PATH)"
 	@mkdir -p $(SLX_VMWARE_PATH)/templ \
 	       -p $(SLX_VMWARE_PATH)/vmsessions/kdm

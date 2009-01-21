@@ -22,3 +22,18 @@ drunterliegende Rootfs ... Laengeres Rumprobieren und nun scheint es
 erstmal zu klappen. Zur Zeit checkt der einfach nur (bis ich das raus
 hatte :-)) ob ein "/rorootfs" da ist und verschiebt das dann. Wenn nicht,
 bleibts so wie vorher.
+
+Gilt auch fuer busybox:
+
+  // Overmount / with newdir and chroot into it.  The chdir is needed to
+        // recalculate "." and ".." links.  And check for UnionFS specific
+dir.
+
+        if ( !lstat("/rorootfs", &st1 ) )
+                if ( mount("/rorootfs", "/", NULL, MS_MOVE, NULL) )
+                        bb_error_msg_and_die("moving rorootfs");
+
+
+        if (mount(".", "/", NULL, MS_MOVE, NULL) || chroot(".") ||
+chdir("/"))
+                bb_error_msg_and_die("moving root");

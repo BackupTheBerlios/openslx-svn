@@ -2,7 +2,7 @@
 # main script for new type of initial ramdisk for OpenSLX linux diskless
 # clients version 4
 #
-# Dirk von Suchodoletz <dirk@goe.net>, 02-12-2006
+# Dirk von Suchodoletz <dirk@goe.net>, 15-12-2006
 # <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
@@ -535,7 +535,7 @@ waitfor /tmp/hwcfg 20000 || error "$init_errhw"
 waitfor /tmp/svcfg 20000 || error "$init_errsw"
 # IP configuration is made and should not be updated automatically, udevd
 # should be killed if started within init
-killall -9 dhcpcd dhclient pump 2>/dev/null
+killall -9 dhcpcd dhclient pump udhcpc 2>/dev/null
 cp /etc/machine-setup /mnt/etc
 
 # post init for some distro specific (fixme!! more elegant solution)
@@ -577,3 +577,5 @@ unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
 #strinstr "bash" "$(ls -la /bin/sh)" && EE="-c"
 # new style of pivoting (exec -c would set an empty environment in bash)
 exec run-init -c dev/console /mnt /sbin/init || error "$init_runinit"
+# run-init could be replaced with switch_root from busybox ...
+#exec switch_root -c dev/console /mnt /sbin/init || error "$init_runinit"
