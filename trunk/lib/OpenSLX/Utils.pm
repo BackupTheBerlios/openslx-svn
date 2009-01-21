@@ -60,7 +60,7 @@ sub linkFile
 
 	my $targetDir = dirname($linkName);
 	system("mkdir -p $targetDir") 	unless -d $targetDir;
-	if (system("ln -s $linkTarget $linkName")) {
+	if (system("ln -sfn $linkTarget $linkName")) {
 		die _tr("unable to create link '%s' to '%s' (%s)",
 				$linkName, $linkTarget, $!);
 	}
