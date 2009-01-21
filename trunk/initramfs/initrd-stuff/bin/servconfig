@@ -508,9 +508,6 @@ resmgr revoke nobody\nresmgr logout tty7\nkillall X" \
     ;;
   esac
   echo -e "# entry made by $0 $date\n$init" >> /mnt/etc/inittab
-  # wait for completion of Xorg configuration and finalize it
-  waitfor /tmp/xready 20000
-  cp /etc/xorg.conf /mnt/${D_XF86CONFFILE}
   displayvars
   if [ -n $XBinPath ] ; then
     testmkd /mnt/var/X11R6/bin

@@ -280,6 +280,13 @@ done
 # wait for /tmp/hwsetup.info to appear
 waitfor /tmp/hwrun1 50000 || \
   error "$hcfg_hwsetup"
+# in some cases the time to wait for module load is to be increased
+if [ -n "${SLOWHWSETUP}" ] ; then
+  modwaittime=${SLOWHWSETUP}
+  [ $DEBUGLEVEL -eq 21 ] && echo "** set modwaittime to ${SLOWHWSETUP}ms"
+else
+  modwaittime=50
+fi
 [ $DEBUGLEVEL -eq 21 ] && echo "** 1st hwdetection finished at $(sysup)"
 # load ide drivers first, takes a while to initialize
 for driver in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
@@ -288,8 +295,9 @@ for driver in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
     pdc202xx_new siimage atiixp hpt34x pdc202xx_old sis5513; do
   strinfile " ${driver}" /tmp/hwsetup.info && {
     ide="yes"
+    #modwaittime=$(expr 10 + ${modwaittime})
     modprobe ${MODPRV} ${driver} &
-    driverlist="${driverlist} ${driver}"; }
+    driverlist="${driverlist} ${driver}"; usleep ${modwaittime}; }
 done
 # check for IDE/SCSI (SATA)
 for driver in ata_piix sata_via sata_nv sata_sil sata_sis sata_svw \
@@ -297,9 +305,12 @@ for driver in ata_piix sata_via sata_nv sata_sil sata_sis sata_svw \
   strinfile " ${driver}" /tmp/hwsetup.info && {
     #SCSIIDE="yes"
     modprobe ${MODPRV} ${driver} &
-    driverlist="${driverlist} ${driver}"; }
+#    case ${driver} in
+#      ata_piix) usleep 500;;
+#    esac
+    driverlist="${driverlist} ${driver}"; usleep ${modwaittime}; }
 done
-# check for USB2.0, pcmcia and ieee1394 hardware drivers
+# check for USB2.0 and ieee1394 hardware drivers
 for driver in ehci-hcd ohci1394; do
   strinfile " ${driver}" /tmp/hwsetup.info && {
     USB="yes"
@@ -335,7 +346,9 @@ for driver in ${NWMODULES} ohci-hcd uhci-hcd ; do
     rmmod ${driver}
     driverlist="${driverlist} ${driver}"; }
 done
-usleep 100 && hwsetup -v > /tmp/hwsetup.info
+# wait depending on time of modules to load a little bit before the next
+# round of hardware detection
+usleep ${modwaittime} && hwsetup -v > /tmp/hwsetup.info
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
 
 # load IDE high level drivers
@@ -343,7 +356,9 @@ if [ -n "$ide" ] ; then
   # you might want to check /etc/sysconfig/floppy for more info
   strinfile "ZIP" /tmp/hwsetup.info && modprobe ${MODPRV} ide-floppy
   strinfile "CDROM" /tmp/hwsetup.info && modprobe ${MODPRV} ide-cd
-  strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} ide-disk
+  strinfile "HD" /tmp/hwsetup.info && {
+    modprobe ${MODPRV} ide-disk
+    disk=yes; }
 fi
 
 # not rather precise ...
@@ -354,7 +369,9 @@ if strinfile "SCSI" /tmp/hwsetup.info ; then
     ( waitfor /dev/sr0 1000 && for i in /dev/sr* ; do 
       ln -s $i /dev/scd${i#/dev/sr} ; done; ) &
     }
-  strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} sd_mod
+  strinfile "HD" /tmp/hwsetup.info && {
+    modprobe ${MODPRV} sd_mod
+    disk=yes; }
   # check if a (scsi) scanner was detected
   strinfile "SCANNER" /tmp/hwsetup.info && \
     echo -e 'KERNEL=="sg*",\t\tNAME="%k", GROUP="disk", MODE="666"' \
@@ -391,6 +408,7 @@ done ) &
 # get idea of availabe harddisk partitions, put swap partitions into
 # (/mnt)/etc/fstab and format and mount partitions of type 44 (unknown)
 [ $DEBUGLEVEL -eq 21 ] && echo "** starting hdd stuff at $(sysup)"
+if [ "${disk}" = "yes" ] ; then
 for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
     sed -n -e '/device:/p' | sed -e 's/device: //') ; do
   fdisk -l /dev/$hd| sed -n "/^\/dev\//p" > /tmp/hd_part
@@ -424,6 +442,9 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
 noexec\t 0 0" >> /tmp/fstab
   done 
 done
+else
+  echo "no disk found ( $(sysup) )" > /tmp/tmpready
+fi
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished hdd stuff at $(sysup)"
 
 # check if USB mouse and/or keyboard is connected and remove usbhid if
