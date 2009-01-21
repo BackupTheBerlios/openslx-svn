@@ -410,6 +410,20 @@ sub createMetaPackager
 	$self->{'meta-packager'} = $metaPackager;
 }
 
+sub selectBaseURL
+{
+	my $self = shift;
+	my $repoInfo = shift;
+
+	my $baseURL = $repoInfo->{url};
+	if (!defined $baseURL) {
+		my @baseURLs = string2Array($repoInfo->{urls});
+		# TODO: insert a closest mirror algorithm here!
+		$baseURL = $baseURLs[0];
+	}
+	return $baseURL;
+}
+
 sub sortRepositoryURLs
 {
 	my $self = shift;
