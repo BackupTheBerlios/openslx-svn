@@ -21,6 +21,7 @@
 - /etc/dxs
 - /etc/resolv.conf.*
 - /etc/vmware/installer.sh
+- /etc/exports*
 - /dev/*
 - /proc/*
 - /sys/*

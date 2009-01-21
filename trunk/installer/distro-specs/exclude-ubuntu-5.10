@@ -24,6 +24,7 @@
 - /boot/grub
 - /dev/*
 - /etc/shadow*
+- /etc/cron.*/*
 - /proc/*
 - /sys/*
 - /tmp/*
