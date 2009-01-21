@@ -237,8 +237,8 @@ case $dhcp in
       error "  Fatal error occured while trying to run dhclient.\n$commonerr" 
   ;;
   dhcpcd)
-    ln -s /bin/dhcpmkconfig /bin/dhcpd.exe
-    dhcpcd -L /var/lib/dhcp -c /bin/dhcpd.exe -T -t 30 eth0 2>&1 >/dev/null || \
+    ln -s /bin/dhcpmkconfig /bin/dhcpcd.exe
+    dhcpcd -L /var/lib/dhcp -c /bin/dhcpcd.exe -T -t 30 eth0 2>&1 >/dev/null || \
       error "  Fatal error occured while trying to run dhcpcd.\n$commonerr" 
   ;;
   pump)
@@ -390,7 +390,7 @@ sed -n -e '/nobody/p' /mnt/etc/passwd >> /tmp/newpasswd
 cp /tmp/newpasswd /mnt/etc/passwd
 # create the shadow from passwd file
 echo -e "root:"$root_pw":12958:0:10000::::" > /mnt/etc/shadow
-sed 's/:.*/:!:13078:0:99999:7:::/' /tmp/newpasswd >> /mnt/etc/shadow
+sed 's/:.*/:!:13078:0:99999:7:::/;/^root.*/d' /tmp/newpasswd >> /mnt/etc/shadow
 }
 
 #######################################################################

@@ -5,7 +5,6 @@
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-03-2006
 #		Nico Dietrich
-#		Blub
 #
 # Version:      0.3.1e
 #
@@ -93,6 +92,8 @@ elif [ -L ${FPTB} ] ; then
 else
   cp ${FPTB} ${INSTDIR}/${DEST}
 fi
+# get an idea which libraries are needed
+chroot ${ROOTDIR} ldd.server ${FPTB#${ROOTDIR}*} >> ${INSTDIR}/tmp/libraries
 }
 
 # replace copy
@@ -114,7 +115,7 @@ else
         -e "s,@@@NWMODULES@@@,${NWMODULES},g" \
         -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
         -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
-	-e "/^# .*/d" \
+	-e "/^#[^!].*/d" \
           initrd-stuff/${FILENAME} >> ${INSTDIR}/${FILENAME}
   fi
 fi
@@ -215,6 +216,9 @@ mkdir -p ${INSTDIR}/usr/share
 # needed for KNOPPIX hwsetup not to confuse with ${D_SYSCONFDIR}
 mkdir -p ${INSTDIR}/etc/sysconfig
 
+# temporary ldd for getting library information out of initrd binaries
+cp `which ldd` ${ROOTDIR}/usr/bin/ldd.server
+
 # if still no distro name set, try to find it using significant files
 if [ -z "${DISTRO}" ] ; then
   if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
@@ -227,9 +231,13 @@ if [ -z "${DISTRO}" ] ; then
   elif [ -e ${ROOTDIR}/etc/debian_version ] ; then
     DISTRO=debian
     DISTRO_VER=`cat ${ROOTDIR}/etc/debian_version`
+  elif [ -e ${ROOTDIR}/etc/gentoo-release ] ; then
+    DISTRO=gentoo
+    # any idea on the versioning scheme??
+    DISTRO_VER=""
   else
-    echo "Could not detect client distribution type and version. Please \
-specify\nas command line argument (-d <distro-name> -v <distro-version)"
+    echo -e "Could not detect client distribution type and version. Please \
+specify\nas command line argument (-d <distro-name> -v <distro-version>)"
     exit 1;
   fi  
 fi
@@ -368,14 +376,17 @@ case "${DISTRO}" in
     cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib;;
 esac
 
-# add needed libraries depending on choosen binaries
-for lib in `ldd /tmp/dxs-instrd/bin/* 2>/dev/null | \
+# add needed libraries depending on choosen binaries. use chroot
+# on ldd, otherwise the detection does not work properly. ldd has to be
+# static linked binary
+for lib in `cat ${INSTDIR}/tmp/libraries 2>/dev/null | \
   sed -e "s,tls,,;s,i686/cmov,," \
   -ne 's:\t\(.* => \)\?\(/.*\) (0x[0-9a-f]*):\2:p' | sort -u` ; do
   baselib=`basename ${lib}`
   test -e  ${INSTDIR}/lib/${baselib} || \
     cp /${ROOTDIR}/${lib} ${INSTDIR}/lib
 done
+rm ${ROOTDIR}/usr/bin/ldd.server ${INSTDIR}/tmp/libraries
 
 # add kernel modules and dependency files
 if [ -z "$KERNVER" ] ; then
@@ -439,6 +450,11 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${DEBUGMODULES}; do
 	cp ${rdirprefix}/fs/nfs_common/nfs_acl.ko \
 	  ${ddirprefix}/fs/nfs_common &>/dev/null
       ;;
+      ext3)
+        mkdir -p ${ddirprefix}/fs/jbd
+        cp ${rdirprefix}/fs/jbd/jbd.ko \
+          ${ddirprefix}/fs/jbd
+      ;;
     esac
   fi
 done
@@ -452,6 +468,18 @@ for dirs in `find initrd-stuff/* ! -regex ".*/\..*"` ; do
 done
 chmod 755 ${INSTDIR}/init \
   ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
+
+# finally add the common client configuration file
+if [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
+  cp /etc/dxs/client.cfg/machine-setup.default \
+    ${INSTDIR}/etc/machine-setup
+elif [ -f ../installer/default_files/machine-setup_default ] ; then
+  cp ../installer/default_files/machine-setup_default \
+    ${INSTDIR}/etc/machine-setup
+else
+  echo -e "# default for machine-setup does not exist\nroot logins are \
+disabled\nroot_pw='!'" > ${INSTDIR}/etc/machine-setup
+fi
 
 #########################################################################
 # End of file copy procedures

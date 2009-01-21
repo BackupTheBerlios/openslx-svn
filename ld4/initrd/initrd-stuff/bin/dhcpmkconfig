@@ -4,39 +4,32 @@
 #		several dhcp clients. The result is written in unified form
 #		to the /etc/machine-setup file
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-01-2006
-#		Blabla
-#		Blub
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 26-03-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
-
-# functions common for all distros
-. /etc/functions
 
 # client variable should be exported via calling function
 echo -e "\n# ip configuration written by $0" \
   >>/etc/machine-setup
 case $0 in
-  *dhcpd*)
-    cat /var/lib/dhcp/dhcpcd-eth0.info | sed -n -e '/^new/p' | sed \
-      -e "s,',\",g" \
-      -e "s,IPADDR,clientip," -e "s,NETMASK,subnet_mask," \
-      -e "s,GATEWAY,gateway," -e "s,BROADCAST,broadcast_address," \
-      -e "s,HOSTNAME,host_name," -e "s,DOMAIN,domain_name," \
-      -e "s,ROOTPATH,root_path," -e "s,DNS,domain_name_servers," \
-      -e "s,NTPSERVERS,ntp_servers," -e "s,DHCPSID,serverip," \
+  *dhcpcd*)
+    sed -e "s,',\",g;s,IPADDR,clientip,;s,NETMASK,subnet_mask," \
+      -e "s,GATEWAY,gateway,;s,BROADCAST,broadcast_address," \
+      -e "s,HOSTNAME,host_name,;s,DOMAIN,domain_name," \
+      -e "s,ROOTPATH,root_path,;s,DNS,domain_name_servers," \
+      -e "s,NTPSERVERS,ntp_servers,;s,DHCPSID,serverip," \
       -e "s,WINSSERVERS,netbios_name_servers," \
       -e "s,NETWORK,network," \
-      -e "s,DHCP..ADDR.*,," -e "s,.*TIME=.*,," -e "s,CL.*,," \
-      -e "s,INTER.*,," -e "s,DHCPSNAME.*,," \
+      -e "s,DHCP..ADDR.*,,;s,.*TIME=.*,,;s,CL.*,,;/^$/d" \
+      -e "s,INTER.*,,;s,DHCPSNAME.*,," /var/lib/dhcp/dhcpcd-eth0.info \
         >>/etc/machine-setup
   ;;
   *dhclient*)
     set | sed -n -e '/^new/p' | sed \
-      -e "s,^new_,," -e "s,fixed_address,clientip," \
-      -e "s,routers,gateway," -e "s,dhcp_server_identifier,serverip," \
-      -e "s,.*_t[iy][mp]e.*,," -e "s,.*_message_.*,," -e "/^$/d" \
-      -e "s,language=,country=," -e "s,ip_address,clientip," \
+      -e "s,^new_,,;s,fixed_address,clientip," \
+      -e "s,routers,gateway,;s,dhcp_server_identifier,serverip," \
+      -e "s,.*_t[iy][mp]e.*,,;s,.*_message_.*,,;/^$/d" \
+      -e "s,language=,country=,;s,ip_address,clientip," \
         >>/etc/machine-setup
   ;;
   *pump*)

@@ -164,6 +164,7 @@ if [ "${DEBUGLEVEL}" -gt 0 ] ; then
   # if LOGFILE should be used within initial ramdisk add '/mnt' in front
   # of the variable
   LOGFILE="/var/log/dxs-boot.log"
+  echo "1 4 1 7" >/proc/sys/kernel/printk
   [ "${DEBUGLEVEL}" -eq 2 ] && MODPRV="-v"
   [ "${DEBUGLEVEL}" -gt 2 ] && { 
     set -x
@@ -223,17 +224,18 @@ if [ -n "${NBD}" ] ; then
   nbdhost=${NBDOPT%:*}
   nbdopt=${NBDOPT#*:}
   nbdport=${nbdopt%,*}
-  nbdfs=${nbdopt#*,}
-  echo "Diskless client using ${NBD} on $nbdhost:$nbdport with $nbdfs"
+  nbdfs=${nbdopt#$nbdport*}
   if [ -z "$nbdfs" ]; then 
     RFST=ext2; 
   else
-    RFST=$nbdfs;
-    # fixme: check for fs in /proc/filesystems before trying to load the module
-    modprobe ${MODPRV} ${RFST} || error "  Failed to load the requested \
-filesystem module for the client root\n  filesystem ontop of the (D)NBD." \
-     nonfatal
+    RFST=${nbdfs#*,};
   fi
+  echo "Diskless client using ${NBD} on $nbdhost:$nbdport with $RFST"
+  # fixme: check for fs in /proc/filesystems before trying to load the module
+  modprobe ${MODPRV} ${RFST} || error "  Failed to load the requested \
+filesystem module for the client root\n  filesystem ontop of the (D)NBD." \
+    nonfatal
+
   errmsg="  For some reason the network block device /dev/${NBD}0 never \
 appeared.\n  You might want to check udev or your list of static device \
 files."
@@ -259,11 +261,11 @@ the network block device client. Unable to mount root\n  filesystem."
       while ! dnbd-client -b $nbdhost -d /dev/dnbd0 $clientopt ; do
         usleep 10
       done
-      echo $?
+      #echo $?
       RDEV=/dev/dnbd0
-      usleep 20
-    ;;
+      ;;
   esac
+  usleep 20
   mount -n -t $RFST -o ro $RDEV /mnt
 fi
 # if no type of root filesystem is passed via kernel command line try
@@ -361,14 +363,13 @@ else
   mount -n --bind ${RWDIR}/var /mnt/var
   # get the "covered" mounts back into filesystem structure
   for i in ${LIST}; do
-    #rm -rf /* >/dev/null 2>&1
     mount -n --move /root/$i /mnt/$i #>>$LOGFILE 2>&1
   done
-  rm -rf /root/* >/dev/null 2>&1
+  #rm -rf /root/* >/dev/null 2>&1
   # run some specific stuff !?
 fi
 # script for stuff to execute during early bootup
-d_mkrlscript init boot.ld "Running post configuration required by init"
+d_mkrlscript init boot.ld "Running configuration postponed from InitRD"
 echo "fs complete" >/tmp/fscmpl
 
 # write debug file information after filesystem setup completed

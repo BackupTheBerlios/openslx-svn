@@ -58,8 +58,8 @@ if [ -f /mnt/etc/init.d/ntp ] ; then
   fi
   testmkd /mnt/var/lib/ntp/var/run/ntp &>/dev/null
   if [ "x$start_ntp" = "xinitial" ] ; then
-    echo -e "\t# entry added by $0: $date\n\t( ntpdate -s -b $ntp_servers\
-  >${LOGFILE} 2>&1 && \\n\t  which hwclock &>/dev/null && hwclock -w ) &" \
+    echo -e "\t# entries added by $0: $date\n\t( ntpdate -s -b $ntp_servers\
+  >${LOGFILE} 2>&1 && {\n\t  which hwclock &>/dev/null && hwclock -w;} ) &" \
       >>/mnt/etc/${D_INITDIR}/boot.ld
   elif [ "x$start_ntp" = "xyes" ] ; then
     rllinker "ntp" "$start" "$stop"
@@ -145,8 +145,8 @@ cp /etc/displaymanager /mnt/etc/sysconfig/displaymanager
 # started twice during bootup - quickhack ...
 #ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/S01xdm
 ln -sf ../xdm /mnt/etc/${D_INITDIR}/rc5.d/K20xdm
-echo -e "\t/etc/init.d/xdm start >${LOGFILE} 2>&1\n\t( sleep 60; \
-ln -sf ../xdm /etc/${D_INITDIR}/rc5.d/S01xdm \
+echo -e "\t/etc/init.d/xdm start >${LOGFILE} 2>&1\n\
+\t( sleep 120; ln -sf ../xdm /etc/${D_INITDIR}/rc5.d/S01xdm \
 >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld
 }
 
@@ -416,8 +416,8 @@ local name="$2"
 local info="$3"
 case "$1" in
   init)
-    echo -e "#!/bin/sh\n# skeleton of /etc/${D_INITDIR}/$name written \
-from $0\n. /etc/rc.status\n. /etc/sysconfig/logfile\nrc_reset\ncase \
+    echo -e "#!/bin/sh\n# skeleton of /etc/${D_INITDIR}/$name created \
+by $0\n. /etc/rc.status\n. /etc/sysconfig/logfile\nrc_reset\ncase \
 \"\$1\" in\n    start)\n\techo -n \"$info\"" >>/mnt/etc/${D_INITDIR}/$name
     chmod u+x /mnt/etc/${D_INITDIR}/$name
   ;;
