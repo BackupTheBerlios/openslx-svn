@@ -1,0 +1,8 @@
+NOESCAPE 0
+PROMPT 0
+TIMEOUT 10
+DEFAULT menu.c32
+IMPLICIT 1
+ALLOWOPTIONS 1
+MENU TITLE Was möchten Sie tun (Auswahl mittels Cursortasten)?
+MENU MASTER PASSWD secret

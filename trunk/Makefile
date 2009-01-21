@@ -152,6 +152,8 @@ supported."; \
 	  tar -xp -C $(SLX_SHARE_PATH)/initramfs; cd ../..
 	@tar --exclude=.svn -cp -C initramfs distro-specs | \
 	  tar -xp -C $(SLX_SHARE_PATH)
+	@cp -p config-db/PXE-template.example \
+	  $(SLX_CONFIG_PATH)/
 	@cp -a installer/default_files/machine-setup.default \
 	  $(SLX_SHARE_PATH)/templates/
 	@tar --exclude=.svn -cp -C installer/default_files tftpboot | \
