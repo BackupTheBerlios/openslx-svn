@@ -382,10 +382,12 @@ sub writePXEMenus
 		$pxeTemplate .= slurpFile($pxeThemeConfig);
 	}
 
-	# PXE uses 'cp850' (codepage 850) but our string is in utf-8, we have
-	# to convert in order to avoid showing gibberish on the client side...
-	use Encode 'from_to';
-	from_to($pxeTemplate, 'utf-8', 'cp850');
+	# fetch info about margin and replace the corresponding placeholders
+	my $margin = $openslxConfig{'pxe-theme-menu-margin'} || 0;
+	my $marginAsText = ' ' x $margin;
+	$pxeTemplate =~ s{\@\@\@MENU_MARGIN\@\@\@}{$margin}g;
+	my $separatorLine = '-' x (78 - 4 - 2 * $margin);
+	$pxeTemplate =~ s{\@\@\@SEPARATOR_LINE\@\@\@}{$separatorLine}g;
 
 	# pick out the last background picture and copy it over
 	my $pic;
@@ -420,16 +422,39 @@ sub writePXEMenus
 			$append .= " initrd=$extID/$info->{'initramfs-name'}";
 			$append .= " $clientAppend";
 			$slxLabels .= "LABEL openslx-$info->{'external-id'}\n";
-			$slxLabels .= "\tMENU LABEL ^$info->{label}\n";
+			my $label = $info->{label} || '';
+			if (!length($label) || $label eq $info->{name}) {
+				if ($info->{name} =~ m{^(.+)::(.+)$}) {
+					my $system = $1;
+					my $exportType = $2;
+					$label = $system . ' ' x (40-length($system)) . $exportType;
+				} else {
+					$label = $info->{name};
+				}
+			}
+			$slxLabels .= "\tMENU LABEL ^$label\n";
 			$slxLabels .= "\tKERNEL $extID/$kernelName\n";
 			$slxLabels .= "\tAPPEND $append\n";
 			$slxLabels .= "\tIPAPPEND 1\n";
+			my $helpText = $info->{description} || '';
+			if (length($helpText)) {
+				# make sure that text matches the given margin
+				$helpText =~ s{^}{$marginAsText}gms;
+				$slxLabels .= "\tTEXT HELP\n$helpText\n\tENDTEXT\n";
+			}
 		}
-$slxLabels .= $slxLabels . $slxLabels . $slxLabels . $slxLabels;
 		# now add the slx-labels (inline or appended) and write the config file
 		if (!($pxeConfig =~ s{\@\@\@SLX_LABELS\@\@\@}{$slxLabels})) {
 			$pxeConfig .= $slxLabels;
 		}
+
+print "$pxeConfig\n";
+
+		# PXE uses 'cp850' (codepage 850) but our string is in utf-8, we have
+		# to convert in order to avoid showing gibberish on the client side...
+		use Encode 'from_to';
+		from_to($pxeConfig, 'utf-8', 'cp850');
+
 		spitFile($pxeFile, $pxeConfig);
 	}
 	return;
