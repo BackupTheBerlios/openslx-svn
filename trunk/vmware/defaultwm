@@ -2,11 +2,11 @@
 #
 # Description:  Session chooser for kdm/gdm
 #
-# Author(s):    Michael Janczyk <mj0@uni-freiburg.de>, 03-10-2006
+# Author(s):    Michael Janczyk <mj0@uni-freiburg.de>, 25-10-2006
 #
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.2.435
+# Version:      0.2.472
 #
 ################################################################################
 
@@ -42,11 +42,11 @@ x_dialog () {
   slxgrptest=
     
 
-  xdesktopsnr=( `ls ${xsessions}/*.desktop | grep -v "default.*" \
-    | wc -l 2>/dev/null` )
-  desktops=( `ls ${xsessions}/*.desktop | grep -v "default.*" \
-    | sort -bf 2>/dev/null; \
-    ls ${vmsessions}/*.desktop | sort -bf 2>/dev/null` )
+  xdesktopsnr=( `ls ${xsessions}/*.desktop 2>/dev/null | grep -v "default.*" \
+    | wc -l 2` )
+  desktops=( `ls ${xsessions}/*.desktop 2>/dev/null | grep -v "default.*" \
+    | sort -bf; \
+    ls ${vmsessions}/*.desktop 2>/dev/null | sort -bf` )
   desktopsnr=$(echo "${#desktops[*]}")
   (( args=0 ))
   declare -i i=0
