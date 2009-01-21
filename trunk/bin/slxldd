@@ -191,21 +191,27 @@ sub addLibsForBinary
 		# determine whether binary is 32- or 64-bit platform
 
 	# now find out about needed libs, we first try objdump...
-	print STDERR _tr("\ttrying objdump...\n") if $verbose;
+	if ($verbose) {
+		print STDERR _tr("\ttrying objdump...\n");
+	}
 	my $res = `objdump -p $binary 2>/dev/null`;
 	if (!$?) {
 		# find out if rpath is set for binary:
 		my $rpath;
 		if ($res =~ m[^\s*RPATH\s*(\S+)]im) {
 			$rpath = $1;
-			print STDERR _tr("\trpath='%s'\n", $rpath) if $verbose;
+			if ($verbose) {
+				print STDERR _tr("\trpath='%s'\n", $rpath);
+			}
 		}
 		while($res =~ m[^\s*NEEDED\s*(.+?)\s*$]gm) {
 			addLib($1, $bitwidth, $rpath);
 		}
 	} else {
 		# ...objdump failed, so we try readelf instead:
-		print STDERR _tr("\ttrying readelf...\n") if $verbose;
+		if ($verbose) {
+			print STDERR _tr("\ttrying readelf...\n");
+		}
 		$res = `readelf -d $binary 2>/dev/null`;
 		if ($?) {
 			die _tr("neither objdump nor readelf seems to be installed, giving up!\n");
@@ -214,7 +220,9 @@ sub addLibsForBinary
 		my $rpath;
 		if ($res =~ m/Library\s*rpath:\s*\[([^\]]+)/im) {
 			$rpath = $1;
-			print STDERR _tr("\trpath='%s'\n", $rpath) if $verbose;
+			if ($verbose) {
+				print STDERR _tr("\trpath='%s'\n", $rpath);
+			}
 		}
 		while($res =~ m{\(NEEDED\)[^\[]+\[(.+?)\]\s*$}gm) {
 			addLib($1, $bitwidth, $rpath);

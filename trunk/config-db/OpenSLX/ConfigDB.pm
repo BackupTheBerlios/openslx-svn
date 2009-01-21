@@ -178,16 +178,15 @@ sub connectConfigDB
 	my $dbModule = "OpenSLX::MetaDB::$dbType";
 	unless (eval "require $dbModule") {
 		if ($! == 2) {
-			die _tr("Unable to load DB-module <%s>\n"
-					."that database type is not supported (yet?)\n", $dbModule);
+			die _tr("Unable to load DB-module <%s>\nthat database type is not supported (yet?)\n",
+					$dbModule);
 		} else {
 			die _tr("Unable to load DB-module <%s> (%s)\n", $dbModule, $@);
 		}
 	}
 	my $modVersion = $dbModule->VERSION;
 	if ($modVersion < $VERSION) {
-		confess _tr('Could not load module <%s> (Version <%s> required, '
-					.'but <%s> found)',
+		confess _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
 					$dbModule, $VERSION, $modVersion);
 	}
 	$dbModule->import;
