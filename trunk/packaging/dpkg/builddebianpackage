@@ -9,11 +9,11 @@ if [ -z "$dpkg_deb" ];then
     exit
 fi
 
-# change into folder the this script lives in:
-cd $(dirname $(readlink -f $0))
+# change into folder where we expect the Makefile:
+cd $(dirname $(readlink -f $0))/../..
 if [ ! -e ./Makefile ]; then
     echo "There is no makefile in this programs directory (`pwd`)."
-    echo "Please run this script only embedded in the context of an openslx installation"
+    echo "Please run this script only embedded in the context of an openslx checkout."
     exit
 fi
 
@@ -24,10 +24,10 @@ if make install; then
   #Create Temporary working directory
   mkdir -p $SLX_BUILD_PATH/DEBIAN
   mkdir -p $SLX_BUILD_PATH/usr/share/man/man1
-  cp packaging/default_files/control  $SLX_BUILD_PATH/DEBIAN/
-  cp packaging/default_files/prerm    $SLX_BUILD_PATH/DEBIAN/
-  cp packaging/default_files/postinst $SLX_BUILD_PATH/DEBIAN/
-  cp packaging/default_files/*.1 $SLX_BUILD_PATH/usr/share/man/man1/
+  cp packaging/dpkg/default_files/control  $SLX_BUILD_PATH/DEBIAN/
+  cp packaging/dpkg/default_files/prerm    $SLX_BUILD_PATH/DEBIAN/
+  cp packaging/dpkg/default_files/postinst $SLX_BUILD_PATH/DEBIAN/
+  cp packaging/dpkg/default_files/*.1 $SLX_BUILD_PATH/usr/share/man/man1/
   gzip -9 $SLX_BUILD_PATH/usr/share/man/man1/*
 
   #Set permissions
@@ -36,10 +36,10 @@ if make install; then
   #Create the package
   dpkg-deb --build $SLX_BUILD_PATH > /dev/null
   . ./VERSIONS
-  mv $SLX_BUILD_PATH.deb ./openslx_$OPENSLX_VERSION_STRING.deb
-  echo "Written './openslx_$OPENSLX_VERSION_STRING.deb':"
-  ls -lh ./openslx_$OPENSLX_VERSION_STRING.deb
+  cd packaging/dpkg
+  mv $SLX_BUILD_PATH.deb openslx_$OPENSLX_VERSION_STRING.deb
+  echo "Written 'openslx_$OPENSLX_VERSION_STRING.deb':"
+  ls -lh openslx_$OPENSLX_VERSION_STRING.deb
 fi
 #Clean up
-#rm -rf $SLX_BUILD_PATH
-
+rm -rf $SLX_BUILD_PATH
