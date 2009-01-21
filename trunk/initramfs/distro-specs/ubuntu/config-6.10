@@ -28,4 +28,4 @@
 # during client bootup, path and file relative to /etc
 
 # mountvirtfs does not exist anymore -> use mountkernfs.sh
-D_INITSCRIPTS="mountkernfs.sh keymap.sh procps.sh bootlogd hwclock.sh sudo"
+D_INITSCRIPTS="mountkernfs.sh keyboard-setup mountdevsubfs.sh procps.sh bootlogd hwclock.sh sudo console-setup"
