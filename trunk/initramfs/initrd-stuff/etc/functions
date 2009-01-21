@@ -326,7 +326,8 @@ local ret=0
   loadmod /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko "$error_modnfs"
 # busybox mount has to be compiled with nfs mount support otherwise
 # --> error "$error_mntt"
-mount -n -t nfs -o ro,nolock $nfsroot $dest || ret=1
+mount -n -t nfs -o ro,nolock,tcp $nfsroot $dest || \
+  mount -n -t nfs -o ro,nolock,udp $nfsroot $dest || ret=1
 return $ret
 }
 #############################################################################
@@ -371,7 +372,8 @@ if [ "$dhcp" = "none" ] ; then
 else
   # ensure the interface is up - might produce conflicts - nbd could
   # fail!!
-  # ipsetup 0.0.0.0 255.255.255.255 0.0.0.0 255.255.255.255 eth0 &
+  [ -n "$noipyet" ] && \
+    ipsetup 0.0.0.0 255.255.255.255 0.0.0.0 255.255.255.255 eth0
   [ -f /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko ] && \
     loadmod /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko \
       "needed for dhcp";

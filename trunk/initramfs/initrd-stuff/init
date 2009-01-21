@@ -573,7 +573,7 @@ mount -n --move /dev /mnt/dev
 chmod a+rwxt /mnt/dev/shm
 killall -9 udevd 2>/dev/null
 # kill the watchdog (errhalt)
-[ -f /tmp/watchdog ] && kill $(cat /tmp/watchdogpid) 2>/dev/null
+[ -f /tmp/watchdog ] && kill -9 $(cat /tmp/watchdogpid) #2>/dev/null
 # runtimer
 [ $DEBUGLEVEL -eq 8 ] && echo "** SLX init ended near $(sysup)"
 umount -n /proc
