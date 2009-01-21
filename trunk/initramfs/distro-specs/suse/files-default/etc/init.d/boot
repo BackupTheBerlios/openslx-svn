@@ -24,7 +24,6 @@
 # Most of preparation is done within the initial ramdisk
 #
 ################################################################
-LD_LIBRARY_PATH=/usr/lib
 
 # Before we do anything else, try at first to activate SELinux support
 test -d /selinux && mount -n -t selinuxfs none /selinux &>/dev/null

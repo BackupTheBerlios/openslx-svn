@@ -57,13 +57,14 @@ SLX_CONFIG_PATH=@@@SLX_CONFIG_PATH@@@
    . $SLX_CONFIG_PATH/settings.default
 [ -f $SLX_CONFIG_PATH/settings.local ] && \
    . $SLX_CONFIG_PATH/settings.local
-# read the common functions file
-[ -e ${SLX_SHARE_PATH}/initramfs/etc/functions ] && \
-  . ${SLX_SHARE_PATH}/initramfs/etc/functions
 
 #########################################################################
 # End of global variable declaration, nothing needed to be changed at
 # default below that line
+
+testmkd () {
+  test -d $1 || mkdir -p $1 >/dev/null 2>&1
+}
 
 usage()
 {
