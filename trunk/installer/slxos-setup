@@ -108,13 +108,12 @@ if ($action =~ m[^import]i) {
 	$engine->initialize($vendorOSName, 'install');
 	$engine->installVendorOS();
 } elsif ($action =~ m[^clone]i) {
+	my $source = shift @ARGV;
 	my $vendorOSName = shift @ARGV;
-	my $srcString = shift @ARGV;
-	if ($srcString !~ m[^\s*source=(.+?)\s*$]) {
-		print STDERR _tr("You need to specify a source you'd like to clone!\n");
+	if (!defined $source || !defined $vendorOSName) {
+		print STDERR _tr("You need to specify exactly one source and one vendor-OS-name!\n");
 		pod2usage(2);
 	}
-	my $source = $1;
 	if ($source !~ m[^.+::?.+$]) {
 		die _tr("Unkown source format given, expected '<hostname>:<path>' or '<hostname>::<module>'!\n");
 	}
@@ -159,7 +158,7 @@ will be used as a OpenSLX-stage1-system (a.k.a. vendor-OS).
 
 =head1 SYNOPSIS
 
-  slxos-setup [options] <action> <vendor-os-name>
+  slxos-setup [options] <action> <action-params> ...
 
   Options:
       --help                   brief help message
@@ -168,7 +167,7 @@ will be used as a OpenSLX-stage1-system (a.k.a. vendor-OS).
       --version                show version
 
   Actions:
-      clone <vendor-os-name> source=<rsync-uri>
+      clone <rsync-source-uri> <vendor-os-name>
                                clones an existing operating system via rsync
       import-into-db <vendor-os-name>
                                imports a vendor-OS into the openslx-db
@@ -228,7 +227,7 @@ In clone-mode, it is a good idea to specify some unqiue string as the selection
 part of the vendor-os-name, such that you will easily recognize the vendor-OS
 at a later stage. We recommend something like '-cloned-from-<name-of-rsync-source>'.
 
-=item B<rsync-uri>
+=item B<rsync-source-uri>
 
 When cloning a vendor-OS, slxos-setup needs to know where to fetch
 the existing OS-files from. Please check the 'rsync' docs for what
@@ -250,7 +249,7 @@ format an rsync-uri has.
 
 =head2 Cloning an Operating System to Make a New Vendor-OS
 
-  slxos-setup clone suse-10.2-clone-my_server source=my_server:/
+  slxos-setup clone my_server:/ suse-10.2-clone-my_server
 
       clones the suse-10.2 system from server 'my_server' as a new vendor-OS,
       which will be named 'suse-10.2-clone-my_server'
