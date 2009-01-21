@@ -46,10 +46,10 @@ use vars qw(%supportedDistros);
 		module => 'Fedora_6_x86_64',  support => 'clone,install'
 	},
 	'gentoo-2005.1' => {
-		module => 'Gentoo_2005_1',    support => 'clone'
+		module => 'Gentoo',    		  support => 'clone'
 	},
 	'gentoo-2006.1' => {
-		module => 'Gentoo_2006_1',    support => 'clone'
+		module => 'Gentoo',           support => 'clone'
 	},
 	'mandriva-2007.0' => {
 		module => 'Mandriva_2007_0',  support => 'clone'
@@ -129,7 +129,7 @@ sub initialize
 	my $selectionName = $2 || 'default';
 	$self->{'vendor-os-name'} = $vendorOSName;
 	$self->{'action-type'}    = $actionType;
-	$self->{'distro-name'}    = $distroName;
+	$self->{'distro-name'}    = lc($distroName);
 	$self->{'selection-name'} = $selectionName;
 	$self->{'clone-source'}   = '';
 	if (!exists $supportedDistros{lc($distroName)}) {
@@ -173,6 +173,8 @@ sub initialize
 		if (!eval { 
 			$distro = instantiateClass("OpenSLX::OSSetup::Distro::$distroClass") 
 		}) {
+			vlog(2, "could not load distro module '$distroClass' ($@) ...");
+			vlog(2, "falling back to module 'Any_Clone'");
 			# allow fallback to generic clone module, such that we can clone
 			# distro's for which there is no specific distro-module yet
 			# (like for example for Gentoo):
@@ -186,7 +188,7 @@ sub initialize
 	if ($actionType =~ m{^(install|update|shell)}) {
 		# setup path to distribution-specific info:
 		my $sharedDistroInfoDir 
-			= "$openslxConfig{'base-path'}/share/distro-info/$distro->{'base-name'}";
+			= "$openslxConfig{'base-path'}/share/distro-info/$self->{'distro-name'}";
 		if (!-d $sharedDistroInfoDir) {
 			die _tr(
 				"unable to find shared distro-info in '%s'\n",
@@ -195,7 +197,7 @@ sub initialize
 		}
 		$self->{'shared-distro-info-dir'} = $sharedDistroInfoDir;
 		my $configDistroInfoDir =
-			"$openslxConfig{'config-path'}/distro-info/$distro->{'base-name'}";
+			"$openslxConfig{'config-path'}/distro-info/$self->{'distro-name'}";
 		if (!-d $configDistroInfoDir) {
 			die _tr(
 				"unable to find configurable distro-info in '%s'\n",
@@ -212,7 +214,7 @@ sub initialize
 		die(
 			_tr(
 				"selection '%s' is unknown to distro '%s'\n",
-				$selectionName, $distro->{'base-name'}
+				$selectionName, $self->{'distro-name'}
 			)
 			. _tr("These selections are available:\n\t")
 			. join("\n\t", keys %{$self->{'distro-info'}->{'selection'}})
@@ -1338,7 +1340,7 @@ sub _changePersonalityIfNeeded
 {
 	my $self = shift;
 
-	my $distroName = $self->{distro}->{'base-name'};
+	my $distroName = $self->{'distro-name'};
 	if ($self->_hostIs64Bit() && $distroName !~ m[_64]) {
 		# trying to handle a 32-bit vendor-OS on a 64-bit machine, so we change
 		# the personality accordingly (from 64-bit to 32-bit):

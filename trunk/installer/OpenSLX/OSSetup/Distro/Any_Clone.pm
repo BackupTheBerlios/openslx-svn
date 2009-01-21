@@ -19,14 +19,12 @@ use warnings;
 use base qw(OpenSLX::OSSetup::Distro::Base);
 
 ################################################################################
-### implementation
+### interface methods
 ################################################################################
 sub new
 {
 	my $class = shift;
-	my $self = {
-		'base-name' => 'any-clone',
-	};
+	my $self = {};
 	return bless $self, $class;
 }
 

@@ -21,8 +21,15 @@ use base qw(OpenSLX::OSSetup::Distro::Base);
 use OpenSLX::Basics;
 
 ################################################################################
-### implementation
+### interface methods
 ################################################################################
+sub new
+{
+	my $class = shift;
+	my $self = {};
+	return bless $self, $class;
+}
+
 sub initialize
 {
 	my $self = shift;
@@ -32,13 +39,6 @@ sub initialize
 	$self->{'packager-type'}       = 'dpkg';
 	$self->{'meta-packager-type'}  = $ENV{SLX_META_PACKAGER} || 'apt';
 	$self->{'stage1c-faked-files'} = [];
-	return;
-}
-
-sub fixPrerequiredFiles
-{
-	my $self = shift;
-	my $stage1cDir = shift;
 	return;
 }
 

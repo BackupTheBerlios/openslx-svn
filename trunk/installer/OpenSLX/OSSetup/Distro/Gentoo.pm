@@ -11,7 +11,7 @@
 # SUSE.pm
 #	- provides SUSE-specific overrides of the OpenSLX OSSetup API.
 # -----------------------------------------------------------------------------
-package OpenSLX::OSSetup::Distro::SUSE;
+package OpenSLX::OSSetup::Distro::Gentoo;
 
 use strict;
 use warnings;
@@ -30,39 +30,29 @@ sub new
 	return bless $self, $class;
 }
 
-sub initialize
-{
-	my $self   = shift;
-	my $engine = shift;
-
-	$self->SUPER::initialize($engine);
-	$self->{'packager-type'}      = 'rpm';
-	$self->{'meta-packager-type'} = $ENV{SLX_META_PACKAGER} || 'smart';
-	$ENV{YAST_IS_RUNNING}         = "instsys";
-	return;
-}
-
-sub fixPrerequiredFiles
+sub pickKernelFile
 {
 	my $self       = shift;
-	my $stage1cDir = shift;
+	my $kernelPath = shift;
 
-	chown(0, 0, "$stage1cDir/etc/group", "$stage1cDir/etc/passwd",
-		"$stage1cDir/etc/shadow");    
-	return;
-}
-
-sub updateDistroConfig
-{
-	my $self = shift;
-
-	# invoke SuSEconfig in order to allow it to update the configuration:
-	if (slxsystem('SuSEconfig')) {
-		die _tr("unable to run SuSEconfig (%s)", $!);
+	my $newestKernelFile;
+	my $newestKernelFileSortKey = '';
+	foreach my $kernelFile (glob("$kernelPath/kernel-genkernel-x86-*")) {
+		next unless $kernelFile =~ m{
+			x86-(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?-(\d+(?:\.\d+)?)
+		}x;
+		my $sortKey 
+			= sprintf("%02d.%02d.%02d.%02d-%2.1f", $1, $2, $3, $4||0, $5);
+		if ($newestKernelFileSortKey lt $sortKey) {
+			$newestKernelFile        = $kernelFile;
+			$newestKernelFileSortKey = $sortKey;
+		}
 	}
-	$self->SUPER::updateDistroConfig();
-	return;
-}
 
+	if (!defined $newestKernelFile) {
+		die _tr("unable to pick a kernel-file from path '%s'!", $kernelPath);
+	}
+	return $newestKernelFile;
+}
 
 1;

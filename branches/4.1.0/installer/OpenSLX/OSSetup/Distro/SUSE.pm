@@ -21,8 +21,15 @@ use base qw(OpenSLX::OSSetup::Distro::Base);
 use OpenSLX::Basics;
 
 ################################################################################
-### implementation
+### interface methods
 ################################################################################
+sub new
+{
+	my $class = shift;
+	my $self = {};
+	return bless $self, $class;
+}
+
 sub initialize
 {
 	my $self   = shift;
