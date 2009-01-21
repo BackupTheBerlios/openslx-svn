@@ -7,6 +7,8 @@
 #
 # (c) 2006, 2007 - OpenSLX GmbH
 
+DESTDIR = /
+
 # the following defaults should be filled via 'configure'
 # and each of them can be overriden by setting the environment variable
 # in the shell that executes this Makefile
@@ -108,75 +110,79 @@ supported."; \
 		fi; \
 	done;
 	@echo "Installing OpenSLX project files"
-	@mkdir -p $(SLX_CONFIG_PATH) \
-	       -p $(SLX_BASE_PATH)/lib \
-	       -p $(SLX_BIN_PATH) \
-	       -p $(SLX_SHARE_PATH)/templates \
-	       -p $(SLX_SHARE_PATH)/initramfs \
-	       -p $(SLX_SHARE_PATH)/busybox \
-	       -p $(SLX_SHARE_PATH)/squashfs \
-	       -p $(SLX_PRIVATE_PATH)/config/default/initramfs \
-	       -p $(SLX_PRIVATE_PATH)/config/default/rootfs \
-	       -p $(SLX_PRIVATE_PATH)/db \
-	       -p $(SLX_PRIVATE_PATH)/stage1 \
-	       -p $(SLX_PUBLIC_PATH) \
-	       -p $(SLX_TFTPBOOT_PATH) \
-	       -p $(SLX_SHARE_PATH)/themes
+	@mkdir -p $(DESTDIR)$(SLX_CONFIG_PATH) \
+	       -p $(DESTDIR)$(SLX_BASE_PATH)/lib \
+	       -p $(DESTDIR)$(SLX_BIN_PATH) \
+	       -p $(DESTDIR)$(SLX_SHARE_PATH)/templates \
+	       -p $(DESTDIR)$(SLX_SHARE_PATH)/initramfs \
+	       -p $(DESTDIR)$(SLX_SHARE_PATH)/busybox \
+	       -p $(DESTDIR)$(SLX_SHARE_PATH)/squashfs \
+	       -p $(DESTDIR)$(SLX_PRIVATE_PATH)/config/default/initramfs \
+	       -p $(DESTDIR)$(SLX_PRIVATE_PATH)/config/default/rootfs \
+	       -p $(DESTDIR)$(SLX_PRIVATE_PATH)/db \
+	       -p $(DESTDIR)$(SLX_PRIVATE_PATH)/stage1 \
+	       -p $(DESTDIR)$(SLX_PUBLIC_PATH) \
+	       -p $(DESTDIR)$(SLX_TFTPBOOT_PATH) \
+	       -p $(DESTDIR)$(SLX_SHARE_PATH)/themes
+	@for dir in $(USR_BIN_PATH); do \
+		test -d $(DESTDIR)$${dir} || \
+			mkdir -p $(DESTDIR)$${dir}; \
+	done
 	@# copy license
-	@cp COPYING $(SLX_BASE_PATH)/
+	@cp COPYING $(DESTDIR)$(SLX_BASE_PATH)/
 	@# copy initramfs generator scripts (and inject SLX_CONFIG_PATH on the way):
-	@cp ./initramfs/mkdxsinitrd $(SLX_BIN_PATH)/
-	@cp ./initramfs/slxmkramfs $(SLX_BIN_PATH)/
+	@cp ./initramfs/mkdxsinitrd $(DESTDIR)$(SLX_BIN_PATH)/
+	@cp ./initramfs/slxmkramfs $(DESTDIR)$(SLX_BIN_PATH)/
 	@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
-	  -i $(SLX_BIN_PATH)/mkdxsinitrd
+	  -i $(DESTDIR)$(SLX_BIN_PATH)/mkdxsinitrd
 	@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
-	  -i $(SLX_BIN_PATH)/slxmkramfs
+	  -i $(DESTDIR)$(SLX_BIN_PATH)/slxmkramfs
 
 	@# copy all PERL-scripts and their required modules:
-	@cp bin/slx* $(SLX_BIN_PATH)/
-	@cp config-db/slx* $(SLX_BIN_PATH)/
-	@cp installer/slx* $(SLX_BIN_PATH)/
+	@cp bin/slx* $(DESTDIR)$(SLX_BIN_PATH)/
+	@cp config-db/slx* $(DESTDIR)$(SLX_BIN_PATH)/
+	@cp installer/slx* $(DESTDIR)$(SLX_BIN_PATH)/
 	@tar --exclude=.svn -cp -C lib OpenSLX distro-info | \
-	  tar -xp -C $(SLX_BASE_PATH)/lib
+	  tar -xp -C $(DESTDIR)$(SLX_BASE_PATH)/lib
 	@tar --exclude=.svn -cp -C config-db OpenSLX | \
-	  tar -xp -C $(SLX_BASE_PATH)/lib
+	  tar -xp -C $(DESTDIR)$(SLX_BASE_PATH)/lib
 	@tar --exclude=.svn -cp -C installer OpenSLX | \
-	  tar -xp -C $(SLX_BASE_PATH)/lib
+	  tar -xp -C $(DESTDIR)$(SLX_BASE_PATH)/lib
 
 	@# link all binaries & scripts into user-path:
-	@ln -sf $(SLX_BIN_PATH)/slx* $(USR_BIN_PATH)/
-	@ln -sf $(SLX_BIN_PATH)/mkdxsinitrd $(USR_BIN_PATH)/
+	@ln -sf $(SLX_BIN_PATH)/slx* $(DESTDIR)$(USR_BIN_PATH)/
+	@ln -sf $(SLX_BIN_PATH)/mkdxsinitrd $(DESTDIR)$(USR_BIN_PATH)/
 
 	@# copy shareable data:
 	@cd initramfs/initrd-stuff; tar --exclude=.svn -cp * | \
-	  tar -xp -C $(SLX_SHARE_PATH)/initramfs; cd ../..
+	  tar -xp -C $(DESTDIR)$(SLX_SHARE_PATH)/initramfs; cd ../..
 	@tar --exclude=.svn -cp -C initramfs distro-specs | \
-	  tar -xp -C $(SLX_SHARE_PATH)
+	  tar -xp -C $(DESTDIR)$(SLX_SHARE_PATH)
 	@cp -p config-db/PXE-template.example \
-	  $(SLX_CONFIG_PATH)/
+	  $(DESTDIR)$(SLX_CONFIG_PATH)/
 	@cp -a installer/default_files/machine-setup.default \
-	  $(SLX_SHARE_PATH)/templates/
+	  $(DESTDIR)$(SLX_SHARE_PATH)/templates/
 	@tar --exclude=.svn -cp -C installer/default_files tftpboot | \
-	  tar -xp -C $(SLX_SHARE_PATH)
+	  tar -xp -C $(DESTDIR)$(SLX_SHARE_PATH)
 	@cd theming; tar --exclude=.svn -cp * | \
-	  tar -xp -C $(SLX_SHARE_PATH)/themes; cd ..
+	  tar -xp -C $(DESTDIR)$(SLX_SHARE_PATH)/themes; cd ..
 	@cp -pP tools/busybox{,.links,.x86_64,.i586} installer/slxbootstrap \
-	  $(SLX_SHARE_PATH)/busybox/
-	@cp -p tools/mksquashfs $(SLX_SHARE_PATH)/squashfs/
+	  $(DESTDIR)$(SLX_SHARE_PATH)/busybox/
+	@cp -p tools/mksquashfs $(DESTDIR)$(SLX_SHARE_PATH)/squashfs/
 
 	@# create pre-/postinit scripts for us in initramfs:
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
 extend the\n# capabilities at the beginning of the initramfs (stage3). \
 The toolset is rather\n# restricted and you have to keep in mind that \
 stage4 rootfs has the\n# prefix '/mnt'." \
-	  > $(SLX_PRIVATE_PATH)/config/default/initramfs/preinit.local
+	  > $(DESTDIR)$(SLX_PRIVATE_PATH)/config/default/initramfs/preinit.local
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
 extend the\n# capabilities at the end of the initramfs (stage3). The \
 toolset is rather\n# restricted and you have to keep in mind that stage4 \
 rootfs has the\n# prefix '/mnt'. But you might use some special slx \
 functions via\n# inclusion: '. /etc/functions' ..." \
-	  > $(SLX_PRIVATE_PATH)/config/default/initramfs/postinit.local
-	@chmod u+x $(SLX_PRIVATE_PATH)/config/default/initramfs/*init.local
+	  > $(DESTDIR)$(SLX_PRIVATE_PATH)/config/default/initramfs/postinit.local
+	@chmod u+x $(DESTDIR)$(SLX_PRIVATE_PATH)/config/default/initramfs/*init.local
 
 	@# create complete default settings and empty local settings file:
 	@echo -e "# default setup for OpenSLX-installation\
@@ -190,18 +196,18 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 \nSLX_TEMP_PATH=${SLX_TEMP_PATH}\
 \nSLX_TFTPBOOT_PATH=${SLX_TFTPBOOT_PATH}\
 \nSLX_VMWARE_PATH=${SLX_VMWARE_PATH}\n" \
-	  > $(SLX_CONFIG_PATH)/settings.default
-	@test -e $(SLX_CONFIG_PATH)/settings.local || \
+	  > $(DESTDIR)$(SLX_CONFIG_PATH)/settings.default
+	@test -e $(DESTDIR)$(SLX_CONFIG_PATH)/settings.local || \
 	  echo -e "# local setup for openslx (overrides settings.default)\n" \
-	    > $(SLX_CONFIG_PATH)/settings.local
+	    > $(DESTDIR)$(SLX_CONFIG_PATH)/settings.local
 
 	@# create slxversion script:
 	@OPENSLX_VERSION_SVNREV=$$(svnversion .); \
 	. ./VERSIONS; \
 	  echo "echo $${OPENSLX_VERSION_STRING}" \
-	    > ${SLX_BIN_PATH}/slxversion
-	@chmod a+x ${SLX_BIN_PATH}/slxversion
-	@ln -sf $(SLX_BIN_PATH)/slxversion $(USR_BIN_PATH)/
+	    > $(DESTDIR)${SLX_BIN_PATH}/slxversion
+	@chmod a+x $(DESTDIR)${SLX_BIN_PATH}/slxversion
+	@ln -sf $(SLX_BIN_PATH)/slxversion $(DESTDIR)$(USR_BIN_PATH)/
 
 vmware_install:
 	@# we should read the config file here or better have a separate
