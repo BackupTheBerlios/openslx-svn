@@ -86,7 +86,7 @@ sub getAttrInfo
 			End-of-Here
 			content_regex => undef,
 			content_descr => undef,
-			default => undef,
+			default => 'openslx',
 		},
 	};
 }

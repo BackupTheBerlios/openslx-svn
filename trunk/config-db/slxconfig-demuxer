@@ -491,7 +491,10 @@ sub generateInitalRamFS
 	$cmd .= "-S $info->{name} ";
 
 	# use theme 'openslx':
-	$cmd .= "-s openslx ";
+	my $theme = $attrs->{'theme::name'} || '';
+	if (length $theme) {
+		$cmd .= "-s $theme ";
+	}
 	
 	my $activePlugins = $info->{'active-plugins'};
 	if ($activePlugins) {
