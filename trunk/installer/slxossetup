@@ -464,7 +464,7 @@ function slxossetup()
 			REPO_TYPE="rpm-md"
 			;;
 		*mandriva*)
-			GLOBAL_SETTINGS="PACKAGE_SUBDIR"
+			GLOBAL_SETTINGS="BASEURL PACKAGE_SUBDIR"
 			test "${SLX_META_PACKAGER}" && \
 				META_PACKAGER="${SLX_META_PACKAGER}" || \
 				META_PACKAGER="urpmi"
