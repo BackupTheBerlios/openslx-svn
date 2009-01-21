@@ -113,9 +113,8 @@ dm_allow_shutdown="user"
 
 # try to start g/k/xdm with X as fast as possible late_dm="no"
 # if there are problems with key, console etc. set late_dm="yes" - adds
-# about five seconds to graphical login delay (might be connected to trying
-# of parallel starting boot scripts)
-#late_dm="yes"
+# few seconds to graphical login delay (default setting)
+#late_dm="no"
 
 # should Xorg/XFree server be started or some special windowmanager be run
 # in kiosk mode e.g. start_x="kde"

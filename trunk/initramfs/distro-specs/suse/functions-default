@@ -228,14 +228,14 @@ sed -e "s,DISPLAYMANAGER=.*,DISPLAYMANAGER=\"$start_xdmcp\"," \
 # started twice during bootup ... late_dm can postpone the start of 
 # displaymanager and X if problems with keyboard, console occur ...
 # might be connected to running startup scripts in parallel, see above ...
-if [ "x$late_dm" = "xyes" ] ; then
-  ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/S01xdm
-  ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/K18xdm
-  sed -e "s,xdm: .*,xdm:," -i /mnt/etc/${D_INITDIR}/.depend.start
-else
+if [ "x$late_dm" = "xno" ] ; then
   ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITBOOTD}/S12boot.xdm
   echo -e "\t(sleep 60; ln -sf ../xdm /etc/${D_INITDIR}/rc5.d/S01xdm; \
   rm /etc/${D_INITBOOTD}/S12boot.xdm) &\n" >>/mnt/etc/${D_INITDIR}/boot.slx
+else
+  ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/S01xdm
+  ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/K18xdm
+  sed -e "s,xdm: .*,xdm:," -i /mnt/etc/${D_INITDIR}/.depend.start
 fi
 }
 # configure X display manager (runlevel links and kind of manager)

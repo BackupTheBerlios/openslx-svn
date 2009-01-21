@@ -42,7 +42,6 @@ sub initDistroInfo
 		- /var/tmp/*
 		- /var/spool/*
 		- /var/run/*
-		- /var/opt/openslx
 		- /var/mail
 		- /var/log/*
 		- /var/lock/*
