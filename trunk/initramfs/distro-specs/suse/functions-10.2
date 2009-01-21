@@ -23,13 +23,13 @@ if [ -x /bin/busybox ] ; then
   shell="/bin/ash"
 else
   for item in hwup ifup ; do
-    echo -e "#!$shell\n:" >/sbin/$i
+    echo -e "#!$shell\n:" >/sbin/${item}
   done
   mkdir /lib/udev /usr/sbin
   for item in usb_id scsi_id vol_id edd_id ata_id path_id cdrom_id idedma.sh \
            mount.sh rename_netiface firmware.sh create_floppy_devices \
            trigger_firmware_loading.sh ; do
-    echo -e "#!$shell\n# do nothing here\n:" >/lib/udev/$i
+    echo -e "#!$shell\n# do nothing here\n:" >/lib/udev/${item}
   done
   echo -e "#!$shell\n:" >/usr/sbin/alsactl
   rm /etc/udev/rules.d/60-persistent-storage.rules 2>/dev/null
@@ -40,7 +40,7 @@ dialout:x:16:\naudio:x:17:\nvideo:x:33:\nvboxusers:!:1000:" > /etc/group
 fi
 }
 
-# udev service
+# udev service - auto creation of device files
 udev_hotplug () {
 local result=0
 echo "Starting udev"

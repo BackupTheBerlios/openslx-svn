@@ -305,9 +305,6 @@ for driver in ata_piix sata_via sata_nv sata_sil sata_sis sata_svw \
   strinfile " ${driver}" /tmp/hwsetup.info && {
     #SCSIIDE="yes"
     modprobe ${MODPRV} ${driver} &
-#    case ${driver} in
-#      ata_piix) usleep 500;;
-#    esac
     driverlist="${driverlist} ${driver}"; usleep ${modwaittime}; }
 done
 # check for USB2.0 and ieee1394 hardware drivers
