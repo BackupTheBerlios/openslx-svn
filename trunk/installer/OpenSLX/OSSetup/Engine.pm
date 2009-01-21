@@ -31,7 +31,7 @@ use vars qw(%supportedDistros);
 		=> { module => 'Debian_4_0', support => 'clone' },
 	'fedora-6'
 		=> { module => 'Fedora_6', support => 'clone,install' },
-	'fedora-6-x86_64'
+	'fedora-6_x86_64'
 		=> { module => 'Fedora_6_x86_64', support => 'clone' },
 	'gentoo-2005.1'
 		=> { module => 'Gentoo_2005_1', support => 'clone' },
@@ -43,15 +43,15 @@ use vars qw(%supportedDistros);
 		=> { module => 'SUSE_9_3', support => 'clone' },
 	'suse-10.0'
 		=> { module => 'SUSE_10_0', support => 'clone' },
-	'suse-10.0-x86_64'
+	'suse-10.0_x86_64'
 		=> { module => 'SUSE_10_0_x86_64', support => 'clone' },
 	'suse-10.1'
 		=> { module => 'SUSE_10_1', support => 'clone,install' },
-	'suse-10.1-x86_64'
+	'suse-10.1_x86_64'
 		=> { module => 'SUSE_10_1_x86_64', support => 'clone' },
 	'suse-10.2'
 		=> { module => 'SUSE_10_2', support => 'clone,install' },
-	'suse-10.2-x86_64'
+	'suse-10.2_x86_64'
 		=> { module => 'SUSE_10_2_x86_64', support => 'clone,install' },
 	'ubuntu-6.06'
 		=> { module => 'Ubuntu_6_06', support => 'clone' },
@@ -830,7 +830,7 @@ sub changePersonalityIfNeeded {
 
 	my $arch = `uname -m`;
 	if ($arch =~ m[64] && $distroName !~ m[_64]) {
-		# trying to handle a 32-bit vendor-OS on a 64-bit machine, so we change 
+		# trying to handle a 32-bit vendor-OS on a 64-bit machine, so we change
 		# the personality accordingly (from 64-bit to 32-bit):
 		require 'syscall.ph'
 			or die _tr("unable to load '%s'\n", 'syscall.ph');
