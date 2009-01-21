@@ -1,12 +1,13 @@
 #!/bin/sh
 # Description:  main script for new type of initial ramdisk for
-#		linux diskless clients version 4 
+#               linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 28-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-06-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
-# 
-# Version:      0.2.4i
+#               (c) 2006 - odlx.org project
+#
+# Version:      0.2.4j
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -27,14 +28,17 @@ export DISTRO="@@@DISTRO@@@"
 # do not use dnbd cache file
 nodnbdcache="yes"
 
+# device files get their own filesystem (to be move mounted later)
 DEVDIR="/dev"
 mount -n -t tmpfs -o 'size=25%,mode=0755' initramfsdevs ${DEVDIR}
 
+# copy basic device files into dev (later udev will handle that)
 cp -a /tmp/null /tmp/console /dev
 mkdir -p ${DEVDIR}/pts
 mkdir -p ${DEVDIR}/shm
 mkdir -p ${DEVDIR}/.udevdb
 
+# mount the important standard directories
 [ ! -f /proc/cpuinfo ] && mount -n -t proc proc /proc
 echo 256 > /proc/sys/kernel/real-root-dev
 [ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
@@ -42,14 +46,15 @@ echo 256 > /proc/sys/kernel/real-root-dev
 # redirect console (after /dev/console is available, and /dev mounted)
 exec < /dev/console > /dev/console 2>&1
 
-# run pre init script
+# run pre init script and user defined preinit.local (see Howto)
 preinit
 [ -x /bin/preinit.local ] && /bin/preinit.local
 
 # start device auto discovery service - distro specific function
 udev_hotplug
 
-# set defaults and create waitfor files
+# set defaults and create special files so that "waitfor" does not waites
+# for a configuration option
 TMPFSSIZE="50%"
 COWSIZE="50%"
 RWDIR=/dev/shm
@@ -96,7 +101,8 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     ;;
     # if (external, via tftp) configuration file retrieval should 
     # be triggered, if no source is given try dhcp server and
-    # predefined standard path
+    # predefined standard path (~/tftpboot/client-conf/default, 
+	# client-conf/<name-of-export>/default, ...)
     file)
       FILE="yes"
       rm /tmp/file-done
@@ -115,7 +121,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       UNIONFS=1
       UNIONDIRS=${opts#union=}
     ;;
-    # if unionfs should be used
+    # if unionfs should be used over the complete root filesystem
     unionfs)
       UNIONFS=1;;
     # if cowloop should be used, only ontop of network block device and in 
@@ -124,7 +130,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       COWLOOP=1
       #COWSIZE=${opts#cowloop=}
     ;;
-    # dnbd server:port 
+    # dnbd server:port,filesystem (filesystem is optional)
     dnbdroot=*)
       NBD=dnbd # name of kernel module
       NBDOPT=${opts#dnbdroot=}
@@ -149,7 +155,8 @@ nfsroot=\"${NFSROOT}\"\n" >> /etc/machine-setup
     # size of tempfs if not max. 50% of RAM should be used
     tmpfssize=*)
       TMPFSSIZE=${opts#tmpfssize=};;
-    # vendor code identifier for dhcp requests
+    # vendor code identifier for dhcp requests, that way odlx clients could
+	# be distinguished from other (dhcp) clients
     vci=*)
       VCI=${opts#vci=};;
   esac

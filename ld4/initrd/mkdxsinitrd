@@ -3,13 +3,14 @@
 # Description:  universal (distro independent) generator for initial
 #               ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-06-2006
 #               Nico Dietrich
 #               Felix Endres
 #
-# Version:      0.4.0a
-#
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
+#               (c) 2006 - odlx.org project
+#
+# Version:      0.4.0a
 
 # debug level of script itself
 DEBUG=1
@@ -34,6 +35,8 @@ COMDIRINDXS="/tmp/scratch /var/lib/nobody"
 # D_RCDIRS - runlevel directories relative to /etc
 # D_HWMODTOIGNORE - 
 
+# just ensure that variables are set and the user gets an idea if
+# something fails
 D_SYSCONFDIR="<set in ~/distro-config/distro file>"
 D_ETCEXCL="<set in ~/distro-config/distro file>"
 D_BINDMPTS="<set in ~/distro-config/distro file>"
@@ -56,7 +59,8 @@ D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 
 usage()
 {
-  echo -e "mkdxsinitrd  [-gh] [-k Kernelversion] [-i Pfad] [-f Module] [-n Module] [-r Pfad] [-s Bildgröße]\n"
+  echo -e "mkdxsinitrd  [-gh] [-k kernel version] [-i path/file] \
+[-f module(s)] [-n module(s)] [-r path] [-s splashsize]\n"
   echo "OPTIONEN"
   echo "  -g     Benutze glibc als Basisbibliothek in der ramdisk."
   echo "  -h     Zeige Informationen zur Benutzung."
@@ -87,7 +91,7 @@ usage()
   exit 0
 }
 
-# replaces which to find executables inside ROOTDIR
+# replaces which command to find executables inside ROOTDIR
 binfinder()
 {
 local PROGRAM="$1"
@@ -113,7 +117,6 @@ if [ -z ${FPTB} ] ; then
   return 1;
 elif [ -L ${FPTB} ] ; then
   # do not copy the link but the binary the link points to
-
   local LINKDEST=`ls -la ${FPTB} | sed -e "s,.* ,,"`
   case $LINKDEST in 
     /*) FPTB=${ROOTDIR}${LINKDEST}
@@ -125,7 +128,12 @@ else
   cp ${FPTB} ${INSTDIR}/${DEST}
 fi
 # get an idea which libraries are needed
+# fixme: that might not work if executed on different architecture than
+# client root is
 chroot ${ROOTDIR} ldd ${FPTB#${ROOTDIR}*} >> ${INSTDIR}/tmp/libraries
+# possible solution: use the server binary, get library names and look
+# them up manually - fixme: does ldd understand foreign architecture 
+# binaries
 }
 
 # replace copy
@@ -154,41 +162,7 @@ else
 fi
 }
 
-# this function incrementally concats and copies distro-specific functions, 
-# configuration variables and files
 copy_distro_stuff() {
-# Konzept geaendert!!!
-#Konzept der Konfiguration mittels
-#functions-* und config-* zu veraendert: Es gibt eine Default-Konfig, die
-#dann von der jeweiligen Version angepasst wird - Ketten von sowas wie
-#config-9.3 wird von config-10.0 wird von config-10.1 ueberschrieben usw.
-#soll durch einfaches config-default -> config-9.3, ... -> config-10.0
-#... abgeloest werden. Das erlaubt langfristig auch dafuer zu sorgen, dass
-#im config-def alles Wesentliche bezogen auf die aktuellsten Version drin
-#ist.
-
-#  # first insert dependencies
-#  case $1 in
-#    suse)
-#      case $2 in
-#        9.3)
-#        ;;
-#        10.0)
-#          copy_distro_stuff suse 9.3
-#        ;;
-#        10.1)
-#          copy_distro_stuff suse 10.0
-#        ;; 
-#      esac
-#    ;;
-#    debian)
-#    ;;
-#    ubuntu)
-#    ;;
-#    gentoo)
-#    ;;
-#  esac
-
   # copy first the default distro dependent configuration (variables) and
   # function files, then append to each the distro/version specific file
   # variables, functions set in default might that way be overwritten by
@@ -206,7 +180,8 @@ copy_distro_stuff() {
     -regex ".*/\..*" -exec rm -rf {} 2>/dev/null \;
 }
 
-# This function makes the directory of this script to the present working directory
+# This function makes the directory of this script to the present working 
+# directory
 # It is called within precheck()
 # Does also work when called by symbolic links (even for nested links). 
 goto_script_dir()
@@ -280,7 +255,7 @@ while getopts :hgk:i:r:o:s:f:n:Sut:d:v:I:V:a: a ; do
     I)  NET_IF=$OPTARG;;         # Not in use 
     a)  acpi_dsdt="$OPTARG";;    # Not in use
     S)  use_selinux=1;;          # Not in use
-    l)  local_init_script="$OPTARG";; # Not in use
+    l)  local_init_script="$OPTARG";; # use for pre/postinit.local? 
     u)  sysfs_root=1             # Not in use
 	    use_udev=
 	    ;;
@@ -296,15 +271,16 @@ shift $(expr $OPTIND - 1)
 #Change to the directory this script is located in
 goto_script_dir
 
+# set temporary setup directory, clean it and setup basic directory
+# structure
 if [ -z "$INSTDIR" ] ; then
   INSTDIR=/tmp/dxs-instrd
 fi
-
 rm -rf ${INSTDIR}
 mkdir -p ${INSTDIR}/{dev,proc,tmp,mnt,root,bin,sys,lib}
 ln -s /bin ${INSTDIR}/sbin
 mkdir -p ${INSTDIR}/usr/share
-# needed for KNOPPIX hwsetup not to confuse with ${D_SYSCONFDIR}
+# needed for KNOPPIX hwsetup tool not to be confused with ${D_SYSCONFDIR}
 mkdir -p ${INSTDIR}/etc/sysconfig
 
 # if still no distro name set, try to find it using significant files
@@ -330,6 +306,7 @@ specify\nas command line argument (-d <distro-name> -v <distro-version>)"
   fi  
 fi
 
+# unify the description of distribution and its version
 case "${DISTRO}" in
   Debian*|debian*|Sarge*|sarge*)
     DISTRO=debian
@@ -363,8 +340,6 @@ case "${DISTRO}" in
     case "${DISTRO_VER}" in
       9*)
         DISTRO_VER=9.3
-        # might be needed for older udev/hotplug
-        # cp -a ${ROOTDIR}/etc/hotplug* ${INSTDIR}/etc
       ;;
       10.0)
         DISTRO_VER=10.0
@@ -373,17 +348,17 @@ case "${DISTRO}" in
         DISTRO_VER=10.1
       ;;
     esac
-     
-    #cp -a /etc/sysconfig/{hardware,network}  ${INSTDIR}/etc/sysconfig
   ;;
 esac
+# aﬆ this point ${DISTRO} ${DISTRO_VER} should be fixed
+copy_distro_stuff ${DISTRO} ${DISTRO_VER}
 
-# hotplug/udev style and stuff
+# hotplug/udev type and related stuff
 cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
 
-# an dieser stelle sollte jetzt sichergestellt sein, dass sowohl DISTRO als auch DISTRO_VER eindeutig gesetzt sind!
-
-copy_distro_stuff ${DISTRO} ${DISTRO_VER}
+# binary and corresponding library copies could be avoided if a small
+# initial ramdisk environment of its own is generated from busybox, 
+# dietlibc and similar, see odlx project page ...
 
 # devices needed rather early (copied from /tmp to /dev in init)
 mknod ${INSTDIR}/tmp/console c 5 1 &>/dev/null
@@ -391,7 +366,7 @@ mknod ${INSTDIR}/tmp/null c 1 3 &>/dev/null
 mknod ${INSTDIR}/tmp/kmsg c 1 11 &>/dev/null
 mknod ${INSTDIR}/tmp/ctl b 241 255 &>/dev/null
 
-#if no klibc - klibc shell seems not to have enough functionality :-(
+# find and copy a shell to be used within initialramfs
 for bbins in bash ash sh; do
   if cobi ${bbins} bin ; then 
     ln -fs ${bbins} ${INSTDIR}/bin/sh
@@ -400,7 +375,7 @@ for bbins in bash ash sh; do
   else echo "Binary not found (${bbins})"; fi
 done
 
-# if no klibc
+# find and copy ip setup binaries
 for bbins in ip ifconfig; do
   if cobi ${bbins} bin ; then 
     [ "${bbins}" = "ifconfig" ] && cobi route bin
@@ -408,7 +383,7 @@ for bbins in ip ifconfig; do
   else echo "Binary not found"; fi
 done
 
-# needed standard binaries
+# needed standard binaries (in init, servconfig, hwautocfg, ... scripts)
 for bbins in \
     cat chmod chown chroot cp expr fdisk killall ln ls mkdir mkfs.ext2 \
     modprobe mount portmap rmmod sed sort rm tar umount
@@ -425,14 +400,14 @@ mkdir -p ${INSTDIR}/var/{lib,run}
 
 # tftp client binary for configuration via file - get machine-setup per
 # tftp from dhcp (or specified other) server
-## irgendwann mal nur konditional ...
+#fixme: irgendwann mal nur konditional ...
 for tftp in atftp tftp ; do
   binfinder $tftp && break
 done
 cobi $tftp bin
 cp /lib/libnss_files.so.2 ${INSTDIR}/lib
 
-# debug binaries
+# binaries useful for debugging purposes
 if [ $IRFSDEBUG -gt 2 ] ; then
   for bbins in \
     date lsmod lsof ps strace time
@@ -441,16 +416,16 @@ if [ $IRFSDEBUG -gt 2 ] ; then
 done
 fi
 
-# style of hotplug/udev/dev (for etc directories see above!!)
+# type of hotplug/udev/dev (for etc directories see above!!)
 for bbins in udev udevd udevstart udevtrigger udevsend
   do
   cobi ${bbins} bin &>/dev/null || echo "Program ${bbins} not found"
 done
 
-# if nfs
+# if nfs is used as clients root filesystem
 mkdir -p ${INSTDIR}/var/lib/nfs/state
 
-# if nbd or dnbd
+# if nbd or dnbd is used as clients root filesystem
 if [ -n "${FSMODULES}" ] ; then
 for i in ${FSMODULES}; do
   case "$i" in
@@ -465,10 +440,12 @@ done
 fi
 
 # if unionfs
-cobi unionctl bin &>/dev/null || echo "Program unionctl not found"
+cobi unionctl bin &>/dev/null || \
+  echo "Program unionctl not found; could be ignored ..."
 
 # if cowloop
-cobi cowdev bin &>/dev/null || echo "Program cowdev not found"
+cobi cowdev bin &>/dev/null || \
+  echo "Program cowdev not found; could be ignored ..."
 
 
 # distro specific additional stuff
@@ -480,6 +457,7 @@ esac
 # add needed libraries depending on choosen binaries. use chroot
 # on ldd, otherwise the detection does not work properly. ldd has to be
 # static linked binary
+# fixme: procedure might have to be changed
 for lib in `cat ${INSTDIR}/tmp/libraries 2>/dev/null | \
   sed -e "s,tls,,;s,i686/cmov,," \
   -ne 's:\t\(.* => \)\?\(/.*\) (0x[0-9a-f]*):\2:p' | sort -u` ; do

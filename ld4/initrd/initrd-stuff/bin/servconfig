@@ -1,8 +1,8 @@
 #!/bin/sh
 #
 # Description:  universal (distro independent) configuration script
-#		for linux diskless clients (executed within initial
-#		ramdisk) 
+#               for linux diskless clients (executed within initial
+#               ramdisk) 
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
 #				Michael Janczyk, 31-05-2006
@@ -10,6 +10,7 @@
 #				Oliver Tappe, 23-06-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
+#               (c) 2006 - odlx.org project
 # 
 # Version:      0.1.1e
 
@@ -47,13 +48,13 @@ while [ $len -le 8 ] ; do
 done
 echo "
             WELCOME TO                            \n (\l)
-                  __      __  ___  __  __   __  __   __     __
-                 |  |    |  ||    |  ||  | |  ||  |_|  |   |  |
-                 |  |    |  ||       ||  | |  |       /    |__|
-                 |  |___ |  ||  |    ||  |_|  | /  _        __
-                 |______||__||__| |__|  _____/ |__| |__|   |__|
+                  _____    ____     __       __   __ 
+                 /  _  \  |  _  \  |  |     |  |_|  |
+                |  | |  | | | | |  |  |      \     /
+                |  |_|  | | |_| |  |  |___   /  _  \ 
+                 \_____/  |_____/  |______| |__| |__|
 
-            Diskless Workstation (v4.0/$dstr (c) <dirk@goe.net>
+            Diskless Workstation (v4.0/$dstr (c) <odlx project>
 ">/mnt/etc/issue
 
 #######################################################################
@@ -225,11 +226,12 @@ fi
 # copy timezone file defined with language settings
 [ -z "$TZ" ] && TZ="$timezone"
 cp /mnt/usr/share/zoneinfo/${TZ} /mnt/etc/localtime 2>/dev/null || \
-  error "  No such timezone data file (needed for ntp time service \
-configuration)." nonfatal
+  error "$scfg_ntptz" nonfatal
 config_ntp
 
-# secure shell server
+# secure shell server - at the moment all clients share one "secret"
+# key or the key has to be regenerated on every bootup or fetched on
+# every bootup from somewhere
 config_sshd
 
 # simple network management protocol agent
@@ -323,6 +325,8 @@ fi
 
 #######################################################################
 # preparation of /tmp directory (partition 44, nfs scratch, ramdisk)
+# there might be the chance that we have a disk partition available, so
+# wait for completion of detection, setup process
 waitfor /tmp/tmpready 10000
 # create some directories and correct permissions
 tmpisdisk=`sed -n '/\/tmp/p' /mnt/etc/fstab`

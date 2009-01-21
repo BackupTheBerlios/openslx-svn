@@ -1,11 +1,12 @@
-# Description:  messages file for all error and info messages generated during
-#		bootup (within initialramfs) for linux diskless clients 
-#		version 4
-#		this file could be used for localization of error messages 
+# Description:  messages file for all error and info messages generated 
+#               during client bootup (within initialramfs) for linux 
+#               diskless clients of	version 4
+#               this file could be used for localization of error messages 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 01-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-06-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
+#               (c) 2006 - odlx.org project
 # 
 # Version:      0.0.3f
 
@@ -136,6 +137,8 @@ scfg_errdcfg="  Did not get any configuration data via dhcp until now ..."
 scfg_errfcfg="  Did not get any configuration data via tftp until now ..."
 scfg_errlcfg="  Did not get any configuration data via ldap until now ..."
 scfg_nfs="  Mount of some NFS source failed ..."
+scfg_ntptz="  No such timezone data file (needed for ntp time service \
+configuration)."
 scfg_vmdir="  For some reason the runvmware script is not available for \
 copying. That\n  could be the result of failed mount or simply missing \
 file on\n  server."
