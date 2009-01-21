@@ -377,13 +377,21 @@ fi
 [ -z "$nodhcp" ] && rundhcp ${vci} &
 if [ -n "$noipyet" ] ; then
   waitfor /tmp/dhcp-done 20000
-  . /etc/machine-setup
-  [ -f /tmp/confviadhcp ] && . /tmp/confviadhcp
-  [ -z "$clientip" -o -z "$subnet_mask" -o -z "$gateway" \
-    -o -z "$broadcast_address" ] && error "$init_errdhcp"
-  ip addr add $clientip/$(nm2pref $subnet_mask) broadcast $broadcast_address \
-    dev $nwif
-  ip route add default via $gateway
+  if [ -f /etc/machine-setup ] ; then
+    . /etc/machine-setup
+    [ -f /tmp/confviadhcp ] && . /tmp/confviadhcp
+    [ -z "$clientip" -o -z "$subnet_mask" -o -z "$gateway" \
+      -o -z "$broadcast_address" ] && error "$init_errdhcp"
+    ip addr add $clientip/$(nm2pref $subnet_mask) broadcast $broadcast_address \
+      dev $nwif
+    ip route add default via $gateway
+  else
+    if [ -n "$file" -a "$srvproto" = "lbdev" ] ; then
+      error "$init_erripcfg" nonfatal
+    else
+      error "$init_erripcfg"
+    fi
+  fi
 fi
 # check if serverip is set as variable @@@serverip@@@
 sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup

@@ -45,6 +45,8 @@ mode. Try\n  to reorder your network module list."
 init_errdhcp="  Did not get complete IP \
 configuration via DHCP. You may want to add\n  a vendor code identifier \
 via kernel commandline (vci=VCI)."
+init_erripcfg="  Up to now no IP configuration is available. If there is any \
+local file config\n  the system may work locally."
 init_errbld="  Failed to load \
 module ${NBD}.ko. It is needed if you intend to use\n  network block \
 device (D)NBD for the client as root filesystem."
