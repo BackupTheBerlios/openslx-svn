@@ -12,12 +12,12 @@
 
 # distro specific stuff to initialize
 preinit () {
-# do nothing here (might be needed for other versions) 
-:
+  # do nothing here (might be needed for other versions) 
+  :
 }
 postinit () {
-# for some reason the udev daemon does not create the needed device files
-udevstart
+  # for some reason the udev daemon does not create the needed device files
+  udevstart
 }
 
 # distro specific function called from servconfig script
@@ -296,7 +296,7 @@ flexible=true\nhandled=true" >>/mnt/etc/opt/gnome/gdm/gdm.conf
 fi
 }
 
-# configure gdm as display manager
+# configure kdm as display manager
 config_kdm () {
 config_dm_entry yes
 }
