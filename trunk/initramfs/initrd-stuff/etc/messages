@@ -182,6 +182,8 @@ for some reason."
 scfg_vmdir="  For some reason the runvmware script is not available for \
 copying. That\n  could be the result of failed mount or simply missing \
 file on\n  server."
+scfg_vmchs="  The virtual machines lister/chooser is not available from \
+~/templates directory.\n  Thus no default kdm menu entry is created."
 scfg_erradir="  Only one directory level is allowed to hook up automounter \
 to and the\n  directory should exist (on the servers export) or should be \
 creatable\n  (e.g. because of UnionFS writeable root directory)."

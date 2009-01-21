@@ -113,9 +113,8 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   # map slxgrp to pool, so it's better to understand
   pool=${slxgrp}
   # if we dont have slxgrp defined
-  if [ -z ${pool} ];then
-    pool=default
-  fi
+  [ -z "$pool" ] && pool="default"
+
   # get source of vmware image server (get type, server and path)
   if strinstr "/" "$vmware" ; then
     vmimgprot=$(uri_token $vmware prot)
@@ -123,28 +122,28 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
     vmimgpath="$(uri_token $vmware path)"
   fi
   if [ -n "${vmimgserv}" ] ; then
-  testmkd /mnt/var/lib/vmware
-  case "${vmimgprot}" in
-    *nbd)
-    ;;
-    lbdev)
-      # we expect the stuff on toplevel directory, filesystem type should be
-      # autodetected here ... (vmimgserv is blockdev here) 
-      mount -o ro /dev/${vmimgserv} /mnt/var/lib/vmware || error "$scfg_evmlm"
-    ;;
-    *)
-      # we expect nfs mounts here ...
-      for proto in tcp udp fail; do
-        [ $proto = "fail" ] && { error "$scfg_nfs" nonfatal; noimg=yes; break;}
-        mount -n -t nfs -o ro,nolock,$proto ${vmimgserv}:${vmimgpath} \
-          /mnt/var/lib/vmware && break
-      done
-    ;;
-  esac
-  # if only the path is given expect a local source within exported
-  # system (allow compatibility to older 3.X versions)
-  elif [ -n "${vmimgpath}" ] ; then
-    ln -s ${vmimgpath} /mnt/var/lib/vmware 2>/dev/null
+    testmkd /mnt/var/lib/vmware
+    case "${vmimgprot}" in
+      *nbd)
+      ;;
+      lbdev)
+        # we expect the stuff on toplevel directory, filesystem type should be
+        # autodetected here ... (vmimgserv is blockdev here)
+        vmbdev=/dev/${vmimgserv}
+        waitfor ${vmbdev} 20000
+        echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems 
+        mount -o ro ${vmbdev} /mnt/var/lib/vmware || error "$scfg_evmlm" nonfatal
+      ;;
+      *)
+        # we expect nfs mounts here ...
+        for proto in tcp udp fail; do
+          [ $proto = "fail" ] && { error "$scfg_nfs" nonfatal;
+            noimg=yes; break;}
+          mount -n -t nfs -o ro,nolock,$proto ${vmimgserv}:${vmimgpath} \
+            /mnt/var/lib/vmware && break
+        done
+      ;;
+    esac
   fi
 fi
 
@@ -331,9 +330,9 @@ config_nscd
 
 # create needed directories and files
 if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
-  for i in /var/X11R6/bin /etc/vmware/vmnet1 /etc/vmware/vmnet8 \
-           /var/run/vmware /etc/vmware/loopimg /etc/vmware/fd-loop \
-           /etc/X11/sessions; do
+  for i in /etc/vmware/vmnet1/dhcpd /etc/vmware/vmnet8/nat \
+           /etc/vmware/vmnet8/dhcpd /var/run/vmware /etc/vmware/loopimg \
+           /etc/vmware/fd-loop /var/X11R6/bin /etc/X11/sessions; do
     testmkd /mnt/$i
   done
   # create needed devices (not created automatically via module load)
@@ -361,63 +360,68 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   mount -n -t msdos -o loop,umask=000 /mnt/etc/vmware/loopimg/fd.img \
     /mnt/etc/vmware/fd-loop
   echo -e "usbfs\t\t/proc/bus/usb\tusbfs\t\tauto\t\t 0 0" >> /mnt/etc/fstab
-  echo -e "mount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
-    >> /mnt/etc/${D_INITDIR}/boot.slx
+  # needed for VMware 5.5.3 and versions below
+  echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
+    >>/mnt/etc/${D_INITDIR}/boot.slx
   config_vmware
   chmod 1777 /mnt/var/run/vmware
   # define a variable where gdm/kdm should look for additional sessions
   # do we really need it?
   # export vmsessions=/var/lib/vmware/vmsessions
 
-  # create default.desktop for kdm
-  echo "[Desktop Entry]" > /mnt/etc/X11/sessions/default.desktop
-  echo "Encoding=UTF8" >> /mnt/etc/X11/sessions/default.desktop
-  echo "Name=Default" >> /mnt/etc/X11/sessions/default.desktop
-  echo "Name[de]=Standard" >> /mnt/etc/X11/sessions/default.desktop
+  # directory of templates and xdialog files
+  vmdir=/mnt/var/lib/vmware
+  
+  if cp ${vmdir}/templates/xdialog.sh /mnt/var/X11R6/bin 2>/dev/null; then
+    # create default.desktop for kdm
+    echo -e "[Desktop Entry]\nEncoding=UTF8\nName=Default\nName[de]=Standard"\
+      >/mnt/etc/X11/sessions/default.desktop
 
-  #I dont like this part, but there is no simple workaround. We need to
-  #create xdialog.sh on every box :(
-  echo "Exec=/var/X11R6/bin/xdialog.sh" \
-      >> /mnt/etc/X11/sessions/default.desktop
-  echo "Type=Application" >> /mnt/etc/X11/sessions/default.desktop
+    #I dont like this part, but there is no simple workaround. We need to
+    #create xdialog.sh on every box :(
+    echo "Exec=/var/X11R6/bin/xdialog.sh" \
+      >>/mnt/etc/X11/sessions/default.desktop
+    echo "Type=Application" >>/mnt/etc/X11/sessions/default.desktop
+
+    # /usr/share/xsessions/* files for the menu
+    for i in /mnt/usr/share/xsessions/*.desktop; do
+      # execute
+      echo "\"$(grep '^Exec=' ${i}|sed 's/^Exec=//')\" \\" \
+        >>/mnt/var/X11R6/bin/xdialog.sh
+      # short description
+      echo "\"$(grep '^Name=' ${i}|sed 's/^Name=//')\" \\" \
+        >>/mnt/var/X11R6/bin/xdialog.sh
+      # long description
+      echo "\"$(grep '^Comment=' ${i}|sed 's/^Comment=//')\" \\" \
+        >>/mnt/var/X11R6/bin/xdialog.sh
+    done
+    # all virtual machine clients
+    cat ${vmdir}/xdialog-files/${pool}/*.xdialog \
+      >>/mnt/var/X11R6/bin/xdialog.sh
+    # closing bracket as last line ends with '\'
+    echo ")" >>/mnt/var/X11R6/bin/xdialog.sh
+    chmod 755 /mnt/var/X11R6/bin/xdialog.sh
+
+    # copy xdm files, so we could choose them before we log in
+    for i in ${vmdir}/xdmsessions/${pool}/*.desktop;do
+      cp ${i} /mnt/etc/X11/sessions/
+    done
+  else
+    error "$scfg_vmchs" nonfatal
+  fi
   # we configured vmware, so we can delete the not_configured file
   rm /mnt/etc/vmware/not_configured 2>/dev/null
 
   # copy dhcpd.conf and nat for vmnet8 (nat)
   # fixme: It should be possible to start just one vmware dhcp which should
   # listen to both interfaces vmnet1 and vmnet8 ...
-  cp /mnt/var/lib/vmware/templates/dhcpd.conf /mnt/etc/vmware/vmnet8/dhcpd/
-  cp /mnt/var/lib/vmware/templates/nat.conf /mnt/etc/vmware/vmnet8/nat/
-
-  # directory of templates and xdialog files
-  vmdir=/mnt/var/lib/vmware
-  cp ${vmdir}/templates/xdialog.sh /mnt/var/X11R6/bin/
-
-  # /usr/share/xsessions/* files for the menu
-  for i in /mnt/usr/share/xsessions/*.desktop; do
-    # execute
-    echo "\"$(grep '^Exec=' ${i}|sed 's/^Exec=//')\" \\" \
-        >> /mnt/var/X11R6/bin/xdialog.sh
-    # short description
-    echo "\"$(grep '^Name=' ${i}|sed 's/^Name=//')\" \\" \
-        >> /mnt/var/X11R6/bin/xdialog.sh
-    #long description
-    echo "\"$(grep '^Comment=' ${i}|sed 's/^Comment=//')\" \\" \
-        >> /mnt/var/X11R6/bin/xdialog.sh
-  done
-
-  # all vmware clients
-  cat ${vmdir}/xdialog-files/${pool}/*.xdialog >> /mnt/var/X11R6/bin/xdialog.sh
-  # closing bracket as last line ends with '\'
-  echo ")" >> /mnt/var/X11R6/bin/xdialog.sh
-  chmod 755 /mnt/var/X11R6/bin/xdialog.sh
-
-  # copy xdm files, so we could choose them before we log in
-  for i in ${vmdir}/xdmsessions/${pool}/*.desktop;do
-    cp ${i} /mnt/etc/X11/sessions/
-  done
+  cp /mnt/var/lib/vmware/templates/dhcpd.conf \
+    /mnt/etc/vmware/vmnet8/dhcpd 2>/dev/null
+  cp /mnt/var/lib/vmware/templates/nat.conf \
+    /mnt/etc/vmware/vmnet8/nat 2>/dev/null
 fi
 
+#############################################################################
 # theming
 testmkd /mnt/var/lib/openslx/themes/displaymanager
 cp -a /usr/share/themes/displaymanager /usr/share/themes/Xdialog \

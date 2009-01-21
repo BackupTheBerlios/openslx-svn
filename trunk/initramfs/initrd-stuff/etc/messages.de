@@ -43,7 +43,7 @@ mode. Try\n  to reorder your network module list."
 init_errdhcp="  Keine komplette IP-Konfiguration ueber DHCP bekommen. \
 Eventuell sollten Sie\n ueber die Kernel Start Optionen eine Hersteller Code \
 ID (vendor code identifier)\n  (VCI=vci) hinzufuegen."
-init_errnbd="  Konnte nicht das Modul ${NBD}.ko laden. Es wird gebraucht, \
+init_errbld="  Konnte nicht das Modul ${NBD}.ko laden. Es wird gebraucht, \
 wenn Sie vorhaben, das\n  Netzwerk Block Geraet (network block device) (D)NBD \
 fuer den Klienten als Wurzel-Dateisystem zu verwenden."
 init_nbdcl="  Konnte den Network Block Geraete-Dienst nicht starten und damit \
@@ -172,7 +172,7 @@ df_errnsc="  Der Name Service Zwischenspeicherungs Daemon $df_errserv\n  \
 Dieser Dienst koennte nuetzlich sein, um Daten von einem ldap Benutzer-\
 Verzeichnis zu bekommen."
 df_errafsd="  Kein AFS Verzeichnis erreichbar"
-df_errafsn="  Der AFS-Klient Dienst ist nicht verfuegbar"
+df_errafsn="  Der AFS-Client Dienst ist nicht verfuegbar"
 df_errkbd="  Keine nicht-englische Tastatur und/oder Konsolenunterstuetzung \
 installiert.\n  Falls gewuenscht/benoetigt diese im Stage1 nachinstallieren!"
 
@@ -180,6 +180,8 @@ installiert.\n  Falls gewuenscht/benoetigt diese im Stage1 nachinstallieren!"
 scfg_nfs="  Das Einhaengen der NFS Quelle schlug fehl..."
 scfg_ntptz="  Die Zeitzonen-Datei wurde nicht gefunden (gebraucht fuer die \
 NTP-Zeit Dienst Konfiguration)."
+scfg_evmlm="  Das Einbinden der lokalen Festplatte(npartition) des VMware-\
+Image-Verzeichnisses\n  schlug fehl."
 scfg_vmdir="  Aus irgendeinem Grund kann das runvmware Skript nicht \
 verfuegbar zu kopieren.\n  Das koennte das Ergebnis eines fehlgeschlagenen \
 Mount-Versuchs sein\n   oder die Datei fehlt auf dem Server."
