@@ -47,16 +47,31 @@ D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 # End of global variable declaration, nothing needed to be changed at 
 # default below that line
 
+# replaces which to find executables inside ROOTDIR
+binfinder()
+{
+  local PROGRAM="$1"
+  local RET=1
+  for ELEMENT in sbin bin usr/bin usr/local/bin usr/bin/X11; do
+    if [ -f "${ROOTDIR}/$ELEMENT/$PROGRAM" ] && [ -x "${ROOTDIR}/$ELEMENT/$PROGRAM" ]; then
+      printf '%s\n' "${ROOTDIR}/$ELEMENT/$PROGRAM"
+      RET=0
+      break
+    fi
+  done
+  return "$RET"  
+}
+
 # copy some binary to given destination. Takes binary in $1 and 
 # destination in $2
 cobi()
 {
 local DEST=$2
-local FPTB=`which $1`
+local FPTB=`binfinder $1`
 if [ -z ${FPTB} ] ; then
   return 1;
 else
-  cp ${ROOTDIR}/${FPTB} ${INSTDIR}/${DEST}
+  cp ${FPTB} ${INSTDIR}/${DEST}
 fi
 }
 
@@ -83,6 +98,7 @@ else
   fi
 fi
 }
+
 
 
 # Resolve dynamic library dependencies. Returns a list of symbolic links
@@ -349,7 +365,7 @@ done
 
 # one of the dhcp clients
 for dhcp in dhclient dhcpcd pump ipconfig ; do
-  which $dhcp && break;
+  binfinder $dhcp && break;
 done
 cobi $dhcp bin
 mkdir -p ${INSTDIR}/var/{lib,run}
