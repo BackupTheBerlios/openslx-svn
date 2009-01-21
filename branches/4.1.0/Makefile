@@ -178,12 +178,18 @@ supported."; \
 	@cp bin/slx* $(DESTDIR)$(SLX_BIN_PATH)/; \
 	cp config-db/slx* $(DESTDIR)$(SLX_BIN_PATH)/; \
 	cp installer/slx* $(DESTDIR)$(SLX_BIN_PATH)/; \
-	tar --exclude=.svn -cp -C lib OpenSLX distro-info | \
-	  tar -xp -C $(DESTDIR)$(SLX_BASE_PATH)/lib; \
-	tar --exclude=.svn -cp -C config-db OpenSLX | \
-	  tar -xp -C $(DESTDIR)$(SLX_BASE_PATH)/lib; \
-	tar --exclude=.svn -cp -C installer OpenSLX | \
-	  tar -xp -C $(DESTDIR)$(SLX_BASE_PATH)/lib; \
+	tar --exclude=.svn -cp -C lib OpenSLX \
+	  | tar -xp -C $(DESTDIR)$(SLX_BASE_PATH)/lib; \
+	tar --exclude=.svn --exclude *.example \
+	    -cp -C lib distro-info \
+	  | tar -xp -C $(DESTDIR)$(SLX_SHARE_PATH); \
+	tar --exclude=.svn --exclude prereqfiles --exclude trusted-package-keys/* \
+	    -cp -C lib distro-info \
+	  | tar -xp -C $(DESTDIR)$(SLX_CONFIG_PATH); \
+	tar --exclude=.svn -cp -C config-db OpenSLX \
+	  | tar -xp -C $(DESTDIR)$(SLX_BASE_PATH)/lib; \
+	tar --exclude=.svn -cp -C installer OpenSLX \
+	  | tar -xp -C $(DESTDIR)$(SLX_BASE_PATH)/lib; \
 
 	@   # link all binaries & scripts into user-path:
 	@ln -sf $(SLX_BIN_PATH)/slx* $(DESTDIR)$(USR_BIN_PATH)/; \

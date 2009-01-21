@@ -1,7 +1,6 @@
-# this file defines the filter rules used when exporting a vendor-OS
-# of this distro
+# this file defines the filter rules used when cloning any vendor-OS
 #
-# copy this file to 'export-filter' and add your own filters to it
+# copy this file to 'clone-filter' and add your own filters to it
 # in order to overrule the filters provided by openslx
 #
 #Examples:

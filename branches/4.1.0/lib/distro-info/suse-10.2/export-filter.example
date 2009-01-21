@@ -1,5 +1,8 @@
-#add your own filters to this file and rename it to 'exclude-filter.local'
-#in order to overrule the filters provided by openslx
+# this file defines the filter rules used when exporting a vendor-OS
+# of this distro
+#
+# copy this file to 'export-filter' and add your own filters to it
+# in order to overrule the filters provided by openslx
 #
 #Examples:
 #     the following line would include anything below /var/spool/

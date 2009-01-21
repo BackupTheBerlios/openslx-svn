@@ -137,11 +137,20 @@ sub initialize
 
 	if ($actionType ne 'clone') {
 		# setup path to distribution-specific info:
-		my $distroInfoDir = "../lib/distro-info/$distro->{'base-name'}";
-		if (!-d $distroInfoDir) {
-			die _tr("unable to find distro-info for distro '%s'\n", $distro->{'base-name'});
+		my $sharedDistroInfoDir 
+			= "$openslxConfig{'share-path'}/distro-info/$distro->{'base-name'}";
+		if (!-d $sharedDistroInfoDir) {
+			die _tr("unable to find shared distro-info in '%s'\n", 
+					$sharedDistroInfoDir);
 		}
-		$self->{'distro-info-dir'} = $distroInfoDir;
+		$self->{'shared-distro-info-dir'} = $sharedDistroInfoDir;
+		my $configDistroInfoDir 
+			= "$openslxConfig{'config-path'}/distro-info/$distro->{'base-name'}";
+		if (!-d $configDistroInfoDir) {
+			die _tr("unable to find configurable distro-info in '%s'\n", 
+					$configDistroInfoDir);
+		}
+		$self->{'config-distro-info-dir'} = $configDistroInfoDir;
 		$self->readDistroInfo();
 	}
 
@@ -407,7 +416,7 @@ sub readDistroInfo
 	my $bootstrap_packages = $self->{distro}->{config}->{'bootstrap-packages'};
 	my $metapackager_packages 
 		= $self->{distro}->{config}->{'metapackager-packages'};
-	my $file = "$self->{'distro-info-dir'}/settings";
+	my $file = "$self->{'config-distro-info-dir'}/settings";
 	if (-e $file) {
 		vlog 2, "reading configuration file $file...";
 		my $config = slurpFile($file);
@@ -554,6 +563,10 @@ try_next_url:
 			if (slxsystem("wget", @contFlags, "$url/$file") == 0) {
 				$foundFile = basename($file);
 				last;
+			} elsif ($! == 17) {
+				my $basefile = basename($file);
+				vlog 2, "removing left-over '$basefile' and trying again...";
+				unlink $basefile;
 			}
 		}
 		if (!defined $foundFile) {
@@ -706,13 +719,13 @@ sub stage1A_copyPrerequiredFiles
 {
 	my $self = shift;
 
-	return unless -d "$self->{'distro-info-dir'}/prereqfiles";
+	return unless -d "$self->{'shared-distro-info-dir'}/prereqfiles";
 
 	vlog 2, "copying folder with pre-required files...";
 	my $stage1cDir
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
 	my $cmd = qq[
-		tar --exclude=.svn -cp -C $self->{'distro-info-dir'}/prereqfiles . \\
+		tar -cp -C $self->{'shared-distro-info-dir'}/prereqfiles . \\
 		| tar -xp -C $stage1cDir
 	];
 	if (slxsystem($cmd)) {
@@ -726,27 +739,30 @@ sub stage1A_copyTrustedPackageKeys
 {
 	my $self = shift;
 
-	return unless -d "$self->{'distro-info-dir'}/trusted-package-keys";
-
 	vlog 2, "copying folder with trusted package keys...";
 	my $stage1bDir
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}";
-	my $cmd = qq[
-		tar --exclude=.svn -cp -C $self->{'distro-info-dir'} trusted-package-keys \\
+	foreach my $folder (
+		$self->{'shared-distro-info-dir'}, $self->{'config-distro-info-dir'},
+	) {
+		next unless -d "$folder/trusted-package-keys";
+		my $cmd = qq[
+			tar -cp -C $folder trusted-package-keys \\
 		| tar -xp -C $stage1bDir
-	];
-	if (slxsystem($cmd)) {
-		die _tr("unable to copy folder with trusted package keys to folder '%s' (%s)\n",
-				$stage1bDir, $!);
-	}
-	slxsystem("chmod 444 $stage1bDir/trusted-package-keys/*");
+		];
+		if (slxsystem($cmd)) {
+			die _tr("unable to copy folder with trusted package keys to folder '%s' (%s)\n",
+					"$stage1bDir/trusted-package-keys", $!);
+		}
+		slxsystem("chmod 444 $stage1bDir/trusted-package-keys/*");
 
-	# install ultimately trusted keys (from distributor):
-	my $stage1cDir
-		= "$stage1bDir/$self->{'stage1cSubdir'}";
-	my $keyDir = "$self->{'distro-info-dir'}/trusted-package-keys";
-	if (-e "$keyDir/pubring.gpg") {
-		copyFile("$keyDir/pubring.gpg", "$stage1cDir/usr/lib/rpm/gnupg");
+		# install ultimately trusted keys (from distributor):
+		my $stage1cDir
+			= "$stage1bDir/$self->{'stage1cSubdir'}";
+		my $keyDir = "$self->{'shared-distro-info-dir'}/trusted-package-keys";
+		if (-e "$keyDir/pubring.gpg") {
+			copyFile("$keyDir/pubring.gpg", "$stage1cDir/usr/lib/rpm/gnupg");
+		}
 	}
 }
 
@@ -978,7 +994,8 @@ sub clone_determineIncludeExcludeList
 {
 	my $self = shift;
 
-	my $localFilterFile = "../lib/distro-info/clone-filter.local";
+	my $localFilterFile
+		= "$openslxConfig{'config-path'}/distro-info/clone-filter";
 	my $includeExcludeList = slurpFile($localFilterFile, 1);
 	$includeExcludeList .= $self->{distro}->{'clone-filter'};
 	$includeExcludeList =~ s[^\s+][]igms;

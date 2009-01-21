@@ -79,7 +79,8 @@ sub determineIncludeExcludeList
 	# in front of the filterset given by the package (as the local filters
 	# should always overrule the vendor filters):
 	my $distroName = $self->{engine}->{'distro-name'};
-	my $localFilterFile = "../lib/distro-info/$distroName/export-filter.local";
+	my $localFilterFile 
+		= "$openslxConfig{'config-path'}/distro-info/$distroName/export-filter";
 	my $includeExcludeList = slurpFile($localFilterFile, 1);
 	$includeExcludeList .= $self->{engine}->{distro}->{'export-filter'};
 	$includeExcludeList =~ s[^\s+][]igms;
