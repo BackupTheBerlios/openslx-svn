@@ -133,6 +133,7 @@ sub parseKeyValueArgs
 sub dumpElements
 {
 	my $objName = shift;
+	my $nameClause = shift || sub { "\t$_->{name}\n" };
 
 	if ($verbose) {
 		foreach my $elem (@_) {
@@ -151,7 +152,7 @@ sub dumpElements
 			);
 		}
 	} else {
-		print join('', map { "\t$_->{name}\n" } @_);
+		print join('', sort map &$nameClause, @_);
 	}
 }
 
@@ -163,9 +164,8 @@ sub listClients
 
     my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
 
-
 	dumpElements(
-		'client',
+		'client', undef,
 		map {
 			my @sysIDs = $openslxDB->aggregatedSystemIDsOfClient($_);
 			$_->{systems}
@@ -190,6 +190,9 @@ sub listExports
 
 	dumpElements(
 		'export',
+		sub {
+			"\t$_->{name}".substr(' ' x 30, length($_->{name}))."($_->{type})\n"
+		},
 		map {
 			my $vendorOS
 				= $openslxDB->fetchVendorOSByID($_->{vendor_os_id}, 'name');
@@ -198,7 +201,7 @@ sub listExports
 			}
 			$_;
 		}
-		sort { $a->{name} cmp $b->{name} }
+		sort { $a->{name} eq $b->{name} || $a->{type} cmp $b->{type} }
 		$openslxDB->fetchExportByFilter($exportData)
 	);
 }
@@ -212,7 +215,7 @@ sub listSystems
     my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
 
 	dumpElements(
-		'system',
+		'system', undef,
 		map {
 			my @clientIDs = $openslxDB->aggregatedClientIDsOfSystem($_);
 			$_->{clients}
@@ -239,7 +242,7 @@ sub listVendorOSes
 
     my $vendorOSData = parseKeyValueArgs(\@vendorOSKeys, 'vendor_os', @_);
 
-	dumpElements('vendor-OS',
+	dumpElements('vendor-OS', undef,
 				 sort { $a->{name} cmp $b->{name} }
 				 $openslxDB->fetchVendorOSByFilter($vendorOSData));
 }
@@ -303,8 +306,12 @@ sub addSystemToConfigDB
 	push @systemKeys, 'clients', 'export';
     my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
 
+	if (!length($systemData->{name})) {
+        die _tr("you have to specify the name of the new system!\n");
+	}
 	if (!length($systemData->{export})) {
-        die _tr("you have to specify the export the new system shall be using\n");
+		$systemData->{export} = $systemData->{name};
+			# try falling back to given system name
 	}
     my $exportName = $systemData->{export};
 	delete $systemData->{export};
@@ -333,11 +340,8 @@ sub addSystemToConfigDB
 	if (!length($systemData->{kernel})) {
 		$systemData->{kernel} = 'vmlinuz';
 	}
-	if (!length($systemData->{name})) {
-		$systemData->{name} = "$exportName-$systemData->{kernel}";
-	}
 	if (!length($systemData->{label})) {
-		$systemData->{label} = "$exportName-$systemData->{kernel}";
+		$systemData->{label} = "$systemData->{name}";
 	}
 	if (!length($systemData->{ramfs_debug_level})) {
 		$systemData->{ramfs_debug_level} = '0';
@@ -569,14 +573,15 @@ and you can create clients for that system, too.
       --version                show version
 
   Actions:
-      add-client name=<client-name> mac=<client-MAC> [<key-value-pair>] ...
-      add-system export=<export-name> [<key-value-pair>] ...
-      change-client name=<client-name> [<key-value-pair>] ...
-      change-system name=<system-name> [<key-value-pair>] ...
-      list-clients [<key-value-pair>] ...
-      list-exports [<key-value-pair>] ...
-      list-systems [<key-value-pair>] ...
-      list-vendoroses [<key-value-pair>] ...
+      add-client name=<client-name> mac=<MAC> [<key>=<value> ...]
+      add-system name=<system-name> [export=<export-name>] \
+                 [<key>=<value> ...]
+      change-client name=<client-name> [<key>=<value> ...]
+      change-system name=<system-name> [<key>=<value> ...]
+      list-clients [<key>=<value> ...]
+      list-exports [<key>=<value> ...]
+      list-systems [<key>=<value> ...]
+      list-vendoroses [<key>=<value> ...]
       remove-client name=<client-name>
       remove-system name=<system-name>
 
@@ -623,50 +628,74 @@ Prints the version and exits.
 
 =head2 Adding a new System to an exported Vendor-OS
 
-  slxconfig add-system export-name=<export-name> [clients=<client-Names>] [<attribute=value> ...]
+  slxconfig add-system name=debian-4.0
 
-      adds a new system to the config-DB. The new system will use
-      the I<export> whose name is given.
+      adds a new system named 'debian-4.0' to the config-DB that will
+      use the export of the same name. No client will be associated with
+      this system, yet.
 
-      If you specify clients (a comma-separated list of client names),
-      the new system will be used by the given clients.
+  slxconfig add-system name=suse-10.1 export-name=suse-10.1-kde \
+                       clients=PC131,PC132,PC133 \
+                       label="Linux Desktop"
+
+      adds a new system name 'suse-10.1' to the config-DB that will use
+      the export named 'suse-10.1-kde'. The system will be labeled
+      'Linux Desktop' and the clients 'PC131, 'PC132' and 'PC133' are
+      associated with this system (so they can boot it).
 
 =head2 Adding a new Client
 
-  slxconfig add-client [systems=<system-names>] [<attribute=value> ...]
+  slxconfig add-client name=vmware-1 mac=01:02:03:04:05:06
 
-      adds a new client to the config-DB.
+      adds a new client named 'vmware-1', being identified by the MAC
+      '01:02:03:04:05:06' to the config-DB. No system will be
+      associated with this client, yet (so it can't boot anything).
 
-      If you specify systems (a comma-separated list of system names),
-      the new client will use the given systems.
+  slxconfig add-client name=vmware-1 mac=01:02:03:04:05:06
+                       systems=suse-10.1,debian-4.0 \
+                       attr_start_x=no
 
-=head2 Changing a Client
+      adds a new client named 'vmware-1', being identified by the MAC
+      '01:02:03:04:05:06' to the config-DB. The systems 'suse-10.1' &
+      'Debian-4.0' will be associated with this client (so it will offer
+      these systems for booting).
 
-  slxconfig change-client [add-systems=<new system-names>]
-                          [remove-systems=<system-names>]
-                          [<attribute=value> ...]
-
-      changes an existing client in the config-DB.
-
-      With C<add-systems> you can add new systems to the specified client,
-      and with C<remove-systems> you can remove systems from it.
-
-      Any other attributes specified on the commandline will directly
-      change the data of the client itself.
+      During boot, the X-subsystem will not be started by this client
+      (so the systems will stay in console mode).
 
 =head2 Changing a System
 
-  slxconfig change-system [add-clients=<new client-names>]
-                          [remove-clients=<client-names>]
-                          [<attribute=value> ...]
+  slxconfig change-system name=suse-10.1 attr_start_xdmcp=gnome
 
-      changes an existing system in the config-DB.
+      will change the system named 'suse-10.1' such that it will use
+      the GNOME session manager.
 
-      With C<add-clients> you can add new clients to the specified system,
-      and with C<remove-clients> you can remove clients from it.
+  slxconfig change-system name=suse-10.1 add-clients=vmware-1
 
-      Any other attributes specified on the commandline will directly
-      change the data of the system itself.
+      will associate the client 'vmware-1' with the system named
+      'suse-10.1'.
+
+  slxconfig change-system name=suse-10.1 remove-clients=vmware-1
+
+      will remove the client 'vmware-1' from the system named
+      'suse-10.1'.
+
+=head2 Changing a Client
+
+  slxconfig change-client name=PC131 attr_start_snmp=yes
+
+      will change the client named 'PC131' such that it will start
+      the SNMP daemon on all systems that it boots.
+
+  slxconfig change-client name=PC131 add-systems=Debian-4.0
+
+      will associate the system 'Debian-4.0' with the client named
+      'PC131'.
+
+  slxconfig change-client name=PC131 remove-systems=Debian-4.0
+
+      will remove the system 'Debian-4.0' from the client named
+      'PC131'.
 
 =head2 Removing a System / Client
 
