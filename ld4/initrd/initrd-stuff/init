@@ -365,6 +365,7 @@ That\n  might indicate some severe error."
 
 # run distribution independent and dependent configuration of files and 
 # services
+bash
 servconfig &
 
 for path in @@@COMDIRINDXS@@@ ${D_DIRINDXS} ${D_DIRINBINDMNT} ; do

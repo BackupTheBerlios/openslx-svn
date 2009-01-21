@@ -342,7 +342,7 @@ done
 # needed standard binaries
 for bbins in \
     cat chmod chown chroot cp expr fdisk killall ln mkdir mkfs.ext2 \
-    modprobe mount portmap rmmod sed tar umount
+    modprobe mount portmap rmmod sed sort tar umount uniq
   do
   cobi ${bbins} bin || echo "Program ${bbins} not found"
 done
@@ -428,7 +428,7 @@ if [ -z "$KERNVER" ] ; then
 fi
 
 if [ -z "$NWMODULES" ] ; then
-  NWMODULES="e100 tg3 via-rhine r8169 pcnet32"
+  NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32"
 fi
 if [ -z "$FSMODULES" ] ; then
   FSMODULES="nbd nfs"
@@ -480,7 +480,8 @@ for dirs in `find initrd-stuff/* ! -regex ".*/\..*"` ; do
   repco ${dirs##initrd-stuff/} 
 done
 chmod 755 ${INSTDIR}/init ${INSTDIR}/bin/servconfig \
-  ${INSTDIR}/bin/hwautocfg ${INSTDIR}/bin/dhcpmkconfig
+  ${INSTDIR}/bin/hwautocfg ${INSTDIR}/bin/dhcpmkconfig \
+  ${INSTDIR}/bin/screenres
 
 #########################################################################
 # End of file copy procedures
