@@ -5,7 +5,7 @@
 # system is setup when servconfig starts
 #
 # Dirk von Suchodoletz <dvs@OpenSLX.com>, 03-09-2006
-# Michael Janczyk <mj0>, 31-05-2006
+# Michael Janczyk <mj0>, 08-09-2006
 # Lars Mueller <lm@OpenSLX.com>, 23-06-2006
 # Oliver Tappe <ot@OpenSLX.com>, 23-06-2006
 #
@@ -499,6 +499,12 @@ DisplayManager.*.reset:\t\t/etc/X11/xdm/Xreset" \
     ;;
   esac
 fi
+
+# theming
+mkdir -p /mnt/usr/share/themes/openslx
+cp -a /usr/share/themes/kdm /usr/share/themes/Xdialog \
+  /usr/share/themes/bootsplash /mnt/usr/share/themes/openslx >/dev/null 2>&1
+cp /usr/share/themes/kdm/kdmrc /mnt/etc/opt/kde3/share/config/kdm >/dev/null 2>&1
 
 # script run timer
 [ $DEBUGLEVEL -eq 8 ] && echo "** SW setup finished at $(sysup)"

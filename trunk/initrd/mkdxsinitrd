@@ -7,6 +7,7 @@
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-09-2006
 #               Nico Dietrich
 #               Felix Endres
+#               mj0, 08-09-2006
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - openslx.org project
@@ -224,35 +225,43 @@ goto_script_dir()
 }
 
 # add a bootsplash image to the initial ramdisk, only SuSE at the moment
-add_splash () {
+# theming
 
-splashsizes="$SPLASH"
-splashsizes="640*480 800x600 1024x768 1280x1024 1400x1050 1600x1200"
-splash_bin=$(chroot $ROOTDIR which splash)
+add_theme() {
+
+theme="${theme}"
+splashsizes="640x480 800x600 1024x768 1280x1024 1400x1050 1600x1200"
 splash_image=
-THEME="dxs"
+splash_bin=$(chroot $ROOTDIR which splash)
 if [ -n "$splashsizes" -a -n "$splash_bin" ]; then
 
   themes_dir=
-  if [ -d "$ROOTDIR/etc/bootsplash/themes" ]; then
-    themes_dir="/etc/bootsplash/themes"
-  elif [ -d "$ROOTDIR/usr/share/splash/themes" ]; then
-    themes_dir="/usr/share/splash/themes"
+  if [ -d "/usr/share/openslx/themes/${theme}/bootsplash" ]; then
+    themes_dir="/usr/share/openslx/themes/${theme}/bootsplash"
+  if [ -d "$ROOTDIR/etc/bootsplash/themes/${theme}" ]; then
+    themes_dir="/etc/bootsplash/themes/${theme}"
+  elif [ -d "$ROOTDIR/usr/share/splash/themes/${theme}" ]; then
+    themes_dir="/usr/share/splash/themes/${theme}"
   fi
 
+  #fixme: very ugly ;)
+  mkdir -p $ROOTDIR/tmp/bootsplash
+  cp -a $themes_dir/* $ROOTDIR/tmp/bootsplash/
+  themes_dir=$ROOTDIR/tmp/bootsplash
+  
   echo -ne "Bootsplash:\t"
   if [ -n "$ROOTDIR/$themes_dir" -a \
-     -d "$ROOTDIR/$themes_dir/$THEME" -o -L "$ROOTDIR/$themes_dir/$THEME" ]; then
+     -d "$ROOTDIR/$themes_dir" -o -L "$ROOTDIR/$themes_dir" ]; then
     for size in $splashsizes; do
-      bootsplash_picture="$themes_dir/$THEME/images/bootsplash-$size.jpg"
-      cfgname="$themes_dir/$THEME/config/bootsplash-$size.cfg"
+      bootsplash_picture="$themes_dir/images/bootsplash-$size.jpg"
+      cfgname="$themes_dir/config/bootsplash-$size.cfg"
       if [ ! -r $ROOTDIR/$cfgname ] ; then
-        echo "disabled for resolution $size"
+        echo " disabled for resolution $size "
       elif [ ! -r $ROOTDIR/$bootsplash_picture ] ; then
-        echo "no image for resolution $size"
+        echo " no image for resolution $size "
       else
         echo -n "${splash_image:+, }$THEME ($size)"
-        splash_image="$splash_image $cfgname"
+        splash_image=" $splash_image $cfgname "
       fi
     done
     echo
@@ -266,7 +275,13 @@ for image in $splash_image; do
   # fixme: ugly hack to have the splash binary
   chroot $ROOTDIR $splash_bin -s -f $image >> ${INSTDIR}/bootsplash
 done
+
+rm -rf $ROOTDIR/tmp/bootsplash
+
+# kdm/Xdialog theme
+cp -a ../theming/${theme}/* ${INSTDIR}/usr/share/themes
 }
+
 
 #########################################################################
 # End of function declaration
@@ -299,7 +314,7 @@ while getopts :bhgk:i:r:o:s:f:n:Sut:d:v:I:V:a: a ; do
     f)  FSMODULES=$OPTARG;;
     n)  NWMODULES=$OPTARG ;;
     r)  ROOTDIR=$OPTARG;;
-    s)  SPLASH=$OPTARG;;
+    s)  theme=$OPTARG;;
     t)  INSTDIR=$OPTARG;;
     d)  IRFSDEBUG=$OPTARG;;
     D)  DISTRO=$OPTARG;;
@@ -701,7 +716,7 @@ strip  ${INSTDIR}/bin/*  ${INSTDIR}/lib/* &>/dev/null
 #########################################################################
 # End of file copy procedures
 
-[ -n "$SPLASH" ] && add_splash
+[ -n "${theme}" ] && add_splash
 
 # finally create the compressed initial ramdisk cpio archive
 pushd . > /dev/null 2>&1
