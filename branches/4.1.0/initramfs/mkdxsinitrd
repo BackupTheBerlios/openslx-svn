@@ -213,7 +213,18 @@ copy_distro_stuff() {
   find ${INSTDIR}/etc/sysconfig/files \
     -regex ".*/\..*" -exec rm -rf {} 2>/dev/null \;
 }
-
+# copy kernel modules even if links (first parameter is source, second
+# destination and third source prefix)
+modcp () {
+local tmpval
+if [ -L $1 ] ; then
+  tmpval=$(ls -la $1)
+  tmpval=${tmpval#*-> }
+  cp $3/$tmpval $2
+else
+  cp $1 $2
+fi
+}
 # This function makes the directory of this script to the present working
 # directory
 # Does also work when called by symbolic links (even for nested links).
@@ -551,7 +562,8 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
   if [ -n "$mod" ] ; then
     mpath=${INSTDIR}/${mod%/*}
     mkdir -p ${mpath}
-    cp ${ROOTDIR}/$mod ${mpath}
+    # specific function which can follow a link
+    modcp ${ROOTDIR}/$mod ${mpath} ${ROOTDIR}
     # fixmee!! selection of dependent modules could be handled a little bit
     # more clever
     rdirprefix="${ROOTDIR}/lib/modules/${KERNVER}/kernel"
@@ -560,18 +572,6 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
       e100|8139too|via-rhine|sis900|epic100|sundance|8139cp|eepro100|pcnet32)
         cp ${rdirprefix}/drivers/net/mii.ko \
            ${ddirprefix}/drivers/net &>/dev/null
-      ;;
-      # WLAN module block
-      #ipw3945|...)
-      # cp ${rdirprefix}/net/wireless ...
-      #;;
-      ath_pci)
-        for wlanmodule in ath_rate_sample wlan ath_hal; do
-          mod=$(cd /${ROOTDIR}; find "lib/modules/${KERNVER}" \
-            -name ${module}.ko 2>/dev/null)
-          mkdir -p ${INSTDIR}/${mod%/*}
-          cp ${ROOTDIR}/$mod ${INSTDIR}/${mod%/*}
-        done
       ;;
       nfs)
         # create directory structure for modules needed and copy them
