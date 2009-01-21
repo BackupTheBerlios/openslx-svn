@@ -162,8 +162,12 @@ sub changedHandler
 	# invoke a key-specific change handler if it exists:
 	$key =~ tr[-][_];
 
-	no strict 'refs';		## no critic (ProhibitNoStrict)
-	"${key}_changed_handler"->();
+	# we do the following function call in an eval as that function may simply
+	# not exist:
+	eval {
+		no strict 'refs';		## no critic (ProhibitNoStrict)
+		"${key}_changed_handler"->();
+	};
 	
 	return;
 }
