@@ -520,8 +520,8 @@ fi
 
 # one of the dhcp clients (do we really need any other dhcp client?)
 if [ -n "${use_dhclient}" ] ; then
-  if binfinder $dhcp ; then
-    cobi $dhcp bin
+  if binfinder dhclient ; then
+    cobi dhclient bin
   else
     echo "dhclient is not available"
   fi
