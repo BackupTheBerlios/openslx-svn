@@ -137,11 +137,11 @@ supported."; \
 	@cp COPYING $(DESTDIR)$(SLX_BASE_PATH)/
 	@# copy initramfs generator scripts (and inject SLX_CONFIG_PATH on the way):
 	@cp ./initramfs/mkdxsinitrd $(DESTDIR)$(SLX_BIN_PATH)/
-	@cp ./initramfs/slxmkramfs $(DESTDIR)$(SLX_BIN_PATH)/
+#@cp ./initramfs/slxmkramfs $(DESTDIR)$(SLX_BIN_PATH)/
 	@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
 	  -i $(DESTDIR)$(SLX_BIN_PATH)/mkdxsinitrd
-	@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
-	  -i $(DESTDIR)$(SLX_BIN_PATH)/slxmkramfs
+#@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
+#  -i $(DESTDIR)$(SLX_BIN_PATH)/slxmkramfs
 
 	@# copy all PERL-scripts and their required modules:
 	@cp bin/slx* $(DESTDIR)$(SLX_BIN_PATH)/
