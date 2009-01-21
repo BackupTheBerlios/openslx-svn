@@ -86,6 +86,7 @@ sub _checkAndUpgradeDBSchemaIfNecessary
 				} elsif ($cmd eq 'add-columns') {
 					$metaDB->schemaAddColumns($changeDescr->{'table'},
 											  $changeDescr->{'new-cols'},
+											  $changeDescr->{'new-default-vals'},
 											  $changeDescr->{'cols'});
 				} elsif ($cmd eq 'drop-columns') {
 					$metaDB->schemaDropColumns($changeDescr->{'table'},
@@ -387,6 +388,22 @@ sub changeVendorOS
 	my $valRows = _aref(shift);
 
 	return $self->{'meta-db'}->changeVendorOS($vendorOSIDs, $valRows);
+}
+
+sub getNextExportCounterForVendorOS
+{
+	my $self = shift;
+	my $id = shift;
+
+	# TODO: fix this to be resilient against parallel execution
+	#       (use a transaction)
+	my $vendorOS
+		= $self->fetchVendorOSByID($id);
+	return undef unless defined $vendorOS;
+	my $exportCounter = $vendorOS->{export_counter}+1;
+	$self->changeVendorOS($id, { 'export_counter' => $exportCounter, });
+
+	return $exportCounter;
 }
 
 sub addExport
