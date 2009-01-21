@@ -4,7 +4,7 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 07-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-03-2006
 #		Blabla
 #		Blub
 #
@@ -52,7 +52,8 @@ data via dhcp until now ..." nonfatal
 waitfor /tmp/ldap-done 10000 || error "  Did not get any configuration \
 data via dhcp until now ..." nonfatal
 . /etc/machine-setup
-# hack for replacing variables in machine-setup
+# hack for replacing variables ($serverip, $clientip, $host_name) in 
+# machine-setup
 sed -e "s/\$serverip/$serverip/" -e "s/\$clientip/$clientip/" \
   /etc/machine-setup > /etc/machine-setup.new
 cp /etc/machine-setup.new /etc/machine-setup
@@ -318,6 +319,17 @@ fi
 #######################################################################
 # name service caching daemon if networked user database
 config_nscd
+
+#######################################################################
+# preparation of /tmp directory (partition 44, nfs scratch, ramdisk)
+# waitfor /tmp/tmpready
+
+# the following should be moved here from X11 ...
+#           /tmp/.ICE-unix \
+#           /tmp/.X11-unix; do testmkd /mnt/$i; done
+#             chmod a+rwxt /mnt/tmp/.ICE-unix
+#               chmod a+rwxt /mnt/tmp/.X11-unix
+               
 
 #######################################################################
 # vmware stuff: two scenarios

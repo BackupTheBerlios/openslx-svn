@@ -10,7 +10,7 @@
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.3.1d
+# Version:      0.3.1e
 
 # local functions used within hwautocfg
 displaysetup () {
@@ -426,8 +426,8 @@ waitfor /tmp/fscmpl 40000
 # postpone some commands into normal bootup environment
 echo -e "\t# entry added by $0: $date" \
   >>/mnt/etc/${D_INITDIR}/boot.ld
-# cdrom/dvd und plattenkonfig. ergaenzen. Module sind hier geladen und
-# devices sind klar
+# get idea of availabe harddisk partitions, put swap partitions into
+# (/mnt)/etc/fstab and format and mount partitions of type 44 (unknown) 
 for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
     sed -n -e '/device:/p' | sed -e 's/device: //') ; do
   fdisk -l /dev/$hd| sed -n "/^\/dev\//p" > /tmp/hd_part
@@ -438,6 +438,7 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
   # we use special non assigned partition type for harddisk scratch space
   for hdpartnr in $(cat /tmp/hd_part | \
         sed -n -e "/ 44 /p"|sed -e "s/[[:space:]].*//") ; do
+    # ugly message from ext2 mount :-(
     ( mkfs.ext2 -q $hdpartnr; mount -n $hdpartnr /mnt/tmp; \
       echo "finished" > /tmp/tmpready ) &
     echo -e "$hdpartnr\t/tmp\t\text2\t\tdefaults\t 0 0" >> /mnt/etc/fstab
@@ -445,6 +446,7 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
     break
   done      
 done
+# determine if tmp preparation should wait for format/mount or not
 [ -z "$part44" ] && echo "finished" > /tmp/tmpready
 
 # run localizator and configure keyboard and console fonts

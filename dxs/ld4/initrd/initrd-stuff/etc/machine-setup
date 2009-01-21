@@ -12,10 +12,10 @@
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 # 
-# format variable="static_value" or variable="$serverip:123"
-# it is possible to use the variables $serverip (the IP of the
-# providing DHCP server - not neccessarily NFS server), $clientip 
-# (the IP of the client itself) and $host_name
+## format variable="static_value" or variable="$serverip:123"       ##
+## it is possible to use the variables $serverip (the IP of the     ##
+## providing DHCP server - not neccessarily NFS server), $clientip  ##
+## (the IP of the client itself) and $host_name                     ##
 # 
 #
 # password of system administrator (root) as crypt -> 'dxs-root'
@@ -70,7 +70,7 @@ start_dreshal="yes"
 # start alsa sound system
 start_alsasound="yes"
 
-# ssh
+# start ssh server
 start_sshd="yes"
 
 # AFS network filesystem
@@ -94,5 +94,9 @@ scratch="$serverip:/dxs/tmp"
 vmware="no"
 imgsrv="$serverip:/dxs/vmware"
 
-start_xdmcp=xdm
-start_x=yes
+# kind of X11 display manager to run 
+start_xdmcp="xdm"
+
+# should Xorg/XFree server be started or some special windowmanager be run
+# in kiosk mode e.g. start_x="kde"
+start_x="yes"
