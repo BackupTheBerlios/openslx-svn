@@ -34,7 +34,11 @@ PATH=\"\$PATH:/var/X11R6/bin\"\n\
 test \"\$UID\" -ge 100 && PATH=\"\$PATH:.\"\n\
 QTDIR=/usr/lib/qt3\nexport QTDIR\nno_proxy='localhost'\n\
 export no_proxy" > /mnt/etc/SuSEconfig/profile
-echo -e "DXS-VERSION=4.0a\INITRAMFS-GEN-DATE=$date" >> /mnt/etc/SuSE-release
+echo -e "DXS VERSION = 4.0a\nINITRAMFS GENERATION DATE = $date" \
+  >> /mnt/etc/SuSE-release
+# add the halt link to the 0 and 6 runlevel directories
+  ln -sf ../halt /mnt/etc/init.d/rc0.d/K20halt
+  ln -sf ../halt /mnt/etc/init.d/rc6.d/K20reboot
 }
 
 # udev/hotplug - auto device discovery service

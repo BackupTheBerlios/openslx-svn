@@ -27,7 +27,7 @@ postinit () {
 
 # distro specific function called from servconfig script
 config_distro () {
-  :
+# fixme!! add halt runlevel links here!!
 }
 
 # AUS SuSE-9.3
