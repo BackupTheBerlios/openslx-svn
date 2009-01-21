@@ -26,18 +26,6 @@ echo -e "# changes made to this file by $0 (initrd from $date)" \
 config_rc_entry "KEYMAP" "${KEYTABLE}"
 }
 
-# udev service - not verified!
-udev_hotplug () {
-ln -s /bin/udevd /bin/udevstart && udevstart &
-if [ -x /bin/udevd ] ; then
-  export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)
-  export UDEVD_EVENT_TIMEOUT=1
-  echo "" > /proc/sys/kernel/hotplug
-  udevd &
-else error "$df_errudev" nonfatal
-fi
-}
-
 # set consolefont
 consolefont () {
 echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
