@@ -2,7 +2,7 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-01-2006
 #		Blabla
 #		Blub
 #
@@ -71,6 +71,13 @@ if [ "x$start_cron" = "xyes" ] ; then
     error "  The cron start script seems not to be installed, so requesting \
 \n  the start of cron services make no sense." nonfatal
   fi 
+fi
+}
+
+# syslog service
+config_syslog () {
+if [ "x$start_syslog" = "xyes" ] ; then
+  echo >/dev/null
 fi
 }
 
@@ -179,4 +186,16 @@ config_xdm () {
 # configure gdm as display manager
 config_gdm () {
   echo >/dev/null
+}
+
+# configure kdm as display manager
+config_kdm () {
+  echo >/dev/null
+}
+
+# configure hal, dbus, resmgr and services like that
+config_dreshal () {
+if [ "x$start_dreshal" = "xyes" ]; then
+  echo >/dev/null
+fi
 }

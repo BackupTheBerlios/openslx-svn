@@ -2,7 +2,7 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 17-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-01-2006
 #		Blabla
 #		Blub
 #
@@ -36,8 +36,9 @@ config_ntp () {
 local start=$1
 local stop=$2
 if [ -f /mnt/etc/init.d/ntp ] ; then
-  echo -e "ntp:x:74:65534:NTP daemon:/var/lib/ntp:/bin/false" \
-    >>/mnt/etc/passwd
+  strinfile "ntp:" /mnt/etc/passwd || \
+    echo -e "ntp:x:74:65534:NTP daemon:/var/lib/ntp:/bin/false" \
+      >>/mnt/etc/passwd
   testmkd /mnt/var/lib/ntp/var/run/ntp &>/dev/null
   if [ "x$start_ntp" = "xinitial" ] ; then
     echo -e "# entry added by $0: $date" \
@@ -71,6 +72,22 @@ if [ "x$start_cron" = "xyes" ] ; then
     error "  The cron start script seems not to be installed, so requesting \
 \n  the start of cron services make no sense." nonfatal
   fi 
+fi
+}
+
+# syslog service
+config_syslog () {
+if [ "x$start_syslog" = "xyes" ] ; then
+  if [ -f /mnt/etc/init.d/syslog ] ; then
+  # how to configure remote log server?
+  # logging servers might be specified in $log_servers (from e.g. dhcp)
+    echo -e "# File modified by $0 within initial ramdisk" \
+      > /etc/syslog-ng.conf
+    sed -e "s,.*dhcp/dev.*,," -e "s,.*named/dev.*,," \
+      /mnt/etc/syslog-ng/syslog-ng.conf >> /etc/syslog-ng.conf
+      cp /etc/syslog-ng.conf /mnt/etc/syslog-ng/syslog-ng.conf
+      rllinker syslog "$1" "$2"
+  fi
 fi
 }
 
@@ -283,9 +300,16 @@ else
 [server-Standard]\nname=Standard server\ncommand=/usr/X11R6/bin/X\n\
 flexible=true\nhandled=true" >>/mnt/etc/opt/gnome/gdm/gdm.conf
 fi
+# start the display manager as early as possible
 ln -sf /etc/init.d/xdm /mnt/etc/init.d/boot.d/S01boot.xdm
 ln -sf /etc/init.d/xdm /mnt/etc/init.d/rc5.d/S01xdm
 ln -sf /etc/init.d/xdm /mnt/etc/init.d/rc5.d/K20xdm
+}
+
+# configure gdm as display manager
+config_kdm () {
+config_dm_entry yes
+
 }
 
 # consolefont
@@ -303,3 +327,36 @@ local stop_powersave=`expr $1 - 1`
 rllinker acpid "$start_acpi" "$stop_acpi"
 rllinker powersaved "$start_powersave" "$stop_powersave"
 }
+
+# configure dbus (inter application communication for kde and gnome), hal
+# (hardware abstraction layer - used e.g. by powersaved) and resmgr
+# (resource manager - the user gets permissions to devices when loggin on)
+config_dreshal () {
+local start="$1"
+local stop="$2"
+if [ "x$start_dreshal" = "xyes" ]; then
+  if [ -f /mnt/etc/init.d/dbus ] ; then
+  strinfile "messagebus:" /mnt/etc/passwd || \
+    echo "messagebus:x:100:101:User for D-BUS:/var/run/dbus:/bin/false" \
+      >> /mnt/etc/passwd
+    testmkd /mnt/var/run/dbus
+    # chown 100:101 /mnt/var/run/dbus
+    rllinker "dbus" "$start" "$stop"
+  fi
+  if [ -f /mnt/etc/init.d/resmgr ] ; then
+    testmkd /mnt/var/run/resmgr/classes
+    start="0"`expr $start + 1`
+    stop="0"`expr $start - 1`
+    rllinker "resmgr" "$start" "$stop"
+  fi
+  if [ -f /mnt/etc/init.d/haldaemon ] ; then
+    strinfile "haldaemon:" /mnt/etc/passwd || \
+      echo "haldaemon:x:101:102:User for haldaemon:/var/run/hal:/bin/false" \
+        >> /mnt/etc/passwd
+    start="0"`expr $start + 1`
+    stop="0"`expr $start - 1`
+    rllinker "haldaemon" "$start" "$stop"
+  fi
+fi
+}
+

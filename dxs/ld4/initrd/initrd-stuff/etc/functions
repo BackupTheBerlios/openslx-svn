@@ -68,7 +68,6 @@ done
 case $ipcfg in
   ip)
     ip link set dev $if up
-    echo "test"
     ip addr add $ip/`nm2pref $nm` broadcast $bc dev $if
     if [ "$gw" != "0.0.0.0" ] ; then
       ip route add default via $gw
@@ -169,6 +168,8 @@ if [ "$dhcp" = "none" ] ; then
   client could be found. Please check that you have some client from\n\
   the following list installed: dhclient dhcpcd pump ipconfig." nonfatal
 else
+  # ensure the interface is up
+  ipsetup 0.0.0.0 255.255.255.255 0.0.0.0 255.255.255.255 eth0 &
   loadmod /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko \
     "needed for dhcp";
   echo "Starting $dhcp for configuration"

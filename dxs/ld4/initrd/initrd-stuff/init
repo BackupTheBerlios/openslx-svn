@@ -211,10 +211,6 @@ fi
 if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" ] ; then
   nfsmnt ${NFSROOT} ${MODPRV}
 fi
-# Bruchstücke?? Was hat das hier verloren?
-# Wer schmeisst hier hirnlos Teile aus dem Code?? Dann sind die Module wech, die
-# hwautoconfig vielleicht mal laden soll!!!! Es will keiner prophylaktisch 50++MB
-# Module schonmal in die Ramdisk klatschen!!!
 # get the complete collection of kernel modules available
 mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
   error "  The requested modules directory does not exist. That could mean:\n\
@@ -338,7 +334,7 @@ of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
 
 date
-#ash
+ash
 # IP configuration is made and should not be updated automatically
 killall -9 dhcpcd dhclient pump 2>/dev/null
 # unmount the bind mounted modules directory

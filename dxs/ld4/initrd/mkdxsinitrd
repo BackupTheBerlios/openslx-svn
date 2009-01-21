@@ -277,6 +277,7 @@ case "${DISTRO}.${DISVER}" in
 	DISTRO=suse-10.0
         # hotplug/udev style and stuff
 	cp -a /etc/udev /etc/hotplug ${INSTDIR}/etc
+	cp -a /etc/sysconfig/hardware  ${INSTDIR}/etc/sysconfig
 	;;
   Debian*|debian*|Sarge*|sarge*)
 	DISTRO=debian
@@ -294,7 +295,10 @@ cp -a distro-specs/${DISTRO}/files ${INSTDIR}/etc/sysconfig
 #if no klibc
 for bbins in ash bash sh; do
   if cobi ${bbins} bin ; then 
-    LRCSH=/bin/${bbins}; ln -fs /bin/${bbins} ${INSTDIR}/bin/sh; break
+    LRCSH=/bin/${bbins}
+    ln -fs /bin/${bbins} ${INSTDIR}/bin/sh
+    [ "${bbins}" != "bash" ] && ln -fs /bin/${bbins} ${INSTDIR}/bin/bash
+    break
   else echo "Binary not found (${bbins})"; fi
 done
 

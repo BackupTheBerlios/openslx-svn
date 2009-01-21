@@ -1,9 +1,10 @@
 #!/bin/sh
 #
-# Description:  universal (distro independent) configuration writer for 
-#		several dhcp clients 
+# Description:  universal (distro independent) IP configuration writer for 
+#		several dhcp clients. The result is written in unified form
+#		to the /etc/machine-setup file
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 17-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-01-2006
 #		Blabla
 #		Blub
 #
@@ -17,7 +18,8 @@ echo -e "\n# ip configuration written by $0" \
   >>/etc/machine-setup
 case $0 in
   *dhcpd*)
-    cat /var/lib/dhcp/dhcpcd-eth0.info | sed -e "s,',\",g" \
+    cat /var/lib/dhcp/dhcpcd-eth0.info | sed -n -e '/^new/p' | sed \
+      -e "s,',\",g" \
       -e "s,IPADDR,clientip," -e "s,NETMASK,subnet_mask," \
       -e "s,GATEWAY,gateway," -e "s,BROADCAST,broadcast_address," \
       -e "s,HOSTNAME,host_name," -e "s,DOMAIN,domain_name," \
@@ -28,14 +30,16 @@ case $0 in
       -e "s,DHCP..ADDR.*,," -e "s,.*TIME=.*,," -e "s,CL.*,," \
       -e "s,INTER.*,," -e "s,DHCPSNAME.*,," \
         >>/etc/machine-setup
-    # empty lines should be removed somehow
   ;;
   *dhclient*)
     set | sed -n -e '/^new/p' | sed \
       -e "s,^new_,," -e "s,fixed-address,clientip," \
       -e "s,routers,gateway," -e "s,dhcp-server-identifier,serverip," \
       -e "s,.*_t[iy][mp]e.*,," -e "s,.*_message_.*,," -e "/^$/d" \
-      -e "s,language=,country=," \
+      -e "s,language=,country=," -e "s,ip_address,clientip," \
         >>/etc/machine-setup
+  ;;
+  *pump*)
+    #
   ;;
 esac

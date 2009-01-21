@@ -6,7 +6,7 @@
 #		New settings are simply appended, so that they might 
 #		overwrite previously defined variables 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-01-2006
 #		Blabla
 #		Blub
 #
@@ -45,6 +45,9 @@ start_sshd="yes"
 # start rwhod service (lan wide login and uptime list)
 start_rwhod="no"
 
+# start log server (remote log servers could be passed via dhcp option)
+start_syslog="yes"
+
 # start cron service
 start_cron="no"
 
@@ -54,14 +57,9 @@ start_atd="no"
 # simple network management protocol for system monitoring
 start_snmp="no"
 
-# resource manager (resmgr)
-start_resmgr="yes"
-
-# hardware abstraction layer (hal) daemon, e.g. dbus is using it 
-start_hal="yes"
-
-# dbus daemon (inter application communication for kde and gnome)
-start_dbus="yes"
+# dbus, resource manager , hal (hardware abstraction layer) interoperate
+# tighly. There might be little different solutions within each distro
+start_dreshal="yes"
 
 # start alsa sound system
 start_alsasound="yes"
