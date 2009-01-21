@@ -667,7 +667,7 @@ if [ -z "$cdboot" ] ; then
           # create directory structure for modules needed and copy them
           # to the proper place (as expected by modprobe/modules.dep)
           mkdir -p ${ddirprefix}/net/sunrpc
-	  mkdir -p ${ddirprefix}/fs/lockd ${ddirprefix}/fs/nfs_common
+          mkdir -p ${ddirprefix}/fs/lockd ${ddirprefix}/fs/nfs_common
           cp ${rdirprefix}/net/sunrpc/sunrpc.ko \
             ${ddirprefix}/net/sunrpc &>/dev/null
           cp ${rdirprefix}/fs/lockd/lockd.ko \
