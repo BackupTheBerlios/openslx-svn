@@ -21,7 +21,7 @@
 . /etc/sysconfig/config
 . /etc/distro-functions
 # get location of logfile definition
-. /mnt/etc/${SYSCONFDIR}/logfile
+. /mnt/etc/${D_SYSCONFDIR}/logfile
 
 #######################################################################
 # copy distro specific scripts, programs, libraries and configs
@@ -54,8 +54,8 @@ data via dhcp until now ..." nonfatal
 # set localization
 if [ -z "$country" ] ; then
   msg "servconfig" "No configuration for localization found in config file. \
-Using default\ncountry setting '${DEFAULTCOUNTRY}' defined in $0."
-  country=${DEFAULTCOUNTRY}
+Using default\ncountry setting '${D_DEFAULTCOUNTRY}' defined in $0."
+  country=${D_DEFAULTCOUNTRY}
 fi
 localization $country
 
@@ -92,15 +92,15 @@ case ${DISTRO} in
 esac
 case ${DISTRO} in
   suse*|debian*|ubuntu*)
-    for i in ${RCDIRS} ${INITBOOTD} ; do
+    for i in ${D_RCDIRS} ${D_INITBOOTD} ; do
       rm -f /mnt/etc/$i/*
     done
     count=10
-    for i in ${INITSCRIPTS}; do 
+    for i in ${D_INITSCRIPTS}; do 
       count=`expr $count + 1`
       revcnt=`expr 41 - $count`
-      ln -sf /etc${INITDIR}/$i /mnt/etc/init.d/${SUSESPECIFICSUBDIR}S${count}$i
-      ln -sf /etc${INITDIR}/$i /mnt/etc/init.d/${SUSESPECIFICSUBDIR}K${revcnt}$i
+      ln -sf /etc${D_INITDIR}/$i /mnt/etc/init.d/${SUSESPECIFICSUBDIR}S${count}$i
+      ln -sf /etc${D_INITDIR}/$i /mnt/etc/init.d/${SUSESPECIFICSUBDIR}K${revcnt}$i
     done
   ;;
   gentoo*)
@@ -113,7 +113,7 @@ esac
 # boot.local
 if [ -n "$bootlocal_script" ]; then
   echo -e "# entries added by $0:\n#\t$date\n\n\
-$bootlocal_script" >> /mnt/etc/${INITDIR}/boot.local
+$bootlocal_script" >> /mnt/etc/${D_INITDIR}/boot.local
 fi
 
 #######################################################################

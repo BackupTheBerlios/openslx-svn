@@ -251,12 +251,12 @@ if [ -n "${UNIONFS}" ] ; then
 else
   echo -n "Using bind mounts to ramdisk for rw access"
   mount -n -t tmpfs -o size=${TMPFSSIZE} ramfs ${RWDIR}
-  for path in ${BINDMPTS} ; do
+  for path in ${D_BINDMPTS} ; do
     mkdir -p ${RWDIR}/${path} >/dev/null 2>&1
     mount -n --bind ${RWDIR}/${path} /mnt/${path}
   done
   [ -z "${NOLDSC}" ] && ldconfig /tmp/ld.so.cache &
-  for path in ${RODIRSINRW}; do
+  for path in ${D_RODIRSINRW}; do
     if [ -d /mnt/${path} ] ; then
       LIST=${path}" "$LIST
       # exclude them from etc copy process too
@@ -266,13 +266,13 @@ else
       mount -n --bind /mnt/${path} /root/${path} >/dev/null 2>&1
     fi
   done
-  for path in /etc/${SYSCONFDIR} ${DIRINBINDMNT} ${LIST}; do
+  for path in /etc/${D_SYSCONFDIR} ${D_DIRINBINDMNT} ${LIST}; do
     mkdir -p ${RWDIR}/${path}
   done
   testmkd ${RWDIR}/var/tmp
   chmod a+rwxt ${RWDIR}/var/tmp >/dev/null 2>&1
 
-  echo -e "${DISETCEXCL} @@@COMETCEXCL@@@" >>/tmp/etc.exclude
+  echo -e "${D_ETCEXCL} @@@COMETCEXCL@@@" >>/tmp/etc.exclude
   # if ld.so.cache is to be generated then do not copy the file
   [ -z "${NOLDSC}" ] && echo -e "ld.so.cache*" >>/tmp/etc.exclude
   # for tar exclude lists might be used, more difficult for cp
@@ -291,19 +291,19 @@ else
   # run some specific stuff !?
 fi
 # script for stuff to execute during early bootup
-echo -e "#!/bin/sh\n# skeleton written from $0" >/mnt/etc/${INITDIR}/boot.ld
+echo -e "#!/bin/sh\n# skeleton written from $0" >/mnt/etc/${D_INITDIR}/boot.ld
 echo "fs complete" >/tmp/fscmpl
 
 # write debug file information after filesystem setup completed
-echo -e "# /etc${SYSCONFDIR}/logfile - file created by $0\n#\n# logfile for linux diskless client specific debugging output\nLOGFILE=\"$LOGFILE\"\n#\n# debug level\nDEBUGLEVEL=\"$DEBUGLEVEL\"" > /mnt/etc/${SYSCONFDIR}/logfile || \
-  error "Unable to create the logfile configuration in /etc/${SYSCONFDIR}. \
+echo -e "# /etc${D_SYSCONFDIR}/logfile - file created by $0\n#\n# logfile for linux diskless client specific debugging output\nLOGFILE=\"$LOGFILE\"\n#\n# debug level\nDEBUGLEVEL=\"$DEBUGLEVEL\"" > /mnt/etc/${D_SYSCONFDIR}/logfile || \
+  error "Unable to create the logfile configuration in /etc/${D_SYSCONFDIR}. \
 That\n  might indicate some severe error."
 
 # run distribution independent and dependent configuration of files and 
 # services
 servconfig &
 
-for path in @@@COMDIRINDXS@@@ ${DISDIRINDXS} ${DIRINBINDMNT} ; do
+for path in @@@COMDIRINDXS@@@ ${D_DIRINDXS} ${D_DIRINBINDMNT} ; do
   testmkd /mnt/${path}
 done
 for i in /var/run/utmp /var/log/wtmp /var/log/lastlog /etc/mtab ; do

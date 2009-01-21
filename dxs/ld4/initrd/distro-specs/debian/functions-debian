@@ -42,9 +42,9 @@ if [ -f /mnt/etc/init.d/ntp ] ; then
   testmkd /mnt/var/lib/ntp/var/run/ntp &>/dev/null
   if [ "x$start_ntp" = "xinitial" ] ; then
     echo -e "# entry added by $0: $date" \
-      >>/mnt/etc/${INITDIR}/boot.ld
+      >>/mnt/etc/${D_INITDIR}/boot.ld
     echo "ntpdate -s -b $ntp_servers >${LOGFILE} 2>&1 &" \
-      >>/mnt/etc/${INITDIR}/boot.ld
+      >>/mnt/etc/${D_INITDIR}/boot.ld
   else
     rllinker "ntp" "$start" "$stop"
   fi
@@ -163,7 +163,7 @@ config_dm () {
   cp /etc/displaymanager /mnt/etc/sysconfig/displaymanager
 
 #  echo -e "#!/bin/sh\n# entry added by $0: $date\n\
-#(sleep 1; /etc/init.d/xdm start) &" >>/mnt/etc/${INITDIR}/boot.ld
+#(sleep 1; /etc/init.d/xdm start) &" >>/mnt/etc/${D_INITDIR}/boot.ld
   ln -sf /etc/init.d/xdm /mnt/etc/init.d/rc5.d/S01xdm
   ln -sf /etc/init.d/xdm /mnt/etc/init.d/rc5.d/K20xdm
 }
@@ -171,7 +171,7 @@ config_dm () {
 # consolefont
 consolefont () {
 echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
-  >>/mnt/etc/${INITDIR}/boot.ld
+  >>/mnt/etc/${D_INITDIR}/boot.ld
 }
 
 # acpi and powersave

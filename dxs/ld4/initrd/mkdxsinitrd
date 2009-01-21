@@ -17,34 +17,34 @@ COMETCEXCL="XF86Config*\nissue*\nmtab*\nfstab*\n"
 COMDIRINDXS="/tmp/scratch /var/lib/nobody"
 
 # distro specific settings read from configuration file
-# SYSCONFDIR - system wide configuration settings in /etc - sysconfig in  
+# D_SYSCONFDIR - system wide configuration settings in /etc - sysconfig in  
 # SuSE and RedHat, default in Debian and Ubuntu, conf.d in Gentoo
-# DISETCEXCL - list of files, wildcards to be excluded from /etc when using 
+# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using 
 # bind mounts
-# DIRINBINDMNT - lists of directories to be created in bind mounted rw
+# D_DIRINBINDMNT - lists of directories to be created in bind mounted rw
 # part of the client filesystem
-# RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
 # TempFS usage
-# DISDIRINDXS - directories in client filesystem which should be present 
+# D_DIRINDXS - directories in client filesystem which should be present 
 # anyhow
-# DISBINDMNT - any code which is specific in bind mount environment
-# RCDIRS - runlevel directories relative to /etc
+# D_BINDMNT - any code which is specific in bind mount environment
+# D_RCDIRS - runlevel directories relative to /etc
 
-SYSCONFDIR="<set in ~/distro-config/distro file>"
-DISETCEXCL="<set in ~/distro-config/distro file>"
-BINDMPTS="<set in ~/distro-config/distro file>"
-DIRINBINDMNT="<set in ~/distro-config/distro file>"
-RODIRSINRW="<set in ~/distro-config/distro file>"
-DISDIRINDXS="<set in ~/distro-config/distro file>"
-DISBINDMNT="<set in ~/distro-config/distro file>"
-INITDIR="<set in ~/distro-config/distro file>"
-INITBOOTD="<set in ~/distro-config/distro file>"
-RCDIRS="<set in ~/distro-config/distro file>"
-RCDIRSINRW="<set in ~/distro-config/distro file>"
-INITSCRIPTS="<set in ~/distro-config/distro file>"
-XF86CONFFILE="<set in ~/distro-config/distro file>"
-XFONTPATH="<set in ~/distro-config/distro file>"
-DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
+D_SYSCONFDIR="<set in ~/distro-config/distro file>"
+D_ETCEXCL="<set in ~/distro-config/distro file>"
+D_BINDMPTS="<set in ~/distro-config/distro file>"
+D_DIRINBINDMNT="<set in ~/distro-config/distro file>"
+D_RODIRSINRW="<set in ~/distro-config/distro file>"
+D_DIRINDXS="<set in ~/distro-config/distro file>"
+D_BINDMNT="<set in ~/distro-config/distro file>"
+D_INITDIR="<set in ~/distro-config/distro file>"
+D_INITBOOTD="<set in ~/distro-config/distro file>"
+D_RCDIRS="<set in ~/distro-config/distro file>"
+D_RCDIRSINRW="<set in ~/distro-config/distro file>"
+D_INITSCRIPTS="<set in ~/distro-config/distro file>"
+D_XF86CONFFILE="<set in ~/distro-config/distro file>"
+D_XFONTPATH="<set in ~/distro-config/distro file>"
+D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 
 #########################################################################
 # End of global variable declaration, nothing needed to be changed at 
@@ -59,7 +59,7 @@ local FPTB=`which $1`
 if [ -z ${FPTB} ] ; then
   return 1;
 else
-  cp ${FPTB} ${INSTDIR}/${DEST}
+  cp ${boot_dir}/${FPTB} ${INSTDIR}/${DEST}
 fi
 }
 
@@ -187,7 +187,7 @@ resolve_modules() {
 #########################################################################
 # End of function declaration
 
-while getopts :hgMRk:i:m:b:d:o:s:Sut:D:I:V:a: a ; do
+while getopts :hgMRk:i:m:r:d:o:s:Sut:D:I:V:a: a ; do
     case $a in
 	\:|\?)	case $OPTARG in
 		k)  echo "-k requires kernel list parameter"
@@ -196,7 +196,7 @@ while getopts :hgMRk:i:m:b:d:o:s:Sut:D:I:V:a: a ; do
 		    ;;
 		m)  echo "-m requires module list parameter"
 		    ;;
-		b)  echo "-b requires boot dir parameter"
+		r)  echo "-r requires root dir parameter"
 		    ;;
 		d)  echo "-d requires root device parameter"
 		    ;;
@@ -227,7 +227,7 @@ while getopts :hgMRk:i:m:b:d:o:s:Sut:D:I:V:a: a ; do
 	m)  modules=$OPTARG
 	    modules_set=1
 	    ;;
-	b)  boot_dir=$OPTARG
+	r)  root_dir=$OPTARG
 	    ;;
 	d)  rootdev=$OPTARG
 	    ;;
@@ -267,7 +267,7 @@ shift $(expr $OPTIND - 1)
 rm -rf ${INSTDIR}
 mkdir -p ${INSTDIR}/{dev,proc,tmp,mnt,root,bin,sbin,sys,lib}
 mkdir -p ${INSTDIR}/usr/share
-# needed for KNOPPIX hwsetup not to confuse with ${SYSCONFDIR}
+# needed for KNOPPIX hwsetup not to confuse with ${D_SYSCONFDIR}
 mkdir -p ${INSTDIR}/etc/sysconfig
 
 # source configuration file for the distribution used
