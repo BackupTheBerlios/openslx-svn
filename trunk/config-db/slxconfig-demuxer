@@ -324,10 +324,6 @@ sub generateInitalRamFS
 
 	vlog 1, _tr('generating initialramfs %s/initramfs', $pxeVendorOSPath);
 	my $cmd = "$openslxConfig{'bin-path'}/mkdxsinitrd ";
-	my $debugLevel = $info->{ramfs_debug_level};
-	if ($debugLevel) {
-		$cmd .= qq[-d $debugLevel ];
-	}
 	if (length($info->{ramfs_nicmods}) > 0) {
 		$cmd .= qq[-n "$info->{ramfs_nicmods}" ];
 	}
@@ -338,6 +334,10 @@ sub generateInitalRamFS
 		= "$openslxConfig{'stage1-path'}/$vendorOS->{name}";
 	$cmd .= "-i $pxeVendorOSPath/$info->{'initramfs-name'} -r $rootPath ";
 	$cmd .= "-s openslx ";
+		# use theme 'openslx'
+	$cmd .= "-d ";
+		# always use dhclient instead of the busybox-provided dhcp-client
+		# (since the latter is unable to fetch NIS-stuff).
 
 	# ...set kernel version...
 	my $kernelFile = readlink($info->{'kernel-file'});
