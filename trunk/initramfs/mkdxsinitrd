@@ -735,6 +735,7 @@ if [ -z "$cdboot" ] ; then
   done
   # copy init-hooks from all plugins which are going to be executed in stage3
   mkdir -p ${INSTDIR}/etc/init-hooks
+  PLUGINS=$(echo ${PLUGINS} | sed -e "s/,/ /g")
   for plugin in $PLUGINS ; do
     test -d ${SLX_BASE_PATH}/lib/plugins/$plugin/init-hooks && \
       cp -r ${SLX_BASE_PATH}/lib/plugins/$plugin/init-hooks/* \
