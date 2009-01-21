@@ -59,7 +59,7 @@ SLX_CONFIG_PATH=@@@SLX_CONFIG_PATH@@@
    . $SLX_CONFIG_PATH/settings.default
 [ -f $SLX_CONFIG_PATH/settings.local ] && \
    . $SLX_CONFIG_PATH/settings.local
-# read the common functions file 
+# read the common functions file
 [ -e ${SLX_SHARE_PATH}/initramfs/etc/functions ] && \
   . ${SLX_SHARE_PATH}/initramfs/etc/functions
 
@@ -195,7 +195,7 @@ else
      # the stage3 init - fixme: version string should be added in a more clever way
      echo -e "slxconf_date=${DATE}\nslxconf_kernver=${KERNVER}\n\
 slxconf_listnwmod=\"${NWMODULES}\"\nslxconf_distro=${DISTRO}-${DISTRO_VER}\n\
-slxconf_slxver=\"4.0.8b\"" > ${INSTDIR}/etc/sysconfig/slxconfig
+slxconf_slxver=\"4.0.8b\"" > ${INSTDIR}/etc/sysconfig/slxsystem.conf
      [ "$use_busybox" = 1 ] && sed -e "s,^#!/bin/sh,#!/bin/ash," \
        -i ${INSTDIR}/${FILENAME}
   fi
@@ -373,7 +373,7 @@ shift $(expr $OPTIND - 1)
 #########################################################################
 # End of parameter, argument interpretation
 
-# Check for superuser id 
+# Check for superuser id
 precheck
 #Change to the directory this script is located in
 goto_script_dir
@@ -729,7 +729,7 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
         # iscsi modules
         # cobi cobi iscsiadm iscsid bin &>/dev/null
         #mkdir -p ${ddirprefix}/drivers/scsi
-        #for i in scsi_mod scsi_transport_iscsi libiscsi iscsi_tcp; do 
+        #for i in scsi_mod scsi_transport_iscsi libiscsi iscsi_tcp; do
         #  cp ${rdirprefix}/drivers/scsi/$i.ko
         #    ${ddirprefix}/drivers/scsi
         #done

@@ -340,9 +340,12 @@ sub generateInitalRamFS
 	# ...set list of network modules...
 	$slxConf{'slxconf_listnwmod'}
 		= $setup->{'ramfs_nicmods'} || $settings->{'default_nicmods'};
-	# ...now create slxconfig file and pass it to slxmkramfs:
-	writeSlxConfigToFile(\%slxConf, "$tempPath/slxconfig");
-	$cmd .= qq[-s "$tempPath/slxconfig" ];
+	# ...add version info...
+	my $slxver = `slxversion`;
+	$slxConf{'slxconf_slxver'} = chomp $slxver;
+	# ...now create slxsystem.conf file and pass it to slxmkramfs:
+	writeSlxConfigToFile(\%slxConf, "$tempPath/slxsystem.conf");
+	$cmd .= qq[-s "$tempPath/slxsystem.conf" ];
 
 	$ENV{'SLX_PRIVATE_PATH'} = $openslxConfig{'private-path'};
 	$ENV{'SLX_PUBLIC_PATH'} = $openslxConfig{'public-path'};

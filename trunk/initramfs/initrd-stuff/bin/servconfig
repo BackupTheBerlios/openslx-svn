@@ -24,7 +24,7 @@
 # specific functions may overwrite functions defined in /etc/functions
 . /etc/sysconfig/config
 . /etc/distro-functions
-. /etc/sysconfig/slxconfig
+. /etc/sysconfig/slxsystem.conf
 # get location of logfile definition
 . /mnt/etc/${D_SYSCONFDIR}/logfile
 
@@ -92,7 +92,7 @@ if [ -z "$country" ] ; then
 fi
 localization "${country}"
 if [ -z "${KEYTABLE}" ] ; then
-  error "$hcfg_keyb" nonfatal 
+  error "$hcfg_keyb" nonfatal
   KEYTABLE=${DEFKEYTABLE}
 fi
 echo -e "\t# entries added by $0: $date" >> /mnt/etc/${D_INITDIR}/boot.slx
@@ -122,7 +122,7 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
     *nbd)
     ;;
     *)
-    # we expect nfs mounts here ... 
+    # we expect nfs mounts here ...
     nfsmnt ${vmimgserv}:${vmimgpath} /mnt/var/lib/vmware || {
       error "${scfg_nfs}" nonfatal; noimg=yes; }
     ;;
