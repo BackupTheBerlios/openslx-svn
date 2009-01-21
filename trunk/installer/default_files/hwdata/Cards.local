@@ -44,4 +44,8 @@ SEE ATI Radeon (generic)
 NAME Matrox Millennium G550 DualHead
 SEE Matrox Millennium G550
 
+# link for VMware virtual SVGA
+NAME VMware virtual video card
+SEE VMware
+
 # main database
