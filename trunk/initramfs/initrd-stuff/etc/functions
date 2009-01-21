@@ -437,11 +437,11 @@ else
   # In order to remedy, we evaluate $SLX_USE_ABSOLUTE_TFTP_PATH in order
   # to find out if we should use the absolute path when accessing files
   # via tftp:
-  if [ "${SLX_USE_ABSOLUTE_TFTP_PATH}" -ge 1 ]; then
-    cfgdir="${SLX_TFTPBOOT_PATH}/client-config"
-  else
-    cfgdir="client-config"
-  fi
+  #if [ "${SLX_USE_ABSOLUTE_TFTP_PATH}" -ge 1 ]; then
+  #  local cfgdir="${SLX_TFTPBOOT_PATH}/client-config"
+  #else
+    local cfgdir="client-config"
+  #fi
   local tftpserver=$serverip
   # try to get configuration files successively; start with distro client
   # and try last distro default ...
