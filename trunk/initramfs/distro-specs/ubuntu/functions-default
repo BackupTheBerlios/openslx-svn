@@ -86,7 +86,7 @@ for i in rc2.d/K$stop$script rc3.d/K$stop$script \
     break
   else 
     ln -sf ../init.d/$script /mnt/etc/$i
-    echo "Linked $script"
+    [ "$DEBUGLEVEL" == 5 ] && echo "Linked $script"
   fi
 done
 }
@@ -200,7 +200,8 @@ echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
 # acpi and powersave
 config_acpi () {
   rllinker "acpid" "10" "19"
-  rllinker "acpi-support" "99" "02"
+  #Commented out since battery checking is only useful for Notebooks
+  #rllinker "acpi-support" "99" "02"
 
   # nur hier weil udev_hotplug zu früh aufgerufen wird.
   rllinker "udev" "11" "25"
