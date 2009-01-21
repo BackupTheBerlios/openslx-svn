@@ -4,10 +4,11 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 01-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 26-06-2006
 #		Felix Endres
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
+#               (c) 2006 - odlx.org project
 #
 # Version:      0.3.2b
 
@@ -399,10 +400,7 @@ fi
 
 # configure some variables from configuration file - wait for dhcp or ldap
 # confiurator to complete
-waitfor /tmp/dhcp-done 10000 || error "  Did not get any configuration \
-data via dhcp until now ..." nonfatal
-waitfor /tmp/ldap-done 10000 || error "  Did not get any configuration \
-data via ldap until now ..." nonfatal
+cfgcomplete
 . /etc/machine-setup
 
 # postpone some commands into normal bootup environment

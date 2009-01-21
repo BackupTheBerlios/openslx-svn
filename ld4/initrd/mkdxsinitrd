@@ -350,7 +350,7 @@ case "${DISTRO}" in
     esac
   ;;
 esac
-# aﬆ this point ${DISTRO} ${DISTRO_VER} should be fixed
+# at this point ${DISTRO} ${DISTRO_VER} should be fixed
 copy_distro_stuff ${DISTRO} ${DISTRO_VER}
 
 # hotplug/udev type and related stuff
@@ -419,7 +419,8 @@ fi
 # type of hotplug/udev/dev (for etc directories see above!!)
 for bbins in udev udevd udevstart udevtrigger udevsend
   do
-  cobi ${bbins} bin &>/dev/null || echo "Program ${bbins} not found"
+  cobi ${bbins} bin &>/dev/null || \
+  echo "Program ${bbins} not found; could be most probably ignored"
 done
 
 # if nfs is used as clients root filesystem

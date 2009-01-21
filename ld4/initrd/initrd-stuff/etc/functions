@@ -2,7 +2,7 @@
 #		linux diskless clients (included by init, hwautocfg,
 #		servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 26-06-2006
 #	 	Felix Endres, 30-04-2006
 #		Tobias Maier
 #
@@ -417,6 +417,20 @@ cp /tmp/newpasswd /mnt/etc/passwd
 echo -e "root:"$root_pw":12958:0:10000::::" > /mnt/etc/shadow
 sed 's/:.*/:!:13078:0:99999:7:::/;/^root.*/d' /tmp/newpasswd \
   >> /mnt/etc/shadow
+}
+
+#######################################################################
+# wait for the completion of configuration file (machine-setup). It is
+# composed from different sources
+cfgcomplete () {
+waitfor /tmp/dhcp-done 10000 || error "$error_errdcfg" nonfatal
+waitfor /tmp/file-done 10000 || error "$error_errfcfg" nonfatal
+waitfor /tmp/ldap-done 10000 || error "$error_errlcfg" nonfatal
+# concat the different files now into the central config file, order
+# matters - ldap data has highest priority
+for config in /tmp/confviadhcp /tmp/confviafile /tmp/confvialdap
+  do test -f $config && cat $config >> /etc/machine-setup
+done
 }
 
 #######################################################################

@@ -3,7 +3,7 @@
 #               diskless clients of	version 4
 #               this file could be used for localization of error messages 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 26-06-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - odlx.org project
@@ -113,6 +113,10 @@ error_pump="  Config via pump not implemented yet.\n$error_dhcp"
 error_ipconf="  Config via ipconfig (from klibc) not implemented yet.\n\
 $error_dhcp"
 error_ldapcfg="  The configuration via ldap is not implemented yet."
+error_errdcfg="  Did not get any configuration data via dhcp until now ..."
+error_errfcfg="  Did not get any configuration data via tftp until now ..."
+error_errlcfg="  Did not get any configuration data via ldap until now ..."
+
 
 # messages from distro functions
 df_errumod="    Failed to load the \"unix\" module. Problems with Hardware \
@@ -133,9 +137,6 @@ df_errnsc="  Name Service caching deamon $df_errserv\n This service might \
 be useful to take load from a ldap user directory."
 
 # messages from servconfig
-scfg_errdcfg="  Did not get any configuration data via dhcp until now ..."
-scfg_errfcfg="  Did not get any configuration data via tftp until now ..."
-scfg_errlcfg="  Did not get any configuration data via ldap until now ..."
 scfg_nfs="  Mount of some NFS source failed ..."
 scfg_ntptz="  No such timezone data file (needed for ntp time service \
 configuration)."

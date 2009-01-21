@@ -4,7 +4,7 @@
 #               for linux diskless clients (executed within initial
 #               ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 26-06-2006
 #				Michael Janczyk, 31-05-2006
 #				Lars Mueller, 23-06-2006
 #				Oliver Tappe, 23-06-2006
@@ -60,17 +60,10 @@ echo "
 #######################################################################
 # read and unify configuration options - default configuration file, 
 # from dhcp, ldap ...
-# wait for the appearance of configuration via dhcp 
-# do not wait if dhcp is not used (how?)
-waitfor /tmp/dhcp-done 10000 || error "$scfg_errdcfg" nonfatal
-waitfor /tmp/file-done 10000 || error "$scfg_errfcfg" nonfatal
-waitfor /tmp/ldap-done 10000 || error "$scfg_errlcfg" nonfatal
-# concat the different files now into the central config file, order
-# matters - ldap data has highest priority
-for config in /tmp/confviadhcp /tmp/confviafile /tmp/confvialdap
-  do test -f $config && cat $config >> /etc/machine-setup
-done
+# wait for the appearance of configuration from several sources
+cfgcomplete
 . /etc/machine-setup
+
 # hack for replacing variables ($serverip, $clientip, $host_name) in 
 # machine-setup
 sed -e "s/\$serverip/$serverip/;s/\$clientip/$clientip/" \
