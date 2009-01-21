@@ -320,7 +320,8 @@ config_nscd
 # create needed directories and files
 if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   for i in /var/X11R6/bin /etc/vmware/vmnet1 /etc/vmware/vmnet8 \
-           /var/run/vmware /etc/vmware/loopimg /etc/vmware/fd-loop; do
+           /var/run/vmware /etc/vmware/loopimg /etc/vmware/fd-loop \
+           /etc/X11/sessions; do
     testmkd /mnt/$i
   done
   # create needed devices (not created automatically via module load)
