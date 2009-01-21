@@ -38,7 +38,7 @@ udev_hotplug () {
 #############################################################################
 # generate events with the sysfs trigger
 trigger_device_events () {
-  list=$(echo /sys/bus/*/devices/*/uevent)
+  local list=$(echo /sys/bus/*/devices/*/uevent)
   list="$list $(echo /sys/class/*/*/uevent)"
   list="$list $(echo /sys/block/*/uevent /sys/block/*/*/uevent)"
   for i in $list; do
@@ -149,13 +149,20 @@ fi
 #############################################################################
 # (re)generate dynamic linked libraries cache from /etc/ld.so.conf
 ldcfg () {
-[ -z "${NOLDSC}" ] && echo "$init_ldcfg" && ldconfig /tmp/ld.so.cache &
+[ -z "${noldsc}" ] && echo "$init_ldcfg" && ldconfig /tmp/ld.so.cache &
 }
 #############################################################################
 # URI interpreter $1 variable to interprete, $2 type of token to return
 # prot: tftp, http, nbd, ... server: IP or FQDN
 uri_token () {
 local var=$1
+local prot
+local rest
+local server
+local path
+local port
+local tmpval
+local query=""
 # first check if URI starts with prot:// - URI scheme
 if strinstr "://" "$1" ; then
   prot=${var%://*}
@@ -180,7 +187,6 @@ else
   port=""
 fi
 # get path and query components - URI path, query
-query=""
 if strinstr "\?" "$rest" ; then
   path="${path%\?*}"
   query="${rest#*\?}"
@@ -212,6 +218,7 @@ fi
 nm2pref () {
 set `IFS="."; echo $1`
 local n=0
+local i
   for i in $1 $2 $3 $4 ; do
     case $i in
         0) break ;;
@@ -230,6 +237,7 @@ echo $n
 # configure Xen bridge xenbr0
 xenbr_config () {
 modprobe netloop
+local ipls
 local vifnum="0"
 local bridge="xenbr${vifnum}"
 local netdev="eth${vifnum}"
@@ -237,20 +245,26 @@ local pdev="p${netdev}"
 local vdev="veth${vifnum}"
 local vif0="vif0.${vifnum}"
 local mac=$(ip link show ${netdev} | sed -n '/^.*link\/ether/p' \
-          | sed -e 's/.*ether \(..:..:..:..:..:..\).*/\1/')
+  | sed -e 's/.*ether \(..:..:..:..:..:..\).*/\1/')
 
 brctl addbr ${bridge}
 brctl stp ${bridge} off
 brctl setfd ${bridge} 0
 brctl addif ${bridge} ${vif0}
-ip link set ${netdev} name ${pdev}
-ip link set ${vdev} name ${netdev}
-ip link set ${pdev} down arp off
-ip link set ${pdev} addr fe:ff:ff:ff:ff:ff
-ip link set ${netdev} addr ${mac} arp on
-ip link set ${bridge} up
-ip link set ${vif0} up
-ip link set ${pdev} up
+for ipls in "${netdev} name ${pdev}" "${vdev} name ${netdev}" \
+            "${pdev} down arp off" "${pdev} addr fe:ff:ff:ff:ff:ff" \
+            "${netdev} addr ${mac} arp on" "${netdev} addr ${mac} arp on" \
+            "${bridge} up" "${vif0} up" "${pdev} up" ; do
+  ip link set ${ipls}
+done
+#ip link set ${netdev} name ${pdev}
+#ip link set ${vdev} name ${netdev}
+#ip link set ${pdev} down arp off
+#ip link set ${pdev} addr fe:ff:ff:ff:ff:ff
+#ip link set ${netdev} addr ${mac} arp on
+#ip link set ${bridge} up
+#ip link set ${vif0} up
+#ip link set ${pdev} up
 brctl addif ${bridge} ${pdev}
 }
 #############################################################################
@@ -280,7 +294,6 @@ case $ipcfg in
     [ -n "$nbdhost" ] && [ `echo $nbdhost|sed "s,\..*,,"` -ge 224 ] && \
       ip route add 224.0.0.0/4 dev eth0
   ;;
-  # the klibc ip configuration / dhcp client tool is deprecated
   # traditional ifconfig/route - if a distro does not provide ip
   ifconfig)
     if [ "$ip" = "0.0.0.0" ]; then
@@ -359,7 +372,7 @@ fi
 }
 
 #############################################################################
-# dhcp client
+# dhcp client function (support dhclient, dhcpcd, pump, udhcpc)
 rundhcp ()
 {
 local vci="$1"
@@ -449,9 +462,9 @@ fileget () {
 # (fixme: rewrite of fileget needed!!)
 # analyze file soure (URI) in $FILESRC
 if [ -n "$FILESRC" ] ; then
-  srvproto=$(uri_token $FILESRC prot)
-  cfgfile="/$(uri_token $FILESRC path)"
-  tftpserver=$(uri_token $FILESRC server)
+  local srvproto=$(uri_token $FILESRC prot)
+  local cfgfile="/$(uri_token $FILESRC path)"
+  local tftpserver=$(uri_token $FILESRC server)
   tftpgetunpack $tftp $cfgfile $tftpserver
 else
   # predefined value for openslx environment; it is expected that this
@@ -601,7 +614,7 @@ cfgcomplete () {
 waitfor /tmp/dhcp-done 10000 || error "$error_errdcfg" nonfatal
 waitfor /tmp/file-done 10000 || error "$error_errfcfg" nonfatal
 waitfor /tmp/ldap-done 10000 || error "$error_errlcfg" nonfatal
-# concat the different files now into the central config file, order
+# concatenate the different files now into the central config file, order
 # matters - ldap data has highest priority
 if ! test -f /tmp/cfgcomplete ; then
   for config in /tmp/confviadhcp /tmp/confviafile /tmp/confvialdap
@@ -1120,7 +1133,7 @@ config_portmap () {
 :
 }
 
-# start NIS (fixmee - does the service is really named ypbind??)
+# start nis/ypbind 
 config_nis () {
 :
 }

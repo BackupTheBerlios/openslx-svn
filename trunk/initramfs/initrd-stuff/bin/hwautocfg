@@ -259,13 +259,13 @@ modprobe ${MODPRV} usbcore &
 # "drivers" (pseudo, placeholder strings, ...) to exclude from loading
 # depending on distro more hw modules have to be excluded too. use the
 # D_HWMODTOIGNORE for that purpose
-DRIVERLIST=" disabled unknown ignore pcspkr synaptics keybdev kanotix\
+driverlist=" disabled unknown ignore pcspkr synaptics keybdev kanotix\
   ${D_HWMODTOIGNORE} "
 # driver blacklist (real modules which fail to load)
-DRIVERLIST=${DRIVERLIST}"hw_random genericwheelusb "
+driverlist=${driverlist}"hw_random genericwheelusb "
 # hack for pseudo modules (not to load) hopefully "usbcore" is present
 # as a module, might be exchanged with any other existing ...
-for i in $DRIVERLIST ; do 
+for i in $driverlist ; do 
   echo -e "alias\t$i\tusbcore" >> /etc/modprobe.conf
 done
 
@@ -290,29 +290,29 @@ waitfor /tmp/hwrun1 50000 || \
   error "$hcfg_hwsetup"
 [ $DEBUGLEVEL -eq 21 ] && echo "** 1st hwdetection finished at $(sysup)"
 # load ide drivers first, takes a while to initialize
-for DRIVER in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
+for driver in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
     triflex aec62xx cs5530 ns87415 sc1200 trm290 alim15x3 \
     cy82c693 opti621 serverworks via82cxxx amd74xx pdc202xx_new \
     siimage atiixp hpt34x pdc202xx_old sis5513; do
-  strinfile " ${DRIVER}" /tmp/hwsetup.info && {
-    IDE="yes"
-    modprobe ${MODPRV} ${DRIVER} &
-    DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
+  strinfile " ${driver}" /tmp/hwsetup.info && {
+    ide="yes"
+    modprobe ${MODPRV} ${driver} &
+    driverlist="${driverlist} ${driver}"; }
 done
 # check for IDE/SCSI (SATA)
-for DRIVER in ata_piix sata_via sata_nv sata_sil sata_sis sata_svw \
+for driver in ata_piix sata_via sata_nv sata_sil sata_sis sata_svw \
     sata_sx4 sata_uli sata_vsc sata_qstor sata_promise sata_mv; do
-  strinfile " ${DRIVER}" /tmp/hwsetup.info && {
+  strinfile " ${driver}" /tmp/hwsetup.info && {
     #SCSIIDE="yes"
-    modprobe ${MODPRV} ${DRIVER} &
-    DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
+    modprobe ${MODPRV} ${driver} &
+    driverlist="${driverlist} ${driver}"; }
 done
 # check for USB, pcmcia and ieee1394 hardware drivers
-for DRIVER in ohci-hcd uhci-hcd ehci-hcd ohci1394; do
-  strinfile " ${DRIVER}" /tmp/hwsetup.info && {
+for driver in ohci-hcd uhci-hcd ehci-hcd ohci1394; do
+  strinfile " ${driver}" /tmp/hwsetup.info && {
     USB="yes"
-    modprobe ${MODPRV} ${DRIVER}
-    DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
+    modprobe ${MODPRV} ${driver}
+    driverlist="${driverlist} ${driver}"; }
 done
 [ -x /bin/mdev ] && mdev -s &
 # load usbhid (for USB keyboard/mouse) or remove usbcore module if USB 
@@ -322,35 +322,35 @@ if [ -n "$USB" ] ; then
 else rmmod usbcore
 fi
 # remove unneeded network card modules
-for DRIVER in ${NWMODULES}; do
-  strinfile " ${DRIVER}" /tmp/hwsetup.info || {
-    rmmod ${DRIVER} &
-    DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
+for driver in ${NWMODULES}; do
+  strinfile " ${driver}" /tmp/hwsetup.info || {
+    rmmod ${driver} &
+    driverlist="${driverlist} ${driver}"; }
 done
-# check for PCMCIA / cardbus stuff
-for DRIVER in yenta_socket i82365 pd6729 tcic; do
-  strinfile ${DRIVER} /tmp/hwsetup.info && {
-    modprobe ${MODPRV} ${DRIVER}
-    DRIVERLIST="${DRIVERLIST} ${DRIVER}"
-    PCMCIA="yes"; }
+# check for pcmcia / cardbus stuff
+for driver in yenta_socket i82365 pd6729 tcic; do
+  strinfile " ${driver}" /tmp/hwsetup.info && {
+    modprobe ${MODPRV} ${driver}
+    driverlist="${driverlist} ${driver}"
+    pcmcia="yes"; }
 done
 # should we check for card reader modules too?
 # newer kernels support some of the major multicard readers which could
 # be found in some barebone systems like Pundits or in many laptops
-
-if [ -n "${PCMCIA}" ] ; then
+if [ -n "${pcmcia}" ] ; then
   modprobe ${MODPRV} ds
 fi
 # sound card setup (alsa and oss compatibility drivers)
 if [ -f /etc/sysconfig/sound ] ; then
   . /etc/sysconfig/sound
-else DRIVER="snd-dummy"
+  driver=${DRIVER}
+else driver="snd-dummy"
 fi
 # problem with a specific module not disabled (via above trick) when 
 # busybox is used
 #  rmmod snd_atiixp_modem snd_atiixp
-modprobe ${MODPRV} ${DRIVER}
-DRIVERLIST="${DRIVERLIST} ${DRIVER} "
+modprobe ${MODPRV} ${driver}
+driverlist="${driverlist} ${driver}"
 modprobe ${MODPRV} snd-pcm-oss 
 modprobe ${MODPRV} snd-mixer-oss
 
@@ -359,21 +359,21 @@ modprobe ${MODPRV} snd-mixer-oss
 # like dvd or harddisk - wait a few seconds so hopefully the ide driver
 # is initialized 
 [ -x /bin/mdev ] && mdev -s &
+[ -n "$ide" ] && modprobe -q ide_generic 2>/dev/null 
 test -f /proc/bus/usb/devices || \
   mount -n -t usbfs usbfs /proc/bus/usb 2>/dev/null
-[ -n "$IDE" ] && modprobe -q ide_generic 2>/dev/null 
 [ $DEBUGLEVEL -eq 21 ] && echo "** started 2nd hwdetection at $(sysup)"
 usleep 200 && hwsetup -v > /tmp/hwsetup.info
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
 # remaining drivers listed in /tmp/hwsetup.info
-cat /tmp/hwsetup.info| while read LINE ; do
-  if strinstr "driver:" "${LINE}"; then
-    DRIVER=${LINE##driver: }
-    if ! strinstr " ${DRIVER} " "${DRIVERLIST}"; then
-      strinstr "Card:" "${DRIVER}" || strinstr "ps/2" "${DRIVER}" || {
-        modprobe ${MODPRV} ${DRIVER} &
-        usleep 100; }
-      DRIVERLIST="${DRIVERLIST} ${DRIVER}"
+cat /tmp/hwsetup.info| while read line ; do
+  if strinstr "driver:" "${line}"; then
+    driver=${line##driver: }
+    if ! strinstr " ${driver} " "${driverlist}"; then
+      strinstr "Card:" "${driver}" || strinstr "ps/2" "${driver}" || {
+        modprobe ${MODPRV} ${driver} &
+        usleep 50; }
+      driverlist="${driverlist} ${driver}"
     fi
   fi
 done
@@ -383,7 +383,7 @@ done
 #  (strinfile "keybdev" /tmp/hwsetup.info || rmmod usbhid)
 
 # load IDE high level drivers
-if [ -n "$IDE" ] ; then
+if [ -n "$ide" ] ; then
   # you might want to check /etc/sysconfig/floppy for more info
   strinfile "ZIP" /tmp/hwsetup.info && modprobe ${MODPRV} ide-floppy
   strinfile "CDROM" /tmp/hwsetup.info && modprobe ${MODPRV} ide-cd
@@ -476,23 +476,12 @@ done
 #[ -n "${KEYTABLE}" ] && keytable
 #[ -n "${CONSOLE_FONT}" ] && consolefont
 
-# finalize X configuration XBinPath contains pointer of to X binary
-# in /var/X11R6/bin/X - only needed if var is set
-#displayvars
-#if [ -n $XBinPath ] ; then
-#  testmkd /mnt/var/X11R6/bin
-#  ln -sf $XBinPath /mnt/var/X11R6/bin/X
-#fi
 # if any new device appeared up to now
 if [ -x /bin/mdev ] ; then
   mdev -s &
   testmkd /dev/input 
   mknod /dev/input/mice c 13 63 2>/dev/null
 fi
-
-# wait for completion of Xorg configuration
-#waitfor /tmp/xready 20000
-#cp /etc/xorg.conf ${D_XF86CONFFILE}
 
 # do not finish until tmp is setup properly
 #[ -n "$part44" ] && waitfor /tmp/tmpready 20000

@@ -22,36 +22,37 @@
 # configuration settings (several file and directory variables)
 . /etc/sysconfig/config || ( echo -e $init_dscf && sleep 100 )
 # configuration settings for slx environment
-. /etc/sysconfig/slxconfig 2>/dev/null || ( echo -e $init_sscf && \
+. /etc/sysconfig/slxconfig 2>/dev/null || ( echo -e ${init_sscf} && \
   sleep 100 )
 
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
-export date="$slxconf_date"
+export date="${slxconf_date}"
 
 export DEBUGLEVEL=0
-export KERNEL="$slxconf_kernver"
-export NWMODULES="$slxconf_listnwmod"
-export DISTRO="$slxconf_distro"
+export KERNEL="${slxconf_kernver}"
+export NWMODULES="${slxconf_listnwmod}"
+export DISTRO="${slxconf_distro}"
 
 # do not use dnbd cache file
 nodnbdcache="yes"
 
 # device files get their own filesystem (to be move mounted later)
-DEVDIR="/dev"
-mount -n -t tmpfs -o 'size=25%,mode=0755' initramfsdevs ${DEVDIR}
+devdir="/dev"
+mount -n -t tmpfs -o 'size=25%,mode=0755' initramfsdevs ${devdir}
 
 # copy basic device files into dev (later udev will handle that)
 cp -a /tmp/null /tmp/console /dev
-mkdir -p ${DEVDIR}/pts
-mkdir -p ${DEVDIR}/shm
-mkdir -p ${DEVDIR}/.udevdb
+mkdir -p ${devdir}/pts
+mkdir -p ${devdir}/shm
+mkdir -p ${devdir}/.udevdb
 
 # mount the important standard directories
 [ ! -f /proc/cpuinfo ] && mount -n -t proc proc /proc
 [ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
 
 # fixme: shut down if script fails
-#trap "exec echo o>/proc/sysrq-trigger" EXIT SIGHUP SIGINT SIGPIPE SIGTERM SIGIO
+trap "exec (sleep 30; echo o>/proc/sysrq-trigger)" \
+  SIGHUP SIGINT SIGPIPE SIGTERM SIGIO
 
 # if no kernel version is set, try to get it directly from /proc
 if [ -z $KERNEL ] ; then
@@ -61,10 +62,10 @@ if [ -z $KERNEL ] ; then
 fi
 # set defaults for some important variables, might be overwritten via
 # kernel commandline
-TMPFSSIZE="50%"
-COWSIZE="50%"
-RWDIR=/dev/shm
-NFSRO="nfs"
+tmpfssize="50%"
+cowsize="50%"
+rwdir=/dev/shm
+nfsro="nfs"
 
 # load usb modules for keyboard (reenable usb keyboards, otherwise the
 # admin has to wait until second run of hwsetup late in stage3)
@@ -137,7 +138,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     ;;
     # if ld.so.cache should not be generated
     noldsc)
-      NOLDSC=yes;;
+      noldsc=yes;;
     # additional source to unify root filesystem with
     union=*)
       UNIONFS=1
@@ -150,7 +151,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     # combination with classical fs, like ext2 useful
     cowloop=*)
       COWLOOP=1
-      #COWSIZE=${opts#cowloop=}
+      #cowsize=${opts#cowloop=}
     ;;
     # rootfs will void the variables (d)nbdroot, nfsroot ...
     # fixme: allow multiple rootfs sources to be unioned!?
@@ -201,7 +202,7 @@ nfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
     ;;
     # size of tempfs if not max. 50% of RAM should be used
     tmpfssize=*)
-      TMPFSSIZE=${opts#tmpfssize=};;
+      tmpfssize=${opts#tmpfssize=};;
     # vendor code identifier for dhcp requests, that way odlx clients could
 	# be distinguished from other (dhcp) clients
     vci=*)
@@ -277,6 +278,7 @@ fi
   echo "** loading all defined network adaptor modules at $(sysup)"
 for mod in ${NWMODULES}; do
   modprobe ${MODPRV} $mod || error "$init_errnwad"
+  usleep 5
 done
 
 # set up loopback networking (ipsetup - function defined in /etc/functions)
@@ -382,11 +384,11 @@ if [ -n "${nbdmod}" ] ; then
       UNIONFS="";
     fi
     echo "Using Copy-on-Write block device for rw access"
-    mount -n -t tmpfs -o size=${COWSIZE} ramfs ${RWDIR}
+    mount -n -t tmpfs -o size=${cowsize} ramfs ${rwdir}
     mkdir /dev/cow && cp -a /tmp/ctl /dev/cow
     usleep 200
     ln -s /dev/cowloop0 /dev/cow/0
-    cowdev -a /dev/nbd0 ${RWDIR}/nbd.cow
+    cowdev -a /dev/nbd0 ${rwdir}/nbd.cow
     usleep 200
     RWRO="rw"
     RDEV=/dev/cow/0
@@ -394,7 +396,7 @@ if [ -n "${nbdmod}" ] ; then
     ldcfg
   else
     # use normal UnionFS behaviour because rootfs is not NFS
-    NFSRO=""
+    nfsro=""
   fi
   # finally mount the block device
   for i in 1 50 100 200 400 1000 ; do
@@ -403,7 +405,8 @@ if [ -n "${nbdmod}" ] ; then
   done
   [ $DEBUGLEVEL -eq 20 ] && echo "** finished nw blockdev stuff at $(sysup)"
 elif [ -n ${iscsiserver} ] ; then
-  [ $DEBUGLEVEL -eq 20 ] && echo "** started setting up iSCSI initiator" 
+  [ $DEBUGLEVEL -eq 20 ] && echo "** started setting up iSCSI initiator at \
+$(sysup)" 
   #if [ -n ${iscsitarget} ] ; then
   #  echo "InitiatorName=${iscsitarget}"|sed "s,@@@serverip@@@,$serverip," \
   #    >/etc/initiatorname.iscsi
@@ -430,7 +433,7 @@ if [ -z "${nbdmod}" -a -z "${nbdserver}" ] ; then
   nfsserver=$(checkip $nfsserver)
   nfsroot=${nfsserver}:${root_path}
   nfsmnt ${nfsroot} || error "$init_nfs"
-  [ $DEBUGLEVEL -eq 20 ] && echo "** finished nfs mount"
+  [ $DEBUGLEVEL -eq 20 ] && echo "** finished nfs mount at $(sysup)"
 fi
 
 # get the complete collection of kernel modules available
@@ -441,7 +444,8 @@ mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
 if [ ${DEBUGLEVEL} = 21 ] ; then
   /bin/sh
 else
-  [ $DEBUGLEVEL -eq 20 ] && echo "** started hwautocfg in background"
+  [ $DEBUGLEVEL -eq 20 ] && echo "** started hwautocfg in background at \
+$(sysup)"
   hwautocfg &
 fi
 
@@ -451,18 +455,18 @@ if [ -n "${UNIONFS}" -o -n "${UNION}" ] ; then
     error "$init_loadufs" nonfatal
     UNIONFS=""; }
 fi
-echo "Vor Union"
+
 # setup of client root filesystem dependent on the availability of UnionFS
 if [ -n "${UNIONFS}" ] ; then
   echo "Using UnionFS for rw access"
-  mkdir -p ${RWDIR}/union ${RWDIR}/uniontmp /rorootfs
-  mount -n -t tmpfs none ${RWDIR}/uniontmp
+  mkdir -p ${rwdir}/union ${rwdir}/uniontmp /rorootfs
+  mount -n -t tmpfs none ${rwdir}/uniontmp
   # hack for handling unionfs with patched run-init
   mount -n --move /mnt /rorootfs
-  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp:/rorootfs=${NFSRO}ro \
+  mount -n -t unionfs -o dirs=${rwdir}/uniontmp:/rorootfs=${nfsro}ro \
     none /mnt
   mkdir -p /mnt/uniontmp
-  mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp
+  mount -n --move ${rwdir}/uniontmp /mnt/uniontmp
   chmod 0755 /mnt/uniontmp /mnt
   # if additional sources should be used for a combined root filesystem
   # probably more sources should be merged into union (${UNION} is defined)
@@ -473,7 +477,7 @@ if [ -n "${UNIONFS}" ] ; then
     # mount $dir unionadd/$dir
     # unionctl mnt --add --after /mnt --mode ro /unionadd/$dir
     # most probably it is a good idea to run ldconfig, so enable it
-    unset NOLDSC
+    unset noldsc
   fi
   # run ldconfig if not switched off via kernel command line
   ldcfg
@@ -481,49 +485,50 @@ if [ -n "${UNIONFS}" ] ; then
   for i in ${D_RCDIRS} ${D_INITBOOTD} ; do
     rm -f /mnt/etc/$i/* 2>/dev/null
   done
-elif [ -z "$COWLOOP" ] ; then
+elif [ -z "${COWLOOP}" ] ; then
   echo "Using bind mounts to ramdisk for rw access"
-  mount -n -t tmpfs -o size=${TMPFSSIZE} ramfs ${RWDIR}
+  mount -n -t tmpfs -o size=${tmpfssize} ramfs ${rwdir}
   for path in ${D_BINDMPTS} ; do
-    mkdir -p ${RWDIR}/${path} >/dev/null 2>&1
-    mount -n --bind ${RWDIR}/${path} /mnt/${path}
+    mkdir -p ${rwdir}/${path} >/dev/null 2>&1
+    mount -n --bind ${rwdir}/${path} /mnt/${path}
     [ ${DEBUGLEVEL} -gt 1 -a ${DEBUGLEVEL} != 8 ] && \
-      echo "Created ${RWDIR}/${path} and mounted it to /mnt/$path"
+      echo "Created ${rwdir}/${path} and mounted it to /mnt/$path"
   done
   # see above ...
   ldcfg
-  # Save the RO Directories mentioned in the distro-specific
+  # save the RO directories mentioned in the distro-specific
   # config to a temporary directory. They will lateron be restored 
   for path in ${D_RODIRSINRW}; do
     if [ -d /mnt/${path} ] ; then
-      LIST=${path}" "$LIST
+      list=${path}" "${list}
       # exclude them from etc copy process too
       echo ${path}|sed -e "s,/root/,," >>/tmp/etc.exclude
       mkdir -p /root/${path} >/dev/null 2>&1
       mount -n --bind /mnt/${path} /root/${path} >/dev/null 2>&1
     fi
   done
-  for path in /etc/${D_SYSCONFDIR} ${D_DIRINBINDMNT} ${LIST}; do
-    mkdir -p ${RWDIR}/${path}
+  for path in /etc/${D_SYSCONFDIR} ${D_DIRINBINDMNT} ${list}; do
+    mkdir -p ${rwdir}/${path}
   done
-  testmkd ${RWDIR}/var/tmp
-  chmod a+rwxt ${RWDIR}/var/tmp >/dev/null 2>&1
+  testmkd ${rwdir}/var/tmp
+  chmod a+rwxt ${rwdir}/var/tmp >/dev/null 2>&1
   # exclude all sysv runlevel link stuff
   for i in ${D_RCDIRS} ${D_INITBOOTD} ; do
     echo "*$i/*" >>/tmp/etc.exclude
   done
+  # add list of files to be excluded and common excludes to the filter list
   echo -e "${D_ETCEXCL}\n@@@COMETCEXCL@@@" >>/tmp/etc.exclude
   # if ld.so.cache is to be generated then do not copy the file
-  [ -z "${NOLDSC}" ] && echo -e "ld.so.cache*" >>/tmp/etc.exclude
+  [ -z "${noldsc}" ] && echo -e "ld.so.cache*" >>/tmp/etc.exclude
   # for tar exclude lists might be used, more difficult for cp
   cd /mnt
   tar -X /tmp/etc.exclude -cp etc/* | \
-    tar -xp -C ${RWDIR} 2>/dev/null ;
+    tar -xp -C ${rwdir} 2>/dev/null ;
   cd /
-  mount -n --bind ${RWDIR}/etc /mnt/etc
-  mount -n --bind ${RWDIR}/var /mnt/var
+  mount -n --bind ${rwdir}/etc /mnt/etc
+  mount -n --bind ${rwdir}/var /mnt/var
   # get the "covered" mounts back into filesystem structure
-  for i in ${LIST}; do
+  for i in ${list}; do
     mount -n --move /root/$i /mnt/$i #>>$LOGFILE 2>&1
   done
   #rm -rf /root/* >/dev/null 2>&1
@@ -532,7 +537,6 @@ fi
 # script for stuff to execute during early bootup
 d_mkrlscript init boot.ld "Running configuration postponed from InitRamFS"
 echo "fs complete at $(sysup)" >/tmp/fscmpl
-echo "FS complete"
 
 # write debug file information after filesystem setup completed
 echo -e "# /etc${D_SYSCONFDIR}/logfile - file created by $0 (initramfs \
@@ -542,7 +546,7 @@ for linux diskless client specific debugging output\nLOGFILE=\"$LOGFILE\"\n#\
   > /mnt/etc/${D_SYSCONFDIR}/logfile || error "$init_errlog"
 
 # run distribution independent and dependent configuration of files and
-# services
+# services (offer debug shell in runlevel 22)
 if [ ${DEBUGLEVEL} = 22 ] ; then
   /bin/sh
 else
@@ -572,7 +576,7 @@ echo -e "rootfs / rootfs rw 0 0\ninitramdevs /dev tmpfs rw\
  0 0" > /mnt/etc/mtab
 
 # copy library cache if generated
-if [ -z "${NOLDSC}" ] ; then
+if [ -z "${noldsc}" ] ; then
   if waitfor /tmp/ldcfg 50000 ; then
     test -s /mnt/tmp/ld.so.cache && {
       cp /mnt/tmp/ld.so.cache /mnt/etc/ld.so.cache
@@ -589,9 +593,9 @@ waitfor /tmp/hwcfg 30000 || error "$init_errhw"
   >> /mnt/etc/udev/rules.d/04-scanner.rules
 # wait a while for services setup to complete
 waitfor /tmp/svcfg 20000 || error "$init_errsw"
-# IP configuration is made and should not be updated automatically, udevd
-# should be killed if started within init
+# IP configuration is complete and should not be updated automatically
 killall -9 dhcpcd dhclient pump udhcpc 2>/dev/null
+# copy machine configuration file into stage4 filesystem
 cp /etc/machine-setup /mnt/etc
 
 # post init for some distro specific (fixme!! more elegant solution)
@@ -613,7 +617,7 @@ for i in 0 200 300 500 800 1000 1200 2000 5000 ; do
 done
 
 [ $i -gt 1000 ] && error "$init_errumnt"
-# check for inittab file
+# check for inittab file (might fail for new style init -> upstart)
 test -f /mnt/etc/inittab || error "$init_erritab"
 # close runlevel script for stuff to execute during early bootup
 d_mkrlscript close boot.ld ""
@@ -623,18 +627,20 @@ sed -n "s,/mnt,,;/\/tmp /p" /proc/mounts >> /mnt/etc/mtab
 # preparations to leave initramfs - umounting ...
 umount -n /sys || error "$init_errsys" nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1
-mount -n --move /dev /mnt/dev
 chmod a+rwxt /mnt/dev/shm /mnt/tmp /mnt/tmp/scratch 2>/dev/null
+mount -n --move /dev /mnt/dev
 
+# stop udevd (non-busybox udevs)
 killall -9 udevd 2>/mnt/dev/null
 # runtimer
-[ $DEBUGLEVEL -eq 8 ] && echo "** SLX init ended near $(sysup)"
+[ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
+  echo "** SLX init ended near $(sysup)"
 # kill the watchdog (autopoweroff, if stage3 init never finishes)
 [ -f /tmp/watchdogpid ] && kill $(cat /tmp/watchdogpid) 2>/mnt/dev/null
 umount -n /proc
 # unset old environment variables
 unset debug date initrd ip dnbdroot nbdroot nfsroot vci vga
 unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
-  UDEVD_EXPECTED_SEQNUM
+  UDEVD_EXPECTED_SEQNUM PATH
 # new style of pivoting (switch_root or run-init in klibc)
-exec switch_root -c dev/console /mnt /sbin/init || error "$init_runinit"
+exec /bin/switch_root -c dev/console /mnt /sbin/init || error "$init_runinit"
