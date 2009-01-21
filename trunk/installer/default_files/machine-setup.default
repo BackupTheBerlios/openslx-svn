@@ -81,14 +81,14 @@ netbios_workgroup="dxs-network"
 # automounter home (/local_dir - top level directories only) and source 
 # (format (proto://)server/path)
 #automnt_dir="/home"
-#automnt_src="$serverip/home"
+#automnt_src="serverip/home"
 
 # scratch space on server "proto://serverip/dxs/tmp"
 #scratch="(proto://)serverip/dxs/tmp"
 
 # configure and start vmware services
 vmware="no"
-#vmware="(proto://)$serverip/dxs/vmware"
+#vmware="(proto://)serverip/dxs/vmware"
 # imgsrv is deprecated, because incorporated into vmware variable
 
 # kind of X11 display manager to run 

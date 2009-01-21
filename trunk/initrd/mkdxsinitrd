@@ -4,7 +4,7 @@
 #               ramdisks for linux diskless clients (stage2 system
 #               setup)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-09-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-09-2006
 #               Nico Dietrich
 #               Felix Endres
 #               mj0, 13-09-2006 theming added
@@ -62,7 +62,7 @@ D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 usage()
 {
   echo -e "mkdxsinitrd  [-bgh] [-k kernel version] [-i path/file] \
-[-f module(s)] [-n module(s)] [-r path] [-s splashsize]\n"
+[-f module(s)] [-n module(s)] [-r path] [-s theme]\n"
   echo "OPTIONEN"
   echo "  -g     Benutze glibc als Basisbibliothek in der ramdisk."
   echo "  -b     Use busybox instead of separate binaries."
@@ -85,7 +85,7 @@ usage()
   echo "  -r path"
   echo "        Pfad zum Wurzelverzeichnis des zu exportierenden  Betriebsystems"
   echo "        (z.B. /export/10.1)."
-  echo "  -s screensize (for splash)"
+  echo "  -s theme (for splash)"
   echo "  -d debug (add special modules to initramfs)"
   echo "  -D Name"
   echo "        Name der Distribution der Betriebsystemvorlage"
@@ -296,7 +296,7 @@ while getopts :bhgk:i:r:o:s:f:n:Sut:d:v:I:V:a: a ; do
       f)  echo "-f requires file system module list parameter";;
       n)  echo "-n requires network module list parameter";;
       r)  echo "-r requires root dir parameter";;
-      s)  echo "-s requires image size(s)";;
+      s)  echo "-s may require theme name";;
       t)  echo "-t requires tmp dir parameter";;
       d)  echo "-d requires debug level (integer)";;
       D)  echo "-D requires linux Distribution name";;
@@ -660,15 +660,15 @@ chmod 755 ${INSTDIR}/init \
 # add the common default client configuration file - just to ensure to
 # have all major variables defined. !!These settings are most probably
 # are overwritten by fileget in stage3 within initramfs!!
-if [ -f /var/lib/openslx/config/default/initramfs/machine-setup ] ; then
-  cp /var/lib/openslx/config/default/initramfs/machine-setup \
+if [ -f /var/opt/openslx/config/default/initramfs/machine-setup ] ; then
+  cp /var/opt/openslx/config/default/initramfs/machine-setup \
     ${INSTDIR}/etc/machine-setup
-  echo "Using /var/lib/openslx/config/default/initramfs/machine-setup"
+  echo "Using /var/opt/openslx/config/default/initramfs/machine-setup"
 # use the installed default machine-setup.default
-elif [ -f /usr/share/openslx/templates/machine-setup.default ] ; then
-  cp /usr/share/openslx/templates/machine-setup.default \
+elif [ -f /opt/openslx/share/templates/machine-setup.default ] ; then
+  cp /opt/openslx/share/templates/machine-setup.default \
     ${INSTDIR}/etc/machine-setup
-  echo "Using /usr/share/openslx/templates/machine-setup.default"
+  echo "Using /opt/openslx/share/templates/machine-setup.default"
 # just compatibility for older versions
 elif [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
   cp /etc/dxs/client.cfg/machine-setup.default \
@@ -691,12 +691,12 @@ fi
 
 # custom hardware configuration files pcitable.local and Cards.local
 # fixme!! New source for these files (instead of templates)!
-if [ -f /usr/share/openslx/templates/pcitable.local ] ; then
-  cat /usr/share/openslx/templates/pcitable.local >> \
+if [ -f /opt/openslx/share/templates/pcitable.local ] ; then
+  cat /opt/openslx/share/templates/pcitable.local >> \
     ${INSTDIR}/usr/share/hwdata/pcitable
 fi
-if [ -f /usr/share/openslx/templates/Cards.local ] ; then
-  cat /usr/share/openslx/templates/Cards.local >> \
+if [ -f /opt/openslx/share/templates/Cards.local ] ; then
+  cat /opt/openslx/share/templates/Cards.local >> \
     ${INSTDIR}/usr/share/hwdata/Cards
 fi
 
@@ -707,8 +707,8 @@ for cfg in default/initramfs/preinit.local \
            ${DISTRO}-${DISTRO_VER}/initramfs/preinit.local \
            default/initramfs/postinit.local \
            ${DISTRO}-${DISTRO_VER}/initramfs/postinit.local ; do
-  test -f /var/lib/openslx/config/$cfg && \
-    cp /var/lib/openslx/config/$cfg ${INSTDIR}/bin
+  test -f /var/opt/openslx/config/$cfg && \
+    cp /var/opt/openslx/config/$cfg ${INSTDIR}/bin
 done
 
 # remove unneeded debug info, fixme not really tested yet
