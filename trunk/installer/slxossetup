@@ -147,6 +147,19 @@ function slxossetup_rpm()
 		chown root: "${SLX_STAGE1_PATH}/${dest_file}"
 	done
 
+	for file in ${SLX_INSTALL_FAKE_FILE}; do
+		dir="${file%/*}"
+		test -d "${SLX_STAGE1_PATH}/${dir}" || \
+			mkdir -p "${SLX_STAGE1_PATH}/${dir}"
+		touch "${SLX_STAGE1_PATH}/${file}"
+	done
+
+	for mountpoint in ${SLX_INSTALL_BIND_MOUNT}; do
+		test -d "${SLX_STAGE1_PATH}/${mountpoint}" || \
+			mkdir -p "${SLX_STAGE1_PATH}/${mountpoint}"
+		mount -o bind "/${mountpoint}" "${SLX_STAGE1_PATH}/${mountpoint}"
+	done
+
 	unset packagelist
 	for variable in ${!SLX_INSTALL_PACKAGES_*}; do
 		packagelist="${packagelist} $( eval echo \$$variable)"
@@ -156,6 +169,15 @@ function slxossetup_rpm()
 		install \
 		${packagelist} \
 		-y
+
+	for mountpoint in ${SLX_INSTALL_BIND_MOUNT}; do
+		umount "${SLX_STAGE1_PATH}/${mountpoint}"
+	done
+	
+	for file in ${SLX_INSTALL_FAKE_FILE}; do
+		test -s "${SLX_STAGE1_PATH}/${file}" || \
+			rm -f "${SLX_STAGE1_PATH}/${file}"
+	done
 }
 
 function slxossetup()
