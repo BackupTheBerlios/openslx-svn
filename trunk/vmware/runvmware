@@ -4,10 +4,10 @@
 #               X Stations and interactive session chooser (v4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-03-2006
-#               Michael Janczyk <mj0@uni-freiburg.de>, 10-01-2007
+#               Michael Janczyk <mj0@uni-freiburg.de>, 27-03-2007
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.16.611
+# Version:      0.17.826
 #
 ################################################################################
 
@@ -39,8 +39,8 @@ runvmwareconfheader ()
 
   ###### ide-disks #############################################################
   ide0:0.mode = \"${np}\"
-  ide0:0.present = \"TRUE\"
-  ide0:0.fileName = \"${tmpdir}/disk\" 
+  ide0:0.present = \"${ide}\"
+  ide0:0.fileName = \"${diskfile}\" 
 
   ide1:0.present = \"${cdr_1}\"
   ide1:0.autodetect = \"TRUE\"
@@ -53,7 +53,11 @@ runvmwareconfheader ()
   ide1:1.deviceType = \"cdrom-raw\"
 
   ###### scsi-disks ############################################################
-  scsi0.present = \"FALSE\"
+  scsi0.present = \"${scsi}\"
+  scsi0.virtualDev = \"lsilogic\"
+  scsi0:0.mode = \"${np}\"
+  scsi0:0.present = \"${scsi}\"
+  scsi0:0.fileName = \"${diskfile}\"
 
   ###### nics ##################################################################
   ethernet0.present = \"TRUE\"
@@ -164,15 +168,7 @@ version=$(head -n 15 $0 | grep "# Version: " | awk '{print $3}')
 
 # hardware variables
 # temporary disk space for logs, etc...
-preftmpdir=/tmp/${USER}
-# there are two different kinds of tmp needed:
-# user config -> preferences for all *.vmx (especially that hidden ram image)
-# and per vmx config (written to runvmware.conf)
-if cat /proc/mounts|grep -e " /tmp" 2>/dev/null| grep -e "nfs" &>/dev/null
-  then export tmpdir=/dev/shm/vmware
-else
-  export tmpdir=$preftmpdir
-fi
+export tmpdir=/tmp/${USER}
 
 mac=
 declare -i mem=0
@@ -183,6 +179,8 @@ memmeg=
 memgig=
 permem=66
 # virtual devices
+ide="TRUE"
+scsi="FALSE"
 cdr_1="FALSE"
 cdr_2="FALSE"
 floppya="FALSE"
@@ -198,8 +196,6 @@ g_xres=
 g_yres=
 
 # VMware variables
-# VMware build
-vmbuild=$(vmware -v | awk -F "-" '{print $2}')
 # VMware start options
 vmopt="-X -q"
 # configfile
@@ -294,6 +290,8 @@ Image options:
 	--vmostype <vmwareos>   define VMware ostype
         --include <includefile> include code right before program start
 	--displayaliases	aliases you can use with option -a
+        --scsi                  enable SCSI 0:0 / disable IDE 0:0
+                                needed when image is SCSI, not IDE
         --floppya               enable floppy disk
         --floppyb               use /etc/vmware/fd-loop as floppy B,
                                 needed for exchanging files w/ VMware
@@ -579,6 +577,10 @@ while [ ${nofclopt} -gt "${args}" ]; do
     --floppyb)
       floppyb="TRUE"
     ;;
+    --scsi)
+      scsi="TRUE"
+      ide="FALSE"
+    ;;
     --edit)
       vmopt=""
     ;;
@@ -599,12 +601,11 @@ done
 # create environment
 # remove leftover locks from former runs,
 # problems may occure if you run more then one vmware with this script
-rm -f ${tmpdir}/*LOCK ${preftmpdir} >/dev/null 2>&1
+rm -f ${tmpdir}/*LOCK >/dev/null 2>&1
 rm -f ${tmpdir}/*.${debug}.log >/dev/null 2>&1
 
 # create vmware directories
 mkdir -p ${tmpdir} >/dev/null 2>&1
-mkdir -p ${preftmpdir} >/dev/null 2>&1
 mkdir -p ${vmhome} >/dev/null 2>&1
 
 # NO X-server no runvmware ;)
@@ -788,22 +789,12 @@ displayname=${displayname:-"VMware Image"}
 writelog "finished\nResults:\n\tDiskfile:\t${diskfile}
   \tVMostype:\t${vmostype}\n\tDisplayname:\t${displayname}\n" 0 1
 
-# link to windows image
-writelog "Linking \"ln -fs ${diskfile}
-  \t${tmpdir}/disk\"...\c" 0 1
-ln -fs ${diskfile} ${tmpdir}/disk
-writelog "finished\nResult:\n`ls -l ${tmpdir}/disk`\n" 0 1
-
 # check if image exists, etc...
 filecheck
 
 
-### WRITE CONFIGURATION FILES ##################################################
-# create preferences
-preferencesheader
-
-# create VMware startup file
-runvmwareconfheader
+### WRITE CONFIGURATION FILES / RUN VMWARE(-Player) ############################
+# ...with the automatically written config file
 
 # include file which is given via command line
 [ -n "${include}" ] && . ${include}
@@ -817,11 +808,17 @@ amixer -q sset Master 28 unmute
 amixer -q sset PCM 28 unmute
 writelog "finished\n" 0 0
 
-
-### RUN VMWARE(-Player) ########################################################
-# ...with the automatically written config file
 if [ `which vmplayer 2>/dev/null` ] && [ -z "${vmrun}" ] \
   || [ "${vmrun}" = "vmplayer" ]; then
+  
+  # VMware build
+  vmbuild=$(vmplayer -v | awk -F "-" '{print $2}')
+
+  # create preferences
+  preferencesheader
+
+  # create VMware startup file
+  runvmwareconfheader
   
   writelog "\nStarting VMplayer..." 0 0
   vmopt=$(echo ${vmopt} | sed -e "s,-q,," -e "s,-x,,") # remove unsupported opts
@@ -830,7 +827,16 @@ if [ `which vmplayer 2>/dev/null` ] && [ -z "${vmrun}" ] \
 
 elif [ `which vmware 2>/dev/null` ] && [ -z "${vmrun}" ] \
   || [ "${vmrun}" = "vmware" ]; then
-  
+
+  # VMware build
+  vmbuild=$(vmware -v | awk -F "-" '{print $2}')
+
+  # create preferences
+  preferencesheader
+
+  # create VMware startup file
+  runvmwareconfheader
+
   # copy licence file to VMware directory
   cp /var/lib/vmware/templ/license.ws.5.0 ${vmhome} 2>&1 >/dev/null
   writelog "\nStarting VMware..." 0 0
