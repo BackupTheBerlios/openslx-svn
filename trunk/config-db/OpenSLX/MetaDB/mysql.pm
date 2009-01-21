@@ -36,8 +36,7 @@ sub connectConfigDB
 	my $dbSpec = $openslxConfig{'db-spec'};
 	if (!defined $dbSpec) {
 		# build $dbSpec from individual parameters:
-		my $dbName = $openslxConfig{'db-name'};
-		$dbSpec = "database=$dbName";
+		$dbSpec = "database=$openslxConfig{'db-name'}";
 	}
 	my $user = (getpwuid($>))[0];
 	vlog 1, "trying to connect user <$user> to mysql-database <$dbSpec>";

@@ -37,11 +37,10 @@ sub connectConfigDB
 	if (!defined $dbSpec) {
 		# build $dbSpec from individual parameters:
 		my $dbBasepath = $openslxConfig{'db-basepath'};
-		my $dbDatadir = $openslxConfig{'db-datadir'} || 'openslxdata-sqlite';
+		my $dbDatadir = $openslxConfig{'db-datadir'} || 'sqlite';
 		my $dbPath = "$dbBasepath/$dbDatadir";
 		mkdir $dbPath unless -e $dbPath;
-		my $dbName = $openslxConfig{'db-name'};
-		$dbSpec = "dbname=$dbPath/$dbName";
+		$dbSpec = "dbname=$dbPath/$openslxConfig{'db-name'}";
 	}
 	vlog 1, "trying to connect to SQLite-database <$dbSpec>";
 	$self->{'dbh'} = DBI->connect("dbi:SQLite:$dbSpec", undef, undef,
