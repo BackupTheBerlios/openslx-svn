@@ -28,22 +28,6 @@ config_distro () {
   sed -e "s/.*initdefault/id:${D_INITDEFAULT}:initdefault/" -i /mnt/etc/inittab
 }
 
-# udev/hotplug - auto device discovery service (deprecated, check and remove)
-# Result: 1 is bad, 0 is good
-udev_hotplug () {
-  local result=0
-  [ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "$df_errhotpl" nonfatal
-  echo "Enabling hotplug/udev"
-  #udevstart && result=0
-  #udevtrigger && result=0
-  udevd --daemon || result=1
-  [ ! -e /sbin/udevsend ] && result=1
-  echo "/sbin/udevsend/" > /proc/sys/kernel/hotplug
-  mkdir -p /dev/.udev/db /dev/.udev/queue
-  trigger_device_events
-  return $result
-}
-
 # distro specific general function called from servconfig script
 config_distro () {
 # add the halt link to the 0 and 6 runlevel directories
