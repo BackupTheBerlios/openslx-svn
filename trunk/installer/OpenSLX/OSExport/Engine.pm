@@ -92,6 +92,7 @@ sub initialize
 	}
 
 	$self->{'vendor-os-name'} = $vendorOSName;
+	$self->{'export-type'} = $exportType;
 	$self->{'export-name'} = "$vendorOSName-$exportType";
 	$vendorOSName =~ m[^(.+?\-[^-]+)];
 	my $distroName = $1;
@@ -199,7 +200,7 @@ sub addExportToConfigDB
 				{
 					'vendor_os_id' => $vendorOS->{id},
 					'name' => $exportName,
-					'export_type' => $self->{'export-type'},
+					'type' => $self->{'export-type'},
 				}
 			);
 			vlog 0, _tr("Export <%s> has been added to DB (ID=%s).\n",
