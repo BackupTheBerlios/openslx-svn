@@ -73,7 +73,7 @@ sub slurpFile
 	if (!open(F, "< $file") && !$mayNotExist) {
 		die _tr("could not open file '%s' for reading! (%s)", $file, $!);
 	}
-	$/ = undef;
+	local $/ = undef;
 	my $text = <F>;
 	close(F);
 	return $text;
