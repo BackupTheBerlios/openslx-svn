@@ -40,13 +40,14 @@ echo 256 > /proc/sys/kernel/real-root-dev
 
 # start device auto discovery (just the first case is tested yet)
 if [ -x /bin/udev -a -x /bin/udevstart ] ; then
-#  if [ -x /bin/hotplug.sh ]; then
-#    echo "/bin/hotplug.sh" > /proc/sys/kernel/hotplug
-#    testmkd /events
-#  else
-    echo "/bin/udev" > /proc/sys/kernel/hotplug
-#  fi
+  echo "Starting udev"
   /bin/udevstart 
+  if [ -x /bin/udevd ] ; then
+    export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)
+    export UDEVD_EVENT_TIMEOUT=1
+    echo "" > /proc/sys/kernel/hotplug
+    udevd --daemon
+  fi
 elif [ -x /bin/hotplug ] ; then
   echo "Enabling hotplug"
   echo "/bin/hotplug" > /proc/sys/kernel/hotplug
@@ -382,14 +383,14 @@ waitfor /tmp/svcfg 20000 || error "  For some reason the software config \
 of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
 # IP configuration is made and should not be updated automatically
-killall -9 dhcpcd dhclient pump 2>/dev/null
+killall -9 dhcpcd dhclient pump udevd 2>/dev/null
 # unmount the bind mounted modules directory
 umount -n /lib/modules/${KERNEL} || error "Unmount of the kernel \
 modules directory failed for some reason."
 # close runlevel script for stuff to execute during early bootup
 d_mkbootld close
-# reset hotplug
-echo "/sbin/hotplug" > /proc/sys/kernel/hotplug
+
+# check for inittab file
 test -f /mnt/etc/inittab || error "  The file /etc/inittab does not exist or \
 is no regular one. It is needed\n  for the bootup procedure to follow."
 umount -n /sys || error "  Unmount of the kernel sys directory \

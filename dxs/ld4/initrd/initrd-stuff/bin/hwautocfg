@@ -4,7 +4,7 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-01-2006
 #		Blabla
 #		Blub
 #
@@ -334,10 +334,11 @@ for DRIVER in ${NWMODULES}; do
     DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
 done
 
-# sound card setup
+# sound card setup (alsa and oss compatibility drivers)
 . /etc/sysconfig/sound || DRIVER="snd-dummy"
 modprobe ${MODPRV} ${DRIVER}
 DRIVERLIST="${DRIVERLIST} ${DRIVER} "
+modprobe -a ${MODPRV} snd_pcm_oss snd_mixer_oss
 
 # remaining drivers listed in /tmp/hwsetup.info
 cat /tmp/hwsetup.info| while read LINE ; do
@@ -356,10 +357,13 @@ done
 # is initialized 
 ( usleep 20 &&  
 hwsetup -v > /tmp/hwsetup.info
+# check if USB mouse and/or keyboard is connected
 strinfile "genericwheelusb" /tmp/hwsetup.info && modprobe ${MODPRV} usbhid
-if strinfile "IDE" /tmp/hwsetup.info ;then
+# fixme - usb keyboard??
+if strinfile "IDE" /tmp/hwsetup.info ; then
   strinfile "CDROM" /tmp/hwsetup.info && modprobe ${MODPRV} ide_cd
   strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} ide_disk &
+  usleep 5
 fi ) &
 
 # configure some variables from configuration file - wait for dhcp or ldap

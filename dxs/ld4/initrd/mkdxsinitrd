@@ -3,11 +3,11 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 26-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-01-2006
 #		Nico Dietrich
 #		Blub
 #
-# Version:      0.3.0b
+# Version:      0.3.0c
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 
@@ -82,7 +82,7 @@ repco()
 {
 local FILENAME=$1
 # do not forget to define all variables which should be replaced within
-# the start and configuration scripts
+# the start and configuration scripts. All comment lines will be deleted.
 if [ -d initrd-stuff/${FILENAME} ] ; then
   [ -d ${INSTDIR}/${FILENAME} ] || mkdir -p ${INSTDIR}/${FILENAME}
 else
@@ -96,6 +96,7 @@ else
         -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
         -e "s,@@@DISTRO@@@,${DISTRO},g" \
         -e "s,@@@NETIF@@@,${NET_IF},g" \
+	-e "/^# .*/d" \
           initrd-stuff/${FILENAME} >> ${INSTDIR}/${FILENAME}
   fi
 fi
@@ -395,7 +396,7 @@ for bbins in \
 done
 
 # style of hotplug/udev/dev (for etc directories see above!!)
-for bbins in udev udevstart
+for bbins in udev udevd udevstart
   do
   cobi ${bbins} bin || echo "Program ${bbins} not found"
 done
@@ -444,6 +445,7 @@ if [ -z "$INITRD_PATH" ] ; then
   INITRD_PATH="/tmp/dxsinitrd.gz"
 fi
 
+# put all needed modules into initial ramdisk
 mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
 for module in af_packet ${NWMODULES} ${FSMODULES}; do
   mod=`cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
@@ -463,9 +465,9 @@ for module in af_packet ${NWMODULES} ${FSMODULES}; do
 	mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc/
 	mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd
         cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc/sunrpc.ko \
-	 ${INSTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc/ # &>/dev/null
+	 ${INSTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc &>/dev/null
 	cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd/lockd.ko \
-         ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd #&>/dev/null
+         ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd &>/dev/null
       ;;
     esac
   fi

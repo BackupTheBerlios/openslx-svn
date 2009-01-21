@@ -4,13 +4,13 @@
 #		functions file). This file is the main base for the 
 #		following SuSE distributions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 26-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-01-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.1a
+# Version:      0.2.1b
 
 # distro specific stuff to initialize
 preinit () {
@@ -314,6 +314,9 @@ config_dm_entry yes
 consolefont () {
 echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
   >>/mnt/etc/${D_INITDIR}/boot.ld
+sed -e "s,RC_LANG=.*,RC_LANG=\"${LANG}\" # added in initrd," \
+  /mnt/etc/${D_SYSCONFDIR}/language > /etc/language
+cp /etc/language /mnt/etc/${D_SYSCONFDIR}/language
 }
 
 # acpi and powersave
