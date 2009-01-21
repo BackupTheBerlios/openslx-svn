@@ -159,13 +159,20 @@ sub addExportToConfigDB
 	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
 	$openslxDB->connect();
 
-	# insert new export if it doesn't already exist in DB:
-	my $exportName = $self->{'vendor-os-name'};
-	my $export
-		= $openslxDB->fetchExportByFilter({
-			'name' => $exportName,
-			'type' => $self->{'export-type'},
-		});
+    my $exportName = $self->{'vendor-os-name'};
+    my $export
+        = $openslxDB->fetchExportByFilter({ 'name' => $exportName });
+	if (defined $export && $export->{type} ne $self->{'export-type'}) {
+        # export with default name already exists (with different type),
+        # so we try appending the type to generate a unique name:
+        $exportName = "$self->{'vendor-os-name'}-$self->{'export-type'}";
+        $export
+            = $openslxDB->fetchExportByFilter({
+                'name' => $exportName,
+                'type' => $self->{'export-type'},
+            });
+    }
+    # insert new export if it doesn't already exist in DB:
 	if (defined $export) {
 		vlog 0, _tr("No need to change export '%s' in OpenSLX-database.\n",
 					$exportName);
