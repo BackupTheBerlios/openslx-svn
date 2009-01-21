@@ -48,6 +48,7 @@ preinit
 
 # start device auto discovery service - distro specific function
 udev_hotplug
+
 # set defaults and create waitfor files
 TMPFSSIZE="50%"
 COWSIZE="50%"
@@ -71,7 +72,11 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       DEBUGLEVEL=1;;
     # debug level
     debug=*)
-      DEBUGLEVEL=${opts#debug=};;
+      DEBUGLEVEL=${opts#debug=}
+      # Handle empty, extremly large or non-numeric input
+      [ -z "$DEBUGLEVEL" ] && DEBUGLEVEL=0
+      [[ "101" < "$DEBUGLEVEL" ]]; DEBUGLEVEL=100
+      ;;
     # if configuration should be gathered by dhcp client
     dhcp)
       DHCP="yes"

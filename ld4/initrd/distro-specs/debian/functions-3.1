@@ -34,12 +34,16 @@ config_distro () {
 # udev/hotplug - auto device discovery service
 # Result: 1 is bad, 0 is good
 udev_hotplug () {
-  local result=1
+  local result=0
   [ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "$df_errhotpl" nonfatal
   echo "Enabling hotplug/udev"
-  udevstart && result=0
-  udevtrigger && result=0
-  udevd -d || result=1
+  #udevstart && result=0
+  #udevtrigger && result=0
+  udevd --daemon || result=1
+  [ ! -e /sbin/udevsend ] && result=1
+  echo "/sbin/udevsend/" > /proc/sys/kernel/hotplug
+  mkdir -p /dev/.udev/db /dev/.udev/queue
+  trigger_device_events
   return $result
 }
 
@@ -61,7 +65,7 @@ local start="$2"
 local stop="$3"
 # empty runlevel links - decision on running certain services is
 # passed via configuration
-# fixme!! "stop" seems not to be used in Debian!?
+# "stop" seems not to be used in Debian!? - It is. Felix
 for i in rc2.d/K$stop$script rc3.d/K$stop$script \
          rc2.d/S$start$script rc3.d/S$start$script ; do
   if ! [ -f /mnt/etc/init.d/$script ]; then
@@ -82,7 +86,7 @@ local info=$3
 }
 
 # group of functions for the normal runlevels - first parameter is start
-# second stop (fixme: is "stop" needed in Debian??)
+# second stop (fixme: is "stop" needed in Debian?? - Yep)
 # function for ntp configuration
 config_ntp () {
 if [ -f /mnt/etc/init.d/ntp ] ; then
@@ -234,8 +238,8 @@ config_gdm () {
     >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld
   # check for gdm user in passwd and group files
   # fixme!!
-  echo "gdm:x:113:">>/mnt/etc/group
-  echo "gdm:x:106:113:Gnome Display Manager:/var/lib/gdm:/bin/false" \
+#  echo "gdm:x:113:">>/mnt/etc/group
+#  echo "gdm:x:106:113:Gnome Display Manager:/var/lib/gdm:/bin/false" \
     >>/mnt/etc/passwd
 }
 

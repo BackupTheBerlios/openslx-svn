@@ -422,7 +422,7 @@ for bbins in \
 done
 
 # style of hotplug/udev/dev (for etc directories see above!!)
-for bbins in udev udevd udevstart udevtrigger
+for bbins in udev udevd udevstart udevtrigger udevsend
   do
   cobi ${bbins} bin &>/dev/null || echo "Program ${bbins} not found"
 done

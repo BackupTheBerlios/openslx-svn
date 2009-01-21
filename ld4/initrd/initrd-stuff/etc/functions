@@ -41,10 +41,6 @@ trigger_device_events () {
 # produce error message and if $2 is empty run (debug) shell 
 error () {
 local e_msg="$1"
-# fixme!! DEBUGLEVEL is exported rather early, so checking it here is
-# redundant ...
-if [ -z "$DEBUGLEVEL" ]; then DEBUGLEVEL=0
-fi
 # check if LOGFILE is really writeable
 if [ -n "${LOGFILE}" ] ; then
   [ "${LOGFILE}" != "/dev/null" ] && \
