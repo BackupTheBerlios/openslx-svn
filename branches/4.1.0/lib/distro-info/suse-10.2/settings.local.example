@@ -1,6 +1,7 @@
-# Use local installation sources.
-$repository{base}->{url} = "ftp://localhost/pub/opensuse/distribution/10.2/repo/oss";
-$repository{base_update}->{url} = "ftp://localhost/pub/suse/update/10.2";
+# use local installation sources
+$repository{'base'}->{'url'} = "local://localhost:5080/srv/ftp/pub/opensuse/distribution/10.2/repo/oss";
+$repository{'base_non-oss'}->{'url'} = "local://localhost:5081/srv/ftp/pub/opensuse/distribution/10.2/repo/non-oss";
+$repository{'base_update'}->{'url'} = "local://localhost:5082/srv/ftp/pub/suse/update/10.2";
 
 # Add a new selection:
 # $selection{'my-kde'} = "$selection{default}

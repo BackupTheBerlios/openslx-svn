@@ -79,6 +79,20 @@ sub new
 	return bless $self, $class;
 }
 
+sub DESTROY
+{
+	my $self = shift;
+
+	if ($self->{'local-http-server-master-pid'} == $$) {
+		# we are the master process, so we clean up all the servers that we
+		# have started:
+		while(my ($localURL, $pid) = each %{$self->{'local-http-servers'}}) {
+			vlog 1, _tr("stopping local HTTP-server for URL '%s'.", $localURL);
+			kill TERM => $pid;
+		}
+	}
+}
+
 sub initialize
 {
 	my $self = shift;
@@ -160,13 +174,15 @@ sub installVendorOS
 	}
 	$self->createVendorOSPath();
 
+	$self->startLocalURLServersAsNeeded();
+
 	my $baseSystemFile = "$self->{'vendor-os-path'}/.openslx-base-system";
 	if (-e $baseSystemFile) {
 		vlog 0, _tr("found existing base system, continuing...\n");
 	} else {
 		# basic setup, stage1a-c:
 	 	$self->setupStage1A();
-	 	executeInSubprocess( sub {
+	 	callInSubprocess( sub {
 	 		# some tasks that involve a chrooted environment:
 			$self->changePersonalityIfNeeded();
 	 		$self->setupStage1B();
@@ -176,7 +192,7 @@ sub installVendorOS
 		slxsystem("touch $baseSystemFile");
 			# just touch the file, in order to indicate a basic system
 	}
-	executeInSubprocess( sub {
+	callInSubprocess( sub {
 		# another task that involves a chrooted environment:
 		$self->changePersonalityIfNeeded();
 		$self->setupStage1D();
@@ -268,7 +284,10 @@ sub updateVendorOS
 		die _tr("can't update vendor-OS '%s', since it doesn't exist!\n",
 				$self->{'vendor-os-path'});
 	}
-	executeInSubprocess( sub {
+
+	$self->startLocalURLServersAsNeeded();
+
+	callInSubprocess( sub {
 		$self->changePersonalityIfNeeded();
 		$self->updateStage1D();
 	});
@@ -489,6 +508,14 @@ sub sortRepositoryURLs
 	my $self = shift;
 	my $repoInfo = shift;
 
+	if ($repoInfo->{'url'} =~ m[^local:]) {
+		# a local URL blocks all the others, in order to avoid causing
+		# (external) network traffic:
+		my $localURL = $repoInfo->{'url'};
+		$localURL =~ s[^local:][http:];
+		return [ $localURL ];
+	}
+
 	my %urlInfo;
 	# specified URL always has highest precedence:
 	$urlInfo{$repoInfo->{url}} = 0		if defined $repoInfo->{url};
@@ -544,6 +571,38 @@ try_next_url:
 		push @foundFiles, $foundFile;
 	}
 	return @foundFiles;
+}
+
+sub startLocalURLServersAsNeeded
+{
+	my $self = shift;
+
+	$self->{'local-http-server-master-pid'} = $$;
+
+	foreach my $repoInfo (values %{$self->{'distro-info'}->{repository}}) {
+		
+		next unless $repoInfo->{'url'} =~ m[^local:];
+		my $localURL = $repoInfo->{url};
+		if (!exists $self->{'local-http-servers'}->{$localURL}) {
+			my $busyboxName
+				= $self->hostIs64Bit()
+					? 'busybox.x86_64'
+					: 'busybox.i586';
+			my $busybox = "$openslxConfig{'share-path'}/busybox/$busyboxName";
+			my $port = 5080;
+			if ($localURL =~ m[:(\d+)/]) {
+				$port = $1;
+			}
+			my $pid = executeInSubprocess(
+				$busybox, "httpd",
+				'-p', $port, 
+				'-h', '/',
+				'-f'
+			);
+			vlog 1, _tr("started local HTTP-server for URL '%s'.", $localURL);
+			$self->{'local-http-servers'}->{$localURL} = $pid;
+		}
+	}
 }
 
 sub setupStage1A

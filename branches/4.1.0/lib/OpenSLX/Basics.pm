@@ -23,7 +23,8 @@ $VERSION = 1.01;
 @EXPORT = qw(
 	&openslxInit %openslxConfig %cmdlineConfig
 	&_tr &trInit
-	&warn &die &executeInSubprocess &slxsystem
+	&warn &die 
+	&callInSubprocess &executeInSubprocess &slxsystem
 	&vlog
 	&instantiateClass
 	&addCleanupFunction &removeCleanupFunction
@@ -298,7 +299,7 @@ sub _tr
 }
 
 # ------------------------------------------------------------------------------
-sub executeInSubprocess
+sub callInSubprocess
 {
 	my $childFunc = shift;
 
@@ -321,6 +322,23 @@ sub executeInSubprocess
 	if ($?) {
 		exit $?;
 	}
+}
+
+# ------------------------------------------------------------------------------
+sub executeInSubprocess
+{
+	my @cmdlineArgs = @_;
+
+	my $pid = fork();
+	if (!$pid) {
+		# child...
+		# ...exec the given cmdline:
+		exec(@cmdlineArgs);
+		die _tr("error in exec('%s')! (%s)", join(' ', @cmdlineArgs), $!);
+	}
+
+	# parent...
+	return $pid;
 }
 
 # ------------------------------------------------------------------------------
