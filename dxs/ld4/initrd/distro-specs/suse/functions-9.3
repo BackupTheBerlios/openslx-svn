@@ -4,18 +4,29 @@
 #		functions file). This file is the main base for the 
 #		following SuSE distributions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 05-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-02-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.1c
+# Version:      0.2.1d
 
 # distro specific stuff to initialize
 preinit () {
   # do nothing yet
   :
+}
+
+# udev/hotplug - auto device discovery service
+udev_hotplug () {
+local result=0
+[ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "  Hotplug subdirectory \
+is missing! udev(d) might not work as expected." nonfatal
+echo "Enabling hotplug/udev"
+udevstart || result=1
+udevd -d || result=1
+return $result
 }
 
 # linking runlevel scripts

@@ -3,13 +3,29 @@
 #		changes should be done there, version specific changes for
 #		the 10.0 here.
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-02-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
 # Version:      0.2.1c
+
+# udev service
+udev_hotplug () {
+local result=0
+echo "Starting udev"
+udevstart || result=1
+if [ -x /bin/udevd ] ; then
+  export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)
+  export UDEVD_EVENT_TIMEOUT=1
+  echo "" > /proc/sys/kernel/hotplug
+  udevd --daemon || result=1
+else error "  udev daemon is not available. Some devices might not \
+apprear." nonfatal
+fi
+return $result
+}
 
 # acpi and powersave have changed
 config_acpi () {

@@ -3,7 +3,7 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-02-2006
 #		Nico Dietrich
 #		Blub
 #
@@ -92,6 +92,8 @@ if [ -d initrd-stuff/${FILENAME} ] ; then
 else
   if file initrd-stuff/${FILENAME}| grep "ELF" &>/dev/null ; then
     cp initrd-stuff/${FILENAME} ${INSTDIR}/${FILENAME}
+  elif [ -L initrd-stuff/${FILENAME} ] ; then
+    cp -a initrd-stuff/${FILENAME} ${INSTDIR}/${FILENAME%/*}
   else
     sed -e "s,@@@INSTDIR@@@,${INSTDIR},g" \
         -e "s,@@@NWMODULES@@@,${NWMODULES},g" \

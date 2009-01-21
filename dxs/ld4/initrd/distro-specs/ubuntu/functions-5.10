@@ -16,6 +16,22 @@ preinit () {
   echo "dhcp:x:101:101::/nonexistent:/bin/false">>/etc/passwd
 }
 
+# udev service
+udev_hotplug () {
+local result=0
+echo "Starting udev"
+udevstart || result=1
+if [ -x /bin/udevd ] ; then
+  export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)
+  export UDEVD_EVENT_TIMEOUT=1
+  echo "" > /proc/sys/kernel/hotplug
+  udevd --daemon || result=1
+else error "  udev daemon is not available. Some devices might not \
+apprear." nonfatal
+fi
+return $result
+}
+
 # linking runlevel scripts
 rllinker () {
 local script="$1"

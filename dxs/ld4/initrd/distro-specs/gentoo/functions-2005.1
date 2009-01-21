@@ -1,3 +1,19 @@
+# udev service - not checked!
+udev_hotplug () {
+local result=0
+echo "Starting udev"
+udevstart || result=1
+if [ -x /bin/udevd ] ; then
+  export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)
+  export UDEVD_EVENT_TIMEOUT=1
+  echo "" > /proc/sys/kernel/hotplug
+  udevd --daemon || result=1
+else error "  udev daemon is not available. Some devices might not \
+apprear." nonfatal
+fi
+return $result
+}
+
 # initialize boot.ld - skript to be executed during early system startup
 # (before most of the normal boot init scripts)
 # this script should operate like a normal runlevel script
