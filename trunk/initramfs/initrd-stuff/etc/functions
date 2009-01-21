@@ -403,7 +403,7 @@ if [ -n "$FILESRC" ] ; then
   tftpserver=$(uri_token $FILESRC server)
   tftpgetunpack $tftp $cfgfile $tftpserver
 else
-  cfgdir="/tftpboot/client-config/"
+  cfgdir="client-conf"
   local tftpserver=$serverip
   # try to get configuration files successively; start with distro client
   # and try last distro default ...
