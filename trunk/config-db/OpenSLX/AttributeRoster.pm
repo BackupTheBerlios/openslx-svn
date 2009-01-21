@@ -398,15 +398,30 @@ An hash-ref with info about all known attributes.
 
 sub getAttrInfo
 {
-	my $class = shift;
-	my $name  = shift;
+	my $class  = shift;
+	my $params = shift;
 
 	$class->_init() if !%AttributeInfo;
 
-	if (defined $name) {
-		my $attrInfo = $AttributeInfo{$name};
+	if (defined $params->{name}) {
+		my $attrInfo = $AttributeInfo{$params->{name}};
 		return if !defined $attrInfo;
-		return { $name => $AttributeInfo{$name} };
+		return { $params->{name} => $AttributeInfo{$params->{name}} };
+	}
+	elsif (defined $params->{scope}) {
+		my %MatchingAttributeInfo;
+		my $lcScope = lc($params->{scope});
+		foreach my $attr (keys %AttributeInfo) {
+			my $attrScope = '';
+			if ($attr =~ m{^(.+?)::}) {
+				$attrScope = $1;
+			}
+			if ((!$attrScope && $lcScope eq 'core') 
+			|| lc($attrScope) eq $lcScope) {
+				$MatchingAttributeInfo{$attr} = $AttributeInfo{$attr};
+			}
+		}
+		return \%MatchingAttributeInfo;
 	}
 
 	return \%AttributeInfo;
