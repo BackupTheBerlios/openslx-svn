@@ -222,27 +222,27 @@ add_splash () {
 
 splashsizes="$SPLASH"
 splashsizes="800x600 1024x768 1280x1024 1400x1050 1600x1200"
-splash_bin=$(which splash)
+splash_bin=$(chroot $ROOTDIR which splash)
 splash_image=
 THEME="SuSE"
 if [ -n "$splashsizes" -a -n "$splash_bin" ]; then
 
   themes_dir=
   if [ -d "$ROOTDIR/etc/bootsplash/themes" ]; then
-    themes_dir="$ROOTDIR/etc/bootsplash/themes"
+    themes_dir="/etc/bootsplash/themes"
   elif [ -d "$ROOTDIR/usr/share/splash/themes" ]; then
-    themes_dir="$ROOTDIR/usr/share/splash/themes"
+    themes_dir="/usr/share/splash/themes"
   fi
 
   echo -ne "Bootsplash:\t"
-  if [ -n "$themes_dir" -a \
-     -d "$themes_dir/$THEME" -o -L "$themes_dir/$THEME" ]; then
+  if [ -n "$ROOTDIR/$themes_dir" -a \
+     -d "$ROOTDIR/$themes_dir/$THEME" -o -L "$ROOTDIR/$themes_dir/$THEME" ]; then
     for size in $splashsizes; do
       bootsplash_picture="$themes_dir/$THEME/images/bootsplash-$size.jpg"
       cfgname="$themes_dir/$THEME/config/bootsplash-$size.cfg"
-      if [ ! -r $cfgname ] ; then
+      if [ ! -r $ROOTDIR/$cfgname ] ; then
         echo "disabled for resolution $size"
-      elif [ ! -r $bootsplash_picture ] ; then
+      elif [ ! -r $ROOTDIR/$bootsplash_picture ] ; then
         echo "no image for resolution $size"
       else
         echo -n "${splash_image:+, }$THEME ($size)"
@@ -257,7 +257,8 @@ fi
 
 # Include bootsplash image
 for image in $splash_image; do
-  $splash_bin -s -f $image >> $INSTDIR/bootsplash
+  # fixme: ugly hack to have the splash binary
+  chroot $ROOTDIR $splash_bin -s -f $image >> ${INSTDIR}/bootsplash
 done
 }
 
