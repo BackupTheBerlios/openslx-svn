@@ -1,9 +1,0 @@
-# copy this file to 'settings' and edit it as you please
-
-# use local installation sources
-$repository{'base'}->{'url'} = "/srv/ftp/pub/debian";
-
-# Add a new selection:
-# $selection{'my-kde'} = "$selection{default}
-# foo
-# bar";

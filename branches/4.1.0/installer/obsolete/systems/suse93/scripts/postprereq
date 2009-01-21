@@ -1,5 +1,0 @@
-#! /bin/bash
-
-SLX_STAGE1_PATH=$1
-
-chown root: ${SLX_STAGE1_PATH}/etc/{group,passwd,shadow}
