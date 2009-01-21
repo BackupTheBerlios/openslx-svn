@@ -3,7 +3,7 @@
 # It's also possible to define addditional values here.
 
 # Use a local installation source.
-SLX_INST_SOURCE_BASEURL_opensuse102="ftp://gab/pub/opensuse/distribution/10.2/repo/oss"
+SLX_INST_SOURCE_BASEURL="ftp://gab/pub/opensuse/distribution/10.2/repo/oss"
 SLX_INST_SOURCE_BASEURL_opensuse102update="ftp://gab/pub/suse/update/10.2"
 
 # Add more packages.
