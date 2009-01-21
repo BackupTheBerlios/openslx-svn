@@ -204,7 +204,7 @@ for xml in *.xml;do
     if [ ${active} -eq 1  -a  ${xdm} = "true" ]; then
 
       # create desktopentry
-      echo -e "\nCreating runfiles for ${image} and pool ${i}\n"
+      echo -e "\nCreating xdm entry for ${image} and pool ${i}\n"
       # create the desktopentry
       #TODO: change it with < EOF, >> isnt nice for so much lines
       echo "Desktop entry for ${image}" \

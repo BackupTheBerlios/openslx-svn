@@ -33,11 +33,9 @@ totalmem=
 permem=66
 
 # virtual fd/cd/dvd and drive devices, floppy b: for configuration
-if [ ! -d /sys/block/fd0 ]; then
-  floppya="FALSE"
-else
-  floppya="TRUE"
-fi
+#floppya is always false, if we have a floppy device or not isn't
+#important.
+floppya="FALSE"
 floppyb="TRUE"
 floppybname="/etc/vmware/loopimg/fd.img"
 cdr_1="FALSE"
