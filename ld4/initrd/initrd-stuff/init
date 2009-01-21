@@ -431,7 +431,7 @@ usbfs\t\t/proc/bus/usb\tusbfs\t\tnoauto\t\t 0 0" >/mnt/etc/fstab || \
   error "$init_fstab"
 echo -e "rootfs / rootfs rw 0 0\ninitramdevs /dev tmpfs rw\
  0 0" > /mnt/etc/mtab
-[ -z "$UNIONFS" ] && echo -e "ramfs /tmp tmpfs rw 0 0\nramfs /root\
+[ -z "$UNIONFS" ] && echo -e "ramfs /tmp tmpfs rw 0 0\nramfs /root \
 tmpfs rw 0 0\n" >> /mnt/etc/mtab
  
 # copy library cache if generated

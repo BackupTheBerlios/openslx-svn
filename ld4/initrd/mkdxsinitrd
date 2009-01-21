@@ -3,15 +3,19 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-05-2006
 #		Nico Dietrich
 #               Felix Endres
 #
-# Version:      0.3.1g
+# Version:      0.3.2a
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 
+# debug level of script itself
 DEBUG=1
+# debug level of the initramfs (to trigger the addition of specific 
+# binaries and kernel modules)
+IRFSDEBUG=1
 COMETCEXCL="XF86Config*\nissue*\nmtab*\nfstab*\n"
 COMDIRINDXS="/tmp/scratch /var/lib/nobody"
 
@@ -60,7 +64,7 @@ usage()
   echo "        mkdxsinitrd  versucht  die  aktuellste  Kernelversion zu finden."
   echo "        Falls  dies  nicht  klappt,  oder  eine   andere   Kernelversion"
   echo "        gewünscht  ist  kann  diese  hier angegeben werden (funktioniert"
-  echo "        natürlich nur für auf dem  Hostsystem  vorhandene  Kernelversio‐"
+  echo "        natürlich nur für auf dem  Hostsystem  vorhandene  Kernelversion"
   echo "        nen)."
   echo "  -i Pfad"
   echo "        Optionale  Angabe wo die erstellte ramdisk hingeschrieben werden"
@@ -74,9 +78,9 @@ usage()
   echo "  -r Pfad"
   echo "        Pfad zum Wurzelverzeichnis des zu exportierenden  Betriebsystems"
   echo "        (z.B. /nfsroot)."
-  echo "  -s Bildgröße"
-  echo "        Größenangabe des splash images."
-  echo "  -d Name"
+  echo "  -s screensize (for splash)"
+  echo "  -d debug (add special modules to initramfs)"
+  echo "  -D Name"
   echo "        Name der Distribution der Betriebsystemvorlage"
   echo "  -v Version"
   echo "        Versionskennung der Distribution der Betriebsystemvorlage"
@@ -237,7 +241,8 @@ while getopts :hgk:i:r:o:s:f:n:Sut:d:v:I:V:a: a ; do
       r)  echo "-r requires root dir parameter";;
       s)  echo "-s requires image size(s)";;
       t)  echo "-t requires tmp dir parameter";;
-      d)  echo "-d requires linux distribution name";;
+      d)  echo "-d requires debug level (integer)";;
+      D)  echo "-D requires linux Distribution name";;
       v)  echo "-v requires linux distribution version";;
       I)  echo "-I requires network interface parameter";;
       V)  echo "-V requires an executable to run inside linuxrc";;
@@ -254,7 +259,8 @@ while getopts :hgk:i:r:o:s:f:n:Sut:d:v:I:V:a: a ; do
     r)  ROOTDIR=$OPTARG;;
     s)  SPLASH=$OPTARG;;
     t)  INSTDIR=$OPTARG;;
-    d)  DISTRO=$OPTARG;;
+    d)  IRFSDEBUG=$OPTARG;;
+    D)  DISTRO=$OPTARG;;
     v)  DISTRO_VER=$OPTARG;;
     I)  NET_IF=$OPTARG;;         # Not in use 
     a)  acpi_dsdt="$OPTARG";;    # Not in use
@@ -415,11 +421,13 @@ cobi $tftp bin
 cp /lib/libnss_files.so.2 ${INSTDIR}/lib
 
 # debug binaries
-for bbins in \
+if [ $IRFSDEBUG -gt 2 ] ; then
+  for bbins in \
     date lsmod lsof ps strace time
   do
-  cobi ${bbins} bin || echo "Program ${bbins} not found"
+    cobi ${bbins} bin || echo "Program ${bbins} not found"
 done
+fi
 
 # style of hotplug/udev/dev (for etc directories see above!!)
 for bbins in udev udevd udevstart udevtrigger udevsend
@@ -499,13 +507,18 @@ fi
 
 # define modules to put into initial ramdisk for debugging
 #DEBUGMODULES="uhci_hcd usbhid"
-DEBUGMODULES=""
+if [ $IRFSDEBUG -gt 1 ] ; then
+  DEBUGMODULES="uhci-hcd ohci-hcd usbhid"
+else
+  DEBUGMODULES=""
+fi
 
 # put all needed modules into initial ramdisk
 mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
 for module in af_packet unix ${NWMODULES} ${FSMODULES} ${DEBUGMODULES}; do
   mod=`cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
 2>/dev/null`
+
   if [ -n "$mod" ] ; then
     mpath=${INSTDIR}/${mod%/*}
     mkdir -p ${mpath}

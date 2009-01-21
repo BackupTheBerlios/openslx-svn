@@ -240,7 +240,8 @@ configure() {
 
   # evtl. optional? --> besser in ein komplett eigenes Setup-Skript fuer
   # machine-setup
-  ask "Where automount home directories from? (A.B.C.D:/home-dir): " amt $server":/home"
+  ask "Where automount home directories from? (A.B.C.D:/home-dir): " \
+    amt $server":/home"
 
   # more information here!! set useful default
   ask "Which debug level should be used? " debuglevel $debuglevel
@@ -367,7 +368,8 @@ separated numbers) " kernel_choice "${kernel_choice}"
     echo "Creating initial ramdisk for ${current_kernel}"
     current_initrd=${tftpbootdir}/initrd-dxs-${current_kernel}
     [ -f ${current_initrd} ] && rm ${current_initrd}
-    ./mkdxsinitrd -f "$fsmod" -r ${rootdir} -k ${current_kernel} -i ${current_initrd}
+    ./mkdxsinitrd -f "$fsmod" -r ${rootdir} -k ${current_kernel} \
+      -i ${current_initrd} -d ${debuglevel}
 
     ln -sf ${kernel[${choice[$j]}]} ${tftpbootdir}/vmlinuz-${current_kernel}
     j=$j+1
