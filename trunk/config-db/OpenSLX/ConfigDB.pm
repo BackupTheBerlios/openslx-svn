@@ -445,15 +445,6 @@ sub addSystem
 		if (!length($valRow->{label})) {
 			$valRow->{label} = $valRow->{name};
 		}
-		if (!length($valRow->{ramfs_debug_level})) {
-			$valRow->{ramfs_debug_level} = '0';
-		}
-		if (!length($valRow->{ramfs_use_glibc})) {
-			$valRow->{ramfs_use_glibc} = '0';
-		}
-		if (!length($valRow->{ramfs_use_busybox})) {
-			$valRow->{ramfs_use_busybox} = '1';
-		}
 	}
 
 	return $self->{'meta-db'}->addSystem($valRows);
