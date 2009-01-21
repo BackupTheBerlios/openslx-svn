@@ -245,12 +245,12 @@ sub writePXEMenus
 	if (!-e "$pxePath/pxelinux.0") {
 		my $pxelinux0Path
 			= "$openslxConfig{'share-path'}/tftpboot/pxelinux.0";
-		system(qq[cp -a "$pxelinux0Path" $pxePath/]);
+		system(qq[cp -p "$pxelinux0Path" $pxePath/]);
 	}
 	if (!-e "$pxePath/menu.c32") {
 		my $menuc32Path
 			= "$openslxConfig{'share-path'}/tftpboot/menu.c32";
-		system(qq[cp -a "$menuc32Path" $pxePath/]);
+		system(qq[cp -p "$menuc32Path" $pxePath/]);
 	}
 
 	my @clients = fetchClientsByFilter($openslxDB);
@@ -357,7 +357,7 @@ sub writeSystemPXEFiles
 		}
 		mkdir $pxeSysPath;
 		vlog 1, _tr('copying kernel %s to %s/kernel', $kernelFile, $pxeSysPath);
-		system(qq[cp -a "$kernelFile" $pxeSysPath/kernel])		unless $dryRun;
+		system(qq[cp -p "$kernelFile" $pxeSysPath/kernel])		unless $dryRun;
 
 		generateInitalRamFS($info, $vendorOS, $pxeSysPath);
 	}
