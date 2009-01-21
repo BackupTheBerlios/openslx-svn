@@ -169,7 +169,7 @@ $DbSchema = {
 			'name:s.128',		# name of group
 			'comment:s.1024',	# internal comment (optional, for admins)
 			'priority:i',		# priority, used for order in group-list
-								# (from 0-lowest to 10-highest)
+								# (from 0-highest to 99-lowest)
 			@sharedAttributes,
 		],
 		'group_client_ref' => [

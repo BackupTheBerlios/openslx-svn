@@ -257,6 +257,34 @@ sub rollbackTransaction
 
 =over
 
+=cut
+
+=item C<getColumnsOfTable($tableName)>
+
+Returns the names of the columns of the given table.
+
+=over
+
+=item Param C<tableName>
+
+The name of the DB-table whose columns you'd like to retrieve.
+
+=item Return Value
+
+An array of column names.
+
+=back
+
+=cut
+
+sub getColumnsOfTable
+{
+	my $self      = shift;
+	my $tableName = shift;
+
+	return map { (/^(\w+)\W/) ? $1 : $_; } @{$DbSchema->{tables}->{$tableName}};
+}
+
 =item C<fetchVendorOSByFilter([%$filter], [$resultCols])>
 
 Fetches and returns information about all vendor-OSes that match the given
@@ -2070,7 +2098,7 @@ sub mergeDefaultAndGroupAttributesIntoClient
 	# (ordered by priority from highest to lowest):
 	my @groupIDs = $self->fetchGroupIDsOfClient($client->{id});
 	my @groups   =
-	  sort { $b->{priority} <=> $a->{priority} }
+	  sort { $a->{priority} <=> $b->{priority} }
 	  $self->fetchGroupByID(\@groupIDs);
 	foreach my $group (@groups) {
 		# merge configuration from this group into the current client:
