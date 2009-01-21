@@ -23,10 +23,13 @@ use OpenSLX::Basics;
 
 my $abstract = q[
 slxsetup.pl
-	This script provides an easy way to show & change the local OpenSLX
-	settings. As an alternative you can always edit the file
-		/etc/opt/openslx/settings.local
-	directly.
+    This script can be used to show or change the local settings for OpenSLX.
+
+    Any cmdline-argument passed to this script will change the local OpenSLX
+    settings file (usually /etc/opt/openslx/settings.local).
+
+    If you invoke the script without any arguments, it will print the current
+    settings and exit.
 ];
 
 my (
@@ -166,7 +169,7 @@ Runs the script without printing anything.
 
 =item B<--remove=<string>>
 
-Removes key B<s> from settings (apply more than once to remove several keys).
+Removes given key from settings (apply more than once to remove several keys).
 
 =back
 
