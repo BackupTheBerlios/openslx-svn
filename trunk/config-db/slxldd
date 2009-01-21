@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 #
-# slxldd.pl - OpenSLX-rewrite of ldd that works on multiple architectures.
+# slxldd - OpenSLX-rewrite of ldd that works on multiple architectures.
 #
 # (c) 2006 - OpenSLX.com
 #
@@ -22,6 +22,14 @@ use File::Glob ':globally';
 use Getopt::Long;
 use Pod::Usage;
 
+# add the lib-folder and the folder this script lives in to perl's search
+# path for modules:
+use FindBin;
+use lib "$FindBin::RealBin/../lib";
+	# production path
+use lib "$FindBin::RealBin";
+	# development path
+
 use OpenSLX::Basics;
 
 my (
@@ -34,6 +42,7 @@ my (
 	%libInfo,
 );
 
+$rootPath = '/';
 GetOptions(
 	'help|?' => \$helpReq,
 	'root-path=s' => \$rootPath,
@@ -69,6 +78,10 @@ foreach my $file (@ARGV) {
 	} else {
 		# relative paths are relative to $rootPath:
 		$file = "$rootPath/$file";
+	}
+
+	if (!-e $file) {
+		die _tr("slxldd: unable to find file '%s'\n", $file);
 	}
 
 	next if `file $file` =~ m[shell\s+script];
@@ -189,6 +202,8 @@ Prints a brief help message and exits.
 Sets the root folder that is used when searching for libraries. In order to
 collect the loader-settings, etc/ld.so.conf is read relative to this path and
 all libraries are sought relative to this path, too (a.k.a. a virtual chroot).
+
+Defaults to '/'.
 
 =item B<--version>
 
