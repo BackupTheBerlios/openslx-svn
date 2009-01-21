@@ -185,7 +185,11 @@ sub initDistroInfo
 	";
 
 	$self->{config}->{'selection'} = {
-		'default' => "",
+		'default' => "
+			dhcp-client
+			nbd
+			squashfs-kmp-default
+		",
 	}
 }
 
