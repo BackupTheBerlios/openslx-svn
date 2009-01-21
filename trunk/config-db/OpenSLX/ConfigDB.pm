@@ -863,9 +863,15 @@ sub aggregatedSystemFileInfoFor
 	my $system = shift;
 
 	my $export = $self->fetchExportByID($system->{export_id});
-	return () if !$export || !length($export->{name});
+	if (!defined $export) {
+		die _tr("DB-problem: system '%s' references export with id=%s, but that doesn't exist!",
+				$system->{name}, $system->{export_id});
+	}
 	my $vendorOS = $self->fetchVendorOSByID($export->{vendor_os_id});
-	return () if !$vendorOS || !length($vendorOS->{name});
+	if (!defined $vendorOS) {
+		die _tr("DB-problem: export '%s' references vendor-OS with id=%s, but that doesn't exist!",
+				$export->{name}, $export->{vendor_os_id});
+	}
 	my $kernelPath
 		= "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}/boot";
 
@@ -881,6 +887,8 @@ sub aggregatedSystemFileInfoFor
 	my $info = { %$system };
 	$info->{'kernel-file'} = "$kernelPath/$system->{kernel}";
 	$info->{'export-uri'} = $exportURI;
+	$info->{'export'} = $export;
+	$info->{'vendor-os'} = $vendorOS;
 	return $info;
 }
 

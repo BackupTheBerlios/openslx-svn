@@ -302,9 +302,6 @@ sub generateInitalRamFS
 
 	vlog 1, _tr('generating initialramfs %s/initramfs', $pxeSysPath);
 	my $cmd = "$openslxConfig{'bin-path'}/slxmkramfs ";
-	if ($setup->{ramfs_use_glibc}) {
-		$cmd .= '-g ';
-	}
 	if ($setup->{ramfs_use_busybox}) {
 		$cmd .= '-b ';
 	}
@@ -358,13 +355,11 @@ sub writeSystemPXEFiles
 {
 	my $system = shift;
 
-	my $pxePath = "$tftpbootPath/pxe";
-
-	my $export = $openslxDB->fetchExportByID($system->{export_id});
-	my $vendorOS = $openslxDB->fetchVendorOSByID($export->{vendor_os_id});
 	my $info = $openslxDB->aggregatedSystemFileInfoFor($system);
 	my $kernelFile = $info->{'kernel-file'};
 	my $extSysID = externalIDForSystem($info);
+
+	my $pxePath = "$tftpbootPath/pxe";
 	my $pxeSysPath = "$pxePath/$extSysID";
 	if (-e $pxeSysPath) {
 		die _tr('PXE-system %s already exists!', $pxeSysPath);
@@ -373,7 +368,7 @@ sub writeSystemPXEFiles
 	vlog 1, _tr('copying kernel %s to %s/kernel', $kernelFile, $pxeSysPath);
 	system(qq[cp -p "$kernelFile" $pxeSysPath/kernel])		unless $dryRun;
 
-	generateInitalRamFS($info, $vendorOS, $pxeSysPath);
+	generateInitalRamFS($info, $info->{'vendor-os'}, $pxeSysPath);
 }
 
 sub writeDhcpConfig
