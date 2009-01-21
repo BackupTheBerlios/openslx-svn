@@ -95,6 +95,18 @@ if ($action =~ m[^import]i) {
 		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 	$engine->initialize($vendorOSName, 'update');
 	$engine->updateVendorOS();
+} elsif ($action =~ m[^shell]i) {
+	my $vendorOSName = shift @ARGV;
+	if (!defined $vendorOSName) {
+		print STDERR _tr("You need to give the name of the vendor-os you'd like to start of shell for!\n");
+		pod2usage(2);
+	}
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	$engine->initialize($vendorOSName, 'update');
+	$engine->startChrootedShellForVendorOS();
 } elsif ($action =~ m[^install]i) {
 	my $vendorOSName = shift @ARGV;
 	if (!defined $vendorOSName) {
@@ -155,6 +167,7 @@ if ($action =~ m[^import]i) {
 	list-supported
 	list-installed
 	remove
+	shell
 	update
 Try '%s --help' for more info.\n", $0);
 }
@@ -203,6 +216,10 @@ show supported distros
 =item B<<     remove <vendor-os-name> >>
 
 removes an installed vendor-OS
+
+=item B<<     shell <vendor-os-name> >>
+
+starts a chrooted shell for an installed vendor-OS
 
 =item B<<     update <vendor-os-name> >>
 

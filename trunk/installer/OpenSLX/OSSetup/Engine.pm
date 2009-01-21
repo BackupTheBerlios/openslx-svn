@@ -304,6 +304,25 @@ sub updateVendorOS
 				$self->{'vendor-os-name'});
 }
 
+sub startChrootedShellForVendorOS
+{
+	my $self = shift;
+
+	if (!-e $self->{'vendor-os-path'}) {
+		die _tr("can't start chrooted shell for vendor-OS '%s', since it doesn't exist!\n",
+				$self->{'vendor-os-path'});
+	}
+
+	$self->startLocalURLServersAsNeeded();
+
+	callInSubprocess( sub {
+		$self->changePersonalityIfNeeded();
+		$self->startChrootedShellInStage1D();
+	});
+	vlog 0, _tr("Chrooted shell for vendor-OS '%s' has been closed.\n",
+				$self->{'vendor-os-name'});
+}
+
 sub removeVendorOS
 {
 	my $self = shift;
@@ -908,6 +927,24 @@ sub updateStage1D
 	chrootInto($self->{'vendor-os-path'});
 
 	$self->stage1D_updateBasicVendorOS();
+}
+
+sub startChrootedShellInStage1D
+{
+	my $self = shift;
+
+	vlog 0, "starting chrooted shell for $self->{'vendor-os-name'}";
+	vlog 0, "---------------------------------------";
+	vlog 0, "- please type 'exit' if you are done! -";
+	vlog 0, "---------------------------------------";
+
+	chrootInto($self->{'vendor-os-path'});
+
+	$self->{'meta-packager'}->startSession();
+	slxsystem('sh');
+		# hangs until user exits manually
+	$self->{'distro'}->updateDistroConfig();
+	$self->{'meta-packager'}->finishSession();
 }
 
 sub stage1D_setupPackageSources()
