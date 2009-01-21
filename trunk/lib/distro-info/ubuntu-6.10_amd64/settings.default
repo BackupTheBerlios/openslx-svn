@@ -1,0 +1,49 @@
+arch = amd64
+package-subdir = pool
+prereq-packages = main/d/debootstrap/debootstrap_0.3.3.2ubuntu3_all.deb
+<repository base>
+	components = main restricted
+	distribution = edgy
+	name = Ubuntu 6.10
+	repo-subdir = dists
+	file-for-speedtest = dists/edgy/main/binary-amd64/Packages.bz2
+</repository>
+<repository base_security>
+	components = main restricted
+	distribution = edgy-security
+	name = Ubuntu 6.10 Security
+	repo-subdir = dists
+	file-for-speedtest = dists/edgy-security/main/binary-amd64/Packages.bz2
+</repository>
+<repository base_updates>
+	components = main restricted
+	distribution = edgy-updates
+	name = Ubuntu 6.10 Updates
+	repo-subdir = dists
+	file-for-speedtest = dists/edgy-updates/main/binary-amd64/Packages.bz2
+</repository>
+<selection default>
+	packages = <<END
+		language-pack-de
+		linux-image-generic
+	END
+</selection>
+<selection gnome>
+	base = default
+	packages = <<END
+		ubuntu-desktop
+	END
+</selection>
+<selection kde>
+	base = default
+	packages = <<END
+		kubuntu-desktop
+	END
+</selection>
+<selection xfce>
+	base = default
+	packages = <<END
+		xubuntu-desktop
+	END
+</selection>
+release-name = edgy

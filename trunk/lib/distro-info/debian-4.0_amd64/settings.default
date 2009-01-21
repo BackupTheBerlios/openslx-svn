@@ -1,0 +1,38 @@
+arch = amd64
+package-subdir = pool
+prereq-packages = main/d/debootstrap/debootstrap_0.3.3.2etch1_all.deb
+release-name = etch
+<repository base>
+	components = main
+	distribution = etch
+	name = Debian 4.0
+	repo-subdir = dists
+	file-for-speedtest = dists/etch/main/binary-amd64/Packages.bz2
+</repository>
+<selection default>
+	packages = <<END
+		linux-image-amd64
+		locales-all
+	END
+</selection>
+<selection gnome>
+	base = default
+	packages = <<END
+		gnome
+	END
+</selection>
+<selection kde>
+	base = default
+	packages = <<END
+		kde
+	END
+</selection>
+<selection openslx-build>
+	base = default
+	packages = <<END
+		bzip2
+		gcc
+		libc6-dev
+		make
+	END
+</selection>

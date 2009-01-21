@@ -67,9 +67,6 @@ sub setupPackageSource
 		die _tr("unable to add channel '%s' (%s)\n", $repoName, $!);
 	}
 
-	my $avoidMirrors = $repoInfo->{'avoid-mirrors'} || 0;
-	return if $avoidMirrors;
-	
 	my $mirrorDescr;
 	foreach my $mirrorURL (@$repoURLs) {
 		$mirrorDescr .= " --add $baseURL$repoSubdir $mirrorURL$repoSubdir";

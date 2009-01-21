@@ -30,12 +30,16 @@ $VERSION = 1.01;
   unshiftHereDoc
   string2Array
   chrootInto
+  mergeHash
+  getFQDN
 );
 
 ################################################################################
 ### Module implementation
 ################################################################################
 use File::Basename;
+use Socket;
+use Sys::Hostname;
 
 use OpenSLX::Basics;
 
@@ -228,6 +232,48 @@ sub chrootInto
 	chroot "."
 		or die _tr("unable to chroot into '%s' (%s)\n", $osDir, $!);
 	return;
+}
+
+sub mergeHash
+{
+	my $targetHash = shift;
+	my $sourceHash = shift;
+	my $fillOnly   = shift || 0;
+	
+	foreach my $key (keys %{$sourceHash}) {
+		my $sourceVal = $sourceHash->{$key};
+		if (ref($sourceVal) eq 'HASH') {
+			if (!exists $targetHash->{$key}) {
+				$targetHash->{$key} = {};
+			}
+			mergeHash($targetHash->{$key}, $sourceVal);
+		}
+		elsif (ref($sourceVal) eq 'ARRAY') {
+			if (!exists $targetHash->{$key}) {
+				$targetHash->{$key} = [];
+			}
+			foreach my $val (@{$sourceHash->{$key}}) {
+				my $targetVal = {};
+				push @{$targetHash->{$key}}, $targetVal;
+				mergeHash($targetVal, $sourceVal);
+			}
+		}
+		else {
+			next if $fillOnly && exists $targetHash->{$key};
+			$targetHash->{$key} = $sourceVal;
+		}
+	}
+}
+
+sub getFQDN
+{
+	my $hostName = hostname();
+	
+	my $hostAddr = gethostbyname($hostName)
+		or die(_tr("unable to get address of host '%s'", $hostName));
+	my $FQDN = gethostbyaddr($hostAddr, AF_INET)
+		or die(_tr("unable to get dns-name of address '%s'", $hostAddr));
+	return $FQDN;
 }
 
 1;

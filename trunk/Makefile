@@ -157,12 +157,6 @@ supported."; \
 	cp os-plugins/slx* $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/; \
 	tar --exclude=.svn -cp -C lib OpenSLX \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
-	tar --exclude=.svn --exclude *.example \
-	    -cp -C lib distro-info \
-	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
-	tar --exclude=.svn --exclude prereqfiles --exclude trusted-package-keys/* \
-	    -cp -C lib distro-info \
-	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH); \
 	tar --exclude=.svn -cp -C config-db OpenSLX \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
 	tar --exclude=.svn -cp -C installer OpenSLX \
@@ -171,6 +165,15 @@ supported."; \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
 	tar --exclude=.svn -cp -C os-plugins plugins \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
+
+	@   # copy distro-info (some parts into /opt, others into /etc
+	@tar --exclude=.svn --exclude=*.example \
+	    -cp -C lib distro-info \
+	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
+	tar --exclude=.svn --exclude=prereqfiles --exclude=trusted-package-keys/* \
+	    --exclude=*.default --exclude=mirrors \
+	    -cp -C lib distro-info \
+	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH); \
 
 	@   # link all binaries & scripts into user-path:
 	@ln -sf $(SLX_BASE_PATH)/bin/slx* $(SLX_BUILD_PATH)$(USR_BIN_PATH)/; \

@@ -108,15 +108,10 @@ sub initialize
 		- *.bak
 	";
 
-	$self->initDistroInfo();
 	return;
 }
 
 sub fixPrerequiredFiles
-{
-}
-
-sub initDistroInfo
 {
 }
 

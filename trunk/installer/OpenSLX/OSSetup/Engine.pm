@@ -26,7 +26,10 @@ use Exporter;
 	%supportedDistros
 );
 
+use Config::General;
 use File::Basename;
+use URI;
+
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
@@ -34,64 +37,64 @@ use vars qw(%supportedDistros);
 
 %supportedDistros = (
 	'debian-3.1' => {
-		module => 'Debian_3_1',       	support => 'clone,install'
+		module => 'Debian_3_1',      support => 'clone,install'
 	},
 	'debian-4.0' => {
-		module => 'Debian_4_0',       	support => 'clone,install'
+		module => 'Debian',          support => 'clone,install'
 	},
 	'debian-4.0_amd64' => {
-		module => 'Debian_4_0_amd64', 	support => 'clone,install'
+		module => 'Debian',          support => 'clone,install'
 	},
 	'fedora-6' => {
-		module => 'Fedora_6',         	support => 'clone,install'
+		module => 'Fedora',          support => 'clone,install'
 	},
 	'fedora-6_x86_64' => {
-		module => 'Fedora_6_x86_64',  	support => 'clone,install'
+		module => 'Fedora',          support => 'clone,install'
 	},
 	'gentoo-2005.1' => {
-		module => 'Gentoo',    		  	support => 'clone'
+		module => 'Gentoo',          support => 'clone'
 	},
 	'gentoo-2006.1' => {
-		module => 'Gentoo',           	support => 'clone'
+		module => 'Gentoo',          support => 'clone'
 	},
 	'mandriva-2007.0' => {
-		module => 'Mandriva_2007_0',  	support => 'clone'
+		module => 'Mandriva_2007_0', support => 'clone'
 	},
 	'suse-9.3' => {
-		module => 'SUSE_9_3',         	support => 'clone'
+		module => 'SUSE',            support => 'clone'
 	},
 	'suse-10.0'	=> {
-		module => 'SUSE_10_0',        	support => 'clone'
+		module => 'SUSE',            support => 'clone'
 	},
 	'suse-10.0_x86_64' => {
-		module => 'SUSE_10_0_x86_64', 	support => 'clone'
+		module => 'SUSE',            support => 'clone'
 	},
 	'suse-10.1' => {
-		module => 'SUSE_10_1',        	support => 'clone,install'
+		module => 'SUSE',            support => 'clone,install'
 	},
 	'suse-10.1_x86_64' => {
-		module => 'SUSE_10_1_x86_64', 	support => 'clone,install'
+		module => 'SUSE',            support => 'clone,install'
 	},
 	'suse-10.2' => {
-		module => 'SUSE_10_2',        	support => 'clone,install'
+		module => 'SUSE',            support => 'clone,install'
 	},
 	'suse-10.2_x86_64' => {
-		module => 'SUSE_10_2_x86_64', 	support => 'clone,install'
+		module => 'SUSE',            support => 'clone,install'
 	},
 	'ubuntu-6.06' => {
-		module => 'Ubuntu_6_06',      	support => 'clone'
+		module => 'Ubuntu',          support => 'clone'
 	},
 	'ubuntu-6.10' => {
-		module => 'Ubuntu_6_10',      	support => 'clone,install'
+		module => 'Ubuntu',          support => 'clone,install'
 	},
 	'ubuntu-6.10_amd64' => {
-		module => 'Ubuntu_6_10_amd64',	support => 'clone,install'
+		module => 'Ubuntu',          support => 'clone,install'
 	},
 	'ubuntu-7.04' => { 
-		module => 'Ubuntu_7_04',      	support => 'clone,install'
+		module => 'Ubuntu',          support => 'clone,install'
 	},
 	'ubuntu-7.04_amd64' => { 
-		module => 'Ubuntu_7_04_amd64',	support => 'clone,install'
+		module => 'Ubuntu',          support => 'clone,install'
 	},
 );
 
@@ -214,10 +217,18 @@ sub initialize
 			);
 		}
 		$self->{'config-distro-info-dir'} = $configDistroInfoDir;
+
+		my $busyboxName =
+			$self->_hostIs64Bit()
+				? 'busybox.x86_64'
+				: 'busybox.i586';
+		$self->{'busybox-binary'} 
+			= "$openslxConfig{'base-path'}/share/busybox/$busyboxName";
+	
 		$self->_readDistroInfo();
 	}
 
-	if (!$self->{'action-type'} eq 'install'
+	if ($self->{'action-type'} eq 'install'
 		&& !exists $self->{'distro-info'}->{'selection'}->{$selectionName})
 	{
 		die(
@@ -226,7 +237,7 @@ sub initialize
 				$selectionName, $self->{'distro-name'}
 			)
 			. _tr("These selections are available:\n\t")
-			. join("\n\t", keys %{$self->{'distro-info'}->{'selection'}})
+			. join("\n\t", sort keys %{$self->{'distro-info'}->{'selection'}})
 			. "\n"
 		);
 	}
@@ -239,6 +250,7 @@ sub initialize
 		$self->_createPackager();
 		$self->_createMetaPackager();
 	}
+
 	return;
 }
 
@@ -629,71 +641,305 @@ sub _readDistroInfo
 
 	vlog(1, "reading configuration info for $self->{'vendor-os-name'}...");
 
-	# merge user-provided configuration distro defaults...
-	my %repository = %{$self->{distro}->{config}->{repository}};
-	my %selection  = %{$self->{distro}->{config}->{selection}};
-	my %excludes 
-		= defined $self->{distro}->{config}->{excludes}
-			? %{$self->{distro}->{config}->{excludes}}
-			: ();
-	my $package_subdir  = $self->{distro}->{config}->{'package-subdir'};
-	my $prereq_packages = $self->{distro}->{config}->{'prereq-packages'};
-	my $bootstrap_packages = $self->{distro}->{config}->{'bootstrap-packages'};
-	my $metapackager_packages =
-		$self->{distro}->{config}->{'metapackager-packages'};
-
-	my $file = "$self->{'config-distro-info-dir'}/settings";
-	if (-e $file) {
-		vlog(2, "reading configuration file $file...");
-		my $config = slurpFile($file);
-		if (!eval "$config" && length($@)) {
-			die _tr("error in config-file '%s' (%s)", $file, $@) . "\n";
-		}
-	}
-
-	# ...expand selection definitions...
-	foreach my $selKey (keys %selection) {
-		$selection{$selKey} =~ s[<<<([^>]+)>>>][$selection{$1}]eg;
-	}
-
-	# ...expand selection definitions...
-	foreach my $exclKey (keys %excludes) {
-		$excludes{$exclKey} =~ s[<<<([^>]+)>>>][$excludes{$1}]eg;
-	}
-
-	# ...and store merged config:
 	$self->{'distro-info'} = {
-		'package-subdir'            => $package_subdir,
-		'prereq-packages'           => $prereq_packages,
-		'bootstrap-packages'        => $bootstrap_packages,
-		'metapackager-packages'     => $metapackager_packages,
-		'repository'                => \%repository,
-		'selection'                 => \%selection,
-		'excludes'                  => \%excludes,
+		'package-subdir'     => '',
+		'prereq-packages'    => '',
+		'bootstrap-packages' => '',
+		'metapackager'       => {},
+		'repository'         => {},
+		'selection'          => {},
+		'excludes'           => {},
 	};
 
+	# merge user-provided configuration with distro defaults
+	foreach my $file (
+		"$self->{'shared-distro-info-dir'}/settings.default",
+		"$self->{'config-distro-info-dir'}/settings"
+	) {
+		if (-e $file) {
+			vlog(2, "reading configuration file $file...");
+			my $configObject = Config::General->new(
+				-AllowMultiOptions => 0,
+				-AutoTrue          => 1,
+				-ConfigFile        => $file,
+				-LowerCaseNames    => 1,
+				-SplitPolicy       => 'equalsign',
+			);
+			my %config = $configObject->getall();
+			mergeHash($self->{'distro-info'}, \%config);
+		}
+	}
+	
+	# fetch mirrors for all repositories:
+	foreach my $repoKey (keys %{$self->{'distro-info'}->{repository}}) {
+		my $repo = $self->{'distro-info'}->{repository}->{$repoKey};
+		$repo->{key} = $repoKey;
+		# if there is local URL, only that is used, otherwise we fetch the
+		# configured mirrors:
+		if (!$repo->{'local-url'}) {
+			$repo->{urls} = $self->_fetchConfiguredMirrorsForRepository($repo);
+		}
+	}
+
+	# expand all selections:
+	foreach my $selKey (keys %{$self->{'distro-info'}->{selection}}) {
+		$self->_expandSelection($selKey);
+	}
+
+	# dump distro-info, if asked for:
 	if ($openslxConfig{'verbose-level'} >= 2) {
-		# dump distro-info, if asked for:
-		foreach my $r (sort keys %repository) {
+		my $repository = $self->{'distro-info'}->{repository};
+		foreach my $r (sort keys %$repository) {
 			vlog(2, "repository '$r':");
-			foreach my $k (sort keys %{$repository{$r}}) {
-				vlog(3, "\t$k = '$repository{$r}->{$k}'");
+			foreach my $k (sort keys %{$repository->{$r}}) {
+				vlog(3, "\t$k = '$repository->{$r}->{$k}'");
 			}
 		}
-		foreach my $s (sort keys %selection) {
-			my @selLines = split "\n", $selection{$s};
+		my $selection = $self->{'distro-info'}->{selection};
+		foreach my $s (sort keys %$selection) {
 			vlog(2, "selection '$s':");
-			foreach my $sl (@selLines) {
-				vlog(3, "\t$sl");
+			foreach my $k (sort keys %{$selection->{$s}}) {
+				vlog(3, "\t$k = '$selection->{$s}->{$k}'");
 			}
 		}
-		foreach my $e (sort keys %excludes) {
-			my @exclLines = split "\n", $excludes{$e};
+		my $excludes = $self->{'distro-info'}->{excludes};
+		foreach my $e (sort keys %$excludes) {
 			vlog(2, "excludes for '$e':");
-			foreach my $excl (@exclLines) {
-				vlog(3, "\t$excl");
+			foreach my $k (sort keys %{$excludes->{$e}}) {
+				vlog(3, "\t$k = '$excludes->{$e}->{$k}'");
 			}
 		}
+	}
+	return;
+}
+
+sub _fetchConfiguredMirrorsForRepository
+{
+	my $self     = shift;
+	my $repoInfo = shift;
+
+	my $configuredMirrorsFile
+		= "$self->{'config-distro-info-dir'}/mirrors/$repoInfo->{key}";
+	if (!-e $configuredMirrorsFile) {
+		vlog(0, 
+			_tr(
+				"repo '%s' has no configured mirrors, let's pick some ...",
+				$repoInfo->{name}
+			)
+		);
+		$self->_configureBestMirrorsForRepository($repoInfo);
+	}
+	vlog(2, "reading configured mirrors file '$configuredMirrorsFile'.");
+	my $configObject = Config::General->new(
+		-AllowMultiOptions => 0,
+		-AutoTrue          => 1,
+		-ConfigFile        => $configuredMirrorsFile,
+		-LowerCaseNames    => 1,
+		-SplitPolicy       => 'equalsign',
+	);
+	my %config = $configObject->getall();
+	
+	return $config{urls};
+}
+
+sub _configureBestMirrorsForRepository
+{
+	my $self     = shift;
+	my $repoInfo = shift;
+
+	my $configuredMirrorsFile
+		= "$self->{'config-distro-info-dir'}/mirrors/$repoInfo->{key}";
+
+	if (!-e "$self->{'config-distro-info-dir'}/mirrors") {
+		mkdir "$self->{'config-distro-info-dir'}/mirrors";
+	}
+
+	my $allMirrorsFile
+		= "$self->{'shared-distro-info-dir'}/mirrors/$repoInfo->{key}";
+	my @allMirrors = string2Array(slurpFile($allMirrorsFile));
+
+	my $mirrorsToTryCount = $openslxConfig{'mirrors-to-try-count'} || 20;
+	my $mirrorsToUseCount = $openslxConfig{'mirrors-to-use-count'} || 5;
+	vlog(1, 
+		_tr(
+			"selecting the '%s' best mirrors (from a set of '%s') for repo '%s' ...", 
+			$mirrorsToUseCount, $mirrorsToTryCount, $repoInfo->{key}
+		)
+	);
+
+	# determine own top-level domain:
+	my $topLevelDomain;
+	if (defined $openslxConfig{'mirrors-preferred-top-level-domain'}) {
+		$topLevelDomain 
+			= lc($openslxConfig{'mirrors-preferred-top-level-domain'});
+	}
+	else {
+		my $FQDN = getFQDN();
+		$FQDN =~ m{\.(\w+)$};
+		$topLevelDomain = lc($1);
+	}
+
+	# select up to $mirrorsToTryCount "close" mirrors from the array ...
+	my @tryMirrors
+		= 	grep {
+				my $uri = URI->new($_);
+				my $host = $uri->host();
+				$host =~ m{\.(\w+)$} && lc($1) eq $topLevelDomain;
+			}
+			@allMirrors;
+
+	my $tryList = join("\n\t", @tryMirrors);
+	vlog(1, 
+		_tr(
+			"mirrors matching the preferred top level domain ('%s'):\n\t%s\n",
+			$topLevelDomain, $tryList
+		)
+	);
+
+	if (@tryMirrors > $mirrorsToTryCount) {
+		# shrink array to $mirrorsToTryCount elements
+		vlog(1, _tr("shrinking list to %s mirrors\n", $mirrorsToTryCount));
+		$#tryMirrors = $mirrorsToTryCount;
+	}
+	elsif (@tryMirrors < $mirrorsToTryCount) {
+		# we need more mirrors, try adding some others randomly:
+		vlog(1, 
+			_tr(
+				"filling list with %s more random mirrors:\n", 
+				$mirrorsToTryCount - @tryMirrors
+			)
+		);
+
+		# fill @untriedMirrors with the mirrors not already contained 
+		# in @tryMirrors ...
+		my @untriedMirrors 
+			=	grep {
+					my $mirror = $_;
+					!grep { $mirror eq $_ } @tryMirrors;
+				} @allMirrors;
+
+		# ... now pick randomly until we have reached the limit or there are 
+		# no more unused mirrors left
+		foreach my $count (@tryMirrors..$mirrorsToTryCount-1) {
+			last if !@untriedMirrors;
+			my $index = int(rand(scalar(@untriedMirrors)));
+			my $randomMirror = splice(@untriedMirrors, $index, 1);
+			push @tryMirrors, $randomMirror;
+			vlog(1, "\t$randomMirror\n");
+		}
+	}
+
+	# ... fetch a file from all of these mirrors and measure the time taken ...
+	vlog(0, 
+		_tr(
+			"testing %s mirrors to determine the fastest %s ...\n", 
+			$mirrorsToTryCount, $mirrorsToUseCount
+		)
+	);
+	my %mirrorSpeed;
+	my $veryGoodSpeedCount = 0;
+	foreach my $mirror (@tryMirrors) {
+		if ($veryGoodSpeedCount >= $mirrorsToUseCount) {
+			# we already have enough mirrors with very good speed,
+			# it makes no sense to test any others. We simply set the
+			# time of the remaining mirrors to some large value, so they
+			# won't get picked:
+			$mirrorSpeed{$mirror} = 10000;
+			next;
+		}
+
+		# test the current mirror and record the result
+		my $time = $self->_speedTestMirror(
+			$mirror, $repoInfo->{'file-for-speedtest'}
+		);
+		$mirrorSpeed{$mirror} = $time;
+		if ($time <= 1) {
+			$veryGoodSpeedCount++;
+		}
+	}
+
+	# ... now select the best (fastest) $mirrorsToUseCount mirrors ... 
+	my @bestMirrors 
+		=	(
+				sort {
+					$mirrorSpeed{$a} <=> $mirrorSpeed{$b};
+				}
+				@tryMirrors
+			)[0..$mirrorsToUseCount-1];
+	
+	vlog(0, 
+		_tr(
+			"picked these '%s' mirrors for repo '%s':\n\t%s\n",
+			$mirrorsToUseCount, $repoInfo->{name}, join("\n\t", @bestMirrors)
+		)
+	);
+
+	# ... and write them into the configuration file:
+	my $configObject = Config::General->new(
+		-AllowMultiOptions => 0,
+		-AutoTrue          => 1,
+		-LowerCaseNames    => 1,
+		-SplitPolicy       => 'equalsign',
+	);
+	$configObject->save_file($configuredMirrorsFile, {
+		'urls' => join("\n", @bestMirrors),
+	});
+	return;
+}
+
+sub _speedTestMirror
+{
+	my $self   = shift;
+	my $mirror = shift;
+	my $file   = shift;
+
+	vlog(0, _tr("\ttesting mirror '%s' ...\n", $mirror));
+	
+	# do an explicit DNS-lookup as we do not want to include the time that takes
+	# in the speedtest
+	my $uri = URI->new($mirror);
+	my $hostName = $uri->host();
+	if (!gethostbyname($hostName)) {
+		# unable to resolve host, we pretend it took really long
+		return 10000;
+	}
+
+	# now measure the time it takes to download the file
+	my $tempFile = "$openslxConfig{'temp-path'}/slx-mirror-testfile";
+	unlink $tempFile if -e $tempFile;
+	my $wgetCmd 
+		= "$self->{'busybox-binary'} wget -q -O $tempFile $mirror/$file";
+	my $start = time();
+	if (slxsystem($wgetCmd)) {
+		# just return any large number that is unlikely to be selected
+		return 10000;
+	}
+	my $time = time() - $start;
+	unlink $tempFile;
+	vlog(0, "\tfetched '$file' in $time seconds\n");
+	return $time;
+}
+		
+sub _expandSelection
+{
+	my $self   = shift;
+	my $selKey = shift;
+	my $seen =   shift || {};
+
+	return if $seen->{$selKey};
+	$seen->{$selKey} = 1;
+
+	return if !exists $self->{'distro-info'}->{selection}->{$selKey};
+	my $selection = $self->{'distro-info'}->{selection}->{$selKey};
+
+	if ($selection->{base}) {
+		# add all packages from base selection to the current one:
+		my $base = $selection->{base};
+		return if !exists $self->{'distro-info'}->{selection}->{$base};
+		my $baseSelection = $self->{'distro-info'}->{selection}->{$base};
+		$self->_expandSelection($base, $seen);
+		$selection->{packages}
+			= "$baseSelection->{packages}\n$selection->{packages}";
 	}
 	return;
 }
@@ -759,24 +1005,19 @@ sub _sortRepositoryURLs
 	my $self     = shift;
 	my $repoInfo = shift;
 
-	if (defined $repoInfo->{'url'} && $repoInfo->{'avoid-mirrors'}) {
-		# a local URL blocks all the others, in order to avoid causing
-		# (external) network traffic, so we return the local URL only:
-		return [$repoInfo->{'url'}];
+	my @URLs 
+		= defined $repoInfo->{'local-url'}
+			? $repoInfo->{'local-url'}
+			: string2Array($repoInfo->{urls});
+	if (!@URLs) {
+		die(
+			_tr(
+				"repository '%s' has no URLs defined, unable to fetch anything!",
+				$repoInfo->{name},
+			)
+		);
 	}
 
-	my %urlInfo;
-
-	# specified URL always has highest precedence:
-	$urlInfo{$repoInfo->{url}} = 0 if defined $repoInfo->{url};
-
-	# now add all others sorted by "closeness":
-	my $index = 1;
-	foreach my $url (string2Array($repoInfo->{urls})) {
-		# TODO: insert a closest mirror algorithm here!
-		$urlInfo{$url} = $index++;
-	}
-	my @URLs = sort { $urlInfo{$a} <=> $urlInfo{$b} } keys %urlInfo;
 	return \@URLs;
 }
 
@@ -794,27 +1035,25 @@ sub _downloadBaseFiles
 		my $tryCount = 0;
 		next unless $fileVariantStr =~ m[\S];
 		my $foundFile;
-	  try_next_url:
+try_next_url:
 		my $url = $URLs[$self->{'baseURL-index'}];
 		$url .= "/$pkgSubdir" if length($pkgSubdir);
-		my @contFlags = ();
-		push @contFlags, '-c' if ($url =~ m[^ftp]);
 
-		# continuing is only supported with FTP, but not with HTTP
 		foreach my $file (split '\s+', $fileVariantStr) {
+			my $basefile = basename($file);
 			vlog(2, "fetching <$file>...");
-			if (slxsystem("wget", @contFlags, "$url/$file") == 0) {
-				$foundFile = basename($file);
+			if (slxsystem("wget", "$url/$file") == 0) {
+				$foundFile = $basefile;
 				last;
 			}
-			elsif ($! == 17) {
-				my $basefile = basename($file);
-				vlog(2, "removing left-over '$basefile' and trying again...");
+			elsif (-e $basefile) {
+				vlog(0, "removing left-over '$basefile' and trying again...");
 				unlink $basefile;
+				redo;
 			}
 		}
 		if (!defined $foundFile) {
-			if (!$ENV{SLX_NO_MIRRORS} && $tryCount < $maxTryCount) {
+			if ($tryCount < $maxTryCount) {
 				$tryCount++;
 				$self->{'baseURL-index'} 
 					= ($self->{'baseURL-index'} + 1) % scalar(@URLs);
@@ -841,21 +1080,15 @@ sub _startLocalURLServersAsNeeded
 	$self->{'local-http-server-master-pid'} = $$;
 
 	my $port = 5080;
+	my %portForURL;
 	foreach my $repoInfo (values %{$self->{'distro-info'}->{repository}}) {
-		$repoInfo->{'avoid-mirrors'} = $ENV{SLX_NO_MIRRORS} || 0;
-		my $localURL = $repoInfo->{url} || '';
+		my $localURL = $repoInfo->{'local-url'} || '';
 		next if !$localURL;
 		next if $localURL =~ m[^\w+:];	# anything with a protcol-spec is non-local
 		if (!exists $self->{'local-http-servers'}->{$localURL}) {
-			my $busyboxName =
-				$self->_hostIs64Bit()
-				? 'busybox.x86_64'
-				: 'busybox.i586';
-			my $busybox =
-				"$openslxConfig{'base-path'}/share/busybox/$busyboxName";
 			my $pid 
 				= executeInSubprocess(
-					$busybox, "httpd", '-p', $port, '-h', '/', '-f'
+					$self->{'busybox-binary'}, "httpd", '-p', $port, '-h', '/', '-f'
 				);
 			vlog(1, 
 				_tr(
@@ -864,9 +1097,14 @@ sub _startLocalURLServersAsNeeded
 				)
 			);
 			$self->{'local-http-servers'}->{$localURL} = $pid;
-			$repoInfo->{'url'} = "http://localhost:$port$localURL";
-			$repoInfo->{'avoid-mirrors'} = 1;
+			$repoInfo->{'local-url'} 
+				= "http://localhost:$port$localURL";
+			$portForURL{$localURL} = $port;
 			$port++;
+		}
+		else {
+			$repoInfo->{'local-url'} 
+				= "http://localhost:$portForURL{$localURL}$localURL";
 		}
 	}
 	return;
@@ -904,11 +1142,10 @@ sub _stage1A_createBusyboxEnvironment
 
 	# copy busybox and all required binaries into stage1a-dir:
 	vlog(1, "creating busybox-environment...");
-	my $busyboxName = $self->_hostIs64Bit() ? 'busybox.x86_64' : 'busybox.i586';
 	my $requiredLibs = copyBinaryWithRequiredLibs({
-		'binary' => "$openslxConfig{'base-path'}/share/busybox/$busyboxName",
+		'binary'          => $self->{'busybox-binary'},
 		'targetFolder'    => "$self->{stage1aDir}/bin",
-		'libTargetFolder' => "$self->{stage1aDir}",
+		'libTargetFolder' => $self->{stage1aDir},
 		'targetName'      => 'busybox',
 	});
 	my $libcFolder;
@@ -1082,9 +1319,9 @@ sub _stage1B_chrootAndBootstrap
 		
 			@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-packages'});
 			push(
-				@pkgs, 
+				@pkgs,
 				string2Array(
-					$self->{'distro-info'}->{'metapackager-packages'}
+					$self->{'distro-info'}->{'metapackager'}
 						->{$self->{distro}->{'meta-packager-type'}}
 				)
 			);
@@ -1238,8 +1475,9 @@ sub _stage1D_setupPackageSources
 
 	vlog(1, "setting up package sources for meta packager...");
 	my $selectionName = $self->{'selection-name'};
-	my $pkgExcludes   = $self->{'distro-info'}->{excludes}->{$selectionName};
-	my $excludeList   = join ' ', string2Array($pkgExcludes);
+	my $pkgExcludes
+		= $self->{'distro-info'}->{excludes}->{$selectionName}->{packages};
+	my $excludeList = join ' ', string2Array($pkgExcludes);
 	$self->{'meta-packager'}->initPackageSources();
 	my ($rk, $repo);
 	while (($rk, $repo) = each %{$self->{'distro-info'}->{repository}}) {
@@ -1267,8 +1505,8 @@ sub _stage1D_installPackageSelection
 	my $selectionName = $self->{'selection-name'};
 
 	vlog(1, "installing package selection <$selectionName>...");
-	my $pkgSelection  = $self->{'distro-info'}->{selection}->{$selectionName};
-	my @pkgs          = string2Array($pkgSelection);
+	my $selection     = $self->{'distro-info'}->{selection}->{$selectionName};
+	my @pkgs          = string2Array($selection->{packages});
 	my @installedPkgs = $self->{'packager'}->getInstalledPackages();
 	@pkgs = grep {
 		my $pkg = $_;

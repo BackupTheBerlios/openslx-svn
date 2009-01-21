@@ -1,0 +1,49 @@
+arch = amd64
+package-subdir = pool
+prereq-packages = main/d/debootstrap/debootstrap_0.3.3.2ubuntu3_all.deb
+<repository base>
+	components = main restricted
+	distribution = feisty
+	name = Ubuntu 7.04
+	repo-subdir = dists
+	file-for-speedtest = dists/feisty/main/binary-amd64/Packages.bz2
+</repository>
+<repository base_security>
+	components = main restricted
+	distribution = feisty-security
+	name = Ubuntu 7.04 Security
+	repo-subdir = dists
+	file-for-speedtest = dists/feisty-security/main/binary-amd64/Packages.bz2
+</repository>
+<repository base_updates>
+	components = main restricted
+	distribution = feisty-updates
+	name = Ubuntu 7.04 Updates
+	repo-subdir = dists
+	file-for-speedtest = dists/feisty-updates/main/binary-amd64/Packages.bz2
+</repository>
+<selection default>
+	packages = <<END
+		language-pack-de
+		linux-image-generic
+	END
+</selection>
+<selection gnome>
+	base = default
+	packages = <<END
+		ubuntu-desktop
+	END
+</selection>
+<selection kde>
+	base = default
+	packages = <<END
+		kubuntu-desktop
+	END
+</selection>
+<selection xfce>
+	base = default
+	packages = <<END
+		xubuntu-desktop
+	END
+</selection>
+release-name = feisty

@@ -78,11 +78,8 @@ sub setupPackageSource
 
 	my $sourcesList = "deb $baseURL $distribution $components\n";
 
-	my $avoidMirrors = $repoInfo->{'avoid-mirrors'} || 0;
-	if (!$avoidMirrors) {
-		foreach my $mirrorURL (@$repoURLs) {
-			$sourcesList .= "deb $mirrorURL $distribution $components\n";
-		}
+	foreach my $mirrorURL (@$repoURLs) {
+		$sourcesList .= "deb $mirrorURL $distribution $components\n";
 	}
 
 	appendFile('/etc/apt/sources.list', $sourcesList);

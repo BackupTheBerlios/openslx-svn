@@ -63,8 +63,8 @@ sub bootstrap
 	if (slxsystem("ash", "-c", "rm -f debian-binary *.tar.gz")) {
 		die _tr("unable to cleanup package '%s' (%s)", $debootstrapPkg, $!);
 	}
-	my $arch = $self->{engine}->{distro}->{arch};
-	my $releaseName = $self->{engine}->{distro}->{'release-name'};
+	my $arch = $self->{engine}->{'distro-info'}->{arch};
+	my $releaseName = $self->{engine}->{'distro-info'}->{'release-name'};
 	my $baseURL = $self->{engine}->{baseURLs}->[0];
 	my $debootstrapCmd = unshiftHereDoc(<<"	END-OF-HERE");
 		/usr/sbin/debootstrap --arch $arch $releaseName \\

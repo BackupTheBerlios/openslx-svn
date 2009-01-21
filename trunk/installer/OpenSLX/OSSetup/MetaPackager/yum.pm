@@ -61,11 +61,8 @@ sub setupPackageSource
 	my $repoDescr 
 		= "[$repoName]\nname=$repoInfo->{name}\nbaseurl=$baseURL$repoSubdir\n";
 
-	my $avoidMirrors = $repoInfo->{'avoid-mirrors'} || 0;
-	if (!$avoidMirrors) {
-		foreach my $mirrorURL (@$repoURLs) {
-			$repoDescr .= "        $mirrorURL$repoSubdir\n";
-		}
+	foreach my $mirrorURL (@$repoURLs) {
+		$repoDescr .= "        $mirrorURL$repoSubdir\n";
 	}
 	my $repoFile = "/etc/yum.repos.d/$repoName.repo";
 	spitFile($repoFile, "$repoDescr\nexclude=$excludeList\n");
