@@ -49,10 +49,13 @@ sub connectConfigDB
 		$dbSpec = "dbname=$dbPath/$openslxConfig{'db-name'}";
 	}
 	vlog 1, "trying to connect to SQLite-database <$dbSpec>";
+	eval ('require DBD::SQLite; 1;')
+		or die _tr("DBD::SQLite doesn't seem to be installed, "
+				   ."so there is no support for SQLite available, sorry!\n");
 	$self->{'dbh'} = DBI->connect("dbi:SQLite:$dbSpec", undef, undef,
-								  {PrintError => 0})
-			or confess _tr("Cannot connect to database <%s> (%s)"),
-						   $dbSpec, $DBI::errstr;
+								  {PrintError => 0, AutoCommit => 1})
+			or confess _tr("Cannot connect to database <%s> (%s)",
+						   $dbSpec, $DBI::errstr);
 }
 
 sub schemaRenameTable
