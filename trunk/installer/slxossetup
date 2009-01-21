@@ -45,7 +45,7 @@ for suffix in "" local ${SLX_SYSTEM_VARIANTNAME}; do
 		. "${SLX_SYSTEM_CONFIG_PATH}/settings${suffix:+.$suffix}"
 done
 
-function install_prereq_file
+function install_prereq_file()
 {
 	# Install prerequired files
 	if test -d "${SLX_SYSTEM_CONFIG_PATH}/prereqfiles"; then
