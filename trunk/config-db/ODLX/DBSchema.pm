@@ -69,7 +69,7 @@ $DbSchema = {
 		'system' => [
 			# a system describes one bootable instance of a vendor os
 			'id:pk',				# primary key
-			'vendor_os:fk',			# foreign key
+			'vendor_os_id:fk',		# foreign key
 			'name:s.32',			# name used in filesystem and passed to kernel via cmdline arg
 									# (e.g.: suse-9.3-minimal, suse-9.3-minimal-nbd, ...)
 			'label:s.128',			# visible name (pxe-label)

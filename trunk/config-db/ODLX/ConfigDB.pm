@@ -20,14 +20,17 @@ use Exporter;
 
 my @accessExports = qw(
 	connectConfigDB disconnectConfigDB
-	fetchSystemsByFilter fetchSystemsById fetchAllSystemIDsOfClient
+	fetchVendorOSesByFilter fetchVendorOSesByID fetchAllVendorOSIDsOfSystem
+	fetchSystemsByFilter fetchSystemsByID fetchAllSystemIDsOfClient
 	fetchAllSystemIDsOfGroup
-	fetchClientsByFilter fetchClientsById fetchAllClientIDsOfSystem
+	fetchClientsByFilter fetchClientsByID fetchAllClientIDsOfSystem
 	fetchAllClientIDsOfGroup
-	fetchGroupsByFilter fetchGroupsById fetchAllGroupIDsOfClient
+	fetchGroupsByFilter fetchGroupsByID fetchAllGroupIDsOfClient
 	fetchAllGroupIDsOfSystem
 );
 my @manipulationExports = qw(
+	addVendorOS removeVendorOS changeVendorOS
+	setSystemIDsOfVendorOS addSystemIDsToVendorOS removeSystemIDsFromVendorOS
 	addSystem removeSystem changeSystem
 	setClientIDsOfSystem addClientIDsToSystem removeClientIDsFromSystem
 	setGroupIDsOfSystem addGroupIDsToSystem removeGroupIDsFromSystem
@@ -160,6 +163,27 @@ sub disconnectConfigDB
 	$confDB->{'meta-db'}->disconnectConfigDB();
 }
 
+sub fetchVendorOSesByFilter
+{
+	my $confDB = shift;
+	my $filter = shift;
+	my $resultCols = shift;
+
+	my @vendorOSes
+		= $confDB->{'meta-db'}->fetchVendorOSesByFilter($filter, $resultCols);
+	return wantarray() ? @vendorOSes : shift @vendorOSes;
+}
+
+sub fetchVendorOSesByID
+{
+	my $confDB = shift;
+	my $id = shift;
+
+	my $filter = { 'id' => $id };
+	my @vendorOSes = $confDB->{'meta-db'}->fetchVendorOSesByFilter($filter);
+	return wantarray() ? @vendorOSes : shift @vendorOSes;
+}
+
 sub fetchSystemsByFilter
 {
 	my $confDB = shift;
@@ -171,7 +195,7 @@ sub fetchSystemsByFilter
 	return wantarray() ? @systems : shift @systems;
 }
 
-sub fetchSystemsById
+sub fetchSystemsByID
 {
 	my $confDB = shift;
 	my $id = shift;
@@ -179,6 +203,14 @@ sub fetchSystemsById
 	my $filter = { 'id' => $id };
 	my @systems = $confDB->{'meta-db'}->fetchSystemsByFilter($filter);
 	return wantarray() ? @systems : shift @systems;
+}
+
+sub fetchAllSystemIDsOfVendorOS
+{
+	my $confDB = shift;
+	my $vendorOSID = shift;
+
+	return $confDB->{'meta-db'}->fetchAllSystemIDsOfVendorOS($vendorOSID);
 }
 
 sub fetchAllSystemIDsOfClient
@@ -206,7 +238,7 @@ sub fetchClientsByFilter
 	return wantarray() ? @clients : shift @clients;
 }
 
-sub fetchClientsById
+sub fetchClientsByID
 {
 	my $confDB = shift;
 	my $id = shift;
@@ -243,7 +275,7 @@ sub fetchGroupsByFilter
 	return wantarray() ? @groups : shift @groups;
 }
 
-sub fetchGroupsById
+sub fetchGroupsByID
 {
 	my $confDB = shift;
 	my $id = shift;
@@ -272,6 +304,69 @@ sub fetchAllGroupIDsOfClient
 ################################################################################
 ### data manipulation interface
 ################################################################################
+sub addVendorOS
+{
+	my $confDB = shift;
+	my $valRows = _aref(shift);
+
+	return $confDB->{'meta-db'}->addVendorOS($valRows);
+}
+
+sub removeVendorOS
+{
+	my $confDB = shift;
+	my $vendorOSIDs = _aref(shift);
+
+	return $confDB->{'meta-db'}->removeVendorOS($vendorOSIDs);
+}
+
+sub changeVendorOS
+{
+	my $confDB = shift;
+	my $vendorOSIDs = _aref(shift);
+	my $valRows = _aref(shift);
+
+	return $confDB->{'meta-db'}->changeVendorOS($vendorOSIDs, $valRows);
+}
+
+sub setSystemIDsOfVendorOS
+{
+	my $confDB = shift;
+	my $vendorOSID = shift;
+	my $systemIDs = _aref(shift);
+
+	my %seen;
+	my @uniqueSystemIDs = grep { !$seen{$_}++ } @$systemIDs;
+	return $confDB->{'meta-db'}->setSystemIDsOfVendorOS($vendorOSID,
+														\@uniqueSystemIDs);
+}
+
+sub addSystemIDsToVendorOS
+{
+	my $confDB = shift;
+	my $vendorOSID = shift;
+	my $newSystemIDs = _aref(shift);
+
+	my @systemIDs
+		= $confDB->{'meta-db'}->fetchAllSystemIDsOfVendorOS($vendorOSID);
+	push @systemIDs, @$newSystemIDs;
+	return setSystemIDsOfVendorOS($confDB, $vendorOSID, \@systemIDs);
+}
+
+sub removeSystemIDsFromVendorOS
+{
+	my $confDB = shift;
+	my $vendorOSID = shift;
+	my $removedSystemIDs = _aref(shift);
+
+	my %toBeRemoved;
+	@toBeRemoved{@$removedSystemIDs} = ();
+	my @systemIDs
+		= grep { !exists $toBeRemoved{$_} }
+			   $confDB->{'meta-db'}->fetchAllSystemIDsOfVendorOS($vendorOSID);
+	return setSystemIDsOfVendorOS($confDB, $vendorOSID, \@systemIDs);
+}
+
 sub addSystem
 {
 	my $confDB = shift;

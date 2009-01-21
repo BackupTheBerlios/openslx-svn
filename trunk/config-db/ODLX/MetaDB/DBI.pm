@@ -82,6 +82,31 @@ sub _doSelect
 	return @vals;
 }
 
+sub fetchVendorOSesByFilter
+{
+	my $self = shift;
+	my $filter = shift;
+	my $resultCols = shift;
+
+	$resultCols = '*' 		unless (defined $resultCols);
+	my $sql = "SELECT $resultCols FROM vendor_os";
+	my $connector;
+	foreach my $col (keys %$filter) {
+		$connector = !defined $connector ? 'WHERE' : 'AND';
+		$sql .= " $connector $col = '$filter->{$col}'";
+	}
+	return $self->_doSelect($sql);
+}
+
+sub fetchVendorOSesById
+{
+	my $self = shift;
+	my $id = shift;
+	my $resultCols = shift;
+
+	return $self->fetchVendorOSesByFilter({'id' => $id}, $resultCols);
+}
+
 sub fetchSystemsByFilter
 {
 	my $self = shift;
@@ -95,8 +120,7 @@ sub fetchSystemsByFilter
 		$connector = !defined $connector ? 'WHERE' : 'AND';
 		$sql .= " $connector $col = '$filter->{$col}'";
 	}
-	my @rows = $self->_doSelect($sql);
-	return @rows;
+	return $self->_doSelect($sql);
 }
 
 sub fetchSystemsById
@@ -108,6 +132,17 @@ sub fetchSystemsById
 	return $self->fetchSystemsByFilter({'id' => $id}, $resultCols);
 }
 
+sub fetchAllSystemIDsOfVendorOS
+{
+	my $self = shift;
+	my $vendorOSID = shift;
+
+	my $sql = qq[
+		SELECT id FROM system WHERE vendor_os_id = '$vendorOSID'
+	];
+	return $self->_doSelect($sql, 'id');
+}
+
 sub fetchAllSystemIDsOfClient
 {
 	my $self = shift;
@@ -116,8 +151,7 @@ sub fetchAllSystemIDsOfClient
 	my $sql = qq[
 		SELECT system_id FROM client_system_ref WHERE client_id = '$clientID'
 	];
-	my @rows = $self->_doSelect($sql, 'system_id');
-	return @rows;
+	return $self->_doSelect($sql, 'system_id');
 }
 
 sub fetchAllSystemIDsOfGroup
@@ -128,8 +162,7 @@ sub fetchAllSystemIDsOfGroup
 	my $sql = qq[
 		SELECT system_id FROM group_system_ref WHERE group_id = '$groupID'
 	];
-	my @rows = $self->_doSelect($sql, 'system_id');
-	return @rows;
+	return $self->_doSelect($sql, 'system_id');
 }
 
 sub fetchClientsByFilter
@@ -145,8 +178,7 @@ sub fetchClientsByFilter
 		$connector = !defined $connector ? 'WHERE' : 'AND';
 		$sql .= " $connector $col = '$filter->{$col}'";
 	}
-	my @rows = $self->_doSelect($sql);
-	return @rows;
+	return $self->_doSelect($sql);
 }
 
 sub fetchClientsById
@@ -166,8 +198,7 @@ sub fetchAllClientIDsOfSystem
 	my $sql = qq[
 		SELECT client_id FROM client_system_ref WHERE system_id = '$systemID'
 	];
-	my @rows = $self->_doSelect($sql, 'system_id');
-	return @rows;
+	return $self->_doSelect($sql, 'system_id');
 }
 
 sub fetchAllClientIDsOfGroup
@@ -178,8 +209,7 @@ sub fetchAllClientIDsOfGroup
 	my $sql = qq[
 		SELECT client_id FROM group_client_ref WHERE group_id = '$groupID'
 	];
-	my @rows = $self->_doSelect($sql, 'system_id');
-	return @rows;
+	return $self->_doSelect($sql, 'system_id');
 }
 
 sub fetchGroupsByFilter
@@ -195,8 +225,7 @@ sub fetchGroupsByFilter
 		$connector = !defined $connector ? 'WHERE' : 'AND';
 		$sql .= " $connector $col = '$filter->{$col}'";
 	}
-	my @rows = $self->_doSelect($sql);
-	return @rows;
+	return $self->_doSelect($sql);
 }
 
 sub fetchGroupsById
@@ -216,8 +245,7 @@ sub fetchAllGroupIDsOfSystem
 	my $sql = qq[
 		SELECT group_id FROM group_system_ref WHERE system_id = '$systemID'
 	];
-	my @rows = $self->_doSelect($sql, 'group_id');
-	return @rows;
+	return $self->_doSelect($sql, 'group_id');
 }
 
 sub fetchAllGroupIDsOfClient
@@ -228,8 +256,7 @@ sub fetchAllGroupIDsOfClient
 	my $sql = qq[
 		SELECT group_id FROM group_client_ref WHERE client_id = '$clientID'
 	];
-	my @rows = $self->_doSelect($sql, 'group_id');
-	return @rows;
+	return $self->_doSelect($sql, 'group_id');
 }
 
 ################################################################################
@@ -384,6 +411,70 @@ sub _updateRefTable
 	if (scalar keys %lastValueIDs) {
 		$self->_doDelete($table, keys %lastValueIDs, $valueCol);
 	}
+}
+
+sub _updateOneToManyRefAttr
+{
+	my $self = shift;
+	my $table = shift;
+	my $oneID = shift;
+	my $newManyIDs = shift;
+	my $fkCol = shift;
+	my $oldManyIDs = shift;
+
+	my %lastManyIDs;
+	@lastManyIDs{@$oldManyIDs} = ();
+
+	foreach my $id (@$newManyIDs) {
+		if (!exists $lastManyIDs{$id}) {
+			# ID has changed, update it
+			$self->_doUpdate($table, $id, [{ $fkCol => $oneID }]);
+		} else {
+			# ID hasn't changed, leave as is, but remove from hash:
+			delete $lastManyIDs{$id};
+		}
+	}
+
+	# all the remaining many-IDs need to be set to 0:
+	foreach my $id (scalar keys %lastManyIDs) {
+		$self->_doUpdate($table, $id, [{ $fkCol => '0' }]);
+	}
+}
+
+sub addVendorOS
+{
+	my $self = shift;
+	my $valRows = shift;
+
+	return $self->_doInsert('vendor_os', $valRows);
+}
+
+sub removeVendorOS
+{
+	my $self = shift;
+	my $vendorOSIDs = shift;
+
+	return $self->_doDelete('vendor_os', $vendorOSIDs);
+}
+
+sub changeVendorOS
+{
+	my $self = shift;
+	my $vendorOSIDs = shift;
+	my $valRows = shift;
+
+	return $self->_doUpdate('vendor_os', $vendorOSIDs, $valRows);
+}
+
+sub setSystemIDsOfVendorOS
+{
+	my $self = shift;
+	my $vendorOSID = shift;
+	my $systemIDs = shift;
+
+	my @currSystems = $self->fetchAllSystemsOfVendorOS($vendorOSID);
+	$self->_updateOneToManyRefAttr('system', $vendorOSID, $systemIDs,
+								   'vendor_os_id', \@currSystems);
 }
 
 sub addSystem

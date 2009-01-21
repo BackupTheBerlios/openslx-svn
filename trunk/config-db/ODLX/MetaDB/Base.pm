@@ -221,11 +221,23 @@ An array of hash-refs containing the resulting data rows.
 
 =cut
 
+sub fetchVendorOSesByFilter
+{
+}
+
+sub fetchVendorOSesById
+{
+}
+
 sub fetchSystemsByFilter
 {
 }
 
 sub fetchSystemsById
+{
+}
+
+sub fetchAllSystemIDsOfVendorOS
 {
 }
 
@@ -279,6 +291,22 @@ sub generateNextIdForTable
 	# 	  1 if this backend requires manual ID generation
 	# 	  0 if not.
 	return undef;
+}
+
+sub addVendorOS
+{
+}
+
+sub removeVendorOS
+{
+}
+
+sub changeVendorOS
+{
+}
+
+sub setSystemIDsOfVendorOS
+{
 }
 
 sub addSystem

@@ -11,11 +11,27 @@ odlxInit();
 
 my $odlxDB = connectConfigDB();
 
+addVendorOS($odlxDB, {
+		'name' => "suse-93-minimal",
+		'descr' => "SuSE 9.3 minimale Installation",
+});
+
+addVendorOS($odlxDB, {
+		'name' => "suse-93-KDE",
+		'descr' => "SuSE 9.3 grafische Installation mit KDE",
+});
+
+addVendorOS($odlxDB, {
+		'name' => "debian-31",
+		'descr' => "Debian 3.1 Default-Installation",
+});
+
 my @systems;
 foreach my $id (1..10) {
 	push @systems, {
 		'name' => "name of $id",
 		'descr' => "descr of $id",
+		'vendor_os_id' => 1 + $id % 3,
 	};
 }
 addSystem($odlxDB, \@systems);
