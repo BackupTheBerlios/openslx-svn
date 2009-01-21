@@ -439,7 +439,7 @@ local count=0
 [ -z $file ] && return 0
 [ -z $maxwait ] && maxwait=5000
 while [ ! -e $file ] ; do
-  echo "waiting ........." > /dev/null
+  usleep 1000 
   count=$(($count + 1))
   [ $count -gt $maxwait ] && return 1
 done
