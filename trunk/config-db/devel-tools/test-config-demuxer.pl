@@ -25,22 +25,22 @@ my $openslxDB = connectConfigDB();
 
 emptyDatabase($openslxDB);
 
-addVendorOS($openslxDB, {
-		'name' => "suse-10-minimal",
-		'comment' => "SuSE 10 minimale Installation",
-		'path' => "suse-10.0",
-			# relative to /var/lib/openslx/stage1
+addVendorOS($openslxDB,{
+	'name' => "suse-10-minimal",
+	'comment' => "SuSE 10 minimale Installation",
+	'path' => "suse-10.0",
+		# relative to /var/lib/openslx/stage1
 });
 
 addVendorOS($openslxDB, {
-		'name' => "suse-10-KDE",
-		'comment' => "SuSE 10 grafische Installation mit KDE",
-		'path' => "suse-10.0",
+	'name' => "suse-10-KDE",
+	'comment' => "SuSE 10 grafische Installation mit KDE",
+	'path' => "suse-10.0",
 });
 
 addVendorOS($openslxDB, {
-		'name' => "debian-31",
-		'comment' => "Debian 3.1 Default-Installation",
+	'name' => "debian-31",
+	'comment' => "Debian 3.1 Default-Installation",
 });
 
 my @systems;
