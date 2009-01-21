@@ -168,7 +168,7 @@ sub installVendorOS
 	 	$self->setupStage1A();
 	 	executeInSubprocess( sub {
 	 		# some tasks that involve a chrooted environment:
-	 		changePersonalityIfNeeded($self->{distro}->{'base-name'});
+			$self->changePersonalityIfNeeded();
 	 		$self->setupStage1B();
 	 		$self->setupStage1C();
 	 	});
@@ -178,7 +178,7 @@ sub installVendorOS
 	}
 	executeInSubprocess( sub {
 		# another task that involves a chrooted environment:
-		changePersonalityIfNeeded($self->{distro}->{'base-name'});
+		$self->changePersonalityIfNeeded();
 		$self->setupStage1D();
 	});
 	slxsystem("touch $installInfoFile");
@@ -260,7 +260,7 @@ sub updateVendorOS
 				$self->{'vendor-os-path'});
 	}
 	executeInSubprocess( sub {
-		changePersonalityIfNeeded($self->{distro}->{'base-name'});
+		$self->changePersonalityIfNeeded();
 		$self->updateStage1D();
 	});
 	vlog 0, _tr("Vendor-OS '%s' updated succesfully.\n",
@@ -456,8 +456,12 @@ sub stage1A_createBusyboxEnvironment
 
 	# copy busybox and all required binaries into stage1a-dir:
 	vlog 1, "creating busybox-environment...";
-	copyFile("$openslxConfig{'share-path'}/busybox/busybox",
-			 "$self->{stage1aDir}/bin");
+	my $busyboxName
+		= $self->hostIs64Bit()
+			? 'busybox.x86_64'
+			: 'busybox.i586';
+	copyFile("$openslxConfig{'share-path'}/busybox/$busyboxName",
+			 "$self->{stage1aDir}/bin", 'busybox');
 
 	# determine all required libraries and copy those, too:
 	vlog 2, "calling slxldd for busybox";
@@ -717,6 +721,8 @@ sub stage1D_updateBasicVendorOS()
 	chroot "."
 		or die _tr("unable to chroot into '%s' (%s)\n", $osDir, $!);
 
+	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
+
 	vlog 1, "updating basic vendor-os...";
 	$self->{'meta-packager'}->startSession();
 	$self->{'meta-packager'}->updateBasicVendorOS();
@@ -799,6 +805,33 @@ sub removeVendorOSFromConfigDB
 }
 
 ################################################################################
+### utility methods
+################################################################################
+sub changePersonalityIfNeeded {
+	my $self = shift;
+
+	my $distroName = $self->{distro}->{'base-name'};
+	if ($self->hostIs64Bit() && $distroName !~ m[_64]) {
+		# trying to handle a 32-bit vendor-OS on a 64-bit machine, so we change
+		# the personality accordingly (from 64-bit to 32-bit):
+		require 'syscall.ph'
+			or die _tr("unable to load '%s'\n", 'syscall.ph');
+		require 'linux/personality.ph'
+			or die _tr("unable to load '%s'\n", 'linux/personality.ph');
+		no strict;
+		syscall &SYS_personality, PER_LINUX32();
+	}
+}
+
+sub hostIs64Bit
+{
+	my $self = shift;
+
+	$self->{arch} = `uname -m`		unless defined $self->{arch};
+	return ($self->{arch} =~ m[64]);
+}
+
+################################################################################
 ### utility functions
 ################################################################################
 sub string2Array
@@ -843,22 +876,6 @@ retry:
 		push @foundFiles, $foundFile;
 	}
 	return @foundFiles;
-}
-
-sub changePersonalityIfNeeded {
-	my $distroName = shift;
-
-	my $arch = `uname -m`;
-	if ($arch =~ m[64] && $distroName !~ m[_64]) {
-		# trying to handle a 32-bit vendor-OS on a 64-bit machine, so we change
-		# the personality accordingly (from 64-bit to 32-bit):
-		require 'syscall.ph'
-			or die _tr("unable to load '%s'\n", 'syscall.ph');
-		require 'linux/personality.ph'
-			or die _tr("unable to load '%s'\n", 'linux/personality.ph');
-		no strict;
-		syscall &SYS_personality, PER_LINUX32();
-	}
 }
 
 1;
