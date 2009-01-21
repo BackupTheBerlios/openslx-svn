@@ -92,13 +92,25 @@ function install_prereq_packages()
 	done
 	popd >/dev/null
 
+	ARCHIVES_PATH="${SLX_METADATA_PATH}/deb-archives"
+	BOOTSTRAP_PATH="${SLX_METADATA_PATH}/debootstrap"
 	test -d "${SLX_STAGE1_PATH}" || \
 		mkdir -p "${SLX_STAGE1_PATH}"
 	for package in ${packagelist}; do
 		package="${SLX_PACKAGE_DOWNLOAD_PATH}/${package}"
 		case "${package}" in
 			*.deb)
-				dpkg --root="${SLX_STAGE1_PATH}" --unpack "${package}"
+				test -d "${ARCHIVES_PATH}" || \
+					mkdir -p "${ARCHIVES_PATH}"
+				test -d "${BOOTSTRAP_PATH}" || \
+					mkdir -p "${BOOTSTRAP_PATH}"
+				pushd "${ARCHIVES_PATH}" >/dev/null
+				ar x "${package}"
+				popd >/dev/null
+				pushd "${BOOTSTRAP_PATH}" >/dev/null
+				tar xfz "${ARCHIVES_PATH}/data.tar.gz"
+				popd >/dev/null
+				rm -rf "${ARCHIVES_PATH}"
 				;;
 			*.rpm)
 				pushd "${SLX_STAGE1_PATH}" >/dev/null
@@ -111,6 +123,16 @@ function install_prereq_packages()
 				;;
 		esac
 	done
+
+	# Ckech if we have to bootstrap
+	if test -x "${BOOTSTRAP_PATH}/usr/sbin/debootstrap"; then
+		DEBOOTSTRAP_DIR="${BOOTSTRAP_PATH}/usr/lib/debootstrap" \
+			"${BOOTSTRAP_PATH}/usr/sbin/debootstrap" \
+			"${SLX_INST_SOURCE_DISTRIBUTION_main}" \
+			"${SLX_STAGE1_PATH}" \
+			"${SLX_INST_SOURCE_BASEURL}"
+		rm -rf "${BOOTSTRAP_PATH}"
+	fi
 
 	# Move package from temp to package dir.
 	if test "${SLX_PACKAGE_DOWNLOAD_PATH}" != "${SLX_PACKAGE_PATH}"; then
