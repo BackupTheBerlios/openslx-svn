@@ -4,7 +4,7 @@
 # clients used within OpenSLX initramfs. The result is written in unified
 # form to the /etc/machine-setup file
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-11-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 15-12-2006
 # Lars Mueller, 23-06-2006
 # Oliver Tappe, 23-06-2006
 #
@@ -61,9 +61,8 @@ enabled via kernel command\n# line)." >>$cfgfile
       -e "s,^P.*,,;s,ntpsrv,ntp_servers,;s,ip,clientip," \
       -e "s,serverid,serverip,;s,subnet,subnet_mask," \
       -e "s,router,gateway,;s,hostname,host_name," \
-      -e "s,dns,domain_name_servers,;s,domain,domain_name," \
+      -e "s,domain,domain_name,;s,dns,domain_name_servers," \
       -e "s,broadcast,broadcast_address,;s,dhc.*,,;/^$/d" \
         >>/tmp/confviadhcp
   ;;
 esac
-

@@ -567,7 +567,7 @@ umount -n /sys || error "$init_errsys" nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1
 mount -n --move /dev /mnt/dev
 chmod a+rwxt /mnt/dev/shm
-killall -9 udevd 2>/dev/null
+killall -9 udevd sleep usleep 2>/dev/null
 [ $DEBUGLEVEL -eq 8 ] && echo "** SLX init ended near $(sysup)"
 umount -n /proc
 # unset old environment variables

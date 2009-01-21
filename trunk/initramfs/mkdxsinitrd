@@ -513,6 +513,14 @@ if [ -n "$use_busybox" ] ; then
   # fake the sh link in busybox environment
   echo -e "#!/bin/ash\n/bin/ash \$@" > ${INSTDIR}/bin/sh
   chmod a+x ${INSTDIR}/bin/sh
+  # binaries useful for debugging purposes
+  if [ $IRFSDEBUG -gt 2 ] ; then
+    for bbins in \
+      strace
+    do
+      cobi ${bbins} bin || echo "Program ${bbins} not found"
+    done
+  fi
 else
   # find and copy a shell to be used within initialramfs
   for bbins in bash ash sh; do
