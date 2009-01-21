@@ -74,13 +74,6 @@ if [ -d /sys ] ; then
     done < /proc/filesystems
 fi
 
-# script stuff written within initrd
-if [ -s /etc/init.d/boot.ld ] ; then
-  rc_reset
-  echo -n "Running post configuration required by initrd"
-  chmod u+x /etc/init.d/boot.ld && /etc/init.d/boot.ld
-  rc_status -v -r
-fi
 # Start blogd, requires /proc and /dev/pts.
 # Export the real device in variable REDIRECT.
 test -x /sbin/blogd -a -n "$REDIRECT" && /sbin/blogd $REDIRECT

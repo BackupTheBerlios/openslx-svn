@@ -294,7 +294,7 @@ else
   # run some specific stuff !?
 fi
 # script for stuff to execute during early bootup
-echo -e "#!/bin/sh\n# skeleton written from $0" >/mnt/etc/${D_INITDIR}/boot.ld
+d_mkbootld init
 echo "fs complete" >/tmp/fscmpl
 
 # write debug file information after filesystem setup completed
@@ -353,6 +353,8 @@ killall -9 dhcpcd dhclient pump 2>/dev/null
 # unmount the bind mounted modules directory
 umount -n /lib/modules/${KERNEL} || error "Unmount of the kernel \
 modules directory failed for some reason."
+# close script for stuff to execute during early bootup
+d_mkbootld close
 # reset hotplug
 echo "/sbin/hotplug" > /proc/sys/kernel/hotplug
 echo ""

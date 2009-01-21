@@ -183,9 +183,9 @@ while getopts :hgk:i:r:o:s:f:n:Sut:d:I:V:a: a ; do
 		    ;;
 		i)  echo "-i requires initrd path parameter"
 		    ;;
-                f)  echo "-m requires file system module list parameter"
+                f)  echo "-f requires file system module list parameter"
 		    ;;
-                n)  echo "-m requires network module list parameter"
+                n)  echo "-n requires network module list parameter"
 		    ;;
 		r)  echo "-r requires root dir parameter"
 		    ;;
@@ -273,15 +273,15 @@ fi
 
 if [ -z $DISTRO ] ; then
   if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
-    DISTRO = suse
-    DISTRO_VER = grep "VERSION" /etc/SuSE-release | sed "s/.*= //"
+    DISTRO=suse
+    DISTRO_VER=`grep "VERSION" /etc/SuSE-release | sed "s/.*= //"`
   fi
 fi
 
 if [ -z $DISTRO ] ; then
   if [ -e ${ROOTDIR}/etc/debian-version ] ; then
-    DISTRO = debian
-    DISTRO_VER = `cat ${ROOTDIR}/etc/debian-version`
+    DISTRO=debian
+    DISTRO_VER=`cat ${ROOTDIR}/etc/debian-version`
   fi
 fi
 
@@ -393,10 +393,10 @@ done
 
 # add kernel modules and dependency files
 if [ -z $KERNVER ] ; then
-  KERNVER = `ls -l ${ROOTDIR}/boot/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
+  KERNVER=`ls -l ${ROOTDIR}/boot/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
 fi
 if [ -z $KERNVER ] ; then
-  KERNVER = `ls -l ${ROOTDIR}/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
+  KERNVER=`ls -l ${ROOTDIR}/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
 fi
 #KERNVER=2.6.12-10-386
 

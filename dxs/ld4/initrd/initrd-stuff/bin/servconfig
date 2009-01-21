@@ -99,7 +99,9 @@ case ${DISTRO} in
       rm -f /mnt/etc/$i/*
     done
     count=10
-    for i in ${D_INITSCRIPTS}; do 
+    # boot.ld is a special runlevel script generated within initial ramdisk
+    # which should be executed before the rest
+    for i in boot.ld ${D_INITSCRIPTS}; do 
       count=`expr $count + 1`
       revcnt=`expr 41 - $count`
       ln -sf /etc${D_INITDIR}/$i /mnt/etc/init.d/${SUSESPECIFICSUBDIR}S${count}$i

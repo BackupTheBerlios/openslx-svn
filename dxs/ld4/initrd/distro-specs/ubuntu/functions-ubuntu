@@ -2,9 +2,9 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-01-2006
-#		Blabla
-#		Blub
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-01-2006
+#		Nico Dietrich
+#		Felix Endres
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -199,4 +199,25 @@ config_dreshal () {
 if [ "x$start_dreshal" = "xyes" ]; then
   echo >/dev/null
 fi
+}
+
+# initialize boot.ld - skript to be executed during early system startup
+# (before most of the normal boot init scripts)
+# this script should operate like a normal runlevel script (fixme!!)
+d_bootld () {
+case "$1" in
+  init)
+    echo -e "#!/bin/sh\n# skeleton of /etc/${D_INITDIR}/boot.ld written \
+from $0" >/mnt/etc/${D_INITDIR}/boot.ld
+    echo -e '\n\ncase "$1" in    start)' \
+      >>/mnt/etc/${D_INITDIR}/boot.ld
+    echo -e '\techo -n "Running post configuration required by initrd"' \
+      >>/mnt/etc/${D_INITDIR}/boot.ld
+  ;;
+  close)
+    echo -e "\t;;\n    stop)\n\t;;esac\nexit 0" \
+      >>/mnt/etc/${D_INITDIR}/boot.ld
+
+  ;;
+esac
 }
