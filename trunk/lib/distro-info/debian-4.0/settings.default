@@ -9,21 +9,24 @@ release-name = etch
 	repo-subdir = dists
 	file-for-speedtest = dists/etch/main/binary-i386/Packages.bz2
 </repository>
-<selection default>
+<selection minimal>
 	packages = <<END
 		linux-image-486
 		locales-all
 	END
 </selection>
 <selection gnome>
-	base = default
+	base = minimal
 	packages = <<END
 		gnome
 	END
 </selection>
 <selection kde>
-	base = default
+	base = minimal
 	packages = <<END
 		kde
 	END
+</selection>
+<selection default>
+	base = minimal
 </selection>

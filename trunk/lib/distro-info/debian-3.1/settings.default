@@ -9,26 +9,29 @@ release-name = sarge
 	repo-subdir = dists
 	file-for-speedtest = dists/sarge/main/binary-i386/Packages.gz
 </repository>
-<selection default>
+<selection minimal>
 	packages = <<END
 		kernel-image-2.6-386
 		locales
 	END
 </selection>
 <selection gnome>
-	base = default
+	base = minimal
 	packages = <<END
 		gnome
 	END
 </selection>
 <selection kde>
-	base = default
+	base = minimal
 	packages = <<END
 		kde
 	END
 </selection>
+<selection default>
+	base = minimal
+</selection>
 <selection openslx-build>
-	base = default
+	base = minimal
 	packages = <<END
 		bzip2
 		gcc

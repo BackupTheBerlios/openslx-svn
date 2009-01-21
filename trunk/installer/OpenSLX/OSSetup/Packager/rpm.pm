@@ -40,9 +40,7 @@ sub bootstrap
 	foreach my $pkg (@$pkgs) {
 		vlog(2, "unpacking package $pkg...");
 		if (slxsystem("ash", "-c", "rpm2cpio $pkg | cpio -i -d -u")) {
-			warn _tr("unable to unpack package <%s> (%s)", $pkg, $!);
-				# TODO: change this back to die() if cpio-ing fedora6-glibc
-				#       doesn't crash anymore... (needs busybox update, I suppose)
+			die _tr("unable to unpack package <%s> (%s)", $pkg, $!);
 		}
 	}
 	return;
@@ -62,22 +60,6 @@ sub importTrustedPackageKeys
 			die _tr("unable to import package key <%s> (%s)\n", $keyFile, $!);
 		}
 	}
-	return;
-}
-
-sub installPrerequiredPackages
-{
-	my $self = shift;
-	my $pkgs = shift;
-	my $finalPath = shift;
-
-	return unless defined $pkgs && scalar(@$pkgs);
-
-	if (slxsystem("rpm", "--root=$finalPath", "-ivh", "--nodeps", "--noscripts",
-			   "--force", @$pkgs)) {
-		die _tr("error during prerequired-package-installation (%s)\n", $!);
-	}
-	slxsystem("rm", "-rf", "$finalPath/var/lib/rpm");
 	return;
 }
 

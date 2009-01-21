@@ -700,8 +700,9 @@ sub _readDistroInfo
 	}
 
 	# expand all selections:
+	my $seen = {};
 	foreach my $selKey (keys %{$self->{'distro-info'}->{selection}}) {
-		$self->_expandSelection($selKey);
+		$self->_expandSelection($selKey, $seen);
 	}
 
 	# dump distro-info, if asked for:
@@ -942,7 +943,7 @@ sub _expandSelection
 {
 	my $self   = shift;
 	my $selKey = shift;
-	my $seen =   shift || {};
+	my $seen =   shift;
 
 	return if $seen->{$selKey};
 	$seen->{$selKey} = 1;
@@ -956,8 +957,9 @@ sub _expandSelection
 		return if !exists $self->{'distro-info'}->{selection}->{$base};
 		my $baseSelection = $self->{'distro-info'}->{selection}->{$base};
 		$self->_expandSelection($base, $seen);
-		$selection->{packages}
-			= "$baseSelection->{packages}\n$selection->{packages}";
+		my $packages = $selection->{packages} || '';
+		my $basePackages = $baseSelection->{packages} || '';
+		$selection->{packages} = $basePackages . "\n" . $packages;
 	}
 	return;
 }
@@ -1406,10 +1408,6 @@ sub _stage1C_chrootAndInstallBasicVendorOS
 		$self->{packager}->importTrustedPackageKeys(\@keyFiles, $stage1cDir);
 	}
 
-	# install prerequired packages (if distro requires it)
-	$self->{packager}->installPrerequiredPackages(
-		$self->{'prereq-packages'}, $stage1cDir
-	);
 	# install bootstrap packages
 	$self->{packager}->installPackages(
 		$self->{'bootstrap-packages'}, $stage1cDir

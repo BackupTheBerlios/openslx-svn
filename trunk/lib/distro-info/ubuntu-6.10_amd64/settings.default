@@ -1,6 +1,7 @@
 arch = amd64
 package-subdir = pool
 prereq-packages = main/d/debootstrap/debootstrap_0.3.3.2ubuntu3_all.deb
+release-name = edgy
 <repository base>
 	components = main restricted
 	distribution = edgy
@@ -22,28 +23,30 @@ prereq-packages = main/d/debootstrap/debootstrap_0.3.3.2ubuntu3_all.deb
 	repo-subdir = dists
 	file-for-speedtest = dists/edgy-updates/main/binary-amd64/Packages.bz2
 </repository>
-<selection default>
+<selection minimal>
 	packages = <<END
 		language-pack-de
 		linux-image-generic
 	END
 </selection>
 <selection gnome>
-	base = default
+	base = minimal
 	packages = <<END
 		ubuntu-desktop
 	END
 </selection>
 <selection kde>
-	base = default
+	base = minimal
 	packages = <<END
 		kubuntu-desktop
 	END
 </selection>
 <selection xfce>
-	base = default
+	base = minimal
 	packages = <<END
 		xubuntu-desktop
 	END
 </selection>
-release-name = edgy
+<selection default>
+	base = minimal
+</selection>

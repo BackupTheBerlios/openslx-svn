@@ -81,7 +81,8 @@ sub preSystemInstallationHook
 	# replace /usr/sbin/invoke-rc.d by a dummy, in order to avoid a whole lot
 	# of initscripts being started. Wishful thinking: there should be another
 	# way to stop Ubuntu from doing this, as this is not really very supportive
-	# of folder-based installations ...
+	# of folder-based installations (then again: I may simply be too stupid
+	# to find out how it is supposed to work ...)
 	rename('/usr/sbin/invoke-rc.d', '/usr/sbin/_invoke-rc.d');
 	spitFile('/usr/sbin/invoke-rc.d', "#! /bin/sh\nexit 0\n");
 	chmod 0755, '/usr/sbin/invoke-rc.d';

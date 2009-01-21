@@ -4,6 +4,7 @@ bootstrap-packages = <<END
 	x86_64/ash-1.6.1-13.x86_64.rpm
 	x86_64/bash-3.1-22.x86_64.rpm x86_64/bash-3.1-24.3.x86_64.rpm
 	x86_64/blocxx-1.0.0-15.x86_64.rpm
+	x86_64/bzip2-1.0.3-15.x86_64.rpm
 	x86_64/coreutils-5.93-20.x86_64.rpm
 	x86_64/cpio-2.6-17.x86_64.rpm
 	x86_64/cracklib-2.8.6-12.x86_64.rpm
@@ -18,6 +19,7 @@ bootstrap-packages = <<END
 	x86_64/findutils-4.2.27-12.x86_64.rpm
 	x86_64/gawk-3.1.5-18.x86_64.rpm
 	x86_64/gdbm-1.8.3-241.x86_64.rpm
+	x86_64/glibc-2.4-25.x86_64.rpm x86_64/glibc-2.4-31.1.x86_64.rpm
 	x86_64/glibc-32bit-2.4-27.x86_64.rpm x86_64/glibc-32bit-2.4-30.x86_64.rpm x86_64/glibc-32bit-2.4-31.1.x86_64.rpm
 	x86_64/gpg-1.4.2-23.x86_64.rpm x86_64/gpg-1.4.2-23.7.x86_64.rpm
 	x86_64/grep-2.5.1a-18.x86_64.rpm
@@ -53,13 +55,16 @@ bootstrap-packages = <<END
 	x86_64/perl-Bootloader-0.2.20-7.x86_64.rpm x86_64/perl-Bootloader-0.2.27-0.4.x86_64.rpm
 	x86_64/perl-gettext-1.05-11.x86_64.rpm
 	x86_64/permissions-2006.2.24-8.x86_64.rpm
+	x86_64/popt-1.7-268.x86_64.rpm
 	x86_64/readline-5.1-22.x86_64.rpm
 	x86_64/reiserfs-3.6.19-17.x86_64.rpm
+	x86_64/rpm-4.4.2-40.x86_64.rpm x86_64/rpm-4.4.2-43.4.x86_64.rpm
 	x86_64/sed-4.1.4-15.x86_64.rpm
 	x86_64/suse-release-10.1-9.x86_64.rpm
 	x86_64/sysvinit-2.86-19.x86_64.rpm
 	x86_64/udev-085-29.x86_64.rpm x86_64/udev-085-30.15.x86_64.rpm
 	x86_64/util-linux-2.12r-35.x86_64.rpm
+	x86_64/zlib-1.2.3-13.x86_64.rpm
 	noarch/suse-build-key-1.0-685.noarch.rpm
 END
 <metapackager smart>
@@ -106,13 +111,18 @@ END
 	name = SUSE Linux 10.1 updates
 	file-for-speedtest = repodata/primary.xml.gz
 </repository>
-<selection default>
+<selection minimal>
 	packages = <<END
 		glibc-locale
 	END
 </selection>
+<selection kde>
+	base = minimal
+	packages = <<END
+	END
+</selection>
 <selection gnome>
-	base = default
+	base = minimal
 	packages = <<END
 		3ddiag
 		855resolution
@@ -959,4 +969,7 @@ END
 		zsh
 		zvbi
 	END
+</selection>
+<selection default>
+	base = minimal
 </selection>
