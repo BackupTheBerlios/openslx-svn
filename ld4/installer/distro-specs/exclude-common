@@ -15,6 +15,7 @@
 + /usr
 + /var
 - /etc/shadow*
+- /etc/dxs
 - /dev/*
 - /proc/*
 - /sys/*
@@ -22,7 +23,8 @@
 - /root/*
 - /home/*
 - /mnt/*
-- /*
 - .svn
 - *~
+- .*.cmd
 - *lost+found*
+- /*

@@ -4,9 +4,9 @@
 #               cloning from rsync source for Diskless X Stations (v4.0)
 #
 # Author(s):    Nico Dietrich, 22-03-2006
-#		Dirk von Suchodoletz <dirk@goe.net>, 30-03-2006
+#		Dirk von Suchodoletz <dirk@goe.net>, 03-04-2006
 #
-# Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
+# Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
 
 
@@ -112,19 +112,28 @@ configure() {
     fi
   else
     cp .config.default .config
+#  # FIXME!! network autodetection seems not to work correctly
+
+# ---> Variablenraten macht eigentlich nur hier Sinn, da sonst ja Werte vom
+# letzten Mal
+#  if ! [ -z "${netmask}" -a -z "${broadcast}" -a -z "${netname}" -a -z "${server}" ] ; then
+#    ipcfg=( `ifconfig eth0 | grep "inet addr" | sed -e "s,[a-zA-Z]*:,,g"` )
+#    netmask=${ipcfg[3]}
+#    broadcast=${ipcfg[2]}
+#    # quickhack (more intelligent solution needed ...)
+#    netname=`route -n | grep -m 1 eth0 | grep -v "UG" | awk '{ print $1 }'`
+#    server=${ipcfg[1]}
+#  fi
   fi
   . .config
-
-  # FIXME!! network autodetection seems not to work correctly
-  if ! [ -z "${netmask}" -a -z "${broadcast}" -a -z "${netname}" -a -z "${server}" ] ; then
-    ipcfg=( `ifconfig eth0 | grep "inet addr" | sed -e "s,[a-zA-Z]*:,,g"` )
-    netmask=${ipcfg[3]}
-    broadcast=${ipcfg[2]}
-    # quickhack (more intelligent solution needed ...)
-    netname=`route -n | grep -m 1 eth0 | grep -v "UG" | awk '{ print $1 }'`
-    server=${ipcfg[1]}
+  
+  overwrite_configs="yes"
+  echo -n "Overwrite server configs or write *.new files? [Y/n] "
+  read userinput
+  if [ "$userinput" = "no" -o "$userinput" = "n" -o \
+       "$userinput" = "N" -o "$userinput" = "No" ] ; then
+    overwrite_configs="no"
   fi
-
 
   # try to detect server architecture
   if [ -z "${server_distro}" ] ; then
@@ -161,7 +170,8 @@ configure() {
 
   # ask for client distro
   ask "Client distribution (e.g. debian): " client_distro ${client_distro}
-  ask "Client distribution version (numerical - e.g. 3.1): " client_distro_ver ${client_distro_ver}
+  ask "Client distribution version (numerical - e.g. 3.1): " \
+    client_distro_ver ${client_distro_ver}
   distro_check client_distro client_distro_ver
   echo "Using ${client_distro} as client distribution"
 
@@ -170,6 +180,9 @@ configure() {
   fi
 
   . distro-specs/config-${server_distro}
+
+echo "b:"$netmask
+
 
   ask "Path for client system: " rootdir $rootdir
   ask "Path for tftpboot: " tftpbootdir $tftpbootdir
@@ -199,29 +212,30 @@ configure() {
 
   # nfs / nbd / squash-fs?
   ask "Would you like to use NBD? (y/N): " nbdyes $nbdyes
-  ask "Which kind of NBD export (ext2/squashfs)?: " nbdfs $nbdfs 
-  
+  if [ "$nbdyes" = "yes" -o "$nbdyes" = "y" -o "$nbdyes" = "Y" ] ; then
+    ask "Which kind of NBD export (ext2/squashfs)?: " nbdfs $nbdfs
+  fi
 
   # password for pxeboot-menu (caution: you can easily retrieve it in clear
   # text!!)
   pxe_passwd="master"
 }
 
-
 copy_system() {
   # allow generic (identical over different versions) or specific exclude
   # files
   if [ -e distro-specs/exclude-${client_distro}-${client_distro_ver} ] ; then
-    local excludefile="distro-specs/exclude-${client_distro}-${client_distro_ver}"
+    local file="distro-specs/exclude-${client_distro}-${client_distro_ver}"
   else
-    local excludefile="distro-specs/exclude-${client_distro}"
+    local file="distro-specs/exclude-${client_distro}"
   fi
-  echo $excludefile
-  echo -e "\n\nSyncing system now\nPlease enter root password of client machine\n"
-  rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-common \
-    --exclude-from=${excludefile} ${rsyncsource} ${rootdir} || \
-    { echo "Rsync failed" ; exit 1 ; }
+  cat $file distro-specs/exclude-common|grep -e "^+ " > /tmp/dxs-exclude-list
+  cat $file distro-specs/exclude-common|grep -e "^- " >> /tmp/dxs-exclude-list
 
+  echo -e "\n\nSyncing system now\nPlease enter root password of client machine\n"
+  rsync -avDe ssh --delete --exclude-from=/tmp/dxs-exclude-list \
+    ${rsyncsource} ${rootdir} || { echo "Rsync failed" ; exit 1 ; }
+  rm /tmp/dxs-exclude-list
   # generate error message in case rsync didn't work and exit.
 
 }
@@ -230,14 +244,17 @@ create_nbd() {
   if [ "$nbdyes" = "yes" -o "$nbdyes" = "y" -o "$nbdyes" = "Y" ] ; then
     # TODO: mksquashfs (background process)
     if [ "$nbdfs" = "squashfs" ] ; then
-      echo -e "\nGenerating "
+      echo -e "\nGenerating SquashFS imge ${rootdir}.squashfs (ca. 30 min.)"
       if `which mksquashfs` ; then
         mksquashfs ${rootdir} ${rootdir}.squashfs &
       else
         echo -e "Tool 'mksquashfs' not found, skipping"
       fi
     else
-      echo -e "\nGenerating "
+      # to be extended
+      # check for space occupied in ${rootdir}, add 10%, setup container
+      # ext2 formatting ...
+      echo -e "\nGenerating ..."
     fi
   fi
 }
@@ -301,12 +318,13 @@ setup_server () {
   done
 
   # copy the client configuration default file - machine-setup
-  cp default_files/machine-setup_default \
-    ${client_conf}
+  cp default_files/machine-setup_default ${client_conf}
 
   # creating new configuration files in $dxs_conf  
   # dhcp
-  sed -e "s,@@@server@@@,${server},g;s,@@@netname@@@,${netname},g;s,@@@netmask@@@,${netmask},g;s,@@@broadcast@@@,${broadcast},g" default_files/dhcpd.conf > ${dxs_conf}/${dxs_dhcpd_conf}-${timestamp}
+  sed -e "s,@@@server@@@,${server},g;s,@@@netname@@@,${netname},g" \
+      -e "s,@@@netmask@@@,${netmask},g;s,@@@broadcast@@@,${broadcast},g" \
+      default_files/dhcpd.conf > ${dxs_conf}/${dxs_dhcpd_conf}-${timestamp}
   # TODO: sed -e @@@example1@@@, netname+1 etc. - which ip addresses are safe to use?
 
   # atftpd
@@ -342,25 +360,36 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" >> ${dxs_conf}/${dxs_
     j=$j+1
   done
   
-  
-  # backing up original files
+  # backing up original files, if files should not be overwritten keep them
+  # in place and create files with ".new" extension
+  if [ "$overwrite_configs" = "no" ] ; then 
+    extension=".new"
+    keep="yes"
+  fi
+
   for cfile in \
     ${dhcpd_conf} ${atftpd_conf} ${exports_conf} \
     ${tftpbootdir}/${pxedefault_conf} ${client_conf} ; do
     if [ -f ${cfile} -a ! -L ${cfile} ] ; then
-      echo "Copying old ${cfile} to ${cfile}.original"
-      mv ${cfile} ${cfile}.original
+      if [ -z "$keep" ] ; then 
+        echo "Copying old ${cfile} to ${cfile}.original"
+        mv ${cfile} ${cfile}.original
+      else
+        echo "Keeping old ${cfile} and generate ${cfile}.new instead"
+      fi
     elif [ -L ${cfile} ] ; then 
-      unlink ${cfile}
+      [ -z "$keep" ] && unlink ${cfile}
     fi
   done
 
   # linking files
-  for cfile in "${dxs_dhcpd_conf} ${dhcpd_conf}" "${dxs_atftpd_conf} ${atftpd_conf}" "${dxs_exports_conf} ${exports_conf}" "${dxs_pxedefault_conf} ${tftpbootdir}/${pxedefault_conf}" ; do
+  for cfile in "${dxs_dhcpd_conf} ${dhcpd_conf}" \
+               "${dxs_atftpd_conf} ${atftpd_conf}" \
+               "${dxs_pxedefault_conf} ${tftpbootdir}/${pxedefault_conf}" \
+               "${dxs_exports_conf} ${exports_conf}" ; do
     set -- $cfile
-    ln -s ${dxs_conf}/${1}-${timestamp} ${2}
+    ln -s ${dxs_conf}/${1}-${timestamp} ${2}${extension}
   done
-
 }
 
 
