@@ -169,7 +169,7 @@ test -n "$domain_name" && \
 search "$domain_name >/mnt/etc/resolv.conf
 test -n "$domain_name_servers" && {
   for name in $domain_name_servers; do
-    echo name $nameserver >>/mnt/etc/resolv.conf;
+    echo nameserver $name >>/mnt/etc/resolv.conf;
   done; }
 
 #############################################################################
