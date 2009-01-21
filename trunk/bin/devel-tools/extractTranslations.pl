@@ -20,6 +20,7 @@ extractTranslations.pl
     any translations already existing in these modules will be preserved.
 ];
 
+use Cwd;
 use File::Find;
 use Getopt::Long;
 use Pod::Usage;
@@ -53,6 +54,7 @@ use FindBin;
 my $path = "$FindBin::RealBin/../..";
 chdir($path)
 	or die "can't chdir to repository-root <$path> ($!)";
+print "searching in ".cwd()."\n";
 
 find(\&ExtractTrStrings, '.');
 
@@ -79,14 +81,14 @@ sub ExtractTrStrings
 	return if -d;
 	open(F, "< $_")
 		or die "could not open file $_ for reading!";
-	$/ = undef;
+	local $/ = undef;
 	my $text = <F>;
 	close(F);
 	if ($File::Find::name !~ m[\.pm$] && $text !~ m[^#!.+/perl]im) {
 		# ignore anything other than perl-modules and -scripts
 		return;
 	}
-	print "$File::Find::name...\n" if $verbose;
+	print "$File::Find::name...\n";
 	$fileCount++;
 	while($text =~ m[_tr\s*\(\s*(.+?)\s*\);]gos) {
 		# NOTE: that cheesy regex relies on the string ');' not being used
