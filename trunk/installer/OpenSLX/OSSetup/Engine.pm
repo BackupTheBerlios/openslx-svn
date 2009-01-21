@@ -104,6 +104,12 @@ sub initialize
 	my $distroModule
 		= "OpenSLX::OSSetup::Distro::"
 			.$supportedDistros{lc($distroName)}->{module};
+	if ($actionType eq 'clone') {
+		# fallback to generic clone module, such that we can clone
+		# distro's for which there is no specific distro-module yet
+		# (like for example for Gentoo):
+		$distroModule = "OpenSLX::OSSetup::Distro::Any_Clone";
+	}
 	unless (eval "require $distroModule") {
 		if ($! == 2) {
 			die _tr("Distro-module <%s> not found!\n", $distroModule);
@@ -120,13 +126,15 @@ sub initialize
 	$distro->initialize($self);
 	$self->{distro} = $distro;
 
-	# setup path to distribution-specific info:
-	my $distroInfoDir = "../lib/distro-info/$distro->{'base-name'}";
-	if (!-d $distroInfoDir) {
-		die _tr("unable to find distro-info for distro '%s'\n", $distro->{'base-name'});
+	if ($actionType ne 'clone') {
+		# setup path to distribution-specific info:
+		my $distroInfoDir = "../lib/distro-info/$distro->{'base-name'}";
+		if (!-d $distroInfoDir) {
+			die _tr("unable to find distro-info for distro '%s'\n", $distro->{'base-name'});
+		}
+		$self->{'distro-info-dir'} = $distroInfoDir;
+		$self->readDistroInfo();
 	}
-	$self->{'distro-info-dir'} = $distroInfoDir;
-	$self->readDistroInfo();
 
 	if (!$self->{'action-type'} eq 'install'
 	&& !exists $self->{'distro-info'}->{'selection'}->{$selectionName}) {
@@ -141,9 +149,10 @@ sub initialize
 		= "$openslxConfig{'stage1-path'}/$self->{'vendor-os-name'}";
 	vlog 1, "vendor-OS will be installed to '$self-vendor-os-path'}'";
 
-	$self->createPackager();
-	$self->createMetaPackager();
-
+	if ($actionType ne 'clone') {
+		$self->createPackager();
+		$self->createMetaPackager();
+	}
 }
 
 sub installVendorOS
