@@ -277,10 +277,11 @@ mkdir -p ${INSTDIR}/etc/sysconfig
 #  done
 #fi
 
+
 if [ -z "${DISTRO}" ] ; then
   if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
     DISTRO=suse
-    DISTRO_VER=`grep "VERSION" /etc/SuSE-release | sed "s/.*= //"`
+    DISTRO_VER=`grep "VERSION" ${ROOTDIR}/etc/SuSE-release | sed "s/.*= //"`
   elif [ -e ${ROOTDIR}/etc/debian-version ] ; then
     DISTRO=debian
     DISTRO_VER=`cat ${ROOTDIR}/etc/debian-version`
@@ -331,10 +332,9 @@ done
 
 # if no klibc
 for bbins in ip ifconfig; do
-  if cobi ${bbins} bin
-  then 
+  if cobi ${bbins} bin ; then 
     LRCIP=/bin/${bbins} 
-    [ "${LRCIP}" = "ifconfig" ] && cobi route bin
+    [ "${bbins}" = "ifconfig" ] && cobi route bin
     break
   else echo "Binary not found"; fi
 done
