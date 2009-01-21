@@ -109,7 +109,13 @@ function install_prereq_packages()
 	if test "${SLX_PACKAGE_DOWNLOAD_PATH}" != "${SLX_PACKAGE_PATH}"; then
 		test -d "${SLX_PACKAGE_PATH}" || \
 			mkdir -p "${SLX_PACKAGE_PATH}"
-		mv "${SLX_PACKAGE_DOWNLOAD_PATH}/"*.rpm "${SLX_PACKAGE_PATH}/"
+		pushd "${SLX_PACKAGE_DOWNLOAD_PATH}" >/dev/null
+		for package in *.deb *.rpm; do
+			test -f ${package} || \
+				continue
+			mv ${package} "${SLX_PACKAGE_PATH}"
+		done
+		popd >/dev/null
 		rmdir "${SLX_PACKAGE_DOWNLOAD_PATH}"
 	fi
 
