@@ -2,7 +2,7 @@
 #		linux diskless clients (included by init, hwautocfg,
 #		servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 28-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
 #	 	Felix Endres, 30-04-2006
 #		Tobias Maier
 #
@@ -26,6 +26,10 @@ postinit () {
 # distro specific general function called from servconfig script
 config_distro () {
   :
+}
+# udev/hotplug - auto device discovery service
+udev_hotplug () {
+ : 
 }
 
 
@@ -694,27 +698,28 @@ case "$country" in
   ;;
 esac
 }
-
-######################### dummy functions
-
-preinit () {
-  :
+#######################################################################
+# setup initial boot scripts (for most standard distributions, gentoo
+# is to be handled differently)
+initial_boot () {
+for i in ${D_RCDIRS} ${D_INITBOOTD} ; do
+  rm -f /mnt/etc/$i/*
+done
+count=10
+# boot.ld is a special runlevel script generated within initial ramdisk
+# which should be executed before the rest
+for i in boot.ld ${D_INITSCRIPTS}; do 
+  count=`expr $count + 1`
+  revcnt=`expr 41 - $count`
+  ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/S${count}$i
+  ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/K${revcnt}$i
+done
 }
 
-postinit () {
-  :
-}
-
-# distro specific function called from servconfig script
-config_distro () {
- : 
-}
+#######################################################################
+# dummy functions
 
 # AUS SuSE-9.3
-# udev/hotplug - auto device discovery service
-udev_hotplug () {
- : 
-}
 
 # linking runlevel scripts
 rllinker () {

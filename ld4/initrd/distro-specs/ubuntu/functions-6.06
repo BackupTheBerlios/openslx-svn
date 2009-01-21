@@ -1,4 +1,4 @@
-# Description:  configuration script for Ubuntu V5.10 to configure
+# Description:  configuration script for Ubuntu V6.06 to configure
 #               linux diskless clients (executed within initial
 #               ramdisk after genconfig) - overwrites settings from the
 #               ubuntu default file (functions-default)

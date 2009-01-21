@@ -1,13 +1,13 @@
 #!/bin/bash
 #
 # Description:  universal (distro independent) generator for initial
-#		ramdisks for linux diskless clients 
+#               ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 22-06-2006
-#		Nico Dietrich
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
+#               Nico Dietrich
 #               Felix Endres
 #
-# Version:      0.3.2b
+# Version:      0.4.0a
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 
@@ -66,7 +66,7 @@ usage()
   echo "        gewünscht  ist  kann  diese  hier angegeben werden (funktioniert"
   echo "        natürlich nur für auf dem  Hostsystem  vorhandene  Kernelversion"
   echo "        nen)."
-  echo "  -i Pfad"
+  echo "  -i path/file"
   echo "        Optionale  Angabe wo die erstellte ramdisk hingeschrieben werden"
   echo "        soll."
   echo "  -f Modulliste"
@@ -75,9 +75,9 @@ usage()
   echo "  -n Modulliste"
   echo "        Kernelmodule zum Betrieb der Clientnetzwerkkarten (z.B. e100 tg3"
   echo "        via-rhine)."
-  echo "  -r Pfad"
+  echo "  -r path"
   echo "        Pfad zum Wurzelverzeichnis des zu exportierenden  Betriebsystems"
-  echo "        (z.B. /nfsroot)."
+  echo "        (z.B. /export/10.1)."
   echo "  -s screensize (for splash)"
   echo "  -d debug (add special modules to initramfs)"
   echo "  -D Name"
@@ -148,7 +148,7 @@ else
         -e "s,@@@NWMODULES@@@,${NWMODULES},g" \
         -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
         -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
-	-e "s,@@@DATE@@@,${DATE},g;/^#[^!].*/d" \
+        -e "s,@@@DATE@@@,${DATE},g;/^#[^!].*/d" \
           initrd-stuff/${FILENAME} >> ${INSTDIR}/${FILENAME}
   fi
 fi
@@ -157,35 +157,50 @@ fi
 # this function incrementally concats and copies distro-specific functions, 
 # configuration variables and files
 copy_distro_stuff() {
-  # first insert dependencies
-  case $1 in
-    suse)
-      case $2 in
-        9.3)
-        ;;
-        10.0)
-          copy_distro_stuff suse 9.3
-        ;;
-        10.1)
-          copy_distro_stuff suse 10.0
-        ;; 
-      esac
-    ;;
-    debian)
-    ;;
-    ubuntu)
-    ;;
-    gentoo)
-    ;;
-  esac
+# Konzept geaendert!!!
+#Konzept der Konfiguration mittels
+#functions-* und config-* zu veraendert: Es gibt eine Default-Konfig, die
+#dann von der jeweiligen Version angepasst wird - Ketten von sowas wie
+#config-9.3 wird von config-10.0 wird von config-10.1 ueberschrieben usw.
+#soll durch einfaches config-default -> config-9.3, ... -> config-10.0
+#... abgeloest werden. Das erlaubt langfristig auch dafuer zu sorgen, dass
+#im config-def alles Wesentliche bezogen auf die aktuellsten Version drin
+#ist.
 
-  # now insert the current stuff
+#  # first insert dependencies
+#  case $1 in
+#    suse)
+#      case $2 in
+#        9.3)
+#        ;;
+#        10.0)
+#          copy_distro_stuff suse 9.3
+#        ;;
+#        10.1)
+#          copy_distro_stuff suse 10.0
+#        ;; 
+#      esac
+#    ;;
+#    debian)
+#    ;;
+#    ubuntu)
+#    ;;
+#    gentoo)
+#    ;;
+#  esac
+
+  # copy first the default distro dependent configuration (variables) and
+  # function files, then append to each the distro/version specific file
+  # variables, functions set in default might that way be overwritten by
+  # definitions in distro/version specific files
+  cat distro-specs/$1/config-default >${INSTDIR}/etc/sysconfig/config
   cat distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig/config
+  cat distro-specs/$1/functions-default >${INSTDIR}/etc/distro-functions
   cat distro-specs/$1/functions-$2 >>${INSTDIR}/etc/distro-functions
   # would be cool not to copy .svn here ...
   # fixme!! works only for etc directories. If dir exists then next copy places
   # file into the existing dir
-  cp -a distro-specs/$1/files-$2 ${INSTDIR}/etc/sysconfig/files 2>/dev/null
+  cp -a distro-specs/$1/files-default ${INSTDIR}/etc/sysconfig/files 2>/dev/null
   # ... so remove them afterwards ...
   find ${INSTDIR}/etc/sysconfig/files \
     -regex ".*/\..*" -exec rm -rf {} 2>/dev/null \;
@@ -265,7 +280,7 @@ while getopts :hgk:i:r:o:s:f:n:Sut:d:v:I:V:a: a ; do
     I)  NET_IF=$OPTARG;;         # Not in use 
     a)  acpi_dsdt="$OPTARG";;    # Not in use
     S)  use_selinux=1;;          # Not in use
-    V)  vendor_init_script="$OPTARG";; # Not in use
+    l)  local_init_script="$OPTARG";; # Not in use
     u)  sysfs_root=1             # Not in use
 	    use_udev=
 	    ;;
@@ -291,11 +306,6 @@ ln -s /bin ${INSTDIR}/sbin
 mkdir -p ${INSTDIR}/usr/share
 # needed for KNOPPIX hwsetup not to confuse with ${D_SYSCONFDIR}
 mkdir -p ${INSTDIR}/etc/sysconfig
-
-# temporary ldd for getting library information out of initrd binaries
-# fixme: ugly bug in ldd prevents renaming ...
-mv ${ROOTDIR}/usr/bin/ldd ${ROOTDIR}/usr/bin/ldd.orig
-cp `which ldd` ${ROOTDIR}/usr/bin/ldd
 
 # if still no distro name set, try to find it using significant files
 if [ -z "${DISTRO}" ] ; then
@@ -478,8 +488,6 @@ for lib in `cat ${INSTDIR}/tmp/libraries 2>/dev/null | \
     cp /${ROOTDIR}/${lib} ${INSTDIR}/lib
 done
 rm ${INSTDIR}/tmp/libraries
-# fixme: ugly ldd bug, see above
-mv ${ROOTDIR}/usr/bin/ldd.orig ${ROOTDIR}/usr/bin/ldd
 
 # add kernel modules and dependency files
 if [ -z "$KERNVER" ] ; then
@@ -584,17 +592,20 @@ else
 disabled\nroot_pw='"'$1$T7VD/mmQ$aCP1WEaWplEsHe9khv4kK.'"'" \
     > ${INSTDIR}/etc/machine-setup
 fi
+
 # custom init script for normal client start after initramfs
+# fixme: should be handled the same way as user-supplied init scripts
 if [ -f /etc/dxs/client.cfg/boot.local.default ] ; then
   cp /etc/dxs/client.cfg/boot.local.default ${INSTDIR}/etc/boot.local
 fi
 
-# finally copy vendor-supplied preinit and postinit files
-for i in vendor_preinit vendor_postinit ; do
-  if [ -f /etc/dxs/init.local/"${i}" ] ; then
-    cp /etc/dxs/init.local/"$i" ${INSTDIR}/bin/"$i"
-  fi
-done
+# finally copy user-supplied preinit and postinit files
+# fixme: where are these files coming from??
+#for i in vendor_preinit vendor_postinit ; do
+#  if [ -f /etc/dxs/init.local/"${i}" ] ; then
+#    cp /etc/dxs/init.local/"$i" ${INSTDIR}/bin/"$i"
+#  fi
+#done
 
 #########################################################################
 # End of file copy procedures

@@ -1,6 +1,6 @@
-# Description:  distro specific settings for Gentoo
+# Description:  distro specific settings for Gentoo 2005.1
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
 #
 # Copyright:    (c) 2005,6 - RZ Universitaet Freiburg
 
@@ -14,34 +14,10 @@
 # TempFS usage
 # D_DIRINDXS - directories in client filesystem which should be present 
 # anyhow
-# D_BINDMNT - any code which is specific in bind mount environment
 # D_RCDIRS - runlevel directories relative to /etc
 # D_HWMODTOIGNORE - hardware modules which should not tried to load (because
 # already in kernel, nonexistent, ...)
 # D_BOOTLOCAL - script for user specified stuff which should be started 
 # during client bootup, path and file relative to /etc
 
-D_SYSCONFDIR=conf.d
-D_ETCEXCL="opt/gnome/gconf/*\n*.old\n*-\n\
-etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
-pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
-X11/xdm/pixmaps\ndhclient.script\nrunlevels/boot/*\n\
-runlevels/default/*\nrunlevels/nonetwork/*"
-D_BINDMPTS="tmp root home"
-D_DIRINBINDMNT="/var/run /var/log /var/tmp"
-D_RODIRSINRW="/var/adm /var/lib/texmf"
-D_DIRINDXS="/var/X11R6/compose-cache \
-/var/run/sysconfig/tmp /var/lib/init.d/started /var/lib/nobody \
-/var/lib/bluetooth \
-/var/lib/texmf /var/lib/nfs/sm /var/lib/nfs/state \
-/var/lib/misc /var/lib/acpi /var/spool/cron \
-/var/lock/subsys/sysconfig"
-D_BINDMNT="# spielspass fuer splash"
-D_INITDIR="/init.d"
-D_INITBOOTD="/runlevels/boot"
-D_RCDIRS="/runlevels/default /runlevels/nonetwork /runlevels/single"
-D_INITSCRIPTS="bootmisc clock urandom boot.ld"
-D_XF86CONFFILE="/etc/X11/xorg.conf"
-D_XFONTPATH="/usr/share/fonts/*"
-D_DEFAULTCOUNTRY="de"
-D_BOOTLOCAL="conf.d/local.start"
+# nothing changed yet

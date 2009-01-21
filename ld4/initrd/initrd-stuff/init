@@ -44,7 +44,7 @@ exec < /dev/console > /dev/console 2>&1
 
 # run pre init script
 preinit
-[ -x /bin/vendor_preinit ] && /bin/vendor_preinit
+[ -x /bin/preinit.local ] && /bin/preinit.local
 
 # start device auto discovery service - distro specific function
 udev_hotplug
@@ -90,7 +90,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       rm /tmp/ldap-done
     ;;
     # ldap configuration with host and port to contact (base)
-    ldap*)
+    ldap=*)
       LDAP="yes"
       rm /tmp/ldap-done
     ;;
@@ -102,7 +102,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       rm /tmp/file-done
     ;;
     # file source with tftp server and file location on the server
-    file*)
+    file=*)
       FILE="yes"
       FILESRC=${opts#file=}
       rm /tmp/file-done
@@ -120,7 +120,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       UNIONFS=1;;
     # if cowloop should be used, only ontop of network block device and in 
     # combination with classical fs, like ext2 useful
-    cowloop*)
+    cowloop=*)
       COWLOOP=1
       #COWSIZE=${opts#cowloop=}
     ;;
@@ -456,7 +456,7 @@ cp /etc/machine-setup /mnt/etc
 
 # post init for some distro specific
 postinit
-[ -x /bin/vendor_postinit ] && /bin/vendor_postinit
+[ -x /bin/postinit.local ] && /bin/postinit.local
 
 # start a debug shell in higher debug levels
 [ $DEBUGLEVEL -gt 2 ] && /bin/sh

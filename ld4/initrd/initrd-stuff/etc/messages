@@ -132,6 +132,9 @@ df_errnsc="  Name Service caching deamon $df_errserv\n This service might \
 be useful to take load from a ldap user directory."
 
 # messages from servconfig
+scfg_errdcfg="  Did not get any configuration data via dhcp until now ..."
+scfg_errfcfg="  Did not get any configuration data via tftp until now ..."
+scfg_errlcfg="  Did not get any configuration data via ldap until now ..."
 scfg_nfs="  Mount of some NFS source failed ..."
 scfg_vmdir="  For some reason the runvmware script is not available for \
 copying. That\n  could be the result of failed mount or simply missing \

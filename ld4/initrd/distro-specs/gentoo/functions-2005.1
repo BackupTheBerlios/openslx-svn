@@ -1,8 +1,8 @@
 # Description:  configuration script for Gentoo V2005.1 to configure
-#		linux diskless clients (executed within initial
-#		ramdisk after genconfig) 
+#               linux diskless clients (executed within initial ramdisk 
+#               after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 28-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -48,6 +48,17 @@ echo $1 >> /mnt/etc/runlevels/default/.critical
 #fi
 }
 
+# setup initial boot scripts (rather strange concept I did not get 
+# completely)
+initial_boot () {
+rm /mnt/etc/runlevels/*/.critical 2>/dev/null
+for i in ${D_INITSCRIPTS}; do
+  ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/$i
+  echo $i >> /mnt/etc/${D_INITBOOTD}/.critical
+  echo $i >> /mnt/etc/runlevels/default/.critical
+done
+}
+
 # initialize boot.ld - skript to be executed during early system startup
 # (before most of the normal boot init scripts)
 # this script should operate like a normal runlevel script
@@ -76,7 +87,7 @@ esac
 # group of functions for the normal runlevels
 # function for ntp configuration (unchecked)
 config_ntp () {
-if [ -f /mnt/etc/${D_INITDIR}/ntp ] ; then
+if [ -e /mnt/etc/${D_INITDIR}/ntp ] ; then
   if ! strinfile "ntp:" /mnt/etc/passwd ; then
     echo -e "ntp:x:74:65534:NTP daemon:/var/lib/ntp:/bin/false" \
       >>/mnt/etc/passwd

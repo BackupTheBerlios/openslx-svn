@@ -1,16 +1,18 @@
 # Description:  configuration functions for SuSE 10.1 which differ from
-#		functions defined for SuSE 9.3 and 10.0 which are base ... 
-#		General changes should be done there, version specific 
-#		changes for the 10.1 here.
+#               functions defined in general SuSE base definitions ... 
+#               General changes should be done there, version specific 
+#               changes for the 10.1 here.
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.1e
+# Version:      0.3.0a
 
-# distro specific stuff to initialize
+# some specific stuff to initialize
 preinit () {
+# fake the existence of some helper binaries (which are not of any use
+# within initialramfs)
 for i in usb_id scsi_id vol_id edd_id ata_id path_id hwup ifup ; do
   echo -e "#!/bin/sh\n:" >/sbin/$i
 done
@@ -26,6 +28,7 @@ chmod u+x /sbin/* /lib/udev/* /usr/sbin/*
 udev_hotplug () {
 local result=0
 echo "Starting udev"
+# might be used if busybox is available
 #mknod /dev/console c 5 1
 #mknod /dev/null c 1 3
 #mknod /dev/kmsg c 1 11
@@ -34,9 +37,14 @@ if [ -x /bin/udevd ] ; then
   udevd --daemon || result=1
   trigger_device_events
   usleep 50
-else error "  udev daemon is not available. Some devices might not \
-apprear." nonfatal
+else error "$df_errudev" nonfatal
 fi
 return $result
+}
+
+# acpi and powersave
+config_acpi () {
+rllinker acpid "10" "12"
+rllinker powersaved "11" "11"
 }
 
