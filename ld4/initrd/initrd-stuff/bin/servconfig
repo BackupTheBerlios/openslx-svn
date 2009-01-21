@@ -276,8 +276,8 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   #
   #
   #  HACK!!!
-  #
-  #
+  #  Links not created because of non existing vmware dir (see above ->&)
+  #  replace awk and grep, etc ...
   #
   d_mkrlscript init vmware-prep "Starting preparation of vmware environment"
   sed "s,^#.*,,;/^$/d;s,^,\t," /etc/vmware-prep >> \
@@ -301,9 +301,7 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
     for i in /mnt/var/lib/vmware/vmsessions/*.desktop; do
       session_name=$(cat ${i} | grep -iw "exec" \
         | awk -F "=" '{print $2}')
-      #coppy bacause of initrd
-      cp /mnt/var/X11R6/bin/desktop-session /mnt/var/X11R6/bin/${session_name}
-      #ln -s /mnt/var/X11R6/bin/desktop-session /mnt/var/X11R6/bin/${session_name}
+      ln -sf /var/X11R6/bin/desktop-session /var/X11R6/bin/${session_name}
     done
   fi
   config_vmware
