@@ -38,19 +38,19 @@ diff -ru ./archival/rpm2cpio.c ../busybox-1.6.0/archival/rpm2cpio.c
 -		bb_error_msg_and_die("invalid gzip magic");
 +	if ((magic[0] == 0x1f) && (magic[1] == 0x8b)) {
 +		check_header_gzip_or_die(rpm_fd);
-+		if (inflate_gunzip(rpm_fd, STDOUT_FILENO) < 0) {
++		if (unpack_gz_stream(rpm_fd, STDOUT_FILENO) < 0) {
 +			bb_error_msg("error inflating (gzip)");
 +		}
  	}
 -
 -	check_header_gzip_or_die(rpm_fd);
--	if (inflate_gunzip(rpm_fd, STDOUT_FILENO) < 0) {
+-	if (unpack_gz_stream(rpm_fd, STDOUT_FILENO) < 0) {
 -		bb_error_msg("error inflating");
 +	else if ((magic[0] == 'B') && (magic[1] == 'Z')) {
 +#ifdef CONFIG_FEATURE_RPM2CPIO_BZIP2
 +		/* return to position before magic (eek..!) */
 +		lseek(rpm_fd, -2, SEEK_CUR);
-+		if (uncompressStream(rpm_fd, fileno(stdout)) != 0)
++		if (unpack_bz2_stream(rpm_fd, fileno(stdout)) != 0)
 +			bb_error_msg("error inflating (bzip2)");
 +#else
 +		bb_error_msg_and_die("bzip2 not supported");
