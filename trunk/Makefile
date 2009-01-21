@@ -13,32 +13,39 @@
 ifeq ($(USR_BIN_PATH),)
 	USR_BIN_PATH = /usr/bin
 endif
+
+ifeq ($(SLX_CONFIG_PATH),)
+	SLX_CONFIG_PATH = /etc/opt/openslx
+endif
 ifeq ($(SLX_BASE_PATH),)
 	SLX_BASE_PATH = /opt/openslx
 endif
 ifeq ($(SLX_BIN_PATH),)
 	SLX_BIN_PATH = ${SLX_BASE_PATH}/bin
 endif
-ifeq ($(SLX_CONFIG_PATH),)
-	SLX_CONFIG_PATH = /etc/opt/openslx
-endif
-ifeq ($(SLX_PRIVATE_PATH),)
-	SLX_PRIVATE_PATH = /var/opt/openslx
-endif
-ifeq ($(SLX_PUBLIC_PATH),)
-	SLX_PUBLIC_PATH = /srv/openslx
-endif
 ifeq ($(SLX_SHARE_PATH),)
 	SLX_SHARE_PATH = ${SLX_BASE_PATH}/share
 endif
-ifeq ($(SLX_TEMP_PATH),)
-	SLX_TEMP_PATH = /tmp
+ifeq ($(SLX_VMWARE_PATH),)
+	SLX_VMWARE_PATH = ${SLX_BASE_PATH}/vmware
+endif
+
+ifeq ($(SLX_PRIVATE_PATH),)
+	SLX_PRIVATE_PATH = /var/opt/openslx
+endif
+
+ifeq ($(SLX_PUBLIC_PATH),)
+	SLX_PUBLIC_PATH = /srv/openslx
+endif
+ifeq ($(SLX_EXPORT_PATH),)
+	SLX_EXPORT_PATH = ${SLX_PUBLIC_PATH}/export
 endif
 ifeq ($(SLX_TFTPBOOT_PATH),)
 	SLX_TFTPBOOT_PATH = ${SLX_PUBLIC_PATH}/tftpboot
 endif
-ifeq ($(SLX_VMWARE_PATH),)
-	SLX_VMWARE_PATH = ${SLX_BASE_PATH}/vmware
+
+ifeq ($(SLX_TEMP_PATH),)
+	SLX_TEMP_PATH = /tmp
 endif
 
 tarball:
@@ -114,6 +121,7 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 \nSLX_BASE_PATH=${SLX_BASE_PATH}\
 \nSLX_BIN_PATH=${SLX_BIN_PATH}\
 \nSLX_CONFIG_PATH=${SLX_CONFIG_PATH}\
+\nSLX_EXPORT_PATH=${SLX_EXPORT_PATH}\
 \nSLX_PRIVATE_PATH=${SLX_PRIVATE_PATH}\
 \nSLX_PUBLIC_PATH=${SLX_PUBLIC_PATH}\
 \nSLX_SHARE_PATH=${SLX_SHARE_PATH}\
