@@ -114,6 +114,7 @@ supported."; \
 	       -p $(SLX_SHARE_PATH)/templates \
 	       -p $(SLX_SHARE_PATH)/initramfs \
 	       -p $(SLX_SHARE_PATH)/busybox \
+	       -p $(SLX_SHARE_PATH)/squashfs \
 	       -p $(SLX_PRIVATE_PATH)/config/default/initramfs \
 	       -p $(SLX_PRIVATE_PATH)/config/default/rootfs \
 	       -p $(SLX_PRIVATE_PATH)/db \
@@ -157,8 +158,9 @@ supported."; \
 	  tar -xp -C $(SLX_SHARE_PATH)
 	@cd theming; tar --exclude=.svn -cp * | \
 	  tar -xp -C $(SLX_SHARE_PATH)/themes; cd ..
-	@cp -p tools/busybox{,.links,.x86_64,.i386} installer/slxbootstrap \
+	@cp -pP tools/busybox{,.links,.x86_64,.i586} installer/slxbootstrap \
 	  $(SLX_SHARE_PATH)/busybox/
+	@cp -p tools/mksquashfs $(SLX_SHARE_PATH)/squashfs/
 
 	@# create pre-/postinit scripts for us in initramfs:
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
