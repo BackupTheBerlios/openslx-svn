@@ -67,7 +67,7 @@ openslxInit();
 my $openslxDB = OpenSLX::ConfigDB->new();
 $openslxDB->connect();
 
-my $action = shift @ARGV;
+my $action = shift @ARGV || '';
 if ($action =~ m[^add-system$]i) {
     addSystemToConfigDB(@ARGV);
 } elsif ($action =~ m[^add-client$]i) {

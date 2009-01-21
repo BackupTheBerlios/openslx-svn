@@ -65,7 +65,7 @@ if ($> != 0) {
 
 openslxInit();
 
-my $action = shift @ARGV;
+my $action = shift @ARGV || '';
 
 # create ossetup-engine for given distro and start it:
 my $engine = OpenSLX::OSSetup::Engine->new;

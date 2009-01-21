@@ -56,7 +56,7 @@ if ($versionReq) {
 
 openslxInit();
 
-my $action = shift @ARGV;
+my $action = shift @ARGV || '';
 
 if ($action =~ m[^list-ex]i) {
 	print _tr("List of exported vendor-OSes:\n");
