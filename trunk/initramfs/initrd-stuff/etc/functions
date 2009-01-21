@@ -35,7 +35,7 @@ udev_hotplug () {
 }
 
 #############################################################################
-# generate events with the sysfs trigger
+# generate events with the sysfs trigger (most probably obsolete)
 trigger_device_events () {
   local list=$(echo /sys/bus/*/devices/*/uevent)
   list="$list $(echo /sys/class/*/*/uevent)"
@@ -63,7 +63,8 @@ trigger_device_events () {
 }
 
 #############################################################################
-# mini udev of busybox or distro specific udev_hotplug
+# mini udev of busybox (most probably obsolete: or distro specific 
+# udev_hotplug)
 runudev () {
 if [ -x /bin/mdev ] ; then
   mdev -s

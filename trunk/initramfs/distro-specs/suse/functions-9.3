@@ -13,13 +13,7 @@
 # in general SuSE base definitions ...  General changes should be done there,
 # version specific changes for the 9.3 go here.
 
-# distro specific stuff to initialize
-postinit () {
-  # for some reason the udev daemon does not create the needed device files
-  udevstart
-}
-
-# udev/hotplug - auto device discovery service
+# udev/hotplug - auto device discovery service (deprecated)
 udev_hotplug () {
 local result=0
 [ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "$df_errhotpl" nonfatal

@@ -13,38 +13,6 @@
 # in general SuSE base definitions ...  General changes should be done there,
 # version specific changes for the 10.1 go here.
 
-# some specific stuff to initialize
-preinit () {
-# fake the existence of some helper binaries (which are not of any use
-# within initialramfs)
-shell="/bin/sh"
-[ -x /bin/busybox ] && shell="/bin/ash"
-for i in usb_id scsi_id vol_id edd_id ata_id path_id hwup ifup ; do
-  echo -e "#!$shell\n:" >/sbin/$i
-done
-mkdir /lib/udev /usr/sbin
-for i in idedma.sh mount.sh rename_netiface \
-         firmware.sh create_floppy_devices ; do
-  echo -e "#!$shell\n:" >/lib/udev/$i
-done
-echo -e "#!$shell\n:" >/usr/sbin/alsactl
-rm /etc/udev/rules.d/60-persistent-storage.rules 2>/dev/null
-chmod u+x /sbin/* /lib/udev/* /usr/sbin/*
-}
-
-# udev service
-udev_hotplug () {
-local result=0
-if [ -x /bin/udevd ] ; then
-  echo "" > /proc/sys/kernel/hotplug
-  udevd --daemon || result=1
-  trigger_device_events
-  usleep 50
-else error "$df_errudev" nonfatal
-fi
-return $result
-}
-
 # afs client
 # configure afs client
 config_afs () {

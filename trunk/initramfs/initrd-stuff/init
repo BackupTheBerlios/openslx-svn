@@ -514,7 +514,8 @@ if [ -n "${unionfs}" -o -n "${aufs}" ] ; then
   mkdir -p /mnt/uniontmp
   mount -n --move ${rwdir}/uniontmp /mnt/uniontmp
   chmod 0755 /mnt/uniontmp /mnt
-  # run ldconfig if not switched off via kernel command line
+  # run ldconfig if switched on via kernel command line (token ldsc) or 
+  # triggered by unionized root filesystem
   ldcfg
   # runlevel directories should contain no links
   for i in ${D_RCDIRS} ${D_INITBOOTD} ; do
@@ -557,14 +558,13 @@ elif [ -z "${cowloop}" ] ; then
   [ -n "${ldsc}" ] && echo -e "ld.so.cache*" >>/tmp/etc.exclude
   # for tar exclude lists might be used, more difficult for cp
   cd /mnt
-  tar -X /tmp/etc.exclude -cp etc/* | \
-    tar -xp -C ${rwdir} 2>/dev/null ;
+  tar -X /tmp/etc.exclude -cp etc/*|tar -xp -C ${rwdir} 2>/dev/null
   cd /
   mount -n --bind ${rwdir}/etc /mnt/etc
   mount -n --bind ${rwdir}/var /mnt/var
   # get the "covered" mounts back into filesystem structure
-  for i in ${list}; do
-    mount -n --move /root/$i /mnt/$i #>>$LOGFILE 2>&1
+  for path in ${list}; do
+    mount -n --move /root/$path /mnt/$path #>>$LOGFILE 2>&1
   done
   #rm -rf /root/* >/dev/null 2>&1
   # run some specific stuff !?
@@ -655,7 +655,7 @@ if [ -n "$uniondirs" ]; then
   include_in_fsroot_union "$union_type" "$uniondirs"
 fi
 
-# post init for some distro specific (fixme!! more elegant solution)
+# post init for some distro specific
 postinit
 [ -s /initramfs/postinit.local ] && \
   mv /initramfs/postinit.local /bin/postinit.local
@@ -669,7 +669,7 @@ postinit
 
 # unmount the bind mounted modules directory
 export ticks
-for ticks in 0 200 300 500 800 1000 1200 2000 5000 ; do
+for ticks in 0 400 1000 2000 5000 10000 ; do
   usleep $ticks && umount -n /lib/modules/${KERNEL} 2>/dev/null && break
   error "$init_wait" nonfatal
 done

@@ -145,10 +145,12 @@ werden Probleme bei der Hardware-Erkennung auftreten."
 df_errserv="ist entweder nicht installiert oder das Start-Skript ist nicht \
 verfuegbar.\n  Deswegen macht der Start des Dienstes keinen Sinn. Bitte \
 deaktivieren Sie den Start\n  oder installieren Sie die benoetigten Dateien."
+### unnoetig wg. mdev
 df_errudev="  Der udev Daemon ist nicht verfuegbar. Einige Geraetedateien \
 koennten nicht angelegt worden sein."
 df_errhotpl="  Das Udev/Hotplug Unterverzeichnis fehlt! udev(d) koennte nicht \
 wie erwartet ablaufen."
+###
 df_errcron="  Das cron Start-Skript $df_errserv" 
 df_errsysl="  Das syslog Start-Skript $df_errserv"
 df_errsshd="  Das sshd Start-Skript $df_errserv"

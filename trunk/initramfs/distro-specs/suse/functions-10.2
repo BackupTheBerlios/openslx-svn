@@ -13,29 +13,6 @@
 # in general SuSE base definitions ...  General changes should be done there,
 # version specific changes for the 10.2 go here.
 
-# some specific stuff to initialize
-preinit () {
-# fake the existence of some helper binaries/scripts (which are not of any use
-# within initialramfs)
-local item
-if [ ! -x /bin/busybox ] ; then
-  for item in hwup ifup ; do
-    echo -e "#!/bin/sh\n:" >/sbin/${item}
-  done
-  mkdir -p /lib/udev /usr/sbin
-  for item in usb_id scsi_id vol_id edd_id ata_id path_id cdrom_id idedma.sh \
-           mount.sh rename_netiface firmware.sh create_floppy_devices \
-           trigger_firmware_loading.sh ; do
-    echo -e "#!/bin/sh\n# do nothing here\n:" >/lib/udev/${item}
-  done
-  echo -e "#!/bin/sh\n:" >/usr/sbin/alsactl
-  rm /etc/udev/rules.d/60-persistent-storage.rules 2>/dev/null
-  chmod u+x /sbin/* /lib/udev/* /usr/sbin/*
-  echo -e "tty:x:5:\ndisk:x:6:\nlp:x:7:\nkmem:x:9:\nuucp:x:14:\n\
-dialout:x:16:\naudio:x:17:\nvideo:x:33:\nvboxusers:!:1000:" > /etc/group
-  echo -e "root:x:0:0:::\nasterisk:x:106:16:::" > /etc/passwd
-fi
-}
 # display manager configuration
 config_kdm () {
 # first define directories for kdm
@@ -48,19 +25,6 @@ testmkd /mnt/${kdmrcdir}
 config_dm_entry yes
 # write configuration file with general config from /etc/functions
 config_kdm_template
-}
-# udev service - auto creation of device files
-udev_hotplug () {
-local result=0
-echo "Starting udev"
-if [ -x /bin/udevd ] ; then
-  echo "" > /proc/sys/kernel/hotplug
-  udevd --daemon 2>/dev/null || result=1
-  trigger_device_events
-  usleep 50
-else error "$df_errudev" nonfatal
-fi
-return $result
 }
 # configure dbus (inter application communication for kde and gnome), hal
 # (hardware abstraction layer - used e.g. by powersaved), resmgr and 

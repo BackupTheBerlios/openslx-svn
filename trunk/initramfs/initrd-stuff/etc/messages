@@ -138,9 +138,11 @@ detection\nwill probably arise."
 df_errserv="seems not to be installed or start script is\n  not available\
 so requesting the start of service make no sense. Please\n  disable service\
 or install the files/packages needed."
+# udev stuff will be handled via busybox mdev ...
 df_errudev="  udev daemon is not available. Some devices might not appear."
 df_errhotpl="  Hotplug subdirectory is missing! udev(d) might not work as \
 expected."
+###
 df_errcron="  The cron start script $df_errserv" 
 df_errsysl="  The syslog start script $df_errserv"
 df_errsshd="  The sshd start script $df_errserv"
