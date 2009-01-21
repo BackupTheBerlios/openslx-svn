@@ -120,7 +120,7 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   if [ -n "${imgsrv}" ] ; then
     vmimgprot=$(uri_token $imgsrv prot)
     vmimgserv=$(uri_token $imgsrv server)
-    vmimgpath="/$(uri_token $imgsrv path)"
+    vmimgpath="$(uri_token $imgsrv path)"
   # on DHCP config systems vmware image server might be coded into the
   # $vmware variable
   elif strinstr "/" "$vmware" ; then
@@ -257,7 +257,7 @@ if [ -n "${automnt_src}" ] ; then
     >> /mnt/etc/auto.master
   echo -e "# /etc/auto.${automnt_dir} created by $0:\n" \
     > /mnt/etc/auto.${automnt_dir}
-  echo -e "*\t-rsize=32768,wsize=32768,rw\t${amserv}:/${ampath}/&" \
+  echo -e "*\t-rsize=32768,wsize=32768,rw\t${amserv}:${ampath}/&" \
     >> /mnt/etc/auto.${automnt_dir}
   # no tempfs needed if automounter operates on /home
   [ "${automnt_dir}" = "home" ] && umount -t tmpfs /mnt/home 2>/dev/null
@@ -445,11 +445,11 @@ if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
     tmppath=$(uri_token $scratch path)
     # fixme - use nfsmnt and pass info on rw
     mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid \
-      ${tmpserv}:/${tmppath} /tmp/scratch >/dev/null 2>&1 && {
+      ${tmpserv}:${tmppath} /tmp/scratch >/dev/null 2>&1 && {
       mkdir -p /tmp/scratch/${clientip} >/dev/null 2>&1
       umount /tmp/scratch
       mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid \
-        ${tmpserv}:/${tmppath}/${clientip} /mnt/tmp >/dev/null 2>&1; }
+        ${tmpserv}:${tmppath}/${clientip} /mnt/tmp >/dev/null 2>&1; }
     ;;
   esac
 fi
