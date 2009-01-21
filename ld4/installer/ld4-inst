@@ -325,7 +325,6 @@ create_initrd() {
     ask "Please chose kernels to create initial ramdisks for (space separated numbers) " kernel_choice "${kernel_choice}"
   fi
   choice=( ${kernel_choice} )
-  
   # make sure /$tftbootdir exists
   mkdir -p ${tftpbootdir}
   
@@ -341,13 +340,13 @@ create_initrd() {
   # ugly workaround...
   cd ../initrd
   while [ $j -lt ${#choice[@]} ] ; do
-    current_kernel=${kernel[$j]#${rootdir}/boot/vmlinuz-}
+    current_kernel=${kernel[${choice[$j]}]#${rootdir}/boot/vmlinuz-}
     echo "Creating initial ramdisk for ${current_kernel}"
     current_initrd=${tftpbootdir}/initrd-dxs-${current_kernel}
     [ -f ${current_initrd} ] && rm ${current_initrd} 
     ./mkdxsinitrd -r ${rootdir} -k ${current_kernel} -i ${current_initrd}
 
-    ln -sf ${kernel[$j]} ${tftpbootdir}/vmlinuz-${current_kernel}
+    ln -sf ${kernel[${choice[$j]}]} ${tftpbootdir}/vmlinuz-${current_kernel}
     j=$j+1
   done
   cd - 
