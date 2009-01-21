@@ -611,7 +611,7 @@ sub addClient
 	my $valRows = _aref(shift);
 
 	foreach my $valRow (@$valRows) {
-		if (!length($valRow->{boot_type})) {
+		if (!$valRow->{boot_type}) {
 			$valRow->{boot_type} = 'pxe';
 		}
 	}
