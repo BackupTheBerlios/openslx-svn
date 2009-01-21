@@ -422,16 +422,17 @@ sub generateInitalRamFS
 
 	vlog(1, _tr('generating initialramfs %s/initramfs', $pxeVendorOSPath));
 	my $cmd = "$openslxConfig{'base-path'}/bin/mkdxsinitrd ";
-	if ($info->{attr_ramfs_nicmods}) {
-		$cmd .= qq[-n "$info->{attr_ramfs_nicmods}" ];
+	my $attrs = $info->{attrs} || {};
+	if ($attrs->{ramfs_nicmods}) {
+		$cmd .= qq[-n "$attrs->{ramfs_nicmods}" ];
 	}
-	my $fsMods = $info->{attr_ramfs_fsmods} || '';
+	my $fsMods = $attrs->{ramfs_fsmods} || '';
 	$fsMods .= ' ' . $osExportEngine->requiredFSMods();
 	if ($fsMods) {
 		$cmd .= qq[-f "$fsMods" ];
 	}
-	if ($info->{attr_ramfs_miscmods}) {
-		$cmd .= qq[-m "$info->{attr_ramfs_miscmods}" ];
+	if ($attrs->{ramfs_miscmods}) {
+		$cmd .= qq[-m "$attrs->{ramfs_miscmods}" ];
 	}
 	my $rootPath = "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}";
 	$cmd .= "-i $pxeVendorOSPath/$info->{'initramfs-name'} -r $rootPath ";
@@ -451,9 +452,9 @@ sub generateInitalRamFS
 	my $initramfsAttrs    = {
 		attrs => {
 			'host_name'		=> 'slx-client', # just to have something at all
-			'ramfs_fsmods'  => $info->{'attr_ramfs_fsmods'} || '',
-			'ramfs_nicmods' => $info->{'attr_ramfs_nicmods'} || '',
-			'ramfs_screen'  => $info->{'attr_ramfs_screen'} || '',
+			'ramfs_fsmods'  => $attrs->{'ramfs_fsmods'} || '',
+			'ramfs_nicmods' => $attrs->{'ramfs_nicmods'} || '',
+			'ramfs_screen'  => $attrs->{'ramfs_screen'} || '',
 			'rootfs'        => $info->{'export-uri'} || '',
 		},
 	};
