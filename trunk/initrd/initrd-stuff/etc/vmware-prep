@@ -6,10 +6,11 @@
 #		initial ramdisk
 #
 # Author(s):    Michael Janczyk <mj0@uni-freiburg.de>, 15-04-2006
-#               Dirk von Suchodoletz <dirk@goe.net>, 31-05-2006
+#               Dirk von Suchodoletz <dirk@goe.net>, 23-08-2006
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.2e WILL DISAPPEAR SOON!!!
+# Version:      0.2.324
+#
 ################################################################################
 
 
@@ -133,4 +134,7 @@ mount_loop
 
 # copy nach blabla
 #vmsession2desktop_session
+
+# mount usbfs
+mount -t usbfs usbfs /proc/bus/usb
 
