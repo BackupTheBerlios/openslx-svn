@@ -2,13 +2,14 @@
 #               linux diskless clients (included by init, hwautocfg,
 #               servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-08-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 17-08-2006
 #               Felix Endres, 30-04-2006
 #               Tobias Maier
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
+#               (c) 2006 - OpenSLX.ORG Project
 # 
-# Version:      0.5.1a
+# Version:      0.5.1b
 
 #######################################################################
 # set of empty dummy functions (loaded before real functions in the 
@@ -127,16 +128,17 @@ else
 fi
 # get the server IP or name and port - URI authority 
 # you get the path or other token without leading "/" - add it later if
-# needed
+# needed (fixme: port might be broken)
 if strinstr ":" "$rest" ; then
   server="${rest%:*}"
   rest="${rest#*:}"
   path="${rest#*/}"
   port="${rest%/$path}"
 else
-  server="${rest%/*}"
+  tmpval=$rest
   rest="${rest#*/}"
-  path="${rest#*/}"
+  server="${tmpval%/*}"
+  path="${tmpval#*/}"
   port=""
 fi
 # get path and query components - URI path, query
@@ -372,7 +374,7 @@ esac
 # unpack part (only gzip is supported)
 if [ -s $dst ] ; then
   tar -xpzf $dst
-  rm $dst
+  [ "$DEBUGLEVEL" -le 2 ] && rm $dst
   return 0
 else
   return 1
