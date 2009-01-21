@@ -5,10 +5,11 @@
 #
 # Author(s):    Nico Dietrich, 04-04-2006
 #		Dirk von Suchodoletz <dirk@goe.net>, 20-05-2006
+#               mj0, 06-07-06
 #
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:	0.2.1a
+# Version:	0.2.1b
 DEBUG=0
 
 header() {
@@ -349,8 +350,9 @@ created and linked to ${tftpbootdir}."
       echo "$j: ${kernel[$j]}"
       j=$j+1
     done
-    ask "Please chose kernels to create initial ramdisks for (space \
-separated numbers) " kernel_choice "${kernel_choice}"
+    ask "Please chose kernel(s) to create initial ramdisk(s) for.
+First named will be the default boot. Separate multiple kernels w/ space." \
+kernel_choice "${kernel_choice}"
   fi
   choice=( ${kernel_choice} )
   # make sure /$tftbootdir exists
@@ -430,7 +432,7 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
 
   declare -i j=0
   while [ $j -lt ${#choice[@]} ] ; do
-    current_kernel=${kernel[$j]#${rootdir}/boot/vmlinuz-}
+    current_kernel=${kernel[${choice[$j]}]#${rootdir}/boot/vmlinuz-}
     current_initrd=${tftpbootdir}/initrd-dxs-${current_kernel}
 
     if [ $j -eq 0 ] ; then
