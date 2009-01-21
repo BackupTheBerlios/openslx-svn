@@ -96,7 +96,6 @@ runudev
 # switch off the several configuration methods, will be switched on
 # according to kernel commandline settings
 echo "noldap" > /tmp/ldap-done
-echo "nodhcp" > /tmp/dhcp-done
 echo "nofile" > /tmp/file-done
 # read kernel commandline
 read KCMDLINE < /proc/cmdline
@@ -118,10 +117,10 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
         echo "** SLX init started near $(sysup)"
     ;;
-    # if configuration should be gathered by dhcp client
-    dhcp)
-      dhcp="yes"
-      rm /tmp/dhcp-done
+    # if configuration should not be gathered by dhcp client
+    nodhcp)
+      nodhcp="no"
+      echo "nodhcp" > /tmp/dhcp-done
     ;;
     # if ldap configuration should be triggered
     ldap)
@@ -223,7 +222,7 @@ $0\n# deprecated: please use rootfs=nfs://...\nnfsroot=\"${nfsroot}\"\n" \
     tmpfssize=*)
       tmpfssize=${opts#tmpfssize=};;
     # vendor code identifier for dhcp requests, that way odlx clients could
-	# be distinguished from other (dhcp) clients
+    # be distinguished from other (dhcp) clients
     vci=*)
       vci=${opts#vci=};;
     xenbr)
@@ -247,7 +246,7 @@ EOF
 fi
 
 # check if at least one type of IP configuration is availabe
-if [ -z "$dhcp" -a -z "$ldap" -a -z "$ipinfo" ] ; then
+if [ -n "$nodhcp" -a -z "$ldap" -a -z "$ipinfo" ] ; then
   echo -e "# You did not specify any advanced configuration mode for your \
 clients. You\n# might want to add the token 'dhcp' for DHCP configuration, \
 'file(=source)'\n# for config file get via TFTP or 'ldap(=source)' for LDAP \
@@ -262,7 +261,7 @@ configuration to\n# your kernel command line." >> /etc/machine-setup
 fi
 # for ldap configuration at least basic IP setup is needed to contact the
 # server
-[ -z "$dhcp" -a -n "$ldap" -a -z "$ipinfo" ] && error "$init_errldap"
+[ -n "$nodhcp" -a -n "$ldap" -a -z "$ipinfo" ] && error "$init_errldap"
 # set debug level and logfile
 if [ $DEBUGLEVEL -eq 20 ] ; then
   echo "** Setting debuglevel to ${DEBUGLEVEL} at $(sysup)"
@@ -327,7 +326,7 @@ else
 fi
 # get configuration data via dhcp (with vendor code identifier if present
 # in ${vci} from kernel command line or machine-setup) ...
-[ -n "$dhcp" ] && rundhcp ${vci} &
+[ -z "$nodhcp" ] && rundhcp ${vci} &
 if [ -n "$noipyet" ] ; then
   waitfor /tmp/dhcp-done 20000
   . /etc/machine-setup
@@ -704,5 +703,5 @@ umount -n /proc
 unset client debug date initrd ip dnbdroot nbdroot nfsroot rootfs ticks vci vga
 unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
   SLXVERSION UDEVD_EXPECTED_SEQNUM PATH
-# new style of pivoting (switch_root or run-init in klibc)
+# new style of pivoting (switch_root or run-init)
 exec /bin/switch_root -c dev/console /mnt /sbin/init || error "$init_runinit"
