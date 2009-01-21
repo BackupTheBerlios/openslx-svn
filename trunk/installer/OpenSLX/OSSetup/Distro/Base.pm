@@ -29,6 +29,19 @@ sub initialize
 
 	$self->{'engine'} = $engine;
 
+	if ($self->{'base-name'} =~ m[x86_64]) {
+		# be careful to only try installing 64-bit systems if actually
+		# running on a 64-bit host, as otherwise we are going to fail later,
+		# anyway:
+		my $arch = `uname -m`;
+		if ($?) {
+			die _tr("unable to determine architecture of host system (%s)\n", $!);
+		}
+		if ($arch !~ m[x86_64]) {
+			die _tr("you can't install a 64-bit system on a 32-bit host, sorry!\n");
+		}
+	}
+
 	$self->{'stage1a-binaries'} = {
 		"$openslxConfig{'share-path'}/busybox/busybox" => 'bin',
 	};
