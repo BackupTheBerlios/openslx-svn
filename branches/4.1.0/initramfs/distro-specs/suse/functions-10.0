@@ -1,35 +1,21 @@
-# OpenSLX configuration functions for SuSE 10.0 which differ from functions
-# defined in general SuSE base settings ... General changes should be done
-# there, version specific changes for the 10.0 here.
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
 #
-# Dirk von Suchodoletz <dvs@openslx.com>, 28-10-2006
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
 #
-# (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.ORG Project
-
-# udev service
-udev_hotplug () {
-local result=0
-echo "Starting udev"
-udevstart || result=1
-if [ -x /bin/udevd ] ; then
-  export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)
-  export UDEVD_EVENT_TIMEOUT=1
-  echo "" > /proc/sys/kernel/hotplug
-  udevd --daemon || result=1
-else error "$df_errudev" nonfatal
-fi
-return $result
-}
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# Configuration functions for SuSE 10.0 which differ from functions defined
+# in general SuSE base definitions ...  General changes should be done there,
+# version specific changes for the version 10.0 go here.
 
 # prepare virtual machine environment (vmware, vmplayer)
 config_vmware () {
-rllinker "vmware-prep" "18" "02"
-rllinker "vmware" "20" "02"
-sed -e "s,TARGETS =,TARGETS = vmware-prep," \
-  /mnt/etc/${D_INITDIR}/.depend.start >> /etc/.depend.start
-  echo "vmware-prep: " >> /etc/.depend.start
-  cp /etc/.depend.start /mnt/etc/${D_INITDIR}/.depend.start
+rllinker "vmware" 20 2
 # during vmware sessions linux should not handle usb events/devices
 testmkd /mnt/var/X11R6/bin
 echo '#!/bin/sh'> /mnt/var/X11R6/bin/vm-udev
