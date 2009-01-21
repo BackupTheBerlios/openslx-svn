@@ -111,7 +111,7 @@ sub parseKeyValueArgs
 
     my %dataHash;
     while (my $param = shift) {
-        if ($param !~ m[^\s*(\w+)\s*=(.+)$]) {
+        if ($param !~ m[^\s*([\w\-]+)\s*=(.+)$]) {
             die _tr("value specification %s has unknown format, expected <key>=<value>\n",
                     $param);
         }
@@ -166,6 +166,7 @@ sub listClients
 			$_->{systems}
 				= 	join "\n",
 					map { $_->{name} }
+					sort { $a->{name} cmp $b->{name} }
 					$openslxDB->fetchSystemByID(\@sysIDs, 'name');
 			$_;
 		}
@@ -212,6 +213,7 @@ sub listSystems
 			$_->{clients}
 				= 	join "\n",
 					map { $_->{name} }
+					sort { $a->{name} cmp $b->{name} }
 					$openslxDB->fetchClientByID(\@clientIDs, 'name');
 			my $export = $openslxDB->fetchExportByID($_->{export_id}, 'name');
 			if (defined $export) {
@@ -246,7 +248,6 @@ sub addClientToConfigDB
     my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
 
 	my @systemIDs;
-	my $systemNames;
 	if (exists $clientData->{systems}) {
 		@systemIDs
 			= map {
@@ -257,8 +258,7 @@ sub addClientToConfigDB
 				}
 				$system->{id};
 			  }
-			  split ",", $clientData->{systems};
-		$systemNames = $clientData->{systems};
+			  split '\s*,\s*', $clientData->{systems};
 		delete $clientData->{systems};
 	}
 
@@ -282,15 +282,11 @@ sub addClientToConfigDB
 	my $clientID = $openslxDB->addClient([$clientData]);
 	vlog 0, _tr("client '%s' has been successfully added to DB (ID=%s)\n",
 				$clientData->{name}, $clientID);
-	if ($verbose) {
-		listClient("name=$clientData->{name}");
-	}
-
-	if (scalar(@systemIDs)) {
+	if (defined @systemIDs) {
 		$openslxDB->addSystemIDsToClient($clientID, \@systemIDs);
-		if ($verbose) {
-			print _tr("systems for this client are:\n\t%s\n", $systemNames);
-		}
+	}
+	if ($verbose) {
+		listClients("id=$clientID");
 	}
 }
 
@@ -315,7 +311,6 @@ sub addSystemToConfigDB
 	$systemData->{export_id} = $export->{id};
 
 	my @clientIDs;
-	my $clientNames;
 	if (exists $systemData->{clients}) {
 		@clientIDs
 			= map {
@@ -326,8 +321,7 @@ sub addSystemToConfigDB
 				}
 				$client->{id};
 			  }
-			  split ",", $systemData->{clients};
-		$clientNames = $systemData->{clients};
+			  split '\s*,\s*', $systemData->{clients};
 		delete $systemData->{clients};
 	}
 
@@ -357,15 +351,11 @@ sub addSystemToConfigDB
 	my $systemID = $openslxDB->addSystem([$systemData]);
 	vlog 0, _tr("system '%s' has been successfully added to DB (ID=%s)\n",
 				$systemData->{name}, $systemID);
-	if ($verbose) {
-		listSystem("name=$systemData->{name}");
-	}
-
-	if (scalar(@clientIDs)) {
+	if (defined @clientIDs) {
 	    $openslxDB->addClientIDsToSystem($systemID, \@clientIDs);
-		if ($verbose) {
-			vlog 0, _tr("clients of this system are:\n\t%s\n", $clientNames);
-		}
+	}
+	if ($verbose) {
+		listSystems("id=$systemID");
 	}
 }
 
@@ -374,14 +364,20 @@ sub changeClientInConfigDB
     my @clientKeys
 		= map { (/^(\w+)\W/) ? $1 : $_; }
 		  @{$DbSchema->{tables}->{client}};
-	push @clientKeys, 'systems';
+	push @clientKeys, 'systems', 'add-systems', 'remove-systems';
     my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
 
 	if (!exists $clientData->{name}) {
 		die _tr("you have to specify the name for the client you'd like to change!\n");
 	}
+
+	my $client = $openslxDB->fetchClientByFilter({'name' => $clientData->{name}});
+	if (!defined $client) {
+		die _tr("the client '%s' doesn't exists in the DB, giving up!\n",
+				$clientData->{name});
+	}
+
 	my @systemIDs;
-	my $systemNames;
 	if (exists $clientData->{systems}) {
 		@systemIDs
 			= map {
@@ -393,14 +389,33 @@ sub changeClientInConfigDB
 				$system->{id};
 			  }
 			  split ",", $clientData->{systems};
-		$systemNames = $clientData->{systems};
 		delete $clientData->{systems};
 	}
-
-	my $client = $openslxDB->fetchClientByFilter({'name' => $clientData->{name}});
-	if (!defined $client) {
-		die _tr("the client '%s' doesn't exists in the DB, giving up!\n",
-				$clientData->{name});
+	if (exists $clientData->{'add-systems'}) {
+		@systemIDs = $openslxDB->fetchSystemIDsOfClient($client->{id});
+		push @systemIDs,
+			map {
+				my $system
+					= $openslxDB->fetchSystemByFilter({ 'name' => $_ });
+				if (!defined $system) {
+					die _tr("system '%s' doesn't exist!\n", $_);
+				}
+				$system->{id};
+			}
+			split ",", $clientData->{'add-systems'};
+		delete $clientData->{'add-systems'};
+	}
+	if (exists $clientData->{'remove-systems'}) {
+		@systemIDs = $openslxDB->fetchSystemIDsOfClient($client->{id});
+		foreach my $sysName (split ",", $clientData->{'remove-systems'})  {
+			my $system
+				= $openslxDB->fetchSystemByFilter({ 'name' => $sysName });
+			if (!defined $system) {
+				die _tr("system '%s' doesn't exist!\n", $sysName);
+			}
+			@systemIDs = grep { $_ != $system->{id} } @systemIDs;
+		}
+		delete $clientData->{'remove-systems'};
 	}
 
 	if (length($clientData->{mac})
@@ -411,15 +426,11 @@ sub changeClientInConfigDB
 	$openslxDB->changeClient($client->{id}, [$clientData]);
 	vlog 0, _tr("client '%s' has been successfully changed\n",
 				$clientData->{name});
-	if ($verbose) {
-		listClient("name=$clientData->{name}");
-	}
-
-	if (scalar(@systemIDs)) {
+	if (defined @systemIDs) {
 		$openslxDB->setSystemIDsOfClient($client->{id}, \@systemIDs);
-		if ($verbose) {
-			print _tr("systems for this client are:\n\t%s\n", $systemNames);
-		}
+	}
+	if ($verbose) {
+		listClients("id=$client->{id}");
 	}
 }
 
@@ -428,15 +439,20 @@ sub changeSystemInConfigDB
     my @systemKeys
 		= map { (/^(\w+)\W/) ? $1 : $_; }
 		  @{$DbSchema->{tables}->{system}};
-	push @systemKeys, 'clients';
+	push @systemKeys, 'clients', 'add-clients', 'remove-clients';
     my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
 
 	if (!exists $systemData->{name}) {
 		die _tr("you have to specify the name of the system you'd like to change!\n");
 	}
 
+	my $system = $openslxDB->fetchSystemByFilter({'name' => $systemData->{name}});
+	if (!defined $system) {
+		die _tr("the system '%s' doesn't exists in the DB, giving up!\n",
+				$systemData->{name});
+	}
+
 	my @clientIDs;
-	my $clientNames;
 	if (exists $systemData->{clients}) {
 		@clientIDs
 			= map {
@@ -448,28 +464,42 @@ sub changeSystemInConfigDB
 				$client->{id};
 			  }
 			  split ",", $systemData->{clients};
-		$clientNames = $systemData->{clients};
 		delete $systemData->{clients};
 	}
-
-	my $system = $openslxDB->fetchSystemByFilter({'name' => $systemData->{name}});
-	if (!defined $system) {
-		die _tr("the system '%s' doesn't exists in the DB, giving up!\n",
-				$systemData->{name});
+	if (exists $systemData->{'add-clients'}) {
+		@clientIDs = $openslxDB->fetchClientIDsOfSystem($system->{id});
+		push @clientIDs,
+			map {
+				my $client
+					= $openslxDB->fetchClientByFilter({ 'name' => $_ });
+				if (!defined $client) {
+					die _tr("client '%s' doesn't exist!\n", $_);
+				}
+				$client->{id};
+			}
+			split ",", $systemData->{'add-clients'};
+		delete $systemData->{'add-clients'};
 	}
-
+	if (exists $systemData->{'remove-clients'}) {
+		@clientIDs = $openslxDB->fetchClientIDsOfSystem($system->{id});
+		foreach my $clientName (split ",", $systemData->{'remove-clients'})  {
+			my $client
+				= $openslxDB->fetchClientByFilter({ 'name' => $clientName });
+			if (!defined $client) {
+				die _tr("client '%s' doesn't exist!\n", $clientName);
+			}
+			@clientIDs = grep { $_ != $client->{id} } @clientIDs;
+		}
+		delete $systemData->{'remove-clients'};
+	}
 	$openslxDB->changeSystem($system->{id}, [$systemData]);
 	vlog 0, _tr("system '%s' has been successfully changed\n",
 				$systemData->{name});
-	if ($verbose) {
-		listSystems("name=$systemData->{name}");
-	}
-
-	if (scalar(@clientIDs)) {
+	if (defined @clientIDs) {
 	    $openslxDB->setClientIDsOfSystem($system->{id}, \@clientIDs);
-		if ($verbose) {
-			vlog 0, _tr("clients of this system are:\n\t%s\n", $clientNames);
-		}
+	}
+	if ($verbose) {
+		listSystems("id=$system->{id}");
 	}
 }
 
@@ -598,12 +628,40 @@ Prints the version and exits.
 
 =head2 Adding a new Client
 
-  slxconfig add-client [systems=<system-IDs> [<attribute=value> ...]
+  slxconfig add-client [systems=<system-names> [<attribute=value> ...]
 
       adds a new client to the config-DB.
 
       If you specify systems (a comma-separated list of system names),
       the new client will use the given systems.
+
+=head2 Changing a Client
+
+  slxconfig change-client [add-systems=<new system-names>
+                          [remove-systems=<system-names>]
+                          [<attribute=value> ...]
+
+      changes an existing client in the config-DB.
+
+      With C<add-systems> you can add new systems to the specified client,
+      and with C<remove-systems> you can remove systems from it.
+
+      Any other attributes specified on the commandline will directly
+      change the data of the client itself.
+
+=head2 Changing a System
+
+  slxconfig change-system [add-clients=<new client-names>
+                          [remove-clients=<client-names>]
+                          [<attribute=value> ...]
+
+      changes an existing system in the config-DB.
+
+      With C<add-clients> you can add new clients to the specified system,
+      and with C<remove-clients> you can remove clients from it.
+
+      Any other attributes specified on the commandline will directly
+      change the data of the system itself.
 
 =head2 Removing a System / Client
 
