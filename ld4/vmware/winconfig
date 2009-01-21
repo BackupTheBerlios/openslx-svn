@@ -4,24 +4,26 @@
 # create Windows config file
 
 
+# NO LONGER NEEDED !!!!!
 # definition of some resolution variables
-hostres=$(xvidtune -show | grep -ve "^$")
-x_param=$(echo "${hostres}" | awk '{print $3}')
-y_param=$(echo "${hostres}" | awk '{print $7}')
-resolution="
-    <resolution_x param=\"${x_param}\">\r
-    </resolution_x>\r
-    <resolution_y param=\"${y_param}\">\r
-    </resolution_y>\r"
+#hostres=$(xvidtune -show | grep -ve "^$")
+#x_param=$(echo "${hostres}" | awk '{print $3}')
+#y_param=$(echo "${hostres}" | awk '{print $7}')
+#resolution="
+#    <resolution_x param=\"${x_param}\">\r
+#    </resolution_x>\r
+#    <resolution_y param=\"${y_param}\">\r
+#    </resolution_y>\r"
 
 
 # VMplayer does not need resolution change
-if [ `which vmplayer 2>/dev/null` ] && [ -z "${vmrun}" ] \
-  || [ "${vmrun}" = "vmplayer" ]; then
-  resolution=
-fi
+#if [ `which vmplayer 2>/dev/null` ] && [ -z "${vmrun}" ] \
+#  || [ "${vmrun}" = "vmplayer" ]; then
+#  resolution=
+#fi
 
 # sync is needed to ensure that data is really written to virtual disk
+# insert '\r${resolution}' after </username> when resolution needed
 sync
 echo -e "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r
 <settings>\r
@@ -29,7 +31,7 @@ echo -e "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r
     <computername param=\"${hostname}\">\r
     </computername>\r
     <username param=\"${USER}\">\r
-    </username>\r${resolution}
+    </username>
   </eintrag>\r
 </settings>\r" \
 > /media/loop0/config.xml
