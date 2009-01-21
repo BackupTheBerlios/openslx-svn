@@ -48,9 +48,9 @@ sub setupPackageSource
 		$repoURL .= "/$repoInfo->{'repo-subdir'}";
 	}
 	my $repoDescr = "[$repoName]\nname=$repoInfo->{name}\nbaseurl=$repoURL\n";
-	system("cp /proc/cpuinfo $self->{engine}->{'vendor-os-path'}/proc");
-	system("rm -f $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d/*");
-	system("mkdir -p $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d");
+	slxsystem("cp /proc/cpuinfo $self->{engine}->{'vendor-os-path'}/proc");
+	slxsystem("rm -f $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d/*");
+	slxsystem("mkdir -p $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d");
 	my $repoFile
 		= "$self->{engine}->{'vendor-os-path'}/etc/yum.repos.d/$repoName.repo";
 	open(REPO, "> $repoFile")
@@ -63,7 +63,7 @@ sub updateBasicVendorOS
 {
 	my $self = shift;
 
-	if (system("yum -y update")) {
+	if (slxsystem("yum -y update")) {
 		if ($! == 2) {
 			# file not found => yum isn't installed
 			die _tr("unable to update this vendor-os, as it seems to lack an installation of yum!\n");
@@ -77,10 +77,10 @@ sub installSelection
 	my $self = shift;
 	my $pkgSelection = shift;
 
-	if (system("yum -y install $pkgSelection")) {
+	if (slxsystem("yum -y install $pkgSelection")) {
 		die _tr("unable to install selection (%s)\n", $!);
 	}
-	system('rm /proc/cpuinfo');
+	slxsystem('rm /proc/cpuinfo');
 }
 
 1;

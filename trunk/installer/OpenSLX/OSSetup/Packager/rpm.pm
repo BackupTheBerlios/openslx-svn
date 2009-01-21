@@ -35,7 +35,7 @@ sub unpackPackages
 
 	foreach my $pkg (@$pkgs) {
 		vlog 2, "unpacking package $pkg...";
-		if (system("ash", "-c", "rpm2cpio $pkg | cpio -i -d")) {
+		if (slxsystem("ash", "-c", "rpm2cpio $pkg | cpio -i -d -u")) {
 			warn _tr("unable to unpack package <%s> (%s)", $pkg, $!);
 				# TODO: change this back to die() if cpio-ing fedora6-glibc
 				#       doesn't crash anymore... (needs busybox update, I suppose)
@@ -53,7 +53,7 @@ sub importTrustedPackageKeys
 
 	foreach my $keyFile (@$keyFiles) {
 		vlog 2, "importing package key $keyFile...";
-		if (system("rpm", "--root=$finalPath", "--import", "$keyFile")) {
+		if (slxsystem("rpm", "--root=$finalPath", "--import", "$keyFile")) {
 			die _tr("unable to import package key <%s> (%s)\n", $keyFile, $!);
 		}
 	}
@@ -67,11 +67,11 @@ sub installPrerequiredPackages
 
 	return unless defined $pkgs && scalar(@$pkgs);
 
-	if (system("rpm", "--root=$finalPath", "-ivh", "--nodeps", "--noscripts",
+	if (slxsystem("rpm", "--root=$finalPath", "-ivh", "--nodeps", "--noscripts",
 			   "--force", @$pkgs)) {
 		die _tr("error during prerequired-package-installation (%s)\n", $!);
 	}
-	system("rm", "-rf", "$finalPath/var/lib/rpm");
+	slxsystem("rm", "-rf", "$finalPath/var/lib/rpm");
 }
 
 sub installPackages
@@ -82,7 +82,7 @@ sub installPackages
 
 	return unless defined $pkgs && scalar(@$pkgs);
 
-	if (system("rpm", "--root=$finalPath", "-ivh", @$pkgs)) {
+	if (slxsystem("rpm", "--root=$finalPath", "-ivh", @$pkgs)) {
 		die _tr("error during package-installation (%s)\n", $!);
 	}
 }
