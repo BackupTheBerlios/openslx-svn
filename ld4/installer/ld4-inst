@@ -353,11 +353,10 @@ separated numbers) " kernel_choice "${kernel_choice}"
   mkdir -p ${tftpbootdir}
   
   declare -i j=0
-  # add nfs modules -f if nfs is choosen
+  # add nfs modules nevertheless
   fsmod=nfs
   # add nbd module and the selected filesystem ontop
   isyes "$nbdyes" && fsmod=$fsmod" nbd $nbdfs"
-  fsmod=" -f \"$fsmod\""
   # one big initrd or several smaller "specialized" ones!?
   
   # FIXME: mkdxsinitrd currently wants to run from own directory
@@ -367,8 +366,8 @@ separated numbers) " kernel_choice "${kernel_choice}"
     current_kernel=${kernel[${choice[$j]}]#${rootdir}/boot/vmlinuz-}
     echo "Creating initial ramdisk for ${current_kernel}"
     current_initrd=${tftpbootdir}/initrd-dxs-${current_kernel}
-    [ -f ${current_initrd} ] && rm ${current_initrd} 
-    ./mkdxsinitrd -r ${rootdir} -k ${current_kernel} -i ${current_initrd}
+    [ -f ${current_initrd} ] && rm ${current_initrd}
+    ./mkdxsinitrd -f "$fsmod" -r ${rootdir} -k ${current_kernel} -i ${current_initrd}
 
     ln -sf ${kernel[${choice[$j]}]} ${tftpbootdir}/vmlinuz-${current_kernel}
     j=$j+1
@@ -532,7 +531,7 @@ dxs_client_conf="client.cfg/machine-setup.default"
 header
 precheck #(run as root, rsync etc.)
 configure
-#copy_system
+copy_system
 create_nbd
 create_initrd
 setup_server
