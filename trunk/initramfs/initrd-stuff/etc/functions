@@ -308,15 +308,9 @@ echo "dhcp finished at $(sysup)" > /tmp/dhcp-done
 # function for retrieving configuration file (machine-setup) via tftp from a
 # predefined server or given source (file=tftp-server:/path via kernel
 # command line)
-# tftpget is helper function for fileget
-tftpgetunpack () {
+unpack () {
 # $1 is  config file name to get, $2 IP of server to get file from
-echo -e "tftp\t69/tcp\ntftp\t69/udp" > /etc/services
-local dst=/tmp/$(basename $1)
-# tftp get part
-# distinguish between busybox tftp and standalone (in.tftp) client
-tftp -g -r $1 -l $dst $2 2>/dev/null
-# unpack part
+local dst=$1
 if [ -s $dst ] ; then
   # fixme: handle different types of packaging (gzip/bzip2)??
   if ! tar -xpzf $dst 2> /tmp/ConfTGZ-tar-error ; then
@@ -338,7 +332,8 @@ if [ -n "$filesrc" ] ; then
   local srvproto=$(uri_token $filesrc prot)
   local cfgfile="/$(uri_token $filesrc path)"
   local tftpserver=$(checkip $(uri_token $filesrc server))
-  tftpgetunpack $tftp $cfgfile $tftpserver
+  tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $tftpserver 2>/dev/null \
+    && unpack /tmp/$(basename $cfgfile)
 else
   # predefined value for openslx environment; it is expected that this
   # directory is just below the tftpboot/tftproot (path to which the
@@ -352,7 +347,8 @@ and as last\n# distro/default" >> /tmp/confviafile
   mac=$(echo $macaddr|sed "s/:/-/g")
   for cfgfile in $cfgdir/$SYSTEM_NAME/01-$mac.tgz \
                  $cfgdir/$SYSTEM_NAME/default.tgz ; do
-    tftpgetunpack $cfgfile $tftpserver && break
+    tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $tftpserver 2>/dev/null \
+    && { unpack /tmp/$(basename $cfgfile) && break; }
   done
 fi
 test -f /initramfs/machine-setup && \
