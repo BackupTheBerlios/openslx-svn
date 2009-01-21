@@ -710,7 +710,6 @@ sub updateStage1D
 	my $self = shift;
 
 	vlog 1, "updating $self->{'vendor-os-name'}...";
-$self->stage1D_setupPackageSources();
 	$self->stage1D_updateBasicVendorOS();
 }
 
