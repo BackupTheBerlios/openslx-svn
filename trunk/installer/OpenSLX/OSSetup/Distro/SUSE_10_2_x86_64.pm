@@ -138,6 +138,7 @@ sub initDistroInfo
 		x86_64/findutils-4.2.28-24.x86_64.rpm
 		x86_64/gawk-3.1.5-41.x86_64.rpm
 		x86_64/gdbm-1.8.3-261.x86_64.rpm
+		x86_64/glibc-32bit-2.5-25.x86_64.rpm
 		x86_64/gpg-1.4.5-24.x86_64.rpm
 		x86_64/grep-2.5.1a-40.x86_64.rpm
 		x86_64/gzip-1.3.5-178.x86_64.rpm

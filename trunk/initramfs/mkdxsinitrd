@@ -395,6 +395,8 @@ DISTRO_VER=${VENDOR_OS#*-}
 	# drop distro type, keep from version onwards
 DISTRO_VER=${DISTRO_VER%%-*}
 	# remove any optional stuff after version
+DISTRO_VER=${DISTRO_VER%%_*}
+	# remove any architecture specification after version
 
 copy_distro_stuff ${DISTRO_NAME} ${DISTRO_VER}
 
@@ -509,7 +511,11 @@ case "${DISTRO_NAME}" in
     cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib;;
 esac
 
-# copy all libraries that have been determined to be required:
+# add libpci.so to the libraries, as we are going to copy it manually:
+slxldd --root-path=${ROOTDIR} ${SLX_SHARE_PATH}/initramfs/lib/libpci.so.2 \
+	>>${INSTDIR}/tmp/libraries
+
+# now copy all libraries that have been determined to be required:
 # first we handle all 64-bit libs...
 for lib in $(fgrep /lib64/ ${INSTDIR}/tmp/libraries 2>/dev/null|sort -u); do
   if ! [ -d ${INSTDIR}/lib64 ] ; then
