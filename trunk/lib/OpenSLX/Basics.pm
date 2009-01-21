@@ -330,6 +330,7 @@ sub die
 		$msg =~ s[^][*** ]igms;
 		chomp $msg;
 		print STDERR "$msg\n";
+		exit 5 unless ($!);
 		exit $!;
 	}
 }
