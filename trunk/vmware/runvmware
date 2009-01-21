@@ -4,17 +4,18 @@
 #               X Stations and interactive session chooser (v4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-03-2006
-#               Michael Janczyk <mj0@uni-freiburg.de>, 12-12-2006
+#               Michael Janczyk <mj0@uni-freiburg.de>, 10-01-2007
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.16.531
+# Version:      0.16.610
 #
 ################################################################################
 
 
-### VERBOSE? ###################################################################
+### VERBOSE?/PATH ##############################################################
 # set verbose mode (set -x(v))
 #set -xv
+export PATH="${PATH}:/var/X11R6/bin:/usr/X11R6/bin"
 
 
 ### HEADER SECTION #############################################################
@@ -179,7 +180,7 @@ cdr_2_name="/dev/cdrom1"
 floppya="FALSE"
 floppyb="FALSE"
 # place for the virtual floppy "B:"
-floppybname="/etc/vmware/loopimg/fd1.img"
+floppybname="/etc/vmware/loopimg/fd.img"
 # resolution
 hostres=$(xvidtune -show 2>/dev/null| grep -ve "^$")
 xres=$(echo "${hostres}" | awk '{print $3}')
