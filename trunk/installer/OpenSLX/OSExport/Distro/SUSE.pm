@@ -53,10 +53,16 @@ sub initDistroInfo
 		- /var/lib/hardware/*
 		- /var/lib/gdm/*
 		- /var/lib/dhcp*
+		- /var/lib/bluetooth/
 		- /var/lib/YaST2/you/mnt/*
+		- /var/lib/YaST2/backup_boot_sectors
+		- /var/cache/sax
+		- /var/cache/libx11/compose/*
+		- /var/cache/beagle
 		- /var/cache/yum
 		- /var/cache/man/*
 		- /var/adm/backup/rpmdb/*
+		- /var/adm/mount/AP*
 		- /var/adm/SuSEconfig
 		- /usr/share/vmware/*
 		- /usr/lib/zen-updater

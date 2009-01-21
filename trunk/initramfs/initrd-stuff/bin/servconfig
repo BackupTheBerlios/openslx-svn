@@ -472,12 +472,14 @@ if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
     tmpserv=$(uri_token $scratch server)
     tmppath=$(uri_token $scratch path)
     # hanging mount processes might stop further setup - timeout
-    # should be configured ...
-    mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid \
+    # should be configured ... it is possible to mount "nolock" only
+    mount -t nfs -o rw,tcp,nolock,intr,nodev,soft,timeo=2,nosuid \
       ${tmpserv}:${tmppath} /tmp/scratch >/dev/null 2>&1 && {
-      mkdir -p /tmp/scratch/${clientip} >/dev/null 2>&1
+      testmkd /tmp/scratch/${clientip}
       umount /tmp/scratch
-      mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid \
+      # no need for tempfs there ...
+      umount /mnt/tmp >/dev/null 2>&1
+      mount -t nfs -o rw,tcp,nolock,intr,nodev,soft,timeo=2,nosuid \
         ${tmpserv}:${tmppath}/${clientip} /mnt/tmp >/dev/null 2>&1; }
     ;;
   esac
