@@ -132,7 +132,7 @@ config_syslog "02" "20"
 config_dreshal "03" "18"
 
 # acpi and powersave - distro dependent function config_acpi
-config_acpi "10" "10"
+config_acpi "10" "12"
 
 #######################################################################
 # network(ed) services
@@ -289,3 +289,4 @@ if [ "x$nis_domain" != "x" ] && [ "x$nis_servers" != "x" ] ; then
   strinfile "+::::::" /mnt/etc/passwd || echo "+::::::" >>/mnt/etc/passwd
 fi
 
+echo "finished" > /tmp/svcfg

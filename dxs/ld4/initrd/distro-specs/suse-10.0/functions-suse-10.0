@@ -143,7 +143,7 @@ fi
 
 # create links to desktop-session chooser
 [ -f /mnt/usr/bin/X11/wmlist ] && wmlist=`cat /mnt/usr/bin/X11/wmlist`
-
+testmkd /mnt/etc/X11/sessions
 for i in `echo $windowmanagers|sed -e "s/,/ /g"` ; do
   # beware!! quickhack for VMware sessions
   strinstr "$i" "$wmlist" || \

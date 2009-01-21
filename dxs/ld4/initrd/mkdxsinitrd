@@ -277,7 +277,7 @@ case "${DISTRO}.${DISVER}" in
 	DISTRO=suse-10.0
         # hotplug/udev style and stuff
 	cp -a /etc/udev /etc/hotplug ${INSTDIR}/etc
-	cp -a /etc/sysconfig/hardware  ${INSTDIR}/etc/sysconfig
+	#cp -a /etc/sysconfig/{hardware,network}  ${INSTDIR}/etc/sysconfig
 	;;
   Debian*|debian*|Sarge*|sarge*)
 	DISTRO=debian
