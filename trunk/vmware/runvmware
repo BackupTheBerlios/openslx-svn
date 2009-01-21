@@ -7,7 +7,7 @@
 #               Michael Janczyk <mj0@uni-freiburg.de>, 27-03-2007
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.17.826
+# Version:      0.17.831
 #
 ################################################################################
 
@@ -54,7 +54,7 @@ runvmwareconfheader ()
 
   ###### scsi-disks ############################################################
   scsi0.present = \"${scsi}\"
-  scsi0.virtualDev = \"lsilogic\"
+  scsi0.virtualDev = \"${hddrv}\"
   scsi0:0.mode = \"${np}\"
   scsi0:0.present = \"${scsi}\"
   scsi0:0.fileName = \"${diskfile}\"
@@ -168,7 +168,15 @@ version=$(head -n 15 $0 | grep "# Version: " | awk '{print $3}')
 
 # hardware variables
 # temporary disk space for logs, etc...
-export tmpdir=/tmp/${USER}
+preftmpdir=/tmp/${USER}
+# there are two different kinds of tmp needed:
+# user config -> preferences for all *.vmx (especially that hidden ram image)
+# and per vmx config (written to runvmware.conf)
+if cat /proc/mounts|grep -e " /tmp" 2>/dev/null| grep -e "nfs" &>/dev/null
+  then export tmpdir=/dev/shm/vmware
+else
+  export tmpdir=$preftmpdir
+fi
 
 mac=
 declare -i mem=0
@@ -181,6 +189,7 @@ permem=66
 # virtual devices
 ide="TRUE"
 scsi="FALSE"
+hddrv="lsilogic"
 cdr_1="FALSE"
 cdr_2="FALSE"
 floppya="FALSE"
@@ -290,8 +299,6 @@ Image options:
 	--vmostype <vmwareos>   define VMware ostype
         --include <includefile> include code right before program start
 	--displayaliases	aliases you can use with option -a
-        --scsi                  enable SCSI 0:0 / disable IDE 0:0
-                                needed when image is SCSI, not IDE
         --floppya               enable floppy disk
         --floppyb               use /etc/vmware/fd-loop as floppy B,
                                 needed for exchanging files w/ VMware
@@ -577,10 +584,6 @@ while [ ${nofclopt} -gt "${args}" ]; do
     --floppyb)
       floppyb="TRUE"
     ;;
-    --scsi)
-      scsi="TRUE"
-      ide="FALSE"
-    ;;
     --edit)
       vmopt=""
     ;;
@@ -770,6 +773,19 @@ writelog "Starting image detection...\c" 0 1
 
 diskfile="${vmdir}/${startvm}.vmdk"
 
+# check if IDE or SCSI
+hddrv=$(grep -m 1 -ia "ddb.adapterType" ${diskfile} | awk -F "\"" '{print $2}')
+if [ "${hddrv}" = "ide" ]; then
+  ide="TRUE"
+  scsi="FALSE"
+elif [ "${hddrv}" = "lsilogic" ]; then
+  ide="FALSE"
+  scsi="TRUE"  
+elif [ "${hddrv}" = "buslogic" ]; then
+  ide="FALSE"
+  scsi="TRUE"  
+fi
+
 # check if ${vmostype} defined via command line
 if [ -z "${comdef}" ]; then
   ostype=$(echo ${startvm} | awk -F "-" '{print $1}')
@@ -786,7 +802,7 @@ displayname=$(grep -m 1 -i "name" \
 # if variable not set
 displayname=${displayname:-"VMware Image"}
 
-writelog "finished\nResults:\n\tDiskfile:\t${diskfile}
+writelog "finished\nResults:\n\tDiskfile:\t${diskfile}\n\tDisktype:\t${hddrv}
   \tVMostype:\t${vmostype}\n\tDisplayname:\t${displayname}\n" 0 1
 
 # check if image exists, etc...
