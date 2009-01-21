@@ -7256,7 +7256,7 @@
 0x8086	0x7110	"unknown"	"Intel Corp.|82371AB PIIX4 ISA"
 0x8086	0x7111	"ata_piix"	"Intel Corp.|82371AB PIIX4 IDE"
 0x8086	0x7112	"usb-uhci"	"Intel Corp.|82371AB PIIX4 USB"
-0x8086	0x7113	"sonypi"	"Intel Corp.|82371AB PIIX4 ACPI - Bus Master IDE Controller"
+0x8086	0x7113	"unknown"	"Intel Corp.|82371AB PIIX4 ACPI - Bus Master IDE Controller"
 0x8086	0x7120	"intel-agp"	"Intel Corp.|82810 GMCH [Graphics Memory Controller Hub]"
 0x8086	0x7121	"Card:Intel 810"	"Intel Corp.|82810 CGC [Chipset Graphics Controller]"
 0x8086	0x7122	"intel-agp"	"Intel Corp.|82810-DC100 GMCH [Graphics Memory Controller Hub]"

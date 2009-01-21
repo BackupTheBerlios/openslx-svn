@@ -40,4 +40,8 @@ DRIVER radeon
 NAME ATI Radeon (fglrx)
 SEE ATI Radeon (generic)
 
+# link for Matrox G550 Dualhead
+NAME Matrox Millennium G550 DualHead
+SEE Matrox Millennium G550
+
 # main database
