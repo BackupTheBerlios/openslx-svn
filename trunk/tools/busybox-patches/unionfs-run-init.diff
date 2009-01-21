@@ -3,11 +3,11 @@ root fs on top.  We check if we have unionfs available to make the ro fs rw.
 Unfortunately the unionfs code is incomplete (mmap issue).   Thus the original
 mount point of the ro fs part is not moved accordingly.
 
-Index: busybox-1.2.2/util-linux/switch_root.c
+Index: busybox-1.3.1/util-linux/switch_root.c
 ===================================================================
---- busybox-1.2.2.orig/util-linux/switch_root.c
-+++ busybox-1.2.2/util-linux/switch_root.c
-@@ -106,6 +106,10 @@ int switch_root_main(int argc, char *arg
+--- busybox-1.3.1.orig/util-linux/switch_root.c
++++ busybox-1.3.1/util-linux/switch_root.c
+@@ -103,6 +103,10 @@ int switch_root_main(int argc, char *arg
  	// Overmount / with newdir and chroot into it.  The chdir is needed to
  	// recalculate "." and ".." links.
  

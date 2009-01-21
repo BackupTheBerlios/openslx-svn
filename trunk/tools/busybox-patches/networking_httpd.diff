@@ -1,0 +1,29 @@
+Author: Lars Mueller <lm at openslx dot com>
+Subject: Add missing defines to enable code for a particular
+BugID: 1159
+
+Index: busybox-1.3.1/networking/httpd.c
+===================================================================
+--- busybox-1.3.1.orig/networking/httpd.c
++++ busybox-1.3.1/networking/httpd.c
+@@ -1305,8 +1305,10 @@ static int checkPermIP(void)
+ 
+ 	/* This could stand some work */
+ 	for (cur = config->ip_a_d; cur; cur = cur->next) {
++#if ENABLE_FEATURE_HTTPD_CGI || DEBUG
+ 		if (DEBUG)
+ 			fprintf(stderr, "checkPermIP: '%s' ? ", config->rmt_ip_str);
++#endif
+ 		if (DEBUG)
+ 			fprintf(stderr, "'%u.%u.%u.%u/%u.%u.%u.%u'\n",
+ 				(unsigned char)(cur->ip >> 24),
+@@ -1690,7 +1692,9 @@ static void handleIncoming(void)
+ 		config->ContentLength = -1;
+ 	} while (0);
+ 
++#if ENABLE_FEATURE_HTTPD_CGI
+  bail_out:
++#endif
+ 
+ 	if (DEBUG)
+ 		fprintf(stderr, "closing socket\n\n");
