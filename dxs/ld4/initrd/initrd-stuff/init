@@ -291,7 +291,7 @@ if [ -n "${UNIONFS}" ] ; then
   mkdir -p ${RWDIR}/union ${RWDIR}/uniontmp
   mount -n -t tmpfs none ${RWDIR}/uniontmp
   mount -n --move /mnt /root
-  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/root=ro none /mnt
+  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/root=nfsro none /mnt
   mkdir -p /mnt/uniontmp
   mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp
   # run ldconfig if not switched off via kernel command line
@@ -397,6 +397,7 @@ d_mkbootld close
 # IP configuration is made and should not be updated automatically, udevd
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null
+
 
 #bash
 
