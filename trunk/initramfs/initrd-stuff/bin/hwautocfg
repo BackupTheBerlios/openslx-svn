@@ -281,9 +281,9 @@ done
 ( hwsetup -v > /tmp/hwsetup.info && echo "hwsetup" > /tmp/hwrun1 ) & 
 [ $DEBUGLEVEL -eq 21 ] && echo "** started 1st hwdetection at $(sysup)"
 
-# AGP configuration (agpgart and chipset specific driver)
-modprobe ${MODPRV} agpgart || \
-    modprobe ${MODPRV} agpgart agp_try_unsupported=1
+# AGP configuration (agpgart and chipset specific driver) really needed?
+#modprobe ${MODPRV} agpgart || \
+#    modprobe ${MODPRV} agpgart agp_try_unsupported=1
 
 # wait for /tmp/hwsetup.info to appear
 waitfor /tmp/hwrun1 50000 || \
