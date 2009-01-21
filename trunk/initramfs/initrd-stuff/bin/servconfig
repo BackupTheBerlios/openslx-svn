@@ -205,13 +205,14 @@ config_cron
 # setup system log services - distro dependent function config_syslog
 config_syslog
 
+# acpi and powersave - distro dependent function config_acpi, these daemons
+# might require dbus
+config_acpi
+
 # configure dbus - distro dependent function config_dreshal - handle
 # all stuff regarding dependent services like dbus, resmgr, hal ...
 # (check for runlevel scripts, passwd entries, directories ...)
 config_dreshal
-
-# acpi and powersave - distro dependent function config_acpi
-config_acpi
 
 # configure automounter
 # if automounter=yes

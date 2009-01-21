@@ -58,12 +58,6 @@ fi
 return $result
 }
 
-# acpi and powersave
-config_acpi () {
-rllinker acpid "10" "12"
-rllinker powersaved "11" "11"
-}
-
 # configure dbus (inter application communication for kde and gnome), hal
 # (hardware abstraction layer - used e.g. by powersaved), resmgr and 
 # policykitd (resource manager/policykitd - the user gets permissions to 
@@ -86,14 +80,14 @@ if [ "x$start_dreshal" = "xyes" ]; then
   fi
   if [ -f /mnt/etc/${D_INITDIR}/resmgr ] ; then
     testmkd /mnt/var/run/resmgr/classes
-    start="0"`expr $start + 1`
-    stop="0"`expr $start - 1`
+    start="0"$(expr $start + 1)
+    stop="0"$(expr $start - 1)
     rllinker "resmgr" "$start" "$stop"
   fi
   if [ -f /mnt/etc/${D_INITDIR}/policykitd ] ; then
     testmkd /mnt/var/run/polkit
-    start="0"`expr $start + 1`
-    stop="0"`expr $start - 1`
+    start="0"$(expr $start + 1)
+    stop="0"$(expr $start - 1)
     rllinker "policykitd" "$start" "$stop"
   fi
   if [ -f /mnt/etc/${D_INITDIR}/haldaemon ] ; then
@@ -106,8 +100,8 @@ if [ "x$start_dreshal" = "xyes" ]; then
     # set permissions with userid
     echo -e "\tchown haldaemon:haldaemon /var/run/hal 2>/dev/null" \
       >>/mnt/etc/${D_INITDIR}/boot.slx
-    start="0"`expr $start + 1`
-    stop="0"`expr $start - 1`
+    start="0"$(expr $start + 1)
+    stop="0"$(expr $start - 1)
     rllinker "haldaemon" "$start" "$stop"
   fi
 fi

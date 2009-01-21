@@ -22,12 +22,6 @@ fi
 return $result
 }
 
-# acpi and powersave
-config_acpi () {
-rllinker acpid "10" "12"
-rllinker powersaved "11" "11"
-}
-
 # prepare virtual machine environment (vmware, vmplayer)
 config_vmware () {
 rllinker "vmware-prep" "18" "02"

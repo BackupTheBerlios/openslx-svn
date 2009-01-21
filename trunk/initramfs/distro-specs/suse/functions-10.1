@@ -41,12 +41,6 @@ fi
 return $result
 }
 
-# acpi and powersave
-config_acpi () {
-rllinker acpid "10" "12"
-rllinker powersaved "11" "11"
-}
-
 # afs client
 # configure afs client
 config_afs () {
