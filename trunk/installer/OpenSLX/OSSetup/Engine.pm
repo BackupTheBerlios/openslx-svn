@@ -29,16 +29,16 @@ use vars qw(%supportedDistros);
 		=> { module => 'Debian_3_1', support => 'clone', },
 	'debian-4.0'
 		=> { module => 'Debian_4_0', support => 'clone', },
-#	'fedora-6'
-#		=> { module => 'Fedora_6', support => 'clone,install', },
-#	'fedora-6-x86_64'
-#		=> { module => 'Fedora_6_x86_64', support => 'clone', },
+	'fedora-6'
+		=> { module => 'Fedora_6', support => 'clone,install', },
+	'fedora-6-x86_64'
+		=> { module => 'Fedora_6_x86_64', support => 'clone', },
 	'gentoo-2005.1'
 		=> { module => 'Gentoo_2005_1', support => 'clone', },
 	'gentoo-2006.1'
 		=> { module => 'Gentoo_2006_1', support => 'clone', },
-#	'mandriva-2007.0'
-#		=> { module => 'Mandriva_2007_0', support => 'clone', },
+	'mandriva-2007.0'
+		=> { module => 'Mandriva_2007_0', support => 'clone', },
 	'suse-9.3'
 		=> { module => 'SUSE_9_3', support => 'clone', },
 	'suse-10.0'
