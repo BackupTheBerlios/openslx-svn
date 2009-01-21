@@ -448,7 +448,6 @@ rllinker "ypbind"
 
 # start vmware and vmware preparation services
 config_vmware () {
-rllinker "vmware-prep"
 # ensure that vmware is started after preparation
 rllinker "vmware" "vmware-prep"
 # during vmware sessions linux should not handle usb events/devices

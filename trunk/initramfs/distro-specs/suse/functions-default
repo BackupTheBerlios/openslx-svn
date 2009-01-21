@@ -488,7 +488,6 @@ fi
 # start vmware
 config_vmware () {
 if [ -f /mnt/etc/${D_SYSCONFDIR}/vmware ] ; then
-  rllinker "vmware-prep" "18" "02"
   rllinker "vmware" "20" "02"
   # if running start scripts in parallel vmware-prep is not recognized
   # first solution: just avoid running in parallel

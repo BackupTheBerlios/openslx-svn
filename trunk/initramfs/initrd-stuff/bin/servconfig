@@ -350,13 +350,6 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   echo -e "usbfs\t\t/proc/bus/usb\tusbfs\t\tauto\t\t 0 0" >> /mnt/etc/fstab
   echo -e "mount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
     >> /mnt/etc/${D_INITDIR}/boot.slx
-  # generate a runlevel script (deprecated because stuff could be done in
-  # here ...)
-  #d_mkrlscript init vmware-prep "Starting preparation of vmware environment"
-  #sed "s,^#.*,,;/^$/d;s,^,        ," /etc/vmware-prep >> \
-  #  /mnt/etc/${D_INITDIR}/vmware-prep
-  #d_mkrlscript close vmware-prep ""
-  #chmod u+x /mnt/etc/${D_INITDIR}/vmware-prep
   # check here that mount finished and the important files are available
   if [ "$noimg" = "yes" ] ; then
     error "$scfg_vmdir" nonfatal
@@ -368,8 +361,8 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   config_vmware
   chmod 1777 /mnt/var/run/vmware
   # define a variable where gdm/kdm should look for additional sessions
-  #do we really need it?
-  #export vmsessions=/var/lib/vmware/vmsessions
+  # do we really need it?
+  # export vmsessions=/var/lib/vmware/vmsessions
   # create default.desktop for kdm
   echo "[Desktop Entry]" > /mnt/etc/X11/sessions/default.desktop
   echo "Encoding=UTF8" >> /mnt/etc/X11/sessions/default.desktop
@@ -385,10 +378,12 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   rm /mnt/etc/vmware/not_configured 2>/dev/null
 
   # copy dhcpd.conf and nat for vmnet8 (nat)
+  # fixme: It should be possible to start just one vmware dhcp which should
+  # listen to both interfaces vmnet1 and vmnet8 ...
   cp /mnt/var/lib/vmware/templates/dhcpd.conf /mnt/etc/vmware/vmnet8/dhcpd/
   cp /mnt/var/lib/vmware/templates/nat.conf /mnt/etc/vmware/vmnet8/nat/
 
-  #directory of templates and xidlaog-files
+  # directory of templates and xdialog files
   vmdir=/mnt/var/lib/vmware
   cp ${vmdir}/templates/xdialog.sh /mnt/etc/X11/
 
@@ -405,9 +400,9 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
         >> /mnt/etc/X11/xdialog.sh
   done
 
-  #all vmware clients
+  # all vmware clients
   cat ${vmdir}/xdialog-files/${pool}/*.xdialog >> /mnt/etc/X11/xdialog.sh
-  #closing bracket as last line ends with '\'
+  # closing bracket as last line ends with '\'
   echo ")" >> /mnt/etc/X11/xdialog.sh
   chmod 755 /mnt/etc/X11/xdialog.sh
 fi
