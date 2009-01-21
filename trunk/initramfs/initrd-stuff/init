@@ -2,7 +2,7 @@
 # main script for new type of initial ramdisk for OpenSLX linux diskless
 # clients version 4
 #
-# Dirk von Suchodoletz <dirk@goe.net>, 29-10-2006
+# Dirk von Suchodoletz <dirk@goe.net>, 03-11-2006
 # <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
@@ -147,7 +147,9 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       srvproto=$(uri_token $ROOTFS prot)
       case $srvproto in
         nfs)
-          nfsroot=$(uri_token $ROOTFS server)":/"$(uri_token $ROOTFS path)
+          # nfsroot consists now of two different parts
+          root_path=/$(uri_token $ROOTFS path)
+          nfsserver=$(uri_token $ROOTFS server)
           echo -e "\n# nfs root information gotten via kernel command \
 line in $0\nnfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
         ;;
@@ -179,6 +181,8 @@ line in $0\nnfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
     # deprecated: nfs server and path (will be removed soon)
     nfsroot=*)
       nfsroot=${opts#nfsroot=}
+      #root_path=
+      #nfsserver=
       echo -e "\n# nfs root information gotten via kernel command line in $0\n\
 nfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
     ;;
@@ -373,9 +377,9 @@ fi
 # call function for nfs mounts
 if [ -z "${nbdmod}" -a -z "${nbdserver}" ] ; then
   . /etc/machine-setup
-  # check if serverip is set as variable @@@serverip@@@
-  serverip=$(checkip $serverip)
-  nfsroot=${serverip}:${root_path}
+  # check if nfsserver is set as variable @@@serverip@@@
+  nfsserver=$(checkip $nfsserver)
+  nfsroot=${nfsserver}:${root_path}
   nfsmnt ${nfsroot} || error "$init_nfs"
 fi
 
