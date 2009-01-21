@@ -30,9 +30,14 @@ sub preSystemInstallationHook
 	
 	$self->SUPER::preSystemInstallationHook();
 
-	# replace /usr/sbin/mkinitrd with a dummy, in order to skip the hopeless
-	# pass at trying to create an initrd. It doesn't work and we don't need
-	# it either.
+	# when the kernel package is being configured, it insists on trying to
+	# create an initrd, which neither works nor makes sense in our environment.
+	#
+	# in order to circumvent this problem, we manually install initrd-tools 
+	# (which contains mkinitrd) ...
+	slxsystem("apt-get install initrd-tools");
+	# ... and replace /usr/sbin/mkinitrd with a dummy, in order to skip the 
+	# initrd-creation.
 	rename('/usr/sbin/mkinitrd', '/usr/sbin/_mkinitrd');
 	spitFile('/usr/sbin/mkinitrd', "#! /bin/sh\ntouch \$2\n");
 	chmod 0755, '/usr/sbin/mkinitrd';

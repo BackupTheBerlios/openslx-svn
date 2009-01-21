@@ -1399,9 +1399,9 @@ sub _setupStage1D
 	$self->_callChrootedFunction({
 		chrootDir    => $self->{'vendor-os-path'},
 		function     => sub {
-			$self->{distro}->preSystemInstallationHook();
 			$self->_stage1D_setupPackageSources();
 			$self->_stage1D_updateBasicVendorOS();
+			$self->{distro}->preSystemInstallationHook();
 			$self->_stage1D_installPackageSelection();
 			$self->{distro}->postSystemInstallationHook();
 		},
