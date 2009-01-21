@@ -40,8 +40,6 @@ sub initDistroInfo
 {
 	my $self = shift;
 
-	$self->SUPER::initDistroInfo();
-
 	$self->{'export-filter'} = "
 		- *.YaST2save
 		- *.o

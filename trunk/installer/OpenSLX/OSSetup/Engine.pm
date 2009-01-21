@@ -690,17 +690,7 @@ sub clone_fetchSource
 	my $source = shift;
 
 	vlog 0, _tr("Cloning vendor-OS from <%s>...\n", $source);
-	my (@includeList, @excludeList);
-	my $filterFile = "../lib/distro-info/clone-filter-common";
-	if (open(FILTER, "< $filterFile")) {
-		while(<FILTER>) {
-			chomp;
-			push @includeList, $_ if /^\+\s+/;
-			push @excludeList, $_ if /^\-\s+/;
-		}
-		close(FILTER);
-	}
-	my $excludeIncludeList = join("\n", @includeList, @excludeList);
+	my $excludeIncludeList = $self->clone_determineIncludeExcludeList();
 	vlog 1, "using exclude-include-filter:\n$excludeIncludeList\n";
 	open(RSYNC, "| rsync -av --delete --exclude-from=- $source $self->{'vendor-os-path'}")
 		or die _tr("unable to start rsync for source '%s', giving up! (%s)",
@@ -711,6 +701,19 @@ sub clone_fetchSource
 				$source, $!);
 	}
 }
+
+sub clone_determineIncludeExcludeList
+{
+	my $self = shift;
+
+	my $localFilterFile = "../lib/distro-info/clone-filter.local";
+	my $includeExcludeList = slurpFile($localFilterFile, 1);
+	$includeExcludeList .= $self->{distro}->{'clone-filter'};
+	$includeExcludeList =~ s[^\s+][]igms;
+		# remove any leading whitespace, as rsync doesn't like it
+	return $includeExcludeList;
+}
+
 
 ################################################################################
 ### utility functions

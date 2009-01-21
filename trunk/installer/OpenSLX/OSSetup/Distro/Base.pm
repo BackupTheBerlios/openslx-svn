@@ -53,6 +53,51 @@ sub initialize
 	$self->{'stage1c-faked-files'} = [
 	];
 
+	$self->{'clone-filter'} = "
+		- *.bak
+		- *.old
+		- *lost+found*
+		- *~
+		- .*.cmd
+		- .svn
+		- /*
+		+ /bin
+		+ /boot
+		+ /dev
+		- /dev/*
+		+ /etc
+		- /etc/dxs
+		- /etc/exports*
+		- /etc/opt/openslx
+		- /etc/resolv.conf.*
+		- /etc/samba/secrets.tdb
+		- /etc/shadow*
+		- /etc/vmware/installer.sh
+		+ /home
+		- /home/*
+		+ /lib
+		+ /lib64
+		+ /mnt
+		- /mnt/*
+		+ /opt
+		- /opt/openslx
+		+ /proc
+		- /proc/*
+		+ /root
+		- /root/*
+		+ /sbin
+		+ /sys
+		- /sys/*
+		+ /tmp
+		- /tmp/*
+		+ /usr
+		- /usr/lib/vmware/modules/*
+		+ /var
+		- /var/lib/vmware
+		- /var/opt/openslx
+		- /var/tmp/*
+	";
+
 	$self->initDistroInfo();
 }
 
