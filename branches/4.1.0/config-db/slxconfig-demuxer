@@ -130,7 +130,7 @@ END { unlockScript($lockFile); }
 writeConfigurations();
 
 my $wr = ($dryRun ? "would have written" : "wrote");
-print "$wr $systemConfCount systems and $clientSystemConfCount client-configurations to $tftpbootPath/client-config\n";
+print "$wr $systemConfCount systems and $clientSystemConfCount client-specific configurations to $tftpbootPath/client-config\n";
 
 $openslxDB->disconnect();
 
