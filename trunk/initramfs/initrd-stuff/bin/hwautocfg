@@ -230,7 +230,8 @@ done
 . /etc/distro-functions
 
 # script run timer
-[ $DEBUGLEVEL -eq 8 ] && echo "** HW setup started at $(sysup)"
+[ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
+  echo "** HW setup started at $(sysup)"
 
 # heavy debugging output in level 3 and above and specific for 11
 [ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 8 -o $DEBUGLEVEL -eq 11 ] && \
@@ -271,9 +272,7 @@ done
 
 # start the knoppix hardware autodetection tool
 ( hwsetup -v > /tmp/hwsetup.info && echo "hwsetup" > /tmp/hwrun1 ) & 
-
-# ACPI configuration - at least not needed with SuSE 9.3/10.0
-# needed for other distros?
+[ $DEBUGLEVEL -eq 21 ] && echo "** started 1st hwdetection at $(sysup)"
 
 # AGP configuration (agpgart and chipset specific driver)
 modprobe ${MODPRV} agpgart || \
@@ -282,6 +281,7 @@ modprobe ${MODPRV} agpgart || \
 # wait for /tmp/hwsetup.info to appear
 waitfor /tmp/hwrun1 50000 || \
   error "$hcfg_hwsetup"
+[ $DEBUGLEVEL -eq 21 ] && echo "** 1st hwdetection finished at $(sysup)"
 # load ide drivers first, takes a while to initialize
 for DRIVER in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
     triflex aec62xx cs5530 ns87415 sc1200 trm290 alim15x3 \
@@ -347,6 +347,7 @@ DRIVERLIST="${DRIVERLIST} ${DRIVER} "
 modprobe ${MODPRV} snd-pcm-oss 
 modprobe ${MODPRV} snd-mixer-oss
 
+[ $DEBUGLEVEL -eq 21 ] && echo "** module loading finished at $(sysup)"
 # rerun the knoppix hardware autodetection tool for USB and ide devices
 # like dvd or harddisk - wait a few seconds so hopefully the ide driver
 # is initialized 
@@ -354,7 +355,9 @@ modprobe ${MODPRV} snd-mixer-oss
 test -f /proc/bus/usb/devices || \
   mount -n -t usbfs usbfs /proc/bus/usb 2>/dev/null
 [ -n "$IDE" ] && modprobe -q ide_generic 2>/dev/null 
+[ $DEBUGLEVEL -eq 21 ] && echo "** started 2nd hwdetection at $(sysup)"
 usleep 200 && hwsetup -v > /tmp/hwsetup.info
+[ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
 # remaining drivers listed in /tmp/hwsetup.info
 cat /tmp/hwsetup.info| while read LINE ; do
   if strinstr "driver:" "${LINE}"; then
@@ -395,12 +398,13 @@ if strinfile "SCSI" /tmp/hwsetup.info ; then
            >> /tmp/scanner-udev
 fi
 [ -x /bin/mdev ] && mdev -s &
-# fixme - psmouse entladen, falls nicht vorhanden
+[ $DEBUGLEVEL -eq 21 ] && echo "** finished module loading at $(sysup)"
 
 # configure some variables from configuration file - wait for dhcp or ldap
 # confiurator to complete
 cfgcomplete
 . /etc/machine-setup
+[ $DEBUGLEVEL -eq 21 ] && echo "** finished waiting for config at $(sysup)"
 
 # run localizator and configure keyboard and console fonts
 DEFKEYTABLE="de-latin1-nodeadkeys"
@@ -420,7 +424,8 @@ else
 fi
   
 # get idea of availabe harddisk partitions, put swap partitions into
-# (/mnt)/etc/fstab and format and mount partitions of type 44 (unknown) 
+# (/mnt)/etc/fstab and format and mount partitions of type 44 (unknown)
+[ $DEBUGLEVEL -eq 21 ] && echo "** starting hdd stuff at $(sysup)"
 for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
     sed -n -e '/device:/p' | sed -e 's/device: //') ; do
   fdisk -l /dev/$hd| sed -n "/^\/dev\//p" > /tmp/hd_part
@@ -454,9 +459,13 @@ noexec\t 0 0" >> /tmp/fstab
 done
 # determine if tmp preparation should wait for format/mount or not
 [ -z "$part44" ] && echo "finished at $(sysup)" > /tmp/tmpready
+[ $DEBUGLEVEL -eq 21 ] && echo "** finished hdd stuff at $(sysup)"
 
 # wait for completion of clients root filesystem in /mnt and add
 # previously generated files to /mnt/etc ...
+[ $DEBUGLEVEL -eq 21 ] && \
+  echo -e "** if you did not run hwautocfg in background and exited the \n\
+debug shell, expect to wait from now on a while ..."
 waitfor /tmp/fscmpl 40000
 [ -f /tmp/fstab ] && cat /tmp/fstab >> /mnt/etc/fstab
 [ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
@@ -490,7 +499,8 @@ cp /etc/xorg.conf ${D_XF86CONFFILE}
 [ -n "$part44" ] && waitfor /tmp/tmpready 20000
 
 
-# script run timer
-[ $DEBUGLEVEL -eq 8 ] && echo "** HW setup finished at $(sysup)"
+# script run timer or debug information
+[ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
+  echo "** HW setup finished at $(sysup)"
 
 echo "hwsetup finished at $(sysup)" > /tmp/hwcfg
