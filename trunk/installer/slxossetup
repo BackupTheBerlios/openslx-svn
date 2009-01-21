@@ -121,7 +121,8 @@ function setup_busybox_chroot()
 	cp -p /etc/resolv.conf "${CHROOT_DIR}/etc/"
 
 	# FIXME this might not be enough to satisfy the resolver
-	for file in /lib/libnss_dns* /lib/libresolv*; do
+#	for file in /lib/libnss_dns* /lib/libresolv*; do
+	for file in /lib/xxlib_dns* /lib/xxlibresolv*; do
 		test -e "${file}" || \
 			continue
 		dir="${CHROOT_DIR}/${file%/*}"
@@ -134,7 +135,7 @@ function setup_busybox_chroot()
 function setup_busybox_stage1_config()
 {
 	local key value CONFIG_FILE
-	
+
 	CONFIG_FILE="${CHROOT_DIR}/etc/slxbootstrap.conf"
 
 	test -d "${CHROOT_DIR}/etc" || \
@@ -363,7 +364,7 @@ function install_slxselection()
 	done
 	test -z "${packagelist}" && \
 		return
-	
+
 	case "${META_PACKAGER}" in
 		*debian*|*ubuntu**)
 			: ${SLX_STAGE1_INSTALL_OPTIONS:=-y}
