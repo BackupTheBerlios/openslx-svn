@@ -63,7 +63,7 @@ case "$WM" in
     xsetroot -solid black
     mkdir -p $HOME/.vmware &>/dev/null
     xterm -bg black -fg white -geometry 170x30+0-0 +sb -e \
-      "runvmware -i --debug 1"
+      "runvmware --xdm vm"
   ;;
   *)
     if which $WM; then
