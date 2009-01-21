@@ -187,7 +187,7 @@ function setup_bootstrap_1b()
 
 function setup_bootstrap_1c()
 {
-	local dir file packagekey	
+	local dir file packagelist packagekey	
 
 	case "${SLX_SYSTEM_BASENAME}" in
 		*ubuntu*)
@@ -216,8 +216,11 @@ function setup_bootstrap_1c()
 				chroot "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}" \
 					/bin/rpm --root="${SLX_STAGE1_FINAL_PATH}" --import "${packagekey}"
 			done
+			cd "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}"
+			packagelist=$( ls *.rpm)
+			cd - >/dev/null
 			chroot "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}" \
-				/bin/rpm --root="${SLX_STAGE1_FINAL_PATH}" -ivh *.rpm
+				/bin/rpm --root="${SLX_STAGE1_FINAL_PATH}" -ivh ${packagelist}
 			cp -p /etc/resolv.conf "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/${SLX_STAGE1_FINAL_PATH}/etc/"
 		;;
 	esac
@@ -338,7 +341,7 @@ function install_slxselection()
 		exit 1
 	fi
 
-	local packagelist variable
+	local packages packagelist variable
 	for variable in ${!SLX_INSTALL_PACKAGES_*}; do
 		packages=$( eval echo \$$variable)
 		packagelist="${packagelist:+$packagelist }$( eval echo \$$variable)"
