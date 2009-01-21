@@ -26,8 +26,6 @@ MENU MASTER PASSWD secret
 my (
 	$dryRun,
 		# dryRun won't touch any file
-	$useAbsoluteTftpPath,
-		# pass tftpboot-path on to clients (for a tftpd serving from "/")
 	$systemConfCount,
 		# number of system configurations written
 	$clientSystemConfCount,
@@ -38,10 +36,6 @@ GetOptions(
 	'dry-run' => \$dryRun,
 		# dry-run doesn't write anything, just prints statistic about what
 		# would have been written
-	'use-absolute-tftp-path' => \$useAbsoluteTftpPath,
-		# this causes the absolute tftp-path to be prepended to all places
-		# that require it such that the system can cooperate with a tftp-server
-		# which does not serve from $SLX_TFTPBOOT_PATH (but from / instead).
 );
 
 openslxInit();
@@ -213,11 +207,6 @@ sub writePXEMenus
 				$append .= " initrd=$extSysID/initramfs";
 				$append .= " $clientAppend";
 				$append .= " rootfs=$info->{'export-uri'} file";
-				if ($useAbsoluteTftpPath) {
-					# tftp-server requires absolute paths, so we pass that on to
-					# the clients:
-					$append .= " tftp_root_path=$tftpbootPath";
-				}
 				print PXE "LABEL openslx-$extSysID\n";
 #				print PXE "\tMENU DEFAULT\n";
 				print PXE "\tMENU LABEL ^$info->{label}\n";
