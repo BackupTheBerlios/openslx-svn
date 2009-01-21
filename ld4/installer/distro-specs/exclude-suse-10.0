@@ -20,6 +20,7 @@
 - /usr/share/vmware/*
 - *lost+found*
 - /media/*
+- /usr/X11R6/bin/BackGround
 - /opt/kde3/share/autostart/SUSEgreeter.desktop
 - /opt/kde3/share/autostart/suseplugger.desktop
 - /opt/kde3/share/autostart/susewatcher.desktop
