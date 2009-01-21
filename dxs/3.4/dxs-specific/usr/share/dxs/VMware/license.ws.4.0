@@ -1,9 +1,0 @@
-# VMware software license
-StartFields = "Cpt, ProductID, LicenseVersion, LicenseType, Epoch"
-Cpt = "COPYRIGHT (c) VMware, Inc. 1999-2003"
-ProductID = "VMware Workstation for Linux"
-LicenseVersion = "4.0"
-LicenseType = "User"
-Epoch = "2003-2-1"
-Serial = "60H2W-DU6FV-X238L-4J20M"
-Hash = "128da16f-a7ccd625-c2901080-9bc81098-9d093437"
