@@ -187,22 +187,6 @@ test -n "$domain_name_servers" && {
   done; }
 
 #############################################################################
-# initial boot scripts
-# delete and create runlevel links for initial booting (SuSE, Debian, Ubuntu,
-# Fedora, ...)
-# splashy stuff
-if [ ${nosplash} = 0 ]; then
-  D_INITSCRIPTS="${D_INITSCRIPTS} splashy.stop"
-  d_mkrlscript init splashy.stop "Stopping Splashy ..."
-  echo -e "\t/var/lib/openslx/bin/splashy_update exit 2>/dev/null
-    \tkillall -9 splashy\n\trm -f /var/lib/openslx/bin/splashy_update" \
-    >>/mnt/etc/${D_INITDIR}/splashy.stop
-  d_mkrlscript close splashy.stop ""
-fi
-
-initial_boot
-
-#############################################################################
 # run distro specific configuration function
 config_distro
 
@@ -437,15 +421,6 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   cp /mnt/var/lib/vmware/templates/nat.conf \
     /mnt/etc/vmware/vmnet8/nat 2>/dev/null
 fi
-
-#############################################################################
-# theming
-testmkd /mnt/var/lib/openslx/themes/displaymanager
-testmkd /mnt/var/lib/openslx/bin
-[ -d /usr/share/themes/displaymanager ] && \
-  cp -a /usr/share/themes/displaymanager /mnt/var/lib/openslx/themes
-[ -d /etc/splashy -a ${nosplash} = 0 ] && (cp -a /bin/splashy_update \
-    /mnt/var/lib/openslx/bin)
 
 #############################################################################
 # preparation of /tmp directory (partition 44, nfs scratch, ramdisk). there

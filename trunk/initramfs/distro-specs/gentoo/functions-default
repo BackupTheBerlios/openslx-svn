@@ -55,6 +55,7 @@ echo -e "\tafter $1\n}" >> /tmp/sedscript
 # setup initial boot scripts (rather strange concept I did not get 
 # completely)
 initial_boot () {
+local scripts=$*
 local after=""
 local script
 d_mkrlscript init boot "Starting Gentoo base initialization"
@@ -120,7 +121,7 @@ cat >>/mnt/etc/${D_INITDIR}/boot <<EOF
         eend \${ret} "\${errstr}"
 EOF
 d_mkrlscript close boot
-for script in boot boot.slx ${D_INITSCRIPTS} ; do
+for script in boot boot.slx $scripts ; do
   # to get a certain order of scripts the after token of depends () might be
   # used
   rllinker "$script" "$after"

@@ -24,20 +24,15 @@
 # if you have any questions regarding the use of this file, please drop a mail
 # to: ot@openslx.com, or join the IRC-channel '#openslx' (on freenode).
 
-if ! [ -e /initramfs/plugin-conf/Example.conf ]; then
-	exit 1
+if [ -e /initramfs/plugin-conf/Example.conf ]; then
+	. /initramfs/plugin-conf/Example.conf
+	if [ $Example_active -ne 0 ]; then
+		[ $DEBUGLEVEL -gt 0 ] && echo "executing the 'Example' os-plugin ...";
+
+		# for this example plugin, we simply take a filename from the 
+		# configuration and cat that file (output the smiley):
+		cat /mnt/opt/openslx/plugin-repo/Example/$preferred_side
+
+		[ $DEBUGLEVEL -gt 0 ] && echo "done with 'Example' os-plugin ...";
+	fi
 fi
-
-# for this example plugin, we simply take a filename from the configuration ...
-. /initramfs/plugin-conf/Example.conf
-
-if ! [ -n $active ]; then
-	exit 0
-fi
-
-echo "executing the 'Example' os-plugin ...";
-
-# ... and cat that file (output the smiley):
-cat /mnt/opt/openslx/plugin-repo/Example/$preferred_side
-
-echo "done with 'Example' os-plugin ...";

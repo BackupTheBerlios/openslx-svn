@@ -82,6 +82,7 @@ usage()
   echo "  -f list of blockdev/filesystem modules"
   echo "  -n list of network adaptor modules"
   echo "  -m list of misc modules not covered by -f or -n"
+  echo "  -p list of active plugins"
   echo "  -r path to stage1 root (vendor OS, e.g. /var/opt/openslx/stage1/suse-..."
   echo "  -S name of the system for which the initramfs is built"
   echo "  -s theme (for splash)"
@@ -298,7 +299,7 @@ echo
 #########################################################################
 # End of function declaration
 
-while getopts :Cdhk:c:i:r:o:s:f:n:m:S:tu:wI:a: a ; do
+while getopts :Cdhk:c:i:r:o:s:f:n:m:p:S:tu:wI:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
@@ -308,6 +309,7 @@ while getopts :Cdhk:c:i:r:o:s:f:n:m:S:tu:wI:a: a ; do
       f)  echo "-f requires file system module (list) parameter";;
       n)  echo "-n requires network module (list) parameter";;
       m)  echo "-m requires misc module (list) parameter";;
+      p)  echo "-p requires plugins (list) parameter";;
       r)  echo "-r requires root dir parameter";;
       s)  echo "-s may require theme name";;
       I)  echo "-I requires network interface parameter";;
@@ -326,6 +328,7 @@ while getopts :Cdhk:c:i:r:o:s:f:n:m:S:tu:wI:a: a ; do
     f)  FSMODULES=$OPTARG;;
     n)  NWMODULES=$OPTARG;;
     m)  MISCMODULES=$OPTARG;;
+    p)  PLUGINS=$OPTARG;;
     r)  ROOTDIR=$OPTARG;;
     s)  theme=$OPTARG;;
     S)  SYSTEM_NAME=$OPTARG;;
@@ -729,6 +732,13 @@ if [ -z "$cdboot" ] ; then
            ${SYSTEM_NAME}/initramfs/postinit.local ; do
     test -f ${SLX_PRIVATE_PATH}/config/$cfg && \
       cp ${SLX_PRIVATE_PATH}/config/$cfg ${INSTDIR}/bin
+  done
+  # copy init-hooks from all plugins which are going to be executed in stage3
+  mkdir -p ${INSTDIR}/etc/init-hooks
+  for plugin in $PLUGINS ; do
+    test -d ${SLX_BASE_PATH}/lib/plugins/$plugin/init-hooks && \
+      cp -r ${SLX_BASE_PATH}/lib/plugins/$plugin/init-hooks/* \
+            ${INSTDIR}/etc/init-hooks/
   done
   # custom hardware configuration files pcitable.local and Cards.local
   # fixme!! New source for these files (instead of templates)!

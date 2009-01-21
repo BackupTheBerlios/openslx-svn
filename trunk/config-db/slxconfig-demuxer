@@ -33,6 +33,7 @@ use Config::General;
 use Fcntl qw(:DEFAULT :flock);
 use File::Basename;
 use File::Find;
+use File::Path;
 use Getopt::Long qw(:config pass_through);
 use Pod::Usage;
 
@@ -130,8 +131,8 @@ END { unlockScript($lockFile) if defined $lockFile; }
 
 my $tempPath = "$openslxConfig{'temp-path'}/slxconfig-demuxer";
 if (!$dryRun) {
-	slxsystem("rm -rf $tempPath");
-	slxsystem("mkdir -p $tempPath");
+	rmtree($tempPath);
+	mkpath($tempPath);
 	if (!-d $tempPath) {
 		die _tr("Unable to create or access temp-path '%s'!", $tempPath);
 	}
@@ -139,7 +140,7 @@ if (!$dryRun) {
 my $tftpbootPath = "$openslxConfig{'public-path'}/tftpboot";
 if (!$dryRun) {
 	slxsystem("rm -rf $tftpbootPath/*");
-	slxsystem("mkdir -p $tftpbootPath/client-config $tftpbootPath/pxelinux.cfg");
+	mkpath( [ "$tftpbootPath/client-config", "$tftpbootPath/pxelinux.cfg" ] );
 	if (!-d $tftpbootPath) {
 		die _tr("Unable to create or access tftpboot-path '%s'!",
 			$tftpbootPath);
@@ -297,7 +298,7 @@ sub copyExternalSystemConfig
 	return if $dryRun;
 
 	slxsystem("rm -rf $targetPath");
-	mkdir $targetPath;
+	mkpath $targetPath;
 
 	# first copy default files ...
 	my $defaultConfigPath = "$clientConfigPath/default";
@@ -333,7 +334,7 @@ sub createTarOfPath
 	vlog(1, _tr('creating tar %s', $tarFile));
 	return if $dryRun;
 
-	mkdir $destinationPath;
+	mkpath $destinationPath;
 	my $tarCmd = "cd $buildPath && tar czf $tarFile *";
 	if (slxsystem("$tarCmd") != 0) {
 		die _tr("unable to execute shell-command:\n\t%s \n\t(%s)", $tarCmd, $!);
@@ -491,6 +492,11 @@ sub generateInitalRamFS
 
 	# use theme 'openslx':
 	$cmd .= "-s openslx ";
+	
+	my $activePlugins = $info->{'active-plugins'};
+	if ($activePlugins) {
+		$cmd .= '-p ' . join(',', @$activePlugins) . ' ';
+	}
 
 	# always use dhclient instead of the busybox-provided dhcp-client
 	# (since the latter is unable to fetch NIS-stuff):
@@ -536,7 +542,7 @@ sub writeSystemPXEFiles
 
 	my $pxePath         = "$tftpbootPath";
 	my $pxeVendorOSPath = "$pxePath/$info->{'vendor-os'}->{name}";
-	mkdir $pxeVendorOSPath unless -e $pxeVendorOSPath || $dryRun;
+	mkpath $pxeVendorOSPath unless -e $pxeVendorOSPath || $dryRun;
 
 	my $targetKernel = "$pxeVendorOSPath/$kernelName";
 	if (!-e $targetKernel) {
@@ -637,12 +643,10 @@ sub writePluginConfigurationsForSystem
 	my $info      = shift || confess 'need to pass in info-hash!';
 	my $buildPath = shift || confess 'need to pass in build-path!';
 
-	my $pluginConfPath = "$buildPath/initramfs/plugin-conf";
-	slxsystem("mkdir -p $pluginConfPath") unless -d $pluginConfPath;
-
+	my $pluginConfPath  = "$buildPath/initramfs/plugin-conf";
 	my $pluginInitdPath = "$buildPath/initramfs/plugin-init.d";
-	slxsystem("mkdir -p $pluginInitdPath") unless -d $pluginInitdPath;
-	
+	my $initHooksPath   = "$buildPath/initramfs/init-hooks";
+
 	my $attrs = $info->{attrs} || {};
 
 	my @activePlugins;
@@ -655,6 +659,10 @@ sub writePluginConfigurationsForSystem
 		
 		push @activePlugins, $pluginName;
 
+		next if $dryRun;
+
+		mkpath([ $pluginConfPath, $pluginInitdPath, $initHooksPath]);
+
 		vlog(2, _tr("writing configuration file for plugin '%s'", $pluginName));
 		# write plugin configuration to a file:
 		my $content;
@@ -663,8 +671,7 @@ sub writePluginConfigurationsForSystem
 			my $attrVal = $attrs->{$attr};
 			next if !defined $attrVal;
 			my $attrName = substr($attr, index($attr, '::')+2);
-			next if $attrName eq 'active' || $attrName eq 'precedence';
-			$content .= qq[$attrName="$attrVal"\n];
+			$content .= qq[${pluginName}_$attrName="$attrVal"\n];
 		}
 		my $fileName = "$pluginConfPath/${pluginName}.conf";
 		spitFile($fileName, $content);
@@ -677,9 +684,9 @@ sub writePluginConfigurationsForSystem
 		# copy runlevel script to be used in stage3:
 		my $precedence 
 			= sprintf('%02d', $attrs->{"${pluginScope}::precedence"});
-		my $scriptFolder 
+		my $pluginFolder 
 			= "$openslxConfig{'base-path'}/lib/plugins/$pluginName";
-		my $scriptName = "$scriptFolder/XX_${pluginName}.sh";
+		my $scriptName = "$pluginFolder/XX_${pluginName}.sh";
 		my $targetName = "$pluginInitdPath/${precedence}_${pluginName}.sh";
 		if (slxsystem("cp $scriptName $targetName && chmod a+x $targetName")) {
 			die _tr(
@@ -688,6 +695,7 @@ sub writePluginConfigurationsForSystem
 			);
 		}
 	}
+	$info->{'active-plugins'} = \@activePlugins;
 	my $activePluginStr = @activePlugins ? join ',', @activePlugins : '<none>';
 	vlog(0, _tr("active plugins: %s", $activePluginStr));
 	return;

@@ -556,9 +556,9 @@ fi
 # execute all shell scripts in the given init-hook folder
 runinithook () {
 local hook=$1
-if [ -d /initramfs/init-hooks/$hook ]; then
-  for hook_script in /initramfs/init-hooks/$hook/*; do
-    . hook_script
+if [ -d /etc/init-hooks/$hook ]; then
+  for hook_script in /etc/init-hooks/$hook/*; do
+    . $hook_script
   done
 fi
 }
@@ -846,15 +846,17 @@ esac
 # setup initial boot scripts (for most standard distributions, gentoo is to
 # be handled differently)
 initial_boot () {
+local scripts=$*
 local count=10
 # boot.slx is a special runlevel script generated within initialramfs which
 # should be executed before the normal runlevel scripts. Proper shutdown is
 # not needed!?
-for i in boot.slx ${D_INITSCRIPTS}; do
+for i in boot.slx $scripts; do
   count=$(($count + 1))
-  revcnt=$((41 - $count))
+  echo "boot-runlevelscript $i"
   ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/S${count}$i
   # uncomment if proper shutdown of bootup scripts is required
+  #revcnt=$((41 - $count))
   #ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/K${revcnt}$i
 done
 }

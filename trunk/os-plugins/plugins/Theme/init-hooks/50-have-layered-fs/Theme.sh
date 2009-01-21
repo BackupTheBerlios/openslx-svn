@@ -1,1 +1,1 @@
-[ ${Theme_nosplash} = 0 ] && /bin/splashy_update "progress 50" 2>/dev/null
+[ ${Theme_nosplash} -eq 0 ] && /bin/splashy_update "progress 50" >/dev/null 2>&1

@@ -78,6 +78,16 @@ sub getAttrInfo
 			default => 30,
 		},
 
+		'theme::name' => {
+			applies_to_systems => 1,
+			applies_to_clients => 0,
+			description => unshiftHereDoc(<<'			End-of-Here'),
+				the name of the theme to apply (or unset for no theme)
+			End-of-Here
+			content_regex => undef,
+			content_descr => undef,
+			default => undef,
+		},
 	};
 }
 

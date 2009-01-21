@@ -123,7 +123,7 @@ sub slurpFile
 sub spitFile
 {
 	my $fileName = shift || croak 'need to pass in a fileName!';
-	my $content  = shift;
+	my $content  = shift || '';
 	my $flags    = shift || {};
 
 	checkParams($flags, { 
