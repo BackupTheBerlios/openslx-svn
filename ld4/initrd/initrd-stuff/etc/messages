@@ -3,11 +3,11 @@
 #		version 4
 #		this file could be used for localization of error messages 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 01-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-05-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.0.3d
+# Version:      0.0.3e
 
 # messages from init
 init_errmsg="functions file contains a lot of script \
@@ -126,6 +126,8 @@ df_errcron="  The cron start script $df_errserv"
 df_errsysl="  The syslog start script $df_errserv"
 df_errsshd="  The sshd start script $df_errserv"
 df_erramnt="  Automounter $df_errserv"
+df_erradir="  Only one directory level is allowed and the directory should \
+exist (on\n  the server) or should be creatable (UnionFS)."
 df_erratpld="  Only toplevel directories \
 are allowed as mount points for user home\n  directories. Please set the \
 variable \${automnt_dir} appropriately in\n  machine-setup file."

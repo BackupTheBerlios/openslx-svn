@@ -422,9 +422,11 @@ if [ -f /mnt/etc/${D_SYSCONFDIR}/autofs ] ; then
   if [ -n "${automnt_src}" ] ; then
     # local directory and home directory server from machine-setup
     [ -z "${automnt_dir}" ] && automnt_dir="/home"
-    strinstr "/" "${automnt_dir}" && error "$df_erratpld" nonfatal
+    # remove leading and trailing slash
     automnt_dir=${automnt_dir#/}
-    echo -e "/home\t/etc/auto.${automnt_dir}\n" >> /mnt/etc/auto.master
+    automnt_dir=${automnt_dir%/}
+    echo -e "/${automnt_dir}\t/etc/auto.${automnt_dir}\n" \
+      >> /mnt/etc/auto.master
     echo -e "# /etc/auto.${automnt_dir} created by $0:\n" \
       > /mnt/etc/auto.${automnt_dir}
     echo -e "*\t-rsize=32768,wsize=32768,rw\t${automnt_src}/&" \

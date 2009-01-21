@@ -4,11 +4,11 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 19-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-05-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.1.0b
+# Version:      0.1.0c
 
 # check for configuration files to source
 
