@@ -2,7 +2,7 @@
 # to the various destination directories
 #
 # Lars Mueller <lm@openslx.com>, 2006
-# Dirk von Suchodoletz <dirk@goe.net>, 2006
+# Dirk von Suchodoletz <dvs@openslx.com>, 2006
 #
 # (c) 2006 - OpenSLX.com
 
@@ -37,7 +37,7 @@ tarball:
 	popd >/dev/null
 
 install:
-	@echo "Installing openslx.org project files"
+	@echo "Installing OpenSLX project files"
 	@mkdir -p /var/lib/openslx/config/default/initramfs \
 	       -p /var/lib/openslx/config/default/rootfs \
 	       -p /var/lib/openslx/db \
@@ -45,7 +45,8 @@ install:
 	       -p /usr/share/openslx/distro-specs \
 	       -p /usr/share/openslx/templates \
 	       -p /usr/share/openslx/initramfs
-	@cp initrd/mkdxsinitrd /usr/local/sbin
+	@cp initrd/{mkdxsinitrd,slxmkramfs} /usr/local/bin
+	@chmod u+x /usr/local/bin/{mkdxsinitrd,slxmkramfs}
 	@cp -a initrd/initrd-stuff/* /usr/share/openslx/initramfs
 	@cp -a initrd/distro-specs/* /usr/share/openslx/distro-specs
 	@cp installer/default_files/machine-setup.default \
@@ -61,6 +62,8 @@ toolset is rather\n# restricted and you have to keep in mind that stage4 \
 rootfs has the\n# prefix '/mnt'." \
 	  > /var/lib/openslx/config/default/initramfs/postinit.local
 	@chmod u+x /var/lib/openslx/config/default/initramfs/*init.local
+	@find /usr/share/openslx -regex ".*/\..*" -exec rm -rf {} 2>/dev/null \;
+# fixme: for some reason find works but produces error status!?
 
 #uninstall:
 #	@echo -e "Uninstalling openslx.org project files but keeping configs \

@@ -1,14 +1,13 @@
 # machine-setup
-# Description:  universal (distro independent) configuration file for
-#		linux diskless clients v4.0. It defines default values 
-#		for several configuration variables. These settings might
-#		be overwritten through various processes in initial ramdisk.
-#		New settings are simply appended, so that they might 
-#		overwrite previously defined variables 
+# universal (distro independent) configuration file for slx linux diskless 
+# client. It defines default values for several configuration variables. 
+# These settings might be overwritten through various processes in initial
+# ramfs in stage3. New settings are simply appended, so that they might 
+# overwrite previously defined variables 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-08-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 2006
 #
-# Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
+# (c) 2003 - 2006 - RZ Universitaet Freiburg
 # 
 #
 # password of system administrator (root) as crypt -> 'dxs-root'
@@ -20,7 +19,7 @@ root_pw=@@@root_pw@@@
 #
 # host and domain name
 host_name="dxs"
-domain_name="test.ldc"
+domain_name="slx.test"
 
 # define country for all localization stuff - see functions how country 
 # is translated to LANGUAGE, COUNTRY, LANG, KEYTABLE, XKEYBOARD,
@@ -74,7 +73,7 @@ netbios_workgroup="dxs-network"
 
 # automounter home (/local_dir - top level directories only) and source 
 # (format (proto://)server/path)
-automnt_dir="/home"
+#automnt_dir="/home"
 #automnt_src="$serverip/home"
 
 # scratch space on server "proto://serverip/dxs/tmp"

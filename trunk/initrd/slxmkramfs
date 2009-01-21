@@ -2,11 +2,10 @@
 #
 # universal (distro independent) generator for initial ramdisks for OpenSLX
 # linux diskless clients (part of stage2 system setup). This script is the
-# successor of mkdxsinitrd ...
+# successor of mkdxsinitrd. It expects all project files to be installed. It
+# does not work directly out of repository any more.
 #
 # Dirk von Suchodoletz <dvs@OpenSLX.com>, 2006
-# Nico Dietrich
-# Felix Endres
 #
 # (c) 2003 - 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.com
@@ -58,36 +57,24 @@ D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 
 usage()
 {
-  echo -e "mkdxsinitrd  [-bgh] [-k kernel version] [-i path/file] \
+  echo -e "slxmkramfs [-bgh] [-k kernel version] [-i path/file] \
 [-f module(s)] [-n module(s)] [-r path] [-s splashsize]\n"
-  echo "OPTIONEN"
-  echo "  -g     Benutze glibc als Basisbibliothek in der ramdisk."
-  echo "  -b     Use busybox instead of separate binaries."
-  echo "  -h     Zeige Informationen zur Benutzung."
-  echo "  -k Kernelversion"
-  echo "        mkdxsinitrd  versucht  die  aktuellste  Kernelversion zu finden."
-  echo "        Falls  dies  nicht  klappt,  oder  eine   andere   Kernelversion"
-  echo "        gewünscht  ist  kann  diese  hier angegeben werden (funktioniert"
-  echo "        natürlich nur für auf dem  Hostsystem  vorhandene  Kernelversion"
-  echo "        nen)."
-  echo "  -i path/file"
-  echo "        Optionale  Angabe wo die erstellte ramdisk hingeschrieben werden"
-  echo "        soll."
-  echo "  -f Modulliste"
-  echo "        Kernelmodule die benutzt werden  sollen  um  das  Rootfilesystem"
-  echo "        über das dem Netzwerk zu mounten (z.B. nfs, nbd dnbd)."
-  echo "  -n Modulliste"
-  echo "        Kernelmodule zum Betrieb der Clientnetzwerkkarten (z.B. e100 tg3"
-  echo "        via-rhine)."
-  echo "  -r path"
-  echo "        Pfad zum Wurzelverzeichnis des zu exportierenden  Betriebsystems"
-  echo "        (z.B. /export/10.1)."
-  echo "  -s screensize (for splash)"
-  echo "  -d debug (add special modules to initramfs)"
-  echo "  -D Name"
-  echo "        Name der Distribution der Betriebsystemvorlage"
-  echo "  -v Version"
-  echo "        Versionskennung der Distribution der Betriebsystemvorlage"
+  echo "OPTIONS"
+  echo "  -g   use glibc as base library in initramfs"
+  echo "  -b   use busybox instead of separate binaries"
+  echo "  -h   show usage information"
+  echo "  -k   kernel version (without linux-)"
+  echo "       slxmkramfs tries to find the most recent kernel version,"
+  echo "       If this fails a version can provided here"
+  echo "  -i   path/file, provide information where to write initramfs"
+  echo "  -f   list of filesystem modules (like, nfs, nbd, squashfs)"
+  echo "  -n   module list of client network adaptors to support"
+  echo "  -r   path to the root of the stage1 system you are preparing"
+  echo "       ramdisk for"
+  echo "  -s   screensize (for splash)"
+  echo "  -d   debug (add special modules to initramfs)"
+  echo "  -D   name of distribution (stage1)"
+  echo "  -v   version of distribution (stage1)"
   exit 0
 }
 
@@ -144,13 +131,13 @@ local FILENAME=$1
 DATE=`date +%m-%d-%Y`
 # do not forget to define all variables which should be replaced within
 # the start and configuration scripts. All comment lines will be deleted.
-if [ -d initrd-stuff/${FILENAME} ] ; then
+if [ -d /usr/share/openslx/initramfs/${FILENAME} ] ; then
   [ -d ${INSTDIR}/${FILENAME} ] || mkdir -p ${INSTDIR}/${FILENAME}
 else
-  if file initrd-stuff/${FILENAME}| grep "ELF" &>/dev/null ; then
-    cp initrd-stuff/${FILENAME} ${INSTDIR}/${FILENAME}
-  elif [ -L initrd-stuff/${FILENAME} ] ; then
-    cp -a initrd-stuff/${FILENAME} ${INSTDIR}/${FILENAME%/*}
+  if file /usr/share/openslx/initramfs/${FILENAME}|grep "ELF" &>/dev/null
+    then cp /usr/share/openslx/initramfs/${FILENAME} ${INSTDIR}/${FILENAME}
+  elif [ -L /usr/share/openslx/initramfs/${FILENAME} ] ; then
+    cp -a /usr/share/openslx/initramfs/${FILENAME} ${INSTDIR}/${FILENAME%/*}
   else
     sed -e "s,@@@INSTDIR@@@,${INSTDIR},g;s,@@@KERNVER@@@,${KERNVER},g" \
         -e "s,@@@DISTRO@@@,${DISTRO}-${DISTRO_VER},g;s,@@@NETIF@@@,${NET_IF},g" \
@@ -158,7 +145,7 @@ else
         -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
         -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
         -e "s,@@@DATE@@@,${DATE},g;/^#[^!].*/d" \
-          initrd-stuff/${FILENAME} >> ${INSTDIR}/${FILENAME}
+          /usr/share/openslx/initramfs/${FILENAME} >> ${INSTDIR}/${FILENAME}
     [ -x busybox -a "$use_busybox" = 1 ] && sed -e "s,^#!/bin/sh,#!/bin/ash," \
       -i ${INSTDIR}/${FILENAME}
   fi
@@ -170,61 +157,14 @@ copy_distro_stuff() {
   # function files, then append to each the distro/version specific file
   # variables, functions set in default might that way be overwritten by
   # definitions in distro/version specific files
-  # try first /usr/share/openslx/distro-specs (available if project was
-  # installed via "make install")
-  if [ -d /usr/share/openslx/distro-specs/$1 ] ; then
-    prefix=/usr/share/openslx/distro-specs/$1
-  else
-    prefix=distro-specs/$1
-  fi
+  # use files from /usr/share/openslx/distro-specs (OpenSLX project files
+  # have to be installed via "make install")
+  prefix=/usr/share/openslx/distro-specs/$1
   cat $prefix/config-default >${INSTDIR}/etc/sysconfig/config
   cat $prefix/config-$2 >>${INSTDIR}/etc/sysconfig/config
   cat $prefix/functions-default >${INSTDIR}/etc/distro-functions
   cat $prefix/functions-$2 >>${INSTDIR}/etc/distro-functions
-  # would be cool not to copy .svn here ...
-  # fixme!! works only for etc directories. If dir exists then next copy 
-  # places file into the existing dir
   cp -a $prefix/files-default ${INSTDIR}/etc/sysconfig/files 2>/dev/null
-  # ... so remove them afterwards ...
-  find ${INSTDIR}/etc/sysconfig/files \
-    -regex ".*/\..*" -exec rm -rf {} 2>/dev/null \;
-}
-
-# This function makes the directory of this script to the present working
-# directory
-# It is called within precheck()
-# Does also work when called by symbolic links (even for nested links).
-goto_script_dir()
-{
-  [ $DEBUG -ge 2 ] && echo "Aufgerufen wurde $0, checking if it is a link"
-  calleddetails=`ls -l $0` # get the file flags (e.g. lrwxrwxrwx)
-  [ $DEBUG -ge 2 ] && echo $calleddetails
-
-  calleddir=${0%/*}  # Strip the filename from path
-  [ $DEBUG -ge 2 ] && echo "Wechsele ins Verzeichnis des aufgerufenen scripts/links ($calleddir)"
-  cd $calleddir
-
-  while index=`expr index "$calleddetails" "l"`;
-        [ $index -eq 1 ]; do
-
-    [ $DEBUG -ge 2 ] && echo "It is a link"
-    target=`echo $calleddetails | awk '{print $NF}'`
-    [ $DEBUG -ge 2 ] && echo "The target of the link is: $target"
-    hasslash=`expr index "$target" "/"`
-    if [ $hasslash -ne 0 ]; then
-        targetpath=${target%/*} # extract the pathname
-        [ $DEBUG -ge 2 ] && echo "Following link to $targetpath"
-        cd $targetpath
-    else
-        [ $DEBUG -ge 2 ] && echo "It is in the same directory as the link"
-    fi
-    targetfile=`basename $target`
-    [ $DEBUG -ge 2 ] && echo "The target file of the link is: $targetfile"
-    calleddetails=`ls -l $targetfile` # get the file flags (e.g. lrwxrwxrwx)
-    [ $DEBUG -ge 2 ] && echo $calleddetails
-  done
-  [ $DEBUG -ge 2 ] && pwd
-
 }
 
 # add a bootsplash image to the initial ramdisk, only SuSE at the moment
@@ -331,13 +271,10 @@ shift $(expr $OPTIND - 1)
 #########################################################################
 # End of parameter, argument interpretation
 
-#Change to the directory this script is located in
-goto_script_dir
-
 # set temporary setup directory, clean it and setup basic directory
 # structure
 if [ -z "$INSTDIR" ] ; then
-  INSTDIR=/tmp/dxs-instrd
+  INSTDIR=/tmp/slx-tmpramfs
 fi
 rm -rf ${INSTDIR}
 mkdir -p ${INSTDIR}/{dev,proc,tmp,mnt,root,bin,sys,lib}
@@ -347,7 +284,6 @@ mkdir -p ${INSTDIR}/usr/share
 mkdir -p ${INSTDIR}/etc/sysconfig
 
 # if still no distro name set, try to find it using significant files
-
 if [ -z "${DISTRO}" ] ; then
   if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
     DISTRO=suse
@@ -431,7 +367,7 @@ cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
 
 # binary and corresponding library copies could be avoided if a small
 # initial ramdisk environment of its own is generated from busybox,
-# dietlibc and similar, see odlx project page ...
+# dietlibc and similar, see OpenSLX project page ...
 
 # devices needed rather early (copied from /tmp to /dev in init)
 mknod ${INSTDIR}/tmp/console c 5 1 &>/dev/null
@@ -546,7 +482,6 @@ cobi unionctl bin &>/dev/null || \
 cobi cowdev bin &>/dev/null || \
   echo "Program cowdev not found; could be ignored ..."
 
-
 # distro specific additional stuff
 case "${DISTRO}" in
   debian*)
@@ -568,14 +503,15 @@ rm ${INSTDIR}/tmp/libraries
 
 # add kernel modules and dependency files
 if [ -z "$KERNVER" ] ; then
-  KERNVER=`ls -l ${ROOTDIR}/boot/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
+  KERNVER=`ls -l ${ROOTDIR}/boot/vmlinuz|grep vmlinuz|sed "s/.*vmlinuz-//"`
 fi
 if [ -z "$KERNVER" ] ; then
-  KERNVER=`ls -l ${ROOTDIR}/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
+  KERNVER=`ls -l ${ROOTDIR}/vmlinuz|grep vmlinuz|sed "s/.*vmlinuz-//"`
 fi
 # if no vmlinuz found, go for vmlinuz-x.yz.uv...
 if [ -z "$KERNVER" ] ; then
-  KERNVER=`ls -lt ${ROOTDIR}/boot/vmlinuz* | grep vmlinuz | sed -n "1,1s/.*vmlinuz-//p"`
+  KERNVER=`ls -lt ${ROOTDIR}/boot/vmlinuz*|grep vmlinuz| \
+    sed -n "1,1s/.*vmlinuz-//p"`
   echo "No vmlinuz-link found. Using kernel version "$KERNVER
 fi
 
@@ -602,7 +538,8 @@ else
   DEBUGMODULES=""
 fi
 
-# put all needed modules into initial ramdisk
+# put all needed modules into initial ramfs
+# fixme: check if ext2 is present in every distro kernel
 mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
 for module in af_packet unix ${NWMODULES} ${FSMODULES} ${DEBUGMODULES}; do
   mod=`cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
@@ -644,10 +581,10 @@ done
 cp ${ROOTDIR}/lib/modules/${KERNVER}/modules.* \
   ${INSTDIR}/lib/modules/${KERNVER}
 
-# initial ramdisk scripts: init, functions, servconfig, hwautocfg, ...
+# initialramfs scripts: init, functions, servconfig, hwautocfg, ...
 # copy and replace variable names
-for dirs in `find initrd-stuff/* ! -regex ".*/\..*"` ; do
-  repco ${dirs##initrd-stuff/}
+for dirs in `find /usr/share/openslx/initramfs/* ! -regex ".*/\..*"`; do
+  repco ${dirs#*initramfs/}
 done
 chmod 755 ${INSTDIR}/init \
   ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
@@ -661,17 +598,6 @@ if [ -f /var/lib/openslx/config/default/initramfs/machine-setup ] ; then
 # use the installed default machine-setup.default
 elif [ -f /usr/share/openslx/templates/machine-setup.default ] ; then
   cp /usr/share/openslx/templates/machine-setup.default \
-    ${INSTDIR}/etc/machine-setup
-# just compatibility for older versions
-elif [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
-  cp /etc/dxs/client.cfg/machine-setup.default \
-    ${INSTDIR}/etc/machine-setup
-# fixme: dirty hack if the installer does not creates a normal file
-elif [ -f /etc/dxs/client.cfg/machine-setup.default.new ] ; then
-  cp /etc/dxs/client.cfg/machine-setup.default.new \
-    ${INSTDIR}/etc/machine-setup
-elif [ -f ../installer/default_files/machine-setup.default ] ; then
-  cp ../installer/default_files/machine-setup.default \
     ${INSTDIR}/etc/machine-setup
 else
   #inserted password for root for debugging purposes
