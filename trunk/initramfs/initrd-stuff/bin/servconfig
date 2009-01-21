@@ -319,8 +319,7 @@ config_nscd
 # create needed directories and files
 if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   for i in /var/X11R6/bin /etc/vmware/vmnet1 /etc/vmware/vmnet8 \
-           /var/run/vmware /etc/X11/sessions/runvmware /etc/vmware/loopimg \
-           /etc/vmware/fd-loop; do
+           /var/run/vmware /etc/vmware/loopimg /etc/vmware/fd-loop; do
     testmkd /mnt/$i
   done
   # create needed devices (not created automatically via module load)
@@ -350,14 +349,6 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   echo -e "usbfs\t\t/proc/bus/usb\tusbfs\t\tauto\t\t 0 0" >> /mnt/etc/fstab
   echo -e "mount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
     >> /mnt/etc/${D_INITDIR}/boot.slx
-  # check here that mount finished and the important files are available
-  #if [ "$noimg" = "yes" ] ; then
-  #  error "$scfg_vmdir" nonfatal
-  #else
-    # copy runvmware for vmware images and Xdialog sessionsmenu
-    #cp /mnt/var/lib/vmware/templ/runvmware \
-    #/mnt/var/X11R6/bin >/dev/null 2>&1
-  #fi
   config_vmware
   chmod 1777 /mnt/var/run/vmware
   # define a variable where gdm/kdm should look for additional sessions
@@ -372,8 +363,7 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
 
   #I dont like this part, but there is no simple workaround. We need to
   #create xdialog.sh on every box :(
-  #echo "Exec=/var/lib/vmware/xdialog-files/${pool}/xdialog.sh" \
-  echo "Exec=/etc/X11/xdialog.sh" \
+  echo "Exec=/var/X11R6/bin/xdialog.sh" \
       >> /mnt/etc/X11/sessions/default.desktop
   echo "Type=Application" >> /mnt/etc/X11/sessions/default.desktop
   # we configured vmware, so we can delete the not_configured file
@@ -387,7 +377,7 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
 
   # directory of templates and xdialog files
   vmdir=/mnt/var/lib/vmware
-  cp ${vmdir}/templates/xdialog.sh /mnt/etc/X11/
+  cp ${vmdir}/templates/xdialog.sh /mnt/var/X11R6/bin/
 
   # /usr/share/xsessions/* files for the menu
   for i in /mnt/usr/share/xsessions/*.desktop; do

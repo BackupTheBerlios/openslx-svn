@@ -16,4 +16,4 @@ $($(which Xdialog) --rc-file /var/lib/openslx/themes/Xdialog/gtkrc \
     --item-help \
     --menubox "Please choose the image you would like to run:" \
     35 80 0 \
-    "/etc/X11/xdialog.sh" "No Image - Don't press return too fast" "" \
+    "/var/X11R6/bin/xdialog.sh" "No Image - Don't press return too fast" "" \
