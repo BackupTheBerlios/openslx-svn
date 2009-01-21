@@ -11,7 +11,7 @@ use strict;
 
 my $abstract = q[
 extractTranslations.pl
-    This script is a tool for OpenSLX developers as it allows to extract
+    This script is a tool for OpenSLX developers that allows to extract
     translatable strings from all OpenSLX perl-scripts and modules found
     in and below a given path.
 
@@ -37,7 +37,7 @@ my (
 
 GetOptions(
 	'help|?' => \$helpReq,
-	'update-path=s' => \$update,
+	'update' => \$update,
 	'show' => \$show,
 	'verbose' => \$verbose,
 	'version' => \$versionReq,
@@ -47,14 +47,12 @@ if ($versionReq) {
 	system('slxversion');
 	exit 1;
 }
-my $path = shift;
-if (!defined $path) {
-	print "You need to specify a path!\n";
-	pod2usage(2);
-}
 
+# chdir to the repository's root folder:
+use FindBin;
+my $path = "$FindBin::RealBin/../..";
 chdir($path)
-	or die "unable to chdir into target-path <$path> ($!)";
+	or die "can't chdir to repository-root <$path> ($!)";
 
 find(\&ExtractTrStrings, '.');
 
@@ -68,22 +66,29 @@ if ($show) {
 }
 
 if ($update) {
-	find(\&UpdateTrModule, 'OpenSLX/Translations');
+	find(\&UpdateTrModule, 'lib/OpenSLX/Translations');
 }
+
+exit;
 
 sub ExtractTrStrings
 {
-	$File::Find::prune = 1 if ($_ eq '.svn' || $_ eq 'Translations'
-								|| $_ eq 'devel-tools');
+	$File::Find::prune = 1 if ($_ eq '.svn'
+							|| $_ eq 'Translations'
+							|| $_ eq 'devel-tools');
 	return if -d;
-	print "$File::Find::name...\n" if $verbose;
 	open(F, "< $_")
 		or die "could not open file $_ for reading!";
 	$/ = undef;
 	my $text = <F>;
 	close(F);
+	if ($File::Find::name !~ m[\.pm$] && $text !~ m[^#!.+/perl]im) {
+		# ignore anything other than perl-modules and -scripts
+		return;
+	}
+	print "$File::Find::name...\n" if $verbose;
 	$fileCount++;
-	while($text =~ m[_tr\s*\(\s*(.+?)\s*\)\s*;]gos) {
+	while($text =~ m[_tr\s*\(\s*(.+?)\s*\);]gos) {
 		# NOTE: that cheesy regex relies on the string ');' not being used
 		#       inside of translatable strings... so SLX_DONT_DO_THAT!
 		#		As an alternative, we could implement a real parser, but
@@ -107,7 +112,7 @@ sub ExtractTrStrings
 sub UpdateTrModule
 {
 	$File::Find::prune = 1 if ($_ eq '.svn');
-	return if -d || ! /.pm$/;
+	return if -d || !/.pm$/;
 	print "updating $File::Find::name...\n";
 	my $trModule = $_;
 	my $useKeyAsTranslation = ($trModule eq 'posix.pm');
@@ -189,12 +194,12 @@ all scripts and modules found in and below the given path.
 
 =head1 SYNOPSIS
 
-extractTranslations.pl [options] path
+extractTranslations.pl [options]
 
   Options:
       --help                   brief help message
-      --update-path=<string>   update the OpenSLX locale modules in given
-                               path
+      --update                 update the OpenSLX locale modules
+                               (in lib/OpenSLX/Translations)
       --show                   show overview of all strings found
       --verbose                show for each file which strings are found
       --version                show version
@@ -211,10 +216,10 @@ Prints a brief help message and exits.
 
 Prints sorted list of all translatable strings that were found.
 
-=item B<--update-path=<string>>
+=item B<--update>
 
 Integrates the found translatable strings into all OpenSLX locale modules found
-in path (which should end in 'Translations').
+under lib/OpenSLX/Translations.
 Every module will be updated with the found strings, existing
 translations will not be changed (unless the corresponding key doesn't exist
 anymore, in which case they will be removed).
