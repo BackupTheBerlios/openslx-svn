@@ -39,7 +39,8 @@ sub connectConfigDB
 	if (!defined $dbSpec) {
 		# build $dbSpec from individual parameters:
 		my $dbBasepath = $openslxConfig{'db-basepath'};
-		my $dbDatadir = $openslxConfig{'db-datadir'} || 'openslxdata-csv';
+		my $dbDatadir = $openslxConfig{'db-datadir'}
+						|| "$openslxConfig{'db-name'}-csv";
 		my $dbPath = "$dbBasepath/$dbDatadir";
 		mkdir $dbPath unless -e $dbPath;
 		$dbSpec = "f_dir=$dbPath";
