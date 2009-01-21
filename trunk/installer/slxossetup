@@ -154,7 +154,9 @@ function setup_busybox_stage1_config()
 		SLX_INST_SOURCE_BASEURL \
 		SLX_INST_SOURCE_DISTRIBUTION \
 		SLX_INST_SOURCE_PACKAGEKEYS \
-		SLX_INST_SOURCE_PACKAGE_SUBDIR; do
+		SLX_INST_SOURCE_PACKAGE_ARCHDIR \
+		SLX_INST_SOURCE_PACKAGE_SUBDIR \
+		SLX_KERNEL_ARCH; do
 		value=$( eval echo \$$key)
 		test "${value}" || \
 			continue
@@ -223,6 +225,13 @@ function setup_bootstrap_1c()
 					/bin/rpm --root="${SLX_STAGE1_FINAL_PATH}" --import "${packagekey}"
 			done
 			for file in ${SLX_BASE_PREREQ_PACKAGES} ${SLX_BASE_BOOTSTRAP_PACKAGES}; do
+				if test "${file##*.}" = 'noarch'; then
+					file="${file}.rpm"
+				elif test "${file##*.}" = 'SLX_KERNEL_ARCH'; then
+					file="${file%SLX_KERNEL_ARCH}${SLX_KERNEL_ARCH}.rpm"
+				else
+					file="${file}.${SLX_INST_ARCH}.rpm"
+				fi
 				test "${SLX_BOOTSTRAP_FAIL_WGET}" = "no" -a \
 					! -f ${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/${file##*/} && \
 					continue
@@ -634,11 +643,15 @@ function slxossetup()
 			GLOBAL_SETTINGS="BASEURL PACKAGEKEYS"
 			REPO_TYPE="rpm-md"
 			NAME_DEST_ROOT="rpm-root"
+			SLX_INST_SOURCE_PACKAGE_ARCHDIR="yes"
+			X86_ARCH='i586'
 			;;
 		*fedora*)
 			GLOBAL_SETTINGS="BASEURL PACKAGEKEYS"
 			REPO_TYPE="rpm-md"
 			NAME_DEST_ROOT="rpm-root"
+			X86_ARCH='i386'
+			X86_KERNEL_ARCH='i586'
 			;;
 		*ubuntu*)
 			GLOBAL_SETTINGS="BASEURL COMPONENTS DISTRIBUTION"
@@ -646,9 +659,25 @@ function slxossetup()
 			NAME_DEST_ROOT="deb-root"
 			SLX_STAGE1_CREATE_DIR="/var/lib/dpkg/updates"
 			SLX_STAGE1_CREATE_FILE="/var/lib/dpkg/available /var/lib/dpkg/status"
+			X86_ARCH='i386'
 			;;
 		*) echo "$0: Error, unkown system ${SLX_SYSTEM_BASENAME}" ;;
 	esac
+
+	if test -z "${SLX_INST_ARCH}"; then
+		SLX_INST_ARCH=$( uname -m)
+		case "${SLX_INST_ARCH}" in
+			i*86)
+				SLX_INST_ARCH="${X86_ARCH}"
+				test "${X86_KERNEL_ARCH}" && \
+					SLX_KERNEL_ARCH="${X86_KERNEL_ARCH}"
+				;;
+			x86_64) SLX_INST_ARCH='x86_64' ;;
+			*)
+				ErrorMsg 1 "Unsupported machine hardware ${SLX_INST_ARCH}."
+			;;
+		esac
+	fi
 
 	test "${SLX_META_PACKAGER}" && \
 		META_PACKAGER="${SLX_META_PACKAGER}" || \

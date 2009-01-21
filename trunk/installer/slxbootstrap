@@ -9,6 +9,38 @@ PATH="/bin:/sbin:/usr/bin:/usr/sbin"
 test -f /etc/slxbootstrap.conf
 . /etc/slxbootstrap.conf
 
+test "${SLX_INST_SOURCE_PACKAGE_SUBDIR}" && \
+	SLX_INST_SOURCE_PACKAGE_SUBDIR="/${SLX_INST_SOURCE_PACKAGE_SUBDIR}"
+test "${SLX_KERNEL_ARCH}" || \
+	SLX_KERNEL_ARCH="${SLX_INST_ARCH}"
+
+download_file () {
+	case "${file}" in
+		*.rpm)
+			if test "${file##*.}" = 'noarch'; then
+				file="${file}.rpm"
+				test "${SLX_INST_SOURCE_PACKAGE_ARCHDIR}" && \
+					arch_sub_dir='/noarch'
+			elif test "${file##*.}" = 'SLX_KERNEL_ARCH'; then
+				file="${file%SLX_KERNEL_ARCH}${SLX_KERNEL_ARCH}.rpm"
+			else
+				file="${file}.${SLX_INST_ARCH}.rpm"
+				test "${SLX_INST_SOURCE_PACKAGE_ARCHDIR}" && \
+					arch_sub_dir="/${SLX_INST_ARCH}"
+			fi
+		;;
+	esac
+	wget "${SLX_INST_SOURCE_BASEURL}${SLX_INST_SOURCE_PACKAGE_SUBDIR}${arch_sub_dir}/${file}"
+	if test $? != 0; then
+		if test "${SLX_BOOTSTRAP_FAIL_WGET}" = "no"; then
+			continue
+		else
+			echo "Error: Unable to download ${SLX_INST_SOURCE_BASEURL}/${file}"
+			exit 1
+		fi
+	fi
+}
+
 for dir in / ${SLX_BOOTSTRAP_PATH}/${SLX_STAGE1_FINAL_PATH}; do
 	test -d "${dir}/dev" || \
 		mkdir -p "${dir}/dev"
@@ -23,15 +55,7 @@ test -d "${SLX_BOOTSTRAP_PATH}" || \
 cd "${SLX_BOOTSTRAP_PATH}"
 
 for file in ${SLX_BASE_PREREQ_PACKAGES}; do
-	wget "${SLX_INST_SOURCE_BASEURL}${SLX_INST_SOURCE_PACKAGE_SUBDIR:+/${SLX_INST_SOURCE_PACKAGE_SUBDIR}}/${file}"
-	if test $? != 0; then
-		if test "${SLX_BOOTSTRAP_FAIL_WGET}" = "no"; then
-			continue
-		else
-			echo "Error: Unable to download ${SLX_INST_SOURCE_BASEURL}/${file}"
-			exit 1
-		fi
-	fi
+	download_file
 	case "${file}" in
 		*.deb)
 			ar x "${file##*/}"
@@ -55,11 +79,7 @@ for file in ${SLX_BASE_PREREQ_PACKAGES}; do
 done
 
 for file in ${SLX_BASE_BOOTSTRAP_PACKAGES}; do
-	wget "${SLX_INST_SOURCE_BASEURL}${SLX_INST_SOURCE_PACKAGE_SUBDIR:+/${SLX_INST_SOURCE_PACKAGE_SUBDIR}}/${file}"
-	if test $? != 0 -a "${SLX_BOOTSTRAP_FAIL_WGET}" = "yes"; then
-		echo "Error: Unable to download ${SLX_INST_SOURCE_BASEURL}/${file}"
-		exit 1
-	fi
+	download_file
 done
 
 for file in ${SLX_INST_SOURCE_PACKAGEKEYS}; do
