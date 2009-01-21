@@ -15,6 +15,7 @@
 #	  and modules.
 # -----------------------------------------------------------------------------
 use strict;
+use warnings;
 
 my $abstract = q[
 extractTranslations.pl
@@ -31,6 +32,8 @@ use Cwd;
 use File::Find;
 use Getopt::Long;
 use Pod::Usage;
+
+use OpenSLX::Utils;
 
 my (
 	$helpReq,
@@ -86,11 +89,7 @@ sub ExtractTrStrings
 							|| $_ eq 'Translations'
 							|| $_ eq 'devel-tools');
 	return if -d;
-	open(F, "< $_")
-		or die "could not open file $_ for reading!";
-	local $/ = undef;
-	my $text = <F>;
-	close(F);
+	my $text = slurpFile($_);
 	if ($File::Find::name !~ m[\.pm$] && $text !~ m[^#!.+/perl]im) {
 		# ignore anything other than perl-modules and -scripts
 		return;
@@ -129,11 +128,7 @@ sub UpdateTrModule
 	print "updating $File::Find::name...\n";
 	my $trModule = $_;
 	my $useKeyAsTranslation = ($trModule eq 'posix.pm');
-	open(F, "< $trModule")
-		or die "could not open file $trModule for reading!";
-	$/ = undef;
-	my $text = <F>;
-	close(F);
+	my $text = slurpFile($trModule);
 	if ($text !~ m[%translations\s*=\s*\(\s*(.+)\s*\);]os) {
 		print "\t*** No translations found - file will be skipped! ***\n";
 		return;
@@ -188,10 +183,7 @@ sub UpdateTrModule
 			  [$updatedTranslations);]os;
 	if ($newCount + $delCount) {
 		chomp $text;
-		open(F, "> $trModule")
-			or die "could not open file $trModule for writing!";
-		print F "$text\n";
-		close(F);
+		spitFile($trModule, $text."\n");
 		print "\tadded $newCount strings, kept $keepCount and removed $delCount.\n";
 	} else {
 		print "\tnothing changed\n";

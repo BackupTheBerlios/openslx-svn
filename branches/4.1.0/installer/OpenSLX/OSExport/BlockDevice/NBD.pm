@@ -43,6 +43,7 @@ sub initialize
 
 	$self->{'engine'} = $engine;
 	$self->{'fs'}     = $fs;
+	return;
 }
 
 sub getExportPort
@@ -84,6 +85,7 @@ sub showExportConfigInfo
 		"nbd-server $export->{port} $self->{fs}->{'export-path'} -r"
 	);
 	print(('#' x 80) . "\n");
+	return;
 }
 
 1;

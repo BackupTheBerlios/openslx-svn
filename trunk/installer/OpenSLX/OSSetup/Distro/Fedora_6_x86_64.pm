@@ -44,6 +44,7 @@ sub initialize
 		'/etc/fstab',
 		'/etc/mtab',
 	];
+	return;
 }
 
 sub initDistroInfo
@@ -167,7 +168,8 @@ sub initDistroInfo
 
 	$self->{config}->{'selection'} = {
 		'default' => "",
-	}
+	};
+	return;
 }
 
 1;

@@ -54,6 +54,7 @@ sub initDistroInfo
 		- *.rpmsave
 		- *.rpmnew
 	";
+	return;
 }
 
 1;

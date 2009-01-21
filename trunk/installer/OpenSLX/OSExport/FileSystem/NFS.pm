@@ -43,6 +43,7 @@ sub initialize
 	$self->{'engine'} = $engine;
 	my $exportBasePath = "$openslxConfig{'public-path'}/export";
 	$self->{'export-path'} = "$exportBasePath/nfs/$engine->{'vendor-os-name'}";
+	return;
 }
 
 sub exportVendorOS
@@ -52,6 +53,7 @@ sub exportVendorOS
 
 	my $target = $self->{'export-path'};
 	$self->_copyViaRsync($source, $target);
+	return;
 }
 
 sub purgeExport
@@ -101,6 +103,7 @@ sub showExportConfigInfo
 
 # TODO : add something a bit more clever here...
 #	my $exports = slurpFile("/etc/exports");
+	return;
 }
 
 ################################################################################
@@ -126,6 +129,7 @@ sub _copyViaRsync
 	close($rsyncFH)
 		or die _tr("unable to export to target '%s', giving up! (%s)",
 				   $target, $!);
+	return;
 }
 
 sub _determineIncludeExcludeList

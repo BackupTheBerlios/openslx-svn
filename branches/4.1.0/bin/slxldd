@@ -111,7 +111,7 @@ sub fetchLoaderConfigFile
 	while (<$ldconfFH>) {
 		chomp;
 		if (/^\s*include\s+(.+?)\s*$/i) {
-			foreach my $incFile (<$rootPath$1>) {
+			while (my $incFile = <$rootPath$1>) {
 				fetchLoaderConfigFile($incFile);
 			}
 			next;
@@ -124,6 +124,7 @@ sub fetchLoaderConfigFile
 	}
 	close $ldconfFH
 		or die(_tr("unable to close file '%s' (%s)", $ldConfFile, $!));
+	return;
 }
 
 sub fetchLoaderConfig
@@ -152,6 +153,7 @@ sub fetchLoaderConfig
 	{
 		push @libFolders, "$rootPath/usr/lib32";
 	}
+	return;
 }
 
 sub addLib
@@ -200,6 +202,7 @@ sub addLib
 		$libInfo{$lib} = $libPath;
 		push @filesToDo, $libPath;
 	}
+	return;
 }
 
 sub addLibsForBinary
@@ -273,6 +276,7 @@ sub addLibsForBinary
 			addLib($1, $bitwidth, $rpath);
 		}
 	}
+	return;
 }
 
 =head1 NAME

@@ -45,6 +45,7 @@ sub unpackPackages
 				#       doesn't crash anymore... (needs busybox update, I suppose)
 		}
 	}
+	return;
 }
 
 sub importTrustedPackageKeys
@@ -61,6 +62,7 @@ sub importTrustedPackageKeys
 			die _tr("unable to import package key <%s> (%s)\n", $keyFile, $!);
 		}
 	}
+	return;
 }
 
 sub installPrerequiredPackages
@@ -76,6 +78,7 @@ sub installPrerequiredPackages
 		die _tr("error during prerequired-package-installation (%s)\n", $!);
 	}
 	slxsystem("rm", "-rf", "$finalPath/var/lib/rpm");
+	return;
 }
 
 sub installPackages
@@ -89,6 +92,7 @@ sub installPackages
 	if (slxsystem("rpm", "--root=$finalPath", "-ivh", @$pkgs)) {
 		die _tr("error during package-installation (%s)\n", $!);
 	}
+	return;
 }
 
 sub getInstalledPackages

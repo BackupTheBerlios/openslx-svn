@@ -191,8 +191,9 @@ sub unlockScript
 	return if $dryRun;
 
 	close(LOCKFILE);
-
 	unlink $lockFile;
+
+	return;
 }
 
 sub folderContainsFiles
@@ -262,6 +263,7 @@ sub writeAttributesToFile
 		vlog(0, $content);
 		vlog(0, "--- END OF $fileName --- ");
 	}
+	return;
 }
 
 sub writeSlxConfigToFile
@@ -276,6 +278,7 @@ sub writeSlxConfigToFile
 		$content .= qq[$key="$slxConf->{$key}"\n];
 	}
 	spitFile($fileName, $content);
+	return;
 }
 
 sub copyExternalSystemConfig
@@ -316,6 +319,7 @@ sub copyExternalSystemConfig
 			slxsystem("cp -a $clientSpecConfigPath/* $targetPath");
 		}
 	}
+	return;
 }
 
 sub createTarOfPath
@@ -404,6 +408,7 @@ sub writePXEMenus
 		close($pxeFH)
 			or croak _tr("unable to close file '%s' (%s)\n", $pxeFile, $!);
 	}
+	return;
 }
 
 sub generateInitalRamFS
@@ -465,6 +470,7 @@ sub generateInitalRamFS
 
 	# ... finally invoke mkdxsinitrd:
 	slxsystem($cmd) unless $dryRun;
+	return;
 }
 
 sub writeSystemPXEFiles
@@ -488,6 +494,7 @@ sub writeSystemPXEFiles
 	  sprintf("initramfs-%d",
 		$vendorOSInitramfsMap{$info->{'vendor-os'}->{id}});
 	generateInitalRamFS($info, $pxeVendorOSPath);
+	return;
 }
 
 sub writeDhcpConfig
@@ -501,6 +508,7 @@ sub writeDhcpConfig
 	my $dhcpBackend = $dhcpModule->new();
 	my @clients     = $openslxDB->fetchClientByFilter();
 	$dhcpBackend->execute(\@clients);
+	return;
 }
 
 sub writeClientConfigurationsForSystem
@@ -563,6 +571,7 @@ sub writeClientConfigurationsForSystem
 				"$tftpbootPath/client-config/$info->{'external-id'}");
 		}
 	}
+	return;
 }
 
 sub writePluginConfigurationsForSystem
@@ -617,6 +626,7 @@ sub writePluginConfigurationsForSystem
 			);
 		}
 	}
+	return;
 }
 
 sub writeSystemConfiguration
@@ -648,6 +658,7 @@ sub writeSystemConfiguration
 	writeClientConfigurationsForSystem($info, $buildPath, $attrFile);
 
 	slxsystem("rm -rf $buildPath") unless $dryRun;
+	return;
 }
 
 sub writeConfigurations
@@ -673,6 +684,7 @@ sub writeConfigurations
 	if (defined $dhcpType) {
 		writeDhcpConfig();
 	}
+	return;
 }
 
 =head1 NAME

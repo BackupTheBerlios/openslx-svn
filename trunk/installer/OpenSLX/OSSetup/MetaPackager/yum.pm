@@ -40,6 +40,7 @@ sub initialize
 
 	$self->SUPER::initialize($engine);
 	$ENV{LC_ALL} = 'POSIX';
+	return;
 }
 
 sub initPackageSources
@@ -48,6 +49,7 @@ sub initPackageSources
 
 	slxsystem("rm -f /etc/yum.repos.d/*");
 	slxsystem("mkdir -p /etc/yum.repos.d");
+	return;
 }
 
 sub setupPackageSource
@@ -74,6 +76,7 @@ sub setupPackageSource
 	}
 	my $repoFile = "/etc/yum.repos.d/$repoName.repo";
 	spitFile($repoFile, "$repoDescr\nexclude=$excludeList\n");
+	return;
 }
 
 sub installSelection
@@ -84,6 +87,7 @@ sub installSelection
 	if (slxsystem("yum -y install $pkgSelection")) {
 		die _tr("unable to install selection (%s)\n", $!);
 	}
+	return;
 }
 
 sub updateBasicVendorOS
@@ -97,6 +101,7 @@ sub updateBasicVendorOS
 		}
 		die _tr("unable to update this vendor-os (%s)\n", $!);
 	}
+	return;
 }
 
 1;

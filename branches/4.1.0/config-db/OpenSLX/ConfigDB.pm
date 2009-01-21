@@ -13,7 +13,7 @@ package OpenSLX::ConfigDB;
 use strict;
 use warnings;
 
-our (@ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS, $VERSION);
+our (@ISA, @EXPORT_OK, %EXPORT_TAGS, $VERSION);
 $VERSION = 1;    # API-version
 
 use Exporter;
@@ -39,7 +39,6 @@ my @supportExports = qw(
   externalAttrName generatePlaceholderFor
 );
 
-@EXPORT      = ();
 @EXPORT_OK   = (@supportExports);
 %EXPORT_TAGS = ('support' => [@supportExports],);
 
@@ -115,6 +114,7 @@ sub _checkAndUpgradeDBSchemaIfNecessary
 	} else {
 		vlog(1, _tr('DB matches current schema version %s', $currVersion));
 	}
+	return;
 }
 
 sub _aref
@@ -141,7 +141,7 @@ sub new
 	return bless $self, $class;
 }
 
-sub connect
+sub connect		## no critic (ProhibitBuiltinHomonyms)
 {
 	my $self     = shift;
 	my $dbParams = shift;
@@ -196,6 +196,7 @@ sub connect
 	}
 
 	_checkAndUpgradeDBSchemaIfNecessary($metaDB);
+	return;
 }
 
 sub disconnect
@@ -203,6 +204,7 @@ sub disconnect
 	my $self = shift;
 
 	$self->{'meta-db'}->disconnect();
+	return;
 }
 
 sub start_transaction
@@ -210,6 +212,7 @@ sub start_transaction
 	my $self = shift;
 
 	$self->{'meta-db'}->start_transaction();
+	return;
 }
 
 sub commit_transaction
@@ -217,6 +220,7 @@ sub commit_transaction
 	my $self = shift;
 
 	$self->{'meta-db'}->commit_transaction();
+	return;
 }
 
 sub rollback_transaction
@@ -224,6 +228,7 @@ sub rollback_transaction
 	my $self = shift;
 
 	$self->{'meta-db'}->rollback_transaction();
+	return;
 }
 
 sub fetchVendorOSByFilter
@@ -829,6 +834,7 @@ sub emptyDatabase
 	my @vendorOSIDs = map { $_->{id} }
 	  grep { $_->{id} > 0 } $self->fetchVendorOSByFilter();
 	$self->removeVendorOS(\@vendorOSIDs);
+	return;
 }
 
 ################################################################################
@@ -845,6 +851,7 @@ sub mergeDefaultAttributesIntoSystem
 
 	my $defaultClient = $self->fetchClientByID(0);
 	pushAttributes($system, $defaultClient);
+	return;
 }
 
 sub mergeDefaultAndGroupAttributesIntoClient
@@ -869,6 +876,7 @@ sub mergeDefaultAndGroupAttributesIntoClient
 	vlog(3, _tr('merging from default client...'));
 	my $defaultClient = $self->fetchClientByID(0);
 	mergeAttributes($client, $defaultClient);
+	return;
 }
 
 sub aggregatedSystemIDsOfClient
@@ -991,6 +999,7 @@ sub mergeAttributes
 			$target->{$key} = $sourceVal;
 		}
 	}
+	return;
 }
 
 sub pushAttributes
@@ -1005,6 +1014,7 @@ sub pushAttributes
 			$target->{$key} = $sourceVal;
 		}
 	}
+	return;
 }
 
 sub externalIDForSystem

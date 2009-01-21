@@ -109,6 +109,7 @@ sub DESTROY
 			kill TERM => $pid;
 		}
 	}
+	return;
 }
 
 sub initialize
@@ -204,6 +205,7 @@ sub initialize
 		$self->createPackager();
 		$self->createMetaPackager();
 	}
+	return;
 }
 
 sub installVendorOS
@@ -262,6 +264,7 @@ sub installVendorOS
 
 	$self->touchVendorOS();
 	$self->addInstalledVendorOSToConfigDB();
+	return;
 }
 
 sub cloneVendorOS
@@ -344,6 +347,7 @@ sub cloneVendorOS
 
 	$self->touchVendorOS();
 	$self->addInstalledVendorOSToConfigDB();
+	return;
 }
 
 sub updateVendorOS
@@ -369,6 +373,7 @@ sub updateVendorOS
 		0,
 		_tr("Vendor-OS '%s' updated succesfully.\n", $self->{'vendor-os-name'})
 	);
+	return;
 }
 
 sub startChrootedShellForVendorOS
@@ -399,6 +404,7 @@ sub startChrootedShellForVendorOS
 			$self->{'vendor-os-name'}
 		)
 	);
+	return;
 }
 
 sub removeVendorOS
@@ -425,6 +431,7 @@ sub removeVendorOS
 		);
 	}
 	$self->removeVendorOSFromConfigDB();
+	return;
 }
 
 sub addInstalledVendorOSToConfigDB
@@ -484,6 +491,7 @@ sub addInstalledVendorOSToConfigDB
 	}
 
 	$openslxDB->disconnect();
+	return;
 }
 
 sub removeVendorOSFromConfigDB
@@ -530,6 +538,7 @@ sub removeVendorOSFromConfigDB
 	}
 
 	$openslxDB->disconnect();
+	return;
 }
 
 ################################################################################
@@ -610,6 +619,7 @@ sub readDistroInfo
 			}
 		}
 	}
+	return;
 }
 
 sub createVendorOSPath
@@ -620,6 +630,7 @@ sub createVendorOSPath
 		die _tr("unable to create directory '%s', giving up! (%s)\n",
 			$self->{'vendor-os-path'}, $!);
 	}
+	return;
 }
 
 sub touchVendorOS
@@ -630,6 +641,7 @@ sub touchVendorOS
 	# 'age' of the vendor-OS when trying to determine whether or not we
 	# need to re-export this vendor-OS:
 	slxsystem("touch $self->{'vendor-os-path'}");
+	return;
 }
 
 sub createPackager
@@ -641,6 +653,7 @@ sub createPackager
 	my $packager = instantiateClass($packagerClass);
 	$packager->initialize($self);
 	$self->{'packager'} = $packager;
+	return;
 }
 
 sub createMetaPackager
@@ -662,6 +675,7 @@ sub createMetaPackager
 	my $metaPackager      = instantiateClass($metaPackagerClass);
 	$metaPackager->initialize($self);
 	$self->{'meta-packager'} = $metaPackager;
+	return;
 }
 
 sub sortRepositoryURLs
@@ -779,6 +793,7 @@ sub startLocalURLServersAsNeeded
 			$port++;
 		}
 	}
+	return;
 }
 
 sub setupStage1A
@@ -804,6 +819,7 @@ sub setupStage1A
 	$self->stage1A_copyPrerequiredFiles();
 	$self->stage1A_copyTrustedPackageKeys();
 	$self->stage1A_createRequiredFiles();
+	return;
 }
 
 sub stage1A_createBusyboxEnvironment
@@ -859,6 +875,7 @@ sub stage1A_createBusyboxEnvironment
 	}
 
 	$self->stage1A_setupResolver($libcFolder);
+	return;
 }
 
 sub stage1A_setupResolver
@@ -878,6 +895,7 @@ sub stage1A_setupResolver
 	my $stage1cDir 
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
 	copyFile('/etc/resolv.conf', "$stage1cDir/etc");
+	return;
 }
 
 sub stage1A_copyPrerequiredFiles
@@ -900,6 +918,7 @@ sub stage1A_copyPrerequiredFiles
 		);
 	}
 	$self->{distro}->fixPrerequiredFiles($stage1cDir);
+	return;
 }
 
 sub stage1A_copyTrustedPackageKeys
@@ -931,6 +950,7 @@ sub stage1A_copyTrustedPackageKeys
 			copyFile("$keyDir/pubring.gpg", "$stage1cDir/usr/lib/rpm/gnupg");
 		}
 	}
+	return;
 }
 
 sub stage1A_createRequiredFiles
@@ -959,6 +979,7 @@ sub stage1A_createRequiredFiles
 			"unable to create node '%s' (%s)\n", "$stage1cDir/dev/null", $!
 		);
 	}
+	return;
 }
 
 sub setupStage1B
@@ -967,6 +988,7 @@ sub setupStage1B
 
 	vlog(1, "setting up stage1b for $self->{'vendor-os-name'}...");
 	$self->stage1B_chrootAndBootstrap();
+	return;
 }
 
 sub stage1B_chrootAndBootstrap
@@ -1006,6 +1028,7 @@ sub stage1B_chrootAndBootstrap
 	my @bootstrapPkgs = $self->downloadBaseFiles(\@pkgs);
 	my @allPkgs = (@prereqPkgs, @bootstrapPrereqPkgs, @bootstrapPkgs);
 	$self->{'bootstrap-packages'} = \@allPkgs;
+	return;
 }
 
 sub setupStage1C
@@ -1014,6 +1037,7 @@ sub setupStage1C
 
 	vlog(1, "setting up stage1c for $self->{'vendor-os-name'}...");
 	$self->stage1C_chrootAndInstallBasicVendorOS();
+	return;
 }
 
 sub stage1C_chrootAndInstallBasicVendorOS
@@ -1047,6 +1071,7 @@ sub stage1C_chrootAndInstallBasicVendorOS
 	$self->{packager}->installPackages(
 		$self->{'bootstrap-packages'}, $stage1cDir
 	);
+	return;
 }
 
 sub stage1C_cleanupBasicVendorOS
@@ -1067,6 +1092,7 @@ sub stage1C_cleanupBasicVendorOS
 			$self->{stage1aDir}, $!
 		);
 	}
+	return;
 }
 
 sub setupStage1D
@@ -1080,6 +1106,7 @@ sub setupStage1D
 	$self->stage1D_setupPackageSources();
 	$self->stage1D_updateBasicVendorOS();
 	$self->stage1D_installPackageSelection();
+	return;
 }
 
 sub updateStage1D
@@ -1091,6 +1118,7 @@ sub updateStage1D
 	chrootInto($self->{'vendor-os-path'});
 
 	$self->stage1D_updateBasicVendorOS();
+	return;
 }
 
 sub startChrootedShellInStage1D
@@ -1110,6 +1138,7 @@ sub startChrootedShellInStage1D
 	# hangs until user exits manually
 	$self->{'distro'}->updateDistroConfig();
 	$self->{'meta-packager'}->finishSession();
+	return;
 }
 
 sub stage1D_setupPackageSources
@@ -1126,6 +1155,7 @@ sub stage1D_setupPackageSources
 		vlog(2, "setting up package source $rk...");
 		$self->{'meta-packager'}->setupPackageSource($rk, $repo, $excludeList);
 	}
+	return;
 }
 
 sub stage1D_updateBasicVendorOS
@@ -1137,6 +1167,7 @@ sub stage1D_updateBasicVendorOS
 	$self->{'meta-packager'}->updateBasicVendorOS();
 	$self->{'distro'}->updateDistroConfig();
 	$self->{'meta-packager'}->finishSession();
+	return;
 }
 
 sub stage1D_installPackageSelection
@@ -1173,6 +1204,7 @@ sub stage1D_installPackageSelection
 	}
 	$self->{'distro'}->updateDistroConfig();
 	$self->{'meta-packager'}->finishSession();
+	return;
 }
 
 sub clone_fetchSource
@@ -1205,6 +1237,7 @@ sub clone_fetchSource
 		or croak _tr(
 			"unable to clone from source '%s', giving up! (%s)\n", $source, $!
 		);
+	return;
 }
 
 sub clone_determineIncludeExcludeList
@@ -1242,6 +1275,7 @@ sub changePersonalityIfNeeded
 
 		syscall &SYS_personality, PER_LINUX32();
 	}
+	return;
 }
 
 sub hostIs64Bit
@@ -1282,6 +1316,7 @@ sub chrootInto
 		or die _tr("unable to chroot into '%s' (%s)\n", $osDir, $!);
 
 	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
+	return;
 }
 
 1;

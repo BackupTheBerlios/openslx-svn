@@ -40,14 +40,15 @@ sub initialize
 	$self->SUPER::initialize($engine);
 	$self->{'packager-type'} = 'dpkg';
 	$self->{'meta-packager-type'} = $ENV{SLX_META_PACKAGER} || 'apt';
-	$self->{'stage1c-faked-files'} = [
-	];
+	$self->{'stage1c-faked-files'} = [];
+	return;
 }
 
 sub fixPrerequiredFiles
 {
 	my $self = shift;
 	my $stage1cDir = shift;
+	return;
 }
 
 sub initDistroInfo
@@ -80,7 +81,8 @@ sub initDistroInfo
 
 	$self->{config}->{'selection'} = {
 		'default' => "list any packagenames here",
-	}
+	};
+	return;
 }
 
 1;

@@ -141,6 +141,7 @@ sub vlog
 		$str .= "\n";
 	}
 	print $openslxLog $str;
+	return;
 }
 
 # ------------------------------------------------------------------------------
@@ -276,6 +277,7 @@ sub trInit
 			);
 		}
 	}
+	return;
 }
 
 # ------------------------------------------------------------------------------
@@ -321,6 +323,7 @@ sub callInSubprocess
 	if ($?) {
 		exit $?;
 	}
+	return;
 }
 
 # ------------------------------------------------------------------------------
@@ -347,6 +350,7 @@ sub addCleanupFunction
 	my $func = shift;
 
 	$cleanupFunctions{$name} = $func;
+	return;
 }
 
 # ------------------------------------------------------------------------------
@@ -355,6 +359,7 @@ sub removeCleanupFunction
 	my $name = shift;
 
 	delete $cleanupFunctions{$name};
+	return;
 }
 
 # ------------------------------------------------------------------------------
@@ -365,6 +370,7 @@ sub invokeCleanupFunctions
 		vlog(2, "invoking cleanup function '$name'...");
 		$cleanupFunctions{$name}->();
 	}
+	return;
 }
 
 # ------------------------------------------------------------------------------
@@ -381,7 +387,6 @@ sub slxsystem
 		if ($signalNo > 0 && $signalNo != 13) {
 			die _tr("child-process reveived signal '%s', parent stops!",
 				$signalNo);
-			exit;
 		}
 	}
 	return $res;
@@ -391,18 +396,21 @@ sub slxsystem
 sub cluck
 {
 	_doThrowOrWarn('cluck', @_);
+	return;
 }
 
 # ------------------------------------------------------------------------------
 sub carp
 {
 	_doThrowOrWarn('carp', @_);
+	return;
 }
 
 # ------------------------------------------------------------------------------
 sub warn
 {
 	_doThrowOrWarn('warn', @_);
+	return;
 }
 
 # ------------------------------------------------------------------------------
@@ -410,6 +418,7 @@ sub confess
 {
 	invokeCleanupFunctions();
 	_doThrowOrWarn('confess', @_);
+	return;
 }
 
 # ------------------------------------------------------------------------------
@@ -417,6 +426,7 @@ sub croak
 {
 	invokeCleanupFunctions();
 	_doThrowOrWarn('croak', @_);
+	return;
 }
 
 # ------------------------------------------------------------------------------
@@ -424,6 +434,7 @@ sub die
 {
 	invokeCleanupFunctions();
 	_doThrowOrWarn('die', @_);
+	return;
 }
 
 # ------------------------------------------------------------------------------
@@ -460,6 +471,7 @@ sub _doThrowOrWarn
 		my $func = $functionFor{$type};
 		$func->("$msg\n");
 	}
+	return;
 }
 
 # ------------------------------------------------------------------------------

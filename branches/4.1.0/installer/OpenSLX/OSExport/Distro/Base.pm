@@ -37,6 +37,7 @@ sub initialize
 	$self->{'engine'} = $engine;
 
 	$self->initDistroInfo();
+	return;
 }
 
 sub initDistroInfo

@@ -41,6 +41,7 @@ sub initialize
 	$self->{'packager-type'} = 'rpm';
 	$self->{'meta-packager-type'} = $ENV{SLX_META_PACKAGER} || 'smart';
 	$ENV{YAST_IS_RUNNING} = "instsys";
+	return;
 }
 
 sub fixPrerequiredFiles
@@ -50,6 +51,7 @@ sub fixPrerequiredFiles
 
 	chown(0, 0, "$stage1cDir/etc/group", "$stage1cDir/etc/passwd",
 		"$stage1cDir/etc/shadow");    
+	return;
 }
 
 sub updateDistroConfig
@@ -65,6 +67,7 @@ sub updateDistroConfig
 		die _tr("unable to run SuSEconfig (%s)", $!);
 	}
 	$self->SUPER::updateDistroConfig();
+	return;
 }
 
 sub initDistroInfo
@@ -395,7 +398,8 @@ sub initDistroInfo
 			zisofs-tools
 			zsh
 		",
-	}
+	};
+	return;
 }
 
 1;

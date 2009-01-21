@@ -49,6 +49,7 @@ sub initialize
 
 	$self->{'engine'} = $engine;
 	$self->{'fs'}     = $fs;
+	return;
 }
 
 sub getExportPort
@@ -90,6 +91,7 @@ sub showExportConfigInfo
 		"... (don't know how this is done yet)"
 	);
 	print(('#' x 80) . "\n");
+	return;
 }
 
 1;

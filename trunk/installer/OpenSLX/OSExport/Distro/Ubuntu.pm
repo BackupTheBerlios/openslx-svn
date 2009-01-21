@@ -50,6 +50,7 @@ sub initDistroInfo
 		- /boot/initrd*
 		- /boot/grub
 	";
+	return;
 }
 
 1;

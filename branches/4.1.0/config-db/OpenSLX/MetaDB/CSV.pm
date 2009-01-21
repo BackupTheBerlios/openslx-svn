@@ -38,7 +38,7 @@ sub new
 	return bless $self, $class;
 }
 
-sub connect
+sub connect		## no critic (ProhibitBuiltinHomonyms)
 {
 	my $self = shift;
 
@@ -55,6 +55,7 @@ sub connect
 	$self->{'dbh'} =
 	  DBI->connect("dbi:CSV:$dbSpec", undef, undef, {PrintError => 0})
 	  or die _tr("Cannot connect to database '%s' (%s)", $dbSpec, $DBI::errstr);
+	return;
 }
 
 sub quote
@@ -78,6 +79,7 @@ sub start_transaction
 	$self->{"transaction-lock"} = *TRANSFILE;
 	flock(TRANSFILE, LOCK_EX)
 	  or confess _tr(q[Can't lock transaction-file '%s' (%s)], $lockFile, $!);
+	return;
 }
 
 sub commit_transaction
@@ -150,6 +152,7 @@ sub schemaDeclareTable
 
 	my $dbh = $self->{'dbh'};
 	$dbh->{'csv_tables'}->{"$table"} = {'file' => "${table}.csv"};
+	return;
 }
 
 sub schemaRenameTable
@@ -162,6 +165,7 @@ sub schemaRenameTable
 	$self->SUPER::schemaRenameTable($oldTable, $newTable, @_);
 	my $dbh = $self->{'dbh'};
 	rename "$dbh->{'f_dir'}/id-$oldTable", "$dbh->{'f_dir'}/id-$newTable";
+	return;
 }
 
 sub schemaDropTable
@@ -172,6 +176,7 @@ sub schemaDropTable
 	$self->SUPER::schemaDropTable($table, @_);
 	my $dbh = $self->{'dbh'};
 	unlink "$dbh->{'f_dir'}/id-$table";
+	return;
 }
 
 1;

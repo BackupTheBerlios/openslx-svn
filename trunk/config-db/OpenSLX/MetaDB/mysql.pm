@@ -35,7 +35,7 @@ sub new
 	return bless $self, $class;
 }
 
-sub connect
+sub connect		## no critic (ProhibitBuiltinHomonyms)
 {
 	my $self = shift;
 
@@ -49,6 +49,7 @@ sub connect
 	$self->{'dbh'} =
 	  DBI->connect("dbi:mysql:$dbSpec", $user, '', {PrintError => 0})
 	  or die _tr("Cannot connect to database <%s> (%s)", $dbSpec, $DBI::errstr);
+	return;
 }
 
 sub schemaConvertTypeDescrToNative
@@ -85,6 +86,7 @@ sub schemaRenameTable
 	vlog(3, $sql);
 	$dbh->do($sql)
 	  or confess _tr(q[Can't rename table <%s> (%s)], $oldTable, $dbh->errstr);
+	return;
 }
 
 sub schemaAddColumns
@@ -111,6 +113,7 @@ sub schemaAddColumns
 	if (defined $newColDefaultVals) {
 		$self->_doUpdate($table, undef, $newColDefaultVals);
 	}
+	return;
 }
 
 sub schemaDropColumns
@@ -132,6 +135,7 @@ sub schemaDropColumns
 	$dbh->do($sql)
 	  or confess _tr(q[Can't drop columns from table <%s> (%s)], $table,
 		$dbh->errstr);
+	return;
 }
 
 sub schemaChangeColumns
@@ -156,5 +160,7 @@ sub schemaChangeColumns
 	$dbh->do($sql)
 	  or confess _tr(q[Can't change columns in table <%s> (%s)], $table,
 		$dbh->errstr);
+	return;
 }
+
 1;

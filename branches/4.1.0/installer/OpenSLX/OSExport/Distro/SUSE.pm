@@ -96,6 +96,7 @@ sub initDistroInfo
 		- *.rpmnew
 		- *.YaST2save
 	";
+	return;
 }
 
 1;

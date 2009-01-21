@@ -40,6 +40,7 @@ sub initialize
 
 	$self->SUPER::initialize($engine);
 	$ENV{LC_ALL} = 'POSIX';
+	return;
 }
 
 sub initPackageSources
@@ -51,6 +52,7 @@ sub initPackageSources
 	if (slxsystem("smart channel -y --remove-all")) {
 		die _tr("unable to remove existing channels (%s)\n", $!);
 	}
+	return;
 }
 
 sub setupPackageSource
@@ -87,6 +89,7 @@ sub setupPackageSource
 			}
 		}
 	}
+	return;
 }
 
 sub installSelection
@@ -100,6 +103,7 @@ sub installSelection
 	if (slxsystem("smart install -y $pkgSelection")) {
 		die _tr("unable to install selection (%s)\n", $!);
 	}
+	return;
 }
 
 sub updateBasicVendorOS
@@ -113,6 +117,7 @@ sub updateBasicVendorOS
 		}
 		die _tr("unable to update this vendor-os (%s)\n", $!);
 	}
+	return;
 }
 
 1;

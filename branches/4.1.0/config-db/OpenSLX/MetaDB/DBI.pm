@@ -35,6 +35,7 @@ sub disconnect
 
 	$self->{'dbh'}->disconnect;
 	$self->{'dbh'} = undef;
+	return;
 }
 
 sub quote
@@ -669,6 +670,7 @@ sub setSystemIDsOfClient
 	my @currSystems = $self->fetchSystemIDsOfClient($clientID);
 	$self->_updateRefTable('client_system_ref', $clientID, $systemIDs,
 		'client_id', 'system_id', \@currSystems);
+	return;
 }
 
 sub setGroupIDsOfClient
@@ -680,6 +682,7 @@ sub setGroupIDsOfClient
 	my @currGroups = $self->fetchGroupIDsOfClient($clientID);
 	$self->_updateRefTable('group_client_ref', $clientID, $groupIDs,
 		'client_id', 'group_id', \@currGroups);
+	return;
 }
 
 sub addGroup
@@ -716,6 +719,7 @@ sub setClientIDsOfGroup
 	my @currClients = $self->fetchClientIDsOfGroup($groupID);
 	$self->_updateRefTable('group_client_ref', $groupID, $clientIDs, 'group_id',
 		'client_id', \@currClients);
+	return;
 }
 
 sub setSystemIDsOfGroup
@@ -727,6 +731,7 @@ sub setSystemIDsOfGroup
 	my @currSystems = $self->fetchSystemIDsOfGroup($groupID);
 	$self->_updateRefTable('group_system_ref', $groupID, $systemIDs, 'group_id',
 		'system_id', \@currSystems);
+	return;
 }
 
 ################################################################################
@@ -826,6 +831,7 @@ sub schemaAddTable
 		# don't care about IDs if there's no 'id' column in this table
 		$self->_doInsert($table, $initialVals, $ignoreIDs);
 	}
+	return;
 }
 
 sub schemaDropTable
@@ -840,6 +846,7 @@ sub schemaDropTable
 	vlog(3, $sql);
 	$dbh->do($sql)
 	  or confess _tr(q[Can't drop table <%s> (%s)], $table, $dbh->errstr);
+	return;
 }
 
 sub schemaRenameTable
@@ -871,6 +878,7 @@ sub schemaRenameTable
 	vlog(3, $sql);
 	$dbh->do($sql)
 	  or confess _tr(q[Can't drop table <%s> (%s)], $oldTable, $dbh->errstr);
+	return;
 }
 
 sub schemaAddColumns
@@ -912,6 +920,7 @@ sub schemaAddColumns
 
 	$self->schemaDropTable($table, 1);
 	$self->schemaRenameTable($tempTable, $table, $colDescrs, 1);
+	return;
 }
 
 sub schemaDropColumns
@@ -944,6 +953,7 @@ sub schemaDropColumns
 
 	$self->schemaDropTable($table, 1);
 	$self->schemaRenameTable($tempTable, $table, $colDescrs, 1);
+	return;
 }
 
 sub schemaChangeColumns
@@ -985,6 +995,7 @@ sub schemaChangeColumns
 
 	$self->schemaDropTable($table, 1);
 	$self->schemaRenameTable($tempTable, $table, $colDescrs, 1);
+	return;
 }
 
 1;

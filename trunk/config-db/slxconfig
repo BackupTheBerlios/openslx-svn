@@ -109,8 +109,6 @@ Try '%s --help' for more info.\n", $0);
 
 $openslxDB->disconnect();
 
-exit;
-
 sub parseKeyValueArgs
 {
     my $allowedKeys = shift;
@@ -154,8 +152,9 @@ sub dumpElements
 			);
 		}
 	} else {
-		print join('', sort map &$nameClause, @_);
+		print join('', sort map { $nameClause->($_); } @_);
 	}
+	return;
 }
 
 sub listClients
@@ -182,6 +181,7 @@ sub listClients
 		sort { $a->{name} cmp $b->{name} }
 		$openslxDB->fetchClientByFilter($clientData)
 	);
+	return;
 }
 
 sub listExports
@@ -210,6 +210,7 @@ sub listExports
 		sort { $a->{name} eq $b->{name} || $a->{type} cmp $b->{type} }
 		$openslxDB->fetchExportByFilter($exportData)
 	);
+	return;
 }
 
 sub listSystems
@@ -240,6 +241,7 @@ sub listSystems
 		sort { $a->{name} cmp $b->{name} }
 		$openslxDB->fetchSystemByFilter($systemData)
 	);
+	return;
 }
 
 sub listVendorOSes
@@ -255,6 +257,7 @@ sub listVendorOSes
 	dumpElements('vendor-OS', undef,
 				 sort { $a->{name} cmp $b->{name} }
 				 $openslxDB->fetchVendorOSByFilter($vendorOSData));
+	return;
 }
 
 sub addClientToConfigDB
@@ -311,6 +314,7 @@ sub addClientToConfigDB
 	if ($verbose) {
 		listClients("id=$clientID");
 	}
+	return;
 }
 
 sub addSystemToConfigDB
@@ -397,6 +401,7 @@ sub addSystemToConfigDB
 	if ($verbose) {
 		listSystems("id=$systemID");
 	}
+	return;
 }
 
 sub changeClientInConfigDB
@@ -473,6 +478,7 @@ sub changeClientInConfigDB
 	if ($verbose) {
 		listClients("id=$client->{id}");
 	}
+	return;
 }
 
 sub changeSystemInConfigDB
@@ -543,6 +549,7 @@ sub changeSystemInConfigDB
 	if ($verbose) {
 		listSystems("id=$system->{id}");
 	}
+	return;
 }
 
 sub removeClientFromConfigDB
@@ -566,6 +573,7 @@ sub removeClientFromConfigDB
 	$openslxDB->removeClient($client->{id});
 	vlog(0, _tr("client '%s' has been successfully removed from DB\n",
 				$clientName));
+	return;
 }
 
 sub removeSystemFromConfigDB
@@ -589,9 +597,8 @@ sub removeSystemFromConfigDB
 	$openslxDB->removeSystem($system->{id});
 	vlog(0, _tr("system '%s' has been successfully removed from DB\n",
 				$systemName));
+	return;
 }
-
-
 
 =head1 NAME
 

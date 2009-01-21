@@ -45,6 +45,7 @@ sub initialize
 	$self->{'block-device'} = $blockDevice;
 	my $exportBasePath = "$openslxConfig{'public-path'}/export";
 	$self->{'export-path'} = "$exportBasePath/sqfs/$engine->{'vendor-os-name'}";
+	return;
 }
 
 sub exportVendorOS
@@ -74,6 +75,7 @@ sub exportVendorOS
 		$self->_createSquashFS($source, $target, $includeExcludeList);
 	}
 	$self->_addBlockDeviceTagToExport($target);
+	return;
 }
 
 sub purgeExport
@@ -176,6 +178,7 @@ sub showExportConfigInfo
 	my $export = shift;
 
 	$self->{'block-device'}->showExportConfigInfo($export);
+	return;
 }
 
 ################################################################################
@@ -317,6 +320,7 @@ sub _addBlockDeviceTagToExport
 
 	my $tagName = "$target" . '@' . lc($self->{'block-device'}->{name});
 	linkFile(basename($target), $tagName);
+	return;
 }
 
 sub _removeBlockDeviceTagFromExport

@@ -28,7 +28,7 @@ sub new
 	confess "Don't create OpenSLX::MetaDB::Base - objects directly!";
 }
 
-sub connect
+sub connect		## no critic (ProhibitBuiltinHomonyms)
 {
 }
 
@@ -124,7 +124,7 @@ sub generateNextIdForTable
 	# NB: if this method is called without a tablename, it returns:
 	# 	  1 if this backend requires manual ID generation
 	# 	  0 if not.
-	return undef;
+	return;
 }
 
 sub addVendorOS

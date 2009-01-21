@@ -11,6 +11,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 use strict;
+use warnings;
 
 my $abstract = q[
 determineMinimumPackageSet.pl
@@ -61,12 +62,12 @@ sub slurpFile
 {
 	my $file = shift;
 
-	if (!open(F, "< $file")) {
-		die _tr("could not open file '%s' for reading! (%s)", $file, $!);
-	}
+	my $fh;
+	open($fh, '<', $file)
+		or die _tr("could not open file '%s' for reading! (%s)", $file, $!);
 	local $/ = undef;
-	my $text = <F>;
-	close(F);
+	my $text = <$fh>;
+	close($fh);
 	return $text;
 }
 
@@ -107,7 +108,11 @@ sub handlePackage
 	($rpmRes, $rpmOut) = callRpm(qq[rpm -q --provides "$pkgName"]);
 	my $provides
 		=	join ' ',
-			map { s[^\s*(.+?)\s*$][$1]; qq["$_"]; }
+			map { 
+				my $rpm = $_;
+				$rpm =~ s[^\s*(.+?)\s*$][$1];
+				qq["$rpm"];
+			}
 			split "\n", $rpmOut;
 	($rpmRes, $rpmOut) = callRpm(qq[rpm -q --whatrequires $provides]);
 	if ($rpmRes == 0) {
@@ -138,6 +143,7 @@ sub determineMinimumPackageSet
 		print "."		unless $verbose;
 		handlePackage($p);
 	}
+	return;
 }
 
 __END__

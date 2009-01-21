@@ -86,6 +86,7 @@ sub initializeFromExisting
 
 	$self->_initialize($vendorOS->{name}, $vendorOS->{id}, $export->{name},
 		$export->{type});
+	return;
 }
 
 sub initializeForNew
@@ -108,6 +109,7 @@ sub initializeForNew
 
 	$self->_initialize($vendorOS->{name}, $vendorOS->{id}, $exportName,
 		$exportType);
+	return;
 }
 
 sub exportVendorOS
@@ -130,6 +132,7 @@ sub exportVendorOS
 		)
 	);
 	$self->_addExportToConfigDB();
+	return;
 }
 
 sub purgeExport
@@ -146,6 +149,7 @@ sub purgeExport
 		);
 	}
 	$self->_removeExportFromConfigDB();
+	return;
 }
 
 sub generateExportURI
@@ -238,6 +242,7 @@ sub _initialize
 			$exporter->{'export-path'}
 		)
 	);
+	return;
 }
 
 sub _addExportToConfigDB
@@ -285,6 +290,7 @@ sub _addExportToConfigDB
 	}
 
 	$openslxDB->disconnect();
+	return;
 }
 
 sub _removeExportFromConfigDB
@@ -325,6 +331,7 @@ sub _removeExportFromConfigDB
 	}
 
 	$openslxDB->disconnect();
+	return;
 }
 
 1;

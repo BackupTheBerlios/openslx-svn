@@ -54,6 +54,7 @@ sub initDistroInfo
                 + /lib/modules/*/misc/vmnet.o
                 + /lib/modules/*/misc/vmmon.o
 	";
+	return;
 }
 
 1;

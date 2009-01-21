@@ -161,7 +161,11 @@ sub changedHandler
 
 	# invoke a key-specific change handler if it exists:
 	$key =~ tr[-][_];
-	eval { no strict 'refs'; "${key}_changed_handler"->(); };
+
+	no strict 'refs';		## no critic (ProhibitNoStrict)
+	"${key}_changed_handler"->();
+	
+	return;
 }
 
 sub private_path_changed_handler
@@ -169,6 +173,8 @@ sub private_path_changed_handler
 	# create the default config folders (for default system only):
 	require OpenSLX::ConfigFolder;
 	OpenSLX::ConfigFolder::createConfigFolderForDefaultSystem();
+
+	return;
 }
 
 =head1 NAME

@@ -34,6 +34,7 @@ sub initialize
 	my $distro = shift;
 
 	$self->{'distro'} = $distro;
+	return;
 }
 
 sub unpackPackages

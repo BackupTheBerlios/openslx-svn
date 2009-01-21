@@ -35,6 +35,7 @@ sub initialize
 	my $engine = shift;
 
 	$self->{'engine'} = $engine;
+	return;
 }
 
 sub initPackageSources
@@ -64,6 +65,7 @@ sub startSession
 
 	$self->{engine}->{distro}->startSession();
 		# allow vendor specific extensions
+	return;
 }
 
 sub finishSession
@@ -76,6 +78,7 @@ sub finishSession
 	system('umount /proc 2>/dev/null');
 
 	removeCleanupFunction('slxos-setup::meta-packager');
+	return;
 }
 
 1;

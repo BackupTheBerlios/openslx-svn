@@ -15,6 +15,7 @@
 #	  SUSE-pattern-files (*.pat).
 # -----------------------------------------------------------------------------
 use strict;
+use warnings;
 
 my $abstract = q[
 parseSusePatterns.pl
@@ -61,13 +62,14 @@ sub parsePatternFile
 	my $patternFile = shift;
 	my $outmost = shift;
 
-	if (!open(PAT, "<$patternFile")) {
+	my $patFH;
+	if (!open($patFH, '<', $patternFile)) {
 		return unless $outmost;
 		die "unable to open $patternFile";
 	}
 	undef $/;
-	my $content = <PAT>;
-	close(PAT);
+	my $content = <$patFH>;
+	close($patFH);
 	$patternNames{$patternFile} = 1;
 
 	if ($content =~ m[^\=Sum.de:\s*(.+?)\s*$]ms) {
@@ -88,6 +90,7 @@ sub parsePatternFile
 	if ($content =~ m[^\+Prc:\s*?$(.+?)^\-Prc:\s*?$]ms) {
 		addPkgNames($1);
 	}
+	return;
 }
 
 sub addSubPatterns
@@ -96,7 +99,11 @@ sub addSubPatterns
 
 	my @subPatterns
 		= grep { length($_) > 0 }
-		  map { $_ =~ s[^\s*(.+?)\s*$][$1]; $_ }
+		  map {
+		  	my $pattern = $_;
+		  	$pattern =~ s[^\s*(.+?)\s*$][$1];
+		  	$pattern;
+		  }
 		  split "\n", $patternNames;
 
 	foreach my $subPattern (@subPatterns) {
@@ -105,6 +112,7 @@ sub addSubPatterns
 			parsePatternFile($subPatternFile);
 		}
 	}
+	return;
 }
 
 sub addPkgNames
@@ -113,14 +121,17 @@ sub addPkgNames
 
 	my @pkgNames
 		= grep { length($_) > 0 }
-		  map { $_ =~ s[^\s*(.+?)\s*$][$1]; $_ }
+		  map {
+		  	my $pkg = $_;
+		  	$pkg =~ s[^\s*(.+?)\s*$][$1];
+		  	$pkg;
+		  }
 		  split "\n", $pkgs;
 	foreach my $pkgName (@pkgNames) {
 		$packageNames{$pkgName} = 1;
 	}
+	return;
 }
-
-__END__
 
 =head1 NAME
 

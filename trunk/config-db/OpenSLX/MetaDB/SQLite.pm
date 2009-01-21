@@ -35,7 +35,7 @@ sub new
 	return bless $self, $class;
 }
 
-sub connect
+sub connect		## no critic (ProhibitBuiltinHomonyms)
 {
 	my $self = shift;
 
@@ -70,6 +70,7 @@ sub schemaRenameTable
 	vlog(3, $sql);
 	$dbh->do($sql)
 	  or croak(_tr(q[Can't rename table <%s> (%s)], $oldTable, $dbh->errstr));
+	return;
 }
 
 sub schemaAddColumns
@@ -98,6 +99,7 @@ sub schemaAddColumns
 	if (defined $newColDefaultVals) {
 		$self->_doUpdate($table, undef, $newColDefaultVals);
 	}
+	return;
 }
 
 1;

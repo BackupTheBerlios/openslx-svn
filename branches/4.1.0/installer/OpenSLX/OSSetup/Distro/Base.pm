@@ -109,6 +109,7 @@ sub initialize
 	";
 
 	$self->initDistroInfo();
+	return;
 }
 
 sub fixPrerequiredFiles
