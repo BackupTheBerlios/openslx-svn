@@ -2,6 +2,7 @@
 
 PATH="/bin:/sbin:/usr/bin:/usr/sbin"
 
+: ${SLX_BOOTSTRAP_FAIL_WGET:="yes"}
 : ${SLX_BOOTSTRAP_PATH:="/slxbootstrap"}
 : ${SLX_STAGE1_FINAL_PATH:="/slxfinal"}
 
@@ -24,8 +25,12 @@ cd "${SLX_BOOTSTRAP_PATH}"
 for file in ${SLX_BASE_PREREQ_PACKAGES}; do
 	wget "${SLX_INST_SOURCE_BASEURL}${SLX_INST_SOURCE_PACKAGE_SUBDIR:+/${SLX_INST_SOURCE_PACKAGE_SUBDIR}}/${file}"
 	if test $? != 0; then
-		echo "Error: Unable to download ${SLX_INST_SOURCE_BASEURL}/${file}"
-		exit 1
+		if test "${SLX_BOOTSTRAP_FAIL_WGET}" = "no"; then
+			continue
+		else
+			echo "Error: Unable to download ${SLX_INST_SOURCE_BASEURL}/${file}"
+			exit 1
+		fi
 	fi
 	case "${file}" in
 		*.deb)
@@ -51,7 +56,7 @@ done
 
 for file in ${SLX_BASE_BOOTSTRAP_PACKAGES}; do
 	wget "${SLX_INST_SOURCE_BASEURL}${SLX_INST_SOURCE_PACKAGE_SUBDIR:+/${SLX_INST_SOURCE_PACKAGE_SUBDIR}}/${file}"
-	if test $? != 0; then
+	if test $? != 0 -a "${SLX_BOOTSTRAP_FAIL_WGET}" = "yes"; then
 		echo "Error: Unable to download ${SLX_INST_SOURCE_BASEURL}/${file}"
 		exit 1
 	fi
