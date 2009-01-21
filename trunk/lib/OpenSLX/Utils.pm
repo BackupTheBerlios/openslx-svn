@@ -32,6 +32,7 @@ $VERSION = 1.01;
   chrootInto
   mergeHash
   getFQDN
+  readPassword
 );
 
 ################################################################################
@@ -274,6 +275,18 @@ sub getFQDN
 	my $FQDN = gethostbyaddr($hostAddr, AF_INET)
 		or die(_tr("unable to get dns-name of address '%s'", $hostAddr));
 	return $FQDN;
+}
+
+sub readPassword
+{
+	my $prompt = shift;
+	
+	use Term::ReadLine;
+	my $term = Term::ReadLine->new('slx');
+	my $attribs = $term->Attribs;
+	$attribs->{redisplay_function} = $attribs->{shadow_redisplay};
+    return $term->readline($prompt);
+    
 }
 
 1;
