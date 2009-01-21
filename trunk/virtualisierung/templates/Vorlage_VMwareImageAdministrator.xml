@@ -33,7 +33,7 @@
     <pools param="default chemie">
     </pools>
     #Description: as xdm menu? If yes "true", else "false"
-    <xdm param="xdm">
+    <xdm param="false">
     </xdm>
   </eintrag>
 </settings>

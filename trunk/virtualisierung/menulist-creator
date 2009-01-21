@@ -22,11 +22,12 @@
 vmdir="." && cd ${vmdir}
 
 # File for dektopentrys
-#TODO: where to put?
-desktopentry="/todø/fuck"
+#TODO: where to put? temporary test file, we should delete it or move it
+# later, else there isnt a valid entryfile till this script is finished
+desktopentry="${vmdir}/desktopentrys"
 
 # template for runvmware
-templatevmware="./templates/runvmware-v2"
+templatevmware="${vmdir}/templates/runvmware-v2"
 
 
 # Take all xml files and work with them
@@ -49,8 +50,8 @@ for xml in *.xml;do
   image=`grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
 
   # Test if correct defined
-  image_type=`echo $image|sed 's/.*\.//'`
-  if [ ${image} != "vmdk"  -o  ${image} != "vdi" ]; then
+  image_type=`echo ${image}|sed 's/.*\.//'`
+  if [ "${image_type}" != "vmdk"  -a  "${image_type}" != "vdi" ]; then
     # TODO: Test
     echo "PANIC, image is not correct defined in ${xml}."
     echo "Image has to end with vdi or vmdk!"
@@ -70,21 +71,21 @@ for xml in *.xml;do
   # Virtualmachine (vmware or virtualbox)?
   vm=`grep -i "<virtualmachine param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
   # Test if correct defined
-  if [ ${vm} != "vbox"  -o  ${vm} != "vmware" ]; then
+  if [ "${vm}" != "vbox"  -a  "${vm}" != "vmware" ]; then
     # TODO: Test
     echo "PANIC, virtualmachine not correct defined in ${xml}"
     exit 0
   fi
 
   # Test if vbox and wrong image
-  if [ ${vm} = "vbox"  -a  ${image_type} != "vdi" ]; then
+  if [ "${vm}" = "vbox"  -a  "${image_type}" != "vdi" ]; then
     # TODO: Test
     echo "PANIC, virtualmachine vbox cant use image type defined in ${xml}"
     exit 0
   fi
 
   # Test if vmware and wrong image 
-  if [ ${vm} = "vmware"  -a  ${image_type} != "vmdk" ]; then
+  if [ "${vm}" = "vmware"  -a  "${image_type}" != "vmdk" ]; then
     # TODO: Test
     echo "PANIC, virtualmachine vmware cant use image type defined in ${xml}"
     exit 0
@@ -95,7 +96,7 @@ for xml in *.xml;do
   network=`grep -i "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
 
   # Test if correct defined
-  if [ ${network} != "nat"  -a  ${network} != "bridged" ]; then
+  if [ "${network}" != "nat"  -a  "${network}" != "bridged" ]; then
     # TODO: test
     echo "PANIC, network connection not correct defined in ${xml}"
     exit 0
@@ -103,10 +104,10 @@ for xml in *.xml;do
 
   
   # os running in vmware?
-  os=`grep -i "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
-  if [ ${os} != "Linux"  -a  ${os} != "Windows XP" ]; then
+  os=`grep -i "<os param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
+  if [ "${os}" != "Linux"  -a  "${os}" != "Windows XP" ]; then
     # TODO: test
-    echo "PANIC, os in virtual machine not correct defined in ${xml}"
+    echo "PANIC, OS in virtual machine not correct defined in ${xml}"
     exit 0
   fi
     
@@ -125,7 +126,7 @@ for xml in *.xml;do
   xdm=`grep "xdm param=\"" ${xml} | awk -F "\"" '{print $2}'`
 
   # Test if correct defined
-  if [ ${xdm} != "true"  -a  ${xdm} != "false" ]; then
+  if [ "${xdm}" != "true"  -a  "${xdm}" != "false" ]; then
     # TODO: test
     echo "PANIC, XDM usage not correct defined in ${xml}"
     exit 0
@@ -137,17 +138,21 @@ for xml in *.xml;do
   ##############################################################################
   # Main part, creates desktopentry and image run script
 
+  # check if ${vmdir}/runscripts/ is available
+  if [ ! -d ${vmdir}/runscripts ]; then
+    mkdir ${vmdir}/runscripts
+  fi
  
   # work with the different pools and...
   for i in ${pools}; do 
     # ... make sure we have the different pool directorys, else create it
-    if [ ! -d ${i} ]; then
-      mkdir -p ${i}
+    if [ ! -d ${vmdir}/runscripts/${i} ]; then
+      mkdir -p ${vmdir}/runscripts/${i}
     fi
     # ... remove startscript if it isn't active.
     if [ ${active} -ne 1 ]; then
-      if [ -f runscripts/${i}/${image}.vmware -o runscripts/${i}/${image}.virtualbox ]; then
-        rm -rf runscripts/${i}/${image}.*
+      if [ -f ${vmdir}/runscripts/${i}/${image}.vmware -o runscripts/${i}/${image}.virtualbox ]; then
+        rm -rf ${vmdir}/runscripts/${i}/${image}.*
       fi
     fi
 
@@ -156,39 +161,42 @@ for xml in *.xml;do
     if [ ${active} -eq 1 ]; then
 
       # create desktopentry
-      echo -e "\nCreating runfiles for ${image}\n"
+      echo -e "\nCreating runfiles for ${image} and pool ${i}\n"
       # create the desktopentry
       #TODO: change it with < EOF, >> isnt nice for so much lines
       echo "Desktop entry for ${image}" >> ${desktopentry}
       echo "[Desktop Entry]" >> ${desktopentry}
       echo "X-SuSE-translate=true" >> ${desktopentry}
       echo "Encoding=UTF-8" >> ${desktopentry}
-      echo "Type=XSession" >> ${meulist}
+      echo "Type=XSession" >> ${desktopentry}
       #TODO: Fix path
       echo "Exec=/path/to/the/execfile/${image}" >> ${desktopentry}
       echo "Name=${short_description}" >> ${desktopentry}
       echo "Comment=${comment}" >> ${desktopentry}
-      #TODO: I dont like SLXGrp as variable herein, why we need it here?  echo "SLXGrp=${pools}" >> ${desktopentry} echo "XDM=${xdm}" >> ${desktopentry}
+      #TODO: I dont like SLXGrp as variable herein, why we need it here?
+      #echo "SLXGrp=${pools}" >> ${desktopentry}
+      #TODO: do we need XDM configuration? -> Chemie pool
+      #echo "XDM=${xdm}" >> ${desktopentry}
       echo "" >> ${desktopentry}
     fi
 
     
 ################################################################################
-## TODO: remember default/ chemie/ option
+## TODO: remember default/ chemie/ option (desktopentrys! and runfiles)
 ## delete old desktop list
 ## fucking pools/directory hirarchy... test it with running script and find
 ## that way the error
 ################################################################################
-    # If we have vmware
 
-    if [ ${vm} = "vmware" ]; then
+    # If we have vmware, build execute from template
+    if [ "${vm}" = "vmware" ]; then
 
       sed -e "s/imagename=\"CHANGEIT\"/imagename=\"${image}\"/" \
-          -e "s/displayname=\"CHANGEIT\"/displayname=\"${short_description}\"" \
-          -e "s/vmostype=\"CHANGEIT\"/vmostype=\"${os}\"" \
-          -e "s/network=\"CHANGEIT\"/network=\"${network}\"" \
+          -e "s/displayname=\"CHANGEIT\"/displayname=\"${short_description}\"/" \
+          -e "s/vmostype=\"CHANGEIT\"/vmostype=\"${os}\"/" \
+          -e "s/network=\"CHANGEIT\"/network=\"${network}\"/" \
       ${templatevmware} \
-      > runscripts/${i}/${image}.runvmware
+      > ${vmdir}/runscripts/${i}/${image}.runvmware
 
     # if we have virtualbox, can only be vbox cause checked above
     else 
