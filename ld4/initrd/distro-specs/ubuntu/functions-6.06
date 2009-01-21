@@ -150,7 +150,6 @@ consolefont () {
 echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
   >>/mnt/etc/${D_INITDIR}/boot.ld
 }
-"20" "02"
 # acpi and powersave
 config_acpi () {
   rllinker "acpid" "02" "19"

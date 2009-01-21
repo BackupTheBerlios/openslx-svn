@@ -23,6 +23,31 @@ preinit () {
   modprobe ${MODPRV} unix || error "$df_errumod" nonfatal
 }
 
+
+#overwrite settings set by hwautocfg
+displayvars (){
+Files=' \t 	  FontPath\t\t       "/usr/share/X11/fonts/misc"\n
+\t        FontPath\t\t    "/usr/share/X11/fonts/cyrillic"\n
+\t        FontPath\t\t   "/usr/share/X11/fonts/100dpi/:unscaled"\n
+\t        FontPath\t\t    "/usr/share/X11/fonts/75dpi/:unscaled"\n
+\t        FontPath\t\t    "/usr/share/X11/fonts/Type1"\n
+\t        FontPath\t\t    "/usr/share/X11/fonts/100dpi"\n
+\t        FontPath\t\t    "/usr/share/X11/fonts/75dpi"\n
+\t        # path to defoma fonts\n
+\t        FontPath\t\t    "/var/lib/defoma/x-ttcidfont-conf.d/dirs/TrueType"\n'
+
+Module=' \t        Load\t	    "i2c"\n
+\t        Load\t	    "bitmap"\n
+\t        Load\t	    "ddc"\n
+\t        Load\t	    "dri"\n
+\t        Load\t	    "extmod"\n
+\t        Load\t	    "freetype"\n
+\t        Load\t	    "glx"\n
+\t        Load\t	    "int10"\n
+\t        Load\t	    "type1"\n
+\t        Load\t	    "vbe"\n'
+
+}
 # distro specific function called from servconfig script
 config_distro () {
 # add the halt link to the 0 and 6 runlevel directories
@@ -157,7 +182,6 @@ consolefont () {
 echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
   >>/mnt/etc/${D_INITDIR}/boot.ld
 }
-"20" "02"
 # acpi and powersave
 config_acpi () {
   rllinker "acpid" "02" "19"

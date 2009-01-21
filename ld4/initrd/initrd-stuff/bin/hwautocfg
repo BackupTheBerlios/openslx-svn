@@ -90,6 +90,8 @@ local ServerLayout='\tIdentifier\t"Simple Layout"\n
 local DRI='\tGroup\t\t"video"\n
 \tMode\t\t0666'
 
+displayvars
+
 if [ -n "$hw_graphic" ] ; then
   DRV=${hw_graphic% *}
   CDP=${hw_graphic##* }

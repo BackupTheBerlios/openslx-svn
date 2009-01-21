@@ -733,6 +733,11 @@ done
 #######################################################################
 # dummy functions
 
+#overwrite xorg configuration set by hwautocfg
+displayvars (){
+:
+}
+
 # AUS SuSE-9.3
 
 # linking runlevel scripts
