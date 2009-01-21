@@ -296,7 +296,7 @@ for driver in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
 done
 # check for IDE/SCSI (SATA)
 for driver in ata_piix sata_via sata_nv sata_sil sata_sis sata_svw \
-    sata_sx4 sata_uli sata_vsc sata_qstor sata_promise sata_mv; do
+    sata_sx4 sata_uli sata_vsc sata_qstor sata_promise sata_mv ahci; do
   strinfile " ${driver}" /tmp/hwsetup.info && {
     #SCSIIDE="yes"
     modprobe ${MODPRV} ${driver} &

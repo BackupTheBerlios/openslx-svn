@@ -20,5 +20,6 @@
 0x8086  0x2792  "Card:Intel 915GM"
 0x8086  0x2592  "Card:Intel 915"
 0x10de  0x0242  "Card:NVIDIA Geforce 6100"
+0x1002  0x5964  "Card:ATI Radeon RS482"
 0x1002  0x5974  "Card:ATI Radeon RS482"
 0x1002  0x5b70  "Card:ATI Radeon (generic)"
