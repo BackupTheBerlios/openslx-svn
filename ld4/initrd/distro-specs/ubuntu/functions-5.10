@@ -269,6 +269,6 @@ config_portmap () {
 }
 
 # start NIS (fixmee - does the service is really named ypbind??)
-config () {
+config_nis () {
   rllinker "ypbind" "06" "16"
 }

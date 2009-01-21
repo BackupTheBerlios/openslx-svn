@@ -2,7 +2,7 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 12-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 13-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -257,7 +257,7 @@ rllinker "portmap"
 }
 
 # start NIS (fixmee: does the start script is really named ypbind?)
-config () {
+config_nis () {
 rllinker "ypbind"
 }
 
