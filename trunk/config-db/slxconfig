@@ -1,0 +1,270 @@
+#! /usr/bin/perl
+#
+# slxconfig -
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
+use strict;
+
+my $abstract = q[
+slxconfig
+    This script can be used to display or change the configuration
+    of OpenSLX vendor-OSes. You can create systems that use a
+    specific vendor-OS and you can create clients for that system, too.
+];
+
+use Getopt::Long qw(:config pass_through);
+use Pod::Usage;
+
+# add the folder this script lives in and the lib-folder to perl's
+# search path for modules:
+use FindBin;
+use lib "$FindBin::RealBin";
+use lib "$FindBin::RealBin/../lib";
+
+use lib "$FindBin::RealBin/../config-db";
+	# development path to config-db
+
+use OpenSLX::Basics;
+use OpenSLX::ConfigDB qw(:access :manipulation);
+use OpenSLX::DBSchema;
+# use OpenSLX::OSSetup::Engine;
+
+my (
+	$helpReq,
+	$manReq,
+	$selection,
+	$source,
+	$verbose,
+	$versionReq,
+);
+
+GetOptions(
+	'help|?' => \$helpReq,
+	'man' => \$manReq,
+	'verbose' => \$verbose,
+	'version' => \$versionReq,
+) or pod2usage(2);
+pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
+pod2usage(-verbose => 2) if $manReq;
+if ($versionReq) {
+	system('slxversion');
+	exit 1;
+}
+
+openslxInit();
+
+my $openslxDB = connectConfigDB();
+
+my $action = shift @ARGV;
+if ($action =~ m[^add-system$]i) {
+    addSystemToConfigDB(@ARGV);
+} elsif ($action =~ m[^add-client$]i) {
+    addClientToConfigDB(@ARGV);
+} else {
+	print STDERR _tr("You need to specify exactly one action:\n\tadd-system\n");
+	pod2usage(2);
+}
+
+disconnectConfigDB($openslxDB);
+
+exit;
+
+sub parseKeyValueArgs
+{
+    my $allowedKeys = shift;
+    my $table = shift;
+
+    my %dataHash;
+    while (my $param = shift) {
+        if ($param !~ m[^\s*(\w+)\s*=(.+)$]) {
+            die _tr("value specification %s has unknown format, expected <key>=<value>\n",
+                    $param);
+        }
+        my $key = $1;
+        my $value = $2;
+        if (!grep { $_ eq $key } @$allowedKeys) {
+            die _tr("unknown attribute '%s' specified for %s\n", $key, $table);
+        }
+        $dataHash{$1} = $2;
+    }
+    return \%dataHash;
+}
+
+sub addSystemToConfigDB
+{
+    my @systemKeys
+		= map { (/^(\w+)\W/) ? $1 : $_; }
+		  @{$DbSchema->{tables}->{system}};
+	push @systemKeys, 'clients', 'vendor_os';
+    my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
+
+	if (!length($systemData->{vendor_os})) {
+        die _tr("you have to specify the vendor_os the new system shall be based on\n");
+	}
+    my $vendorOSName = $systemData->{vendor_os};
+	delete $systemData->{vendor_os};
+	my $vendorOS
+		= fetchVendorOSesByFilter($openslxDB, { 'name' => $vendorOSName });
+	if (!defined $vendorOS) {
+		die _tr("vendor-OS '%s' could not be found!\n", $vendorOSName);
+	}
+	$systemData->{vendor_os_id} = $vendorOS->{id};
+
+	my @clientIDs;
+	my $clientNames;
+	if (exists $systemData->{clients}) {
+		@clientIDs
+			= map {
+				my $client
+					= fetchClientsByFilter($openslxDB,
+										   { 'name' => $_ });
+				if (!defined $client) {
+					die _tr("client '%s' doesn't exist!\n", $_);
+				}
+				$client->{id};
+			  }
+			  split ",", $systemData->{clients};
+		$clientNames = $systemData->{clients};
+		delete $systemData->{clients};
+	}
+
+	if (!length($systemData->{export_type})) {
+		die _tr("you have to specify the export_type for this system ('nfs', 'nbd' or 'nbd-squash')\n");
+	}
+	if (!length($systemData->{name})) {
+		$systemData->{name} = $vendorOSName;
+	}
+	if (!length($systemData->{label})) {
+		$systemData->{label} = $vendorOSName;
+	}
+	if (!length($systemData->{kernel})) {
+		$systemData->{kernel} = '/boot/vmlinuz';
+	}
+	if (!length($systemData->{ramfs_debug_level})) {
+		$systemData->{ramfs_debug_level} = '0';
+	}
+	if (!length($systemData->{ramfs_use_glibc})) {
+		$systemData->{ramfs_use_glibc} = '0';
+	}
+	if (!length($systemData->{ramfs_use_busybox})) {
+		$systemData->{ramfs_use_busybox} = '1';
+	}
+	my $systemID = addSystem($openslxDB, [$systemData]);
+
+	if (scalar(@clientIDs)) {
+	    addClientIDsToSystem($openslxDB, $systemID, \@clientIDs);
+		if ($verbose) {
+			print _tr("clients of this system are:\n\t%s\n", $clientNames);
+		}
+	}
+}
+
+sub addClientToConfigDB
+{
+    my @clientKeys
+		= map { (/^(\w+)\W/) ? $1 : $_; }
+		  @{$DbSchema->{tables}->{client}};
+	push @clientKeys, 'systems';
+    my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
+
+	my @systemIDs;
+	my $systemNames;
+	if (exists $clientData->{systems}) {
+		@systemIDs
+			= map {
+				my $system
+					= fetchSystemsByFilter($openslxDB,
+										   { 'name' => $_ });
+				if (!defined $system) {
+					die _tr("system '%s' doesn't exist!\n", $_);
+				}
+				$system->{id};
+			  }
+			  split ",", $clientData->{systems};
+		$systemNames = $clientData->{systems};
+		delete $clientData->{systems};
+	}
+
+	if (!length($clientData->{name})) {
+		die _tr("you have to specify the name for the new client\n");
+	}
+	if (!length($clientData->{mac})) {
+		die _tr("you have to specify the MAC for the new client\n");
+	}
+	if (!length($clientData->{boot_type})) {
+		$clientData->{boot_type} = 'pxe';
+	}
+
+	my $clientID = addClient($openslxDB, [$clientData]);
+
+	if (scalar(@systemIDs)) {
+	    addSystemIDsToClient($openslxDB, $clientID, \@systemIDs);
+		if ($verbose) {
+			print _tr("systems for this client are:\n\t%s\n", $systemNames);
+		}
+	}
+}
+
+__END__
+
+=head1 NAME
+
+slxconfig - OpenSLX-script to configure a vendor-OS for use with
+OpenSLX. You can create systems that will use the specified vendor-OS
+and you can create clients for that system, too.
+
+=head1 SYNOPSIS
+
+slxconfig [options] <action> <action-options>
+
+  Options:
+      --help                   brief help message
+      --man                    show full documentation
+      --selection=<string>     specific selection for vendor-OS
+      --source=<string>        (rsync-)source to clone vendor-OS from
+      --version                show version
+
+  Actions:
+      list-systems             clones an existing system via rsync
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--help>
+
+Prints a brief help message and exits.
+
+=item B<--man>
+
+Prints the manual page and exits.
+
+=item B<--selection=<string>>
+
+Many distributions offer several different package selections for
+installation. With this option you can specify which of these you
+would like to use.
+
+If you pass an unknown selection, you will see a list of the selections
+that are available.
+
+In clone-mode, the selection specifies the name by which the cloned system
+will be known (exact name will be '<distro>-<selection>' instead of
+'<distro>-cloned-from-<rsync-source>').
+
+=item B<--source=<string>>
+
+When cloning a vendor-OS, slxos-setup needs to know where to fetch
+the existing OS-files from. You can specify the rsync-uri with this
+option.
+
+=item B<--version>
+
+Prints the version and exits.
+
+=back
+
+=cut
