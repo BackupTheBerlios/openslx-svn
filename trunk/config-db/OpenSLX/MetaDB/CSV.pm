@@ -14,8 +14,8 @@
 package OpenSLX::MetaDB::CSV;
 
 use strict;
-use vars qw($VERSION);
-$VERSION = 1.01;    # API-version . implementation-version
+use warnings;
+
 use base qw(OpenSLX::MetaDB::DBI);
 
 ################################################################################
@@ -24,12 +24,9 @@ use base qw(OpenSLX::MetaDB::DBI);
 ### - each table will be stored into a CSV file.
 ### - by default all files will be created inside a 'openslxdata-csv' directory.
 ################################################################################
-use strict;
-use Carp;
 use Fcntl qw(:DEFAULT :flock);
 use DBD::CSV 0.22;
 use OpenSLX::Basics;
-use OpenSLX::MetaDB::DBI 1;
 
 ################################################################################
 ### implementation

@@ -13,14 +13,10 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::Any_Clone;
 
-use vars qw($VERSION);
-use base qw(OpenSLX::OSSetup::Distro::Base);
-$VERSION = 1.01;		# API-version . implementation-version
-
 use strict;
-use Carp;
-use OpenSLX::Basics;
-use OpenSLX::OSSetup::Distro::Base 1;
+use warnings;
+
+use base qw(OpenSLX::OSSetup::Distro::Base);
 
 ################################################################################
 ### implementation

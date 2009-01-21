@@ -14,6 +14,7 @@
 #	- OpenSLX-script to show & change local settings
 # -----------------------------------------------------------------------------
 use strict;
+use warnings;
 
 my $abstract = q[
 slxsettings
@@ -28,9 +29,6 @@ slxsettings
     Please use the --man option in order to read the full manual.
 ];
 
-use Getopt::Long qw(:config pass_through);
-use Pod::Usage;
-
 # add the lib-folder and the folder this script lives in to perl's search
 # path for modules:
 use FindBin;
@@ -38,8 +36,12 @@ use lib "$FindBin::RealBin/../lib";
 use lib "$FindBin::RealBin";
 # development path to config-db stuff
 
+use Getopt::Long qw(:config pass_through);
+use Pod::Usage;
+
 use OpenSLX::Basics;
 use OpenSLX::Utils;
+
 
 my ($quiet, @reset, $helpReq, $manReq, $versionReq,);
 
@@ -111,11 +113,8 @@ foreach my $key (@reset) {
 
 # ... and write local settings file if necessary
 if (keys %changed) {
-	my $f = "$openslxConfig{'config-path'}/settings";
-	open(SETTINGS, "> $f")
-	  or die _tr("Unable to write local settings file '%s' (%s)", $f, $!);
-	print SETTINGS $settings;
-	close(SETTINGS);
+	my $fileName = "$openslxConfig{'config-path'}/settings";
+	spitFile($fileName, $settings);
 
 	openslxInit();
 
@@ -135,13 +134,15 @@ if (!keys %changed) {
 	print $text;
 	my @baseSettings = grep { exists $cmdlineConfig{$_} } keys %openslxConfig;
 	foreach my $key (sort @baseSettings) {
-		print qq[\t--$key='$openslxConfig{$key}'\n];
+		my $val = $openslxConfig{$key} || '';
+		print qq[\t--$key='$val'\n];
 	}
 	print _tr("extended settings:\n");
 	my @extSettings = grep { !exists $cmdlineConfig{$_} } keys %openslxConfig;
 	foreach my $key (sort @extSettings) {
 		next if $key =~ m[^(base-path|config-path)$];
-		print qq[\t$key='$openslxConfig{$key}'\n];
+		my $val = $openslxConfig{$key} || '';
+		print qq[\t$key='$val'\n];
 	}
 }
 

@@ -11,8 +11,13 @@
 package OpenSLX::ConfigDB;
 
 use strict;
-use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $VERSION);
+use warnings;
+
+our (@ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS, $VERSION);
 $VERSION = 1;    # API-version
+
+use Exporter;
+@ISA = qw(Exporter);
 
 ################################################################################
 ### This module defines the data abstraction layer for the OpenSLX configuration
@@ -28,9 +33,6 @@ $VERSION = 1;    # API-version
 ### 	- support methods
 ################################################################################
 
-use Exporter;
-@ISA = qw(Exporter);
-
 my @supportExports = qw(
   isAttribute mergeAttributes pushAttributes
   externalIDForSystem externalIDForClient externalConfigNameForClient
@@ -44,7 +46,6 @@ my @supportExports = qw(
 ################################################################################
 ### private stuff
 ################################################################################
-use Carp;
 use OpenSLX::Basics;
 use OpenSLX::DBSchema;
 
@@ -106,7 +107,7 @@ sub _checkAndUpgradeDBSchemaIfNecessary
 						$changeDescr->{'cols'}
 					);
 				} else {
-					confess _tr('UnknownDbSchemaCommand', $cmd);
+					croak _tr('UnknownDbSchemaCommand', $cmd);
 				}
 			}
 		}
@@ -162,29 +163,25 @@ sub connect
 		$dbType = $dbTypeMap{$lcType};
 	}
 
+	my $dbModuleName = "OpenSLX/MetaDB/$dbType.pm";
 	my $dbModule = "OpenSLX::MetaDB::$dbType";
-	unless (eval "require $dbModule") {
+	unless (eval { require $dbModuleName } ) {
 		if ($! == 2) {
 			die _tr(
 				"Unable to load DB-module <%s>\nthat database type is not supported (yet?)\n",
-				$dbModule
+				$dbModuleName
 			);
 		} else {
-			die _tr("Unable to load DB-module <%s> (%s)\n", $dbModule, $@);
+			die _tr("Unable to load DB-module <%s> (%s)\n", $dbModuleName, $@);
 		}
 	}
-	my $modVersion = $dbModule->VERSION;
-	if ($modVersion < $VERSION) {
-		confess _tr(
-			'Could not load module <%s> (Version <%s> required, but <%s> found)',
-			$dbModule, $VERSION, $modVersion);
-	}
 	my $metaDB = $dbModule->new();
-	if (!eval '$metaDB->connect($dbParams);1') {
-		warn _tr("Unable to connect to DB-module <%s>\n%s", $dbModule, $@);
+	if (!$metaDB->connect($dbParams)) {
+		warn _tr("Unable to connect to DB-module <%s>\n%s", $dbModuleName, $@);
 		warn _tr("These DB-modules seem to work ok:");
 		foreach my $dbMod ('CSV', 'mysql', 'SQLite') {
-			if (eval "require DBD::$dbMod;") {
+			my $fullDbModName = "DBD/$dbMod.pm";
+			if (eval { require $fullDbModName }) {
 				vlog(0, "\t$dbMod\n");
 			}
 		}
@@ -436,7 +433,7 @@ sub incrementExportCounterForVendorOS
 
 	$self->start_transaction();
 	my $vendorOS = $self->fetchVendorOSByID($id);
-	return undef unless defined $vendorOS;
+	return unless defined $vendorOS;
 	my $exportCounter = $vendorOS->{export_counter} + 1;
 	$self->changeVendorOS($id, {'export_counter' => $exportCounter});
 	$self->commit_transaction();
@@ -451,7 +448,7 @@ sub incrementGlobalCounter
 
 	$self->start_transaction();
 	my $value = $self->fetchGlobalInfo($counterName);
-	return undef unless defined $value;
+	return unless defined $value;
 	my $newValue = $value + 1;
 	$self->changeGlobalInfo($counterName, $newValue);
 	$self->commit_transaction();
@@ -499,10 +496,10 @@ sub addSystem
 	my $valRows = _aref(shift);
 
 	foreach my $valRow (@$valRows) {
-		if (!length($valRow->{kernel})) {
+		if (!defined $valRow->{kernel} || !length($valRow->{kernel})) {
 			$valRow->{kernel} = 'vmlinuz';
 		}
-		if (!length($valRow->{label})) {
+		if (!defined $valRow->{label} || !length($valRow->{label})) {
 			$valRow->{label} = $valRow->{name};
 		}
 	}
@@ -958,7 +955,7 @@ sub aggregatedSystemFileInfoFor
 	  "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}/boot";
 	$info->{'kernel-file'} = "$kernelPath/$system->{kernel}";
 
-	my $exportURI = $export->{'uri'};
+	my $exportURI = $export->{'uri'} || '';
 	if ($exportURI !~ m[\w]) {
 		# auto-generate export_uri if none has been given:
 		my $type           = $export->{'type'};
@@ -987,9 +984,11 @@ sub mergeAttributes
 	my $source = shift;
 
 	foreach my $key (grep { isAttribute($_) } keys %$source) {
-		if (length($source->{$key}) > 0 && length($target->{$key}) == 0) {
-			vlog(3, _tr("merging %s (val=%s)", $key, $source->{$key}));
-			$target->{$key} = $source->{$key};
+		my $sourceVal = $source->{$key} || '';
+		my $targetVal = $target->{$key} || '';
+		if (length($sourceVal) > 0 && length($targetVal) == 0) {
+			vlog(3, _tr("merging %s (val=%s)", $key, $sourceVal));
+			$target->{$key} = $sourceVal;
 		}
 	}
 }
@@ -1000,9 +999,10 @@ sub pushAttributes
 	my $source = shift;
 
 	foreach my $key (grep { isAttribute($_) } keys %$source) {
-		if (length($source->{$key}) > 0) {
-			vlog(3, _tr("pushing %s (val=%s)", $key, $source->{$key}));
-			$target->{$key} = $source->{$key};
+		my $sourceVal = $source->{$key} || '';
+		if (length($sourceVal) > 0) {
+			vlog(3, _tr("pushing %s (val=%s)", $key, $sourceVal));
+			$target->{$key} = $sourceVal;
 		}
 	}
 }

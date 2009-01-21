@@ -14,19 +14,16 @@
 package OpenSLX::MetaDB::SQLite;
 
 use strict;
-use vars qw($VERSION);
-$VERSION = 1.01;    # API-version . implementation-version
+use warnings;
+
 use base qw(OpenSLX::MetaDB::DBI);
 
 ################################################################################
 ### This class provides a MetaDB backend for SQLite databases.
 ### - by default the db will be created inside a 'openslxdata-sqlite' directory.
 ################################################################################
-use strict;
-use Carp;
 use DBD::SQLite;
 use OpenSLX::Basics;
-use OpenSLX::MetaDB::DBI 1;
 
 ################################################################################
 ### implementation
@@ -52,16 +49,11 @@ sub connect
 		$dbSpec = "dbname=$dbPath/$openslxConfig{'db-name'}";
 	}
 	vlog(1, "trying to connect to SQLite-database <$dbSpec>");
-	eval('require DBD::SQLite; 1;')
-	  or die _tr(
-		qq[%s doesn't seem to be installed,
-so there is no support for %s available, sorry!\n%s], 'DBD::SQLite', 'SQLite',
-		$@
-	  );
 	$self->{'dbh'} =
 	  DBI->connect("dbi:SQLite:$dbSpec", undef, undef,
 		{PrintError => 0, AutoCommit => 1})
 	  or die _tr("Cannot connect to database <%s> (%s)", $dbSpec, $DBI::errstr);
+	return 1;
 }
 
 sub schemaRenameTable
@@ -77,7 +69,7 @@ sub schemaRenameTable
 	my $sql = "ALTER TABLE $oldTable RENAME TO $newTable";
 	vlog(3, $sql);
 	$dbh->do($sql)
-	  or confess _tr(q[Can't rename table <%s> (%s)], $oldTable, $dbh->errstr);
+	  or croak(_tr(q[Can't rename table <%s> (%s)], $oldTable, $dbh->errstr));
 }
 
 sub schemaAddColumns
@@ -99,8 +91,8 @@ sub schemaAddColumns
 		my $sql = "ALTER TABLE $table ADD COLUMN $colDescrString";
 		vlog(3, $sql);
 		$dbh->do($sql)
-		  or confess _tr(q[Can't add column to table <%s> (%s)], $table,
-			$dbh->errstr);
+		  or croak(_tr(q[Can't add column to table <%s> (%s)], $table,
+			$dbh->errstr));
 	}
 	# if default values have been provided, we apply them now:
 	if (defined $newColDefaultVals) {

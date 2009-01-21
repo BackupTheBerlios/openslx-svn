@@ -14,15 +14,20 @@
 package OpenSLX::Translations::de;
 
 use strict;
-use vars qw(@ISA @EXPORT $VERSION);
+use warnings;
 
-use Exporter;
-$VERSION = 0.02;
-@ISA = qw(Exporter);
+our $VERSION = 0.02;
 
-@EXPORT = qw(%translations);
+my %translations;
 
-use vars qw(%translations);
+################################################################################
+### Implementation
+################################################################################
+sub getAllTranslations
+{
+	my $class = shift;
+	return \%translations;
+}
 
 ################################################################################
 ### Translations
@@ -352,12 +357,3 @@ use vars qw(%translations);
 );
 
 1;
-
-
-
-
-
-
-
-
-

@@ -13,14 +13,12 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Packager::rpm;
 
-use vars qw($VERSION);
-use base qw(OpenSLX::OSSetup::Packager::Base);
-$VERSION = 1.01;		# API-version . implementation-version
-
 use strict;
-use Carp;
+use warnings;
+
+use base qw(OpenSLX::OSSetup::Packager::Base);
+
 use OpenSLX::Basics;
-use OpenSLX::OSSetup::Packager::Base 1;
 
 ################################################################################
 ### implementation

@@ -14,7 +14,9 @@
 package OpenSLX::Basics;
 
 use strict;
-use vars qw(@ISA @EXPORT $VERSION);
+use warnings;
+
+our (@ISA, @EXPORT, $VERSION);
 
 use Exporter;
 $VERSION = 1.01;
@@ -23,31 +25,32 @@ $VERSION = 1.01;
 @EXPORT = qw(
   &openslxInit %openslxConfig %cmdlineConfig
   &_tr &trInit
-  &warn &die
+  &warn &die &croak &carp &confess &cluck
   &callInSubprocess &executeInSubprocess &slxsystem
   &vlog
   &instantiateClass
   &addCleanupFunction &removeCleanupFunction
 );
 
-use vars qw(%openslxConfig %cmdlineConfig %openslxPath);
-use subs qw(die);
+our (%openslxConfig, %cmdlineConfig, %openslxPath);
+
+use subs qw(die warn);
 
 ################################################################################
 ### Module implementation
 ################################################################################
-use Carp;
-use
-  Carp::Heavy; # use it here to have it loaded immediately, not at 
-               # the time when carp() is being invoked (which might
-               # be at a point in time where the script executes in
-               # a chrooted environment, such that the module can't
-               # be loaded anymore).
+require Carp;		# do not import anything as we are going to overload carp
+					# and croak!
+use Carp::Heavy;    # use it here to have it loaded immediately, not at
+                    # the time when carp() is being invoked (which might
+                    # be at a point in time where the script executes in
+                    # a chrooted environment, such that the module can't
+                    # be loaded anymore).
 use FindBin;
 use Getopt::Long;
 use POSIX qw(locale_h);
 
-my %translations;
+my $translations;
 
 # this hash will hold the active openslx configuration,
 # the initial content is based on environment variables or default values.
@@ -80,6 +83,7 @@ chomp($openslxConfig{'locale-charmap'});
 
 # specification of cmdline arguments that are shared by all openslx-scripts:
 my %openslxCmdlineArgs = (
+
 	# name of database, defaults to 'openslx'
 	'db-name=s' => \$cmdlineConfig{'db-name'},
 
@@ -124,6 +128,8 @@ my %cleanupFunctions;
 # filehandle used for logging:
 my $openslxLog = *STDERR;
 
+$Carp::CarpLevel = 3;
+
 # ------------------------------------------------------------------------------
 sub vlog
 {
@@ -147,14 +153,16 @@ sub openslxInit
 	my $configPath = $cmdlineConfig{'config-path'}
 	  || $openslxConfig{'config-path'};
 	my $sharePath = "$openslxConfig{'base-path'}/share";
+	my $configFH;
+	my $verboseLevel = $cmdlineConfig{'verbose-level'} || 0;
 	foreach my $f ("$sharePath/settings.default", "$configPath/settings",
 		"$ENV{HOME}/.openslx/settings")
 	{
-		next unless open(CONFIG, "<$f");
-		if ($cmdlineConfig{'verbose-level'} >= 2) {
+		next unless open($configFH, '<', $f);
+		if ($verboseLevel >= 2) {
 			vlog(0, "reading config-file $f...");
 		}
-		while (<CONFIG>) {
+		while (<$configFH>) {
 			chomp;
 			s/#.*//;
 			s/^\s+//;
@@ -176,7 +184,7 @@ sub openslxInit
 			$key =~ tr/[A-Z]_/[a-z]-/;
 			$openslxConfig{$key} = $value;
 		}
-		close CONFIG;
+		close $configFH;
 	}
 
 	# push any cmdline argument into our config hash, possibly overriding any
@@ -186,10 +194,14 @@ sub openslxInit
 		$openslxConfig{$key} = $val;
 	}
 
-	if (defined $openslxConfig{'logfile'}
-		&& open(LOG, ">>$openslxConfig{'logfile'}"))
-	{
-		$openslxLog = *LOG;
+	if (defined $openslxConfig{'logfile'}) {
+		open($openslxLog, '>>', $openslxConfig{'logfile'})
+		  or croak(
+			_tr(
+				"unable to append to logfile '%s'! (%s)",    
+				$openslxConfig{'logfile'}, $!
+			)
+		  );
 	}
 	if ($openslxConfig{'verbose-level'} >= 2) {
 		foreach my $k (sort keys %openslxConfig) {
@@ -206,8 +218,9 @@ sub openslxInit
 # ------------------------------------------------------------------------------
 sub trInit
 {
+
 	# set the specified locale...
-	setlocale('LC_ALL', $openslxConfig{'locale'});
+	setlocale(LC_ALL, $openslxConfig{'locale'});
 
 	# ...and activate automatic charset conversion on all I/O streams:
 	binmode(STDIN,  ":encoding($openslxConfig{'locale-charmap'})");
@@ -223,6 +236,7 @@ sub trInit
 	}
 
 	if (lc($locale) ne 'posix') {
+
 		# parse locale and canonicalize it (e.g. to 'de_DE') and generate
 		# two filenames from it (language+country and language only):
 		if ($locale !~ m{^\s*([^_]+)(?:_(\w+))?}) {
@@ -238,17 +252,13 @@ sub trInit
 		# specific one [language+country]):
 		my $loadedTranslationModule;
 		foreach my $trName (@locales) {
-			my $trModule = "OpenSLX::Translations::$trName";
-			if (eval "require $trModule") {
-				# Access OpenSLX::Translations::<locale>::translations
-				# via a symbolic reference...
-				no strict 'refs';
-				my $translationsRef = \%{"${trModule}::translations"};
-
-				# ...and copy the available translations into our hash:
-				foreach my $k (keys %{$translationsRef}) {
-					$translations{$k} = $translationsRef->{$k};
-				}
+			vlog(2,	"trying to load translation module $trName...");
+			my $trModule = "OpenSLX/Translations/$trName.pm";
+			my $trModuleSpec = "OpenSLX::Translations::$trName";
+			if (eval { require $trModule } ) {
+				# copy the translations available in the given locale into our 
+				# hash:
+				$translations = $trModuleSpec->getAllTranslations();
 				$loadedTranslationModule = $trModule;
 				vlog(
 					1,
@@ -276,7 +286,10 @@ sub _tr
 	$trKey =~ s[\n][\\n]g;
 	$trKey =~ s[\t][\\t]g;
 
-	my $formatStr = $translations{$trKey};
+	my $formatStr;
+	if (defined $translations) {
+		$formatStr = $translations->{$trKey};
+	}
 	if (!defined $formatStr) {
 		$formatStr = $trOrig;
 	}
@@ -290,6 +303,7 @@ sub callInSubprocess
 
 	my $pid = fork();
 	if (!$pid) {
+
 		# child...
 		# ...execute the given function and exit:
 		&$childFunc();
@@ -315,6 +329,7 @@ sub executeInSubprocess
 
 	my $pid = fork();
 	if (!$pid) {
+
 		# child...
 		# ...exec the given cmdline:
 		exec(@cmdlineArgs);
@@ -357,6 +372,7 @@ sub slxsystem
 	vlog(2, _tr("executing: %s", join ' ', @_));
 	my $res = system(@_);
 	if ($res > 0) {
+
 		# check if child got killed, if so we stop, too (unless the signal is
 		# SIGPIPE, which we ignore in order to loop over failed FTP connections
 		# and the like):
@@ -371,32 +387,77 @@ sub slxsystem
 }
 
 # ------------------------------------------------------------------------------
+sub cluck
+{
+	_doThrowOrWarn('cluck', @_);
+}
+
+# ------------------------------------------------------------------------------
+sub carp
+{
+	_doThrowOrWarn('carp', @_);
+}
+
+# ------------------------------------------------------------------------------
 sub warn
 {
-	my $msg = shift;
-	$msg =~ s[^\*\*\* ][]igms;
-	$msg =~ s[^][*** ]igms;
-	if ($openslxConfig{'debug-confess'}) {
-		Carp::cluck $msg;
-	} else {
-		chomp $msg;
-		CORE::warn "$msg\n";
-	}
+	_doThrowOrWarn('warn', @_);
+}
+
+# ------------------------------------------------------------------------------
+sub confess
+{
+	invokeCleanupFunctions();
+	_doThrowOrWarn('confess', @_);
+}
+
+# ------------------------------------------------------------------------------
+sub croak
+{
+	invokeCleanupFunctions();
+	_doThrowOrWarn('croak', @_);
 }
 
 # ------------------------------------------------------------------------------
 sub die
 {
 	invokeCleanupFunctions();
+	_doThrowOrWarn('die', @_);
+}
 
+# ------------------------------------------------------------------------------
+sub _doThrowOrWarn
+{
+	my $type = shift;
 	my $msg = shift;
+	
 	$msg =~ s[^\*\*\* ][]igms;
 	$msg =~ s[^][*** ]igms;
+
 	if ($openslxConfig{'debug-confess'}) {
-		confess $msg;
-	} else {
+		my %functionFor = (
+			'carp' => sub { Carp::cluck @_ },
+			'cluck' => sub { Carp::cluck @_ },
+			'confess' => sub { Carp::confess @_ },
+			'croak' => sub { Carp::confess @_ },
+			'die' => sub { Carp::confess @_ },
+			'warn' => sub { Carp::cluck @_ },
+		);
+		my $func = $functionFor{$type};
+		$func->($msg);
+	}
+	else {
 		chomp $msg;
-		CORE::die "$msg\n";
+		my %functionFor = (
+			'carp' => sub { Carp::carp @_ },
+			'cluck' => sub { Carp::cluck @_ },
+			'confess' => sub { Carp::confess @_ },
+			'croak' => sub { Carp::croak @_ },
+			'die' => sub { CORE::die @_},
+			'warn' => sub { CORE::warn @_ },
+		);
+		my $func = $functionFor{$type};
+		$func->("$msg\n");
 	}
 }
 
@@ -406,11 +467,15 @@ sub instantiateClass
 	my $class            = shift;
 	my $requestedVersion = shift;
 
-	unless (eval "require $class") {
+	my $moduleName = $class;
+	$moduleName =~ s[::][/]g;
+	$moduleName .= '.pm';
+	unless (eval { require $moduleName } ) {
 		if ($! == 2) {
-			die _tr("Class <%s> not found!\n", $class);
-		} else {
-			die _tr("Unable to load class <%s> (%s)\n", $class, $@);
+			die _tr("Module <%s> not found!\n", $moduleName);
+		}
+		else {
+			die _tr("Unable to load module <%s> (%s)\n", $moduleName, $@);
 		}
 	}
 	if (defined $requestedVersion) {

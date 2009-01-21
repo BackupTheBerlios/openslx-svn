@@ -14,14 +14,12 @@
 package OpenSLX::MetaDB::DBI;
 
 use strict;
-use vars qw($VERSION);
-$VERSION = 1.01;    # API-version . implementation-version
+use warnings;
+
 use base qw(OpenSLX::MetaDB::Base);
 
-use Carp;
 use DBI;
 use OpenSLX::Basics;
-use OpenSLX::MetaDB::Base 1;
 
 ################################################################################
 ### basics
@@ -783,7 +781,7 @@ sub schemaFetchDBVersion
 	  eval { $dbh->selectrow_hashref('SELECT schema_version FROM meta'); };
 	return 0 if $@;
 	# no database access possible
-	return undef unless defined $row;
+	return unless defined $row;
 	# no entry in meta-table
 	return $row->{schema_version};
 }

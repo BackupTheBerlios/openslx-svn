@@ -13,17 +13,15 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::FileSystem::NFS;
 
-use vars qw($VERSION);
-use base qw(OpenSLX::OSExport::FileSystem::Base);
-$VERSION = 1.01;		# API-version . implementation-version
-
 use strict;
-use Carp;
+use warnings;
+
+use base qw(OpenSLX::OSExport::FileSystem::Base);
+
 use File::Basename;
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::Utils;
-use OpenSLX::OSExport::FileSystem::Base 1;
 
 ################################################################################
 ### interface methods
@@ -74,11 +72,11 @@ sub generateExportURI
 	my $export = shift;
 	my $vendorOS = shift;
 
-	my $server
-		= length($export->{server_ip})
-			? $export->{server_ip}
-			: generatePlaceholderFor('serverip');
-	$server .= ":$export->{port}"		if length($export->{port});
+	my $serverIP = $export->{server_ip} || '';
+	my $server 
+		= length($serverIP) ? $serverIP : generatePlaceholderFor('serverip');
+	my $port = $export->{port} || '';
+	$server .= ":$port" if length($port);
 
 	my $exportPath = "$openslxConfig{'public-path'}/export";
 	return "nfs://$server$exportPath/nfs/$vendorOS->{name}";
@@ -98,7 +96,7 @@ sub showExportConfigInfo
 
 	print (('#' x 80)."\n");
 	print _tr("Please make sure the following line is contained in /etc/exports\nin order to activate the NFS-export of this vendor-OS:\n\t%s\n",
-			  "$self->{engine}->{'export-path'}\t*(ro,no_root_squash,async,no_subtree_check)");
+			  "$self->{'export-path'}\t*(ro,no_root_squash,async,no_subtree_check)");
 	print (('#' x 80)."\n");
 
 # TODO : add something a bit more clever here...
@@ -120,14 +118,14 @@ sub _copyViaRsync
 	}
 	my $includeExcludeList = $self->_determineIncludeExcludeList();
 	vlog(1, _tr("using include-exclude-filter:\n%s\n", $includeExcludeList));
-	open(RSYNC, "| rsync -av --delete --exclude-from=- $source/ $target")
+	my $rsyncFH;
+	open($rsyncFH, '|-', "rsync -av --delete --exclude-from=- $source/ $target")
 		or die _tr("unable to start rsync for source '%s', giving up! (%s)",
 				   $source, $!);
-	print RSYNC $includeExcludeList;
-	if (!close(RSYNC)) {
-		die _tr("unable to export to target '%s', giving up! (%s)",
-				$target, $!);
-	}
+	print $rsyncFH $includeExcludeList;
+	close($rsyncFH)
+		or die _tr("unable to export to target '%s', giving up! (%s)",
+				   $target, $!);
 }
 
 sub _determineIncludeExcludeList
@@ -140,7 +138,8 @@ sub _determineIncludeExcludeList
 	my $distroName = $self->{engine}->{'distro-name'};
 	my $localFilterFile 
 		= "$openslxConfig{'config-path'}/distro-info/$distroName/export-filter";
-	my $includeExcludeList = slurpFile($localFilterFile, 1);
+	my $includeExcludeList 
+		= slurpFile($localFilterFile, { failIfMissing => 0 });
 	$includeExcludeList .= $self->{engine}->{distro}->{'export-filter'};
 	$includeExcludeList =~ s[^\s+][]igms;
 		# remove any leading whitespace, as rsync doesn't like it

@@ -14,7 +14,9 @@
 package OpenSLX::DBSchema;
 
 use strict;
-use vars qw(@ISA @EXPORT $VERSION);
+use warnings;
+
+our (@ISA, @EXPORT, $VERSION);
 
 use Exporter;
 $VERSION = 0.01;
@@ -24,7 +26,7 @@ $VERSION = 0.01;
 	$DbSchema %DbSchemaHistory
 );
 
-use vars qw($DbSchema %DbSchemaHistory);
+our ($DbSchema, %DbSchemaHistory);
 
 # configurable attributes for system, client and group:
 my @sharedAttributes = (

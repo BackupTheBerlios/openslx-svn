@@ -14,11 +14,11 @@
 package OpenSLX::MetaDB::Base;
 
 use strict;
+use warnings;
 
-use vars qw($VERSION);
-$VERSION = 1.01;		# API-version . implementation-version
+our $VERSION = 1.01;		# API-version . implementation-version
 
-use Carp;
+use OpenSLX::Basics;
 
 ################################################################################
 ### basic functions

@@ -14,12 +14,11 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::BlockDevice::NBD;
 
-use vars qw($VERSION);
-use base qw(OpenSLX::OSExport::BlockDevice::Base);
-$VERSION = 1.01;    # API-version . implementation-version
-
 use strict;
-use Carp;
+use warnings;
+
+use base qw(OpenSLX::OSExport::BlockDevice::Base);
+
 use File::Basename;
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:support);
@@ -59,10 +58,9 @@ sub generateExportURI
 	my $self   = shift;
 	my $export = shift;
 
-	my $server =
-	  length($export->{server_ip})
-	  ? $export->{server_ip}
-	  : generatePlaceholderFor('serverip');
+	my $serverIP = $export->{server_ip} || '';
+	my $server 
+		= length($serverIP) ? $serverIP : generatePlaceholderFor('serverip');
 	$server .= ":$export->{port}" if length($export->{port});
 
 	return "nbd://$server";

@@ -18,10 +18,10 @@ use vars qw(@ISA @EXPORT $VERSION);
 
 use Exporter;
 $VERSION = 1.01;
-@ISA = qw(Exporter);
+@ISA     = qw(Exporter);
 
 @EXPORT = qw(
-	&copyFile &fakeFile &linkFile &slurpFile &followLink
+  copyFile fakeFile linkFile slurpFile spitFile followLink unshiftHereDoc
 );
 
 ################################################################################
@@ -34,73 +34,131 @@ use OpenSLX::Basics;
 
 sub copyFile
 {
-	my $fileName = shift;
-	my $targetDir = shift;
+	my $fileName       = shift || croak 'need to pass in a fileName!';
+	my $targetDir      = shift || croak 'need to pass in target dir!';
 	my $targetFileName = shift || '';
 
-	system("mkdir -p $targetDir") 	unless -d $targetDir;
+	system("mkdir -p $targetDir") unless -d $targetDir;
 	my $target = "$targetDir/$targetFileName";
 	vlog(2, _tr("copying '%s' to '%s'", $fileName, $target));
 	if (system("cp -p $fileName $target")) {
-		die _tr("unable to copy file '%s' to dir '%s' (%s)",
-				$fileName, $target, $!);
+		croak(
+			_tr(
+				"unable to copy file '%s' to dir '%s' (%s)",
+				$fileName, $target, $!
+			)
+		);
 	}
+	return;
 }
 
 sub fakeFile
 {
-	my $fullPath = shift;
+	my $fullPath = shift || croak 'need to pass in full path!';
 
 	my $targetDir = dirname($fullPath);
-	system("mkdir", "-p", $targetDir) 	unless -d $targetDir;
+	system("mkdir", "-p", $targetDir) unless -d $targetDir;
 	if (system("touch", $fullPath)) {
-		die _tr("unable to create file '%s' (%s)",
-				$fullPath, $!);
+		croak(_tr("unable to create file '%s' (%s)", $fullPath, $!));
 	}
+	return;
 }
 
 sub linkFile
 {
-	my $linkTarget = shift;
-	my $linkName = shift;
+	my $linkTarget = shift || croak 'need to pass in link target!';
+	my $linkName   = shift || croak 'need to pass in link name!';
 
 	my $targetDir = dirname($linkName);
-	system("mkdir -p $targetDir") 	unless -d $targetDir;
+	system("mkdir -p $targetDir") unless -d $targetDir;
 	if (system("ln -sfn $linkTarget $linkName")) {
-		die _tr("unable to create link '%s' to '%s' (%s)",
-				$linkName, $linkTarget, $!);
+		croak(
+			_tr(
+				"unable to create link '%s' to '%s' (%s)",
+				$linkName, $linkTarget, $!
+			)
+		);
 	}
+	return;
+}
+
+sub checkFlags
+{
+	my $flags = shift || confess 'need to pass in flags-hashref!';
+	my $knownFlags  = shift || confess 'need to pass in knownFlags-arrayref!';
+
+	my %known;
+	@known{@$knownFlags} = ();
+	foreach my $flag (keys %$flags) {
+		next if exists $known{$flag};
+		cluck("flag '$flag' not known!");
+	}
+	return;
 }
 
 sub slurpFile
 {
-	my $file = shift;
-	my $mayNotExist = shift;
+	my $fileName = shift || confess 'need to pass in fileName!';
+	my $flags    = shift || {};
 
-	if (!open(F, "< $file") && !$mayNotExist) {
-		die _tr("could not open file '%s' for reading! (%s)", $file, $!);
+	checkFlags($flags, ['failIfMissing']);
+	my $failIfMissing 
+		= exists $flags->{failIfMissing} ? $flags->{failIfMissing} : 1;
+
+	local $/;
+	my $fh;
+	if (!open($fh, '<', $fileName)) {
+		return '' unless $failIfMissing;
+		croak _tr("could not open file '%s' for reading! (%s)", $fileName, $!);
 	}
-	local $/ = undef;
-	my $text = <F>;
-	close(F);
-	return $text;
+	my $content = <$fh>;
+	close($fh)
+	  or croak _tr("unable to close file '%s' (%s)\n", $fileName, $!);
+	return $content;
+}
+
+sub spitFile
+{
+	my $fileName = shift || croak 'need to pass in a fileName!';
+	my $content  = shift;
+
+	my $fh;
+	open($fh, '>', $fileName)
+	  or croak _tr("unable to create file '%s' (%s)\n", $fileName, $!);
+	print $fh $content
+	  or croak _tr("unable to print to file '%s' (%s)\n", $fileName, $!);
+	close($fh)
+	  or croak _tr("unable to close file '%s' (%s)\n", $fileName, $!);
+	return;
 }
 
 sub followLink
 {
-	my $path = shift;
+	my $path         = shift || croak 'need to pass in a path!';
 	my $prefixedPath = shift || '';
-	
+
 	my $target;
 	while (-l "$path") {
 		$target = readlink "$path";
 		if (substr($target, 1, 1) eq '/') {
 			$path = "$prefixedPath/$target";
-		} else {
-			$path = $prefixedPath.dirname($path).'/'.$target;
+		}
+		else {
+			$path = $prefixedPath . dirname($path) . '/' . $target;
 		}
 	}
 	return $path;
+}
+
+sub unshiftHereDoc
+{
+	my $content = shift;
+	return $content unless $content =~ m{^(\s+)};
+	my $shift = length($1);
+	return 
+		join "\n", 
+		map { substr($_, $shift); } 
+		split m{\n}, $content;
 }
 
 1;

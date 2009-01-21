@@ -13,14 +13,12 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::Distro::Gentoo;
 
-use vars qw($VERSION);
-use base qw(OpenSLX::OSExport::Distro::Base);
-$VERSION = 1.01;		# API-version . implementation-version
-
 use strict;
-use Carp;
+use warnings;
+
+use base qw(OpenSLX::OSExport::Distro::Base);
+
 use OpenSLX::Basics;
-use OpenSLX::OSExport::Distro::Base 1;
 
 ################################################################################
 ### implementation

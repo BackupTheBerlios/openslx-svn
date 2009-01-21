@@ -11,6 +11,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 use strict;
+use warnings;
 
 my $abstract = q[
 slxos-export
@@ -61,9 +62,10 @@ if ($action =~ m[^list-ex]i) {
 	print _tr("List of exported vendor-OSes:\n");
 	foreach my $type (sort keys %supportedExportFileSystems) {
 		# list all image files, followed by the block devices using it:
-		my @files = map {    
-			s[^.+/][];
-			$_
+		my @files = map {
+			my $image = $_;
+			$image =~ s[^.+/][];
+			$image;
 		} sort <$openslxConfig{'public-path'}/export/$type/*>;
 		my %imageFiles;
 		foreach my $file (@files) {
@@ -95,13 +97,14 @@ if ($action =~ m[^list-ex]i) {
 		);
 	}
 } elsif ($action =~ m[^list-in]i) {
-	my @files = <$openslxConfig{'private-path'}/stage1/*>;
+	my @files = glob("$openslxConfig{'private-path'}/stage1/*");
 	print _tr("List of installed vendor-OSes:\n");
 	print join(
 		'',
 		map {
-			s[^.+/][];
-			"\t$_\n";
+			my $vendorOS = $_;
+			$vendorOS =~ s[^.+/][];
+			"\t$vendorOS\n";
 		  }
 		  sort @files
 	);
