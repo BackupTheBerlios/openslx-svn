@@ -16,7 +16,7 @@
 
 # distro specific general function called from servconfig script
 config_distro () {
-echo -e "OpenSLX version 4.0.6\ninitramfs generation date $date" \
+echo -e "OpenSLX version ${SLXVERSION}\ninitramfs generation date $date" \
   >> /mnt/etc/gentoo-release
 echo -e "# changes made to this file by $0 (initramfs from $date)" \
   > /etc/rc.conf
@@ -24,7 +24,7 @@ echo -e "# changes made to this file by $0 (initramfs from $date)" \
 config_rc_entry "KEYMAP" "${KEYTABLE}" "conf.d/keymaps"
 }
 
-# udev service - not verified!
+# udev service (fixme: deprecated, check and remove!!)
 udev_hotplug () {
 ln -s /bin/udevd /bin/udevstart && udevstart &
 if [ -x /bin/udevd ] ; then

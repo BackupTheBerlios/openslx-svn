@@ -57,8 +57,7 @@ config_distro () {
   sed -e "s/.*initdefault/id:${D_INITDEFAULT}:initdefault/" -i /mnt/etc/inittab
 }
 
-# AUS SuSE-9.3
-# udev/hotplug - auto device discovery service
+# udev/hotplug - auto device discovery service (deprecated)
 # Result: 1 is bad, 0 is good
 udev_hotplug () {
   local result=0

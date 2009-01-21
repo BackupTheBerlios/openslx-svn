@@ -90,8 +90,9 @@ hwautocfg pre
 preinit
 [ -x /bin/preinit.local ] && /bin/preinit.local
 
-# start device auto discovery service - busybox or distro specific function
-runudev
+# start device auto discovery service - busybox (or distro specific function)
+#mdev -s # enable this one
+runudev #(remove that functions soon, see #129, #130 ...)
 
 # switch off the several configuration methods, will be switched on
 # according to kernel commandline settings

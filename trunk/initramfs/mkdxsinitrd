@@ -86,10 +86,6 @@ usage()
   echo "        (z.B. /var/opt/openslx/stage1/suse-10.2)."
   echo "  -s theme (for splash)"
   echo "  -t tpm support (client security)"
-  echo "  -D Name"
-  echo "        Name der Distribution der Betriebsystemvorlage"
-  echo "  -v Version"
-  echo "        Versionskennung der Distribution der Betriebsystemvorlage"
   exit 0
 }
 
@@ -308,7 +304,7 @@ cp -a ${themes}* ${INSTDIR}/usr/share/themes
 #########################################################################
 # End of function declaration
 
-while getopts :dhk:c:i:r:o:s:f:n:m:Sut:v:I:a: a ; do
+while getopts :dhk:c:i:r:o:s:f:n:m:Sut:I:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
