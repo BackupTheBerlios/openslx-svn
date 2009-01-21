@@ -52,7 +52,7 @@ my @aggregationExports = qw(
 	mergeDefaultAttributesIntoSystem
 	mergeDefaultAndGroupAttributesIntoClient
 	aggregatedSystemIDsOfClient aggregatedClientIDsOfSystem
-	aggregatedKernelFilesOfSystem aggregatedInitramFilesOfSystem
+	aggregatedSystemFileInfosOfSystem
 );
 
 my @supportExports = qw(
@@ -144,6 +144,14 @@ sub _unique
 {	# return given array filtered to unique elements
 	my %seenIDs;
 	return grep { !$seenIDs{$_}++; } @_;
+}
+
+sub _uniqueByKey
+{	# return given array filtered to unique key elements
+	my $key = shift;
+
+	my %seenIDs;
+	return grep { !$seenIDs{$_->{$key}}++; } @_;
 }
 
 ################################################################################
@@ -418,8 +426,7 @@ sub setClientIDsOfSystem
 	my $systemID = shift;
 	my $clientIDs = _aref(shift);
 
-	my %seen;
-	my @uniqueClientIDs = grep { !$seen{$_}++ } @$clientIDs;
+	my @uniqueClientIDs = _unique(@$clientIDs);
 	return $confDB->{'meta-db'}->setClientIDsOfSystem($systemID,
 													  \@uniqueClientIDs);
 }
@@ -455,8 +462,7 @@ sub setGroupIDsOfSystem
 	my $systemID = shift;
 	my $groupIDs = _aref(shift);
 
-	my %seen;
-	my @uniqueGroupIDs = grep { !$seen{$_}++ } @$groupIDs;
+	my @uniqueGroupIDs = _unique(@$groupIDs);
 	return $confDB->{'meta-db'}->setGroupIDsOfSystem($systemID,
 													 \@uniqueGroupIDs);
 }
@@ -542,8 +548,7 @@ sub setSystemIDsOfClient
 	my $clientID = shift;
 	my $systemIDs = _aref(shift);
 
-	my %seen;
-	my @uniqueSystemIDs = grep { !$seen{$_}++ } @$systemIDs;
+	my @uniqueSystemIDs = _unique(@$systemIDs);
 	return $confDB->{'meta-db'}->setSystemIDsOfClient($clientID,
 													   \@uniqueSystemIDs);
 }
@@ -579,8 +584,7 @@ sub setGroupIDsOfClient
 	my $clientID = shift;
 	my $groupIDs = _aref(shift);
 
-	my %seen;
-	my @uniqueGroupIDs = grep { !$seen{$_}++ } @$groupIDs;
+	my @uniqueGroupIDs = _unique(@$groupIDs);
 	return $confDB->{'meta-db'}->setGroupIDsOfClient($clientID,
 													 \@uniqueGroupIDs);
 }
@@ -641,8 +645,7 @@ sub setClientIDsOfGroup
 	my $groupID = shift;
 	my $clientIDs = _aref(shift);
 
-	my %seen;
-	my @uniqueClientIDs = grep { !$seen{$_}++ } @$clientIDs;
+	my @uniqueClientIDs = _unique(@$clientIDs);
 	return $confDB->{'meta-db'}->setClientIDsOfGroup($groupID,
 													 \@uniqueClientIDs);
 }
@@ -678,8 +681,7 @@ sub setSystemIDsOfGroup
 	my $groupID = shift;
 	my $systemIDs = _aref(shift);
 
-	my %seen;
-	my @uniqueSystemIDs = grep { !$seen{$_}++ } @$systemIDs;
+	my @uniqueSystemIDs = _unique(@$systemIDs);
 	return $confDB->{'meta-db'}->setSystemIDsOfGroup($groupID,
 													  \@uniqueSystemIDs);
 }
@@ -766,9 +768,7 @@ sub aggregatedSystemIDsOfClient
 	# add all systems inherited from default client
 	push @systemIDs, fetchSystemIDsOfClient($confDB, 0);
 
-	my %seenIDs;
-	return grep { !$seenIDs{$_}++; } @systemIDs;
-		# return unique list
+	return _unique(@systemIDs);
 }
 
 sub aggregatedClientIDsOfSystem
@@ -791,49 +791,37 @@ sub aggregatedClientIDsOfSystem
 	# add all clients inherited from default system
 	push @clientIDs, fetchClientIDsOfSystem($confDB, 0);
 
-	my %seenIDs;
-	return grep { !$seenIDs{$_}++; } @clientIDs;
-		# return unique list
+	return _unique(@clientIDs);
 }
 
-sub aggregatedKernelFilesOfSystem
-{	# return aggregated list of kernel-files this system is using
-	# (as indicated by itself and system's variants)
+sub aggregatedSystemFileInfosOfSystem
+{	# return aggregated list of hash-refs that contain information about
+	# the kernel- and initialramfs-files this system is using
+	# (as indicated by itself and the system's variants)
 	my $confDB = shift;
 	my $system = shift;
 
 	my $vendorOS = fetchVendorOSesByID($confDB, $system->{vendor_os_id});
 	return () if !$vendorOS || !length($vendorOS->{path});
 	my $kernelPath
-		= "$openslxConfig{'private-basepath'}/stage1/$vendorOS->{path}";
+		= "$openslxConfig{'private-path'}/stage1/$vendorOS->{path}";
 
 	my @variantIDs = fetchSystemVariantIDsOfSystem($confDB, $system->{id});
 	my @variants = fetchSystemVariantsByID($confDB, \@variantIDs);
 
-	my @kernelFiles	= map { "$kernelPath/$_->{kernel}" }
-					  grep { length($_->{kernel}) > 0 }
-					  ($system, @variants);
-	return _unique(@kernelFiles);
-}
-
-sub aggregatedInitramSetupsOfSystem
-{	# return aggregated list of initialramfs-setups this system is using
-	# (as indicated by itself and system's variants)
-	my $confDB = shift;
-	my $system = shift;
-
-	my $vendorOS = fetchVendorOSesByID($confDB, $system->{vendor_os_id});
-	return () if !$vendorOS || !length($vendorOS->{path});
-	my $kernelPath
-		= "$openslxConfig{'private-basepath'}/stage1/$vendorOS->{path}";
-
-	my @variantIDs = fetchSystemVariantIDsOfSystem($confDB, $system->{id});
-	my @variants = fetchSystemVariantsByID($confDB, \@variantIDs);
-
-	my @initramFiles = map { "$kernelPath/$_->{initramfs}" }
-					   grep { length($_->{initramfs}) > 0 }
-					   ($system, @variants);
-	return _unique(@initramFiles);
+	my @infos;
+	foreach my $sys ($system, @variants) {
+		next if !length($sys->{kernel});
+		my %info = %$sys;
+		$info{'kernel-file'} = "$kernelPath/$sys->{kernel}";
+		if (!defined $info{'name'}) {
+			# compose full name and label for system-variant:
+			$info{'name'} = "$system->{name}-$info{name_addition}";
+			$info{'label'} = "$system->{label} $info{label_addition}";
+		}
+		push @infos, \%info;
+	}
+	return _uniqueByKey('name', @infos);
 }
 
 ################################################################################

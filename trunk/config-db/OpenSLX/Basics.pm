@@ -32,12 +32,15 @@ my $loadedTranslationModule;
 	'db-type' => 'CSV',
 	'locale' => $ENV{LANG},
 		# TODO: may need to be improved in order to be portable
-	'private-basepath' => '/var/lib/openslx',
-	'public-basepath' => '/srv/openslx',
-	'shared-basepath' => '/usr/share/openslx',
+	'config-path' => '/etc/opt/openslx',
+	'openslx-basepath' => '/opt/openslx',
+	'private-path' => '/var/opt/openslx',
+	'public-path' => '/srv/openslx',
 	'temp-basepath' => '/tmp',
 );
-$openslxConfig{'db-basepath'} = "$openslxConfig{'private-basepath'}/db",
+$openslxConfig{'db-basepath'} = "$openslxConfig{'private-path'}/db",
+$openslxConfig{'bin-path'} = "$openslxConfig{'openslx-basepath'}/bin",
+$openslxConfig{'share-path'} = "$openslxConfig{'openslx-basepath'}/share",
 
 # specification of cmdline arguments that are shared by all openslx-scripts:
 my %openslxCmdlineArgs = (
@@ -57,14 +60,21 @@ my %openslxCmdlineArgs = (
 		# locale to use for translations
 	'logfile=s' => \$openslxConfig{'locale'},
 		# file to write logging output to, defaults to STDERR
-	'private-basepath=s' => \$openslxConfig{'private-basepath'},
-		# basic path to private data (which is accessible for clients and
+	'bin-path=s' => \$openslxConfig{'bin-path'},
+		# path to binaries and scripts
+	'config-path=s' => \$openslxConfig{'config-path'},
+		# path to configuration files
+	'openslx-basepath=s' => \$openslxConfig{'openslx-basepath'},
+		# basic path to project files (binaries, functionality templates and
+		# distro-specs)
+	'private-path=s' => \$openslxConfig{'private-path'},
+		# path to private data (which is accessible for clients and
 		# contains all data required for booting the clients)
-	'public-basepath=s' => \$openslxConfig{'public-basepath'},
-		# basic path to public data (which contains database, vendorOSes
+	'public-path=s' => \$openslxConfig{'public-path'},
+		# path to public data (which contains database, vendorOSes
 		# and all local extensions [system specific scripts])
-	'shared-basepath=s' => \$openslxConfig{'shared-basepath'},
-		# basic path to shared data (functionality templates and distro-specs)
+	'share-path=s' => \$openslxConfig{'share-path'},
+		# path to sharable data (functionality templates and distro-specs)
 	'temp-basepath=s' => \$openslxConfig{'temp-basepath'},
 		# basic path to temporary data (used during demuxing)
 	'verbose-level=i' => \$openslxConfig{'verbose-level'},
@@ -86,8 +96,8 @@ sub vlog
 sub openslxInit
 {
 	# try to read and evaluate config files:
-	foreach my $f ("/etc/openslx/settings.default",
-				   "/etc/openslx/settings.local",
+	foreach my $f ("$openslxConfig{'config-path'}/settings.default",
+				   "$openslxConfig{'config-path'}/settings.local",
 				   "$ENV{HOME}/.openslx/settings") {
 		next unless open(CONFIG, "<$f");
 		while(<CONFIG>) {
