@@ -484,7 +484,7 @@ if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
           ${tmpserv}:${tmppath}/${clientip} /mnt/tmp >/dev/null 2>&1 
         # create an empty container file for vmware *.vmem, it does not
         # like to live on NFS exports
-        if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
+        if [ "x$vmware" != "x" -a "x$vmware" != "xno" ] ; then
           dd if=/dev/zero of=/mnt/tmp/vm-container count=1 seek=204800
           diskfm /mnt/tmp/vm-container /mnt/tmp/vmware
           chmod a+rwxt /mnt/tmp/vmware
