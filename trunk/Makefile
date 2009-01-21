@@ -31,14 +31,14 @@ endif
 ifeq ($(SLX_SHARE_PATH),)
 	SLX_SHARE_PATH = ${SLX_BASE_PATH}/share
 endif
-ifeq ($(SLX_TEMP_BASE_PATH),)
-	SLX_TEMP_BASE_PATH = /tmp
+ifeq ($(SLX_TEMP_PATH),)
+	SLX_TEMP_PATH = /tmp
 endif
 ifeq ($(SLX_TFTPBOOT_PATH),)
 	SLX_TFTPBOOT_PATH = ${SLX_PUBLIC_PATH}/tftpboot
 endif
-ifeq ($(VMWARE_PATH),)
-	VMWARE_PATH = ${SLX_BASE_PATH}/vmware
+ifeq ($(SLX_VMWARE_PATH),)
+	SLX_VMWARE_PATH = ${SLX_BASE_PATH}/vmware
 endif
 
 tarball:
@@ -110,13 +110,16 @@ rootfs has the\n# prefix '/mnt'. But you might use some special slx \
 functions via\n# inclusion: '. /etc/functions' ..." \
 	  > $(SLX_PRIVATE_PATH)/config/default/initramfs/postinit.local
 	@chmod u+x $(SLX_PRIVATE_PATH)/config/default/initramfs/*init.local
-	@echo -e "# default setup for openslx on this specific system\
+	@echo -e "# default setup for OpenSLX-installation
 \nSLX_BASE_PATH=${SLX_BASE_PATH}\
+\nSLX_BIN_PATH=${SLX_BIN_PATH}\
+\nSLX_CONFIG_PATH=${SLX_CONFIG_PATH}\
 \nSLX_PRIVATE_PATH=${SLX_PRIVATE_PATH}\
 \nSLX_PUBLIC_PATH=${SLX_PUBLIC_PATH}\
 \nSLX_SHARE_PATH=${SLX_SHARE_PATH}\
-\nSLX_TEMP_BASE_PATH=${SLX_TEMP_BASE_PATH}\
-\nSLX_TFTPBOOT_PATH=${SLX_TFTPBOOT_PATH}\n" \
+\nSLX_TEMP_PATH=${SLX_TEMP_PATH}\
+\nSLX_TFTPBOOT_PATH=${SLX_TFTPBOOT_PATH}\
+\nSLX_VMWARE_PATH=${SLX_VMWARE_PATH}\n" \
 	  > $(SLX_CONFIG_PATH)/settings.default
 	@echo -e "# local setup for openslx (overrides settings.default)\n" \
 	  > $(SLX_CONFIG_PATH)/settings.local
@@ -125,11 +128,11 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 	@chmod a+w $(SLX_PRIVATE_PATH)/db
 
 vmware_install:
-	@echo "Installing VMware files to $(VMWARE_PATH)"
-	@mkdir -p $(VMWARE_PATH)/templ \
-	       -p $(VMWARE_PATH)/vmsessions/kdm
-	@cp -a vmware/* $(VMWARE_PATH)/templ/
-	@echo -e "Please configure your exports (add $(VMWARE_PATH) to your list).\nCopy your *.vmdk files into $(VMWARE_PATH). For interactive mode add for each virtual machine (*.vmdk) a .desktop file into ./vmsessions (example file $(VMWARE_PATH)/templ/desktop.template). Don't forget to install Xdialog!"
+	@echo "Installing VMware files to $(SLX_VMWARE_PATH)"
+	@mkdir -p $(SLX_VMWARE_PATH)/templ \
+	       -p $(SLX_VMWARE_PATH)/vmsessions/kdm
+	@cp -a vmware/* $(SLX_VMWARE_PATH)/templ/
+	@echo -e "Please configure your exports (add $(SLX_VMWARE_PATH) to your list).\nCopy your *.vmdk files into $(SLX_VMWARE_PATH). For interactive mode add for each virtual machine (*.vmdk) a .desktop file into ./vmsessions (example file $(SLX_VMWARE_PATH)/templ/desktop.template). Don't forget to install Xdialog!"
 
 #uninstall:
 #	@echo -e "Uninstalling openslx.org project files but keeping configs \
