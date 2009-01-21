@@ -101,18 +101,17 @@ precheck() {
     echo -e "\nYou don't have the needed permission. Please rerun as root user!\n"
     exit 1
   fi
-  # fixme:: Do we really need this!?
   # Check for correct settings of SLX-Variables
-  #if [ "x" == "x$SLX_BASE_PATH" ]; then
-  #  if [ "x$SLX_CONFIG_PATH" == "x@@@SLX_CONFIG_PATH@@@" ]; then
-  #     echo "Please make sure you install the Open SLX Software properly,"
-  #     echo "i.e. install it using the provided Makefile. Thanks."
-  #  else
-  #     echo "Essential configuration is missing. Please verify"
-  #     echo "existence and correctness of $SLX_SHARE_PATH/settings.default"
-  #  fi
-  #  exit 1
-  #fi
+  if [ "x" == "x$SLX_BASE_PATH" ]; then
+    if [ "x$SLX_CONFIG_PATH" == "x@@@SLX_CONFIG_PATH@@@" ]; then
+       echo "Please make sure you install the Open SLX Software properly,"
+       echo "i.e. install it using the provided Makefile. Thanks."
+    else
+       echo "Essential configuration is missing. Please verify"
+       echo "existence and correctness of $SLX_SHARE_PATH/settings.default"
+    fi
+    exit 1
+  fi
 }
 
 # replaces which command to find executables inside ROOTDIR
