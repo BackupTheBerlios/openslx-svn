@@ -133,6 +133,18 @@ else
 complete\n  or non existant. The $0 script tried for a fully automatic\n\
   configuration of display"
 fi
+
+#Auskommentiert, da noch nicht getestet
+#FIXMEE: Optimiere den dreifachen aufruf von Screenres
+#VERTSR=`screenres | sed -n '/Vertical Frequency Range/s/[^0-9]* \([0-9-]*\)/\1/p'`
+#HORISR=`screenres | sed -n '/Horizontal Frequency Range/s/[^0-9]* \([0-9-]*\)/\1/p'`
+#if [ -n "$HORISR" ]; then 
+#  HS=$HORISR
+#fi
+#if [ -n "$VERTSR" ]; then
+#  VS=$VERTSR
+#fi
+
 if [ -z "$HS" ] ; then error "  $msg timings requested but could not \
 establish\n  horizontal frequency in kHz." nonfatal
   HS=${HSYNCRANGE}
@@ -145,9 +157,7 @@ if [ -z "$MR" ] ; then error "  $msg resolution requested but not \
 established." nonfatal
   MR=${MAXRES}
 fi
-
-
-monmanual=yes
+monmanual=yes 
 
 ## compute max resolution
 #for res in 640x400 640x480 800x600 1024x768 1280x1024 1400x1050 1600x1200

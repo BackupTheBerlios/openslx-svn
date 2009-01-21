@@ -54,7 +54,7 @@ fi
 if [ $pix_per_qcm -gt 1599 ]; then tft_probability=$(($tft_probability - 15))
 else tft_probability=$(($tft_probability + 15))
 fi
-echo -ne "Is a TFT:\t"
+echo -ne "Is a TFT: "
 if [ $tft_probability -ge 50 ]; then
     echo -n "true"
 else echo -n "false"
@@ -86,4 +86,12 @@ if [ $tft_probability -lt 50 ]; then
         screen_resolutions=` echo $screen_resolutions | sed -n 's/"[0-9x]*" \(.*\)/\1/p'`
     fi
 fi
+
 echo "Recommended Screen Modes: $screen_resolutions"
+
+######## Vertical and horizontal frequency ranges #########
+
+frequency_ranges=`sed '/range/!d;s/[^0-9]*\([1-9][0-9]\)[ \t]*-[ \t]*\([1-9][0-9]*\)[^0-9]*\([1-9][0-9]*\)[ \t]*-[ \t]*\([1-9][0-9]*\).*/\1-\2 \3-\4/' ${tmp_ddcprobe_output}`
+set -- $frequency_ranges # split into $1 und $2
+echo "Vertical Frequency Range (kHz): $1"
+echo "Horizontal Frequency Range (Hz): $2"
