@@ -363,6 +363,6 @@ InputDevice='\tIdentifier\t"Keyboard1"\n
 \tOption\t\t"XkbRules"\t\t"xorg"\n
 \tOption\t\t"XkbLayout"\t\t"XKEYBOARD"\n
 \tOption\t\t"XkbModel"\t\t"pc105"\n
-\tOption\t\t"XkbOptions"\t"lv3:ralt_switch"\n
-\tOption\t\t"XkbVariant"\t"nodeadkeys"'
+\tOption\t\t"XkbOptions"\t\t"lv3:ralt_switch"\n
+\tOption\t\t"XkbVariant"\t\t"nodeadkeys"'
 }

@@ -294,8 +294,9 @@ case $ipcfg in
     MAC=$(ip link show dev $if|sed -n "/ether [0-9e-f]\{2\}:.*/p" \
       | sed -e "s/.*ether //;s/ .*//")
     # if multicast is required for dnbd
-    [ -n "$nbdhost" ] && [ `echo $nbdhost|sed "s,\..*,,"` -ge 224 ] && \
-      ip route add 224.0.0.0/4 dev eth0
+    [ -n "$nbdhost" -a "$ip" != 127.0.0.1 ] && { nbdhost=$(checkip $nbdhost) 
+      [ $(echo $nbdhost|sed "s,\..*,,") -ge 224 ] && \
+      ip route add 224.0.0.0/4 dev $if; }
   ;;
   # traditional ifconfig/route - if a distro does not provide ip
   ifconfig)
@@ -308,8 +309,9 @@ case $ipcfg in
     MAC=$(ifconfig $if|sed -n "/HWaddr [0-9A-F]\{2\}:.*/p" \
       | sed -e "s/.*HWaddr //;y/ABCDEF/abcdef/")
     # if multicast is required for dnbd
-    [ -n "$nbdhost" ] && [ $(echo $nbdhost|sed "s,\..*,,") -ge 224 ] && \
-      route add -net 224.0.0.0 netmask 240.0.0.0 dev $if
+    [ -n "$nbdhost"  -a "$ip" != 127.0.0.1 ] && { nbdhost=$(checkip $nbdhost)
+      [ $(echo $nbdhost|sed "s,\..*,,") -ge 224 ] && \
+      route add -net 224.0.0.0 netmask 240.0.0.0 dev $if; }
   ;;
   none)
     error "$error_iptool"
@@ -628,8 +630,6 @@ if ! test -f /tmp/cfgcomplete ; then
   for config in /tmp/confviadhcp /tmp/confviafile /tmp/confvialdap
     do test -f $config && cat $config >> /etc/machine-setup
   done
-# check if serverip is set as variable @@@serverip@@@
-sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup
 echo "config completed" > /tmp/cfgcomplete
 fi
 }
