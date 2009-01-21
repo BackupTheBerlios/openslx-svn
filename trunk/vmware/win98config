@@ -12,7 +12,7 @@ echo -e "\tREGEDIT4\r
 \"RemotePath\"=\"\\\\192.168.1.2\\${USER}\"\r
 \"UserName\"=\"${USER}\"\r
 \"ProviderName\"=\"Microsoft Network\"\r" \
-> /media/loop0/home.reg
+> /etc/vmware/fd-loop/home.reg
 
 
 echo -e "\tREGEDIT4\r
@@ -28,7 +28,7 @@ echo -e "\tREGEDIT4\r
 [HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\ComputerName\\\
 ComputerName]\r
 \"ComputerName\"=\"${hostname}\"\r" \
-> /media/loop0/rechner.reg
+> /etc/vmware/fd-loop/rechner.reg
 
 
 echo -e "\tREGEDIT4\r
@@ -37,6 +37,6 @@ echo -e "\tREGEDIT4\r
 \"username\"=\"${USER}\"\r
 \"PrimaryProvider\"=\"Microsoft Network\"\r
 \"LMLogon\"=hex:00,00,00,00\r" \
-> /tmp/loop0/logon.reg
+> /etc/vmware/fd-loop/logon.reg
 
 sync
