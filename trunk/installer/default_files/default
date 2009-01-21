@@ -2,7 +2,7 @@
 #
 # Description:  Boot selection with the new Syslinux/PXElinux by Peter Anwin
 #               selection is done by cursor up and down keys
-DEFAULT @@@server@@@::@@@tftpbootdir@@@/menu.c32
+DEFAULT @@@server@@@::/menu.c32
 
 PROMPT 0
 NOESCAPE 1
@@ -18,11 +18,11 @@ MENU TITLE Diskless X-Stations
 
 #####
 LABEL Bitte waehlen Sie mit den Pfeil-Tasten aus:
-   KERNEL ::@@@tftpbootdir@@@/menu.c32
-   APPEND @@@server@@@::@@@tftpbootdir@@@/pxelinux.cfg/default
+   KERNEL ::/menu.c32
+   APPEND @@@server@@@::/pxelinux.cfg/default
 LABEL
-   KERNEL @@@server@@@::@@@tftpbootdir@@@/menu.c32
-   APPEND @@@server@@@::@@@tftpbootdir@@@/pxelinux.cfg/default
+   KERNEL @@@server@@@::/menu.c32
+   APPEND @@@server@@@::/pxelinux.cfg/default
 #####
 
 LABEL local
@@ -32,6 +32,6 @@ LABEL local
 
 #####
 LABEL
-  KERNEL @@@server@@@::@@@tftpbootdir@@@/menu.c32
-  APPEND @@@server@@@::@@@tftpbootdir@@@/pxelinux.cfg/default
+  KERNEL @@@server@@@::/menu.c32
+  APPEND @@@server@@@::/pxelinux.cfg/default
 #####

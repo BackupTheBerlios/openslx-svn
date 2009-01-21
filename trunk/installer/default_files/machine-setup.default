@@ -1,7 +1,7 @@
 # machine-setup
 #
 #### default file, please modify, rename it to machine-setup and copy it
-#### to a proper location, like /var/lib/openslx/config/default/initramfs
+#### to a proper location, like /var/opt/openslx/config/default/initramfs
 #### several of the settings could be passed via DHCP too (vendorspecific
 #### options, see dhcpd.conf example) - some settings could be done only
 #### within this file (no DHCP variable definition available)
@@ -22,7 +22,8 @@
 # a passwd file via extended config tgz
 root_pw=@@@root_pw@@@
 
-# SLX-Group
+# SLX-Group used at the moment only for VMware image / session assignment
+# to a specific group of clients
 #slxgrp=default
 
 ## name service configuration defaults
@@ -101,7 +102,7 @@ vmware="no"
 # imgsrv is deprecated, because incorporated into vmware variable
 
 # kind of X11 display manager to run 
-start_xdmcp="xdm"
+start_xdmcp="kdm"
 # for kdm/gdm - enable shutdown option on login screen "user/root/none"
 dm_allow_shutdown="user"
 

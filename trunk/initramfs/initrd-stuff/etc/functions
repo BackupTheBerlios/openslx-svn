@@ -2,7 +2,7 @@
 # (included by init, hwautocfg, servconfig, ... within OpenSLX initial
 # ramfs)
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 31-10-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-11-2006
 # Felix Endres, 30-04-2006
 # <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 # Tobias Maier
@@ -17,19 +17,19 @@
 
 # distro specific funtion called at the beginning of init script
 preinit () {
-  :
+:
 }
 # distro specific funtion called at the end of init script
 postinit () {
-  :
+:
 }
 # distro specific general function called from servconfig script
 config_distro () {
-  :
+:
 }
 # udev/hotplug - auto device discovery service
 udev_hotplug () {
- :
+:
 }
 
 
@@ -450,16 +450,10 @@ if [ -n "$FILESRC" ] ; then
   tftpserver=$(uri_token $FILESRC server)
   tftpgetunpack $tftp $cfgfile $tftpserver
 else
-  # usually the tftp-server serves relative to $SLX_TFTPBOOT_PATH, however,
-  # some tftp-servers aren't setup to do that but serve from / instead.
-  # In order to remedy, we evaluate $SLX_USE_ABSOLUTE_TFTP_PATH in order
-  # to find out if we should use the absolute path when accessing files
-  # via tftp:
-  #if [ "${slxconf_tftp_prefix}" -ge 1 ]; then
-  #  local cfgdir="${slxconf_tftp_prefix}/client-config"
-  #else
-    local cfgdir="client-config"
-  #fi
+  # predefined value for openslx environment; it is expected that this
+  # directory is just below the tftpboot/tftproot (path to which the 
+  # daemon is restricted to)
+  local cfgdir="client-config"
   local tftpserver=$serverip
   # try to get configuration files successively; start with distro client
   # and try last distro default ...
