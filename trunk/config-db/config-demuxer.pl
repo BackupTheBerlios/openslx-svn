@@ -1,10 +1,13 @@
 #! /usr/bin/perl
+use strict;
 
 # add the folder this script lives in to perl's search path for modules:
 use FindBin;
 use lib $FindBin::Bin;
 
 use Getopt::Long qw(:config pass_through);
+
+use Fcntl qw(:DEFAULT :flock);
 
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB;
@@ -16,6 +19,8 @@ my (
 	%systemConf,
 	%clientConf,
 	%clientPXE,
+	$systemConfCount,
+	$clientConfCount,
 );
 
 GetOptions(
@@ -33,32 +38,70 @@ if (!-d $configPath) {
 	die _tr("Unable to access config-path '%s'!", $configPath);
 }
 my $tempPath = "$openslxConfig{'temp-basepath'}/oslx-demuxer";
-mkdir $tempPath;
-if (!-d $tempPath) {
-	die _tr("Unable to create or access temp-path '%s'!", $tempPath);
+if (!$dryRun) {
+	mkdir $tempPath;
+	if (!-d $tempPath) {
+		die _tr("Unable to create or access temp-path '%s'!", $tempPath);
+	}
 }
 my $exportPath = "$openslxConfig{'public-basepath'}/tftpboot";
-system("rm -rf $exportPath/client-conf/* $exportPath/pxe/pxelinux.cfg/*");
-system("mkdir -p $exportPath/client-conf $exportPath/pxe/pxelinux.cfg");
-if (!-d $exportPath) {
-	die _tr("Unable to create or access export-path '%s'!", $exportPath);
+if (!$dryRun) {
+	system("rm -rf $exportPath/client-conf/* $exportPath/pxe/pxelinux.cfg/*");
+	system("mkdir -p $exportPath/client-conf $exportPath/pxe/pxelinux.cfg");
+	if (!-d $exportPath) {
+		die _tr("Unable to create or access export-path '%s'!", $exportPath);
+	}
 }
+
+my $lockFile = "$exportPath/config-demuxer.lock";
+lockScript($lockFile);
 
 demuxConfigurations();
 
-if (!$dryRun) {
-	writeConfigurations();
-}
+writeConfigurations();
+
+my $wr = ($dryRun ? "would have written" : "wrote");
+print "$wr $systemConfCount systems and $clientConfCount client-configurations to $exportPath/client-conf\n";
 
 disconnectConfigDB($openslxDB);
 
-system("rm -rf $tempPath");
+system("rm -rf $tempPath")		unless $dryRun || length($tempPath) == 0;
+
+unlockScript($lockFile);
 
 exit;
 
 ################################################################################
 ###
 ################################################################################
+sub lockScript
+{
+	my $lockFile = shift;
+
+	return		if $dryRun;
+
+	# use a lock-file to singularize execution of this script:
+	if (-e $lockFile) {
+		my $ctime = (stat($lockFile))[10];
+		my $now = time();
+		if ($now - $ctime > 15*60) {
+			# existing lock file is older than 15 minutes, wipe it:
+			unlink $lockFile;
+		}
+	}
+	sysopen(LOCKFILE, $lockFile, O_RDWR|O_CREAT|O_EXCL)
+		or die _tr(qq[Lock-file <%s> exists, script is already running.\nPlease remove the logfile and try again if you are sure that no one else is executing this script.], $lockFile);
+}
+
+sub unlockScript
+{
+	my $lockFile = shift;
+
+	return		if $dryRun;
+
+	unlink $lockFile;
+}
+
 sub isAttribute
 {	# returns whether or not the given key is an exportable attribute
 	my $key = shift;
@@ -84,6 +127,8 @@ sub writeAttributesToFile
 	my $attrHash = shift;
 	my $fileName = shift;
 
+	return		if $dryRun;
+
 	open(ATTRS, "> $fileName")		or die "unable to write to $fileName";
 	my @attrs = sort grep { isAttribute($_) } keys %$attrHash;
 	foreach my $attr (@attrs) {
@@ -92,7 +137,7 @@ sub writeAttributesToFile
 			# convert 'attrExampleName' to 'example_name':
 			$shellVar =~ s[([A-Z])]['_'.lc($1)]ge;
 			$shellVar = substr($shellVar, 5);
-			print SYSCONF "$shellVar = $attrHash->{$attr}\n";
+			print ATTRS "$shellVar = $attrHash->{$attr}\n";
 		}
 	}
 	close(ATTRS);
@@ -103,6 +148,8 @@ sub copySystemConfig
 	# config folder (var/lib/openslx/config/...) into a temporary folder
 	my $systemName = shift;
 	my $targetPath = shift;
+
+	return		if $dryRun;
 
 	system("rm -rf $targetPath");
 	mkdir $targetPath;
@@ -125,9 +172,11 @@ sub createTarOfPath
 	my $tarName = shift;
 	my $destinationPath = shift;
 
-	mkdir $destinationPath;
 	my $tarFile = "$destinationPath/$tarName";
 	vlog 1, _tr('creating tar %s', $tarFile);
+	return		if $dryRun;
+
+	mkdir $destinationPath;
 	my $tarCmd = "cd $buildPath && tar czf $tarFile *";
 	if (system("$tarCmd") != 0) {
 		die _tr("unable to execute shell-command:\n\t%s \n\t($!)", $tarCmd);
@@ -145,6 +194,7 @@ sub writeClientConfigurationsForSystem
 
 	foreach my $client (values %{$system->{clients}}) {
 		vlog 2, _tr("exporting client %d:%s", $client->{id}, $client->{name});
+		$clientConfCount++;
 
 		writeAttributesToFile($client, $attrFile);
 
@@ -160,8 +210,9 @@ sub writeSystemConfigurations
 {
 	foreach my $system (values %systemConf) {
 		vlog 2, _tr('exporting system %d:%s', $system->{id}, $system->{name});
-		my $buildPath = "$tempPath/build";
+		$systemConfCount++;
 
+		my $buildPath = "$tempPath/build";
 		copySystemConfig($system->{name}, $buildPath);
 
 		my $attrFile = "$buildPath/initramfs/machine-setup";
@@ -172,7 +223,7 @@ sub writeSystemConfigurations
 
 		writeClientConfigurationsForSystem($system, $buildPath, $attrFile);
 
-		system("rm -rf $buildPath");
+		system("rm -rf $buildPath")		unless $dryRun;
 	}
 }
 
@@ -258,8 +309,8 @@ my @sysIDs = fetchSystemIDsOfClient($openslxDB, $client->{id});
 		# and merge system-specific attributes into that:
 		foreach my $s (values %{$client->{systems}}) {
 			$clientConf{$client->{id}} = { %$client };
-			vlog 3, _tr('merging from system %d:%s...', $system->{id}, $system->{name});
-			mergeConfigAttributes($systemClientConf{$client->{id}}, $system);
+			vlog 3, _tr('merging from system %d:%s...', $s->{id}, $s->{name});
+			mergeConfigAttributes($clientConf{$client->{id}}, $s);
 		}
 	}
 }
@@ -272,6 +323,7 @@ sub demuxConfigurations()
 
 sub writeConfigurations()
 {
+	$systemConfCount = $clientConfCount = 0;
 	writeSystemConfigurations();
 }
 
