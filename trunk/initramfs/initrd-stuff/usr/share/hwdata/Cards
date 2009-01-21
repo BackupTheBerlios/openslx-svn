@@ -2112,6 +2112,10 @@ CHIPSET R350
 DRIVER radeon
 LINE #Option "nodri"
 
+# HP AMD64 onboard ATI Radeon RS482
+NAME ATI Radeon RS482
+DRIVER radeon
+
 NAME ATI FireGL Z1/X1
 CHIPSET R300
 DRIVER radeon

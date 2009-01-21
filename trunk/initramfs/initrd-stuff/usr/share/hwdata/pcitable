@@ -252,6 +252,7 @@
 0x1002	0x5961	"Card:ATI Radeon 9200"
 0x1002	0x5962	"Card:ATI Radeon 9200"
 0x1002	0x5964	"Card:ATI Radeon 9200SE"
+0x1002  0x5974  "Card:ATI Radeon RS482"
 0x1002  0x5a41  "Card:ATI Radeon Xpress 200"
 0x1002	0x5b60	"Card:ATI Radeon X300"
 0x1002	0x5b62	"Card:ATI Radeon X600"
