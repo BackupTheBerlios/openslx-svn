@@ -128,7 +128,7 @@ configure() {
   . .config
   
   overwrite_configs="yes"
-  echo -n "Overwrite server configs or write *.new files? [Y/n] "
+  echo -n "Overwrite server configs (Y) or write *.new files (n)? [Y/n] "
   read userinput
   if [ "$userinput" = "no" -o "$userinput" = "n" -o \
        "$userinput" = "N" -o "$userinput" = "No" ] ; then
