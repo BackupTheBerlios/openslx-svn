@@ -3,6 +3,7 @@
 #
 # Lars Mueller <lm@openslx.com>, 2006
 # Dirk von Suchodoletz <dvs@openslx.com>, 2006
+# mj0, 12-09-2006 - vmware + theming
 #
 # (c) 2006 - OpenSLX.com
 
@@ -13,6 +14,7 @@ SLX_CONFIG_PATH=/etc/opt/openslx
 SLX_PRIVATE_PATH=/var/opt/openslx
 SLX_PUBLIC_PATH=/srv/openslx
 SLX_SHARE_PATH=/opt/openslx/share
+VMWARE_PATH=/opt/openslx/vmware
 
 tarball:
 	@OPENSLX_SVN_SNAPSHOT=$$( echo $${OPENSLX_SVN_SNAPSHOT} | \
@@ -55,7 +57,8 @@ install:
 	       -p $(SLX_PRIVATE_PATH)/config/default/rootfs \
 	       -p $(SLX_PRIVATE_PATH)/db \
 	       -p $(SLX_PRIVATE_PATH)/stage1 \
-	       -p $(SLX_PUBLIC_PATH)/tftpboot
+	       -p $(SLX_PUBLIC_PATH)/tftpboot \
+	       -p $(SLX_SHARE_PATH)/themes
 	@cp initrd/{mkdxsinitrd,slxmkramfs} $(SLX_BIN_PATH)
 	@chmod u+x $(SLX_BIN_PATH)/{mkdxsinitrd,slxmkramfs}
 	@ln -sf $(SLX_BIN_PATH)/mkdxsinitrd $(USR_BIN)/
@@ -65,6 +68,7 @@ install:
 	@cp -a installer/default_files/machine-setup.default \
 	  $(SLX_SHARE_PATH)/templates
 	@cp -a installer/default_files/tftpboot $(SLX_SHARE_PATH)
+	@cp -a theming/* $(SLX_SHARE_PATH)/themes
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
 extend the\n# capabilities at the beginning of the initramfs (stage3). \
 The toolset is rather\n# restricted and you have to keep in mind that \
@@ -84,6 +88,13 @@ functions via\# inclusion: '. /etc/functions' ..." \
 	@find $(SLX_SHARE_PATH) -depth -regex ".*/\..*" -print0 | xargs -0 rm -rf {}
 	@chmod a+w $(SLX_PUBLIC_PATH)/tftpboot
 	@chmod a+w $(SLX_PRIVATE_PATH)/db
+
+vmware_install:
+	@echo "Installing VMware files to $(VMWARE_PATH)"
+	@mkdir -p $(VMWARE_PATH)/templ \
+	       -p $(VMWARE_PATH)/vmsessions
+	@cp -a vmware/* $(VMWARE_PATH)/templ/
+	@echo -e "Please configure your exports (add $(VMWARE_PATH) to your list).\nCopy your *.vmdk files into $(VMWARE_PATH). For interactive mode add for each virtual machine (*.vmdk) a .desktop file into ./vmsessions (example file $(VMWARE_PATH)/templ/desktop.template)."
 
 #uninstall:
 #	@echo -e "Uninstalling openslx.org project files but keeping configs \

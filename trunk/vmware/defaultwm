@@ -2,11 +2,11 @@
 #
 # Description:  Session chooser for kdm/gdm
 #
-# Author(s):    Michael Janczyk <mj0@uni-freiburg.de>, 08-09-2006
+# Author(s):    Michael Janczyk <mj0@uni-freiburg.de>, 12-09-2006
 #
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.1.363
+# Version:      0.1.371
 #
 ################################################################################
 
@@ -16,11 +16,11 @@
 
 # set X background
 res=$(xvidtune -show | grep -wo "\".*\"" | sed "s/\"//g")
-if ! [ -f /usr/share/themes/openslx/bootsplash/images/silent-${res}.jpg ]; then
-  img=$(ls /usr/share/themes/openslx/images/ | grep -m 1 "silent")
-  display -window root /usr/share/themes/openslx/bootsplash/images/${img}
+if ! [ -f /var/lib/openslx/themes/bootsplash/images/silent-${res}.jpg ]; then
+  img=$(ls /var/lib/openslx/themes/bootsplash/images/ | grep -m 1 "silent")
+  display -window root /var/lib/openslx/themes/bootsplash/images/${img}
 else 
-  display -window root /usr/share/themes/openslx/bootsplash/images/silent-${res}.jpg
+  display -window root /var/lib/openslx/themes/bootsplash/images/silent-${res}.jpg
 fi
 
 
