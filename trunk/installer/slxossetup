@@ -235,7 +235,8 @@ function setup_bootstrap_1c()
 
 			chroot "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}" \
 				/bin/rpm --root="${SLX_STAGE1_FINAL_PATH}" -ivh ${packagelist}
-			test $? -eq 0 || \
+			rc=$?
+			test ${rc} -eq 0 || \
 				ErrorMsg ${rc} "Bootstrap failed! "
 			cp -p /etc/resolv.conf "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/${SLX_STAGE1_FINAL_PATH}/etc/"
 		;;
