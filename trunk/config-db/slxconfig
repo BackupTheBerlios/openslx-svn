@@ -225,13 +225,15 @@ sub parseKeyValueArgsWithAttrs
 		}
 		my $key   = lc($1);
 		my $value = $2;
-		if ($value eq '-') {
-			$value = undef;
-		}
 
 		# replace escaped newlines and tab chars by the respective real thing
 		$value =~ s{\\n}{\n}gms;
 		$value =~ s{\\t}{\t}gms;
+
+		# accept '-' as placeholder for undefined
+		if ($value eq '-') {
+			$value = undef;
+		}
 
 		if (grep { $_ eq $key } @$allowedKeys) {
 			$dataHash{$key} = $value;
