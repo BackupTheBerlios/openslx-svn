@@ -3,11 +3,11 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 22-06-2006
 #		Nico Dietrich
 #               Felix Endres
 #
-# Version:      0.3.2a
+# Version:      0.3.2b
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 
@@ -125,7 +125,7 @@ else
   cp ${FPTB} ${INSTDIR}/${DEST}
 fi
 # get an idea which libraries are needed
-chroot ${ROOTDIR} ldd.server ${FPTB#${ROOTDIR}*} >> ${INSTDIR}/tmp/libraries
+chroot ${ROOTDIR} ldd ${FPTB#${ROOTDIR}*} >> ${INSTDIR}/tmp/libraries
 }
 
 # replace copy
@@ -293,7 +293,9 @@ mkdir -p ${INSTDIR}/usr/share
 mkdir -p ${INSTDIR}/etc/sysconfig
 
 # temporary ldd for getting library information out of initrd binaries
-cp `which ldd` ${ROOTDIR}/usr/bin/ldd.server
+# fixme: ugly bug in ldd prevents renaming ...
+mv ${ROOTDIR}/usr/bin/ldd ${ROOTDIR}/usr/bin/ldd.orig
+cp `which ldd` ${ROOTDIR}/usr/bin/ldd
 
 # if still no distro name set, try to find it using significant files
 if [ -z "${DISTRO}" ] ; then
@@ -475,7 +477,9 @@ for lib in `cat ${INSTDIR}/tmp/libraries 2>/dev/null | \
   test -e  ${INSTDIR}/lib/${baselib} || \
     cp /${ROOTDIR}/${lib} ${INSTDIR}/lib
 done
-rm ${ROOTDIR}/usr/bin/ldd.server ${INSTDIR}/tmp/libraries
+rm ${INSTDIR}/tmp/libraries
+# fixme: ugly ldd bug, see above
+mv ${ROOTDIR}/usr/bin/ldd.orig ${ROOTDIR}/usr/bin/ldd
 
 # add kernel modules and dependency files
 if [ -z "$KERNVER" ] ; then
