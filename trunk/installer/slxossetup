@@ -194,7 +194,7 @@ function setup_bootstrap_1b()
 
 function setup_bootstrap_1c()
 {
-	local dir file packagelist packagekey	
+	local dir file packagelist packagekey rc
 
 	case "${SLX_SYSTEM_BASENAME}" in
 		*ubuntu*)
@@ -208,6 +208,9 @@ function setup_bootstrap_1c()
 				"${SLX_INST_SOURCE_DISTRIBUTION}" \
 				"${SLX_BOOTSTRAP_PATH}/${SLX_STAGE1_FINAL_PATH}" \
 				"${SLX_INST_SOURCE_BASEURL}"
+			rc=$?
+			test ${rc} -eq 0 || \
+				ErrorMsg ${rc} "Bootstrap failed! "
 		;;
 		*suse*|*fedora*)
 			test -d "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/etc" || \
