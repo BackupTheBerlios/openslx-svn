@@ -100,7 +100,15 @@ sub generateNextIdForTable
 	if (!$nextID) {
 		# no ID information available, we protect against users having
 		# deleted the ID-file by fetching the highest ID from the DB:
-		$nextID = 1+$self->_doSelect("SELECT max(id) AS id FROM $table", 'id');
+		#
+		# N.B.: older versions of DBD::CSV (notably the one that comes with
+		#       SUSE-9.3) do not understand the max() function, so we determine
+		#       the maximum ID manually:
+		my @IDs
+			=	sort { $b <=> $a }
+				$self->_doSelect("SELECT id FROM $table", 'id');
+		my $maxID = $IDs[0];
+		$nextID = 1+$maxID;
 	}
 	seek(IDFILE, 0, 0)
 		or confess _tr(q[Can't to seek ID-file <%s> (%s)], $idFile, $!);
