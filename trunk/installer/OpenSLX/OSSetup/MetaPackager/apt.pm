@@ -92,7 +92,7 @@ sub installSelection
 	my $self = shift;
 	my $pkgSelection = shift;
 
-	if (slxsystem("apt-get update")) {
+	if (slxsystem("apt-get -y update")) {
 		die _tr("unable to update repository info (%s)\n", $!);
 	}
 	if (slxsystem("apt-get -y install $pkgSelection")) {
