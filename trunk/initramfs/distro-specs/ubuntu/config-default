@@ -24,7 +24,8 @@
 # D_DIRINDXS - directories in client filesystem which should be present 
 # anyhow
 # D_BINDMNT - any code which is specific in bind mount environment
-# D_BINDMPTS - These directories will be created in the ramdisk and movemounted to the root ("/") this will also happen to /var and /etc
+# D_BINDMPTS - These directories will be created in the ramdisk and movemounted
+# to the root ("/") this will also happen to /var and /etc
 # D_RCDIRS - runlevel directories relative to /etc
 # D_XF86CONFFILE - name and location of XFree/Xorg config file, e.g.
 # /etc/X11/xorg.conf or /etc/X11/XF86config, ...
@@ -43,7 +44,8 @@ pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
 X11/xdm/pixmaps\ndhclient.script"
 D_BINDMPTS="tmp root home media"
 D_DIRINBINDMNT="/var/run /var/log /var/tmp /var/lib/gdm"
-D_RODIRSINRW="/etc/X11/xkb /var/lib/gconf /var/lib/dpkg /var/lib/aspell /var/lib/pango /var/lib/defoma"
+D_RODIRSINRW="/etc/X11/xkb /var/lib/gconf /var/lib/dpkg /var/lib/aspell \
+/var/lib/pango /var/lib/defoma"
 #D_RWDIRSINRO="/var/lib/gdm"
 D_DIRINDXS="/var/X11R6/compose-cache \
 /var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \

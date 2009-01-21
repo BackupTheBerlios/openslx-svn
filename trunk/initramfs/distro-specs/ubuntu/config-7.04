@@ -36,8 +36,11 @@
 
 # Aus 6.10:
 # mountvirtfs does not exist anymore -> use mountkernfs.sh
-D_INITSCRIPTS="mountkernfs.sh keyboard-setup mountdevsubfs.sh procps.sh bootlogd hwclock.sh sudo console-setup"
-D_ETCEXCL="*.old\n*-\n\
-etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
+D_ETCEXCL="*.old\n*-\n etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
 pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
 X11/xdm/pixmaps\ndhclient.script"
+D_RODIRSINRW="/etc/X11/xkb /var/lib/gconf /var/lib/dpkg /var/lib/aspell \
+/var/lib/pango /var/lib/defoma /var/cache/fontconfig"
+D_INITSCRIPTS="mountkernfs.sh keyboard-setup mountdevsubfs.sh procps.sh \
+bootlogd hwclock.sh sudo console-setup"
+
