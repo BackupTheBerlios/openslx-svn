@@ -28,6 +28,13 @@ LABEL
    APPEND @@@server@@@::@@@tftpbootdir@@@/pxelinux.cfg/default
 #####
 
+LABEL dxsdefault
+   MENU DEFAULT
+   MENU LABEL 1. @@@client_distro@@@-@@@client_distro_ver@@@ Diskless
+   KERNEL @@@server@@@::@@@tftpbootdir@@@/vmlinuz
+   APPEND nfsroot=@@@server@@@:@@@rootdir@@@ vga=0x317 splash=silent initrd=@@@server@@@::@@@tftpbootdir@@@/initrd apic dhcp noldsc vci=DXS
+   ipappend 1
+
 
 LABEL kr1
    MENU LABEL 1. 10.0 NFS
@@ -66,7 +73,6 @@ LABEL kr5a
    ipappend 1
 
 LABEL kr6
-   MENU DEFAULT
    MENU LABEL 1. 10.1 DNBD-EXT2
    KERNEL @@@server@@@::@@@tftpbootdir@@@/suse101nfs
    APPEND dnbdroot=224.0.0.6:5001,ext2 vga=0x317 splash=silent initrd=@@@server@@@::@@@tftpbootdir@@@/initrd-101nfs apic dhcp noldsc vci=DXS debug=0 elevator=noop

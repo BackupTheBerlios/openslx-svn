@@ -112,6 +112,8 @@ configure() {
   fi
   . .config
 
+  # TODO: assure that values get entered only once in .config
+
   # TODO: bash doesnt allow concatenation of more than 2 logical expressions
   if ! [ -z $netmask -a -z $broadcast -a -z $netname -a -z $server ] ; then
     ipcfg=( `ifconfig eth0 | grep "inet addr" | sed -e "s,[a-zA-Z]*:,,g"` )
@@ -137,7 +139,7 @@ configure() {
 
   # if still no distro name set, try to find it using significant files
   if [ -z "${server_distro}" ] ; then
-    if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
+    if [ -e ${rootdir}/etc/SuSE-release ] ; then
       server_distro=suse
       server_distro_ver=`grep "VERSION" /etc/SuSE-release | sed "s/.*= //"`
     elif [ -e /etc/lsb-release ] ; then
@@ -160,7 +162,11 @@ configure() {
   distro_check client_distro client_distro_ver
   echo "Using ${client_distro} as client distribution"
 
-  . config-${server_distro}
+  if [ -z ${rootdir} ] ; then
+    ${rootdir}="/nfsroot/"${client_distro}-${client_distro_ver}
+  fi
+
+  . distro-specs/config-${server_distro}
   
   ask "Path for client system: " rootdir $rootdir
   ask "Path for tftpboot: " tftpbootdir $tftpbootdir
@@ -173,6 +179,7 @@ configure() {
   # evtl. optional?
   ask "Where automount home directories from? (A.B.C.D:/home-dir)" amt $server":/home"
 
+  # more information here!! set useful default
   ask "Which debug level should be used? " debuglevel $debuglevel
 
   # wo ist das referenzsystem? - was ist default ???
@@ -181,33 +188,41 @@ configure() {
   # hier auch dns-server etc abfragen??
 
   # nfs / nbd / squash-fs?
+
+
+  # password for pxeboot-menu (caution: you can easily retrieve it in clear text!!)
+  pxe_passwd="master"
 }
 
 
 copy_system() {
+  echo -e "\n\nSyncing system now\nPlease enter root password of client machine\n"
   rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-${client_distro} ${rsyncsource} ${rootdir}
   # generate error message in case rsync didn't work and exit.
   
-  
+  # mksquashfs (background process)   
 }
 
 
 # setting up server site configuration files etc.
 setup_server () {
+  echo -e "\n\nSetting up server configuration\n"
   # dhcp
   if [ -f ${dhcpd_conf} ] ; then
     echo "Copying old dhcpd.conf to dhcpd.conf.dxs.bak"
     mv ${dhcpd_conf} ${dhcpd_conf}.dxs.bak
   fi
   cp default_files/dhcpd.conf ${dhcpd_conf}
-  sed -e "s,@@@server@@@,${server}," -i ${dhcpd_conf}
+  sed -e "s,@@@server@@@,${server},g" -e "s,@@@netname@@@,${netname},g" -e "s,@@@netmask@@@,${netmask},g" -e "s,@@@broadcast@@@,${broadcast},g" -i ${dhcpd_conf}
+
+  # TODO: sed -e @@@example1@@@, netname+1 etc.
 
   # atftpd
   if [ -f ${atftpd_conf} ] ; then
     echo "Copying old atftpd config file to ${atftpd_conf}.dxs.bak"
     cp ${atftpd_conf} ${atftpd_conf}.dxs.bak
   fi
-  ## MISSING COPY - DISTRO SPECIFIC!!
+  ## TODO: MISSING COPY - DISTRO SPECIFIC!!
   sed -e "s,/tftpboot,${tftpbootdir}," -i ${atftpd_conf}
 
   # nfs
@@ -216,15 +231,16 @@ setup_server () {
     echo "Copying old nfs export file to ${exports_conf}.dxs.bak"
     mv ${exports_conf} ${exports_conf}.dxs.bak
   fi
-  echo "/nfsroot/dxs     ${netname}/${netmask}(ro,no_root_squash,async)" >> ${exports_conf}
+  echo "${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" >> ${exports_conf}
   
   # pxe
   if [ -e ${tftpbootdir} ] ; then
     echo "Copying old tftpboot directory to ${tftpbootdir}.dxs.bak"
+    rm -rf ${tftpbootdir}.dxs.bak >/dev/null
     mv ${tftpbootdir} ${tftpbootdir}.dxs.bak
   fi
   cp -r default_files/tftpboot ${tftpbootdir}
-  sed -e "s,@@@server@@@,${server},g" -e "s,@@@tftpbootdir@@@,${tftpbootdir},g" -i ${tftpbootdir}/pxelinux.cfg/default
+  sed -e "s,@@@server@@@,${server},g" -e "s,@@@tftpbootdir@@@,${tftpbootdir},g" -e "s,@@@pxe_passwd@@@,${pxe_passwd},g" -e "s,@@@client_distro@@@,${client_distro},g" -e "s,@@@client_distro_ver@@@,${client_distro_ver},g" -e "s,@@@rootdir@@@,${rootdir},g" -i ${tftpbootdir}/pxelinux.cfg/default
 
   
   # make services start  -- do we really want to do this?
@@ -232,6 +248,7 @@ setup_server () {
 
 
 create_initrd() {
+  # FIXME: mkdxsinitrd currently wants to run from own directory
   ../initrd/mkdxsinitrd -r ${rootdir}
   
   # generate links to kernel and initial ramdisk
@@ -241,6 +258,11 @@ create_initrd() {
   # TODO: assure that vmlinuz and initrd exist!!
 }
 
+
+footer() {
+  echo -e "\nPlease assure to restart atftpd, nfs-kernel-server and dhcpd!\n"
+  echo -e "\nInstallation finished.\n"
+}
 
 
 ## ------ MAIN ------ ##
@@ -252,3 +274,4 @@ copy_system
 setup_server
 create_initrd
 
+footer

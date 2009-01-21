@@ -1,5 +1,6 @@
 + /bin
 + /boot
++ /dev
 + /etc
 + /home
 + /lib
@@ -7,8 +8,10 @@
 + /media
 + /mnt
 + /opt
++ /proc
 + /root
 + /sbin
++ /sys
 + /tmp
 + /usr
 + /var
@@ -19,6 +22,9 @@
 - /lib/klibc/events/*
 - /boot/initrd*
 - /boot/grub
+- /dev/*
+- /proc/*
+- /sys/*
 - /tmp/*
 - /root/*
 - /home/*
