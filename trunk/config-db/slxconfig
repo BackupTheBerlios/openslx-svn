@@ -545,30 +545,211 @@ and you can create clients for that system, too.
 
 =head1 SYNOPSIS
 
-  slxconfig [options] <action> <key-value-pairs>
+slxconfig [options] <action> <key-value-pairs>
 
-  Options:
-      --help                   brief help message
-      --man                    show full documentation
-      --verbose                be more verbose
-      --version                show version
+=head2 OpenSLX Options
 
-  Actions:
-      add-client name=<client-name> mac=<MAC> [<key>=<value> ...]
-      add-system name=<system-name> [export=<export-name>] \
-                 [<key>=<value> ...]
-      change-client name=<client-name> [<key>=<value> ...]
-      change-system name=<system-name> [<key>=<value> ...]
-      list-clients [<key>=<value> ...]
-      list-exports [<key>=<value> ...]
-      list-systems [<key>=<value> ...]
-      list-vendoroses [<key>=<value> ...]
-      remove-client name=<client-name>
-      remove-system name=<system-name>
+    --base-path=<string>       basic path to project files
+    --bin-path=<string>        path to binaries and scripts
+    --config-path=<string>     path to configuration files
+    --db-basepath=<string>     basic path to openslx database
+    --db-datadir=<string>      data folder created under db-basepath
+    --db-name=<string>         name of database
+    --db-spec=<string>         full DBI-specification of database
+    --db-type=<string>         type of database to connect to
+    --export-path=<string>     path to root of all exported filesystems
+    --locale=<string>          locale to use for translations
+    --logfile=<string>         file to write logging output to
+    --private-path=<string>    path to private data
+    --public-path=<string>     path to public (client-accesible) data
+    --share-path=<string>      path to sharable data
+    --stage1-path=<string>     path to stage1 systems
+    --temp-path=<string>       path to temporary data
+    --tftpboot-path=<string>   path to root of tftp-server
+    --verbose-level=<int>      level of logging verbosity (0-3)
+
+=head2 General Options
+
+    --help                     brief help message
+    --man                      show full documentation
+    --verbose                  be more verbose
+    --version                  show version
+
+=head2 Actions
+
+=over 4
+
+add-client name=<client-name> mac=<MAC> [<key>=<value> ...]
+
+    adds a new client to the config-DB
+
+add-system name=<system-name> [export=<export-name>] \
+           [<key>=<value> ...]
+
+    adds a new system to the config-DB
+
+change-client name=<client-name> [<key>=<value> ...]
+
+    changes the data of an existing system in the config-DB
+
+change-system name=<system-name> [<key>=<value> ...]
+
+    changes the data of an exiisting system in the config-DB
+
+list-clients [<key>=<value> ...]
+
+    lists all clients in config-DB (optionally matching given
+    criteria)
+
+list-exports [<key>=<value> ...]
+
+    lists all exports in config-DB (optionally matching given
+    criteria)
+
+list-systems [<key>=<value> ...]
+
+    lists all systems in config-DB (optionally matching given
+    criteria)
+
+list-vendoroses [<key>=<value> ...]
+
+    lists all vendor-OSes in config-DB (optionally matching given
+    criteria)
+
+remove-client name=<client-name>
+
+    removes a client from the config-DB
+
+remove-system name=<system-name>
+
+    removes a system from the config-DB
+
+=back
 
 =head1 OPTIONS
 
-=over 8
+=head3 OpenSLX Options
+
+=over 4
+
+=item B<--base-path=<string>>
+
+Sets basic path to project files.
+
+Default is $SLX_BASE_PATH (usually F</opt/openslx>).
+
+=item B<--bin-path=<string>>
+
+Sets path to binaries and scripts.
+
+Default is $SLX_BASE_PATH/bin (usually F</opt/openslx/bin>).
+
+=item B<--config-path=<string>>
+
+Sets path to configuration files.
+
+Default is $SLX_CONFIG_PATH (usually F</etc/opt/openslx>).
+
+=item B<--db-basepath=<string>>
+
+Sets basic path to openslx database.
+
+Default is $SLX_DB_PATH (usually F</var/opt/openslx/db>).
+
+=item B<--db-datadir=<string>>
+
+Sets data folder created under db-basepath.
+
+Default is $SLX_DB_DATADIR (usually empty as it depends on db-type
+whether or not such a directory is required at all).
+
+=item B<--db-name=<string>>
+
+Gives the name of the database to connect to.
+
+Default is $SLX_DB_NAME (usually C<openslx>).
+
+=item B<--db-spec=<string>>
+
+Gives the full DBI-specification of database to connect to. Content depends
+on the db-type.
+
+Default is $SLX_DB_SPEC (usually empty as it will be built automatically).
+
+=item B<--db-type=<string>>
+
+Sets the type of database to connect to (CSV, SQLite, mysql, ...).
+
+Default $SLX_DB_TYPE (usually C<CSV>).
+
+=item B<--export-path=<string>>
+
+Sets path to root of all exported filesystems. For each type of export (NFS,
+NBD, ...) a separate folder will be created in here.
+
+Default is $SLX_EXPORT_PATH (usually F</srv/openslx/export>.
+
+=item B<--locale=<string>>
+
+Sets the locale to use for translations.
+
+Defaults to the system's standard locale.
+
+=item B<--logfile=<string>>
+
+Specifies a file where logging output will be written to.
+
+Default is to log to STDERR.
+
+=item B<--private-path=<string>>
+
+Sets path to private data, where the config-db, vendor_oses and configurational
+extensions will be stored.
+
+Default is $SLX_PRIVATE_PATH (usually F</var/opt/openslx>.
+
+=item B<--public-path=<string>>
+
+Sets path to public (client-accesible) data.
+
+Default is $SLX_PUBLIC_PATH (usually F</srv/openslx>.
+
+=item B<--share-path=<string>>
+
+Sets path to sharable data, where distro-specs and functionality templates
+will be stored.
+
+Default is $SLX_SHARE_PATH (usually F</opt/openslx/share>.
+
+=item B<--stage1-path=<string>>
+
+Sets path to stage1 systems, where distributor-systems will be installed.
+
+Default is $SLX_STAGE1_PATH (usually F</var/opt/openslx/stage1>.
+
+=item B<--temp-path=<string>>
+
+Sets path to temporary data.
+
+Default is $SLX_TEMP_PATH (usually F</tmp>.
+
+=item B<--tftpboot-path=<string>>
+
+Sets path to root of tftp-server from which clients will access their files.
+
+Default is $SLX_TFTPBOOT_PATH (usually F</srv/openslx/tftpboot>.
+
+=item B<--verbose-level=<int>>
+
+Sets the level of logging verbosity (0-3).
+
+Default is $SLX_VERBOSE_LEVEL (usually 0, no logging).
+
+=back
+
+=head3 General Options
+
+=over 4
 
 =item B<--help>
 
@@ -590,99 +771,102 @@ Prints the version and exits.
 
 =head1 EXAMPLES
 
-=head2 Listing existing Clients / Exports / Systems / Vendor-OSes
+=head3 Listing existing Clients / Exports / Systems / Vendor-OSes
 
-  slxconfig list-client
-  slxconfig list-export
-  slxconfig list-system
-  slxconfig list-vendoros
+=item B<slxconfig list-client>
 
-      lists all existing instances of the respective DB-objects.
+=item B<slxconfig list-export>
 
-  slxconfig list-client id=3
+=item B<slxconfig list-system>
 
-      lists the client with id=3
+=item B<slxconfig list-vendoros>
 
-  slxconfig list-export type=nfs
+lists all existing instances of the respective DB-objects.
 
-      lists the client with id=3
+=item B<slxconfig list-client id=3>
 
-=head2 Adding a new System to an exported Vendor-OS
+lists the client with id=3
 
-  slxconfig add-system name=debian-4.0
+=item B<slxconfig list-export type=nfs>
 
-      adds a new system named 'debian-4.0' to the config-DB that will
-      use the export of the same name. No client will be associated with
-      this system, yet.
+lists the client with id=3
 
-  slxconfig add-system name=suse-10.1 export-name=suse-10.1-kde \
-                       clients=PC131,PC132,PC133 \
-                       label="Linux Desktop"
+=head3 Adding a new System to an exported Vendor-OS
 
-      adds a new system name 'suse-10.1' to the config-DB that will use
-      the export named 'suse-10.1-kde'. The system will be labeled
-      'Linux Desktop' and the clients 'PC131, 'PC132' and 'PC133' are
-      associated with this system (so they can boot it).
+=item B<slxconfig add-system name=debian-4.0>
 
-=head2 Adding a new Client
+adds a new system named 'debian-4.0' to the config-DB that will
+use the export of the same name. No client will be associated
+with this system, yet.
 
-  slxconfig add-client name=vmware-1 mac=01:02:03:04:05:06
+=item B<slxconfig add-system name=suse-10.1 export-name=suse-10.1-kde \
+                         clients=PC131,PC132,PC133 label="Linux Desktop">
 
-      adds a new client named 'vmware-1', being identified by the MAC
-      '01:02:03:04:05:06' to the config-DB. No system will be
-      associated with this client, yet (so it can't boot anything).
+adds a new system name 'suse-10.1' to the config-DB that will
+use the export named 'suse-10.1-kde'. The system will be labeled
+'Linux Desktop' and the clients 'PC131, 'PC132' and 'PC133' are
+associated with this system (so they can boot it).
 
-  slxconfig add-client name=vmware-1 mac=01:02:03:04:05:06
-                       systems=suse-10.1,debian-4.0 \
-                       attr_start_x=no
+=head3 Adding a new Client
 
-      adds a new client named 'vmware-1', being identified by the MAC
-      '01:02:03:04:05:06' to the config-DB. The systems 'suse-10.1' &
-      'Debian-4.0' will be associated with this client (so it will offer
-      these systems for booting).
+=item B<slxconfig add-client name=vmware-1 mac=01:02:03:04:05:06>
 
-      During boot, the X-subsystem will not be started by this client
-      (so the systems will stay in console mode).
+adds a new client named 'vmware-1', being identified by the MAC
+'01:02:03:04:05:06' to the config-DB. No system will be
+associated with this client, yet (so it can't boot anything).
 
-=head2 Changing a System
+=item B<slxconfig add-client name=vmware-1 mac=01:02:03:04:05:06
+						systems=suse-10.1,debian-4.0 \
+						attr_start_x=no>
 
-  slxconfig change-system name=suse-10.1 attr_start_xdmcp=gnome
+adds a new client named 'vmware-1', being identified by the MAC
+'01:02:03:04:05:06' to the config-DB. The systems 'suse-10.1' &
+'Debian-4.0' will be associated with this client (so it will
+offer these systems for booting).
 
-      will change the system named 'suse-10.1' such that it will use
-      the GNOME session manager.
+During boot, the X-subsystem will not be started by this client
+(so the systems will stay in console mode).
 
-  slxconfig change-system name=suse-10.1 add-clients=vmware-1
+=head3 Changing a System
 
-      will associate the client 'vmware-1' with the system named
-      'suse-10.1'.
+=item B<slxconfig change-system name=suse-10.1 attr_start_xdmcp=gnome>
 
-  slxconfig change-system name=suse-10.1 remove-clients=vmware-1
+will change the system named 'suse-10.1' such that it will use
+the GNOME session manager.
 
-      will remove the client 'vmware-1' from the system named
-      'suse-10.1'.
+=item B<slxconfig change-system name=suse-10.1 add-clients=vmware-1>
 
-=head2 Changing a Client
+will associate the client 'vmware-1' with the system named
+'suse-10.1'.
 
-  slxconfig change-client name=PC131 attr_start_snmp=yes
+=item B<slxconfig change-system name=suse-10.1 remove-clients=vmware-1>
 
-      will change the client named 'PC131' such that it will start
-      the SNMP daemon on all systems that it boots.
+will remove the client 'vmware-1' from the system named
+'suse-10.1'.
 
-  slxconfig change-client name=PC131 add-systems=Debian-4.0
+=head3 Changing a Client
 
-      will associate the system 'Debian-4.0' with the client named
-      'PC131'.
+=item B<slxconfig change-client name=PC131 attr_start_snmp=yes>
 
-  slxconfig change-client name=PC131 remove-systems=Debian-4.0
+will change the client named 'PC131' such that it will start
+the SNMP daemon on all systems that it boots.
 
-      will remove the system 'Debian-4.0' from the client named
-      'PC131'.
+=item B<slxconfig change-client name=PC131 add-systems=Debian-4.0>
 
-=head2 Removing a System / Client
+will associate the system 'Debian-4.0' with the client named
+'PC131'.
 
-  slxconfig remove-system name=<system-name>
-  slxconfig remove-client name=<client-name>
+=item B<slxconfig change-client name=PC131 remove-systems=Debian-4.0>
 
-      removes the system/client with the given name.
+will remove the system 'Debian-4.0' from the client named
+'PC131'.
+
+=head3 Removing a System / Client
+
+=item B<< slxconfig remove-system name=<system-name> >>
+
+=item B<< slxconfig remove-client name=<client-name> >>
+
+removes the system/client with the given name.
 
 =cut

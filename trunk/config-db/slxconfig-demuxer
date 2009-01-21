@@ -458,40 +458,41 @@ slxconfig-demuxer - OpenSLX configuration demultiplexer
 
 slxconfig-demuxer [options]
 
-  Script Options:
-      --dhpc-type=s              specifies the type of DHCP-server (ISC,...)
-      --dry-run                  avoids writing anything, for testing
+Script Options:
+    --dhpc-type=<string>       specifies the type of DHCP-server
+                               (ISC,...)
+    --dry-run                  avoids writing anything, for testing
 
-  OpenSLX Options:
-      --base-path=<string>       basic path to project files
-      --bin-path=<string>        path to binaries and scripts
-      --config-path=<string>     path to configuration files
-      --db-basepath=<string>     basic path to openslx database
-      --db-datadir=<string>      data folder created under db-basepath
-      --db-name=<string>         name of database
-      --db-spec=<string>         full DBI-specification of database
-      --db-type=<string>         type of database to connect to
-      --export-path=<string>     path to root of all exported filesystems
-      --locale=<string>          locale to use for translations
-      --logfile=<string>         file to write logging output to
-      --private-path=<string>    path to private data
-      --public-path=<string>     path to public (client-accesible) data
-      --share-path=<string>      path to sharable data
-      --stage1-path=<string>     path to stage1 systems
-      --temp-path=<string>       path to temporary data
-      --tftpboot-path=<string>   path to root of tftp-server
-      --verbose-level=<int>      level of logging verbosity (0-3)
+OpenSLX Options:
+    --base-path=<string>       basic path to project files
+    --bin-path=<string>        path to binaries and scripts
+    --config-path=<string>     path to configuration files
+    --db-basepath=<string>     basic path to openslx database
+    --db-datadir=<string>      data folder created under db-basepath
+    --db-name=<string>         name of database
+    --db-spec=<string>         full DBI-specification of database
+    --db-type=<string>         type of database to connect to
+    --export-path=<string>     path to root of all exported filesystems
+    --locale=<string>          locale to use for translations
+    --logfile=<string>         file to write logging output to
+    --private-path=<string>    path to private data
+    --public-path=<string>     path to public (client-accesible) data
+    --share-path=<string>      path to sharable data
+    --stage1-path=<string>     path to stage1 systems
+    --temp-path=<string>       path to temporary data
+    --tftpboot-path=<string>   path to root of tftp-server
+    --verbose-level=<int>      level of logging verbosity (0-3)
 
-  General Options:
-      --help                     brief help message
-      --man                      full documentation
-      --version                  show version
+General Options:
+    --help                     brief help message
+    --man                      full documentation
+    --version                  show version
 
 =head1 OPTIONS
 
 =head3 Script Options
 
-=over 8
+=over 4
 
 =item B<--dhcp-type>
 
@@ -507,7 +508,7 @@ you can learn from the logging output what would have been done.
 
 =head3 OpenSLX Options
 
-=over 8
+=over 4
 
 =item B<--base-path=<string>>
 
@@ -626,7 +627,7 @@ Default is $SLX_VERBOSE_LEVEL (usually 0, no logging).
 
 =head3 General Options
 
-=over 8
+=over 4
 
 =item B<--help>
 
