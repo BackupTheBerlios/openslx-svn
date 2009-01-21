@@ -10,6 +10,12 @@
 # (c) 2003 - 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.org Project
 
+# NOTE (zooey):
+#   this whole file should be reimplemented in perl in order to
+#   simplify the passing in of information and the logging/translation
+#   functionality.
+
+
 # debug level of script itself
 DEBUG=1
 # debug level of the initramfs (to trigger the addition of specific
@@ -78,7 +84,8 @@ usage()
   echo "  -n   module list of client network adaptors to support"
   echo "  -r   path to the root of the stage1 system you are preparing"
   echo "       ramdisk for"
-  echo "  -s   theme (for splash)"
+  echo "  -s   settings-file"
+  echo "  -T   theme (for splash)"
   echo "  -d   debug (add special modules to initramfs)"
   echo "  -D   name of distribution (stage1)"
   echo "  -v   version of distribution (stage1)"
@@ -225,7 +232,7 @@ done
 #########################################################################
 # End of function declaration
 
-while getopts :bhgk:i:r:o:s:f:n:Sut:d:D:v:I:V:a: a ; do
+while getopts :bhgk:i:r:o:s:T:f:n:Sut:d:D:v:I:V:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
@@ -234,7 +241,8 @@ while getopts :bhgk:i:r:o:s:f:n:Sut:d:D:v:I:V:a: a ; do
       f)  echo "-f requires file system module list parameter";;
       n)  echo "-n requires network module list parameter";;
       r)  echo "-r requires root dir parameter";;
-      s)  echo "-s requires image size(s)";;
+      s)  echo "-s requires setings file name";;
+      T)  echo "-t requires theme name";;
       t)  echo "-t requires tmp dir parameter";;
       d)  echo "-d requires debug level (integer)";;
       D)  echo "-D requires linux Distribution name";;
@@ -253,7 +261,8 @@ while getopts :bhgk:i:r:o:s:f:n:Sut:d:D:v:I:V:a: a ; do
     f)  FSMODULES=$OPTARG;;
     n)  NWMODULES=$OPTARG ;;
     r)  ROOTDIR=$OPTARG;;
-    s)  theme=$OPTARG;;
+    s)  settings_file=$OPTARG;;
+    T)  theme=$OPTARG;;
     t)  INSTDIR=$OPTARG;;
     d)  IRFSDEBUG=$OPTARG;;
     D)  DISTRO=$OPTARG;;
@@ -290,6 +299,11 @@ ln -s /bin ${INSTDIR}/sbin
 mkdir -p ${INSTDIR}/usr/share
 # needed for KNOPPIX hwsetup tool not to be confused with ${D_SYSCONFDIR}
 mkdir -p ${INSTDIR}/etc/sysconfig
+
+if [ -n "${settings_file}" ] ; then
+	# copy settings file (slxconfig) into the right place:
+	cp $settings_file ${INSTDIR}/etc/sysconfig/slxconfig
+fi
 
 # if still no distro name set, try to find it using significant files
 if [ -z "${DISTRO}" ] ; then
