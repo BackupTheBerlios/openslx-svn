@@ -172,7 +172,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
           root_path=/$(uri_token $rootfs path)
           nfsserver=$(uri_token $rootfs server)
           echo -e "\n# nfs root information gotten via kernel command \
-line in $0\nnfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
+line in $0\n#nfsroot=\"${nfsserver}:${root_path}\"\n" >> /etc/machine-setup
         ;;
         *nbd)
           nbdmod=$srvproto
@@ -204,8 +204,9 @@ line in $0\nnfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
       nfsroot=${opts#nfsroot=}
       #root_path=
       #nfsserver=
-      echo -e "\n# nfs root information gotten via kernel command line in $0\n\
-nfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
+      echo -e "\n# nfs root information gotten via kernel command line in \n\
+$0\n# deprecated: please use rootfs=nfs://...\nnfsroot=\"${nfsroot}\"\n" \
+>> /etc/machine-setup
     ;;
     # size of tempfs if not max. 50% of RAM should be used
     tmpfssize=*)
