@@ -67,13 +67,69 @@ sub rollbackTransaction
 }
 
 ################################################################################
-### data access functions
+### data access
 ################################################################################
 sub _trim
 {
 	my $s = shift;
 	$s =~ s[^\s*(.*?)\s*$][$1];
 	return $s;
+}
+
+sub _buildFilterClause
+{
+	my $self      = shift;
+	my $filter    = shift || {};
+	my $connector = shift;
+
+	my $filterClause = '';
+	my ($quotedVal);
+	foreach my $col (keys %$filter) {
+		$connector = !defined $connector ? 'WHERE' : 'AND';
+		if (defined $filter->{$col}) {
+			$quotedVal = $self->{dbh}->quote($filter->{$col});
+			$filterClause .= " $connector $col = $quotedVal";
+		} else {
+			$filterClause .= " $connector $col IS NULL";
+		}
+	}
+	
+	return $filterClause;
+}
+
+sub _buildAttrFilterClause
+{
+	my $self       = shift;
+	my $attrFilter = shift || {};
+	my $connector = shift;
+
+	my $attrFilterClause = '';
+	my ($quotedName, $quotedValue);
+	foreach my $name (keys %$attrFilter) {
+		$connector = !defined $connector ? 'WHERE' : 'AND';
+		$quotedName = $self->{dbh}->quote($name);
+		if (defined $attrFilter->{$name}) {
+			$quotedValue = $self->{dbh}->quote($attrFilter->{$name});
+			$attrFilterClause .= <<"			End-of-Here";
+				$connector EXISTS (
+					SELECT name FROM system_attr
+					WHERE name = $quotedName 
+					AND value = $quotedValue
+					AND system_id = system.id
+				)
+			End-of-Here
+		} else {
+			$attrFilterClause .= <<"			End-of-Here";
+				$connector NOT EXISTS (
+					SELECT name FROM system_attr
+					WHERE name = $quotedName 
+					AND system_id = system.id
+				)
+			End-of-Here
+		}
+	}
+
+	return $attrFilterClause;
 }
 
 sub _doSelect
@@ -117,13 +173,8 @@ sub fetchVendorOSByFilter
 	my $resultCols = shift;
 
 	$resultCols = '*' unless (defined $resultCols);
-	my $sql = "SELECT $resultCols FROM vendor_os";
-	my ($connector, $quotedVal);
-	foreach my $col (keys %$filter) {
-		$connector = !defined $connector ? 'WHERE' : 'AND';
-		$quotedVal = $self->{dbh}->quote($filter->{$col});
-		$sql .= " $connector $col = $quotedVal";
-	}
+	my $filterClause = $self->_buildFilterClause($filter);
+	my $sql = "SELECT $resultCols FROM vendor_os $filterClause";
 	return $self->_doSelect($sql);
 }
 
@@ -147,13 +198,8 @@ sub fetchExportByFilter
 	my $resultCols = shift;
 
 	$resultCols = '*' unless (defined $resultCols);
-	my $sql = "SELECT $resultCols FROM export";
-	my ($connector, $quotedVal);
-	foreach my $col (keys %$filter) {
-		$connector = !defined $connector ? 'WHERE' : 'AND';
-		$quotedVal = $self->{dbh}->quote($filter->{$col});
-		$sql .= " $connector $col = $quotedVal";
-	}
+	my $filterClause = $self->_buildFilterClause($filter);
+	my $sql = "SELECT $resultCols FROM export $filterClause";
 	return $self->_doSelect($sql);
 }
 
@@ -196,15 +242,17 @@ sub fetchSystemByFilter
 	my $self       = shift;
 	my $filter     = shift;
 	my $resultCols = shift;
+	my $attrFilter = shift;
 
 	$resultCols = '*' unless (defined $resultCols);
-	my $sql = "SELECT $resultCols FROM system";
-	my ($connector, $quotedVal);
-	foreach my $col (keys %$filter) {
-		$connector = !defined $connector ? 'WHERE' : 'AND';
-		$quotedVal = $self->{dbh}->quote($filter->{$col});
-		$sql .= " $connector $col = $quotedVal";
-	}
+	my $filterClause = $self->_buildFilterClause($filter, 'AND');
+	my $attrFilterClause = $self->_buildAttrFilterClause($attrFilter, 'AND');
+	my $sql = <<"	End-of-Here";
+		SELECT $resultCols FROM system
+		WHERE 1=1
+		$filterClause
+		$attrFilterClause
+	End-of-Here
 	return $self->_doSelect($sql);
 }
 
@@ -225,11 +273,16 @@ sub fetchSystemAttrs
 {
 	my $self      = shift;
 	my $systemID  = $self->{dbh}->quote(shift);
+	my $attrNames = shift;
 
 	my $sql = <<"	End-of-Here";
 		SELECT id, name, value FROM system_attr
 		WHERE system_id = $systemID
 	End-of-Here
+	if (defined $attrNames) {
+		my $attrList = join ',', map { $self->{dbh}->quote($_) } @$attrNames;
+		$sql .= " AND name IN ($attrList)";
+	}
 	return $self->_doSelect($sql);
 }
 
@@ -273,13 +326,8 @@ sub fetchClientByFilter
 	my $resultCols = shift;
 
 	$resultCols = '*' unless (defined $resultCols);
-	my $sql = "SELECT $resultCols FROM client";
-	my ($connector, $quotedVal);
-	foreach my $col (keys %$filter) {
-		$connector = !defined $connector ? 'WHERE' : 'AND';
-		$quotedVal = $self->{dbh}->quote($filter->{$col});
-		$sql .= " $connector $col = $quotedVal";
-	}
+	my $filterClause = $self->_buildFilterClause($filter);
+	my $sql = "SELECT $resultCols FROM client $filterClause";
 	return $self->_doSelect($sql);
 }
 
@@ -325,13 +373,8 @@ sub fetchGroupByFilter
 	my $resultCols = shift;
 
 	$resultCols = '*' unless (defined $resultCols);
-	my $sql = "SELECT $resultCols FROM groups";
-	my ($connector, $quotedVal);
-	foreach my $col (keys %$filter) {
-		$connector = !defined $connector ? 'WHERE' : 'AND';
-		$quotedVal = $self->{dbh}->quote($filter->{$col});
-		$sql .= " $connector $col = $quotedVal";
-	}
+	my $filterClause = $self->_buildFilterClause($filter);
+	my $sql = "SELECT $resultCols FROM groups $filterClause";
 	return $self->_doSelect($sql);
 }
 

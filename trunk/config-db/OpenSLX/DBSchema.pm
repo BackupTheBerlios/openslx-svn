@@ -23,10 +23,13 @@ $VERSION = 0.2;
 @ISA = qw(Exporter);
 
 @EXPORT = qw(
-	$DbSchema %DbSchemaHistory
+	$DbSchema %DbSchemaHistory %AttributeInfo
 );
 
-our ($DbSchema, %DbSchemaHistory);
+our ($DbSchema, %DbSchemaHistory, %AttributeInfo);
+
+
+use OpenSLX::Basics;
 
 use POSIX qw(locale_h);
 my $lang = setlocale(LC_MESSAGES);
@@ -256,9 +259,19 @@ $DbSchema = {
 				},
 				{
 					'system_id' => 0,
+					'name' => 'ramfs_miscmods',
+					'value' => '',
+				},
+				{
+					'system_id' => 0,
 					'name' => 'ramfs_nicmods',
 					'value' 
 						=> 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
+				},
+				{
+					'system_id' => 0,
+					'name' => 'ramfs_screen',
+					'value' => '',
 				},
 				{
 					'system_id' => 0,
@@ -448,7 +461,7 @@ $DbSchema = {
 					foreach my $key (keys %$system) {
 						next if substr($key, 0, 5) ne 'attr_';
 						my $attrValue = $system->{$key} || '';
-						next if !length($attrValue);
+						next if $system->{id}>0 && !length($attrValue);
 						my $newAttrName = substr($key, 5);
 						$configDB->setSystemAttr(
 							$system->{id}, $newAttrName, $attrValue
@@ -515,5 +528,27 @@ $DbSchema = {
 		# ... group attributes ...
 	],
 );
+
+
+################################################################################
+###
+### Load all available AttrInfo modules and build the complete hash containing
+### info about all known attributes from that.
+###
+################################################################################
+
+%AttributeInfo = ();
+
+my $libPath = "$openslxConfig{'base-path'}/lib";
+foreach my $module (glob("$libPath/OpenSLX/AttrInfo/*.pm")) {
+	next if $module !~ m{/([^/]+)\.pm$};
+	my $class = "OpenSLX::AttrInfo::$1";
+	vlog(2, "loading attr-info from module '$module'");
+	my $instance = instantiateClass($class);
+	my $attrInfo = $instance->AttrInfo();
+	foreach my $attr (keys %$attrInfo) {
+		$AttributeInfo{$attr} = $attrInfo->{$attr};
+	}
+}
 
 1;

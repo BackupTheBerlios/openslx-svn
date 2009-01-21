@@ -104,8 +104,6 @@ use OpenSLX::Utils;
 =item C<new()>
 
 Returns an object representing a database handle to the config database.
-N.B. this class is implemented as a singleton, so several successive calls to
-new will return the *same* object
 
 =cut
 
@@ -283,9 +281,55 @@ sub getColumnsOfTable
 	my $self      = shift;
 	my $tableName = shift;
 
-	return 
+	return	
 		map { (/^(\w+)\W/) ? $1 : $_; } 
 		@{$DbSchema->{tables}->{$tableName}->{cols}};
+}
+
+=item C<getKnownSystemAttrs()>
+
+Returns the attribute names that apply to systems.
+
+=over
+
+=item Return Value
+
+An array of attribute names.
+
+=back
+
+=cut
+
+sub getKnownSystemAttrs
+{
+	my $self = shift;
+
+	return 
+		grep { $AttributeInfo{$_}->{"applies_to_systems"} }
+		keys %AttributeInfo
+}
+
+=item C<getKnownClientAttrs()>
+
+Returns the attribute names that apply to clients.
+
+=over
+
+=item Return Value
+
+An array of attribute names.
+
+=back
+
+=cut
+
+sub getKnownClientAttrs
+{
+	my $self = shift;
+
+	return 
+		grep { $AttributeInfo{$_}->{"applies_to_clients"} }
+		keys %AttributeInfo
 }
 
 =item C<fetchVendorOSByFilter([%$filter], [$resultCols])>
@@ -318,8 +362,8 @@ sub fetchVendorOSByFilter
 	my $filter     = shift;
 	my $resultCols = shift;
 
-	my @vendorOS =
-	  $self->{'meta-db'}->fetchVendorOSByFilter($filter, $resultCols);
+	my @vendorOS 
+		= $self->{'meta-db'}->fetchVendorOSByFilter($filter, $resultCols);
 
 	return wantarray() ? @vendorOS : shift @vendorOS;
 }
@@ -493,6 +537,11 @@ is no filtering. See L</"Filters"> for more info.
 A comma-separated list of colunm names that shall be returned. If not defined,
 all available data must be returned.
 
+=item Param C<$attrFilter> [Optional]
+
+A hash-ref containing the filter criteria that shall be applied against
+attributes.
+
 =item Return Value
 
 An array of hash-refs containing the resulting data rows.
@@ -506,19 +555,11 @@ sub fetchSystemByFilter
 	my $self       = shift;
 	my $filter     = shift;
 	my $resultCols = shift;
+	my $attrFilter = shift;
 
-	my @systems = $self->{'meta-db'}->fetchSystemByFilter($filter, $resultCols);
-
-	# unless specific result cols have been given, we mix in the attributes
-	# of each system, too:
-	if (!defined $resultCols) {
-		foreach my $system (@systems) {
-			my @attrs = $self->{'meta-db'}->fetchSystemAttrs($system->{id});
-			foreach my $attr (@attrs) {
-				$system->{"attr_$attr->{name}"} = $attr->{value};
-			}
-		}
-	}
+	my @systems = $self->{'meta-db'}->fetchSystemByFilter(
+		$filter, $resultCols, $attrFilter
+	);
 
 	return wantarray() ? @systems : shift @systems;
 }
@@ -555,16 +596,89 @@ sub fetchSystemByID
 	
 	# unless specific result cols have been given, we mix in the attributes
 	# of each system, too:
-	if (!defined $resultCols) {
-		foreach my $system (@systems) {
-			my @attrs = $self->{'meta-db'}->fetchSystemAttrs($system->{id});
-			foreach my $attr (@attrs) {
-				$system->{"attr_$attr->{name}"} = $attr->{value};
-			}
-		}
-	}
+#	if (!defined $resultCols) {
+#		foreach my $system (@systems) {
+#			$system->{attrs} 
+#				= $self->{'meta-db'}->fetchSystemAttrs($system->{id});
+#		}
+#	}
 
 	return wantarray() ? @systems : shift @systems;
+}
+
+=item C<fetchSystemAttrs($systemID, [$attrNames])>
+
+Fetches and returns the information about the attributes of the system
+with the given ID.
+
+=over
+
+=item Param C<$systemID>
+
+The ID of the system whose attributes you are interested in.
+
+=item Param C<$attrNames> [Optional]
+
+A comma-separated list of attribute names that shall be returned. If not 
+defined,all available attributes will be returned.
+
+=item Return Value
+
+An array of hash-refs containing the resulting data rows (or a single hash-ref
+mapping all attribute names to the respective value).
+
+=back
+
+=cut
+
+sub fetchSystemAttrs
+{
+	my $self      = shift;
+	my $systemID  = shift;
+	my $attrNames = shift;
+
+	my @attrs = $self->{'meta-db'}->fetchSystemAttrs($systemID, $attrNames);
+
+	return wantarray() ? @attrs : shift @attrs;
+}
+
+=item C<fetchSystemAttrsAsHash($systemID, [$attrNames])>
+
+Fetches and returns the information about the attributes of the system
+with the given ID.
+
+=over
+
+=item Param C<$systemID>
+
+The ID of the system whose attributes you are interested in.
+
+=item Param C<$attrNames> [Optional]
+
+A comma-separated list of attribute names that shall be returned. If not 
+defined,all available attributes will be returned.
+
+=item Return Value
+
+A single hash-ref mapping all attribute names to their respective value.
+
+=back
+
+=cut
+
+sub fetchSystemAttrsAsHash
+{
+	my $self      = shift;
+	my $systemID  = shift;
+	my $attrNames = shift;
+
+	my @attrs = $self->{'meta-db'}->fetchSystemAttrs($systemID, $attrNames);
+
+	my $Result = {};
+	foreach my $attr (@attrs) {
+		$Result->{$attr->{name}} = $attr->{value};
+	}
+	return $Result;
 }
 
 =item C<fetchSystemIDsOfExport($id)>
@@ -2702,6 +2816,7 @@ sub _checkAndUpgradeDBSchemaIfNecessary
 				$DbSchema->{tables}->{$tableName}->{vals}
 			);
 		}
+		$metaDB->schemaSetDBVersion($DbSchema->{version});
 		vlog(1, _tr('DB has been created successfully'));
 	} elsif ($currVersion < $DbSchema->{version}) {
 		vlog(
@@ -2759,6 +2874,7 @@ sub _checkAndUpgradeDBSchemaIfNecessary
 				}
 			}
 		}
+		$metaDB->schemaSetDBVersion($DbSchema->{version});
 		vlog(1, _tr('upgrade done'));
 	} else {
 		vlog(1, _tr('DB matches current schema version (%s)', $currVersion));
@@ -2770,6 +2886,7 @@ sub _checkAndUpgradeDBSchemaIfNecessary
 sub _aref
 {    # transparently converts the given reference to an array-ref
 	my $ref = shift;
+
 	return [] unless defined $ref;
 	$ref = [$ref] unless ref($ref) eq 'ARRAY';
 
@@ -2779,7 +2896,6 @@ sub _aref
 sub _unique
 {    # return given array filtered to unique elements
 	my %seenIDs;
-
 	return grep { !$seenIDs{$_}++; } @_;
 }
 
