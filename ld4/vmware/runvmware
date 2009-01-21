@@ -4,13 +4,13 @@
 #               X Stations (v4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-03-2006
-#               Michael Janczyk <mj0@uni-freiburg.de>, 15-05-2006
+#               Michael Janczyk <mj0@uni-freiburg.de>, 18-05-2006
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
 last_changes=$(head $0 | grep "@" | awk -F ", " '{print $2}' \
   | awk -F "-" '{print $3" "$2" "$1}' | sort -bfnr \
   | awk '{print $3"-"$2"-"$1}' | grep -m 1 [0-9])
-version=0.14.d
+version=0.14.e
 ################################################################################
 
 
@@ -574,7 +574,7 @@ writelog "Starting...`echo ${np} | sed -e \"s,i.*-,,g\" \
 
 # log disksetup
 writelog "Directories:
-  \tTmpdir:\t\t${tmpdir}\n\tVMhome:\t\t${vmhome}\n\tTmpdir info:
+  \tTmpdir:\t\t${tmpdir}\n\tVMhome:\t\t${vmhome}\n\tTmpdir info:\
   \t`mount | grep -i "/tmp "`\n" 0 1
 
 
@@ -663,7 +663,7 @@ writelog "finished\nResults:\n\tMAC:\t\t00:50:56:0D:${mac}\n\tMem:\t\t${mem} MB
 if [ -n "${inter}" ]; then
   writelog "Starting interactive mode...\c" 0 0
 
-  menutest=$(ls ${vmsessions} | grep -x ".*desktop" 2>/dev/null | wc -l)
+  menutest=$(ls ${vmsessions} | grep -x "*.desktop" 2>/dev/null | wc -l)
 
   # check for session files
   if [ "${menutest}" = "0" ]; then
@@ -717,7 +717,9 @@ fi
 
 # define name for VMware window
 displayname=$(grep -m 1 -i "name" \
-  ${vmsessions}/${startvm}.desktop | awk -F "=" '{print $2}')
+  ${vmsessions}/*${startvm}.desktop | awk -F "=" '{print $2}')
+# if variable not set
+displayname=${displayname:-"VMware Image"}
 
 
 writelog "finished\nResults:\n\tDiskfile:\t${diskfile}
