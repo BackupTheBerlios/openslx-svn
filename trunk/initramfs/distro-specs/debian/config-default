@@ -9,7 +9,7 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# Distro specific general settings for Debian/Sarge
+# Distro specific general settings for general Debian 
 
 # D_SYSCONFDIR - system wide configuration settings - /etc/sysconfig in SuSE 
 # and RedHat, /etc/default in Debian and Ubuntu

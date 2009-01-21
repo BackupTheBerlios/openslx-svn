@@ -42,14 +42,14 @@ sub initDistroInfo
 		- /var/tmp/*
 		- /var/spool/*
 		- /var/run/*
+		- /var/opt/openslx
 		- /var/mail
 		- /var/log/*
 		- /var/lock/*
-		- /var/lib/zypp/cache/*
 		- /var/lib/zypp/*
 		- /var/lib/zmd
 		- /var/lib/xdm
-		- /var/lib/vm/*
+		- /var/lib/vm*
 		- /var/lib/suspend*
 		- /var/lib/smart
 		- /var/lib/sax
@@ -72,14 +72,19 @@ sub initDistroInfo
 		- /usr/bin/zen-*
 		- /usr/bin/nw-manager
 		- /usr/X11R6/bin/BackGround
+		- /usr/bin/BackGround
 		- /opt/kde3/share/autostart/suseplugger.desktop
+		- /opt/kde3/share/autostart/susewatcher.desktop
 		- /opt/kde3/share/autostart/runupdater.desktop
 		- /opt/kde3/share/autostart/profile_chooser-autostart.desktop
 		- /opt/kde3/share/autostart/opensuseupdater.desktop
 		- /opt/kde3/share/autostart/knetworkmanager-autostart.desktop
 		- /opt/kde3/share/autostart/kerry.autostart.desktop
+		- /opt/kde3/share/autostart/kinternet.desktop
 		- /opt/kde3/share/autostart/beagled.desktop
 		- /opt/kde3/share/autostart/SUSEgreeter.desktop
+		- /opt/kde3/share/autostart/zen-updater-auto.desktop
+		- /opt/gnome/share/autostart/beagle*.desktop
 		- /media/*
 		+ /media
 		+ /lib/modules/*/misc/vmblock.o
