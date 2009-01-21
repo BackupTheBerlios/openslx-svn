@@ -4,7 +4,7 @@
 #		functions file). This file is the main base for the 
 #		following SuSE distributions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 28-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, /28-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -163,8 +163,7 @@ local dm="$1"
 # should be stated that entries were made (fixmee how??)
 sed -e "s,DISPLAYMANAGER=.*,DISPLAYMANAGER=\"$start_xdmcp\"," \
     -e "s,.*_XSERVER.*,DISPLAYMANAGER_STARTS_XSERVER=\"$dm\"," \
-  /mnt/etc/${D_SYSCONFDIR}/displaymanager > /etc/displaymanager
-cp /etc/displaymanager /mnt/etc/${D_SYSCONFDIR}/displaymanager
+    -i /mnt/etc/${D_SYSCONFDIR}/displaymanager
 # start the display manager as early as possible, but avoid that is
 # started twice during bootup - quickhack ...
 #ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/S01xdm
@@ -313,13 +312,12 @@ config_bt () {
   cp /etc/bluetooth /mnt/etc/${D_SYSCONFDIR}/bluetooth
 }
 
-# consolefont
+# consolefont and language
 consolefont () {
 echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
   >>/mnt/etc/${D_INITDIR}/boot.ld
 sed -e "s,RC_LANG=.*,RC_LANG=\"${LANG}\" # added in initrd," \
-  /mnt/etc/${D_SYSCONFDIR}/language > /etc/language
-cp /etc/language /mnt/etc/${D_SYSCONFDIR}/language
+    -i /mnt/etc/${D_SYSCONFDIR}/language
 }
 
 # acpi and powersave
@@ -435,8 +433,7 @@ sed -e "s,TARGETS =,TARGETS = vmware-prep," \
 # to block linux from handling usb events during vmware sessions
 sed -e '/USB-specific/{;i\' \
   -e 'ps aux |grep -i vmware| grep -v "grep" &>/dev/null && exit 0' \
-  -e ' }' /mnt/etc/hotplug.d/usb/50-usb.hotplug > /tmp/50-usb.hotplug
-cp /tmp/50-usb.hotplug /mnt/etc/hotplug.d/usb/50-usb.hotplug
+  -e ' }' -i /mnt/etc/hotplug.d/usb/50-usb.hotplug
 }
 
 # initialize runlevel skript to be executed during system startup

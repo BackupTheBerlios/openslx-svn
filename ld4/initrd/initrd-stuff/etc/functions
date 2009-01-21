@@ -2,8 +2,8 @@
 #		linux diskless clients (included by init, hwautocfg,
 #		servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 11-04-2006
-#	 	Felix Endres, 21-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 30-04-2006
+#	 	Felix Endres, 30-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -19,16 +19,16 @@ trigger_device_events () {
     case "$i" in
       */device/uevent|*\**)
         continue
-        ;;
+      ;;
       */class/mem/*|*/class/tty/*)
         first="$first $i"
-        ;;
+      ;;
       */block/md*)
         last="$last $i"
-        ;;
+      ;;
       */*)
         default="$default $i"
-        ;;
+      ;;
     esac
   done
   # trigger the sorted events
@@ -41,6 +41,8 @@ trigger_device_events () {
 # produce error message and if $2 is empty run (debug) shell 
 error () {
 local e_msg="$1"
+# fixme!! DEBUGLEVEL is exported rather early, so checking it here is
+# redundant ...
 if [ -z "$DEBUGLEVEL" ]; then DEBUGLEVEL=0
 fi
 # check if LOGFILE is really writeable
@@ -143,13 +145,11 @@ case $ipcfg in
   ;;
   ifconfig)
     if [ "$ip" = "0.0.0.0" ]; then
-        ifconfig $if up
+      ifconfig $if up
     else
-        ifconfig $if $ip netmask $nm broadcast $bc
+      ifconfig $if $ip netmask $nm broadcast $bc
     fi
-    if [ "$gw" != "0.0.0.0" ] ; then
-      route add default gw $gw
-    fi
+    [ "$gw" != "0.0.0.0" ] && route add default gw $gw
   ;;
   none)
     error "$error_iptool"
@@ -268,10 +268,10 @@ tftpget () {
 case "$1" in
     atftp)
       atftp -g -r $2 $3
-      ;;
+    ;;
     tftp)
       echo "get $2" | tftp $3
-      ;;
+    ;;
 esac
 }
 fileget () {
@@ -323,13 +323,6 @@ strinstr (){
 
 #######################################################################
 # simple string in file search 
-#strinfile (){
-#local line
-#while read < $2 line; do
-#  case "${line}" in *$1*) return 0;; esac
-#done
-#return 1
-#}
 strinfile (){
   case "$(cat $2)" in *$1*) return 0;; esac
   return 1

@@ -84,7 +84,7 @@ if [ "x$start_dreshal" = "xyes" ]; then
   fi
 fi
 }
-# start vmware
+# prepare virtual machine environment (vmware, vmplayer)
 config_vmware () {
 rllinker "vmware-prep" "18" "02"
 rllinker "vmware" "20" "02"
