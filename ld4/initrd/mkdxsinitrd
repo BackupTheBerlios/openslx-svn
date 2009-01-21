@@ -49,7 +49,6 @@ D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 # End of global variable declaration, nothing needed to be changed at 
 # default below that line
 
-
 usage()
 {
   echo Here is how to use mkdxsinitrd
@@ -450,7 +449,7 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${DEBUGMODULES}; do
     mpath=${INSTDIR}/${mod%/*}
     mkdir -p ${mpath}
     cp ${ROOTDIR}/$mod ${mpath}
-    # fixmee!! selection of dependent modules could be handled a little bi
+    # fixmee!! selection of dependent modules could be handled a little bit
     # more clever
     case "$module" in
       e100|8139too|via-rhine|sis900|epic100|sundance|8139cp|eepro100|pcnet32)
@@ -458,6 +457,8 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${DEBUGMODULES}; do
           ${INSTDIR}/lib/modules/${KERNVER}/kernel/drivers/net &>/dev/null
       ;;
       nfs)
+        # create directory structure for modules needed and copy them
+        # to the proper place (as expected by modprobe/modules.dep)
 	mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc/
 	mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd
 	mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/nfs_common

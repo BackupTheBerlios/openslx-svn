@@ -4,7 +4,7 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 21-03-2006
 #		Blabla
 #		Blub
 #
@@ -276,6 +276,15 @@ fi
 # USB core is needed for presence of /proc/bus/usb
 modprobe ${MODPRV} usbcore &
 
+# "drivers" (pseudo, placeholder strings, ...) to exclude from loading
+DRIVERLIST=" disabled unknown ignore pcspkr synaptics keybdev"
+# driver blacklist (real modules which fail to load)
+DRIVERLIST=${DRIVERLIST}" hw_random ichxrom kanotix genericwheelusb "
+# hack for pseudo modules (not to load)
+for i in $DRIVERLIST ; do 
+  echo -e "alias\t$i\tusbcore" >> /etc/modprobe.conf
+done
+
 # load kernel module for ps2 mice
 [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mouse/psmouse.ko ] && \
   modprobe ${MODPRV} psmouse
@@ -288,20 +297,7 @@ modprobe ${MODPRV} usbcore &
 ( hwsetup -v > /tmp/hwsetup.info && echo "hwsetup" > /tmp/hwrun1 ) & 
 
 # ACPI configuration - at least not needed with SuSE 9.3/10.0
-#if [ -d /proc/acpi ]; then
-#  if ! strinstr "noacpi" ${KCMDLINE} || \
-#    ! strinstr "acpi=off" ${KCMDLINE} ; then
-#    found=""
-#    for acpi in /lib/modules/$KERNEL/kernel/drivers/acpi/*; do
-#      acpi=`basename acpi`
-#      case "$acpi" in *_acpi)
-#        egrep -qi "${basename%%_acpi}" /proc/acpi/dsdt 2>/dev/null || continue ;;
-#      esac
-#    modprobe $basename >/dev/null 2>&1 && echo -n " ${YELLOW}$basename${GREEN}" && found="yes"
-#    done
-#  fi
-#fi
-
+# needed for other distros?
 
 # AGP configuration (agpgart and chipset specific driver)
 modprobe ${MODPRV} agpgart || \
@@ -312,14 +308,7 @@ waitfor /tmp/hwrun1 50000 || \
   error "  Expected information from hwsetup to appear in \
 /tmp/hwsetup.info.\n  Unable to configure parts of the systems hardware. \
 Please check that\n  hwsetup is properly installed and executable."
-# "drivers" (pseudo, placeholder strings, ...) to exclude from loading
-DRIVERLIST=" disabled unknown ignore pcspkr synaptics keybdev"
-# driver blacklist (real modules which fail to load)
-DRIVERLIST=${DRIVERLIST}" hw_random ichxrom kanotix genericwheelusb "
-# hack for pseudo modules (not to load)
-for i in $DRIVERLIST ; do 
-  echo -e "alias\t$i\tusbcore" >> /etc/modprobe.conf
-done
+
 # load ide drivers first, takes a while to initialize
 for DRIVER in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
     triflex aec62xx cs5530 ns87415 sc1200 trm290 alim15x3 \

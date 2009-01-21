@@ -4,7 +4,7 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 21-03-2006
 #		Blabla
 #		Blub
 #
@@ -70,9 +70,9 @@ localization $country
 
 #######################################################################
 # setup passwd and shadow for local system users like root, bin, daemon
-# ...
+# and nobody ... all other users should be added externally or with the
+# corresponding services
 basepasswd
-extpasswd
 
 #######################################################################
 # dns and ip configuration

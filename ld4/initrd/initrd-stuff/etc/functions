@@ -2,8 +2,8 @@
 #		linux diskless clients (included by init, hwautocfg,
 #		servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 07-03-2006
-#		Blabla
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 21-03-2006
+#	 	Felix Endres, 21-03-2006
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
@@ -365,15 +365,17 @@ echo "not implemented" > /tmp/ldap-done
 # base passwd/shadow, the standard user present in every system. All
 # other system users should be generated within the service function
 basepasswd () {
-# strip every line with userid between 500 and 99999 from the passwd-file
-# FIXME: "nobody" will be deleted too
-cat /mnt/etc/passwd | sed '/^[a-zA-Z0-9]*:[a-zA-Z0-9]*:[1-9][0-9]\{3,4\}:/d;/^[a-zA-Z0-9]*:[a-zA-Z0-9]*:[5-9][0-9]\{2\}:/d' > /mnt/etc/newpasswd
-mv /mnt/etc/newpasswd /mnt/etc/passwd
-
-
-#echo -e "root:x:0:0:System Administrator:/root:/bin/bash" \
-#  > /mnt/etc/passwd
+# strip every line with userid between 500 and 99999 from the passwd
+# file
+sed '/^[a-zA-Z0-9]*:[a-zA-Z0-9]*:[1-9][0-9]\{3,4\}:/d;/^+:*/d;/^+$/d;
+  /^[a-zA-Z0-9]*:[a-zA-Z0-9]*:[5-9][0-9]\{2\}:/d' /mnt/etc/passwd \
+  > /tmp/newpasswd
+# and add user nobody again (is there a more elegant way?)
+sed -n -e '/nobody/p' /mnt/etc/passwd >> /tmp/newpasswd
+cp /tmp/newpasswd /mnt/etc/passwd
+# create the shadow from passwd file
 echo -e "root:"$root_pw":12958:0:10000::::" > /mnt/etc/shadow
+sed 's/:.*/:!:13078:0:99999:7:::/' /tmp/newpasswd >> /mnt/etc/shadow
 }
 
 #######################################################################

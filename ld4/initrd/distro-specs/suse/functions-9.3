@@ -4,7 +4,7 @@
 #		functions file). This file is the main base for the 
 #		following SuSE distributions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 21-03-2006
 #		Blabla
 #		Blub
 #
@@ -44,19 +44,6 @@ for i in rc3.d/K$stop$script rc5.d/K$stop$script \
          rc3.d/S$start$script rc5.d/S$start$script ; do
   ln -sf ../$script /mnt/etc/init.d/$i
 done
-}
-
-# extended system users
-extpasswd () {
-echo -e "bin:x:1:1:bin:/bin:/bin/bash\ndaemon:x:2:2:Daemon:/sbin:\
-/bin/bash\nman:x:13:62:Manual pages viewer:/var/cache/man:/bin/bash\n\
-at:x:25:25:Batch jobs daemon:/var/spool/atjobs:/bin/bash\n\
-sshd:x:71:65:SSH daemon:/var/lib/sshd:/bin/false\n\
-nobody:x:65534:65533:nobody:/var/lib/nobody:/bin/bash" \
-  >> /mnt/etc/passwd
-echo -e "bin:*:8902:0:10000::::\ndaemon:*:8902:0:10000::::\n\
-man:*:8902:0:10000::::\nat:!:13078:0:99999:7:::\n\
-sshd:!:13078:0:99999:7:::\nnobody:*:13078::::::" >> /mnt/etc/shadow
 }
 
 # group of functions for the normal runlevels - first parameter is start
