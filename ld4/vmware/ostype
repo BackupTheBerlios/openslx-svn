@@ -5,12 +5,11 @@
 
 ##### 
 # For OSType use the first part of the image-name.
-# -OSType-     | -VMWare name- 
+# -VMWare-OS name-      | -User defined OSType- 
 #####
-windows98	win98
-windows2000	win2000pro
-windowsxp	winxppro
-suse		suse
-kubuntu	        other26xlinux
-debian          other26xlinux
+win98                   windows98
+win2000pro              windows2000
+winxppro                windowsxp
+suse                    suse
+other26xlinux           debian kubuntu
 

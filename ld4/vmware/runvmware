@@ -4,13 +4,13 @@
 #               X Stations (v4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-03-2006
-#               Michael Janczyk <mj0@uni-freiburg.de>, 24-05-2006
+#               Michael Janczyk <mj0@uni-freiburg.de>, 26-05-2006
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
 last_changes=$(head $0 | grep "@" | awk -F ", " '{print $2}' \
   | awk -F "-" '{print $3" "$2" "$1}' | sort -bfnr \
   | awk '{print $3"-"$2"-"$1}' | grep -m 1 [0-9])
-version=0.14.e
+version=0.14.f
 ################################################################################
 
 
@@ -272,18 +272,19 @@ USAGE: $0 [--options]
 
 Image options:
 	-i|--interactive        interactive mode with image selection
-	-s|--start <image name>	start image /\$vmdir/<image name>.vmdk
+	-s|--start <image-name>	start image /\${vmdir}/<image-name>.vmdk
 	-a|--alias		use aliases
 	--silent		no stdout from runvmware
         --mem <n(M(h)),n(G(h))>	override autoallocation of memory, in percent
                                 m,M megabyte, g,G gigabyte, h,H reserve f. host
-        --res <XXXxYYY>         Maximum resolution of the guest os, e.g. 800x600
+        --res <X_intxY_int>     Maximum resolution of the guest os, e.g. 800x600
 	--delay <n seconds>	delay the start of the script n seconds
 	--image <directory>	specify image directory
 	--persistent		use persistent mode
 	--vmostype <vmwareos>   define VMware ostype
         --include <includefile> include code right before program start
 	--displayaliases	aliases you can use with option -a
+        --floppya               enable floppy disk
         --floppyb               use /tmp/loop0 as floppy B,
                                 needed for exchanging files w/ VMware
 VMware options:
@@ -506,6 +507,10 @@ while [ ${nofclopt} -gt "${args}" ]; do
     --windowed)
       vmopt=$(echo ${vmopt} | sed -e "s,-X,-x,")
     ;;
+
+    --floppya)
+      floppya="TRUE"
+    ;;
     --floppyb)
       floppyb="TRUE"
     ;;
@@ -631,8 +636,8 @@ if [ -L /dev/cdrom1 ] ; then
 fi
 
 
-# floppy
-[ -d /sys/block/fd0 ] && floppya="TRUE"
+# check for floppy controller
+test ! -d /sys/block/fd0 && floppya="FALSE"
 
 
 # guest resolution
@@ -651,8 +656,8 @@ if [ -n "${guestres}" ]; then
 fi        
 
 writelog "finished\nResults:\n\tMAC:\t\t00:50:56:0D:${mac}\n\tMem:\t\t${mem} MB
-  \tResolution:\t${xres}x${yres}\n\tCD-ROM_1:\t${cdr_1}
-  \tCD-ROM_2:\t${cdr_2}\n" 0 1
+  \tMax. res.:\t${xres}x${yres}\n\tFloppy_A:\t${floppya}\n\tFloppy_B:\
+  \t${floppyb}\n\tCD-ROM_1:\t${cdr_1}\n\tCD-ROM_2:\t${cdr_2}\n" 0 1
 
 
 
@@ -707,7 +712,7 @@ diskfile="${vmdir}/${startvm}.vmdk"
 if [ -z "${comdef}" ]; then
   ostype=$(echo ${startvm} | awk -F "-" '{print $1}')
   vmostype=$(grep -v "#.*" ${vmtempl}/ostype | grep -w "${ostype}" \
-    | awk '{print $2}')
+    | awk '{print $1}')
 
   # if ${ostype} not found use else statement
   vmostype=${vmostype:-"other"}
@@ -723,7 +728,7 @@ displayname=${displayname:-"VMware Image"}
 
 
 writelog "finished\nResults:\n\tDiskfile:\t${diskfile}
-  \tVMimage:\t${vmostype}\n\tDisplayname:\t${displayname}\n" 0 1
+  \tVMostype:\t${vmostype}\n\tDisplayname:\t${displayname}\n" 0 1
 
 
 # link to windows image

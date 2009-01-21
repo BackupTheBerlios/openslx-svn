@@ -3,8 +3,8 @@
 # -NO DUPLICATE ENTRIES!!!-
 
 ###### 
-# -OSType name-         | -aliases separated through spaces-
+# -VMware-Image name-           | -aliases separated through spaces-
 #####
-winxppro-kursversion	winxppro windowsxp winxp
-suse-9.3		suse
+winxppro-kursversion    	winxppro windowsxp winxp
+suse-9.3	        	suse
 
