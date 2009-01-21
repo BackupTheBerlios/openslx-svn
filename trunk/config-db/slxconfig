@@ -355,6 +355,22 @@ sub addSystemToConfigDB
 		die _tr("the system '%s' already exists in the DB, giving up!\n",
 				$systemName);
 	}
+
+	if ($systemName =~ m[\bkde\b]) {
+		# activate kdm and X if system is based on kde:
+		$systemData->{attr_start_xdmcp} = 'kdm'
+			unless exists $systemData->{attr_start_xdmcp};
+		$systemData->{attr_start_x} = 'yes'
+			unless exists $systemData->{attr_start_x};
+	}
+	if ($systemName =~ m[\bgnome\b]) {
+		# activate gdm and X if system is based on GNOME:
+		$systemData->{attr_start_xdmcp} = 'gdm'
+			unless exists $systemData->{attr_start_xdmcp};
+		$systemData->{attr_start_x} = 'yes'
+			unless exists $systemData->{attr_start_x};
+	}
+
 	my $systemID = $openslxDB->addSystem([$systemData]);
 	vlog 0, _tr("system '%s' has been successfully added to DB (ID=%s)\n",
 				$systemName, $systemID);
