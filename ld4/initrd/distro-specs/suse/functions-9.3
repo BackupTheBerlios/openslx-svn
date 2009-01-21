@@ -4,9 +4,7 @@
 #		functions file). This file is the main base for the 
 #		following SuSE distributions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-03-2006
-#		Blabla
-#		Blub
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 25-03-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -60,9 +58,8 @@ if [ -f /mnt/etc/init.d/ntp ] ; then
   fi
   testmkd /mnt/var/lib/ntp/var/run/ntp &>/dev/null
   if [ "x$start_ntp" = "xinitial" ] ; then
-    echo -e "\t# entry added by $0: $date" \
-      >>/mnt/etc/${D_INITDIR}/boot.ld
-    echo -e "\tntpdate -s -b $ntp_servers >${LOGFILE} 2>&1 &" \
+    echo -e "\t# entry added by $0: $date\n\t( ntpdate -s -b $ntp_servers\
+  >${LOGFILE} 2>&1 && \\n\t  which hwclock &>/dev/null && hwclock -w ) &" \
       >>/mnt/etc/${D_INITDIR}/boot.ld
   elif [ "x$start_ntp" = "xyes" ] ; then
     rllinker "ntp" "$start" "$stop"
@@ -114,8 +111,12 @@ fi
 config_sshd () {
 if [ "x$start_sshd" = "xyes" ] ; then
   if [ -f /mnt/etc/init.d/sshd ] ; then
-    testmkd /mnt/var/lib/sshd; testmkd /mnt/var/lib/empty
+    testmkd /mnt/var/lib/sshd
+    testmkd /mnt/var/lib/empty
     rllinker "sshd" "12" "10"
+  else
+    error "  The sshd start script does not seem to be installed, so \
+requesting\n  the start of service does not make much sense." nonfatal
   fi
 fi
 }
@@ -410,15 +411,14 @@ sed -e "s,TARGETS =,TARGETS = vmware-prep," \
 # (before most of the normal boot init scripts)
 # this script should operate like a normal runlevel script
 d_mkrlscript () {
-local switch=$1
-local name=$2
-local info=$3
+local switch="$1"
+local name="$2"
+local info="$3"
 case "$1" in
   init)
-    echo -en "#!/bin/sh\n# skeleton of /etc/${D_INITDIR}/$name written \
-from $0\n. /etc/rc.status\n. /etc/sysconfig/logfile\nrc_reset\n\
-case \"\$1\" in\n    start)\n\techo -n " >>/mnt/etc/${D_INITDIR}/$name
-    echo "\"$info\"" >>/mnt/etc/${D_INITDIR}/$name
+    echo -e "#!/bin/sh\n# skeleton of /etc/${D_INITDIR}/$name written \
+from $0\n. /etc/rc.status\n. /etc/sysconfig/logfile\nrc_reset\ncase \
+\"\$1\" in\n    start)\n\techo -n \"$info\"" >>/mnt/etc/${D_INITDIR}/$name
     chmod u+x /mnt/etc/${D_INITDIR}/$name
   ;;
   close)

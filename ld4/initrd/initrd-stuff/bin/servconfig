@@ -192,19 +192,24 @@ config_snmp 24 02
 # create needed directories and files
 if [ "x$vmware" != "x" ] || [ "x$vmware" != "xno" ] ; then
   # in the future other types of sources besides NFS should be supported
-  mount -t nfs -o ro,nolock,intr,nodev,soft,timeo=2,nosuid \
-    ${imgsrv} /mnt/${vmdir} &
+  for i in /var/lib/vmware /etc/vmware/vmnet1 /etc/vmware/vmnet8 \
+           /var/run/vmware ; do
+    testmkd /mnt/$i
+  done
+  # mount the vmware image source or link it (compatibility to ver. 3)
+  if [ -d /mnt/usr/share/vmware ] ; then
+    ln -sf /usr/share/vmware /var/lib/vmware
+  elif [ -n "${imgsrv}" ] ; then
+    mount -t nfs -o ro,nolock,intr,nodev,soft,timeo=2,nosuid \
+      ${imgsrv} /mnt/var/lib/vmware &
+  fi
   # generate a runlevel script
-  d_mkrlscript init vmware-prep "Starting preparation of vmware environment"
+  d_mkrlscript init vmware-prep 'Starting preparation of vmware environment'
   sed "s,^#.*,,;/^$/d;s,^,\t," /etc/vmware-prep >> \
     /mnt/etc/${D_INITDIR}/vmware-prep
   d_mkrlscript close vmware-prep ""
   chmod u+x /mnt/etc/${D_INITDIR}/vmware-prep
   config_vmware
-  for i in /var/lib/vmware /etc/vmware/vmnet1 /etc/vmware/vmnet8 \
-           /var/run/vmware ; do
-    testmkd /mnt/$i
-  done
   chmod 1777 /mnt/var/run/vmware
   rm /mnt/etc/vmware/not_configured 2>/dev/null
   # define a variable where gdm/kdm should look for additional sessions

@@ -12,7 +12,7 @@
 
 #######################################################################
 # generate events with the sysfs trigger
-function trigger_device_events() {
+trigger_device_events () {
     list=$(echo /sys/bus/*/devices/*/uevent)
     list="$list $(echo /sys/class/*/*/uevent)"
     list="$list $(echo /sys/block/*/uevent /sys/block/*/*/uevent)"
@@ -40,7 +40,7 @@ function trigger_device_events() {
 
 #######################################################################
 # produce error message and if $2 is empty run (debug) shell 
-error() {
+error () {
 local message="An error occured during execution of $0 script:\n\n$1\n"
 # check if LOGFILE is really writeable
 if [ -n "${LOGFILE}" ] ; then
@@ -61,7 +61,7 @@ else
   /bin/sh
 fi
 }
-msg() {
+msg () {
 echo -e "$1 info: $2"
 }
 #######################################################################
@@ -75,7 +75,7 @@ return 0
 #######################################################################
 # load a certain module - name of module with path in argument one, the
 # error message in second argument
-loadmod() {
+loadmod () {
 local modpath=$1
 local module=`echo $modpath|sed -e "s,.*/,,"`
 local msg=$2
@@ -87,7 +87,7 @@ fi
 }
 #######################################################################
 # compute prefix bit number from netmask
-nm2pref() {
+nm2pref () {
 set `IFS="."; echo $1`
 local n=0
   for i in $1 $2 $3 $4 ; do
@@ -144,7 +144,7 @@ esac
 }
 #######################################################################
 # nfs mounter
-nfsmnt()
+nfsmnt ()
 {
 local nfsroot=$1
 errmsg="  Mount of root filesystem via NFS was requested via kernel command \
@@ -176,7 +176,7 @@ esac
 }
 #######################################################################
 # create configuration file for dhclient
-mkdhclconf() {
+mkdhclconf () {
 local vci=$1
 # provide dhclient with proper configuration
 echo -e "option bootlocal-script code 221\t= string;\n\
@@ -205,7 +205,7 @@ fi
 
 #######################################################################
 # dhcp client
-rundhcp()
+rundhcp ()
 {
 local commonerr="  The following problems could produce that error:\n\
   * The af_packet.ko module is either not loaded nor present in kernel.\n\
@@ -326,7 +326,7 @@ strinstr (){
 #done
 #return 1
 #}
-strinfile(){
+strinfile (){
   case "$(cat $2)" in *$1*) return 0;; esac
   return 1
 }

@@ -62,7 +62,7 @@ fi
 echo " ($tft_probability)"
 
 # Find the lines with two times 3 to 4 digits delimited by an x. Print with the two values reverted, so sort sorts w.r.t the 2nd value. Then swap back
-screen_resolutions=`sed -n '/edid/I,$s/.*[ \t]\([0-9]\{3,4\}\) *x *\([0-9]\{3,4\}\).*/\2 x \1/p' ${tmp_ddcprobe_output}| sort -r -n | uniq| sed -n 's/\([0-9]\{3,4\}\) x \([0-9]\{3,4\}\).*/"\2x\1"/p' `
+screen_resolutions=`sed -n '/edid/I,$s/.*[ \t]\([0-9]\{3,4\}\) *x *\([0-9]\{3,4\}\).*/\2 x \1/p' ${tmp_ddcprobe_output}| sort -rn | sort -rnu | sed -n 's/\([0-9]\{3,4\}\) x \([0-9]\{3,4\}\).*/"\2x\1"/p' `
 screen_resolutions=`echo $screen_resolutions`
 echo "Supported Screen Modes: $screen_resolutions"
 

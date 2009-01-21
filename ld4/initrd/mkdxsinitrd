@@ -311,8 +311,8 @@ done
 
 # needed standard binaries
 for bbins in \
-    cat chmod chown chroot cp expr fdisk killall ln mkdir mkfs.ext2 \
-    modprobe mount portmap rmmod sed sort tar umount uniq
+    cat chmod chown chroot cp expr fdisk killall ln ls mkdir mkfs.ext2 \
+    modprobe mount portmap rmmod sed sort rm tar umount
   do
   cobi ${bbins} bin || echo "Program ${bbins} not found"
 done
@@ -334,7 +334,7 @@ cobi $tftp bin
 
 # debug binaries
 for bbins in \
-    date ls lsmod lsof ps rm strace time
+    date lsmod lsof ps strace time
   do
   cobi ${bbins} bin || echo "Program ${bbins} not found"
 done
@@ -348,8 +348,7 @@ done
 # if nfs
 mkdir -p ${INSTDIR}/var/lib/nfs/state
 
-# if nbd
-# cobi nbd-client bin
+# if nbd or dnbd
 if [ -n "${FSMODULES}" ] ; then
 for i in ${FSMODULES}; do
   case "$i" in
@@ -421,23 +420,24 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${DEBUGMODULES}; do
     cp ${ROOTDIR}/$mod ${mpath}
     # fixmee!! selection of dependent modules could be handled a little bit
     # more clever
+    rdirprefix="${ROOTDIR}/lib/modules/${KERNVER}/kernel"
+    ddirprefix="${INSTDIR}/lib/modules/${KERNVER}/kernel"
     case "$module" in
       e100|8139too|via-rhine|sis900|epic100|sundance|8139cp|eepro100|pcnet32)
-        cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/drivers/net/mii.ko \
-          ${INSTDIR}/lib/modules/${KERNVER}/kernel/drivers/net &>/dev/null
+        cp ${rdirprefix}/drivers/net/mii.ko \
+           ${ddirprefix}/drivers/net &>/dev/null
       ;;
       nfs)
         # create directory structure for modules needed and copy them
         # to the proper place (as expected by modprobe/modules.dep)
-	mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc/
-	mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd
-	mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/nfs_common
-        cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc/sunrpc.ko \
-	  ${INSTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc &>/dev/null
-	cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd/lockd.ko \
-          ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd &>/dev/null
-	cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/fs/nfs_common/nfs_acl.ko \
-	  ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/nfs_common &>/dev/null
+	mkdir -p ${ddirprefix}/net/sunrpc
+	mkdir -p ${ddirprefix}/fs/lockd ${ddirprefix}/fs/nfs_common
+        cp ${rdirprefix}/net/sunrpc/sunrpc.ko \
+	  ${ddirprefix}/net/sunrpc &>/dev/null
+	cp ${rdirprefix}/fs/lockd/lockd.ko \
+          ${ddirprefix}/fs/lockd &>/dev/null
+	cp ${rdirprefix}/fs/nfs_common/nfs_acl.ko \
+	  ${ddirprefix}/fs/nfs_common &>/dev/null
       ;;
     esac
   fi
@@ -450,9 +450,8 @@ cp ${ROOTDIR}/lib/modules/${KERNVER}/modules.* \
 for dirs in `find initrd-stuff/* ! -regex ".*/\..*"` ; do
   repco ${dirs##initrd-stuff/} 
 done
-chmod 755 ${INSTDIR}/init ${INSTDIR}/bin/servconfig \
-  ${INSTDIR}/bin/hwautocfg ${INSTDIR}/bin/dhcpmkconfig \
-  ${INSTDIR}/bin/screenres
+chmod 755 ${INSTDIR}/init \
+  ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
 
 #########################################################################
 # End of file copy procedures
