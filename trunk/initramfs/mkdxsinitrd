@@ -4,7 +4,7 @@
 #               ramdisks for linux diskless clients (stage2 system
 #               setup)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-10-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 02-12-2006
 #               Nico Dietrich
 #               Felix Endres
 #               <mj0@uni-freiburg.de> (xenbr), 27-09-2006
@@ -68,8 +68,10 @@ SLX_CONFIG_PATH=@@@SLX_CONFIG_PATH@@@
 usage()
 {
   echo -e "mkdxsinitrd  [-bgh] [-k kernel version] [-i path/file] \
-[-f module(s)] [-n module(s)] [-m module(s)] [-r path] [-s theme]\n"
+[-f module(s)] [-n module(s)] [-m module(s)] [-r path] [-s theme]\n\
+[-c machine-setup]"
   echo "OPTIONEN"
+  echo "  -c location of client configuration file (machine-setup)"
   echo "  -g     Benutze glibc als Basisbibliothek in der ramdisk."
   echo "  -b     Use busybox instead of separate binaries."
   echo "  -h     Zeige Informationen zur Benutzung."
@@ -322,10 +324,11 @@ cp -a ${themes}* ${INSTDIR}/usr/share/themes
 #########################################################################
 # End of function declaration
 
-while getopts :bhgk:i:r:o:s:f:n:m:Sut:d:v:I:V:a: a ; do
+while getopts :bhgk:c:i:r:o:s:f:n:m:Sut:d:v:I:V:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
+      c)  echo "-c requires location of machine-setup file";;
       k)  echo "-k requires kernel version parameter";;
       i)  echo "-i requires initrd path parameter";;
       f)  echo "-f requires file system module list parameter";;
@@ -345,6 +348,7 @@ while getopts :bhgk:i:r:o:s:f:n:m:Sut:d:v:I:V:a: a ; do
     exit 1
     ;;
     b)  use_busybox=1;;
+    c)  CLCONFFILE=$OPTARG;;
     g)  use_glibc=1;;
     k)  KERNVER=$OPTARG;;
     i)  INITRD_PATH=$OPTARG ;;
@@ -724,11 +728,15 @@ chmod 755 ${INSTDIR}/init \
 # add the common default client configuration file - just to ensure to
 # have all major variables defined. !!These settings are most probably
 # are overwritten by fileget in stage3 within initramfs!!
-if [ -f ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup ] ; then
+# fixme! it should be possible to provide the filename and location via
+# parameter
+if [ -n "${CLCONFFILE}" ] ; then
+  cp ${CLCONFFILE} ${INSTDIR}/etc/machine-setup
+  echo "Using ${CLCONFFILE}"
+elif [ -f ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup ] ; then
   cp ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup \
     ${INSTDIR}/etc/machine-setup
   echo "Using ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup"
-
 # use the installed default machine-setup.default
 elif [ -f ${SLX_SHARE_PATH}/templates/machine-setup.default ] ; then
   cp ${SLX_SHARE_PATH}/templates/machine-setup.default \
@@ -749,6 +757,7 @@ elif [ -f ../installer/default_files/machine-setup.default ] ; then
   echo "Warning: Using ../installer/default_files/machine-setup.default"
 else
   #inserted password for root for debugging purposes
+  # fixme - set more default values?!
   echo -e "# default for machine-setup does not exist\n# root logins are \
 disabled\nroot_pw='"'$1$T7VD/mmQ$aCP1WEaWplEsHe9khv4kK.'"'" \
     > ${INSTDIR}/etc/machine-setup

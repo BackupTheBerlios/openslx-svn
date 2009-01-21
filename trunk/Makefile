@@ -189,6 +189,7 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 	@ln -sf $(SLX_BIN_PATH)/slxversion $(USR_BIN_PATH)/
 
 vmware_install:
+	@# we should read the config file here!!
 	@echo "Installing VMware files to $(SLX_VMWARE_PATH)"
 	@mkdir -p $(SLX_VMWARE_PATH)/templ \
 	       -p $(SLX_VMWARE_PATH)/vmsessions/kdm

@@ -2,11 +2,11 @@
 # main script for new type of initial ramdisk for OpenSLX linux diskless
 # clients version 4
 #
-# Dirk von Suchodoletz <dirk@goe.net>, 19-11-2006
+# Dirk von Suchodoletz <dirk@goe.net>, 02-12-2006
 # <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.ORG project
+# (c) 2006 - OpenSLX.ORG Project
 
 # functions common for all distros, messages contains all error and info
 # output (for some reason the error output is not produced properly - crash)
@@ -197,6 +197,20 @@ nfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
       XENBR=1;;
   esac
 done
+# at this point a timer should be started to ensure an automated reboot
+# or halt of the machine if SLX init does not succeed (e.g. missing kernel
+# module for the network adaptor)
+# fixme/testme!!
+# errorhalt () {
+# if [ "${DEBUGLEVEL}" -lt 3 ] ; then
+#   [ ! -f /proc/version ] && mount -n -t proc proc /proc
+#   [ ! -f /proc/sysrq-trigger ] && echo -e $init_nosysrq
+#   usleep 100000
+#   echo "o" > /proc/sysrq-trigger
+# fi
+# }
+# errorhalt &
+
 # check if at least one type of IP configuration is availabe
 if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
   echo -e "# You did not specify any advanced configuration mode for your \
@@ -251,7 +265,7 @@ ipsetup 127.0.0.1 255.0.0.0 0.0.0.0 127.255.255.255 lo
 if [ -n "$IPINFO" ] ; then
   getip () {
     val=$IPINFO; i=$(expr $1 - 1);
-    while [ $i -gt 0 ] ; do
+    while [ $i -ge 0 ] ; do
       val=${val#*:} ; i=$(expr $i - 1);
     done;
   echo $val|sed "s/:.*//"; }
