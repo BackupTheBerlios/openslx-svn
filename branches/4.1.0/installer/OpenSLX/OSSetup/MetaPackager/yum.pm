@@ -13,14 +13,14 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::MetaPackager::yum;
 
-use vars qw(@ISA $VERSION);
-@ISA = ('OpenSLX::OSSetup::MetaPackager::Base');
+use vars qw($VERSION);
+use base qw(OpenSLX::OSSetup::MetaPackager::Base);
 $VERSION = 1.01;		# API-version . implementation-version
 
 use strict;
 use Carp;
 use OpenSLX::Basics;
-use OpenSLX::OSSetup::MetaPackager::Base 1.01;
+use OpenSLX::OSSetup::MetaPackager::Base 1;
 
 ################################################################################
 ### implementation

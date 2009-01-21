@@ -13,8 +13,8 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::ExportType::NFS;
 
-use vars qw(@ISA $VERSION);
-@ISA = ('OpenSLX::OSExport::ExportType::Base');
+use vars qw($VERSION);
+use base qw(OpenSLX::OSExport::ExportType::Base);
 $VERSION = 1.01;		# API-version . implementation-version
 
 use strict;
@@ -23,7 +23,7 @@ use File::Basename;
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::Utils;
-use OpenSLX::OSExport::ExportType::Base 1.01;
+use OpenSLX::OSExport::ExportType::Base 1;
 
 ################################################################################
 ### interface methods

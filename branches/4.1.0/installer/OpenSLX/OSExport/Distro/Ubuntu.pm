@@ -13,14 +13,14 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::Distro::Ubuntu;
 
-use vars qw(@ISA $VERSION);
-@ISA = ('OpenSLX::OSExport::Distro::Base');
+use vars qw($VERSION);
+use base qw(OpenSLX::OSExport::Distro::Base);
 $VERSION = 1.01;		# API-version . implementation-version
 
 use strict;
 use Carp;
 use OpenSLX::Basics;
-use OpenSLX::OSExport::Distro::Base 1.01;
+use OpenSLX::OSExport::Distro::Base 1;
 
 ################################################################################
 ### implementation

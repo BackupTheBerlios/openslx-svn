@@ -15,18 +15,13 @@ package OpenSLX::MetaDB::DBI;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 1;		# API-version
+$VERSION = 1.01;		# API-version . implementation-version
 use base qw(OpenSLX::MetaDB::Base);
 
 use Carp;
 use DBI;
 use OpenSLX::Basics;
-
-my $superVersion = $OpenSLX::MetaDB::Base::VERSION;
-if ($superVersion < $VERSION) {
-	confess _tr('Unable to load module <%s> (Version <%s> required, but <%s> found)',
-				'OpenSLX::MetaDB::Base', $VERSION, $superVersion);
-}
+use OpenSLX::MetaDB::Base 1;
 
 ################################################################################
 ### basics

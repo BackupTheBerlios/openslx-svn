@@ -13,14 +13,14 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::SUSE_10_2_x86_64;
 
-use vars qw(@ISA $VERSION);
-@ISA = ('OpenSLX::OSSetup::Distro::Base');
+use vars qw($VERSION);
+use base qw(OpenSLX::OSSetup::Distro::Base);
 $VERSION = 1.01;		# API-version . implementation-version
 
 use strict;
 use Carp;
 use OpenSLX::Basics;
-use OpenSLX::OSSetup::Distro::Base 1.01;
+use OpenSLX::OSSetup::Distro::Base 1;
 
 ################################################################################
 ### implementation
