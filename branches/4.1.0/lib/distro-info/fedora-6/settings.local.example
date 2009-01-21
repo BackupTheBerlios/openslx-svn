@@ -1,6 +1,8 @@
+# copy this file to 'settings' and edit it as you please
+
 # use local installation sources
-$repository{'base'}->{'url'} = "local://localhost:5080/srv/ftp/pub/opensuse/distribution/SL-10.1/inst-source";
-$repository{'base_update'}->{'url'} = "local://localhost:5082/srv/ftp/pub/suse/update/10.1";
+$repository{'base'}->{'url'} = "local://localhost:5080/srv/ftp/pub/pub/linux/fedora/linux/core/6/i386/os";
+$repository{'base_update'}->{'url'} = "local://localhost:5082/srv/ftp/pub/linux/fedora/linux/core/updates/6/i386/";
 
 # Add a new selection:
 # $selection{'my-kde'} = "$selection{default}

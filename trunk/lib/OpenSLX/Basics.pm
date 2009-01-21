@@ -164,8 +164,10 @@ sub openslxInit
 	# try to read and evaluate config files:
 	my $configPath = $cmdlineConfig{'config-path'}
 						|| $openslxConfig{'config-path'};
-	foreach my $f ("$configPath/settings.default",
-				   "$configPath/settings.local",
+	my $sharePath = $cmdlineConfig{'share-path'}
+						|| $openslxConfig{'share-path'};
+	foreach my $f ("$sharePath/settings.default",
+				   "$configPath/settings",
 				   "$ENV{HOME}/.openslx/settings") {
 		next unless open(CONFIG, "<$f");
 		if ($cmdlineConfig{'verbose-level'} >= 2) {

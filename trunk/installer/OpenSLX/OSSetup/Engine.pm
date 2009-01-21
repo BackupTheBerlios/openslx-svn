@@ -407,7 +407,7 @@ sub readDistroInfo
 	my $bootstrap_packages = $self->{distro}->{config}->{'bootstrap-packages'};
 	my $metapackager_packages 
 		= $self->{distro}->{config}->{'metapackager-packages'};
-	my $file = "$self->{'distro-info-dir'}/settings.local";
+	my $file = "$self->{'distro-info-dir'}/settings";
 	if (-e $file) {
 		vlog 2, "reading configuration file $file...";
 		my $config = slurpFile($file);

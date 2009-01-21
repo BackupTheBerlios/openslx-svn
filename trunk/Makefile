@@ -125,9 +125,9 @@ install:
 	@   # specific database modules are optional, but we tell the user if
 	@   # support for a database is missing:
 	@DEFAULT_DB_TYPE=""; \
-	if test -e ${SLX_CONFIG_PATH}/settings.local; then \
+	if test -e ${SLX_CONFIG_PATH}/settings; then \
 		echo "Reading local settings..."; \
-		. ${SLX_CONFIG_PATH}/settings.local; \
+		. ${SLX_CONFIG_PATH}/settings; \
 	fi; \
 	for m in $${SLX_DB_TYPE} SQLite CSV mysql; do \
 		if ! perl -Ilib -Iconfig-db -e "use OpenSLX::MetaDB::$$m" 2>>${SLX_INSTALL_LOG} ; then \
@@ -234,10 +234,12 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 \nSLX_TEMP_PATH=${SLX_TEMP_PATH}\
 \nSLX_TFTPBOOT_PATH=${SLX_TFTPBOOT_PATH}\
 \nSLX_VMWARE_PATH=${SLX_VMWARE_PATH}\n" \
-	  > $(DESTDIR)$(SLX_CONFIG_PATH)/settings.default; \
-	test -e $(DESTDIR)$(SLX_CONFIG_PATH)/settings.local || \
-	  echo -e "# local setup for openslx (overrides settings.default)\n" \
-	    > $(DESTDIR)$(SLX_CONFIG_PATH)/settings.local; \
+	  > $(DESTDIR)$(SLX_SHARE_PATH)/settings.default; \
+	test -e $(DESTDIR)$(SLX_CONFIG_PATH)/settings || \
+	  echo -e "# Local setup for OpenSLX (overrides default settings).\
+\n#\n# Please look at $(SLX_SHARE_PATH)/settings.default and the docs to learn\
+\n# about the available options.\n" \
+	    > $(DESTDIR)$(SLX_CONFIG_PATH)/settings; \
 
 	@   # create slxversion script:
 	@if test -e REVISION; then \

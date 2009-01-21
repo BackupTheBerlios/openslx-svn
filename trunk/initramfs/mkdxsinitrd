@@ -53,10 +53,10 @@ D_XFONTPATH="<set in ~/distro-config/distro file>"
 D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 # read in the global settings
 SLX_CONFIG_PATH=@@@SLX_CONFIG_PATH@@@
-[ -f $SLX_CONFIG_PATH/settings.default ] && \
-   . $SLX_CONFIG_PATH/settings.default
-[ -f $SLX_CONFIG_PATH/settings.local ] && \
-   . $SLX_CONFIG_PATH/settings.local
+[ -f $SLX_SHARE_PATH/settings.default ] && \
+   . $SLX_SHARE_PATH/settings.default
+[ -f $SLX_CONFIG_PATH/settings ] && \
+   . $SLX_CONFIG_PATH/settings
 
 #########################################################################
 # End of global variable declaration, nothing needed to be changed at
@@ -107,7 +107,7 @@ precheck() {
        echo "i.e. install it using the provided Makefile. Thanks."
     else
        echo "Essential configuration is missing. Please verify"
-       echo "existence and correctness of $SLX_CONFIG_PATH/settings.default"
+       echo "existence and correctness of $SLX_SHARE_PATH/settings.default"
     fi
     exit 1
   fi
@@ -199,10 +199,10 @@ copy_distro_stuff() {
   # definitions in distro/version specific files
   cat ${SLX_SHARE_PATH}/distro-specs/$1/config-default >${INSTDIR}/etc/sysconfig/config
   cat ${SLX_SHARE_PATH}/distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig/config
-  #[ -f $SLX_CONFIG_PATH/settings.default ] && \
-  #   cat $SLX_CONFIG_PATH/settings.default >>${INSTDIR}/etc/sysconfig/config
-  #[ -f $SLX_CONFIG_PATH/settings.local ] && \
-  #   cat $SLX_CONFIG_PATH/settings.local >>${INSTDIR}/etc/sysconfig/config
+  #[ -f $SLX_SHARE_PATH/settings.default ] && \
+  #   cat $SLX_SHARE_PATH/settings.default >>${INSTDIR}/etc/sysconfig/config
+  #[ -f $SLX_CONFIG_PATH/settings ] && \
+  #   cat $SLX_CONFIG_PATH/settings >>${INSTDIR}/etc/sysconfig/config
   cat ${SLX_SHARE_PATH}/distro-specs/$1/functions-default >${INSTDIR}/etc/distro-functions
   cat ${SLX_SHARE_PATH}/distro-specs/$1/functions-$2 >>${INSTDIR}/etc/distro-functions
   # would be cool not to copy .svn here ...

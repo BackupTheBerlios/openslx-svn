@@ -20,7 +20,7 @@ slxsettings
     This script can be used to show or change the local settings for OpenSLX.
 
     Any cmdline-argument passed to this script will change the local OpenSLX
-    settings file (usually /etc/opt/openslx/settings.local).
+    settings file (usually /etc/opt/openslx/settings).
 
     If you invoke the script without any arguments, it will print the current
     settings and exit.
@@ -82,14 +82,14 @@ while (scalar @ARGV) {
 }
 
 # fetch current content of local settings file...
-my $settings = slurpFile("$openslxConfig{'config-path'}/settings.local");
+my $settings = slurpFile("$openslxConfig{'config-path'}/settings");
 
 my $changeCount;
 
 # ...set new values...
 foreach my $key (keys %givenSettings) {
 	next if $key eq 'config-path';
-		# config-path can't be changed, it is used to find settings.local
+		# config-path can't be changed, it is used to find settings
 	my $value = $givenSettings{$key};
 	next if !defined $value;
 	vlog 0, _tr("setting %s to '%s'", $key, $value) unless $quiet;
@@ -113,7 +113,7 @@ foreach my $key (@reset) {
 
 # ... and write local settings file if necessary
 if ($changeCount) {
-	my $f = "$openslxConfig{'config-path'}/settings.local";
+	my $f = "$openslxConfig{'config-path'}/settings";
 	open(SETTINGS, "> $f")
 		or die _tr("Unable to write local settings file '%s' (%s)", $f, $!);
 	print SETTINGS $settings;
@@ -208,7 +208,7 @@ value)
 B<slxsettings> can be used to show or change the local settings for OpenSLX.
 
 Any cmdline-argument passed to this script will change the local OpenSLX
-settings file (usually /etc/opt/openslx/settings.local).
+settings file (usually /etc/opt/openslx/settings).
 
 If you invoke the script without any arguments, it will print the current
 settings and exit.
