@@ -51,10 +51,10 @@ use vars qw(%supportedDistros);
 	'fedora-6_x86_64' => {
 		module => 'Fedora',          support => 'clone,install'
 	},
-	'gentoo-2005.1' => {
+	'gentoo-2006.X' => {
 		module => 'Gentoo',          support => 'clone'
 	},
-	'gentoo-2006.1' => {
+	'gentoo-2007.X' => {
 		module => 'Gentoo',          support => 'clone'
 	},
 	'mandriva-2007.0' => {
@@ -80,6 +80,12 @@ use vars qw(%supportedDistros);
 	},
 	'suse-10.2_x86_64' => {
 		module => 'SUSE',            support => 'clone,install'
+	},
+	'suse-10.3' => {
+		module => 'SUSE',            support => 'clone'
+	},
+	'suse-10.3_x86_64' => {
+		module => 'SUSE',            support => 'clone'
 	},
 	'ubuntu-6.06' => {
 		module => 'Ubuntu',          support => 'clone'
