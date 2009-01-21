@@ -10,9 +10,9 @@ use strict;
 
 my $abstract = q[
 slxconfig
-    This script can be used to display or change the configuration
-    of OpenSLX vendor-OSes. You can create systems that use a
-    specific vendor-OS and you can create clients for that system, too.
+    This script can be used to display or change the OpenSLX configuration
+    database. You can create systems that use a specific vendor-OS
+	and you can create clients for these systems, too.
 ];
 
 use Getopt::Long qw(:config pass_through);
@@ -33,10 +33,6 @@ use OpenSLX::DBSchema;
 
 my (
 	$helpReq,
-	$listClientsReq,
-	$listExportsReq,
-	$listSystemsReq,
-	$listVendorOSesReq,
 	$manReq,
 	$verbose,
 	$versionReq,
@@ -44,10 +40,6 @@ my (
 
 GetOptions(
 	'help|?' => \$helpReq,
-	'list-clients' => \$listClientsReq,
-	'list-exports' => \$listExportsReq,
-	'list-systems' => \$listSystemsReq,
-	'list-vendor-oses' => \$listVendorOSesReq,
 	'man' => \$manReq,
 	'verbose' => \$verbose,
 	'version' => \$versionReq,
@@ -64,48 +56,44 @@ openslxInit();
 my $openslxDB = OpenSLX::ConfigDB->new();
 $openslxDB->connect();
 
-if ($listClientsReq) {
-	print _tr("List of the clients defined in config-DB:\n");
-	print join('', map { "\t$_->{name}\n" }
-#				   grep { $_->{id} > 0 }
-				   sort { $a->{name} cmp $b->{name} }
-				   $openslxDB->fetchClientByFilter());
-	exit 1;
-}
-
-if ($listExportsReq) {
-	print _tr("List of the exports defined in config-DB:\n");
-	print join('', map { "\t$_->{name}\n" }
-				   sort { $a->{name} cmp $b->{name} }
-				   $openslxDB->fetchExportByFilter());
-	exit 1;
-}
-
-if ($listSystemsReq) {
-	print _tr("List of the systems defined in config-DB:\n");
-	print join('', map { "\t$_->{name}\n" }
-#				   grep { $_->{id} > 0 }
-				   sort { $a->{name} cmp $b->{name} }
-				   $openslxDB->fetchSystemByFilter());
-	exit 1;
-}
-
-if ($listVendorOSesReq) {
-	print _tr("List of the vendor-OSes defined in config-DB:\n");
-	print join('', map { "\t$_->{name}\n" }
-				   sort { $a->{name} cmp $b->{name} }
-				   $openslxDB->fetchVendorOSByFilter());
-	exit 1;
-}
-
 my $action = shift @ARGV;
 if ($action =~ m[^add-system$]i) {
     addSystemToConfigDB(@ARGV);
 } elsif ($action =~ m[^add-client$]i) {
     addClientToConfigDB(@ARGV);
+} elsif ($action =~ m[^change-system$]i) {
+    changeSystemInConfigDB(@ARGV);
+} elsif ($action =~ m[^change-client$]i) {
+    changeClientInConfigDB(@ARGV);
+} elsif ($action =~ m[^list-c]) {
+	print _tr("List of the matching clients:\n");
+	listClients(@ARGV);
+} elsif ($action =~ m[^list-e]) {
+	print _tr("List of the matching exports:\n");
+	listExports(@ARGV);
+} elsif ($action =~ m[^list-s]) {
+	print _tr("List of the matching systems:\n");
+	listSystems(@ARGV);
+} elsif ($action =~ m[^list-v]) {
+	print _tr("List of the matching vendor-OSes:\n");
+	listVendorOSes(@ARGV);
+} elsif ($action =~ m[^remove-client$]i) {
+    removeClientFromConfigDB(@ARGV);
+} elsif ($action =~ m[^remove-system$]i) {
+    removeSystemFromConfigDB(@ARGV);
 } else {
-	print STDERR _tr("You need to specify exactly one of these actions:\n\tadd-system, add-client\n");
-	pod2usage(2);
+	print STDERR _tr("You need to specify exactly one of these actions:
+	add-client
+	add-system
+	change-client
+	change-system
+	list-client
+	list-export
+	list-system
+	list-vendoros
+	remove-client
+	remove-system
+Try '$0 --help' for more info.\n");
 }
 
 $openslxDB->disconnect();
@@ -131,6 +119,137 @@ sub parseKeyValueArgs
         $dataHash{$1} = $2;
     }
     return \%dataHash;
+}
+
+sub dumpElements
+{
+	my $objName = shift;
+
+	if ($verbose) {
+		foreach my $elem (@_) {
+			print "$objName '$elem->{name}':\n";
+			print join(
+				'',
+				map {
+					"\t$_"
+					.substr('                         ',length($_))
+					." = $elem->{$_}\n";
+				}
+				sort keys %$elem
+			);
+		}
+	} else {
+		print join('', map { "\t$_->{name}\n" } @_);
+	}
+}
+
+sub listClients
+{
+    my @clientKeys
+		= map { (/^(\w+)\W/) ? $1 : $_; }
+		  @{$DbSchema->{tables}->{client}};
+
+    my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
+
+	dumpElements('client',
+				 sort { $a->{name} cmp $b->{name} }
+				 $openslxDB->fetchClientByFilter($clientData));
+}
+
+sub listExports
+{
+    my @exportKeys
+		= map { (/^(\w+)\W/) ? $1 : $_; }
+		  @{$DbSchema->{tables}->{export}};
+
+    my $exportData = parseKeyValueArgs(\@exportKeys, 'export', @_);
+
+	dumpElements('export',
+				 sort { $a->{name} cmp $b->{name} }
+				 $openslxDB->fetchExportByFilter($exportData));
+}
+
+sub listSystems
+{
+    my @systemKeys
+		= map { (/^(\w+)\W/) ? $1 : $_; }
+		  @{$DbSchema->{tables}->{system}};
+
+    my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
+
+	dumpElements('system',
+				 sort { $a->{name} cmp $b->{name} }
+				 $openslxDB->fetchSystemByFilter($systemData));
+}
+
+sub listVendorOSes
+{
+    my @vendorOSKeys
+		= map { (/^(\w+)\W/) ? $1 : $_; }
+		  @{$DbSchema->{tables}->{vendor_os}};
+
+    my $vendorOSData = parseKeyValueArgs(\@vendorOSKeys, 'vendor_os', @_);
+
+	dumpElements('vendor-OS',
+				 sort { $a->{name} cmp $b->{name} }
+				 $openslxDB->fetchVendorOSByFilter($vendorOSData));
+}
+
+sub addClientToConfigDB
+{
+    my @clientKeys
+		= map { (/^(\w+)\W/) ? $1 : $_; }
+		  @{$DbSchema->{tables}->{client}};
+	push @clientKeys, 'systems';
+    my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
+
+	my @systemIDs;
+	my $systemNames;
+	if (exists $clientData->{systems}) {
+		@systemIDs
+			= map {
+				my $system
+					= $openslxDB->fetchSystemByFilter({ 'name' => $_ });
+				if (!defined $system) {
+					die _tr("system '%s' doesn't exist!\n", $_);
+				}
+				$system->{id};
+			  }
+			  split ",", $clientData->{systems};
+		$systemNames = $clientData->{systems};
+		delete $clientData->{systems};
+	}
+
+	if (!length($clientData->{name})) {
+		die _tr("you have to specify the name for the new client\n");
+	}
+	if (!length($clientData->{mac})) {
+		die _tr("you have to specify the MAC for the new client\n");
+	}
+	if ($clientData->{mac} !~ m[^(?:[[:xdigit:]][[:xdigit:]]:){5}?[[:xdigit:]][[:xdigit:]]$]) {
+		die _tr("unknown MAC-format given, expected something like '01:02:03:04:05:06'!\n");
+	}
+	if (!length($clientData->{boot_type})) {
+		$clientData->{boot_type} = 'pxe';
+	}
+
+	if ($openslxDB->fetchClientByFilter({ 'name' => $clientData->{name} })) {
+		die _tr("the client '%s' already exists in the DB, giving up!\n",
+				$clientData->{name});
+	}
+	my $clientID = $openslxDB->addClient([$clientData]);
+	vlog 0, _tr("client '%s' has been successfully added to DB (ID=%s)\n",
+				$clientData->{name}, $clientID);
+	if ($verbose) {
+		listClient("name=$clientData->{name}");
+	}
+
+	if (scalar(@systemIDs)) {
+		$openslxDB->addSystemIDsToClient($clientID, \@systemIDs);
+		if ($verbose) {
+			print _tr("systems for this client are:\n\t%s\n", $systemNames);
+		}
+	}
 }
 
 sub addSystemToConfigDB
@@ -196,6 +315,9 @@ sub addSystemToConfigDB
 	my $systemID = $openslxDB->addSystem([$systemData]);
 	vlog 0, _tr("system '%s' has been successfully added to DB (ID=%s)\n",
 				$systemData->{name}, $systemID);
+	if ($verbose) {
+		listSystem("name=$systemData->{name}");
+	}
 
 	if (scalar(@clientIDs)) {
 	    $openslxDB->addClientIDsToSystem($systemID, \@clientIDs);
@@ -205,7 +327,7 @@ sub addSystemToConfigDB
 	}
 }
 
-sub addClientToConfigDB
+sub changeClientInConfigDB
 {
     my @clientKeys
 		= map { (/^(\w+)\W/) ? $1 : $_; }
@@ -213,6 +335,9 @@ sub addClientToConfigDB
 	push @clientKeys, 'systems';
     my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
 
+	if (!exists $clientData->{name}) {
+		die _tr("you have to specify the name for the client you'd like to change!\n");
+	}
 	my @systemIDs;
 	my $systemNames;
 	if (exists $clientData->{systems}) {
@@ -230,30 +355,121 @@ sub addClientToConfigDB
 		delete $clientData->{systems};
 	}
 
-	if (!length($clientData->{name})) {
-		die _tr("you have to specify the name for the new client\n");
-	}
-	if (!length($clientData->{mac})) {
-		die _tr("you have to specify the MAC for the new client\n");
-	}
-	if (!length($clientData->{boot_type})) {
-		$clientData->{boot_type} = 'pxe';
-	}
-
-	if ($openslxDB->fetchClientByFilter({ 'name' => $clientData->{name} })) {
-		die _tr("the client '%s' already exists in the DB, giving up!\n",
+	my $client = $openslxDB->fetchClientByFilter({'name' => $clientData->{name}});
+	if (!defined $client) {
+		die _tr("the client '%s' doesn't exists in the DB, giving up!\n",
 				$clientData->{name});
 	}
-	my $clientID = $openslxDB->addClient([$clientData]);
-	vlog 0, _tr("client '%s' has been successfully added to DB (ID=%s)\n",
-				$clientData->{name}, $clientID);
+
+	if ($clientData->{mac} !~ m[^(?:[[:xdigit:]][[:xdigit:]]:){5}?[[:xdigit:]][[:xdigit:]]$]) {
+		die _tr("unknown MAC-format given, expected something like '01:02:03:04:05:06'!\n");
+	}
+
+	$openslxDB->changeClient($client->{id}, [$clientData]);
+	vlog 0, _tr("client '%s' has been successfully changed\n",
+				$clientData->{name});
+	if ($verbose) {
+		listClient("name=$clientData->{name}");
+	}
 
 	if (scalar(@systemIDs)) {
-		$openslxDB->addSystemIDsToClient($clientID, \@systemIDs);
+		$openslxDB->setSystemIDsOfClient($client->{id}, \@systemIDs);
 		if ($verbose) {
 			print _tr("systems for this client are:\n\t%s\n", $systemNames);
 		}
 	}
+}
+
+sub changeSystemInConfigDB
+{
+    my @systemKeys
+		= map { (/^(\w+)\W/) ? $1 : $_; }
+		  @{$DbSchema->{tables}->{system}};
+	push @systemKeys, 'clients';
+    my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
+
+	if (!exists $systemData->{name}) {
+		die _tr("you have to specify the name of the system you'd like to change!\n");
+	}
+
+	my @clientIDs;
+	my $clientNames;
+	if (exists $systemData->{clients}) {
+		@clientIDs
+			= map {
+				my $client
+					= $openslxDB->fetchClientByFilter({ 'name' => $_ });
+				if (!defined $client) {
+					die _tr("client '%s' doesn't exist in DB, giving up!\n", $_);
+				}
+				$client->{id};
+			  }
+			  split ",", $systemData->{clients};
+		$clientNames = $systemData->{clients};
+		delete $systemData->{clients};
+	}
+
+	my $system = $openslxDB->fetchSystemByFilter({'name' => $systemData->{name}});
+	if (!defined $system) {
+		die _tr("the system '%s' doesn't exists in the DB, giving up!\n",
+				$systemData->{name});
+	}
+
+	$openslxDB->changeSystem($system->{id}, [$systemData]);
+	vlog 0, _tr("system '%s' has been successfully changed\n",
+				$systemData->{name});
+	if ($verbose) {
+		listSystems("name=$systemData->{name}");
+	}
+
+	if (scalar(@clientIDs)) {
+	    $openslxDB->setClientIDsOfSystem($system->{id}, \@clientIDs);
+		if ($verbose) {
+			vlog 0, _tr("clients of this system are:\n\t%s\n", $clientNames);
+		}
+	}
+}
+
+sub removeClientFromConfigDB
+{
+    my $clientData = parseKeyValueArgs(['name'], 'client', @_);
+
+	if (!length($clientData->{name})) {
+		die _tr("you have to specify the name of the client you'd like to remove!\n");
+	}
+
+	my $client = $openslxDB->fetchClientByFilter({'name' => $clientData->{name}});
+	if (!defined $client) {
+		die _tr("the client '%s' doesn't exists in the DB, giving up!\n",
+				$clientData->{name});
+	}
+	if ($client->{id} == 0) {
+		die _tr("you can't remove the default-client!\n");
+	}
+	$openslxDB->removeClient($client->{id});
+	vlog 0, _tr("client '%s' has been successfully removed from DB\n",
+				$clientData->{name});
+}
+
+sub removeSystemFromConfigDB
+{
+    my $systemData = parseKeyValueArgs(['name'], 'system', @_);
+
+	if (!length($systemData->{name})) {
+		die _tr("you have to specify the name of the system you'd like to remove!\n");
+	}
+
+	my $system = $openslxDB->fetchSystemByFilter({'name' => $systemData->{name}});
+	if (!defined $system) {
+		die _tr("the system '%s' doesn't exists in the DB, giving up!\n",
+				$systemData->{name});
+	}
+	if ($system->{id} == 0) {
+		die _tr("you can't remove the default-client!\n");
+	}
+	$openslxDB->removeSystem($system->{id});
+	vlog 0, _tr("system '%s' has been successfully removed from DB\n",
+				$systemData->{name});
 }
 
 __END__
@@ -266,36 +482,25 @@ and you can create clients for that system, too.
 
 =head1 SYNOPSIS
 
-=head2 Adding a new System to a Vendor-OS Export
-
-  slxconfig add-system export-name=<export-name> [clients=<client-Names>] [<attribute=value> ...]
-
-  The above syntax is used to add a new system to the config-DB. The new
-  system will use the I<export> whose name is given.
-
-  If you specify clients (a comma-separated list of client names), the new system
-  will be used by the given clients.
-
-=head2 Adding a new Client
-
-  slxconfig add-client [systems=<system-IDs> [<attribute=value> ...]
-
-  The above syntax is used to add a new client to the config-DB.
-
-  If you specify systems (a comma-separated list of system names), the new client
-  will use the given systems.
-
-=head2 General Format
-
-  slxconfig [options] <action> <action-options>
+  slxconfig [options] <action> <key-value-pairs>
 
   Options:
       --help                   brief help message
       --man                    show full documentation
+      --verbose                be more verbose
       --version                show version
 
   Actions:
-      list-systems             clones an existing system via rsync
+      add-client name=<client-name> mac=<client-MAC> ...
+      add-system export=<export-name> ...
+      change-client name=<client-name> [<key-value-pair>] ...
+      change-system name=<system-name> [<key-value-pair>] ...
+      list-clients [<key-value-pair>] ...
+      list-exports [<key-value-pair>] ...
+      list-systems [<key-value-pair>] ...
+      list-vendoroses [<key-value-pair>] ...
+      remove-client name=<client-name>
+      remove-system name=<system-name>
 
 =head1 OPTIONS
 
@@ -309,10 +514,59 @@ Prints a brief help message and exits.
 
 Prints the manual page and exits.
 
+=item B<--verbose>
+
+Prints more information during execution of any action.
+
 =item B<--version>
 
 Prints the version and exits.
 
 =back
+
+=head1 EXAMPLES
+
+=head2 Listing existing Clients / Exports / Systems / Vendor-OSes
+
+  slxconfig list-client
+  slxconfig list-export
+  slxconfig list-system
+  slxconfig list-vendoros
+
+      lists all existing instances of the respective DB-objects.
+
+  slxconfig list-client id=3
+
+      lists the client with id=3
+
+  slxconfig list-export type=nfs
+
+      lists the client with id=3
+
+=head2 Adding a new System to an exported Vendor-OS
+
+  slxconfig add-system export-name=<export-name> [clients=<client-Names>] [<attribute=value> ...]
+
+      adds a new system to the config-DB. The new system will use
+      the I<export> whose name is given.
+
+      If you specify clients (a comma-separated list of client names),
+      the new system will be used by the given clients.
+
+=head2 Adding a new Client
+
+  slxconfig add-client [systems=<system-IDs> [<attribute=value> ...]
+
+      adds a new client to the config-DB.
+
+      If you specify systems (a comma-separated list of system names),
+      the new client will use the given systems.
+
+=head2 Removing a System / Client
+
+  slxconfig remove-system name=<system-name>
+  slxconfig remove-client name=<client-name>
+
+      removes the system/client with the given name.
 
 =cut
