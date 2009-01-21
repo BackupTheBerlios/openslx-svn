@@ -4,7 +4,7 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-02-2006
 #		Blabla
 #		Blub
 #
@@ -323,7 +323,7 @@ for DRIVER in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
     DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
 done
 # check for IDE/SCSI (SATA) - incomplete list
-for DRIVER in ata_piix sata_via; do
+for DRIVER in ata_piix sata_via sata_nv; do
   strinfile " ${DRIVER}" /tmp/hwsetup.info && {
     #SCSIIDE="yes"
     modprobe ${MODPRV} ${DRIVER} &

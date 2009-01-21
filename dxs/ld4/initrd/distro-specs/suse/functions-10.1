@@ -1,4 +1,4 @@
-# Description:  configuration functions for SuSE 10.0 which differ from
+# Description:  configuration functions for SuSE 10.1 which differ from
 #		functions defined for SuSE 9.3 which is base ... General
 #		changes should be done there, version specific changes for
 #		the 10.0 here.
@@ -11,10 +11,21 @@
 # 
 # Version:      0.2.1c
 
+# distro specific stuff to initialize
+preinit () {
+for i in usb_id scsi_id vol_id edd_id hwup ; do
+  echo -e "#!/bin/sh\n:" >/sbin/$i
+done
+chmod u+x /sbin/*
+}
+
 # udev service
 udev_hotplug () {
 local result=0
 echo "Starting udev"
+mknod /dev/console c 5 1
+mknod /dev/null c 1 3
+mknod /dev/kmsg c 1 11
 if [ -x /bin/udevd ] ; then
   echo "" > /proc/sys/kernel/hotplug
   udevd --daemon || result=1

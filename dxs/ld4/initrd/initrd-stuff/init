@@ -19,9 +19,11 @@ functionality. Without this\ninit script will not run."
 . /etc/sysconfig/config || ( echo -e "  The distribution \
 specific configuration file could not be found" && exit 1 )
 
+# run pre init script
+preinit
 date
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
-export date="17-01-2006"
+export date="07-02-2006"
 exec < /dev/console > /dev/console 2>&1
 
 export KERNEL="@@@KERNVER@@@"
@@ -39,7 +41,6 @@ echo 256 > /proc/sys/kernel/real-root-dev
 [ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
 
 # start device auto discovery service - distro specific function
-bash
 udev_hotplug
 # read kernel commandline
 TMPFSSIZE="50%"
