@@ -423,6 +423,7 @@ fi
 # if no vmlinuz found, go for vmlinuz-x.yz.uv...
 if [ -z "$KERNVER" ] ; then
   KERNVER=`ls -lt /nfsroot/boot/vmlinuz* | grep vmlinuz | sed -n "1,1s/.*vmlinuz-//p"`
+  echo "No vmlinuz-link found. Using kernel version "$KERNVER
 fi
 
 if [ -z "$KERNVER" ] ; then

@@ -219,7 +219,7 @@ setup_server () {
   timestamp=`date +%Y%m%d-%H%M`
 
   # creating central dxs configuration directory structure if it doesn't exist
-  for dir in dhcp nfs atftpd pxelinux ; do   # TODO etc...
+  for dir in dhcp nfs atftpd pxelinux ; do
     [ -d ${dxs_conf}/${dir} ] || mkdir -p ${dxs_conf}/${dir}
   done
 
@@ -231,32 +231,32 @@ setup_server () {
   # atftpd
   sed -e "s,/tftpboot,${tftpbootdir}," default_files/${atftpd_conf_name} > ${dxs_conf}/${dxs_atftpd_conf}-${timestamp}
 
-  # nfs
+   # nfs
   echo -e "# Bla Blub\n \
   # NFS export entry for DXS\n\
   ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" >> ${dxs_conf}/${dxs_exports_conf}-${timestamp}
 
   # pxe
   [ -d ${tftpbootdir} ] || mkdir -p ${tftpbootdir} 
-  rsync -a --exclude=.svn default_files/tftpboot ${tftpbootdir}
+  rsync -a --exclude=.svn default_files/tftpboot/* ${tftpbootdir}
 
   sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g;s,@@@pxe_passwd@@@,${pxe_passwd},g;s,@@@client_distro@@@,${client_distro},g;s,@@@client_distro_ver@@@,${client_distro_ver},g;s,@@@rootdir@@@,${rootdir},g" default_files/default > ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
 
   # TODO: loop over kernel and initial ramdisks and create corresponding entries in default
 
-
+  
   # backing up original files
-  for cfile in ${dhcpd_conf} ${atftpd_conf} ${exports_conf} ; do
+  for cfile in ${dhcpd_conf} ${atftpd_conf} ${exports_conf} ${tftpbootdir}/${pxedefault_conf} ; do
     if [ -f ${cfile} -a ! -L ${cfile} ] ; then
       echo "Copying old ${cfile} to ${cfile}"
-      mv ${file} ${file}.original
+      mv ${cfile} ${cfile}.original
     elif [ -L ${cfile} ] ; then 
       unlink ${cfile}
     fi
   done
 
   # linking files
-  for cfile in "${dxs_dhcpd_conf} ${dhcpd_conf}" "${dxs_atftpd_conf} ${atftpd_conf}" "${dxs_exports_conf} ${exports_conf}" "${dxs_pxedefault_conf} ${pxedefault_conf}" ; do
+  for cfile in "${dxs_dhcpd_conf} ${dhcpd_conf}" "${dxs_atftpd_conf} ${atftpd_conf}" "${dxs_exports_conf} ${exports_conf}" "${dxs_pxedefault_conf} ${tftpbootdir}/${pxedefault_conf}" ; do
     set -- $cfile
     ln -s ${dxs_conf}/${1}-${timestamp} ${2}
   done
@@ -266,7 +266,6 @@ setup_server () {
 
 create_initrd() {
   # FIXME: mkdxsinitrd currently wants to run from own directory
-
   # ugly workaround...
   cd ../initrd
 
@@ -279,11 +278,16 @@ create_initrd() {
 
   # TODO: move this stuff in upper loop
   if [ -e ${rootdir}/boot/vmlinuz ] ; then 
-    ln -s ${rootdir}/boot/vmlinuz ${tftpbootdir}
+    ln -sf ${rootdir}/boot/vmlinuz ${tftpbootdir}
   elif [ -e ${rootdir}/vmlinuz ] ; then 
-    ln -s ${rootdir}/boot/vmlinuz ${tftpbootdir}
+    ln -sf ${rootdir}/boot/vmlinuz ${tftpbootdir}
+  elif [ -n "`ls ${rootdir}/boot/vmlinuz*`" ]; then
+    ln -sf `ls -1t ${rootdir}/boot/vmlinuz* | sed -n 1,1p` ${tftpbootdir}/vmlinuz
+  else echo "Could not find the Kernel. Please link the kernel to ${tftpbootdir}"
   fi
-  ln -s ${rootdir}/boot/initrd ${tftpbootdir}
+  # make sure /$tftbootdir exists
+  mkdir -p ${tftpbootdir}
+  ln -sf ${rootdir}/tmp/dxsinitrd.gz ${tftpbootdir}/initrd
 
 }
 
@@ -308,8 +312,8 @@ pxedefault_conf="pxelinux.cfg/default"
 dxs_conf="/etc/dxs/"
 dxs_dhcpd_conf="dhcp/dhcpd.conf"
 dxs_atftpd_conf="atftpd/atftpd"
-dxs_nfs_conf="nfs/exports"
-dxs_pxedefault_conf="pxe/default"
+dxs_exports_conf="nfs/exports"
+dxs_pxedefault_conf="pxelinux/default"
 
 
 
@@ -317,7 +321,7 @@ dxs_pxedefault_conf="pxe/default"
 header
 precheck #(run as root, rsync etc.)
 configure
-copy_system
+#copy_system
 create_initrd
 setup_server
 footer

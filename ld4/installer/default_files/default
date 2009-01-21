@@ -32,7 +32,7 @@ LABEL dxsdefault
    MENU DEFAULT
    MENU LABEL 1. @@@client_distro@@@-@@@client_distro_ver@@@ Diskless
    KERNEL @@@server@@@::@@@tftpbootdir@@@/vmlinuz
-   APPEND nfsroot=@@@server@@@:@@@rootdir@@@ vga=0x317 splash=silent initrd=@@@server@@@::@@@tftpbootdir@@@/initrd apic dhcp noldsc vci=DXS
+   APPEND nfsroot=@@@server@@@:@@@rootdir@@@ vga=0x317 nosplash initrd=@@@server@@@::@@@tftpbootdir@@@/initrd apic dhcp noldsc vci=DXS
    ipappend 1
 
 
