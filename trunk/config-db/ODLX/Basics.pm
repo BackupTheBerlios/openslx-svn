@@ -32,16 +32,17 @@ my $loadedTranslationModule;
 	'db-type' => 'CSV',
 	'locale' => $ENV{LANG},
 		# TODO: may need to be improved in order to be portable
-	'private-basepath=s' => '/var/lib/openslx',
-	'public-basepath=s' => '/srv/openslx',
-	'shared-basepath=s' => '/usr/share/openslx',
+	'private-basepath' => '/var/lib/openslx',
+	'public-basepath' => '/srv/openslx',
+	'shared-basepath' => '/usr/share/openslx',
+	'temp-basepath' => '/tmp',
 );
-$odlxConfig{'db-basepath'} = "$odlxConfig{'private-basepath'}/config-db",
+$odlxConfig{'db-basepath'} = "$odlxConfig{'private-basepath'}/db",
 
 # specification of cmdline arguments that are shared by all odlx-scripts:
 my %odlxCmdlineArgs = (
 	'db-basepath=s' => \$odlxConfig{'db-basepath'},
-		# basic path to odlx database, defaults to "$private-basepath/config-db"
+		# basic path to odlx database, defaults to "$private-basepath/db"
 	'db-datadir=s' => \$odlxConfig{'db-datadir'},
 		# data folder created under db-basepath, default depends on db-type
 	'db-spec=s' => \$odlxConfig{'db-spec'},
@@ -64,6 +65,8 @@ my %odlxCmdlineArgs = (
 		# and all local extensions [system specific scripts])
 	'shared-basepath=s' => \$odlxConfig{'shared-basepath'},
 		# basic path to shared data (functionality templates and distro-specs)
+	'temp-basepath=s' => \$odlxConfig{'temp-basepath'},
+		# basic path to temporary data (used during demuxing)
 	'verbose-level=i' => \$odlxConfig{'verbose-level'},
 		# level of logging verbosity (0-3)
 );
