@@ -154,7 +154,7 @@ sub parseKeyValueArgs
 
 	my %dataHash;
 	while (my $param = shift) {
-		if ($param !~ m[^\s*([\w\-]+)\s*=(.+)$]) {
+		if ($param !~ m[^\s*([\w\-]+)\s*=(.*)$]) {
 			die _tr(
 				"value specification %s has unknown format, expected <key>=<value>\n",
 				$param
