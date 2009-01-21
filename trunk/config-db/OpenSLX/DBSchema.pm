@@ -61,23 +61,29 @@ $DbSchema = {
 			# a vendor os describes a folder containing an operating system as provided by the
 			# vendor (a.k.a. unchanged and thus updatable)
 			'id:pk',			# primary key
-			'name:s.32',		# structured name of OS installation (e.g. suse-9.3-minimal,
+			'name:s.48',		# structured name of OS installation (e.g. suse-9.3-minimal,
 								# suse-9.3-kde, debian-3.1-ppc)
-			'descr:s.1024',		# internal description (optional, for admins)
+			'comment:s.1024',	# internal comment (optional, for admins)
 			'path:s.256',		# path to os filesystem root
 		],
 		'system' => [
 			# a system describes one bootable instance of a vendor os
 			'id:pk',				# primary key
 			'vendor_os_id:fk',		# foreign key
-			'name:s.32',			# name used in filesystem and passed to kernel via cmdline arg
+			'name:s.48',			# name used in filesystem and passed to kernel via cmdline arg
 									# (e.g.: suse-9.3-minimal, suse-9.3-minimal-nbd, ...)
-			'label:s.128',			# visible name (pxe-label)
-			'descr:s.1024',			# internal description (optional, for admins)
+			'label:s.128',			# name visible to user (pxe-label)
+			'comment:s.1024',		# internal comment (optional, for admins)
+			'export_type:s.10',		# 'nbd', 'nbd-squash', 'nfs', ...
 			'export_uri:s.256',		# path to export (NDB-image or NFS-path)
 			'kernel:s.128',			# path to kernel file, relative to OS root
 			'kernel_params:s.512',	# kernel-param string for pxe
-			'initramfs:s.128',		# path to initramfs file, relative to OS root
+			'ramfs_debug_level:i',	# debug level for initramfs-generator-script
+			'ramfs_use_glibc:b',	# use glibc in ramfs
+			'ramfs_use_busybox:b',	# use busybox in ramfs
+			'ramfs_nicmods:s.128',	# list of network interface card modules
+			'ramfs_fsmods:s.128',	# list of filesystem modules
+			'ramfs_screen:s.10',	# screen size for splash
 			'hidden:b',				# hidden systems won't be offered for booting
 			@sharedAttributes,
 		],
@@ -86,13 +92,19 @@ $DbSchema = {
 			# which will always be offered if the systems itself is offered by
 			# a client
 			'id:pk',				# primary key
-			'name:s.32',			# name used for
+			'name_addition:s.48',	# string added to system name in order to
+									# get a unique system name
 			'system_id:fk',			# foreign key
 			'label_addition:s.64',	# visible name part (added to pxe-label)
-			'descr:s.1024',			# internal description (optional, for admins)
+			'comment:s.1024',		# internal comment (optional, for admins)
 			'kernel:s.128',			# name of kernel file
 			'kernel_params:s.512',	# kernel-param string for pxe
-			'initramfs:s.128',		# name of initrd file
+			'ramfs_debug_level:i',	# debug level for initramfs-generator-script
+			'ramfs_use_glibc:b',	# use glibc in ramfs
+			'ramfs_use_busybox:b',	# use busybox in ramfs
+			'ramfs_nicmods:s.128',	# list of network interface card modules
+			'ramfs_fsmods:s.128',	# list of filesystem modules
+			'ramfs_screen:s.10',	# screen size for splash
 		],
 		'client' => [
 			# a client is a PC booting via network
@@ -100,9 +112,10 @@ $DbSchema = {
 			'name:s.128',		# official name of PC (e.g. as given by sticker
 								# on case)
 			'mac:s.20',			# MAC of NIC used for booting
-			'descr:s.1024',		# internal description (for admins)
+			'comment:s.1024',	# internal comment (optional, for admins)
 			'boot_type:s.20',	# type of remote boot procedure (PXE, ...)
 			'unbootable:b',		# unbootable clients simply won't boot
+			'kernel_params:s.128',	# client-specific kernel-args (e.g. console)
 			@sharedAttributes,
 		],
 		'client_system_ref' => [
@@ -117,7 +130,7 @@ $DbSchema = {
 			# one resulting attribute set with respect to each group's priority.
 			'id:pk',			# primary key
 			'name:s.128',		# name of group
-			'descr:s.1024',		# internal description (for admins)
+			'comment:s.1024',	# internal comment (optional, for admins)
 			'priority:i',		# priority, used for order in group-list
 								# (from 0-lowest to 10-highest)
 			@sharedAttributes,
@@ -191,7 +204,7 @@ $DbSchema = {
 				{	# add default system
 					'id' => 0,
 					'name' => '<<<default>>>',
-					'descr' => 'internal system that holds default values',
+					'comment' => 'internal system that holds default values',
 				},
 			],
 		},
@@ -208,7 +221,7 @@ $DbSchema = {
 				{	# add default client
 					'id' => 0,
 					'name' => '<<<default>>>',
-					'descr' => 'internal client that holds default values',
+					'comment' => 'internal client that holds default values',
 				},
 			],
 		},
