@@ -53,22 +53,22 @@ if (!$dryRun) {
 		die _tr("Unable to create or access temp-path '%s'!", $tempPath);
 	}
 }
-my $exportPath = "$openslxConfig{'public-path'}/tftpboot";
+my $tftpbootPath = $openslxConfig{'tftpboot-path'};
 if (!$dryRun) {
-	system("rm -rf $exportPath/client-conf/* $exportPath/pxe/*");
-	system("mkdir -p $exportPath/client-conf $exportPath/pxe/pxelinux.cfg");
-	if (!-d $exportPath) {
-		die _tr("Unable to create or access export-path '%s'!", $exportPath);
+	system("rm -rf $tftpbootPath/client-config/* $tftpbootPath/pxe/*");
+	system("mkdir -p $tftpbootPath/client-config $tftpbootPath/pxe/pxelinux.cfg");
+	if (!-d $tftpbootPath) {
+		die _tr("Unable to create or access tftpboot-path '%s'!", $tftpbootPath);
 	}
 }
 
-my $lockFile = "$exportPath/config-demuxer.lock";
+my $lockFile = "$tftpbootPath/config-demuxer.lock";
 lockScript($lockFile);
 
 writeConfigurations();
 
 my $wr = ($dryRun ? "would have written" : "wrote");
-print "$wr $systemConfCount systems and $clientSystemConfCount client-configurations to $exportPath/client-conf\n";
+print "$wr $systemConfCount systems and $clientSystemConfCount client-configurations to $tftpbootPath/client-config\n";
 
 disconnectConfigDB($openslxDB);
 
@@ -175,8 +175,8 @@ sub createTarOfPath
 ################################################################################
 sub writePXEMenus
 {
-	my $pxePath = "$exportPath/pxe";
-	my $pxeConfigPath = "$exportPath/pxe/pxelinux.cfg";
+	my $pxePath = "$tftpbootPath/pxe";
+	my $pxeConfigPath = "$tftpbootPath/pxe/pxelinux.cfg";
 
 	if (!-e "$pxePath/pxelinux.0") {
 		my $pxelinux0Path
@@ -204,7 +204,7 @@ sub writePXEMenus
 			foreach my $info (@infos) {
 				my $extSysID = externalIDForSystem($info);
 				my $append = $system->{kernel_params};
-				$append .= " initrd=$extSysID/initialramfs";
+				$append .= " initrd=$extSysID/initramfs";
 				$append .= " $clientAppend";
 				$append .= " rootfs=$info->{'export-uri'} file";
 				print PXE "LABEL openslx-$extSysID\n";
@@ -225,7 +225,7 @@ sub generateInitalRamFS
 	my $vendorOS = shift;
 	my $pxeSysPath = shift;
 
-	vlog 1, _tr('generating initialramfs %s/initialramfs', $pxeSysPath);
+	vlog 1, _tr('generating initialramfs %s/initramfs', $pxeSysPath);
 	my $cmd = "$openslxConfig{'bin-path'}/slxmkramfs ";
 	if ($setup->{ramfs_use_glibc}) {
 		$cmd .= '-g ';
@@ -245,7 +245,7 @@ sub generateInitalRamFS
 	}
 	my $rootPath
 		= "$openslxConfig{'private-path'}/stage1/$vendorOS->{path}";
-	$cmd .= "-i $pxeSysPath/initialramfs -r $rootPath";
+	$cmd .= "-i $pxeSysPath/initramfs -r $rootPath";
 
 	$ENV{'SLX_PRIVATE_PATH'} = $openslxConfig{'private-path'};
 	$ENV{'SLX_PUBLIC_PATH'} = $openslxConfig{'public-path'};
@@ -258,7 +258,7 @@ sub writeSystemPXEFiles
 {
 	my $system = shift;
 
-	my $pxePath = "$exportPath/pxe";
+	my $pxePath = "$tftpbootPath/pxe";
 
 	my $vendorOS = fetchVendorOSesByID($openslxDB, $system->{vendor_os_id});
 	my @infos = aggregatedSystemFileInfosOfSystem($openslxDB, $system);
@@ -300,7 +300,7 @@ sub writeClientConfigurationsForSystem
 		my $externalClientID = externalIDForClient($client);
 		my $externalSystemID = externalIDForSystem($system);
 		createTarOfPath($buildPath, "${externalClientID}.tgz",
-						"$exportPath/client-conf/$externalSystemID");
+						"$tftpbootPath/client-config/$externalSystemID");
 	}
 }
 
@@ -321,7 +321,7 @@ sub writeSystemConfigurations
 		writeAttributesToFile($system, $attrFile);
 
 		my $externalSystemID = externalIDForSystem($system);
-		my $systemPath = "$exportPath/client-conf/$externalSystemID";
+		my $systemPath = "$tftpbootPath/client-config/$externalSystemID";
 		createTarOfPath($buildPath, "default.tgz", $systemPath);
 
 		writeSystemPXEFiles($system);
