@@ -1,0 +1,11 @@
+# Apparently this is not really a .desktop file like the rest, but it's useful
+# to treat it as such
+
+[GdmGreeterTheme]
+Encoding=UTF-8
+Greeter=openslx.xml
+Name=openslx
+Description=OpenSLX Theme based on Daemonic KDM theme for FreeBSD
+Author=openslx.org
+Copyright=
+Screenshot=screenshot.png

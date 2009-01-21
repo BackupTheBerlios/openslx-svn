@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE greeter SYSTEM "greeter.dtd">
+<greeter>
+
+<!-- main pic, login pic -->
+<item type="pixmap">
+	<normal file="background.png"/>
+	<pos x="0" y="0" width="100%" height="100%"/>
+
+	<item type="pixmap">
+		<normal file="welcome-time-shadowed.png"/>
+		<pos anchor="n" x="50%" y="0" width="824" height="48"/>
+
+
+		<!-- Wellcome on ... -->
+		<item type="label">
+			<pos anchor="w" x="28" y="33%"/>
+			<normal color="#f0f0f0" font="Sans 12"/>
+			<stock type="welcome-label"/>
+		</item>
+
+
+		<!-- clock -->
+		<item type="label" id="clock">
+			<normal color="#f0f0f0" font="Sans 12"/>
+			<pos anchor="e" x="-28" y="33%"/>
+			<text>%c</text>
+		</item>
+
+	</item>
+
+
+	<item type="pixmap">
+		<normal file="main-runner.png"/>
+		<pos anchor="c" x="50%" y="50%" width="100%" height="192"/>
+
+		<item type="pixmap">
+			<normal file="distribution.png"/>
+			<pos anchor="w" x="40" y="50%" width="100" height="100"/>
+		</item>
+
+		<item type="rect">
+			<normal color="#ffff00" alpha="0.0"/>
+			<pos anchor="w" x="180" y="50%" width="90" height="160"/>
+
+			<!-- username-label -->
+			<item type="label">
+				<pos anchor="ne" x="90%" y="35%"/>
+				<normal color="#f0f0f0" font="Sans 11"/>
+				<stock type="username-label"/>
+			</item>
+
+			<!-- password-label -->
+			<item type="label">
+				<pos anchor="ne" x="90%" y="55%"/>
+				<normal color="#f0f0f0" font="Sans 11"/>
+				<stock type="password-label"/>
+			</item>
+		</item>
+
+		<item type="rect">
+			<normal color="#00ffff" alpha="0.0"/>
+			<pos anchor="w" x="270" y="50%" width="170" height="160"/>
+
+			<!-- username-entry -->
+			<item type="entry" id="user-entry">
+				<pos anchor="n" x="45%" y="35%" height="24" width="150"/>
+			</item>
+
+			<!-- password-entry -->
+			<item type="entry" id="pw-entry">
+				<pos anchor="n" x="45%" y="55%" height="24" width="150"/>
+			</item>
+			
+			<item type="pixmap" button="true" id="login_button">
+				<pos anchor="n" x="100%" y="55%" height="24"/>
+				<normal file="enter.png"/>
+			</item>
+		</item>
+
+
+
+		<item type="rect">
+			<normal color="#ff0000" alpha="0.0"/>
+			<pos anchor="c" x="50%" y="50%" width="30%" height="160"/>
+
+			<!-- capslock-warning -->
+			<item type="pixmap" id="caps-lock-warning">
+				<normal file="error.png"/>
+				<pos anchor="c" x="50%" y="16%" width="100%" height="70"/>
+				<item type="rect" id="caps-lock-warning">
+					<normal color="#000000" alpha="0.4"/>
+					<pos anchor="c" x="50%" y="50%" width="box" height="box"/>
+					<box orientation="vertical" min-width="400" xpadding="10" ypadding="5" spacing="0">
+						<item type="label">
+							<normal color="#ff8b00" font="Sans 12"/>
+							<pos x="50%" anchor="n"/>
+							<stock type="caps-lock-warning"/>
+						</item>
+					</box>
+				</item>
+			</item>
+
+			<item type="pixmap">
+				<normal file="environment.png"/>
+				<pos anchor="c" x="50%" y="50%" width="186" height="100"/>
+			</item>
+
+			<!-- Login-Error -->
+			<item type="pixmap" id="pam-error">
+				<normal file="error.png"/>
+				<pos anchor="c" x="50%" y="84%" width="100%" height="70"/>
+				<item type="rect">
+					<normal color="#000000" alpha="0.4"/>
+					<pos anchor="c" x="50%" y="50%" width="box" height="box"/>
+					<box orientation="vertical" min-width="400" xpadding="10" ypadding="5" spacing="0">
+						<item type="label">
+							<normal color="#ff8b00" font="Sans 12"/>
+							<pos anchor="n" x="50%"/>
+							<text>Login failed.</text>
+						</item>
+					</box>
+				</item>
+			</item>
+
+		</item>
+
+
+		<!-- icons and text on the left -->
+		<item type="rect">
+			<normal color="#ff0000" alpha="0.0"/>
+			<pos anchor="e" x="-100" y="50%" width="20%" height="160"/>
+
+			<!-- session-button -->
+			<item type="rect" id="session_button" button="true">
+				<pos anchor="se" x="100%" y="50%" width="180" height="50%"/>
+				<item type="pixmap" id="session_button" button="true">
+					<normal file="sessions_inactive.png"/>
+					<prelight file="sessions.png"/>
+					<pos anchor="se" x="94%" y="-8" width="48" height="48"/>
+				</item>
+				<item type="label">
+					<normal color="#bbbbbb" font="Sans 12"/>
+					<prelight color="#f0f0f0" font="Sans 12"/>
+					<active color="#ff0000" font="Sans 12"/>
+					<pos anchor="e" x="-70" y="-32"/>
+					<text>Sessions</text>
+					<text xml:lang="ca">Sessi&#xF3;</text>
+					<text xml:lang="es">Sesi&#xF3;n</text>
+					<text xml:lang="en">Session</text>
+				</item>
+			</item>
+
+			<!-- menu-button -->
+			<item type="rect" id="system_button" button="true">
+				<show modes="console" type="system"/>
+				<pos anchor="ne" x="100%" y="50%" width="180" height="50%"/>
+				<item type="pixmap" id="system_button" button="true">
+					<normal file="system_inactive.png"/>
+					<prelight file="system.png"/>
+					<pos anchor="ne" x="94%" y="8" width="48" height="48"/>
+				</item>
+				<item type="label">
+					<normal color="#bbbbbb" font="Sans 12"/>
+					<prelight color="#f0f0f0" font="Sans 12"/>
+					<active color="#ff0000" font="Sans 12"/>
+					<pos anchor="e" x="-70" y="32"/>
+					<text>System Menu</text>
+					<text xml:lang="ca">Men&#xFA;</text>
+					<text xml:lang="es">Men&#xFA;</text>
+					<text xml:lang="en">Menu</text>
+				</item>
+			</item>
+
+		</item>
+
+
+	</item>
+</item>
+</greeter>
