@@ -414,7 +414,7 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
   for hdpartnr in $(cat /tmp/hd_part | \
         sed -n -e "/ 44 /p"|sed -e "s/[[:space:]].*//") ; do
     # ext2fs_check_if_mount message supressed
-    ( mkfs.ext2 -Fq $hdpartnr 2>/dev/null
+    ( LD_LIBRARY_PATH=/mnt/lib /mnt/sbin/mkfs.ext2 -Fq $hdpartnr 2>/dev/null
       umount /mnt/tmp 2>/dev/null
       # if mounting of temp partion fails fall back to tmpfs on /tmp
       mount -t ext2 -n -o nocheck,noexec $hdpartnr /mnt/tmp 2>/dev/null || \

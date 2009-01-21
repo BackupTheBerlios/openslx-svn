@@ -422,8 +422,9 @@ done
 echo -e "#!/bin/ash\n/bin/ash \$@" > ${INSTDIR}/bin/sh
 chmod a+x ${INSTDIR}/bin/sh
 
-# fixme: add ext2 stuff until busybox offers these tools again
-cobi mkfs.ext2 bin
+# fixme: add ext2 stuff until busybox offers these tools again or use mkfs.ext2
+# out of mounted root filesystem (more convenient)??
+#cobi mkfs.ext2 bin
 
 # binaries useful for debugging purposes
 if [ $IRFSDEBUG -gt 2 ] ; then

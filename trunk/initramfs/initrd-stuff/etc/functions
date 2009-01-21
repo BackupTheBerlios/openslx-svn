@@ -29,7 +29,7 @@ postinit () {
 config_distro () {
 :
 }
-# udev/hotplug - auto device discovery service
+# udev/hotplug - auto device discovery service (deprecated)
 udev_hotplug () {
 :
 }
