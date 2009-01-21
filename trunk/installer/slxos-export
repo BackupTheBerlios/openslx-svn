@@ -16,7 +16,7 @@ my $abstract = q[
 slxos-export
     This script exports an OpenSLX-stage1-system (a.k.a. vendor-OS) into
     an OpenSLX-stage2-system (a.k.a. export), which can be an NFS-export,
-	an NBD-image containing a squash-fs.
+    an NBD-image containing a squash-fs.
 ];
 
 use Getopt::Long qw(:config pass_through);
