@@ -374,10 +374,10 @@ mkdir -p ${INSTDIR}/var/lib/nfs/state
 # cobi nbd-client bin
 if [ -n "${FSMODULES}" ] ; then
   case "${FSMODULES}" in
-    dnbd*)
+    *dnbd*)
       cobi dnbd-client bin
     ;;
-    nbd*)   
+    *nbd*)  
       cobi nbd-client bin
     ;;
   esac

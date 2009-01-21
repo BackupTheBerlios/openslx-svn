@@ -227,10 +227,10 @@ the network block device client. Unable to mount root\n  filesystem."
     ;;
     # dnbd by Thorsten Zitterell
     dnbd)
-      #mkdir /dnbd
-      #mount -n -t tmpfs tmpfs /dnbd
+      mkdir /dnbd
+      mount -n -o 'size=10%' -t tmpfs tmpfs /dnbd
       waitfor /dev/dnbd0 10000 || error $errmsg
-      while ! dnbd-client -b $dnbdhost -d /dev/dnbd0; do # -c /dnbd/cache
+      while ! dnbd-client -b $nbdhost -d /dev/dnbd0 -c /dnbd/cache; do
         usleep 10
       done
       echo $?
