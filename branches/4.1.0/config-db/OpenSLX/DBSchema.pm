@@ -98,7 +98,6 @@ $DbSchema = {
 			'comment:s.1024',		# internal comment (optional, for admins)
 			'clone_source:s.256',	# if vendor-OS was cloned, this contains
 									# the rsync-URI pointing to the original
-			'export_counter:i',		# counter used for export names
 		],
 		'export' => [
 			# an export describes a vendor-OS "wrapped" in some kind of exporting
@@ -110,7 +109,7 @@ $DbSchema = {
 									#   <vendor-os-name>-<export-type>
 			'vendor_os_id:fk',		# foreign key
 			'comment:s.1024',		# internal comment (optional, for admins)
-			'type:s.10',			# 'nbd-squash', 'nfs', ...
+			'type:s.10',			# 'nbd', 'nfs', ...
 			'server_ip:s.16',		# IP of exporting server, if empty the
 									# boot server will be used
 			'port:i',				# some export types need to use a specific
