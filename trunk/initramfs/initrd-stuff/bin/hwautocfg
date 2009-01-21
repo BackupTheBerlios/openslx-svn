@@ -424,8 +424,6 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
     part44=yes
     break
   done
-  # determine if tmp preparation should wait for format/mount or not
-  [ -z "$part44" ] && echo "finished at $(sysup)" > /tmp/tmpready
   # put detected linux partitions into /etc/fstab with "noauto"
   for hdpartnr in $(cat /tmp/hd_part | \
         sed -n -e "/ 83 /p"|sed -e "s/[[:space:]].*//") ; do
@@ -434,6 +432,8 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
 noexec\t 0 0" >> /tmp/fstab
   done 
 done
+# determine if tmp preparation should wait for format/mount or not
+[ -z "$part44" ] && echo "finished at $(sysup)" > /tmp/tmpready
 else
   echo "no disk found ( $(sysup) )" > /tmp/tmpready
 fi
