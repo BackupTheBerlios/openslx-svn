@@ -1,13 +1,7 @@
-If we find the special directory, /rorootfs move the mount point of the later
-root fs on top.  We check if we have unionfs available to make the ro fs rw.
-Unfortunately the unionfs code is incomplete (mmap issue).   Thus the original
-mount point of the ro fs part is not moved accordingly.
-
-Index: busybox-1.4.2/util-linux/switch_root.c
-===================================================================
---- busybox-1.4.2.orig/util-linux/switch_root.c
-+++ busybox-1.4.2/util-linux/switch_root.c
-@@ -103,6 +103,10 @@ int switch_root_main(int argc, char *arg
+diff -ru ../busybox-1.6.0.orig/util-linux/switch_root.c ./util-linux/switch_root.c
+--- ../busybox-1.6.0.orig/util-linux/switch_root.c	2007-06-01 13:48:41.000000000 +0200
++++ ./util-linux/switch_root.c	2007-06-15 12:31:40.000000000 +0200
+@@ -105,6 +105,10 @@
  	// Overmount / with newdir and chroot into it.  The chdir is needed to
  	// recalculate "." and ".." links.
  
@@ -15,6 +9,6 @@ Index: busybox-1.4.2/util-linux/switch_root.c
 +		if ( mount("/rorootfs", "/", NULL, MS_MOVE, NULL) )
 +			bb_error_msg_and_die("moving rorootfs");
 +
- 	if (mount(".", "/", NULL, MS_MOVE, NULL) || chroot(".") || chdir("/"))
- 		bb_error_msg_and_die("moving root");
- 
+ 	if (mount(".", "/", NULL, MS_MOVE, NULL) || chroot("."))
+ 		bb_error_msg_and_die("error moving root");
+ 	xchdir("/");
