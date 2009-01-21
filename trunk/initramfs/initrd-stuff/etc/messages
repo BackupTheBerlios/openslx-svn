@@ -7,7 +7,7 @@
 # If you have any feedback please consult http://openslx.org/feedback and
 # send your feedback to feedback@openslx.org
 #
-# General information about OpenSLX can be found under http://openslx.org
+# General information about OpenSLX can be found at http://openslx.org
 #
 # messages file for all error and info messages generated during client
 # bootup (within initialramfs) for OpenSLX linux diskless clients version 4
@@ -21,6 +21,8 @@ init_dff="The distro $init_errmsg"
 init_dscf="The distribution specific configuration file could not be found."
 init_sscf="The slx configuration variables could not be found. Please
 provide the slxconfig file."
+init_noeth="  Unable to configure the ethernet device (eth0). Please check \
+for an\n  appropriate kernel module."
 init_errip="  Unable to setup at \
 least basic functionality, because no IP configuration\n  available. You \
 might pass that information via kernel command line\n  through setting of \

@@ -100,12 +100,14 @@ else
   modprobe -a usbcore uhci-hcd ohci-hcd usbhid >/dev/null 2>&1
   /bin/sh
   echo -n "Reboot now? [y]"
+  exec < /dev/console > /dev/console
+  input="y"
   read input
-#  [ -z "$input" -o "$input" = "y" -o "$input" = "Y" ] && {
-#    usleep 5000
-#    [ -f /proc/sysrq-trigger ] || mount -t proc none /proc
-#    echo "b" > /proc/sysrq-trigger
-#  }
+  [ -z "$input" -o "$input" = "y" -o "$input" = "Y" ] && {
+    sleep 4
+    [ -f /proc/sysrq-trigger ] || mount -t proc none /proc
+    echo "b" > /proc/sysrq-trigger
+  }
 fi
 }
 #############################################################################
@@ -277,13 +279,14 @@ local nm=$2
 local gw=$3
 local bc=$4
 local if=$5
+local ret=0
 for ipcfg in ip ifconfig none; do
   test -x /bin/$ipcfg && break;
 done
 case $ipcfg in
   # the standard linux ip configuration tool
   ip)
-    ip link set dev $if up 2>/dev/null
+    ip link set dev $if up 2>/dev/null || ret=1
     ip addr add $ip/`nm2pref $nm` broadcast $bc dev $if 2>/dev/null
     if [ "$gw" != "0.0.0.0" ] ; then
       ip route add default via $gw 2>/dev/null
@@ -297,21 +300,23 @@ case $ipcfg in
   # traditional ifconfig/route - if a distro does not provide ip
   ifconfig)
     if [ "$ip" = "0.0.0.0" ]; then
-      ifconfig $if up
+      ifconfig $if up || ret=1
     else
-      ifconfig $if $ip netmask $nm broadcast $bc
+      ifconfig $if $ip netmask $nm broadcast $bc || ret=1
     fi
     [ "$gw" != "0.0.0.0" ] && route add default gw $gw
     MAC=$(ifconfig $if|sed -n "/HWaddr [0-9A-F]\{2\}:.*/p" \
       | sed -e "s/.*HWaddr //;y/ABCDEF/abcdef/")
     # if multicast is required for dnbd
-    [ -n "$nbdhost" ] && [ `echo $nbdhost|sed "s,\..*,,"` -ge 224 ] && \
+    [ -n "$nbdhost" ] && [ $(echo $nbdhost|sed "s,\..*,,") -ge 224 ] && \
       route add -net 224.0.0.0 netmask 240.0.0.0 dev eth0
   ;;
   none)
     error "$error_iptool"
+    ret=1
   ;;
 esac
+return $ret
 }
 #############################################################################
 # replace @@@serverip@@@ with real serverip. Allows the usage of a variable 
@@ -372,7 +377,7 @@ fi
 }
 
 #############################################################################
-# dhcp client function (support dhclient, dhcpcd, pump, udhcpc)
+# dhcp client function (supporting dhclient, dhcpcd, pump, udhcpc)
 rundhcp ()
 {
 local vci="$1"
@@ -385,7 +390,8 @@ else
   # ensure the interface is up - might produce conflicts - nbd could
   # fail!!
   [ -n "$noipyet" ] && \
-    ipsetup 0.0.0.0 255.255.255.255 0.0.0.0 255.255.255.255 eth0
+    ipsetup 0.0.0.0 255.255.255.255 0.0.0.0 255.255.255.255 eth0 \
+      2>/dev/null || error "$init_noeth"
   [ -f /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko ] && \
     loadmod /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko \
       "needed for dhcp";

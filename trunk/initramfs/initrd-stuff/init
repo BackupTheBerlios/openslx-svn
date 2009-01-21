@@ -212,13 +212,13 @@ nfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
     vci=*)
       vci=${opts#vci=};;
     xenbr)
-      XENBR=1;;
+      xenbr=1;;
   esac
 done
 # at this point a timer should be started to ensure an automated reboot
 # or halt of the machine if SLX init does not succeed (e.g. missing kernel
 # module for the network adaptor)
-if [ "${DEBUGLEVEL}" -lt 3 ] ; then
+if [ ${DEBUGLEVEL} -lt 3 -o ${DEBUGLEVEL} = 8 ] ; then
   [ -x /bin/busybox ] && shtype=a
   cat<<EOF > /bin/watchdog
 #!/bin/${shtype}sh
@@ -290,13 +290,13 @@ done
 ipsetup 127.0.0.1 255.0.0.0 0.0.0.0 127.255.255.255 lo
 
 # Xen bridge config
-[ -n "$XENBR" ] && xenbr_config
+[ -n "$xenbr" ] && xenbr_config
 
 # analyze ip information from the kernel command line and put parts
 # of it into several variables
 if [ -n "$ipinfo" ] ; then
   getip () {
-    val="$ipinfo:"; i=$(expr $1 - 1);
+    local val="$ipinfo:"; i=$(expr $1 - 1);
     while [ $i -gt 0 ] ; do
       val=${val#*:} ; i=$(expr $i - 1);
     done;
@@ -306,7 +306,7 @@ if [ -n "$ipinfo" ] ; then
   gateway=$(getip 3)
   subnet_mask=$(getip 4)
   echo -e "# ip configuration written by $0 script\nclientip=$clientip\n\
-subnet_mask=$sub_netmask\ngateway=$gateway\nserverip=$serverip" \
+subnet_mask=$subnet_mask\ngateway=$gateway\nserverip=$serverip" \
     >>/etc/machine-setup
   # set static ip address via function ipsetup
   ipsetup $clientip $subnet_mask $gateway 255.255.255.255 eth0
@@ -314,7 +314,7 @@ else
   noipyet="yes"
 fi
 # get configuration data via dhcp (with vendor code identifier if present
-# in ${vci} (from kernel command line) ...
+# in ${vci} from kernel command line or machine-setup) ...
 [ -n "$dhcp" ] && rundhcp ${vci} &
 if [ -n "$noipyet" ] ; then
   waitfor /tmp/dhcp-done 20000
