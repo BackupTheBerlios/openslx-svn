@@ -814,6 +814,7 @@ sub setSystemAttrs
 	my $systemID = shift;
 	my $attrs    = shift;
 
+	# TODO: improve this, as it is pretty slow!
 	# for now we take the simple path and remove all attributes ...
 	$self->_doDelete('system_attr', [ $systemID ], 'system_id');
 
@@ -909,6 +910,7 @@ sub setClientAttrs
 	my $clientID = shift;
 	my $attrs    = shift;
 
+	# TODO: improve this, as it is pretty slow!
 	# for now we take the simple path and remove all attributes ...
 	$self->_doDelete('client_attr', [ $clientID ], 'client_id');
 
@@ -1004,6 +1006,7 @@ sub setGroupAttrs
 	my $groupID = shift;
 	my $attrs   = shift;
 
+	# TODO: improve this, as it is pretty slow!
 	# for now we take the simple path and remove all attributes ...
 	$self->_doDelete('group_attr', [ $groupID ], 'group_id');
 
