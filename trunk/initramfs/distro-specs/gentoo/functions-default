@@ -22,13 +22,6 @@ echo -e "# changes made to this file by $0 (initramfs from $date)" \
   > /etc/rc.conf
 # keytable is set by hwautocfg script (added just for convenience here)
 config_rc_entry "KEYMAP" "${KEYTABLE}" "conf.d/keymaps"
-
-# setting the path for kdmrc-file 
-# FIXME: hack - there is no other way in gentoo?!?
-# FIXME: only if user wants kdm...
-sed -e 's,\(save_options .*\)"$,\1 -- -config /var/lib/openslx/themes/displaymanager/kdmrc",g'\
-    -i /mnt/etc/init.d/xdm
-
 }
 
 # udev service - not verified!
@@ -303,6 +296,12 @@ config_dm_entry kdm
 kdmrcdir=/var/lib/openslx/themes/displaymanager/
 xdmdir=/etc/X11/xdm
 testmkd /mnt/${kdmrcdir}
+
+# setting the path for kdmrc-file 
+# FIXME: hack - there is no other way in gentoo?!?
+# FIXME: only if user wants kdm...
+sed -e 's,\(save_options .*\)"$,\1 -- -config /var/lib/openslx/themes/displaymanager/kdmrc",g'\
+    -i /mnt/etc/init.d/xdm
 
 
 # write configuration file - NOT using general config in /etc/functions
