@@ -24,6 +24,7 @@ use base qw(OpenSLX::MetaDB::DBI);
 ################################################################################
 use DBD::mysql;
 use OpenSLX::Basics;
+use OpenSLX::Utils;
 
 ################################################################################
 ### implementation
@@ -50,11 +51,7 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 			: (getpwuid($>))[0];
 	my $dbPasswd = $openslxConfig{'db-passwd'};
 	if (!defined $dbPasswd) {
-		use Term::ReadLine;
-		my $term = Term::ReadLine->new('slx');
-		my $attribs = $term->Attribs;
-		$attribs->{redisplay_function} = $attribs->{shadow_redisplay};
-        $dbPasswd = $term->readline("db-password> ");
+        $dbPasswd = readPassword("db-password> ");
 	}
 	
 	vlog(1, "trying to connect user '$dbUser' to mysql-database '$dbSpec'");
