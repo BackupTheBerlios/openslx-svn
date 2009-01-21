@@ -156,7 +156,7 @@ else
         -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
         -e "s,@@@DATE@@@,${DATE},g;/^#[^!].*/d" \
           ${SLX_SHARE_PATH}/initramfs/${FILENAME} >> ${INSTDIR}/${FILENAME}
-    [ -x busybox -a "$use_busybox" = 1 ] && sed -e "s,^#!/bin/sh,#!/bin/ash," \
+    [ "$use_busybox" = 1 ] && sed -e "s,^#!/bin/sh,#!/bin/ash," \
       -i ${INSTDIR}/${FILENAME}
   fi
 fi

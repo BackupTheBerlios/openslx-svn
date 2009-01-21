@@ -122,10 +122,10 @@ supported."; \
 	       -p $(SLX_TFTPBOOT_PATH) \
 	       -p $(SLX_SHARE_PATH)/themes
 	@# copy license
-	@cp COPYING $(SLX_BASE_PATH)
+	@cp COPYING $(SLX_BASE_PATH)/
 	@# copy initramfs generator scripts (and inject SLX_CONFIG_PATH on the way):
-	@cp ./initramfs/mkdxsinitrd $(SLX_BIN_PATH)
-	@cp ./initramfs/slxmkramfs $(SLX_BIN_PATH)
+	@cp ./initramfs/mkdxsinitrd $(SLX_BIN_PATH)/
+	@cp ./initramfs/slxmkramfs $(SLX_BIN_PATH)/
 	@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
 	  -i $(SLX_BIN_PATH)/mkdxsinitrd
 	@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
@@ -146,13 +146,12 @@ supported."; \
 	@tar --exclude=.svn -cp -C initramfs distro-specs | \
 	  tar -xp -C $(SLX_SHARE_PATH)
 	@cp -a installer/default_files/machine-setup.default \
-	  $(SLX_SHARE_PATH)/templates
+	  $(SLX_SHARE_PATH)/templates/
 	@tar --exclude=.svn -cp -C installer/default_files tftpboot | \
 	  tar -xp -C $(SLX_SHARE_PATH)
 	@cd theming; tar --exclude=.svn -cp * | \
 	  tar -xp -C $(SLX_SHARE_PATH)/themes; cd ..
-	@# ia32 busybox should be renamed accordingly ...
-	@cp -p tools/busybox{,.links,.x86_64} installer/slxbootstrap \
+	@cp -p tools/busybox{,.links,.x86_64,.i386} installer/slxbootstrap \
 	  $(SLX_SHARE_PATH)/busybox/
 
 	@# create pre-/postinit scripts for us in initramfs:

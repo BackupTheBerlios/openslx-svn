@@ -4,15 +4,13 @@
 #               ramdisks for linux diskless clients (stage2 system
 #               setup)
 #
-# Author(s):    Dirk von Suchodoletz <dvs@OpenSLX.com>, 08-01-2007
+# Author(s):    Dirk von Suchodoletz <dvs@OpenSLX.com>, 10-01-2007
 #               Nico Dietrich
 #               Felix Endres
-#               <mj0@uni-freiburg.de> (xenbr), 12-12-2006
+#               <mj0@uni-freiburg.de> (xenbr), 09-01-2007
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 #               (c) 2006, 2007 - OpenSLX GmbH
-#
-# Version:      0.4.5d
 
 # debug level of script itself
 DEBUG=1
@@ -60,6 +58,9 @@ SLX_CONFIG_PATH=@@@SLX_CONFIG_PATH@@@
    . $SLX_CONFIG_PATH/settings.default
 [ -f $SLX_CONFIG_PATH/settings.local ] && \
    . $SLX_CONFIG_PATH/settings.local
+# read the common functions file 
+[ -e ${SLX_SHARE_PATH}/initramfs/etc/functions ] && \
+  . ${SLX_SHARE_PATH}/initramfs/etc/functions
 
 #########################################################################
 # End of global variable declaration, nothing needed to be changed at
@@ -174,7 +175,7 @@ DATE=`date +%m-%d-%Y`
 # do not forget to define all variables which should be replaced within
 # the start and configuration scripts. All comment lines will be deleted.
 if [ -d ${SLX_SHARE_PATH}/initramfs/${FILENAME} ] ; then
-  [ -d ${INSTDIR}/${FILENAME} ] || mkdir -p ${INSTDIR}/${FILENAME}
+  testmkd ${INSTDIR}/${FILENAME}
 else
   if file ${SLX_SHARE_PATH}/initramfs/${FILENAME}| grep "ELF" &>/dev/null ; then
     cp ${SLX_SHARE_PATH}/initramfs/${FILENAME} ${INSTDIR}/${FILENAME}
@@ -494,23 +495,29 @@ done
 chmod 755 ${INSTDIR}/init \
   ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
 
+# quickhack architecture detection of target system
+if [ -d ${ROOTDIR}/lib64 ] ; then
+  ARCH=x86_64
+else
+  ARCH=i386
+fi
+
 # test for the existance of busybox
 if [ "$use_busybox" = 1 ]; then
-  [ -x ${SLX_SHARE_PATH}/busybox/busybox ] || {
+  [ -x ${SLX_SHARE_PATH}/busybox/busybox.${ARCH} ] || {
     unset use_busybox
-    echo "You wanted to include busybox, but did not provide it in \
-${SLX_SHARE_PATH}/busybox directory."; }
+    echo "You wanted to include busybox for ${ARCH}, but did not provide \
+it in ${SLX_SHARE_PATH}/busybox directory."; }
 fi
 if [ -n "$use_busybox" ] ; then
   # somehow the target platform should be defined and proper busybox copied
   cp ${SLX_SHARE_PATH}/busybox/busybox ${INSTDIR}/bin
   for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
-       date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \
-       insmod \
-	   id ip kill killall ln ls lsmod mdev mkdir mke2fs mkfs.ext2 mkfs.ext3 \
-       mknod mkswap modprobe mount mv nice ping printf ps rdate rm rmmod sed \
-       sleep sort swapoff swapon switch_root tar test tftp time touch tr \
-	   udhcpc umount uptime usleep vconfig vi zcat zcip; do
+      date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \
+      insmod id ip kill killall ln ls lsmod mdev mkdir mke2fs mkfs.ext2 \
+      mkfs.ext3 mknod mkswap modprobe mount mv nice ping printf ps rdate \
+      rm rmmod sed sleep sort swapoff swapon switch_root tar test tftp \
+      time touch tr udhcpc umount uptime usleep vconfig vi zcat zcip; do
     ln -fs /bin/busybox ${INSTDIR}/bin/$bbins
   done
   # fake the sh link in busybox environment
@@ -662,18 +669,10 @@ if [ -z "$INITRD_PATH" ] ; then
   INITRD_PATH="${ROOTDIR}/tmp/slxinitramfs.gz"
 fi
 
-# define modules to put into initial ramdisk for debugging
-#DEBUGMODULES="uhci_hcd usbhid"
-if [ $IRFSDEBUG -gt 1 ] ; then
-  DEBUGMODULES="uhci-hcd ohci-hcd usbhid"
-else
-  DEBUGMODULES=""
-fi
-
 # put all needed modules into initial ramdisk
 mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
 for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
-  ${DEBUGMODULES}; do
+  ${DEBUGMODULES} usbcore usbhid uhci-hcd ohci-hcd; do
   mod=`cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
 2>/dev/null`
 

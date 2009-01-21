@@ -4,7 +4,7 @@
 #
 # this file is distributed under the GPLv2, see ~/openslx/COPYING
 #
-# Dirk von Suchodoletz <dirk@goe.net>, 22-12-2006
+# Dirk von Suchodoletz <dirk@goe.net>, 10-01-2007
 # <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
@@ -61,6 +61,13 @@ TMPFSSIZE="50%"
 COWSIZE="50%"
 RWDIR=/dev/shm
 NFSRO="nfs"
+
+# load usb modules for keyboard (reenable usb keyboards, otherwise the
+# admin has to wait until second run of hwsetup late in stage3)
+( for mod in usbcore uhci-hcd ohci-hcd usbhid; do
+  modprobe -q $mod 2>/dev/null
+done ) &
+
 
 # run pre init script and user defined preinit.local, copied by mkdxsinitrd
 # from /var/lib/openslx/config/... in stage2
@@ -259,6 +266,7 @@ fi
 for mod in ${NWMODULES}; do
   modprobe ${MODPRV} $mod || error "$init_errnwad"
 done
+
 # set up loopback networking (ipsetup - function defined in /etc/functions)
 ipsetup 127.0.0.1 255.0.0.0 0.0.0.0 127.255.255.255 lo
 
