@@ -138,7 +138,7 @@ option start-cron code 227\t\t= string;\n\
 option crontab-entries code 228\t\t= string;\n\
 option start-rwhod code 229\t\t= string;\n\
 option start-printdaemon code 230\t= string;\n\
-option desktop-session code 231\t= string;\n\
+option desktop-session code 231\t\t= string;\n\
 option tex-enable code 232\t\t= string;\n\
 option netbios-workgroup code 233\t= string;\n\
 option vmware code 234\t\t\t= string;\n\
@@ -146,7 +146,7 @@ option hw-mouse code 252\t\t= string;\n\
 option hw-graphic code 253\t\t= string;\n\
 option hw-monitor code 254\t\t= string;\n\n\
 send dhcp-lease-time 86400;\nsend dhcp-max-message-size 1400;\n\
-request;\nscript \"/bin/dhclient-script\";" >> /etc/dhclient.conf
+request;\nscript \"/sbin/dhclient-script\";" >> /etc/dhclient.conf
 if [ -n "$vci" ] ; then
   echo "send vendor-class-identifier \"$vci\";" >> /etc/dhclient.conf
 fi
@@ -172,19 +172,19 @@ else
   loadmod /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko \
     "needed for dhcp";
   echo "Starting $dhcp for configuration"
-  mkdir /var/lib/dhcp 2&>1 >/dev/null
+  mkdir /var/lib/dhcp 2>&1 >/dev/null
 fi
 export client="$dhcp"
 case $dhcp in
   dhclient)
     mkdhclconf $vci
     ln -s /bin/dhcpmkconfig /sbin/dhclient-script
-    dhclient -lf /var/lib/dhcp/dhclient.leases eth0 || \
+    dhclient -lf /var/lib/dhcp/dhclient.leases eth0 2>&1 >/dev/null || \
       error "  Fatal error occured while trying to run dhclient.\n$commonerr" 
   ;;
   dhcpcd)
     ln -s /bin/dhcpmkconfig /sbin/dhcpd.exe
-    dhcpcd -L /var/lib/dhcp -c /sbin/dhcpd.exe -T -t 30 eth0 || \
+    dhcpcd -L /var/lib/dhcp -c /sbin/dhcpd.exe -T -t 30 eth0 2>&1 >/dev/null || \
       error "  Fatal error occured while trying to run dhcpcd.\n$commonerr" 
   ;;
   pump)

@@ -2,7 +2,7 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 17-01-2006
 #		Blabla
 #		Blub
 #
@@ -162,4 +162,14 @@ config_dm () {
 consolefont () {
 echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
   >>/mnt/etc/${INITDIR}/boot.ld
+}
+
+# acpi and powersave
+config_acpi () {
+local start_acpi=$1
+local stop_acpi=$2
+local start_powersave=`expr $1 + 5`
+local stop_powersave=`expr $1 - 1`
+rllinker acpid "$start_acpi" "$stop_acpi"
+rllinker powersaved "$start_powersave" "$stop_powersave"
 }

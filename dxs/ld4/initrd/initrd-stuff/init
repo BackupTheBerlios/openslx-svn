@@ -7,7 +7,7 @@ specific configuration file could not be found"
 
 date
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
-export date="07-01-2006"
+export date="17-01-2006"
 exec < /dev/console > /dev/console 2>&1
 
 export KERNEL="@@@KERNVER@@@"
@@ -20,9 +20,9 @@ mkdir -p ${DEVDIR}/pts
 mkdir -p ${DEVDIR}/shm
 mkdir -p ${DEVDIR}/.udevdb
 
-[ ! -f /proc/cpuinfo ] && mount -n -tproc proc /proc
+[ ! -f /proc/cpuinfo ] && mount -n -t proc proc /proc
 echo 256 > /proc/sys/kernel/real-root-dev
-[ ! -d /sys/class ] && mount -n -tsysfs sysfs /sys
+[ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
 
 # start device auto discovery (just the first case is tested yet)
 if [ -x /bin/udev -a -x /bin/udevstart ] ; then
@@ -65,6 +65,10 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     ldap)
       LDAP="yes"
       rm /tmp/ldap-done;;
+    # ldap configuration with host and port to contact (base)
+    ldap*)
+      LDAP="yes"
+      rm /tmp/ldap-done;;
     # if ld.so.cache should not be generated
     noldsc)
       NOLDSC=yes;;
@@ -83,7 +87,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     # nfs server and path
     nfsroot=*)
       NFSROOT=${opts#nfsroot=}
-      echo -e "\n# nfs root information gotten via kernel command line \ in $0\nnfsroot=\"${NFSROOT}\"" >> /etc/machine-setup
+      echo -e "\n# nfs root information gotten via kernel command line in $0\nnfsroot=\"${NFSROOT}\"\n" >> /etc/machine-setup
     ;;
     # size of tempfs if not max. 50% of RAM should be used
     tmpfssize=*)
@@ -107,12 +111,8 @@ might pass that information via kernel command line\n  through setting of \
 enabled via tokens ('ldap' or 'dhcp') in kernel\n  command line."
   fi
 fi
-#[ -z "$DHCP" -a -n "$LDAP" -a -z "$IPINFO" ] && error "  Unable to setup at \
-#might pass that information via kernel command line\n  through setting of \
-#'ipappend 1' in pxelinux.cfg/* or just enable dhcp\n  or ldap. They are \
-#enabled via tokens ('ldap' or 'dhcp') in kernel\n  command line."
-#  fi
-#fi
+# for ldap configuration at least basic IP setup is needed to contact the
+# server
 [ -z "$DHCP" -a -n "$LDAP" -a -z "$IPINFO" ] && error "  Unable to setup at \
 least basic functionality, because no IP configuration\n  available. Please \
 beware - ldap works only in combination of either\n  ipappend or similar or \
@@ -159,7 +159,8 @@ sub_netmask=$NM\ngateway=$GW\nserverip=$SERVER" \
 else
   noipyet="yes"
 fi
-# get configuration data via dhcp or ldap if available (in background)
+# get configuration data via dhcp (with vendor code identifier if present in 
+# ${VCI} or ldap if available (in background)
 [ -n "$DHCP" ] && rundhcp ${VCI} &
 if [ -n "$noipyet" ] ; then
   waitfor /tmp/dhcp-done 20000
@@ -211,6 +212,16 @@ if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" ] ; then
   nfsmnt ${NFSROOT} ${MODPRV}
 fi
 # Bruchstücke?? Was hat das hier verloren?
+# Wer schmeisst hier hirnlos Teile aus dem Code?? Dann sind die Module wech, die
+# hwautoconfig vielleicht mal laden soll!!!! Es will keiner prophylaktisch 50++MB
+# Module schonmal in die Ramdisk klatschen!!!
+# get the complete collection of kernel modules available
+mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
+  error "  The requested modules directory does not exist. That could mean:\n\
+  * The kernel was updated but mkdxsinitrd was not run afterwards.\n\
+  * The mounted filesystem does not contain the modules directory at all.\n\
+  You might want to check the list of mounted filesystems and if /mnt is\n\
+  not empty run 'ls /mnt/lib/modules' to check."
 #  You might want to check the list of mounted filesystems and if /mnt is\n\
 #  not empty run 'ls /mnt/lib/modules' to check."
 # start hardware configuration as background process
@@ -327,7 +338,7 @@ of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
 
 date
-#ash
+ash
 # IP configuration is made and should not be updated automatically
 killall -9 dhcpcd dhclient pump 2>/dev/null
 # unmount the bind mounted modules directory

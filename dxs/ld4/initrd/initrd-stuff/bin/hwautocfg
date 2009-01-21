@@ -4,7 +4,7 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-01-2006
 #		Blabla
 #		Blub
 #
@@ -262,8 +262,8 @@ fi
 
 # ACPI configuration
 #if [ -d /proc/acpi ]; then
-#  if ! inkernelcmdline "noacpi" || ! inkernelcmdline "acpi=off"; then
-#    echo ACPIbla
+#  if ! strinstr "noacpi" ${KCMDLINE} || \
+#    ! strinstr "acpi=off" ${KCMDLINE} ; then
 #    found=""
 #    for acpi in /lib/modules/$KERNEL/kernel/drivers/acpi/*; do
 #      acpi=`basename acpi`
@@ -273,16 +273,7 @@ fi
 #    modprobe $basename >/dev/null 2>&1 && echo -n " ${YELLOW}$basename${GREEN}" && found="yes"
 #    done
 #  fi
-#else
-# APM
-#if checkbootparam "noapm"; then
-#echo " ${BLUE}Skipping APM Bios detection as requested on boot commandline.${NORMAL}"
-#else
-#modprobe apm power_off=1 >/dev/null 2>&1 && test -x /etc/init.d/apmd && /etc/init.d/apmd start && echo "${GREEN}APM Bios found, power management functions enabled.${NORMAL}"
 #fi
-#fi
-
-
 
 
 # AGP configuration (agpgart and chipset specific driver)

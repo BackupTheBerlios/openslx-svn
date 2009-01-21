@@ -3,7 +3,7 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-01-2006
 #		Blabla
 #		Blub
 #
@@ -15,7 +15,6 @@ DEBUG=1
 LINRC=${INSTDIR}/init
 COMETCEXCL="XF86Config*\nissue*\nmtab*\nfstab*\n"
 COMDIRINDXS="/tmp/scratch /var/lib/nobody"
-set +x
 
 # distro specific settings read from configuration file
 # SYSCONFDIR - system wide configuration settings in /etc - sysconfig in  
@@ -43,6 +42,9 @@ INITBOOTD="<set in ~/distro-config/distro file>"
 RCDIRS="<set in ~/distro-config/distro file>"
 RCDIRSINRW="<set in ~/distro-config/distro file>"
 INITSCRIPTS="<set in ~/distro-config/distro file>"
+XF86CONFFILE="<set in ~/distro-config/distro file>"
+XFONTPATH="<set in ~/distro-config/distro file>"
+DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 
 #########################################################################
 # End of global variable declaration, nothing needed to be changed at 
@@ -269,7 +271,7 @@ mkdir -p ${INSTDIR}/usr/share
 mkdir -p ${INSTDIR}/etc/sysconfig
 
 # source configuration file for the distribution used
-DISTRO=debian
+DISTRO=suse
 case "${DISTRO}.${DISVER}" in
   SuSE*|suse*|Suse*|SuSe*)
 	DISTRO=suse-10.0
@@ -360,8 +362,8 @@ for lib in `shared_object_files ${INSTDIR}/bin/*` ; do
 done
 
 # add kernel modules and dependency files
-#KERNVER=2.6.13-15-default
-KERNVER=2.6.12-10-386
+KERNVER=2.6.13-15.7-default
+#KERNVER=2.6.12-10-386
 NWMODULES="e100 tg3 via-rhine"
 FSMODULES="nbd nfs"
 

@@ -4,7 +4,7 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 17-01-2006
 #		Blabla
 #		Blub
 #
@@ -129,6 +129,10 @@ config_atd "14" "04"
 [ "x$crontab_entries" != "x" ] && \
     echo -e "$crontab_entries" >> /mnt/etc/crontab
 config_cron "16" "04"
+
+# acpi and powersave
+config_acpi "10" "10"
+
 
 #######################################################################
 # network(ed) services

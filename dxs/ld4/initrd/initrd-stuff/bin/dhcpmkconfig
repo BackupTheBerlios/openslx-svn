@@ -3,7 +3,7 @@
 # Description:  universal (distro independent) configuration writer for 
 #		several dhcp clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 07-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 17-01-2006
 #		Blabla
 #		Blub
 #
@@ -15,8 +15,8 @@
 # client variable should be exported via calling function
 echo -e "\n# ip configuration written by $0" \
   >>/etc/machine-setup
-case $client in
-  dhcpcd)
+case $0 in
+  *dhcpd*)
     cat /var/lib/dhcp/dhcpcd-eth0.info | sed -e "s,',\",g" \
       -e "s,IPADDR,clientip," -e "s,NETMASK,subnet_mask," \
       -e "s,GATEWAY,gateway," -e "s,BROADCAST,broadcast_address," \
@@ -30,12 +30,12 @@ case $client in
         >>/etc/machine-setup
     # empty lines should be removed somehow
   ;;
-  dhclient)
-    set | grep "new_" | sed \
+  *dhclient*)
+    set | sed -n -e '/^new/p' | sed \
       -e "s,^new_,," -e "s,fixed-address,clientip," \
       -e "s,routers,gateway," -e "s,dhcp-server-identifier,serverip," \
-      -e "s,.*-time.*,," -e "s,language=,country=," \
-        >>/etc/machine-setup    
+      -e "s,.*_t[iy][mp]e.*,," -e "s,.*_message_.*,," -e "/^$/d" \
+      -e "s,language=,country=," \
+        >>/etc/machine-setup
   ;;
 esac
-
