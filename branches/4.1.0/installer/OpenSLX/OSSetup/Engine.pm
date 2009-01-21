@@ -295,7 +295,7 @@ sub cloneVendorOS
 	}
 
 	$self->{'clone-source'} = $source;
-	my $lastCloneSource;
+	my $lastCloneSource = '';
 	my $cloneInfoFile = "$self->{'vendor-os-path'}/.openslx-clone-info";
 	my $isReClone;
 	if (-e $self->{'vendor-os-path'}) {
