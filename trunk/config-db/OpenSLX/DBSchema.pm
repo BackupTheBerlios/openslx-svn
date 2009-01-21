@@ -77,6 +77,7 @@ $DbSchema = {
 			'comment:s.1024',		# internal comment (optional, for admins)
 			'clone_source:s.256',	# if vendor-OS was cloned, this contains
 									# the rsync-URI pointing to the original
+			'export_counter:i',		# counter used for export names
 		],
 		'export' => [
 			# an export describes a vendor-OS "wrapped" in some kind of exporting
@@ -187,7 +188,7 @@ $DbSchema = {
 ### 			'new-cols' => contains a list of new column descriptions
 ### 			'new-default-vals' => optional, a list of data hashes to be used
 ###							 		  as default values for the new columns
-### 			'cols' => contains a list of column descriptions
+### 			'cols' => contains a full list of resulting column descriptions
 ### 		drop-columns => drops columns from a table
 ### 			'table' => the name of the table the columns should be dropped from
 ### 			'col-changes' => a hash with changed column descriptions
