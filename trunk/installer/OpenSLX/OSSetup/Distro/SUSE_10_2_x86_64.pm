@@ -23,7 +23,7 @@ sub new
 {
 	my $class = shift;
 	my $self = {
-		'base-name' => 'suse-10.2-x86_64',
+		'base-name' => 'suse-10.2_x86_64',
 	};
 	return bless $self, $class;
 }
