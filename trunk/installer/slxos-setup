@@ -202,8 +202,9 @@ that distribution.
 If you pass an unknown selection, you will see a list of the selections
 that are available.
 
-In clone-mode, leaving the selection empty will cause slxos-setup to generate
-a special name for the vendor-os, like '<distro>-cloned-from-<rsync-source>'.
+In clone-mode, it is a good idea to specify some unqiue string as the selection
+part of the vendor-os-name, such that you will easily recognize the vendor-OS
+at a later stage. We recommend something like '-cloned-from-<name-of-rsync-source>'.
 
 =back
 

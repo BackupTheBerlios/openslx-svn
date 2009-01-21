@@ -85,13 +85,8 @@ sub initialize
 	$self->{'vendor-os-name'} = $vendorOSName;
 	$self->{'action-type'} = $actionType;
 	my $distroName = $1;
+	my $selectionName = $2 || 'default';
 	$self->{'distro-name'} = $distroName;
-	my $selectionName = $2;
-	if (!length($selectionName) && $actionType ne 'clone') {
-		# selections for clones default to the name of the source, but
-		# that isn't known here, so we handle that in cloneVendorOS()
-		$selectionName = 'default';
-	}
 	$self->{'selection-name'} = $selectionName;
 	if (!exists $supportedDistros{lc($distroName)}) {
 		print _tr("Sorry, distro '%s' is unsupported.\n", $distroName);
@@ -189,19 +184,40 @@ sub cloneVendorOS
 	my $self = shift;
 	my $source = shift;
 
-	$self->createVendorOSPath();
-
-	if (!length($self->{'selection-name'})) {
-		my $selectionName = "cloned-from-$source";
-		$selectionName =~ tr[:/][_];
-			# mask : and /
-		$selectionName =~ s[_+$][];
-			# remove any trailing underscores, as they're ugly
-		$self->{'selection-name'} = $selectionName;
-		$self->{'vendor-os-name'} .= "-$selectionName";
+	my $lastCloneSource;
+	my $cloneInfoFile = "$self->{'vendor-os-path'}/.openslx-clone-info";
+	if (-e $self->{'vendor-os-path'}) {
+		if (!-e $cloneInfoFile) {
+			# oops, given vendor-os has not been cloned originally, we complain:
+			die _tr("The vendor-OS '%s' exists but it is no clone, refusing to clobber!\nPlease delete the folder manually, if that's really what you want...\n",
+					$self->{'vendor-os-path'});
+		} else {
+			my $cloneInfo = slurpFile($cloneInfoFile);
+			if ($cloneInfo =~ m[^source\s*=\s*(.+?)\s*$]ims) {
+				$lastCloneSource = $1;
+			}
+			if ($source ne $lastCloneSource) {
+				# protect user from confusing sources (still allowed, though):
+				my $yes = _tr('yes');
+				my $no = _tr('no');
+				print _tr("Last time this vendor-OS was cloned, it has been cloned from '%s', now you specified a different source: '%s'\nWould you still like to proceed(%s/%s)? ",
+						$lastCloneSource, $source, $yes, $no);
+				my $answer = <STDIN>;
+				exit 5		unless $answer =~ m[^\s*$yes]i;
+			}
+		}
 	}
 
+	$self->createVendorOSPath();
+
 	$self->clone_fetchSource($source);
+	if ($source ne $lastCloneSource) {
+		open(CLONE_INFO, "> $cloneInfoFile")
+			or die _tr("unable to create clone-info file '%s', giving up! (%s)\n",
+					   $cloneInfoFile);
+		print CLONE_INFO "source=$source";
+		close CLONE_INFO;
+	}
 	vlog 0, _tr("Vendor-OS <%s> cloned succesfully.\n",
 				$self->{'vendor-os-name'});
 
