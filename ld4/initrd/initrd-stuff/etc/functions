@@ -694,3 +694,124 @@ case "$country" in
   ;;
 esac
 }
+
+######################### dummy functions
+
+preinit () {
+  :
+}
+
+postinit () {
+  :
+}
+
+# distro specific function called from servconfig script
+config_distro () {
+ : 
+}
+
+# AUS SuSE-9.3
+# udev/hotplug - auto device discovery service
+udev_hotplug () {
+ : 
+}
+
+# linking runlevel scripts
+rllinker () {
+ : 
+}
+
+# group of functions for the normal runlevels - first parameter is start
+# second stop
+# function for ntp configuration
+config_ntp () {
+ : 
+}
+
+# function for atd
+config_atd () {
+ : 
+}
+
+# function for configuration of cron services
+config_cron () {
+ : 
+}
+
+# syslog service
+config_syslog () {
+ : 
+}
+
+# secure shell service
+config_sshd () {
+ :
+}
+
+# snmp agent for remote monitoring
+config_snmp () {
+ : 
+}
+
+# consolefont
+consolefont () {
+ : 
+}
+# acpi and powersave
+config_acpi () {
+ : 
+}
+
+# configure xdm as display manager
+config_xdm () {
+  :
+} 
+
+# configure gdm as display manager
+config_gdm () {
+ : 
+}
+
+# configure hal, dbus, resmgr and services like that
+config_dreshal () {
+  :
+}
+
+# configure automounter
+config_automount () {
+:
+}
+
+# configure bluetooth services
+config_bt () {
+:
+}
+
+d_mkrlscript () {
+ : 
+}
+
+# start name service caching daemon
+config_nscd () {
+:
+}
+
+# prepare virtual machine environment (vmware, vmplayer)
+config_vmware () {
+ : 
+}
+
+# configure automounter
+config_automount () {
+ : 
+}
+
+# start portmapper (needed at least for nfs and nis services)
+config_portmap () {
+:
+}
+
+# start NIS (fixmee - does the service is really named ypbind??)
+config_nis () {
+ :
+}

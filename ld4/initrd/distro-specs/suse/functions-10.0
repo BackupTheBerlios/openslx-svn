@@ -10,9 +10,6 @@
 # Version:      0.2.1f
 
 # 
-postinit () {
-:
-}
 
 # udev service
 udev_hotplug () {

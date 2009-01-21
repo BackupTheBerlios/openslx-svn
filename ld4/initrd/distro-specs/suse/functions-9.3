@@ -11,10 +11,6 @@
 # Version:      0.2.2g
 
 # distro specific stuff to initialize
-preinit () {
-  # do nothing here (might be needed for other versions) 
-  :
-}
 postinit () {
   # for some reason the udev daemon does not create the needed device files
   udevstart

@@ -16,10 +16,6 @@ preinit () {
   echo "dhcp:x:101:101::/nonexistent:/bin/false" >>/etc/passwd
 }
 
-postinit () {
-  :
-}
-
 # distro specific function called from servconfig script
 config_distro () {
 # add the halt link to the 0 and 6 runlevel directories
@@ -220,16 +216,6 @@ sed -e "s,LANGUAGE=.*,LANGUAGE=\"${LANG}\" # set within initramfs," \
     -i /mnt/etc/environment
 }
 
-# acpi and powersave
-config_acpi () {
-  :
-}
-
-# configure xdm as display manager
-config_xdm () {
-  :
-} 
-
 # configure gdm as display manager
 config_gdm () {
   ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/K20gdm
@@ -246,9 +232,7 @@ config_gdm () {
 # configure kdm as display manager
 config_kdm () {
   ln -sf ../${D_INITDIR}/kdm /mnt/etc/rc3.d/K20kdm
-  echo -e "\t/etc/${D_INITDIR}/kdm start >${LOGFILE} 2>&1\n\
-    \t( sleep 120; ln -sf /etc/${D_INITDIR}/kdm /etc/rc3.d/S01kdm \
-    >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld
+  ln -sf ../${D_INITDIR}/kdm /mnt/etc/rc3.d/S20kdm
 }
 
 # configure hal, dbus, resmgr and services like that
@@ -258,15 +242,7 @@ if [ "x$start_dreshal" = "xyes" ]; then
 fi
 }
 
-# configure automounter
-config_automount () {
-  :
-}
 
-# start name service caching daemon
-config_nscd () {
-  :
-}
 # fixme!! taken from SuSE10.0 untested here ...
 # prepare virtual machine environment (vmware, vmplayer)
 config_vmware () {

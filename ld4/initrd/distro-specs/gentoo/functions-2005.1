@@ -10,11 +10,6 @@
 
 # empty functions are defined at the beginning of /etc/functions
 
-postinit () {
-# rm -rf /mnt/etc/runlevels/default/*
-  :
-}
-
 # distro specific general function called from servconfig script
 config_distro () {
 echo -e "dxs version 4.0a\ninitramfs generation date $date" \
@@ -204,13 +199,6 @@ config_acpi () {
 rllinker acpid
 # remove dependencies (runs unneeded services ...)
 sed "/depend/,/}/d" -i /mnt/etc/${D_INITDIR}/acpid
-}
-
-# configure dbus (inter application communication for kde and gnome), hal
-# (hardware abstraction layer - used e.g. by powersaved) and resmgr
-# (resource manager - the user gets permissions to devices when loggin on)
-config_dreshal () {
-  :
 }
 
 # configure automounter
