@@ -50,6 +50,7 @@ use Carp::Heavy;    # use it here to have it loaded immediately, not at
                     # be at a point in time where the script executes in
                     # a chrooted environment, such that the module can't
                     # be loaded anymore).
+use Config::General;
 use Encode;
 require File::Glob;
 use FindBin;
@@ -160,38 +161,29 @@ sub openslxInit
 	my $configPath = $cmdlineConfig{'config-path'}
 	  || $openslxConfig{'config-path'};
 	my $sharePath = "$openslxConfig{'base-path'}/share";
-	my $configFH;
 	my $verboseLevel = $cmdlineConfig{'verbose-level'} || 0;
 	foreach my $f ("$sharePath/settings.default", "$configPath/settings",
 		"$ENV{HOME}/.openslx/settings")
 	{
-		next unless open($configFH, '<', $f);
+		next unless -e $f;
 		if ($verboseLevel >= 2) {
 			vlog(0, "reading config-file $f...");
 		}
-		while (<$configFH>) {
-			chomp;
-			s/#.*//;
-			s/^\s+//;
-			s/\s+$//;
-			next unless length;
-			if (!/^(\w+)=(.*)$/) {
-				die _tr("config-file <%s> has incorrect syntax here:\n\t%s\n",
-					$f, $_);
-			}
-			my ($key, $value) = ($1, $2);
-
-			# N.B.: the config files are used by shell-scripts, too, so in
+		my %config = ParseConfig(
+			-ConfigFile => $f, -AutoTrue => 1, -LowerCaseNames => 1
+		);
+		foreach my $key (keys %config) {
+			# N.B.: these config files are used by shell-scripts, too, so in
 			# order to comply with shell-style, the config files use shell
 			# syntax and an uppercase, underline-as-separator format.
 			# Internally, we use lowercase, minus-as-separator format, so we
 			# need to convert the environment variable names to our own
 			# internal style here (e.g. 'SLX_BASE_PATH' to 'base-path'):
-			$key =~ s[^SLX_][];
-			$key =~ tr/[A-Z]_/[a-z]-/;
-			$openslxConfig{$key} = $value;
+			my $ourKey = $key;
+			$ourKey =~ s[^slx_][];
+			$ourKey =~ tr/_/-/;
+			$openslxConfig{$ourKey} = $config{$key};
 		}
-		close $configFH;
 	}
 
 	# push any cmdline argument into our config hash, possibly overriding any

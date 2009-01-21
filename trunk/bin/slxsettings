@@ -36,6 +36,7 @@ use lib "$FindBin::RealBin/../lib";
 use lib "$FindBin::RealBin";
 # development path to config-db stuff
 
+use Config::General;
 use Getopt::Long qw(:config pass_through);
 use Pod::Usage;
 
@@ -87,7 +88,11 @@ while (scalar @ARGV) {
 }
 
 # fetch current content of local settings file...
-my $settings = slurpFile("$openslxConfig{'config-path'}/settings");
+my $fileName = "$openslxConfig{'config-path'}/settings";
+my $configObj = Config::General->new(
+	-ConfigFile => $fileName, -SplitPolicy => 'equalsign',
+);
+my %settings = $configObj->getall();
 
 my %changed;
 
@@ -103,8 +108,8 @@ foreach my $key (keys %givenSettings) {
 	}
 	vlog(0, _tr("setting %s to '%s'", $key, $value)) unless $quiet;
 	my $externalKey = externalKeyFor($key);
-	if (!($settings =~ s[^\s*$externalKey=.*?$][$externalKey=$value]ms)) {
-		$settings .= "$externalKey=$value\n";
+	if (!exists $settings{$externalKey} || $settings{$externalKey} ne $value) {
+		$settings{$externalKey} = $value;
 	}
 	$changed{$key}++;
 }
@@ -112,7 +117,8 @@ foreach my $key (keys %givenSettings) {
 # reset specified keys to fall back to default:
 foreach my $key (@reset) {
 	my $externalKey = externalKeyFor($key);
-	if ($settings =~ s[^\s*?$externalKey=.*?\n][]ms) {
+	if (exists $settings{$externalKey}) {
+		delete $settings{$externalKey};
 		vlog(0,
 			_tr("removing option '%s' from local settings", $key))
 			  unless $quiet;
@@ -126,8 +132,7 @@ foreach my $key (@reset) {
 
 # ... and write local settings file if necessary
 if (keys %changed) {
-	my $fileName = "$openslxConfig{'config-path'}/settings";
-	spitFile($fileName, $settings);
+	$configObj->save_file($fileName, \%settings);
 
 	openslxInit();
 

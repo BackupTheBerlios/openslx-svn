@@ -95,8 +95,8 @@ install:
 
 	@   # many of the following modules are part of core perl, but we check
 	@   # for them just to be sure...
-	@for m in Carp DBI Digest::MD5 Fcntl File::Basename FindBin Getopt::Long \
-	          Pod::Usage ; do \
+	@for m in Carp Config::General DBI Digest::MD5 Fcntl File::Basename FindBin \
+	          Getopt::Long Pod::Usage ; do \
 		if ! perl -e "use $$m" 2>>${SLX_INSTALL_LOG} ; then \
 			echo "  The perl-module '$$m' is required, please install it."; \
 			exit 1; \
