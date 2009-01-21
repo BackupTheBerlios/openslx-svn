@@ -26,8 +26,8 @@ use vars qw(%supportedExportTypes %supportedDistros);
 %supportedExportTypes = (
 	'nfs'
 		=> { module => 'NFS' },
-#	'nbd-squashfs'
-#		=> { module => 'NBD_Squash' },
+	'nbd-squash'
+		=> { module => 'NBD_Squash' },
 );
 
 %supportedDistros = (
