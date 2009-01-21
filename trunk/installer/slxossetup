@@ -161,6 +161,11 @@ function slxossetup_rpm()
 		${packagelist} \
 		-y
 
+	# Move any .rpmnew file to the right name
+	for file in $( find "${SLX_STAGE1_PATH}" -type f -name '*.rpmnew'); do
+		mv "${file}" "${file%.rpmnew}"
+	done
+
 	for mountpoint in ${SLX_INSTALL_BIND_MOUNT}; do
 		umount "${SLX_STAGE1_PATH}/${mountpoint}"
 	done
