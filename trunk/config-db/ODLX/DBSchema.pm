@@ -13,6 +13,8 @@ $VERSION = 0.01;
 
 use vars qw($DbSchema %DbSchemaHistory);
 
+# TODO: copy attributes from installer/default_files/dhcp.conf
+
 ################################################################################
 ### DB-schema definition
 ### 	This hash-ref describes the current ODLX configuration database schema.
@@ -34,17 +36,29 @@ $DbSchema = {
 			# information about the database as such
 			'schema_version:s.5',	# schema-version currently implemented by DB
 		],
-		'system' => [
-			# a system describes a bootable instance of an os
+		'vendor_os' => [
+			# a vendor os describes a folder containing an operating system as provided by the
+			# vendor (a.k.a. unchanged and thus updatable)
 			'id:pk',			# primary key
-			'name:s.128',		# visible name (pxe-label)
-			'descr:s.1024',		# internal description (for admins)
-			'path:s.256',		# path to image
-			'os_type:s.20',		# type of OS (Linux, ...)
-			'os_name:s.80',		# name of OS (opensuse-10.1, Kubuntu-1, ...)
-			'kernel:s.128',		# name of kernel file
-			'initrd:s.128',		# name of initrd file
-			'hidden:b'			# hidden systems won't be offered for booting
+			'name:s.32',		# structured name of OS installation (e.g. suse-9.3-minimal,
+								# suse-9.3-kde, debian-3.1-ppc)
+			'descr:s.1024',		# internal description (optional, for admins)
+			'path:s.256',		# path to os filesystem root
+		],
+		'system' => [
+			# a system describes one bootable instance of a vendor os
+			'id:pk',				# primary key
+			'vendor_os:fk',			# foreign key
+			'name:s.32',			# name used in filesystem and passed to kernel via cmdline arg
+									# (e.g.: suse-9.3-minimal, suse-9.3-minimal-nbd, ...)
+			'label:s.128',			# visible name (pxe-label)
+			'descr:s.1024',			# internal description (optional, for admins)
+			'export_uri:s.256',		# path to export (NDB-image or NFS-path)
+			'tftp_uri:s.256',		# path to tftp export directory
+			'kernel:s.128',			# name of kernel file
+			'kernel_params:s.512',	# kernel-param string for pxe
+			'initramfs:s.128',		# name of initrd file
+			'hidden:b',				# hidden systems won't be offered for booting
 		],
 		'client' => [
 			# a client is a PC booting via net
@@ -86,6 +100,21 @@ $DbSchema = {
 ### 			'cols'	=> contains a list of column descriptions
 ### 			'vals'	=> optional, contains list of data hashes to be inserted
 ### 					   into new table
+### 		drop-table => drops an existing table
+### 			'table	=> contains the name of the table to be dropped
+### 		rename-table => renames a table
+### 			'old-table' => contains the old name of the table
+### 			'new-table' => contains the new name of the table
+### 		add-columns => adds columns to a table
+### 			'table' => the name of the table the columns should be added to
+### 			'new-cols' => contains a list of new column descriptions
+### 			'new-default-vals' => optional, a list of data hashes to be used
+###							 		  as default values for the new columns
+### 			'cols' => contains a list of column descriptions
+### 		drop-columns => drops columns from a table
+### 			'table' => the name of the table the columns should be dropped from
+### 			'col-changes' => a hash with changed column descriptions
+### 			'cols'	=> contains a full list of resulting column descriptions
 ################################################################################
 
 %DbSchemaHistory = (
@@ -100,6 +129,11 @@ $DbSchema = {
 					'schema_version' => $DbSchema->{'version'},
 				},
 			],
+		},
+		{
+			'cmd' => 'add-table',
+			'table' => 'vendor_os',
+			'cols' => $DbSchema->{'tables'}->{'vendor_os'},
 		},
 		{
 			'cmd' => 'add-table',
