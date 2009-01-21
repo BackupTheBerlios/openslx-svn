@@ -138,7 +138,7 @@ if ($action =~ m[import]i) {
 	list-supported
 	list-installed
 	update
-Try '$0 --help' for more info.\n");
+Try '%s --help' for more info.\n", $0);
 }
 
 __END__

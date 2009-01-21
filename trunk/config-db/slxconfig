@@ -93,7 +93,7 @@ if ($action =~ m[^add-system$]i) {
 	list-vendoros
 	remove-client
 	remove-system
-Try '$0 --help' for more info.\n");
+Try '%s --help' for more info.\n", $0);
 }
 
 $openslxDB->disconnect();

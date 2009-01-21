@@ -178,7 +178,7 @@ sub addLibsForBinary
 	print STDERR _tr("analyzing '%s'...\n", $binary) if $verbose;
 	my $fileInfo = `file --dereference --brief --mime $binary 2>/dev/null`;
 	if ($?) {
-		die _tr("unable to fetch file info for $binary, giving up!\n");
+		die _tr("unable to fetch file info for '%s', giving up!\n", $binary);
 	}
 	chomp $fileInfo;
 	print STDERR _tr("\tinfo is: '%s'...\n", $fileInfo) if $verbose;
@@ -192,7 +192,7 @@ sub addLibsForBinary
 	# bitwidth:
 	$fileInfo = `file --dereference --brief $binary 2>/dev/null`;
 	if ($?) {
-		die _tr("unable to fetch file info for $binary, giving up!\n");
+		die _tr("unable to fetch file info for '%s', giving up!\n", $binary);
 	}
 	chomp $fileInfo;
 	print STDERR _tr("\tinfo is: '%s'...\n", $fileInfo) if $verbose;

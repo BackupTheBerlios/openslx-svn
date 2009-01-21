@@ -100,7 +100,7 @@ if ($action =~ m[^list-ex]i) {
 	list-exported
 	list-installed
 	list-types
-Try '$0 --help' for more info.\n");
+Try '%s --help' for more info.\n", $0);
 }
 
 __END__
