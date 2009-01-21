@@ -228,7 +228,7 @@ supported."; \
 	@   # set default db-type:
 	@DEFAULT_DB_TYPE=$$(cat DEFAULT-DB-TYPE); \
 	rm DEFAULT-DB-TYPE; \
-	echo -n '  '; slxsettings --db-type="$${DEFAULT_DB_TYPE}";
+	echo -n '  '; slxsettings set db-type="$${DEFAULT_DB_TYPE}";
 
 vmware_install:
 	@# we should read the config file here or better have a separate

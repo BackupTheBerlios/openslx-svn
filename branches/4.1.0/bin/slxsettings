@@ -42,15 +42,10 @@ use Pod::Usage;
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
-
-my ($quiet, @reset, $helpReq, $manReq, $versionReq,);
+my ($quiet, @reset, $helpReq, $manReq, $versionReq, %givenSettings);
 
 GetOptions(
-	'quiet' => \$quiet,
-	# will avoid printing anything
-	'reset=s' => \@reset,
-	# resets given option to its default
-
+	'quiet'   => \$quiet,
 	'help|?'  => \$helpReq,
 	'man'     => \$manReq,
 	'version' => \$versionReq,
@@ -64,19 +59,31 @@ if ($versionReq) {
 
 openslxInit() or pod2usage(2);
 
-my %givenSettings = %cmdlineConfig;
-
-# if there are still arguments in the cmdline left, it must be extended
-# settings:
+# the remaining cmdline arguments are set or reset actions, each followed
+# by a single argument:
 while (scalar @ARGV) {
-	my $extSetting = shift;
-	if ($extSetting !~ m[^([-\w]+)=(.+)$]) {
-		die _tr(
-			"extended setting '%s' has unknown format, expected '<key>=<value>!'",
-			$extSetting
-		);
+	my $action = shift;
+	my $arg    = shift;
+	if ($action eq 'set') {
+		if ($arg !~ m[^([-\w]+)=(.+)$]) {
+			die _tr(
+				"set-argument '%s' has unknown format, expected '<key>=<value>!'",
+				$arg
+			);
+		}
+		$givenSettings{$1} = $2;
 	}
-	$givenSettings{$1} = $2;
+	elsif ($action eq 'reset') {
+		push @reset, $arg;
+	}
+	else {
+		die _tr(unshiftHereDoc(<<'		END-OF-HERE'), $arg, $0);
+			action '%s' is not understood! Known actions are:
+				set
+				reset
+			Try '%s --help' for more info.
+		END-OF-HERE
+	}
 }
 
 # fetch current content of local settings file...
@@ -88,6 +95,12 @@ my %changed;
 foreach my $key (keys %givenSettings) {
 	my $value = $givenSettings{$key};
 	next if !defined $value;
+	if (!exists $openslxConfig{$key}) {
+		die _tr("option '%s' is not known!", $key);
+	}
+	if ($key =~ m{^(base-path|config-path)$}) {
+		die _tr("option '%s' is fixed!", $key);
+	}
 	vlog(0, _tr("setting %s to '%s'", $key, $value)) unless $quiet;
 	my $externalKey = externalKeyFor($key);
 	if (!($settings =~ s[^\s*$externalKey=.*?$][$externalKey=$value]ms)) {
@@ -125,8 +138,8 @@ if (keys %changed) {
 
 if (!keys %changed) {
 	print _tr("paths fixed at installation time:\n");
-	print qq[\t--base-path='$openslxConfig{'base-path'}'\n];
-	print qq[\t--config-path='$openslxConfig{'config-path'}'\n];
+	print qq[\tbase-path='$openslxConfig{'base-path'}'\n];
+	print qq[\tconfig-path='$openslxConfig{'config-path'}'\n];
 	my $text =
 	  keys %changed
 	  ? "resulting base settings (cmdline options):\n"
@@ -135,7 +148,7 @@ if (!keys %changed) {
 	my @baseSettings = grep { exists $cmdlineConfig{$_} } keys %openslxConfig;
 	foreach my $key (sort @baseSettings) {
 		my $val = $openslxConfig{$key} || '';
-		print qq[\t--$key='$val'\n];
+		print qq[\t$key='$val'\n];
 	}
 	print _tr("extended settings:\n");
 	my @extSettings = grep { !exists $cmdlineConfig{$_} } keys %openslxConfig;
@@ -189,21 +202,22 @@ slxsettings - OpenSLX-script to show & change local settings
 
 slxsettings [options] [action ...]
 
-=head3 Script Options
+=head3 Script Actions
 
-      --reset=<string>           resets the given option to its default
+      set <option-name=value>    sets the option to the given value
+      reset <option-name>        resets the given option to its default
 
-=head3 OpenSLX Options
+=head3 List of Known Option Names
 
-      --db-name=<string>         name of database
-      --db-spec=<string>         full DBI-specification of database
-      --db-type=<string>         type of database to connect to
-      --locale=<string>          locale to use for translations
-      --logfile=<string>         file to write logging output to
-      --private-path=<string>    path to private data
-      --public-path=<string>     path to public (client-accesible) data
-      --temp-path=<string>       path to temporary data
-      --verbose-level=<int>      level of logging verbosity (0-3)
+      db-name=<string>           name of database
+      db-spec=<string>           full DBI-specification of database
+      db-type=<string>           type of database to connect to
+      locale=<string>            locale to use for translations
+      logfile=<string>           file to write logging output to
+      private-path=<string>      path to private data
+      public-path=<string>       path to public (client-accesible) data
+      temp-path=<string>         path to temporary data
+      verbose-level=<int>        level of logging verbosity (0-3)
 
 =head3 General Options
 
@@ -243,61 +257,61 @@ settings and exit.
 
 =head1 OPTIONS
 
-=head3 OpenSLX Options
+=head3 Known Option Names
 
 =over 8
 
-=item B<<     --db-name=<string> >>
+=item B<<     db-name=<string> >>
 
 Gives the name of the database to connect to.
 
 Default is $SLX_DB_NAME (usually C<openslx>).
 
-=item B<<     --db-spec=<string> >>
+=item B<<     db-spec=<string> >>
 
 Gives the full DBI-specification of database to connect to. Content depends
 on the db-type.
 
 Default is $SLX_DB_SPEC (usually empty as it will be built automatically).
 
-=item B<<     --db-type=<string> >>
+=item B<<     db-type=<string> >>
 
 Sets the type of database to connect to (CSV, SQLite, mysql, ...).
 
 Default $SLX_DB_TYPE (usually C<CSV>).
 
-=item B<<     --locale=<string> >>
+=item B<<     locale=<string> >>
 
 Sets the locale to use for translations.
 
 Defaults to the system's standard locale.
 
-=item B<<     --logfile=<string> >>
+=item B<<     logfile=<string> >>
 
 Specifies a file where logging output will be written to.
 
 Default is to log to STDERR.
 
-=item B<<     --private-path=<string> >>
+=item B<<     private-path=<string> >>
 
 Sets path to private data, where the config-db, vendor_oses and configurational
 extensions will be stored.
 
 Default is $SLX_PRIVATE_PATH (usually F</var/opt/openslx>.
 
-=item B<<     --public-path=<string> >>
+=item B<<     public-path=<string> >>
 
 Sets path to public (client-accesible) data.
 
 Default is $SLX_PUBLIC_PATH (usually F</srv/openslx>.
 
-=item B<<     --temp-path=<string> >>
+=item B<<     temp-path=<string> >>
 
 Sets path to temporary data.
 
 Default is $SLX_TEMP_PATH (usually F</tmp>.
 
-=item B<<     --verbose-level=<int> >>
+=item B<<     verbose-level=<int> >>
 
 Sets the level of logging verbosity (0-3).
 Prints additional output for debugging. N is a number between 0 and 3. Level
