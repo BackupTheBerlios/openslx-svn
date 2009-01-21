@@ -68,8 +68,11 @@ sub linkFile
 sub slurpFile
 {
 	my $file = shift;
-	open(F, "< $file")
-		or die _tr("could not open file '%s' for reading! (%s)", $file, $!);
+	my $mayNotExist = shift;
+
+	if (!open(F, "< $file") && !$mayNotExist) {
+		die _tr("could not open file '%s' for reading! (%s)", $file, $!);
+	}
 	$/ = undef;
 	my $text = <F>;
 	close(F);
