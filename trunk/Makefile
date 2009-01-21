@@ -7,7 +7,12 @@
 # (c) 2006 - OpenSLX.com
 
 tarball:
-	@. VERSIONS; \
+	@OPENSLX_SVN_SNAPSHOT=$$( echo $${OPENSLX_SVN_SNAPSHOT} | \
+		tr [:upper:] [:lower:]); \
+	case "$${OPENSLX_SVN_SNAPSHOT}" in \
+		yes|y|1) OPENSLX_VERSION_SVNREV=$$( svnversion) ;; \
+	esac; \
+	. VERSIONS; \
 	echo "Creating OpenSLX $${OPENSLX_VERSION_STRING} tar ball "; \
 	if test -e "../openslx-$${OPENSLX_VERSION_STRING}" -a \
 	! -L "../openslx-$${OPENSLX_VERSION_STRING}"; then \
