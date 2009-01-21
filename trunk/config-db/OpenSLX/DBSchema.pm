@@ -15,25 +15,25 @@ use vars qw($DbSchema %DbSchemaHistory);
 
 # configurable attributes for system, client and group:
 my @sharedAttributes = (
-	'attrDesktopSession:s.128',
-	'attrDomainName:s.64',
-	'attrDomainNameServers:s.128',
-	'attrFontServers:s.128',
-	'attrHwGraphic:s.64',
-	'attrHwMonitor:s.64',
-	'attrHwMouse:s.64',
-	'attrLanguage:s.64',
-	'attrLprServers:s.128',
-	'attrNetbiosWorkgroup:s.64',
-	'attrNisDomain:s.64',
-	'attrNisServers:s.128',
-	'attrNtpServers:s.128',
-	'attrStartRwhod:b',
-	'attrStartSnmp:b',
-	'attrStartX:s.64',
-	'attrStartXdmcp:s.64',
-	'attrTexEnable:b',
-	'attrVmware:b',
+	'attr_desktop_session:s.128',
+	'attr_domain_name:s.64',
+	'attr_domain_name_servers:s.128',
+	'attr_font_servers:s.128',
+	'attr_hw_graphic:s.64',
+	'attr_hw_monitor:s.64',
+	'attr_hw_mouse:s.64',
+	'attr_language:s.64',
+	'attr_lpr_servers:s.128',
+	'attr_netbios_workgroup:s.64',
+	'attr_nis_domain:s.64',
+	'attr_nis_servers:s.128',
+	'attr_ntp_servers:s.128',
+	'attr_start_rwhod:b',
+	'attr_start_snmp:b',
+	'attr_start_x:s.64',
+	'attr_start_xdmcp:s.64',
+	'attr_tex_enable:b',
+	'attr_vmware:b',
 );
 
 ################################################################################
@@ -75,12 +75,24 @@ $DbSchema = {
 			'label:s.128',			# visible name (pxe-label)
 			'descr:s.1024',			# internal description (optional, for admins)
 			'export_uri:s.256',		# path to export (NDB-image or NFS-path)
-			'tftp_uri:s.256',		# path to tftp export directory
+			'kernel:s.128',			# path to kernel file, relative to OS root
+			'kernel_params:s.512',	# kernel-param string for pxe
+			'initramfs:s.128',		# path to initramfs file, relative to OS root
+			'hidden:b',				# hidden systems won't be offered for booting
+			@sharedAttributes,
+		],
+		'system_variant' => [
+			# a system_variant describes an alternative boot setup for a system
+			# which will always be offered if the systems itself is offered by
+			# a client
+			'id:pk',				# primary key
+			'name:s.32',			# name used for
+			'system_id:fk',			# foreign key
+			'label_addition:s.64',	# visible name part (added to pxe-label)
+			'descr:s.1024',			# internal description (optional, for admins)
 			'kernel:s.128',			# name of kernel file
 			'kernel_params:s.512',	# kernel-param string for pxe
 			'initramfs:s.128',		# name of initrd file
-			'hidden:b',				# hidden systems won't be offered for booting
-			@sharedAttributes,
 		],
 		'client' => [
 			# a client is a PC booting via network
@@ -98,7 +110,7 @@ $DbSchema = {
 			'client_id:fk',		# foreign key
 			'system_id:fk',		# foreign key
 		],
-		'group' => [
+		'groups' => [
 			# a group encapsulates a set of clients as one entity, managing
 			# a group-specific attribute set. All the different attribute
 			# sets a client inherits via group membership are folded into
@@ -185,6 +197,11 @@ $DbSchema = {
 		},
 		{
 			'cmd' => 'add-table',
+			'table' => 'system_variant',
+			'cols' => $DbSchema->{'tables'}->{'system_variant'},
+		},
+		{
+			'cmd' => 'add-table',
 			'table' => 'client',
 			'cols' => $DbSchema->{'tables'}->{'client'},
 			'vals' => [
@@ -202,8 +219,8 @@ $DbSchema = {
 		},
 		{
 			'cmd' => 'add-table',
-			'table' => 'group',
-			'cols' => $DbSchema->{'tables'}->{'group'},
+			'table' => 'groups',
+			'cols' => $DbSchema->{'tables'}->{'groups'},
 		},
 		{
 			'cmd' => 'add-table',
