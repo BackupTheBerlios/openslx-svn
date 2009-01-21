@@ -3412,6 +3412,7 @@
 0x8086	0x2582	"Card:Intel 915"
 0x8086	0x2592	"Card:Intel 915"
 0x8086	0x2653	"ata_piix"	"Intel Corp.|82801FBM Serial ATA Storage Controller"
+0x8086	0x266e	"snd-intel8x0"	"Intel Corp.|AC'97 Audio Controller"
 0x8086  0x2772  "Card:Intel 945"
 0x8086  0x2792  "Card:Intel 915GM"
 0x8086  0x27a2  "Card:Intel 945"
