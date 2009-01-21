@@ -1,0 +1,20 @@
+How busybox is created
+
+1. Get the current sources from busybox.net and untar them.
+2. Change to the busybox-<version> dir and create a sym link named patches
+   pointing to ../busybox-patches
+3. Use 'quilt push -a' to apply all patches from the busybox-patches/series
+   file.  Or apply the patches in the order shown in the series file.
+4. Create a sym link named .config pointing to ../busybox-config
+5. Call make oldconfig and adjust the configuration if required.
+6. Call make to create the busybox binary.
+7. Copy the binary to ../busybox.<arch>
+
+
+Current open issues
+
+- The process is not automated.
+- Should be moved to a place outside of the OpenSLX sources.
+- Ensure to create the binaries with an older Linux version.  Else the binary
+  might use newer features of libc which are not available on the used host.
+  For the last builds suse 10.1 systems created with slxos-setup had been used.
