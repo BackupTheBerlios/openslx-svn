@@ -114,6 +114,18 @@ sub fetchAllSystemIDsOfClient
 	return @rows;
 }
 
+sub fetchAllSystemIDsOfGroup
+{
+	my $self = shift;
+	my $groupID = shift;
+
+	my $sql = qq[
+		SELECT system_id FROM group_system_ref WHERE group_id = '$groupID'
+	];
+	my @rows = $self->_doSelect($sql, 'system_id');
+	return @rows;
+}
+
 sub fetchClientsByFilter
 {
 	my $self = shift;
@@ -143,12 +155,74 @@ sub fetchClientsById
 sub fetchAllClientIDsOfSystem
 {
 	my $self = shift;
+	my $systemID = shift;
+
+	my $sql = qq[
+		SELECT client_id FROM client_system_ref WHERE system_id = '$systemID'
+	];
+	my @rows = $self->_doSelect($sql, 'system_id');
+	return @rows;
+}
+
+sub fetchAllClientIDsOfGroup
+{
+	my $self = shift;
+	my $groupID = shift;
+
+	my $sql = qq[
+		SELECT client_id FROM group_client_ref WHERE group_id = '$groupID'
+	];
+	my @rows = $self->_doSelect($sql, 'system_id');
+	return @rows;
+}
+
+sub fetchGroupsByFilter
+{
+	my $self = shift;
+	my $filter = shift;
+	my $resultCols = shift;
+
+	$resultCols = '*' 		unless (defined $resultCols);
+	my $sql = "SELECT $resultCols FROM group";
+	my $connector;
+	foreach my $col (keys %$filter) {
+		$connector = !defined $connector ? 'WHERE' : 'AND';
+		$sql .= " $connector $col = '$filter->{$col}'";
+	}
+	my @rows = $self->_doSelect($sql);
+	return @rows;
+}
+
+sub fetchGroupsById
+{
+	my $self = shift;
+	my $id = shift;
+	my $resultCols = shift;
+
+	return $self->fetchGroupsByFilter({'id' => $id}, $resultCols);
+}
+
+sub fetchAllGroupIDsOfSystem
+{
+	my $self = shift;
+	my $systemID = shift;
+
+	my $sql = qq[
+		SELECT group_id FROM group_system_ref WHERE system_id = '$systemID'
+	];
+	my @rows = $self->_doSelect($sql, 'group_id');
+	return @rows;
+}
+
+sub fetchAllGroupIDsOfClient
+{
+	my $self = shift;
 	my $clientID = shift;
 
 	my $sql = qq[
-		SELECT client_id FROM client_system_ref WHERE system_id = '$clientID'
+		SELECT group_id FROM group_client_ref WHERE client_id = '$clientID'
 	];
-	my @rows = $self->_doSelect($sql, 'system_id');
+	my @rows = $self->_doSelect($sql, 'group_id');
 	return @rows;
 }
 

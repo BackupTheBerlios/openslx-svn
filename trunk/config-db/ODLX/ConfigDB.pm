@@ -232,6 +232,43 @@ sub fetchAllClientIDsOfGroup
 	return $confDB->{'meta-db'}->fetchAllClientIDsOfGroup($groupID);
 }
 
+sub fetchGroupsByFilter
+{
+	my $confDB = shift;
+	my $filter = shift;
+	my $resultCols = shift;
+
+	my @groups
+		= $confDB->{'meta-db'}->fetchGroupsByFilter($filter, $resultCols);
+	return wantarray() ? @groups : shift @groups;
+}
+
+sub fetchGroupsById
+{
+	my $confDB = shift;
+	my $id = shift;
+
+	my $filter = { 'id' => $id };
+	my @groups = $confDB->{'meta-db'}->fetchGroupsByFilter($filter);
+	return wantarray() ? @groups : shift @groups;
+}
+
+sub fetchAllGroupIDsOfSystem
+{
+	my $confDB = shift;
+	my $systemID = shift;
+
+	return $confDB->{'meta-db'}->fetchAllGroupIDsOfSystem($systemID);
+}
+
+sub fetchAllGroupIDsOfClient
+{
+	my $confDB = shift;
+	my $clientID = shift;
+
+	return $confDB->{'meta-db'}->fetchAllGroupIDsOfClient($clientID);
+}
+
 ################################################################################
 ### data manipulation interface
 ################################################################################
