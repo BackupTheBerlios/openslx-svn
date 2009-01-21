@@ -456,7 +456,7 @@ elif [ -z "$COWLOOP" ] ; then
   # run some specific stuff !?
 fi
 # script for stuff to execute during early bootup
-d_mkrlscript init boot.ld "Running configuration postponed from InitRD"
+d_mkrlscript init boot.ld "Running configuration postponed from InitRamFS"
 echo "fs complete" >/tmp/fscmpl
 
 # write debug file information after filesystem setup completed

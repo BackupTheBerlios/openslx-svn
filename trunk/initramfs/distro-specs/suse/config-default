@@ -1,7 +1,7 @@
 # Description:  distro specific settings for general SuSE. This configuration
 #               is the base for following SuSE versions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
+# Author(s):    Dirk von Suchodoletz <dvs@openslx.com>, 23-06-2006
 #
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 
@@ -34,7 +34,8 @@ X11/xdm/pixmaps\n*.rpmsave\ndhclient*script\ninit.d/boot.d/*\n\
 init.d/rc3.d/*\ninit.d/rc5.d/*\nX11/xorg.conf*\n"
 D_BINDMPTS="tmp root media home"
 D_DIRINBINDMNT="/var/run /var/log /var/tmp"
-D_RODIRSINRW="/etc/opt/gnome/gconf /etc/X11/xkb /var/adm /var/lib/texmf /var/lib/rpm"
+D_RODIRSINRW="/etc/opt/gnome/gconf /etc/X11/xkb /var/adm /var/lib/texmf \
+/var/lib/rpm"
 D_DIRINDXS="/var/X11R6/compose-cache \
 /var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
 /var/lib/pam_devperm /var/lib/bluetooth \
@@ -44,8 +45,10 @@ D_DIRINDXS="/var/X11R6/compose-cache \
 D_INITDIR="/init.d"
 D_INITBOOTD="${D_INITDIR}/boot.d"
 D_INITDEFAULT="5"
-D_RCDIRS="/init.d/rc0.d /init.d/rc1.d /init.d/rc2.d /init.d/rc3.d /init.d/rc4.d /init.d/rc5.d /init.d/rc6.d /init.d/rcS.d"
-D_INITSCRIPTS="boot.udev boot.proc boot.shm boot.klog boot.loadmodules boot.clock boot.sysctl boot.ipconfig boot.swap"
+D_RCDIRS="/init.d/rc0.d /init.d/rc1.d /init.d/rc2.d /init.d/rc3.d \
+/init.d/rc4.d /init.d/rc5.d /init.d/rc6.d /init.d/rcS.d"
+D_INITSCRIPTS="boot.udev boot.proc boot.shm boot.klog boot.loadmodules \
+boot.clock boot.sysctl boot.ipconfig boot.swap"
 D_XF86CONFFILE="/etc/X11/xorg.conf"
 D_XFONTPATH="/usr/X11R6/lib/X11/fonts/*"
 D_DEFAULTCOUNTRY="de"

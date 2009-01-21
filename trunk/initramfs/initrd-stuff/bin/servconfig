@@ -4,7 +4,7 @@
 # diskless clients (executed in stage3 within initial ramfs). The file-
 # system is setup when servconfig starts
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 03-09-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 29-10-2006
 # Michael Janczyk <mj0>, 27-10-2006
 # Lars Mueller <lm@OpenSLX.com>, 23-06-2006
 # Oliver Tappe <ot@OpenSLX.com>, 23-06-2006
@@ -32,7 +32,7 @@
 [ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 8 -o $DEBUGLEVEL -eq 12 ] && \
   set -x
 
-#######################################################################
+#############################################################################
 # copy distro specific scripts, programs, libraries and configs
 cp -a /etc/sysconfig/files/* /mnt 2>/dev/null &
 # boot.local file (different for several distros)
@@ -41,9 +41,9 @@ cp -a /etc/sysconfig/files/* /mnt 2>/dev/null &
   cat /etc/boot.local >> /mnt/etc/${D_BOOTLOCAL}
 }
 
-#######################################################################
-# read and unify configuration options - default configuration file,
-# from dhcp, ldap ...
+#############################################################################
+# read and unify configuration options - default configuration file, from
+# dhcp, ldap ...
 # wait for the appearance of configuration from several sources
 cfgcomplete
 . /etc/machine-setup
@@ -79,7 +79,7 @@ echo "
    Diskless Workstation (v4.1/$dstr   (c) <OpenSLX.ORG project>
 ">/mnt/etc/issue
 
-#######################################################################
+#############################################################################
 # vmware stuff first part: two scenarios
 # * VM images in /usr/share/vmware - then simply link
 # * VM images via additional mount (mount source NFS, NBD, ...)
@@ -114,7 +114,7 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   fi
 fi
 
-#######################################################################
+#############################################################################
 # set localization
 if [ -z "$country" ] ; then
   error "$scfg_country" nonfatal
@@ -122,16 +122,16 @@ if [ -z "$country" ] ; then
 fi
 localization "${country}"
 
-#######################################################################
-# setup passwd and shadow for local system users like root, bin, daemon
-# and nobody if no user/admin provided passwd exists ...
-# the root password provided by machine-setup is used only if no passwd
-# file is provided (default case)
+#############################################################################
+# setup passwd and shadow for local system users like root, bin, daemon and
+# nobody if no user/admin provided passwd exists ...
+# the root password provided by machine-setup is used only if no passwd file
+# is provided (default case)
 if [ ! -f /rootfs/etc/passwd ] ; then
   basepasswd
 fi
 
-#######################################################################
+#############################################################################
 # dns and ip configuration
 # hostname of the machine
 echo "$host_name" >/proc/sys/kernel/hostname
@@ -153,19 +153,17 @@ test -n "$domain_name_servers" && {
     echo nameserver $nameserver >>/mnt/etc/resolv.conf;
   done; }
 
-#######################################################################
+#############################################################################
 # initial boot scripts
 # delete and create runlevel links for initial booting (SuSE, Debian,
 # ...)
 initial_boot
 
-#######################################################################
-#
+#############################################################################
 # run distro specific configuration function
 config_distro
 
-
-#######################################################################
+#############################################################################
 #
 # boot.local
 if [ -n "$bootlocal_script" ]; then
@@ -173,7 +171,7 @@ if [ -n "$bootlocal_script" ]; then
 $bootlocal_script" >> /mnt/etc/${D_INITDIR}/boot.local
 fi
 
-#######################################################################
+#############################################################################
 # basic (non network) services
 
 # at daemon - calling distro specific function config_atd
@@ -236,7 +234,7 @@ config_automount
 # configure bluetooth services
 config_bt
 
-#######################################################################
+#############################################################################
 # network(ed) services
 
 # network time service (ntp) configuration file
@@ -264,7 +262,7 @@ config_snmp
 # setup afs client stuff
 config_afs
 
-#######################################################################
+#############################################################################
 # NIS
 # setup nis configuration if needed
 if [ "x$nis_domain" != "x" ] && [ "x$nis_servers" != "x" ] ; then
@@ -276,11 +274,11 @@ $date\n\nypserver "$nis_servers >/mnt/etc/yp.conf
   config_nis
 fi
 
-#######################################################################
+#############################################################################
 # name service caching daemon if networked user database
 config_nscd
 
-#######################################################################
+#############################################################################
 # vmware stuff second part: setting up the environment
 
 # create needed directories and files
@@ -341,13 +339,13 @@ Type=Application" >/mnt/etc/X11/sessions/default.desktop
   # add scripts for default.desktop and vmimages.desktop
   cd /mnt/var/X11R6/bin
   ln -s desktop-session xdmmenu
-  ln -s desktop-session vmmenu                             
+  ln -s desktop-session vmmenu
 fi
 
-#######################################################################
-# preparation of /tmp directory (partition 44, nfs scratch, ramdisk)
-# there might be the chance that we have a disk partition available, so
-# wait for completion of detection, setup process
+#############################################################################
+# preparation of /tmp directory (partition 44, nfs scratch, ramdisk). there
+# might be the chance that we have a disk partition available, so wait for
+# completion of detection, setup process
 waitfor /tmp/tmpready 10000
 [ $DEBUGLEVEL -eq 8 ] && echo "** Setup of /tmp completed at $(sysup)"
 # create some directories and correct permissions
@@ -378,7 +376,7 @@ if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
 fi
 chmod 1777 /mnt/tmp
 
-#######################################################################
+#############################################################################
 # X11/GUI stuff
 if [ "x$start_x" != "xno" ] ; then
   # creating directories commonly needed for X11 in all distros
