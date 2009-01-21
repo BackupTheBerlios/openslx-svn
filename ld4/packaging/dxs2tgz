@@ -49,7 +49,8 @@ goto_script_dir
 #Create Temporary working directory
 mkdir -p /tmp/ld$$/dxs
 mkdir -p /tmp/ld$$/man/
-cp default_files/*.1.gz /tmp/ld$$/man/
+cp default_files/*.1 /tmp/ld$$/man/
+gzip /tmp/ld$$/man/*
 cp default_files/*install.sh /tmp/ld$$/
 
 #Goto project root

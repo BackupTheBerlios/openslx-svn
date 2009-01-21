@@ -55,7 +55,8 @@ mkdir -p /tmp/ld$$/DEBIAN
 cp default_files/control  /tmp/ld$$/DEBIAN/
 cp default_files/prerm    /tmp/ld$$/DEBIAN/
 cp default_files/postinst /tmp/ld$$/DEBIAN/
-cp default_files/mkdxsinitrd.1.gz /tmp/ld$$/usr/share/man/man1/
+cp default_files/*.1 /tmp/ld$$/usr/share/man/man1/
+gzip /tmp/ld$$/usr/share/man/man1/*
 
 #Goto project root
 pushd .. > /dev/null
