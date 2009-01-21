@@ -56,6 +56,7 @@ sub initialize
 {
 	my $self = shift;
 	my $distroName = shift;
+	my $selectionName = shift;
 	my $protectSystemPath = shift;
 
 	if (!exists $supportedDistros{lc($distroName)}) {
@@ -85,61 +86,46 @@ sub initialize
 	$distro->initialize($self);
 	$self->{distro} = $distro;
 
+	$self->{'selection-name'} = $selectionName;
+	my $vendorOSName = $self->{distro}->{'base-name'};
+	if (length($selectionName) && $selectionName ne 'default') {
+		$vendorOSName .= "-$selectionName";
+	}
+	$self->{'vendor-os-name'} = $vendorOSName;
+
 	# setup path to distribution-specific info:
 	my $distroInfoDir = "../lib/distro-info/$distro->{'base-name'}";
 	if (!-d $distroInfoDir) {
-		die _tr("unable to find distro-info for system '%s'", $distro->{'base-name'})."\n";
+		die _tr("unable to find distro-info for system '%s'\n", $distro->{'base-name'});
 	}
 	$self->{'distro-info-dir'} = $distroInfoDir;
 	$self->readDistroInfo();
 
-	$self->setupSystemPaths($protectSystemPath);
+	if (!exists $self->{'distro-info'}->{'selection'}->{$selectionName}) {
+		die _tr("selection '%s' is unknown to system '%s'\n",
+				$selectionName, $distro->{'base-name'})
+			."These selections are available:\n\t"
+			.join("\n\t", keys %{$self->{'distro-info'}->{'selection'}})
+			."\n";
+	}
+
+	$self->{'system-path'}
+		= "$openslxConfig{'stage1-path'}/$self->{'vendor-os-name'}";
+	vlog 1, "system will be installed to '$self->{'system-path'}'";
+	if ($protectSystemPath && -e $self->{'system-path'}) {
+		die _tr("'%s' already exists, giving up!", $self->{'system-path'});
+	}
 
 	$self->createPackager();
 	$self->createMetaPackager();
+
 }
 
-sub setupStage1A
+sub installVendorOS
 {
 	my $self = shift;
 
-	vlog 1, "setting up stage1a for $self->{distro}->{'base-name'}...";
-	$self->stage1A_createBusyboxEnvironment();
-	$self->stage1A_setupResolver();
-	$self->stage1A_copyPrerequiredFiles();
-	$self->stage1A_copyTrustedPackageKeys();
-	$self->stage1A_createRequiredFiles();
-}
-
-sub setupStage1B
-{
-	my $self = shift;
-
-	vlog 1, "setting up stage1b for $self->{distro}->{'base-name'}...";
-	$self->stage1B_chrootAndBootstrap();
-}
-
-sub setupStage1C
-{
-	my $self = shift;
-
-	vlog 1, "setting up stage1c for $self->{distro}->{'base-name'}...";
-	$self->stage1C_chrootAndInstallBasicSystem();
-}
-
-sub setupStage1D
-{
-	my $self = shift;
-
-	vlog 1, "setting up stage1d for $self->{distro}->{'base-name'}...";
-	$self->stage1D_setupPackageSources();
-	$self->stage1D_updateBasicSystem();
-	$self->stage1D_installPackageSelection();
-}
-
-sub setupStage1
-{
-	my $self = shift;
+	$self->createSystemPaths();
 
 	$self->setupStage1A();
 	my $pid = fork();
@@ -157,17 +143,57 @@ sub setupStage1
 	}
 	$self->stage1C_cleanupBasicSystem();
 	$self->setupStage1D();
+
+	$self->addInstalledVendorOSToConfigDB();
 }
 
-sub setupRepositories
+sub updateVendorOS
 {
 	my $self = shift;
 
-	$self->setupStage1D();
+	$self->updateStage1D();
 }
 
-sub fixPrerequiredFiles
+sub addInstalledVendorOSToConfigDB
 {
+	my $self = shift;
+
+	my $configDBModule = "OpenSLX::ConfigDB";
+	unless (eval "require $configDBModule") {
+		if ($! == 2) {
+			vlog 1, _tr("ConfigDB-module not found, unable to access OpenSLX-database.\n");
+		} else {
+			die _tr("Unable to load ConfigDB-module <%s> (%s)\n", $configDBModule, $@);
+		}
+	} else {
+		my $modVersion = $configDBModule->VERSION;
+		if ($modVersion < 1.01) {
+			die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
+					$configDBModule, 1.01, $modVersion);
+		}
+		$configDBModule->import(qw(:access :manipulation));
+		my $openslxDB = connectConfigDB();
+		# insert new system if it doesn't already exist in DB:
+		my $vendorOSName = $self->{'vendor-os-name'};
+		my $vendorOS
+			= fetchVendorOSesByFilter($openslxDB,
+									  { 'name' => $vendorOSName },
+									  'id');
+		if (defined $vendorOS) {
+			print STDERR _tr("Vendor-OS <%s> already exists in OpenSLX-database!\n",
+							 $vendorOSName);
+		} else {
+			my $id = addVendorOS($openslxDB, {
+				'name' => $vendorOSName,
+				'path' => $self->{'vendor-os-name'},
+			});
+
+			print STDERR _tr("Vendor-OS <%s> has been added to DB (ID=%s)\n",
+							 $vendorOSName, $id);
+		}
+
+		disconnectConfigDB($openslxDB);
+	}
 }
 
 ################################################################################
@@ -177,7 +203,7 @@ sub readDistroInfo
 {
 	my $self = shift;
 
-	vlog 1, "reading configuration info for $self->{distro}->{'base-name'}...";
+	vlog 1, "reading configuration info for $self->{'vendor-os-name'}...";
 	# merge user-provided configuration distro defaults...
 	my %repository = %{$self->{distro}->{config}->{repository}};
 	my %selection = %{$self->{distro}->{config}->{selection}};
@@ -222,17 +248,9 @@ sub readDistroInfo
 	}
 }
 
-sub setupSystemPaths
+sub createSystemPaths
 {
 	my $self = shift;
-	my $protectSystemPath = shift;
-
-	$self->{'system-path'}
-		= "$openslxConfig{'stage1-path'}/$self->{distro}->{'base-name'}";
-	vlog 1, "system will be installed to '$self->{'system-path'}'";
-	if ($protectSystemPath && -e $self->{'system-path'}) {
-		die _tr("'%s' already exists, giving up!", $self->{'system-path'});
-	}
 
 	# specify individual paths for the respective substages:
 	$self->{stage1aDir} = "$self->{'system-path'}/stage1a";
@@ -308,6 +326,18 @@ sub selectBaseURL
 		$baseURL = $baseURLs[0];
 	}
 	return $baseURL;
+}
+
+sub setupStage1A
+{
+	my $self = shift;
+
+	vlog 1, "setting up stage1a for $self->{'vendor-os-name'}...";
+	$self->stage1A_createBusyboxEnvironment();
+	$self->stage1A_setupResolver();
+	$self->stage1A_copyPrerequiredFiles();
+	$self->stage1A_copyTrustedPackageKeys();
+	$self->stage1A_createRequiredFiles();
 }
 
 sub stage1A_createBusyboxEnvironment
@@ -424,6 +454,14 @@ sub stage1A_createRequiredFiles
 	}
 }
 
+sub setupStage1B
+{
+	my $self = shift;
+
+	vlog 1, "setting up stage1b for $self->{'vendor-os-name'}...";
+	$self->stage1B_chrootAndBootstrap();
+}
+
 sub stage1B_chrootAndBootstrap
 {
 	my $self = shift;
@@ -461,6 +499,14 @@ sub stage1B_chrootAndBootstrap
 	my @bootstrapPkgs = downloadFilesFrom(\@pkgs, $pkgDirURL);
 	my @allPkgs = (@prereqPkgs, @bootstrapPrereqPkgs, @bootstrapPkgs);
 	$self->{'local-bootstrap-packages'}	= \@allPkgs;
+}
+
+sub setupStage1C
+{
+	my $self = shift;
+
+	vlog 1, "setting up stage1c for $self->{'vendor-os-name'}...";
+	$self->stage1C_chrootAndInstallBasicSystem();
 }
 
 sub stage1C_chrootAndInstallBasicSystem
@@ -517,6 +563,24 @@ sub stage1C_cleanupBasicSystem
 	}
 }
 
+sub setupStage1D
+{
+	my $self = shift;
+
+	vlog 1, "setting up stage1d for $self->{'vendor-os-name'}...";
+	$self->stage1D_setupPackageSources();
+	$self->stage1D_updateBasicSystem();
+	$self->stage1D_installPackageSelection();
+}
+
+sub updateStage1D
+{
+	my $self = shift;
+
+	vlog 1, "updating $self->{'vendor-os-name'}...";
+	$self->stage1D_updateBasicSystem();
+}
+
 sub stage1D_setupPackageSources()
 {
 	my $self = shift;
@@ -550,7 +614,7 @@ sub stage1D_installPackageSelection
 {
 	my $self = shift;
 
-	my $selectionName = 'default';
+	my $selectionName = $self->{'selection-name'};
 
 	vlog 1, "installing package selection <$selectionName>...";
 	my $pkgSelection = $self->{'distro-info'}->{selection}->{$selectionName};

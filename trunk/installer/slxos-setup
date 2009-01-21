@@ -23,6 +23,9 @@ use FindBin;
 use lib "$FindBin::RealBin";
 use lib "$FindBin::RealBin/../lib";
 
+use lib "$FindBin::RealBin/../config-db";
+	# development path to config-db
+
 use OpenSLX::Basics;
 use OpenSLX::OSSetup::Engine;
 
@@ -34,16 +37,17 @@ my (
 	$helpReq,
 	$manReq,
 	$listReq,
-	$setupRepos,
 	$verbose,
 	$versionReq,
 );
+
+my $selection = 'default';
 
 GetOptions(
 	'help|?' => \$helpReq,
 	'list' => \$listReq,
 	'man' => \$manReq,
-	'setup-repos' => \$setupRepos,
+	'selection=s' => \$selection,
 	'verbose' => \$verbose,
 	'version' => \$versionReq,
 ) or pod2usage(2);
@@ -62,8 +66,14 @@ if ($listReq) {
 	exit 1;
 }
 
-if (scalar(@ARGV) != 1) {
-	print STDERR _tr("You need to specify exactly one distro name!\n");
+if (scalar(@ARGV) != 2) {
+	print STDERR _tr("You need to specify exactly one action and one distro name!\n");
+	pod2usage(2);
+}
+my $action = $ARGV[0];
+my $distroName = $ARGV[1];
+if ($action !~ m[^import-into-db|install|update$]i) {
+	print STDERR _tr("You need to specify exactly one action:\n\tinstall, update or import-into-db\n");
 	pod2usage(2);
 }
 
@@ -74,14 +84,19 @@ chdir($FindBin::RealBin)
 
 
 # create ossetup-engine for given distro and start it:
-my $distroName = $ARGV[0];
 my $engine = OpenSLX::OSSetup::Engine->new;
-if ($setupRepos) {
-	$engine->initialize($distroName, 0);
-	$engine->setupRepositories();
-} else {
-	$engine->initialize($distroName, 1);
-	$engine->setupStage1();
+if ($action =~ m[import]i) {
+	$engine->initialize($distroName, $selection, 0);
+	if (!-e $engine->{'system-path'}) {
+		die _tr("'%s' doesn't exist, giving up!\n", $engine->{'system-path'});
+	}
+	$engine->addInstalledVendorOSToConfigDB();
+} elsif ($action =~ m[update]i) {
+	$engine->initialize($distroName, $selection, 0);
+	$engine->updateVendorOS();
+} elsif ($action =~ m[install]i) {
+	$engine->initialize($distroName, $selection, 1);
+	$engine->installVendorOS();
 }
 
 __END__
@@ -93,12 +108,18 @@ will be used as a stage1 system for OpenSLX.
 
 =head1 SYNOPSIS
 
-slxos-setup [options] <distro-name>
+slxos-setup [options] <action> <distro-name>
 
   Options:
       --help                   brief help message
       --man                    show full documentation
+      --selection=<string>     specific selection for vendor-OS
       --version                show version
+
+  Actions:
+      import-into-db           imports a vendor-OS into the openslx-db
+      install                  installs a vendor-OS into a folder
+      update                   updates an installed vendor-OS
 
 =head1 OPTIONS
 
@@ -111,6 +132,15 @@ Prints a brief help message and exits.
 =item B<--man>
 
 Prints the manual page and exits.
+
+=item B<--selection=<string>>
+
+Many distributions offer several different package selections for
+installation. With this option you can specify which of these you
+would like to use.
+
+If you pass an unknown selection, you will see a list of the selections
+that are available.
 
 =item B<--version>
 
