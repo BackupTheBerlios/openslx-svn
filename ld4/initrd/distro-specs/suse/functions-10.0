@@ -34,12 +34,8 @@ return $result
 
 # acpi and powersave have changed
 config_acpi () {
-local start_acpi=10
-local stop_acpi=12
-local start_powersave=11
-local stop_powersave=11
-rllinker acpid "$start_acpi" "$stop_acpi"
-rllinker powersaved "$start_powersave" "$stop_powersave"
+rllinker acpid "10" "12"
+rllinker powersaved "11" "11"
 }
 
 # configure dbus (inter application communication for kde and gnome), hal

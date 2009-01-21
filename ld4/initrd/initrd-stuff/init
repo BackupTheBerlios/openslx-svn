@@ -2,11 +2,11 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 12-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 01-05-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.4e
+# Version:      0.2.4f
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -53,6 +53,8 @@ udev_hotplug
 TMPFSSIZE="50%"
 COWSIZE="50%"
 RWDIR=/dev/shm
+# switch off the several configuration methods, will be switched on
+# according to kernel commandline settings
 echo "noldap" > /tmp/ldap-done
 echo "nodhcp" > /tmp/dhcp-done
 echo "nofile" > /tmp/file-done
@@ -67,46 +69,52 @@ for opts in ${KCMDLINE} ; do
       echo -e "\n# localization information gotten via kernel command line \
 in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     ;;
-    # single token for debugging
+    # single token for debugging ...
     debug)
       DEBUGLEVEL=1;;
-    # debug level
+    # ... or a specified debug level
     debug=*)
       DEBUGLEVEL=${opts#debug=}
       # Handle empty, extremly large or non-numeric input
       [ -z "$DEBUGLEVEL" ] && DEBUGLEVEL=0
-      [[ "101" < "$DEBUGLEVEL" ]]; DEBUGLEVEL=100
-      ;;
+      #[[ "101" < "$DEBUGLEVEL" ]] && DEBUGLEVEL=100
+    ;;
     # if configuration should be gathered by dhcp client
     dhcp)
       DHCP="yes"
-      rm /tmp/dhcp-done;;
+      rm /tmp/dhcp-done
+    ;;
     # if ldap configuration should be triggered
     ldap)
       LDAP="yes"
-      rm /tmp/ldap-done;;
+      rm /tmp/ldap-done
+    ;;
     # ldap configuration with host and port to contact (base)
     ldap*)
       LDAP="yes"
-      rm /tmp/ldap-done;;
+      rm /tmp/ldap-done
+    ;;
     # if (external, via tftp) configuration file retrieval should 
     # be triggered, if no source is given try dhcp server and
     # predefined standard path
     file)
       FILE="yes"
-      rm /tmp/file-done;;
+      rm /tmp/file-done
+    ;;
     # file source with tftp server and file location on the server
     file*)
       FILE="yes"
       FILESRC=${opts#file=}
-      rm /tmp/file-done;;
+      rm /tmp/file-done
+    ;;
     # if ld.so.cache should not be generated
     noldsc)
       NOLDSC=yes;;
     # additional source to unify root filesystem with
     union=*)
       UNIONFS=1
-      UNIONDIRS=${opts#union=};;
+      UNIONDIRS=${opts#union=}
+    ;;
     # if unionfs should be used
     unionfs)
       UNIONFS=1;;
@@ -115,18 +123,20 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     cowloop*)
       COWLOOP=1
       #COWSIZE=${opts#cowloop=}
-      ;;
+    ;;
     # dnbd server:port 
     dnbdroot=*)
       NBD=dnbd # name of kernel module
-      NBDOPT=${opts#dnbdroot=};;
+      NBDOPT=${opts#dnbdroot=}
+    ;;
+    # size of cache dnbd should use within ram
     dcsize=*)
-      # size of cache dnbd should use within ram
       DNBDCACHESIZE=${opts#dcsize=};;
     # nbd server:port,filesystem (filesystem is optional)
     nbdroot=*)
       NBD=nbd # name of kernel module
-      NBDOPT=${opts#nbdroot=};;
+      NBDOPT=${opts#nbdroot=}
+    ;;
     # ip configuration client-ip:server-ip:gateway:netmask
     ip=*)
       IPINFO=${opts#ip=};;
