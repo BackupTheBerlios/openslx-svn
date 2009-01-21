@@ -1,6 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2007 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -107,7 +106,7 @@ if [ -n "${essid}" ] ; then
   :
 else
   # check here for the active ethernet link
-  ip link show dev eth1 >/dev/null 2>&1 && error "$init_2eif" nonfatal
+  ip link show dev eth1 >/dev/null 2>&1 && echo "more than one nw if found"
 fi
 
 # set up loopback networking
@@ -117,13 +116,16 @@ ip addr add 127.0.0.1/8 dev lo
 ip link set dev $nwif up || echo "noeth"
 
 # start udhcpc here
+[ -f /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko ] && \
+  modprobe -q af_packet
+[ -n $vci ] && vci="-V $vci"
+udhcpc -b -q $vci -i $nwif 2>/dev/null
 
-[ -f /tmp/confviadhcp ] && . /tmp/confviadhcp
-    [ -z "$clientip" -o -z "$subnet_mask" -o -z "$gateway" \
-      -o -z "$broadcast_address" ] && error "$init_errdhcp"
-    ip addr add $clientip/$(nm2pref $subnet_mask) broadcast $broadcast_address \
-      dev $nwif
-    ip route add default via $gateway
+[ -z "$clientip" -o -z "$subnet_mask" -o -z "$gateway" \
+  -o -z "$broadcast_address" ] && error "$init_errdhcp"
+ip addr add $clientip/$(nm2pref $subnet_mask) broadcast $broadcast_address \
+  dev $nwif
+ip route add default via $gateway
 
 # start the new kernel with initialramfs and cmdline
 #kexec

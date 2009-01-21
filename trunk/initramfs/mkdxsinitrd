@@ -400,11 +400,6 @@ if [ -z "$cdboot" ] ; then
 	# remove any architecture specification after version
   copy_distro_stuff ${DISTRO_NAME} ${DISTRO_VER}
 
-  if [ -z "$NWMODULES" ] ; then
-    #NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32 8139too 8139cp"
-    NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32"
-  fi
-
   # initial ramdisk scripts: init, functions, servconfig, hwautocfg, ...
   # copy and replace variable names
   for dirs in `find ${SLX_SHARE_PATH}/initramfs/* ! -regex ".*/\..*"` ; do
@@ -549,7 +544,10 @@ fi
 if [ -z "$INITRD_PATH" ] ; then
   INITRD_PATH="/tmp/slxinitramfs.gz"
 fi
-
+if [ -z "$NWMODULES" ] ; then
+    #NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32 8139too 8139cp"
+    NWMODULES="forcedeth e1000 e100 tg3 3c59x via-rhine r8169 pcnet32 b44 8139too"
+fi
 # slx init or cdboot init 
 if [ -z "$cdboot" ] ; then
   # base filesystem modules
