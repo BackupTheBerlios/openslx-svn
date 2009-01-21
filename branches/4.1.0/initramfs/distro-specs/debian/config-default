@@ -9,7 +9,7 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# Distro specific general settings for Debian/Sarge
+# Distro specific general settings for general Debian 
 
 # D_SYSCONFDIR - system wide configuration settings - /etc/sysconfig in SuSE 
 # and RedHat, /etc/default in Debian and Ubuntu
@@ -37,7 +37,7 @@ pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
 X11/xdm/pixmaps\ndhclient.script"
 D_BINDMPTS="tmp root home"
 D_DIRINBINDMNT="/var/run /var/log /var/tmp /var/lib/gdm /etc/X11"
-D_RODIRSINRW="etc/gconf etc/X11/xkb /var/adm /var/lib/texmf"
+D_RODIRSINRW="etc/gconf etc/X11/xkb /var/lib/texmf /var/lib/dpkg"
 D_DIRINDXS="/var/X11R6/compose-cache \
 /var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
 /var/lib/pam_devperm /var/lib/bluetooth \
@@ -50,7 +50,7 @@ D_RCDIRS="/rc0.d /rc1.d /rc2.d /rc3.d /rc4.d /rc5.d /rc6.d"
 D_INITDEFAULT="3"
 # fixme: is keymap.sh really needed? Should be handled in a simpler fashion
 # via boot.slx (see hwautocfg)
-D_INITSCRIPTS="mountvirtfs udev procps.sh bootlogd keymap.sh hwclock.sh sudo dbus-1"
+D_INITSCRIPTS="mountkernfs.sh mountvirtfs udev procps.sh bootlogd keymap.sh hwclock.sh sudo dbus-1"
 D_XF86CONFFILE="/etc/X11/xorg.conf"
 D_XORGBIN=/usr/X11R6/bin/X
 D_XFONTPATH="/usr/X11R6/lib/X11/fonts/*"

@@ -36,3 +36,7 @@
 
 # mountvirtfs does not exist anymore -> use mountkernfs.sh
 D_INITSCRIPTS="mountkernfs.sh keyboard-setup mountdevsubfs.sh procps.sh bootlogd hwclock.sh sudo console-setup"
+D_ETCEXCL="*.old\n*-\n\
+etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
+pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
+X11/xdm/pixmaps\ndhclient.script"

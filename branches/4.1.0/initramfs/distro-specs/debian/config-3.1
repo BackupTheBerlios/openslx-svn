@@ -1,9 +1,15 @@
-# Description:  distro specific settings for Debian/Sarge
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
-#               Felix Endres
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
 #
-# Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# Version specific general settings for Debian Sarge (3.1)
 
 # D_SYSCONFDIR - system wide configuration settings - /etc/sysconfig in SuSE 
 # and RedHat, /etc/default in Debian and Ubuntu
@@ -23,28 +29,4 @@
 # D_HWMODTOIGNORE - hardware modules which should not tried to load (because
 # already in kernel, nonexistent, ...)
 
-D_SYSCONFDIR=/default
-D_ETCEXCL="etc/gconf/*\n*.old\n*-\n\
-etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
-pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
-X11/xdm/pixmaps\ndhclient.script\n\
-rc2.d/*\nrc5.d/*"
-D_BINDMPTS="tmp root home"
-D_DIRINBINDMNT="/var/run /var/log /var/tmp /var/lib/gdm"
-D_RODIRSINRW="etc/gconf etc/X11/xkb /var/adm /var/lib/texmf"
-D_DIRINDXS="/var/X11R6/compose-cache \
-/var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
-/var/lib/pam_devperm /var/lib/bluetooth \
-/var/lib/texmf /var/lib/nfs/sm \
-/var/lib/misc /var/lib/acpi /var/spool/cron \
-/var/lock/subsys/sysconfig"
-D_INITDIR="/init.d"
-D_INITBOOTD="/rcS.d"
-D_RCDIRS="/rc0.d /rc1.d /rc2.d /rc3.d /rc4.d /rc5.d /rc6.d"
-D_INITDEFAULT="3"
-# fixme: is keymap.sh really needed? Should be handled in a simpler fashion
-# via boot.slx (see hwautocfg)
-D_INITSCRIPTS="mountvirtfs udev procps.sh bootlogd keymap.sh hwclock.sh sudo dbus-1"
-D_XF86CONFFILE="/etc/X11/xorg.conf"
-D_XFONTPATH="/usr/X11R6/lib/X11/fonts/*"
-D_DEFAULTCOUNTRY="de"
+# nothing changed (yet) compared to the config-default file
