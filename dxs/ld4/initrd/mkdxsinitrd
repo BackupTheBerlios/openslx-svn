@@ -278,22 +278,20 @@ mkdir -p ${INSTDIR}/usr/share
 # needed for KNOPPIX hwsetup not to confuse with ${D_SYSCONFDIR}
 mkdir -p ${INSTDIR}/etc/sysconfig
 
-# source configuration file for the distribution used
-#DISTRO=debian
 
-# fixmee!! Funktion knallt, wenn lsb_release nicht da!!
-#if [ -z "${DISTRO}" ] ; then
-#  for i in ${ROOTDIR}/bin/lsb_release ${ROOTDIR}/usr/bin/lsb_release; do
-#    if [ -e $i ] ; then
-#      DISTRO=`. $i -a | grep "Distributor" | sed "s/.*\t//"`
-#	echo $DISTRO
-#      DISTRO_VER=`. $i -a | grep "Release:" | sed "s/.*\t//"`
-#      break
-#    fi
-#  done
-#fi
+# if no distro name is set, try to find the correct one via lsb_release
+if [ -z "${DISTRO}" ] ; then
+  for i in ${ROOTDIR}/bin/lsb_release ${ROOTDIR}/usr/bin/lsb_release; do
+    if [ -e $i ] ; then
+      $i || break
+      DISTRO=`. $i -i | sed "s/.*\t//"`
+      DISTRO_VER=`. $i -r | sed "s/.*\t//"`
+      break
+    fi
+  done
+fi
 
-
+# if still no distro name set, try to find it using significant files
 if [ -z "${DISTRO}" ] ; then
   if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
     DISTRO=suse
@@ -305,36 +303,82 @@ if [ -z "${DISTRO}" ] ; then
 fi
 
 case "${DISTRO}" in
-  SuSE*|suse*|Suse*|SuSe*|SUSE*)
-        case "${DISTRO_VER}" in
-#          9*)
-#            DISTRO=suse-9.3
-#            ;;
-          *)
-            DISTRO=suse-10.0
-            ;;
-          esac
-
-        # hotplug/udev style and stuff
-	cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
-	#cp -a /etc/sysconfig/{hardware,network}  ${INSTDIR}/etc/sysconfig
-	;;
   Debian*|debian*|Sarge*|sarge*)
-	DISTRO=debian
-	;;
+    DISTRO=debian
+    case "${DISTRO_VER}" in
+      Sarge*|sarge*|3.1*|*)
+        DISTRO_VER=3.1
+      ;;
+    esac
+  ;;
   Ubuntu*|ubuntu*)
-        DISTRO=ubuntu
-        ;;
+    DISTRO=ubuntu
+    case "${DISTRO_VER}" in
+      Breezy*|breezy*|*)
+        DISTRO_VER=5.10
+      ;;
+    esac
+    ;;
   Gentoo*|gentoo*)
-	DISTRO=gentoo
-	;;
+    DISTRO=gentoo
+    case "${DISTRO_VER}" in
+      2005*|*)
+        DISTRO_VER=2005.1
+      ;;
+    esac  
+  ;;
+  SuSE*|suse*|Suse*|SuSe*|SUSE*|*)
+    DISTRO=suse
+    case "${DISTRO_VER}" in
+      9*)
+        DISTRO_VER=9.3
+      ;;
+      10*|*)
+        DISTRO_VER=10.0
+      ;;
+    esac
+     
+    # hotplug/udev style and stuff
+    cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
+    #cp -a /etc/sysconfig/{hardware,network}  ${INSTDIR}/etc/sysconfig
+  ;;
 esac
 
-cp distro-specs/${DISTRO}/config ${INSTDIR}/etc/sysconfig
-cp distro-specs/${DISTRO}/functions-${DISTRO} ${INSTDIR}/etc/distro-functions
-cp -a distro-specs/${DISTRO}/files ${INSTDIR}/etc/sysconfig
 
-#case ${DEBUG} 
+# an dieser stelle sollte jetzt sichergestellt sein, dass sowohl DISTRO als auch DISTRO_VER eindeutig gesetzt sind!
+
+
+# this function incrementally concats and copies distro-specific functions, configuration variables and files
+copy_distro_stuff() {
+
+  # first insert dependencies
+  case $1 in
+    suse)
+      case $2 in
+        9.3)
+        ;;
+        10.0)
+          copystuff suse 9.3
+        ;;
+      esac
+    ;;
+    debian)
+    ;;
+    ubuntu)
+    ;;
+    gentoo)
+    ;;
+  esac
+
+  # now insert the current stuff
+  cat distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig
+  cat distro-specs/$1/functions-$2 >>${INSTDIR}/etc/distro-functions
+  cp -a distro-specs/$1/files-$2 ${INSTDIR}
+}
+
+copy_distro_stuff ${DISTRO} ${DISTRO_VER}
+
+
 
 #if no klibc
 for bbins in ash bash sh; do
@@ -411,7 +455,11 @@ fi
 if [ -z "$KERNVER" ] ; then
   KERNVER=`ls -l ${ROOTDIR}/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
 fi
-#KERNVER=2.6.12-10-386
+
+if [ -z "$KERNVER" ] ; then
+  echo "No kernel version set or detected - please use the -k flag! Exiting..."
+  exit 1
+fi
 
 if [ -z "$NWMODULES" ] ; then
   NWMODULES="e100 tg3 via-rhine r8169"
