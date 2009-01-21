@@ -95,9 +95,16 @@ sub installSelection
 	if (slxsystem("apt-get -y update")) {
 		die _tr("unable to update repository info (%s)\n", $!);
 	}
+	if ('/var/cache/debconf/slx-defaults.dat') {
+		$ENV{DEBCONF_DB_FALLBACK} 
+			= "'File{/var/cache/debconf/slx-defaults.dat}'";
+	}
+	$ENV{DEBIAN_FRONTEND} = 'noninteractive';
 	if (slxsystem("apt-get -y install $pkgSelection")) {
 		die _tr("unable to install selection (%s)\n", $!);
 	}
+	delete $ENV{DEBCONF_DB_FALLBACK};
+	delete $ENV{DEBIAN_FRONTEND};
 	return;
 }
 
