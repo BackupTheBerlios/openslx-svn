@@ -83,9 +83,9 @@ if (!@ARGV) {
 fetchLoaderConfig();
 
 foreach my $file (@ARGV) {
-	if ($file =~ m[^/]) {
-		# force absolute path relative to $rootPath:
-		$file = "$rootPath$file";
+	if (substr($file,0,1) ne '/') {
+		# force relative paths relative to $rootPath:
+		$file = "$rootPath/$file";
 	}
 	if (!-e $file) {
 		print STDERR _tr("slxldd: unable to find file '%s', skipping it\n", $file);
@@ -135,12 +135,12 @@ sub fetchLoaderConfig
 		push @libFolders, "$rootPath/usr/lib";
 	}
 
-	# add lib32-folders for 64-bit Debians, as they do not 
+	# add lib32-folders for 64-bit Debians, as they do not
 	# refer those in ld.so.conf (which I find strange...)
 	if (-e '/lib32' && !grep { m[^$rootPath/lib32$]}  @libFolders) {
 		push @libFolders, "$rootPath/lib32";
 	}
-	if (-e '/usr/lib32' 
+	if (-e '/usr/lib32'
 	&& !grep { m[^$rootPath/usr/lib32$] } @libFolders) {
 		push @libFolders, "$rootPath/usr/lib32";
 	}
