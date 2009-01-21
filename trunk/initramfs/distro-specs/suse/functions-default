@@ -118,6 +118,9 @@ fi
 # syslog service (use syslog-ng for all versions)
 config_syslog () {
 if [ "x$start_syslog" != "xno" ] ; then
+  # enable basic logging to console tty10; file logging could be enabled via
+  # setting of config_syslog="file"
+  start_syslog="yes"
   if [ -f /mnt/etc/${D_INITDIR}/syslog ] ; then
     sed -e "1i# modified in InitRamFS by $0" \
         -e "s,SYSLOG_DAEMON=.*,SYSLOG_DAEMON=\"syslog-ng\"," \
