@@ -51,5 +51,3 @@ der Clients (/export oder /nfsroot).
 Insgesamt booten Rechner mit der neuen Diskless Variante deutlich schneller 
 als früher ld3.4 1Minute++, nun 30Sekunden+ und generiert selbst im 
 Standard-NFS/Bindmount-Betrieb deutlich weniger Netzwerk-Traffic.
-
-
