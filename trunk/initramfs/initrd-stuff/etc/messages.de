@@ -45,6 +45,10 @@ init_nbdcl="  Konnte den Network Block Geraete-Dienst nicht starten und damit \
 das Wurzel-Dateisystem\n  nicht einhaengen."
 init_nbddev="  Aus irgendeinem Grund ist /dev/${NBD}0 nie erschienen. Sie \
 sollten ihr udev-System\n  nach Listen von statischen Geraeten untersuchen."
+init_dnbd2s="  Nach 100 Versuchen konnte das dnbd2 Blockdevice keinen laufenden \
+Server finden.\n  Bitte ueberpruefen Sie die Erreichbarkeit."
+service. Please\n  check that at least one server is available. You might \
+use the\n  /sys/block/vnbd0 interface for this."
 init_moddir="  Das angeforderte Modul-Verzeichnis existiert nicht. Das koennte \
 bedeuten:\n  * Der Kernel wurde ausgetauscht/erneuert ohne einen neuen Aufruf \
 von slxmkramfs oder\n  mkdxsinitrd.\n  * Das eingehaengte Dateisystem \
