@@ -1,0 +1,40 @@
+
+<table cellpadding='0' cellspacing='0' border='0' width='100%'>
+			
+
+	<!-- BEGIN DYNAMIC BLOCK: Hauptmenu -->
+		
+		<tr valign='middle' align='left'>
+		
+ 		<td width='8%' align='right' style="border-style=none;">{ICON}</td> 
+ 		<td width="8%" align="left" style="border-width:1 0 1 1;border-color:#000000;border-style:solid;padding:5;background-color:{FARBE}">&nbsp;</td>
+ 		<td width="5%" align="left" style="border-width:1 0 1 0;border-color:#000000;border-style:solid;padding:5;background-color:{FARBE}">&nbsp;</td>
+     	<td width="69%" align="left" style="border-width:1 1 1 0;border-color:#000000;border-style:solid;padding:5;background-color:{FARBE}">
+     	<a href="{LINK_M}" style="text-decoration:none"><b class="standard_schrift">{TEXT_M}</b></a></td>
+		<td width='10%'>&nbsp;</td>
+		
+		</tr>
+		
+		
+		
+
+				<!-- BEGIN DYNAMIC BLOCK: Submenu -->
+		
+				{SUB}
+				
+					<!-- BEGIN DYNAMIC BLOCK: Subsubmenu -->
+		
+					{SUBSUB}
+				
+		
+					<!-- END DYNAMIC BLOCK: Subsubmenu -->
+				
+		
+				<!-- END DYNAMIC BLOCK: Submenu -->
+
+		<tr height='5'>
+		</tr>
+		
+<!-- END DYNAMIC BLOCK: Hauptmenu -->
+
+</table>

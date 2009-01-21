@@ -1,0 +1,41 @@
+<table border='0' cellpadding='5' cellspacing='0' width='90%'> 
+  	<tr>
+  		<td colspan='2'><h3>Modul - Remote Boot Services (PXE) Management: </h3></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr>
+  		<td>
+  		<p>Dieses Modul dient der Verwaltung ihres <b>Remote Boot Services (RBS)</b><br>
+  		Benutzen Sie die Navigation links, um die einzelnen Verwaltungsbereiche anzusteuern:</p>
+  		<ul>
+  			<li><p><b>Remote Boot Service</b></p>
+  					Allgemeine Einstellungen Ihres Remote Boot Service.<br>
+  					Falls Sie noch keinen RBS angelegt haben, k&ouml;nnen Sie dies hier tun. <br>
+  					Daneben k&ouml;nnen Sie hier ihr RBS Bootserver-System (TFTP-, NFS-, NBD-Server) verwalten.  
+  				</li>
+  			<li><p><b>Generische Boot Men&uuml;s</b></p>
+  					Generische Boot Menues die Sie Nutzern ihres RBS anbieten wollen.<br>
+  					Hier verwalten Sie Generische Boot Menues (GBM) oder legen neue an.<br><br>
+  					GBMs enthalten alle Komponenten eines PXE Bootmen&uuml;s, welche
+  					auf ihrem Bootserver-System gespeichert und von Ihnen verwaltet werden, d.h. 
+  					Kernel-Images, Initial-Ramdisks (initrd), usw. Diese sind unabh&auml;ngig 
+  					von den PXE-Parametern, die das eigentliche Aussehen eines PXE Bootmen&uuml;s bestimmen, 
+  					wie z.B. Menu-Zeilen, oder PXE Parametern welche zur Bootclient Konfiguration verwendet 
+  					werden.<br>
+  					Nutzer ihres RBS k&ouml;nnen aus diesen GBMs dann ihre individuellen PXE Boot
+  					Men&uuml;s zusammenstellen.
+  					 
+  				</li>
+  			<li><p><b>Default PXE</b></p>
+  					Default PXE Boot Konfigurationen, fuer die bootende Rechner ohne spezifische
+  					PXEs.<br>
+  					Hier k&ouml;nnen Sie Default PXEs anlegen und verwalten.
+  				</li>
+  		</ul>
+  		
+  		</td>
+  	</tr>
+
+</table>

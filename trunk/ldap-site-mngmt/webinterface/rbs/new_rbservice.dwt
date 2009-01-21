@@ -1,0 +1,117 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	<tr>
+  		<td colspan='2'><h3>Remote Boot Service anlegen</h3></td>
+  	</tr>
+  	<tr>
+  		<td height='20'></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+				<form action='rbservice_add.php' method='post'>
+			
+			<tr>
+				<td width='40%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='60%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+			</tr>
+			
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Eindeutiger RBS Name (cn):</b><br>(Teil des dn, ohne Leerzeichen eingeben) &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<font size='+2'><b>RBS_</b></font><input type='Text' name='rbscn' value='{RBSCN}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50' valign='top'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				   <b>Wer soll Dienst nutzen d&uuml;rfen:</b><br>(W&auml;hlen Sie eine Abteilung,<br> 
+				   impliziert alle Unterabteilungen)
+				</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<select name='rbsoffer' size='4' class='medium_form_selectbox'> 
+						<option selected value='{OFFERSELF}'>------ {SELFOU} ------</option>
+						
+						<!-- BEGIN DYNAMIC BLOCK: Rbsoffers -->
+						<option value='{RBSOFFER}'>{RBSOFFEROU}</option>
+						<!-- END DYNAMIC BLOCK: Rbsoffers -->
+						
+					</select>
+				</td>
+			</tr>
+	
+		</table></td>
+	</tr>
+	<tr>
+  		<td height='40'></td>
+  	</tr>		
+	<tr>
+  		<td colspan='2'><h4>Boot Server System:</h4></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+			<tr valign='top'>
+				<td width='20%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Server</b></td>
+				<td width='30%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>IP Adresse eingeben</b> oder<br><b>Rechner ausw&auml;hlen</b></td>
+				<td width='50%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Pfad</b> <br>(auf dem jeweiligen Server)</td>
+			</tr>
+			<tr valign='top'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>TFTP Server: &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='tftpserverip' value='' size='20' class='medium_form_field'>
+					<select name='tftpserver' size='4' class='small_form_selectbox'> 
+						<option selected value='none'>----------------------------</option>
+						<!-- BEGIN DYNAMIC BLOCK: TftpHosts -->
+						<option value='{HDN}'>{HN}</option>
+						<!-- END DYNAMIC BLOCK: TftpHosts -->
+					</select> 
+				</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				   Initial Boot File <input type='Text' name='attribs[initbootfile]' value='{INITBOOTFILE}' size='25' class='medium_form_field'><br>
+					Kernel Path <input type='Text' name='attribs[tftpkernelpath]' value='{TFTPKERNEL}' size='25' class='medium_form_field'><br>
+					PXE Path<input type='Text' name='attribs[tftppxepath]' value='{TFTPPXE}' size='25' class='medium_form_field'><br>
+					Clientconf Path<input type='Text' name='attribs[tftpclientconfpath]' value='{TFTPCLIENTCONF}' size='25' class='medium_form_field'>
+					</td>
+			</tr>
+			<tr valign='top'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>NFS Server: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='nfsserverip' value='' size='20' class='medium_form_field'>
+					<select name='nfsserver' size='4' class='small_form_selectbox'> 
+						<option selected value='none'>----------------------------</option>
+						<!-- BEGIN DYNAMIC BLOCK: NfsHosts -->
+						<option value='{HDN}'>{HN}</option>
+						<!-- END DYNAMIC BLOCK: NfsHosts -->
+					</select> 
+				</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[exportpath]' value='{NFSPATH}' size='25' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr valign='top'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>NBD Server: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='nbdserverip' value='' size='20' class='medium_form_field'>
+					<select name='nbdserver' size='4' class='small_form_selectbox'> 
+						<option selected value='none'>----------------------------</option>
+						<!-- BEGIN DYNAMIC BLOCK: NbdHosts -->
+						<option value='{HDN}'>{HN}</option>
+						<!-- END DYNAMIC BLOCK: NbdHosts -->
+					</select> 
+				</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>&nbsp;</td>
+			</tr>
+			
+			<input type='hidden' name='mnr' value='{MNR}'>	
+			<input type='hidden' name='sbmnr' value='{SBMNR}'>			
+
+		</table></td>
+  	</tr>
+  	<tr>
+		<td><input type='Submit' name='apply' value='anlegen' class='small_loginform_button'>
+		</form></td>
+	</tr>
+
+</table>

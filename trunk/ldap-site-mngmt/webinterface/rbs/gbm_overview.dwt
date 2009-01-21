@@ -1,0 +1,29 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+	<tr>
+  		<td colspan='2'><h3>Generische Boot Images</h3>
+  			Diese Boot Images werden vom Remote Boot Service <code class='font_object'> {RBSCN} </code>
+  			angeboten. Sie k&ouml;nnen f&uuml;r jedes Image festlegen, wer dieses Angebot in Anspruch nehmen 
+  			kann (Spektrum zwischen (a) ihrer Abteilung <code class='font_object'> {AU} </code> und ihrer Unterabteilungen, und (b) organisationsweit) </td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			<tr>
+				<td width='50%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Generisches Boot Men&uuml;</b></td>
+				<td width='50%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Netzwerk Dateisystem</b></td>
+			</tr>
+			
+			<!-- BEGIN DYNAMIC BLOCK: Genericbm -->	
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>{GBMCN} &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>{FS}&nbsp;</td>
+			</tr>
+			<!-- END DYNAMIC BLOCK: Genericbm -->
+
+		</table></td>
+  	</tr>
+
+  	
+</table>

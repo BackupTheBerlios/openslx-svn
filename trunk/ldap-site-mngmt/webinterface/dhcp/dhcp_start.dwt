@@ -1,0 +1,27 @@
+<table border='0' cellpadding='5' cellspacing='0' width='90%'> 
+  	<tr>
+  		<td colspan='2'><h3>Modul - DHCP Management: </h3></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr>
+  		<td>
+  		<p>Dieses Modul dient der Verwaltung eines DHCP Dienstes und DHCP Subnets, Classes <br>
+  		Benutzen Sie die Navigation links, um die einzelnen Verwaltungsbereiche anzusteuern:</p>
+  		<ul>
+  			<li><p><b>DHCP Service</b></p>
+  					...  
+  				</li>
+  			<li><p><b>DHCP Subnets</b></p>
+  					...
+  				</li>
+  			<li><p><b>DHCP Classes</b></p>
+  					...
+  				</li>
+  		</ul>
+  		
+  		</td>
+  	</tr>
+
+</table>

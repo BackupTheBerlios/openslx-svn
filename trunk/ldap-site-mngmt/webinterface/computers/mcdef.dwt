@@ -1,0 +1,293 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	<tr>
+  		<td colspan='2'><h3>MachineConfig &nbsp;<code class='font_object'>  {MCCN} </code> </h3></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr>
+  		<td colspan='2'><h4>Allgemein:</h4></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+				<form action='mcdef_change.php' method='post'>
+			
+			<tr>
+				<td width='25%' style='border-color: black; border-style: solid; border-width: 3 0 1 0;'><b>Eindeutiger Name (cn):</b><br>(Bitte ohne Leerzeichen eingeben) &nbsp;</td>
+				<td width='5%' style='border-color: black; border-style: solid; border-width: 3 0 1 0;'>&nbsp;</td>
+				<td colspan='2' style='border-color: black; border-style: solid; border-width: 3 0 1 0;'>
+					<font size='+2'><b>MC_</b></font><input type='Text' name='mccn' value='{MCCN}' size='50' class='medium_form_field'>
+					<input type='hidden' name='oldmccn' value='{MCCN}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Machine Config <br>Beschreibung: &nbsp;</td>
+				<td width='5%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>&nbsp;</td>
+				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='mcdesc' value='{MCDESC}' size='60' class='medium_form_field'>
+					<input type='hidden' name='oldmcdesc' value='{MCDESC}'> 
+					&nbsp;
+				</td>
+			</tr>
+			
+			
+			<tr valign='top'>
+				<td width='25%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'><b>G&uuml;ltigkeitsdauer <br>(Time Range(s)): </b>&nbsp;</td>
+				<td width='5%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>&nbsp;</td>
+				<td width='35%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+					Eines der folgenden:<br>
+					
+					- <b>Datum</b> &nbsp;(dd.mm, z.B. 21.03/01.11) <br> 
+					- <b>Monatstag</b> &nbsp;(dd, z.B. 01 oder 25) <br> 
+					- <b>Wochentag</b> &nbsp;(MO, DI, ... , SO) <br>
+					- <b>X</b> f&uuml;r <b>t&auml;glich</b> 
+					
+				<td width='35%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+					- <b>Uhrzeit</b> &nbsp;(Format: hh, z.B. 07-19)<br> 
+					- <b>X</b> f&uuml;r rund um die Uhr
+					
+				</td>
+			</tr>
+			
+			<!-- BEGIN DYNAMIC BLOCK: TRanges -->
+			<tr valign='top'>
+				<td width='25%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>Zum L&ouml;schen einer Time Range<br>H&auml;kchen setzen&nbsp;</td>
+				<td width='5%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+					<input type='checkbox' name='deltr[]' value='{MCDAY}_{MCBEG}_{MCEND}'>
+				&nbsp;</td>				
+				<td width='35%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+					<input type='Text' name='mcday[]' value='{MCDAY}' size='5' maxlength='5' class='medium_form_field'>
+					<input type='hidden' name='oldmcday[]' value='{MCDAY}'> &nbsp;<br>
+					
+					
+				<td width='35%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+					<input type='Text' name='mcbeg[]' value='{MCBEG}' size='2' maxlength='2' class='medium_form_field'>
+					<input type='hidden' name='oldmcbeg[]' value='{MCBEG}'> <b><font size='+1'>:00</b> &nbsp;- &nbsp;</font>
+					<input type='Text' name='mcend[]' value='{MCEND}' size='2' maxlength='2' class='medium_form_field'>
+					<input type='hidden' name='oldmcend[]' value='{MCEND}'> <b><font size='+1'>:59</b> Uhr</font><br>
+				</td>
+			</tr>
+			<!-- END DYNAMIC BLOCK: TRanges -->
+			
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>Neue Time Range hinzuf&uuml;gen&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='newmcday' value='' size='5' maxlength='5' class='medium_form_field'>
+					
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='newmcbeg' value='' size='2' maxlength='2' class='medium_form_field'>
+					<b><font size='+1'>:00</b> &nbsp;- &nbsp;</font>
+					<input type='Text' name='newmcend' value='' size='2' maxlength='2' class='medium_form_field'>
+					<b><font size='+1'>:59</b> Uhr</font><br>
+					
+				</td>
+			</tr>
+			
+		</table></td>
+  	</tr>
+  	
+  	<tr>
+  		<td height='40'></td>
+  	</tr>
+  	<tr>
+  		<td colspan='2'><h4>Dienste:</h4></td>
+  	</tr>
+  	
+	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+			<tr>
+				<td width='30%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='70%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+			</tr>
+  			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Start X: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[start-x]' value='{X}' size='10' maxlength='3' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[start-x]' value='{X}'> &nbsp;&nbsp;( yes | no )
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Start SNMP: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[start-snmp]' value='{SNMP}' size='10' maxlength='3' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[start-snmp]' value='{SNMP}'> &nbsp;&nbsp;( yes | no )
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Start SSHD: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[start-sshd]' value='{SSHD}' size='10' maxlength='3' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[start-sshd]' value='{SSHD}'> &nbsp;&nbsp;( yes | no )
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Start XDMCP: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[start-xdmcp]' value='{XDMCP}' size='10' maxlength='3' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[start-xdmcp]' value='{XDMCP}'> &nbsp;&nbsp;( yes | no )
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Start RWHOD: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[start-rwhod]' value='{RWHOD}' size='10' maxlength='3' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[start-rwhod]' value='{RWHOD}'> &nbsp;&nbsp;( yes | no )
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Start PRINT DAEMON: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[start-printdaemon]' value='{PRINTD}' size='10' maxlength='3' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[start-printdaemon]' value='{PRINTD}'> &nbsp;&nbsp;( yes | no )
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>TEX Enable: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[tex-enable]' value='{TEX}' size='10' maxlength='3' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[tex-enable]' value='{TEX}'> &nbsp;&nbsp;( yes | no )
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Start CRON: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[start-cron]' value='{CRON}' size='10' maxlength='3' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[start-cron]' value='{CRON}'> &nbsp;&nbsp;( yes | no ) 
+				</td>
+			</tr>
+			
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Crontab Entries:</b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>	
+					<!-- BEGIN DYNAMIC BLOCK: Crontab -->
+					<input type='Text' name='crontab[]' value='{CRONTAB}' size='60' class='medium_form_field'>
+					<input type='hidden' name='oldcrontab[]' value='{CRONTAB}'> &nbsp;<br>
+					<!-- END DYNAMIC BLOCK: Crontab -->
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Language: &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[language]' value='{LANG}' size='10' maxlength='2' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[language]' value='{LANG}'> 
+					&nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>NETBIOS Workgroup: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[netbios-workgroup]' value='{NETBIOS}' size='40' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[netbios-workgroup]' value='{NETBIOS}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>VMWARE: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[vmware]' value='{VMWARE}' size='40' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[vmware]' value='{VMWARE}'> &nbsp;
+				</td>
+			</tr>
+			
+			<input type='hidden' name='nodedn' value='{NODEDN}'>
+			<input type='hidden' name='mcdn' value='{MCDN}'>
+  			<input type='hidden' name='oldmccn' value='{MCCN}'>
+			<input type='hidden' name='mnr' value='{MNR}'>
+			<input type='hidden' name='sbmnr' value='{SBMNR}'>
+			<input type='hidden' name='mcnr' value='{MCNR}'>						
+
+		</table></td>
+  	</tr>
+  	<tr>
+		<td><input type='Submit' name='apply' value='anwenden' class='small_loginform_button'>
+		</form></td>
+	</tr>
+	
+	<tr>
+  		<td height='40'></td>
+  	</tr>
+	
+	<tr>
+  		<td colspan='2'><h4>MachineConfig &nbsp;<code class='font_object'>{MCCN}</code>&nbsp; kopieren:</h4>
+  		Beachten Sie, dass die Time Ranges der Machine Config nicht mit kopiert werden.<br>
+  		Sie m&uuml;ssen diese anschlie&szlig;end neu setzen. <br>
+  		Geben Sie bitte den eindeutigen Namen des neuen MachineConfig-Objektes an.
+  	</tr>
+  	<tr>
+  		<td>
+  		<table cellpadding='7' cellspacing='0' border='0' align='left' width='90%' style='border-width: 0 0 0 0;'>
+  			<form action='mcdef_copy.php' method='post'>
+  			
+  			<tr  valign='top'>
+				<td style='border-color: black; border-style: solid; border-width: 3 0 1 0;'><b>Ziel Objekt:</b><br>
+									(Mehrfachauswahl m&ouml;glich)&nbsp;</td>
+				<td colspan='2' style='border-color: black; border-style: solid; border-width: 3 0 1 0;'>
+					
+					<select name='copytargets[]' size='10' multiple class='medium_form_selectbox'> 
+						<option selected value='none'>----------------------------</option>
+						<option value='{DEFDN}'>DEFAULT</option>
+						
+						<option value='none'>---- RECHNER -----</option>
+						<!-- BEGIN DYNAMIC BLOCK: Hosts -->
+						<option value='{HDN}'>{HN}</option>
+						<!-- END DYNAMIC BLOCK: Hosts -->
+						
+						<option value='none'>---- GRUPPEN -----</option>
+						<!-- BEGIN DYNAMIC BLOCK: Groups -->
+						<option value='{GDN}'>{GN}</option>
+						<!-- END DYNAMIC BLOCK: Groups -->
+					</select>
+				</td>
+			</tr>
+  			<tr>
+				<td width='30%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Eindeutiger Name (cn):</b><br>(Bitte ohne Leerzeichen eingeben) &nbsp;</td>
+				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<font size='+2'><b>MC_</b></font><input type='Text' name='mccncp' value='{MCCN}' size='50' class='medium_form_field'>
+					<input type='hidden' name='oldmccncp' value='{MCCN}'> &nbsp;
+				</td>
+			</tr>
+  			
+  			<input type='hidden' name='mcdn' value='{MCDN}'>
+  			<input type='hidden' name='oldmccn' value='{MCCN}'>
+			<input type='hidden' name='mnr' value='{MNR}'>
+			<input type='hidden' name='sbmnr' value='{SBMNR}'>
+  			<input type='hidden' name='mcnr' value='{MCNR}'>
+  			<input type='hidden' name='deltr' value='{DELTR}'> 
+  			
+  		</table></td>
+  		</tr><tr><td>
+			 	<input type='Submit' name='apply' value='kopieren' class='small_loginform_button'>
+			</form></td></tr> 
+	
+	<tr>
+  		<td height='40'></td>
+  	</tr>
+	
+	<tr>
+  		<td colspan='2'><h4>Default MachineConfig &nbsp;<code class='font_object'>{MCCN}</code>&nbsp; l&ouml;schen:</h4></td>
+  	</tr>
+  	<tr>
+  		<td>
+  		<table cellpadding='7' cellspacing='0' border='0' align='left' width='90%' style='border-width: 0 0 0 0;'>
+  			<form action='delete_confirm.php' method='post'>
+  			
+  			
+  			<tr>
+  				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+  					Die MachineConfig wird komplett gel&ouml;scht.
+  			</tr>
+  			
+  			<input type='hidden' name='dn' value='{MCDN}'>
+  			<input type='hidden' name='name' value='{MCCN}'>
+  			<input type='hidden' name='delurl' value='mcdef_delete.php'>
+  			<input type='hidden' name='backurl' value='mcdef.php?dn={MCDN}&mnr={MNR}&sbmnr={SBMNR}&mcnr={MCNR}'>
+
+  			
+  		</table></td>
+  		</tr><tr><td>
+			 	<input type='Submit' name='apply' value='l&ouml;schen' class='small_loginform_button'>
+			</form></td></tr> 
+  	
+</table>

@@ -1,0 +1,40 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	<tr>
+  		<td colspan='2'><h3>Rechner &nbsp;<code class='font_object'>{AU}</code>&nbsp; </h3></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			<tr>
+				<td width='24%' class='tab_h'><b>Rechnername</b></td>
+				<td width='19%' class='tab_h'><b>MAC Adresse</b></td>
+				<td width='19%' class='tab_h'><b>IP Adresse</b></td>
+				<td width='19%' class='tab_h'><b>DHCP</b></td>
+				<td width='19%' class='tab_h'><b>RBS</b></td>
+			</tr>
+			
+			<!-- BEGIN DYNAMIC BLOCK: Rechner -->	
+			<tr valign='top' height='45'>
+				<td class='tab_d'>{HOSTNAME} &nbsp;</td>
+				<td class='tab_d'>{HWADDRESS} &nbsp;</td>
+				<td class='tab_d'>{IPADDRESS} &nbsp;</td>
+				<td class='tab_d'>{DHCPCONT} &nbsp;</td>
+				<td class='tab_d'>{RBSCONT} &nbsp;</td>
+			</tr>
+			<!-- END DYNAMIC BLOCK: Rechner -->
+
+		</table></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr>
+		<td>
+			Zum Verwalten eines bestimmten Rechners, w&auml;hlen Sie links entsprechenden Submen&uuml;-Eintrag.<br>
+			Um einen neuen Rechner anzulegen w&auml;hlen Sie links "Neuer Rechner"
+		</td>
+	</tr>
+	
+</table>

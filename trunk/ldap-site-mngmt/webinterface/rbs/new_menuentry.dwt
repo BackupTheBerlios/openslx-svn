@@ -1,0 +1,188 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	<tr>
+  		<td height='20'><h4>Zur&uuml;ck zu &nbsp;<a href='pxe.php?dn={PXEDN}&mnr={MNR}&sbmnr={SBMNR}&mcnr={MCNR}' class='headerlink'>{PXECN}</a></h4></td>
+  	</tr>
+  	<tr>
+  		<td height='20'>&nbsp;</td>
+  	</tr>
+  	<tr>
+  		<td colspan='2'><h3>Neuen Boot Men&uuml; Eintrag anlegen:</h3></td>
+  	</tr>
+  	<tr>
+  		<td height='20'>&nbsp;</td>
+  	</tr>
+  	<tr>
+  		<td colspan='2'><h4>Notwendige Attribute:</h4></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+				<form action='menuentry_add.php' method='post'>
+			
+			<tr>
+				<td width='35%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='65%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+			</tr>
+			
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Eindeutiger Name (cn):</b><br>(Teil des dn, ohne Leerzeichen eingeben) &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='mecn' value='{MECN}' size='60' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Label:</b> &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[label]' value='{LABEL}' size='60' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50' valign='top'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Generische Boot Images: </b><br>(W&auml;hlen Sie eines aus) &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<select name='gbm' size='5' class='large_form_selectbox'> 
+						<option selected value='none'>----------</option>
+						<!-- BEGIN DYNAMIC BLOCK: Gbms -->
+						<option value='{GBMDN}'>{GBMCN} &nbsp;[Abt.: {RBSAU}]</option>
+						<!-- END DYNAMIC BLOCK: Gbms -->
+					</select>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Men&uuml; Position: </b><br>
+																														(Bitte ohne f&uuml;hrende Null)&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='menpos' value='{MAXPOS}' size='2' class='medium_form_field'>
+				</td>
+			</tr>
+		
+		</table></td>
+	</tr>
+	<tr>
+  		<td height='40'>&nbsp;</td>
+  	</tr>
+	<tr>
+  		<td colspan='2'><h4>Optionale Attribute:</h4></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+			<tr>
+				<td width='35%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='65%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+			</tr>
+			
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Menu Label:</b> <br>(Wird im Bootmen&uuml; statt Label angezeigt) &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[menulabel]' value='{MELABEL}' size='50' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Menu Passwd:</b> &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[menupasswd]' value='{MEPASSWD}' size='50' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Menu Hide:</b> &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[menuhide]' value='{MEHIDE}' size='50' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Localboot:</b> &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[localboot]' value='{LOCALBOOT}' size='50' class='medium_form_field'>
+				</td>
+			</tr>
+	
+		</table></td>
+	</tr>
+	<tr>
+  		<td height='40'></td>
+  	</tr>		
+	<tr>
+  		<td colspan='2'><h4>APPEND Parameter:</h4></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+			<tr>
+				<td width='20%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='80%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Client Konfiguration via: &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[clientconfvia]' value='{CCV}' size='30' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>vga: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[vga]' value='{VGA}' size='30' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>splash: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[splash]' value='{SPLASH}' size='30' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>vci: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[vci]' value='{VCI}' size='30' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>no ldsc: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[noldsc]' value='{NOLDSC}' size='30' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>elevator: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[elevator]' value='{ELEVATOR}' size='30' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>apic: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[apic]' value='{APIC}' size='30' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Union FS: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[unionfs]' value='{UNIONFS}' size='30' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>cowloop: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[cowloop]' value='{COWLOOP}' size='30' class='medium_form_field'>
+				</td>
+			</tr>
+			
+			<input type='hidden' name='typ' value='newme'>
+			<input type='hidden' name='maxpos' value='{MAXPOS}'>
+			<input type='hidden' name='pxedn' value='{PXEDN}'>
+			<input type='hidden' name='mnr' value='{MNR}'>
+			<input type='hidden' name='sbmnr' value='{SBMNR}'>
+			<input type='hidden' name='mcnr' value='{MCNR}'>		
+
+		</table></td>
+  	</tr>
+  	<tr>
+		<td><input type='Submit' name='apply' value='anlegen' class='small_loginform_button'>
+		</form></td>
+	</tr>
+	
+
+  	
+</table>

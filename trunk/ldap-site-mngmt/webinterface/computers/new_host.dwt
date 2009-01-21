@@ -1,0 +1,112 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	<tr>
+  		<td colspan='2'><h3>Neuen Rechner anlegen:</h3></td>
+  	</tr>
+  	<tr>
+  		<td height='20'></td>
+  	</tr>
+  	<tr>
+  		<td colspan='2'><h4>Notwendige Attribute (m&uuml;ssen angegeben werden):</h3></td>
+  	</tr>
+  	
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+				<form action='host_add.php' method='post'>
+			
+			<tr>
+				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+			</tr>
+			
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Rechner Name (hostname):</b><br>(Teil des dn, ohne Leerzeichen eingeben) &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='hostname' value='{HOSTNAME}' size='40' class='medium_form_field'> &nbsp;
+				</td>
+			</tr>
+			
+		</table></td>
+	</tr>
+	<tr>
+  		<td height='25'></td>
+  	</tr>
+  	<tr>
+  		<td><h4>Optionale Attribute:</h3></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>		
+			
+			<tr>
+				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+			</tr>
+			
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Rechner Beschreibung: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='hostdesc' value='{HOSTDESC}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>MAC Adresse (HWAddress) :</b> &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='mac' value='{MAC}' size='17' maxlength='17' class='medium_form_field'>
+						Bsp.: 00-12-03-aa-54-e6 &nbsp;
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>IP Adresse:</b> &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='ip' value='{IP}' size='15' maxlength='15' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>HW Mouse: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[hw-mouse]' value='{MOUSE}' size='30' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>HW Graphic: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[hw-graphic]' value='{GRAPHIC}' size='30' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>HW Monitor: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[hw-monitor]' value='{MONITOR}' size='30' class='medium_form_field'>
+				</td>
+			</tr>
+			
+		</table></td>
+  	</tr>
+  	
+  	<tr>
+  		<td height='25'></td>
+  	</tr>
+  	<tr>
+  		<td><h4>Rechner als Host-Objekt in den DHCP Dienst aufnehmen (optional):</h3></td>
+  	</tr>
+  	
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+			<tr>
+				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>DHCP Objekt</b></td>
+				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Auswahl</b></td>
+			</tr>
+			
+		</table></td>
+  	</tr>
+  	
+  	<tr>
+  		<td height='5'></td>
+  	</tr>
+  	<tr>
+		<td style='border-width: 0 0 0 0;'><input type='Submit' name='apply' value='anlegen' class='small_loginform_button'>
+		</form></td>
+	</tr>	
+
+</table>

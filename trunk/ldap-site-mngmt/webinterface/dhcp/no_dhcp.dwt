@@ -1,0 +1,25 @@
+<table border='0' cellpadding='5' cellspacing='0' width='90%'> 
+  	<tr>
+  		<td colspan='2'><h3>Modul - DHCP Management: </h3></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr>
+  		<td>
+  		<p>Dieses Modul dient der Verwaltung des DHCP Dienstes und DHCP Subnetzen.<br>
+  		<br>
+  		<b>Sie verf&uuml;gen &uuml;ber keine kompletten Netzwerke!</b> <br>
+  		x.x.x.0/24<br>
+  		x.x.0.0/16<br>
+  		x.0.0.0/8<br>
+  		<br>
+  		Sie k&ouml;nnen daher keine DHCP Dienst- bzw. DHCP Subnetz-Objekte anlegen. <br>
+  		<br>
+  		Jedoch k&ouml;nnen Sie ihre Rechner in DHCP Diensten (Subnetzen) anderer AUs 
+  		anmelden (Modul Rechner Management).
+  		
+  		</td>
+  	</tr>
+
+</table>
