@@ -47,40 +47,29 @@ fi
 
 goto_script_dir
 #Create Temporary working directory
-mkdir -p /tmp/ld$$/usr/share/dxs
-mkdir -p /tmp/ld$$/usr/sbin
-mkdir -p /tmp/ld$$/usr/share/man/man1
-mkdir -p /tmp/ld$$/usr/share/doc/dxs
-mkdir -p /tmp/ld$$/DEBIAN
-cp default_files/control  /tmp/ld$$/DEBIAN/
-cp default_files/prerm    /tmp/ld$$/DEBIAN/
-cp default_files/postinst /tmp/ld$$/DEBIAN/
-cp default_files/mkdxsinitrd.1.gz /tmp/ld$$/usr/share/man/man1/
+mkdir -p /tmp/ld$$/dxs
+mkdir -p /tmp/ld$$/man/
+cp default_files/*.1.gz /tmp/ld$$/man/
+cp default_files/*install.sh /tmp/ld$$/
 
 #Goto project root
 pushd .. > /dev/null
 #copy all relevant file to a tar archive (can't use xargs with cp)
-find -type f| grep -v /\.svn | grep -v \#.*\# | grep ^\./in | grep -v ~$ | xargs tar rf /tmp/ld$$/usr/share/dxs/tmp.tar
+find -type f| grep -v /\.svn | grep -v \#.*\# | grep ^\./in | grep -v ~$ | xargs tar rf /tmp/ld$$/dxs/tmp.tar
 #extract it
-pushd /tmp/ld$$/usr/share/dxs > /dev/null
+pushd /tmp/ld$$/dxs > /dev/null
 tar xf tmp.tar
 rm tmp.tar
 
-#Create links to provide the scripts to the user
-pushd /tmp/ld$$/usr/sbin > /dev/null
-ln -s ../share/dxs/installer/ld4-inst
-ln -s ../share/dxs/initrd/mkdxsinitrd
-
-
-#Set permissions
-find /tmp/ld$$ -type d|xargs chmod 755
-
 #Create the package
-dpkg-deb --build /tmp/ld$$ > /dev/null
+pushd /tmp/ld$$/ > /dev/null
+find -type f |xargs tar rf dxs.tar
+gzip dxs.tar
+popd > /dev/null
+
 #And bring the package back to the dir of this script
 popd > /dev/null
 popd > /dev/null
-popd > /dev/null
-mv /tmp/ld$$.deb ./dxs.deb
+mv /tmp/ld$$/dxs.tar.gz ./dxs.tgz
 rm -rf /tmp/ld$$
-echo "Written './dxs.deb'"
+echo "Written './dxs.tgz'"
