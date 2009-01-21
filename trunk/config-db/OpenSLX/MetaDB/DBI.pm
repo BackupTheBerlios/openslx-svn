@@ -422,7 +422,7 @@ sub _doUpdate
 					map { "$_ = ".$self->quote($valRow->{$_}) }
 					grep { $_ ne 'id' }
 						# filter column 'id' if present, as we don't want
-						# to update it
+						# to update it!
 					keys %$valRow;
 		my $sql = "UPDATE $table SET $cols";
 		if (defined $id) {
@@ -469,6 +469,7 @@ sub _updateRefTable
 	if (scalar keys %lastValueIDs) {
 		$self->_doDelete($table, [ keys %lastValueIDs ], $valueCol);
 	}
+	return 1;
 }
 
 sub _updateOneToManyRefAttr
@@ -497,6 +498,7 @@ sub _updateOneToManyRefAttr
 	foreach my $id (scalar keys %lastManyIDs) {
 		$self->_doUpdate($table, $id, [{ $fkCol => '0' }]);
 	}
+	return 1;
 }
 
 sub addVendorOS
@@ -556,8 +558,8 @@ sub setClientIDsOfSystem
 	my $clientIDs = shift;
 
 	my @currClients = $self->fetchClientIDsOfSystem($systemID);
-	$self->_updateRefTable('client_system_ref', $systemID, $clientIDs,
-						   'system_id', 'client_id', \@currClients);
+	return $self->_updateRefTable('client_system_ref', $systemID, $clientIDs,
+						          'system_id', 'client_id', \@currClients);
 }
 
 sub setGroupIDsOfSystem
@@ -567,8 +569,8 @@ sub setGroupIDsOfSystem
 	my $groupIDs = shift;
 
 	my @currGroups = $self->fetchGroupIDsOfSystem($systemID);
-	$self->_updateRefTable('group_system_ref', $systemID, $groupIDs,
-						   'system_id', 'group_id', \@currGroups);
+	return $self->_updateRefTable('group_system_ref', $systemID, $groupIDs,
+						          'system_id', 'group_id', \@currGroups);
 }
 
 sub addSystemVariant
