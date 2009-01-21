@@ -6,13 +6,17 @@
 #		New settings are simply appended, so that they might 
 #		overwrite previously defined variables 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-03-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 # 
-# format variable="value"
+# format variable="static_value" or variable="$serverip:123"
+# it is possible to use the variables $serverip (the IP of the
+# providing DHCP server - not neccessarily NFS server), $clientip 
+# (the IP of the client itself) and $host_name
+# 
 #
 # password of system administrator (root) as crypt -> 'dxs-root'
 root_pw='$2a$10$MoEYhIPZGCtR62R8UvBl3emNn2qMOuQpLQpfmNnhya4bGLhyF0pbu'
@@ -83,8 +87,12 @@ netbios_workgroup="dxs-network"
 automnt_dir="/home"
 automnt_src="10.8.4.254:/home"
 
+# scratch space on server
+scratch="$serverip:/dxs/tmp"
+
 # configure and start vmware services
 vmware="no"
+imgsrv="$serverip:/dxs/vmware"
 
 start_xdmcp=xdm
 start_x=yes

@@ -3,11 +3,11 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-03-2006
 #		Nico Dietrich
 #		Blub
 #
-# Version:      0.3.1d
+# Version:      0.3.1e
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 
@@ -341,8 +341,8 @@ done
 
 # needed standard binaries
 for bbins in \
-    cat chmod chown chroot cp expr fdisk killall ln mkdir modprobe \
-    mount portmap rmmod sed tar umount
+    cat chmod chown chroot cp expr fdisk killall ln mkdir mkfs.ext2 \
+    modprobe mount portmap rmmod sed tar umount
   do
   cobi ${bbins} bin || echo "Program ${bbins} not found"
 done

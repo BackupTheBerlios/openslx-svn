@@ -4,13 +4,13 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-03-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.3.1c
+# Version:      0.3.1d
 
 # local functions used within hwautocfg
 displaysetup () {
@@ -433,17 +433,19 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
   fdisk -l /dev/$hd| sed -n "/^\/dev\//p" > /tmp/hd_part
   for hdpartnr in $(cat /tmp/hd_part | \
       sed -n -e "/ 82 /p"|sed -e "s/[[:space:]].*//") ; do
-    echo -e "$hdpartnr\tswap\t\tswap\t\tdefaults\t0 0" >> /mnt/etc/fstab
+    echo -e "$hdpartnr\tswap\t\tswap\t\tdefaults\t 0 0" >> /mnt/etc/fstab
   done
   # we use special non assigned partition type for harddisk scratch space
   for hdpartnr in $(cat /tmp/hd_part | \
         sed -n -e "/ 44 /p"|sed -e "s/[[:space:]].*//") ; do
-    echo -e "\t( mke2fs -q $hdpartnr; mount -n $hdpartnr /mnt/tmp ) &" \
-      >>/mnt/etc/${D_INITDIR}/boot.ld
-    #
+    ( mkfs.ext2 -q $hdpartnr; mount -n $hdpartnr /mnt/tmp; \
+      echo "finished" > /tmp/tmpready ) &
+    echo -e "$hdpartnr\t/tmp\t\text2\t\tdefaults\t 0 0" >> /mnt/etc/fstab
+    part44=yes
     break
   done      
 done
+[ -z "$part44" ] && echo "finished" > /tmp/tmpready
 
 # run localizator and configure keyboard and console fonts
 DEFKEYTABLE="de-latin1-nodeadkeys"

@@ -52,6 +52,11 @@ data via dhcp until now ..." nonfatal
 waitfor /tmp/ldap-done 10000 || error "  Did not get any configuration \
 data via dhcp until now ..." nonfatal
 . /etc/machine-setup
+# hack for replacing variables in machine-setup
+sed -e "s/\$serverip/$serverip/" -e "s/\$clientip/$clientip/" \
+  /etc/machine-setup > /etc/machine-setup.new
+cp /etc/machine-setup.new /etc/machine-setup
+. /etc/machine-setup
 
 #######################################################################
 # set localization
