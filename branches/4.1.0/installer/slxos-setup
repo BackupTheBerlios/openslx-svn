@@ -106,7 +106,7 @@ if ($action =~ m[^import]i) {
 	# a known starting point:
 	chdir($FindBin::RealBin)
 		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
-	$engine->initialize($vendorOSName, 'update');
+	$engine->initialize($vendorOSName, 'shell');
 	$engine->startChrootedShellForVendorOS();
 } elsif ($action =~ m[^install]i) {
 	my $vendorOSName = shift @ARGV;
