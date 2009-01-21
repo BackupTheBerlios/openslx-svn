@@ -135,9 +135,12 @@ sub dumpElements
 			print join(
 				'',
 				map {
+					my $spc = ' 'x25;
+					my $val = $elem->{$_};
+					$val =~ s[\n][\n\t$spc   ]g;
 					"\t$_"
-					.substr('                         ',length($_))
-					." = $elem->{$_}\n";
+					.substr($spc, length($_))
+					." = $val\n";
 				}
 				sort keys %$elem
 			);
@@ -155,9 +158,20 @@ sub listClients
 
     my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
 
-	dumpElements('client',
-				 sort { $a->{name} cmp $b->{name} }
-				 $openslxDB->fetchClientByFilter($clientData));
+
+	dumpElements(
+		'client',
+		map {
+			my @sysIDs = $openslxDB->aggregatedSystemIDsOfClient($_);
+			$_->{systems}
+				= 	join "\n",
+					map { $_->{name} }
+					$openslxDB->fetchSystemByID(\@sysIDs, 'name');
+			$_;
+		}
+		sort { $a->{name} cmp $b->{name} }
+		$openslxDB->fetchClientByFilter($clientData)
+	);
 }
 
 sub listExports
@@ -168,9 +182,19 @@ sub listExports
 
     my $exportData = parseKeyValueArgs(\@exportKeys, 'export', @_);
 
-	dumpElements('export',
-				 sort { $a->{name} cmp $b->{name} }
-				 $openslxDB->fetchExportByFilter($exportData));
+	dumpElements(
+		'export',
+		map {
+			my $vendorOS
+				= $openslxDB->fetchVendorOSByID($_->{vendor_os_id}, 'name');
+			if (defined $vendorOS) {
+				$_->{vendor_os_id} .= " ($vendorOS->{name})";
+			}
+			$_;
+		}
+		sort { $a->{name} cmp $b->{name} }
+		$openslxDB->fetchExportByFilter($exportData)
+	);
 }
 
 sub listSystems
@@ -181,9 +205,23 @@ sub listSystems
 
     my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
 
-	dumpElements('system',
-				 sort { $a->{name} cmp $b->{name} }
-				 $openslxDB->fetchSystemByFilter($systemData));
+	dumpElements(
+		'system',
+		map {
+			my @clientIDs = $openslxDB->aggregatedClientIDsOfSystem($_);
+			$_->{clients}
+				= 	join "\n",
+					map { $_->{name} }
+					$openslxDB->fetchClientByID(\@clientIDs, 'name');
+			my $export = $openslxDB->fetchExportByID($_->{export_id}, 'name');
+			if (defined $export) {
+				$_->{export_id} .= " ($export->{name})";
+			}
+			$_;
+		}
+		sort { $a->{name} cmp $b->{name} }
+		$openslxDB->fetchSystemByFilter($systemData)
+	);
 }
 
 sub listVendorOSes
@@ -365,7 +403,8 @@ sub changeClientInConfigDB
 				$clientData->{name});
 	}
 
-	if ($clientData->{mac} !~ m[^(?:[[:xdigit:]][[:xdigit:]]:){5}?[[:xdigit:]][[:xdigit:]]$]) {
+	if (length($clientData->{mac})
+	&& $clientData->{mac} !~ m[^(?:[[:xdigit:]][[:xdigit:]]:){5}?[[:xdigit:]][[:xdigit:]]$]) {
 		die _tr("unknown MAC-format given, expected something like '01:02:03:04:05:06'!\n");
 	}
 
