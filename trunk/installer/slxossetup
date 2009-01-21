@@ -480,7 +480,9 @@ function slxossetup()
 			i*86) SLX_INST_ARCH="${X86_ARCH}" ;;
 			x86_64)
 				# Redefine SLX_INST_ARCH in the case of Debian
-				# based systems.
+				# based systems.  Here we might need to differ
+				# between the vendors architecture name and the
+				# named used by the OS kernel.
 				case "${SLX_SYSTEM_BASENAME}" in
 					*debian*|*ubuntu*) SLX_INST_ARCH='amd64' ;;
 				esac
