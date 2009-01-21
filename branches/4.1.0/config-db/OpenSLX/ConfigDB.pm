@@ -957,7 +957,7 @@ sub aggregatedSystemFileInfoFor
 	$info->{'vendor-os'} = $vendorOS;
 
 	my $kernelPath
-		= "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}/boot";
+		= "$openslxConfig{'stage1-path'}/$vendorOS->{name}/boot";
 	$info->{'kernel-file'} = "$kernelPath/$system->{kernel}";
 
 	my $exportURI = $export->{'uri'};
