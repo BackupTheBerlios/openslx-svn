@@ -56,7 +56,7 @@ done
 function setup_busybox_init()
 {
 	test -d "${SLX_STAGE1_PATH}" && \
-		ErrorMsg 1 "Error, ${dir} already exists! "
+		ErrorMsg 1 "Error, ${SLX_STAGE1_PATH} already exists! "
 }
 
 function setup_busybox_chroot()
