@@ -96,7 +96,6 @@ sub initDistroInfo
 		- /boot/grub
 		- *.rpmsave
 		- *.rpmnew
-		- *.o
 		- *.YaST2save
 	";
 }
