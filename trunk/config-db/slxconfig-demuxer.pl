@@ -206,7 +206,7 @@ sub writePXEMenus
 				my $append = $system->{kernel_params};
 				$append .= " initrd=$extSysID/initialramfs";
 				$append .= " $clientAppend";
-				$append .= " rootfs=$info->{'export-uri'}";
+				$append .= " rootfs=$info->{'export-uri'} file";
 				print PXE "LABEL openslx-$extSysID\n";
 #				print PXE "\tMENU DEFAULT\n";
 				print PXE "\tMENU LABEL ^$info->{label}\n";
