@@ -77,7 +77,16 @@ sub requiredBlockDeviceModules
 {
 	my $self = shift;
 
-	return 'aoe';
+	return qw( aoe );
+}
+
+sub requiredBlockDeviceTools
+{
+	my $self = shift;
+
+	# TODO: is there any such tool?
+
+	return;
 }
 
 sub showExportConfigInfo

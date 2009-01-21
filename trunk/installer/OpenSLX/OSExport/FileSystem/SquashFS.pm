@@ -163,6 +163,13 @@ sub requiredFSMods
 	return @mods;
 }
 
+sub requiredFSTools
+{
+	my $self = shift;
+
+	return $self->{'block-device'}->requiredBlockDeviceTools();
+}
+
 sub showExportConfigInfo
 {
 	my $self   = shift;

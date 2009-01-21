@@ -44,6 +44,10 @@ sub requiredBlockDeviceModules
 {
 }
 
+sub requiredBlockDeviceTools
+{
+}
+
 sub showExportConfigInfo
 {
 }

@@ -71,7 +71,14 @@ sub requiredBlockDeviceModules
 {
 	my $self = shift;
 
-	return 'nbd';
+	return qw( nbd );
+}
+
+sub requiredBlockDeviceTools
+{
+	my $self = shift;
+
+	return qw( nbd-client );
 }
 
 sub showExportConfigInfo

@@ -65,6 +65,10 @@ sub requiredFSMods
 {
 }
 
+sub requiredFSTools
+{
+}
+
 sub showExportConfigInfo
 {
 }

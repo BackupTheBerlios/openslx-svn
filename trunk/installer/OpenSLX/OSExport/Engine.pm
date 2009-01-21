@@ -166,6 +166,13 @@ sub requiredFSMods
 	return $self->{exporter}->requiredFSMods();
 }
 
+sub requiredFSTools
+{
+	my $self = shift;
+
+	return $self->{exporter}->requiredFSTools();
+}
+
 ################################################################################
 ### implementation methods
 ################################################################################
