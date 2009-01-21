@@ -60,11 +60,12 @@ stage4 rootfs has the\n# prefix '/mnt'." \
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
 extend the\n# capabilities at the end of the initramfs (stage3). The \
 toolset is rather\n# restricted and you have to keep in mind that stage4 \
-rootfs has the\n# prefix '/mnt'." \
+rootfs has the\n# prefix '/mnt'. But you might use some special slx \
+functions via\# inclusion: '. /etc/functions' ..." \
 	  > /var/lib/openslx/config/default/initramfs/postinit.local
 	@chmod u+x /var/lib/openslx/config/default/initramfs/*init.local
 	@find /usr/share/openslx -depth -regex ".*/\..*" \
-	  -exec rm -rf {} 2>/dev/null \;
+	  -print0 | xargs -0 rm -rf {}
 
 #uninstall:
 #	@echo -e "Uninstalling openslx.org project files but keeping configs \

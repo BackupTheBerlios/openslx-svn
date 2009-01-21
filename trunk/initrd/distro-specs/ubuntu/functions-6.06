@@ -1,14 +1,14 @@
-# Description:  configuration script for Debian 3.1 to configure
-#		linux diskless clients (executed within initial
-#		ramdisk after genconfig) 
+# configuration script for Ubuntu V6.06 to configure OpenSLX linux diskless
+# clients (merged in stage2 with ubuntu/functions-default - and loaded within
+# initial ramfs - stage3) It may overwrite settings from the default config
+# file (/etc/functions)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-05-2006
-#		Felix Endres, 30-04-2006
-#		Tobias Maier
+# Dirk von Suchodoletz <dirk@goe.net>, 31-08-2006
+# Nico Dietrich
+# Felix Endres, 29-08-2006
 #
-# Copyright:    (c) 2006 - RZ Universitaet Freiburg
-# 
-# Version:      0.2.1d
+# (c) 2006 - RZ Universitaet Freiburg
+# (c) 2006 - OpenSLX.ORG Project
 
 # distro specific stuff to initialize
 preinit () {
@@ -21,8 +21,9 @@ preinit () {
 
 # distro specific function called from servconfig script
 
-# AUS SuSE-9.3
 # udev/hotplug - auto device discovery service
+# fixme: why does nothing happens here!? If default should be used just
+# skip that function here!! 
 # Result: 1 is bad, 0 is good
 udev_hotplug () {
 #  local result=0
@@ -38,8 +39,6 @@ udev_hotplug () {
 #  return $result
 :
 }
-
-
 
 # function for atd
 config_atd () {
@@ -67,7 +66,6 @@ if [ "x$start_cron" = "xyes" ] ; then
   fi 
 fi
 }
-
 
 # secure shell service
 config_sshd () {
@@ -119,6 +117,7 @@ else
 fi
 
 # create links to desktop-session chooser
+# fixme: wmlist is SuSE stuff !?!?
 [ -f /mnt/usr/bin/X11/wmlist ] && wmlist=`cat /mnt/usr/bin/X11/wmlist`
 
 for i in `echo $windowmanagers|sed -e "s/,/ /g"` ; do
@@ -141,6 +140,8 @@ done
 }
 
 # set up keytable (function run in hwautocfg)
+# fixme: is anything needed here - otherwise remove (and check that a 
+# dummy function is present)
 keytable () {
 # fixme -- use keytable setup script here
 :
@@ -148,15 +149,8 @@ keytable () {
 
 # consolefont and language
 consolefont () {
-# better change that in /etc/functions to UTF8 default
-if [ "$LANG" == "de_DE@euro" ] ; then
-  LANG=de_DE.UTF8
-fi
-sed -e "s,LANGUAGE=.*,LANGUAGE=${LANG}," \
-    -e "s,LANG=.*,LANG=${LANG}," \
+[ "$LANG" == "de_DE@euro" ] && LANG=de_DE.UTF8
+sed -e "s,LANGUAGE=.*,LANGUAGE=${LANG},;s,LANG=.*,LANG=${LANG}," \
     -i /mnt/etc/environment
-
 rllinker "console-screen.sh" "31" "03"
 }
-
-

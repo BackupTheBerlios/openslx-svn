@@ -82,7 +82,7 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   if [ -d /mnt/usr/share/vmware ] ; then
     ln -sf /usr/share/vmware /mnt/var/lib/vmware
   elif [ -n "${imgsrv}" ] ; then
-  # get type, server, path of VMware image export
+  # get type, server and path of VMware image export
   vmimgsprot=$(uri_token $imgsrv prot)
   vmimgsserv=$(uri_token $imgsrv server)
   vmimgspath="/$(uri_token $imgsrv path)"
@@ -90,7 +90,7 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
     *nbd)
     ;;
     *)
-    #  # more general mount script should be used here!?
+    # we expect nfs mounts here ... 
     nfsmnt ${imgsrv} /mnt/var/lib/vmware || {
       error "$scfg_nfs" nonfatal; noimg=yes; }
     ;;
@@ -101,8 +101,7 @@ fi
 #######################################################################
 # set localization
 if [ -z "$country" ] ; then
-  msg "servconfig" "No configuration for localization found in config file. \
-Using default\ncountry setting '${D_DEFAULTCOUNTRY}' defined in $0."
+  error "$scfg_country" nonfatal
   country=${D_DEFAULTCOUNTRY}
 fi
 localization $country
@@ -424,8 +423,7 @@ $date\nwhile ps aux|grep -i kiosk|grep -v \"grep\" &>/dev/null;\
 do\n  test -f /var/run/kiosk || break; sleep 3;\ndone\ntouch \
  /var/run/kiosk\nresmgr login nobody tty7\nresmgr grant nobody desktop\n\
 chown nobody /dev/dsp* /dev/audio* /dev/mixer* /dev/snd/control*\n\
-#tar -zxvf /var/lib/vmware/templ/nobodyconf.tar.gz -C /var/lib/nobody\n\
-chown -R nobody.nobody /var/lib/nobody\nsu -c 'xinit /var/X11R6/bin/startgui \
+chown -R nobody:nobody /var/lib/nobody\nsu -c 'xinit /var/X11R6/bin/startgui \
 $start_x -- vt7 -quiet' -l nobody &>/dev/null\nrm /var/run/kiosk\n\
 resmgr revoke nobody\nresmgr logout tty7\nkillall X" \
         >/mnt/var/X11R6/bin/kiosk
@@ -439,9 +437,6 @@ resmgr revoke nobody\nresmgr logout tty7\nkillall X" \
       rm /mnt/var/run/kiosk 2>/dev/null
     ;;
   esac
-  # enable runlevel 5 (X11 gui under SuSE linux)
-  #      grep -v -e "7:[35]" /etc/inittab > /etc/inittab.new
-  #      [ -z "$init" ] || {
   echo -e "# entry made by $0 $date\n$init" >> /mnt/etc/inittab
 fi
 

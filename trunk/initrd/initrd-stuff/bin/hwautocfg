@@ -1,26 +1,23 @@
 #!/bin/sh
 #
-# Description:  universal (distro independent) hardware autoconfiguration 
-#		script for linux diskless clients, using hwconfig from 
-#		knoppix as base tool 
+# universal (distro independent) hardware autoconfiguration script for 
+# OpenSLX linux diskless clients, using hwconfig from knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-07-2006
-#		Felix Endres
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 30-08-2006
 #
-# Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
-#               (c) 2006 - odlx.org project
-#
-# Version:      0.3.2c
+# (c) 2003 - 2006 - RZ Universitaet Freiburg
+# (c) 2006 - OpenSLX.org
 
 # local functions used within hwautocfg
 displaysetup () {
+# (temporary) configuration file
 local xfc=$1
 # define some defaults
 local HSYNCRANGE="31.5-63.5"
 local VSYNCRANGE="60-90"
 local DEFAULTMODES='"1024x768" "800x600" "640x480"'
 local DEFAULTCOLORDPT=24
-# set variables representing the xorg.conf sections (version 6.8.x)
+# set variables representing the xorg.conf sections (version 6.9.x)
 local Module='\tLoad\t\t"dbe"\n
 \tLoad\t\t"extmod"\n
 \tLoad\t\t"type1"\n
@@ -89,16 +86,11 @@ displayvars
 if [ -n "$hw_graphic" ] ; then
   DRV=${hw_graphic% *}
   CDP=${hw_graphic##* }
-  msg="Please check your graphic adaptor settings ($hw_graphic)."
-  if [ -z "$DRV" ] ; then error "  Manual configuration of your graphic \
-hardware module setting failed.\n  $msg" nonfatal
-    XMODULE=DRV
-  else
-    [ -z "${XMODULE}" ] && XMODULE=vesa
+  if [ -z "$DRV" ] ; then error "$hcfg_gfxdrv" nonfatal
+    XMODULE=vesa
   fi
 fi
-if [ -z "$CDP" ] ; then error "  Manual configuration of your graphic \
-systems color depth failed.\n  $msg" nonfatal
+if [ -z "$CDP" ] ; then error "$hcfg_gfxcdp" nonfatal
   CDP=${DEFAULTCOLORDPT}
 fi
 
@@ -112,28 +104,24 @@ if [ -n "$hw_monitor" ] ; then
 else
   # gather information about the monitor capabilities 
   screenres > /tmp/screenres
-  VERTSR=`cat /tmp/screenres | sed -n '/Vertical Frequency Range/s/[^0-9]* \([0-9-]*\)/\1/p'`
-  HORISR=`cat /tmp/screenres | sed -n '/Horizontal Frequency Range/s/[^0-9]* \([0-9-]*\)/\1/p'`
+  VERTSR=`cat /tmp/screenres | sed -n \
+    '/Vertical Frequency Range/s/[^0-9]* \([0-9-]*\)/\1/p'`
+  HORISR=`cat /tmp/screenres | sed -n \
+    '/Horizontal Frequency Range/s/[^0-9]* \([0-9-]*\)/\1/p'`
   HS=$HORISR
   VS=$VERTSR
   # compute max resolution
-  SCR_MODES=`cat /tmp/screenres | sed -n '/Recommended Screen Modes:/s/[^"]*\(.*\)/\1/p'`
+  SCR_MODES=`cat /tmp/screenres | sed -n \
+    '/Recommended Screen Modes:/s/[^"]*\(.*\)/\1/p'`
 fi
 
-#hwmsg="Please check your predefined monitor settings ($hw_monitor): Automatic\n\
-#configuration of display"
-if [ -z "$HS" ] ; then #error "  $hwmsg timings was attempted, but the \
-#horizontal frequency could not be detected. Using default frequency \
-#range (${HSYNCRANGE})" nonfatal
+if [ -z "$HS" ] ; then #error "$hcfg_hfrq" nonfatal
   HS=${HSYNCRANGE}
 fi
-if [ -z "$VS" ] ; then #error "  $hwmsg timings was attempted, but the \
-#vertical frequency could not be detected. Using default frequency \
-#range (${VSYNCRANGE})" nonfatal
+if [ -z "$VS" ] ; then #error "$hcfg_vfrq" nonfatal
   VS=${VSYNCRANGE}
 fi
-if [ -z "$SCR_MODES" ] ; then #error "  $hwmsg resolution was attempted but not \
-#established. Using default resolutions (${DEFAULTMODES})" nonfatal
+if [ -z "$SCR_MODES" ] ; then #error "$hcfg_res" nonfatal
   SCR_MODES=${DEFAULTMODES}
 fi
 monmanual=yes 
@@ -164,31 +152,13 @@ for section in Files ServerFlags Module InputDevice Monitor \
     Device)
       echo -e ${Device} | \
         sed -e "s,XMODULE,${XMODULE}," -e "s%XDESC%${XDESC}%" >>$xfc
-            # special options may be needed for some drivers
-            [ $DEBUGLEVEL -gt 1 ] && msg "X setup" \
-"adding for some Xfree86 modules (radeon, s3virge, nvidia) special\noptions \
-to the 'Device' section. Consult hwsetup if you like to add more or\nremove some."
-	    # write TV config - no problem, if no TV is connected
-	    [ -n "$TVOUT" ] && echo -e $TVOUT >>$xfc
-            [ x$DRV = "xs3virge" ] && {
-            echo -e "\tOption\t\t\"XVideo\" \"Off\"\n" >>$xfc
-            [ $DEBUGLEVEL -gt 1 ] && msg  "X setup" \
-"added special option for \
-the s3virge module -> 'XVideo Off'. remove the\nappropriate line in hwsetup \
-if you like not to use it." ; }
-            [ x$DRV = "xnvidia" ] && {
-            echo -e "\tOption\t\t\"NvAGP\" \"3\"" >>$xfc
-            echo -e "\tOption\t\t\"NoLogo\" \"1\"" >>$xfc
-            [ $DEBUGLEVEL -gt 1 ] && msg  "X setup" \
-"added special option for \
-the nvidia module -> 'NvAGP '. it sets the use\nof internal or external \
-agpgart support." ; }
-            [ "$busid" ] && {
-            echo -e "\tOption\t\t\"BusID\" \"$busid\"" >>$xfc
-            [ $DEBUGLEVEL -gt 1 ] && msg  "X setup" \
-"added special option for \
-the 'BusID' information - it\ndefines the npostion of graphics adaptor in \
-pci/agp bus needed for acceleration." ; }
+        # write TV config - no problem, if no TV is connected
+	[ -n "$TVOUT" ] && echo -e $TVOUT >>$xfc
+        [ x$DRV = "xs3virge" ] && \
+	  echo -e "\tOption\t\t\"XVideo\" \"Off\"\n" >>$xfc
+	[ x$DRV = "xnvidia" ] && {
+	  echo -e "\tOption\t\t\"NvAGP\" \"3\"" >>$xfc
+	  echo -e "\tOption\t\t\"NoLogo\" \"1\"" >>$xfc ; }
     ;;
     Module)
       echo -e ${Module} >>$xfc
@@ -241,7 +211,7 @@ done
 # functions common for all distros
 . /etc/functions
 # functions common for all distros, messages contains all error and
-# info output (fixme!! put messages output into that file)
+# info output
 . /etc/messages
 # load distro specific configuration variables and functions. distro
 # specific functions may overwrite functions defined in /etc/functions
@@ -296,9 +266,7 @@ modprobe ${MODPRV} agpgart || \
 
 # wait for /tmp/hwsetup.info to appear
 waitfor /tmp/hwrun1 50000 || \
-  error "  Expected information from hwsetup to appear in \
-/tmp/hwsetup.info.\n  Unable to configure parts of the systems hardware. \
-Please check that\n  hwsetup is properly installed and executable."
+  error "$hcfg_hwsetup"
 # load ide drivers first, takes a while to initialize
 for DRIVER in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
     triflex aec62xx cs5530 ns87415 sc1200 trm290 alim15x3 \
@@ -343,8 +311,9 @@ for DRIVER in yenta_socket i82365 pd6729 tcic; do
     DRIVERLIST="${DRIVERLIST} ${DRIVER}"
     PCMCIA="yes"; }
 done
+# should we check for card reader modules too?
+
 if [ -n "${PCMCIA}" ] ; then
-  #echo "pcmcia=\"yes\"" > config
   modprobe ${MODPRV} ds
 fi
 # sound card setup (alsa and oss compatibility drivers)
@@ -352,7 +321,8 @@ if [ -f /etc/sysconfig/sound ] ; then
   . /etc/sysconfig/sound
 else DRIVER="snd-dummy"
 fi
-# problem with a specific module not disabled when busybox
+# problem with a specific module not disabled (via above trick) when 
+# busybox is used
 #  rmmod snd_atiixp_modem snd_atiixp
 modprobe ${MODPRV} ${DRIVER}
 DRIVERLIST="${DRIVERLIST} ${DRIVER} "
@@ -407,8 +377,7 @@ cfgcomplete
 DEFKEYTABLE="de-latin1-nodeadkeys"
 localization $country
 if [ -z "${KEYTABLE}" ] ; then
-  msg "Keyboard setup" "No settings found for keyboard, using default of \
-'${DEFKEYTABLE}' defined\nin $0."
+  error "$hcfg_keyb" nonfatal 
   KEYTABLE=${DEFKEYTABLE}
 fi
 
@@ -425,7 +394,9 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
       sed -n -e "/ 82 /p"|sed -e "s/[[:space:]].*//") ; do
     echo -e "$hdpartnr\tswap\t\tswap\t\tdefaults\t 0 0" >> /tmp/fstab
   done
-  # we use special non assigned partition type for harddisk scratch space
+  # we use special non assigned partition type (id44) for harddisk scratch 
+  # space, thus no normal filesystem will be incidentally deleted or
+  # corrupted
   for hdpartnr in $(cat /tmp/hd_part | \
         sed -n -e "/ 44 /p"|sed -e "s/[[:space:]].*//") ; do
     # ext2fs_check_if_mount message supressed

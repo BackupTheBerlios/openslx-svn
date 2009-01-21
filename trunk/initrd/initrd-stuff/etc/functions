@@ -1,15 +1,13 @@
-# Description:  common function script for the configuration of
-#               linux diskless clients (included by init, hwautocfg,
-#               servconfig, ... within initial ramdisk) 
+# common function script for the configuration of linux diskless clients
+# (included by init, hwautocfg, servconfig, ... within OpenSLX initial 
+# ramfs) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-08-2006
-#               Felix Endres, 30-04-2006
-#               Tobias Maier
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 31-08-2006
+# Felix Endres, 30-04-2006
+# Tobias Maier
 #
-# Copyright:    (c) 2006 - RZ Universitaet Freiburg
-#               (c) 2006 - OpenSLX.ORG Project
-# 
-# Version:      0.5.1b
+# (c) 2006 - RZ Universitaet Freiburg
+# (c) 2006 - OpenSLX.ORG Project
 
 #######################################################################
 # set of empty dummy functions (loaded before real functions in the 
@@ -93,9 +91,7 @@ else
 #  }
 fi
 }
-msg () {
-echo -e "$1 info: $2"
-}
+
 #######################################################################
 # micro sleep - either busybox command or simply loop and delete 1 from 
 # the first argument gotten until zero
@@ -365,9 +361,9 @@ case "$tftp" in
     */tftp)
       # distinguish between busybox tftp and standalone (in.tftp) client
       if [ -x /bin/busybox ] ; then
-        tftp -g -r $1 -l $dst $2 2> /dev/null
+        tftp -g -r $1 -l $dst $2 1>&2 >/dev/null
       else
-        echo "get $1 $dst" | tftp $2 2> /dev/null 
+        echo "get $1 $dst" | tftp $2 1>&2 >/dev/null 
       fi
     ;;
 esac
@@ -402,7 +398,6 @@ and as last\n# distro/default" >> /tmp/confviafile
     tftpgetunpack $cfgfile $tftpserver && break
   done
 fi
-#echo "# -> $cfgfile" >> /tmp/confviafile
 test -f /initramfs/machine-setup && \
   cat /initramfs/machine-setup >> /tmp/confviafile
 echo "fileget via $srvproto finished" > /tmp/file-done
