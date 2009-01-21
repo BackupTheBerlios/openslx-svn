@@ -2,16 +2,17 @@
 #
 # Description:  Session chooser for kdm/gdm
 #
-# Author(s):    Michael Janczyk <mj0@uni-freiburg.de>, 12-09-2006
+# Author(s):    Michael Janczyk <mj0@uni-freiburg.de>, 03-10-2006
 #
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.1.372
+# Version:      0.2.435
 #
 ################################################################################
 
 
-
+# read from machine-setup (for slxgrp)
+. /etc/machine-setup
 
 
 # set X background
@@ -24,6 +25,12 @@ else
 fi
 
 
+# Xdailog test
+xdialog=$(which Xdialog)
+[ -z "${xdialog}" ] && xterm -e 'echo -e "\n\n\n\n\n\n\t\t\tNo Xdialog installed!!!\
+  \n\n\t\t\tClosing in 3 seconds."; sleep 3' && exit 1
+
+
 x_dialog () {
 
   xsessions="/usr/share/xsessions"
@@ -31,7 +38,9 @@ x_dialog () {
   tmpdir="/tmp"
   menu=
   execute=
-
+  slxgrp=$(echo ${slxgrp} | tr [A-Z] [a-z])
+  slxgrptest=
+    
 
   xdesktopsnr=( `ls ${xsessions}/*.desktop | grep -v "default.*" \
     | wc -l 2>/dev/null` )
@@ -39,10 +48,9 @@ x_dialog () {
     | sort -bf 2>/dev/null; \
     ls ${vmsessions}/*.desktop | sort -bf 2>/dev/null` )
   desktopsnr=$(echo "${#desktops[*]}")
-
-
   (( args=0 ))
   declare -i i=0
+
 
   while [ "${xdesktopsnr}" -gt "${args}" ]; do
     # exec in .desktop
@@ -71,29 +79,40 @@ ${execute[${i}]:-"No comment"}"
 
 
   while [ "${desktopsnr}" -gt "${args}" ]; do
-    # exec in .desktop
-    execute[${i}]=$(grep -m 1 -i "exec" ${desktops[${args}]} \
-      | awk -F "=" '{print $2}')
-    menu="$menu \"\${execute[${i}]}\""
-    i=${i}+1
+    # check for slxgrp
+    slxgrptest=$(grep -m 1 -i "slxgrp" ${desktops[${args}]} \
+      | awk -F "=" '{print $2}' | tr [A-Z] [a-z])
+    if [ -z "${slxgrp}" -o "${slxgrp}" = "${slxgrptest}" -o "${slxgrp}" = "default"  ]; \
+      then
 
-    # name in .desktop
-    execute[${i}]=$(grep -m 1 -i "name" ${desktops[${args}]} \
-      | awk -F "=" '{print $2}')
-    execute[${i}]=${execute[${i}]:-`echo ${execute[${i}-1]} | sed -e "s,-, ,g"`}
-    menu="$menu \"\${execute[${i}]}\""
-    i=${i}+1
+      # exec in .desktop
+      execute[${i}]=$(grep -m 1 -i "exec" ${desktops[${args}]} \
+        | awk -F "=" '{print $2}')
+      menu="$menu \"\${execute[${i}]}\""
+      i=${i}+1
 
-    # comment in .desktop
-    execute[${i}]=$(grep -m 1 -i "comment" ${desktops[${args}]} \
-      | awk -F "=" '{print $2}')
-    execute[${i}]="| VMware Image |
+      # name in .desktop
+      execute[${i}]=$(grep -m 1 -i "name" ${desktops[${args}]} \
+        | awk -F "=" '{print $2}')
+      execute[${i}]=${execute[${i}]:-`echo ${execute[${i}-1]} | sed -e "s,-, ,g"`}
+      menu="$menu \"\${execute[${i}]}\""
+      i=${i}+1
+
+      # comment in .desktop
+      execute[${i}]=$(grep -m 1 -i "comment" ${desktops[${args}]} \
+        | awk -F "=" '{print $2}')
+      execute[${i}]="| VMware Image |
 ${execute[${i}]:-"No comment"}"
-    menu="$menu \"\${execute[${i}]}\""
-    i=${i}+1
+      menu="$menu \"\${execute[${i}]}\""
+      i=${i}+1
 
+    fi
+  
     (( args=${args}+1 ))
   done
+
+  # test if menu not empty?
+  [ -z "${menu}" ] && Xdialog --infobox "No items found to display!!!" 10 30 3000 && exit 1
 
   # --stderr because of 1>/dev/null
   # echoing to file because Xdialog sux when used w/ quotes
@@ -113,6 +132,7 @@ ${execute[${i}]:-"No comment"}"
   . ${tmpdir}/Xdialog
   rm -f ${tmpdir}/Xdialog
 }
+
 
 args_dial=$(x_dialog 2>&1) # 2>&1, see function
 exec ${args_dial}
