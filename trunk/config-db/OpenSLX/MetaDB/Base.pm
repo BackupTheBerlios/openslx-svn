@@ -16,7 +16,7 @@ package OpenSLX::MetaDB::Base;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = 1;		# API-version
+$VERSION = 1.01;		# API-version . implementation-version
 
 use Carp;
 

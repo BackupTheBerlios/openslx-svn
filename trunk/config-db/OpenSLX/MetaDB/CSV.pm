@@ -13,8 +13,9 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::MetaDB::CSV;
 
+use strict;
 use vars qw($VERSION);
-$VERSION = 1;		# API-version
+$VERSION = 1.01;		# API-version . implementation-version
 use base qw(OpenSLX::MetaDB::DBI);
 
 ################################################################################
@@ -28,12 +29,8 @@ use Carp;
 use Fcntl qw(:DEFAULT :flock);
 use DBD::CSV 0.22;
 use OpenSLX::Basics;
+use OpenSLX::MetaDB::DBI 1;
 
-my $superVersion = $OpenSLX::MetaDB::DBI::VERSION;
-if ($superVersion < $VERSION) {
-	confess _tr("Unable to load module '%s' (Version '%s' required, but '%s' found)",
-				'OpenSLX::MetaDB::DBI', $VERSION, $superVersion);
-}
 ################################################################################
 ### implementation
 ################################################################################
