@@ -80,7 +80,7 @@ if ($action !~ m[^clone|import-into-db|install|update$]i) {
 
 if ($action =~ m[clone]i) {
 	if (!length($source)) {
-		die _tr("You need to specifiy a source you'd like to clone!\n");
+		die _tr("You need to specify a source you'd like to clone!\n");
 	}
 	if ($source !~ m[^.+::?.+$]) {
 		die _tr("Unkown source format given, expected '<hostname>:<path>' or '<hostname>::<module>'!\n");
