@@ -227,7 +227,7 @@ goto_script_dir()
 add_splash () {
 
 splashsizes="$SPLASH"
-splashsizes="800x600 1024x768 1280x1024 1400x1050 1600x1200"
+splashsizes="640*480 800x600 1024x768 1280x1024 1400x1050 1600x1200"
 splash_bin=$(chroot $ROOTDIR which splash)
 splash_image=
 THEME="dxs"
