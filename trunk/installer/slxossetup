@@ -99,8 +99,9 @@ function slxossetup_rpm_suse()
 	test -d "${SLX_STAGE1_PATH}" || \
 		mkdir -p "${SLX_STAGE1_PATH}"
 	pushd "${SLX_STAGE1_PATH}" >/dev/null
-	for package in "${SLX_PACKAGE_PATH}/*.rpm"; do
-		rpm2cpio ${package} | cpio -i --make-directories
+	for package in $SLX_BASE_PREREQ_PACKAGES; do
+		rpm2cpio ${SLX_PACKAGE_PATH}/${package}-*.rpm | \
+			cpio -i --make-directories
 	done
 	# Cleanup etc to prevent .rpnnew files
    # FIXME: This should be controled by the config file.
