@@ -57,6 +57,8 @@ $openslxConfig{'export-path'}
 	= $ENV{SLX_EXPORT_PATH} || "$openslxConfig{'public-path'}/export",
 $openslxConfig{'share-path'}
 	= $ENV{SLX_SHARE_PATH} || "$openslxConfig{'base-path'}/share",
+$openslxConfig{'stage1-path'}
+	= $ENV{SLX_STAGE1_PATH} || "$openslxConfig{'private-path'}/stage1",
 $openslxConfig{'tftpboot-path'}
 	= $ENV{SLX_TFTPBOOT_PATH} || "$openslxConfig{'public-path'}/tftpboot",
 
@@ -99,6 +101,8 @@ my %openslxCmdlineArgs = (
 		# PXE-configurations, kernels, initramfs and client configurations)
 	'share-path=s' => \$cmdlineConfig{'share-path'},
 		# path to sharable data (functionality templates and distro-specs)
+	'stage1-path=s' => \$cmdlineConfig{'stage1-path'},
+		# path to stage1 systems
 	'temp-path=s' => \$cmdlineConfig{'temp-path'},
 		# path to temporary data (used during demuxing)
 	'tftpboot-path=s' => \$cmdlineConfig{'tftpboot-path'},
@@ -205,7 +209,7 @@ sub trInit
 	if (eval "require OpenSLX::Translations::posix") {
 		%translations = %OpenSLX::Translations::posix::translations;
 	} else {
-		vlog 1, "unable to load translations module 'posix' ($!).";
+		vlog 1, "unable to load translations module 'posix' ($@).";
 	}
 
 	if (lc($locale) ne 'posix') {
