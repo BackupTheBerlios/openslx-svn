@@ -34,6 +34,9 @@ use OpenSLX::Basics;
 
 my (
 	$helpReq,
+	$manReq,
+	$verbose,
+
 	$rootPath,
 	$versionReq,
 
@@ -47,10 +50,13 @@ my (
 $rootPath = '/';
 GetOptions(
 	'help|?' => \$helpReq,
+	'man' => \$manReq,
 	'root-path=s' => \$rootPath,
+	'verbose' => \$verbose,
 	'version' => \$versionReq,
 ) or pod2usage(2);
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
+pod2usage(-verbose => 2) if $manReq;
 if ($versionReq) {
 	system('slxversion');
 	exit 1;
@@ -77,9 +83,6 @@ foreach my $file (@ARGV) {
 	if ($file =~ m[^/]) {
 		# force absolute path relative to $rootPath:
 		$file = "$rootPath$file";
-	} else {
-		# relative paths are relative to $rootPath:
-		$file = "$rootPath/$file";
 	}
 	if (!-e $file) {
 		die _tr("slxldd: unable to find file '%s'\n", $file);
@@ -145,7 +148,11 @@ sub addLib
 					die _tr("unable to fetch file info for $folder/$lib, giving up!\n");
 				}
 				my $libBitwidth = ($libFileInfo =~ m[64-bit]i) ? 64 : 32;
-				next unless $bitwidth == $libBitwidth;
+				if ($bitwidth != $libBitwidth) {
+					vlog 0, _tr('%s has wrong bitwidth (%s instead of %s)',
+						      "$folder/$lib", $libBitwidth, $bitwidth) if $verbose;
+					next;
+				}
 				$libPath = "$folder/$lib";
 				last;
 			}
