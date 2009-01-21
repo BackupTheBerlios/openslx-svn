@@ -801,9 +801,6 @@ for cfg in default/initramfs/preinit.local \
     cp ${SLX_PRIVATE_PATH}/config/$cfg ${INSTDIR}/bin
 done
 
-# remove unneeded debug info, fixme not really tested yet
-strip  ${INSTDIR}/bin/*  ${INSTDIR}/lib/* &>/dev/null
-
 #########################################################################
 # End of file copy procedures
 
