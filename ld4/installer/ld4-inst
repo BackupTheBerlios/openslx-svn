@@ -4,12 +4,12 @@
 #               cloning from rsync source for Diskless X Stations (v4.0)
 #
 # Author(s):    Nico Dietrich, 04-04-2006
-#		Dirk von Suchodoletz <dirk@goe.net>, 24-07-2006
-#               mj0, 06-07-06
+#		Dirk von Suchodoletz <dirk@goe.net>, 29-07-2006
+#               Michael Janczyk, <mj0>, 06-07-06
 #
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:	0.2.1c
+# Version:	0.2.1d
 DEBUG=0
 
 header() {
@@ -441,11 +441,13 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
     else
       default_string=""
     fi
+    # because of restricted length of kernel commandline put the initrd token 
+    # last (needed only for loading with pxelinux)
     echo -e "LABEL ${client_distro}-${current_kernel}\n${default_string}\
   MENU LABEL $j. ${client_distro}-${client_distro_ver} ${current_kernel} Diskless\n\
   KERNEL ${server}::${tftpbootdir}/vmlinuz-${current_kernel}\n\
-  APPEND nfsroot=${server}:${rootdir} initrd=${server}::${tftpbootdir}/initrd-dxs-${current_kernel} \
-  apic dhcp noldsc debug=$debuglevel vci=DXS\n\
+  APPEND nfsroot=${server}:${rootdir} apic dhcp noldsc debug=$debuglevel vci=DXS \
+  initrd=${server}::${tftpbootdir}/initrd-dxs-${current_kernel} \n\
   ipappend 1\n" >> ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
 
     if isyes "$nbdyes" ; then
@@ -454,8 +456,8 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
       echo -e "LABEL ${client_distro}-${current_kernel}-nbd\n\
   MENU LABEL $j. ${client_distro}-${client_distro_ver} ${current_kernel} Diskless NBD\n\
   KERNEL ${server}::${tftpbootdir}/vmlinuz-${current_kernel}\n\
-  APPEND nbdroot=${server}:5000/${nbdfs} initrd=${server}::${tftpbootdir}/initrd-dxs-${current_kernel} \
-  apic dhcp noldsc debug=$debuglevel elevator=\"noop\" vci=DXS\n\
+  APPEND nbdroot=${server}:5000/${nbdfs} apic dhcp noldsc debug=$debuglevel elevator=\"noop\" vci=DXS \
+  initrd=${server}::${tftpbootdir}/initrd-dxs-${current_kernel}\n\
   ipappend 1\n" >> ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
     fi
 
