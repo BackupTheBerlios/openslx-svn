@@ -281,7 +281,7 @@ create_initrd() {
       echo "$j: ${kernel[$j]}"
       j=$j+1
     done
-    ask "Please chose kernels to create initial ramdisks for (space separated numbers) " kernel_choice ${kernel_choice}
+    ask "Please chose kernels to create initial ramdisks for (space separated numbers) " kernel_choice "${kernel_choice}"
   fi
   choice=( ${kernel_choice} )
   
