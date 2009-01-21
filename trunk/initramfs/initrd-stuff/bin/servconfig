@@ -384,20 +384,20 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   for i in /mnt/usr/share/xsessions/*.desktop; do
     # execute
     echo "\"$(grep '^Exec=' ${i}|sed 's/^Exec=//')\" \\" \
-        >> /mnt/etc/X11/xdialog.sh
+        >> /mnt/var/X11R6/xdialog.sh
     # short description
     echo "\"$(grep '^Name=' ${i}|sed 's/^Name=//')\" \\" \
-        >> /mnt/etc/X11/xdialog.sh
+        >> /mnt/var/X11R6/xdialog.sh
     #long description
     echo "\"$(grep '^Comment=' ${i}|sed 's/^Comment=//')\" \\" \
-        >> /mnt/etc/X11/xdialog.sh
+        >> /mnt/var/X11R6/xdialog.sh
   done
 
   # all vmware clients
   cat ${vmdir}/xdialog-files/${pool}/*.xdialog >> /mnt/etc/X11/xdialog.sh
   # closing bracket as last line ends with '\'
-  echo ")" >> /mnt/etc/X11/xdialog.sh
-  chmod 755 /mnt/etc/X11/xdialog.sh
+  echo ")" >> /mnt/var/X11R6/xdialog.sh
+  chmod 755 /mnt/var/X11R6/xdialog.sh
 
   # copy xdm files, so we could choose them before we log in
   for i in ${vmdir}/xdmsessions/${pool}/*.desktop;do
