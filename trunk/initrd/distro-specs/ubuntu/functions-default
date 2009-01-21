@@ -80,6 +80,7 @@ for i in rc2.d/K$stop$script rc3.d/K$stop$script \
     break
   else 
     ln -sf ../init.d/$script /mnt/etc/$i
+    echo "Linked $script"
   fi
 done
 }

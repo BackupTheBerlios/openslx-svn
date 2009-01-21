@@ -27,4 +27,4 @@
 # D_BOOTLOCAL - script for user specified stuff which should be started
 # during client bootup, path and file relative to /etc
 
-# no changes from default except:
+# no changes from default:

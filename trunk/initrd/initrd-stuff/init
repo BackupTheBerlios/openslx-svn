@@ -46,6 +46,13 @@ echo 256 > /proc/sys/kernel/real-root-dev
 # redirect console (after /dev/console is available, and /dev mounted)
 exec < /dev/console > /dev/console 2>&1
 
+# set defaults and create special files so that "waitfor" does not waites
+# for a configuration option
+TMPFSSIZE="50%"
+COWSIZE="50%"
+RWDIR=/dev/shm
+NFSRO="nfs"
+
 # run pre init script and user defined preinit.local (see Howto)
 preinit
 [ -x /bin/preinit.local ] && /bin/preinit.local
@@ -53,12 +60,6 @@ preinit
 # start device auto discovery service - distro specific function
 udev_hotplug
 
-# set defaults and create special files so that "waitfor" does not waites
-# for a configuration option
-TMPFSSIZE="50%"
-COWSIZE="50%"
-RWDIR=/dev/shm
-NFSRO="nfs"
 # switch off the several configuration methods, will be switched on
 # according to kernel commandline settings
 echo "noldap" > /tmp/ldap-done
@@ -355,7 +356,7 @@ if [ -n "${UNIONFS}" ] ; then
   mount -n -t tmpfs none ${RWDIR}/uniontmp
   # hack for handling unionfs with patched run-init
   mount -n --move /mnt /rorootfs
-  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/rorootfs=${NFSRO}ro \
+  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp:/rorootfs=${NFSRO}ro \
     none /mnt
   mkdir -p /mnt/uniontmp
   mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp

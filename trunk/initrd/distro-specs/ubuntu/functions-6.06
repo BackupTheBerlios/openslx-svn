@@ -15,6 +15,8 @@ preinit () {
   echo "Creating dhcp user"
   echo "dhcp:x:101:" >>/etc/group
   echo "dhcp:x:101:101::/nonexistent:/bin/false" >>/etc/passwd
+  # mount/unionfs can not handle the nfsro parameter in Ubuntu 6.06 
+  NFSRO=""
 }
 
 # distro specific function called from servconfig script
@@ -160,6 +162,7 @@ rllinker "console-screen.sh" "31" "03"
 # configure gdm as display manager
 config_gdm () {
 rllinker "gdm" "13" "01"
+ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/K20gdm
 #  ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/S13gdm
 #  ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc6.d/K01gdm
   echo -e "\t/etc/${D_INITDIR}/gdm start >${LOGFILE} 2>&1\n\
