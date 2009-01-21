@@ -487,7 +487,6 @@ if [ -n "${bldmod}" ] ; then
       ;;
     lbdev)
       # using clients local block device (disk partition is to be specified)
-      echo "B: /dev/$blddev"
       RDEV=/dev/$blddev
       ;;
   esac
@@ -770,9 +769,10 @@ fi
 
 # post init for some distro specific
 postinit
-[ -s /initramfs/postinit.local ] && \
-  mv /initramfs/postinit.local /bin/postinit.local
-[ -x /bin/postinit.local ] && {
+[ -s /initramfs/postinit.local ] && {
+  mv /initramfs/postinit.local /bin/postinit.local;
+  chmod u+x /bin/postinit.local; }
+[ -f /bin/postinit.local ] && {
   [ $DEBUGLEVEL -gt 0 ] && \
     echo "Running postinit.local - if boot stops here, check the script!"
   /bin/postinit.local; }

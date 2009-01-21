@@ -49,16 +49,16 @@ if [ -n "$2" ] ; then
   [ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && usleep 10
 else
   echo -e "${error_msg}${e_msg}${error_shell}"
-  /bin/sh
-  echo -n "Reboot now? [y]"
+  /bin/ash
+  echo -n "Reboot now? [y] (nothing happens here at the moment)"
   exec < /dev/console > /dev/console
-  input="y"
-  read input
-  [ -z "$input" -o "$input" = "y" -o "$input" = "Y" ] && {
-    sleep 4
-    [ -f /proc/sysrq-trigger ] || mount -t proc none /proc
-    echo "b" > /proc/sysrq-trigger
-  }
+  #input="y"
+  #read input
+  #[ -z "$input" -o "$input" = "y" -o "$input" = "Y" ] && {
+  #  sleep 4
+  #  [ -f /proc/sysrq-trigger ] || mount -t proc none /proc
+  #  echo "b" > /proc/sysrq-trigger
+  #}
 fi
 }
 #############################################################################
@@ -357,12 +357,12 @@ if [ "x$filepath" != "x" ] ; then
    ;;
    file)
      local ldev=$fileserv
-     echo "Waiting for /dev/$ldev ...."
-     waitfor /dev/$ldev 10000
+     echo "Waiting for /mnt/etc ...."
+     waitfor /mnt/etc 10000
      mkdir /tmp/$ldev
      echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
-     mount /dev/$ldev /tmp/$ldev || error "$init_errlfg"
-     unpack $cfgfile
+     mount -o ro /dev/$ldev /tmp/$ldev || error "$init_errlfg"
+     unpack /tmp/$ldev/$cfgfile
      umount /dev/$ldev
    ;;
    *)
