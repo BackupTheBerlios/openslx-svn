@@ -376,10 +376,12 @@ sub writePXEMenus
 	# now append (and thus override) the PXE-template with the settings of the 
 	# selected PXE-theme, if any
 	my $pxeTheme = $openslxConfig{'pxe-theme'};
-	my $pxeThemeConfig 
-		= "$openslxConfig{'base-path'}/share/themes/${pxeTheme}/pxe/theme.conf";
-	if (-e $pxeThemeConfig) {
-		$pxeTemplate .= slurpFile($pxeThemeConfig);
+	if (defined $pxeTheme) {
+		my $pxeThemeConfig 
+			= "$openslxConfig{'base-path'}/share/themes/${pxeTheme}/pxe/theme.conf";
+		if (-e $pxeThemeConfig) {
+			$pxeTemplate .= slurpFile($pxeThemeConfig);
+		}
 	}
 
 	# fetch info about margin and replace the corresponding placeholders
