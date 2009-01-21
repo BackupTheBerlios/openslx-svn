@@ -86,6 +86,18 @@ sub initDistroInfo
 			'name' => 'openSUSE 10.2',
 			'repo-subdir' => 'suse',
 		},
+		'base_non-oss' => {
+			'urls' => "
+				ftp://ftp5.gwdg.de/pub/opensuse/distribution/10.2/repo/non-oss
+				ftp://suse.inode.at/opensuse/distribution/10.2/repo/non-oss
+				http://mirrors.uol.com.br/pub/suse/distribution/10.2/repo/non-oss
+				ftp://klid.dk/opensuse/distribution/10.2/repo/non-oss
+				ftp://ftp.estpak.ee/pub/suse/opensuse/distribution/10.2/repo/non-oss
+				ftp://ftp.jaist.ac.jp/pub/Linux/openSUSE/distribution/10.2/repo/non-oss
+			",
+			'name' => 'openSUSE 10.2 non-OSS',
+			'repo-subdir' => 'suse',
+		},
 		'base_update' => {
 			'urls' => "
 				ftp://ftp.gwdg.de/pub/suse/update/10.2
