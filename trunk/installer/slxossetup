@@ -12,7 +12,7 @@
 : ${SLX_BOOTSTRAP_PATH:="/slxbootstrap"}
 : ${SLX_STAGE1_FINAL_PATH:="/slxfinal"}
 
-SLX_SYSTEM_NAME=$1
+SLX_SYSTEM_BASENAME=$1
 test "$2" && \
 	SLX_OSSETUP_MODE=$2 ||
 	SLX_OSSETUP_MODE="bootstrap"
@@ -26,14 +26,11 @@ for binary in smart; do
 	fi
 done
 
-if test -z "${SLX_SYSTEM_NAME}"; then
+if test -z "${SLX_SYSTEM_BASENAME}"; then
 	echo "$0: Error, <system-name> not provided! "
 	exit 1
 fi
-SLX_SYSTEM_BASENAME="${SLX_SYSTEM_NAME%%-*}"
-SLX_SYSTEM_VARIANTNAME="${SLX_SYSTEM_NAME##*-}"
-test "${SLX_SYSTEM_VARIANTNAME}" = "${SLX_SYSTEM_BASENAME}" && \
-	unset SLX_SYSTEM_VARIANTNAME
+
 for dir in . ${SLX_CONFIG_PATH}; do
 	if test -d "${dir}/systems/${SLX_SYSTEM_BASENAME}"; then
 		SLX_SYSTEM_CONFIG_PATH="${dir}/systems/${SLX_SYSTEM_BASENAME}"
@@ -52,7 +49,7 @@ done
 SLX_BUSYBOX_CHROOT_NAME="busybox_chroot"
 
 # Read config files for a particular system
-for suffix in "" local ${SLX_SYSTEM_VARIANTNAME}; do
+for suffix in "" local; do
 	test -f "${SLX_SYSTEM_CONFIG_PATH}/settings${suffix:+.$suffix}" && \
 		. "${SLX_SYSTEM_CONFIG_PATH}/settings${suffix:+.$suffix}"
 done
@@ -237,6 +234,8 @@ function setup_bootstrap_1c()
 
 			chroot "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}" \
 				/bin/rpm --root="${SLX_STAGE1_FINAL_PATH}" -ivh ${packagelist}
+			test $? -eq 0 || \
+				ErrorMsg ${rc} "Bootstrap failed! "
 			cp -p /etc/resolv.conf "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/${SLX_STAGE1_FINAL_PATH}/etc/"
 		;;
 	esac
@@ -407,8 +406,8 @@ function slxossetup_busybox()
 
 function slxossetup_init()
 {
-	SLX_METADATA_PATH="${SLX_PRIVATE_PATH}/metadata/${SLX_SYSTEM_NAME}"
-	SLX_STAGE1_PATH="${SLX_PRIVATE_PATH}/stage1/${SLX_SYSTEM_NAME}"
+	SLX_METADATA_PATH="${SLX_PRIVATE_PATH}/metadata/${SLX_SYSTEM_BASENAME}"
+	SLX_STAGE1_PATH="${SLX_PRIVATE_PATH}/stage1/${SLX_SYSTEM_BASENAME}"
 }
 
 function slxossetup()
