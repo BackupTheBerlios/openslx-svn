@@ -93,4 +93,13 @@ sub installPackages
 	}
 }
 
+sub getInstalledPackages
+{
+	my $self = shift;
+
+	my $rpmCmd = 'rpm -qa --queryformat="%{NAME}\n"';
+	my $pkgList = `$rpmCmd`;
+	return split "\n", $pkgList;
+}
+
 1;

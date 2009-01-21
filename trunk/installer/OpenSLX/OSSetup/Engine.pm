@@ -863,11 +863,22 @@ sub stage1D_installPackageSelection
 	vlog 1, "installing package selection <$selectionName>...";
 	my $pkgSelection = $self->{'distro-info'}->{selection}->{$selectionName};
 	my @pkgs = string2Array($pkgSelection);
+	my @installedPkgs = $self->{'packager'}->getInstalledPackages();
+	@pkgs 
+		= 	grep {
+				my $pkg = $_;
+				if (grep { $_ eq $pkg; } @installedPkgs) {
+					vlog 1, "package '$pkg' filtered, it is already installed.";
+					0;
+				} else {
+					1;
+				}
+			} @pkgs;
 	if (scalar(@pkgs) == 0) {
 		vlog 0, _tr("No packages listed for selection '%s', nothing to do.",
 					$selectionName);
 	} else {
-    	vlog 2, "installing these packages:\n".join("\n\t", @pkgs);
+    	vlog 1, "installing these packages:\n".join("\n\t", @pkgs);
 		$self->{'meta-packager'}->startSession();
 		$self->{'meta-packager'}->installSelection(join " ", @pkgs);
 		$self->{'distro'}->updateDistroConfig();
