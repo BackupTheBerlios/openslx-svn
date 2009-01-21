@@ -636,8 +636,8 @@ umount -n /proc/bus/usb >/dev/null 2>&1
 chmod 1777 /mnt/dev/shm /mnt/tmp /mnt/tmp/scratch 2>/dev/null
 mount -n --move /dev /mnt/dev
 
-# stop udevd (non-busybox udevs)
-killall -9 udevd 2>/mnt/dev/null
+# stop udevd (non-busybox udevs) and kill hwautocfg, servconfig
+killall -9 udevd hwautocfg servconfig 2>/mnt/dev/null
 # runtimer
 [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
   echo "** SLX init ended near $(sysup)"
