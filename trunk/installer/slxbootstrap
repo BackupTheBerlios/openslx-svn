@@ -13,7 +13,14 @@ test "${SLX_INST_SOURCE_PACKAGE_SUBDIR}" && \
 	SLX_INST_SOURCE_PACKAGE_SUBDIR="/${SLX_INST_SOURCE_PACKAGE_SUBDIR}"
 
 download_file () {
-	wget "${SLX_INST_SOURCE_BASEURL}${SLX_INST_SOURCE_PACKAGE_SUBDIR}/${file}"
+	case ${file} in
+		ftp://*|http://*)
+			wget "${file}"
+			;;
+		*)
+			wget "${SLX_INST_SOURCE_BASEURL}${SLX_INST_SOURCE_PACKAGE_SUBDIR}/${file}"
+			;;
+	esac
 	if test $? != 0; then
 		if test "${SLX_BOOTSTRAP_FAIL_WGET}" = "no"; then
 			continue
