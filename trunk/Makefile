@@ -171,7 +171,7 @@ supported."; \
 	  tar -xp -C $(DESTDIR)$(SLX_SHARE_PATH)
 	@cd theming; tar --exclude=.svn -cp * | \
 	  tar -xp -C $(DESTDIR)$(SLX_SHARE_PATH)/themes; cd ..
-	@cp -pP tools/busybox{,.links,.x86_64,.i586} installer/slxbootstrap \
+	@cp -pP tools/busybox{,.links,.x86_64,.i586} \
 	  $(DESTDIR)$(SLX_SHARE_PATH)/busybox/
 	@cp -p tools/mksquashfs $(DESTDIR)$(SLX_SHARE_PATH)/squashfs/
 
