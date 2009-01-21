@@ -269,3 +269,9 @@ variable \${automnt_dir} appropriately in\n  machine-setup file." nonfatal
   rllinker "autofs" "18" "04"
 fi
 }
+
+# start portmapper (needed at least for nfs and nis services)
+config_portmap () {
+  rllinker "portmap" "02" "20"
+}
+

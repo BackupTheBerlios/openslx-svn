@@ -44,6 +44,8 @@ exec < /dev/console > /dev/console 2>&1
 
 # run pre init script
 preinit
+[ -x /bin/vendor_preinit ] && /bin/vendor_preinit
+
 # start device auto discovery service - distro specific function
 udev_hotplug
 # set defaults and create waitfor files
@@ -412,6 +414,7 @@ killall -9 dhcpcd dhclient pump 2>/dev/null
 
 # post init for some distro specific
 postinit
+[ -x /bin/vendor_postinit ] && /bin/vendor_postinit
 
 # start a debug shell in higher debug levels
 [ $DEBUGLEVEL -gt 2 ] && /bin/sh

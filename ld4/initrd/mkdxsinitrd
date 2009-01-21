@@ -479,7 +479,7 @@ done
 chmod 755 ${INSTDIR}/init \
   ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
 
-# finally add the common client configuration file
+# add the common client configuration file
 if [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
   cp /etc/dxs/client.cfg/machine-setup.default \
     ${INSTDIR}/etc/machine-setup
@@ -491,6 +491,13 @@ else
   echo -e "# default for machine-setup does not exist\n# root logins are \
 disabled\nroot_pw='"'$1$T7VD/mmQ$aCP1WEaWplEsHe9khv4kK.'"'" > ${INSTDIR}/etc/machine-setup
 fi
+
+# finally copy vendor-supplied preinit and postinit files
+for i in vendor_preinit vendor_postinit ; do
+  if [ -f /etc/dxs/init.local/"${i}" ] ; then
+    cp /etc/dxs/init.local/"$i" ${INSTDIR}/bin/"$i"
+  fi
+done
 
 #########################################################################
 # End of file copy procedures

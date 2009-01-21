@@ -312,7 +312,7 @@ setup_server () {
   timestamp=`date +%Y%m%d-%H%M`
 
   # creating central dxs configuration directory structure if it doesn't exist
-  for dir in dhcp nfs atftpd pxelinux client.cfg ; do
+  for dir in dhcp nfs atftpd pxelinux client.cfg init.local ; do
     [ -d ${dxs_conf}/${dir} ] || mkdir -p ${dxs_conf}/${dir}
   done
 
@@ -360,35 +360,41 @@ setup_server () {
     j=$j+1
   done
   
-  # backing up original files, if files should not be overwritten keep them
+  # if files should not be overwritten keep them
   # in place and create files with ".new" extension
   if [ "$overwrite_configs" = "no" ] ; then 
     extension=".new"
     keep="yes"
   fi
 
-  for cfile in \
-    ${dhcpd_conf} ${atftpd_conf} ${exports_conf} \
-    ${tftpbootdir}/${pxedefault_conf} ${client_conf} ; do
-    if [ -f ${cfile} -a ! -L ${cfile} ] ; then
-      if [ -z "$keep" ] ; then 
-        echo "Copying old ${cfile} to ${cfile}.original"
-        mv ${cfile} ${cfile}.original
-      else
-        echo "Keeping old ${cfile} and generate ${cfile}.new instead"
-      fi
-    elif [ -L ${cfile} ] ; then 
-      [ -z "$keep" ] && unlink ${cfile}
-    fi
-  done
-
-  # linking files
   for cfile in "${dxs_dhcpd_conf} ${dhcpd_conf}" \
                "${dxs_atftpd_conf} ${atftpd_conf}" \
                "${dxs_pxedefault_conf} ${tftpbootdir}/${pxedefault_conf}" \
-               "${dxs_exports_conf} ${exports_conf}" ; do
+               "${dxs_exports_conf} ${exports_conf}" \
+               "${dxs_client_conf} ${client_conf}" ; do
     set -- $cfile
-    ln -s ${dxs_conf}/${1}-${timestamp} ${2}${extension}
+
+    # check if file changed
+    lastfile=`ls -lt ${dxs_conf}/${1}* | awk '{print $8}'| sed -n "2,2p"`
+    diff ${dxs_conf}/${1}-${timestamp} ${lastfile} >/dev/null
+    if [ $? -eq 0 ] ; then
+      echo "Configuration file ${2} didn't change - leaving unchanged"
+      rm ${dxs_conf}/${1}-${timestamp}
+    else
+      # backing up orginial files / create files with .new extension
+      if [ -f ${2} -a ! -L ${2} ] ; then
+        if [ -z "$keep" ] ; then 
+          echo "Copying old ${2} to ${2}.original"
+          mv ${2} ${2}.original
+        else
+          echo "Keeping old ${2} and generate ${2}.new instead"
+        fi
+      elif [ -L ${2} ] ; then 
+        [ -z "$keep" ] && unlink ${2}
+      fi
+      # linking files 
+      ln -sf ${dxs_conf}/${1}-${timestamp} ${2}${extension}
+    fi
   done
 }
 
