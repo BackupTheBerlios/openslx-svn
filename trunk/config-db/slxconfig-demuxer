@@ -448,8 +448,6 @@ sub writePXEMenus
 			$pxeConfig .= $slxLabels;
 		}
 
-print "$pxeConfig\n";
-
 		# PXE uses 'cp850' (codepage 850) but our string is in utf-8, we have
 		# to convert in order to avoid showing gibberish on the client side...
 		use Encode 'from_to';
