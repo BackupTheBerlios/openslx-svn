@@ -173,7 +173,7 @@ configure() {
 
   ask "Path for client system: " rootdir $rootdir
   ask "Path for tftpboot: " tftpbootdir $tftpbootdir
-  ask "Which network do you want to use for DXS? (A.B.C.0) " netname $netname
+  ask "Which network do you want to use for DXS? (A.B.C.0): " netname $netname
   ask "Which netmask should be used? (255.B.C.0): " netmask $netmask
   ask "What is your servers IP for NFS, DHCP and TFTP? " server $server
   # noetig??
@@ -198,7 +198,9 @@ configure() {
   # list available kernels and allow to chose from
 
   # nfs / nbd / squash-fs?
-
+  ask "Would you like to use NBD? (y/N): " nbdyes $nbdyes
+  ask "Which kind of NBD export (ext2/squashfs)?: " nbdfs $nbdfs 
+  
 
   # password for pxeboot-menu (caution: you can easily retrieve it in clear
   # text!!)
@@ -207,14 +209,37 @@ configure() {
 
 
 copy_system() {
+  # allow generic (identical over different versions) or specific exclude
+  # files
+  if [ -e distro-specs/exclude-${client_distro}-${client_distro_ver} ] ; then
+    local excludefile="distro-specs/exclude-${client_distro}-${client_distro_ver}"
+  else
+    local excludefile="distro-specs/exclude-${client_distro}"
+  fi
+  echo $excludefile
   echo -e "\n\nSyncing system now\nPlease enter root password of client machine\n"
   rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-common \
-    --exclude-from=distro-specs/exclude-${client_distro}-${client_distro_ver} \
-    ${rsyncsource} ${rootdir} || { echo "Rsync failed" ; exit 1 ; }
+    --exclude-from=${excludefile} ${rsyncsource} ${rootdir} || \
+    { echo "Rsync failed" ; exit 1 ; }
 
   # generate error message in case rsync didn't work and exit.
 
-  # TODO: mksquashfs (background process)   
+}
+
+create_nbd() {
+  if [ "$nbdyes" = "yes" -o "$nbdyes" = "y" -o "$nbdyes" = "Y" ] ; then
+    # TODO: mksquashfs (background process)
+    if [ "$nbdfs" = "squashfs" ] ; then
+      echo -e "\nGenerating "
+      if `which mksquashfs` ; then
+        mksquashfs ${rootdir} ${rootdir}.squashfs &
+      else
+        echo -e "Tool 'mksquashfs' not found, skipping"
+      fi
+    else
+      echo -e "\nGenerating "
+    fi
+  fi
 }
 
 create_initrd() {

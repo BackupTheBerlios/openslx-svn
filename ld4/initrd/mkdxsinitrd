@@ -3,10 +3,10 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 31-03-2006
 #		Nico Dietrich
 #
-# Version:      0.3.1e
+# Version:      0.3.1f
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 
@@ -372,6 +372,9 @@ for i in ${FSMODULES}; do
   esac
 done
 fi
+
+# if unionfs
+cobi unionctl bin &>/dev/null || echo "Program unionctl not found"
 
 # distro specific additional stuff
 case "${DISTRO}" in 

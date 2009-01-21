@@ -2,11 +2,11 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 30-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 31-03-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.3d
+# Version:      0.2.3f
 
 # functions common for all distros
 errmsg="functions file contains a lot of script \
@@ -101,6 +101,11 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     # if unionfs should be used
     unionfs*)
       UNIONFS=1;;
+    # if cowloop should be used, only ontop of network block device and in 
+    # combination with classical fs, like ext2 useful
+    cowloop*)
+      COWLOOP=1
+      COWSIZE=${opts#cowloop=};;
     # dnbd server:port 
     dnbdroot=*)
       NBD=dnbd # name of kernel module
@@ -280,11 +285,6 @@ if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" ] ; then
   nfsmnt ${NFSROOT} ${MODPRV}
 fi
 
-# if additional sources should be used for a combined root filesystem
-if [ -n ${UNION} ] ; then
-  :
-fi
-
 # get the complete collection of kernel modules available
 mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
   error "  The requested modules directory does not exist. That could mean:\n\
@@ -299,12 +299,33 @@ hwautocfg &
 
 # try to use unionfs for rw access if available
 RWDIR=/dev/shm
-if [ -n "${UNIONFS}" ] ; then
+if [ -n "${UNIONFS}" -o -n "${UNION}" ] ; then
   modprobe ${MODPRV} unionfs || { 
     error "  Loading of UnionFS failed - Either module is not present or \
 module\n  does not match the running kernel. If you do not want to see this \
 \n  message remove the token 'unionfs' from kernel command line." nonfatal 
     UNIONFS=""; }
+fi
+if [ -n "${COWLOOP}" ] ; then
+  modprobe ${MODPRV} cowloop || {
+  error "  Loading of Copy On Write (COW - special block device) module \
+failed -\n  Either module is not present or module does not match the \
+running\n  kernel. If you do not want to see this message remove the token \
+'cowloop' from kernel command line." nonfatal
+  COWLOOP=""; }
+  if [ -z "${NBD}" -o -n "${UNIONFS}" ] ; then
+    error "  Loading of cow module is of no sense if no network block device \
+is used or\n  UnionFS was specified as read write layer too. Remove UnionFS \
+token from\n  kernel commandline if cowloop should be used instead."
+    COWLOOP="";
+  fi
+fi
+
+# if additional sources should be used for a combined root filesystem
+# probably more sources should be merged into union (${UNION} is defined)
+if [ -n "${UNION}" ] ; then
+  # unionctl
+  :
 fi
 
 # setup of client root filesystem dependent on the availability of UnionFS
@@ -315,13 +336,14 @@ if [ -n "${UNIONFS}" ] ; then
   mkdir -p ${RWDIR}/union ${RWDIR}/uniontmp
   mount -n -t tmpfs none ${RWDIR}/uniontmp
   mount -n --move /mnt /root
-  # probably more sources should be merged into union (${ADDFS} is defined)
-  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/root=${NFSRO}ro${ADDFS} \
+  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/root=${NFSRO}ro \
     none /mnt
   mkdir -p /mnt/uniontmp
   mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp
   # run ldconfig if not switched off via kernel command line
   [ -z "${NOLDSC}" ] && echo $msg && ldconfig /etc/ld.so.cache &
+elif [ -n "${COWLOOP}" -a -n "${NBD}" ] ; then
+  :
 else
   echo "Using bind mounts to ramdisk for rw access"
   mount -n -t tmpfs -o size=${TMPFSSIZE} ramfs ${RWDIR}
