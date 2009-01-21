@@ -417,10 +417,10 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
     ( if diskfm $hdpartnr ; then
         echo "$hdpartnr is mounted to /mnt/tmp at $(sysup)" > /tmp/tmpready
         echo -e "$hdpartnr\t/tmp\t\tauto\t\tdefaults\t 0 0" >> /tmp/fstab
-        part44=yes
       else
         echo "formatting failed for some reason ($(sysup))" > /tmp/tmpready
       fi ) &
+    part44=yes
     break
   done
   # put detected linux partitions into /etc/fstab with "noauto"

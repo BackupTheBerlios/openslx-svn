@@ -9,7 +9,7 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# configuration script for Gentoo linux distribution to configure OpenSLX
+# Configuration script for Gentoo linux distribution to configure OpenSLX
 # linux diskless clients (executed within initialramfs after genconfig) 
 
 # empty functions are defined at the beginning of /etc/functions
@@ -22,18 +22,6 @@ echo -e "# changes made to this file by $0 (initramfs from $date)" \
   > /etc/rc.conf
 # keytable is set by hwautocfg script (added just for convenience here)
 config_rc_entry "KEYMAP" "${KEYTABLE}" "conf.d/keymaps"
-}
-
-# udev service (fixme: deprecated, check and remove!!)
-udev_hotplug () {
-ln -s /bin/udevd /bin/udevstart && udevstart &
-if [ -x /bin/udevd ] ; then
-  export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)
-  export UDEVD_EVENT_TIMEOUT=1
-  echo "" > /proc/sys/kernel/hotplug
-  udevd &
-else error "$df_errudev" nonfatal
-fi
 }
 
 # linking runlevel scripts and defining execution order
