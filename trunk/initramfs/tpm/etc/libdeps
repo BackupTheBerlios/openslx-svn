@@ -1,0 +1,34 @@
+# whitespace-separated list containing libraries
+# that are required for some binaries to work...
+
+# tcsd requires libgcc_s, otherwise it exits after the
+# first connection socket is closed
+lib/libgcc_s.so.1
+
+# nss is required to connect to local and remote services:
+lib/libnss_compat.so.2
+lib/libnss_files.so.2
+
+################ deprecated ################
+# slxldd resolves the dependencies below...
+### lib/libpthread.so.0
+
+# tcsd:
+### lib/libdl.so.2
+### lib/libz.so.1
+
+# ssh/scp:
+### lib/libresolv.so.2
+### lib/libutil.so.1
+### lib/libnsl.so.1
+### lib/libcrypt.so.1
+### usr/lib/libopensc.so.2
+### usr/lib/libgssapi_krb5.so.2
+### usr/lib/libkrb5.so.3
+### usr/lib/libk5crypto.so.3
+### usr/lib/libscconf.so.2
+### usr/lib/libssl.so.0.9.8
+### usr/lib/libopenct.so.1
+### usr/lib/libpcsclite.so.1
+### usr/lib/libltdl.so.3
+### usr/lib/libkrb5support.so.0
