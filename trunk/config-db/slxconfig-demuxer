@@ -265,20 +265,18 @@ sub writePXEMenus
 		my @systemIDs = $openslxDB->aggregatedSystemIDsOfClient($client);
 		my @systems = $openslxDB->fetchSystemByID(\@systemIDs);
 		foreach my $system (@systems) {
-			my @infos = $openslxDB->aggregatedSystemFileInfosOfSystem($system);
-			foreach my $info (@infos) {
-				my $extSysID = externalIDForSystem($info);
-				my $append = $system->{kernel_params};
-				$append .= " initrd=$extSysID/initramfs";
-				$append .= " $clientAppend";
-				$append .= " rootfs=$info->{'export-uri'} file";
-				print PXE "LABEL openslx-$extSysID\n";
-#				print PXE "\tMENU DEFAULT\n";
-				print PXE "\tMENU LABEL ^$info->{label}\n";
-				print PXE "\tKERNEL $extSysID/kernel\n";
-				print PXE "\tAPPEND $append\n";
-				print PXE "\tIPAPPEND 1\n";
-			}
+			my $info = $openslxDB->aggregatedSystemFileInfoFor($system);
+			my $extSysID = externalIDForSystem($info);
+			my $append = $system->{kernel_params};
+			$append .= " initrd=$extSysID/initramfs";
+			$append .= " $clientAppend";
+			$append .= " rootfs=$info->{'export-uri'} file";
+			print PXE "LABEL openslx-$extSysID\n";
+#			print PXE "\tMENU DEFAULT\n";
+			print PXE "\tMENU LABEL ^$info->{label}\n";
+			print PXE "\tKERNEL $extSysID/kernel\n";
+			print PXE "\tAPPEND $append\n";
+			print PXE "\tIPAPPEND 1\n";
 		}
 		close(PXE);
  	}
@@ -349,20 +347,18 @@ sub writeSystemPXEFiles
 
 	my $export = $openslxDB->fetchExportByID($system->{export_id});
 	my $vendorOS = $openslxDB->fetchVendorOSByID($export->{vendor_os_id});
-	my @infos = $openslxDB->aggregatedSystemFileInfosOfSystem($system);
-	foreach my $info (@infos) {
-		my $kernelFile = $info->{'kernel-file'};
-		my $extSysID = externalIDForSystem($info);
-		my $pxeSysPath = "$pxePath/$extSysID";
-		if (-e $pxeSysPath) {
-			die _tr('PXE-system %s already exists!', $pxeSysPath);
-		}
-		mkdir $pxeSysPath;
-		vlog 1, _tr('copying kernel %s to %s/kernel', $kernelFile, $pxeSysPath);
-		system(qq[cp -p "$kernelFile" $pxeSysPath/kernel])		unless $dryRun;
-
-		generateInitalRamFS($info, $vendorOS, $pxeSysPath);
+	my $info = $openslxDB->aggregatedSystemFileInfoFor($system);
+	my $kernelFile = $info->{'kernel-file'};
+	my $extSysID = externalIDForSystem($info);
+	my $pxeSysPath = "$pxePath/$extSysID";
+	if (-e $pxeSysPath) {
+		die _tr('PXE-system %s already exists!', $pxeSysPath);
 	}
+	mkdir $pxeSysPath;
+	vlog 1, _tr('copying kernel %s to %s/kernel', $kernelFile, $pxeSysPath);
+	system(qq[cp -p "$kernelFile" $pxeSysPath/kernel])		unless $dryRun;
+
+	generateInitalRamFS($info, $vendorOS, $pxeSysPath);
 }
 
 sub writeDhcpConfig

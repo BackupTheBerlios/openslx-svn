@@ -116,14 +116,6 @@ sub _unique
 	return grep { !$seenIDs{$_}++; } @_;
 }
 
-sub _uniqueByKey
-{	# return given array filtered to unique key elements
-	my $key = shift;
-
-	my %seenIDs;
-	return grep { !$seenIDs{$_->{$key}}++; } @_;
-}
-
 ################################################################################
 ### data access interface
 ################################################################################
@@ -836,9 +828,9 @@ sub aggregatedClientIDsOfSystem
 	return _unique(@clientIDs);
 }
 
-sub aggregatedSystemFileInfosOfSystem
-{	# return aggregated list of hash-refs that contain information about
-	# the kernel- and initialramfs-files this system is using
+sub aggregatedSystemFileInfoFor
+{	# return aggregated information about the kernel and initialramfs
+	# this system is using
 	my $self = shift;
 	my $system = shift;
 
@@ -849,29 +841,19 @@ sub aggregatedSystemFileInfosOfSystem
 	my $kernelPath
 		= "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}/boot";
 
-	my $exportURI = $system->{'export_uri'};
+	my $exportURI = $export->{'uri'};
 	if ($exportURI !~ m[\w]) {
 		# auto-generate export_uri if none has been given:
-		my $type = $system->{'export_type'};
+		my $type = $export->{'type'};
 		my $serverIpToken = generatePlaceholderFor('serverip');
 		$exportURI
 			= "$type://$serverIpToken$openslxConfig{'export-path'}/$type/$vendorOS->{name}";
 	}
 
-	my @infos;
-	foreach my $sys ($system) {
-		next if !length($sys->{kernel});
-		my %info = %$sys;
-		$info{'kernel-file'} = "$kernelPath/$sys->{kernel}";
-		$info{'export-uri'} = $exportURI;
-		if (!defined $info{'name'}) {
-			# compose full name and label for system-variant:
-			$info{'name'} = "$system->{name}-$info{name_addition}";
-			$info{'label'} = "$system->{label} $info{label_addition}";
-		}
-		push @infos, \%info;
-	}
-	return _uniqueByKey('name', @infos);
+	my $info = { %$system };
+	$info->{'kernel-file'} = "$kernelPath/$system->{kernel}";
+	$info->{'export-uri'} = $exportURI;
+	return $info;
 }
 
 ################################################################################
