@@ -4,9 +4,9 @@
 #		several dhcp clients. The result is written in unified form
 #		to the /etc/machine-setup file
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
-#				Lars Mueller, 23-06-2006
-#				Oliver Tappe, 23-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-06-2006
+#               Lars Mueller, 23-06-2006
+#               Oliver Tappe, 23-06-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 
@@ -19,7 +19,7 @@ this is\n# intended, use dhclient instead or get them via tftp (to be \
 enabled\n# via kernel command line)."
 case $0 in
   *dhcpcd*)
-    dhcl="dhcpcd"; echo -e "$infomsg" >>/etc/machine-setup
+    dhcl="dhcpcd"; echo -e "$infomsg" >>/tmp/confviadhcp
     sed -e "s,',\",g;s,IPADDR,clientip,;s,NETMASK,subnet_mask," \
       -e "s,GATEWAY,gateway,;s,BROADCAST,broadcast_address," \
       -e "s,HOSTNAME,host_name,;s,DOMAIN,domain_name," \
@@ -45,6 +45,17 @@ command\n# line)." >>/tmp/confviadhcp
   ;;
   *pump*)
     dhcl="pump"; echo -e "$infomsg" >>/tmp/confviadhcp
+  ;;
+  *udhcpc*)
+    dhcl="udhcpc"; echo -e "$infomsg" >>/tmp/confviadhcp
+    unset infomsg HOME IFS mask lease interface
+    set | sed \
+      -e "s,^P.*,,;s,ntpsrv,ntp_servers,;s,ip,clientip," \
+      -e "s,serverid,serverip,;s,subnet,subnet_mask," \
+      -e "s,router,gateway,;s,hostname,host_name," \
+      -e "s,dns,domain_name_servers,;s,domain,domain_name," \
+      -e "s,broadcast,broadcast_address,;s,dhc.*,,;/^$/d" \
+        >>/tmp/confviadhcp
   ;;
 esac
 

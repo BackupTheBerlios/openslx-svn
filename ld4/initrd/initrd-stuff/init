@@ -2,7 +2,7 @@
 # Description:  main script for new type of initial ramdisk for
 #               linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-06-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - odlx.org project
@@ -200,7 +200,9 @@ else
   LOGFILE="/dev/null"
 fi
 # load network adaptor modules
-modprobe ${MODPRV} -a ${NWMODULES} || error "$init_errnwad"
+for mod in ${NWMODULES}; do
+  modprobe ${MODPRV} $mod || error "$init_errnwad"
+done
 # set up loopback networking (ipsetup - function defined in /etc/functions)
 ipsetup 127.0.0.1 255.0.0.0 0.0.0.0 127.255.255.255 lo
 # analyze ip information from the kernel command line and put parts

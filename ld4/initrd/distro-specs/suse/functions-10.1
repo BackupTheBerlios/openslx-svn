@@ -14,13 +14,13 @@ preinit () {
 # fake the existence of some helper binaries (which are not of any use
 # within initialramfs)
 for i in usb_id scsi_id vol_id edd_id ata_id path_id hwup ifup ; do
-  echo -e "#!/bin/sh\n:" >/sbin/$i
+  echo -e "#!/bin/ash\n:" >/sbin/$i
 done
 mkdir /lib/udev /usr/sbin
 for i in idedma.sh mount.sh rename_netiface create_floppy_devices ; do
-  echo -e "#!/bin/sh\n:" >/lib/udev/$i
+  echo -e "#!/bin/ash\n:" >/lib/udev/$i
 done
-echo -e "#!/bin/sh\n:" >/usr/sbin/alsactl
+echo -e "#!/bin/ash\n:" >/usr/sbin/alsactl
 chmod u+x /sbin/* /lib/udev/* /usr/sbin/*
 }
 

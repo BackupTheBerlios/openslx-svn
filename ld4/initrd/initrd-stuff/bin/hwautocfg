@@ -4,7 +4,7 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 26-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-06-2006
 #		Felix Endres
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
@@ -90,6 +90,7 @@ local ServerLayout='\tIdentifier\t"Simple Layout"\n
 local DRI='\tGroup\t\t"video"\n
 \tMode\t\t0666'
 
+# displayvars may overwrite the above settings
 displayvars
 
 if [ -n "$hw_graphic" ] ; then
@@ -395,7 +396,8 @@ fi
 
 # not rather precise ...
 if strinfile "SCSI" /tmp/hwsetup.info ; then
-  strinfile "CDROM" /tmp/hwsetup.info && modprobe -a ${MODPRV} sr_mod sg
+  strinfile "CDROM" /tmp/hwsetup.info && { modprobe ${MODPRV} sr_mod;
+    modprobe ${MODPRV} sg; }
   strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} sd_mod
 fi
 # fixme - psmouse entladen, falls nicht vorhanden
