@@ -137,8 +137,7 @@ fi
 # secure shell service
 config_sshd () {
 if [ "x$start_sshd" = "xyes" ] ; then
-  if [ -f /mnt/etc/init.d/sshd ] ; then
-    testmkd /mnt/var/lib/sshd; testmkd /mnt/var/lib/empty
+  if [ -f /mnt/etc/init.d/ssh ] ; then
     rllinker "sshd" "12" "10"
   fi
 fi

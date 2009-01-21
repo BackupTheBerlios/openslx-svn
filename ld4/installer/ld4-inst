@@ -190,7 +190,7 @@ configure() {
 
   # evtl. optional? --> besser in ein komplett eigenes Setup-Skript fuer
   # machine-setup
-  ask "Where automount home directories from? (A.B.C.D:/home-dir)" amt $server":/home"
+  ask "Where automount home directories from? (A.B.C.D:/home-dir): " amt $server":/home"
 
   # more information here!! set useful default
   ask "Which debug level should be used? " debuglevel $debuglevel
