@@ -92,7 +92,7 @@ foreach my $key (sort keys %cmdlineConfig) {
 		# config-path can't be changed, it is used to find settings.local
 	my $value = $cmdlineConfig{$key};
 	next if !defined $value;
-	vlog 0, _tr('setting %s to <%s>', $key, $value) unless $quiet;
+	vlog 0, _tr("setting %s to '%s'", $key, $value) unless $quiet;
 	$key =~ tr[-][_];
 	my $externalKey = "SLX_".uc($key);
 	if (!($settings =~ s[^\s*$externalKey=.*?$][$externalKey=$value]ms)) {
@@ -104,7 +104,7 @@ foreach my $key (sort keys %cmdlineConfig) {
 # ...remove any keys we should do away with...
 foreach my $key (@remove) {
 	if (!exists $cmdlineConfig{$key}) {
-		vlog 0, _tr('ignoring unknown key <%s>', $key);
+		vlog 0, _tr("ignoring unknown key '%s'", $key);
 		next;
 	}
 	vlog 0, _tr('removing %s', $key) unless $quiet;
@@ -118,7 +118,7 @@ foreach my $key (@remove) {
 if ($changeCount) {
 	my $f = "$openslxConfig{'config-path'}/settings.local";
 	open(SETTINGS, "> $f")
-		or die _tr('Unable to write local settings file <%s> (%s)', $f, $!);
+		or die _tr("Unable to write local settings file '%s' (%s)", $f, $!);
 	print SETTINGS $settings;
 	close(SETTINGS);
 }
@@ -129,7 +129,7 @@ if (scalar(keys %cmdlineSettings) > 0) {
 			$openslxDB->changeSettings({ $key => $cmdlineSettings{$key} });
 			$changeCount++;
 		} else {
-			die _tr("unknown settings key <%s>!\n", $key);
+			die _tr("unknown settings key '%s'!\n", $key);
 		}
 	}
 	$currSettings = $openslxDB->fetchSettings();
@@ -141,11 +141,11 @@ if ($verbose || !$changeCount) {
 	my $text = $changeCount ? "resulting settings:" : "current settings:";
 	print "\n"._tr($text)."\n";
 	foreach my $key (sort keys %openslxConfig) {
-		print qq[\t$key="$openslxConfig{$key}"\n];
+		print qq[\t$key='$openslxConfig{$key}'\n];
 	}
 	print "slxconf:\n";
 	foreach my $key (sort keys %$currSettings) {
-		print qq[\t$key="$currSettings->{$key}"\n];
+		print qq[\t$key='$currSettings->{$key}'\n];
 	}
 }
 
@@ -191,9 +191,9 @@ slxsettings [options] [action ...]
 
 =over 8
 
-=item B<<     <openslx-option>=<value> >>
+=item B<<     --<openslx-option>=<value> >>
 
-sets the specified openslx-option (without the leading '--') to the given value
+sets the specified openslx-option to the given value
 
 =item B<<     remove=<openslx-option> >>
 
