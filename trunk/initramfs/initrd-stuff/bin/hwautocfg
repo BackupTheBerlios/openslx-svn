@@ -359,7 +359,7 @@ if strinfile "SCSI" /tmp/hwsetup.info ; then
     modprobe ${MODPRV} sg;
     # just for compatibility to hwsetup (which generates links to scd*)
     ( waitfor /dev/sr0 1000 && for i in /dev/sr* ; do 
-      ln -s $i /dev/scd${i#/dev/sr} ; done; ) &
+      [ -e /dev/scd${i#/dev/sr} ] || ln -s $i /dev/scd${i#/dev/sr} ; done; ) &
     }
   strinfile "HD" /tmp/hwsetup.info && {
     modprobe ${MODPRV} sd_mod

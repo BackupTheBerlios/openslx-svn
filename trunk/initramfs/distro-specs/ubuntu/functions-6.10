@@ -28,12 +28,13 @@ config_distro () {
 # add the halt link to the 0 and 6 runlevel directories
   ln -sf ../init.d/halt /mnt/etc/rc0.d/S90halt
   ln -sf ../init.d/reboot /mnt/etc/rc6.d/S90reboot
+  sed -i '/halt.*-i/s/ -i / /' /mnt/etc/init.d/halt  
   # set default runlevel
   # how that is done for upstart??
   # needed lateron (by hwsetup? - fixme, check if already copied by
   # mkdxsinitrd!! If busybox is installed use tool directly ...)
-  /mnt/bin/mknod /dev/zero c 1 5
-  /mnt/bin/mknod /dev/mem c 1 1
+  [ -e /dev/zero ] || /mnt/bin/mknod /dev/zero c 1 5
+  [ -e /dev/mem ] || /mnt/bin/mknod /dev/mem c 1 1
 }
 
 # udev/hotplug - auto device discovery service
