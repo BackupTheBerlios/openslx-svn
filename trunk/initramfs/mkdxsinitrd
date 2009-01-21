@@ -410,6 +410,7 @@ fi
 # x86_64 for 64bit)
 # fixme: At the moment the busybox does not support ext2 filesystem tools
 cp ${SLX_SHARE_PATH}/busybox/busybox.${ARCH} ${INSTDIR}/bin/busybox
+slxldd --root-path=${ROOTDIR} ${INSTDIR}/bin/busybox >>${INSTDIR}/tmp/libraries
 for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
     date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \
     insmod id ip kill killall ln ls lsmod mdev mkdir \
