@@ -72,11 +72,11 @@ local stop="$3"
 # passed via configuration
 for i in rc2.d/K$stop$script rc3.d/K$stop$script \
          rc2.d/S$start$script rc3.d/S$start$script ; do
-  if ! [ -f ../$script ]; then
+  if ! [ -f /mnt/etc/init.d/$script ]; then
     echo "Target `pwd`../$script does not exist. Skipping links"
     break
   else 
-    ln -sf ../$script /mnt/etc/init.d/$i
+    ln -sf ../init.d/$script /mnt/etc/$i
     echo "Linked $script"
   fi
 done
@@ -138,7 +138,7 @@ fi
 config_sshd () {
 if [ "x$start_sshd" = "xyes" ] ; then
   if [ -f /mnt/etc/init.d/ssh ] ; then
-    rllinker "sshd" "12" "10"
+    rllinker "ssh" "12" "10"
   fi
 fi
 }
