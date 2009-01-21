@@ -68,9 +68,9 @@ sub bootstrap
 	my $baseURL = $self->{engine}->{baseURLs}->[0];
 	my $debootstrapCmd = unshiftHereDoc(<<"	END-OF-HERE");
 		/usr/sbin/debootstrap --arch $arch $releaseName \\
-		                      /slxbootstrap/slxfinal $baseURL
+							  /slxbootstrap/slxfinal $baseURL
 	END-OF-HERE
-	if (slxsystem("ash", "-c", "/bin/ash $debootstrapCmd")) {
+	if (slxsystem("ash", "-c", ". $debootstrapCmd")) {
 		die _tr("unable to run debootstrap (%s)", $!);
 	}
 	return;
