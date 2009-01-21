@@ -58,6 +58,7 @@ sub initialize
 	my $distroName = shift;
 	my $selectionName = shift;
 	my $protectSystemPath = shift;
+	my $cloneMode = shift;
 
 	if (!exists $supportedDistros{lc($distroName)}) {
 		print _tr("Sorry, distro '%s' is unsupported.\n", $distroName);
@@ -92,6 +93,7 @@ sub initialize
 		$vendorOSName .= "-$selectionName";
 	}
 	$self->{'vendor-os-name'} = $vendorOSName;
+	$self->{'clone-mode'} = $cloneMode;
 
 	# setup path to distribution-specific info:
 	my $distroInfoDir = "../lib/distro-info/$distro->{'base-name'}";
@@ -101,7 +103,8 @@ sub initialize
 	$self->{'distro-info-dir'} = $distroInfoDir;
 	$self->readDistroInfo();
 
-	if (!exists $self->{'distro-info'}->{'selection'}->{$selectionName}) {
+	if (!$self->{'clone-mode'}
+	&& !exists $self->{'distro-info'}->{'selection'}->{$selectionName}) {
 		die _tr("selection '%s' is unknown to system '%s'\n",
 				$selectionName, $distro->{'base-name'})
 			."These selections are available:\n\t"
@@ -125,7 +128,7 @@ sub installVendorOS
 {
 	my $self = shift;
 
-	$self->createSystemPaths();
+	$self->createSystemPath();
 
 	$self->setupStage1A();
 	my $pid = fork();
@@ -144,6 +147,20 @@ sub installVendorOS
 	$self->stage1C_cleanupBasicSystem();
 	$self->setupStage1D();
 	vlog 0, _tr("Vendor-OS <%s> installed succesfully.\n",
+				$self->{'vendor-os-name'});
+
+	$self->addInstalledVendorOSToConfigDB();
+}
+
+sub cloneVendorOS
+{
+	my $self = shift;
+	my $source = shift;
+
+	$self->createSystemPath();
+
+	$self->clone_fetchSource($source);
+	vlog 0, _tr("Vendor-OS <%s> cloned succesfully.\n",
 				$self->{'vendor-os-name'});
 
 	$self->addInstalledVendorOSToConfigDB();
@@ -184,7 +201,7 @@ sub addInstalledVendorOSToConfigDB
 									  { 'name' => $vendorOSName },
 									  'id');
 		if (defined $vendorOS) {
-			vlog 0, _tr("Vendor-OS <%s> already exists in OpenSLX-database!\n",
+			vlog 0, _tr("Vendor-OS <%s> already exists in OpenSLX-database.\n",
 						$vendorOSName);
 		} else {
 			my $id = addVendorOS($openslxDB, {
@@ -252,21 +269,13 @@ sub readDistroInfo
 	}
 }
 
-sub createSystemPaths
+sub createSystemPath
 {
 	my $self = shift;
 
-	# specify individual paths for the respective substages:
-	$self->{stage1aDir} = "$self->{'system-path'}/stage1a";
-	$self->{stage1bSubdir} = 'slxbootstrap';
-	$self->{stage1cSubdir} = 'slxfinal';
-
-	# we create *all* of the above folders by creating stage1cDir:
-	my $stage1cDir
-		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
-	if (system("mkdir -p $stage1cDir")) {
+	if (system("mkdir -p $self->{'system-path'}")) {
 		die _tr("unable to create directory '%s', giving up! (%s)",
-				$stage1cDir, $!);
+				$self->{'system-path'}, $!);
 	}
 }
 
@@ -337,6 +346,20 @@ sub setupStage1A
 	my $self = shift;
 
 	vlog 1, "setting up stage1a for $self->{'vendor-os-name'}...";
+
+	# specify individual paths for the respective substages:
+	$self->{stage1aDir} = "$self->{'system-path'}/stage1a";
+	$self->{stage1bSubdir} = 'slxbootstrap';
+	$self->{stage1cSubdir} = 'slxfinal';
+
+	# we create *all* of the above folders by creating stage1cDir:
+	my $stage1cDir
+		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
+	if (system("mkdir -p $stage1cDir")) {
+		die _tr("unable to create directory '%s', giving up! (%s)",
+				$stage1cDir, $!);
+	}
+
 	$self->stage1A_createBusyboxEnvironment();
 	$self->stage1A_setupResolver();
 	$self->stage1A_copyPrerequiredFiles();
@@ -631,6 +654,35 @@ sub stage1D_installPackageSelection
 					$selectionName);
 	} else {
 		$self->{'meta-packager'}->installSelection(join " ", @pkgs);
+	}
+}
+
+sub clone_fetchSource
+{
+	my $self = shift;
+	my $source = shift;
+
+	vlog 0, _tr("Cloning vendor-OS from <%s>...\n", $source);
+	my (@includeList, @excludeList);
+	foreach my $filterFile ("../lib/distro-info/clone-filter-common",
+							"$self->{'distro-info-dir'}/clone-filter") {
+		if (open(FILTER, "< $filterFile")) {
+			while(<FILTER>) {
+				push @includeList, $_ if /^\+\s+/;
+				push @excludeList, $_ if /^\-\s+/;
+			}
+			close(FILTER);
+		}
+	}
+	my $excludeIncludeList = join("", @includeList, @excludeList);
+	vlog 1, "using exclude-include-filter:\n$excludeIncludeList\n";
+	open(RSYNC, "| rsync -av --delete --exclude-from=- $source $self->{'system-path'}")
+		or die _tr("unable to start rsync for source '%s', giving up! (%s)",
+				   $source, $!);
+	print RSYNC $excludeIncludeList;
+	if (!close(RSYNC)) {
+		die _tr("unable to clone from source '%s', giving up! (%s)",
+				$source, $!);
 	}
 }
 
