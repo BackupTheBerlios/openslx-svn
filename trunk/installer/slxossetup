@@ -406,7 +406,6 @@ function slxossetup_busybox()
 
 function slxossetup_init()
 {
-	SLX_METADATA_PATH="${SLX_PRIVATE_PATH}/metadata/${SLX_SYSTEM_BASENAME}"
 	SLX_STAGE1_PATH="${SLX_PRIVATE_PATH}/stage1/${SLX_SYSTEM_BASENAME}"
 }
 
@@ -421,19 +420,14 @@ function slxossetup()
 			export YAST_IS_RUNNING="instsys"
 			GLOBAL_SETTINGS="BASEURL PACKAGEKEYS"
 			REPO_TYPE="rpm-md"
-			NAME_DEST_ROOT="rpm-root"
 			;;
 		*fedora*)
 			GLOBAL_SETTINGS="BASEURL PACKAGEKEYS"
 			REPO_TYPE="rpm-md"
-			NAME_DEST_ROOT="rpm-root"
 			;;
 		*debian*|*ubuntu**)
 			GLOBAL_SETTINGS="BASEURL COMPONENTS DISTRIBUTION"
 			REPO_TYPE="apt-deb"
-			NAME_DEST_ROOT="deb-root"
-			SLX_STAGE1_CREATE_DIR="/var/lib/dpkg/updates"
-			SLX_STAGE1_CREATE_FILE="/var/lib/dpkg/available /var/lib/dpkg/status"
 			X86_ARCH='i386'
 			;;
 		*) ErrorMsg 1 "Unkown system ${SLX_SYSTEM_BASENAME}. " ;;
