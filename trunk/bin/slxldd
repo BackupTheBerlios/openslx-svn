@@ -116,7 +116,7 @@ sub fetchLoaderConfigFile
 sub fetchLoaderConfig
 {
 	if (!-e "$rootPath/etc/ld.so.conf") {
-		die _tr("$rootPath/etc/ld.so.conf not found, maybe wrong root-path?\n");
+		die _tr("'%s' not found, maybe wrong root-path?\n", $rootPath/etc/ld.so.conf);
 	}
 	fetchLoaderConfigFile("$rootPath/etc/ld.so.conf");
 
@@ -148,7 +148,8 @@ sub addLib
 				# have library matching name, now check if the platform is ok, too:
 				my $libFileInfo = `file --dereference $folder/$lib 2>/dev/null`;
 				if ($?) {
-					die _tr("unable to fetch file info for $folder/$lib, giving up!\n");
+					die _tr("unable to fetch file info for '%s', giving up!\n",
+							$folder/$lib);
 				}
 				my $libBitwidth = ($libFileInfo =~ m[64-bit]i) ? 64 : 32;
 				if ($bitwidth != $libBitwidth) {
