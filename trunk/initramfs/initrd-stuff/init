@@ -27,10 +27,11 @@ for i in "/dev/mem c 1 1" "/dev/null c 1 3" "/dev/zero c 1 5" \
          "/dev/tty7 c 4 7" "/dev/tty8 c 4 8" "/dev/tty9 c 4 9" \
          "/dev/tty10 c 4 10" "/dev/tty c 5 0" "/dev/console c 5 1" \
          "/dev/ptmx c 5 2" "/dev/psaux c 10 1" "/dev/agpgart c 10 175" \
-         "/dev/fb0 c 29 0" "/dev/bootsplash p" "/dev/xconsole p"; do
+         "/dev/fb0 c 29 0" "/dev/xconsole p"; do
   mknod $i
 done
-mkdir -p ${devdir}/pts ${devdir}/shm ${devdir}/.udevdb ${devdir}/.udev
+mkdir -p ${devdir}/pts ${devdir}/shm ${devdir}/.udevdb ${devdir}/.udev \
+  ${devdir}/.initramfs
 
 # source functions file common for all distros, messages contains all error
 # and info output (for some reason the error output is not produced properly
@@ -111,7 +112,7 @@ echo "noldap" > /tmp/ldap-done
 file="yes"
 
 # splashy stuff
-nosplash=0
+export nosplash=0
 
 # read kernel commandline
 read KCMDLINE < /proc/cmdline
@@ -555,7 +556,7 @@ fi
 
 # splashy stuff
 [ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
-  && /bin/splashy_update "progress 20" 2>/dev/null
+  && /bin/splashy_update "progress 10" 2>/dev/null
 
 # if no type of root filesystem is passed via kernel command line try
 # information gathered from dhcp process (only valid for nfs)
@@ -699,7 +700,7 @@ fi
 
 # splashy stuff
 [ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
-  && /bin/splashy_update "progress 40" 2>/dev/null
+  && /bin/splashy_update "progress 50" 2>/dev/null
 
 # script for stuff to execute during early bootup
 d_mkrlscript init boot.slx "Running configuration postponed from InitRamFS"
@@ -719,10 +720,6 @@ if [ ${DEBUGLEVEL} = 22 ] ; then
 else
   servconfig &
 fi
-
-# splashy stuff
-[ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
-  && /bin/splashy_update "progress 50" 2>/dev/null
 
 for path in @@@COMDIRINDXS@@@ ${D_DIRINDXS} ${D_DIRINBINDMNT} ; do
   testmkd /mnt/${path}
@@ -745,10 +742,6 @@ proc\t\t/proc\t\tproc\t\tdefaults\t 0 0\ninitramdevs\t/dev\t\ttmpfs\
 echo -e "rootfs / rootfs rw 0 0\ninitramdevs /dev tmpfs rw\
  0 0" > /mnt/etc/mtab
 
-# splashy stuff
-[ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
-  && /bin/splashy_update "progress 60" 2>/dev/null
-
 # copy library cache if generated
 if [ -n "${ldsc}" ] ; then
   # creating library cache takes a while ...
@@ -761,6 +754,11 @@ if [ -n "${ldsc}" ] ; then
 else
   error "$init_infldcfg" nonfatal
 fi
+
+# splashy stuff
+[ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
+  && /bin/splashy_update "progress 80" 2>/dev/null
+
 # wait a while for hardware setup to complete and copy stuff to stage4
 waitfor /tmp/hwcfg 20000 || error "$init_errhw"
 [ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
@@ -803,10 +801,6 @@ if [ -d /initramfs/plugin-init.d ]; then
   done
 fi
 
-# splashy stuff
-[ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
-  && /bin/splashy_update "progress 70" 2>/dev/null
-
 # post init for some distro specific
 postinit
 [ -s /initramfs/postinit.local ] && {
@@ -827,10 +821,6 @@ for ticks in 0 1 2 5 10 20 30; do
   error "$init_wait" nonfatal
 done
 
-# splashy stuff
-[ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
-  && /bin/splashy_update "progress 80" 2>/dev/null
-
 mount 2>/dev/null | grep /lib/modules/${KERNEL} >/dev/null 2>&1 \
   && error "$init_errumnt"
 # check for inittab file (might fail for new style init -> upstart)
@@ -845,10 +835,6 @@ umount -n /sys || error "$init_errsys" nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1
 chmod 1777 /mnt/dev/shm /mnt/tmp /mnt/tmp/scratch 2>/dev/null
 mount -n --move /dev /mnt/dev
-
-# splashy stuff
-[ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
-  && /bin/splashy_update "progress 90" 2>/dev/null
 
 # kill hwautocfg, servconfig
 killall -9 hwautocfg servconfig 2>/mnt/dev/null
@@ -866,9 +852,6 @@ unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
 # splashy stuff
 [ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
   && /bin/splashy_update "progress 100" 2>/dev/null
-[ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
-  && /bin/splashy_update exit 2>/dev/null
-killall -9 splashy 2>/dev/null
 
 # new style of pivoting (switch_root or run-init)
 exec /bin/switch_root -c dev/console /mnt /sbin/init || error "$init_runinit"
