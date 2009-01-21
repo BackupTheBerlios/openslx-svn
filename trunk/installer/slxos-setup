@@ -245,7 +245,7 @@ format an rsync-uri has.
 
 =head2 Cloning an Operating System to Make a New Vendor-OS
 
-  slxos-setup clone suse-10.2-clone-my_server --source=my_server:/
+  slxos-setup clone suse-10.2-clone-my_server source=my_server:/
 
       clones the suse-10.2 system from server 'my_server' as a new vendor-OS,
       which will be named 'suse-10.2-clone-my_server'
