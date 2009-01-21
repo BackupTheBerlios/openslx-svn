@@ -65,7 +65,7 @@ my @aggregationExports = qw(
 my @supportExports = qw(
 	isAttribute mergeAttributes
 	externalIDForSystem externalIDForClient
-	externalAttrName
+	externalAttrName generatePlaceholderFor
 );
 
 @EXPORT = @accessExports;
@@ -867,7 +867,7 @@ sub aggregatedSystemFileInfosOfSystem
 	if ($exportURI !~ m[\w]) {
 		# auto-generate export_uri if none has been given:
 		my $type = $system->{'export_type'};
-		my $serverIpToken = '@@@server_ip@@@';
+		my $serverIpToken = generatePlaceholderFor('serverip');
 		$exportURI
 			= "$type://$serverIpToken$openslxConfig{'export-path'}/$type/$vendorOS->{path}";
 	}
@@ -944,6 +944,12 @@ sub externalAttrName
 {
 	my $attr = shift;
 	return substr($attr, 5);
+}
+
+sub generatePlaceholderFor
+{
+	my $varName = shift;
+	return '@@@'.$varName.'@@@';
 }
 
 1;
