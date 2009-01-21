@@ -139,12 +139,28 @@ sub initialize
 		exit 1;
 	}
 	my $support = $supportedDistros{lc($distroName)}->{support};
-	if ($actionType eq 'install' && $support !~ m[install]i) {
-		print _tr(
-			"Sorry, distro '%s' can not be installed, only cloned.\n", 
-			$distroName
-		);
-		exit 1;
+	if ($support !~ m[install]i) {
+		if ($actionType eq 'install') {
+			print _tr(
+				"Sorry, distro '%s' can not be installed, only cloned!\n", 
+				$distroName
+			);
+			exit 1;
+		}
+		elsif ($actionType eq 'update') {
+			print _tr(
+				"Sorry, vendor-OS '%s' has been cloned, don't know how to update it!\n", 
+				$distroName
+			);
+			exit 1;
+		}
+		elsif ($actionType eq 'shell') {
+			print _tr(
+				"Sorry, vendor-OS '%s' has been cloned, no support for chrooted shell available!\n", 
+				$distroName
+			);
+			exit 1;
+		}
 	}
 
 	# load module for the requested distro:
@@ -162,7 +178,7 @@ sub initialize
 	$distro->initialize($self);
 	$self->{distro} = $distro;
 
-	if ($actionType ne 'clone') {
+	if ($actionType =~ m{^(install|update|shell)}) {
 		# setup path to distribution-specific info:
 		my $sharedDistroInfoDir 
 			= "$openslxConfig{'base-path'}/share/distro-info/$distro->{'base-name'}";
@@ -203,7 +219,7 @@ sub initialize
 		= "$openslxConfig{'private-path'}/stage1/$self->{'vendor-os-name'}";
 	vlog(1, "vendor-OS path is '$self->{'vendor-os-path'}'");
 
-	if ($actionType ne 'clone') {
+	if ($actionType =~ m{^(install|update|shell)}) {
 		$self->createPackager();
 		$self->createMetaPackager();
 	}
