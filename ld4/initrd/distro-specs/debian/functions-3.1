@@ -12,11 +12,37 @@
 
 # distro specific stuff to initialize
 preinit () {
-  :
+  echo "Creating dhcp user"
+  echo "dhcp:x:101:">>/etc/group
+  echo "dhcp:x:101:101::/nonexistent:/bin/false" >>/etc/passwd
+
 }
 
 postinit () {
   :
+}
+
+# distro specific function called from servconfig script
+config_distro () {
+# add the halt link to the 0 and 6 runlevel directories
+  ln -sf ../init.d/halt /mnt/etc/rc0.d/S90halt
+  ln -sf ../init.d/reboot /mnt/etc/rc6.d/S90reboot
+  
+  # set default runlevel
+  sed -e "s/.*initdefault/id:${D_INITDEFAULT}:initdefault/" -i /mnt/etc/inittab
+}
+
+# AUS SuSE-9.3
+# udev/hotplug - auto device discovery service
+# Result: 1 is bad, 0 is good
+udev_hotplug () {
+  local result=1
+  [ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "$df_errhotpl" nonfatal
+  echo "Enabling hotplug/udev"
+  udevstart && result=0
+  udevtrigger && result=0
+  udevd -d || result=1
+  return $result
 }
 
 # distro specific general function called from servconfig script
@@ -39,8 +65,13 @@ local stop="$3"
 # passed via configuration
 for i in rc2.d/K$stop$script rc3.d/K$stop$script \
          rc2.d/S$start$script rc3.d/S$start$script ; do
-  ln -sf ../$script /mnt/etc/init.d/$i
-  echo "Linked $script"
+  if ! [ -f /mnt/etc/init.d/$script ]; then
+    echo "Target `pwd`../$script does not exist. Skipping links"
+    break
+  else 
+    ln -sf ../init.d/$script /mnt/etc/$i
+    echo "Linked $script"
+  fi
 done
 }
 

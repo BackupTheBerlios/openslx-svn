@@ -52,7 +52,34 @@ D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 
 usage()
 {
-  echo Here is how to use mkdxsinitrd
+  echo -e "mkdxsinitrd  [-gh] [-k Kernelversion] [-i Pfad] [-f Module] [-n Module] [-r Pfad] [-s Bildgröße]\n"
+  echo "OPTIONEN"
+  echo "  -g     Benutze glibc als Basisbibliothek in der ramdisk."
+  echo "  -h     Zeige Informationen zur Benutzung."
+  echo "  -k Kernelversion"
+  echo "        mkdxsinitrd  versucht  die  aktuellste  Kernelversion zu finden."
+  echo "        Falls  dies  nicht  klappt,  oder  eine   andere   Kernelversion"
+  echo "        gewünscht  ist  kann  diese  hier angegeben werden (funktioniert"
+  echo "        natürlich nur für auf dem  Hostsystem  vorhandene  Kernelversio‐"
+  echo "        nen)."
+  echo "  -i Pfad"
+  echo "        Optionale  Angabe wo die erstellte ramdisk hingeschrieben werden"
+  echo "        soll."
+  echo "  -f Modulliste"
+  echo "        Kernelmodule die benutzt werden  sollen  um  das  Rootfilesystem"
+  echo "        über das dem Netzwerk zu mounten (z.B. nfs, nbd dnbd)."
+  echo "  -n Modulliste"
+  echo "        Kernelmodule zum Betrieb der Clientnetzwerkkarten (z.B. e100 tg3"
+  echo "        via-rhine)."
+  echo "  -r Pfad"
+  echo "        Pfad zum Wurzelverzeichnis des zu exportierenden  Betriebsystems"
+  echo "        (z.B. /nfsroot)."
+  echo "  -s Bildgröße"
+  echo "        Größenangabe des splash images."
+  echo "  -d Name"
+  echo "        Name der Distribution der Betriebsystemvorlage"
+  echo "  -v Version"
+  echo "        Versionskennung der Distribution der Betriebsystemvorlage"
   exit 0
 }
 
@@ -229,11 +256,11 @@ while getopts :hgk:i:r:o:s:f:n:Sut:d:v:I:V:a: a ; do
     t)  INSTDIR=$OPTARG;;
     d)  DISTRO=$OPTARG;;
     v)  DISTRO_VER=$OPTARG;;
-    I)  NET_IF=$OPTARG;;
-    a)  acpi_dsdt="$OPTARG";;
-    S)  use_selinux=1;;
-    V)  vendor_init_script="$OPTARG";;
-    u)  sysfs_root=1
+    I)  NET_IF=$OPTARG;;         # Not in use 
+    a)  acpi_dsdt="$OPTARG";;    # Not in use
+    S)  use_selinux=1;;          # Not in use
+    V)  vendor_init_script="$OPTARG";; # Not in use
+    u)  sysfs_root=1             # Not in use
 	    use_udev=
 	    ;;
     h)  usage;;
@@ -291,6 +318,8 @@ case "${DISTRO}" in
     case "${DISTRO_VER}" in
       Sarge*|sarge*|3.1*|*)
         DISTRO_VER=3.1
+	mkdir -p ${INSTDIR}/lib/udev
+        cp -r ${ROOTDIR}/lib/udev/* ${INSTDIR}/lib/udev/
       ;;
     esac
   ;;
@@ -393,7 +422,7 @@ for bbins in \
 done
 
 # style of hotplug/udev/dev (for etc directories see above!!)
-for bbins in udev udevd udevstart
+for bbins in udev udevd udevstart udevtrigger
   do
   cobi ${bbins} bin &>/dev/null || echo "Program ${bbins} not found"
 done

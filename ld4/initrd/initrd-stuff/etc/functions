@@ -41,6 +41,8 @@ trigger_device_events () {
 # produce error message and if $2 is empty run (debug) shell 
 error () {
 local e_msg="$1"
+if [ -z "$DEBUGLEVEL" ]; then DEBUGLEVEL=0
+fi
 # check if LOGFILE is really writeable
 if [ -n "${LOGFILE}" ] ; then
   [ "${LOGFILE}" != "/dev/null" ] && \
@@ -140,7 +142,11 @@ case $ipcfg in
     ipconfig $ip::$gw:$nm:$if:none
   ;;
   ifconfig)
-    ifconfig $if $ip netmask $nm broadcast $bc
+    if [ "$ip" = "0.0.0.0" ]; then
+        ifconfig $if up
+    else
+        ifconfig $if $ip netmask $nm broadcast $bc
+    fi
     if [ "$gw" != "0.0.0.0" ] ; then
       route add default gw $gw
     fi
