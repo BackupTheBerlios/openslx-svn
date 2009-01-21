@@ -168,12 +168,13 @@ sub openslxInit
 		if ($verboseLevel >= 2) {
 			vlog(0, "reading config-file $f...");
 		}
-		my %config = ParseConfig(
+		my $configObject = Config::General->new(
 			-AutoTrue       => 1, 
 			-ConfigFile     => $f, 
 			-LowerCaseNames => 1,
 			-SplitPolicy    => 'equalsign',
 		);
+		my %config = $configObject->getall();
 		foreach my $key (keys %config) {
 			# N.B.: these config files are used by shell-scripts, too, so in
 			# order to comply with shell-style, the config files use shell
