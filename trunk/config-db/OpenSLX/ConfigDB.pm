@@ -2158,14 +2158,19 @@ sub mergeDefaultAndGroupAttributesIntoClient
 
 	# step over all groups this client belongs to
 	# (ordered by priority from highest to lowest):
-	my @groupIDs = $self->fetchGroupIDsOfClient($client->{id});
-	my @groups   =
-	  sort { $a->{priority} <=> $b->{priority} }
-	  $self->fetchGroupByID(\@groupIDs);
+	my @groupIDs = _unique(
+		$self->fetchGroupIDsOfClient(0), 
+		$self->fetchGroupIDsOfClient($client->{id})
+	);
+	my @groups
+		= sort { $a->{priority} <=> $b->{priority} }
+		  $self->fetchGroupByID(\@groupIDs);
 	foreach my $group (@groups) {
 		# merge configuration from this group into the current client:
-		vlog(3,
-		  _tr('merging from group %d:%s...', $group->{id}, $group->{name}));
+		vlog(
+			3,
+			_tr('merging from group %d:%s...', $group->{id}, $group->{name})
+		);
 		mergeAttributes($client, $group);
 	}
 
@@ -2251,8 +2256,10 @@ sub aggregatedClientIDsOfSystem
 		# add *all* client-IDs if the system is being referenced by
 		# the default client, as that means that all clients should offer
 		# this system for booting:
-		push @clientIDs,
-		  map { $_->{id} } $self->fetchClientByFilter(undef, 'id');
+		push(
+			@clientIDs,
+			map { $_->{id} } $self->fetchClientByFilter(undef, 'id')
+		);
 	}
 
 	# step over all groups this system belongs to:
@@ -2317,8 +2324,8 @@ sub aggregatedSystemFileInfoFor
 
 	# check if the specified kernel file really exists (follow links while
 	# checking) and if not, find the newest kernel file that is available.
-	my $kernelPath =
-	  "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}/boot";
+	my $kernelPath 
+		= "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}/boot";
 	my $kernelFile = "$kernelPath/$system->{kernel}";
 	while (-l $kernelFile) {
 		$kernelFile = followLink($kernelFile);
@@ -2409,7 +2416,8 @@ sub mergeAttributes
 	my $target = shift;
 	my $source = shift;
 
-	foreach my $key (grep { isAttribute($_) } keys %$source) {
+	foreach my $key (keys %$source) {
+		next if !isAttribute($key);
 		my $sourceVal = $source->{$key} || '';
 		my $targetVal = $target->{$key} || '';
 		if (length($sourceVal) && !length($targetVal)) {
