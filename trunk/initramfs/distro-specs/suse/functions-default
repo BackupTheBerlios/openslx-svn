@@ -87,7 +87,7 @@ if [ -e /mnt/etc/${D_INITDIR}/ntp ] ; then
       >>/mnt/etc/passwd
     echo -e "ntp:!:13099:0:99999:7:::" >>/mnt/etc/shadow
   fi
-  testmkd /mnt/var/lib/ntp/var/run/ntp &>/dev/null
+  testmkd /mnt/var/lib/ntp/var/run/ntp
   if [ "x$start_ntp" = "xyes" ] ; then
     rllinker "ntp" 7 14
   fi

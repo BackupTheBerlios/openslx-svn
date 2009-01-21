@@ -6314,7 +6314,7 @@
 0x5333	0x8c03	"Card:S3 ViRGE/MX (generic)"	"S3 Inc.|ViRGE/MX+MV"
 0x5333	0x8c10	"Card:S3 Savage (generic)"	"S3 Inc.|86C270-294 Savage/MX-MV"
 0x5333	0x8c11	"Card:S3 Savage (generic)"	"S3 Inc.|86C270-294 Savage/MX"
-0x5333	0x8c12	"Card:S3 Savage (generic, sw_cursor)"	"S3 Inc.|86C270-294 Savage/IX-MV"
+0x5333	0x8c12	"Card:S3 Savage (generic)"	"S3 Inc.|86C270-294 Savage/IX-MV"
 0x5333	0x8c13	"Card:S3 Savage (generic)"	"S3 Inc.|86C270-294 Savage/IX"
 0x5333	0x8c22	"Card:S3 Savage4"	"S3 Incorporated|86C508 SuperSavage 128/MX"
 0x5333	0x8c24	"Card:S3 Savage4"	"S3 Incorporated|SuperSavage/MX-/IX"
