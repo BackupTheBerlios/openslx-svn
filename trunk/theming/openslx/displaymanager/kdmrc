@@ -51,7 +51,7 @@ Language=
 EchoMode=OneStar
 ShowLog=false
 UseTheme=true
-Theme=/var/lib/openslx/themes/kdm
+Theme=/var/lib/openslx/themes/displaymanager
 UseBackground=false
 BackgroundCfg=/etc/opt/kde3/share/config/kdm/backgroundrc
 

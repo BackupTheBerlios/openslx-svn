@@ -164,11 +164,11 @@ initial_boot
 config_distro
 
 #############################################################################
-#
-# boot.local
+# boot.local (fixme: deprecated)
 if [ -n "$bootlocal_script" ]; then
-  echo -e "# entries added by $0:\n#\t$date\n\n\
-$bootlocal_script" >> /mnt/etc/${D_INITDIR}/boot.local
+  echo -e "# Option is deprecated and will be removed soon. Please put the \
+file to the ConfTGZ (rootfs/etc/${D_INITDIR}/boot.local)" >> \
+  /mnt/etc/${D_INITDIR}/boot.local
 fi
 
 #############################################################################
