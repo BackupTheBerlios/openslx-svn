@@ -111,6 +111,13 @@ sub addExportToConfigDB
 	return $res;
 }
 
+sub requiredFSMods
+{
+	my $self = shift;
+
+	return 'nbd squashfs';
+}
+
 ################################################################################
 ### implementation methods
 ################################################################################

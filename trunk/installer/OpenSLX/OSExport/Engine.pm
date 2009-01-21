@@ -158,6 +158,13 @@ sub purgeExport
 	$self->removeExportFromConfigDB();
 }
 
+sub requiredFSMods
+{
+	my $self = shift;
+
+	return $self->{exporter}->requiredFSMods();
+}
+
 ################################################################################
 ### implementation methods
 ################################################################################

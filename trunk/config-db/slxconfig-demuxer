@@ -354,13 +354,18 @@ sub generateInitalRamFS
 
 	my $vendorOS = $info->{'vendor-os'};
 
+	my $osExportEngine = instantiateClass("OpenSLX::OSExport::Engine");
+	$osExportEngine->initializeFromExisting($info->{export}->{name});
+
 	vlog 1, _tr('generating initialramfs %s/initramfs', $pxeVendorOSPath);
 	my $cmd = "$openslxConfig{'bin-path'}/mkdxsinitrd ";
-	if (length($info->{ramfs_nicmods}) > 0) {
-		$cmd .= qq[-n "$info->{ramfs_nicmods}" ];
+	if (length($info->{attr_ramfs_nicmods}) > 0) {
+		$cmd .= qq[-n "$info->{attr_ramfs_nicmods}" ];
 	}
-	if (length($info->{ramfs_fsmods}) > 0) {
-		$cmd .= qq[-f "$info->{ramfs_fsmods}" ];
+	my $fsMods = $info->{attr_ramfs_fsmods};
+	$fsMods .= ' '.$osExportEngine->requiredFSMods();
+	if (length($fsMods) > 0) {
+		$cmd .= qq[-f "$fsMods" ];
 	}
 	my $rootPath
 		= "$openslxConfig{'stage1-path'}/$vendorOS->{name}";

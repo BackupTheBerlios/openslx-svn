@@ -60,6 +60,13 @@ sub addExportToConfigDB
 	return $openslxDB->addExport($export);
 }
 
+sub requiredFSMods
+{
+	my $self = shift;
+
+	return '';
+}
+
 ################################################################################
 ### implementation methods
 ################################################################################
