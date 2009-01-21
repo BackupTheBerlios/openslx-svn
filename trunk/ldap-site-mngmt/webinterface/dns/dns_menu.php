@@ -7,18 +7,19 @@ function createDNSMenu($rollen , $mnr) {
     $hauptmenu = array(array("link" => "dns.php",
                              "text" => "&Uuml;bersicht",
                              "zugriff" => "alle"),
-    						  array("link" => "dns.php",
-                             "text" => "SOA Record",
-                             "zugriff" => array("MainAdmin")),
-                       array("link" => "dns.php",
-                             "text" => "INCLUDE Direktiven",
-                             "zugriff" => array("MainAdmin","ZoneAdmin")),
-                       array("link" => "dns.php",
-                             "text" => "Zonen Delgierung",
-                             "zugriff" => array("MainAdmin")),
-                       array("link" => "dns.php",
-                             "text" => "Resource Records",
-                             "zugriff" => array("MainAdmin","HostAdmin","ZoneAdmin")));
+    						  #array("link" => "dns.php",
+                       #      "text" => "SOA Record",
+                       #      "zugriff" => array("MainAdmin")),
+                       #array("link" => "dns.php",
+                       #      "text" => "INCLUDE Direktiven",
+                       #      "zugriff" => array("MainAdmin","ZoneAdmin")),
+                       #array("link" => "dns.php",
+                       #      "text" => "Zonen Delgierung",
+                       #      "zugriff" => array("MainAdmin")),
+                       #array("link" => "dns.php",
+                       #      "text" => "Resource Records",
+                       #      "zugriff" => array("MainAdmin","HostAdmin","ZoneAdmin"))
+                       );
 	 
 	 #$rollen = array_keys($roles);
 

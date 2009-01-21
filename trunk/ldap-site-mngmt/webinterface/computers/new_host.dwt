@@ -76,6 +76,15 @@
 					<input type='Text' name='attribs[hw-monitor]' value='{MONITOR}' size='30' class='medium_form_field'>
 				</td>
 			</tr>
+			<tr>
+			   <td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>DHCP: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				   <select name='dhcpcont' size='2' class='medium_form_selectbox'> 
+   	   	      <option selected value='none'>----------</option>
+   	   	      {DHCPSELECT}
+   	   	   </select>   
+   	   	   </td>
+			</tr>
 			
 		</table></td>
   	</tr>

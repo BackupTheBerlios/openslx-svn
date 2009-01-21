@@ -17,7 +17,21 @@ $sbmnr = $_POST['sbmnr'];
 $dhcp = htmlentities($dhcp);
 $olddhcp = htmlentities($olddhcp);
 
-
+# sonstige Attribute
+$attribs = $_POST['attribs'];
+if (count($attribs) != 0){
+	foreach (array_keys($attribs) as $key){
+		$atts[$key] = htmlentities($attribs[$key]);
+	}
+}
+#print_r($atts); echo "<br><br>";
+$oldattribs = $_POST['oldattribs'];
+if (count($oldattribs) != 0){
+	foreach (array_keys($oldattribs) as $key){
+		$oldatts[$key] = htmlentities($oldattribs[$key]);
+	}
+}
+#print_r($oldatts); echo "<br><br>";
 
 /*echo "new dhcp:"; print_r($dhcp); echo "<br>";
 echo "old dhcp:"; print_r($olddhcp); echo "<br>";
@@ -53,7 +67,7 @@ if ($dhcp != "none" && $dhcp != $olddhcp){
 	   if ($olddhcp != ""){
 	      echo "DHCP replace "; print_r($olddhcp); echo " with "; print_r($entrydhcp); echo "<br>";
    	   if ($result = ldap_mod_replace($ds,$hostDN,$entrydhcp)){
-   	      update_dhcpmtime();
+   	      update_dhcpmtime(array());
    	   	$mesg = "Rechner erfolgreich in DHCP <b>".$dhcpcn." [Abt.: ".$dhcpau."]</b> angemeldet<br><br>";
    	   }else{
    	   	$mesg = "Fehler beim &auml;ndern des DHCP Dienstes zu <b>".$dhcpcn."</b>!<br><br>";
@@ -64,7 +78,7 @@ if ($dhcp != "none" && $dhcp != $olddhcp){
 	      }
 	      echo "DHCP add "; print_r($entrydhcp); echo "<br>";
 	      if ($result = ldap_mod_add($ds,$hostDN,$entrydhcp)){
-	         update_dhcpmtime();
+	         update_dhcpmtime(array());
    	   	$mesg = "Rechner erfolgreich in DHCP <b>".$dhcpcn." [Abt.: ".$dhcpau."]</b> angemeldet<br><br>";
    	   }else{
    	   	$mesg = "Fehler beim &auml;ndern des DHCP Dienstes zu <b>".$dhcpcn."</b>!<br><br>";
@@ -80,7 +94,7 @@ if ($dhcp != "none" && $dhcp != $olddhcp){
 	   #}
 	   echo "DHCP delete "; echo "<br>";
 	   if ($result = ldap_mod_del($ds,$hostDN,$entrydhcp)){
-	      update_dhcpmtime();
+	      update_dhcpmtime(array());
 	   	$mesg = "Rechner erfolgreich aus DHCP gel&ouml;scht<br><br>";
 	   }else{
 	   	$mesg = "Fehler beim l&ouml;schen aus DHCP Dienst!<br><br>";
@@ -99,7 +113,7 @@ if ($fixedaddress != "none" && $fixedaddress != $oldfixedaddress){
       if ($oldfixedaddress != ""){
          echo "Fixed Address &auml;ndern"; echo "<br>";
          if ($result = ldap_mod_replace($ds,$hostDN,$entryfixadd)){
-            update_dhcpmtime();
+            update_dhcpmtime(array());
    	   	$mesg = "Option Fixed-Address erfolgreich auf <b>".$fixedaddress."</b> ge&auml;ndert<br><br>";
    	   }else{
    	   	$mesg = "Fehler beim &auml;ndern der Option Fixed-Address auf <b>".$fixedaddress."</b>!<br><br>";
@@ -107,7 +121,7 @@ if ($fixedaddress != "none" && $fixedaddress != $oldfixedaddress){
    	}else{
          echo "Fixed Address auf IP Adresse setzen"; echo "<br>";
          if ($result = ldap_mod_add($ds,$hostDN,$entryfixadd)){
-            update_dhcpmtime();
+            update_dhcpmtime(array());
    	   	$mesg = "Option Fixed-Address erfolgreich auf <b>".$fixedaddress."</b> gesetzt<br><br>";
    	   }else{
    	   	$mesg = "Fehler beim setzen der Option Fixed-Address auf <b>".$fixedaddress."</b>!<br><br>";
@@ -117,12 +131,85 @@ if ($fixedaddress != "none" && $fixedaddress != $oldfixedaddress){
       $entryfixadd ['dhcpoptfixed-address'] = array();
       echo "No Fixed Address"; echo "<br>";
 	   if ($result = ldap_mod_del($ds,$hostDN,$entryfixadd)){
-	      update_dhcpmtime();
+	      update_dhcpmtime(array());
 	   	$mesg = "Option Fixed-Address erfolgreich gel&ouml;scht<br><br>";
 	   }else{
 	   	$mesg = "Fehler beim l&ouml;schen der Option Fixed-Address!<br><br>";
 	   }
    }
+}
+
+#####################################
+# Restliche Attribute (u.a. Description)
+
+$entryadd = array();
+$entrymod = array();
+$entrydel = array();
+
+foreach (array_keys($atts) as $key){
+	
+	if ( $oldatts[$key] == $atts[$key] ){
+	
+	}
+	if ( $oldatts[$key] == "" && $atts[$key] != "" ){
+		# hier noch Syntaxcheck
+		$entryadd[$key] = $atts[$key];
+	}
+	if ( $oldatts[$key] != "" && $atts[$key] != "" && $oldatts[$key] != $atts[$key] ){
+		# hier noch Syntaxcheck
+		$entrymod[$key] = $atts[$key];
+	}
+	if ( $oldatts[$key] != "" && $atts[$key] == "" ){
+		# hier noch Syntaxcheck
+		$entrydel[$key] = $oldatts[$key];
+	}
+}
+
+#print_r($entryadd); echo "<br>";
+#print_r($entrymod); echo "<br>";
+#print_r($entrydel); echo "<br>";
+
+
+if (count($entryadd) != 0 ){
+	#print_r($entryadd); echo "<br>";
+	#echo "neu anlegen<br>"; 
+	foreach (array_keys($entryadd) as $key){
+		$addatts .= "<b>".$key."</b>,";
+	}
+	if(ldap_mod_add($ds,$hostDN,$entryadd)){
+		$mesg = "Attribute ".$addatts." erfolgreich eingetragen<br><br>";
+		update_dhcpmtime(array());
+	}else{
+		$mesg = "Fehler beim eintragen der Attribute ".$addatts."<br><br>";
+	}
+}
+
+if (count($entrymod) != 0 ){
+	#print_r($entrymod); echo "<br>";
+	#echo "&auml;ndern<br>";
+	foreach (array_keys($entrymod) as $key){
+		$modatts .= "<b>".$key."</b>,";
+	}
+	if(ldap_mod_replace($ds,$hostDN,$entrymod)){
+		$mesg = "Attribute ".$modatts." erfolgreich geaendert<br><br>";
+		update_dhcpmtime(array());
+	}else{
+		$mesg = "Fehler beim aendern der Attribute ".$modatts."<br><br>";
+	}
+}
+
+if (count($entrydel) != 0 ){
+	#print_r($entrydel); echo "<br>";
+	#echo "l&ouml;schen<br>";
+	foreach (array_keys($entrydel) as $key){
+		$delatts .= "<b>".$key."</b>,";
+	}
+	if(ldap_mod_del($ds,$hostDN,$entrydel)){
+		$mesg = "Attribute ".$delatts." erfolgreich geloescht<br><br>";
+      update_dhcpmtime(array());
+	}else{
+		$mesg = "Fehler beim loeschen der Attribute ".$delatts."<br><br>";
+	}
 }
 
 

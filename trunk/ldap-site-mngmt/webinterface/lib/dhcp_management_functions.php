@@ -18,18 +18,45 @@ $ldapError = null;
 
 ###################################################################################################
 
-# immer wenn ein DHCP Objekt geändert wird (DHCP modify time aktualisieren)
-function update_dhcpmtime(){
+# wenn DHCP Objekte geändert werden DHCP modify time der AU aktualisieren, und auch der AUs 
+# referenzierter Objekte (Subnetz, RBS Dhcp Optionen) aktualisieren 
+function update_dhcpmtime($au_array){
 
    global $ds, $auDN, $ldapError;
    
    $entry ['dhcpmtime'] = time();
+   
+   # eigene AU
    $results = ldap_mod_replace($ds,$auDN,$entry);
 	if ($results){
-      echo "<br><b>dhcpMTime</b> erfolgreich aktualisiert!<br>" ;
-      return 1;
+      echo "<br><b>dhcpMTime</b> erfolgreich in AU ".$auDN." aktualisiert!<br>" ;
+      #return 1;
    }else{
       echo "<br>Fehler beim Aktualisieren der <b>dhcpMTime</b>!<br>" ;
+   }
+   
+   # andere AUs
+	if ( count($au_array) != 0 ) {
+		$au_array = array_unique($au_array);
+	   # Bind als DHCP Manager
+	   $dhcp_uid = "dhcpmanager";
+		$dhcp_userPassword = "dhcpman02";
+	   if (!($dhcp_ds = uniLdapConnect($dhcp_uid,$dhcp_userPassword))){
+			echo "Konnte nicht als <b>DHCP-Manager</b> mit LDAP Server verbinden";
+			die;
+		}else{
+			#echo "DHCP BIND erfolgreich";
+		   foreach ($au_array as $au){
+			   $results = ldap_mod_replace($dhcp_ds,$au,$entry);
+				if ($results){
+			      echo "<b>dhcpMTime</b> erfolgreich in AU ".$au." aktualisiert!<br>" ;
+					#return 1;
+			   }else{
+			      echo "<br>Fehler beim Aktualisieren der <b>dhcpMTime</b>!<br>" ;
+			   }
+		   }
+	   ldap_unbind($dhcp_ds);
+	   }
    }
 }
 
@@ -270,7 +297,7 @@ function add_dhcpservice ($dhcpserviceName,$dhcpoffer,$atts){
 }
 
 
-
+# Löschen von Referenzen (dhcpHlpService) auf DHCP Service Objekt
 function cleanup_del_dhcpservice ($dhcpserviceDN){
    
    global $ds, $suffix, $auDN, $ldapError;
@@ -289,7 +316,7 @@ function cleanup_del_dhcpservice ($dhcpserviceDN){
 }
 
 
-
+# Anpassen von Referenzen auf DHCP Service Objekt an neuen DN
 function adjust_dhcpservice_dn ($newdhcpserviceDN,$dhcpserviceDN){
    
    global $ds, $suffix, $auDN, $ldapError;
@@ -318,7 +345,7 @@ function alternative_dhcpobjects($objecttype,$objectDN,$ip){
    $expip = explode('.',$ip);
    $subnetDN = "";
    
-   if ($objecttype == "subnet"){
+   /*if ($objecttype == "subnet"){
       # alternative DHCP Dienstobjekte eigene AU/übergeordnete AUs
       $servarray = alternative_dhcpservices("");
       #print_r($servarray); echo "<br>";
@@ -337,7 +364,7 @@ function alternative_dhcpobjects($objecttype,$objectDN,$ip){
    	      }
          }
       }
-   }
+   }*/
    
    if ($objecttype == "service"){
       # alternative DHCP Dienstobjekte eigene AU/übergeordnete AUs
@@ -348,7 +375,7 @@ function alternative_dhcpobjects($objecttype,$objectDN,$ip){
 		      $alt_dhcp[] = $servarray[$i];
 	      }
       }
-      # Subnetz entsprechend IP
+      /*# Subnetz entsprechend IP
       $subarray = alternative_dhcpsubnets($objectDN);
       #print_r($subarray);
       if (count($subarray) != 0){
@@ -369,7 +396,7 @@ function alternative_dhcpobjects($objecttype,$objectDN,$ip){
    		      $alt_dhcp[] = $subarray[$i];
    	  	   }
    	   }
-      }
+      }*/
    }
    
    if ($objecttype == "nodhcp"){
@@ -381,7 +408,7 @@ function alternative_dhcpobjects($objecttype,$objectDN,$ip){
 		      $alt_dhcp[] = $servarray[$i];
 	      }
       }
-      # Subnetz entsprechend IP
+      /*# Subnetz entsprechend IP
       $subarray = alternative_dhcpsubnets($objectDN);
       #print_r($subarray);
       if (count($subarray) != 0){
@@ -402,7 +429,7 @@ function alternative_dhcpobjects($objecttype,$objectDN,$ip){
    		      $alt_dhcp[] = $subarray[$i];
    	  	   }
    	   }
-      }
+      }*/
    }
    #echo "<br>";print_r($alt_dhcp);
    return $alt_dhcp;
@@ -461,8 +488,8 @@ function add_dhcpsubnet ($cn,$dhcpservice,$netmask,$atts){
       	
       	if ($result = ldap_add($ds, $dhcpsubnetDN, $entrydhcp)){
       	   printf("Subnet <b>%s / %s</b> erfolgreich eingetragen",$cn,$netmask);
+				update_dhcpmtime(array());      	   
       	   return 1;
-      	   update_dhcpmtime();
       	   #if ( check_ip_in_subnet($range1,$cn) && check_ip_in_subnet($range2,$cn)){
       	   #   $dhcprange = implode('_',array($range1,$range2));
 				#   if ( $range = new_ip_dhcprange($dhcprange,$dhcpsubnetDN,$auDN) ){
@@ -503,7 +530,7 @@ function delete_dhcpsubnet($subnetDN,$cn){
       $results = ldap_mod_add($ds,$auDN,$entry);
    	if ($results){
    	   merge_ipranges($auDN);
-   	   update_dhcpmtime();
+   	   update_dhcpmtime(array());
    	   return 1;
 		}else{
 	      return 0;
@@ -555,7 +582,7 @@ function modify_subnet_dn($subnetDN,$newsubnetDN){
    		$results = ldap_mod_replace($ds,$auDN,$entry);
    		if ($results){
    		   merge_ipranges($auDN);
-   		   update_dhcpmtime();
+   		   update_dhcpmtime(array());
    	      echo "<br>FIPBs erfolgreich angepasst!<br>" ;
    	      return 1;
    	   }else{

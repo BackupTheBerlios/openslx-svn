@@ -5,7 +5,7 @@ $hostname = $_POST['hostname'];
 $hostdesc = $_POST['hostdesc'];
 $mac = $_POST['mac'];
 $ip = $_POST['ip'];
-
+$dhcp = $_POST['dhcpcont'];
 
 $hostname = htmlentities($hostname);
 $hostdesc = htmlentities($hostdesc);
@@ -67,12 +67,14 @@ if ( $hostname != ""){
 		$hostDN = "HostName=".$hostname.",cn=computers,".$auDN;
 		# print_r($hostDN); echo "<br>";
 		
-		if (add_host($hostDN,$hostname,$hostdesc,$mac,$ip,$atts)){			
+		if (add_host($hostDN,$hostname,$hostdesc,$mac,$ip,$atts,$dhcp)){			
 			$mesg .= "<br>Neuer Rechner erfolgreich angelegt<br>";
 		}
 		else{
 			$mesg .= "<br>Fehler beim anlegen des Rechners!<br>";
 		}
+		
+		# DHCP
 		
 		$url = 'hostoverview.php';
 	}

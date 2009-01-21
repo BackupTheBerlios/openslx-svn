@@ -23,9 +23,9 @@ function createIPMenu($rollen , $mnr) {
     						  array("link" => $iprechnerlink,
                              "text" => "IP Adressen Rechner",
                              "zugriff" => array("MainAdmin","HostAdmin")),
-                       array("link" => $ipdhcplink,
-                             "text" => "IP Adressen DHCP",
-                             "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")),
+                       #array("link" => $ipdhcplink,
+                       #      "text" => "IP Adressen DHCP",
+                       #      "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")),
                        array("link" => $ipdeleglink,
                              "text" => "Delegierte IP Bereiche",
                              "zugriff" => array("MainAdmin")));

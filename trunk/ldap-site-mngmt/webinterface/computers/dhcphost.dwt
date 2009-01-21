@@ -32,6 +32,21 @@
 			</tr>
 			
 			   {HOST_DHCPOPT}
+			   
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'><b>Default Lease Time:</b></td>
+				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+					<input type='Text' name='attribs[dhcpoptdefault-lease-time]' value='{DEFAULTLEASE}' size='30' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[dhcpoptdefault-lease-time]' value='{DEFAULTLEASE}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Max Lease Time:</b></td>
+				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[dhcpoptmax-lease-time]' value='{MAXLEASE}' size='30' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[dhcpoptmax-lease-time]' value='{MAXLEASE}'> &nbsp;
+				</td>
+			</tr>
 
 		</table></td>
   	</tr>

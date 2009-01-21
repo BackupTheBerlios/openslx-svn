@@ -3,6 +3,7 @@ include('../standard_header.inc.php');
 
 $hostDN = $_POST['dn'];
 $hostname = $_POST['name'];
+$dhcphlpcont = $_POST['dhcphlpcont'];
 $hostDN = htmlentities($hostDN);
 $hostname = htmlentities($hostname);
 
@@ -28,7 +29,9 @@ echo "
 if ( $hostDN != ""){
 	
 	if ( delete_host($hostDN) ){
-      update_dhcpmtime();
+		if ( $dhcphlpcont != "" ){
+      	update_dhcpmtime(array());
+      }
 		$mesg = "Rechner <b>".$hostname."</b> erfolgreich gel&ouml;scht!<br><br>";
 	}
 	else{

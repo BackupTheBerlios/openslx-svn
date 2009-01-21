@@ -1,0 +1,32 @@
+<table border='0' cellpadding='5' cellspacing='0' width='90%'> 
+  	<tr>
+  		<td colspan='2'><h3>Modul - AU Management: </h3></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr>
+  		<td>
+  		<p>Dieses Modul dient der Verwaltung ihrer Abteilung oder Administrativen Einheit 
+  		(Administrative Unit - AU).<br>
+  		Benutzen Sie die Navigation links, um die einzelnen Verwaltungsbereiche anzusteuern:</p>
+  		<ul>
+  			<li><p><b>Eigene AU</b></p>
+  					Hier erhalten Sie eine &Uuml;bersicht &uuml;ber Ihre Administrative Unit. Sie k&ouml;nnen bestimmte 
+  					Daten bearbeiten, z.B. den Name(cn) oder die Beschreibung. Zudem k&ouml;nnen Sie Statistiken 
+  					zu Ihrer AU einsehen.
+  					   
+  				</li>
+  			<li><p><b>Untergeordnete AUs</b></p>
+  					Hier erhalten Sie eine &Uuml;bersicht Ihrer untergeordneten eigenst&auml;ndigen Administrativen 
+  					Einheiten. Sie k&ouml;nnen diese bearbeiten und l&ouml;schen. 
+  				</li>
+  			<li><p><b>Neue untergeordnete AUs</b></p>
+  					Hier k&ouml;nnen Sie eine neue untergeordnete eigenst&auml;ndigen AU anlegen. 
+  				</li>
+  		</ul>
+  		
+  		</td>
+  	</tr>
+
+</table>

@@ -283,7 +283,7 @@ if (count($entrydel) != 0 ){
 }
 
 
-update_dhcpmtime();
+update_dhcpmtime(array());
 
 $mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>				
 			Falls nicht, klicken Sie hier <a href=".$url." style='publink'>back</a>";

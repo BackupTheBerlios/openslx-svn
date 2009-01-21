@@ -3,7 +3,7 @@
     #Pfad festlegen wo die Anwendungsskripte sich befinden
     #$START_PATH="http://132.230.4.150/test/";
     #$START_PATH="https://132.230.9.56/lsm/";
-    $START_PATH="https://dhcp.uni-freiburg.de/lsm/";
+    $START_PATH="https://dhcp.uni-freiburg.de/";
 
     # Anlegen einer Variablen für den Speicherort von den CSVs
     # $TMPPATH_CSV="/home/gruppe1/public_html/htdocs/";

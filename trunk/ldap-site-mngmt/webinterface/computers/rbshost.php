@@ -108,8 +108,8 @@ if ($rbsDN == ""){
 				</tr>";
 	
 	$rbs_dhcpopt = "";
-}
 
+}
 
 
 $template->assign(array("HOSTDN" => $hostDN,
@@ -170,43 +170,46 @@ if (count($hostpxeconfigs) != 0){
    }
 }
 
-# Default PXEs des RBS 
-$defaultpxeconfigs = get_pxeconfigs($rbsDN,array("dn","cn","description","timerange","filename"));
 
+# Default PXEs des RBS 
 $template->assign(array("DEFPXEDN" => "",
-								"DEFPXECN" => "Keine PXE Config angelegt",
-								"DEFPXEDESC" => "",
-								"DEFPXETR" => "",));
+   								"DEFPXECN" => "Keine PXE Config angelegt",
+   								"DEFPXEDESC" => "",
+   								"DEFPXETR" => "",));
 $template->define_dynamic("Defpxes", "Webseite");
 
-if (count($defaultpxeconfigs) != 0){
-   for ($i=0;$i<count($defaultpxeconfigs);$i++){
-      if ($defaultpxeconfigs[$i]['filename'] == "default"){
-      $defpxelink = "<a href='showpxe.php?dn=".$defaultpxeconfigs[$i]['dn']."&mnr=1&sbmnr=".$sbmnr."&mcnr=-1&hostdn=".$hostDN."' class='headerlink'>".$defaultpxeconfigs[$i]['cn']."</a>";
-      
-      $deftrange = "";
-   	if (count($defaultpxeconfigs[$i]['timerange']) > 1 ){
-   		foreach ($defaultpxeconfigs[$i]['timerange'] as $tr){
-   			$exptime = array_merge(explode('_',$tr), array($defaultpxeconfigs[$i]['cn']));
-   			$timeranges[$i][] = $exptime; # Für grafische Wo-Ansicht
-   			if ($exptime[0] == "X"){$exptime[0]="t&auml;glich";}
-   			# if ($exptime[1] == "X" && $exptime[2] == "X"){$exptime[1] = ""; $exptime[2]= "";}
-   			$deftrange .= $exptime[0].", von ".$exptime[1].":00 bis ".$exptime[2].":59 <br> "; 
-   		}
-   	}else{
-   		$exptime = array_merge(explode('_',$defaultpxeconfigs[$i]['timerange']), array($defaultpxeconfigs[$i]['cn']));
-   		$timeranges[$i] = $exptime; # Für grafische Wo-Ansicht
-   		if ($exptime[0] == "X"){$exptime[0]="t&auml;glich";}
-   		# if ($exptime[1] == "X" && $exptime[2] == "X"){$exptime[1] = ""; $exptime[2]= "";}
-   		$deftrange .= $exptime[0].", von ".$exptime[1].":00 bis ".$exptime[2].":59"; 
-   	}
-      
-      $template->assign(array("DEFPXEDN" => $defaultpxeconfigs[$i]['dn'],
-   								"DEFPXECN" => $defpxelink,
-              			      "DEFPXEDESC" => $defaultpxeconfigs['description'],
-              			      "DEFPXETR" => $deftrange, ));
-   	$template->parse("DEFPXES_LIST", ".Defpxes");
-   	}
+if ($rbsDN != ""){
+   $defaultpxeconfigs = get_pxeconfigs($rbsDN,array("dn","cn","description","timerange","filename"));
+   
+   if (count($defaultpxeconfigs) != 0){
+      for ($i=0;$i<count($defaultpxeconfigs);$i++){
+         if ($defaultpxeconfigs[$i]['filename'] == "default"){
+         $defpxelink = "<a href='showpxe.php?dn=".$defaultpxeconfigs[$i]['dn']."&mnr=1&sbmnr=".$sbmnr."&mcnr=-1&hostdn=".$hostDN."' class='headerlink'>".$defaultpxeconfigs[$i]['cn']."</a>";
+         
+         $deftrange = "";
+      	if (count($defaultpxeconfigs[$i]['timerange']) > 1 ){
+      		foreach ($defaultpxeconfigs[$i]['timerange'] as $tr){
+      			$exptime = array_merge(explode('_',$tr), array($defaultpxeconfigs[$i]['cn']));
+      			$timeranges[$i][] = $exptime; # Für grafische Wo-Ansicht
+      			if ($exptime[0] == "X"){$exptime[0]="t&auml;glich";}
+      			# if ($exptime[1] == "X" && $exptime[2] == "X"){$exptime[1] = ""; $exptime[2]= "";}
+      			$deftrange .= $exptime[0].", von ".$exptime[1].":00 bis ".$exptime[2].":59 <br> "; 
+      		}
+      	}else{
+      		$exptime = array_merge(explode('_',$defaultpxeconfigs[$i]['timerange']), array($defaultpxeconfigs[$i]['cn']));
+      		$timeranges[$i] = $exptime; # Für grafische Wo-Ansicht
+      		if ($exptime[0] == "X"){$exptime[0]="t&auml;glich";}
+      		# if ($exptime[1] == "X" && $exptime[2] == "X"){$exptime[1] = ""; $exptime[2]= "";}
+      		$deftrange .= $exptime[0].", von ".$exptime[1].":00 bis ".$exptime[2].":59"; 
+      	}
+         
+         $template->assign(array("DEFPXEDN" => $defaultpxeconfigs[$i]['dn'],
+      								"DEFPXECN" => $defpxelink,
+                 			      "DEFPXEDESC" => $defaultpxeconfigs['description'],
+                 			      "DEFPXETR" => $deftrange, ));
+      	$template->parse("DEFPXES_LIST", ".Defpxes");
+      	}
+      }
    }
 }
 

@@ -62,7 +62,7 @@ function modify_host_dn($hostDN, $newhostDN){
 
 
 # Rechner neu anlegen
-function add_host($hostDN,$hostname,$hostdesc,$mac,$ip,$atts){
+function add_host($hostDN,$hostname,$hostdesc,$mac,$ip,$atts,$dhcp){
 	
 	global $ds, $suffix, $auDN, $assocdom, $ldapError;
 	
@@ -73,7 +73,12 @@ function add_host($hostDN,$hostname,$hostdesc,$mac,$ip,$atts){
 	$entryhost ["hostname"] = $hostname;
 	$entryhost ["domainname"] = $assocdom;
 	if ($hostdesc != ""){$entryhost ["description"] = $hostdesc;}
-	if ($mac != ""){$entryhost ["hwaddress"] = $mac;}
+	if ($mac != ""){
+		$entryhost ["hwaddress"] = $mac;
+		if ($dhcp != "none" && $dhcp != ""){
+	   	$entryhost ["dhcphlpcont"] = $dhcp;    
+		}
+	}
 	foreach (array_keys($atts) as $key){
 		if ($atts[$key] != ""){
 			$entryhost[$key] = $atts[$key];
@@ -91,14 +96,25 @@ function add_host($hostDN,$hostname,$hostdesc,$mac,$ip,$atts){
 				print_r($newip); echo "<br><br>";
 				if (new_ip_host($newip,$hostDN,$auDN)){
 					echo "IP erfolgreich eingetragen<br><br>";
+					if ($mac != "" && $dhcp != "none" && $dhcp != ""){
+						$entryfa ["dhcpoptfixed-address"] = "ip";
+						if (ldap_mod_add($ds,$hostDN,$entryfa)){
+							echo "DHCP Fixed-Address erfolgreich auf IP gesetzt<br><br>";
+						}else{
+							echo "Fehler beim Setzen der DHCP Fixed-Address<br><br>";
+						}
+					}
 				}else{
 					echo "Fehler beim eintragen der IP<br><br>";
 				}
 			}else{
-				echo "Falsche IP Syntax! IP nicht eingetragen";
+				echo "Falsche IP Syntax! IP nicht eingetragen<br><br>";
 			}
 		}
-		
+		echo "Rechner erfolgreich eingetragen";
+		if ($mac != "" && $dhcp != "none" && $dhcp != ""){
+			update_dhcpmtime(array());
+		}
 		return 1;
 	}
 	else{

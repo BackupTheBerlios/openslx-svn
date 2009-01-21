@@ -5,6 +5,7 @@ $syntax = new Syntaxcheck;
 
 $pooldn = $_POST['pooldn'];
 $subnet = $_POST['subnet'];
+$subnetau = $_POST['subnetau'];
 $delpool = $_POST['delpool'];
 $poolranges = array();
 foreach ($pooldn as $dn){
@@ -20,8 +21,14 @@ $addrange2 = $_POST['addrange2'];
 $uc = $_POST['unknownclients'];
 $olduc = $_POST['olduc'];
 
+# Array to fill with AUs to update dhcpMTime
+$au_to_update = array();
+
+$mnr = $_POST['mnr'];
+
 #print_r($pooldn); echo "<br>";
 #print_r($subnet); echo "<br>";
+#print_r($subnetau); echo "<br>";
 #print_r($delpool); echo "<br><br>";
 #print_r($oldrange1); echo "<br>"; 
 #print_r($oldrange2); echo "<br>";
@@ -33,9 +40,7 @@ $olduc = $_POST['olduc'];
 #print_r($olduc); echo "<br><br>";
 #print_r($uc); echo "<br><br>";
 
-$mnr = $_POST['mnr'];
-
-$seconds = 2000;
+$seconds = 200;
 $url = "dhcppool.php?mnr=".$mnr;
  
 echo " 
@@ -48,9 +53,9 @@ echo "
 <table border='0' cellpadding='30' cellspacing='0'> 
 <tr><td>"; 
 
-
+#########################################################################################
+# Pools löschen, entsprechende Arrays ($pooldn, $uc, ...) zur weiteren Verarbeitung anpassen
 for ($i=0;$i<count($delpool);$i++){
-   # Löschen und Arrays $pooldn, $uc, ... und $rpooldn anpassen zur weiteren Verarbeitung
    
    $key = array_keys ( $pooldn, $delpool[$i] );
    $key_r = array_keys ( $rangepooldn, $delpool[$i] );
@@ -71,6 +76,8 @@ for ($i=0;$i<count($delpool);$i++){
    	
    	$delete = ldap_delete($ds,$delpool[$i]);
    	if ($delete){
+   		# Subnet-AU auf DHCP-Modify setzen
+   		$au_to_update [] = $subnetau[$i];
    	   # Arrays von gelöschten Pools für weitere Verarbeitung bereinigen
       	foreach ( $key as $nr ){
             array_splice ( &$pooldn, $nr, 1 );
@@ -98,22 +105,25 @@ for ($i=0;$i<count($delpool);$i++){
 	}			
 }
 
-
+#########################################################################################
+# Änderungen in bestehenden Pools (unknown-clients) und Ranges hinzufügen
 for ($i=0;$i<count($pooldn);$i++){
    
    $entrydel = array();
    $entryadd = array();
    # DENY, ALLOW, IGNORE Unknown-clients verarbeiten
    if ( $uc[$i] != $olduc[$i] ){
-      printf("Unknown-Clients f&uuml;r Pool %s &auml;ndern<br>", $pooldn[$i]);
       $dhcpoptdel = "dhcpopt".$olduc[$i];
       $entrydel [$dhcpoptdel] = array();
-      print_r($entrydel); echo "<br>";
+      #print_r($entrydel); echo "<br>";
       ldap_mod_del($ds,$pooldn[$i],$entrydel);
       $dhcpoptadd = "dhcpopt".$uc[$i];
       $entryadd [$dhcpoptadd] = "unknown-clients";
-      print_r($entryadd); echo "<br><br>";
+      #print_r($entryadd); echo "<br><br>";
       ldap_mod_add($ds,$pooldn[$i],$entryadd);
+      printf("Pool %s:<br>DHCP Option <b>unknown-clients</b> von <b>%s</b> auf <b>%s</b> ge&auml;ndert<br><br>",$pooldn[$i],$olduc[$i],$uc[$i]);
+   	# Subnet-AU auf DHCP-Modify setzen
+		$au_to_update [] = $subnetau[$i];
    }
    # Ranges hinzufügen
    if ( $addrange1[$i] != "" && $addrange2[$i] != "" ){
@@ -128,6 +138,8 @@ for ($i=0;$i<count($pooldn);$i++){
             $newrange = implode("_", array($addrange1[$i],$addrange2[$i]));
             $result = add_dhcprange($newrange,$pooldn[$i]);
             if ($result){
+            	# Subnet-AU auf DHCP-Modify setzen
+					$au_to_update [] = $subnetau[$i];
                printf("Neue dynamische IP Range %s - %s erfolgreich in Subnetz %s0 eingetragen!<br>",$addrange1[$i],$addrange2[$i],$net);
             }else{
                echo "<br>Fehler beim eintragen des dynamischen DHCP Pools!<br>";
@@ -143,7 +155,9 @@ for ($i=0;$i<count($pooldn);$i++){
 
 }
 
-# bereits angelegte Ranges verarbeiten (löschen, verkleinern, vergrößern)
+#########################################################################################
+# In Pools bereits angelegte Ranges verarbeiten (löschen, verkleinern, vergrößern)
+# vorzunehmende Änderungen in Arrays ($mod_dhcpranges, $new_fibs) speichern
 $fipbs = get_freeipblocks_au($auDN);
 $new_fipbs ['freeipblock'] = $fipbs;
 $mod_dhcpranges = array();
@@ -161,6 +175,8 @@ for ($i=0;$i<count($rangepooldn);$i++){
 	   array_splice ( &$mod_dhcpranges[$rangepooldn[$i]], $range_key, 1 );
 	   array_splice ( &$poolranges[$rangepooldn[$i]], $range_key, 1 );
       $new_fipbs ['freeipblock'][] = $oldrange;
+      # Subnet-AU auf DHCP-Modify setzen
+		$au_to_update [] = $subnetau[$i];
    }
    elseif ( $oldrange1[$i] != "" && $oldrange2[$i] != "" && $range1[$i] != "" && $range2[$i] != "" ){
 		$or1 = ip2long($oldrange1[$i]);
@@ -179,6 +195,8 @@ for ($i=0;$i<count($rangepooldn);$i++){
    		   #print_r($range_key); echo "<br>";
    		   $poolranges [$rangepooldn[$i]][$range_key] = $range;
    		   $mod_dhcpranges [$rangepooldn[$i]][$range_key] = $range;
+   		   # Subnet-AU auf DHCP-Modify setzen
+				$au_to_update [] = $subnetau[$i];
         
             foreach ($diffrange as $dr){
                $new_fipbs ['freeipblock'][] = $dr;
@@ -206,7 +224,9 @@ for ($i=0;$i<count($rangepooldn);$i++){
             	}
             	if ( $test ){
             	   $poolranges [$rangepooldn[$i]][] = $ar;
-                  $mod_dhcpranges [$rangepooldn[$i]][] = $ar; 
+                  $mod_dhcpranges [$rangepooldn[$i]][] = $ar;
+                  # Subnet-AU auf DHCP-Modify setzen
+						$au_to_update [] = $subnetau[$i];
             	}
             }
          }else{
@@ -222,9 +242,11 @@ for ($i=0;$i<count($rangepooldn);$i++){
 		#}
    }
 }
-
 #print_r($mod_dhcpranges); echo "<br>";
 #print_r($new_fipbs); echo "<br><br>";
+
+#########################################################################################
+# In Arrays $dhcp_modranges und $new_fipbs gespeicherte Änderungen im LDAP schreiben
 $keys = array_keys($mod_dhcpranges);
 foreach ($keys as $pdn){
    #print_r($pdn); echo "<br>";
@@ -265,8 +287,13 @@ if ( count($diff) != 0 || count($revdiff) != 0 ){
       printf("Fehler beim Anpassen der FIPBs");
    }
 }
-# DHCP Modify Timestamp festhalten
-update_dhcpmtime();
+
+#########################################################################################
+# DHCP Modify Timestamps in betreffenden AUs aktualisieren
+#echo "<br>Subnet-AU: ";print_r ($au_to_update); echo "<br>";
+update_dhcpmtime($au_to_update);
+
+
 
 $mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>				
 			Falls nicht, klicken Sie hier <a href=".$url." style='publink'>back</a>";

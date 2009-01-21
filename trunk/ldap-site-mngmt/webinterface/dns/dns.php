@@ -7,7 +7,7 @@ $titel = "DNS Zone Management";
 $mnr = 0; 
 $mainnr = 6;
 # 3. Dateiname und evtl. Pfad des Templates für die Webseite
-$webseite = "dns_start.dwt";
+$webseite = "dns_inwork.dwt";
 
 include("../class.FastTemplate.php");
 

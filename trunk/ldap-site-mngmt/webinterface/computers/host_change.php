@@ -57,7 +57,7 @@ echo "Host DN:"; print_r($hostDN); echo "<br>";
 echo "submenuNR:"; print_r($submenu); echo "<br><br>";
 */
 
-$seconds = 200;
+$seconds = 2;
 $url = 'host.php?dn='.$hostDN.'&sbmnr='.$sbmnr;
  
 echo "  
@@ -89,6 +89,7 @@ if ( $oldhostname != "" && $hostname != "" && $oldhostname != $hostname ){
 	$newhostDN = "hostname=".$hostname.",cn=computers,".$auDN;
 	# print_r($newhostDN); echo "<br><br>";
 	modify_host_dn($hostDN, $newhostDN);
+	$hostDN = $newhostDN;
 	
 	# newsubmenu holen...hosts neu holen, sortieren, ->position
 	#$newhosts = get_hosts($auDN,array("dn"));
@@ -231,9 +232,9 @@ if ( $oldip == "" && $ip != "" ){
 		# print_r($newip); echo "<br><br>";
 		if (new_ip_host($newip,$hostDN,$auDN)){
 			$mesg = "IP erfolgreich eingetragen<br><br>";
-			if ($dhcptype == "subnet"){
-   			adjust_hostip_dhcpsubnet($ip,$hostDN,$dhcphlpcont);
-		   }
+			#if ($dhcptype == "subnet"){
+   		#	adjust_hostip_dhcpsubnet($ip,$hostDN,$dhcphlpcont);
+		   #}
 		}else{
 			$mesg = "Fehler beim eintragen der IP<br><br>";
 		}
@@ -389,8 +390,9 @@ if (count($entrydel) != 0 ){
 }
 
 */
-
-update_dhcpmtime();
+if ( $dhcphlpcont != "" ){
+	update_dhcpmtime(array());
+}
 
 $mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>				
 			Falls nicht, klicken Sie hier <a href=".$url." style='publink'>back</a>";

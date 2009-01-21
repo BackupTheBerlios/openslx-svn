@@ -32,11 +32,22 @@ $hostdesc = str_replace ( "_", " ", $_GET['hostdesc']);
 $mac = str_replace ( "_", " ", $_GET['mac']);
 $ip = str_replace ( "_", " ", $_GET['ip']);
 
+# DHCP Einbindung
+$objecttype = "nodhcp";
+$dhcp_selectbox = "";
+$altdhcp = alternative_dhcpobjects($objecttype,"","");
+if (count($altdhcp) != 0){
+	foreach ($altdhcp as $item){
+		$dhcp_selectbox .= "
+		   <option value='".$item['dn']."'>".$item['cn']." ".$item['au']."</option>";
+	}
+}
 
 $template->assign(array("HOSTNAME" => $hostname,
            			      "HOSTDESC" => $hostdesc,
            			      "MAC" => $mac,
            			      "IP" => $ip,
+           			      "DHCPSELECT" => $dhcp_selectbox,
            			      "MOUSE" => "",
            			      "GRAPHIC" => "",
            			      "MONITOR" => "",

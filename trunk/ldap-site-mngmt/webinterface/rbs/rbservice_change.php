@@ -128,7 +128,17 @@ if ( $rbsoffer != "none" && $rbsoffer != $oldrbsoffer ){
 	else{
 		$mesg = "Fehler beim &auml;ndern des RBS Offers!<br><br>";
 	}
-} 
+}
+
+/*if ( $rbsoffer == "off" && $olddhcpoffer != "" ){
+   $entryoffer ['dhcpofferdn'] = array();
+	if(ldap_mod_del($ds,$dhcpDN,$entryoffer)){
+		$mesg = "DHCP Service Offer erfolgreich ge&auml;ndert<br><br>";
+	}
+	else{
+		$mesg = "Fehler beim &auml;ndern des DHCP Service Offers!<br><br>";
+	}
+}*/
 
 
 #####################################

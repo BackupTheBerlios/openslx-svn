@@ -18,11 +18,11 @@
   					Hier koennen Sie die IP Adressen ihrer Rechner verwalten. Sie koennen IP Adressen neu zuweisen,
   					aendern oder loeschen. 
   				</li>
-  			<li><p><b>IP Adressen DHCP</b></p>
+  			<!-- <li><p><b>IP Adressen DHCP</b></p>
   					In diesem Bereich koennen Sie die IP Adressen verwalten, die Sie fuer den DHCP Dienst reservieren.
   					D.h. die IP Adress Ranges, welche Sie DHCP Subnetzen oder Pools zugewiesen haben zur dynamischen
   					IP Adresszuweisung. 
-  				</li>
+  				</li> -->
   			<li><p><b>Delegierte IP Adressen</b></p>
   					In diesem Bereich verwalten Sie ihre an untergeordnete Abteilungen delegierten 
   					IP Adressbereiche. Sie koennen neue IP Bereiche delegieren, Delegierungen aendern oder 

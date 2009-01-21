@@ -15,32 +15,27 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
                        array("link" => "groupoverview.php",
                              "text" => "Rechnergruppen",
                              "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")),
-                       array("link" => "machineconfig_default.php",
-                             "text" => "Default MachineConfigs",
-                             "zugriff" => array("MainAdmin","HostAdmin")),
-                       array("link" => "new_mcdef.php",
-                             "text" => "Neue MachineConfig",
-                             "zugriff" => array("MainAdmin","HostAdmin")),
+                       #array("link" => "machineconfig_default.php",
+                       #      "text" => "Default MachineConfigs",
+                       #      "zugriff" => array("MainAdmin","HostAdmin")),
+                       #array("link" => "new_mcdef.php",
+                       #      "text" => "Neue MachineConfig",
+                       #      "zugriff" => array("MainAdmin","HostAdmin")),
                        array("link" => "new_pxe.php",
                              "text" => "Neues PXE Bootmen&uuml;",
                              "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")));
 	
 	# Submenus 
-	#$comps = array();
-	$computers_array = get_hosts($auDN,array("dn","hostname","ou"));
-	#if (count($computers_array) != 0){
+	/*$computers_array = get_hosts($auDN,array("dn","hostname","ou"));
   	for($n=0;$n<count($computers_array);$n++){
   		
   		$comps[] = array("link" => "host.php?dn=".$computers_array[$n]['dn']."&sbmnr=".$n,
   							"text" => $computers_array[$n]['hostname'],
                     	"zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin"));
       # print_r($comps); echo "<br>";
-      
-      
-  	}
-  	#}
-  	$comps[] = array("link" => "new_host.php?sbmnr=".$n,
-                    "text" => "Neuer Rechner",
+  	}*/
+  	$comps[] = array("link" => "new_host.php?sbmnr=0", #.$n,
+                    "text" => "Neuen Rechner anlegen",
                     "zugriff" => array("MainAdmin","HostAdmin"));
    
   	$groups_array = get_groups($auDN,array("dn","cn"));
@@ -53,7 +48,7 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
       	              	
   	}
   	$groups[] = array("link" => "new_group.php?sbmnr=".$n,
-                     "text" => "Neue Gruppe",
+                     "text" => "Neue Gruppe anlegen",
                      "zugriff" => array("MainAdmin","HostAdmin"));
    
    # default machine-configs 
@@ -140,14 +135,14 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
 		            } 
 		        	}
 		   		$htmlcode= "
-		   		<tr height='3'>
+		   		<tr height='4'>
 						<td></td><td></td><td></td><td></td>
 		   		</tr>
 		   		<tr>
 						<td width='8%'>&nbsp;</td>
 						<td width='8%' align='right'>".$zwisch2."</td>
- 						<td width='5%' align='left' style='border-width:1 0 1 1;border-color:#000000;border-style:solid;padding:2;background-color:{FARBE_S}'>&nbsp;</td>
-		     			<td width='69%' align='left' style='border-width:1 1 1 0;border-color:#000000;border-style:solid;padding:2;padding-left:15px;background-color:{FARBE_S}'> 
+ 						<td width='5%' align='left' style='border-width:1 0 1 1;border-color:#000000;border-style:solid;padding:4;background-color:{FARBE_S}'>&nbsp;</td>
+		     			<td width='69%' align='left' style='border-width:1 1 1 0;border-color:#000000;border-style:solid;padding:4;padding-left:12px;background-color:{FARBE_S}'> 
 		     			<a href='".$item2['link']."' style='text-decoration:none'><b class='standard_schrift'>".$item2['text']."</b></a></td>
 						<td width='10%'>&nbsp;</td> 						
 					</tr>

@@ -21,7 +21,7 @@
   					ihre gemeinsamen Hardware-Parameter. Daneben verwalten Sie hier gruppen-spezifische 
   					Computer-Profile (MachineConfig) und PXE Boot Konfigurationen. 
   				</li>
-  			<li><p><b>Default MachineConfig</b></p>
+  			<!-- <li><p><b>Default MachineConfig</b></p>
   					Hier verwalten Sie ihre Default Computer-Profile (bearbeiten, l&ouml;schen, kopieren), 
   					d.h. Computer-Profile, die beim booten von Rechnern verwendet werden, f&uuml;r die 
   					keine rechner- oder gruppen-spezifischen MachineConfigs angelegt sind. 
@@ -29,7 +29,7 @@
   			<li><p><b>Neue MachineConfig</b></p>
   					Hier k&ouml;ennen Sie neue Computer-Profile (MachineConfigs) als rechner-, gruppen-
   					spezifische, oder Default MachineConfigs anlegen. 
-  				</li>
+  				</li> -->
   			<li><p><b>Neues PXE Bootmen&uuml;</b></p>
   					Hier k&ouml;nnen Sie neue PXE Bootmen&uuml;s (PXEConfigs) f&uuml;r ihre Rechner oder 
   					Rechnergruppen anlegen.

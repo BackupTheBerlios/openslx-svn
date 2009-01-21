@@ -6,7 +6,7 @@ include('../standard_header.inc.php');
 $titel = "Computers Management";
 # 2. Nummer des zugehörigen Hauptmenus (Registerkarte) beginnend bei 0, siehe Dokumentation.doc.
 $mainnr = 3;
-$mnr = 5; 
+$mnr = 3; 
 $sbmnr = -1;
 $mcnr = -1;
 # 3. Dateiname und evtl. Pfad des Templates für die Webseite

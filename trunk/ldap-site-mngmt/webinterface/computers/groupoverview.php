@@ -37,6 +37,7 @@ $template->define_dynamic("Gruppen", "Webseite");
 
 foreach ($group_array as $group){
 	
+	$groupname = "<a href='group.php?dn=".$group['dn']."&sbmnr=".$i."' class='headerlink'>".$group['cn']."</a>";
 	$anzahlmember = count($group['member']);
 	
 	if ( count($group['dhcphlpcont']) != 0 ){
@@ -46,7 +47,7 @@ foreach ($group_array as $group){
 	}else{$dhcpcont = "";}
 	
 	$template->assign(array("DN" => $group['dn'],
-								"GROUPCN" => $group['cn'],
+								"GROUPCN" => $groupname,
            			      "GROUPDESC" => $group['description'],
            			      "MEMBERS" => $anzahlmember,
            			      # "MEMBER" => $group['member'],            			      

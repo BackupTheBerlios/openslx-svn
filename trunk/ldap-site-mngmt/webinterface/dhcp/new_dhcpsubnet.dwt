@@ -77,21 +77,15 @@
 			</tr>
 			
 			<tr height='50'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Default Lease Time:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Routers:</b></td>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[dhcpoptdefault-lease-time]' value='{DEFAULTLEASE}' size='40' class='medium_form_field'>
+					<input type='Text' name='attribs[dhcpoptrouters]' value='{ROUTERS}' size='40' class='medium_form_field'>
 				</td>
 			</tr>
 			<tr height='50'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Max Lease Time:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Broadcast Address:</b></td>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[dhcpoptmax-lease-time]' value='{MAXLEASE}' size='40' class='medium_form_field'>
-				</td>
-			</tr>
-			<tr height='50'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>DDNS Update Style:</b></td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[dhcpoptddns-update-style]' value='{DDNSUPDATE}' size='40' class='medium_form_field'>
+					<input type='Text' name='attribs[dhcpoptbroadcast-address]' value='{BROADCAST}' size='40' class='medium_form_field'>
 				</td>
 			</tr>
 			<tr height='50'>
@@ -107,15 +101,15 @@
 				</td>
 			</tr>
 			<tr height='50'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Routers:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Default Lease Time:</b></td>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[dhcpoptrouters]' value='{ROUTERS}' size='40' class='medium_form_field'>
+					<input type='Text' name='attribs[dhcpoptdefault-lease-time]' value='{DEFAULTLEASE}' size='40' class='medium_form_field'>
 				</td>
 			</tr>
 			<tr height='50'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Broadcast Address:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Max Lease Time:</b></td>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[dhcpoptbroadcast-address]' value='{BROADCAST}' size='40' class='medium_form_field'>
+					<input type='Text' name='attribs[dhcpoptmax-lease-time]' value='{MAXLEASE}' size='40' class='medium_form_field'>
 				</td>
 			</tr>
 			<!-- <tr height='50'>
@@ -129,13 +123,13 @@
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
 					<input type='Text' name='attribs[dhcpoptfilename]' value='{FILENAME}' size='40' class='medium_form_field'>
 				</td>
-			</tr> -->
+			</tr>
 			<tr height='50'>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>NTP Servers:</b></td>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
 					<input type='Text' name='attribs[dhcpoptntp-servers]' value='{NTPSERVERS}' size='40' class='medium_form_field'>
 				</td>
-			</tr>
+			</tr>-->
 			
 			<input type='hidden' name='mnr' value='{MNR}'>	
 			<input type='hidden' name='sbmnr' value='{SBMNR}'>			

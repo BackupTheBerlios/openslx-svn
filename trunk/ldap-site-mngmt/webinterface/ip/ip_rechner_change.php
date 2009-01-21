@@ -42,7 +42,8 @@ foreach ($tochange as $i){
 			$oldip[$i] = htmlentities($oldip[$i]);
 			if (new_ip_host($newipp,$hostDN[$i],$auDN)){
 			 	$mesg = "Neue IP Adresse eingetragen<br>";
-			 	update_dhcpmtime();
+			 	# falls Rechner in DHCP -> fixed-address auf IP Setzen...
+			 	# und update_dhcpmtime(array());
 			}else{$mesg = "Fehler beim eintragen der neuen IP Adresse<br>";}
 		}else{echo "falsche IP Syntax";}
 		
@@ -70,7 +71,8 @@ foreach ($tochange as $i){
 			if (modify_ip_host($newipp,$hostDN[$i],$auDN)){
 				$mesg = "IP Adresse geaendert<br>";
 				adjust_hostip_tftpserverip($oldip[$i],$newip[$i]);
-				update_dhcpmtime();
+				# Falls Rechner in DHCP
+				update_dhcpmtime(array());
 			}else{
 				$mesg = "Fehler beim aendern der IP Adresse<br>";
 				# oldip die schon gelöscht wurde wieder einfügen
@@ -94,7 +96,8 @@ foreach ($tochange as $i){
 		if (delete_ip_host($hostDN[$i],$auDN)){
 			$mesg = "IP Adresse geloescht<br>";
 			adjust_hostip_tftpserverip($oldip[$i],"");
-			update_dhcpmtime();
+			# falls Rechner in DHCP -> fixed-address auf dynamic/Hostname setzen
+			update_dhcpmtime(array());
 		}else{$mesg = "Fehler beim loeschen der IP Adresse<br>";}
 		
 		$mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>

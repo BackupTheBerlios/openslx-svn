@@ -3,6 +3,7 @@ include('../standard_header.inc.php');
 
 $dn = $_POST['dn'];
 $name = $_POST['name'];
+$dhcphlpcont = $_POST['dhcphlpcont'];
 $delurl = $_POST['delurl'];
 $backurl = $_POST['backurl'];
 $successurl = $_POST['successurl'];
@@ -23,6 +24,7 @@ echo "
 				Falls ja:<br><br>
 				<input type='hidden' name='dn' value='".$dn."'>
 				<input type='hidden' name='name' value='".$name."'>
+				<input type='hidden' name='dhcphlpcont' value='".$dhcphlpcont."'>
 				<input type='hidden' name='successurl' value='".$successurl."'>
 				<input type='hidden' name='pxedn' value='".$pxedn."'>
 				<input type='Submit' name='apply' value='l&ouml;schen' class='small_loginform_button'><br><br>

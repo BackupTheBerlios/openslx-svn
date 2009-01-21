@@ -1,0 +1,79 @@
+<html>
+
+<head>
+	<title>{SEITENTITEL}</title>
+	<link rel='stylesheet' href='../styles.css' type='text/css'></head>
+<body>
+
+<table cellpadding='0' cellspacing='0' border='0' width='95%' height='8%'>
+	<tr>
+	<td width='35%'>
+	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
+		<tr valign='top'> 
+			<td width='1'></td> 
+			<td><h2>Rechner und IP Management</h2></td>
+		</tr>
+	</table>
+	</td>
+	
+	<td width='40%'>
+	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
+		<tr valign='top' align='left'>
+		<td>
+			<h4><a href='../start.php' class='headerlink'>Startseite</a>
+			 &nbsp;>>&nbsp; <a href='au.php' class='headerlink'>{AU}</a> &nbsp;[ {DOMAIN} ]</h4>
+		</td>
+		</tr>
+	</table>
+	</td>
+	<td width='25%'>
+	<table cellpadding='5' cellspacing='0' border='0' width='100%' align='right'>
+		<tr valign='top' align='right'>
+		<td>
+			{LOGIN}
+		</td>
+		</tr>
+	</table>
+	</td>
+	</tr>
+</table>
+
+<table cellpadding='5' cellspacing='0' border='0' width='95%' height='7%'>
+<tr>
+	<td>{MAINMENU}</td>
+</tr>
+</table>
+
+<hr align='center' width='98%' noshade>
+
+
+
+<table cellpadding='5' cellspacing='0' border='0' width='100%' height='85%'>
+
+	<tr valign='top' height='100%'>
+	<td width='28%'>
+	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
+		<tr><td>
+	
+		{NAVIGATION}
+		
+		</td></tr>
+	</table>
+	</td>
+	
+	<td width='72%'>
+	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
+		<tr><td>
+		
+		{HAUPTFENSTER}
+		
+		</td></tr>
+	</table>
+	</td>
+	
+	</tr>
+</table>
+
+</body>
+
+</html>

@@ -195,7 +195,7 @@ function rbs_adjust_host($hostDN, $rbs){
 }
 
 # Bei Änderung der TFTP Server IP eines RBS-Objekts entsprechend DHCP Option next-server
-# in den Hostobjekten anpassen 
+# in den Hostobjekten anpassen und DHCP modify time in den AUs aktualisieren
 function adjust_dhcpnextserver($tftpIP, $rbsDN){
 
    global $ds, $suffix, $ldapError;
@@ -224,15 +224,7 @@ function adjust_dhcpnextserver($tftpIP, $rbsDN){
 	}
 	if ( count($host_au) != 0 ){
 	   $host_au = array_unique($host_au);
-	   $entry ['dhcpmtime'] = time();
-	   foreach ($host_au as $au){
-         $results = ldap_mod_replace($ds,$au,$entry);
-         if ($results){
-            #echo "<br><b>dhcpMTime</b> erfolgreich aktualisiert!<br>" ;
-         }else{
-            echo "<br>Fehler beim Aktualisieren der <b>dhcpMTime</b>!<br>" ;
-      	}
-      }
+	   update_dhcpmtime($host_au);
 	}
 }
 
@@ -271,15 +263,7 @@ function adjust_dhcpfilename($initbootfile, $rbsDN, $type){
    }
    if ( count($host_au) != 0 ){
 	   $host_au = array_unique($host_au);
-	   $entry ['dhcpmtime'] = time();
-	   foreach ($host_au as $au){
-         $results = ldap_mod_replace($ds,$au,$entry);
-         if ($results){
-            #echo "<br><b>dhcpMTime</b> erfolgreich aktualisiert!<br>" ;
-         }else{
-            echo "<br>Fehler beim Aktualisieren der <b>dhcpMTime</b>!<br>" ;
-      	}
-      }
+	   update_dhcpmtime($host_au);
 	}
 }
 

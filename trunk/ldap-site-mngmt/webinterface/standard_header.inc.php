@@ -38,28 +38,32 @@ if (!($ds = uniLdapConnect($uid,$userPassword))){
 			</html>
 			";
 	die;
-} 
-
-# AU Daten holen
-$attributes = array("ou","associateddomain","maxipblock","freeipblock","cn","description");
-$au_data = get_au_data($auDN,$attributes);
-$assocdom = $au_data[0]['associateddomain'];
-$au_ou = $au_data[0]['ou'];
-$au_cn = $au_data[0]['cn'];
-$au_desc = $au_data[0]['description'];
-$au_mipb = $au_data[0]['maxipblock'];
-$au_fipb = $au_data[0]['freeipblock'];
-
-# AU Domain Daten holen
-$domain_data = get_domain_data($auDN,array("dn"));
-
-$expAuDn = explode(",",$auDN);
-if ($expAuDn[1] == "ou=RIPM"){
-	$domDN = "ou=DNS,".$suffix;
 }
-else{$domDN = $domain_data[0]['dn']; echo "<br>";}
 
-$domprefix = str_replace('.'.$domsuffix,'',$assocdom);
-# print_r($domprefix);
+if ($auDN != ""){
+
+   # AU Daten holen
+   $attributes = array("ou","associateddomain","maxipblock","freeipblock","cn","description");
+   $au_data = get_au_data($auDN,$attributes);
+   $assocdom = $au_data[0]['associateddomain'];
+   $au_ou = $au_data[0]['ou'];
+   $au_cn = $au_data[0]['cn'];
+   $au_desc = $au_data[0]['description'];
+   $au_mipb = $au_data[0]['maxipblock'];
+   $au_fipb = $au_data[0]['freeipblock'];
+   
+   # AU Domain Daten holen
+   $domain_data = get_domain_data($auDN,array("dn"));
+   
+   $expAuDn = explode(",",$auDN);
+   if ($expAuDn[1] == "ou=RIPM"){
+   	$domDN = "ou=DNS,".$suffix;
+   }
+   else{$domDN = $domain_data[0]['dn']; echo "<br>";}
+   
+   $domprefix = str_replace('.'.$domsuffix,'',$assocdom);
+   # print_r($domprefix);
+
+}
 
 ?>

@@ -98,30 +98,43 @@ if ( $oldcn != "" && $cn == "" ){
 
 if ( $dhcpoffer != "none" ){
    
-   if ( $dhcpoffer != "off" && $dhcpoffer == $olddhcpoffer ){
+   if ( ($dhcpoffer != "off" && $dhcpoffer == $olddhcpoffer) || ($dhcpoffer == "off" && $olddhcpoffer == "") ){
    	$mesg = "Sie haben die gleiche Abteilung ausgew&auml;hlt<br>
    				Keine &Auml;nderung!";
    }
    
    if ( $dhcpoffer != "off" && $dhcpoffer != $olddhcpoffer ){
    	$entryoffer ['dhcpofferdn'] = $dhcpoffer;
-   	if(ldap_mod_replace($ds,$dhcpDN,$entryoffer)){
-   		$mesg = "DHCP Service Offer erfolgreich ge&auml;ndert<br><br>";
+   	if ($olddhcpoffer == ""){
+   	   # Offer anlegen
+      	if(ldap_mod_add($ds,$dhcpDN,$entryoffer)){
+      		$mesg = "DHCP Service Offer erfolgreich angelegt<br><br>";
+      	}
+      	else{
+      		$mesg = "Fehler beim &auml;ndern des DHCP Service Offers!<br><br>";
+      	}
+   	}
+   	else{
+   	   # Offer ändern
+      	if(ldap_mod_replace($ds,$dhcpDN,$entryoffer)){
+      		$mesg = "DHCP Service Offer erfolgreich ge&auml;ndert<br><br>";
+      	}
+      	else{
+      		$mesg = "Fehler beim &auml;ndern des DHCP Service Offers!<br><br>";
+      	}
+   	}
+   }
+   
+   if ( $dhcpoffer == "off" && $olddhcpoffer != "" ){
+      $entryoffer ['dhcpofferdn'] = array();
+   	if(ldap_mod_del($ds,$dhcpDN,$entryoffer)){
+   		$mesg = "DHCP Service Offer erfolgreich gel&ouml;scht<br><br>";
+   		cleanup_del_dhcpservice ($dhcpDN);
    	}
    	else{
    		$mesg = "Fehler beim &auml;ndern des DHCP Service Offers!<br><br>";
    	}
    }
-   
-   /*if ( $dhcpoffer == "off" && $olddhcpoffer != "" ){
-      $entryoffer ['dhcpofferdn'] = array();
-   	if(ldap_mod_del($ds,$dhcpDN,$entryoffer)){
-   		$mesg = "DHCP Service Offer erfolgreich ge&auml;ndert<br><br>";
-   	}
-   	else{
-   		$mesg = "Fehler beim &auml;ndern des DHCP Service Offers!<br><br>";
-   	}
-   }*/
 
 }
 
@@ -133,7 +146,7 @@ if ( $adddhcpoptdefinition != "" ){
    $entryadd['optiondefinition'] = $adddhcpoptdefinition;
    if(ldap_mod_add($ds,$dhcpDN,$entryadd)){
 		$mesg = "Selbst-definierte DHCP Option erfolgreich eingetragen<br><br>";
-		update_dhcpmtime();
+		update_dhcpmtime(array());
 	}else{
 		$mesg = "Fehler beim eintragen Selbst-definierte DHCP Option<br><br>";
 	}
@@ -176,7 +189,7 @@ if (count($entryadd) != 0 ){
 	}
 	if(ldap_mod_add($ds,$dhcpDN,$entryadd)){
 		$mesg = "Attribute ".$addatts." erfolgreich eingetragen<br><br>";
-		update_dhcpmtime();
+		update_dhcpmtime(array());
 	}else{
 		$mesg = "Fehler beim eintragen der Attribute ".$addatts."<br><br>";
 	}
@@ -188,7 +201,7 @@ if (count($entrymod) != 0 ){
 	}
 	if(ldap_mod_replace($ds,$dhcpDN,$entrymod)){
 		$mesg = "Attribute ".$modatts." erfolgreich geaendert<br><br>";
-		update_dhcpmtime();
+		update_dhcpmtime(array());
 	}else{
 		$mesg = "Fehler beim aendern der Attribute ".$modatts."<br><br>";
 	}
@@ -200,7 +213,7 @@ if (count($entrydel) != 0 ){
 	}
 	if(ldap_mod_del($ds,$dhcpDN,$entrydel)){
 		$mesg = "Attribute ".$delatts." erfolgreich geloescht<br><br>";
-      update_dhcpmtime();
+      update_dhcpmtime(array());
 	}else{
 		$mesg = "Fehler beim loeschen der Attribute ".$delatts."<br><br>";
 	}

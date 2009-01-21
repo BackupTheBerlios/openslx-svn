@@ -31,11 +31,13 @@ $hostDN = $_GET['dn'];
 # Rechner Daten
 $attributes = array("hostname","domainname","ipaddress","hwaddress","description","hlprbservice",
                      "dhcphlpcont","dhcpoptfixed-address","dhcpopthardware","dhcpoptfilename",
-                     "dhcpoptnext-server","hw-mouse","hw-graphic","hw-monitor");
+                     "dhcpoptnext-server","dhcpoptmax-lease-time","dhcpoptdefault-lease-time","hw-mouse","hw-graphic","hw-monitor");
 $host = get_node_data($hostDN,$attributes);
 $hostip = explode('_',$host['ipaddress']);
 # print_r($hostip); echo "<br><br>";
 $dhcphlpcont = $host['dhcphlpcont'];
+$dhcpmaxlease = $host['dhcpoptmax-lease-time'];
+$dhcpdefaultlease = $host['dhcpoptdefault-lease-time'];
 $objectDN = $dhcphlpcont;
 $rbsDN = $host['hlprbservice'];
 
@@ -79,7 +81,8 @@ if ($dhcphlpcont == ""){
    # Host in Service oder Subnet?
    $objecttype = "service";
    $dhcp = "";
-   $ocarray = get_node_data($dhcphlpcont,array("objectclass","dhcphlpcont"));
+   
+   /*$ocarray = get_node_data($dhcphlpcont,array("objectclass","dhcphlpcont"));
    #print_r($ocarray); echo "<br>";
    $sub = array_search('dhcpSubnet', $ocarray['objectclass']);
    #print_r($sub);
@@ -89,7 +92,8 @@ if ($dhcphlpcont == ""){
       $expsub = explode('=',$exp0[0]); $dhcpsub = $expsub[1];
       $dhcp .= "Subnet <b>".$dhcpsub."</b> / ";
       $dhcphlpcont = $ocarray['dhcphlpcont'];
-   }
+   }*/
+   
    $exp1 = explode(',',$dhcphlpcont);
    $expdhcp = explode('=',$exp1[0]); $dhcpserv = $expdhcp[1];
    $expdhcpau = explode('=',$exp1[2]); $dhcpau = $expdhcpau[1];
@@ -146,9 +150,9 @@ if ($dhcphlpcont == ""){
 				         <td class='tab_d_ohne'>&nbsp;</td>
 			         </tr>
 			         <tr valign='top'>
-			         	<td class='tab_d'><b>fixed-address:</b> &nbsp;</td>
-			         	<td class='tab_d'>".$fixedaddress."&nbsp;</td>
-				         <td class='tab_d'>
+			         	<td class='tab_d_ohne'><b>fixed-address:</b> &nbsp;</td>
+			         	<td class='tab_d_ohne'>".$fixedaddress."&nbsp;</td>
+				         <td class='tab_d_ohne'>
 				         <select name='fixadd' size='3' class='medium_form_selectbox'>
 				            ".$fixedaddselopt."
 				         </select>
@@ -170,6 +174,8 @@ $template->assign(array("HOSTDN" => $hostDN,
            		       	"HOST_DHCPOPT" => $host_dhcpopt,   			      
            		       	"NEXTSERVER" => $host['dhcpoptnext-server'],          			      
            		       	"FILENAME" => $host['dhcpoptfilename'],
+								"DEFAULTLEASE" => $dhcpdefaultlease,
+								"MAXLEASE" => $dhcpmaxlease,
            		       	"HOSTLINK" => "<a href='host.php?dn=".$hostDN."&sbmnr=".$sbmnr."' class='headerlink'>",
            		       	"RBSLINK" => "<a href='rbshost.php?dn=".$hostDN."&sbmnr=".$sbmnr."' class='headerlink'>",
            		       	"HWLINK" => "<a href='hwhost.php?dn=".$hostDN."&sbmnr=".$sbmnr."' class='headerlink'>",

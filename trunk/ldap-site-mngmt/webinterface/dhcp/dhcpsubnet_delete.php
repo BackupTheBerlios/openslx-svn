@@ -21,7 +21,7 @@ echo "
 if ( $subnetDN != ""){
    if( delete_dhcpsubnet($subnetDN,$cn)){
       $mesg = "Subnet <b>".$cn."</b> erfolgreich gel&ouml;scht!<br><br>";
-      update_dhcpmtime();
+      update_dhcpmtime(array());
    }else{
       $mesg = "Fehler beim l&ouml;schen des Subnets <b>".$cn."</b> !<br><br>";
    }

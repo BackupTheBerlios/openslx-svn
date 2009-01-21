@@ -46,6 +46,7 @@ function new_childau($childDN,$childou,$childcn,$childdesc,$mainadmin){
 	$entryAU ["objectclass"][1] = "organizationalunit";
 	$entryAU ["objectclass"][2] = "top";
 	$entryAU ["ou"] = $childou;
+	$entryAU ["dhcpmtime"] = 0;
 	if ($childcn != ""){$entryAU ["cn"] = $childcn;}
 	if ($childdesc != ""){$entryAU ["description"] = $childdesc;}
 	

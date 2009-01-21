@@ -109,6 +109,7 @@
   			
   			<input type='hidden' name='dn' value='{HOSTDN}'>
   			<input type='hidden' name='name' value='{HOSTNAME}'>
+  			<input type='hidden' name='dhcphlpcont' value='{DHCPCONT}'>
   			<input type='hidden' name='delurl' value='host_delete.php'>
   			<input type='hidden' name='backurl' value='host.php?dn={HOSTDN}&sbmnr={SBMNR}'>
   			

@@ -18,7 +18,7 @@
   					Rollen, IP Adressen und deren Delegierung, Rechner (Gruppen), deren Hardware-Profile und 
   					PXE Boot Konfigurationen, sowie die Dienste DHCP und DNS.  
   				</li>
-  			<li><p><b>Host Admins</b></p>
+  			<!-- <li><p><b>Host Admins</b></p>
   					Diese verwalten Rechner (Gruppen), deren Hardware-Profile und PXE Boot Konfigurationen, 
   					und koennen diese im DHCP und DNS anmelden (verwalten im DNS nur deren Namenseintraege). 
   				</li>
@@ -28,7 +28,7 @@
   			<li><p><b>DNS Admins</b></p>
   					Sind die Administratoren der mit der AU assozierten DNS Zone. D.h. sie verwalten SOA,
   					Include Direktiven untergeordneter Include Files, sowie alle Nameneintraege der Zone. 
-  				</li>
+  				</li> -->
   		</ul>
   		
   		</td>

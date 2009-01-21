@@ -6,7 +6,7 @@ include('../standard_header.inc.php');
 $titel = "IP Address Management";
 # 2. Nummer des zugehörigen Hauptmenus (Registerkarte) beginnend bei 0, siehe Dokumentation.doc.
 $mainnr = 2;
-$mnr = 3; 
+$mnr = 2; 
 # 3. Dateiname und evtl. Pfad des Templates für die Webseite
 $webseite = "ip_deleg.dwt";
 

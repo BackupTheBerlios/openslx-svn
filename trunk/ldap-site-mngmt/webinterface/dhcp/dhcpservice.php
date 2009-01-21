@@ -65,7 +65,7 @@ $attributes = array("dn","cn","dhcpprimarydn","dhcpsecondarydn","description","d
 $dhcpsv_data = get_node_data($dhcpserviceDN, $attributes);
 #print_r($dhcpsv_data);
 
-# RBS Anbieten
+# DHCP Service Anbieten
 # momentanes Offer
 # todo: falls dhcpofferDN leer dann standardwert AU teilbaum
 $offerexp = ldap_explode_dn($dhcpsv_data['dhcpofferdn'], 1);
