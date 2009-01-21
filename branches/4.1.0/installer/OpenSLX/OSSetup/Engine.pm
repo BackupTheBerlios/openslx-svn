@@ -142,7 +142,7 @@ sub initialize
 
 	$self->{'vendor-os-path'}
 		= "$openslxConfig{'stage1-path'}/$self->{'vendor-os-name'}";
-	vlog 1, "vendor-OS will be installed to '$self-vendor-os-path'}'";
+	vlog 1, "vendor-OS path is '$self->{'vendor-os-path'}'";
 
 	if ($actionType ne 'clone') {
 		$self->createPackager();
@@ -374,7 +374,7 @@ sub readDistroInfo
 	# merge user-provided configuration distro defaults...
 	my %repository = %{$self->{distro}->{config}->{repository}};
 	my %selection = %{$self->{distro}->{config}->{selection}};
-	my %excludes = 
+	my %excludes =
 		defined $self->{distro}->{config}->{excludes}
 			? %{$self->{distro}->{config}->{excludes}}
 			: ();
@@ -725,15 +725,7 @@ sub stage1B_chrootAndBootstrap
 {
 	my $self = shift;
 
-	vlog 2, "chrooting into $self->{stage1aDir}...";
-	# chdir into stage1aDir...
-	chdir $self->{stage1aDir}
-		or die _tr("unable to chdir into '%s' (%s)\n", $self->{stage1aDir}, $!);
-	# ...do chroot
-	chroot "."
-		or die _tr("unable to chroot into '%s' (%s)\n", $self->{stage1aDir}, $!);
-
-	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
+	chrootInto($self->{stage1aDir});
 
 	# chdir into slxbootstrap, as we want to drop packages into there:
 	chdir "/$self->{stage1bSubdir}"
@@ -770,17 +762,9 @@ sub stage1C_chrootAndInstallBasicVendorOS
 	my $self = shift;
 
 	my $stage1bDir = "/$self->{stage1bSubdir}";
-	vlog 2, "chrooting into $stage1bDir...";
-	# chdir into stage1bDir...
-	chdir $stage1bDir
-		or die _tr("unable to chdir into '%s' (%s)\n", $stage1bDir, $!);
-	# ...do chroot
-	chroot "."
-		or die _tr("unable to chroot into '%s' (%s)\n", $stage1bDir, $!);
+	chrootInto($stage1bDir);
 
-	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
 	my $stage1cDir = "/$self->{stage1cSubdir}";
-
 	# install all prerequired bootstrap packages
 	$self->{packager}->installPrerequiredPackages(
 		$self->{'local-bootstrap-prereq-packages'}, $stage1cDir
@@ -824,6 +808,9 @@ sub setupStage1D
 	my $self = shift;
 
 	vlog 1, "setting up stage1d for $self->{'vendor-os-name'}...";
+
+	chrootInto($self->{'vendor-os-path'});
+
 	$self->stage1D_setupPackageSources();
 	$self->stage1D_updateBasicVendorOS();
 	$self->stage1D_installPackageSelection();
@@ -834,6 +821,9 @@ sub updateStage1D
 	my $self = shift;
 
 	vlog 1, "updating $self->{'vendor-os-name'}...";
+
+	chrootInto($self->{'vendor-os-path'});
+
 	$self->stage1D_updateBasicVendorOS();
 }
 
@@ -856,17 +846,6 @@ sub stage1D_setupPackageSources()
 sub stage1D_updateBasicVendorOS()
 {
 	my $self = shift;
-
-	# chdir into vendor-os folder...
-	my $osDir = $self->{'vendor-os-path'};
-	vlog 2, "chrooting into $osDir...";
-	chdir $osDir
-		or die _tr("unable to chdir into '%s' (%s)\n", $osDir, $!);
-	# ...do chroot
-	chroot "."
-		or die _tr("unable to chroot into '%s' (%s)\n", $osDir, $!);
-
-	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
 
 	vlog 1, "updating basic vendor-os...";
 	$self->{'meta-packager'}->startSession();
@@ -905,7 +884,7 @@ sub clone_fetchSource
 				$self->{'vendor-os-path'});
 	my $excludeIncludeList = $self->clone_determineIncludeExcludeList();
 	vlog 1, "using exclude-include-filter:\n$excludeIncludeList\n";
-	my $rsyncCmd 
+	my $rsyncCmd
 		= "rsync -av --delete --exclude-from=- $source $self->{'vendor-os-path'}";
 	vlog 2, "executing: $rsyncCmd\n";
 	open(RSYNC, "| $rsyncCmd")
@@ -969,6 +948,20 @@ sub string2Array
             # drop empty lines and comments
 		map { $_ =~ s[^\s*(.*?)\s*$][$1]; $_ }
 		split "\n", $str;
+}
+
+sub chrootInto
+{
+	my $osDir = shift;
+
+	vlog 2, "chrooting into $osDir...";
+	chdir $osDir
+		or die _tr("unable to chdir into '%s' (%s)\n", $osDir, $!);
+	# ...do chroot
+	chroot "."
+		or die _tr("unable to chroot into '%s' (%s)\n", $osDir, $!);
+
+	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
 }
 
 1;

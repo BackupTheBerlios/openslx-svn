@@ -47,8 +47,8 @@ sub initPackageSources
 {
 	my $self = shift;
 
-	slxsystem("rm -f $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d/*");
-	slxsystem("mkdir -p $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d");
+	slxsystem("rm -f /etc/yum.repos.d/*");
+	slxsystem("mkdir -p /etc/yum.repos.d");
 }
 
 sub setupPackageSource
@@ -63,8 +63,7 @@ sub setupPackageSource
 		$repoURL .= "/$repoInfo->{'repo-subdir'}";
 	}
 	my $repoDescr = "[$repoName]\nname=$repoInfo->{name}\nbaseurl=$repoURL\n";
-	my $repoFile
-		= "$self->{engine}->{'vendor-os-path'}/etc/yum.repos.d/$repoName.repo";
+	my $repoFile = "/etc/yum.repos.d/$repoName.repo";
 	open(REPO, "> $repoFile")
 		or die _tr("unable to create repo-file <%s> (%s)\n", $repoFile, $1);
 	print REPO $repoDescr;
