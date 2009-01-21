@@ -644,8 +644,8 @@ chmod 755 ${INSTDIR}/init \
 # add the common default client configuration file - just to ensure to
 # have all major variables defined. !!These settings are most probably
 # are overwritten by fileget in stage3 within initramfs!!
-if [ -f /var/lib/opendiskless/default/initramfs/machine-setup ] ; then
-  cp /var/lib/opendiskless/default/initramfs/machine-setup \
+if [ -f /var/lib/opendiskless/config/default/initramfs/machine-setup ] ; then
+  cp /var/lib/opendiskless/config/default/initramfs/machine-setup \
     ${INSTDIR}/etc/machine-setup
 # use the installed default machine-setup.default
 elif [ -f /usr/share/opendiskless/templates/machine-setup.default ] ; then

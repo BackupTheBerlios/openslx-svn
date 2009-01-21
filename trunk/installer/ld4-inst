@@ -4,12 +4,12 @@
 #               cloning from rsync source for Diskless X Stations (v4.0)
 #
 # Author(s):    Nico Dietrich, 04-04-2006
-#		Dirk von Suchodoletz <dirk@goe.net>, 11-08-2006
+#		Dirk von Suchodoletz <dirk@goe.net>, 17-08-2006
 #               Michael Janczyk, <mj0>, 06-07-2006
 #
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:	0.2.1d
+# Version:	0.2.1e
 DEBUG=0
 
 header() {
@@ -242,8 +242,7 @@ configure() {
   # noetig??
   ask "Broadcast Address: " broadcast $broadcast
 
-  # evtl. optional? --> besser in ein komplett eigenes Setup-Skript fuer
-  # machine-setup
+  # optional, komplexere Konfiguration via TGZ und nicht Skriptomatik
   ask "Where automount home directories from? (A.B.C.D:/home-dir): " \
     amt $server":/home"
 
@@ -390,14 +389,14 @@ setup_server () {
   timestamp=`date +%Y%m%d-%H%M`
 
   # creating central dxs configuration directory structure if it doesn't exist
-  for dir in dhcp nfs atftpd pxelinux client.cfg init.local ; do
+  for dir in dhcp nfs atftpd pxelinux init.local ; do
     [ -d ${dxs_conf}/${dir} ] || mkdir -p ${dxs_conf}/${dir}
   done
 
   # copy the client configuration default file and replace root_pw - 
   # machine-setup
   sed -e "s,@@@root_pw@@@,'${root_pw}'," default_files/machine-setup.default \
-    > ${dxs_conf}/${dxs_client_conf}-${timestamp}
+    > ${dxs_cl_dir}/${dxs_client_conf}
 
   # creating new configuration files in $dxs_conf  
   # dhcp
@@ -474,8 +473,7 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
   for cfile in "${dxs_dhcpd_conf} ${dhcpd_conf}" \
                "${dxs_atftpd_conf} ${atftpd_conf}" \
                "${dxs_pxedefault_conf} ${tftpbootdir}/${pxedefault_conf}" \
-               "${dxs_exports_conf} ${exports_conf}" \
-               "${dxs_client_conf} ${client_conf}" ; do
+               "${dxs_exports_conf} ${exports_conf}" ; do
     set -- $cfile
 
     # check if file changed
@@ -528,13 +526,15 @@ footer() {
 
 pxedefault_conf="pxelinux.cfg/default"
 
-dxs_conf="/etc/dxs/"
+# config directory for the server side
+dxs_conf="/etc/dxs"
 dxs_dhcpd_conf="dhcp/dhcpd.conf"
 dxs_atftpd_conf="atftpd/atftpd"
 dxs_exports_conf="nfs/exports"
 dxs_pxedefault_conf="pxelinux/default"
-dxs_client_conf="client.cfg/machine-setup.default"
-
+# config directory for the client side
+dxs_cl_dir="/var/lib/opendiskless/config/default/initramfs"
+dxs_client_conf="machine-setup"
 
 
 header
