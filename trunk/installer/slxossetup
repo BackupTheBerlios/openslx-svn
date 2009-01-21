@@ -1,0 +1,141 @@
+#! /bin/bash
+#
+# slxossetup - OpenSLX script for OS setup
+#
+# (c) 2006 - OpenSLX.com
+#
+# Lars Müller <lm@openslx.com>
+#
+
+: ${SLX_CONFIG_PATH:=/etc/opt/openslx}
+: ${SLX_PRIVATE_PATH:=/var/opt/openslx}
+
+SLX_SYSTEM_NAME=$1
+test "$2" && \
+	SLX_OSSETUP_MODE=$2 ||
+	SLX_OSSETUP_MODE="install"
+
+PATH="/bin:/usr/bin"
+
+if test -z "${SLX_SYSTEM_NAME}"; then
+	echo "$0: Error, <system-name> not provided! "
+	exit 1
+fi
+SLX_SYSTEM_BASENAME="${SLX_SYSTEM_NAME%%-*}"
+SLX_SYSTEM_VARIANTNAME="${SLX_SYSTEM_NAME##*-}"
+test "${SLX_SYSTEM_VARIANTNAME}" = "${SLX_SYSTEM_BASENAME}" && \
+	unset SLX_SYSTEM_VARIANTNAME
+SLX_SYSTEM_CONFIG_PATH="${SLX_CONFIG_PATH}/systems/${SLX_SYSTEM_BASENAME}"
+
+# Read config files for a particular system
+for suffix in "" local ${SLX_SYSTEM_VARIANTNAME}; do
+	test -f "${SLX_SYSTEM_CONFIG_PATH}/settings${suffix:+.$suffix}" && \
+		. "${SLX_SYSTEM_CONFIG_PATH}/settings${suffix:+.$suffix}"
+done
+
+function slxossetup_rpm_suse()
+{
+	SLX_METADATA_PATH="${SLX_PRIVATE_PATH}/metadata/${SLX_SYSTEM_NAME}"
+	SLX_STAGE1_PATH="${SLX_PRIVATE_PATH}/stage1/${SLX_SYSTEM_NAME}"
+
+	for dir in ${SLX_METADATA_PATH} ${SLX_STAGE1_PATH}; do
+		if test -d "${dir}"; then
+			echo "$0: Error, ${dir} already exists! "
+			exit 1
+		fi
+	done
+
+	smart --data-dir="${SLX_METADATA_PATH}" \
+		config \
+		--set \
+		rpm-root="${SLX_STAGE1_PATH}"
+
+	for variable in ${!SLX_INST_SOURCE_BASEURL_*}; do
+		# Unset SMART_* to let smart fail if they are not set for a particular
+		# channel; unset PACKAGEKEYS to prevent adding them multiple times.
+		unset SMART_NAME SMART_TYPE PACKAGEKEYS
+		SMART_CHANNEL="${variable##*_}"
+		SMART_BASEURL=$( eval echo \$$variable)
+		SMART_NAME=$( eval echo \$SLX_INST_SOURCE_NAME_${SMART_CHANNEL})
+		SMART_TYPE=$( eval echo \$SLX_INST_SOURCE_TYPE_${SMART_CHANNEL})
+		PACKAGEKEYS=$( eval echo \$SLX_INST_SOURCE_PACKAGEKEYS_${SMART_CHANNEL})
+
+		smart --data-dir="${SLX_METADATA_PATH}" \
+			channel \
+			--add "${SMART_CHANNEL}" \
+			name="${SMART_NAME}" \
+			type="${SMART_TYPE}" \
+			baseurl=${SMART_BASEURL} \
+			-y
+
+		for packagekey in ${PACKAGEKEYS}; do
+			case "${packagekey}" in
+				*/*) ;;
+				*) packagekey="${SMART_BASEURL}/${packagekey}" ;;
+			esac
+			rpm --root="${SLX_STAGE1_PATH}" \
+				--import "${packagekey}"
+		done
+	done
+
+	smart --data-dir="${SLX_METADATA_PATH}" \
+		update
+
+	# Download and unpack prerequired packages before any package installation
+	SLX_PACKAGE_PATH="${SLX_METADATA_PATH}/packages"
+	test -d "${SLX_PACKAGE_PATH}" || \
+		mkdir -p "${SLX_PACKAGE_PATH}"
+	pushd "${SLX_PACKAGE_PATH}" >/dev/null
+	smart --data-dir="${SLX_METADATA_PATH}" \
+		download \
+		"${SLX_BASE_PREREQ_PACKAGES}"
+	popd >/dev/null
+
+	test -d "${SLX_STAGE1_PATH}" || \
+		mkdir -p "${SLX_STAGE1_PATH}"
+	pushd "${SLX_STAGE1_PATH}" >/dev/null
+	for package in "${SLX_PACKAGE_PATH}/*.rpm"; do
+		rpm2cpio ${package} | cpio -i --make-directories
+	done
+	# Cleanup etc to prevent .rpnnew files
+   # FIXME: This should be controled by the config file.
+	find etc/ -type f -print0 | \
+		xargs -0 rm -f
+
+	# Install base system files
+	for file in ${SLX_SYSTEM_CONFIG_PATH}/BASE_FILE_*; do
+		suffix="${file#${SLX_SYSTEM_CONFIG_PATH}/BASE_FILE_}"
+		dest_path=${suffix%__*}
+		dest_path="${dest_path//__//}"
+		dest_file="${suffix//__//}"
+		test -d ""${SLX_STAGE1_PATH}/${dest_path}" || \
+			mkdir ""${SLX_STAGE1_PATH}/${dest_path}"
+		cp -p "${file}" "${SLX_STAGE1_PATH}/${dest_file}"
+	done
+
+	unset packagelist
+	for variable in ${!SLX_INSTALL_PACKAGES_*}; do
+		packagelist="${packagelist} $( eval echo \$$variable)"
+	done
+
+	# Inform SUSE RPMs that we're doing installation
+	export YAST_IS_RUNNING="instsys"
+
+	smart --data-dir="${SLX_METADATA_PATH}" \
+		install \
+		${packagelist} \
+		-y
+}
+
+function slxossetup()
+{
+	case "${SLX_SYSTEM_BASENAME}" in
+		*suse*) slxossetup_rpm_suse ;;
+		*) echo "$0: Error, unkown system ${SLX_SYSTEM_BASENAME}" ;;
+	esac
+}
+
+case "${SLX_OSSETUP_MODE}" in
+	install) slxossetup ;;
+	*) echo "Usage: $0 system-name [install]" ;;
+esac
