@@ -317,7 +317,7 @@ setup_server () {
   done
 
   # copy the client configuration default file and replace root_pw - machine-setup
-  sed -e "s,@@@root_pw@@@,${root_pw}," \ 
+  sed -e "s,@@@root_pw@@@,'${root_pw}'," \
       default_files/machine-setup.default > ${dxs_conf}/${dxs_client_conf}-${timestamp}
 
   # creating new configuration files in $dxs_conf  
@@ -376,7 +376,7 @@ setup_server () {
 
     # check if file changed
     lastfile=`ls -lt ${dxs_conf}/${1}* | awk '{print $8}'| sed -n "2,2p"`
-    diff ${dxs_conf}/${1}-${timestamp} ${lastfile} >/dev/null
+    ! [ -z $lastfile ] && diff ${dxs_conf}/${1}-${timestamp} ${lastfile} >/dev/null
     if [ $? -eq 0 ] ; then
       echo "Configuration file ${2} didn't change - leaving unchanged"
       rm ${dxs_conf}/${1}-${timestamp}
