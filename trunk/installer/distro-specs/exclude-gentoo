@@ -7,3 +7,4 @@
 - /var/spool/*
 - /var/lib/xdm
 - /usr/share/vmware/*
+- /var/lib/init.d/*
