@@ -340,7 +340,8 @@ function install_slxselection()
 
 	local packagelist variable
 	for variable in ${!SLX_INSTALL_PACKAGES_*}; do
-		packagelist="${packagelist} $( eval echo \$$variable)"
+		packages=$( eval echo \$$variable)
+		packagelist="${packagelist:+$packagelist }$( eval echo \$$variable)"
 	done
 	test -z "${packagelist}" && \
 		return
