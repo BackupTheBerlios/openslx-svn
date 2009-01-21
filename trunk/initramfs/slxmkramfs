@@ -78,7 +78,7 @@ usage()
   echo "  -n   module list of client network adaptors to support"
   echo "  -r   path to the root of the stage1 system you are preparing"
   echo "       ramdisk for"
-  echo "  -s   screensize (for splash)"
+  echo "  -s   theme (for splash)"
   echo "  -d   debug (add special modules to initramfs)"
   echo "  -D   name of distribution (stage1)"
   echo "  -v   version of distribution (stage1)"
@@ -122,13 +122,7 @@ elif [ -L ${FPTB} ] ; then
 else
   cp ${FPTB} ${INSTDIR}/${DEST}
 fi
-# get an idea which libraries are needed
-# fixme: that might not work if executed on different architecture than
-# client root is
-chroot ${ROOTDIR} ldd ${FPTB#${ROOTDIR}*} >> ${INSTDIR}/tmp/libraries
-# possible solution: use the server binary, get library names and look
-# them up manually - fixme: does ldd understand foreign architecture
-# binaries
+slxldd.pl --root-path=${ROOTDIR} ${FPTB#${ROOTDIR}*} >>${INSTDIR}/tmp/libraries
 }
 
 # replace copy
@@ -179,42 +173,40 @@ copy_distro_stuff() {
 }
 
 # add a bootsplash image to the initial ramdisk, only SuSE at the moment
-add_splash () {
+add_theme() {
 
-splashsizes="$SPLASH"
-splashsizes="800x600 1024x768 1280x1024 1400x1050 1600x1200"
-splash_bin=$(chroot $ROOTDIR which splash)
+theme="${theme}"
+splashsizes="640x480 800x600 1024x768 1280x1024 1400x1050 1600x1200"
 splash_image=
-themes_dir=
-THEME="dxs"
+splash_bin=$(chroot $ROOTDIR which splash)
 if [ -n "$splashsizes" -a -n "$splash_bin" ]; then
-  # add themes created for OpenSLX client (might be different from distro
-  # theming
-  if [ -d ${SLX_SHARE_PATH}/themes/bootsplash/themes ]; then
-    themes_dir="${SLX_SHARE_PATH}/themes/bootsplash/themes"
-	# cp -a ${SLX_SHARE_PATH}/theming/bootsplash \
-	#   ${ROOTDIR}/${SLX_SHARE_PATH}/theming/bootsplash
-  elif [ -d "$ROOTDIR/etc/bootsplash/themes" ]; then
-    themes_dir="$ROOTDIR/etc/bootsplash/themes"
-	relthemesdir="/etc/bootsplash/themes"
-  elif [ -d "$ROOTDIR/usr/share/splash/themes" ]; then
-    themes_dir="$ROOTDIR/usr/share/splash/themes"
-	relthemesdir="/usr/share/splash/themes"
+  if [ -d "$SLX_SHARE_PATH/themes/${theme}/bootsplash" ]; then
+    themes_dir="$SLX_SHARE_PATH/themes/${theme}/bootsplash"
+  elif [ -d "$ROOTDIR/etc/bootsplash/themes/${theme}" ]; then
+    themes_dir="/etc/bootsplash/themes/${theme}"
+  elif [ -d "$ROOTDIR/usr/share/splash/themes/${theme}" ]; then
+    themes_dir="/usr/share/splash/themes/${theme}"
   fi
 
-  echo -ne "Bootsplash:\t"
+  #fixme: very ugly ;)
+  mkdir -p $ROOTDIR/tmp/bootsplash
+  cp -a $themes_dir/* $ROOTDIR/tmp/bootsplash
+  themes=${themes_dir%bootsplash}
+  echo -e "\n\tUsing ${themes} for themes.\n"
+  themes_dir=$ROOTDIR/tmp/bootsplash
+
   if [ -n "$themes_dir" -a \
-     -d "$themes_dir/$THEME" -o -L "$themes_dir/$THEME" ]; then
+     -d "$themes_dir" -o -L "$themes_dir" ]; then
     for size in $splashsizes; do
-      bootsplash_picture="$rethemesdir/$THEME/images/bootsplash-$size.jpg"
-      cfgname="$relthemesdir/$THEME/config/bootsplash-$size.cfg"
-      if [ ! -r $ROOTDIR/$cfgname ] ; then
-        echo "disabled for resolution $size"
-      elif [ ! -r $ROOTDIR/$bootsplash_picture ] ; then
-        echo "no image for resolution $size"
+      bootsplash_picture="$themes_dir/images/bootsplash-$size.jpg"
+      cfgname="$themes_dir/config/bootsplash-$size.cfg"
+      if [ ! -r $cfgname ] ; then
+        echo " disabled for resolution $size "
+      elif [ ! -r $bootsplash_picture ] ; then
+        echo " no image for resolution $size "
       else
         echo -n "${splash_image:+, }$THEME ($size)"
-        splash_image="$splash_image $cfgname"
+        splash_image=" $splash_image ${cfgname#$ROOTDIR} "
       fi
     done
     echo
@@ -261,7 +253,7 @@ while getopts :bhgk:i:r:o:s:f:n:Sut:d:D:v:I:V:a: a ; do
     f)  FSMODULES=$OPTARG;;
     n)  NWMODULES=$OPTARG ;;
     r)  ROOTDIR=$OPTARG;;
-    s)  SPLASH=$OPTARG;;
+    s)  theme=$OPTARG;;
     t)  INSTDIR=$OPTARG;;
     d)  IRFSDEBUG=$OPTARG;;
     D)  DISTRO=$OPTARG;;
@@ -504,16 +496,17 @@ case "${DISTRO}" in
     cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib;;
 esac
 
-# add needed libraries depending on choosen binaries. use chroot
-# on ldd, otherwise the detection does not work properly. ldd has to be
-# static linked binary
-# fixme: procedure might have to be changed
-for lib in `cat ${INSTDIR}/tmp/libraries 2>/dev/null | \
-  sed -e "s,tls,,;s,i686/cmov,," \
-  -ne 's:\t\(.* => \)\?\(/.*\) (0x[0-9a-f]*):\2:p' | sort -u` ; do
-  baselib=`basename ${lib}`
-  test -e  ${INSTDIR}/lib/${baselib} || \
-    cp /${ROOTDIR}/${lib} ${INSTDIR}/lib
+# copy all libraries that have been determined to be required:
+# first we handle all 64-bit libs...
+for lib in `fgrep /lib64/ ${INSTDIR}/tmp/libraries 2>/dev/null | sort -u` ; do
+  if ! [ -d ${INSTDIR}/lib64 ] ; then
+    mkdir ${INSTDIR}/lib64
+  fi
+  cp ${lib} ${INSTDIR}/lib64
+done
+# ...now copy 32-bit libs:
+for lib in `fgrep -v /lib64/ ${INSTDIR}/tmp/libraries 2>/dev/null | sort -u` ; do
+  cp ${lib} ${INSTDIR}/lib
 done
 rm ${INSTDIR}/tmp/libraries
 
@@ -650,7 +643,7 @@ strip  ${INSTDIR}/bin/*  ${INSTDIR}/lib/* &>/dev/null
 #########################################################################
 # End of file copy procedures
 
-[ -n "$SPLASH" ] && add_splash
+[ -n "$theme" ] && add_theme
 
 # finally create the compressed initial ramdisk cpio archive
 pushd . > /dev/null 2>&1
