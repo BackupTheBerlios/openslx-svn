@@ -253,44 +253,17 @@ local gw=$3
 local bc=$4
 local if=$5
 local ret=0
-for ipcfg in ip ifconfig none; do
-  test -x /bin/$ipcfg && break;
-done
-case $ipcfg in
-  # the standard linux ip configuration tool
-  ip)
-    ip link set dev $if up 2>/dev/null || ret=1
-    ip addr add $ip/`nm2pref $nm` broadcast $bc dev $if 2>/dev/null
-    if [ "$gw" != "0.0.0.0" ] ; then
-      ip route add default via $gw 2>/dev/null
-    fi
-    MAC=$(ip link show dev $if|sed -n "/ether [0-9e-f]\{2\}:.*/p" \
-      | sed -e "s/.*ether //;s/ .*//")
-    # if multicast is required for dnbd
-    [ -n "$nbdhost" -a "$ip" != 127.0.0.1 ] && { nbdhost=$(checkip $nbdhost) 
-      [ $(echo $nbdhost|sed "s,\..*,,") -ge 224 ] && \
-      ip route add 224.0.0.0/4 dev $if; }
-  ;;
-  # traditional ifconfig/route - if a distro does not provide ip
-  ifconfig)
-    if [ "$ip" = "0.0.0.0" ]; then
-      ifconfig $if up || ret=1
-    else
-      ifconfig $if $ip netmask $nm broadcast $bc || ret=1
-    fi
-    [ "$gw" != "0.0.0.0" ] && route add default gw $gw
-    MAC=$(ifconfig $if|sed -n "/HWaddr [0-9A-F]\{2\}:.*/p" \
-      | sed -e "s/.*HWaddr //;y/ABCDEF/abcdef/")
-    # if multicast is required for dnbd
-    [ -n "$nbdhost"  -a "$ip" != 127.0.0.1 ] && { nbdhost=$(checkip $nbdhost)
-      [ $(echo $nbdhost|sed "s,\..*,,") -ge 224 ] && \
-      route add -net 224.0.0.0 netmask 240.0.0.0 dev $if; }
-  ;;
-  none)
-    error "$error_iptool"
-    ret=1
-  ;;
-esac
+ip link set dev $if up 2>/dev/null || ret=1
+ip addr add $ip/`nm2pref $nm` broadcast $bc dev $if 2>/dev/null
+if [ "$gw" != "0.0.0.0" ] ; then
+  ip route add default via $gw 2>/dev/null
+fi
+MAC=$(ip link show dev $if|sed -n "/ether [0-9e-f]\{2\}:.*/p" \
+  | sed -e "s/.*ether //;s/ .*//")
+# if multicast is required for dnbd
+[ -n "$nbdhost" -a "$ip" != 127.0.0.1 ] && { nbdhost=$(checkip $nbdhost) 
+  [ $(echo $nbdhost|sed "s,\..*,,") -ge 224 ] && \
+  ip route add 224.0.0.0/4 dev $if; }
 # if something got wrong with the setup of the primary ethernet interface
 [ $ret -gt 0 -a $if = "eth0" ] && error "$init_noeth"
 return $ret
@@ -358,7 +331,7 @@ fi
 rundhcp ()
 {
 local vci="$1"
-for dhcp in dhclient dhcpcd udhcpc none; do
+for dhcp in dhclient udhcpc none; do
   test -e /bin/$dhcp && break;
 done
 if [ "$dhcp" = "none" ] ; then
@@ -367,8 +340,7 @@ else
   # ensure the interface is up - might produce conflicts - nbd could
   # fail!!
   [ -n "$noipyet" ] && \
-    ipsetup 0.0.0.0 255.255.255.255 0.0.0.0 255.255.255.255 eth0 \
-      2>/dev/null
+    ip link set dev eth0 up
   [ -f /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko ] && \
     loadmod /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko \
       "needed for dhcp";
@@ -383,13 +355,7 @@ case $dhcp in
     dhclient -cf /etc/dhclient.conf -lf /var/lib/dhcp/dhclient.leases \
       -q eth0 >/dev/null 2>&1 || error "$error_dhclient"
   ;;
-  dhcpcd)
-    [ -n $vci ] && vci="-i $vci"
-    ln -s /bin/dhcpmkconfig /bin/dhcpcd.exe
-    dhcpcd $vci -L /var/lib/dhcp -c /bin/dhcpcd.exe -T -t 30 eth0 \
-      >/dev/null 2>&1 || error "$error_dhcpcd"
-  ;;
-  # udhcpc is part of busybox
+  # udhcpc is a busybox applet
   udhcpc)
     [ -n $vci ] && vci="-V $vci"
     testmkd /usr/share/udhcpc

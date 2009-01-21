@@ -1,15 +1,18 @@
 #!/bin/sh
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
 #
-# universal (distro independent) IP configuration writer for several dhcp 
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# Universal (distro independent) IP configuration writer for several dhcp 
 # clients used within OpenSLX initramfs. The result is written in unified
 # form to the /etc/machine-setup file
-#
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 09-01-2007
-# Lars Mueller, 23-06-2006
-# Oliver Tappe, 23-06-2006
-# Michael Janczyk, 09-01-2007
-#
-# (c) 2006 - RZ Universitaet Freiburg
 
 # client variable should be exported via calling function
 cfgfile="/tmp/confviadhcp"
@@ -51,9 +54,6 @@ enabled via kernel command\n# line)." >>$cfgfile
         -e "s,language=,country=,;s,ip_address,clientip," \
           >>$cfgfile
      fi
-  ;;
-  *pump*)
-    dhcl="pump"; echo -e "$cfgmsg\n$infomsg" >>$cfgfile
   ;;
   *udhcpc*)
     dhcl="udhcpc"; echo -e "$cfgmsg\n$infomsg" >>$cfgfile

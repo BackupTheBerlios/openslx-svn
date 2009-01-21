@@ -9,7 +9,7 @@
 #
 # General information about OpenSLX can be found at http://openslx.org
 #
-# messages file for all error and info messages generated during client
+# Messages file for all error and info messages generated during client
 # bootup (within initialramfs) for OpenSLX linux diskless clients version 4
 # this file could be used for localization of error messages 
 
@@ -119,9 +119,6 @@ error_nfe="\n  -> Dieser Fehler ist nicht schwerwiegend - setze fort ...\n"
 error_shell="\n  -> Fuehre Shell aus zum Debuggen ...\n"
 error_modload="Es schlug fehl, folgendes Modul zu laden:"
 error_modnfs="gebraucht zum einhaengen des Wurzel Dateisystems"
-error_iptool="  Kein Wergzeug fuer die lokale IP Konfiguration gefunden.\
- Sie sollten wenigstens eins der folgenden Programme in ihre ramdisk laden:\n\
- ip ipconfig ifconfig."
 error_portm="  Der Portmapper sollte praesent sein, wenn normale ,,mount''-Befehle \
 verwendet werden. \nBitte pruefen Sie die Einrichtung ihres Initialramfs \
 (slxmkramfs/mkdxsinitrd)."
@@ -136,8 +133,6 @@ error_dhcp="  Die folgenden Probleme koennten den Fehler verursachen:\n\
 'lsmod' ausfuehren."
 error_dhclient="  Schwerer Fehler aufgetreten beim Aufrufen von dhclient.\n\
 $error_dhcp"
-error_dhcpcd="   Schwerer Fehler aufgetreten beim Aufrufen von dhcpcd.\n$error_dhcp"
-error_pump="  Konfiguration mit pump ist noch nicht implementiert.\n$error_dhcp"
 error_ldapcfg="  Die Konfiguration via ldap ist noch nicht implementiert."
 error_errdcfg="  Bis jetzt noch keine Konfigurationsdaten bekommen via dhcp .."
 error_errfcfg="  Bis jetzt noch keine Konfigurationsdaten bekommen via tftp ..."

@@ -10,7 +10,7 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# universal (distro independent) hardware autoconfiguration script for 
+# Universal (distro independent) hardware autoconfiguration script for 
 # OpenSLX linux diskless clients, using hwconfig from knoppix as base tool 
 
 #############################################################################

@@ -9,7 +9,7 @@
 #
 # General information about OpenSLX can be found at http://openslx.org
 #
-# messages file for all error and info messages generated during client
+# Messages file for all error and info messages generated during client
 # bootup (within initialramfs) for OpenSLX linux diskless clients version 4
 # this file could be used for localization of error messages 
 
@@ -113,9 +113,6 @@ error_nfe="\n  -> This error is not fatal - continuing ...\n"
 error_shell="\n  -> Running shell for debugging purposes now ...\n"
 error_modload="Failed to load module "
 error_modnfs="needed for mounting rootfs"
-error_iptool="  No tool for local IP configuration found. You should at \
-least add\n  one of the following programs to your ramdisk: ip \
-ipconfig\n  ifconfig."
 error_portm="  Portmapper should be present, if normal mount \
 command is used. Please\n  check your initial ramdisk setup (mkdxsinitrd)."
 error_mntt="  No suitable mount tool found."
@@ -128,8 +125,6 @@ error_dhcp="  The following problems could produce that error:\n\
     was loaded nor present in kernel.\n  You might want to run 'lsmod'."
 error_dhclient="  Fatal error occured while trying to run dhclient.\n\
 $error_dhcp"
-error_dhcpcd="  Fatal error occured while trying to run dhcpcd.\n$error_dhcp"
-error_pump="  Config via pump not implemented yet.\n$error_dhcp"
 error_ldapcfg="  The configuration via ldap is not implemented yet."
 error_errdcfg="  Did not get any configuration data via dhcp until now ..."
 error_errfcfg="  Did not get any configuration data via tftp until now ..."
