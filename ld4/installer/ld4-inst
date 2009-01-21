@@ -3,8 +3,8 @@
 # Description:  Script for generating dxs filesystem by
 #               cloning from rsync source for Diskless X Stations (v4.0)
 #
-# Author(s):    Nico Dietrich
-#		Dirk von Suchodoletz <dirk@goe.net>, 02-11-2005
+# Author(s):    Nico Dietrich, 22-03-2006
+#		Dirk von Suchodoletz <dirk@goe.net>, 30-03-2006
 #
 # Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
 #
@@ -208,7 +208,9 @@ configure() {
 
 copy_system() {
   echo -e "\n\nSyncing system now\nPlease enter root password of client machine\n"
-  rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-${client_distro}-${client_distro_ver} ${rsyncsource} ${rootdir} || { echo "Rsync failed" ; exit 1 ; }
+  rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-common \
+    --exclude-from=distro-specs/exclude-${client_distro}-${client_distro_ver} \
+    ${rsyncsource} ${rootdir} || { echo "Rsync failed" ; exit 1 ; }
 
   # generate error message in case rsync didn't work and exit.
 
@@ -302,7 +304,7 @@ setup_server () {
     current_initrd=${tftpbootdir}/initrd-dxs-${current_kernel}
 
     if [ $j -eq 0 ] ; then
-      default_string="       MENU DEFAULT\n"
+      default_string="\tMENU DEFAULT\n"
     else
       default_string=""
     fi

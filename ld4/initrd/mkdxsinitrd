@@ -100,6 +100,7 @@ chroot ${ROOTDIR} ldd.server ${FPTB#${ROOTDIR}*} >> ${INSTDIR}/tmp/libraries
 repco()
 {
 local FILENAME=$1
+DATE=`date +%m-%d-%Y`
 # do not forget to define all variables which should be replaced within
 # the start and configuration scripts. All comment lines will be deleted.
 if [ -d initrd-stuff/${FILENAME} ] ; then
@@ -115,7 +116,7 @@ else
         -e "s,@@@NWMODULES@@@,${NWMODULES},g" \
         -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
         -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
-	-e "/^#[^!].*/d" \
+	-e "s,@@@DATE@@@,${DATE},g;/^#[^!].*/d" \
           initrd-stuff/${FILENAME} >> ${INSTDIR}/${FILENAME}
   fi
 fi

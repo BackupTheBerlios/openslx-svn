@@ -2,13 +2,11 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-03-2006
-#		Bla
-#		Blub
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 30-03-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.3c
+# Version:      0.2.3d
 
 # functions common for all distros
 errmsg="functions file contains a lot of script \
@@ -20,7 +18,7 @@ functionality. Without this\ninit script will not run."
 specific configuration file could not be found" && exit 1 )
 
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
-export date="23-03-2006"
+export date="@@@DATE@@@"
 
 export DEBUGLEVEL=0
 export KERNEL="@@@KERNVER@@@"
@@ -166,7 +164,7 @@ if [ "${DEBUGLEVEL}" -gt 0 ] ; then
   LOGFILE="/var/log/dxs-boot.log"
   echo "1 4 1 7" >/proc/sys/kernel/printk
   [ "${DEBUGLEVEL}" -eq 2 ] && MODPRV="-v"
-  [ "${DEBUGLEVEL}" -gt 2 ] && { 
+  [ "${DEBUGLEVEL}" -gt 3 ] && { 
     set -x
     # modprobe should be verbose
     MODPRV="-v";
@@ -425,10 +423,11 @@ and list the modules loaded until\n  now."
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null
 
-[ $DEBUGLEVEL -gt 1 ] && sh
-
 # post init for some distro specific
 postinit
+
+# start a debug shell in higher debug levels
+[ $DEBUGLEVEL -gt 2 ] && /bin/sh
 
 # unmount the bind mounted modules directory
 for i in 0 40 100 200 300 500 800 1000 1200; do

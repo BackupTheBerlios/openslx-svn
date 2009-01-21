@@ -25,6 +25,11 @@ postinit () {
   :
 }
 
+# distro specific function called from servconfig script
+config_distro () {
+  :
+}
+
 # AUS SuSE-9.3
 # udev/hotplug - auto device discovery service
 udev_hotplug () {
