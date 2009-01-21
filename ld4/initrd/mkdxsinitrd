@@ -151,6 +151,8 @@ copy_distro_stuff() {
   cat distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig/config
   cat distro-specs/$1/functions-$2 >>${INSTDIR}/etc/distro-functions
   # would be cool not to copy .svn here ...
+  # fixme!! works only for etc directories. If dir exists then next copy places
+  # file into the existing dir
   cp -a distro-specs/$1/files-$2 ${INSTDIR}/etc/sysconfig/files 2>/dev/null
   # ... so remove them afterwards ...
   find ${INSTDIR}/etc/sysconfig/files \

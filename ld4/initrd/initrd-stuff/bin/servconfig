@@ -24,7 +24,7 @@
 . /mnt/etc/${D_SYSCONFDIR}/logfile
 
 # heavy debugging output in level 3 and above ...
-[ $DEBUGLEVEL -gt 2 ] && set -x
+[ $DEBUGLEVEL -gt 3 ] && set -x
 
 #######################################################################
 # copy distro specific scripts, programs, libraries and configs
@@ -145,7 +145,7 @@ esac
 #######################################################################
 # 
 # run distro specific configuration function
-config-distro
+config_distro
 
 
 #######################################################################

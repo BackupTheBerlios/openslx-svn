@@ -263,7 +263,7 @@ done
 . /etc/distro-functions
 
 # heavy debugging output in level 3 and above ...
-[ $DEBUGLEVEL -gt 2 ] && set -x
+[ $DEBUGLEVEL -gt 3 ] && set -x
 
 # set X11 configuration file
 if [ -n "${D_XF86CONFFILE}" ] ; then
@@ -479,7 +479,7 @@ if strinstr "/var/X11R6" "$link" ; then
   done
 fi
 # wait for completion of Xorg configuration
-waitfor /tmp/xready 1000
+waitfor /tmp/xready 10000
 cp /etc/xorg.conf ${D_XF86CONFFILE}
 
 echo "finished" > /tmp/hwcfg
