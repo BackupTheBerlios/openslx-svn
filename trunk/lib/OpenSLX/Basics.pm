@@ -261,7 +261,7 @@ sub _tr
 
 	my $formatStr = $translations{$trKey};
 	if (!defined $formatStr) {
-		vlog 1, "Translation key '$trKey' not found.";
+		vlog 2, "Translation key '$trKey' not found.";
 		$formatStr = $trOrig;
 	}
 	return sprintf($formatStr, @_);
