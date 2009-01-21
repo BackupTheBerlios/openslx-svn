@@ -26,7 +26,7 @@ SYSCONFDIR=/default
 DISETCEXCL="etc/gconf/*\n*.old\n*-\n\
 etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
 pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
-X11/xdm/pixmaps\ndhclient.script\ninit.d/boot.d/*\n\
+X11/xdm/pixmaps\ndhclient.script\n\
 rc2.d/*\nrc5.d/*"
 BINDMPTS="tmp root home"
 DIRINBINDMNT="/var/run /var/log /var/tmp"
@@ -41,7 +41,7 @@ DISBINDMNT="# "
 INITDIR="/init.d"
 INITBOOTD="/rcS.d"
 RCDIRS="/rc0.d /rc1.d /rc2.d /rc3.d /rc4.d /rc5.d /rc6.d"
-INITSCRIPTS="boot.udev boot.proc boot.shm boot.klog boot.loadmodules boot.clock boot.localnet boot.sysctl boot.ipconfig"
+INITSCRIPTS="udev procps.sh bootlogd keymap.sh hwclock.sh sudo"
 XF86CONFFILE="/etc/X11/xorg.conf"
 XFONTPATH="/usr/X11R6/lib/X11/fonts/*"
 DEFAULTCOUNTRY="de"

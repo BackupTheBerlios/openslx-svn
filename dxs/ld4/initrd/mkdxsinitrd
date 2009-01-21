@@ -131,7 +131,7 @@ shared_object_files() {
 	    lib="${lib:1}" ;;
 	*)
 	    # Library could not be found.
-	    oops 7 "Dynamic library $lib not found"
+	    echo "Dynamic library $lib not found"
 	    continue ;;
 	esac
 
@@ -167,7 +167,7 @@ resolve_modules() {
 	    --show-depends $module 2> /dev/null \
 	    | sed -ne 's:.*insmod /\?::p' )
 	if [ -z "$module_list" ]; then
-	    oops 7 "Cannot determine dependencies of module $module." \
+	    echo "Cannot determine dependencies of module $module." \
 		"Is modules.dep up to date?"
 	fi
 	echo "$module_list"
@@ -271,7 +271,7 @@ mkdir -p ${INSTDIR}/usr/share
 mkdir -p ${INSTDIR}/etc/sysconfig
 
 # source configuration file for the distribution used
-DISTRO=suse
+DISTRO=debian
 case "${DISTRO}.${DISVER}" in
   SuSE*|suse*|Suse*|SuSe*)
 	DISTRO=suse-10.0
@@ -367,8 +367,8 @@ for lib in `shared_object_files ${INSTDIR}/bin/*` ; do
 done
 
 # add kernel modules and dependency files
-KERNVER=2.6.13-15.7-default
-#KERNVER=2.6.12-10-386
+#KERNVER=2.6.13-15.7-default
+KERNVER=2.6.12-10-386
 NWMODULES="e100 tg3 via-rhine"
 FSMODULES="nbd nfs"
 

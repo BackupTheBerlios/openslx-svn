@@ -32,7 +32,7 @@ if [ -x /bin/udev -a -x /bin/udevstart ] ; then
 #  else
     echo "/bin/udev" > /proc/sys/kernel/hotplug
 #  fi
-  /bin/udevstart &
+  /bin/udevstart 
 elif [ -x /bin/hotplug ] ; then
   echo "Enabling hotplug"
   echo "/bin/hotplug" > /proc/sys/kernel/hotplug
@@ -165,6 +165,8 @@ else
 fi
 # get configuration data via dhcp (with vendor code identifier if present in 
 # ${VCI} or ldap if available (in background)
+echo "dhcp:!:13117:0:99999:7:::" > /etc/passwd
+echo "dhcp:x:101:" > /etc/group
 [ -n "$DHCP" ] && rundhcp ${VCI} &
 if [ -n "$noipyet" ] ; then
   waitfor /tmp/dhcp-done 20000
@@ -342,7 +344,7 @@ waitfor /tmp/svcfg 20000 || error "  For some reason the software config \
 of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
 date
-#ash
+bash
 # IP configuration is made and should not be updated automatically
 killall -9 dhcpcd dhclient pump 2>/dev/null
 # unmount the bind mounted modules directory

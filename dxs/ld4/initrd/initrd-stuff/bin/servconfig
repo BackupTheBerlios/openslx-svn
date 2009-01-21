@@ -86,6 +86,11 @@ test -n "$domain_name_servers" && {
 # delete and create runlevel links for initial booting (SuSE, Debian,
 # ...)
 case ${DISTRO} in
+  suse*)
+    ${SUSESPECIFICSUBDIR} = "boot.d/"
+  ;;
+esac
+case ${DISTRO} in
   suse*|debian*|ubuntu*)
     for i in ${RCDIRS} ${INITBOOTD} ; do
       rm -f /mnt/etc/$i/*
@@ -94,8 +99,8 @@ case ${DISTRO} in
     for i in ${INITSCRIPTS}; do 
       count=`expr $count + 1`
       revcnt=`expr 41 - $count`
-      ln -sf /etc${INITDIR}/$i /mnt/etc/init.d/boot.d/S${count}$i
-      ln -sf /etc${INITDIR}/$i /mnt/etc/init.d/boot.d/K${revcnt}$i
+      ln -sf /etc${INITDIR}/$i /mnt/etc/init.d/${SUSESPECIFICSUBDIR}S${count}$i
+      ln -sf /etc${INITDIR}/$i /mnt/etc/init.d/${SUSESPECIFICSUBDIR}K${revcnt}$i
     done
   ;;
   gentoo*)

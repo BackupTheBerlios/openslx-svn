@@ -26,6 +26,7 @@ local stop="$3"
 for i in rc3.d/K$stop$script rc5.d/K$stop$script \
          rc3.d/S$start$script rc5.d/S$start$script ; do
   ln -sf ../$script /mnt/etc/init.d/$i
+  echo "Linked $script"
 done
 }
 
