@@ -2,7 +2,7 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 31-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-02-2006
 #		Bla
 #		Blub
 #
@@ -215,7 +215,7 @@ as root filesystem."
   echo "Diskless client using ${NBD} server $nbdhost:$nbdport,$nbdfs"
   if [ -z "$nbdfs" ]; then 
     RFST=ext2; 
-  else 
+  else
     RFST=$nbdfs;
     modprobe ${MODPRV} ${RFST} || error "  Failed to load the requested \
 filesystem module for the client root\n  filesystem ontop of the (D)NBD."
@@ -238,8 +238,8 @@ filesystem module for the client root\n  filesystem ontop of the (D)NBD."
       usleep 20
     ;;
   esac
+  mount -o ro $RDEV /mnt
 fi
-
 # if no type of root filesystem is passed via kernel command line try
 # information gathered from dhcp process
 if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" -a -z "${NFSROOT}" ] ; then
@@ -389,6 +389,7 @@ of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
 # close runlevel script for stuff to execute during early bootup
 d_mkbootld close
+ash
 # IP configuration is made and should not be updated automatically, udevd
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null

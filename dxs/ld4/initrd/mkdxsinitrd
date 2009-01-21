@@ -3,11 +3,11 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 30-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-02-2006
 #		Nico Dietrich
 #		Blub
 #
-# Version:      0.3.0c
+# Version:      0.3.1a
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 
@@ -54,7 +54,7 @@ binfinder()
 {
   local PROGRAM="$1"
   local RET=1
-  for ELEMENT in sbin bin usr/bin usr/sbin usr/local/bin usr/bin/X11; do
+  for ELEMENT in bin sbin usr/bin usr/sbin usr/local/bin usr/bin/X11; do
     if [ -f "${ROOTDIR}/$ELEMENT/$PROGRAM" ] && [ -x "${ROOTDIR}/$ELEMENT/$PROGRAM" ]; then
       printf '%s\n' "${ROOTDIR}/$ELEMENT/$PROGRAM"
       RET=0
@@ -72,6 +72,10 @@ local DEST=$2
 local FPTB=`binfinder $1`
 if [ -z ${FPTB} ] ; then
   return 1;
+elif [ -L ${FPTB} ] ; then
+  # do not copy the link but the binary the link points to
+  FPTB=${ROOTDIR}/`ls -la ${FPTB} | sed -e "s,.* ,,"`
+  cp ${FPTB} ${INSTDIR}/${DEST}
 else
   cp ${FPTB} ${INSTDIR}/${DEST}
 fi
@@ -358,9 +362,8 @@ copy_distro_stuff ${DISTRO} ${DISTRO_VER}
 #if no klibc
 for bbins in ash bash sh; do
   if cobi ${bbins} bin ; then 
-    LRCSH=/bin/${bbins}
-    ln -fs /bin/${bbins} ${INSTDIR}/bin/sh
-    [ "${bbins}" != "bash" ] && ln -fs /bin/${bbins} ${INSTDIR}/bin/bash
+    ln -fs ${bbins} ${INSTDIR}/bin/sh
+    [ "${bbins}" != "bash" ] && ln -fs ${bbins} ${INSTDIR}/bin/bash
     break
   else echo "Binary not found (${bbins})"; fi
 done
@@ -368,7 +371,6 @@ done
 # if no klibc
 for bbins in ip ifconfig; do
   if cobi ${bbins} bin ; then 
-    LRCIP=/bin/${bbins} 
     [ "${bbins}" = "ifconfig" ] && cobi route bin
     break
   else echo "Binary not found"; fi
@@ -414,6 +416,16 @@ mkdir -p ${INSTDIR}/var/lib/nfs/state
 
 # if nbd
 # cobi nbd-client bin
+if [ -n ${FSMODULES} ] ; then
+  case ${FSMODULES} in
+    dnbd*)
+      cobi dnbd-client bin
+    ;;
+    nbd*)   
+      cobi nbd-client bin
+    ;;
+  esac
+fi
 
 # distro specific additional stuff
 case "${DISTRO}" in 
