@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 #
 # Description:  Script for generating dxs filesystem by
 #               cloning from rsync source for Diskless X Stations (v4.0)
@@ -204,7 +204,7 @@ configure() {
 
 copy_system() {
   echo -e "\n\nSyncing system now\nPlease enter root password of client machine\n"
-  rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-${client_distro} ${rsyncsource} ${rootdir} || { echo "Rsync failed" ; exit 1 }
+  rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-${client_distro} ${rsyncsource} ${rootdir} || { echo "Rsync failed" ; exit 1 ; }
 
   # generate error message in case rsync didn't work and exit.
 
