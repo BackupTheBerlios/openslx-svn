@@ -9,8 +9,8 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# distro specific settings for general SuSE. This configuration is the base
-# for following SuSE versions: 9.3 - 10.2
+# Distro specific settings for general SuSE. This configuration is the base
+# for following (Open)SuSE versions: 9.3 - 10.2
 
 # D_SYSCONFDIR - system wide configuration settings - /etc/sysconfig in SuSE 
 # and RedHat, /etc/default in Debian and Ubuntu

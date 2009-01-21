@@ -15,19 +15,21 @@
 
 # some specific stuff to initialize
 preinit () {
-# fake the existence of some helper binaries (which are not of any use
+# fake the existence of some helper binaries/scripts (which are not of any use
 # within initialramfs)
-shell="/bin/sh"
+local shell="/bin/sh"
+local item
 if [ -x /bin/busybox ] ; then
   shell="/bin/ash"
 else
-  for i in hwup ifup ; do
+  for item in hwup ifup ; do
     echo -e "#!$shell\n:" >/sbin/$i
   done
   mkdir /lib/udev /usr/sbin
-  for i in usb_id scsi_id vol_id edd_id ata_id path_id cdrom_id idedma.sh \
-           mount.sh rename_netiface firmware.sh create_floppy_devices ; do
-    echo -e "#!$shell\n:" >/lib/udev/$i
+  for item in usb_id scsi_id vol_id edd_id ata_id path_id cdrom_id idedma.sh \
+           mount.sh rename_netiface firmware.sh create_floppy_devices \
+           trigger_firmware_loading.sh ; do
+    echo -e "#!$shell\n# do nothing here\n:" >/lib/udev/$i
   done
   echo -e "#!$shell\n:" >/usr/sbin/alsactl
   rm /etc/udev/rules.d/60-persistent-storage.rules 2>/dev/null
@@ -63,10 +65,9 @@ rllinker powersaved "11" "11"
 }
 
 # configure dbus (inter application communication for kde and gnome), hal
-# (hardware abstraction layer - used e.g. by powersaved) and resmgr
-# (resource manager - the user gets permissions to devices when loggin on)
-# runlevel script for haldaemon is now haldaemon instead of hal. For KDE
-# and GNOME a new concept was introduced: 
+# (hardware abstraction layer - used e.g. by powersaved), resmgr and 
+# policykitd (resource manager/policykitd - the user gets permissions to 
+# devices when loggin on)
 config_dreshal () {
 local start="05"
 local stop="18"
@@ -123,7 +124,7 @@ nfsd\t\t/proc/fs/nfsd\tnfsd\t\tdefaults\t 0 0" >>/tmp/fstab
 echo -e "\t# stuff needed for nfsv4\n\tmount -t rpc_pipefs rpc_pipefs \
 /var/lib/nfs/rpc_pipefs\n\tmount -t nfsd nfsd /proc/fs/nfsd" \
 >>/mnt/etc/${D_INITDIR}/boot.ld
-# portmap is required
+# portmap is required for any NFS
 config_portmap
 rllinker "idmapd" "14" "08"
 rllinker "gssd" "15" "07"
@@ -161,7 +162,7 @@ fi
 
 # set up keytable (function run in hwautocfg)
 # kbd runlevel link is in the list of initial runlevel scripts (see 
-# config-10.1 file)
+# suse/config-10.2 file)
 keytable () {
 # remove unneeded components from the startscript
 sed -e "/wanted keytable/,/^fi$/d;/load usb drivers/,/^esac$/d" \

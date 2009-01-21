@@ -1,10 +1,16 @@
-# distro specific settings for SuSE 10.1. This configuration might change
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# Distro specific settings for SuSE 10.1. This configuration might change
 # settings from SuSE default configuration file
-#
-# Dirk von Suchodoletz <dirk@goe.net>, 15-07-2006
-#
-# (c) 2003, 2006 - RZ Universitaet Freiburg
-# (c) 2006 OpenSLX.org Project
 
 # D_SYSCONFDIR - system wide configuration settings - /etc/sysconfig in SuSE
 # D_ETCEXCL - list of files, wildcards to be excluded from /etc when using
@@ -24,5 +30,7 @@
 # D_BOOTLOCAL - script for user specified stuff which should be started
 # during client bootup, path and file relative to /etc
 
-D_INITSCRIPTS="kbd boot.udev boot.proc boot.klog boot.loadmodules boot.clock boot.sysctl boot.ipconfig boot.swap"
-D_RODIRSINRW="/etc/opt/gnome/gconf /etc/X11/xkb /var/adm /var/lib/texmf /var/lib/rpm /var/cache/fontconfig"
+D_INITSCRIPTS="kbd boot.udev boot.proc boot.klog boot.loadmodules boot.clock \
+boot.sysctl boot.ipconfig boot.swap"
+D_RODIRSINRW="/etc/opt/gnome/gconf /etc/X11/xkb /var/adm /var/lib/texmf \
+/var/lib/rpm /var/cache/fontconfig"
