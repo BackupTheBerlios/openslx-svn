@@ -55,7 +55,7 @@ local Monitor='\tIdentifier "Default"\n
 \tOption\t"CalcAlgorithm"\t"CheckDesktopGeometry"\n
 \tHorizSync\tHS\n
 \tVertRefresh\tVS\n
-\tUseModes\t"Default"\n
+\t#UseModes\t"Default"\n
 \tOption\t"DPMS"\t"true"'
 local Modes='\tIdentifier "Default"'
 local Modelines='
@@ -117,6 +117,16 @@ systems color depth failed.\n  $msg" nonfatal
   CDP=${DEFAULTCOLORDPT}
 fi
 
+#OPTIMIZEME: Optimiere den dreifachen aufruf von Screenres
+VERTSR=`screenres | sed -n '/Vertical Frequency Range/s/[^0-9]* \([0-9-]*\)/\1/p'`
+HORISR=`screenres | sed -n '/Horizontal Frequency Range/s/[^0-9]* \([0-9-]*\)/\1/p'`
+if [ -n "$HORISR" ]; then 
+  HS=$HORISR
+fi
+if [ -n "$VERTSR" ]; then
+  VS=$VERTSR
+fi
+
 if [ -n "$hw_monitor" ] ; then
   # just cut all starting from k(Hz) ...
   HS=${hw_monitor%k*}
@@ -133,17 +143,6 @@ else
 complete\n  or non existant. The $0 script tried for a fully automatic\n\
   configuration of display"
 fi
-
-#Auskommentiert, da noch nicht getestet
-#FIXMEE: Optimiere den dreifachen aufruf von Screenres
-#VERTSR=`screenres | sed -n '/Vertical Frequency Range/s/[^0-9]* \([0-9-]*\)/\1/p'`
-#HORISR=`screenres | sed -n '/Horizontal Frequency Range/s/[^0-9]* \([0-9-]*\)/\1/p'`
-#if [ -n "$HORISR" ]; then 
-#  HS=$HORISR
-#fi
-#if [ -n "$VERTSR" ]; then
-#  VS=$VERTSR
-#fi
 
 if [ -z "$HS" ] ; then error "  $msg timings requested but could not \
 establish\n  horizontal frequency in kHz." nonfatal
