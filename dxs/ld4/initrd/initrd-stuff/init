@@ -383,16 +383,18 @@ and list the modules loaded until\n  now."
 waitfor /tmp/svcfg 20000 || error "  For some reason the software config \
 of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
+# close runlevel script for stuff to execute during early bootup
+d_mkbootld close
 # IP configuration is made and should not be updated automatically, udevd
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null
 # unmount the bind mounted modules directory
-umount -n /lib/modules/${KERNEL} 2>/dev/null || {
-  usleep 40 && umount -n /lib/modules/${KERNEL} || \
-  error "Unmount of the kernel modules directory failed for some reason."
-}
-# close runlevel script for stuff to execute during early bootup
-d_mkbootld close
+for i in 0 40 100 200 300 500 800 1000 1200; do
+  usleep $i && umount -n /lib/modules/${KERNEL} 2>/dev/null && break
+  error "  Waited $i ticks to unmount kernel module directory ..." nonfatal
+done
+[ $i -gt 1000 ] && error "  Unmount of the kernel modules directory \
+failed for some reason. Some\n  modprobe still active!?"
 # check for inittab file
 test -f /mnt/etc/inittab || error "  The file /etc/inittab does not exist or \
 is no regular one. It is needed\n  for the bootup procedure to follow."
