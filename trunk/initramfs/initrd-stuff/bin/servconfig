@@ -11,7 +11,7 @@
 #
 # universal (distro independent) configuration script for OpenSLX linux
 # diskless clients (executed in stage3 within initial ramfs). The file-
-# system is setup when servconfig starts
+# system setup is completed when servconfig starts
 
 #############################################################################
 # check for configuration files to source
@@ -24,6 +24,7 @@
 # specific functions may overwrite functions defined in /etc/functions
 . /etc/sysconfig/config
 . /etc/distro-functions
+. /etc/sysconfig/slxconfig
 # get location of logfile definition
 . /mnt/etc/${D_SYSCONFDIR}/logfile
 
@@ -58,10 +59,10 @@ cfgcomplete
 cp -a /rootfs/* /mnt 2>/dev/null
 
 # set greeting and add information on booted system (distro)
-len=$(expr length $DISTRO)
-dstr="$DISTRO)"
-while [ $len -le 16 ] ; do
-  dstr="$dstr "
+len=$(expr length ${SLXVERSION}${DISTRO})
+vdstr="v${SLXVERSION}/${DISTRO})"
+while [ $len -le 20 ] ; do
+  vdstr="$vdstr "
   len=$(expr $len + 1)
 done
 len=$(expr length $host_name)
@@ -78,7 +79,7 @@ echo "
          |  |_|  |  |    |  |___|  |  |  |   ____|  |  |___ /  /
            _____/|__|    |______|__|  |__|  |_______|______|__|  |__|
 
-   Diskless Workstation (v4.0.8/$dstr (c) <OpenSLX.ORG project>
+   Stateless Workstation ($vdstr (c) <OpenSLX.ORG project>
 ">/mnt/etc/issue
 
 #############################################################################

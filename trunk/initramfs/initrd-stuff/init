@@ -39,6 +39,7 @@ export DEBUGLEVEL=0
 export KERNEL="${slxconf_kernver}"
 export NWMODULES="${slxconf_listnwmod}"
 export DISTRO="${slxconf_distro}"
+export SLXVERSION="${slxconf_slxver}"
 
 # do not use dnbd cache file
 nodnbdcache="yes"
@@ -656,6 +657,6 @@ umount -n /proc
 # unset old environment variables
 unset debug date initrd ip dnbdroot nbdroot nfsroot rootfs ticks vci vga
 unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
-  UDEVD_EXPECTED_SEQNUM PATH
+  SLXVERSION UDEVD_EXPECTED_SEQNUM PATH
 # new style of pivoting (switch_root or run-init in klibc)
 exec /bin/switch_root -c dev/console /mnt /sbin/init || error "$init_runinit"

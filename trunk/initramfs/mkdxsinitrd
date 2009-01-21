@@ -96,8 +96,8 @@ usage()
   echo "        Kernelmodule (misc) die nicht von -n bzw. -f abgedeckt werden"
   echo "        (z.B. xenbr for xen network bridge)."
   echo "  -r path"
-  echo "        Pfad zum Wurzelverzeichnis des zu exportierenden  Betriebsystems"
-  echo "        (z.B. /export/10.1)."
+  echo "        Pfad zum Wurzelverzeichnis des Ausgangssystems (Vendor-OS)"
+  echo "        (z.B. /var/opt/openslx/stage1/suse-10.2)."
   echo "  -s theme (for splash)"
   echo "  -d debug (add special modules to initramfs)"
   echo "  -D Name"
@@ -192,8 +192,10 @@ else
         -e "s,@@@DATE@@@,${DATE},g;/^#[^!].*/d" \
           ${SLX_SHARE_PATH}/initramfs/${FILENAME} >> ${INSTDIR}/${FILENAME}
      # ugly hack for creating a general slx config file instead of "patching"
-     # the stage3 init
-     echo -e "slxconf_date=${DATE}\nslxconf_kernver=${KERNVER}\nslxconf_listnwmod=\"${NWMODULES}\"\nslxconf_distro=${DISTRO}-${DISTRO_VER}" > ${INSTDIR}/etc/sysconfig/slxconfig
+     # the stage3 init - fixme: version string should be added in a more clever way
+     echo -e "slxconf_date=${DATE}\nslxconf_kernver=${KERNVER}\n\
+slxconf_listnwmod=\"${NWMODULES}\"\nslxconf_distro=${DISTRO}-${DISTRO_VER}\n\
+slxconf_slxver=\"4.0.8b\"" > ${INSTDIR}/etc/sysconfig/slxconfig
      [ "$use_busybox" = 1 ] && sed -e "s,^#!/bin/sh,#!/bin/ash," \
        -i ${INSTDIR}/${FILENAME}
   fi

@@ -31,8 +31,21 @@ PATH=\"\$PATH:/var/X11R6/bin\"\n\
 test \"\$UID\" -ge 100 && PATH=\"\$PATH:.\"\n\
 QTDIR=/usr/lib/qt3\nexport QTDIR\nno_proxy='localhost'\n\
 export no_proxy" > /mnt/etc/SuSEconfig/profile
-echo -e "DXS VERSION = 4.1.0\nINITRAMFS GENERATION DATE = $date" \
+echo -e "SLX VERSION = $SLXVERSION\nINITRAMFS GENERATION DATE = $date" \
   >> /mnt/etc/SuSE-release
+# create a stateless specific halt script
+echo -e '#!/bin/sh\n# script generated in InitRamFS (SLX stage3)
+. /etc/rc.status\n
+trap "echo" SIGINT SIGSEGV SIGQUIT SIGTERM\nset +e\n\n
+case "$0" in\n\t*halt)
+\t   message="The system will be halted immediately."
+\t   command="halt -p"\n\t   ;;\n\t*reboot)\n
+\t   message="Please stand by while rebooting the system..."
+\t   command="reboot"\n\t   ;;\nesac\n
+rc_reset\ntest -e /etc/init.d/halt.local && {
+\techo Running /etc/init.d/halt.local\n\t/bin/sh /etc/init.d/halt.local
+\trc_status -v1 -r\n}
+echo $message\nexec $command -d -f' > /mnt/etc/${D_INITDIR}/halt
 # add the halt link to the 0 and 6 runlevel directories
 ln -sf ../halt /mnt/etc/${D_INITDIR}/rc0.d/S20halt
 ln -sf ../halt /mnt/etc/${D_INITDIR}/rc6.d/S20reboot

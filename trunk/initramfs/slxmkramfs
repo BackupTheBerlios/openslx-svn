@@ -91,7 +91,7 @@ usage()
   echo "  -m   module list of otherwise uncovered modules, e.g. xen stuff"
   echo "  -n   module list of client network adaptors to support"
   echo "  -r   path to the root of the stage1 system you are preparing"
-  echo "       ramdisk for"
+  echo "       ramdisk for e.g. /var/opt/openslx/stage1/suse-10.2"
   echo "  -s   settings-file"
   echo "  -T   theme (for splash)"
   echo "  -d   debug (add special modules to initramfs)"
@@ -316,6 +316,8 @@ mkdir -p ${INSTDIR}/etc/sysconfig
 if [ -n "${settings_file}" ] ; then
 	# copy settings file (slxconfig) into the right place:
 	cp $settings_file ${INSTDIR}/etc/sysconfig/slxconfig
+	# fixme: echo version number
+	echo 'slxconf_slxver="4.0.8b"' >> ${INSTDIR}/etc/sysconfig/slxconfig 
 fi
 
 # if still no distro name set, try to find it using significant files
