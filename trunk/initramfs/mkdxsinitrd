@@ -84,6 +84,7 @@ usage()
   echo "  -r path"
   echo "        Pfad zum Wurzelverzeichnis des Ausgangssystems (Vendor-OS)"
   echo "        (z.B. /var/opt/openslx/stage1/suse-10.2)."
+  echo "  -S name of the system for which the initramfs is built"
   echo "  -s theme (for splash)"
   echo "  -t tpm support (client security)"
   exit 0
