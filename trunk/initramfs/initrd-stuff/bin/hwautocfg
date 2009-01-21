@@ -354,7 +354,7 @@ modprobe ${MODPRV} snd-mixer-oss
 test -f /proc/bus/usb/devices || \
   mount -n -t usbfs usbfs /proc/bus/usb 2>/dev/null
 [ -n "$IDE" ] && modprobe -q ide_generic 2>/dev/null 
-usleep 200 && hwsetup -v > /tmp/hwsetup.info
+usleep 100 && hwsetup -v > /tmp/hwsetup.info
 # remaining drivers listed in /tmp/hwsetup.info
 cat /tmp/hwsetup.info| while read LINE ; do
   if strinstr "driver:" "${LINE}"; then
@@ -368,9 +368,9 @@ cat /tmp/hwsetup.info| while read LINE ; do
   fi
 done
 # check if USB mouse and/or keyboard is connected and remove usbhid if
-# not
-strinfile "genericwheelusb" /tmp/hwsetup.info || \
-  (strinfile "keybdev" /tmp/hwsetup.info || rmmod usbhid)
+# not (does not work properly)
+#strinfile "genericwheelusb" /tmp/hwsetup.info || \
+#  (strinfile "keybdev" /tmp/hwsetup.info || rmmod usbhid)
 
 # load IDE high level drivers
 if [ -n "$IDE" ] ; then
@@ -439,7 +439,7 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
       # if mounting of temp partion fails fall back to tmpfs on /tmp
       mount -n -o nocheck,noexec $hdpartnr /mnt/tmp 2>/dev/null || \
         mount -n -t tmpfs none /mnt/tmp 
-      echo "$hdpartnr is mounted to /tmp" > /tmp/tmpready ) &
+      echo "$hdpartnr is mounted to /tmp at $(sysup)" > /tmp/tmpready ) &
     echo -e "$hdpartnr\t/tmp\t\text2\t\tdefaults\t 0 0" >> /tmp/fstab
     part44=yes
     break
@@ -453,7 +453,7 @@ noexec\t 0 0" >> /tmp/fstab
   done 
 done
 # determine if tmp preparation should wait for format/mount or not
-[ -z "$part44" ] && echo "finished" > /tmp/tmpready
+[ -z "$part44" ] && echo "finished at $(sysup)" > /tmp/tmpready
 
 # wait for completion of clients root filesystem in /mnt and add
 # previously generated files to /mnt/etc ...
@@ -468,14 +468,12 @@ echo -e "\t# entries added by $0: $date" >> /mnt/etc/${D_INITDIR}/boot.ld
 [ -n "${KEYTABLE}" ] && keytable
 [ -n "${CONSOLE_FONT}" ] && consolefont
 
-# finalize X configuration
-# only if X is link itself (normally to /var/X11R6/bin/X) check!!
-link=`ls -l /mnt/usr/X11R6/bin/X 2>/dev/null`
-if strinstr "/var/X11R6" "$link" ; then
+# finalize X configuration XBinPath contains pointer of to X binary
+# in /var/X11R6/bin/X - only needed if var is set
+displayvars
+if [ -n $XBinPath ] ; then
   testmkd /mnt/var/X11R6/bin
-  for i in /usr/X11R6/bin/Xorg /usr/X11R6/bin/XFree86 ; do
-    [ -e "/mnt/$i" ] && { ln -sf $i /mnt/var/X11R6/bin/X; break; }
-  done
+  ln -sf $XBinPath /mnt/var/X11R6/bin/X
 fi
 # if any new device appeared up to now
 if [ -x /bin/mdev ] ; then
@@ -495,4 +493,4 @@ cp /etc/xorg.conf ${D_XF86CONFFILE}
 # script run timer
 [ $DEBUGLEVEL -eq 8 ] && echo "** HW setup finished at $(sysup)"
 
-echo "finished" > /tmp/hwcfg
+echo "hwsetup finished at $(sysup)" > /tmp/hwcfg
