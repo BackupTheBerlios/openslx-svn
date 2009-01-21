@@ -67,4 +67,4 @@ in dem sich die meisten Konfigurationsdateien befinden und Projektdaten landen.
 Das Installationsskript ruft ld4/initrd/mkdxsinitrd auf, welches ein Initramfs
 fuer die Diskless X Stations generiert. Nach jedem Kernel-Update oder
 Aenderungen, die den Initialstart betreffen, muss es neu aufgerufen werden.
-Siehe auch http://www.openslx.org !!
+Siehe auch http://www.openslx.org/
