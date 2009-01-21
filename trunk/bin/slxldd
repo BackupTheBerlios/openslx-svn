@@ -61,7 +61,7 @@ if ($versionReq) {
 openslxInit();
 
 if (!$rootPath) {
-	print _tr("You need to specify the root-path!\n");
+	print STDERR _tr("You need to specify the root-path!\n");
 	pod2usage(2);
 }
 
@@ -69,7 +69,7 @@ $rootPath =~ s[/+$][];
 	# remove trailing slashes
 
 if (!@ARGV) {
-	print _tr("You need to specify at least one file!\n");
+	print STDERR _tr("You need to specify at least one file!\n");
 	pod2usage(2);
 }
 
@@ -81,7 +81,8 @@ foreach my $file (@ARGV) {
 		$file = "$rootPath$file";
 	}
 	if (!-e $file) {
-		die _tr("slxldd: unable to find file '%s'\n", $file);
+		print STDERR _tr("slxldd: unable to find file '%s', skipping it\n", $file);
+		next;
 	}
 	push @filesToDo, $file;
 }
@@ -173,38 +174,38 @@ sub addLibsForBinary
 	my $binary = shift;
 
 	# first do some checks:
-	print STDERR "analyzing '$binary'...\n" if $verbose;
+	print STDERR _tr("analyzing '%s'...\n", $binary) if $verbose;
 	my $fileInfo = `file --dereference --brief --mime $binary 2>/dev/null`;
 	chomp $fileInfo;
-	print STDERR "\tinfo is: '$fileInfo'...\n" if $verbose;
+	print STDERR _tr("\tinfo is: '%s'...\n", $fileInfo) if $verbose;
 	if ($?) {
 		die _tr("unable to fetch file info for $binary, giving up!\n");
 	}
 	if ($fileInfo !~ m[^application/(x-executable|x-shared)]i) {
 		# ignore anything that's not an executable or a shared library
-		print STDERR "$binary: ignored, as it isn't an executable or a shared library\n";
+		print STDERR _tr("%s: ignored, as it isn't an executable or a shared library\n", $binary);
 		next;
 	}
 
 	my $bitwidth = ($fileInfo =~ m[64-bit]i) ? 64 : 32;
 		# determine whether binary is 32- or 64-bit platform
-	
+
 	# now find out about needed libs, we first try objdump...
-	print STDERR "\ttrying objdump...\n" if $verbose;
+	print STDERR _tr("\ttrying objdump...\n") if $verbose;
 	my $res = `objdump -p $binary 2>/dev/null`;
 	if (!$?) {
 		# find out if rpath is set for binary:
 		my $rpath;
 		if ($res =~ m[^\s*RPATH\s*(\S+)]im) {
 			$rpath = $1;
-			print STDERR "\trpath='$rpath'\n" if $verbose;
+			print STDERR _tr("\trpath='%s'\n", $rpath) if $verbose;
 		}
 		while($res =~ m[^\s*NEEDED\s*(.+?)\s*$]gm) {
 			addLib($1, $bitwidth, $rpath);
 		}
 	} else {
 		# ...objdump failed, so we try readelf instead:
-		print STDERR "\ttrying readelf...\n" if $verbose;
+		print STDERR _tr("\ttrying readelf...\n") if $verbose;
 		$res = `readelf -d $binary 2>/dev/null`;
 		if ($?) {
 			die _tr("neither objdump nor readelf seems to be installed, giving up!\n");
@@ -213,7 +214,7 @@ sub addLibsForBinary
 		my $rpath;
 		if ($res =~ m/Library\s*rpath:\s*\[([^\]]+)/im) {
 			$rpath = $1;
-			print STDERR "\trpath='$rpath'\n" if $verbose;
+			print STDERR _tr("\trpath='%s'\n", $rpath) if $verbose;
 		}
 		while($res =~ m{\(NEEDED\)[^\[]+\[(.+?)\]\s*$}gm) {
 			addLib($1, $bitwidth, $rpath);
