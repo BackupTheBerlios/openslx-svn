@@ -101,6 +101,21 @@ foreach my $row (@rows) {
 	}
 }
 
-# $metaDB->schemaDropTable('test2');
+$metaDB->schemaDropTable('test2');
+
+addGroup($odlxDB, {
+		'name' => "Fell-PCs",
+		'descr' => "Fell-Threemansion PCs from 2002",
+});
+
+addGroup($odlxDB, {
+		'name' => "Teacher-PCs",
+		'descr' => "all PCs sitting on teacher's desks",
+});
+
+addGroup($odlxDB, {
+		'name' => "PCs in 234",
+		'descr' => "all PCs of room 234",
+});
 
 disconnectConfigDB($odlxDB);
