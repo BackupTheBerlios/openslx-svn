@@ -22,10 +22,6 @@ use vars qw(%translations);
 ################################################################################
 
 %translations = (
-	q{$rootPath/etc/ld.so.conf not found, maybe wrong root-path?\n}
-	=>
-	qq{$rootPath/etc/ld.so.conf not found, maybe wrong root-path?\n},
-
 	q{%s doesn't seem to be installed,\nso there is no support for %s available, sorry!\n}
 	=>
 	qq{%s doesn't seem to be installed,\nso there is no support for %s available, sorry!\n},
@@ -37,6 +33,14 @@ use vars qw(%translations);
 	q{%s: ignored, as it isn't an executable or a shared library\n}
 	=>
 	qq{%s: ignored, as it isn't an executable or a shared library\n},
+
+	q{'%s' already exists!\n}
+	=>
+	qq{'%s' already exists!\n},
+
+	q{'%s' not found, maybe wrong root-path?\n}
+	=>
+	qq{'%s' not found, maybe wrong root-path?\n},
 
 	q{\trpath='%s'\n}
 	=>
@@ -170,6 +174,10 @@ use vars qw(%translations);
 	=>
 	qq{ignoring unknown key <%s>},
 
+	q{List of supported systems:\n\t}
+	=>
+	qq{List of supported systems:\n\t},
+
 	q{Lock-file <%s> exists, script is already running.\nPlease remove the logfile and try again if you are sure that no one else\nis executing this script.\n}
 	=>
 	qq{Lock-file <%s> exists, script is already running.\nPlease remove the logfile and try again if you are sure that no one else\nis executing this script.\n},
@@ -214,6 +222,10 @@ use vars qw(%translations);
 	=>
 	qq{slxldd: unable to find file '%s', skipping it\n},
 
+	q{Sorry, system '%s' is unsupported.\n}
+	=>
+	qq{Sorry, system '%s' is unsupported.\n},
+
 	q{system-error: illegal target-path <%s>!}
 	=>
 	qq{system-error: illegal target-path <%s>!},
@@ -250,9 +262,9 @@ use vars qw(%translations);
 	=>
 	qq{unable to execute shell-command:\n\t%s \n\t(%s)},
 
-	q{unable to fetch file info for $folder/$lib, giving up!\n}
+	q{unable to fetch file info for '%s', giving up!\n}
 	=>
-	qq{unable to fetch file info for $folder/$lib, giving up!\n},
+	qq{unable to fetch file info for '%s', giving up!\n},
 
 	q{Unable to load DB-module <%s> (%s)\n}
 	=>
@@ -274,6 +286,14 @@ use vars qw(%translations);
 	=>
 	qq{Unable to load module <%s> (Version <%s> required, but <%s> found)},
 
+	q{Unable to load system-module <%s> (%s)\n}
+	=>
+	qq{Unable to load system-module <%s> (%s)\n},
+
+	q{Unable to load system-module <%s>!\n}
+	=>
+	qq{Unable to load system-module <%s>!\n},
+
 	q{Unable to write local settings file <%s> (%s)}
 	=>
 	qq{Unable to write local settings file <%s> (%s)},
@@ -284,15 +304,15 @@ use vars qw(%translations);
 
 	q{UnknownDbSchemaColumnDescr}
 	=>
-	qq{Unknown DbSchema column description <%s> found},
+	qq{UnknownDbSchemaColumnDescr},
 
 	q{UnknownDbSchemaCommand}
 	=>
-	qq{Unknown DbSchema command <%s> found},
+	qq{UnknownDbSchemaCommand},
 
 	q{UnknownDbSchemaTypeDescr}
 	=>
-	qq{Unknown DbSchema type description <%s> found},
+	qq{UnknownDbSchemaTypeDescr},
 
 	q{upgrade done}
 	=>
@@ -314,6 +334,10 @@ use vars qw(%translations);
 	=>
 	qq{You need to specify at least one file!\n},
 
+	q{You need to specify exactly one system name!\n}
+	=>
+	qq{You need to specify exactly one system name!\n},
+
 	q{You need to specify the root-path!\n}
 	=>
 	qq{You need to specify the root-path!\n},
@@ -325,6 +349,7 @@ use vars qw(%translations);
 
 
 1;
+
 
 
 

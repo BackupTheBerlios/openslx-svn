@@ -22,10 +22,6 @@ use vars qw(%translations);
 ################################################################################
 
 %translations = (
-	q{NEW:$rootPath/etc/ld.so.conf not found, maybe wrong root-path?\n}
-	=>
-	qq{},
-
 	q{NEW:%s doesn't seem to be installed,\nso there is no support for %s available, sorry!\n}
 	=>
 	qq{},
@@ -35,6 +31,14 @@ use vars qw(%translations);
 	qq{},
 
 	q{NEW:%s: ignored, as it isn't an executable or a shared library\n}
+	=>
+	qq{},
+
+	q{NEW:'%s' already exists!\n}
+	=>
+	qq{},
+
+	q{NEW:'%s' not found, maybe wrong root-path?\n}
 	=>
 	qq{},
 
@@ -170,6 +174,10 @@ use vars qw(%translations);
 	=>
 	qq{},
 
+	q{NEW:List of supported systems:\n\t}
+	=>
+	qq{},
+
 	q{NEW:Lock-file <%s> exists, script is already running.\nPlease remove the logfile and try again if you are sure that no one else\nis executing this script.\n}
 	=>
 	qq{},
@@ -214,6 +222,10 @@ use vars qw(%translations);
 	=>
 	qq{},
 
+	q{NEW:Sorry, system '%s' is unsupported.\n}
+	=>
+	qq{},
+
 	q{NEW:system-error: illegal target-path <%s>!}
 	=>
 	qq{},
@@ -250,7 +262,7 @@ use vars qw(%translations);
 	=>
 	qq{},
 
-	q{NEW:unable to fetch file info for $folder/$lib, giving up!\n}
+	q{NEW:unable to fetch file info for '%s', giving up!\n}
 	=>
 	qq{},
 
@@ -271,6 +283,14 @@ use vars qw(%translations);
 	qq{},
 
 	q{NEW:Unable to load module <%s> (Version <%s> required, but <%s> found)}
+	=>
+	qq{},
+
+	q{NEW:Unable to load system-module <%s> (%s)\n}
+	=>
+	qq{},
+
+	q{NEW:Unable to load system-module <%s>!\n}
 	=>
 	qq{},
 
@@ -314,6 +334,10 @@ use vars qw(%translations);
 	=>
 	qq{},
 
+	q{NEW:You need to specify exactly one system name!\n}
+	=>
+	qq{},
+
 	q{NEW:You need to specify the root-path!\n}
 	=>
 	qq{},
@@ -321,6 +345,7 @@ use vars qw(%translations);
 );
 
 1;
+
 
 
 
