@@ -1,12 +1,13 @@
 # Description:  messages file for all error and info messages generated during
 #		bootup (within initialramfs) for linux diskless clients 
-#		version 4 
+#		version 4
+#		this file could be used for localization of error messages 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 01-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 02-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.0.3a
+# Version:      0.0.3b
 
 # messages from init
 init_errmsg="functions file contains a lot of script \
@@ -14,9 +15,6 @@ functionality. Without this\ninit script will not run."
 init_mff="The main $init_errmsg"
 init_dff="The distro $init_errmsg"
 init_dscf="The distribution specific configuration file could not be found"
-init_errnbd="  Failed to load \
-module ${NBD}.ko. It is needed if you intend to use\n  network block \
-device (D)NBD for the client as root filesystem."
 init_errip="  Unable to setup at \
 least basic functionality, because no IP configuration\n  available. You \
 might pass that information via kernel command line\n  through setting of \
@@ -29,11 +27,63 @@ with dhcp!"
 init_errnwad="  Failed to load the network \
 adaptor modules defined via mkdxsinitrd\n  run. Please rerun and list the \
 appropriate modules (without .ko)."
+init_errdhcp="  Did not get complete IP \
+configuration via DHCP. You may want to add\n  a vendor code identifier \
+via kernel commandline (vci=VCI)."
+init_errnbd="  Failed to load \
+module ${NBD}.ko. It is needed if you intend to use\n  network block \
+device (D)NBD for the client as root filesystem."
+init_nbdcl="  Failed to start \
+the network block device client. Unable to mount root\n  filesystem."
+init_nbddev="  For some reason the network block device /dev/${NBD}0 never \
+appeared.\n  You might want to check udev or your list of static device \
+files."
+init_moddir="  The requested modules directory does not exist. That could \
+mean:\n  * The kernel was updated but mkdxsinitrd was not run afterwards.\n\
+  * The mounted filesystem does not contain the modules directory at all.\n\
+  You might want to check the list of mounted filesystems and if /mnt is\n\
+  not empty run 'ls /mnt/lib/modules' to check."
+init_loadufs="  Loading of UnionFS failed - Either module is not present or \
+module\n  does not match the running kernel. If you do not want to see this \
+\n  message remove the token 'unionfs' from kernel command line."
+init_loadcow="  Loading of Copy On Write (COW - special block device) module \
+failed -\n  Either module is not present or module does not match the \
+running\n  kernel. If you do not want to see this message remove the token \
+'cowloop' from kernel command line."
+init_cownonbd="  Loading of cow module is of no sense if no network block \
+device is used or\n  UnionFS was specified as read write layer too. Remove \
+UnionFS token from\n  kernel commandline if cowloop should be used instead."
+init_ldcfg="Starting ldconfig - switch it off via kernel cmdline option \
+'noldsc'"
+init_errlog="Unable to create the logfile configuration in \
+/etc/${D_SYSCONFDIR}. That\n  might indicate some severe error."
+init_fstab="Failed to create /etc/fstab in the clients root filesystem. The\n\
+  noexistence of the file might produce some unexpected behaviour of\n\
+  mount commands."
+init_errldcfg="  For some reason the generation of ld.so.cache did not \
+finish in time."
+init_infldcfg="  You decided not to recreate \
+/etc/ld.so.cache file. That might cause errors\n  if libraries are installed \
+after this file was created on server."
+init_errcfg="of this client did not finish in\n  time. You might check the \
+process list and list the modules loaded until\n  now."
+init_errhw="  For some reason the hardware autoconfig $init_errcfg"
+init_errsw="  For some reason the software configuration  $init_errcfg"
+init_wait="  Waited $i ticks to unmount kernel module directory ..."
+init_errumnt="  Unmount of the kernel modules directory \
+failed for some reason. Some\n  modprobe still active!?"
+init_erritab="  The file /etc/inittab does not exist or \
+is no regular one. It is needed\n  for the bootup procedure to follow."
+init_errsys="  Unmount of the kernel sys directory \
+failed for some\nreason.  You will get some error messages that some files \
+could not be\n  removed."
+init_runinit="  Could not execute \
+run-init due to missing command or wrong\n  parameters given."
 
 # messages from functions
 error_msg="An error occured during execution of $0 script:\n\n"
-error_nfe="This error is not fatal - continuing ...\n"
-error_shell="Running shell for debugging purposes now ...\n"
+error_nfe="\n  -> This error is not fatal - continuing ...\n"
+error_shell="\n  -> Running shell for debugging purposes now ...\n"
 error_modload="Failed to load module "
 error_modnfs="needed for mounting rootfs"
 error_iptool="  No tool for local IP configuration found. You should at \
@@ -48,6 +98,9 @@ running kernel - see error messages above\n\
 error_portm="  Portmapper should be present, if normal mount \
 command is used. Please\n  check your initial ramdisk setup (mkdxsinitrd)."
 error_mntt="  No suitable mount tool found."
+error_nodhcp="  You tried to configure system via dhcp, but no usable dhcp\n\
+  client could be found. Please check that you have some client from\n\
+  the following list installed: dhclient dhcpcd pump ipconfig."
 error_dhcp="  The following problems could produce that error:\n\
   * The af_packet.ko module is either not loaded nor present in kernel.\n\
   * No network device is present - either no module matching the hardware\n\
@@ -65,6 +118,8 @@ df_errserv="seems not to be installed or start script is not available\n  \
 so requesting the start of service make no sense. Please disable service\n  \
 or install the files needed."
 df_errudev="  udev daemon is not available. Some devices might not apprear."
+df_errhotpl="  Hotplug subdirectory is missing! udev(d) might not work as \
+expected."
 df_errcron="  The cron start script $df_errserv" 
 df_errsysl="  The syslog start script $df_errserv"
 df_errsshd="  The sshd start script $df_errserv"

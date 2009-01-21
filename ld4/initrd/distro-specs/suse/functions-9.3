@@ -44,8 +44,7 @@ echo -e "DXS VERSION = 4.0a\nINITRAMFS GENERATION DATE = $date" \
 # udev/hotplug - auto device discovery service
 udev_hotplug () {
 local result=0
-[ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "  Hotplug subdirectory \
-is missing! udev(d) might not work as expected." nonfatal
+[ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "$df_errhotpl" nonfatal
 echo "Enabling hotplug/udev"
 udevstart || result=1
 udevd -d || result=1
@@ -107,7 +106,7 @@ if [ "x$start_cron" = "xyes" ] ; then
 \nMAILTO=\n-*/15 * * * *\troot\ttest -x /usr/lib/cron/run-crons && \
 /usr/lib/cron/run-crons >/dev/null 2>&1\n" >/mnt/etc/crontab
   else
-    error $df_errcron nonfatal
+    error "$df_errcron" nonfatal
   fi 
 fi
 }
@@ -125,7 +124,7 @@ if [ "x$start_syslog" = "xyes" ] ; then
       cp /etc/syslog-ng.conf /mnt/etc/syslog-ng/syslog-ng.conf
       rllinker syslog "02" "20"
   else
-    error $df_errsysl nonfatal
+    error "$df_errsysl" nonfatal
   fi
 fi
 }
@@ -138,7 +137,7 @@ if [ "x$start_sshd" = "xyes" ] ; then
     testmkd /mnt/var/lib/empty
     rllinker "sshd" "12" "10"
   else
-    error $df_errsshd nonfatal
+    error "$df_errsshd" nonfatal
   fi
 fi
 }
@@ -380,7 +379,7 @@ if [ -f /mnt/etc/${D_SYSCONFDIR}/autofs ] ; then
   if [ -n "${automnt_src}" ] ; then
     # local directory and home directory server from machine-setup
     [ -z "${automnt_dir}" ] && automnt_dir="/home"
-    strinstr "/" "${automnt_dir}" && error $df_erratpld nonfatal
+    strinstr "/" "${automnt_dir}" && error "$df_erratpld" nonfatal
     automnt_dir=${automnt_dir#/}
     echo -e "/home\t/etc/auto.${automnt_dir}\n" >> /mnt/etc/auto.master
     echo -e "# /etc/auto.${automnt_dir} created by $0:\n" \

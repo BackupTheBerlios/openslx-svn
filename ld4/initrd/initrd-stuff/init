@@ -135,7 +135,7 @@ nfsroot=\"${NFSROOT}\"\n" >> /etc/machine-setup
 done
 # load block device driver if needed
 if [ -n "${NBD}" ] ; then
-  modprobe ${MODPRV} ${NBD} || error $init_errnbd 
+  modprobe ${MODPRV} ${NBD} || error "$init_errnbd"
 fi
 # check if at least one type of IP configuration is availabe
 if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
@@ -144,12 +144,12 @@ if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
     . /etc/machine-setup
     IPINFO="ip=$clientip:$serverip:$gateway:$subnet_mask"
   else
-    error $init_errip 
+    error "$init_errip"
   fi
 fi
 # for ldap configuration at least basic IP setup is needed to contact the
 # server
-[ -z "$DHCP" -a -n "$LDAP" -a -z "$IPINFO" ] && error $init_errldap
+[ -z "$DHCP" -a -n "$LDAP" -a -z "$IPINFO" ] && error "$init_errldap"
 # set debug level and logfile
 echo "Setting debuglevel to ${DEBUGLEVEL}"
 export MODPRV=" "
@@ -172,9 +172,7 @@ else
   LOGFILE="/dev/null"
 fi
 # load network adaptor modules
-modprobe ${MODPRV} -a ${NWMODULES} || error "  Failed to load the network \
-adaptor modules defined via mkdxsinitrd\n  run. Please rerun and list the \
-appropriate modules (without .ko)."
+modprobe ${MODPRV} -a ${NWMODULES} || error "$init_errnwad"
 # set up loopback networking (ipsetup - function defined in /etc/functions)
 ipsetup 127.0.0.1 255.0.0.0 0.0.0.0 127.255.255.255 lo
 # analyze ip information from the kernel command line and put parts
@@ -201,9 +199,7 @@ if [ -n "$noipyet" ] ; then
   waitfor /tmp/dhcp-done 20000
   . /etc/machine-setup
   [ -z "$clientip" -o -z "$subnet_mask" -o -z "$gateway" \
-    -o -z "$broadcast_address" ] && error "  Did not get complete IP \
-configuration via DHCP. You may want to add\n  a vendor code identifier \
-via kernel commandline (vci=VCI)."
+    -o -z "$broadcast_address" ] && error "$init_errdhcp"
   ipsetup $clientip $subnet_mask $gateway $broadcast_address eth0
 fi
 # ... or ldap if available (in background)
@@ -224,20 +220,13 @@ if [ -n "${NBD}" ] ; then
   fi
   echo "Diskless client using ${NBD} on $nbdhost:$nbdport with $RFST"
   # fixme: check for fs in /proc/filesystems before trying to load the module
-  modprobe ${MODPRV} ${RFST} || error "  Failed to load the requested \
-filesystem module for the client root\n  filesystem ontop of the (D)NBD." \
-    nonfatal
-
-  errmsg="  For some reason the network block device /dev/${NBD}0 never \
-appeared.\n  You might want to check udev or your list of static device \
-files."
+  modprobe ${MODPRV} ${RFST} || error "$init_errnbd" nonfatal
 
   case "${NBD}" in
     # network block device present in standard kernel
     nbd)
-      waitfor /dev/nbd0 10000 || error $errmsg
-      nbd-client $nbdhost $nbdport /dev/nbd0 || error "  Failed to start \
-the network block device client. Unable to mount root\n  filesystem."
+      waitfor /dev/nbd0 10000 || error "$init_nbddev"
+      nbd-client $nbdhost $nbdport /dev/nbd0 || error "$init_nbdcl"
       RDEV=/dev/nbd0
     ;;
     # dnbd by Thorsten Zitterell
@@ -249,7 +238,7 @@ the network block device client. Unable to mount root\n  filesystem."
         clientopt="-c /dnbd/cache"
         waitfor /tmp/cache 10000
       fi
-      waitfor /dev/dnbd0 10000 || error $errmsg
+      waitfor /dev/dnbd0 10000 || error "$init_nbddev"
       while ! dnbd-client -b $nbdhost -d /dev/dnbd0 $clientopt ; do
         usleep 10
       done
@@ -278,13 +267,7 @@ fi
 
 # get the complete collection of kernel modules available
 mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
-  error "  The requested modules directory does not exist. That could mean:\n\
-  * The kernel was updated but mkdxsinitrd was not run afterwards.\n\
-  * The mounted filesystem does not contain the modules directory at all.\n\
-  You might want to check the list of mounted filesystems and if /mnt is\n\
-  not empty run 'ls /mnt/lib/modules' to check."
-#  You might want to check the list of mounted filesystems and if /mnt is\n\
-#  not empty run 'ls /mnt/lib/modules' to check."
+  error "$init_moddir"
 # start hardware configuration as background process
 hwautocfg &
 
@@ -292,22 +275,15 @@ hwautocfg &
 RWDIR=/dev/shm
 if [ -n "${UNIONFS}" -o -n "${UNION}" ] ; then
   modprobe ${MODPRV} unionfs || { 
-    error "  Loading of UnionFS failed - Either module is not present or \
-module\n  does not match the running kernel. If you do not want to see this \
-\n  message remove the token 'unionfs' from kernel command line." nonfatal 
+    error "$init_loadufs" nonfatal 
     UNIONFS=""; }
 fi
 if [ -n "${COWLOOP}" ] ; then
   modprobe ${MODPRV} cowloop || {
-  error "  Loading of Copy On Write (COW - special block device) module \
-failed -\n  Either module is not present or module does not match the \
-running\n  kernel. If you do not want to see this message remove the token \
-'cowloop' from kernel command line." nonfatal
+  error "$init_loadcow" nonfatal
   COWLOOP=""; }
   if [ -z "${NBD}" -o -n "${UNIONFS}" ] ; then
-    error "  Loading of cow module is of no sense if no network block device \
-is used or\n  UnionFS was specified as read write layer too. Remove UnionFS \
-token from\n  kernel commandline if cowloop should be used instead."
+    error "$init_cownonbd"
     COWLOOP="";
   fi
 fi
@@ -320,7 +296,6 @@ if [ -n "${UNION}" ] ; then
 fi
 
 # setup of client root filesystem dependent on the availability of UnionFS
-msg="Starting ldconfig - switch it off via kernel cmdline option 'noldsc'"
 if [ -n "${UNIONFS}" ] ; then
   echo "Using UnionFS for rw access"
   [ -n ${NFSROOT} ] && NFSRO=nfs
@@ -332,7 +307,7 @@ if [ -n "${UNIONFS}" ] ; then
   mkdir -p /mnt/uniontmp
   mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp
   # run ldconfig if not switched off via kernel command line
-  [ -z "${NOLDSC}" ] && echo $msg && ldconfig /etc/ld.so.cache &
+  [ -z "${NOLDSC}" ] && echo $init_ldcfg && ldconfig /etc/ld.so.cache &
 elif [ -n "${COWLOOP}" -a -n "${NBD}" ] ; then
   :
 else
@@ -343,7 +318,7 @@ else
     mount -n --bind ${RWDIR}/${path} /mnt/${path}
   done
   # see above ...
-  [ -z "${NOLDSC}" ] && echo $msg && ldconfig /tmp/ld.so.cache &
+  [ -z "${NOLDSC}" ] && echo $init_ldcfg && ldconfig /tmp/ld.so.cache &
   for path in ${D_RODIRSINRW}; do
     if [ -d /mnt/${path} ] ; then
       LIST=${path}" "$LIST
@@ -383,8 +358,7 @@ echo "fs complete" >/tmp/fscmpl
 
 # write debug file information after filesystem setup completed
 echo -e "# /etc${D_SYSCONFDIR}/logfile - file created by $0\n#\n# logfile for linux diskless client specific debugging output\nLOGFILE=\"$LOGFILE\"\n#\n# debug level\nDEBUGLEVEL=\"$DEBUGLEVEL\"" > /mnt/etc/${D_SYSCONFDIR}/logfile || \
-  error "Unable to create the logfile configuration in /etc/${D_SYSCONFDIR}. \
-That\n  might indicate some severe error."
+  error "$init_errlog"
 
 # run distribution independent and dependent configuration of files and 
 # services
@@ -403,9 +377,7 @@ Suchodoletz, dirk@goe.net\n\nrootfs\t\t/\t\trootfs\t\tro\t\t 0 0\n\
 proc\t\t/proc\t\tproc\t\tdefaults\t 0 0\ninitramdevs\t/dev\t\ttmpfs\
 \t\trw\t\t 0 0\ndevpts\t\t/dev/pts\tdevpts\t\tmode=0620,gid=5\t 0 0\n\
 usbfs\t\t/proc/bus/usb\tusbfs\t\tnoauto\t\t 0 0" >>/mnt/etc/fstab || \
-  error "Failed to create /etc/fstab in the clients root filesystem. The\n\
-  noexistence of the file might produce some unexpected behaviour of\n\
-  mount commands."
+  error "$init_fstab"
 # copy library cache if generated
 if [ -z "${NOLDSC}" ] ; then
   if waitfor /tmp/ldcfg 50000 ; then
@@ -413,23 +385,16 @@ if [ -z "${NOLDSC}" ] ; then
       cp /mnt/tmp/ld.so.cache /mnt/etc/ld.so.cache
       rm /mnt/tmp/ld.so.cache; }
   else 
-    error "  For some reason the generation of \
-ld.so.cache did not finish in time."
+    error "$init_errldcfg"
   fi
 else
-  error "  You decided not to recreate \
-/etc/ld.so.cache file. That might cause errors\n  if libraries are installed \
-after this file was created on server." nonfatal
+  error "$init_infldcfg" nonfatal
 fi
 # copy machine configuration (from global settings, additions made within
 # here and from dhcp/ldap sources) to client /etc for later checks
 cp /etc/machine-setup /mnt/etc
-waitfor /tmp/hwcfg 20000 || error "  For some reason the hardware autoconfig \
-of this client did not finish in\n  time. You might check the process list \
-and list the modules loaded until\n  now."
-waitfor /tmp/svcfg 20000 || error "  For some reason the software config \
-of this client did not finish in\n  time. You might check the process list \
-and list the modules loaded until\n  now."
+waitfor /tmp/hwcfg 20000 || error "$init_errhw"
+waitfor /tmp/svcfg 20000 || error "$init_errsw"
 # IP configuration is made and should not be updated automatically, udevd
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null
@@ -443,26 +408,20 @@ postinit
 # unmount the bind mounted modules directory
 for i in 0 40 100 200 300 500 800 1000 1200; do
   usleep $i && umount -n /lib/modules/${KERNEL} 2>/dev/null && break
-  error "  Waited $i ticks to unmount kernel module directory ..." nonfatal
+  error "$init_wait" nonfatal
 done
 
-[ $i -gt 1000 ] && error "  Unmount of the kernel modules directory \
-failed for some reason. Some\n  modprobe still active!?"
+[ $i -gt 1000 ] && error "$init_errumnt"
 # check for inittab file
-test -f /mnt/etc/inittab || error "  The file /etc/inittab does not exist or \
-is no regular one. It is needed\n  for the bootup procedure to follow."
+test -f /mnt/etc/inittab || error "$init_erritab"
 # close runlevel script for stuff to execute during early bootup
 d_mkrlscript close boot.ld ""
 # preparations to leave initrd - umounting ...
-umount -n /sys || error "  Unmount of the kernel sys directory \
-failed for some\nreason.  You will get some error messages that some files \
-could not be\n  removed." nonfatal
+umount -n /sys || error "$init_errsys" nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1
 mount -n --move /dev /mnt/dev
 killall -9 udevd 2>/dev/null
 umount -n /proc
 [ -n "${UNIONFS}" ] && mount -n --move /root /mnt/mnt 
-# new kind of pivoting
-exec run-init -c dev/console /mnt /sbin/init || error "  Could not execute \
-run-init due to missing command or wrong\n  parameters given."
-
+# new style of pivoting
+exec run-init -c dev/console /mnt /sbin/init || error "$init_runinit"

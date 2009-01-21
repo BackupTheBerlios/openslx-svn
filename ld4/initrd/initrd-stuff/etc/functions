@@ -50,12 +50,12 @@ else LOGFILE="/dev/null"
 fi
 # if nonfatal error else fatal error message and shell
 if [ -n "$2" ] ; then
-  [ "$DEBUGLEVEL" -ge 1 ] && echo -e "$error_msg $e_msg $error_nfe" \
+  [ "$DEBUGLEVEL" -ge 1 ] && echo -e "${error_msg}${e_msg}${error_nfe}" \
       >> ${LOGFILE} 
-  [ "$DEBUGLEVEL" -gt 1 ] && echo -e "$error_msg $e_msg $error_nfe"
+  [ "$DEBUGLEVEL" -gt 1 ] && echo -e "${error_msg}${e_msg}${error_nfe}"
   [ "$DEBUGLEVEL" -gt 2 ] && usleep 20
 else
-  echo -e "$error_msg $e_msg $error_shell"
+  echo -e "${error_msg}${e_msg}${error_shell}"
   /bin/sh
 fi
 }
@@ -134,7 +134,7 @@ case $ipcfg in
     fi
   ;;
   none)
-    error $error_iptool
+    error "$error_iptool"
   ;;
 esac
 }
@@ -147,18 +147,18 @@ for mnt in nfsmount mount none; do
   test -x /bin/$mnt && break;
 done
 [ -f /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko ] && \
-  loadmod /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko $error_modnfs
+  loadmod /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko "$error_modnfs"
 case $mnt in
   nfsmount)
-    nfsmount -o ro $nfsroot /mnt || error $error_nfs
+    nfsmount -o ro $nfsroot /mnt || error "$error_nfs"
   ;;
   mount)
-    portmap || error $error_portm
-    mount -n -t nfs -o ro $nfsroot /mnt || error $errmsg
+    portmap || error "$error_portm"
+    mount -n -t nfs -o ro $nfsroot /mnt || error "$errmsg"
     killall -9 portmap
   ;;
   none)
-    error $error_mntt
+    error "$error_mntt"
   ;;
 esac
 }
@@ -200,9 +200,7 @@ for dhcp in dhclient dhcpcd pump ipconfig none; do
   test -x /bin/$dhcp && break;
 done
 if [ "$dhcp" = "none" ] ; then
-  error "  You tried to configure system via dhcp, but no usable dhcp\n\
-  client could be found. Please check that you have some client from\n\
-  the following list installed: dhclient dhcpcd pump ipconfig." nonfatal
+  error "$error_nodhcp" nonfatal
 else
   # ensure the interface is up
   ipsetup 0.0.0.0 255.255.255.255 0.0.0.0 255.255.255.255 eth0 &
@@ -218,18 +216,18 @@ case $dhcp in
     mkdhclconf $vci
     ln -s /bin/dhcpmkconfig /bin/dhclient-script
     dhclient -q -cf /etc/dhclient.conf -lf /var/lib/dhcp/dhclient.leases eth0 \
-  2>&1 >/dev/null || error $error_dhclient 
+  2>&1 >/dev/null || error "$error_dhclient"
   ;;
   dhcpcd)
     ln -s /bin/dhcpmkconfig /bin/dhcpcd.exe
     dhcpcd -L /var/lib/dhcp -c /bin/dhcpcd.exe -T -t 30 eth0 2>&1 >/dev/null \
-     || error $error_dhcpcd
+     || error "$error_dhcpcd"
   ;;
   pump)
-      error $error_pump
+      error "$error_pump"
   ;;
   ipconfig)
-      error $error_ipconf
+      error "$error_ipconf"
   ;;
   *)
   ;;
@@ -355,7 +353,7 @@ echo "finished" > /tmp/ldcfg
 # configuration via ldap
 ldapconf () {
 local ldapserver=$1
-error $error_ldapcfg
+error "$error_ldapcfg"
 echo "not implemented" > /tmp/ldap-done
 } 
 
