@@ -60,18 +60,38 @@ my $action = shift @ARGV;
 if ($action =~ m[^list-ex]i) {
 	print _tr("List of exported vendor-OSes:\n");
 	foreach my $type (sort keys %supportedExportFileSystems) {
-		my @files = <$openslxConfig{'public-path'}/export/$type/*>;
+		# list all image files, followed by the block devices using it:
+		my @files = map {    
+			s[^.+/][];
+			$_
+		} sort <$openslxConfig{'public-path'}/export/$type/*>;
+		my %imageFiles;
+		foreach my $file (@files) {
+			if ($file =~ m[^(.+)@(.+)$]) {
+				# it's a link referring to a block device using this image,
+				# we collect the name of the block device:
+				push @{$imageFiles{$1}}, $2;
+			} else {
+				# it's an image file, we setup an empty array of block devices:
+				$imageFiles{$file} = [];
+			}
+		}
 		print join(
 			'',
 			map {
-				s[^.+/][];
-				"\t$type/$_\n";
+				my $devices = join(',', @{$imageFiles{$_}});
+				if (length($devices)) {
+					my $name = "$type/$_";
+					"\t$name".substr(' ' x 30, length($name))."($devices)\n";
+				} else {
+					"\t$type/$_\n";
+				}
 			  }
 			  grep {
 				# filter out RSYNC_TMP folders:
 				$_ !~ m[###];
 			  }
-			  sort @files
+			  sort keys %imageFiles
 		);
 	}
 } elsif ($action =~ m[^list-in]i) {
@@ -83,7 +103,7 @@ if ($action =~ m[^list-ex]i) {
 			s[^.+/][];
 			"\t$_\n";
 		  }
-		  sort @files    
+		  sort @files
 	);
 } elsif ($action =~ m[^list-ty]i) {
 	print _tr("List of supported export types:\n\t");

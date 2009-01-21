@@ -332,7 +332,7 @@ sub _removeBlockDeviceTagFromExport
 	# now find out whether or not there are any other tags left:
 	my $vendorOSName = basename($target);
 	opendir(DIR, dirname($target));
-	my @tags = grep { /^vendorOSName\@/ } readdir(DIR);
+	my @tags = grep { /^$vendorOSName\@/ } readdir(DIR);
 	return @tags ? 0 : 1;
 	# return 1 if no more tags (i.e. it is safe to remove the image)
 }
