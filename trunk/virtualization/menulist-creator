@@ -58,6 +58,12 @@ for xml in *.xml;do
     exit 0
   fi
 
+  # Test if image is available
+  if [ ! -f ${image} ]; then
+    echo "PANIC, image defined in ${xml} not available"
+    exit 0
+  fi
+
 
   # get information if the current image should be used
   # active when active=1 image, else disabled
