@@ -45,7 +45,7 @@ config_kdm () {
 kdmrcdir=/etc/opt/kde3/share/config/kdm
 xdmdir=/etc/X11/xdm
 # use different kdmrc than default, since 10.2 in /opt/kde/...
-echo 'XDMOPTIONS="-config /etc/opt/kde3/share/config/kdm/kdmrc" \
+echo 'XDMOPTIONS="-config /etc/opt/kde3/share/config/kdm/kdmrc"' \
   >> /mnt/etc/sysconfig/displaymanager
 testmkd /mnt/${kdmrcdir}
 config_dm_entry yes
