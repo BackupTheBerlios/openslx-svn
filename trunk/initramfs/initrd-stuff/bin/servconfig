@@ -470,18 +470,25 @@ if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
       :
     ;;
     *)
-    tmpserv=$(uri_token $scratch server)
-    tmppath=$(uri_token $scratch path)
-    # hanging mount processes might stop further setup - timeout
-    # should be configured ... it is possible to mount "nolock" only
-    mount -t nfs -o rw,tcp,nolock,intr,nodev,soft,timeo=2,nosuid \
-      ${tmpserv}:${tmppath} /tmp/scratch >/dev/null 2>&1 && {
-      testmkd /tmp/scratch/${clientip}
-      umount /tmp/scratch
-      # no need for tempfs there ...
-      umount /mnt/tmp >/dev/null 2>&1
+      tmpserv=$(uri_token $scratch server)
+      tmppath=$(uri_token $scratch path)
+      # hanging mount processes might stop further setup - timeout
+      # should be configured ... it is possible to mount "nolock" only
       mount -t nfs -o rw,tcp,nolock,intr,nodev,soft,timeo=2,nosuid \
-        ${tmpserv}:${tmppath}/${clientip} /mnt/tmp >/dev/null 2>&1; }
+        ${tmpserv}:${tmppath} /tmp/scratch >/dev/null 2>&1 && {
+        testmkd /tmp/scratch/${clientip}
+        umount /tmp/scratch
+        # no need for tempfs there ...
+        umount /mnt/tmp >/dev/null 2>&1
+        mount -t nfs -o rw,tcp,nolock,intr,nodev,soft,timeo=2,nosuid \
+          ${tmpserv}:${tmppath}/${clientip} /mnt/tmp >/dev/null 2>&1 
+        # create an empty container file for vmware *.vmem, it does not
+        # like to live on NFS exports
+        if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
+          dd if=/dev/zero of=/mnt/tmp/vm-container count=1 seek=204800
+          diskfm /mnt/tmp/vm-container /mnt/tmp/vmware
+          chmod a+rwxt /mnt/tmp/vmware
+        fi; }
     ;;
   esac
 fi

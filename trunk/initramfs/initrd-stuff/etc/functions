@@ -214,9 +214,12 @@ return $notfound
 }
 #############################################################################
 # disk formatter and mounter. some proper error message output should be
-# added. It uses programs invoked from stage 4 root filesystem
+# added. It uses programs invoked from stage 4 root filesystem. First
+# argument is blockdev or file to be formatted, second mountpoint if not
+# /mnt/tmp (default)
 diskfm () {
 local target=$1
+local mntpnt=$2
 local fs
 local path
 for fs in xfs ext2 reiserfs ; do
@@ -241,11 +244,17 @@ for fs in xfs ext2 reiserfs ; do
         esac
         LD_LIBRARY_PATH=/mnt/lib /mnt/$path/mkfs.$fs $fopt $target \
           >/dev/null 2>&1 #|| error
-        umount /mnt/tmp 2>/dev/null
-        if mount -t $fs -n $mopt $target /mnt/tmp 2>/dev/null; then
-          return 0
+        if [ -z $mntpnt ] ; then
+          umount /mnt/tmp 2>/dev/null
+          if mount -t $fs -n $mopt $target /mnt/tmp 2>/dev/null; then
+            return 0
+          else
+            mount -n -t tmpfs none /mnt/tmp
+          fi
         else
-          mount -n -t tmpfs none /mnt/tmp
+          testmkd $mntpnt
+          mount -t $fs -n -o loop $target $mntpnt 2>/dev/null
+          return 0
         fi
       fi
     done
