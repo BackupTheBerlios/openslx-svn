@@ -27,12 +27,12 @@ if [ $dim -lt 750 ] ; then
 # 17" crt displays, little bit smaller than tfts
 elif [ $dim -lt 900 ] ; then
   crt="CRT 17inch"
-  echo "1280x1024\n1152x864" > /tmp/res
+  echo -e "1280x1024\n1152x864" > /tmp/res
 # 19" crt / sub 19" tft
 elif [ $dim -lt 1000 ] ; then
   if [ $year -lt 2001 ] ; then
     crt="CRT 19inch"
-    echo "1400x1050\n1280x1024\n1152x864" > /tmp/res
+    echo -e "1400x1050\n1280x1024\n1152x864" > /tmp/res
   else
     crt="TFT 4:3 17''"
   fi
@@ -42,7 +42,7 @@ elif [ $dim -lt 1200 ] ; then
     crt="TFT 4:3 18(+)''"
   else
     crt="CRT 20''"
-    echo "1400x1050\n1280x1024\n1152x864" > /tmp/res
+    echo -e "1400x1050\n1280x1024\n1152x864" > /tmp/res
   fi
 # sub 22" displays are crts if older than 2004 :)
 elif [ $dim -lt 1300 ] ; then
@@ -50,7 +50,7 @@ elif [ $dim -lt 1300 ] ; then
     crt="TFT 4:3 19(+)''"
   else
     crt="CRT 20(+)''"
-    echo "1600x1200\n1400x1050\n1280x1024\n1152x864" > /tmp/res
+    echo -e "1600x1200\n1400x1050\n1280x1024\n1152x864" > /tmp/res
   fi
 # any bigger display is most probably a tft
 elif [ $year -ge 2004 ] ; then
@@ -228,13 +228,6 @@ else
   fi
 fi
 sed "s/Modes        \"/Modes       ${Modes} \"/" -i $xfc
-# run localizator and configure X11 keyboard
-localization "${country}"
-if [ -z "${XKEYBOARD}" ] ; then
-  XKEYBOARD="us"
-  error "${xcfg_keyb}" nonfatal
-fi
-sed "s/XKEYBOARD/${XKEYBOARD}/" -i $xfc
 # displayvars
 #displayvars
 #sed "/Section \"Device\"/a\ \ ${Files}" -i $xfc

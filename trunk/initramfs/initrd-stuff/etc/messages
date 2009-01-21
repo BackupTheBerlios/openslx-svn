@@ -198,8 +198,6 @@ default resolutions (defined in xconfig)"
 hcfg_hwsetup="  Expected information from hwsetup to appear in \
 /tmp/hwsetup.info.\n  Unable to configure parts of the systems hardware. \
 Please check that\n  hwsetup is properly installed and executable."
-
-# messages from xconfig
-xcfg_keyb="  No settings found for keyboard, using default of '${XKEYBOARD}' \
+hcfg_keyb="  No settings found for keyboard, using default of '${XKEYBOARD}' \
 defined\n  in $0."
 

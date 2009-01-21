@@ -248,17 +248,25 @@ else
   D_XF86CONFFILE="/mnt/etc/X11/xorg.conf"
   error "$hcfg_xcfg" nonfatal
 fi
-# move Xorg configuration if no xorg.conf file was provided by ConfigTGZ 
+# finish Xorg configuration if no xorg.conf file was provided by ConfigTGZ 
 # (check for /rootfs/${D_XF86CONFFILE#/mnt})
-if [ ! -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then
+if [ ! -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then 
+  xfc="/tmp/xorg.conf"
   . /etc/sysconfig/xserver >/dev/null 2>&1 || error "${hcfg_hwsetup}" nonfatal
   # replace OSS 3D server with proprietary one
   checkgraphix
-  sed -e "s/\"vesa\"/\"${XMODULE}\"/" -i /tmp/xorg.conf
+  sed -e "s/\"vesa\"/\"${XMODULE}\"/" -i $xfc
   # check for 64bit CPU/installation (fixme!!)
   [ -d "/mnt/usr/X11R6/lib64/modules" ] && \
     sed -e "/Section \"Files\"/a\ \ ModulePath    \"/usr/X11R6/lib64/modules\"" \
      -i $xfc
+  # run localizator and configure X11 keyboard
+  localization "${country}"
+  if [ -z "${XKEYBOARD}" ] ; then
+    XKEYBOARD="us"
+    error "${xcfg_keyb}" nonfatal
+  fi
+  sed "s/XKEYBOARD/${XKEYBOARD}/" -i $xfc
   # check for kind of xorg module used
   # if intel
   #   915resolution -l|sed -n "/32 bits/p" > /tmp/ires

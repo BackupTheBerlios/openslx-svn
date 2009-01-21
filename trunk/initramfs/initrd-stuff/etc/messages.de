@@ -209,8 +209,6 @@ Standard-Aufloesungen (defined in xconfig)"
 hcfg_hwsetup="  Erwartete Informationen von hwsetup in \
 /tmp/hwsetup.info.\n  Teile des Systems koennen nicht eingerichtet werden. \
 Bitte pruefen, dass\n  hwsetup richtig installiert und ausfuehrbar ist."
-
-# messages from xconfig
 hcfg_keyb="  Keine Einstellungen fuer ihre Tastatur gefunden, verwende den \
 Standard-Wert '${XKEYBOARD}' definiert\n  in $0."
 
