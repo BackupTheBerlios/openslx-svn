@@ -338,7 +338,7 @@ while getopts :dhk:c:i:r:o:s:f:n:m:S:tu:w:I:a: a ; do
     f)  FSMODULES=$OPTARG;;
     n)  NWMODULES=$OPTARG;;
     m)  MISCMODULES=$OPTARG;;
-    w)  WLANMODULES==$OPTARG;;
+    w)  WLANMODULES=$OPTARG;;
     r)  ROOTDIR=$OPTARG;;
     s)  theme=$OPTARG;;
     S)  SYSTEM_NAME=$OPTARG;;
@@ -561,9 +561,18 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
         cp ${rdirprefix}/drivers/net/mii.ko \
            ${ddirprefix}/drivers/net &>/dev/null
       ;;
+      # WLAN module block
       #ipw3945|...)
       # cp ${rdirprefix}/net/wireless ...
       #;;
+      ath_pci)
+        for wlanmodule in ath_rate_sample wlan ath_hal; do
+          mod=$(cd /${ROOTDIR}; find "lib/modules/${KERNVER}" \
+            -name ${module}.ko 2>/dev/null)
+          mkdir -p ${INSTDIR}/${mod%/*}
+          cp ${ROOTDIR}/$mod ${INSTDIR}/${mod%/*}
+        done
+      ;;
       nfs)
         # create directory structure for modules needed and copy them
         # to the proper place (as expected by modprobe/modules.dep)
