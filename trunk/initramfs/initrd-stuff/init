@@ -518,7 +518,7 @@ if [ -z "${nbdmod}" -a -z "${nbdhost}" -a -z "${nfsroot}" ] ; then
   # information has to be read from dhcp and ldap configuration
   cfgcomplete
 fi
-# call function for nfs mounts
+# mount nfs rootfs
 if [ -z "${nbdmod}" -a -z "${nbdserver}" ] ; then
   [ $DEBUGLEVEL -eq 20 ] && echo "** started nfs mount"
   # read in extended machine-setup

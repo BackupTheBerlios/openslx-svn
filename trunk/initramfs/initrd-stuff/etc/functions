@@ -358,12 +358,8 @@ if [ "x$filepath" != "x" ] ; then
         2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
    ;;
    *)
-echo "tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv" >> /tmp/fileblub
      tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv  \
        && unpack /tmp/$(basename $cfgfile)
-     ls -la /tmp/$(basename $cfgfile) >> /tmp/fileblub
-     echo "F: /tmp/$(basename $cfgfile)" >>/tmp/fileblub
-
    ;;
    esac
 else
@@ -385,14 +381,11 @@ and as last\n# distro/default" >> /tmp/confviafile
           2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
       tftp)
-echo "tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv" >> /tmp/fileblub
         tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv \
            && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
     esac
   done
-  ls -la /tmp/$(basename $cfgfile) >> /tmp/fileblub
-     echo "F: /tmp/$(basename $cfgfile)" >>/tmp/fileblub
 fi
 test -f /initramfs/machine-setup && \
   cat /initramfs/machine-setup >> /tmp/confviafile
