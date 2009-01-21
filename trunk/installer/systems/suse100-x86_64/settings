@@ -23,7 +23,6 @@ SLX_BASE_BOOTSTRAP_PACKAGES="
 x86_64/aaa_base-10.0-28.x86_64.rpm
 x86_64/aaa_skel-2005.9.7-2.x86_64.rpm
 x86_64/ash-1.6.1-4.x86_64.rpm
-x86_64/audit-libs-1.0.3-2.x86_64.rpm
 x86_64/bash-3.0-17.x86_64.rpm
 x86_64/blocxx-0.9.20050812-2.x86_64.rpm
 x86_64/coreutils-5.3.0-20.x86_64.rpm

@@ -23,7 +23,6 @@ SLX_BASE_BOOTSTRAP_PACKAGES="
 i586/aaa_base-10.0-28.i586.rpm
 i586/aaa_skel-2005.9.7-2.i586.rpm
 i586/ash-1.6.1-4.i586.rpm
-i586/audit-libs-1.0.3-2.i586.rpm
 i586/bash-3.0-17.i586.rpm
 i586/blocxx-0.9.20050812-2.i586.rpm
 i586/coreutils-5.3.0-20.i586.rpm
