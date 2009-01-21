@@ -71,9 +71,9 @@ usage()
 {
   echo -e "mkdxsinitrd  [-dh] [-k kernel version] [-i path/file] \
 [-f module(s)] [-n module(s)] [-m module(s)] -r path [-s theme]\n\
-[-c machine-setup] -S system_name"
+[-c initramfs-setup] -S system_name"
   echo "OPTIONEN"
-  echo "  -c location of client configuration file (machine-setup)"
+  echo "  -c location of initramfs configuration file (initramfs-setup)"
   echo "  -d use ISC dhclient instead of udhcpcd of busybox"
   echo "  -h show usage information"
   echo "  -k kernel version"
@@ -323,7 +323,7 @@ while getopts :dhk:c:i:r:o:s:f:n:m:S:tu:w:I:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
-      c)  echo "-c requires location of machine-setup file";;
+      c)  echo "-c requires location of initramfs-setup file";;
       k)  echo "-k requires kernel version parameter";;
       i)  echo "-i requires initramfs path parameter";;
       f)  echo "-f requires file system module (list) parameter";;
@@ -625,45 +625,14 @@ cp ${ROOTDIR}/lib/modules/${KERNVER}/modules.* \
   ${INSTDIR}/lib/modules/${KERNVER}
 
 # add the common default client configuration file - just to ensure to
-# have all major variables defined. !!These settings are most probably
-# are overwritten by fileget in stage3 within initramfs!!
-# fixme! it should be possible to provide the filename and location via
-# parameter
-echo "## common settings of machine-setup for clients sharing an InitRamFS" \
-  > ${INSTDIR}/etc/machine-setup
+# have all major variables defined.
+echo "## common settings for clients sharing an InitRamFS" \
+  > ${INSTDIR}/etc/initramfs-setup
 if [ -n "${CLCONFFILE}" ] ; then
-  cat ${CLCONFFILE} >>${INSTDIR}/etc/machine-setup
+  cat ${CLCONFFILE} >>${INSTDIR}/etc/initramfs-setup
   echo "Using ${CLCONFFILE}"
-elif [ -f ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup ] ; then
-  cat ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup \
-    >>${INSTDIR}/etc/machine-setup
-  echo "Using ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup"
-# use the installed default machine-setup.default
-elif [ -f ${SLX_SHARE_PATH}/templates/machine-setup.default ] ; then
-  cat ${SLX_SHARE_PATH}/templates/machine-setup.default \
-    >>${INSTDIR}/etc/machine-setup
-  echo "Using ${SLX_SHARE_PATH}/templates/machine-setup.default"
-# just compatibility for older versions
-elif [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
-  cat /etc/dxs/client.cfg/machine-setup.default \
-    >>${INSTDIR}/etc/machine-setup
-  echo "Using /etc/dxs/client.cfg/machine-setup.default"
-# fixme: dirty hack if the installer does not creates a normal file
-elif [ -f /etc/dxs/client.cfg/machine-setup.default.new ] ; then
-  cat /etc/dxs/client.cfg/machine-setup.default.new \
-    >>${INSTDIR}/etc/machine-setup
-elif [ -f ../installer/default_files/machine-setup.default ] ; then
-  cat ../installer/default_files/machine-setup.default \
-    >>${INSTDIR}/etc/machine-setup
-  echo "Warning: Using ../installer/default_files/machine-setup.default"
-else
-  #inserted password for root for debugging purposes
-  # fixme - set more default values?!
-  echo -e "# default for machine-setup does not exist\n# root logins are \
-disabled\nroot_pw='"'$1$T7VD/mmQ$aCP1WEaWplEsHe9khv4kK.'"'" \
-    >>${INSTDIR}/etc/machine-setup
 fi
-echo "## end of common machine-setup" >>${INSTDIR}/etc/machine-setup
+echo "## end of common initramfs-setup" >>${INSTDIR}/etc/initramfs-setup
 
 # custom hardware configuration files pcitable.local and Cards.local
 # fixme!! New source for these files (instead of templates)!
