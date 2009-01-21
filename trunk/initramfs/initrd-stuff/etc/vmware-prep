@@ -28,12 +28,15 @@ vmdir=/var/lib/vmware
 modprobe loop >/dev/null 2>&1
 
 # device creation - the module does not trigger udev properly
-for i in 0 1 2 3 4 5 6 7 8 9; do
-  [ -c /dev/vmnet${i} ] || mknod /dev/vmnet${i} c 119 ${i};
-done
-chmod 0700 /dev/vmnet*
+#for i in 0 1 2 3 4 5 6 7 8 9; do
+#  [ -c /dev/vmnet${i} ] || mknod /dev/vmnet${i} c 119 ${i};
+#done
+#chmod 0700 /dev/vmnet*
 
 # loop file for exchanging information between linux and vmware guest
+# other option to pass information!? --> move to servconfig!? problem
+# of DOS formatting ... possibility of using mkfs.dos out of later 
+# rootfs (LD_LIBRARY_PATH=/mnt/lib
 loopsrc=/etc/vmware/loopimg
 loopdst=/etc/vmware/fd-loop
 mkdir -p $loopsrc
