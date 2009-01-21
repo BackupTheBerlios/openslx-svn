@@ -71,9 +71,6 @@ start_dreshal="yes"
 # start alsa sound system
 start_alsasound="yes"
 
-# start ssh server
-start_sshd="yes"
-
 # smb protocol service (provide windows file service)
 start_samba="may"
 netbios_workgroup="dxs-network"

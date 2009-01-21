@@ -3,7 +3,7 @@
 # universal (distro independent) hardware autoconfiguration script for 
 # OpenSLX linux diskless clients, using hwconfig from knoppix as base tool 
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 03-09-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 19-09-2006
 #
 # (c) 2003 - 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.org
@@ -368,9 +368,10 @@ if strinfile "SCSI" /tmp/hwsetup.info ; then
   strinfile "CDROM" /tmp/hwsetup.info && { modprobe ${MODPRV} sr_mod;
     modprobe ${MODPRV} sg; }
   strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} sd_mod
+  # check if a (scsi) scanner was detected
   strinfile "SCANNER" /tmp/hwsetup.info && \
     echo -e 'KERNEL=="sg*",\t\tNAME="%k", GROUP="disk", MODE="666"' \
-    >> /mnt/etc/udev/rules.d/04-scanner.rules
+           >> /tmp/scanner-udev
 fi
 # fixme - psmouse entladen, falls nicht vorhanden
 
@@ -432,9 +433,12 @@ done
 # determine if tmp preparation should wait for format/mount or not
 [ -z "$part44" ] && echo "finished" > /tmp/tmpready
 
-# wait for completion of clients root filesystem in /mnt
+# wait for completion of clients root filesystem in /mnt and add
+# previously generated files to /mnt/etc ...
 waitfor /tmp/fscmpl 40000
 [ -f /tmp/fstab ] && cat /tmp/fstab >> /mnt/etc/fstab
+[ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
+  >> /mnt/etc/udev/rules.d/04-scanner.rules
 
 # add entries to initialize keytable and consolefont to boot.ld
 # postpone some commands into normal bootup environment
