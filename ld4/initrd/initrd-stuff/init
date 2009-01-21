@@ -2,7 +2,7 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 19-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 21-05-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -273,13 +273,12 @@ if [ -n "${NBD}" ] ; then
       fi
       waitfor /dev/dnbd0 10000 || error "$init_nbddev"
       while ! dnbd-client -b $nbdhost -d /dev/dnbd0 $clientopt ; do
-        usleep 10
+        usleep 20
       done
       echo "0" > /sys/block/dnbd0/queue/read_ahead_kb
       RDEV=/dev/dnbd0
       ;;
   esac
-  usleep 10
   RWRO="ro"
   if [ -n "${COWLOOP}" -a -x /bin/cowdev ] ; then
     modprobe ${MODPRV} cowloop || {
@@ -294,6 +293,7 @@ if [ -n "${NBD}" ] ; then
     echo "Using Copy-on-Write block device for rw access"
     mount -n -t tmpfs -o size=${COWSIZE} ramfs ${RWDIR}
     mkdir /dev/cow && cp -a /tmp/ctl /dev/cow
+    usleep 10
     ln -s /dev/cowloop0 /dev/cow/0
     cowdev -a /dev/nbd0 ${RWDIR}/nbd.cow
     usleep 10
@@ -303,7 +303,10 @@ if [ -n "${NBD}" ] ; then
     ldcfg
   fi
   # finally mount the block device
-  mount -n -t $RFST -o $RWRO $RDEV /mnt
+  for i in 50 100 ; do
+    usleep $i
+    mount -n -t $RFST -o $RWRO $RDEV /mnt 2>/dev/null
+  done
 fi
 
 # if no type of root filesystem is passed via kernel command line try
@@ -429,8 +432,7 @@ usbfs\t\t/proc/bus/usb\tusbfs\t\tnoauto\t\t 0 0" >/mnt/etc/fstab || \
 echo -e "rootfs / rootfs rw 0 0\ninitramdevs /dev tmpfs rw\
  0 0" > /mnt/etc/mtab
 [ -z "$UNIONFS" ] && echo -e "ramfs /tmp tmpfs rw 0 0\nramfs /root\
-tmpfs rw 0 0\nramfs /media tmpfs rw 0 0 \nramfs /home tmpfs rw 0 0" \
-  >> /mnt/etc/mtab
+tmpfs rw 0 0\n" >> /mnt/etc/mtab
  
 # copy library cache if generated
 if [ -z "${NOLDSC}" ] ; then

@@ -3,7 +3,7 @@
 #		version 4
 #		this file could be used for localization of error messages 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 21-05-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -133,8 +133,9 @@ be useful to take load from a ldap user directory."
 
 # messages from servconfig
 scfg_nfs="  Mount of some NFS source failed ..."
-scfg_erradir="  Only one directory level is allowed and the directory should \
-exist (on\n  the server) or should be creatable (UnionFS)."
+scfg_erradir="  Only one directory level is allowed to hook up automounter \
+to and the\n  directory should exist (on the servers export) or should be \
+creatable\n  (e.g. because of UnionFS writeable root directory)."
 scfg_erratpld="  Only toplevel directories \
 are allowed as mount points for user home\n  directories. Please set the \
 variable \${automnt_dir} appropriately in\n  machine-setup file."
