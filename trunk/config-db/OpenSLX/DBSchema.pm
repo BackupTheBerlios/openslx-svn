@@ -208,9 +208,10 @@ $DbSchema = {
 ### 			'cols'	=> contains a full list of resulting column descriptions
 ################################################################################
 
-my $lang = setlocale(LC_LANG);
+use POSIX qw(locale_h);
+my $lang = setlocale(LC_MESSAGES);
 my $country;
-if ($lang =~ m[\w\w_(\w\w)]) {
+if ($lang =~ m[^\w\w_(\w\w)]) {
 	$country = lc($1);
 } else {
 	$country = 'us';
