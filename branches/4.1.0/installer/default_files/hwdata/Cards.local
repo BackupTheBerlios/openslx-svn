@@ -36,4 +36,8 @@ NOCLOCKPROBE
 NAME ATI Radeon RS482
 DRIVER radeon
 
+# link for fglrx, not used at the moment
+NAME ATI Radeon (fglrx)
+SEE ATI Radeon (generic)
+
 # main database
