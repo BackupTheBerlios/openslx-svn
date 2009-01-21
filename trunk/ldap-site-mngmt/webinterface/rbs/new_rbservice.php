@@ -24,15 +24,7 @@ createRBSMenu($rollen, $mnr, $auDN, $sbmnr);
 
 ###################################################################################
 
-# nochmal zur Sicherheit: falls doch RBS angelegt					
-$rbs_array = get_rbservices($auDN,array("dn","cn"));
-if (count($rbs_array) != 0){
-	$url = "rbservice.php?mnr=1";
-	$seconds = 1;
-	$mesg .= "<br>Sie werden automatisch auf die n&auml;chste Seite geleitet. <br>				
-			Falls nicht, klicken Sie hier <a href=".$url." style='publink'>hier</a>";
-	redirect($seconds, $url, $mesg, $addSessionId = TRUE);
-}
+# nochmal zur Sicherheit: falls doch RBS angelegt
 
 $rbscn = str_replace ( "_", " ", $_GET['rbscn']);
 $template->assign(array("RBSCN" => $rbscn,

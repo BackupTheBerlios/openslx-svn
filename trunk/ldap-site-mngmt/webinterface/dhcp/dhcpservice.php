@@ -30,6 +30,7 @@ $template->assign(array("DHCPDN" => "",
 								"SECONDARY" => "",
 								"DESCRIPTION" => "",
 								"STATEMENTS" => "",
+								"FAILOVERPEER" => "",
 								"ALLOW" => "",
 								"DENY" => "",
 								"IGNORE" => "",
@@ -40,18 +41,22 @@ $template->assign(array("DHCPDN" => "",
 								"DOMAINNAME" => "",
 								"DOMAINNAMESERVERS" => "",
 								"MAXMESSIZE" => "",
-								"SRVIDENT" => "",
 								"NTPSERVERS" => "",
 								"OPTGENERIC" => "",
+								"OPTDEF" => "",
+								"OPTDEFINITION" => "",
 								"DHCPOFFERNOWDN" => "",
-								"DHCPOFFERNOW" => ""));
+								"DHCPOFFERNOW" => "",
+								"SUBNET" => "keine Subnetze zugewiesen",
+								"NETMASK" => "",
+								"SUBNETAU" => ""));
 
 # DHCP Service Daten						
 $dhcpsv_array = get_dhcpservices($auDN,array("dn","cn"));
 $dhcpserviceDN = $dhcpsv_array[0]['dn'];
-$attributes = array("dn","cn","dhcpprimarydn","dhcpsecondarydn","description","dhcpofferdn","dhcpstatements","dhcpoptallow",
-							"dhcpoptddns-update-style","dhcpoptdefault-lease-time","dhcpoptdeny","dhcpoptfilename",
-							"dhcpoptignore","dhcpoptmax-lease-time","dhcpoptnext-server","dhcpoptserver-identifier",
+$attributes = array("dn","cn","dhcpprimarydn","dhcpsecondarydn","description","dhcpofferdn","dhcpstatements","dhcpfailoverpeer",
+                     "dhcpoptallow","dhcpoptddns-update-style","dhcpoptdefault-lease-time","dhcpoptdeny","dhcpoptfilename",
+							"dhcpoptignore","dhcpoptmax-lease-time","dhcpoptnext-server","optiondefinition",
 							"dhcpoptuse-host-decl-names","dhcpoptbroadcast-address","dhcpoptdhcp-max-message-size",
 							"dhcpoptdomain-name","dhcpoptdomain-name-servers","dhcpoptgeneric","dhcpoptntp-servers",
 							"dhcpoptroot-path","dhcpoptrouters");
@@ -81,6 +86,22 @@ $expcn = explode('_',$dhcpsv_data['cn']);
 $name = array_slice($expcn,1);
 $dhcpcn = implode('_',$name);
 
+$optdef = "";
+if (count($dhcpsv_data['optiondefinition']) == 1){
+    $dhcpsv_data['optiondefinition'] = array($dhcpsv_data['optiondefinition']);  
+}
+if (count($dhcpsv_data['optiondefinition']) > 0){
+   foreach ($dhcpsv_data['optiondefinition'] as $optdefinition){
+      $optdef .= "
+      			<tr>
+      				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>&nbsp;</td>
+      				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+      					<input type='Text' name='dhcpoptdefinition[]' value='".$optdefinition."' size='40' class='medium_form_field'>
+      					<input type='hidden' name='olddhcpoptdefinition[]' value='".$optdefinition."'> &nbsp;
+      				</td>
+      			</tr>";
+   }
+}
 
 $template->assign(array("DHCPDN" => $dhcpsv_data['dn'],
 								"CN" => $dhcpcn,
@@ -88,6 +109,7 @@ $template->assign(array("DHCPDN" => $dhcpsv_data['dn'],
 								"SECONDARY" => $dhcpsv_data['dhcpsecondarydn'],
 								"DESCRIPTION" => $dhcpsv_data['description'],
 								"STATEMENTS" => $dhcpsv_data['dhcpstatements'],
+								"FAILOVERPEER" => $dhcpsv_data['dhcpfailoverpeer'],
 								"ALLOW" => $dhcpsv_data['dhcpoptallow'],
 								"DENY" => $dhcpsv_data['dhcpoptdeny'],
 								"IGNORE" => $dhcpsv_data['dhcpoptignore'],
@@ -100,11 +122,10 @@ $template->assign(array("DHCPDN" => $dhcpsv_data['dn'],
 								"DOMAINNAMESERVERS" => $dhcpsv_data['dhcpoptdomain-name-servers'],
 								"NEXTSERVER" => $dhcpsv_data['dhcpoptnext-server'],
 								"FILENAME" => $dhcpsv_data['dhcpoptfilename'],
-								"SRVIDENT" => $dhcpsv_data['dhcpoptserver-identifier'],
 								"NTPSERVERS" => $dhcpsv_data['dhcpoptntp-servers'],
-								"OPTGENERIC" => $dhcpsv_data['dhcpoptgeneric'],
 								"DHCPOFFERNOWDN" => $dhcpsv_data['dhcpofferdn'],
 								"DHCPOFFERNOW" => $dhcpoffernow,
+								"OPTDEF" => $optdef,
            		       	"MNR" => $mnr,
            		       	"SBMNR" => $sbmnr));
 
@@ -114,6 +135,7 @@ foreach ($dhcpoffers as $offer){
 									"DHCPOFFEROU" => $offer['ou'],));
 	$template->parse("DHCPOFFERS_LIST", ".Dhcpoffers");
 }
+
 
 # Subnetze und Hosts des Dienstes
 $dhcpobjects = get_service_subnets($dhcpserviceDN, array("dn","cn","dhcpoptnetmask"));
@@ -150,7 +172,7 @@ foreach ($dhcpobjects as $subnet){
 
 ################################################
 # DHCP Generator Skript Config
-$template->assign(array("DHCPGENLDAP" => "ldap://".LDAP_HOST,
+$template->assign(array("DHCPGENLDAP" => LDAP_HOST,
    	                  "DHCPGENBASE" => "ou=RIPM,".$suffix,
    	                  "DHCPGENUDN" => $userDN,
    	                  "DHCPGENPW" => $userPassword,

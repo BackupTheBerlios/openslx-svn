@@ -131,7 +131,7 @@ $template->assign(array("MENDN" => "",
    	                  "BGCDEF" => "",
    	                  "POSITION" => ""));
 foreach ($menuentries as $me){
-	$anzeige = "";
+	$anzeige = ""; $medef = ""; $mepwd = ""; $mehide = "";
 	if ($me['label'] != "" && $me['menulabel'] == ""){$anzeige .= $me['label'];}
 	if ($me['menulabel'] != ""){$anzeige .= $me['menulabel'];}
 	if ($me['menudefault'] == 1){$medef = "<b>D</b>"; $bgcdef = "background-color:#EEDD82;";}

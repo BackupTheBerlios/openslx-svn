@@ -6,66 +6,45 @@ function createRBSMenu($rollen, $mnr, $auDN, $sbmnr) {
  	
  	# rbservices (momentan nur für einen RBS konzipiert)
  	$rbs_array = get_rbservices($auDN,array("dn","cn"));
-   if (count($rbs_array) == 0){
-   	$rbslink = "new_rbservice.php?mnr=1";
-   	$gbmlink = "no_rbservice.php?mnr=2";
-   	$pxelink = "no_rbservice.php?mnr=3";
-   }
-   else {
-   	$rbslink = "rbservice.php?mnr=1";
-   	$gbmlink = "gbm_overview.php?mnr=2";
-   	$pxelink = "pxeconfig_default.php?mnr=3";
-   }
-   $rbsDN = $rbs_array[0]['dn'];
-   
- 	# Struktur der Registerkartenleiste
+
+ 	# Struktur der Registerkartenleiste 	
  	$hauptmenu = array(array("link" => "rbs.php?mnr=0",
             	           	"text" => "&Uuml;bersicht",
-           		            "zugriff" => "alle"),
-           		       array("link" => $rbslink,
-            	           	"text" => "Remote Boot Service",
-           		            "zugriff" => array("MainAdmin","HostAdmin")),
-           		       array("link" => $gbmlink,
-            	           	"text" => "Generische Bootmen&uuml;s",
-           		            "zugriff" => array("MainAdmin","HostAdmin")),
-   						 array("link" => $pxelink,
-                           "text" => "Default PXE",
-                           "zugriff" => array("MainAdmin","HostAdmin")));
-   #print_r($hauptmenu);
- 	
- 	# Generische Bootmenüs
- 	$gbm = array();
- 	if (count($rbs_array) != 0){
-	 	$generic_bms = get_menuentries($rbsDN, array("dn","cn"));
-	  	for ($g=0;$g<count($generic_bms);$g++){
-	  		$gbm[] = array("link" => "gbm.php?dn=".$generic_bms[$g]['dn']."&mnr=2&sbmnr=".$g,
-	  							"text" => $generic_bms[$g]['cn'],
-								"zugriff" => array("MainAdmin","HostAdmin"));
-	  	}
-	  	$gbm [] = array("link" => "new_gbm.php?mnr=2&sbmnr=".$g,
-	                   "text" => "Neues Generisches BM",
-	                   "zugriff" => array("MainAdmin","HostAdmin"));
- 	}
- 	
- 	# default pxe-configs
- 	$pxe = array();
- 	if (count($rbs_array) != 0){
-	   $pxe_array = get_pxeconfigs($rbsDN,array("dn","cn","timerange"));
-	   for($n=0;$n<count($pxe_array);$n++){
-	   	$pxe [] = array("link" => "pxe.php?dn=".$pxe_array[$n]['dn']."&mnr=3&sbmnr=".$n,
-	  							 "text" => $pxe_array[$n]['cn'],
+           		            "zugriff" => "alle"));
+   $submenu = array(array());
+           		            	
+ 	$n = 1;
+   if (count($rbs_array) != 0){
+      for ($i=0;$i<count($rbs_array);$i++){
+         
+         $hauptmenu [] = array("link" => "rbservice.php?rbsdn=".$rbs_array[$i]['dn']."&mnr=".$n,
+	  							 "text" => $rbs_array[$i]['cn'],
 	      	             "zugriff" => array("MainAdmin","HostAdmin"));
-	   }
-	   $pxe [] = array("link" => "new_pxe.php?mnr=3&sbmnr=".$n,
-	                     "text" => "Neues Default PXE",
-	                     "zugriff" => array("MainAdmin","HostAdmin"));
+	      $submenu [] = array(
+	                        array("link" => "gbm_overview.php?rbsdn=".$rbs_array[$i]['dn']."&mnr=".$n."&sbmnr=0",
+           	          	        "text" => "Generische Bootmen&uuml;s",
+           		                    "zugriff" => array("MainAdmin","HostAdmin")),
+           		            array("link" => "pxeconfig_default.php?rbsdn=".$rbs_array[$i]['dn']."&mnr=".$n."&sbmnr=1",
+            	          	        "text" => "Default PXE Configs",
+           		                    "zugriff" => array("MainAdmin","HostAdmin")),
+           		            array("link" => "new_gbm.php?rbsdn=".$rbs_array[$i]['dn']."&mnr=".$n."&sbmnr=2",
+           	          	        "text" => "Neues GBM anlegen",
+           		                    "zugriff" => array("MainAdmin","HostAdmin")),
+           		            array("link" => "new_pxe.php?rbsdn=".$rbs_array[$i]['dn']."&mnr=".$n."&sbmnr=3",
+           	          	        "text" => "Neue PXE Config anlegen",
+           		                    "zugriff" => array("MainAdmin","HostAdmin")), 
+          		             );
+         $n++;
+      }
    }
-   $submenu = array(array(),
-   					  array(),
-    	              $gbm,
-    	              $pxe);
-	 
-	#$rollen = array_keys($roles);
+   $hauptmenu [] = array("link" => "new_rbservice.php?&mnr=".$n,
+	 					 "text" => "Neuen RBS anlegen",
+	      	       "zugriff" => array("MainAdmin","HostAdmin"));
+   
+   $submenu [] = array();   
+   #print_r($hauptmenu); echo "<br><br>";
+   #print_r($submenu);
+
 
   	# Zusammenstellen der Menuleiste
   	$template->define_dynamic("Hauptmenu", "Menu");

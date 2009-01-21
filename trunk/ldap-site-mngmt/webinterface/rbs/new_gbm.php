@@ -25,11 +25,9 @@ createRBSMenu($rollen, $mnr, $auDN, $sbmnr);
 
 ###################################################################################
 
-$gbmcn = str_replace ( "_", " ", $_GET['gbmcn']);
+$rbsDN = $_GET['rbsdn'];
 
-# rbservice und pxe daten (voerst nur ein rbs)
-$rbs_array = get_rbservices($auDN,array("dn","cn"));
-$rbsDN = $rbs_array[0]['dn'];
+$gbmcn = str_replace ( "_", " ", $_GET['gbmcn']);
 
 # RBS Daten 				
 $rbs_data = get_node_data($rbsDN, array("cn","nfsserverip","exportpath","tftpserverip","tftppath","nbdserverip"));

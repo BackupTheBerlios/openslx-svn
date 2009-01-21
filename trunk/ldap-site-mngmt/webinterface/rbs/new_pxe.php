@@ -28,6 +28,9 @@ createRBSMenu($rollen, $mnr, $auDN, $sbmnr);
 
 ###################################################################################
 
+$rbsDN = $_GET['rbsdn'];
+$rbsdnexp = ldap_explode_dn($rbsDN, 1);
+
 $pxecn = str_replace ( "_", " ", $_GET['pxecn']);
 $pxeday = str_replace ( "_", " ", $_GET['pxeday']);
 $pxebeg = str_replace ( "_", " ", $_GET['pxebeg']);
@@ -39,7 +42,8 @@ $template->assign(array("PXECN" => $pxecn,
            			      "PXEEND" => $pxeend,
            		       	"LDAPURI" => "",
            			      "FILEURI" => "",   
-           			      "RBS" => "",
+           			      "RBSDN" => $rbsDN,
+           			      "RBSCN" => $rbsdnexp[0],   
            			      "RBSAU" => "",
            			      "NFS" => "",
            			      "NFSROOT" => "",
@@ -65,28 +69,6 @@ $template->assign(array("PXECN" => $pxecn,
            		        	"MNR" => $mnr,
            		       	"SBMNR" => $sbmnr));
 
-#############################################
-# RB Dienste holen
-$rbsoffers = get_rbsoffers($auDN);
-
-$template->assign(array("ALTRBSDN" => "",
-   	                  "ALTRBSCN" => "",
-   	                  "ALTRBSAU" => ""));
-
-if (count($rbsoffers) != 0){
-$template->define_dynamic("Altrbs", "Webseite");
-	foreach ($rbsoffers as $item){
-		$rbsdnexp = ldap_explode_dn($item,1);
-		$rbsoffcn = $rbsdnexp[0];
-		$rbsoffau = $rbsdnexp[2];
-		#$auexp = explode(',',$item['auDN']);
-		#$altrbsau = explode('=',$auexp[0]);
-		$template->assign(array("ALTRBSDN" => $item,
-   	                        "ALTRBSCN" => $rbsoffcn,
-   	                        "ALTRBSAU" => " &nbsp;&nbsp;[ Abt.:  ".$rbsoffau." ]"));
-   	$template->parse("ALTRBS_LIST", ".Altrbs");	
-	} 
-}
 
 ###################################################################################
 

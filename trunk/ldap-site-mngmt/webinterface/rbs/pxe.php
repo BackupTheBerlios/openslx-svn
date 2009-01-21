@@ -29,6 +29,7 @@ createRBSMenu($rollen, $mnr, $auDN, $sbmnr);
 ###################################################################################
 
 $pxeDN = $_GET['dn'];
+#$rbsDN = $_GET['rbsdn'];
 
 $attributes = array("dn","cn","rbservicedn","filename","timerange","allowoptions","console","default",
 							"display","font","implicit","kbdmap","menumasterpasswd","menutitle",
@@ -90,6 +91,7 @@ $maxpos = count($menuentries)+1;
 $template->assign(array("PXEDN" => $pxeDN,
 								"PXECN" => $pxecn,
 								"TIMERANGE" => $pxe['timerange'],
+								"RBSDN" => $rbsDN,
            			      "RBS" => $rbsdata['cn'],
            			      "RBSAU" => $rbsau,
            			      "NFS" => $rbsdata['nfsserverip'],

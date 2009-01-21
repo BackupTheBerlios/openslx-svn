@@ -27,7 +27,7 @@ $pxetype = $pxearray[2];
 
 $seconds = 2;
 $get_mecn = str_replace ( " ", "_", $mecn );
-$url = "pxe.php?dn=".$pxeDN."&mecn=".$get_mecn."&mnr=".$mnr."&sbmnr=".$sbmnr."&mcnr=".$mcnr;
+$url = "pxe_bootmenue.php?dn=".$pxeDN."&mecn=".$get_mecn."&mnr=".$mnr."&sbmnr=".$sbmnr."&mcnr=".$mcnr;
 
 echo " 
 <html>
@@ -68,7 +68,7 @@ if ($typ == "newme" && $typ != "local" && $typ != "text" && $typ != "leer" && $t
 				
 		if (add_me($meDN,$mecn,$gbmDN,$menpos,$meatts,$pxeDN)){			
 			$mesg .= "<br>Neuen Men&uuml; Eintrag erfolgreich angelegt<br>";
-			$url = "pxe.php?dn=".$pxeDN."&mnr=".$mnr."&sbmnr=".$sbmnr."&mcnr=".$mcnr;;
+			$url = "pxe_bootmenue.php?dn=".$pxeDN."&mnr=".$mnr."&sbmnr=".$sbmnr."&mcnr=".$mcnr;;
 			}
 		else{
 			$mesg .= "<br>Fehler beim anlegen des Men&uuml; Eintrags!<br>";
@@ -134,7 +134,7 @@ elseif ($typ == "local" && $typ != "newme" && $typ != "text" && $typ != "leer" &
 	}else{
 		$mesg .= "Fehler beim eintragen der Localboot Zeile!";
 	}
-	$url = "pxe.php?dn=".$pxeDN."&mnr=".$mnr."&sbmnr=".$sbmnr."&mcnr=".$mcnr;
+	$url = "pxe_bootmenue.php?dn=".$pxeDN."&mnr=".$mnr."&sbmnr=".$sbmnr."&mcnr=".$mcnr;
 }
 
 
@@ -191,7 +191,7 @@ elseif ($typ == "text" && $typ != "newme" && $typ != "local" && $typ != "leer" &
 		}else{
 			$mesg .= "Fehler beim eintragen der Textzeile!";
 		}
-		$url = "pxe.php?dn=".$pxeDN."&mnr=".$mnr."&sbmnr=".$sbmnr."&mcnr=".$mcnr;
+		$url = "pxe_bootmenue.php?dn=".$pxeDN."&mnr=".$mnr."&sbmnr=".$sbmnr."&mcnr=".$mcnr;
 	}
 }
 
@@ -247,7 +247,7 @@ elseif ($typ == "leer" && $typ != "newme" && $typ != "local" && $typ != "text" &
 	}else{
 		$mesg .= "Fehler beim eintragen der Leerzeile!";
 	}
-	$url = "pxe.php?dn=".$pxeDN."&mnr=".$mnr."&sbmnr=".$sbmnr."&mcnr=".$mcnr;
+	$url = "pxe_bootmenue.php?dn=".$pxeDN."&mnr=".$mnr."&sbmnr=".$sbmnr."&mcnr=".$mcnr;
 }
 
 

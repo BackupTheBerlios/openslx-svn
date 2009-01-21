@@ -53,8 +53,8 @@
   				<input type='hidden' name='name' value='{ANZEIGENAME}'>
 				<input type='hidden' name='pxedn' value='{PXEDN}'>
 				<input type='hidden' name='delurl' value='menuentry_delete.php'>
-  				<input type='hidden' name='successurl' value='pxe.php?dn={PXEDN}&mnr={MNR}&sbmnr={SBMNR}&mcnr={MCNR}'>
-  				<input type='hidden' name='backurl' value='pxe.php?dn={PXEDN}&mnr={MNR}&sbmnr={SBMNR}&mcnr={MCNR}'>
+  				<input type='hidden' name='successurl' value='pxe_bootmenue.php?dn={PXEDN}&mnr={MNR}&sbmnr={SBMNR}&mcnr={MCNR}'>
+  				<input type='hidden' name='backurl' value='pxe_bootmenue.php?dn={PXEDN}&mnr={MNR}&sbmnr={SBMNR}&mcnr={MCNR}'>
   			
   				<input type='Submit' name='apply' value='l&ouml;schen' class='small_loginform_button'>
   			</tr>

@@ -1,5 +1,6 @@
 <?php
 include('../standard_header.inc.php');
+$syntax = new Syntaxcheck;
 
 $rbscn = "RBS_".$_POST['rbscn'];
 $oldrbscn = "RBS_".$_POST['oldrbscn'];
@@ -19,6 +20,13 @@ $nbdserver = $_POST['nbdserver'];
 $oldtftpserverdn = $_POST['oldtftpserverdn'];
 $oldnfsserverdn = $_POST['oldnfsserverdn'];
 $oldnbdserverdn = $_POST['oldnbdserverdn'];
+
+$delfsuri = $_POST['delfsuri'];
+$addfsuri = $_POST['addfsuri'];
+
+$fstype = $_POST['fstype'];
+$fsip = $_POST['fsip'];
+$fspath = $_POST['fspath'];
 
 $initbootfile = $_POST['initbootfile'];
 $oldinitbootfile = $_POST['oldinitbootfile'];
@@ -48,9 +56,6 @@ if (count($oldattribs) != 0){
 }
 #print_r($oldatts); echo "<br><br>";
 
-
-$seconds = 2;
-$url = "rbservice.php?&mnr=1";
  
 echo "
 <html>
@@ -130,7 +135,6 @@ if ( $rbsoffer != "none" && $rbsoffer != $oldrbsoffer ){
 #####################################
 # Server ändern über IP Feld
 
-$syntax = new Syntaxcheck;
 
 if ( $tftpserverip != "" && $tftpserverip != $oldtftpserverip ){
 	
@@ -159,6 +163,45 @@ if ( $tftpserverip != "" && $tftpserverip != $oldtftpserverip ){
 		$mesg .= "Falsche IP Syntax!<br>";
 	}
 }
+
+#######################################
+# Fileserver URI anlegen
+
+if ( $addfsuri[1] != "" ){
+   # tests: ipsyntax, und spezifische URI-Syntax-Checks...
+   if( $syntax->check_ip_syntax($addfsuri[1]) ){
+      
+      $newfsuri = $addfsuri[0]."://".$addfsuri[1].$addfsuri[2];
+      echo "FS URI <b>".$newfsuri."</b> anlegen<br>";
+      
+      $entryfsadd ['fileserveruri'] = $newfsuri;
+      if(ldap_mod_add($ds,$rbsDN,$entryfsadd)){
+			$mesg = "FS URI erfolgreich eingetragen<br><br>";
+		}else{
+			$mesg = "Fehler beim eintragen der FS URI<br><br>";
+		}
+	}
+	else{echo "Falsche IP Syntax<br><br>";}
+}
+
+#####################################
+# Fileserver URIs löschen
+if ( count($delfsuri) != 0 ){
+	echo "Fileserver URI l&ouml;schen<br>";
+	
+	$i = 0;
+	foreach ($delfsuri as $fsuri){
+		$entry['fileserveruri'][$i] = $fsuri;
+		$i++;
+	}
+	#print_r($entry); echo "<br><br>";
+	
+	if ($result = ldap_mod_del($ds,$rbsDN,$entry)){
+		$mesg = "Zu l&ouml;schende Fileserver URIs erfolgreich gel&ouml;scht<br><br>";
+	}else{
+		$mesg = "Fehler beim l&ouml;schen der Fileserver URIs<br><br>";
+	}
+} 
 
 if ( $nfsserverip != "" && $nfsserverip != $oldnfsserverip ){
 	
@@ -299,6 +342,9 @@ if ( $initbootfile != "" && $initbootfile != $oldinitbootfile ){
 		$mesg = "Fehler beim &auml;ndern des Initial Boot Files!<br><br>";
 	}
 }
+
+
+
  
 #####################################
 # Restliche Attribute
@@ -371,6 +417,8 @@ if (count($entrydel) != 0 ){
 }
 
 
+$url = "rbservice.php?rbsdn=".$rbsDN."&mnr=".$mnr;
+$seconds = 2;
 
 
 $mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>				

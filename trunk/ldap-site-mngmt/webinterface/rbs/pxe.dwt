@@ -1,4 +1,12 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	
+   <tr>
+  		<td height='20'><h4><a href='pxeconfig_default.php?rbsdn={RBSDN}&mnr={MNR}&sbmnr={SBMNR}' class='headerlink'><< Zur&uuml;ck zur PXE &Uuml;bersicht</a></h4></td>
+  	</tr>
+  	<tr>
+  		<td height='20'>&nbsp;</td>
+  	</tr>
+  	
   	<tr>
   		<td colspan='2'><h3>PXE Boot Men&uuml; &nbsp;<code class='font_object'>  {PXECN} </code> </h3></td>
   	</tr>

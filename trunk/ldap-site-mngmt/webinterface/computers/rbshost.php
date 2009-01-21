@@ -43,74 +43,74 @@ $rbs_dhcpopt = "";
 $host_dhcpopt = "";
 $dhcp_selectbox = "";
 
+$rbs = "";
+$nodhcptext = "";
 
-# Falls nicht DHCP Dienst dann kein RBS Setup
+# Falls nicht DHCP Dienst dann Erklärung ... 
 if ($dhcphlpcont == ""){
 	
-	$rbs = "<td class='tab_d_ohne' colspan='2'>
-				Sie m&uuml;ssen den Rechner zuerst in einem DHCP Dienst anmelden, bevor Sie ihn
-	         einem Remote Boot Dienst zuordnen k&ouml;nnen <br>(DHCP Optionen!!).<br></td>
-	        </tr>
-	        <input type='hidden' name='rbs' value='".$rbsDN."'>";
-}else{
-    
-   ###########################################################
-   # RBS Setup # Nur wenn angezeigt wenn Host in DHCP
-   $rbs_selectbox = "";
-   $rbs_dhcpopt = "";
-   $altrbs = alternative_rbservices($rbsDN);
-   
-   
-      $rbs_selectbox .= "<td class='tab_d'>
-		   		            <select name='rbs' size='4' class='medium_form_selectbox'> 
-		   			            <option selected value='none'>----------</option>";
-   if (count($altrbs) != 0){
-      foreach ($altrbs as $item){
-         $rbs_selectbox .= "
-         <option value='".$item['dn']."'>".$item['cn']." ".$item['au']."</option>";
-      }
-   }
-   $rbs_selectbox .= "<option value=''>Kein RBS</option>
-           					</select></td>";
-
-   # RBS Daten
-   if ($rbsDN == ""){
-      
-      $rbs = "<td class='tab_d_ohne'><b>Remote Boot Dienst: </b>&nbsp;</td>
-              <td class='tab_d_ohne'>
-               Rechner ist in keinem Remote Boot Dienst angemeldet<br></td></tr>
-              <tr valign='top'><td class='tab_d'>
-   			   RBS ausw&auml;hlen: <br></td>".$rbs_selectbox;
-   }else{
-      
-      $rbs = "";
-      $rbsdata = get_node_data($rbsDN,array("tftpserverip"));
-      #print_r($rbsdata); echo "<br>";
-      $exp2 = explode(',',$host['hlprbservice']);
-      $exprbs = explode('=',$exp2[0]); $rbserv = $exprbs[1];
-      $exprbsau = explode('=',$exp2[2]); $rbsau = $exprbsau[1];
-      $rbs .= "<tr valign='top'>
-                  <td class='tab_d_ohne'><b>Remote Boot Dienst: </b>&nbsp;</td>
-                  <td class='tab_d_ohne'>
-                     Remote Boot Service <b>".$rbserv."</b> / AU <b>".$rbsau."</b></td>
-               </tr>
-               <tr>
-   				   <td class='tab_d_ohne'>DHCP Option <b>next-server</b> &nbsp;(TFTP Boot Server IP):</td>
-   				   <td class='tab_d_ohne'><b>".$host['dhcpoptnext-server']."</b>&nbsp;</td>
-   			   </tr>
-   			   <tr>
-   				   <td class='tab_d'>DHCP Option <b>filename</b> &nbsp;(initiale remote Bootdatei):</td>
-   				   <td class='tab_d'><b>".$host['dhcpoptfilename']."</b>&nbsp;</td>
-   			   </tr>
-               <tr valign='top'><td class='tab_d'>
-   					RBS Einbindung &auml;ndern: <br></td>".$rbs_selectbox."
-   				</tr>";
-   	
-   	$rbs_dhcpopt = "
-   	      ";
-   }
-
+	$nodhcptext .= "Der Rechner ist in keinem DHCP Dienst eingetragen. Dies ist jedoch Voraussetzung,
+	         um einen Remote Boot Dienst nutzen zu k&ouml;nnen.<br>
+	         D.h. die hier verwalteten RBS-relevanten DHCP Optionen werden bzw. sind f&uuml;r den Client zentral gespeichert, 
+	         werden jedoch in keine DHCP Dienst Konfiguration &uuml;nernommen.
+	        ";
 }
+# <input type='hidden' name='rbs' value='".$rbsDN."'> 
+###########################################################
+# RBS Setup 
+$rbs_selectbox = "";
+$rbs_dhcpopt = "";
+$altrbs = alternative_rbservices($rbsDN);
+
+
+   $rbs_selectbox .= "<td class='tab_d'>
+	   		            <select name='rbs' size='4' class='medium_form_selectbox'> 
+	   			            <option selected value='none'>----------</option>";
+if (count($altrbs) != 0){
+   foreach ($altrbs as $item){
+      $rbs_selectbox .= "
+      <option value='".$item['dn']."'>".$item['cn']." ".$item['au']."</option>";
+   }
+}
+$rbs_selectbox .= "<option value=''>Kein RBS</option>
+        					</select></td>";
+
+# RBS Daten
+if ($rbsDN == ""){
+   
+   $rbs .= "<td class='tab_d_ohne'><b>Remote Boot Dienst: </b>&nbsp;</td>
+           <td class='tab_d_ohne'>
+            Rechner ist in keinem Remote Boot Dienst angemeldet<br></td></tr>
+           <tr valign='top'><td class='tab_d'>
+			   RBS ausw&auml;hlen: <br></td>".$rbs_selectbox;
+}else{
+   
+   $rbsdata = get_node_data($rbsDN,array("tftpserverip"));
+   #print_r($rbsdata); echo "<br>";
+   $exp2 = explode(',',$host['hlprbservice']);
+   $exprbs = explode('=',$exp2[0]); $rbserv = $exprbs[1];
+   $exprbsau = explode('=',$exp2[2]); $rbsau = $exprbsau[1];
+   $rbs .= "<tr valign='top'>
+               <td class='tab_d_ohne'><b>Remote Boot Dienst: </b>&nbsp;</td>
+               <td class='tab_d_ohne'>
+                  Remote Boot Service <b>".$rbserv."</b> / AU <b>".$rbsau."</b></td>
+            </tr>
+            <tr>
+				   <td class='tab_d_ohne'>DHCP Option <b>next-server</b> &nbsp;(TFTP Boot Server IP):</td>
+				   <td class='tab_d_ohne'><b>".$host['dhcpoptnext-server']."</b>&nbsp;</td>
+			   </tr>
+			   <tr>
+				   <td class='tab_d'>DHCP Option <b>filename</b> &nbsp;(initiale remote Bootdatei):</td>
+				   <td class='tab_d'><b>".$host['dhcpoptfilename']."</b>&nbsp;</td>
+			   </tr>
+            <tr valign='top'><td class='tab_d'>
+					RBS Einbindung &auml;ndern: <br></td>".$rbs_selectbox."
+				</tr>";
+	
+	$rbs_dhcpopt = "";
+}
+
+
 
 $template->assign(array("HOSTDN" => $hostDN,
 								"HOSTNAME" => $host['hostname'],
@@ -120,6 +120,7 @@ $template->assign(array("HOSTDN" => $hostDN,
            			      "DESCRIPTION" => $host['description'],
            			      "OLDDHCP" => $objectDN,
            			      "OLDFIXADD" => $host['dhcpoptfixed-address'],
+           			      "NODHCP" => $nodhcptext,
            			      "OLDRBS" => $rbsDN,
            		       	"RBS" => $rbs,
            		       	"HOSTLINK" => "<a href='host.php?dn=".$hostDN."&sbmnr=".$sbmnr."' class='headerlink'>",
@@ -162,7 +163,7 @@ if (count($hostpxeconfigs) != 0){
    	}
       $template->assign(array("PXEDN" => $hostpxeconfigs[$i]['dn'],
    								"PXECN" => $pxelink,
-              			      "PXEDESC" => $hostpxeconfigs['description'],
+              			      #"PXEDESC" => $hostpxeconfigs['description'],
               			      "PXETR" => $trange, ));
    	$template->parse("RECHNERPXES_LIST", ".Rechnerpxes");
    

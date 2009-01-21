@@ -9,17 +9,17 @@
   		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
 			<tr>
 				<td width='24%' class='tab_h'><b>Rechnername</b></td>
-				<td width='19%' class='tab_h'><b>MAC Adresse</b></td>
 				<td width='19%' class='tab_h'><b>IP Adresse</b></td>
+				<td width='19%' class='tab_h'><b>MAC Adresse</b></td>
 				<td width='19%' class='tab_h'><b>DHCP</b></td>
 				<td width='19%' class='tab_h'><b>RBS</b></td>
 			</tr>
 			
 			<!-- BEGIN DYNAMIC BLOCK: Rechner -->	
 			<tr valign='top' height='45'>
-				<td class='tab_d'>{HOSTNAME} &nbsp;</td>
-				<td class='tab_d'>{HWADDRESS} &nbsp;</td>
+				<td class='tab_d'><b>{HOSTNAME}</b> &nbsp;</td>
 				<td class='tab_d'>{IPADDRESS} &nbsp;</td>
+				<td class='tab_d'>{HWADDRESS} &nbsp;</td>
 				<td class='tab_d'>{DHCPCONT} &nbsp;</td>
 				<td class='tab_d'>{RBSCONT} &nbsp;</td>
 			</tr>

@@ -1,6 +1,6 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
   	<tr>
-  		<td height='20'><h4>Zur&uuml;ck zu &nbsp;<a href='pxe.php?dn={PXEDN}&mnr={MNR}&sbmnr={SBMNR}&mcnr={MCNR}' class='headerlink'>{PXECN}</a></h4></td>
+  		<td height='20'><h4>Zur&uuml;ck zu &nbsp;<a href='pxe_bootmenue.php?dn={PXEDN}&mnr={MNR}&sbmnr={SBMNR}&mcnr={MCNR}' class='headerlink'>{PXECN}</a></h4></td>
   	</tr>
   	<tr>
   		<td height='20'>&nbsp;</td>

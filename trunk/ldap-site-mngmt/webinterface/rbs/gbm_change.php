@@ -9,8 +9,11 @@ $rbsDN = $_POST['rbsdn'];
 $mnr = $_POST['mnr'];
 $sbmnr = $_POST['sbmnr'];
 
-$rootfstype = $_POST['rootfstype'];
-$oldrootfstype = $_POST['oldrootfstype'];
+$rootfs = $_POST['rootfs'];
+#$oldrootfs = $_POST['oldrootfs'];
+$rootfspath = $_POST['rootfspath'];
+$rootfssuffix = $_POST['rootfssuffix'];
+#$oldrootfstype = $_POST['oldrootfstype'];
 
 $attribs = $_POST['attribs'];
 if (count($attribs) != 0){
@@ -92,42 +95,65 @@ if ( $oldgbmcn != "" && $gbmcn == "" ){
 }
 
 ###################################
+# RootFS
+if ( $rootfs != "" ){
+   if ( $rootfs == "none" ){
+      echo "Root FS l&ouml;schen!<br>";
+	   $entrydel ['rootfs'] = array();
+	   if(ldap_mod_del($ds,$gbmDN,$entrydel)){
+		   $mesg = "Attribut <b>RootFS</b> erfolgreich gel&ouml;scht<br><br>";
+   	}else{
+   		$mesg = "Fehler beim l&ouml;schen des Attributs <b>RootFS</b><br><br>";
+   	}
+   
+   }else{
+      echo "Root FS &auml;ndern!<br>";
+	   $entrymod ['rootfs'] = $rootfs.$rootfssuffix;
+	   if(ldap_mod_replace($ds,$gbmDN,$entrymod)){
+		   $mesg = "Attribut <b>RootFS</b> erfolgreich ge&auml;ndert<br><br>";
+   	}else{
+   		$mesg = "Fehler beim &auml;ndern des Attributs <b>RootFS</b><br><br>";
+   	}
+   }
+}
+
+###################################
 # RootFS Type
 
-if ( $oldrootfstype == $rootfstype ){
-	# $mesg = "keine Aenderung<br>";
-}
+#if ( $oldrootfstype == $rootfstype ){
+#	# $mesg = "keine Aenderung<br>";
+#}
+ 
+#if ( $oldrootfstype == "" && $rootfstype != "" ){
+#	$entryadd ['rootfstype'] = $rootfstype;
+#	if(ldap_mod_add($ds,$gbmDN,$entryadd)){
+#		$mesg = "Attribute <b>RootfsType</b> erfolgreich eingetragen<br><br>";
+#	}else{
+#		$mesg = "Fehler beim eintragen der Attribute <b>RootfsType</b><br><br>";
+#	}
+#}
+ 
 
-if ( $oldrootfstype == "" && $rootfstype != "" ){
-	$entryadd ['rootfstype'] = $rootfstype;
-	if(ldap_mod_add($ds,$gbmDN,$entryadd)){
-		$mesg = "Attribute <b>RootfsType</b> erfolgreich eingetragen<br><br>";
-	}else{
-		$mesg = "Fehler beim eintragen der Attribute <b>RootfsType</b><br><br>";
-	}
-}
+#if ( $oldrootfstype != "" && $rootfstype != "" && $oldrootfstype != $rootfstype ){
+#	echo "Root FS Type &auml;ndern<br>";
+#	$entrymod ['rootfstype'] = $rootfstype;
+#	if(ldap_mod_replace($ds,$gbmDN,$entrymod)){
+#		$mesg = "Attribute <b>RootfsType</b> erfolgreich geaendert<br><br>";
+#	}else{
+#		$mesg = "Fehler beim aendern der Attribute <b>RootfsType</b><br><br>";
+#	}
+#}
 
 
-if ( $oldrootfstype != "" && $rootfstype != "" && $oldrootfstype != $rootfstype ){
-	echo "Root FS Type &auml;ndern<br>";
-	$entrymod ['rootfstype'] = $rootfstype;
-	if(ldap_mod_replace($ds,$gbmDN,$entrymod)){
-		$mesg = "Attribute <b>RootfsType</b> erfolgreich geaendert<br><br>";
-	}else{
-		$mesg = "Fehler beim aendern der Attribute <b>RootfsType</b><br><br>";
-	}
-}
-
-
-if ( $oldrootfstype != "" && $rootfstype == "" ){
-	echo "Root FS Type l&ouml;schen!<br>";
-	$entrydel ['rootfstype'] = array();
-	if(ldap_mod_del($ds,$gbmDN,$entrydel)){
-		$mesg = "Attribute <b>RootfsType</b> erfolgreich geloescht<br><br>";
-	}else{
-		$mesg = "Fehler beim loeschen der Attribute <b>RootfsType</b><br><br>";
-	}
-}
+#if ( $oldrootfstype != "" && $rootfstype == "" ){
+#	echo "Root FS Type l&ouml;schen!<br>";
+#	$entrydel ['rootfstype'] = array();
+#	if(ldap_mod_del($ds,$gbmDN,$entrydel)){
+#		$mesg = "Attribute <b>RootfsType</b> erfolgreich geloescht<br><br>";
+#	}else{
+#		$mesg = "Fehler beim loeschen der Attribute <b>RootfsType</b><br><br>";
+#	}
+#}
 
 
 ###################################

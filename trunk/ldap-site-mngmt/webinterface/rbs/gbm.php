@@ -27,16 +27,28 @@ createRBSMenu($rollen, $mnr, $auDN, $sbmnr);
 
 $gbmDN = $_GET['dn'];
 
+$template->assign(array("TFTPROOT" => "",
+								"TFTPKERNEL" => "",
+								"TFTPPXE" => "",
+                        "TFTPCLIENTCONF" => "",
+								"NFS" => "",
+								"NFSPATH" => "",
+								"NBD" => ""));
+
 # rbservice und pxe daten (voerst nur ein rbs)
 $rbs_array = get_rbservices($auDN,array("dn","cn"));
 $rbsDN = $rbs_array[0]['dn'];
 # RBS Daten 					
-$rbs_data = get_node_data($rbsDN, array("cn","nfsserverip","exportpath","tftpserverip","tftppath","nbdserverip"));
+$rbs_data = get_node_data($rbsDN, array("cn","tftpserverip","tftproot","tftpkernelpath","tftpclientconfpath",
+                                          "tftppxepath","nfsserverip","exportpath","nbdserverip","fileserveruri"));
 $template->assign(array("RBSCN" => $rbs_data['cn'],
+								"TFTPIP" => $rbs_data['tftpserverip'],
+								"TFTPROOT" => $rbs_data['tftproot'],
+								"TFTPKERNEL" => $rbs_data['tftpkernelpath'],
+								"TFTPPXE" => $rbs_data['tftppxepath'],
+                        "TFTPCLIENTCONF" => $rbs_data['tftpclientconfpath'],
 								"NFS" => $rbs_data['nfsserverip'],
 								"NFSPATH" => $rbs_data['exportpath'],
-								"TFTP" => $rbs_data['tftpserverip'],
-								"TFTPPATH" => $rbs_data['tftppath'],
 								"NBD" => $rbs_data['nbdserverip']));
 								
 
@@ -47,11 +59,24 @@ $template->assign(array("GBMDN" => $gbmDN,
 								"INITRD" => "",
 								"FSTYPE" => "",
 								"ROOTFS" => "",
+								"DEBUG" => "",
+								"MISC" => "",
 								"IPAPPEND" => ""));
 
 # GBM Daten		
-$attributes = array("dn","cn","label","kernel","initrd","rootfstype","rootfspath","ipappend");				
+$attributes = array("dn","cn","label","kernel","initrd","rootfs","rootfstype","rootfspath","debug","appendmisc","ipappend");				
 $gbm = get_node_data($gbmDN, $attributes);
+
+$selectboxmax = count($rbs_data['fileserveruri']) + 1;
+$fsuriselectbox = "<select name='rootfs' size='".$selectboxmax."' class='rootfs_form_selectbox'>
+                  <option value='none'>---------------------------------</option>";
+if ( $rbs_data['fileserveruri'] != "" ){
+   foreach ($rbs_data['fileserveruri'] as $fsuri){
+      $fsuriselectbox .= "<option value='".$fsuri."'>".$fsuri."</option>";
+   }
+}
+$fsuriselectbox .= "</select>
+					   <input type='hidden' name='oldrootfs' value='".$gbm['rootfs']."'>";
 
 if ($gbm['rootfstype'] == 'nfs'){
 	$options = "<select name='rootfstype' size='4' class='rootfs_form_selectbox'>
@@ -96,8 +121,11 @@ $template->assign(array("GBMCN" => $gbm['cn'],
 								"LABEL" => $gbm['label'],
 								"KERNEL" => $gbm['kernel'],
 								"INITRD" => $gbm['initrd'],
+								"FSURISELECT" => $fsuriselectbox,
 								"SELECTOPTIONS" => $options,
-								"ROOTFS" => $gbm['rootfspath'],
+								"ROOTFS" => $gbm['rootfs'],
+								"DEBUG" => $gbm['debug'],
+								"MISC" => $gbm['appendmisc'],
 								"IPAPPEND" => $gbm['ipappend'],
 								"RBSDN" => $rbsDN,
            		       	"MNR" => $mnr,

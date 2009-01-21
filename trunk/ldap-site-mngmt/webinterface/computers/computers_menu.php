@@ -140,14 +140,14 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
 		            } 
 		        	}
 		   		$htmlcode= "
-		   		<tr height='4'>
+		   		<tr height='3'>
 						<td></td><td></td><td></td><td></td>
 		   		</tr>
 		   		<tr>
 						<td width='8%'>&nbsp;</td>
 						<td width='8%' align='right'>".$zwisch2."</td>
- 						<td width='5%' align='left' style='border-width:1 0 1 1;border-color:#000000;border-style:solid;padding:3;background-color:{FARBE_S}'>&nbsp;</td>
-		     			<td width='69%' align='left' style='border-width:1 1 1 0;border-color:#000000;border-style:solid;padding:3;padding-left:15px;background-color:{FARBE_S}'> 
+ 						<td width='5%' align='left' style='border-width:1 0 1 1;border-color:#000000;border-style:solid;padding:2;background-color:{FARBE_S}'>&nbsp;</td>
+		     			<td width='69%' align='left' style='border-width:1 1 1 0;border-color:#000000;border-style:solid;padding:2;padding-left:15px;background-color:{FARBE_S}'> 
 		     			<a href='".$item2['link']."' style='text-decoration:none'><b class='standard_schrift'>".$item2['text']."</b></a></td>
 						<td width='10%'>&nbsp;</td> 						
 					</tr>

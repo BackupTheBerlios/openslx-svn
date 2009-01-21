@@ -35,9 +35,6 @@
 
 		</table></td>
   	</tr>
-  	<tr>
-  		<td height='20'></td>
-  	</tr>
   	
    
    <input type='hidden' name='olddhcp' value='{OLDDHCP}'>

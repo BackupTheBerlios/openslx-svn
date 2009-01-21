@@ -9,6 +9,7 @@ $olddhcp = $_POST['olddhcp'];
 $hostip = $_POST['hostip'];
 $fixedaddress = $_POST['fixadd'];
 $oldfixedaddress = $_POST['oldfixadd'];
+$oldrbs = $_POST['oldrbs'];
 
 $hostDN = $_POST['hostdn'];
 $sbmnr = $_POST['sbmnr'];
@@ -72,6 +73,9 @@ if ($dhcp != "none" && $dhcp != $olddhcp){
 	   if ( $oldfixedaddress != "" ){
 	      $entrydhcp ['dhcpoptfixed-address'] = array();
 	   }
+	   #if ( $oldrbs != "" ){
+	   #   $entrydhcp ['hlprbservice'] = array();
+	   #}
 	   echo "DHCP delete "; echo "<br>";
 	   if ($result = ldap_mod_del($ds,$hostDN,$entrydhcp)){
 	   	$mesg = "Rechner erfolgreich aus DHCP gel&ouml;scht<br><br>";

@@ -1,6 +1,6 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
   	<tr>
-  		<td colspan='2'><h3>Neues DEFAULT PXE Boot Men&uuml; anlegen:</h3></td>
+  		<td colspan='2'><h3>Neue PXE Config (DEFAULT) f&uuml;r Dienst &nbsp;<code class='font_object'> {RBSCN} </code>&nbsp; anlegen:</h3></td>
   	</tr>
   	<tr>
   		<td height='10'>&nbsp;</td>
@@ -16,20 +16,6 @@
 				<td width='30%' style='border-color: black; border-style: solid; border-width: 3 0 1 0;'><b>Eindeutiger Name (cn):</b><br>(Bitte ohne Leerzeichen eingeben) &nbsp;</td>
 				<td colspan='2' style='border-color: black; border-style: solid; border-width: 3 0 1 0;'>
 					<font size='+2'><b>PXE_</b></font><input type='Text' name='pxecn' value='{PXECN}' size='50' class='medium_form_field'>
-				</td>
-			</tr>
-			<tr valign='top'>
-				<td width='30%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Remote Boot Dienst <br>
-																																		ausw&auml;hlen: </b>&nbsp;</td>
-				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<select name='rbs' size='5' class='medium_form_selectbox'> 
-						<option selected value='none'>----------</option>
-						
-						<!-- BEGIN DYNAMIC BLOCK: Altrbs -->
-						<option value='{ALTRBSDN}'>{ALTRBSCN} {ALTRBSAU}</option>
-						<!-- END DYNAMIC BLOCK: Altrbs -->
-						
-					</select>
 				</td>
 			</tr>
 			<tr valign='top'>
@@ -144,6 +130,7 @@
 			</tr>
 			
   			<input type='hidden' name='oldpxecn' value='{PXECN}'>
+  			<input type='hidden' name='rbsdn' value='{RBSDN}'>
 			<input type='hidden' name='mnr' value='{MNR}'>
 			<input type='hidden' name='sbmnr' value='{SBMNR}'>
 			<input type='hidden' name='mcnr' value='{MCNR}'>					

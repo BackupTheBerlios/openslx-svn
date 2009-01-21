@@ -9,7 +9,7 @@ function createDhcpMenu($rollen , $mnr, $auDN, $sbmnr) {
       $hauptmenu = array(array("link" => "no_dhcp.php",
                              "text" => "&Uuml;bersicht",
                              "zugriff" => "alle"));
-      $submenu = array(array(array()));
+      $submenu = array(array());
    }else{
       # DHCP Services (momentan nur für einen DHCP konzipiert)
     	$dhcpservice_array = get_dhcpservices($auDN,array("dn","cn"));

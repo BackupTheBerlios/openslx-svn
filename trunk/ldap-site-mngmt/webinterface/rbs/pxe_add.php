@@ -2,7 +2,7 @@
 include('../standard_header.inc.php');
 
 $pxecn = $_POST['pxecn'];  $pxecn = htmlentities($pxecn);
-$rbsDN = $_POST['rbs'];
+$rbsDN = $_POST['rbsdn'];
 #print_r($rbsDN);
 $pxeday = $_POST['pxeday']; $pxeday = htmlentities($pxeday);
 $pxebeg = $_POST['pxebeg']; $pxebeg = htmlentities($pxebeg);

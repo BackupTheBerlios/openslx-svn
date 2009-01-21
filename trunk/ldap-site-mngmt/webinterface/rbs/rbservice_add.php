@@ -1,5 +1,6 @@
 <?php
 include('../standard_header.inc.php');
+$syntax = new Syntaxcheck;
 
 $rbscn = $_POST['rbscn']; $rbscn = htmlentities($rbscn);
 

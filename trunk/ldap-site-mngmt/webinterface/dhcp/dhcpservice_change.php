@@ -5,6 +5,9 @@ $cn = "DHCP_".$_POST['cn'];
 $oldcn = "DHCP_".$_POST['oldcn'];
 $dhcpoffer = $_POST['dhcpoffer'];
 $olddhcpoffer = $_POST['olddhcpoffer'];
+$dhcpoptdefinition = $_POST['dhcpoptdefinition'];
+$olddhcpoptdefinition = $_POST['olddhcpoptdefinition'];
+$adddhcpoptdefinition = $_POST['adddhcpoptdefinition'];
 
 $dhcpDN = $_POST['dhcpdn'];
 
@@ -123,6 +126,23 @@ if ( $dhcpoffer != "none" ){
 }
 
 #####################################
+# Selbstdefinierte Optionen
+
+if ( $adddhcpoptdefinition != "" ){
+   echo "Selbst-definierte DHCP Option hinzuf&uuml;gen.<br>";
+   $entryadd['optiondefinition'] = $adddhcpoptdefinition;
+   if(ldap_mod_add($ds,$dhcpDN,$entryadd)){
+		$mesg = "Selbst-definierte DHCP Option erfolgreich eingetragen<br><br>";
+	}else{
+		$mesg = "Fehler beim eintragen Selbst-definierte DHCP Option<br><br>";
+	}
+}
+
+#todo: array_vergleich -> Änderung -> ldap_modify 
+#print_r($dhcpoptdefinition);echo "<br>";
+#print_r($olddhcpoptdefinition);echo "<br>";
+
+#####################################
 # Restliche Attribute
 
 $entryadd = array();
@@ -148,14 +168,8 @@ foreach (array_keys($atts) as $key){
 	}
 }
 
-#print_r($entryadd); echo "<br>";
-#print_r($entrymod); echo "<br>";
-#print_r($entrydel); echo "<br>";
-
 
 if (count($entryadd) != 0 ){
-	#print_r($entryadd); echo "<br>";
-	#echo "neu anlegen<br>"; 
 	foreach (array_keys($entryadd) as $key){
 		$addatts .= "<b>".$key."</b>,";
 	}
@@ -167,8 +181,6 @@ if (count($entryadd) != 0 ){
 }
 
 if (count($entrymod) != 0 ){
-	#print_r($entrymod); echo "<br>";
-	#echo "&auml;ndern<br>";
 	foreach (array_keys($entrymod) as $key){
 		$modatts .= "<b>".$key."</b>,";
 	}
@@ -180,8 +192,6 @@ if (count($entrymod) != 0 ){
 }
 
 if (count($entrydel) != 0 ){
-	#print_r($entrydel); echo "<br>";
-	#echo "l&ouml;schen<br>";
 	foreach (array_keys($entrydel) as $key){
 		$delatts .= "<b>".$key."</b>,";
 	}

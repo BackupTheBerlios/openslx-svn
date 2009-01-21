@@ -24,14 +24,18 @@ createRBSMenu($rollen, $mnr, $auDN, $sbmnr);
 
 ###################################################################################
 
+$rbsDN = $_GET['rbsdn'];
+
 $template->assign(array("RBSDN" => "",
 								"CN" => "",
 								"TFTP" => "",
 								"TFTPIP" => "",
+								"TFTPROOT" => "",
 								"INITBOOTFILE" => "",
 								"TFTPKERNEL" => "",
 								"TFTPPXE" => "",
 								"TFTPCLIENTCONF" => "",
+								"FSURI" => "",
 								"NFS" => "",
 								"NFSIP" => "",
 								"NFSPATH" => "",
@@ -44,10 +48,8 @@ $template->assign(array("RBSDN" => "",
 								"IP" => ""));
 
 # RBS Daten						
-$rbs_array = get_rbservices($auDN,array("dn","cn"));
-$rbsDN = $rbs_array[0]['dn'];
-$attributes = array("dn","cn","rbsofferdn","tftpserverip","tftpkernelpath","tftpclientconfpath","tftppxepath",
-							"nfsserverip","exportpath","nbdserverip","initbootfile");
+$attributes = array("dn","cn","rbsofferdn","tftpserverip","tftproot","tftpkernelpath","tftpclientconfpath",
+                     "tftppxepath","nfsserverip","exportpath","nbdserverip","initbootfile","fileserveruri");
 $rbs_data = get_node_data($rbsDN, $attributes);
 
 # RBS Anbieten
@@ -82,6 +84,7 @@ $template->assign(array("RBSDN" => $rbs_data['dn'],
 								"TFTP" => $tftpserver['hostname'],
 								"TFTPDN" => $tftpserver['dn'],
 								"TFTPIP" => $rbs_data['tftpserverip'],
+								"TFTPROOT" => $rbs_data['tftproot'],
 								"INITBOOTFILE" => $rbs_data['initbootfile'],
 								"TFTPKERNEL" => $rbs_data['tftpkernelpath'],
 								"TFTPPXE" => $rbs_data['tftppxepath'],
@@ -98,11 +101,25 @@ $template->assign(array("RBSDN" => $rbs_data['dn'],
            		       	"MNR" => $mnr,
            		       	"SBMNR" => $sbmnr));
 
+# RBS Offers
 $template->define_dynamic("Rbsoffers", "Webseite");
 foreach ($rbsoffers as $offer){
 	$template->assign(array("RBSOFFER" => $offer['dn'],
 									"RBSOFFEROU" => $offer['ou'],));
 	$template->parse("RBSOFFERS_LIST", ".Rbsoffers");
+}
+
+
+# Fileserver URIs
+$template->define_dynamic("Fsuris", "Webseite");
+if ( count($rbs_data['fileserveruri']) > 1 ){
+   foreach ($rbs_data['fileserveruri'] as $fsuri){
+   	$template->assign(array("FSURI" => $fsuri));
+   	$template->parse("FSURIS_LIST", ".Fsuris");
+   }
+}else{
+   $template->assign(array("FSURI" => $rbs_data['fileserveruri']));
+	$template->parse("FSURIS_LIST", ".Fsuris");
 }
 
 ### Rechner

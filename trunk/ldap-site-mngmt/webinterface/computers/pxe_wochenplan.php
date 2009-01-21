@@ -78,10 +78,10 @@ foreach ($wopldeftranges as $tr){
 #print_r($allx); echo "<br>";	
 
 $daycode = array("MO" => "A", "DI" => "B", "MI" => "C", "DO" => "D", "FR" => "E", "SA" => "F", "SO" => "G");
-$allxcolors = array("#BEBEBE","A0A0A0","#696969","#EEDFCC","#D8BFD8","#505050");
-$dayxcolors = array("#483D8B","#7B68EE","#191970","#8470FF","#708090","#6A5ACD");
-$timexcolors = array("#CDC673","#A2CD5A","#BDB76B","#8B864E","#6B8E23","#CDBE70");
-$daytimecolors = array("880000","#CD6839","#CC3300","#CC6600","#993300","#8B4C39");
+$daytimexcolors = array("#BEBEBE","A0A0A0","#696969","#EEDFCC","#D8BFD8","#505050");
+$allxcolors = array("#483D8B","#7B68EE","#191970","#8470FF","#708090","#6A5ACD");
+$dayxcolors = array("#CDC673","#A2CD5A","#BDB76B","#8B864E","#6B8E23","#CDBE70");
+$timecolors = array("880000","#CD6839","#CC3300","#CC6600","#993300","#8B4C39");
 
 
 if (count($allx) != 0){
@@ -242,7 +242,7 @@ if (count($daytime) != 0){
 
 }
 
-$template->assign(array("PXEDESC" => ""));
+$template->assign(array("PXEPLANDESC" => ""));
 #print_r($legend);
 if (count($legend) != 0){
 	$template->define_dynamic("Legende", "Webseite");
@@ -252,7 +252,7 @@ if (count($legend) != 0){
 		$template->assign(array("TR1" => $item[0][0],
 										"TR2" => $item[0][1],
 										"TR3" => $item[0][2],
-										"PXEDESC" => $item[0][3],
+										"PXEPLANDESC" => $item[0][3],
 										"COLOR" => $color));
 		$template->parse("LEGENDE_LIST", ".Legende");
 	}
