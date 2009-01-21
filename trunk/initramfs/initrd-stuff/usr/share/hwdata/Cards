@@ -1948,6 +1948,9 @@ NAME ATI Radeon (generic)
 CHIPSET R100
 DRIVER radeon
 
+NAME ATI Radeon
+SEE ATI Radeon (generic)
+
 NAME ATI Radeon AGP
 SEE ATI Radeon (generic)
 
@@ -3384,6 +3387,9 @@ NAME NVIDIA Quadro FX (generic)
 CHIPSET Quadro FX
 DRIVER nv
 NOCLOCKPROBE
+
+NAME NVIDIA GeForce 6 Series
+SEE NVIDIA GeForce 6100
 
 NAME NVIDIA GeForce 6100
 DRIVER nv

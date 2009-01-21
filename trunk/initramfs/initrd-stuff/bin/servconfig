@@ -508,10 +508,10 @@ resmgr revoke nobody\nresmgr logout tty7\nkillall X" \
   esac
   echo -e "# entry made by $0 $date\n$init" >> /mnt/etc/inittab
   # most probably not needed any longer
-  #if [ -n ${D_XORGBIN} ] ; then
-  #  testmkd /mnt/var/X11R6/bin
-  #  ln -sf ${D_XORGBIN} /mnt/var/X11R6/bin/X
-  #fi
+  if [ -n ${D_XORGBIN} ] ; then
+    testmkd /mnt/var/X11R6/bin
+    ln -sf ${D_XORGBIN} /mnt/var/X11R6/bin/X
+  fi
 fi
 
 # setup requested display manager
