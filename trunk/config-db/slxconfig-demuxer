@@ -45,7 +45,6 @@ use lib "$FindBin::RealBin";
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::ConfigFolder;
-use OpenSLX::OSPlugin::Engine;
 use OpenSLX::Utils;
 
 my $pxeDefaultTemplate = q[NOESCAPE 0
@@ -596,12 +595,15 @@ sub writePluginConfigurationsForSystem
 	
 	my $attrs = $info->{attrs} || {};
 
-	foreach my $pluginName (OpenSLX::OSPlugin::Engine->getAvailablePlugins()) {
+	my @activePlugins;
+	foreach my $pluginName (@{$info->{'installed-plugins'}}) {
 		vlog(2, _tr("checking configuration of plugin '%s'", $pluginName));
 
 		# skip inactive plugins
 		my $pluginScope = lc($pluginName);
 		next unless $attrs->{"${pluginScope}::active"};
+		
+		push @activePlugins, $pluginName;
 
 		vlog(2, _tr("writing configuration file for plugin '%s'", $pluginName));
 		# write plugin configuration to a file:
@@ -636,6 +638,8 @@ sub writePluginConfigurationsForSystem
 			);
 		}
 	}
+	my $activePluginStr = @activePlugins ? join ',', @activePlugins : '<none>';
+	vlog(0, _tr("active plugins: %s", $activePluginStr));
 	return;
 }
 

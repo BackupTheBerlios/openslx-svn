@@ -2613,6 +2613,9 @@ sub aggregatedSystemFileInfoFor
 		);
 	}
 	$info->{'vendor-os'} = $vendorOS;
+	
+	my @installedPlugins = $self->fetchInstalledPlugins($vendorOS->{id});
+	$info->{'installed-plugins'} = \@installedPlugins;
 
 	# check if the specified kernel file really exists (follow links while
 	# checking) and if not, find the newest kernel file that is available.
