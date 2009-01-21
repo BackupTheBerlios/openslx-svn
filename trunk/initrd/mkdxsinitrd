@@ -4,7 +4,7 @@
 #               ramdisks for linux diskless clients (stage2 system
 #               setup)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 11-08-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-08-2006
 #               Nico Dietrich
 #               Felix Endres
 #
@@ -155,7 +155,7 @@ else
     cp -a initrd-stuff/${FILENAME} ${INSTDIR}/${FILENAME%/*}
   else
     sed -e "s,@@@INSTDIR@@@,${INSTDIR},g;s,@@@KERNVER@@@,${KERNVER},g" \
-        -e "s,@@@DISTRO@@@,${DISTRO},g;s,@@@NETIF@@@,${NET_IF},g" \
+        -e "s,@@@DISTRO@@@,${DISTRO}-${DISTRO_VER},g;s,@@@NETIF@@@,${NET_IF},g" \
         -e "s,@@@NWMODULES@@@,${NWMODULES},g" \
         -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
         -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
@@ -677,10 +677,12 @@ if [ -f /usr/share/opendiskless/templates/Cards.local ] ; then
     ${INSTDIR}/usr/share/hwdata/Cards
 fi
 
-# finally copy user-supplied preinit files. postinit.local and other
-# additions are part of fileget tgz (in stage3)
+# finally copy user-supplied preinit files. postinit.local may be
+# part of fileget tgz (in stage3)
 for cfg in ${DISTRO}-${DISTRO_VER}/initramfs/preinit.local \
-           default/initramfs/preinit.local ; do
+           default/initramfs/preinit.local \
+           ${DISTRO}-${DISTRO_VER}/initramfs/postinit.local \
+           default/initramfs/postinit.local ; do
   test -f /var/lib/opendiskless/config/$cfg && {
     cp /var/lib/opendiskless/config/$cfg ${INSTDIR}; break; }
 done

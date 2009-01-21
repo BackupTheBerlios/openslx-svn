@@ -46,8 +46,8 @@ echo 256 > /proc/sys/kernel/real-root-dev
 # redirect console (after /dev/console is available, and /dev mounted)
 exec < /dev/console > /dev/console 2>&1
 
-# set defaults and create special files so that "waitfor" does not waites
-# for a configuration option
+# set defaults for some important variables, might be overwritten via kernel
+# commandline
 TMPFSSIZE="50%"
 COWSIZE="50%"
 RWDIR=/dev/shm

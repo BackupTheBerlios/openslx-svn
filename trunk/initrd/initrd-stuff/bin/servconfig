@@ -4,15 +4,15 @@
 #               for linux diskless clients (executed within initial
 #               ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-08-2006
 #               Michael Janczyk, 31-05-2006
-#               Lars Mueller, 23-06-2006
-#               Oliver Tappe, 23-06-2006
+#               Lars Mueller <lm@opendiskless.org>, 23-06-2006
+#               Oliver Tappe <ot@opendiskless.org>, 23-06-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
-#               (c) 2006 - odlx.org project
+#               (c) 2006 - opendiskless.org project
 # 
-# Version:      0.1.1e
+# Version:      0.1.2a
 
 # check for configuration files to source
 
@@ -49,13 +49,13 @@ while [ $len -le 11 ] ; do
 done
 echo "
          WELCOME TO                               \n (\l)
-                   _____    ______     __       __   __ 
-                  /  _     |   _      |  |     |  |_|  |
-                 |  | |  | |  | |  |  |  |            /
-                 |  |_|  | |  |_|  |  |  |___   /  _    
-                   _____/  |______/   |______| |__| |__|
+                  _____    ______     __       _____
+                 /  _     |   _      |  |     |   _  |
+                |  | |  | |  | |  |  |  |     |  |_| |
+                |  |_|  | |  |_|  |  |  |___  |   ___/
+                  _____/  |______/   |______| |__|
 
-         Diskless Workstation (v4.0/$dstr (c) <odlx project>
+         Diskless Workstation (v4.0/$dstr (c) <odl project>
 ">/mnt/etc/issue
 
 #######################################################################
