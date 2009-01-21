@@ -52,7 +52,9 @@ start_sshd="yes"
 # start rwhod service (lan wide login and uptime list)
 start_rwhod="no"
 
-# start log server (remote log servers could be passed via dhcp option)
+# start log server (remote log servers could be either passed via dhcp option
+# or by giving the server URI instead of yes. udp and tcp are possible)
+# start_syslog="syslog://@@@serverip@@@:port/udp"
 start_syslog="yes"
 
 # start cron service
@@ -64,7 +66,7 @@ start_atd="no"
 # simple network management protocol for system monitoring
 start_snmp="no"
 
-# dbus, resource manager , hal (hardware abstraction layer) interoperate
+# dbus, resource manager, hal (hardware abstraction layer) interoperate
 # tighly. There might be little different solutions within each distro
 start_dreshal="yes"
 

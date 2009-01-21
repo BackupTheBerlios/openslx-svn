@@ -47,6 +47,12 @@ mkdir -p ${DEVDIR}/.udevdb
 # redirect console (after /dev/console is available, and /dev mounted)
 exec < /dev/console > /dev/console 2>&1
 
+# if no kernel version is set, try to get it directly from /proc
+if [ -z $KERNEL ] ; then
+  KERNEL=$(cat /proc/version)
+  KERNEL=${KERNEL#*version }
+  KERNEL=${KERNEL% (*) (*}
+fi
 # set defaults for some important variables, might be overwritten via
 # kernel commandline
 TMPFSSIZE="50%"

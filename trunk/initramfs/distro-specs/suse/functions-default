@@ -3,10 +3,10 @@
 # inclusion of the main functions file). This file is the main base for the
 # several SuSE distro versions
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 07-10-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 29-10-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 OpenSLX.org Project
+# (c) 2006 OpenSLX.ORG Project
 
 # empty functions are defined at the beginning of /etc/functions
 
@@ -92,13 +92,13 @@ if [ "x$start_cron" = "xyes" ] ; then
 fi
 }
 
-# syslog service
+# syslog service (different syslogs might be present)
 config_syslog () {
-if [ "x$start_syslog" = "xyes" ] ; then
+if [ "x$start_syslog" != "xno" ] ; then
   if [ -f /mnt/etc/${D_INITDIR}/syslog ] ; then
   # how to configure remote log server?
   # logging servers might be specified in $log_servers (from e.g. dhcp)
-    echo -e "# File modified by $0 within initial ramdisk" \
+    echo -e "# File modified by $0 within InitRamFS" \
       > /etc/syslog-ng.conf
     sed -e "s,.*dhcp/dev.*,,;s,.*named/dev.*,," \
       /mnt/etc/syslog-ng/syslog-ng.conf >> /etc/syslog-ng.conf
