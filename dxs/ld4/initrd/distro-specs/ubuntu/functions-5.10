@@ -15,22 +15,33 @@ preinit () {
   echo "dhcp:x:101:">>/etc/group
   echo "dhcp:x:101:101::/nonexistent:/bin/false">>/etc/passwd
 }
-
-# udev service
+# AUS SuSE-9.3
+# udev/hotplug - auto device discovery service
 udev_hotplug () {
 local result=0
-echo "Starting udev"
+[ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "  Hotplug subdirectory \
+is missing! udev(d) might not work as expected." nonfatal
+echo "Enabling hotplug/udev"
 udevstart || result=1
-if [ -x /bin/udevd ] ; then
-  export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)
-  export UDEVD_EVENT_TIMEOUT=1
-  echo "" > /proc/sys/kernel/hotplug
-  udevd --daemon || result=1
-else error "  udev daemon is not available. Some devices might not \
-apprear." nonfatal
-fi
+udevd -d || result=1
 return $result
 }
+
+## udev service
+#udev_hotplug () {
+#local result=0
+#echo "Starting udev"
+#udevstart || result=1
+#if [ -x /bin/udevd ] ; then
+#  export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)
+#  export UDEVD_EVENT_TIMEOUT=1
+#  echo "" > /proc/sys/kernel/hotplug
+#  udevd --daemon || result=1
+#else error "  udev daemon is not available. Some devices might not \
+#apprear." nonfatal
+#fi
+#return $result
+#}
 
 # linking runlevel scripts
 rllinker () {

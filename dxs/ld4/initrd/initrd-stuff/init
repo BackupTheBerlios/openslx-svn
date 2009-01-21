@@ -22,6 +22,7 @@ specific configuration file could not be found" && exit 1 )
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
 export date="08-02-2006"
 
+export DEBUGLEVEL=0
 export KERNEL="@@@KERNVER@@@"
 export NWMODULES="@@@NWMODULES@@@"
 export DISTRO="@@@DISTRO@@@"
@@ -43,12 +44,10 @@ exec < /dev/console > /dev/console 2>&1
 
 # run pre init script
 preinit
-
 # start device auto discovery service - distro specific function
 udev_hotplug
 # read kernel commandline
 TMPFSSIZE="50%"
-export DEBUGLEVEL=0
 echo "noldap" > /tmp/ldap-done
 echo "nodhcp" > /tmp/dhcp-done
 read KCMDLINE < /proc/cmdline
@@ -185,8 +184,6 @@ else
 fi
 # get configuration data via dhcp (with vendor code identifier if present in 
 # ${VCI} or ldap if available (in background)
-echo "dhcp:!:13117:0:99999:7:::" > /etc/passwd
-echo "dhcp:x:101:" > /etc/group
 [ -n "$DHCP" ] && rundhcp ${VCI} &
 if [ -n "$noipyet" ] ; then
   waitfor /tmp/dhcp-done 20000
@@ -391,10 +388,16 @@ d_mkbootld close
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null
 # unmount the bind mounted modules directory
+
+bash
+
 for i in 0 40 100 200 300 500 800 1000 1200; do
   usleep $i && umount -n /lib/modules/${KERNEL} 2>/dev/null && break
   error "  Waited $i ticks to unmount kernel module directory ..." nonfatal
 done
+
+
+
 [ $i -gt 1000 ] && error "  Unmount of the kernel modules directory \
 failed for some reason. Some\n  modprobe still active!?"
 # check for inittab file
