@@ -355,9 +355,10 @@ fi
 # setup of client root filesystem dependent on the availability of UnionFS
 if [ -n "${UNIONFS}" ] ; then
   echo "Using UnionFS for rw access"
-  mkdir -p ${RWDIR}/union ${RWDIR}/uniontmp
+  mkdir -p ${RWDIR}/union ${RWDIR}/uniontmp /rorootfs
   mount -n -t tmpfs none ${RWDIR}/uniontmp
-  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/mnt=${NFSRO}ro \
+  mount --move /mnt /rorootfs
+  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/rorootfs=${NFSRO}ro \
     none /mnt
   mkdir -p /mnt/uniontmp
   mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp
