@@ -382,8 +382,6 @@ sub writePXEMenus
 		$pxeTemplate .= slurpFile($pxeThemeConfig);
 	}
 
-print "$pxeTemplate\n";
-
 	# fetch info about margin and replace the corresponding placeholders
 	my $margin = $openslxConfig{'pxe-theme-menu-margin'} || 0;
 	my $marginAsText = ' ' x $margin;

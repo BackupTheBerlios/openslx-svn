@@ -553,6 +553,17 @@ fi
 }
 
 #############################################################################
+# execute all shell scripts in the given init-hook folder
+runinithook () {
+local hook=$1
+if [ -d /initramfs/init-hooks/$hook ]; then
+  for hook_script in /initramfs/init-hooks/$hook/*; do
+    . hook_script
+  done
+fi
+}
+
+#############################################################################
 # localization simply derived from $language variable set in machine-setup or
 # other sources - mostly taken from knoppix
 localization () {

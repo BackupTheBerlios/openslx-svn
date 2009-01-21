@@ -8,10 +8,14 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# VMware.pm
-#	- an example implementation of the OSPlugin API (i.e. an os-plugin)
+# Theme.pm
+#	- implementation of the 'Theme' plugin, which applies theming to the 
+#     following places:
+#		+ bootsplash (via splashy)
+#		+ displaymanager (gdm, kdm, ...)
+#		+ desktop (to be done)
 # -----------------------------------------------------------------------------
-package OpenSLX::OSPlugin::VMware;
+package OpenSLX::OSPlugin::Theme;
 
 use strict;
 use warnings;
@@ -36,7 +40,7 @@ sub getInfo
 
 	return {
 		description => unshiftHereDoc(<<'		End-of-Here'),
-			!!! descriptive text missing here !!!
+			applies a graphical theme to the bootsplash and the displaymanager
 		End-of-Here
 		mustRunAfter => [],
 	};
@@ -52,26 +56,26 @@ sub getAttrInfo
 	# of slxconfig.
 	return {
 		# attribute 'active' is mandatory for all plugins
-		'vmware::active' => {
+		'theme::active' => {
 			applies_to_systems => 1,
 			applies_to_clients => 0,
 			description => unshiftHereDoc(<<'			End-of-Here'),
-				should the 'VMware'-plugin be executed during boot?
+				should the 'Theme'-plugin be executed during boot?
 			End-of-Here
 			content_regex => qr{^(0|1)$},
 			content_descr => '1 means active - 0 means inactive',
 			default => '1',
 		},
 		# attribute 'precedence' is mandatory for all plugins
-		'vmware::precedence' => {
+		'theme::precedence' => {
 			applies_to_systems => 1,
 			applies_to_clients => 0,
 			description => unshiftHereDoc(<<'			End-of-Here'),
-				the execution precedence of the 'VMware' plugin
+				the execution precedence of the 'Theme' plugin
 			End-of-Here
 			content_regex => qr{^\d\d$},
 			content_descr => 'allowed range is from 01-99',
-			default => 70,
+			default => 30,
 		},
 
 	};

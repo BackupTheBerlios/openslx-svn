@@ -12,8 +12,8 @@
 #
 # Main script for new type of initial ramdisk for OpenSLX linux stateless
 # clients version 4
-
 #############################################################################
+
 # device files get their own filesystem (to be move mounted later)
 devdir="/dev"
 mount -n -t tmpfs -o 'size=25%,mode=0755' initramfsdevs ${devdir}
@@ -93,6 +93,8 @@ nfsro="nfs"
 # load usb modules for keyboard (reenable usb keyboards, otherwise the
 # admin has to wait until second run of hwsetup late in stage3)
 hwautocfg pre
+
+runinithook '00-started'
 
 # run pre init script and user defined preinit.local, copied by mkdxsinitrd
 # from /var/lib/openslx/config/... in stage2
@@ -277,6 +279,8 @@ $0\n# deprecated: please use rootfs=nfs://...\nnfsroot=\"${nfsroot}\"\n" \
   esac
 done
 
+runinithook '05-have-kernelvars'
+
 # splashy stuff
 [ ${nosplash} = 0 ] && /bin/splashy boot 2>/dev/null
 
@@ -416,6 +420,8 @@ sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup
 [ -n "$ldap" ] && ldapconf &
 # ... or via tftp file get (in background)
 [ -n "$file" ] && fileget &
+
+runinithook '15-have-ip-config'
 
 # if root filesystem should be imported via local or a network block device
 if [ -n "${bldmod}" ] ; then
@@ -591,6 +597,8 @@ if [ -z "${bldmod}" -a -z "${bldserver}" ] ; then
   [ $DEBUGLEVEL -eq 20 ] && echo "** finished nfs mount at $(sysup)"
 fi
 
+runinithook '20-have-network-root'
+
 # get the complete collection of kernel modules available
 mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
   error "$init_moddir"
@@ -604,6 +612,8 @@ else
 $(sysup)"
   hwautocfg main &
 fi
+
+runinithook '25-started-hw-config'
 
 union_type=""
 # try to use unionfs for rw access if available
@@ -702,6 +712,8 @@ elif [ -z "${cowloop}" ] ; then
   # run some specific stuff !?
 fi
 
+runinithook '50-have-layered-fs'
+
 # splashy stuff
 [ ${nosplash} = 0 ] && /bin/splashy_update "progress 50" 2>/dev/null
 
@@ -758,6 +770,8 @@ else
   error "$init_infldcfg" nonfatal
 fi
 
+runinithook '60-have-servconfig'
+
 # splashy stuff
 [ ${nosplash} = 0 ] && /bin/splashy_update "progress 80" 2>/dev/null
 
@@ -798,6 +812,8 @@ if [ -n "$uniondirs" ]; then
   include_in_fsroot_union "$union_type" "$uniondirs"
 fi
 
+runinithook '70-before-plugins'
+
 # check for any plugin-specific runlevel scripts and run them, if found:
 if [ -d /initramfs/plugin-init.d ]; then
   for plugin_starter in /initramfs/plugin-init.d/*; do
@@ -806,6 +822,8 @@ if [ -d /initramfs/plugin-init.d ]; then
     /bin/sh $plugin_starter
   done
 fi
+
+runinithook '80-after-plugins'
 
 # post init for some distro specific
 postinit
@@ -854,6 +872,8 @@ umount -n /proc
 unset client debug date initrd ip bldroot nfsroot rootfs ticks vci vga
 unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
   SLXVERSION UDEVD_EXPECTED_SEQNUM PATH
+
+runinithook '99-handing-over'
 
 # splashy stuff
 [ ${nosplash} = 0 ] && /bin/splashy_update "progress 100" 2>/dev/null
