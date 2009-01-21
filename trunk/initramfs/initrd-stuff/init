@@ -627,7 +627,7 @@ sed -n "s,/mnt,,;/\/tmp /p" /proc/mounts >> /mnt/etc/mtab
 # preparations to leave initramfs - umounting ...
 umount -n /sys || error "$init_errsys" nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1
-chmod a+rwxt /mnt/dev/shm /mnt/tmp /mnt/tmp/scratch 2>/dev/null
+chmod 1777 /mnt/dev/shm /mnt/tmp /mnt/tmp/scratch 2>/dev/null
 mount -n --move /dev /mnt/dev
 
 # stop udevd (non-busybox udevs)

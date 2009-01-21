@@ -347,8 +347,7 @@ Type=Application" >/mnt/etc/X11/sessions/default.desktop
     for i in /mnt/var/lib/vmware/vmsessions/*.desktop; do
       # only link if in right slxgrp
       slxgrpstr=$(sed \
-        'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/;/slxgrp=/!d' ${i} \
-        | sed '$!d;s/slxgrp=//')
+        'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/;/slxgrp=/!d' \         ${i} | sed '$!d;s/slxgrp=//')
       slxgrptest="false"
       # FIXME: maybe logfile sometime ;)
       #echo "=${slxgrpstr}="
@@ -424,7 +423,6 @@ if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
     ;;
   esac
 fi
-chmod 1777 /mnt/tmp
 
 #############################################################################
 # X11/GUI stuff
@@ -438,7 +436,7 @@ if [ "x$start_x" != "xno" ] ; then
            /var/run/xdmctl \
            /tmp/.ICE-unix \
            /tmp/.X11-unix ; do testmkd /mnt/$i; done
-  chmod a+rwxt /mnt/tmp/.ICE-unix /mnt/tmp/.X11-unix
+  chmod 1777 /mnt/tmp/.ICE-unix /mnt/tmp/.X11-unix
   echo "# file emtied by $0 during initramfs" > /mnt/etc/X11/xdm/Xservers
   # define additional sessions offered to the user (via dhcp/ldap config)
   # descsession -> deprecated by new vmware integration concept

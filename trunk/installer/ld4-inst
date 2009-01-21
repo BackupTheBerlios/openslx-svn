@@ -4,7 +4,7 @@
 #               cloning from rsync source for Diskless X Stations (v4.0)
 #
 # Author(s):    Nico Dietrich, 04-04-2006
-#		Dirk von Suchodoletz <dirk@goe.net>, 30-01-2007
+#		Dirk von Suchodoletz <dirk@goe.net>, 31-01-2007
 #               Michael Janczyk, <mj0>, 06-07-2006
 #
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
@@ -135,8 +135,11 @@ distro_check() {
     Gentoo*|gentoo*)
     eval "$1=\"gentoo\""
     case "${!2}" in
-      2005*|*)
+      2005*)
       eval "$2=\"2005.1\""
+      ;;
+      2006*)
+      eval "$2=\"2006.1\""
       ;;
     esac
     ;;

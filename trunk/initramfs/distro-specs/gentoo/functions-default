@@ -1,18 +1,24 @@
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
 # configuration script for Gentoo linux distribution to configure OpenSLX
 # linux diskless clients (executed within initialramfs after genconfig) 
-#
-# Dirk von Suchodoletz <dirk@goe.net>, 08-07-2006
-#
-# (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.ORG Project
 
 # empty functions are defined at the beginning of /etc/functions
 
 # distro specific general function called from servconfig script
 config_distro () {
-echo -e "dxs version 4.0a\ninitramfs generation date $date" \
+echo -e "OpenSLX version 4.0.6a\ninitramfs generation date $date" \
   >> /mnt/etc/gentoo-release
-echo -e "# changes made to this file by $0 (initrd from $date)" \
+echo -e "# changes made to this file by $0 (initramfs from $date)" \
   > /etc/rc.conf
 # keytable is set by hwautocfg script (added just for convenience here)
 config_rc_entry "KEYMAP" "${KEYTABLE}"
@@ -33,26 +39,35 @@ fi
 # linking runlevel scripts
 rllinker () {
 local script="$1"
-local need="$2"
+local after="$2"
 # empty runlevel links - decision on running certain services is
 # passed via configuration
 ln -s /etc/${D_INITDIR}/$1 /mnt/etc/runlevels/default/$1
-echo $1 >> /mnt/etc/runlevels/default/.critical
-# hack to remove unneeded dependency stuff
-#if [ "$script" != "vmware-prep" ] ; then
-#  sed "/depend/,/}/d" /mnt/etc/${D_INITDIR}/$1 > /etc/rls
-#  cp /etc/rls /mnt/etc/${D_INITDIR}/$1
-#fi
+#echo $1 >> /mnt/etc/runlevels/default/.critical
+# same stuff as within initial_boot
+# [ -n "$after" ] &&
 }
 
 # setup initial boot scripts (rather strange concept I did not get 
 # completely)
 initial_boot () {
-rm /mnt/etc/runlevels/*/.critical 2>/dev/null
+#rm /mnt/etc/runlevels/*/.critical 2>/dev/null
 for i in ${D_INITSCRIPTS}; do
   ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/$i
-  echo $i >> /mnt/etc/${D_INITBOOTD}/.critical
-  echo $i >> /mnt/etc/runlevels/default/.critical
+  # to get a certain order of scripts the after token of depends () might be
+  # used
+  # [ -n "$after" ] && \
+  #  sedscript:
+   #/depend/,/}/{
+   #/^ /d
+   #/depend/a\
+   #\tafter $bla
+   #}
+  #after=$i
+  #sed -f sedscript -i /etc${D_INITDIR}/$i
+  # not needed any more
+  #echo $i >> /mnt/etc/${D_INITBOOTD}/.critical
+  #echo $i >> /mnt/etc/runlevels/default/.critical
 done
 }
 
