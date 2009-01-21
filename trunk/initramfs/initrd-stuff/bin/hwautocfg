@@ -231,7 +231,7 @@ done
 ( hwsetup -n -v > /tmp/hwsetup.info && echo "hwsetup" > /tmp/hwrun1 ) &
 ( for mod in usbcore uhci-hcd ohci-hcd usbhid; do
   modprobe -q $mod 2>/dev/null
-  usleep 5000
+  usleep 10000
 done; ) &
 return 0
 }
@@ -243,7 +243,7 @@ nwmod () {
   echo "** loading all defined network adaptor modules at $(sysup)"
 for mod in ${NWMODULES}; do
   modprobe ${MODPRV} $mod || error "$init_errnwad"
-  usleep 10000 
+  usleep 50000 
 done
 return 0
 }
