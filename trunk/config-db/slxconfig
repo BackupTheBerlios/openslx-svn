@@ -21,6 +21,7 @@ slxconfig
 ];
 
 use Getopt::Long qw(:config pass_through);
+use List::Util qw(max);
 use Pod::Usage;
 
 # add the folder this script lives in and the lib-folder to perl's
@@ -170,13 +171,47 @@ sub parseKeyValueArgs
 		}
 		my $key   = lc($1);
 		my $value = $2;
+		if ($value =~ m{^(?:UNDEF|NULL|-)$}) {
+			$value = undef;
+		}
 		if (!grep { $_ eq $key } @$allowedKeys) {
-			die _tr("unknown attribute '%s' specified for %s\n", $key, $table);
+			die _tr("unknown key '%s' specified for %s\n", $key, $table);
 		}
 		$dataHash{$key} = $value;
 	}
 
 	return \%dataHash;
+}
+
+sub parseKeyValueArgsWithAttrs
+{
+	my $allowedKeys     = shift;
+	my $allowedAttrKeys = shift;
+	my $table           = shift;
+
+	my (%dataHash, %attrHash);
+	while (my $param = shift) {
+		if ($param !~ m[^\s*([\w\-]+)\s*=(.*)$]) {
+			die _tr(
+				"value specification %s has unknown format, expected <key>=<value>\n",
+				$param
+			);
+		}
+		my $key   = lc($1);
+		my $value = $2;
+		if ($value =~ m{^(?:UNDEF|NULL|-)$}) {
+			$value = undef;
+		}
+		if (grep { $_ eq $key } @$allowedKeys) {
+			$dataHash{$key} = $value;
+		} elsif (grep { $_ eq $key } @$allowedAttrKeys) {
+			$attrHash{$key} = $value;
+		} else {
+			die _tr("unknown key '%s' specified for %s\n", $key, $table);
+		}
+	}
+
+	return (\%dataHash, \%attrHash);
 }
 
 sub dumpElements
@@ -185,17 +220,40 @@ sub dumpElements
 	my $nameClause = shift || sub { "\t$_->{name}\n" };
 
 	if ($verbose) {
+		my $ind = ' ' x 4;
 		foreach my $elem (@_) {
 			print "$objName '$elem->{name}':\n";
+			my $spcLen = max map { length($_) } keys %$elem;
 			print join(
 				'',
 				map {
-					my $spc = ' ' x 25;
-					my $val = $elem->{$_} || '';
-					$val =~ s[\n][\n\t$spc   ]g;
-					"\t$_" . substr($spc, length($_)) . " = $val\n";
+					my $elemVal = $elem->{$_} || '';
+					if (ref($elemVal) eq 'HASH') {
+						my $spcLen 
+							= max(map { length($_) } keys %$elemVal) || 0;
+						my $spc = ' ' x $spcLen;
+						my $subLines = join(
+							"\n",
+							map {
+								my $spc = ' ' x $spcLen;
+								my $val = $elemVal->{$_} || '';
+								$val =~ s[\n][\n\t$spc   ]g;
+								"$ind$_" . substr($spc, length($_)) . " = $val";
+							}
+							sort keys %$elemVal
+						);
+						$subLines ||= "$ind<none>";
+						"  $_:\n$subLines\n";
+					} else {
+						my $spc = ' ' x $spcLen;
+						$elemVal =~ s[\n][\n\t$spc   ]g;
+						"$ind$_" . substr($spc, length($_)) . " = $elemVal\n";
+					}
 				}
-				sort keys %$elem
+				sort {
+					my $refCmp = ref($elem->{$a}) cmp ref($elem->{$b});
+					return $refCmp ? $refCmp : $a cmp $b;
+				} keys %$elem
 			);
 		}
 	}
@@ -329,6 +387,7 @@ sub listSystems
 			if (defined $export) {
 				$_->{export_id} = "$export->{name} ($export->{type})";
 			}
+			$_->{ATTRIBUTES} = $openslxDB->fetchSystemAttrsAsHash($_->{id});
 			$_;
 		}
 		sort { $a->{name} cmp $b->{name} }
@@ -445,7 +504,10 @@ sub searchExports
 sub searchSystems
 {
 	my @systemKeys = $openslxDB->getColumnsOfTable('system');
-	my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
+	my @systemAttrKeys = $openslxDB->getKnownSystemAttrs();
+	my ($systemData, $systemAttrs) = parseKeyValueArgsWithAttrs(
+		\@systemKeys, \@systemAttrKeys, 'system', @_
+	);
 
 	# set verbose mode if any params have been passed in:
 	$verbose = 1 if %$systemData;
@@ -461,10 +523,11 @@ sub searchSystems
 			if (defined $export) {
 				$_->{export_id} = "$export->{name} ($export->{type})";
 			}
+			$_->{ATTRIBUTES} = $openslxDB->fetchSystemAttrsAsHash($_->{id});
 			$_;
-			}
-			sort { $a->{name} cmp $b->{name} }
-			$openslxDB->fetchSystemByFilter($systemData)
+		}
+		sort { $a->{name} cmp $b->{name} }
+		$openslxDB->fetchSystemByFilter($systemData, undef, $systemAttrs)
 	);
 
 	return 1;
@@ -478,9 +541,11 @@ sub searchVendorOSes
 	# set verbose mode if any params have been passed in:
 	$verbose = 1 if %$vendorOSData;
 
-	dumpElements('vendor-OS', undef,
+	dumpElements(
+		'vendor-OS', undef,
 		sort { $a->{name} cmp $b->{name} }
-			$openslxDB->fetchVendorOSByFilter($vendorOSData));
+		$openslxDB->fetchVendorOSByFilter($vendorOSData)
+	);
 
 	return 1;
 }
@@ -505,10 +570,11 @@ sub changeVendorOSInConfigDB
 	}
 
 	$openslxDB->changeVendorOS($vendorOS->{id}, [$vendorOSData]);
-	vlog(0, _tr("vendor-OS '%s' has been successfully changed\n", $vendorOSName));
-	if ($verbose) {
-		listVendorOSes("id=$vendorOS->{id}");
-	}
+	vlog(
+		0, _tr("vendor-OS '%s' has been successfully changed\n", $vendorOSName)
+	);
+
+	listVendorOSes("id=$vendorOS->{id}") if $verbose;
 
 	return 1;
 }
@@ -534,9 +600,8 @@ sub changeExportInConfigDB
 
 	$openslxDB->changeExport($export->{id}, [$exportData]);
 	vlog(0, _tr("export '%s' has been successfully changed\n", $exportName));
-	if ($verbose) {
-		listExports("id=$export->{id}");
-	}
+
+	listExports("id=$export->{id}") if $verbose;
 
 	return 1;
 }
