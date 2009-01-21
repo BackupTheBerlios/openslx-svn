@@ -46,6 +46,7 @@ my @manipulationExports = qw(
 	addGroup removeGroup changeGroup
 	setClientIDsOfGroup addClientIDsToGroup removeClientIDsFromGroup
 	setSystemIDsOfGroup addSystemIDsToGroup removeSystemIDsFromGroup
+	emptyDatabase
 );
 
 my @aggregationExports = qw(
@@ -136,6 +137,7 @@ sub _checkAndUpgradeDBSchemaIfNecessary
 sub _aref
 {	# transparently converts the given reference to an array-ref
 	my $ref = shift;
+	return [] unless defined $ref;
 	$ref = [ $ref ] unless ref($ref) eq 'ARRAY';
 	return $ref;
 }
@@ -408,6 +410,11 @@ sub removeSystem
 	my $confDB = shift;
 	my $systemIDs = _aref(shift);
 
+	foreach my $system (@$systemIDs) {
+		setGroupIDsOfSystem($confDB, $system);
+		setClientIDsOfSystem($confDB, $system);
+	}
+
 	return $confDB->{'meta-db'}->removeSystem($systemIDs);
 }
 
@@ -530,6 +537,11 @@ sub removeClient
 	my $confDB = shift;
 	my $clientIDs = _aref(shift);
 
+	foreach my $client (@$clientIDs) {
+		setGroupIDsOfClient($confDB, $client);
+		setSystemIDsOfClient($confDB, $client);
+	}
+
 	return $confDB->{'meta-db'}->removeClient($clientIDs);
 }
 
@@ -627,6 +639,11 @@ sub removeGroup
 	my $confDB = shift;
 	my $groupIDs = _aref(shift);
 
+	foreach my $group (@$groupIDs) {
+		setSystemIDsOfGroup($confDB, $group, []);
+		setClientIDsOfGroup($confDB, $group, []);
+	}
+
 	return $confDB->{'meta-db'}->removeGroup($groupIDs);
 }
 
@@ -709,6 +726,40 @@ sub removeSystemIDsFromGroup
 		= grep { !exists $toBeRemoved{$_} }
 			   $confDB->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
 	return setSystemIDsOfGroup($confDB, $groupID, \@systemIDs);
+}
+
+sub emptyDatabase
+{	# clears all user-data from the database
+	my $confDB = shift;
+
+	my @groupIDs
+		= map { $_->{id} }
+		  fetchGroupsByFilter($confDB);
+	removeGroup($confDB, \@groupIDs);
+
+	my @clientIDs
+		= map { $_->{id} }
+		  grep { $_->{id} > 0 }
+		  fetchClientsByFilter($confDB);
+	removeClient($confDB, \@clientIDs);
+
+	my @sysVarIDs
+		= map { $_->{id} }
+		  grep { $_->{id} > 0 }
+		  fetchSystemVariantsByFilter($confDB);
+	removeSystemVariant($confDB, \@sysVarIDs);
+
+	my @sysIDs
+		= map { $_->{id} }
+		  grep { $_->{id} > 0 }
+		  fetchSystemsByFilter($confDB);
+	removeSystem($confDB, \@sysIDs);
+
+	my @vendorOSIDs
+		= map { $_->{id} }
+		  grep { $_->{id} > 0 }
+		  fetchVendorOSesByFilter($confDB);
+	removeVendorOS($confDB, \@vendorOSIDs);
 }
 
 ################################################################################

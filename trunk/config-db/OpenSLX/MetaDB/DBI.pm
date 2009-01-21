@@ -473,7 +473,7 @@ sub _updateRefTable
 
 	# all the remaining value-IDs need to be removed:
 	if (scalar keys %lastValueIDs) {
-		$self->_doDelete($table, keys %lastValueIDs, $valueCol);
+		$self->_doDelete($table, [ keys %lastValueIDs ], $valueCol);
 	}
 }
 
@@ -573,7 +573,7 @@ sub setGroupIDsOfSystem
 	my $groupIDs = shift;
 
 	my @currGroups = $self->fetchGroupIDsOfSystem($systemID);
-	$self->_updateRefTable('grop_system_ref', $systemID, $groupIDs,
+	$self->_updateRefTable('group_system_ref', $systemID, $groupIDs,
 						   'system_id', 'group_id', \@currGroups);
 }
 

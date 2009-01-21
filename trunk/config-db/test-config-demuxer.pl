@@ -1,4 +1,5 @@
 #! /usr/bin/perl
+use strict;
 
 # add the folder this script lives in to perl's search path for modules:
 use FindBin;
@@ -7,20 +8,45 @@ use lib $FindBin::Bin;
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:access :manipulation);
 
+use Getopt::Long qw(:config pass_through);
+my $clobber;
+GetOptions(
+	'clobber' => \$clobber
+		# clobber causes this script to overwrite the database without asking
+);
+
 openslxInit();
 
 my $openslxDB = connectConfigDB();
 
+if (!$clobber) {
+	my $yes = _tr('yes');
+	my $no = _tr('no');
+	my @systems = fetchSystemsByFilter($openslxDB);
+	my @clients = fetchClientsByFilter($openslxDB);
+	print _tr(qq[This will overwrite the current OpenSLX-database with an example dataset.
+All your data (%s systems and %s clients) will be lost!
+Do you want to continue(%s/%s)? ], scalar(@systems), scalar(@clients), $yes, $no);
+	my $answer = <>;
+	if ($answer !~ m[^\s*$yes]i) {
+		print "no - stopping\n";
+		exit 5;
+	}
+	print "yes - starting...\n";
+}
+
+emptyDatabase($openslxDB);
+
 addVendorOS($openslxDB, {
 		'name' => "suse-10-minimal",
-		'comment' => "SuSE 9.3 minimale Installation",
+		'comment' => "SuSE 10 minimale Installation",
 		'path' => "suse-10.0",
 			# relative to /var/lib/openslx/stage1
 });
 
 addVendorOS($openslxDB, {
 		'name' => "suse-10-KDE",
-		'comment' => "SuSE 9.3 grafische Installation mit KDE",
+		'comment' => "SuSE 10 grafische Installation mit KDE",
 		'path' => "suse-10.0",
 });
 
