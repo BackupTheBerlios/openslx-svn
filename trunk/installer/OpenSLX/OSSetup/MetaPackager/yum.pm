@@ -33,19 +33,11 @@ sub new
 	return bless $self, $class;
 }
 
-sub initialize
-{
-	my $self = shift;
-	my $engine = shift;
-
-	$self->SUPER::initialize($engine);
-	$ENV{LC_ALL} = 'POSIX';
-	return;
-}
-
 sub initPackageSources
 {
 	my $self = shift;
+
+	$ENV{LC_ALL} = 'POSIX';
 
 	slxsystem("rm -f /etc/yum.repos.d/*");
 	slxsystem("mkdir -p /etc/yum.repos.d");
@@ -68,8 +60,9 @@ sub setupPackageSource
 
 	my $repoDescr 
 		= "[$repoName]\nname=$repoInfo->{name}\nbaseurl=$baseURL$repoSubdir\n";
+
 	my $avoidMirrors = $repoInfo->{'avoid-mirrors'} || 0;
-	unless ($ENV{SLX_NO_MIRRORS} || $avoidMirrors) {
+	if (!$avoidMirrors) {
 		foreach my $mirrorURL (@$repoURLs) {
 			$repoDescr .= "        $mirrorURL$repoSubdir\n";
 		}

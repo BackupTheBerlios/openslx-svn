@@ -40,10 +40,30 @@ sub initDistroInfo
 	$self->{config}->{'repository'} = {
 		'base' => {
 			'urls' => "
-				ftp://localhost/pub/ubuntu
+				http://ubuntu.intergenia.de/ubuntu
 			",
 			'name' => 'Ubuntu 6.10',
-			'repo-subdir' => 'dists/edgy',
+			'repo-subdir'  => 'dists',
+			'distribution' => 'edgy',
+			'components'   => 'main restricted',
+		},
+		'base_updates' => {
+			'urls' => "
+				ftp://localhost/pub/ubuntu
+			",
+			'name' => 'Ubuntu 6.10 Updates',
+			'repo-subdir'  => 'dists',
+			'distribution' => 'edgy-updates',
+			'components'   => 'main restricted',
+		},
+		'base_security' => {
+			'urls' => "
+				ftp://localhost/pub/ubuntu
+			",
+			'name' => 'Ubuntu 6.10 Security',
+			'repo-subdir'  => 'dists',
+			'distribution' => 'edgy-security',
+			'components'   => 'main restricted',
 		},
 	};
 
@@ -53,14 +73,14 @@ sub initDistroInfo
 		main/d/debootstrap/debootstrap_1.0.0_all.deb
 	";
 
-	$self->{config}->{'bootstrap-prereq-packages'} = "
-	";
-
 	$self->{config}->{'bootstrap-packages'} = "
 	";
 
 	$self->{config}->{'selection'} = {
-		'default' => "kmail",
+		'default' => "
+			kernel-image-2.6-386
+			kmail
+		",
 	};
 	return;
 }

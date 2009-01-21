@@ -79,8 +79,6 @@ sub initDistroInfo
 		zlib-1.2.3-3.i386.rpm
 	";
 
-	$self->{config}->{'bootstrap-prereq-packages'} = "";
-
 	$self->{config}->{'bootstrap-packages'} = "
 		audit-libs-1.2.8-1.fc6.i386.rpm
 		basesystem-8.0-5.1.1.noarch.rpm

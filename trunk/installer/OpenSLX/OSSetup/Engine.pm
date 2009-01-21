@@ -34,10 +34,10 @@ use vars qw(%supportedDistros);
 
 %supportedDistros = (
 	'debian-3.1' => {
-		module => 'Debian_3_1',       support => 'clone'
+		module => 'Debian_3_1',       support => 'clone,install'
 	},
 	'debian-4.0' => {
-		module => 'Debian_4_0',       support => 'clone'
+		module => 'Debian_4_0',       support => 'clone,install'
 	},
 	'fedora-6' => {
 		module => 'Fedora_6',         support => 'clone,install'
@@ -79,7 +79,7 @@ use vars qw(%supportedDistros);
 		module => 'Ubuntu_6_06',      support => 'clone'
 	},
 	'ubuntu-6.10' => {
-		module => 'Ubuntu_6_10',      support => 'clone,install'
+		module => 'Ubuntu_6_10',      support => 'clone'
 	},
 	'ubuntu-7.04' => { 
 		module => 'Ubuntu_7_04',      support => 'clone' 
@@ -627,8 +627,6 @@ sub _readDistroInfo
 			: ();
 	my $package_subdir  = $self->{distro}->{config}->{'package-subdir'};
 	my $prereq_packages = $self->{distro}->{config}->{'prereq-packages'};
-	my $bootstrap_prereq_packages =
-		$self->{distro}->{config}->{'bootstrap-prereq-packages'};
 	my $bootstrap_packages = $self->{distro}->{config}->{'bootstrap-packages'};
 	my $metapackager_packages =
 		$self->{distro}->{config}->{'metapackager-packages'};
@@ -656,7 +654,6 @@ sub _readDistroInfo
 	$self->{'distro-info'} = {
 		'package-subdir'            => $package_subdir,
 		'prereq-packages'           => $prereq_packages,
-		'bootstrap-prereq-packages' => $bootstrap_prereq_packages,
 		'bootstrap-packages'        => $bootstrap_packages,
 		'metapackager-packages'     => $metapackager_packages,
 		'repository'                => \%repository,
@@ -834,6 +831,7 @@ sub _startLocalURLServersAsNeeded
 
 	my $port = 5080;
 	foreach my $repoInfo (values %{$self->{'distro-info'}->{repository}}) {
+		$repoInfo->{'avoid-mirrors'} = $ENV{SLX_NO_MIRRORS} || 0;
 		my $localURL = $repoInfo->{url} || '';
 		next if !$localURL;
 		next if $localURL =~ m[^\w+:];	# anything with a protcol-spec is non-local
@@ -1071,10 +1069,6 @@ sub _stage1B_chrootAndBootstrap
 			my @prereqPkgs = $self->_downloadBaseFiles(\@pkgs);
 			$self->{packager}->bootstrap(\@prereqPkgs);
 		
-			@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-prereq-packages'});
-			my @bootstrapPrereqPkgs = $self->_downloadBaseFiles(\@pkgs);
-			$self->{'bootstrap-prereq-packages'} = \@bootstrapPrereqPkgs;
-		
 			@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-packages'});
 			push(
 				@pkgs, 
@@ -1084,8 +1078,7 @@ sub _stage1B_chrootAndBootstrap
 				)
 			);
 			my @bootstrapPkgs = $self->_downloadBaseFiles(\@pkgs);
-			my @allPkgs = (@prereqPkgs, @bootstrapPrereqPkgs, @bootstrapPkgs);
-			$self->{'bootstrap-packages'} = \@allPkgs;
+			$self->{'bootstrap-packages'} = \@bootstrapPkgs;
 		},
 	});
 	return;
@@ -1109,12 +1102,6 @@ sub _stage1C_chrootAndInstallBasicVendorOS
 
 	my $stage1cDir = "/$self->{stage1cSubdir}";
 
-	# install all prerequired bootstrap packages
-	$self->{packager}->installPrerequiredPackages(
-		$self->{'bootstrap-prereq-packages'},
-		$stage1cDir
-	);
-
 	# import any additional trusted package keys to rpm-DB:
 	my $keyDir = "/trusted-package-keys";
 	my $keyDirDH;
@@ -1127,7 +1114,7 @@ sub _stage1C_chrootAndInstallBasicVendorOS
 		$self->{packager}->importTrustedPackageKeys(\@keyFiles, $stage1cDir);
 	}
 
-	# install all other bootstrap packages
+	# install all bootstrap packages
 	$self->{packager}->installPackages(
 		$self->{'bootstrap-packages'}, $stage1cDir
 	);

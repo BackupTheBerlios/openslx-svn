@@ -27,7 +27,9 @@ sub new
 {
 	my $class = shift;
 	my $self = {
-		'base-name' => 'debian-4.0',
+		'base-name'    => 'debian-4.0',
+		'arch'         => 'i386',
+		'release-name' => 'etch',
 	};
 	return bless $self, $class;
 }
@@ -35,34 +37,35 @@ sub new
 sub initDistroInfo
 {
 	my $self = shift;
+
 	$self->{config}->{'repository'} = {
 		'base' => {
 			'urls' => "
+				http://debian.intergenia.de/debian
 			",
-			'name' => '',
-			'repo-subdir' => '',
-		},
-		'base_update' => {
-			'urls' => '
-			',
-			'name' => '',
-			'repo-subdir' => '',
+			'name' => 'Debian 4.0',
+			'repo-subdir'  => 'dists',
+			'distribution' => 'etch',
+			'components'   => 'main',
 		},
 	};
 
-	$self->{config}->{'package-subdir'} = '';
+	$self->{config}->{'package-subdir'} = 'pool';
 
 	$self->{config}->{'prereq-packages'} = "
+		main/d/debootstrap/debootstrap_1.0.0_all.deb
 	";
-
-	$self->{config}->{'bootstrap-prereq-packages'} = "";
 
 	$self->{config}->{'bootstrap-packages'} = "
 	";
 
 	$self->{config}->{'selection'} = {
-		'default' => "list any packagenames here",
+		'default' => "
+			kernel-image-2.6-386
+			kmail
+		",
 	};
+
 	return;
 }
 
