@@ -125,7 +125,7 @@ function install_prereq_packages()
 	done
 
 	# Ckech if we have to bootstrap
-	if test -x "${BOOTSTRAP_PATH}/usr/sbin/debootstrap"; then
+	if test "${BOOTSTRAP_PATH}" -a -x "${BOOTSTRAP_PATH}/usr/sbin/debootstrap"; then
 		DEBOOTSTRAP_DIR="${BOOTSTRAP_PATH}/usr/lib/debootstrap" \
 			"${BOOTSTRAP_PATH}/usr/sbin/debootstrap" \
 			"${SLX_INST_SOURCE_DISTRIBUTION_main}" \
