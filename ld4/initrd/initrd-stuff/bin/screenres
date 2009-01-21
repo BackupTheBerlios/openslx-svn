@@ -1,4 +1,102 @@
 #!/bin/sh
+# Author: Felix Endres
+# Written in April 2006
+
+
+# This script gives information about recommended display modes for the 
+# attached monitor
+
+# The script tries to guess whether the attached monitor is a lcd or
+# a crt based on age, display size and pixel size.
+# For CRTs the script tries to determine which screen modes are
+# convenient to work with:
+# - High resolutions are not recommended for small displays, because
+#   everything on the screen would be too tiny.
+# - The highest resolution is not recommended if the refresh rate is
+#   not known or lower than 80 Hz
+# - Though the mode 1400x1050 never shows up in the ddc info, it is
+#   Recommended as a replacement for 1600x1200 if that one is not.
+#
+
+## For CRTs determine recommended screen modes ####################################################
+DEBUG=""
+
+function calculate_max_horizontal_freq()
+{
+    highest_resolution=` echo $screen_resolutions | sed -n 's/"\([0-9x]*\)" .*/\1/p'`
+    freq_for_highest_res=`sed -n /$highest_resolution'/s/[^@]*@\([0-9]\{2,3\}\).*/\1/p' $tmp_ddcprobe_output | sort -nr|sed -n 1p`
+    if [ -z "$freq_for_highest_res" ]; then
+        #Search for a number followed by the term "Hz" in the same line as the highest resolution
+	freq_for_highest_res=`sed -n /$highest_resolution'/s/.*[^a-zA-Z0-9]\([0-9]\{2,3\}\)[ \t]*[Hh][Zz].*/\1/p' $tmp_ddcprobe_output | sort -nr|sed -n 1p`
+    fi
+    highest_res_line_count=` echo $highest_resolution | sed -n 's/x[0-9]*//p'`
+    [ -n "$DEBUG" ] && echo "  # of lines in highest res.: $highest_res_line_count"
+    horiz_freq_khz=$(( $highest_res_line_count * $freq_for_highest_res /1000))
+    [ -n "$DEBUG" ] && echo "  Assumed Horizontal Frequency: $horiz_freq_khz"
+}
+function determine_recommended_crt_modes()
+{
+    ## Introduce the standard resolution 1400x1050 as it is seldom in the list the monitors output, though supported
+    [ -n "$DEBUG" ] && echo "Screen Modes: $screen_resolutions"
+    if [ -z "`echo $screen_resolutions|sed -n /1400/p`" ]; then
+	[ -n "$DEBUG" ] && echo "Inserting 1400x1050 (if 1600x.... is present"
+        # Insert "1400x1050" after 1600x.... (of course only if a 1600er res. is there because 1400x1050 would otherwise be listed)
+        screen_resolutions=`echo $screen_resolutions|sed  's/\(.*"1600x[0-9]*"\)\(.*\)/\1 "1400x1050"\2/'`
+    fi
+    # For CRTs check if the highest frequency can be displayed with reasonable refresh rate (> 80Hz)
+    highest_resolution=` echo $screen_resolutions | sed -n 's/"\([0-9x]*\)" .*/\1/p'`
+    #Search for an @ in the same line as the highest resolution; FIXME: Sort only considers the vertical resolution
+    freq_for_highest_res=`sed -n /$highest_resolution'/s/[^@]*@\([0-9]\{2,3\}\).*/\1/p' $tmp_ddcprobe_output | sort -nr|sed -n 1p`
+    #echo $freq_for_highest_res
+    if [ -z "$freq_for_highest_res" ]; then
+        #Search for a number followed by the term "Hz" in the same line as the highest resolution
+	freq_for_highest_res=`sed -n /$highest_resolution'/s/.*[^a-zA-Z0-9]\([0-9]\{2,3\}\)[ \t]*[Hh][Zz].*/\1/p' $tmp_ddcprobe_output | sort -nr|sed -n 1p`
+    fi
+    # Assure that the highest resolution is removed if we do not know at what refresh rate it is displayed
+    # Chances are it would be flickering at that resolution
+    if [ -z "$freq_for_highest_res" ]; then 
+        freq_for_highest_res=75 # Assume 75 Hz to be the least a monitor is able to do.
+    fi
+    # Cut the first resolution if it is displayed with less than 85Hz
+    # It's assumed here, that the second best resolution will be displayed with > 85Hz
+    if [ $freq_for_highest_res -lt 85 ]; then
+        screen_resolutions=` echo $screen_resolutions | sed -n 's/"[0-9x]*" \(.*\)/\1/p'`
+    fi
+    define_max_recommended_horizontal_pixel_count # sets max_wanted_resolution
+#    max_wanted_resolution="$?"
+    [ -n "$DEBUG" ] && echo "  The screen is too small for resolutions greater than ${max_wanted_resolution}x...."
+    # Fetch the first resolution in the list
+    new_highest_resolution=` echo $screen_resolutions | sed -n 's/"\([0-9x]*\)" .*/\1/p'`
+    [ -n "$DEBUG" ] && echo "  new highest resolution: $new_highest_resolution"
+    new_highest_horizontal_resolution=`echo $new_highest_resolution | sed -n 's/\([0-9]*\)x.*/\1/p'`
+    [ -n "$DEBUG" ] && echo "  new_highest_horizontal_resolution: $new_highest_horizontal_resolution"
+    while [ $new_highest_horizontal_resolution -gt $max_wanted_resolution ]; do
+      # Cut the highest resolution because the display size is to small for it to be convenient
+      screen_resolutions=` echo $screen_resolutions | sed -n 's/"[0-9x]*" \(.*\)/\1/p'`
+      new_highest_resolution=` echo $screen_resolutions | sed -n 's/"\([0-9x]*\)" .*/\1/p'`
+      [ -n "$DEBUG" ] && echo "  new highest resolution: $new_highest_resolution"
+      new_highest_horizontal_resolution=`echo $new_highest_resolution | sed -n 's/\([0-9]*\)x.*/\1/p'`
+      [ -n "$DEBUG" ] && echo "  new_highest_horizontal_resolution: $new_highest_horizontal_resolution"
+    done
+    ##########
+}
+
+function define_max_recommended_horizontal_pixel_count()
+{
+    ## To high resolutions are not wanted on small screens #####################################
+    # For 15 inch and below
+    if [ $screen_size_in_qcm -lt 704 ]; then max_wanted_resolution=1024
+    # For 15" to 17"
+    elif [ $screen_size_in_qcm -lt 918 ]; then max_wanted_resolution=1280
+    # For 17" to 19"
+    elif [ $screen_size_in_qcm -gt 1121 ]; then max_wanted_resolution=1400
+    else max_wanted_resolution=50000 # Accept any resolution on Monitors above 19"
+    fi
+    [ -n "$DEBUG" ] && echo "  Max. recommended resolution: $max_wanted_resolution"
+    #return $max_wanted_resolution
+}
+
+
 #TODO command line arguments processing (--help)
 tmp_ddcprobe_output=$1
 if [ -z $tmp_ddcprobe_output ]; then
@@ -8,7 +106,10 @@ fi
 failed=`sed -n '/edid.*failed/Ip' ${tmp_ddcprobe_output}`
 if [ -n "$failed" ]; then
     echo "Error: Display seems to be incapable of providing DDC Information"
+    # Print Defaults OPTIMIZEME: The defaults could be command line parameters
     echo 'Recommended Screen Modes: "1024x768" "800x600" "640x480"'
+    echo "Vertical Frequency Range (kHz): 31.5-63.5"
+    echo "Horizontal Frequency Range (Hz): 60-90"
     exit 1;
 fi
 screen_size_in_qcm=$((`sed -n "s/[Ss]creen.*[Ss]ize[^0-9]*\([0-9]*\)[^0-9]*\([0-9]*\).*/\1 *  \2/p" ${tmp_ddcprobe_output}`))
@@ -17,10 +118,14 @@ manufacturing_year=`sed -n 's/manufact.*\([12][90][0-9][0-9]\).*/\1/Ip' ${tmp_dd
 
 if [ -z $screen_size_in_qcm ] || [ -z $manufacturing_year ] || [ -z $max_pixels ] ; then
     echo "Error: Display seems to be incapable of providing all relevant DDC Information"
+    # Print Defaults OPTIMIZEME: The defaults could be command line parameters
     echo 'Recommended Screen Modes: "1024x768" "800x600" "640x480"'
+    echo "Vertical Frequency Range (kHz): 31.5-63.5"
+    echo "Horizontal Frequency Range (Hz): 60-90"
     exit 1;
 fi
 
+## Determine probabilitiy for TFT ###########################################
 pix_per_qcm=$(($max_pixels/$screen_size_in_qcm))
 echo "Display size:	$screen_size_in_qcm qcm"
 echo "Max Pixels per qcm:	$pix_per_qcm"
@@ -54,44 +159,38 @@ fi
 if [ $pix_per_qcm -gt 1599 ]; then tft_probability=$(($tft_probability - 15))
 else tft_probability=$(($tft_probability + 15))
 fi
-echo -ne "Is a TFT: "
-if [ $tft_probability -ge 50 ]; then
-    echo -n "true"
-else echo -n "false"
+if [ -n "$DEBUG" ];then
+    echo -ne "Is a TFT: "
+    if [ $tft_probability -ge 50 ]; then
+	echo -n "true"
+    else echo -n "false"
+    fi
+    echo " ($tft_probability)"
 fi
-echo " ($tft_probability)"
+
+########################################
 
 # Find the lines with two times 3 to 4 digits delimited by an x. Print with the two values reverted, so sort sorts w.r.t the 2nd value. Then swap back
 screen_resolutions=`sed -n '/edid/I,$s/.*[ \t]\([0-9]\{3,4\}\) *x *\([0-9]\{3,4\}\).*/\2 x \1/p' ${tmp_ddcprobe_output}| sort -rn | sort -rnu | sed -n 's/\([0-9]\{3,4\}\) x \([0-9]\{3,4\}\).*/"\2x\1"/p' `
 screen_resolutions=`echo $screen_resolutions`
 echo "Supported Screen Modes: $screen_resolutions"
 
-# For CRTs check if the highest frequency can be displayed with reasonable refresh rate (> 80Hz)
 if [ $tft_probability -lt 50 ]; then
-    highest_resolution=` echo $screen_resolutions | sed -n 's/"\([0-9x]*\)" .*/\1/p'`
-    #echo $highest_resolution
-    #Search for an @ in the same line as the highest resolution
-    freq_for_highest_res=`sed -n /$highest_resolution'/s/[^@]*@\([0-9]\{2,3\}\).*/\1/p' $tmp_ddcprobe_output | sort -nr|sed -n 1p`
-    #echo $freq_for_highest_res
-    if [ -z "$freq_for_highest_res" ]; then
-        #Search for a number followed by the term "Hz" in the same line as the highest resolution
-	freq_for_highest_res=`sed -n /$highest_resolution'/s/.*[^a-zA-Z0-9]\([0-9]\{2,3\}\)[ \t]*[Hh][Zz].*/\1/p' $tmp_ddcprobe_output | sort -nr|sed -n 1p`
-    fi
-    # Assure that the highest resolution is removed if we do not know at what refresh rate it is displayed
-    # Chances are it would be flickering at that resolution
-    if [ -z "$freq_for_highest_res" ]; then 
-        freq_for_highest_res=0
-    fi
-    if [ $freq_for_highest_res -lt 80 ]; then
-        screen_resolutions=` echo $screen_resolutions | sed -n 's/"[0-9x]*" \(.*\)/\1/p'`
-    fi
+    determine_recommended_crt_modes;
 fi
 
 echo "Recommended Screen Modes: $screen_resolutions"
 
 ######## Vertical and horizontal frequency ranges #########
+# find a line with the word range and and numbers with a minus in the middle (e.g 123-321)
+frequency_ranges=`sed '/[Rr][Aa][Nn][Gg][Ee]/!d;s/[^0-9]*\([1-9][0-9]\)[ \t]*-[ \t]*\([1-9][0-9]*\)[^0-9]*\([1-9][0-9]*\)[ \t]*-[ \t]*\([1-9][0-9]*\).*/\1-\2 \3-\4/' ${tmp_ddcprobe_output}`
 
-frequency_ranges=`sed '/range/!d;s/[^0-9]*\([1-9][0-9]\)[ \t]*-[ \t]*\([1-9][0-9]*\)[^0-9]*\([1-9][0-9]*\)[ \t]*-[ \t]*\([1-9][0-9]*\).*/\1-\2 \3-\4/' ${tmp_ddcprobe_output}`
 set -- $frequency_ranges # split into $1 und $2
-echo "Vertical Frequency Range (kHz): $1"
-echo "Horizontal Frequency Range (Hz): $2"
+if [ -z "$frequency_ranges" ]; then
+    calculate_max_horizontal_freq # gives us $horiz_freq_khz
+    horiz_freq_range="31.5-$horiz_freq_khz"
+else horiz_freq_range=$1
+fi
+#Fixme: How to Calculate the Vertical Refresh rate?
+echo "Horizontal Frequency Range (kHz): $horiz_freq_range"
+echo "Vertical Frequency Range (Hz): $2"
