@@ -206,6 +206,7 @@ sub initDistroInfo
 
 	$self->{config}->{'selection'} = {
 		'default' => "
+			glibc-locale
 		",
 
 		'gnome' => "

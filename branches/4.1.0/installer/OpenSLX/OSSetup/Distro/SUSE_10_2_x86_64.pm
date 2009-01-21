@@ -210,6 +210,7 @@ sub initDistroInfo
 
 	$self->{config}->{'selection'} = {
 		'default' => "
+			glibc-locale
 			nbd
 			squashfs-kmp-default
 		",
