@@ -67,8 +67,8 @@ trigger_device_events () {
 # mini udev of busybox or distro specific udev_hotplug
 runudev () {
 if [ -x /bin/mdev ] ; then
-  mknod /dev/mem c 1 1 &>/dev/null
-  mknod /dev/zero c 1 5 &>/dev/null
+  [ -c /dev/mem ] ||mknod /dev/mem c 1 1 2>/dev/null
+  [ -c /dev/zero ] || mknod /dev/zero c 1 5 2>/dev/null
   mdev -s
 else
   udev_hotplug
@@ -309,13 +309,15 @@ case $ipcfg in
       | sed -e "s/.*HWaddr //;y/ABCDEF/abcdef/")
     # if multicast is required for dnbd
     [ -n "$nbdhost" ] && [ $(echo $nbdhost|sed "s,\..*,,") -ge 224 ] && \
-      route add -net 224.0.0.0 netmask 240.0.0.0 dev eth0
+      route add -net 224.0.0.0 netmask 240.0.0.0 dev $if
   ;;
   none)
     error "$error_iptool"
     ret=1
   ;;
 esac
+# if something got wrong with the setup of the primary ethernet interface
+[ $ret -gt 0 -a $if = "eth0" ] && error "$init_noeth"
 return $ret
 }
 #############################################################################
@@ -391,7 +393,7 @@ else
   # fail!!
   [ -n "$noipyet" ] && \
     ipsetup 0.0.0.0 255.255.255.255 0.0.0.0 255.255.255.255 eth0 \
-      2>/dev/null || error "$init_noeth"
+      2>/dev/null
   [ -f /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko ] && \
     loadmod /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko \
       "needed for dhcp";
