@@ -1,7 +1,8 @@
-# splashy stuff seems to depend on /proc/fb with VESA!?
-# only activate with kernel option quiet
+# splashy depends on /proc/fb with VESA
+# only activate with kernel option quiet and no debuglevel
 if grep -E "(VESA|VGA)" /proc/fb > /dev/null 2>&1 \
-  && grep -qi " quiet " /proc/cmdline > /dev/null 2>&1 ; then
+  && grep -qi " quiet " /proc/cmdline > /dev/null 2>&1 \
+  && [ $DEBUGLEVEL -eq 0 ] ; then
   export Theme_nosplash=0
 else
   export Theme_nosplash=1
