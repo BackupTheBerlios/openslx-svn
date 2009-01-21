@@ -48,6 +48,10 @@ ifeq ($(SLX_TEMP_PATH),)
 	SLX_TEMP_PATH = /tmp
 endif
 
+ifeq ($(SLX_INSTALL_LOG),)
+	SLX_INSTALL_LOG = install.log
+endif
+
 tarball:
 	@OPENSLX_SVN_SNAPSHOT=$$( echo $${OPENSLX_SVN_SNAPSHOT} | \
 		tr [:upper:] [:lower:]); \
@@ -79,6 +83,28 @@ tarball:
 	popd >/dev/null
 
 install:
+	@echo "Checking installation requirements..."; \
+	echo $$(date) >${SLX_INSTALL_LOG}; \
+	if ! perl -e '$$x=2' 2>>${SLX_INSTALL_LOG} ; then \
+		echo "  Perl is required, please install it."; \
+		exit 1; \
+	fi; \
+	# many of the following modules are part of core perl, but we check \
+	# for them just to be sure... \
+	for m in Carp DBI Fcntl FindBin Getopt::Long Pod::Usage ; do \
+		if ! perl -e "use $$m" 2>>${SLX_INSTALL_LOG} ; then \
+			echo "  The perl-module '$$m' is required, please install it."; \
+			exit 1; \
+		fi; \
+	done; \
+	# specific database modules are optional, but we tell the user if \
+	# support for a database is missing: \
+	for m in CSV mysql SQLite; do \
+		if ! perl -e "use DBD::$$m" 2>>${SLX_INSTALL_LOG} ; then \
+			echo -e "  'DBD::$$m' not found, so $$m-databases will not be\
+supported."; \
+		fi; \
+	done;
 	@echo "Installing OpenSLX project files"
 	@mkdir -p $(SLX_CONFIG_PATH) \
 	       -p $(SLX_BASE_PATH)/lib \
