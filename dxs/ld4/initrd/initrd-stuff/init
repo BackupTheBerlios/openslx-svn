@@ -387,8 +387,10 @@ and list the modules loaded until\n  now."
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump udevd 2>/dev/null
 # unmount the bind mounted modules directory
-umount -n /lib/modules/${KERNEL} || error "Unmount of the kernel \
-modules directory failed for some reason."
+umount -n /lib/modules/${KERNEL} || {
+  usleep 40 && umount -n /lib/modules/${KERNEL} || \
+  error "Unmount of the kernel modules directory failed for some reason."
+}
 # close runlevel script for stuff to execute during early bootup
 d_mkbootld close
 # check for inittab file
