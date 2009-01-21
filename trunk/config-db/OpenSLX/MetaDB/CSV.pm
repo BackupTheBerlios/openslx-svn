@@ -54,7 +54,7 @@ sub connect
 		system("mkdir -p $dbPath") 	unless -e $dbPath;
 		$dbSpec = "f_dir=$dbPath;csv_eol=\n;";
 	}
-	vlog 1, "trying to connect to CSV-database <$dbSpec>";
+	vlog(1, "trying to connect to CSV-database <$dbSpec>");
 	$self->{'dbh'} = DBI->connect("dbi:CSV:$dbSpec", undef, undef,
 								  {PrintError => 0})
 			or die _tr("Cannot connect to database '%s' (%s)",

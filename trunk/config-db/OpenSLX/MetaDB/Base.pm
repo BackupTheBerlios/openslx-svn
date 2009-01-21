@@ -287,7 +287,7 @@ OpenSLX::MetaDB::Base - the base class for all MetaDB drivers
       my $self = shift;
 
       my $dbName = $openslxConfig{'db-name'};
-      vlog 1, "trying to connect to coolnewDB-database <$dbName>";
+      vlog(1, "trying to connect to coolnewDB-database <$dbName>");
       $self->{'dbh'} = ... # get connection handle from coolnewDB
   }
 

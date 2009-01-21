@@ -52,12 +52,13 @@ my (
 
 $rootPath = '/';
 GetOptions(
-	'help|?' => \$helpReq,
-	'man' => \$manReq,
+	'help|?'      => \$helpReq,
+	'man'         => \$manReq,
 	'root-path=s' => \$rootPath,
-	'verbose' => \$verbose,
-	'version' => \$versionReq,
-) or pod2usage(2);
+	'verbose'     => \$verbose,
+	'version'     => \$versionReq,
+  )
+  or pod2usage(2);
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
 pod2usage(-verbose => 2) if $manReq;
 if ($versionReq) {
@@ -73,7 +74,7 @@ if (!$rootPath) {
 }
 
 $rootPath =~ s[/+$][];
-	# remove trailing slashes
+# remove trailing slashes
 
 if (!@ARGV) {
 	print STDERR _tr("You need to specify at least one file!\n");
@@ -83,12 +84,13 @@ if (!@ARGV) {
 fetchLoaderConfig();
 
 foreach my $file (@ARGV) {
-	if (substr($file,0,1) ne '/') {
+	if (substr($file, 0, 1) ne '/') {
 		# force relative paths relative to $rootPath:
 		$file = "$rootPath/$file";
 	}
 	if (!-e $file) {
-		print STDERR _tr("slxldd: unable to find file '%s', skipping it\n", $file);
+		print STDERR _tr("slxldd: unable to find file '%s', skipping it\n",
+			$file);
 		next;
 	}
 	push @filesToDo, $file;
@@ -103,7 +105,7 @@ sub fetchLoaderConfigFile
 	my $ldConfFile = shift;
 
 	open(LDCONF, "< $ldConfFile");
-	while(<LDCONF>) {
+	while (<LDCONF>) {
 		chomp;
 		if (/^\s*include\s+(.+?)\s*$/i) {
 			foreach my $incFile (<$rootPath$1>) {
@@ -113,7 +115,7 @@ sub fetchLoaderConfigFile
 		}
 		if (/\S+/i) {
 			s[=.+][];
-				# remove any lib-type specifications (e.g. '=libc5')
+			# remove any lib-type specifications (e.g. '=libc5')
 			push @libFolders, "$rootPath$_";
 		}
 	}
@@ -123,12 +125,13 @@ sub fetchLoaderConfigFile
 sub fetchLoaderConfig
 {
 	if (!-e "$rootPath/etc") {
-		die _tr("'%s'-folder not found, maybe wrong root-path?\n", "$rootPath/etc");
+		die _tr("'%s'-folder not found, maybe wrong root-path?\n",
+			"$rootPath/etc");
 	}
 	fetchLoaderConfigFile("$rootPath/etc/ld.so.conf");
 
 	# add "trusted" folders /lib and /usr/lib if not already in place:
-	if (!grep { m[^$rootPath/lib$]}  @libFolders) {
+	if (!grep { m[^$rootPath/lib$] } @libFolders) {
 		push @libFolders, "$rootPath/lib";
 	}
 	if (!grep { m[^$rootPath/usr/lib$] } @libFolders) {
@@ -137,20 +140,21 @@ sub fetchLoaderConfig
 
 	# add lib32-folders for 64-bit Debians, as they do not
 	# refer those in ld.so.conf (which I find strange...)
-	if (-e '/lib32' && !grep { m[^$rootPath/lib32$]}  @libFolders) {
+	if (-e '/lib32' && !grep { m[^$rootPath/lib32$] } @libFolders) {
 		push @libFolders, "$rootPath/lib32";
 	}
 	if (-e '/usr/lib32'
-	&& !grep { m[^$rootPath/usr/lib32$] } @libFolders) {
+		&& !grep { m[^$rootPath/usr/lib32$] } @libFolders)
+	{
 		push @libFolders, "$rootPath/usr/lib32";
 	}
 }
 
 sub addLib
 {
-	my $lib = shift;
+	my $lib      = shift;
 	my $bitwidth = shift;
-	my $rpath = shift;
+	my $rpath    = shift;
 
 	if (!exists $libInfo{$lib}) {
 		push @libs, $lib;
@@ -163,15 +167,22 @@ sub addLib
 		foreach my $folder (@folders) {
 			if (-e "$folder/$lib") {
 				# have library matching name, now check if the platform is ok, too:
-				my $libFileInfo = `file --dereference --brief $folder/$lib 2>/dev/null`;
+				my $libFileInfo =
+				  `file --dereference --brief $folder/$lib 2>/dev/null`;
 				if ($?) {
 					die _tr("unable to fetch file info for '%s', giving up!\n",
-							$folder/$lib);
+						$folder / $lib);
 				}
 				my $libBitwidth = ($libFileInfo =~ m[64-bit]i) ? 64 : 32;
 				if ($bitwidth != $libBitwidth) {
-					vlog 0, _tr('%s has wrong bitwidth (%s instead of %s)',
-						      "$folder/$lib", $libBitwidth, $bitwidth) if $verbose;
+					vlog(
+						0,
+						_tr(
+							'%s has wrong bitwidth (%s instead of %s)',
+							"$folder/$lib", $libBitwidth, $bitwidth
+						)
+					  )
+					  if $verbose;
 					next;
 				}
 				$libPath = "$folder/$lib";
@@ -201,7 +212,9 @@ sub addLibsForBinary
 	print STDERR _tr("\tinfo is: '%s'...\n", $fileInfo) if $verbose;
 	if ($fileInfo !~ m[^application/(x-executable|x-shared)]i) {
 		# ignore anything that's not an executable or a shared library
-		print STDERR _tr("%s: ignored, as it isn't an executable or a shared library\n", $binary);
+		print STDERR _tr(
+			"%s: ignored, as it isn't an executable or a shared library\n",
+			$binary);
 		next;
 	}
 
@@ -214,7 +227,7 @@ sub addLibsForBinary
 	chomp $fileInfo;
 	print STDERR _tr("\tinfo is: '%s'...\n", $fileInfo) if $verbose;
 	my $bitwidth = ($fileInfo =~ m[64-bit]i) ? 64 : 32;
-		# determine whether binary is 32- or 64-bit platform
+	# determine whether binary is 32- or 64-bit platform
 
 	# now find out about needed libs, we first try objdump...
 	if ($verbose) {
@@ -230,7 +243,7 @@ sub addLibsForBinary
 				print STDERR _tr("\trpath='%s'\n", $rpath);
 			}
 		}
-		while($res =~ m[^\s*NEEDED\s*(.+?)\s*$]gm) {
+		while ($res =~ m[^\s*NEEDED\s*(.+?)\s*$]gm) {
 			addLib($1, $bitwidth, $rpath);
 		}
 	} else {
@@ -240,7 +253,9 @@ sub addLibsForBinary
 		}
 		$res = `readelf -d $binary 2>/dev/null`;
 		if ($?) {
-			die _tr("neither objdump nor readelf seems to be installed, giving up!\n");
+			die _tr(
+				"neither objdump nor readelf seems to be installed, giving up!\n"
+			);
 		}
 		# find out if rpath is set for binary:
 		my $rpath;
@@ -250,14 +265,11 @@ sub addLibsForBinary
 				print STDERR _tr("\trpath='%s'\n", $rpath);
 			}
 		}
-		while($res =~ m{\(NEEDED\)[^\[]+\[(.+?)\]\s*$}gm) {
+		while ($res =~ m{\(NEEDED\)[^\[]+\[(.+?)\]\s*$}gm) {
 			addLib($1, $bitwidth, $rpath);
 		}
 	}
 }
-
-
-__END__
 
 =head1 NAME
 
@@ -306,3 +318,4 @@ Prints the version and exits.
 =back
 
 =cut
+

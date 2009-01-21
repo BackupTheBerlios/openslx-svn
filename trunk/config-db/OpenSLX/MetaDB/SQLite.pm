@@ -51,7 +51,7 @@ sub connect
 		system("mkdir -p $dbPath") 	unless -e $dbPath;
 		$dbSpec = "dbname=$dbPath/$openslxConfig{'db-name'}";
 	}
-	vlog 1, "trying to connect to SQLite-database <$dbSpec>";
+	vlog(1, "trying to connect to SQLite-database <$dbSpec>");
 	eval ('require DBD::SQLite; 1;')
 		or die _tr(qq[%s doesn't seem to be installed,
 so there is no support for %s available, sorry!\n%s], 'DBD::SQLite', 'SQLite', $@);
@@ -70,9 +70,9 @@ sub schemaRenameTable
 	my $isSubCmd = shift;
 
 	my $dbh = $self->{'dbh'};
-	vlog 1, "renaming table <$oldTable> to <$newTable>..." unless $isSubCmd;
+	vlog(1, "renaming table <$oldTable> to <$newTable>..." unless $isSubCmd);
 	my $sql = "ALTER TABLE $oldTable RENAME TO $newTable";
-	vlog 3, $sql;
+	vlog(3, $sql);
 	$dbh->do($sql)
 		or confess _tr(q[Can't rename table <%s> (%s)], $oldTable, $dbh->errstr);
 }
@@ -88,12 +88,12 @@ sub schemaAddColumns
 
 	my $dbh = $self->{'dbh'};
 	my $newColNames = $self->_convertColDescrsToColNamesString($newColDescrs);
-	vlog 1, "adding columns <$newColNames> to table <$table>" unless $isSubCmd;
+	vlog(1, "adding columns <$newColNames> to table <$table>" unless $isSubCmd);
 	foreach my $colDescr (@$newColDescrs) {
 		my $colDescrString
 			= $self->_convertColDescrsToDBNativeString([$colDescr]);
 		my $sql = "ALTER TABLE $table ADD COLUMN $colDescrString";
-		vlog 3, $sql;
+		vlog(3, $sql);
 		$dbh->do($sql)
 			or confess _tr(q[Can't add column to table <%s> (%s)], $table,
 						   $dbh->errstr);

@@ -294,8 +294,8 @@ sub addClientToConfigDB
 				$clientData->{mac});
 	}
 	my $clientID = $openslxDB->addClient([$clientData]);
-	vlog 0, _tr("client '%s' has been successfully added to DB (ID=%s)\n",
-				$clientName, $clientID);
+	vlog(0, _tr("client '%s' has been successfully added to DB (ID=%s)\n",
+				$clientName, $clientID));
 	if (@systemIDs) {
 		$openslxDB->addSystemIDsToClient($clientID, \@systemIDs);
 	}
@@ -380,8 +380,8 @@ sub addSystemToConfigDB
 	}
 
 	my $systemID = $openslxDB->addSystem([$systemData]);
-	vlog 0, _tr("system '%s' has been successfully added to DB (ID=%s)\n",
-				$systemName, $systemID);
+	vlog(0, _tr("system '%s' has been successfully added to DB (ID=%s)\n",
+				$systemName, $systemID));
 	if (@clientIDs) {
 	    $openslxDB->addClientIDsToSystem($systemID, \@clientIDs);
 	}
@@ -457,7 +457,7 @@ sub changeClientInConfigDB
 	}
 
 	$openslxDB->changeClient($client->{id}, [$clientData]);
-	vlog 0, _tr("client '%s' has been successfully changed\n", $clientName);
+	vlog(0, _tr("client '%s' has been successfully changed\n", $clientName));
 	if (@systemIDs) {
 		$openslxDB->setSystemIDsOfClient($client->{id}, \@systemIDs);
 	}
@@ -527,7 +527,7 @@ sub changeSystemInConfigDB
 		delete $systemData->{'remove-clients'};
 	}
 	$openslxDB->changeSystem($system->{id}, [$systemData]);
-	vlog 0, _tr("system '%s' has been successfully changed\n", $systemName);
+	vlog(0, _tr("system '%s' has been successfully changed\n", $systemName));
 	if (@clientIDs) {
 	    $openslxDB->setClientIDsOfSystem($system->{id}, \@clientIDs);
 	}
@@ -555,8 +555,8 @@ sub removeClientFromConfigDB
 		die _tr("you can't remove the default-client!\n");
 	}
 	$openslxDB->removeClient($client->{id});
-	vlog 0, _tr("client '%s' has been successfully removed from DB\n",
-				$clientName);
+	vlog(0, _tr("client '%s' has been successfully removed from DB\n",
+				$clientName));
 }
 
 sub removeSystemFromConfigDB
@@ -578,8 +578,8 @@ sub removeSystemFromConfigDB
 		die _tr("you can't remove the default-client!\n");
 	}
 	$openslxDB->removeSystem($system->{id});
-	vlog 0, _tr("system '%s' has been successfully removed from DB\n",
-				$systemName);
+	vlog(0, _tr("system '%s' has been successfully removed from DB\n",
+				$systemName));
 }
 
 

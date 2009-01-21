@@ -85,7 +85,7 @@ sub _doSelect
 
 	my $dbh = $self->{'dbh'};
 
-	vlog 3, _trim($sql);
+	vlog(3, _trim($sql));
 	my $sth = $dbh->prepare($sql)
 		or confess _tr(q[Can't prepare SQL-statement <%s> (%s)], $sql,
 					   $dbh->errstr);
@@ -377,12 +377,12 @@ sub _doInsert
 		if (!defined $valRow->{id} && !$ignoreIDs && $needToGenerateIDs) {
 			# let DB-backend pre-specify ID, as current DB can't generate IDs:
 			$valRow->{id} = $self->generateNextIdForTable($table);
-			vlog 3, "generated id for <$table> is <$valRow->{id}>";
+			vlog(3, "generated id for <$table> is <$valRow->{id}>");
 		}
 		my $cols = join ', ', keys %$valRow;
 		my $values = join ', ', map { $self->quote($valRow->{$_}) } keys %$valRow;
 		my $sql = "INSERT INTO $table ( $cols ) VALUES ( $values )";
-		vlog 3, $sql;
+		vlog(3, $sql);
 		my $sth = $dbh->prepare($sql)
 			or confess _tr(q[Can't insert into table <%s> (%s)], $table,
 						$dbh->errstr);
@@ -392,7 +392,7 @@ sub _doInsert
 		if (!$ignoreIDs && !defined $valRow->{id}) {
 			# id has not been pre-specified, we need to fetch it from DB:
 			$valRow->{'id'} = $dbh->last_insert_id(undef, undef, $table, 'id');
-			vlog 3, "DB-generated id for <$table> is <$valRow->{id}>";
+			vlog(3, "DB-generated id for <$table> is <$valRow->{id}>");
 		}
 		push @ids, $valRow->{'id'};
 	}
@@ -419,7 +419,7 @@ sub _doDelete
 				$sql .= $additionalWhereClause;
 			}
 		}
-		vlog 3, $sql;
+		vlog(3, $sql);
 		my $sth = $dbh->prepare($sql)
 			or confess _tr(q[Can't delete from table <%s> (%s)], $table,
 						$dbh->errstr);
@@ -457,7 +457,7 @@ sub _doUpdate
 		if (defined $id) {
 			$sql .= " WHERE id = ".$self->quote($id);
 		}
-		vlog 3, $sql;
+		vlog(3, $sql);
 		my $sth = $dbh->prepare($sql)
 			or confess _tr(q[Can't update table <%s> (%s)], $table, $dbh->errstr);
 		$sth->execute()
@@ -823,10 +823,10 @@ sub schemaAddTable
 	my $isSubCmd = shift;
 
 	my $dbh = $self->{'dbh'};
-	vlog 1, "adding table <$table> to schema..." unless $isSubCmd;
+	vlog(1, "adding table <$table> to schema..." unless $isSubCmd);
 	my $colDescrString = $self->_convertColDescrsToDBNativeString($colDescrs);
 	my $sql = "CREATE TABLE $table ($colDescrString)";
-	vlog 3, $sql;
+	vlog(3, $sql);
 	$dbh->do($sql)
 		or confess _tr(q[Can't create table <%s> (%s)], $table, $dbh->errstr);
 	if (defined $initialVals) {
@@ -843,9 +843,9 @@ sub schemaDropTable
 	my $isSubCmd = shift;
 
 	my $dbh = $self->{'dbh'};
-	vlog 1, "dropping table <$table> from schema..." unless $isSubCmd;
+	vlog(1, "dropping table <$table> from schema..." unless $isSubCmd);
 	my $sql = "DROP TABLE $table";
-	vlog 3, $sql;
+	vlog(3, $sql);
 	$dbh->do($sql)
 		or confess _tr(q[Can't drop table <%s> (%s)], $table, $dbh->errstr);
 }
@@ -866,17 +866,17 @@ sub schemaRenameTable
 	my $isSubCmd = shift;
 
 	my $dbh = $self->{'dbh'};
-	vlog 1, "renaming table <$oldTable> to <$newTable>..." unless $isSubCmd;
+	vlog(1, "renaming table <$oldTable> to <$newTable>..." unless $isSubCmd);
 	my $colDescrString = $self->_convertColDescrsToDBNativeString($colDescrs);
 	my $sql = "CREATE TABLE $newTable ($colDescrString)";
-	vlog 3, $sql;
+	vlog(3, $sql);
 	$dbh->do($sql)
 		or confess _tr(q[Can't create table <%s> (%s)], $oldTable, $dbh->errstr);
 	my $colNamesString = $self->_convertColDescrsToColNamesString($colDescrs);
 	my @dataRows = $self->_doSelect("SELECT $colNamesString FROM $oldTable");
 	$self->_doInsert($newTable, \@dataRows);
 	$sql = "DROP TABLE $oldTable";
-	vlog 3, $sql;
+	vlog(3, $sql);
 	$dbh->do($sql)
 		or confess _tr(q[Can't drop table <%s> (%s)], $oldTable, $dbh->errstr);
 }
@@ -902,7 +902,7 @@ sub schemaAddColumns
 	my $tempTable = "${table}_temp";
 	my @newColNames = $self->_convertColDescrsToColNames($newColDescrs);
 	my $newColStr = join ', ', @newColNames;
-	vlog 1, "adding columns <$newColStr> to table <$table>..." unless $isSubCmd;
+	vlog(1, "adding columns <$newColStr> to table <$table>..." unless $isSubCmd);
 	$self->schemaAddTable($tempTable, $colDescrs, undef, 1);
 
 	# copy the data from the old table to the new:
@@ -940,8 +940,8 @@ sub schemaDropColumns
 	my $dbh = $self->{'dbh'};
 	my $tempTable = "${table}_temp";
 	my $dropColStr = join ', ', @$dropColNames;
-	vlog 1, "dropping columns <$dropColStr> from table <$table>..."
-			unless $isSubCmd;
+	vlog(1, "dropping columns <$dropColStr> from table <$table>..."
+			unless $isSubCmd);
 	$self->schemaAddTable($tempTable, $colDescrs, undef, 1);
 
 	# copy the data from the old table to the new:
@@ -972,8 +972,8 @@ sub schemaChangeColumns
 	my $dbh = $self->{'dbh'};
 	my $tempTable = "${table}_temp";
 	my $changeColStr = join ', ', keys %$colChanges;
-	vlog 1, "changing columns <$changeColStr> of table <$table>..."
-			unless $isSubCmd;
+	vlog(1, "changing columns <$changeColStr> of table <$table>..."
+			unless $isSubCmd);
 	$self->schemaAddTable($tempTable, $colDescrs, undef, 1);
 
 	# copy the data from the old table to the new:

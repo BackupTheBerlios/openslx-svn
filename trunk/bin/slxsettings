@@ -36,27 +36,21 @@ use Pod::Usage;
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
 use lib "$FindBin::RealBin";
-	# development path to config-db stuff
+# development path to config-db stuff
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
-my (
-	$quiet,
-	@reset,
-	$helpReq,
-	$manReq,
-	$versionReq,
-);
+my ($quiet, @reset, $helpReq, $manReq, $versionReq,);
 
 GetOptions(
 	'quiet' => \$quiet,
-		# will avoid printing anything
+	# will avoid printing anything
 	'reset=s' => \@reset,
-		# resets given option to its default
+	# resets given option to its default
 
-	'help|?' => \$helpReq,
-	'man' => \$manReq,
+	'help|?'  => \$helpReq,
+	'man'     => \$manReq,
 	'version' => \$versionReq,
 );
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
@@ -75,8 +69,10 @@ my %givenSettings = %cmdlineConfig;
 while (scalar @ARGV) {
 	my $extSetting = shift;
 	if ($extSetting !~ m[^([-\w]+)=(.+)$]) {
-		die _tr("extended setting '%s' has unknown format, expected '<key>=<value>!'",
-				$extSetting);
+		die _tr(
+			"extended setting '%s' has unknown format, expected '<key>=<value>!'",
+			$extSetting
+		);
 	}
 	$givenSettings{$1} = $2;
 }
@@ -90,7 +86,7 @@ my %changed;
 foreach my $key (keys %givenSettings) {
 	my $value = $givenSettings{$key};
 	next if !defined $value;
-	vlog 0, _tr("setting %s to '%s'", $key, $value) unless $quiet;
+	vlog(0, _tr("setting %s to '%s'", $key, $value)) unless $quiet;
 	my $externalKey = externalKeyFor($key);
 	if (!($settings =~ s[^\s*$externalKey=.*?$][$externalKey=$value]ms)) {
 		$settings .= "$externalKey=$value\n";
@@ -102,9 +98,13 @@ foreach my $key (keys %givenSettings) {
 foreach my $key (@reset) {
 	my $externalKey = externalKeyFor($key);
 	if ($settings =~ s[^\s*?$externalKey=.*?\n][]ms) {
-		vlog 0, _tr("removing option '%s' from local settings", $key) unless $quiet;
+		vlog(0,
+			_tr("removing option '%s' from local settings", $key))
+			  unless $quiet;
 	} else {
-		vlog 0, _tr("option '%s' didn't exist in local settings!", $key) unless $quiet;
+		vlog(0,
+			_tr("option '%s' didn't exist in local settings!", $key))
+			  unless $quiet;
 	}
 	$changed{$key}++;
 }
@@ -113,7 +113,7 @@ foreach my $key (@reset) {
 if (keys %changed) {
 	my $f = "$openslxConfig{'config-path'}/settings";
 	open(SETTINGS, "> $f")
-		or die _tr("Unable to write local settings file '%s' (%s)", $f, $!);
+	  or die _tr("Unable to write local settings file '%s' (%s)", $f, $!);
 	print SETTINGS $settings;
 	close(SETTINGS);
 
@@ -128,10 +128,10 @@ if (!keys %changed) {
 	print _tr("paths fixed at installation time:\n");
 	print qq[\t--base-path='$openslxConfig{'base-path'}'\n];
 	print qq[\t--config-path='$openslxConfig{'config-path'}'\n];
-	my $text
-		= keys %changed
-			? "resulting base settings (cmdline options):\n"
-			: "current base settings (cmdline options):\n";
+	my $text =
+	  keys %changed
+	  ? "resulting base settings (cmdline options):\n"
+	  : "current base settings (cmdline options):\n";
 	print $text;
 	my @baseSettings = grep { exists $cmdlineConfig{$_} } keys %openslxConfig;
 	foreach my $key (sort @baseSettings) {
@@ -150,12 +150,12 @@ sub externalKeyFor
 	my $key = shift;
 
 	$key =~ tr[-][_];
-	return "SLX_".uc($key);
+	return "SLX_" . uc($key);
 }
 
 sub changedHandler
 {
-	my $key = shift;
+	my $key   = shift;
 	my $value = shift;
 
 	# invoke a key-specific change handler if it exists:
@@ -324,3 +324,4 @@ Prints the version and exits.
 slxos-setup, slxos-export, slxconfig, slxconfig-demuxer
 
 =cut
+

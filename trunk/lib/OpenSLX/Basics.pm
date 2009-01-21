@@ -37,11 +37,12 @@ use subs qw(die);
 ### Module implementation
 ################################################################################
 use Carp;
-use Carp::Heavy
-  ; # use it here to have it loaded immediately, not at the time when
-    # carp() is being invoked (which might be at a point in time where
-    # the script executes in a chrooted environment, such that the module
-    # can't be loaded anymore).
+use
+  Carp::Heavy; # use it here to have it loaded immediately, not at 
+               # the time when carp() is being invoked (which might
+               # be at a point in time where the script executes in
+               # a chrooted environment, such that the module can't
+               # be loaded anymore).
 use FindBin;
 use Getopt::Long;
 use POSIX qw(locale_h);
@@ -52,9 +53,9 @@ my %translations;
 # the initial content is based on environment variables or default values.
 # Each value may be overridden from config files and/or cmdline arguments.
 %openslxConfig = (
-	'db-name'        => $ENV{SLX_DB_NAME} || 'openslx',
-	'db-spec'        => $ENV{SLX_DB_SPEC},
-	'db-type'        => $ENV{SLX_DB_TYPE} || 'SQLite',
+	'db-name' => $ENV{SLX_DB_NAME} || 'openslx',
+	'db-spec' => $ENV{SLX_DB_SPEC},
+	'db-type' => $ENV{SLX_DB_TYPE} || 'SQLite',
 	'locale'         => setlocale(LC_MESSAGES),
 	'locale-charmap' => `locale charmap`,
 	'base-path'      => $ENV{SLX_BASE_PATH} || '/opt/openslx',
@@ -67,7 +68,7 @@ my %translations;
 	#
 	# options useful during development only:
 	#
-	'debug-confess'  => '0',
+	'debug-confess' => '0',
 
 	#
 	# extended settings follow, which are only supported by slxsettings,
@@ -151,7 +152,7 @@ sub openslxInit
 	{
 		next unless open(CONFIG, "<$f");
 		if ($cmdlineConfig{'verbose-level'} >= 2) {
-			vlog 0, "reading config-file $f...";
+			vlog(0, "reading config-file $f...");
 		}
 		while (<CONFIG>) {
 			chomp;
@@ -192,7 +193,7 @@ sub openslxInit
 	}
 	if ($openslxConfig{'verbose-level'} >= 2) {
 		foreach my $k (sort keys %openslxConfig) {
-			vlog 2, "config-dump: $k = $openslxConfig{$k}";
+			vlog(2, "config-dump: $k = $openslxConfig{$k}");
 		}
 	}
 
@@ -205,7 +206,6 @@ sub openslxInit
 # ------------------------------------------------------------------------------
 sub trInit
 {
-
 	# set the specified locale...
 	setlocale('LC_ALL', $openslxConfig{'locale'});
 
@@ -250,12 +250,19 @@ sub trInit
 					$translations{$k} = $translationsRef->{$k};
 				}
 				$loadedTranslationModule = $trModule;
-				vlog 1, _tr("translations module %s loaded successfully", $trModule);
+				vlog(
+					1,
+					_tr(
+						"translations module %s loaded successfully", $trModule
+					)
+				);
 				last;
 			}
 		}
 		if (!defined $loadedTranslationModule) {
-			vlog 1, "unable to load any translations module for locale '$locale' ($!).";
+			vlog(1,
+				"unable to load any translations module for locale '$locale' ($!)."
+			);
 		}
 	}
 }
@@ -339,7 +346,7 @@ sub invokeCleanupFunctions
 {
 	my @funcNames = keys %cleanupFunctions;
 	foreach my $name (@funcNames) {
-		vlog 2, "invoking cleanup function '$name'...";
+		vlog(2, "invoking cleanup function '$name'...");
 		$cleanupFunctions{$name}->();
 	}
 }
@@ -347,7 +354,7 @@ sub invokeCleanupFunctions
 # ------------------------------------------------------------------------------
 sub slxsystem
 {
-	vlog 2, _tr("executing: %s", join ' ', @_);
+	vlog(2, _tr("executing: %s", join ' ', @_));
 	my $res = system(@_);
 	if ($res > 0) {
 		# check if child got killed, if so we stop, too (unless the signal is
@@ -371,8 +378,7 @@ sub warn
 	$msg =~ s[^][*** ]igms;
 	if ($openslxConfig{'debug-confess'}) {
 		Carp::cluck $msg;
-	}
-	else {
+	} else {
 		chomp $msg;
 		CORE::warn "$msg\n";
 	}
@@ -388,8 +394,7 @@ sub die
 	$msg =~ s[^][*** ]igms;
 	if ($openslxConfig{'debug-confess'}) {
 		confess $msg;
-	}
-	else {
+	} else {
 		chomp $msg;
 		CORE::die "$msg\n";
 	}
@@ -404,16 +409,16 @@ sub instantiateClass
 	unless (eval "require $class") {
 		if ($! == 2) {
 			die _tr("Class <%s> not found!\n", $class);
-		}
-		else {
+		} else {
 			die _tr("Unable to load class <%s> (%s)\n", $class, $@);
 		}
 	}
 	if (defined $requestedVersion) {
 		my $classVersion = $class->VERSION;
 		if ($classVersion < $requestedVersion) {
-			die _tr('Could not load class <%s> (Version <%s> required, but <%s> found)',
-					$class, $requestedVersion, $classVersion);
+			die _tr(
+				'Could not load class <%s> (Version <%s> required, but <%s> found)',
+				$class, $requestedVersion, $classVersion);
 		}
 	}
 	return $class->new;

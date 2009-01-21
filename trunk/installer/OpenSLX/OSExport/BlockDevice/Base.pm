@@ -8,38 +8,55 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# ISC.pm
-#	- provides ISC-specific implementation of DHCP export.
+# Base.pm
+#	- provides empty base of the OpenSLX OSExport::BlockDevice API.
 # -----------------------------------------------------------------------------
-package OpenSLX::Export::DHCP::ISC;
+package OpenSLX::OSExport::BlockDevice::Base;
 
-use vars qw(@ISA $VERSION);
+use vars qw($VERSION);
 $VERSION = 1.01;		# API-version . implementation-version
 
-################################################################################
-### This class provides an ISC specific implementation for DHCP export.
-################################################################################
 use strict;
 use Carp;
+
 use OpenSLX::Basics;
+use OpenSLX::Utils;
 
 ################################################################################
-### implementation
+### interface methods
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {};
-	return bless $self, $class;
+	confess "Creating OpenSLX::OSExport::BlockDevice::Base-objects directly makes no sense!";
 }
 
-sub execute
+sub initialize
 {
-	my $self = shift;
-	my $clients = shift;
-
-	vlog(1, _tr("writing dhcp-config for %s clients", scalar(@$clients)));
-	foreach my $client (@$clients) {
-print "ISC-DHCP: $client->{name}\n";
-	}
 }
+
+sub getExportPort
+{
+}
+
+sub generateExportURI
+{
+}
+
+sub requiredBlockDeviceModules
+{
+}
+
+sub showExportConfigInfo
+{
+}
+
+1;
+################################################################################
+
+=pod
+
+=head1 NAME
+
+OpenSLX::OSExport::BlockDevice::Base - the base class for all OSExport::BlockDevices
+
+=cut

@@ -27,30 +27,26 @@ use lib "$FindBin::RealBin";
 use lib "$FindBin::RealBin/../lib";
 
 use lib "$FindBin::RealBin/../config-db";
-	# development path to config-db
+# development path to config-db
 
 use OpenSLX::Basics;
 use OpenSLX::OSExport::Engine;
 
-my (
-	$helpReq,
-	$manReq,
-	$verbose,
-	$versionReq,
-);
+my ($helpReq, $manReq, $verbose, $versionReq,);
 
 GetOptions(
-	'help|?' => \$helpReq,
-	'man' => \$manReq,
+	'help|?'  => \$helpReq,
+	'man'     => \$manReq,
 	'verbose' => \$verbose,
 	'version' => \$versionReq,
-) or pod2usage(2);
+  )
+  or pod2usage(2);
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
 if ($manReq) {
 	$ENV{LANG} = 'en_EN';
-		# avoid dubious problem with perldoc in combination with UTF-8 that
-		# leads to strange dashes and single-quotes being used
-	pod2usage(-verbose => 2)
+	# avoid dubious problem with perldoc in combination with UTF-8 that
+	# leads to strange dashes and single-quotes being used
+	pod2usage(-verbose => 2);
 }
 if ($versionReq) {
 	system('slxversion');
@@ -63,46 +59,56 @@ my $action = shift @ARGV;
 
 if ($action =~ m[^list-ex]i) {
 	print _tr("List of exported vendor-OSes:\n");
-	foreach my $type (sort keys %supportedExportTypes) {
-		print join('',	map {
-							s[^.+/][];
-							"\t$type/$_\n";
-						}
-						grep {
-							# filter out RSYNC_TMP folders:
-							$_ !~ m[###];
-						}
-						sort <$openslxConfig{'public-path'}/export/$type/*>);
+	foreach my $type (sort keys %supportedExportFileSystems) {
+		my @files = <$openslxConfig{'public-path'}/export/$type/*>;
+		print join(
+			'',
+			map {
+				s[^.+/][];
+				"\t$type/$_\n";
+			  }
+			  grep {
+				# filter out RSYNC_TMP folders:
+				$_ !~ m[###];
+			  }
+			  sort @files
+		);
 	}
 } elsif ($action =~ m[^list-in]i) {
+	my @files = <$openslxConfig{'private-path'}/stage1/*>;
 	print _tr("List of installed vendor-OSes:\n");
-	print join('', map {
-					s[^.+/][];
-					"\t$_\n";
-				   }
-				   sort <$openslxConfig{'private-path'}/stage1/*>);
+	print join(
+		'',
+		map {
+			s[^.+/][];
+			"\t$_\n";
+		  }
+		  sort @files    
+	);
 } elsif ($action =~ m[^list-ty]i) {
 	print _tr("List of supported export types:\n\t");
-	print join("\n\t", sort keys %supportedExportTypes)."\n";
+	print join("\n\t", sort @supportedExportTypes) . "\n";
 } elsif ($action =~ m[^export]i) {
 	if (scalar(@ARGV) != 2) {
-		print STDERR _tr("You need to specify exactly one vendor-os-name and one export-type!\n");
+		print STDERR _tr(
+			"You need to specify exactly one vendor-os-name and one export-type!\n"
+		);
 		pod2usage(2);
 	}
 	my $vendorOSName = shift @ARGV;
-	my $exportType = shift @ARGV;
+	my $exportType   = shift @ARGV;
 
 	# we chdir into the script's folder such that all relative paths have
 	# a known starting point:
 	chdir($FindBin::RealBin)
-		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	  or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 
 	# create OSExport-engine for given export type and start it:
 	my $engine = OpenSLX::OSExport::Engine->new;
 	$engine->initializeForNew($vendorOSName, $exportType);
 	if (!-e $engine->{'vendor-os-path'}) {
 		die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
-				$engine->{'vendor-os-path'});
+			$engine->{'vendor-os-path'});
 	}
 	$engine->exportVendorOS();
 } elsif ($action =~ m[^remove]i) {
@@ -115,23 +121,23 @@ if ($action =~ m[^list-ex]i) {
 	# we chdir into the script's folder such that all relative paths have
 	# a known starting point:
 	chdir($FindBin::RealBin)
-		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	  or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 
 	# create OSExport-engine for given export type and start it:
 	my $engine = OpenSLX::OSExport::Engine->new;
 	$engine->initializeFromExisting($exportName);
 	$engine->purgeExport();
 } else {
-	print STDERR _tr("You need to specify exactly one action:
+	print STDERR _tr(
+		"You need to specify exactly one action:
 	export
 	list-exported
 	list-installed
 	list-types
 	remove
-Try '%s --help' for more info.\n", $0);
+Try '%s --help' for more info.\n", $0
+	);
 }
-
-
 
 =head1 NAME
 
@@ -192,13 +198,16 @@ in different flavors:
 NFS (network file system) is a well established networking file system, which
 is supported by LINUX since long.
 
-=item B<    Export Type 'nbd'>
+=item B<    Export Type 'sqfs-nbd'>
 
-A rather modern concept is the network block device, which basically "transports"
-a block device over the network (from server to client), making it possible to
-use more or less any file system over the network. In this particular case,
-a squash-FS is being used, which is a filesystem providing very good compression,
+Squash-FS is a rather modern filesystem providing very good compression,
 resulting in considerably reduced network traffic during boot (and execution).
+However, in order to mount a squash-fs that resides on the server, the client
+has to get access to it first. This can be established via a network block 
+device, which basically "transports" a block device over the network (from 
+server to client), making it possible to use more or less any file system over 
+the network. 
+So, this example translates to 'use a squashfs on a network block device'.
 
 =back
 
@@ -247,7 +256,7 @@ resulting NFS-export will live in C</srv/openslx/export/nfs/suse-10.2>.
 
 =over 8
 
-=item B<<     slxos-export export ubuntu-6.10 nbd >>
+=item B<<     slxos-export export ubuntu-6.10 sqfs-nbd >>
 
 Exports the installed vendor-OS ubuntu-6.10 via nbd, the resulting
 Squash-FS will live in C</srv/openslx/export/nbd/ubuntu-6.10>.
@@ -289,3 +298,4 @@ Please refer to the C<slxsettings>-manpage for a more detailed description
 of these options.
 
 =cut
+

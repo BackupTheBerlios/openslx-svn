@@ -40,7 +40,7 @@ sub copyFile
 
 	system("mkdir -p $targetDir") 	unless -d $targetDir;
 	my $target = "$targetDir/$targetFileName";
-	vlog 2, _tr("copying '%s' to '%s'", $fileName, $target);
+	vlog(2, _tr("copying '%s' to '%s'", $fileName, $target));
 	if (system("cp -p $fileName $target")) {
 		die _tr("unable to copy file '%s' to dir '%s' (%s)",
 				$fileName, $target, $!);

@@ -199,7 +199,7 @@ sub folderContainsFiles
 		$result = 1 if -f;
 	};
 	find({ wanted => $wanted, follow_fast => 1 }, $folder);
-	vlog 2, "result for folderContainsFiles($folder): $result\n";
+	vlog(2, "result for folderContainsFiles($folder): $result\n");
 	return $result;
 }
 
@@ -214,7 +214,7 @@ sub digestAttributes
 			sort { $a cmp $b }
 			grep { isAttribute($_) } keys %$attrs;
 
-	vlog 3, "Attribute-string: $attrsAsString";
+	vlog(3, "Attribute-string: $attrsAsString");
 	use Digest::MD5 qw(md5_hex);
 	return md5_hex($attrsAsString);
 }
@@ -279,14 +279,14 @@ sub copyExternalSystemConfig
 
 	# first copy default files ...
 	my $defaultConfigPath = "$clientConfigPath/default";
-	vlog 2, "checking $defaultConfigPath for default config...";
+	vlog(2, "checking $defaultConfigPath for default config...");
 	if (-d $defaultConfigPath) {
 		slxsystem("cp -a $defaultConfigPath/* $targetPath");
 	}
 	# ... now pour system-specific configuration on top (if any):
 	my $systemSpecConfigPath
 		= "$clientConfigPath/$systemName/default";
-	vlog 2, "checking $systemSpecConfigPath for system config...";
+	vlog(2, "checking $systemSpecConfigPath for system config...");
 	if (folderContainsFiles($systemSpecConfigPath)) {
 		slxsystem("cp -a $systemSpecConfigPath/* $targetPath");
 	}
@@ -295,7 +295,7 @@ sub copyExternalSystemConfig
 		# configuration on top (if any):
 		my $clientSpecConfigPath
 			= "$clientConfigPath/$systemName/$clientName";
-		vlog 2, "checking $clientSpecConfigPath for client config...";
+		vlog(2, "checking $clientSpecConfigPath for client config...");
 		if (folderContainsFiles($clientSpecConfigPath)) {
 			slxsystem("cp -a $clientSpecConfigPath/* $targetPath")
 		}
@@ -309,7 +309,7 @@ sub createTarOfPath
 	my $destinationPath = shift;
 
 	my $tarFile = "$destinationPath/$tarName";
-	vlog 1, _tr('creating tar %s', $tarFile);
+	vlog(1, _tr('creating tar %s', $tarFile));
 	return		if $dryRun;
 
 	mkdir $destinationPath;
@@ -363,7 +363,7 @@ sub writePXEMenus
 		my $externalClientID = externalIDForClient($client);
 		my $pxeFile = "$pxeConfigPath/$externalClientID";
 		my $clientAppend = $client->{kernel_params};
-		vlog 1, _tr("writing PXE-file %s", $pxeFile);
+		vlog(1, _tr("writing PXE-file %s", $pxeFile));
 		next	if $dryRun;
 		open(PXE, ">$pxeFile")		or die "unable to write to $pxeFile";
 		print PXE $pxeTemplate;
@@ -399,7 +399,7 @@ sub generateInitalRamFS
 	my $osExportEngine = instantiateClass("OpenSLX::OSExport::Engine");
 	$osExportEngine->initializeFromExisting($info->{export}->{name});
 
-	vlog 1, _tr('generating initialramfs %s/initramfs', $pxeVendorOSPath);
+	vlog(1, _tr('generating initialramfs %s/initramfs', $pxeVendorOSPath));
 	my $cmd = "$openslxConfig{'base-path'}/bin/mkdxsinitrd ";
 	if (length($info->{attr_ramfs_nicmods}) > 0) {
 		$cmd .= qq[-n "$info->{attr_ramfs_nicmods}" ];
@@ -449,7 +449,7 @@ sub writeSystemPXEFiles
 
 	my $targetKernel = "$pxeVendorOSPath/$kernelName";
 	if (!-e $targetKernel) {
-		vlog 1, _tr('copying kernel %s to %s', $kernelFile, $targetKernel);
+		vlog(1, _tr('copying kernel %s to %s', $kernelFile, $targetKernel));
 		slxsystem(qq[cp -p "$kernelFile" "$targetKernel"])		unless $dryRun;
 	}
 	$vendorOSInitramfsMap{$info->{'vendor-os'}->{id}}++;
@@ -461,7 +461,7 @@ sub writeSystemPXEFiles
 
 sub writeDhcpConfig
 {
-vlog 0, _tr("sorry, exporting dhcp data is not implemented yet!");
+vlog(0, _tr("sorry, exporting dhcp data is not implemented yet!"));
 	my $dhcpModule = "OpenSLX::Export::DHCP::$dhcpType";
 	if (!eval "require $dhcpModule") {
 		die _tr("unable to load DHCP-Export backend '%s'! (%s)\n", $dhcpModule, $@);
@@ -493,15 +493,15 @@ sub writeClientConfigurationsForSystem
 		mergeAttributes($client, $info);
 
 		my $clientAttrDigest = digestAttributes($client);
-		vlog 2, _tr("attribute-digest for client '%s' is '%s'", $client->{name},
-				$clientAttrDigest);
+		vlog(2, _tr("attribute-digest for client '%s' is '%s'", $client->{name},
+				$clientAttrDigest));
 		# export client-specific config only if attributes are different
 		# from system and/or a client-specific config-folder exists:
 		if ($clientAttrDigest ne $info->{'attr-digest'}
 		|| -d $clientConfigPath) {
 
-			vlog 1, _tr("creating config-tgz for client %d:%s", $client->{id},
-						$client->{name});
+			vlog(1, _tr("creating config-tgz for client %d:%s", $client->{id},
+						$client->{name}));
 			$clientSystemConfCount++;
 
 			# merge default, system and client configuration files into
@@ -532,8 +532,8 @@ sub writeSystemConfiguration
 
 	$openslxDB->mergeDefaultAttributesIntoSystem($info);
 	$info->{'attr-digest'} = digestAttributes($info);
-	vlog 2, _tr("attribute-digest for system '%s' is '%s'", $info->{name},
-				$info->{'attr-digest'});
+	vlog(2, _tr("attribute-digest for system '%s' is '%s'", $info->{name},
+				$info->{'attr-digest'}));
 	my $attrFile = "$buildPath/initramfs/machine-setup";
 	writeAttributesToFile($info, $attrFile);
 
@@ -555,7 +555,7 @@ sub writeConfigurations
 	foreach my $system (@systems) {
 		next 	unless $system->{id} > 0;
 
-		vlog 0, _tr('exporting system %d:%s', $system->{id}, $system->{name});
+		vlog(0, _tr('exporting system %d:%s', $system->{id}, $system->{name}));
 		$systemConfCount++;
 
 		my $info = $openslxDB->aggregatedSystemFileInfoFor($system);
