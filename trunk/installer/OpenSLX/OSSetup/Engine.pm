@@ -55,7 +55,7 @@ use vars qw(%supportedDistros);
 	'suse-10.1'
 		=> { module => 'SUSE_10_1', support => 'clone,install' },
 	'suse-10.1_x86_64'
-		=> { module => 'SUSE_10_1_x86_64', support => 'clone' },
+		=> { module => 'SUSE_10_1_x86_64', support => 'clone,install' },
 	'suse-10.2'
 		=> { module => 'SUSE_10_2', support => 'clone,install' },
 	'suse-10.2_x86_64'
