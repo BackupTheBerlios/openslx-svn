@@ -61,7 +61,7 @@ generelle Installation einer Distribution in ein beliebiges Unterverzeichnis
 auf dem SLX-Server ist in Vorbereitung. Das ersetzt dann auch das Skript 
 ld4/installer/ld4-inst, welches derzeit die Installation übernimmt. Es stellt 
 die von der Vorgaengerversion bekannten Fragen. Durch ein vorheriges make install
-werden Verzeichnisse /var/lib/openslx, /usr/share/openslx auf dem Server angelegt, 
+werden Verzeichnisse /var/opt/openslx, /opt/openslx auf dem Server angelegt, 
 in dem sich die meisten Konfigurationsdateien befinden und Projektdaten landen.
 
 Das Installationsskript ruft ld4/initrd/mkdxsinitrd auf, welches ein Initramfs
