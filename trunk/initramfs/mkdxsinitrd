@@ -4,7 +4,7 @@
 #               ramdisks for linux diskless clients (stage2 system
 #               setup)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-12-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 17-12-2006
 #               Nico Dietrich
 #               Felix Endres
 #               <mj0@uni-freiburg.de> (xenbr), 12-12-2006
@@ -578,13 +578,12 @@ else
     cobi ${bbins} bin &>/dev/null || \
     echo "Program ${bbins} not found; could be most probably ignored"
   done
+  # if nfs is used as clients root filesystem
+  cobi portmap bin
+  mkdir -p ${INSTDIR}/var/lib/nfs/state
 fi
 
 mkdir -p ${INSTDIR}/var/{lib,run}
-
-# if nfs is used as clients root filesystem
-cobi portmap bin
-mkdir -p ${INSTDIR}/var/lib/nfs/state
 
 # if nbd or dnbd is used as clients root filesystem
 if [ -n "${FSMODULES}" ] ; then

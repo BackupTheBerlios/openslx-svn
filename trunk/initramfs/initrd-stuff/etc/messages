@@ -2,10 +2,10 @@
 # bootup (within initialramfs) for OpenSLX linux diskless clients version 4
 # this file could be used for localization of error messages 
 #
-# Dirk von Suchodoletz <dvs@openslx.com>, 29-10-2006
+# Dirk von Suchodoletz <dvs@openslx.com>, 17-10-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.org
+# (c) 2006 - OpenSLX.ORG Project
 
 # messages from (slx) init
 init_errmsg="functions file contains a lot of script \
@@ -109,8 +109,6 @@ error_dhclient="  Fatal error occured while trying to run dhclient.\n\
 $error_dhcp"
 error_dhcpcd="  Fatal error occured while trying to run dhcpcd.\n$error_dhcp"
 error_pump="  Config via pump not implemented yet.\n$error_dhcp"
-error_ipconf="  Config via ipconfig (from klibc) not implemented yet.\n\
-$error_dhcp"
 error_ldapcfg="  The configuration via ldap is not implemented yet."
 error_errdcfg="  Did not get any configuration data via dhcp until now ..."
 error_errfcfg="  Did not get any configuration data via tftp until now ..."

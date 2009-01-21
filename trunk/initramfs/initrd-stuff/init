@@ -2,7 +2,7 @@
 # main script for new type of initial ramdisk for OpenSLX linux diskless
 # clients version 4
 #
-# Dirk von Suchodoletz <dirk@goe.net>, 15-12-2006
+# Dirk von Suchodoletz <dirk@goe.net>, 17-12-2006
 # <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
@@ -200,16 +200,18 @@ done
 # at this point a timer should be started to ensure an automated reboot
 # or halt of the machine if SLX init does not succeed (e.g. missing kernel
 # module for the network adaptor)
-# fixme/testme!!
-errorhalt () {
 if [ "${DEBUGLEVEL}" -lt 4 ] ; then
-  [ ! -f /proc/version ] && mount -n -t proc proc /proc
-  [ ! -f /proc/sysrq-trigger ] && echo -e $init_nosysrq
-  sleep 120
-  echo "o" > /proc/sysrq-trigger
+  [ -x /bin/busybox ] && shtype=a
+  cat<<EOF > /bin/watchdog
+#!/bin/${shtype}sh
+echo \$$ > /tmp/watchdogpid
+[ ! -f /proc/version ] && mount -n -t proc proc /proc
+sleep 120
+echo "o" > /proc/sysrq-trigger
+EOF
+  chmod u+x /bin/watchdog
+  watchdog &
 fi
-}
-errorhalt &
 
 # check if at least one type of IP configuration is availabe
 if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
@@ -569,7 +571,10 @@ umount -n /sys || error "$init_errsys" nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1
 mount -n --move /dev /mnt/dev
 chmod a+rwxt /mnt/dev/shm
-killall -9 udevd sleep usleep 2>/dev/null
+killall -9 udevd 2>/dev/null
+# kill the watchdog (errhalt)
+[ -f /tmp/watchdog ] && kill $(cat /tmp/watchdogpid) 2>/dev/null
+# runtimer
 [ $DEBUGLEVEL -eq 8 ] && echo "** SLX init ended near $(sysup)"
 umount -n /proc
 # unset old environment variables
