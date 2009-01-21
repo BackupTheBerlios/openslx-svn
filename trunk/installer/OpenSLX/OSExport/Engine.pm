@@ -80,7 +80,6 @@ sub initialize
 
 	$self->{'vendor-os-name'} = $vendorOSName;
 	$self->{'export-type'} = $exportType;
-	$self->{'export-name'} = "$vendorOSName-$exportType";
 	$vendorOSName =~ m[^(.+?\-[^-]+)];
 	my $distroName = $1;
 	$self->{'distro-name'} = $distroName;
@@ -181,9 +180,12 @@ sub addExportToConfigDB
 		$openslxDB->connect();
 
 		# insert new export if it doesn't already exist in DB:
-		my $exportName = $self->{'export-name'};
+		my $exportName = $self->{'vendor-os-name'};
 		my $export
-			= $openslxDB->fetchExportByFilter({'name' => $exportName});
+			= $openslxDB->fetchExportByFilter({
+				'name' => $exportName,
+				'type' => $self->{'export-type'},
+			});
 		if (defined $export) {
 			vlog 0, _tr("No need to change export '%s' in OpenSLX-database.\n",
 						$exportName);
