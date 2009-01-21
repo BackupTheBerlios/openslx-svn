@@ -93,8 +93,6 @@ use OpenSLX::Basics;
 use OpenSLX::DBSchema;
 use OpenSLX::Utils;
 
-our $configDBInstance;
-
 =head1 Methods
 
 =head2 Basic Methods
@@ -112,25 +110,12 @@ new will return the *same* object
 =cut
 
 sub new
-{	# TODO: it would be better to allow new() to do what any caller expects and
-	# rename this to instance() or anything similar ...
+{
 	my $class = shift;
 
-	if ($configDBInstance) {
-		return $configDBInstance;
-	}
-
-	$configDBInstance = {
-		connectedCount => 0,
+	my $self = {
 	};
-	return bless $configDBInstance, $class;
-}
-
-sub DESTROY
-{
-	my $self = shift;
-
-	$configDBInstance = undef;
+	return bless $self, $class;
 }
 
 =item C<connect()>
@@ -165,49 +150,45 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 	# hash-ref with any additional info that might be required by
 	# specific metadb-module (not used yet)
 
-	if (!$self->{connectedCount}) {
+	my $dbType = $openslxConfig{'db-type'};
+		# name of underlying database module...
 
-		my $dbType = $openslxConfig{'db-type'};
-			# name of underlying database module...
-
-		my $dbModuleName = "OpenSLX/MetaDB/$dbType.pm";
-		my $dbModule = "OpenSLX::MetaDB::$dbType";
-		unless (eval { require $dbModuleName } ) {
-			if ($! == 2) {
-				die _tr(
-					"Unable to load DB-module <%s>\nthat database type is not supported (yet?)\n",
-					$dbModuleName
-				);
-			} else {
-				die _tr("Unable to load DB-module <%s> (%s)\n", $dbModuleName, $@);
-			}
-		}
-		my $metaDB = $dbModule->new();
-		if (!$metaDB->connect($dbParams)) {
-			warn _tr("Unable to connect to DB-module <%s>\n%s", $dbModuleName, $@);
-			warn _tr("These DB-modules seem to work ok:");
-			foreach my $dbMod ('mysql', 'SQLite') {
-				my $fullDbModName = "DBD/$dbMod.pm";
-				if (eval { require $fullDbModName }) {
-					vlog(0, "\t$dbMod\n");
-				}
-			}
+	my $dbModuleName = "OpenSLX/MetaDB/$dbType.pm";
+	my $dbModule = "OpenSLX::MetaDB::$dbType";
+	unless (eval { require $dbModuleName } ) {
+		if ($! == 2) {
 			die _tr(
-				'Please use slxsettings if you want to switch to another db-type.');
+				"Unable to load DB-module <%s>\nthat database type is not supported (yet?)\n",
+				$dbModuleName
+			);
+		} else {
+			die _tr("Unable to load DB-module <%s> (%s)\n", $dbModuleName, $@);
 		}
-
-		$self->{'db-type'} = $dbType;
-		$self->{'meta-db'} = $metaDB;
-		foreach my $tk (keys %{$DbSchema->{tables}}) {
-			$metaDB->schemaDeclareTable($tk, $DbSchema->{tables}->{$tk});
+	}
+	my $metaDB = $dbModule->new();
+	if (!$metaDB->connect($dbParams)) {
+		warn _tr("Unable to connect to DB-module <%s>\n%s", $dbModuleName, $@);
+		warn _tr("These DB-modules seem to work ok:");
+		foreach my $dbMod ('mysql', 'SQLite') {
+			my $fullDbModName = "DBD/$dbMod.pm";
+			if (eval { require $fullDbModName }) {
+				vlog(0, "\t$dbMod\n");
+			}
 		}
-
-		_checkAndUpgradeDBSchemaIfNecessary($metaDB);
+		die _tr(
+			'Please use slxsettings if you want to switch to another db-type.'
+		);
 	}
 
-	$self->{connectedCount}++;
+	$self->{'db-type'} = $dbType;
+	$self->{'meta-db'} = $metaDB;
+	foreach my $tk (keys %{$DbSchema->{tables}}) {
+		$metaDB->schemaDeclareTable($tk, $DbSchema->{tables}->{$tk});
+	}
 
-	return;
+	_checkAndUpgradeDBSchemaIfNecessary($metaDB);
+
+	return 1;
 }
 
 =item C<disconnect()>
@@ -220,18 +201,15 @@ sub disconnect
 {
 	my $self = shift;
 
-	if ($self->{connectedCount} == 1) {
-		$self->{'meta-db'}->disconnect();
-	}
-	$self->{connectedCount}--;
+	$self->{'meta-db'}->disconnect();
 
-	return;
+	return 1;
 }
 
 =item C<startTransaction()>
 
-Opens a database transaction - most useful if you want to make sure a couple of changes
-apply as a whole or not at all.
+Opens a database transaction - most useful if you want to make sure a couple of 
+changes apply as a whole or not at all.
 
 =cut
 
@@ -240,13 +218,13 @@ sub startTransaction
 	my $self = shift;
 
 	$self->{'meta-db'}->startTransaction();
-	return;
+	return 1;
 }
 
 =item C<commitTransaction()>
 
-Commits a database transaction - so all changes done inside of this transaction will
-be applied to the database.
+Commits a database transaction - so all changes done inside of this transaction 
+will be applied to the database.
 
 =cut
 
@@ -255,13 +233,13 @@ sub commitTransaction
 	my $self = shift;
 
 	$self->{'meta-db'}->commitTransaction();
-	return;
+	return 1;
 }
 
 =item C<rollbackTransaction()>
 
-Revokes a database transaction - so all changes done inside of this transaction will
-be undone.
+Revokes a database transaction - so all changes done inside of this transaction 
+will be undone.
 
 =cut
 
@@ -270,7 +248,7 @@ sub rollbackTransaction
 	my $self = shift;
 
 	$self->{'meta-db'}->rollbackTransaction();
-	return;
+	return 1;
 }
 
 =back
@@ -2024,7 +2002,7 @@ sub emptyDatabase
 
 	my @vendorOSIDs = map { $_->{id} } $self->fetchVendorOSByFilter();
 	$self->removeVendorOS(\@vendorOSIDs);
-	return;
+	return 1;
 }
 
 =back
@@ -2062,7 +2040,7 @@ sub mergeDefaultAttributesIntoSystem
 
 	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
 	pushAttributes($system, $defaultClient);
-	return;
+	return 1;
 }
 
 =item C<mergeDefaultAndGroupAttributesIntoClient($client)>
@@ -2105,7 +2083,7 @@ sub mergeDefaultAndGroupAttributesIntoClient
 	vlog(3, _tr('merging from default client...'));
 	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
 	mergeAttributes($client, $defaultClient);
-	return;
+	return 1;
 }
 
 =item C<aggregatedSystemIDsOfClient($client)>
@@ -2348,7 +2326,7 @@ sub mergeAttributes
 			$target->{$key} = $sourceVal;
 		}
 	}
-	return;
+	return 1;
 }
 
 =item C<pushAttributes($target, $source)>
@@ -2385,7 +2363,7 @@ sub pushAttributes
 			$target->{$key} = $sourceVal;
 		}
 	}
-	return;
+	return 1;
 }
 
 =item C<externalIDForSystem($system)>
@@ -2600,7 +2578,7 @@ sub _checkAndUpgradeDBSchemaIfNecessary
 	} else {
 		vlog(1, _tr('DB matches current schema version %s', $currVersion));
 	}
-	return;
+	return 1;
 }
 
 sub _aref
@@ -2618,7 +2596,3 @@ sub _unique
 }
 
 1;
-
-=back
-
-=cut

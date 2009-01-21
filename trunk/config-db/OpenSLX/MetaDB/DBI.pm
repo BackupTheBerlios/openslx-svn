@@ -86,14 +86,15 @@ sub _doSelect
 
 	vlog(3, _trim($sql));
 	my $sth = $dbh->prepare($sql)
-	  or
-	  croak _tr(q[Can't prepare SQL-statement <%s> (%s)], $sql, $dbh->errstr);
+		or croak _tr(
+			q[Can't prepare SQL-statement <%s> (%s)], $sql, $dbh->errstr
+		);
 	$sth->execute()
-	  or
-	  croak _tr(q[Can't execute SQL-statement <%s> (%s)], $sql, $dbh->errstr);
-	my (@vals, $row);
-	while ($row = $sth->fetchrow_hashref()) {
-
+		or croak _tr(
+			q[Can't execute SQL-statement <%s> (%s)], $sql, $dbh->errstr
+		);
+	my @vals;
+	while (my $row = $sth->fetchrow_hashref()) {
 		if (defined $resultCol) {
 			return $row->{$resultCol} unless wantarray();
 			push @vals, $row->{$resultCol};
@@ -113,10 +114,11 @@ sub fetchVendorOSByFilter
 
 	$resultCols = '*' unless (defined $resultCols);
 	my $sql = "SELECT $resultCols FROM vendor_os";
-	my $connector;
+	my ($connector, $quotedVal);
 	foreach my $col (keys %$filter) {
 		$connector = !defined $connector ? 'WHERE' : 'AND';
-		$sql .= " $connector $col = '$filter->{$col}'";
+		$quotedVal = $self->{dbh}->quote($filter->{$col});
+		$sql .= " $connector $col = $quotedVal";
 	}
 	return $self->_doSelect($sql);
 }

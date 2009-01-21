@@ -35,6 +35,27 @@ sub new
 	return bless $self, $class;
 }
 
+sub databaseExists
+{
+	my $self = shift;
+	
+	my $fullDBPath = $self->_getDBPath() . "/$openslxConfig{'db-name'}";
+print "$fullDBPath\n";
+	return -e $fullDBPath;
+}
+
+sub dropDatabase
+{
+	my $self = shift;
+	
+	if ($self->{dbh}) {
+		die "need to disconnect before you can drop the database!";
+	}
+	
+	my $fullDBPath = $self->_getDBPath() . "/$openslxConfig{'db-name'}";
+	system("rm -rf $fullDBPath") if -e $fullDBPath;
+}
+
 sub connect		## no critic (ProhibitBuiltinHomonyms)
 {
 	my $self = shift;
@@ -42,9 +63,7 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 	my $dbSpec = $openslxConfig{'db-spec'};
 	if (!defined $dbSpec) {
 		# build $dbSpec from individual parameters:
-		my $dbBasepath = "$openslxConfig{'private-path'}/db";
-		my $dbDatadir  = 'sqlite';
-		my $dbPath     = "$dbBasepath/$dbDatadir";
+		my $dbPath = $self->_getDBPath;
 		system("mkdir -p $dbPath") unless -e $dbPath;
 		$dbSpec = "dbname=$dbPath/$openslxConfig{'db-name'}";
 	}
@@ -100,6 +119,13 @@ sub schemaAddColumns
 		$self->_doUpdate($table, undef, $newColDefaultVals);
 	}
 	return;
+}
+
+sub _getDBPath
+{
+	my $self = shift;
+
+	return "$openslxConfig{'private-path'}/db/sqlite";
 }
 
 1;
