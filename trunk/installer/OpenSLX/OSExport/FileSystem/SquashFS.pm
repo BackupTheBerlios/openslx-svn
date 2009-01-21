@@ -63,7 +63,7 @@ sub exportVendorOS
 		= $self->_mapRsyncFilter2Regex($source, $includeExcludeList);
 	vlog(1, _tr("using include-exclude-filter:\n%s\n", $includeExcludeList));
 	my $target = $self->{'export-path'};
-#	$self->_createSquashFS($source, $target, $includeExcludeList);
+	$self->_createSquashFS($source, $target, $includeExcludeList);
 	$self->_addBlockDeviceTagToExport($target);
 }
 
