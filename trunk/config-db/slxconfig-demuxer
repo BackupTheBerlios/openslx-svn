@@ -89,7 +89,7 @@ if ($manReq) {
 	pod2usage(-verbose => 2)
 }
 if ($versionReq) {
-	system('slxversion');
+	slxsystem('slxversion');
 	exit 1;
 }
 
@@ -115,8 +115,8 @@ if (!$dryRun) {
 }
 my $tftpbootPath = $openslxConfig{'tftpboot-path'};
 if (!$dryRun) {
-	system("rm -rf $tftpbootPath/client-config/* $tftpbootPath/pxe/*");
-	system("mkdir -p $tftpbootPath/client-config $tftpbootPath/pxe/pxelinux.cfg");
+	slxsystem("rm -rf $tftpbootPath/client-config/* $tftpbootPath/pxe/*");
+	slxsystem("mkdir -p $tftpbootPath/client-config $tftpbootPath/pxe/pxelinux.cfg");
 	if (!-d $tftpbootPath) {
 		die _tr("Unable to create or access tftpboot-path '%s'!", $tftpbootPath);
 	}
@@ -134,7 +134,7 @@ print "$wr $systemConfCount systems and $clientSystemConfCount client-configurat
 
 $openslxDB->disconnect();
 
-system("rm -rf $tempPath")		unless $dryRun || length($tempPath) < 12;
+slxsystem("rm -rf $tempPath")		unless $dryRun || length($tempPath) < 12;
 
 exit;
 
@@ -176,6 +176,22 @@ sub unlockScript
 	unlink $lockFile;
 }
 
+sub digestAttributes
+{	# returns a digest-string for the given attribute hash, in order to
+	# facilitate comparing different attribute hashes.
+	my $attrs = shift;
+
+	my $attrsAsString
+		= 	join ';',
+			map { "$_=$attrs->{$_}"; }
+			sort { $a cmp $b }
+			grep { isAttribute($_) } keys %$attrs;
+
+	vlog 3, "Attribute-string: $attrsAsString";
+	use Digest::MD5 qw(md5_hex);
+	return md5_hex($attrsAsString);
+}
+
 sub writeAttributesToFile
 {
 	my $attrHash = shift;
@@ -213,24 +229,40 @@ sub copyExternalSystemConfig
 	# config folder (var/lib/openslx/config/...) into a temporary folder
 	my $systemName = shift;
 	my $targetPath = shift;
-
-	return		if $dryRun;
+	my $clientName = shift;		# optional
 
 	if ($targetPath !~ m[$tempPath]) {
+		# bail if target-path isn't within temp folder, as we do not dare
+		# executing 'rm -rf' in that case!
 		die _tr("system-error: illegal target-path <%s>!", $targetPath);
 	}
-	system("rm -rf $targetPath");
+	return		if $dryRun;
+
+	slxsystem("rm -rf $targetPath");
 	mkdir $targetPath;
 
-	# first copy default files...
+	# first copy default files ...
 	my $defaultConfigPath = "$clientConfigPath/default";
+	vlog 2, "checking $defaultConfigPath for default config...";
 	if (-d $defaultConfigPath) {
-		system("cp -r $defaultConfigPath/* $targetPath")		unless $dryRun;
+		slxsystem("cp -a $defaultConfigPath/* $targetPath");
 	}
-	# now pour system-specific configuration on top (if any):
-	my $systemConfigPath = "$clientConfigPath/$systemName";
-	if (-d $systemConfigPath) {
-		system("cp -r $systemConfigPath/* $targetPath")		unless $dryRun;
+	# ... now pour system-specific configuration on top (if any):
+	my $systemSpecConfigPath
+		= quotemeta("$clientConfigPath/$systemName/default");
+	vlog 2, "checking $systemSpecConfigPath for system config...";
+	if (-d $systemSpecConfigPath) {
+		slxsystem("cp -a $systemSpecConfigPath/* $targetPath");
+	}
+	if (defined $clientName) {
+		# client has been given, so we finally pour client-specific
+		# configuration on top (if any):
+		my $clientSpecConfigPath
+			= quotemeta("$clientConfigPath/$systemName/$clientName");
+		vlog 2, "checking $clientSpecConfigPath for client config...";
+		if (-d $clientSpecConfigPath) {
+			slxsystem("cp -a $clientSpecConfigPath/* $targetPath")
+		}
 	}
 }
 
@@ -246,7 +278,7 @@ sub createTarOfPath
 
 	mkdir $destinationPath;
 	my $tarCmd = "cd $buildPath && tar czf $tarFile *";
-	if (system("$tarCmd") != 0) {
+	if (slxsystem("$tarCmd") != 0) {
 		die _tr("unable to execute shell-command:\n\t%s \n\t(%s)", $tarCmd, $!);
 	}
 }
@@ -264,12 +296,12 @@ sub writePXEMenus
 	if (!-e "$pxePath/pxelinux.0") {
 		my $pxelinux0Path
 			= "$openslxConfig{'share-path'}/tftpboot/pxelinux.0";
-		system(qq[cp -p "$pxelinux0Path" $pxePath/])		unless $dryRun;
+		slxsystem(qq[cp -p "$pxelinux0Path" $pxePath/])		unless $dryRun;
 	}
 	if (!-e "$pxePath/menu.c32") {
 		my $menuc32Path
 			= "$openslxConfig{'share-path'}/tftpboot/menu.c32";
-		system(qq[cp -p "$menuc32Path" $pxePath/])		unless $dryRun;
+		slxsystem(qq[cp -p "$menuc32Path" $pxePath/])		unless $dryRun;
 	}
 
 	# fetch PXE-template, if any:
@@ -370,7 +402,7 @@ sub writeSystemPXEFiles
 	my $targetKernel = "$pxeVendorOSPath/$kernelName";
 	if (!-e $targetKernel) {
 		vlog 1, _tr('copying kernel %s to %s', $kernelFile, $targetKernel);
-		system(qq[cp -p "$kernelFile" "$targetKernel"])		unless $dryRun;
+		slxsystem(qq[cp -p "$kernelFile" "$targetKernel"])		unless $dryRun;
 	}
 	$vendorOSInitramfsMap{$info->{'vendor-os'}->{id}}++;
 	$info->{'initramfs-name'}
@@ -381,7 +413,7 @@ sub writeSystemPXEFiles
 
 sub writeDhcpConfig
 {
-vlog 0, _tr("sorry, exporting dhcp data is not done yet!");
+vlog 0, _tr("sorry, exporting dhcp data is not implemented yet!");
 	my $dhcpModule = "OpenSLX::Export::DHCP::$dhcpType";
 	if (!eval "require $dhcpModule") {
 		die _tr("unable to load DHCP-Export backend '%s'! (%s)\n", $dhcpModule, $@);
@@ -400,20 +432,45 @@ sub writeClientConfigurationsForSystem
 	my @clientIDs = $openslxDB->aggregatedClientIDsOfSystem($info);
 	my @clients = $openslxDB->fetchClientByID(\@clientIDs);
 	foreach my $client (@clients) {
-		vlog 2, _tr("exporting client %d:%s", $client->{id}, $client->{name});
-		$clientSystemConfCount++;
+		next if $client->{id} == 0;
+			# skip default client, as it doesn't need any config-tgz
+		my $externalSystemID = externalIDForSystem($info);
+		my $externalClientName = externalConfigNameForClient($client);
+		my $clientConfigPath
+			= "$clientConfigPath/$externalSystemID/$externalClientName";
 
-		# merge configurations of client, it's groups, default client and
-		# system and write the resulting attributes to a configuration file:
-		$openslxDB->mergeDefaultAndGroupAttributesIntoClient($client);
-		mergeAttributes($client, $info);
-		writeAttributesToFile($client, $attrFile);
+		my $clientAttrDigest = digestAttributes($client);
+		vlog 2, _tr("attribute-digest for client '%s' is '%s'", $client->{name},
+				$clientAttrDigest);
+		# export client-specific config only if attributes are different
+		# from system and/or a client-specific config-folder exists:
+		if ($clientAttrDigest ne $info->{'attr-digest'}
+		|| -d $clientConfigPath) {
 
-		# create tar containing external system configuration
-		# and client attribute file:
-		my $externalClientID = externalIDForClient($client);
-		createTarOfPath($buildPath, "${externalClientID}.tgz",
-						"$tftpbootPath/client-config/$info->{'external-id'}");
+			vlog 1, _tr("creating config-tgz for client %d:%s", $client->{id},
+						$client->{name});
+			$clientSystemConfCount++;
+
+			# merge configurations of client, it's groups, default client and
+			# system and write the resulting attributes to a configuration file:
+			$openslxDB->mergeDefaultAndGroupAttributesIntoClient($client);
+			mergeAttributes($client, $info);
+			writeAttributesToFile($client, $attrFile);
+
+			# merge default, system and client configuration files into
+			# the system configuration for the current client:
+			copyExternalSystemConfig($externalSystemID, $buildPath,
+									$externalClientName);
+
+			# create tar containing external system configuration
+			# and client attribute file, this time referring to the client
+			# via its external ID (the PXE-style MAC), as the TGZ needs to
+			# be accessed from the client-PC, which doesn't know about the
+			# name it is referred to in the openslx-config-DB:
+			my $externalClientID = externalIDForClient($client);
+			createTarOfPath($buildPath, "${externalClientID}.tgz",
+							"$tftpbootPath/client-config/$info->{'external-id'}");
+		}
 	}
 }
 
@@ -422,10 +479,13 @@ sub writeSystemConfiguration
 	my $info = shift;
 
 	my $buildPath = "$tempPath/build";
-	copyExternalSystemConfig($info->{name}, $buildPath);
+	copyExternalSystemConfig(externalIDForSystem($info), $buildPath);
 
 	my $attrFile = "$buildPath/initramfs/machine-setup";
 	$openslxDB->mergeDefaultAttributesIntoSystem($info);
+	$info->{'attr-digest'} = digestAttributes($info);
+	vlog 2, _tr("attribute-digest for system '%s' is '%s'", $info->{name},
+				$info->{'attr-digest'});
 	writeAttributesToFile($info, $attrFile);
 
 	my $systemPath = "$tftpbootPath/client-config/$info->{'external-id'}";
@@ -435,7 +495,7 @@ sub writeSystemConfiguration
 
 	writeClientConfigurationsForSystem($info, $buildPath, $attrFile);
 
-	system("rm -rf $buildPath")		unless $dryRun;
+	slxsystem("rm -rf $buildPath")		unless $dryRun;
 }
 
 sub writeConfigurations
