@@ -52,7 +52,6 @@ mkdir -p ${devdir}/pts ${devdir}/shm ${devdir}/.udevdb ${devdir}/.udev
 
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
 export date="${slxconf_date}"
-export nwif="eth0"
 
 export DEBUGLEVEL=0
 export KERNEL="${slxconf_kernver}"
@@ -64,6 +63,10 @@ export SLXVERSION="${slxconf_slxver}"
 
 # do not use dnbd cache file
 nodnbdcache="yes"
+
+# set a default LAN interface, might be modified for WLAN or on machines with
+# more than one ethernet card built in
+nwif="eth0"
 
 # mount the important standard directories
 [ ! -f /proc/cpuinfo ] && mount -n -t proc proc /proc
@@ -303,12 +306,15 @@ else
   # redirect console (after /dev/null is available, and /dev mounted)
   [ "${DEBUGLEVEL}" != 8 ] && exec < /dev/console > /dev/null 2>&1
 fi
-# load network adaptor modules
+# load network adaptor modules, check for WLAN specific settings and check
+# for multiple ethernet interfaces (not implemented yet)
 hwautocfg nwmod
 if [ -n "${essid}" ] ; then
   wlanlinksetup
   #echo "Starting shell for testing of WLAN setup procedure"
   #/bin/ash
+else
+  : # check here for the active ethernet link
 fi
 
 # set up loopback networking

@@ -84,12 +84,7 @@ if [ -e /mnt/etc/${D_INITDIR}/ntp ] ; then
     echo -e "ntp:!:13099:0:99999:7:::" >>/mnt/etc/shadow
   fi
   testmkd /mnt/var/lib/ntp/var/run/ntp &>/dev/null
-  if [ "x$start_ntp" = "xinitial" ] ; then
-    echo -e "\t# entries added by $0 (InitRamFS from $date)\n\
-\t( ntpdate -s -b $ntp_servers >${LOGFILE} 2>&1 && {\n\t  which \
-hwclock &>/dev/null && hwclock -w;} ) &" \
-      >>/mnt/etc/${D_INITDIR}/boot.slx
-  elif [ "x$start_ntp" = "xyes" ] ; then
+  if [ "x$start_ntp" = "xyes" ] ; then
     rllinker "ntp" "07" "14"
   fi
 fi
