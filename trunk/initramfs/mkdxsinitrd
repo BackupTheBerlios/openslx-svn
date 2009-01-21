@@ -4,7 +4,7 @@
 #               ramdisks for linux diskless clients (stage2 system
 #               setup)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-10-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-10-2006
 #               Nico Dietrich
 #               Felix Endres
 #               <mj0@uni-freiburg.de> (xenbr), 27-09-2006
@@ -566,6 +566,10 @@ cobi unionctl bin &>/dev/null || \
 cobi cowdev bin &>/dev/null || \
   echo "Program cowdev not found; could be ignored ..."
 
+# if iscsi (or just with modules)??
+# cobi iscsiadm iscsid bin &>/dev/null || \
+#  echo "Program cowdev not found; could be ignored ..."
+
 # distro specific additional stuff
 case "${DISTRO}" in
   debian*)
@@ -660,6 +664,7 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
           ${ddirprefix}/fs/jbd
       ;;
       netloop)
+        # needed for xen stuff
         cobi brctl bin &>/dev/null || \
           echo "Program brctl not found; could be ignored ..."
         mkdir -p ${ddirprefix}/drivers/xen/netback
@@ -668,6 +673,15 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
           ${ddirprefix}/drivers/xen/netback &>/dev/null
         cp ${rdirprefix}/net/bridge/bridge.ko \
           ${ddirprefix}/net/bridge &>/dev/null
+      ;;
+      iscsi_tcp)
+        # iscsi modules
+        # cobi cobi iscsiadm iscsid bin &>/dev/null
+        #mkdir -p ${ddirprefix}/drivers/scsi
+        #for i in scsi_mod scsi_transport_iscsi libiscsi iscsi_tcp; do 
+        #  cp ${rdirprefix}/drivers/scsi/$i.ko
+        #    ${ddirprefix}/drivers/scsi
+        #done
       ;;
     esac
   fi

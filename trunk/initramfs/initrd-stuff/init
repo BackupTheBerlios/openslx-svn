@@ -2,7 +2,7 @@
 # main script for new type of initial ramdisk for OpenSLX linux diskless
 # clients version 4
 #
-# Dirk von Suchodoletz <dirk@goe.net>, 07-09-2006
+# Dirk von Suchodoletz <dirk@goe.net>, 15-10-2006
 # <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
@@ -156,6 +156,9 @@ line in $0\nnfsroot=\"${NFSROOT}\"\n" >> /etc/machine-setup
         ;;
         iscsi)
           echo "Not implemented yet"
+          #iscsiserver=$(uri_token $ROOTFS server)
+          #iscsiport=$(uri_token $ROOTFS port)
+          #iscsitarget=$(uri_token $ROOTFS path)
         ;;
       esac
     ;;
@@ -339,6 +342,17 @@ if [ -n "${nbdmod}" ] ; then
     usleep $i
     mount -n -t $nbdrfst -o $RWRO $RDEV /mnt 2>/dev/null && break
   done
+elif [ -n ${iscsiserver} ] ; then
+  :
+  #if [ -n ${iscsitarget} ] ; then
+  #  echo "InitiatorName=${iscsitarget}">/etc/initiatorname.iscsi
+  #else
+  # discovery
+  #fi
+  #echo -e "node.startup = automatic">/etc/iscsid.conf
+  #iscsid -c /etc/iscsid.conf
+  # the cowloop part has to be moved (option for iscsi devices too)
+  # and should be generalized for nbd, dnbd, iscsi
 fi
 
 # if no type of root filesystem is passed via kernel command line try
