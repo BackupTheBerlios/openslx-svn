@@ -235,7 +235,7 @@ configure() {
   # more information here!! set useful default
   ask "Which debug level should be used? " debuglevel $debuglevel
   [ -z "$debuglevel" ] && debuglevel=0
-  while [[ "101" < "$debuglevel" ]]; do
+  while [ "101" -lt "$debuglevel" ]; do
     echo "The debug level has to be a number from 0 to 100"
     ask "Which debug level should be used? " debuglevel $debuglevel
     [ -z "$debuglevel" ] && debuglevel=0

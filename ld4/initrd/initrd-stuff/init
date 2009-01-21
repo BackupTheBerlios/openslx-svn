@@ -2,7 +2,7 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 01-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 10-05-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -425,8 +425,12 @@ proc\t\t/proc\t\tproc\t\tdefaults\t 0 0\ninitramdevs\t/dev\t\ttmpfs\
 \t\trw\t\t 0 0\ndevpts\t\t/dev/pts\tdevpts\t\tmode=0620,gid=5\t 0 0\n\
 usbfs\t\t/proc/bus/usb\tusbfs\t\tnoauto\t\t 0 0" >>/mnt/etc/fstab || \
   error "$init_fstab"
-echo -e "rootfs / rootfs rw 0 0" > /mnt/etc/mtab
-
+echo -e "rootfs / rootfs rw 0 0\ninitramdevs /dev tmpfs rw\
+ 0 0" > /mnt/etc/mtab
+[ -z "$UNIONFS" ] && echo -e "ramfs /tmp tmpfs rw 0 0\nramfs /root\
+tmpfs rw 0 0\nramfs /media tmpfs rw 0 0 \nramfs /home tmpfs rw 0 0" \
+ > /mnt/etc/mtab
+ 
 # copy library cache if generated
 if [ -z "${NOLDSC}" ] ; then
   if waitfor /tmp/ldcfg 50000 ; then
