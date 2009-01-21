@@ -169,7 +169,7 @@ sub openslxInit
 	}
 	if ($openslxConfig{'verbose-level'} >= 2) {
 		foreach my $k (sort keys %openslxConfig) {
-			vlog 2, "dump-config: $k = $openslxConfig{$k}";
+			vlog 2, "config-dump: $k = $openslxConfig{$k}";
 		}
 	}
 
@@ -201,15 +201,17 @@ sub trInit
 
 	if ($locale ne 'posix') {
 		if (eval "require $trModule") {
-			# Access OpenSLX::Translations::$locale::%translations
+			# Access OpenSLX::Translations::<locale>::translations
 			# via a symbolic reference...
 			no strict 'refs';
-			my $translationsRef	= \%{"${trModule}::translations"};
+			my $translationsRef	= \%{ "${trModule}::translations" };
 			# ...and copy the available translations into our hash:
 			foreach my $k (keys %{$translationsRef}) {
 				$translations{$k} = $translationsRef->{$k};
 			}
 			$loadedTranslationModule = $trModule;
+			vlog 1, _tr("translations module %s loaded successfully",
+						$trModule);
 		} else {
 			carp "Unable to load translations module '$locale' ($!).";
 		}
