@@ -13,11 +13,44 @@
 
 # acpi and powersave have changed
 config_acpi () {
-local start_acpi=$1
-local stop_acpi=$2
+local start_acpi=10
+local stop_acpi=12
 local start_powersave=`expr $1 + 5`
 local stop_powersave=`expr $1 - 1`
 rllinker acpid "$start_acpi" "$stop_acpi"
 rllinker powersaved "$start_powersave" "$stop_powersave"
+}
+
+# configure dbus (inter application communication for kde and gnome), hal
+# (hardware abstraction layer - used e.g. by powersaved) and resmgr
+# (resource manager - the user gets permissions to devices when loggin on)
+# runlevel script for haldaemon is now haldaemon instead of hal
+config_dreshal () {
+local start="05"
+local stop="18"
+if [ "x$start_dreshal" = "xyes" ]; then
+  if [ -f /mnt/etc/init.d/dbus ] ; then
+  strinfile "messagebus:" /mnt/etc/passwd || \
+    echo "messagebus:x:100:101:User for D-BUS:/var/run/dbus:/bin/false" \
+      >> /mnt/etc/passwd
+    testmkd /mnt/var/run/dbus
+    # chown 100:101 /mnt/var/run/dbus
+    rllinker "dbus" "$start" "$stop"
+  fi
+  if [ -f /mnt/etc/init.d/resmgr ] ; then
+    testmkd /mnt/var/run/resmgr/classes
+    start="0"`expr $start + 1`
+    stop="0"`expr $start - 1`
+    rllinker "resmgr" "$start" "$stop"
+  fi
+  if [ -f /mnt/etc/init.d/hal ] ; then
+    strinfile "haldaemon:" /mnt/etc/passwd || \
+      echo "haldaemon:x:105:103:User for haldaemon:/var/run/hal:/bin/false" \
+        >> /mnt/etc/passwd
+    start="0"`expr $start + 1`
+    stop="0"`expr $start - 1`
+    rllinker "hal" "$start" "$stop"
+  fi
+fi
 }
 

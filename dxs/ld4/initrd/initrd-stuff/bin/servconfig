@@ -137,10 +137,10 @@ config_syslog "02" "20"
 # configure dbus - distro dependent function config_dreshal - handle all
 # stuff regarding dependent services like dbus, resmgr, hal ...
 # (check for runlevel scripts, passwd entries, directories ...)
-config_dreshal "03" "18"
+config_dreshal
 
 # acpi and powersave - distro dependent function config_acpi
-config_acpi "10" "12"
+config_acpi
 
 #######################################################################
 # network(ed) services

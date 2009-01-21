@@ -318,8 +318,8 @@ echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
 
 # acpi and powersave
 config_acpi () {
-  local start_powersave=`expr $1 + 5`
-  local stop_powersave=`expr $1 - 1`
+  local start_powersave=10
+  local stop_powersave=12
   rllinker powersaved "$start_powersave" "$stop_powersave"
 }
 
@@ -327,8 +327,8 @@ config_acpi () {
 # (hardware abstraction layer - used e.g. by powersaved) and resmgr
 # (resource manager - the user gets permissions to devices when loggin on)
 config_dreshal () {
-local start="$1"
-local stop="$2"
+local start="05"
+local stop="18"
 if [ "x$start_dreshal" = "xyes" ]; then
   if [ -f /mnt/etc/init.d/dbus ] ; then
   strinfile "messagebus:" /mnt/etc/passwd || \
@@ -344,13 +344,13 @@ if [ "x$start_dreshal" = "xyes" ]; then
     stop="0"`expr $start - 1`
     rllinker "resmgr" "$start" "$stop"
   fi
-  if [ -f /mnt/etc/init.d/haldaemon ] ; then
+  if [ -f /mnt/etc/init.d/hal ] ; then
     strinfile "haldaemon:" /mnt/etc/passwd || \
-      echo "haldaemon:x:101:102:User for haldaemon:/var/run/hal:/bin/false" \
+      echo "haldaemon:x:105:103:User for haldaemon:/var/run/hal:/bin/false" \
         >> /mnt/etc/passwd
     start="0"`expr $start + 1`
     stop="0"`expr $start - 1`
-    rllinker "haldaemon" "$start" "$stop"
+    rllinker "hal" "$start" "$stop"
   fi
 fi
 }
