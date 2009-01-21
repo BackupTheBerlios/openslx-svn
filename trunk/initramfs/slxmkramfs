@@ -51,11 +51,11 @@ D_XF86CONFFILE="<set in ~/distro-config/distro file>"
 D_XFONTPATH="<set in ~/distro-config/distro file>"
 D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 # read in the global settings
-#. /etc/opt/openslx/settings.default # temporarily
-# [ -f @@@SLX_CONFIG_PATH@@@/settings.default ] && \
-#    . @@@SLX_CONFIG_PATH@@@/settings.default
-# [ -f @@@SLX_CONFIG_PATH@@@/settings.local ] && \
-#    . @@@SLX_CONFIG_PATH@@@/settings.local
+SLX_CONFIG_PATH=@@@SLX_CONFIG_PATH@@@
+[ -f $SLX_CONFIG_PATH/settings.default ] && \
+   . $SLX_CONFIG_PATH/settings.default
+[ -f $SLX_CONFIG_PATH/settings.local ] && \
+   . $SLX_CONFIG_PATH/settings.local
 
 #########################################################################
 # End of global variable declaration, nothing needed to be changed at
@@ -169,7 +169,10 @@ copy_distro_stuff() {
   prefix=${SLX_SHARE_PATH}/distro-specs/$1
   cat $prefix/config-default >${INSTDIR}/etc/sysconfig/config
   cat $prefix/config-$2 >>${INSTDIR}/etc/sysconfig/config
-  echo "SLX_TFTPBOOT_PATH=${SLX_TFTPBOOT_PATH}" >>${INSTDIR}/etc/sysconfig/config
+  [ -f $SLX_CONFIG_PATH/settings.default ] && \
+     cat $SLX_CONFIG_PATH/settings.default >>${INSTDIR}/etc/sysconfig/config
+  [ -f $SLX_CONFIG_PATH/settings.local ] && \
+     cat $SLX_CONFIG_PATH/settings.local >>${INSTDIR}/etc/sysconfig/config
   cat $prefix/functions-default >${INSTDIR}/etc/distro-functions
   cat $prefix/functions-$2 >>${INSTDIR}/etc/distro-functions
   cp -a $prefix/files-default ${INSTDIR}/etc/sysconfig/files 2>/dev/null

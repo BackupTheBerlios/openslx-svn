@@ -1,6 +1,6 @@
 # common function script for the configuration of linux diskless clients
-# (included by init, hwautocfg, servconfig, ... within OpenSLX initial 
-# ramfs) 
+# (included by init, hwautocfg, servconfig, ... within OpenSLX initial
+# ramfs)
 #
 # Dirk von Suchodoletz <dvs@OpenSLX.com>, 29-09-2006
 # Felix Endres, 30-04-2006
@@ -11,7 +11,7 @@
 # (c) 2006 - OpenSLX.ORG Project
 
 #######################################################################
-# set of empty dummy functions (loaded before real functions in the 
+# set of empty dummy functions (loaded before real functions in the
 # distro specific files - to have no undeclared function in init, serv-
 # config, hwautocfg, ...
 
@@ -29,7 +29,7 @@ config_distro () {
 }
 # udev/hotplug - auto device discovery service
 udev_hotplug () {
- : 
+ :
 }
 
 
@@ -62,7 +62,7 @@ trigger_device_events () {
 }
 
 #######################################################################
-# produce error message and if $2 is empty run (debug) shell 
+# produce error message and if $2 is empty run (debug) shell
 error () {
 local e_msg="$1"
 # check if LOGFILE is really writeable
@@ -74,7 +74,7 @@ fi
 # if nonfatal error else fatal error message and shell
 if [ -n "$2" ] ; then
   [ "$DEBUGLEVEL" -ge 1 -a "$DEBUGLEVEL" != 8 ] && \
-    echo -e "${error_msg}${e_msg}${error_nfe}" >> ${LOGFILE} 
+    echo -e "${error_msg}${e_msg}${error_nfe}" >> ${LOGFILE}
   [ "$DEBUGLEVEL" -gt 1 -a "$DEBUGLEVEL" != 8 ] && \
     echo -e "${error_msg}${e_msg}${error_nfe}"
   [ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && usleep 20
@@ -103,7 +103,7 @@ echo "${uptime} ms."
 
 
 #######################################################################
-# micro sleep - either busybox command or simply loop and delete 1 from 
+# micro sleep - either busybox command or simply loop and delete 1 from
 # the first argument gotten until zero
 usleep () {
 if [ -x /bin/usleep ]; then
@@ -121,7 +121,7 @@ ldcfg () {
 }
 #######################################################################
 # URI interpreter $1 variable to interprete, $2 type of token to return
-# prot: tftp, http, nbd, ... server: IP or FQDN 
+# prot: tftp, http, nbd, ... server: IP or FQDN
 uri_token () {
 local var=$1
 # first check if URI starts with prot:// - URI scheme
@@ -132,7 +132,7 @@ else
   rest="$var"
   prot=""
 fi
-# get the server IP or name and port - URI authority 
+# get the server IP or name and port - URI authority
 # you get the path or other token without leading "/" - add it later if
 # needed (fixme: port might be broken)
 if strinstr ":" "$rest" ; then
@@ -222,7 +222,7 @@ ip link set ${pdev} up
 brctl addif ${bridge} ${pdev}
 }
 #######################################################################
-# configure IP address statically - first argument the ip address, 
+# configure IP address statically - first argument the ip address,
 # second the netmask, then gateway and broadcast address and last
 # interface. All arguments have to be given.
 ipsetup () {
@@ -390,7 +390,7 @@ echo "dhcp finished" > /tmp/dhcp-done
 # function for retrieving configuration file (machine-setup) via tftp
 # from a predefined server or given source (file=tftp-server:/path via
 # kernel command line)
-# tftpget is helper function for fileget 
+# tftpget is helper function for fileget
 tftpgetunpack () {
 # $1 is  config file name to get, $2 IP of server to get file from
 for tftp in /bin/atftp /bin/tftp ; do
@@ -408,7 +408,7 @@ case "$tftp" in
       if [ -x /bin/busybox ] ; then
         tftp -g -r $1 -l $dst $2 1>&2 >/dev/null
       else
-        echo "get $1 $dst" | tftp $2 1>&2 >/dev/null 
+        echo "get $1 $dst" | tftp $2 1>&2 >/dev/null
       fi
     ;;
 esac
@@ -423,7 +423,7 @@ else
 fi
 }
 fileget () {
-# get type of tftp available, alternatively use wget for ftp or http 
+# get type of tftp available, alternatively use wget for ftp or http
 # (fixme: rewrite of fileget needed!!)
 # analyze file soure (URI) in $FILESRC
 if [ -n "$FILESRC" ] ; then
@@ -432,11 +432,16 @@ if [ -n "$FILESRC" ] ; then
   tftpserver=$(uri_token $FILESRC server)
   tftpgetunpack $tftp $cfgfile $tftpserver
 else
-  # we expect the tftp-server to serve from $SLX_TFTPBOOT_PATH, so we
-  # fixme!!!! just use the relative path from that here:
-  # the variable is nowhere to be seen, so it cannot be used here!?!?
-  cfgdir="/tftpboot/client-conf"
-  # cfgdir="${SLX_TFTPBOOT_PATH}" # future setting
+  # usually the tftp-server serves relative to $SLX_TFTPBOOT_PATH, however,
+  # some tftp-servers aren't setup to do that but serve from / instead.
+  # In order to remedy, we evaluate $SLX_USE_ABSOLUTE_TFTP_PATH in order
+  # to find out if we should use the absolute path when accessing files
+  # via tftp:
+  if [ "${SLX_USE_ABSOLUTE_TFTP_PATH}" -ge 1 ]; then
+    cfgdir="${SLX_TFTPBOOT_PATH}/client-config"
+  else
+    cfgdir="client-config"
+  fi
   local tftpserver=$serverip
   # try to get configuration files successively; start with distro client
   # and try last distro default ...
@@ -468,14 +473,14 @@ basename () {
 }
 
 #######################################################################
-# simple string in string search 
+# simple string in string search
 strinstr (){
   case "$2" in *$1*) return 0;; esac
   return 1
 }
 
 #######################################################################
-# simple string in file search 
+# simple string in file search
 strinfile (){
   case "$(cat $2)" in *$1*) return 0;; esac
   return 1
@@ -525,7 +530,7 @@ ldapconf () {
 local ldapserver=$1
 error "$error_ldapcfg"
 echo "not implemented" > /tmp/ldap-done
-} 
+}
 
 #######################################################################
 # base passwd/shadow, the standard user present in every system. All
@@ -563,7 +568,7 @@ fi
 }
 
 #######################################################################
-# localization simply derived from $language variable set in 
+# localization simply derived from $language variable set in
 # machine-setup or other sources - mostly taken from knoppix
 localization () {
 country="$1"
@@ -851,7 +856,7 @@ done
 count=10
 # boot.ld is a special runlevel script generated within initial ramdisk
 # which should be executed before the rest
-for i in boot.ld ${D_INITSCRIPTS}; do 
+for i in boot.ld ${D_INITSCRIPTS}; do
   count=`expr $count + 1`
   revcnt=`expr 41 - $count`
   ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/S${count}$i
@@ -864,7 +869,7 @@ done
 check_glx () {
 case "${XMODULE}" in
   radeon)
-    # check ${XDESC}/ hwsetup.info device string in Cards file and then 
+    # check ${XDESC}/ hwsetup.info device string in Cards file and then
     # for needed components
     test -f /mnt/lib/modules/${KERNEL}/kernel/drivers/char/drm/fglrx.ko \
       && test -f /mnt/usr/X11R6/lib/modules/drivers/fglrx_drv.* && \
@@ -892,7 +897,7 @@ displayvars (){
 
 # function for ntp configuration
 config_ntp () {
-: 
+:
 }
 
 # function for afs
@@ -902,17 +907,17 @@ config_afs () {
 
 # function for atd
 config_atd () {
-: 
+:
 }
 
 # function for configuration of cron services
 config_cron () {
-: 
+:
 }
 
 # syslog service
 config_syslog () {
-: 
+:
 }
 
 # secure shell service
@@ -922,22 +927,22 @@ config_sshd () {
 
 # snmp agent for remote monitoring
 config_snmp () {
-: 
+:
 }
 
 # consolefont
 consolefont () {
-: 
+:
 }
 # acpi and powersave
 config_acpi () {
-: 
+:
 }
 
 # configure xdm as display manager
 config_xdm () {
 :
-} 
+}
 
 # configure gdm as display manager
 config_gdm () {

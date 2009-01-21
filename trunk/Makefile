@@ -43,6 +43,9 @@ endif
 ifeq ($(SLX_TFTPBOOT_PATH),)
 	SLX_TFTPBOOT_PATH = ${SLX_PUBLIC_PATH}/tftpboot
 endif
+ifeq ($(SLX_USE_ABSOLUTE_TFTP_PATH),)
+	SLX_USE_ABSOLUTE_TFTP_PATH = 1
+endif
 
 ifeq ($(SLX_TEMP_PATH),)
 	SLX_TEMP_PATH = /tmp
@@ -93,10 +96,10 @@ install:
 	       -p $(SLX_TFTPBOOT_PATH) \
 	       -p $(SLX_SHARE_PATH)/themes
 	@cp initramfs/{mkdxsinitrd,slxmkramfs} $(SLX_BIN_PATH)
-	# sed -e "s,@@@SLX_TFTPBOOT_PATH@@@,$(SLX_TFTPBOOT_PATH)" \
-	#  -i $(SLX_BIN_PATH)/mkdxsinitrd
-	# sed -e "s,@@@SLX_TFTPBOOT_PATH@@@,$(SLX_TFTPBOOT_PATH)" \
-	#  -i $(SLX_BIN_PATH)/slxmkramfs  
+	@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
+	  -i $(SLX_BIN_PATH)/mkdxsinitrd
+	@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
+	  -i $(SLX_BIN_PATH)/slxmkramfs
 	@chmod u+x $(SLX_BIN_PATH)/{mkdxsinitrd,slxmkramfs}
 	@ln -sf $(SLX_BIN_PATH)/mkdxsinitrd $(USR_BIN)/
 	@ln -sf $(SLX_BIN_PATH)/slxmkramfs $(USR_BIN)/
@@ -131,6 +134,7 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 \nSLX_SHARE_PATH=${SLX_SHARE_PATH}\
 \nSLX_TEMP_PATH=${SLX_TEMP_PATH}\
 \nSLX_TFTPBOOT_PATH=${SLX_TFTPBOOT_PATH}\
+\nSLX_USE_ABSOLUTE_TFTP_PATH=${SLX_USE_ABSOLUTE_TFTP_PATH}\
 \nSLX_VMWARE_PATH=${SLX_VMWARE_PATH}\n" \
 	  > $(SLX_CONFIG_PATH)/settings.default
 	@echo -e "# local setup for openslx (overrides settings.default)\n" \
