@@ -46,6 +46,7 @@ sed -e "s,RUN_PARALLEL=.*,RUN_PARALLEL=\"no\"," \
   -i /mnt/etc/${D_SYSCONFDIR}/boot
 # if YaST2 should be runnable (without much effect anyway) on the client
 testmkd /mnt/var/log/YaST2
+echo "$host_name" > /mnt/etc/HOSTNAME
 }
 
 # linking runlevel scripts

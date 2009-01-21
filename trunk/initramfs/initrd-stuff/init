@@ -631,7 +631,7 @@ for ticks in 0 200 300 500 800 1000 1200 2000 5000 ; do
   error "$init_wait" nonfatal
 done
 
-[ $i -gt 1000 ] && error "$init_errumnt"
+[ $ticks -gt 1000 ] && error "$init_errumnt"
 # check for inittab file (might fail for new style init -> upstart)
 test -f /mnt/etc/inittab || test -d /mnt/etc/event.d || error "$init_erritab"
 # close runlevel script for stuff to execute during early bootup

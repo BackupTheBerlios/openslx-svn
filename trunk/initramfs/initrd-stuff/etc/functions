@@ -621,6 +621,7 @@ cp /tmp/newpasswd /mnt/etc/passwd
 echo -e "root:"$root_pw":12958:0:10000::::" > /mnt/etc/shadow
 sed 's/:.*/:!:13078:0:99999:7:::/;/^root.*/d' /tmp/newpasswd \
   >> /mnt/etc/shadow
+chmod 0640 /mnt/etc/shadow
 }
 
 #############################################################################
