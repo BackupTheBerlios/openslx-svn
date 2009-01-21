@@ -1,4 +1,11 @@
 # machine-setup
+#
+#### default file, please modify, rename it to machine-setup and copy it
+#### to a proper location, like /var/lib/openslx/config/default/initramfs
+#### several of the settings could be passed via DHCP too (vendorspecific
+#### options, see dhcpd.conf example) - some settings could be done only
+#### within this file (no DHCP variable definition available)
+#
 # universal (distro independent) configuration file for slx linux diskless 
 # client. It defines default values for several configuration variables. 
 # These settings might be overwritten through various processes in initial

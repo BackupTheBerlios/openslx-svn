@@ -40,11 +40,10 @@ mkdir -p $loopsrc
 grep "unionfs" /proc/mounts >/dev/null && \
   mount -o size=1500k -t tmpfs vm-loopimg $loopsrc
 mkdir -p $loopdst
-cp ${vmdir}/templ/fd0.img /$loopsrc/fd1.img
+cp ${vmdir}/templ/fd1.img /$loopsrc/fd1.img
 chmod a+rw /$loopsrc/fd1.img
 mount -n -t msdos -o loop,umask=000 /$loopsrc/fd1.img $loopdst
 
 # mount usbfs needed for vmware to detect usb devices
 grep "/proc/bus/usb" /proc/mounts >/dev/null || \
   mount -t usbfs usbfs /proc/bus/usb
-
