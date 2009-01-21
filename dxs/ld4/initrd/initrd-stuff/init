@@ -46,7 +46,7 @@ if [ -x /bin/udev -a -x /bin/udevstart ] ; then
     export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)
     export UDEVD_EVENT_TIMEOUT=1
     echo "" > /proc/sys/kernel/hotplug
-    udevd --daemon
+    udevd --daemon &
   fi
 elif [ -x /bin/hotplug ] ; then
   echo "Enabling hotplug"

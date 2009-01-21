@@ -400,6 +400,13 @@ for bbins in udev udevd udevstart
   cobi ${bbins} bin || echo "Program ${bbins} not found"
 done
 
+# in suse 9.3 it could be better to use udev.static etc
+#for bbins in udev udevd udevstart
+#do
+#  cobi ${bbins}.static bin || echo "Program ${bbins}.static not found"
+#  ln -s /bin/${bbins}.static ${INSTDIR}/bin/${bbins}
+#done
+
 # if nfs
 mkdir -p ${INSTDIR}/var/lib/nfs/state
 
