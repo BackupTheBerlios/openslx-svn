@@ -1,0 +1,14 @@
+# Settings made here overwrite values from the settings file in the same
+# directory.
+# It's also possible to define addditional values here.
+
+# Use a local installation source.
+SLX_INST_SOURCE_BASEURL="ftp://gab/pub/opensuse/distribution/10.2/repo/oss"
+SLX_INST_SOURCE_BASEURL_opensuse102update="ftp://gab/pub/suse/update/10.2"
+
+# Add more packages.
+# It's possible to habe more than one SLX_INSTALL_PACKAGES_* variable defined.
+# All SLX_INSTALL_PACKAGES_* are combined to one package list which is
+# in one step.
+SLX_INSTALL_PACKAGES_EDITORS="vim emacs"
+SLX_INSTALL_PACKAGES_KDEPIM="kdepim3"
