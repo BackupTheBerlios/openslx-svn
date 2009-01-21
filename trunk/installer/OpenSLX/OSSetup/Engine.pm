@@ -263,6 +263,7 @@ sub initialize
 sub installVendorOS
 {
 	my $self = shift;
+	my $vendorOSSettings = shift;
 
 	my $installInfoFile = "$self->{'vendor-os-path'}/.openslx-install-info";
 	if (-e $installInfoFile) {
@@ -301,11 +302,16 @@ sub installVendorOS
 	);
 
 	# create the install-info file, in order to indicate a proper installation:
-	spitFile($installInfoFile,
-		"SLX_META_PACKAGER=$self->{distro}->{'meta-packager-type'}\n");
+	spitFile(
+		$installInfoFile,
+		"SLX_META_PACKAGER=$self->{distro}->{'meta-packager-type'}\n"
+	);
+
+	# base system info file is no longer needed, we have a full system now
 	slxsystem("rm $baseSystemFile");
 
-	# no longer needed, we have a full system now
+	$self->_applyVendorOSSettings($vendorOSSettings) unless !$vendorOSSettings;
+
 	vlog(
 		0,
 		_tr(
@@ -950,6 +956,22 @@ sub _expandSelection
 	return;
 }
 
+sub _applyVendorOSSettings
+{
+	my $self = shift;
+	my $vendorOSSettings = shift;
+
+	if (exists $vendorOSSettings->{'root-password'}) {
+		# hashes password according to requirements of current distro and 
+		# writes it to /etc/shadow
+		$self->{distro}->setPasswordForUser(
+			'root', $vendorOSSettings->{'root-password'}
+		);
+	}
+
+	return;
+}
+
 sub _createVendorOSPath
 {
 	my $self = shift;
@@ -1320,7 +1342,12 @@ sub _stage1B_chrootAndBootstrap
 			);
 			$self->{'baseURL-index'} = 0;
 			my @pkgs = string2Array($self->{'distro-info'}->{'prereq-packages'});
+			vlog(
+				2, 
+				"downloading these prereq packages:\n\t" . join("\n\t", @pkgs)
+			);
 			my @prereqPkgs = $self->_downloadBaseFiles(\@pkgs);
+			$self->{'prereq-packages'} = \@prereqPkgs;
 			$self->{packager}->bootstrap(\@prereqPkgs);
 		
 			@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-packages'});
@@ -1328,8 +1355,12 @@ sub _stage1B_chrootAndBootstrap
 				@pkgs,
 				string2Array(
 					$self->{'distro-info'}->{'metapackager'}
-						->{$self->{distro}->{'meta-packager-type'}}
+						->{$self->{distro}->{'meta-packager-type'}}->{packages}
 				)
+			);
+			vlog(
+				2, 
+				"downloading bootstrap packages:\n\t" . join("\n\t", @pkgs)
 			);
 			my @bootstrapPkgs = $self->_downloadBaseFiles(\@pkgs);
 			$self->{'bootstrap-packages'} = \@bootstrapPkgs;
@@ -1368,7 +1399,11 @@ sub _stage1C_chrootAndInstallBasicVendorOS
 		$self->{packager}->importTrustedPackageKeys(\@keyFiles, $stage1cDir);
 	}
 
-	# install all bootstrap packages
+	# install prerequired packages (if distro requires it)
+	$self->{packager}->installPrerequiredPackages(
+		$self->{'prereq-packages'}, $stage1cDir
+	);
+	# install bootstrap packages
 	$self->{packager}->installPackages(
 		$self->{'bootstrap-packages'}, $stage1cDir
 	);

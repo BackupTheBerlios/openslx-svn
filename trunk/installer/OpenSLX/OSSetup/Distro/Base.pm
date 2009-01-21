@@ -18,6 +18,7 @@ use warnings;
 
 our $VERSION = 1.01;		# API-version . implementation-version
 
+use Fcntl qw(:DEFAULT :flock);
 use File::Basename;
 use OpenSLX::Basics;
 use OpenSLX::Utils;
@@ -214,6 +215,56 @@ sub preSystemInstallationHook
 
 sub postSystemInstallationHook
 {
+}
+
+sub setPasswordForUser
+{
+	my $self = shift;
+	my $username = shift;
+	my $password = shift;
+	
+	my $hashedPassword = $self->hashPassword($password);
+
+	my $writePasswordFunction = sub {
+		# now read, change and write shadow-file in atomic manner:
+		my $shadowFile = '/etc/shadow';
+		slxsystem("cp -r $shadowFile $shadowFile~");
+		my $shadowFH;
+		open($shadowFH, '+<', $shadowFile)
+			or croak _tr("could not open file '%s'! (%s)", $shadowFile, $!);
+		flock($shadowFH, LOCK_EX)
+			or croak _tr("could not lock file '%s'! (%s)", $shadowFile, $!);
+		my $content = do { local $/; <$shadowFH> };
+		if ($content =~ m{^$username:}ims) {
+			my $lastChanged = int(time()/24/60/60);
+			my $newEntry 
+				= "$username:$hashedPassword:$lastChanged:0:99999:7:::";
+			$content =~ s{^$username:.+?$}{$newEntry}ms;
+			seek($shadowFH, 0, 0);
+			print $shadowFH $content;
+		} else {
+			warn _tr(
+				"user '%s' doesn't exist - unable to set password! (%s)", 
+				$username
+			);
+		}
+		close($shadowFH)
+			or croak _tr("could not close file '%s'! (%s)", $shadowFile, $!);
+#		unlink "$shadowFile~";
+	};
+	$self->{engine}->callChrootedFunctionForVendorOS($writePasswordFunction);
+}
+
+sub hashPassword
+{
+	my $self = shift;
+	my $password = shift;
+	
+	my $busyboxBin = $self->{engine}->{'busybox-binary'};
+	my $hashedPassword = qx{$busyboxBin cryptpw -a md5 $password};
+	chomp $hashedPassword;
+
+	return $hashedPassword;
 }
 
 1;

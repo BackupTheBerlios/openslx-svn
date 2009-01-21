@@ -96,4 +96,20 @@ sub postSystemInstallationHook
 	$self->SUPER::postSystemInstallationHook();
 }
 
+sub setPasswordForUser
+{
+	my $self = shift;
+	my $username = shift;
+	my $password = shift;
+	
+	# activate shadow passwords
+	my $activateShadowFunction = sub {
+		slxsystem('/sbin/shadowconfig', 'on');
+	};
+	$self->{engine}->callChrootedFunctionForVendorOS($activateShadowFunction);
+	
+	# invoke default behaviour
+	$self->SUPER::setPasswordForUser($username, $password);
+}
+	
 1;

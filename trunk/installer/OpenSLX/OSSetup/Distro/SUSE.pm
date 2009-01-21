@@ -70,5 +70,16 @@ sub updateDistroConfig
 	return;
 }
 
+sub hashPassword
+{
+	my $self = shift;
+	my $password = shift;
+	
+	my $busyboxBin = $self->{engine}->{'busybox-binary'};
+	my $hashedPassword = qx{$busyboxBin cryptpw -a blowfish '$password'};
+	chomp $hashedPassword;
+
+	return $hashedPassword;
+}
 
 1;
