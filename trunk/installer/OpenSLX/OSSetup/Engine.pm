@@ -444,7 +444,6 @@ sub setupStage1A
 	}
 
 	$self->stage1A_createBusyboxEnvironment();
-	$self->stage1A_setupResolver();
 	$self->stage1A_copyPrerequiredFiles();
 	$self->stage1A_copyTrustedPackageKeys();
 	$self->stage1A_createRequiredFiles();
@@ -465,19 +464,26 @@ sub stage1A_createBusyboxEnvironment
 
 	# determine all required libraries and copy those, too:
 	vlog 1, _tr("calling slxldd for $busyboxName");
-	my $slxlddCmd 
+	my $slxlddCmd
 		= "slxldd $openslxConfig{'share-path'}/busybox/$busyboxName";
 	vlog 2, "executing: $slxlddCmd";
 	my $requiredLibsStr = `$slxlddCmd`;
 	if ($?) {
-		die _tr("slxldd couldn't determine the libs required by busybox! (%s)", $?);
+		die _tr("slxldd couldn't determine the libs required by busybox! (%s)",
+				$?);
 	}
 	chomp $requiredLibsStr;
 	vlog 2, "slxldd results:\n$requiredLibsStr";
+	my $libcFolder;
 	foreach my $lib (split "\n", $requiredLibsStr) {
 		vlog 3, "copying lib '$lib'";
 		my $libDir = dirname($lib);
 		copyFile($lib, "$self->{stage1aDir}/$libDir");
+		if ($lib =~ m[/libc.so.\d\s*$]) {
+			# note target folder of libc, as we need to copy the resolver libs
+			# into the same place:
+			$libcFolder = $libDir;
+		}
 	}
 
 	# create all needed links to busybox:
@@ -492,15 +498,23 @@ sub stage1A_createBusyboxEnvironment
 	if ($self->hostIs64Bit() && !-e "$self->{stage1aDir}/usr/lib64") {
 		linkFile('/usr/lib', "$self->{stage1aDir}/usr/lib64");
 	}
+
+	$self->stage1A_setupResolver($libcFolder);
 }
 
 sub stage1A_setupResolver
 {
 	my $self = shift;
+	my $libcFolder = shift;
+
+	if (!defined $libcFolder) {
+		warn _tr("unable to determine libc-target-folder, will use /lib!");
+		$libcFolder = 'lib';
+	}
 
 	copyFile('/etc/resolv.conf', "$self->{stage1aDir}/etc");
-	copyFile('/lib/libresolv*', "$self->{stage1aDir}/lib");
-	copyFile('/lib/libnss_dns*', "$self->{stage1aDir}/lib");
+	copyFile("/$libcFolder/libresolv*", "$self->{stage1aDir}/$libcFolder");
+	copyFile("/$libcFolder/libnss_dns*", "$self->{stage1aDir}/$libcFolder");
 
 	my $stage1cDir
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
