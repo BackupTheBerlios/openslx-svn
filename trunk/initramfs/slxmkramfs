@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# universal (distro independent) generator for initial ramdisks for OpenSLX
+# universal (distro independent) generator for initialramfs for OpenSLX
 # linux diskless clients (part of stage2 system setup). This script is the
 # successor of mkdxsinitrd. It expects all project files to be installed. It
 # does not work directly out of repository any more.
@@ -543,7 +543,7 @@ if [ -z "$FSMODULES" ] ; then
   FSMODULES="nbd nfs"
 fi
 if [ -z "$INITRD_PATH" ] ; then
-  INITRD_PATH="${ROOTDIR}/tmp/dxsinitrd.gz"
+  INITRD_PATH="${ROOTDIR}/tmp/slxinitramfs.gz"
 fi
 
 # define modules to put into initial ramdisk for debugging

@@ -401,14 +401,14 @@ local dst=/tmp/$(basename $1)
 # tftp get part
 case "$tftp" in
     */atftp)
-      atftp -g -r $1 -l $dst $2 2>/dev/null
+      atftp -g -r $1 -l $dst $2 2>&1>/dev/null
     ;;
     */tftp)
       # distinguish between busybox tftp and standalone (in.tftp) client
       if [ -x /bin/busybox ] ; then
         tftp -g -r $1 -l $dst $2 2>/dev/null
       else
-        echo "get $1 $dst" | tftp $2 2>/dev/null
+        echo "get $1 $dst" | tftp $2 2>&1>/dev/null
       fi
     ;;
 esac

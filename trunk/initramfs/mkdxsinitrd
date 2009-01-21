@@ -4,7 +4,7 @@
 #               ramdisks for linux diskless clients (stage2 system
 #               setup)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-09-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-10-2006
 #               Nico Dietrich
 #               Felix Endres
 #               <mj0@uni-freiburg.de> (xenbr), 27-09-2006
@@ -357,7 +357,7 @@ goto_script_dir
 # set temporary setup directory, clean it and setup basic directory
 # structure
 if [ -z "$INSTDIR" ] ; then
-  INSTDIR=/tmp/dxs-instrd
+  INSTDIR=/tmp/slx-tmpramfs
 fi
 rm -rf ${INSTDIR}
 mkdir -p ${INSTDIR}/{dev,proc,tmp,mnt,root,bin,sys,lib}
@@ -611,7 +611,7 @@ if [ -z "$FSMODULES" ] ; then
   FSMODULES="nbd nfs"
 fi
 if [ -z "$INITRD_PATH" ] ; then
-  INITRD_PATH="${ROOTDIR}/tmp/dxsinitrd.gz"
+  INITRD_PATH="${ROOTDIR}/tmp/slxinitramfs.gz"
 fi
 
 # define modules to put into initial ramdisk for debugging
