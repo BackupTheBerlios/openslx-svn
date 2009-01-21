@@ -52,7 +52,7 @@ if ($versionReq) {
 determineMinimumPackageSet();
 
 print "THE MINIMUM PACKAGE LIST:\n";
-print ('-' x 40)."\n";
+print(('-' x 40)."\n");
 print join("\n", sort @leafPkgs)."\n";
 
 exit;

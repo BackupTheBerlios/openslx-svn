@@ -18,29 +18,30 @@ use vars qw(@ISA @EXPORT $VERSION);
 
 use Exporter;
 $VERSION = 1.01;
-@ISA = qw(Exporter);
+@ISA     = qw(Exporter);
 
 @EXPORT = qw(
-	&openslxInit %openslxConfig %cmdlineConfig
-	&_tr &trInit
-	&warn &die 
-	&callInSubprocess &executeInSubprocess &slxsystem
-	&vlog
-	&instantiateClass
-	&addCleanupFunction &removeCleanupFunction
+  &openslxInit %openslxConfig %cmdlineConfig
+  &_tr &trInit
+  &warn &die
+  &callInSubprocess &executeInSubprocess &slxsystem
+  &vlog
+  &instantiateClass
+  &addCleanupFunction &removeCleanupFunction
 );
 
 use vars qw(%openslxConfig %cmdlineConfig);
+use subs qw(die);
 
 ################################################################################
 ### Module implementation
 ################################################################################
 use Carp;
-use Carp::Heavy;
-	# use it here to have it loaded immediately, not at the time when
-	# carp() is being invoked (which might be at a point in time where
-	# the script executes in a chrooted environment, such that the module
-	# can't be loaded anymore).
+use Carp::Heavy
+  ; # use it here to have it loaded immediately, not at the time when
+    # carp() is being invoked (which might be at a point in time where
+    # the script executes in a chrooted environment, such that the module
+    # can't be loaded anymore).
 use FindBin;
 use Getopt::Long;
 use POSIX qw(locale_h);
@@ -51,19 +52,20 @@ my %translations;
 # the initial content is based on environment variables or default values.
 # Each value may be overridden from config files and/or cmdline arguments.
 %openslxConfig = (
-	'croak' => '0',
-	'db-datadir' => $ENV{SLX_DB_DATADIR},
-	'db-name' => $ENV{SLX_DB_NAME} || 'openslx',
-	'db-spec' => $ENV{SLX_DB_SPEC},
-	'db-type' => $ENV{SLX_DB_TYPE} || 'SQLite',
-	'locale' => setlocale(LC_MESSAGES),
+	'croak'          => '0',
+	'db-datadir'     => $ENV{SLX_DB_DATADIR},
+	'db-name'        => $ENV{SLX_DB_NAME} || 'openslx',
+	'db-spec'        => $ENV{SLX_DB_SPEC},
+	'db-type'        => $ENV{SLX_DB_TYPE} || 'SQLite',
+	'locale'         => setlocale(LC_MESSAGES),
 	'locale-charmap' => `locale charmap`,
-	'base-path' => $ENV{SLX_BASE_PATH} || '/opt/openslx',
-	'config-path' => $ENV{SLX_CONFIG_PATH} || '/etc/opt/openslx',
-	'private-path' => $ENV{SLX_PRIVATE_PATH} || '/var/opt/openslx',
-	'public-path' => $ENV{SLX_PUBLIC_PATH} || '/srv/openslx',
-	'temp-path' => $ENV{SLX_TEMP_PATH} || '/tmp',
-	'verbose-level' => $ENV{SLX_VERBOSE_LEVEL} || '0',
+	'base-path'      => $ENV{SLX_BASE_PATH} || '/opt/openslx',
+	'config-path'    => $ENV{SLX_CONFIG_PATH} || '/etc/opt/openslx',
+	'private-path'   => $ENV{SLX_PRIVATE_PATH} || '/var/opt/openslx',
+	'public-path'    => $ENV{SLX_PUBLIC_PATH} || '/srv/openslx',
+	'temp-path'      => $ENV{SLX_TEMP_PATH} || '/tmp',
+	'verbose-level'  => $ENV{SLX_VERBOSE_LEVEL} || '0',
+
 	#
 	# extended settings follow, which are only supported by slxsettings,
 	# but not by any other script:
@@ -71,70 +73,89 @@ my %translations;
 	'ossetup-max-try-count' => '5',
 );
 chomp($openslxConfig{'locale-charmap'});
-$openslxConfig{'bin-path'}
-	= $ENV{SLX_BIN_PATH} || "$openslxConfig{'base-path'}/bin",
-$openslxConfig{'db-basepath'}
-	= $ENV{SLX_DB_PATH} || "$openslxConfig{'private-path'}/db",
-$openslxConfig{'export-path'}
-	= $ENV{SLX_EXPORT_PATH} || "$openslxConfig{'public-path'}/export",
-$openslxConfig{'share-path'}
-	= $ENV{SLX_SHARE_PATH} || "$openslxConfig{'base-path'}/share",
-$openslxConfig{'stage1-path'}
-	= $ENV{SLX_STAGE1_PATH} || "$openslxConfig{'private-path'}/stage1",
-$openslxConfig{'tftpboot-path'}
-	= $ENV{SLX_TFTPBOOT_PATH} || "$openslxConfig{'public-path'}/tftpboot",
-$openslxConfig{'vmware-path'}
-	= $ENV{SLX_VMWARE_PATH} || "$openslxConfig{'base-path'}/vmware",
+$openslxConfig{'bin-path'} = $ENV{SLX_BIN_PATH}
+  || "$openslxConfig{'base-path'}/bin";
+$openslxConfig{'db-basepath'} = $ENV{SLX_DB_PATH}
+  || "$openslxConfig{'private-path'}/db";
+$openslxConfig{'export-path'} = $ENV{SLX_EXPORT_PATH}
+  || "$openslxConfig{'public-path'}/export";
+$openslxConfig{'share-path'} = $ENV{SLX_SHARE_PATH}
+  || "$openslxConfig{'base-path'}/share";
+$openslxConfig{'stage1-path'} = $ENV{SLX_STAGE1_PATH}
+  || "$openslxConfig{'private-path'}/stage1";
+$openslxConfig{'tftpboot-path'} = $ENV{SLX_TFTPBOOT_PATH}
+  || "$openslxConfig{'public-path'}/tftpboot";
+$openslxConfig{'vmware-path'} = $ENV{SLX_VMWARE_PATH}
+  || "$openslxConfig{'base-path'}/vmware";
 
 # specification of cmdline arguments that are shared by all openslx-scripts:
-%cmdlineConfig;
 my %openslxCmdlineArgs = (
 	'base-path=s' => \$cmdlineConfig{'base-path'},
-		# basic path to project files (binaries, functionality templates and
-		# distro-specs)
+
+	# basic path to project files (binaries, functionality templates and
+	# distro-specs)
 	'bin-path=s' => \$cmdlineConfig{'bin-path'},
-		# path to binaries and scripts
+
+	# path to binaries and scripts
 	'config-path=s' => \$cmdlineConfig{'config-path'},
-		# path to configuration files
+
+	# path to configuration files
 	'croak' => \$cmdlineConfig{'croak'},
-		# activates debug mode, this will show the lines where any error occured
+
+	# activates debug mode, this will show the lines where any error occured
 	'db-basepath=s' => \$cmdlineConfig{'db-basepath'},
-		# basic path to openslx database, defaults to "${private-path}/db"
+
+	# basic path to openslx database, defaults to "${private-path}/db"
 	'db-datadir=s' => \$cmdlineConfig{'db-datadir'},
-		# data folder created under db-basepath, default depends on db-type
+
+	# data folder created under db-basepath, default depends on db-type
 	'db-name=s' => \$cmdlineConfig{'db-name'},
-		# name of database, defaults to 'openslx'
+
+	# name of database, defaults to 'openslx'
 	'db-spec=s' => \$cmdlineConfig{'db-spec'},
-		# full specification of database, a special string defining the
-		# precise database to connect to (the contents of this string
-		# depend on db-type)
+
+	# full specification of database, a special string defining the
+	# precise database to connect to (the contents of this string
+	# depend on db-type)
 	'db-type=s' => \$cmdlineConfig{'db-type'},
-		# type of database to connect to (CSV, SQLite, ...), defaults to 'CSV'
+
+	# type of database to connect to (CSV, SQLite, ...), defaults to 'CSV'
 	'export-path=s' => \$cmdlineConfig{'export-path'},
-		# path to root of all exports, each different export-type (e.g. nfs, nbd)
-		# has a separate subfolder in here.
+
+	# path to root of all exports, each different export-type (e.g. nfs, nbd)
+	# has a separate subfolder in here.
 	'locale=s' => \$cmdlineConfig{'locale'},
-		# locale to use for translations
+
+	# locale to use for translations
 	'locale-charmap=s' => \$cmdlineConfig{'locale-charmap'},
-		# locale-charmap to use for I/O (iso-8859-1, utf-8, etc.)
+
+	# locale-charmap to use for I/O (iso-8859-1, utf-8, etc.)
 	'logfile=s' => \$cmdlineConfig{'locale'},
-		# file to write logging output to, defaults to STDERR
+
+	# file to write logging output to, defaults to STDERR
 	'private-path=s' => \$cmdlineConfig{'private-path'},
-		# path to private data (which is *not* accesible by clients and contains
-		# database, vendorOSes and all local extensions [system specific scripts])
+
+	# path to private data (which is *not* accesible by clients and contains
+	# database, vendorOSes and all local extensions [system specific scripts])
 	'public-path=s' => \$cmdlineConfig{'public-path'},
-		# path to public data (which is accesible by clients and contains
-		# PXE-configurations, kernels, initramfs and client configurations)
+
+	# path to public data (which is accesible by clients and contains
+	# PXE-configurations, kernels, initramfs and client configurations)
 	'share-path=s' => \$cmdlineConfig{'share-path'},
-		# path to sharable data (functionality templates and distro-specs)
+
+	# path to sharable data (functionality templates and distro-specs)
 	'stage1-path=s' => \$cmdlineConfig{'stage1-path'},
-		# path to stage1 systems
+
+	# path to stage1 systems
 	'temp-path=s' => \$cmdlineConfig{'temp-path'},
-		# path to temporary data (used during demuxing)
+
+	# path to temporary data (used during demuxing)
 	'tftpboot-path=s' => \$cmdlineConfig{'tftpboot-path'},
-		# path to root of tftp-server, tftpable data will be stored there
+
+	# path to root of tftp-server, tftpable data will be stored there
 	'verbose-level=i' => \$cmdlineConfig{'verbose-level'},
-		# level of logging verbosity (0-3)
+
+	# level of logging verbosity (0-3)
 );
 
 my %cleanupFunctions;
@@ -147,8 +168,8 @@ sub vlog
 {
 	my $minLevel = shift;
 	return if $minLevel > $openslxConfig{'verbose-level'};
-	my $str = join("", '-'x$minLevel, @_);
-	if (substr($str,-1,1) ne "\n") {
+	my $str = join("", '-' x $minLevel, @_);
+	if (substr($str, -1, 1) ne "\n") {
 		$str .= "\n";
 	}
 	print $openslxLog $str;
@@ -157,33 +178,35 @@ sub vlog
 # ------------------------------------------------------------------------------
 sub openslxInit
 {
+
 	# evaluate cmdline arguments:
 	Getopt::Long::Configure('no_pass_through');
 	GetOptions(%openslxCmdlineArgs) or return 0;
 
 	# try to read and evaluate config files:
 	my $configPath = $cmdlineConfig{'config-path'}
-						|| $openslxConfig{'config-path'};
+	  || $openslxConfig{'config-path'};
 	my $sharePath = $cmdlineConfig{'share-path'}
-						|| $openslxConfig{'share-path'};
-	foreach my $f ("$sharePath/settings.default",
-				   "$configPath/settings",
-				   "$ENV{HOME}/.openslx/settings") {
+	  || $openslxConfig{'share-path'};
+	foreach my $f ("$sharePath/settings.default", "$configPath/settings",
+		"$ENV{HOME}/.openslx/settings")
+	{
 		next unless open(CONFIG, "<$f");
 		if ($cmdlineConfig{'verbose-level'} >= 2) {
 			vlog 0, "reading config-file $f...";
 		}
-		while(<CONFIG>) {
+		while (<CONFIG>) {
 			chomp;
 			s/#.*//;
 			s/^\s+//;
 			s/\s+$//;
 			next unless length;
-			if (! /^(\w+)=(.*)$/) {
+			if (!/^(\w+)=(.*)$/) {
 				die _tr("config-file <%s> has incorrect syntax here:\n\t%s\n",
-						$f, $_);
+					$f, $_);
 			}
 			my ($key, $value) = ($1, $2);
+
 			# N.B.: the config files are used by shell-scripts, too, so in
 			# order to comply with shell-style, the config files use shell
 			# syntax and an uppercase, underline-as-separator format.
@@ -199,14 +222,15 @@ sub openslxInit
 
 	# push any cmdline argument into our config hash, possibly overriding any
 	# setting from the config files:
-	while(my ($key, $val) = each(%cmdlineConfig)) {
+	while (my ($key, $val) = each(%cmdlineConfig)) {
 		next unless defined $val;
 		$openslxConfig{$key} = $val;
 	}
 
 	if (defined $openslxConfig{'logfile'}
-	&& open(LOG, ">>$openslxConfig{'logfile'}")) {
-		$openslxLog
+		&& open(LOG, ">>$openslxConfig{'logfile'}"))
+	{
+		$openslxLog = *LOG;
 	}
 	if ($openslxConfig{'verbose-level'} >= 2) {
 		foreach my $k (sort keys %openslxConfig) {
@@ -223,30 +247,25 @@ sub openslxInit
 # ------------------------------------------------------------------------------
 sub trInit
 {
+
 	# set the specified locale...
 	setlocale('LC_ALL', $openslxConfig{'locale'});
 
 	# ...and activate automatic charset conversion on all I/O streams:
-	binmode(STDIN, ":encoding($openslxConfig{'locale-charmap'})");
+	binmode(STDIN,  ":encoding($openslxConfig{'locale-charmap'})");
 	binmode(STDOUT, ":encoding($openslxConfig{'locale-charmap'})");
 	binmode(STDERR, ":encoding($openslxConfig{'locale-charmap'})");
 	use open ':locale';
 
 	my $locale = $openslxConfig{'locale'};
 	if (lc($locale) eq 'c') {
+
 		# treat locale 'c' as equivalent for 'posix':
 		$locale = 'posix';
 	}
 
-	# load Posix-Translations first in order to fall back to English strings
-	# if a specific translation isn't available:
-	if (eval "require OpenSLX::Translations::posix") {
-		%translations = %OpenSLX::Translations::posix::translations;
-	} else {
-		vlog 1, "unable to load translations module 'posix' ($@).";
-	}
-
 	if (lc($locale) ne 'posix') {
+
 		# parse locale and canonicalize it (e.g. to 'de_DE') and generate
 		# two filenames from it (language+country and language only):
 		if ($locale !~ m{^\s*([^_]+)(?:_(\w+))?}) {
@@ -254,7 +273,7 @@ sub trInit
 		}
 		my @locales;
 		if (defined $2) {
-			push @locales, lc($1).'_'.uc($2);
+			push @locales, lc($1) . '_' . uc($2);
 		}
 		push @locales, lc($1);
 
@@ -264,22 +283,25 @@ sub trInit
 		foreach my $trName (@locales) {
 			my $trModule = "OpenSLX::Translations::$trName";
 			if (eval "require $trModule") {
+
 				# Access OpenSLX::Translations::<locale>::translations
 				# via a symbolic reference...
 				no strict 'refs';
-				my $translationsRef	= \%{ "${trModule}::translations" };
+				my $translationsRef = \%{"${trModule}::translations"};
+
 				# ...and copy the available translations into our hash:
 				foreach my $k (keys %{$translationsRef}) {
 					$translations{$k} = $translationsRef->{$k};
 				}
 				$loadedTranslationModule = $trModule;
-				vlog 1, _tr("translations module %s loaded successfully",
-							$trModule);
+				vlog 1,
+				  _tr("translations module %s loaded successfully", $trModule);
 				last;
 			}
 		}
 		if (!defined $loadedTranslationModule) {
-			vlog 1, "unable to load any translations module for locale '$locale' ($!).";
+			vlog 1,
+"unable to load any translations module for locale '$locale' ($!).";
 		}
 	}
 }
@@ -307,6 +329,7 @@ sub callInSubprocess
 
 	my $pid = fork();
 	if (!$pid) {
+
 		# child...
 		# ...execute the given function and exit:
 		&$childFunc();
@@ -315,10 +338,9 @@ sub callInSubprocess
 
 	# parent...
 	# ...pass on interrupt- and terminate-signals to child...
-	local $SIG{INT}
-		= sub { kill 'INT', $pid; waitpid($pid, 0); exit $? };
-	local $SIG{TERM}
-		= sub { kill 'TERM', $pid; waitpid($pid, 0); exit $? };
+	local $SIG{INT}  = sub { kill 'INT',  $pid; waitpid($pid, 0); exit $? };
+	local $SIG{TERM} = sub { kill 'TERM', $pid; waitpid($pid, 0); exit $? };
+
 	# ...and wait for child to do its work:
 	waitpid($pid, 0);
 	if ($?) {
@@ -333,10 +355,10 @@ sub executeInSubprocess
 
 	my $pid = fork();
 	if (!$pid) {
+
 		# child...
 		# ...exec the given cmdline:
 		exec(@cmdlineArgs);
-		die _tr("error in exec('%s')! (%s)", join(' ', @cmdlineArgs), $!);
 	}
 
 	# parent...
@@ -376,13 +398,14 @@ sub slxsystem
 	vlog 2, _tr("executing: %s", join ' ', @_);
 	my $res = system(@_);
 	if ($res > 0) {
-		# check if child got killed, if so we stop, too (unless the signal is 
-		# SIGPIPE, which we ignore in order to loop over failed FTP connections 
+
+		# check if child got killed, if so we stop, too (unless the signal is
+		# SIGPIPE, which we ignore in order to loop over failed FTP connections
 		# and the like):
 		my $signalNo = $res & 127;
 		if ($signalNo > 0 && $signalNo != 13) {
-			die _tr("child-process reveived signal '%s', parent stops!", 
-					$signalNo);
+			die _tr("child-process reveived signal '%s', parent stops!",
+				$signalNo);
 			exit;
 		}
 	}
@@ -397,7 +420,8 @@ sub warn
 	$msg =~ s[^][*** ]igms;
 	if ($openslxConfig{'croak'}) {
 		carp $msg;
-	} else {
+	}
+	else {
 		chomp $msg;
 		CORE::warn "$msg\n";
 	}
@@ -413,7 +437,8 @@ sub die
 	$msg =~ s[^][*** ]igms;
 	if ($openslxConfig{'croak'}) {
 		croak $msg;
-	} else {
+	}
+	else {
 		chomp $msg;
 		CORE::die "$msg\n";
 	}
@@ -422,21 +447,23 @@ sub die
 # ------------------------------------------------------------------------------
 sub instantiateClass
 {
-	my $class = shift;
+	my $class            = shift;
 	my $requestedVersion = shift;
 
 	unless (eval "require $class") {
 		if ($! == 2) {
 			die _tr("Class <%s> not found!\n", $class);
-		} else {
+		}
+		else {
 			die _tr("Unable to load class <%s> (%s)\n", $class, $@);
 		}
 	}
 	if (defined $requestedVersion) {
 		my $classVersion = $class->VERSION;
 		if ($classVersion < $requestedVersion) {
-			die _tr('Could not load class <%s> (Version <%s> required, but <%s> found)',
-					$class, $requestedVersion, $classVersion);
+			die _tr(
+'Could not load class <%s> (Version <%s> required, but <%s> found)',
+				$class, $requestedVersion, $classVersion);
 		}
 	}
 	return $class->new;

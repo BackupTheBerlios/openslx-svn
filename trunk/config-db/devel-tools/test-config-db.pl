@@ -129,7 +129,7 @@ $metaDB->schemaChangeColumns('test2',
 							   'descr' => 'description:s.30' },
 							 $colDescrs);
 
-my @rows = $metaDB->_doSelect("SELECT * FROM test2");
+@rows = $metaDB->_doSelect("SELECT * FROM test2");
 foreach my $row (@rows) {
 	foreach my $r (keys %$row) {
 		print "$r = $row->{$r}\n";

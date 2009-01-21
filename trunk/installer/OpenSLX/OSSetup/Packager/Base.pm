@@ -39,10 +39,6 @@ sub unpackPackages
 {
 }
 
-sub unpackPackages
-{
-}
-
 sub importTrustedPackageKeys
 {
 }

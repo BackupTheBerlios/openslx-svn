@@ -295,7 +295,7 @@ sub addClientToConfigDB
 	my $clientID = $openslxDB->addClient([$clientData]);
 	vlog 0, _tr("client '%s' has been successfully added to DB (ID=%s)\n",
 				$clientName, $clientID);
-	if (defined @systemIDs) {
+	if (@systemIDs) {
 		$openslxDB->addSystemIDsToClient($clientID, \@systemIDs);
 	}
 	if ($verbose) {
@@ -374,7 +374,7 @@ sub addSystemToConfigDB
 	my $systemID = $openslxDB->addSystem([$systemData]);
 	vlog 0, _tr("system '%s' has been successfully added to DB (ID=%s)\n",
 				$systemName, $systemID);
-	if (defined @clientIDs) {
+	if (@clientIDs) {
 	    $openslxDB->addClientIDsToSystem($systemID, \@clientIDs);
 	}
 	if ($verbose) {
@@ -450,7 +450,7 @@ sub changeClientInConfigDB
 
 	$openslxDB->changeClient($client->{id}, [$clientData]);
 	vlog 0, _tr("client '%s' has been successfully changed\n", $clientName);
-	if (defined @systemIDs) {
+	if (@systemIDs) {
 		$openslxDB->setSystemIDsOfClient($client->{id}, \@systemIDs);
 	}
 	if ($verbose) {
@@ -520,7 +520,7 @@ sub changeSystemInConfigDB
 	}
 	$openslxDB->changeSystem($system->{id}, [$systemData]);
 	vlog 0, _tr("system '%s' has been successfully changed\n", $systemName);
-	if (defined @clientIDs) {
+	if (@clientIDs) {
 	    $openslxDB->setClientIDsOfSystem($system->{id}, \@clientIDs);
 	}
 	if ($verbose) {
