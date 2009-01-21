@@ -128,7 +128,7 @@ function install_prereq_packages()
 	if test "${BOOTSTRAP_PATH}" -a -x "${BOOTSTRAP_PATH}/usr/sbin/debootstrap"; then
 		DEBOOTSTRAP_DIR="${BOOTSTRAP_PATH}/usr/lib/debootstrap" \
 			"${BOOTSTRAP_PATH}/usr/sbin/debootstrap" \
-			"${SLX_INST_SOURCE_DISTRIBUTION_main}" \
+			"${SLX_INST_SOURCE_DISTRIBUTION}" \
 			"${SLX_STAGE1_PATH}" \
 			"${SLX_INST_SOURCE_BASEURL}"
 		rm -rf "${BOOTSTRAP_PATH}"
@@ -180,6 +180,7 @@ function slxossetup_smart()
 		unset SMART_COMPONENTS \
 			SMART_DISTRIBUTION \
 			SMART_NAME \
+			SMART_PRIORITY \
 			SMART_TYPE \
 			PACKAGEKEYS
 
@@ -197,9 +198,10 @@ function slxossetup_smart()
 		# Has this config distribution, components
 		SMART_DISTRIBUTION=$( eval echo \$SLX_INST_SOURCE_DISTRIBUTION_${SMART_CHANNEL})
 		SMART_COMPONENTS=$( eval echo \$SLX_INST_SOURCE_COMPONENTS_${SMART_CHANNEL})
+		SMART_PRIORITY=$( eval echo \$SLX_INST_SOURCE_PRIORITY_${SMART_CHANNEL})
 		# Check if one of our global settings is still undefined
 		for setting in ${GLOBAL_SETTINGS}; do
-			test $( eval echo \$SMART_${setting}) || \
+			test "$( eval echo \$SMART_${setting})" || \
 				eval SMART_${setting}=\$SLX_INST_SOURCE_${setting}
 		done
 
@@ -208,6 +210,8 @@ function slxossetup_smart()
 		SMART_DISTRIBUTION="distribution=\"${SMART_DISTRIBUTION}\""
 		test "${SMART_COMPONENTS}" && \
 			SMART_COMPONENTS="components=\"${SMART_COMPONENTS}\""
+		test "${SMART_PRIORITY}" && \
+			SMART_PRIORITY="priority=\"${SMART_PRIORITY}\""
 
 		PACKAGEKEYS=$( eval echo \$SLX_INST_SOURCE_PACKAGEKEYS_${SMART_CHANNEL})
 
@@ -219,6 +223,7 @@ function slxossetup_smart()
 			baseurl=\"${SMART_BASEURL}\" \
 			${SMART_DISTRIBUTION} \
 			${SMART_COMPONENTS} \
+			${SMART_PRIORITY} \
 			-y
 
 		for packagekey in ${PACKAGEKEYS}; do
@@ -292,7 +297,7 @@ function slxossetup()
 			slxossetup_smart
 			;;
 		*ubuntu*)
-			GLOBAL_SETTINGS="BASEURL COMPONENTS"
+			GLOBAL_SETTINGS="BASEURL COMPONENTS DISTRIBUTION"
 			REPO_TYPE="apt-deb"
 			NAME_DEST_ROOT="deb-root"
 			SLX_STAGE1_CREATE_DIR="/var/lib/dpkg/updates"

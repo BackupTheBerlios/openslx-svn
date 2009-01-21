@@ -1,7 +1,7 @@
 SLX_INST_SOURCE_BASEURL="http://ftp-1.gwdg.de/pub/linux/debian/ubuntu"
 SLX_INST_SOURCE_COMPONENTS="main restricted multiverse universe"
+SLX_INST_SOURCE_DISTRIBUTION="edgy"
 SLX_INST_SOURCE_NAME_main="Ubuntu 6.10"
-SLX_INST_SOURCE_DISTRIBUTION_main="edgy"
 SLX_INST_SOURCE_NAME_ubuntu610updates="Ubuntu 6.10 updates"
 SLX_INST_SOURCE_DISTRIBUTION_ubuntu610updates="edgy-updates"
 SLX_INST_SOURCE_NAME_ubuntu610security="Ubuntu 6.10 security"
