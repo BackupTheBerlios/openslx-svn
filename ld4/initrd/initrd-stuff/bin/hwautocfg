@@ -4,13 +4,13 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-07-2006
 #		Felix Endres
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - odlx.org project
 #
-# Version:      0.3.2b
+# Version:      0.3.2c
 
 # local functions used within hwautocfg
 displaysetup () {
@@ -175,6 +175,8 @@ for section in Files ServerFlags Module InputDevice Monitor \
             [ $DEBUGLEVEL -gt 1 ] && msg "X setup" \
 "adding for some Xfree86 modules (radeon, s3virge, nvidia) special\noptions \
 to the 'Device' section. Consult hwsetup if you like to add more or\nremove some."
+	    # write TV config - no problem, if no TV is connected
+	    [ -n "$TVOUT" ] && echo -e $TVOUT >>$xfc
             [ x$DRV = "xs3virge" ] && {
             echo -e "\tOption\t\t\"XVideo\" \"Off\"\n" >>$xfc
             [ $DEBUGLEVEL -gt 1 ] && msg  "X setup" \
@@ -408,8 +410,6 @@ fi
 cfgcomplete
 . /etc/machine-setup
 
-# postpone some commands into normal bootup environment
-echo -e "\t# entries added by $0: $date" >> /etc/boot.ld
 # run localizator and configure keyboard and console fonts
 DEFKEYTABLE="de-latin1-nodeadkeys"
 localization $country
@@ -418,19 +418,10 @@ if [ -z "${KEYTABLE}" ] ; then
 '${DEFKEYTABLE}' defined\nin $0."
   KEYTABLE=${DEFKEYTABLE}
 fi
-# keytable will be loaded during early init process
-echo -e "\tloadkeys -q ${KEYTABLE}" >> /etc/boot.ld
 
 # run X11 / Xorg configurator
 . /etc/sysconfig/xserver >/dev/null 2>&1 || error "$hcfg_hwsetup" nonfatal
 ( displaysetup /etc/xorg.conf; echo "ready" > /tmp/xready ) &
-
-# wait for completion of clients root filesystem in /mnt
-waitfor /tmp/fscmpl 40000
-
-# add entries to boot.ld
-cat /etc/boot.ld >> /mnt/etc/${D_INITDIR}/boot.ld
-[ -n "${CONSOLE_FONT}" ] && consolefont
 
 # get idea of availabe harddisk partitions, put swap partitions into
 # (/mnt)/etc/fstab and format and mount partitions of type 44 (unknown) 
@@ -439,7 +430,7 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
   fdisk -l /dev/$hd| sed -n "/^\/dev\//p" > /tmp/hd_part
   for hdpartnr in $(cat /tmp/hd_part | \
       sed -n -e "/ 82 /p"|sed -e "s/[[:space:]].*//") ; do
-    echo -e "$hdpartnr\tswap\t\tswap\t\tdefaults\t 0 0" >> /mnt/etc/fstab
+    echo -e "$hdpartnr\tswap\t\tswap\t\tdefaults\t 0 0" >> /tmp/fstab
   done
   # we use special non assigned partition type for harddisk scratch space
   for hdpartnr in $(cat /tmp/hd_part | \
@@ -447,7 +438,7 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
     # ugly message from ext2 mount :-(
     ( mkfs.ext2 -q $hdpartnr; mount -n $hdpartnr /mnt/tmp; \
       echo "$hdpartnr" > /tmp/tmpready ) &
-    echo -e "$hdpartnr\t/tmp\t\text2\t\tdefaults\t 0 0" >> /mnt/etc/fstab
+    echo -e "$hdpartnr\t/tmp\t\text2\t\tdefaults\t 0 0" >> /tmp/fstab
     part44=yes
     break
   done
@@ -456,11 +447,21 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
         sed -n -e "/ 83 /p"|sed -e "s/[[:space:]].*//") ; do
     mkdir -p /mnt/media/${hdpartnr#/dev/*} 2>/dev/null
     echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
-noexec\t 0 0" >> /mnt/etc/fstab
+noexec\t 0 0" >> /tmp/fstab
   done 
 done
 # determine if tmp preparation should wait for format/mount or not
 [ -z "$part44" ] && echo "finished" > /tmp/tmpready
+
+# wait for completion of clients root filesystem in /mnt
+waitfor /tmp/fscmpl 40000
+cat /tmp/fstab >> /mnt/etc/fstab
+
+# add entries to initialize keytable and consolefont to boot.ld
+# postpone some commands into normal bootup environment
+echo -e "\t# entries added by $0: $date" >> /mnt/etc/${D_INITDIR}/boot.ld
+[ -n "${KEYTABLE}" ] && keytable
+[ -n "${CONSOLE_FONT}" ] && consolefont
 
 # finalize X configuration
 # only if X is link itself (normally to /var/X11R6/bin/X) check!!

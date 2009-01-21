@@ -6,7 +6,7 @@
 #		New settings are simply appended, so that they might 
 #		overwrite previously defined variables 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-07-2006
 #		Blabla
 #		Blub
 #
@@ -97,6 +97,13 @@ imgsrv="$serverip:/dxs/vmware"
 # kind of X11 display manager to run 
 start_xdmcp="xdm"
 
+# try to start g/k/xdm with X as fast as possible late_dm="no"
+# if there are problems with key, console etc. set late_dm="yes" - adds
+# about five seconds to graphical login delay
+#late_dm="yes"
+
 # should Xorg/XFree server be started or some special windowmanager be run
 # in kiosk mode e.g. start_x="kde"
 start_x="yes"
+
+

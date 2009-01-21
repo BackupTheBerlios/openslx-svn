@@ -138,9 +138,15 @@ done
 #PATH=\"\$PATH:/var/X11R6/bin\"" >>/mnt/etc/profile
 }
 
+# set up keytable (function run in hwautocfg)
+keytable () {
+# fixme -- use keytable setup script here
+:
+}
 
 # consolefont and language
 consolefont () {
+# better change that in /etc/functions to UTF8 default
 if [ "$LANG" == "de_DE@euro" ] ; then
   LANG=de_DE.UTF8
 fi

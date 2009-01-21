@@ -455,11 +455,11 @@ case "$country" in
   # German version
   de*)
     COUNTRY="de"
-    LANG="de_DE@euro"
+    LANG="de_DE.UTF8"
     KEYTABLE="de-latin1-nodeadkeys"
     XKEYBOARD="de"
     KDEKEYBOARD="de"
-    CHARSET="iso8859-15"
+    CHARSET="utf8"
     KDEKEYBOARDS="us,fr"
     TZ="Europe/Berlin"
   ;;
@@ -752,6 +752,9 @@ case "${XMODULE}" in
     test -f /mnt/lib/modules/${KERNEL}/kernel/drivers/char/drm/fglrx.ko && \
       test -f /mnt/usr/X11R6/lib/modules/drivers/fglrx_drv.o && \
       XMODULE=fglrx
+      # there seems no problem, if no TV is connected
+      TVOUT='\tOption\t"TVFormat" "PAL-B"\n
+\tOption\t"DesktopSetup" "horizontal"'
   ;;
   nv)
     #

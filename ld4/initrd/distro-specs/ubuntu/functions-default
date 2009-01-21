@@ -174,11 +174,19 @@ if [ "x$start_snmp" = "xyes" ] ; then
   fi
 }
 
+# set up keytable (function run in hwautocfg)
+keytable () {
+# fixme -- use keytable setup script here
+:
+}
+
 # consolefont
 consolefont () {
 echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
   >>/mnt/etc/${D_INITDIR}/boot.ld
 }
+
+
 # acpi and powersave
 config_acpi () {
   rllinker "acpid" "10" "19"
