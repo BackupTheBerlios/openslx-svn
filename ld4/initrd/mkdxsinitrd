@@ -3,7 +3,7 @@
 # Description:  universal (distro independent) generator for initial
 #               ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 01-07-2006
 #               Nico Dietrich
 #               Felix Endres
 #
@@ -476,11 +476,11 @@ else
 fi
   
 # one of the dhcp clients
-#for dhcp in dhclient dhcpcd pump ipconfig ; do
-#  binfinder $dhcp && break;
-#done
-#cobi $dhcp bin
-#mkdir -p ${INSTDIR}/var/{lib,run}
+for dhcp in dhclient dhcpcd pump ipconfig ; do
+  binfinder $dhcp && break;
+done
+cobi $dhcp bin
+mkdir -p ${INSTDIR}/var/{lib,run}
 
 # type of hotplug/udev/dev (for etc directories see above!!)
 for bbins in udev udevd udevstart udevtrigger udevsend
@@ -652,6 +652,9 @@ fi
 #    cp /etc/dxs/init.local/"$i" ${INSTDIR}/bin/"$i"
 #  fi
 #done
+
+# remove unneeded debug info, fixme not really tested yet
+strip  ${INSTDIR}/bin/*  ${INSTDIR}/lib/* &>/dev/null
 
 #########################################################################
 # End of file copy procedures
