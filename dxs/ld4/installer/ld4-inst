@@ -38,9 +38,52 @@ ask() {
   else
       local back=$userinput
   fi
+  {!2}=$back
   echo "$2=\"$back\"" >> .config
 }
 
+distro_check() {
+  case "${!1}" in
+    Debian*|debian*|Sarge*|sarge*)
+      {!1}=debian
+      case "${!2}" in
+        Sarge*|sarge*|3.1*|*)
+          {!2}=3.1
+        ;;
+      esac
+    ;;
+    Ubuntu*|ubuntu*)
+      {!1}=ubuntu
+      case "${!2}" in
+        Breezy*|breezy*|*)
+          {!2}=5.10
+        ;;
+      esac
+      ;;
+    Gentoo*|gentoo*)
+      {!1}=gentoo
+      case "${!2}" in
+        2005*|*)
+          {!2}=2005.1
+        ;;
+      esac
+    ;;
+    SuSE*|suse*|Suse*|SuSe*|SUSE*|*)
+      {!1}=suse
+      case "${!2}" in
+        9*)
+          {!2}=9.3
+        ;;
+        10.0)
+          {!2}=10.0
+        ;;
+        10*)
+          {!2}=10.1
+        ;;
+      esac
+    ;;
+  esac
+}
 
 configure() {
   export LANG="c"
@@ -66,10 +109,42 @@ configure() {
   fi
 
 
-  # missing: try to detect server architecture
+  # try to detect server architecture
+  if [ -z "${server_distro}" ] ; then
+    for i in /bin/lsb_release /usr/bin/lsb_release; do
+      if [ -e $i ] ; then
+        $i > /dev/null 2>&1 || break
+        server_distro=`. $i -i | sed "s/.*\t//"`
+        server_distro_ver=`. $i -r | sed "s/.*\t//"`
+        break
+      fi
+    done
+  fi
 
-  # missing: ask for client & server distro
- 
+  # if still no distro name set, try to find it using significant files
+  if [ -z "${server_distro}" ] ; then
+    if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
+      server_distro=suse
+      server_distro_ver=`grep "VERSION" /etc/SuSE-release | sed "s/.*= //"`
+    elif [ -e /etc/lsb-release ] ; then
+      . /etc/lsb-release
+      server_distro=${DISTRIB_ID}
+      server_distro_ver=${DISTRIB_RELEASE}
+    elif [ -e /etc/debian_version ] ; then
+      server_distro=debian
+      server_distro_ver=`cat /etc/debian_version`
+    fi
+  fi
+
+  ask "Server distribution: " server_distro ${server_distro}
+  distro_check server_distro server_distro_ver
+  echo "Using ${server_distro} as server distribution"
+  
+  # ask for client distro
+  ask "Client distribution: " client_distro ${client_distro}
+  distro_check client_distro client_distro_ver
+
+  . config-${server_distro}
   
   # das grosse frage-antwort-spiel:
   ask "Path for client system: " rootdir $rootdir
@@ -85,8 +160,9 @@ configure() {
 
   ask "Which debug level should be used? " debuglevel $debuglevel
 
-  # wo ist das referenzsystem?
-
+  # wo ist das referenzsystem? - was ist default ???
+  ask "IP + Path to reference system: " rsyncsource "localhost:/"
+  
   # hier auch dns-server etc abfragen??
 
   # nfs / nbd / squash-fs?
@@ -94,16 +170,35 @@ configure() {
 
 
 copy_system() {
-  . exclude-${client_distro}
-
-  # sync / mksquashfs
-
+  rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-${client_distro} ${rsyncsource} ${rootdir}
+    
+  # mksquashfs
 }
 
 # setting up server site configuration files etc.
 setup_server () {
-  # rewrite and copy / cat default files (may be distro-dependant): 
-    # dhcpd.conf, atftpd, exports
+  # dhcp
+  if [ -f ${dhcpd_conf} ] ; then
+    echo "Copying old dhcpd.conf to dhcpd.conf.bak"
+    mv ${dhcpd_conf} ${dhcpd_conf}.bak
+  fi
+  cp default_files/dhcpd.conf ${dhcpd_conf}
+  sed -e "s,@@@server@@@,${server}"
+
+  # atftpd
+  if [ -f ${atftpd_conf} ] ; then
+    echo "Copying old atftpd config file to ${atftpd_conf}.bak"
+    cp ${atftpd_conf} ${atftpd_conf}.bak
+  fi
+  sed -e 's,/tftpboot,${tftpbootdir},' -i ${atftpd_conf}
+
+  # nfs
+  exports_conf="/etc/exports"
+  if [ -f ${exports_conf} ] ; then
+    echo "Copying old nfs export file to ${exports_conf}.bak"
+    mv ${exports_conf} ${exports_conf}.bak
+  fi
+  
   # make services start
 }
 
