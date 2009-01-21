@@ -8,32 +8,12 @@ use lib $FindBin::Bin;
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:access :manipulation);
 
-use Getopt::Long qw(:config pass_through);
-my $clobber;
-GetOptions(
-	'clobber' => \$clobber
-		# clobber causes this script to overwrite the database without asking
-);
-
 openslxInit();
 
-my $openslxDB = connectConfigDB();
+$openslxConfig{'db-name'} = 'openslx_testscript';
+	# make sure to use a database of our own!
 
-if (!$clobber) {
-	my $yes = _tr('yes');
-	my $no = _tr('no');
-	my @systems = fetchSystemsByFilter($openslxDB);
-	my @clients = fetchClientsByFilter($openslxDB);
-	print _tr(qq[This will overwrite the current OpenSLX-database with an example dataset.
-All your data (%s systems and %s clients) will be lost!
-Do you want to continue(%s/%s)? ], scalar(@systems), scalar(@clients), $yes, $no);
-	my $answer = <>;
-	if ($answer !~ m[^\s*$yes]i) {
-		print "no - stopping\n";
-		exit 5;
-	}
-	print "yes - starting...\n";
-}
+my $openslxDB = connectConfigDB();
 
 emptyDatabase($openslxDB);
 
