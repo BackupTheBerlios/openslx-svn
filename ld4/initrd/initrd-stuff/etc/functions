@@ -247,6 +247,11 @@ case $dhcp in
       error "$error_pump"
   ;;
   ipconfig)
+      [ $DEBUGLEVEL -gt 1 ] && echo -e "# You are using ipconfig as dhcp \
+client. With this tool you only get the\n# basic IP settings from the \
+server. No vendor specific, self defined\n# dhcp options are possible this \
+way. use dhclient instead or get them via\n# tftp (to be enabled via kernel \
+command line)." >> /etc/machine-setup
       error "$error_ipconf"
   ;;
   *)

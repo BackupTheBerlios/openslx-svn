@@ -4,15 +4,20 @@
 #		several dhcp clients. The result is written in unified form
 #		to the /etc/machine-setup file
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 26-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 22-05-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 
 # client variable should be exported via calling function
 echo -e "\n# ip configuration written by $0" \
   >>/etc/machine-setup
+infomsg="# --> You are using $dhcl. With this client you are not \
+able to\n# transfer any vendor specific, self defined dhcp options. If \
+this is\n# intended, use dhclient instead or get them via tftp (to be \
+enabled\n# via kernel command line)."
 case $0 in
   *dhcpcd*)
+    dhcl="dhcpcd"; echo -e "$infomsg" >>/etc/machine-setup
     sed -e "s,',\",g;s,IPADDR,clientip,;s,NETMASK,subnet_mask," \
       -e "s,GATEWAY,gateway,;s,BROADCAST,broadcast_address," \
       -e "s,HOSTNAME,host_name,;s,DOMAIN,domain_name," \
@@ -25,6 +30,10 @@ case $0 in
         >>/etc/machine-setup
   ;;
   *dhclient*)
+    echo -e "# --> You are using dhclient. Iy you wish to transfer other \
+vendor/user\n# specific variables, you have to add them in functions and \
+in\n# dhcpmkconfig script or use  tftp (to be enabled via kernel \
+command\n# line)." >>/etc/machine-setup
     set | sed -n -e '/^new/p' | sed \
       -e "s,^new_,,;s,fixed_address,clientip," \
       -e "s,routers,gateway,;s,dhcp_server_identifier,serverip," \
@@ -33,6 +42,6 @@ case $0 in
         >>/etc/machine-setup
   ;;
   *pump*)
-    #
+    dhcl="pump"; echo -e "$infomsg" >>/etc/machine-setup
   ;;
 esac

@@ -2,11 +2,11 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 21-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 22-05-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.4f
+# Version:      0.2.4g
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -448,12 +448,12 @@ else
 fi
 # copy machine configuration (from global settings, additions made within
 # here and from dhcp/ldap sources) to client /etc for later checks
-cp /etc/machine-setup /mnt/etc
 waitfor /tmp/hwcfg 20000 || error "$init_errhw"
 waitfor /tmp/svcfg 20000 || error "$init_errsw"
 # IP configuration is made and should not be updated automatically, udevd
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null
+cp /etc/machine-setup /mnt/etc
 
 # post init for some distro specific
 postinit
