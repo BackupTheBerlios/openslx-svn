@@ -1,0 +1,8 @@
+[GdmGreeterTheme]
+Encoding=UTF-8
+Greeter=industrial.xml
+Name=Code10 Industrial
+Description=Default Code 10 Theme
+Author=Jakub Steiner
+Copyright=(c) 2006 Novell, Inc.
+Screenshot=screenshot.png
