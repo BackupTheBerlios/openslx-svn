@@ -181,8 +181,11 @@ sub installVendorOS
 		$self->changePersonalityIfNeeded();
 		$self->setupStage1D();
 	});
-	slxsystem("touch $installInfoFile");
-		# just touch the file, in order to indicate a proper installation
+	# creat the install-info file, in order to indicate a proper installation:
+	open(INFO, "> $installInfoFile")
+		or die _tr("unable to create info-file <%s> (%s)\n", $installInfoFile, $!);
+	print INFO "SLX_META_PACKAGER=$self->{distro}->{'meta-packager-type'}\n";
+	close(INFO);
 	slxsystem("rm $baseSystemFile");
 		# no longer needed, we have a full system now
 	vlog 0, _tr("Vendor-OS '%s' installed succesfully.\n",
@@ -242,7 +245,7 @@ sub cloneVendorOS
 	if ($source ne $lastCloneSource) {
 		open(CLONE_INFO, "> $cloneInfoFile")
 			or die _tr("unable to create clone-info file '%s', giving up! (%s)\n",
-					   $cloneInfoFile);
+					   $cloneInfoFile, $!);
 		print CLONE_INFO "source=$source";
 		close CLONE_INFO;
 	}
@@ -463,8 +466,19 @@ sub createMetaPackager
 {
 	my $self = shift;
 
+	my $metaPackagerType = $self->{distro}->{'meta-packager-type'};
+
+	my $installInfoFile = "$self->{'vendor-os-path'}/.openslx-install-info";
+	if (-e $installInfoFile) {
+		# activate the meta-packager that was used when installing the os:
+		my $installInfo = slurpFile($installInfoFile);
+		if ($installInfo =~ m[SLX_META_PACKAGER=(\w+)]) {
+			$metaPackagerType = $1;
+		}
+	}
+
 	my $metaPackagerClass
-		= "OpenSLX::OSSetup::MetaPackager::$self->{distro}->{'meta-packager-type'}";
+		= "OpenSLX::OSSetup::MetaPackager::$metaPackagerType";
 	my $metaPackager =instantiateClass($metaPackagerClass);
 	$metaPackager->initialize($self);
 	$self->{'meta-packager'} = $metaPackager;
