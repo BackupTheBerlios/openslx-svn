@@ -1,10 +1,10 @@
-# de_de_utf_8.pm - OpenSLX-translations for the German language.
+# de.pm - OpenSLX-translations for the German language.
 #
 # (c) 2006 - OpenSLX.com
 #
 # Oliver Tappe <ot@openslx.com>
 #
-package OpenSLX::Translations::de_de_utf8;
+package OpenSLX::Translations::de;
 
 use strict;
 use vars qw(@ISA @EXPORT $VERSION);
