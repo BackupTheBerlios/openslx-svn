@@ -254,8 +254,8 @@ hwmain () {
 # "drivers" (pseudo, placeholder strings, ...) to exclude from loading
 # depending on distro more hw modules have to be excluded too. use the
 # D_HWMODTOIGNORE for that purpose
-driverlist=" disabled unknown ignore pcspkr synaptics keybdev kanotix\
-  ${D_HWMODTOIGNORE} "
+driverlist=" disabled unknown ignore pcspkr synaptics keybdev kanotix \
+  slamr {D_HWMODTOIGNORE} "
 # driver blacklist (real modules which fail to load)
 driverlist=${driverlist}"hw_random genericwheelusb "
 # hack for pseudo modules (not to load) hopefully "usbcore" is present
