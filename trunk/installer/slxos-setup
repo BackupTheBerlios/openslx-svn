@@ -54,27 +54,11 @@ if ($versionReq) {
 	exit 1;
 }
 
-my @supportedDistros = (
-	'debian-3.1',
-	'debian-4.0',
-	'fedora-6',
-	'fedora-6-x86_64',
-	'mandriva-2007.0',
-	'suse-9.3',
-	'suse-10.0',
-	'suse-10.0-x86_64',
-	'suse-10.1',
-	'suse-10.1-x86_64',
-	'suse-10.2',
-	'suse-10.2-x86_64',
-	'ubuntu-6.10',
-);
-
 openslxInit();
 
 if ($listReq) {
 	print _tr("List of supported distros:\n\t");
-	print join("\n\t", @supportedDistros)."\n";
+	print join("\n\t", keys %supportedDistros)."\n";
 	exit 1;
 }
 
@@ -83,20 +67,14 @@ if (scalar(@ARGV) != 1) {
 	pod2usage(2);
 }
 
-my $distroName = $ARGV[0];
-if (!grep { /^$distroName$/ } @supportedDistros) {
-	print _tr("Sorry, distro '%s' is unsupported.\n", $distroName);
-	print _tr("List of supported distros:\n\t");
-	print join("\n\t", @supportedDistros)."\n";
-	exit 1;
-}
-
 # we chdir into the script's folder such that all relative paths have
 # a known starting point:
 chdir($FindBin::RealBin)
 	or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 
-# create ossetup-engine and start it:
+
+# create ossetup-engine for given distro and start it:
+my $distroName = $ARGV[0];
 my $engine = OpenSLX::OSSetup::Engine->new;
 if ($setupRepos) {
 	$engine->initialize($distroName, 0);

@@ -6,13 +6,38 @@
 #
 package OpenSLX::OSSetup::Engine;
 
-use vars qw($VERSION);
+use vars qw(@ISA @EXPORT $VERSION);
 $VERSION = 1.01;		# API-version . implementation-version
+
+use Exporter;
+@ISA = qw(Exporter);
+
+@EXPORT = qw(
+	%supportedDistros
+);
 
 use strict;
 use Carp;
 use File::Basename;
 use OpenSLX::Basics;
+
+use vars qw(%supportedDistros);
+
+%supportedDistros = (
+#	'debian-3.1' 		=> 'Debian_3_1',
+#	'debian-4.0' 		=> 'Debian_4_0',
+#	'fedora-6' 			=> 'Fedora_6',
+#	'fedora-6-x86_64' 	=> 'Fedora_6_x86_64',
+#	'mandriva-2007.0' 	=> 'Mandriva_2007_0',
+#	'suse-9.3' 			=> 'SUSE_9_3',
+#	'suse-10.0' 		=> 'SUSE_10_0',
+#	'suse-10.0-x86_64' 	=> 'SUSE_10_0_x86_64',
+	'suse-10.1' 		=> 'SUSE_10_1',
+#	'suse-10.1-x86_64' 	=> 'SUSE_10_1_x86_64',
+	'suse-10.2' 		=> 'SUSE_10_2',
+#	'suse-10.2-x86_64' 	=> 'SUSE_10_2_x86_64',
+#	'ubuntu-6.10' 		=> 'Ubuntu_6_10',
+);
 
 ################################################################################
 ### interface methods
@@ -33,10 +58,16 @@ sub initialize
 	my $distroName = shift;
 	my $protectSystemPath = shift;
 
+	if (!exists $supportedDistros{lc($distroName)}) {
+		print _tr("Sorry, distro '%s' is unsupported.\n", $distroName);
+		print _tr("List of supported distros:\n\t");
+		print join("\n\t", keys %supportedDistros)."\n";
+		exit 1;
+	}
+
 	# load module for the requested distro:
-	$distroName = uc($distroName);
-	$distroName =~ tr[-.][_];
-	my $distroModule = "OpenSLX::OSSetup::Distro::$distroName";
+	my $distroModule
+		= "OpenSLX::OSSetup::Distro::".$supportedDistros{lc($distroName)};
 	unless (eval "require $distroModule") {
 		if ($! == 2) {
 			die _tr("Distro-module <%s> not found!\n", $distroModule);
