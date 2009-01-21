@@ -25,7 +25,12 @@ SLX_SYSTEM_BASENAME="${SLX_SYSTEM_NAME%%-*}"
 SLX_SYSTEM_VARIANTNAME="${SLX_SYSTEM_NAME##*-}"
 test "${SLX_SYSTEM_VARIANTNAME}" = "${SLX_SYSTEM_BASENAME}" && \
 	unset SLX_SYSTEM_VARIANTNAME
-SLX_SYSTEM_CONFIG_PATH="${SLX_CONFIG_PATH}/systems/${SLX_SYSTEM_BASENAME}"
+for dir in . ${SLX_CONFIG_PATH}; do
+	if test -d "${dir}/systems/${SLX_SYSTEM_BASENAME}"; then
+		SLX_SYSTEM_CONFIG_PATH="${dir}/systems/${SLX_SYSTEM_BASENAME}"
+		break
+	fi
+done
 
 # Read config files for a particular system
 for suffix in "" local ${SLX_SYSTEM_VARIANTNAME}; do
@@ -101,6 +106,7 @@ function slxossetup_rpm_suse()
    # FIXME: This should be controled by the config file.
 	find etc/ -type f -print0 | \
 		xargs -0 rm -f
+	popd >/dev/null
 
 	# Install base system files
 	for file in ${SLX_SYSTEM_CONFIG_PATH}/BASE_FILE_*; do
@@ -111,6 +117,7 @@ function slxossetup_rpm_suse()
 		test -d ""${SLX_STAGE1_PATH}/${dest_path}" || \
 			mkdir ""${SLX_STAGE1_PATH}/${dest_path}"
 		cp -p "${file}" "${SLX_STAGE1_PATH}/${dest_file}"
+		chown root: "${SLX_STAGE1_PATH}/${dest_file}"
 	done
 
 	unset packagelist
