@@ -4,10 +4,10 @@
 #               X Stations (v3.3,v3.4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-03-2006
-#               Michael Janczyk <mj0@uni-freiburg.de>, 06-04-2006
+#               Michael Janczyk <mj0@uni-freiburg.de>, 13-04-2006
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-VERSION=0.13.3b; LAST_CHANGES=06.04.06
+VERSION=0.13.3; LAST_CHANGES=13.04.06
 ################################################################################
 
 
@@ -174,6 +174,7 @@ preferencesheader ()
  pref.exchangeSelections = \"TRUE\"
  pref.hotkey.shift = \"TRUE\"
  pref.tip.startup = \"FALSE\"
+ pref.vmplayer.exit.vmAction = \"poweroff\"
  pref.vmplayer.fullscreen.autohide = \"TRUE\"
  pref.vmplayer.webUpdateOnStartup = \"FALSE\"
  prefvmx.defaultVMPath = \".vmware\"
@@ -769,8 +770,12 @@ runvmwareconfheader
 # Set Resolution for Windows guest
 winresheader
 
-# copy VMware bios
+# Copy VMware bios
 cp /usr/share/dxs/VMware/nvram.5.0 $CONFDIR/nvram 2>&1 >/dev/null
+
+# Adjust volume
+amixer -q sset Master 28 unmute
+amixer -q sset PCM 28 unmute
 
 
 
