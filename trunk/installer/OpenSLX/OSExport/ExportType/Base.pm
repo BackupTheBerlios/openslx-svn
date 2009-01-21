@@ -42,31 +42,13 @@ sub exportVendorOS
 {
 }
 
+sub purgeExport
+{
+}
+
 ################################################################################
 ### implementation methods
 ################################################################################
-sub copyViaRsync
-{
-	my $self = shift;
-	my $source = shift;
-	my $target = shift;
-
-	if (system("mkdir -p $target")) {
-		die _tr("unable to create directory '%s', giving up! (%s)\n",
-				$target, $!);
-	}
-	my $includeExcludeList = $self->determineIncludeExcludeList();
-	vlog 1, _tr("using include-exclude-filter:\n%s\n", $includeExcludeList);
-	open(RSYNC, "| rsync -av --delete --exclude-from=- $source/ $target")
-		or die _tr("unable to start rsync for source '%s', giving up! (%s)",
-				   $source, $!);
-	print RSYNC $includeExcludeList;
-	if (!close(RSYNC)) {
-		die _tr("unable to export to target '%s', giving up! (%s)",
-				$target, $!);
-	}
-}
-
 sub determineIncludeExcludeList
 {
 	my $self = shift;

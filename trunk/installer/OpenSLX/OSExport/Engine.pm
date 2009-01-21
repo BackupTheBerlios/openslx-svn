@@ -97,42 +97,12 @@ sub initialize
 			}
 		}
 	}
-	my $distroModule
-		= "OpenSLX::OSExport::Distro::"
-			.$supportedDistros{lc($distroName)}->{module};
-	unless (eval "require $distroModule") {
-		if ($! == 2) {
-			die _tr("Distro-module <%s> not found!\n", $distroModule);
-		} else {
-			die _tr("Unable to load distro-module <%s> (%s)\n", $distroModule, $@);
-		}
-	}
-	my $modVersion = $distroModule->VERSION;
-	if ($modVersion < 1.01) {
-		die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
-				$distroModule, 1.01, $modVersion);
-	}
-	my $distro = $distroModule->new;
+	my $distro = accessDistro($distroName);
 	$distro->initialize($self);
 	$self->{distro} = $distro;
 
 	# load module for the requested export type:
-	my $exportTypeModule
-		= "OpenSLX::OSExport::ExportType::"
-			.$supportedExportTypes{lc($exportType)}->{module};
-	unless (eval "require $exportTypeModule") {
-		if ($! == 2) {
-			die _tr("Export-type-module <%s> not found!\n", $exportTypeModule);
-		} else {
-			die _tr("Unable to load export-type-module <%s> (%s)\n", $exportTypeModule, $@);
-		}
-	}
-	my $modVersion = $exportTypeModule->VERSION;
-	if ($modVersion < 1.01) {
-		die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
-				$exportTypeModule, 1.01, $modVersion);
-	}
-	my $exporter = $exportTypeModule->new;
+	my $exporter = accessExporter($exportType);
 	$exporter->initialize($self);
 	$self->{'exporter'} = $exporter;
 
@@ -153,16 +123,71 @@ sub exportVendorOS
 		$self->{'vendor-os-path'},
 		$self->{'export-path'}
 	);
+	vlog 0, _tr("vendor-OS '%s' successfully exported to '%s'!",
+				$self->{'vendor-os-path'}, $self->{'export-path'});
 	$self->addExportToConfigDB();
+}
+
+sub purgeExport
+{
+	my $self = shift;
+
+	if ($self->{'exporter'}->purgeExport($self->{'export-path'})) {
+		vlog 0, _tr("export '%s' successfully removed!",
+					$self->{'export-path'});
+	}
+	$self->removeExportFromConfigDB();
 }
 
 ################################################################################
 ### implementation methods
 ################################################################################
-sub addExportToConfigDB
+sub accessDistro
 {
-	my $self = shift;
+	my $distroName = shift;
 
+	my $distroModule
+		= "OpenSLX::OSExport::Distro::"
+			.$supportedDistros{lc($distroName)}->{module};
+	unless (eval "require $distroModule") {
+		if ($! == 2) {
+			die _tr("Distro-module <%s> not found!\n", $distroModule);
+		} else {
+			die _tr("Unable to load distro-module <%s> (%s)\n", $distroModule, $@);
+		}
+	}
+	my $modVersion = $distroModule->VERSION;
+	if ($modVersion < 1.01) {
+		die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
+				$distroModule, 1.01, $modVersion);
+	}
+	return $distroModule->new;
+}
+
+sub accessExporter
+{
+	my $exportType = shift;
+
+	my $exportTypeModule
+		= "OpenSLX::OSExport::ExportType::"
+			.$supportedExportTypes{lc($exportType)}->{module};
+	unless (eval "require $exportTypeModule") {
+		if ($! == 2) {
+			die _tr("Export-type-module <%s> not found!\n", $exportTypeModule);
+		} else {
+			die _tr("Unable to load export-type-module <%s> (%s)\n", $exportTypeModule, $@);
+		}
+	}
+	my $modVersion = $exportTypeModule->VERSION;
+	if ($modVersion < 1.01) {
+		die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
+				$exportTypeModule, 1.01, $modVersion);
+	}
+	return $exportTypeModule->new;
+}
+
+sub accessConfigDB
+{
 	my $configDBModule = "OpenSLX::ConfigDB";
 	unless (eval "require $configDBModule") {
 		if ($! == 2) {
@@ -176,40 +201,72 @@ sub addExportToConfigDB
 			die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
 					$configDBModule, 1.01, $modVersion);
 		}
-		my $openslxDB = $configDBModule->new();
-		$openslxDB->connect();
+	}
+	return $configDBModule->new();
+}
 
-		# insert new export if it doesn't already exist in DB:
-		my $exportName = $self->{'vendor-os-name'};
-		my $export
-			= $openslxDB->fetchExportByFilter({
+sub addExportToConfigDB
+{
+	my $self = shift;
+
+	my $openslxDB = accessConfigDB();
+	$openslxDB->connect();
+
+	# insert new export if it doesn't already exist in DB:
+	my $exportName = $self->{'vendor-os-name'};
+	my $export
+		= $openslxDB->fetchExportByFilter({
+			'name' => $exportName,
+			'type' => $self->{'export-type'},
+		});
+	if (defined $export) {
+		vlog 0, _tr("No need to change export '%s' in OpenSLX-database.\n",
+					$exportName);
+	} else {
+		my $vendorOSName = $self->{'vendor-os-name'};
+		my $vendorOS
+			= $openslxDB->fetchVendorOSByFilter({'name' => $vendorOSName});
+		if (!defined $vendorOS) {
+			die _tr("vendor-OS '%s' could not be found in OpenSLX-database, giving up!\n",
+					$vendorOSName);
+		}
+		my $id = $openslxDB->addExport(
+			{
+				'vendor_os_id' => $vendorOS->{id},
 				'name' => $exportName,
 				'type' => $self->{'export-type'},
-			});
-		if (defined $export) {
-			vlog 0, _tr("No need to change export '%s' in OpenSLX-database.\n",
-						$exportName);
-		} else {
-			my $vendorOSName = $self->{'vendor-os-name'};
-			my $vendorOS
-				= $openslxDB->fetchVendorOSByFilter({'name' => $vendorOSName});
-			if (!defined $vendorOS) {
-				die _tr("vendor-OS '%s' could not be found in OpenSLX-database, giving up!\n",
-						$vendorOSName);
 			}
-			my $id = $openslxDB->addExport(
-				{
-					'vendor_os_id' => $vendorOS->{id},
-					'name' => $exportName,
-					'type' => $self->{'export-type'},
-				}
-			);
-			vlog 0, _tr("Export <%s> has been added to DB (ID=%s).\n",
-						$exportName, $id);
-		}
-
-		$openslxDB->disconnect();
+		);
+		vlog 0, _tr("Export '%s' has been added to DB (ID=%s).\n",
+					$exportName, $id);
 	}
+
+	$openslxDB->disconnect();
+}
+
+sub removeExportFromConfigDB
+{
+	my $self = shift;
+
+	my $openslxDB = accessConfigDB();
+	$openslxDB->connect();
+
+	# remove export from DB:
+	my $exportName = $self->{'vendor-os-name'};
+	my $export
+		= $openslxDB->fetchExportByFilter({
+			'name' => $exportName,
+			'type' => $self->{'export-type'},
+		});
+	if (!defined $export) {
+		vlog 0, _tr("Export '%s' didn't exist in OpenSLX-database.\n",
+					$exportName);
+	} else {
+		$openslxDB->removeExport($export->{id});
+		vlog 0, _tr("Export '%s' has been removed from DB.\n", $exportName);
+	}
+
+	$openslxDB->disconnect();
 }
 
 1;

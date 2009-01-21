@@ -41,26 +41,26 @@ sub exportVendorOS
 	my $source = shift;
 	my $target = shift;
 
-	# TODO: once the include/exclude-patch by Vito has been applied
-	#       to mksquashfs, the extra route via rsync isn't necessary anymore:
-	my $mksquashfsCanFilter = 1;
-	if ($mksquashfsCanFilter) {
-		my $includeExcludeList = $self->determineIncludeExcludeList();
-		# in order to do the filtering as part of mksquashfs, we need to map
-		# our internal (rsync-)filter format to regexes:
-		$includeExcludeList
-			= mapRsyncFilter2Regex($source, $includeExcludeList);
-		vlog 1, _tr("using include-exclude-filter:\n%s\n", $includeExcludeList);
-		$self->createSquashFS($source, $target, $includeExcludeList);
-	} else {
-		# do filtering via an rsync copy:
-		vlog 0, _tr("taking detour via rsync...");
-		my $tmpTarget = "${target}_###RSYNC_TMP###";
-		$self->copyViaRsync($source, $tmpTarget);
-		$self->createSquashFS($tmpTarget, $target);
-#		system("rm -r $tmpTarget");
-	}
+	my $includeExcludeList = $self->determineIncludeExcludeList();
+	# in order to do the filtering as part of mksquashfs, we need to map
+	# our internal (rsync-)filter format to regexes:
+	$includeExcludeList
+		= mapRsyncFilter2Regex($source, $includeExcludeList);
+	vlog 1, _tr("using include-exclude-filter:\n%s\n", $includeExcludeList);
+	$self->createSquashFS($source, $target, $includeExcludeList);
 	$self->showNbdParams($target);
+}
+
+sub purgeExport
+{
+	my $self = shift;
+	my $target = shift;
+
+	if (system("rm $target")) {
+		vlog 0, _tr("unable to remove export '%s'!", $target);
+		return 0;
+	}
+	1;
 }
 
 ################################################################################
@@ -74,7 +74,7 @@ sub createSquashFS
 	my $target = shift;
 	my $includeExcludeList = shift;
 
-	system("rm -rf $target");
+	system("rm -f $target");
 		# mksquasfs isn't significantly faster if fs already exists, but it
 		# causes the filesystem to grow somewhat, so we remove it in order to
 		# get the smallest FS-file possible.
@@ -94,8 +94,8 @@ sub createSquashFS
 	unlink($filterFile);
 		# ... remove filter file if done
 	if ($res) {
-		die _tr("unable to create squashfs for source '%s into target '%s', giving up! ($!)",
-				$source, $target);
+		die _tr("unable to create squashfs for source '%s' as target '%s', giving up! (%s)",
+				$source, $target, $!);
 	}
 }
 

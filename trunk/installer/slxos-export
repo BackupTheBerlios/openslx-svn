@@ -86,7 +86,7 @@ if ($action =~ m[^list-ex]i) {
 } elsif ($action =~ m[^list-ty]i) {
 	print _tr("List of supported export types:\n\t");
 	print join("\n\t", sort keys %supportedExportTypes)."\n";
-} elsif ($action =~ m[^export]i) {
+} elsif ($action =~ m[^(add|export)]i) {
 	if (scalar(@ARGV) != 2) {
 		print STDERR _tr("You need to specify exactly one vendor-os-name and one export-type!\n");
 		pod2usage(2);
@@ -107,12 +107,30 @@ if ($action =~ m[^list-ex]i) {
 				$engine->{'vendor-os-path'});
 	}
 	$engine->exportVendorOS();
+} elsif ($action =~ m[^remove]i) {
+	if (scalar(@ARGV) != 2) {
+		print STDERR _tr("You need to specify exactly one export-name and one export-type!\n");
+		pod2usage(2);
+	}
+	my $exportName = shift @ARGV;
+	my $exportType = shift @ARGV;
+
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+
+	# create OSExport-engine for given export type and start it:
+	my $engine = OpenSLX::OSExport::Engine->new;
+	$engine->initialize($exportName, $exportType);
+	$engine->purgeExport();
 } else {
 	print STDERR _tr("You need to specify exactly one action:
-	export
+	add
 	list-exported
 	list-installed
 	list-types
+	remove
 Try '%s --help' for more info.\n", $0);
 }
 
@@ -140,9 +158,10 @@ slxos-export [options] <action>
 
 =over 8
 
-=item B<<     export <vendor-OS-name> <export-type> >>
+=item B<<     add <vendor-OS-name> <export-type> >>
 
-exports the vendor-OS with the given name via the given export type
+exports the vendor-OS with the given name using the given export type and
+adds it to the config-DB, too
 
 =item B<<     list-exported >>
 
@@ -155,6 +174,11 @@ list all installed vendor-OSes
 =item B<<     list-types >>
 
 list all supported export types
+
+=item B<<     remove <export-name> <export-type> >>
+
+removes the export with the given name and export type from disk and
+config-DB
 
 =back
 
@@ -186,9 +210,9 @@ Prints the version and exits.
 
 =head3 Exporting a Vendor-OS via NFS
 
-=item B<<     slxos-export export suse-10.2 nfs >>
+=item B<<     slxos-export add suse-10.2 nfs >>
 
-exports the installed vendor-OS suse-10.2 via nfs, the
+Exports the installed vendor-OS suse-10.2 via nfs, the
 resulting NFS-export will live in C</srv/openslx/export/nfs/suse-10.2>.
 
 =back
@@ -197,10 +221,22 @@ resulting NFS-export will live in C</srv/openslx/export/nfs/suse-10.2>.
 
 =over 8
 
-=item B<<     slxos-export export ubuntu-6.10 nbd-squash >>
+=item B<<     slxos-export add ubuntu-6.10 nbd-squash >>
 
-exports the installed vendor-OS ubuntu-6.10 via nbd-squash, the resulting
+Exports the installed vendor-OS ubuntu-6.10 via nbd-squash, the resulting
 Squash-FS will live in C</srv/openslx/export/nbd-squash/ubuntu-6.10>.
+
+=back
+
+=head3 Removing an Export
+
+=over 8
+
+=item B<<     slxos-export remove ubuntu-6.10 nbd-squash >>
+
+Wipes the squash-FS of the export named 'ubuntu-6.10' from disk (i.e. the
+file C</srv/openslx/export/nbd-squash/ubuntu-6.10> will be deleted) and
+removes that export from the config-DB, too.
 
 =back
 
