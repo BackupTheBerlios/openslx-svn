@@ -32,8 +32,7 @@ D_SYSCONFDIR=/default
 D_ETCEXCL="etc/gconf/*\n*.old\n*-\n\
 etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
 pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
-X11/xdm/pixmaps\ndhclient.script\n\
-rc2.d/*\nrc5.d/*"
+X11/xdm/pixmaps\ndhclient.script"
 D_BINDMPTS="tmp root home"
 D_DIRINBINDMNT="/var/run /var/log /var/tmp /var/lib/gdm"
 D_RODIRSINRW="/etc/X11/xkb /var/lib/gconf /var/lib/dpkg /var/lib/aspell /var/lib/pango /var/lib/defoma"

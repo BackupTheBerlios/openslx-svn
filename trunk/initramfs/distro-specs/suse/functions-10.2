@@ -1,11 +1,17 @@
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
 # configuration functions for SuSE 10.2 which differ from functions defined
 # in general SuSE base definitions ...  General changes should be done there,
 # version specific changes for the 10.2 go here.
-#
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-12-2006
-#
-# (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.ORG Project
 
 # some specific stuff to initialize
 preinit () {
@@ -24,6 +30,7 @@ done
 echo -e "#!$shell\n:" >/usr/sbin/alsactl
 rm /etc/udev/rules.d/60-persistent-storage.rules 2>/dev/null
 chmod u+x /sbin/* /lib/udev/* /usr/sbin/*
+echo -e "disk:x:6:\nlp:x:7:\nkmem:x:9:\nvideo:x:33:" > /etc/group
 }
 
 # udev service
@@ -112,12 +119,17 @@ sed -e "/wanted keytable/,/^fi$/d;/load usb drivers/,/^esac$/d" \
   -i /mnt/etc/${D_INITDIR}/kbd
 sed -e "s,KEYTABLE=.*,KEYTABLE=\"${KEYTABLE}\"," \
   -i /mnt/etc/${D_SYSCONFDIR}/keyboard
+#echo -e "\tloadkeys ${KEYTABLE} >${LOGFILE} 2>&1\n" \
+#  >>/mnt/etc/${D_INITDIR}/boot.ld
+rllinker kbd "01" "20"
 }
 
 # consolefont and language (function run in hwautocfg)
 consolefont () {
 sed -e "s,RC_LANG=.*,RC_LANG=\"${LANG}\" # added in initrd," \
     -i /mnt/etc/${D_SYSCONFDIR}/language
+#echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
+#  >>/mnt/etc/${D_INITDIR}/boot.ld
 }
 
 # check the glx and tvout stuff and configure it
@@ -176,4 +188,6 @@ Files='\tModulePath\t"/etc/X11/modules"\n
 \tFontPath\t"/usr/share/fonts/misc/:unscaled"\n
 \tFontPath\t"/usr/share/fonts/75dpi/:unscaled"\n
 \tFontPath\t"/usr/share/fonts/100dpi/:unscaled"'
+# where to link /var/X11R6/bin/X too
+XBinPath=/usr/bin/Xorg
 }

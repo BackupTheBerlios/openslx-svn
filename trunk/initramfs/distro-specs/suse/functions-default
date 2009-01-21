@@ -560,3 +560,9 @@ rerun\n# the mkdxsinitrd script to get them applied\n\
   ;;
 esac
 }
+
+# Xorg variable settings. chance to overwrite settings in hwautocfg for
+# xorg.conf
+displayvars () {
+XBinPath=/usr/X11R6/bin/Xorg
+}
