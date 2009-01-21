@@ -473,9 +473,6 @@ esac
 # at this point ${DISTRO} ${DISTRO_VER} should be fixed
 copy_distro_stuff ${DISTRO} ${DISTRO_VER}
 
-# hotplug/udev type and related stuff
-cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
-
 # binary and corresponding library copies could be avoided if a small
 # initial ramdisk environment of its own is generated from busybox,
 # dietlibc and similar, see odlx project page ...
@@ -487,6 +484,14 @@ mknod ${INSTDIR}/tmp/kmsg c 1 11 &>/dev/null
 mknod ${INSTDIR}/tmp/ctl b 241 255 &>/dev/null
 # suse specific, but might be usable with other distros too
 mknod ${INSTDIR}/tmp/bootsplash p &>/dev/null
+
+# initial ramdisk scripts: init, functions, servconfig, hwautocfg, ...
+# copy and replace variable names
+for dirs in `find ${SLX_SHARE_PATH}/initramfs/* ! -regex ".*/\..*"` ; do
+  repco ${dirs##*initramfs/}
+done
+chmod 755 ${INSTDIR}/init \
+  ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
 
 # test for the existance of busybox
 if [ "$use_busybox" = 1 ]; then
@@ -503,7 +508,7 @@ if [ -n "$use_busybox" ] ; then
         mknod mkswap modprobe mount mv nice ping ps rdate rm rmmod sed \
         sleep sort swapoff swapon switch_root tar test tftp time udhcpc \
         umount uptime usleep vconfig vi zcat zcip; do
-    ln -s /bin/busybox ${INSTDIR}/bin/$bbins
+    ln -fs /bin/busybox ${INSTDIR}/bin/$bbins
   done
   # fake the sh link in busybox environment
   echo -e "#!/bin/ash\n/bin/ash \$@" > ${INSTDIR}/bin/sh
@@ -559,6 +564,9 @@ else
 fi
 
 mkdir -p ${INSTDIR}/var/{lib,run}
+
+# hotplug/udev type and related stuff
+cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
 
 # type of hotplug/udev/dev (for etc directories see above!!)
 for bbins in udev udevd udevstart udevtrigger udevsend
@@ -715,14 +723,6 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
 done
 cp ${ROOTDIR}/lib/modules/${KERNVER}/modules.* \
   ${INSTDIR}/lib/modules/${KERNVER}
-
-# initial ramdisk scripts: init, functions, servconfig, hwautocfg, ...
-# copy and replace variable names
-for dirs in `find ${SLX_SHARE_PATH}/initramfs/* ! -regex ".*/\..*"` ; do
-  repco ${dirs##*initramfs/}
-done
-chmod 755 ${INSTDIR}/init \
-  ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
 
 # add the common default client configuration file - just to ensure to
 # have all major variables defined. !!These settings are most probably

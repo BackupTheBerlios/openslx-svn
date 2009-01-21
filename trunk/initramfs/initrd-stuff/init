@@ -576,6 +576,6 @@ unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
   UDEVD_EXPECTED_SEQNUM
 #strinstr "bash" "$(ls -la /bin/sh)" && EE="-c"
 # new style of pivoting (exec -c would set an empty environment in bash)
-exec run-init -c dev/console /mnt /sbin/init || error "$init_runinit"
+#exec run-init -c dev/console /mnt /sbin/init || error "$init_runinit"
 # run-init could be replaced with switch_root from busybox ...
-#exec switch_root -c dev/console /mnt /sbin/init || error "$init_runinit"
+exec switch_root -c dev/console /mnt /sbin/init || error "$init_runinit"
