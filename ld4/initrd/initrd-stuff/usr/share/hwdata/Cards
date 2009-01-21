@@ -4017,6 +4017,12 @@ NAME Intel 915
 DRIVER i810
 NOCLOCKPROBE
 
+NAME Intel 945
+CHIPSET Intel 945
+DRIVER i810
+NOCLOCKPROBE
+
+
 ######################################################################
 # 3Dfx Hardware
 #

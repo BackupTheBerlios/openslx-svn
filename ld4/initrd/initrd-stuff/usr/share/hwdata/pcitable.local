@@ -1,0 +1,15 @@
+#~/usr/share/hwdata/pcitable.local
+#
+# Description:  local changes to the pcitables file. All additions should be
+#               documented here, so that they are not lost ...
+#               this file seems to be part of RedHat (and others) hardware
+#               detection tool suite
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-07-2006
+#
+# Copyright:    (c) 2006 - RZ Universitaet Freiburg
+#               (c) 2006 - odlx.org project
+#
+# Version:      0.0.1a
+
+0x8086  0x2772  "Card:Intel 945"

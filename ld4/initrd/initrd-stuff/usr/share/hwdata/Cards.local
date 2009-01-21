@@ -1,0 +1,16 @@
+#~/usr/share/hwdata/Cards.local
+#
+# Description:  local changes to the Cards file. All additions should be
+#		documented here, so that they are not lost ...
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-07-2006
+#
+# Copyright:    (c) 2006 - RZ Universitaet Freiburg
+#               (c) 2006 - odlx.org project
+#
+# Version:      0.0.1a
+
+NAME Intel 945
+CHIPSET Intel 945
+DRIVER i810
+NOCLOCKPROBE
