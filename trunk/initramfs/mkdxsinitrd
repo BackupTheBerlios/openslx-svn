@@ -540,14 +540,16 @@ if [ -z "$cdboot" ] ; then
   mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
   for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
     ${DEBUGMODULES} usbcore hid usbhid uhci-hcd ohci-hcd; do
-    mod=$(cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
-2>/dev/null)
+    mod=( $(cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
+      2>/dev/null) )
 
-    if [ -n "$mod" ] ; then
-      mpath=${INSTDIR}/${mod%/*}
+    mod_nr=${#mod[*]}
+    declare -i counter=0
+    while [ ${counter} -lt ${mod_nr} ]; do
+      mpath=${INSTDIR}/${mod[$counter]%/*}
       mkdir -p ${mpath}
       # specific function which can follow a link
-      modcp ${ROOTDIR}/$mod ${mpath} ${ROOTDIR}
+      modcp ${ROOTDIR}/${mod[$counter]} ${mpath} ${ROOTDIR}
       # fixmee!! selection of dependent modules could be handled a little bit
       # more clever
       rdirprefix="${ROOTDIR}/lib/modules/${KERNVER}/kernel"
@@ -596,10 +598,7 @@ if [ -z "$cdboot" ] ; then
           # needed for xen stuff
           cobi brctl bin &>/dev/null || \
             echo "Program brctl not found; could be ignored ..."
-          mkdir -p ${ddirprefix}/drivers/xen/netback
           mkdir -p ${ddirprefix}/net/bridge
-          cp ${rdirprefix}/drivers/xen/netback/netloop.ko \
-            ${ddirprefix}/drivers/xen/netback &>/dev/null
           cp ${rdirprefix}/net/bridge/bridge.ko \
             ${ddirprefix}/net/bridge &>/dev/null
         ;;
@@ -624,16 +623,15 @@ if [ -z "$cdboot" ] ; then
         ;;
         vesafb)
           # vesa framebuffer support
-          mkdir -p ${ddirprefix%kernel}/initrd \
-            ${ddirprefix}/drivers/video/console
-          cp ${rdirprefix%kernel}/initrd/vesafb.ko ${ddirprefix%kernel}/initrd
+          mkdir -p ${ddirprefix}/drivers/video/console
           for i in bitblit fbcon font mdacon softcursor tileblit; do
             cp ${rdirprefix}/drivers/video/console/$i.ko \
               ${ddirprefix}/drivers/video/console
           done
         ;;
       esac
-    fi
+      counter=${counter}+1
+    done
   done
   # copy user-supplied preinit files. The client specific one overwrites the
   # system default one. postinit.local may be part of fileget tgz (in stage3)
