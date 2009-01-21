@@ -162,17 +162,22 @@ sub initialize
 	}
 
 	# load module for the requested distro:
-	my $distroClass;
-	if ($actionType eq 'clone') {
-		# force generic clone module, such that we can clone
-		# distro's for which there is no specific distro-module yet
-		# (like for example for Gentoo):
-		$distroClass = "Any_Clone";
+	my $distro;
+	my $distroClass = $supportedDistros{lc($distroName)}->{module};
+	if ($actionType =~ m{^(install|update|shell)}) {
+		$distro = instantiateClass($distroClass);
 	}
 	else {
-		$distroClass = $supportedDistros{lc($distroName)}->{module};
+		if (!eval { 
+			$distro = instantiateClass("OpenSLX::OSSetup::Distro::$distroClass") 
+		}) {
+			# allow fallback to generic clone module, such that we can clone
+			# distro's for which there is no specific distro-module yet
+			# (like for example for Gentoo):
+			$distro = instantiateClass("OpenSLX::OSSetup::Distro::Any_Clone") 
+		}
 	}
-	my $distro = instantiateClass("OpenSLX::OSSetup::Distro::$distroClass");
+
 	$distro->initialize($self);
 	$self->{distro} = $distro;
 
