@@ -198,6 +198,8 @@ supported."; \
 	  $(DESTDIR)$(SLX_CONFIG_PATH)/; \
 	cp -a installer/default_files/machine-setup.default \
 	  $(DESTDIR)$(SLX_SHARE_PATH)/templates/; \
+	cp -a installer/default_files/hwdata/{pcitable.local,Cards.local} \
+	  $(DESTDIR)$(SLX_SHARE_PATH)/templates/; \
 	tar --exclude=.svn -cp -C installer/default_files tftpboot | \
 	  tar -xp -C $(DESTDIR)$(SLX_SHARE_PATH); \
 	cd theming; tar --exclude=.svn -cp * | \

@@ -9,10 +9,11 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-#~/usr/share/hwdata/Cards.local
+# <SLX_SHARE_PATH>/share/templates/hwdata/Cards.local
 #
-# local changes to the Cards file. All additions should be documented here, 
-# so that they are not lost ...
+# Local changes to the Cards file. All additions should be documented here, 
+# so that they are not lost ... They are prepended via mkdxsinitrd to the
+# main flat file database
 
 # Dell GX620
 NAME Intel 945
@@ -34,3 +35,5 @@ NOCLOCKPROBE
 # HP AMD64 onboard ATI Radeon RS482
 NAME ATI Radeon RS482
 DRIVER radeon
+
+# main database
