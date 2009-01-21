@@ -422,8 +422,13 @@ if [ -n "${bldmod}" ] ; then
     nbd)
       RDEV=/dev/nbd0
       waitfor "${RDEV}" 20000 || error "$init_nbddev"
+      i=0
       while ! nbd-client $bldhost $bldport ${RDEV} ; do
-        usleep 10000
+        usleep 100000
+        i=$(($i + 1))
+        if [ $i -ge 1000 ] ; then
+          error "$init_nbds"; break
+        fi
       done
       usleep 100
       echo noop > /sys/block/nbd0/queue/scheduler

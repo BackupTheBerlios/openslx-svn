@@ -693,6 +693,9 @@ echo "## common settings for clients sharing an InitRamFS" \
 if [ -n "${CLCONFFILE}" ] ; then
   cat ${CLCONFFILE} >>${INSTDIR}/etc/initramfs-setup
   echo "Using ${CLCONFFILE}"
+elif [ -n "$cdboot" ] ; then
+  echo -e "ramfs_nicmods=\"${NWMODULES}\"\nramfs_kernver=\"${KERNVER}\"" \
+    >>${INSTDIR}/etc/initramfs-setup
 fi
 echo "## end of common initramfs-setup" >>${INSTDIR}/etc/initramfs-setup
 
