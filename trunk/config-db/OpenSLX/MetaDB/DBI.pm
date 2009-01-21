@@ -46,10 +46,31 @@ sub disconnect
 }
 
 sub quote
-{	# default implementation quotes any given values through the DBD-driver
+{	# default implementation quotes any given values through the DBI
 	my $self = shift;
 
 	return $self->{'dbh'}->quote(@_);
+}
+
+sub start_transaction
+{	# default implementation passes on the request to the DBI
+	my $self = shift;
+
+	return $self->{'dbh'}->begin_work();
+}
+
+sub commit_transaction
+{	# default implementation passes on the request to the DBI
+	my $self = shift;
+
+	return $self->{'dbh'}->commit();
+}
+
+sub rollback_transaction
+{	# default implementation passes on the request to the DBI
+	my $self = shift;
+
+	return $self->{'dbh'}->rollback();
 }
 
 ################################################################################
@@ -157,6 +178,16 @@ sub fetchExportIDsOfVendorOS
 		SELECT id FROM export WHERE vendor_os_id = '$vendorOSID'
 	];
 	return $self->_doSelect($sql, 'id');
+}
+
+sub fetchGlobalInfo
+{
+	my $self = shift;
+	my $id = shift;
+
+	return if !length($id);
+	my $sql = "SELECT * FROM global_info WHERE id = ".$self->quote($id);
+	return $self->_doSelect($sql, 'value');
 }
 
 sub fetchSystemByFilter
@@ -554,6 +585,15 @@ sub changeExport
 	my $valRows = shift;
 
 	return $self->_doUpdate('export', $exportIDs, $valRows);
+}
+
+sub changeGlobalInfo
+{
+	my $self = shift;
+	my $id = shift;
+	my $value = shift;
+
+	return $self->_doUpdate('global_info', [$id], [{ 'value' => $value }] );
 }
 
 sub addSystem

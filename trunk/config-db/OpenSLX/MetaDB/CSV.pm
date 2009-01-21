@@ -31,7 +31,7 @@ use OpenSLX::MetaDB::DBI $VERSION;
 
 my $superVersion = $OpenSLX::MetaDB::DBI::VERSION;
 if ($superVersion < $VERSION) {
-	confess _tr('Unable to load module <%s> (Version <%s> required, but <%s> found)',
+	confess _tr("Unable to load module '%s' (Version '%s' required, but '%s' found)",
 				'OpenSLX::MetaDB::DBI', $VERSION, $superVersion);
 }
 ################################################################################
@@ -68,7 +68,7 @@ sub connect
 so there is no support for %s available, sorry!\n%s], 'DBD::CSV', 'CSV', $@);
 	$self->{'dbh'} = DBI->connect("dbi:CSV:$dbSpec", undef, undef,
 								  {PrintError => 0})
-			or confess _tr("Cannot connect to database <%s> (%s)",
+			or confess _tr("Cannot connect to database '%s' (%s)",
 						   $dbSpec, $DBI::errstr);
 }
 
@@ -82,20 +82,57 @@ sub quote
 	return "'$val'";
 }
 
+sub start_transaction
+{	# simulate a global transaction by flocking a file:
+	my $self = shift;
+
+	my $dbh = $self->{'dbh'};
+	my $lockFile = "$dbh->{'f_dir'}/transaction-lock";
+	sysopen(TRANSFILE, $lockFile, O_RDWR|O_CREAT)
+		or confess _tr(q[Can't open transaction-file '%s' (%s)], $lockFile, $!);
+	$self->{"transaction-lock"} = *TRANSFILE;
+	flock(TRANSFILE, LOCK_EX)
+		or confess _tr(q[Can't lock transaction-file '%s' (%s)], $lockFile, $!);
+}
+
+sub commit_transaction
+{	# free transaction-lock
+	my $self = shift;
+
+	if (!defined $self->{"transaction-lock"}) {
+		confess _tr(q[no open transaction-lock found!]);
+	}
+	close($self->{"transaction-lock"});
+	$self->{"transaction-lock"} = undef;
+	return 1;
+}
+
+sub rollback_transaction
+{	# free transaction-lock
+	my $self = shift;
+
+	if (!defined $self->{"transaction-lock"}) {
+		confess _tr(q[no open transaction-lock found!]);
+	}
+	close($self->{"transaction-lock"});
+	$self->{"transaction-lock"} = undef;
+	return 1;
+}
+
 sub generateNextIdForTable
-{	# CSV doesn't provide any mechanism to generate IDs, we just...
+{	# CSV doesn't provide any mechanism to generate IDs, we provide one
 	my $self = shift;
 	my $table = shift;
 
 	return 1 unless defined $table;
 
-	# ...fetch the next ID from a table-specific file:
+	# fetch the next ID from a table-specific file:
 	my $dbh = $self->{'dbh'};
 	my $idFile = "$dbh->{'f_dir'}/id-$table";
 	sysopen(IDFILE, $idFile, O_RDWR|O_CREAT)
-		or confess _tr(q[Can't open ID-file <%s> (%s)], $idFile, $!);
+		or confess _tr(q[Can't open ID-file '%s' (%s)], $idFile, $!);
 	flock(IDFILE, LOCK_EX)
-		or confess _tr(q[Can't lock ID-file <%s> (%s)], $idFile, $!);
+		or confess _tr(q[Can't lock ID-file '%s' (%s)], $idFile, $!);
 	my $nextID = <IDFILE>;
 	if (!$nextID) {
 		# no ID information available, we protect against users having
@@ -111,11 +148,11 @@ sub generateNextIdForTable
 		$nextID = 1+$maxID;
 	}
 	seek(IDFILE, 0, 0)
-		or confess _tr(q[Can't to seek ID-file <%s> (%s)], $idFile, $!);
+		or confess _tr(q[Can't to seek ID-file '%s' (%s)], $idFile, $!);
 	truncate(IDFILE, 0)
-		or confess _tr(q[Can't truncate ID-file <%s> (%s)], $idFile, $!);
+		or confess _tr(q[Can't truncate ID-file '%s' (%s)], $idFile, $!);
 	print IDFILE $nextID+1
-		or confess _tr(q[Can't update ID-file <%s> (%s)], $idFile, $!);
+		or confess _tr(q[Can't update ID-file '%s' (%s)], $idFile, $!);
 	close(IDFILE);
 
 	return $nextID;

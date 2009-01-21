@@ -195,6 +195,27 @@ sub disconnect
 	$self->{'meta-db'}->disconnect();
 }
 
+sub start_transaction
+{
+	my $self = shift;
+
+	$self->{'meta-db'}->start_transaction();
+}
+
+sub commit_transaction
+{
+	my $self = shift;
+
+	$self->{'meta-db'}->commit_transaction();
+}
+
+sub rollback_transaction
+{
+	my $self = shift;
+
+	$self->{'meta-db'}->rollback_transaction();
+}
+
 sub fetchVendorOSByFilter
 {
 	my $self = shift;
@@ -245,6 +266,14 @@ sub fetchExportIDsOfVendorOS
 	my $vendorOSID = shift;
 
 	return $self->{'meta-db'}->fetchExportIDsOfVendorOS($vendorOSID);
+}
+
+sub fetchGlobalInfo
+{
+	my $self = shift;
+	my $id = shift;
+
+	return $self->{'meta-db'}->fetchGlobalInfo($id);
 }
 
 sub fetchSystemByFilter
@@ -392,20 +421,35 @@ sub changeVendorOS
 	return $self->{'meta-db'}->changeVendorOS($vendorOSIDs, $valRows);
 }
 
-sub getNextExportCounterForVendorOS
+sub incrementExportCounterForVendorOS
 {
 	my $self = shift;
 	my $id = shift;
 
-	# TODO: fix this to be resilient against parallel execution
-	#       (use a transaction)
+	$self->start_transaction();
 	my $vendorOS
 		= $self->fetchVendorOSByID($id);
 	return undef unless defined $vendorOS;
 	my $exportCounter = $vendorOS->{export_counter}+1;
-	$self->changeVendorOS($id, { 'export_counter' => $exportCounter, });
+	$self->changeVendorOS($id, { 'export_counter' => $exportCounter });
+	$self->commit_transaction();
 
 	return $exportCounter;
+}
+
+sub incrementGlobalCounter
+{
+	my $self = shift;
+	my $counterName = shift;
+
+	$self->start_transaction();
+	my $value = $self->fetchGlobalInfo($counterName);
+	return undef unless defined $value;
+	my $newValue = $value+1;
+	$self->changeGlobalInfo($counterName, $newValue);
+	$self->commit_transaction();
+
+	return $value;
 }
 
 sub addExport
@@ -431,6 +475,15 @@ sub changeExport
 	my $valRows = _aref(shift);
 
 	return $self->{'meta-db'}->changeExport($exportIDs, $valRows);
+}
+
+sub changeGlobalInfo
+{
+	my $self = shift;
+	my $id = shift;
+	my $value = shift;
+
+	return $self->{'meta-db'}->changeGlobalInfo($id, $value);
 }
 
 sub addSystem
@@ -904,9 +957,17 @@ sub aggregatedSystemFileInfoFor
 	if ($exportURI !~ m[\w]) {
 		# auto-generate export_uri if none has been given:
 		my $type = $export->{'type'};
-		my $serverIpToken = generatePlaceholderFor('serverip');
+		my $serverIpToken
+			= length($export->{server_ip})
+				? $export->{server_ip}
+				: generatePlaceholderFor('serverip');
+		my $port
+			= length($export->{port})
+				? ":$export->{port}"
+				: '';
 		$exportURI
-			= "$type://$serverIpToken$openslxConfig{'export-path'}/$type/$export->{name}";
+			= $type.'://'.$serverIpToken.$port.$openslxConfig{'export-path'}
+				.'/'.$type.'/'.$export->{name};
 	}
 
 	my $info = { %$system };
