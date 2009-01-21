@@ -134,9 +134,9 @@ error_errlcfg="  Did not get any configuration data via ldap until now ..."
 # messages from distro functions
 df_errumod="    Failed to load the \"unix\" module. Problems with Hardware \
 detection\nwill probably arise."
-df_errserv="seems not to be installed or start script is not available\n  \
-so requesting the start of service make no sense. Please disable service\n  \
-or install the files needed."
+df_errserv="seems not to be installed or start script is\n  not available\
+so requesting the start of service make no sense. Please\n  disable service\
+or install the files/packages needed."
 df_errudev="  udev daemon is not available. Some devices might not appear."
 df_errhotpl="  Hotplug subdirectory is missing! udev(d) might not work as \
 expected."
