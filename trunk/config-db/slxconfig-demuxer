@@ -325,10 +325,7 @@ sub generateInitalRamFS
 	my $vendorOS = $info->{'vendor-os'};
 
 	vlog 1, _tr('generating initialramfs %s/initramfs', $pxeVendorOSPath);
-	my $cmd = "$openslxConfig{'bin-path'}/slxmkramfs ";
-	if ($info->{ramfs_use_busybox}) {
-		$cmd .= '-b ';
-	}
+	my $cmd = "$openslxConfig{'bin-path'}/mkdxsinitrd ";
 	my $debugLevel = $info->{ramfs_debug_level};
 	if ($debugLevel) {
 		$cmd .= qq[-d $debugLevel ];
@@ -342,33 +339,23 @@ sub generateInitalRamFS
 	my $rootPath
 		= "$openslxConfig{'stage1-path'}/$vendorOS->{name}";
 	$cmd .= "-i $pxeVendorOSPath/$info->{'initramfs-name'} -r $rootPath ";
+	$cmd .= "-s openslx ";
 
-	# fill slxConf-hash...
-	my %slxConf;
-	# ...set date initrd has been generated...
-	$slxConf{'slxconf_date'} = $callDate;
 	# ...set kernel version...
 	my $kernelFile = readlink($info->{'kernel-file'});
 	$kernelFile =~ m[-(.+)$];
-	$slxConf{'slxconf_kernver'} = $1;
-	# ...set distro version...
-	$slxConf{'slxconf_distro'} = $vendorOS->{'name'};
-	# ...set list of network modules...
-	$slxConf{'slxconf_listnwmod'}
-		= $info->{'ramfs_nicmods'} || $settings->{'default_nicmods'};
+	$cmd .= "-k $1 ";
+	# ...set distro and distro version...
+	$vendorOS->{'name'} =~ m[^([^-]+)-([^-]+)];
+	$cmd .= "-D $1 -v $2 ";
 	# ...add version info...
 	my $slxver = `slxversion`;
 	chomp $slxver;
-	$slxConf{'slxconf_slxver'} = $slxver;
-	# ...now create slxsystem.conf file and pass it to slxmkramfs:
-	writeSlxConfigToFile(\%slxConf, "$tempPath/slxsystem.conf");
-	$cmd .= qq[-s "$tempPath/slxsystem.conf" ];
-
+	$ENV{'SLX_VERSION'} = $slxver;
 	$ENV{'SLX_PRIVATE_PATH'} = $openslxConfig{'private-path'};
 	$ENV{'SLX_PUBLIC_PATH'} = $openslxConfig{'public-path'};
 	$ENV{'SLX_SHARE_PATH'} = $openslxConfig{'share-path'};
-	vlog 2, _tr('executing %s', $cmd);
-	system($cmd)		unless $dryRun;
+	slxsystem($cmd)		unless $dryRun;
 }
 
 sub writeSystemPXEFiles
