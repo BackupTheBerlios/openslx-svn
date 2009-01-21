@@ -158,15 +158,17 @@ SUBSYSTEM==\"usb\", ACTION==\"remove\", PROGRAM=\"/var/X11R6/bin/vm-udev\"" \
 fi
 }
 # set up keytable (function run in hwautocfg)
-# kbd runlevel link is in the list of initial runlevel scripts (see 
-# suse/config-10.2 file)
 keytable () {
-# remove unneeded components from the startscript
-sed -e "/wanted keytable/,/^fi$/d;/load usb drivers/,/^esac$/d" \
-  -i /mnt/etc/${D_INITDIR}/kbd
-sed -e "s,KEYTABLE=.*,KEYTABLE=\"${KEYTABLE}\"," \
-  -i /mnt/etc/${D_SYSCONFDIR}/keyboard
-rllinker kbd "20" "20"
+if [ -f /mnt/etc/${D_INITDIR}/kbd ] ; then
+  # remove unneeded components from the startscript
+  sed -e "/wanted keytable/,/^fi$/d;/load usb drivers/,/^esac$/d" \
+    -i /mnt/etc/${D_INITDIR}/kbd
+  sed -e "s,KEYTABLE=.*,KEYTABLE=\"${KEYTABLE}\"," \
+    -i /mnt/etc/${D_SYSCONFDIR}/keyboard
+  ln -sf /etc/${D_INITDIR}/kbd /mnt/etc/${D_INITBOOTD}/S01boot.kbd
+else
+  error "$df_errkbd" nonfatal
+fi
 }
 
 # consolefont and language (function run in hwautocfg)

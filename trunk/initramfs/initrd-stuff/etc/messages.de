@@ -160,6 +160,8 @@ Dieser Dienst koennte nuetzlich sein, um Daten von einem ldap Benutzer-\
 Verzeichnis zu bekommen."
 df_errafsd="  Kein AFS Verzeichnis erreichbar"
 df_errafsn="  Der AFS-Klient Dienst ist nicht verfuegbar"
+df_errkbd="  Keine nicht-englische Tastatur und/oder Konsolenunterstuetzung \
+installiert.\n  Falls gewuenscht/benoetigt diese im Stage1 nachinstallieren!"
 
 # messages from servconfig
 scfg_nfs="  Das Einhaengen der NFS Quelle schlug fehl..."

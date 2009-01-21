@@ -233,9 +233,9 @@ if [ "x$late_dm" = "xyes" ] ; then
   ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/K18xdm
   sed -e "s,xdm: .*,xdm:," -i /mnt/etc/${D_INITDIR}/.depend.start
 else
-  ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITBOOTD}/S12xdm
+  ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITBOOTD}/S02boot.xdm
   echo -e "\t(sleep 60; ln -sf ../xdm /etc/${D_INITDIR}/rc5.d/S01xdm; \
-  rm /etc/${D_INITBOOTD}/S12xdm) &\n" >>/mnt/etc/${D_INITDIR}/boot.slx
+  rm /etc/${D_INITBOOTD}/S02boot.xdm) &\n" >>/mnt/etc/${D_INITDIR}/boot.slx
 fi
 }
 # configure X display manager (runlevel links and kind of manager)

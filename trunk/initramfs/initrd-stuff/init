@@ -157,6 +157,8 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     unionfs=*)
       unionfs=1
       uniondirs=${opts#unionfs=}
+      # most probably it is a good idea to run ldconfig, so enable it
+      ldsc="yes"
     ;;
     # same for AUFS; alternative to unionfs
     aufs)
@@ -164,6 +166,8 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     aufs=*)
       aufs=1
       uniondirs=${opts#aufs=}
+      # most probably it is a good idea to run ldconfig, so enable it
+      ldsc="yes"
     ;;
     # if cowloop should be used, only ontop of network block device and in
     # combination with classical fs, like ext2 useful
@@ -510,17 +514,6 @@ if [ -n "${unionfs}" -o -n "${aufs}" ] ; then
   mkdir -p /mnt/uniontmp
   mount -n --move ${rwdir}/uniontmp /mnt/uniontmp
   chmod 0755 /mnt/uniontmp /mnt
-  # if additional sources should be used for a combined root filesystem
-  # probably more sources should be merged into union (${union} is defined)
-  # allow more than one union??
-  if [ -n "${unionfs}" -o -n "${aufs}" ] ; then
-    # for dir in "${union}"; do
-    # testmkd /unionadd/$dir
-    # mount $dir unionadd/$dir
-    # unionctl mnt --add --after /mnt --mode ro /unionadd/$dir
-    # most probably it is a good idea to run ldconfig, so enable it
-    ldsc="yes"
-  fi
   # run ldconfig if not switched off via kernel command line
   ldcfg
   # runlevel directories should contain no links
