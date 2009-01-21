@@ -187,12 +187,12 @@ in different flavors:
 
 =over 8
 
-=item B<    Export Type 'NFS'>
+=item B<    Export Type 'nfs'>
 
 NFS (network file system) is a well established networking file system, which
 is supported by LINUX since long.
 
-=item B<    Export Type 'NBD-squash'>
+=item B<    Export Type 'nbd'>
 
 A rather modern concept is the network block device, which basically "transports"
 a block device over the network (from server to client), making it possible to
@@ -243,14 +243,14 @@ resulting NFS-export will live in C</srv/openslx/export/nfs/suse-10.2>.
 
 =back
 
-=head3 Exporting a Vendor-OS via NBD-Squash
+=head3 Exporting a Vendor-OS via NBD
 
 =over 8
 
-=item B<<     slxos-export export ubuntu-6.10 nbd-squash >>
+=item B<<     slxos-export export ubuntu-6.10 nbd >>
 
-Exports the installed vendor-OS ubuntu-6.10 via nbd-squash, the resulting
-Squash-FS will live in C</srv/openslx/export/nbd-squash/ubuntu-6.10>.
+Exports the installed vendor-OS ubuntu-6.10 via nbd, the resulting
+Squash-FS will live in C</srv/openslx/export/nbd/ubuntu-6.10>.
 
 =back
 
@@ -258,10 +258,10 @@ Squash-FS will live in C</srv/openslx/export/nbd-squash/ubuntu-6.10>.
 
 =over 8
 
-=item B<<     slxos-export remove ubuntu-6.10 nbd-squash >>
+=item B<<     slxos-export remove ubuntu-6.10 nbd >>
 
 Wipes the squash-FS of the export named 'ubuntu-6.10' from disk (i.e. the
-file C</srv/openslx/export/nbd-squash/ubuntu-6.10> will be deleted) and
+file C</srv/openslx/export/nbd/ubuntu-6.10> will be deleted) and
 removes that export from the config-DB, too.
 
 =back
