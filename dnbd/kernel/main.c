@@ -70,7 +70,12 @@ static int dnbd_end_request(dnbd_device_t * dnbd, struct request *req,
 
 	spin_lock_irqsave(q->queue_lock, flags);
 	if (!(result = end_that_request_first(req, success, size))) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
+		end_that_request_last(req,success);
+#else
 		end_that_request_last(req);
+#endif
+
 	}
 	spin_unlock_irqrestore(q->queue_lock, flags);
 	return result;		/* 0, if request is completed */
