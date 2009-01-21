@@ -9,7 +9,7 @@
 use strict;
 
 my $abstract = q[
-slxconfig-demuxer.pl
+slxconfig-demuxer
     This script will read information about all systems, clients and
     groups from the OpenSLX configuration database, mix & match the individual
     configurational attributes and then demultiplex the resulting information
@@ -389,11 +389,11 @@ __END__
 
 =head1 NAME
 
-slxconfig-demuxer.pl - OpenSLX configuration demultiplexer
+slxconfig-demuxer - OpenSLX configuration demultiplexer
 
 =head1 SYNOPSIS
 
-slxconfig-demuxer.pl [options]
+slxconfig-demuxer [options]
 
   Script Options:
       --dry-run                  avoids writing anything, for testing

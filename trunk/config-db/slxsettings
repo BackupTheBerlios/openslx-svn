@@ -9,7 +9,7 @@
 use strict;
 
 my $abstract = q[
-slxsetup.pl
+slxsettings
     This script can be used to show or change the local settings for OpenSLX.
 
     Any cmdline-argument passed to this script will change the local OpenSLX
@@ -120,11 +120,11 @@ __END__
 
 =head1 NAME
 
-slxsetup.pl - OpenSLX-script to show & change local settings
+slxsettings - OpenSLX-script to show & change local settings
 
 =head1 SYNOPSIS
 
-slxsetup.pl [options]
+slxsettings [options]
 
   Script Options:
       --noshow                   do not print resulting settings

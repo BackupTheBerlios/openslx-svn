@@ -9,7 +9,7 @@
 use strict;
 
 my $abstract = q[
-slxsetup-test-data-simple.pl
+create-simple-db.pl
     This script will generate a very simple OpenSLX test-dataset, useful for
     testing and/or trying things out.
 
@@ -151,11 +151,11 @@ __END__
 
 =head1 NAME
 
-slxsetup-test-data-simple.pl - Simple OpenSLX test data generator
+create-simple-db.pl - Simple OpenSLX test data generator
 
 =head1 SYNOPSIS
 
-slxsetup-test-data-simple.pl [options]
+create-simple-db.pl [options]
 
   Script Options:
       --clobber                  overwrites config-db without asking

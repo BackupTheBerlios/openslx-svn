@@ -9,7 +9,7 @@
 use strict;
 
 my $abstract = q[
-slxsetup-test-data-simple.pl
+slxsetup
     This script will generate a very simple OpenSLX test-dataset, useful for
     testing and/or trying things out.
 
@@ -153,11 +153,11 @@ __END__
 
 =head1 NAME
 
-slxsetup-test-data-simple.pl - Simple OpenSLX test data generator
+slxsetup - interactive OpenSLX setup
 
 =head1 SYNOPSIS
 
-slxsetup-test-data-simple.pl [options]
+slxsetup [options]
 
   Script Options:
       --clobber                  overwrites config-db without asking
@@ -194,8 +194,8 @@ slxsetup-test-data-simple.pl [options]
 
 =item B<--clobber>
 
-Runs the script without asking any questions, B<any contents in the OpenSLX
-config-db will be wiped!>
+Runs the script without asking for confirmation, B<any contents in the
+OpenSLX config-db will be wiped!>
 
 =back
 
@@ -332,8 +332,9 @@ Prints the version and exits.
 
 =head1 DESCRIPTION
 
-B<slxsetup-test-data-simple.pl> will generate a very simple test-dataset
-useful for testing and/or trying things out.
+B<slxsetup> executes an interactive setup process (a questionnaire),
+after which an OpenSLX database will be created according to the
+results of the questionnaire.
 
 If the OpenSLX configuration database already contains data, the script
 will ask for confirmation before clobbering that database.

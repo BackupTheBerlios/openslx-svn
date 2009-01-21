@@ -9,7 +9,7 @@
 use strict;
 
 my $abstract = q[
-slxldd.pl
+slxldd
     This script reimplements ldd in a way that should work for all
     binary formats supported by the binutils installed on the host system.
 
@@ -164,12 +164,12 @@ __END__
 
 =head1 NAME
 
-slxldd.pl - OpenSLX-script to determine the libraries required by any given
+slxldd - OpenSLX-script to determine the libraries required by any given
 binary file.
 
 =head1 SYNOPSIS
 
-slxldd.pl [options] file [...more files]
+slxldd [options] file [...more files]
 
   Options:
       --help                   brief help message
