@@ -28,20 +28,40 @@ use vars qw($DbSchema %DbSchemaHistory);
 
 # configurable attributes for system, client and group:
 my @sharedAttributes = (
-	'attr_desktop_session:s.128',
+	'attr_automnt_dir:s.128',
+	'attr_automnt_src:s.128',
+#	'attr_auth_type:s.64',
+		# not used currently!
+	'attr_country:s.64',
+#	'attr_home_type:s.64',
+		# not used currently!
 	'attr_hw_graphic:s.64',
 	'attr_hw_monitor:s.64',
 	'attr_hw_mouse:s.64',
-	'attr_language:s.64',
+	'attr_late_dm:s.16',
 	'attr_netbios_workgroup:s.64',
-	'attr_start_rwhod:b',
-	'attr_start_snmp:b',
-	'attr_start_x:s.64',
-	'attr_start_xdmcp:s.64',
-	'attr_auth_type:s.64',
-	'attr_home_type:s.64',
-	'attr_tex_enable:b',
-	'attr_vmware:b',
+	'attr_nis_domain:s.64',
+	'attr_nis_servers:s.64',
+	'attr_sane_scanner:s.64',
+	'attr_scratch:s.128',
+	'attr_slxgrp:s.64',
+	'attr_start_alsasound:s.16',
+	'attr_start_atd:s.16',
+	'attr_start_cron:s.16',
+	'attr_start_dreshal:s.16',
+	'attr_start_ntp:s.16',
+	'attr_start_nfsv4:s.16',
+	'attr_start_printer:s.16',
+	'attr_start_samba:s.16',
+	'attr_start_snmp:s.16',
+	'attr_start_sshd:s.16',
+	'attr_start_syslog:s.64',
+	'attr_start_x:s.32',
+	'attr_start_xdmcp:s.32',
+	'attr_tex_enable:s.16',
+	'attr_timezone:s.32',
+	'attr_tvout:s.32',
+	'attr_vmware:s.128',
 );
 
 ################################################################################
@@ -109,9 +129,6 @@ $DbSchema = {
 			'comment:s.1024',		# internal comment (optional, for admins)
 			'kernel:s.128',			# path to kernel file, relative to /boot
 			'kernel_params:s.512',	# kernel-param string for pxe
-			'ramfs_debug_level:i',	# debug level for initramfs-generator-script
-			'ramfs_use_glibc:b',	# use glibc in ramfs
-			'ramfs_use_busybox:b',	# use busybox in ramfs
 			'ramfs_nicmods:s.128',	# list of network interface card modules
 			'ramfs_fsmods:s.128',	# list of filesystem modules
 			'ramfs_screen:s.10',	# screen size for splash
