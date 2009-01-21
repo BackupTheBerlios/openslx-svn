@@ -97,11 +97,10 @@ for script in boot boot.ld ${D_INITSCRIPTS} ; do
   rllinker "$script" "$after"
   after=$script
 done
-ls /mnt/etc/runlevels/boot
 # avoid the bullshit of "system initialization"
 sed -e "s/# System init.*//;s/si::.*//" -i /mnt/etc/inittab
 # initial script which is executed last
-lastinit=$after
+lastinit="$after"
 }
 
 # initialize boot.ld - skript to be executed during early system startup
@@ -359,4 +358,11 @@ Files='\tModulePath\t"/etc/X11/modules"\n
 \tFontPath\t"/usr/share/fonts/misc/"\n
 \tFontPath\t"/usr/share/fonts/75dpi/"\n
 \tFontPath\t"/usr/share/fonts/100dpi/"'
+InputDevice='\tIdentifier\t"Keyboard1"\n
+\tDriver\t\t"kbd"\n
+\tOption\t\t"XkbRules"\t\t"xorg"\n
+\tOption\t\t"XkbLayout"\t\t"XKEYBOARD"\n
+\tOption\t\t"XkbModel"\t\t"pc105"\n
+\tOption\t\t"XkbOptions"\t"lv3:ralt_switch"\n
+\tOption\t\t"XkbVariant"\t"nodeadkeys"'
 }
