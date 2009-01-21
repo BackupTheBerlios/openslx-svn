@@ -67,6 +67,8 @@ sub initDistroInfo
 		+ /usr/lib/perl5/*/*/*/*.o
 		+ /usr/lib/gcc/*/*/*.o
 		+ /usr/lib/*.o
+		+ /usr/X11R6/lib/modules/drivers/*.o
+		+ /usr/X11R6/lib/modules/drivers/linux/*.o
 		- /usr/bin/zen-*
 		- /usr/bin/nw-manager
 		- /usr/X11R6/bin/BackGround
