@@ -32,8 +32,8 @@ use Exporter;
 @ISA = qw(Exporter);
 
 my @supportExports = qw(
-       isAttribute mergeAttributes
-       externalIDForSystem externalIDForClient
+       isAttribute mergeAttributes pushAttributes
+       externalIDForSystem externalIDForClient externalConfigNameForClient
        externalAttrName generatePlaceholderFor
 );
 
@@ -792,15 +792,16 @@ sub emptyDatabase
 ### data aggregation interface
 ################################################################################
 sub mergeDefaultAttributesIntoSystem
-{	# merge default system configuration into given system
+{	# merge default system attributes into given system
+	# and push the default client attributes on top of that
 	my $self = shift;
 	my $system = shift;
-	my $defaultSystem = shift;
 
-	$defaultSystem = $self->fetchSystemByID(0)
-		unless defined $defaultSystem;
-
+	my $defaultSystem = $self->fetchSystemByID(0);
 	mergeAttributes($system, $defaultSystem);
+
+	my $defaultClient = $self->fetchClientByID(0);
+	pushAttributes($system, $defaultClient);
 }
 
 sub mergeDefaultAndGroupAttributesIntoClient
@@ -850,12 +851,21 @@ sub aggregatedSystemIDsOfClient
 
 sub aggregatedClientIDsOfSystem
 {	# return aggregated list of client-IDs this system is linked to
-	# (as indicated by itself, the default system and the system's groups)
+	# (as indicated by itself, the default system and the system's groups).
 	my $self = shift;
 	my $system = shift;
 
 	# add all clients directly linked to system:
 	my @clientIDs = $self->fetchClientIDsOfSystem($system->{id});
+
+	if (grep { $_ == 0; } @clientIDs) {
+		# add *all* client-IDs if the system is being referenced by
+		# the default client, as that means that all clients should offer
+		#this system for booting:
+		push @clientIDs,
+			 map { $_->{id} } $self->fetchClientByFilter(undef, 'id');
+	}
+
 
 	# step over all groups this system belongs to:
 	my @groupIDs = $self->fetchGroupIDsOfSystem($system->{id});
@@ -930,22 +940,35 @@ sub mergeAttributes
 	}
 }
 
+sub pushAttributes
+{	# copies all attributes that are set in source into the target
+	my $target = shift;
+	my $source = shift;
+
+	foreach my $key (grep { isAttribute($_) } keys %$source) {
+		if (length($source->{$key}) > 0) {
+			vlog 3, _tr("pushing %s (val=%s)", $key, $source->{$key});
+			$target->{$key} = $source->{$key};
+		}
+	}
+}
+
 sub externalIDForSystem
-{
+{	# returns given system's name as the external ID, worked into a
+	# state that is usable as a filename:
 	my $system = shift;
 
 	return "default" if $system->{id} == 0;
 
-	my $externalID = $system->{name};
-	$externalID =~ s[\s+][_]g;
-		# replace any whitespace in name, such that the external ID can
-		# be used as a directory name (without complications)
-	return $externalID;
+	my $name = $system->{name};
+	$name =~ tr[/][_];
+	return $name;
 }
 
 
 sub externalIDForClient
-{
+{	# returns given client's MAC as the external ID, worked into a
+	# state that is usable as a filename:
 	my $client = shift;
 
 	return "default" if $client->{id} == 0;
@@ -954,6 +977,18 @@ sub externalIDForClient
 		# PXE seems to expect MACs being all lowercase
 	$mac =~ tr[:][-];
 	return "01-$mac";
+}
+
+sub externalConfigNameForClient
+{	# returns given client's name as the external ID, worked into a
+	# state that is usable as a filename:
+	my $client = shift;
+
+	return "default" if $client->{id} == 0;
+
+	my $name = $client->{name};
+	$name =~ tr[/][_];
+	return $name;
 }
 
 sub externalAttrName
