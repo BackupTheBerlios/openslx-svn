@@ -314,8 +314,8 @@ setup_server () {
 
   # nfs
   echo -e "# Bla Blub\n \
-  # NFS export entry for DXS\n\
-  ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" >> ${dxs_conf}/${dxs_exports_conf}-${timestamp}
+# NFS export entry for DXS\n\
+${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" >> ${dxs_conf}/${dxs_exports_conf}-${timestamp}
 
   # pxe
   [ -d ${tftpbootdir} ] || mkdir -p ${tftpbootdir} 
