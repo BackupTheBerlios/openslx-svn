@@ -21,7 +21,7 @@
 ## For CRTs determine recommended screen modes ####################################################
 
 # enable debugging in higher debug levels
-[ -z "$DEBUGLEVEL" ] && DEBUGLEVEL=3
+[ -z "$DEBUGLEVEL" ] && DEBUGLEVEL=0
 [ $DEBUGLEVEL -gt 1 ] && DEBUG="yes"
 
 #Define some default output values if the script fails to find better values:
@@ -135,8 +135,8 @@ if [ -z $screen_size_in_qcm ] || [ -z $manufacturing_year ] || [ 256000 -gt $max
     echo "Error: Display seems to be incapable of providing all relevant DDC Information"
     # Print Defaults OPTIMIZEME: The defaults could be command line parameters
     echo "Recommended Screen Modes: $default_recommended_screen_modes" 
-    echo "Vertical Frequency Range (kHz): 31.5-$default_horiz_freq_khz"
-    echo "Horizontal Frequency Range (Hz): 60-90"
+    echo "Horizontal Frequency Range (kHz): 31.5-$default_horiz_freq_khz"
+    echo "Vertical Frequency Range (Hz): 60-90"
     exit 1;
 fi
 
