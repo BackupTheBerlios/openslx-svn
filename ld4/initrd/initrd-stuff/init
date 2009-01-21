@@ -2,12 +2,12 @@
 # Description:  main script for new type of initial ramdisk for
 #               linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 02-07-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - odlx.org project
 #
-# Version:      0.2.4j
+# Version:      0.2.4k
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -58,6 +58,7 @@ udev_hotplug
 TMPFSSIZE="50%"
 COWSIZE="50%"
 RWDIR=/dev/shm
+NFSRO="nfs"
 # switch off the several configuration methods, will be switched on
 # according to kernel commandline settings
 echo "noldap" > /tmp/ldap-done
@@ -309,6 +310,9 @@ if [ -n "${NBD}" ] ; then
     RDEV=/dev/cow/0
     # run ldconfig if not switched off via kernel command line
     ldcfg
+  else
+    # use normal UnionFS behaviour because rootfs is not NFS
+    NFSRO=""  
   fi
   # finally mount the block device
   for i in 50 100 ; do
@@ -350,7 +354,6 @@ fi
 # setup of client root filesystem dependent on the availability of UnionFS
 if [ -n "${UNIONFS}" ] ; then
   echo "Using UnionFS for rw access"
-  [ -n ${NFSROOT} ] && NFSRO=nfs
   mkdir -p ${RWDIR}/union ${RWDIR}/uniontmp
   mount -n -t tmpfs none ${RWDIR}/uniontmp
   mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/mnt=${NFSRO}ro \
@@ -359,9 +362,15 @@ if [ -n "${UNIONFS}" ] ; then
   mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp
   # if additional sources should be used for a combined root filesystem
   # probably more sources should be merged into union (${UNION} is defined)
+  # allow more than one union??
   if [ -n "${UNION}" ] ; then
-    # unionctl
-    :
+    # mkdir /unionadd
+    # for dir in ${UNIONDIRS}; do
+    # mkdir /unionadd/$dir
+    # mount $dir unionadd/$dir 
+    # unionctl mnt --add --after /mnt --mode ro /unionadd/$dir
+    # most probably it is a good idea to run ldconfig, so enable it
+    unset NOLDSC
   fi
   # run ldconfig if not switched off via kernel command line
   ldcfg
