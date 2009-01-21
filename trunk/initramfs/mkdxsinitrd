@@ -563,7 +563,7 @@ fi
 # put all needed modules into initial ramdisk
 mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
 for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
-  ${DEBUGMODULES} usbcore usbhid uhci-hcd ohci-hcd; do
+  ${DEBUGMODULES} usbcore hid usbhid uhci-hcd ohci-hcd; do
   mod=$(cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
 2>/dev/null)
 
