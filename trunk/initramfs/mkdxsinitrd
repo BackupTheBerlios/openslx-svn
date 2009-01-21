@@ -622,6 +622,16 @@ if [ -z "$cdboot" ] ; then
             ${ddirprefix}/drivers/scsi
           cp ${rdirprefix}/drivers/ata/libata.ko ${ddirprefix}/drivers/ata
         ;;
+        vesafb)
+          # vesa framebuffer support
+          mkdir -p ${ddirprefix%kernel}/initrd \
+            ${ddirprefix}/drivers/video/console
+          cp ${rdirprefix%kernel}/initrd/vesafb.ko ${ddirprefix%kernel}/initrd
+          for i in bitblit fbcon font mdacon softcursor tileblit; do
+            cp ${rdirprefix}/drivers/video/console/$i.ko \
+              ${ddirprefix}/drivers/video/console
+          done
+        ;;
       esac
     fi
   done

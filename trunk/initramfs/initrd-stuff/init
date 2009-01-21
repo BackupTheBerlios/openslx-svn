@@ -112,7 +112,9 @@ echo "noldap" > /tmp/ldap-done
 file="yes"
 
 # splashy stuff seems to depend on /proc/fb with VESA!?
-if cat /proc/fb |grep VESA > /dev/null 2>&1 ; then 
+# only activate with kernel option quiet
+if grep -qi '\(vesa|vga\)' /proc/fb > /dev/null 2>&1 \
+  && grep -qi " quiet " /proc/cmdline > /dev/null 2>&1; then
   export nosplash=0
 else
   export nosplash=1
@@ -272,9 +274,6 @@ $0\n# deprecated: please use rootfs=nfs://...\nnfsroot=\"${nfsroot}\"\n" \
       vci=${opts#vci=};;
     xenbr)
       xenbr=1;;
-    # splashy stuff
-    nosplash)
-      nosplash=1;;
   esac
 done
 
@@ -317,7 +316,7 @@ fi
 # set debug level and logfile
 if [ $DEBUGLEVEL -eq 20 ] ; then
   echo "** Setting debuglevel to ${DEBUGLEVEL} at $(sysup)"
-else
+elif [ $DEBUGLEVEL -ne 0 ] ; then
   echo "Setting debuglevel to ${DEBUGLEVEL}"
 fi
 export MODPRV=" "

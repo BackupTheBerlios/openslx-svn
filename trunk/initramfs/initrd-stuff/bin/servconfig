@@ -546,11 +546,16 @@ $0: $date\n:0 local X :0 vt07\n" >/mnt/etc/X11/xdm/Xservers
         test -f /var/run/kiosk || break; sleep 3;
       done
       touch /var/run/kiosk
-      resmgr login nobody tty7 \\
+      for((i=0;\$i<=120;i=\$((\$i+1)))); do
+        [ -e /var/run/resmgr.pid ] && break
+        [ \$i = 120 ] && exit 1
+        sleep 1
+      done
+      resmgr login nobody tty8 \\
       && resmgr grant nobody desktop \\
       && chown -R nobody:nogroup /var/lib/nobody \\
-      && (su -c 'amixer -q sset Master 28 unmute
-        amixer -q sset PCM 28 unmute
+      && (su -c '(sleep 10; amixer -q sset Master 28 unmute; \\
+        amixer -q sset PCM 28 unmute) &
         xinit /var/X11R6/bin/startgui $start_x \\
         -- vt7 -quiet' -l nobody &>/dev/null)
       rm /var/run/kiosk

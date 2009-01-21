@@ -22,6 +22,8 @@ preinit () {
   # load unix module to provide sockets (is compiled into kernel on
   # the live CDs!?)
   modprobe ${MODPRV} unix 2>/dev/null || error "$df_errumod" nonfatal
+  modprobe ${MODPRV} vesafb 2>/dev/null || error "$df_errumod" nonfatal
+  modprobe ${MODPRV} fbcon 2>/dev/null || error "$df_errumod" nonfatal
 }
 
 # overwrite settings set by hwautocfg, pathes will change for newer
