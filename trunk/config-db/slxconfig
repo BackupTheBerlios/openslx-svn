@@ -223,9 +223,9 @@ sub listSystems
 					map { $_->{name} }
 					sort { $a->{name} cmp $b->{name} }
 					$openslxDB->fetchClientByID(\@clientIDs, 'name');
-			my $export = $openslxDB->fetchExportByID($_->{export_id}, 'name');
+			my $export = $openslxDB->fetchExportByID($_->{export_id});
 			if (defined $export) {
-				$_->{export_id} .= " ($export->{name})";
+				$_->{export_id} = "$export->{name} ($export->{type})";
 			}
 			$_;
 		}
