@@ -34,11 +34,6 @@ my (
 	%libInfo,
 );
 
-# array of regexes that match on libraries which shall be ignored:
-my @ignoreLibs = (
-	'^ld-linux.*\.so',
-);
-
 GetOptions(
 	'help|?' => \$helpReq,
 	'root-path=s' => \$rootPath,
@@ -123,8 +118,6 @@ sub fetchLoaderConfig
 sub addLib
 {
 	my $lib = shift;
-
-	return if grep { $lib =~ m[$_] } @ignoreLibs;
 
 	if (!exists $libInfo{$lib}) {
 		push @libs, $lib;
