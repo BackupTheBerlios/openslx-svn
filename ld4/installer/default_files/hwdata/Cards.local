@@ -3,14 +3,21 @@
 # Description:  local changes to the Cards file. All additions should be
 #		documented here, so that they are not lost ...
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-07-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - odlx.org project
 #
-# Version:      0.0.1a
+# Version:      0.0.1b
 
+# Dell GX620
 NAME Intel 945
 CHIPSET Intel 945
+DRIVER i810
+NOCLOCKPROBE
+
+# IBM X41
+NAME Intel 915GM
+CHIPSET Intel 915
 DRIVER i810
 NOCLOCKPROBE

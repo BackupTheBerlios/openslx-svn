@@ -4,7 +4,7 @@
 #               for linux diskless clients (executed within initial
 #               ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-07-2006
 #               Michael Janczyk, 31-05-2006
 #               Lars Mueller, 23-06-2006
 #               Oliver Tappe, 23-06-2006
@@ -83,9 +83,19 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   if [ -d /mnt/usr/share/vmware ] ; then
     ln -sf /usr/share/vmware /mnt/var/lib/vmware
   elif [ -n "${imgsrv}" ] ; then
-  #  # more general mount script should be used here!?
+  # get type, server, path of VMware image export
+  vmimgsprot=$(uri_token $imgsrv prot)
+  vmimgsserv=$(uri_token $imgsrv server)
+  vmimgspath="/$(uri_token $imgsrv path)"
+  case "$vmimgsprot" in
+    *nbd)
+    ;;
+    *)
+    #  # more general mount script should be used here!?
     nfsmnt ${imgsrv} /mnt/var/lib/vmware || {
       error "$scfg_nfs" nonfatal; noimg=yes; }
+    ;;
+  esac
   fi
 fi
   
@@ -324,15 +334,24 @@ waitfor /tmp/tmpready 10000
 # create some directories and correct permissions
 tmpisdisk=`sed -n '/\/tmp/p' /mnt/etc/fstab`
 # if there is no local disk partition for /tmp then try to mount a rw
-# NFS scratch space (if defined in $scratch) and prepared on server
+# scratch space (if defined in $scratch) and prepared on server
 if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
+  scrproto=$(uri_token $FILESRC prot)
+  scrpath=$(uri_token $FILESRC path)
   mkdir -p /tmp/scratch >/dev/null 2>&1
-  mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid ${scratch} \
+  case "$scrproto" in
+    nbd)
+    # exports have to be per client!!
+    ;;
+    *)
+    mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid ${scratch} \
       /tmp/scratch >/dev/null 2>&1 && {
-    mkdir -p /tmp/scratch/${clientip} >/dev/null 2>&1
-    umount /tmp/scratch
-    mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid \
-      ${scratch}/${clientip} /mnt/tmp >/dev/null 2>&1; }
+      mkdir -p /tmp/scratch/${clientip} >/dev/null 2>&1
+      umount /tmp/scratch
+      mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid \
+        ${scratch}/${clientip} /mnt/tmp >/dev/null 2>&1; }
+    ;;
+  esac
 fi
 chmod 1777 /mnt/tmp
 

@@ -6,7 +6,7 @@
 #		New settings are simply appended, so that they might 
 #		overwrite previously defined variables 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-07-2006
 #		Blabla
 #		Blub
 #
@@ -85,17 +85,19 @@ netbios_workgroup="dxs-network"
 # automounter home (/local_dir - top level directories only) and source 
 # (server:/path)
 automnt_dir="/home"
-automnt_src="$serverip:/home"
+#automnt_src="$serverip:/home"
 
-# scratch space on server
+# scratch space on server "proto://$serverip:/dxs/tmp"
 scratch="$serverip:/dxs/tmp"
 
 # configure and start vmware services
 vmware="no"
-imgsrv="$serverip:/dxs/vmware"
+#imgsrv="(proto://)$serverip:/dxs/vmware"
 
 # kind of X11 display manager to run 
 start_xdmcp="xdm"
+# for kdm/gdm - enable shutdown option on login screen "user/root/none"
+dm_allow_shutdown="user"
 
 # try to start g/k/xdm with X as fast as possible late_dm="no"
 # if there are problems with key, console etc. set late_dm="yes" - adds

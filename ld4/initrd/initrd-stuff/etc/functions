@@ -2,13 +2,13 @@
 #		linux diskless clients (included by init, hwautocfg,
 #		servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-07-2006
 #	 	Felix Endres, 30-04-2006
 #		Tobias Maier
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.5.0b
+# Version:      0.5.1a
 
 #######################################################################
 # set of empty dummy functions (loaded before real functions in the 
@@ -112,7 +112,48 @@ return 0
 ldcfg () {
 [ -z "${NOLDSC}" ] && echo "$init_ldcfg" && ldconfig /tmp/ld.so.cache &
 }
-
+#######################################################################
+# URI interpreter $1 variable to interprete, $2 type of token to return
+# prot: tftp, http, nbd, ... server: IP or FQDN 
+uri_token () {
+local var=$1
+# first check if URI starts with prot:// - URI scheme
+if strinstr "://" "$1" ; then
+  prot=${var%://*}
+  rest=${var#*://}
+else
+  rest="$var"
+  prot=""
+fi
+# get the server IP or name and port - URI authority 
+# you get the path or other token without leading "/" - add it later if
+# needed
+if strinstr ":" "$rest" ; then
+  server="${rest%:*}"
+  rest="${rest#*:}"
+  path="${rest#*/}"
+  port="${rest%/$path}"
+else
+  server="${rest%/*}"
+  rest="${rest#*/}"
+  path="${rest#*/}"
+  port=""
+fi
+# get path and query components - URI path, query
+query=""
+if strinstr "\?" "$rest" ; then
+  path="${path%\?*}"
+  query="${rest#*\?}"
+fi
+# return the requested token
+case "$2" in
+  prot) echo "$prot" ;;
+  server) echo "$server" ;;
+  path) echo "$path" ;;
+  port) echo "$port" ;;
+  query) echo "$query" ;;
+esac
+}
 #######################################################################
 # load a certain module - name of module with path in argument one, the
 # error message in second argument
@@ -308,32 +349,34 @@ echo "dhcp finished" > /tmp/dhcp-done
 # kernel command line)
 # tftpget is helper function for fileget 
 tftpget () {
-# $1 is type of tftp command, $2 is config file name to get, $3 IP of
-# server to get file from
-local dst=/tmp/$(basename $2)
-case "$1" in
+# $1 is  config file name to get, $2 IP of server to get file from
+for tftp in /bin/atftp /bin/tftp ; do
+  test -x $tftp && break
+done
+echo -e "tftp\t69/tcp\ntftp\t69/udp" > /etc/services
+local dst=/tmp/$(basename $1)
+case "$tftp" in
     */atftp)
-      atftp -g -r $2 -l $dst $3 2> /dev/null
+      atftp -g -r $1 -l $dst $2 2> /dev/null
     ;;
     */tftp)
       # distinguish between busybox tftp and standalone (in.tftp) client
       if [ -x /bin/busybox ] ; then
-        tftp -g -r $2 -l $dst $3 2> /dev/null
+        tftp -g -r $1 -l $dst $2 2> /dev/null
       else
-        echo "get $2 $dst" | tftp $3 2> /dev/null 
+        echo "get $1 $dst" | tftp $2 2> /dev/null 
       fi
     ;;
 esac
 }
 fileget () {
-# get type of tftp available
-for tftp in /bin/atftp /bin/tftp ; do
-  test -x $tftp && break
-done
-echo -e "tftp\t69/tcp\ntftp\t69/udp" > /etc/services
+# get type of tftp available, alternatively use wget for ftp or http 
+# (fixme: rewrite of fileget needed!!)
+# analyze file soure (URI) in $FILESRC
 if [ -n "$FILESRC" ] ; then
-  cfgfile=${FILESRC#*:}
-  tftpserver=${FILESRC%:*}
+  srvproto=$(uri_token $FILESRC prot)
+  cfgfile="/$(uri_token $FILESRC path)"
+  tftpserver=$(uri_token $FILESRC server)
   tftpget $tftp $cfgfile $tftpserver
 else
   cfgdir="/tftpboot/client-config/"
@@ -348,14 +391,14 @@ and as last\n# distro/client" >> /tmp/confviafile
   for cfgfile in $cfgdir/default $cfgdir/01-$mac \
                  $cfgdir/$DISTRO/default $cfgdir/$DISTRO/01-$mac ; do
     echo "# -> $cfgfile" >> /tmp/confviafile
-    if tftpget $tftp $cfgfile $tftpserver ; then
+    if tftpget $cfgfile $tftpserver ; then
       cat /tmp/$(basename $cfgfile) >> /tmp/confviafile
     else
       echo -e "# ... this file does not exist on server." >> /tmp/confviafile
     fi
   done
 fi
-echo "tftp finished" > /tmp/file-done
+echo "fileget via $srvproto finished" > /tmp/file-done
 }
 
 #######################################################################
@@ -767,9 +810,9 @@ case "${XMODULE}" in
   radeon)
     # check ${XDESC}/ hwsetup.info device string in Cards file and then 
     # for needed components
-    test -f /mnt/lib/modules/${KERNEL}/kernel/drivers/char/drm/fglrx.ko && \
-      test -f /mnt/usr/X11R6/lib/modules/drivers/fglrx_drv.o && \
-      XMODULE=fglrx
+    test -f /mnt/lib/modules/${KERNEL}/kernel/drivers/char/drm/fglrx.ko \
+      && test -f /mnt/usr/X11R6/lib/modules/drivers/fglrx_drv.o && \
+         XMODULE=fglrx
       # there seems no problem, if no TV is connected
       TVOUT='\tOption\t\t"TVFormat" "PAL-B"\n
 \tOption\t\t"DesktopSetup" "horizontal"'

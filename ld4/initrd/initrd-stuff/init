@@ -2,12 +2,12 @@
 # Description:  main script for new type of initial ramdisk for
 #               linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-07-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - odlx.org project
 #
-# Version:      0.2.6a
+# Version:      0.2.6d
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -103,7 +103,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     # if (external, via tftp) configuration file retrieval should 
     # be triggered, if no source is given try dhcp server and
     # predefined standard path (~/tftpboot/client-conf/default, 
-	# client-conf/<name-of-export>/default, ...)
+    # client-conf/<name-of-export>/default, ...)
     file)
       FILE="yes"
       rm /tmp/file-done
@@ -248,19 +248,14 @@ fi
 if [ -n "${NBD}" ] ; then
   # load block device driver if needed
   modprobe ${MODPRV} ${NBD} || error "$init_errnbd"
-  # get settings for nbd-client
-  nbdhost=${NBDOPT%:*}
-  nbdopt=${NBDOPT#*:}
-  nbdport=${nbdopt%,*}
-  nbdfs=${nbdopt#$nbdport*}
-  if [ -z "$nbdfs" ]; then 
-    RFST=ext2; 
-  else
-    RFST=${nbdfs#*,};
-  fi
-  echo "Diskless client using ${NBD} on $nbdhost:$nbdport with $RFST"
+  # get settings for nbd-client, filesystem equals to path in URI notation
+  nbdhost=$(uri_token $NBDOPT server)
+  nbdport=$(uri_token $NBDOPT port)
+  nbdrfst=$(uri_token $NBDOPT path)
+  [ -z "$nbdrfst" ] && nbdrfst=ext2
+  echo "Diskless client using ${NBD} on $nbdhost:$nbdport with $nbdrfst"
   # fixme: check for fs in /proc/filesystems before trying to load the module
-  modprobe ${MODPRV} ${RFST} || error "$init_errnbd" nonfatal
+  modprobe ${MODPRV} ${nbdrfst} || error "$init_errnbd" nonfatal
 
   case "${NBD}" in
     # network block device present in standard kernel
@@ -319,7 +314,7 @@ if [ -n "${NBD}" ] ; then
   # finally mount the block device
   for i in 5 40 60 ; do
     usleep $i
-    mount -n -t $RFST -o $RWRO $RDEV /mnt 2>/dev/null && break
+    mount -n -t $nbdrfst -o $RWRO $RDEV /mnt 2>/dev/null && break
   done
 fi
 

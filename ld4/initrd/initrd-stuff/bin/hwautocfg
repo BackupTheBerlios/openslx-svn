@@ -4,7 +4,7 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 10-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-07-2006
 #		Felix Endres
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
@@ -428,9 +428,9 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
   # we use special non assigned partition type for harddisk scratch space
   for hdpartnr in $(cat /tmp/hd_part | \
         sed -n -e "/ 44 /p"|sed -e "s/[[:space:]].*//") ; do
-    # ugly message from ext2 mount :-(
-    ( mkfs.ext2 -q $hdpartnr; mount -n $hdpartnr /mnt/tmp; \
-      echo "$hdpartnr" > /tmp/tmpready ) &
+    # ext2fs_check_if_mount message supressed
+    ( mkfs.ext2 -Fq $hdpartnr 2>/dev/null; mount -n -o nocheck,noexec \
+      $hdpartnr /mnt/tmp 2>/dev/null; echo "$hdpartnr" > /tmp/tmpready ) &
     echo -e "$hdpartnr\t/tmp\t\text2\t\tdefaults\t 0 0" >> /tmp/fstab
     part44=yes
     break

@@ -5,11 +5,13 @@
 #               this file seems to be part of RedHat (and others) hardware
 #               detection tool suite
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-07-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - odlx.org project
 #
 # Version:      0.0.1a
 
+0x8086  0x2592  "Card:Intel 915GM"
 0x8086  0x2772  "Card:Intel 945"
+0x8086  0x2792  "Card:Intel 915GM"
