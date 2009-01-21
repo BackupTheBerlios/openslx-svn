@@ -166,8 +166,7 @@ __END__
 
 =head1 NAME
 
-slxos-setup - OpenSLX-script to install an operating system into a folder which
-will be used as a OpenSLX-stage1-system (a.k.a. vendor-OS).
+slxos-setup - OpenSLX-script to install a vendor-OS.
 
 =head1 SYNOPSIS
 
@@ -213,6 +212,22 @@ removes an installed vendor-OS
 updates an installed vendor-OS
 
 =back
+
+=head1 DESCRIPTION
+
+B<slxos-setup> installs an operating system into a folder which
+will be used as a OpenSLX-stage1-system (a.k.a. a I<vendor-OS>).
+
+You can either install a vendor-OS from scratch (causing the required
+packages to be downloaded or copied from a local source). Installing
+is supported for several different LINUX distributions, but not for all
+of them.
+
+Alternatively, a locally installed operating system can be cloned
+into a vendor-OS.
+
+When invoking slxos-setup, you have to pass it the name of the vendor-OS
+you wish to create.
 
 =head1 OPTIONS
 
@@ -327,5 +342,36 @@ Wipes the (existing) vendor-OS 'suse-10.2' from disk and removes it
 from the config-DB, too.
 
 =back
+
+=head1 SEE ALSO
+
+slxsettings, slxos-export, slxconfig, slxconfig-demuxer
+
+=head1 GENERAL OPENSLX OPTIONS
+
+Being a part of OpenSLX, this script supports several other options
+which can be used to overrule the OpenSLX settings:
+
+    --base-path=<string>       basic path to project files
+    --bin-path=<string>        path to binaries and scripts
+    --config-path=<string>     path to configuration files
+    --db-basepath=<string>     basic path to openslx database
+    --db-datadir=<string>      data folder created under db-basepath
+    --db-name=<string>         name of database
+    --db-spec=<string>         full DBI-specification of database
+    --db-type=<string>         type of database to connect to
+    --export-path=<string>     path to root of all exported filesystems
+    --locale=<string>          locale to use for translations
+    --logfile=<string>         file to write logging output to
+    --private-path=<string>    path to private data
+    --public-path=<string>     path to public (client-accesible) data
+    --share-path=<string>      path to sharable data
+    --stage1-path=<string>     path to stage1 systems
+    --temp-path=<string>       path to temporary data
+    --tftpboot-path=<string>   path to root of tftp-server
+    --verbose-level=<int>      level of logging verbosity (0-3)
+
+Please refer to the C<slxsettings>-manpage for a more detailed description
+of these options.
 
 =cut

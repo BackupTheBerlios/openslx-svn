@@ -14,9 +14,7 @@ use strict;
 
 my $abstract = q[
 slxos-export
-    This script exports an OpenSLX-stage1-system (a.k.a. vendor-OS) into
-    an OpenSLX-stage2-system (a.k.a. export), which can be an NFS-export,
-    an NBD-image containing a squash-fs.
+    OpenSLX-script to generate an export from a vendor-OS.
 ];
 
 use Getopt::Long qw(:config pass_through);
@@ -138,10 +136,7 @@ __END__
 
 =head1 NAME
 
-slxos-export - OpenSLX-script to export a stage1-system (a.k.a. vendor-OS) into
-a stage2-system (a.k.a. export).
-The export itself can be done via several different types, e.g. via NFS or
-via a squashfs inside of a network block device.
+slxos-export - OpenSLX-script to generate an export from a vendor-OS.
 
 =head1 SYNOPSIS
 
@@ -181,6 +176,37 @@ removes the export with the given name and export type from disk and
 config-DB
 
 =back
+
+=head1 DESCRIPTION
+
+B<slxos-export> converts an installed vendor-OS into a form that can be accessed
+via network by booting clients.
+
+The resulting form of such a conversion is called an I<export> and those come
+in different flavors:
+
+=over 8
+
+=item B<    Export Type 'NFS'>
+
+NFS (network file system) is a well established networking file system, which
+is supported by LINUX since long.
+
+=item B<    Export Type 'NBD-squash'>
+
+A rather modern concept is the network block device, which basically "transports"
+a block device over the network (from server to client), making it possible to
+use more or less any file system over the network. In this particular case,
+a squash-FS is being used, which is a filesystem providing very good compression,
+resulting in considerably reduced network traffic during boot (and execution).
+
+=back
+
+When invoking slxos-export, you have to pass it a vendor-OS name and the export
+type you want to use and it will do the conversion (which can take a while, so
+please be patient).
+
+The resulting export will be stored under C</srv/openslx/export>.
 
 =head1 OPTIONS
 
@@ -239,5 +265,36 @@ file C</srv/openslx/export/nbd-squash/ubuntu-6.10> will be deleted) and
 removes that export from the config-DB, too.
 
 =back
+
+=head1 SEE ALSO
+
+slxsettings, slxos-setup, slxconfig, slxconfig-demuxer
+
+=head1 GENERAL OPENSLX OPTIONS
+
+Being a part of OpenSLX, this script supports several other options
+which can be used to overrule the OpenSLX settings:
+
+    --base-path=<string>       basic path to project files
+    --bin-path=<string>        path to binaries and scripts
+    --config-path=<string>     path to configuration files
+    --db-basepath=<string>     basic path to openslx database
+    --db-datadir=<string>      data folder created under db-basepath
+    --db-name=<string>         name of database
+    --db-spec=<string>         full DBI-specification of database
+    --db-type=<string>         type of database to connect to
+    --export-path=<string>     path to root of all exported filesystems
+    --locale=<string>          locale to use for translations
+    --logfile=<string>         file to write logging output to
+    --private-path=<string>    path to private data
+    --public-path=<string>     path to public (client-accesible) data
+    --share-path=<string>      path to sharable data
+    --stage1-path=<string>     path to stage1 systems
+    --temp-path=<string>       path to temporary data
+    --tftpboot-path=<string>   path to root of tftp-server
+    --verbose-level=<int>      level of logging verbosity (0-3)
+
+Please refer to the C<slxsettings>-manpage for a more detailed description
+of these options.
 
 =cut
