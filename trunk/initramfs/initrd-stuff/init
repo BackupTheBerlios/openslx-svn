@@ -113,7 +113,7 @@ file="yes"
 
 # splashy stuff seems to depend on /proc/fb with VESA!?
 # only activate with kernel option quiet
-if grep -qi '\(vesa|vga\)' /proc/fb > /dev/null 2>&1 \
+if grep -q '\(VESA|VGA\)' /proc/fb > /dev/null 2>&1 \
   && grep -qi " quiet " /proc/cmdline > /dev/null 2>&1; then
   export nosplash=0
 else
