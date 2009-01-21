@@ -71,6 +71,17 @@ sub setupPackageSource
 	close(REPO);
 }
 
+sub installSelection
+{
+	my $self = shift;
+	my $pkgSelection = shift;
+
+	if (slxsystem("yum -y install $pkgSelection")) {
+		die _tr("unable to install selection (%s)\n", $!);
+	}
+	slxsystem('rm /proc/cpuinfo');
+}
+
 sub updateBasicVendorOS
 {
 	my $self = shift;
@@ -84,14 +95,11 @@ sub updateBasicVendorOS
 	}
 }
 
-sub installSelection
+sub cleanup
 {
 	my $self = shift;
-	my $pkgSelection = shift;
 
-	if (slxsystem("yum -y install $pkgSelection")) {
-		die _tr("unable to install selection (%s)\n", $!);
-	}
+	slxsystem('umount /proc');
 	slxsystem('rm /proc/cpuinfo');
 }
 

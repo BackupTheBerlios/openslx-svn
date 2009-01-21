@@ -172,14 +172,14 @@ sub installVendorOS
 	}
 	$self->createVendorOSPath();
 
-	$self->setupStage1A();
-	executeInSubprocess( sub {
-		# some tasks that involve a chrooted environment:
-		changePersonalityIfNeeded($self->{distro}->{'base-name'});
-		$self->setupStage1B();
-		$self->setupStage1C();
-	});
-	$self->stage1C_cleanupBasicVendorOS();
+ 	$self->setupStage1A();
+ 	executeInSubprocess( sub {
+ 		# some tasks that involve a chrooted environment:
+ 		changePersonalityIfNeeded($self->{distro}->{'base-name'});
+ 		$self->setupStage1B();
+ 		$self->setupStage1C();
+ 	});
+ 	$self->stage1C_cleanupBasicVendorOS();
 	executeInSubprocess( sub {
 		# another task that involves a chrooted environment:
 		changePersonalityIfNeeded($self->{distro}->{'base-name'});
@@ -703,6 +703,7 @@ sub setupStage1D
 	$self->stage1D_setupPackageSources();
 	$self->stage1D_updateBasicVendorOS();
 	$self->stage1D_installPackageSelection();
+	$self->{'meta-packager'}->cleanup();
 }
 
 sub updateStage1D
@@ -711,6 +712,7 @@ sub updateStage1D
 
 	vlog 1, "updating $self->{'vendor-os-name'}...";
 	$self->stage1D_updateBasicVendorOS();
+	$self->{'meta-packager'}->cleanup();
 }
 
 sub stage1D_setupPackageSources()
