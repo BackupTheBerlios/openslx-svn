@@ -241,11 +241,10 @@ sub writeAttributesToFile
 	return if $dryRun;
 
 	my $content = "# attributes set by slxconfig-demuxer:\n";
-	my @attrs = (
-		$grepForAttributes
-			? sort grep { isAttribute($_) } keys %$attrHash
-			: keys %$attrHash
-	);    
+	my @attrs 
+		= $grepForAttributes
+			? grep { isAttribute($_) } sort keys %$attrHash
+			: sort keys %$attrHash;
 	foreach my $attr (@attrs) {
 		my $attrVal = $attrHash->{$attr} || '';
 		if (length($attrVal) > 0) {
@@ -279,8 +278,8 @@ sub writeSlxConfigToFile
 }
 
 sub copyExternalSystemConfig
-{    # copies local configuration extensions of given system from private
-	    # config folder (var/lib/openslx/config/...) into a temporary folder
+{   # copies local configuration extensions of given system from private
+    # config folder (var/lib/openslx/config/...) into a temporary folder
 	my $systemName = shift;
 	my $targetPath = shift;
 	my $clientName = shift;    # optional
@@ -428,13 +427,16 @@ sub generateInitalRamFS
 	}
 	my $rootPath = "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}";
 	$cmd .= "-i $pxeVendorOSPath/$info->{'initramfs-name'} -r $rootPath ";
+
+	# pass in system name:
 	$cmd .= "-S $info->{name} ";
-	# pass in system name
+
+	# use theme 'openslx':
 	$cmd .= "-s openslx ";
-	# use theme 'openslx'
-	$cmd .= "-d ";
+
 	# always use dhclient instead of the busybox-provided dhcp-client
-	# (since the latter is unable to fetch NIS-stuff).
+	# (since the latter is unable to fetch NIS-stuff):
+	$cmd .= "-d ";
 
 	# generate initramfs-setup file (with settings relevant for initramfs only):
 	my $initramfsAttrFile = "$tempPath/initramfs-setup";
@@ -445,18 +447,21 @@ sub generateInitalRamFS
 		'rootfs'        => $info->{'export-uri'} || '',
 	};
 	writeAttributesToFile($initramfsAttrs, $initramfsAttrFile, 0);
-	# and pass it to mkdxsinitrd:
+	# and pass the generated initramfs-setup file to mkdxsinitrd:
 	$cmd .= "-c $initramfsAttrFile ";
 
-	# ...set kernel version...
+	# ... set kernel version ...
 	my $kernelFile = basename(followLink($info->{'kernel-file'}));
 	$kernelFile =~ m[-(.+)$];
 	my $kernelVersion = $1;
 	$cmd .= "-k $kernelVersion ";
-	# ...add version info...
+
+	# ... add version info ...
 	my $slxver = `slxversion`;
 	chomp $slxver;
 	$ENV{'SLX_VERSION'} = $slxver;
+
+	# ... finally invoke mkdxsinitrd:
 	slxsystem($cmd) unless $dryRun;
 }
 
@@ -530,7 +535,6 @@ sub writeClientConfigurationsForSystem
 		if ($clientAttrDigest ne $info->{'attr-digest'}
 			|| -d $clientConfigPath)
 		{
-
 			vlog(
 				1,
 				_tr(
