@@ -233,7 +233,7 @@ winresheader ()
  <settings>\r
    <eintrag>\r
      <computername param=\"$HOSTNAME\">\r
-     </computername>
+     </computername>\r
      <resolution_x param=\"$X_PARAM\">\r
      </resolution_x>\r
      <resolution_y param=\"$Y_PARAM\">\r

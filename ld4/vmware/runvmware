@@ -4,10 +4,10 @@
 #               X Stations (v4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-03-2006
-#               Michael Janczyk <mj0@uni-freiburg.de>, 06-04-2006
+#               Michael Janczyk <mj0@uni-freiburg.de>, 13-04-2006
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-version=pre0.14; last_changes=06-04-06
+version=pre0.14; last_changes=13-04-06
 ################################################################################
 
 
@@ -78,7 +78,7 @@ runvmwareconfheader () {
 
   floppy1.present = \"${floppyb}\"
   floppy1.fileType = \"file\"
-  floppy1.fileName = \"${filename}\"
+  floppy1.fileName = \"${floppybname}\"
   floppy1.startConnected = \"TRUE\"
 
 
@@ -124,6 +124,7 @@ preferencesheader () {
   pref.exchangeSelections = \"TRUE\"
   pref.hotkey.shift = \"TRUE\"
   pref.tip.startup = \"FALSE\"
+  pref.vmplayer.exit.vmAction = \"poweroff\"
   pref.vmplayer.fullscreen.autohide = \"TRUE\"
   pref.vmplayer.webUpdateOnStartup = \"FALSE\"
   prefvmx.defaultVMPath = \"${vmhome}\"
@@ -141,6 +142,9 @@ preferencesheader () {
 ### VARIABLES SECTION ##########################################################
 
 # declaration of default variables
+
+# first read variables from machine-setup
+. /etc/machine-setup
 
 # hardware variables
 # temporary disk space for logs, etc...
@@ -162,7 +166,7 @@ cdr_2_name="/dev/cdrom2"
 floppya="FALSE"
 floppyb="FALSE"
 # place for the virtual floppy "B:"
-filename=`mount | grep -i "/tmp/${clientip}-fd0.img" | awk '{print $1}'`
+floppybname="/tmp/${clientip}-fd0.img"
 
 
 # VMware variables
@@ -200,7 +204,7 @@ filecheck=
 
 # command line variables
 # start with this this default commmand line options + extra
-defaults=$(grep -v "#.*" ${vmtempl}/ostype)
+defaults=$(grep -v "#.*" ${vmtempl}/defaults)
 # add command line opts to defaults
 # defaults will be overwritten by command line options
 lineopts=( `echo ${defaults} $@` )
@@ -381,7 +385,7 @@ filecheck () {
 
 #### INTERPRET COMMAND LINE OPTIONS ############################################
 # print help if no clo
-if [ $# = "0" ]; then
+if [ ${nofclopt} = "0" ]; then
   help
   exit 0
 fi
@@ -678,10 +682,14 @@ preferencesheader
 runvmwareconfheader
 
 # include file which is given via command line
-. ${include}
+[ -n "${include}" ] && . ${include}
 
 # copy VMware (-Player) bios
 cp ${vmtempl}/nvram.5.0 ${tmpdir}/nvram 2>&1 >/dev/null
+
+# adjust volume
+amixer -q sset Master 28 unmute
+amixer -q sset PCM 28 unmute
 
 
 

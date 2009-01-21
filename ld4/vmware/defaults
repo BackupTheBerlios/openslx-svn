@@ -3,5 +3,5 @@
 # here you can specify default command line options for runvmware
 # all in one line !!!!
 
---include ${vmtempl}/winconfig --floppyb
+--include /var/lib/vmware/templ/winconfig --floppyb
 
