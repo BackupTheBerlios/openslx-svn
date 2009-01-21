@@ -1,4 +1,12 @@
 #! /usr/bin/perl
+#
+# test-config-db.pl - test-script for the OpenSLX config-db & MetaDB modules.
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
+use strict;
 
 # add the lib-folder and the folder this script lives in to perl's search
 # path for modules:

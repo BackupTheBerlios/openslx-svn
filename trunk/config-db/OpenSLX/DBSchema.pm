@@ -1,3 +1,9 @@
+# DBSchema.pm - provides database schema of the OpenSLX config-db.
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
 package OpenSLX::DBSchema;
 
 use strict;

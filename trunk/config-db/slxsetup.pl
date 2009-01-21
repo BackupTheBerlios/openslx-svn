@@ -1,4 +1,15 @@
 #! /usr/bin/perl
+#
+# slxsetup.pl - OpenSLX-script to show & change local settings
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
+use strict;
+
+use Getopt::Long qw(:config pass_through);
+use Pod::Usage;
 
 # add the lib-folder and the folder this script lives in to perl's search
 # path for modules:
@@ -9,9 +20,6 @@ use lib "$FindBin::RealBin";
 	# development path
 
 use OpenSLX::Basics;
-
-use Getopt::Long qw(:config pass_through);
-use Pod::Usage;
 
 my (
 	$noShow,

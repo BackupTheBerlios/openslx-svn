@@ -1,3 +1,9 @@
+# ConfigDB.pm - provides full API of the OpenSLX config-db.
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
 package OpenSLX::ConfigDB;
 
 use strict;

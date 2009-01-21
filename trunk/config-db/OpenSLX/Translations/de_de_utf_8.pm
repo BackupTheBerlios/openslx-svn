@@ -1,3 +1,9 @@
+# de_de_utf_8.pm - OpenSLX-translations for the German language.
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
 package ODLX::Translations::de_de_utf_8;
 
 use strict;

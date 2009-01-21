@@ -1,5 +1,17 @@
 #! /usr/bin/perl
+#
+# slxconfig-demuxer.pl - OpenSLX configuration demultiplexer
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
 use strict;
+
+use Fcntl qw(:DEFAULT :flock);
+use File::Basename;
+use Getopt::Long qw(:config pass_through);
+use Pod::Usage;
 
 # add the lib-folder and the folder this script lives in to perl's search
 # path for modules:
@@ -8,11 +20,6 @@ use lib "$FindBin::RealBin/../lib";
 	# production path
 use lib "$FindBin::RealBin";
 	# development path
-
-use Fcntl qw(:DEFAULT :flock);
-use File::Basename;
-use Getopt::Long qw(:config pass_through);
-use Pod::Usage;
 
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:access :aggregation :support);

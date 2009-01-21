@@ -1,3 +1,9 @@
+# Base.pm - provides empty base of the OpenSLX MetaDB API.
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
 ################################################################################
 # OpenSLX::MetaDB:Base - the base class for all MetaDB drivers
 #

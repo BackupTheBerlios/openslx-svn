@@ -1,3 +1,9 @@
+# CSV.pm - provides CSV-specific overrides of the OpenSLX MetaDB API.
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
 package OpenSLX::MetaDB::CSV;
 
 use vars qw(@ISA $VERSION);

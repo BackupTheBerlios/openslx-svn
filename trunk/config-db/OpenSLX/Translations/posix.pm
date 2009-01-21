@@ -1,3 +1,9 @@
+# posix.pm - OpenSLX-translations for the posix locale (English language).
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
 package ODLX::Translations::posix;
 
 use strict;

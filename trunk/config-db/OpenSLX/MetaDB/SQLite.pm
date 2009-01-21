@@ -1,3 +1,9 @@
+# SQLite.pm - provides SQLite-specific overrides of the OpenSLX MetaDB API.
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
 package OpenSLX::MetaDB::SQLite;
 
 use vars qw(@ISA $VERSION);

@@ -1,23 +1,16 @@
+# DBI.pm - provides DBI-based implementation of the OpenSLX MetaDB API.
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
 package OpenSLX::MetaDB::DBI;
 
+use strict;
 use vars qw(@ISA $VERSION);
 @ISA = ('OpenSLX::MetaDB::Base');
 $VERSION = 1.01;		# API-version . implementation-version
 
-################################################################################
-### This class is the base for all DBI-related metaDB variants.
-### It provides a default implementation for every method, such that
-### each DB-specific implementation needs to override only the methods
-### that require a different implementation than the one provided here.
-###
-### N.B.: In case you ask yourself why none of the SQL-statements in this
-###       file make use of SQL bind params (?), the answer is that at least
-###       one DBD-driver didn't like them at all. As the performance gains
-###       from bound params are not really necessary here, we simply do
-###       not use them.
-################################################################################
-
-use strict;
 use Carp;
 use DBI;
 use OpenSLX::Basics;
@@ -325,12 +318,6 @@ sub fetchGroupIDsOfClient
 
 ################################################################################
 ### data manipulation functions
-###
-### N.B.: In case you ask yourself why none of the SQL-statements in
-###       the following functions make use of SQL-placeholders (?), the answer
-###       is that at least one DBD-driver didn't like them at all.
-###       As the improved performance gained from using placeholders is not
-###       really necessary here, we simply do not use them.
 ################################################################################
 sub _doInsert
 {
@@ -961,3 +948,25 @@ sub schemaChangeColumns
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+DBI.pm - provides DBI-based implementation of the OpenSLX MetaDB API.
+
+=head1 SYNOPSIS
+
+This class is the base for all DBI-related metaDB variants.
+It provides a default implementation for every method, such that
+each DB-specific implementation needs to override only the methods
+that require a different implementation than the one provided here.
+
+=head1 NOTES
+
+In case you ask yourself why none of the SQL-statements in this
+file make use of SQL bind params (?), the answer is that at least
+one DBD-driver didn't like them at all. As the performance gains
+from bound params are not really necessary here, we simply do
+not use them.
+

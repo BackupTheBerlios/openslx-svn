@@ -1,4 +1,15 @@
 #! /usr/bin/perl
+#
+# slxsetup-test-data-simple.pl - Simple OpenSLX test data generator
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
+use strict;
+
+use Getopt::Long qw(:config pass_through);
+use Pod::Usage;
 
 # add the lib-folder and the folder this script lives in to perl's search
 # path for modules:
@@ -10,9 +21,6 @@ use lib "$FindBin::RealBin";
 
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:access :manipulation);
-
-use Getopt::Long qw(:config pass_through);
-use Pod::Usage;
 
 my (
 	$clobber,

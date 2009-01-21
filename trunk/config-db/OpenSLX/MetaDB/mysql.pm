@@ -1,3 +1,9 @@
+# mysql.pm - provides mysql-specific overrides of the OpenSLX MetaDB API.
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
 package OpenSLX::MetaDB::mysql;
 
 use vars qw(@ISA $VERSION);
