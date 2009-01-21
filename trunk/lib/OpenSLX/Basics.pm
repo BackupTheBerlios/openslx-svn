@@ -23,7 +23,7 @@ $VERSION = 1.01;
 @EXPORT = qw(
 	&openslxInit %openslxConfig %cmdlineConfig
 	&_tr &trInit
-	&die &executeInSubprocess &slxsystem
+	&warn &die &executeInSubprocess &slxsystem
 	&vlog
 );
 
@@ -317,6 +317,20 @@ sub slxsystem
 		exit;
 	}
 	return $res;
+}
+
+# ------------------------------------------------------------------------------
+sub warn
+{
+	my $msg = shift;
+	if ($openslxConfig{'croak'}) {
+		print STDERR "*** ";
+		carp $msg;
+	} else {
+		$msg =~ s[^][*** ]igms;
+		chomp $msg;
+		print STDERR "$msg\n";
+	}
 }
 
 # ------------------------------------------------------------------------------
