@@ -41,6 +41,7 @@ DISBINDMNT="<set in ~/distro-config/distro file>"
 INITDIR="<set in ~/distro-config/distro file>"
 INITBOOTD="<set in ~/distro-config/distro file>"
 RCDIRS="<set in ~/distro-config/distro file>"
+RCDIRSINRW="<set in ~/distro-config/distro file>"
 INITSCRIPTS="<set in ~/distro-config/distro file>"
 
 #########################################################################
@@ -93,7 +94,7 @@ shared_object_files() {
 
     LDD=`which ldd`
     if [ ! -x $LDD ]; then
-	error 2 "I need $LDD."
+	error 2 "I need execution permission on ldd ($LDD)."
     fi
 
     initrd_libs=( $(
@@ -268,7 +269,7 @@ mkdir -p ${INSTDIR}/usr/share
 mkdir -p ${INSTDIR}/etc/sysconfig
 
 # source configuration file for the distribution used
-DISTRO=suse
+DISTRO=debian
 case "${DISTRO}.${DISVER}" in
   SuSE*|suse*|Suse*|SuSe*)
 	DISTRO=suse-10.0
@@ -290,7 +291,7 @@ cp -a distro-specs/${DISTRO}/files ${INSTDIR}/etc/sysconfig
 for bbins in ash bash sh; do
   if cobi ${bbins} bin ; then 
     LRCSH=/bin/${bbins}; ln -fs /bin/${bbins} ${INSTDIR}/bin/sh; break
-  else echo "Binary not found (1)"; fi
+  else echo "Binary not found (${bbins})"; fi
 done
 
 # if no klibc
@@ -318,7 +319,10 @@ for bbins in \
 done
 
 # one of the dhcp clients
-cobi dhcpcd bin
+for dhcp in dhclient dhcpcd pump ipconfig ; do
+  which $dhcp && break;
+done
+cobi $dhcp bin
 mkdir -p ${INSTDIR}/var/{lib,run}
 
 # debug binaries
@@ -343,6 +347,11 @@ mkdir -p ${INSTDIR}/var/lib/nfs/state
 
 #if nfs - dann modul suchen, kopieren 
 
+case "${DISTRO}" in 
+  debian*)
+    cp /lib/libnss_compat.so.2 ${INSTDIR}/lib;;
+esac
+
 # add needed libraries depending on choosen binaries
 for lib in `shared_object_files ${INSTDIR}/bin/*` ; do
   baselib=`basename ${lib}`
@@ -352,7 +361,7 @@ done
 
 # add kernel modules and dependency files
 #KERNVER=2.6.13-15-default
-KERNVER=2.6.13-15.7-default
+KERNVER=2.6.12-10-386
 NWMODULES="e100 tg3 via-rhine"
 FSMODULES="nbd nfs"
 

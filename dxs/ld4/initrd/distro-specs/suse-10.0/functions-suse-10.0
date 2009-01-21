@@ -10,6 +10,10 @@
 # 
 # Version:      0.2.1a
 
+# distro specific stuff to initialize
+preinit () {
+}
+
 # linking runlevel scripts
 rllinker () {
 local script="$1"

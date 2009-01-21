@@ -83,8 +83,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     # nfs server and path
     nfsroot=*)
       NFSROOT=${opts#nfsroot=}
-      echo -e "\n# nfs root information gotten via kernel command line \
-in $0\nnfsroot=\"${NFSROOT}\"" >> /etc/machine-setup
+      echo -e "\n# nfs root information gotten via kernel command line \ in $0\nnfsroot=\"${NFSROOT}\"" >> /etc/machine-setup
     ;;
     # size of tempfs if not max. 50% of RAM should be used
     tmpfssize=*)
@@ -103,6 +102,12 @@ if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
   else
     error "  Unable to setup at \
 least basic functionality, because no IP configuration\n  available. You \
+might pass that information via kernel command line\n  through setting of \
+'ipappend 1' in pxelinux.cfg/* or just enable dhcp\n  or ldap. They are \
+enabled via tokens ('ldap' or 'dhcp') in kernel\n  command line."
+  fi
+fi
+[ -z "$DHCP" -a -n "$LDAP" -a -z "$IPINFO" ] && error "  Unable to setup at \
 might pass that information via kernel command line\n  through setting of \
 'ipappend 1' in pxelinux.cfg/* or just enable dhcp\n  or ldap. They are \
 enabled via tokens ('ldap' or 'dhcp') in kernel\n  command line."
@@ -131,14 +136,12 @@ else
   MODPRV="-q"
   LOGFILE="/dev/null"
 fi
-
 # load network adaptor modules
 modprobe ${MODPRV} -a ${NWMODULES} || error "  Failed to load the network \
 adaptor modules defined via mkdxsinitrd\n  run. Please rerun and list the \
 appropriate modules (without .ko)."
 # set up loopback networking (ipsetup - function defined in /etc/functions)
 ipsetup 127.0.0.1 255.0.0.0 0.0.0.0 127.255.255.255 lo
-
 # analyze ip information from the kernel command line and put parts
 # of it into several variables
 if [ -n "$IPINFO" ] ; then
@@ -208,11 +211,6 @@ if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" ] ; then
   nfsmnt ${NFSROOT} ${MODPRV}
 fi
 
-# get the complete collection of kernel modules available
-mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
-  error "  The requested modules directory does not exist. That could mean:\n\
-  * The kernel was updated but mkdxsinitrd was not run afterwards.\n\
-  * The mounted filesystem does not contain the modules directory at all.\n\
   You might want to check the list of mounted filesystems and if /mnt is\n\
   not empty run 'ls /mnt/lib/modules' to check."
 # start hardware configuration as background process
@@ -267,7 +265,7 @@ else
   # for tar exclude lists might be used, more difficult for cp
   cd /mnt
   tar -X /tmp/etc.exclude -cp etc/* 2>/dev/null| \
-    tar -xp -C ${RWDIR}>/dev/null 2>&1;
+    tar -xp -C ${RWDIR}>/dev/null ;
   cd /
   mount -n --bind ${RWDIR}/etc /mnt/etc
   mount -n --bind ${RWDIR}/var /mnt/var
