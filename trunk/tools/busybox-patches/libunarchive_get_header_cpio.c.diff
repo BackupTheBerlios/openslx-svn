@@ -1,0 +1,16 @@
+Author: Lars Mueller <lm at openslx dot com>
+Subject: Do not return with an error in this particular case.
+Fixed upstream: Yes; at least in 1.3.1
+
+Index: busybox-1.2.2/archival/libunarchive/get_header_cpio.c
+===================================================================
+--- busybox-1.2.2.orig/archival/libunarchive/get_header_cpio.c
++++ busybox-1.2.2/archival/libunarchive/get_header_cpio.c
+@@ -35,7 +35,6 @@ char get_header_cpio(archive_handle_t *a
+ 		oldtmp = NULL;
+ 
+ 		while (tmp) {
+-			bb_error_msg_and_die("need to fix this\n");
+ 			if (tmp->entry->link_name) { /* Found a hardlink ready to be extracted */
+ 				file_header = tmp->entry;
+ 				if (oldtmp) {
