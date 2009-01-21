@@ -48,7 +48,6 @@ sub exportVendorOS
 		= mapRsyncFilter2Regex($source, $includeExcludeList);
 	vlog 1, _tr("using include-exclude-filter:\n%s\n", $includeExcludeList);
 	$self->createSquashFS($source, $target, $includeExcludeList);
-	$self->showNbdParams($target);
 }
 
 sub purgeExport
@@ -98,6 +97,20 @@ sub checkRequirements
 	1;
 }
 
+sub addExportToConfigDB
+{
+	my $self = shift;
+	my $export = shift;
+	my $openslxDB = shift;
+
+	$export->{port}
+		= $openslxDB->incrementGlobalCounter('next-nbd-server-port');
+
+	my $res = $openslxDB->addExport($export);
+	$self->showNbdParams($export)		if $res;
+	return $res;
+}
+
 ################################################################################
 ### implementation methods
 ################################################################################
@@ -145,11 +158,11 @@ sub createSquashFS
 sub showNbdParams
 {
 	my $self = shift;
-	my $target = shift;
+	my $export = shift;
 
 	print (('#' x 80)."\n");
 	print _tr("Please make sure you start a corresponding nbd-server:\n\t%s\n",
-			  "nbd-server port $self->{engine}->{'export-path'} -r");
+			  "nbd-server $export->{port} $self->{engine}->{'export-path'} -r");
 	print (('#' x 80)."\n");
 }
 

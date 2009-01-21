@@ -48,7 +48,16 @@ sub purgeExport
 
 sub checkRequirements
 {
-	1;
+	return 1;
+}
+
+sub addExportToConfigDB
+{
+	my $self = shift;
+	my $export = shift;
+	my $openslxDB = shift;
+
+	return $openslxDB->addExport($export);
 }
 
 ################################################################################

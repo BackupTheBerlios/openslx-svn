@@ -322,6 +322,41 @@ sub addInstalledVendorOSToConfigDB
 	$openslxDB->disconnect();
 }
 
+sub removeVendorOSFromConfigDB
+{
+	my $self = shift;
+
+	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
+	$openslxDB->connect();
+
+	my $vendorOSName = $self->{'vendor-os-name'};
+	my $vendorOS
+		= $openslxDB->fetchVendorOSByFilter({ 'name' => $vendorOSName });
+	if (!defined $vendorOS) {
+		vlog 0, _tr("Vendor-OS '%s' didn't exist in OpenSLX-database.\n",
+					$vendorOSName);
+	} else {
+		# remove all exports (and systems) using this vendor-OS and then
+		# remove the vendor-OS itself:
+		my @exports	= $openslxDB->fetchExportByFilter(
+			{ 'vendor_os_id' => $vendorOS->{id} }
+		);
+		foreach my $export (@exports) {
+			my $osExportEngine = instantiateClass("OpenSLX::OSExport::Engine");
+			$osExportEngine->initializeFromExisting($export->{name});
+			vlog 0, _tr("purging export '%s', since it belongs to the vendor-OS being deleted...",
+						$export->{name});
+			$osExportEngine->purgeExport();
+		}
+
+		$openslxDB->removeVendorOS($vendorOS->{id});
+		vlog 0, _tr("Vendor-OS '%s' has been removed from DB!\n",
+					$vendorOSName);
+	}
+
+	$openslxDB->disconnect();
+}
+
 ################################################################################
 ### implementation methods
 ################################################################################
@@ -865,28 +900,6 @@ sub clone_determineIncludeExcludeList
 	$includeExcludeList =~ s[^\s+][]igms;
 		# remove any leading whitespace, as rsync doesn't like it
 	return $includeExcludeList;
-}
-
-sub removeVendorOSFromConfigDB
-{
-	my $self = shift;
-
-	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
-	$openslxDB->connect();
-
-	my $vendorOSName = $self->{'vendor-os-name'};
-	my $vendorOS
-		= $openslxDB->fetchVendorOSByFilter({ 'name' => $vendorOSName });
-	if (!defined $vendorOS) {
-		vlog 0, _tr("Vendor-OS '%s' didn't exist in OpenSLX-database.\n",
-					$vendorOSName);
-	} else {
-		$openslxDB->removeVendorOS($vendorOS->{id});
-		vlog 0, _tr("Vendor-OS '%s' has been removed from DB!\n",
-					$vendorOSName);
-	}
-
-	$openslxDB->disconnect();
 }
 
 ################################################################################

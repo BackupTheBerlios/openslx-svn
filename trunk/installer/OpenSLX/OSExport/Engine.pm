@@ -105,7 +105,7 @@ sub initializeForNew
 	}
 
 	my $exportCounter
-		= $openslxDB->getNextExportCounterForVendorOS($vendorOS->{id});
+		= $openslxDB->incrementExportCounterForVendorOS($vendorOS->{id});
 	my $exportName = sprintf "$vendorOSName-%c", 64+$exportCounter;
 
 	$openslxDB->disconnect();
@@ -151,10 +151,10 @@ sub purgeExport
 {
 	my $self = shift;
 
-	if ($self->{'exporter'}->purgeExport($self->{'export-path'})) {
-		vlog 0, _tr("export '%s' successfully removed!",
-					$self->{'export-path'});
-	}
+ 	if ($self->{'exporter'}->purgeExport($self->{'export-path'})) {
+ 		vlog 0, _tr("export '%s' successfully removed!",
+ 					$self->{'export-path'});
+ 	}
 	$self->removeExportFromConfigDB();
 }
 
@@ -226,13 +226,13 @@ sub addExportToConfigDB
 	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
 	$openslxDB->connect();
 
-	my $id = $openslxDB->addExport(
-		{
-			'vendor_os_id' => $self->{'vendor-os-id'},
-			'name' => $self->{'export-name'},
-			'type' => $self->{'export-type'},
-		}
-	);
+	my $export = {
+		'vendor_os_id' => $self->{'vendor-os-id'},
+		'name' => $self->{'export-name'},
+		'type' => $self->{'export-type'},
+	};
+
+	my $id = $self->{exporter}->addExportToConfigDB($export, $openslxDB);
 	vlog 0, _tr("Export '%s' has been added to DB (ID=%s)...\n",
 				$self->{'export-name'}, $id);
 	# now create a default system for that export, using the standard kernel:
@@ -250,15 +250,25 @@ sub removeExportFromConfigDB
 
 	# remove export from DB:
 	my $exportName = $self->{'export-name'};
-	my $export
-		= $openslxDB->fetchExportByFilter({
-			'name' => $exportName,
-			'type' => $self->{'export-type'},
-		});
+ 	my $export
+ 		= $openslxDB->fetchExportByFilter({
+ 			'name' => $exportName,
+ 			'type' => $self->{'export-type'},
+ 		});
 	if (!defined $export) {
 		vlog 0, _tr("Export '%s' doesn't exist in OpenSLX-database.\n",
 					$exportName);
 	} else {
+		# remove all systems using this export and then remove the
+		# export itself:
+		my @systemIDs
+			= 	map { $_->{id} }
+				$openslxDB->fetchSystemByFilter(
+					{ 'export_id' => $export->{id} }, 'id'
+				);
+		vlog 1, _tr("removing systems '%s' from DB, since they belong to the export being deleted.\n",
+					join ',', @systemIDs);
+		$openslxDB->removeSystem(\@systemIDs);
 		$openslxDB->removeExport($export->{id});
 		vlog 0, _tr("Export '%s' has been removed from DB.\n", $exportName);
 	}
