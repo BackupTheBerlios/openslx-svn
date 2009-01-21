@@ -1,9 +1,9 @@
 # copy this file to 'settings' and edit it as you please
 
 # use local installation sources
-$repository{'base'}->{'url'} = "local://localhost:5080/srv/ftp/pub/opensuse/distribution/SL-10.1/inst-source";
-$repository{'base_non-oss'}->{'url'} = "local://localhost:5081/srv/ftp/pub/opensuse/distribution/SL-10.1/non-oss-inst-source";
-$repository{'base_update'}->{'url'} = "local://localhost:5082/srv/ftp/pub/suse/update/10.1";
+$repository{'base'}->{'url'} = "/srv/ftp/pub/opensuse/distribution/SL-10.1/inst-source";
+$repository{'base_non-oss'}->{'url'} = "/srv/ftp/pub/opensuse/distribution/SL-10.1/non-oss-inst-source";
+$repository{'base_update'}->{'url'} = "/srv/ftp/pub/suse/update/10.1";
 
 # Add a new selection:
 # $selection{'my-kde'} = "$selection{default}

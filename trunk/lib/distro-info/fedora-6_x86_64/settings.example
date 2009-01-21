@@ -1,8 +1,8 @@
 # copy this file to 'settings' and edit it as you please
 
 # use local installation sources
-$repository{'base'}->{'url'} = "local://localhost:5080/srv/ftp/pub/pub/linux/fedora/linux/core/6/x86_64/os";
-$repository{'base_update'}->{'url'} = "local://localhost:5082/srv/ftp/pub/linux/fedora/linux/core/updates/6/x86_64/";
+$repository{'base'}->{'url'} = "/srv/ftp/pub/pub/linux/fedora/linux/core/6/x86_64/os";
+$repository{'base_update'}->{'url'} = "/srv/ftp/pub/linux/fedora/linux/core/updates/6/x86_64/";
 
 # Add a new selection:
 # $selection{'my-kde'} = "$selection{default}
