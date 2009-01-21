@@ -71,10 +71,8 @@ my (
 	$versionReq,
 );
 
-$dhcpType = 'ISC';
-
 GetOptions(
-	'dhcp-type=s' => \$dhcpType,
+	'dhcp-export-type=s' => \$dhcpType,
 	'dry-run' => \$dryRun,
 	'help|?' => \$helpReq,
 	'man' => \$manReq,
@@ -226,12 +224,12 @@ sub copyExternalSystemConfig
 	# first copy default files...
 	my $defaultConfigPath = "$clientConfigPath/default";
 	if (-d $defaultConfigPath) {
-		system("cp -r $defaultConfigPath/* $targetPath");
+		system("cp -r $defaultConfigPath/* $targetPath")		unless $dryRun;
 	}
 	# now pour system-specific configuration on top (if any):
 	my $systemConfigPath = "$clientConfigPath/$systemName";
 	if (-d $systemConfigPath) {
-		system("cp -r $systemConfigPath/* $targetPath");
+		system("cp -r $systemConfigPath/* $targetPath")		unless $dryRun;
 	}
 }
 
@@ -263,12 +261,12 @@ sub writePXEMenus
 	if (!-e "$pxePath/pxelinux.0") {
 		my $pxelinux0Path
 			= "$openslxConfig{'share-path'}/tftpboot/pxelinux.0";
-		system(qq[cp -p "$pxelinux0Path" $pxePath/]);
+		system(qq[cp -p "$pxelinux0Path" $pxePath/])		unless $dryRun;
 	}
 	if (!-e "$pxePath/menu.c32") {
 		my $menuc32Path
 			= "$openslxConfig{'share-path'}/tftpboot/menu.c32";
-		system(qq[cp -p "$menuc32Path" $pxePath/]);
+		system(qq[cp -p "$menuc32Path" $pxePath/])		unless $dryRun;
 	}
 
 	# fetch PXE-template, if any:
@@ -279,6 +277,10 @@ sub writePXEMenus
 	} else {
 		$pxeTemplate .= $pxeDefaultTemplate;
 	}
+	# PXE uses 'cp850' (codepage 850) but our string is in utf-8, we have
+	# to convert in order to avoid showing gibberish on the client side...
+	use Encode 'from_to';
+	from_to($pxeTemplate, 'utf-8', 'cp850');
 
 	my @clients = $openslxDB->fetchClientByFilter();
 	foreach my $client (@clients) {
@@ -286,7 +288,8 @@ sub writePXEMenus
 		my $pxeFile = "$pxeConfigPath/$externalClientID";
 		my $clientAppend = $client->{kernel_params};
 		vlog 1, _tr("writing PXE-file %s", $pxeFile);
-		open(PXE, "> $pxeFile")		or die "unable to write to $pxeFile";
+		next	if $dryRun;
+		open(PXE, ">$pxeFile")		or die "unable to write to $pxeFile";
 		print PXE $pxeTemplate;
 		my @systemIDs = $openslxDB->aggregatedSystemIDsOfClient($client);
 		my @systems = $openslxDB->fetchSystemByID(\@systemIDs);
@@ -298,7 +301,6 @@ sub writePXEMenus
 			$append .= " $clientAppend";
 			$append .= " rootfs=$info->{'export-uri'} file";
 			print PXE "LABEL openslx-$extSysID\n";
-#			print PXE "\tMENU DEFAULT\n";
 			print PXE "\tMENU LABEL ^$info->{label}\n";
 			print PXE "\tKERNEL $extSysID/kernel\n";
 			print PXE "\tAPPEND $append\n";
@@ -366,6 +368,7 @@ sub writeSystemPXEFiles
 
 	my $info = $openslxDB->aggregatedSystemFileInfoFor($system);
 	my $kernelFile = $info->{'kernel-file'};
+	my $kernelName = basename($kernelFile);
 	my $extSysID = externalIDForSystem($info);
 
 	my $pxePath = "$tftpbootPath/pxe";
@@ -374,7 +377,8 @@ sub writeSystemPXEFiles
 		die _tr('PXE-system %s already exists!', $pxeSysPath);
 	}
 	mkdir $pxeSysPath;
-	vlog 1, _tr('copying kernel %s to %s/kernel', $kernelFile, $pxeSysPath);
+	vlog 1, _tr('copying kernel %s to %s/%s', $kernelFile, $pxeSysPath,
+				'kernel');
 	system(qq[cp -p "$kernelFile" $pxeSysPath/kernel])		unless $dryRun;
 
 	generateInitalRamFS($info, $info->{'vendor-os'}, $pxeSysPath);
@@ -383,6 +387,7 @@ sub writeSystemPXEFiles
 sub writeDhcpConfig
 {
 	return unless defined $dhcpType;
+vlog 0, _tr("sorry, exporting dhcp data is not done yet!");
 	my $dhcpModule = "OpenSLX::Export::DHCP::$dhcpType";
 	if (!eval "require $dhcpModule") {
 		die _tr("unable to load DHCP-Export backend '%s'! (%s)\n", $dhcpModule, $@);
@@ -565,7 +570,7 @@ appropriate settings.
 
 =over 8
 
-=item B<<     --dhcp-type >>
+=item B<<     --dhcp-export-type >>
 
 Specifies the type of DHCP-export that shall be used. Currently, only 'ISC' is
 supported.
