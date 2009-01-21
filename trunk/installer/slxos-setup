@@ -35,8 +35,9 @@ if ($> != 0) {
 
 my (
 	$helpReq,
+	$listInstalledReq,
+	$listSupportedReq,
 	$manReq,
-	$listReq,
 	$source,
 	$verbose,
 	$versionReq,
@@ -44,7 +45,8 @@ my (
 
 GetOptions(
 	'help|?' => \$helpReq,
-	'list' => \$listReq,
+	'list-installed' => \$listInstalledReq,
+	'list-supported' => \$listSupportedReq,
 	'man' => \$manReq,
 	'source=s' => \$source,
 	'verbose' => \$verbose,
@@ -59,7 +61,7 @@ if ($versionReq) {
 
 openslxInit();
 
-if ($listReq) {
+if ($listSupportedReq) {
 	print _tr("List of supported distros:\n");
 	print join('', map {
 					"\t$_"
@@ -67,6 +69,15 @@ if ($listReq) {
 					 ."\t($supportedDistros{$_}->{support})\n"
 				   }
 				   sort keys %supportedDistros);
+	exit 1;
+}
+if ($listInstalledReq) {
+	print _tr("List of installed vendor-OSes:\n");
+	print join('', map {
+					s[^.+/][];
+					"\t$_\n";
+				   }
+				   sort <$openslxConfig{'stage1-path'}/*>);
 	exit 1;
 }
 
@@ -142,7 +153,8 @@ will be used as a OpenSLX-stage1-system (a.k.a. vendor-OS).
 
   Options:
       --help                   brief help message
-      --list                   show supported distros
+      --list-installed         show installed vendor-OSes
+      --list-supported         show supported distros
       --man                    show full documentation
       --source=<string>        (rsync-)source to clone vendor-OS from
       --version                show version
@@ -161,7 +173,11 @@ will be used as a OpenSLX-stage1-system (a.k.a. vendor-OS).
 
 Prints a brief help message and exits.
 
-=item B<--list>
+=item B<--list-installed>
+
+Lists all installed vendor-OSes and exits.
+
+=item B<--list-supported>
 
 Lists all supported distros and exits.
 
