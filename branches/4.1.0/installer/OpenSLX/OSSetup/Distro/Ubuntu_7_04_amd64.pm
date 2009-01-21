@@ -8,10 +8,10 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Ubuntu_7_04.pm
-#	- provides Ubuntu-7.04-specific overrides of the OpenSLX OSSetup API.
+# Ubuntu_7_04_amd64.pm
+#	- provides Ubuntu-7.04_amd64-specific overrides of the OpenSLX OSSetup API.
 # -----------------------------------------------------------------------------
-package OpenSLX::OSSetup::Distro::Ubuntu_7_04;
+package OpenSLX::OSSetup::Distro::Ubuntu_7_04_amd64;
 
 use strict;
 use warnings;
@@ -27,8 +27,8 @@ sub new
 {
 	my $class = shift;
 	my $self = {
-		'base-name'    => 'ubuntu-7.04',
-		'arch'         => 'i386',
+		'base-name'    => 'ubuntu-7.04_amd64',
+		'arch'         => 'amd64',
 		'release-name' => 'feisty',
 	};
 	return bless $self, $class;

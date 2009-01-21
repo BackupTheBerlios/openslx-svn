@@ -76,9 +76,10 @@ sub initDistroInfo
 			kde
 		",
 
-		# current build platform for OpenSLX:
+		# current 32-bit build platform for OpenSLX:
 		'openslx-build' => "
 			<<<default>>>
+			bzip2
 			gcc
 			libc6-dev
 			make

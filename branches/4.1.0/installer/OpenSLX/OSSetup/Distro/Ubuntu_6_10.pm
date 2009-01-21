@@ -70,7 +70,7 @@ sub initDistroInfo
 	$self->{config}->{'package-subdir'} = 'pool';
 
 	$self->{config}->{'prereq-packages'} = "
-		main/d/debootstrap/debootstrap_0.3.3.3ubuntu3~edgy1_all.deb
+		main/d/debootstrap/debootstrap_0.3.3.2ubuntu3_all.deb
 	";
 
 	$self->{config}->{'bootstrap-packages'} = "
