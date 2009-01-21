@@ -519,8 +519,9 @@ sub writeClientConfigurationsForSystem
 	my @clientIDs = $openslxDB->aggregatedClientIDsOfSystem($info);
 	my @clients   = $openslxDB->fetchClientByID(\@clientIDs);
 	foreach my $client (@clients) {
-		next if $client->{id} == 0;
-		# skip default client, as it doesn't need any config-tgz
+		next if $client->{name} eq '<<<default>>>';
+			# skip default client, as it doesn't need any config-tgz
+
 		my $externalSystemID   = externalIDForSystem($info);
 		my $externalClientName = externalConfigNameForClient($client);
 		my $clientConfigPath   =
@@ -609,10 +610,11 @@ sub writeConfigurations
 	my @systems = $openslxDB->fetchSystemByFilter();
 	my @infos;
 	foreach my $system (@systems) {
-		next unless $system->{id} > 0;
+		next if $system->{name} eq '<<<default>>>';
 
-		vlog(0,
-			_tr('exporting system %d : %s', $system->{id}, $system->{name}));
+		vlog(
+			0,	_tr('exporting system %d : %s', $system->{id}, $system->{name})
+		);
 		$systemConfCount++;
 
 		my $info = $openslxDB->aggregatedSystemFileInfoFor($system);

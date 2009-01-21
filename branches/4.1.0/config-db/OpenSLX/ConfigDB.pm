@@ -848,8 +848,8 @@ sub emptyDatabase
 ### data aggregation interface
 ################################################################################
 sub mergeDefaultAttributesIntoSystem
-{    # merge default system attributes into given system
-	    # and push the default client attributes on top of that
+{	# merge default system attributes into given system
+	# and push the default client attributes on top of that
 	my $self   = shift;
 	my $system = shift;
 
@@ -862,7 +862,7 @@ sub mergeDefaultAttributesIntoSystem
 }
 
 sub mergeDefaultAndGroupAttributesIntoClient
-{       # merge default and group configurations into given client
+{	# merge default and group configurations into given client
 	my $self   = shift;
 	my $client = shift;
 
@@ -887,8 +887,8 @@ sub mergeDefaultAndGroupAttributesIntoClient
 }
 
 sub aggregatedSystemIDsOfClient
-{    # return aggregated list of system-IDs this client should offer
-	    # (as indicated by itself, the default client and the client's groups)
+{	# return aggregated list of system-IDs this client should offer
+	# (as indicated by itself, the default client and the client's groups)
 	my $self   = shift;
 	my $client = shift;
 
@@ -910,8 +910,8 @@ sub aggregatedSystemIDsOfClient
 }
 
 sub aggregatedClientIDsOfSystem
-{    # return aggregated list of client-IDs this system is linked to
-	    # (as indicated by itself, the default system and the system's groups).
+{   # return aggregated list of client-IDs this system is linked to
+	# (as indicated by itself, the default system and the system's groups).
 	my $self   = shift;
 	my $system = shift;
 
@@ -941,8 +941,8 @@ sub aggregatedClientIDsOfSystem
 }
 
 sub aggregatedSystemFileInfoFor
-{    # return aggregated information about the kernel and initialramfs
-	    # this system is using
+{   # return aggregated information about the kernel and initialramfs
+	# this system is using
 	my $self   = shift;
 	my $system = shift;
 
@@ -952,7 +952,7 @@ sub aggregatedSystemFileInfoFor
 	if (!defined $export) {
 		die _tr(
 			"DB-problem: system '%s' references export with id=%s, but that doesn't exist!",
-			$system->{name}, $system->{export_id}
+			$system->{name}, $system->{export_id} || ''
 		);
 	}
 	$info->{'export'} = $export;
@@ -961,7 +961,7 @@ sub aggregatedSystemFileInfoFor
 	if (!defined $vendorOS) {
 		die _tr(
 			"DB-problem: export '%s' references vendor-OS with id=%s, but that doesn't exist!",
-			$export->{name}, $export->{vendor_os_id}
+			$export->{name}, $export->{vendor_os_id} || ''
 		);
 	}
 	$info->{'vendor-os'} = $vendorOS;
@@ -1005,14 +1005,14 @@ sub aggregatedSystemFileInfoFor
 ### support interface
 ################################################################################
 sub isAttribute
-{    # returns whether or not the given key is an exportable attribute
+{   # returns whether or not the given key is an exportable attribute
 	my $key = shift;
 
 	return $key =~ m[^attr_];
 }
 
 sub mergeAttributes
-{    # copies all attributes of source that are unset in target over
+{   # copies all attributes of source that are unset in target over
 	my $target = shift;
 	my $source = shift;
 
@@ -1028,7 +1028,7 @@ sub mergeAttributes
 }
 
 sub pushAttributes
-{    # copies all attributes that are set in source into the target
+{   # copies all attributes that are set in source into the target
 	my $target = shift;
 	my $source = shift;
 
@@ -1043,8 +1043,8 @@ sub pushAttributes
 }
 
 sub externalIDForSystem
-{    # returns given system's name as the external ID, worked into a
-	    # state that is usable as a filename:
+{   # returns given system's name as the external ID, worked into a
+	# state that is usable as a filename:
 	my $system = shift;
 
 	return "default" if $system->{id} == 0;
@@ -1055,8 +1055,8 @@ sub externalIDForSystem
 }
 
 sub externalIDForClient
-{       # returns given client's MAC as the external ID, worked into a
-	    # state that is usable as a filename:
+{   # returns given client's MAC as the external ID, worked into a
+	# state that is usable as a filename:
 	my $client = shift;
 
 	return "default" if $client->{id} == 0;
@@ -1068,8 +1068,8 @@ sub externalIDForClient
 }
 
 sub externalConfigNameForClient
-{       # returns given client's name as the external ID, worked into a
-	    # state that is usable as a filename:
+{   # returns given client's name as the external ID, worked into a
+	# state that is usable as a filename:
 	my $client = shift;
 
 	return "default" if $client->{id} == 0;
