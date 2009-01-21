@@ -9,7 +9,7 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# configuration script for Ubuntu 6.10 to configure OpenSLX linux diskless
+# Configuration script for Ubuntu 6.10 to configure OpenSLX linux stateless
 # clients (merged in stage2 with ubuntu/functions-default - and loaded within
 # initial ramfs - stage3) It may overwrite settings from the default config
 # file (/etc/functions)
@@ -31,10 +31,6 @@ config_distro () {
   sed -i '/halt.*-i/s/ -i / /' /mnt/etc/init.d/halt  
   # set default runlevel
   # how that is done for upstart??
-  # needed lateron (by hwsetup? - fixme, check if already copied by
-  # mkdxsinitrd!! If busybox is installed use tool directly ...)
-  [ -e /dev/zero ] || /mnt/bin/mknod /dev/zero c 1 5
-  [ -e /dev/mem ] || /mnt/bin/mknod /dev/mem c 1 1
 }
 
 # udev/hotplug - auto device discovery service

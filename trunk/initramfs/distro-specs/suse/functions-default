@@ -9,8 +9,8 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# configuration script for general SuSE to configure linux diskless clients 
-# (included by init, hwautocfg, servconfig within initial ramdisk after 
+# configuration script for general SuSE to configure linux stateless clients 
+# (included by init, hwautocfg, servconfig within InitialRamFS after 
 # inclusion of the main functions file). This file is the main base for the
 # several SuSE distro versions
 

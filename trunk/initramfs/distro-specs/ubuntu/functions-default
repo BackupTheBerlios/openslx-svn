@@ -9,8 +9,8 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# configuration script for general Ubuntu to configure OpenSLX linux
-# diskless clients (executed within initial ramdisk after genconfig) 
+# Configuration script for general Ubuntu to configure OpenSLX linux
+# stateless clients (executed within initial ramdisk after genconfig) 
 
 # empty functions are defined at the beginning of /etc/functions
 
@@ -55,10 +55,6 @@ config_distro () {
   ln -sf ../init.d/reboot /mnt/etc/rc6.d/S90reboot
   # set default runlevel
   sed -e "s/.*initdefault/id:${D_INITDEFAULT}:initdefault/" -i /mnt/etc/inittab
-  # needed lateron (by hwsetup? - fixme, check if already copied by
-  # mkdxsinitrd!! If busybox is installed use tool directly ...)
-  /mnt/bin/mknod /dev/zero c 1 5
-  /mnt/bin/mknod /dev/mem c 1 1
 }
 
 # AUS SuSE-9.3
