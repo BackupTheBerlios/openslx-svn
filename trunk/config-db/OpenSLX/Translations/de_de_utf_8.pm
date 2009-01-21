@@ -22,149 +22,235 @@ use vars qw(%translations);
 ################################################################################
 
 %translations = (
-	qq{NEW:config-file <%s> has incorrect syntax here:\n\t%s\n}
+	q{NEW:%s doesn't seem to be installed,\nso there is no support for %s available, sorry!\n}
 	=>
 	qq{},
 
-	qq{NEW:copying kernel %s to %s/kernel}
+	q{NEW:Can't add column to table <%s> (%s)}
 	=>
 	qq{},
 
-	qq{Could not determine schema version of database}
+	q{NEW:Can't add columns to table <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't change columns in table <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't create table <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't delete from table <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't drop columns from table <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't drop table <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't execute SQL-statement <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't insert into table <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't lock ID-file <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't open ID-file <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't prepare SQL-statement <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't rename table <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't to seek ID-file <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't truncate ID-file <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't update ID-file <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Can't update table <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:Cannot connect to database <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:config-file <%s> has incorrect syntax here:\n\t%s\n}
+	=>
+	qq{},
+
+	q{NEW:copying kernel %s to %s/kernel}
+	=>
+	qq{},
+
+	q{Could not determine schema version of database}
 	=>
 	qq{Die Version des Datenbank-Schemas konnte nicht bestimmt werden},
 
-	qq{NEW:Could not load module <%s> (Version <%s> required, but <%s> found)}
+	q{NEW:Could not load module <%s> (Version <%s> required, but <%s> found)}
 	=>
 	qq{},
 
-	qq{NEW:creating tar %s}
+	q{NEW:creating tar %s}
 	=>
 	qq{},
 
-	qq{NEW:DB matches current schema version %s}
+	q{NEW:DB matches current schema version %s}
 	=>
 	qq{},
 
-	qq{NEW:executing %s}
+	q{NEW:executing %s}
 	=>
 	qq{},
 
-	qq{NEW:exporting client %d:%s}
+	q{NEW:exporting client %d:%s}
 	=>
 	qq{},
 
-	qq{NEW:exporting system %d:%s}
+	q{NEW:exporting system %d:%s}
 	=>
 	qq{},
 
-	qq{NEW:generating initialramfs %s/initramfs}
+	q{NEW:generating initialramfs %s/initramfs}
 	=>
 	qq{},
 
-	qq{NEW:ignoring unknown key <%s>}
+	q{NEW:ignoring unknown key <%s>}
 	=>
 	qq{},
 
-	qq{NEW:merging %s (val=%s)}
+	q{NEW:Lock-file <%s> exists, script is already running.\nPlease remove the logfile and try again if you are sure that no one else is executing this script.}
 	=>
 	qq{},
 
-	qq{NEW:merging from default client...}
+	q{NEW:merging %s (val=%s)}
 	=>
 	qq{},
 
-	qq{NEW:merging from group %d:%s...}
+	q{NEW:merging from default client...}
 	=>
 	qq{},
 
-	qq{NEW:no}
+	q{NEW:merging from group %d:%s...}
 	=>
 	qq{},
 
-	qq{NEW:Our schema-version is %s, DB is %s, upgrading DB...}
+	q{NEW:no}
 	=>
 	qq{},
 
-	qq{NEW:PXE-system %s already exists!}
+	q{NEW:Our schema-version is %s, DB is %s, upgrading DB...}
 	=>
 	qq{},
 
-	qq{NEW:removing %s}
+	q{NEW:PXE-system %s already exists!}
 	=>
 	qq{},
 
-	qq{NEW:setting %s to <%s>}
+	q{NEW:removing %s}
 	=>
 	qq{},
 
-	qq{NEW:system-error: illegal target-path <%s>!}
+	q{NEW:setting %s to <%s>}
 	=>
 	qq{},
 
-	qq{NEW:translations module %s loaded successfully}
+	q{NEW:system-error: illegal target-path <%s>!}
 	=>
 	qq{},
 
-	qq{NEW:Unable to access client-config-path '%s'!}
+	q{NEW:This will overwrite the current OpenSLX-database with an example dataset.\nAll your data (%s systems and %s clients) will be lost!\nDo you want to continue(%s/%s)? }
 	=>
 	qq{},
 
-	qq{NEW:Unable to create or access temp-path '%s'!}
+	q{NEW:translations module %s loaded successfully}
 	=>
 	qq{},
 
-	qq{NEW:Unable to create or access tftpboot-path '%s'!}
+	q{NEW:Unable to access client-config-path '%s'!}
 	=>
 	qq{},
 
-	qq{unable to execute shell-command:\n\t%s \n\t(%s)}
+	q{NEW:Unable to create or access temp-path '%s'!}
 	=>
-	qq{Konnte Shell-Kommando nicht ausführen:\n\t%s\n\t(%s)},
+	qq{},
 
-	qq{Unable to load DB-module <%s> (%s)}
+	q{NEW:Unable to create or access tftpboot-path '%s'!}
+	=>
+	qq{},
+
+	q{NEW:unable to execute shell-command:\n\t%s \n\t(%s)}
+	=>
+	qq{},
+
+	q{Unable to load DB-module <%s> (%s)}
 	=>
 	qq{Kann DB-Modul <%s> nicht laden (%s)},
 
-	qq{NEW:Unable to load module <%s> (Version <%s> required)}
+	q{NEW:Unable to load module <%s> (Version <%s> required)}
 	=>
 	qq{},
 
-	qq{NEW:Unable to load module <%s> (Version <%s> required, but <%s> found)}
+	q{NEW:Unable to load module <%s> (Version <%s> required, but <%s> found)}
 	=>
 	qq{},
 
-	qq{NEW:Unable to write local settings file <%s> (%s)}
+	q{NEW:Unable to write local settings file <%s> (%s)}
 	=>
 	qq{},
 
-	qq{NEW:UnknownDbSchemaColumnDescr}
+	q{NEW:UnknownDbSchemaColumnDescr}
 	=>
 	qq{},
 
-	qq{UnknownDbSchemaCommand}
+	q{UnknownDbSchemaCommand}
 	=>
 	qq{Unbekannter DbSchema-Befehl <%s> wird übergangen},
 
-	qq{NEW:UnknownDbSchemaTypeDescr}
+	q{NEW:UnknownDbSchemaTypeDescr}
 	=>
 	qq{},
 
-	qq{NEW:upgrade done}
+	q{NEW:upgrade done}
 	=>
 	qq{},
 
-	qq{NEW:writing PXE-file %s}
+	q{NEW:writing PXE-file %s}
 	=>
 	qq{},
 
-	qq{NEW:yes}
+	q{NEW:yes}
 	=>
 	qq{},
 
 );
 
 1;
+
+
 
 
 
