@@ -308,7 +308,7 @@ cp -a ${themes}* ${INSTDIR}/usr/share/themes
 #########################################################################
 # End of function declaration
 
-while getopts :dhk:c:i:r:o:s:f:n:m:Sut:v:I:D:V:a: a ; do
+while getopts :dhk:c:i:r:o:s:f:n:m:Sut:v:I:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
@@ -320,8 +320,6 @@ while getopts :dhk:c:i:r:o:s:f:n:m:Sut:v:I:D:V:a: a ; do
       m)  echo "-m requires misc module list parameter";;
       r)  echo "-r requires root dir parameter";;
       s)  echo "-s may require theme name";;
-      D)  echo "-D requires linux Distribution name";;
-      v)  echo "-v requires linux distribution version";;
       I)  echo "-I requires network interface parameter";;
       V)  echo "-V requires an executable to run inside linuxrc";;
       *)  echo "Unknown option: -$OPTARG"
@@ -340,8 +338,6 @@ while getopts :dhk:c:i:r:o:s:f:n:m:Sut:v:I:D:V:a: a ; do
     s)  theme=$OPTARG;;
     t)  use_tpm=1;;
     d)  IRFSDEBUG=$OPTARG;;
-    D)  DISTRO=$OPTARG;;
-    v)  DISTRO_VER=$OPTARG;;
     l)  local_init_script="$OPTARG";; # use for pre/postinit.local?
     h)  usage;;
   esac
@@ -370,104 +366,15 @@ mkdir -p ${INSTDIR}/usr/share
 # needed for KNOPPIX hwsetup tool not to be confused with ${D_SYSCONFDIR}
 mkdir -p ${INSTDIR}/etc/sysconfig
 
-# if still no distro name set, try to find it using significant files
+# set DISTRO & DISTRO_VER from ROOTDIR:
+VENDOR_OS=$(basename $ROOTDIR)
+DISTRO=${VENDOR_OS%%-*}
+	# select distro type
+DISTRO_VER=${VENDOR_OS#*-}
+	# drop distro type, keep from version onwards
+DISTRO_VER=${DISTRO_VER%%-*}
+	# remove any optional stuff after version
 
-if [ -z "${DISTRO}" ] ; then
-  if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
-    DISTRO=suse
-    DISTRO_VER=`grep "VERSION" ${ROOTDIR}/etc/SuSE-release | sed "s/.*= //"`
-  elif [ -e ${ROOTDIR}/etc/lsb-release ] ; then
-    . ${ROOTDIR}/etc/lsb-release
-    DISTRO=${DISTRIB_ID}
-    DISTRO_VER=${DISTRIB_RELEASE}
-  elif [ -e ${ROOTDIR}/etc/debian_version ] ; then
-	if [ $(grep Ubuntu /etc/issue | wc -l) -gt 0 ]; then
-		DISTRO=Ubuntu
-		DISTRO_VER=`sed 's/[Uu]buntu \([0-9]*\.[0-9]*\).*/\1/' /etc/issue`
-	else
-    		DISTRO=debian
-    		DISTRO_VER=`cat ${ROOTDIR}/etc/debian_version`
-	fi
-  elif [ -e ${ROOTDIR}/etc/gentoo-release ] ; then
-    DISTRO=gentoo
-    # any idea on the versioning scheme??
-    DISTRO_VER=""
-  else
-    echo -e "Could not detect client distribution type and version. Please \
-specify\nas command line argument (-d <distro-name> -v <distro-version>)"
-    exit 1;
-  fi
-fi
-
-# unify the description of distribution and its version
-case "${DISTRO}" in
-  Debian*|debian*|Sarge*|sarge*)
-    DISTRO=debian
-    case "${DISTRO_VER}" in
-      Sarge*|sarge*|3.1*|*)
-        DISTRO_VER=3.1
-	mkdir -p ${INSTDIR}/lib/udev
-        cp -r ${ROOTDIR}/lib/udev/* ${INSTDIR}/lib/udev/
-      ;;
-    esac
-  ;;
-  Ubuntu*|ubuntu*)
-    DISTRO=ubuntu
-    case "${DISTRO_VER}" in
-      Breezy*|breezy*)
-        DISTRO_VER=5.10
-        cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib
-      ;;
-      Dapper*|dapper*)
-        DISTRO_VER=6.06
-      ;;
-      Edgy*|edgy*)
-        DISTRO_VER=6.10
-      ;;
-      Feisty*|feisty*)
-        DISTRO_VER=7.04
-      ;;
-    esac
-    ;;
-  Gentoo*|gentoo*)
-    DISTRO=gentoo
-    case "${DISTRO_VER}" in
-      2005*)
-        DISTRO_VER=2005.1
-      ;;
-      2006*)
-        DISTRO_VER=2006.1
-        mkdir -p ${INSTDIR}/lib/udev
-        cp -r ${ROOTDIR}/lib/udev/* ${INSTDIR}/lib/udev/
-        cp ${ROOTDIR}/etc/group ${INSTDIR}/etc/
-      ;;
-      2007*|*)
-        DISTRO_VER=2007.1
-      ;;
-    esac
-  ;;
-  SuSE*|suse*|Suse*|SuSe*|SUSE*|*)
-    DISTRO=suse
-    case "${DISTRO_VER}" in
-      9*)
-        DISTRO_VER=9.3
-      ;;
-      10.0)
-        DISTRO_VER=10.0
-      ;;
-      10.1)
-        DISTRO_VER=10.1
-      ;;
-      10.2)
-        DISTRO_VER=10.2
-      ;;
-      10.3)
-        DISTRO_VER=10.3
-      ;;
-    esac
-  ;;
-esac
-# at this point ${DISTRO} ${DISTRO_VER} should be fixed
 copy_distro_stuff ${DISTRO} ${DISTRO_VER}
 
 if [ -z "$NWMODULES" ] ; then

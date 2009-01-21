@@ -375,9 +375,6 @@ sub generateInitalRamFS
 	my $kernelFile = readlink($info->{'kernel-file'});
 	$kernelFile =~ m[-(.+)$];
 	$cmd .= "-k $1 ";
-	# ...set distro and distro version...
-	$vendorOS->{'name'} =~ m[^([^-]+)-([^-]+)];
-	$cmd .= "-D $1 -v $2 ";
 	# ...add version info...
 	my $slxver = `slxversion`;
 	chomp $slxver;
