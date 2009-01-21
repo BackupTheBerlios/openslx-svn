@@ -97,7 +97,7 @@ if [ -n "$hw_monitor" ] ; then
   VS=${hw_monitor%Hz*}
   [ "${hw_monitor}" == "$VS" ] && VS=${hw_monitor%hz*}
   VS=${VS##* }
-  SCR_MODES=${hw_monitor##* }
+  SCR_MODES="\"${hw_monitor##* }\""
 else
   # Gather information about the Monitor capabilities 
   screenres > /tmp/screenres
