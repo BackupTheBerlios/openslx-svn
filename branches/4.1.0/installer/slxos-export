@@ -18,6 +18,7 @@ slxos-export
     OpenSLX-script to generate an export from a vendor-OS.
 ];
 
+use Encode;
 use Getopt::Long qw(:config pass_through);
 use Pod::Usage;
 
@@ -64,10 +65,10 @@ if ($action =~ m[^list-ex]i) {
 	foreach my $type (sort keys %supportedExportFileSystems) {
 		# list all image files, followed by the block devices using it:
 		my @files = map {
-			my $image = $_;
+			my $image = decode('utf8', $_);
 			$image =~ s[^.+/][];
 			$image;
-		} sort <$openslxConfig{'public-path'}/export/$type/*>;
+		} sort glob("$openslxConfig{'public-path'}/export/$type/*");
 		my %imageFiles;
 		foreach my $file (@files) {
 			if ($file =~ m[^(.+)@(.+)$]) {
@@ -103,7 +104,7 @@ if ($action =~ m[^list-ex]i) {
 	print join(
 		'',
 		map {
-			my $vendorOS = $_;
+			my $vendorOS = decode('utf8', $_);
 			$vendorOS =~ s[^.+/][];
 			"\t$vendorOS\n";
 		  }

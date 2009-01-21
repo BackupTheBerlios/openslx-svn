@@ -31,12 +31,11 @@ $VERSION = 1.01;
 	&checkFlags
 	&instantiateClass
 	&addCleanupFunction &removeCleanupFunction
-	&glob
 );
 
 our (%openslxConfig, %cmdlineConfig, %openslxPath);
 
-use subs qw(die warn glob);
+use subs qw(die warn);
 
 use open ':utf8';
 
@@ -467,14 +466,6 @@ sub _doThrowOrWarn
 		$func->("$msg\n");
 	}
 	return;
-}
-
-# ------------------------------------------------------------------------------
-sub glob
-{
-	return map {
-		decode('utf8', $_);
-	} (File::Glob::bsd_glob(@_));
 }
 
 # ------------------------------------------------------------------------------
