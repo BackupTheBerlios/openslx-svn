@@ -4,10 +4,10 @@
 #               X Stations (v4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-03-2006
-#               Michael Janczyk <mj0@uni-freiburg.de>, 13-04-2006
+#               Michael Janczyk <mj0@uni-freiburg.de>, 21-04-2006
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-version=pre0.14; last_changes=13-04-06
+version=0.14a; last_changes=21-04-06
 ################################################################################
 
 
@@ -180,6 +180,10 @@ vmdir="/var/lib/vmware"
 vmtempl="${vmdir}/templ"
 # .desktop files directory
 vmsessions="${vmdir}/vmsessions"
+desktops=
+desktopsnr=
+execute=()
+menu=
 # special Variables
 confver=8
 hver=4
@@ -214,7 +218,6 @@ include=
 debug=0
 inter=
 comdef=
-args=
 
 
 
@@ -314,30 +317,52 @@ checkalias () {
 
 
 x_dialog () {
-  desktops=( `ls ${vmsessions} 2>/dev/null | sed -e "s,.desktop,,"` )
-  desktopsnr=$(echo "${#vmsessions[*]}")
+  desktops=( `ls ${vmsessions} | grep -x ".*desktop" 2>/dev/null` )
+  desktopsnr=$(echo "${#desktops[*]}")
   (( args=0 ))
+  declare -i i=0
+
   while [ "${desktopsnr}" -gt "${args}" ]; do
-    execute=$(grep -m 1 -i "exec" ${vmsessions[${args}]} \
+    # exec in .desktop
+    execute[${i}]=$(grep -m 1 -i "exec" ${vmsessions}/${desktops[${args}]} \
       | awk -F "=" '{print $2}')
-    executenam=$(grep -m 1 -i "name" ${vmsessions[${args}]} \
+    menu="$menu \"\${execute[${i}]}\""
+    i=${i}+1
+
+    # name in .desktop
+    execute[${i}]=$(grep -m 1 -i "name" ${vmsessions}/${desktops[${args}]} \
       | awk -F "=" '{print $2}')
-    executecom=$(grep -m 1 -i "comment" ${vmsessions[${args}]} \
+    execute[${i}]=${execute[${i}]:-`echo ${execute[${i}-1]} | sed -e "s,-, ,g"`}
+    menu="$menu \"\${execute[${i}]}\""
+    i=${i}+1
+
+    # comment in .desktop
+    execute[${i}]=$(grep -m 1 -i "comment" ${vmsessions}/${desktops[${args}]} \
       | awk -F "=" '{print $2}')
-    menu="${menu} ${execute} ${executenam:-${execute}} \
-      ${executecom:-${executenam:-${execute}}}"
+    execute[${i}]=${execute[${i}]:-"No comment"}
+    menu="$menu \"\${execute[${i}]}\""
+    i=${i}+1
+
     (( args=${args}+1 ))
   done
 
   # --stderr because of 1>/dev/null
-  Xdialog --title "VMware Image Menu" \
+  # echoing to file because Xdialog sux when used w/ quotes
+  echo -e "Xdialog --title \"VMware Image Menu\" \
+          --screen-center \
+          --fill \
+          --no-wrap \
           --stderr \
           --no-tags \
-          --ok-label "Run Image" \
-          --cancel-label "Abort Runvmware" \
+          --ok-label \"START\" \
           --item-help \
-          --menubox "Please choose the image you would like to run:" 24 51 6 \
-          ${menu} 1>/dev/null
+          --menubox \"Please choose the image you would like to run:\" 35 80 0 \
+          $menu 1>/dev/null" \
+  > ${tmpdir}/Xdialog
+  
+. ${tmpdir}/Xdialog
+rm -f ${tmpdir}/Xdialog
+
 }
 
 
@@ -349,12 +374,9 @@ filecheck () {
 
   # check if link
   if [ -L "${diskfile}" ]; then
-    writelog "Vmware Image Problem:\c" 0 1
-    writelog "\tThe image you've specified is a link.\n" 0 1
-    writelog "\tContinuing to start VMware, but it may cause problems!\n" 0 0
-
     # take link target
-    rightsfile=$(ls -lh ${diskfile} 2>&1 | awk -F "->" '{print $2}')
+    rightsfile=$(ls -lh ${diskfile} 2>&1 | awk -F "-> *" '{print $2}')
+    rightsfile=${vmdir}/${rightsfile}
     filecheck=$(LANG=us ls -lh ${rightsfile} 2>&1)
   fi
 
@@ -370,14 +392,28 @@ filecheck () {
   fi
 
   # readable?
-  if ! [ -r "${diskfile}" ]; then # ${rightsfile} see above
-    writelog "Vmware Image Problem:\c" 0 1
-    writelog "\tThe image you've specified has wrong rights." 0 1
-    writelog "Filecheck says:\t\t`echo ${filecheck} \
-      | awk '{print $1" "$3" "$4}'` ${rightsfile}" 0 1
-    writelog "Hint:\t\t\tChange rights with: chmod a+r ${rightsfile}\n" 0 0
-    exit 1
-  fi
+#  if [ `/bin/test -r "${diskfile}" >/dev/null 2>&1 \
+#    || /usr/bin/test -r "${diskfile}" >/dev/null 2>&1` ]; then
+#    writelog "Vmware Image Problem:\c" 0 1
+#    writelog "\tThe image you've specified has wrong rights." 0 1
+#    writelog "Filecheck says:\t\t`echo ${filecheck} \
+#      | awk '{print $1" "$3" "$4}'` ${rightsfile}" 0 1
+#    writelog "Hint:\t\t\tChange rights with: chmod a+r ${rightsfile}\n" 0 0
+#    exit 1
+#  fi
+#
+  # writable (for persistent-mode)?
+#  if [ `/bin/test -w "${diskfile}" >/dev/null 2>&1 \
+#    || /usr/bin/test -w "${diskfile}" >/dev/null 2>&1` ] \
+#    && [ "${np}" = "independent-persistent" ]; then
+#    writelog "Vmware Image Problem:\c" 0 1
+#    writelog "\tThe image you've specified has wrong rights." 0 1
+#    writelog "Filecheck says:\t\t`echo ${filecheck} \
+#      | awk '{print $1" "$3" "$4}'` ${rightsfile}" 0 1
+#    writelog "Hint:\t\t\tUse nonpersistent-mode or change rights to rw" 0 0
+#    exit 1
+#  fi
+                          
 }
 
 
@@ -598,7 +634,7 @@ writelog "\tCD-ROM_1=${cdr_1}\n\tCD-ROM_2=${cdr_2}\n" 0 1
 if [ -n "${inter}" ]; then
   writelog "Starting interactive mode...\c" 0 0
 
-  menutest=$(ls ${vmsessions} 2>/dev/null | wc -l)
+  menutest=$(ls ${vmsessions} | grep -x ".*desktop" 2>/dev/null | wc -l)
 
   # check for session files
   if [ "${menutest}" = "0" ]; then
@@ -609,7 +645,7 @@ if [ -n "${inter}" ]; then
 
   # check for Xdialog
   if ! [ `which Xdialog 2>/dev/null` ]; then
-    writelog "\rXdialog not found!\t\t" 0 99
+    writelog "\rXdialog not found!      " 0 99
     writelog "Please install Xdialog for interactive mode, \c" 0 0
     writelog "or use options -o/-s.\n" 0 0
     exit 1
