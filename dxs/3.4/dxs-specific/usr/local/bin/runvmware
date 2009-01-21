@@ -4,10 +4,10 @@
 #               X Stations (v3.3,v3.4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 05-08-2005
-#               Michael Janczyk <mj0@uni-freiburg.de>, 07-12-2005
+#               Michael Janczyk <mj0@uni-freiburg.de>, 08-12-2005
 # Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
 #
-VERSION=0.13.1; LAST_CHANGES=07.12.05
+VERSION=0.13.1; LAST_CHANGES=08.12.05
 ################################################################################
 
 
@@ -129,7 +129,7 @@ runvmwareconfheader ()
  tmpDirectory = \"$TMPDIR\"
  tools.syncTime = \"TRUE\"
  usb.present = \"TRUE\"
- virtualHW.version = \"3\"
+ virtualHW.version = \"4\"
  " \
  >$CONFILE
 
@@ -664,7 +664,7 @@ fi
 
 
 # Floppy
-[ -d /sys/block/fd0 ] && FLOPPYA="floppy0\.fileName = /dev/fd0"
+[ -d /sys/block/fd0 ] && FLOPPYA="floppy0.fileName = /dev/fd0"
 
 
 writelog "finished\nResults:\n\tMAC=$MAC\n\tMEM=$MEM\n\tVMSCSI=$VMSCSI" 0 1
