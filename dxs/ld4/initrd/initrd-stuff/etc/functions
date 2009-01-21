@@ -34,8 +34,8 @@ function trigger_device_events() {
     done
 
     # trigger the sorted events
-    for i in \$first \$default \$last; do
-       echo "add" > "\$i"
+    for i in $first $default $last; do
+       echo "add" > "$i"
    done
 }
 

@@ -3,7 +3,7 @@
 #		changes should be done there, version specific changes for
 #		the 10.0 here.
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-02-2006
 #		Blabla
 #		Blub
 #
@@ -13,20 +13,24 @@
 
 # distro specific stuff to initialize
 preinit () {
-for i in usb_id scsi_id vol_id edd_id hwup ; do
+for i in usb_id scsi_id vol_id edd_id hwup ifup ; do
   echo -e "#!/bin/sh\n:" >/sbin/$i
 done
-echo -e "#!/bin/sh\n:" >/lib/udev/mount.sh
-chmod u+x /sbin/* /lib/udev/mount.sh
+mkdir /lib/udev /usr/sbin
+for i in idedma.sh mount.sh rename_netiface create_floppy_devices ; do
+  echo -e "#!/bin/sh\n:" >/lib/udev/$i
+done
+echo -e "#!/bin/sh\n:" >/usr/sbin/alsactl
+chmod u+x /sbin/* /lib/udev/* /usr/sbin/*
 }
 
 # udev service
 udev_hotplug () {
 local result=0
 echo "Starting udev"
-mknod /dev/console c 5 1
-mknod /dev/null c 1 3
-mknod /dev/kmsg c 1 11
+#mknod /dev/console c 5 1
+#mknod /dev/null c 1 3
+#mknod /dev/kmsg c 1 11
 if [ -x /bin/udevd ] ; then
   echo "" > /proc/sys/kernel/hotplug
   udevd --daemon || result=1
