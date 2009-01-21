@@ -1,20 +1,18 @@
 OpenSLX - Linux Diskless Clients Version 4
+--> http://www.openslx.org (Projektseiten)
+--> http://www.openslx.org/trac/documentation/Linux_Stateless_Clients
 
 Die Version 4 wählt einen komplett neuen Ansatz und ist in den meisten
 Punkten nicht zur Vorgängerin kompatibel. Die wesentlichen Änderungen 
-werden im folgenden kurz dargestellt.
-
-Wegen der Probleme der Distrofixierung in der Version 3 und den ständigen
-Schwierigkeiten und schlechten Erweiterbarkeit des "mkinitrd" von SuSE
-wurde ein völlig neuer Ansatz gewählt, der diesmal um das Initramfs 
-zentriert ist:
+werden im folgenden kurz dargestellt. Es wurde ein völlig neuer Ansatz 
+gewählt, der diesmal um das InitRamFS zentriert ist:
 
 1. mkdxsinitrd (ersetzt mkinitrd) baut ein InitialRamFS:
-* Einfügen bestimmter Toolsets (Standardprogramme zum Setup, wie Bash,
-sed, ip, cp, rm, dhcpcd, dhclient, nbd-client, ...) unabhängig von Distro
+* Einfügen bestimmter Toolsets (Standardprogramme zum Setup, wie Busybox,
+dhclient, nbd-client, dnbd-client, ...) unabhängig von Distro
 * Es werden nur Basismodule für Netzwerkkarten und Netzwerk-Dateisystem
-(nbd, squashfs, dnbd, ...) ins Ramfs eingebaut (wie früher auch, nur
-konnte das klassische mkinitrd kein (D)NBD, UnionFS unterstützen
+(nbd, squashfs, dnbd(2), ...) ins Ramfs eingebaut (wie früher auch, nur
+konnte das klassische mkinitrd kein (D)NBD, UnionFS/AUFS unterstützen
 * Das InitRamFS wird durchaus größer als vorher und erreicht zur Zeit
 bis zu 3,5MByte
 
@@ -53,18 +51,3 @@ der Clients (/export oder /nfsroot).
 Insgesamt booten Rechner mit der neuen Diskless Variante deutlich schneller 
 als früher ld3.4 1Minute++, nun 30Sekunden+ und generiert selbst im 
 Standard-NFS/Bindmount-Betrieb deutlich weniger Netzwerk-Traffic.
-
-Installation
-
-Derzeit ist nur die Installation von einem Referenzsystem möglich, eine 
-generelle Installation einer Distribution in ein beliebiges Unterverzeichnis 
-auf dem SLX-Server ist in Vorbereitung. Das ersetzt dann auch das Skript 
-ld4/installer/ld4-inst, welches derzeit die Installation übernimmt. Es stellt 
-die von der Vorgaengerversion bekannten Fragen. Durch ein vorheriges make install
-werden Verzeichnisse /var/opt/openslx, /opt/openslx auf dem Server angelegt, 
-in dem sich die meisten Konfigurationsdateien befinden und Projektdaten landen.
-
-Das Installationsskript ruft ld4/initrd/mkdxsinitrd auf, welches ein Initramfs
-fuer die Diskless X Stations generiert. Nach jedem Kernel-Update oder
-Aenderungen, die den Initialstart betreffen, muss es neu aufgerufen werden.
-Siehe auch http://www.openslx.org/
