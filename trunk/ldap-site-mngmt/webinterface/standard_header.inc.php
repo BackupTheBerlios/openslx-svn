@@ -12,6 +12,7 @@ include('lib/ip_management_functions.php');
 include('lib/host_management_functions.php');
 include('lib/dhcp_management_functions.php');
 include('lib/rbs_management_functions.php');
+include("class.FastTemplate.php");
 
 
 $uid = $_SESSION['uid'];

@@ -19,27 +19,27 @@ function createRBSMenu($rollen, $mnr, $auDN, $sbmnr) {
          
          $hauptmenu [] = array("link" => "rbservice.php?rbsdn=".$rbs_array[$i]['dn']."&mnr=".$n,
 	  							 "text" => $rbs_array[$i]['cn'],
-	      	             "zugriff" => array("MainAdmin","HostAdmin"));
+	      	             "zugriff" => array("MainAdmin","RbsAdmin"));
 	      $submenu [] = array(
 	                        array("link" => "gbm_overview.php?rbsdn=".$rbs_array[$i]['dn']."&mnr=".$n."&sbmnr=0",
            	          	        "text" => "Generische Bootmen&uuml;s",
-           		                    "zugriff" => array("MainAdmin","HostAdmin")),
+           		                    "zugriff" => array("MainAdmin","RbsAdmin")),
            		            array("link" => "pxeconfig_default.php?rbsdn=".$rbs_array[$i]['dn']."&mnr=".$n."&sbmnr=1",
             	          	        "text" => "Default PXE Configs",
-           		                    "zugriff" => array("MainAdmin","HostAdmin")),
+           		                    "zugriff" => array("MainAdmin","RbsAdmin")),
            		            array("link" => "new_gbm.php?rbsdn=".$rbs_array[$i]['dn']."&mnr=".$n."&sbmnr=2",
            	          	        "text" => "Neues GBM anlegen",
-           		                    "zugriff" => array("MainAdmin","HostAdmin")),
+           		                    "zugriff" => array("MainAdmin","RbsAdmin")),
            		            array("link" => "new_pxe.php?rbsdn=".$rbs_array[$i]['dn']."&mnr=".$n."&sbmnr=3",
            	          	        "text" => "Neue PXE Config anlegen",
-           		                    "zugriff" => array("MainAdmin","HostAdmin")), 
+           		                    "zugriff" => array("MainAdmin","RbsAdmin")), 
           		             );
          $n++;
       }
    }
    $hauptmenu [] = array("link" => "new_rbservice.php?&mnr=".$n,
 	 					 "text" => "Neuen RBS anlegen",
-	      	       "zugriff" => array("MainAdmin","HostAdmin"));
+	      	       "zugriff" => array("MainAdmin","RbsAdmin"));
    
    $submenu [] = array();   
    #print_r($hauptmenu); echo "<br><br>";

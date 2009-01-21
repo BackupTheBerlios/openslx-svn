@@ -2,21 +2,16 @@
 
 include('../standard_header.inc.php');
 
-# 1. Seitentitel - wird in der Titelleiste des Browser angezeigt. 
-$titel = "Remote Boot Service Management";
-# 2. Nummer des zugehörigen Hauptmenus (Registerkarte) beginnend bei 0, siehe Dokumentation.doc.
-$mainnr = 4;
-$mnr = 3; 
-$sbmnr = -1;
-$mcnr = -1;
 # 3. Dateiname und evtl. Pfad des Templates für die Webseite
 $webseite = "menuentry.dwt";
-
-include("../class.FastTemplate.php");
 
 include('rbs_header.inc.php');
 
 ###################################################################################
+
+$mnr = 3; 
+$sbmnr = -1;
+$mcnr = -1;
 
 $sbmnr = $_GET['sbmnr'];
 

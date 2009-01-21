@@ -5,9 +5,6 @@ include('standard_header.inc.php');
 
 $titel = "Rechner und IP Management Startseite";
 $webseite = "home.dwt";
-# Einbinden der Template-Funktionen
-
-include("class.FastTemplate.php");
 
 # neues Template-Objekt erstellen
 $template = new FastTemplate(".");
@@ -24,7 +21,16 @@ $template->define_dynamic("Aus", "Webseite");
 #$template->define_dynamic("Roles", "Webseite");
 
 $roles = getRoles($ds, $userDN);
-#print_r($roles); echo "<br><br>"; 
+#print_r($roles); echo "<br><br>";
+if (count($roles) == 1 ){
+	$mesg = "";
+	$rollenurlstring = implode('_',$roles[0]['role']);
+	$url = "zwischen.php?audn=".$roles[0]['au']."&rollen=".$rollenurlstring;
+ 	redirect(0, $url, $mesg, $addSessionId = TRUE);
+ 	die;
+}
+
+
 foreach ($roles as $item){
 	
 	$auDN = $item['au'];
@@ -32,11 +38,15 @@ foreach ($roles as $item){
 	$expOU = explode('=',$expDN[0]);
 	$au = $expOU[1];
 	
-	$template->assign(array( "MA" => "", "HA" => "", "DA" => "", "ZA" => ""));
+	$template->assign(array( "MA" => "", "HA" => "", "DA" => "", "ZA" => "", "RA" => ""));
 	$template->assign(array( "AU" => $au, "AUDN" => $auDN, "ROLLEN" => implode('_',$item['role'])));
 	
+	$rollen = "";
 	foreach ($item['role'] as $role){
-		if ($role == MainAdmin){
+		$rollen .= $role." &nbsp;";
+		$template->assign(array( "MA" => $rollen));		
+		
+		/*if ($role == MainAdmin){
 			$template->assign(array( "MA" => $role));
 		}
 		if ($role == HostAdmin){
@@ -48,6 +58,9 @@ foreach ($roles as $item){
 		if ($role == ZoneAdmin){
 			$template->assign(array( "ZA" => $role));
 		}
+		if ($role == RbsAdmin){
+			$template->assign(array( "RA" => $role));
+		}*/
 	}
 	$template->parse("AUS_LIST", ".Aus");
 	$template->clear_dynamic("Aus");

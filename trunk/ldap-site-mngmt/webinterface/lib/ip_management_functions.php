@@ -455,13 +455,13 @@ function merge_ipranges($auDN)
    		}
    	}
    }
-   print_r($fipb_array);printf("<br>");
+   #print_r($fipb_array);printf("<br>");
    foreach ( $fipb_array as $item ){
 		$entry ['FreeIPBlock'][] = $item;
 	}
 	$results = ldap_mod_replace($ds,$auDN,$entry);
-	if ($results) echo "<br>FIPBs erfolgreich zusammengefasst!<br><br>" ;
-   else echo "<br>Fehler beim eintragen der FIPBs!<br><br>";	  
+	if ($results) echo "FIPBs erfolgreich zusammengefasst!<br>" ;
+   else echo "Fehler beim eintragen der FIPBs!<br>";	  
 	 
 	$d = count($mipb_array);
    for ($i=0; $i < $d; $i++){
@@ -475,13 +475,13 @@ function merge_ipranges($auDN)
    		}
    	}
    }
-   print_r($mipb_array);printf("<br>");
+   #print_r($mipb_array);printf("<br>");
    foreach ( $mipb_array as $item ){
 		 	$entry2 ['MaxIPBlock'][] = $item;
 		}		 
 	$results = ldap_mod_replace($ds,$auDN,$entry2);
-	if ($results) echo "<br>MIPBs erfolgreich zusammengefasst!<br><br>" ;
-   else echo "<br>Fehler beim eintragen der MIPBs!<br><br>";	  
+	if ($results) echo "MIPBs erfolgreich zusammengefasst!<br>" ;
+   else echo "Fehler beim eintragen der MIPBs!<br>";	  
 }
 
 function merge_dhcpranges($dhcpobjectDN)
@@ -805,12 +805,16 @@ function delete_ip_dhcprange($dhcpobjectDN,$auDN)
 *
 * @author Tarik Gasmi
 */
-function modify_ip_host($ip,$hostDN,$auDN)
+function modify_ip_host($ip,$hostDN,$auDN,$fixadd)
 {
 	global $ds, $suffix, $ldapError;
 	
 	if ( delete_ip_host($hostDN,$auDN) ){
 		if ( new_ip_host($ip,$hostDN,$auDN) ){
+			if ( $fixadd != ""){
+				$fa_entry ['dhcpoptfixed-address'] = $fixadd;
+				ldap_mod_add($ds,$hostDN,$fa_entry);
+			}
 			echo "<br>IP Adresse erfolgeich geaendert!<br>";
 			return 1;
 		}else{
@@ -873,7 +877,7 @@ function new_ip_delegation($ip,$childauDN,$auDN)
 	global $ds, $suffix, $ldapError;
    
    $fipb_array = get_freeipblocks_au($auDN);
-   echo "<br>---<br>";print_r($fipb_array);echo "<br>---<br>";
+   #echo "<br>---<br>";print_r($fipb_array);echo "<br>---<br>";
 	for ($i=0; $i < count($fipb_array); $i++){
 		if ( split_iprange($ip,$fipb_array[$i]) != 0 ){
 			$ipranges = split_iprange($ip,$fipb_array[$i]);
@@ -895,13 +899,12 @@ function new_ip_delegation($ip,$childauDN,$auDN)
 			# ldap_mod_add -> IPAddress = $ip , in Host mit $hostDN 
 			$mipbentry['MaxIPBlock'] = $ip;
 			$mipbentry['FreeIPBlock'] = $ip;
-			print_r($mipbentry);
+			#print_r($mipbentry);
 				
 			$results = ldap_mod_add($ds,$childauDN,$mipbentry);
 			if ($results){
 				echo "<br>IP Adressblock erfolgreich delegiert!<br>" ;
 				merge_ipranges($childauDN);
-				
 				return 1;
 			}else{
 				echo "<br>Fehler beim eintragen der IP Adresse!<br>";
@@ -937,7 +940,7 @@ function delete_ip_delegation($oldmipb,$childauDN,$auDN)
 	
 	# Durch Reduzierung zu loeschende IP Ranges (Array)
    $delip[] = $oldmipb;
-   print_r($delip);printf("<br><br>");
+   #print_r($delip);printf("<br><br>");
    
    # Finde unter allen Child-AUs diejenigen, die von Reduzierung betroffene Child-Child-AUs haben 
 	# Diese sind werden rekursiv abgearbeitet
@@ -964,39 +967,49 @@ function delete_ip_delegation($oldmipb,$childauDN,$auDN)
 			}
 		}
 	}	
-	print_r($cchild_todo);printf("<br><br>");
+	#print_r($cchild_todo);printf("<br><br>");
 	
+	###################
 	# Rekursionsaufruf (für jede Child-AU, die betroffene Child-Child-AU hat)
 	foreach ($cchild_todo as $item){
 			delete_ip_delegation($item['coldmipb'],$item['ccauDN'],$item['childauDN']);
 	}
+	###################
 	
 	# Ab hier: alles was bei jedem Fkt.Aufruf zu machen ist (in Ebene AU und Child-AU) 
    
    # in CAU Check ob RechnerIPs oder DhcpIPs betroffen: 
    $del_objects = objects_to_delete($delip,$childauDN,$cchild_array);
    # print_r($del_objects);printf("<br><br>");
-   printf("<br>Host IP Addresses that will be deleted: <br>");
-   foreach ($del_objects['hostips'] as $item){
-   	printf("HostDN: %s &nbsp;&nbsp; IP Address: %s <br>",$item['dn'],$item['ip']);
+   if ( count($del_objects['hostips']) != 0 ){ 
+	   printf("<br>Host IP Addresses that will be deleted: <br>");
+   	foreach ($del_objects['hostips'] as $item){
+   		printf("HostDN: %s &nbsp;&nbsp; IP Address: %s <br>",$item['dn'],$item['ip']);
+   	}
    }
-   printf("<br>Subnet IP Ranges that will be adjusted: <br>");
-   foreach ($del_objects['dhcpranges'] as $item){
-   	printf("DhcpObjectDN: %s &nbsp;&nbsp; Zu loeschende IP Range: %s <br>",$item['dn'],$item['delrange']);
-   }
+   if ( count($del_objects['dhcpranges']) != 0 ){ 
+	   printf("<br>Subnet IP Ranges that will be adjusted: <br>");
+	   foreach ($del_objects['dhcpranges'] as $item){
+	   	printf("DhcpObjectDN: %s &nbsp;&nbsp; Zu loeschende IP Range: %s <br>",$item['dn'],$item['delrange']);
+	   }
+	}
    # hier kommte Abfrage ob wirklich Aenderung ausfuehren, ja dann weiter mit loeschen 
    # sonst Abbruch 
-   # momentan: einfach loeschen 
-   foreach ($del_objects['hostips'] as $item){
-   	delete_ip_host($item['dn'],$item['auDN']);
+   # momentan: einfach loeschen
+   if ( count($del_objects['hostips']) != 0 ){
+	   foreach ($del_objects['hostips'] as $item){
+	   	delete_ip_host($item['dn'],$item['auDN']);
+	   }
    }
-   foreach ($del_objects['dhcpranges'] as $item){
-		delete_ip_dhcprange($item['dn'],$item['auDN']);
-   } 
+   if ( count($del_objects['dhcpranges']) != 0 ){ 
+	   foreach ($del_objects['dhcpranges'] as $item){
+			delete_ip_dhcprange($item['dn'],$item['auDN']);
+	   } 
+	}
    
    # in Child-AU: oldmipb loeschen 
    $mipb_array = get_maxipblocks_au($childauDN);
-   print_r($mipb_array);printf("<br><br>");
+   #print_r($mipb_array);printf("<br><br>");
    foreach ($delip as $delipitem){
    	# if ( count($mipb_array) > 1 ){
    		for ($i=0; $i < count($mipb_array); $i++){
@@ -1016,16 +1029,17 @@ function delete_ip_delegation($oldmipb,$childauDN,$auDN)
 	# for ($i=0; $i < count($mipb_array); $i++){
    #	 if ($mipb_array[$i] == false){array_splice($mipb_array, $i, 1);}
    # }
-   print_r($mipb_array);printf("<br><br>");
+   
+   #print_r($mipb_array);printf("<br><br>");
    if (count($mipb_array) == 0){
    	$entry ['MaxIPBlock'] = array();
-   	print_r($entry);printf("<br><br>");
+   	#print_r($entry);printf("<br><br>");
    	$results = ldap_mod_del($ds,$childauDN,$entry);	
    }else{
 	   foreach ( $mipb_array as $item ){
 		 	$entry ['MaxIPBlock'][] = $item;
 	 	}
-	 	print_r($entry);printf("<br><br>");	
+	 	#print_r($entry);printf("<br><br>");	
 		$results = ldap_mod_replace($ds,$childauDN,$entry);
 	}	  	
 	
@@ -1034,7 +1048,7 @@ function delete_ip_delegation($oldmipb,$childauDN,$auDN)
 		
 		 # in Child-AU: FIPBs anpassen 
    	$fipb_array = get_freeipblocks_au($childauDN);
-   	print_r($fipb_array);printf("<br><br>"); 
+   	#print_r($fipb_array);printf("<br><br>"); 
    	foreach ($delip as $delipitem){
    		# if ( count($fipb_array) > 1 ){
 			   for ($i=0; $i < count($fipb_array); $i++){
@@ -1055,45 +1069,46 @@ function delete_ip_delegation($oldmipb,$childauDN,$auDN)
    	# for ($i=0; $i < count($fipb_array); $i++){
    	# 	if ($fipb_array[$i] == false){array_splice($fipb_array, $i, 1);}
    	# }
-   	print_r($fipb_array);printf("<br><br>");
+   	
+   	#print_r($fipb_array);printf("<br><br>");
    	if (count($fipb_array) == 0){
    		$entry1 ['FreeIPBlock'] = array();
-   		print_r($entry1);printf("<br><br>");
+   		#print_r($entry1);printf("<br><br>");
   			$results = ldap_mod_del($ds,$childauDN,$entry1);		
    	}else{
 			foreach ( $fipb_array as $item ){
 			 	$entry1 ['FreeIPBlock'][] = $item;
 			}
-			print_r($entry1);printf("<br><br>");	
+			#print_r($entry1);printf("<br><br>");	
 			$results = ldap_mod_replace($ds,$childauDN,$entry1);
 		}
 		
 		if ($results){
-			echo "<br>FIPBs in Child-AU erfolgreich geloescht!<br>" ;
+			echo "FIPBs in Child-AU erfolgreich geloescht!<br>" ;
 			
 			# in AU: Geloeschte IP Bereiche als neue FIPBs aufnehmen
    		foreach ($delip as $item){
 		   	$entry2 ['FreeIPBlock'][] = $item;
    		}
-   		print_r($entry2);printf("<br><br>");
+   		#print_r($entry2);printf("<br><br>");
    		$results = ldap_mod_add($ds,$auDN,$entry2);
 			if ($results){
-				echo "<br>FIPBs in AU erfolgreich aktualisiert!<br>" ;
+				echo "FIPBs in AU erfolgreich aktualisiert!<br>" ;
 				
 				# IP Bloecke aufraeumen in Child-AU und AU (Merging) 	
 				merge_ipranges($auDN);
 				merge_ipranges($childauDN);
 				return 1;
 			}else{
-				echo "<br>Fehler beim aktualisieren!<br>";
+				echo "Fehler beim aktualisieren der FIPBs in AU!<br>";
 				return 0;
 			}
 		}else{
-			echo "<br>Fehler beim loeschen!<br>";
+			echo "Fehler beim loeschen der FIPBs in Child-AU!<br>";
 			return 0;
 		}			
 	}else{
-		echo "<br>Fehler beim loeschen!<br>";
+		echo "<br>Fehler beim loeschen der MIPBs in Child-AU!<br>";
 		return 0;	
    }   
 }
@@ -1120,7 +1135,7 @@ function reduce_ip_delegation($oldmipb,$newmipb,$childauDN,$auDN)
 	
 	# Durch Reduzierung zu loeschende IP Ranges (Array)
    $delip = split_iprange($newmipb,$oldmipb);
-   print_r($delip);printf("<br><br>");
+   #print_r($delip);printf("<br><br>");
 	
 	# Finde unter allen Child-AUs diejenigen, die von Reduzierung betroffene Child-Child-AUs haben 
 	# Diese sind werden rekursiv abgearbeitet
@@ -1149,9 +1164,9 @@ function reduce_ip_delegation($oldmipb,$newmipb,$childauDN,$auDN)
 			}
 		}
 	}	
-	print_r($cchild_todo);printf("<br><br>");
+	#print_r($cchild_todo);printf("<br><br>");
 	
-	
+	######################
 	# Rekursionsaufruf (für jede Child-AU, die betroffene Child-Child-AU hat)
 	foreach ($cchild_todo as $item){
 		if ($item['cnewmipb'] == false ){
@@ -1161,6 +1176,7 @@ function reduce_ip_delegation($oldmipb,$newmipb,$childauDN,$auDN)
 		   reduce_ip_delegation($item['coldmipb'],$item['cnewmipb'],$item['ccauDN'],$item['childauDN']);
 		}
 	}
+	######################
 	 
    
    # Ab hier: alles was bei jedem Fkt.Aufruf zu machen ist (auf Ebene AU und Child-AU) 
@@ -1172,27 +1188,34 @@ function reduce_ip_delegation($oldmipb,$newmipb,$childauDN,$auDN)
    # - falls nein: fuer jedes FIPB in CAU intersect(FIPB,newmipb)-> Schnittmengen bilden die neuen FIPB
    $del_objects = objects_to_adjust($newmipb,$delip,$childauDN,$cchild_array);
    # print_r($del_objects);printf("<br><br>");
-   printf("<br>Host IP Addresses that will be deleted: <br>");
-   foreach ($del_objects['hostips'] as $item){
-   	printf("HostDN: %s &nbsp;&nbsp; IP Address: %s <br>",$item['dn'],$item['ip']);
+	if ( count($del_objects['hostips']) != 0 ){   
+	   printf("<br>Host IP Addresses that will be deleted: <br>");
+	   foreach ($del_objects['hostips'] as $item){
+	   	printf("HostDN: %s &nbsp;&nbsp; IP Address: %s <br>",$item['dn'],$item['ip']);
+	   }
    }
-   printf("<br>Subnet IP Ranges that will be adjusted: <br>");
-   foreach ($del_objects['dhcpranges'] as $item){
-   	printf("DhcpObjectDN: %s &nbsp;&nbsp; New IP Range: %s <br>",$item['dn'],$item['newrange']);
+   if ( count($del_objects['dhcpranges']) != 0 ){
+	   printf("<br>Subnet IP Ranges that will be adjusted: <br>");
+	   foreach ($del_objects['dhcpranges'] as $item){
+	   	printf("DhcpObjectDN: %s &nbsp;&nbsp; New IP Range: %s <br>",$item['dn'],$item['newrange']);
+	   }
    }
 
    # momentan wird einfach geloescht:
-   foreach ($del_objects['hostips'] as $item){
-   	delete_ip_host($item['dn'],$item['auDN']);
+   if ( count($del_objects['hostips']) != 0 ){
+	   foreach ($del_objects['hostips'] as $item){
+	   	delete_ip_host($item['dn'],$item['auDN']);
+	   }
+	}
+   if ( count($del_objects['dhcpranges']) != 0 ){
+	   foreach ($del_objects['dhcpranges'] as $item){
+	   	if ( count($item['newrange']) >= 1 ){
+				modify_ip_dhcprange($item['newrange'],$item['dn'],$item['auDN']);
+			}else{
+				delete_ip_dhcprange($item['dn'],$item['auDN']);
+			}
+	   } 
    }
-   foreach ($del_objects['dhcpranges'] as $item){
-   	if ( count($item['newrange']) >= 1 ){
-			modify_ip_dhcprange($item['newrange'],$item['dn'],$item['auDN']);
-		}else{
-			delete_ip_dhcprange($item['dn'],$item['auDN']);
-		}
-   } 
-   
    
    # in Child-AU: oldmipb -> newmipb
    $mipb_array = get_maxipblocks_au($childauDN);
@@ -1209,16 +1232,16 @@ function reduce_ip_delegation($oldmipb,$newmipb,$childauDN,$auDN)
 	for ($i=0; $i < count($mipb_array); $i++){
    	if ($mipb_array[$i] == false){array_splice($mipb_array, $i, 1);}
    }
-   print_r($mipb_array);printf("<br><br>");
+   #print_r($mipb_array);printf("<br><br>");
    if (count($mipb_array) == 0){
    	$entry ['MaxIPBlock'] = array();
-   	print_r($entry);printf("<br><br>");
+   	#print_r($entry);printf("<br><br>");
    	$results = ldap_mod_del($ds,$childauDN,$entry);
    }else{
 	   foreach ( $mipb_array as $item ){
 		 	$entry ['MaxIPBlock'][] = $item;
 	 	}
-	 	print_r($entry);printf("<br><br>");	
+	 	#print_r($entry);printf("<br><br>");	
 		$results = ldap_mod_replace($ds,$childauDN,$entry);
 	}
 	
@@ -1240,30 +1263,30 @@ function reduce_ip_delegation($oldmipb,$newmipb,$childauDN,$auDN)
    	for ($i=0; $i < count($fipb_array); $i++){
    		if ($fipb_array[$i] == false){array_splice($fipb_array, $i, 1);}
    	}
-   	print_r($fipb_array);printf("<br><br>");   
+   	#print_r($fipb_array);printf("<br><br>");   
 		if (count($fipb_array) == 0){
    		$entry1 ['FreeIPBlock'] = array();
-   		print_r($entry1);printf("<br><br>");
+   		#print_r($entry1);printf("<br><br>");
   			$results = ldap_mod_del($ds,$childauDN,$entry1);
    	}else{
 			foreach ( $fipb_array as $item ){
 			 	$entry1 ['FreeIPBlock'][] = $item;
 			}
-			print_r($entry1);printf("<br><br>");
+			#print_r($entry1);printf("<br><br>");
 			$results = ldap_mod_replace($ds,$childauDN,$entry1);		
 		}
 
 		if ($results){
-			echo "<br>FIPBs in Child-AU erfolgreich aktualisiert!<br>" ;
+			echo "FIPBs in Child-AU erfolgreich aktualisiert!<br>" ;
 			
 			# in AU: Geloeschte IP Bereiche als neue FIPBs aufnehmen
    		foreach ($delip as $item){
 	   		$entry2 ['FreeIPBlock'][] = $item;
    		}
-   		print_r($entry2);printf("<br><br>");
+   		#print_r($entry2);printf("<br><br>");
    		$results = ldap_mod_add($ds,$auDN,$entry2);
 			if ($results){
-				echo "<br>FIPBs in AU erfolgreich aktualisiert!<br>" ;
+				echo "FIPBs in AU erfolgreich aktualisiert!<br>" ;
 				
 				# IP Bloecke aufraeumen in Child-AU und AU (Merging) 	
 				merge_ipranges($auDN);
@@ -1271,15 +1294,15 @@ function reduce_ip_delegation($oldmipb,$newmipb,$childauDN,$auDN)
 				
 				return 1;
 			}else{
-				echo "<br>Fehler beim aktualisieren!<br>";
+				echo "Fehler beim aktualisieren der FIPBs in AU!<br>";
 				return 0;
 			}	
 		}else{
-			echo "<br>Fehler beim aktualisieren!<br>";
+			echo "Fehler beim aktualisieren der FIPBs in Child-AU!<br>";
 			return 0;
 		}		
 	}else{
-		echo "<br>Fehler beim aktualisieren!<br>";
+		echo "<br>Fehler beim aktualisieren der MIPBs in Child-AU!<br>";
 		return 0;
 	}	  	
 }
@@ -1305,7 +1328,11 @@ function expand_ip_delegation($oldmipb,$newmipb,$childauDN,$auDN)
 	global $ds, $suffix, $ldapError;
 	
 	$difference = split_iprange($oldmipb,$newmipb);
-	new_ip_delegation($difference[0],$childauDN,$auDN);
+	if ( new_ip_delegation($difference[0],$childauDN,$auDN) ){
+		return 1;
+	}else{
+		return 0;
+	}
 }
 
 
@@ -1331,6 +1358,7 @@ function objects_to_delete($delip,$childauDN,$cchild_array)
 	# Hosts von child-AU, child-child-AU
 	$chosts = get_hosts($childauDN,array("dn","ipaddress"));
    # print_r($chosts);printf("<br><br>");
+   $cchosts = array();
    foreach ($cchild_array as $item){
    	$cchostsitem = get_hosts($item['dn'],array("dn","ipaddress"));
    	foreach ($cchostsitem as $item2){
@@ -1340,9 +1368,10 @@ function objects_to_delete($delip,$childauDN,$cchild_array)
    $chosts = array_merge($chosts,$cchosts);
    # print_r($chosts);printf("<br><br>");
    
-   # Subnets von child-AU, child-child-AU
-   $csubnets = get_subnets($childauDN,array("dn","dhcprange"));
+   # Pools von child-AU, child-child-AU
+   $csubnets = get_dhcppools($childauDN,array("dn","dhcprange"));
    # print_r($csubnets);printf("<br><br>");
+   $ccsubnets = array();
    foreach ($cchild_array as $item){
    	$ccsubnetsitem = get_hosts($item['dn'],array("dn","dhcprange"));
    	foreach ($ccsubnetsitem as $item2){
@@ -1352,98 +1381,63 @@ function objects_to_delete($delip,$childauDN,$cchild_array)
    $csubnets = array_merge($csubnets,$ccsubnets);
    # print_r($csubnets);printf("<br><br>");
    
-   # Pools von child-AU, child-child-AU
-   /*$cpools = get_pools($childauDN,array("dn","dhcprange"));
-   # print_r($cpools);printf("<br>");
-   foreach ($cchild_array as $item){
-   	$ccpoolsitem = get_hosts($item['dn'],array("dn","dhcprange"));
-   	foreach ($ccpoolsitem as $item2){
-   	  	$ccpools[] = $item2;
-   	}
-   }
-   $cpools = array_merge($cpools,$ccpools);
-   # print_r($cpools);printf("<br><br>");
-   */
    
    # Zu loeschende Hosts bestimmen
    $chosts_todo = array();
 	foreach ($delip as $delipitem){
-		foreach ($chosts as $item){
-			if( count($item['ipaddress']) > 1 ){
-				foreach ($item['ipaddress'] as $item2 ){
-					if ( intersect_ipranges($delipitem,$item2) != false ){
+		if ( count($chosts) != 0 ){
+			foreach ($chosts as $item){
+				if( count($item['ipaddress']) > 1 ){
+					foreach ($item['ipaddress'] as $item2 ){
+						if ( intersect_ipranges($delipitem,$item2) != false ){
+							$chosts_todo[] = array('dn' => $item['dn'],
+															'ip' => $item['ipaddress'],
+															'auDN' => $item['auDN']);
+						}
+					}
+				}
+				elseif ( count($item['ipaddress']) == 1 ){		
+					if ( intersect_ipranges($delipitem,$item['ipaddress']) != false ){
 						$chosts_todo[] = array('dn' => $item['dn'],
 														'ip' => $item['ipaddress'],
 														'auDN' => $item['auDN']);
 					}
 				}
 			}
-			elseif ( count($item['ipaddress']) == 1 ){		
-				if ( intersect_ipranges($delipitem,$item['ipaddress']) != false ){
-					$chosts_todo[] = array('dn' => $item['dn'],
-													'ip' => $item['ipaddress'],
-													'auDN' => $item['auDN']);
-				}
-			}
 		}
 	}
    # print_r($chosts_todo);printf("<br><br>");
    
-   # Zu loeschende Subnets bestimmen, und wie IP Range anzupassen ist
+   # Zu loeschende Pools bestimmen, und wie IP Range anzupassen ist
    $csubnets_todo = array();
 	foreach ($delip as $delipitem){
-		foreach ($csubnets as $item){
-			if( count($item['dhcprange']) > 1 ){
-				foreach ($item['dhcprange'] as $item2 ){
-					# print_r(intersect_ipranges($delipitem,$item2));
-					if ( intersect_ipranges($delipitem,$item2) != false ){
-						$csubnets_todo[] = array('dn'=> $item['dn'],
-														'delrange' => $item2['dhcprange'],
-														'auDN' => $item['auDN']);
+		if ( count($csubnets) != 0 ){
+			foreach ($csubnets as $item){
+				if( count($item['dhcprange']) > 1 ){
+					foreach ($item['dhcprange'] as $item2 ){
+						# print_r(intersect_ipranges($delipitem,$item2));
+						if ( intersect_ipranges($delipitem,$item2) != false ){
+							$csubnets_todo[] = array('dn'=> $item['dn'],
+															'delrange' => $item2['dhcprange'],
+															'auDN' => $item['auDN']);
+						}
 					}
 				}
-			}
-			elseif ( count($item['dhcprange']) == 1 ){		
-				# print_r(intersect_ipranges($delipitem,$item['dhcprange']));
-				if ( intersect_ipranges($delipitem,$item['dhcprange']) != false ){
-					$csubnets_todo[] = array('dn'=> $item['dn'],
- 													'delrange' => $item['dhcprange'],
- 													'auDN' => $item['auDN']);
+				elseif ( count($item['dhcprange']) == 1 ){		
+					# print_r(intersect_ipranges($delipitem,$item['dhcprange']));
+					if ( intersect_ipranges($delipitem,$item['dhcprange']) != false ){
+						$csubnets_todo[] = array('dn'=> $item['dn'],
+	 													'delrange' => $item['dhcprange'],
+	 													'auDN' => $item['auDN']);
+					}
 				}
 			}
 		}
 	}
    # print_r($csubnets_todo);printf("<br><br>");
-   
-   # Zu loeschende Pools bestimmen, und wie IP Range anzupassen ist
-   /*$cpools_todo = array();
-	foreach ($delip as $delipitem){
-		foreach ($cpools as $item){
-			if( count($item['dhcprange']) > 1 ){
-				foreach ($item['dhcprange'] as $item2 ){
-					if ( intersect_ipranges($delipitem,$item2) != false ){
-						$cpools_todo[] = array('dn'=> $item['dn'],
-														'delrange' => $item2['dhcprange'],
-														'auDN' => $item['auDN']);
-					}
-				}
-			}
-			elseif ( count($item['dhcprange']) == 1 ){		
-				if ( intersect_ipranges($delipitem,$item['dhcprange']) != false ){
-					$cpools_todo[] = array('dn'=> $item['dn'],
- 													'delrange' => $item['dhcprange'],
- 													'auDN' => $item['auDN']);
-				}
-			}
-		}
-	}
-   # print_r($cpools_todo);printf("<br><br>");
-   */ 
-   
-   $dhcps_todo = array_merge($csubnets_todo,$cpools_todo);
     
    $objects_to_delete = array('hostips' => $chosts_todo,
-   									'dhcpranges' => $dhcps_todo);
+   									'dhcpranges' => $csubnets_todo);
    return $objects_to_delete;
 }
 
@@ -1471,6 +1465,7 @@ function objects_to_adjust($newmipb,$delip,$childauDN,$cchild_array)
 	# Hosts von child-AU, child-child-AU
 	$chosts = get_hosts($childauDN,array("dn","ipaddress"));
    # print_r($chosts);printf("<br><br>");
+   $cchosts = array();
    foreach ($cchild_array as $item){
    	$cchostsitem = get_hosts($item['dn'],array("dn","ipaddress"));
    	foreach ($cchostsitem as $item2){
@@ -1480,9 +1475,10 @@ function objects_to_adjust($newmipb,$delip,$childauDN,$cchild_array)
    $chosts = array_merge($chosts,$cchosts);
    # print_r($chosts);printf("<br><br>");
    
-   # Subnets von child-AU, child-child-AU
-   $csubnets = get_subnets($childauDN,array("dn","dhcprange"));
+   # Pools von child-AU, child-child-AU
+   $csubnets = get_dhcppools($childauDN,array("dn","dhcprange"));
    # print_r($csubnets);printf("<br><br>");
+   $ccsubnets = array();
    foreach ($cchild_array as $item){
    	$ccsubnetsitem = get_hosts($item['dn'],array("dn","dhcprange"));
    	foreach ($ccsubnetsitem as $item2){
@@ -1492,37 +1488,27 @@ function objects_to_adjust($newmipb,$delip,$childauDN,$cchild_array)
    $csubnets = array_merge($csubnets,$ccsubnets);
    # print_r($csubnets);printf("<br><br>");
    
-   # Pools von child-AU, child-child-AU
-   /*$cpools = get_pools($childauDN,array("dn","dhcprange"));
-   # print_r($cpools);printf("<br>");
-   foreach ($cchild_array as $item){
-   	$ccpoolsitem = get_hosts($item['dn'],array("dn","dhcprange"));
-   	foreach ($ccpoolsitem as $item2){
-   	  	$ccpools[] = $item2;
-   	}
-   }
-   $cpools = array_merge($cpools,$ccpools);
-   # print_r($cpools);printf("<br><br>");
-   */
    
    # Zu loeschende Hosts bestimmen
    $chosts_todo = array();
 	foreach ($delip as $delipitem){
-		foreach ($chosts as $item){
-			if( count($item['ipaddress']) > 1 ){
-				foreach ($item['ipaddress'] as $item2 ){
-					if ( intersect_ipranges($delipitem,$item2) != false ){
+		if ( count($chosts) != 0 ){
+			foreach ($chosts as $item){
+				if( count($item['ipaddress']) > 1 ){
+					foreach ($item['ipaddress'] as $item2 ){
+						if ( intersect_ipranges($delipitem,$item2) != false ){
+							$chosts_todo[] = array('dn' => $item['dn'],
+															'ip' => $item['ipaddress'],
+															'auDN' => $item['auDN']);
+						}
+					}
+				}
+				elseif ( count($item['ipaddress']) == 1 ){		
+					if ( intersect_ipranges($delipitem,$item['ipaddress']) != false ){
 						$chosts_todo[] = array('dn' => $item['dn'],
 														'ip' => $item['ipaddress'],
 														'auDN' => $item['auDN']);
 					}
-				}
-			}
-			elseif ( count($item['ipaddress']) == 1 ){		
-				if ( intersect_ipranges($delipitem,$item['ipaddress']) != false ){
-					$chosts_todo[] = array('dn' => $item['dn'],
-													'ip' => $item['ipaddress'],
-													'auDN' => $item['auDN']);
 				}
 			}
 		}
@@ -1532,58 +1518,34 @@ function objects_to_adjust($newmipb,$delip,$childauDN,$cchild_array)
    # Zu loeschende Subnets bestimmen, und wie IP Range anzupassen ist
    $csubnets_todo = array();
 	foreach ($delip as $delipitem){
-		foreach ($csubnets as $item){
-			if( count($item['dhcprange']) > 1 ){
-				foreach ($item['dhcprange'] as $item2 ){
-					# print_r(intersect_ipranges($delipitem,$item2));
-					if ( intersect_ipranges($delipitem,$item2) != false ){
-						$csubnets_todo[] = array('dn'=> $item['dn'],
-														'newrange' => intersect_ipranges($newmipb,$item2),
-														'auDN' => $item['auDN']);
+		if ( count($csubnets) != 0 ){
+			foreach ($csubnets as $item){
+				if( count($item['dhcprange']) > 1 ){
+					foreach ($item['dhcprange'] as $item2 ){
+						# print_r(intersect_ipranges($delipitem,$item2));
+						if ( intersect_ipranges($delipitem,$item2) != false ){
+							$csubnets_todo[] = array('dn'=> $item['dn'],
+															'newrange' => intersect_ipranges($newmipb,$item2),
+															'auDN' => $item['auDN']);
+						}
 					}
 				}
-			}
-			elseif ( count($item['dhcprange']) == 1 ){		
-				# print_r(intersect_ipranges($delipitem,$item['dhcprange']));
-				if ( intersect_ipranges($delipitem,$item['dhcprange']) != false ){
-					$csubnets_todo[] = array('dn'=> $item['dn'],
- 													'newrange' => intersect_ipranges($newmipb,$item['dhcprange']),
- 													'auDN' => $item['auDN']);
+				elseif ( count($item['dhcprange']) == 1 ){		
+					# print_r(intersect_ipranges($delipitem,$item['dhcprange']));
+					if ( intersect_ipranges($delipitem,$item['dhcprange']) != false ){
+						$csubnets_todo[] = array('dn'=> $item['dn'],
+	 													'newrange' => intersect_ipranges($newmipb,$item['dhcprange']),
+	 													'auDN' => $item['auDN']);
+					}
 				}
 			}
 		}
 	}
    # print_r($csubnets_todo);printf("<br><br>");
    
-   # Zu loeschende Pools bestimmen, und wie IP Range anzupassen ist
-   /*$cpools_todo = array();
-	foreach ($delip as $delipitem){
-		foreach ($cpools as $item){
-			if( count($item['dhcprange']) > 1 ){
-				foreach ($item['dhcprange'] as $item2 ){
-					if ( intersect_ipranges($delipitem,$item2) != false ){
-						$cpools_todo[] = array('dn'=> $item['dn'],
-														'newrange' => intersect_ipranges($newmipb,$item2),
-														'auDN' => $item['auDN']);
-					}
-				}
-			}
-			elseif ( count($item['dhcprange']) == 1 ){		
-				if ( intersect_ipranges($delipitem,$item['dhcprange']) != false ){
-					$cpools_todo[] = array('dn'=> $item['dn'],
- 													'newrange' => intersect_ipranges($newmipb,$item['dhcprange']),
- 													'auDN' => $item['auDN']);
-				}
-			}
-		}
-	}
-   # print_r($cpools_todo);printf("<br><br>");
-   */ 
-   
-   $dhcps_todo = array_merge($csubnets_todo,$cpools_todo);
     
    $objects_to_adjust = array('hostips' => $chosts_todo,
-   									'dhcpranges' => $dhcps_todo);
+   									'dhcpranges' => $csubnets_todo);
    return $objects_to_adjust;
 }
 

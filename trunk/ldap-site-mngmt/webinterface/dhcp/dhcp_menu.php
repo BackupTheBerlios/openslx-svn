@@ -15,6 +15,14 @@ function createDhcpMenu($rollen , $mnr, $auDN, $sbmnr) {
                              "text" => "&Uuml;bersicht",
                              "zugriff" => "alle"));
    }
+   
+	$pools = get_dhcppools($auDN, array("dn"));
+	if (count($pools) == 0){
+		$poollink = "dhcpnopool.php";
+	}else{
+		$poollink = "dhcppool.php";
+	}   
+   
    $i=1;
    if ( $auDN == $rootAU ) {
       $dhcpservice_array = get_dhcpservices($auDN,array("dn","cn"));
@@ -49,18 +57,18 @@ function createDhcpMenu($rollen , $mnr, $auDN, $sbmnr) {
       	                   "zugriff" => array("MainAdmin","DhcpAdmin"));
    	   }
    	   $i++;
-         $hauptmenu [] = array("link" => "dhcppool.php?mnr=".$i,
+         $hauptmenu [] = array("link" => $poollink."?mnr=".$i,
                                 "text" => "Dynamische DHCP Pools",
-                                "zugriff" => "alle");
+                                "zugriff" => array("MainAdmin","DhcpAdmin"));
    	                  
          $submenu = array(array(),
           	              $subnets,
           	              array());                       
                                 
       }else{
-         $hauptmenu [] = array("link" => "dhcppool.php?mnr=".$i,
+         $hauptmenu [] = array("link" => $poollink."?mnr=".$i,
                                 "text" => "Dynamische DHCP Pools",
-                                "zugriff" => "alle");
+                                "zugriff" => array("MainAdmin","DhcpAdmin"));
       }
    }
    

@@ -5,7 +5,7 @@ include('../standard_header.inc.php');
 # 1. Seitentitel - wird in der Titelleiste des Browser angezeigt. 
 $titel = "IP Address Management";
 # 2. Nummer des zugehörigen Hauptmenus (Registerkarte) beginnend bei 0, siehe Dokumentation.doc.
-$mainnr = 2;
+$mainnr = 1;
 $mnr = 2; 
 # 3. Dateiname und evtl. Pfad des Templates für die Webseite
 $webseite = "ip_deleg.dwt";

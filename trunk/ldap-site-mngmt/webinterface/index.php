@@ -16,9 +16,6 @@ include('standard_header.inc.php');
 
 $titel = "Rechner und IP Management Startseite";
 $webseite = "start.dwt";
-# Einbinden der Template-Funktionen
-
-include("class.FastTemplate.php");
 
 # neues Template-Objekt erstellen
 $template = new FastTemplate(".");

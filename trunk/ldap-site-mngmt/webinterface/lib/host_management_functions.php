@@ -15,6 +15,7 @@
 # Konfiguration laden
 require_once("config.inc.php");
 
+
 $ldapError = null;
 
 ###################################################################################################
@@ -66,6 +67,8 @@ function add_host($hostDN,$hostname,$hostdesc,$mac,$ip,$atts,$dhcp){
 	
 	global $ds, $suffix, $auDN, $assocdom, $ldapError;
 	
+	$syntax = new Syntaxcheck;	
+	
 	$entryhost ['objectclass'][0] = "Host";
 	$entryhost ['objectclass'][1] = "dhcpHost";
 	$entryhost ['objectclass'][2] = "dhcpOptions";
@@ -73,11 +76,13 @@ function add_host($hostDN,$hostname,$hostdesc,$mac,$ip,$atts,$dhcp){
 	$entryhost ["hostname"] = $hostname;
 	$entryhost ["domainname"] = $assocdom;
 	if ($hostdesc != ""){$entryhost ["description"] = $hostdesc;}
-	if ($mac != ""){
+	if ($mac != "" && $syntax->check_mac_syntax($mac) ){
 		$entryhost ["hwaddress"] = $mac;
 		if ($dhcp != "none" && $dhcp != ""){
 	   	$entryhost ["dhcphlpcont"] = $dhcp;    
 		}
+	}else{
+		echo "Keine MAC Adresse angelegt. Kein Eintrag im DHCP.<br>";
 	}
 	foreach (array_keys($atts) as $key){
 		if ($atts[$key] != ""){
@@ -89,7 +94,6 @@ function add_host($hostDN,$hostname,$hostdesc,$mac,$ip,$atts,$dhcp){
 	if ($result = ldap_add($ds, $hostDN, $entryhost)){
 		
 		if($ip != ""){
-			$syntax = new Syntaxcheck;
 			if( $syntax->check_ip_syntax($ip) ){
 				$newip_array = array($ip,$ip);
 				$newip = implode('_',$newip_array);

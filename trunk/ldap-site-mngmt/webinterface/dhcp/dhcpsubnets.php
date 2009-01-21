@@ -2,19 +2,14 @@
 
 include('../standard_header.inc.php');
 
-# 1. Seitentitel - wird in der Titelleiste des Browser angezeigt. 
-$titel = "DHCP Service Management";
-# 2. Nummer des zugehörigen Hauptmenus (Registerkarte) beginnend bei 0, siehe Dokumentation.doc.
-$mainnr = 5;
+# Dateiname und evtl. Pfad des Templates für die Webseite
+$webseite = "dhcpsubnets.dwt";
+
+include('dhcp_header.inc.php');
+
 $mnr = -1; 
 $sbmnr = -1;
 $mcnr = -1;
-# 3. Dateiname und evtl. Pfad des Templates für die Webseite
-$webseite = "dhcpsubnets.dwt";
-
-include("../class.FastTemplate.php");
-
-include('dhcp_header.inc.php');
 
 ###################################################################################
 
@@ -23,8 +18,6 @@ $mnr = $_GET['mnr'];
 # Menuleisten erstellen
 createMainMenu($rollen, $mainnr);
 createDhcpMenu($rollen, $mnr, $auDN, $sbmnr);
-
-include("ip_blocks.inc.php");
 
 ###################################################################################
 

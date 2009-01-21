@@ -1,8 +1,7 @@
 <?php
 
     #Pfad festlegen wo die Anwendungsskripte sich befinden
-    #$START_PATH="http://132.230.4.150/test/";
-    #$START_PATH="https://132.230.9.56/lsm/";
+    #$START_PATH="http://localhost/lsm/";
     $START_PATH="https://dhcp.uni-freiburg.de/";
 
     # Anlegen einer Variablen für den Speicherort von den CSVs
@@ -19,8 +18,8 @@
 	 $rootAU = "ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
     
     # der LDAP-Server für die Authentisierung der User
-    #define('LDAP_HOST_RZ', '132.230.1.61');
-    #define('LDAP_PORT_RZ', 636);
+    #define('LDAP_HOST', 'localhost');
+    #define('LDAP_PORT', 389);
     #$suffix_rz = "dc=uni-freiburg,dc=de";
 
     # einige Sachen, die aus Sicherheitsgründen in produktiven Umgebungen geändert werden sollten!!!

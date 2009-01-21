@@ -11,16 +11,20 @@ $webseite = "roles_start.dwt";
 
 include("../class.FastTemplate.php");
 
-include("roles_header.inc.php");
+#include("roles_header.inc.php");
+include("au_header.inc.php");
 
 ###################################################################################
+
+$mnr = 3;
+$sbmnr = -1;
 
 # Menuleiste erstellen
 createMainMenu($rollen, $mainnr);
-createRolesMenu($rollen, $mnr, $assocdom);
+createAUMenu($rollen, $mnr, $auDN, $sbmnr);
 
 ###################################################################################
 
-include("roles_footer.inc.php");
+include("au_footer.inc.php");
 
 ?>

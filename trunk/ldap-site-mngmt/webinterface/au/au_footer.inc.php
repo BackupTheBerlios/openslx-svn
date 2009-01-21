@@ -6,6 +6,7 @@ $template->assign(array("PFAD" => $START_PATH));
 $template->parse("LOGIN", "Login");
 $template->parse("MAINMENU", "Mmenu");
 $template->parse("NAVIGATION", "Menu");
+$template->parse("IPBLOCKS", "IPBlocks");
 $template->parse("HAUPTFENSTER", "Webseite");
 $template->parse("PAGE", "Vorlage");
 

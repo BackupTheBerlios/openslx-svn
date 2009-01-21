@@ -27,7 +27,7 @@ echo "
 # print_r($role);echo "<br>";
 # print_r($menr);echo "<br><br>";
 
-$url = 'role_show.php?role='.$role.'&mnr='.$menr;
+$url = 'role_show.php?role='.$role.'&sbmnr='.$menr;
 
 if ($adduser != 'none'){
 	$res = new_role_member($adduserDN,$role,$auDN,$domDN);
@@ -37,14 +37,14 @@ if ($adduser != 'none'){
 		$mesg = "Fehler! Der Benutzer <b>".$adduserUID."</b> konnte nicht aufgenommen werden<br><br>";
 	}
 	$mesg .= "Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>
-				Falls nicht, klicken Sie hier <a href='role_show.php?role=$role&mnr=$menr' style='publink'>back</a>";
+				Falls nicht, klicken Sie hier <a href='role_show.php?role=$role&sbmnr=$menr' style='publink'>back</a>";
 	redirect(3, $url, $mesg, $addSessionId = TRUE);
 }
 
 else {
 	$mesg = "Sie haben keinen Benutzer ausgew&auml;hlt<br><br>
 				Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>
-				Falls nicht, klicken Sie hier <a href='role_show.php?role=$role&mnr=$menr' style='publink'>back</a>";
+				Falls nicht, klicken Sie hier <a href='role_show.php?role=$role&sbmnr=$menr' style='publink'>back</a>";
 	redirect(3, $url, $mesg, $addSessionId = TRUE);
 }
 

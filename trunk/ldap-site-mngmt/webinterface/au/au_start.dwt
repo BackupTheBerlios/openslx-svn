@@ -18,11 +18,10 @@
   					   
   				</li>
   			<li><p><b>Untergeordnete AUs</b></p>
-  					Hier erhalten Sie eine &Uuml;bersicht Ihrer untergeordneten eigenst&auml;ndigen Administrativen 
-  					Einheiten. Sie k&ouml;nnen diese bearbeiten und l&ouml;schen. 
+  					Hier erhalten Sie eine &Uuml;bersicht Ihrer untergeordneten eigenst&auml;ndigen Administrativen Einheiten. Sie k&ouml;nnen diese bearbeiten und l&ouml;schen. Hier k&ouml;nnen Sie auch neue untergeordnete AUs anlegen.
   				</li>
-  			<li><p><b>Neue untergeordnete AUs</b></p>
-  					Hier k&ouml;nnen Sie eine neue untergeordnete eigenst&auml;ndigen AU anlegen. 
+  			<li><p><b>Admin Rollen Management</b></p>
+  					Hier k&ouml;nnen Sie den Administratoren Rollen ihrer AU Benutzer zuweisen.
   				</li>
   		</ul>
   		

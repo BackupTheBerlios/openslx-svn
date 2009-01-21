@@ -20,6 +20,7 @@ print_r($auDN);echo "<br><br>";
 
 $syntax = new Syntaxcheck;
 $url = "ip_deleg.php";
+$seconds = 200;
 
 echo "
 <html>
@@ -44,59 +45,57 @@ $tochange2 = array_unique(array_merge($diff3,$diff4));
 # print_r($tochange2);echo "<br><br>"; 
 
 $tochange = array_unique(array_merge($tochange1,$tochange2));
-print_r($tochange);echo "<br><br>"; 
+#print_r($tochange);echo "<br><br>"; 
 
 
 foreach ($tochange as $i){
 
+	$childaudnexp = ldap_explode_dn($childauDN[$i], 1);
+	$childau = $childaudnexp[0];
+	#print_r($childau);
+
 	if ( $oldrange1[$i] == "" && $oldrange2[$i] == "" && $newrange1[$i] != "" && $newrange2[$i] != "" ){
-		echo "neuer IP Bereich delegieren ...";echo "<br>";echo "<br>";
-		print_r($auDN[$i]);echo "<br>";
-		print_r($childauDN[$i]);echo "<br>";
-		echo "<br>";
-		# echo "alte IP Range: ";print_r($oldrange1[$i]);echo " - ";print_r($oldrange2[$i]);echo "<br>";
+		
+		echo "Neuen IP Bereich an <b>$childau</b> delegieren:";echo "<br>";echo "<br>";
 		echo "neue IP Range: ";print_r($newrange1[$i]);echo " - ";print_r($newrange2[$i]);echo "<br>";
 		
 		if ($syntax->check_ip_syntax($newrange1[$i]) && $syntax->check_ip_syntax($newrange2[$i])){
-			echo "korrekte IP Syntax<br>";
+			#echo "korrekte IP Syntax<br>";
 			$newrange1[$i] = htmlentities($newrange1[$i]);
 			$newrange2[$i] = htmlentities($newrange2[$i]);
 			$newrange_array = array($newrange1[$i],$newrange2[$i]);
-			print_r($newrange_array);
+			#print_r($newrange_array);
 			$newrange = implode('_',$newrange_array);
-			print_r($newrange);
+			#print_r($newrange);
 			# $oldip[$i] = htmlentities($oldip[$i]);
 			if (new_ip_delegation($newrange,$childauDN[$i],$auDN[$i])){
-			 	echo "Neuer IP Bereich delegiert eingetragen<br>";
-			}else{echo "Fehler beim delegieren des neuen IP Bereichs<br>";}
+			 	echo "<br>Neuer IP Bereich erfolgreich delegiert<br>";
+			}else{echo "<br>Fehler beim delegieren des neuen IP Bereichs<br>";}
 		}else{echo "falsche IP Syntax<br>";}
 		
 		$mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>
 				Falls nicht, klicken Sie hier <a href='ip_deleg.php' style='publink'>back</a>";
-		redirect(2, $url, $mesg, $addSessionId = TRUE);
+		redirect($seconds, $url, $mesg, $addSessionId = TRUE);
 	} 
 	
 	elseif ( $oldrange1[$i] != "" && $oldrange2[$i] != "" && $newrange1[$i] == "" && $newrange2[$i] == "" ){
-		echo "loeschen IP Delegierung ...";echo "<br>";echo "<br>";
-		print_r($auDN[$i]);echo "<br>";
-		print_r($childauDN[$i]);echo "<br>";
-		echo "<br>";
-		echo "alte IP Range: ";print_r($oldrange1[$i]);echo " - ";print_r($oldrange2[$i]);echo "<br>";
-		echo "neue IP Range: ";print_r($newrange1[$i]);echo " - ";print_r($newrange2[$i]);echo "<br>";
+		
+		echo "IP Delegierung von <b>$childau</b> l&ouml;schen:";echo "<br>";echo "<br>";
+		echo "zu l&ouml;schende IP Range: ";print_r($oldrange1[$i]);echo " - ";print_r($oldrange2[$i]);echo "<br>";
 		
 		$oldrange1[$i] = htmlentities($oldrange1[$i]);
 		$oldrange2[$i] = htmlentities($oldrange2[$i]);
 		$oldip_array = array($oldrange1[$i],$oldrange2[$i]); 
 		$oldrange = implode('_',$oldip_array);
 		if (delete_ip_delegation($oldrange,$childauDN[$i],$auDN[$i])){
-			$mesg = "IP Delegierung geloescht<br>";
+			$mesg = "<br>IP Delegierung geloescht<br>";
 		}else{
-			$mesg = "Fehler beim loeschen der IP Delegierung<br>";
+			$mesg = "<br>Fehler beim loeschen der IP Delegierung<br>";
 		}
 		
 		$mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>
 				Falls nicht, klicken Sie hier <a href='ip_deleg.php' style='publink'>back</a>";
-		redirect(2, $url, $mesg, $addSessionId = TRUE);
+		redirect($seconds, $url, $mesg, $addSessionId = TRUE);
 	}
 	
 	elseif ( $oldrange1[$i] != "" && $oldrange2[$i] != "" && $newrange1[$i] != "" && $newrange2[$i] != "" ){
@@ -107,88 +106,85 @@ foreach ($tochange as $i){
 		
 		if ( ($nr1 > $or1 || $nr2 < $or2) && !($nr1 < $or1 || $nr2 > $or2) ){
 		
-			echo "reduzieren IP Delegierung";echo "<br>";echo "<br>"; 
-			print_r($auDN[$i]);echo "<br>";
-			print_r($childauDN[$i]);echo "<br>";
+			echo "IP Delegierung von <b>$childau</b> reduzieren:";echo "<br>";echo "<br>";
 			echo "alte IP Range: ";print_r($oldrange1[$i]);echo " - ";print_r($oldrange2[$i]);echo "<br>";
 			echo "neue IP Range: ";print_r($newrange1[$i]);echo " - ";print_r($newrange2[$i]);echo "<br>";
 		
 			if ($syntax->check_ip_syntax($newrange1[$i]) && $syntax->check_ip_syntax($newrange2[$i])){
-				echo "korrekte IP Syntax<br>";
+				#echo "korrekte IP Syntax<br>";
 			
 				$newrange1[$i] = htmlentities($newrange1[$i]);
 				$newrange2[$i] = htmlentities($newrange2[$i]);
 				$newrange_array = array($newrange1[$i],$newrange2[$i]);
 				$newrange = implode('_',$newrange_array);
-				print_r($newrange);
+				#print_r($newrange);
 				
 				$oldrange1[$i] = htmlentities($oldrange1[$i]);
 				$oldrange2[$i] = htmlentities($oldrange2[$i]);
 				$oldip_array = array($oldrange1[$i],$oldrange2[$i]); 
 				$oldrange = implode('_',$oldip_array); 
-				print_r($oldrange);
+				#print_r($oldrange);
 			
 				if (reduce_ip_delegation($oldrange,$newrange,$childauDN[$i],$auDN[$i])){
-					$mesg = "IP Range verkleinert<br>";
+					$mesg = "<br>IP Range verkleinert<br>";
 				}else{
-					$mesg = "Fehler beim verkleinern der IP Range<br>";
+					$mesg = "<br>Fehler beim verkleinern der IP Range<br>";
 				}
 			}else{echo "falsche IP Syntax<br>";}
 				
 			$mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>
 						Falls nicht, klicken Sie hier <a href='ip_deleg.php' style='publink'>back</a>";
-			redirect(2, $url, $mesg, $addSessionId = TRUE);
+			redirect($seconds, $url, $mesg, $addSessionId = TRUE);
 			
 		
 		}elseif( ($nr1 < $or1 || $nr2 > $or2) && !($nr1 > $or1 || $nr2 < $or2) ){
 				
-			echo "vergroessern IP Delegierung";echo "<br>";echo "<br>"; 
-			print_r($auDN[$i]);echo "<br>";
-			print_r($childauDN[$i]);echo "<br>";
-			echo "<br>";
+			echo "IP Delegierung von <b>$childau</b> erweitern:";echo "<br>";echo "<br>";
 			echo "alte IP Range: ";print_r($oldrange1[$i]);echo " - ";print_r($oldrange2[$i]);echo "<br>";
 			echo "neue IP Range: ";print_r($newrange1[$i]);echo " - ";print_r($newrange2[$i]);echo "<br>";
 			
 			if ($syntax->check_ip_syntax($newrange1[$i]) && $syntax->check_ip_syntax($newrange2[$i])){
-				echo "korrekte IP Syntax<br>";
+				#echo "korrekte IP Syntax<br>";
 				$newrange1[$i] = htmlentities($newrange1[$i]);
 				$newrange2[$i] = htmlentities($newrange2[$i]);
 				$newrange_array = array($newrange1[$i],$newrange2[$i]);
 				$newrange = implode('_',$newrange_array);
-				print_r($newrange);
+				#print_r($newrange);
 				
 				$oldrange1[$i] = htmlentities($oldrange1[$i]);
 				$oldrange2[$i] = htmlentities($oldrange2[$i]);
 				$oldip_array = array($oldrange1[$i],$oldrange2[$i]); 
 				$oldrange = implode('_',$oldip_array); 
-				print_r($oldrange);
+				#print_r($oldrange);
 				
 				if (expand_ip_delegation($oldrange,$newrange,$childauDN[$i],$auDN[$i])){
-					$mesg = "IP Range erweitert<br>";
+					$mesg = "<br>IP Range erweitert<br>";
 				}else{
-					$mesg = "Fehler beim erweitern der IP Range<br>";
+					$mesg = "<br>Fehler beim erweitern der IP Range<br>";
 				}
 			}else{
 				echo "falsche IP Syntax<br>";
 			}
 			$mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>
 						Falls nicht, klicken Sie hier <a href='ip_deleg.php' style='publink'>back</a>";
-			redirect(2, $url, $mesg, $addSessionId = TRUE);	
+			redirect($seconds, $url, $mesg, $addSessionId = TRUE);	
 		}
 		else{
 			$mesg = "<br>Verschieben (Shiften) der Delegierung nicht moeglich!<br>
 			Nur Vergroessern und Verkleinern moeglich!<br>";
 			$mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>
 						Falls nicht, klicken Sie hier <a href='ip_deleg.php' style='publink'>back</a>";
-			redirect(2, $url, $mesg, $addSessionId = TRUE);
+			redirect($seconds, $url, $mesg, $addSessionId = TRUE);
 		}
 	}
 	else{
 		$mesg = "keine Aenderung<br>";
 		$mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>
 					Falls nicht, klicken Sie hier <a href='ip_deleg.php' style='publink'>back</a>";
-		redirect(2, $url, $mesg, $addSessionId = TRUE);
-		}
+		redirect($seconds, $url, $mesg, $addSessionId = TRUE);
+	}
+	
+	echo "<br><br>";
 }
 
 echo "

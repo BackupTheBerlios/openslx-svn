@@ -59,6 +59,7 @@
 			
 			<input type='hidden' name='dhcphlpcont' value='{DHCPCONT}'>
 			<input type='hidden' name='dhcptype' value='{DHCPTYPE}'>
+			<input type='hidden' name='fixadd' value='{FIXADD}'>
 			<input type='hidden' name='hostdn' value='{HOSTDN}'>
 			<input type='hidden' name='sbmnr' value='{SBMNR}'>			
 

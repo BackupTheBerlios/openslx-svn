@@ -404,6 +404,10 @@ function get_hosts($auDN,$attributes)
 {
 	global $ds, $suffix, $ldapError;
 	
+	#if ( $sortattr == ""){
+	#	$sortattr = "hostname";	
+	#}
+	
 	if(!($result = uniLdapSearch($ds, "cn=computers,".$auDN, "(objectclass=Host)", $attributes, "hostname", "sub", 0, 0))) {
  		# redirect(5, "", $ldapError, FALSE);
   		echo "no search"; 

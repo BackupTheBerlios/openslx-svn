@@ -23,7 +23,7 @@ if (isset($_POST['deluser'])){
 	# print_r($role);echo "<br>";
 	# print_r($menr);echo "<br>";
 	
-	$url = 'role_show.php?role='.$role.'&mnr='.$menr;
+	$url = 'role_show.php?role='.$role.'&sbmnr='.$menr;
 	$mesg = "";
 
 	foreach ($deluser as $item){
@@ -36,11 +36,11 @@ if (isset($_POST['deluser'])){
 		 if ($res == 1){
 			$mesg .= "Der Benutzer <b>".$deluserUID."</b> wurde erfolgreich aus der Rolle <b>".$role."</b> entfernt.<br>";
 		}else{
-		  	$mesg .= "<b>Fehler!</b> Der Benutzer <b>".$deluserUID."</b> konnte nicht entfernt werden<br>";
+		  	$mesg .= "<br><b>Fehler!</b> Der Benutzer <b>".$deluserUID."</b> konnte nicht entfernt werden<br>";
 		}
 	}
 	$mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>
-				Falls nicht, klicken Sie hier <a href='role_show.php?role=$role&mnr=$menr' style='publink'>back</a><br><br>";
+				Falls nicht, klicken Sie hier <a href='role_show.php?role=$role&sbmnr=$menr' style='publink'>back</a><br><br>";
 	redirect(3, $url, $mesg, $addSessionId = TRUE);
 	
 }
@@ -48,7 +48,7 @@ if (isset($_POST['deluser'])){
 else {
 	$mesg .= "<br>Sie haben keinen Benutzer ausgew&auml;hlt<br><br>
 				Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>
-				Falls nicht, klicken Sie hier <a href='role_show.php?role=$role&mnr=$menr' style='publink'>back</a>";
+				Falls nicht, klicken Sie hier <a href='role_show.php?role=$role&sbmnr=$menr' style='publink'>back</a>";
 	redirect(3, $url, $mesg, $addSessionId = TRUE);
 }
 

@@ -2,19 +2,14 @@
 
 include('../standard_header.inc.php');
 
-# 1. Seitentitel - wird in der Titelleiste des Browser angezeigt. 
-$titel = "Computers Management";
-# 2. Nummer des zugehörigen Hauptmenus (Registerkarte) beginnend bei 0, siehe Dokumentation.doc.
-$mainnr = 3;
+# Dateiname und evtl. Pfad des Templates für die Webseite
+$webseite = "dhcphost.dwt";
+
+include('computers_header.inc.php');
+
 $mnr = 1; 
 $sbmnr = -1;
 $mcnr = -1;
-# 3. Dateiname und evtl. Pfad des Templates für die Webseite
-$webseite = "dhcphost.dwt";
-
-include("../class.FastTemplate.php");
-
-include('computers_header.inc.php');
 
 ###################################################################################
 
@@ -55,7 +50,7 @@ if ($dhcphlpcont == ""){
    # DHCP Selectbox
    $altdhcp = alternative_dhcpobjects($objecttype,$objectDN,$hostip[0]);
    $dhcp_selectbox .= "<td class='tab_d'>
-   	   		          <select name='dhcpcont' size='4' class='medium_form_selectbox'> 
+   	   		          <select name='dhcpcont' size='3' class='medium_form_selectbox'> 
    	   			          <option selected value='none'>----------</option>";
    if (count($altdhcp) != 0){
    	foreach ($altdhcp as $item){
@@ -101,7 +96,7 @@ if ($dhcphlpcont == ""){
    # DHCP Selectbox
    $altdhcp = alternative_dhcpobjects($objecttype,$objectDN,$hostip[0]);
    $dhcp_selectbox .= "<td class='tab_d'>
-   	   		          <select name='dhcpcont' size='4' class='medium_form_selectbox'> 
+   	   		          <select name='dhcpcont' size='3' class='medium_form_selectbox'> 
    	   			          <option selected value='none'>----------</option>";
    if (count($altdhcp) != 0){
    	foreach ($altdhcp as $item){
@@ -183,86 +178,9 @@ $template->assign(array("HOSTDN" => $hostDN,
            		       	"SBMNR" => $sbmnr));
 
 
-##########################################################
-# DHCP Setup
-
-/*$dhcp_selectbox = "";
-$altdhcp = alternative_dhcpobjects($objecttype,$objectDN,$hostip[0]);
-echo "<br><br>";print_r($altdhcp);
-
-$dhcp_selectbox .= "<td class='tab_d'>
-	   		          <select name='dhcpcont' size='4' class='medium_form_selectbox'> 
-	   			          <option selected value='none'>----------</option>";
-
-if (count($altdhcp) != 0){
-	foreach ($altdhcp as $item){
-		$dhcp_selectbox .= "
-		   <option value='".$item['dn']."'>".$item['cn']." ".$item['au']."</option>";
-	}
-}
-$dhcp_selectbox .= "<option value=''>Kein DHCP</option>
-        					</select></td>";*/
-
-###########################################################
-# RBS Setup
-
-/*$altrbs = alternative_rbservices($rbsDN);
-#print_r($altrbs); echo "<br><br>";
-$template->assign(array("ALTRBSDN" => "",
-   	                  "ALTRBSCN" => "",
-   	                  "ALTRBSAU" => ""));
-if (count($altrbs) != 0){
-$template->define_dynamic("Altrbs", "Webseite");
-	foreach ($altrbs as $item){
-		$template->assign(array("ALTRBSDN" => $item['dn'],
-   	                        "ALTRBSCN" => $item['cn'],
-   	                        "ALTRBSAU" => $item['au'],));
-   	$template->parse("ALTRBS_LIST", ".Altrbs");	
-	} 
-}*/ 
-
 
 ###################################################################################
 
 include("computers_footer.inc.php");
 
-
-
-/*
-<tr height='50'>
-				<td class='tab_d'><b>DHCP Option hardware ethernet: </b>&nbsp;</td>
-				<td class='tab_d'>{HWADDRESS} &nbsp;
-				</td>
-			</tr>
-			<tr height='50'>
-				<td class='tab_d'><b>DHCP Option fixed-address: &nbsp;</td>
-				<td class='tab_d'>{IPADDRESS} &nbsp;
-				</td>
-			</tr>
-
-<td class='tab_d'>
-					<select name='rbs' size='4' class='medium_form_selectbox'> 
-						<option selected value='none'>----------</option>
-						
-						<!-- BEGIN DYNAMIC BLOCK: Altrbs -->
-						<option value='{ALTRBSDN}'>{ALTRBSCN} {ALTRBSAU}</option>
-						<!-- END DYNAMIC BLOCK: Altrbs -->
-						
-						<option value=''>Kein RBS</option>
-						
-					</select>
-				</td>
-	<tr height='50'>
-				<td class='tab_d'><b>TFTP Server <br>DHCP Option next-server: </b>&nbsp;</td>
-				<td class='tab_d'>{NEXTSERVER} &nbsp;
-				</td>
-			</tr>
-			<tr height='50'>
-				<td class='tab_d'><b>PXE initiale Bootdatei <br>DHCP Option filename: </b>&nbsp;</td>
-				<td class='tab_d'>{FILENAME} &nbsp;
-				</td>
-			</tr>
-
-				
-				*/
 ?>

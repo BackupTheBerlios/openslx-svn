@@ -1,23 +1,22 @@
 <?php
 
 include('../standard_header.inc.php');
-include("../class.FastTemplate.php");
 
 # Filename of Template
 $webseite = "new_child.dwt";
 
 include('au_header.inc.php');
 
-
 ###############################################################################
 # Menus
 
-$mnr = 3; 
+$mnr = 2; 
 $sbmnr = -1;
+
+$sbmnr = $_GET['sbmnr'];
 
 createMainMenu($rollen, $mainnr);
 createAUMenu($rollen, $mnr, $auDN, $sbmnr);
-
 
 ################################################################################
 # Mainpage Data

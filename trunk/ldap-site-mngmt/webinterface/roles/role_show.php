@@ -12,16 +12,19 @@ $role = "MainAdmin";
 
 include("../class.FastTemplate.php");
 
-include("roles_header.inc.php");
-
+#include("roles_header.inc.php");
+include("au_header.inc.php");
 
 ###############################################################################
 
-$mnr = $_GET['mnr'];
+#$mnr = $_GET['mnr'];
+$mnr = 3;
+
+$sbmnr = $_GET['sbmnr'];
 
 # Menuleiste erstellen
 createMainMenu($rollen, $mainnr);
-createRolesMenu($rollen, $mnr, $assocdom);
+createAUMenu($rollen, $mnr, $auDN, $sbmnr);
 
 #################################### 
 # Admins anzeigen und loeschen
@@ -33,19 +36,23 @@ $roles_array = get_roles($auDN);
 # jeder Rolle entsprechend Members holen und Überschrift setzen
 switch ($role){
 case 'MainAdmin':
-	$template->assign(array("ROLE" => "MainAdmin","ROLE_DESC" => "Haupt Administratoren","MENR" => $mnr));
+	$template->assign(array("ROLE" => "MainAdmin","ROLE_DESC" => "Haupt Administratoren","MENR" => $sbmnr));
 	$members = $roles_array['MainAdmin'];
 	break;
 case 'HostAdmin':
-	$template->assign(array("ROLE" => "HostAdmin","ROLE_DESC" => "Administratoren &nbsp;- &nbsp;Rechner, Rechnergruppen, Remote Boot Services (PXE)","MENR" => $mnr));
+	$template->assign(array("ROLE" => "HostAdmin","ROLE_DESC" => "Administratoren &nbsp;- &nbsp;Rechner, Rechnergruppen, Remote Boot Services (PXE)","MENR" => $sbmnr));
 	$members = $roles_array['HostAdmin'];
 	break;
 case 'DhcpAdmin':
-	$template->assign(array("ROLE" => "DhcpAdmin","ROLE_DESC" => "Administratoren &nbsp;- &nbsp;DHCP","MENR" => $mnr));
+	$template->assign(array("ROLE" => "DhcpAdmin","ROLE_DESC" => "Administratoren &nbsp;- &nbsp;DHCP","MENR" => $sbmnr));
 	$members = $roles_array['DhcpAdmin'];
 	break;
+case 'RbsAdmin':
+	$template->assign(array("ROLE" => "RbsAdmin","ROLE_DESC" => "Administratoren &nbsp;- &nbsp;Remote Boot Services","MENR" => $sbmnr));
+	$members = $roles_array['RbsAdmin'];
+	break;
 case 'ZoneAdmin':
-	$template->assign(array("ROLE" => "ZoneAdmin","ROLE_DESC" => "Administratoren &nbsp;- &nbsp;DNS Zone &nbsp;[ {DOM} ]","MENR" => $mnr,"DOM" => $assocdom));
+	$template->assign(array("ROLE" => "ZoneAdmin","ROLE_DESC" => "Administratoren &nbsp;- &nbsp;DNS Zone &nbsp;[ {DOM} ]","MENR" => $sbmnr));
 	$members = $roles_array['ZoneAdmin'];
 	break;
 }
@@ -111,6 +118,6 @@ for ($i=0; $i < count($users_array); $i++){
 
 ###############################################################################
 
-include("roles_footer.inc.php");
+include("au_footer.inc.php");
 
 ?>

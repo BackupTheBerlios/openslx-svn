@@ -1,13 +1,10 @@
 <?php
 
 include('../standard_header.inc.php');
-include("../class.FastTemplate.php");
-
 # Filename of Template
 $webseite = "au_show.dwt";
 
 include('au_header.inc.php');
-
 
 ###############################################################################
 # Menus
@@ -17,7 +14,6 @@ $sbmnr = -1;
 
 createMainMenu($rollen, $mainnr);
 createAUMenu($rollen, $mnr, $auDN, $sbmnr);
-
 
 ###############################################################################
 # MainpageData

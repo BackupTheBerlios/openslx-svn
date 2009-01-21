@@ -88,6 +88,40 @@ function check_netip_syntax($IP)
 }	
 
 # MAC Adresse
+function check_mac_syntax($MAC)
+{
+	if($this->CLEAR) { $this->clear_error();}
+	
+	$len = strlen($MAC);
+	if( $len != 17 ){
+		$this->ERROR = "check_mac_syntax: too long [$MAC][$len]";
+		return false;
+	}
+		
+	$badcharacter = eregi_replace("([0-9a-fA-F\:]+)","",$MAC);
+	if(!empty($badcharacter)){
+		$this->ERROR = "check_mac_syntax: Bad data in MAC address [$badcharacter]";
+		return false;
+	}
+	
+	$chunks = explode(":",$MAC);
+	$count = count($chunks);
+	if ($count != 6){
+		$this->ERROR = "check_mac_syntax: not in format hx:hx:hx:hx:hx:hx [$MAC]";
+		return false;
+	}
+	foreach ($chunks as $chunk){
+		$chunklen = strlen($chunk);
+		if( $len != 2 ){
+			$this->ERROR = "check_mac_syntax: too long [$MAC][$len]";
+			return false;
+		}
+	}
+	
+	return true;
+	
+}	
+
 
 # Domainname
 

@@ -53,11 +53,20 @@
 	<tr valign='top' height='100%'>
 	<td width='28%'>
 	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
-		<tr><td>
+		<tr>
+			<td>
 	
-		{NAVIGATION}
+			{NAVIGATION}
 		
-		</td></tr>
+			</td>
+		</tr>
+		<tr>
+			<td>
+	
+		   {IPBLOCKS}
+		
+			</td>
+		</tr>
 	</table>
 	</td>
 	

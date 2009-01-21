@@ -10,29 +10,60 @@ function createAUMenu($rollen, $mnr, $auDN,$sbmnr) {
 			"zugriff" => "alle"),
 		array("link" => "au_show.php",
 			"text" => "Eigene AU",
-			"zugriff" => array("MainAdmin")),
+			"zugriff" => array("MainAdmin","DhcpAdmin","HostAdmin")),
 		array("link" => "au_childs.php",
 			"text" => "Untergeordnete AUs",
 			"zugriff" => array("MainAdmin")),
-		array("link" => "new_child.php",
-			"text" => "Neue untergeordnete AU",
-			"zugriff" => array("MainAdmin")));
+		array("link" => "roles.php",
+			"text" => "Admin Rollen Management",
+			"zugriff" => array("MainAdmin","DhcpAdmin")),
+		#array("link" => "new_child.php",
+		#	"text" => "Neue untergeordnete AU",
+		#	"zugriff" => array("MainAdmin"))
+		);
 	#echo "hauptmenu: ";print_r($hauptmenu);echo "<br><br>";
+	
 	# Submenu 
-	$array = array();
-	$childau_array = get_childau($auDN,array("dn","cn","ou"));
+	$childaus = array();
+	$n = 0;	
+	#$childau_array = get_childau($auDN,array("dn","cn","ou"));
 	#echo "childau_array: ";print_r($childau_array);echo "<br><br>";
-	if (count($childau_array)!= 0){
-   	for ($n=0;$n<count($childau_array);$n++) {
-   		$array[] = array("link" => "child_au.php?dn=".$childau_array[$n]['dn']."&sbmnr=".$n,
-   			"text" => $childau_array[$n]['ou'],
-   			"zugriff" => array("MainAdmin"));
-   	}
-	}
+	#if (count($childau_array)!= 0){
+   #	for ($n=0;$n<count($childau_array);$n++) {
+   #		$childaus[] = array("link" => "child_au.php?dn=".$childau_array[$n]['dn']."&sbmnr=".$n,
+   #			"text" => $childau_array[$n]['ou'],
+   #			"zugriff" => array("MainAdmin"));
+   #	}
+   #	#$c=0+$n;
+	#}
+	#$c = $n;
+	$childaus[] = array("link" => "new_child.php?sbmnr=".$n,
+							"text" => "Neue untergeordnete AU",
+							"zugriff" => array("MainAdmin"));
+	
+	$adminroles = array(array("link" => "role_show.php?role=MainAdmin&sbmnr=0",
+                             "text" => "Main Admins",
+                             "zugriff" => array("MainAdmin")),
+                       array("link" => "role_show.php?role=DhcpAdmin&sbmnr=1",
+                             "text" => "DHCP Admins",
+                             "zugriff" => array("MainAdmin")),
+                       array("link" => "role_show.php?role=HostAdmin&sbmnr=2",
+                             "text" => "Host Admins",
+                             "zugriff" => array("MainAdmin","DhcpAdmin")),
+                       array("link" => "role_show.php?role=RbsAdmin&sbmnr=3",
+                             "text" => "RBS Admins",
+                             "zugriff" => array("MainAdmin","DhcpAdmin")),
+                       #array("link" => "role_show.php?role=ZoneAdmin&mnr=4",
+                       #      "text" => "DNS Admins",
+                       #      "zugriff" => array("MainAdmin"))
+                       );
+	
+	
 	$submenu = array(array(),
-		array(),
-		$array,
-		array());
+							array(),
+							$childaus,
+							$adminroles
+						);
 	#echo "submenu: ";print_r($submenu);echo "<br><br>";
 	# Zusammenstellen der Menuleiste
 	$template->define_dynamic("Hauptmenu", "Menu");
@@ -45,6 +76,10 @@ function createAUMenu($rollen, $mnr, $auDN,$sbmnr) {
 		$template->clear_parse("SUBMENU_LIST");
 		#echo "item: "; print_r($item); echo "<br>"; 
 		if ($item['zugriff'] === "alle" || vergleicheArrays($rollen , $item['zugriff'])) {
+			
+			#########################################################################
+  			# SUBMENU 
+  						
 			$subempty = 0;
 			$j=0;
 			$maxsub = count($submenu[$mnr]);
@@ -98,7 +133,7 @@ function createAUMenu($rollen, $mnr, $auDN,$sbmnr) {
 								<tr>
 									<td width='8%'>&nbsp;</td>
 									<td width='8%' align='right'><img src='../pics/".$zwisch.".gif'></td>
-									<td width='74%' align='left' style='border-width:1 1 1 1;border-color:#000000;border-style:solid;padding:2;padding-left:30px;background-color:{FARBE_S}'>
+									<td width='74%' align='left' style='border-width:1 1 1 1;border-color:#000000;border-style:solid;padding:4;padding-left:25px;background-color:{FARBE_S}'>
 										<a href='".$item2['link']."' style='text-decoration:none'><b class='standard_schrift'>".$item2['text']."</b></a></td>
 									<td width='10%'>&nbsp;</td>
 								</tr>";
@@ -122,7 +157,10 @@ function createAUMenu($rollen, $mnr, $auDN,$sbmnr) {
 				$template->parse("SUBMENU_LIST", ".Submenu");
 				$template->clear_dynamic("Submenu");
 			}
-			
+			# SUBMENU		
+  			#####################################################################
+  			
+  			
 			if ($i==0) {
 				if ($mnr==0) {
 					if (count($submenu[$i][0]) != 0) {

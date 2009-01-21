@@ -1,5 +1,10 @@
 <?php
-include("ip_menu.php");
+
+# 1. Seitentitel - wird in der Titelleiste des Browser angezeigt. 
+$titel = "IP Address Management";
+# 2. Nummer des zugehörigen Hauptmenus (Registerkarte) beginnend bei 0, siehe Dokumentation.doc.
+$mainnr = 1;
+
 
 $template = new FastTemplate(".");
 
@@ -18,5 +23,9 @@ if (isset($additionalTemplates)) {
 $template->define($definedTemplates);
 
 $template->assign(array("SEITENTITEL" => $titel, "ROLLE" => "mainadmin", "AU" => $au_ou, "DOMAIN" => $assocdom, "USERCN" => $usercn));
+
+
+include("ip_menu.php");
+include("ip_blocks.inc.php");
 
 ?>

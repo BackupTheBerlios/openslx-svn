@@ -12,6 +12,7 @@ $olddesc = $_POST['olddesc'];
 
 $dhcphlpcont = $_POST['dhcphlpcont'];
 $dhcptype = $_POST['dhcptype'];
+$fixadd = $_POST['fixadd'];
 $hostDN = $_POST['hostdn'];
 $sbmnr = $_POST['sbmnr'];
 
@@ -134,58 +135,66 @@ if ( $oldmac == $mac ){
 if ( $oldmac == "" && $mac != "" ){
 	echo "MAC neu anlegen<br>";
 	# hier noch Syntaxcheck
-	$entry['hwaddress'] = $mac;
-	$result = ldap_mod_add($ds,$hostDN,$entry);
-	if($result){
-		$mesg = "MAC erfolgreich eingetragen<br><br>";
+	if( $syntax->check_mac_syntax($mac) ){
+		$entry['hwaddress'] = $mac;
+		$result = ldap_mod_add($ds,$hostDN,$entry);
+		if($result){
+			$mesg = "MAC erfolgreich eingetragen<br><br>";
+		}else{
+			$mesg = "Fehler beim eintragen der MAC<br><br>";
+		}
 	}else{
-		$mesg = "Fehler beim eintragen der MAC<br><br>";
+		echo "Falsche MAC Syntax<br><br>";
 	}
 }
 
 if ( $oldmac != "" && $mac != "" && $oldmac != $mac ){
 	echo "MAC aendern<br>";
 	# hier noch Syntaxcheck
-	$entry['hwaddress'] = $mac;
-	$pxemac = str_replace (":","-",$mac);
-	$pxeoldmac = str_replace (":","-",$oldmac);
-	$result = ldap_mod_replace($ds,$hostDN,$entry);
-	if($result){
-		# in den PXEs auch ändern
-		$pxes = get_pxeconfigs($hostDN,array("dn","filename"));
-		if ( count($pxes) != 0 ){
-			foreach ($pxes as $pxe){
-				$entrynewmac ['filename'] = "01-".$pxemac;
-				ldap_mod_replace($ds,$pxe['dn'],$entrynewmac);
-			}
-		}
-		# und in Gruppen PXEs 
-		$groups = get_groups_member($auDN,array("dn"),$hostDN);
-		if ( count($groups) != 0 ){
-			$pxes = get_pxeconfigs($groups[0]['dn'],array("dn","filename"));
+	if( $syntax->check_mac_syntax($mac) ){
+		$entry['hwaddress'] = $mac;
+		$pxemac = str_replace (":","-",$mac);
+		$pxeoldmac = str_replace (":","-",$oldmac);
+		$result = ldap_mod_replace($ds,$hostDN,$entry);
+		if($result){
+			# in den PXEs auch ändern
+			$pxes = get_pxeconfigs($hostDN,array("dn","filename"));
 			if ( count($pxes) != 0 ){
 				foreach ($pxes as $pxe){
-					if (count($pxe['filename']) > 1){
-						for ($i=0; $i<count($pxe['filename']); $i++){
-							if ($pxe['filename'][$i] == $pxeoldmac){
-								$entrynewmac ['filename'][$i] = "01-".$pxemac;
-							}else{
-								$entrynewmac ['filename'][$i] = $pxe['filename'][$i];
-							}
-						}
-					}
-					if (count($pxe['filename']) == 1 && $pxe['filename'][$i] == $pxeoldmac){
-						$entrynewmac ['filename'] = "01-".$pxemac;
-					}
+					$entrynewmac ['filename'] = "01-".$pxemac;
 					ldap_mod_replace($ds,$pxe['dn'],$entrynewmac);
 				}
 			}
+			# und in Gruppen PXEs 
+			$groups = get_groups_member($auDN,array("dn"),$hostDN);
+			if ( count($groups) != 0 ){
+				$pxes = get_pxeconfigs($groups[0]['dn'],array("dn","filename"));
+				if ( count($pxes) != 0 ){
+					foreach ($pxes as $pxe){
+						if (count($pxe['filename']) > 1){
+							for ($i=0; $i<count($pxe['filename']); $i++){
+								if ($pxe['filename'][$i] == $pxeoldmac){
+									$entrynewmac ['filename'][$i] = "01-".$pxemac;
+								}else{
+									$entrynewmac ['filename'][$i] = $pxe['filename'][$i];
+								}
+							}
+						}
+						if (count($pxe['filename']) == 1 && $pxe['filename'][$i] == $pxeoldmac){
+							$entrynewmac ['filename'] = "01-".$pxemac;
+						}
+						ldap_mod_replace($ds,$pxe['dn'],$entrynewmac);
+					}
+				}
+			}
+			$mesg = "MAC erfolgreich geaendert<br><br>
+						Falls Rechner-Konfiguration via File, <b>Client-Conf</b> Dateiname in untergeordneten <br>
+						PXEs bitte auch &auml;ndern";
+		}else{
+			$mesg = "Fehler beim aendern der MAC<br><br>";
 		}
-		$mesg = "MAC erfolgreich geaendert<br><br>
-					Falls Rechner-Konfiguration via File, <b>Client-Conf</b> Dateiname in untergeordneten <br>
-					PXEs bitte auch &auml;ndern";
 	}else{
-		$mesg = "Fehler beim aendern der MAC<br><br>";
+		echo "Falsche MAC Syntax<br><br>";
 	}
 }
 
@@ -204,7 +213,6 @@ if ( $oldmac != "" && $mac == "" ){
 				MAC nicht gel&ouml;scht!";
 	}
 	else{
-		# hier noch Syntaxcheck
 		$entry['hwaddress'] = $oldmac;
 		$result = ldap_mod_del($ds,$hostDN,$entry);
 		if($result){
@@ -251,7 +259,7 @@ if ( $oldip != "" && $ip != "" && $oldip != $ip ){
 		# print_r($newip); echo "<br><br>";
 		$oldip_array = array($oldip,$oldip); 
 		$oldipp = implode('_',$oldip_array);
-		if (modify_ip_host($newip,$hostDN,$auDN)){
+		if (modify_ip_host($newip,$hostDN,$auDN,$fixadd)){
 			$mesg = "IP erfolgreich geaendert<br><br>";
 			if ($dhcptype == "subnet"){
    			adjust_hostip_dhcpsubnet($ip,$hostDN,$dhcphlpcont);

@@ -22,7 +22,7 @@ function createIPMenu($rollen , $mnr) {
                              "zugriff" => "alle"),
     						  array("link" => $iprechnerlink,
                              "text" => "IP Adressen Rechner",
-                             "zugriff" => array("MainAdmin","HostAdmin")),
+                             "zugriff" => array("MainAdmin","DhcpAdmin","HostAdmin")),
                        #array("link" => $ipdhcplink,
                        #      "text" => "IP Adressen DHCP",
                        #      "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")),

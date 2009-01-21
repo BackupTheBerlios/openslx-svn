@@ -3,7 +3,15 @@
 function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
    
    global $template, $ds, $suffix, $START_PATH;
-    
+   
+   $mipb_array = get_maxipblocks_au($auDN);
+	#print_r($mipb_array);
+	if ( $mipb_array[0] == "" ){
+		$iprechnerlink = "no_ip.php?mnr=2";
+	}else{
+		$iprechnerlink = "ip_rechner.php";
+	}
+	
    # Struktur der Registerkartenleiste
    # Hauptmenu
    $hauptmenu = array(array("link" => "computers.php",
@@ -12,9 +20,12 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
     						  array("link" => "hostoverview.php",
                              "text" => "Rechner",
                              "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")),
-                       array("link" => "groupoverview.php",
-                             "text" => "Rechnergruppen",
-                             "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")),
+                       array("link" => $iprechnerlink,
+                             "text" => "IP Adressen Rechner",
+                             "zugriff" => array("MainAdmin","DhcpAdmin","HostAdmin")),
+                       #array("link" => "groupoverview.php",
+                       #      "text" => "Rechnergruppen",
+                       #      "zugriff" => array("MainAdmin")),
                        #array("link" => "machineconfig_default.php",
                        #      "text" => "Default MachineConfigs",
                        #      "zugriff" => array("MainAdmin","HostAdmin")),
@@ -23,7 +34,7 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
                        #      "zugriff" => array("MainAdmin","HostAdmin")),
                        array("link" => "new_pxe.php",
                              "text" => "Neues PXE Bootmen&uuml;",
-                             "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")));
+                             "zugriff" => array("MainAdmin")));
 	
 	# Submenus 
 	/*$computers_array = get_hosts($auDN,array("dn","hostname","ou"));
@@ -36,7 +47,7 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
   	}*/
   	$comps[] = array("link" => "new_host.php?sbmnr=0", #.$n,
                     "text" => "Neuen Rechner anlegen",
-                    "zugriff" => array("MainAdmin","HostAdmin"));
+                    "zugriff" => array("MainAdmin","DhcpAdmin","HostAdmin"));
    
   	$groups_array = get_groups($auDN,array("dn","cn"));
   	for($n=0;$n<count($groups_array);$n++){
@@ -44,25 +55,26 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
   		$groups = array();
   		$groups[] = array("link" => "group.php?dn=".$groups_array[$n]['dn']."&sbmnr=".$n,
   								"text" => $groups_array[$n]['cn'],
-      	              	"zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin"));
+      	              	"zugriff" => array("MainAdmin","DhcpAdmin","HostAdmin"));
       	              	
   	}
   	$groups[] = array("link" => "new_group.php?sbmnr=".$n,
                      "text" => "Neue Gruppe anlegen",
-                     "zugriff" => array("MainAdmin","HostAdmin"));
+                     "zugriff" => array("MainAdmin","DhcpAdmin","HostAdmin"));
    
    # default machine-configs 
    $mcdef_array = get_machineconfigs("cn=computers,".$auDN,array("dn","cn","timerange"));
    for($n=0;$n<count($mcdef_array);$n++){
    	$defmc [] = array("link" => "mcdef.php?dn=".$mcdef_array[$n]['dn']."&mnr=3&sbmnr=".$n,
   								"text" => $mcdef_array[$n]['cn'],
-      	              	"zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin"));
+      	              	"zugriff" => array("MainAdmin","DhcpAdmin","HostAdmin"));
    }
    
   	$submenu = array(array(),
     	              $comps,
-    	              $groups,
-    	              $defmc,
+    	              array(),
+    	              #$groups,
+    	              #$defmc,
     	              array());
    #echo "submenu: ";print_r($submenu);echo "<br><br>";
 	
@@ -100,47 +112,53 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
 		   		else{
 		   		if ($j==0) {
 		         	if ($sbmnr==0) { 
-		               if($maxsub == 1){$zwisch2="";}
-		               else {$zwisch2="";}
+		               if($maxsub == 1){$zwisch2="branchbottom2";}
+		               else {$zwisch2="branch2";}
 		               $lastaktive=true;
 		               $farb="#505050";
 		            }
 		            else{
-		            	if(count($subsubmenu[$i][$j][0]) != 0){
-               		if($maxsub == 1){$zwisch2="<a href='".$item2['link']."' style='border-style=none;text-decoration:none'>
-               			<img style='border-width:0;border-style=none;' src='../pics/plus2.gif'></a>";}
-		         		else {$zwisch2="<a href='".$item2['link']."' style='border-style=none;text-decoration:none'>
-               			<img style='border-width:0;border-style=none;' src='../pics/plus2.gif'></a>";}
-		         		}else{$zwisch2="";}
+		            	if ($maxsub == 1) {$zwisch2="branchbottom2";}
+		            	# Wenn Unter-Unter-Menu ...
+		            	#if(count($subsubmenu[$i][$j][0]) != 0){
+               		#if($maxsub == 1){$zwisch2="<a href='".$item2['link']."' style='border-style=none;text-decoration:none'>
+               		#	<img style='border-width:0;border-style=none;' src='../pics/plus2.gif'></a>";}
+		         		#else {$zwisch2="<a href='".$item2['link']."' style='border-style=none;text-decoration:none'>
+               		#	<img style='border-width:0;border-style=none;' src='../pics/plus2.gif'></a>";}
+			         	#}
+		         		else{$zwisch2="branch2";}
 		               $farb="#A0A0A0";  
 		               $lastaktive=false;
 		            }
 		         }
 		         else {
 		         	if ($sbmnr==$j) { 
-		            	if($maxsub == $j+1){$zwisch2="";}
-		               else {$zwisch2="";}
+		            	if($maxsub == $j+1){$zwisch2="branchbottom2";}
+		               else {$zwisch2="branch2";}
 		               $lastaktive=true; 
 		               $farb="#505050"; 
 		            }
 		            else {
-		            	if(count($subsubmenu[$i][$j][0]) != 0){
-               			if($maxsub == $i+1){$zwisch2="<a href='".$item2['link']."' style='border-style=none;text-decoration:none'>
-               				<img style='border-width:0;border-style=none;' src='../pics/plus2.gif'></a>";}
-		         			else {$zwisch2="<a href='".$item2['link']."' style='border-style=none;text-decoration:none'>
-               				<img style='border-width:0;border-style=none;' src='../pics/plus2.gif'></a>";}
-		         		}else{$zwisch2="";}
+		            	if ($maxsub == $j+1) {$zwisch2="branchbottom2";}
+		            	# Wenn Unter-Unter-Menu ...
+		            	#if(count($subsubmenu[$i][$j][0]) != 0){
+               		#	if($maxsub == $i+1){$zwisch2="<a href='".$item2['link']."' style='border-style=none;text-decoration:none'>
+               		#		<img style='border-width:0;border-style=none;' src='../pics/plus2.gif'></a>";}
+		         		#	else {$zwisch2="<a href='".$item2['link']."' style='border-style=none;text-decoration:none'>
+               		#		<img style='border-width:0;border-style=none;' src='../pics/plus2.gif'></a>";}
+							#}		         		
+		         		else{$zwisch2="branch2";}
 		               $farb="#A0A0A0";
 		               $lastaktive=false;
 		            } 
 		        	}
 		   		$htmlcode= "
 		   		<tr height='4'>
-						<td></td><td></td><td></td><td></td>
+						<td></td><td align='right'><img src='../pics/line2.gif' height='4'></td><td></td><td></td>
 		   		</tr>
 		   		<tr>
 						<td width='8%'>&nbsp;</td>
-						<td width='8%' align='right'>".$zwisch2."</td>
+						<td width='8%' align='right'><img src='../pics/".$zwisch2.".gif'></td>
  						<td width='5%' align='left' style='border-width:1 0 1 1;border-color:#000000;border-style:solid;padding:4;background-color:{FARBE_S}'>&nbsp;</td>
 		     			<td width='69%' align='left' style='border-width:1 1 1 0;border-color:#000000;border-style:solid;padding:4;padding-left:12px;background-color:{FARBE_S}'> 
 		     			<a href='".$item2['link']."' style='text-decoration:none'><b class='standard_schrift'>".$item2['text']."</b></a></td>

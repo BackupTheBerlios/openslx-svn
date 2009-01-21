@@ -1,8 +1,5 @@
 <?php
 
-# standard header file for AU files
-
-include("au_menu.php");
 # 1. Title
 $titel = "Administrative Unit Management";
 # 2. Mainmenu Number (starting with 0)
@@ -15,6 +12,7 @@ $definedTemplates = array("Vorlage" => "au.dwt",
 	"Login" => "../logout_form.inc.dwt",
 	"Mmenu" => "../hauptmenue.dwt",
 	"Menu" => "menu.dwt",
+   "IPBlocks" => "../common/ipblocks.dwt",
 	"Webseite" => $webseite);
 
 if (isset($additionalTemplates)) {
@@ -29,5 +27,9 @@ $template->assign(array("SEITENTITEL" => $titel,
 	"AU" => $au_ou,
 	"DOMAIN" => $assocdom,
 	"USERCN" => $usercn));
+
+
+include("au_menu.php");
+include("../common/ip_blocks.inc.php");
 
 ?>

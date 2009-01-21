@@ -1,12 +1,12 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
   	<tr>
-  		<td colspan='2'><h3>Administrative Unit - &nbsp;<i>{AU}</i>&nbsp; -</h3></td>
+  		<td colspan='2'><h3>Administrative Unit - &nbsp;<code class='font_object'>{AU}</code></h3></td>
   	</tr>
   	<tr>
   		<td height='10'></td>
   	</tr>
   	<tr>
-  		<td><h4>Im LDAP Verzeichnis gespeicherte Daten:</h4>
+  		<td>
   			Sie k&ouml;nnen den Namen und die Beschreibung bearbeiten. Zur Verwaltung, der ihnen 
   			zugeordneten IP Adressbereiche benutzen Sie bitte das Modul <b>IP Management</b>.<br>
   			Wollen Sie ihren DNS Domainnamen &auml;ndern	so wenden Sie sich an den Haupt-Administrator 
@@ -21,32 +21,32 @@
 				<form action='au_change.php' method='post'>
 			
 			<tr height='45'>
-				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
-				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+				<td width='45%' class='tab_h'><b>Attribut</b></td>
+				<td width='55%' class='tab_h'><b>Wert</b></td>
 			</tr>
 			<tr height='45'>
-				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Name: </b></td>
-				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td width='45%' class='tab_d'><b>Name: </b></td>
+				<td width='55%' class='tab_d'>
 					<input type='Text' name='commonname' value='{CN}' size='40' class='medium_form_field'>
 					<input type='hidden' name='oldcn' value='{CN}'>
 					<input type='hidden' name='audn' value='{AUDN}'> &nbsp;
 				</td>
 			</tr>
 			<tr height='45'>
-				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Bechreibung:</b></td>
-				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td width='45%' class='tab_d'><b>Bechreibung:</b></td>
+				<td width='55%' class='tab_d'>
 					<input type='Text' name='description' value='{DSC}' size='40' class='medium_form_field'>
 					<input type='hidden' name='olddesc' value='{DSC}'>
 					<input type='hidden' name='audn' value='{AUDN}'> &nbsp;
 				</td>
 			</tr>
 			<tr height='45'>
-				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>DNS Domain:</b></td>
-				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>{DOMAIN} &nbsp;</td>
+				<td width='45%' class='tab_d'><b>DNS Domain:</b></td>
+				<td width='55%' class='tab_d'>{DOMAIN} &nbsp;</td>
 			</tr>
-			<tr height='45'>
-				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>IP Bereiche:</b></td>
-				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>{MIPBS} &nbsp;</td>
+			<tr height='45' valign='top'>
+				<td width='45%' class='tab_d'><b>IP Bereiche:</b></td>
+				<td width='55%' class='tab_d'>{MIPBS} &nbsp;</td>
 			</tr>						
 
 		</table></td>
@@ -55,6 +55,8 @@
 		<td><input type='Submit' name='apply' value='anwenden' class='small_loginform_button'>
 		</form></td>
 	</tr>
+	
+	<!--	
 	<tr>
   		<td height='40'></td>
   	</tr>
@@ -64,21 +66,23 @@
   	<tr><td>
   		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
 			<tr height='1'>
-				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'>&nbsp;</td>
-				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'>&nbsp;</td>
+				<td width='45%' class='tab_h'>&nbsp;</td>
+				<td width='55%' class='tab_h'>&nbsp;</td>
 			</tr>
 			<tr height='45'>
-				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Hauptadministratoren:</b></td>
-				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>...</td>
+				<td width='45%' class='tab_d'><b>Hauptadministratoren:</b></td>
+				<td width='55%' class='tab_d'>...</td>
 			</tr>
 			<tr height='45'>
-				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Anzahl Rechner:</b></td>
-				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>...</td>
+				<td width='45%' class='tab_d'><b>Anzahl Rechner:</b></td>
+				<td width='55%' class='tab_d'>...</td>
 			</tr>
 			<tr height='45'>
-				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>.... :</b></td>
-				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>...</td>
+				<td width='45%' class='tab_d'><b>.... :</b></td>
+				<td width='55%' class='tab_d'>...</td>
 			</tr>
 		</table></td>
 	</tr>
+	-->
+	
 </table>

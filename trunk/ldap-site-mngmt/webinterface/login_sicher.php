@@ -314,14 +314,14 @@ function userLogin($uid, $userPassword) {
     global $userDN, $suffix, $ldapError;
     # Verbindung mit der Datenbank herstellen
     if(($uid == "") || ($userPassword == "") || !($ds = uniLdapConnect($uid,$userPassword))) {
-      redirect(5, "index.php", "Falscher Login<br>".$ldapError, FALSE);
+      redirect(3, "index.php", "Falscher Login<br>".$ldapError, FALSE);
       die;
     }
     
     # cn abfragen
     $cn = "Gast";
     if(!($person_daten = uniLdapSearch($ds, "ou=people,".$suffix, "uid=$uid", array("cn"), "", "list", 0, 0))) {
-      redirect(5, "index.php", $ldapError, FALSE);
+      redirect(3, "index.php", $ldapError, FALSE);
       die;
     } else {
       $cn = str_replace('\"', '', $person_daten[0]['cn'][0]);
@@ -351,8 +351,9 @@ function userLogin($uid, $userPassword) {
 	 			</table>
 	 			</body>
 				</html>";
-    # Aufruf der Startseite:
-    redirect(0, "start.php", $mesg, TRUE);
+   # Aufruf der Startseite:
+  	
+   redirect(0, "start.php", $mesg, TRUE);
 	
 	# nichtmehr benötigte CSV-Dateien im tmp-Verzeichnis löschen
 	# listen_sauber();

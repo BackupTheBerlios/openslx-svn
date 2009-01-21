@@ -12,7 +12,7 @@ if ($mipb_array[0] != "" ){
 	if (count($mipb_array) > 1 ){
 		$ipblocks .= "<table border='1' cellpadding='2' cellspacing='0' width='100%' style='border-width: 0 0 0 0;'>
 							<tr><td colspan='3' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'>
-							<h4>Zugewiesene IP Bereiche:</h4></td></tr>";
+							<b>Zugewiesene IP Bereiche:</b></td></tr>";
 		foreach ($mipb_array as $mipb){
 			$exp = explode('_',$mipb);
 			$ipblocks .= "<tr><td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>$exp[0]&nbsp;</td>
@@ -23,7 +23,7 @@ if ($mipb_array[0] != "" ){
 	elseif (count($mipb_array) == 1){
 		$ipblocks .= "<table border='1' cellpadding='2' cellspacing='0' width='100%' style='border-width: 0 0 0 0;'>
 							<tr><td colspan='3' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'>
-							<h4>Zugewiesener IP Bereich:</h4></td></tr>";	
+							<b>Zugewiesener IP Bereich:</b></td></tr>";	
 		$exp = explode('_',$mipb_array[0]);
 		$ipblocks .= "<tr><td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>$exp[0]&nbsp;</td>
 							<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'> - </td>
@@ -31,13 +31,13 @@ if ($mipb_array[0] != "" ){
 	}
 	elseif( $fipb_array[0] == "" ){
 	$ipblocks .= "<table border='0' cellpadding='2' cellspacing='0' width='100%' style='border-width: 0 0 0 0;'>
-						<tr><td><h4>Keine IP Adressen mehr verf&uuml;gbar</h4></td></tr>";
+						<tr><td><b>Keine IP Adressen mehr verf&uuml;gbar</b></td></tr>";
 	}
 	if (count($fipb_array) > 1 ){
 		$ipblocks .= "<table border='1' cellpadding='2' cellspacing='0' width='100%' style='border-width: 0 0 0 0;'>
-							<tr valign='bottom' height='50'>
-							<td colspan='3' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'>
-							<h4>Davon noch frei verf&uuml;gbar:</h4></td></tr>";	
+							<tr valign='bottom' height='40'>
+								<td colspan='3' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'>
+								<b>Davon noch frei verf&uuml;gbar:</b></td></tr>";	
 		foreach ($fipb_array as $fipb){
 			$exp = explode('_',$fipb);
 			$ipblocks .= "<tr><td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>$exp[0]&nbsp;</td>
@@ -47,8 +47,9 @@ if ($mipb_array[0] != "" ){
 	}
 	elseif (count($fipb_array) == 1){
 		$ipblocks .=  "<table border='1' cellpadding='2' cellspacing='0' width='100%' style='border-width: 0 0 0 0;'>
-							<tr><td colspan='3' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'>
-							<h4>Davon noch frei verf&uuml;gbar:</h4></td></tr>";	
+							<tr valign='bottom' height='40'>
+								<td colspan='3' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'>
+								<b>Davon noch frei verf&uuml;gbar:</b></td></tr>";	
 		$exp = explode('_',$fipb_array[0]);
 		$ipblocks .= "<tr><td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>$exp[0]&nbsp;</td>
 							<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'> - </td>
@@ -59,7 +60,8 @@ if ($mipb_array[0] != "" ){
 
 if( $mipb_array[0] == "" ){
 	$ipblocks .= "<table border='0' cellpadding='2' cellspacing='0' width='100%' style='border-width: 0 0 0 0;'>
-						<tr><td><h4>Ihnen wurden keine IP Adressen zugewiesen</h4></td></tr>";
+						<tr valign='bottom' height='40'>
+						<td><b>Ihnen wurden keine IP Adressen zugewiesen</b></td></tr>";
 }
 $ipblocks .= "</table>";
 

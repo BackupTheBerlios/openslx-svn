@@ -8,16 +8,19 @@ function createRolesMenu($rollen , $mnr, $assocdom) {
     if ($assocdom != ""){
     $hauptmenu = array(array("link" => "roles.php",
                              "text" => "&Uuml;bersicht",
-                             "zugriff" => array("MainAdmin")),
+                             "zugriff" => array("MainAdmin","DhcpAdmin")),
                        array("link" => "role_show.php?role=MainAdmin&mnr=1",
                              "text" => "Main Admins",
                              "zugriff" => array("MainAdmin")),
-                       #array("link" => "role_show.php?role=HostAdmin&mnr=2",
-                       #      "text" => "Host Admins",
-                       #      "zugriff" => array("MainAdmin")),
-                       #array("link" => "role_show.php?role=DhcpAdmin&mnr=3",
-                       #      "text" => "DHCP Admins",
-                       #      "zugriff" => array("MainAdmin")),
+                       array("link" => "role_show.php?role=DhcpAdmin&mnr=2",
+                             "text" => "DHCP Admins",
+                             "zugriff" => array("MainAdmin")),
+                       array("link" => "role_show.php?role=HostAdmin&mnr=3",
+                             "text" => "Host Admins",
+                             "zugriff" => array("MainAdmin","DhcpAdmin")),
+                       array("link" => "role_show.php?role=RbsAdmin&mnr=4",
+                             "text" => "RBS Admins",
+                             "zugriff" => array("MainAdmin","DhcpAdmin")),
                        #array("link" => "role_show.php?role=ZoneAdmin&mnr=4",
                        #      "text" => "DNS Admins",
                        #      "zugriff" => array("MainAdmin"))
@@ -25,16 +28,19 @@ function createRolesMenu($rollen , $mnr, $assocdom) {
 	 }else{
 	 $hauptmenu = array(array("link" => "roles.php",
                              "text" => "&Uuml;bersicht",
-                             "zugriff" => array("MainAdmin")),
+                             "zugriff" => array("MainAdmin","DhcpAdmin")),
                        array("link" => "role_show.php?role=MainAdmin&mnr=1",
                              "text" => "Main Admins",
                              "zugriff" => array("MainAdmin")),
-                       #array("link" => "role_show.php?role=HostAdmin&mnr=2",
-                       #      "text" => "Host Admins",
-                       #      "zugriff" => array("MainAdmin")),
-                       #array("link" => "role_show.php?role=DhcpAdmin&mnr=3",
-                       #      "text" => "DHCP Admins",
-                       #      "zugriff" => array("MainAdmin"))
+                       array("link" => "role_show.php?role=DhcpAdmin&mnr=2",
+                             "text" => "DHCP Admins",
+                             "zugriff" => array("MainAdmin")),
+                       array("link" => "role_show.php?role=HostAdmin&mnr=3",
+                             "text" => "Host Admins",
+                             "zugriff" => array("MainAdmin","DhcpAdmin")),
+                       array("link" => "role_show.php?role=RbsAdmin&mnr=4",
+                             "text" => "RBS Admins",
+                             "zugriff" => array("MainAdmin","DhcpAdmin"))
                        );	
 	 }
 	 # $rollen = array_keys($roles);

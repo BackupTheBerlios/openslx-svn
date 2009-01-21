@@ -68,12 +68,12 @@ function new_childau($childDN,$childou,$childcn,$childdesc,$mainadmin){
 		$entryMA ['cn'] = "MainAdmin";
 		$entryMA ['member'] = $mainadmin;
 		if ($resultMA = ldap_add($ds,"cn=MainAdmin,cn=roles,".$childDN,$entryMA)){
-			$admins = array("HostAdmin","DhcpAdmin","ZoneAdmin");
-			foreach ($admins as $admin){
-				$entryAdmin ['objectclass'] = "Admins";
-				$entryAdmin ['cn'] = $admin;
-				ldap_add($ds,"cn=".$admin.",cn=roles,".$childDN,$entryAdmin);
-			}
+			#$admins = array("HostAdmin","DhcpAdmin","ZoneAdmin");
+			#foreach ($admins as $admin){
+			#	$entryAdmin ['objectclass'] = "Admins";
+			#	$entryAdmin ['cn'] = $admin;
+			#	ldap_add($ds,"cn=".$admin.",cn=roles,".$childDN,$entryAdmin);
+			#}
 			return 1;
 		}
 		else{
@@ -124,6 +124,8 @@ function delete_childau($childDN,$childou,$delmodus){
 			# ChildAU-Rollen unterhalb dc-Knoten löschen (nur diese)(oder übernehmen: MA zu HA, HA zu HA)
 			$roles = get_roles($childDN);
 			#print_r($roles); echo "<br>";
+			
+			# was ist wenn rollen nur noch ein member haben ... fehler
 			if(count($roles['MainAdmin']) != 0){
 				$mainadmins = $roles['MainAdmin'];
 				for ($i=0; $i<count($mainadmins); $i++){
@@ -281,14 +283,16 @@ function new_child_domain($childdomain, $childDN, $assocdom, $domDN){
 				#print_r($entryRoleHost); echo "<br>";
 				$resultMA = ldap_mod_add($ds,"cn=MainAdmin,cn=roles,".$domDN,$entryRoleMain);
 			}
-			if(count($roles['HostAdmin']) != 0){
-				$hostadmins = $roles['HostAdmin'];
-				for ($i=0; $i<count($hostadmins); $i++){
-					$entryRoleHost ['member'][$i] = $hostadmins[$i];
-				}
-				#print_r($entryRoleHost); echo "<br>";
-				$resultHA = ldap_mod_add($ds,"cn=HostAdmin,cn=roles,".$domDN,$entryRoleHost);
-			}
+			#if(count($roles['HostAdmin']) != 0){
+			#	$dnsroles = get_roles($domDN);
+			# ... 
+			#	$hostadmins = $roles['HostAdmin'];
+			#	for ($i=0; $i<count($hostadmins); $i++){
+			#		$entryRoleHost ['member'][$i] = $hostadmins[$i];
+			#	}
+			#	#print_r($entryRoleHost); echo "<br>";
+			#	$resultHA = ldap_mod_add($ds,"cn=HostAdmin,cn=roles,".$domDN,$entryRoleHost);
+			#}
 			# Domainname zu associatedDomain der ChildAU
 			$entryAD['objectclass'] = "domainRelatedObject";
 			$entryAD['associateddomain'] = $assocdom;
@@ -348,20 +352,20 @@ function new_child_domain($childdomain, $childDN, $assocdom, $domDN){
 						#print_r($entryRoleMain); echo "<br>";
 						$resultMA = ldap_add($ds,"cn=MainAdmin,cn=roles,".$dcDN,$entryRoleMain);
 						
-						$entryRoleHost ['objectclass'] = "Admins";
-						$entryRoleHost ['cn'] = "HostAdmin";
 						if(count($roles['HostAdmin']) != 0){
+							$entryRoleHost ['objectclass'] = "groupOfNames";
+							$entryRoleHost ['cn'] = "HostAdmin";
 							$hostadmins = $roles['HostAdmin'];
 							for ($i=0; $i<count($hostadmins); $i++){
 								$entryRoleHost ['member'][$i] = $hostadmins[$i];
 							}
 							#print_r($entryRoleHost); echo "<br>";
-						}
-						$resultHA = ldap_add($ds,"cn=HostAdmin,cn=roles,".$dcDN,$entryRoleHost);
+							$resultHA = ldap_add($ds,"cn=HostAdmin,cn=roles,".$dcDN,$entryRoleHost);
+						}						
 						
-						$entryRoleZone ['objectclass'] = "Admins";
-						$entryRoleZone ['cn'] = "ZoneAdmin";	
-						$resultZA = ldap_add($ds,"cn=ZoneAdmin,cn=roles,".$dcDN,$entryRoleZone);
+						#$entryRoleZone ['objectclass'] = "Admins";
+						#$entryRoleZone ['cn'] = "ZoneAdmin";	
+						#$resultZA = ldap_add($ds,"cn=ZoneAdmin,cn=roles,".$dcDN,$entryRoleZone);
 						
 						if ($resultMA){$resultsum = true;}
 					}
@@ -431,7 +435,7 @@ function change_child_domain($childdomain, $oldchilddomain, $childDN, $assocdom,
 				#print_r($entryAN); echo "<br>";
 				$result = ldap_mod_del($ds,$domDN,$entryAN);
 				
-				# Eigene Rollen aus dc-Knoten enrfernen 
+				# Eigene Rollen aus dc-Knoten entfernen 
 				$roles = get_roles($childDN);
 				if(count($roles['MainAdmin']) != 0){
 					$mainadmins = $roles['MainAdmin'];
@@ -976,9 +980,12 @@ function new_role_member($userDN,$role,$auDN,$domDN){
 
 	global $ds, $suffix, $ldapError;
 	
+	$actroles = get_roles($auDN);
+	
 	$entry['member'] = $userDN;
 	
 	if ($domDN != ""){
+		$actdnsroles = get_roles_dns($domDN);
 		switch ($role){
 		case 'MainAdmin':
 			$roleDN1 = "cn=".$role.",cn=roles,".$auDN;
@@ -993,10 +1000,18 @@ function new_role_member($userDN,$role,$auDN,$domDN){
 			break;
 		case 'HostAdmin':
 			$roleDN1 = "cn=".$role.",cn=roles,".$auDN;
-			$roleDN2 = "cn=".$role.",cn=roles,".$domDN;
-			$results1 = ldap_mod_add($ds,$roleDN1,$entry);
-			$results2 = ldap_mod_add($ds,$roleDN2,$entry);
-			if ($results1 && $results2){ 
+			#$roleDN2 = "cn=".$role.",cn=roles,".$domDN;
+			if ( count($actroles['HostAdmin']) != 0 ){
+				$results1 = ldap_mod_add($ds,$roleDN1,$entry);
+				#$results2 = ldap_mod_add($ds,$roleDN2,$entry);
+			}else{
+				$entrynew ['objectclass'] = "groupOfNames";
+				$entrynew ['cn'] = $role;
+				$entrynew ['member'] = $userDN;
+				$results1 = ldap_add($ds,$roleDN1,$entrynew);
+				#$results2 = ldap_add($ds,$roleDN2,$entryHA);
+			}
+			if ($results1){ #&& $results2){ 
 				return 1;
    		}else{ 
 			   return 0;
@@ -1004,7 +1019,30 @@ function new_role_member($userDN,$role,$auDN,$domDN){
 			break;
 		case 'DhcpAdmin':
 			$roleDN = "cn=".$role.",cn=roles,".$auDN;
-			$results = ldap_mod_add($ds,$roleDN,$entry);
+			if ( count($actroles['DhcpAdmin']) != 0 ){
+				$results = ldap_mod_add($ds,$roleDN,$entry);
+			}else{
+				$entrynew ['objectclass'] = "groupOfNames";
+				$entrynew ['cn'] = $role;
+				$entrynew ['member'] = $userDN;
+				$results = ldap_add($ds,$roleDN,$entrynew);
+			}
+			if ($results){ 
+				return 1;
+   		}else{ 
+			   return 0;
+			}	
+			break;
+		case 'RbsAdmin':
+			$roleDN = "cn=".$role.",cn=roles,".$auDN;
+			if ( count($actroles['RbsAdmin']) != 0 ){
+				$results = ldap_mod_add($ds,$roleDN,$entry);
+			}else{
+				$entrynew ['objectclass'] = "groupOfNames";
+				$entrynew ['cn'] = $role;
+				$entrynew ['member'] = $userDN;
+				$results = ldap_add($ds,$roleDN,$entrynew);
+			}
 			if ($results){ 
 				return 1;
    		}else{ 
@@ -1013,10 +1051,17 @@ function new_role_member($userDN,$role,$auDN,$domDN){
 			break;
 		case 'ZoneAdmin':
 			$roleDN1 = "cn=".$role.",cn=roles,".$auDN;
-			$roleDN2 = "cn=".$role.",cn=roles,".$domDN;
-			$results1 = ldap_mod_add($ds,$roleDN1,$entry);
-			$results2 = ldap_mod_add($ds,$roleDN2,$entry);
-			if ($results1 && $results2){ 
+			#$roleDN2 = "cn=".$role.",cn=roles,".$domDN;
+			if ( count($actroles['ZoneAdmin']) != 0 ){
+				$results1 = ldap_mod_add($ds,$roleDN1,$entry);
+				#$results2 = ldap_mod_add($ds,$roleDN2,$entry);
+			}else{
+				$entrynew ['objectclass'] = "groupOfNames";
+				$entrynew ['cn'] = $role;
+				$entrynew ['member'] = $userDN;
+				$results = ldap_add($ds,$roleDN1,$entrynew);
+			}
+			if ($results1){  #&& $results2){ 
 				return 1;
    		}else{ 
 			   return 0;
@@ -1036,7 +1081,14 @@ function new_role_member($userDN,$role,$auDN,$domDN){
 			break;
 		case 'HostAdmin':
 			$roleDN = "cn=".$role.",cn=roles,".$auDN;
-			$results = ldap_mod_add($ds,$roleDN,$entry);
+			if ( count($actroles['HostAdmin']) != 0 ){
+				$results = ldap_mod_add($ds,$roleDN,$entry);
+			}else{
+				$entrynew ['objectclass'] = "groupOfNames";
+				$entrynew ['cn'] = $role;
+				$entrynew ['member'] = $userDN;
+				$results = ldap_add($ds,$roleDN,$entrynew);
+			}
 			if ($results){ 
 				return 1;
    		}else{ 
@@ -1045,7 +1097,30 @@ function new_role_member($userDN,$role,$auDN,$domDN){
 			break;
 		case 'DhcpAdmin':
 			$roleDN = "cn=".$role.",cn=roles,".$auDN;
-			$results = ldap_mod_add($ds,$roleDN,$entry);
+			if ( count($actroles['DhcpAdmin']) != 0 ){
+				$results = ldap_mod_add($ds,$roleDN,$entry);
+			}else{
+				$entrynew ['objectclass'] = "groupOfNames";
+				$entrynew ['cn'] = $role;
+				$entrynew ['member'] = $userDN;
+				$results = ldap_add($ds,$roleDN,$entrynew);
+			}
+			if ($results){ 
+				return 1;
+   		}else{ 
+			   return 0;
+			}	
+			break;
+		case 'RbsAdmin':
+			$roleDN = "cn=".$role.",cn=roles,".$auDN;
+			if ( count($actroles['RbsAdmin']) != 0 ){
+				$results = ldap_mod_add($ds,$roleDN,$entry);
+			}else{
+				$entrynew ['objectclass'] = "groupOfNames";
+				$entrynew ['cn'] = $role;
+				$entrynew ['member'] = $userDN;
+				$results = ldap_add($ds,$roleDN,$entrynew);
+			}
 			if ($results){ 
 				return 1;
    		}else{ 
@@ -1054,7 +1129,14 @@ function new_role_member($userDN,$role,$auDN,$domDN){
 			break;
 		case 'ZoneAdmin':
 			$roleDN = "cn=".$role.",cn=roles,".$auDN;
-			$results = ldap_mod_add($ds,$roleDN,$entry);
+			if ( count($actroles['ZoneAdmin']) != 0 ){
+				$results = ldap_mod_add($ds,$roleDN,$entry);
+			}else{
+				$entrynew ['objectclass'] = "groupOfNames";
+				$entrynew ['cn'] = $role;
+				$entrynew ['member'] = $userDN;
+				$results = ldap_add($ds,$roleDN,$entrynew);
+			}
 			if ($results){ 
 				return 1;
    		}else{ 
@@ -1070,15 +1152,24 @@ function delete_role_member($userDN,$role,$auDN,$domDN){
 
 	global $ds, $suffix, $ldapError;
 	
+	$actroles = get_roles($auDN);
+	
 	$entry['member'] = $userDN;
 	
 	if ($domDN != ""){
+		$actdnsroles = get_roles_dns($domDN);
+		
 		switch ($role){
 		case 'MainAdmin':
 			$roleDN1 = "cn=".$role.",cn=roles,".$auDN;
 			$roleDN2 = "cn=".$role.",cn=roles,".$domDN;
-			$results1 = ldap_mod_del($ds,$roleDN1,$entry);
-			$results2 = ldap_mod_del($ds,$roleDN2,$entry);
+			if ( count($actroles['MainAdmin']) == 1 || count($actdnsroles['MainAdmin']) == 1 ){
+				echo "Rolle <b>MainAdmin</b> muss mindestens ein Mitglied haben!<br>
+						<b>$userDN</b> wird nicht gel&ouml;scht.<br><br>";
+			}else{
+				$results1 = ldap_mod_del($ds,$roleDN1,$entry);
+				$results2 = ldap_mod_del($ds,$roleDN2,$entry);
+			}
 			if ($results1 && $results2){ 
 				return 1;
    		}else{ 
@@ -1087,10 +1178,14 @@ function delete_role_member($userDN,$role,$auDN,$domDN){
 			break;
 		case 'HostAdmin':
 			$roleDN1 = "cn=".$role.",cn=roles,".$auDN;
-			$roleDN2 = "cn=".$role.",cn=roles,".$domDN;
-			$results1 = ldap_mod_del($ds,$roleDN1,$entry);
-			$results2 = ldap_mod_del($ds,$roleDN2,$entry);
-			if ($results1 && $results2){ 
+			#$roleDN2 = "cn=".$role.",cn=roles,".$domDN;
+			if ( count($actroles['HostAdmin']) == 1 ){
+				$results1 = ldap_delete($ds,$roleDN1);
+			}else{
+				$results1 = ldap_mod_del($ds,$roleDN1,$entry);
+			}
+			#$results2 = ldap_mod_del($ds,$roleDN2,$entry);
+			if ($results1){  #&& $results2){ 
 				return 1;
    		}else{ 
 			   return 0;
@@ -1098,7 +1193,24 @@ function delete_role_member($userDN,$role,$auDN,$domDN){
 			break;
 		case 'DhcpAdmin':
 			$roleDN = "cn=".$role.",cn=roles,".$auDN;
-			$results = ldap_mod_del($ds,$roleDN,$entry);
+			if ( count($actroles['DhcpAdmin']) == 1 ){
+				$results = ldap_delete($ds,$roleDN);
+			}else{
+				$results = ldap_mod_del($ds,$roleDN,$entry);
+			}
+			if ($results){ 
+				return 1;
+   		}else{ 
+			   return 0;
+			}	
+			break;
+		case 'RbsAdmin':
+			$roleDN = "cn=".$role.",cn=roles,".$auDN;
+			if ( count($actroles['RbsAdmin']) == 1 ){
+				$results = ldap_delete($ds,$roleDN);
+			}else{
+				$results = ldap_mod_del($ds,$roleDN,$entry);
+			}
 			if ($results){ 
 				return 1;
    		}else{ 
@@ -1107,10 +1219,14 @@ function delete_role_member($userDN,$role,$auDN,$domDN){
 			break;
 		case 'ZoneAdmin':
 			$roleDN1 = "cn=".$role.",cn=roles,".$auDN;
-			$roleDN2 = "cn=".$role.",cn=roles,".$domDN;
-			$results1 = ldap_mod_del($ds,$roleDN1,$entry);
-			$results2 = ldap_mod_del($ds,$roleDN2,$entry);
-			if ($results1 && $results2){ 
+			#$roleDN2 = "cn=".$role.",cn=roles,".$domDN;
+			if ( count($actroles['ZoneAdmin']) == 1 ){
+				$results1 = ldap_delete($ds,$roleDN1);
+			}else{
+				$results1 = ldap_mod_del($ds,$roleDN1,$entry);
+			}
+			#$results2 = ldap_mod_del($ds,$roleDN2,$entry);
+			if ($results1){   #&& $results2){ 
 				return 1;
    		}else{ 
 			   return 0;
@@ -1121,7 +1237,12 @@ function delete_role_member($userDN,$role,$auDN,$domDN){
 		switch ($role){
 		case 'MainAdmin':
 			$roleDN = "cn=".$role.",cn=roles,".$auDN;
-			$results = ldap_mod_del($ds,$roleDN,$entry);
+			if ( count($actroles['MainAdmin']) == 1 ){
+				echo "Rolle <b>MainAdmin</b> muss mindestens ein Mitglied haben!<br>
+						<b>$userDN</b> wird nicht gel&oumlscht.<br><br>";
+			}else{
+				$results = ldap_mod_del($ds,$roleDN,$entry);
+			}
 			if ($results){ 
 				return 1;
    		}else{ 
@@ -1130,7 +1251,11 @@ function delete_role_member($userDN,$role,$auDN,$domDN){
 			break;
 		case 'HostAdmin':
 			$roleDN = "cn=".$role.",cn=roles,".$auDN;
-			$results = ldap_mod_del($ds,$roleDN,$entry);
+			if ( count($actroles['HostAdmin']) == 1 ){
+				$results = ldap_delete($ds,$roleDN);
+			}else{
+				$results = ldap_mod_del($ds,$roleDN,$entry);
+			}
 			if ($results){ 
 				return 1;
    		}else{ 
@@ -1139,7 +1264,24 @@ function delete_role_member($userDN,$role,$auDN,$domDN){
 			break;
 		case 'DhcpAdmin':
 			$roleDN = "cn=".$role.",cn=roles,".$auDN;
-			$results = ldap_mod_del($ds,$roleDN,$entry);
+			if ( count($actroles['DhcpAdmin']) == 1 ){
+				$results = ldap_delete($ds,$roleDN);
+			}else{
+				$results = ldap_mod_del($ds,$roleDN,$entry);
+			}
+			if ($results){ 
+				return 1;
+   		}else{ 
+			   return 0;
+			}	
+			break;
+		case 'RbsAdmin':
+			$roleDN = "cn=".$role.",cn=roles,".$auDN;
+			if ( count($actroles['RbsAdmin']) == 1 ){
+				$results = ldap_delete($ds,$roleDN);
+			}else{
+				$results = ldap_mod_del($ds,$roleDN,$entry);
+			}
 			if ($results){ 
 				return 1;
    		}else{ 
@@ -1148,7 +1290,11 @@ function delete_role_member($userDN,$role,$auDN,$domDN){
 			break;
 		case 'ZoneAdmin':
 			$roleDN = "cn=".$role.",cn=roles,".$auDN;
-			$results = ldap_mod_del($ds,$roleDN,$entry);
+			if ( count($actroles['ZoneAdmin']) == 1 ){
+				$results = ldap_delete($ds,$roleDN);
+			}else{
+				$results = ldap_mod_del($ds,$roleDN,$entry);
+			}
 			if ($results){ 
 				return 1;
    		}else{ 

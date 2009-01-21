@@ -1,10 +1,10 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
-  	<tr>
-  		<td colspan='2'><h3>Neue untergeordnete AU anlegen:</h3></td>
-  	</tr>
-  	<tr>
-  		<td height='20'></td>
-  	</tr>
+	<tr>
+		<td colspan='2'><h3>Neue untergeordnete AU anlegen:</h3></td>
+	</tr>
+	<tr>
+		<td height='20'></td>
+	</tr>
   	<tr>
   		<td colspan='2'><h4>Notwendige Attribute (m&uuml;ssen angegeben werden):</h3></td>
   	</tr>
@@ -15,20 +15,20 @@
 				<form action='childau_add.php' method='post'>
 			
 			<tr>
-				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
-				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+				<td width='45%' class='tab_h'><b>Attribut</b></td>
+				<td width='55%' class='tab_h'><b>Wert</b></td>
 			</tr>
 			
 			<tr height='50'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Eindeutiger Name (ou):</b><br>(Teil des dn, ohne Leerzeichen eingeben) &nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td class='tab_d'><b>Eindeutiger Name (ou):</b><br>(Teil des dn, ohne Leerzeichen eingeben) &nbsp;</td>
+				<td class='tab_d'>
 					<input type='Text' name='childou' value='{CHILDOU}' size='40' class='medium_form_field'> &nbsp;
 				</td>
 			</tr>
 			
 			<tr height='50'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>MainAdmin neue AU:</b><br>(W&auml;hlen Sie einen Benutzer aus)</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td class='tab_d'><b>MainAdmin neue AU:</b><br>(W&auml;hlen Sie einen Benutzer aus)</td>
+				<td class='tab_d'>
 					<select name='adduser' size='1' class='medium_form_selectbox'> 
 						<option selected value='none'>----------</option>
 						
@@ -52,26 +52,26 @@
   		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>		
 			
 			<tr>
-				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
-				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+				<td width='45%' class='tab_h'><b>Attribut</b></td>
+				<td width='55%' class='tab_h'><b>Wert</b></td>
 			</tr>
 			
 			<tr height='50'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Name der Abteilung (cn): </b>&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td class='tab_d'><b>Name der Abteilung (cn): </b>&nbsp;</td>
+				<td class='tab_d'>
 					<input type='Text' name='childcn' value='{CHILDCN}' size='40' class='medium_form_field'>
 				</td>
 			</tr>
 			<tr height='50'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>DNS Domain :</b> &nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td class='tab_d'><b>DNS Domain :</b> &nbsp;</td>
+				<td class='tab_d'>
 					<input type='Text' name='childdomain' value='{CHILDDOMAIN}' size='24' class='medium_form_field'>
 						<b><font size="+1">.uni-freiburg.de</font></b>&nbsp;
 				</td>
 			</tr>
 			<tr height='50'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Beschreibung der AU:</b> &nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td class='tab_d'><b>Beschreibung der AU:</b> &nbsp;</td>
+				<td class='tab_d'>
 					<input type='Text' name='childdesc' value='{CHILDDESC}' size='40' class='medium_form_field'>
 				</td>
 				
@@ -91,14 +91,14 @@
   		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
 			
 			<tr>
-				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Objekt</b></td>
-				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Auswahl</b></td>
+				<td width='45%' class='tab_h'><b>Objekt</b></td>
+				<td width='55%' class='tab_h'><b>Auswahl</b></td>
 			</tr>
 			
 			<tr height='50'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Rechner:</b><br>
+				<td class='tab_d'><b>Rechner:</b><br>
 						(W&auml;hlen Sie die zu verschiebenden Rechner aus, <br>Mehrfachauswahl m&ouml;glich)</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td class='tab_d'>
 					<select name='addhost[]' size='{HOSTNUMBER}' class='medium_form_selectbox' multiple> 
 						<option selected value='none'>----------</option>
 						
