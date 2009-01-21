@@ -180,7 +180,8 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 	    > $(SLX_CONFIG_PATH)/settings.local
 
 	@# create slxversion script:
-	@OPENSLX_VERSION_SVNREV=$$(svnversion) . VERSIONS; \
+	@OPENSLX_VERSION_SVNREV=$$(svnversion .); \
+	. VERSIONS; \
 	  echo "echo $${OPENSLX_VERSION_STRING}" \
 	    > ${SLX_BIN_PATH}/slxversion
 	@chmod a+x ${SLX_BIN_PATH}/slxversion
