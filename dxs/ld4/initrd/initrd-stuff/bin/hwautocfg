@@ -279,6 +279,10 @@ modprobe ${MODPRV} usbcore &
 [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mouse/psmouse.ko ] && \
   modprobe ${MODPRV} psmouse
 
+# and map the mousehandler to /dev/input/mice
+[ -f /lib/modules/${KERNEL}/kernel/drivers/input/mousedev.ko ] && \
+  modprobe ${MODPRV} mousedev
+
 # start the knoppix hardware autodetection tool
 ( hwsetup -v > /tmp/hwsetup.info && echo "hwsetup" > /tmp/hwrun1 ) &
 
