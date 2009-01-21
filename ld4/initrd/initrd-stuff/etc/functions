@@ -332,7 +332,7 @@ waitfor () {
 local file=$1
 local maxwait=$2
 local count=0
-while [ ! -f $file ] ; do
+while [ ! -e $file ] ; do
   echo "waiting ........." > /dev/null
   count=`expr $count + 1`
   [ $count -gt $maxwait ] && return 1

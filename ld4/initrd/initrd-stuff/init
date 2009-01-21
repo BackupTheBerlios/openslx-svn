@@ -2,11 +2,11 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.4b
+# Version:      0.2.4c
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -230,10 +230,13 @@ if [ -n "${NBD}" ] ; then
   case "${NBD}" in
     # network block device present in standard kernel
     nbd)
-      waitfor /dev/nbd0 10000 || error "$init_nbddev"
-      nbd-client $nbdhost $nbdport /dev/nbd0 || error "$init_nbdcl"
       RDEV=/dev/nbd0
-    ;;
+      waitfor "${RDEV}" 15000 || error "$init_nbddev"
+      echo "0" > /sys/block/nbd0/queue/read_ahead_kb
+      nbd-client $nbdhost $nbdport ${RDEV} || error "$init_nbdcl"
+      # switch off unneeded block read ahead
+      echo "0" > /sys/block/nbd0/queue/read_ahead_kb
+      ;;
     # dnbd by Thorsten Zitterell
     dnbd)
       if [ -z $nodnbdcache ] ; then  # variable not really used yet
@@ -247,7 +250,7 @@ if [ -n "${NBD}" ] ; then
       while ! dnbd-client -b $nbdhost -d /dev/dnbd0 $clientopt ; do
         usleep 10
       done
-      #echo $?
+      echo "0" > /sys/block/dnbd0/queue/read_ahead_kb
       RDEV=/dev/dnbd0
       ;;
   esac
