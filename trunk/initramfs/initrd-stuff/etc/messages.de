@@ -27,11 +27,11 @@ init_noeth="  Konnte die Netzwerk-Schnittstelle nicht konfigurieren (eth0).\
 init_errip="  Konnte die Grund-Funktionalitaet nicht einrichten, \
 da keine IP-Konfigurationen\n  vorhanden sind. Sie koennten diese \
 Informationen ueber die Kernel-Command-Line\n  durch die Einstellung \
-'ipappend 1' in pxelinux.cfg/* oder einfach dhcp\n  oder ldap aktivieren. \
-Sie werden durch Token ('ldap' oder 'dhcp')  in den Kernel Start Optionen aktiviert."
+'ipappend 1' in pxelinux.cfg/* oder ldap\n  aktivieren. Sie werden durch \
+Token ('ldap')  in den Kernel Start Optionen\n  eingeschaltet."
 init_errldap="  Konnte nicht wenigstens die Grund-Funktionalitaet einrichten, \
 da keine IP-Konfigurationen\n  vorhanden sind. Achtung - ldap arbeitet nur in \
-Kombination mit ipappend o.ae. oder dhcp!"
+Kombination mit IPAPPEND (PXE)\n  o.ae. oder DHCP!"
 init_errnwad="  Konnte die Netzwerk-Adapter, die durch den slx/mkramfs bzw. \
 mkdxsinitrd-Aufruf definiert\n  wurden, nicht laden. Bitte erneut aufrufen \
 und die passenden Module auflisten\n  (ohne Endung .ko)."
@@ -51,22 +51,22 @@ von slxmkramfs oder\n  mkdxsinitrd.\n  * Das eingehaengte Dateisystem \
 beinhaltet das Modul-Verzeichnis ueberhaupt nicht.\n    Sie sollten die Liste \
 der eingehaengten Dateisysteme pruefen und wenn /mnt\n    nicht leer ist, \
 'ls /mnt/lib/modules' ausfuehren."
-init_loadunions="  Stapeln mehrerer Verzeichnisse nicht möglich, da kein UnionFS/AUFS \
-Modul geladen ist"
+init_loadunions="  Stapeln mehrerer Verzeichnisse nicht möglich, da kein \
+UnionFS/AUFS\n  Modul geladen ist."
 init_loadaufs="  Laden von AUFS schlug fehl - entweder das Modul ist \
-nicht vorhanden, oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese Meldung \
-nicht sehen wollen,\n  entfernen Sie das Token 'aufs' von den Kernel Start \
-Optionen."
-init_noaufs_butufs=" AUFS wurde als Unification FS angegeben, ist jedoch nicht \
-vorhanden. UnionFS steht aber scheinbar zu Verfügung. Wenn Sie dieses nutzen \
-möchten fügen Sie bitte 'unionfs' zu den Kernel Start Optionen hinzu"
+nicht vorhanden, oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese \
+Meldung nicht sehen\n  wollen, entfernen Sie das Token 'aufs' von den Kernel \
+Start Optionen."
+init_noaufs_butufs="  AUFS wurde als Unification FS angegeben, ist jedoch nicht \
+vorhanden. UnionFS\n  steht aber scheinbar zu Verfügung. Wenn Sie dieses nutzen \
+moechten fuegen\n  Sie bitte 'unionfs' zu den Kernel Start Optionen hinzu."
 init_loadufs="  Laden von UnionFS schlug fehl - entweder das Modul ist \
 nicht vorhanden, oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese Meldung \
 nicht sehen wollen,\n  entfernen Sie das Token 'unionfs' von den Kernel Start \
 Optionen."
-init_noufs_butaufs=" UnionFS wurde als Unification FS angegeben, ist jedoch nicht \
-vorhanden. AUFS steht aber scheinbar zu Verfügung. Wenn Sie dieses nutzen \
-möchten fügen Sie bitte 'aufs' zu den Kernel Start Optionen hinzu"
+init_noufs_butaufs="  UnionFS wurde als Unification FS angegeben, ist jedoch \
+nicht vorhanden. AUFS\n  steht aber scheinbar zu Verfügung. Wenn Sie dieses nutzen \
+moechten fuegen Sie\n  bitte 'aufs' zu den Kernel Start Optionen hinzu."
 init_loadcow="  Laden von Copy On Write (COW - Spezielles Block Geraet) Modul \
 schlug fehl -\n  entweder das Modul nicht praesent oder es passt nicht zum \
 laufenden\n Kernel. Wenn Sie diese Meldung nicht sehen wollen, entfernen sie \
@@ -84,9 +84,9 @@ Fehlermeldungen darueber.\n\
   * Sie versuchten, einen falschen Pfad einzuhaengen ($nfsroot).\n\
   * Kein NFS-Server laeuft oder Sie haben nicht die Zugriffsberechtigungen auf \
 diesen."
-init_ldcfg=" Starte ldconfig - auszuschalten mit der Kernel Start Option\
-'noldsc'.\n  Eventuell sollten Sie zusaetzliche Bibliothekspfade zu ld.so.conf \
-hinzufuegen."
+init_ldcfg="  Starte ldconfig - normalerweise ausgeschaltet. Wird mit der Kernel \
+Start Option\n  'noldsc' aktiviert. Eventuell sollten Sie zusaetzliche \
+Bibliothekspfade\n  zur ld.so.conf hinzufuegen."
 init_errlog="  Konnte die Log-Datei Konfiguration nicht anlegen in \
 /etc/${D_SYSCONFDIR}. Das\n  koennte auf schwerwiegende Fehler hindeuten."
 init_fstab="Das Erzeugen von /etc/fstab im Wurzel-Dateisystem des Clients \
@@ -107,11 +107,11 @@ init_errumnt="  Das Kernel Modul Verzeichnis auszuhaengen \
 scheiterte aus irgendeinem Grund. Sind einige\n  ,,modprobe'' noch aktiv!?"
 init_erritab="  Die Datei /etc/inittab existiert nicht oder \
 ist keine regulaere. \nSie wird fuer den Boot-Process benoetigt."
-init_errsys="  Aushaengen des Kernel sys Verzeichnis \
-schlug fehl aus irgendeinem \nGrund.  Sie werden einige Fehlermeldungen bekommen,\
+init_errsys="  Aushaengen des Kernel /sys Verzeichnisses schlug aus irgendeinem \
+Grund\n  fehl. Sie werden einige Fehlermeldungen bekommen,\
 \ndass einige Dateien nicht entfernt werden konnten."
-init_runinit="  Konnte run-init nicht ausfuehren, \
-wegen fehlenden Befehlen \n oder falsch angegebenen Parametern."
+init_runinit="  Konnte switch_root/run-init nicht ausfuehren, wegen fehlender \
+Befehle\n  oder falsch angegebenen Parametern."
 
 # messages from functions
 error_msg="Ein Fehler trat auf waehrend der Ausfuehrung des $0 Skripts:\n\n"

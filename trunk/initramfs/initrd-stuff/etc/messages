@@ -78,8 +78,9 @@ line\nbut failed. There might be the following reasons for that:\n\
 running kernel - see error messages above\n\
 * You tried to mount from wrong server or path ($nfsroot)\n\
 * No NFS server is running or you do not have permissions"
-init_ldcfg="  Starting ldconfig - switch it off via kernel cmdline option \
-'noldsc'.\n  You might have to add additional library pathes to ld.so.conf."
+init_ldcfg="  Starting ldconfig - normally switched off. Enable it via kernel \
+cmdline option\n  'noldsc'. You might have/want to add additional library \
+pathes to the\n  ld.so.conf file."
 init_errlog="  Unable to create the logfile configuration in \
 /etc/${D_SYSCONFDIR}. That\n  might indicate some severe error."
 init_fstab="Failed to create /etc/fstab in the clients root filesystem. The\n\
