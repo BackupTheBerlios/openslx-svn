@@ -882,13 +882,15 @@ sub stage1D_installPackageSelection
 					1;
 				}
 			} @pkgs;
-	if (scalar(@pkgs) == 0) {
-    	vlog 1, "installing these packages:\n".join("\n\t", @pkgs);
-		$self->{'meta-packager'}->startSession();
+		vlog 0, _tr("No packages listed for selection '%s', nothing to do.",
+					$selectionName);
+   	vlog 1, "installing these packages:\n".join("\n\t", @pkgs);
+	$self->{'meta-packager'}->startSession();
+	if (scalar(@pkgs) > 0) {
 		$self->{'meta-packager'}->installSelection(join " ", @pkgs);
-		$self->{'distro'}->updateDistroConfig();
-		$self->{'meta-packager'}->finishSession();
 	}
+	$self->{'distro'}->updateDistroConfig();
+	$self->{'meta-packager'}->finishSession();
 }
 
 sub clone_fetchSource
