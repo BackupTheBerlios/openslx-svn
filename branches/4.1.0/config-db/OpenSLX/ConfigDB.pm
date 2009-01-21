@@ -273,6 +273,8 @@ sub rollbackTransaction
 	return;
 }
 
+=back
+
 =head2 Data Access Methods
 
 =over
@@ -847,7 +849,11 @@ sub fetchGroupIDsOfClient
 	return $self->{'meta-db'}->fetchGroupIDsOfClient($clientID);
 }
 
+=back
+
 =head2 Data Manipulation Methods
+
+=over
 
 =item C<addVendorOS(@$valRows)>
 
@@ -2023,7 +2029,11 @@ sub emptyDatabase
 	return;
 }
 
+=back
+
 =head2 Data Aggregation Methods
+
+=over
 
 =item C<mergeDefaultAttributesIntoSystem($system)>
 
@@ -2270,7 +2280,11 @@ sub aggregatedSystemFileInfoFor
 	return $info;
 }
 
+=back
+
 =head2 Support Functions
+
+=over
 
 =item C<isAttribute($key)>
 
@@ -2603,3 +2617,7 @@ sub _unique
 }
 
 1;
+
+=back
+
+=cut
