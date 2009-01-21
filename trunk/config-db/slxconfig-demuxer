@@ -442,6 +442,7 @@ sub generateInitalRamFS
 	# generate initramfs-setup file (with settings relevant for initramfs only):
 	my $initramfsAttrFile = "$tempPath/initramfs-setup";
 	my $initramfsAttrs    = {
+		'host_name'		=> 'slx-client', # silly default just to have something
 		'ramfs_fsmods'  => $info->{'attr_ramfs_fsmods'} || '',
 		'ramfs_nicmods' => $info->{'attr_ramfs_nicmods'} || '',
 		'ramfs_screen'  => $info->{'attr_ramfs_screen'} || '',
