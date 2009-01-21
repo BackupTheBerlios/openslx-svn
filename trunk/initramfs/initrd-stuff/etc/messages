@@ -2,7 +2,7 @@
 # bootup (within initialramfs) for OpenSLX linux diskless clients version 4
 # this file could be used for localization of error messages 
 #
-# Dirk von Suchodoletz <dvs@openslx.com>, 05-09-2006
+# Dirk von Suchodoletz <dvs@openslx.com>, 29-10-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.org
@@ -12,7 +12,9 @@ init_errmsg="functions file contains a lot of script \
 functionality. Without this\ninit script will not run."
 init_mff="The main $init_errmsg"
 init_dff="The distro $init_errmsg"
-init_dscf="The distribution specific configuration file could not be found"
+init_dscf="The distribution specific configuration file could not be found."
+init_sscf="The slx configuration variables could not be found. Please
+provide the slxconfig file."
 init_errip="  Unable to setup at \
 least basic functionality, because no IP configuration\n  available. You \
 might pass that information via kernel command line\n  through setting of \

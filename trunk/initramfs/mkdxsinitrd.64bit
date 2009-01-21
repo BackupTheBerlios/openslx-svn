@@ -171,6 +171,9 @@ else
         -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
         -e "s,@@@DATE@@@,${DATE},g;/^#[^!].*/d" \
           initrd-stuff/${FILENAME} >> ${INSTDIR}/${FILENAME}
+# ugly hack for creating a general slx config file instead of "patching"
+     # the stage3 init
+     echo -e "slxconf_date=${DATE}\nslxconf_kernver=${KERNVER}\nslxconf_listnwmod=\"${NWMODULES}\"\nslxconf_distro=${DISTRO}-${DISTRO_VER}" > ${INSTDIR}/etc/sysconfig/slxconfig
     [ -x busybox -a "$use_busybox" = 1 ] && sed -e "s,^#!/bin/sh,#!/bin/ash," \
       -i ${INSTDIR}/${FILENAME}
   fi

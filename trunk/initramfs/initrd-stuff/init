@@ -2,27 +2,30 @@
 # main script for new type of initial ramdisk for OpenSLX linux diskless
 # clients version 4
 #
-# Dirk von Suchodoletz <dirk@goe.net>, 15-10-2006
+# Dirk von Suchodoletz <dirk@goe.net>, 29-10-2006
 # <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.ORG project
 
 # functions common for all distros, messages contains all error and info
-# output
+# output (for some reason the error output is not produced properly - crash)
 . /etc/messages
-. /etc/functions || ( echo -e $init_mff && exit 1 )
-. /etc/distro-functions || ( echo -e $init_dff && exit 1 )
+. /etc/functions || ( echo -e $init_mff && usleep 10000 )
+. /etc/distro-functions || ( echo -e $init_dff && usleep 10000 )
 # configuration settings (several file and directory variables)
-. /etc/sysconfig/config || ( echo -e $init_dscf && exit 1 )
+. /etc/sysconfig/config || ( echo -e $init_dscf && usleep 10000 )
+# configuration settings for slx environment
+. /etc/sysconfig/slxconfig 2>/dev/null || ( echo -e $init_sscf && \
+  usleep 10000 )
 
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
-export date="@@@DATE@@@"
+export date="$slxconf_date"
 
 export DEBUGLEVEL=0
-export KERNEL="@@@KERNVER@@@"
-export NWMODULES="@@@NWMODULES@@@"
-export DISTRO="@@@DISTRO@@@"
+export KERNEL="$slxconf_kernver"
+export NWMODULES="$slxconf_listnwmod"
+export DISTRO="$slxconf_distro"
 
 # do not use dnbd cache file
 nodnbdcache="yes"
@@ -39,7 +42,6 @@ mkdir -p ${DEVDIR}/.udevdb
 
 # mount the important standard directories
 [ ! -f /proc/cpuinfo ] && mount -n -t proc proc /proc
-echo 256 > /proc/sys/kernel/real-root-dev
 [ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
 
 # redirect console (after /dev/console is available, and /dev mounted)
@@ -139,9 +141,9 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       srvproto=$(uri_token $ROOTFS prot)
       case $srvproto in
         nfs)
-          NFSROOT=$(uri_token $ROOTFS server)":/"$(uri_token $ROOTFS path)
+          nfsroot=$(uri_token $ROOTFS server)":/"$(uri_token $ROOTFS path)
           echo -e "\n# nfs root information gotten via kernel command \
-line in $0\nnfsroot=\"${NFSROOT}\"\n" >> /etc/machine-setup
+line in $0\nnfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
         ;;
         *nbd)
           nbdmod=$srvproto
@@ -170,9 +172,9 @@ line in $0\nnfsroot=\"${NFSROOT}\"\n" >> /etc/machine-setup
       IPINFO=${opts#ip=};;
     # deprecated: nfs server and path (will be removed soon)
     nfsroot=*)
-      NFSROOT=${opts#nfsroot=}
+      nfsroot=${opts#nfsroot=}
       echo -e "\n# nfs root information gotten via kernel command line in $0\n\
-nfsroot=\"${NFSROOT}\"\n" >> /etc/machine-setup
+nfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
     ;;
     # size of tempfs if not max. 50% of RAM should be used
     tmpfssize=*)
@@ -276,6 +278,7 @@ if [ -n "${nbdmod}" ] ; then
   # load block device driver if needed
   modprobe ${MODPRV} ${nbdmod} || error "$init_errnbd"
   [ -z "$nbdrfst" ] && nbdrfst=ext2
+  nbdhost=$(checkip $nbdhost)
   echo "Diskless client using ${nbdmod} on $nbdhost:$nbdport with $nbdrfst"
   # fixme: check for fs in /proc/filesystems before trying to load the module
   modprobe ${MODPRV} ${nbdrfst} || error "$init_errnbd" nonfatal
@@ -295,7 +298,6 @@ if [ -n "${nbdmod}" ] ; then
     # dnbd by Thorsten Zitterell
     dnbd)
       # quickhack
-      
       if [ -z $nodnbdcache ] ; then  # variable not really used yet
         mkdir /dnbd
         mount -n -o 'size=10%' -t tmpfs tmpfs /dnbd
@@ -345,7 +347,8 @@ if [ -n "${nbdmod}" ] ; then
 elif [ -n ${iscsiserver} ] ; then
   :
   #if [ -n ${iscsitarget} ] ; then
-  #  echo "InitiatorName=${iscsitarget}">/etc/initiatorname.iscsi
+  #  echo "InitiatorName=${iscsitarget}"|sed "s,@@@serverip@@@,$serverip," \
+  #    >/etc/initiatorname.iscsi
   #else
   # discovery
   #fi
@@ -357,24 +360,17 @@ fi
 
 # if no type of root filesystem is passed via kernel command line try
 # information gathered from dhcp process
-if [ -z "${nbdmod}" -a -z "${nbdhost}" -a -z "${NFSROOT}" ] ; then
-  # information has to be read from dhcp configuration
-  if [ -z "$noipyet" ] ; then
-    waitfor /tmp/dhcp-done 20000
-  fi
-  waitfor /tmp/ldap-done 20000
-  . /etc/machine-setup
-  NFSROOT=${serverip}:${root_path}
+if [ -z "${nbdmod}" -a -z "${nbdhost}" -a -z "${nfsroot}" ] ; then
+  # information has to be read from dhcp and ldap configuration
+  cfgcomplete
 fi
 # call function for nfs mounts
 if [ -z "${nbdmod}" -a -z "${nbdserver}" ] ; then
-  case "$NFSROOT" in
-    # replace '@@@server_ip@@@' with real IP of server:
-    *@@@server_ip@@@*)
-      NFSROOT=$(echo $NFSROOT | sed s/@@@server_ip@@@/$serverip/)
-      ;;
-  esac
-  nfsmnt ${NFSROOT} || error "$init_nfs"
+  . /etc/machine-setup
+  # check if serverip is set as variable @@@serverip@@@
+  serverip=$(checkip $serverip)
+  nfsroot=${serverip}:${root_path}
+  nfsmnt ${nfsroot} || error "$init_nfs"
 fi
 
 # get the complete collection of kernel modules available

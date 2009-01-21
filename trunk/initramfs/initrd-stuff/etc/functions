@@ -274,6 +274,17 @@ case $ipcfg in
 esac
 }
 #######################################################################
+# replace @@@serverip@@@ with real serverip
+checkip ()
+{
+if [ "@@@serverip@@@" = "$1" -a -n "$serverip" ] ; then
+  echo $serverip
+else
+  echo $1
+fi
+}
+
+#######################################################################
 # nfs mounter for root filesystem and other sources
 nfsmnt ()
 {
@@ -557,10 +568,12 @@ waitfor /tmp/file-done 10000 || error "$error_errfcfg" nonfatal
 waitfor /tmp/ldap-done 10000 || error "$error_errlcfg" nonfatal
 # concat the different files now into the central config file, order
 # matters - ldap data has highest priority
-if ! [ -f /tmp/cfgcomplete ] ; then
+if ! test -f /tmp/cfgcomplete ; then
   for config in /tmp/confviadhcp /tmp/confviafile /tmp/confvialdap
     do test -f $config && cat $config >> /etc/machine-setup
   done
+# check if serverip is set as variable @@@serverip@@@
+sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup
 echo "config completed" > /tmp/cfgcomplete
 fi
 }
