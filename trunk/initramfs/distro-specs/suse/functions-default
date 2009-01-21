@@ -225,7 +225,7 @@ $vmsessions
 BaseXsession=/etc/opt/gnome/gdm/Xsession
 UserAuthFBDir=/tmp
 UserAuthFile=.Xauthority
-StandardXServer=/usr/X11R6/bin/X +kb -I
+StandardXServer=${D_XORGBIN} +kb -I
 Xnest=/usr/X11R6/bin/Xnest -audit 0 -name Xnest
 
 [security]

@@ -1009,7 +1009,7 @@ Willing=/${xdmdir}/Xwilling
 HaltCmd=/sbin/halt
 RebootCmd=/sbin/reboot
 [X-*-Core]
-ServerCmd=/usr/X11R6/bin/X -br
+ServerCmd=${D_XORGBIN} -br
 ServerArgsLocal=-nolisten tcp
 TerminateServer=true
 Resources=/${xdmdir}/Xresources
