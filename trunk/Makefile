@@ -3,7 +3,7 @@
 #
 # Lars Mueller <lm@openslx.com>, 2006
 # Dirk von Suchodoletz <dvs@openslx.com>, 2006
-# mj0, 12-09-2006 - vmware + theming
+# Michael Janczyk, 2006
 #
 # (c) 2006 - OpenSLX.com
 
