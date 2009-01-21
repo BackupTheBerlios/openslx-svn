@@ -374,7 +374,8 @@ else
 /etc/ld.so.cache file. That might cause errors\n  if libraries are installed \
 after this file was created on server." nonfatal
 fi
-# save machine configuration
+# copy machine configuration (from global settings, additions made within
+# here and from dhcp/ldap sources) to client /etc for later checks
 cp /etc/machine-setup /mnt/etc
 waitfor /tmp/hwcfg 20000 || error "  For some reason the hardware autoconfig \
 of this client did not finish in\n  time. You might check the process list \
@@ -382,14 +383,14 @@ and list the modules loaded until\n  now."
 waitfor /tmp/svcfg 20000 || error "  For some reason the software config \
 of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
-# IP configuration is made and should not be updated automatically
+# IP configuration is made and should not be updated automatically, udevd
+# should be killed if started within init
 killall -9 dhcpcd dhclient pump udevd 2>/dev/null
 # unmount the bind mounted modules directory
 umount -n /lib/modules/${KERNEL} || error "Unmount of the kernel \
 modules directory failed for some reason."
 # close runlevel script for stuff to execute during early bootup
 d_mkbootld close
-
 # check for inittab file
 test -f /mnt/etc/inittab || error "  The file /etc/inittab does not exist or \
 is no regular one. It is needed\n  for the bootup procedure to follow."

@@ -4,17 +4,14 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 30-01-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 #
-#
-#
 
-
-# local functions
+# local functions used within hwautocfg
 displaysetup () {
 local xfc=$1
 # define some defaults
@@ -277,15 +274,15 @@ fi
 # USB core is needed for presence of /proc/bus/usb
 ( modprobe ${MODPRV} usbcore && mount -n -t usbfs usbfs /proc/bus/usb ) &
 
-#fixmee: Kernelmodul für ps-maeuse laden, da sie sonst nicht von hwsetup erkannt werden.
-if [ -f /mnt/lib/modules/${KERNEL}/kernel/drivers/input/mouse/psmouse.ko ]; then
-	( modprobe ${MODPRV} psmouse )
-fi
+#fixmee: Kernelmodul für ps-maeuse laden, da sie sonst nicht von hwsetup 
+# erkannt werden. ( -> /lib reicht, bind mounted!! )
+[ -f /lib/modules/${KERNEL}/kernel/drivers/input/mouse/psmouse.ko ] && \
+  modprobe ${MODPRV} psmouse
 
 # start the knoppix hardware autodetection tool
 ( hwsetup -v > /tmp/hwsetup.info && echo "hwsetup" > /tmp/hwrun1 ) &
 
-# ACPI configuration
+# ACPI configuration - at least not needed with SuSE 9.3/10.0
 #if [ -d /proc/acpi ]; then
 #  if ! strinstr "noacpi" ${KCMDLINE} || \
 #    ! strinstr "acpi=off" ${KCMDLINE} ; then
@@ -374,6 +371,10 @@ if strinfile "IDE" /tmp/hwsetup.info ; then
   strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} ide_disk &
   usleep 5
 fi ) &
+# cdrom/dvd und plattenkonfig. ergaenzen. Module sind hier geladen und
+# devices sind klar
+
+# fixme - psmouse entladen, falls nicht vorhanden
 
 # configure some variables from configuration file - wait for dhcp or ldap
 # confiurator to complete

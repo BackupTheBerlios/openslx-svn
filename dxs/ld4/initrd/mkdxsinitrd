@@ -3,7 +3,7 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 30-01-2006
 #		Nico Dietrich
 #		Blub
 #
@@ -102,13 +102,11 @@ else
 fi
 }
 
-
-
 # Resolve dynamic library dependencies. Returns a list of symbolic links
 # to shared objects and shared object files for the binaries in $*.
 # stolen from SuSE mkinitrd
 shared_object_files() {
-    local LDD CHROOT initrd_libs lib_files lib_links lib link
+    local LDD initrd_libs lib_files lib_links lib link
 
     LDD=`which ldd`
     if [ ! -x $LDD ]; then
@@ -191,6 +189,7 @@ copy_distro_stuff() {
   # now insert the current stuff
   cat distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig/config
   cat distro-specs/$1/functions-$2 >>${INSTDIR}/etc/distro-functions
+  # would be cool not to copy .svn here ...
   cp -a distro-specs/$1/files-$2 ${INSTDIR}/etc/sysconfig/files 2>/dev/null
 }
 
@@ -406,8 +405,6 @@ mkdir -p ${INSTDIR}/var/lib/nfs/state
 
 # if nbd
 # cobi nbd-client bin
-
-#if nfs - dann modul suchen, kopieren 
 
 # distro specific additional stuff
 case "${DISTRO}" in 

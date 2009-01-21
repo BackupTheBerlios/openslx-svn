@@ -4,13 +4,13 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 30-01-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.0.2a
+# Version:      0.0.2b
 
 # check for configuration files to source
 
@@ -28,7 +28,7 @@
 
 #######################################################################
 # copy distro specific scripts, programs, libraries and configs
-cp -a /etc/sysconfig/files/* /mnt > /dev/null 2&>1 & 
+cp -a /etc/sysconfig/files/* /mnt 2>/dev/null 
 
 # set greeting
 echo "
