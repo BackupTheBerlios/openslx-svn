@@ -110,13 +110,15 @@ sub fetchLoaderConfigFile
 		or die(_tr("unable to open file '%s' (%s)", $ldConfFile, $!));
 	while (<$ldconfFH>) {
 		chomp;
-		if (/^\s*include\s+(.+?)\s*$/i) {
-			while (my $incFile = <$rootPath$1>) {
-				fetchLoaderConfigFile($incFile);
+		if (m{^\s*include\s+(.+?)\s*$}i) {
+			while (my $incFile = glob("$rootPath$1")) {
+				if ($incFile) {
+					fetchLoaderConfigFile($incFile);
+				}
 			}
 			next;
 		}
-		if (/\S+/i) {
+		if (m{\S+}i) {
 			s[=.+][];
 			# remove any lib-type specifications (e.g. '=libc5')
 			push @libFolders, "$rootPath$_";
@@ -266,7 +268,7 @@ sub addLibsForBinary
 		}
 		# find out if rpath is set for binary:
 		my $rpath;
-		if ($res =~ m/Library\s*rpath:\s*\[([^\]]+)/im) {
+		if ($res =~ m{Library\s*rpath:\s*\[([^\]]+)}im) {
 			$rpath = $1;
 			if ($verbose) {
 				print STDERR _tr("\trpath='%s'\n", $rpath);
