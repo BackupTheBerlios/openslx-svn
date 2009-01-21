@@ -165,6 +165,8 @@ sub listClients
 		  @{$DbSchema->{tables}->{client}};
 
     my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
+    # set verbose mode if any params have been passed in:
+    $verbose = 1 if %$clientData;
 
 	dumpElements(
 		'client', undef,
@@ -189,6 +191,8 @@ sub listExports
 		  @{$DbSchema->{tables}->{export}};
 
     my $exportData = parseKeyValueArgs(\@exportKeys, 'export', @_);
+    # set verbose mode if any params have been passed in:
+    $verbose = 1 if %$exportData;
 
 	dumpElements(
 		'export',
@@ -215,6 +219,8 @@ sub listSystems
 		  @{$DbSchema->{tables}->{system}};
 
     my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
+    # set verbose mode if any params have been passed in:
+    $verbose = 1 if %$systemData;
 
 	dumpElements(
 		'system', undef,
@@ -243,6 +249,8 @@ sub listVendorOSes
 		  @{$DbSchema->{tables}->{vendor_os}};
 
     my $vendorOSData = parseKeyValueArgs(\@vendorOSKeys, 'vendor_os', @_);
+    # set verbose mode if any params have been passed in:
+    $verbose = 1 if %$vendorOSData;
 
 	dumpElements('vendor-OS', undef,
 				 sort { $a->{name} cmp $b->{name} }
