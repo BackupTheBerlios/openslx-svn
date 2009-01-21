@@ -222,12 +222,16 @@ sub trInit
 # ------------------------------------------------------------------------------
 sub _tr
 {
-	my $trKey = shift;
+	my $trOrig = shift;
+
+	my $trKey = $trOrig;
+	$trKey =~ s[\n][\\n]g;
+	$trKey =~ s[\t][\\t]g;
 
 	my $formatStr = $translations{$trKey};
 	if (!defined $formatStr) {
 #		carp "Translation key '$trKey' not found.";
-		$formatStr = $trKey;
+		$formatStr = $trOrig;
 	}
 	return sprintf($formatStr, @_);
 }
