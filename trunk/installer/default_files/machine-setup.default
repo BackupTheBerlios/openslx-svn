@@ -6,7 +6,7 @@
 #		New settings are simply appended, so that they might 
 #		overwrite previously defined variables 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-08-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-08-2006
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 # 
@@ -68,22 +68,17 @@ start_alsasound="yes"
 # start ssh server
 start_sshd="yes"
 
-# AFS network filesystem
-start_afs="no"
-this_cell="uni-freiburg.de"
-cell_server="132.230.6.237 132.230.6.236 132.230.6.235"
-
 # smb protocol service (provide windows file service)
 start_samba="may"
 netbios_workgroup="dxs-network"
 
 # automounter home (/local_dir - top level directories only) and source 
-# (server:/path)
+# (format (proto://)server/path)
 automnt_dir="/home"
-#automnt_src="$serverip:/home"
+#automnt_src="$serverip/home"
 
 # scratch space on server "proto://serverip/dxs/tmp"
-#scratch="(proto://)serverip:/dxs/tmp"
+#scratch="(proto://)serverip/dxs/tmp"
 
 # configure and start vmware services
 vmware="no"
@@ -102,5 +97,3 @@ dm_allow_shutdown="user"
 # should Xorg/XFree server be started or some special windowmanager be run
 # in kiosk mode e.g. start_x="kde"
 start_x="yes"
-
-

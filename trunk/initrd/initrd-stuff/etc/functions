@@ -2,7 +2,7 @@
 #               linux diskless clients (included by init, hwautocfg,
 #               servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 17-08-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-08-2006
 #               Felix Endres, 30-04-2006
 #               Tobias Maier
 #
@@ -373,7 +373,7 @@ case "$tftp" in
 esac
 # unpack part (only gzip is supported)
 if [ -s $dst ] ; then
-  tar -xpzf $dst
+  tar -xpzf $dst 2>/dev/null
   [ "$DEBUGLEVEL" -le 2 ] && rm $dst
   return 0
 else

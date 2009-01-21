@@ -4,8 +4,8 @@
 #               for linux diskless clients (executed within initial
 #               ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-08-2006
-#               Michael Janczyk, 31-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-08-2006
+#               Michael Janczyk <mj0>, 31-05-2006
 #               Lars Mueller <lm@opendiskless.org>, 23-06-2006
 #               Oliver Tappe <ot@opendiskless.org>, 23-06-2006
 #
@@ -334,7 +334,7 @@ fi
 # wait for completion of detection, setup process
 waitfor /tmp/tmpready 10000
 # create some directories and correct permissions
-tmpisdisk=`sed -n '/\/tmp/p' /mnt/etc/fstab`
+tmpisdisk=`sed -n '/\/tmp/p' /tmp/tmpready`
 # if there is no local disk partition for /tmp then try to mount a rw
 # scratch space (if defined in $scratch) and prepared on server
 if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
