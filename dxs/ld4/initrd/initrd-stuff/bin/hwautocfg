@@ -4,12 +4,13 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 30-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 31-01-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 #
+# Version:      0.3.1a
 
 # local functions used within hwautocfg
 displaysetup () {
@@ -272,10 +273,15 @@ configuration\n  file" nonfatal
 fi
 
 # USB core is needed for presence of /proc/bus/usb
-( modprobe ${MODPRV} usbcore && mount -n -t usbfs usbfs /proc/bus/usb ) &
+if [ -n "${UDEVD_EXPECTED_SEQNUM}" ] ; then
+  # if udevd is used usbfs is mounted automatically
+  modprobe ${MODPRV} usbcore &
+else
+  # mount usbfs after loading of module
+  ( modprobe ${MODPRV} usbcore && mount -n -t usbfs usbfs /proc/bus/usb ) &
+fi
 
-#fixmee: Kernelmodul für ps-maeuse laden, da sie sonst nicht von hwsetup 
-# erkannt werden. ( -> /lib reicht, bind mounted!! )
+# load kernel module for ps2 mice
 [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mouse/psmouse.ko ] && \
   modprobe ${MODPRV} psmouse
 
@@ -312,6 +318,16 @@ Please check that\n  hwsetup is properly installed and executable."
 DRIVERLIST="disabled unknown ignore pcspkr synaptics keybdev"
 # driver blacklist (real modules which fail to load)
 DRIVERLIST=${DRIVERLIST}" hw_random"
+# load ide drivers first, takes a while to initialize
+for DRIVER in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
+    triflex aec62xx cs5530 ns87415 sc1200 trm290 alim15x3 \
+    cy82c693 opti621 serverworks via82cxxx amd74xx generic \
+    pdc202xx_new siimage atiixp hpt34x pdc202xx_old sis5513; do
+  strinfile ${DRIVER} /tmp/hwsetup.info && {
+    IDE="yes"
+    modprobe ${MODPRV} ${DRIVER} &
+    DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
+done
 # check for USB, pcmcia and ieee1394 hardware drivers
 for DRIVER in ohci-hcd uhci-hcd ehci-hcd \
               ohci1394; do
@@ -322,6 +338,17 @@ for DRIVER in ohci-hcd uhci-hcd ehci-hcd \
 done
 # remove usb core if USB not present
 [ -z "$USB" ] && rmmod usbcore
+# remove unneeded network card modules
+for DRIVER in ${NWMODULES}; do
+  strinfile ${DRIVER} /tmp/hwsetup.info || {
+    rmmod ${DRIVER}
+    DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
+done
+# sound card setup (alsa and oss compatibility drivers)
+. /etc/sysconfig/sound || DRIVER="snd-dummy"
+modprobe ${MODPRV} ${DRIVER}
+DRIVERLIST="${DRIVERLIST} ${DRIVER} "
+modprobe -a ${MODPRV} snd_pcm_oss snd_mixer_oss
 # check for PCMCIA / cardbus stuff
 for DRIVER in yenta_socket i82365 pd6729 tcic; do
   strinfile ${DRIVER} /tmp/hwsetup.info && {
@@ -333,19 +360,6 @@ if [ -n "PCMCIA" ] ; then
   #echo "pcmcia=\"yes\"" > config
   modprobe ${MODPRV} ds
 fi
-# remove unneeded network card modules
-for DRIVER in ${NWMODULES}; do
-  strinfile ${DRIVER} /tmp/hwsetup.info || {
-    rmmod ${DRIVER}
-    DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
-done
-
-# sound card setup (alsa and oss compatibility drivers)
-. /etc/sysconfig/sound || DRIVER="snd-dummy"
-modprobe ${MODPRV} ${DRIVER}
-DRIVERLIST="${DRIVERLIST} ${DRIVER} "
-modprobe -a ${MODPRV} snd_pcm_oss snd_mixer_oss
-
 # remaining drivers listed in /tmp/hwsetup.info
 cat /tmp/hwsetup.info| while read LINE ; do
   if strinstr "driver:" "${LINE}"; then
@@ -361,15 +375,14 @@ done
 # rerun the knoppix hardware autodetection tool for USB and ide devices
 # like dvd or harddisk - wait a few seconds so hopefully the ide driver
 # is initialized 
-( usleep 20 && hwsetup -v > /tmp/hwsetup.info
+( usleep 10 && hwsetup -v > /tmp/hwsetup.info
 # check if USB mouse and/or keyboard is connected
 strinfile "genericwheelusb" /tmp/hwsetup.info && modprobe ${MODPRV} usbhid
 # fixme - usb keyboard??
-if strinfile "IDE" /tmp/hwsetup.info ; then
+if [ -n "IDE" ] ; then
   strinfile "CDROM" /tmp/hwsetup.info && modprobe ${MODPRV} ide_cd
   strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} ide_disk &
-  usleep 5
-fi )
+fi ) &
 # cdrom/dvd und plattenkonfig. ergaenzen. Module sind hier geladen und
 # devices sind klar
 
