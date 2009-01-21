@@ -452,6 +452,9 @@ case "${DISTRO}" in
       ;;
       2006*|*)
         DISTRO_VER=2006.1
+        mkdir -p ${INSTDIR}/lib/udev
+        cp -r ${ROOTDIR}/lib/udev/* ${INSTDIR}/lib/udev/
+        cp ${ROOTDIR}/etc/group ${INSTDIR}/etc/
       ;;
     esac
   ;;

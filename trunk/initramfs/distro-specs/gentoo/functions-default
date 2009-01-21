@@ -88,6 +88,10 @@ cat >>/mnt/etc/${D_INITDIR}/boot <<EOF
             esac
           done < /proc/filesystems
         fi
+        # Starting udev (normally handled by /sbin/rc sysinit)
+        source "\${svclib}/addons/udev-start.sh"
+        rm -rf /dev/.rcsysinit
+        #/bin/bash
         eend \${ret} "\${errstr}"
 EOF
 d_mkrlscript close boot
