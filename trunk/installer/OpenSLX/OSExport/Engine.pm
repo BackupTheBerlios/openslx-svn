@@ -237,8 +237,10 @@ sub addExportToConfigDB
 				'type' => $self->{'export-type'},
 			}
 		);
-		vlog 0, _tr("Export '%s' has been added to DB (ID=%s).\n",
+		vlog 0, _tr("Export '%s' has been added to DB (ID=%s)...\n",
 					$exportName, $id);
+		# now create a default system for that export, using the standard kernel:
+		system("slxconfig add-system $exportName");
 	}
 
 	$openslxDB->disconnect();

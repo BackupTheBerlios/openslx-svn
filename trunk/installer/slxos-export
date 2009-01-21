@@ -153,7 +153,7 @@ slxos-export [options] <action>
 
 =over 8
 
-=item B<<     add <vendor-OS-name> <export-type> >>
+=item B<<     export <vendor-OS-name> <export-type> >>
 
 exports the vendor-OS with the given name using the given export type and
 adds it to the config-DB, too
@@ -236,7 +236,7 @@ Prints the version and exits.
 
 =head3 Exporting a Vendor-OS via NFS
 
-=item B<<     slxos-export add suse-10.2 nfs >>
+=item B<<     slxos-export export suse-10.2 nfs >>
 
 Exports the installed vendor-OS suse-10.2 via nfs, the
 resulting NFS-export will live in C</srv/openslx/export/nfs/suse-10.2>.
@@ -247,7 +247,7 @@ resulting NFS-export will live in C</srv/openslx/export/nfs/suse-10.2>.
 
 =over 8
 
-=item B<<     slxos-export add ubuntu-6.10 nbd-squash >>
+=item B<<     slxos-export export ubuntu-6.10 nbd-squash >>
 
 Exports the installed vendor-OS ubuntu-6.10 via nbd-squash, the resulting
 Squash-FS will live in C</srv/openslx/export/nbd-squash/ubuntu-6.10>.
