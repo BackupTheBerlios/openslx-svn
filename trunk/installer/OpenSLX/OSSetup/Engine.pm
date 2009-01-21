@@ -340,7 +340,7 @@ sub readDistroInfo
 	my $bootstrap_packages = $self->{distro}->{config}->{'bootstrap-packages'};
 	my $file = "$self->{'distro-info-dir'}/settings.local";
 	if (-e $file) {
-		vlog 3, "reading configuration file $file...";
+		vlog 2, "reading configuration file $file...";
 		my $config = slurpFile($file);
 		if (!eval $config && length($@)) {
 			die _tr("error in config-file '%s' (%s)", $file, $@)."\n";
@@ -478,7 +478,7 @@ sub stage1A_createBusyboxEnvironment
 	foreach my $lib (split "\n", $requiredLibsStr) {
 		vlog 3, "copying lib '$lib'";
 		my $libDir = dirname($lib);
-		copyFile($lib, "$self->{stage1aDir}/$libDir");
+		copyFile($lib, "$self->{stage1aDir}$libDir");
 		if ($lib =~ m[/libc.so.\d\s*$]) {
 			# note target folder of libc, as we need to copy the resolver libs
 			# into the same place:
@@ -509,12 +509,12 @@ sub stage1A_setupResolver
 
 	if (!defined $libcFolder) {
 		warn _tr("unable to determine libc-target-folder, will use /lib!");
-		$libcFolder = 'lib';
+		$libcFolder = '/lib';
 	}
 
 	copyFile('/etc/resolv.conf', "$self->{stage1aDir}/etc");
-	copyFile("/$libcFolder/libresolv*", "$self->{stage1aDir}/$libcFolder");
-	copyFile("/$libcFolder/libnss_dns*", "$self->{stage1aDir}/$libcFolder");
+	copyFile("$libcFolder/libresolv*", "$self->{stage1aDir}$libcFolder");
+	copyFile("$libcFolder/libnss_dns*", "$self->{stage1aDir}$libcFolder");
 
 	my $stage1cDir
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
