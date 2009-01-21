@@ -114,7 +114,8 @@ install:
 
 	@   # many of the following modules are part of core perl, but we check
 	@   # for them just to be sure...
-	@for m in Carp DBI Fcntl FindBin Getopt::Long Pod::Usage ; do \
+	@for m in Carp DBI Digest::MD5 Fcntl File::Basename FindBin Getopt::Long \
+	          Pod::Usage ; do \
 		if ! perl -e "use $$m" 2>>${SLX_INSTALL_LOG} ; then \
 			echo "  The perl-module '$$m' is required, please install it."; \
 			exit 1; \
@@ -124,7 +125,11 @@ install:
 	@   # specific database modules are optional, but we tell the user if
 	@   # support for a database is missing:
 	@DEFAULT_DB_TYPE=""; \
-	for m in SQLite CSV mysql; do \
+	if test -e ${SLX_CONFIG_PATH}/settings.local; then \
+		echo "Reading local settings..."; \
+		. ${SLX_CONFIG_PATH}/settings.local; \
+	fi; \
+	for m in $${SLX_DB_TYPE} SQLite CSV mysql; do \
 		if ! perl -e "use DBD::$$m" 2>>${SLX_INSTALL_LOG} ; then \
 			echo -e "  'DBD::$$m' not found, so $$m-databases will not be \
 supported."; \
