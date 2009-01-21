@@ -90,7 +90,10 @@ while (scalar @ARGV) {
 # fetch current content of local settings file...
 my $fileName = "$openslxConfig{'config-path'}/settings";
 my $configObj = Config::General->new(
-	-ConfigFile => $fileName, -SplitPolicy => 'equalsign',
+	-ConfigFile     => $fileName, 
+	-SplitDelimiter => '\s*=\s*',
+	-SplitPolicy    => 'custom',
+	-StoreDelimiter => '=',
 );
 my %settings = $configObj->getall();
 

@@ -170,7 +170,10 @@ sub openslxInit
 			vlog(0, "reading config-file $f...");
 		}
 		my %config = ParseConfig(
-			-ConfigFile => $f, -AutoTrue => 1, -LowerCaseNames => 1
+			-AutoTrue       => 1, 
+			-ConfigFile     => $f, 
+			-LowerCaseNames => 1,
+			-SplitPolicy    => 'equalsign',
 		);
 		foreach my $key (keys %config) {
 			# N.B.: these config files are used by shell-scripts, too, so in
