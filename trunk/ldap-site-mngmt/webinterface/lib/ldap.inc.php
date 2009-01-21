@@ -34,7 +34,7 @@ function uniLdapConnect($userRdn = "", $userPwd = "") {
        # Connect zum LDAP-Server OK
        if(ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3)) {
            # Optionen gesetzt
-           if (ldap_start_tls($ds)){
+           #if (ldap_start_tls($ds)){
               if($userRdn != "" && $userPwd != "") {
                 # Anmeldung als User.
                 if($result = @ldap_bind($ds, "uid=".$userRdn.",ou=people,".$suffix, $userPwd)) {
@@ -61,10 +61,10 @@ function uniLdapConnect($userRdn = "", $userPwd = "") {
                   return false;
                 }
               }
-          } else {
-             # TLS starten fehlgeschlagen
-             $ldapError .= "TLS starten fehlgeschlagen: ".ldap_error($ds)."<br>\n";
-          }
+          #} else {
+          #   # TLS starten fehlgeschlagen
+          #   $ldapError .= "TLS starten fehlgeschlagen: ".ldap_error($ds)."<br>\n";
+          #}
        } else {
          # Optionen setzen fehlgeschlagen
          $ldapError .= "Protokollversion setzen fehlgeschlagen: ".ldap_error($ds)."<br>\n";

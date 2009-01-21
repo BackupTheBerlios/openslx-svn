@@ -168,6 +168,7 @@ foreach ($menuentries as $me){
 	if ($me['menupasswd'] != ""){$mepwd = "<b>P</b>";}
 	if ($me['menuhide'] == 1){$mehide = "<b>H</b>"; $bgcdef = "background-color:#A0A0A0;";}
 	$template->assign(array("MENDN" => $me['dn'],
+	                        "BACKLINK" => "<a href='menuentry.php?dn=".$me['dn']."&mnr=".$mnr."&sbmnr=".$sbmnr."&mcnr=".$mcnr."' class='headerlink'>",
 									"ANZEIGE" => "<a href='menuentry.php?dn=".$me['dn']."&mnr=".$mnr."&sbmnr=".$sbmnr."&mcnr=".$mcnr."' class='headerlink'>".$anzeige."</a>",
    	        			      "ANZEIGENAME" => $anzeige,
    	        			      "POSITION" => $me['menuposition'],

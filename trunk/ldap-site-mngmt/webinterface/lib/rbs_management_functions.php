@@ -194,6 +194,56 @@ function rbs_adjust_host($hostDN, $rbs){
    }
 }
 
+# Bei Änderung der TFTP Server IP eines RBS-Objekts entsprechend DHCP Option next-server
+# in den Hostobjekten anpassen 
+function adjust_dhcpnextserver($tftpIP, $rbsDN){
+
+   global $ds, $suffix, $ldapError;
+   
+   if(!($result = uniLdapSearch($ds, "ou=RIPM,".$suffix, "(&(objectclass=Host)(hlprbservice=$rbsDN))", array("dn"), "dn", "sub", 0, 0))) {
+ 		# redirect(5, "", $ldapError, FALSE);
+  		echo "no search";
+  		die;
+	}
+	$result = ldapArraySauber($result);
+	$modtftpentry ['dhcpoptnext-server'] = $tftpIP;
+	foreach ($result as $item){
+		ldap_mod_replace($ds, $item['dn'], $modtftpentry);
+	}
+}
+
+# Bei Änderung des PXE Init Boot File eines RBS-Objekts entsprechend DHCP Option Filename
+# in den Hostobjekten anpassen 
+function adjust_dhcpfilename($initbootfile, $rbsDN, $type){
+
+   global $ds, $suffix, $ldapError;
+   
+   if(!($result = uniLdapSearch($ds, "ou=RIPM,".$suffix, "(&(objectclass=Host)(hlprbservice=$rbsDN))", array("dn"), "dn", "sub", 0, 0))) {
+ 		# redirect(5, "", $ldapError, FALSE);
+  		echo "no search";
+  		die;
+	}
+	$result = ldapArraySauber($result);
+	if ($type == "add"){
+   	$modentry ['dhcpoptfilename'] = $initbootfile;
+   	foreach ($result as $item){
+   		ldap_mod_add($ds, $item['dn'], $modentry);
+   	}
+   }
+   elseif ($type == "delete"){
+      $modentry ['dhcpoptfilename'] = array();
+   	foreach ($result as $item){
+   		ldap_mod_del($ds, $item['dn'], $modentry);
+   	}
+   }
+   elseif ($type == "replace"){
+      $modentry ['dhcpoptfilename'] = $initbootfile;
+   	foreach ($result as $item){
+   		ldap_mod_replace($ds, $item['dn'], $modentry);
+   	}
+   }
+}
+
 
 # 
 # Sucht den Hostname zu einer IP im Rechnerteilbaum der AU

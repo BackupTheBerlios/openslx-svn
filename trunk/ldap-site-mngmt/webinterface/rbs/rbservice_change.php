@@ -20,6 +20,9 @@ $oldtftpserverdn = $_POST['oldtftpserverdn'];
 $oldnfsserverdn = $_POST['oldnfsserverdn'];
 $oldnbdserverdn = $_POST['oldnbdserverdn'];
 
+$initbootfile = $_POST['initbootfile'];
+$oldinitbootfile = $_POST['oldinitbootfile'];
+
 $host_array = get_hosts($auDN,array("dn","hostname","ipaddress"));
 
 $rbsDN = $_POST['rbsdn'];
@@ -141,6 +144,7 @@ if ( $tftpserverip != "" && $tftpserverip != $oldtftpserverip ){
 			if ($tftpserverip == $hostip){
 				$entrytftp ['tftpserverip'] = $tftpserverip;			
 				if (ldap_mod_replace($ds,$rbsDN,$entrytftp)){
+				   adjust_dhcpnextserver($tftpserverip, $rbsDN);
 					$mesg .= "Treffer: Rechner ".$host['hostname']."<br>TFTP Server erfolgreich ge&auml;ndert<br>";
 				}else{
 					$mesg .= "Fehler beim  &auml;ndern des TFTP Servers!<br>";
@@ -220,6 +224,7 @@ if ($tftpserver != "none" && $tftpserver != $oldtftpserverdn){
 	$hostip = $hostipexp[0];
 	$entrytftp ['tftpserverip'] = $hostip;
 	if (ldap_mod_replace($ds,$rbsDN,$entrytftp)){
+	   adjust_dhcpnextserver($tftpserverip, $rbsDN);
 		$mesg .= "TFTP Server erfolgreich ge&auml;ndert<br>";
 	}else{
 		$mesg .= "Fehler beim  &auml;ndern des TFTP Servers!<br>";
@@ -253,7 +258,47 @@ if ($nbdserver != "none" && $nbdserver != $oldnbdserverdn){
 		$mesg .= "Fehler beim  &auml;ndern des NBD Servers!<br>";
 	}
 	
-}		
+}
+
+#####################################
+# Init Boot File
+
+if ( $initbootfile == $oldinitbootfile ){
+	# $mesg = "keine Aenderung<br>";
+}
+
+if ( $initbootfile != "" && $oldinitbootfile == "" ){
+   $entrydelibf ['initbootfile'] = $initbootfile;
+   if(ldap_mod_add($ds,$rbsDN,$entrydelibf)){
+      adjust_dhcpfilename($initbootfile, $rbsDN, "add");
+		$mesg = "Initial Boot File erfolgreich eingetragen<br><br>";
+	}
+	else{
+		$mesg = "Fehler beim eintragen von Initial Boot File!<br><br>";
+	}
+}
+
+if ( $initbootfile == "" && $oldinitbootfile != "" ){
+   $entrydelibf ['initbootfile'] = array();
+   if(ldap_mod_del($ds,$rbsDN,$entrydelibf)){
+      adjust_dhcpfilename($initbootfile, $rbsDN, "delete");
+		$mesg = "Initial Boot File erfolgreich gel&ouml;scht<br><br>";
+	}
+	else{
+		$mesg = "Fehler beim l&ouml;schen von Initial Boot File!<br><br>";
+	}
+}
+
+if ( $initbootfile != "" && $initbootfile != $oldinitbootfile ){
+   $entryibf ['initbootfile'] = $initbootfile;
+	if(ldap_mod_replace($ds,$rbsDN,$entryibf)){
+	   adjust_dhcpfilename($initbootfile, $rbsDN, "replace");
+		$mesg = "Initial Boot File erfolgreich ge&auml;ndert<br><br>";
+	}
+	else{
+		$mesg = "Fehler beim &auml;ndern des Initial Boot Files!<br><br>";
+	}
+}
  
 #####################################
 # Restliche Attribute

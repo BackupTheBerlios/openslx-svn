@@ -71,8 +71,8 @@
 					<input type='hidden' name='oldtftpserverip' value='{TFTPIP}'></td>
 				<td width='15%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>Init Boot File</td>
 				<td width='35%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
-					<input type='Text' name='attribs[initbootfile]' value='{INITBOOTFILE}' size='25' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[initbootfile]' value='{INITBOOTFILE}'></td>
+					<input type='Text' name='initbootfile' value='{INITBOOTFILE}' size='25' class='medium_form_field'>
+					<input type='hidden' name='oldinitbootfile' value='{INITBOOTFILE}'></td>
 			</tr>
 			<tr valign='top'>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'><font size='+1'>{TFTP}</font></td>

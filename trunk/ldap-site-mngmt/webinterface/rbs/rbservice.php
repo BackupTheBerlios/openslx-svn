@@ -129,7 +129,7 @@ foreach ($hosts_array as $item){
 
 ################################################
 # PXE Generator Skript Config
-$pxegen_ldap = "ldap://".LDAP_HOST;
+$pxegen_ldap = LDAP_HOST;
 $pxegen_base = "ou=RIPM,".$suffix;
 $pxegen_udn = $userDN;
 $pxegen_pw = $userPassword;

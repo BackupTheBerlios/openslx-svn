@@ -80,14 +80,15 @@ if ($gbm['rootfstype'] == 'dnbd'){
 					</select>
 					<input type='hidden' name='oldrootfstype' value='".$gbm['rootfstype']."'>";
 }
-if ($gbm['rootfstype'] != 'nfs' && $gbm['rootfstype'] != 'nbd' && $gbm['rootfstype'] != 'dnbd'){
+#if ($gbm['rootfstype'] != 'nfs' && $gbm['rootfstype'] != 'nbd' && $gbm['rootfstype'] != 'dnbd'){
+if ($gbm['rootfstype'] == 'none' ){
 	$options = "<select name='rootfstype' size='4' class='rootfs_form_selectbox'>
 					<option value='' selected>---------------------------------</option>
 					<option value='nfs'><b>nfs://".$rbs_data['nfsserverip'].":/".$rbs_data['exportpath']."</b></option>
 					<option value='nbd'>nbd://".$rbs_data['nbdserverip'].":</option>
 					<option value='dnbd'>dnbd://".$rbs_data['nbdserverip'].":</option>
 					</select>
-					<input type='hidden' name='oldrootfstype' value=''>";
+					<input type='hidden' name='oldrootfstype' value='".$gbm['rootfstype']."'>";
 }
 
 
