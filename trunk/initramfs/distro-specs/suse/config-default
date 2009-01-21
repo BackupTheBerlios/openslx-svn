@@ -36,7 +36,7 @@ D_SYSCONFDIR=/sysconfig
 D_ETCEXCL="opt/gnome/gconf/*\n*.old\n*-\n*.rpmorig\n*.rpmnew\n\
 *.YaST2save\netc/autoinstall\nlogrotate*\nbootloader\n*~\n\
 *.SuSEconfig.saved\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
-X11/xdm/pixmaps\n*.rpmsave\ndhclient*script\nX11/xorg.conf*\n"
+X11/xdm/pixmaps\n*.rpmsave\ndhclient*script\nxorg.conf.*"
 D_BINDMPTS="tmp root media home"
 D_DIRINBINDMNT="/var/run /var/log /var/tmp"
 D_RODIRSINRW="/etc/opt/gnome/gconf /etc/X11/xkb /var/adm /var/lib/texmf \

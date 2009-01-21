@@ -490,7 +490,7 @@ elif [ -z "$COWLOOP" ] ; then
   for i in ${D_RCDIRS} ${D_INITBOOTD} ; do
     echo "*$i/*" >>/tmp/etc.exclude
   done
-  echo -e "${D_ETCEXCL} @@@COMETCEXCL@@@" >>/tmp/etc.exclude
+  echo -e "${D_ETCEXCL}\n@@@COMETCEXCL@@@" >>/tmp/etc.exclude
   # if ld.so.cache is to be generated then do not copy the file
   [ -z "${NOLDSC}" ] && echo -e "ld.so.cache*" >>/tmp/etc.exclude
   # for tar exclude lists might be used, more difficult for cp

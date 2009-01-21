@@ -122,6 +122,9 @@ checkgraphix () {
 # test if unionfs
 case "${XMODULE}" in
   radeon)
+    # IGP is not supported with fglrx driver (at least not in some versions)
+    # comment if it works properly ...
+    strinfile " IGP" /tmp/hwsetup.info && exit
     # check ${XDESC}/ hwsetup.info device string in Cards file and then
     # for needed components
     # not all radeon cards are properly supported by fglrx, so the decision on
