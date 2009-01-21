@@ -25,7 +25,7 @@ $VERSION = 1.01;
 @EXPORT = qw(
   copyFile fakeFile linkFile 
   copyBinaryWithRequiredLibs
-  slurpFile spitFile 
+  slurpFile spitFile appendFile
   followLink 
   unshiftHereDoc
   string2Array
@@ -125,6 +125,21 @@ sub spitFile
 	return;
 }
 
+sub appendFile
+{
+	my $fileName = shift || croak 'need to pass in a fileName!';
+	my $content  = shift;
+
+	my $fh;
+	open($fh, '>>', $fileName)
+	  or croak _tr("unable to create file '%s' (%s)\n", $fileName, $!);
+	print $fh $content
+	  or croak _tr("unable to print to file '%s' (%s)\n", $fileName, $!);
+	close($fh)
+	  or croak _tr("unable to close file '%s' (%s)\n", $fileName, $!);
+	return;
+}
+
 sub followLink
 {
 	my $path         = shift || croak 'need to pass in a path!';
@@ -171,7 +186,7 @@ sub copyBinaryWithRequiredLibs {
 	foreach my $lib (split "\n", $requiredLibsStr) {
 		my $libDir = dirname($lib);
 		my $targetLib = "$params->{libTargetFolder}$libDir";
-#		next if -e $targetLib;
+		next if -e "$targetLib/$lib";
 		vlog(3, "copying lib '$lib'");
 		copyFile($lib, $targetLib);
 	}
@@ -182,11 +197,9 @@ sub unshiftHereDoc
 {
 	my $content = shift;
 	return $content unless $content =~ m{^(\s+)};
-	my $shift = length($1);
-	return 
-		join "\n", 
-		map { substr($_, $shift); } 
-		split m{\n}, $content;
+	my $shiftStr = $1;
+	$content =~ s[^$shiftStr][]gms;
+	return $content;
 }
 
 sub string2Array

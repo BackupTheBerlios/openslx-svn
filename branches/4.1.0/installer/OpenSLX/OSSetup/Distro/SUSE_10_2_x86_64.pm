@@ -79,8 +79,6 @@ sub initDistroInfo
 		x86_64/zlib-1.2.3-33.x86_64.rpm
 	";
 
-	$self->{config}->{'bootstrap-prereq-packages'} = "";
-
 	$self->{config}->{'bootstrap-packages'} = "
 		x86_64/aaa_base-10.2-38.x86_64.rpm
 		x86_64/aaa_skel-2006.5.19-20.x86_64.rpm

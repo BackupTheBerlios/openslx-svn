@@ -66,8 +66,8 @@ sub bootstrap
 	my $arch = $self->{engine}->{distro}->{arch};
 	my $releaseName = $self->{engine}->{distro}->{'release-name'};
 	my $baseURL = $self->{engine}->{baseURLs}->[0];
-	my $debootstrapCmd = <<"	END-OF-HERE";
-		/usr/sbin/debootstrap --verbose --arch $arch $releaseName \\
+	my $debootstrapCmd = unshiftHereDoc(<<"	END-OF-HERE");
+		/usr/sbin/debootstrap --arch $arch $releaseName \\
 		                      /slxbootstrap/slxfinal $baseURL
 	END-OF-HERE
 	if (slxsystem("ash", "-c", "/bin/ash $debootstrapCmd")) {
@@ -84,7 +84,7 @@ sub installPackages
 
 	return unless defined $pkgs && @$pkgs;
 
-	if (slxsystem("rpm", "--root=$finalPath", "-ivh", @$pkgs)) {
+	if (slxsystem("dpkg", "--root=$finalPath", "--install", @$pkgs)) {
 		die _tr("error during package-installation (%s)\n", $!);
 	}
 	return;
@@ -94,8 +94,8 @@ sub getInstalledPackages
 {
 	my $self = shift;
 
-	my $rpmCmd = 'rpm -qa --queryformat="%{NAME}\n"';
-	my $pkgList = `$rpmCmd`;
+	my $rpmCmd = 'dpkg-query --showformat "\${package}\n" --show';
+	my $pkgList = qx{$rpmCmd};
 	return split "\n", $pkgList;
 }
 

@@ -28,6 +28,8 @@ sub new
 	my $class = shift;
 	my $self = {
 		'base-name' => 'debian-3.1',
+		'arch'         => 'i386',
+		'release-name' => 'sarge',
 	};
 	return bless $self, $class;
 }
@@ -35,34 +37,35 @@ sub new
 sub initDistroInfo
 {
 	my $self = shift;
+
 	$self->{config}->{'repository'} = {
 		'base' => {
 			'urls' => "
+				http://debian.intergenia.de/debian
 			",
-			'name' => '',
-			'repo-subdir' => '',
-		},
-		'base_update' => {
-			'urls' => '
-			',
-			'name' => '',
-			'repo-subdir' => '',
+			'name' => 'Debian 3.1',
+			'repo-subdir'  => 'dists',
+			'distribution' => 'sarge',
+			'components'   => 'main',
 		},
 	};
 
-	$self->{config}->{'package-subdir'} = '';
+	$self->{config}->{'package-subdir'} = 'pool';
 
 	$self->{config}->{'prereq-packages'} = "
+		main/d/debootstrap/debootstrap_0.3.3.2_all.deb
 	";
-
-	$self->{config}->{'bootstrap-prereq-packages'} = "";
 
 	$self->{config}->{'bootstrap-packages'} = "
 	";
 
 	$self->{config}->{'selection'} = {
-		'default' => "list any packagenames here",
+		'default' => "
+			kernel-image-2.6-386
+			locales
+		",
 	};
+
 	return;
 }
 

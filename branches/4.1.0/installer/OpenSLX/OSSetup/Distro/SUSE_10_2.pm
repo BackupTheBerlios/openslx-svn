@@ -77,8 +77,6 @@ sub initDistroInfo
 		i586/zlib-1.2.3-33.i586.rpm
 	";
 
-	$self->{config}->{'bootstrap-prereq-packages'} = "";
-
 	$self->{config}->{'bootstrap-packages'} = "
 		i586/aaa_base-10.2-38.i586.rpm
 		i586/aaa_skel-2006.5.19-20.i586.rpm

@@ -37,20 +37,56 @@ sub initPackageSources
 {
 	my $self = shift;
 
+	$ENV{LC_ALL} = 'POSIX';
+
+	# remove any existing sources
+	slxsystem('rm -f /etc/apt/sources.list');
+	
+	# create default timezone if there isn't any
+	if (!-e '/etc/timezone') {
+		spitFile('/etc/timezone', "$openslxConfig{'default-timezone'}\n");
+	}
+	
+	# create kernel config if there isn't any
+	if (!-e '/etc/kernel-img.conf') {
+		my $kernelConfig = unshiftHereDoc(<<"		END-OF-HERE");
+			# Kernel image management overrides
+			# See kernel-img.conf(5) for details
+			do_symlinks = yes
+			relative_links = yes
+			do_bootloader = no
+			do_bootfloppy = no
+			do_initrd = yes
+			link_in_boot = yes
+		END-OF-HERE
+		spitFile('/etc/kernel-img.conf', $kernelConfig);
+	}
 	return;
 }
 
 sub setupPackageSource
 {
-	my $self = shift;
-	my $repoName = shift;
-	my $repoInfo = shift;
+	my $self        = shift;
+	my $repoName    = shift;
+	my $repoInfo    = shift;
 	my $excludeList = shift;
+	my $repoURLs    = shift;
 
-	my $repoSubdir = '';
-	if (length($repoInfo->{'repo-subdir'})) {
-		$repoSubdir = "/$repoInfo->{'repo-subdir'}";
+	my $baseURL      = shift @$repoURLs;
+	my $distribution = $repoInfo->{'distribution'};
+	my $components   = $repoInfo->{'components'};
+
+	my $sourcesList = "deb $baseURL $distribution $components\n";
+
+	my $avoidMirrors = $repoInfo->{'avoid-mirrors'} || 0;
+	if (!$avoidMirrors) {
+		foreach my $mirrorURL (@$repoURLs) {
+			$sourcesList .= "deb $mirrorURL $distribution $components\n";
+		}
 	}
+
+	appendFile('/etc/apt/sources.list', $sourcesList);
+
 	return;
 }
 
@@ -59,6 +95,12 @@ sub installSelection
 	my $self = shift;
 	my $pkgSelection = shift;
 
+	if (slxsystem("apt-get update")) {
+		die _tr("unable to update repository info (%s)\n", $!);
+	}
+	if (slxsystem("apt-get -y install $pkgSelection")) {
+		die _tr("unable to install selection (%s)\n", $!);
+	}
 	return;
 }
 
@@ -66,6 +108,12 @@ sub updateBasicVendorOS
 {
 	my $self = shift;
 
+	if (slxsystem("apt-get -y update")) {
+		die _tr("unable to update repository info (%s)\n", $!);
+	}
+	if (slxsystem("apt-get -y upgrade")) {
+		die _tr("unable to update this vendor-os (%s)\n", $!);
+	}
 	return;
 }
 

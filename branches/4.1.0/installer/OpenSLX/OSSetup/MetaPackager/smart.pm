@@ -33,22 +33,14 @@ sub new
 	return bless $self, $class;
 }
 
-sub initialize
-{
-	my $self = shift;
-	my $engine = shift;
-
-	$self->SUPER::initialize($engine);
-	$ENV{LC_ALL} = 'POSIX';
-	return;
-}
-
 sub initPackageSources
 {
 	my $self = shift;
 
+	$ENV{LC_ALL} = 'POSIX';
+
+	# remove any existing channels
 	slxsystem("rm -f /etc/smart/channels/*");
-	# remove channel if it already exists
 	if (slxsystem("smart channel -y --remove-all")) {
 		die _tr("unable to remove existing channels (%s)\n", $!);
 	}
@@ -74,19 +66,20 @@ sub setupPackageSource
 	if (slxsystem("smart channel -y --add $repoDescr")) {
 		die _tr("unable to add channel '%s' (%s)\n", $repoName, $!);
 	}
+
 	my $avoidMirrors = $repoInfo->{'avoid-mirrors'} || 0;
-	unless ($ENV{SLX_NO_MIRRORS} || $avoidMirrors) {
-		my $mirrorDescr;
-		foreach my $mirrorURL (@$repoURLs) {
-			$mirrorDescr .= " --add $baseURL$repoSubdir $mirrorURL$repoSubdir";
-		}
-		if (defined $mirrorDescr) {
-			if (slxsystem("smart mirror $mirrorDescr")) {
-				die _tr(
-					"unable to add mirrors for channel '%s' (%s)\n", 
-					$repoName, $!
-				);
-			}
+	return if $avoidMirrors;
+	
+	my $mirrorDescr;
+	foreach my $mirrorURL (@$repoURLs) {
+		$mirrorDescr .= " --add $baseURL$repoSubdir $mirrorURL$repoSubdir";
+	}
+	if (defined $mirrorDescr) {
+		if (slxsystem("smart mirror $mirrorDescr")) {
+			die _tr(
+				"unable to add mirrors for channel '%s' (%s)\n", 
+				$repoName, $!
+			);
 		}
 	}
 	return;

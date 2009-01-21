@@ -84,6 +84,8 @@ my $translations;
 	# but not by any other script:
 	#
 	'ossetup-max-try-count' => '5',
+	'default-shell' 		=> 'bash',
+	'default-timezone' 		=> 'Europe/Berlin',
 );
 chomp($openslxConfig{'locale-charmap'});
 
