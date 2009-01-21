@@ -32,7 +32,6 @@ function trigger_device_events() {
                ;;
        esac
     done
-
     # trigger the sorted events
     for i in $first $default $last; do
        echo "add" > "$i"

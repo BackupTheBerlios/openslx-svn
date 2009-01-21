@@ -2,13 +2,13 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-02-2006
 #		Bla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.2a
+# Version:      0.2.2b
 
 # functions common for all distros
 errmsg="functions file contains a lot of script \
@@ -19,7 +19,6 @@ functionality. Without this\ninit script will not run."
 . /etc/sysconfig/config || ( echo -e "  The distribution \
 specific configuration file could not be found" && exit 1 )
 
-date
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
 export date="08-02-2006"
 
@@ -406,15 +405,10 @@ failed for some\nreason.  You will get some error messages that some files \
 could not be\n  removed." nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1
 mount -n --move /dev /mnt/dev
-#cd /mnt
-# kill udevd
-[ -n "${UDEVD_EXPECTED_SEQNUM}" ] && killall -9 udevd 2>/dev/null
+killall -9 udevd 2>/dev/null
 umount -n /proc
 [ -n "${UNIONFS}" ] && mount -n --move /root /mnt/mnt 
-# --> pivot_root seems to be deprecated - check for older kernels too
-#pivot_root . mnt || error "  Could not execute pivot_root due to missing \
-#command or wrong\n  parameters given."
-#echo "Exiting the initial ramdisk init"
-#exec `which chroot` . sh -c 'rm -rf mnt/*; exec /sbin/init' \
-#  <dev/console >dev/console 2>&1
-exec run-init -c dev/console /mnt /sbin/init
+# new kind of pivoting
+exec run-init -c dev/console /mnt /sbin/init || error "  Could not execute \
+run-init due to missing command or wrong\n  parameters given."
+

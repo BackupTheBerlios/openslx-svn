@@ -3,7 +3,7 @@
 #		changes should be done there, version specific changes for
 #		the 10.0 here.
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-02-2006
 #		Blabla
 #		Blub
 #
@@ -13,7 +13,7 @@
 
 # distro specific stuff to initialize
 preinit () {
-for i in usb_id scsi_id vol_id edd_id hwup ifup ; do
+for i in usb_id scsi_id vol_id edd_id ata_id hwup ifup ; do
   echo -e "#!/bin/sh\n:" >/sbin/$i
 done
 mkdir /lib/udev /usr/sbin
