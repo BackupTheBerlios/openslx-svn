@@ -87,4 +87,3 @@ i586/python-xml-2.5-19.i586.rpm
 i586/python-2.5-19.i586.rpm
 i586/smart-0.42-43.i586.rpm
 "
-SLX_BASE_PREREQ_CLEANUP_PATH="etc"

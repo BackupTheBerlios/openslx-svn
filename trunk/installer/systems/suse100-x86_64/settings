@@ -9,7 +9,6 @@ gpg-pubkey-0dfb3188-41ed929b.asc
 "
 SLX_INST_SOURCE_NAME_suse100="SUSE Linux 10.0"
 SLX_INST_SOURCE_REPO_SUBDIR_suse100="suse"
-SLX_INST_SOURCE_TYPE_suse100="yast2"
 SLX_INST_SOURCE_BASEURL_suse100update="http://ftp.gwdg.de/pub/suse/update/10.0"
 SLX_INST_SOURCE_NAME_suse100update="SUSE Linux 10.0 updates"
 SLX_BASE_PREREQ_PACKAGES="

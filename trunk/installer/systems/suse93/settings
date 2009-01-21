@@ -1,3 +1,4 @@
+# Currently not working as SUSE Linux 9.3 doesn't provide repo data
 SLX_INST_SOURCE_BASEURL_suse93="http://ftp.gwdg.de/pub/suse/install/9.3"
 SLX_INST_SOURCE_PACKAGEKEYS_suse93="
 gpg-pubkey-0dfb3188-41ed929b.asc
@@ -9,5 +10,3 @@ SLX_INST_SOURCE_TYPE_suse93="yast2"
 SLX_INST_SOURCE_BASEURL_suse93update="http://ftp.gwdg.de/pub/suse/update/9.3"
 SLX_INST_SOURCE_NAME_suse93update="SUSE Linux 9.3 updates"
 SLX_BASE_PREREQ_PACKAGES="glibc"
-SLX_BASE_PREREQ_CLEANUP_PATH="etc"
-SLX_INSTALL_PACKAGES_MAIN="kernel-default bash"

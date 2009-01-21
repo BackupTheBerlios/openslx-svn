@@ -102,7 +102,4 @@ RPMS/rpm-python-4.4.2-32.i386.rpm
 RPMS/yum-3.0-6.noarch.rpm
 RPMS/yum-metadata-parser-1.0-8.fc6.i386.rpm
 "
-#SLX_BASE_PREREQ_CLEANUP_PATH="etc/localtime etc/nsswitch.conf etc/rpc usr/lib/gconv/gconv-modules"
-SLX_INSTALL_BIND_MOUNT="sys"
 SLX_INSTALL_FAKE_FILE="/etc/fstab /etc/mtab"
-SLX_INSTALL_PACKAGES_MAIN=""
