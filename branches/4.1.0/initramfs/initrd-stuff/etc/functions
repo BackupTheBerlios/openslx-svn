@@ -29,50 +29,6 @@ postinit () {
 config_distro () {
 :
 }
-# udev/hotplug - auto device discovery service (deprecated)
-udev_hotplug () {
-:
-}
-
-#############################################################################
-# generate events with the sysfs trigger (most probably obsolete)
-trigger_device_events () {
-  local list=$(echo /sys/bus/*/devices/*/uevent)
-  list="$list $(echo /sys/class/*/*/uevent)"
-  list="$list $(echo /sys/block/*/uevent /sys/block/*/*/uevent)"
-  for i in $list; do
-    case "$i" in
-      */device/uevent|*\**)
-        continue
-      ;;
-      */class/mem/*|*/class/tty/*)
-        first="$first $i"
-      ;;
-      */block/md*)
-        last="$last $i"
-      ;;
-      */*)
-        default="$default $i"
-      ;;
-    esac
-  done
-  # trigger the sorted events
-  for i in $first $default $last; do
-    echo "add" > "$i"
-  done
-}
-
-#############################################################################
-# mini udev of busybox (most probably obsolete: or distro specific
-# udev_hotplug)
-runudev () {
-if [ -x /bin/mdev ] ; then
-  mdev -s
-else
-  udev_hotplug
-fi
-echo "Started udev"
-}
 
 #############################################################################
 # produce error message and if $2 is empty run (debug) shell
