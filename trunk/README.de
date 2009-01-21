@@ -1,4 +1,4 @@
-DXS - LDC Version 4
+OpenSLX - Linux Diskless Clients Version 4
 
 Die Version 4 wählt einen komplett neuen Ansatz und ist in den meisten
 Punkten nicht zur Vorgängerin kompatibel. Die wesentlichen Änderungen 
@@ -18,11 +18,17 @@ konnte das klassische mkinitrd kein (D)NBD, UnionFS unterstützen
 * Das InitRamFS wird durchaus größer als vorher und erreicht zur Zeit
 bis zu 3,5MByte
 
+mkdxsinitrd wird in der nächsten Zeit durch slxmkramfs ersetzt, welches
+Teil eines Config-Frameworks werden wird, dass sich um die Installation
+der Kernel, Erstellen der passenden Initramfs, Erstellen der machine-setup
+und des Packens des ConfTGZ kümmern wird.
+
 2. In der InitialRamdisk:
 * Laden der NW-Karten-Module, Setup des Root-Filesystems (NFS, NBD
-evtl. UnionFS)
+evtl. UnionFS, später auch AoE, iSCSI)
 * Start der Hardware-Konfiguration (distro-unabhängig) und Software-
-Konfiguration distro-abhängig
+Konfiguration distro-abhängig (durch Laden von Dateien mit den benötigten
+Funktionen)
 * run-init ins spätere Filesystem der Clients, was komplett vorbereitet 
 ist (Transfer etlicher Aufgaben aus boot.ld in die initrd)
 
@@ -50,14 +56,15 @@ Standard-NFS/Bindmount-Betrieb deutlich weniger Netzwerk-Traffic.
 
 Installation
 
-Derzeit ist nur die Installation von einem Referenzsystem moeglich. Das regelt
-das Skript ld4/installer/ld4-inst. Dieses stellt die von der Vorgaengerversion
-bekannten Fragen und legt dabei ein Verzeichnis /etc/dxs auf dem Server an, in
-dem sich die meisten Konfigurationsdateien befinden.
+Derzeit ist nur die Installation von einem Referenzsystem möglich, eine 
+generelle Installation einer Distribution in ein beliebiges Unterverzeichnis 
+auf dem SLX-Server ist in Vorbereitung. Das ersetzt dann auch das Skript 
+ld4/installer/ld4-inst, welches derzeit die Installation übernimmt. Es stellt 
+die von der Vorgaengerversion bekannten Fragen. Durch ein vorheriges make install
+werden Verzeichnisse /var/lib/openslx, /usr/share/openslx auf dem Server angelegt, 
+in dem sich die meisten Konfigurationsdateien befinden und Projektdaten landen.
 
 Das Installationsskript ruft ld4/initrd/mkdxsinitrd auf, welches ein Initramfs
 fuer die Diskless X Stations generiert. Nach jedem Kernel-Update oder
 Aenderungen, die den Initialstart betreffen, muss es neu aufgerufen werden.
-Siehe auch http://132.230.4.73/trac/dxs !!
-
-
+Siehe auch http://www.openslx.org !!

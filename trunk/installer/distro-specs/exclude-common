@@ -18,6 +18,7 @@
 - /etc/shadow*
 - /etc/dxs
 - /etc/resolv.conf.*
+- //etc/vmware/vmnet*
 - /dev/*
 - /proc/*
 - /sys/*
