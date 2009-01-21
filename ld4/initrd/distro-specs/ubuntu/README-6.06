@@ -1,6 +1,8 @@
 fehler kubuntu 6.06:
 
 distro-functions: line 43: udevstert not found
+	-laut changelog von udev wird behaupted, dass man udevstart nicht mehr braucht..
+
 module unix not found -> im kernel
 anderer pfad in xorg.conf:
 fonts in /urs/share/X11/fonts + module pfad löschen
