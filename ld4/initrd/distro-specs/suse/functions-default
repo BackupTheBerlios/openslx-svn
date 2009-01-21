@@ -315,7 +315,7 @@ StdFont=Nimbus Sans l,14,-1,5,48,0,0,0,0,0\n\
 FailFont=Nimbus Sans l,14,-1,5,74,0,0,0,0,0\n\
 AntiAliasing=true\nLanguage=$lang\n\
 EchoMode=OneStar\nShowLog=false\n\
-UseTheme=true\nTheme=/opt/kde3/share/apps/kdm/themes/SUSE\n\
+UseTheme=true\nTheme=/opt/kde3/share/apps/kdm/themes/dxs\n\
 UseBackground=false\n\
 BackgroundCfg=/etc/opt/kde3/share/config/kdm/backgroundrc\n\n\
 [X-:*-Greeter]\n\
