@@ -1,7 +1,9 @@
 fehler kubuntu 6.06:
 
 distro-functions: line 43: udevstert not found
-	-laut changelog von udev wird behaupted, dass man udevstart nicht mehr braucht..
+	-laut changelog von udev wird behaupted, dass man udevstart nicht mehr braucht.. -> Ja und da wir mdev von busybox machen, wird in Stage3 KEIN udev mehr
+benötigt! (dsuchod)
+
 
 module unix not found -> im kernel
 anderer pfad in xorg.conf:
