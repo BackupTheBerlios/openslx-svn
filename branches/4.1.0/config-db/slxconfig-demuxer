@@ -14,6 +14,7 @@
 #	- OpenSLX configuration demultiplexer
 # -----------------------------------------------------------------------------
 use strict;
+use warnings;
 
 my $abstract = q[
 slxconfig-demuxer
@@ -217,9 +218,14 @@ sub digestAttributes
 	    # facilitate comparing different attribute hashes.
 	my $attrs = shift;
 
-	my $attrsAsString = join ';', map { "$_=$attrs->{$_}"; }
-	  sort { $a cmp $b }
-	  grep { isAttribute($_) } keys %$attrs;
+	my $attrsAsString 
+		=   join ';', 
+			map { 
+				my $val = $attrs->{$_} || '';
+				"$_=$val";
+			}
+		    sort { $a cmp $b }
+		    grep { isAttribute($_) } keys %$attrs;
 
 	vlog(3, "Attribute-string: $attrsAsString");
 	use Digest::MD5 qw(md5_hex);
@@ -234,27 +240,27 @@ sub writeAttributesToFile
 
 	return if $dryRun;
 
+	my $content = "# attributes set by slxconfig-demuxer:\n";
+	my @attrs = (
+		$grepForAttributes
+			? sort grep { isAttribute($_) } keys %$attrHash
+			: keys %$attrHash
+	);    
+	foreach my $attr (@attrs) {
+		my $attrVal = $attrHash->{$attr} || '';
+		if (length($attrVal) > 0) {
+			my $externalAttrName = externalAttrName($attr);
+			$content .= qq[$externalAttrName="$attrVal"\n];
+		}
+	}
 	# Overwrite attribute file even if it exists, to make sure that our users
 	# will never again try to fiddle with machine-setup directly the
 	# file-system. From now on the DB is the keeper of that info.
-	open(ATTRS, "> $fileName") or die "unable to write to $fileName";
-	my @attrs = (
-		$grepForAttributes
-		? sort grep { isAttribute($_) } keys %$attrHash
-		: keys %$attrHash
-	);    
-	print ATTRS "# attributes set by slxconfig-demuxer:\n";
-	foreach my $attr (@attrs) {
-		if (length($attrHash->{$attr}) > 0) {
-			my $externalAttrName = externalAttrName($attr);
-			print ATTRS qq[$externalAttrName="$attrHash->{$attr}"\n];
-		}
-	}
-	close(ATTRS);
+	spitFile($fileName, $content);
 	if ($openslxConfig{'verbose-level'} > 2) {
-		print "--- START OF $fileName ---\n";
-		system("cat $fileName");
-		print "--- END OF $fileName --- \n";
+		vlog(0, "--- START OF $fileName ---");
+		vlog(0, $content);
+		vlog(0, "--- END OF $fileName --- ");
 	}
 }
 
@@ -265,11 +271,11 @@ sub writeSlxConfigToFile
 
 	return if $dryRun;
 
-	open(SLXCONF, "> $fileName") or die "unable to write to $fileName";
+	my $content = '';
 	foreach my $key (sort keys %$slxConf) {
-		print SLXCONF qq[$key="$slxConf->{$key}"\n];
+		$content .= qq[$key="$slxConf->{$key}"\n];
 	}
-	close(SLXCONF);
+	spitFile($fileName, $content);
 }
 
 sub copyExternalSystemConfig
@@ -372,11 +378,13 @@ sub writePXEMenus
 	foreach my $client (@clients) {
 		my $externalClientID = externalIDForClient($client);
 		my $pxeFile          = "$pxeConfigPath/$externalClientID";
-		my $clientAppend     = $client->{kernel_params};
+		my $clientAppend     = $client->{kernel_params} || '';
 		vlog(1, _tr("writing PXE-file %s", $pxeFile));
 		next if $dryRun;
-		open(PXE, ">$pxeFile") or die "unable to write to $pxeFile";
-		print PXE $pxeTemplate;
+		my $pxeFH;
+		open($pxeFH, '>', $pxeFile)
+			or croak _tr("unable to create file '%s' (%s)\n", $pxeFile, $!);
+		print $pxeFH $pxeTemplate;
 		my %systemIDs;
 		@systemIDs{$openslxDB->aggregatedSystemIDsOfClient($client)} = ();
 		my @systemInfos = grep { exists $systemIDs{$_->{id}} } @infos;
@@ -387,13 +395,14 @@ sub writePXEMenus
 			my $append     = $info->{kernel_params};
 			$append .= " initrd=$extID/$info->{'initramfs-name'}";
 			$append .= " $clientAppend";
-			print PXE "LABEL openslx-$info->{'external-id'}\n";
-			print PXE "\tMENU LABEL ^$info->{label}\n";
-			print PXE "\tKERNEL $extID/$kernelName\n";
-			print PXE "\tAPPEND $append\n";
-			print PXE "\tIPAPPEND 1\n";
+			print $pxeFH "LABEL openslx-$info->{'external-id'}\n";
+			print $pxeFH "\tMENU LABEL ^$info->{label}\n";
+			print $pxeFH "\tKERNEL $extID/$kernelName\n";
+			print $pxeFH "\tAPPEND $append\n";
+			print $pxeFH "\tIPAPPEND 1\n";
 		}
-		close(PXE);
+		close($pxeFH)
+			or croak _tr("unable to close file '%s' (%s)\n", $pxeFile, $!);
 	}
 }
 
@@ -430,10 +439,10 @@ sub generateInitalRamFS
 	# generate initramfs-setup file (with settings relevant for initramfs only):
 	my $initramfsAttrFile = "$tempPath/initramfs-setup";
 	my $initramfsAttrs    = {
-		'ramfs_fsmods'  => "$info->{'attr_ramfs_fsmods'}",
-		'ramfs_nicmods' => "$info->{'attr_ramfs_nicmods'}",
-		'ramfs_screen'  => "$info->{'attr_ramfs_screen'}",
-		'rootfs'        => "$info->{'export-uri'}",
+		'ramfs_fsmods'  => $info->{'attr_ramfs_fsmods'} || '',
+		'ramfs_nicmods' => $info->{'attr_ramfs_nicmods'} || '',
+		'ramfs_screen'  => $info->{'attr_ramfs_screen'} || '',
+		'rootfs'        => $info->{'export-uri'} || '',
 	};
 	writeAttributesToFile($initramfsAttrs, $initramfsAttrFile, 0);
 	# and pass it to mkdxsinitrd:
@@ -478,7 +487,7 @@ sub writeDhcpConfig
 {
 	vlog(0, _tr("sorry, exporting dhcp data is not implemented yet!"));
 	my $dhcpModule = "OpenSLX::Export::DHCP::$dhcpType";
-	if (!eval "require $dhcpModule") {
+	if (!eval { require $dhcpModule } ) {
 		die _tr("unable to load DHCP-Export backend '%s'! (%s)\n",
 			$dhcpModule, $@);
 	}

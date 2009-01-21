@@ -13,12 +13,12 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::MetaPackager::Base;
 
-use vars qw($VERSION);
-$VERSION = 1.01;		# API-version . implementation-version
-
 use strict;
+use warnings;
 
-use Carp;
+our $VERSION = 1.01;		# API-version . implementation-version
+
+use Carp qw(confess);
 use OpenSLX::Basics;
 
 ################################################################################

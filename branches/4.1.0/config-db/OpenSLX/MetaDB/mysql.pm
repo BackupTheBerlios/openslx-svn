@@ -14,19 +14,16 @@
 package OpenSLX::MetaDB::mysql;
 
 use strict;
-use vars qw($VERSION);
-$VERSION = 1.01;    # API-version . implementation-version
+use warnings;
+
 use base qw(OpenSLX::MetaDB::DBI);
 
 ################################################################################
 ### This class provides a MetaDB backend for mysql databases.
 ### - by default the db will be created inside a 'openslxdata-mysql' directory.
 ################################################################################
-use strict;
-use Carp;
 use DBD::mysql;
 use OpenSLX::Basics;
-use OpenSLX::MetaDB::DBI 1;
 
 ################################################################################
 ### implementation

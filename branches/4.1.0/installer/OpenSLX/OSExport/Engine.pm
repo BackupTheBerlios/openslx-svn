@@ -13,7 +13,10 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::Engine;
 
-use vars qw(@ISA @EXPORT $VERSION);
+use strict;
+use warnings;
+
+our (@ISA, @EXPORT, $VERSION);
 $VERSION = 1.01;    # API-version . implementation-version
 
 use Exporter;
@@ -24,16 +27,14 @@ use Exporter;
   @supportedExportTypes %supportedDistros
 );
 
-use strict;
-use Carp;
 use File::Basename;
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
-use vars qw(
-  %supportedExportFileSystems %supportedExportBlockDevices
-  @supportedExportTypes %supportedDistros
+our (
+  %supportedExportFileSystems, %supportedExportBlockDevices,
+  @supportedExportTypes, %supportedDistros
 );
 
 %supportedExportFileSystems = (

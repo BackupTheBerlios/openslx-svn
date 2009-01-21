@@ -14,6 +14,7 @@
 #	- OpenSLX-rewrite of ldd that works on multiple architectures.
 # -----------------------------------------------------------------------------
 use strict;
+use warnings;
 
 my $abstract = q[
 slxldd
@@ -25,13 +26,13 @@ slxldd
     required by a binary of the x86_64 target system.
 ];
 
-use File::Glob ':globally';
-use Getopt::Long;
-use Pod::Usage;
-
 # add the lib-folder to perl's search path for modules:
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
+
+use File::Glob ':globally';
+use Getopt::Long;
+use Pod::Usage;
 
 use OpenSLX::Basics;
 
@@ -104,8 +105,10 @@ sub fetchLoaderConfigFile
 {
 	my $ldConfFile = shift;
 
-	open(LDCONF, "< $ldConfFile");
-	while (<LDCONF>) {
+	my $ldconfFH;
+	open($ldconfFH, '<', $ldConfFile)
+		or die(_tr("unable to open file '%s' (%s)", $ldConfFile, $!));
+	while (<$ldconfFH>) {
 		chomp;
 		if (/^\s*include\s+(.+?)\s*$/i) {
 			foreach my $incFile (<$rootPath$1>) {
@@ -119,7 +122,8 @@ sub fetchLoaderConfigFile
 			push @libFolders, "$rootPath$_";
 		}
 	}
-	close LDCONF;
+	close $ldconfFH
+		or die(_tr("unable to close file '%s' (%s)", $ldConfFile, $!));
 }
 
 sub fetchLoaderConfig

@@ -14,7 +14,9 @@
 package OpenSLX::ConfigFolder;
 
 use strict;
-use vars qw(@ISA @EXPORT $VERSION);
+use warnings;
+
+our (@ISA, @EXPORT, $VERSION);
 
 use Exporter;
 $VERSION = 1.01;
@@ -30,6 +32,7 @@ $VERSION = 1.01;
 ################################################################################
 use Carp;
 use OpenSLX::Basics;
+use OpenSLX::Utils;
 
 sub createConfigFolderForDefaultSystem
 {
@@ -47,29 +50,22 @@ sub createConfigFolderForDefaultSystem
 	# create default pre-/postinit scripts for us in initramfs:
 	my $preInitFile = "$defaultConfigPath/initramfs/preinit.local";
 	if (!-e $preInitFile) {
-		open(PREINIT, "> $preInitFile")
-			or die _tr("Unable to create file '%s'!", $preInitFile);
-		my $preInit = <<'			END'
+		my $preInit = unshiftHereDoc(<<'			END-of-HERE');
 			#!/bin/sh
 			#
 			# This script allows the local admin to extend the
 			# capabilities at the beginning of the initramfs (stage3).
 			# The toolset is rather limited and you have to keep in mind 
 			# that stage4 rootfs has the prefix '/mnt'.
-			END
-			;
-		$preInit =~ s[^\s+][]igms;
-		print PREINIT $preInit;
-		close(PREINIT);
+			END-of-HERE
+		spitFile($preInitFile, $preInit);
 		slxsystem("chmod u+x $preInitFile");
 		$result = 1;
 	}
 
 	my $postInitFile = "$defaultConfigPath/initramfs/postinit.local";
 	if (!-e $postInitFile) {
-		open(POSTINIT, "> $postInitFile")
-			or die _tr("Unable to create file '%s'!", $postInitFile);
-		my $postInit = <<'			END'
+		my $postInit = unshiftHereDoc(<<'			END-of-HERE');
 			#!/bin/sh
 			#
 			# This script allows the local admin to extend the
@@ -78,11 +74,8 @@ sub createConfigFolderForDefaultSystem
 			# that stage4 rootfs has the prefix '/mnt'.
 			# But you may use some special slx-functions available via
 			# inclusion: '. /etc/functions' ...
-			END
-			;
-		$postInit =~ s[^\s+][]igms;
-		print POSTINIT $postInit;
-		close(POSTINIT);
+			END-of-HERE
+		spitFile($postInitFile, $postInit);
 		slxsystem("chmod u+x $postInitFile");
 		$result = 1;
 	}

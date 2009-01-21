@@ -14,12 +14,11 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::FileSystem::SquashFS;
 
-use vars qw($VERSION);
-use base qw(OpenSLX::OSExport::FileSystem::Base);
-$VERSION = 1.01;    # API-version . implementation-version
-
 use strict;
-use Carp;
+use warnings;
+
+use base qw(OpenSLX::OSExport::FileSystem::Base);
+
 use File::Basename;
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:support);
@@ -61,11 +60,11 @@ sub exportVendorOS
 	vlog(1, _tr("using include-exclude-filter:\n%s\n", $includeExcludeList));
 	my $target = $self->{'export-path'};
 
-	my $sourceTime = (stat($source))[9];
-	my $targetTime = (stat($target))[9];
+	my $sourceTime = (stat($source))[9] || 0;
+	my $targetTime = (stat($target))[9] || 0;
 	vlog(2, "source-time=$sourceTime target-time=$targetTime");
 
-	if (defined $targetTime && $sourceTime < $targetTime) {
+	if ($targetTime && $sourceTime < $targetTime) {
 		vlog(
 			0,
 			"!!! creation of squashfs skipped, as vendor-OS hasn't changed since last export!\n" 
@@ -115,7 +114,7 @@ sub checkRequirements
 				"unable to find blockdevice-module '%s' for kernel version '%s'.",
 				$blockModName, $kernelVer
 			);
-			return undef;
+			return;
 		}
 		push @blockMods, $blockMod;
 	}
@@ -130,7 +129,7 @@ sub checkRequirements
 	if (!defined $squashfsMod) {
 		warn _tr("unable to find squashfs-module for kernel version '%s'.",
 			$kernelVer);
-		return undef;
+		return;
 	}
 	push @blockMods, $squashfsMod;
 	if (defined $info) {
@@ -205,10 +204,7 @@ sub _createSquashFS
 
 	# dump filter to a file ...
 	my $filterFile = "/tmp/slx-nbdsquash-filter-$$";
-	open(FILTERFILE, "> $filterFile")
-	  or die _tr("unable to create tmpfile '%s' (%s)", $filterFile, $!);
-	print FILTERFILE $includeExcludeList;
-	close(FILTERFILE);
+	spitFile($filterFile, $includeExcludeList);
 
 	# ... invoke mksquashfs ...
 	vlog(0, _tr("invoking mksquashfs..."));
@@ -234,7 +230,8 @@ sub _determineIncludeExcludeList
 	my $distroName      = $self->{engine}->{'distro-name'};
 	my $localFilterFile =
 	  "$openslxConfig{'config-path'}/distro-info/$distroName/export-filter";
-	my $includeExcludeList = slurpFile($localFilterFile, 1);
+	my $includeExcludeList 
+		= slurpFile($localFilterFile, { failIfMissing => 0 });
 	$includeExcludeList .= $self->{engine}->{distro}->{'export-filter'};
 	$includeExcludeList =~ s[^\s+][]igms;
 	# remove any leading whitespace, as rsync doesn't like it
@@ -310,7 +307,7 @@ sub _locateKernelModule
 	if (defined $location) {
 		return followLink($location, $vendorOSPath);
 	}
-	return undef;
+	return;
 }
 
 sub _addBlockDeviceTagToExport

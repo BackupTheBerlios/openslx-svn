@@ -13,14 +13,13 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::MetaPackager::smart;
 
-use vars qw($VERSION);
-use base qw(OpenSLX::OSSetup::MetaPackager::Base);
-$VERSION = 1.01;		# API-version . implementation-version
-
 use strict;
-use Carp;
+use warnings;
+
+use base qw(OpenSLX::OSSetup::MetaPackager::Base);
+
 use OpenSLX::Basics;
-use OpenSLX::OSSetup::MetaPackager::Base 1;
+use OpenSLX::Utils;
 
 ################################################################################
 ### implementation
@@ -61,7 +60,7 @@ sub setupPackageSource
 	my $repoInfo = shift;
 	my $excludeList = shift;
 
-	my $repoSubdir;
+	my $repoSubdir = '';
 	if (length($repoInfo->{'repo-subdir'})) {
 		$repoSubdir = "/$repoInfo->{'repo-subdir'}";
 	}
@@ -78,8 +77,13 @@ sub setupPackageSource
 		foreach my $mirrorURL (@$repoURLs) {
 			$mirrorDescr .= " --add $baseURL$repoSubdir $mirrorURL$repoSubdir";
 		}
-		if (slxsystem("smart mirror $mirrorDescr")) {
-			die _tr("unable to add mirrors for channel '%s' (%s)\n", $repoName, $!);
+		if (defined $mirrorDescr) {
+			if (slxsystem("smart mirror $mirrorDescr")) {
+				die _tr(
+					"unable to add mirrors for channel '%s' (%s)\n", 
+					$repoName, $!
+				);
+			}
 		}
 	}
 }

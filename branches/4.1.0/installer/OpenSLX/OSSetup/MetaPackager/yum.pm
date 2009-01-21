@@ -13,14 +13,13 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::MetaPackager::yum;
 
-use vars qw($VERSION);
-use base qw(OpenSLX::OSSetup::MetaPackager::Base);
-$VERSION = 1.01;		# API-version . implementation-version
-
 use strict;
-use Carp;
+use warnings;
+
+use base qw(OpenSLX::OSSetup::MetaPackager::Base);
+
 use OpenSLX::Basics;
-use OpenSLX::OSSetup::MetaPackager::Base 1;
+use OpenSLX::Utils;
 
 ################################################################################
 ### implementation
@@ -73,11 +72,7 @@ sub setupPackageSource
 		}
 	}
 	my $repoFile = "/etc/yum.repos.d/$repoName.repo";
-	open(REPO, "> $repoFile")
-		or die _tr("unable to create repo-file <%s> (%s)\n", $repoFile, $!);
-	print REPO $repoDescr;
-	print REPO "\nexclude=$excludeList\n";
-	close(REPO);
+	spitFile($repoFile, "$repoDescr\nexclude=$excludeList\n");
 }
 
 sub installSelection

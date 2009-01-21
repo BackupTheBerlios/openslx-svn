@@ -11,6 +11,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 use strict;
+use warnings;
 
 my $abstract = q[
 slxos-setup
@@ -155,8 +156,9 @@ if ($action =~ m[^import]i) {
 } elsif ($action =~ m[^list-in]i) {
 	print _tr("List of installed vendor-OSes:\n");
 	print join('', map {
-					s[^.+/][];
-					"\t$_\n";
+					my $vendorOS = $_;
+					$vendorOS =~ s[^.+/][];
+					"\t$vendorOS\n";
 				   }
 				   sort <$openslxConfig{'private-path'}/stage1/*>);
 } else {

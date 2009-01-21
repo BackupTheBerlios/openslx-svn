@@ -13,14 +13,12 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::BlockDevice::Base;
 
-use vars qw($VERSION);
-$VERSION = 1.01;		# API-version . implementation-version
-
 use strict;
-use Carp;
+use warnings;
 
-use OpenSLX::Basics;
-use OpenSLX::Utils;
+our $VERSION = 1.01;		# API-version . implementation-version
+
+use Carp qw(confess);
 
 ################################################################################
 ### interface methods

@@ -11,6 +11,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 use strict;
+use warnings;
 
 my $abstract = q[
 slxconfig
@@ -143,7 +144,7 @@ sub dumpElements
 				'',
 				map {
 					my $spc = ' 'x25;
-					my $val = $elem->{$_};
+					my $val = $elem->{$_} || '';
 					$val =~ s[\n][\n\t$spc   ]g;
 					"\t$_"
 					.substr($spc, length($_))
@@ -319,12 +320,12 @@ sub addSystemToConfigDB
     my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
 	$systemData->{name} = $systemName;
 
-	if (!length($systemData->{export})) {
-		$systemData->{export} = $systemName;
+	my $exportName = $systemData->{export} || '';
+	delete $systemData->{export};
+	if (!length($exportName)) {
+		$exportName = $systemName;
 			# try falling back to given system name
 	}
-    my $exportName = $systemData->{export};
-	delete $systemData->{export};
 	my $export
 		= $openslxDB->fetchExportByFilter({ 'name' => $exportName });
 	if (!defined $export) {

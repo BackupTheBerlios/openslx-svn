@@ -13,14 +13,14 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::Export::DHCP::ISC;
 
-use vars qw(@ISA $VERSION);
-$VERSION = 1.01;		# API-version . implementation-version
+use strict;
+use warnings;
+
+our $VERSION = 1.01;		# API-version . implementation-version
 
 ################################################################################
 ### This class provides an ISC specific implementation for DHCP export.
 ################################################################################
-use strict;
-use Carp;
 use OpenSLX::Basics;
 
 ################################################################################

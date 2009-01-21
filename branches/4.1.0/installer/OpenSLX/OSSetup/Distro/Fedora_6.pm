@@ -13,14 +13,12 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::Fedora_6;
 
-use vars qw($VERSION);
-use base qw(OpenSLX::OSSetup::Distro::Base);
-$VERSION = 1.01;		# API-version . implementation-version
-
 use strict;
-use Carp;
+use warnings;
+
+use base qw(OpenSLX::OSSetup::Distro::Base);
+
 use OpenSLX::Basics;
-use OpenSLX::OSSetup::Distro::Base 1;
 
 ################################################################################
 ### implementation
