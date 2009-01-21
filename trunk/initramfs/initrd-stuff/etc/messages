@@ -177,6 +177,8 @@ Please add\n  them to your stage1 to have them enabled."
 scfg_nfs="  Mount of some NFS source failed ..."
 scfg_ntptz="  No such timezone data file (needed for ntp time service \
 configuration)."
+scfg_evmlm="  Mounting of local device source for vmware directory failed \
+for some reason."
 scfg_vmdir="  For some reason the runvmware script is not available for \
 copying. That\n  could be the result of failed mount or simply missing \
 file on\n  server."
