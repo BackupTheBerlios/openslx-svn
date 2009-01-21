@@ -3,11 +3,11 @@
 #		version 4
 #		this file could be used for localization of error messages 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 05-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.0.3b
+# Version:      0.0.3c
 
 # messages from init
 init_errmsg="functions file contains a lot of script \
@@ -115,6 +115,8 @@ $error_dhcp"
 error_ldapcfg="  The configuration via ldap is not implemented yet."
 
 # messages from distro functions
+df_errumod="    Failed to load the \"unix\" module. \
+  Problems with Hardware detection\nwill probably arise"
 df_errserv="seems not to be installed or start script is not available\n  \
 so requesting the start of service make no sense. Please disable service\n  \
 or install the files needed."
@@ -128,4 +130,3 @@ df_erramnt="  Automounter $df_errserv"
 df_erratpld="  Only toplevel directories \
 are allowed as mount points for user home\n  directories. Please set the \
 variable \${automnt_dir} appropriately in\n  machine-setup file."
-

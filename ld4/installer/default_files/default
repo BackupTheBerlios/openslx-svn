@@ -2,9 +2,6 @@
 #
 # Description:  Boot selection with the new Syslinux/PXElinux by Peter Anwin
 #               selection is done by cursor up and down keys
-# Modification: Alexander Heinz
-#               Dirk von Suchodoletz <dirk@goe.net>, 23-09-2005
-#
 DEFAULT @@@server@@@::@@@tftpbootdir@@@/menu.c32
 
 PROMPT 0
@@ -38,4 +35,3 @@ LABEL
   KERNEL @@@server@@@::@@@tftpbootdir@@@/menu.c32
   APPEND @@@server@@@::@@@tftpbootdir@@@/pxelinux.cfg/default
 #####
-
