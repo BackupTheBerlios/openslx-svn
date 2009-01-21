@@ -38,7 +38,7 @@ for suffix in "" local ${SLX_SYSTEM_VARIANTNAME}; do
 		. "${SLX_SYSTEM_CONFIG_PATH}/settings${suffix:+.$suffix}"
 done
 
-function slxossetup_rpm()
+function slxossetup_smart()
 {
 	SLX_METADATA_PATH="${SLX_PRIVATE_PATH}/metadata/${SLX_SYSTEM_NAME}"
 	SLX_STAGE1_PATH="${SLX_PRIVATE_PATH}/stage1/${SLX_SYSTEM_NAME}"
@@ -53,28 +53,53 @@ function slxossetup_rpm()
 	smart --data-dir="${SLX_METADATA_PATH}" \
 		config \
 		--set \
-		rpm-root="${SLX_STAGE1_PATH}"
+		"${NAME_DEST_ROOT}"="${SLX_STAGE1_PATH}"
 
-	for variable in ${!SLX_INST_SOURCE_BASEURL_*}; do
+	for variable in ${!SLX_INST_SOURCE_NAME_*}; do
 		# Unset SMART_* to let smart fail if they are not set for a particular
 		# channel; unset PACKAGEKEYS to prevent adding them multiple times.
-		unset SMART_NAME SMART_TYPE PACKAGEKEYS
+		unset SMART_COMPONENTS \
+			SMART_DISTRIBUTION \
+			SMART_NAME \
+			SMART_TYPE \
+			PACKAGEKEYS
+
 		SMART_CHANNEL="${variable##*_}"
-		SMART_BASEURL=$( eval echo \$$variable)
-		SMART_NAME=$( eval echo \$SLX_INST_SOURCE_NAME_${SMART_CHANNEL})
+		SMART_BASEURL=$( eval echo \$SLX_INST_SOURCE_BASEURL_${SMART_CHANNEL})
+		SMART_NAME=$( eval echo \$$variable)
 		test "${SMART_NAME}" || \
 			SMART_NAME="${SMART_CHANNEL}"
+
 		SMART_TYPE=$( eval echo \$SLX_INST_SOURCE_TYPE_${SMART_CHANNEL})
+		# Use default repo type if not available from settings config file
 		test "${SMART_TYPE}" || \
 			SMART_TYPE="${REPO_TYPE}"
+
+		# Has this config distribution, components
+		SMART_DISTRIBUTION=$( eval echo \$SLX_INST_SOURCE_DISTRIBUTION_${SMART_CHANNEL})
+		SMART_COMPONENTS=$( eval echo \$SLX_INST_SOURCE_COMPONENTS_${SMART_CHANNEL})
+		# Check if one of our global settings is still undefined
+		for setting in ${GLOBAL_SETTINGS}; do
+			test $( eval echo \$SMART_${setting}) || \
+				eval SMART_${setting}=\$SLX_INST_SOURCE_${setting}
+		done
+
+		# Prefix the config name for optional parameters
+		test "${SMART_DISTRIBUTION}" && \
+		SMART_DISTRIBUTION="distribution=\"${SMART_DISTRIBUTION}\""
+		test "${SMART_COMPONENTS}" && \
+			SMART_COMPONENTS="components=\"${SMART_COMPONENTS}\""
+
 		PACKAGEKEYS=$( eval echo \$SLX_INST_SOURCE_PACKAGEKEYS_${SMART_CHANNEL})
 
-		smart --data-dir="${SLX_METADATA_PATH}" \
+		eval smart --data-dir=\"${SLX_METADATA_PATH}\" \
 			channel \
-			--add "${SMART_CHANNEL}" \
-			name="${SMART_NAME}" \
-			type="${SMART_TYPE}" \
-			baseurl=${SMART_BASEURL} \
+			--add \"${SMART_CHANNEL}\" \
+			name=\"${SMART_NAME}\" \
+			type=\"${SMART_TYPE}\" \
+			baseurl=\"${SMART_BASEURL}\" \
+			${SMART_DISTRIBUTION} \
+			${SMART_COMPONENTS} \
 			-y
 
 		for packagekey in ${PACKAGEKEYS}; do
@@ -85,6 +110,13 @@ function slxossetup_rpm()
 			rpm --root="${SLX_STAGE1_PATH}" \
 				--import "${packagekey}"
 		done
+	done
+
+	for path in ${SLX_STAGE1_CREATE_DIR}; do
+		mkdir -p "${SLX_STAGE1_PATH}/${path}"
+	done
+	for file in ${SLX_STAGE1_CREATE_FILE}; do
+		touch "${SLX_STAGE1_PATH}/${file}"
 	done
 
 	smart --data-dir="${SLX_METADATA_PATH}" \
@@ -189,11 +221,21 @@ function slxossetup()
 			# Inform SUSE RPMs that we're performing an installation
 			export YAST_IS_RUNNING="instsys"
 			REPO_TYPE="rpm-md"
-			slxossetup_rpm
+			NAME_DEST_ROOT="rpm-root"
+			slxossetup_smart
 			;;
 		*fedora*)
 			REPO_TYPE="rpm-md"
-			slxossetup_rpm
+			NAME_DEST_ROOT="rpm-root"
+			slxossetup_smart
+			;;
+		*ubuntu*)
+			GLOBAL_SETTINGS="BASEURL COMPONENTS"
+			REPO_TYPE="apt-deb"
+			NAME_DEST_ROOT="deb-root"
+			SLX_STAGE1_CREATE_DIR="/var/lib/dpkg/updates"
+			SLX_STAGE1_CREATE_FILE="/var/lib/dpkg/available /var/lib/dpkg/status"
+			slxossetup_smart
 			;;
 		*) echo "$0: Error, unkown system ${SLX_SYSTEM_BASENAME}" ;;
 	esac
