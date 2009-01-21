@@ -71,6 +71,8 @@ sub initialize
 		+ /proc
 		- /opt/openslx
 		+ /opt
+		- /media/*
+		+ /media
 		- /mnt/*
 		+ /mnt
 		+ /lib64
