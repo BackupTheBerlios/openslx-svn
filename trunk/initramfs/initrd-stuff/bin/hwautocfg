@@ -292,8 +292,8 @@ waitfor /tmp/hwrun1 50000 || \
 # load ide drivers first, takes a while to initialize
 for driver in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
     triflex aec62xx cs5530 ns87415 sc1200 trm290 alim15x3 \
-    cy82c693 opti621 serverworks via82cxxx amd74xx pdc202xx_new \
-    siimage atiixp hpt34x pdc202xx_old sis5513; do
+    cy82c693 opti621 serverworks via82cxxx amd74xx pata_amd \
+    pdc202xx_new siimage atiixp hpt34x pdc202xx_old sis5513; do
   strinfile " ${driver}" /tmp/hwsetup.info && {
     ide="yes"
     modprobe ${MODPRV} ${driver} &

@@ -274,6 +274,8 @@ config_snmp
 # setup afs client stuff
 config_afs
 
+# setup nfsv4/krb stuff
+
 #############################################################################
 # NIS
 # setup nis configuration if needed
@@ -395,7 +397,8 @@ cp -a /usr/share/themes/displaymanager /usr/share/themes/Xdialog \
 # preparation of /tmp directory (partition 44, nfs scratch, ramdisk). there
 # might be the chance that we have a disk partition available, so wait for
 # completion of detection, setup process
-waitfor /tmp/tmpready 10000
+[ $DEBUGLEVEL -eq 8 ] && echo "** Waiting for /tmp completion at $(sysup)"
+waitfor /tmp/tmpready 40000
 [ $DEBUGLEVEL -eq 8 ] && echo "** Setup of /tmp completed at $(sysup)"
 # create some directories and correct permissions
 tmpisdisk=$(sed -n '/\/tmp/p' /tmp/fstab 2>/dev/null)
