@@ -53,7 +53,7 @@ for xml in *.xml;do
   image=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 
   # Test if correct defined
-  image_type=$(echo ${image}|sed 's/.*\.//')
+  image_type=$(echo ${image}|sed 's%.*\.%%')
   if [ "${image_type}" != "vmdk"  -a  "${image_type}" != "vdi" ]; then
     # TODO: Test
     echo "PANIC, image is not correct defined in ${xml}."
@@ -130,14 +130,14 @@ for xml in *.xml;do
    
   # get short image description
   short_description=$(grep "short_description param=\"" ${xml}.utf |
-          sed -e "s/&.*;/; /g" | awk -F "\"" '{print $2}')
+          sed -e "s%&.*;%; %g" | awk -F "\"" '{print $2}')
   # if ${short_description} not defined use ${image}
   short_description=${short_description:-"${image}"}
  
 
   # Get the long image description
   long_description=$(grep "long_description param=\"" ${xml}.utf |
-          sed -e "s/&.*;/; /g" | awk -F "\"" '{print $2}')
+          sed -e "s%&.*;%; %g" | awk -F "\"" '{print $2}')
 
 
   # Informations if we need for XDM
@@ -238,7 +238,7 @@ for xml in *.xml;do
 
       # virtualmachine executable form template
       sed -e "s/imagename=\"CHANGEIT\"/imagename=\"${image}\"/" \
-          -e "s/displayname=\"CHANGEIT\"/displayname=\"${short_description}\"/" \
+          -e "s%displayname=\"CHANGEIT\"%displayname=\"${short_description}\"%" \
           -e "s/vmostype=\"CHANGEIT\"/vmostype=\"${os}\"/" \
           -e "s/network=\"CHANGEIT\"/network=\"${network}\"/" \
       ${templatevmware} \
