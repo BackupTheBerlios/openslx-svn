@@ -7,7 +7,9 @@
 #
 # (c) 2006 - OpenSLX.com
 
-# the following should be filled via 'configure':
+# the following defaults should be filled via 'configure'
+# and each of them can be overriden by setting the environment variable
+# in the calling shell
 ifeq ($(USR_BIN_PATH),)
 	USR_BIN_PATH = /usr/bin
 endif
@@ -28,6 +30,12 @@ ifeq ($(SLX_PUBLIC_PATH),)
 endif
 ifeq ($(SLX_SHARE_PATH),)
 	SLX_SHARE_PATH = ${SLX_BASE_PATH}/share
+endif
+ifeq ($(SLX_TEMP_BASE_PATH),)
+	SLX_TEMP_BASE_PATH = /tmp
+endif
+ifeq ($(SLX_TFTPBOOT_PATH),)
+	SLX_TFTPBOOT_PATH = ${SLX_PUBLIC_PATH}/tftpboot
 endif
 ifeq ($(VMWARE_PATH),)
 	VMWARE_PATH = ${SLX_BASE_PATH}/vmware
@@ -74,7 +82,8 @@ install:
 	       -p $(SLX_PRIVATE_PATH)/config/default/rootfs \
 	       -p $(SLX_PRIVATE_PATH)/db \
 	       -p $(SLX_PRIVATE_PATH)/stage1 \
-	       -p $(SLX_PUBLIC_PATH)/tftpboot \
+	       -p $(SLX_PUBLIC_PATH) \
+	       -p $(SLX_TFTPBOOT_PATH) \
 	       -p $(SLX_SHARE_PATH)/themes
 	@cp initramfs/{mkdxsinitrd,slxmkramfs} $(SLX_BIN_PATH)
 	@chmod u+x $(SLX_BIN_PATH)/{mkdxsinitrd,slxmkramfs}
@@ -102,11 +111,12 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 	  > $(SLX_PRIVATE_PATH)/config/default/initramfs/postinit.local
 	@chmod u+x $(SLX_PRIVATE_PATH)/config/default/initramfs/*init.local
 	@echo -e "# default setup for openslx on this specific system\
-\nopenslx-basepath = ${SLX_BASE_PATH}\
-\nconfig-path = ${SLX_CONFIG_PATH}\
-\nprivate-path = ${SLX_PRIVATE_PATH}\
-\npublic-path = ${SLX_PUBLIC_PATH}\
-\nshare-path = ${SLX_SHARE_PATH}\n" \
+\nSLX_BASE_PATH=${SLX_BASE_PATH}\
+\nSLX_PRIVATE_PATH=${SLX_PRIVATE_PATH}\
+\nSLX_PUBLIC_PATH=${SLX_PUBLIC_PATH}\
+\nSLX_SHARE_PATH=${SLX_SHARE_PATH}\
+\nSLX_TEMP_BASE_PATH=${SLX_TEMP_BASE_PATH}\
+\nSLX_TFTPBOOT_PATH=${SLX_TFTPBOOT_PATH}\n" \
 	  > $(SLX_CONFIG_PATH)/settings.default
 	@echo -e "# local setup for openslx (overrides settings.default)\n" \
 	  > $(SLX_CONFIG_PATH)/settings.local
