@@ -496,7 +496,6 @@ if [ -n "${use_tpm}" ] ; then
   MISCMODULES="${MISCMODULES} tpm"
 
   ########## platform-independent stuff ##########
-  # TODO: fix SLX_TPM_PATH stuff
   SLX_TPM_PATH="$SLX_SHARE_PATH/tpm"
   if [ ! -d "$SLX_TPM_PATH" ] ; then
         echo "ERROR: can't find platform-independent tpm-files: $SLX_TPM_PATH"
