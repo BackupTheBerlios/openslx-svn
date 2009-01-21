@@ -1,0 +1,141 @@
+#! /usr/bin/perl
+#
+# slxos-export
+#
+# (c) 2006 - OpenSLX.com
+#
+# Oliver Tappe <ot@openslx.com>
+#
+use strict;
+
+my $abstract = q[
+slxos-export
+    This script exports an OpenSLX-stage1-system (a.k.a. vendor-OS) into
+    an OpenSLX-stage2-system (a.k.a. export), which can be an NFS-export,
+	an NBD-image containing a squash-fs.
+];
+
+use Getopt::Long qw(:config pass_through);
+use Pod::Usage;
+
+# add the folder this script lives in and the lib-folder to perl's
+# search path for modules:
+use FindBin;
+use lib "$FindBin::RealBin";
+use lib "$FindBin::RealBin/../lib";
+
+use lib "$FindBin::RealBin/../config-db";
+	# development path to config-db
+
+use OpenSLX::Basics;
+use OpenSLX::OSExport::Engine;
+
+my (
+	$helpReq,
+	$manReq,
+	$listReq,
+	$verbose,
+	$versionReq,
+);
+
+GetOptions(
+	'help|?' => \$helpReq,
+	'list' => \$listReq,
+	'man' => \$manReq,
+	'verbose' => \$verbose,
+	'version' => \$versionReq,
+) or pod2usage(2);
+pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
+pod2usage(-verbose => 2) if $manReq;
+if ($versionReq) {
+	system('slxversion');
+	exit 1;
+}
+
+openslxInit();
+
+if ($listReq) {
+	print _tr("List of supported export types:\n\t");
+	print join("\n\t", keys %supportedExportTypes)."\n";
+	exit 1;
+}
+
+if (scalar(@ARGV) != 2) {
+	print STDERR _tr("You need to specify exactly one vendor-os-name and one export-type!\n");
+	pod2usage(2);
+}
+my $vendorOSName = $ARGV[0];
+my $exportType = $ARGV[1];
+
+# we chdir into the script's folder such that all relative paths have
+# a known starting point:
+chdir($FindBin::RealBin)
+	or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+
+
+# create ossetup-engine for given distro and start it:
+my $engine = OpenSLX::OSExport::Engine->new;
+$engine->initialize($vendorOSName, $exportType);
+if (!-e $engine->{'vendor-os-path'}) {
+	die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
+			$engine->{'vendor-os-path'});
+}
+$engine->exportVendorOS();
+
+__END__
+
+=head1 NAME
+
+slxos-export - OpenSLX-script to export a stage1-system (a.k.a. vendor-OS) into
+a stage2-system (a.k.a. export).
+The export itself can be done via several different types, e.g. via NFS or
+via a squashfs inside of a network block device.
+
+=head1 SYNOPSIS
+
+slxos-export [options] <vendor-os-name> <export-type>
+
+  Options:
+      --help                   brief help message
+      --list                   show available export-types
+      --man                    show full documentation
+      --version                show version
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--help>
+
+Prints a brief help message and exits.
+
+=item B<--man>
+
+Prints the manual page and exits.
+
+=item B<--selection=<string>>
+
+Many distributions offer several different package selections for
+installation. With this option you can specify which of these you
+would like to use.
+
+If you pass an unknown selection, you will see a list of the selections
+that are available.
+
+In clone-mode, the selection specifies the name by which the cloned system
+will be known (exact name will be '<distro>-<selection>' instead of
+'<distro>-cloned-from-<rsync-source>').
+
+=item B<--source=<string>>
+
+When cloning a vendor-OS, slxos-export needs to know where to fetch
+the existing OS-files from. You can specify the rsync-uri with this
+option.
+
+=item B<--version>
+
+Prints the version and exits.
+
+=back
+
+=cut
