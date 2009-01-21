@@ -9,6 +9,12 @@ $VERSION = 1.01;		# API-version . implementation-version
 ### It provides a default implementation for every method, such that
 ### each DB-specific implementation needs to override only the methods
 ### that require a different implementation than the one provided here.
+###
+### N.B.: In case you ask yourself why none of the SQL-statements in this
+###       file make use of SQL bind params (?), the answer is that at least
+###       one DBD-driver didn't like them at all. As the performance gains
+###       from bound params are not really necessary here, we simply do
+###       not use them.
 ################################################################################
 
 use strict;
@@ -228,6 +234,12 @@ sub fetchAllGroupIDsOfClient
 
 ################################################################################
 ### data manipulation functions
+###
+### N.B.: In case you ask yourself why none of the SQL-statements in
+###       the following functions make use of SQL-placeholders (?), the answer
+###       is that at least one DBD-driver didn't like them at all.
+###       As the improved performance gained from using placeholders is not
+###       really necessary here, we simply do not use them.
 ################################################################################
 sub _doInsert
 {
@@ -252,17 +264,17 @@ sub _doInsert
 	}
 	my @ids;
 	foreach my $valRow (@$valRows) {
+		if (!defined $valRow->{id} && !$ignoreIDs && $needToGenerateIDs) {
+			# let DB-backend pre-specify ID, as current DB can't generate IDs:
+			$valRow->{id} = $self->generateNextIdForTable($table);
+			vlog 3, "generated id for <$table> is <$valRow->{id}>";
+		}
 		my $cols = join ', ', keys %$valRow;
 		my $values = join ', ', map { $self->quote($valRow->{$_}) } keys %$valRow;
 		my $sql = "INSERT INTO $table ( $cols ) VALUES ( $values )";
 		my $sth = $dbh->prepare($sql)
 			or confess _tr(q[Can't insert into table <%s> (%s)], $table,
 						$dbh->errstr);
-		if (!defined $valRow->{id} && !$ignoreIDs && $needToGenerateIDs) {
-			# let DB-backend pre-specify ID, as current DB can't generate IDs:
-			$valRow->{id} = $self->generateNextIdForTable($table);
-			vlog 3, "generated id for <$table> is <$valRow->{id}>";
-		}
 		vlog 3, $sql;
 		$sth->execute()
 			or confess _tr(q[Can't insert into table <%s> (%s)], $table,
