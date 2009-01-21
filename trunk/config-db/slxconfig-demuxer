@@ -497,7 +497,7 @@ sub generateInitialRamFS
 	# pass in system name:
 	$cmd .= "-S $info->{name} ";
 
-	# use theme 'openslx':
+	# pass on theme, if any
 	my $theme = $attrs->{'theme::name'} || '';
 	if (length $theme) {
 		$cmd .= "-s $theme ";
