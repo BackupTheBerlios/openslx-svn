@@ -132,6 +132,7 @@ supported."; \
 	  -i $(SLX_BIN_PATH)/slxmkramfs
 
 	@# copy all PERL-scripts from config-db and their required modules:
+	@cp bin/slx* $(SLX_BIN_PATH)/
 	@cp config-db/slx* $(SLX_BIN_PATH)/
 	@tar --exclude=.svn -cp -C lib OpenSLX | \
 	  tar -xp -C $(SLX_BASE_PATH)/lib
