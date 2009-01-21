@@ -196,6 +196,12 @@ sub cloneVendorOS
 	my $self = shift;
 	my $source = shift;
 
+	if (substr($source, -1, 1) ne '/') {
+		# make sure source path ends with a slash, as otherwise, the
+		# last folder would be copied (but we only want its contents).
+		$source .= '/';
+	}
+
 	$self->{'clone-source'} = $source;
 	my $lastCloneSource;
 	my $cloneInfoFile = "$self->{'vendor-os-path'}/.openslx-clone-info";
@@ -368,7 +374,10 @@ sub readDistroInfo
 	# merge user-provided configuration distro defaults...
 	my %repository = %{$self->{distro}->{config}->{repository}};
 	my %selection = %{$self->{distro}->{config}->{selection}};
-	my %excludes = %{$self->{distro}->{config}->{excludes}};
+	my %excludes = 
+		defined $self->{distro}->{config}->{excludes}
+			? %{$self->{distro}->{config}->{excludes}}
+			: ();
 	my $package_subdir = $self->{distro}->{config}->{'package-subdir'};
 	my $prereq_packages = $self->{distro}->{config}->{'prereq-packages'};
 	my $bootstrap_prereq_packages
@@ -896,7 +905,10 @@ sub clone_fetchSource
 				$self->{'vendor-os-path'});
 	my $excludeIncludeList = $self->clone_determineIncludeExcludeList();
 	vlog 1, "using exclude-include-filter:\n$excludeIncludeList\n";
-	open(RSYNC, "| rsync -av --delete --exclude-from=- $source $self->{'vendor-os-path'}")
+	my $rsyncCmd 
+		= "rsync -av --delete --exclude-from=- $source $self->{'vendor-os-path'}";
+	vlog 2, "executing: $rsyncCmd\n";
+	open(RSYNC, "| $rsyncCmd")
 		or die _tr("unable to start rsync for source '%s', giving up! (%s)\n",
 				   $source, $!);
 	print RSYNC $excludeIncludeList;
