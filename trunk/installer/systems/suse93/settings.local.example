@@ -3,7 +3,7 @@
 # It's also possible to define addditional values here.
 
 # Use a local installation source.
-SLX_INST_SOURCE_BASEURL_suse93="http://ftp-1.gwdg.de/pub/suse/install/9.3"
+SLX_INST_SOURCE_BASEURL="http://ftp-1.gwdg.de/pub/suse/install/9.3"
 SLX_INST_SOURCE_BASEURL_suse93update="http://ftp-1.gwdg.de/pub/suse/update/9.3"
 
 # Add more packages.

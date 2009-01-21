@@ -61,7 +61,7 @@ for file in ${SLX_BASE_PREREQ_PACKAGES}; do
 	esac
 done
 
-for file in ${SLX_BASE_BOOTSTRAP_PACKAGES}; do
+for file in ${SLX_BASE_BOOTSTRAP_PACKAGES} ${SLX_BASE_BOOTSTRAP_PREREQ_PACKAGES}; do
 	download_file
 done
 

@@ -144,6 +144,7 @@ function setup_busybox_stage1_config()
 
 	for key in \
 		SLX_BASE_BOOTSTRAP_PACKAGES \
+		SLX_BASE_BOOTSTRAP_PREREQ_PACKAGES \
 		SLX_BASE_PREREQ_PACKAGES \
 		SLX_BOOTSTRAP_FAIL_WGET \
 		SLX_STAGE1_FINAL_PATH \
@@ -189,6 +190,19 @@ function setup_bootstrap_1b()
 	fi
 }
 
+function create_package_list()
+{
+	local file packagelist
+	packagelist=$@
+
+	for file in ${packagelist}; do
+		test "${SLX_BOOTSTRAP_FAIL_WGET}" = "no" -a \
+			! -f ${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/${file##*/} && \
+			continue
+		echo -n "${file##*/} "
+	done
+}
+
 function setup_bootstrap_1c()
 {
 	local dir file packagelist packagekey rc
@@ -223,15 +237,18 @@ function setup_bootstrap_1c()
 				chroot "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}" \
 					/bin/rpm --root="${SLX_STAGE1_FINAL_PATH}" --import "${packagekey}"
 			done
-			for file in ${SLX_BASE_PREREQ_PACKAGES} ${SLX_BASE_BOOTSTRAP_PACKAGES}; do
-				test "${SLX_BOOTSTRAP_FAIL_WGET}" = "no" -a \
-					! -f ${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/${file##*/} && \
-					continue
-				packagelist="${packagelist} ${file##*/}"
-			done
+			packagelist=$( create_package_list ${SLX_BASE_BOOTSTRAP_PREREQ_PACKAGES})
+			if test "${packagelist}"; then
+				chroot "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}" \
+					/bin/rpm --root="${SLX_STAGE1_FINAL_PATH}" \
+						-ivh --nodeps --noscripts --force \
+						${packagelist}
+				# Remove RPM DB; else the following call to rpm fails.
+				rm -rf "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/${SLX_STAGE1_FINAL_PATH}/var/lib/rpm"
+			fi
+			packagelist=$( create_package_list ${SLX_BASE_PREREQ_PACKAGES} ${SLX_BASE_BOOTSTRAP_PACKAGES} ${SLX_BASE_BOOTSTRAP_PREREQ_PACKAGES})
 			test -z "{packagelist}" && \
 				ErrorMsg 1 "Packagelist to bootstrap from ${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH} is empty."
-
 			chroot "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}" \
 				/bin/rpm --root="${SLX_STAGE1_FINAL_PATH}" -ivh ${packagelist}
 			rc=$?
