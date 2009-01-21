@@ -87,10 +87,10 @@ sub _doSelect
 	vlog(3, _trim($sql));
 	my $sth = $dbh->prepare($sql)
 	  or
-	  confess _tr(q[Can't prepare SQL-statement <%s> (%s)], $sql, $dbh->errstr);
+	  croak _tr(q[Can't prepare SQL-statement <%s> (%s)], $sql, $dbh->errstr);
 	$sth->execute()
 	  or
-	  confess _tr(q[Can't execute SQL-statement <%s> (%s)], $sql, $dbh->errstr);
+	  croak _tr(q[Can't execute SQL-statement <%s> (%s)], $sql, $dbh->errstr);
 	my (@vals, $row);
 	while ($row = $sth->fetchrow_hashref()) {
 
@@ -385,10 +385,10 @@ sub _doInsert
 		my $sql = "INSERT INTO $table ( $cols ) VALUES ( $values )";
 		vlog(3, $sql);
 		my $sth = $dbh->prepare($sql)
-		  or confess _tr(q[Can't insert into table <%s> (%s)], $table,
+		  or croak _tr(q[Can't insert into table <%s> (%s)], $table,
 			$dbh->errstr);
 		$sth->execute()
-		  or confess _tr(q[Can't insert into table <%s> (%s)], $table,
+		  or croak _tr(q[Can't insert into table <%s> (%s)], $table,
 			$dbh->errstr);
 		if (!$ignoreIDs && !defined $valRow->{id}) {
 			# id has not been pre-specified, we need to fetch it from DB:
@@ -422,10 +422,10 @@ sub _doDelete
 		}
 		vlog(3, $sql);
 		my $sth = $dbh->prepare($sql)
-		  or confess _tr(q[Can't delete from table <%s> (%s)], $table,
+		  or croak _tr(q[Can't delete from table <%s> (%s)], $table,
 			$dbh->errstr);
 		$sth->execute()
-		  or confess _tr(q[Can't delete from table <%s> (%s)], $table,
+		  or croak _tr(q[Can't delete from table <%s> (%s)], $table,
 			$dbh->errstr);
 	}
 	return 1;
@@ -459,9 +459,9 @@ sub _doUpdate
 		}
 		vlog(3, $sql);
 		my $sth = $dbh->prepare($sql)
-		  or confess _tr(q[Can't update table <%s> (%s)], $table, $dbh->errstr);
+		  or croak _tr(q[Can't update table <%s> (%s)], $table, $dbh->errstr);
 		$sth->execute()
-		  or confess _tr(q[Can't update table <%s> (%s)], $table, $dbh->errstr);
+		  or croak _tr(q[Can't update table <%s> (%s)], $table, $dbh->errstr);
 	}
 	return 1;
 }
@@ -746,7 +746,7 @@ sub _convertColDescrsToDBNativeString
 		# convert each column description into database native format
 		# (e.g. convert 'name:s.45' to 'name char(45)'):
 		if (!m[^\s*(\S+?)\s*:\s*(\S+?)\s*$]) {
-			confess _tr('UnknownDbSchemaColumnDescr', $_);
+			croak _tr('UnknownDbSchemaColumnDescr', $_);
 		}
 		"$1 " . $self->schemaConvertTypeDescrToNative($2);
 	} @$colDescrs;
@@ -762,7 +762,7 @@ sub _convertColDescrsToColNames
 		# convert each column description into database native format
 		# (e.g. convert 'name:s.45' to 'name char(45)'):
 		if (!m[^\s*(\S+?)\s*:.+$]) {
-			confess _tr('UnknownDbSchemaColumnDescr', $_);
+			croak _tr('UnknownDbSchemaColumnDescr', $_);
 		}
 		$1;
 	} @$colDescrs;
@@ -807,7 +807,7 @@ sub schemaConvertTypeDescrToNative
 	} elsif ($typeDescr =~ m[^s\.(\d+)$]i) {
 		return "varchar($1)";
 	} else {
-		confess _tr('UnknownDbSchemaTypeDescr', $typeDescr);
+		croak _tr('UnknownDbSchemaTypeDescr', $typeDescr);
 	}
 }
 
@@ -825,7 +825,7 @@ sub schemaAddTable
 	my $sql            = "CREATE TABLE $table ($colDescrString)";
 	vlog(3, $sql);
 	$dbh->do($sql)
-	  or confess _tr(q[Can't create table <%s> (%s)], $table, $dbh->errstr);
+	  or croak _tr(q[Can't create table <%s> (%s)], $table, $dbh->errstr);
 	if (defined $initialVals) {
 		my $ignoreIDs = ($colDescrString !~ m[\bid\b]);
 		# don't care about IDs if there's no 'id' column in this table
@@ -845,7 +845,7 @@ sub schemaDropTable
 	my $sql = "DROP TABLE $table";
 	vlog(3, $sql);
 	$dbh->do($sql)
-	  or confess _tr(q[Can't drop table <%s> (%s)], $table, $dbh->errstr);
+	  or croak _tr(q[Can't drop table <%s> (%s)], $table, $dbh->errstr);
 	return;
 }
 
@@ -870,14 +870,14 @@ sub schemaRenameTable
 	my $sql            = "CREATE TABLE $newTable ($colDescrString)";
 	vlog(3, $sql);
 	$dbh->do($sql)
-	  or confess _tr(q[Can't create table <%s> (%s)], $oldTable, $dbh->errstr);
+	  or croak _tr(q[Can't create table <%s> (%s)], $oldTable, $dbh->errstr);
 	my $colNamesString = $self->_convertColDescrsToColNamesString($colDescrs);
 	my @dataRows = $self->_doSelect("SELECT $colNamesString FROM $oldTable");
 	$self->_doInsert($newTable, \@dataRows);
 	$sql = "DROP TABLE $oldTable";
 	vlog(3, $sql);
 	$dbh->do($sql)
-	  or confess _tr(q[Can't drop table <%s> (%s)], $oldTable, $dbh->errstr);
+	  or croak _tr(q[Can't drop table <%s> (%s)], $oldTable, $dbh->errstr);
 	return;
 }
 

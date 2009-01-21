@@ -269,7 +269,7 @@ OpenSLX::MetaDB::Base - the base class for all MetaDB drivers
 
   my $superVersion = $OpenSLX::MetaDB::Base::VERSION;
   if ($superVersion < $VERSION) {
-      confess _tr('Unable to load module <%s> (Version <%s> required)',
+      croak _tr('Unable to load module <%s> (Version <%s> required)',
                   'OpenSLX::MetaDB::Base', $VERSION);
   }
 

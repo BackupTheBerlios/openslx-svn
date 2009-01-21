@@ -18,7 +18,6 @@ use warnings;
 
 our $VERSION = 1.01;		# API-version . implementation-version
 
-use Carp qw(confess);
 use File::Basename;
 use OpenSLX::Basics;
 

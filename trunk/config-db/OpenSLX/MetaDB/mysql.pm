@@ -68,8 +68,9 @@ sub schemaConvertTypeDescrToNative
 	} elsif ($typeDescr =~ m[^s\.(\d+)$]i) {
 		return "varchar($1)";
 	} else {
-		confess _tr('UnknownDbSchemaTypeDescr', $typeDescr);
+		croak _tr('UnknownDbSchemaTypeDescr', $typeDescr);
 	}
+	return;
 }
 
 sub schemaRenameTable
@@ -85,7 +86,7 @@ sub schemaRenameTable
 	my $sql = "ALTER TABLE $oldTable RENAME TO $newTable";
 	vlog(3, $sql);
 	$dbh->do($sql)
-	  or confess _tr(q[Can't rename table <%s> (%s)], $oldTable, $dbh->errstr);
+	  or croak _tr(q[Can't rename table <%s> (%s)], $oldTable, $dbh->errstr);
 	return;
 }
 
@@ -107,7 +108,7 @@ sub schemaAddColumns
 	my $sql = "ALTER TABLE $table $addClause";
 	vlog(3, $sql);
 	$dbh->do($sql)
-	  or confess _tr(q[Can't add columns to table <%s> (%s)], $table,
+	  or croak _tr(q[Can't add columns to table <%s> (%s)], $table,
 		$dbh->errstr);
 	# if default values have been provided, we apply them now:
 	if (defined $newColDefaultVals) {
@@ -133,7 +134,7 @@ sub schemaDropColumns
 	my $sql = "ALTER TABLE $table $dropClause";
 	vlog(3, $sql);
 	$dbh->do($sql)
-	  or confess _tr(q[Can't drop columns from table <%s> (%s)], $table,
+	  or croak _tr(q[Can't drop columns from table <%s> (%s)], $table,
 		$dbh->errstr);
 	return;
 }
@@ -158,7 +159,7 @@ sub schemaChangeColumns
 	my $sql = "ALTER TABLE $table $changeClause";
 	vlog(3, $sql);
 	$dbh->do($sql)
-	  or confess _tr(q[Can't change columns in table <%s> (%s)], $table,
+	  or croak _tr(q[Can't change columns in table <%s> (%s)], $table,
 		$dbh->errstr);
 	return;
 }

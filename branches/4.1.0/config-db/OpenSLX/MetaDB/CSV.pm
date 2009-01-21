@@ -75,10 +75,10 @@ sub start_transaction
 	my $dbh      = $self->{'dbh'};
 	my $lockFile = "$dbh->{'f_dir'}/transaction-lock";
 	sysopen(TRANSFILE, $lockFile, O_RDWR | O_CREAT)
-	  or confess _tr(q[Can't open transaction-file '%s' (%s)], $lockFile, $!);
+	  or croak _tr(q[Can't open transaction-file '%s' (%s)], $lockFile, $!);
 	$self->{"transaction-lock"} = *TRANSFILE;
 	flock(TRANSFILE, LOCK_EX)
-	  or confess _tr(q[Can't lock transaction-file '%s' (%s)], $lockFile, $!);
+	  or croak _tr(q[Can't lock transaction-file '%s' (%s)], $lockFile, $!);
 	return;
 }
 
@@ -87,7 +87,7 @@ sub commit_transaction
 	my $self = shift;
 
 	if (!defined $self->{"transaction-lock"}) {
-		confess _tr(q[no open transaction-lock found!]);
+		croak _tr(q[no open transaction-lock found!]);
 	}
 	close($self->{"transaction-lock"});
 	$self->{"transaction-lock"} = undef;
@@ -99,7 +99,7 @@ sub rollback_transaction
 	my $self = shift;
 
 	if (!defined $self->{"transaction-lock"}) {
-		confess _tr(q[no open transaction-lock found!]);
+		croak _tr(q[no open transaction-lock found!]);
 	}
 	close($self->{"transaction-lock"});
 	$self->{"transaction-lock"} = undef;
@@ -117,9 +117,9 @@ sub generateNextIdForTable
 	my $dbh    = $self->{'dbh'};
 	my $idFile = "$dbh->{'f_dir'}/id-$table";
 	sysopen(IDFILE, $idFile, O_RDWR | O_CREAT)
-	  or confess _tr(q[Can't open ID-file '%s' (%s)], $idFile, $!);
+	  or croak _tr(q[Can't open ID-file '%s' (%s)], $idFile, $!);
 	flock(IDFILE, LOCK_EX)
-	  or confess _tr(q[Can't lock ID-file '%s' (%s)], $idFile, $!);
+	  or croak _tr(q[Can't lock ID-file '%s' (%s)], $idFile, $!);
 	my $nextID = <IDFILE>;
 	if (!$nextID) {
 		# no ID information available, we protect against users having
@@ -134,11 +134,11 @@ sub generateNextIdForTable
 		$nextID = 1 + $maxID;
 	}
 	seek(IDFILE, 0, 0)
-	  or confess _tr(q[Can't to seek ID-file '%s' (%s)], $idFile, $!);
+	  or croak _tr(q[Can't to seek ID-file '%s' (%s)], $idFile, $!);
 	truncate(IDFILE, 0)
-	  or confess _tr(q[Can't truncate ID-file '%s' (%s)], $idFile, $!);
+	  or croak _tr(q[Can't truncate ID-file '%s' (%s)], $idFile, $!);
 	print IDFILE $nextID + 1
-	  or confess _tr(q[Can't update ID-file '%s' (%s)], $idFile, $!);
+	  or croak _tr(q[Can't update ID-file '%s' (%s)], $idFile, $!);
 	close(IDFILE);
 
 	return $nextID;
