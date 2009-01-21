@@ -437,5 +437,7 @@ mount -n --move /dev /mnt/dev
 killall -9 udevd 2>/dev/null
 umount -n /proc
 [ -n "${UNIONFS}" ] && mount -n --move /root /mnt/mnt 
+# unset old environment variables
+unset debug date initrd ip nfsroot vci
 # new style of pivoting
 exec run-init -c dev/console /mnt /sbin/init || error "$init_runinit"
