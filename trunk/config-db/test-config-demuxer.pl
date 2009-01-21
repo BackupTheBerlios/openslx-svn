@@ -13,21 +13,20 @@ my $openslxDB = connectConfigDB();
 
 addVendorOS($openslxDB, {
 		'name' => "suse-10-minimal",
-		'descr' => "SuSE 9.3 minimale Installation",
-		'path' => "suse10",
+		'comment' => "SuSE 9.3 minimale Installation",
+		'path' => "suse-10.0",
 			# relative to /var/lib/openslx/stage1
 });
 
 addVendorOS($openslxDB, {
 		'name' => "suse-10-KDE",
-		'descr' => "SuSE 9.3 grafische Installation mit KDE",
-		'path' => "suse10",
+		'comment' => "SuSE 9.3 grafische Installation mit KDE",
+		'path' => "suse-10.0",
 });
 
 addVendorOS($openslxDB, {
 		'name' => "debian-31",
-		'descr' => "Debian 3.1 Default-Installation",
-#		'path' => "/var/lib/openslx/stage1/suse10",
+		'comment' => "Debian 3.1 Default-Installation",
 });
 
 my @systems;
@@ -35,9 +34,11 @@ foreach my $id (1..10) {
 	push @systems, {
 		'name' => "name of $id",
 		'label' => "label of $id",
-		'descr' => "descr of $id",
+		'comment' => "comment of $id",
 		'vendor_os_id' => 1 + $id % 3,
-		'initramfs' => "boot/initrd-2.6.13-15-default",
+		'ramfs_flags' => $id,
+		'ramfs_nicmods' => ($id % 3) ? 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32' : '',
+		'ramfs_fsmods' => ($id % 3)==2 ? 'nbd ext3 nfs reiserfs xfs' : '',
 		'kernel' => "boot/vmlinuz-2.6.13-15-default",
 		'kernel_params' => "splash=silent",
 	};
@@ -59,7 +60,7 @@ my $metaDB = $openslxDB->{'meta-db'};
 my $colDescrs = [
 	'id:pk',
 	'name:s.30',
-	'descr:s.1024',
+	'comment:s.1024',
 	'counter:i',
 	'hidden:b',
 	'dropped1:b',
@@ -68,7 +69,7 @@ my $colDescrs = [
 my $initialVals = [
 	{
 		'name' => '123456789012345678901234567890xxx',
-		'descr' => 'descr-value-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+		'comment' => 'comment-value-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
 		'counter' => 34567,
 		'hidden' => 1,
 		'dropped1' => 0,
@@ -76,7 +77,7 @@ my $initialVals = [
 	},
 	{
 		'name' => 'name',
-		'descr' => q[from_äöüß#'"$...\to_here],
+		'comment' => q[from_äöüß#'"$...\to_here],
 		'counter' => -1,
 		'hidden' => 0,
 		'dropped1' => 1,
@@ -111,7 +112,7 @@ $colDescrs = [
 	map {
 		if ($_ =~ m[counter]) {
 			"count:i";
-		} elsif ($_ =~ m[descr]) {
+		} elsif ($_ =~ m[comment]) {
 			"description:s.30";
 		} else {
 			$_
@@ -120,7 +121,7 @@ $colDescrs = [
 ];
 $metaDB->schemaChangeColumns('test2',
 							 { 'counter' => 'count:i',
-							   'descr' => 'description:s.30' },
+							   'comment' => 'description:s.30' },
 							 $colDescrs);
 
 my @rows = $metaDB->_doSelect("SELECT * FROM test2");
@@ -179,14 +180,14 @@ addClientIDsToSystem($openslxDB, 6, [$clientG01ID, $clientG02ID, $clientG03ID,	$
 
 my $group1ID = addGroup($openslxDB, {
 		'name' => "Gell-PCs",
-		'descr' => "Gell-Threemansion PCs from 2002",
+		'comment' => "Gell-Threemansion PCs from 2002",
 		'attr_hw_mouse' => 'serial',
 });
 addClientIDsToGroup($openslxDB, $group1ID, [$clientG01ID, $clientF02ID, $clientG03ID]);
 
 my $group2ID = addGroup($openslxDB, {
 		'name' => "Teacher-PCs",
-		'descr' => "all PCs sitting on teacher's desks",
+		'comment' => "all PCs sitting on teacher's desks",
 		'attr_hw_monitor' => '1600x1200',
 });
 addClientIDsToGroup($openslxDB, $group2ID, [$clientG01ID, $clientF01ID]);
@@ -194,7 +195,7 @@ addSystemIDsToGroup($openslxDB, $group2ID, [2, 3]);
 
 my $group3ID = addGroup($openslxDB, {
 		'name' => "PCs in room G",
-		'descr' => "all PCs of room 234",
+		'comment' => "all PCs of room 234",
 });
 addClientIDsToGroup($openslxDB, $group3ID, [$clientG01ID, $clientG02ID, $clientG03ID, $clientG04ID]);
 
