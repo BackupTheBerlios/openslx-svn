@@ -2,11 +2,11 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 31-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 02-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.0.1d
+# Version:      0.0.2a
 
 # distro specific stuff to initialize
 preinit () {
@@ -37,8 +37,7 @@ if [ -x /bin/udevd ] ; then
   export UDEVD_EVENT_TIMEOUT=1
   echo "" > /proc/sys/kernel/hotplug
   udevd &
-else error "  udev daemon is not available. Some devices might not \
-apprear." nonfatal
+else error $df_errudev nonfatal
 fi
 }
 
@@ -116,8 +115,7 @@ if [ "x$start_cron" = "xyes" ] ; then
   if [ -f /mnt/etc/init.d/cron ] ; then
     :
   else
-    error "  The cron start script seems not to be installed, so requesting \
-\n  the start of cron services make no sense." nonfatal
+    error $df_errcron nonfatal
   fi
 fi
 }
@@ -128,8 +126,7 @@ if [ "x$start_syslog" = "xyes" ] ; then
   if [ -f /mnt/etc/init.d/syslog-ng ] ; then
     rllinker syslog-ng
   else
-    error "  The syslog start script does not seem to be installed, so \
-requesting\n  the start of service does not make much sense." nonfatal
+    error $df_errsysl nonfatal
   fi
 fi
 }
@@ -140,8 +137,7 @@ if [ "x$start_sshd" = "xyes" ] ; then
   if [ -f /mnt/etc/init.d/sshd ] ; then
     rllinker "sshd"
   else
-    error "  The sshd start script does not seem to be installed, so \
-requesting\n  the start of service does not make much sense." nonfatal
+    error $df_errsshd nonfatal
   fi
 fi
 }
@@ -244,7 +240,7 @@ variable \${automnt_dir} appropriately in\n  machine-setup file." nonfatal
     config_portmap
   fi
 else
-  error "  Automounter seems not to be installed" nonfatal
+  error $df_erramnt nonfatal
 fi
 }
 

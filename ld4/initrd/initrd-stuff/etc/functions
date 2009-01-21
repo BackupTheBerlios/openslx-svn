@@ -41,7 +41,7 @@ trigger_device_events () {
 #######################################################################
 # produce error message and if $2 is empty run (debug) shell 
 error () {
-local message="An error occured during execution of $0 script:\n\n$1\n"
+local e_msg=$1
 # check if LOGFILE is really writeable
 if [ -n "${LOGFILE}" ] ; then
   [ "${LOGFILE}" != "/dev/null" ] && \
@@ -50,14 +50,12 @@ else LOGFILE="/dev/null"
 fi
 # if nonfatal error else fatal error message and shell
 if [ -n "$2" ] ; then
-  [ "$DEBUGLEVEL" -ge 1 ] && \
-    echo -e "$message  This error is not fatal - continuing ...\n" \
+  [ "$DEBUGLEVEL" -ge 1 ] && echo -e "$error_msg $e_msg $error_nfe" \
       >> ${LOGFILE} 
-  [ "$DEBUGLEVEL" -gt 1 ] && \
-    echo -e "$message  This error is not fatal - continuing ...\n"
+  [ "$DEBUGLEVEL" -gt 1 ] && echo -e "$error_msg $e_msg $error_nfe"
   [ "$DEBUGLEVEL" -gt 2 ] && usleep 20
 else
-  echo -e "$message  Running shell for debugging purposes now ...\n"
+  echo -e "$error_msg $e_msg $error_shell"
   /bin/sh
 fi
 }
@@ -82,7 +80,7 @@ local msg=$2
 if [ -f $modpath ] ; then
   module=${module%.*}
   modprobe ${MODPRV} ${module#*.} || \
-    echo "Failed to load module '$module'. $msg"
+    echo "$error_modload '$module'. $msg"
 fi
 }
 #######################################################################
@@ -136,9 +134,7 @@ case $ipcfg in
     fi
   ;;
   none)
-    error "  No tool for local IP configuration found. You should at \
-least add\n  one of the following programs to your ramdisk: ip \
-ipconfig\n  ifconfig."
+    error $error_iptool
   ;;
 esac
 }
@@ -147,30 +143,22 @@ esac
 nfsmnt ()
 {
 local nfsroot=$1
-errmsg="  Mount of root filesystem via NFS was requested via kernel command \
-line\nbut failed. There might be the following reasons for that:\n\
-* No nfs.ko module could be loaded and no NFS support was present in the\n\
-running kernel - see error messages above\n\
-* You tried to mount from wrong server or path ($nfsroot)\n\
-* No NFS server is running or you do not have permissions"
 for mnt in nfsmount mount none; do
   test -x /bin/$mnt && break;
 done
 [ -f /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko ] && \
-  loadmod /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko \
-    "needed for mounting rootfs"
+  loadmod /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko $error_modnfs
 case $mnt in
   nfsmount)
-    nfsmount -o ro $nfsroot /mnt || error $errmsg
+    nfsmount -o ro $nfsroot /mnt || error $error_nfs
   ;;
   mount)
-    portmap || error "  Portmapper should be present, if normal mount \
-command is used. Please\n  check your initial ramdisk setup (mkdxsinitrd)."
+    portmap || error $error_portm
     mount -n -t nfs -o ro $nfsroot /mnt || error $errmsg
     killall -9 portmap
   ;;
   none)
-    error "  No suitable mount tool found."
+    error $error_mntt
   ;;
 esac
 }
@@ -207,10 +195,6 @@ fi
 # dhcp client
 rundhcp ()
 {
-local commonerr="  The following problems could produce that error:\n\
-  * The af_packet.ko module is either not loaded nor present in kernel.\n\
-  * No network device is present - either no module matching the hardware\n\
-    was loaded nor present in kernel.\n  You might want to run 'lsmod'."
 local vci=$1
 for dhcp in dhclient dhcpcd pump ipconfig none; do
   test -x /bin/$dhcp && break;
@@ -233,20 +217,19 @@ case $dhcp in
   dhclient)
     mkdhclconf $vci
     ln -s /bin/dhcpmkconfig /bin/dhclient-script
-    dhclient -q -cf /etc/dhclient.conf -lf /var/lib/dhcp/dhclient.leases eth0 2>&1 >/dev/null || \
-      error "  Fatal error occured while trying to run dhclient.\n$commonerr" 
+    dhclient -q -cf /etc/dhclient.conf -lf /var/lib/dhcp/dhclient.leases eth0 \
+  2>&1 >/dev/null || error $error_dhclient 
   ;;
   dhcpcd)
     ln -s /bin/dhcpmkconfig /bin/dhcpcd.exe
-    dhcpcd -L /var/lib/dhcp -c /bin/dhcpcd.exe -T -t 30 eth0 2>&1 >/dev/null || \
-      error "  Fatal error occured while trying to run dhcpcd.\n$commonerr" 
+    dhcpcd -L /var/lib/dhcp -c /bin/dhcpcd.exe -T -t 30 eth0 2>&1 >/dev/null \
+     || error $error_dhcpcd
   ;;
   pump)
-      error "  Config via pump not implemented yet.\n$commonerr"
+      error $error_pump
   ;;
   ipconfig)
-      error "  Config via ipconfig (from klibc) not implemented yet.\n\
-$commonerr"
+      error $error_ipconf
   ;;
   *)
   ;;
@@ -372,7 +355,7 @@ echo "finished" > /tmp/ldcfg
 # configuration via ldap
 ldapconf () {
 local ldapserver=$1
-error "  The configuration via ldap is not implemented yet."
+error $error_ldapcfg
 echo "not implemented" > /tmp/ldap-done
 } 
 

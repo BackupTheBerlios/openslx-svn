@@ -2,20 +2,19 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 31-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 02-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.3f
+# Version:      0.2.4a
 
-# functions common for all distros
-errmsg="functions file contains a lot of script \
-functionality. Without this\ninit script will not run."
-. /etc/functions || ( echo -e "The main $errmsg" && exit 1 )
-. /etc/distro-functions || ( echo "The distro $errmsg"  && exit 1 )
+# functions common for all distros, messages contains all error and info
+# output
+. /etc/messages
+. /etc/functions || ( echo -e $init_mff && exit 1 )
+. /etc/distro-functions || ( echo -e $init_dff && exit 1 )
 # configuration settings (several file and directory variables)
-. /etc/sysconfig/config || ( echo -e "  The distribution \
-specific configuration file could not be found" && exit 1 )
+. /etc/sysconfig/config || ( echo -e $init_dscf && exit 1 )
 
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
 export date="@@@DATE@@@"
@@ -123,7 +122,8 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     # nfs server and path
     nfsroot=*)
       NFSROOT=${opts#nfsroot=}
-      echo -e "\n# nfs root information gotten via kernel command line in $0\nnfsroot=\"${NFSROOT}\"\n" >> /etc/machine-setup
+      echo -e "\n# nfs root information gotten via kernel command line in $0\n\
+nfsroot=\"${NFSROOT}\"\n" >> /etc/machine-setup
     ;;
     # size of tempfs if not max. 50% of RAM should be used
     tmpfssize=*)
@@ -135,9 +135,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
 done
 # load block device driver if needed
 if [ -n "${NBD}" ] ; then
-  modprobe ${MODPRV} ${NBD} || error "  Failed to load \
-module ${NBD}.ko. It is needed if you intend to use\n  network block \
-device (D)NBD for the client as root filesystem."
+  modprobe ${MODPRV} ${NBD} || error $init_errnbd 
 fi
 # check if at least one type of IP configuration is availabe
 if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
@@ -146,19 +144,12 @@ if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
     . /etc/machine-setup
     IPINFO="ip=$clientip:$serverip:$gateway:$subnet_mask"
   else
-    error "  Unable to setup at \
-least basic functionality, because no IP configuration\n  available. You \
-might pass that information via kernel command line\n  through setting of \
-'ipappend 1' in pxelinux.cfg/* or just enable dhcp\n  or ldap. They are \
-enabled via tokens ('ldap' or 'dhcp') in kernel\n  command line."
+    error $init_errip 
   fi
 fi
 # for ldap configuration at least basic IP setup is needed to contact the
 # server
-[ -z "$DHCP" -a -n "$LDAP" -a -z "$IPINFO" ] && error "  Unable to setup at \
-least basic functionality, because no IP configuration\n  available. Please \
-beware - ldap works only in combination of either\n  ipappend or similar or \
-with dhcp!"
+[ -z "$DHCP" -a -n "$LDAP" -a -z "$IPINFO" ] && error $init_errldap
 # set debug level and logfile
 echo "Setting debuglevel to ${DEBUGLEVEL}"
 export MODPRV=" "

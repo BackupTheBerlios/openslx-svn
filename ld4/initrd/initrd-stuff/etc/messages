@@ -1,0 +1,72 @@
+# Description:  messages file for all error and info messages generated during
+#		bootup (within initialramfs) for linux diskless clients 
+#		version 4 
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 01-04-2006
+#
+# Copyright:    (c) 2006 - RZ Universitaet Freiburg
+# 
+# Version:      0.0.3a
+
+# messages from init
+init_errmsg="functions file contains a lot of script \
+functionality. Without this\ninit script will not run."
+init_mff="The main $init_errmsg"
+init_dff="The distro $init_errmsg"
+init_dscf="The distribution specific configuration file could not be found"
+init_errnbd="  Failed to load \
+module ${NBD}.ko. It is needed if you intend to use\n  network block \
+device (D)NBD for the client as root filesystem."
+init_errip="  Unable to setup at \
+least basic functionality, because no IP configuration\n  available. You \
+might pass that information via kernel command line\n  through setting of \
+'ipappend 1' in pxelinux.cfg/* or just enable dhcp\n  or ldap. They are \
+enabled via tokens ('ldap' or 'dhcp') in kernel\n  command line."
+init_errldap="  Unable to setup at \
+least basic functionality, because no IP configuration\n  available. Please \
+beware - ldap works only in combination of either\n  ipappend or similar or \
+with dhcp!"
+
+# messages from functions
+error_msg="An error occured during execution of $0 script:\n\n"
+error_nfe="This error is not fatal - continuing ...\n"
+error_shell="Running shell for debugging purposes now ...\n"
+error_modload="Failed to load module "
+error_modnfs="needed for mounting rootfs"
+error_iptool="  No tool for local IP configuration found. You should at \
+least add\n  one of the following programs to your ramdisk: ip \
+ipconfig\n  ifconfig."
+error_nfs="  Mount of root filesystem via NFS was requested via kernel command \
+line\nbut failed. There might be the following reasons for that:\n\
+* No nfs.ko module could be loaded and no NFS support was present in the\n\
+running kernel - see error messages above\n\
+* You tried to mount from wrong server or path ($nfsroot)\n\
+* No NFS server is running or you do not have permissions"
+error_portm="  Portmapper should be present, if normal mount \
+command is used. Please\n  check your initial ramdisk setup (mkdxsinitrd)."
+error_mntt="  No suitable mount tool found."
+error_dhcp="  The following problems could produce that error:\n\
+  * The af_packet.ko module is either not loaded nor present in kernel.\n\
+  * No network device is present - either no module matching the hardware\n\
+    was loaded nor present in kernel.\n  You might want to run 'lsmod'."
+error_dhclient="  Fatal error occured while trying to run dhclient.\n\
+$error_dhcp"
+error_dhcpcd="  Fatal error occured while trying to run dhcpcd.\n$error_dhcp"
+error_pump="  Config via pump not implemented yet.\n$error_dhcp"
+error_ipconf="  Config via ipconfig (from klibc) not implemented yet.\n\
+$error_dhcp"
+error_ldapcfg="  The configuration via ldap is not implemented yet."
+
+# messages from distro functions
+df_errserv="seems not to be installed or start script is not available\n  \
+so requesting the start of service make no sense. Please disable service\n  \
+or install the files needed."
+df_errudev="  udev daemon is not available. Some devices might not apprear."
+df_errcron="  The cron start script $df_errserv" 
+df_errsysl="  The syslog start script $df_errserv"
+df_errsshd="  The sshd start script $df_errserv"
+df_erramnt="  Automounter $df_errserv"
+df_erratpld="  Only toplevel directories \
+are allowed as mount points for user home\n  directories. Please set the \
+variable \${automnt_dir} appropriately in\n  machine-setup file."
+
