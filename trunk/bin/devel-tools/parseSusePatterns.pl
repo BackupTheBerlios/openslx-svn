@@ -70,9 +70,12 @@ sub parsePatternFile
 	close(PAT);
 	$patternNames{$patternFile} = 1;
 
-#	if ($content =~ m[^\+Sug:\s*?$(.+?)^\-Sug:\s*?$]ms) {
-#		addSubPatterns($1);
-#	}
+	if ($content =~ m[^\=Sum.de:\s*(.+?)\s*$]ms) {
+		print "+ $1\n";
+	}
+	if ($content =~ m[^\+Sug:\s*?$(.+?)^\-Sug:\s*?$]ms) {
+		addSubPatterns($1);
+	}
 	if ($content =~ m[^\+Req:\s*?$(.+?)^\-Req:\s*?$]ms) {
 		addSubPatterns($1);
 	}
