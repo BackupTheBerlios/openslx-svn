@@ -115,8 +115,8 @@ function slxossetup_rpm_suse()
 		dest_path=${suffix%__*}
 		dest_path="${dest_path//__//}"
 		dest_file="${suffix//__//}"
-		test -d ""${SLX_STAGE1_PATH}/${dest_path}" || \
-			mkdir ""${SLX_STAGE1_PATH}/${dest_path}"
+		test -d "${SLX_STAGE1_PATH}/${dest_path}" || \
+			mkdir "${SLX_STAGE1_PATH}/${dest_path}"
 		cp -p "${file}" "${SLX_STAGE1_PATH}/${dest_file}"
 		chown root: "${SLX_STAGE1_PATH}/${dest_file}"
 	done
