@@ -181,7 +181,8 @@ configure() {
   ask "Which debug level should be used? " debuglevel $debuglevel
 
   # wo ist das referenzsystem? - was ist default ???
-  ask "IP + Path to reference system: " rsyncsource "localhost:/"
+  if [ -z ${rsyncsource} ] ; then rsyncsource="localhost:/" ; fi
+  ask "IP + Path to reference system: " rsyncsource $rsyncsource
   
   # dns-server
   # domain-name

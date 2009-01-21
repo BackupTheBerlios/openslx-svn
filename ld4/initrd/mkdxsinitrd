@@ -434,7 +434,7 @@ if [ -z "$FSMODULES" ] ; then
   FSMODULES="nbd nfs"
 fi
 if [ -z "$INITRD_PATH" ] ; then
-  INITRD_PATH="/tmp/dxsinitrd.gz"
+  INITRD_PATH="${ROOTDIR}/tmp/dxsinitrd.gz"
 fi
 
 # define modules to put into initial ramdisk for debugging
