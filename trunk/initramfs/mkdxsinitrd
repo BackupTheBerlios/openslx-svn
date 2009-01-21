@@ -485,7 +485,7 @@ fi
 
 # if wlan should be supported in stage3
 if [ -n "${enable_wlan}" ] ; then
-  cobi iwconfig bin 
+  cobi iwconfig bin
 fi
   
 # if tpm should be used within InitRamFS ...
@@ -581,9 +581,9 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
       # cp ${rdirprefix}/net/wireless ...
       #;;
       ath_pci)
-        for wlanmodule in ath_rate_sample wlan ath_hal; do
+        for wlanmodule in ath_rate_sample ath_hal wlan wlan_scan_sta ; do
           mod=$(cd /${ROOTDIR}; find "lib/modules/${KERNVER}" \
-            -name ${module}.ko 2>/dev/null)
+            -name ${wlanmodule}.ko 2>/dev/null)
           mkdir -p ${INSTDIR}/${mod%/*}
           # specific function which can follow a link
           modcp ${ROOTDIR}/$mod ${INSTDIR}/${mod%/*} ${ROOTDIR}
