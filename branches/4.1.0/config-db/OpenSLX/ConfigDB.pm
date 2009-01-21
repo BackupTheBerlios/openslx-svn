@@ -2012,19 +2012,17 @@ sub emptyDatabase
 	$self->removeGroup(\@groupIDs);
 
 	my @clientIDs = map { $_->{id} }
-	  grep { $_->{id} > 0 } $self->fetchClientByFilter();
+	  grep { $_->{name} ne '<<<default>>>' } $self->fetchClientByFilter();
 	$self->removeClient(\@clientIDs);
 
 	my @sysIDs = map { $_->{id} }
-	  grep { $_->{id} > 0 } $self->fetchSystemByFilter();
+	  grep { $_->{name} ne '<<<default>>>' } $self->fetchSystemByFilter();
 	$self->removeSystem(\@sysIDs);
 
-	my @exportIDs = map { $_->{id} }
-	  grep { $_->{id} > 0 } $self->fetchExportByFilter();
+	my @exportIDs = map { $_->{id} } $self->fetchExportByFilter();
 	$self->removeExport(\@exportIDs);
 
-	my @vendorOSIDs = map { $_->{id} }
-	  grep { $_->{id} > 0 } $self->fetchVendorOSByFilter();
+	my @vendorOSIDs = map { $_->{id} } $self->fetchVendorOSByFilter();
 	$self->removeVendorOS(\@vendorOSIDs);
 	return;
 }
@@ -2059,10 +2057,10 @@ sub mergeDefaultAttributesIntoSystem
 	my $self   = shift;
 	my $system = shift;
 
-	my $defaultSystem = $self->fetchSystemByID(0);
+	my $defaultSystem = $self->fetchSystemByFilter({name => '<<<default>>>'});
 	mergeAttributes($system, $defaultSystem);
 
-	my $defaultClient = $self->fetchClientByID(0);
+	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
 	pushAttributes($system, $defaultClient);
 	return;
 }
@@ -2105,7 +2103,7 @@ sub mergeDefaultAndGroupAttributesIntoClient
 
 	# merge configuration from default client:
 	vlog(3, _tr('merging from default client...'));
-	my $defaultClient = $self->fetchClientByID(0);
+	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
 	mergeAttributes($client, $defaultClient);
 	return;
 }
@@ -2146,7 +2144,8 @@ sub aggregatedSystemIDsOfClient
 	}
 
 	# add all systems inherited from default client
-	push @systemIDs, $self->fetchSystemIDsOfClient(0);
+	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
+	push @systemIDs, $self->fetchSystemIDsOfClient($defaultClient->{id});
 
 	return _unique(@systemIDs);
 }
@@ -2176,12 +2175,13 @@ sub aggregatedClientIDsOfSystem
 	my $system = shift;
 
 	# add all clients directly linked to system:
+	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
 	my @clientIDs = $self->fetchClientIDsOfSystem($system->{id});
 
-	if (grep { $_ == 0; } @clientIDs) {
+	if (grep { $_ == $defaultClient->{id}; } @clientIDs) {
 		# add *all* client-IDs if the system is being referenced by
 		# the default client, as that means that all clients should offer
-		#this system for booting:
+		# this system for booting:
 		push @clientIDs,
 		  map { $_->{id} } $self->fetchClientByFilter(undef, 'id');
 	}
@@ -2195,7 +2195,8 @@ sub aggregatedClientIDsOfSystem
 	}
 
 	# add all clients inherited from default system
-	push @clientIDs, $self->fetchClientIDsOfSystem(0);
+	my $defaultSystem = $self->fetchSystemByFilter({name => '<<<default>>>'});
+	push @clientIDs, $self->fetchClientIDsOfSystem($defaultSystem->{id});
 
 	return _unique(@clientIDs);
 }
@@ -2342,7 +2343,7 @@ sub mergeAttributes
 	foreach my $key (grep { isAttribute($_) } keys %$source) {
 		my $sourceVal = $source->{$key} || '';
 		my $targetVal = $target->{$key} || '';
-		if (length($sourceVal) > 0 && length($targetVal) == 0) {
+		if (length($sourceVal) && !length($targetVal)) {
 			vlog(3, _tr("merging %s (val=%s)", $key, $sourceVal));
 			$target->{$key} = $sourceVal;
 		}
@@ -2379,7 +2380,7 @@ sub pushAttributes
 
 	foreach my $key (grep { isAttribute($_) } keys %$source) {
 		my $sourceVal = $source->{$key} || '';
-		if (length($sourceVal) > 0) {
+		if (length($sourceVal)) {
 			vlog(3, _tr("pushing %s (val=%s)", $key, $sourceVal));
 			$target->{$key} = $sourceVal;
 		}
@@ -2410,7 +2411,7 @@ sub externalIDForSystem
 {
 	my $system = shift;
 
-	return "default" if $system->{id} == 0;
+	return "default" if $system->{name} eq '<<<default>>>';
 
 	my $name = $system->{name};
 	$name =~ tr[/][_];
@@ -2440,7 +2441,7 @@ sub externalIDForClient
 {
 	my $client = shift;
 
-	return "default" if $client->{id} == 0;
+	return "default" if $client->{name} eq '<<<default>>>';
 
 	my $mac = lc($client->{mac});
 	# PXE seems to expect MACs being all lowercase
