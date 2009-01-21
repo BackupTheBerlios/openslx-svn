@@ -57,12 +57,10 @@ endif
 #packaging tool for .deb packages too.
 
 tarball:
-	@OPENSLX_SVN_SNAPSHOT=$$( echo $${OPENSLX_SVN_SNAPSHOT} | \
-		tr [:upper:] [:lower:]); \
-	case "$${OPENSLX_SVN_SNAPSHOT}" in \
-		yes|y|1) OPENSLX_VERSION_SVNREV=$$( svnversion) ;; \
-	esac; \
+	@OPENSLX_VERSION_SVNREV=$$( svnversion); \
 	. ./VERSIONS; \
+	echo "OPENSLX_VERSION_SVNREV=\"$${OPENSLX_VERSION_SVNREV}\"" \
+		>REVISION; \
 	echo "Creating OpenSLX $${OPENSLX_VERSION_STRING} tar ball "; \
 	if test -e "../openslx-$${OPENSLX_VERSION_STRING}" -a \
 	! -L "../openslx-$${OPENSLX_VERSION_STRING}"; then \
@@ -84,7 +82,8 @@ tarball:
 		"openslx-$${OPENSLX_VERSION_STRING}/"; \
 	test "$${OPENSLX_SOURCEDIR_SYMLINK_CREATED}" = "yes" && \
 		rm -f "openslx-$${OPENSLX_VERSION_STRING}"; \
-	cd - >/dev/null
+	cd - >/dev/null; \
+	rm REVISION
 
 install:
 	@echo "Checking installation requirements..."; \
@@ -202,7 +201,11 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 	    > $(DESTDIR)$(SLX_CONFIG_PATH)/settings.local
 
 	@# create slxversion script:
-	@OPENSLX_VERSION_SVNREV=$$(svnversion .); \
+	@if test -e REVISION; then \
+		. REVISION; \
+	else \
+		OPENSLX_VERSION_SVNREV=$$(svnversion .); \
+	fi; \
 	. ./VERSIONS; \
 	  echo "echo $${OPENSLX_VERSION_STRING}" \
 	    > $(DESTDIR)${SLX_BIN_PATH}/slxversion
