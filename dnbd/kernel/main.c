@@ -551,6 +551,7 @@ static void dnbd_rexmit(unsigned long arg)
 {
 	dnbd_device_t *dnbd = (dnbd_device_t *) arg;
 	unsigned long flags;
+	unsigned long timeout;
 
 	int requeued;
 
@@ -563,7 +564,7 @@ static void dnbd_rexmit(unsigned long arg)
 	if (diff > dnbd->servers.timeout_max)
 		diff = dnbd->servers.timeout_max;
 
-	unsigned long timeout = jiffies - (diff << TIMEOUT_SHIFT);
+	timeout = jiffies - (diff << TIMEOUT_SHIFT);
 
 	requeued =
 	    dnbd_requeue_requests(&dnbd->tx_queue, &dnbd->rx_queue,
@@ -987,8 +988,6 @@ static int dnbd_ioctl(struct inode *inode, struct file *file,
 		inode->i_bdev->bd_inode->i_size = dnbd->bytesize;
 		set_blocksize(inode->i_bdev, dnbd->blksize);
 		set_capacity(dnbd->disk, dnbd->bytesize >> 9);
-		printk(KERN_INFO "dnbd: setting capacity to %lu sectors\n",
-		       get_capacity(dnbd->disk));
 		result = 0;
 		break;
 	case DNBD_SET_CACHE:
@@ -1224,6 +1223,7 @@ static void __exit dnbd_exit(void)
 {
 	int i;
 	char name[] = "dnbdxx";
+	struct gendisk *disk;
 
 	/* force disconnects */
 	for (i = 0; i < MAX_DNBD; i++) {
@@ -1236,7 +1236,7 @@ static void __exit dnbd_exit(void)
 	for (i = 0; i < MAX_DNBD; i++) {
 		dnbd_rem_servers(&dnbd_dev[i].servers);
 
-		struct gendisk *disk = dnbd_dev[i].disk;
+		disk = dnbd_dev[i].disk;
 		if (disk) {
 			del_gendisk(disk);
 			blk_cleanup_queue(disk->queue);
