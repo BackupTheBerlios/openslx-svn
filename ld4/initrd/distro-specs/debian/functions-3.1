@@ -2,19 +2,30 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 31-03-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.1b
+# Version:      0.2.1c
 
 # distro specific stuff to initialize
 preinit () {
-  echo "dhcp:x:101:">>/etc/group
-  echo "dhcp:x:101:101::/nonexistent:/bin/false">>/etc/passwd
+  :
 }
+
+postinit () {
+  :
+}
+
+# distro specific general function called from servconfig script
+config_distro () {
+# add the halt link to the 0 and 6 runlevel directories
+  ln -sf ../halt /mnt/etc/rc0.d/S90halt
+  ln -sf ../halt /mnt/etc/rc6.d/S90reboot
+}
+
 
 # linking runlevel scripts
 rllinker () {

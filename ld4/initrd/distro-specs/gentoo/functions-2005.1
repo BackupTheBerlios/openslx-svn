@@ -2,11 +2,11 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 30-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 31-03-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.0.1c
+# Version:      0.0.1d
 
 # distro specific stuff to initialize
 preinit () {
@@ -17,8 +17,10 @@ postinit () {
   :
 }
 
+# distro specific general function called from servconfig script
 config_distro () {
-echo -e "DXS-VERSION=4.0a\INITRAMFS-GEN-DATE=$date" >> /mnt/etc/SuSE-release
+echo -e "dxs version 4.0a\initramfs generation date $date" \
+  >> /mnt/etc/gentoo-release
 }
 
 # udev service - not checked!

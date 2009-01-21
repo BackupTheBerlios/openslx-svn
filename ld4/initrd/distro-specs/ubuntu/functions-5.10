@@ -2,23 +2,23 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 31-03-2006
 #		Nico Dietrich
 #		Felix Endres
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.1c
+# Version:      0.2.1d
 
 # distro specific stuff to initialize
 preinit () {
   echo "Creating dhcp user"
   echo "dhcp:x:101:">>/etc/group
-  echo "dhcp:x:101:101::/nonexistent:/bin/false">>/etc/passwd
+  echo "dhcp:x:101:101::/nonexistent:/bin/false" >>/etc/passwd
 
   # load unix module to provide sockets
-  modprobe ${MODPRV} unix || error " Failed to load the \"unix\" module. \
-  Problems with Hardware detection will probably arise"
+  modprobe ${MODPRV} unix || error "  Failed to load the \"unix\" module. \
+  Problems with Hardware detection\nwill probably arise"
 }
 
 postinit () {
@@ -27,7 +27,10 @@ postinit () {
 
 # distro specific function called from servconfig script
 config_distro () {
-# fixme!! add halt runlevel links here!!
+# add the halt link to the 0 and 6 runlevel directories
+# fixmee!! check ...
+#  ln -sf ../halt /mnt/etc/rc0.d/S90halt
+#  ln -sf ../halt /mnt/etc/rc6.d/S90reboot
 }
 
 # AUS SuSE-9.3
