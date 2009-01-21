@@ -129,26 +129,38 @@ via a squashfs inside of a network block device.
 
 slxos-export [options] <action>
 
-  Options:
-      --help                   brief help message
-      --man                    show full documentation
-      --verbose                show more information during execution
-      --version                show version
+=head3 Options
 
-  Actions:
-      export <vendor-OS-name> <export-type>
-                               exports the vendor-OS with the given name via
-                               the given export type
-      list-exported
-                               list all exported vendor-OSes
-      list-installed
-                               list all installed vendor-OSes
-      list-types
-                               list all supported export types
+    --help          brief help message
+    --man           show full documentation
+    --verbose       show more information during execution
+    --version       show version
+
+=head3 Actions
+
+=over 8
+
+=item B<<     export <vendor-OS-name> <export-type> >>
+
+exports the vendor-OS with the given name via the given export type
+
+=item B<<     list-exported >>
+
+list all exported vendor-OSes
+
+=item B<<     list-installed >>
+
+list all installed vendor-OSes
+
+=item B<<     list-types >>
+
+list all supported export types
+
+=back
 
 =head1 OPTIONS
 
-=over 8
+=over 4
 
 =item B<--help>
 
@@ -170,11 +182,26 @@ Prints the version and exits.
 
 =head1 EXAMPLES
 
-=head2 Exporting a Vendor-OS
+=over 8
 
-  slxos-export export suse-10.2 nfs
+=head3 Exporting a Vendor-OS via NFS
 
-      exports the installed vendor-OS suse-10.2 via nfs, the resulting
-      NFS-export will live in '/srv/openslx/export/nfs/suse-10.2'
+=item B<<     slxos-export export suse-10.2 nfs >>
+
+exports the installed vendor-OS suse-10.2 via nfs, the
+resulting NFS-export will live in C</srv/openslx/export/nfs/suse-10.2>.
+
+=back
+
+=head3 Exporting a Vendor-OS via NBD-Squash
+
+=over 8
+
+=item B<<     slxos-export export ubuntu-6.10 nbd-squash >>
+
+exports the installed vendor-OS ubuntu-6.10 via nbd-squash, the resulting
+Squash-FS will live in C</srv/openslx/export/nbd-squash/ubuntu-6.10>.
+
+=back
 
 =cut

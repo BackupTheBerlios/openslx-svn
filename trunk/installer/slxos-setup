@@ -158,27 +158,44 @@ will be used as a OpenSLX-stage1-system (a.k.a. vendor-OS).
 
 =head1 SYNOPSIS
 
-  slxos-setup [options] <action> <action-params> ...
+slxos-setup [options] <action> <action-params> ...
 
-  Options:
-      --help                   brief help message
-      --man                    show full documentation
-      --verbose                show more information during execution
-      --version                show version
+=head3 Options
 
-  Actions:
-      clone <rsync-source-uri> <vendor-os-name>
-                               clones an existing operating system via rsync
-      import-into-db <vendor-os-name>
-                               imports a vendor-OS into the openslx-db
-      install <vendor-os-name>
-                               installs a vendor-OS into a folder
-      list-installed
-                               show installed vendor-OSes
-      list-supported
-                               show supported distros
-      update <vendor-os-name>
-                               updates an installed vendor-OS
+    --help          brief help message
+    --man           show full documentation
+    --verbose       show more information during execution
+    --version       show version
+
+=head3 Actions
+
+=over 8
+
+=item B<<     clone <rsync-source-uri> <vendor-os-name> >>
+
+clones an existing operating system via rsync
+
+=item B<<     import-into-db <vendor-os-name> >>
+
+imports a vendor-OS into the openslx-db
+
+=item B<<     install <vendor-os-name> >>
+
+installs a vendor-OS into a folder
+
+=item B<<     list-installed >>
+
+show installed vendor-OSes
+
+=item B<<     list-supported >>
+
+show supported distros
+
+=item B<<     update <vendor-os-name> >>
+
+updates an installed vendor-OS
+
+=back
 
 =head1 OPTIONS
 
@@ -205,7 +222,7 @@ Prints the version and exits.
 The vendor-os-name is the name of the vendor-OS that shall be installed,
 cloned, imported or updated. It corresponds to a folder in the OpenSLX-
 stage1-path (usually /var/opt/openslx/stage1).
-The general format of a vendor-os-name is this:
+The general format of a vendor-os-name is:
 
 	<distro-name>-<release-version>
 or
@@ -237,33 +254,50 @@ format an rsync-uri has.
 
 =head1 EXAMPLES
 
-=head2 Installing a Vendor-OS
+=head3 Installing a Vendor-OS
 
-  slxos-setup install suse-10.2
+=over 8
 
-      installs the distro suse-10.2 as a new vendor-OS
+=item B<<     slxos-setup install suse-10.2 >>
 
-  slxos-setup install suse-10.2-gnome
+installs the distro suse-10.2 as a new vendor-OS
 
-      installs the 'gnome'-selection of distro suse-10.2 as a new vendor-OS
+=item B<<     slxos-setup install suse-10.2-gnome >>
 
-=head2 Cloning an Operating System to Make a New Vendor-OS
+installs the 'gnome'-selection of distro suse-10.2 as a new
+vendor-OS
 
-  slxos-setup clone my_server:/ suse-10.2-clone-my_server
+=back
 
-      clones the suse-10.2 system from server 'my_server' as a new vendor-OS,
-      which will be named 'suse-10.2-clone-my_server'
+=head3 Cloning an Operating System to Make a New Vendor-OS
 
-=head2 Updating a Vendor-OS
+=over 8
 
-  slxos-setup update suse-10.2
+=item B<<     slxos-setup clone my_server:/ suse-10.2-clone-my_server >>
 
-      updates the (existing) vendor-OS 'suse-10.2'
+clones the suse-10.2 system from server 'my_server' as a new
+vendor-OS, which will be named 'suse-10.2-clone-my_server'
 
-=head2 Importing an Existing Vendor-OS into the Config-DB
+=back
 
-  slxos-setup import-into-db suse-10.2
+=head3 Updating a Vendor-OS
 
-      imports the (existing) vendor-OS 'suse-10.2' into the config-DB
+=over 8
+
+=item B<<     slxos-setup update suse-10.2 >>
+
+updates the (existing) vendor-OS 'suse-10.2'
+
+=back
+
+=head3 Importing an Existing Vendor-OS into the Config-DB
+
+=over 8
+
+=item B<<     slxos-setup import-into-db suse-10.2 >>
+
+imports the (existing) vendor-OS 'suse-10.2' into the config-DB
+
+=back
 
 =cut
