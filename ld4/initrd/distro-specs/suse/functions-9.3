@@ -125,6 +125,9 @@ if [ "x$start_syslog" = "xyes" ] ; then
       /mnt/etc/syslog-ng/syslog-ng.conf >> /etc/syslog-ng.conf
       cp /etc/syslog-ng.conf /mnt/etc/syslog-ng/syslog-ng.conf
       rllinker syslog "02" "20"
+  else
+    error "  The syslog start script does not seem to be installed, so \
+requesting\n  the start of service does not make much sense." nonfatal
   fi
 fi
 }

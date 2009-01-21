@@ -42,7 +42,7 @@ mount_loop () {
   mkdir -p /media/loop0
   cp ${vmdir}/templ/fd0.img /tmp/${clientip}-fd0.img
   chmod a+rw /tmp/${clientip}-fd0.img
-  mount -t msdos -o loop,umask=000 /tmp/${clientip}-fd0.img \
+  mount -n -t msdos -o loop,umask=000 /tmp/${clientip}-fd0.img \
     /media/loop0
 }
 
