@@ -36,6 +36,7 @@ use File::Find;
 use File::Path;
 use Getopt::Long qw(:config pass_through);
 use Pod::Usage;
+use Storable qw(dclone);
 
 # add the lib-folder and the folder this script lives in to perl's search
 # path for modules:
@@ -47,6 +48,7 @@ use lib "$FindBin::RealBin";
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::ConfigFolder;
+use OpenSLX::MakeInitRamFS::Engine;
 use OpenSLX::Utils;
 
 my $pxeDefaultTemplate = unshiftHereDoc(<<'End-of-Here');
@@ -63,16 +65,18 @@ utf8::decode($pxeDefaultTemplate);
 
 my (
 	$dhcpType,
-	# type of DHCP export format
+		# type of DHCP export format
 	$dryRun,
-	# dryRun won't touch any file
+		# dryRun won't touch any file
 	$systemConfCount,
-	# number of system configurations written
+		# number of system configurations written
 	$clientSystemConfCount,
-	# number of (system-specific) client configurations written
+		# number of (system-specific) client configurations written
 	%vendorOSInitramfsMap,
-	# keeping note of how many initramFSs have been created for a
-	# specific vendor-OS.
+		# keeping note of how many initramFSs have been created for a
+		# specific vendor-OS.
+	$makeInitRamFS,
+		# generate initial ramfs internally (new style)
 	$helpReq,
 	$manReq,
 	$versionReq,
@@ -84,6 +88,7 @@ if ($> != 0) {
 
 GetOptions(
 	'dhcp-export-type=s' => \$dhcpType,
+	'makeinitramfs'      => \$makeInitRamFS,
 	'dry-run'            => \$dryRun,
 	'help|?'             => \$helpReq,
 	'man'                => \$manReq,
@@ -123,6 +128,8 @@ if (createConfigFolderForDefaultSystem()) {
 		$clientConfigPath
 	);
 }
+
+chomp(my $slxVersion = qx{slxversion});
 
 my $lockFile = "$openslxConfig{'private-path'}/config-demuxer.lock";
 lockScript($lockFile);
@@ -241,8 +248,8 @@ sub digestAttributes
 
 sub writeAttributesToFile
 {
-	my $object            = shift;
-	my $fileName          = shift;
+	my $object   = shift;
+	my $fileName = shift;
 
 	return if $dryRun;
 
@@ -460,7 +467,7 @@ sub writePXEMenus
 	return;
 }
 
-sub generateInitalRamFS
+sub generateInitialRamFS
 {
 	my $info            = shift;
 	my $pxeVendorOSPath = shift;
@@ -477,7 +484,7 @@ sub generateInitalRamFS
 		$cmd .= qq[-n "$attrs->{ramfs_nicmods}" ];
 	}
 	my $fsMods = $attrs->{ramfs_fsmods} || '';
-	$fsMods .= ' ' . $osExportEngine->requiredFSMods();
+	$fsMods .= ' ' . join(' ', $osExportEngine->requiredFSMods());
 	if ($fsMods) {
 		$cmd .= qq[-f "$fsMods" ];
 	}
@@ -536,6 +543,37 @@ sub generateInitalRamFS
 	return;
 }
 
+sub makeInitRamFS
+{
+	my $info            = shift;
+	my $pxeVendorOSPath = shift;
+
+	vlog(1, _tr('generating initialramfs %s/initramfs', $pxeVendorOSPath));
+
+	my $vendorOS = $info->{'vendor-os'};
+	my $kernelFile = basename(followLink($info->{'kernel-file'}));
+
+	my $attrs = dclone($info->{attrs} || {});
+
+	my $params = {
+		'attrs'          => $attrs,
+		'export-name'    => $info->{export}->{name},
+		'export-uri'     => $info->{'export-uri'},
+		'initramfs'      => "$pxeVendorOSPath/$info->{'initramfs-name'}",
+		'kernel-version' => $kernelFile =~ m[-(.+)$] ? $1 : '',
+		'plugins'        => $info->{'active-plugins'},
+		'root-path'   
+			=> "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}",
+		'slx-version'    => $slxVersion,
+		'system-name'    => $info->{name},
+	};
+
+	my $makeInitRamFSEngine = OpenSLX::MakeInitRamFS::Engine->new($params);
+	$makeInitRamFSEngine->execute()		unless $dryRun;
+
+	return;
+}
+
 sub writeSystemPXEFiles
 {
 	my $info = shift;
@@ -556,7 +594,11 @@ sub writeSystemPXEFiles
 	$info->{'initramfs-name'} =
 	  sprintf("initramfs-%d",
 		$vendorOSInitramfsMap{$info->{'vendor-os'}->{id}});
-	generateInitalRamFS($info, $pxeVendorOSPath);
+	if ($makeInitRamFS) {
+		makeInitRamFS($info, $pxeVendorOSPath);
+	} else {
+		generateInitialRamFS($info, $pxeVendorOSPath);
+	}
 	return;
 }
 

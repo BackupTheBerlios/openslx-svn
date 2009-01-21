@@ -162,6 +162,8 @@ supported."; \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
 	tar --exclude=.svn -cp -C config-db OpenSLX \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
+	tar --exclude=.svn -cp -C initramfs OpenSLX \
+	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
 	tar --exclude=.svn -cp -C installer OpenSLX \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
 	tar --exclude=.svn -cp -C os-plugins OpenSLX \
