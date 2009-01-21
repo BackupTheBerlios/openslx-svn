@@ -2,13 +2,13 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 19-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 28-04-2006
 #		Nico Dietrich
 #		Felix Endres
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.1f
+# Version:      0.2.1g
 
 # distro specific stuff to initialize
 preinit () {
@@ -212,7 +212,9 @@ local info="$3"
 case "$switch" in
   init)
     echo -e "#!/bin/sh\n# skeleton of /etc/${D_INITDIR}/$name written \
-from $0" >/mnt/etc/${D_INITDIR}/$name
+from $0\n# after you applied changes to the creation scripts you have to \
+rerun\n# the mkdxsinitrd script to get them applied" \
+      >/mnt/etc/${D_INITDIR}/$name
     echo -e "\n\ncase \"\$1\" in\n    start)\techo -n \"$info\"" \
       >>/mnt/etc/${D_INITDIR}/$name
     chmod u+x /mnt/etc/${D_INITDIR}/$name

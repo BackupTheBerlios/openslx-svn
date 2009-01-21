@@ -4,11 +4,11 @@
 #		functions file). This file is the main base for the 
 #		following SuSE distributions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 19-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 28-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.2c
+# Version:      0.2.2e
 
 # distro specific stuff to initialize
 preinit () {
@@ -431,6 +431,12 @@ sed -e "s,TARGETS =,TARGETS = vmware-prep," \
   /mnt/etc/${D_INITDIR}/.depend.start >> /etc/.depend.start
   echo "vmware-prep: " >> /etc/.depend.start
   cp /etc/.depend.start /mnt/etc/${D_INITDIR}/.depend.start
+# this line should be added to /etc/hotplug.d/usb/50-usb.hotplug
+# to block linux from handling usb events during vmware sessions
+sed -e '/USB-specific/{;i\' \
+  -e 'ps aux |grep -i vmware| grep -v "grep" &>/dev/null && exit 0' \
+  -e ' }' /mnt/etc/hotplug.d/usb/50-usb.hotplug > /tmp/50-usb.hotplug
+cp /tmp/50-usb.hotplug /mnt/etc/hotplug.d/usb/50-usb.hotplug
 }
 
 # initialize runlevel skript to be executed during system startup
@@ -443,7 +449,9 @@ local info="$3"
 case "$1" in
   init)
     echo -e "#!/bin/sh\n# skeleton of /etc/${D_INITDIR}/$name created \
-by $0\n. /etc/rc.status\n. /etc/${D_SYSCONFDIR}/logfile\nrc_reset\ncase \
+by $0\n# after you applied changes to the creation scripts you have to \
+rerun\n# the mkdxsinitrd script to get them applied\n\
+. /etc/rc.status\n. /etc/${D_SYSCONFDIR}/logfile\nrc_reset\ncase \
 \"\$1\" in\n    start)\n\techo -n \"$info\"" >>/mnt/etc/${D_INITDIR}/$name
     chmod u+x /mnt/etc/${D_INITDIR}/$name
   ;;
