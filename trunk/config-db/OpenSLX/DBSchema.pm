@@ -22,22 +22,17 @@ use vars qw($DbSchema %DbSchemaHistory);
 # configurable attributes for system, client and group:
 my @sharedAttributes = (
 	'attr_desktop_session:s.128',
-	'attr_domain_name:s.64',
-	'attr_domain_name_servers:s.128',
-	'attr_font_servers:s.128',
 	'attr_hw_graphic:s.64',
 	'attr_hw_monitor:s.64',
 	'attr_hw_mouse:s.64',
 	'attr_language:s.64',
-	'attr_lpr_servers:s.128',
 	'attr_netbios_workgroup:s.64',
-	'attr_nis_domain:s.64',
-	'attr_nis_servers:s.128',
-	'attr_ntp_servers:s.128',
 	'attr_start_rwhod:b',
 	'attr_start_snmp:b',
 	'attr_start_x:s.64',
 	'attr_start_xdmcp:s.64',
+	'attr_auth_type:s.64'
+	'attr_home_type:s.64'
 	'attr_tex_enable:b',
 	'attr_vmware:b',
 );
