@@ -2246,7 +2246,8 @@ NAME ATI Radeon X800XT
 DRIVER radeon
 
 NAME ATI Radeon (fglrx)
-DRIVER fglrx
+DRIVER radeon
+#DRIVER fglrx
 
 #NAME ATI Radeon Xpress 200
 #DRIVER fglrx # radeon leads to  black screen ?!?
