@@ -4,10 +4,13 @@
 #               X Stations (v3.3,v3.4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-03-2006
-#               Michael Janczyk <mj0@uni-freiburg.de>, 13-04-2006
+#               Michael Janczyk <mj0@uni-freiburg.de>, 08-05-2006
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-VERSION=0.13.3; LAST_CHANGES=13.04.06
+LAST_CHANGES=$(head $0 | grep "@" | awk -F ", " '{print $2}' \
+  | awk -F "-" '{print $3" "$2" "$1}' | sort -bfnr \
+  | awk '{print $3"-"$2"-"$1}' | grep -m 1 [0-9])
+VERSION=0.13.4
 ################################################################################
 
 
@@ -117,10 +120,12 @@ runvmwareconfheader ()
  
  ###### sound ##################################################################
  sound.present = \"TRUE\"
+ sound.virtualDev = \"es1371\"
 
 
  ###### usb ####################################################################
  usb.present = \"TRUE\"
+ usb.generic.autoconnect = \"TRUE\"
 
 
  ###### floppies ###############################################################
@@ -153,9 +158,20 @@ runvmwareconfheader ()
  ###### misc ###################################################################
  tmpDirectory = \"$TMPDIR\"
  mainMem.useNamedFile = \"FALSE\"
- tools.syncTime = \"FALSE\"
+ tools.syncTime = \"TRUE\"
  redoLogDir = \"$TMPDIR\"
-
+ hints.hideAll = \"TRUE\"
+ logging = \"FALSE\"
+ isolation.tools.hgfs.disable = \"FALSE\"
+ isolation.tools.dnd.disable = \"TRUE\"
+ isolation.tools.copy.enable = \"TRUE\"
+ isolation.tools.paste.enabled = \"TRUE\"
+ gui.restricted = \"TRUE\"
+ pref.hotkey.shift = \"TRUE\"
+ pref.hotkey.control = \"TRUE\"
+ pref.hotkey.alt = \"TRUE\"
+ svga.maxWidth = \"$X_PARAM\"
+ svga.maxHeight = \"$Y_PARAM\"
  " \
  >$CONFILE
 
@@ -234,10 +250,6 @@ winresheader ()
    <eintrag>\r
      <computername param=\"$HOSTNAME\">\r
      </computername>\r
-     <resolution_x param=\"$X_PARAM\">\r
-     </resolution_x>\r
-     <resolution_y param=\"$Y_PARAM\">\r
-     </resolution_y>\r
      <username param=\"$USER\">\r
      </username>\r
    </eintrag>\r

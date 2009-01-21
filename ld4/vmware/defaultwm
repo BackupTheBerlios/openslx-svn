@@ -4,9 +4,13 @@
 #
 # Michael Janczyk <mj0@uni-freiburg.de>
 #
-# Last changes: 26-04-2006
+# Last changes: 02-05-2006
 #
 
+
+
+# set X background
+xsetroot -solid "slate grey"
 
 
 x_dialog () {
@@ -18,12 +22,11 @@ x_dialog () {
   execute=
 
 
+  xdesktopsnr=( `ls ${xsessions} | grep -x ".*desktop" \
+    | grep -v "default.*" | wc -l 2>/dev/null` )
   desktops=( `ls ${xsessions} | grep -x ".*desktop" \
-    | grep -v "default.*" 2>/dev/null` )
-  xdesktopsnr=$(echo "${#desktops[*]}")
-  desktops=( `ls ${xsessions} | grep -x ".*desktop" \
-      | grep -v "default.*" 2>/dev/null; \
-      ls ${vmsessions} | grep -x ".*desktop" 2>/dev/null` )
+      | grep -v "default.*" | sort -bf 2>/dev/null; \
+      ls ${vmsessions} | grep -x ".*desktop" | sort -bf 2>/dev/null` )
   desktopsnr=$(echo "${#desktops[*]}")
 
 
@@ -47,12 +50,14 @@ x_dialog () {
     # comment in .desktop
     execute[${i}]=$(grep -m 1 -i "comment" ${xsessions}/${desktops[${args}]} \
       | awk -F "=" '{print $2}')
-    execute[${i}]=${execute[${i}]:-"No comment"}
+    execute[${i}]="| Desktop Environment |
+${execute[${i}]:-"No comment"}"
     menu="$menu \"\${execute[${i}]}\""
     i=${i}+1
 
     (( args=${args}+1 ))
   done
+
 
   while [ "${desktopsnr}" -gt "${args}" ]; do
     # exec in .desktop
@@ -71,7 +76,8 @@ x_dialog () {
     # comment in .desktop
     execute[${i}]=$(grep -m 1 -i "comment" ${vmsessions}/${desktops[${args}]} \
       | awk -F "=" '{print $2}')
-    execute[${i}]=${execute[${i}]:-"No comment"}
+    execute[${i}]="| VMware Image |
+${execute[${i}]:-"No comment"}"
     menu="$menu \"\${execute[${i}]}\""
     i=${i}+1
 
@@ -80,7 +86,7 @@ x_dialog () {
 
   # --stderr because of 1>/dev/null
   # echoing to file because Xdialog sux when used w/ quotes
-  echo -e "Xdialog --title \"VMware Image Menu\" \
+  echo -e "Xdialog --title \"Desktop / VMware-Image Menu\" \
           --screen-center \
           --fill \
           --no-wrap \
@@ -88,7 +94,7 @@ x_dialog () {
           --no-tags \
           --ok-label \"START\" \
           --item-help \
-          --menubox \"Please choose the image you would like to run:\" 35 80 0 \
+          --menubox \"Which desktop or VMware-image to start?\" 35 80 0 \
           $menu 1>/dev/null" \
   > ${tmpdir}/Xdialog
 
