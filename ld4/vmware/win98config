@@ -37,6 +37,6 @@ echo -e "\tREGEDIT4\r
 \"username\"=\"${USER}\"\r
 \"PrimaryProvider\"=\"Microsoft Network\"\r
 \"LMLogon\"=hex:00,00,00,00\r" \
-> /media/loop0/logon.reg
+> /tmp/loop0/logon.reg
 
 sync

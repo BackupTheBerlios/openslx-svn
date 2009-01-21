@@ -34,6 +34,6 @@ echo -e "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r
     </username>
   </eintrag>\r
 </settings>\r" \
-> /media/loop0/config.xml
+> /tmp/loop0/config.xml
 
 sync

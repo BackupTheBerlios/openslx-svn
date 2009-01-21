@@ -9,7 +9,7 @@
 #               Dirk von Suchodoletz <dirk@goe.net>, 10-05-2006
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.2c
+# Version:      0.2d
 ################################################################################
 
 
@@ -28,22 +28,33 @@
 
 ### VARIABLES SECTION ##########################################################
 # Declaration of default variables
-vmdir="/var/lib/vmware"
-path="/var/X11R6/bin"
+vmdir=/var/lib/vmware
+path=/var/X11R6/bin
 sessions=
 session_name=
 
 
 
 ### FUNCTIONS SECTION ##########################################################
+# unionfs used?
+pathtest () {
+  if `touch /usr/X11R6/bin/touch >/dev/null 2>&1`; then
+    path=/usr/X11R6/bin/
+    rm ${path}/touch >/dev/null 2>&1
+  else
+    test -d ${path} || mkdir -p ${path}
+  fi
+}
+
+
 # loop file for exchanging information between linux and vmware
 mount_loop () {
   modprobe loop >/dev/null 2>&1
-  mkdir -p /media/loop0
+  mkdir -p /tmp/loop0
   cp ${vmdir}/templ/fd0.img /tmp/${clientip}-fd0.img
   chmod a+rw /tmp/${clientip}-fd0.img
   mount -n -t msdos -o loop,umask=000 /tmp/${clientip}-fd0.img \
-    /media/loop0
+    /tmp/loop0
 }
 
 
@@ -57,28 +68,14 @@ vmnet () {
 
 
 # special start script for vmware with predefined image
-Xpath () {
-  if `touch /usr/X11R6/bin/touch >/dev/null 2>&1`; then
-    rm /usr/X11R6/bin/touch >/dev/null 2>&1
-    path="/usr/X11R6/bin"
-    cp ${vmdir}/templ/runvmware \
-       /usr/X11R6/bin
-    chmod 755 /usr/X11R6/bin/runvmware >/dev/null 2>&1
+copyscript () {
+  # runvmware
+  cp ${vmdir}/templ/runvmware ${path}
+  chmod 755 ${path}/runvmware >/dev/null 2>&1
     
-    # default kdm session. Xdialog with WM and VMware images
-    cp ${vmdir}/templ/defaultwm /usr/X11R6/bin/defaultwm
-    chmod 755 /usr/X11R6/bin/defaultwm >/dev/null 2>&1
-  else
-    path="/var/X11R6/bin"
-    test -d /var/X11R6/bin || mkdir -p /var/X11R6/bin
-    cp ${vmdir}/templ/runvmware \
-       /var/X11R6/bin
-    chmod 755 /var/X11R6/bin/runvmware >/dev/null 2>&1
-
-    # default kdm session. Xdialog with WM and VMware images
-    cp ${vmdir}/templ/defaultwm /var/X11R6/bin/defaultwm
-    chmod 755 /var/X11R6/bin/defaultwm >/dev/null 2>&1
-  fi
+  # default kdm session. Xdialog with WM and VMware images
+  cp ${vmdir}/templ/defaultwm ${path}/defaultwm
+  chmod 755 ${path}/defaultwm >/dev/null 2>&1
 }
 
 
@@ -88,9 +85,9 @@ desktop_session () {
   \n# set to black background\nxsetroot -solid \"black\"\n  
   startvm=\$(echo \$0 | sed -e \"s,.*/,,\")
 
-  xterm -bg black -fg white -geometry 170x30+0-0 +sb \
+  xterm -bg black -fg white -geometry 80x30+0-0 +sb \
     -e \"${path}/runvmware -s \${startvm} ${debug}\"\n" \
-  > ${path}/desktop-session
+    > ${path}/desktop-session
   chmod 755 ${path}/desktop-session
 }
 
@@ -117,11 +114,14 @@ vmsession2desktop_session () {
 # rechtzeitig fuer gdm/kdm verfuegbar)
 #mount -t nfs -o ro,nolock,intr,nodev,soft,timeo=2,nosuid ${imgsrv} ${vmdir}
 
+# check path
+pathtest
+
 # device creation - the module does not trigger udev properly
 vmnet
 
 # special start script for vmware with predefined image
-Xpath
+copyscript
 
 # loop file for exchanging information between linux and vmware guest
 mount_loop

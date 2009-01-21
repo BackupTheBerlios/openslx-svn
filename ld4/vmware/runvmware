@@ -284,7 +284,7 @@ Image options:
 	--vmostype <vmwareos>   define VMware ostype
         --include <includefile> include code right before program start
 	--displayaliases	aliases you can use with option -a
-        --floppyb               use /media/loop0 as floppy B,
+        --floppyb               use /tmp/loop0 as floppy B,
                                 needed for exchanging files w/ VMware
 VMware options:
         --run <program>         specify programm, e.g. vmware, vmplayer, ...
