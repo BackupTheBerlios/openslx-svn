@@ -368,7 +368,9 @@ if strinfile "SCSI" /tmp/hwsetup.info ; then
   strinfile "CDROM" /tmp/hwsetup.info && { modprobe ${MODPRV} sr_mod;
     modprobe ${MODPRV} sg; }
   strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} sd_mod
-  strinfile "SCANNER" /tmp/hwsetup.info && : 
+  strinfile "SCANNER" /tmp/hwsetup.info && \
+    echo -e 'KERNEL=="sg*",\t\tNAME="%k", GROUP="disk", MODE="666"' \
+    >> /etc/udev/rules.d/04-scanner.rules
 fi
 # fixme - psmouse entladen, falls nicht vorhanden
 
