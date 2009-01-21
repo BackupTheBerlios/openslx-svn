@@ -135,7 +135,7 @@ local n=0
     case $i in
         0) break ;;
       128) n=`expr $n + 1` ; break ;;
-      192) n=`expr $n + 1` ; break ;;
+      192) n=`expr $n + 2` ; break ;;
       224) n=`expr $n + 3` ; break ;;
       240) n=`expr $n + 4` ; break ;;
       252) n=`expr $n + 6` ; break ;;

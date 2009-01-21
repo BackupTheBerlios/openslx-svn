@@ -11,7 +11,6 @@
 # 
 # Version:      0.3.0b
 
-<<<<<<< .mine
 # distro specific stuff to initialize
 preinit () {
   echo "Creating dhcp user"
@@ -172,7 +171,6 @@ consolefont () {
 echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
   >>/mnt/etc/${D_INITDIR}/boot.ld
 }
-"20" "02"
 # acpi and powersave
 config_acpi () {
   rllinker "acpid" "02" "19"
@@ -404,6 +402,3 @@ config_portmap () {
 config_nis () {
   rllinker "ypbind" "06" "16"
 }
-=======
-# nothing changed from default yet
->>>>>>> .r256

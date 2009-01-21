@@ -373,6 +373,7 @@ kernel_choice "${kernel_choice}"
     echo "Creating initial ramdisk for ${current_kernel}"
     current_initrd=${tftpbootdir}/initrd-dxs-${current_kernel}
     [ -f ${current_initrd} ] && rm ${current_initrd}
+    echo "mkdxsinitrd -f \"$fsmod\" -r ${rootdir} -k ${current_kernel} -i ${current_initrd} -d ${debuglevel}"
     ./mkdxsinitrd -f "$fsmod" -r ${rootdir} -k ${current_kernel} \
       -i ${current_initrd} -d ${debuglevel}
 
@@ -537,7 +538,8 @@ dxs_client_conf="client.cfg/machine-setup.default"
 header
 precheck #(run as root, rsync etc.)
 configure
-copy_system
+#do not sync if "-o" was specified
+[ "$1" = "-o" ] || copy_system
 create_nbd
 create_initrd
 setup_server
