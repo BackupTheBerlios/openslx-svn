@@ -98,7 +98,7 @@ sub cleanup
 {
 	my $self = shift;
 
-	slxsystem('umount /proc');
+	slxsystem('umount /proc 2>/dev/null');
 	slxsystem('rm /proc/cpuinfo');
 }
 
