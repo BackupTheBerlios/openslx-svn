@@ -51,11 +51,13 @@ sub initDistroInfo
 		- /var/lib/xdm
 		- /var/lib/vm/*
 		- /var/lib/suspend*
+		- /var/lib/smart
 		- /var/lib/sax
 		- /var/lib/hardware/*
 		- /var/lib/gdm/*
 		- /var/lib/dhcp*
 		- /var/lib/YaST2/you/mnt/*
+		- /var/cache/yum
 		- /var/cache/man/*
 		- /var/adm/backup/rpmdb/*
 		- /var/adm/SuSEconfig

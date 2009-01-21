@@ -46,6 +46,8 @@ sub initDistroInfo
 		- /var/lock/*
 		- /var/log/*
 		- /var/lib/xdm
+		- /var/lib/smart
+		- /var/cache/yum
 		- /var/cache/man/*
 		- /usr/share/vmware/*
 		- /lib/klibc/events/*
