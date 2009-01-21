@@ -1,0 +1,10 @@
+Package: dxs
+Version: 4-1
+Section: base
+Priority: optional
+Architecture: all
+Depends: bash (>= 3.0), coreutils (>= 5.2.1), sed (>= 4.1.4), mawk (>= 1.3.3), findutils (>= 4.2.22)
+Maintainer: Felix Endres <felix-ld4@256bit.org>
+Description: Diskless Linux Server Setup
+ This project provides a convenient way to setup a server for diskless 
+ clients.

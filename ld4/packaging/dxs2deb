@@ -1,0 +1,86 @@
+#!/bin/sh
+#
+# This script transforms the dxs project files to debians
+# binary package format .deb
+
+DEBUG=0
+# This function makes the directory of this script to the present working directory
+# It is called within precheck()
+# Does also work when called by symbolic links (even for nested links). 
+goto_script_dir()
+{
+  [ $DEBUG -ge 2 ] && echo "Aufgerufen wurde $0, checking if it is a link"
+  calleddetails=`ls -l $0` # get the file flags (e.g. lrwxrwxrwx)
+  [ $DEBUG -ge 2 ] && echo $calleddetails
+  
+  calleddir=${0%/*}  # Strip the filename from path
+  [ $DEBUG -ge 2 ] && echo "Wechsele ins Verzeichnis des aufgerufenen scripts/links ($calleddir)"
+  cd $calleddir
+ 
+  while index=`expr index "$calleddetails" "l"`; 
+        [ $index -eq 1 ]; do
+
+    [ $DEBUG -ge 2 ] && echo "It is a link"
+    target=`echo $calleddetails | awk '{print $NF}'`
+    [ $DEBUG -ge 2 ] && echo "The target of the link is: $target"
+    hasslash=`expr index "$target" "/"`
+    if [ $hasslash -ne 0 ]; then 
+        targetpath=${target%/*} # extract the pathname
+        [ $DEBUG -ge 2 ] && echo "Following link to $targetpath"
+        cd $targetpath
+    else
+        [ $DEBUG -ge 2 ] && echo "It is in the same directory as the link"
+    fi
+    targetfile=`basename $target`
+    [ $DEBUG -ge 2 ] && echo "The target file of the link is: $targetfile"
+    calleddetails=`ls -l $targetfile` # get the file flags (e.g. lrwxrwxrwx)
+    [ $DEBUG -ge 2 ] && echo $calleddetails
+  done
+  [ $DEBUG -ge 2 ] && pwd
+
+}
+dpkg_deb=`which dpkg-deb`
+if [ -z "$dpkg_deb" ];then 
+    echo "You need the program dpkg-deb (contained in package dpkg) to build a debian package"
+    exit
+fi
+
+goto_script_dir
+#Create Temporary working directory
+mkdir -p /tmp/ld$$/usr/share/dxs
+mkdir -p /tmp/ld$$/usr/sbin
+mkdir -p /tmp/ld$$/usr/share/man/man1
+mkdir -p /tmp/ld$$/usr/share/doc/dxs
+mkdir -p /tmp/ld$$/DEBIAN
+cp default_files/control  /tmp/ld$$/DEBIAN/
+cp default_files/prerm    /tmp/ld$$/DEBIAN/
+cp default_files/postinst /tmp/ld$$/DEBIAN/
+cp default_files/mkdxsinitrd.1.gz /tmp/ld$$/usr/share/man/man1/
+
+#Goto project root
+pushd .. > /dev/null
+#copy all relevant file to a tar archive (can't use xargs with cp)
+find -type f| grep -v /\.svn | grep -v \#.*\# | grep ^\./in | grep -v ~$ | xargs tar rf /tmp/ld$$/usr/share/dxs/tmp.tar
+#extract it
+pushd /tmp/ld$$/usr/share/dxs > /dev/null
+tar xf tmp.tar
+rm tmp.tar
+
+#Create links to provide the scripts to the user
+pushd /tmp/ld$$/usr/sbin > /dev/null
+ln -s ../share/dxs/installer/ld4-inst
+ln -s ../share/dxs/initrd/mkdxsinitrd
+
+
+#Set permissions
+find /tmp/ld$$ -type d|xargs chmod 755
+
+#Create the package
+dpkg-deb --build /tmp/ld$$ > /dev/null
+#And bring the package back to the dir of this script
+popd > /dev/null
+popd > /dev/null
+popd > /dev/null
+mv /tmp/ld$$.deb ./dxs.deb
+#rm -rf /tmp/ld$$
+echo "Written './dxs.deb'"
