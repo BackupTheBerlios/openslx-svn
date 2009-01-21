@@ -90,7 +90,7 @@ distro_check() {
         10.0)
           eval "$2=\"10.0\""
         ;;
-        10*)
+        10*|*)
           eval "$2=\"10.1\""
         ;;
       esac
@@ -113,6 +113,7 @@ configure() {
   fi
   . .config
 
+  # FIXME!! network autodetection seems not to work
   if ! [ -z "${netmask}" -a -z "${broadcast}" -a -z "${netname}" -a -z "${server}" ] ; then
     ipcfg=( `ifconfig eth0 | grep "inet addr" | sed -e "s,[a-zA-Z]*:,,g"` )
     netmask=${ipcfg[3]}
@@ -151,12 +152,14 @@ configure() {
   fi
 
   # das grosse frage-antwort-spiel:
-  ask "Server distribution: " server_distro ${server_distro}
+  ask "Server distribution (e.g. debian): " server_distro ${server_distro}
+  #ask "Server distribution version: " server_distro_ver ${server_distro_ver}
   distro_check server_distro server_distro_ver
   echo "Using ${server_distro} as server distribution"
   
   # ask for client distro
-  ask "Client distribution: " client_distro ${client_distro}
+  ask "Client distribution (e.g. debian): " client_distro ${client_distro}
+  ask "Client distribution version (numerical - e.g. 3.1): " client_distro_ver ${client_distro_ver}
   distro_check client_distro client_distro_ver
   echo "Using ${client_distro} as client distribution"
 
@@ -201,7 +204,8 @@ configure() {
 
 copy_system() {
   echo -e "\n\nSyncing system now\nPlease enter root password of client machine\n"
-  rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-${client_distro} ${rsyncsource} ${rootdir}
+  rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-${client_distro} ${rsyncsource} ${rootdir} || { echo "Rsync failed" ; exit 1 }
+  
   # generate error message in case rsync didn't work and exit.
   
   # TODO: mksquashfs (background process)   
@@ -211,42 +215,51 @@ copy_system() {
 # setting up server site configuration files etc.
 setup_server () {
   echo -e "\n\nSetting up server configuration\n"
-  # dhcp
-  if [ -f ${dhcpd_conf} ] ; then
-    echo "Copying old dhcpd.conf to dhcpd.conf.dxs.bak"
-    mv ${dhcpd_conf} ${dhcpd_conf}.dxs.bak
-  fi
-  cp default_files/dhcpd.conf ${dhcpd_conf}
-  sed -e "s,@@@server@@@,${server},g;s,@@@netname@@@,${netname},g;s,@@@netmask@@@,${netmask},g;s,@@@broadcast@@@,${broadcast},g" -i ${dhcpd_conf}
 
+  timestamp=`date +%Y%m%d-%H%M`
+  
+  # creating central dxs configuration directory structure if it doesn't exist
+  for dir in dhcp nfs atftpd pxelinux ; do   # TODO etc...
+    [ -d ${dxs_conf}/${dir} ] || mkdir -p ${dxs_conf}/${dir}
+  done
+
+  # creating new configuration files in $dxs_conf  
+  # dhcp
+  sed -e "s,@@@server@@@,${server},g;s,@@@netname@@@,${netname},g;s,@@@netmask@@@,${netmask},g;s,@@@broadcast@@@,${broadcast},g" default_files/dhcpd.conf > ${dxs_conf}/${dxs_dhcpd_conf}-${timestamp}
   # TODO: sed -e @@@example1@@@, netname+1 etc. - which ip addresses are safe to use?
 
   # atftpd
-  if [ -f ${atftpd_conf} ] ; then
-    echo "Copying old atftpd config file to ${atftpd_conf}.dxs.bak"
-    cp ${atftpd_conf} ${atftpd_conf}.dxs.bak
-  fi
-  ## TODO: MISSING COPY - DISTRO SPECIFIC!!
-  sed -e "s,/tftpboot,${tftpbootdir}," -i ${atftpd_conf}
+  sed -e "s,/tftpboot,${tftpbootdir}," default_files/atftpd_conf > ${dxs_conf}/${dxs_atftpd_conf}-${timestamp}
 
   # nfs
-  exports_conf="/etc/exports"
-  if [ -f ${exports_conf} ] ; then
-    echo "Copying old nfs export file to ${exports_conf}.dxs.bak"
-    mv ${exports_conf} ${exports_conf}.dxs.bak
-  fi
-  echo "${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" >> ${exports_conf}
+  echo -e "# Bla Blub\n \
+  # NFS export entry for DXS\n\
+  ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" >> ${dxs_conf}/${dxs_exports_conf}-${timestamp}
   
   # pxe
-  if [ -e ${tftpbootdir} ] ; then
-    echo "Copying old tftpboot directory to ${tftpbootdir}.dxs.bak"
-    rm -rf ${tftpbootdir}.dxs.bak >/dev/null
-    mv ${tftpbootdir} ${tftpbootdir}.dxs.bak
-  fi
-  cp -r default_files/tftpboot ${tftpbootdir}
-  sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g;s,@@@pxe_passwd@@@,${pxe_passwd},g;s,@@@client_distro@@@,${client_distro},g;s,@@@client_distro_ver@@@,${client_distro_ver},g;s,@@@rootdir@@@,${rootdir},g" -i ${tftpbootdir}/pxelinux.cfg/default
+  [ -d ${tftpbootdir} ] || mkdir -p ${tftpbootdir} 
+  rsync -a --exclude=.svn default_files/tftpboot ${tftpbootdir}
+  
+  sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g;s,@@@pxe_passwd@@@,${pxe_passwd},g;s,@@@client_distro@@@,${client_distro},g;s,@@@client_distro_ver@@@,${client_distro_ver},g;s,@@@rootdir@@@,${rootdir},g" default_files/default > ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
 
-  # TODO: create all kernel entries in default
+  # TODO: loop over kernel and initial ramdisks and create corresponding entries in default
+
+  
+  # backing up original files
+  for cfile in ${dhcpd_conf} ${atftpd_conf} ${exports_conf} ; do
+    if [ -f ${cfile} -a ! -L ${cfile} ] ; then
+      echo "Copying old ${cfile} to ${cfile}"
+      mv ${file} ${file}.original
+    elif [ -L ${cfile} ] ; then 
+      unlink ${cfile}
+    fi
+  done
+
+  # linking files
+  for cfile in "${dxs_dhcpd_conf} ${dhcpd_conf}" "${dxs_atftpd_conf} ${atftpd_conf}" "${dxs_exports_conf} ${exports_conf}" "${dxs_pxedefault_conf} ${pxedefault_conf}" ; do
+    set -- $cfile
+    ln -s ${dxs_conf}/${1}-${timestamp} ${2}
+  done
 
 }
 
@@ -286,7 +299,20 @@ footer() {
 }
 
 
+
+
 ## ------ MAIN ------ ##
+
+pxedefault_conf="pxelinux.cfg/default"
+
+dxs_conf="/etc/dxs/"
+dxs_dhcpd_conf="dhcp/dhcpd.conf"
+dxs_atftpd_conf="atftpd/atftpd"
+dxs_nfs_conf="nfs/exports"
+dxs_pxedefault_conf="pxe/default"
+
+
+
 
 header
 precheck #(run as root, rsync etc.)
