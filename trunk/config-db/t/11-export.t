@@ -32,6 +32,16 @@ is(
 	'no export yet (array context)'
 );
 
+is(
+	my @exportIDs = $configDB->fetchExportIDsOfVendorOS(1), 0, 
+	'vendor-OS 1 has no export IDs yet'
+);
+
+is(
+	@exportIDs = $configDB->fetchExportIDsOfVendorOS(2), 0, 
+	'vendor-OS 2 has no export IDs yet'
+);
+
 my $inExport1 = {
 	'name'         => 'exp-1',
 	'type'         => 'nfs',
@@ -106,6 +116,19 @@ is($export1->{comment},      '',       'export 1 - comment');
 is($export1->{port},         undef,    'export 1 - port');
 is($export1->{server_ip},    undef,    'export 1 - server_ip');
 is($export1->{uri},          undef,    'export 1 - uri');
+
+is(
+	@exportIDs = sort( { $a <=> $b } $configDB->fetchExportIDsOfVendorOS(1)), 
+	2, 'vendor-OS 1 has two export IDs'
+);
+is($exportIDs[0], 1, 'first export ID of vendor-OS 1 (1)');
+is($exportIDs[1], 2, 'second export ID of vendor-OS 1 (2)');
+
+is(
+	@exportIDs = sort( { $a <=> $b } $configDB->fetchExportIDsOfVendorOS(2)), 
+	1, 'vendor-OS 2 has one export IDs'
+);
+is($exportIDs[0], 3, 'first export ID of vendor-OS 2 (3)');
 
 # fetch exports 3 & 1 by id
 ok(

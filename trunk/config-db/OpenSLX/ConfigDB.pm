@@ -1106,6 +1106,8 @@ sub changeGlobalInfo
 	my $id    = shift;
 	my $value = shift;
 
+	return if !defined $self->{'meta-db'}->fetchGlobalInfo($id);
+
 	return $self->{'meta-db'}->changeGlobalInfo($id, $value);
 }
 
@@ -1137,7 +1139,8 @@ sub addSystem
 	foreach my $valRow (@$valRows) {
 		if (!$valRow->{kernel}) {
 			$valRow->{kernel} = 'vmlinuz';
-			warn(
+			vlog(
+				1,
 				_tr(
 					"setting kernel of system '%s' to 'vmlinuz'!",
 					$valRow->{name}
@@ -1764,6 +1767,13 @@ sub addGroup
 	my $self    = shift;
 	my $valRows = _aref(shift);
 
+	_checkCols($valRows, 'group', qw(name));
+
+	foreach my $valRow (@$valRows) {
+		if (!defined $valRow->{priority}) {
+			$valRow->{priority} = '50';
+		}
+	}
 	return $self->{'meta-db'}->addGroup($valRows);
 }
 

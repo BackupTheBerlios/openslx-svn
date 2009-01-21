@@ -103,6 +103,10 @@ sub _doSelect
 			push @vals, $row;
 		}
 	}
+
+	# return undef if there's no result in scalar context
+	return if !wantarray();		
+
 	return @vals;
 }
 
@@ -183,7 +187,7 @@ sub fetchGlobalInfo
 	my $id   = shift;
 
 	return if !length($id);
-	my $sql = "SELECT * FROM global_info WHERE id = " . $self->quote($id);
+	my $sql = "SELECT value FROM global_info WHERE id = " . $self->quote($id);
 	return $self->_doSelect($sql, 'value');
 }
 
@@ -310,10 +314,11 @@ sub fetchGroupByFilter
 
 	$resultCols = '*' unless (defined $resultCols);
 	my $sql = "SELECT $resultCols FROM groups";
-	my $connector;
+	my ($connector, $quotedVal);
 	foreach my $col (keys %$filter) {
 		$connector = !defined $connector ? 'WHERE' : 'AND';
-		$sql .= " $connector $col = '$filter->{$col}'";
+		$quotedVal = $self->{dbh}->quote($filter->{$col});
+		$sql .= " $connector $col = $quotedVal";
 	}
 	return $self->_doSelect($sql);
 }
@@ -628,8 +633,10 @@ sub setClientIDsOfSystem
 	my $clientIDs = shift;
 
 	my @currClients = $self->fetchClientIDsOfSystem($systemID);
-	return $self->_updateRefTable('client_system_ref', $systemID, $clientIDs,
-		'system_id', 'client_id', \@currClients);
+	return $self->_updateRefTable(
+		'client_system_ref', $systemID, $clientIDs, 'system_id', 'client_id', 
+		\@currClients
+	);
 }
 
 sub setGroupIDsOfSystem
@@ -639,8 +646,10 @@ sub setGroupIDsOfSystem
 	my $groupIDs = shift;
 
 	my @currGroups = $self->fetchGroupIDsOfSystem($systemID);
-	return $self->_updateRefTable('group_system_ref', $systemID, $groupIDs,
-		'system_id', 'group_id', \@currGroups);
+	return $self->_updateRefTable(
+		'group_system_ref', $systemID, $groupIDs, 'system_id', 'group_id', 
+		\@currGroups
+	);
 }
 
 sub addClient
@@ -675,9 +684,10 @@ sub setSystemIDsOfClient
 	my $systemIDs = shift;
 
 	my @currSystems = $self->fetchSystemIDsOfClient($clientID);
-	$self->_updateRefTable('client_system_ref', $clientID, $systemIDs,
-		'client_id', 'system_id', \@currSystems);
-	return;
+	return $self->_updateRefTable(
+		'client_system_ref', $clientID, $systemIDs, 'client_id', 'system_id', 
+		\@currSystems
+	);
 }
 
 sub setGroupIDsOfClient
@@ -687,9 +697,10 @@ sub setGroupIDsOfClient
 	my $groupIDs = shift;
 
 	my @currGroups = $self->fetchGroupIDsOfClient($clientID);
-	$self->_updateRefTable('group_client_ref', $clientID, $groupIDs,
-		'client_id', 'group_id', \@currGroups);
-	return;
+	return $self->_updateRefTable(
+		'group_client_ref', $clientID, $groupIDs, 'client_id', 'group_id', 
+		\@currGroups
+	);
 }
 
 sub addGroup
@@ -724,9 +735,10 @@ sub setClientIDsOfGroup
 	my $clientIDs = shift;
 
 	my @currClients = $self->fetchClientIDsOfGroup($groupID);
-	$self->_updateRefTable('group_client_ref', $groupID, $clientIDs, 'group_id',
-		'client_id', \@currClients);
-	return;
+	return $self->_updateRefTable(
+		'group_client_ref', $groupID, $clientIDs, 'group_id', 'client_id', 
+		\@currClients
+	);
 }
 
 sub setSystemIDsOfGroup
@@ -736,9 +748,10 @@ sub setSystemIDsOfGroup
 	my $systemIDs = shift;
 
 	my @currSystems = $self->fetchSystemIDsOfGroup($groupID);
-	$self->_updateRefTable('group_system_ref', $groupID, $systemIDs, 'group_id',
-		'system_id', \@currSystems);
-	return;
+	return $self->_updateRefTable(
+		'group_system_ref', $groupID, $systemIDs, 'group_id', 'system_id', 
+		\@currSystems
+	);
 }
 
 ################################################################################
