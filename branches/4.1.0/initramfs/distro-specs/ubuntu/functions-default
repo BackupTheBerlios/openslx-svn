@@ -92,18 +92,11 @@ done
 config_ntp () {
 local start=07
 local stop=14
-if [ -f /mnt/etc/init.d/ntp ] ; then
+if [ -f /mnt/etc/init.d/ntp -a "x$start_ntp" != "xno" ] ; then
   echo -e "ntp:x:74:65534:NTP daemon:/var/lib/ntp:/bin/false" \
     >>/mnt/etc/passwd
-  testmkd /mnt/var/lib/ntp/var/run/ntp &>/dev/null
-  if [ "x$start_ntp" = "xinitial" ] ; then
-    echo -e "# entry added by $0: $date" \
-      >>/mnt/etc/${D_INITDIR}/boot.slx
-    echo "ntpdate -s -b $ntp_servers >${LOGFILE} 2>&1 &" \
-      >>/mnt/etc/${D_INITDIR}/boot.slx
-  else
-    rllinker "ntp" "$start" "$stop"
-  fi
+  testmkd /mnt/var/lib/ntp/var/run/ntp
+  rllinker "ntp" "$start" "$stop"
 fi
 }
 

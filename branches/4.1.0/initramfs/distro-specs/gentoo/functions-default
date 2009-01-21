@@ -9,7 +9,7 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# configuration script for Gentoo linux distribution to configure OpenSLX
+# Configuration script for Gentoo linux distribution to configure OpenSLX
 # linux diskless clients (executed within initialramfs after genconfig) 
 
 # empty functions are defined at the beginning of /etc/functions
@@ -22,18 +22,6 @@ echo -e "# changes made to this file by $0 (initramfs from $date)" \
   > /etc/rc.conf
 # keytable is set by hwautocfg script (added just for convenience here)
 config_rc_entry "KEYMAP" "${KEYTABLE}" "conf.d/keymaps"
-}
-
-# udev service (fixme: deprecated, check and remove!!)
-udev_hotplug () {
-ln -s /bin/udevd /bin/udevstart && udevstart &
-if [ -x /bin/udevd ] ; then
-  export UDEVD_EXPECTED_SEQNUM=$(cat /sys/kernel/hotplug_seqnum)
-  export UDEVD_EVENT_TIMEOUT=1
-  echo "" > /proc/sys/kernel/hotplug
-  udevd &
-else error "$df_errudev" nonfatal
-fi
 }
 
 # linking runlevel scripts and defining execution order
@@ -179,12 +167,7 @@ if [ -e /mnt/etc/${D_INITDIR}/ntp ] ; then
     echo -e "ntp:!:13099:0:99999:7:::" >>/mnt/etc/shadow
   fi
   testmkd /mnt/var/lib/ntp/var/run/ntp &>/dev/null
-  if [ "x$start_ntp" = "xinitial" ] ; then
-    echo -e "\t# entries added by $0 (InitRamFS from $date)\n\
-\t( ntpdate -s -b $ntp_servers >${LOGFILE} 2>&1 && {\n\t  which \
-hwclock &>/dev/null && hwclock -w;} ) &" \
-      >>/mnt/etc/${D_INITDIR}/boot.slx
-  elif [ "x$start_ntp" = "xyes" ] ; then
+  if [ "x$start_ntp" = "xyes" ] ; then
     rllinker "ntp"
   fi
 fi

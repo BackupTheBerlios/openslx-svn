@@ -26,6 +26,9 @@
 0x1002  0x5834  "Card:ATI Radeon"
 0x1002  0x5964  "Card:ATI Radeon RS482"
 0x1002  0x5974  "Card:ATI Radeon RS482"
+0x1002  0x5b60  "Card:ATI Radeon (generic)"
 0x1002  0x5b70  "Card:ATI Radeon (generic)"
+0x1002  0x5964  "Card:ATI Radeon (generic)"
+
 
 # main database
