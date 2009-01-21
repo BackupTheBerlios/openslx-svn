@@ -369,7 +369,7 @@ if [ -z "$ROOTDIR" ] ; then
   echo "No ROOTDIR given - please use the -r flag! Exiting..."
   exit 1
 fi
-if [ -z "$SYSTEM_NAME" ] ; then
+if [ -z "$SYSTEM_NAME" -a -z "$cdboot" ] ; then
   echo "No system name given - please use the -S flag! Exiting..."
   exit 1
 fi
@@ -440,10 +440,6 @@ done
 # fake the sh link in busybox environment
 echo -e "#!/bin/ash\n/bin/ash \$@" > ${INSTDIR}/bin/sh
 chmod a+x ${INSTDIR}/bin/sh
-
-# fixme: add ext2 stuff until busybox offers these tools again or use mkfs.ext2
-# out of mounted root filesystem (more convenient)??
-#cobi mkfs.ext2 bin
 
 # binaries useful for debugging purposes
 if [ $IRFSDEBUG -gt 2 ] ; then
