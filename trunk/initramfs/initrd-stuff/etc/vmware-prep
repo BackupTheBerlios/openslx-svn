@@ -41,6 +41,8 @@ grep "unionfs" /proc/mounts >/dev/null && \
   mount -o size=1500k -t tmpfs vm-loopimg $loopsrc
 mkdir -p -m a+t $loopdst
 cp ${vmdir}/templ/fd.img /$loopsrc/fd.img
+# compatibility hack
+ln -s /$loopsrc/fd.img /$loopsrc/fd1.img
 chmod a+rw /$loopsrc/fd.img
 mount -n -t msdos -o loop,umask=000 /$loopsrc/fd.img $loopdst
 

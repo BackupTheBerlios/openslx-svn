@@ -379,8 +379,8 @@ if strinfile "SCSI" /tmp/hwsetup.info ; then
   strinfile "CDROM" /tmp/hwsetup.info && { modprobe ${MODPRV} sr_mod;
     modprobe ${MODPRV} sg;
     # just for compatibility to hwsetup (which generates links to scd*)
-    test -b /dev/sr0 && { for i in /dev/sr* ; do 
-      ln -s $i /dev/scd${i#/dev/sr} ; done; }
+    ( waitfor /dev/sr0 1000 && for i in /dev/sr* ; do 
+      ln -s $i /dev/scd${i#/dev/sr} ; done; ) &
     }
   strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} sd_mod
   # check if a (scsi) scanner was detected

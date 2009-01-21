@@ -530,9 +530,9 @@ if [ -f /mnt/etc/${D_SYSCONFDIR}/vmware ] ; then
   cp /etc/.depend.start /mnt/etc/${D_INITDIR}/.depend.start
   # this line should be added to /etc/hotplug.d/usb/50-usb.hotplug
   # to block linux from handling usb events during vmware sessions
-  sed -e '/USB-specific/{;i\' \
-    -e 'ps aux |grep -i vmware| grep -v "grep" &>/dev/null && exit 0' \
-    -e ' }' -i /mnt/etc/hotplug.d/usb/50-usb.hotplug
+  #sed -e '/USB-specific/{;i\' \
+  #  -e 'ps aux |grep -i vmware| grep -v "grep" >/dev/null 2>&1 && exit 0' \
+  #  -e ' }' -i /mnt/etc/hotplug.d/usb/50-usb.hotplug
 else
   error "df_errvmw" nonfatal
 fi
