@@ -365,9 +365,12 @@ case "${DISTRO}" in
   Ubuntu*|ubuntu*)
     DISTRO=ubuntu
     case "${DISTRO_VER}" in
-      Breezy*|breezy*|*)
+      Breezy*|breezy*)
         DISTRO_VER=5.10
         cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib
+      ;;
+     Dapper*|dapper*|*)
+	DISTRO_VER=6.06
       ;;
     esac
     ;;
