@@ -60,8 +60,8 @@ cp -a /rootfs/* /mnt 2>/dev/null
 
 # set greeting and add information on booted system (distro)
 len=$(expr length ${SLXVERSION}${DISTRO})
-vdstr="v${SLXVERSION}/${DISTRO})"
-while [ $len -le 20 ] ; do
+vdstr="V${SLXVERSION}/${DISTRO})"
+while [ $len -le 28 ] ; do
   vdstr="$vdstr "
   len=$(expr $len + 1)
 done
@@ -79,7 +79,7 @@ echo "
          |  |_|  |  |    |  |___|  |  |  |   ____|  |  |___ /  /
            _____/|__|    |______|__|  |__|  |_______|______|__|  |__|
 
-   Stateless Workstation ($vdstr (c) <OpenSLX.ORG project>
+   Stateless Workstation ($vdstr (c) <OpenSLX.ORG>
 ">/mnt/etc/issue
 
 #############################################################################

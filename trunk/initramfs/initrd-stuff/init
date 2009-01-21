@@ -298,6 +298,8 @@ hwautocfg nwmod
 ip link set dev lo up
 ip addr add 127.0.0.1/8 dev lo
 ip link set dev eth0 up || error "$init_noeth"
+macaddr=$(ip link show dev eth0|sed -n "/ether [0-9e-f]\{2\}:.*/p" \
+  |sed -e "s/.*ether //;s/ .*//")
 
 # XEN bridge config
 [ -n "$xenbr" ] && xenbr_config

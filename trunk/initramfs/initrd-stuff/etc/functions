@@ -218,8 +218,8 @@ local netdev="eth${vifnum}"
 local pdev="p${netdev}"
 local vdev="veth${vifnum}"
 local vif0="vif0.${vifnum}"
-local mac=$(ip link show ${netdev} | sed -n '/^.*link\/ether/p' \
-  | sed -e 's/.*ether \(..:..:..:..:..:..\).*/\1/')
+# fixme: that is the mac address of eth0 device
+local mac=$macaddr
 
 brctl addbr ${bridge}
 brctl stp ${bridge} off
@@ -373,7 +373,6 @@ if [ -n "$filesrc" ] ; then
   local cfgfile="/$(uri_token $filesrc path)"
   local tftpserver=$(checkip $(uri_token $filesrc server))
   tftpgetunpack $tftp $cfgfile $tftpserver
-  echo "tftpgetunpack $tftp $cfgfile $tftpserver" >> /tmp/confviafile
 else
   # predefined value for openslx environment; it is expected that this
   # directory is just below the tftpboot/tftproot (path to which the 
@@ -384,7 +383,7 @@ else
   # and try last distro default ...
   echo -e "\n## Configuration via fileget: Hierarchy is distro client \
 and as last\n# distro/default" >> /tmp/confviafile
-  mac=$(echo $MAC|sed "s/:/-/g")
+  mac=$(echo $macaddr|sed "s/:/-/g")
   for cfgfile in $cfgdir/$DISTRO/01-$mac.tgz $cfgdir/$DISTRO/default.tgz \
                  $cfgdir/01-$mac.tgz $cfgdir/default.tgz ; do
     tftpgetunpack $cfgfile $tftpserver && break
