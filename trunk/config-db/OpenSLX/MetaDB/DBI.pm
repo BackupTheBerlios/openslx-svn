@@ -335,7 +335,7 @@ sub _doInsert
 
 	my $dbh = $self->{'dbh'};
 	my $valRow = (@$valRows)[0];
-	return if !defined $valRow;
+	return if !defined $valRow || !scalar keys %$valRow;
 
 	if ($table =~ m[_ref$]) {
 		# reference tables do not have IDs:
@@ -357,10 +357,10 @@ sub _doInsert
 		my $cols = join ', ', keys %$valRow;
 		my $values = join ', ', map { $self->quote($valRow->{$_}) } keys %$valRow;
 		my $sql = "INSERT INTO $table ( $cols ) VALUES ( $values )";
+		vlog 3, $sql;
 		my $sth = $dbh->prepare($sql)
 			or confess _tr(q[Can't insert into table <%s> (%s)], $table,
 						$dbh->errstr);
-		vlog 3, $sql;
 		$sth->execute()
 			or confess _tr(q[Can't insert into table <%s> (%s)], $table,
 						   $dbh->errstr);
@@ -394,10 +394,10 @@ sub _doDelete
 				$sql .= $additionalWhereClause;
 			}
 		}
+		vlog 3, $sql;
 		my $sth = $dbh->prepare($sql)
 			or confess _tr(q[Can't delete from table <%s> (%s)], $table,
 						$dbh->errstr);
-		vlog 3, $sql;
 		$sth->execute()
 			or confess _tr(q[Can't delete from table <%s> (%s)], $table,
 						   $dbh->errstr);
@@ -414,7 +414,7 @@ sub _doUpdate
 
 	my $dbh = $self->{'dbh'};
 	my $valRow = (@$valRows)[0];
-	return if !defined $valRow;
+	return if !defined $valRow || !scalar keys %$valRow;
 
 	my $idx = 0;
 	foreach my $valRow (@$valRows) {
@@ -432,9 +432,9 @@ sub _doUpdate
 		if (defined $id) {
 			$sql .= " WHERE id = ".$self->quote($id);
 		}
+		vlog 3, $sql;
 		my $sth = $dbh->prepare($sql)
 			or confess _tr(q[Can't update table <%s> (%s)], $table, $dbh->errstr);
-		vlog 3, $sql;
 		$sth->execute()
 			or confess _tr(q[Can't update table <%s> (%s)], $table,
 						   $dbh->errstr);
