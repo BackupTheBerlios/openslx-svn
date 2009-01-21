@@ -121,7 +121,7 @@ sub writeAttributesToFile
 	foreach my $attr (@attrs) {
 		if (length($attrHash->{$attr}) > 0) {
 			my $externalAttrName = externalAttrName($attr);
-			print ATTRS "$externalAttrName = $attrHash->{$attr}\n";
+			print ATTRS "$externalAttrName=$attrHash->{$attr}\n";
 		}
 	}
 	close(ATTRS);
