@@ -1,0 +1,73 @@
+Author: Adam Slattery slattery at students.missouri.edu
+Subject: [BusyBox] rpm2cpio bzip2 decompression (patch included)
+URL: http://www.busybox.net/lists/busybox/2004-May/011669.html
+CVS: http://www.busybox.net/cgi-bin/viewcvs.cgi/trunk/busybox/patches/rpm2cpio_bzip2.patch?rev=9001
+
+Index: busybox-1.2.2/archival/Config.in
+===================================================================
+--- busybox-1.2.2.orig/archival/Config.in
++++ busybox-1.2.2/archival/Config.in
+@@ -127,6 +127,14 @@ config CONFIG_RPM2CPIO
+ 	help
+ 	  Converts an RPM file into a CPIO archive.
+ 
++config CONFIG_FEATURE_RPM2CPIO_BZIP2
++	bool "  Support bzip2 decompression"
++	default n
++	depends on CONFIG_RPM2CPIO
++	help
++	  If you enable this option you'll be able to extract
++	  rpms compressed with bzip2.
++
+ config CONFIG_RPM
+ 	bool "rpm"
+ 	default n
+Index: busybox-1.2.2/archival/libunarchive/Makefile.in
+===================================================================
+--- busybox-1.2.2.orig/archival/libunarchive/Makefile.in
++++ busybox-1.2.2/archival/libunarchive/Makefile.in
+@@ -59,6 +59,7 @@ LIBUNARCHIVE-$(CONFIG_FEATURE_DEB_TAR_LZ
+ LIBUNARCHIVE-$(CONFIG_GUNZIP) += $(GUNZIP_FILES)
+ LIBUNARCHIVE-$(CONFIG_FEATURE_GUNZIP_UNCOMPRESS) += decompress_uncompress.o
+ LIBUNARCHIVE-$(CONFIG_RPM2CPIO) += $(GUNZIP_FILES) get_header_cpio.o
++LIBUNARCHIVE-$(CONFIG_FEATURE_RPM2CPIO_BZIP2) += decompress_bunzip2.o
+ LIBUNARCHIVE-$(CONFIG_RPM) += $(GUNZIP_FILES) get_header_cpio.o
+ LIBUNARCHIVE-$(CONFIG_TAR) += get_header_tar.o
+ LIBUNARCHIVE-$(CONFIG_FEATURE_TAR_BZIP2) += decompress_bunzip2.o get_header_tar_bz2.o
+Index: busybox-1.2.2/archival/rpm2cpio.c
+===================================================================
+--- busybox-1.2.2.orig/archival/rpm2cpio.c
++++ busybox-1.2.2/archival/rpm2cpio.c
+@@ -91,15 +91,27 @@ int rpm2cpio_main(int argc, char **argv)
+ 	skip_header(rpm_fd);
+ 
+ 	bb_xread_all(rpm_fd, &magic, 2);
+-	if ((magic[0] != 0x1f) || (magic[1] != 0x8b)) {
+-		bb_error_msg_and_die("Invalid gzip magic");
++	if ((magic[0] == 0x1f) || (magic[1] == 0x8b)) {
++		check_header_gzip(rpm_fd);
++		if (inflate_gunzip(rpm_fd, fileno(stdout)) != 0)
++			bb_error_msg("Error inflating (gzip)");
+ 	}
+ 
+-	check_header_gzip(rpm_fd);
+-	if (inflate_gunzip(rpm_fd, STDOUT_FILENO) != 0) {
+-		bb_error_msg("Error inflating");
++	if ((magic[0] == 'B') && (magic[1] == 'Z')) {
++#ifdef CONFIG_FEATURE_RPM2CPIO_BZIP2
++		/* return to position before magic (eek..!) */
++		lseek(rpm_fd, -2, SEEK_CUR);
++		if(uncompressStream(rpm_fd, fileno(stdout)) != 0)
++			bb_error_msg("Error inflating (bzip2)");
++#else
++		bb_error_msg_and_die("bzip2 not supported");
++#endif
+ 	}
+ 
++	else
++		bb_error_msg_and_die("not gzip or bzip2 compressed");
++  
++
+ 	close(rpm_fd);
+ 
+ 	return 0;
