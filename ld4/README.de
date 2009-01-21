@@ -47,3 +47,16 @@ der Clients (/export oder /nfsroot).
 Insgesamt booten Rechner mit der neuen Diskless Variante deutlich schneller 
 als früher ld3.4 1Minute++, nun 30Sekunden+ und generiert selbst im 
 Standard-NFS/Bindmount-Betrieb deutlich weniger Netzwerk-Traffic.
+
+Installation
+
+Derzeit ist nur die Installation von einem Referenzsystem moeglich. Das regelt
+das Skript ld4/installer/ld4-inst. Dieses stellt die von der Vorgaengerversion
+bekannten Fragen und legt dabei ein Verzeichnis /etc/dxs auf dem Server an, in
+dem sich die meisten Konfigurationsdateien befinden.
+
+Das Installationsskript ruft ld4/initrd/mkdxsinitrd auf, welches ein Initramfs
+fuer die Diskless X Stations generiert. Nach jedem Kernel-Update oder
+Aenderungen, die den Initialstart betreffen, muss es neu aufgerufen werden.
+Siehe auch http://132.230.4.73/trac/dxs !!
+

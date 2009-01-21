@@ -4,7 +4,7 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 12-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 19-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -165,16 +165,16 @@ fi
 # basic (non network) services
 
 # at daemon - calling distro specific function config_atd
-config_atd "14" "04"
+config_atd
 
 # configuration of cron services - calling distro specific function 
 # config_cron (runlevel links, directories, ...)
 [ "x$crontab_entries" != "x" ] && \
     echo -e "$crontab_entries" >> /mnt/etc/crontab
-config_cron "16" "04"
+config_cron
 
 # setup system log services - distro dependent function config_syslog
-config_syslog "02" "20"
+config_syslog
 
 # configure dbus - distro dependent function config_dreshal - handle all
 # stuff regarding dependent services like dbus, resmgr, hal ...
