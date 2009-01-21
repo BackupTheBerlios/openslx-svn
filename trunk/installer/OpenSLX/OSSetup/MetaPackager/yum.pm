@@ -43,6 +43,15 @@ sub initialize
 	$ENV{LC_ALL} = 'POSIX';
 }
 
+sub initPackageSources
+{
+	my $self = shift;
+
+	slxsystem("cp /proc/cpuinfo $self->{engine}->{'vendor-os-path'}/proc");
+	slxsystem("rm -f $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d/*");
+	slxsystem("mkdir -p $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d");
+}
+
 sub setupPackageSource
 {
 	my $self = shift;
@@ -54,9 +63,6 @@ sub setupPackageSource
 		$repoURL .= "/$repoInfo->{'repo-subdir'}";
 	}
 	my $repoDescr = "[$repoName]\nname=$repoInfo->{name}\nbaseurl=$repoURL\n";
-	slxsystem("cp /proc/cpuinfo $self->{engine}->{'vendor-os-path'}/proc");
-	slxsystem("rm -f $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d/*");
-	slxsystem("mkdir -p $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d");
 	my $repoFile
 		= "$self->{engine}->{'vendor-os-path'}/etc/yum.repos.d/$repoName.repo";
 	open(REPO, "> $repoFile")

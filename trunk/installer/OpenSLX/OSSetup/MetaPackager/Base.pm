@@ -35,6 +35,10 @@ sub initialize
 	$self->{'engine'} = $engine;
 }
 
+sub initPackageSources
+{
+}
+
 sub setupPackageSource
 {
 }

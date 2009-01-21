@@ -710,6 +710,7 @@ sub updateStage1D
 	my $self = shift;
 
 	vlog 1, "updating $self->{'vendor-os-name'}...";
+$self->stage1D_setupPackageSources();
 	$self->stage1D_updateBasicVendorOS();
 }
 
@@ -718,6 +719,7 @@ sub stage1D_setupPackageSources()
 	my $self = shift;
 
 	vlog 1, "setting up package sources for meta packager...";
+	$self->{'meta-packager'}->initPackageSources();
 	my ($rk, $repo);
 	while(($rk, $repo) = each %{$self->{'distro-info'}->{repository}}) {
 		vlog 2, "setting up package source $rk...";
