@@ -2,7 +2,7 @@
 # (included by init, hwautocfg, servconfig, ... within OpenSLX initial
 # ramfs)
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 02-10-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 13-10-2006
 # Felix Endres, 30-04-2006
 # <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 # Tobias Maier
@@ -244,6 +244,9 @@ case $ipcfg in
     fi
     MAC=$(ip link show dev $if|sed -n "/ether [0-9e-f]\{2\}:.*/p" \
       | sed -e "s/.*ether //;s/ .*//")
+    # if multicast is required for dnbd
+    [ -n "$nbdhost" ] && [ `echo $nbdhost|sed "s,\..*,,"` -ge 224 ] && \
+      ip route add 224.0.0.0/4 dev eth0
   ;;
   # the klibc ip configuration / dhcp client tool
   ipconfig)
@@ -261,6 +264,9 @@ case $ipcfg in
     [ "$gw" != "0.0.0.0" ] && route add default gw $gw
     MAC=$(ifconfig $if|sed -n "/HWaddr [0-9A-F]\{2\}:.*/p" \
       | sed -e "s/.*HWaddr //;y/ABCDEF/abcdef/")
+    # if multicast is required for dnbd
+    [ -n "$nbdhost" ] && [ `echo $nbdhost|sed "s,\..*,,"` -ge 224 ] && \
+      route add -net 224.0.0.0 netmask 240.0.0.0 dev eth0
   ;;
   none)
     error "$error_iptool"
@@ -867,8 +873,8 @@ case "${XMODULE}" in
       && test -f /mnt/usr/X11R6/lib/modules/drivers/fglrx_drv.* && \
          XMODULE=fglrx
       # there seems no problem, if no TV is connected
-      TVOUT='\tOption\t\t"TVFormat" "PAL-B"\n
-\tOption\t\t"DesktopSetup" "horizontal"'
+      #TVOUT='\tOption\t\t"TVFormat" "PAL-B"\n
+#\tOption\t\t"DesktopSetup" "horizontal"'
   ;;
   nv)
     #

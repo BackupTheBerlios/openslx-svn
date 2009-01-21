@@ -2238,6 +2238,10 @@ DRIVER radeon
 NAME ATI Radeon X800XT
 DRIVER radeon
 
+#NAME ATI Radeon Xpress 200
+#DRIVER fglrx # radeon leads to  black screen ?!?
+
+
 ######################################################################
 NAME ATI Rage Fury Pro AGP
 CHIPSET ATI
@@ -3374,6 +3378,10 @@ NOCLOCKPROBE
 
 NAME NVIDIA Quadro FX (generic)
 CHIPSET Quadro FX
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA GeForce 6150
 DRIVER nv
 NOCLOCKPROBE
 

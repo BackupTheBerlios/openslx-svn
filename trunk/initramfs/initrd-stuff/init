@@ -291,6 +291,8 @@ if [ -n "${nbdmod}" ] ; then
       ;;
     # dnbd by Thorsten Zitterell
     dnbd)
+      # quickhack
+      
       if [ -z $nodnbdcache ] ; then  # variable not really used yet
         mkdir /dnbd
         mount -n -o 'size=10%' -t tmpfs tmpfs /dnbd
