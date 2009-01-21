@@ -410,18 +410,63 @@ sub createMetaPackager
 	$self->{'meta-packager'} = $metaPackager;
 }
 
-sub selectBaseURL
+sub sortRepositoryURLs
 {
 	my $self = shift;
 	my $repoInfo = shift;
 
-	my $baseURL = $repoInfo->{url};
-	if (!defined $baseURL) {
-		my @baseURLs = string2Array($repoInfo->{urls});
+	my %urlInfo;
+	# specified URL always has highest precedence:
+	$urlInfo{$repoInfo->{url}} = 0		if defined $repoInfo->{url};
+	# now add all others sorted by "closeness":
+	my $index = 1;
+	foreach my $url (string2Array($repoInfo->{urls})) {
 		# TODO: insert a closest mirror algorithm here!
-		$baseURL = $baseURLs[0];
+		$urlInfo{$url} = $index++;
 	}
-	return $baseURL;
+	my @URLs = sort { $urlInfo{$a} <=> $urlInfo{$b} } keys %urlInfo;
+	return \@URLs;
+}
+
+sub downloadBaseFiles
+{
+	my $self = shift;
+	my $files = shift;
+
+	my $pkgSubdir = $self->{'distro-info'}->{'package-subdir'};
+	my @URLs = @{$self->{'baseURLs'}};
+	my $maxTryCount = 5;	# TODO: make this configurable!
+
+	my @foundFiles;
+	foreach my $fileVariantStr (@$files) {
+		my $tryCount = 0;
+		next unless $fileVariantStr =~ m[\S];
+		my $foundFile;
+try_next_url:
+		my $url = $URLs[$self->{'baseURL-index'}];
+		$url .= "/$pkgSubdir"	if length($pkgSubdir);
+		foreach my $file (split '\s+', $fileVariantStr) {
+			vlog 2, "fetching <$file>...";
+			if (slxsystem("wget", "$url/$file") == 0) {
+				$foundFile = basename($file);
+				last;
+			}
+		}
+		if (!defined $foundFile) {
+			if ($tryCount < $maxTryCount) {
+				$tryCount++;
+				$self->{'baseURL-index'}
+					= ($self->{'baseURL-index'}+1) % scalar(@URLs);
+				vlog 0, _tr("switching to mirror '%s'.",
+							$URLs[$self->{'baseURL-index'}]);
+				goto try_next_url;
+			}
+			die _tr("unable to fetch '%s' from any mirrors!\n",
+					$fileVariantStr);
+		}
+		push @foundFiles, $foundFile;
+	}
+	return @foundFiles;
 }
 
 sub setupStage1A
@@ -621,22 +666,19 @@ sub stage1B_chrootAndBootstrap
 		or die _tr("unable to chdir into '%s' (%s)\n", "/$self->{stage1bSubdir}", $!);
 
 	# fetch prerequired packages:
-	my $baseURL
-		= $self->selectBaseURL($self->{'distro-info'}->{repository}->{base});
-	my $pkgDirURL = $baseURL;
-	if (length($self->{'distro-info'}->{'package-subdir'})) {
-		$pkgDirURL .= "/$self->{'distro-info'}->{'package-subdir'}";
-	}
+	$self->{'baseURLs'}
+		= $self->sortRepositoryURLs($self->{'distro-info'}->{repository}->{base});
+	$self->{'baseURL-index'} = 0;
 	my @pkgs = string2Array($self->{'distro-info'}->{'prereq-packages'});
-	my @prereqPkgs = downloadFilesFrom(\@pkgs, $pkgDirURL);
+	my @prereqPkgs = $self->downloadBaseFiles(\@pkgs);
 	$self->{packager}->unpackPackages(\@prereqPkgs);
 
 	@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-prereq-packages'});
-	my @bootstrapPrereqPkgs = downloadFilesFrom(\@pkgs, $pkgDirURL);
+	my @bootstrapPrereqPkgs = $self->downloadBaseFiles(\@pkgs);
 	$self->{'local-bootstrap-prereq-packages'} = \@bootstrapPrereqPkgs;
 
 	@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-packages'});
-	my @bootstrapPkgs = downloadFilesFrom(\@pkgs, $pkgDirURL);
+	my @bootstrapPkgs = $self->downloadBaseFiles(\@pkgs);
 	my @allPkgs = (@prereqPkgs, @bootstrapPrereqPkgs, @bootstrapPkgs);
 	$self->{'local-bootstrap-packages'}	= \@allPkgs;
 }
@@ -868,40 +910,6 @@ sub string2Array
 		grep { length($_) > 0 }
 		map { $_ =~ s[^\s*(.+?)\s*$][$1]; $_ }
 		split "\n", $str;
-}
-
-sub downloadFilesFrom
-{
-	my $files = shift;
-	my $baseURL = shift;
-
-	my @foundFiles;
-	my @contFlags = ('-c');
-		# default to trying to continue partial downloads
-	foreach my $fileVariantStr (@$files) {
-		next unless $fileVariantStr =~ m[\S];
-		my $foundFile;
-		foreach my $file (split '\s+', $fileVariantStr) {
-			vlog 2, "fetching <$file>...";
-retry:
-			if (slxsystem("wget", @contFlags, "$baseURL/$file") == 0) {
-				$foundFile = basename($file);
-				last;
-			}
-			if (scalar(@contFlags)) {
-				# server probably doesn't support continuing downloads, so we
-				# remove the continue-flag and retry:
-				shift @contFlags;
-				goto retry;
-			}
-		}
-		if (!defined $foundFile) {
-			die _tr("unable to fetch '%s' from '%s' (%s)\n", $fileVariantStr,
-					$baseURL, $!);
-		}
-		push @foundFiles, $foundFile;
-	}
-	return @foundFiles;
 }
 
 1;
