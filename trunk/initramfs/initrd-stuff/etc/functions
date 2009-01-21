@@ -922,9 +922,6 @@ include_in_fsroot_union () {
 
 # kdmrc template started from distro specific functions files
 config_kdm_template () {
-usetheme=false
-themeconf=$(ls /mnt/var/lib/openslx/themes/displaymanager/*.xml 2>/dev/null)
-[ -r "${themeconf}" ] && usetheme=true
 # check if a kdmrc was provided via ConfTGZ
 [ -f /rootfs/${kdmrcdir}/kdmrc ] || \
   echo -e "# ${kdmrcdir}/kdmrc - \
@@ -978,7 +975,7 @@ AntiAliasing=true
 Language=$lang
 EchoMode=OneStar
 ShowLog=false
-UseTheme=${usetheme}
+UseTheme=false
 Theme=/var/lib/openslx/themes/displaymanager
 UseBackground=true
 BackgroundCfg=/var/lib/openslx/themes/displaymanager/backgroundrc
