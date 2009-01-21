@@ -58,13 +58,11 @@ for xml in *.xml;do
     # TODO: Test
     echo "PANIC, image is not correct defined in ${xml}."
     echo "Image has to end with vdi or vmdk!"
-    exit 0
   fi
 
   # Test if image is available
-  if [ ! -f ${image} ]; then
+  if [ ! -f ../${image} ]; then
     echo "PANIC, image defined in ${xml} not available"
-    exit 0
   fi
 
 
@@ -81,7 +79,6 @@ for xml in *.xml;do
   # we need the pool configuration
   if ! [ "${pools}" ]; then
     echo "PANIC, pools not correct defined in ${xml}"
-    exit 0
   fi
 
 
@@ -90,21 +87,18 @@ for xml in *.xml;do
   # Test if correct defined
   if [ "${vm}" != "vbox"  -a  "${vm}" != "vmware" ]; then
     echo "PANIC, virtualmachine not correct defined in ${xml}"
-    exit 0
   fi
 
   # Test if vbox and wrong image
   if [ "${vm}" = "vbox"  -a  "${image_type}" != "vdi" ]; then
     # TODO: Test
     echo "PANIC, virtualmachine vbox cant use image type defined in ${xml}"
-    exit 0
   fi
 
   # Test if vmware and wrong image 
   if [ "${vm}" = "vmware"  -a  "${image_type}" != "vmdk" ]; then
     # TODO: Test
     echo "PANIC, virtualmachine vmware cant use image type defined in ${xml}"
-    exit 0
   fi
 
   
@@ -115,7 +109,6 @@ for xml in *.xml;do
   if [ "${network}" != "nat"  -a  "${network}" != "bridged" ]; then
     # TODO: test
     echo "PANIC, network connection not correct defined in ${xml}"
-    exit 0
   fi
 
   
@@ -124,7 +117,6 @@ for xml in *.xml;do
   if [ "${os}" != "Linux"  -a  "${os}" != "winxppro" -a "${os}" != "Windows 2000" ]; then
     # TODO: test
     echo "PANIC, OS in virtual machine not correct defined in ${xml}"
-    exit 0
   fi
     
    
@@ -147,7 +139,6 @@ for xml in *.xml;do
   if [ "${xdm}" != "true"  -a  "${xdm}" != "false" ]; then
     # TODO: test
     echo "PANIC, XDM usage not correct defined in ${xml}"
-    exit 0
   fi
 
   # Get priority, use it for important Images in Xdialog
@@ -204,7 +195,7 @@ for xml in *.xml;do
     if [ ${active} -eq 1  -a  ${xdm} = "true" ]; then
 
       # create desktopentry
-      echo -e "\nCreating xdm entry for ${image} and pool ${i}\n"
+      #echo -e "\nCreating xdm entry for ${image} and pool ${i}\n"
       # create the desktopentry
       #TODO: change it with < EOF, >> isnt nice for so much lines
       echo "Desktop entry for ${image}" \
@@ -268,13 +259,37 @@ for xml in *.xml;do
         echo "${image} isnt enabled"
       else 
         echo "Currently Virtualbox isn't implented"
-        exit 0
       fi
     fi
 
   done
 
 done
+
+
+# test if we still have this xml file, else we can delete the old entry
+for i in xdmsessions/*/*.desktop; do
+  # get the name, cut all the folder information and file prefix off
+  name=$(echo ${i} |sed 's/.*\///' | sed 's/.vmdk.desktop//' | sed 's/.vbox.desktop//' | sed 's/^[0-9]_//')
+  # if not available as xml delete it
+  if [ ! -f ${name}.xml ]; then
+    echo "delete file ./${i}, no matching xml found"
+    rm -rf ${i}
+  fi
+done
+
+
+# test if we still have this xml file, else we can delete the old entry
+for i in xdialog-files/*/*.xdialog; do
+  # get the name, cut all the folder information and file prefix off
+  name=$(echo ${i} |sed 's/.*\///' | sed 's/.vmdk.xdialog//' | sed 's/.vbox.xdialog//' | sed 's/^[0-9]_//')
+  # if not available as xml delete it
+  if [ ! -f ${name}.xml ]; then
+    echo "delete file ./${i}, no matching xml found"
+    rm -rf ${i}
+  fi
+done
+
 
 # Building Xdialog executable for each pool
 for i in ${vmdir}/xdialog-files/*; do
@@ -288,3 +303,5 @@ done
 
 # Delete all .utf files, we dont need them anymore
 rm -f *.xml.utf
+
+
