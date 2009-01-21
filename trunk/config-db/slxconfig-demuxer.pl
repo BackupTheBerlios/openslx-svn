@@ -190,7 +190,7 @@ sub createTarOfPath
 	mkdir $destinationPath;
 	my $tarCmd = "cd $buildPath && tar czf $tarFile *";
 	if (system("$tarCmd") != 0) {
-		die _tr("unable to execute shell-command:\n\t%s \n\t($!)", $tarCmd);
+		die _tr("unable to execute shell-command:\n\t%s \n\t(%s)", $tarCmd, $!);
 	}
 }
 
