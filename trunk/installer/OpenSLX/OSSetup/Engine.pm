@@ -39,7 +39,7 @@ use vars qw(%supportedDistros);
 	'fedora-6'
 		=> { module => 'Fedora_6', support => 'clone,install' },
 	'fedora-6_x86_64'
-		=> { module => 'Fedora_6_x86_64', support => 'clone' },
+		=> { module => 'Fedora_6_x86_64', support => 'clone,install' },
 	'gentoo-2005.1'
 		=> { module => 'Gentoo_2005_1', support => 'clone' },
 	'gentoo-2006.1'
