@@ -8,6 +8,8 @@
 # (c) 2006, 2007 - OpenSLX GmbH
 
 DESTDIR = /
+# enforce the use of bash (/bin/sh might be a link to incomplete shells)
+SHELL = /bin/bash
 
 # the following defaults should be filled via 'configure'
 # and each of them can be overriden by setting the environment variable
