@@ -84,13 +84,22 @@ sub UpdateTrModule
 	}
 	my %translations;
 	if (!eval "$&") {
-		print "\t*** Something No translations found (?!?) file will be skipped! ***\n";
+		print "\t*** translations can't be evaluated (?!?) file will be skipped! ***\n";
+		return;
+	}
 	my $updatedTranslations = "%translations = (\n";
 	foreach my $tr (sort {lc($a) cmp lc($b)} keys %translatableStrings) {
-		if (!exists $translations{$tr} && $useKeyAsTranslation) {
-			# POSIX language: use key as translation:
-			$updatedTranslations
-				.= "\tqq{$tr}\n\t\t => qq{$tr},\n\n";
+		if (!length($translations{$tr})) {
+			if ($useKeyAsTranslation) {
+				# POSIX language: use key as translation:
+				$updatedTranslations
+					.= "\tqq{$tr}\n\t\t => qq{$tr},\n\n";
+			} else {
+				# no translation available, we mark the key, such that a
+				# search for this key will fall back to the english message:
+				$updatedTranslations
+					.= "\tqq{NEW:$tr}\n\t\t => qq{$translations{$tr}},\n\n";
+			}
 		} else {
 			# use existing translation for key:
 			$updatedTranslations
