@@ -382,6 +382,8 @@ sub writePXEMenus
 		$pxeTemplate .= slurpFile($pxeThemeConfig);
 	}
 
+print "$pxeTemplate\n";
+
 	# fetch info about margin and replace the corresponding placeholders
 	my $margin = $openslxConfig{'pxe-theme-menu-margin'} || 0;
 	my $marginAsText = ' ' x $margin;
@@ -450,10 +452,7 @@ sub writePXEMenus
 
 		# PXE uses 'cp850' (codepage 850) but our string is in utf-8, we have
 		# to convert in order to avoid showing gibberish on the client side...
-		use Encode 'from_to';
-		from_to($pxeConfig, 'utf-8', 'cp850');
-
-		spitFile($pxeFile, $pxeConfig);
+		spitFile($pxeFile, $pxeConfig, { 'io-layer' => 'encoding(cp850)' } );
 	}
 	return;
 }

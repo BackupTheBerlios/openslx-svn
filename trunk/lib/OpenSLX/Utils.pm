@@ -100,13 +100,17 @@ sub slurpFile
 	my $fileName = shift || confess 'need to pass in fileName!';
 	my $flags    = shift || {};
 
-	checkParams($flags, { 'failIfMissing' => '?' });
+	checkParams($flags, { 
+		'failIfMissing' => '?',
+		'io-layer' => '?',
+	});
 	my $failIfMissing 
 		= exists $flags->{failIfMissing} ? $flags->{failIfMissing} : 1;
+	my $ioLayer = $flags->{'io-layer'} || 'utf8';
 
 	local $/;
 	my $fh;
-	if (!open($fh, '<', $fileName)) {
+	if (!open($fh, "<:$ioLayer", $fileName)) {
 		return '' unless $failIfMissing;
 		croak _tr("could not open file '%s' for reading! (%s)", $fileName, $!);
 	}
@@ -120,9 +124,15 @@ sub spitFile
 {
 	my $fileName = shift || croak 'need to pass in a fileName!';
 	my $content  = shift;
+	my $flags    = shift || {};
+
+	checkParams($flags, { 
+		'io-layer' => '?',
+	});
+	my $ioLayer = $flags->{'io-layer'} || 'utf8';
 
 	my $fh;
-	open($fh, '>', $fileName)
+	open($fh, ">:$ioLayer", $fileName)
 	  or croak _tr("unable to create file '%s' (%s)\n", $fileName, $!);
 	print $fh $content
 	  or croak _tr("unable to print to file '%s' (%s)\n", $fileName, $!);
@@ -135,9 +145,15 @@ sub appendFile
 {
 	my $fileName = shift || croak 'need to pass in a fileName!';
 	my $content  = shift;
+	my $flags    = shift || {};
+
+	checkParams($flags, { 
+		'io-layer' => '?',
+	});
+	my $ioLayer = $flags->{'io-layer'} || 'utf8';
 
 	my $fh;
-	open($fh, '>>', $fileName)
+	open($fh, ">>:$ioLayer", $fileName)
 	  or croak _tr("unable to create file '%s' (%s)\n", $fileName, $!);
 	print $fh $content
 	  or croak _tr("unable to print to file '%s' (%s)\n", $fileName, $!);
