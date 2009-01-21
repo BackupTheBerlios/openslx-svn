@@ -298,7 +298,6 @@ waitfor /tmp/hwrun1 50000 || \
   error "  Expected information from hwsetup to appear in \
 /tmp/hwsetup.info.\n  Unable to configure parts of the systems hardware. \
 Please check that\n  hwsetup is properly installed and executable."
-
 # load ide drivers first, takes a while to initialize
 for DRIVER in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
     triflex aec62xx cs5530 ns87415 sc1200 trm290 alim15x3 \
@@ -341,6 +340,10 @@ if [ -f /etc/sysconfig/sound ] ; then
   . /etc/sysconfig/sound
 else DRIVER="snd-dummy"
 fi
+# special hack
+#if [ "${DRIVER}" = "snd-atiixp" ] ; then
+#  rmmod snd_atiixp_modem snd_atiixp
+#fi
 modprobe ${MODPRV} ${DRIVER}
 
 DRIVERLIST="${DRIVERLIST} ${DRIVER} "
