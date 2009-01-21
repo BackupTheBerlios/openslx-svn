@@ -81,6 +81,20 @@ sub initDistroInfo
 			language-pack-de
 			linux-image-generic
 		",
+		'gnome' => "
+			<<<default>>>
+			ubuntu-desktop
+		",
+
+		'kde' => "
+			<<<default>>>
+			kubuntu-desktop
+		",
+
+		'xfce' => "
+			<<<default>>>
+			xubuntu-desktop
+		",
 	};
 	return;
 }

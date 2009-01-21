@@ -213,6 +213,14 @@ sub pickKernelFile
 	return $newestKernelFile;
 }
 
+sub preSystemInstallationHook
+{
+}
+
+sub postSystemInstallationHook
+{
+}
+
 1;
 ################################################################################
 

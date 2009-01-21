@@ -64,6 +64,16 @@ sub initDistroInfo
 			linux-image-486
 			locales-all
 		",
+
+		'gnome' => "
+			<<<default>>>
+			gnome
+		",
+
+		'kde' => "
+			<<<default>>>
+			kde
+		",
 	};
 
 	return;

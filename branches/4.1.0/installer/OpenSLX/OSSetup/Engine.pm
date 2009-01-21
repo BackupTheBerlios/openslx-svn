@@ -34,7 +34,7 @@ use vars qw(%supportedDistros);
 
 %supportedDistros = (
 	'debian-3.1' => {
-		module => 'Debian_3_1',       support => 'clone'
+		module => 'Debian_3_1',       support => 'clone,install'
 	},
 	'debian-4.0' => {
 		module => 'Debian_4_0',       support => 'clone,install'
@@ -1153,9 +1153,11 @@ sub _setupStage1D
 	$self->_callChrootedFunction({
 		chrootDir    => $self->{'vendor-os-path'},
 		function     => sub {
+			$self->{distro}->preSystemInstallationHook();
 			$self->_stage1D_setupPackageSources();
 			$self->_stage1D_updateBasicVendorOS();
 			$self->_stage1D_installPackageSelection();
+			$self->{distro}->postSystemInstallationHook();
 		},
 		updateConfig => 1,
 	});

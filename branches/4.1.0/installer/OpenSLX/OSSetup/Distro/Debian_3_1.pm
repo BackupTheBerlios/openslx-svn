@@ -19,6 +19,7 @@ use warnings;
 use base qw(OpenSLX::OSSetup::Distro::Debian);
 
 use OpenSLX::Basics;
+use OpenSLX::Utils;
 
 ################################################################################
 ### implementation
@@ -64,9 +65,43 @@ sub initDistroInfo
 			kernel-image-2.6-386
 			locales
 		",
+
+		'gnome' => "
+			<<<default>>>
+			gnome
+		",
+
+		'kde' => "
+			<<<default>>>
+			kde
+		",
+
 	};
 
 	return;
+}
+
+sub preSystemInstallationHook
+{
+	my $self = shift;
+	
+	$self->SUPER::preSystemInstallationHook();
+
+	# replace /usr/sbin/mkinitrd with a dummy, in order to skip the hopeless
+	# pass at trying to create an initrd. It doesn't work and we don't need
+	# it either.
+	rename('/usr/sbin/mkinitrd', '/usr/sbin/_mkinitrd');
+	spitFile('/usr/sbin/mkinitrd', "#! /bin/sh\ntouch \$2\n");
+	chmod 0755, '/usr/sbin/mkinitrd';
+}
+
+sub postSystemInstallationHook
+{
+	my $self = shift;
+
+	# restore /usr/sbin/mkinitrd
+	rename('/usr/sbin/_mkinitrd', '/usr/sbin/mkinitrd');
+	$self->SUPER::postSystemInstallationHook();
 }
 
 1;

@@ -38,7 +38,13 @@ sub initialize
 	$self->SUPER::initialize($engine);
 	$self->{'packager-type'}      = 'rpm';
 	$self->{'meta-packager-type'} = $ENV{SLX_META_PACKAGER} || 'smart';
-	$ENV{YAST_IS_RUNNING}         = "instsys";
+
+	if ($engine->{'action-type'} eq 'install') {
+		# Inform SUSE RPMs that we're performing an installation - this is
+		# only important for installations taking place in stage 1c:
+		$ENV{YAST_IS_RUNNING}         = "instsys";
+	}
+
 	return;
 }
 
