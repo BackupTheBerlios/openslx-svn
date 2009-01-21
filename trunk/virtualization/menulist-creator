@@ -12,6 +12,8 @@
 ##   ${vmdir}/$image.vbox                   vbox image file 
 ##   ${vmdir}/runscripts/$pool/*.vmware     vmware runscript 
 ##   ${vmdir}/runscripts/$pool/*.vbox       virtualbox runscript 
+##   ${vmdir}/xdmsession/$pool/*.desktop    .desktop files for xdm,
+##                                          can't avoid masses of them
 ##   ${vmdir}/templates/runvmware-v2        image exec template script
 ################################################################################
 
@@ -47,10 +49,10 @@ for xml in *.xml;do
 
  
   # get image name
-  image=`grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
+  image=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 
   # Test if correct defined
-  image_type=`echo ${image}|sed 's/.*\.//'`
+  image_type=$(echo ${image}|sed 's/.*\.//')
   if [ "${image_type}" != "vmdk"  -a  "${image_type}" != "vdi" ]; then
     # TODO: Test
     echo "PANIC, image is not correct defined in ${xml}."
@@ -67,15 +69,15 @@ for xml in *.xml;do
 
   # get information if the current image should be used
   # active when active=1 image, else disabled
-  active=`grep -i "<active param=\"true\"" ${xml} | wc -l`
+  active=$(grep -i "<active param=\"true\"" ${xml} | wc -l)
 
 
   # get list where the current image should be used
-  pools=`grep -i "<pools param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
+  pools=$(grep -i "<pools param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 
  
   # Virtualmachine (vmware or virtualbox)?
-  vm=`grep -i "<virtualmachine param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
+  vm=$(grep -i "<virtualmachine param=\"" ${xml} | awk -F "\"" '{ print $2 }')
   # Test if correct defined
   if [ "${vm}" != "vbox"  -a  "${vm}" != "vmware" ]; then
     # TODO: Test
@@ -99,7 +101,7 @@ for xml in *.xml;do
 
   
   # Connectiontype of vm (nat or bridged)?
-  network=`grep -i "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
+  network=$(grep -i "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 
   # Test if correct defined
   if [ "${network}" != "nat"  -a  "${network}" != "bridged" ]; then
@@ -110,7 +112,7 @@ for xml in *.xml;do
 
   
   # os running in vmware?
-  os=`grep -i "<os param=\"" ${xml} | awk -F "\"" '{ print $2 }'`
+  os=$(grep -i "<os param=\"" ${xml} | awk -F "\"" '{ print $2 }')
   if [ "${os}" != "Linux"  -a  "${os}" != "Windows XP" ]; then
     # TODO: test
     echo "PANIC, OS in virtual machine not correct defined in ${xml}"
@@ -119,17 +121,17 @@ for xml in *.xml;do
     
    
   # get short image description
-  short_description=`grep "short_description param=\"" ${xml}.utf | sed -e "s/&.*;/; /g" | awk -F "\"" '{print $2}'`
+  short_description=$(grep "short_description param=\"" ${xml}.utf | sed -e "s/&.*;/; /g" | awk -F "\"" '{print $2}')
   # if ${short_description} not defined use ${image}
   short_description=${short_description:-"${image}"}
  
 
   # Get the long image description
-  long_description=`grep "long_description param=\"" ${xml}.utf | sed -e "s/&.*;/; /g" | awk -F "\"" '{print $2}'`
+  long_description=$(grep "long_description param=\"" ${xml}.utf | sed -e "s/&.*;/; /g" | awk -F "\"" '{print $2}')
 
 
   # Informations if we need for XDM
-  xdm=`grep "xdm param=\"" ${xml} | awk -F "\"" '{print $2}'`
+  xdm=$(grep "xdm param=\"" ${xml} | awk -F "\"" '{print $2}')
 
   # Test if correct defined
   if [ "${xdm}" != "true"  -a  "${xdm}" != "false" ]; then
@@ -142,11 +144,16 @@ for xml in *.xml;do
   ##############################################################################
   ## main part,
   ##############################################################################
-  # Main part, creates desktopentry and image run script
+  # Main part, creates desktopentrys and image run scripts
 
   # check if ${vmdir}/runscripts/ is available
   if [ ! -d ${vmdir}/runscripts ]; then
     mkdir ${vmdir}/runscripts
+  fi
+  
+  # check if ${vmdir}/xdmsessions/ for .desktop files is available
+  if [ ! -d ${vmdir}/xdmsessions ]; then
+    mkdir ${vmdir}/xdmsessions
   fi
  
   # work with the different pools and...
@@ -155,10 +162,14 @@ for xml in *.xml;do
     if [ ! -d ${vmdir}/runscripts/${i} ]; then
       mkdir -p ${vmdir}/runscripts/${i}
     fi
-    # ... remove startscript if it isn't active.
+    if [ ! -d ${vmdir}/xdmsessions/${i} ]; then
+      mkdir -p ${vmdir}/xdmsessions/${i}
+    fi
+    # ... remove startscript and xdmsessions if it isn't active.
     if [ ${active} -ne 1 ]; then
       if [ -f ${vmdir}/runscripts/${i}/${image}.vmware -o runscripts/${i}/${image}.virtualbox ]; then
         rm -rf ${vmdir}/runscripts/${i}/${image}.*
+        rm -rf ${vmdir}/xdmsessions/${i}/${image}.desktop
       fi
     fi
 
@@ -170,30 +181,22 @@ for xml in *.xml;do
       echo -e "\nCreating runfiles for ${image} and pool ${i}\n"
       # create the desktopentry
       #TODO: change it with < EOF, >> isnt nice for so much lines
-      echo "Desktop entry for ${image}" >> ${desktopentry}
-      echo "[Desktop Entry]" >> ${desktopentry}
-      echo "X-SuSE-translate=true" >> ${desktopentry}
-      echo "Encoding=UTF-8" >> ${desktopentry}
-      echo "Type=XSession" >> ${desktopentry}
+      echo "Desktop entry for ${image}" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
+      echo "[Desktop Entry]" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
+      echo "X-SuSE-translate=true" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
+      echo "Encoding=UTF-8" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
+      echo "Type=XSession" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       #TODO: Fix path
-      echo "Exec=/path/to/the/execfile/${image}" >> ${desktopentry}
-      echo "Name=${short_description}" >> ${desktopentry}
-      echo "Comment=${comment}" >> ${desktopentry}
+      echo "Exec=/path/to/the/execfile/${image}" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
+      echo "Name=${short_description}" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
+      echo "Comment=${comment}" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       #TODO: I dont like SLXGrp as variable herein, why we need it here?
-      #echo "SLXGrp=${pools}" >> ${desktopentry}
+      #echo "SLXGrp=${pools}" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       #TODO: do we need XDM configuration? -> Chemie pool
-      #echo "XDM=${xdm}" >> ${desktopentry}
-      echo "" >> ${desktopentry}
+      #echo "XDM=${xdm}" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
     fi
 
     
-################################################################################
-## TODO: remember default/ chemie/ option (desktopentrys! and runfiles)
-## delete old desktop list
-## fucking pools/directory hirarchy... test it with running script and find
-## that way the error
-################################################################################
-
     # If we have vmware, build execute from template
     if [ "${vm}" = "vmware" ]; then
 
@@ -204,7 +207,7 @@ for xml in *.xml;do
       ${templatevmware} \
       > ${vmdir}/runscripts/${i}/${image}.runvmware
 
-    # if we have virtualbox, can only be vbox cause checked above
+    # if we have virtualbox, part here can only be vbox cause check above
     else 
       echo "Currently Virtualbox isn't implented"
       exit 0
@@ -217,4 +220,4 @@ done
 
 
 # Delete all .utf files, we dont need them anymore
-rm -f *.xml.utf
+rm -f "*.xml.utf"

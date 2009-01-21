@@ -167,8 +167,8 @@ filecheck ()
     -o -r "${diskfile}" >/dev/null 2>&1 ]; then
     writelog "Vmware Image Problem:\c"
     writelog "\tThe image you've specified has wrong rights."
-    writelog "Filecheck says:\t\t`echo ${filecheck} \
-      | awk '{print $1" "$3" "$4}'` ${rightsfile}"
+    writelog "Filecheck says:\t\t$(echo ${filecheck} \
+      | awk '{print $1" "$3" "$4}') ${rightsfile}"
     writelog "Hint:\t\t\tChange rights with: chmod a+r ${rightsfile}\n"
     exit 1
   fi
@@ -179,8 +179,8 @@ filecheck ()
     && [ "${np}" = "independent-persistent" ]; then
     writelog "Vmware Image Problem:\c"
     writelog "\tThe image you've specified has wrong rights."
-    writelog "Filecheck says:\t\t`echo ${filecheck} \
-      | awk '{print $1" "$3" "$4}'` ${rightsfile}"
+    writelog "Filecheck says:\t\t$(echo ${filecheck} \
+      | awk '{print $1" "$3" "$4}') ${rightsfile}"
     writelog "Hint:\t\t\tUse nonpersistent-mode or change rights to rw\n"
     exit 1
   fi
@@ -364,15 +364,15 @@ EOL
 
 ## log script information
 writelog "##################################################\n"
-writelog "# File created by $0 (v.${version})\n# on `date`\n"
+writelog "# File created by $0 (v.${version})\n# on $(date)\n"
 writelog "##################################################\n"
-writelog "Starting...`echo ${np} | sed -e \"s/i.*-//g\" \
-  | tr [a-z] [A-Z]`-mode\n"
+writelog "Starting...$(echo ${np} | sed -e \"s/i.*-//g\" \
+  | tr [a-z] [A-Z])-mode\n"
 
 ## log disksetup
 writelog "Directories:
   \tTmpdir:\t\t${tmpdir}\n\tVMhome:\t\t${vmhome}\n\tTmpdir info:\
-  \t`mount | grep -i "/tmp "`\n"
+  \t$(mount | grep -i "/tmp ")\n"
 
 ## configuring MAC address: first four bytes are fixed (00:50:56:0D) the
 ## last two bytes are taken from the local network adaptor
@@ -424,7 +424,7 @@ writelog "finished\nResults:\n\tDiskfile:\t${diskfile}
 writelog "Linking \"ln -fs ${diskfile}
   \t${tmpdir}/disk\"...\c"
 ln -fs ${diskfile} ${tmpdir}/disk
-writelog "finished\nResult:\n`ls -l ${tmpdir}/disk`\n"
+writelog "finished\nResult:\n$(ls -l ${tmpdir}/disk)\n"
 
 # check if image exists, etc...
 filecheck
@@ -467,8 +467,7 @@ writelog "finished\n"
 
 ### run vmplayer ###############################################################
 # ...with the automatically written config file
-if [ `which vmplayer 2>/dev/null` ]; then
-  writelog "\nStarting VMplayer..."
+if [ $(which vmplayer 2>/dev/null) ]; then writelog "\nStarting VMplayer..."
   # run VMplayer
   writelog "... vmplayer ${vmopt} ${confile}...\n"
   vmplayer ${vmopt} ${confile} 2>&1 >/dev/null
