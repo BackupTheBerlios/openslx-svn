@@ -98,7 +98,7 @@ sub ExtractTrStrings
 sub UpdateTrModule
 {
 	$File::Find::prune = 1 if ($_ eq '.svn');
-	return if -d;
+	return if -d || ! /.pm$/;
 	print "updating $File::Find::name...\n";
 	my $trModule = $_;
 	my $useKeyAsTranslation = ($trModule eq 'posix.pm');
