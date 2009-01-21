@@ -164,7 +164,7 @@ configure() {
   echo "Using ${client_distro} as client distribution"
 
   if [ -z ${rootdir} ] ; then
-    ${rootdir}="/nfsroot/"${client_distro}-${client_distro_ver}
+    rootdir="/nfsroot/"${client_distro}-${client_distro_ver}
   fi
 
   . distro-specs/config-${server_distro}
@@ -228,9 +228,9 @@ create_initrd() {
     echo "Found one kernel in ${rootdir}/boot."
     kernel_choice="0"
   else
-    echo -e "This is a list of existing kernels in your client OS: \n"
+    echo -e "\n\nThis is a list of existing kernels in your client OS: \n"
     declare -i j=0
-    while [ $j -lt $i ] do
+    while [ $j -lt $i ] ; do
       echo "$j: ${kernel[$j]}"
       j=$j+1
     done
@@ -245,7 +245,7 @@ create_initrd() {
   # FIXME: mkdxsinitrd currently wants to run from own directory
   # ugly workaround...
   cd ../initrd
-  while [ $j -lt ${#choice[@]} ] do
+  while [ $j -lt ${#choice[@]} ] ; do
     current_kernel=${kernel[$j]#${rootdir}/boot/vmlinuz-}
     echo "Creating initial ramdisk for ${current_kernel}"
     current_initrd=${tftpbootdir}/initrd-dxs-${current_kernel}
@@ -289,17 +289,16 @@ setup_server () {
   sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g;s,@@@pxe_passwd@@@,${pxe_passwd},g;s,@@@client_distro@@@,${client_distro},g;s,@@@client_distro_ver@@@,${client_distro_ver},g;s,@@@rootdir@@@,${rootdir},g" default_files/default > ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
 
   declare -i j=0
-  while [ $j -lt ${#choice[@]} ] do
+  while [ $j -lt ${#choice[@]} ] ; do
     current_kernel=${kernel[$j]#${rootdir}/boot/vmlinuz-}
     current_initrd=${tftpbootdir}/initrd-dxs-${current_kernel}
 
     if [ $j -eq 0 ] ; then
-      default_string="MENU DEFAULT\n"
+      default_string="       MENU DEFAULT\n"
     else
       default_string=""
     fi
-    echo -e "LABEL ${client_distro}-${current_kernel}\n \
-      ${default_string} \
+    echo -e "LABEL ${client_distro}-${current_kernel}\n${default_string} \
       MENU LABEL $j. ${client_distro}-${client_distro_ver} ${current_kernel} Diskless\n \
       KERNEL ${server}::${tftpbootdir}/vmlinuz-${current_kernel}\n \
       APPEND nfsroot=${server}:${rootdir} initrd=${server}::${tftpbootdir}/initrd-dxs-${current_kernel} apic dhcp noldsc vci=DXS\n \
@@ -358,7 +357,7 @@ dxs_pxedefault_conf="pxelinux/default"
 header
 precheck #(run as root, rsync etc.)
 configure
-copy_system
+#copy_system
 create_initrd
 setup_server
 footer
