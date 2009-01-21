@@ -2,13 +2,13 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 05-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 12-04-2006
 #		Nico Dietrich
 #		Felix Endres
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.1e
+# Version:      0.2.1f
 
 # distro specific stuff to initialize
 preinit () {
@@ -268,3 +268,7 @@ config_portmap () {
   rllinker "portmap" "02" "20"
 }
 
+# start NIS (fixmee - does the service is really named ypbind??)
+config () {
+  rllinker "ypbind" "06" "16"
+}

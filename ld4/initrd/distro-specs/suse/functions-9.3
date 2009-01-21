@@ -4,11 +4,11 @@
 #		functions file). This file is the main base for the 
 #		following SuSE distributions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 02-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 12-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.2a
+# Version:      0.2.2b
 
 # distro specific stuff to initialize
 preinit () {
@@ -409,6 +409,11 @@ fi
 # start portmapper (needed at least for nfs and nis services)
 config_portmap () {
 rllinker "portmap" "02" "20"
+}
+
+# start NIS
+config () {
+rllinker "ypbind" "06" "16"
 }
 
 # start vmware
