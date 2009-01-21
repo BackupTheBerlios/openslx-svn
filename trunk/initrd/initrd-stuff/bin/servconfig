@@ -261,6 +261,9 @@ config_sshd
 # simple network management protocol agent
 config_snmp
 
+# setup afs client stuff
+config_afs
+
 #######################################################################
 # NIS
 # setup nis configuration if needed

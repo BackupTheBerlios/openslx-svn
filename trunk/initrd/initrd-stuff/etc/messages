@@ -2,12 +2,10 @@
 # bootup (within initialramfs) for OpenSLX linux diskless clients version 4
 # this file could be used for localization of error messages 
 #
-# Dirk von Suchodoletz <dvs@openslx.com>, 30-08-2006
+# Dirk von Suchodoletz <dvs@openslx.com>, 05-09-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.org
-#
-# Version:      0.0.3g
 
 # messages from (slx) init
 init_errmsg="functions file contains a lot of script \
@@ -134,6 +132,8 @@ df_errvmw="  VMware X86 emulation $df_errserv"
 df_erramnt="  Automounter $df_errserv"
 df_errnsc="  Name Service caching deamon $df_errserv\n This service might \
 be useful to take load from a ldap user directory."
+df_errafsd="  No afs directory present"
+df_errafsn="  AFS client service is not available"
 
 # messages from servconfig
 scfg_nfs="  Mount of some NFS source failed ..."

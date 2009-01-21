@@ -368,6 +368,7 @@ if strinfile "SCSI" /tmp/hwsetup.info ; then
   strinfile "CDROM" /tmp/hwsetup.info && { modprobe ${MODPRV} sr_mod;
     modprobe ${MODPRV} sg; }
   strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} sd_mod
+  strinfile "SCANNER" /tmp/hwsetup.info && : 
 fi
 # fixme - psmouse entladen, falls nicht vorhanden
 
