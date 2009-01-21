@@ -60,8 +60,14 @@ cp -a /rootfs/* /mnt 2>/dev/null
 
 # set greeting and add information on booted system
 len=$(expr length ${SLXVERSION}${SYSTEM_NAME})
-vdstr="V${SLXVERSION}/${SYSTEM_NAME})"
-while [ $len -le 28 ] ; do
+if [ $len -le 28 ] ; then
+  vdstr="Stateless Workstation (V${SLXVERSION}/${SYSTEM_NAME})"
+  smax=28
+else
+  vdstr="V${SLXVERSION}/${SYSTEM_NAME}"
+  smax=52
+fi
+while [ $len -le $smax ] ; do
   vdstr="$vdstr "
   len=$(expr $len + 1)
 done
@@ -79,7 +85,7 @@ echo "
          |  |_|  |  |    |  |___|  |  |  |   ____|  |  |___ /  /
            _____/|__|    |______|__|  |__|  |_______|______|__|  |__|
 
-   Stateless Workstation ($vdstr (c) <OpenSLX.ORG>
+   $vdstr (c) <OpenSLX.ORG>
 ">/mnt/etc/issue
 
 #############################################################################
