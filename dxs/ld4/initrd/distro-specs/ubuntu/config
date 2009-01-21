@@ -1,0 +1,47 @@
+# Description:  distro specific settings for Debian/Sarge
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-01-2006
+#               Blablub
+#
+# Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
+
+# D_SYSCONFDIR - system wide configuration settings - /etc/sysconfig in SuSE 
+# and RedHat, /etc/default in Debian and Ubuntu
+# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using 
+# bind mounts
+# D_DIRINBINDMNT - lists of directories to be created in bind mounted rw
+# part of the client filesystem
+# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# TempFS usage
+# D_DIRINDXS - directories in client filesystem which should be present 
+# anyhow
+# D_BINDMNT - any code which is specific in bind mount environment
+# D_RCDIRS - runlevel directories relative to /etc
+# D_XF86CONFFILE - name and location of XFree/Xorg config file, e.g.
+# /etc/X11/xorg.conf or /etc/X11/XF86config, ...
+# D_XFONTPATH - path(es) where X11 fonts are installed (with trailing /*)
+# D_DEFAULTCOUNTRY - localization (see common functions)
+
+D_SYSCONFDIR=/default
+D_ETCEXCL="etc/gconf/*\n*.old\n*-\n\
+etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
+pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
+X11/xdm/pixmaps\ndhclient.script\n\
+rc2.d/*\nrc5.d/*"
+D_BINDMPTS="tmp root home"
+D_DIRINBINDMNT="/var/run /var/log /var/tmp"
+D_RODIRSINRW="etc/gconf etc/X11/xkb /var/adm /var/lib/texmf /var/lib/gdm"
+D_DIRINDXS="/var/X11R6/compose-cache \
+/var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
+/var/lib/pam_devperm /var/lib/bluetooth \
+/var/lib/texmf /var/lib/nfs/sm \
+/var/lib/misc /var/lib/acpi /var/spool/cron \
+/var/lock/subsys/sysconfig"
+D_BINDMNT="# "
+D_INITDIR="/init.d"
+D_INITBOOTD="/rcS.d"
+D_RCDIRS="/rc0.d /rc1.d /rc2.d /rc3.d /rc4.d /rc5.d /rc6.d"
+D_INITSCRIPTS="udev procps.sh bootlogd keymap.sh hwclock.sh sudo"
+D_XF86CONFFILE="/etc/X11/xorg.conf"
+D_XFONTPATH="/usr/X11R6/lib/X11/fonts/*"
+D_DEFAULTCOUNTRY="de"
