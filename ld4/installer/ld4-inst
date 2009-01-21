@@ -128,7 +128,7 @@ configure() {
   . .config
   
   [ -z $overwrite_configs ] && overwrite_configs="y"
-  ask "Overwrite server configs (Y) or write *.new files (n)? [Y/n] " overwrite_configs $overwrite_configs
+  ask "Overwrite server configs (y) or write *.new files (n)? " overwrite_configs $overwrite_configs
   if [ "$overwrite_configs" = "no" -o "$overwrite_configs" = "n" -o \
        "$overwrite_configs" = "N" -o "$overwrite_configs" = "No" ] ; then
     overwrite_configs="no"

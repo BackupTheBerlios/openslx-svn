@@ -193,7 +193,7 @@ config_xdm () {
 
 # configure gdm as display manager
 config_gdm () {
-  ln -sf ../gdm /mnt/etc/${D_INITDIR}/rc3.d/K20gdm
+  ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/K20gdm
   echo -e "\t/etc/${D_INITDIR}/gdm start >${LOGFILE} 2>&1\n\
     \t( sleep 120; ln -sf /etc/${D_INITDIR}/gdm /etc/rc3.d/S01gdm \
     >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld
@@ -204,7 +204,7 @@ config_gdm () {
 
 # configure kdm as display manager
 config_kdm () {
-  ln -sf ../kdm /mnt/etc/${D_INITDIR}/rc3.d/K20kdm
+  ln -sf ../${D_INITDIR}/kdm /mnt/etc/rc3.d/K20kdm
   echo -e "\t/etc/${D_INITDIR}/kdm start >${LOGFILE} 2>&1\n\
     \t( sleep 120; ln -sf /etc/${D_INITDIR}/kdm /etc/rc3.d/S01kdm \
     >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld
