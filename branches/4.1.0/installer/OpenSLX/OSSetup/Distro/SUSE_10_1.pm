@@ -41,7 +41,7 @@ sub initialize
 
 	$self->SUPER::initialize($engine);
 	$self->{'packager-type'} = 'rpm';
-	$self->{'meta-packager-type'} = $ENV{SLX_META_PACKAGER} || 'yum';
+	$self->{'meta-packager-type'} = $ENV{SLX_META_PACKAGER} || 'smart';
 	$ENV{YAST_IS_RUNNING} = "instsys";
 }
 
