@@ -307,8 +307,8 @@ fi
 hwautocfg nwmod
 if [ -n "${essid}" ] ; then
   wlanlinksetup
-  echo "Starting shell for testing of WLAN setup procedure"
-  /bin/ash
+  #echo "Starting shell for testing of WLAN setup procedure"
+  #/bin/ash
 fi
 
 # set up loopback networking
@@ -355,6 +355,7 @@ if [ -n "$noipyet" ] ; then
     -o -z "$broadcast_address" ] && error "$init_errdhcp"
   ip addr add $clientip/$(nm2pref $subnet_mask) broadcast $broadcast_address \
     dev $nwif
+  ip route add default via $gateway
 fi
 # check if serverip is set as variable @@@serverip@@@
 sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup
@@ -385,7 +386,7 @@ if [ -n "${nbdmod}" ] ; then
       RDEV=/dev/nbd0
       waitfor "${RDEV}" 20000 || error "$init_nbddev"
       while ! nbd-client $nbdhost $nbdport ${RDEV} ; do
-        usleep 100
+        usleep 10000
       done
       usleep 100
       echo noop > /sys/block/nbd0/queue/scheduler
@@ -428,9 +429,9 @@ if [ -n "${nbdmod}" ] ; then
       waitfor /dev/dnbd0 10000 || error "$init_nbddev"
       echo "dnbd-client -b $nbdhost -d $RDEV $clientopt"
       /bin/ash
-      #while ! dnbd-client -b $nbdhost -d $RDEV $clientopt ; do
-      #  sleep 1
-      #done
+      while ! dnbd-client -b $nbdhost -d $RDEV $clientopt ; do
+        usleep 10000
+      done
       # problem with squashfs and cfq scheduler
       echo noop > /sys/block/dnbd0/queue/scheduler
       echo 0 > /sys/block/dnbd0/queue/read_ahead_kb
