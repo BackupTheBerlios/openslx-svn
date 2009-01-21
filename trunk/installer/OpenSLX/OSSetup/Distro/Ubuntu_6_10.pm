@@ -27,7 +27,9 @@ sub new
 {
 	my $class = shift;
 	my $self = {
-		'base-name' => 'ubuntu-6.10',
+		'base-name'    => 'ubuntu-6.10',
+		'arch'         => 'i386',
+		'release-name' => 'edgy',
 	};
 	return bless $self, $class;
 }
@@ -38,6 +40,7 @@ sub initDistroInfo
 	$self->{config}->{'repository'} = {
 		'base' => {
 			'urls' => "
+				ftp://localhost/pub/ubuntu
 			",
 			'name' => 'Ubuntu 6.10',
 			'repo-subdir' => 'dists/edgy',
@@ -47,7 +50,7 @@ sub initDistroInfo
 	$self->{config}->{'package-subdir'} = 'pool';
 
 	$self->{config}->{'prereq-packages'} = "
-		main/d/debootstrap/debootstrap_0.3.3.0ubuntu7_all.deb
+		main/d/debootstrap/debootstrap_1.0.0_all.deb
 	";
 
 	$self->{config}->{'bootstrap-prereq-packages'} = "

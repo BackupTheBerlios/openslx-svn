@@ -57,7 +57,7 @@ sub initDistroInfo
 				ftp://ftp.estpak.ee/pub/suse/opensuse/distribution/SL-10.1/non-oss-inst-source
 				ftp://ftp.jaist.ac.jp/pub/Linux/openSUSE/distribution/SL-10.1/non-oss-inst-source
 			",
-			'name' => 'openSUSE 10.2 non-OSS',
+			'name' => 'openSUSE 10.1 non-OSS',
 			'repo-subdir' => 'suse',
 		},
 		'base_update' => {

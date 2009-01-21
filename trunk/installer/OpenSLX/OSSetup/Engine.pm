@@ -432,8 +432,9 @@ sub startChrootedShellForVendorOS
 
 sub callChrootedFunctionForVendorOS
 {
-	my $self     = shift;
-	my $function = shift;
+	my $self         = shift;
+	my $function     = shift;
+	my $updateConfig = shift || 0;
 
 	if (!-e $self->{'vendor-os-path'}) {
 		die _tr(
@@ -447,7 +448,11 @@ sub callChrootedFunctionForVendorOS
 	callInSubprocess(
 		sub {
 			$self->_changePersonalityIfNeeded();
-			$self->_callChrootedFunctionInStage1D($function);
+			$self->_callChrootedFunction({
+				chrootDir    => $self->{'vendor-os-path'}, 
+				function     => $function,
+				updateConfig => $updateConfig,
+			});
 		}
 	);
 
@@ -746,12 +751,10 @@ sub _sortRepositoryURLs
 	my $self     = shift;
 	my $repoInfo = shift;
 
-	if (defined $repoInfo->{'url'} && $repoInfo->{'url'} =~ m[^local:]) {
+	if (defined $repoInfo->{'url'} && $repoInfo->{'avoid-mirrors'}) {
 		# a local URL blocks all the others, in order to avoid causing
-		# (external) network traffic:
-		my $localURL = $repoInfo->{'url'} || '';
-		$localURL =~ s[^local:][http:];
-		return [$localURL];
+		# (external) network traffic, so we return the local URL only:
+		return [$repoInfo->{'url'}];
 	}
 
 	my %urlInfo;
@@ -832,7 +835,8 @@ sub _startLocalURLServersAsNeeded
 	my $port = 5080;
 	foreach my $repoInfo (values %{$self->{'distro-info'}->{repository}}) {
 		my $localURL = $repoInfo->{url} || '';
-		next if $localURL =~ m[^\w+:];
+		next if !$localURL;
+		next if $localURL =~ m[^\w+:];	# anything with a protcol-spec is non-local
 		if (!exists $self->{'local-http-servers'}->{$localURL}) {
 			my $busyboxName =
 				$self->_hostIs64Bit()
@@ -1048,38 +1052,42 @@ sub _stage1B_chrootAndBootstrap
 	# give packager a chance to copy required files into stage1a-folder:
 	$self->{packager}->prepareBootstrap($self->{stage1aDir});
 	
-	chrootInto($self->{stage1aDir});
+	$self->_callChrootedFunction({
+		chrootDir => $self->{stage1aDir},
+		function  => sub {
+			# chdir into slxbootstrap, as we want to drop packages into there:
+			chdir "/$self->{stage1bSubdir}"
+				or die _tr(
+					"unable to chdir into '%s' (%s)\n", 
+					"/$self->{stage1bSubdir}", $!
+				);
 
-	# chdir into slxbootstrap, as we want to drop packages into there:
-	chdir "/$self->{stage1bSubdir}"
-		or die _tr(
-			"unable to chdir into '%s' (%s)\n", "/$self->{stage1bSubdir}", $!
-		);
-
-	# fetch prerequired packages and use them to bootstrap the packager:
-	$self->{'baseURLs'} = $self->_sortRepositoryURLs(
-		$self->{'distro-info'}->{repository}->{base}
-	);
-	$self->{'baseURL-index'} = 0;
-	my @pkgs = string2Array($self->{'distro-info'}->{'prereq-packages'});
-	my @prereqPkgs = $self->_downloadBaseFiles(\@pkgs);
-	$self->{packager}->bootstrap(\@prereqPkgs);
-
-	@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-prereq-packages'});
-	my @bootstrapPrereqPkgs = $self->_downloadBaseFiles(\@pkgs);
-	$self->{'bootstrap-prereq-packages'} = \@bootstrapPrereqPkgs;
-
-	@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-packages'});
-	push(
-		@pkgs, 
-		string2Array(
-			$self->{'distro-info'}->{'metapackager-packages'}
-				->{$self->{distro}->{'meta-packager-type'}}
-		)
-	);
-	my @bootstrapPkgs = $self->_downloadBaseFiles(\@pkgs);
-	my @allPkgs = (@prereqPkgs, @bootstrapPrereqPkgs, @bootstrapPkgs);
-	$self->{'bootstrap-packages'} = \@allPkgs;
+			# fetch prerequired packages and use them to bootstrap the packager:
+			$self->{'baseURLs'} = $self->_sortRepositoryURLs(
+				$self->{'distro-info'}->{repository}->{base}
+			);
+			$self->{'baseURL-index'} = 0;
+			my @pkgs = string2Array($self->{'distro-info'}->{'prereq-packages'});
+			my @prereqPkgs = $self->_downloadBaseFiles(\@pkgs);
+			$self->{packager}->bootstrap(\@prereqPkgs);
+		
+			@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-prereq-packages'});
+			my @bootstrapPrereqPkgs = $self->_downloadBaseFiles(\@pkgs);
+			$self->{'bootstrap-prereq-packages'} = \@bootstrapPrereqPkgs;
+		
+			@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-packages'});
+			push(
+				@pkgs, 
+				string2Array(
+					$self->{'distro-info'}->{'metapackager-packages'}
+						->{$self->{distro}->{'meta-packager-type'}}
+				)
+			);
+			my @bootstrapPkgs = $self->_downloadBaseFiles(\@pkgs);
+			my @allPkgs = (@prereqPkgs, @bootstrapPrereqPkgs, @bootstrapPkgs);
+			$self->{'bootstrap-packages'} = \@allPkgs;
+		},
+	});
 	return;
 }
 
@@ -1153,11 +1161,15 @@ sub _setupStage1D
 
 	vlog(1, "setting up stage1d for $self->{'vendor-os-name'}...");
 
-	chrootInto($self->{'vendor-os-path'});
-
-	$self->_stage1D_setupPackageSources();
-	$self->_stage1D_updateBasicVendorOS();
-	$self->_stage1D_installPackageSelection();
+	$self->_callChrootedFunction({
+		chrootDir    => $self->{'vendor-os-path'},
+		function     => sub {
+			$self->_stage1D_setupPackageSources();
+			$self->_stage1D_updateBasicVendorOS();
+			$self->_stage1D_installPackageSelection();
+		},
+		updateConfig => 1,
+	});
 	return;
 }
 
@@ -1167,9 +1179,13 @@ sub _updateStage1D
 
 	vlog(1, "updating $self->{'vendor-os-name'}...");
 
-	chrootInto($self->{'vendor-os-path'});
-
-	$self->_stage1D_updateBasicVendorOS();
+	$self->_callChrootedFunction({
+		chrootDir    => $self->{'vendor-os-path'},
+		function     => sub {
+			$self->_stage1D_updateBasicVendorOS();
+		},
+		updateConfig => 1,
+	});
 	return;
 }
 
@@ -1182,32 +1198,37 @@ sub _startChrootedShellInStage1D
 	vlog(0, "- please type 'exit' if you are done! -");
 	vlog(0, "---------------------------------------");
 
-	chrootInto($self->{'vendor-os-path'});
-
-	$self->{'meta-packager'}->startSession();
-
-	# will hang until user exits manually:
-	slxsystem('sh');
-
-	$self->{'distro'}->updateDistroConfig();
-	$self->{'meta-packager'}->finishSession();
+	$self->_callChrootedFunction({
+		chrootDir    => $self->{'vendor-os-path'},
+		function     => sub {
+			# will hang until user exits manually:
+			slxsystem('sh');
+		},
+		updateConfig => 1,
+	});
 	return;
 }
 
-sub _callChrootedFunctionInStage1D
+sub _callChrootedFunction
 {
-	my $self     = shift;
-	my $function = shift;
+	my $self   = shift;
+	my $params = shift;
+	
+	checkParams($params, {
+		'chrootDir'    => '!',
+		'function'     => '!',
+		'updateConfig' => '?',
+	});
 
-	chrootInto($self->{'vendor-os-path'});
-
-	$self->{'meta-packager'}->startSession();
+	$self->{'distro'}->startSession($params->{chrootDir});
 
 	# invoke given function:
-	$function->();
+	$params->{function}->();
 
-	$self->{'distro'}->updateDistroConfig();
-	$self->{'meta-packager'}->finishSession();
+	if ($params->{updateConfig}) {
+		$self->{'distro'}->updateDistroConfig();
+	}
+	$self->{'distro'}->finishSession();
 	return;
 }
 
@@ -1223,7 +1244,9 @@ sub _stage1D_setupPackageSources
 	my ($rk, $repo);
 	while (($rk, $repo) = each %{$self->{'distro-info'}->{repository}}) {
 		vlog(2, "setting up package source $rk...");
-		$self->{'meta-packager'}->setupPackageSource($rk, $repo, $excludeList);
+		$self->{'meta-packager'}->setupPackageSource(
+			$rk, $repo, $excludeList, $self->_sortRepositoryURLs($repo)
+		);
 	}
 	return;
 }
@@ -1233,10 +1256,7 @@ sub _stage1D_updateBasicVendorOS
 	my $self = shift;
 
 	vlog(1, "updating basic vendor-os...");
-	$self->{'meta-packager'}->startSession();
 	$self->{'meta-packager'}->updateBasicVendorOS();
-	$self->{'distro'}->updateDistroConfig();
-	$self->{'meta-packager'}->finishSession();
 	return;
 }
 
@@ -1260,20 +1280,19 @@ sub _stage1D_installPackageSelection
 			1;
 		}
 	} @pkgs;
-	vlog(
-		0,
-		_tr(
-			"No packages listed for selection '%s', nothing to do.",
-			$selectionName
-		)
-	);
-	vlog(1, "installing these packages:\n" . join("\n\t", @pkgs));
-	$self->{'meta-packager'}->startSession();
-	if (scalar(@pkgs) > 0) {
+	if (!@pkgs) {
+		vlog(
+			0,
+			_tr(
+				"No packages listed for selection '%s', nothing to do.",
+				$selectionName
+			)
+		);
+	}
+	else {
+		vlog(1, "installing these packages:\n" . join("\n\t", @pkgs));
 		$self->{'meta-packager'}->installSelection(join " ", @pkgs);
 	}
-	$self->{'distro'}->updateDistroConfig();
-	$self->{'meta-packager'}->finishSession();
 	return;
 }
 

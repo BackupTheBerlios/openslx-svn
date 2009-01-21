@@ -106,8 +106,10 @@ sub fetchLoaderConfigFile
 	my $ldConfFile = shift;
 
 	my $ldconfFH;
-	open($ldconfFH, '<', $ldConfFile)
-		or die(_tr("unable to open file '%s' (%s)", $ldConfFile, $!));
+	if (!open($ldconfFH, '<', $ldConfFile)) {
+		warn(_tr("unable to open file '%s' (%s)", $ldConfFile, $!));
+		return;
+	}
 	while (<$ldconfFH>) {
 		chomp;
 		if (m{^\s*include\s+(.+?)\s*$}i) {

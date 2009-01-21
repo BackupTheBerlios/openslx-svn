@@ -63,8 +63,12 @@ sub bootstrap
 	if (slxsystem("ash", "-c", "rm -f debian-binary *.tar.gz")) {
 		die _tr("unable to cleanup package '%s' (%s)", $debootstrapPkg, $!);
 	}
+	my $arch = $self->{engine}->{distro}->{arch};
+	my $releaseName = $self->{engine}->{distro}->{'release-name'};
+	my $baseURL = $self->{engine}->{baseURLs}->[0];
 	my $debootstrapCmd = <<"	END-OF-HERE";
-		/usr/sbin/debootstrap --arch i386 edgy /slxbootstrap/slxfinal http://localhost:5080/srv/ftp/pub/ubuntu
+		/usr/sbin/debootstrap --verbose --arch $arch $releaseName \\
+		                      /slxbootstrap/slxfinal $baseURL
 	END-OF-HERE
 	if (slxsystem("ash", "-c", "/bin/ash $debootstrapCmd")) {
 		die _tr("unable to run debootstrap (%s)", $!);
@@ -78,7 +82,7 @@ sub installPackages
 	my $pkgs = shift;
 	my $finalPath = shift;
 
-	return unless defined $pkgs && scalar(@$pkgs);
+	return unless defined $pkgs && @$pkgs;
 
 	if (slxsystem("rpm", "--root=$finalPath", "-ivh", @$pkgs)) {
 		die _tr("error during package-installation (%s)\n", $!);

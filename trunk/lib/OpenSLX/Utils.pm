@@ -169,9 +169,11 @@ sub copyBinaryWithRequiredLibs {
 	vlog(2, "slxldd results:\n$requiredLibsStr");
 	
 	foreach my $lib (split "\n", $requiredLibsStr) {
-		vlog(3, "copying lib '$lib'");
 		my $libDir = dirname($lib);
-		copyFile($lib, "$params->{libTargetFolder}$libDir");
+		my $targetLib = "$params->{libTargetFolder}$libDir";
+#		next if -e $targetLib;
+		vlog(3, "copying lib '$lib'");
+		copyFile($lib, $targetLib);
 	}
 	return $requiredLibsStr;
 }
@@ -212,8 +214,6 @@ sub chrootInto
 	# ...do chroot
 	chroot "."
 		or die _tr("unable to chroot into '%s' (%s)\n", $osDir, $!);
-
-	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
 	return;
 }
 

@@ -54,16 +54,16 @@ sub initPackageSources
 
 sub setupPackageSource
 {
-	my $self = shift;
-	my $repoName = shift;
-	my $repoInfo = shift;
+	my $self        = shift;
+	my $repoName    = shift;
+	my $repoInfo    = shift;
 	my $excludeList = shift;
+	my $repoURLs    = shift;
 
 	my $repoSubdir;
 	if (length($repoInfo->{'repo-subdir'})) {
 		$repoSubdir = "/$repoInfo->{'repo-subdir'}";
 	}
-	my $repoURLs = $self->{engine}->sortRepositoryURLs($repoInfo);
 	my $baseURL = shift @$repoURLs;
 
 	my $repoDescr 

@@ -53,33 +53,6 @@ sub installSelection
 {
 }
 
-sub startSession
-{
-	my $self = shift;
-	
-	addCleanupFunction('slxos-setup::meta-packager', 
-	                   sub { $self->finishSession(); } );
-
-	system('mount -t proc proc /proc 2>/dev/null');
-
-	$self->{engine}->{distro}->startSession();
-		# allow vendor specific extensions
-	return;
-}
-
-sub finishSession
-{
-	my $self = shift;
-	
-	$self->{engine}->{distro}->finishSession();
-		# allow vendor specific extensions
-
-	system('umount /proc 2>/dev/null');
-
-	removeCleanupFunction('slxos-setup::meta-packager');
-	return;
-}
-
 1;
 ################################################################################
 
