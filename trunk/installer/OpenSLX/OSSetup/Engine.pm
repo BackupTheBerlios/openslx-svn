@@ -700,7 +700,7 @@ sub clone_fetchSource
 		close(FILTER);
 	}
 	my $excludeIncludeList = join("\n", @includeList, @excludeList);
-	vlog 0, "using exclude-include-filter:\n$excludeIncludeList\n";
+	vlog 1, "using exclude-include-filter:\n$excludeIncludeList\n";
 	open(RSYNC, "| rsync -av --delete --exclude-from=- $source $self->{'system-path'}")
 		or die _tr("unable to start rsync for source '%s', giving up! (%s)",
 				   $source, $!);
