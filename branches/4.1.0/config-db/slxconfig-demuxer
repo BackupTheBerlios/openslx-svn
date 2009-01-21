@@ -581,30 +581,41 @@ contain information about the systems this client shall offer for booting.
 For each of these systems, the kernel cmdline options required for that
 particular system setup is specified (via PXE's APPEND option).
 
+Any client that is not known to OpenSLX (so it will not have a specific
+configuration file) will use the configuration from the default client 
+(appropriately named 'default').
+
 =item B<System Kernels and Initialram-Filesystems>
 
 For each bootable system, that system's kernel will be copied to
-F<$SLX_TFTPBOOT_PATH/pxe/<system-name>/kernel and an OpenSLX-specific initramfs
+F<$SLX_TFTPBOOT_PATH/pxe/<vendor-os-name>/kernel and an OpenSLX-specific initramfs
 required for booting that particular system is generated (by means of
-slxmkramfs) and put into F<$SLX_TFTPBOOT_PATH/pxe/<system-name>/initramfs.
+slxmkramfs) and put into F<$SLX_TFTPBOOT_PATH/pxe/<vendor-os-name>/initramfs.
 
 These two files (kernel & initramfs) will be referenced by the PXE client
 configuration of all clients that offer this specific system for booting.
 
 =item B<OpenSLX Client Configurations>
 
-For each combination of system and client, an OpenSLX configuration archive
-will be generated and written to
-F<$SLX_TFTPBOOT_PATH/client-config/<system-name>/01-<MAC-of-client>.tgz>.
-This archive will contain the file F<initramfs/machine-setup>, specifying all
-the attributes of that particular client (e.g. whether or not it should start
-the X-server).
+For each system, an OpenSLX configuration archive will be generated and written 
+to F<$SLX_TFTPBOOT_PATH/client-config/<system-name>/default. Furthermore, 
+every client of that system whose attributes differ from the system's default
+will get its own configuration archive generated here, too (e.g. 
+F<$SLX_TFTPBOOT_PATH/client-config/<system-name>/01-<MAC-of-client>.tgz>).
 
-Furthermore, the archive may contain additional system files that are
-required for the client (e.g. a special PAM-module required for LDAP
+Each of these archives will contain the file F<initramfs/machine-setup>, 
+specifying all the attributes of that particular system and/or client 
+(e.g. whether or not it should start the X-server).
+
+Furthermore, each system-specific archive may contain additional system files 
+that are required for that system (e.g. a special PAM-module required for LDAP 
 authentication). These files are copied from F<$SLX_PRIVATE_PATH/config/default>
 and F<$SLX_PROVATE_PATH/config/<system-name>>.
 
+On top of that, each client may have its own set of system files, too (e.g.
+some config files required to install a special kind of hardware available only
+on that client). These files are copied from 
+F<< $SLX_PROVATE_PATH/config/<system-name>/01-<MAC-of-client> >>.
 =back
 
 =head2 MIXING & MATCHING (THE DEMUXER)
