@@ -61,7 +61,7 @@ local Monitor='\tIdentifier "Default"\n
 \tOption\t\t"CalcAlgorithm"\t"CheckDesktopGeometry"\n
 \tHorizSync\tHS\n
 \tVertRefresh\tVS\n
-\tOption\t"DPMS"\t\t"true"'
+\tOption\t\t"DPMS"\t\t"true"'
 local Device='\tIdentifier\t"StdGraphics"\n
 \tVendorName\t"XDESC"\n
 \tDriver\t\t"XMODULE"'

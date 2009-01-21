@@ -2,7 +2,7 @@
 # (included by init, hwautocfg, servconfig, ... within OpenSLX initial
 # ramfs)
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-11-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 19-11-2006
 # Felix Endres, 30-04-2006
 # <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 # Tobias Maier
@@ -31,7 +31,6 @@ config_distro () {
 udev_hotplug () {
 :
 }
-
 
 #############################################################################
 # generate events with the sysfs trigger
@@ -547,6 +546,8 @@ waitfor () {
 local file=$1
 local maxwait=$2
 local count=0
+[ -z $file ] && return 0
+[ -z $maxwait ] && maxwait=5000
 while [ ! -e $file ] ; do
   echo "waiting ........." > /dev/null
   count=`expr $count + 1`

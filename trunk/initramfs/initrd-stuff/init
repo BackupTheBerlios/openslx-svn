@@ -2,7 +2,7 @@
 # main script for new type of initial ramdisk for OpenSLX linux diskless
 # clients version 4
 #
-# Dirk von Suchodoletz <dirk@goe.net>, 03-11-2006
+# Dirk von Suchodoletz <dirk@goe.net>, 19-11-2006
 # <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
@@ -181,9 +181,8 @@ line in $0\nnfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
     # deprecated: nfs server and path (will be removed soon)
     nfsroot=*)
       nfsroot=${opts#nfsroot=}
-      # conversion to new system:
-      root_path=${nfsroot#*:}
-      nfsserver=${nfsroot%:*}
+      #root_path=
+      #nfsserver=
       echo -e "\n# nfs root information gotten via kernel command line in $0\n\
 nfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
     ;;
@@ -409,6 +408,7 @@ if [ -n "${UNIONFS}" ] ; then
     none /mnt
   mkdir -p /mnt/uniontmp
   mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp
+  chmod 0755 /mnt/uniontmp /mnt
   # if additional sources should be used for a combined root filesystem
   # probably more sources should be merged into union (${UNION} is defined)
   # allow more than one union??
