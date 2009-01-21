@@ -4,11 +4,11 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 21-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-05-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.1.1b
+# Version:      0.1.1c
 
 # check for configuration files to source
 
@@ -282,6 +282,14 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   rm /mnt/etc/vmware/not_configured 2>/dev/null
   # define a variable where gdm/kdm should look for additional sessions
   export vmsessions=/var/lib/vmware/vmsessions
+  # create default.desktop for kdm
+  echo '[Desktop Entry]
+  Encoding=UTF-8
+  Name=Default
+  Name[de]=Standard
+  Exec=defaultwm
+  TryExec=/usr/X11R6/bin/defaultwm
+  Type=Application' >/etc/X11/sessions/default.desktop
 fi
 
 #######################################################################
