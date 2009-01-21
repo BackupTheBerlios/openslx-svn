@@ -18,10 +18,6 @@
 displaysetup () {
 # (temporary) configuration file
 local xfc=$1
-# define some defaults
-local HSYNCRANGE="31.5-63.5"
-local VSYNCRANGE="60-90"
-local DEFAULTMODES='"1024x768" "800x600" "640x480"'
 # set variables representing the xorg.conf sections (version 6.9.x)
 # variables might be overwritten via displayvars function
 local Module='\tLoad\t\t"dbe"\n
@@ -66,8 +62,6 @@ local InputMouseSyn='\tIdentifier  "Mouse1"\n
 local Monitor='\tIdentifier "Default"\n
 \tModelName\t"MODEL"\n
 \tOption\t\t"CalcAlgorithm"\t"CheckDesktopGeometry"\n
-\tHorizSync\tHS\n
-\tVertRefresh\tVS\n
 \tOption\t\t"DPMS"\t\t"true"'
 local Device='\tIdentifier\t"StdGraphics"\n
 \tVendorName\t"XDESC"\n
@@ -107,6 +101,7 @@ if [ -n "${hw_graphic}" ] ; then
   fi
 fi
 
+# deprecated stuff, needed primarily for CRT displays
 if [ -n "${hw_monitor}" ] ; then
   # just cut all starting from k(Hz) ...
   HS=${hw_monitor%k*}
@@ -202,10 +197,10 @@ for section in Files ServerFlags Module InputDevice Monitor \
     ;;
     Screen)
       echo -e ${Screen} >>$xfc
-      for BPP in 15 16 24
-        do echo -e '\tSubSection "Display"\n\t\tDepth\t'\
-          $BPP'\n\t\tModes\t'$SCR_MODES'\n\tEndSubSection' >>$xfc
-      done
+      #for BPP in 15 16 24
+      #  do echo -e '\tSubSection "Display"\n\t\tDepth\t'\
+      #    $BPP'\n\t\tModes\t'$SCR_MODES'\n\tEndSubSection' >>$xfc
+      #done
     ;;
     ServerLayout)
       echo -e ${ServerLayout} >>$xfc
