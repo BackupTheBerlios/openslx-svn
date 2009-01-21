@@ -99,6 +99,10 @@ $(USR_BIN_PATH)/*" \
 	cd - >/dev/null; \
 	rm REVISION packaging/rpm/openslx-filelist
 
+release-tarball:
+	@export OPENSLX_SVN_SNAPSHOT=0; \
+	make tarball
+
 install:
 	@echo "Checking installation requirements..."; \
 	echo $$(date) >${SLX_INSTALL_LOG}; \
