@@ -179,7 +179,7 @@ cdr_2_name="/dev/cdrom1"
 floppya="FALSE"
 floppyb="FALSE"
 # place for the virtual floppy "B:"
-floppybname="/etc/vmware/loopimg/fd1.img"
+floppybname="/etc/vmware/loopimg/fd.img"
 # resolution
 hostres=$(xvidtune -show 2>/dev/null| grep -ve "^$")
 xres=$(echo "${hostres}" | awk '{print $3}')

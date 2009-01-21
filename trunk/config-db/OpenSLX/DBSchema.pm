@@ -31,8 +31,8 @@ my @sharedAttributes = (
 	'attr_start_snmp:b',
 	'attr_start_x:s.64',
 	'attr_start_xdmcp:s.64',
-	'attr_auth_type:s.64'
-	'attr_home_type:s.64'
+	'attr_auth_type:s.64',
+	'attr_home_type:s.64',
 	'attr_tex_enable:b',
 	'attr_vmware:b',
 );
