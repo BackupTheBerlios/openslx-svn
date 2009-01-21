@@ -128,12 +128,15 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     ;;
     # single token for debugging ...
     debug)
-      DEBUGLEVEL=1;;
+      DEBUGLEVEL=1
+      nosplash=1
+    ;;
     # ... or a specified debug level
     debug=*)
       DEBUGLEVEL=${opts#debug=}
       [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
         echo "** SLX init started near $(sysup)"
+      nosplash=1
     ;;
     # essid for WLAN boot (experimental, might be moved to a module component
     # in later versions
@@ -272,7 +275,7 @@ $0\n# deprecated: please use rootfs=nfs://...\nnfsroot=\"${nfsroot}\"\n" \
 done
 
 # splashy stuff
-[ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] && /bin/splashy boot 2>/dev/null
+[ ${nosplash} = 0 ] && /bin/splashy boot 2>/dev/null
 
 # at this point a timer should be started to ensure an automated reboot
 # or halt of the machine if SLX init does not succeed (e.g. missing kernel
@@ -555,8 +558,7 @@ $(sysup)"
 fi
 
 # splashy stuff
-[ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
-  && /bin/splashy_update "progress 10" 2>/dev/null
+[ ${nosplash} = 0 ] && /bin/splashy_update "progress 10" 2>/dev/null
 
 # if no type of root filesystem is passed via kernel command line try
 # information gathered from dhcp process (only valid for nfs)
@@ -623,8 +625,7 @@ if [ -n "${aufs}" ]; then
 fi
 
 # splashy stuff
-[ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
-  && /bin/splashy_update "progress 30" 2>/dev/null
+[ ${nosplash} = 0 ] && /bin/splashy_update "progress 30" 2>/dev/null
 
 # setup of client root filesystem dependent on the availability of UnionFS
 if [ -n "${unionfs}" -o -n "${aufs}" ] ; then
@@ -699,8 +700,7 @@ elif [ -z "${cowloop}" ] ; then
 fi
 
 # splashy stuff
-[ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
-  && /bin/splashy_update "progress 50" 2>/dev/null
+[ ${nosplash} = 0 ] && /bin/splashy_update "progress 50" 2>/dev/null
 
 # script for stuff to execute during early bootup
 d_mkrlscript init boot.slx "Running configuration postponed from InitRamFS"
@@ -756,8 +756,7 @@ else
 fi
 
 # splashy stuff
-[ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
-  && /bin/splashy_update "progress 80" 2>/dev/null
+[ ${nosplash} = 0 ] && /bin/splashy_update "progress 80" 2>/dev/null
 
 # wait a while for hardware setup to complete and copy stuff to stage4
 waitfor /tmp/hwcfg 20000 || error "$init_errhw"
@@ -850,8 +849,7 @@ unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
   SLXVERSION UDEVD_EXPECTED_SEQNUM PATH
 
 # splashy stuff
-[ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ] \
-  && /bin/splashy_update "progress 100" 2>/dev/null
+[ ${nosplash} = 0 ] && /bin/splashy_update "progress 100" 2>/dev/null
 
 # new style of pivoting (switch_root or run-init)
 exec /bin/switch_root -c dev/console /mnt /sbin/init || error "$init_runinit"
