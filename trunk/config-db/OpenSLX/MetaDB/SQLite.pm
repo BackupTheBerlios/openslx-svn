@@ -58,7 +58,7 @@ sub connect
 	vlog 1, "trying to connect to SQLite-database <$dbSpec>";
 	eval ('require DBD::SQLite; 1;')
 		or die _tr(qq[%s doesn't seem to be installed,
-so there is no support for %s available, sorry!\n], 'DBI::SQLite', 'SQLite');
+so there is no support for %s available, sorry!\n], 'DBD::SQLite', 'SQLite');
 	$self->{'dbh'} = DBI->connect("dbi:SQLite:$dbSpec", undef, undef,
 								  {PrintError => 0, AutoCommit => 1})
 			or confess _tr("Cannot connect to database <%s> (%s)",
