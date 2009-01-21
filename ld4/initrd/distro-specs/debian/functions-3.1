@@ -195,7 +195,7 @@ config_xdm () {
 config_gdm () {
   ln -sf ../gdm /mnt/etc/${D_INITDIR}/rc3.d/K20gdm
   echo -e "\t/etc/${D_INITDIR}/gdm start >${LOGFILE} 2>&1\n\
-    \t( sleep 120; ln -sf ../gdm /etc/${D_INITDIR}/rc3.d/S01gdm \
+    \t( sleep 120; ln -sf /etc/${D_INITDIR}/gdm /etc/rc3.d/S01gdm \
     >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld
   # append gdm user
   echo "gdm:x:113:">>/etc/group
@@ -206,7 +206,7 @@ config_gdm () {
 config_kdm () {
   ln -sf ../kdm /mnt/etc/${D_INITDIR}/rc3.d/K20kdm
   echo -e "\t/etc/${D_INITDIR}/kdm start >${LOGFILE} 2>&1\n\
-    \t( sleep 120; ln -sf ../gdm /etc/${D_INITDIR}/rc3.d/S01kdm \
+    \t( sleep 120; ln -sf /etc/${D_INITDIR}/kdm /etc/rc3.d/S01kdm \
     >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld
 }
 
