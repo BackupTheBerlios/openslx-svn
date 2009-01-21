@@ -47,9 +47,6 @@ exec < /dev/console > /dev/console 2>&1
 
 # run pre init script
 preinit
-# load unix module to provide sockets
-modprobe ${MODPRV} unix || error " Failed to load the \"unix\" module. \
-Problems with Hardware detection will probably arise"
 # start device auto discovery service - distro specific function
 udev_hotplug
 # read kernel commandline
@@ -402,7 +399,7 @@ d_mkbootld close
 killall -9 dhcpcd dhclient pump 2>/dev/null
 # unmount the bind mounted modules directory
 
-bash
+#bash
 
 for i in 0 40 100 200 300 500 800 1000 1200; do
   usleep $i && umount -n /lib/modules/${KERNEL} 2>/dev/null && break
