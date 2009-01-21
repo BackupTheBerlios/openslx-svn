@@ -12,18 +12,22 @@ openslxInit();
 my $openslxDB = connectConfigDB();
 
 addVendorOS($openslxDB, {
-		'name' => "suse-93-minimal",
+		'name' => "suse-10-minimal",
 		'descr' => "SuSE 9.3 minimale Installation",
+		'path' => "suse10",
+			# relative to /var/lib/openslx/stage1
 });
 
 addVendorOS($openslxDB, {
-		'name' => "suse-93-KDE",
+		'name' => "suse-10-KDE",
 		'descr' => "SuSE 9.3 grafische Installation mit KDE",
+		'path' => "suse10",
 });
 
 addVendorOS($openslxDB, {
 		'name' => "debian-31",
 		'descr' => "Debian 3.1 Default-Installation",
+#		'path' => "/var/lib/openslx/stage1/suse10",
 });
 
 my @systems;
@@ -33,8 +37,9 @@ foreach my $id (1..10) {
 		'label' => "label of $id",
 		'descr' => "descr of $id",
 		'vendor_os_id' => 1 + $id % 3,
-		'kernel' => "kernel of $id",
-		'kernel_params' => "kernel-args of $id",
+		'initramfs' => "boot/initrd-2.6.13-15-default",
+		'kernel' => "boot/vmlinuz-2.6.13-15-default",
+		'kernel_params' => "splash=silent",
 	};
 }
 addSystem($openslxDB, \@systems);
@@ -43,9 +48,9 @@ removeSystem($openslxDB, [1,3,5,7,9,11,13,15,17,19] );
 
 changeSystem($openslxDB, [ 2 ], [ { 'name' => 'new name of 2'} ] );
 
-changeSystem($openslxDB, [ 0 ], [ { 'attrStartX' => 'kde,gnome'} ] );
-changeSystem($openslxDB, [ 1,2,3 ], [ { 'attrHwMonitor' => '1280x1024'} ] );
-changeSystem($openslxDB, [ 4 ], [ { 'attrHwMonitor' => '800x600'} ] );
+changeSystem($openslxDB, [ 0 ], [ { 'attr_start_x' => 'kde,gnome'} ] );
+changeSystem($openslxDB, [ 1,2,3 ], [ { 'attr_hw_monitor' => '1280x1024'} ] );
+changeSystem($openslxDB, [ 4 ], [ { 'attr_hw_monitor' => '800x600'} ] );
 
 
 changeSystem($openslxDB, 4, { 'id' => 114, 'name' => 'id should still be 4'} );
@@ -175,14 +180,14 @@ addClientIDsToSystem($openslxDB, 6, [$clientG01ID, $clientG02ID, $clientG03ID,	$
 my $group1ID = addGroup($openslxDB, {
 		'name' => "Gell-PCs",
 		'descr' => "Gell-Threemansion PCs from 2002",
-		'attrHwMouse' => 'serial',
+		'attr_hw_mouse' => 'serial',
 });
 addClientIDsToGroup($openslxDB, $group1ID, [$clientG01ID, $clientF02ID, $clientG03ID]);
 
 my $group2ID = addGroup($openslxDB, {
 		'name' => "Teacher-PCs",
 		'descr' => "all PCs sitting on teacher's desks",
-		'attrHwMonitor' => '1600x1200',
+		'attr_hw_monitor' => '1600x1200',
 });
 addClientIDsToGroup($openslxDB, $group2ID, [$clientG01ID, $clientF01ID]);
 addSystemIDsToGroup($openslxDB, $group2ID, [2, 3]);
