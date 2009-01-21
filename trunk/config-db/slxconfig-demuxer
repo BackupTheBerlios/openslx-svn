@@ -199,8 +199,12 @@ sub writeAttributesToFile
 
 	return		if $dryRun;
 
-	open(ATTRS, "> $fileName")		or die "unable to write to $fileName";
+	# append to attribute file if it exists, in order to make use of any
+	# settings that have been added by the user (unless, of course, these
+	# settings are overruled by the DB):
+	open(ATTRS, ">> $fileName")		or die "unable to write to $fileName";
 	my @attrs = sort grep { isAttribute($_) } keys %$attrHash;
+	print ATTRS "# attributes set by slxconfig-demuxer:\n";
 	foreach my $attr (@attrs) {
 		if (length($attrHash->{$attr}) > 0) {
 			my $externalAttrName = externalAttrName($attr);
@@ -208,6 +212,11 @@ sub writeAttributesToFile
 		}
 	}
 	close(ATTRS);
+	if ($openslxConfig{'verbose-level'} > 2) {
+		print "--- START OF MACHINE-SETUP ---\n";
+		system("cat $fileName");
+		print "--- END OF MACHINE-SETUP --- \n";
+	}
 }
 
 sub writeSlxConfigToFile
@@ -249,7 +258,7 @@ sub copyExternalSystemConfig
 	}
 	# ... now pour system-specific configuration on top (if any):
 	my $systemSpecConfigPath
-		= quotemeta("$clientConfigPath/$systemName/default");
+		= "$clientConfigPath/$systemName/default";
 	vlog 2, "checking $systemSpecConfigPath for system config...";
 	if (-d $systemSpecConfigPath) {
 		slxsystem("cp -a $systemSpecConfigPath/* $targetPath");
@@ -258,7 +267,7 @@ sub copyExternalSystemConfig
 		# client has been given, so we finally pour client-specific
 		# configuration on top (if any):
 		my $clientSpecConfigPath
-			= quotemeta("$clientConfigPath/$systemName/$clientName");
+			= "$clientConfigPath/$systemName/$clientName";
 		vlog 2, "checking $clientSpecConfigPath for client config...";
 		if (-d $clientSpecConfigPath) {
 			slxsystem("cp -a $clientSpecConfigPath/* $targetPath")
@@ -351,6 +360,7 @@ sub generateInitalRamFS
 {
 	my $info = shift;
 	my $pxeVendorOSPath = shift;
+	my $attrFile = shift;
 
 	my $vendorOS = $info->{'vendor-os'};
 
@@ -378,6 +388,9 @@ sub generateInitalRamFS
 		# always use dhclient instead of the busybox-provided dhcp-client
 		# (since the latter is unable to fetch NIS-stuff).
 
+	# pass in machine-setup file (the one contained in system's conf-TGZ):
+	$cmd .= "-c $attrFile ";
+
 	# ...set kernel version...
 	my $kernelFile = basename(followLink($info->{'kernel-file'}));
 	$kernelFile =~ m[-(.+)$];
@@ -396,6 +409,7 @@ sub generateInitalRamFS
 sub writeSystemPXEFiles
 {
 	my $info = shift;
+	my $attrFile = shift;
 
 	my $kernelFile = $info->{'kernel-file'};
 	my $kernelName = basename($kernelFile);
@@ -413,7 +427,7 @@ sub writeSystemPXEFiles
 	$info->{'initramfs-name'}
 		= sprintf "initramfs-%d",
 				  $vendorOSInitramfsMap{$info->{'vendor-os'}->{id}};
-	generateInitalRamFS($info, $pxeVendorOSPath);
+	generateInitalRamFS($info, $pxeVendorOSPath, $attrFile);
 }
 
 sub writeDhcpConfig
@@ -464,7 +478,7 @@ sub writeClientConfigurationsForSystem
 			# merge default, system and client configuration files into
 			# the system configuration for the current client:
 			copyExternalSystemConfig($externalSystemID, $buildPath,
-									$externalClientName);
+									 $externalClientName);
 
 			writeAttributesToFile($client, $attrFile);
 
@@ -487,17 +501,17 @@ sub writeSystemConfiguration
 	my $buildPath = "$tempPath/build";
 	copyExternalSystemConfig(externalIDForSystem($info), $buildPath);
 
-	my $attrFile = "$buildPath/initramfs/machine-setup";
 	$openslxDB->mergeDefaultAttributesIntoSystem($info);
 	$info->{'attr-digest'} = digestAttributes($info);
 	vlog 2, _tr("attribute-digest for system '%s' is '%s'", $info->{name},
 				$info->{'attr-digest'});
+	my $attrFile = "$buildPath/initramfs/machine-setup";
 	writeAttributesToFile($info, $attrFile);
 
 	my $systemPath = "$tftpbootPath/client-config/$info->{'external-id'}";
 	createTarOfPath($buildPath, "default.tgz", $systemPath);
 
-	writeSystemPXEFiles($info);
+	writeSystemPXEFiles($info, $attrFile);
 
 	writeClientConfigurationsForSystem($info, $buildPath, $attrFile);
 
