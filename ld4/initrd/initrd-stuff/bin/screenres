@@ -19,7 +19,9 @@
 #
 
 ## For CRTs determine recommended screen modes ####################################################
-DEBUG="yes"
+
+# enable debugging in higher debug levels
+[ $DEBUGLEVEL -gt 1 ] && DEBUG="yes"
 
 function calculate_max_horizontal_freq()
 {

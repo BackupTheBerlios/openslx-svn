@@ -4,7 +4,7 @@
 #               cloning from rsync source for Diskless X Stations (v4.0)
 #
 # Author(s):    Nico Dietrich, 04-04-2006
-#		Dirk von Suchodoletz <dirk@goe.net>, 05-04-2006
+#		Dirk von Suchodoletz <dirk@goe.net>, 06-04-2006
 #
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
@@ -288,6 +288,13 @@ create_initrd() {
   mkdir -p ${tftpbootdir}
   
   declare -i j=0
+  # add nfs modules -f if nfs is choosen
+  fsmod=nfs
+  # add nbd module and the selected filesystem ontop
+  [ -n "$nbdyes" ] && fsmod=$fsmod" nbd $nbdfs"
+  fsmod=" -f \"$fsmod\""
+  # one big initrd or several smaller "specialized" ones!?
+  
   # FIXME: mkdxsinitrd currently wants to run from own directory
   # ugly workaround...
   cd ../initrd
@@ -340,7 +347,12 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
   [ -d ${tftpbootdir} ] || mkdir -p ${tftpbootdir} 
   rsync -a --exclude=.svn default_files/tftpboot/* ${tftpbootdir}
 
-  sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g;s,@@@pxe_passwd@@@,${pxe_passwd},g;s,@@@client_distro@@@,${client_distro},g;s,@@@client_distro_ver@@@,${client_distro_ver},g;s,@@@rootdir@@@,${rootdir},g" default_files/default > ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
+  sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g" \
+      -e "s,@@@pxe_passwd@@@,${pxe_passwd},g" \
+      -e "s,@@@client_distro@@@,${client_distro},g" \
+      -e "s,@@@client_distro_ver@@@,${client_distro_ver},g" \
+      -e "s,@@@rootdir@@@,${rootdir},g" default_files/default \
+         > ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
 
   declare -i j=0
   while [ $j -lt ${#choice[@]} ] ; do
@@ -348,15 +360,25 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
     current_initrd=${tftpbootdir}/initrd-dxs-${current_kernel}
 
     if [ $j -eq 0 ] ; then
-      default_string="\tMENU DEFAULT\n"
+      default_string="  MENU DEFAULT\n"
     else
       default_string=""
     fi
-    echo -e "LABEL ${client_distro}-${current_kernel}\n${default_string} \
-      MENU LABEL $j. ${client_distro}-${client_distro_ver} ${current_kernel} Diskless\n \
-      KERNEL ${server}::${tftpbootdir}/vmlinuz-${current_kernel}\n \
-      APPEND nfsroot=${server}:${rootdir} initrd=${server}::${tftpbootdir}/initrd-dxs-${current_kernel} apic dhcp noldsc vci=DXS\n \
-      ipappend 1\n\n" >> ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
+    echo -e "LABEL ${client_distro}-${current_kernel}\n${default_string}\
+  MENU LABEL $j. ${client_distro}-${client_distro_ver} ${current_kernel} Diskless\n \
+  KERNEL ${server}::${tftpbootdir}/vmlinuz-${current_kernel}\n \
+  APPEND nfsroot=${server}:${rootdir} initrd=${server}::${tftpbootdir}/initrd-dxs-${current_kernel} apic dhcp noldsc vci=DXS\n \
+  ipappend 1\n\n" >> ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
+
+    if [ -n "$nbdyes" ] ; then
+      j=$j+1
+      # create configs for nbd/squashfs kernels too
+      echo -e "LABEL ${client_distro}-${current_kernel}-nbd\n\
+  MENU LABEL $j. ${client_distro}-${client_distro_ver} ${current_kernel} Diskless NBD\n \
+  KERNEL ${server}::${tftpbootdir}/vmlinuz-${current_kernel}\n \
+  APPEND nbdroot=${server}:5000,${nbdfs} initrd=${server}::${tftpbootdir}/initrd-dxs-${current_kernel} apic dhcp noldsc vci=DXS\n \
+  ipappend 1\n\n" >> ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
+    fi
 
     j=$j+1
   done

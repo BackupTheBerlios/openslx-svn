@@ -1,5 +1,5 @@
-dhcpd_conf="/etc/dhcp3/dhcpd.conf"
-atftpd_conf="/etc/default/atftpd"
+dhcpd_conf="/etc/dhcpd.conf"
+atftpd_conf="/etc/conf.d/atftpd"
 exports_conf="/etc/exports"
 client_conf="/etc/dxs/client.cfg/machine-setup.default"
 
