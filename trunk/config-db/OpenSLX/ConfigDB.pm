@@ -42,95 +42,11 @@ my @supportExports = qw(
 @EXPORT_OK   = (@supportExports);
 %EXPORT_TAGS = ('support' => [@supportExports],);
 
-################################################################################
-### private stuff
-################################################################################
 use OpenSLX::Basics;
 use OpenSLX::DBSchema;
 use OpenSLX::Utils;
 
-sub _checkAndUpgradeDBSchemaIfNecessary
-{
-	my $metaDB = shift;
-
-	vlog(2, "trying to determine schema version...");
-	my $currVersion = $metaDB->schemaFetchDBVersion();
-	if (!defined $currVersion) {
-		# that's bad, someone has messed with our DB, as there is a
-		# database, but the 'meta'-table is empty. There might still
-		# be data in the other tables, but we have no way to find out
-		# which schema version they're in. So it's safer to give up:
-		croak _tr('Could not determine schema version of database');
-	}
-
-	if ($currVersion < $DbSchema->{version}) {
-		vlog(1,
-		  _tr('Our schema-version is %s, DB is %s, upgrading DB...',
-			$DbSchema->{version}, $currVersion));
-		foreach my $v (sort { $a <=> $b } keys %DbSchemaHistory) {
-			next if $v <= $currVersion;
-			my $changeSet = $DbSchemaHistory{$v};
-			foreach my $c (0 .. scalar(@$changeSet) - 1) {
-				my $changeDescr = @{$changeSet}[$c];
-				my $cmd         = $changeDescr->{cmd};
-				if ($cmd eq 'add-table') {
-					$metaDB->schemaAddTable(
-						$changeDescr->{'table'},
-						$changeDescr->{'cols'},
-						$changeDescr->{'vals'}
-					);
-				} elsif ($cmd eq 'drop-table') {
-					$metaDB->schemaDropTable($changeDescr->{'table'});
-				} elsif ($cmd eq 'rename-table') {
-					$metaDB->schemaRenameTable(
-						$changeDescr->{'old-table'},
-						$changeDescr->{'new-table'},
-						$changeDescr->{'cols'}
-					);
-				} elsif ($cmd eq 'add-columns') {
-					$metaDB->schemaAddColumns(
-						$changeDescr->{'table'},
-						$changeDescr->{'new-cols'},
-						$changeDescr->{'new-default-vals'},
-						$changeDescr->{'cols'}
-					);
-				} elsif ($cmd eq 'drop-columns') {
-					$metaDB->schemaDropColumns(
-						$changeDescr->{'table'},
-						$changeDescr->{'drop-cols'},
-						$changeDescr->{'cols'}
-					);
-				} elsif ($cmd eq 'rename-columns') {
-					$metaDB->schemaRenameColumns(
-						$changeDescr->{'table'},
-						$changeDescr->{'col-renames'},
-						$changeDescr->{'cols'}
-					);
-				} else {
-					croak _tr('UnknownDbSchemaCommand', $cmd);
-				}
-			}
-		}
-		vlog(1, _tr('upgrade done'));
-	} else {
-		vlog(1, _tr('DB matches current schema version %s', $currVersion));
-	}
-	return;
-}
-
-sub _aref
-{    # transparently converts the given reference to an array-ref
-	my $ref = shift;
-	return [] unless defined $ref;
-	$ref = [$ref] unless ref($ref) eq 'ARRAY';
-	return $ref;
-}
-
-sub _unique
-{    # return given array filtered to unique elements
-	my %seenIDs;
-	return grep { !$seenIDs{$_}++; } @_;
-}
+our $configDBInstance;
 
 ################################################################################
 ### data access interface
@@ -138,8 +54,22 @@ sub _unique
 sub new
 {
 	my $class = shift;
-	my $self  = {};
-	return bless $self, $class;
+
+	if ($configDBInstance) {
+		return $configDBInstance;
+	}
+
+	$configDBInstance = {
+		connectedCount => 0,
+	};
+	return bless $configDBInstance, $class;
+}
+
+sub DESTROY
+{
+	my $self = shift;
+	
+	$configDBInstance = undef;
 }
 
 sub connect		## no critic (ProhibitBuiltinHomonyms)
@@ -149,53 +79,48 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 	# hash-ref with any additional info that might be required by
 	# specific metadb-module (not used yet)
 
-	my $dbType = $openslxConfig{'db-type'};
-	# name of underlying database module...
+	if (!$self->{connectedCount}) {
 
-	# map db-type to name of module, such that the user doesn't have
-	# to type the correct case:
-	my %dbTypeMap = (
-		'mysql'  => 'mysql',
-		'sqlite' => 'SQLite',
-	);
-	my $lcType = lc($dbType);
-	if (exists $dbTypeMap{$lcType}) {
-		$dbType = $dbTypeMap{$lcType};
-	}
-
-	my $dbModuleName = "OpenSLX/MetaDB/$dbType.pm";
-	my $dbModule = "OpenSLX::MetaDB::$dbType";
-	unless (eval { require $dbModuleName } ) {
-		if ($! == 2) {
-			die _tr(
-				"Unable to load DB-module <%s>\nthat database type is not supported (yet?)\n",
-				$dbModuleName
-			);
-		} else {
-			die _tr("Unable to load DB-module <%s> (%s)\n", $dbModuleName, $@);
-		}
-	}
-	my $metaDB = $dbModule->new();
-	if (!$metaDB->connect($dbParams)) {
-		warn _tr("Unable to connect to DB-module <%s>\n%s", $dbModuleName, $@);
-		warn _tr("These DB-modules seem to work ok:");
-		foreach my $dbMod ('mysql', 'SQLite') {
-			my $fullDbModName = "DBD/$dbMod.pm";
-			if (eval { require $fullDbModName }) {
-				vlog(0, "\t$dbMod\n");
+		my $dbType = $openslxConfig{'db-type'};
+			# name of underlying database module...
+	
+		my $dbModuleName = "OpenSLX/MetaDB/$dbType.pm";
+		my $dbModule = "OpenSLX::MetaDB::$dbType";
+		unless (eval { require $dbModuleName } ) {
+			if ($! == 2) {
+				die _tr(
+					"Unable to load DB-module <%s>\nthat database type is not supported (yet?)\n",
+					$dbModuleName
+				);
+			} else {
+				die _tr("Unable to load DB-module <%s> (%s)\n", $dbModuleName, $@);
 			}
 		}
-		die _tr(
-			'Please use slxsettings if you want to switch to another db-type.');
+		my $metaDB = $dbModule->new();
+		if (!$metaDB->connect($dbParams)) {
+			warn _tr("Unable to connect to DB-module <%s>\n%s", $dbModuleName, $@);
+			warn _tr("These DB-modules seem to work ok:");
+			foreach my $dbMod ('mysql', 'SQLite') {
+				my $fullDbModName = "DBD/$dbMod.pm";
+				if (eval { require $fullDbModName }) {
+					vlog(0, "\t$dbMod\n");
+				}
+			}
+			die _tr(
+				'Please use slxsettings if you want to switch to another db-type.');
+		}
+	
+		$self->{'db-type'} = $dbType;
+		$self->{'meta-db'} = $metaDB;
+		foreach my $tk (keys %{$DbSchema->{tables}}) {
+			$metaDB->schemaDeclareTable($tk, $DbSchema->{tables}->{$tk});
+		}
+	
+		_checkAndUpgradeDBSchemaIfNecessary($metaDB);
 	}
 
-	$self->{'db-type'} = $dbType;
-	$self->{'meta-db'} = $metaDB;
-	foreach my $tk (keys %{$DbSchema->{tables}}) {
-		$metaDB->schemaDeclareTable($tk, $DbSchema->{tables}->{$tk});
-	}
-
-	_checkAndUpgradeDBSchemaIfNecessary($metaDB);
+	$self->{connectedCount}++;
+	
 	return;
 }
 
@@ -203,7 +128,11 @@ sub disconnect
 {
 	my $self = shift;
 
-	$self->{'meta-db'}->disconnect();
+	if ($self->{connectedCount} == 1) {
+		$self->{'meta-db'}->disconnect();
+	}
+	$self->{connectedCount}--;
+
 	return;
 }
 
@@ -1091,6 +1020,92 @@ sub generatePlaceholderFor
 {
 	my $varName = shift;
 	return '@@@' . $varName . '@@@';
+}
+
+################################################################################
+### private stuff
+################################################################################
+sub _checkAndUpgradeDBSchemaIfNecessary
+{
+	my $metaDB = shift;
+
+	vlog(2, "trying to determine schema version...");
+	my $currVersion = $metaDB->schemaFetchDBVersion();
+	if (!defined $currVersion) {
+		# that's bad, someone has messed with our DB, as there is a
+		# database, but the 'meta'-table is empty. There might still
+		# be data in the other tables, but we have no way to find out
+		# which schema version they're in. So it's safer to give up:
+		croak _tr('Could not determine schema version of database');
+	}
+
+	if ($currVersion < $DbSchema->{version}) {
+		vlog(1,
+		  _tr('Our schema-version is %s, DB is %s, upgrading DB...',
+			$DbSchema->{version}, $currVersion));
+		foreach my $v (sort { $a <=> $b } keys %DbSchemaHistory) {
+			next if $v <= $currVersion;
+			my $changeSet = $DbSchemaHistory{$v};
+			foreach my $c (0 .. scalar(@$changeSet) - 1) {
+				my $changeDescr = @{$changeSet}[$c];
+				my $cmd         = $changeDescr->{cmd};
+				if ($cmd eq 'add-table') {
+					$metaDB->schemaAddTable(
+						$changeDescr->{'table'},
+						$changeDescr->{'cols'},
+						$changeDescr->{'vals'}
+					);
+				} elsif ($cmd eq 'drop-table') {
+					$metaDB->schemaDropTable($changeDescr->{'table'});
+				} elsif ($cmd eq 'rename-table') {
+					$metaDB->schemaRenameTable(
+						$changeDescr->{'old-table'},
+						$changeDescr->{'new-table'},
+						$changeDescr->{'cols'}
+					);
+				} elsif ($cmd eq 'add-columns') {
+					$metaDB->schemaAddColumns(
+						$changeDescr->{'table'},
+						$changeDescr->{'new-cols'},
+						$changeDescr->{'new-default-vals'},
+						$changeDescr->{'cols'}
+					);
+				} elsif ($cmd eq 'drop-columns') {
+					$metaDB->schemaDropColumns(
+						$changeDescr->{'table'},
+						$changeDescr->{'drop-cols'},
+						$changeDescr->{'cols'}
+					);
+				} elsif ($cmd eq 'rename-columns') {
+					$metaDB->schemaRenameColumns(
+						$changeDescr->{'table'},
+						$changeDescr->{'col-renames'},
+						$changeDescr->{'cols'}
+					);
+				} else {
+					croak _tr('UnknownDbSchemaCommand', $cmd);
+				}
+			}
+		}
+		vlog(1, _tr('upgrade done'));
+	} else {
+		vlog(1, _tr('DB matches current schema version %s', $currVersion));
+	}
+	return;
+}
+
+sub _aref
+{    # transparently converts the given reference to an array-ref
+	my $ref = shift;
+	return [] unless defined $ref;
+	$ref = [$ref] unless ref($ref) eq 'ARRAY';
+	return $ref;
+}
+
+sub _unique
+{    # return given array filtered to unique elements
+	my %seenIDs;
+	return grep { !$seenIDs{$_}++; } @_;
 }
 
 1;

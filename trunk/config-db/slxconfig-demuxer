@@ -423,12 +423,12 @@ sub generateInitalRamFS
 
 	vlog(1, _tr('generating initialramfs %s/initramfs', $pxeVendorOSPath));
 	my $cmd = "$openslxConfig{'base-path'}/bin/mkdxsinitrd ";
-	if (length($info->{attr_ramfs_nicmods}) > 0) {
+	if ($info->{attr_ramfs_nicmods}) {
 		$cmd .= qq[-n "$info->{attr_ramfs_nicmods}" ];
 	}
-	my $fsMods = $info->{attr_ramfs_fsmods};
+	my $fsMods = $info->{attr_ramfs_fsmods} || '';
 	$fsMods .= ' ' . $osExportEngine->requiredFSMods();
-	if (length($fsMods) > 0) {
+	if ($fsMods) {
 		$cmd .= qq[-f "$fsMods" ];
 	}
 	my $rootPath = "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}";
