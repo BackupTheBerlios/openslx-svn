@@ -66,6 +66,9 @@ my (
 		# number of system configurations written
 	$clientSystemConfCount,
 		# number of (system-specific) client configurations written
+	%vendorOSInitramfsMap,
+		# keeping note of how many initramFSs have been created for a
+		# specific vendor-OS.
 	$helpReq,
 	$manReq,
 	$versionReq,
@@ -298,15 +301,15 @@ sub writePXEMenus
 		my @systemInfos = grep { exists $systemIDs{$_->{id}} } @infos;
 			# now @systemInfos holds all infos relevant to this client
 		foreach my $info (@systemInfos) {
-			my $extSysID = $info->{'external-id'};
+			my $extID = $info->{'vendor-os'}->{name};
 			my $kernelName = basename($info->{'kernel-file'});
 			my $append = $info->{kernel_params};
-			$append .= " initrd=$extSysID/initramfs";
+			$append .= " initrd=$extID/$info->{'initramfs-name'}";
 			$append .= " $clientAppend";
 			$append .= " rootfs=$info->{'export-uri'} file";
-			print PXE "LABEL openslx-$extSysID\n";
+			print PXE "LABEL openslx-$info->{'external-id'}\n";
 			print PXE "\tMENU LABEL ^$info->{label}\n";
-			print PXE "\tKERNEL $extSysID/$kernelName\n";
+			print PXE "\tKERNEL $extID/$kernelName\n";
 			print PXE "\tAPPEND $append\n";
 			print PXE "\tIPAPPEND 1\n";
 		}
@@ -317,11 +320,11 @@ sub writePXEMenus
 sub generateInitalRamFS
 {
 	my $info = shift;
-	my $pxeSysPath = shift;
+	my $pxeVendorOSPath = shift;
 
 	my $vendorOS = $info->{'vendor-os'};
 
-	vlog 1, _tr('generating initialramfs %s/initramfs', $pxeSysPath);
+	vlog 1, _tr('generating initialramfs %s/initramfs', $pxeVendorOSPath);
 	my $cmd = "$openslxConfig{'bin-path'}/slxmkramfs ";
 	if ($info->{ramfs_use_busybox}) {
 		$cmd .= '-b ';
@@ -338,7 +341,7 @@ sub generateInitalRamFS
 	}
 	my $rootPath
 		= "$openslxConfig{'stage1-path'}/$vendorOS->{name}";
-	$cmd .= "-i $pxeSysPath/initramfs -r $rootPath ";
+	$cmd .= "-i $pxeVendorOSPath/$info->{'initramfs-name'} -r $rootPath ";
 
 	# fill slxConf-hash...
 	my %slxConf;
@@ -376,15 +379,19 @@ sub writeSystemPXEFiles
 	my $kernelName = basename($kernelFile);
 
 	my $pxePath = "$tftpbootPath/pxe";
-	my $pxeSysPath = "$pxePath/$info->{'external-id'}";
-	mkdir $pxeSysPath		unless -e $pxeSysPath || $dryRun;
+	my $pxeVendorOSPath = "$pxePath/$info->{'vendor-os'}->{name}";
+	mkdir $pxeVendorOSPath		unless -e $pxeVendorOSPath || $dryRun;
 
-	my $targetKernel = "$pxeSysPath/$kernelName";
+	my $targetKernel = "$pxeVendorOSPath/$kernelName";
 	if (!-e $targetKernel) {
 		vlog 1, _tr('copying kernel %s to %s', $kernelFile, $targetKernel);
 		system(qq[cp -p "$kernelFile" "$targetKernel"])		unless $dryRun;
 	}
-	generateInitalRamFS($info, $pxeSysPath);
+	$vendorOSInitramfsMap{$info->{'vendor-os'}->{id}}++;
+	$info->{'initramfs-name'}
+		= sprintf "initramfs-%c",
+				  64+$vendorOSInitramfsMap{$info->{'vendor-os'}->{id}};
+	generateInitalRamFS($info, $pxeVendorOSPath);
 }
 
 sub writeDhcpConfig
