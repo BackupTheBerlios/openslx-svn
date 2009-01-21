@@ -1,2 +1,2 @@
 tftpbootdir="/tftpboot"
-
+overwrite_configs="Y"

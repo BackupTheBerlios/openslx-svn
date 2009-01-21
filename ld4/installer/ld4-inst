@@ -127,11 +127,10 @@ configure() {
   fi
   . .config
   
-  overwrite_configs="yes"
-  echo -n "Overwrite server configs (Y) or write *.new files (n)? [Y/n] "
-  read userinput
-  if [ "$userinput" = "no" -o "$userinput" = "n" -o \
-       "$userinput" = "N" -o "$userinput" = "No" ] ; then
+  [ -z $overwrite_configs ] && overwrite_configs="y"
+  ask "Overwrite server configs (Y) or write *.new files (n)? [Y/n] " overwrite_configs $overwrite_configs
+  if [ "$overwrite_configs" = "no" -o "$overwrite_configs" = "n" -o \
+       "$overwrite_configs" = "N" -o "$overwrite_configs" = "No" ] ; then
     overwrite_configs="no"
   fi
 
@@ -375,7 +374,7 @@ setup_server () {
     set -- $cfile
 
     # check if file changed
-    lastfile=`ls -lt ${dxs_conf}/${1}* | awk '{print $8}'| sed -n "2,2p"`
+    lastfile=`ls -lt ${dxs_conf}/${1}* | sed -n "2,2s/.*${1}/${1}/p"`
     ! [ -z $lastfile ] && diff ${dxs_conf}/${1}-${timestamp} ${lastfile} >/dev/null
     if [ $? -eq 0 ] ; then
       echo "Configuration file ${2} didn't change - leaving unchanged"
