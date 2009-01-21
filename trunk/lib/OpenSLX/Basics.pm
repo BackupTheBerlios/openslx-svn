@@ -119,7 +119,11 @@ sub vlog
 {
 	my $minLevel = shift;
 	return if $minLevel > $openslxConfig{'verbose-level'};
-	print $openslxLog '-'x$minLevel, @_, "\n";
+	my $str = join("", '-'x$minLevel, @_);
+	if (substr($str,-1,1) ne "\n") {
+		$str .= "\n";
+	}
+	print $openslxLog $str;
 }
 
 # ------------------------------------------------------------------------------
