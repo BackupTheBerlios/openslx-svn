@@ -75,6 +75,12 @@ tarball:
 		cd - >/dev/null; \
 		OPENSLX_SOURCEDIR_SYMLINK_CREATED="yes"; \
 	fi; \
+	echo -e "$(SLX_CONFIG_PATH)\n\
+$(SLX_BASE_PATH)\n\
+$(SLX_PRIVATE_PATH)\n\
+$(SLX_PUBLIC_PATH)\n\
+$(USR_BIN_PATH)/*" \
+		>packaging/rpm/openslx-filelist; \
 	cd .. >/dev/null; \
 	tar cfhj \
 		"$${svn_repo_name}/openslx-$${OPENSLX_VERSION_STRING}.tar.bz2" \
@@ -83,7 +89,7 @@ tarball:
 	test "$${OPENSLX_SOURCEDIR_SYMLINK_CREATED}" = "yes" && \
 		rm -f "openslx-$${OPENSLX_VERSION_STRING}"; \
 	cd - >/dev/null; \
-	rm REVISION
+	rm REVISION packaging/rpm/openslx-filelist
 
 install:
 	@echo "Checking installation requirements..."; \
@@ -207,7 +213,7 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 		OPENSLX_VERSION_SVNREV=$$(svnversion .); \
 	fi; \
 	. ./VERSIONS; \
-	  echo "echo $${OPENSLX_VERSION_STRING}" \
+	  echo -e "#! /bin/sh\n\necho $${OPENSLX_VERSION_STRING}" \
 	    > $(DESTDIR)${SLX_BIN_PATH}/slxversion
 	@chmod a+x $(DESTDIR)${SLX_BIN_PATH}/slxversion
 	@ln -sf $(SLX_BIN_PATH)/slxversion $(DESTDIR)$(USR_BIN_PATH)/
