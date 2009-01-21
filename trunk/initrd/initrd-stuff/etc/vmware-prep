@@ -12,12 +12,12 @@
 # Version:      0.2.324
 #
 #######################################################################
-# set verbose mode (set -x(v))
+# set verbose mode for script debugging
 #set -xv
 
 ### CONFIGURATION #####################################################
 # read configuration information
-. /etc/machine-setup
+#. /etc/machine-setup # not needed at the moment!
 
 ### VARIABLES SECTION #################################################
 # Declaration of default variables

@@ -207,20 +207,23 @@ for ipcfg in ip ipconfig ifconfig none; do
   test -x /bin/$ipcfg && break;
 done
 case $ipcfg in
+  # the standard linux ip configuration tool
   ip)
-    ip link set dev $if up
-    ip addr add $ip/`nm2pref $nm` broadcast $bc dev $if
+    ip link set dev $if up 2>/dev/null
+    ip addr add $ip/`nm2pref $nm` broadcast $bc dev $if 2>/dev/null
     if [ "$gw" != "0.0.0.0" ] ; then
-      ip route add default via $gw
+      ip route add default via $gw 2>/dev/null
     fi
     MAC=$(ip link show dev $if|sed -n "/ether [0-9e-f]\{2\}:.*/p" \
       | sed -e "s/.*ether //;s/ .*//")
   ;;
+  # the klibc ip configuration / dhcp client tool
   ipconfig)
     # fixme: to be checked
     ipconfig $ip::$gw:$nm:$if:none
     MAC=""
   ;;
+  # traditional ifconfig/route - if a distro does not provide ip
   ifconfig)
     if [ "$ip" = "0.0.0.0" ]; then
       ifconfig $if up
@@ -247,12 +250,15 @@ local ret=0
 for mnt in nfsmount mount none; do
   test -x /bin/$mnt && break;
 done
+# often nfs is just a module and not compiled directly into the kernel
 [ -f /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko ] && \
   loadmod /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko "$error_modnfs"
 case $mnt in
+  # the klibc nfs mount tool (includes portmap)
   nfsmount)
     nfsmount -o ro $nfsroot $dest || ret=1
   ;;
+  # the standard mount; portmap is needed ...
   mount)
     portmap || { echo "$error_portm"; ret=1; }
     # fixme: busybox mount uses nfs ...
@@ -377,7 +383,8 @@ case "$tftp" in
       fi
     ;;
 esac
-# unpack part (only gzip is supported)
+# unpack part (only gzip is supported, bzip binary not present in
+# initramfs)
 if [ -s $dst ] ; then
   tar -xpzf $dst 2>/dev/null
   [ "$DEBUGLEVEL" -le 2 -o "$DEBUGLEVEL" -eq 8  ] && rm $dst
@@ -443,7 +450,7 @@ strinfile (){
 
 
 #######################################################################
-# Check boot commandline for specified option
+# check boot commandline for specified option
 inkernelcmdline (){
 strinstr " $1" "${KCMDLINE}"
 return "$?"
@@ -464,6 +471,7 @@ return 0
 }
 
 #######################################################################
+# ldconfig is needed if rootfilesystem is composed of several parts.
 # search for ldconfig and execute it
 # check that /mnt/etc/ld.so.conf is never lost
 ldconfig () {
@@ -834,7 +842,7 @@ case "${XMODULE}" in
   ;;
   nv)
     #
-    # test -f /mnt/usr/X11R6/lib/modules/drivers/nvidia_drv.o
+    # test -f /mnt/usr/X11R6/lib/modules/drivers/nvidia_drv.*
   ;;
 esac
 }
@@ -856,51 +864,51 @@ config_ntp () {
 
 # function for atd
 config_atd () {
- : 
+: 
 }
 
 # function for configuration of cron services
 config_cron () {
- : 
+: 
 }
 
 # syslog service
 config_syslog () {
- : 
+: 
 }
 
 # secure shell service
 config_sshd () {
- :
+:
 }
 
 # snmp agent for remote monitoring
 config_snmp () {
- : 
+: 
 }
 
 # consolefont
 consolefont () {
- : 
+: 
 }
 # acpi and powersave
 config_acpi () {
- : 
+: 
 }
 
 # configure xdm as display manager
 config_xdm () {
-  :
+:
 } 
 
 # configure gdm as display manager
 config_gdm () {
- : 
+:
 }
 
 # configure hal, dbus, resmgr and services like that
 config_dreshal () {
-  :
+:
 }
 
 # configure automounter
@@ -913,8 +921,9 @@ config_bt () {
 :
 }
 
+# create a compliant runlevel script, needed for boot.ld and vmware-prep
 d_mkrlscript () {
- : 
+:
 }
 
 # start name service caching daemon
@@ -924,12 +933,12 @@ config_nscd () {
 
 # prepare virtual machine environment (vmware, vmplayer)
 config_vmware () {
- : 
+:
 }
 
 # configure automounter
 config_automount () {
- : 
+:
 }
 
 # start portmapper (needed at least for nfs and nis services)
@@ -939,5 +948,5 @@ config_portmap () {
 
 # start NIS (fixmee - does the service is really named ypbind??)
 config_nis () {
- :
+:
 }
