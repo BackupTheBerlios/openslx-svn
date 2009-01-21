@@ -50,6 +50,7 @@ ask() {
       local back="$userinput"
   fi
   eval "$2=\"$back\""
+  sed -e '/'$2'=.*/d' -i .config
   echo "$2=\"$back\"" >> .config
 }
 
@@ -112,10 +113,7 @@ configure() {
   fi
   . .config
 
-  # TODO: assure that values get entered only once in .config
-
-  # TODO: bash doesnt allow concatenation of more than 2 logical expressions
-  if ! [ -z $netmask -a -z $broadcast -a -z $netname -a -z $server ] ; then
+  if ! [ -z "${netmask}" -a -z "${broadcast}" -a -z "${netname}" -a -z "${server}" ] ; then
     ipcfg=( `ifconfig eth0 | grep "inet addr" | sed -e "s,[a-zA-Z]*:,,g"` )
     netmask=${ipcfg[3]}
     broadcast=${ipcfg[2]}
@@ -185,11 +183,16 @@ configure() {
   # wo ist das referenzsystem? - was ist default ???
   ask "IP + Path to reference system: " rsyncsource "localhost:/"
   
-  # hier auch dns-server etc abfragen??
+  # dns-server
+  # domain-name
+  # evtl. ntp-server
 
+  # which kernel(s) to use to generate initial ramdisk(s)
+    # list available kernels and allow to chose from
+  
   # nfs / nbd / squash-fs?
 
-
+  
   # password for pxeboot-menu (caution: you can easily retrieve it in clear text!!)
   pxe_passwd="master"
 }
@@ -213,9 +216,9 @@ setup_server () {
     mv ${dhcpd_conf} ${dhcpd_conf}.dxs.bak
   fi
   cp default_files/dhcpd.conf ${dhcpd_conf}
-  sed -e "s,@@@server@@@,${server},g" -e "s,@@@netname@@@,${netname},g" -e "s,@@@netmask@@@,${netmask},g" -e "s,@@@broadcast@@@,${broadcast},g" -i ${dhcpd_conf}
+  sed -e "s,@@@server@@@,${server},g;s,@@@netname@@@,${netname},g;s,@@@netmask@@@,${netmask},g;s,@@@broadcast@@@,${broadcast},g" -i ${dhcpd_conf}
 
-  # TODO: sed -e @@@example1@@@, netname+1 etc.
+  # TODO: sed -e @@@example1@@@, netname+1 etc. - which ip addresses are safe to use?
 
   # atftpd
   if [ -f ${atftpd_conf} ] ; then
@@ -240,7 +243,7 @@ setup_server () {
     mv ${tftpbootdir} ${tftpbootdir}.dxs.bak
   fi
   cp -r default_files/tftpboot ${tftpbootdir}
-  sed -e "s,@@@server@@@,${server},g" -e "s,@@@tftpbootdir@@@,${tftpbootdir},g" -e "s,@@@pxe_passwd@@@,${pxe_passwd},g" -e "s,@@@client_distro@@@,${client_distro},g" -e "s,@@@client_distro_ver@@@,${client_distro_ver},g" -e "s,@@@rootdir@@@,${rootdir},g" -i ${tftpbootdir}/pxelinux.cfg/default
+  sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g;s,@@@pxe_passwd@@@,${pxe_passwd},g;s,@@@client_distro@@@,${client_distro},g;s,@@@client_distro_ver@@@,${client_distro_ver},g;s,@@@rootdir@@@,${rootdir},g" -i ${tftpbootdir}/pxelinux.cfg/default
 
   
   # make services start  -- do we really want to do this?
@@ -249,19 +252,33 @@ setup_server () {
 
 create_initrd() {
   # FIXME: mkdxsinitrd currently wants to run from own directory
-  ../initrd/mkdxsinitrd -r ${rootdir}
+
+  # ugly workaround...
+  cd ../initrd
+  # TODO: loop over chosen kernels -> mkdxsinitrd -k ... and -i ...
+
+  ./mkdxsinitrd -r ${rootdir}
+  cd ../installer
+
+  # generate links to kernels and initial ramdisks
   
-  # generate links to kernel and initial ramdisk
-  ln -s ${rootdir}/boot/vmlinuz ${tftpbootdir}
+  # TODO: move this stuff in upper loop
+  if [ -e ${rootdir}/boot/vmlinuz ] ; then 
+    ln -s ${rootdir}/boot/vmlinuz ${tftpbootdir}
+  elif [ -e ${rootdir}/vmlinuz ] ; then 
+    ln -s ${rootdir}/boot/vmlinuz ${tftpbootdir}
+  fi
   ln -s ${rootdir}/boot/initrd ${tftpbootdir}
 
-  # TODO: assure that vmlinuz and initrd exist!!
 }
 
 
 footer() {
   echo -e "\nPlease assure to restart atftpd, nfs-kernel-server and dhcpd!\n"
   echo -e "\nInstallation finished.\n"
+
+  # TODO: tell user things he's got to configure aftewards - point to README
+  #  * in dhcpd.conf - put in clients mac and ip addresses
 }
 
 
@@ -273,5 +290,4 @@ configure
 copy_system
 setup_server
 create_initrd
-
 footer
