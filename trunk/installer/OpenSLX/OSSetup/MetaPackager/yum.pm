@@ -48,11 +48,11 @@ sub setupPackageSource
 		$repoURL .= "/$repoInfo->{'repo-subdir'}";
 	}
 	my $repoDescr = "[$repoName]\nname=$repoInfo->{name}\nbaseurl=$repoURL\n";
-	system("cp /proc/cpuinfo $self->{engine}->{'system-path'}/proc");
-	system("rm -f $self->{engine}->{'system-path'}/etc/yum.repos.d/*");
-	system("mkdir -p $self->{engine}->{'system-path'}/etc/yum.repos.d");
+	system("cp /proc/cpuinfo $self->{engine}->{'vendor-os-path'}/proc");
+	system("rm -f $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d/*");
+	system("mkdir -p $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d");
 	my $repoFile
-		= "$self->{engine}->{'system-path'}/etc/yum.repos.d/$repoName.repo";
+		= "$self->{engine}->{'vendor-os-path'}/etc/yum.repos.d/$repoName.repo";
 	open(REPO, "> $repoFile")
 		or die _tr("unable to create repo-file <%s> (%s)", $repoFile, $1);
 	print REPO $repoDescr;

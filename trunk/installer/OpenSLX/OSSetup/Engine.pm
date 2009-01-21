@@ -138,11 +138,11 @@ sub initialize
 			."\n";
 	}
 
-	$self->{'system-path'}
+	$self->{'vendor-os-path'}
 		= "$openslxConfig{'stage1-path'}/$self->{'vendor-os-name'}";
-	vlog 1, "system will be installed to '$self->{'system-path'}'";
-	if ($protectSystemPath && -e $self->{'system-path'}) {
-		die _tr("'%s' already exists, giving up!", $self->{'system-path'});
+	vlog 1, "vendor-OS will be installed to '$self-vendor-os-pathath'}'";
+	if ($protectSystemPath && -e $self->{'vendor-os-path'}) {
+		die _tr("vendor-OS '%s' already exists, giving up!", $self->{'vendor-os-path'});
 	}
 
 	$self->createPackager();
@@ -299,9 +299,9 @@ sub createSystemPath
 {
 	my $self = shift;
 
-	if (system("mkdir -p $self->{'system-path'}")) {
+	if (system("mkdir -p $self->{'vendor-os-path'}")) {
 		die _tr("unable to create directory '%s', giving up! (%s)",
-				$self->{'system-path'}, $!);
+				$self->{'vendor-os-path'}, $!);
 	}
 }
 
@@ -374,7 +374,7 @@ sub setupStage1A
 	vlog 1, "setting up stage1a for $self->{'vendor-os-name'}...";
 
 	# specify individual paths for the respective substages:
-	$self->{stage1aDir} = "$self->{'system-path'}/stage1a";
+	$self->{stage1aDir} = "$self->{'vendor-os-path'}/stage1a";
 	$self->{stage1bSubdir} = 'slxbootstrap';
 	$self->{stage1cSubdir} = 'slxfinal';
 
@@ -606,9 +606,9 @@ sub stage1C_cleanupBasicSystem
 
 	my $stage1cDir
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
-	if (system("mv $stage1cDir/* $self->{'system-path'}/")) {
+	if (system("mv $stage1cDir/* $self->{'vendor-os-path'}/")) {
 		die _tr("unable to move final setup to <%s> (%s)",
-				$self->{'system-path'}, $!);
+				$self->{'vendor-os-path'}, $!);
 	}
 	if (system("rm -rf $self->{stage1aDir}")) {
 		die _tr("unable to remove temporary folder <%s> (%s)",
@@ -651,7 +651,7 @@ sub stage1D_updateBasicSystem()
 	my $self = shift;
 
 	# chdir into systemDir...
-	my $systemDir = $self->{'system-path'};
+	my $systemDir = $self->{'vendor-os-path'};
 	vlog 2, "chrooting into $systemDir...";
 	chdir $systemDir
 		or die _tr("unable to chdir into <%s> (%s)", $systemDir, $!);
@@ -701,7 +701,7 @@ sub clone_fetchSource
 	}
 	my $excludeIncludeList = join("\n", @includeList, @excludeList);
 	vlog 1, "using exclude-include-filter:\n$excludeIncludeList\n";
-	open(RSYNC, "| rsync -av --delete --exclude-from=- $source $self->{'system-path'}")
+	open(RSYNC, "| rsync -av --delete --exclude-from=- $source $self->{'vendor-os-path'}")
 		or die _tr("unable to start rsync for source '%s', giving up! (%s)",
 				   $source, $!);
 	print RSYNC $excludeIncludeList;
