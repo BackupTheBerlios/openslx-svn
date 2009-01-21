@@ -469,7 +469,7 @@ waitfor /tmp/svcfg 20000 || error "$init_errsw"
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null
 cp /etc/machine-setup /mnt/etc
-
+#bash
 # post init for some distro specific
 postinit
 [ -x /bin/postinit.local ] && /bin/postinit.local

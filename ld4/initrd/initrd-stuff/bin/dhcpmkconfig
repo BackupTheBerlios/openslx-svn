@@ -18,6 +18,8 @@ able to\n# transfer any vendor specific, self defined dhcp options. If \
 this is\n# intended, use dhclient instead or get them via tftp (to be \
 enabled\n# via kernel command line)."
 # heavy debugging output in level 3 and above ... and on 13
+#FIXME: DEBUGLEVEL is not propagated to this file (at least for Ubuntu)
+[ -z "$DEBUGLEVEL" ] && DEBUGLEVEL=0
 [ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 10 -o $DEBUGLEVEL -eq 13 ] && \
   set -x
 case $0 in

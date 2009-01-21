@@ -302,10 +302,11 @@ fi
 
 # configure kdm as display manager
 config_kdm () {
-  ln -sf ../${D_INITDIR}/kdm /mnt/etc/rc3.d/K20kdm
-  echo -e "\t/etc/${D_INITDIR}/kdm start >${LOGFILE} 2>&1\n\
-    \t( sleep 120; ln -sf /etc/${D_INITDIR}/kdm /etc/rc3.d/S01kdm \
-    >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld
+ rllinker "kdm" "25" "01"
+#  ln -sf ../${D_INITDIR}/kdm /mnt/etc/rc3.d/K20kdm
+#  echo -e "\t/etc/${D_INITDIR}/kdm start >${LOGFILE} 2>&1\n\
+#    \t( sleep 120; ln -sf /etc/${D_INITDIR}/kdm /etc/rc3.d/S01kdm \
+#    >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld
 }
 
 # configure hal, dbus, resmgr and services like that

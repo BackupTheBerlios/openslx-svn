@@ -1,5 +1,3 @@
-<<<<<<< .mine
-=======
 # Description:  distro specific settings for Ubuntu Hoary Hedgehog (5.10)
 #               defaults are taken from config-default file
 #
@@ -29,5 +27,4 @@
 # D_BOOTLOCAL - script for user specified stuff which should be started
 # during client bootup, path and file relative to /etc
 
-# no changes from default
->>>>>>> .r256
+# no changes from default except:

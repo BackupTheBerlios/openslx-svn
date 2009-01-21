@@ -334,6 +334,7 @@ mkdir -p ${INSTDIR}/usr/share
 mkdir -p ${INSTDIR}/etc/sysconfig
 
 # if still no distro name set, try to find it using significant files
+
 if [ -z "${DISTRO}" ] ; then
   if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
     DISTRO=suse
@@ -380,7 +381,7 @@ case "${DISTRO}" in
         DISTRO_VER=5.10
         cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib
       ;;
-     Dapper*|dapper*|*)
+     Dapper*|dapper*)
 	DISTRO_VER=6.06
       ;;
     esac
