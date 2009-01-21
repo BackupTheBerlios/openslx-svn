@@ -527,7 +527,7 @@ sub writeConfigurations
 	}
 }
 
-__END__
+
 
 =head1 NAME
 

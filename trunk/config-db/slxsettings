@@ -143,7 +143,7 @@ sub externalKeyFor
 	return "SLX_".uc($key);
 }
 
-__END__
+
 
 =head1 NAME
 
@@ -362,3 +362,5 @@ Prints the version and exits.
 =head1 SEE ALSO
 
 slxos-setup, slxos-export, slxconfig, slxconfig-demuxer
+
+=cut

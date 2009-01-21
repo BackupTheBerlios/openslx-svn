@@ -159,7 +159,7 @@ if ($action =~ m[^import]i) {
 Try '%s --help' for more info.\n", $0);
 }
 
-__END__
+
 
 =head1 NAME
 

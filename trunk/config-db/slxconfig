@@ -574,7 +574,7 @@ sub removeSystemFromConfigDB
 				$systemName);
 }
 
-__END__
+
 
 =head1 NAME
 

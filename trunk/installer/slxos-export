@@ -152,7 +152,7 @@ if ($action =~ m[^list-ex]i) {
 Try '%s --help' for more info.\n", $0);
 }
 
-__END__
+
 
 =head1 NAME
 
