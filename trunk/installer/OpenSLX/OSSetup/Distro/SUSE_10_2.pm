@@ -182,6 +182,8 @@ sub initDistroInfo
 	";
 
 	$self->{config}->{'selection'} = {
+		'default' => "",
+
 		'kde' => "
 			3ddiag
 			915resolution
@@ -941,8 +943,6 @@ sub initDistroInfo
 			zypper
 		",
 	};
-	$self->{config}->{'selection'}->{default}
-		= $self->{config}->{'selection'}->{kde};
 }
 
 1;

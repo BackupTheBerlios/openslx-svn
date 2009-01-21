@@ -166,6 +166,8 @@ sub initDistroInfo
 	";
 
 	$self->{config}->{'selection'} = {
+		'default' => "",
+
 		'gnome' => "
 			3ddiag
 			855resolution
@@ -1013,8 +1015,6 @@ sub initDistroInfo
 			zvbi
 		",
 	};
-	$self->{config}->{'selection'}->{default}
-		= $self->{config}->{'selection'}->{gnome};
 }
 
 1;
