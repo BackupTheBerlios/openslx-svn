@@ -28,7 +28,7 @@
 
 #######################################################################
 # copy distro specific scripts, programs, libraries and configs
-cp -a /etc/sysconfig/files/* /mnt &
+cp -a /etc/sysconfig/files/* /mnt > /dev/null 2&>1 & 
 
 # set greeting
 echo "

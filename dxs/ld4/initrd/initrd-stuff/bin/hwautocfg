@@ -9,6 +9,10 @@
 #		Blub
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
+#
+#
+#
+
 
 # local functions
 displaysetup () {
@@ -272,6 +276,11 @@ fi
 
 # USB core is needed for presence of /proc/bus/usb
 ( modprobe ${MODPRV} usbcore && mount -n -t usbfs usbfs /proc/bus/usb ) &
+
+#fixmee: Kernelmodul für ps-maeuse laden, da sie sonst nicht von hwsetup erkannt werden.
+if [ -f /mnt/lib/modules/${KERNEL}/kernel/drivers/input/mouse/psmouse.ko ]; then
+	( modprobe ${MODPRV} psmouse )
+fi
 
 # start the knoppix hardware autodetection tool
 ( hwsetup -v > /tmp/hwsetup.info && echo "hwsetup" > /tmp/hwrun1 ) &

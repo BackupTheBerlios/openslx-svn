@@ -29,8 +29,8 @@ pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
 X11/xdm/pixmaps\ndhclient.script\n\
 rc2.d/*\nrc5.d/*"
 D_BINDMPTS="tmp root home"
-D_DIRINBINDMNT="/var/run /var/log /var/tmp"
-D_RODIRSINRW="etc/gconf etc/X11/xkb /var/adm /var/lib/texmf /var/lib/gdm"
+D_DIRINBINDMNT="/var/run /var/log /var/tmp /var/lib/gdm"
+D_RODIRSINRW="etc/gconf etc/X11/xkb /var/adm /var/lib/texmf"
 D_DIRINDXS="/var/X11R6/compose-cache \
 /var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
 /var/lib/pam_devperm /var/lib/bluetooth \
@@ -41,7 +41,7 @@ D_BINDMNT="# "
 D_INITDIR="/init.d"
 D_INITBOOTD="/rcS.d"
 D_RCDIRS="/rc0.d /rc1.d /rc2.d /rc3.d /rc4.d /rc5.d /rc6.d"
-D_INITSCRIPTS="udev procps.sh bootlogd keymap.sh hwclock.sh sudo"
+D_INITSCRIPTS="mountvirtfs udev procps.sh bootlogd keymap.sh hwclock.sh sudo"
 D_XF86CONFFILE="/etc/X11/xorg.conf"
 D_XFONTPATH="/usr/share/fonts/*"
 D_DEFAULTCOUNTRY="de"
