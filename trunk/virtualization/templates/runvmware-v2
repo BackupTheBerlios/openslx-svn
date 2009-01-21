@@ -3,8 +3,8 @@
 # Description:  Script for preparing VMware environment Diskless
 #               X Stations and interactive session chooser (v4)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-03-2006
-#               Michael Janczyk <mj0@uni-freiburg.de>, 10-01-2007
+# Author(s):    see project authors file
+# 
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
 # Version:      0.16.611
@@ -40,6 +40,8 @@ floppyb="TRUE"
 floppybname="/etc/vmware/loopimg/fd.img"
 cdr_1="FALSE"
 cdr_2="FALSE"
+# ide is expected default, test for the virtual disk image type should
+# be done while creating the runscripts ...
 ide="TRUE"
 scsi="FALSE"
 hddrv="lsilogic"
@@ -101,21 +103,23 @@ imagename="CHANGEIT"
 diskfile="${vmdir}/${imagename}"
 
 #TODO: check for a faster way, perhaps we should put this into XML
+# oh - yeah!! Why not do it on the SERVER??? It has enough power and has
+# to do it once and not during every start on a client :)
 #grepping every file could take much (network) resources. And if its
 #an IDE Image, but has somewhere the string ddb.adapterType stuff can
 #become screwed
 # check if IDE or SCSI
-hddrv=$(grep -m 1 -ia "ddb.adapterType" ${diskfile} | awk -F "\"" '{print $2}')
-if [ "${hddrv}" = "ide" ]; then
-  ide="TRUE"
-  scsi="FALSE"
-elif [ "${hddrv}" = "lsilogic" ]; then
-  ide="FALSE"
-  scsi="TRUE"  
-elif [ "${hddrv}" = "buslogic" ]; then
-  ide="FALSE"
-  scsi="TRUE"  
-fi
+#hddrv=$(grep -m 1 -ia "ddb.adapterType" ${diskfile} | awk -F "\"" '{print $2}')
+#if [ "${hddrv}" = "ide" ]; then
+#  ide="TRUE"
+#  scsi="FALSE"
+#elif [ "${hddrv}" = "lsilogic" ]; then
+#  ide="FALSE"
+#  scsi="TRUE"  
+#elif [ "${hddrv}" = "buslogic" ]; then
+#  ide="FALSE"
+#  scsi="TRUE"  
+#fi
 
 # define name for VMware window
 displayname="CHANGEIT"

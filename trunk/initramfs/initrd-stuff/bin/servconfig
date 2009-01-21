@@ -368,6 +368,7 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   # mount a clean tempfs (bug in UnionFS prevents loopmount to work)
   strinfile "unionfs" /proc/mounts && \
     mount -n -o size=1500k -t tmpfs vm-loopimg /mnt/etc/vmware/loopimg
+  # create an empty floppy image of 1.4MByte size
   dd if=/dev/zero of=/mnt/etc/vmware/loopimg/fd.img \
     count=2880 bs=512 2>/dev/null
   chmod 0777 /mnt/etc/vmware/loopimg/fd.img
