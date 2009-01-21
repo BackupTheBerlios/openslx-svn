@@ -53,8 +53,7 @@ config_distro () {
   
   # set default runlevel
   sed -e "s/.*initdefault/id:${D_INITDEFAULT}:initdefault/" -i /mnt/etc/inittab
-  # neeed lateron:
-  echo HALLO
+  # needed lateron (by hwsetup?)
   /mnt/bin/mknod /dev/zero c 1 5
   /mnt/bin/mknod /dev/mem c 1 1
    
