@@ -922,7 +922,7 @@ for i in boot.ld ${D_INITSCRIPTS}; do
 done
 }
 
-# kdmrc template
+# kdmrc template started from distro specific functions files
 config_kdm_template () {
 usetheme=false
 themeconf=$(ls /mnt/var/lib/openslx/themes/displaymanager/*.xml 2>/dev/null)

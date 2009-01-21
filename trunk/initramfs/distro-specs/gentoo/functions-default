@@ -16,12 +16,12 @@
 
 # distro specific general function called from servconfig script
 config_distro () {
-echo -e "OpenSLX version 4.0.6a\ninitramfs generation date $date" \
+echo -e "OpenSLX version 4.0.6\ninitramfs generation date $date" \
   >> /mnt/etc/gentoo-release
 echo -e "# changes made to this file by $0 (initramfs from $date)" \
   > /etc/rc.conf
 # keytable is set by hwautocfg script (added just for convenience here)
-config_rc_entry "KEYMAP" "${KEYTABLE}"
+config_rc_entry "KEYMAP" "${KEYTABLE}" "conf.d/keymaps"
 }
 
 # udev service - not verified!
@@ -42,18 +42,18 @@ local script="$1"
 local after="$2"
 # empty runlevel links - decision on running certain services is
 # passed via configuration
-if strinstr "$1" "boot boot.ld ${D_INITSCRIPTS}" ; then
-  ln -s /etc/${D_INITDIR}/$1 /mnt/etc/runlevels/boot/$1
-  echo $1 >> /mnt/etc/runlevels/boot/.critical
+if strinstr "$script" "boot boot.ld ${D_INITSCRIPTS}" ; then
+  ln -s /etc/${D_INITDIR}/$script /mnt/etc/runlevels/boot/$script
+  echo $script >> /mnt/etc/runlevels/boot/.critical
 else
-  ln -s /etc/${D_INITDIR}/$1 /mnt/etc/runlevels/default/$1
-  echo $1 >> /mnt/etc/runlevels/default/.critical
+  ln -s /etc/${D_INITDIR}/$script /mnt/etc/runlevels/default/$script
+  echo $script >> /mnt/etc/runlevels/default/.critical
 fi
 if [ -n "$after" ] ; then
   sedscript "$after"
-  sed -f /tmp/sedscript -i /mnt/etc/${D_INITDIR}/$1
+  sed -f /tmp/sedscript -i /mnt/etc/${D_INITDIR}/$script
 else
-  sed "/depend/,/}/d" -i /mnt/etc/${D_INITDIR}/$1
+  sed "/depend/,/}/d" -i /mnt/etc/${D_INITDIR}/$script
 fi
 }
 
@@ -206,7 +206,9 @@ fi
 config_rc_entry () {
 local var=$1
 local value=$2
-sed -e "s,$var=.*,$var=\"$value\"," -i /mnt/etc/rc.conf
+local file=$3
+[ -z $file ] && file=rc.conf
+sed -e "s,$var=.*,$var=\"$value\"," -i /mnt/etc/${file}
 }
 
 # general display manager stuff like runlevel link and config file entry
@@ -272,7 +274,7 @@ fi
 consolefont () {
 echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
   >>/mnt/etc/${D_INITDIR}/boot.ld
-config_rc_entry "CONSOLEFONT" "${CONSOLE_FONT}"
+config_rc_entry "CONSOLEFONT" "${CONSOLE_FONT}" "conf.d/consolefont"
 }
 
 # acpi and powersave
@@ -324,7 +326,8 @@ rllinker "ypbind"
 # start vmware and vmware preparation services
 config_vmware () {
 rllinker "vmware-prep"
-rllinker "vmware"
+# ensure that vmware is started after preparation
+rllinker "vmware" "vmware-prep"
 # during vmware sessions linux should not handle usb events/devices
 testmkd /mnt/var/X11R6/bin
 echo '#!/bin/sh'>> /mnt/etc/udev/rules.d/01-udev-vm.rules
@@ -344,3 +347,16 @@ SUBSYSTEM==\"usb\", ACTION==\"remove\", PROGRAM=\"/var/X11R6/bin/vm-udev\"" \
   >> /mnt/etc/udev/rules.d/01-udev-vm.rules
 }
 
+# Xorg variable settings. Lots of stuff changed for newer Xorg servers
+displayvars () {
+Files='\tModulePath\t"/etc/X11/modules"\n
+\tModulePath\t"/usr/lib/xorg/modules"\n
+\tRgbPath\t\t"/usr/share/X11/rgb"\n
+\tFontPath\t"/usr/share/fonts/TTF/"\n
+\tFontPath\t"/usr/share/fonts/OTF/"\n
+\tFontPath\t"/usr/share/fonts/Type1/"\n
+\tFontPath\t"/usr/share/fonts/CID/"\n
+\tFontPath\t"/usr/share/fonts/misc/"\n
+\tFontPath\t"/usr/share/fonts/75dpi/"\n
+\tFontPath\t"/usr/share/fonts/100dpi/"'
+}
