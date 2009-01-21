@@ -74,7 +74,13 @@ if [ -z ${FPTB} ] ; then
   return 1;
 elif [ -L ${FPTB} ] ; then
   # do not copy the link but the binary the link points to
-  FPTB=${ROOTDIR}/`ls -la ${FPTB} | sed -e "s,.* ,,"`
+
+  local LINKDEST=`ls -la ${FPTB} | sed -e "s,.* ,,"`
+  case $LINKDEST in 
+    /*) FPTB=${ROOTDIR}${LINKDEST}
+	;;
+    *) ;;
+  esac
   cp ${FPTB} ${INSTDIR}/${DEST}
 else
   cp ${FPTB} ${INSTDIR}/${DEST}
