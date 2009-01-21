@@ -2,13 +2,12 @@
 #               is the base for following SuSE versions until the changes
 #               within them require a major change
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-05-2006
 #
-# Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
+# Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 
 
 # D_SYSCONFDIR - system wide configuration settings - /etc/sysconfig in SuSE
-# and RedHat, /etc/default in Debian and Ubuntu
 # D_ETCEXCL - list of files, wildcards to be excluded from /etc when using
 # bind mounts
 # D_DIRINBINDMNT - lists of directories to be created in bind mounted rw
@@ -27,3 +26,4 @@
 # during client bootup, path and file relative to /etc
 
 D_INITSCRIPTS="boot.udev boot.proc boot.klog boot.loadmodules boot.clock boot.sysctl boot.ipconfig boot.swap"
+D_RODIRSINRW="/etc/opt/gnome/gconf /etc/X11/xkb /var/adm /var/lib/texmf /var/lib/rpm /var/cache/fontconfig"
