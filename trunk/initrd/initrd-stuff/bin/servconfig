@@ -233,7 +233,7 @@ $date\n" >/mnt/etc/ntp.conf;
 fi
 # copy timezone file defined with language settings
 [ -z "$TZ" ] && TZ="$timezone"
-cp /mnt/usr/share/zoneinfo/${TZ} /mnt/etc/localtime 2>/dev/null || \
+ln -snf /usr/share/zoneinfo/${TZ} /mnt/etc/localtime || \
   error "$scfg_ntptz" nonfatal
 config_ntp
 

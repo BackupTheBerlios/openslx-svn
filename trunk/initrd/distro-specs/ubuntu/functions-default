@@ -27,7 +27,7 @@ preinit () {
 #overwrite settings set by hwautocfg
 displayvars (){
 Files=' \t 	  FontPath\t\t       "/usr/share/X11/fonts/misc"\n
-\t        FontPath\t\t   "/usr/share/X11/fonts/100dpi/:unscaled"\n
+\t        FontPath\t\t    "/usr/share/X11/fonts/100dpi/:unscaled"\n
 \t        FontPath\t\t    "/usr/share/X11/fonts/75dpi/:unscaled"\n
 \t        FontPath\t\t    "/usr/share/X11/fonts/Type1"\n
 \t        FontPath\t\t    "/usr/share/X11/fonts/100dpi"\n
@@ -53,11 +53,16 @@ config_distro () {
   
   # set default runlevel
   sed -e "s/.*initdefault/id:${D_INITDEFAULT}:initdefault/" -i /mnt/etc/inittab
+  # neeed lateron:
+  echo HALLO
+  /mnt/bin/mknod /dev/zero c 1 5
+  /mnt/bin/mknod /dev/mem c 1 1
    
 }
 
 # AUS SuSE-9.3
 # udev/hotplug - auto device discovery service
+# Result: 1 is bad, 0 is good
 udev_hotplug () {
   local result=0
   [ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "$df_errhotpl" nonfatal
@@ -194,8 +199,8 @@ config_acpi () {
   rllinker "acpid" "10" "19"
   rllinker "acpi-support" "99" "02"
 
-  # nur hier wiel udev_hotplug zu früh aufgerufen wird.
-  rllinker "udev" "18" "25"
+  # nur hier weil udev_hotplug zu früh aufgerufen wird.
+  rllinker "udev" "11" "25"
 }
 
 # configure gdm as display manager
@@ -356,7 +361,7 @@ rerun\n# the mkdxsinitrd script to get them applied" \
       >/mnt/etc/${D_INITDIR}/$name
     echo -e "\n\ncase \"\$1\" in\n    start)\techo -n \"$info\"" \
       >>/mnt/etc/${D_INITDIR}/$name
-    chmod +x /mnt/etc/${D_INITDIR}/$name
+    chmod u+x /mnt/etc/${D_INITDIR}/$name
   ;;
   close)
     echo -e "\t;;\n    stop)\n\t;;\nesac\nexit 0" \
@@ -424,7 +429,7 @@ fi
 
 # start portmapper (needed at least for nfs and nis services)
 config_portmap () {
-  rllinker "portmap" "18" "20"
+  rllinker "portmap" "02" "20"
 }
 
 # start NIS (fixmee - does the service is really named ypbind??)
