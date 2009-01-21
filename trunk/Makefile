@@ -1,12 +1,10 @@
-# Description:  Makefile for creating project tarball and installing the project
-#               to the various destination directories
+# Makefile for creating project tarball and installing the project
+# to the various destination directories
 #
-# Author(s):    Lars Mueller <lm@openslx.org>, 11-08-2006
-#               Dirk von Suchodoletz <dirk@goe.net>, 20-08-2006
+# Lars Mueller <lm@openslx.com>, 2006
+# Dirk von Suchodoletz <dirk@goe.net>, 2006
 #
-# Copyright:    (c) 2006 - openslx.org project
-#
-# Version:      0.0.1c
+# (c) 2006 - OpenSLX.com
 
 tarball:
 	@echo "Creating tar ball "
