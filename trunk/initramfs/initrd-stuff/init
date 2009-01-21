@@ -64,7 +64,6 @@ export SLXVERSION="${slxconf_slxver}"
 # do not use dnbd cache file
 nodnbdcache="yes"
 
-
 # mount the important standard directories
 [ ! -f /proc/cpuinfo ] && mount -n -t proc proc /proc
 [ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
@@ -96,8 +95,7 @@ preinit
 [ -x /bin/preinit.local ] && /bin/preinit.local
 
 # start device auto discovery service - busybox (or distro specific function)
-#mdev -s # enable this one
-runudev #(remove that functions soon, see #129, #130 ...)
+mdev -s
 
 # switch off the several configuration methods, will be switched on
 # according to kernel commandline settings
@@ -122,6 +120,11 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       DEBUGLEVEL=${opts#debug=}
       [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
         echo "** SLX init started near $(sysup)"
+    ;;
+    # essid for WLAN boot (experimental, might be moved to a module component
+    # in later versions
+    essid=*)
+      essid==${opts#essid=}
     ;;
     # if configuration should not be gathered by dhcp client
     nodhcp)
@@ -693,8 +696,8 @@ umount -n /proc/bus/usb >/dev/null 2>&1
 chmod 1777 /mnt/dev/shm /mnt/tmp /mnt/tmp/scratch 2>/dev/null
 mount -n --move /dev /mnt/dev
 
-# stop udevd (non-busybox udevs) and kill hwautocfg, servconfig
-killall -9 udevd hwautocfg servconfig 2>/mnt/dev/null
+# kill hwautocfg, servconfig
+killall -9 hwautocfg servconfig 2>/mnt/dev/null
 # runtimer
 [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
   echo "** SLX init ended near $(sysup)"

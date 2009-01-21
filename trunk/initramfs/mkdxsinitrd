@@ -88,8 +88,8 @@ usage()
   echo "  -S name of the system for which the initramfs is built"
   echo "  -s theme (for splash)"
   echo "  -t tpm support (client security)"
-  echo "  -w include (list of) WLAN driver modules. WLAN specific tools are"
-  echo "        added to the initramfs"
+  echo "  -w enable WLAN support. Put WLAN kernel drivers to the network module"
+  echo "        list"
   exit 0
 }
 
@@ -310,7 +310,7 @@ cp -a ${themes}* ${INSTDIR}/usr/share/themes
 #########################################################################
 # End of function declaration
 
-while getopts :dhk:c:i:r:o:s:f:n:m:S:tu:w:I:a: a ; do
+while getopts :dhk:c:i:r:o:s:f:n:m:S:tu:wI:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
@@ -325,7 +325,6 @@ while getopts :dhk:c:i:r:o:s:f:n:m:S:tu:w:I:a: a ; do
       I)  echo "-I requires network interface parameter";;
       S)  echo "-S requires the system name";;
       V)  echo "-V requires an executable to run inside linuxrc";;
-      w)  echo "-w requires WLAN module (list) parameter";; 
       *)  echo "Unknown option: -$OPTARG"
           echo "Try mkinitrd -h";;
     esac
@@ -338,11 +337,11 @@ while getopts :dhk:c:i:r:o:s:f:n:m:S:tu:w:I:a: a ; do
     f)  FSMODULES=$OPTARG;;
     n)  NWMODULES=$OPTARG;;
     m)  MISCMODULES=$OPTARG;;
-    w)  WLANMODULES=$OPTARG;;
     r)  ROOTDIR=$OPTARG;;
     s)  theme=$OPTARG;;
     S)  SYSTEM_NAME=$OPTARG;;
     t)  use_tpm=1;;
+    w)  enable_wlan=1;;
     d)  IRFSDEBUG=$OPTARG;;
     l)  local_init_script="$OPTARG";; # use for pre/postinit.local?
     h)  usage;;
@@ -474,7 +473,7 @@ done
 fi
 
 # if wlan should be supported in stage3
-if [ -n "${WLANMODULES}" ] ; then
+if [ -n "${enable_wlan}" ] ; then
   cobi iwconfig bin 
 fi
   
@@ -544,7 +543,7 @@ fi
 # put all needed modules into initial ramdisk
 mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
 for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
-  ${WLANMODULES} ${DEBUGMODULES} usbcore usbhid uhci-hcd ohci-hcd; do
+  ${DEBUGMODULES} usbcore usbhid uhci-hcd ohci-hcd; do
   mod=$(cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
 2>/dev/null)
 

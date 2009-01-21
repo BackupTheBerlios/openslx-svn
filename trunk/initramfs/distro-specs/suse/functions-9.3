@@ -13,15 +13,6 @@
 # in general SuSE base definitions ...  General changes should be done there,
 # version specific changes for the 9.3 go here.
 
-# udev/hotplug - auto device discovery service (deprecated)
-udev_hotplug () {
-local result=0
-[ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "$df_errhotpl" nonfatal
-udevstart || result=1
-udevd -d || result=1
-return $result
-}
-
 # acpi and powersave
 config_acpi () {
 rllinker powersaved "10" "12"
