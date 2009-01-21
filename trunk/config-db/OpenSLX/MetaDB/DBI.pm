@@ -15,7 +15,7 @@ package OpenSLX::MetaDB::DBI;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 1.01;		# API-version . implementation-version
+$VERSION = 1.01;    # API-version . implementation-version
 use base qw(OpenSLX::MetaDB::Base);
 
 use Carp;
@@ -40,28 +40,28 @@ sub disconnect
 }
 
 sub quote
-{	# default implementation quotes any given values through the DBI
+{    # default implementation quotes any given values through the DBI
 	my $self = shift;
 
 	return $self->{'dbh'}->quote(@_);
 }
 
 sub start_transaction
-{	# default implementation passes on the request to the DBI
+{    # default implementation passes on the request to the DBI
 	my $self = shift;
 
 	return $self->{'dbh'}->begin_work();
 }
 
 sub commit_transaction
-{	# default implementation passes on the request to the DBI
+{    # default implementation passes on the request to the DBI
 	my $self = shift;
 
 	return $self->{'dbh'}->commit();
 }
 
 sub rollback_transaction
-{	# default implementation passes on the request to the DBI
+{    # default implementation passes on the request to the DBI
 	my $self = shift;
 
 	return $self->{'dbh'}->rollback();
@@ -79,21 +79,22 @@ sub _trim
 
 sub _doSelect
 {
-	my $self = shift;
-	my $sql = shift;
+	my $self      = shift;
+	my $sql       = shift;
 	my $resultCol = shift;
 
 	my $dbh = $self->{'dbh'};
 
 	vlog(3, _trim($sql));
 	my $sth = $dbh->prepare($sql)
-		or confess _tr(q[Can't prepare SQL-statement <%s> (%s)], $sql,
-					   $dbh->errstr);
+	  or
+	  confess _tr(q[Can't prepare SQL-statement <%s> (%s)], $sql, $dbh->errstr);
 	$sth->execute()
-		or confess _tr(q[Can't execute SQL-statement <%s> (%s)], $sql,
-					   $dbh->errstr);
+	  or
+	  confess _tr(q[Can't execute SQL-statement <%s> (%s)], $sql, $dbh->errstr);
 	my (@vals, $row);
-	while($row = $sth->fetchrow_hashref()) {
+	while ($row = $sth->fetchrow_hashref()) {
+
 		if (defined $resultCol) {
 			return $row->{$resultCol} unless wantarray();
 			push @vals, $row->{$resultCol};
@@ -107,11 +108,11 @@ sub _doSelect
 
 sub fetchVendorOSByFilter
 {
-	my $self = shift;
-	my $filter = shift;
+	my $self       = shift;
+	my $filter     = shift;
 	my $resultCols = shift;
 
-	$resultCols = '*' 		unless (defined $resultCols);
+	$resultCols = '*' unless (defined $resultCols);
 	my $sql = "SELECT $resultCols FROM vendor_os";
 	my $connector;
 	foreach my $col (keys %$filter) {
@@ -123,11 +124,11 @@ sub fetchVendorOSByFilter
 
 sub fetchVendorOSByID
 {
-	my $self = shift;
-	my $ids = shift;
+	my $self       = shift;
+	my $ids        = shift;
 	my $resultCols = shift;
 
-	$resultCols = '*' 		unless (defined $resultCols);
+	$resultCols = '*' unless (defined $resultCols);
 	my $idStr = join ',', @$ids;
 	return if !length($idStr);
 	my $sql = "SELECT $resultCols FROM vendor_os WHERE id IN ($idStr)";
@@ -136,11 +137,11 @@ sub fetchVendorOSByID
 
 sub fetchExportByFilter
 {
-	my $self = shift;
-	my $filter = shift;
+	my $self       = shift;
+	my $filter     = shift;
 	my $resultCols = shift;
 
-	$resultCols = '*' 		unless (defined $resultCols);
+	$resultCols = '*' unless (defined $resultCols);
 	my $sql = "SELECT $resultCols FROM export";
 	my $connector;
 	foreach my $col (keys %$filter) {
@@ -152,11 +153,11 @@ sub fetchExportByFilter
 
 sub fetchExportByID
 {
-	my $self = shift;
-	my $ids = shift;
+	my $self       = shift;
+	my $ids        = shift;
 	my $resultCols = shift;
 
-	$resultCols = '*' 		unless (defined $resultCols);
+	$resultCols = '*' unless (defined $resultCols);
 	my $idStr = join ',', @$ids;
 	return if !length($idStr);
 	my $sql = "SELECT $resultCols FROM export WHERE id IN ($idStr)";
@@ -165,7 +166,7 @@ sub fetchExportByID
 
 sub fetchExportIDsOfVendorOS
 {
-	my $self = shift;
+	my $self       = shift;
 	my $vendorOSID = shift;
 
 	my $sql = qq[
@@ -177,17 +178,17 @@ sub fetchExportIDsOfVendorOS
 sub fetchGlobalInfo
 {
 	my $self = shift;
-	my $id = shift;
+	my $id   = shift;
 
 	return if !length($id);
-	my $sql = "SELECT * FROM global_info WHERE id = ".$self->quote($id);
+	my $sql = "SELECT * FROM global_info WHERE id = " . $self->quote($id);
 	return $self->_doSelect($sql, 'value');
 }
 
 sub fetchSystemByFilter
 {
-	my $self = shift;
-	my $filter = shift;
+	my $self       = shift;
+	my $filter     = shift;
 	my $resultCols = shift;
 
 	$resultCols = '*' unless (defined $resultCols);
@@ -202,11 +203,11 @@ sub fetchSystemByFilter
 
 sub fetchSystemByID
 {
-	my $self = shift;
-	my $ids = shift;
+	my $self       = shift;
+	my $ids        = shift;
 	my $resultCols = shift;
 
-	$resultCols = '*' 		unless (defined $resultCols);
+	$resultCols = '*' unless (defined $resultCols);
 	my $idStr = join ',', @$ids;
 	return if !length($idStr);
 	my $sql = "SELECT $resultCols FROM system WHERE id IN ($idStr)";
@@ -215,7 +216,7 @@ sub fetchSystemByID
 
 sub fetchSystemIDsOfExport
 {
-	my $self = shift;
+	my $self     = shift;
 	my $exportID = shift;
 
 	my $sql = qq[
@@ -226,7 +227,7 @@ sub fetchSystemIDsOfExport
 
 sub fetchSystemIDsOfClient
 {
-	my $self = shift;
+	my $self     = shift;
 	my $clientID = shift;
 
 	my $sql = qq[
@@ -237,7 +238,7 @@ sub fetchSystemIDsOfClient
 
 sub fetchSystemIDsOfGroup
 {
-	my $self = shift;
+	my $self    = shift;
 	my $groupID = shift;
 
 	my $sql = qq[
@@ -248,11 +249,11 @@ sub fetchSystemIDsOfGroup
 
 sub fetchClientByFilter
 {
-	my $self = shift;
-	my $filter = shift;
+	my $self       = shift;
+	my $filter     = shift;
 	my $resultCols = shift;
 
-	$resultCols = '*' 		unless (defined $resultCols);
+	$resultCols = '*' unless (defined $resultCols);
 	my $sql = "SELECT $resultCols FROM client";
 	my $connector;
 	foreach my $col (keys %$filter) {
@@ -264,11 +265,11 @@ sub fetchClientByFilter
 
 sub fetchClientByID
 {
-	my $self = shift;
-	my $ids = shift;
+	my $self       = shift;
+	my $ids        = shift;
 	my $resultCols = shift;
 
-	$resultCols = '*' 		unless (defined $resultCols);
+	$resultCols = '*' unless (defined $resultCols);
 	my $idStr = join ',', @$ids;
 	return if !length($idStr);
 	my $sql = "SELECT $resultCols FROM client WHERE id IN ($idStr)";
@@ -277,7 +278,7 @@ sub fetchClientByID
 
 sub fetchClientIDsOfSystem
 {
-	my $self = shift;
+	my $self     = shift;
 	my $systemID = shift;
 
 	my $sql = qq[
@@ -288,7 +289,7 @@ sub fetchClientIDsOfSystem
 
 sub fetchClientIDsOfGroup
 {
-	my $self = shift;
+	my $self    = shift;
 	my $groupID = shift;
 
 	my $sql = qq[
@@ -299,11 +300,11 @@ sub fetchClientIDsOfGroup
 
 sub fetchGroupByFilter
 {
-	my $self = shift;
-	my $filter = shift;
+	my $self       = shift;
+	my $filter     = shift;
 	my $resultCols = shift;
 
-	$resultCols = '*' 		unless (defined $resultCols);
+	$resultCols = '*' unless (defined $resultCols);
 	my $sql = "SELECT $resultCols FROM groups";
 	my $connector;
 	foreach my $col (keys %$filter) {
@@ -315,11 +316,11 @@ sub fetchGroupByFilter
 
 sub fetchGroupByID
 {
-	my $self = shift;
-	my $ids = shift;
+	my $self       = shift;
+	my $ids        = shift;
 	my $resultCols = shift;
 
-	$resultCols = '*' 		unless (defined $resultCols);
+	$resultCols = '*' unless (defined $resultCols);
 	my $idStr = join ',', @$ids;
 	return if !length($idStr);
 	my $sql = "SELECT $resultCols FROM groups WHERE id IN ($idStr)";
@@ -328,7 +329,7 @@ sub fetchGroupByID
 
 sub fetchGroupIDsOfSystem
 {
-	my $self = shift;
+	my $self     = shift;
 	my $systemID = shift;
 
 	my $sql = qq[
@@ -339,7 +340,7 @@ sub fetchGroupIDsOfSystem
 
 sub fetchGroupIDsOfClient
 {
-	my $self = shift;
+	my $self     = shift;
 	my $clientID = shift;
 
 	my $sql = qq[
@@ -353,12 +354,12 @@ sub fetchGroupIDsOfClient
 ################################################################################
 sub _doInsert
 {
-	my $self = shift;
-	my $table = shift;
-	my $valRows = shift;
+	my $self      = shift;
+	my $table     = shift;
+	my $valRows   = shift;
 	my $ignoreIDs = shift;
 
-	my $dbh = $self->{'dbh'};
+	my $dbh    = $self->{'dbh'};
 	my $valRow = (@$valRows)[0];
 	return if !defined $valRow || !scalar keys %$valRow;
 
@@ -380,15 +381,16 @@ sub _doInsert
 			vlog(3, "generated id for <$table> is <$valRow->{id}>");
 		}
 		my $cols = join ', ', keys %$valRow;
-		my $values = join ', ', map { $self->quote($valRow->{$_}) } keys %$valRow;
+		my $values = join ', ',
+		  map { $self->quote($valRow->{$_}) } keys %$valRow;
 		my $sql = "INSERT INTO $table ( $cols ) VALUES ( $values )";
 		vlog(3, $sql);
 		my $sth = $dbh->prepare($sql)
-			or confess _tr(q[Can't insert into table <%s> (%s)], $table,
-						$dbh->errstr);
+		  or confess _tr(q[Can't insert into table <%s> (%s)], $table,
+			$dbh->errstr);
 		$sth->execute()
-			or confess _tr(q[Can't insert into table <%s> (%s)], $table,
-						   $dbh->errstr);
+		  or confess _tr(q[Can't insert into table <%s> (%s)], $table,
+			$dbh->errstr);
 		if (!$ignoreIDs && !defined $valRow->{id}) {
 			# id has not been pre-specified, we need to fetch it from DB:
 			$valRow->{'id'} = $dbh->last_insert_id(undef, undef, $table, 'id');
@@ -401,80 +403,78 @@ sub _doInsert
 
 sub _doDelete
 {
-	my $self = shift;
-	my $table = shift;
-	my $IDs = shift;
-	my $idCol = shift;
+	my $self                  = shift;
+	my $table                 = shift;
+	my $IDs                   = shift;
+	my $idCol                 = shift;
 	my $additionalWhereClause = shift;
 
 	my $dbh = $self->{'dbh'};
 
-	$IDs = [undef] unless defined $IDs;
-	$idCol = 'id' unless defined $idCol;
+	$IDs   = [undef] unless defined $IDs;
+	$idCol = 'id'    unless defined $idCol;
 	foreach my $id (@$IDs) {
 		my $sql = "DELETE FROM $table";
 		if (defined $id) {
-			$sql .= " WHERE $idCol = ".$self->quote($id);
+			$sql .= " WHERE $idCol = " . $self->quote($id);
 			if (defined $additionalWhereClause) {
 				$sql .= $additionalWhereClause;
 			}
 		}
 		vlog(3, $sql);
 		my $sth = $dbh->prepare($sql)
-			or confess _tr(q[Can't delete from table <%s> (%s)], $table,
-						$dbh->errstr);
+		  or confess _tr(q[Can't delete from table <%s> (%s)], $table,
+			$dbh->errstr);
 		$sth->execute()
-			or confess _tr(q[Can't delete from table <%s> (%s)], $table,
-						   $dbh->errstr);
+		  or confess _tr(q[Can't delete from table <%s> (%s)], $table,
+			$dbh->errstr);
 	}
 	return 1;
 }
 
 sub _doUpdate
 {
-	my $self = shift;
-	my $table = shift;
-	my $IDs = shift;
+	my $self    = shift;
+	my $table   = shift;
+	my $IDs     = shift;
 	my $valRows = shift;
 
-	my $dbh = $self->{'dbh'};
+	my $dbh    = $self->{'dbh'};
 	my $valRow = (@$valRows)[0];
 	return if !defined $valRow || !scalar keys %$valRow;
 
 	my $idx = 0;
 	foreach my $valRow (@$valRows) {
-		my $id = $IDs->[$idx++];
+		my $id      = $IDs->[$idx++];
 		my %valData = %$valRow;
 		delete $valData{'id'};
-			# filter column 'id' if present, as we don't want to update it
-		my $cols =  join ', ',
-					map { "$_ = ".$self->quote($valRow->{$_}) }
-					grep { $_ ne 'id' }
-						# filter column 'id' if present, as we don't want
-						# to update it!
-					keys %$valRow;
+		# filter column 'id' if present, as we don't want to update it
+		my $cols = join ', ', map { "$_ = " . $self->quote($valRow->{$_}) }
+		  grep { $_ ne 'id' }
+		  # filter column 'id' if present, as we don't want
+		  # to update it!
+		  keys %$valRow;
 		my $sql = "UPDATE $table SET $cols";
 		if (defined $id) {
-			$sql .= " WHERE id = ".$self->quote($id);
+			$sql .= " WHERE id = " . $self->quote($id);
 		}
 		vlog(3, $sql);
 		my $sth = $dbh->prepare($sql)
-			or confess _tr(q[Can't update table <%s> (%s)], $table, $dbh->errstr);
+		  or confess _tr(q[Can't update table <%s> (%s)], $table, $dbh->errstr);
 		$sth->execute()
-			or confess _tr(q[Can't update table <%s> (%s)], $table,
-						   $dbh->errstr);
+		  or confess _tr(q[Can't update table <%s> (%s)], $table, $dbh->errstr);
 	}
 	return 1;
 }
 
 sub _updateRefTable
 {
-	my $self = shift;
-	my $table = shift;
-	my $keyID = shift;
+	my $self        = shift;
+	my $table       = shift;
+	my $keyID       = shift;
 	my $newValueIDs = shift;
-	my $keyCol = shift;
-	my $valueCol = shift;
+	my $keyCol      = shift;
+	my $valueCol    = shift;
 	my $oldValueIDs = shift;
 
 	my %lastValueIDs;
@@ -484,7 +484,7 @@ sub _updateRefTable
 		if (!exists $lastValueIDs{$valueID}) {
 			# value-ID is new, create it
 			my $valRow = {
-				$keyCol => $keyID,
+				$keyCol   => $keyID,
 				$valueCol => $valueID,
 			};
 			$self->_doInsert($table, [$valRow]);
@@ -496,19 +496,19 @@ sub _updateRefTable
 
 	# all the remaining value-IDs need to be removed:
 	if (scalar keys %lastValueIDs) {
-		$self->_doDelete($table, [ keys %lastValueIDs ], $valueCol,
-						 " AND $keyCol='$keyID'");
+		$self->_doDelete($table, [keys %lastValueIDs],
+			$valueCol, " AND $keyCol='$keyID'");
 	}
 	return 1;
 }
 
 sub _updateOneToManyRefAttr
 {
-	my $self = shift;
-	my $table = shift;
-	my $oneID = shift;
+	my $self       = shift;
+	my $table      = shift;
+	my $oneID      = shift;
 	my $newManyIDs = shift;
-	my $fkCol = shift;
+	my $fkCol      = shift;
 	my $oldManyIDs = shift;
 
 	my %lastManyIDs;
@@ -517,7 +517,7 @@ sub _updateOneToManyRefAttr
 	foreach my $id (@$newManyIDs) {
 		if (!exists $lastManyIDs{$id}) {
 			# ID has changed, update it
-			$self->_doUpdate($table, $id, [{ $fkCol => $oneID }]);
+			$self->_doUpdate($table, $id, [{$fkCol => $oneID}]);
 		} else {
 			# ID hasn't changed, leave as is, but remove from hash:
 			delete $lastManyIDs{$id};
@@ -526,14 +526,14 @@ sub _updateOneToManyRefAttr
 
 	# all the remaining many-IDs need to be set to 0:
 	foreach my $id (scalar keys %lastManyIDs) {
-		$self->_doUpdate($table, $id, [{ $fkCol => '0' }]);
+		$self->_doUpdate($table, $id, [{$fkCol => '0'}]);
 	}
 	return 1;
 }
 
 sub addVendorOS
 {
-	my $self = shift;
+	my $self    = shift;
 	my $valRows = shift;
 
 	return $self->_doInsert('vendor_os', $valRows);
@@ -541,7 +541,7 @@ sub addVendorOS
 
 sub removeVendorOS
 {
-	my $self = shift;
+	my $self        = shift;
 	my $vendorOSIDs = shift;
 
 	return $self->_doDelete('vendor_os', $vendorOSIDs);
@@ -549,16 +549,16 @@ sub removeVendorOS
 
 sub changeVendorOS
 {
-	my $self = shift;
+	my $self        = shift;
 	my $vendorOSIDs = shift;
-	my $valRows = shift;
+	my $valRows     = shift;
 
 	return $self->_doUpdate('vendor_os', $vendorOSIDs, $valRows);
 }
 
 sub addExport
 {
-	my $self = shift;
+	my $self    = shift;
 	my $valRows = shift;
 
 	return $self->_doInsert('export', $valRows);
@@ -566,7 +566,7 @@ sub addExport
 
 sub removeExport
 {
-	my $self = shift;
+	my $self      = shift;
 	my $exportIDs = shift;
 
 	return $self->_doDelete('export', $exportIDs);
@@ -574,25 +574,25 @@ sub removeExport
 
 sub changeExport
 {
-	my $self = shift;
+	my $self      = shift;
 	my $exportIDs = shift;
-	my $valRows = shift;
+	my $valRows   = shift;
 
 	return $self->_doUpdate('export', $exportIDs, $valRows);
 }
 
 sub changeGlobalInfo
 {
-	my $self = shift;
-	my $id = shift;
+	my $self  = shift;
+	my $id    = shift;
 	my $value = shift;
 
-	return $self->_doUpdate('global_info', [$id], [{ 'value' => $value }] );
+	return $self->_doUpdate('global_info', [$id], [{'value' => $value}]);
 }
 
 sub addSystem
 {
-	my $self = shift;
+	my $self    = shift;
 	my $valRows = shift;
 
 	return $self->_doInsert('system', $valRows);
@@ -600,7 +600,7 @@ sub addSystem
 
 sub removeSystem
 {
-	my $self = shift;
+	my $self      = shift;
 	my $systemIDs = shift;
 
 	return $self->_doDelete('system', $systemIDs);
@@ -608,38 +608,38 @@ sub removeSystem
 
 sub changeSystem
 {
-	my $self = shift;
+	my $self      = shift;
 	my $systemIDs = shift;
-	my $valRows = shift;
+	my $valRows   = shift;
 
 	return $self->_doUpdate('system', $systemIDs, $valRows);
 }
 
 sub setClientIDsOfSystem
 {
-	my $self = shift;
-	my $systemID = shift;
+	my $self      = shift;
+	my $systemID  = shift;
 	my $clientIDs = shift;
 
 	my @currClients = $self->fetchClientIDsOfSystem($systemID);
 	return $self->_updateRefTable('client_system_ref', $systemID, $clientIDs,
-						          'system_id', 'client_id', \@currClients);
+		'system_id', 'client_id', \@currClients);
 }
 
 sub setGroupIDsOfSystem
 {
-	my $self = shift;
+	my $self     = shift;
 	my $systemID = shift;
 	my $groupIDs = shift;
 
 	my @currGroups = $self->fetchGroupIDsOfSystem($systemID);
 	return $self->_updateRefTable('group_system_ref', $systemID, $groupIDs,
-						          'system_id', 'group_id', \@currGroups);
+		'system_id', 'group_id', \@currGroups);
 }
 
 sub addClient
 {
-	my $self = shift;
+	my $self    = shift;
 	my $valRows = shift;
 
 	return $self->_doInsert('client', $valRows);
@@ -647,7 +647,7 @@ sub addClient
 
 sub removeClient
 {
-	my $self = shift;
+	my $self      = shift;
 	my $clientIDs = shift;
 
 	return $self->_doDelete('client', $clientIDs);
@@ -655,38 +655,38 @@ sub removeClient
 
 sub changeClient
 {
-	my $self = shift;
+	my $self      = shift;
 	my $clientIDs = shift;
-	my $valRows = shift;
+	my $valRows   = shift;
 
 	return $self->_doUpdate('client', $clientIDs, $valRows);
 }
 
 sub setSystemIDsOfClient
 {
-	my $self = shift;
-	my $clientID = shift;
+	my $self      = shift;
+	my $clientID  = shift;
 	my $systemIDs = shift;
 
 	my @currSystems = $self->fetchSystemIDsOfClient($clientID);
 	$self->_updateRefTable('client_system_ref', $clientID, $systemIDs,
-						   'client_id', 'system_id', \@currSystems);
+		'client_id', 'system_id', \@currSystems);
 }
 
 sub setGroupIDsOfClient
 {
-	my $self = shift;
+	my $self     = shift;
 	my $clientID = shift;
 	my $groupIDs = shift;
 
 	my @currGroups = $self->fetchGroupIDsOfClient($clientID);
 	$self->_updateRefTable('group_client_ref', $clientID, $groupIDs,
-						   'client_id', 'group_id', \@currGroups);
+		'client_id', 'group_id', \@currGroups);
 }
 
 sub addGroup
 {
-	my $self = shift;
+	my $self    = shift;
 	my $valRows = shift;
 
 	return $self->_doInsert('groups', $valRows);
@@ -694,7 +694,7 @@ sub addGroup
 
 sub removeGroup
 {
-	my $self = shift;
+	my $self     = shift;
 	my $groupIDs = shift;
 
 	return $self->_doDelete('groups', $groupIDs);
@@ -702,33 +702,33 @@ sub removeGroup
 
 sub changeGroup
 {
-	my $self = shift;
+	my $self     = shift;
 	my $groupIDs = shift;
-	my $valRows = shift;
+	my $valRows  = shift;
 
 	return $self->_doUpdate('groups', $groupIDs, $valRows);
 }
 
 sub setClientIDsOfGroup
 {
-	my $self = shift;
-	my $groupID = shift;
+	my $self      = shift;
+	my $groupID   = shift;
 	my $clientIDs = shift;
 
 	my @currClients = $self->fetchClientIDsOfGroup($groupID);
-	$self->_updateRefTable('group_client_ref', $groupID, $clientIDs,
-						   'group_id', 'client_id', \@currClients);
+	$self->_updateRefTable('group_client_ref', $groupID, $clientIDs, 'group_id',
+		'client_id', \@currClients);
 }
 
 sub setSystemIDsOfGroup
 {
-	my $self = shift;
-	my $groupID = shift;
+	my $self      = shift;
+	my $groupID   = shift;
 	my $systemIDs = shift;
 
 	my @currSystems = $self->fetchSystemIDsOfGroup($groupID);
-	$self->_updateRefTable('group_system_ref', $groupID, $systemIDs,
-						   'group_id', 'system_id', \@currSystems);
+	$self->_updateRefTable('group_system_ref', $groupID, $systemIDs, 'group_id',
+		'system_id', \@currSystems);
 }
 
 ################################################################################
@@ -736,43 +736,38 @@ sub setSystemIDsOfGroup
 ################################################################################
 sub _convertColDescrsToDBNativeString
 {
-	my $self = shift;
+	my $self      = shift;
 	my $colDescrs = shift;
 
-	my $colDescrString
-		= join ', ',
-		  map {
-			  # convert each column description into database native format
-			  # (e.g. convert 'name:s.45' to 'name char(45)'):
-			  if (!m[^\s*(\S+?)\s*:\s*(\S+?)\s*$]) {
-				  confess _tr('UnknownDbSchemaColumnDescr', $_);
-			  }
-			  "$1 ".$self->schemaConvertTypeDescrToNative($2);
-		  }
-		  @$colDescrs;
+	my $colDescrString = join ', ', map {
+		# convert each column description into database native format
+		# (e.g. convert 'name:s.45' to 'name char(45)'):
+		if (!m[^\s*(\S+?)\s*:\s*(\S+?)\s*$]) {
+			confess _tr('UnknownDbSchemaColumnDescr', $_);
+		}
+		"$1 " . $self->schemaConvertTypeDescrToNative($2);
+	} @$colDescrs;
 	return $colDescrString;
 }
 
 sub _convertColDescrsToColNames
 {
-	my $self = shift;
+	my $self      = shift;
 	my $colDescrs = shift;
 
-	return
-		map {
-			# convert each column description into database native format
-			# (e.g. convert 'name:s.45' to 'name char(45)'):
-			if (!m[^\s*(\S+?)\s*:.+$]) {
-				confess _tr('UnknownDbSchemaColumnDescr', $_);
-			}
-			$1;
+	return map {
+		# convert each column description into database native format
+		# (e.g. convert 'name:s.45' to 'name char(45)'):
+		if (!m[^\s*(\S+?)\s*:.+$]) {
+			confess _tr('UnknownDbSchemaColumnDescr', $_);
 		}
-		@$colDescrs;
+		$1;
+	} @$colDescrs;
 }
 
 sub _convertColDescrsToColNamesString
 {
-	my $self = shift;
+	my $self      = shift;
 	my $colDescrs = shift;
 
 	return join ', ', $self->_convertColDescrsToColNames($colDescrs);
@@ -784,19 +779,18 @@ sub schemaFetchDBVersion
 
 	my $dbh = $self->{'dbh'};
 	local $dbh->{RaiseError} = 1;
-	my $row = eval {
-		$dbh->selectrow_hashref('SELECT schema_version FROM meta');
-	};
+	my $row =
+	  eval { $dbh->selectrow_hashref('SELECT schema_version FROM meta'); };
 	return 0 if $@;
-		# no database access possible
+	# no database access possible
 	return undef unless defined $row;
-		# no entry in meta-table
+	# no entry in meta-table
 	return $row->{schema_version};
 }
 
 sub schemaConvertTypeDescrToNative
-{	# a default implementation, many DBs need to override...
-	my $self = shift;
+{    # a default implementation, many DBs need to override...
+	my $self      = shift;
 	my $typeDescr = lc(shift);
 
 	if ($typeDescr eq 'b') {
@@ -816,101 +810,102 @@ sub schemaConvertTypeDescrToNative
 
 sub schemaAddTable
 {
-	my $self = shift;
-	my $table = shift;
-	my $colDescrs = shift;
+	my $self        = shift;
+	my $table       = shift;
+	my $colDescrs   = shift;
 	my $initialVals = shift;
-	my $isSubCmd = shift;
+	my $isSubCmd    = shift;
 
 	my $dbh = $self->{'dbh'};
-	vlog(1, "adding table <$table> to schema..." unless $isSubCmd);
+	vlog(1, "adding table <$table> to schema...") unless $isSubCmd;
 	my $colDescrString = $self->_convertColDescrsToDBNativeString($colDescrs);
-	my $sql = "CREATE TABLE $table ($colDescrString)";
+	my $sql            = "CREATE TABLE $table ($colDescrString)";
 	vlog(3, $sql);
 	$dbh->do($sql)
-		or confess _tr(q[Can't create table <%s> (%s)], $table, $dbh->errstr);
+	  or confess _tr(q[Can't create table <%s> (%s)], $table, $dbh->errstr);
 	if (defined $initialVals) {
 		my $ignoreIDs = ($colDescrString !~ m[\bid\b]);
-			# don't care about IDs if there's no 'id' column in this table
+		# don't care about IDs if there's no 'id' column in this table
 		$self->_doInsert($table, $initialVals, $ignoreIDs);
 	}
 }
 
 sub schemaDropTable
 {
-	my $self = shift;
-	my $table = shift;
+	my $self     = shift;
+	my $table    = shift;
 	my $isSubCmd = shift;
 
 	my $dbh = $self->{'dbh'};
-	vlog(1, "dropping table <$table> from schema..." unless $isSubCmd);
+	vlog(1, "dropping table <$table> from schema...") unless $isSubCmd;
 	my $sql = "DROP TABLE $table";
 	vlog(3, $sql);
 	$dbh->do($sql)
-		or confess _tr(q[Can't drop table <%s> (%s)], $table, $dbh->errstr);
+	  or confess _tr(q[Can't drop table <%s> (%s)], $table, $dbh->errstr);
 }
 
 sub schemaRenameTable
-{	# a rather simple-minded implementation that renames a table in several
-	# steps:
-	# 	- create the new table
-	# 	- copy the data over from the old one
-	# 	- drop the old table
-	# This should be overriden for advanced DBs, as these more often than not
-	# implement the 'ALTER TABLE <old> RENAME TO <new>' SQL-command (which
-	# is much more efficient).
-	my $self = shift;
-	my $oldTable = shift;
-	my $newTable = shift;
+{    # a rather simple-minded implementation that renames a table in several
+	   # steps:
+	   # 	- create the new table
+	   # 	- copy the data over from the old one
+	   # 	- drop the old table
+	   # This should be overriden for advanced DBs, as these more often than not
+	   # implement the 'ALTER TABLE <old> RENAME TO <new>' SQL-command (which
+	   # is much more efficient).
+	my $self      = shift;
+	my $oldTable  = shift;
+	my $newTable  = shift;
 	my $colDescrs = shift;
-	my $isSubCmd = shift;
+	my $isSubCmd  = shift;
 
 	my $dbh = $self->{'dbh'};
-	vlog(1, "renaming table <$oldTable> to <$newTable>..." unless $isSubCmd);
+	vlog(1, "renaming table <$oldTable> to <$newTable>...") unless $isSubCmd;
 	my $colDescrString = $self->_convertColDescrsToDBNativeString($colDescrs);
-	my $sql = "CREATE TABLE $newTable ($colDescrString)";
+	my $sql            = "CREATE TABLE $newTable ($colDescrString)";
 	vlog(3, $sql);
 	$dbh->do($sql)
-		or confess _tr(q[Can't create table <%s> (%s)], $oldTable, $dbh->errstr);
+	  or confess _tr(q[Can't create table <%s> (%s)], $oldTable, $dbh->errstr);
 	my $colNamesString = $self->_convertColDescrsToColNamesString($colDescrs);
 	my @dataRows = $self->_doSelect("SELECT $colNamesString FROM $oldTable");
 	$self->_doInsert($newTable, \@dataRows);
 	$sql = "DROP TABLE $oldTable";
 	vlog(3, $sql);
 	$dbh->do($sql)
-		or confess _tr(q[Can't drop table <%s> (%s)], $oldTable, $dbh->errstr);
+	  or confess _tr(q[Can't drop table <%s> (%s)], $oldTable, $dbh->errstr);
 }
 
 sub schemaAddColumns
-{	# a rather simple-minded implementation that adds columns to a table
-	# in several steps:
-	# 	- create a temp table with the new layout
-	# 	- copy the data from the old table into the new one
-	# 	- drop the old table
-	# 	- rename the temp table to the original name
-	# This should be overriden for advanced DBs, as these more often than not
-	# implement the 'ALTER TABLE <old> RENAME TO <new>' SQL-command (which
-	# is much more efficient).
-	my $self = shift;
-	my $table = shift;
-	my $newColDescrs = shift;
+{    # a rather simple-minded implementation that adds columns to a table
+	   # in several steps:
+	   # 	- create a temp table with the new layout
+	   # 	- copy the data from the old table into the new one
+	   # 	- drop the old table
+	   # 	- rename the temp table to the original name
+	   # This should be overriden for advanced DBs, as these more often than not
+	   # implement the 'ALTER TABLE <old> RENAME TO <new>' SQL-command (which
+	   # is much more efficient).
+	my $self              = shift;
+	my $table             = shift;
+	my $newColDescrs      = shift;
 	my $newColDefaultVals = shift;
-	my $colDescrs = shift;
-	my $isSubCmd = shift;
+	my $colDescrs         = shift;
+	my $isSubCmd          = shift;
 
-	my $dbh = $self->{'dbh'};
-	my $tempTable = "${table}_temp";
+	my $dbh         = $self->{'dbh'};
+	my $tempTable   = "${table}_temp";
 	my @newColNames = $self->_convertColDescrsToColNames($newColDescrs);
-	my $newColStr = join ', ', @newColNames;
-	vlog(1, "adding columns <$newColStr> to table <$table>..." unless $isSubCmd);
+	my $newColStr   = join ', ', @newColNames;
+	vlog(1, "adding columns <$newColStr> to table <$table>...")
+	  unless $isSubCmd;
 	$self->schemaAddTable($tempTable, $colDescrs, undef, 1);
 
 	# copy the data from the old table to the new:
 	my @dataRows = $self->_doSelect("SELECT * FROM $table");
 	$self->_doInsert($tempTable, \@dataRows);
-		# N.B.: for the insert, we rely on the caller having added the new
-		# columns to the end of the table (if that isn't the case, things
-		# break here!)
+	# N.B.: for the insert, we rely on the caller having added the new
+	# columns to the end of the table (if that isn't the case, things
+	# break here!)
 
 	if (defined $newColDefaultVals) {
 		# default values have been provided, we apply them now:
@@ -922,31 +917,31 @@ sub schemaAddColumns
 }
 
 sub schemaDropColumns
-{	# a rather simple-minded implementation that drops columns from a table
-	# in several steps:
-	# 	- create a temp table with the new layout
-	# 	- copy the data from the old table into the new one
-	# 	- drop the old table
-	# 	- rename the temp table to the original name
-	# This should be overriden for advanced DBs, as these sometimes
-	# implement the 'ALTER TABLE <old> DROP COLUMN <col>' SQL-command (which
-	# is much more efficient).
-	my $self = shift;
-	my $table = shift;
+{    # a rather simple-minded implementation that drops columns from a table
+	    # in several steps:
+	    # 	- create a temp table with the new layout
+	    # 	- copy the data from the old table into the new one
+	    # 	- drop the old table
+	    # 	- rename the temp table to the original name
+	    # This should be overriden for advanced DBs, as these sometimes
+	    # implement the 'ALTER TABLE <old> DROP COLUMN <col>' SQL-command (which
+	    # is much more efficient).
+	my $self         = shift;
+	my $table        = shift;
 	my $dropColNames = shift;
-	my $colDescrs = shift;
-	my $isSubCmd = shift;
+	my $colDescrs    = shift;
+	my $isSubCmd     = shift;
 
-	my $dbh = $self->{'dbh'};
-	my $tempTable = "${table}_temp";
+	my $dbh        = $self->{'dbh'};
+	my $tempTable  = "${table}_temp";
 	my $dropColStr = join ', ', @$dropColNames;
-	vlog(1, "dropping columns <$dropColStr> from table <$table>..."
-			unless $isSubCmd);
+	vlog(1, "dropping columns <$dropColStr> from table <$table>...")
+	  unless $isSubCmd;
 	$self->schemaAddTable($tempTable, $colDescrs, undef, 1);
 
 	# copy the data from the old table to the new:
 	my $colNamesString = $self->_convertColDescrsToColNamesString($colDescrs);
-	my @dataRows = $self->_doSelect("SELECT $colNamesString FROM $table");
+	my @dataRows       = $self->_doSelect("SELECT $colNamesString FROM $table");
 	$self->_doInsert($tempTable, \@dataRows);
 
 	$self->schemaDropTable($table, 1);
@@ -954,34 +949,34 @@ sub schemaDropColumns
 }
 
 sub schemaChangeColumns
-{	# a rather simple-minded implementation that changes columns
-	# in several steps:
-	# 	- create a temp table with the new layout
-	# 	- copy the data from the old table into the new one
-	# 	- drop the old table
-	# 	- rename the temp table to the original name
-	# This should be overriden for advanced DBs, as these sometimes
-	# implement the 'ALTER TABLE <old> CHANGE COLUMN <col>' SQL-command (which
-	# is much more efficient).
-	my $self = shift;
-	my $table = shift;
+{    # a rather simple-minded implementation that changes columns
+	  # in several steps:
+	  # 	- create a temp table with the new layout
+	  # 	- copy the data from the old table into the new one
+	  # 	- drop the old table
+	  # 	- rename the temp table to the original name
+	  # This should be overriden for advanced DBs, as these sometimes
+	  # implement the 'ALTER TABLE <old> CHANGE COLUMN <col>' SQL-command (which
+	  # is much more efficient).
+	my $self       = shift;
+	my $table      = shift;
 	my $colChanges = shift;
-	my $colDescrs = shift;
-	my $isSubCmd = shift;
+	my $colDescrs  = shift;
+	my $isSubCmd   = shift;
 
-	my $dbh = $self->{'dbh'};
-	my $tempTable = "${table}_temp";
+	my $dbh          = $self->{'dbh'};
+	my $tempTable    = "${table}_temp";
 	my $changeColStr = join ', ', keys %$colChanges;
-	vlog(1, "changing columns <$changeColStr> of table <$table>..."
-			unless $isSubCmd);
+	vlog(1, "changing columns <$changeColStr> of table <$table>...")
+	  unless $isSubCmd;
 	$self->schemaAddTable($tempTable, $colDescrs, undef, 1);
 
 	# copy the data from the old table to the new:
 	my $colNamesString = $self->_convertColDescrsToColNamesString($colDescrs);
-	my @dataRows = $self->_doSelect("SELECT * FROM $table");
+	my @dataRows       = $self->_doSelect("SELECT * FROM $table");
 	foreach my $oldCol (keys %$colChanges) {
-		my $newCol
-			= $self->_convertColDescrsToColNamesString([$colChanges->{$oldCol}]);
+		my $newCol =
+		  $self->_convertColDescrsToColNamesString([$colChanges->{$oldCol}]);
 		# rename current column in all data-rows:
 		foreach my $row (@dataRows) {
 			$row->{$newCol} = $row->{$oldCol};
@@ -995,8 +990,6 @@ sub schemaChangeColumns
 }
 
 1;
-
-__END__
 
 =head1 NAME
 
