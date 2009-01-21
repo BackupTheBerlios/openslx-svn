@@ -47,18 +47,18 @@ nodnbdcache="yes"
 devdir="/dev"
 mount -n -t tmpfs -o 'size=25%,mode=0755' initramfsdevs ${devdir}
 
-# create basic device files in dev (later udev will handle that)
-mknod /dev/mem c 1 1
-mknod /dev/null c 1 3
-mknod /dev/zero c 1 5
-mknod /dev/urandom c 1 9
-mknod /dev/kmsg c 1 11
-mknod /dev/console c 5 1
-mknod /dev/bootsplash p
-
-mkdir -p ${devdir}/pts
-mkdir -p ${devdir}/shm
-mkdir -p ${devdir}/.udevdb
+# create basic device files an directories in dev (for most hardware related
+# devices mdev should handle that)
+for i in "/dev/mem c 1 1" "/dev/null c 1 3" "/dev/zero c 1 5" \
+         "/dev/urandom c 1 9" "/dev/kmsg c 1 11" "/dev/tty0 c 4 0" \
+         "/dev/tty1 c 4 1" "/dev/tty2 c 4 2" "/dev/tty3 c 4 3" \
+         "/dev/tty4 c 4 4" "/dev/tty5 c 4 5" "/dev/tty6 c 4 6" \
+         "/dev/tty7 c 4 7" "/dev/tty8 c 4 8" "/dev/tty9 c 4 9" \
+         "/dev/tty10 c 4 10" "/dev/console c 5 1" "/dev/ptmx c 5 2" \
+         "/dev/fb0 c 29 0" "/dev/bootsplash p" "/dev/xconsole p"; do
+  mknod $i
+done
+mkdir -p ${devdir}/pts ${devdir}/shm ${devdir}/.udevdb ${devdir}/.udev
 
 # mount the important standard directories
 [ ! -f /proc/cpuinfo ] && mount -n -t proc proc /proc
