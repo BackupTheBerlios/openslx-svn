@@ -2,7 +2,7 @@
 # (included by init, hwautocfg, servconfig, ... within OpenSLX initial
 # ramfs)
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 19-11-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-12-2006
 # Felix Endres, 30-04-2006
 # <mj0@uni-freiburg.de> (xenbr), 12-12-2006
 # Tobias Maier
@@ -112,6 +112,16 @@ else
   while [ $count -gt 0 ] ; do count=`expr $count \- 1` ; done
 fi
 return 0
+}
+# standard sleep command
+sleep () {
+if [ -x /bin/sleep ]; then
+  /bin/sleep $1
+#elif [ -x /bin/bash ]; then
+#  TMOUT=$1 read
+else
+  usleep `expr $1 \* 100`
+fi 
 }
 #############################################################################
 # (re)generate dynamic linked libraries cache from /etc/ld.so.conf

@@ -36,7 +36,7 @@ echo "Starting udev"
 #mknod /dev/kmsg c 1 11
 if [ -x /bin/udevd ] ; then
   echo "" > /proc/sys/kernel/hotplug
-  udevd --daemon || result=1
+  udevd --daemon 2>/dev/null || result=1
   trigger_device_events
   usleep 50
 else error "$df_errudev" nonfatal

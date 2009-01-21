@@ -538,7 +538,7 @@ else
   # binaries useful for debugging purposes
   if [ $IRFSDEBUG -gt 2 ] ; then
     for bbins in \
-      date lsmod lsof ps strace time
+      date lsmod lsof ps strace time uptime
     do
       cobi ${bbins} bin || echo "Program ${bbins} not found"
     done

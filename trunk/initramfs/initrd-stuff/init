@@ -45,7 +45,7 @@ mkdir -p ${DEVDIR}/.udevdb
 [ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
 
 # redirect console (after /dev/console is available, and /dev mounted)
-exec < /dev/console > /dev/console 2>&1
+#exec < /dev/console > /dev/console 2>&1
 
 # if no kernel version is set, try to get it directly from /proc
 if [ -z $KERNEL ] ; then
@@ -201,15 +201,15 @@ done
 # or halt of the machine if SLX init does not succeed (e.g. missing kernel
 # module for the network adaptor)
 # fixme/testme!!
-# errorhalt () {
-# if [ "${DEBUGLEVEL}" -lt 3 ] ; then
-#   [ ! -f /proc/version ] && mount -n -t proc proc /proc
-#   [ ! -f /proc/sysrq-trigger ] && echo -e $init_nosysrq
-#   usleep 100000
-#   echo "o" > /proc/sysrq-trigger
-# fi
-# }
-# errorhalt &
+errorhalt () {
+if [ "${DEBUGLEVEL}" -lt 4 ] ; then
+  [ ! -f /proc/version ] && mount -n -t proc proc /proc
+  [ ! -f /proc/sysrq-trigger ] && echo -e $init_nosysrq
+  sleep 120
+  echo "o" > /proc/sysrq-trigger
+fi
+}
+errorhalt &
 
 # check if at least one type of IP configuration is availabe
 if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
