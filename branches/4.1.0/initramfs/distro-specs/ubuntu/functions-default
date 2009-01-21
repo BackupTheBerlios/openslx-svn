@@ -90,13 +90,11 @@ done
 # second stop
 # function for ntp configuration
 config_ntp () {
-local start=07
-local stop=14
 if [ -f /mnt/etc/init.d/ntp -a "x$start_ntp" != "xno" ] ; then
   echo -e "ntp:x:74:65534:NTP daemon:/var/lib/ntp:/bin/false" \
     >>/mnt/etc/passwd
   testmkd /mnt/var/lib/ntp/var/run/ntp
-  rllinker "ntp" "$start" "$stop"
+  rllinker "ntp" "07" "14"
 fi
 }
 
