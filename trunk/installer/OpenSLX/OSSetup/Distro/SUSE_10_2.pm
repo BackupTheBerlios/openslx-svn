@@ -137,8 +137,6 @@ sub initDistroInfo
 		i586/findutils-4.2.28-24.i586.rpm
 		i586/gawk-3.1.5-41.i586.rpm
 		i586/gdbm-1.8.3-261.i586.rpm
-		i586/glib2-2.12.4-15.i586.rpm
-		i586/gnome-filesystem-0.1-288.i586.rpm
 		i586/gpg-1.4.5-24.i586.rpm
 		i586/grep-2.5.1a-40.i586.rpm
 		i586/gzip-1.3.5-178.i586.rpm
@@ -153,8 +151,6 @@ sub initDistroInfo
 		i586/libstdc++41-4.1.2_20061115-5.i586.rpm
 		i586/libvolume_id-103-12.i586.rpm
 		i586/libxcrypt-2.4-30.i586.rpm
-		i586/libxml2-2.6.26-26.i586.rpm
-		i586/libxml2-python-2.6.26-29.i586.rpm
 		i586/libzio-0.2-20.i586.rpm
 		i586/limal-1.2.9-5.i586.rpm
 		i586/limal-bootloader-1.2.4-6.i586.rpm
@@ -177,23 +173,38 @@ sub initDistroInfo
 		i586/perl-Bootloader-0.4.5-3.i586.rpm
 		i586/perl-gettext-1.05-31.i586.rpm
 		i586/permissions-2006.11.13-5.i586.rpm
-		i586/python-2.5-19.i586.rpm
-		i586/python-sqlite-1.1.8-11.i586.rpm
-		i586/python-urlgrabber-3.1.0-18.i586.rpm
-		i586/python-xml-2.5-19.i586.rpm
 		i586/readline-5.1-55.i586.rpm
 		i586/reiserfs-3.6.19-37.i586.rpm
-		i586/rpm-python-4.4.2-76.i586.rpm
 		i586/sed-4.1.5-21.i586.rpm
-		i586/sqlite-3.3.8-14.i586.rpm
 		i586/sysvinit-2.86-47.i586.rpm
 		i586/udev-103-12.i586.rpm
 		i586/util-linux-2.12r-61.i586.rpm
-		i586/yum-3.0.1-9.i586.rpm
-		i586/yum-metadata-parser-1.0.2-23.i586.rpm
 		noarch/pciutils-ids-2006.11.18-2.noarch.rpm
 		noarch/suse-build-key-1.0-707.noarch.rpm
 	";
+
+	$self->{config}->{'metapackager-packages'} = {
+		'smart' => "
+			i586/python-2.5-19.i586.rpm
+			i586/python-xml-2.5-19.i586.rpm
+			i586/rpm-python-4.4.2-76.i586.rpm
+			i586/smart-0.42-43.i586.rpm
+		",
+		'yum' => "
+			i586/glib2-2.12.4-15.i586.rpm
+			i586/gnome-filesystem-0.1-288.i586.rpm
+			i586/libxml2-2.6.26-26.i586.rpm
+			i586/libxml2-python-2.6.26-29.i586.rpm
+			i586/python-2.5-19.i586.rpm
+			i586/python-sqlite-1.1.8-11.i586.rpm
+			i586/python-urlgrabber-3.1.0-18.i586.rpm
+			i586/python-xml-2.5-19.i586.rpm
+			i586/rpm-python-4.4.2-76.i586.rpm
+			i586/sqlite-3.3.8-14.i586.rpm
+			i586/yum-3.0.1-9.i586.rpm
+			i586/yum-metadata-parser-1.0.2-23.i586.rpm
+		",
+	};
 
 	$self->{config}->{'selection'} = {
 		'default' => "

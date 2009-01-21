@@ -180,16 +180,28 @@ sub initDistroInfo
 		i586/udev-085-29.i586.rpm i586/udev-085-30.15.i586.rpm
 		i586/util-linux-2.12r-35.i586.rpm
 		noarch/suse-build-key-1.0-685.noarch.rpm
-		i586/libxml2-2.6.23-13.i586.rpm
-		i586/libxml2-python-2.6.23-15.i586.rpm
-		i586/python-2.4.2-18.i586.rpm
-		i586/python-elementtree-1.2.6-18.i586.rpm
-		i586/python-sqlite-1.1.6-17.i586.rpm
-		i586/python-urlgrabber-2.9.7-15.i586.rpm
-		i586/rpm-python-4.4.2-40.i586.rpm
-		i586/sqlite-3.2.8-14.i586.rpm
-		i586/yum-2.4.2-13.i586.rpm
 	";
+
+	$self->{config}->{'metapackager-packages'} = {
+		'smart' => "
+			i586/python-2.4.2-18.i586.rpm
+			i586/python-elementtree-1.2.6-18.i586.rpm
+			i586/python-xml-2.4.2-18.i586.rpm
+			i586/rpm-python-4.4.2-40.i586.rpm
+			i586/smart-0.41-23.2.i586.rpm
+		",
+		'yum' => "
+			i586/libxml2-2.6.23-13.i586.rpm
+			i586/libxml2-python-2.6.23-15.i586.rpm
+			i586/python-2.4.2-18.i586.rpm
+			i586/python-elementtree-1.2.6-18.i586.rpm
+			i586/python-sqlite-1.1.6-17.i586.rpm
+			i586/python-urlgrabber-2.9.7-15.i586.rpm
+			i586/rpm-python-4.4.2-40.i586.rpm
+			i586/sqlite-3.2.8-14.i586.rpm
+			i586/yum-2.4.2-13.i586.rpm
+		",
+	};
 
 	$self->{config}->{'selection'} = {
 		'default' => "

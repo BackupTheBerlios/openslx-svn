@@ -181,16 +181,28 @@ sub initDistroInfo
 		x86_64/udev-085-29.x86_64.rpm x86_64/udev-085-30.15.x86_64.rpm
 		x86_64/util-linux-2.12r-35.x86_64.rpm
 		noarch/suse-build-key-1.0-685.noarch.rpm
-		x86_64/libxml2-2.6.23-13.x86_64.rpm
-		x86_64/libxml2-python-2.6.23-15.x86_64.rpm
-		x86_64/python-2.4.2-18.x86_64.rpm
-		x86_64/python-elementtree-1.2.6-18.x86_64.rpm
-		x86_64/python-sqlite-1.1.6-17.x86_64.rpm
-		x86_64/python-urlgrabber-2.9.7-15.x86_64.rpm
-		x86_64/rpm-python-4.4.2-40.x86_64.rpm
-		x86_64/sqlite-3.2.8-14.x86_64.rpm
-		x86_64/yum-2.4.2-13.x86_64.rpm
 	";
+
+	$self->{config}->{'metapackager-packages'} = {
+		'smart' => "
+			x86_64/python-2.4.2-18.x86_64.rpm
+			x86_64/python-elementtree-1.2.6-18.x86_64.rpm
+			x86_64/python-xml-2.4.2-18.x86_64.rpm
+			x86_64/rpm-python-4.4.2-40.x86_64.rpm
+			x86_64/smart-0.41-23.2.x86_64.rpm
+		",
+		'yum' => "
+			x86_64/libxml2-2.6.23-13.x86_64.rpm
+			x86_64/libxml2-python-2.6.23-15.x86_64.rpm
+			x86_64/python-2.4.2-18.x86_64.rpm
+			x86_64/python-elementtree-1.2.6-18.x86_64.rpm
+			x86_64/python-sqlite-1.1.6-17.x86_64.rpm
+			x86_64/python-urlgrabber-2.9.7-15.x86_64.rpm
+			x86_64/rpm-python-4.4.2-40.x86_64.rpm
+			x86_64/sqlite-3.2.8-14.x86_64.rpm
+			x86_64/yum-2.4.2-13.x86_64.rpm
+		",
+	};
 
 	$self->{config}->{'selection'} = {
 		'default' => "

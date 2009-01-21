@@ -169,19 +169,30 @@ sub initDistroInfo
 		x86_64/util-linux-2.12r-61.x86_64.rpm
 		noarch/pciutils-ids-2006.11.18-2.noarch.rpm
 		noarch/suse-build-key-1.0-707.noarch.rpm
-		x86_64/glib2-2.12.4-15.x86_64.rpm
-		x86_64/gnome-filesystem-0.1-288.x86_64.rpm
-		x86_64/libxml2-2.6.26-26.x86_64.rpm
-		x86_64/libxml2-python-2.6.26-29.x86_64.rpm
-		x86_64/rpm-python-4.4.2-76.x86_64.rpm
-		x86_64/python-2.5-19.x86_64.rpm
-		x86_64/python-sqlite-1.1.8-11.x86_64.rpm
-		x86_64/python-urlgrabber-3.1.0-18.x86_64.rpm
-		x86_64/python-xml-2.5-19.x86_64.rpm
-		x86_64/sqlite-3.3.8-14.x86_64.rpm
-		x86_64/yum-3.0.1-9.x86_64.rpm
-		x86_64/yum-metadata-parser-1.0.2-23.x86_64.rpm
 	";
+
+	$self->{config}->{'metapackager-packages'} = {
+		'smart' => "
+			x86_64/python-2.5-19.x86_64.rpm
+			x86_64/python-xml-2.5-19.x86_64.rpm
+			x86_64/rpm-python-4.4.2-76.x86_64.rpm
+			x86_64/smart-0.42-43.x86_64.rpm
+		",
+		'yum' => "
+			x86_64/glib2-2.12.4-15.x86_64.rpm
+			x86_64/gnome-filesystem-0.1-288.x86_64.rpm
+			x86_64/libxml2-2.6.26-26.x86_64.rpm
+			x86_64/libxml2-python-2.6.26-29.x86_64.rpm
+			x86_64/python-2.5-19.x86_64.rpm
+			x86_64/python-sqlite-1.1.8-11.x86_64.rpm
+			x86_64/python-urlgrabber-3.1.0-18.x86_64.rpm
+			x86_64/python-xml-2.5-19.x86_64.rpm
+			x86_64/rpm-python-4.4.2-76.x86_64.rpm
+			x86_64/sqlite-3.3.8-14.x86_64.rpm
+			x86_64/yum-3.0.1-9.x86_64.rpm
+			x86_64/yum-metadata-parser-1.0.2-23.x86_64.rpm
+		",
+	};
 
 	$self->{config}->{'selection'} = {
 		'default' => "

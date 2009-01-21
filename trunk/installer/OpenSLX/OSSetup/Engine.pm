@@ -383,6 +383,8 @@ sub readDistroInfo
 	my $bootstrap_prereq_packages
 		= $self->{distro}->{config}->{'bootstrap-prereq-packages'};
 	my $bootstrap_packages = $self->{distro}->{config}->{'bootstrap-packages'};
+	my $metapackager_packages 
+		= $self->{distro}->{config}->{'metapackager-packages'};
 	my $file = "$self->{'distro-info-dir'}/settings.local";
 	if (-e $file) {
 		vlog 2, "reading configuration file $file...";
@@ -405,6 +407,7 @@ sub readDistroInfo
 		'prereq-packages' => $prereq_packages,
 		'bootstrap-prereq-packages' => $bootstrap_prereq_packages,
 		'bootstrap-packages' => $bootstrap_packages,
+		'metapackager-packages' => $metapackager_packages,
 		'repository' => \%repository,
 		'selection' => \%selection,
 		'excludes' => \%excludes,
@@ -741,12 +744,17 @@ sub stage1B_chrootAndBootstrap
 
 	@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-prereq-packages'});
 	my @bootstrapPrereqPkgs = $self->downloadBaseFiles(\@pkgs);
-	$self->{'local-bootstrap-prereq-packages'} = \@bootstrapPrereqPkgs;
+	$self->{'bootstrap-prereq-packages'} = \@bootstrapPrereqPkgs;
 
 	@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-packages'});
+	push @pkgs, string2Array(
+		$self->{'distro-info'}->{'metapackager-packages'}->{
+			$self->{distro}->{'meta-packager-type'}
+		}
+	);
 	my @bootstrapPkgs = $self->downloadBaseFiles(\@pkgs);
 	my @allPkgs = (@prereqPkgs, @bootstrapPrereqPkgs, @bootstrapPkgs);
-	$self->{'local-bootstrap-packages'}	= \@allPkgs;
+	$self->{'bootstrap-packages'}	= \@allPkgs;
 }
 
 sub setupStage1C
@@ -767,7 +775,7 @@ sub stage1C_chrootAndInstallBasicVendorOS
 	my $stage1cDir = "/$self->{stage1cSubdir}";
 	# install all prerequired bootstrap packages
 	$self->{packager}->installPrerequiredPackages(
-		$self->{'local-bootstrap-prereq-packages'}, $stage1cDir
+		$self->{'bootstrap-prereq-packages'}, $stage1cDir
 	);
 
 	# import any additional trusted package keys to rpm-DB:
@@ -783,7 +791,7 @@ sub stage1C_chrootAndInstallBasicVendorOS
 
 	# install all other bootstrap packages
 	$self->{packager}->installPackages(
-		$self->{'local-bootstrap-packages'}, $stage1cDir
+		$self->{'bootstrap-packages'}, $stage1cDir
 	);
 }
 
