@@ -482,6 +482,10 @@ elif [ -z "$COWLOOP" ] ; then
   done
   testmkd ${RWDIR}/var/tmp
   chmod a+rwxt ${RWDIR}/var/tmp >/dev/null 2>&1
+  # exclude all sysv runlevel link stuff
+  for i in ${D_RCDIRS} ${D_INITBOOTD} ; do
+    echo "*$i/*" >>/tmp/etc.exclude
+  done
   echo -e "${D_ETCEXCL} @@@COMETCEXCL@@@" >>/tmp/etc.exclude
   # if ld.so.cache is to be generated then do not copy the file
   [ -z "${NOLDSC}" ] && echo -e "ld.so.cache*" >>/tmp/etc.exclude
@@ -501,7 +505,7 @@ elif [ -z "$COWLOOP" ] ; then
 fi
 # script for stuff to execute during early bootup
 d_mkrlscript init boot.ld "Running configuration postponed from InitRamFS"
-echo "fs complete" >/tmp/fscmpl
+echo "fs complete at $(sysup)" >/tmp/fscmpl
 
 # write debug file information after filesystem setup completed
 echo -e "# /etc${D_SYSCONFDIR}/logfile - file created by $0 (initramfs \

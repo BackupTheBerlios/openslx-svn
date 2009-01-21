@@ -48,4 +48,4 @@ mount -n -t msdos -o loop,umask=000 /$loopsrc/fd.img $loopdst
 
 # mount usbfs needed for vmware to detect usb devices
 grep "/proc/bus/usb" /proc/mounts >/dev/null || \
-  mount -t usbfs usbfs /proc/bus/usb
+  mount -t usbfs usbfs /proc/bus/usb 2>/dev/null

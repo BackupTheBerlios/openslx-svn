@@ -67,19 +67,9 @@ trigger_device_events () {
 # mini udev of busybox or distro specific udev_hotplug
 runudev () {
 if [ -x /bin/mdev ] ; then
-  # simple shell daemon which runs for 100 seconds and stops if hwautocfg is
-  # completed
-  #miniudev () {
-  #  local maxwait=100
-  #  local count=0
-  #  while [ ! -e /tmp/hwcfg ] ; do
-      mdev -s
-  #    sleep 1
-  #    count=`expr $count + 1`
-  #    [ $count -gt $maxwait ] && return 0
-  #  done
-  #}
-  #miniudev &
+  mknod /dev/mem c 1 1 &>/dev/null
+  mknod /dev/zero c 1 5 &>/dev/null
+  mdev -s
 else
   udev_hotplug
 fi
@@ -402,17 +392,16 @@ case $dhcp in
   pump)
       error "$error_pump"
   ;;
-  # udhcpc is part of busybox
+  # udhcpc is part of busybox; then we expect to have mknod installed
   udhcpc)
     [ -n $vci ] && vci="-V $vci"
     testmkd /usr/share/udhcpc
+    test -c /dev/urandom || mknod /dev/urandom c 1 9 2>/dev/null
     ln -s /bin/dhcpmkconfig /usr/share/udhcpc/default.script
     udhcpc -b -q $vci -s /usr/share/udhcpc/default.script -i eth0 2>/dev/null
   ;;
-  *)
-  ;;
 esac
-echo "dhcp finished" > /tmp/dhcp-done
+echo "dhcp finished at $(sysup)" > /tmp/dhcp-done
 }
 
 #############################################################################
@@ -903,10 +892,7 @@ esac
 # setup initial boot scripts (for most standard distributions, gentoo is to
 # be handled differently)
 initial_boot () {
-for i in ${D_RCDIRS} ${D_INITBOOTD} ; do
-  rm -f /mnt/etc/$i/*
-done
-count=10
+local count=10
 # boot.ld is a special runlevel script generated within initialramfs which
 # should be executed before the normal runlevel scripts. Proper shutdown is
 # not needed!?

@@ -79,7 +79,7 @@ echo "
          |  |_|  |  |    |  |___|  |  |  |   ____|  |  |___ /  /
            _____/|__|    |______|__|  |__|  |_______|______|__|  |__|
 
-   Diskless Workstation (v4.1/$dstr   (c) <OpenSLX.ORG project>
+   Diskless Workstation (v4.0.6/$dstr (c) <OpenSLX.ORG project>
 ">/mnt/etc/issue
 
 #############################################################################
@@ -548,4 +548,4 @@ fi
 [ $DEBUGLEVEL -eq 8 ] && echo "** SW setup finished at $(sysup)"
 
 # servconfig finished successfully
-echo "finished" > /tmp/svcfg
+echo "servconfig finished at $(sysup)" > /tmp/svcfg

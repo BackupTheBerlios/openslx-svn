@@ -1,14 +1,20 @@
 #!/bin/bash
 #
+# (c) 2003 - 2006 - RZ Universitaet Freiburg
+# (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
 # universal (distro independent) generator for initialramfs for OpenSLX
 # linux diskless clients (part of stage2 system setup). This script is the
 # successor of mkdxsinitrd. It expects all project files to be installed. It
 # does not work directly out of repository any more.
-#
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 2006, 2007
-#
-# (c) 2003 - 2006 - RZ Universitaet Freiburg
-# (c) 2006, 2007 - OpenSLX GmbH
 
 # NOTE (zooey):
 #   this whole file should be reimplemented in perl in order to
