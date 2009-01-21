@@ -49,6 +49,7 @@ sub setupPackageSource
 	}
 	my $repoDescr = "[$repoName]\nname=$repoInfo->{name}\nbaseurl=$repoURL\n";
 	system("cp /proc/cpuinfo $self->{engine}->{'system-path'}/proc");
+	system("rm -f $self->{engine}->{'system-path'}/etc/yum.repos.d/*");
 	system("mkdir -p $self->{engine}->{'system-path'}/etc/yum.repos.d");
 	my $repoFile
 		= "$self->{engine}->{'system-path'}/etc/yum.repos.d/$repoName.repo";
@@ -64,6 +65,16 @@ sub updateBasicSystem
 
 	if (system("yum -y update")) {
 		die _tr("unable to update basic system (%s)", $!);
+	}
+}
+
+sub installSelection
+{
+	my $self = shift;
+	my $pkgSelection = shift;
+
+	if (system("yum -y install $pkgSelection")) {
+		die _tr("unable to install selection (%s)", $!);
 	}
 	system('rm /proc/cpuinfo');
 }

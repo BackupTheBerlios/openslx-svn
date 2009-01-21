@@ -36,7 +36,9 @@ sub unpackPackages
 	foreach my $pkg (@$pkgs) {
 		vlog 2, "unpacking package $pkg...";
 		if (system("ash", "-c", "rpm2cpio $pkg | cpio -i -d")) {
-			die _tr("unable to unpack package <%s> (%s)", $pkg, $!);
+			warn _tr("unable to unpack package <%s> (%s)", $pkg, $!);
+				# TODO: change this back to die() if cpio-ing fedora6-glibc
+				#       doesn't crash anymore... (needs busybox update, I suppose)
 		}
 	}
 }

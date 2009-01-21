@@ -26,7 +26,7 @@ use vars qw(%supportedDistros);
 %supportedDistros = (
 #	'debian-3.1' 		=> 'Debian_3_1',
 #	'debian-4.0' 		=> 'Debian_4_0',
-#	'fedora-6' 			=> 'Fedora_6',
+	'fedora-6' 			=> 'Fedora_6',
 #	'fedora-6-x86_64' 	=> 'Fedora_6_x86_64',
 #	'mandriva-2007.0' 	=> 'Mandriva_2007_0',
 #	'suse-9.3' 			=> 'SUSE_9_3',
@@ -35,7 +35,7 @@ use vars qw(%supportedDistros);
 	'suse-10.1' 		=> 'SUSE_10_1',
 #	'suse-10.1-x86_64' 	=> 'SUSE_10_1_x86_64',
 	'suse-10.2' 		=> 'SUSE_10_2',
-#	'suse-10.2-x86_64' 	=> 'SUSE_10_2_x86_64',
+	'suse-10.2-x86_64' 	=> 'SUSE_10_2_x86_64',
 #	'ubuntu-6.10' 		=> 'Ubuntu_6_10',
 );
 
@@ -190,7 +190,7 @@ sub readDistroInfo
 	if (-e $file) {
 		vlog 3, "reading configuration file $file...";
 		my $config = slurpFile($file);
-		if (!eval $config) {
+		if (!eval $config && length($@)) {
 			die _tr("error in config-file <%s> (%s)", $file, $@)."\n";
 		}
 	}
@@ -394,7 +394,9 @@ sub stage1A_copyTrustedPackageKeys
 	my $stage1cDir
 		= "$stage1bDir/$self->{'stage1cSubdir'}";
 	my $keyDir = "$self->{'distro-info-dir'}/trusted-package-keys";
-	copyFile("$keyDir/pubring.gpg", "$stage1cDir/usr/lib/rpm/gnupg");
+	if (-e "$keyDir/pubring.gpg") {
+		copyFile("$keyDir/pubring.gpg", "$stage1cDir/usr/lib/rpm/gnupg");
+	}
 }
 
 sub stage1A_createRequiredFiles
@@ -548,7 +550,16 @@ sub stage1D_installPackageSelection
 {
 	my $self = shift;
 
-	vlog 1, "installing package selection...";
+	my $selectionName = 'default';
+
+	vlog 1, "installing package selection <$selectionName>...";
+	my $pkgSelection = $self->{'distro-info'}->{selection}->{$selectionName};
+	my @pkgs
+		= grep { length($_) > 0 }
+		  map { $_ =~ s[^\s*(.+?)\s*$][$1]; $_ }
+		  split "\n", $pkgSelection;
+	$self->{'meta-packager'}->installSelection(join " ", @pkgs);
+
 }
 
 ################################################################################
