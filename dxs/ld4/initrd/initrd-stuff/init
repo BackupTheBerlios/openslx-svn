@@ -2,7 +2,7 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 10-02-2006
 #		Bla
 #		Blub
 #
@@ -26,6 +26,9 @@ export DEBUGLEVEL=0
 export KERNEL="@@@KERNVER@@@"
 export NWMODULES="@@@NWMODULES@@@"
 export DISTRO="@@@DISTRO@@@"
+
+# do not use dnbd cache file
+nodnbdcache="yes"
 
 DEVDIR="/dev"
 mount -n -t tmpfs -o 'size=25%,mode=0755' initramfsdevs ${DEVDIR}
@@ -207,8 +210,10 @@ if [ -n "${NBD}" ] ; then
     RFST=ext2; 
   else
     RFST=$nbdfs;
+    # fixme: check for fs in /proc/filesystems before trying to load the module
     modprobe ${MODPRV} ${RFST} || error "  Failed to load the requested \
-filesystem module for the client root\n  filesystem ontop of the (D)NBD."
+filesystem module for the client root\n  filesystem ontop of the (D)NBD." \
+     nonfatal
   fi
   errmsg="  For some reason the network block device /dev/${NBD}0 never \
 appeared.\n  You might want to check udev or your list of static device \
@@ -224,10 +229,15 @@ the network block device client. Unable to mount root\n  filesystem."
     ;;
     # dnbd by Thorsten Zitterell
     dnbd)
-      mkdir /dnbd
-      mount -n -o 'size=10%' -t tmpfs tmpfs /dnbd
+      if [ -z $nodnbdcache ] ; then  # variable not really used yet
+        mkdir /dnbd
+        mount -n -o 'size=10%' -t tmpfs tmpfs /dnbd
+        ( cat /dev/zero > /dnbd/cache 2>/dev/null || echo "ok" >/tmp/cache ) &
+        clientopt="-c /dnbd/cache"
+        waitfor /tmp/cache 10000
+      fi
       waitfor /dev/dnbd0 10000 || error $errmsg
-      while ! dnbd-client -b $nbdhost -d /dev/dnbd0 -c /dnbd/cache; do
+      while ! dnbd-client -b $nbdhost -d /dev/dnbd0 $clientopt ; do
         usleep 10
       done
       echo $?
