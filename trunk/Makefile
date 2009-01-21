@@ -1,11 +1,11 @@
 # Makefile for creating project tarball and installing the project
 # to the various destination directories
 #
-# Lars Mueller <lm@openslx.com>, 2006
-# Dirk von Suchodoletz <dvs@openslx.com>, 2006
+# Lars Mueller <lm@openslx.com>, 2006, 2007
+# Dirk von Suchodoletz <dvs@openslx.com>, 2006, 2007
 # Michael Janczyk, 2006
 #
-# (c) 2006 - OpenSLX.ORG Project
+# (c) 2006, 2007 - OpenSLX GmbH
 
 # the following defaults should be filled via 'configure'
 # and each of them can be overriden by setting the environment variable
@@ -151,7 +151,9 @@ supported."; \
 	  tar -xp -C $(SLX_SHARE_PATH)
 	@cd theming; tar --exclude=.svn -cp * | \
 	  tar -xp -C $(SLX_SHARE_PATH)/themes; cd ..
-	@cp -p tools/busybox{,.links} installer/slxbootstrap $(SLX_SHARE_PATH)/busybox/
+	@# ia32 busybox should be renamed accordingly ...
+	@cp -p tools/busybox{,.links,.x86_64} installer/slxbootstrap \
+	  $(SLX_SHARE_PATH)/busybox/
 
 	@# create pre-/postinit scripts for us in initramfs:
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \

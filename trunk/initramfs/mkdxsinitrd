@@ -502,6 +502,7 @@ if [ "$use_busybox" = 1 ]; then
 ${SLX_SHARE_PATH}/busybox directory."; }
 fi
 if [ -n "$use_busybox" ] ; then
+  # somehow the target platform should be defined and proper busybox copied
   cp ${SLX_SHARE_PATH}/busybox/busybox ${INSTDIR}/bin
   for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
        date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \
