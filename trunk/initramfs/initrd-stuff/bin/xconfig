@@ -1,0 +1,172 @@
+#!/bin/ash
+iscrt () {
+local dim=$1
+local year=$2
+local crt="CRT Generic"
+# sub 17" displays
+if [ $dim -lt 750 ] ; then
+  # modern crt should have a size of 17"+
+  if [ $year -gt 1998 ] ; then crt="TFT 4:3 <17inch" ; fi
+# 17" crt displays, little bit smaller than tfts
+elif [ $dim -lt 900 ] ; then
+  crt="CRT 17inch"
+  echo "1280x1024\n1152x864" > /tmp/res
+# 19" crt / sub 19" tft
+elif [ $dim -lt 1000 ] ; then
+  if [ $year -lt 2001 ] ; then
+    crt="CRT 19inch"
+    echo "1400x1050\n1280x1024\n1152x864" > /tmp/res
+  else
+    crt="TFT 4:3 17inch"
+  fi
+# 18/19" tft displays (available after 2001)
+elif [ $dim -lt 1200 ] ; then  
+  if [ $year -ge 2002 ] ; then
+    crt="TFT 4:3 18+inch"
+  else
+    crt="CRT 20inch"
+    echo "1400x1050\n1280x1024\n1152x864" > /tmp/res
+  fi
+# sub 22" displays are crts if older than 2004 :)
+elif [ $dim -lt 1300 ] ; then
+  if [ $year -ge 2004 ] ; then
+    crt="TFT 4:3 19+inch"
+  else
+    crt="CRT 20+inch"
+    echo "1600x1200\n1400x1050\n1280x1024\n1152x864" > /tmp/res
+  fi
+# any bigger display is most probably a tft
+elif [ $year -ge 2004 ] ; then
+  crt="TFT 4:3 22+inch"
+fi
+echo "$crt"
+}
+xfc=xorg
+echo -e '
+Section "Files"
+EndSection
+Section "Module"
+  Load         "i2c"
+  Load         "bitmap"
+  Load         "ddc"
+  Load         "extmod"
+  Load         "freetype"
+  Load         "int10"
+  Load         "vbe"
+EndSection
+Section "InputDevice"
+  Identifier "Generic Keyboard"
+  Driver       "kbd"
+  Option       "CoreKeyboard"
+  Option       "XkbRules"          "xorg"
+  Option       "XkbModel"          "pc105"
+  Option       "XkbLayout"         "de"
+  Option       "XkbVariant"        "nodeadkeys"
+EndSection
+Section "InputDevice"
+  Identifier   "Generic Mouse"
+  Driver       "mouse"
+  Option       "CorePointer"
+  Option       "Device"            "/dev/input/mice"
+  Option       "Protocol"          "ImPS/2"
+  Option       "ZAxisMapping"      "4 5"
+  Option       "Emulate3Buttons"   "true"
+EndSection
+Section "InputDevice"
+  Driver       "wacom"
+  Identifier   "stylus"
+  Option       "Device"            "/dev/input/wacom"
+  Option       "Type"              "stylus"
+  Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
+EndSection
+Section "InputDevice"
+  Driver       "wacom"
+  Identifier   "eraser"
+  Option       "Device"            "/dev/input/wacom"
+  Option       "Type"              "eraser"
+  Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
+EndSection
+Section "InputDevice"
+  Driver       "wacom"
+  Identifier   "cursor"
+  Option       "Device"            "/dev/input/wacom"
+  Option       "Type"              "cursor"
+  Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
+EndSection
+Section "Device"
+  Identifier   "Generic Video Card"
+  Driver       "vesa"
+EndSection
+Section "Monitor"
+  Identifier   "Generic Display"
+  Option       "DPMS"
+EndSection
+Section "Screen"
+  Identifier   "Default Screen"
+  Device       "Generic Video Card"
+  Monitor      "Generic Display"
+  DefaultDepth 24
+  SubSection "Display"
+    Depth        24
+    Modes        "1024x768" "800x600"
+  EndSubSection
+EndSection
+Section "ServerLayout"
+  Identifier   "Default Layout"
+  Screen       "Default Screen"
+  InputDevice  "Generic Keyboard"
+  InputDevice  "Configured Mouse"
+  InputDevice  "stylus"            "SendCoreEvents"
+  InputDevice  "cursor"            "SendCoreEvents"
+  InputDevice  "eraser"            "SendCoreEvents"
+EndSection
+Section "DRI"
+  Mode    0666
+EndSection
+'> /tmp/$xfc
+
+rm /tmp/res
+cat $1|sed "/mode: /d"|while read line ; do 
+	case $line in
+	  ctiming*|dtiming*)
+            Res=$(echo $line|sed "s/.*:\ //;s/@.*//")
+            Width=${Res%%x*}
+            Height=${Res##*x}
+	    # we need exact resolutions for tft displays only
+            [ "${IsCrt%% *}" = "TFT" -a $((${Width}00 / ${Height})) -ge 125 ] &&  echo $Res >> /tmp/res
+            [ "x${VendorName}" = "x" ] && VendorName="No vendor string detected" 
+            grep ModelName /tmp/$xfc 2>&1 >/dev/null || \
+              sed -e "/Section \"Monitor\"/a\ \ ModelName    \"Display - ${IsCrt}\"" \
+                  -e "/Section \"Device\"/a\ \ VendorName   \"${VendorName}\"" \
+                  -i /tmp/$xfc	  
+          ;;
+	  monitorname*|monitorid*)
+            [ "x${line##monitor*:}" = "x" ] || sed "s/Display - /${line##monitor*: } - /" -i /tmp/$xfc
+	  ;;
+          product*)
+            [ "$line" != "product:" ] && \
+              sed "/Section \"Device\"/a\ \ BoardName    \"${line##product: }\"" \
+                -i /tmp/$xfc
+          ;;
+	  oem*|vendor*)
+            [ "x${line##?e*:}" = "x" ] || VendorName="${line##?e*: }"
+          ;;
+	  manufacture*)
+	    Year=${line##* }
+	  ;;
+	  screensize*)
+	    Dim=${line##screensize: }
+            Width=${Dim%% *}
+            Height=${Dim##* }
+            Dim=$(($Width * $Height))
+	    # check for geometry - no crt if no 4:3 ratio
+	    if [ $((${Width}00 / $((${Height} + 1 )))) -lt 140 ] ; then
+ 	      IsCrt="$(iscrt $Dim $Year)"
+ 	    else
+ 	      IsCrt="TFT WideScreen"
+ 	    fi
+          ;;
+	esac
+done
+for line in `sort -run /tmp/res` ; do Modes="$Modes \"$line\""; done
+sed "s/Modes        \"/Modes       ${Modes} \"/" -i /tmp/$xfc
