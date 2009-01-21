@@ -19,19 +19,66 @@ $VERSION = 1;    # API-version
 use Exporter;
 @ISA = qw(Exporter);
 
-################################################################################
-### This module defines the data abstraction layer for the OpenSLX configuration
-### database.
-### Aim of this abstraction is to hide the details of the data layout and
-### the peculiarities of individual database types behind a simple interface
-### that offers straightforward access to and manipulation of the
-### OpenSLX-systems and -clients (without the need to use SQL).
-### The interface is divided into four parts:
-### 	- data access methods (getting data)
-### 	- data manipulation methods (adding, removing and changing data)
-### 	- data aggregation methods (combining data in ways useful for apps)
-### 	- support methods
-################################################################################
+=pod
+
+=head1 NAME
+
+OpenSLX::ConfigDB - the configuration database API class for OpenSLX
+
+=head1 SYNOPSIS
+
+  use OpenSLX::ConfigDB;
+
+  openslxInit();
+
+  my $openslxDB = OpenSLX::ConfigDB->new();
+  $openslxDB->connect();
+
+  # fetch a client by name:
+  my $defaultClient = $openslxDB->fetchClientByFilter({'name' => '<<<default>>>'})
+
+  # fetch all systems:
+  my @systems = $openslxDB->fetchSystemByFilter();
+
+=head1 DESCRIPTION
+
+This class defines the OpenSLX API to the config database (the data layer to
+the outside world).
+
+The ConfigDB interface contains of five different parts:
+
+=over
+
+=item - L<basic methods> (connection handling)
+
+=item - L<data access methods> (getting data)
+
+=item - L<data manipulation methods> (adding, removing and changing data)
+
+=item - L<data aggregation methods> (getting info about the resulting
+configurations after mixing individual client-, group- and system-
+configurations).
+
+=item - L<suppport functions> (useful helpers)
+
+=back
+
+=head1 Special Concepts
+
+=over
+
+=item C<Filters>
+
+A filter is a hash-ref defining the filter criteria to be applied to a database
+query. Each key of the filter corresponds to a DB column and the (hash-)value
+contains the respective column value.
+
+[At a later stage, this will be improved to support a more structured approach
+to filtering (with boolean operators and hierarchical expressions)].
+
+=back
+
+=cut
 
 my @supportExports = qw(
   isAttribute mergeAttributes pushAttributes
@@ -48,11 +95,25 @@ use OpenSLX::Utils;
 
 our $configDBInstance;
 
-################################################################################
-### data access interface
-################################################################################
+=head1 Methods
+
+=head2 Basic Methods
+
+=over
+
+=cut
+
+=item C<new()>
+
+Returns an object representing a database handle to the config database.
+N.B. this class is implemented as a singleton, so several successive calls to
+new will return the *same* object
+
+=cut
+
 sub new
-{
+{	# TODO: it would be better to allow new() to do what any caller expects and
+	# rename this to instance() or anything similar ...
 	my $class = shift;
 
 	if ($configDBInstance) {
@@ -68,9 +129,34 @@ sub new
 sub DESTROY
 {
 	my $self = shift;
-	
+
 	$configDBInstance = undef;
 }
+
+=item C<connect()>
+
+Tries to establish a connection to the database specified via the db-...
+settings.
+The global configuration hash C<%openslxConfig> contains further info about the
+requested connection. When implementing this method, you may have to look at
+the following entries in order to find out which database to connect to:
+
+=over
+
+=item C<$openslxConfig{'db-spec'}>
+
+Full specification of database, a special string defining the
+precise database to connect to (this allows connecting to a database
+that requires specifications which aren't cared for by the existing
+C<%config>-entries).
+
+=item C<$openslxConfig{'db-name'}>
+
+The precise name of the database that should be connected (defaults to 'openslx').
+
+=back
+
+=cut
 
 sub connect		## no critic (ProhibitBuiltinHomonyms)
 {
@@ -83,7 +169,7 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 
 		my $dbType = $openslxConfig{'db-type'};
 			# name of underlying database module...
-	
+
 		my $dbModuleName = "OpenSLX/MetaDB/$dbType.pm";
 		my $dbModule = "OpenSLX::MetaDB::$dbType";
 		unless (eval { require $dbModuleName } ) {
@@ -109,20 +195,26 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 			die _tr(
 				'Please use slxsettings if you want to switch to another db-type.');
 		}
-	
+
 		$self->{'db-type'} = $dbType;
 		$self->{'meta-db'} = $metaDB;
 		foreach my $tk (keys %{$DbSchema->{tables}}) {
 			$metaDB->schemaDeclareTable($tk, $DbSchema->{tables}->{$tk});
 		}
-	
+
 		_checkAndUpgradeDBSchemaIfNecessary($metaDB);
 	}
 
 	$self->{connectedCount}++;
-	
+
 	return;
 }
+
+=item C<disconnect()>
+
+Tears down the connection to the database and cleans up.
+
+=cut
 
 sub disconnect
 {
@@ -136,29 +228,78 @@ sub disconnect
 	return;
 }
 
-sub start_transaction
+=item C<startTransaction()>
+
+Opens a database transaction - most useful if you want to make sure a couple of changes
+apply as a whole or not at all.
+
+=cut
+
+sub startTransaction
 {
 	my $self = shift;
 
-	$self->{'meta-db'}->start_transaction();
+	$self->{'meta-db'}->startTransaction();
 	return;
 }
 
-sub commit_transaction
+=item C<commitTransaction()>
+
+Commits a database transaction - so all changes done inside of this transaction will
+be applied to the database.
+
+=cut
+
+sub commitTransaction
 {
 	my $self = shift;
 
-	$self->{'meta-db'}->commit_transaction();
+	$self->{'meta-db'}->commitTransaction();
 	return;
 }
 
-sub rollback_transaction
+=item C<rollbackTransaction()>
+
+Revokes a database transaction - so all changes done inside of this transaction will
+be undone.
+
+=cut
+
+sub rollbackTransaction
 {
 	my $self = shift;
 
-	$self->{'meta-db'}->rollback_transaction();
+	$self->{'meta-db'}->rollbackTransaction();
 	return;
 }
+
+=head2 Data Access Methods
+
+=over
+
+=item C<fetchVendorOSByFilter([%$filter], [$resultCols])>
+
+Fetches and returns information about all vendor-OSes that match the given
+filter.
+
+=over
+
+=item Param C<filter>
+
+A hash-ref containing the filter criteria that shall be applied - default
+is no filtering. See L</"Filters"> for more info.
+
+=item Param C<resultCols>
+
+A string listing the columns that shall be returned - default is all columns.
+
+=item Return Value
+
+An array of hash-refs containing the resulting data rows.
+
+=back
+
+=cut
 
 sub fetchVendorOSByFilter
 {
@@ -171,6 +312,28 @@ sub fetchVendorOSByFilter
 	return wantarray() ? @vendorOS : shift @vendorOS;
 }
 
+=item C<fetchVendorOSByID(@$ids, [$resultCols])>
+
+Fetches and returns information the vendor-OSes with the given IDs.
+
+=over
+
+=item Param C<ids>
+
+An array of the vendor-OS-IDs you are interested in.
+
+=item Param C<resultCols>
+
+A string listing the columns that shall be returned - default is all columns.
+
+=item Return Value
+
+An array of hash-refs containing the resulting data rows.
+
+=back
+
+=cut
+
 sub fetchVendorOSByID
 {
 	my $self       = shift;
@@ -180,6 +343,30 @@ sub fetchVendorOSByID
 	my @vendorOS = $self->{'meta-db'}->fetchVendorOSByID($ids, $resultCols);
 	return wantarray() ? @vendorOS : shift @vendorOS;
 }
+
+=item C<fetchExportByFilter([%$filter], [$resultCols])>
+
+Fetches and returns information about all exports that match the given
+filter.
+
+=over
+
+=item Param C<filter>
+
+A hash-ref containing the filter criteria that shall be applied - default
+is no filtering. See L</"Filters"> for more info.
+
+=item Param C<resultCols>
+
+A string listing the columns that shall be returned - default is all columns.
+
+=item Return Value
+
+An array of hash-refs containing the resulting data rows.
+
+=back
+
+=cut
 
 sub fetchExportByFilter
 {
@@ -191,6 +378,28 @@ sub fetchExportByFilter
 	return wantarray() ? @exports : shift @exports;
 }
 
+=item C<fetchExportByID(@$ids, [$resultCols])>
+
+Fetches and returns information the exports with the given IDs.
+
+=over
+
+=item Param C<ids>
+
+An array of the export-IDs you are interested in.
+
+=item Param C<resultCols>
+
+A string listing the columns that shall be returned - default is all columns.
+
+=item Return Value
+
+An array of hash-refs containing the resulting data rows.
+
+=back
+
+=cut
+
 sub fetchExportByID
 {
 	my $self       = shift;
@@ -201,6 +410,24 @@ sub fetchExportByID
 	return wantarray() ? @exports : shift @exports;
 }
 
+=item C<fetchExportIDsOfVendorOS($id)>
+
+Fetches the IDs of all exports that make use of the vendor-OS with the given ID.
+
+=over
+
+=item Param C<id>
+
+ID of the vendor-OS whose exports shall be returned.
+
+=item Return Value
+
+An array of system-IDs.
+
+=back
+
+=cut
+
 sub fetchExportIDsOfVendorOS
 {
 	my $self       = shift;
@@ -209,6 +436,24 @@ sub fetchExportIDsOfVendorOS
 	return $self->{'meta-db'}->fetchExportIDsOfVendorOS($vendorOSID);
 }
 
+=item C<fetchGlobalInfo($id)>
+
+Fetches the global info element specified by the given ID.
+
+=over
+
+=item Param C<id>
+
+The name of the global info value you are interested in.
+
+=item Return Value
+
+The value of the requested global info.
+
+=back
+
+=cut
+
 sub fetchGlobalInfo
 {
 	my $self = shift;
@@ -216,6 +461,30 @@ sub fetchGlobalInfo
 
 	return $self->{'meta-db'}->fetchGlobalInfo($id);
 }
+
+=item C<fetchSystemByFilter([%$filter], [$resultCols])>
+
+Fetches and returns information about all systems that match the given filter.
+
+=over
+
+=item Param C<$filter>
+
+A hash-ref containing the filter criteria that shall be applied - default
+is no filtering. See L</"Filters"> for more info.
+
+=item Param C<$resultCols> [Optional]
+
+A comma-separated list of colunm names that shall be returned. If not defined,
+all available data must be returned.
+
+=item Return Value
+
+An array of hash-refs containing the resulting data rows.
+
+=back
+
+=cut
 
 sub fetchSystemByFilter
 {
@@ -227,6 +496,28 @@ sub fetchSystemByFilter
 	return wantarray() ? @systems : shift @systems;
 }
 
+=item C<fetchSystemByID(@$ids, [$resultCols])>
+
+Fetches and returns information the systems with the given IDs.
+
+=over
+
+=item Param C<ids>
+
+An array of the system-IDs you are interested in.
+
+=item Param C<resultCols>
+
+A string listing the columns that shall be returned - default is all columns.
+
+=item Return Value
+
+An array of hash-refs containing the resulting data rows.
+
+=back
+
+=cut
+
 sub fetchSystemByID
 {
 	my $self       = shift;
@@ -237,6 +528,24 @@ sub fetchSystemByID
 	return wantarray() ? @systems : shift @systems;
 }
 
+=item C<fetchSystemIDsOfExport($id)>
+
+Fetches the IDs of all systems that make use of the export with the given ID.
+
+=over
+
+=item Param C<id>
+
+ID of the export whose systems shall be returned.
+
+=item Return Value
+
+An array of system-IDs.
+
+=back
+
+=cut
+
 sub fetchSystemIDsOfExport
 {
 	my $self     = shift;
@@ -244,6 +553,25 @@ sub fetchSystemIDsOfExport
 
 	return $self->{'meta-db'}->fetchSystemIDsOfExport($exportID);
 }
+
+=item C<fetchSystemIDsOfClient($id)>
+
+Fetches the IDs of all systems that are used by the client with the given
+ID.
+
+=over
+
+=item Param C<id>
+
+ID of the client whose systems shall be returned.
+
+=item Return Value
+
+An array of system-IDs.
+
+=back
+
+=cut
 
 sub fetchSystemIDsOfClient
 {
@@ -253,6 +581,25 @@ sub fetchSystemIDsOfClient
 	return $self->{'meta-db'}->fetchSystemIDsOfClient($clientID);
 }
 
+=item C<fetchSystemIDsOfGroup($id)>
+
+Fetches the IDs of all systems that are part of the group with the given
+ID.
+
+=over
+
+=item Param C<id>
+
+ID of the group whose systems shall be returned.
+
+=item Return Value
+
+An array of system-IDs.
+
+=back
+
+=cut
+
 sub fetchSystemIDsOfGroup
 {
 	my $self    = shift;
@@ -260,6 +607,30 @@ sub fetchSystemIDsOfGroup
 
 	return $self->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
 }
+
+=item C<fetchClientByFilter([%$filter], [$resultCols])>
+
+Fetches and returns information about all clients that match the given filter.
+
+=over
+
+=item Param C<$filter>
+
+A hash-ref containing the filter criteria that shall be applied - default
+is no filtering. See L</"Filters"> for more info.
+
+=item Param C<$resultCols> [Optional]
+
+A comma-separated list of colunm names that shall be returned. If not defined,
+all available data must be returned.
+
+=item Return Value
+
+An array of hash-refs containing the resulting data rows.
+
+=back
+
+=cut
 
 sub fetchClientByFilter
 {
@@ -269,6 +640,28 @@ sub fetchClientByFilter
 	my @clients = $self->{'meta-db'}->fetchClientByFilter($filter);
 	return wantarray() ? @clients : shift @clients;
 }
+
+=item C<fetchClientByID(@$ids, [$resultCols])>
+
+Fetches and returns information the clients with the given IDs.
+
+=over
+
+=item Param C<ids>
+
+An array of the client-IDs you are interested in.
+
+=item Param C<resultCols>
+
+A string listing the columns that shall be returned - default is all columns.
+
+=item Return Value
+
+An array of hash-refs containing the resulting data rows.
+
+=back
+
+=cut
 
 sub fetchClientByID
 {
@@ -280,6 +673,25 @@ sub fetchClientByID
 	return wantarray() ? @clients : shift @clients;
 }
 
+=item C<fetchClientIDsOfSystem($id)>
+
+Fetches the IDs of all clients that make use of the system with the given
+ID.
+
+=over
+
+=item Param C<id>
+
+ID of the system whose clients shall be returned.
+
+=item Return Value
+
+An array of client-IDs.
+
+=back
+
+=cut
+
 sub fetchClientIDsOfSystem
 {
 	my $self     = shift;
@@ -288,6 +700,25 @@ sub fetchClientIDsOfSystem
 	return $self->{'meta-db'}->fetchClientIDsOfSystem($systemID);
 }
 
+=item C<fetchClientIDsOfGroup($id)>
+
+Fetches the IDs of all clients that are part of the group with the given
+ID.
+
+=over
+
+=item Param C<id>
+
+ID of the group whose clients shall be returned.
+
+=item Return Value
+
+An array of client-IDs.
+
+=back
+
+=cut
+
 sub fetchClientIDsOfGroup
 {
 	my $self    = shift;
@@ -295,6 +726,30 @@ sub fetchClientIDsOfGroup
 
 	return $self->{'meta-db'}->fetchClientIDsOfGroup($groupID);
 }
+
+=item C<fetchGroupByFilter([%$filter], [$resultCols])>
+
+Fetches and returns information about all groups that match the given filter.
+
+=over
+
+=item Param C<$filter>
+
+A hash-ref containing the filter criteria that shall be applied - default
+is no filtering. See L</"Filters"> for more info.
+
+=item Param C<$resultCols> [Optional]
+
+A comma-separated list of colunm names that shall be returned. If not defined,
+all available data must be returned.
+
+=item Return Value
+
+An array of hash-refs containing the resulting data rows.
+
+=back
+
+=cut
 
 sub fetchGroupByFilter
 {
@@ -306,6 +761,28 @@ sub fetchGroupByFilter
 	return wantarray() ? @groups : shift @groups;
 }
 
+=item C<fetchGroupByID(@$ids, [$resultCols])>
+
+Fetches and returns information the groups with the given IDs.
+
+=over
+
+=item Param C<ids>
+
+An array of the group-IDs you are interested in.
+
+=item Param C<resultCols>
+
+A string listing the columns that shall be returned - default is all columns.
+
+=item Return Value
+
+An array of hash-refs containing the resulting data rows.
+
+=back
+
+=cut
+
 sub fetchGroupByID
 {
 	my $self       = shift;
@@ -316,6 +793,25 @@ sub fetchGroupByID
 	return wantarray() ? @groups : shift @groups;
 }
 
+=item C<fetchGroupIDsOfSystem($id)>
+
+Fetches the IDs of all groups that contain the system with the given
+ID.
+
+=over
+
+=item Param C<id>
+
+ID of the system whose groups shall be returned.
+
+=item Return Value
+
+An array of client-IDs.
+
+=back
+
+=cut
+
 sub fetchGroupIDsOfSystem
 {
 	my $self     = shift;
@@ -323,6 +819,25 @@ sub fetchGroupIDsOfSystem
 
 	return $self->{'meta-db'}->fetchGroupIDsOfSystem($systemID);
 }
+
+=item C<fetchGroupIDsOfClient($id)>
+
+Fetches the IDs of all groups that contain the client with the given
+ID.
+
+=over
+
+=item Param C<id>
+
+ID of the client whose groups shall be returned.
+
+=item Return Value
+
+An array of client-IDs.
+
+=back
+
+=cut
 
 sub fetchGroupIDsOfClient
 {
@@ -332,9 +847,26 @@ sub fetchGroupIDsOfClient
 	return $self->{'meta-db'}->fetchGroupIDsOfClient($clientID);
 }
 
-################################################################################
-### data manipulation interface
-################################################################################
+=head2 Data Manipulation Methods
+
+=item C<addVendorOS(@$valRows)>
+
+Adds one or more vendor-OS to the database.
+
+=over
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the data of the new vendor-OS(es).
+
+=item Return Value
+
+The IDs of the new vendor-OS(es), C<undef> if the creation failed.
+
+=back
+
+=cut
+
 sub addVendorOS
 {
 	my $self    = shift;
@@ -343,6 +875,24 @@ sub addVendorOS
 	return $self->{'meta-db'}->addVendorOS($valRows);
 }
 
+=item C<removeVendorOS(@$vendorOSIDs)>
+
+Removes one or more vendor-OS from the database.
+
+=over
+
+=item Param C<vendorOSIDs>
+
+An array-ref containing the IDs of the vendor-OSes that shall be removed.
+
+=item Return Value
+
+C<1> if the vendorOS(es) could be removed, C<undef> if not.
+
+=back
+
+=cut
+
 sub removeVendorOS
 {
 	my $self        = shift;
@@ -350,6 +900,28 @@ sub removeVendorOS
 
 	return $self->{'meta-db'}->removeVendorOS($vendorOSIDs);
 }
+
+=item C<changeVendorOS(@$vendorOSIDs, @$valRows)>
+
+Changes the data of one or more vendor-OS.
+
+=over
+
+=item Param C<vendorOSIDs>
+
+An array-ref containing the IDs of the vendor-OSes that shall be changed.
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the new data for the vendor-OS(es).
+
+=item Return Value
+
+C<1> if the vendorOS(es) could be changed, C<undef> if not.
+
+=back
+
+=cut
 
 sub changeVendorOS
 {
@@ -360,20 +932,106 @@ sub changeVendorOS
 	return $self->{'meta-db'}->changeVendorOS($vendorOSIDs, $valRows);
 }
 
-sub incrementExportCounterForVendorOS
+=item C<addExport(@$valRows)>
+
+Adds one or more export to the database.
+
+=over
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the data of the new export(s).
+
+=item Return Value
+
+The IDs of the new export(s), C<undef> if the creation failed.
+
+=back
+
+=cut
+
+sub addExport
 {
-	my $self = shift;
-	my $id   = shift;
+	my $self    = shift;
+	my $valRows = _aref(shift);
 
-	$self->start_transaction();
-	my $vendorOS = $self->fetchVendorOSByID($id);
-	return unless defined $vendorOS;
-	my $exportCounter = $vendorOS->{export_counter} + 1;
-	$self->changeVendorOS($id, {'export_counter' => $exportCounter});
-	$self->commit_transaction();
-
-	return $exportCounter;
+	return $self->{'meta-db'}->addExport($valRows);
 }
+
+=item C<removeExport(@$exportIDs)>
+
+Removes one or more export from the database.
+
+=over
+
+=item Param C<exportIDs>
+
+An array-ref containing the IDs of the exports that shall be removed.
+
+=item Return Value
+
+C<1> if the export(s) could be removed, C<undef> if not.
+
+=back
+
+=cut
+
+sub removeExport
+{
+	my $self      = shift;
+	my $exportIDs = _aref(shift);
+
+	return $self->{'meta-db'}->removeExport($exportIDs);
+}
+
+=item C<changeExport(@$exportIDs, @$valRows)>
+
+Changes the data of one or more export.
+
+=over
+
+=item Param C<vendorOSIDs>
+
+An array-ref containing the IDs of the exports that shall be changed.
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the new data for the export(s).
+
+=item Return Value
+
+C<1> if the export(s) could be changed, C<undef> if not.
+
+=back
+
+=cut
+
+sub changeExport
+{
+	my $self      = shift;
+	my $exportIDs = _aref(shift);
+	my $valRows   = _aref(shift);
+
+	return $self->{'meta-db'}->changeExport($exportIDs, $valRows);
+}
+
+=item C<incrementGlobalCounter($counterName)>
+
+Increments the global counter of the given name and returns the *old* value.
+
+=over
+
+=item Param C<counterName>
+
+The name of the global counter that shall be bumped.
+
+=item Return Value
+
+The value the global counter had before it was incremented.
+
+=back
+
+=cut
 
 sub incrementGlobalCounter
 {
@@ -390,30 +1048,27 @@ sub incrementGlobalCounter
 	return $value;
 }
 
-sub addExport
-{
-	my $self    = shift;
-	my $valRows = _aref(shift);
+=item C<changeGlobalInfo($id, $value)>
 
-	return $self->{'meta-db'}->addExport($valRows);
-}
+Sets the global info element specified by the given ID to the given value.
 
-sub removeExport
-{
-	my $self      = shift;
-	my $exportIDs = _aref(shift);
+=over
 
-	return $self->{'meta-db'}->removeExport($exportIDs);
-}
+=item Param C<id>
 
-sub changeExport
-{
-	my $self      = shift;
-	my $exportIDs = _aref(shift);
-	my $valRows   = _aref(shift);
+The ID specifying the global info you'd like to change.
 
-	return $self->{'meta-db'}->changeExport($exportIDs, $valRows);
-}
+=item Param C<value>
+
+The new value for the global info element.
+
+=item Return Value
+
+The value the global counter had before it was incremented.
+
+=back
+
+=cut
 
 sub changeGlobalInfo
 {
@@ -423,6 +1078,24 @@ sub changeGlobalInfo
 
 	return $self->{'meta-db'}->changeGlobalInfo($id, $value);
 }
+
+=item C<addSystem(@$valRows)>
+
+Adds one or more systems to the database.
+
+=over
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the data of the new system(s).
+
+=item Return Value
+
+The IDs of the new system(s), C<undef> if the creation failed.
+
+=back
+
+=cut
 
 sub addSystem
 {
@@ -447,6 +1120,24 @@ sub addSystem
 	return $self->{'meta-db'}->addSystem($valRows);
 }
 
+=item C<removeSystem(@$systemIDs)>
+
+Removes one or more systems from the database.
+
+=over
+
+=item Param C<systemIDs>
+
+An array-ref containing the IDs of the systems that shall be removed.
+
+=item Return Value
+
+C<1> if the system(s) could be removed, C<undef> if not.
+
+=back
+
+=cut
+
 sub removeSystem
 {
 	my $self      = shift;
@@ -460,6 +1151,28 @@ sub removeSystem
 	return $self->{'meta-db'}->removeSystem($systemIDs);
 }
 
+=item C<changeSystem(@$systemIDs, @$valRows)>
+
+Changes the data of one or more systems.
+
+=over
+
+=item Param C<systemIDs>
+
+An array-ref containing the IDs of the systems that shall be changed.
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the new data for the system(s).
+
+=item Return Value
+
+C<1> if the system(s) could be changed, C<undef> if not.
+
+=back
+
+=cut
+
 sub changeSystem
 {
 	my $self      = shift;
@@ -468,6 +1181,29 @@ sub changeSystem
 
 	return $self->{'meta-db'}->changeSystem($systemIDs, $valRows);
 }
+
+=item C<setClientIDsOfSystem($systemID, @$clientIDs)>
+
+Specifies all clients that should offer the given system for booting.
+
+=over
+
+=item Param C<systemID>
+
+The ID of the system whose clients you'd like to specify.
+
+=item Param C<clientIDs>
+
+An array-ref containing the IDs of the clients that shall be connected to the
+system.
+
+=item Return Value
+
+C<1> if the system/client references could be set, C<undef> if not.
+
+=back
+
+=cut
 
 sub setClientIDsOfSystem
 {
@@ -480,6 +1216,29 @@ sub setClientIDsOfSystem
 	  ->setClientIDsOfSystem($systemID, \@uniqueClientIDs);
 }
 
+=item C<addClientIDsToSystem($systemID, @$clientIDs)>
+
+Add one or more clients to the set that should offer the given system for booting.
+
+=over
+
+=item Param C<systemID>
+
+The ID of the system that you wish to add the clients to.
+
+=item Param C<clientIDs>
+
+An array-ref containing the IDs of the new clients that shall be added to the
+system.
+
+=item Return Value
+
+C<1> if the system/client references could be set, C<undef> if not.
+
+=back
+
+=cut
+
 sub addClientIDsToSystem
 {
 	my $self         = shift;
@@ -490,6 +1249,29 @@ sub addClientIDsToSystem
 	push @clientIDs, @$newClientIDs;
 	return $self->setClientIDsOfSystem($systemID, \@clientIDs);
 }
+
+=item C<removeClientIDsFromSystem($systemID, @$clientIDs)>
+
+Removes the connection between the given clients and the given system.
+
+=over
+
+=item Param C<systemID>
+
+The ID of the system you'd like to remove groups from.
+
+=item Param C<clientIDs>
+
+An array-ref containing the IDs of the clients that shall be removed from the
+system.
+
+=item Return Value
+
+C<1> if the system/client references could be set, C<undef> if not.
+
+=back
+
+=cut
 
 sub removeClientIDsFromSystem
 {
@@ -505,6 +1287,29 @@ sub removeClientIDsFromSystem
 	return $self->setClientIDsOfSystem($systemID, \@clientIDs);
 }
 
+=item C<setGroupIDsOfSystem($systemID, @$groupIDs)>
+
+Specifies all groups that should offer the given system for booting.
+
+=over
+
+=item Param C<systemID>
+
+The ID of the system whose groups you'd like to specify.
+
+=item Param C<groupIDs>
+
+An array-ref containing the IDs of the groups that shall be connected to the
+system.
+
+=item Return Value
+
+C<1> if the system/group references could be set, C<undef> if not.
+
+=back
+
+=cut
+
 sub setGroupIDsOfSystem
 {
 	my $self     = shift;
@@ -514,6 +1319,29 @@ sub setGroupIDsOfSystem
 	my @uniqueGroupIDs = _unique(@$groupIDs);
 	return $self->{'meta-db'}->setGroupIDsOfSystem($systemID, \@uniqueGroupIDs);
 }
+
+=item C<addGroupIDsToSystem($systemID, @$groupIDs)>
+
+Add one or more groups to the set that should offer the given system for booting.
+
+=over
+
+=item Param C<systemID>
+
+The ID of the system that you wish to add the groups to.
+
+=item Param C<groupIDs>
+
+An array-ref containing the IDs of the new groups that shall be added to the
+system.
+
+=item Return Value
+
+C<1> if the system/group references could be set, C<undef> if not.
+
+=back
+
+=cut
 
 sub addGroupIDsToSystem
 {
@@ -525,6 +1353,29 @@ sub addGroupIDsToSystem
 	push @groupIDs, @$newGroupIDs;
 	return $self->setGroupIDsOfSystem($systemID, \@groupIDs);
 }
+
+=item C<removeGroupIDsFromSystem($systemID, @$groupIDs)>
+
+Removes the connection between the given groups and the given system.
+
+=over
+
+=item Param C<systemID>
+
+The ID of the system you'd like to remove groups from.
+
+=item Param C<groupIDs>
+
+An array-ref containing the IDs of the groups that shall be removed from the
+system.
+
+=item Return Value
+
+C<1> if the system/group references could be set, C<undef> if not.
+
+=back
+
+=cut
 
 sub removeGroupIDsFromSystem
 {
@@ -540,6 +1391,24 @@ sub removeGroupIDsFromSystem
 	return $self->setGroupIDsOfSystem($systemID, \@groupIDs);
 }
 
+=item C<addClient(@$valRows)>
+
+Adds one or more clients to the database.
+
+=over
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the data of the new client(s).
+
+=item Return Value
+
+The IDs of the new client(s), C<undef> if the creation failed.
+
+=back
+
+=cut
+
 sub addClient
 {
 	my $self    = shift;
@@ -554,6 +1423,24 @@ sub addClient
 	return $self->{'meta-db'}->addClient($valRows);
 }
 
+=item C<removeClient(@$clientIDs)>
+
+Removes one or more clients from the database.
+
+=over
+
+=item Param C<clientIDs>
+
+An array-ref containing the IDs of the clients that shall be removed.
+
+=item Return Value
+
+C<1> if the client(s) could be removed, C<undef> if not.
+
+=back
+
+=cut
+
 sub removeClient
 {
 	my $self      = shift;
@@ -567,6 +1454,28 @@ sub removeClient
 	return $self->{'meta-db'}->removeClient($clientIDs);
 }
 
+=item C<changeClient(@$clientIDs, @$valRows)>
+
+Changes the data of one or more clients.
+
+=over
+
+=item Param C<clientIDs>
+
+An array-ref containing the IDs of the clients that shall be changed.
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the new data for the client(s).
+
+=item Return Value
+
+C<1> if the client(s) could be changed, C<undef> if not.
+
+=back
+
+=cut
+
 sub changeClient
 {
 	my $self      = shift;
@@ -575,6 +1484,29 @@ sub changeClient
 
 	return $self->{'meta-db'}->changeClient($clientIDs, $valRows);
 }
+
+=item C<setSystemIDsOfClient($clientID, @$systemIDs)>
+
+Specifies all systems that should be offered for booting by the given client.
+
+=over
+
+=item Param C<clientID>
+
+The ID of the client whose systems you'd like to specify.
+
+=item Param C<systemIDs>
+
+An array-ref containing the IDs of the systems that shall be connected to the
+client.
+
+=item Return Value
+
+C<1> if the client/system references could be set, C<undef> if not.
+
+=back
+
+=cut
 
 sub setSystemIDsOfClient
 {
@@ -587,6 +1519,29 @@ sub setSystemIDsOfClient
 	  ->setSystemIDsOfClient($clientID, \@uniqueSystemIDs);
 }
 
+=item C<addSystemIDsToClient($clientID, @$systemIDs)>
+
+Adds some systems to the set that should be offered for booting by the given client.
+
+=over
+
+=item Param C<clientID>
+
+The ID of the client to which you'd like to add systems to.
+
+=item Param C<systemIDs>
+
+An array-ref containing the IDs of the new systems that shall be added to the
+client.
+
+=item Return Value
+
+C<1> if the client/system references could be set, C<undef> if not.
+
+=back
+
+=cut
+
 sub addSystemIDsToClient
 {
 	my $self         = shift;
@@ -597,6 +1552,29 @@ sub addSystemIDsToClient
 	push @systemIDs, @$newSystemIDs;
 	return $self->setSystemIDsOfClient($clientID, \@systemIDs);
 }
+
+=item C<removeSystemIDsFromClient($clientID, @$systemIDs)>
+
+Removes some systems from the set that should be offered for booting by the given client.
+
+=over
+
+=item Param C<clientID>
+
+The ID of the client to which you'd like to remove systems from.
+
+=item Param C<systemIDs>
+
+An array-ref containing the IDs of the systems that shall be removed from the
+client.
+
+=item Return Value
+
+C<1> if the client/system references could be set, C<undef> if not.
+
+=back
+
+=cut
 
 sub removeSystemIDsFromClient
 {
@@ -612,6 +1590,28 @@ sub removeSystemIDsFromClient
 	return $self->setSystemIDsOfClient($clientID, \@systemIDs);
 }
 
+=item C<setGroupIDsOfClient($clientID, @$groupIDs)>
+
+Specifies all groups that the given client shall be part of.
+
+=over
+
+=item Param C<clientID>
+
+The ID of the client whose groups you'd like to specify.
+
+=item Param C<groupIDs>
+
+An array-ref containing the IDs of the groups that the client should be part of.
+
+=item Return Value
+
+C<1> if the client/group references could be set, C<undef> if not.
+
+=back
+
+=cut
+
 sub setGroupIDsOfClient
 {
 	my $self     = shift;
@@ -621,6 +1621,29 @@ sub setGroupIDsOfClient
 	my @uniqueGroupIDs = _unique(@$groupIDs);
 	return $self->{'meta-db'}->setGroupIDsOfClient($clientID, \@uniqueGroupIDs);
 }
+
+=item C<addGroupIDsToClient($clientID, @$groupIDs)>
+
+Adds the given client to the given groups.
+
+=over
+
+=item Param C<clientID>
+
+The ID of the client that you'd like to add to the given groups.
+
+=item Param C<groupIDs>
+
+An array-ref containing the IDs of the groups that shall be added to the
+client.
+
+=item Return Value
+
+C<1> if the client/group references could be set, C<undef> if not.
+
+=back
+
+=cut
 
 sub addGroupIDsToClient
 {
@@ -632,6 +1655,29 @@ sub addGroupIDsToClient
 	push @groupIDs, @$newGroupIDs;
 	return $self->setGroupIDsOfClient($clientID, \@groupIDs);
 }
+
+=item C<removeGroupsIDsFromClient($clientID, @$groupIDs)>
+
+Removes the given client from the given groups.
+
+=over
+
+=item Param C<clientID>
+
+The ID of the client that you'd like to remove from the given groups.
+
+=item Param C<groupIDs>
+
+An array-ref containing the IDs of the groups that shall be removed from the
+client.
+
+=item Return Value
+
+C<1> if the client/group references could be set, C<undef> if not.
+
+=back
+
+=cut
 
 sub removeGroupIDsFromClient
 {
@@ -647,6 +1693,24 @@ sub removeGroupIDsFromClient
 	return $self->setGroupIDsOfClient($clientID, \@groupIDs);
 }
 
+=item C<addGroup(@$valRows)>
+
+Adds one or more groups to the database.
+
+=over
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the data of the new group(s).
+
+=item Return Value
+
+The IDs of the new group(s), C<undef> if the creation failed.
+
+=back
+
+=cut
+
 sub addGroup
 {
 	my $self    = shift;
@@ -654,6 +1718,24 @@ sub addGroup
 
 	return $self->{'meta-db'}->addGroup($valRows);
 }
+
+=item C<removeGroup(@$groupIDs)>
+
+Removes one or more groups from the database.
+
+=over
+
+=item Param C<groupIDs>
+
+An array-ref containing the IDs of the groups that shall be removed.
+
+=item Return Value
+
+C<1> if the group(s) could be removed, C<undef> if not.
+
+=back
+
+=cut
 
 sub removeGroup
 {
@@ -668,6 +1750,28 @@ sub removeGroup
 	return $self->{'meta-db'}->removeGroup($groupIDs);
 }
 
+=item C<changeGroup(@$groupIDs, @$valRows)>
+
+Changes the data of one or more groups.
+
+=over
+
+=item Param C<groupIDs>
+
+An array-ref containing the IDs of the groups that shall be changed.
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the new data for the group(s).
+
+=item Return Value
+
+C<1> if the group(s) could be changed, C<undef> if not.
+
+=back
+
+=cut
+
 sub changeGroup
 {
 	my $self     = shift;
@@ -676,6 +1780,28 @@ sub changeGroup
 
 	return $self->{'meta-db'}->changeGroup($groupIDs, $valRows);
 }
+
+=item C<setClientIDsOfGroup($groupID, @$clientIDs)>
+
+Specifies all clients that should be part of the given group.
+
+=over
+
+=item Param C<groupID>
+
+The ID of the group whose clients you'd like to specify.
+
+=item Param C<clientIDs>
+
+An array-ref containing the IDs of the clients that shall be part of the group.
+
+=item Return Value
+
+C<1> if the group/client references could be set, C<undef> if not.
+
+=back
+
+=cut
 
 sub setClientIDsOfGroup
 {
@@ -687,6 +1813,28 @@ sub setClientIDsOfGroup
 	return $self->{'meta-db'}->setClientIDsOfGroup($groupID, \@uniqueClientIDs);
 }
 
+=item C<addClientIDsToGroup($groupID, @$clientIDs)>
+
+Add some clients to the given group.
+
+=over
+
+=item Param C<groupID>
+
+The ID of the group to which you'd like to add clients.
+
+=item Param C<clientIDs>
+
+An array-ref containing the IDs of the clients that shall be added.
+
+=item Return Value
+
+C<1> if the group/client references could be set, C<undef> if not.
+
+=back
+
+=cut
+
 sub addClientIDsToGroup
 {
 	my $self         = shift;
@@ -697,6 +1845,28 @@ sub addClientIDsToGroup
 	push @clientIDs, @$newClientIDs;
 	return $self->setClientIDsOfGroup($groupID, \@clientIDs);
 }
+
+=item C<removeClientIDsFromGroup($groupID, @$clientIDs)>
+
+Remove some clients from the given group.
+
+=over
+
+=item Param C<groupID>
+
+The ID of the group from which you'd like to remove clients.
+
+=item Param C<clientIDs>
+
+An array-ref containing the IDs of the clients that shall be removed.
+
+=item Return Value
+
+C<1> if the group/client references could be set, C<undef> if not.
+
+=back
+
+=cut
 
 sub removeClientIDsFromGroup
 {
@@ -712,6 +1882,29 @@ sub removeClientIDsFromGroup
 	return $self->setClientIDsOfGroup($groupID, \@clientIDs);
 }
 
+=item C<setSystemIDsOfGroup($groupID, @$systemIDs)>
+
+Specifies all systems that should be offered for booting by the given group.
+
+=over
+
+=item Param C<groupID>
+
+The ID of the group whose systems you'd like to specify.
+
+=item Param C<systemIDs>
+
+An array-ref containing the IDs of the systems that shall be connected to the
+group.
+
+=item Return Value
+
+C<1> if the group/system references could be set, C<undef> if not.
+
+=back
+
+=cut
+
 sub setSystemIDsOfGroup
 {
 	my $self      = shift;
@@ -721,6 +1914,28 @@ sub setSystemIDsOfGroup
 	my @uniqueSystemIDs = _unique(@$systemIDs);
 	return $self->{'meta-db'}->setSystemIDsOfGroup($groupID, \@uniqueSystemIDs);
 }
+
+=item C<addSystemIDsToGroup($groupID, @$systemIDs)>
+
+Adds some systems to the set that should be offered for booting by the given group.
+
+=over
+
+=item Param C<groupID>
+
+The ID of the group to which you'd like to add systems.
+
+=item Param C<systemIDs>
+
+An array-ref containing the IDs of the systems that shall be added.
+
+=item Return Value
+
+C<1> if the group/system references could be set, C<undef> if not.
+
+=back
+
+=cut
 
 sub addSystemIDsToGroup
 {
@@ -732,6 +1947,28 @@ sub addSystemIDsToGroup
 	push @systemIDs, @$newSystemIDs;
 	return $self->setSystemIDsOfGroup($groupID, \@systemIDs);
 }
+
+=item C<removeSystemIDsFromGroup($groupID, @$systemIDs)>
+
+Removes some systems from the set that should be offered for booting by the given group.
+
+=over
+
+=item Param C<groupID>
+
+The ID of the group from which you'd like to remove systems.
+
+=item Param C<systemIDs>
+
+An array-ref containing the IDs of the systems that shall be removed.
+
+=item Return Value
+
+C<1> if the group/system references could be set, C<undef> if not.
+
+=back
+
+=cut
 
 sub removeSystemIDsFromGroup
 {
@@ -746,6 +1983,20 @@ sub removeSystemIDsFromGroup
 	  $self->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
 	return $self->setSystemIDsOfGroup($groupID, \@systemIDs);
 }
+
+=item C<emptyDatabase()>
+
+Removes all data from the database - the tables stay, but they will be empty.
+
+=over
+
+=item Return Value
+
+none
+
+=back
+
+=cut
 
 sub emptyDatabase
 {    # clears all user-data from the database
@@ -772,12 +2023,29 @@ sub emptyDatabase
 	return;
 }
 
-################################################################################
-### data aggregation interface
-################################################################################
+=head2 Data Aggregation Methods
+
+=item C<mergeDefaultAttributesIntoSystem($system)>
+
+merges default system attributes into the given system hash and pushes the default
+client attributes on top of that.
+
+=over
+
+=item Param C<system>
+
+The system whose attributes shall be merged into (completed).
+
+=item Return Value
+
+none
+
+=back
+
+=cut
+
 sub mergeDefaultAttributesIntoSystem
-{	# merge default system attributes into given system
-	# and push the default client attributes on top of that
+{
 	my $self   = shift;
 	my $system = shift;
 
@@ -789,8 +2057,26 @@ sub mergeDefaultAttributesIntoSystem
 	return;
 }
 
+=item C<mergeDefaultAndGroupAttributesIntoClient($client)>
+
+merges default and group configurations into the given client hash.
+
+=over
+
+=item Param C<client>
+
+The client whose attributes shall be merged into (completed).
+
+=item Return Value
+
+none
+
+=back
+
+=cut
+
 sub mergeDefaultAndGroupAttributesIntoClient
-{	# merge default and group configurations into given client
+{
 	my $self   = shift;
 	my $client = shift;
 
@@ -814,9 +2100,27 @@ sub mergeDefaultAndGroupAttributesIntoClient
 	return;
 }
 
+=item C<aggregatedSystemIDsOfClient($client)>
+
+Returns an aggregated list of system-IDs that this client should offer for
+booting (as indicated by itself, the default client and the client's groups)
+
+=over
+
+=item Param C<client>
+
+The client whose aggregated systems you're interested in.
+
+=item Return Value
+
+A list of unqiue system-IDs.
+
+=back
+
+=cut
+
 sub aggregatedSystemIDsOfClient
-{	# return aggregated list of system-IDs this client should offer
-	# (as indicated by itself, the default client and the client's groups)
+{
 	my $self   = shift;
 	my $client = shift;
 
@@ -837,9 +2141,27 @@ sub aggregatedSystemIDsOfClient
 	return _unique(@systemIDs);
 }
 
+=item C<aggregatedClientIDsOfSystem($system)>
+
+Returns an aggregated list of client-IDs that offer this system for
+booting (as indicated by itself, the default system and the system's groups)
+
+=over
+
+=item Param C<system>
+
+The system whose aggregated clients you're interested in.
+
+=item Return Value
+
+A list of unqiue client-IDs.
+
+=back
+
+=cut
+
 sub aggregatedClientIDsOfSystem
-{   # return aggregated list of client-IDs this system is linked to
-	# (as indicated by itself, the default system and the system's groups).
+{
 	my $self   = shift;
 	my $system = shift;
 
@@ -868,9 +2190,28 @@ sub aggregatedClientIDsOfSystem
 	return _unique(@clientIDs);
 }
 
+=item C<aggregatedSystemFileInfoFor($system)>
+
+Returns aggregated information about the kernel and initialramfs
+this system is using.
+
+=over
+
+=item Param C<system>
+
+The system whose aggregated info you're interested in.
+
+=item Return Value
+
+A hash containing detailled info about the vendor-OS and export used by
+this system, as well as the specific kernel-file and export-URI being used.
+
+=back
+
+=cut
+
 sub aggregatedSystemFileInfoFor
-{   # return aggregated information about the kernel and initialramfs
-	# this system is using
+{
 	my $self   = shift;
 	my $system = shift;
 
@@ -894,7 +2235,7 @@ sub aggregatedSystemFileInfoFor
 	}
 	$info->{'vendor-os'} = $vendorOS;
 
-	# check if the specified kernel file really exists (follow links while 
+	# check if the specified kernel file really exists (follow links while
 	# checking) and if not, find the newest kernel file that is available.
 	my $kernelPath =
 	  "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}/boot";
@@ -909,7 +2250,7 @@ sub aggregatedSystemFileInfoFor
 		$kernelFile = $osSetupEngine->pickKernelFile($kernelPath);
 		warn(
 			_tr(
-				"setting kernel of system '%s' to '%s'!", 
+				"setting kernel of system '%s' to '%s'!",
 				$info->{name}, $kernelFile
 			)
 		);
@@ -929,18 +2270,58 @@ sub aggregatedSystemFileInfoFor
 	return $info;
 }
 
-################################################################################
-### support interface
-################################################################################
+=head2 Support Functions
+
+=item C<isAttribute($key)>
+
+Returns whether or not the given key is an exportable attribute.
+
+=over
+
+=item Param C<system>
+
+The key to check.
+
+=item Return Value
+
+1 if the given key is indeed an attribute (currently, this means that
+it starts with 'attr_'), 0 if not.
+
+=back
+
+=cut
+
 sub isAttribute
-{   # returns whether or not the given key is an exportable attribute
+{
 	my $key = shift;
 
 	return $key =~ m[^attr_];
 }
 
+=item C<mergeAttributes($target, $source)>
+
+Copies all attributes from source that are unset in target over (source extends target).
+
+=over
+
+=item Param C<target>
+
+The hash to be used as copy target.
+
+=item Param C<source>
+
+The hash to be used as copy source.
+
+=item Return Value
+
+none
+
+=back
+
+=cut
+
 sub mergeAttributes
-{   # copies all attributes of source that are unset in target over
+{
 	my $target = shift;
 	my $source = shift;
 
@@ -955,8 +2336,30 @@ sub mergeAttributes
 	return;
 }
 
+=item C<pushAttributes($target, $source)>
+
+Copies all attributes that are set in source into the target (source overrules target).
+
+=over
+
+=item Param C<target>
+
+The hash to be used as copy target.
+
+=item Param C<source>
+
+The hash to be used as copy source.
+
+=item Return Value
+
+none
+
+=back
+
+=cut
+
 sub pushAttributes
-{   # copies all attributes that are set in source into the target
+{
 	my $target = shift;
 	my $source = shift;
 
@@ -970,9 +2373,27 @@ sub pushAttributes
 	return;
 }
 
+=item C<externalIDForSystem($system)>
+
+Returns the given system's name as an external ID - worked into a
+state that is usable as a filename.
+
+=over
+
+=item Param C<system>
+
+The system you are interested in.
+
+=item Return Value
+
+The external ID (name) of the given system.
+
+=back
+
+=cut
+
 sub externalIDForSystem
-{   # returns given system's name as the external ID, worked into a
-	# state that is usable as a filename:
+{
 	my $system = shift;
 
 	return "default" if $system->{id} == 0;
@@ -982,9 +2403,27 @@ sub externalIDForSystem
 	return $name;
 }
 
+=item C<externalIDForClient($client)>
+
+Returns the given client's MAC as an external ID - worked into a
+state that is usable as a filename.
+
+=over
+
+=item Param C<client>
+
+The client you are interested in.
+
+=item Return Value
+
+The external ID (MAC) of the given client.
+
+=back
+
+=cut
+
 sub externalIDForClient
-{   # returns given client's MAC as the external ID, worked into a
-	# state that is usable as a filename:
+{
 	my $client = shift;
 
 	return "default" if $client->{id} == 0;
@@ -995,17 +2434,54 @@ sub externalIDForClient
 	return "01-$mac";
 }
 
+=item C<externalConfigNameForClient($client)>
+
+Returns the given client's name as an external ID - worked into a
+state that is usable as a filename.
+
+=over
+
+=item Param C<client>
+
+The client you are interested in.
+
+=item Return Value
+
+The external name of the given client.
+
+=back
+
+=cut
+
 sub externalConfigNameForClient
-{   # returns given client's name as the external ID, worked into a
-	# state that is usable as a filename:
+{
 	my $client = shift;
 
-	return "default" if $client->{id} == 0;
+	return "default" if $client->{name} eq '<<<default>>>';
 
 	my $name = $client->{name};
 	$name =~ tr[/][_];
 	return $name;
 }
+
+=item C<externalAttrName($attr)>
+
+Returns the given attribute as it is referenced externally - without the
+'attr'_-prefix.
+
+=over
+
+=item Param C<attr>
+
+The attribute you are interested in.
+
+=item Return Value
+
+The external name of the given attribute.
+
+=back
+
+=cut
 
 sub externalAttrName
 {
@@ -1015,6 +2491,24 @@ sub externalAttrName
 	}
 	return $attr;
 }
+
+=item C<generatePlaceholdersFor($varName)>
+
+Returns the given variable as a placeholder - surrounded by '@@@' markers.
+
+=over
+
+=item Param C<varName>
+
+The variable you are interested in.
+
+=item Return Value
+
+The given variable as a placeholder string.
+
+=back
+
+=cut
 
 sub generatePlaceholderFor
 {

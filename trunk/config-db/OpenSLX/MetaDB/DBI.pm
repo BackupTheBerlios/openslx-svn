@@ -45,21 +45,21 @@ sub quote
 	return $self->{'dbh'}->quote(@_);
 }
 
-sub start_transaction
+sub startTransaction
 {    # default implementation passes on the request to the DBI
 	my $self = shift;
 
 	return $self->{'dbh'}->begin_work();
 }
 
-sub commit_transaction
+sub commitTransaction
 {    # default implementation passes on the request to the DBI
 	my $self = shift;
 
 	return $self->{'dbh'}->commit();
 }
 
-sub rollback_transaction
+sub rollbackTransaction
 {    # default implementation passes on the request to the DBI
 	my $self = shift;
 
