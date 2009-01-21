@@ -428,12 +428,13 @@ ${SLX_SHARE_PATH}/busybox directory."; }
 fi
 if [ -n "$use_busybox" ] ; then
   cp ${SLX_SHARE_PATH}/busybox/busybox ${INSTDIR}/bin
-  for bbins in [ arping ash bunzip2 cat chmod chown chroot cp cut date \
-        dd df dmesg du echo env expr fdisk free gunzip hwclock insmod ip \
-        kill killall ln ls lsmod mdev mkdir mke2fs mkfs.ext2 mkfs.ext3 \
-        mknod mkswap modprobe mount mv nice ping ps rdate rm rmmod sed \
-        sleep sort swapoff swapon switch_root tar test tftp time udhcpc \
-        umount uptime usleep vconfig vi zcat zcip; do
+  for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
+        date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \
+		insmod \
+		id ip kill killall ln ls lsmod mdev mkdir mke2fs mkfs.ext2 mkfs.ext3 \
+        mknod mkswap modprobe mount mv nice ping printf ps rdate rm rmmod sed \
+        sleep sort swapoff swapon switch_root tar test tftp time touch tr \
+		udhcpc umount uptime usleep vconfig vi zcat zcip; do
     ln -fs /bin/busybox ${INSTDIR}/bin/$bbins
   done
   # fake the sh link in busybox environment
