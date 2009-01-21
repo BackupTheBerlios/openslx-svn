@@ -562,6 +562,13 @@ sub removeVendorOSFromConfigDB
 	return;
 }
 
+sub pickKernelFile
+{
+	my $self = shift;
+
+	return $self->{distro}->pickKernelFile(@_);
+}
+
 ################################################################################
 ### implementation methods
 ################################################################################

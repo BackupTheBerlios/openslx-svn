@@ -134,6 +134,31 @@ sub finishSession
 {
 }
 
+sub pickKernelFile
+{
+	my $self       = shift;
+	my $kernelPath = shift;
+
+	my $newestKernelFile;
+	my $newestKernelFileSortKey = '';
+	foreach my $kernelFile (glob("$kernelPath/vmlinuz-*")) {
+		next unless $kernelFile =~ m{
+			vmlinuz-(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?-(\d+(?:\.\d+)?)
+		}x;
+		my $sortKey 
+			= sprintf("%02d.%02d.%02d.%02d-%2.1f", $1, $2, $3, $4||0, $5);
+		if ($newestKernelFileSortKey lt $sortKey) {
+			$newestKernelFile        = $kernelFile;
+			$newestKernelFileSortKey = $sortKey;
+		}
+	}
+
+	if (!defined $newestKernelFile) {
+		die _tr("unable to pick a kernel-file from path '%s'!", $kernelPath);
+	}
+	return $newestKernelFile;
+}
+
 1;
 ################################################################################
 

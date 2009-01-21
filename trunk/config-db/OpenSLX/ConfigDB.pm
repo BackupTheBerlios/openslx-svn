@@ -47,6 +47,7 @@ my @supportExports = qw(
 ################################################################################
 use OpenSLX::Basics;
 use OpenSLX::DBSchema;
+use OpenSLX::Utils;
 
 sub _checkAndUpgradeDBSchemaIfNecessary
 {
@@ -501,10 +502,16 @@ sub addSystem
 	my $valRows = _aref(shift);
 
 	foreach my $valRow (@$valRows) {
-		if (!defined $valRow->{kernel} || !length($valRow->{kernel})) {
+		if (!$valRow->{kernel}) {
 			$valRow->{kernel} = 'vmlinuz';
+			warn(
+				_tr(
+					"setting kernel of system '%s' to 'vmlinuz'!",
+					$valRow->{name}
+				)
+			);
 		}
-		if (!defined $valRow->{label} || !length($valRow->{label})) {
+		if (!$valRow->{label}) {
 			$valRow->{label} = $valRow->{name};
 		}
 	}
@@ -959,14 +966,32 @@ sub aggregatedSystemFileInfoFor
 	}
 	$info->{'vendor-os'} = $vendorOS;
 
+	# check if the specified kernel file really exists (follow links while 
+	# checking) and if not, find the newest kernel file that is available.
 	my $kernelPath =
 	  "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}/boot";
-	$info->{'kernel-file'} = "$kernelPath/$system->{kernel}";
+	my $kernelFile = "$kernelPath/$system->{kernel}";
+	while (-l $kernelFile) {
+		$kernelFile = followLink($kernelFile);
+	}
+	if (!-e $kernelFile) {
+		# pick best kernel file available
+		my $osSetupEngine = instantiateClass("OpenSLX::OSSetup::Engine");
+		$osSetupEngine->initialize($vendorOS->{name}, 'none');
+		$kernelFile = $osSetupEngine->pickKernelFile($kernelPath);
+		warn(
+			_tr(
+				"setting kernel of system '%s' to '%s'!", 
+				$info->{name}, $kernelFile
+			)
+		);
+	}
+	$info->{'kernel-file'} = $kernelFile;
 
+	# auto-generate export_uri if none has been given
 	my $exportURI = $export->{'uri'} || '';
 	if ($exportURI !~ m[\w]) {
-		# auto-generate export_uri if none has been given:
-		my $type           = $export->{'type'};
+		# instantiate OSExport engine and ask it for exportURI
 		my $osExportEngine = instantiateClass("OpenSLX::OSExport::Engine");
 		$osExportEngine->initializeFromExisting($export->{name});
 		$exportURI = $osExportEngine->generateExportURI($export, $vendorOS);
