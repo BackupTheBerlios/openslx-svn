@@ -136,8 +136,9 @@ $DbSchema = {
 			'comment:s.1024',		# internal comment (optional, for admins)
 			'kernel:s.128',			# path to kernel file, relative to /boot
 			'kernel_params:s.512',	# kernel-param string for pxe
-			'attr_ramfs_nicmods:s.128',	# list of network interface card modules
-			'attr_ramfs_fsmods:s.128',	# list of filesystem modules
+			'attr_ramfs_nicmods:s.256',	# list of network interface card modules
+			'attr_ramfs_fsmods:s.256',	# list of filesystem modules
+			'attr_ramfs_miscmods:s.256',	# list of miscellaneous modules
 			'attr_ramfs_screen:s.10',	# screen size for splash
 			'hidden:b',				# hidden systems won't be offered for booting
 			@sharedAttributes,

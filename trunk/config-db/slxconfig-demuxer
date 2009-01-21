@@ -430,6 +430,9 @@ sub generateInitalRamFS
 	if ($fsMods) {
 		$cmd .= qq[-f "$fsMods" ];
 	}
+	if ($info->{attr_ramfs_miscmods}) {
+		$cmd .= qq[-m "$info->{attr_ramfs_miscmods}" ];
+	}
 	my $rootPath = "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}";
 	$cmd .= "-i $pxeVendorOSPath/$info->{'initramfs-name'} -r $rootPath ";
 
