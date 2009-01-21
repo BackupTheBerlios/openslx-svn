@@ -28,17 +28,20 @@ my $loadedTranslationModule;
 # this hash will hold the active odlx configuration,
 # it is populated from config files and/or cmdline arguments:
 %odlxConfig = (
-	'db-basepath' => "$FindBin::Bin",
 	'db-name' => 'odlx',
 	'db-type' => 'CSV',
 	'locale' => $ENV{LANG},
 		# TODO: may need to be improved in order to be portable
+	'private-basepath=s' => '/var/lib/openslx',
+	'public-basepath=s' => '/srv/openslx',
+	'shared-basepath=s' => '/usr/share/openslx',
 );
+$odlxConfig{'db-basepath'} = "$odlxConfig{'private-basepath'}/config-db",
 
 # specification of cmdline arguments that are shared by all odlx-scripts:
 my %odlxCmdlineArgs = (
 	'db-basepath=s' => \$odlxConfig{'db-basepath'},
-		# basic path to odlx database, defaults to path of running script
+		# basic path to odlx database, defaults to "$private-basepath/config-db"
 	'db-datadir=s' => \$odlxConfig{'db-datadir'},
 		# data folder created under db-basepath, default depends on db-type
 	'db-spec=s' => \$odlxConfig{'db-spec'},
@@ -53,6 +56,14 @@ my %odlxCmdlineArgs = (
 		# locale to use for translations
 	'logfile=s' => \$odlxConfig{'locale'},
 		# file to write logging output to, defaults to STDERR
+	'private-basepath=s' => \$odlxConfig{'private-basepath'},
+		# basic path to private data (which is accessible for clients and
+		# contains all data required for booting the clients)
+	'public-basepath=s' => \$odlxConfig{'public-basepath'},
+		# basic path to public data (which contains database, vendorOSes
+		# and all local extensions [system specific scripts])
+	'shared-basepath=s' => \$odlxConfig{'shared-basepath'},
+		# basic path to shared data (functionality templates and distro-specs)
 	'verbose-level=i' => \$odlxConfig{'verbose-level'},
 		# level of logging verbosity (0-3)
 );
