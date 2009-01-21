@@ -480,11 +480,12 @@ fi
 
 # copy the proper busybox depending on architecture (i586 for 32bit and
 # x86_64 for 64bit)
+# fixme: At the moment the busybox does not support ext2 filesystem tools
 cp ${SLX_SHARE_PATH}/busybox/busybox.${ARCH} ${INSTDIR}/bin/busybox
 for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
     date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \
-    insmod id ip kill killall ln ls lsmod mdev mkdir mke2fs mkfs.ext2 \
-    mkfs.ext3 mknod mkswap modprobe mount mv nice ping printf ps rdate \
+    insmod id ip kill killall ln ls lsmod mdev mkdir \
+    mknod mkswap modprobe mount mv nice ping printf ps rdate \
     rm rmmod sed sleep sort swapoff swapon switch_root tar test tftp \
     time touch tr udhcpc umount uptime usleep vconfig vi zcat zcip; do
   ln -fs /bin/busybox ${INSTDIR}/bin/$bbins
@@ -492,6 +493,10 @@ done
 # fake the sh link in busybox environment
 echo -e "#!/bin/ash\n/bin/ash \$@" > ${INSTDIR}/bin/sh
 chmod a+x ${INSTDIR}/bin/sh
+
+# fixme: add ext2 stuff until busybox offers these tools again
+cobi mkfs.ext2 bin
+
 # binaries useful for debugging purposes
 if [ $IRFSDEBUG -gt 2 ] ; then
   for bbins in \
