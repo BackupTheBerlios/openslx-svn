@@ -630,6 +630,7 @@
 0x10de	0x021d	"Card:NVIDIA Unknown (generic)"
 0x10de	0x021e	"Card:NVIDIA Unknown (generic)"
 0x10de  0x0240  "Card:NVIDIA Geforce 6150"
+0x10de  0x0242  "Card:NVIDIA Geforce 6100"
 0x10de	0x0250	"Card:NVIDIA GeForce 4 (generic)"
 0x10de	0x0251	"Card:NVIDIA GeForce 4 (generic)"
 0x10de	0x0252	"Card:NVIDIA GeForce 4 (generic)"

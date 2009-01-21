@@ -1,14 +1,12 @@
 #~/usr/share/hwdata/Cards.local
 #
-# Description:  local changes to the Cards file. All additions should be
-#		documented here, so that they are not lost ...
+# local changes to the Cards file. All additions should be documented here, 
+# so that they are not lost ...
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-07-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 11-11-2006
 #
-# Copyright:    (c) 2006 - RZ Universitaet Freiburg
-#               (c) 2006 - odlx.org project
-#
-# Version:      0.0.1b
+# (c) 2006 - RZ Universitaet Freiburg
+# (c) 2006 - OpenSLX.ORG Project
 
 # Dell GX620
 NAME Intel 945
@@ -20,4 +18,9 @@ NOCLOCKPROBE
 NAME Intel 915GM
 CHIPSET Intel 915
 DRIVER i810
+NOCLOCKPROBE
+
+# onboard NVidia grafix chip
+NAME NVIDIA GeForce 6100
+DRIVER nv
 NOCLOCKPROBE
