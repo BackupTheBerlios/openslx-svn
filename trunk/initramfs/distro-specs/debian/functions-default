@@ -236,8 +236,18 @@ config_gdm () {
 
 # configure kdm as display manager
 config_kdm () {
-  ln -sf ../${D_INITDIR}/kdm /mnt/etc/rc3.d/K20kdm
-  ln -sf ../${D_INITDIR}/kdm /mnt/etc/rc3.d/S20kdm
+# first define directories for kdm
+kdmrcdir=/etc/kde3/kdm
+xdmdir=/etc/kde3/kdm
+
+testmkd /mnt/${kdmrcdir}
+
+ln -sf ../${D_INITDIR}/kdm /mnt/etc/rc3.d/K20kdm
+ln -sf ../${D_INITDIR}/kdm /mnt/etc/rc3.d/S20kdm
+
+# write configuration file
+# use general config in /etc/functions
+config_kdm_template
 }
 
 # configure hal, dbus, resmgr and services like that

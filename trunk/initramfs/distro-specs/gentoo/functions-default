@@ -187,7 +187,17 @@ config_rc_entry "DISPLAYMANAGER" "gdm"
 
 # configure kdm as display manager
 config_kdm () {
+# first define directories for kdm
+#kdmrcdir=/etc/opt/kde3/share/config/kdm
+#xdmdir=/etc/X11/xdm
+
+#testmkd /mnt/${kdmrcdir}
+
 config_rc_entry "DISPLAYMANAGER" "kdm"
+
+# write configuration file
+# use general config in /etc/functions
+#config_kdm_template
 }
 
 # configure bluetooth services
