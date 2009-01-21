@@ -39,6 +39,7 @@ $VERSION = 1.01;
 ### Module implementation
 ################################################################################
 use File::Basename;
+use File::Path;
 use Socket;
 use Sys::Hostname;
 use Term::ReadLine;
@@ -51,7 +52,7 @@ sub copyFile
 	my $targetDir      = shift || croak 'need to pass in target dir!';
 	my $targetFileName = shift || '';
 
-	system("mkdir -p $targetDir") unless -d $targetDir;
+	mkpath($targetDir) unless -d $targetDir;
 	my $target = "$targetDir/$targetFileName";
 	vlog(2, _tr("copying '%s' to '%s'", $fileName, $target));
 	if (system("cp -p $fileName $target")) {
@@ -70,7 +71,7 @@ sub fakeFile
 	my $fullPath = shift || croak 'need to pass in full path!';
 
 	my $targetDir = dirname($fullPath);
-	system("mkdir", "-p", $targetDir) unless -d $targetDir;
+	mkpath($targetDir) unless -d $targetDir;
 	if (system("touch", $fullPath)) {
 		croak(_tr("unable to create file '%s' (%s)", $fullPath, $!));
 	}
@@ -83,7 +84,7 @@ sub linkFile
 	my $linkName   = shift || croak 'need to pass in link name!';
 
 	my $targetDir = dirname($linkName);
-	system("mkdir -p $targetDir") unless -d $targetDir;
+	mkpath($targetDir) unless -d $targetDir;
 	if (system("ln -sfn $linkTarget $linkName")) {
 		croak(
 			_tr(
