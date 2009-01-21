@@ -21,15 +21,16 @@ $VERSION = 1.01;
 @ISA = qw(Exporter);
 
 @EXPORT = qw(
-	&copyFile &fakeFile &linkFile &slurpFile
+	&copyFile &fakeFile &linkFile &slurpFile &instantiateClass
 );
 
 ################################################################################
 ### Module implementation
 ################################################################################
 use Carp;
-use OpenSLX::Basics;
 use File::Basename;
+
+use OpenSLX::Basics;
 
 sub copyFile
 {
@@ -86,4 +87,27 @@ sub slurpFile
 	close(F);
 	return $text;
 }
+
+sub instantiateClass
+{
+	my $class = shift;
+	my $requestedVersion = shift;
+
+	unless (eval "require $class") {
+		if ($! == 2) {
+			die _tr("Class <%s> not found!\n", $class);
+		} else {
+			die _tr("Unable to load class <%s> (%s)\n", $class, $@);
+		}
+	}
+	if (defined $requestedVersion) {
+		my $classVersion = $class->VERSION;
+		if ($classVersion < $requestedVersion) {
+			die _tr('Could not load class <%s> (Version <%s> required, but <%s> found)',
+					$class, $requestedVersion, $classVersion);
+		}
+	}
+	return $class->new;
+}
+
 1;

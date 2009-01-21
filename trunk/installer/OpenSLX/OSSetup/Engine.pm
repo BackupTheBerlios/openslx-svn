@@ -108,28 +108,16 @@ sub initialize
 	}
 
 	# load module for the requested distro:
-	my $distroModule
-		= "OpenSLX::OSSetup::Distro::"
-			.$supportedDistros{lc($distroName)}->{module};
+	my $distroClass;
 	if ($actionType eq 'clone') {
-		# fallback to generic clone module, such that we can clone
+		# force generic clone module, such that we can clone
 		# distro's for which there is no specific distro-module yet
 		# (like for example for Gentoo):
-		$distroModule = "OpenSLX::OSSetup::Distro::Any_Clone";
+		$distroClass = "Any_Clone";
+	} else {
+		$distroClass = $supportedDistros{lc($distroName)}->{module};
 	}
-	unless (eval "require $distroModule") {
-		if ($! == 2) {
-			die _tr("Distro-module '%s' not found!\n", $distroModule);
-		} else {
-			die _tr("Unable to load distro-module '%s' (%s)\n", $distroModule, $@);
-		}
-	}
-	my $modVersion = $distroModule->VERSION;
-	if ($modVersion < 1.01) {
-		die _tr("Could not load module '%s' (Version '%s' required, but '%s' found)\n",
-				$distroModule, 1.01, $modVersion);
-	}
-	my $distro = $distroModule->new;
+	my $distro = instantiateClass("OpenSLX::OSSetup::Distro::$distroClass");
 	$distro->initialize($self);
 	$self->{distro} = $distro;
 
@@ -291,7 +279,7 @@ sub addInstalledVendorOSToConfigDB
 		die _tr("can't import vendor-OS '%s', since it doesn't exist!\n",
 				$self->{'vendor-os-path'});
 	}
-	my $openslxDB = accessConfigDB();
+	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
 	$openslxDB->connect();
 	# insert new vendor-os if it doesn't already exist in DB:
 	my $vendorOSName = $self->{'vendor-os-name'};
@@ -394,21 +382,9 @@ sub createPackager
 {
 	my $self = shift;
 
-	my $packagerModule
+	my $packagerClass
 		= "OpenSLX::OSSetup::Packager::$self->{distro}->{'packager-type'}";
-	unless (eval "require $packagerModule") {
-		if ($! == 2) {
-			die _tr("Packager-module '%s' not found!\n", $packagerModule);
-		} else {
-			die _tr("Unable to load packager-module '%s' (%s)\n", $packagerModule, $@);
-		}
-	}
-	my $modVersion = $packagerModule->VERSION;
-	if ($modVersion < 1.01) {
-		die _tr("Could not load module '%s' (Version '%s' required, but '%s' found)\n",
-				$packagerModule, 1.01, $modVersion);
-	}
-	my $packager = $packagerModule->new;
+	my $packager = instantiateClass($packagerClass);
 	$packager->initialize($self);
 	$self->{'packager'} = $packager;
 }
@@ -417,21 +393,9 @@ sub createMetaPackager
 {
 	my $self = shift;
 
-	my $metaPackagerModule
+	my $metaPackagerClass
 		= "OpenSLX::OSSetup::MetaPackager::$self->{distro}->{'meta-packager-type'}";
-	unless (eval "require $metaPackagerModule") {
-		if ($! == 2) {
-			die _tr("Meta-packager-module '%s' not found!\n", $metaPackagerModule);
-		} else {
-			die _tr("Unable to load meta-packager-module '%s' (%s)\n", $metaPackagerModule, $@);
-		}
-	}
-	my $modVersion = $metaPackagerModule->VERSION;
-	if ($modVersion < 1.01) {
-		die _tr("Could not load module '%s' (Version '%s' required, but '%s' found)\n",
-				$metaPackagerModule, 1.01, $modVersion);
-	}
-	my $metaPackager = $metaPackagerModule->new;
+	my $metaPackager =instantiateClass($metaPackagerClass);
 	$metaPackager->initialize($self);
 	$self->{'meta-packager'} = $metaPackager;
 }
@@ -800,30 +764,11 @@ sub clone_determineIncludeExcludeList
 	return $includeExcludeList;
 }
 
-sub accessConfigDB
-{
-	my $configDBModule = "OpenSLX::ConfigDB";
-	unless (eval "require $configDBModule") {
-		if ($! == 2) {
-			vlog 1, _tr("ConfigDB-module not found, unable to access OpenSLX-database.\n");
-		} else {
-			die _tr("Unable to load ConfigDB-module '%s' (%s)\n", $configDBModule, $@);
-		}
-	} else {
-		my $modVersion = $configDBModule->VERSION;
-		if ($modVersion < 1.01) {
-			die _tr("Could not load module '%s' (Version '%s' required, but '%s' found)",
-					$configDBModule, 1.01, $modVersion);
-		}
-	}
-	return $configDBModule->new();
-}
-
 sub removeVendorOSFromConfigDB
 {
 	my $self = shift;
 
-	my $openslxDB = accessConfigDB();
+	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
 	$openslxDB->connect();
 
 	my $vendorOSName = $self->{'vendor-os-name'};

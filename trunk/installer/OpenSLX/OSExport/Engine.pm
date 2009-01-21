@@ -26,7 +26,9 @@ use Exporter;
 use strict;
 use Carp;
 use File::Basename;
+
 use OpenSLX::Basics;
+use OpenSLX::Utils;
 
 use vars qw(%supportedExportTypes %supportedDistros);
 
@@ -97,12 +99,16 @@ sub initialize
 			}
 		}
 	}
-	my $distro = accessDistro($distroName);
+	my $distroModuleName = $supportedDistros{lc($distroName)}->{module};
+	my $distro
+		= instantiateClass("OpenSLX::OSExport::Distro::$distroModuleName");
 	$distro->initialize($self);
 	$self->{distro} = $distro;
 
 	# load module for the requested export type:
-	my $exporter = accessExporter($exportType);
+	my $typeModuleName = $supportedExportTypes{lc($exportType)}->{module};
+	my $exporter
+		= instantiateClass("OpenSLX::OSExport::ExportType::$typeModuleName");
 	$exporter->initialize($self);
 	$self->{'exporter'} = $exporter;
 
@@ -142,74 +148,11 @@ sub purgeExport
 ################################################################################
 ### implementation methods
 ################################################################################
-sub accessDistro
-{
-	my $distroName = shift;
-
-	my $distroModule
-		= "OpenSLX::OSExport::Distro::"
-			.$supportedDistros{lc($distroName)}->{module};
-	unless (eval "require $distroModule") {
-		if ($! == 2) {
-			die _tr("Distro-module <%s> not found!\n", $distroModule);
-		} else {
-			die _tr("Unable to load distro-module <%s> (%s)\n", $distroModule, $@);
-		}
-	}
-	my $modVersion = $distroModule->VERSION;
-	if ($modVersion < 1.01) {
-		die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
-				$distroModule, 1.01, $modVersion);
-	}
-	return $distroModule->new;
-}
-
-sub accessExporter
-{
-	my $exportType = shift;
-
-	my $exportTypeModule
-		= "OpenSLX::OSExport::ExportType::"
-			.$supportedExportTypes{lc($exportType)}->{module};
-	unless (eval "require $exportTypeModule") {
-		if ($! == 2) {
-			die _tr("Export-type-module <%s> not found!\n", $exportTypeModule);
-		} else {
-			die _tr("Unable to load export-type-module <%s> (%s)\n", $exportTypeModule, $@);
-		}
-	}
-	my $modVersion = $exportTypeModule->VERSION;
-	if ($modVersion < 1.01) {
-		die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
-				$exportTypeModule, 1.01, $modVersion);
-	}
-	return $exportTypeModule->new;
-}
-
-sub accessConfigDB
-{
-	my $configDBModule = "OpenSLX::ConfigDB";
-	unless (eval "require $configDBModule") {
-		if ($! == 2) {
-			vlog 1, _tr("ConfigDB-module not found, unable to access OpenSLX-database.\n");
-		} else {
-			die _tr("Unable to load ConfigDB-module <%s> (%s)\n", $configDBModule, $@);
-		}
-	} else {
-		my $modVersion = $configDBModule->VERSION;
-		if ($modVersion < 1.01) {
-			die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
-					$configDBModule, 1.01, $modVersion);
-		}
-	}
-	return $configDBModule->new();
-}
-
 sub addExportToConfigDB
 {
 	my $self = shift;
 
-	my $openslxDB = accessConfigDB();
+	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
 	$openslxDB->connect();
 
 	# insert new export if it doesn't already exist in DB:
@@ -250,7 +193,7 @@ sub removeExportFromConfigDB
 {
 	my $self = shift;
 
-	my $openslxDB = accessConfigDB();
+	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
 	$openslxDB->connect();
 
 	# remove export from DB:
