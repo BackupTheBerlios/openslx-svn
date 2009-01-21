@@ -377,8 +377,10 @@ d_mkrlscript init boot.ld "Running configuration postponed from InitRD"
 echo "fs complete" >/tmp/fscmpl
 
 # write debug file information after filesystem setup completed
-echo -e "# /etc${D_SYSCONFDIR}/logfile - file created by $0\n#\n# logfile for linux diskless client specific debugging output\nLOGFILE=\"$LOGFILE\"\n#\n# debug level\nDEBUGLEVEL=\"$DEBUGLEVEL\"" > /mnt/etc/${D_SYSCONFDIR}/logfile || \
-  error "$init_errlog"
+echo -e "# /etc${D_SYSCONFDIR}/logfile - file created by $0\n#\n# logfile \
+for linux diskless client specific debugging output\nLOGFILE=\"$LOGFILE\"\n#\
+\n# debug level\nDEBUGLEVEL=\"$DEBUGLEVEL\"" \
+  > /mnt/etc/${D_SYSCONFDIR}/logfile || error "$init_errlog"
 
 # run distribution independent and dependent configuration of files and 
 # services
@@ -445,7 +447,9 @@ killall -9 udevd 2>/dev/null
 umount -n /proc
 [ -n "${UNIONFS}" ] && mount -n --move /root /mnt/mnt 
 # unset old environment variables
-unset debug date initrd ip nfsroot vci
-unset KERNEL NWMODULES
+unset debug date initrd ip dnbdroot nbdroot nfsroot vci vga
+unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
+  UDEVD_EXPECTED_SEQNUM
+#strinstr "bash" "$(ls -la /bin/sh)" && EE="-c"
 # new style of pivoting (exec -c would set an empty environment in bash)
-exec run-init -c dev/console /mnt /sbin/init || error "$init_runinit"
+exec ${EE} run-init -c dev/console /mnt /sbin/init || error "$init_runinit"

@@ -134,25 +134,25 @@ if [ -n "$hw_monitor" ] ; then
   [ -z "$VS" ] && VS=${hw_monitor%hz*}
   VS=${VS##* }
   MR=${hw_monitor##* }
-  msg="Please check your predefined monitor settings ($hw_monitor): Manual\n\
+  hwmsg="Please check your predefined monitor settings ($hw_monitor): Manual\n\
   configurtion of display"
 else
   # gather monitor information automatically
   ddcprobe > /tmp/ddcprobe
-  msg="Please check the output of ddcprobe. The settings where not \
+  hwmsg="Please check the output of ddcprobe. The settings where not \
 complete\n  or non existant. The $0 script tried for a fully automatic\n\
   configuration of display"
 fi
 
-if [ -z "$HS" ] ; then error "  $msg timings requested but could not \
+if [ -z "$HS" ] ; then error "  $hwmsg timings requested but could not \
 establish\n  horizontal frequency in kHz." nonfatal
   HS=${HSYNCRANGE}
 fi
-if [ -z "$VS" ] ; then error "  $msg timings but could not establish \
+if [ -z "$VS" ] ; then error "  $hwmsg timings but could not establish \
 vertical\n  frequency in Hz." nonfatal
   VS=${VSYNCRANGE}
 fi
-if [ -z "$MR" ] ; then error "  $msg resolution requested but not \
+if [ -z "$MR" ] ; then error "  $hwmsg resolution requested but not \
 established." nonfatal
   MR=${MAXRES}
 fi

@@ -304,7 +304,7 @@ mknod ${INSTDIR}/tmp/null c 1 3 &>/dev/null
 mknod ${INSTDIR}/tmp/kmsg c 1 11 &>/dev/null
 
 #if no klibc - klibc shell seems not to have enough functionality :-(
-for bbins in bash ash sh; do
+for bbins in ash ash sh; do
   if cobi ${bbins} bin ; then 
     ln -fs ${bbins} ${INSTDIR}/bin/sh
     [ "${bbins}" != "bash" ] && ln -fs ${bbins} ${INSTDIR}/bin/bash
@@ -342,6 +342,7 @@ for tftp in atftp tftp ; do
   binfinder $tftp && break
 done
 cobi $tftp bin
+cp /lib/libnss_files.so.2 ${INSTDIR}/lib
 
 # debug binaries
 for bbins in \
@@ -483,13 +484,18 @@ chmod 755 ${INSTDIR}/init \
 if [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
   cp /etc/dxs/client.cfg/machine-setup.default \
     ${INSTDIR}/etc/machine-setup
-elif [ -f ../installer/default_files/machine-setup_default ] ; then
-  cp ../installer/default_files/machine-setup_default \
+elif [ -f ../installer/default_files/machine-setup.default ] ; then
+  cp ../installer/default_files/machine-setup.default \
     ${INSTDIR}/etc/machine-setup
 else
- #inserted password for root for debugging purposes
+  #inserted password for root for debugging purposes
   echo -e "# default for machine-setup does not exist\n# root logins are \
-disabled\nroot_pw='"'$1$T7VD/mmQ$aCP1WEaWplEsHe9khv4kK.'"'" > ${INSTDIR}/etc/machine-setup
+disabled\nroot_pw='"'$1$T7VD/mmQ$aCP1WEaWplEsHe9khv4kK.'"'" \
+    > ${INSTDIR}/etc/machine-setup
+fi
+# custom init script for normal client start after initramfs
+if [ -f /etc/dxs/client.cfg/boot.local.default ] ; then
+  cp /etc/dxs/client.cfg/boot.local.default ${INSTDIR}/etc/boot.local
 fi
 
 # finally copy vendor-supplied preinit and postinit files

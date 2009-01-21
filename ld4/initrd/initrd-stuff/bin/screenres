@@ -23,8 +23,7 @@
 # enable debugging in higher debug levels
 [ $DEBUGLEVEL -gt 1 ] && DEBUG="yes"
 
-function calculate_max_horizontal_freq()
-{
+calculate_max_horizontal_freq () {
     highest_resolution=` echo $screen_resolutions | sed -n 's/"\([0-9x]*\)" .*/\1/p'`
     freq_for_highest_res=`sed -n /$highest_resolution'/s/[^@]*@\([0-9]\{2,3\}\).*/\1/p' $tmp_ddcprobe_output | sort -nr|sed -n 1p`
     if [ -z "$freq_for_highest_res" ]; then
@@ -36,8 +35,7 @@ function calculate_max_horizontal_freq()
     horiz_freq_khz=$(( $highest_res_line_count * $freq_for_highest_res / 950)) # 950 = 0,95 * 1000 (invisible range * Kilohertz)
     [ -n "$DEBUG" ] && echo "  Assumed Horizontal Frequency: $horiz_freq_khz"
 }
-function determine_recommended_crt_modes()
-{
+determine_recommended_crt_modes () {
     ## Introduce the standard resolution 1400x1050 as it is seldom in the list the monitors output, though supported
     [ -n "$DEBUG" ] && echo "Screen Modes: $screen_resolutions"
     if [ -z "`echo $screen_resolutions|sed -n /1400/p`" ]; then
@@ -83,8 +81,7 @@ function determine_recommended_crt_modes()
     ##########
 }
 
-function define_max_recommended_horizontal_pixel_count()
-{
+define_max_recommended_horizontal_pixel_count () {
     ## To high resolutions are not wanted on small screens #####################################
     # For 15 inch and below
     if [ $screen_size_in_qcm -lt 704 ]; then max_wanted_resolution=1024

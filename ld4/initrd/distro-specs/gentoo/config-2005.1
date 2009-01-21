@@ -1,6 +1,6 @@
 # Description:  distro specific settings for Gentoo
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 31-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-04-2006
 #
 # Copyright:    (c) 2005,6 - RZ Universitaet Freiburg
 
@@ -18,7 +18,8 @@
 # D_RCDIRS - runlevel directories relative to /etc
 # D_HWMODTOIGNORE - hardware modules which should not tried to load (because
 # already in kernel, nonexistent, ...)
-
+# D_BOOTLOCAL - script for user specified stuff which should be started 
+# during client bootup, path and file relative to /etc
 
 D_SYSCONFDIR=conf.d
 D_ETCEXCL="opt/gnome/gconf/*\n*.old\n*-\n\
@@ -43,4 +44,4 @@ D_INITSCRIPTS="bootmisc clock urandom boot.ld"
 D_XF86CONFFILE="/etc/X11/xorg.conf"
 D_XFONTPATH="/usr/share/fonts/*"
 D_DEFAULTCOUNTRY="de"
-
+D_BOOTLOCAL="conf.d/local.start"

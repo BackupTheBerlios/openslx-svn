@@ -2,7 +2,7 @@
 #		linux diskless clients (included by init, hwautocfg,
 #		servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-04-2006
 #	 	Felix Endres, 21-03-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
@@ -40,7 +40,7 @@ trigger_device_events () {
 #######################################################################
 # produce error message and if $2 is empty run (debug) shell 
 error () {
-local e_msg=$1
+local e_msg="$1"
 # check if LOGFILE is really writeable
 if [ -n "${LOGFILE}" ] ; then
   [ "${LOGFILE}" != "/dev/null" ] && \
@@ -262,6 +262,7 @@ fileget () {
 for tftp in /bin/atftp /bin/tftp ; do
   test -x $tftp && break
 done
+echo -e "tftp\t69/tcp\ntftp\t69/udp" > /etc/services
 if [ -n "$FILESRC" ] ; then
   cfgfile=${FILESRC#*:}
   tftpserver=${FILESRC%:*}

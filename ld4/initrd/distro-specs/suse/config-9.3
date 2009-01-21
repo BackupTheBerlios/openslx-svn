@@ -2,7 +2,7 @@
 #		is the base for following SuSE versions until the changes
 #		within them require a major change
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-04-2006
 #
 # Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
 
@@ -25,6 +25,8 @@
 # D_DEFAULTCOUNTRY - localization (see common functions)
 # D_HWMODTOIGNORE - hardware modules which should not tried to load (because
 # already in kernel, nonexistent, ...)
+# D_BOOTLOCAL - script for user specified stuff which should be started
+# during client bootup, path and file relative to /etc
 
 D_SYSCONFDIR=/sysconfig
 D_ETCEXCL="opt/gnome/gconf/*\n*.old\n*-\n*.rpmorig\n*.rpmnew\n\
@@ -51,3 +53,4 @@ D_XF86CONFFILE="/etc/X11/xorg.conf"
 D_XFONTPATH="/usr/X11R6/lib/X11/fonts/*"
 D_DEFAULTCOUNTRY="de"
 D_HWMODTOIGNORE="i8xx_tco ichxrom"
+D_BOOTLOCAL="init.d/boot.local"

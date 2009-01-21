@@ -4,9 +4,7 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-04-2006
-#		Blabla
-#		Blub
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -28,7 +26,12 @@
 
 #######################################################################
 # copy distro specific scripts, programs, libraries and configs
-cp -a /etc/sysconfig/files/* /mnt 2>/dev/null 
+cp -a /etc/sysconfig/files/* /mnt 2>/dev/null &
+# boot.local file (different for several distros)
+[ -f "/etc/boot.local" -a -n "${D_BOOTLOCAL}" ] && {
+  echo "# added by $0 (initramfs from $date)" >> /mnt/etc/${D_BOOTLOCAL}
+  cat /etc/boot.local >> /mnt/etc/${D_BOOTLOCAL}
+}
 
 # set greeting
 echo "

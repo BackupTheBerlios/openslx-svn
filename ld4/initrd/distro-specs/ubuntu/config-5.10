@@ -1,6 +1,6 @@
 # Description:  distro specific settings for Debian/Sarge
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-04-2006
 #               Blablub
 #
 # Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
@@ -23,6 +23,8 @@
 # D_DEFAULTCOUNTRY - localization (see common functions)
 # D_HWMODTOIGNORE - hardware modules which should not tried to load (because
 # already in kernel, nonexistent, ...)
+# D_BOOTLOCAL - script for user specified stuff which should be started
+# during client bootup, path and file relative to /etc
 
 D_SYSCONFDIR=/default
 D_ETCEXCL="etc/gconf/*\n*.old\n*-\n\
@@ -48,3 +50,4 @@ D_INITSCRIPTS="mountvirtfs udev procps.sh bootlogd boot.ld hwclock.sh sudo dbus"
 D_XF86CONFFILE="/etc/X11/xorg.conf"
 D_XFONTPATH="/usr/share/fonts/*"
 D_DEFAULTCOUNTRY="de"
+D_BOOTLOCAL=""
