@@ -26,37 +26,37 @@ use vars qw(%supportedDistros);
 
 %supportedDistros = (
 	'debian-3.1'
-		=> { module => 'Debian_3_1', support => 'clone', },
+		=> { module => 'Debian_3_1', support => 'clone' },
 	'debian-4.0'
-		=> { module => 'Debian_4_0', support => 'clone', },
+		=> { module => 'Debian_4_0', support => 'clone' },
 	'fedora-6'
-		=> { module => 'Fedora_6', support => 'clone,install', },
+		=> { module => 'Fedora_6', support => 'clone,install' },
 	'fedora-6-x86_64'
-		=> { module => 'Fedora_6_x86_64', support => 'clone', },
+		=> { module => 'Fedora_6_x86_64', support => 'clone' },
 	'gentoo-2005.1'
-		=> { module => 'Gentoo_2005_1', support => 'clone', },
+		=> { module => 'Gentoo_2005_1', support => 'clone' },
 	'gentoo-2006.1'
-		=> { module => 'Gentoo_2006_1', support => 'clone', },
+		=> { module => 'Gentoo_2006_1', support => 'clone' },
 	'mandriva-2007.0'
-		=> { module => 'Mandriva_2007_0', support => 'clone', },
+		=> { module => 'Mandriva_2007_0', support => 'clone' },
 	'suse-9.3'
-		=> { module => 'SUSE_9_3', support => 'clone', },
+		=> { module => 'SUSE_9_3', support => 'clone' },
 	'suse-10.0'
-		=> { module => 'SUSE_10_0', support => 'clone', },
+		=> { module => 'SUSE_10_0', support => 'clone' },
 	'suse-10.0-x86_64'
-		=> { module => 'SUSE_10_0_x86_64', support => 'clone', },
+		=> { module => 'SUSE_10_0_x86_64', support => 'clone' },
 	'suse-10.1'
-		=> { module => 'SUSE_10_1', support => 'clone,install', },
+		=> { module => 'SUSE_10_1', support => 'clone,install' },
 	'suse-10.1-x86_64'
-		=> { module => 'SUSE_10_1_x86_64', support => 'clone', },
+		=> { module => 'SUSE_10_1_x86_64', support => 'clone' },
 	'suse-10.2'
-		=> { module => 'SUSE_10_2', support => 'clone,install', },
+		=> { module => 'SUSE_10_2', support => 'clone,install' },
 	'suse-10.2-x86_64'
-		=> { module => 'SUSE_10_2_x86_64', support => 'clone,install', },
+		=> { module => 'SUSE_10_2_x86_64', support => 'clone,install' },
 	'ubuntu-6.06'
-		=> { module => 'Ubuntu_6_06', support => 'clone', },
+		=> { module => 'Ubuntu_6_06', support => 'clone' },
 	'ubuntu-6.10'
-		=> { module => 'Ubuntu_6_10', support => 'clone', },
+		=> { module => 'Ubuntu_6_10', support => 'clone' },
 );
 
 ################################################################################
@@ -159,12 +159,14 @@ sub installVendorOS
 	$self->setupStage1A();
 	executeInSubprocess( sub {
 		# some tasks that involve a chrooted environment:
+		changePersonalityIfNeeded($self->{distro}->{'base-name'});
 		$self->setupStage1B();
 		$self->setupStage1C();
 	});
 	$self->stage1C_cleanupBasicVendorOS();
 	executeInSubprocess( sub {
 		# another task that involves a chrooted environment:
+		changePersonalityIfNeeded($self->{distro}->{'base-name'});
 		$self->setupStage1D();
 	});
 	slxsystem("touch $installInfoFile");
@@ -243,7 +245,10 @@ sub updateVendorOS
 		die _tr("can't update vendor-OS '%s', since it doesn't exist!\n",
 				$self->{'vendor-os-path'});
 	}
-	$self->updateStage1D();
+	executeInSubprocess( sub {
+		changePersonalityIfNeeded($self->{distro}->{'base-name'});
+		$self->updateStage1D();
+	});
 	vlog 0, _tr("Vendor-OS <%s> updated succesfully.\n",
 				$self->{'vendor-os-name'});
 }
@@ -818,6 +823,22 @@ retry:
 		push @foundFiles, $foundFile;
 	}
 	return @foundFiles;
+}
+
+sub changePersonalityIfNeeded {
+	my $distroName = shift;
+
+	my $arch = `uname -m`;
+	if ($arch =~ m[64] && $distroName !~ m[_64]) {
+		# trying to handle a 32-bit vendor-OS on a 64-bit machine, so we change 
+		# the personality accordingly (from 64-bit to 32-bit):
+		require 'syscall.ph'
+			or die _tr("unable to load '%s'\n", 'syscall.ph');
+		require 'linux/personality.ph'
+			or die _tr("unable to load '%s'\n", 'linux/personality.ph');
+		no strict;
+		syscall &SYS_personality, PER_LINUX32();
+	}
 }
 
 1;
