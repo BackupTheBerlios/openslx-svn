@@ -123,9 +123,9 @@ if ($action =~ m[^list-av]i) {
 } else {
 	vlog(0, _tr(unshiftHereDoc(<<'	END-OF-HERE'), $0));
 		You need to specify exactly one action:
-			install
 			list-available
-			remove
+			install <plugin-name> <vendor-OS-name>
+			remove <plugin-name> <vendor-OS-name>
 		Try '%s --help' for more info.
 	END-OF-HERE
 }
