@@ -151,7 +151,7 @@ supported."; \
 	  tar -xp -C $(SLX_SHARE_PATH)
 	@cd theming; tar --exclude=.svn -cp * | \
 	  tar -xp -C $(SLX_SHARE_PATH)/themes; cd ..
-	@cp -p tools/busybox installer/slxbootstrap $(SLX_SHARE_PATH)/busybox/
+	@cp -p tools/busybox{,.links} installer/slxbootstrap $(SLX_SHARE_PATH)/busybox/
 
 	@# create pre-/postinit scripts for us in initramfs:
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
