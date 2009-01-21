@@ -4,10 +4,10 @@
 #               X Stations (v3.3,v3.4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-03-2006
-#               Michael Janczyk <mj0@uni-freiburg.de>, 04-04-2006
-# Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
+#               Michael Janczyk <mj0@uni-freiburg.de>, 06-04-2006
+# Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-VERSION=0.13.3a; LAST_CHANGES=04.04.06
+VERSION=0.13.3b; LAST_CHANGES=06.04.06
 ################################################################################
 
 
@@ -231,6 +231,8 @@ winresheader ()
  echo -e "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r
  <settings>\r
    <eintrag>\r
+     <computername param=\"${hostname}\">\r
+     </computername>
      <resolution_x param=\"$X_PARAM\">\r
      </resolution_x>\r
      <resolution_y param=\"$Y_PARAM\">\r
@@ -767,6 +769,9 @@ runvmwareconfheader
 # Set Resolution for Windows guest
 winresheader
 
+# copy VMware bios
+cp /usr/share/dxs/VMware/nvram.5.0 $CONFDIR/nvram 2>&1 >/dev/null
+
 
 
 
@@ -775,20 +780,17 @@ winresheader
 # ...with the automatically written config file
 if [ `which vmplayer 2>/dev/null` ] && [ -z "$VMRUN" ]\
   || [ "$VMRUN" = "vmplayer" ]; then
+  
    writelog "\nStarting VMplayer..." 0 0
-   cp /usr/share/dxs/VMware/nvram.5.0 $CONFDIR/nvram 2>&1 >/dev/null
-   echo "$HOSTNAME" > /media/loop0/compname.txt
    VMOPT=`echo $VMOPT | sed -e "s,-q,," -e "s,-x,,"` # Remove unsupported opts.
+   # Run VMplayer
    vmplayer $VMOPT $CONFILE 2>&1 >/dev/null
 
 elif [ `which vmware 2>/dev/null` ] && [ -z "$VMRUN" ]\
   || [ "$VMRUN" = "vmware" ]; then
-   # Copy licence file and virtual bios to VMware directory
-   writelog "copying nvram and licence..." 0 0
+  
+   # Copy licence file to VMware directory
    cp /usr/share/dxs/VMware/license.ws.5.0 $VMDIR 2>&1 >/dev/null
-   cp /usr/share/dxs/VMware/nvram.5.0 $CONFDIR/nvram 2>&1 >/dev/null
-   echo "$HOSTNAME" > /media/loop0/compname.txt
-
    # Run VMware
    writelog "\nStarting VMware..." 0 0
    vmware $VMOPT $CONFILE 2>&1 >/dev/null

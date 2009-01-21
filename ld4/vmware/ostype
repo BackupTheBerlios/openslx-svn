@@ -1,0 +1,16 @@
+# file for runvmware
+#
+# change VMware ostype here
+
+
+##### 
+# For OSType use the first part of the image-name.
+# -OSType-     | -VMWare name- 
+#####
+windows98	win98
+windows2000	win2000pro
+windowsxp	winxppro
+suse		suse
+kubuntu	        other26xlinux
+debian          other26xlinux
+

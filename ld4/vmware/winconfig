@@ -1,0 +1,29 @@
+#
+# this is an include file for runvmware
+#
+# create Windows config file
+
+
+# definition of some resolution variables
+hostres=$(xvidtune -show | grep -ve "^$")
+x_param=$(echo "${hostres}" | awk '{print $3}')
+y_param=$(echo "${hostres}" | awk '{print $7}')
+
+# sync is needed to ensure that data is really written to virtual disk
+sync
+echo -e "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r
+<settings>\r
+  <eintrag>\r
+    <computername param=\"${hostname}\">\r
+    </computername>
+    <resolution_x param=\"${x_param}\">\r
+    </resolution_x>\r
+    <resolution_y param=\"${y_param}\">\r
+    </resolution_y>\r
+    <username param=\"${USER}\">\r
+    </username>\r
+  </eintrag>\r
+</settings>\r" \
+> /media/loop0/config.xml
+
+sync

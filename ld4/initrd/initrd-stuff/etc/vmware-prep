@@ -5,7 +5,7 @@
 #               environment. Start and stop functionality is added within
 #		initial ramdisk
 #
-# Author(s):    Michael Janczyk <mj0@uni-freiburg.de>, 23-03-2006
+# Author(s):    Michael Janczyk <mj0@uni-freiburg.de>, 04-04-2006
 #               Dirk von Suchodoletz <dirk@goe.net>, 25-03-2006
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
@@ -63,11 +63,13 @@ Xpath () {
     path="/usr/X11R6/bin"
     cp ${vmdir}/templ/runvmware \
        /usr/X11R6/bin
+    chmod 755 /usr/X11R6/bin/runvmware >/dev/null 2>&1
   else
     path="/var/X11R6/bin"
     test -d /var/X11R6/bin || mkdir -p /var/X11R6/bin
     cp ${vmdir}/templ/runvmware \
        /var/X11R6/bin
+    chmod 755 /var1R6/bin/runvmware >/dev/null 2>&1
   fi
 }
 
