@@ -476,7 +476,9 @@ cp /etc/machine-setup /mnt/etc
 postinit
 [ -s /initramfs/postinit.local ] && \
   cp /initramfs/postinit.local /bin/postinit.local
-[ -x /bin/postinit.local ] && /bin/postinit.local
+[ -x /bin/postinit.local ] && {
+  echo "Running postinit.local - if boot stops here, check the script!"
+  /bin/postinit.local; }
 
 # start a debug shell in higher debug levels
 [ $DEBUGLEVEL -gt 2 ] && /bin/sh

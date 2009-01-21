@@ -4,7 +4,7 @@
 #               for linux diskless clients (executed within initial
 #               ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-08-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-08-2006
 #               Michael Janczyk <mj0>, 31-05-2006
 #               Lars Mueller <lm@opendiskless.org>, 23-06-2006
 #               Oliver Tappe <ot@opendiskless.org>, 23-06-2006
@@ -202,11 +202,13 @@ if [ -n "${automnt_src}" ] ; then
   automnt_dir=${automnt_dir%/}
   test -d /${automnt_dir} || error "$scfg_erradir" nonfatal
   strinstr "/" ${automnt_dir} && error "$scfg_erratpld" nonfatal
+  amserv=$(uri_token $automnt_src server)
+  ampath=$(uri_token $automnt_src path)
   echo -e "/${automnt_dir}\t/etc/auto.${automnt_dir}\n" \
     >> /mnt/etc/auto.master
   echo -e "# /etc/auto.${automnt_dir} created by $0:\n" \
     > /mnt/etc/auto.${automnt_dir}
-  echo -e "*\t-rsize=32768,wsize=32768,rw\t${automnt_src}/&" \
+  echo -e "*\t-rsize=32768,wsize=32768,rw\t${amserv}:/${ampath}/&" \
     >> /mnt/etc/auto.${automnt_dir}
   # no tempfs needed if automounter operates on /home
   [ "${automnt_dir}" = "home" ] && umount -t tmpfs /mnt/home 2>/dev/null
@@ -334,24 +336,27 @@ fi
 # wait for completion of detection, setup process
 waitfor /tmp/tmpready 10000
 # create some directories and correct permissions
-tmpisdisk=`sed -n '/\/tmp/p' /tmp/tmpready`
+tmpisdisk=`sed -n '/\/tmp/p' /tmp/fstab 2>/dev/null`
 # if there is no local disk partition for /tmp then try to mount a rw
 # scratch space (if defined in $scratch) and prepared on server
 if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
   scrproto=$(uri_token $FILESRC prot)
   scrpath=$(uri_token $FILESRC path)
   mkdir -p /tmp/scratch >/dev/null 2>&1
+  # exports have to be per client!!
   case "$scrproto" in
     nbd)
-    # exports have to be per client!!
+      :
     ;;
     *)
-    mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid ${scratch} \
-      /tmp/scratch >/dev/null 2>&1 && {
+    tmpserv=$(uri_token $scratch server)
+    tmppath=$(uri_token $scratch path)
+    mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid \
+      ${tmpserv}:/${tmppath} /tmp/scratch >/dev/null 2>&1 && {
       mkdir -p /tmp/scratch/${clientip} >/dev/null 2>&1
       umount /tmp/scratch
       mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid \
-        ${scratch}/${clientip} /mnt/tmp >/dev/null 2>&1; }
+        ${tmpserv}:/${tmppath}/${clientip} /mnt/tmp >/dev/null 2>&1; }
     ;;
   esac
 fi
