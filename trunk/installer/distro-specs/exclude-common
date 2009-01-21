@@ -14,11 +14,11 @@
 + /tmp
 + /usr
 + /var
+- /usr/lib/vmware/modules/*
 - /var/tmp/*
 - /etc/shadow*
 - /etc/dxs
 - /etc/resolv.conf.*
-- /etc/vmware/vmnet*
 - /etc/vmware/installer.sh
 - /dev/*
 - /proc/*
