@@ -35,17 +35,15 @@ use OpenSLX::Basics;
 sub copyFile
 {
 	my $fileName = shift;
-	my $dirName = shift;
+	my $targetDir = shift;
+	my $targetFileName = shift || '';
 
-	my $baseName = basename($fileName);
-	my $targetName = "$dirName/$baseName";
-	if (!-e $targetName) {
-		my $targetDir = dirname($targetName);
-		system("mkdir -p $targetDir") 	unless -d $targetDir;
-		if (system("cp -p $fileName $targetDir/")) {
-			die _tr("unable to copy file '%s' to dir '%s' (%s)",
-					$fileName, $targetDir, $!);
-		}
+	system("mkdir -p $targetDir") 	unless -d $targetDir;
+	my $target = "$targetDir/$targetFileName";
+	vlog 2, _tr("copying '%s' to '%s'", $fileName, $target);
+	if (system("cp -p $fileName $target")) {
+		die _tr("unable to copy file '%s' to dir '%s' (%s)",
+				$fileName, $target, $!);
 	}
 }
 
