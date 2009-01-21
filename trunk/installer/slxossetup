@@ -85,19 +85,26 @@ function install_prereq_packages()
 	smart --data-dir="${SLX_METADATA_PATH}" \
 		download \
 		${SLX_BASE_PREREQ_PACKAGES}
+
+	unset packagelist
+	for package in ${SLX_BASE_PREREQ_PACKAGES}; do
+		packagelist="${packagelist} $( ls ${package}*)"
+	done
 	popd >/dev/null
 
 	test -d "${SLX_STAGE1_PATH}" || \
 		mkdir -p "${SLX_STAGE1_PATH}"
-	pushd "${SLX_STAGE1_PATH}" >/dev/null
-	for package in ${SLX_PACKAGE_DOWNLOAD_PATH}/${SLX_BASE_PREREQ_PACKAGES}*; do
+	for package in ${packagelist}; do
+		package="${SLX_PACKAGE_DOWNLOAD_PATH}/${package}"
 		case "${package}" in
 			*.deb)
 				dpkg --root="${SLX_STAGE1_PATH}" --unpack "${package}"
 				;;
 			*.rpm)
+				pushd "${SLX_STAGE1_PATH}" >/dev/null
 				rpm2cpio "${package}" | \
 					cpio -i --make-directories
+				popd >/dev/null
 				;;
 			*)
 				echo "$0: Warning, unknown package type of ${package}. "
@@ -126,7 +133,6 @@ function install_prereq_packages()
 				xargs -0 rm -f
 		done
 	fi
-	popd >/dev/null
 }
 
 function slxossetup_smart()
