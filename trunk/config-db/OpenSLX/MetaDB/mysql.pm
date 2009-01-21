@@ -47,8 +47,8 @@ sub connectConfigDB
 	my $user = (getpwuid($>))[0];
 	vlog 1, "trying to connect user <$user> to mysql-database <$dbSpec>";
 	eval ('require DBD::mysql; 1;')
-		or die _tr("DBD::mysql doesn't seem to be installed, "
-				   ."so there is no support for mysql available, sorry!\n");
+		or die _tr(qq[%s doesn't seem to be installed,
+so there is no support for %s available, sorry!\n], 'DBI::mysql', 'mysql');
 	$self->{'dbh'} = DBI->connect("dbi:mysql:$dbSpec", $user, '',
 								  {PrintError => 0})
 			or confess _tr("Cannot connect to database <%s> (%s)",

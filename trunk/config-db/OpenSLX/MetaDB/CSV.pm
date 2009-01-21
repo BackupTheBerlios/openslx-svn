@@ -53,8 +53,8 @@ sub connectConfigDB
 	}
 	vlog 1, "trying to connect to CSV-database <$dbSpec>";
 	eval ('require DBD::CSV; 1;')
-		or die _tr("DBD::CSV doesn't seem to be installed, "
-				   ."so there is no support for CSV available, sorry!\n");
+		or die _tr(qq[%s doesn't seem to be installed,
+so there is no support for %s available, sorry!\n], 'DBI::CSV', 'CSV');
 	$self->{'dbh'} = DBI->connect("dbi:CSV:$dbSpec", undef, undef,
 								  {PrintError => 0})
 			or confess _tr("Cannot connect to database <%s> (%s)",
