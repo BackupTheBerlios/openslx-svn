@@ -59,12 +59,12 @@ install:
 	       -p $(SLX_PRIVATE_PATH)/stage1 \
 	       -p $(SLX_PUBLIC_PATH)/tftpboot \
 	       -p $(SLX_SHARE_PATH)/themes
-	@cp initrd/{mkdxsinitrd,slxmkramfs} $(SLX_BIN_PATH)
+	@cp initramfs/{mkdxsinitrd,slxmkramfs} $(SLX_BIN_PATH)
 	@chmod u+x $(SLX_BIN_PATH)/{mkdxsinitrd,slxmkramfs}
 	@ln -sf $(SLX_BIN_PATH)/mkdxsinitrd $(USR_BIN)/
 	@ln -sf $(SLX_BIN_PATH)/slxmkramfs $(USR_BIN)/
-	@cp -a initrd/initrd-stuff/* $(SLX_SHARE_PATH)/initramfs
-	@cp -a initrd/distro-specs/* $(SLX_SHARE_PATH)/distro-specs
+	@cp -a initramfs/initrd-stuff/* $(SLX_SHARE_PATH)/initramfs
+	@cp -a initramfs/distro-specs/* $(SLX_SHARE_PATH)/distro-specs
 	@cp -a installer/default_files/machine-setup.default \
 	  $(SLX_SHARE_PATH)/templates
 	@cp -a installer/default_files/tftpboot $(SLX_SHARE_PATH)

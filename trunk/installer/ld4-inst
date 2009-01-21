@@ -366,15 +366,15 @@ kernel_choice "${kernel_choice}"
 
   # FIXME: mkdxsinitrd currently wants to run from own directory
   # ugly workaround...
-  cd ../initrd
+  cd ../initramfs
   while [ $j -lt ${#choice[@]} ] ; do
     current_kernel=${kernel[${choice[$j]}]#${rootdir}/boot/vmlinuz-}
-    echo "Creating initial ramdisk for ${current_kernel}"
-    current_initrd=${tftpbootdir}/initrd-dxs-${current_kernel}
-    [ -f ${current_initrd} ] && rm ${current_initrd}
-    echo "mkdxsinitrd -f \"$fsmod\" -r ${rootdir} -k ${current_kernel} -i ${current_initrd} -d ${debuglevel}"
+    echo "Creating initialramfs for ${current_kernel}"
+    current_initramfs=${tftpbootdir}/initrd-dxs-${current_kernel}
+    [ -f ${current_initramfs} ] && rm ${current_initramfs}
+    echo "mkdxsinitrd -f \"$fsmod\" -r ${rootdir} -k ${current_kernel} -i ${current_initramfs} -d ${debuglevel}"
     ./mkdxsinitrd -f "$fsmod" -r ${rootdir} -k ${current_kernel} \
-      -i ${current_initrd} -d ${debuglevel}
+      -i ${current_initramfs} -d ${debuglevel}
 
     ln -sf ${kernel[${choice[$j]}]} ${tftpbootdir}/vmlinuz-${current_kernel}
     j=$j+1
@@ -433,7 +433,7 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
   declare -i j=0
   while [ $j -lt ${#choice[@]} ] ; do
     current_kernel=${kernel[${choice[$j]}]#${rootdir}/boot/vmlinuz-}
-    current_initrd=${tftpbootdir}/initrd-dxs-${current_kernel}
+    current_initramfs=${tftpbootdir}/initrd-dxs-${current_kernel}
 
     if [ $j -eq 0 ] ; then
       default_string="  MENU DEFAULT\n"

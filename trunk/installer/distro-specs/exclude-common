@@ -18,7 +18,8 @@
 - /etc/shadow*
 - /etc/dxs
 - /etc/resolv.conf.*
-- //etc/vmware/vmnet*
+- /etc/vmware/vmnet*
+- /etc/vmware/installer.sh
 - /dev/*
 - /proc/*
 - /sys/*
