@@ -30,7 +30,8 @@ done
 echo -e "#!$shell\n:" >/usr/sbin/alsactl
 rm /etc/udev/rules.d/60-persistent-storage.rules 2>/dev/null
 chmod u+x /sbin/* /lib/udev/* /usr/sbin/*
-echo -e "disk:x:6:\nlp:x:7:\nkmem:x:9:\nvideo:x:33:" > /etc/group
+echo -e "tty:x:5:\ndisk:x:6:\nlp:x:7:\nkmem:x:9:\nuucp:x:14:\naudio:x:17:\n\
+video:x:33:" > /etc/group
 }
 
 # udev service
