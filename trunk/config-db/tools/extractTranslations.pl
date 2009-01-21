@@ -13,18 +13,23 @@ use File::Find;
 use Getopt::Long;
 use Pod::Usage;
 
+use Text::ParseWords;
+
 my (
 	$helpReq,
+	$show,
 	$update,
 	$verbose,
 	$versionReq,
 
 	%translatableStrings,
+	$fileCount,
 );
 
 GetOptions(
 	'help|?' => \$helpReq,
-	'update' => \$update,
+	'update-path=s' => \$update,
+	'show' => \$show,
 	'verbose' => \$verbose,
 	'version' => \$versionReq,
 ) or pod2usage(2);
@@ -33,25 +38,34 @@ if ($versionReq) {
 	system('slxversion');
 	exit 1;
 }
+my $path = shift;
+if (!defined $path) {
+	print "You need to specify a path!\n";
+	pod2usage(2);
+}
 
-use FindBin;
-chdir("$FindBin::RealBin/../../config-db")
-	or die "unable to find 'config-db'-folder (should be '..' from script)";
-		# always start in 'config-db' - folder
+chdir($path)
+	or die "unable to chdir into target-path <$path> ($!)";
 
 find(\&ExtractTrStrings, '.');
 
-if ($update) {
-	find(\&UpdateTrModule, 'OpenSLX/Translations');
-} else {
+my $trCount = scalar keys %translatableStrings;
+print "Found $trCount translatable strings in $fileCount files.\n";
+
+if ($show) {
 	foreach my $tr (sort {lc($a) cmp lc($b)} keys %translatableStrings) {
 		print "\tqq{$tr}\n\t\t=> qq{$tr}\n";
 	}
 }
 
+if ($update) {
+	find(\&UpdateTrModule, 'OpenSLX/Translations');
+}
+
 sub ExtractTrStrings
 {
-	$File::Find::prune = 1 if ($_ eq '.svn' || $_ eq 'Translations');
+	$File::Find::prune = 1 if ($_ eq '.svn' || $_ eq 'Translations'
+								|| $_ eq 'devel-tools');
 	return if -d;
 	print "$File::Find::name...\n" if $verbose;
 	open(F, "< $_")
@@ -59,8 +73,23 @@ sub ExtractTrStrings
 	$/ = undef;
 	my $text = <F>;
 	close(F);
-	while($text =~ m[_tr\s*\(\s*('[^']+'|\"[^"]+\")\s*(?:,.+?)?\)\s*;]gos) {
-		my $tr = substr($1, 1, -1);
+	$fileCount++;
+	while($text =~ m[_tr\s*\(\s*(.+?)\s*\)\s*;]gos) {
+		# NOTE: that cheesy regex relies on the string ');' not being used
+		#       inside of translatable strings... so SLX_DONT_DO_THAT!
+		#		As an alternative, we could implement a real parser, but
+		#		I'd like to postpone that until the current scheme proves
+		#		simply not good enough.
+		my $tr = $1;
+		if (!($tr =~ m[^'([^']+)'\s*(,.+?)*\s*$]os
+		|| $tr =~ m[^\"([^"]+)\"\s*(,.+?)*\s*$]os
+		|| $tr =~ m{^qq?\[([^\]]+)\]\s*(,.+?)*\s*$}os)) {
+			die "$File::Find::name: could not parse _tr()-argument: \n"
+				."$tr\nPlease correct and retry.\n";
+		}
+		$tr = $1;
+		$tr =~ s[\n][\\n]g;
+		$tr =~ s[\t][\\t]g;
 		$translatableStrings{$tr} = $tr;
 		print "\t$tr\n" if $verbose;
 	}
@@ -83,36 +112,63 @@ sub UpdateTrModule
 		return;
 	}
 	my %translations;
+	# evaluate the hash read from file into %translations:
 	if (!eval "$&") {
 		print "\t*** translations can't be evaluated (?!?) file will be skipped! ***\n";
 		return;
 	}
 	my $updatedTranslations = "%translations = (\n";
+	my $keepCount = 0;
+	my $newCount = 0;
 	foreach my $tr (sort {lc($a) cmp lc($b)} keys %translatableStrings) {
 		if (!length($translations{$tr})) {
 			if ($useKeyAsTranslation) {
-				# POSIX language: use key as translation:
+				# POSIX language (English): use key as translation:
 				$updatedTranslations
-					.= "\tqq{$tr}\n\t=>\n\tqq{$tr},\n\n";
+					.= "\tq{$tr}\n\t=>\n\tqq{$tr},\n\n";
+				$newCount++;
 			} else {
 				# no translation available, we mark the key, such that a
 				# search for this key will fall back to the english message:
-				$updatedTranslations
-					.= "\tqq{NEW:$tr}\n\t=>\n\tqq{$translations{$tr}},\n\n";
+				my $trMark = "NEW:$tr";
+				if (exists $translations{$trMark}) {
+					# the marked string already exists, we keep the translation
+					# if any (usually, of course, there is none):
+					my $trValue = $translations{$trMark};
+					$trValue =~ s[\n][\\n]g;
+					$trValue =~ s[\t][\\t]g;
+					$updatedTranslations
+						.= "\tq{$trMark}\n\t=>\n\tqq{$trValue},\n\n";
+					$keepCount++;
+				} else {
+					$updatedTranslations
+						.= "\tq{$trMark}\n\t=>\n\tqq{},\n\n";
+					$newCount++;
+				}
 			}
 		} else {
 			# use existing translation for key:
+			my $trValue = $translations{$tr};
+			$trValue =~ s[\n][\\n]g;
+			$trValue =~ s[\t][\\t]g;
 			$updatedTranslations
-				.= "\tqq{$tr}\n\t=>\n\tqq{$translations{$tr}},\n\n";
+				.= "\tq{$tr}\n\t=>\n\tqq{$trValue},\n\n";
+			$keepCount++;
 		}
 	}
+	my $delCount = scalar(keys %translations) - $keepCount;
 	$text =~ s[%translations\s*=\s*\(\s*(.+)\s*\);]
 			  [$updatedTranslations);]os;
-	chomp $text;
-	open(F, "> $trModule")
-		or die "could not open file $trModule for writing!";
-	print F "$text\n";
-	close(F);
+	if ($newCount + $delCount) {
+		chomp $text;
+		open(F, "> $trModule")
+			or die "could not open file $trModule for writing!";
+		print F "$text\n";
+		close(F);
+		print "\tadded $newCount strings, kept $keepCount and removed $delCount.\n";
+	} else {
+		print "\tnothing changed\n";
+	}
 }
 
 __END__
@@ -120,16 +176,17 @@ __END__
 =head1 NAME
 
 extractTranslations.pl - OpenSLX-script to extract translatable strings from
-other scripts and modules.
+all scripts and modules found in and below the given path.
 
 =head1 SYNOPSIS
 
-extractTranslations.pl [options] [path]
+extractTranslations.pl [options] path
 
   Options:
       --help              brief help message
-      --update            update the OpenSLX locale modules
-      --verbose           show what's going on
+      --update-path=s     update the OpenSLX locale modules in given path
+      --show              show overview of all strings found
+      --verbose           show for each file which strings are found
       --version           show version
 
 =head1 OPTIONS
@@ -140,12 +197,17 @@ extractTranslations.pl [options] [path]
 
 Prints a brief help message and exits.
 
-=item B<--update>
+=item B<--show>
 
-Integrates the found translatable strings into all OpenSLX locale modules, i.e.
-every module will be updated with the found strings, existing translations
-will not be changed (unless the corresponding key doesn't exist anymore, in
-which case they will be removed).
+Prints sorted list of all translatable strings that were found.
+
+=item B<--update-path=s>
+
+Integrates the found translatable strings into all OpenSLX locale modules found
+in path (which should end in 'Translations').
+Every module will be updated with the found strings, existing
+translations will not be changed (unless the corresponding key doesn't exist
+anymore, in which case they will be removed).
 
 =item B<--verbose>
 
