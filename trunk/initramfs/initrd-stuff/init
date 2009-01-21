@@ -344,6 +344,12 @@ if [ -z "${nbdmod}" -a -z "${nbdhost}" -a -z "${NFSROOT}" ] ; then
 fi
 # call function for nfs mounts
 if [ -z "${nbdmod}" -a -z "${nbdserver}" ] ; then
+  case "$NFSROOT" in
+    # replace '@@@server_ip@@@' with real IP of server:
+    *@@@server_ip@@@*)
+      NFSROOT=$(echo $NFSROOT | sed s/@@@server_ip@@@/$serverip/)
+      ;;
+  esac
   nfsmnt ${NFSROOT} || error "$init_nfs"
 fi
 
