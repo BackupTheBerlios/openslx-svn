@@ -12,7 +12,7 @@ package OpenSLX::ConfigDB;
 
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $VERSION);
-$VERSION = 1.01;		# API-version . implementation-version
+$VERSION = 1;		# API-version
 
 ################################################################################
 ### This module defines the data abstraction layer for the OpenSLX configuration
