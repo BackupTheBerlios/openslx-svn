@@ -133,6 +133,8 @@ supported."; \
 
 	@# copy all PERL-scripts from config-db and their required modules:
 	@cp config-db/slx* $(SLX_BIN_PATH)/
+	@tar --exclude=.svn -cp -C lib OpenSLX | \
+	  tar -xp -C $(SLX_BASE_PATH)/lib
 	@tar --exclude=.svn -cp -C config-db OpenSLX | \
 	  tar -xp -C $(SLX_BASE_PATH)/lib
 

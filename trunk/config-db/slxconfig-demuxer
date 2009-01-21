@@ -32,9 +32,8 @@ use Pod::Usage;
 # path for modules:
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
-	# production path
 use lib "$FindBin::RealBin";
-	# development path
+	# development path to config-db stuff
 
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:access :aggregation :support);

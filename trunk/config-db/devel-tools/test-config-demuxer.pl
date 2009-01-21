@@ -8,10 +8,12 @@
 #
 use strict;
 
-# add the folder this script lives in to perl's search path for modules:
+# add the lib-folder and the config-db folder to perl's search
+# path for modules:
 use FindBin;
+use lib "$FindBin::RealBin/../../lib";
 use lib "$FindBin::RealBin/..";
-	# development path only (as script should never be installed)
+	# development path to config-db stuff
 
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:access :manipulation);

@@ -24,9 +24,6 @@ use Pod::Usage;
 # path for modules:
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
-	# production path
-use lib "$FindBin::RealBin/..";
-	# development path to basic stuff
 use lib "$FindBin::RealBin";
 	# development path to config-db stuff
 

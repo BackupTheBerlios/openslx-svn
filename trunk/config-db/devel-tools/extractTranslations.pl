@@ -24,8 +24,6 @@ use File::Find;
 use Getopt::Long;
 use Pod::Usage;
 
-use Text::ParseWords;
-
 my (
 	$helpReq,
 	$show,
