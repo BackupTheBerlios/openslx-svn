@@ -344,6 +344,11 @@ sub addSystemToConfigDB
 			  }
 			  split '\s*,\s*', $systemData->{clients};
 		delete $systemData->{clients};
+	} else {
+		# no clients given, so we add this system to the default client,
+		# which will make this system bootable by *all* clients (unless
+		# they are configured otherwise).
+		push @clientIDs, 0;
 	}
 
 	if ($openslxDB->fetchSystemByFilter({ 'name' => $systemName })) {
