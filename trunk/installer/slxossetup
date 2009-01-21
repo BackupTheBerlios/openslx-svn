@@ -457,7 +457,7 @@ function slxossetup()
 			REPO_TYPE="apt-deb"
 			X86_ARCH='i386'
 			;;
-		*) ErrorMsg 1 "Unkown system ${SLX_SYSTEM_BASENAME}. " ;;
+		*) ErrorMsg 1 "Unknown system ${SLX_SYSTEM_BASENAME}. " ;;
 	esac
 
 	if test -z "${SLX_INST_ARCH}"; then
