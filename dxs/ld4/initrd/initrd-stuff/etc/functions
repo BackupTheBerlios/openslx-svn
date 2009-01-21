@@ -13,14 +13,16 @@ msg() {
 echo -e "$1 info: $2"
 }
 #######################################################################
-# micro sleep
+# micro sleep - simply loop and delete 1 from the first argument gotten
+# until zero
 usleep () {
 local count=`expr $1 \* 10`
 while [ $count -gt 0 ] ; do count=`expr $count \- 1` ; done
 return 0
 }
 #######################################################################
-# load a certain module
+# load a certain module - name of module with path in argument one, the
+# error message in second argument
 loadmod() {
 local modpath=$1
 local module=`echo $modpath|sed -e "s,.*/,,"`
@@ -51,14 +53,16 @@ local n=0
 echo $n
 }
 #######################################################################
-# configure IP address statically
+# configure IP address statically - first argument the ip address, 
+# second the netmask, then gateway and broadcast address and last
+# interface. All arguments have to be given.
 ipsetup () {
 local ip=$1
 local nm=$2
 local gw=$3
 local bc=$4
 local if=$5
-for ipcfg in ip ipconfig ifconfig ; do
+for ipcfg in ip ipconfig ifconfig none; do
   test -x /bin/$ipcfg && break;
 done
 case $ipcfg in
@@ -80,6 +84,11 @@ case $ipcfg in
       route add default gw $gw
     fi
   ;;
+  none)
+    error "  No tool for local IP configuration found. You should at \
+least add\n  one of the following programs to your ramdisk: ip \
+ipconfig\n  ifconfig."
+  ;;
 esac
 }
 #######################################################################
@@ -93,7 +102,7 @@ line\nbut failed. There might be the following reasons for that:\n\
 running kernel - see error messages above\n\
 * You tried to mount from wrong server or path ($nfsroot)\n\
 * No NFS server is running or you do not have permissions"
-for mnt in nfsmount mount ; do
+for mnt in nfsmount mount none; do
   test -x /bin/$mnt && break;
 done
 loadmod /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko \
@@ -108,6 +117,9 @@ command is used. Please\n  check your initial ramdisk setup (mkdxsinitrd)."
     mount -n -t nfs -o ro $nfsroot /mnt || error $errmsg
 
     killall -9 portmap
+  ;;
+  none)
+    error "  No suitable mount tool found."
   ;;
 esac
 }
@@ -149,13 +161,13 @@ local commonerr="  The following problems could produce that error:\n\
   * No network device is present - either no module matching the hardware\n\
     was loaded nor present in kernel.\n  You might want to run 'lsmod'."
 local vci=$1
-for dhcp in dhclient dhcpcd pump ipconfig ; do
+for dhcp in dhclient dhcpcd pump ipconfig none; do
   test -x /bin/$dhcp && break;
 done
-if [ -z "$dhcp" ] ; then
+if [ "$dhcp" = "none" ] ; then
   error "  You tried to configure system via dhcp, but no usable dhcp\n\
   client could be found. Please check that you have some client from\n\
-  the following list installed: dhclient dhcpcd pump ipconfig."
+  the following list installed: dhclient dhcpcd pump ipconfig." nonfatal
 else
   loadmod /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko \
     "needed for dhcp";
@@ -181,6 +193,8 @@ case $dhcp in
   ipconfig)
       error "  Config via ipconfig (from klibc) not implemented yet.\n\
 $commonerr"
+  ;;
+  *)
   ;;
 esac
 echo "finished" > /tmp/dhcp-done
