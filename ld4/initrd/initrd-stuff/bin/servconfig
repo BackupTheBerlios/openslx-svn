@@ -4,7 +4,7 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 25-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-04-2006
 #		Blabla
 #		Blub
 #
@@ -225,8 +225,10 @@ if [ "x$vmware" != "x" ] || [ "x$vmware" != "xno" ] ; then
   if [ -d /mnt/usr/share/vmware ] ; then
     ln -sf /usr/share/vmware /var/lib/vmware
   elif [ -n "${imgsrv}" ] ; then
-    mount -t nfs -o ro,nolock,intr,nodev,soft,timeo=2,nosuid \
-      ${imgsrv} /mnt/var/lib/vmware &
+    # nfsmnt script should be used here ...
+    nfsmnt ${imgsrv} /mnt/var/lib/vmware &
+    #mount -n -t nfs -o ro,nolock,intr,nodev,soft,timeo=2,nosuid \
+    #  ${imgsrv} 
   fi
   # generate a runlevel script
   d_mkrlscript init vmware-prep "Starting preparation of vmware environment"

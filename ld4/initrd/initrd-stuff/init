@@ -2,11 +2,11 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 02-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.4a
+# Version:      0.2.4b
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -46,11 +46,14 @@ exec < /dev/console > /dev/console 2>&1
 preinit
 # start device auto discovery service - distro specific function
 udev_hotplug
-# read kernel commandline
+# set defaults and create waitfor files
 TMPFSSIZE="50%"
+COWSIZE="50%"
+RWDIR=/dev/shm
 echo "noldap" > /tmp/ldap-done
 echo "nodhcp" > /tmp/dhcp-done
 echo "nofile" > /tmp/file-done
+# read kernel commandline
 read KCMDLINE < /proc/cmdline
 export KCMDLINE
 for opts in ${KCMDLINE} ; do
@@ -247,8 +250,28 @@ if [ -n "${NBD}" ] ; then
       ;;
   esac
   usleep 20
-  mount -n -t $RFST -o ro $RDEV /mnt
+  RWRO="ro"
+  if [ -n "${COWLOOP}" -a -x /bin/cowdev ] ; then
+    modprobe ${MODPRV} cowloop || {
+      error "$init_loadcow" nonfatal
+      COWLOOP=""; }
+  fi
+  if [ -n "${COWLOOP}" ] ; then
+    if [ -n "${UNIONFS}" ] ; then
+      error "$init_cownonbd"
+      UNIONFS="";
+    fi
+    echo "Using Copy-on-Write block device for rw access"
+    mount -n -t tmpfs -o size=${COWSIZE} ramfs ${RWDIR}
+    cowdev -a /dev/nbd0 ${RWDIR}/nbd.cow
+    RWRO="rw"
+    RDEV=/dev/cow/0
+    # run ldconfig if not switched off via kernel command line
+    [ -z "${NOLDSC}" ] && echo $init_ldcfg && ldconfig /etc/ld.so.cache &
+  fi  
+  mount -n -t $RFST -o $RWRO $RDEV /mnt  
 fi
+
 # if no type of root filesystem is passed via kernel command line try
 # information gathered from dhcp process
 if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" -a -z "${NFSROOT}" ] ; then
@@ -262,7 +285,7 @@ if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" -a -z "${NFSROOT}" ] ; then
 fi
 # call function for nfs mounts
 if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" ] ; then
-  nfsmnt ${NFSROOT} ${MODPRV}
+  nfsmnt ${NFSROOT}
 fi
 
 # get the complete collection of kernel modules available
@@ -272,20 +295,10 @@ mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
 hwautocfg &
 
 # try to use unionfs for rw access if available
-RWDIR=/dev/shm
 if [ -n "${UNIONFS}" -o -n "${UNION}" ] ; then
   modprobe ${MODPRV} unionfs || { 
     error "$init_loadufs" nonfatal 
     UNIONFS=""; }
-fi
-if [ -n "${COWLOOP}" ] ; then
-  modprobe ${MODPRV} cowloop || {
-  error "$init_loadcow" nonfatal
-  COWLOOP=""; }
-  if [ -z "${NBD}" -o -n "${UNIONFS}" ] ; then
-    error "$init_cownonbd"
-    COWLOOP="";
-  fi
 fi
 
 # if additional sources should be used for a combined root filesystem
@@ -308,9 +321,7 @@ if [ -n "${UNIONFS}" ] ; then
   mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp
   # run ldconfig if not switched off via kernel command line
   [ -z "${NOLDSC}" ] && echo $init_ldcfg && ldconfig /etc/ld.so.cache &
-elif [ -n "${COWLOOP}" -a -n "${NBD}" ] ; then
-  :
-else
+elif [ -z "$COWLOOP" ] ; then
   echo "Using bind mounts to ramdisk for rw access"
   mount -n -t tmpfs -o size=${TMPFSSIZE} ramfs ${RWDIR}
   for path in ${D_BINDMPTS} ; do

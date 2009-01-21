@@ -2,9 +2,8 @@
 #		linux diskless clients (included by init, hwautocfg,
 #		servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-04-2006
 #	 	Felix Endres, 21-03-2006
-#		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -139,10 +138,17 @@ case $ipcfg in
 esac
 }
 #######################################################################
-# nfs mounter
+# nfs mounter for root filesystem and other sources
 nfsmnt ()
 {
 local nfsroot=$1
+local dest=$2
+if [ -z "$dest" ] ; then
+  dest="/mnt"
+  e_nfs="$error_rnfs"
+else
+  e_nfs="$error_gnfs"
+fi
 for mnt in nfsmount mount none; do
   test -x /bin/$mnt && break;
 done
@@ -150,11 +156,11 @@ done
   loadmod /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko "$error_modnfs"
 case $mnt in
   nfsmount)
-    nfsmount -o ro $nfsroot /mnt || error "$error_nfs"
+    nfsmount -o ro $nfsroot $dest || error "$e_nfs"
   ;;
   mount)
     portmap || error "$error_portm"
-    mount -n -t nfs -o ro $nfsroot /mnt || error "$errmsg"
+    mount -n -t nfs -o ro,nolock $nfsroot $dest || error "$e_nfs"
     killall -9 portmap
   ;;
   none)

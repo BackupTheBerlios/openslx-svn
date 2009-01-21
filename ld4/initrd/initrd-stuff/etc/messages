@@ -3,7 +3,7 @@
 #		version 4
 #		this file could be used for localization of error messages 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 02-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -89,12 +89,13 @@ error_modnfs="needed for mounting rootfs"
 error_iptool="  No tool for local IP configuration found. You should at \
 least add\n  one of the following programs to your ramdisk: ip \
 ipconfig\n  ifconfig."
-error_nfs="  Mount of root filesystem via NFS was requested via kernel command \
+error_rnfs="  Mount of root filesystem via NFS was requested via kernel command \
 line\nbut failed. There might be the following reasons for that:\n\
 * No nfs.ko module could be loaded and no NFS support was present in the\n\
 running kernel - see error messages above\n\
 * You tried to mount from wrong server or path ($nfsroot)\n\
 * No NFS server is running or you do not have permissions"
+error_gnfs="  Mount of some NFS source failed ..."
 error_portm="  Portmapper should be present, if normal mount \
 command is used. Please\n  check your initial ramdisk setup (mkdxsinitrd)."
 error_mntt="  No suitable mount tool found."
