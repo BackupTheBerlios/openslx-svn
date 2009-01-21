@@ -27,9 +27,9 @@ use vars qw(%openslxConfig %cmdlineConfig);
 use Carp;
 use FindBin;
 use Getopt::Long;
+use POSIX qw(locale_h);
 
 my %translations;
-my $loadedTranslationModule;
 
 # this hash will hold the active openslx configuration,
 # the initial content is based on environment variables or default values.
@@ -39,8 +39,8 @@ my $loadedTranslationModule;
 	'db-name' => $ENV{SLX_DB_NAME} || 'openslx',
 	'db-spec' => $ENV{SLX_DB_SPEC},
 	'db-type' => $ENV{SLX_DB_TYPE} || 'CSV',
-	'locale' => $ENV{LANG},
-		# TODO: may need to be improved in order to be portable
+	'locale' => setlocale(LC_MESSAGES),
+	'locale-charmap' => `locale charmap`,
 	'base-path' => $ENV{SLX_BASE_PATH} || '/opt/openslx',
 	'config-path' => $ENV{SLX_CONFIG_PATH} || '/etc/opt/openslx',
 	'private-path' => $ENV{SLX_PRIVATE_PATH} || '/var/opt/openslx',
@@ -48,6 +48,7 @@ my $loadedTranslationModule;
 	'temp-path' => $ENV{SLX_TEMP_PATH} || '/tmp',
 	'verbose-level' => $ENV{SLX_VERBOSE_LEVEL} || '0',
 );
+chomp($openslxConfig{'locale-charmap'});
 $openslxConfig{'bin-path'}
 	= $ENV{SLX_BIN_PATH} || "$openslxConfig{'base-path'}/bin",
 $openslxConfig{'db-basepath'}
@@ -86,6 +87,8 @@ my %openslxCmdlineArgs = (
 		# has a separate subfolder in here.
 	'locale=s' => \$cmdlineConfig{'locale'},
 		# locale to use for translations
+	'locale-charmap=s' => \$cmdlineConfig{'locale-charmap'},
+		# locale-charmap to use for I/O (iso-8859-1, utf-8, etc.)
 	'logfile=s' => \$cmdlineConfig{'locale'},
 		# file to write logging output to, defaults to STDERR
 	'private-path=s' => \$cmdlineConfig{'private-path'},
@@ -182,14 +185,19 @@ sub openslxInit
 # ------------------------------------------------------------------------------
 sub trInit
 {
-	my $locale = $openslxConfig{'locale'};
-	$locale =~ tr[A-Z.][a-z_];
-	$locale =~ tr[\-][]d;
+	# set the specified locale...
+	setlocale('LC_ALL', $openslxConfig{'locale'});
 
-	my $trModule = "OpenSLX::Translations::$locale";
-	if ($loadedTranslationModule eq $trModule) {
-		# requested translations have already been loaded
-		return;
+	# ...and activate automatic charset conversion on all I/O streams:
+	binmode(STDIN, ":encoding($openslxConfig{'locale-charmap'})");
+	binmode(STDOUT, ":encoding($openslxConfig{'locale-charmap'})");
+	binmode(STDERR, ":encoding($openslxConfig{'locale-charmap'})");
+	use open ':locale';
+
+	my $locale = $openslxConfig{'locale'};
+	if (lc($locale) eq 'c') {
+		# treat locale 'c' as equivalent for 'posix':
+		$locale = 'posix';
 	}
 
 	# load Posix-Translations first in order to fall back to English strings
@@ -197,27 +205,45 @@ sub trInit
 	if (eval "require OpenSLX::Translations::posix") {
 		%translations = %OpenSLX::Translations::posix::translations;
 	} else {
-		vlog 1, "Unable to load translations module 'posix' ($!).";
+		vlog 1, "unable to load translations module 'posix' ($!).";
 	}
 
-	if ($locale ne 'posix') {
-		if (eval "require $trModule") {
-			# Access OpenSLX::Translations::<locale>::translations
-			# via a symbolic reference...
-			no strict 'refs';
-			my $translationsRef	= \%{ "${trModule}::translations" };
-			# ...and copy the available translations into our hash:
-			foreach my $k (keys %{$translationsRef}) {
-				$translations{$k} = $translationsRef->{$k};
+	if (lc($locale) ne 'posix') {
+		# parse locale and canonicalize it (e.g. to 'de_DE') and generate
+		# two filenames from it (language+country and language only):
+		if ($locale !~ m{^\s*([^_]+)(?:_(\w+))?}) {
+			die "locale $locale has unknown format!?!";
+		}
+		my @locales;
+		if (defined $2) {
+			push @locales, lc($1).'_'.uc($2);
+		}
+		push @locales, lc($1);
+
+		# try to load any of the Translation modules (starting with the more
+		# specific one [language+country]):
+		my $loadedTranslationModule;
+		foreach my $trName (@locales) {
+			my $trModule = "OpenSLX::Translations::$trName";
+			if (eval "require $trModule") {
+				# Access OpenSLX::Translations::<locale>::translations
+				# via a symbolic reference...
+				no strict 'refs';
+				my $translationsRef	= \%{ "${trModule}::translations" };
+				# ...and copy the available translations into our hash:
+				foreach my $k (keys %{$translationsRef}) {
+					$translations{$k} = $translationsRef->{$k};
+				}
+				$loadedTranslationModule = $trModule;
+				vlog 1, _tr("translations module %s loaded successfully",
+							$trModule);
+				last;
 			}
-			$loadedTranslationModule = $trModule;
-			vlog 1, _tr("translations module %s loaded successfully",
-						$trModule);
-		} else {
-			vlog 1, "Unable to load translations module '$locale' ($!).";
+		}
+		if (!defined $loadedTranslationModule) {
+			vlog 1, "unable to load any translations module for locale '$locale' ($!).";
 		}
 	}
-
 }
 
 # ------------------------------------------------------------------------------
@@ -231,7 +257,7 @@ sub _tr
 
 	my $formatStr = $translations{$trKey};
 	if (!defined $formatStr) {
-#		carp "Translation key '$trKey' not found.";
+		vlog 1, "Translation key '$trKey' not found.";
 		$formatStr = $trOrig;
 	}
 	return sprintf($formatStr, @_);
