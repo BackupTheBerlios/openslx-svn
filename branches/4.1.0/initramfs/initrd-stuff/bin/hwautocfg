@@ -231,7 +231,7 @@ done
 ( hwsetup -n -v > /tmp/hwsetup.info && echo "hwsetup" > /tmp/hwrun1 ) &
 ( for mod in usbcore uhci-hcd ohci-hcd usbhid; do
   modprobe -q $mod 2>/dev/null
-  usleep 5
+  usleep 5000
 done; ) &
 return 0
 }
@@ -243,7 +243,7 @@ nwmod () {
   echo "** loading all defined network adaptor modules at $(sysup)"
 for mod in ${NWMODULES}; do
   modprobe ${MODPRV} $mod || error "$init_errnwad"
-  usleep 5
+  usleep 5000
 done
 return 0
 }
@@ -280,7 +280,7 @@ if [ -n "${SLOWHWSETUP}" ] ; then
   modwaittime=${SLOWHWSETUP}
   [ $DEBUGLEVEL -eq 21 ] && echo "** set modwaittime to ${SLOWHWSETUP}ms"
 else
-  modwaittime=50
+  modwaittime=5000
 fi
 [ $DEBUGLEVEL -eq 21 ] && echo "** 1st hwdetection finished at $(sysup)"
 # load ide drivers first, takes a while to initialize
@@ -390,7 +390,7 @@ cat /tmp/hwsetup.info| while read line ; do
     if ! strinstr " ${driver} " "${driverlist}"; then
       strinstr "Card:" "${driver}" || strinstr "ps/2" "${driver}" || {
         modprobe ${MODPRV} ${driver} &
-        usleep 5; }
+        usleep 5000; }
       driverlist="${driverlist} ${driver}"
     fi
   fi
@@ -402,9 +402,9 @@ done ) &
 [ $DEBUGLEVEL -eq 21 ] && echo "** starting hdd stuff at $(sysup)"
 if [ "${disk}" = "yes" ] ; then
 for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
-    sed -n -e '/device:/p' | sed -e 's/device: //') ; do
-  fdisk -l /dev/$hd| sed -n "/^\/dev\//p" > /tmp/hd_part
-  for hdpartnr in $(cat /tmp/hd_part | \
+    sed -n -e '/device:/p'|sed -e 's/device: //') ; do
+  /mnt/sbin/fdisk -l /dev/$hd|sed -n "/^\/dev\//p" > /tmp/hd_part
+  for hdpartnr in $(cat /tmp/hd_part| \
       sed -n -e "/ 82 /p"|sed -e "s/[[:space:]].*//") ; do
     echo -e "$hdpartnr\tswap\t\tswap\t\tdefaults\t 0 0" >> /tmp/fstab
   done
