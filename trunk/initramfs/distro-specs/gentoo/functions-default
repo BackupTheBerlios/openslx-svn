@@ -282,10 +282,8 @@ testmkd /mnt/${kdmrcdir}
 
 # setting the path for kdmrc-file 
 # FIXME: hack - there is no other way in gentoo?!?
-# FIXME: only if user wants kdm...
-sed -e 's,\(save_options .*\)"$,\1 -- -config /var/lib/openslx/themes/displaymanager/kdmrc",g'\
+sed -e 's,\(PIDFILE:.*\)|| \\$,\1 -- -config /var/lib/openslx/themes/displaymanager/kdmrc || \\,g'\
     -i /mnt/etc/init.d/xdm
-
 
 # write configuration file - NOT using general config in /etc/functions
 ##config_kdm_template
@@ -315,7 +313,7 @@ Setup=/usr/kde/3.5/share/config/kdm/Xsetup
 Startup=/usr/kde/3.5/share/config/kdm/Xstartup
 Reset=/usr/kde/3.5/share/config/kdm/Xreset
 Session=/usr/kde/3.5/share/config/kdm/Xsession
-AllowRootLogin=false
+AllowRootLogin=true
 AllowNullPasswd=false
 AllowShutdown=Root
 SessionsDirs=/etc/X11/sessions,/usr/share/xsessions

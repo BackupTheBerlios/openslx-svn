@@ -1,3 +1,7 @@
+# SOURCE: 
+# mirror://gentoo/hwdata-gentoo-0.3.tar.bz2
+#    http://dev.gentoo.org/~wolf31o2/sources/hwdata-gentoo/hwdata-gentoo-0.3.tar.bz2
+#
 0x0000	0x0000	"snd-cs46xx"	"Card without SSID set"
 0x0001	0x1002	"bttv"	"ATI Technologies Inc.|TV Wonder"
 0x0001	0x1461	"bttv"	"AVerMedia|TVPhone98"

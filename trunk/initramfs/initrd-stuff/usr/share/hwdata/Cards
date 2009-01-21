@@ -2245,6 +2245,9 @@ DRIVER radeon
 NAME ATI Radeon X800XT
 DRIVER radeon
 
+NAME ATI Radeon (fglrx)
+DRIVER fglrx
+
 #NAME ATI Radeon Xpress 200
 #DRIVER fglrx # radeon leads to  black screen ?!?
 
@@ -3234,6 +3237,7 @@ NOCLOCKPROBE
 NAME NVIDIA GeForce
 CHIPSET GeForce
 DRIVER nv
+#DRIVER nvidia
 NOCLOCKPROBE
 
 NAME ELSA VICTORY ERAZOR
