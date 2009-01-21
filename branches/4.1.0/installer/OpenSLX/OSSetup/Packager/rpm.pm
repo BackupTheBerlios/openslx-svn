@@ -104,3 +104,4 @@ sub getInstalledPackages
 	return split "\n", $pkgList;
 }
 
+1;
