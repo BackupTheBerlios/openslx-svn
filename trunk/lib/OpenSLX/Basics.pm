@@ -91,7 +91,7 @@ my $translations;
 	'mirrors-to-try-count'               => '20',
 	'mirrors-to-use-count'               => '5',
 	'ossetup-max-try-count'              => '5',
-	'pxe-theme'                          => 'openslx',
+	'pxe-theme'                          => undef,
 	'pxe-theme-menu-margin'              => '9',
 );
 chomp($openslxConfig{'locale-charmap'});
