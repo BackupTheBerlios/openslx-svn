@@ -182,11 +182,11 @@ fi
 #############################################################################
 # definition of wlan interface name and wireless connect
 wlanlinksetup () {
-if=$(iwconfig 2>/dev/null|sed -n "/ESSID:/p"|sed "s/    .*//")
+local wlanif=$(iwconfig 2>/dev/null|sed -n "/ESSID:/p"|sed "s/    .*//")
 if [ -n "$if" ] ; then
-  ip link set dev $if up
-  if iwconfig $if mode managed essid "${essid}"; then
-    nwif=$if
+  ip link set dev ${wlanif} up
+  if iwconfig ${wlanif} mode managed essid "${essid}"; then
+    nwif=${wlanif}
   else
     error "$init_nowlan"
   fi

@@ -220,17 +220,19 @@ line in $0\n#nfsroot=\"${nfsserver}:${nfspath}\"\n" >> /etc/machine-setup
         ;;
         aoe)
           echo "Not implemented yet"
+          bldmod=
         ;;
         iscsi)
           echo "Not implemented yet"
+          bldmod=
           #iscsiserver=$(uri_token $rootfs server)
           #iscsiport=$(uri_token $rootfs port)
           #iscsitarget=$(uri_token $rootfs path)
         ;;
-        device)
+        lbdev)
           # use a local device for mounting root block device with given
           # filesystem, e.g. rootfs=device://sda2/squashfs
-          bldmod=""
+          bldmod="sata_sil sd_mod"
           blddev=$(uri_token $rootfs server)
           bldfst=$(uri_token $rootfs path)
           bldfst=${bldfst#/*}
@@ -306,7 +308,7 @@ export LOGFILE
 if [ "${DEBUGLEVEL}" -gt 0 -a "${DEBUGLEVEL}" != 8 ] ; then
   # if LOGFILE should be used within initial ramdisk add '/mnt' in front
   # of the variable
-  LOGFILE="/var/log/dxs-boot.log"
+  LOGFILE="/var/log/slx-boot.log"
   echo "1 4 1 7" >/proc/sys/kernel/printk
   [ "${DEBUGLEVEL}" -ge 2 ] && MODPRV="-v"
   [ "${DEBUGLEVEL}" -gt 3 -a "${DEBUGLEVEL}" -le 10 ] && {
@@ -327,6 +329,8 @@ fi
 # for multiple ethernet interfaces (not implemented yet)
 hwautocfg nwmod
 if [ -n "${essid}" ] ; then
+  # WLAN setup will most probably change the network interface name stored in
+  # nwif (to wlan0 or something like that)
   wlanlinksetup
   #echo "Starting shell for testing of WLAN setup procedure"
   #/bin/ash
@@ -389,22 +393,24 @@ sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup
 # ... or via tftp file get (in background)
 [ -n "$file" ] && fileget &
 
-# if root filesystem should be imported via (d) network block device
+# if root filesystem should be imported via local or a network block device
 if [ -n "${bldmod}" ] ; then
-  # load block device driver if needed
-  modprobe ${MODPRV} ${bldmod} || error "$init_errbld"
+  # load block device driver(s) if needed
+  for module in ${bldmod} ; do
+    modprobe ${MODPRV} ${module} || error "$init_errbld"
+  done
   [ -x /bin/mdev ] && mdev -s
   [ -z "$bldrfst" ] && bldrfst=squashfs
   bldhost=$(checkip $bldhost)
   if [ $DEBUGLEVEL -eq 20 ] ; then
     echo "** starting setup of ${bldmod} at $(sysup)"
   else
-    echo "Diskless client using ${bldmod} on $bldhost:$bldport with $bldrfst"
+    echo "Stateless client using ${bldmod} on $bldhost:$bldport with $bldrfst"
   fi
   # fixme: check for fs in /proc/filesystems before trying to load the module
-  modprobe -a ${MODPRV} ${bldrfst} || error "$init_errbld" nonfatal
+  modprobe ${MODPRV} ${bldrfst} || error "$init_errbld" nonfatal
 
-  case "${bldmod}" in
+  case "${srvproto}" in
     # network block device present in standard kernel
     nbd)
       RDEV=/dev/nbd0
@@ -471,8 +477,9 @@ if [ -n "${bldmod}" ] ; then
       echo noop > /sys/block/dnbd0/queue/scheduler
       echo 0 > /sys/block/dnbd0/queue/read_ahead_kb
       ;;
-    device)
-      # using clients local disk (partition is to be specified)
+    lbdev)
+      # using clients local block device (disk partition is to be specified)
+      echo "B: /dev/$blddev"
       RDEV=/dev/$blddev
       ;;
   esac
@@ -504,12 +511,12 @@ if [ -n "${bldmod}" ] ; then
     # use normal UnionFS behaviour because rootfs is not NFS
     unset nfsro
   fi
-  # finally mount the block device
-  for i in 1 50 100 200 400 1000 ; do
+  # finally mount the configured network/local block device
+  for i in 0 5000 20000 100000 500000 1000000 ; do
     usleep $i
     mount -n -t $bldrfst -o $RWRO $RDEV /mnt 2>/dev/null && break
   done
-  [ $DEBUGLEVEL -eq 20 ] && echo "** finished nw blockdev stuff at $(sysup)"
+  [ $DEBUGLEVEL -eq 20 ] && echo "** finished blockdev setup stuff at $(sysup)"
 elif [ -n ${iscsiserver} ] ; then
   [ $DEBUGLEVEL -eq 20 ] && echo "** started setting up iSCSI initiator at \
 $(sysup)"

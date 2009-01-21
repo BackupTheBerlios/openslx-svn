@@ -594,6 +594,10 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
           modcp ${ROOTDIR}/$mod ${INSTDIR}/${mod%/*} ${ROOTDIR}
         done
       ;;
+      # for unsupported WLAN devices
+      ndiswrapper)
+        cp -a ${ROOTDIR}/etc/ndiswrapper ${INSTDIR}/etc
+      ;;
       nfs)
         # create directory structure for modules needed and copy them
         # to the proper place (as expected by modprobe/modules.dep)
@@ -634,6 +638,13 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
       ;;
       tpm)
         # tpm module stuff
+      ;;
+      sata_sil|sata_nv|sata_via)
+        # serial ata local disk support
+        mkdir -p ${ddirprefix}/drivers/scsi ${ddirprefix}/drivers/ata
+        cp ${rdirprefix}/drivers/scsi/{scsi,sd}_mod.ko \
+          ${ddirprefix}/drivers/scsi
+        cp ${rdirprefix}/drivers/ata/libata.ko ${ddirprefix}/drivers/ata
       ;;
     esac
   fi
