@@ -488,7 +488,8 @@ waitfor /tmp/ldap-done 10000 || error "$error_errlcfg" nonfatal
 # concatenate the different files now into the central config file, order
 # matters - ldap data has highest priority
 if ! test -f /tmp/cfgcomplete ; then
-  for config in /tmp/confviadhcp /tmp/confviafile /tmp/confvialdap
+  for config in /etc/initramfs-setup /tmp/confviadhcp /tmp/confviafile \
+  	            /tmp/confvialdap
     do test -f $config && cat $config >> /etc/machine-setup
   done
 # check again and replace @@@serverip@@@
