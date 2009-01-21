@@ -17,13 +17,23 @@ header() {
 # check needed things for installation
 precheck() {
   # check if running as root
+  if [ "`id -u`" != "0" ]; then
+    echo "\nYou don't have the needed permission. Please rerun as root user!\n"
+    exit 1
+  fi
+  
+  # check for existing programs:
+  # rsync (server-side)
+  which rsync >/dev/null
+  if [ $? != 0 ] ; then
+    echo "\nYou need to install rsync on server side before installing!\n"
+    exit 1
+  fi
+  
+  # ssh, rsync (referenz-system-side) -> not possible in precheck
 
-  # check for existing programs: 
-    # rsync (server-side) -> which
-    # ssh, rsync (referenz-system-side) -> not possible in precheck
-
-    # nfs-kernel-server, atftpd 
-    #  -> not needed for installation
+  # nfs-kernel-server, atftpd 
+  #  -> not needed for installation
 }
 
 
@@ -33,52 +43,52 @@ ask() {
   echo "$1"
   echo -n "* [ $3 ] "
   read userinput
-  if [ -z $userinput ] ; then
+  if [ -z "$userinput" ] ; then
       local back=$3
   else
-      local back=$userinput
+      local back="$userinput"
   fi
-  {!2}=$back
+  eval "$2=\"$back\""
   echo "$2=\"$back\"" >> .config
 }
 
 distro_check() {
   case "${!1}" in
     Debian*|debian*|Sarge*|sarge*)
-      {!1}=debian
+      eval "$1=\"debian\""
       case "${!2}" in
         Sarge*|sarge*|3.1*|*)
-          {!2}=3.1
+          eval "$2=\"3.1\""
         ;;
       esac
     ;;
     Ubuntu*|ubuntu*)
-      {!1}=ubuntu
+      eval "$1=\"ubuntu\""
       case "${!2}" in
         Breezy*|breezy*|*)
-          {!2}=5.10
+          eval "$2=\"5.10\""
         ;;
       esac
       ;;
     Gentoo*|gentoo*)
-      {!1}=gentoo
+      eval "$1=\"gentoo\""
       case "${!2}" in
         2005*|*)
-          {!2}=2005.1
+          eval "$2=\"2005.1\""
         ;;
       esac
     ;;
     SuSE*|suse*|Suse*|SuSe*|SUSE*|*)
-      {!1}=suse
+      eval "$1=\"suse\""
       case "${!2}" in
         9*)
-          {!2}=9.3
+          eval "$2=\"9.3\""
         ;;
         10.0)
-          {!2}=10.0
+          eval "$2=\"10.0\""
         ;;
         10*)
-          {!2}=10.1
+          eval "$2=\"10.0\""
         ;;
       esac
     ;;
@@ -204,7 +214,7 @@ setup_server () {
 
 
 create_initrd() {
-
+  # mkdxsinitrd
 }
 
 
