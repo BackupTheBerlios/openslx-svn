@@ -15,7 +15,7 @@
 SLX_SYSTEM_NAME=$1
 test "$2" && \
 	SLX_OSSETUP_MODE=$2 ||
-	SLX_OSSETUP_MODE="install"
+	SLX_OSSETUP_MODE="bootstrap"
 
 PATH="/sbin:/bin:/usr/bin:/usr/sbin"
 
@@ -638,12 +638,13 @@ function slxossetup()
 		META_PACKAGER="${SLX_SYSTEM_BASENAME}"
 
 	case "${SLX_OSSETUP_MODE}" in
-		install) slxossetup_busybox ;;
+		bootstrap) slxossetup_busybox ;;
 		package-source) setup_package_sources ;;
+		install-selection) install_slxselection ;;
 	esac
 }
 
 case "${SLX_OSSETUP_MODE}" in
-	install|package-source) slxossetup ;;
-	*) echo "Usage: $0 system-name [install]" ;;
+	bootstrap|package-source|install-selection) slxossetup ;;
+	*) echo "Usage: $0 system-name [bootstrap|package-source|install-selection]" ;;
 esac
