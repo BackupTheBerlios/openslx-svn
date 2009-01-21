@@ -87,8 +87,9 @@ init_errsw="  For some reason the software configuration  $init_errcfg"
 init_wait="  Waited $i ticks to unmount kernel module directory ..."
 init_errumnt="  Unmount of the kernel modules directory \
 failed for some reason. Some\n  modprobe still active!?"
-init_erritab="  The file /etc/inittab does not exist or \
-is no regular one. It is needed\n  for the bootup procedure to follow."
+init_erritab="  The file /etc/inittab does not exist or is no regular one. It \
+is needed\n  for the bootup procedure to follow. If upstart is used instead no \
+inittab\n  is needed any more, but a proper configured events.d."
 init_errsys="  Unmount of the kernel sys directory \
 failed for some\nreason.  You will get some error messages that some files \
 could not be\n  removed."

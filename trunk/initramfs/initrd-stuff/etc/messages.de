@@ -13,65 +13,70 @@
 # bootup (within initialramfs) for OpenSLX linux diskless clients version 4
 # this file could be used for localization of error messages 
 
-# messages from (slx) init
-init_errmsg="Die ,,functions''-Datei beinhaltet viele Funktionen \
-der SLX Skripte. Ohne diese\nwird das Init-Skript nicht funktionieren."
-init_mff="Die Haupt \$init_errmsg"
-init_dff="Die Distro \$init_errmsg"
-init_dscf="Die Distributions-spezifische Konfigurationsdatei wurde nicht gefunden."
-init_sscf="Die SLX Konfigurations-Variablen wurden nicht gefunden. 
-Bitte stellen sie die SLX Konfigurations-Datei zur Verfügung."
+# messages from (slx) init / Fehlermeldungen des SLX init
+init_errmsg="  ,,functions''-Datei beinhaltet viele Funktionen \
+der SLX Skripte. Ohne diese\n  wird das Init-Skript nicht funktionieren."
+init_mff="  Die Haupt $init_errmsg"
+init_dff="  Die Distro $init_errmsg"
+init_dscf="  Die Distributions-spezifische Konfigurationsdatei \
+(/etc/sysconfig/config) wurde nicht gefunden."
+init_sscf="  Die SLX Konfigurations-Variablen wurden nicht gefunden. 
+Bitte stellen Sie die\n  SLX Konfigurations-Datei zur Verfügung."
 init_noeth="  Konnte die Netzwerk-Schnittstelle nicht konfigurieren (eth0).\
- Bitte prüfe, ob das geeigneten kernel-Modul vorhanden ist."
+ Bitte prüfen,\n  ob das geeignete kernel-Modul vorhanden ist."
 init_errip="  Konnte die Grund-Funktionalität nicht einrichten, \
-da keine IP-Konfigurationen vorhanden sind. Sie \
-könnten diese Informationen über die Kernel-Command-Line\n\
- durch die Einstellung 'ipappend 1' in pxelinux.cfg/*\
- oder einfach dhcp\n  oder ldap aktivieren. \
+da keine IP-Konfigurationen\n  vorhanden sind. Sie könnten diese \
+Informationen über die Kernel-Command-Line\n  durch die Einstellung \
+'ipappend 1' in pxelinux.cfg/* oder einfach dhcp\n  oder ldap aktivieren. \
 Sie werden durch Token ('ldap' oder 'dhcp')  in den Kernel Start Optionen aktiviert."
 init_errldap="  Konnte nicht wenigstens die Grund-Funktionalität einrichten, \
-da keine IP-Konfigurationen vorhanden sind.\
-Achtung - ldap arbeitet nur in Kombination mit ipappend o.ä. oder dhcp!" \
-init_errnwad=" Konnte die Netzwerk-Adapter, die durch den mkdxsinitrd-Aufruf\
- definiert wurden, nicht laden.\
- Bitte wiederholt aufrufen und die passenden Module auflisten (ohne .ko)."
+da keine IP-Konfigurationen\n  vorhanden sind. Achtung - ldap arbeitet nur in \
+Kombination mit ipappend o.ä. oder dhcp!"
+init_errnwad="  Konnte die Netzwerk-Adapter, die durch den slx/mkramfs bzw. \
+mkdxsinitrd-Aufruf definiert\n  wurden, nicht laden. Bitte erneut aufrufen \
+und die passenden Module auflisten\n  (ohne Endung .ko)."
 init_errdhcp="  Keine komplette IP-Konfiguration über DHCP bekommen. \
-Eventuell sollten Sie\n über die Kernel Start Optionen einen\
- Hersteller Code ID (vendor code identifier) (VCI=vci) hinzufügen."
-init_errnbd="  Konnte nicht das Modul \
-${NBD}.ko laden. Es wird gebraucht, wenn Sie vorhaben, \
-das Netzwerk Block Gerät (network block device) (D)NBD \
-für den Klienten ls Wurzel-Dateisystem zu gebrauchen."
-init_nbdcl="  Konnte den Network Block Geräte-Klient nicht starten. \
-Kann das Wurzel-Dateisystem nicht einhängen."
-init_nbddev="  Aus irgendeinem Grund ist /dev/${NBD}0 nie \
-erschienen.\n  Sie sollten ihr udev-System nach Listen von statischen Geräten\
- untersuchen."
+Eventuell sollten Sie\n über die Kernel Start Optionen eine Hersteller Code \
+ID (vendor code identifier)\n  (VCI=vci) hinzufügen."
+init_errnbd="  Konnte nicht das Modul ${NBD}.ko laden. Es wird gebraucht, \
+wenn Sie vorhaben, das\n  Netzwerk Block Gerät (network block device) (D)NBD \
+für den Klienten als Wurzel-Dateisystem zu verwenden."
+init_nbdcl="  Konnte den Network Block Geräte-Dienst nicht starten und damit \
+das Wurzel-Dateisystem\n  nicht einhängen."
+init_nbddev="  Aus irgendeinem Grund ist /dev/${NBD}0 nie erschienen. Sie \
+sollten ihr udev-System\n  nach Listen von statischen Geräten untersuchen."
 init_moddir="  Das angeforderte Modul-Verzeichnis existiert nicht. Das könnte \
-bedeuten:\n  * Der Kernel wurde erneuert ohne einen neuen Aufruf von mkdxsinitrd.\n\
-  * Das eingehängte Dateisystem beinhaltet das Modul-Verzeichnis überhaupt nicht.\n\
-  Sie sollten die Liste der eingehängten Dateisysteme prüfen und wenn /mnt \n\
-  nicht leer ist, 'ls /mnt/lib/modules' ausführen."
-init_loadufs="  Laden von UnionFS schlug fehl - entweder das Modul nicht präsent oder\
- \n es passt nicht zum laufenden Kernel. Wenn Sie diese Meldung nicht sehen wollen,\
-\n  entfernen Sie den Token 'unionfs' von den Kernel Start Optionen."
+bedeuten:\n  * Der Kernel wurde ausgetauscht/erneuert ohne einen neuen Aufruf \
+von slxmkramfs oder\n  mkdxsinitrd.\n  * Das eingehängte Dateisystem \
+beinhaltet das Modul-Verzeichnis überhaupt nicht.\n    Sie sollten die Liste \
+der eingehängten Dateisysteme prüfen und wenn /mnt\n    nicht leer ist, \
+'ls /mnt/lib/modules' ausführen."
+init_loadufs="  Laden von UnionFS schlug fehl - entweder das Modul nicht \
+vorhanden oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese Meldung \
+nicht sehen wollen,\n  entfernen Sie das Token 'unionfs' von den Kernel Start \
+Optionen."
 init_loadcow="  Laden von Copy On Write (COW - Spezielles Block Gerät) Modul \
 schlug fehl -\n  entweder das Modul nicht präsent oder es passt nicht zum \
-laufenden\n Kernel. Wenn Sie diese Meldung nicht sehen wollen, entfernen sie den Token \
-'cowloop' von den Kernel Start Optionen."
+laufenden\n Kernel. Wenn Sie diese Meldung nicht sehen wollen, entfernen sie \
+das Token 'cowloop' aus den Kernel Start Optionen."
 init_cownonbd="  Laden des cow Moduls ist sinnlos, wenn kein Netzwerk Block \
-Gerät benutzt wird oder\n  UnionFS als Lese- Schreib-Schicht spezifiziert wurde. Entferne \
-das UnionFS Token von\n  den Kernel Start Optionen wenn cowloop stattdessen verwendet werden soll."
-init_nfs="  Einhängen des Wurzel Dateisystems über NFS wurde angefordert durch die Kernel Start Optionen,\
-\naber schlug fehl. Die folgenden Gründe könnten verantwortlich sein:\n\
-* Kein nfs.ko Modul konnte geladen werden und keine NFS Unterstützung war präsent im\n\
-laufenden Kernel - siehe Fehlermeldungen darüber.\n\
+Gerät benutzt wird oder\n  UnionFS als Lese- Schreib-Schicht spezifiziert \
+wurde. Entfernen Sie das UnionFS Token aus\n  den Kernel Start Optionen wenn \
+cowloop stattdessen verwendet werden soll."
+init_nfs="  Einhängen des Wurzel Dateisystems über NFS wurde angefordert \
+durch die Kernel Start Optionen,\n  aber schlug fehl. Die folgenden Gründe \
+könnten verantwortlich sein:\n\
+* Kein nfs.ko (und weitere dafür benötigte) Modul konnte geladen werden und \
+keine NFS Unterstützung war im\n  laufenden Kernel vorhanden - siehe \
+Fehlermeldungen darüber.\n\
 * Sie versuchten, einen falschen Pfad einzuhängen ($nfsroot).\n\
-* Kein NFS-Server läuft oder Sie haben nicht die Berechtigungen dazu."
+* Kein NFS-Server läuft oder Sie haben nicht die Zugriffsberechtigungen auf \
+diesen."
 init_ldcfg=" Starte ldconfig - auszuschalten mit der Kernel Start Option\
-'noldsc'.\n  Eventuell sollten Sie zusätzliche Bibliothekspfade zu ld.so.conf hinzufügen."
+'noldsc'.\n  Eventuell sollten Sie zusätzliche Bibliothekspfade zu ld.so.conf \
+hinzufügen."
 init_errlog="  Konnte die Log-Datei Konfiguration nicht anlegen in \
-/etc/${D_SYSCONFDIR}. Das\n  könnte schwerwiegende Fehler andeuten."
+/etc/${D_SYSCONFDIR}. Das\n  könnte auf schwerwiegende Fehler hindeuten."
 init_fstab="Das Erzeugen von /etc/fstab im Wurzel-Dateisystem des Klienten schlug fehl.\n\
   Die Abwesenheit dieser Datei könnte unvorhergesehenes Verhalten von mount-Befehlen\n\
   verursachen."

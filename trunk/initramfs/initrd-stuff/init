@@ -632,7 +632,7 @@ done
 
 [ $i -gt 1000 ] && error "$init_errumnt"
 # check for inittab file (might fail for new style init -> upstart)
-test -f /mnt/etc/inittab || error "$init_erritab"
+test -f /mnt/etc/inittab || test -d /mnt/etc/event.d || error "$init_erritab"
 # close runlevel script for stuff to execute during early bootup
 d_mkrlscript close boot.ld ""
 # put /tmp into stage4 mtab and add stuff to stage4 fstab
