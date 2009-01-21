@@ -195,7 +195,8 @@ if [ ${nosplash} = 0 ]; then
   D_INITSCRIPTS="${D_INITSCRIPTS} splashy.stop"
   d_mkrlscript init splashy.stop "Stopping Splashy ..."
   echo -e "\t/var/lib/openslx/bin/splashy_update exit 2>/dev/null
-    \tkillall -9 splashy" >>/mnt/etc/${D_INITDIR}/splashy.stop
+    \tkillall -9 splashy\n\trm -f /var/lib/openslx/bin/splashy*" \
+    >>/mnt/etc/${D_INITDIR}/splashy.stop
   d_mkrlscript close splashy.stop ""
 fi
 
@@ -445,7 +446,7 @@ testmkd /mnt/var/lib/openslx/themes/displaymanager
 testmkd /mnt/var/lib/openslx/bin
 [ -d /usr/share/themes/displaymanager ] && \
   cp -a /usr/share/themes/displaymanager /mnt/var/lib/openslx/themes
-[ -d /etc/splashy ] && ( cp -a /etc/splashy /mnt/etc; \
+[ -d /etc/splashy -a ${nosplash} = 0 ] && ( cp -a /etc/splashy /mnt/etc; \
   cp -a /bin/splashy* /mnt/var/lib/openslx/bin )
 
 #############################################################################

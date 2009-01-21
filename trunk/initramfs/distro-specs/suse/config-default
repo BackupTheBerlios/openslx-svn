@@ -34,7 +34,7 @@
 # during client bootup, path and file relative to /etc
 
 D_SYSCONFDIR=/sysconfig
-D_ETCEXCL="opt/gnome/gconf/*\n*.old\n*-\n*.rpmorig\n*.rpmnew\n\
+D_ETCEXCL="*.old\n*-\n*.rpmorig\n*.rpmnew\n\
 *.YaST2save\netc/autoinstall\nlogrotate*\nbootloader\n*~\n\
 *.SuSEconfig.saved\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
 X11/xdm/pixmaps\n*.rpmsave\ndhclient*script\nxorg.conf.*"
