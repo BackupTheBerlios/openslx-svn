@@ -356,7 +356,7 @@ function install_slxselection()
 		yum|*fedora*)
 			: ${SLX_STAGE1_INSTALL_OPTIONS:=-y}
 			cp -p /proc/cpuinfo "${SLX_STAGE1_PATH}/proc/cpuinfo"
-			chroot "${SLX_STAGE1_PATH}" yum ${SLX_STAGE1_INSTALL_OPTIONS} install ${packagelist}
+			LC_ALL=POSIX chroot "${SLX_STAGE1_PATH}" yum ${SLX_STAGE1_INSTALL_OPTIONS} install ${packagelist}
 			rm "${SLX_STAGE1_PATH}/proc/cpuinfo"
 		;;
 	esac
