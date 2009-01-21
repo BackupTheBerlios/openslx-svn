@@ -19,6 +19,12 @@ test "$2" && \
 
 PATH="/sbin:/bin:/usr/bin:/usr/sbin"
 
+function ErrorMsg()
+{
+	echo "$0: $2"
+	exit $1
+}
+
 if test -z "${SLX_SYSTEM_BASENAME}"; then
 	echo "$0: Error, <system-name> not provided! "
 	exit 1
@@ -30,6 +36,8 @@ for dir in . ${SLX_CONFIG_PATH}; do
 		break
 	fi
 done
+test -z "${SLX_SYSTEM_CONFIG_PATH}" && \
+	ErrorMsg 1 "Error, system named ${SLX_SYSTEM_BASENAME} not found in systems sub directory of . nor ${SLX_CONFIG_PATH} "
 
 for dir in ${SLX_CONFIG_PATH} .; do
 	for file in settings.default settings.local; do
@@ -46,12 +54,6 @@ for suffix in "" local; do
 	test -f "${SLX_SYSTEM_CONFIG_PATH}/settings${suffix:+.$suffix}" && \
 		. "${SLX_SYSTEM_CONFIG_PATH}/settings${suffix:+.$suffix}"
 done
-
-function ErrorMsg()
-{
-	echo "$0: $2"
-	exit $1
-}
 
 function setup_busybox_init()
 {
