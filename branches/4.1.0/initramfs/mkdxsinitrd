@@ -216,11 +216,8 @@ copy_distro_stuff() {
 # copy kernel modules even if links (first parameter is source, second
 # destination and third source prefix)
 modcp () {
-local tmpval
 if [ -L $1 ] ; then
-  tmpval=$(ls -la $1)
-  tmpval=${tmpval#*-> }
-  cp $3/$tmpval $2
+  cp $3/$(readlink $1) $2
 else
   cp $1 $2
 fi
