@@ -120,12 +120,12 @@ sub parseKeyValueArgs
             die _tr("value specification %s has unknown format, expected <key>=<value>\n",
                     $param);
         }
-        my $key = $1;
+        my $key = lc($1);
         my $value = $2;
         if (!grep { $_ eq $key } @$allowedKeys) {
             die _tr("unknown attribute '%s' specified for %s\n", $key, $table);
         }
-        $dataHash{$1} = $2;
+        $dataHash{$key} = $value;
     }
     return \%dataHash;
 }
@@ -249,11 +249,18 @@ sub listVendorOSes
 
 sub addClientToConfigDB
 {
+	my $clientName = shift;
+
+	if (!length($clientName)) {
+		die _tr("you have to specify the name for the new client\n");
+	}
+
     my @clientKeys
 		= map { (/^(\w+)\W/) ? $1 : $_; }
 		  @{$DbSchema->{tables}->{client}};
 	push @clientKeys, 'systems';
     my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
+	$clientData->{name} = $clientName;
 
 	my @systemIDs;
 	if (exists $clientData->{systems}) {
@@ -270,9 +277,6 @@ sub addClientToConfigDB
 		delete $clientData->{systems};
 	}
 
-	if (!length($clientData->{name})) {
-		die _tr("you have to specify the name for the new client\n");
-	}
 	if (!length($clientData->{mac})) {
 		die _tr("you have to specify the MAC for the new client\n");
 	}
@@ -280,13 +284,17 @@ sub addClientToConfigDB
 		die _tr("unknown MAC-format given, expected something like '01:02:03:04:05:06'!\n");
 	}
 
-	if ($openslxDB->fetchClientByFilter({ 'name' => $clientData->{name} })) {
+	if ($openslxDB->fetchClientByFilter({ 'name' => $clientName })) {
 		die _tr("the client '%s' already exists in the DB, giving up!\n",
-				$clientData->{name});
+				$clientName);
+	}
+	if ($openslxDB->fetchClientByFilter({ 'mac' => $clientData->{mac} })) {
+		die _tr("a client with the MAC '%s' already exists in the DB, giving up!\n",
+				$clientData->{mac});
 	}
 	my $clientID = $openslxDB->addClient([$clientData]);
 	vlog 0, _tr("client '%s' has been successfully added to DB (ID=%s)\n",
-				$clientData->{name}, $clientID);
+				$clientName, $clientID);
 	if (defined @systemIDs) {
 		$openslxDB->addSystemIDsToClient($clientID, \@systemIDs);
 	}
@@ -297,17 +305,21 @@ sub addClientToConfigDB
 
 sub addSystemToConfigDB
 {
+	my $systemName = shift;
+
+	if (!length($systemName)) {
+        die _tr("you have to specify the name of the new system!\n");
+	}
+
     my @systemKeys
 		= map { (/^(\w+)\W/) ? $1 : $_; }
 		  @{$DbSchema->{tables}->{system}};
 	push @systemKeys, 'clients', 'export';
     my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
+	$systemData->{name} = $systemName;
 
-	if (!length($systemData->{name})) {
-        die _tr("you have to specify the name of the new system!\n");
-	}
 	if (!length($systemData->{export})) {
-		$systemData->{export} = $systemData->{name};
+		$systemData->{export} = $systemName;
 			# try falling back to given system name
 	}
     my $exportName = $systemData->{export};
@@ -334,13 +346,13 @@ sub addSystemToConfigDB
 		delete $systemData->{clients};
 	}
 
-	if ($openslxDB->fetchSystemByFilter({ 'name' => $systemData->{name} })) {
+	if ($openslxDB->fetchSystemByFilter({ 'name' => $systemName })) {
 		die _tr("the system '%s' already exists in the DB, giving up!\n",
-				$systemData->{name});
+				$systemName);
 	}
 	my $systemID = $openslxDB->addSystem([$systemData]);
 	vlog 0, _tr("system '%s' has been successfully added to DB (ID=%s)\n",
-				$systemData->{name}, $systemID);
+				$systemName, $systemID);
 	if (defined @clientIDs) {
 	    $openslxDB->addClientIDsToSystem($systemID, \@clientIDs);
 	}
@@ -351,20 +363,22 @@ sub addSystemToConfigDB
 
 sub changeClientInConfigDB
 {
+	my $clientName = shift;
+
+	if (!length($clientName)) {
+		die _tr("you have to specify the name for the client you'd like to change!\n");
+	}
+
     my @clientKeys
 		= map { (/^(\w+)\W/) ? $1 : $_; }
 		  @{$DbSchema->{tables}->{client}};
 	push @clientKeys, 'systems', 'add-systems', 'remove-systems';
     my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
 
-	if (!exists $clientData->{name}) {
-		die _tr("you have to specify the name for the client you'd like to change!\n");
-	}
-
-	my $client = $openslxDB->fetchClientByFilter({'name' => $clientData->{name}});
+	my $client = $openslxDB->fetchClientByFilter({'name' => $clientName});
 	if (!defined $client) {
 		die _tr("the client '%s' doesn't exists in the DB, giving up!\n",
-				$clientData->{name});
+				$clientName);
 	}
 
 	my @systemIDs;
@@ -414,8 +428,7 @@ sub changeClientInConfigDB
 	}
 
 	$openslxDB->changeClient($client->{id}, [$clientData]);
-	vlog 0, _tr("client '%s' has been successfully changed\n",
-				$clientData->{name});
+	vlog 0, _tr("client '%s' has been successfully changed\n", $clientName);
 	if (defined @systemIDs) {
 		$openslxDB->setSystemIDsOfClient($client->{id}, \@systemIDs);
 	}
@@ -426,20 +439,22 @@ sub changeClientInConfigDB
 
 sub changeSystemInConfigDB
 {
+	my $systemName = shift;
+
+	if (!length($systemName)) {
+		die _tr("you have to specify the name of the system you'd like to change!\n");
+	}
+
     my @systemKeys
 		= map { (/^(\w+)\W/) ? $1 : $_; }
 		  @{$DbSchema->{tables}->{system}};
 	push @systemKeys, 'clients', 'add-clients', 'remove-clients';
     my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
 
-	if (!exists $systemData->{name}) {
-		die _tr("you have to specify the name of the system you'd like to change!\n");
-	}
-
-	my $system = $openslxDB->fetchSystemByFilter({'name' => $systemData->{name}});
+	my $system = $openslxDB->fetchSystemByFilter({'name' => $systemName});
 	if (!defined $system) {
 		die _tr("the system '%s' doesn't exists in the DB, giving up!\n",
-				$systemData->{name});
+				$systemName);
 	}
 
 	my @clientIDs;
@@ -483,8 +498,7 @@ sub changeSystemInConfigDB
 		delete $systemData->{'remove-clients'};
 	}
 	$openslxDB->changeSystem($system->{id}, [$systemData]);
-	vlog 0, _tr("system '%s' has been successfully changed\n",
-				$systemData->{name});
+	vlog 0, _tr("system '%s' has been successfully changed\n", $systemName);
 	if (defined @clientIDs) {
 	    $openslxDB->setClientIDsOfSystem($system->{id}, \@clientIDs);
 	}
@@ -495,44 +509,48 @@ sub changeSystemInConfigDB
 
 sub removeClientFromConfigDB
 {
-    my $clientData = parseKeyValueArgs(['name'], 'client', @_);
+	my $clientName = shift;
 
-	if (!length($clientData->{name})) {
+	if (!length($clientName)) {
 		die _tr("you have to specify the name of the client you'd like to remove!\n");
 	}
 
-	my $client = $openslxDB->fetchClientByFilter({'name' => $clientData->{name}});
+    my $clientData = parseKeyValueArgs(['name'], 'client', @_);
+
+	my $client = $openslxDB->fetchClientByFilter({'name' => $clientName});
 	if (!defined $client) {
 		die _tr("the client '%s' doesn't exists in the DB, giving up!\n",
-				$clientData->{name});
+				$clientName);
 	}
 	if ($client->{id} == 0) {
 		die _tr("you can't remove the default-client!\n");
 	}
 	$openslxDB->removeClient($client->{id});
 	vlog 0, _tr("client '%s' has been successfully removed from DB\n",
-				$clientData->{name});
+				$clientName);
 }
 
 sub removeSystemFromConfigDB
 {
-    my $systemData = parseKeyValueArgs(['name'], 'system', @_);
+	my $systemName = shift;
 
-	if (!length($systemData->{name})) {
+	if (!length($systemName)) {
 		die _tr("you have to specify the name of the system you'd like to remove!\n");
 	}
 
-	my $system = $openslxDB->fetchSystemByFilter({'name' => $systemData->{name}});
+    my $systemData = parseKeyValueArgs(['name'], 'system', @_);
+
+	my $system = $openslxDB->fetchSystemByFilter({'name' => $systemName});
 	if (!defined $system) {
 		die _tr("the system '%s' doesn't exists in the DB, giving up!\n",
-				$systemData->{name});
+				$systemName);
 	}
 	if ($system->{id} == 0) {
 		die _tr("you can't remove the default-client!\n");
 	}
 	$openslxDB->removeSystem($system->{id});
 	vlog 0, _tr("system '%s' has been successfully removed from DB\n",
-				$systemData->{name});
+				$systemName);
 }
 
 __END__
@@ -556,21 +574,21 @@ slxconfig [options] <action> <key-value-pairs>
 
 =over 8
 
-=item B<<     add-client name=<client-name> mac=<MAC> [<key>=<value> ...] >>
+=item B<<     add-client <client-name> mac=<MAC> [<key>=<value> ...] >>
 
 adds a new client to the config-DB
 
-=item B<<     add-system name=<system-name> [export=<export-name>] \ >>
+=item B<<     add-system <system-name> [export=<export-name>] \ >>
 
 =item B<<                <key>=<value> ...] >>
 
 adds a new system to the config-DB
 
-=item B<<     change-client name=<client-name> [<key>=<value> ...] >>
+=item B<<     change-client <client-name> [<key>=<value> ...] >>
 
 changes the data of an existing system in the config-DB
 
-=item B<<     change-system name=<system-name> [<key>=<value> ...] >>
+=item B<<     change-system <system-name> [<key>=<value> ...] >>
 
 changes the data of an exiisting system in the config-DB
 
@@ -591,11 +609,11 @@ criteria)
 
 lists all vendor-OSes in config-DB (optionally matching given criteria)
 
-=item B<<     remove-client name=<client-name> >>
+=item B<<     remove-client <client-name> >>
 
 removes a client from the config-DB
 
-=item B<<     remove-system name=<system-name> >>
+=item B<<     remove-system <system-name> >>
 
 removes a system from the config-DB
 
@@ -659,13 +677,13 @@ lists the exports of type 'nfs'
 
 =over 8
 
-=item B<<     slxconfig add-system name=debian-4.0 >>
+=item B<<     slxconfig add-system debian-4.0 >>
 
 adds a new system named 'debian-4.0' to the config-DB that will
 use the export of the same name. No client will be associated
 with this system, yet.
 
-=item B<<     slxconfig add-system name=suse-10.1 export-name=suse-10.1-kde \ >>
+=item B<<     slxconfig add-system suse-10.1 export-name=suse-10.1-kde \ >>
 
 =item B<<                          clients=PC131,PC132,PC133 \ >>
 
@@ -682,13 +700,13 @@ associated with this system (so they can boot it).
 
 =over 8
 
-=item B<<     slxconfig add-client name=vmware-1 mac=01:02:03:04:05:06 >>
+=item B<<     slxconfig add-client vmware-1 mac=01:02:03:04:05:06 >>
 
 adds a new client named 'vmware-1', being identified by the MAC
 '01:02:03:04:05:06' to the config-DB. No system will be
 associated with this client, yet (so it can't boot anything).
 
-=item B<<     slxconfig add-client name=vmware-1 mac=01:02:03:04:05:06 \ >>
+=item B<<     slxconfig add-client vmware-1 mac=01:02:03:04:05:06 \ >>
 
 =item B<<                          systems=suse-10.1,debian-4.0 \ >>
 
@@ -708,17 +726,17 @@ During boot, the X-server will not be started by this client
 
 =over 8
 
-=item B<<     slxconfig change-system name=suse-10.1 attr_start_xdmcp=gnome >>
+=item B<<     slxconfig change-system suse-10.1 attr_start_xdmcp=gnome >>
 
 will change the system named 'suse-10.1' such that it will use
 the GNOME session manager.
 
-=item B<<     slxconfig change-system name=suse-10.1 add-clients=vmware-1 >>
+=item B<<     slxconfig change-system suse-10.1 add-clients=vmware-1 >>
 
 will associate the client 'vmware-1' with the system named
 'suse-10.1'.
 
-=item B<<     slxconfig change-system name=suse-10.1 remove-clients=vmware-1 >>
+=item B<<     slxconfig change-system suse-10.1 remove-clients=vmware-1 >>
 
 will remove the client 'vmware-1' from the system named
 'suse-10.1'.
@@ -729,17 +747,17 @@ will remove the client 'vmware-1' from the system named
 
 =over 8
 
-=item B<<     slxconfig change-client name=PC131 attr_start_snmp=yes >>
+=item B<<     slxconfig change-client PC131 attr_start_snmp=yes >>
 
 will change the client named 'PC131' such that it will start
 the SNMP daemon on all systems that it boots.
 
-=item B<<     slxconfig change-client name=PC131 add-systems=Debian-4.0 >>
+=item B<<     slxconfig change-client PC131 add-systems=Debian-4.0 >>
 
 will associate the system 'Debian-4.0' with the client named
 'PC131'.
 
-=item B<<     slxconfig change-client name=PC131 remove-systems=Debian-4.0 >>
+=item B<<     slxconfig change-client PC131 remove-systems=Debian-4.0 >>
 
 will remove the system 'Debian-4.0' from the client named
 'PC131'.
@@ -750,9 +768,9 @@ will remove the system 'Debian-4.0' from the client named
 
 =over 8
 
-=item B<<     slxconfig remove-system name=<system-name> >>
+=item B<<     slxconfig remove-system <system-name> >>
 
-=item B<<     slxconfig remove-client name=<client-name> >>
+=item B<<     slxconfig remove-client <client-name> >>
 
 removes the system/client with the given name.
 
