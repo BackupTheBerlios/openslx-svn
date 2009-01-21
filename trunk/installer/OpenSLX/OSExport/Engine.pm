@@ -284,7 +284,12 @@ sub _addExportToConfigDB
 		);
 
 		$self->{exporter}->showExportConfigInfo($export) if $id;
+	}
 
+	my $system = $openslxDB->fetchSystemByFilter({
+		'name' => $self->{'export-name'},
+	});
+	if (!defined $system) {
 		# now create a default system for that export, using the standard kernel:
 		system("slxconfig add-system $self->{'export-name'}");
 	}
