@@ -36,6 +36,7 @@ use OpenSLX::Basics;
 use OpenSLX::ConfigDB;
 use OpenSLX::ConfigFolder;
 use OpenSLX::DBSchema;
+use OpenSLX::Utils;
 
 my (
 	$helpReq,
@@ -105,22 +106,24 @@ if ($action =~ m[^add-system$]i) {
 } elsif ($action =~ m[^remove-system$]i) {
     removeSystemFromConfigDB(@ARGV);
 } else {
-	print STDERR _tr("You need to specify exactly one of these actions:
-	add-client
-	add-system
-	change-client
-	change-system
-	list-client
-	list-export
-	list-system
-	list-vendoros
-	remove-client
-	remove-system
-	search-client
-	search-export
-	search-system
-	search-vendoros
-Try '%s --help' for more info.\n", $0);
+	vlog(0, _tr(unshiftHereDoc(<<'	END-OF-HERE'), $0));
+		You need to specify exactly one of these actions:
+			add-client
+			add-system
+			change-client
+			change-system
+			list-client
+			list-export
+			list-system
+			list-vendoros
+			remove-client
+			remove-system
+			search-client
+			search-export
+			search-system
+			search-vendoros
+		Try '%s --help' for more info.
+	END-OF-HERE
 }
 
 $openslxDB->disconnect();

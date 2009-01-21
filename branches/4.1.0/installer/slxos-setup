@@ -33,6 +33,7 @@ use lib "$FindBin::RealBin/../config-db";
 
 use OpenSLX::Basics;
 use OpenSLX::OSSetup::Engine;
+use OpenSLX::Utils;
 
 my (
 	$helpReq,
@@ -155,23 +156,28 @@ if ($action =~ m[^import]i) {
 				   sort keys %supportedDistros);
 } elsif ($action =~ m[^list-in]i) {
 	print _tr("List of installed vendor-OSes:\n");
-	print join('', map {
-					my $vendorOS = $_;
-					$vendorOS =~ s[^.+/][];
-					"\t$vendorOS\n";
-				   }
-				   sort <$openslxConfig{'private-path'}/stage1/*>);
+	print join(
+		'', 
+		map {
+			my $vendorOS = $_;
+			$vendorOS =~ s[^.+/][];
+			"\t$vendorOS\n";
+		}
+		sort glob("$openslxConfig{'private-path'}/stage1/*")
+	);
 } else {
-	print STDERR _tr("You need to specify exactly one action:
-	clone
-	import-into-db
-	install
-	list-supported
-	list-installed
-	remove
-	shell
-	update
-Try '%s --help' for more info.\n", $0);
+	vlog(0, _tr(unshiftHereDoc(<<'	END-OF-HERE'), $0));
+		You need to specify exactly one action:
+			clone
+			import-into-db
+			install
+			list-supported
+			list-installed
+			remove
+			shell
+			update
+		Try '%s --help' for more info.
+	END-OF-HERE
 }
 
 
