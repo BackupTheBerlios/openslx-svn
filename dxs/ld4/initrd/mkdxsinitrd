@@ -59,7 +59,7 @@ local FPTB=`which $1`
 if [ -z ${FPTB} ] ; then
   return 1;
 else
-  cp ${boot_dir}/${FPTB} ${INSTDIR}/${DEST}
+  cp ${ROOTDIR}/${FPTB} ${INSTDIR}/${DEST}
 fi
 }
 
@@ -187,10 +187,10 @@ resolve_modules() {
 #########################################################################
 # End of function declaration
 
-while getopts :hgMRk:i:m:r:d:o:s:Sut:D:I:V:a: a ; do
+while getopts :hgMRk:i:m:r:o:s:Sut:d:D:I:V:a: a ; do
     case $a in
 	\:|\?)	case $OPTARG in
-		k)  echo "-k requires kernel list parameter"
+		k)  echo "-k requires kernel version parameter"
 		    ;;
 		i)  echo "-i requires initrd list parameter"
 		    ;;
@@ -198,12 +198,12 @@ while getopts :hgMRk:i:m:r:d:o:s:Sut:D:I:V:a: a ; do
 		    ;;
 		r)  echo "-r requires root dir parameter"
 		    ;;
-		d)  echo "-d requires root device parameter"
-		    ;;
 		s)  echo "-s requires image size(s)"
 		    ;;
 		t)  echo "-t requires tmp dir parameter"
 		    ;;
+                d)  echo "-d requires linux distribution name (debian, ubuntu, suse-9.3, suse-10.1)"
+                    ;;
 		D)  echo "-D requires dhcp interface parameter"
 		    ;;
 		I)  echo "-I requires network interface parameter"
@@ -220,21 +220,20 @@ while getopts :hgMRk:i:m:r:d:o:s:Sut:D:I:V:a: a ; do
 	    ;;
 	g)  use_glibc=1
 	    ;;
-	k)  kernel_images=$OPTARG
+	k)  KERNELVER=$OPTARG
 	    ;;
 	i)  initrd_images=$OPTARG
 	    ;;
 	m)  modules=$OPTARG
 	    modules_set=1
 	    ;;
-	r)  root_dir=$OPTARG
-	    ;;
-	d)  rootdev=$OPTARG
+	r)  ROOTDIR=$OPTARG
 	    ;;
 	s)  splash=$OPTARG
 	    ;;
 	t)  tmp_dir=$OPTARG
 	    ;;
+        d)  DISTRO=$OPTARG
 	D)  interface=$OPTARG
 	    interface=${interface#/dev/}
 	    use_dhcp=1
@@ -271,10 +270,44 @@ mkdir -p ${INSTDIR}/usr/share
 mkdir -p ${INSTDIR}/etc/sysconfig
 
 # source configuration file for the distribution used
-DISTRO=debian
-case "${DISTRO}.${DISVER}" in
+#DISTRO=debian
+
+if [ -z $DISTRO ] ; then
+  for i in ${ROOTDIR}/bin/lsb_release ${ROOTDIR}/usr/bin/lsb_release; do
+    if [ -e $i ] ; then
+      DISTRO = `. $i -a | grep "Distributor" | sed "s/.*\t//"`
+      DISTRO_VER = `. $i -a | grep "Release:" | sed "s/.*\t//"`
+      break
+    fi
+  done
+fi
+
+if [ -z $DISTRO ] ; then
+  if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
+    DISTRO = suse
+    DISTRO_VER = grep "VERSION" /etc/SuSE-release | sed "s/.*= //"
+  fi
+fi
+
+if [ -z $DISTRO ] ; then
+  if [ -e ${ROOTDIR}/etc/debian-version ] ; then
+    DISTRO = debian
+    DISTRO_VER = `cat ${ROOTDIR}/etc/debian-version`
+  fi
+fi
+
+
+case "${DISTRO}" in
   SuSE*|suse*|Suse*|SuSe*)
-	DISTRO=suse-10.0
+        case "${DISTRO_VER}" in
+          9*)
+            DISTRO=suse-9.3
+            ;;
+          *)
+            DISTRO=suse-10.0
+            ;;
+          esac
+
         # hotplug/udev style and stuff
 	cp -a /etc/udev /etc/hotplug ${INSTDIR}/etc
 	#cp -a /etc/sysconfig/{hardware,network}  ${INSTDIR}/etc/sysconfig
@@ -282,10 +315,14 @@ case "${DISTRO}.${DISVER}" in
   Debian*|debian*|Sarge*|sarge*)
 	DISTRO=debian
 	;;
+  Ubuntu*|ubuntu*)
+        DISTRO=ubuntu
+        ;;
   Gentoo*|gentoo*)
 	DISTRO=gentoo
 	;;
 esac
+
 cp distro-specs/${DISTRO}/config ${INSTDIR}/etc/sysconfig
 cp distro-specs/${DISTRO}/functions-${DISTRO} ${INSTDIR}/etc/distro-functions
 cp -a distro-specs/${DISTRO}/files ${INSTDIR}/etc/sysconfig
