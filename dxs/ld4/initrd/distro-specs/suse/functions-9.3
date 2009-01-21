@@ -187,7 +187,7 @@ cp /etc/displaymanager /mnt/etc/sysconfig/displaymanager
 # start the display manager as early as possible, but avoid that is
 # started twice during bootup - quickhack ...
 #ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/S01xdm
-ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/K20xdm
+ln -sf ../xdm /mnt/etc/${D_INITDIR}/rc5.d/K20xdm
 echo -e "\t/etc/init.d/xdm start >${LOGFILE} 2>&1\n\t( sleep 60; \
 ln -sf ../xdm /etc/${D_INITDIR}/rc5.d/S01xdm \
 >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld

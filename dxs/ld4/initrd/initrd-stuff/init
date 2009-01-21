@@ -20,7 +20,7 @@ functionality. Without this\ninit script will not run."
 specific configuration file could not be found" && exit 1 )
 
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
-export date="08-02-2006"
+export date="12-02-2006"
 
 export DEBUGLEVEL=0
 export KERNEL="@@@KERNVER@@@"

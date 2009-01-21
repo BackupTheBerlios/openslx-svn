@@ -231,7 +231,8 @@ if [ -z "$INSTDIR" ] ; then
 fi
 
 rm -rf ${INSTDIR}
-mkdir -p ${INSTDIR}/{dev,proc,tmp,mnt,root,bin,sbin,sys,lib}
+mkdir -p ${INSTDIR}/{dev,proc,tmp,mnt,root,bin,sys,lib}
+ln -s /bin ${INSTDIR}/sbin
 mkdir -p ${INSTDIR}/usr/share
 # needed for KNOPPIX hwsetup not to confuse with ${D_SYSCONFDIR}
 mkdir -p ${INSTDIR}/etc/sysconfig
