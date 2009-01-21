@@ -526,6 +526,24 @@ echo "finished" > /tmp/ldcfg
 
 #######################################################################
 # configuration via ldap
+# get_timeranges: helper function for ldapconf, retrieving timeranges
+# of machineconfig-objects under search base $1 (Host,Group,Default)
+get_timeranges(){
+trquery=`ldapsearch -x -H ldap://$ldapserver -b $1 -D $user -w $pwd -LLL \
+"(objectclass=machineconfig)" Timerange|sed -n '/Tim*/p'|sed 's/TimeRange: /#/'`
+}
+# matching_timerange: helper function for ldapconf to get "most 
+# specific timerange" matching actual time
+matching_timerange(){
+}
+# get_machineconfig: helper function for ldapconf, writing machine
+# config data of one timerange $tr into file "tmp/confvialdap/$tr"
+get_machineconfig(){
+ldapsearch -x -H ldap://$ldapserver -b $1 -D $user -w $pwd -LLL "(&(objectclass
+ =machineconfig)(timerange=$tr))"|sed '/dn:/d'|sed '/ou=/d'|sed '/dc=/d'|\
+ sed '/objectC*/d'|sed '/Tim*/d'|sed '/cn:/d'|sed '/desc*/d'|sed 's/: /=/g' \
+ |sed 's/-/_/g'` > tmp/confvialdap/$tr
+}
 ldapconf () {
 local ldapserver=$1
 error "$error_ldapcfg"
