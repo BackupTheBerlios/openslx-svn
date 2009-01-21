@@ -195,6 +195,24 @@ else
 fi
 }
 #############################################################################
+# replacement for which command to find executables inside stage4 rootfs
+binfinder()
+{
+local program="$1"
+local s4path
+local notfound=1
+for s4path in bin sbin usr/bin usr/sbin usr/local/bin \
+               usr/local/sbin usr/bin/X11; do
+  if [ -f "/mnt/$s4path/$program" ] && \
+     [ -x "/mnt/$s4path/$program" ]; then
+    printf '%s\n' "/$s4path/$program"
+    notfound=0
+    break
+  fi
+done
+return $notfound
+}
+#############################################################################
 # disk formatter and mounter. some proper error message output should be
 # added
 diskfm () {

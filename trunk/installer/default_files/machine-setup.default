@@ -1,4 +1,5 @@
-# machine-setup
+# machine-setup - this file is obsolete! Present for reference on 
+# variable configuration only ...
 #
 #### default file, please modify, rename it to machine-setup and copy it
 #### to a proper location, like /var/opt/openslx/config/default/initramfs
@@ -110,11 +111,6 @@ vmware="no"
 start_xdmcp="kdm"
 # for kdm/gdm - enable shutdown option on login screen "user/root/none"
 dm_allow_shutdown="user"
-
-# try to start g/k/xdm with X as fast as possible late_dm="no"
-# if there are problems with key, console etc. set late_dm="yes" - adds
-# few seconds to graphical login delay (default setting)
-#late_dm="no"
 
 # should Xorg/XFree server be started or some special windowmanager be run
 # in kiosk mode e.g. start_x="kde"

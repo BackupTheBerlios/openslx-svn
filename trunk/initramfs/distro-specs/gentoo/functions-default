@@ -239,12 +239,7 @@ config_dm_entry () {
 local displmng=$1
 if [ -f /mnt/etc/${D_INITDIR}/xdm ] ; then
   config_rc_entry "DISPLAYMANAGER" "${displmng}"
-  if [ "x$late_dm" = "xyes" ] ; then
-    rllinker xdm
-  else
-    D_INITSCRIPTS="${D_INITSCRIPTS} ${displmng}"
-    rllinker xdm "${lastinit}"
-  fi
+  rllinker xdm
 else
   error "" nonfatal
 fi
