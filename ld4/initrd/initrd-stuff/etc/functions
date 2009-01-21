@@ -55,6 +55,8 @@ if [ -n "$2" ] ; then
   [ "$DEBUGLEVEL" -gt 2 ] && usleep 20
 else
   echo -e "${error_msg}${e_msg}${error_shell}"
+  # load usb modules to have keyboard enabled
+  modprobe -a usbcore uhci-hcd ohci-hcd usbhid 2>&1 >/dev/null
   /bin/sh
   echo -n "Reboot now? [y]"
   read input

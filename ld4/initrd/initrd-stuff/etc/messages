@@ -7,7 +7,7 @@
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.0.3e
+# Version:      0.0.3f
 
 # messages from init
 init_errmsg="functions file contains a lot of script \
@@ -114,8 +114,8 @@ $error_dhcp"
 error_ldapcfg="  The configuration via ldap is not implemented yet."
 
 # messages from distro functions
-df_errumod="    Failed to load the \"unix\" module. \
-  Problems with Hardware detection\nwill probably arise"
+df_errumod="    Failed to load the \"unix\" module. Problems with Hardware \
+detection\nwill probably arise."
 df_errserv="seems not to be installed or start script is not available\n  \
 so requesting the start of service make no sense. Please disable service\n  \
 or install the files needed."
@@ -125,15 +125,18 @@ expected."
 df_errcron="  The cron start script $df_errserv" 
 df_errsysl="  The syslog start script $df_errserv"
 df_errsshd="  The sshd start script $df_errserv"
+df_erryp="  The NIS client $df_errserv"
 df_erramnt="  Automounter $df_errserv"
-df_erradir="  Only one directory level is allowed and the directory should \
-exist (on\n  the server) or should be creatable (UnionFS)."
-df_erratpld="  Only toplevel directories \
-are allowed as mount points for user home\n  directories. Please set the \
-variable \${automnt_dir} appropriately in\n  machine-setup file."
+df_errnsc="  Name Service caching deamon $df_errserv\n This service might \
+be useful to take load from a ldap user directory."
 
 # messages from servconfig
 scfg_nfs="  Mount of some NFS source failed ..."
+scfg_erradir="  Only one directory level is allowed and the directory should \
+exist (on\n  the server) or should be creatable (UnionFS)."
+scfg_erratpld="  Only toplevel directories \
+are allowed as mount points for user home\n  directories. Please set the \
+variable \${automnt_dir} appropriately in\n  machine-setup file."
 
 # messages from hwautocfg
 hcfg_xcfg="  You should define the variable D_XF86CONFFILE in yours distro \
