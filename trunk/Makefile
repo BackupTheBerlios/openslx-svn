@@ -51,6 +51,7 @@ install:
 	@cp -a initrd/distro-specs/* /usr/share/openslx/distro-specs
 	@cp installer/default_files/machine-setup.default \
 	  /usr/share/openslx/templates
+	@cp -a installer/default_files/tftpboot /usr/share/openslx/
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
 extend the\n# capabilities at the beginning of the initramfs (stage3). \
 The toolset is rather\n# restricted and you have to keep in mind that \
@@ -62,8 +63,8 @@ toolset is rather\n# restricted and you have to keep in mind that stage4 \
 rootfs has the\n# prefix '/mnt'." \
 	  > /var/lib/openslx/config/default/initramfs/postinit.local
 	@chmod u+x /var/lib/openslx/config/default/initramfs/*init.local
-	@find /usr/share/openslx -regex ".*/\..*" -exec rm -rf {} 2>/dev/null \;
-# fixme: for some reason find works but produces error status!?
+	@find /usr/share/openslx -depth -regex ".*/\..*" \
+	  -exec rm -rf {} 2>/dev/null \;
 
 #uninstall:
 #	@echo -e "Uninstalling openslx.org project files but keeping configs \
