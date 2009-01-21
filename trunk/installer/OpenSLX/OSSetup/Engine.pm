@@ -345,7 +345,7 @@ sub cloneVendorOS
 
 	$self->_createVendorOSPath();
 
-	$self->clone_fetchSource($source);
+	$self->_clone_fetchSource($source);
 	if ($source ne $lastCloneSource) {
 		spitFile($cloneInfoFile, "source=$source\n");
 	}
@@ -1289,7 +1289,7 @@ sub _clone_fetchSource
 			$self->{'vendor-os-path'}
 		)
 	);
-	my $excludeIncludeList = $self->clone_determineIncludeExcludeList();
+	my $excludeIncludeList = $self->_clone_determineIncludeExcludeList();
 	vlog(1, "using exclude-include-filter:\n$excludeIncludeList\n");
 	my $rsyncCmd 
 		= "rsync -av --delete --exclude-from=- $source $self->{'vendor-os-path'}";
