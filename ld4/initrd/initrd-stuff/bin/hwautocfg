@@ -359,6 +359,12 @@ if [ -n "${PCMCIA}" ] ; then
   #echo "pcmcia=\"yes\"" > config
   modprobe ${MODPRV} ds
 fi
+# rerun the knoppix hardware autodetection tool for USB and ide devices
+# like dvd or harddisk - wait a few seconds so hopefully the ide driver
+# is initialized 
+test -f /proc/bus/usb/devices || mount -n -t usbfs usbfs /proc/bus/usb
+[ -n "$IDE" ] && modprobe -q ide_generic 2>/dev/null 
+usleep 10 && hwsetup -v > /tmp/hwsetup.info
 # remaining drivers listed in /tmp/hwsetup.info
 cat /tmp/hwsetup.info| while read LINE ; do
   if strinstr "driver:" "${LINE}"; then
@@ -371,12 +377,6 @@ cat /tmp/hwsetup.info| while read LINE ; do
     fi
   fi
 done
-# rerun the knoppix hardware autodetection tool for USB and ide devices
-# like dvd or harddisk - wait a few seconds so hopefully the ide driver
-# is initialized 
-test -f /proc/bus/usb/devices || mount -n -t usbfs usbfs /proc/bus/usb
-[ -n "$IDE" ] && modprobe -q ide_generic 2>/dev/null 
-usleep 10 && hwsetup -v > /tmp/hwsetup.info
 # check if USB mouse and/or keyboard is connected and remove usbhid if
 # not
 strinfile "genericwheelusb" /tmp/hwsetup.info || \
