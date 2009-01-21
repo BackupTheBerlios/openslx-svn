@@ -132,9 +132,8 @@ if (!$dryRun) {
 }
 my $tftpbootPath = "$openslxConfig{'public-path'}/tftpboot";
 if (!$dryRun) {
-	slxsystem("rm -rf $tftpbootPath/client-config/* $tftpbootPath/pxe/*");
-	slxsystem(
-		"mkdir -p $tftpbootPath/client-config $tftpbootPath/pxe/pxelinux.cfg");
+	slxsystem("rm -rf $tftpbootPath/*");
+	slxsystem("mkdir -p $tftpbootPath/client-config $tftpbootPath/pxelinux.cfg");
 	if (!-d $tftpbootPath) {
 		die _tr("Unable to create or access tftpboot-path '%s'!",
 			$tftpbootPath);
@@ -346,8 +345,8 @@ sub writePXEMenus
 {
 	my @infos = @_;
 
-	my $pxePath       = "$tftpbootPath/pxe";
-	my $pxeConfigPath = "$tftpbootPath/pxe/pxelinux.cfg";
+	my $pxePath       = "$tftpbootPath";
+	my $pxeConfigPath = "$tftpbootPath/pxelinux.cfg";
 
 	if (!-e "$pxePath/pxelinux.0") {
 		my $pxelinux0Path =
@@ -480,7 +479,7 @@ sub writeSystemPXEFiles
 	my $kernelFile = $info->{'kernel-file'};
 	my $kernelName = basename($kernelFile);
 
-	my $pxePath         = "$tftpbootPath/pxe";
+	my $pxePath         = "$tftpbootPath";
 	my $pxeVendorOSPath = "$pxePath/$info->{'vendor-os'}->{name}";
 	mkdir $pxeVendorOSPath unless -e $pxeVendorOSPath || $dryRun;
 
@@ -728,12 +727,12 @@ The following set of files will be created:
 =item B<Basic PXE Setup>
 
 The basic PXE files (F<menu.c32>, F<pxelinux.0>) will be copied into
-F<$SLX_PUBLIC_PATH/tftpboot/pxe> to make them available to any PXE-client via tftp.
+F<$SLX_PUBLIC_PATH/tftpboot> to make them available to any PXE-client via tftp.
 
 =item B<PXE Client Configurations>
 
 For each client, a PXE configuration file will be generated and written to
-F<$SLX_PUBLIC_PATH/tftpboot/pxe/pxelinux.cfg/01-<MAC-of-client>>. This file will
+F<$SLX_PUBLIC_PATH/tftpboot/pxelinux.cfg/01-<MAC-of-client>>. This file will
 contain information about the systems this client shall offer for booting.
 For each of these systems, the kernel cmdline options required for that
 particular system setup is specified (via PXE's APPEND option).
@@ -745,9 +744,9 @@ configuration file) will use the configuration from the default client
 =item B<System Kernels and Initialram-Filesystems>
 
 For each bootable system, that system's kernel will be copied to
-F<$SLX_PUBLIC_PATH/tftpboot/pxe/<vendor-os-name>/kernel and an OpenSLX-specific initramfs
+F<$SLX_PUBLIC_PATH/tftpboot/<vendor-os-name>/kernel and an OpenSLX-specific initramfs
 required for booting that particular system is generated (by means of
-slxmkramfs) and put into F<$SLX_PUBLIC_PATH/tftpboot/pxe/<vendor-os-name>/initramfs.
+slxmkramfs) and put into F<$SLX_PUBLIC_PATH/tftpboot/<vendor-os-name>/initramfs.
 
 These two files (kernel & initramfs) will be referenced by the PXE client
 configuration of all clients that offer this specific system for booting.
