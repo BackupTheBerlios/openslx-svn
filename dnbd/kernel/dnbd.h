@@ -8,6 +8,7 @@
 #include <linux/rbtree.h>
 #include <linux/jiffies.h>
 #include <linux/timer.h>
+#include <linux/version.h>
 
 #include "queue.h"
 #include "cache.h"

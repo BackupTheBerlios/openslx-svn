@@ -517,7 +517,11 @@ static int dnbd_tx_loop(void *data)
 
 		if (cached) {
 			if (!end_that_request_first(req, 1, cached)) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
+				end_that_request_last(req,1);
+#else
 				end_that_request_last(req);
+#endif
 			} else {
 				dnbd_enq_request(&dnbd->tx_queue, req, 1);
 			}
