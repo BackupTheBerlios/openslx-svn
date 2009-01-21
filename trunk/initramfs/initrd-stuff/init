@@ -242,7 +242,7 @@ line in $0\n#nfsroot=\"${nfsserver}:${nfspath}\"\n" >> /etc/machine-setup
         ;;
         lbdev)
           # use a local device for mounting root block device with given
-          # filesystem, e.g. rootfs=device://sda2/squashfs
+          # filesystem, e.g. rootfs=lbdev://sda2/squashfs
           bldmod="sata_sil sd_mod"
           blddev=$(uri_token $rootfs server)
           bldfst=$(uri_token $rootfs path)
@@ -297,7 +297,7 @@ EOF
 fi
 
 # check if at least one type of IP configuration is availabe
-if [ -n "$nodhcp" -a -z "$ldap" -a -z "$ipinfo" ] ; then
+if [ -n "$nodhcp" -a -z "$ldap" -a -z "$ipinfo" -a $srvproto = "lbdev" ]; then
   echo -e "# You did not specify any advanced configuration mode for your \
 clients. You\n# might want to add the token 'dhcp' for DHCP configuration, \
 'file(=source)'\n# for config file get via TFTP or 'ldap(=source)' for LDAP \
