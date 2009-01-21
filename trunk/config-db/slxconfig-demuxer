@@ -322,7 +322,8 @@ sub generateInitalRamFS
 			? "$ENV{SLX_TFTPBOOT_PATH}/"
 			: "";
 	# ...set kernel version...
-	$setup->{'kernel'} =~ m[-(.+)$];
+	my $kernelFile = readlink($setup->{'kernel-file'});
+	$kernelFile =~ m[-(.+)$];
 	$slxConf{'slxconf_kernver'} = $1;
 	# ...set distro version...
 	$slxConf{'slxconf_distro'} = $vendorOS->{'name'};
@@ -408,7 +409,7 @@ sub writeSystemConfigurations
 	foreach my $system (@systems) {
 		next 	unless $system->{id} > 0;
 
-		vlog 2, _tr('exporting system %d:%s', $system->{id}, $system->{name});
+		vlog 0, _tr('exporting system %d:%s', $system->{id}, $system->{name});
 		$systemConfCount++;
 
 		my $buildPath = "$tempPath/build";
