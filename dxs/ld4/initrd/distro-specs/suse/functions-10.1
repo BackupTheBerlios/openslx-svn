@@ -3,13 +3,13 @@
 #		changes should be done there, version specific changes for
 #		the 10.0 here.
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-02-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.1c
+# Version:      0.2.1d
 
 # distro specific stuff to initialize
 preinit () {
@@ -23,6 +23,10 @@ done
 echo -e "#!/bin/sh\n:" >/usr/sbin/alsactl
 chmod u+x /sbin/* /lib/udev/* /usr/sbin/*
 }
+postinit () {
+:
+}
+
 
 # udev service
 udev_hotplug () {

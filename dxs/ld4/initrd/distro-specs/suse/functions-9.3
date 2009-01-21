@@ -14,9 +14,15 @@
 
 # distro specific stuff to initialize
 preinit () {
-  # do nothing yet
-  :
+# do nothing yet
+:
 }
+postinit () {
+# for some reason the udev daemon does not create the needed device files
+udevstart
+}
+
+
 
 # udev/hotplug - auto device discovery service
 udev_hotplug () {

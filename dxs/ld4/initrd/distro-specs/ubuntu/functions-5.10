@@ -2,7 +2,7 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-02-2006
 #		Nico Dietrich
 #		Felix Endres
 #
@@ -19,6 +19,10 @@ preinit () {
   modprobe ${MODPRV} unix || error " Failed to load the \"unix\" module. \
   Problems with Hardware detection will probably arise"
 }
+preinit () {
+:
+}
+
 # AUS SuSE-9.3
 # udev/hotplug - auto device discovery service
 udev_hotplug () {

@@ -3,11 +3,11 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-02-2006
 #		Nico Dietrich
 #		Blub
 #
-# Version:      0.3.1a
+# Version:      0.3.1b
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 
@@ -386,14 +386,16 @@ mkdir -p ${INSTDIR}/var/lib/nfs/state
 # if nbd
 # cobi nbd-client bin
 if [ -n "${FSMODULES}" ] ; then
-  case "${FSMODULES}" in
-    *dnbd*)
+for i in ${FSMODULES}; do
+  case "$i" in
+    dnbd)
       cobi dnbd-client bin
     ;;
-    *nbd*)  
+    nbd)  
       cobi nbd-client bin
     ;;
   esac
+done
 fi
 
 # distro specific additional stuff

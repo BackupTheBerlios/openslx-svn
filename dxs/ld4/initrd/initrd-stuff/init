@@ -397,16 +397,17 @@ d_mkbootld close
 # IP configuration is made and should not be updated automatically, udevd
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null
-# unmount the bind mounted modules directory
 
 #bash
 
+# post init for some distro specific
+postinit
+
+# unmount the bind mounted modules directory
 for i in 0 40 100 200 300 500 800 1000 1200; do
   usleep $i && umount -n /lib/modules/${KERNEL} 2>/dev/null && break
   error "  Waited $i ticks to unmount kernel module directory ..." nonfatal
 done
-
-
 
 [ $i -gt 1000 ] && error "  Unmount of the kernel modules directory \
 failed for some reason. Some\n  modprobe still active!?"
