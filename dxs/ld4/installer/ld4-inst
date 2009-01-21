@@ -203,7 +203,7 @@ copy_system() {
   rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-${client_distro} ${rsyncsource} ${rootdir}
   # generate error message in case rsync didn't work and exit.
   
-  # mksquashfs (background process)   
+  # TODO: mksquashfs (background process)   
 }
 
 
@@ -245,8 +245,8 @@ setup_server () {
   cp -r default_files/tftpboot ${tftpbootdir}
   sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g;s,@@@pxe_passwd@@@,${pxe_passwd},g;s,@@@client_distro@@@,${client_distro},g;s,@@@client_distro_ver@@@,${client_distro_ver},g;s,@@@rootdir@@@,${rootdir},g" -i ${tftpbootdir}/pxelinux.cfg/default
 
-  
-  # make services start  -- do we really want to do this?
+  # TODO: create all kernel entries in default
+
 }
 
 
@@ -255,10 +255,11 @@ create_initrd() {
 
   # ugly workaround...
   cd ../initrd
+  
   # TODO: loop over chosen kernels -> mkdxsinitrd -k ... and -i ...
 
   ./mkdxsinitrd -r ${rootdir}
-  cd ../installer
+   cd -
 
   # generate links to kernels and initial ramdisks
   
@@ -279,6 +280,8 @@ footer() {
 
   # TODO: tell user things he's got to configure aftewards - point to README
   #  * in dhcpd.conf - put in clients mac and ip addresses
+  #  * make services start
+  
 }
 
 
@@ -288,6 +291,6 @@ header
 precheck #(run as root, rsync etc.)
 configure
 copy_system
-setup_server
 create_initrd
+setup_server
 footer
