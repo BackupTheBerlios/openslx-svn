@@ -375,7 +375,7 @@ if [ -z "${KEYTABLE}" ] ; then
 '${DEFKEYTABLE}' defined\nin $0."
   KEYTABLE=${DEFKEYTABLE}
 fi
-echo -e "#!/bin/sh\n# entry added by $0: $date" \
+echo -e "# entry added by $0: $date" \
   >>/mnt/etc/${INITDIR}/boot.ld
 echo -e "loadkeys -q ${KEYTABLE}\n" >>/mnt/etc/${INITDIR}/boot.ld
 [ -n "${CONSOLE_FONT}" ] && consolefont
