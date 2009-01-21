@@ -478,7 +478,13 @@ function slxossetup()
 		SLX_INST_ARCH=$( uname -m)
 		case "${SLX_INST_ARCH}" in
 			i*86) SLX_INST_ARCH="${X86_ARCH}" ;;
-			x86_64) SLX_INST_ARCH='x86_64' ;;
+			x86_64)
+				# Redefine SLX_INST_ARCH in the case of Debian
+				# based systems.
+				case "${SLX_SYSTEM_BASENAME}" in
+					*debian*|*ubuntu*) SLX_INST_ARCH='amd64' ;;
+				esac
+			;;
 			*)
 				ErrorMsg 1 "Unsupported machine hardware ${SLX_INST_ARCH}."
 			;;
