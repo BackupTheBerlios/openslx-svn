@@ -144,13 +144,21 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     noldsc)
       noldsc=yes;;
     # additional source to unify root filesystem with
-    union=*)
+    unionfs=*)
       unionfs=1
-      uniondirs=${opts#union=}
+      uniondirs=${opts#unionfs=}
     ;;
     # if unionfs should be used over the complete root filesystem
     unionfs)
       unionfs=1;;
+    # Same for AUFS
+    aufs=*)
+      aufs=1
+      uniondirs=${opts#aufs=}
+    ;;
+    # if unionfs should be used over the complete root filesystem
+    aufs)
+      aufs=1;;
     # if cowloop should be used, only ontop of network block device and in
     # combination with classical fs, like ext2 useful
     cowloop=*)
@@ -452,17 +460,27 @@ $(sysup)"
   hwautocfg main &
 fi
 
+union_type=""
 # try to use unionfs for rw access if available
-if [ -n "${unionfs}" -o -n "${union}" ] ; then
-  union_type=""
+if [ -n "${unionfs}" ]; then 
   modprobe ${MODPRV} unionfs  && union_type="unionfs"
-  modprobe ${MODPRV} aufs   && union_type="aufs"
   if [ -z "$union_type" ]; then 
 	error "$init_loadufs" nonfatal
 	unionfs="";
+	# if unionfs is not available, check for aufs and inform user
+        modprobe ${MODPRV} -n aufs && error $init_noufs_butaufs
   fi
 fi
-
+# try to use aufs for rw access if available
+if [ -n "${aufs}" ]; then 
+  modprobe ${MODPRV} aufs   && union_type="aufs"
+  if [ -z "$union_type" ]; then 
+	error "$init_loadaufs" nonfatal
+	aufs="";
+	# if aufs is not available, check for unionfs and inform user
+        modprobe ${MODPRV} -n unionfs && error $init_noaufs_butufs
+  fi
+fi
 # setup of client root filesystem dependent on the availability of UnionFS
 if [ -n "${unionfs}" ] ; then
   echo "Using UnionFS for rw access"

@@ -53,10 +53,20 @@ der eingehaengten Dateisysteme pruefen und wenn /mnt\n    nicht leer ist, \
 'ls /mnt/lib/modules' ausfuehren."
 init_loadunions="  Stapeln mehrerer Verzeichnisse nicht möglich, da kein UnionFS/AUFS \
 Modul geladen ist"
-init_loadufs="  Laden von UnionFS oder AUFS schlug fehl - entweder die Module sind \
-nicht vorhanden, oder\n  sie passen nicht zum laufenden Kernel. Wenn Sie diese Meldung \
+init_loadaufs="  Laden von AUFS schlug fehl - entweder das Modul ist \
+nicht vorhanden, oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese Meldung \
+nicht sehen wollen,\n  entfernen Sie das Token 'aufs' von den Kernel Start \
+Optionen."
+init_noaufs_butufs=" AUFS wurde als Unification FS angegeben, ist jedoch nicht \
+vorhanden. UnionFS steht aber scheinbar zu Verfügung. Wenn Sie dieses nutzen \
+möchten fügen Sie bitte 'unionfs' zu den Kernel Start Optionen hinzu"
+init_loadufs="  Laden von UnionFS schlug fehl - entweder das Modul ist \
+nicht vorhanden, oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese Meldung \
 nicht sehen wollen,\n  entfernen Sie das Token 'unionfs' von den Kernel Start \
 Optionen."
+init_noufs_butaufs=" UnionFS wurde als Unification FS angegeben, ist jedoch nicht \
+vorhanden. AUFS steht aber scheinbar zu Verfügung. Wenn Sie dieses nutzen \
+möchten fügen Sie bitte 'aufs' zu den Kernel Start Optionen hinzu"
 init_loadcow="  Laden von Copy On Write (COW - Spezielles Block Geraet) Modul \
 schlug fehl -\n  entweder das Modul nicht praesent oder es passt nicht zum \
 laufenden\n Kernel. Wenn Sie diese Meldung nicht sehen wollen, entfernen sie \
