@@ -47,7 +47,7 @@ if [ -f /mnt/etc/init.d/ntp ] ; then
       >>/mnt/etc/${D_INITDIR}/boot.ld
     echo -e "\tntpdate -s -b $ntp_servers >${LOGFILE} 2>&1 &" \
       >>/mnt/etc/${D_INITDIR}/boot.ld
-  else
+  elif [ "x$start_ntp" = "xyes" ] ; then
     rllinker "ntp" "$start" "$stop"
   fi
 fi
@@ -189,11 +189,12 @@ config_dm_entry yes
 config_gdm () {
 config_dm_entry yes
 testmkd /mnt/var/lib/gdm
+testmkd /mnt/var/log/gdm
 strinfile "gdm:" /mnt/etc/passwd || echo "gdm:x:50:15:Gnome Display Manager \
 Daemon:/var/lib/gdm:/bin/false" >>/mnt/etc/passwd
 # hack - gdm should be user 50 and shadow group 15
-chown 50:15 /mnt/var/lib/gdm
-chmod 0750 /mnt/var/lib/gdm
+chown 50:15 /mnt/var/lib/gdm /mnt/var/log/gdm
+chmod 0750 /mnt/var/lib/gdm /mnt/var/log/gdm
 xdmcp_hosts=`echo $x_display_manager|sed -e "s; ;,;"`
 if [ "${DEBUGLEVEL}" -gt 0 ] ; then
   debug="true"
@@ -348,7 +349,7 @@ if [ "x$start_dreshal" = "xyes" ]; then
     echo "messagebus:x:100:101:User for D-BUS:/var/run/dbus:/bin/false" \
       >> /mnt/etc/passwd
     testmkd /mnt/var/run/dbus
-    # chown 100:101 /mnt/var/run/dbus
+    chown 100:101 /mnt/var/run/dbus
     rllinker "dbus" "$start" "$stop"
   fi
   if [ -f /mnt/etc/init.d/resmgr ] ; then
@@ -361,6 +362,8 @@ if [ "x$start_dreshal" = "xyes" ]; then
     strinfile "haldaemon:" /mnt/etc/passwd || \
       echo "haldaemon:x:105:103:User for haldaemon:/var/run/hal:/bin/false" \
         >> /mnt/etc/passwd
+    testmkd /mnt/var/run/hal
+    chown 105:103 /mnt/var/run/hal
     start="0"`expr $start + 1`
     stop="0"`expr $start - 1`
     rllinker "hal" "$start" "$stop"
@@ -396,6 +399,13 @@ variable \${automnt_dir} appropriately in\n  machine-setup file." nonfatal
   cp /etc/autofs /mnt/etc/sysconfig/autofs
   config_portmap
   rllinker "autofs" "18" "04"
+fi
+}
+# start name service caching daemon
+config_nscd () {
+if [ -f /mnt/etc/init.d/nscd ] ; then
+  testmkd /mnt/var/run/nscd
+  rllinker "nscd" "02" "16"
 fi
 }
 

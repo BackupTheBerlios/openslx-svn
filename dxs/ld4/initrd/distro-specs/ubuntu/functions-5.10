@@ -227,3 +227,9 @@ from $0" >/mnt/etc/${D_INITDIR}/boot.ld
   ;;
 esac
 }
+
+# start name service caching daemon
+config_nscd () {
+:
+}
+

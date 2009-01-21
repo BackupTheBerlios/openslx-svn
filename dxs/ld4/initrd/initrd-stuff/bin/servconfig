@@ -4,13 +4,13 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 30-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-02-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.0.2b
+# Version:      0.0.2c
 
 # check for configuration files to source
 
@@ -181,6 +181,7 @@ if [ "x$start_x" != "xno" ] ; then
            /etc/X11/xdm \
            /etc/X11/sessions \
            /var/X11R6/bin \
+           /var/run/xdmctl \
            /tmp/.ICE-unix \
            /tmp/.X11-unix; do testmkd /mnt/$i; done
   chmod a+rwxt /mnt/tmp/.ICE-unix 
@@ -302,5 +303,9 @@ if [ "x$nis_domain" != "x" ] && [ "x$nis_servers" != "x" ] ; then
   # should be last in passwd file
   strinfile "+::::::" /mnt/etc/passwd || echo "+::::::" >>/mnt/etc/passwd
 fi
+
+#######################################################################
+# name service caching daemon if networked user database
+config_nscd
 
 echo "finished" > /tmp/svcfg

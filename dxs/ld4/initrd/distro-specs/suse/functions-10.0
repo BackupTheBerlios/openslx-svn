@@ -3,13 +3,13 @@
 #		changes should be done there, version specific changes for
 #		the 10.0 here.
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-02-2006
 #		Blabla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.1b
+# Version:      0.2.1c
 
 # acpi and powersave have changed
 config_acpi () {

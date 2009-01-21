@@ -273,13 +273,7 @@ configuration\n  file" nonfatal
 fi
 
 # USB core is needed for presence of /proc/bus/usb
-if [ -n "${UDEVD_EXPECTED_SEQNUM}" ] ; then
-  # if udevd is used usbfs is mounted automatically
-  modprobe ${MODPRV} usbcore &
-else
-  # mount usbfs after loading of module
-  ( modprobe ${MODPRV} usbcore && mount -n -t usbfs usbfs /proc/bus/usb ) &
-fi
+modprobe ${MODPRV} usbcore &
 
 # load kernel module for ps2 mice
 [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mouse/psmouse.ko ] && \
@@ -331,7 +325,7 @@ done
 # check for IDE/SCSI (SATA) - incomplete list
 for DRIVER in ata_piix sata_via; do
   strinfile " ${DRIVER}" /tmp/hwsetup.info && {
-    SCSIIDE="yes"
+    #SCSIIDE="yes"
     modprobe ${MODPRV} ${DRIVER} &
     DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
 done
@@ -365,7 +359,7 @@ for DRIVER in yenta_socket i82365 pd6729 tcic; do
     DRIVERLIST="${DRIVERLIST} ${DRIVER}"
     PCMCIA="yes"; }
 done
-if [ -n "PCMCIA" ] ; then
+if [ -n "${PCMCIA}" ] ; then
   #echo "pcmcia=\"yes\"" > config
   modprobe ${MODPRV} ds
 fi
@@ -384,19 +378,28 @@ done
 # rerun the knoppix hardware autodetection tool for USB and ide devices
 # like dvd or harddisk - wait a few seconds so hopefully the ide driver
 # is initialized 
-( usleep 10 && hwsetup -v > /tmp/hwsetup.info
+test -f /proc/bus/usb/devices || mount -n -t usbfs usbfs /proc/bus/usb
+usleep 10 && hwsetup -v > /tmp/hwsetup.info
 # check if USB mouse and/or keyboard is connected
-strinfile "genericwheelusb" /tmp/hwsetup.info && modprobe ${MODPRV} usbhid
+if strinfile "genericwheelusb" /tmp/hwsetup.info ; then
+  modprobe ${MODPRV} usbhid
+elif strinfile "keybdev" /tmp/hwsetup.info ; then
+  modprobe ${MODPRV} usbhid
+fi
+
 # fixme - usb keyboard??
 if [ -n "$IDE" ] ; then
-   strinfile " ZIP " /tmp/hwsetup.info && modprobe ${MODPRV} ide_floppy
+  # you might want to check /etc/sysconfig/floppy for more info
+  strinfile "ZIP" /tmp/hwsetup.info && modprobe ${MODPRV} ide_floppy
   strinfile "CDROM" /tmp/hwsetup.info && modprobe ${MODPRV} ide_cd
   strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} ide_disk &
 fi
-if [ -n "$SCSIIDE" ] ; then
+# not rather precise ...
+if strinfile "SCSI" /tmp/hwsetup.info ; then
   strinfile "CDROM" /tmp/hwsetup.info && modprobe -a ${MODPRV} sr_mod sg
   strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} sd_mod &
-fi )
+fi
+
 # cdrom/dvd und plattenkonfig. ergaenzen. Module sind hier geladen und
 # devices sind klar
 

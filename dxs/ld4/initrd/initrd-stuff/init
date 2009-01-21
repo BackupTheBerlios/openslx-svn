@@ -321,7 +321,7 @@ else
   # for tar exclude lists might be used, more difficult for cp
   cd /mnt
   tar -X /tmp/etc.exclude -cp etc/* | \
-    tar -xp -C ${RWDIR}>/dev/null ;
+    tar -xp -C ${RWDIR} 2>/dev/null ;
   cd /
   mount -n --bind ${RWDIR}/etc /mnt/etc
   mount -n --bind ${RWDIR}/var /mnt/var
@@ -362,7 +362,6 @@ usbfs\t\t/proc/bus/usb\tusbfs\t\tnoauto\t\t 0 0">/mnt/etc/fstab || \
   error "Failed to create /etc/fstab in the clients root filesystem. The\n\
   noexistence of the file might produce some unexpected behaviour of\n\
   mount commands."
-date
 # copy library cache if generated
 if [ -z "${NOLDSC}" ] ; then
   if waitfor /tmp/ldcfg 50000 ; then
@@ -389,7 +388,6 @@ of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
 # close runlevel script for stuff to execute during early bootup
 d_mkbootld close
-ash
 # IP configuration is made and should not be updated automatically, udevd
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null
