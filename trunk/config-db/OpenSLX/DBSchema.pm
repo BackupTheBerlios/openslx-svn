@@ -395,7 +395,6 @@ sub checkAndUpgradeDBSchemaIfNecessary
 			)
 		);
 		$self->_schemaUpgradeDBFrom($metaDB, $currVersion);
-		$metaDB->schemaSetDBVersion($DbSchema->{version});
 		vlog(1, _tr('upgrade done'));
 	} else {
 		vlog(1, _tr('DB matches current schema version (%s)', $currVersion));
@@ -436,7 +435,7 @@ sub _upgradeDBTo0_2
 	my $self   = shift;
 	my $metaDB = shift;
 
-	vlog(1, "upgrading schema version to 0.2 ...");
+	vlog(0, "upgrading schema version to 0.2");
 
 	# move attributes into separate tables ...
 	#
@@ -643,6 +642,8 @@ sub _upgradeDBTo0_2
 		]
 	);
 
+	$metaDB->schemaSetDBVersion(0.2);
+
 	return 1;
 }
 
@@ -651,7 +652,7 @@ sub _upgradeDBTo0_21
 	my $self   = shift;
 	my $metaDB = shift;
 
-	vlog(1, "upgrading schema version to 0.21 ...");
+	vlog(0, "upgrading schema version to 0.21");
 
 	# move attributes into separate tables ...
 	#
@@ -664,6 +665,8 @@ sub _upgradeDBTo0_21
 			'plugin_name:s.64',
 		]
 	);
+
+	$metaDB->schemaSetDBVersion(0.21);
 
 	return 1;
 }
