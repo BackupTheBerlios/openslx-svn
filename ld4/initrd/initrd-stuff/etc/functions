@@ -1,10 +1,10 @@
 # Description:  common function script for the configuration of
-#		linux diskless clients (included by init, hwautocfg,
-#		servconfig, ... within initial ramdisk) 
+#               linux diskless clients (included by init, hwautocfg,
+#               servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-07-2006
-#	 	Felix Endres, 30-04-2006
-#		Tobias Maier
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 10-08-2006
+#               Felix Endres, 30-04-2006
+#               Tobias Maier
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -381,23 +381,19 @@ if [ -n "$FILESRC" ] ; then
 else
   cfgdir="/tftpboot/client-config/"
   local tftpserver=$serverip
-  # try to get configuration files successively; start with first most 
-  # generic file (global default), then global client, then distro default
-  # last distro client ...
-  echo -e "\n## Configuration via fileget: Hierarchy is first most \
-generic file\n# (global default), then global client, then distro default \
-and as last\n# distro/client" >> /tmp/confviafile
+  # try to get configuration files successively; start with distro client
+  # and try last distro default ...
+  echo -e "\n## Configuration via fileget: Hierarchy is distro client \
+and as last\n# distro/default" >> /tmp/confviafile
   mac=$(echo $MAC|sed "s/:/-/g")
-  for cfgfile in $cfgdir/default $cfgdir/01-$mac \
-                 $cfgdir/$DISTRO/default $cfgdir/$DISTRO/01-$mac ; do
-    echo "# -> $cfgfile" >> /tmp/confviafile
+  for cfgfile in $cfgdir/$DISTRO/01-$mac $cfgdir/$DISTRO/default ; do
     if tftpget $cfgfile $tftpserver ; then
-      cat /tmp/$(basename $cfgfile) >> /tmp/confviafile
-    else
-      echo -e "# ... this file does not exist on server." >> /tmp/confviafile
+      : # unpack the tgz and distribute files
     fi
   done
 fi
+#echo "# -> $cfgfile" >> /tmp/confviafile
+#cat /tmp/$(basename $cfgfile) >> /tmp/confviafile
 echo "fileget via $srvproto finished" > /tmp/file-done
 }
 
