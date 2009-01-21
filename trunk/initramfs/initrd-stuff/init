@@ -193,10 +193,10 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       case $srvproto in
         nfs)
           # nfsroot consists now of two different parts
-          root_path=/$(uri_token $rootfs path)
+          nfspath=/$(uri_token $rootfs path)
           nfsserver=$(uri_token $rootfs server)
           echo -e "\n# nfs root information gotten via kernel command \
-line in $0\n#nfsroot=\"${nfsserver}:${root_path}\"\n" >> /etc/machine-setup
+line in $0\n#nfsroot=\"${nfsserver}:${nfspath}\"\n" >> /etc/machine-setup
         ;;
         *nbd)
           nbdmod=$srvproto
@@ -226,8 +226,6 @@ line in $0\n#nfsroot=\"${nfsserver}:${root_path}\"\n" >> /etc/machine-setup
     # deprecated: nfs server and path (will be removed soon)
     nfsroot=*)
       nfsroot=${opts#nfsroot=}
-      #root_path=
-      #nfsserver=
       echo -e "\n# nfs root information gotten via kernel command line in \n\
 $0\n# deprecated: please use rootfs=nfs://...\nnfsroot=\"${nfsroot}\"\n" \
 >> /etc/machine-setup
@@ -306,6 +304,10 @@ else
 fi
 # load network adaptor modules
 hwautocfg nwmod
+if [ -n "${essid}" ] ; then
+  echo "Starting shell for testing of WLAN setup procedure"
+  /bin/ash
+fi
 
 # set up loopback networking
 [ $DEBUGLEVEL -eq 20 ] && echo "** starting ip config at $(sysup)"
@@ -464,10 +466,18 @@ fi
 # call function for nfs mounts
 if [ -z "${nbdmod}" -a -z "${nbdserver}" ] ; then
   [ $DEBUGLEVEL -eq 20 ] && echo "** started nfs mount"
+  # read in extended machine-setup
   . /etc/machine-setup
-  # check if nfsserver is set as variable @@@serverip@@@
-  nfsserver=$(checkip $nfsserver)
-  nfsroot=${nfsserver}:${root_path}
+  # prefer nfsserver and nfspath from kernel commandline over the information
+  # gotten from dhcp server
+  if [ -n "${nfsserver}" -a -n "${nfspath}" ] ; then
+    # check if nfsserver is set as variable @@@serverip@@@
+    nfsserver=$(checkip $nfsserver)
+    nfsroot=${nfsserver}:${nfspath}
+  else
+    # the root_path should contain server ip and path in nfsroot notation
+    nfsroot=${root_path}
+  fi
   nfsmnt ${nfsroot} || error "$init_nfs"
   [ $DEBUGLEVEL -eq 20 ] && echo "** finished nfs mount at $(sysup)"
 fi
