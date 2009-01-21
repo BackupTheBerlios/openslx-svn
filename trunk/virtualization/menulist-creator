@@ -14,7 +14,7 @@
 ##   ${vmdir}/runscripts/$pool/*.vbox       virtualbox runscript 
 ##   ${vmdir}/xdialog-files/$pool/*.xdialog xdialog menu entrys 
 ##   ${vmdir}/xdmsession/$pool/*.desktop    .desktop files for xdm,
-##                                          can't avoid masses of them
+##                                          if xdm = true in xml
 ##   ${vmdir}/templates/runvmware-v2        image exec template script
 ################################################################################
 
@@ -191,7 +191,7 @@ for xml in *.xml;do
 
 
     # ... create desktopentry
-    if [ ${active} -eq 1 ]; then
+    if [ ${active} -eq 1 -a ${xdm} = "true"]; then
 
       # create desktopentry
       echo -e "\nCreating runfiles for ${image} and pool ${i}\n"
