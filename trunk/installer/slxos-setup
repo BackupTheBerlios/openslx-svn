@@ -80,12 +80,6 @@ if ($action !~ m[^clone|import-into-db|install|update$]i) {
 	pod2usage(2);
 }
 my $vendorOSName = $ARGV[1];
-if ($vendorOSName !~ m[^(\w+\-[\d.]+)(\-.+)?]) {
-	print STDERR _tr("Given vendor-OS has unknown format, expected '<name>-<release>[-<selection>]'\n");
-	pod2usage(2);
-}
-my $distroName = $1;
-my $selection = $2;
 
 # we chdir into the script's folder such that all relative paths have
 # a known starting point:
@@ -95,16 +89,16 @@ chdir($FindBin::RealBin)
 # create ossetup-engine for given distro and start it:
 my $engine = OpenSLX::OSSetup::Engine->new;
 if ($action =~ m[import]i) {
-	$engine->initialize($distroName, $selection, 0);
+	$engine->initialize($vendorOSName, 0, 'import');
 	if (!-e $engine->{'system-path'}) {
 		die _tr("'%s' doesn't exist, giving up!\n", $engine->{'system-path'});
 	}
 	$engine->addInstalledVendorOSToConfigDB();
 } elsif ($action =~ m[update]i) {
-	$engine->initialize($distroName, $selection, 0);
+	$engine->initialize($vendorOSName, 0, 'update');
 	$engine->updateVendorOS();
 } elsif ($action =~ m[install]i) {
-	$engine->initialize($distroName, $selection, 1);
+	$engine->initialize($vendorOSName, 1, 'install');
 	$engine->installVendorOS();
 } elsif ($action =~ m[clone]i) {
 	if (!length($source)) {
@@ -113,14 +107,7 @@ if ($action =~ m[import]i) {
 	if ($source !~ m[^.+::?.+$]) {
 		die _tr("Unkown source format given, expected '<hostname>:<path>' or '<hostname>::<module>'!\n");
 	}
-	if (!defined $selection) {
-		$selection = "cloned-from-$source";
-		$selection =~ tr[:/][_];
-			# mask : and /
-		$selection =~ s[_+$][];
-			# remove any trailing underscores, as they're ugly
-	}
-	$engine->initialize($distroName, $selection, 0, 1);
+	$engine->initialize($vendorOSName, 0, 'clone');
 	$engine->cloneVendorOS($source);
 }
 

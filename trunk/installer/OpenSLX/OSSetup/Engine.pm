@@ -75,11 +75,24 @@ sub new
 sub initialize
 {
 	my $self = shift;
-	my $distroName = shift;
-	my $selectionName = shift || 'default';
-	my $protectSystemPath = shift;
-	my $cloneMode = shift;
+	my $vendorOSName = shift;
+	my $protectVendorOSPath = shift;
+	my $actionType = shift;
 
+	if ($vendorOSName !~ m[^([^\-]+\-[^\-]+)(?:\-(.+))?]) {
+		die _tr("Given vendor-OS has unknown format, expected '<name>-<release>[-<selection>]'\n");
+	}
+	$self->{'vendor-os-name'} = $vendorOSName;
+	$self->{'action-type'} = $actionType;
+	my $distroName = $1;
+	$self->{'distro-name'} = $distroName;
+	my $selectionName = $2;
+	if (!length($selectionName) && $actionType ne 'clone') {
+		# selections for clones default to the name of the source, but
+		# that isn't known here, so we handle that in cloneVendorOS()
+		$selectionName = 'default';
+	}
+	$self->{'selection-name'} = $selectionName;
 	if (!exists $supportedDistros{lc($distroName)}) {
 		print _tr("Sorry, distro '%s' is unsupported.\n", $distroName);
 		print _tr("List of supported distros:\n\t");
@@ -87,7 +100,7 @@ sub initialize
 		exit 1;
 	}
 	my $support = $supportedDistros{lc($distroName)}->{support};
-	if (!$cloneMode && $support !~ m[install]i) {
+	if ($actionType eq 'install' && $support !~ m[install]i) {
 		print _tr("Sorry, distro '%s' can not be installed, only cloned.\n",
 				  $distroName);
 		exit 1;
@@ -106,7 +119,7 @@ sub initialize
 	}
 	my $modVersion = $distroModule->VERSION;
 	if ($modVersion < 1.01) {
-		die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
+		die _tr("Could not load module <%s> (Version <%s> required, but <%s> found)\n",
 				$distroModule, 1.01, $modVersion);
 	}
 	$distroModule->import;
@@ -114,25 +127,17 @@ sub initialize
 	$distro->initialize($self);
 	$self->{distro} = $distro;
 
-	$self->{'selection-name'} = $selectionName;
-	my $vendorOSName = $self->{distro}->{'base-name'};
-	if (length($selectionName) && $selectionName ne 'default') {
-		$vendorOSName .= "-$selectionName";
-	}
-	$self->{'vendor-os-name'} = $vendorOSName;
-	$self->{'clone-mode'} = $cloneMode;
-
 	# setup path to distribution-specific info:
 	my $distroInfoDir = "../lib/distro-info/$distro->{'base-name'}";
 	if (!-d $distroInfoDir) {
-		die _tr("unable to find distro-info for system '%s'\n", $distro->{'base-name'});
+		die _tr("unable to find distro-info for distro '%s'\n", $distro->{'base-name'});
 	}
 	$self->{'distro-info-dir'} = $distroInfoDir;
 	$self->readDistroInfo();
 
-	if (!$self->{'clone-mode'}
+	if (!$self->{'action-type'} eq 'install'
 	&& !exists $self->{'distro-info'}->{'selection'}->{$selectionName}) {
-		die _tr("selection '%s' is unknown to system '%s'\n",
+		die _tr("selection '%s' is unknown to distro '%s'\n",
 				$selectionName, $distro->{'base-name'})
 			."These selections are available:\n\t"
 			.join("\n\t", keys %{$self->{'distro-info'}->{'selection'}})
@@ -141,9 +146,9 @@ sub initialize
 
 	$self->{'vendor-os-path'}
 		= "$openslxConfig{'stage1-path'}/$self->{'vendor-os-name'}";
-	vlog 1, "vendor-OS will be installed to '$self-vendor-os-pathath'}'";
-	if ($protectSystemPath && -e $self->{'vendor-os-path'}) {
-		die _tr("vendor-OS '%s' already exists, giving up!", $self->{'vendor-os-path'});
+	vlog 1, "vendor-OS will be installed to '$self-vendor-os-path'}'";
+	if ($protectVendorOSPath && -e $self->{'vendor-os-path'}) {
+		die _tr("vendor-OS '%s' already exists, giving up!\n", $self->{'vendor-os-path'});
 	}
 
 	$self->createPackager();
@@ -155,7 +160,7 @@ sub installVendorOS
 {
 	my $self = shift;
 
-	$self->createSystemPath();
+	$self->createVendorOSPath();
 
 	$self->setupStage1A();
 	my $pid = fork();
@@ -171,7 +176,7 @@ sub installVendorOS
 	if ($?) {
 		exit $?;
 	}
-	$self->stage1C_cleanupBasicSystem();
+	$self->stage1C_cleanupBasicVendorOS();
 	$self->setupStage1D();
 	vlog 0, _tr("Vendor-OS <%s> installed succesfully.\n",
 				$self->{'vendor-os-name'});
@@ -184,7 +189,17 @@ sub cloneVendorOS
 	my $self = shift;
 	my $source = shift;
 
-	$self->createSystemPath();
+	$self->createVendorOSPath();
+
+	if (!length($self->{'selection-name'})) {
+		my $selectionName = "cloned-from-$source";
+		$selectionName =~ tr[:/][_];
+			# mask : and /
+		$selectionName =~ s[_+$][];
+			# remove any trailing underscores, as they're ugly
+		$self->{'selection-name'} = $selectionName;
+		$self->{'vendor-os-name'} .= "-$selectionName";
+	}
 
 	$self->clone_fetchSource($source);
 	vlog 0, _tr("Vendor-OS <%s> cloned succesfully.\n",
@@ -197,6 +212,10 @@ sub updateVendorOS
 {
 	my $self = shift;
 
+	if (!-e $self->{'vendor-os-path'}) {
+		die _tr("can't update vendor-OS '%s', since it doesn't exist!\n",
+				$self->{'vendor-os-path'});
+	}
 	$self->updateStage1D();
 	vlog 0, _tr("Vendor-OS <%s> updated succesfully.\n",
 				$self->{'vendor-os-name'});
@@ -206,6 +225,10 @@ sub addInstalledVendorOSToConfigDB
 {
 	my $self = shift;
 
+	if (!-e $self->{'vendor-os-path'}) {
+		die _tr("can't import vendor-OS '%s', since it doesn't exist!\n",
+				$self->{'vendor-os-path'});
+	}
 	my $configDBModule = "OpenSLX::ConfigDB";
 	unless (eval "require $configDBModule") {
 		if ($! == 2) {
@@ -216,12 +239,12 @@ sub addInstalledVendorOSToConfigDB
 	} else {
 		my $modVersion = $configDBModule->VERSION;
 		if ($modVersion < 1.01) {
-			die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
+			die _tr("Could not load module <%s> (Version <%s> required, but <%s> found)\n",
 					$configDBModule, 1.01, $modVersion);
 		}
 		$configDBModule->import(qw(:access :manipulation));
 		my $openslxDB = connectConfigDB();
-		# insert new system if it doesn't already exist in DB:
+		# insert new vendor-os if it doesn't already exist in DB:
 		my $vendorOSName = $self->{'vendor-os-name'};
 		my $vendorOS
 			= fetchVendorOSesByFilter($openslxDB,
@@ -296,12 +319,12 @@ sub readDistroInfo
 	}
 }
 
-sub createSystemPath
+sub createVendorOSPath
 {
 	my $self = shift;
 
 	if (system("mkdir -p $self->{'vendor-os-path'}")) {
-		die _tr("unable to create directory '%s', giving up! (%s)",
+		die _tr("unable to create directory '%s', giving up! (%s)\n",
 				$self->{'vendor-os-path'}, $!);
 	}
 }
@@ -321,7 +344,7 @@ sub createPackager
 	}
 	my $modVersion = $packagerModule->VERSION;
 	if ($modVersion < 1.01) {
-		die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
+		die _tr("Could not load module <%s> (Version <%s> required, but <%s> found)\n",
 				$packagerModule, 1.01, $modVersion);
 	}
 	$packagerModule->import;
@@ -345,7 +368,7 @@ sub createMetaPackager
 	}
 	my $modVersion = $metaPackagerModule->VERSION;
 	if ($modVersion < 1.01) {
-		die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
+		die _tr("Could not load module <%s> (Version <%s> required, but <%s> found)\n",
 				$metaPackagerModule, 1.01, $modVersion);
 	}
 	$metaPackagerModule->import;
@@ -383,7 +406,7 @@ sub setupStage1A
 	my $stage1cDir
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
 	if (system("mkdir -p $stage1cDir")) {
-		die _tr("unable to create directory '%s', giving up! (%s)",
+		die _tr("unable to create directory '%s', giving up! (%s)\n",
 				$stage1cDir, $!);
 	}
 
@@ -449,7 +472,7 @@ sub stage1A_copyPrerequiredFiles
 		| tar -xp -C $stage1cDir
 	];
 	if (system($cmd)) {
-		die _tr("unable to copy folder with pre-required files to folder <%s> (%s)",
+		die _tr("unable to copy folder with pre-required files to folder <%s> (%s)\n",
 				$stage1cDir, $!);
 	}
 	$self->{distro}->fixPrerequiredFiles($stage1cDir);
@@ -469,7 +492,7 @@ sub stage1A_copyTrustedPackageKeys
 		| tar -xp -C $stage1bDir
 	];
 	if (system($cmd)) {
-		die _tr("unable to copy folder with trusted package keys to folder <%s> (%s)",
+		die _tr("unable to copy folder with trusted package keys to folder <%s> (%s)\n",
 				$stage1bDir, $!);
 	}
 	system("chmod 444 $stage1bDir/trusted-package-keys/*");
@@ -504,7 +527,7 @@ sub stage1A_createRequiredFiles
 
 	mkdir "$stage1cDir/dev";
 	if (system("mknod $stage1cDir/dev/null c 1 3")) {
-		die _tr("unable to create node <%s> (%s)", "$stage1cDir/dev/null", $!);
+		die _tr("unable to create node <%s> (%s)\n", "$stage1cDir/dev/null", $!);
 	}
 }
 
@@ -523,16 +546,16 @@ sub stage1B_chrootAndBootstrap
 	vlog 2, "chrooting into $self->{stage1aDir}...";
 	# chdir into stage1aDir...
 	chdir $self->{stage1aDir}
-		or die _tr("unable to chdir into <%s> (%s)", $self->{stage1aDir}, $!);
+		or die _tr("unable to chdir into <%s> (%s)\n", $self->{stage1aDir}, $!);
 	# ...do chroot
 	chroot "."
-		or die _tr("unable to chroot into <%s> (%s)", $self->{stage1aDir}, $!);
+		or die _tr("unable to chroot into <%s> (%s)\n", $self->{stage1aDir}, $!);
 
 	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
 
 	# chdir into slxbootstrap, as we want to drop packages into there:
 	chdir "/$self->{stage1bSubdir}"
-		or die _tr("unable to chdir into <%s> (%s)", "/$self->{stage1bSubdir}", $!);
+		or die _tr("unable to chdir into <%s> (%s)\n", "/$self->{stage1bSubdir}", $!);
 
 	# fetch prerequired packages:
 	my $baseURL
@@ -560,10 +583,10 @@ sub setupStage1C
 	my $self = shift;
 
 	vlog 1, "setting up stage1c for $self->{'vendor-os-name'}...";
-	$self->stage1C_chrootAndInstallBasicSystem();
+	$self->stage1C_chrootAndInstallBasicVendorOS();
 }
 
-sub stage1C_chrootAndInstallBasicSystem
+sub stage1C_chrootAndInstallBasicVendorOS
 {
 	my $self = shift;
 
@@ -571,10 +594,10 @@ sub stage1C_chrootAndInstallBasicSystem
 	vlog 2, "chrooting into $stage1bDir...";
 	# chdir into stage1bDir...
 	chdir $stage1bDir
-		or die _tr("unable to chdir into <%s> (%s)", $stage1bDir, $!);
+		or die _tr("unable to chdir into <%s> (%s)\n", $stage1bDir, $!);
 	# ...do chroot
 	chroot "."
-		or die _tr("unable to chroot into <%s> (%s)", $stage1bDir, $!);
+		or die _tr("unable to chroot into <%s> (%s)\n", $stage1bDir, $!);
 
 	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
 	my $stage1cDir = "/$self->{stage1cSubdir}";
@@ -587,7 +610,7 @@ sub stage1C_chrootAndInstallBasicSystem
 	# import any additional trusted package keys to rpm-DB:
 	my $keyDir = "/trusted-package-keys";
 	opendir(KEYDIR, $keyDir)
-		or die _tr("unable to opendir <%s> (%s)", $keyDir, $!);
+		or die _tr("unable to opendir <%s> (%s)\n", $keyDir, $!);
 	my @keyFiles
 		= map { "$keyDir/$_" }
 		  grep { $_ !~ m[^(\.\.?|pubring.gpg)$] }
@@ -601,18 +624,18 @@ sub stage1C_chrootAndInstallBasicSystem
 	);
 }
 
-sub stage1C_cleanupBasicSystem
+sub stage1C_cleanupBasicVendorOS
 {
 	my $self = shift;
 
 	my $stage1cDir
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
 	if (system("mv $stage1cDir/* $self->{'vendor-os-path'}/")) {
-		die _tr("unable to move final setup to <%s> (%s)",
+		die _tr("unable to move final setup to <%s> (%s)\n",
 				$self->{'vendor-os-path'}, $!);
 	}
 	if (system("rm -rf $self->{stage1aDir}")) {
-		die _tr("unable to remove temporary folder <%s> (%s)",
+		die _tr("unable to remove temporary folder <%s> (%s)\n",
 				$self->{stage1aDir}, $!);
 	}
 }
@@ -623,7 +646,7 @@ sub setupStage1D
 
 	vlog 1, "setting up stage1d for $self->{'vendor-os-name'}...";
 	$self->stage1D_setupPackageSources();
-	$self->stage1D_updateBasicSystem();
+	$self->stage1D_updateBasicVendorOS();
 	$self->stage1D_installPackageSelection();
 }
 
@@ -632,7 +655,7 @@ sub updateStage1D
 	my $self = shift;
 
 	vlog 1, "updating $self->{'vendor-os-name'}...";
-	$self->stage1D_updateBasicSystem();
+	$self->stage1D_updateBasicVendorOS();
 }
 
 sub stage1D_setupPackageSources()
@@ -647,21 +670,21 @@ sub stage1D_setupPackageSources()
 	}
 }
 
-sub stage1D_updateBasicSystem()
+sub stage1D_updateBasicVendorOS()
 {
 	my $self = shift;
 
-	# chdir into systemDir...
-	my $systemDir = $self->{'vendor-os-path'};
-	vlog 2, "chrooting into $systemDir...";
-	chdir $systemDir
-		or die _tr("unable to chdir into <%s> (%s)", $systemDir, $!);
+	# chdir into vendor-os folder...
+	my $osDir = $self->{'vendor-os-path'};
+	vlog 2, "chrooting into $osDir...";
+	chdir $osDir
+		or die _tr("unable to chdir into <%s> (%s)\n", $osDir, $!);
 	# ...do chroot
 	chroot "."
-		or die _tr("unable to chroot into <%s> (%s)", $systemDir, $!);
+		or die _tr("unable to chroot into <%s> (%s)\n", $osDir, $!);
 
-	vlog 1, "updating basic system...";
-	$self->{'meta-packager'}->updateBasicSystem();
+	vlog 1, "updating basic vendor-os...";
+	$self->{'meta-packager'}->updateBasicVendorOS();
 }
 
 sub stage1D_installPackageSelection
@@ -693,11 +716,11 @@ sub clone_fetchSource
 	my $excludeIncludeList = $self->clone_determineIncludeExcludeList();
 	vlog 1, "using exclude-include-filter:\n$excludeIncludeList\n";
 	open(RSYNC, "| rsync -av --delete --exclude-from=- $source $self->{'vendor-os-path'}")
-		or die _tr("unable to start rsync for source '%s', giving up! (%s)",
+		or die _tr("unable to start rsync for source '%s', giving up! (%s)\n",
 				   $source, $!);
 	print RSYNC $excludeIncludeList;
 	if (!close(RSYNC)) {
-		die _tr("unable to clone from source '%s', giving up! (%s)",
+		die _tr("unable to clone from source '%s', giving up! (%s)\n",
 				$source, $!);
 	}
 }
@@ -745,7 +768,7 @@ sub downloadFilesFrom
 			}
 		}
 		if (!defined $foundFile) {
-			die _tr("unable to fetch <%s> from <%s> (%s)", $fileVariantStr,
+			die _tr("unable to fetch <%s> from <%s> (%s)\n", $fileVariantStr,
 					$baseURL, $!);
 		}
 		push @foundFiles, $foundFile;
@@ -760,38 +783,9 @@ sub downloadFilesFrom
 
 =head1 NAME
 
-OpenSLX::OSSetup::System::Base - the base class for all OSSetup backends
+OpenSLX::OSSetup::Engine - driver engine for OSSetup API
 
 =head1 SYNOPSIS
-
-  package OpenSLX::OSSetup::coolnewOS;
-
-  use vars qw(@ISA $VERSION);
-  @ISA = ('OpenSLX::OSSetup::Base');
-  $VERSION = 1.01;
-
-  use coolnewOS;
-
-  sub new
-  {
-      my $class = shift;
-      my $self = {};
-      return bless $self, $class;
-  }
-
-  # override all methods of OpenSLX::OSSetup::Base in order to implement
-  # a full OS-setup backend
-  ...
-
-I<The synopsis above outlines a class that implements a
-OSSetup backend for the (imaginary) operating system B<coolnewOS>>
-
-=head1 DESCRIPTION
-
-This class defines the OSSetup interface for the OpenSLX.
-
-Aim of the OSSetup abstraction is to make it possible to install a large set
-of different operating systems transparently.
 
 ...
 
