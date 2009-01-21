@@ -309,7 +309,7 @@ cp -a ${themes}* ${INSTDIR}/usr/share/themes
 #########################################################################
 # End of function declaration
 
-while getopts :dhk:c:i:r:o:s:f:n:m:S:ut:I:a: a ; do
+while getopts :dhk:c:i:r:o:s:f:n:m:S:tu:I:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
@@ -644,11 +644,19 @@ echo "## end of common machine-setup" >>${INSTDIR}/etc/machine-setup
 # custom hardware configuration files pcitable.local and Cards.local
 # fixme!! New source for these files (instead of templates)!
 if [ -f ${SLX_SHARE_PATH}/templates/pcitable.local ] ; then
-  cat ${SLX_SHARE_PATH}/templates/pcitable.local >> \
+  cat ${SLX_SHARE_PATH}/templates/pcitable.local > \
+    ${INSTDIR}/usr/share/hwdata/pcitable.new
+  cat ${INSTDIR}/usr/share/hwdata/pcitable >>\
+    ${INSTDIR}/usr/share/hwdata/pcitable.new
+  mv ${INSTDIR}/usr/share/hwdata/pcitable.new \
     ${INSTDIR}/usr/share/hwdata/pcitable
 fi
 if [ -f ${SLX_SHARE_PATH}/templates/Cards.local ] ; then
-  cat ${SLX_SHARE_PATH}/templates/Cards.local >> \
+  cat ${SLX_SHARE_PATH}/templates/Cards.local > \
+    ${INSTDIR}/usr/share/hwdata/Cards.new
+  cat ${INSTDIR}/usr/share/hwdata/Cards >>\
+    ${INSTDIR}/usr/share/hwdata/Cards.new
+  mv ${INSTDIR}/usr/share/hwdata/Cards.new \
     ${INSTDIR}/usr/share/hwdata/Cards
 fi
 
