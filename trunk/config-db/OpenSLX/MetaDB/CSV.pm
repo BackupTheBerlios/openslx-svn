@@ -48,7 +48,11 @@ sub connectConfigDB
 		my $dbDatadir = $openslxConfig{'db-datadir'}
 						|| "$openslxConfig{'db-name'}-csv";
 		my $dbPath = "$dbBasepath/$dbDatadir";
-		mkdir $dbPath unless -e $dbPath;
+		if (!-e $dbPath) {
+			mkdir $dbPath
+				or die _tr("unable to create db-datadir %s! (%s)\n",
+						    $dbPath, $!);
+		}
 		$dbSpec = "f_dir=$dbPath";
 	}
 	vlog 1, "trying to connect to CSV-database <$dbSpec>";
