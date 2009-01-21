@@ -4,7 +4,7 @@
 #
 # Oliver Tappe <ot@openslx.com>
 #
-package OpenSLX::Translations::de_de_utf_8;
+package OpenSLX::Translations::de_de_utf8;
 
 use strict;
 use vars qw(@ISA @EXPORT $VERSION);
@@ -158,9 +158,9 @@ use vars qw(%translations);
 	=>
 	qq{},
 
-	q{NEW:no}
+	q{no}
 	=>
-	qq{},
+	qq{nein},
 
 	q{NEW:Our schema-version is %s, DB is %s, upgrading DB...}
 	=>
@@ -182,9 +182,9 @@ use vars qw(%translations);
 	=>
 	qq{},
 
-	q{NEW:This will overwrite the current OpenSLX-database with an example dataset.\nAll your data (%s systems and %s clients) will be lost!\nDo you want to continue(%s/%s)? }
+	q{This will overwrite the current OpenSLX-database with an example dataset.\nAll your data (%s systems and %s clients) will be lost!\nDo you want to continue(%s/%s)? }
 	=>
-	qq{},
+	qq{Die aktuelle OpenSLX-Datenbank wird mit einem Beispiel-Datensatz überschrieben.\nAlle Daten (%s Systeme und %s Clients) werden gelöscht!\nMöchten Sie den Vorgang fortsetzen(%s/%s)? },
 
 	q{NEW:translations module %s loaded successfully}
 	=>
@@ -242,9 +242,9 @@ use vars qw(%translations);
 	=>
 	qq{},
 
-	q{NEW:yes}
+	q{yes}
 	=>
-	qq{},
+	qq{ja},
 
 );
 
