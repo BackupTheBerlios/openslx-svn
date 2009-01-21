@@ -32,8 +32,8 @@ config_kdm_template
 # devices when loggin on)
 config_dreshal () {
 if [ "x$start_dreshal" = "xyes" ]; then
-  local start="05"
-  local stop="18"
+  local start=5
+  local stop=18
   if [ -f /mnt/etc/${D_INITDIR}/dbus ] ; then
     strinfile "messagebus:" /mnt/etc/passwd || \
       echo "messagebus:x:100:101:User for D-BUS:/var/run/dbus:/bin/false" \
@@ -44,19 +44,19 @@ if [ "x$start_dreshal" = "xyes" ]; then
     # set permissions with userid
     echo -e "\tchown messagebus:messagebus /var/run/dbus 2>/dev/null" \
       >>/mnt/etc/${D_INITDIR}/boot.slx
-    rllinker "dbus" "$start" "$stop"
+    rllinker "dbus" $start $stop
   fi
   if [ -f /mnt/etc/${D_INITDIR}/resmgr ] ; then
     testmkd /mnt/var/run/resmgr/classes
-    start="0"$(expr $start + 1)
-    stop="0"$(expr $start - 1)
-    rllinker "resmgr" "$start" "$stop"
+    start=$(($start + 1))
+    stop=$(($stop - 1))
+    rllinker "resmgr" $start $stop
   fi
   if [ -f /mnt/etc/${D_INITDIR}/policykitd ] ; then
     testmkd /mnt/var/run/polkit
-    start="0"$(expr $start + 1)
-    stop="0"$(expr $start - 1)
-    rllinker "policykitd" "$start" "$stop"
+    start=$(($start + 1))
+    stop=$(($stop - 1))
+    rllinker "policykitd" $start $stop
   fi
   if [ -f /mnt/etc/${D_INITDIR}/haldaemon ] ; then
     strinfile "haldaemon:" /mnt/etc/passwd || \
@@ -68,9 +68,9 @@ if [ "x$start_dreshal" = "xyes" ]; then
     # set permissions with userid
     echo -e "\tchown haldaemon:haldaemon /var/run/hal 2>/dev/null" \
       >>/mnt/etc/${D_INITDIR}/boot.slx
-    start="0"$(expr $start + 1)
-    stop="0"$(expr $start - 1)
-    rllinker "haldaemon" "$start" "$stop"
+    start=$(($start + 1))
+    stop=$(($stop - 1))
+    rllinker "haldaemon" $start $stop
   fi
 fi
 }
@@ -88,13 +88,13 @@ echo -e "\t# stuff needed for nfsv4\n\tmount -t rpc_pipefs rpc_pipefs \
 >>/mnt/etc/${D_INITDIR}/boot.slx
   # portmap is required for any NFS
   config_portmap
-  rllinker "idmapd" "14" "08"
-  rllinker "gssd" "15" "07"
+  rllinker "idmapd" 14 8
+  rllinker "gssd" 15 7
 fi
 }
 # prepare virtual machine environment (vmware, vmplayer)
 config_vmware () {
-rllinker "vmware" "20" "02"
+rllinker "vmware" 20 2
 # during vmware sessions linux should not handle usb events/devices
 # vmplayer and recent versions of vmware do not need this hack
 if [ ! -x /mnt/usr/bin/vmplayer ] ; then

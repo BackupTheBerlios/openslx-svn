@@ -15,7 +15,7 @@
 
 # prepare virtual machine environment (vmware, vmplayer)
 config_vmware () {
-rllinker "vmware" "20" "02"
+rllinker "vmware" 20 2
 # during vmware sessions linux should not handle usb events/devices
 testmkd /mnt/var/X11R6/bin
 echo '#!/bin/sh'> /mnt/var/X11R6/bin/vm-udev
