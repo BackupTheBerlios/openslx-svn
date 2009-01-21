@@ -4,7 +4,7 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-01-2006
 #		Blabla
 #		Blub
 #
@@ -257,6 +257,9 @@ fi
 # specific functions may overwrite functions defined in /etc/functions
 . /etc/sysconfig/config
 . /etc/distro-functions
+
+# heavy debugging output in level 3 and above ...
+[ $DEBUGLEVEL -gt 2 ] && set -x
 
 # set X11 configuration file
 if [ -n "${D_XF86CONFFILE}" ] ; then

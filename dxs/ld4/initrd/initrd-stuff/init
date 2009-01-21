@@ -2,8 +2,8 @@
 . /etc/functions || ( echo -e "The functions file contains a lot of script \
 functionality. Without this\ninit script will not run." && exit 1 )
 # configuration settings (several file and directory variables)
-. /etc/sysconfig/config || error "  The distribution \
-specific configuration file could not be found"
+. /etc/sysconfig/config || ( echo -e "  The distribution \
+specific configuration file could not be found" && exit 1 )
 
 date
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
@@ -126,13 +126,16 @@ echo "Setting debuglevel to ${DEBUGLEVEL}"
 export MODPRV=" "
 export LOGFILE
 if [ "${DEBUGLEVEL}" -gt 0 ] ; then
-  # if LOGFILE should be used within initial ramdisk add '/mnt' in fron
+  # if LOGFILE should be used within initial ramdisk add '/mnt' in front
   # of the variable
   LOGFILE="/var/log/dxs-boot.log"
+  [ "${DEBUGLEVEL}" -eq 2 ] && MODPRV="-v"
   [ "${DEBUGLEVEL}" -gt 2 ] && { 
     set -x
     # modprobe should be verbose
-    MODPRV="-v"; }
+    MODPRV="-v";
+    # and the kernel too
+    echo "7 7 7 7" >/proc/sys/kernel/printk; }
 else
   # switch off most of kernel debug output
   echo "0 0 0 0" >/proc/sys/kernel/printk

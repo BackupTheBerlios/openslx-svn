@@ -1,9 +1,18 @@
 #######################################################################
 # produce error message and if $2 is empty run (debug) shell 
 error() {
-echo -e "An error occured during execution of $0 script:\n\n$1\n"
+local message="An error occured during execution of $0 script:\n\n$1\n"
+# check if LOGFILE is already defined
+[ -z "${LOGFILE}" ] && LOGFILE="/dev/null"
+# check if LOGFILE is really writeable
+[ -n "${LOGFILE}" ] && [ -w /mnt/${LOGFILE} ] || LOGFILE="/dev/null"
+# if nonfatal error else fatal error message and shell
 if [ -n "$2" ] ; then
-  echo -e "This error is not fatal - continuing ...\n"
+[ "$DEBUGLEVEL" -ge 1 ] && \
+  echo -e "{$message}  This error is not fatal - continuing ...\n" \
+    >> /mnt/${LOGFILE} 
+[ "$DEBUGLEVEL" -gt 1 ] && \
+  echo -e "{$message}  This error is not fatal - continuing ...\n"
 else
   echo -e "Running shell for debugging purposes now ...\n"
   /bin/sh

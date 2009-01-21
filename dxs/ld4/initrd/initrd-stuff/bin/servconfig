@@ -4,7 +4,7 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 17-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-01-2006
 #		Blabla
 #		Blub
 #
@@ -22,6 +22,9 @@
 . /etc/distro-functions
 # get location of logfile definition
 . /mnt/etc/${D_SYSCONFDIR}/logfile
+
+# heavy debugging output in level 3 and above ...
+[ $DEBUGLEVEL -gt 2 ] && set -x
 
 #######################################################################
 # copy distro specific scripts, programs, libraries and configs
