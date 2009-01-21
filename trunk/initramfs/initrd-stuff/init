@@ -278,7 +278,7 @@ else
   MODPRV="-q"
   LOGFILE="/dev/null"
   # redirect console (after /dev/null is available, and /dev mounted)
-  [ "${DEBUGLEVEL}" != 8 ] && exec < /dev/null > /dev/null 2>&1
+  [ "${DEBUGLEVEL}" != 8 ] && exec < /dev/console > /dev/null 2>&1
 fi
 # load network adaptor modules
 [ $DEBUGLEVEL -eq 20 ] && \
