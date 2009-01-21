@@ -27,6 +27,8 @@
 - /root/*
 - /home/*
 - /mnt/*
+- /var/opt/openslx
+- /opt/openslx
 - .svn
 - *~
 - .*.cmd

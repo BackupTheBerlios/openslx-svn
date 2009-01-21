@@ -1,0 +1,24 @@
+Fix fuer UnionFS auf /
+Nun gibts einfach eine Erweiterung fuer das Klibc-Tool run-init:
+
+klibc1.3
+usr/kinit/run-init/runinitlib.c
+
+  /* Delete rootfs contents */
+  if ( nuke_dir("/") )
+    die("nuking initramfs contents");
+
+  /* wild guess and try&error */
+   if ( !lstat("/rorootfs", &rfs ) )
+     if ( mount("/rorootfs", "/", NULL, MS_MOVE, NULL) )
+       die("moving rorootfs");
+
+  /* Overmount the root */
+  if ( mount(".", "/", NULL, MS_MOVE, NULL) )
+    die("overmounting root");
+
+und vor dem Movemount fuer das eigentliche Root noch ein Movemount auf das
+drunterliegende Rootfs ... Laengeres Rumprobieren und nun scheint es
+erstmal zu klappen. Zur Zeit checkt der einfach nur (bis ich das raus
+hatte :-)) ob ein "/rorootfs" da ist und verschiebt das dann. Wenn nicht,
+bleibts so wie vorher.
