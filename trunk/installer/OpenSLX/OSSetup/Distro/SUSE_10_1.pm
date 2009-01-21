@@ -166,9 +166,11 @@ sub initDistroInfo
 	";
 
 	$self->{config}->{'selection'} = {
-		'default' => "",
+		'default' => "
+		",
 
 		'gnome' => "
+			<<<default>>>
 			3ddiag
 			855resolution
 			a2ps

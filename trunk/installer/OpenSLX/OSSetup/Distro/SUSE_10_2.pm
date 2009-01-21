@@ -184,9 +184,11 @@ sub initDistroInfo
 	";
 
 	$self->{config}->{'selection'} = {
-		'default' => "",
+		'default' => "
+		",
 
 		'kde' => "
+			<<<default>>>
 			3ddiag
 			915resolution
 			a2ps

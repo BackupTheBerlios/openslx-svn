@@ -348,6 +348,10 @@ sub readDistroInfo
 			die _tr("error in config-file '%s' (%s)", $file, $@)."\n";
 		}
 	}
+	# ...expand selection definitions...
+	foreach my $selKey (keys %selection) {
+		$selection{$selKey} =~ s[<<<([^>]+)>>>][$selection{$1}]eg;
+	}
 	# ...and store merged config:
 	$self->{'distro-info'} = {
 		'package-subdir' => $package_subdir,
