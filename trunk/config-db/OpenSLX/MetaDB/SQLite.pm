@@ -1,22 +1,22 @@
-package ODLX::MetaDB::SQLite;
+package OpenSLX::MetaDB::SQLite;
 
 use vars qw(@ISA $VERSION);
-@ISA = ('ODLX::MetaDB::DBI');
+@ISA = ('OpenSLX::MetaDB::DBI');
 $VERSION = 1.01;		# API-version . implementation-version
 
 ################################################################################
 ### This class provides a MetaDB backend for SQLite databases.
-### - by default the db will be created inside a 'odlxdata-sqlite' directory.
+### - by default the db will be created inside a 'openslxdata-sqlite' directory.
 ################################################################################
 use strict;
 use Carp;
-use ODLX::Basics;
-use ODLX::MetaDB::DBI $VERSION;
+use OpenSLX::Basics;
+use OpenSLX::MetaDB::DBI $VERSION;
 
-my $superVersion = $ODLX::MetaDB::DBI::VERSION;
+my $superVersion = $OpenSLX::MetaDB::DBI::VERSION;
 if ($superVersion < $VERSION) {
 	confess _tr('Unable to load module <%s> (Version <%s> required, but <%s> found)',
-				'ODLX::MetaDB::DBI', $VERSION, $superVersion);
+				'OpenSLX::MetaDB::DBI', $VERSION, $superVersion);
 }
 
 ################################################################################
@@ -33,14 +33,14 @@ sub connectConfigDB
 {
 	my $self = shift;
 
-	my $dbSpec = $odlxConfig{'db-spec'};
+	my $dbSpec = $openslxConfig{'db-spec'};
 	if (!defined $dbSpec) {
 		# build $dbSpec from individual parameters:
-		my $dbBasepath = $odlxConfig{'db-basepath'};
-		my $dbDatadir = $odlxConfig{'db-datadir'} || 'odlxdata-sqlite';
+		my $dbBasepath = $openslxConfig{'db-basepath'};
+		my $dbDatadir = $openslxConfig{'db-datadir'} || 'openslxdata-sqlite';
 		my $dbPath = "$dbBasepath/$dbDatadir";
 		mkdir $dbPath unless -e $dbPath;
-		my $dbName = $odlxConfig{'db-name'};
+		my $dbName = $openslxConfig{'db-name'};
 		$dbSpec = "dbname=$dbPath/$dbName";
 	}
 	vlog 1, "trying to connect to SQLite-database <$dbSpec>";

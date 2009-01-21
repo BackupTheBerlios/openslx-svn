@@ -1,4 +1,4 @@
-package ODLX::Basics;
+package OpenSLX::Basics;
 
 use strict;
 use vars qw(@ISA @EXPORT $VERSION);
@@ -8,12 +8,12 @@ $VERSION = 0.02;
 @ISA = qw(Exporter);
 
 @EXPORT = qw(
-	&odlxInit %odlxConfig
+	&openslxInit %openslxConfig
 	&_tr &trInit
 	&vlog
 );
 
-use vars qw(%odlxConfig);
+use vars qw(%openslxConfig);
 
 ################################################################################
 ### Module implementation
@@ -25,10 +25,10 @@ use Getopt::Long;
 my %translations;
 my $loadedTranslationModule;
 
-# this hash will hold the active odlx configuration,
+# this hash will hold the active openslx configuration,
 # it is populated from config files and/or cmdline arguments:
-%odlxConfig = (
-	'db-name' => 'odlx',
+%openslxConfig = (
+	'db-name' => 'openslx',
 	'db-type' => 'CSV',
 	'locale' => $ENV{LANG},
 		# TODO: may need to be improved in order to be portable
@@ -37,56 +37,56 @@ my $loadedTranslationModule;
 	'shared-basepath' => '/usr/share/openslx',
 	'temp-basepath' => '/tmp',
 );
-$odlxConfig{'db-basepath'} = "$odlxConfig{'private-basepath'}/db",
+$openslxConfig{'db-basepath'} = "$openslxConfig{'private-basepath'}/db",
 
-# specification of cmdline arguments that are shared by all odlx-scripts:
-my %odlxCmdlineArgs = (
-	'db-basepath=s' => \$odlxConfig{'db-basepath'},
-		# basic path to odlx database, defaults to "$private-basepath/db"
-	'db-datadir=s' => \$odlxConfig{'db-datadir'},
+# specification of cmdline arguments that are shared by all openslx-scripts:
+my %openslxCmdlineArgs = (
+	'db-basepath=s' => \$openslxConfig{'db-basepath'},
+		# basic path to openslx database, defaults to "$private-basepath/db"
+	'db-datadir=s' => \$openslxConfig{'db-datadir'},
 		# data folder created under db-basepath, default depends on db-type
-	'db-spec=s' => \$odlxConfig{'db-spec'},
+	'db-spec=s' => \$openslxConfig{'db-spec'},
 		# full specification of database, a special string defining the
 		# precise database to connect to (the contents of this string
 		# depend on db-type)
-	'db-name=s' => \$odlxConfig{'db-name'},
-		# name of database, defaults to 'odlx'
-	'db-type=s' => \$odlxConfig{'db-type'},
+	'db-name=s' => \$openslxConfig{'db-name'},
+		# name of database, defaults to 'openslx'
+	'db-type=s' => \$openslxConfig{'db-type'},
 		# type of database to connect to (CSV, SQLite, ...), defaults to 'CSV'
-	'locale=s' => \$odlxConfig{'locale'},
+	'locale=s' => \$openslxConfig{'locale'},
 		# locale to use for translations
-	'logfile=s' => \$odlxConfig{'locale'},
+	'logfile=s' => \$openslxConfig{'locale'},
 		# file to write logging output to, defaults to STDERR
-	'private-basepath=s' => \$odlxConfig{'private-basepath'},
+	'private-basepath=s' => \$openslxConfig{'private-basepath'},
 		# basic path to private data (which is accessible for clients and
 		# contains all data required for booting the clients)
-	'public-basepath=s' => \$odlxConfig{'public-basepath'},
+	'public-basepath=s' => \$openslxConfig{'public-basepath'},
 		# basic path to public data (which contains database, vendorOSes
 		# and all local extensions [system specific scripts])
-	'shared-basepath=s' => \$odlxConfig{'shared-basepath'},
+	'shared-basepath=s' => \$openslxConfig{'shared-basepath'},
 		# basic path to shared data (functionality templates and distro-specs)
-	'temp-basepath=s' => \$odlxConfig{'temp-basepath'},
+	'temp-basepath=s' => \$openslxConfig{'temp-basepath'},
 		# basic path to temporary data (used during demuxing)
-	'verbose-level=i' => \$odlxConfig{'verbose-level'},
+	'verbose-level=i' => \$openslxConfig{'verbose-level'},
 		# level of logging verbosity (0-3)
 );
 
 # filehandle used for logging:
-my $odlxLog = *STDERR;
+my $openslxLog = *STDERR;
 
 # ------------------------------------------------------------------------------
 sub vlog
 {
 	my $minLevel = shift;
-	return if $minLevel > $odlxConfig{'verbose-level'};
-	print $odlxLog '-'x$minLevel, @_, "\n";
+	return if $minLevel > $openslxConfig{'verbose-level'};
+	print $openslxLog '-'x$minLevel, @_, "\n";
 }
 
 # ------------------------------------------------------------------------------
-sub odlxInit
+sub openslxInit
 {
 	# try to read and evaluate config files:
-	foreach my $f ("ODLX/odlxrc", "$ENV{HOME}/.odlxrc") {
+	foreach my $f ("OpenSLX/openslxrc", "$ENV{HOME}/.openslxrc") {
 		next unless open(CONFIG, "<$f");
 		while(<CONFIG>) {
 			chomp;
@@ -95,21 +95,21 @@ sub odlxInit
 			s/\s+$//;
 			next unless length;
 			my ($key, $value) = split(/\s*=\s*/, $_, 2);
-			$odlxConfig{$key} = $value;
+			$openslxConfig{$key} = $value;
 		}
 		close CONFIG;
 	}
 
 	# push any cmdline argument directly into our config hash:
-	GetOptions(%odlxCmdlineArgs);
+	GetOptions(%openslxCmdlineArgs);
 
-	if (defined $odlxConfig{'logfile'}
-	&& open(LOG, ">>$odlxConfig{'logfile'}")) {
-		$odlxLog
+	if (defined $openslxConfig{'logfile'}
+	&& open(LOG, ">>$openslxConfig{'logfile'}")) {
+		$openslxLog
 	}
-	if ($odlxConfig{'verbose-level'} >= 2) {
-		foreach my $k (sort keys %odlxConfig) {
-			vlog 2, "dump-config: $k = $odlxConfig{$k}";
+	if ($openslxConfig{'verbose-level'} >= 2) {
+		foreach my $k (sort keys %openslxConfig) {
+			vlog 2, "dump-config: $k = $openslxConfig{$k}";
 		}
 	}
 
@@ -120,10 +120,10 @@ sub odlxInit
 # ------------------------------------------------------------------------------
 sub trInit
 {
-	my $locale = $odlxConfig{'locale'};
+	my $locale = $openslxConfig{'locale'};
 	$locale =~ tr[A-Z.\-][a-z__];
 
-	my $trModule = "ODLX::Translations::$locale";
+	my $trModule = "OpenSLX::Translations::$locale";
 	if ($loadedTranslationModule eq $trModule) {
 		# requested translations have already been loaded
 		return;
@@ -131,15 +131,15 @@ sub trInit
 
 	# load Posix-Translations first in order to fall back to English strings
 	# if a specific translation isn't available:
-	if (eval "require ODLX::Translations::posix") {
-		%translations = %ODLX::Translations::posix::translations;
+	if (eval "require OpenSLX::Translations::posix") {
+		%translations = %OpenSLX::Translations::posix::translations;
 	} else {
 		carp "Unable to load translations module 'posix' ($!).";
 	}
 
 	if ($locale ne 'posix') {
 		if (eval "require $trModule") {
-			# Access ODLX::Translations::$locale::%translations
+			# Access OpenSLX::Translations::$locale::%translations
 			# via a symbolic reference...
 			no strict 'refs';
 			my $translationsRef	= \%{"${trModule}::translations"};

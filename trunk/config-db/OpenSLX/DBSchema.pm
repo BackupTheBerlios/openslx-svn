@@ -1,4 +1,4 @@
-package ODLX::DBSchema;
+package OpenSLX::DBSchema;
 
 use strict;
 use vars qw(@ISA @EXPORT $VERSION);
@@ -38,7 +38,7 @@ my @sharedAttributes = (
 
 ################################################################################
 ### DB-schema definition
-### 	This hash-ref describes the current ODLX configuration database schema.
+### 	This hash-ref describes the current OpenSLX configuration database schema.
 ### 	Each table is defined by a list of column descriptions.
 ### 	A column description is simply the name of the column followed by ':'
 ### 	followed by the data type description. The following data types are

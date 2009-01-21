@@ -1,15 +1,15 @@
-package ODLX::ConfigDB;
+package OpenSLX::ConfigDB;
 
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $VERSION);
 $VERSION = 1.01;		# API-version . implementation-version
 
 ################################################################################
-### This module defines the data abstraction layer for the ODLX configuration
+### This module defines the data abstraction layer for the OpenSLX configuration
 ### database.
 ### Aim of this abstraction is to hide the details of the data layout and
 ### the peculiarities of individual database types behind a simple interface
-### that offers straightforward access to and manipulation of the ODLX-systems
+### that offers straightforward access to and manipulation of the OpenSLX-systems
 ### and -clients (without the need to use SQL).
 ### The interface is divided into two parts:
 ### 	- data access methods (getting data)
@@ -53,8 +53,8 @@ my @manipulationExports = qw(
 ### private stuff
 ################################################################################
 use Carp;
-use ODLX::Basics;
-use ODLX::DBSchema;
+use OpenSLX::Basics;
+use OpenSLX::DBSchema;
 
 sub _checkAndUpgradeDBSchemaIfNecessary
 {
@@ -128,9 +128,9 @@ sub connectConfigDB
 		# hash-ref with any additional info that might be required by
 		# specific metadb-module (not used yet)
 
-	my $dbType = $odlxConfig{'db-type'};
+	my $dbType = $openslxConfig{'db-type'};
 		# name of underlying database module
-	my $dbModule = "ODLX::MetaDB::$dbType";
+	my $dbModule = "OpenSLX::MetaDB::$dbType";
 	unless (eval "require $dbModule") {
 		confess _tr('Unable to load DB-module <%s> (%s)', $dbModule, $@);
 	}

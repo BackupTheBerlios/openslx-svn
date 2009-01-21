@@ -1,22 +1,22 @@
-package ODLX::MetaDB::mysql;
+package OpenSLX::MetaDB::mysql;
 
 use vars qw(@ISA $VERSION);
-@ISA = ('ODLX::MetaDB::DBI');
+@ISA = ('OpenSLX::MetaDB::DBI');
 $VERSION = 1.01;		# API-version . implementation-version
 
 ################################################################################
 ### This class provides a MetaDB backend for mysql databases.
-### - by default the db will be created inside a 'odlxdata-mysql' directory.
+### - by default the db will be created inside a 'openslxdata-mysql' directory.
 ################################################################################
 use strict;
 use Carp;
-use ODLX::Basics;
-use ODLX::MetaDB::DBI $VERSION;
+use OpenSLX::Basics;
+use OpenSLX::MetaDB::DBI $VERSION;
 
-my $superVersion = $ODLX::MetaDB::DBI::VERSION;
+my $superVersion = $OpenSLX::MetaDB::DBI::VERSION;
 if ($superVersion < $VERSION) {
 	confess _tr('Unable to load module <%s> (Version <%s> required, but <%s> found)',
-				'ODLX::MetaDB::DBI', $VERSION, $superVersion);
+				'OpenSLX::MetaDB::DBI', $VERSION, $superVersion);
 }
 
 ################################################################################
@@ -33,10 +33,10 @@ sub connectConfigDB
 {
 	my $self = shift;
 
-	my $dbSpec = $odlxConfig{'db-spec'};
+	my $dbSpec = $openslxConfig{'db-spec'};
 	if (!defined $dbSpec) {
 		# build $dbSpec from individual parameters:
-		my $dbName = $odlxConfig{'db-name'};
+		my $dbName = $openslxConfig{'db-name'};
 		$dbSpec = "database=$dbName";
 	}
 	my $user = (getpwuid($>))[0];

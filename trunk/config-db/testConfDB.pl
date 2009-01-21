@@ -4,24 +4,24 @@
 use FindBin;
 use lib $FindBin::Bin;
 
-use ODLX::Basics;
-use ODLX::ConfigDB qw(:access :manipulation);
+use OpenSLX::Basics;
+use OpenSLX::ConfigDB qw(:access :manipulation);
 
-odlxInit();
+openslxInit();
 
-my $odlxDB = connectConfigDB();
+my $openslxDB = connectConfigDB();
 
-addVendorOS($odlxDB, {
+addVendorOS($openslxDB, {
 		'name' => "suse-93-minimal",
 		'descr' => "SuSE 9.3 minimale Installation",
 });
 
-addVendorOS($odlxDB, {
+addVendorOS($openslxDB, {
 		'name' => "suse-93-KDE",
 		'descr' => "SuSE 9.3 grafische Installation mit KDE",
 });
 
-addVendorOS($odlxDB, {
+addVendorOS($openslxDB, {
 		'name' => "debian-31",
 		'descr' => "Debian 3.1 Default-Installation",
 });
@@ -34,20 +34,20 @@ foreach my $id (1..10) {
 		'vendor_os_id' => 1 + $id % 3,
 	};
 }
-addSystem($odlxDB, \@systems);
+addSystem($openslxDB, \@systems);
 
-removeSystem($odlxDB, [1,3,5,7,9,11,13,15,17,19] );
+removeSystem($openslxDB, [1,3,5,7,9,11,13,15,17,19] );
 
-changeSystem($odlxDB, [ 2 ], [ { 'name' => 'new name of 2'} ] );
+changeSystem($openslxDB, [ 2 ], [ { 'name' => 'new name of 2'} ] );
 
-changeSystem($odlxDB, [ 0 ], [ { 'attrStartX' => 'kde,gnome'} ] );
-changeSystem($odlxDB, [ 1,2,3 ], [ { 'attrHwMonitor' => '1280x1024'} ] );
-changeSystem($odlxDB, [ 4 ], [ { 'attrHwMonitor' => '800x600'} ] );
+changeSystem($openslxDB, [ 0 ], [ { 'attrStartX' => 'kde,gnome'} ] );
+changeSystem($openslxDB, [ 1,2,3 ], [ { 'attrHwMonitor' => '1280x1024'} ] );
+changeSystem($openslxDB, [ 4 ], [ { 'attrHwMonitor' => '800x600'} ] );
 
 
-changeSystem($odlxDB, 4, { 'id' => 114, 'name' => 'id should still be 4'} );
+changeSystem($openslxDB, 4, { 'id' => 114, 'name' => 'id should still be 4'} );
 
-my $metaDB = $odlxDB->{'meta-db'};
+my $metaDB = $openslxDB->{'meta-db'};
 my $colDescrs = [
 	'id:pk',
 	'name:s.30',
@@ -124,70 +124,70 @@ foreach my $row (@rows) {
 
 $metaDB->schemaDropTable('test2');
 
-my $clientG01ID = addClient($odlxDB, {
+my $clientG01ID = addClient($openslxDB, {
 		'name' => "PC-G-01",
 		'mac' => "00:14:85:80:00:35",
 		'boot_type' => 'pxe',
 });
 
-my $clientG02ID = addClient($odlxDB, {
+my $clientG02ID = addClient($openslxDB, {
 		'name' => "PC-G-02",
 		'mac' => "00:14:85:80:00:36",
 		'boot_type' => 'pxe',
 });
 
-my $clientG03ID = addClient($odlxDB, {
+my $clientG03ID = addClient($openslxDB, {
 		'name' => "PC-G-03",
 		'mac' => "00:14:85:80:00:37",
 		'boot_type' => 'pxe',
 });
 
-my $clientG04ID = addClient($odlxDB, {
+my $clientG04ID = addClient($openslxDB, {
 		'name' => "PC-G-04",
 		'mac' => "00:14:85:80:00:38",
 		'boot_type' => 'pxe',
 		'unbootable' => 1,
 });
 
-my $clientF01ID = addClient($odlxDB, {
+my $clientF01ID = addClient($openslxDB, {
 		'name' => "PC-F-01",
 		'mac' => "00:14:85:80:00:31",
 		'boot_type' => 'other',
 });
 
-my $clientF02ID = addClient($odlxDB, {
+my $clientF02ID = addClient($openslxDB, {
 		'name' => "PC-F-02",
 		'mac' => "00:14:85:80:00:32",
 		'boot_type' => 'pxe',
 });
 
-my $clientF03ID = addClient($odlxDB, {
+my $clientF03ID = addClient($openslxDB, {
 		'name' => "PC-F-03",
 		'mac' => "00:14:85:80:00:33",
 		'boot_type' => 'pxe',
 });
 
-addClientIDsToSystem($odlxDB, 6, [$clientG01ID, $clientG02ID, $clientG03ID,	$clientG04ID, $clientF01ID, $clientF02ID, $clientF03ID]);
+addClientIDsToSystem($openslxDB, 6, [$clientG01ID, $clientG02ID, $clientG03ID,	$clientG04ID, $clientF01ID, $clientF02ID, $clientF03ID]);
 
-my $group1ID = addGroup($odlxDB, {
+my $group1ID = addGroup($openslxDB, {
 		'name' => "Gell-PCs",
 		'descr' => "Gell-Threemansion PCs from 2002",
 		'attrHwMouse' => 'serial',
 });
-addClientIDsToGroup($odlxDB, $group1ID, [$clientG01ID, $clientF02ID, $clientG03ID]);
+addClientIDsToGroup($openslxDB, $group1ID, [$clientG01ID, $clientF02ID, $clientG03ID]);
 
-my $group2ID = addGroup($odlxDB, {
+my $group2ID = addGroup($openslxDB, {
 		'name' => "Teacher-PCs",
 		'descr' => "all PCs sitting on teacher's desks",
 		'attrHwMonitor' => '1600x1200',
 });
-addClientIDsToGroup($odlxDB, $group2ID, [$clientG01ID, $clientF01ID]);
-addSystemIDsToGroup($odlxDB, $group2ID, [2, 3]);
+addClientIDsToGroup($openslxDB, $group2ID, [$clientG01ID, $clientF01ID]);
+addSystemIDsToGroup($openslxDB, $group2ID, [2, 3]);
 
-my $group3ID = addGroup($odlxDB, {
+my $group3ID = addGroup($openslxDB, {
 		'name' => "PCs in room G",
 		'descr' => "all PCs of room 234",
 });
-addClientIDsToGroup($odlxDB, $group3ID, [$clientG01ID, $clientG02ID, $clientG03ID, $clientG04ID]);
+addClientIDsToGroup($openslxDB, $group3ID, [$clientG01ID, $clientG02ID, $clientG03ID, $clientG04ID]);
 
-disconnectConfigDB($odlxDB);
+disconnectConfigDB($openslxDB);

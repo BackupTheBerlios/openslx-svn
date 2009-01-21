@@ -1,25 +1,25 @@
-package ODLX::MetaDB::CSV;
+package OpenSLX::MetaDB::CSV;
 
 use vars qw(@ISA $VERSION);
-@ISA = ('ODLX::MetaDB::DBI');
+@ISA = ('OpenSLX::MetaDB::DBI');
 $VERSION = 1.01;		# API-version . implementation-version
 
 ################################################################################
 ### This class provides a MetaDB backend for CSV files (CSV = comma separated
 ### files).
 ### - each table will be stored into a CSV file.
-### - by default all files will be created inside a 'odlxdata-csv' directory.
+### - by default all files will be created inside a 'openslxdata-csv' directory.
 ################################################################################
 use strict;
 use Carp;
 use Fcntl qw(:DEFAULT :flock);
-use ODLX::Basics;
-use ODLX::MetaDB::DBI $VERSION;
+use OpenSLX::Basics;
+use OpenSLX::MetaDB::DBI $VERSION;
 
-my $superVersion = $ODLX::MetaDB::DBI::VERSION;
+my $superVersion = $OpenSLX::MetaDB::DBI::VERSION;
 if ($superVersion < $VERSION) {
 	confess _tr('Unable to load module <%s> (Version <%s> required, but <%s> found)',
-				'ODLX::MetaDB::DBI', $VERSION, $superVersion);
+				'OpenSLX::MetaDB::DBI', $VERSION, $superVersion);
 }
 ################################################################################
 ### implementation
@@ -35,11 +35,11 @@ sub connectConfigDB
 {
 	my $self = shift;
 
-	my $dbSpec = $odlxConfig{'db-spec'};
+	my $dbSpec = $openslxConfig{'db-spec'};
 	if (!defined $dbSpec) {
 		# build $dbSpec from individual parameters:
-		my $dbBasepath = $odlxConfig{'db-basepath'};
-		my $dbDatadir = $odlxConfig{'db-datadir'} || 'odlxdata-csv';
+		my $dbBasepath = $openslxConfig{'db-basepath'};
+		my $dbDatadir = $openslxConfig{'db-datadir'} || 'openslxdata-csv';
 		my $dbPath = "$dbBasepath/$dbDatadir";
 		mkdir $dbPath unless -e $dbPath;
 		$dbSpec = "f_dir=$dbPath";

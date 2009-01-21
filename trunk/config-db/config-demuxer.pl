@@ -6,8 +6,8 @@ use lib $FindBin::Bin;
 
 use Getopt::Long qw(:config pass_through);
 
-use ODLX::Basics;
-use ODLX::ConfigDB;
+use OpenSLX::Basics;
+use OpenSLX::ConfigDB;
 
 my (
 	$dryRun,
@@ -24,20 +24,20 @@ GetOptions(
 		# would have been written
 );
 
-odlxInit();
+openslxInit();
 
-my $odlxDB = connectConfigDB();
+my $openslxDB = connectConfigDB();
 
-my $configPath = "$odlxConfig{'private-basepath'}/config";
+my $configPath = "$openslxConfig{'private-basepath'}/config";
 if (!-d $configPath) {
 	die _tr("Unable to access config-path '%s'!", $configPath);
 }
-my $tempPath = "$odlxConfig{'temp-basepath'}/oslx-demuxer";
+my $tempPath = "$openslxConfig{'temp-basepath'}/oslx-demuxer";
 mkdir $tempPath;
 if (!-d $tempPath) {
 	die _tr("Unable to create or access temp-path '%s'!", $tempPath);
 }
-my $exportPath = "$odlxConfig{'public-basepath'}/tftpboot";
+my $exportPath = "$openslxConfig{'public-basepath'}/tftpboot";
 system("rm -rf $exportPath/client-conf/* $exportPath/pxe/pxelinux.cfg/*");
 system("mkdir -p $exportPath/client-conf $exportPath/pxe/pxelinux.cfg");
 if (!-d $exportPath) {
@@ -50,7 +50,7 @@ if (!$dryRun) {
 	writeConfigurations();
 }
 
-disconnectConfigDB($odlxDB);
+disconnectConfigDB($openslxDB);
 
 system("rm -rf $tempPath");
 
@@ -178,9 +178,9 @@ sub writeSystemConfigurations
 
 sub initSystemConfigurations
 {
-	$defaultSystem = fetchSystemsByID($odlxDB, 0);
+	$defaultSystem = fetchSystemsByID($openslxDB, 0);
 
-	foreach my $s (fetchSystemsByFilter($odlxDB)) {
+	foreach my $s (fetchSystemsByFilter($openslxDB)) {
 		next unless $s->{id} > 0;
 		vlog 2, _tr('read system %d:%s...', $s->{id}, $s->{name});
 
@@ -215,19 +215,19 @@ sub linkClientToSystems
 sub demuxClientConfigurations
 {
 	my %groups;
-	foreach my $g (fetchGroupsByFilter($odlxDB)) {
+	foreach my $g (fetchGroupsByFilter($openslxDB)) {
 		vlog 2, _tr('read group %d:%s...', $g->{id}, $g->{name});
 		$groups{$g->{id}} = $g;
 	}
 
-	$defaultClient = fetchClientsByID($odlxDB, 0);
+	$defaultClient = fetchClientsByID($openslxDB, 0);
 
-	foreach my $client (fetchClientsByFilter($odlxDB)) {
+	foreach my $client (fetchClientsByFilter($openslxDB)) {
 		next unless $client->{id} > 0;
 		vlog 2, _tr('read client %d:%s...', $client->{id}, $client->{name});
 
 		# add all systems directly linked to client:
-my @sysIDs = fetchSystemIDsOfClient($odlxDB, $client->{id});
+my @sysIDs = fetchSystemIDsOfClient($openslxDB, $client->{id});
 		linkClientToSystems($client, @sysIDs
 							);
 
@@ -238,12 +238,12 @@ my @sysIDs = fetchSystemIDsOfClient($odlxDB, $client->{id});
 			  map { $groups{$_} }
 			  grep { exists $groups{$_} }
 					# just to be safe: filter out unknown group-IDs
-			  fetchGroupIDsOfClient($odlxDB, $client->{id});
+			  fetchGroupIDsOfClient($openslxDB, $client->{id});
 		foreach my $group (@clientGroups) {
 			# fetch and add all systems that the client inherits from
 			# the current group:
 			linkClientToSystems($client,
-								fetchSystemIDsOfGroup($odlxDB, $group->{id}));
+								fetchSystemIDsOfGroup($openslxDB, $group->{id}));
 
 			# merge configuration from this group into the current client:
 			vlog 3, _tr('merging from group %d:%s...', $group->{id}, $group->{name});

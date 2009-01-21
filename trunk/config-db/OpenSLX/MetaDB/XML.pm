@@ -1,4 +1,4 @@
-package ODLX::MetaDB::XML;
+package OpenSLX::MetaDB::XML;
 
 use strict;
 use vars qw(@ISA @EXPORT $VERSION);
@@ -18,7 +18,7 @@ $VERSION = 0.02;
 ################################################################################
 use Carp;
 use DBI;
-use ODLX::Base;
+use OpenSLX::Base;
 
 ################################################################################
 ### basics
@@ -28,7 +28,7 @@ sub metaConnectConfigDB
 	my $dbParams = shift;
 
 	my $dbPath = $dbParams->{'db-path'}
-				 || '/home/zooey/Sources/odlx/config-db/datafiles-xml';
+				 || '/home/zooey/Sources/openslx/config-db/datafiles-xml';
 	mkdir $dbPath;
 	vlog 1, "trying to connect to XML-database <$dbPath>";
 	my $dbh = DBI->connect("dbi:AnyData:",

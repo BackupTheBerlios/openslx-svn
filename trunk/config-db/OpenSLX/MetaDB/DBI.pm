@@ -1,7 +1,7 @@
-package ODLX::MetaDB::DBI;
+package OpenSLX::MetaDB::DBI;
 
 use vars qw(@ISA $VERSION);
-@ISA = ('ODLX::MetaDB::Base');
+@ISA = ('OpenSLX::MetaDB::Base');
 $VERSION = 1.01;		# API-version . implementation-version
 
 ################################################################################
@@ -20,13 +20,13 @@ $VERSION = 1.01;		# API-version . implementation-version
 use strict;
 use Carp;
 use DBI;
-use ODLX::Basics;
-use ODLX::MetaDB::Base;
+use OpenSLX::Basics;
+use OpenSLX::MetaDB::Base;
 
-my $superVersion = $ODLX::MetaDB::Base::VERSION;
+my $superVersion = $OpenSLX::MetaDB::Base::VERSION;
 if ($superVersion < $VERSION) {
 	confess _tr('Unable to load module <%s> (Version <%s> required, but <%s> found)',
-				'ODLX::MetaDB::Base', $VERSION, $superVersion);
+				'OpenSLX::MetaDB::Base', $VERSION, $superVersion);
 }
 
 ################################################################################
@@ -34,7 +34,7 @@ if ($superVersion < $VERSION) {
 ################################################################################
 sub new
 {
-	confess "Don't call ODLX::MetaDB::DBI::new directly!";
+	confess "Don't call OpenSLX::MetaDB::DBI::new directly!";
 }
 
 sub disconnectConfigDB

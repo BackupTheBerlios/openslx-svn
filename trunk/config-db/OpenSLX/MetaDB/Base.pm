@@ -1,12 +1,12 @@
 ################################################################################
-# ODLX::MetaDB:Base - the base class for all MetaDB drivers
+# OpenSLX::MetaDB:Base - the base class for all MetaDB drivers
 #
 # Copyright 2006 by Oliver Tappe - all rights reserved.
 #
 # You may distribute this module under the terms of the GNU GPL v2.
 ################################################################################
 
-package ODLX::MetaDB::Base;
+package OpenSLX::MetaDB::Base;
 
 use vars qw($VERSION);
 $VERSION = 1.01;		# API-version . implementation-version
@@ -16,20 +16,20 @@ $VERSION = 1.01;		# API-version . implementation-version
 
 =head1 NAME
 
-ODLX::MetaDB::Base - the base class for all MetaDB drivers
+OpenSLX::MetaDB::Base - the base class for all MetaDB drivers
 
 =head1 SYNOPSIS
 
-  package ODLX::MetaDB::coolnewDB;
+  package OpenSLX::MetaDB::coolnewDB;
 
   use vars qw(@ISA $VERSION);
-  @ISA = ('ODLX::MetaDB::Base');
+  @ISA = ('OpenSLX::MetaDB::Base');
   $VERSION = 1.01;
 
-  my $superVersion = $ODLX::MetaDB::Base::VERSION;
+  my $superVersion = $OpenSLX::MetaDB::Base::VERSION;
   if ($superVersion < $VERSION) {
       confess _tr('Unable to load module <%s> (Version <%s> required)',
-                  'ODLX::MetaDB::Base', $VERSION);
+                  'OpenSLX::MetaDB::Base', $VERSION);
   }
 
   use coolnewDB;
@@ -45,7 +45,7 @@ ODLX::MetaDB::Base - the base class for all MetaDB drivers
   {
       my $self = shift;
 
-      my $dbName = $odlxConfig{'db-name'};
+      my $dbName = $openslxConfig{'db-name'};
       vlog 1, "trying to connect to coolnewDB-database <$dbName>";
       $self->{'dbh'} = ... # get connection handle from coolnewDB
   }
@@ -57,7 +57,7 @@ ODLX::MetaDB::Base - the base class for all MetaDB drivers
       $self->{'dbh'}->disconnect;
   }
 
-  # override all methods of ODLX::MetaDB::Base in order to implement
+  # override all methods of OpenSLX::MetaDB::Base in order to implement
   # a full MetaDB driver
   ...
 
@@ -66,16 +66,16 @@ MetaDB driver for the (imaginary) database B<coolnewDB>>
 
 =head1 DESCRIPTION
 
-This class defines the MetaDB interface for the ODLX.
+This class defines the MetaDB interface for the OpenSLX.
 
 Aim of the MetaDB abstraction is to make it possible to use a large set
 of different databases (from CSV-files to a fullblown Oracle-installation)
 transparently.
 
-While ODLX::ConfigDB represents the data layer to the outside world, each
-implementation of ODLX::MetaDB::Base provides a backend for a specific database.
+While OpenSLX::ConfigDB represents the data layer to the outside world, each
+implementation of OpenSLX::MetaDB::Base provides a backend for a specific database.
 
-This way, the different ODLX-scripts do not have to burden
+This way, the different OpenSLX-scripts do not have to burden
 themselves with any DB-specific details, they just request the data they want
 from the ConfigDB-layer and that in turn creates and communicates with the
 appropriate MetaDB driver in order to connect to the database and fetch and/or
@@ -96,12 +96,12 @@ The MetaDB interface contains of four different parts:
 =back
 
 In order to implement a MetaDB driver for a specific database, you need
-to inherit from B<ODLX::MetaDB::Base> and implement the full interface. As this
+to inherit from B<OpenSLX::MetaDB::Base> and implement the full interface. As this
 is quite some work, it might be wiser to actually inherit your driver from
-B<L<ODLX::MetaDB::DBI|ODLX::MetaDB::DBI>>, which is a default implementation for SQL databases.
+B<L<OpenSLX::MetaDB::DBI|OpenSLX::MetaDB::DBI>>, which is a default implementation for SQL databases.
 
 If there is a DBD-driver for the database your new MetaDB driver wants to talk
-to then all you need to do is inherit from B<ODLX::MetaDB::DBI> and then
+to then all you need to do is inherit from B<OpenSLX::MetaDB::DBI> and then
 reimplement L<C<connectConfigDB>> (and maybe some other methods in order to
 improve efficiency).
 
@@ -124,7 +124,7 @@ The following basic methods need to be implemented in a MetaDB driver:
 ################################################################################
 sub new
 {
-	confess "Don't create ODLX::MetaDB::Base - objects directly!";
+	confess "Don't create OpenSLX::MetaDB::Base - objects directly!";
 }
 
 =item C<connectConfigDB>
@@ -140,7 +140,7 @@ the following entries in order to find out which database to connect to:
 
 =item C<$config{'db-basepath'}>
 
-basic path to odlx database, defaults to path of running script
+basic path to openslx database, defaults to path of running script
 
 =item C<$config{'db-datadir'}>
 
@@ -157,7 +157,7 @@ C<%config>-entries).
 
 =item C<$config{'db-name'}>
 
-the precise name of the database that should be connected (defaults to 'odlx').
+the precise name of the database that should be connected (defaults to 'openslx').
 
 =back
 
