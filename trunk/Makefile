@@ -98,7 +98,7 @@ stage4 rootfs has the\n# prefix '/mnt'." \
 extend the\n# capabilities at the end of the initramfs (stage3). The \
 toolset is rather\n# restricted and you have to keep in mind that stage4 \
 rootfs has the\n# prefix '/mnt'. But you might use some special slx \
-functions via\# inclusion: '. /etc/functions' ..." \
+functions via\n# inclusion: '. /etc/functions' ..." \
 	  > $(SLX_PRIVATE_PATH)/config/default/initramfs/postinit.local
 	@chmod u+x $(SLX_PRIVATE_PATH)/config/default/initramfs/*init.local
 	@echo -e "# default setup for openslx on this specific system\
