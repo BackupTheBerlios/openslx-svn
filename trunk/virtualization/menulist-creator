@@ -12,6 +12,7 @@
 ##   ${vmdir}/$image.vbox                   vbox image file 
 ##   ${vmdir}/runscripts/$pool/*.vmware     vmware runscript 
 ##   ${vmdir}/runscripts/$pool/*.vbox       virtualbox runscript 
+##   ${vmdir}/xdialog-files/$pool/*.xdialog xdialog menu entrys 
 ##   ${vmdir}/xdmsession/$pool/*.desktop    .desktop files for xdm,
 ##                                          can't avoid masses of them
 ##   ${vmdir}/templates/runvmware-v2        image exec template script
@@ -25,7 +26,6 @@ vmdir="." && cd ${vmdir}
 
 # template for runvmware
 templatevmware="${vmdir}/templates/runvmware-v2"
-
 
 # Take all xml files and work with them
 for xml in *.xml;do
@@ -143,6 +143,10 @@ for xml in *.xml;do
   ##############################################################################
   # Main part, creates desktopentrys and image run scripts
 
+  # TODO: Perhaps its better if we put runscripts, xdmsessions and
+  # xdialog-files in one big folder with subfolder runscripts,
+  # xdmsessions, xdialog-files
+
   # check if ${vmdir}/runscripts/ is available
   if [ ! -d ${vmdir}/runscripts ]; then
     mkdir ${vmdir}/runscripts
@@ -151,6 +155,11 @@ for xml in *.xml;do
   # check if ${vmdir}/xdmsessions/ for .desktop files is available
   if [ ! -d ${vmdir}/xdmsessions ]; then
     mkdir ${vmdir}/xdmsessions
+  fi
+  
+  # check if ${vmdir}/xdmsessions/ for .desktop files is available
+  if [ ! -d ${vmdir}/xdmsessions ]; then
+    mkdir ${vmdir}/xdialog-files
   fi
  
   # work with the different pools and...
@@ -162,12 +171,16 @@ for xml in *.xml;do
     if [ ! -d ${vmdir}/xdmsessions/${i} ]; then
       mkdir -p ${vmdir}/xdmsessions/${i}
     fi
-    # ... remove startscript and xdmsessions if it isn't active.
+    if [ ! -d ${vmdir}/xdialog-files/${i} ]; then
+      mkdir -p ${vmdir}/xdialog-files/${i}
+    fi
+    # ... remove startscript, xdmsessions and Xdialog files if it isn't active.
     if [ ${active} -ne 1 ]; then
       if [ -f ${vmdir}/runscripts/${i}/${image}.vmware \
            -o -f runscripts/${i}/${image}.virtualbox ]; then
         rm -rf ${vmdir}/runscripts/${i}/${image}.*
         rm -rf ${vmdir}/xdmsessions/${i}/${image}.desktop
+        rm -rf ${vmdir}/xdialog-files/${i}/${image}.xdialog
       fi
     fi
 
@@ -179,18 +192,18 @@ for xml in *.xml;do
       echo -e "\nCreating runfiles for ${image} and pool ${i}\n"
       # create the desktopentry
       #TODO: change it with < EOF, >> isnt nice for so much lines
-      echo "Desktop entry for ${image}" > \ 
-                ${vmdir}/xdmsessions/${i}/${image}.desktop
+      echo "Desktop entry for ${image}" \
+                >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       echo "[Desktop Entry]" > ${vmdir}/xdmsessions/${i}/${image}.desktop
-      echo "X-SuSE-translate=true" >> \
-                ${vmdir}/xdmsessions/${i}/${image}.desktop
+      echo "X-SuSE-translate=true" \
+                >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       echo "Encoding=UTF-8" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       echo "Type=XSession" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       #TODO: Fix path
-      echo "Exec=/path/to/the/execfile/${image}" >> \
-                ${vmdir}/xdmsessions/${i}/${image}.desktop
-      echo "Name=${short_description}" >> \
-                ${vmdir}/xdmsessions/${i}/${image}.desktop
+      echo "Exec=/path/to/the/execfile/${image}" \
+                >> ${vmdir}/xdmsessions/${i}/${image}.desktop
+      echo "Name=${short_description}" \
+                >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       echo "Comment=${comment}" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       #TODO: I dont like SLXGrp as variable herein, why we need it here?
       #echo "SLXGrp=${pools}" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
@@ -199,15 +212,23 @@ for xml in *.xml;do
     fi
 
     
-    # If we have vmware, build execute from template
+    # If we have vmware, build executeable from template and
+    # Xdialog menu entrys
     if [ "${vm}" = "vmware" ]; then
 
+      # virtualmachine executable form template
       sed -e "s/imagename=\"CHANGEIT\"/imagename=\"${image}\"/" \
           -e "s/displayname=\"CHANGEIT\"/displayname=\"${short_description}\"/" \
           -e "s/vmostype=\"CHANGEIT\"/vmostype=\"${os}\"/" \
           -e "s/network=\"CHANGEIT\"/network=\"${network}\"/" \
       ${templatevmware} \
       > ${vmdir}/runscripts/${i}/${image}.runvmware
+    
+      # Xdialog menu entrys
+      echo -e "\"${vmdir}/runscripts/${i}/${image}.vmware\" \\
+            \"${short_description}\" \\
+            \"${long_description}\" \\" \
+            > ${vmdir}/xdialog-files/${i}/${image}.xdialog
 
     # if we have virtualbox, part here can only be vbox cause check above
     else 
@@ -215,10 +236,18 @@ for xml in *.xml;do
       exit 0
     fi
 
-
   done
 
 done
 
+# Building Xdialog executable for each pool
+for i in ${vmdir}/xdialog-files/*; do
+  cp ${vmdir}/templates/xdialog.sh ${i}
+  cat ${i}/*.xdialog >> ${i}/xdialog.sh
+  #closing bracket as last line invoked with \
+  echo ")" >> ${i}/xdialog.sh
+done
+
+
 # Delete all .utf files, we dont need them anymore
-rm -f "*.xml.utf"
+rm -f *.xml.utf

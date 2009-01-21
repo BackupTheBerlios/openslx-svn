@@ -6,12 +6,14 @@ Earlier checkin, cause it was requested.
 
 Structure and files:
 - menulist-creator:
-            creates desktop entrys and runvmwares runscripts from
-            template using xml files
+            creates desktop entrys, runvmwares runscripts and
+            xdialog skript for the different Pools from template using
+            xml files
 - templates/runvmware-v2:
             runvmware-v2 template, needed by menulist-creator
 - templates/Vorlage_VMWareImageAdministrator.xml:
             example xml file with verbose description
+- templates/
 
 Goal:
 - better documentation of source and virtualisation
