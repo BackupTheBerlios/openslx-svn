@@ -435,6 +435,8 @@ fi
 if [ -n "$use_busybox" ] ; then
   # somehow the target platform should be defined and proper busybox copied
   cp ${SLX_SHARE_PATH}/busybox/busybox ${INSTDIR}/bin
+  echo "${ROOTDIR}/lib/libc.so.6" >>${INSTDIR}/tmp/libraries
+  echo "${ROOTDIR}/lib/ld-linux.so.2" >>${INSTDIR}/tmp/libraries
   for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
       date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \
       insmod id ip kill killall ln ls lsmod mdev mkdir mke2fs mkfs.ext2 \
@@ -552,7 +554,7 @@ done
 for lib in $(fgrep -v /lib64/ ${INSTDIR}/tmp/libraries 2>/dev/null|sort -u); do
   cp ${lib} ${INSTDIR}/lib
 done
-rm ${INSTDIR}/tmp/libraries
+rm -f ${INSTDIR}/tmp/libraries
 
 # add kernel modules and dependency files
 if [ -z "$KERNVER" ] ; then
@@ -644,7 +646,7 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
         # iscsi modules
         # cobi cobi iscsiadm iscsid bin &>/dev/null
         #mkdir -p ${ddirprefix}/drivers/scsi
-        #for i in scsi_mod scsi_transport_iscsi libiscsi iscsi_tcp; do 
+        #for i in scsi_mod scsi_transport_iscsi libiscsi iscsi_tcp; do
         #  cp ${rdirprefix}/drivers/scsi/$i.ko
         #    ${ddirprefix}/drivers/scsi
         #done
