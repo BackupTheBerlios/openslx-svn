@@ -1,16 +1,17 @@
 #!/bin/bash
 #
 # Description:  universal (distro independent) generator for initial
-#               ramdisks for linux diskless clients 
+#               ramdisks for linux diskless clients (stage2 system
+#               setup)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 11-08-2006
 #               Nico Dietrich
 #               Felix Endres
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - odlx.org project
 #
-# Version:      0.4.5a
+# Version:      0.4.5b
 
 # debug level of script itself
 DEBUG=1
@@ -171,6 +172,7 @@ copy_distro_stuff() {
   # function files, then append to each the distro/version specific file
   # variables, functions set in default might that way be overwritten by
   # definitions in distro/version specific files
+  # fixme!! files should be taken from /usr/share/opendiskless/distro-specs
   cat distro-specs/$1/config-default >${INSTDIR}/etc/sysconfig/config
   cat distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig/config
   cat distro-specs/$1/functions-default >${INSTDIR}/etc/distro-functions
@@ -640,8 +642,14 @@ done
 chmod 755 ${INSTDIR}/init \
   ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
 
-# add the common client configuration file
-if [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
+# add the common default client configuration file - just to ensure to
+# have all major variables defined. !!These settings are most probably
+# are overwritten by fileget in stage3 within initramfs!!
+if [ -f /var/lib/opendiskless/default/initramfs/machine-setup ] ; then
+  cp /var/lib/opendiskless/default/initramfs/machine-setup \
+    ${INSTDIR}/etc/machine-setup
+# just compatibility for older versions
+elif [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
   cp /etc/dxs/client.cfg/machine-setup.default \
     ${INSTDIR}/etc/machine-setup
 # fixme: dirty hack if the installer does not creates a normal file
@@ -658,29 +666,24 @@ disabled\nroot_pw='"'$1$T7VD/mmQ$aCP1WEaWplEsHe9khv4kK.'"'" \
     > ${INSTDIR}/etc/machine-setup
 fi
 
-# custom init script for normal client start after initramfs
-# fixme: should be handled the same way as user-supplied init scripts
-if [ -f /etc/dxs/client.cfg/boot.local.default ] ; then
-  cp /etc/dxs/client.cfg/boot.local.default ${INSTDIR}/etc/boot.local
-fi
-
 # custom hardware configuration files pcitable.local and Cards.local
-if [ -f /etc/dxs/client.cfg/pcitable.local ] ; then
-  cat /etc/dxs/client.cfg/pcitable.local >> \
+# fixme!! New source for these files (instead of templates)!
+if [ -f /usr/share/opendiskless/templates/pcitable.local ] ; then
+  cat /usr/share/opendiskless/templates/pcitable.local >> \
     ${INSTDIR}/usr/share/hwdata/pcitable
 fi
-if [ -f /etc/dxs/client.cfg/Cards.local ] ; then
-  cat /etc/dxs/client.cfg/Cards.local >> \
+if [ -f /usr/share/opendiskless/templates/Cards.local ] ; then
+  cat /usr/share/opendiskless/templates/Cards.local >> \
     ${INSTDIR}/usr/share/hwdata/Cards
 fi
 
-# finally copy user-supplied preinit and postinit files
-# fixme: where are these files coming from??
-#for i in vendor_preinit vendor_postinit ; do
-#  if [ -f /etc/dxs/init.local/"${i}" ] ; then
-#    cp /etc/dxs/init.local/"$i" ${INSTDIR}/bin/"$i"
-#  fi
-#done
+# finally copy user-supplied preinit files. postinit.local and other
+# additions are part of fileget tgz (in stage3)
+for cfg in ${DISTRO}-${DISTRO_VER}/initramfs/preinit.local \
+           default/initramfs/preinit.local ; do
+  test -f /var/lib/opendiskless/config/$cfg && {
+    cp /var/lib/opendiskless/config/$cfg ${INSTDIR}; break; }
+done
 
 # remove unneeded debug info, fixme not really tested yet
 strip  ${INSTDIR}/bin/*  ${INSTDIR}/lib/* &>/dev/null

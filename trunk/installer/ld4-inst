@@ -4,8 +4,8 @@
 #               cloning from rsync source for Diskless X Stations (v4.0)
 #
 # Author(s):    Nico Dietrich, 04-04-2006
-#		Dirk von Suchodoletz <dirk@goe.net>, 29-07-2006
-#               Michael Janczyk, <mj0>, 06-07-06
+#		Dirk von Suchodoletz <dirk@goe.net>, 11-08-2006
+#               Michael Janczyk, <mj0>, 06-07-2006
 #
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
@@ -171,7 +171,7 @@ configure() {
 # ---> Variablenraten macht eigentlich nur hier Sinn, da sonst ja Werte vom
 # letzten Mal
 #  if ! [ -z "${netmask}" -a -z "${broadcast}" -a -z "${netname}" -a -z "${server}" ] ; then
-#    ipcfg=( `ifconfig eth0 | grep "inet addr" | sed -e "s,[a-zA-Z]*:,,g"` )
+#    ipcfg=( `ifconfig eth0 | grep "inet " | sed -e "s,[a-zA-Z]*:,,g"` )
 #    netmask=${ipcfg[3]}
 #    broadcast=${ipcfg[2]}
 #    # quickhack (more intelligent solution needed ...)
