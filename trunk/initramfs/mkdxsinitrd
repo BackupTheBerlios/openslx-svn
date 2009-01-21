@@ -491,6 +491,95 @@ if [ -n "${enable_wlan}" ] ; then
   cobi iwconfig bin
 fi
   
+# if tpm should be used within InitRamFS ...
+if [ -n "${use_tpm}" ] ; then
+  MISCMODULES="${MISCMODULES} tpm"
+
+  OLD_PWD=`pwd`
+  ########## platform-independent stuff ##########
+  if [ -z "$SLX_TPM_PATH" ] ; then
+        echo "ERROR: SLX_TPM_PATH is not set."
+        exit 1
+  fi
+  if [ ! -d "$SLX_TPM_PATH" ] ; then
+        echo "ERROR: can't find platform-independent tpm-files: $SLX_TPM_PATH"
+        exit 1
+  fi
+  # cd ${SLX_TPM_PATH}
+  for TPM_FILE in $(find ${SLX_TPM_PATH} -type f) ; do
+    # path="$(dirname $TPM_FILE | cut -c 3-)"
+    path=$(dirname $TPM_FILE | sed "s,$SLX_TPM_PATH,,")
+    mkdir -p ${INSTDIR}/$path
+    cp $TPM_FILE ${INSTDIR}/$path
+  done
+  ################################################
+
+  ########### platform-dependent stuff ###########
+  # TPM_BINPATH contains path to platform-dependent stuff
+  TPM_BINPATH="${ROOTDIR}/usr/local/share/tpm"
+  if [ ! -d "$TPM_BINPATH" ] ; then
+        echo "ERROR: can't find platform-dependent tpm-files: $TPM_BINPATH"
+        exit 1
+  fi
+  # copy platform-dependent directory structure and files
+  # cd ${TPM_BINPATH}
+  for TPM_FILE in $(find ${TPM_BINPATH} -type f) ; do
+    # path="$(dirname $TPM_FILE | cut -c 3-)"
+    path=$(dirname $TPM_FILE | sed "s,${ROOTDIR},,")
+    mkdir -p ${INSTDIR}/$path
+    cp $TPM_FILE ${INSTDIR}/$path
+  done
+  ################################################
+
+  # include the shared libraries required for various binaries
+  ### echo "adding shared libs:"
+  SHLIBS="$(grep -v '^#' ${SLX_TPM_PATH}/etc/libdeps)"
+  for lib in $SHLIBS ; do
+    ### cp ${ROOTDIR}/$lib ${INSTDIR}/lib/ && echo $lib
+	echo ${ROOTDIR}/$lib >>${INSTDIR}/tmp/libraries
+  done
+  
+  # trousers and tpm-tools
+  cobi tcsd bin
+  for tool in tpm_sealdata tpm_changeownerauth tpm_clear \
+	  		  tpm_restrictpubek tpm_selftest tpm_setactive \
+			  tpm_setclearable tpm_setenable tpm_setownable \
+			  tpm_setpresence tpm_takeownership tpm_version \
+			  tpm_createek tpm_getpubek tpm_unseal ; do
+	  cobi $tool bin
+  done
+  # ssh stuff
+  cobi ssh bin
+  cobi scp bin
+  
+  # cd $OLD_PWD
+
+  # just debugging tools, can be safely removed...
+  cobi bash bin
+  cp ${ROOTDIR}/usr/bin/ldd /${INSTDIR}/bin
+  cobi strace bin
+fi
+
+# if unionfs
+cobi unionctl bin &>/dev/null || \
+  echo "Program unionctl not found; could be ignored ..."
+
+# if cowloop
+cobi cowdev bin &>/dev/null || \
+  echo "Program cowdev not found; could be ignored ..."
+
+# if iscsi (or just with modules)??
+# cobi iscsiadm iscsid bin &>/dev/null || \
+#  echo "Program iscsid not found; could be ignored ..."
+
+# distro specific additional stuff
+case "${DISTRO_NAME}" in
+  debian*)
+    cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib;;
+esac
+
+#### end tpm-stuff ####
+
 # now copy all libraries that have been determined to be required:
 # first we handle all 64-bit libs...
 for lib in $(fgrep /lib64/ ${INSTDIR}/tmp/libraries 2>/dev/null|sort -u); do
@@ -612,7 +701,11 @@ if [ -z "$cdboot" ] ; then
           #done
         ;;
         tpm)
-          # tpm module stuff
+          # complete the tpm modules
+          for mod in tpm_atmel tpm_bios tpm_nsc tpm_infineon tpm_tis ; do
+            cp ${rdirprefix}/drivers/char/tpm/$mod.ko \
+              ${ddirprefix}/drivers/char/tpm/
+          done
         ;;
         sata_sil|sata_nv|sata_via)
           # serial ata local disk support
