@@ -517,7 +517,7 @@ if [ -n "$use_busybox" ] ; then
       date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \
       insmod id ip kill killall ln ls lsmod mdev mkdir mke2fs mkfs.ext2 \
       mkfs.ext3 mknod mkswap modprobe mount mv nice ping printf ps rdate \
-      rm rmmod sed sort swapoff swapon switch_root tar test tftp \
+      rm rmmod sed sleep sort swapoff swapon switch_root tar test tftp \
       time touch tr udhcpc umount uptime usleep vconfig vi zcat zcip; do
     ln -fs /bin/busybox ${INSTDIR}/bin/$bbins
   done
@@ -554,7 +554,7 @@ else
   # needed standard binaries (in init, servconfig, hwautocfg, ... scripts)
   for bbins in \
       cat chmod chown chroot cp expr fdisk gzip killall ln ls mkdir \
-      mkfs.ext2 modprobe mount rmmod sed sleep sort rm tar umount
+      mkfs.ext2 modprobe mount rmmod sed sort rm tar umount
     do
     cobi ${bbins} bin || echo "Program ${bbins} not found"
   done
