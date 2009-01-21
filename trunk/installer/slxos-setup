@@ -63,7 +63,7 @@ my $action = shift @ARGV;
 
 # create ossetup-engine for given distro and start it:
 my $engine = OpenSLX::OSSetup::Engine->new;
-if ($action =~ m[import]i) {
+if ($action =~ m[^import]i) {
 	my $vendorOSName = shift @ARGV;
 	if (!defined $vendorOSName) {
 		print STDERR _tr("You need to give the name of the vendor-os you'd like to import!\n");
@@ -78,7 +78,7 @@ if ($action =~ m[import]i) {
 		die _tr("'%s' doesn't exist, giving up!\n", $engine->{'vendor-os-path'});
 	}
 	$engine->addInstalledVendorOSToConfigDB();
-} elsif ($action =~ m[update]i) {
+} elsif ($action =~ m[^update]i) {
 	my $vendorOSName = shift @ARGV;
 	if (!defined $vendorOSName) {
 		print STDERR _tr("You need to give the name of the vendor-os you'd like to update!\n");
@@ -90,7 +90,7 @@ if ($action =~ m[import]i) {
 		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 	$engine->initialize($vendorOSName, 'update');
 	$engine->updateVendorOS();
-} elsif ($action =~ m[install]i) {
+} elsif ($action =~ m[^install]i) {
 	my $vendorOSName = shift @ARGV;
 	if (!defined $vendorOSName) {
 		print STDERR _tr("You need to give the name of the vendor-os you'd like to install!\n");
@@ -102,7 +102,7 @@ if ($action =~ m[import]i) {
 		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 	$engine->initialize($vendorOSName, 'install');
 	$engine->installVendorOS();
-} elsif ($action =~ m[clone]i) {
+} elsif ($action =~ m[^clone]i) {
 	my $vendorOSName = shift @ARGV;
 	my $srcString = shift @ARGV;
 	if ($srcString !~ m[^\s*source=(.+?)\s*$]) {
@@ -119,7 +119,7 @@ if ($action =~ m[import]i) {
 		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 	$engine->initialize($vendorOSName, 'clone');
 	$engine->cloneVendorOS($source);
-} elsif ($action =~ m[list-su]i) {
+} elsif ($action =~ m[^list-su]i) {
 	print _tr("List of supported distros:\n");
 	print join('', map {
 					"\t$_"
@@ -127,7 +127,7 @@ if ($action =~ m[import]i) {
 					 ."\t($supportedDistros{$_}->{support})\n"
 				   }
 				   sort keys %supportedDistros);
-} elsif ($action =~ m[list-in]i) {
+} elsif ($action =~ m[^list-in]i) {
 	print _tr("List of installed vendor-OSes:\n");
 	print join('', map {
 					s[^.+/][];
