@@ -394,7 +394,7 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   done
 
   # all vmware clients
-  cat ${vmdir}/xdialog-files/${pool}/*.xdialog >> /mnt/etc/X11/xdialog.sh
+  cat ${vmdir}/xdialog-files/${pool}/*.xdialog >> /mnt/var/X11R6/bin/xdialog.sh
   # closing bracket as last line ends with '\'
   echo ")" >> /mnt/var/X11R6/bin/xdialog.sh
   chmod 755 /mnt/var/X11R6/bin/xdialog.sh
