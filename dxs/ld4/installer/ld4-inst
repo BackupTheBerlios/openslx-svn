@@ -1,0 +1,124 @@
+#! /bin/bash
+#
+# Description:  Script for generating dxs filesystem by
+#               cloning from rsync source for Diskless X Stations (v4.0)
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 02-11-2005
+# Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
+#
+
+
+header() {
+  echo
+  echo "Welcome to the LD4 installation"
+  echo
+}
+
+# check needed things for installation
+precheck() {
+  # check if running as root
+
+  # check for existing programs: 
+    # rsync (server-side) -> which
+    # ssh, rsync (referenz-system-side) -> not possible in precheck
+
+    # nfs-kernel-server, atftpd 
+    #  -> not needed for installation
+}
+
+
+# ask question variable_name default_value
+ask() {
+  echo
+  echo "$1"
+  echo -n "* [ $3 ] "
+  read userinput
+  if [ -z $userinput ] ; then
+      local back=$3
+  else
+      local back=$userinput
+  fi
+  echo "$2=\"$back\"" >> .config
+}
+
+
+configure() {
+  export LANG="c"
+  
+  if [ -f .config ] ; then
+    echo -n "Use values from last installation? [Y/n] "
+    read userinput
+    if [ "x$userinput" = "xn" ] ; then
+      cp .config.default .config
+    fi
+  else
+    cp .config.default .config
+  fi
+  . .config
+
+  if ! [ -z $netmask -a -z $broadcast -a -z $netname -a -z $server ] ; then
+    ipcfg=( `ifconfig eth0 | grep "inet addr" | sed -e "s,[a-zA-Z]*:,,g"` )
+    netmask=${ipcfg[3]}
+    broadcast=${ipcfg[2]}
+  # quickhack (more intelligent solution needed ...)
+    netname=`route -n | grep -m 1 eth0 | grep -v "UG" | awk '{ print $1 }'`
+    server=${ipcfg[1]}
+  fi
+
+
+  # missing: try to detect server architecture
+
+  # missing: ask for client & server distro
+ 
+  
+  # das grosse frage-antwort-spiel:
+  ask "Path for client system: " rootdir $rootdir
+  ask "Path for tftpboot: " tftpbootdir $tftpbootdir
+  ask "Which network do you want to use for DXS? (A.B.C.0) " netname $netname
+  ask "Which netmask should be used? (255.B.C.0): " netmask $netmask
+  ask "What is your servers IP for NFS, DHCP and TFTP? " server $server
+  # noetig??
+  ask "Broadcast Address: " broadcast $broadcast
+
+  # evtl. optional?
+  ask "Where automount home directories from? (A.B.C.D:/home-dir)" amt $server":/home"
+
+  ask "Which debug level should be used? " debuglevel $debuglevel
+
+  # wo ist das referenzsystem?
+
+  # hier auch dns-server etc abfragen??
+
+  # nfs / nbd / squash-fs?
+}
+
+
+copy_system() {
+  . exclude-${client_distro}
+
+  # sync / mksquashfs
+
+}
+
+# setting up server site configuration files etc.
+setup_server () {
+  # rewrite and copy / cat default files (may be distro-dependant): 
+    # dhcpd.conf, atftpd, exports
+  # make services start
+}
+
+
+create_initrd() {
+
+}
+
+
+## ------ MAIN ------ ##
+
+header
+precheck #(run as root, rsync etc.)
+configure
+copy_system
+setup_server
+create_initrd
+

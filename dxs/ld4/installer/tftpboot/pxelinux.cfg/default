@@ -1,0 +1,67 @@
+# ~/pxelinux.cfg/default (main-menu)
+#
+# Description:  Boot selection with the new Syslinux/PXElinux by Peter Anwin
+#               selection is done by cursor up and down keys
+# Modification: Alexander Heinz
+#               Dirk von Suchodoletz <dirk@goe.net>, 23-09-2005
+#
+DEFAULT @@@server@@@::@@@tftpbootdir@@@/menu.c32
+
+PROMPT 0
+NOESCAPE 1
+TIMEOUT 600
+#IMPLICIT 1
+#ALLOWOPTIONS 1
+#ONERROR menu
+
+MENU MASTER PASSWD ganzgeheim
+
+MENU TITLE Linux Diskless Clients - Main Menu
+
+
+#####
+LABEL Bitte waehlen Sie mit den Pfeil-Tasten aus:
+   KERNEL @@@server@@@::@@@tftpbootdir@@@/menu.c32
+   APPEND @@@server@@@::@@@tftpbootdir@@@/pxelinux.cfg/default
+LABEL
+   KERNEL @@@server@@@::@@@tftpbootdir@@@/menu.c32
+   APPEND @@@server@@@::@@@tftpbootdir@@@/pxelinux.cfg/default
+#####
+
+
+LABEL kursraum
+   MENU LABEL 1. ^Kursraumumgebung Linux SuSe 9.3 (VMWare 5.0) starten
+   MENU DEFAULT
+   KERNEL @@@server@@@::@@@tftpbootdir@@@/9.3
+   APPEND nfsroot=@@@server@@@:/nfsroot/9.3 vga=0x317 splash=silent initrd=@@@server@@@::@@@tftpbootdir@@@/initrd-9.3 apic dhcp
+   ipappend 1
+
+LABEL suse93
+   MENU LABEL 2. Neue Kursraumumgebung ^SuSE 9.3 mit VMplayer starten
+   KERNEL @@@server@@@::@@@tftpbootdir@@@/9.3-new
+   APPEND vga=0x317 nfsroot=@@@server@@@:/nfsroot/9.3-new vga=0x317 splash=silent initrd=@@@server@@@::@@@tftpbootdir@@@/initrd-9.3-new apic dhcp
+   ipappend 1
+
+
+LABEL local
+   MENU LABEL 4. ^Lokal booten
+   MENU PASSWD lokal
+   localboot 0
+
+
+#####
+LABEL
+   KERNEL @@@server@@@::@@@tftpbootdir@@@/menu.c32
+   APPEND @@@server@@@::@@@tftpbootdir@@@/pxelinux.cfg/default
+#####
+
+
+LABEL halt
+   MENU LABEL c. ^Computer ausschalten
+   KERNEL @@@server@@@::@@@tftpbootdir@@@/atxoff.com
+
+LABEL help
+   MENU LABEL d. ^Hilfe
+   KERNEL @@@server@@@::@@@tftpbootdir@@@/menu.c32
+   APPEND @@@server@@@::@@@tftpbootdir@@@/pxelinux.cfg/help
+

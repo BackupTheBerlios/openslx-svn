@@ -1,0 +1,7 @@
+exclude="+ /bin\n+ /boot\n+ /etc\n+ /home\n+ /lib\n\
+  + /media\n+ /mnt\n+ /opt\n+ /root\n+ /sbin\n+ /tmp\n+ /usr\n\
+  + /var\n\
+  - *~\n- *.rpmsave\n- *.rpmnew\n- *.YaST2save\n- *.old\n- *.bak\n\
+  - /boot/initrd*\n- /boot/grub\n- /tmp/*\n- /root/*\n- /home/*\n\
+  - /var/lib/YaST2/you/mnt/*\n- .svn\n- /var/tmp/*\n\
+  - /usr/share/vmware/*\n- *lost+found*\n- /mnt/*\n- /media/*\n- /*"
