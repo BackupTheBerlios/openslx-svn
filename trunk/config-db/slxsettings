@@ -346,6 +346,9 @@ Default is $SLX_TFTPBOOT_PATH (usually F</srv/openslx/tftpboot>.
 =item B<<     --verbose-level=<int> >>
 
 Sets the level of logging verbosity (0-3).
+Prints additional output for debugging. N is a number between 0 and 3. Level
+1 provides more information than the default, while 2 provides traces. With
+level 3 you get extreme debug output, e.g. database commands are printed.
 
 Default is $SLX_VERBOSE_LEVEL (usually 0, no logging).
 
