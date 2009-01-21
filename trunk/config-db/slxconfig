@@ -77,17 +77,29 @@ if ($action =~ m[^add-system$]i) {
 } elsif ($action =~ m[^change-client$]i) {
     changeClientInConfigDB(@ARGV);
 } elsif ($action =~ m[^list-c]) {
-	print _tr("List of the matching clients:\n");
+	print _tr("List of clients:\n");
 	listClients(@ARGV);
 } elsif ($action =~ m[^list-e]) {
-	print _tr("List of the matching exports:\n");
+	print _tr("List of exports:\n");
 	listExports(@ARGV);
 } elsif ($action =~ m[^list-s]) {
-	print _tr("List of the matching systems:\n");
+	print _tr("List of systems:\n");
 	listSystems(@ARGV);
 } elsif ($action =~ m[^list-v]) {
-	print _tr("List of the matching vendor-OSes:\n");
+	print _tr("List of vendor-OSes:\n");
 	listVendorOSes(@ARGV);
+} elsif ($action =~ m[^search-c]) {
+	print _tr("Matching clients:\n");
+	searchClients(@ARGV);
+} elsif ($action =~ m[^search-e]) {
+	print _tr("Matching exports:\n");
+	searchExports(@ARGV);
+} elsif ($action =~ m[^search-s]) {
+	print _tr("Matching systems:\n");
+	searchSystems(@ARGV);
+} elsif ($action =~ m[^search-v]) {
+	print _tr("Matching vendor-OSes:\n");
+	searchVendorOSes(@ARGV);
 } elsif ($action =~ m[^remove-client$]i) {
     removeClientFromConfigDB(@ARGV);
 } elsif ($action =~ m[^remove-system$]i) {
@@ -104,6 +116,10 @@ if ($action =~ m[^add-system$]i) {
 	list-vendoros
 	remove-client
 	remove-system
+	search-client
+	search-export
+	search-system
+	search-vendoros
 Try '%s --help' for more info.\n", $0);
 }
 
@@ -159,6 +175,115 @@ sub dumpElements
 
 sub listClients
 {
+	my $name = shift;
+
+	my %nameSpec;
+    # set verbose mode if any params have been passed in:
+    if (defined $name) {
+	    $verbose = 1;
+	    $nameSpec{name} = $name;
+    }
+
+	dumpElements(
+		'client', undef,
+		map {
+			my @sysIDs = $openslxDB->aggregatedSystemIDsOfClient($_);
+			$_->{systems}
+				= 	join "\n",
+					map { $_->{name} }
+					sort { $a->{name} cmp $b->{name} }
+					$openslxDB->fetchSystemByID(\@sysIDs, 'name');
+			$_;
+		}
+		sort { $a->{name} cmp $b->{name} }
+		$openslxDB->fetchClientByFilter(\%nameSpec)
+	);
+	return;
+}
+
+sub listExports
+{
+	my $name = shift;
+
+	my %nameSpec;
+    # set verbose mode if any params have been passed in:
+    if (defined $name) {
+	    $verbose = 1;
+	    $nameSpec{name} = $name;
+    }
+
+	dumpElements(
+		'export',
+		sub {
+			"\t$_->{name}".substr(' ' x 30, length($_->{name}))."($_->{type})\n"
+		},
+		map {
+			my $vendorOS
+				= $openslxDB->fetchVendorOSByID($_->{vendor_os_id}, 'name');
+			if (defined $vendorOS) {
+				$_->{vendor_os_id} .= " ($vendorOS->{name})";
+			}
+			$_;
+		}
+		sort { $a->{name} eq $b->{name} || $a->{type} cmp $b->{type} }
+		$openslxDB->fetchExportByFilter(\%nameSpec)
+	);
+	return;
+}
+
+sub listSystems
+{
+	my $name = shift;
+
+	my %nameSpec;
+    # set verbose mode if any params have been passed in:
+    if (defined $name) {
+	    $verbose = 1;
+	    $nameSpec{name} = $name;
+    }
+
+	dumpElements(
+		'system', undef,
+		map {
+			my @clientIDs = $openslxDB->aggregatedClientIDsOfSystem($_);
+			$_->{clients}
+				= 	join "\n",
+					map { $_->{name} }
+					sort { $a->{name} cmp $b->{name} }
+					$openslxDB->fetchClientByID(\@clientIDs, 'name');
+			my $export = $openslxDB->fetchExportByID($_->{export_id});
+			if (defined $export) {
+				$_->{export_id} = "$export->{name} ($export->{type})";
+			}
+			$_;
+		}
+		sort { $a->{name} cmp $b->{name} }
+		$openslxDB->fetchSystemByFilter(\%nameSpec)
+	);
+	return;
+}
+
+sub listVendorOSes
+{
+	my $name = shift;
+
+	my %nameSpec;
+    # set verbose mode if any params have been passed in:
+    if (defined $name) {
+	    $verbose = 1;
+	    $nameSpec{name} = $name;
+    }
+
+	dumpElements(
+		'vendor-OS', undef,
+		 sort { $a->{name} cmp $b->{name} }
+		 $openslxDB->fetchVendorOSByFilter(\%nameSpec)
+	);
+	return;
+}
+
+sub searchClients
+{
     my @clientKeys
 		= map { (/^(\w+)\W/) ? $1 : $_; }
 		  @{$DbSchema->{tables}->{client}};
@@ -184,7 +309,7 @@ sub listClients
 	return;
 }
 
-sub listExports
+sub searchExports
 {
     my @exportKeys
 		= map { (/^(\w+)\W/) ? $1 : $_; }
@@ -213,7 +338,7 @@ sub listExports
 	return;
 }
 
-sub listSystems
+sub searchSystems
 {
     my @systemKeys
 		= map { (/^(\w+)\W/) ? $1 : $_; }
@@ -244,7 +369,7 @@ sub listSystems
 	return;
 }
 
-sub listVendorOSes
+sub searchVendorOSes
 {
     my @vendorOSKeys
 		= map { (/^(\w+)\W/) ? $1 : $_; }
@@ -637,22 +762,21 @@ changes the data of an existing system in the config-DB
 
 changes the data of an exiisting system in the config-DB
 
-=item B<<     list-clients [<key>=<value> ...] >>
+=item B<<     list-client [<client-name>] >>
 
-lists all clients in config-DB (optionally matching given criteria)
+lists client with given name
 
-=item B<<     list-exports [<key>=<value> ...] >>
+=item B<<     list-export [<export-name>] >>
 
-lists all exports in config-DB (optionally matching given criteria)
+lists export with given name
 
-=item B<<     list-systems [<key>=<value> ...] >>
+=item B<<     list-system [<system-name>] >>
 
-lists all systems in config-DB (optionally matching given
-criteria)
+lists system with given name
 
-=item B<<     list-vendoroses [<key>=<value> ...] >>
+=item B<<     list-vendoros [<vendorOS-name>] >>
 
-lists all vendor-OSes in config-DB (optionally matching given criteria)
+lists vendor-OS with given name
 
 =item B<<     remove-client <client-name> >>
 
@@ -661,6 +785,23 @@ removes a client from the config-DB
 =item B<<     remove-system <system-name> >>
 
 removes a system from the config-DB
+
+=item B<<     search-client [<key>=<value> ...] >>
+
+shows all clients in config-DB (optionally matching given criteria)
+
+=item B<<     search-export [<key>=<value> ...] >>
+
+shows all exports in config-DB (optionally matching given criteria)
+
+=item B<<     search-system [<key>=<value> ...] >>
+
+shows all systems in config-DB (optionally matching given
+criteria)
+
+=item B<<     search-vendoros [<key>=<value> ...] >>
+
+shows all vendor-OSes in config-DB (optionally matching given criteria)
 
 =back
 
