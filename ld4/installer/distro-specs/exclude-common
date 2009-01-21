@@ -14,6 +14,7 @@
 + /tmp
 + /usr
 + /var
+- /var/tmp/*
 - /etc/shadow*
 - /etc/dxs
 - /dev/*

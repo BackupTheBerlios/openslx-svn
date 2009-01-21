@@ -7,34 +7,34 @@
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.4.2b
+# Version:      0.4.2c
 
 #######################################################################
 # generate events with the sysfs trigger
 trigger_device_events () {
-    list=$(echo /sys/bus/*/devices/*/uevent)
-    list="$list $(echo /sys/class/*/*/uevent)"
-    list="$list $(echo /sys/block/*/uevent /sys/block/*/*/uevent)"
-    for i in $list; do
-       case "$i" in
-           */device/uevent|*\**)
-               continue
-               ;;
-           */class/mem/*|*/class/tty/*)
-               first="$first $i"
-               ;;
-           */block/md*)
-               last="$last $i"
-               ;;
-           */*)
-               default="$default $i"
-               ;;
-       esac
-    done
-    # trigger the sorted events
-    for i in $first $default $last; do
-       echo "add" > "$i"
-   done
+  list=$(echo /sys/bus/*/devices/*/uevent)
+  list="$list $(echo /sys/class/*/*/uevent)"
+  list="$list $(echo /sys/block/*/uevent /sys/block/*/*/uevent)"
+  for i in $list; do
+    case "$i" in
+      */device/uevent|*\**)
+        continue
+        ;;
+      */class/mem/*|*/class/tty/*)
+        first="$first $i"
+        ;;
+      */block/md*)
+        last="$last $i"
+        ;;
+      */*)
+        default="$default $i"
+        ;;
+    esac
+  done
+  # trigger the sorted events
+  for i in $first $default $last; do
+    echo "add" > "$i"
+  done
 }
 
 #######################################################################
@@ -201,7 +201,7 @@ fi
 # dhcp client
 rundhcp ()
 {
-local vci=$1
+local vci="$1"
 for dhcp in dhclient dhcpcd pump ipconfig none; do
   test -x /bin/$dhcp && break;
 done
@@ -238,7 +238,7 @@ case $dhcp in
   *)
   ;;
 esac
-echo "finished" > /tmp/dhcp-done
+echo "dhcp finished" > /tmp/dhcp-done
 }
 
 #######################################################################
@@ -281,7 +281,7 @@ else
     cfgfile=$cfgfile"."
   done
 fi
-echo "finished" > /tmp/file-done
+echo "tftp finished" > /tmp/file-done
 }
 
 #######################################################################
@@ -386,7 +386,7 @@ sed 's/:.*/:!:13078:0:99999:7:::/;/^root.*/d' /tmp/newpasswd \
 # localization simply derived from $language variable set in 
 # machine-setup or other sources - mostly taken from knoppix
 localization () {
-country=$1
+country="$1"
 CONSOLE_FONT="lat9w-16.psfu"
 case "$country" in
   # German version
