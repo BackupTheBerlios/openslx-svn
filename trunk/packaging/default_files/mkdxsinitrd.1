@@ -10,7 +10,7 @@
 .TH mkdxsinitrd 1 "2006-05-05" "4.0.1" ""
 .LO 1
 .SH NAME
-mkdxsinitrd \- erstellt eine initial ramdisk für diskless clients
+mkdxsinitrd \- erstellt eine initial ramdisk fuer diskless clients
 .SH SYNTAX
 .B mkdxsinitrd 
 .RB [\| \-gh \|] 
@@ -25,16 +25,16 @@ mkdxsinitrd \- erstellt eine initial ramdisk für diskless clients
 .RB [\| \-r 
 .IR Pfad \|] 
 .RB [\| \-s 
-.IR Bildgröße \|] 
+.IR Bildgroesse \|] 
 
 .SH BESCHREIBUNG
-Damit Clients ein Betriebssystem nutzen können dass über ein 
+Damit Clients ein Betriebssystem nutzen koennen dass ueber ein 
 Netzwerk bereitgestellt wird, brauchen diese eine initial ramdisk, 
-in der Vorkonfigurationsschritte stattfinden. Diese sind nötig,
+in der Vorkonfigurationsschritte stattfinden. Diese sind noetig,
 damit das Betriebssystem eine Umgebung vorfindet in der es seine 
 gewohnte Initialisierung betreiben kann.  
 .B mkdxsinitrd 
-erstellt eine solche ramdisk, die von PXE-fähigen zum Booten benutzt
+erstellt eine solche ramdisk, die von PXE-faehigen zum Booten benutzt
 werden kann.
 
 
@@ -49,14 +49,14 @@ Zeige Informationen zur Benutzung.
 .BI \-k\  Kernelversion
 .B mkdxsinitrd
 versucht die aktuellste Kernelversion zu finden. Falls dies nicht klappt, 
-oder eine andere Kernelversion gewünscht ist kann diese hier angegeben werden 
-(funktioniert natürlich nur für auf dem Hostsystem vorhandene Kernelversionen).
+oder eine andere Kernelversion gewuenscht ist kann diese hier angegeben werden 
+(funktioniert natuerlich nur fuer auf dem Hostsystem vorhandene Kernelversionen).
 .TP
 .BI \-i\  Pfad 
 Optionale Angabe wo die erstellte ramdisk hingeschrieben werden soll.
 .TP
 .BI \-f\  Modulliste 
-Kernelmodule die benutzt werden sollen um das Rootfilesystem über das dem Netzwerk zu mounten (z.B. nfs, nbd dnbd).
+Kernelmodule die benutzt werden sollen um das Rootfilesystem ueber das dem Netzwerk zu mounten (z.B. nfs, nbd dnbd).
 .TP
 .BI \-n\  Modulliste
 Kernelmodule zum Betrieb der Clientnetzwerkkarten (z.B. e100 tg3 via-rhine).
@@ -64,8 +64,8 @@ Kernelmodule zum Betrieb der Clientnetzwerkkarten (z.B. e100 tg3 via-rhine).
 .BI \-r\  Pfad
 Pfad zum Wurzelverzeichnis des zu exportierenden Betriebsystems (z.B. /nfsroot).
 .TP
-.BI \-s\  Bildgröße
-Größenangabe des splash images.
+.BI \-s\  Bildgroesse
+Groessenangabe des splash images.
 .TP
 .BI \-d\  Name
 Name der Distribution der Betriebsystemvorlage
