@@ -26,20 +26,20 @@ goto_script_dir()
   [ $DEBUG -ge 2 ] && echo "Aufgerufen wurde $0, checking if it is a link"
   calleddetails=`ls -l $0` # get the file flags (e.g. lrwxrwxrwx)
   [ $DEBUG -ge 2 ] && echo $calleddetails
-  
+
   calleddir=${0%/*}  # Strip the filename from path
   [ $DEBUG -ge 2 ] && echo "Changing into directory of called scripts/links \
 ($calleddir)"
   cd $calleddir
- 
-  while index=`expr index "$calleddetails" "l"`; 
+
+  while index=`expr index "$calleddetails" "l"`;
         [ $index -eq 1 ]; do
 
     [ $DEBUG -ge 2 ] && echo "It is a link"
     target=`echo $calleddetails | awk '{print $NF}'`
     [ $DEBUG -ge 2 ] && echo "The target of the link is: $target"
     hasslash=`expr index "$target" "/"`
-    if [ $hasslash -ne 0 ]; then 
+    if [ $hasslash -ne 0 ]; then
         targetpath=${target%/*} # extract the pathname
         [ $DEBUG -ge 2 ] && echo "Following link to $targetpath"
         cd $targetpath
@@ -63,10 +63,10 @@ precheck() {
     echo -e "\nYou don't have the needed permission. Please rerun as root user!\n"
     exit 1
   fi
-  
+
   # switch pwd to this scripts location
   goto_script_dir
-  
+
   # check for existing programs:
   # rsync (server-side)
   which rsync >/dev/null
@@ -77,7 +77,7 @@ precheck() {
 
   # ssh, rsync (referenz-system-side) -> not possible in precheck
 
-  # nfs-kernel-server, atftpd 
+  # nfs-kernel-server, atftpd
   #  -> not needed for installation
   # but should be checked here, so the admin has just to restart
 }
@@ -180,7 +180,7 @@ configure() {
 #  fi
   fi
   . .config
-  
+
   [ -z $overwrite_configs ] && overwrite_configs="y"
   ask "Overwrite server configs (y) or write *.new files (n)? " overwrite_configs $overwrite_configs
   if [ "$overwrite_configs" = "no" -o "$overwrite_configs" = "n" -o \
@@ -254,7 +254,7 @@ configure() {
     ask "Which debug level should be used? " debuglevel $debuglevel
     [ -z "$debuglevel" ] && debuglevel=0
   done
- 
+
   # wo ist das referenzsystem? - was ist default ???
   if [ -z ${rsyncsource} ] ; then rsyncsource="localhost:/" ; fi
   ask "IP + Path to reference system: " rsyncsource $rsyncsource
@@ -285,7 +285,7 @@ copy_system() {
   else
     local file="distro-specs/exclude-${client_distro}"
   fi
-  # put specific an common exclude list into one file, add includes (+) 
+  # put specific an common exclude list into one file, add includes (+)
   # before excludes (-)
   cat $file distro-specs/exclude-common|grep -e "^+ " > /tmp/dxs-exclude-list
   cat $file distro-specs/exclude-common|grep -e "^- " >> /tmp/dxs-exclude-list
@@ -306,7 +306,7 @@ create_nbd() {
     if [ "$nbdfs" = "squashfs" ] ; then
       if ps aux|grep -v grep|grep mksquashfs &>/dev/null ; then
         echo "Found other mksquashfs process running, skipping this step."
-      else 
+      else
         echo -e "\nGenerating SquashFS image ${rootdir}.squashfs (ca. 30 min.)"
         if `which mksquashfs &>/dev/null` ; then
           mv ${rootdir}.squashfs ${rootdir}.squashfs.old
@@ -356,14 +356,14 @@ kernel_choice "${kernel_choice}"
   choice=( ${kernel_choice} )
   # make sure /$tftbootdir exists
   mkdir -p ${tftpbootdir}
-  
+
   declare -i j=0
   # add nfs modules nevertheless
   fsmod=nfs
   # add nbd module and the selected filesystem ontop
   isyes "$nbdyes" && fsmod=$fsmod" nbd $nbdfs"
   # one big initrd or several smaller "specialized" ones!?
-  
+
   # FIXME: mkdxsinitrd currently wants to run from own directory
   # ugly workaround...
   cd ../initrd
@@ -379,7 +379,7 @@ kernel_choice "${kernel_choice}"
     ln -sf ${kernel[${choice[$j]}]} ${tftpbootdir}/vmlinuz-${current_kernel}
     j=$j+1
   done
-  cd - 
+  cd -
 }
 
 # setting up server site configuration files etc.
@@ -393,12 +393,12 @@ setup_server () {
     [ -d ${dxs_conf}/${dir} ] || mkdir -p ${dxs_conf}/${dir}
   done
 
-  # copy the client configuration default file and replace root_pw - 
+  # copy the client configuration default file and replace root_pw -
   # machine-setup
   sed -e "s,@@@root_pw@@@,'${root_pw}'," default_files/machine-setup.default \
     > ${dxs_cl_dir}/${dxs_client_conf}
 
-  # creating new configuration files in $dxs_conf  
+  # creating new configuration files in $dxs_conf
   # dhcp
   sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g" \
       -e "s,@@@netmask@@@,${netmask},g;s,@@@broadcast@@@,${broadcast},g" \
@@ -420,7 +420,7 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
   >> ${dxs_conf}/${dxs_exports_conf}-${timestamp}
 
   # pxe
-  [ -d ${tftpbootdir} ] || mkdir -p ${tftpbootdir} 
+  [ -d ${tftpbootdir} ] || mkdir -p ${tftpbootdir}
   rsync -a --exclude=.svn default_files/tftpboot/* ${tftpbootdir}
 
   sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g" \
@@ -440,7 +440,7 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
     else
       default_string=""
     fi
-    # because of restricted length of kernel commandline put the initrd token 
+    # because of restricted length of kernel commandline put the initrd token
     # last (needed only for loading with pxelinux)
     echo -e "LABEL ${client_distro}-${current_kernel}\n${default_string}\
   MENU LABEL $j. ${client_distro}-${client_distro_ver} ${current_kernel} Diskless\n\
@@ -462,10 +462,10 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
 
     j=$j+1
   done
-  
+
   # if files should not be overwritten keep them
   # in place and create files with ".new" extension
-  if [ "$overwrite_configs" = "no" ] ; then 
+  if [ "$overwrite_configs" = "no" ] ; then
     extension=".new"
     keep="yes"
   fi
@@ -485,16 +485,16 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
     else
       # backing up orginial files / create files with .new extension
       if [ -f ${2} -a ! -L ${2} ] ; then
-        if [ -z "$keep" ] ; then 
+        if [ -z "$keep" ] ; then
           echo "Copying old ${2} to ${2}.original"
           mv ${2} ${2}.original
         else
           echo "Keeping old ${2} and generate ${2}.new instead"
         fi
-      elif [ -L ${2} ] ; then 
+      elif [ -L ${2} ] ; then
         [ -z "$keep" ] && unlink ${2}
       fi
-      # linking files 
+      # linking files
       # fixme!! if SuSE und DHCP dann Kopie statt Link
       if [ ${server_distro} = "suse" ] && echo ${dxs_conf}|\
         grep dhcp &>/dev/null; then
@@ -533,7 +533,7 @@ dxs_atftpd_conf="atftpd/atftpd"
 dxs_exports_conf="nfs/exports"
 dxs_pxedefault_conf="pxelinux/default"
 # config directory for the client side
-dxs_cl_dir="/var/lib/opendiskless/config/default/initramfs"
+dxs_cl_dir="/var/lib/openslx/config/default/initramfs"
 dxs_client_conf="machine-setup"
 
 

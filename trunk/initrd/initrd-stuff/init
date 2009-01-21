@@ -1,11 +1,11 @@
 #!/bin/sh
 # Description:  main script for new type of initial ramdisk for
-#               linux diskless clients version 4 
+#               linux diskless clients version 4
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-08-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
-#               (c) 2006 - opendiskless.org project
+#               (c) 2006 - openslx.org project
 #
 # Version:      0.2.6e
 
@@ -54,7 +54,7 @@ RWDIR=/dev/shm
 NFSRO="nfs"
 
 # run pre init script and user defined preinit.local, copied by mkdxsinitrd
-# from /var/lib/opendiskless/config/... in stage2
+# from /var/lib/openslx/config/... in stage2
 preinit
 [ -x /bin/preinit.local ] && /bin/preinit.local
 
@@ -102,9 +102,9 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       LDAP="yes"
       rm /tmp/ldap-done
     ;;
-    # if (external, via tftp) configuration file retrieval should 
+    # if (external, via tftp) configuration file retrieval should
     # be triggered, if no source is given try dhcp server and
-    # predefined standard path (~/tftpboot/client-conf/default, 
+    # predefined standard path (~/tftpboot/client-conf/default,
     # client-conf/<name-of-export>/default, ...)
     file)
       FILE="yes"
@@ -127,7 +127,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     # if unionfs should be used over the complete root filesystem
     unionfs)
       UNIONFS=1;;
-    # if cowloop should be used, only ontop of network block device and in 
+    # if cowloop should be used, only ontop of network block device and in
     # combination with classical fs, like ext2 useful
     cowloop=*)
       COWLOOP=1
@@ -169,7 +169,7 @@ if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
   echo -e "# You did not specify any advanced configuration mode for your \
 clients. You\n# might want to add the token 'dhcp' for DHCP configuration, \
 'file(=source)'\n# for config file get via TFTP or 'ldap(=source)' for LDAP \
-configuration to\n# your kernel command line." >> /etc/machine-setup 
+configuration to\n# your kernel command line." >> /etc/machine-setup
   if strinfile "clientip" /etc/machine-setup ; then
     # IP configuration seems to be present in machine-setup file
     . /etc/machine-setup
@@ -191,7 +191,7 @@ if [ "${DEBUGLEVEL}" -gt 0 ] ; then
   LOGFILE="/var/log/dxs-boot.log"
   echo "1 4 1 7" >/proc/sys/kernel/printk
   [ "${DEBUGLEVEL}" -ge 2 ] && MODPRV="-v"
-  [ "${DEBUGLEVEL}" -gt 3 ] && { 
+  [ "${DEBUGLEVEL}" -gt 3 ] && {
     set -x
     # and the kernel too
     echo "7 7 7 7" >/proc/sys/kernel/printk; }
@@ -212,11 +212,11 @@ ipsetup 127.0.0.1 255.0.0.0 0.0.0.0 127.255.255.255 lo
 # analyze ip information from the kernel command line and put parts
 # of it into several variables
 if [ -n "$IPINFO" ] ; then
-  getip () { 
-    val=$IPINFO; i=$(expr $1 - 1); 
-    while [ $i -gt 0 ] ; do 
-      val=${val#*:} ; i=$(expr $i - 1); 
-    done; 
+  getip () {
+    val=$IPINFO; i=$(expr $1 - 1);
+    while [ $i -gt 0 ] ; do
+      val=${val#*:} ; i=$(expr $i - 1);
+    done;
   echo $val|sed "s/:.*//"; }
   clientip=$(getip 1)
   serverip=$(getip 2)
@@ -246,7 +246,7 @@ fi
 # ... or via tftp file get (in background)
 [ -n "$FILE" ] && fileget &
 
-# if root filesystem should be imported via (d) network block device 
+# if root filesystem should be imported via (d) network block device
 if [ -n "${NBD}" ] ; then
   # load block device driver if needed
   modprobe ${MODPRV} ${NBD} || error "$init_errnbd"
@@ -311,7 +311,7 @@ if [ -n "${NBD}" ] ; then
     ldcfg
   else
     # use normal UnionFS behaviour because rootfs is not NFS
-    NFSRO=""  
+    NFSRO=""
   fi
   # finally mount the block device
   for i in 5 40 60 ; do
@@ -344,8 +344,8 @@ hwautocfg &
 
 # try to use unionfs for rw access if available
 if [ -n "${UNIONFS}" -o -n "${UNION}" ] ; then
-  modprobe ${MODPRV} unionfs || { 
-    error "$init_loadufs" nonfatal 
+  modprobe ${MODPRV} unionfs || {
+    error "$init_loadufs" nonfatal
     UNIONFS=""; }
 fi
 
@@ -367,7 +367,7 @@ if [ -n "${UNIONFS}" ] ; then
   if [ -n "${UNION}" ] ; then
     # for dir in "${UNION}"; do
     # testmkd /unionadd/$dir
-    # mount $dir unionadd/$dir 
+    # mount $dir unionadd/$dir
     # unionctl mnt --add --after /mnt --mode ro /unionadd/$dir
     # most probably it is a good idea to run ldconfig, so enable it
     unset NOLDSC
@@ -427,7 +427,7 @@ for linux diskless client specific debugging output\nLOGFILE=\"$LOGFILE\"\n#\
 \n# debug level\nDEBUGLEVEL=\"$DEBUGLEVEL\"" \
   > /mnt/etc/${D_SYSCONFDIR}/logfile || error "$init_errlog"
 
-# run distribution independent and dependent configuration of files and 
+# run distribution independent and dependent configuration of files and
 # services
 servconfig &
 
@@ -450,14 +450,14 @@ echo -e "rootfs / rootfs rw 0 0\ninitramdevs /dev tmpfs rw\
  0 0" > /mnt/etc/mtab
 [ -z "$UNIONFS" ] && echo -e "ramfs /tmp tmpfs rw 0 0\nramfs /root \
 tmpfs rw 0 0\n" >> /mnt/etc/mtab
- 
+
 # copy library cache if generated
 if [ -z "${NOLDSC}" ] ; then
   if waitfor /tmp/ldcfg 50000 ; then
     test -s /mnt/tmp/ld.so.cache && {
       cp /mnt/tmp/ld.so.cache /mnt/etc/ld.so.cache
       rm /mnt/tmp/ld.so.cache; }
-  else 
+  else
     error "$init_errldcfg"
   fi
 else

@@ -1,46 +1,46 @@
 # Description:  Makefile for creating project tarball and installing the project
-#               to the various destination directories 
+#               to the various destination directories
 #
-# Author(s):    Lars Mueller <lm@opendiskless.org>, 11-08-2006
+# Author(s):    Lars Mueller <lm@openslx.org>, 11-08-2006
 #               Dirk von Suchodoletz <dirk@goe.net>, 20-08-2006
 #
-# Copyright:    (c) 2006 - opendiskless.org project
+# Copyright:    (c) 2006 - openslx.org project
 #
 # Version:      0.0.1c
 
 tarball:
 	@echo "Creating tar ball "
-	@tar cfhj opendiskless.tar.bz2 \
+	@tar cfhj openslx.tar.bz2 \
 		--exclude-from=tools/tar_exclude_from \
 		.
 install:
-	@echo "Installing opendiskless.org project files"
-	@mkdir -p /var/lib/opendiskless/config/default/initramfs \
-	       -p /var/lib/opendiskless/config/default/rootfs \
-	       -p /var/lib/opendiskless/db \
-	       -p /var/lib/opendiskless/stage1 \
-	       -p /usr/share/opendiskless/distro-specs \
-	       -p /usr/share/opendiskless/templates \
-	       -p /usr/share/opendiskless/initramfs
+	@echo "Installing openslx.org project files"
+	@mkdir -p /var/lib/openslx/config/default/initramfs \
+	       -p /var/lib/openslx/config/default/rootfs \
+	       -p /var/lib/openslx/db \
+	       -p /var/lib/openslx/stage1 \
+	       -p /usr/share/openslx/distro-specs \
+	       -p /usr/share/openslx/templates \
+	       -p /usr/share/openslx/initramfs
 	@cp initrd/mkdxsinitrd /usr/local/sbin
-	@cp -a initrd/initrd-stuff/* /usr/share/opendiskless/initramfs
-	@cp -a initrd/distro-specs/* /usr/share/opendiskless/distro-specs
+	@cp -a initrd/initrd-stuff/* /usr/share/openslx/initramfs
+	@cp -a initrd/distro-specs/* /usr/share/openslx/distro-specs
 	@cp installer/default_files/machine-setup.default \
-	  /usr/share/opendiskless/templates
+	  /usr/share/openslx/templates
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
 extend the\n# capabilities at the beginning of the initramfs (stage3). \
 The toolset is rather\n# restricted and you have to keep in mind that \
 stage4 rootfs has the\n# prefix '/mnt'." \
-	  > /var/lib/opendiskless/config/default/initramfs/preinit.local
+	  > /var/lib/openslx/config/default/initramfs/preinit.local
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
 extend the\n# capabilities at the end of the initramfs (stage3). The \
 toolset is rather\n# restricted and you have to keep in mind that stage4 \
 rootfs has the\n# prefix '/mnt'." \
-	  > /var/lib/opendiskless/config/default/initramfs/postinit.local
-	@chmod u+x /var/lib/opendiskless/config/default/initramfs/*init.local
+	  > /var/lib/openslx/config/default/initramfs/postinit.local
+	@chmod u+x /var/lib/openslx/config/default/initramfs/*init.local
 
 #uninstall:
-#	@echo -e "Uninstalling opendiskless.org project files but keeping configs \
+#	@echo -e "Uninstalling openslx.org project files but keeping configs \
 #and stage1\nfiles (please remove manually)"
-#	@rm -rf /usr/share/opendiskless
+#	@rm -rf /usr/share/openslx
 #	@rm /usr/local/sbin/mkdxsinitrd

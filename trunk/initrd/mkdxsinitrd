@@ -9,32 +9,32 @@
 #               Felix Endres
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
-#               (c) 2006 - opendiskless.org project
+#               (c) 2006 - openslx.org project
 #
 # Version:      0.4.5c
 
 # debug level of script itself
 DEBUG=1
-# debug level of the initramfs (to trigger the addition of specific 
+# debug level of the initramfs (to trigger the addition of specific
 # binaries and kernel modules)
 IRFSDEBUG=1
 COMETCEXCL="XF86Config*\nissue*\nmtab*\nfstab*\n"
 COMDIRINDXS="/tmp/scratch /var/lib/nobody"
 
 # distro specific settings read from configuration file
-# D_SYSCONFDIR - system wide configuration settings in /etc - sysconfig in  
+# D_SYSCONFDIR - system wide configuration settings in /etc - sysconfig in
 # SuSE and RedHat, default in Debian and Ubuntu, conf.d in Gentoo
-# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using 
+# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using
 # bind mounts
 # D_DIRINBINDMNT - lists of directories to be created in bind mounted rw
 # part of the client filesystem
-# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on
 # TempFS usage
-# D_DIRINDXS - directories in client filesystem which should be present 
+# D_DIRINDXS - directories in client filesystem which should be present
 # anyhow
 # D_BINDMNT - any code which is specific in bind mount environment
 # D_RCDIRS - runlevel directories relative to /etc
-# D_HWMODTOIGNORE - 
+# D_HWMODTOIGNORE -
 
 # just ensure that variables are set and the user gets an idea if
 # something fails
@@ -55,7 +55,7 @@ D_XFONTPATH="<set in ~/distro-config/distro file>"
 D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 
 #########################################################################
-# End of global variable declaration, nothing needed to be changed at 
+# End of global variable declaration, nothing needed to be changed at
 # default below that line
 
 usage()
@@ -107,10 +107,10 @@ for ELEMENT in bin sbin usr/bin usr/sbin usr/local/bin \
     break
   fi
 done
-return $RET 
+return $RET
 }
 
-# copy some binary to given destination. Takes binary in $1 and 
+# copy some binary to given destination. Takes binary in $1 and
 # destination in $2
 cobi()
 {
@@ -121,7 +121,7 @@ if [ -z ${FPTB} ] ; then
 elif [ -L ${FPTB} ] ; then
   # do not copy the link but the binary the link points to
   local LINKDEST=`ls -la ${FPTB} | sed -e "s,.* ,,"`
-  case $LINKDEST in 
+  case $LINKDEST in
     /*) FPTB=${ROOTDIR}${LINKDEST}
 	;;
     *) ;;
@@ -135,7 +135,7 @@ fi
 # client root is
 chroot ${ROOTDIR} ldd ${FPTB#${ROOTDIR}*} >> ${INSTDIR}/tmp/libraries
 # possible solution: use the server binary, get library names and look
-# them up manually - fixme: does ldd understand foreign architecture 
+# them up manually - fixme: does ldd understand foreign architecture
 # binaries
 }
 
@@ -172,7 +172,7 @@ copy_distro_stuff() {
   # function files, then append to each the distro/version specific file
   # variables, functions set in default might that way be overwritten by
   # definitions in distro/version specific files
-  # fixme!! files should be taken from /usr/share/opendiskless/distro-specs
+  # fixme!! files should be taken from /usr/share/openslx/distro-specs
   cat distro-specs/$1/config-default >${INSTDIR}/etc/sysconfig/config
   cat distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig/config
   cat distro-specs/$1/functions-default >${INSTDIR}/etc/distro-functions
@@ -186,28 +186,28 @@ copy_distro_stuff() {
     -regex ".*/\..*" -exec rm -rf {} 2>/dev/null \;
 }
 
-# This function makes the directory of this script to the present working 
+# This function makes the directory of this script to the present working
 # directory
 # It is called within precheck()
-# Does also work when called by symbolic links (even for nested links). 
+# Does also work when called by symbolic links (even for nested links).
 goto_script_dir()
 {
   [ $DEBUG -ge 2 ] && echo "Aufgerufen wurde $0, checking if it is a link"
   calleddetails=`ls -l $0` # get the file flags (e.g. lrwxrwxrwx)
   [ $DEBUG -ge 2 ] && echo $calleddetails
-  
+
   calleddir=${0%/*}  # Strip the filename from path
   [ $DEBUG -ge 2 ] && echo "Wechsele ins Verzeichnis des aufgerufenen scripts/links ($calleddir)"
   cd $calleddir
- 
-  while index=`expr index "$calleddetails" "l"`; 
+
+  while index=`expr index "$calleddetails" "l"`;
         [ $index -eq 1 ]; do
 
     [ $DEBUG -ge 2 ] && echo "It is a link"
     target=`echo $calleddetails | awk '{print $NF}'`
     [ $DEBUG -ge 2 ] && echo "The target of the link is: $target"
     hasslash=`expr index "$target" "/"`
-    if [ $hasslash -ne 0 ]; then 
+    if [ $hasslash -ne 0 ]; then
         targetpath=${target%/*} # extract the pathname
         [ $DEBUG -ge 2 ] && echo "Following link to $targetpath"
         cd $targetpath
@@ -273,7 +273,7 @@ done
 
 while getopts :bhgk:i:r:o:s:f:n:Sut:d:v:I:V:a: a ; do
   case $a in
-    \:|\?) 
+    \:|\?)
     case $OPTARG in
       k)  echo "-k requires kernel version parameter";;
       i)  echo "-i requires initrd path parameter";;
@@ -304,10 +304,10 @@ while getopts :bhgk:i:r:o:s:f:n:Sut:d:v:I:V:a: a ; do
     d)  IRFSDEBUG=$OPTARG;;
     D)  DISTRO=$OPTARG;;
     v)  DISTRO_VER=$OPTARG;;
-    I)  NET_IF=$OPTARG;;         # Not in use 
+    I)  NET_IF=$OPTARG;;         # Not in use
     a)  acpi_dsdt="$OPTARG";;    # Not in use
     S)  use_selinux=1;;          # Not in use
-    l)  local_init_script="$OPTARG";; # use for pre/postinit.local? 
+    l)  local_init_script="$OPTARG";; # use for pre/postinit.local?
     u)  sysfs_root=1             # Not in use
 	    use_udev=
 	    ;;
@@ -342,7 +342,7 @@ if [ -z "${DISTRO}" ] ; then
     DISTRO=suse
     DISTRO_VER=`grep "VERSION" ${ROOTDIR}/etc/SuSE-release | sed "s/.*= //"`
   elif [ -e ${ROOTDIR}/etc/lsb-release ] ; then
-    . ${ROOTDIR}/etc/lsb-release 
+    . ${ROOTDIR}/etc/lsb-release
     DISTRO=${DISTRIB_ID}
     DISTRO_VER=${DISTRIB_RELEASE}
   elif [ -e ${ROOTDIR}/etc/debian_version ] ; then
@@ -361,7 +361,7 @@ if [ -z "${DISTRO}" ] ; then
     echo -e "Could not detect client distribution type and version. Please \
 specify\nas command line argument (-d <distro-name> -v <distro-version>)"
     exit 1;
-  fi  
+  fi
 fi
 
 # unify the description of distribution and its version
@@ -394,7 +394,7 @@ case "${DISTRO}" in
       2005*|*)
         DISTRO_VER=2005.1
       ;;
-    esac  
+    esac
   ;;
   SuSE*|suse*|Suse*|SuSe*|SUSE*|*)
     DISTRO=suse
@@ -419,7 +419,7 @@ copy_distro_stuff ${DISTRO} ${DISTRO_VER}
 cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
 
 # binary and corresponding library copies could be avoided if a small
-# initial ramdisk environment of its own is generated from busybox, 
+# initial ramdisk environment of its own is generated from busybox,
 # dietlibc and similar, see odlx project page ...
 
 # devices needed rather early (copied from /tmp to /dev in init)
@@ -453,7 +453,7 @@ if [ -n "$use_busybox" ] ; then
 else
   # find and copy a shell to be used within initialramfs
   for bbins in bash ash sh; do
-    if cobi ${bbins} bin ; then 
+    if cobi ${bbins} bin ; then
       ln -fs ${bbins} ${INSTDIR}/bin/sh
       [ "${bbins}" != "ash" ] && ln -fs ${bbins} ${INSTDIR}/bin/ash
       [ "${bbins}" != "bash" ] && ln -fs ${bbins} ${INSTDIR}/bin/bash
@@ -463,7 +463,7 @@ else
 
   # find and copy ip setup binaries
   for bbins in ip ifconfig; do
-    if cobi ${bbins} bin ; then 
+    if cobi ${bbins} bin ; then
       [ "${bbins}" = "ifconfig" ] && cobi route bin
       break
     else echo "Binary not found"; fi
@@ -494,7 +494,7 @@ else
   cobi $tftp bin || echo "Program ${tftp} not found"
   cp /lib/libnss_files.so.2 ${INSTDIR}/lib
 fi
-  
+
 # one of the dhcp clients
 for dhcp in dhclient dhcpcd pump ipconfig ; do
   binfinder $dhcp && break;
@@ -520,7 +520,7 @@ for i in ${FSMODULES}; do
     dnbd)
       cobi dnbd-client bin
     ;;
-    nbd)  
+    nbd)
       cobi nbd-client bin
     ;;
   esac
@@ -537,7 +537,7 @@ cobi cowdev bin &>/dev/null || \
 
 
 # distro specific additional stuff
-case "${DISTRO}" in 
+case "${DISTRO}" in
   debian*)
     cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib;;
 esac
@@ -636,7 +636,7 @@ cp ${ROOTDIR}/lib/modules/${KERNVER}/modules.* \
 # initial ramdisk scripts: init, functions, servconfig, hwautocfg, ...
 # copy and replace variable names
 for dirs in `find initrd-stuff/* ! -regex ".*/\..*"` ; do
-  repco ${dirs##initrd-stuff/} 
+  repco ${dirs##initrd-stuff/}
 done
 chmod 755 ${INSTDIR}/init \
   ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
@@ -644,12 +644,12 @@ chmod 755 ${INSTDIR}/init \
 # add the common default client configuration file - just to ensure to
 # have all major variables defined. !!These settings are most probably
 # are overwritten by fileget in stage3 within initramfs!!
-if [ -f /var/lib/opendiskless/config/default/initramfs/machine-setup ] ; then
-  cp /var/lib/opendiskless/config/default/initramfs/machine-setup \
+if [ -f /var/lib/openslx/config/default/initramfs/machine-setup ] ; then
+  cp /var/lib/openslx/config/default/initramfs/machine-setup \
     ${INSTDIR}/etc/machine-setup
 # use the installed default machine-setup.default
-elif [ -f /usr/share/opendiskless/templates/machine-setup.default ] ; then
-  cp /usr/share/opendiskless/templates/machine-setup.default \
+elif [ -f /usr/share/openslx/templates/machine-setup.default ] ; then
+  cp /usr/share/openslx/templates/machine-setup.default \
     ${INSTDIR}/etc/machine-setup
 # just compatibility for older versions
 elif [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
@@ -671,12 +671,12 @@ fi
 
 # custom hardware configuration files pcitable.local and Cards.local
 # fixme!! New source for these files (instead of templates)!
-if [ -f /usr/share/opendiskless/templates/pcitable.local ] ; then
-  cat /usr/share/opendiskless/templates/pcitable.local >> \
+if [ -f /usr/share/openslx/templates/pcitable.local ] ; then
+  cat /usr/share/openslx/templates/pcitable.local >> \
     ${INSTDIR}/usr/share/hwdata/pcitable
 fi
-if [ -f /usr/share/opendiskless/templates/Cards.local ] ; then
-  cat /usr/share/opendiskless/templates/Cards.local >> \
+if [ -f /usr/share/openslx/templates/Cards.local ] ; then
+  cat /usr/share/openslx/templates/Cards.local >> \
     ${INSTDIR}/usr/share/hwdata/Cards
 fi
 
@@ -687,8 +687,8 @@ for cfg in default/initramfs/preinit.local \
            ${DISTRO}-${DISTRO_VER}/initramfs/preinit.local \
            default/initramfs/postinit.local \
            ${DISTRO}-${DISTRO_VER}/initramfs/postinit.local ; do
-  test -f /var/lib/opendiskless/config/$cfg && \
-    cp /var/lib/opendiskless/config/$cfg ${INSTDIR}/bin
+  test -f /var/lib/openslx/config/$cfg && \
+    cp /var/lib/openslx/config/$cfg ${INSTDIR}/bin
 done
 
 # remove unneeded debug info, fixme not really tested yet
