@@ -2,7 +2,7 @@
 #
 # stage3 part of 'Theme' plugin - the runlevel script
 #
-. /etc/distro-functions
+. /etc/sysconfig/config
 if [ -e /initramfs/plugin-conf/Theme.conf ]; then
 	. /initramfs/plugin-conf/Theme.conf
 	if [ $Theme_active -ne 0 ]; then

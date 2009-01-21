@@ -61,3 +61,5 @@ D_XFONTPATH="/usr/X11R6/lib/X11/fonts/*"
 D_DEFAULTCOUNTRY="de"
 D_HWMODTOIGNORE="i8xx-tco ichxrom snd-atiixp-modem intel-rng"
 D_BOOTLOCAL="init.d/boot.local"
+D_KDMRCPATH=/etc/opt/kde3/share/config/kdm
+D_XDMPATH=/etc/X11/xdm
