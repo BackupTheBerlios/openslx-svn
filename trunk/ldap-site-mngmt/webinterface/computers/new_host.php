@@ -41,9 +41,6 @@ $template->assign(array("HOSTNAME" => $hostname,
            			      "GRAPHIC" => "",
            			      "MONITOR" => "",
            		       	"AUDN" => $auDN));
-           	
-           		       	
-# DHCP Stuff
 
 
 ###################################################################################

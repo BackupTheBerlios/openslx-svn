@@ -164,19 +164,22 @@ if ( $pxecn != "" && $pxecn != "Hier_PXE_NAME_eintragen" && $rbsDN != "none" ){
 				$filenames = array();
 				if ($targettype == "computers"){
 					$macdata = get_node_data($targetDN, array("hwaddress"));
-					$filenames[] = "01-".$macdata['hwaddress'];
+					$pxemac = str_replace (":","-",$macdata['hwaddress']);
+					$filenames[] = "01-".$pxemac;
 				}
 				if ($targettype == "groups"){
 					$members = get_node_data($targetDN, array("member"));
 					if (count($members) > 1){
 						foreach ($members['member'] as $hostDN){
 							$macdata = get_node_data($hostDN, array("hwaddress"));
-							$filenames[] = "01-".$macdata['hwaddress'];
+							$pxemac = str_replace (":","-",$macdata['hwaddress']);
+							$filenames[] = "01-".$pxemac;
 						}
 					}
 					if (count($members) == 1){
 						$macdata = get_node_data($members['member'], array("hwaddress"));
-						$filenames[] = "01-".$macdata['hwaddress'];
+						$pxemac = str_replace (":","-",$macdata['hwaddress']);
+						$filenames[] = "01-".$pxemac;
 					}
 				}
 				echo "filenames: ";print_r($filenames); echo "<br>";
@@ -187,7 +190,7 @@ if ( $pxecn != "" && $pxecn != "Hier_PXE_NAME_eintragen" && $rbsDN != "none" ){
 				$rbsDN = $rbs['hlprbservice'];
 				print_r($rbsDN);
 				
-				/*if (add_pxe($pxeDN,$pxecn,$rbsDN,$pxetimerange,$pxeattribs,$filenames,$conffile)){			
+				if (add_pxe($pxeDN,$pxecn,$rbsDN,$pxetimerange,$pxeattribs,$filenames,$conffile)){			
 					$mesg .= "<br>Neues PXE Boot Men&uuml; erfolgreich angelegt<br>";
 					if ($targettype == "computers"){
 						$mnr=1;
@@ -199,7 +202,7 @@ if ( $pxecn != "" && $pxecn != "Hier_PXE_NAME_eintragen" && $rbsDN != "none" ){
 				}
 				else{
 					$mesg .= "<br>Fehler beim anlegen des PXE Boot Men&uuml;s!<br>";
-				}*/ 
+				}
 			}
 		}
 	}

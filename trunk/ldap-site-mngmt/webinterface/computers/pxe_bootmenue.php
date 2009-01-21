@@ -10,7 +10,7 @@ $mnr = -1;
 $sbmnr = -1;
 $mcnr = -1;
 # 3. Dateiname und evtl. Pfad des Templates für die Webseite
-$webseite = "pxe.dwt";
+$webseite = "pxe_bootmenue.dwt";
 
 include("../class.FastTemplate.php");
 
@@ -88,15 +88,12 @@ $maxpos = count($menuentries)+1;
 $template->assign(array("PXEDN" => $pxeDN,
 								"PXECN" => $pxecn,
 								"TIMERANGE" => $pxe['timerange'],
-           			      "TFTP" => $rbsdata['tftpserverip'],
-           			      "TFTPFILE" => $rbsdata['tftpclientconfpath'],
-           		       	#"LDAPURI" => $pxe['ldapuri'],
-           			      "FILEURI" => $pxe['fileuri'],
+           		       	"MAXPOS" => $maxpos,
            		       	"NODEDN" => $nodeDN,
    	                  "NODE" => $nodednarray[0],
            		       	"DEFDN" => "cn=rbs,".$auDN,
+           		       	"PXELINK" => "<a href='pxe.php?dn=".$pxeDN."&sbmnr=".$sbmnr."' class='headerlink'>",
            		       	"OPTLINK" => "<a href='pxe_globals.php?dn=".$pxeDN."&sbmnr=".$sbmnr."' class='headerlink'>",
-           		       	"BMLINK" => "<a href='pxe_bootmenue.php?dn=".$pxeDN."&sbmnr=".$sbmnr."' class='headerlink'>",
            		       	"MNR" => $mnr,
            		       	"SBMNR" => $sbmnr,
            		       	"MCNR" => $mcnr));

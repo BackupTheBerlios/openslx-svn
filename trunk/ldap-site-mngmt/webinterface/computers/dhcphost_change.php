@@ -5,20 +5,17 @@ $syntax = new Syntaxcheck;
 
 $dhcp = $_POST['dhcpcont'];
 $olddhcp = $_POST['olddhcp'];
+
 $hostip = $_POST['hostip'];
 $fixedaddress = $_POST['fixadd'];
 $oldfixedaddress = $_POST['oldfixadd'];
-
-$rbs = $_POST['rbs'];
-$oldrbs = $_POST['oldrbs'];
 
 $hostDN = $_POST['hostdn'];
 $sbmnr = $_POST['sbmnr'];
 
 $dhcp = htmlentities($dhcp);
 $olddhcp = htmlentities($olddhcp);
-$rbs = htmlentities($rbs);
-$oldrbs = htmlentities($oldrbs);
+
 
 
 /*echo "new dhcp:"; print_r($dhcp); echo "<br>";
@@ -72,7 +69,7 @@ if ($dhcp != "none" && $dhcp != $olddhcp){
 	   }
 	}else{
 	   $entrydhcp ['dhcphlpcont'] = array();
-	   if ( $fixedaddress != "" ){
+	   if ( $oldfixedaddress != "" ){
 	      $entrydhcp ['dhcpoptfixed-address'] = array();
 	   }
 	   echo "DHCP delete "; echo "<br>";
@@ -116,53 +113,6 @@ if ($fixedaddress != "none" && $fixedaddress != $oldfixedaddress){
 	   	$mesg = "Fehler beim l&ouml;schen der Option Fixed-Address!<br><br>";
 	   }
    }
-}
-
-
-##########################################
-# RBS
-
-if ($rbs != "none" && $rbs != $oldrbs){
-   if ($rbs != ""){
-   	$exp = ldap_explode_dn($rbs, 1);
-	   $rbscn = $exp[0];
-	   $rbsau = $exp[2];
-	   
-	   $dhcpdata = get_node_data($rbs,array("tftpserverip","initbootfile"));
-	   $entryrbs ['hlprbservice'] = $rbs;
-	   $entryrbs ['dhcpoptnext-server'] = $dhcpdata['tftpserverip'];
-      $entryrbs ['dhcpoptfilename'] = $dhcpdata['initbootfile'];
-	   if ($oldrbs != ""){
-	      echo "RBS replace "; print_r($oldrbs); echo " with "; print_r($entryrbs); echo "<br>";
-   	   if ($result = ldap_mod_replace($ds,$hostDN,$entryrbs)){
-   	      rbs_adjust_host($hostDN, $rbs);
-         	$mesg = "Remote Boot Service erfolgreich zu <b>".$rbscn." [Abt.: ".$rbsau."]</b> ge&auml;ndert<br><br>";
-   	   }else{
-   	      $mesg = "Fehler beim &auml;ndern des Remote Boot Services zu <b>".$rbscn."</b>!<br><br>";
-   	   }
-   	}else{
-   	   echo "RBS add "; print_r($entryrbs); echo "<br>";
-   	   if ($result = ldap_mod_add($ds,$hostDN,$entryrbs)){
-   	      rbs_adjust_host($hostDN, $rbs);
-         	$mesg = "Remote Boot Service erfolgreich zu <b>".$rbscn." [Abt.: ".$rbsau."]</b> ge&auml;ndert<br><br>";
-   	   }else{
-   	      $mesg = "Fehler beim &auml;ndern des Remote Boot Services zu <b>".$rbscn."</b>!<br><br>";
-   	   }
-   	}
-	}else{
-	   $entryrbs ['hlprbservice'] = array();
-	   $entryrbs ['dhcpoptnext-server'] = array();
-	   $entryrbs ['dhcpoptfilename'] = array();
-	   echo "RBS delete "; echo "<br>";
-	   if ($result = ldap_mod_del($ds,$hostDN,$entryrbs)){
-	   	$mesg = "Rechner erfolgreich aus RBS gel&ouml;scht<br><br>";
-	   }else{
-	   	$mesg = "Fehler beim l&ouml;schen aus RBS!<br><br>";
-	   }
-	}
-}
-if ($rbs == "none"){
-   echo "RBS none <br>";
 }
 
 

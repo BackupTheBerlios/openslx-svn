@@ -10,7 +10,7 @@ $mnr = -1;
 $sbmnr = -1;
 $mcnr = -1;
 # 3. Dateiname und evtl. Pfad des Templates für die Webseite
-$webseite = "pxe.dwt";
+$webseite = "pxe_globals.dwt";
 
 include("../class.FastTemplate.php");
 
@@ -42,7 +42,7 @@ $pxe = get_node_data($pxeDN,$attributes);
 
 # RBS Daten
 $rbsDN = $pxe['rbservicedn'];
-$rbsdata = get_node_data($rbsDN,array("cn","tftpserverip","tftppath","tftpclientconfpath"));
+$rbsdata = get_node_data($rbsDN,array("cn","nfsserverip","exportpath","tftpserverip","tftppath","tftpclientconfpath"));
 
 # Timerange Komponenten
 $template->define_dynamic("TRanges", "Webseite");
@@ -91,11 +91,27 @@ $template->assign(array("PXEDN" => $pxeDN,
            			      "TFTP" => $rbsdata['tftpserverip'],
            			      "TFTPFILE" => $rbsdata['tftpclientconfpath'],
            		       	#"LDAPURI" => $pxe['ldapuri'],
-           			      "FILEURI" => $pxe['fileuri'],
+           			      "FILEURI" => $pxe['fileuri'],      			      
+           		       	"ALLOW" => $pxe['allowoptions'],          			      
+           		       	"CONSOLE" => $pxe['console'],
+           		       	"DEFAULT" => $pxe['default'], 
+           			      "DISPLAY" => $pxe['display'],          			      
+           		       	"FONT" => $pxe['font'],
+           		       	"IMPLICIT" => $pxe['implicit'],
+           			      "KBDMAP" => $pxe['kbdmap'],          			      
+           		       	"MENMPW" => $pxe['menumasterpasswd'],
+           		       	"MENTIT" => $pxe['menutitle'],                   			      
+           		       	"NOESC" => $pxe['noescape'],
+           		       	"ONERR" => $pxe['onerror'],          			      
+           		       	"ONTIME" => $pxe['ontimeout'],
+           		       	"PROMPT" => $pxe['prompt'],          			      
+           		       	"SAY" => $pxe['say'],
+           		       	"SERIAL" => $pxe['serial'],
+								"TIMEOUT" => $pxe['timeout'],
            		       	"NODEDN" => $nodeDN,
    	                  "NODE" => $nodednarray[0],
            		       	"DEFDN" => "cn=rbs,".$auDN,
-           		       	"OPTLINK" => "<a href='pxe_globals.php?dn=".$pxeDN."&sbmnr=".$sbmnr."' class='headerlink'>",
+           		       	"PXELINK" => "<a href='pxe.php?dn=".$pxeDN."&sbmnr=".$sbmnr."' class='headerlink'>",
            		       	"BMLINK" => "<a href='pxe_bootmenue.php?dn=".$pxeDN."&sbmnr=".$sbmnr."' class='headerlink'>",
            		       	"MNR" => $mnr,
            		       	"SBMNR" => $sbmnr,

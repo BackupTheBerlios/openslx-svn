@@ -146,13 +146,15 @@ if ( $oldmac != "" && $mac != "" && $oldmac != $mac ){
 	echo "MAC aendern<br>";
 	# hier noch Syntaxcheck
 	$entry['hwaddress'] = $mac;
+	$pxemac = str_replace (":","-",$mac);
+	$pxeoldmac = str_replace (":","-",$oldmac);
 	$result = ldap_mod_replace($ds,$hostDN,$entry);
 	if($result){
 		# in den PXEs auch ändern
 		$pxes = get_pxeconfigs($hostDN,array("dn","filename"));
 		if ( count($pxes) != 0 ){
 			foreach ($pxes as $pxe){
-				$entrynewmac ['filename'] = "01-".$mac;
+				$entrynewmac ['filename'] = "01-".$pxemac;
 				ldap_mod_replace($ds,$pxe['dn'],$entrynewmac);
 			}
 		}
@@ -164,15 +166,15 @@ if ( $oldmac != "" && $mac != "" && $oldmac != $mac ){
 				foreach ($pxes as $pxe){
 					if (count($pxe['filename']) > 1){
 						for ($i=0; $i<count($pxe['filename']); $i++){
-							if ($pxe['filename'][$i] == $oldmac){
-								$entrynewmac ['filename'][$i] = "01-".$mac;
+							if ($pxe['filename'][$i] == $pxeoldmac){
+								$entrynewmac ['filename'][$i] = "01-".$pxemac;
 							}else{
 								$entrynewmac ['filename'][$i] = $pxe['filename'][$i];
 							}
 						}
 					}
-					if (count($pxe['filename']) == 1 && $pxe['filename'][$i] == $oldmac){
-						$entrynewmac ['filename'] = "01-".$mac;
+					if (count($pxe['filename']) == 1 && $pxe['filename'][$i] == $pxeoldmac){
+						$entrynewmac ['filename'] = "01-".$pxemac;
 					}
 					ldap_mod_replace($ds,$pxe['dn'],$entrynewmac);
 				}

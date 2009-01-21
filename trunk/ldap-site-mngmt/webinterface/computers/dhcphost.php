@@ -41,20 +41,42 @@ $rbsDN = $host['hlprbservice'];
 
 $rbs_dhcpopt = "";
 $host_dhcpopt = "";
+$dhcp_selectbox = "";
+
+##########################################################
+# DHCP Setup
 
 # DHCP Daten
 if ($dhcphlpcont == ""){
-   $dhcp = "Rechner ist in keinem DHCP Dienst angemeldet<br></td></tr>
+   $objecttype = "nodhcp";
+   
+   # DHCP Selectbox
+   $altdhcp = alternative_dhcpobjects($objecttype,$objectDN,$hostip[0]);
+   $dhcp_selectbox .= "<td class='tab_d'>
+   	   		          <select name='dhcpcont' size='4' class='medium_form_selectbox'> 
+   	   			          <option selected value='none'>----------</option>";
+   if (count($altdhcp) != 0){
+   	foreach ($altdhcp as $item){
+   		$dhcp_selectbox .= "
+   		   <option value='".$item['dn']."'>".$item['cn']." ".$item['au']."</option>";
+   	}
+   }
+   $dhcp_selectbox .= "<option value=''>Kein DHCP</option>
+           					</select></td>";
+   
+   $dhcp = "<td class='tab_d_ohne' colspan='2'><b>Eingebunden in DHCP Dienst: </b>&nbsp;</td>
+				<td class='tab_d_ohne'>
+            Rechner ist in keinem DHCP Dienst angemeldet<br></td></tr>
             <tr valign='top'><td class='tab_d' colspan='2'>
-					DHCP Dienst ausw&auml;hlen: ";
-	$objecttype = "nodhcp";
+					DHCP Dienst ausw&auml;hlen: <br></td>".$dhcp_selectbox;
+	
 	$rbs = "<td class='tab_d_ohne' colspan='2'>
 				Sie m&uuml;ssen den Rechner zuerst in einem DHCP Dienst anmelden, bevor Sie ihn
 	         einem Remote Boot Dienst zuordnen k&ouml;nnen <br>(DHCP Optionen!!).<br></td>
 	        </tr>
 	        <input type='hidden' name='rbs' value='".$rbsDN."'>";
 }else{
-   # Subnet?
+   # Host in Service oder Subnet?
    $objecttype = "service";
    $dhcp = "";
    $ocarray = get_node_data($dhcphlpcont,array("objectclass","dhcphlpcont"));
@@ -71,9 +93,26 @@ if ($dhcphlpcont == ""){
    $exp1 = explode(',',$dhcphlpcont);
    $expdhcp = explode('=',$exp1[0]); $dhcpserv = $expdhcp[1];
    $expdhcpau = explode('=',$exp1[2]); $dhcpau = $expdhcpau[1];
-   $dhcp .= "Service <b>".$dhcpserv."</b> / AU <b>".$dhcpau."</b><br></td></tr>
+   
+   # DHCP Selectbox
+   $altdhcp = alternative_dhcpobjects($objecttype,$objectDN,$hostip[0]);
+   $dhcp_selectbox .= "<td class='tab_d'>
+   	   		          <select name='dhcpcont' size='4' class='medium_form_selectbox'> 
+   	   			          <option selected value='none'>----------</option>";
+   if (count($altdhcp) != 0){
+   	foreach ($altdhcp as $item){
+   		$dhcp_selectbox .= "
+   		   <option value='".$item['dn']."'>".$item['cn']." ".$item['au']."</option>";
+   	}
+   }
+   $dhcp_selectbox .= "<option value=''>Kein DHCP</option>
+           					</select></td>";
+   
+   $dhcp .= "<td class='tab_d_ohne' colspan='2'><b>Eingebunden in DHCP Dienst: </b>&nbsp;</td>
+				<td class='tab_d_ohne'>
+            Service <b>".$dhcpserv."</b> / AU <b>".$dhcpau."</b><br></td></tr>
             <tr valign='top'><td class='tab_d' colspan='2'>
-					DHCP Dienst &auml;ndern: ";
+					DHCP Dienst &auml;ndern: <br></td>".$dhcp_selectbox;
    
    
    $fixedaddselopt = "<option selected value='none'>------------</option>";
@@ -91,7 +130,7 @@ if ($dhcphlpcont == ""){
                            <option value=''>kein Eintrag &nbsp;(dynamische IP Vergabe)</option>";
       break;
    case "hostname":
-      $fixedaddress = "<b>".$host['hostname']."</b><br>(Fixe IP Adresse &uuml;ber Hostnamen aufgel&ouml;st)";
+      $fixedaddress = "<b>".$host['hostname']."</b><br>(Fixe IP Adresse &uuml;ber DNS aufgel&ouml;st)";
       if ( $hostip[0] != "" ){
          $fixedaddselopt .= "<option value='ip'>".$hostip[0]." &nbsp;(IP Adresse)</option>";
       }
@@ -115,59 +154,6 @@ if ($dhcphlpcont == ""){
 				         </select>
 				         </td>
 			         </tr>";
-   
-   ###########################################################
-   # RBS Setup
-   $rbs_selectbox = "";
-   $rbs_dhcpopt = "";
-   $altrbs = alternative_rbservices($rbsDN);
-   
-   
-      $rbs_selectbox .= "<td class='tab_d'>
-		   		            <select name='rbs' size='4' class='medium_form_selectbox'> 
-		   			            <option selected value='none'>----------</option>";
-   if (count($altrbs) != 0){
-      foreach ($altrbs as $item){
-         $rbs_selectbox .= "
-         <option value='".$item['dn']."'>".$item['cn']." ".$item['au']."</option>";
-      }
-   }
-   $rbs_selectbox .= "<option value=''>Kein RBS</option>
-           					</select></td>";
-
-   # RBS Daten
-   if ($rbsDN == ""){
-      
-      $rbs = "<td class='tab_d_ohne'><b>Remote Boot Dienst: </b>&nbsp;</td>
-              <td class='tab_d_ohne'>
-               Rechner ist in keinem Remote Boot Dienst angemeldet<br></td></tr>
-              <tr valign='top'><td class='tab_d'>
-   			   RBS ausw&auml;hlen: <br></td>".$rbs_selectbox;
-   }else{
-      
-      $rbs = "";
-      $rbsdata = get_node_data($rbsDN,array("tftpserverip"));
-      #print_r($rbsdata); echo "<br>";
-      $exp2 = explode(',',$host['hlprbservice']);
-      $exprbs = explode('=',$exp2[0]); $rbserv = $exprbs[1];
-      $exprbsau = explode('=',$exp2[2]); $rbsau = $exprbsau[1];
-      $rbs .= "<td class='tab_d_ohne'><b>Remote Boot Dienst: </b>&nbsp;</td>
-               <td class='tab_d_ohne'>
-                  Remote Boot Service <b>".$rbserv."</b> / AU <b>".$rbsau."</b><br>
-                  TFTP (Boot) Server: <b>".$rbsdata['tftpserverip']."</b><br></td></tr>
-               <tr valign='top'><td class='tab_d'>
-   					RBS &auml;ndern: <br></td>".$rbs_selectbox;
-   	
-   	$rbs_dhcpopt = "<tr><td class='tab_d_ohne' colspan='2'><b>DHCP Optionen:</b></td></tr>
-   	      <tr>
-				   <td class='tab_d_ohne'><b>next-server</b> &nbsp;(TFTP Server):</td>
-				   <td class='tab_d_ohne'>".$host['dhcpoptnext-server']."&nbsp;</td>
-			   </tr>
-			   <tr>
-				   <td class='tab_d'><b>filename</b> &nbsp;(initiale remote Bootdatei):</td>
-				   <td class='tab_d'>".$host['dhcpoptfilename']."&nbsp;</td>
-			   </tr>";
-   }
 
 }
 
@@ -181,12 +167,11 @@ $template->assign(array("HOSTDN" => $hostDN,
            			      "OLDFIXADD" => $host['dhcpoptfixed-address'],
            			      "OLDRBS" => $rbsDN,         			      
            		       	"DHCPCONT" => $dhcp,
-           		       	"HOST_DHCPOPT" => $host_dhcpopt,
-           		       	"RBS" => $rbs,
-           		       	"RBS_DHCPOPT" => $rbs_dhcpopt,        			      
+           		       	"HOST_DHCPOPT" => $host_dhcpopt,   			      
            		       	"NEXTSERVER" => $host['dhcpoptnext-server'],          			      
            		       	"FILENAME" => $host['dhcpoptfilename'],
            		       	"HOSTLINK" => "<a href='host.php?dn=".$hostDN."&sbmnr=".$sbmnr."' class='headerlink'>",
+           		       	"RBSLINK" => "<a href='rbshost.php?dn=".$hostDN."&sbmnr=".$sbmnr."' class='headerlink'>",
            		       	"HWLINK" => "<a href='hwhost.php?dn=".$hostDN."&sbmnr=".$sbmnr."' class='headerlink'>",
            		       	"AUDN" => $auDN,
            		       	"SBMNR" => $sbmnr));
@@ -195,23 +180,22 @@ $template->assign(array("HOSTDN" => $hostDN,
 ##########################################################
 # DHCP Setup
 
+/*$dhcp_selectbox = "";
 $altdhcp = alternative_dhcpobjects($objecttype,$objectDN,$hostip[0]);
-#echo "<br><br>";print_r($altdhcp);
+echo "<br><br>";print_r($altdhcp);
 
-$template->assign(array("ALTDN" => "",
-   	                  "ALTCN" => "",
-   	                  "ALTAU" => ""));
+$dhcp_selectbox .= "<td class='tab_d'>
+	   		          <select name='dhcpcont' size='4' class='medium_form_selectbox'> 
+	   			          <option selected value='none'>----------</option>";
+
 if (count($altdhcp) != 0){
-$template->define_dynamic("Altdhcp", "Webseite");
 	foreach ($altdhcp as $item){
-		
-		$template->assign(array("ALTDN" => $item['dn'],
-   	                        "ALTCN" => $item['cn'],
-   	                        "ALTAU" => $item['au'],));
-   	$template->parse("ALTDHCP_LIST", ".Altdhcp");	
-	} 
+		$dhcp_selectbox .= "
+		   <option value='".$item['dn']."'>".$item['cn']." ".$item['au']."</option>";
+	}
 }
-
+$dhcp_selectbox .= "<option value=''>Kein DHCP</option>
+        					</select></td>";*/
 
 ###########################################################
 # RBS Setup

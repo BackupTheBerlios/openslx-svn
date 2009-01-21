@@ -119,7 +119,8 @@ if ( $pxecn != ""){
 					# Filename anpassen
 					if ($targettype == "computers"){
 						$macdata = get_node_data($targetDN, array("hwaddress"));
-						$entrymod ['filename'] = "01-".$macdata['hwaddress'];
+						$pxemac = str_replace (":","-",$macdata['hwaddress']);
+						$entrymod ['filename'] = "01-".$pxemac;
 						#$entrymod ['fileuri'] = "01-".$macdata['hwaddress'].".tgz";
 					}
 					if ($targettype == "groups"){
@@ -127,7 +128,8 @@ if ( $pxecn != ""){
 						if (count($members) != 0){
 							foreach ($members['member'] as $hostDN){
 								$macdata = get_node_data($hostDN, array("hwaddress"));
-								$entrymod ['filename'][] = "01-".$macdata['hwaddress'];
+								$pxemac = str_replace (":","-",$macdata['hwaddress']);
+								$entrymod ['filename'][] = "01-".$pxemac;
 								#$entrymod ['fileuri'] = $target.".tgz";
 							}
 						}

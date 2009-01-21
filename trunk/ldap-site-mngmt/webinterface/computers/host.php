@@ -61,6 +61,7 @@ $template->assign(array("HOSTDN" => $hostDN,
            		       	"GRAPHIC" => $host['hw-graphic'],
            		       	"MONITOR" => $host['hw-monitor'],
            		       	"DHCPLINK" => "<a href='dhcphost.php?dn=".$hostDN."&sbmnr=".$sbmnr."' class='headerlink'>",
+           		       	"RBSLINK" => "<a href='rbshost.php?dn=".$hostDN."&sbmnr=".$sbmnr."' class='headerlink'>",
            		       	"HWLINK" => "<a href='hwhost.php?dn=".$hostDN."&sbmnr=".$sbmnr."' class='headerlink'>",
            		       	"AUDN" => $auDN,
            		       	"SBMNR" => $sbmnr));

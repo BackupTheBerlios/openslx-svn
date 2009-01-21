@@ -1,46 +1,34 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
-  	<tr>
-  		<td colspan='4'><h3>Rechner &nbsp;<code class='font_object'> {HOSTNAME} </code> </h3></td>
-  	</tr>
-  	<tr>
-  		<td height='20'></td>
-  	</tr>
+  	
   	<tr>
   		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 1;'><h4>{HOSTLINK} Allgemein </a></h4></td>
-  		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4><code class='font_object'>DHCP/RBS</code></h4></td>
+  		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4><code class='font_object'>DHCP</code></h4></td>
+  		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{RBSLINK} RBS/PXE </a></h4></td>
   		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{HWLINK} Hardware </a></h4></td>
   		<td>&nbsp;</td>
   	</tr>
   	<tr>
   		<td height='20'></td>
   	</tr>
-  	<tr><td colspan='4'>
+  	<tr>
+  		<td colspan='5'><h3>DHCP Setup - Rechner &nbsp;<code class='font_object'> {HOSTNAME} </code> </h3></td>
+  	</tr>
+  	
+  	<tr><td colspan='5'>
   		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
 			
 				<form action='dhcphost_change.php' method='post'>
 			
 			<tr>
-				<td width='25%' class='tab_h'><h4><b>DHCP Setup</b></h4></td>
+				<td width='25%' class='tab_h'><b>DHCP Administration - Diensteinbindung, Optionen</b></td>
 				<td width='25%' class='tab_h'><b>&nbsp;</b></td>
 				<td width='50%' class='tab_h'><b>&nbsp;</b></td>
 			</tr>
 			
 			<tr valign='top'>
-				<td class='tab_d_ohne' colspan='2'><b>Eingebunden in DHCP Dienst: </b>&nbsp;</td>
-				<td class='tab_d_ohne'>
-					{DHCPCONT} <br></td>
-				<td class='tab_d'>
-					<select name='dhcpcont' size='4' class='medium_form_selectbox'> 
-						<option selected value='none'>----------</option>
-						
-						<!-- BEGIN DYNAMIC BLOCK: Altdhcp -->
-						<option value='{ALTDN}'>{ALTCN}{ALTAU}</option>
-						<!-- END DYNAMIC BLOCK: Altdhcp -->
-						
-						<option value=''>Kein DHCP</option>
-						
-					</select>
-				</td>
+			
+					{DHCPCONT}
+					
 			</tr>
 			
 			   {HOST_DHCPOPT}
@@ -50,23 +38,7 @@
   	<tr>
   		<td height='20'></td>
   	</tr>
-  	<tr><td colspan='4'>
-  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
-			
-			<tr>
-				<td width='35%' class='tab_h'><h4><b>PXE/TFTP Setup</b></h4></td>
-				<td width='65%' class='tab_h'><b>&nbsp;</b></td>
-			</tr>
-			
-			<tr valign='top'>
-				
-					{RBS} 
-				
-			</tr>
-			      {RBS_DHCPOPT}
-			
-		</table></td>
-  	</tr>
+  	
    
    <input type='hidden' name='olddhcp' value='{OLDDHCP}'>
    <input type='hidden' name='oldfixadd' value='{OLDFIXADD}'>
