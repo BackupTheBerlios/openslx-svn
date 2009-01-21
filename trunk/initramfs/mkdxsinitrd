@@ -590,6 +590,7 @@ if [ -z "$KERNVER" ] ; then
 fi
 
 if [ -z "$NWMODULES" ] ; then
+  #NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32 8139too 8139cp"
   NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32"
 fi
 if [ -z "$FSMODULES" ] ; then

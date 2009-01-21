@@ -140,7 +140,7 @@ fi
 config_sshd () {
 if [ "x$start_sshd" = "xyes" ] ; then
   if [ -f /mnt/etc/init.d/ssh ] ; then
-    rllinker "sshd" "20" "02"
+    rllinker "ssh" "20" "02"
   fi
 fi
 }

@@ -6,5 +6,3 @@ client_conf="/etc/dxs/client.cfg/machine-setup.default"
 # this variable choses which atftpd template file to chose
 atftpd_conf_name="atftpd_default"
 
-# wild guess on correct format of password string (dxs-root)
-root_pw='$1$yhUR.J5f$t4Djzm0SWX1hCmCVoIZ371'

@@ -193,8 +193,8 @@ configure() {
     for i in /bin/lsb_release /usr/bin/lsb_release; do
       if [ -e $i ] ; then
         $i > /dev/null 2>&1 || break
-        server_distro=`. $i -i | sed "s/.*\t//"`
-        server_distro_ver=`. $i -r | sed "s/.*\t//"`
+        server_distro=`$i -i | sed "s/.*\t//"`
+        server_distro_ver=`$i -r | sed "s/.*\t//"`
         break
       fi
     done
@@ -233,6 +233,7 @@ configure() {
   fi
 
   . distro-specs/config-${server_distro}
+  . distro-specs/config-client-${client_distro}
 
   ask "Path for client system: " rootdir $rootdir
   ask "Path for tftpboot: " tftpbootdir $tftpbootdir
@@ -395,6 +396,7 @@ setup_server () {
 
   # copy the client configuration default file and replace root_pw -
   # machine-setup
+  # echo "setting root password: ${root_pw}"
   sed -e "s,@@@root_pw@@@,'${root_pw}'," default_files/machine-setup.default \
     > ${dxs_cl_dir}/${dxs_client_conf}
 
