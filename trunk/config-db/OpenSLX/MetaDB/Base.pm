@@ -115,10 +115,6 @@ sub fetchGroupIDsOfSystem
 {
 }
 
-sub fetchSettings
-{
-}
-
 ################################################################################
 ### data manipulation interface
 ################################################################################
@@ -212,10 +208,6 @@ sub setClientIDsOfGroup
 }
 
 sub setSystemIDsOfGroup
-{
-}
-
-sub changeSettings
 {
 }
 
@@ -786,21 +778,6 @@ An array of client-IDs.
 
 
 
-=item C<fetchSettings()>
-
-Fetches all entries of the settings table, where a single row holds the info
-about all system wide configuration parameters.
-
-=over
-
-=item Return Value
-
-A hash containing all column values of the single row that lives
-int the settings table.
-
-=back
-
-
 =head2 Data Manipulation Methods
 
 The following methods need to be implemented in a MetaDB driver in order to
@@ -1231,26 +1208,6 @@ group.
 C<1> if the group/system references could be set, C<undef> if not.
 
 =back
-
-
-
-=item C<changeSettings(%$settings)>
-
-Changes one or more of the system-wide setting parameters.
-
-=over
-
-=item Param C<settings>
-
-A hash-ref containing the column-names you'd like to change with their new
-values.
-
-=item Return Value
-
-C<1> if the settings could be changed, C<undef> if not.
-
-=back
-
 
 
 

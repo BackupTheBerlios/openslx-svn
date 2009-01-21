@@ -46,7 +46,7 @@ my %translations;
 
 # this hash will hold the active openslx configuration,
 # the initial content is based on environment variables or default values.
-# Each value may be overrided from config files and/or cmdline arguments.
+# Each value may be overridden from config files and/or cmdline arguments.
 %openslxConfig = (
 	'croak' => '0',
 	'db-datadir' => $ENV{SLX_DB_DATADIR},
@@ -61,6 +61,14 @@ my %translations;
 	'public-path' => $ENV{SLX_PUBLIC_PATH} || '/srv/openslx',
 	'temp-path' => $ENV{SLX_TEMP_PATH} || '/tmp',
 	'verbose-level' => $ENV{SLX_VERBOSE_LEVEL} || '0',
+	#
+	# extended settings follow, which are only supported by slxsettings,
+	# but not by any other script:
+	#
+	'system-default-nicmods'
+		=> 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
+	'system-default-fsmods' => '',
+	'ossetup-max-retry-count' => '5',
 );
 chomp($openslxConfig{'locale-charmap'});
 $openslxConfig{'bin-path'}
@@ -75,6 +83,8 @@ $openslxConfig{'stage1-path'}
 	= $ENV{SLX_STAGE1_PATH} || "$openslxConfig{'private-path'}/stage1",
 $openslxConfig{'tftpboot-path'}
 	= $ENV{SLX_TFTPBOOT_PATH} || "$openslxConfig{'public-path'}/tftpboot",
+$openslxConfig{'vmware-path'}
+	= $ENV{SLX_VMWARE_PATH} || "$openslxConfig{'base-path'}/vmware",
 
 # specification of cmdline arguments that are shared by all openslx-scripts:
 %cmdlineConfig;

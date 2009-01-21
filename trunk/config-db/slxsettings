@@ -39,27 +39,24 @@ use lib "$FindBin::RealBin";
 	# development path to config-db stuff
 
 use OpenSLX::Basics;
-use OpenSLX::ConfigDB;
+use OpenSLX::Utils;
 
 my (
 	$quiet,
-	@remove,
-	%cmdlineSettings,
+	@reset,
 	$helpReq,
 	$manReq,
-	$verbose,
 	$versionReq,
 );
 
 GetOptions(
 	'quiet' => \$quiet,
 		# will avoid printing anything
-	'setting=s' => \%cmdlineSettings,
-		# accepts setting for db-table 'settings'
+	'reset=s' => \@reset,
+		# resets given option to its default
 
 	'help|?' => \$helpReq,
 	'man' => \$manReq,
-	'verbose' => \$verbose,
 	'version' => \$versionReq,
 );
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
@@ -71,35 +68,29 @@ if ($versionReq) {
 
 openslxInit() or pod2usage(2);
 
-# if there are still arguments in the cmdline left, it must be 'remove'-actions:
+my %givenSettings = %cmdlineConfig;
+
+# if there are still arguments in the cmdline left, it must be extended
+# settings:
 while (scalar @ARGV) {
-	my $action = shift;
-	my $key = shift;
-	if ($action !~ m[^remove$]) {
-		print STDERR _tr("Action '%s' is not understood!\n\n", $action);
-		pod2usage();
+	my $extSetting = shift;
+	if ($extSetting !~ m[^([-\w]+)=(.+)$]) {
+		die _tr("extended setting '%s' has unknown format, expected '<key>=<value>!'",
+				$extSetting);
 	}
-	push @remove, $key;
+	$givenSettings{$1} = $2;
 }
 
-# fetch slxconf entries...
-my $openslxDB = OpenSLX::ConfigDB->new();
-$openslxDB->connect();
-my $currSettings = $openslxDB->fetchSettings();
-
-# ...and fetch current content of local settings file...
-open(SETTINGS, "< $openslxConfig{'config-path'}/settings.local");
-local $/ = undef;
-my $settings = <SETTINGS>;
-close(SETTINGS);
+# fetch current content of local settings file...
+my $settings = slurpFile("$openslxConfig{'config-path'}/settings.local");
 
 my $changeCount;
 
 # ...set new values...
-foreach my $key (sort keys %cmdlineConfig) {
+foreach my $key (keys %givenSettings) {
 	next if $key eq 'config-path';
 		# config-path can't be changed, it is used to find settings.local
-	my $value = $cmdlineConfig{$key};
+	my $value = $givenSettings{$key};
 	next if !defined $value;
 	vlog 0, _tr("setting %s to '%s'", $key, $value) unless $quiet;
 	my $externalKey = externalKeyFor($key);
@@ -109,14 +100,10 @@ foreach my $key (sort keys %cmdlineConfig) {
 	$changeCount++;
 }
 
-# ...remove any keys we should do away with...
-foreach my $key (@remove) {
-	if (!exists $cmdlineConfig{$key}) {
-		vlog 0, _tr("ignoring unknown key '%s'", $key);
-		next;
-	}
+# reset specified keys to fall back to default:
+foreach my $key (@reset) {
 	my $externalKey = externalKeyFor($key);
-	if ($settings =~ s[^\s*$externalKey=.*?$][]ms) {
+	if ($settings =~ s[^\s*?$externalKey=.*?\n][]ms) {
 		vlog 0, _tr("removing option '%s' from local settings", $key) unless $quiet;
 	} else {
 		vlog 0, _tr("option '%s' didn't exist in local settings!", $key) unless $quiet;
@@ -133,29 +120,18 @@ if ($changeCount) {
 	close(SETTINGS);
 }
 
-if (scalar(keys %cmdlineSettings) > 0) {
-	foreach my $key (keys %cmdlineSettings) {
-		if (exists $currSettings->{$key}) {
-			$openslxDB->changeSettings({ $key => $cmdlineSettings{$key} });
-			$changeCount++;
-		} else {
-			die _tr("unknown settings key '%s'!\n", $key);
-		}
-	}
-	$currSettings = $openslxDB->fetchSettings();
-}
-
-$openslxDB->disconnect();
-
-if ($verbose || !$changeCount) {
-	my $text = $changeCount ? "resulting settings:" : "current settings:";
+if (!$changeCount) {
+	my $text
+		= $changeCount ? "resulting base settings:" : "current base settings:";
 	print "\n"._tr($text)."\n";
-	foreach my $key (sort keys %openslxConfig) {
-		print qq[\t$key='$openslxConfig{$key}'\n];
+	my @baseSettings = grep { exists $cmdlineConfig{$_} } keys %openslxConfig;
+	foreach my $key (sort @baseSettings) {
+		print qq[\t--$key='$openslxConfig{$key}'\n];
 	}
-	print "slxconf:\n";
-	foreach my $key (sort keys %$currSettings) {
-		print qq[\t$key='$currSettings->{$key}'\n];
+	print "extended settings:\n";
+	my @extSettings = grep { !exists $cmdlineConfig{$_} } keys %openslxConfig;
+	foreach my $key (sort @extSettings) {
+		print qq[\t$key='$openslxConfig{$key}'\n];
 	}
 }
 
@@ -176,6 +152,10 @@ slxsettings - OpenSLX-script to show & change local settings
 =head1 SYNOPSIS
 
 slxsettings [options] [action ...]
+
+=head3 Script Options
+
+      --reset=<string>           resets the given option to its default
 
 =head3 OpenSLX Options
 
@@ -202,7 +182,6 @@ slxsettings [options] [action ...]
       --help                     brief help message
       --man                      full documentation
       --quiet                    do not print anything
-      --verbose                  show more information
       --version                  show version
 
 =head3 Actions
@@ -213,10 +192,14 @@ slxsettings [options] [action ...]
 
 sets the specified openslx-option to the given value
 
-=item B<<     remove <openslx-option> [remove ...] >>
+=item B<<     <extended-setting>=<value> >>
 
-removes given openslx-option from the local settings (resets it to the
-default value)
+sets the specified extended setting to the given value
+
+=item B<<     --reset=<setting> [--reset=...] >>
+
+removes the given setting from the local settings (resets it to its default
+value)
 
 =back
 
@@ -369,10 +352,6 @@ Prints the manual page and exits.
 =item B<    --quiet>
 
 Runs the script without printing anything.
-
-=item B<    --verbose>
-
-Prints the resulting settings after changes have been applied.
 
 =item B<    --version>
 

@@ -158,11 +158,6 @@ $DbSchema = {
 			'group_id:fk',		# foreign key
 			'system_id:fk',		# foreign key
 		],
-		'settings' => [
-			# system-wide settings
-			'default_nicmods:s.256',
-								# list of default network modules
-		],
 	},
 };
 
@@ -261,17 +256,6 @@ $DbSchema = {
 			'cmd' => 'add-table',
 			'table' => 'group_system_ref',
 			'cols' => $DbSchema->{'tables'}->{'group_system_ref'},
-		},
-		{
-			'cmd' => 'add-table',
-			'table' => 'settings',
-			'cols' => $DbSchema->{'tables'}->{'settings'},
-			'vals' => [
-				{	# add default configuration
-					'default_nicmods'
-						=> 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
-				},
-			],
 		},
 	],
 );

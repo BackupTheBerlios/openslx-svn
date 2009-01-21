@@ -323,13 +323,6 @@ sub fetchGroupIDsOfClient
 	return $self->_doSelect($sql, 'group_id');
 }
 
-sub fetchSettings
-{
-	my $self = shift;
-	my $sql = "SELECT * FROM settings";
-	return $self->_doSelect($sql);
-}
-
 ################################################################################
 ### data manipulation functions
 ################################################################################
@@ -702,13 +695,6 @@ sub setSystemIDsOfGroup
 	my @currSystems = $self->fetchSystemIDsOfGroup($groupID);
 	$self->_updateRefTable('group_system_ref', $groupID, $systemIDs,
 						   'group_id', 'system_id', \@currSystems);
-}
-
-sub changeSettings
-{
-	my $self = shift;
-	my $settings = shift;
-	return $self->_doUpdate('settings', undef, [ $settings ]);
 }
 
 ################################################################################

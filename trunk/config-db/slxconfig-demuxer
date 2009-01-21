@@ -102,8 +102,6 @@ openslxInit();
 my $openslxDB = OpenSLX::ConfigDB->new();
 $openslxDB->connect();
 
-my $settings = $openslxDB->fetchSettings();
-
 my $clientConfigPath = "$openslxConfig{'private-path'}/config";
 if (!-d $clientConfigPath) {
 	die _tr("Unable to access client-config-path '%s'!", $clientConfigPath);

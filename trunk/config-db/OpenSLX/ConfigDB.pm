@@ -364,14 +364,6 @@ sub fetchGroupIDsOfClient
 	return $self->{'meta-db'}->fetchGroupIDsOfClient($clientID);
 }
 
-sub fetchSettings
-{
-	my $self = shift;
-
-	my @rows = $self->{'meta-db'}->fetchSettings();
-	return shift @rows;
-}
-
 ################################################################################
 ### data manipulation interface
 ################################################################################
@@ -803,14 +795,6 @@ sub emptyDatabase
 		  grep { $_->{id} > 0 }
 		  $self->fetchVendorOSByFilter();
 	$self->removeVendorOS(\@vendorOSIDs);
-}
-
-sub changeSettings
-{
-	my $self = shift;
-	my $settings = shift;
-
-	return $self->{'meta-db'}->changeSettings($settings);
 }
 
 ################################################################################
