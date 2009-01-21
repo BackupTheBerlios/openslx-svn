@@ -604,7 +604,7 @@ if [ "x$called" = "xd2dl" ]; then
           rsexcl="--exclude-from=exclude.local --exclude=/etc/passwd* --exclude=/etc/shadow* "; }
 fi
 
-check_programs
+check_files
 
 configure
 
