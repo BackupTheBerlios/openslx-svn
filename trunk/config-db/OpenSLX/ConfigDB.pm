@@ -37,6 +37,7 @@ my @accessExports = qw(
 	fetchClientIDsOfGroup
 	fetchGroupsByFilter fetchGroupsByID fetchGroupIDsOfClient
 	fetchGroupIDsOfSystem
+	fetchSettings
 );
 
 my @manipulationExports = qw(
@@ -52,6 +53,7 @@ my @manipulationExports = qw(
 	addGroup removeGroup changeGroup
 	setClientIDsOfGroup addClientIDsToGroup removeClientIDsFromGroup
 	setSystemIDsOfGroup addSystemIDsToGroup removeSystemIDsFromGroup
+	changeSettings
 	emptyDatabase
 );
 
@@ -379,6 +381,14 @@ sub fetchGroupIDsOfClient
 	my $clientID = shift;
 
 	return $confDB->{'meta-db'}->fetchGroupIDsOfClient($clientID);
+}
+
+sub fetchSettings
+{
+	my $confDB = shift;
+
+	my @rows = $confDB->{'meta-db'}->fetchSettings();
+	return shift @rows;
 }
 
 ################################################################################
@@ -772,6 +782,14 @@ sub emptyDatabase
 		  grep { $_->{id} > 0 }
 		  fetchVendorOSesByFilter($confDB);
 	removeVendorOS($confDB, \@vendorOSIDs);
+}
+
+sub changeSettings
+{
+	my $confDB = shift;
+	my $settings = shift;
+
+	return $confDB->{'meta-db'}->changeSettings($settings);
 }
 
 ################################################################################

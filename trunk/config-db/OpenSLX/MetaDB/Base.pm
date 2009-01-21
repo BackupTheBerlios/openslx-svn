@@ -108,6 +108,10 @@ sub fetchGroupIDsOfSystem
 {
 }
 
+sub fetchSettings
+{
+}
+
 ################################################################################
 ### data manipulation interface
 ################################################################################
@@ -201,6 +205,10 @@ sub setClientIDsOfGroup
 }
 
 sub setSystemIDsOfGroup
+{
+}
+
+sub changeSettings
 {
 }
 
