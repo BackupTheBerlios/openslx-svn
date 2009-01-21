@@ -206,7 +206,8 @@ if [ "${DEBUGLEVEL}" -lt 4 ] ; then
 #!/bin/${shtype}sh
 echo \$$ > /tmp/watchdogpid
 [ ! -f /proc/version ] && mount -n -t proc proc /proc
-sleep 120
+. /etc/functions
+sleep 120 2> /dev/null
 echo "o" > /proc/sysrq-trigger
 EOF
   chmod u+x /bin/watchdog
