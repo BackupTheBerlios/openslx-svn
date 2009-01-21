@@ -167,28 +167,6 @@ case "$2" in
 esac
 }
 #############################################################################
-# load a certain module - name of module with path in argument one, the
-# error message in second argument -- fixme!!
-loadmod () {
-local modpath=$1
-local module=`echo $modpath|sed -e "s,.*/,,"`
-local msg=$2
-if [ -f $modpath ] ; then
-  module=${module%.*}
-  modprobe ${MODPRV} ${module#*.} || \
-    echo "$error_modload '$module'. $msg"
-fi
-}
-modloader () {
-local path=$1
-local list=$2
-local mod
-for mod in $list ; do
-  insmod /lib/modules/${KERNEL}/${path}/${mod}.ko 2>/dev/null || \
-     modprobe ${MODPRV} ${mod}  2>/dev/null
-done
-}
-#############################################################################
 # compute prefix bit number from netmask
 nm2pref () {
 set `IFS="."; echo $1`
@@ -211,7 +189,7 @@ echo $n
 #############################################################################
 # configure Xen bridge xenbr0
 xenbr_config () {
-modprobe netloop
+modprobe ${MODPRV} netloop
 local ipls
 local vifnum="0"
 local bridge="xenbr${vifnum}"
@@ -232,14 +210,6 @@ for ipls in "${netdev} name ${pdev}" "${vdev} name ${netdev}" \
             "${bridge} up" "${vif0} up" "${pdev} up" ; do
   ip link set ${ipls}
 done
-#ip link set ${netdev} name ${pdev}
-#ip link set ${vdev} name ${netdev}
-#ip link set ${pdev} down arp off
-#ip link set ${pdev} addr fe:ff:ff:ff:ff:ff
-#ip link set ${netdev} addr ${mac} arp on
-#ip link set ${bridge} up
-#ip link set ${vif0} up
-#ip link set ${pdev} up
 brctl addif ${bridge} ${pdev}
 }
 #############################################################################
@@ -263,7 +233,7 @@ local ret=0
 [ -z "$dest" ] && dest="/mnt"
 # often nfs is just a module and not compiled directly into the kernel
 [ -f /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko ] && \
-  loadmod /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko "$error_modnfs"
+  modprobe ${MODPRV} nfs || error "$error_modnfs"
 # busybox mount has to be compiled with nfs mount support otherwise
 # --> error "$error_mntt"
 mount -n -t nfs -o ro,nolock,tcp $nfsroot $dest || \
@@ -315,8 +285,7 @@ else
   [ -n "$noipyet" ] && \
     ip link set dev eth0 up
   [ -f /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko ] && \
-    loadmod /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko \
-      "needed for dhcp";
+    modprobe ${MODPRV} af_packet   
   echo "Starting $dhcp for configuration"
   mkdir /var/lib/dhcp >/dev/null 2>&1
 fi
@@ -350,11 +319,7 @@ echo -e "tftp\t69/tcp\ntftp\t69/udp" > /etc/services
 local dst=/tmp/$(basename $1)
 # tftp get part
 # distinguish between busybox tftp and standalone (in.tftp) client
-if [ -x /bin/busybox ] ; then
-  tftp -g -r $1 -l $dst $2 2>/dev/null
-else
-  echo "get $1 $dst" | tftp $2 >/dev/null 2>&1
-fi
+tftp -g -r $1 -l $dst $2 2>/dev/null
 # unpack part
 if [ -s $dst ] ; then
   # fixme: handle different types of packaging (gzip/bzip2)??
@@ -475,14 +440,14 @@ local count=0
 [ -z $maxwait ] && maxwait=5000
 while [ ! -e $file ] ; do
   echo "waiting ........." > /dev/null
-  count=`expr $count + 1`
+  count=$(expr $count + 1)
   [ $count -gt $maxwait ] && return 1
 done
 return 0
 }
 
 #############################################################################
-# ldconfig is needed if rootfilesystem is composed of several parts search
+# ldconfig is needed if rootfilesystem is composed of several parts. Search
 # for ldconfig and execute it
 # check that /mnt/etc/ld.so.conf is never lost
 ldconfig () {
@@ -493,8 +458,7 @@ for ldcfg in /mnt/sbin/ldconfig \
   test -x $ldcfg && {
     $ldcfg -r /mnt -C $cachefile; break; }
 done
-#/mnt/sbin/ldconfig -r /mnt -C $cachefile
-echo "finished" > /tmp/ldcfg
+echo "finished at $(sysup)" > /tmp/ldcfg
 }
 
 #############################################################################
@@ -509,7 +473,7 @@ sed '/^[a-zA-Z0-9]*:[a-zA-Z0-9]*:[1-9][0-9]\{3,4\}:/d;/^+:*/d;/^+$/d;
 # and add user nobody again (is there a more elegant way?)
 sed -n -e '/nobody/p' /mnt/etc/passwd >> /tmp/newpasswd
 # create the shadow from passwd file
-echo -e "root:"$root_pw":12958:0:10000::::" > /mnt/etc/shadow
+echo -e "root:"${root_pw}":12958:0:10000::::" > /mnt/etc/shadow
 sed 's/:.*/:!:13078:0:99999:7:::/;/^root.*/d' /tmp/newpasswd \
   >> /mnt/etc/shadow
 mv /tmp/newpasswd /mnt/etc/passwd
@@ -874,14 +838,16 @@ include_in_fsroot_union () {
           ;;
         esac
     if [ "X$union_type" == "XUnionFS" ]; then
-	[ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && echo "Using unionctl to mount ${root_path}_${union_id} (type: $union_type)"
-	unionctl /mnt/ --add --after 1 --mode ro /mnt/tmp/${root_path}_${union_id}
+      [ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && \
+        echo "Using unionctl to mount ${root_path}_${union_id} (type: $union_type)"
+      unionctl /mnt/ --add --after 1 --mode ro /mnt/tmp/${root_path}_${union_id}
     elif [ "X$union_type" == "XAUFS" ]; then
-	#unionctl for aufs is a sh script needing tools not included in our initrd
-	[ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && echo "Using aufs-mount to mount ${root_path}_${union_id} (type: $union_type)"
-	mount -n -o remount,add:1:/mnt/tmp/${root_path}_${union_id}=ro none /mnt
+      # unionctl for aufs is a sh script needing tools not included in our initrd
+      [ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && \
+        echo "Using aufs-mount to mount ${root_path}_${union_id} (type: $union_type)"
+      mount -n -o remount,add:1:/mnt/tmp/${root_path}_${union_id}=ro none /mnt
     else
-	error $init_loadunions nonfatal
+      error ${init_loadunions} nonfatal
     fi
  done
 }
