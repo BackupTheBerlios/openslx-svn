@@ -1091,6 +1091,9 @@ sub addInstalledPlugin
 	my $vendorOSID = shift;
 	my $pluginName = shift;
 
+	# make sure the attributes of this plugin are available via default system
+	$self->{'db-schema'}->synchronizeAttributesWithDefaultSystem($self);
+
 	return $self->{'meta-db'}->addInstalledPlugin($vendorOSID, $pluginName);
 }
 

@@ -271,7 +271,7 @@ sub checkAndUpgradeDBSchemaIfNecessary
 			);
 		}
 		$metaDB->schemaSetDBVersion($DbSchema->{version});
-		$self->_synchronizeAttributesWithDefaultSystem($configDB);
+		$self->synchronizeAttributesWithDefaultSystem($configDB);
 		vlog(1, _tr('DB has been created successfully'));
 	} elsif ($currVersion < $DbSchema->{version}) {
 		vlog(
@@ -282,7 +282,7 @@ sub checkAndUpgradeDBSchemaIfNecessary
 			)
 		);
 		$self->_schemaUpgradeDBFrom($metaDB, $currVersion);
-		$self->_synchronizeAttributesWithDefaultSystem($configDB);
+		$self->synchronizeAttributesWithDefaultSystem($configDB);
 		vlog(1, _tr('upgrade done'));
 	} else {
 		vlog(1, _tr('DB matches current schema version (%s)', $currVersion));
@@ -301,7 +301,7 @@ sub getColumnsOfTable
 		@{$DbSchema->{tables}->{$tableName}->{cols}};
 }
 
-sub _synchronizeAttributesWithDefaultSystem
+sub synchronizeAttributesWithDefaultSystem
 {
 	my $self     = shift;
 	my $configDB = shift;

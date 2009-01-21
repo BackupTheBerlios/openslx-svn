@@ -292,12 +292,20 @@ sub dumpElements
 							"\n",
 							map {
 								my $spc = ' ' x $spcLen;
-								my $val = $elemVal->{$_} || '';
+								my $val 
+									= defined $elemVal->{$_}
+										? $elemVal->{$_} 
+										: '';
 								$val =~ s[\n][\n$ind$spc   ]g;
 								"$ind$_" . substr($spc, length($_)) . " = $val";
 							}
 							sort keys %$elemVal
 						);
+						$subLines ||= "$ind<none>";
+						"  $_:\n$subLines\n";
+					} elsif (ref($elemVal) eq 'ARRAY') {
+						my $subLines 
+							= join( "\n", map { "$ind$_"	} sort @$elemVal);
 						$subLines ||= "$ind<none>";
 						"  $_:\n$subLines\n";
 					} else {
@@ -473,10 +481,29 @@ sub listSystems
 					map { $_->{name} }
 					sort { $a->{name} cmp $b->{name} }
 					$openslxDB->fetchClientByID(\@clientIDs, 'name');
+			my @activePlugins;
 			my $export = $openslxDB->fetchExportByID($_->{export_id});
 			if (defined $export) {
-				$_->{export_id} = "$export->{name} ($export->{type})";
+				$_->{export_id}
+					= "$export->{id} ($export->{name})";
+
+				# fetch detailed info about active plugins
+				my @installedPlugins = sort $openslxDB->fetchInstalledPlugins(
+					$export->{vendor_os_id}
+				);
+				my $mergedSystem = dclone($_);
+				$openslxDB->mergeDefaultAttributesIntoSystem($mergedSystem);
+				my $mergedAttrs = $mergedSystem->{attrs} || {};
+				foreach my $plugin (@installedPlugins) {
+					my $pluginScope = lc($plugin);
+					next if !$mergedAttrs->{"${pluginScope}::active"};
+					my $precedence = sprintf(
+						"%02d", $mergedAttrs->{"${pluginScope}::precedence"}
+					);
+					push(@activePlugins, "$precedence...$plugin");
+				}
 			}
+			$_->{PLUGINS} = [ sort @activePlugins ];
 			# rename attrs to ATTRIBUTES for display
 			$_->{ATTRIBUTES} = $_->{attrs};
 			delete $_->{attrs};
@@ -502,6 +529,11 @@ sub listVendorOSes
 	}
 
 	dumpElements('vendor-OS', undef,
+		map {
+			my @plugins = sort $openslxDB->fetchInstalledPlugins($_->{id});
+			$_->{plugins} = @plugins ? join(',', @plugins) : '<none>';
+			$_;
+		}
 		sort { $a->{name} cmp $b->{name} }
 		$openslxDB->fetchVendorOSByFilter(\%nameSpec));
 
@@ -623,10 +655,29 @@ sub searchSystems
 			$_->{clients} = join "\n", map { $_->{name} }
 				sort { $a->{name} cmp $b->{name} }
 				$openslxDB->fetchClientByID(\@clientIDs, 'name');
+			my @activePlugins;
 			my $export = $openslxDB->fetchExportByID($_->{export_id});
 			if (defined $export) {
-				$_->{export_id} = "$export->{name} ($export->{type})";
+				$_->{export_id}
+					= "$export->{id} ($export->{name})";
+
+				# fetch detailed info about active plugins
+				my @installedPlugins = sort $openslxDB->fetchInstalledPlugins(
+					$export->{vendor_os_id}
+				);
+				my $mergedSystem = dclone($_);
+				$openslxDB->mergeDefaultAttributesIntoSystem($mergedSystem);
+				my $mergedAttrs = $mergedSystem->{attrs} || {};
+				foreach my $plugin (@installedPlugins) {
+					my $pluginScope = lc($plugin);
+					next if !$mergedAttrs->{"${pluginScope}::active"};
+					my $precedence = sprintf(
+						"%02d", $mergedAttrs->{"${pluginScope}::precedence"}
+					);
+					push(@activePlugins, "$precedence...$plugin");
+				}
 			}
+			$_->{PLUGINS} = [ sort @activePlugins ];
 			# rename attrs to ATTRIBUTES for display
 			$_->{ATTRIBUTES} = $_->{attrs};
 			delete $_->{attrs};
@@ -649,6 +700,11 @@ sub searchVendorOSes
 
 	dumpElements(
 		'vendor-OS', undef,
+		map {
+			my @plugins = sort $openslxDB->fetchInstalledPlugins($_->{id});
+			$_->{plugins} = @plugins ? join(',', @plugins) : '<none>';
+			$_;
+		}
 		sort { $a->{name} cmp $b->{name} }
 		$openslxDB->fetchVendorOSByFilter($vendorOSData)
 	);
@@ -970,6 +1026,8 @@ sub changeClientInConfigDB
 			$clientName);
 	}
 
+	mergeNonExistingAttributes($clientData, $client);
+
 	my @systemIDs;
 	if (exists $clientData->{systems}) {
 		@systemIDs = map {
@@ -1173,6 +1231,8 @@ sub changeSystemInConfigDB
 			$systemName);
 	}
 
+	mergeNonExistingAttributes($systemData, $system);
+
 	my @clientIDs;
 	if (exists $systemData->{clients}) {
 		@clientIDs = map {
@@ -1214,7 +1274,7 @@ sub changeSystemInConfigDB
 			"you can't rename the default system - no changes were made!\n");
 	}
 
-	$openslxDB->changeSystem($system->{id}, [$systemData]);
+	$openslxDB->changeSystem($system->{id}, $systemData);
 	vlog(0, _tr("system '%s' has been successfully changed\n", $systemName));
 	if (@clientIDs) {
 		$openslxDB->setClientIDsOfSystem($system->{id}, \@clientIDs);
