@@ -22,7 +22,35 @@ use vars qw(%translations);
 ################################################################################
 
 %translations = (
+	q{NEW:$rootPath/etc/ld.so.conf not found, maybe wrong root-path?\n}
+	=>
+	qq{},
+
 	q{NEW:%s doesn't seem to be installed,\nso there is no support for %s available, sorry!\n}
+	=>
+	qq{},
+
+	q{NEW:%s has wrong bitwidth (%s instead of %s)}
+	=>
+	qq{},
+
+	q{NEW:%s: ignored, as it isn't an executable or a shared library\n}
+	=>
+	qq{},
+
+	q{NEW:\trpath='%s'\n}
+	=>
+	qq{},
+
+	q{NEW:\ttrying objdump...\n}
+	=>
+	qq{},
+
+	q{NEW:\ttrying readelf...\n}
+	=>
+	qq{},
+
+	q{NEW:analyzing '%s'...\n}
 	=>
 	qq{},
 
@@ -142,7 +170,7 @@ use vars qw(%translations);
 	=>
 	qq{},
 
-	q{NEW:Lock-file <%s> exists, script is already running.\nPlease remove the logfile and try again if you are sure that no one else is executing this script.}
+	q{NEW:Lock-file <%s> exists, script is already running.\nPlease remove the logfile and try again if you are sure that no one else\nis executing this script.\n}
 	=>
 	qq{},
 
@@ -155,6 +183,10 @@ use vars qw(%translations);
 	qq{},
 
 	q{NEW:merging from group %d:%s...}
+	=>
+	qq{},
+
+	q{NEW:neither objdump nor readelf seems to be installed, giving up!\n}
 	=>
 	qq{},
 
@@ -178,6 +210,10 @@ use vars qw(%translations);
 	=>
 	qq{},
 
+	q{NEW:slxldd: unable to find file '%s', skipping it\n}
+	=>
+	qq{},
+
 	q{NEW:system-error: illegal target-path <%s>!}
 	=>
 	qq{},
@@ -194,6 +230,14 @@ use vars qw(%translations);
 	=>
 	qq{},
 
+	q{NEW:unable to create db-datadir %s! (%s)\n}
+	=>
+	qq{},
+
+	q{NEW:Unable to create lock-file <%s>, exiting!\n}
+	=>
+	qq{},
+
 	q{NEW:Unable to create or access temp-path '%s'!}
 	=>
 	qq{},
@@ -206,9 +250,21 @@ use vars qw(%translations);
 	=>
 	qq{},
 
-	q{Unable to load DB-module <%s> (%s)}
+	q{NEW:unable to fetch file info for $folder/$lib, giving up!\n}
 	=>
-	qq{Kann DB-Modul <%s> nicht laden (%s)},
+	qq{},
+
+	q{NEW:Unable to load DB-module <%s> (%s)\n}
+	=>
+	qq{},
+
+	q{NEW:Unable to load DB-module <%s>\nthat database type is not supported (yet?)\n}
+	=>
+	qq{},
+
+	q{NEW:unable to load DHCP-Export backend '%s'! (%s)\n}
+	=>
+	qq{},
 
 	q{NEW:Unable to load module <%s> (Version <%s> required)}
 	=>
@@ -219,6 +275,10 @@ use vars qw(%translations);
 	qq{},
 
 	q{NEW:Unable to write local settings file <%s> (%s)}
+	=>
+	qq{},
+
+	q{NEW:unknown settings key <%s>!\n}
 	=>
 	qq{},
 
@@ -238,6 +298,10 @@ use vars qw(%translations);
 	=>
 	qq{},
 
+	q{NEW:writing dhcp-config for %s clients}
+	=>
+	qq{},
+
 	q{NEW:writing PXE-file %s}
 	=>
 	qq{},
@@ -246,9 +310,18 @@ use vars qw(%translations);
 	=>
 	qq{ja},
 
+	q{NEW:You need to specify at least one file!\n}
+	=>
+	qq{},
+
+	q{NEW:You need to specify the root-path!\n}
+	=>
+	qq{},
+
 );
 
 1;
+
 
 
 
