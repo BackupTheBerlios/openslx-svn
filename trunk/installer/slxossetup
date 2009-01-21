@@ -124,9 +124,7 @@ function slxossetup_rpm()
 		# Cleanup etc to prevent .rpnnew files
 		if test "${SLX_BASE_PREREQ_CLEANUP_PATH}"; then
 			for path in ${SLX_BASE_PREREQ_CLEANUP_PATH}; do
-				# Remove leading / as we do not like to delete e.g. /etc
-				path="${path#/}"
-				find "${path}" -type f -print0 | \
+				find "${SLX_STAGE1_PATH}/${path}" -type f -print0 | \
 					xargs -0 rm -f
 			done
 		fi
