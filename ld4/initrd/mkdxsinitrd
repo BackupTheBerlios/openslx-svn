@@ -5,6 +5,7 @@
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-04-2006
 #		Nico Dietrich
+#               Felix Endres
 #
 # Version:      0.3.1g
 #
@@ -159,6 +160,38 @@ copy_distro_stuff() {
     -regex ".*/\..*" -exec rm -rf {} 2>/dev/null \;
 }
 
+# This function makes the directory of this script to the present working directory
+# Does also work when called by a link. FIXME: Breaks when called by a link to a link
+goto_script_dir()
+{
+  [ $DEBUG -ge 2 ] && echo "Aufgerufen wurde $0, checking if it is a link"
+  calleddetails=`ls -l $0` # get the file flags (e.g. lrwxrwxrwx)
+  [ $DEBUG -ge 2 ] && echo $calleddetails
+  index=`expr index "$calleddetails" "l"`
+
+  calleddir=${0%/*}  # Strip the filename from path
+  [ $DEBUG -ge 2 ] && echo "Wechsele ins Verzeichnis des aufgerufenen scripts/links ($calleddir)"
+  cd $calleddir
+
+
+  if [ $index -eq 1 ]; then
+    [ $DEBUG -ge 2 ] && echo "It is a link"
+
+    script=`echo $calleddetails | awk '{print $NF}'`
+    [ $DEBUG -ge 2 ] && echo "The script is: $script"
+    hasslash=`expr index "$script" "/"`
+    if [ $hasslash -ne 0 ]; then 
+      scriptdir=${script%/*}
+      [ $DEBUG -ge 2 ] && echo "Following link to $scriptdir"
+      cd $scriptdir
+    else
+      [ $DEBUG -ge 2 ] && echo "It is in the same directory as the link"
+    fi
+  fi
+  [ $DEBUG -ge 2 ] && pwd
+
+}
+
 #########################################################################
 # End of function declaration
 
@@ -207,6 +240,9 @@ shift $(expr $OPTIND - 1)
 
 #########################################################################
 # End of parameter, argument interpretation
+
+#Change to the directory this script is located in
+goto_script_dir
 
 if [ -z "$INSTDIR" ] ; then
   INSTDIR=/tmp/dxs-instrd
