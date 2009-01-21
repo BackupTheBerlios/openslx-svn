@@ -9,7 +9,10 @@
 # 
 # Version:      0.2.1f
 
-# 
+# empty preinit to overwrite settings from the 9.3 file
+postinit () { 
+: 
+}
 
 # udev service
 udev_hotplug () {

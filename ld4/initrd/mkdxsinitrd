@@ -567,6 +567,10 @@ chmod 755 ${INSTDIR}/init \
 if [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
   cp /etc/dxs/client.cfg/machine-setup.default \
     ${INSTDIR}/etc/machine-setup
+# fixme: dirty hack if the installer does not creates a normal file
+elif [ -f /etc/dxs/client.cfg/machine-setup.default.new ] ; then
+  cp /etc/dxs/client.cfg/machine-setup.default.new \
+    ${INSTDIR}/etc/machine-setup
 elif [ -f ../installer/default_files/machine-setup.default ] ; then
   cp ../installer/default_files/machine-setup.default \
     ${INSTDIR}/etc/machine-setup

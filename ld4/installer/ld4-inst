@@ -490,7 +490,7 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
       fi
       # linking files 
       # fixme!! if SuSE und DHCP dann Kopie statt Link
-      if [ ${server_distro} = "suse" ] && echo ${dxs_dhcpd_conf}|\
+      if [ ${server_distro} = "suse" ] && echo ${dxs_conf}|\
         grep dhcp &>/dev/null; then
         rm ${2}${extension} &>/dev/null
 	cp ${dxs_conf}/${1}-${timestamp} ${2}${extension}
