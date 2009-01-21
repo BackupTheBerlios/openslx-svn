@@ -1,10 +1,16 @@
-# Description:  distro specific settings for Ubuntu Dapper Dake (6.06)
-#               defaults are taken from config-default file
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
 #
-# Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
 #
+# General information about OpenSLX can be found under http://openslx.org
+#
+# Distro specific settings for Ubuntu Dapper Dake (6.06) defaults are
+# taken from config-default file
 
 # D_SYSCONFDIR - system wide configuration settings - /etc/sysconfig in SuSE 
 # and RedHat, /etc/default in Debian and Ubuntu
@@ -20,6 +26,7 @@
 # D_RCDIRS - runlevel directories relative to /etc
 # D_XF86CONFFILE - name and location of XFree/Xorg config file, e.g.
 # /etc/X11/xorg.conf or /etc/X11/XF86config, ...
+# D_XORGBIN - name of XFree/Xorg server with absolute path
 # D_XFONTPATH - path(es) where X11 fonts are installed (with trailing /*)
 # D_DEFAULTCOUNTRY - localization (see common functions)
 # D_HWMODTOIGNORE - hardware modules which should not tried to load (because

@@ -1,15 +1,18 @@
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
 # configuration script for general SuSE to configure linux diskless clients 
 # (included by init, hwautocfg, servconfig within initial ramdisk after 
 # inclusion of the main functions file). This file is the main base for the
 # several SuSE distro versions
-#
-# this file is distributed under the GPLv2, see ~/openslx/COPYING
-#
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 22-12-2006
-# mj0 09-11-2006
-#
-# (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 OpenSLX GmbH
 
 # empty functions are defined at the beginning of /etc/functions
 
@@ -146,9 +149,10 @@ if [ "x$start_snmp" = "xyes" ] ; then
 config_dm_entry () {
 local dm="$1"  
 # should be stated that entries were made (fixmee how??)
+# autologin is defined some other way ...
+#    -e "s,.*_AUTOLOGIN.*,DISPLAYMANAGER_AUTOLOGIN=\"\"," \
 sed -e "s,DISPLAYMANAGER=.*,DISPLAYMANAGER=\"$start_xdmcp\"," \
     -e "s,.*_XSERVER.*,DISPLAYMANAGER_STARTS_XSERVER=\"$dm\"," \
-    -e "s,.*_AUTOLOGIN.*,DISPLAYMANAGER_AUTOLOGIN=\"\"," \
     -i /mnt/etc/${D_SYSCONFDIR}/displaymanager
 # start the display manager as early as possible, but avoid that it is
 # started twice during bootup ... late_dm can postpone the start of 
@@ -470,8 +474,7 @@ rerun\n# the mkdxsinitrd script to get them applied\n\
 esac
 }
 
-# Xorg variable settings. chance to overwrite settings in hwautocfg for
-# xorg.conf
+# Xorg variable settings. Lots of stuff changes for newer Xorg servers
 displayvars () {
-XBinPath=/usr/X11R6/bin/Xorg
+synapticsdrv="/usr/X11R6/lib/modules/input/synaptics_drv.o"
 }

@@ -406,4 +406,5 @@ InputDevice='\tIdentifier\t"Keyboard1"\n
 \tOption\t\t"XkbModel"\t\t"pc105"\n
 \tOption\t\t"XkbOptions"\t\t"lv3:ralt_switch"\n
 \tOption\t\t"XkbVariant"\t\t"nodeadkeys"'
+synapticsdrv="/usr/lib/xorg/modules/input/synaptics_drv.o"
 }

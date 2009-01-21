@@ -50,6 +50,7 @@ D_RCDIRS="<set in ~/distro-config/distro file>"
 D_RCDIRSINRW="<set in ~/distro-config/distro file>"
 D_INITSCRIPTS="<set in ~/distro-config/distro file>"
 D_XF86CONFFILE="<set in ~/distro-config/distro file>"
+D_XORGBIN="<set in ~/distro-config/distro file>"
 D_XFONTPATH="<set in ~/distro-config/distro file>"
 D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 # read in the global settings

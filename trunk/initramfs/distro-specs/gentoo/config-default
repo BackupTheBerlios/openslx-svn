@@ -21,6 +21,7 @@
 # TempFS usage
 # D_DIRINDXS - directories in client filesystem which should be present 
 # anyhow
+# D_XORGBIN - name of XFree/Xorg server with absolute path
 # D_RCDIRS - runlevel directories relative to /etc
 # D_HWMODTOIGNORE - hardware modules which should not tried to load (because
 # already in kernel, nonexistent, ...)
@@ -43,8 +44,8 @@ D_INITDEFAULT="3"
 D_RCDIRS="/runlevels/default /runlevels/single /runlevels/nonetwork"
 D_INITSCRIPTS="localmount keymaps clock urandom"
 D_XF86CONFFILE="/etc/X11/xorg.conf"
+D_XORGBIN=/usr/bin/Xorg
 D_XFONTPATH="/usr/share/fonts/*"
 D_DEFAULTCOUNTRY="de"
 D_HWMODTOIGNORE="i8xx-tco ichxrom snd-atiixp-modem intel-rng"
 D_BOOTLOCAL="conf.d/local.start"
-

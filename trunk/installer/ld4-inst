@@ -443,7 +443,7 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
   declare -i j=0
   while [ $j -lt ${#choice[@]} ] ; do
     current_kernel=${kernel[${choice[$j]}]#${rootdir}/boot/vmlinuz-}
-    current_initramfs=${tftpbootdir}/initrd-dxs-${current_kernel}
+    current_initramfs=initrd-dxs-${current_kernel}
 
     if [ $j -eq 0 ] ; then
       default_string="  MENU DEFAULT\n"
@@ -454,9 +454,9 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
     # last (needed only for loading with pxelinux)
     echo -e "LABEL ${client_distro}-${current_kernel}\n${default_string}\
   MENU LABEL $j. ${client_distro}-${client_distro_ver} ${current_kernel} Diskless\n\
-  KERNEL ${server}::${tftpbootdir}/vmlinuz-${current_kernel}\n\
+  KERNEL ${server}::vmlinuz-${current_kernel}\n\
   APPEND rootfs=nfs://${server}${rootdir} apic dhcp noldsc debug=$debuglevel vci=DXS \
-  initrd=${server}::${tftpbootdir}/initrd-dxs-${current_kernel} \n\
+  initrd=${server}::initrd-dxs-${current_kernel} \n\
   ipappend 1\n" >> ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
 
     if isyes "$nbdyes" ; then
@@ -464,9 +464,9 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
       # create configs for nbd/squashfs kernels too
       echo -e "LABEL ${client_distro}-${current_kernel}-nbd\n\
   MENU LABEL $j. ${client_distro}-${client_distro_ver} ${current_kernel} Diskless NBD\n\
-  KERNEL ${server}::${tftpbootdir}/vmlinuz-${current_kernel}\n\
+  KERNEL ${server}::vmlinuz-${current_kernel}\n\
   APPEND rootfs=nbd://${server}:5000/${nbdfs} apic dhcp noldsc debug=$debuglevel elevator=\"noop\" vci=DXS \
-  initrd=${server}::${tftpbootdir}/initrd-dxs-${current_kernel}\n\
+  initrd=${server}::initrd-dxs-${current_kernel}\n\
   ipappend 1\n" >> ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
     fi
 

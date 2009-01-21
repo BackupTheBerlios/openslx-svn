@@ -46,7 +46,7 @@ Module=' \t        Load\t	    "i2c"\n
 \t        Load\t	    "int10"\n
 \t        Load\t	    "type1"\n
 \t        Load\t	    "vbe"\n'
-
+synapticsdrv=""
 }
 # distro specific function called from servconfig script
 config_distro () {

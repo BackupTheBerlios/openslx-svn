@@ -25,6 +25,7 @@
 # D_RCDIRS - runlevel directories relative to /etc
 # D_XF86CONFFILE - name and location of XFree/Xorg config file, e.g.
 # /etc/X11/xorg.conf or /etc/X11/XF86config, ...
+# D_XORGBIN - name of XFree/Xorg server with absolute path
 # D_XFONTPATH - path(es) where X11 fonts are installed (with trailing /*)
 # D_DEFAULTCOUNTRY - localization (see common functions)
 # D_HWMODTOIGNORE - hardware modules which should not tried to load (because
@@ -55,6 +56,7 @@ D_RCDIRS="/init.d/rc0.d /init.d/rc1.d /init.d/rc2.d /init.d/rc3.d \
 D_INITSCRIPTS="boot.udev boot.proc boot.shm boot.klog boot.loadmodules \
 boot.clock boot.sysctl boot.ipconfig boot.swap"
 D_XF86CONFFILE="/etc/X11/xorg.conf"
+D_XORGBIN=/usr/X11R6/bin/Xorg
 D_XFONTPATH="/usr/X11R6/lib/X11/fonts/*"
 D_DEFAULTCOUNTRY="de"
 D_HWMODTOIGNORE="i8xx-tco ichxrom snd-atiixp-modem intel-rng"

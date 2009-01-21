@@ -281,3 +281,26 @@ PROGRAM=\"/var/X11R6/bin/vm-udev\", OPTIONS=\"ignore_device\"\n\
 SUBSYSTEM==\"usb\", ACTION==\"remove\", PROGRAM=\"/var/X11R6/bin/vm-udev\"" \
   >> /mnt/etc/udev/rules.d/01-udev-vm.rules
 }
+
+# overwrite settings set by hwautocfg, pathes will change for newer
+# Xorg version 7.X
+displayvars (){
+Files=' \t        FontPath\t\t       "/usr/share/X11/fonts/misc"\n
+\t        FontPath\t\t    "/usr/share/X11/fonts/100dpi/:unscaled"\n
+\t        FontPath\t\t    "/usr/share/X11/fonts/75dpi/:unscaled"\n
+\t        FontPath\t\t    "/usr/share/X11/fonts/Type1"\n
+\t        FontPath\t\t    "/usr/share/X11/fonts/100dpi"\n
+\t        FontPath\t\t    "/usr/share/X11/fonts/75dpi"\n
+'
+Module=' \t        Load\t           "i2c"\n
+\t        Load\t            "bitmap"\n
+\t        Load\t            "ddc"\n
+\t        Load\t            "dri"\n
+\t        Load\t            "extmod"\n
+\t        Load\t            "freetype"\n
+\t        Load\t            "glx"\n
+\t        Load\t            "int10"\n
+\t        Load\t            "type1"\n
+\t        Load\t            "vbe"\n'
+synapticsdrv=""
+}

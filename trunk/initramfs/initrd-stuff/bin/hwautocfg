@@ -22,7 +22,6 @@ local xfc=$1
 local HSYNCRANGE="31.5-63.5"
 local VSYNCRANGE="60-90"
 local DEFAULTMODES='"1024x768" "800x600" "640x480"'
-local DEFAULTCOLORDPT=24
 # set variables representing the xorg.conf sections (version 6.9.x)
 # variables might be overwritten via displayvars function
 local Module='\tLoad\t\t"dbe"\n
@@ -76,7 +75,7 @@ local Device='\tIdentifier\t"StdGraphics"\n
 local Screen='\tIdentifier\t"Screen 1"\n
 \tDevice\t\t"StdGraphics"\n
 \tMonitor\t\t"Default"\n
-\tDefaultColorDepth CDP'
+\tDefaultColorDepth 24'
 local ServerLayout='\tIdentifier\t"Simple Layout"\n
 \tScreen\t\t"Screen 1"\n
 \tInputDevice\t"Keyboard1"\t"CoreKeyboard"\n
@@ -88,30 +87,27 @@ local ServerLayout='\tIdentifier\t"Simple Layout"\n
 local DRI='\tGroup\t\t"video"\n
 \tMode\t\t0666'
 
-# displayvars may overwrite the above settings
+# displayvars may overwrite the above settings and define pathes below e.g.
+# synapticsdrv
 displayvars
 
 # run localizator and configure X11 keyboard
 localization "${country}"
 if [ -z "${XKEYBOARD}" ] ; then
-  error "$hcfg_keyb" nonfatal
+  error "${hcfg_keyb}" nonfatal
   XKEYBOARD="de"
 fi
 
 # check if hardware definition variables are set and overwrite autodetected
 # values
-if [ -n "$hw_graphic" ] ; then
+if [ -n "${hw_graphic}" ] ; then
   DRV=${hw_graphic% *}
-  CDP=${hw_graphic##* }
-  if [ -z "$DRV" ] ; then error "$hcfg_gfxdrv" nonfatal
+  if [ -z "$DRV" ] ; then error "${hcfg_gfxdrv}" nonfatal
     XMODULE=vesa
   fi
 fi
-if [ -z "$CDP" ] ; then error "$hcfg_gfxcdp" nonfatal
-  CDP=${DEFAULTCOLORDPT}
-fi
 
-if [ -n "$hw_monitor" ] ; then
+if [ -n "${hw_monitor}" ] ; then
   # just cut all starting from k(Hz) ...
   HS=${hw_monitor%k*}
   VS=${hw_monitor%Hz*}
@@ -198,18 +194,17 @@ for section in Files ServerFlags Module InputDevice Monitor \
       # if special synaptics touchpad was detected and specific driver
       # is present
       if strinfile "synaptics" /tmp/hwsetup.info && \
-        test -e /mnt/usr/X11R6/lib/modules/input/synaptics_drv.o ; then
+        test -e /mnt/${synapticsdrv} ; then
 	echo -e $InputMouseSyn >>$xfc
       else
         echo -e $InputMouseDef >>$xfc
       fi
     ;;
     Screen)
-      echo -e ${Screen} | sed -e "s,CDP,${CDP}," >>$xfc
+      echo -e ${Screen} >>$xfc
       for BPP in 15 16 24
         do echo -e '\tSubSection "Display"\n\t\tDepth\t'\
           $BPP'\n\t\tModes\t'$SCR_MODES'\n\tEndSubSection' >>$xfc
-        [ $BPP = "$CDP" ] && break
       done
     ;;
     ServerLayout)
@@ -467,7 +462,7 @@ fi
 if [ -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then
   echo "ready" > /tmp/xready
 else
-  . /etc/sysconfig/xserver >/dev/null 2>&1 || error "$hcfg_hwsetup" nonfatal
+  . /etc/sysconfig/xserver >/dev/null 2>&1 || error "${hcfg_hwsetup}" nonfatal
   ( displaysetup /etc/xorg.conf; echo "ready" > /tmp/xready ) &
 fi
   
@@ -525,4 +520,3 @@ case $1 in
     echo "hwsetup finished at $(sysup)" > /tmp/hwcfg
   ;;
 esac
-
