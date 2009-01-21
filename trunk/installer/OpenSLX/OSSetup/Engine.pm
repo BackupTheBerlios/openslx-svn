@@ -1,4 +1,4 @@
-# Engine.pm - provides driver enginge for the OSSetup API.
+# Engine.pm - provides driver engine for the OSSetup API.
 #
 # (c) 2006 - OpenSLX.com
 #
@@ -95,7 +95,7 @@ sub initialize
 	# load module for the requested distro:
 	my $distroModule
 		= "OpenSLX::OSSetup::Distro::"
-			.$supportedDistros{lc($distroName)->{module}};
+			.$supportedDistros{lc($distroName)}->{module};
 	unless (eval "require $distroModule") {
 		if ($! == 2) {
 			die _tr("Distro-module <%s> not found!\n", $distroModule);
@@ -693,13 +693,14 @@ sub clone_fetchSource
 	my $filterFile = "../lib/distro-info/clone-filter-common";
 	if (open(FILTER, "< $filterFile")) {
 		while(<FILTER>) {
+			chomp;
 			push @includeList, $_ if /^\+\s+/;
 			push @excludeList, $_ if /^\-\s+/;
 		}
 		close(FILTER);
 	}
-	my $excludeIncludeList = join("", @includeList, @excludeList);
-	vlog 1, "using exclude-include-filter:\n$excludeIncludeList\n";
+	my $excludeIncludeList = join("\n", @includeList, @excludeList);
+	vlog 0, "using exclude-include-filter:\n$excludeIncludeList\n";
 	open(RSYNC, "| rsync -av --delete --exclude-from=- $source $self->{'system-path'}")
 		or die _tr("unable to start rsync for source '%s', giving up! (%s)",
 				   $source, $!);
