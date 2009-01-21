@@ -4,10 +4,10 @@
 #               X Stations (v3.3,v3.4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 05-08-2005
-#               Michael Janczyk <mj0@uni-freiburg.de>, 08-12-2005
+#               Michael Janczyk <mj0@uni-freiburg.de>, 09-03-2006
 # Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
 #
-VERSION=0.13.1; LAST_CHANGES=08.12.05
+VERSION=0.13.2; LAST_CHANGES=09.03.06
 ################################################################################
 
 
@@ -35,14 +35,15 @@ ostypeheader ()
  windows2000	win2000pro	Windows-2000-Professional
  windowsxp	winxppro	Windows-XP-Professional
  suse		suse		Novell-SuSe-Linux
- kubuntu	other26xlinux	kubuntu-504
+ kubuntu	other26xlinux	kubuntu
+ debian         other26xlinux   debian
 
  #####
  # What to boot if none of the obove is found, equivalent to *
  # -else-       | -VMWare name- | -Description (use "-" for space)-
  #####
 
- else		other		Unspecified OS
+ else		other		Unspecified-OS
  '
  }
 
@@ -181,7 +182,7 @@ preferencesheader ()
  pref.vmplayer.exit.vmAction = \"poweroff\"
  pref.vmplayer.fullscreen.autohide = \"TRUE\"
  pref.vmplayer.webUpdateOnStartup = \"FALSE\"
- prefvmx.defaultVMPath = \"~/.vmware\"
+ prefvmx.defaultVMPath = \".vmware\"
  prefvmx.mru.config = \"$CONFILE:\"
  prefvmx.mru.suspended = \"\"
  tmpDirectory = \"$CONFDIR\"
@@ -257,8 +258,9 @@ export TMPDIR=/tmp/vmware_temporary/$USER/tmp
 # ;)
 MAC=
 declare -i MEM=0
-declare -i MEMOPT=0
 declare -i MEMTEST=0
+MEMOPT=
+PERMEM=66
 # Virtual Devices
 VMSCSI=FALSE
 CDR_1=FALSE
@@ -354,12 +356,14 @@ Image options:
 	-a 			use aliases in runvmware header
 	--silent		no stdout from runvmware
 	--displayaliases	aliases you can use with option -a
-        --mem <n MB>		override autoallocation of memory
+        --mem <n(M(h)),n(G(h))>	override autoallocation of memory, in percent
+                                m,M megabyte, g,G gigabyte, h,H reserve f. host
 	--delay <n seconds>	delay the start of the script n seconds
 	--image <directory>	specify image directory
 	--persistent		use persistent mode
 	--define-vm-ostype <os>	overwrite vmware ostype
 VMware options:
+        --run <programm>        specify programm, e.g. vmware, vmplayer, ...
 	--windowed		start in windowed mode
 	--edit			only open config file in vmware (only VMware)
 	--donotquit		do not quit after image stopped (only VMware)
@@ -385,12 +389,12 @@ checkalias ()
  {
  writelog "Checking alias for $OSTYPE${SPEC:+", $SPEC"}...\c" 0 1
  # OSTYPE=
- OSALIAS=`aliasheader | grep -xv "#.*" | grep -w "$OSTYPE" | awk '{print $1}'`
+ OSALIAS=`aliasheader | grep -v "#.*" | grep -w "$OSTYPE" | awk '{print $1}'`
  [ -n "$OSALIAS" ] && OSTYPE=$OSALIAS
 
  # SPEC=
  [ -n "$SPEC" ] && \
- SPECALIAS=`aliasheader | grep -xv "#.*" | grep -w "$SPEC" | awk '{print $1}'`
+ SPECALIAS=`aliasheader | grep -v "#.*" | grep -w "$SPEC" | awk '{print $1}'`
  [ -n "$SPECALIAS" ] && SPEC=$SPECALIAS
 
  writelog "finished\nResult:\n\tOS=$OSTYPE${SPEC:+"\\\n\\\tSPEC=$SPEC"}\n" 0 1
@@ -520,6 +524,10 @@ while [ $# -gt "$NARG" ]; do
      (( NARG=$NARG+1 ))
      MEMOPT=${LINEOPTS[$NARG]}
   ;;
+  --run)
+     (( NARG=$NARG+1 ))
+     VMRUN=${LINEOPTS[$NARG]}
+  ;;
   --debug)
      (( NARG=$NARG+1 ))
      DEBUG=${LINEOPTS[$NARG]}
@@ -611,42 +619,38 @@ MAC=`/sbin/ifconfig eth0 | grep eth0 | sed -e "s, ,,g" | \
 
 
 # Gather memory info and set virtual machine memory size accordingly
-MEM=`cat /proc/meminfo | grep MemTotal | sed -e 's,[0-9][0-9][0-9] kB,,' \
+MEMTEST=`cat /proc/meminfo | grep MemTotal | sed -e 's,[0-9][0-9][0-9] kB,,' \
                                              -e 's,MemTotal: *,,'`
 
-# Check if command option $MEMOPT possible
-MEMTEST=$MEM-$MEMOPT
-
-# Memory allocation
-if [ "$MEM" -le "110" ]; then
-   writelog "\rYour memory is too low: $MEM\n\t\t\t\tExiting\n" 0 1
-   exit 1
-elif [ "$MEM" -le "200" ]; then
-   writelog "\nYour memory is too low: $MEM" 0 1
-   writelog "\tContinuing but it may cause problems!\n" 0 0
-   MEM=$MEM-64
-elif [ "$MEM" -le "260" ]; then
-   writelog "\nYour memory is too low: $MEM" 0 1
-   writelog "\tContinuing but it may cause problems!\n" 0 0
-   MEM=$MEM-96
-elif [ "$MEM" -le "330" ]; then
-   MEM=$MEM-128
-elif [ "$MEM" -le "390" ]; then
-   MEM=$MEM-192
-elif [ "$MEM" -le "520" ]; then
-   MEM=$MEM-256
-elif [ "$MEM" -gt "520" ]; then
-   MEM=$MEM-256
+# Check if command line option given and calculate memory for vmware
+if [ -n "$MEMOPT" ]; then
+  # Memory allocation for host or guest?
+  MEMHOST=`echo $MEMOPT | grep -i "h"`\
+     && MEMOPT=`echo $MEMOPT | sed -e "s,[h,H],,"`
+  # Memory given in megabyte
+  MEMMEG=`echo $MEMOPT | grep -i "m"`
+  # Memory given in gigabyte
+  MEMGIG=`echo $MEMOPT | grep -i "g"`
+  # Remove m or M
+  [ -n "$MEMMEG" ] && MEM=`echo $MEMOPT | sed -e "s,[m,M],,"`
+  # Remove g or G and convert to megabyte
+  [ -n "$MEMGIG" ] && MEM=`echo $MEMOPT | sed -e "s,[g,G],,"`\
+     && MEM=$MEM*1024
+  # If no m or g, then it is percent
+  [ -z "$MEMMEG" ] && [ -z "$MEMGIG" ] && MEM=$MEMTEST/100*$MEMOPT/4*4
+  # Memory allocation for host or guest? If host calculate for guest.
+  [ -n "$MEMHOST" ] && MEM=$MEMTEST-$MEM
+  # Else use PERMEM variable to calculate memory percentage for vmware
+else MEM=$MEMTEST/100*$PERMEM/4*4
 fi
 
-# If possible use $MEMOPT
-[ "$MEMOPT" -gt "0" ] && \
-writelog "\nMin. 64MB for host and guest, else memory is auto allocated" 0 0
-
-[ "$MEMOPT" -ge "64" ] && [ "$MEMTEST" -ge "60" ] && MEM=$MEMTEST
-
-# To get 4MByte boundary
-MEM=$MEM/4*4
+# Check memory range
+MEMTEST=$MEMTEST-128
+if [ "$MEM" -lt "128" ] || [ "$MEM" -gt "$MEMTEST" ]; then
+  writelog "\n\n\tYour memory is out of range: $MEM MB.\n\
+     \tMin. 128 MB for host and guest!\n\tTry --mem option.\n" 0 1
+  exit 1
+fi
 
 
 # Look for cdrom,dvd and floppy and add them to the vm config file
@@ -722,16 +726,17 @@ DISKFILE="$IMGDIR/$OSTYPE${SPEC:+"-$SPEC"}.$ENDING"
 
 # Check if VMOSTYPE defined via command line
 if [ -z "$COMDEF" ]; then
-   VMOSTYPE=`ostypeheader | grep -xv "#.*" | grep -w "$OSTYPE" | \
+   VMOSTYPE=`ostypeheader | grep -v "#.*" | grep -w "$OSTYPE" | \
              awk '{print $2}'`
-   DISPLAYNAME=`ostypeheader | grep -xv "#.*" | grep -w "$OSTYPE" |\
+   DISPLAYNAME=`ostypeheader | grep -v "#.*" | grep -w "$OSTYPE" |\
                 awk '{print $3}' | sed -e "s,-, ,g"`
 
    # If OSTYPE not found use else statement
-   VMOSTYPE=${VMOSTYPE:-`ostypeheader | grep -xv "#.*" | grep -w "else" | \
+   VMOSTYPE=${VMOSTYPE:-`ostypeheader | grep -v "#.*" | grep -w "else" | \
                          awk '{print $2}'`}
-   DISPLAYNAME=${DISPLAYNAME:-`ostypeheader | grep -xv "#.*" | \
-                               grep -w "else" | awk '{print $NF}'`}
+   DISPLAYNAME=${DISPLAYNAME:-`ostypeheader | grep -v "#.*" | \
+                               grep -w "else" | awk '{print $3}' |\
+                               sed -e "s,-, ,g"`}
 fi
 
 writelog "finished\nResults:\n\tDISKFILE=$DISKFILE\n\tVMOSTYPE=$VMOSTYPE" 0 1
@@ -780,7 +785,15 @@ awk {'print "[resolution]\r\nx="$3"\r\ny="$7"\r\n\r\n[username]\r\n\
 ### RUN VMWARE(-Player) ########################################################
 
 # ...with the automatically written config file
-if [ `which vmware 2>/dev/null` ]; then
+if [ `which vmplayer 2>/dev/null` ] && [ -z "$VMRUN" ]\
+  || [ "$VMRUN" = "vmplayer" ]; then
+   writelog "\nStarting VMplayer..." 0 0
+   cp /usr/share/dxs/VMware/nvram.5.0 $CONFDIR/nvram 2>&1 >/dev/null
+   VMOPT=`echo $VMOPT | sed -e "s,-q,," -e "s,-x,,"` # Remove unsupported opts.
+   vmplayer $VMOPT $CONFILE 2>&1 >/dev/null
+
+elif [ `which vmware 2>/dev/null` ] && [ -z "$VMRUN" ]\
+  || [ "$VMRUN" = "vmware" ]; then
    # Copy licence file and virtual bios to VMware directory
    writelog "copying nvram and licence..." 0 0
    cp /usr/share/dxs/VMware/license.ws.5.0 $VMDIR 2>&1 >/dev/null
@@ -789,11 +802,6 @@ if [ `which vmware 2>/dev/null` ]; then
    # Run VMware
    writelog "\nStarting VMware..." 0 0
    vmware $VMOPT $CONFILE 2>&1 >/dev/null
-
-elif [ `which vmplayer 2>/dev/null` ]; then
-   writelog "\nStarting VMplayer..." 0 0
-   VMOPT=`echo $VMOPT | sed -e "s,-q,," -e "s,-x,,"` # Remove unsupported opts.
-   vmplayer $VMOPT $CONFILE 2>&1 >/dev/null
 
 else
    writelog "\nNo VMware/VMPlayer found!\n" 0 99
