@@ -230,15 +230,11 @@ slxsettings [options] [action ...]
 
 =over 8
 
-=item B<<     --<openslx-option>=<value> >>
+=item B<<     set <openslx-option>=<value> >>
 
-sets the specified openslx-option to the given value
+sets the specified option to the given value
 
-=item B<<     <extended-setting>=<value> >>
-
-sets the specified extended setting to the given value
-
-=item B<<     --reset=<setting> [--reset=...] >>
+=item B<<     reset <setting> >>
 
 removes the given setting from the local settings (resets it to its default
 value)
