@@ -8,13 +8,30 @@
 # (c) 2006 - OpenSLX.com
 
 # the following should be filled via 'configure':
-USR_BIN_PATH=/usr/bin
-SLX_BIN_PATH=/opt/openslx/bin
-SLX_CONFIG_PATH=/etc/opt/openslx
-SLX_PRIVATE_PATH=/var/opt/openslx
-SLX_PUBLIC_PATH=/srv/openslx
-SLX_SHARE_PATH=/opt/openslx/share
-VMWARE_PATH=/opt/openslx/vmware
+ifeq ($(USR_BIN_PATH),)
+	USR_BIN_PATH = /usr/bin
+endif
+ifeq ($(SLX_BASE_PATH),)
+	SLX_BASE_PATH = /opt/openslx
+endif
+ifeq ($(SLX_BIN_PATH),)
+	SLX_BIN_PATH = ${SLX_BASE_PATH}/bin
+endif
+ifeq ($(SLX_CONFIG_PATH),)
+	SLX_CONFIG_PATH = /etc/opt/openslx
+endif
+ifeq ($(SLX_PRIVATE_PATH),)
+	SLX_PRIVATE_PATH = /var/opt/openslx
+endif
+ifeq ($(SLX_PUBLIC_PATH),)
+	SLX_PUBLIC_PATH = /srv/openslx
+endif
+ifeq ($(SLX_SHARE_PATH),)
+	SLX_SHARE_PATH = ${SLX_BASE_PATH}/share
+endif
+ifeq ($(VMWARE_PATH),)
+	VMWARE_PATH = ${SLX_BASE_PATH}/vmware
+endif
 
 tarball:
 	@OPENSLX_SVN_SNAPSHOT=$$( echo $${OPENSLX_SVN_SNAPSHOT} | \
@@ -63,6 +80,9 @@ install:
 	@chmod u+x $(SLX_BIN_PATH)/{mkdxsinitrd,slxmkramfs}
 	@ln -sf $(SLX_BIN_PATH)/mkdxsinitrd $(USR_BIN)/
 	@ln -sf $(SLX_BIN_PATH)/slxmkramfs $(USR_BIN)/
+	@cp config-db/slxconfig-demuxer.pl $(SLX_BIN_PATH)/
+	@cp -r config-db/OpenSLX $(SLX_BIN_PATH)/
+	@ln -sf $(SLX_BIN_PATH)/slxconfig-demuxer.pl $(USR_BIN)/
 	@cp -a initramfs/initrd-stuff/* $(SLX_SHARE_PATH)/initramfs
 	@cp -a initramfs/distro-specs/* $(SLX_SHARE_PATH)/distro-specs
 	@cp -a installer/default_files/machine-setup.default \
@@ -81,7 +101,12 @@ rootfs has the\n# prefix '/mnt'. But you might use some special slx \
 functions via\# inclusion: '. /etc/functions' ..." \
 	  > $(SLX_PRIVATE_PATH)/config/default/initramfs/postinit.local
 	@chmod u+x $(SLX_PRIVATE_PATH)/config/default/initramfs/*init.local
-	@echo -e "# default setup for openslx on this specific system\n" \
+	@echo -e "# default setup for openslx on this specific system\
+\nopenslx-basepath = ${SLX_BASE_PATH}\
+\nconfig-path = ${SLX_CONFIG_PATH}\
+\nprivate-path = ${SLX_PRIVATE_PATH}\
+\npublic-path = ${SLX_PUBLIC_PATH}\
+\nshare-path = ${SLX_SHARE_PATH}\n" \
 	  > $(SLX_CONFIG_PATH)/settings.default
 	@echo -e "# local setup for openslx (overrides settings.default)\n" \
 	  > $(SLX_CONFIG_PATH)/settings.local
