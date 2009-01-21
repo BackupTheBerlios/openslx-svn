@@ -87,7 +87,7 @@ sub DESTROY
 		# we are the master process, so we clean up all the servers that we
 		# have started:
 		while(my ($localURL, $pid) = each %{$self->{'local-http-servers'}}) {
-			vlog 1, _tr("stopping local HTTP-server for URL '%s'.", $localURL);
+			vlog(1, _tr("stopping local HTTP-server for URL '%s'.", $localURL));
 			kill TERM => $pid;
 		}
 	}
@@ -165,7 +165,7 @@ sub initialize
 
 	$self->{'vendor-os-path'}
 		= "$openslxConfig{'private-path'}/stage1/$self->{'vendor-os-name'}";
-	vlog 1, "vendor-OS path is '$self->{'vendor-os-path'}'";
+	vlog(1, "vendor-OS path is '$self->{'vendor-os-path'}'");
 
 	if ($actionType ne 'clone') {
 		$self->createPackager();
@@ -187,7 +187,7 @@ sub installVendorOS
 
 	my $baseSystemFile = "$self->{'vendor-os-path'}/.openslx-base-system";
 	if (-e $baseSystemFile) {
-		vlog 0, _tr("found existing base system, continuing...\n");
+		vlog(0, _tr("found existing base system, continuing...\n"));
 	} else {
 		# basic setup, stage1a-c:
 	 	$self->setupStage1A();
@@ -213,8 +213,8 @@ sub installVendorOS
 	close(INFO);
 	slxsystem("rm $baseSystemFile");
 		# no longer needed, we have a full system now
-	vlog 0, _tr("Vendor-OS '%s' installed succesfully.\n",
-				$self->{'vendor-os-name'});
+	vlog(0, _tr("Vendor-OS '%s' installed succesfully.\n",
+				$self->{'vendor-os-name'}));
 
 	$self->addInstalledVendorOSToConfigDB();
 }
@@ -275,11 +275,11 @@ sub cloneVendorOS
 		close CLONE_INFO;
 	}
 	if ($isReClone) {
-		vlog 0, _tr("Vendor-OS '%s' has been re-cloned succesfully.\n",
-					$self->{'vendor-os-name'});
+		vlog(0, _tr("Vendor-OS '%s' has been re-cloned succesfully.\n",
+					$self->{'vendor-os-name'}));
 	} else {
-		vlog 0, _tr("Vendor-OS '%s' has been cloned succesfully.\n",
-					$self->{'vendor-os-name'});
+		vlog(0, _tr("Vendor-OS '%s' has been cloned succesfully.\n",
+					$self->{'vendor-os-name'}));
 	}
 
 	$self->addInstalledVendorOSToConfigDB();
@@ -300,8 +300,8 @@ sub updateVendorOS
 		$self->changePersonalityIfNeeded();
 		$self->updateStage1D();
 	});
-	vlog 0, _tr("Vendor-OS '%s' updated succesfully.\n",
-				$self->{'vendor-os-name'});
+	vlog(0, _tr("Vendor-OS '%s' updated succesfully.\n",
+				$self->{'vendor-os-name'}));
 }
 
 sub startChrootedShellForVendorOS
@@ -319,20 +319,20 @@ sub startChrootedShellForVendorOS
 		$self->changePersonalityIfNeeded();
 		$self->startChrootedShellInStage1D();
 	});
-	vlog 0, _tr("Chrooted shell for vendor-OS '%s' has been closed.\n",
-				$self->{'vendor-os-name'});
+	vlog(0, _tr("Chrooted shell for vendor-OS '%s' has been closed.\n",
+				$self->{'vendor-os-name'}));
 }
 
 sub removeVendorOS
 {
 	my $self = shift;
 
-	vlog 0, _tr("removing vendor-OS folder '%s'...", $self->{'vendor-os-path'});
+	vlog(0, _tr("removing vendor-OS folder '%s'...", $self->{'vendor-os-path'}));
 	if (system("rm -r $self->{'vendor-os-path'}")) {
-		vlog 0, _tr("* unable to remove vendor-OS '%s'!", $self->{'vendor-os-path'});
+		vlog(0, _tr("* unable to remove vendor-OS '%s'!", $self->{'vendor-os-path'}));
 	} else {
-		vlog 0, _tr("Vendor-OS '%s' removed succesfully.\n",
-					$self->{'vendor-os-name'});
+		vlog(0, _tr("Vendor-OS '%s' removed succesfully.\n",
+					$self->{'vendor-os-name'}));
 	}
 	$self->removeVendorOSFromConfigDB();
 }
@@ -356,11 +356,11 @@ sub addInstalledVendorOSToConfigDB
 			$openslxDB->changeVendorOS($vendorOS->{id}, {
 				'clone_source' => $self->{'clone-source'},
 			});
-			vlog 0, _tr("Vendor-OS '%s' has been updated in OpenSLX-database.\n",
-						$vendorOSName);
+			vlog(0, _tr("Vendor-OS '%s' has been updated in OpenSLX-database.\n",
+						$vendorOSName));
 		} else {
-			vlog 0, _tr("No need to change vendor-OS '%s' in OpenSLX-database.\n",
-						$vendorOSName);
+			vlog(0, _tr("No need to change vendor-OS '%s' in OpenSLX-database.\n",
+						$vendorOSName));
 		}
 	} else {
 		my $data = {
@@ -371,8 +371,8 @@ sub addInstalledVendorOSToConfigDB
 		}
 		my $id = $openslxDB->addVendorOS($data);
 
-		vlog 0, _tr("Vendor-OS '%s' has been added to DB (ID=%s).\n",
-					$vendorOSName, $id);
+		vlog(0, _tr("Vendor-OS '%s' has been added to DB (ID=%s).\n",
+					$vendorOSName, $id));
 	}
 
 	$openslxDB->disconnect();
@@ -389,8 +389,8 @@ sub removeVendorOSFromConfigDB
 	my $vendorOS
 		= $openslxDB->fetchVendorOSByFilter({ 'name' => $vendorOSName });
 	if (!defined $vendorOS) {
-		vlog 0, _tr("Vendor-OS '%s' didn't exist in OpenSLX-database.\n",
-					$vendorOSName);
+		vlog(0, _tr("Vendor-OS '%s' didn't exist in OpenSLX-database.\n",
+					$vendorOSName));
 	} else {
 		# remove all exports (and systems) using this vendor-OS and then
 		# remove the vendor-OS itself:
@@ -400,14 +400,14 @@ sub removeVendorOSFromConfigDB
 		foreach my $export (@exports) {
 			my $osExportEngine = instantiateClass("OpenSLX::OSExport::Engine");
 			$osExportEngine->initializeFromExisting($export->{name});
-			vlog 0, _tr("purging export '%s', since it belongs to the vendor-OS being deleted...",
-						$export->{name});
+			vlog(0, _tr("purging export '%s', since it belongs to the vendor-OS being deleted...",
+						$export->{name}));
 			$osExportEngine->purgeExport();
 		}
 
 		$openslxDB->removeVendorOS($vendorOS->{id});
-		vlog 0, _tr("Vendor-OS '%s' has been removed from DB!\n",
-					$vendorOSName);
+		vlog(0, _tr("Vendor-OS '%s' has been removed from DB!\n",
+					$vendorOSName));
 	}
 
 	$openslxDB->disconnect();
@@ -420,7 +420,7 @@ sub readDistroInfo
 {
 	my $self = shift;
 
-	vlog 1, "reading configuration info for $self->{'vendor-os-name'}...";
+	vlog(1, "reading configuration info for $self->{'vendor-os-name'}...");
 	# merge user-provided configuration distro defaults...
 	my %repository = %{$self->{distro}->{config}->{repository}};
 	my %selection = %{$self->{distro}->{config}->{selection}};
@@ -437,7 +437,7 @@ sub readDistroInfo
 		= $self->{distro}->{config}->{'metapackager-packages'};
 	my $file = "$self->{'config-distro-info-dir'}/settings";
 	if (-e $file) {
-		vlog 2, "reading configuration file $file...";
+		vlog(2, "reading configuration file $file...");
 		my $config = slurpFile($file);
 		if (!eval $config && length($@)) {
 			die _tr("error in config-file '%s' (%s)", $file, $@)."\n";
@@ -466,23 +466,23 @@ sub readDistroInfo
 	if ($openslxConfig{'verbose-level'} >= 2) {
 		# dump distro-info, if asked for:
 		foreach my $r (sort keys %repository) {
-			vlog 2, "repository '$r':";
+			vlog(2, "repository '$r':");
 			foreach my $k (sort keys %{$repository{$r}}) {
-				vlog 3, "\t$k = '$repository{$r}->{$k}'";
+				vlog(3, "\t$k = '$repository{$r}->{$k}'");
 			}
 		}
 		foreach my $s (sort keys %selection) {
 			my @selLines = split "\n", $selection{$s};
-			vlog 2, "selection '$s':";
+			vlog(2, "selection '$s':");
 			foreach my $sl (@selLines) {
-				vlog 3, "\t$sl";
+				vlog(3, "\t$sl");
 			}
 		}
 		foreach my $e (sort keys %excludes) {
 			my @exclLines = split "\n", $excludes{$e};
-			vlog 2, "excludes for '$e':";
+			vlog(2, "excludes for '$e':");
 			foreach my $excl (@exclLines) {
-				vlog 3, "\t$excl";
+				vlog(3, "\t$excl");
 			}
 		}
 	}
@@ -578,13 +578,13 @@ try_next_url:
 		push @contFlags, '-c'	if ($url =~ m[^ftp]);
 			# continuing is only supported with FTP, but not with HTTP
 		foreach my $file (split '\s+', $fileVariantStr) {
-			vlog 2, "fetching <$file>...";
+			vlog(2, "fetching <$file>...");
 			if (slxsystem("wget", @contFlags, "$url/$file") == 0) {
 				$foundFile = basename($file);
 				last;
 			} elsif ($! == 17) {
 				my $basefile = basename($file);
-				vlog 2, "removing left-over '$basefile' and trying again...";
+				vlog(2, "removing left-over '$basefile' and trying again...");
 				unlink $basefile;
 			}
 		}
@@ -593,8 +593,8 @@ try_next_url:
 				$tryCount++;
 				$self->{'baseURL-index'}
 					= ($self->{'baseURL-index'}+1) % scalar(@URLs);
-				vlog 0, _tr("switching to mirror '%s'.",
-							$URLs[$self->{'baseURL-index'}]);
+				vlog(0, _tr("switching to mirror '%s'.",
+							$URLs[$self->{'baseURL-index'}]));
 				goto try_next_url;
 			}
 			die _tr("unable to fetch '%s' from any source!\n",
@@ -631,7 +631,7 @@ sub startLocalURLServersAsNeeded
 				'-h', '/',
 				'-f'
 			);
-			vlog 1, _tr("started local HTTP-server for URL '%s'.", $localURL);
+			vlog(1, _tr("started local HTTP-server for URL '%s'.", $localURL));
 			$self->{'local-http-servers'}->{$localURL} = $pid;
 		}
 	}
@@ -641,7 +641,7 @@ sub setupStage1A
 {
 	my $self = shift;
 
-	vlog 1, "setting up stage1a for $self->{'vendor-os-name'}...";
+	vlog(1, "setting up stage1a for $self->{'vendor-os-name'}...");
 
 	# specify individual paths for the respective substages:
 	$self->{stage1aDir} = "$self->{'vendor-os-path'}/stage1a";
@@ -667,7 +667,7 @@ sub stage1A_createBusyboxEnvironment
 	my $self = shift;
 
 	# copy busybox and all required binaries into stage1a-dir:
-	vlog 1, "creating busybox-environment...";
+	vlog(1, "creating busybox-environment...");
 	my $busyboxName
 		= $self->hostIs64Bit()
 			? 'busybox.x86_64'
@@ -676,20 +676,20 @@ sub stage1A_createBusyboxEnvironment
 			 "$self->{stage1aDir}/bin", 'busybox');
 
 	# determine all required libraries and copy those, too:
-	vlog 1, _tr("calling slxldd for $busyboxName");
+	vlog(1, _tr("calling slxldd for $busyboxName"));
 	my $slxlddCmd
 		= "slxldd $openslxConfig{'base-path'}/share/busybox/$busyboxName";
-	vlog 2, "executing: $slxlddCmd";
+	vlog(2, "executing: $slxlddCmd");
 	my $requiredLibsStr = `$slxlddCmd`;
 	if ($?) {
 		die _tr("slxldd couldn't determine the libs required by busybox! (%s)",
 				$?);
 	}
 	chomp $requiredLibsStr;
-	vlog 2, "slxldd results:\n$requiredLibsStr";
+	vlog(2, "slxldd results:\n$requiredLibsStr");
 	my $libcFolder;
 	foreach my $lib (split "\n", $requiredLibsStr) {
-		vlog 3, "copying lib '$lib'";
+		vlog(3, "copying lib '$lib'");
 		my $libDir = dirname($lib);
 		copyFile($lib, "$self->{stage1aDir}$libDir");
 		if ($lib =~ m[/libc.so.\d\s*$]) {
@@ -740,7 +740,7 @@ sub stage1A_copyPrerequiredFiles
 
 	return unless -d "$self->{'shared-distro-info-dir'}/prereqfiles";
 
-	vlog 2, "copying folder with pre-required files...";
+	vlog(2, "copying folder with pre-required files...");
 	my $stage1cDir
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
 	my $cmd = qq[
@@ -758,7 +758,7 @@ sub stage1A_copyTrustedPackageKeys
 {
 	my $self = shift;
 
-	vlog 2, "copying folder with trusted package keys...";
+	vlog(2, "copying folder with trusted package keys...");
 	my $stage1bDir
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}";
 	foreach my $folder (
@@ -789,7 +789,7 @@ sub stage1A_createRequiredFiles
 {
 	my $self = shift;
 
-	vlog 2, "creating required files...";
+	vlog(2, "creating required files...");
 	# fake all files required by stage1b (by creating them empty):
 	my $stage1bDir
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}";
@@ -814,7 +814,7 @@ sub setupStage1B
 {
 	my $self = shift;
 
-	vlog 1, "setting up stage1b for $self->{'vendor-os-name'}...";
+	vlog(1, "setting up stage1b for $self->{'vendor-os-name'}...");
 	$self->stage1B_chrootAndBootstrap();
 }
 
@@ -855,7 +855,7 @@ sub setupStage1C
 {
 	my $self = shift;
 
-	vlog 1, "setting up stage1c for $self->{'vendor-os-name'}...";
+	vlog(1, "setting up stage1c for $self->{'vendor-os-name'}...");
 	$self->stage1C_chrootAndInstallBasicVendorOS();
 }
 
@@ -909,7 +909,7 @@ sub setupStage1D
 {
 	my $self = shift;
 
-	vlog 1, "setting up stage1d for $self->{'vendor-os-name'}...";
+	vlog(1, "setting up stage1d for $self->{'vendor-os-name'}...");
 
 	chrootInto($self->{'vendor-os-path'});
 
@@ -922,7 +922,7 @@ sub updateStage1D
 {
 	my $self = shift;
 
-	vlog 1, "updating $self->{'vendor-os-name'}...";
+	vlog(1, "updating $self->{'vendor-os-name'}...");
 
 	chrootInto($self->{'vendor-os-path'});
 
@@ -933,10 +933,10 @@ sub startChrootedShellInStage1D
 {
 	my $self = shift;
 
-	vlog 0, "starting chrooted shell for $self->{'vendor-os-name'}";
-	vlog 0, "---------------------------------------";
-	vlog 0, "- please type 'exit' if you are done! -";
-	vlog 0, "---------------------------------------";
+	vlog(0, "starting chrooted shell for $self->{'vendor-os-name'}");
+	vlog(0, "---------------------------------------");
+	vlog(0, "- please type 'exit' if you are done! -");
+	vlog(0, "---------------------------------------");
 
 	chrootInto($self->{'vendor-os-path'});
 
@@ -951,14 +951,14 @@ sub stage1D_setupPackageSources()
 {
 	my $self = shift;
 
-	vlog 1, "setting up package sources for meta packager...";
+	vlog(1, "setting up package sources for meta packager...");
 	my $selectionName = $self->{'selection-name'};
 	my $pkgExcludes = $self->{'distro-info'}->{excludes}->{$selectionName};
 	my $excludeList = join ' ', string2Array($pkgExcludes);
 	$self->{'meta-packager'}->initPackageSources();
 	my ($rk, $repo);
 	while(($rk, $repo) = each %{$self->{'distro-info'}->{repository}}) {
-		vlog 2, "setting up package source $rk...";
+		vlog(2, "setting up package source $rk...");
 		$self->{'meta-packager'}->setupPackageSource($rk, $repo, $excludeList);
 	}
 }
@@ -967,7 +967,7 @@ sub stage1D_updateBasicVendorOS()
 {
 	my $self = shift;
 
-	vlog 1, "updating basic vendor-os...";
+	vlog(1, "updating basic vendor-os...");
 	$self->{'meta-packager'}->startSession();
 	$self->{'meta-packager'}->updateBasicVendorOS();
 	$self->{'distro'}->updateDistroConfig();
@@ -980,7 +980,7 @@ sub stage1D_installPackageSelection
 
 	my $selectionName = $self->{'selection-name'};
 
-	vlog 1, "installing package selection <$selectionName>...";
+	vlog(1, "installing package selection <$selectionName>...");
 	my $pkgSelection = $self->{'distro-info'}->{selection}->{$selectionName};
 	my @pkgs = string2Array($pkgSelection);
 	my @installedPkgs = $self->{'packager'}->getInstalledPackages();
@@ -988,15 +988,15 @@ sub stage1D_installPackageSelection
 		= 	grep {
 				my $pkg = $_;
 				if (grep { $_ eq $pkg; } @installedPkgs) {
-					vlog 1, "package '$pkg' filtered, it is already installed.";
+					vlog(1, "package '$pkg' filtered, it is already installed.");
 					0;
 				} else {
 					1;
 				}
 			} @pkgs;
-		vlog 0, _tr("No packages listed for selection '%s', nothing to do.",
-					$selectionName);
-   	vlog 1, "installing these packages:\n".join("\n\t", @pkgs);
+		vlog(0, _tr("No packages listed for selection '%s', nothing to do.",
+					$selectionName));
+   	vlog(1, "installing these packages:\n".join("\n\t", @pkgs));
 	$self->{'meta-packager'}->startSession();
 	if (scalar(@pkgs) > 0) {
 		$self->{'meta-packager'}->installSelection(join " ", @pkgs);
@@ -1010,13 +1010,13 @@ sub clone_fetchSource
 	my $self = shift;
 	my $source = shift;
 
-	vlog 0, _tr("Cloning vendor-OS from '%s' to '%s'...\n", $source,
-				$self->{'vendor-os-path'});
+	vlog(0, _tr("Cloning vendor-OS from '%s' to '%s'...\n", $source,
+				$self->{'vendor-os-path'}));
 	my $excludeIncludeList = $self->clone_determineIncludeExcludeList();
-	vlog 1, "using exclude-include-filter:\n$excludeIncludeList\n";
+	vlog(1, "using exclude-include-filter:\n$excludeIncludeList\n");
 	my $rsyncCmd
 		= "rsync -av --delete --exclude-from=- $source $self->{'vendor-os-path'}";
-	vlog 2, "executing: $rsyncCmd\n";
+	vlog(2, "executing: $rsyncCmd\n");
 	open(RSYNC, "| $rsyncCmd")
 		or die _tr("unable to start rsync for source '%s', giving up! (%s)\n",
 				   $source, $!);
@@ -1085,7 +1085,7 @@ sub chrootInto
 {
 	my $osDir = shift;
 
-	vlog 2, "chrooting into $osDir...";
+	vlog(2, "chrooting into $osDir...");
 	chdir $osDir
 		or die _tr("unable to chdir into '%s' (%s)\n", $osDir, $!);
 	# ...do chroot

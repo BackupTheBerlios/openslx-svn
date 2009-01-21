@@ -15,7 +15,7 @@ package OpenSLX::MetaDB::CSV;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 1.01;		# API-version . implementation-version
+$VERSION = 1.01;    # API-version . implementation-version
 use base qw(OpenSLX::MetaDB::DBI);
 
 ################################################################################
@@ -37,7 +37,7 @@ use OpenSLX::MetaDB::DBI 1;
 sub new
 {
 	my $class = shift;
-	my $self = {};
+	my $self  = {};
 	return bless $self, $class;
 }
 
@@ -49,43 +49,42 @@ sub connect
 	if (!defined $dbSpec) {
 		# build $dbSpec from individual parameters:
 		my $dbBasepath = "$openslxConfig{'private-path'}/db";
-		my $dbDatadir = "$openslxConfig{'db-name'}-csv";
-		my $dbPath = "$dbBasepath/$dbDatadir";
-		system("mkdir -p $dbPath") 	unless -e $dbPath;
+		my $dbDatadir  = "$openslxConfig{'db-name'}-csv";
+		my $dbPath     = "$dbBasepath/$dbDatadir";
+		system("mkdir -p $dbPath") unless -e $dbPath;
 		$dbSpec = "f_dir=$dbPath;csv_eol=\n;";
 	}
-	vlog 1, "trying to connect to CSV-database <$dbSpec>";
-	$self->{'dbh'} = DBI->connect("dbi:CSV:$dbSpec", undef, undef,
-								  {PrintError => 0})
-			or die _tr("Cannot connect to database '%s' (%s)",
-					   $dbSpec, $DBI::errstr);
+	vlog(1, "trying to connect to CSV-database <$dbSpec>");
+	$self->{'dbh'} =
+	  DBI->connect("dbi:CSV:$dbSpec", undef, undef, {PrintError => 0})
+	  or die _tr("Cannot connect to database '%s' (%s)", $dbSpec, $DBI::errstr);
 }
 
 sub quote
-{	# DBD::CSV has a buggy quoting mechanism which can't cope with backslashes
-	# so we reimplement the quoting ourselves...
+{    # DBD::CSV has a buggy quoting mechanism which can't cope with backslashes
+	    # so we reimplement the quoting ourselves...
 	my $self = shift;
-	my $val = shift;
+	my $val  = shift;
 
 	$val =~ s[(['])][\\$1]go;
 	return "'$val'";
 }
 
 sub start_transaction
-{	# simulate a global transaction by flocking a file:
+{       # simulate a global transaction by flocking a file:
 	my $self = shift;
 
-	my $dbh = $self->{'dbh'};
+	my $dbh      = $self->{'dbh'};
 	my $lockFile = "$dbh->{'f_dir'}/transaction-lock";
-	sysopen(TRANSFILE, $lockFile, O_RDWR|O_CREAT)
-		or confess _tr(q[Can't open transaction-file '%s' (%s)], $lockFile, $!);
+	sysopen(TRANSFILE, $lockFile, O_RDWR | O_CREAT)
+	  or confess _tr(q[Can't open transaction-file '%s' (%s)], $lockFile, $!);
 	$self->{"transaction-lock"} = *TRANSFILE;
 	flock(TRANSFILE, LOCK_EX)
-		or confess _tr(q[Can't lock transaction-file '%s' (%s)], $lockFile, $!);
+	  or confess _tr(q[Can't lock transaction-file '%s' (%s)], $lockFile, $!);
 }
 
 sub commit_transaction
-{	# free transaction-lock
+{    # free transaction-lock
 	my $self = shift;
 
 	if (!defined $self->{"transaction-lock"}) {
@@ -97,7 +96,7 @@ sub commit_transaction
 }
 
 sub rollback_transaction
-{	# free transaction-lock
+{    # free transaction-lock
 	my $self = shift;
 
 	if (!defined $self->{"transaction-lock"}) {
@@ -109,19 +108,19 @@ sub rollback_transaction
 }
 
 sub generateNextIdForTable
-{	# CSV doesn't provide any mechanism to generate IDs, we provide one
-	my $self = shift;
+{    # CSV doesn't provide any mechanism to generate IDs, we provide one
+	my $self  = shift;
 	my $table = shift;
 
 	return 1 unless defined $table;
 
 	# fetch the next ID from a table-specific file:
-	my $dbh = $self->{'dbh'};
+	my $dbh    = $self->{'dbh'};
 	my $idFile = "$dbh->{'f_dir'}/id-$table";
-	sysopen(IDFILE, $idFile, O_RDWR|O_CREAT)
-		or confess _tr(q[Can't open ID-file '%s' (%s)], $idFile, $!);
+	sysopen(IDFILE, $idFile, O_RDWR | O_CREAT)
+	  or confess _tr(q[Can't open ID-file '%s' (%s)], $idFile, $!);
 	flock(IDFILE, LOCK_EX)
-		or confess _tr(q[Can't lock ID-file '%s' (%s)], $idFile, $!);
+	  or confess _tr(q[Can't lock ID-file '%s' (%s)], $idFile, $!);
 	my $nextID = <IDFILE>;
 	if (!$nextID) {
 		# no ID information available, we protect against users having
@@ -130,36 +129,35 @@ sub generateNextIdForTable
 		# N.B.: older versions of DBD::CSV (notably the one that comes with
 		#       SUSE-9.3) do not understand the max() function, so we determine
 		#       the maximum ID manually:
-		my @IDs
-			=	sort { $b <=> $a }
-				$self->_doSelect("SELECT id FROM $table", 'id');
+		my @IDs =
+		  sort { $b <=> $a } $self->_doSelect("SELECT id FROM $table", 'id');
 		my $maxID = $IDs[0];
-		$nextID = 1+$maxID;
+		$nextID = 1 + $maxID;
 	}
 	seek(IDFILE, 0, 0)
-		or confess _tr(q[Can't to seek ID-file '%s' (%s)], $idFile, $!);
+	  or confess _tr(q[Can't to seek ID-file '%s' (%s)], $idFile, $!);
 	truncate(IDFILE, 0)
-		or confess _tr(q[Can't truncate ID-file '%s' (%s)], $idFile, $!);
-	print IDFILE $nextID+1
-		or confess _tr(q[Can't update ID-file '%s' (%s)], $idFile, $!);
+	  or confess _tr(q[Can't truncate ID-file '%s' (%s)], $idFile, $!);
+	print IDFILE $nextID + 1
+	  or confess _tr(q[Can't update ID-file '%s' (%s)], $idFile, $!);
 	close(IDFILE);
 
 	return $nextID;
 }
 
 sub schemaDeclareTable
-{	# explicitly set file name for each table such that it makes
-	# use of '.csv'-extension
-	my $self = shift;
+{    # explicitly set file name for each table such that it makes
+	    # use of '.csv'-extension
+	my $self  = shift;
 	my $table = shift;
 
 	my $dbh = $self->{'dbh'};
-	$dbh->{'csv_tables'}->{"$table"} = { 'file' => "${table}.csv"};
+	$dbh->{'csv_tables'}->{"$table"} = {'file' => "${table}.csv"};
 }
 
 sub schemaRenameTable
-{	# renames corresponding id-file after renaming the table
-	my $self = shift;
+{       # renames corresponding id-file after renaming the table
+	my $self     = shift;
 	my $oldTable = shift;
 	my $newTable = shift;
 
@@ -170,8 +168,8 @@ sub schemaRenameTable
 }
 
 sub schemaDropTable
-{	# removes corresponding id-file after dropping the table
-	my $self = shift;
+{       # removes corresponding id-file after dropping the table
+	my $self  = shift;
 	my $table = shift;
 
 	$self->SUPER::schemaDropTable($table, @_);
@@ -179,4 +177,3 @@ sub schemaDropTable
 	unlink "$dbh->{'f_dir'}/id-$table";
 }
 
-1;

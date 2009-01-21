@@ -40,7 +40,7 @@ sub unpackPackages
 	my $pkgs = shift;
 
 	foreach my $pkg (@$pkgs) {
-		vlog 2, "unpacking package $pkg...";
+		vlog(2, "unpacking package $pkg...");
 		if (slxsystem("ash", "-c", "rpm2cpio $pkg | cpio -i -d -u")) {
 			warn _tr("unable to unpack package <%s> (%s)", $pkg, $!);
 				# TODO: change this back to die() if cpio-ing fedora6-glibc
@@ -58,7 +58,7 @@ sub importTrustedPackageKeys
 	return unless defined $keyFiles;
 
 	foreach my $keyFile (@$keyFiles) {
-		vlog 2, "importing package key $keyFile...";
+		vlog(2, "importing package key $keyFile...");
 		if (slxsystem("rpm", "--root=$finalPath", "--import", "$keyFile")) {
 			die _tr("unable to import package key <%s> (%s)\n", $keyFile, $!);
 		}
