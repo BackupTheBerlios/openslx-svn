@@ -308,7 +308,7 @@ cp -a ${themes}* ${INSTDIR}/usr/share/themes
 #########################################################################
 # End of function declaration
 
-while getopts :hk:c:i:r:o:s:f:n:m:Sut:d:v:I:D:V:a: a ; do
+while getopts :dhk:c:i:r:o:s:f:n:m:Sut:v:I:D:V:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
@@ -330,7 +330,7 @@ while getopts :hk:c:i:r:o:s:f:n:m:Sut:d:v:I:D:V:a: a ; do
     exit 1
     ;;
     c)  CLCONFFILE=$OPTARG;;
-    d) use_dhclient=1;;
+    d)  use_dhclient=1;;
     k)  KERNVER=$OPTARG;;
     i)  INITRD_PATH=$OPTARG ;;
     f)  FSMODULES=$OPTARG;;
