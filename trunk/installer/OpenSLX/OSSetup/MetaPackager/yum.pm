@@ -74,7 +74,7 @@ sub setupPackageSource
 	}
 	my $repoFile = "/etc/yum.repos.d/$repoName.repo";
 	open(REPO, "> $repoFile")
-		or die _tr("unable to create repo-file <%s> (%s)\n", $repoFile, $1);
+		or die _tr("unable to create repo-file <%s> (%s)\n", $repoFile, $!);
 	print REPO $repoDescr;
 	print REPO "\nexclude=$excludeList\n";
 	close(REPO);
