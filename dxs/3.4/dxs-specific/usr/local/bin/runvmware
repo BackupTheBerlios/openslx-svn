@@ -7,7 +7,7 @@
 #               Michael Janczyk <mj0@uni-freiburg.de>, 10-11-2005
 # Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
 #
-VERSION=0.13b; LAST_CHANGES=10.11.05
+VERSION=0.13; LAST_CHANGES=10.11.05
 ################################################################################
 
 
@@ -375,7 +375,7 @@ EOH
 
  # Print Version , remove path
  echo -e "$0: LAST CHANGES $LAST_CHANGES | VERSION $VERSION\n" |\
- awk -F "/" '{print "\t"$NF}'
+ awk -F "/" '{print "\t\t"$NF}'
 
  exit 0
  }
@@ -477,7 +477,7 @@ while [ $# -gt "$NARG" ]; do
   ;;
   --version)
      echo -e "\n$0: LAST CHANGES $LAST_CHANGES | VERSION $VERSION\n" |\
-     awk -F "/" '{print "\t"$NF}'
+     awk -F "/" '{print "\t\t"$NF}'
      exit 0
   ;;
   -i)
