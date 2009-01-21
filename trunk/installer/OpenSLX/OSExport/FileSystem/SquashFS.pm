@@ -160,7 +160,7 @@ sub requiredFSMods
 
 	my @mods = $self->{'block-device'}->requiredBlockDeviceModules();
 	push @mods, 'squashfs ';
-	return join ' ', @mods;
+	return @mods;
 }
 
 sub showExportConfigInfo

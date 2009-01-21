@@ -113,7 +113,7 @@ sub requiredFSMods
 {
 	my $self = shift;
 
-	return 'nfs';
+	return qw( nfs );
 }
 
 sub showExportConfigInfo
