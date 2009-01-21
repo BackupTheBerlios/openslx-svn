@@ -2,13 +2,13 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 04-02-2006
 #		Bla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.1b
+# Version:      0.2.1c
 
 # functions common for all distros
 errmsg="functions file contains a lot of script \
@@ -126,9 +126,11 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
   esac
 done
 # load block device driver if needed
-[ -n "$NBD" ] && modprobe ${MODPRV} ${NBD} || error "  Failed to load \
+if [ -n "${NBD}" ] ; then
+  modprobe ${MODPRV} ${NBD} || error "  Failed to load \
 module ${NBD}.ko. It is needed if you intend to use\n  network block \
 device (D)NBD for the client as root filesystem."
+fi
 # check if at least one type of IP configuration is availabe
 if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
   if strinfile "clientip" /etc/machine-setup ; then
