@@ -232,8 +232,8 @@ local dest=$2
 local ret=0
 [ -z "$dest" ] && dest="/mnt"
 # often nfs is just a module and not compiled directly into the kernel
-[ -f /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko ] && \
-  modprobe ${MODPRV} nfs || error "$error_modnfs"
+[ -f /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko ]  && \
+  { modprobe ${MODPRV} nfs || error "$error_modnfs"; }
 # busybox mount has to be compiled with nfs mount support otherwise
 # --> error "$error_mntt"
 mount -n -t nfs -o ro,nolock,tcp $nfsroot $dest || \
