@@ -2093,7 +2093,9 @@ CHIPSET R300
 DRIVER radeon
 LINE #Option "nodri"
 
-
+NAME ATI Radeon X300
+CHIPSET R300
+DRIVER radeon
 
 ######################################################################
 NAME ATI Rage Fury Pro AGP

@@ -477,7 +477,7 @@ postinit
 [ -x /bin/postinit.local ] && /bin/postinit.local
 
 # start a debug shell in higher debug levels
-[ $DEBUGLEVEL -gt 2 ] && /bin/sh
+[ $DEBUGLEVEL -gt 2 ] && start_shell
 
 # unmount the bind mounted modules directory
 for i in 0 40 100 200 300 500 800 1000 1200; do
