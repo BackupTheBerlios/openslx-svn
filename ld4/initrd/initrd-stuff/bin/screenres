@@ -1,8 +1,11 @@
 #!/bin/sh
-# Author: Felix Endres
-# Written in April 2006
-
-
+#
+# Author(s):    Felix Endres
+#
+# Copyright:    (c) 2006 - RZ Universitaet Freiburg
+#
+# Description:
+#
 # This script gives information about recommended display modes for the 
 # attached monitor
 
@@ -24,14 +27,18 @@
 [ -z "$DEBUGLEVEL" ] && DEBUGLEVEL=0
 [ $DEBUGLEVEL -gt 1 ] && DEBUG="yes"
 
+
 #Define some default output values if the script fails to find better values:
-default_horiz_freq_khz="63.5"
-default_recommended_screen_modes='"1024x768" "800x600" "640x480"'
+# Empty defaults, s.t. hwautocfg defines the defaults
+default_horiz_freq_range_khz="" #"31.5-63.5"
+default_vert_freq_range_hz=""   #"60-90"
+default_recommended_screen_modes="" #'"1024x768" "800x600" "640x480"'
 
 
 
 calculate_max_horizontal_freq () {
     highest_resolution=` echo $screen_resolutions | sed -n 's/"\([0-9x]*\)".*/\1/p'`
+    [ -z $highest_resolution ] && return # if the highest resolution can not be extracted, the frequency can not be calculated 
     freq_for_highest_res=`sed -n /$highest_resolution'/s/[^@]*@\([0-9]\{2,3\}\).*/\1/p' $tmp_ddcprobe_output | sort -nr|sed -n 1p`
     if [ -z "$freq_for_highest_res" ]; then
         #Search for a number followed by the term "Hz" in the same line as the highest resolution
@@ -40,7 +47,7 @@ calculate_max_horizontal_freq () {
     [ -n "$DEBUG" ] && echo "  # Vertical Frequency for highest resolution.: $freq_for_highest_res"
     if [ -z "$freq_for_highest_res" ]; then
         [ -n "$DEBUG" ] && echo "Vertical Frequency not available. Calculation not possible. Return default value."
-        horiz_freq_khz=$default_horiz_freq_khz
+        horiz_freq_range_khz=$default_horiz_freq_range_khz
         return
     fi
 
@@ -48,6 +55,7 @@ calculate_max_horizontal_freq () {
     [ -n "$DEBUG" ] && echo "  # of lines in highest res.: $highest_res_line_count"
     horiz_freq_khz=$(( $highest_res_line_count * $freq_for_highest_res / 950)) # 950 = 0,95 * 1000 (invisible range * Kilohertz)
     [ -n "$DEBUG" ] && echo "  Assumed Horizontal Frequency: $horiz_freq_khz"
+    horiz_freq_range_khz="31.5-$horiz_freq_khz"
 }
 determine_recommended_crt_modes () {
     ## Introduce the standard resolution 1400x1050 as it is seldom in the list the monitors output, though supported
@@ -87,7 +95,7 @@ determine_recommended_crt_modes () {
     while [ $new_highest_horizontal_resolution -gt $max_wanted_resolution ]; do
       # Cut the highest resolution because the display size is to small for it to be convenient
       screen_resolutions=` echo $screen_resolutions | sed -n 's/"[0-9x]*" \(.*\)/\1/p'`
-      new_highest_resolution=` echo $screen_resolutions | sed -n 's/"\([0-9x]*\)" .*/\1/p'`
+      new_highest_resolution=` echo $screen_resolutions | sed -n 's/"\([0-9x]*\)".*/\1/p'`
       [ -n "$DEBUG" ] && echo "  new highest resolution: $new_highest_resolution"
       new_highest_horizontal_resolution=`echo $new_highest_resolution | sed -n 's/\([0-9]*\)x.*/\1/p'`
       [ -n "$DEBUG" ] && echo "  new_highest_horizontal_resolution: $new_highest_horizontal_resolution"
@@ -110,7 +118,7 @@ define_max_recommended_horizontal_pixel_count () {
 }
 
 
-#TODO command line arguments processing (--help)
+#TODO command line arguments processing (--help --defaults)
 tmp_ddcprobe_output=$1
 if [ -z $tmp_ddcprobe_output ]; then
     tmp_ddcprobe_output=/tmp/ddcprobe_output
@@ -121,8 +129,8 @@ if [ -n "$failed" ]; then
     echo "Error: Display seems to be incapable of providing DDC Information"
     # Print Defaults OPTIMIZEME: The defaults could be command line parameters
     echo "Recommended Screen Modes: $default_recommended_screen_modes" 
-    echo "Vertical Frequency Range (kHz): 31.5-$default_horiz_freq_khz"
-    echo "Horizontal Frequency Range (Hz): 60-90"
+    echo "Horizontal Frequency Range (kHz): $default_horiz_freq_range_khz"
+    echo "Vertical Frequency Range (Hz): $default_vert_freq_range_hz"
     exit 1;
 fi
 screen_size_in_qcm=$((`sed -n "s/[Ss]creen.*[Ss]ize[^0-9]*\([0-9]*\)[^0-9]*\([0-9]*\).*/\1 *  \2/p" ${tmp_ddcprobe_output}`))
@@ -135,8 +143,8 @@ if [ -z $screen_size_in_qcm ] || [ -z $manufacturing_year ] || [ 256000 -gt $max
     echo "Error: Display seems to be incapable of providing all relevant DDC Information"
     # Print Defaults OPTIMIZEME: The defaults could be command line parameters
     echo "Recommended Screen Modes: $default_recommended_screen_modes" 
-    echo "Horizontal Frequency Range (kHz): 31.5-$default_horiz_freq_khz"
-    echo "Vertical Frequency Range (Hz): 60-90"
+    echo "Horizontal Frequency Range (kHz): $default_horiz_freq_range_khz"
+    echo "Vertical Frequency Range (Hz): $default_vert_freq_range_hz"
     exit 1;
 fi
 
@@ -184,7 +192,8 @@ if [ -n "$DEBUG" ];then
 fi
 
 # Find the lines with two times 3 to 4 digits delimited by an x. Print with the two values reverted, so sort sorts w.r.t the 2nd value. Then swap back
-screen_resolutions=`sed -n '/edid/I,$s/.*[ \t]\([0-9]\{3,4\}\) *x *\([0-9]\{3,4\}\).*/\2 x \1/p' ${tmp_ddcprobe_output}| sort -rn | sort -rnu | sed -n 's/\([0-9]\{3,4\}\) x \([0-9]\{3,4\}\).*/"\2x\1"/p' `
+# Minor problem: If two Modes are found in a line, the second one is used.
+screen_resolutions=`sed -n '/edid/I,$s/\(.*[ \t]\)*\([0-9]\{3,4\}\) *x *\([0-9]\{3,4\}\).*/\3 x \2/p' ${tmp_ddcprobe_output}| sort -rn | sort -rnu | sed -n 's/\([0-9]\{3,4\}\) x \([0-9]\{3,4\}\).*/"\2x\1"/p' `
 screen_resolutions=`echo $screen_resolutions`
 echo "Supported Screen Modes: $screen_resolutions"
 
@@ -194,10 +203,10 @@ echo "Supported Screen Modes: $screen_resolutions"
 # find a line with the word range and and numbers with a minus in the middle (e.g 123-321)
 frequency_ranges=`sed '/[Rr][Aa][Nn][Gg][Ee]/!d;s/[^0-9]*\([1-9][0-9]\)[ \t]*-[ \t]*\([1-9][0-9]*\)[^0-9]*\([1-9][0-9]*\)[ \t]*-[ \t]*\([1-9][0-9]*\).*/\1-\2 \3-\4/' ${tmp_ddcprobe_output}`
 
-set -- $frequency_ranges # split into $1 und $2
+set -- $frequency_ranges # split into $1 und $2 
 if [ -z "$frequency_ranges" ] && [ $tft_probability -lt 50 ]; then
-    calculate_max_horizontal_freq # gives us $horiz_freq_khz
-    horiz_freq_range="31.5-$horiz_freq_khz"
+    calculate_max_horizontal_freq # gives us $horiz_freq_range_khz
+    horiz_freq_range="$horiz_freq_range_khz"
 else horiz_freq_range=$1
 fi
 ########################################
