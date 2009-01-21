@@ -284,7 +284,7 @@ fi
 }
 
 #############################################################################
-# dhcp client function (supporting dhclient, dhcpcd, pump, udhcpc)
+# dhcp client function (supporting dhclient and udhcp, latter is preferred)
 rundhcp ()
 {
 local vci="$1"

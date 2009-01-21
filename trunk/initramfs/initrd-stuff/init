@@ -271,7 +271,6 @@ if [ ${DEBUGLEVEL} -lt 3 -o ${DEBUGLEVEL} = 8 ] ; then
 #!/bin/ash
 echo \$$ > /tmp/watchdogpid
 [ ! -f /proc/version ] && mount -n -t proc proc /proc
-. /etc/functions
 sleep 120 2> /dev/null
 echo "o" > /proc/sysrq-trigger
 EOF
