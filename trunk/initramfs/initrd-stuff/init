@@ -79,6 +79,7 @@ nfsro="nfs"
 echo "0 0 0 0" >/proc/sys/kernel/printk
 ( for mod in usbcore uhci-hcd ohci-hcd usbhid; do
   modprobe -q $mod 2>/dev/null
+  usleep 5
 done; echo "1 4 1 7" >/proc/sys/kernel/printk ) &
 
 

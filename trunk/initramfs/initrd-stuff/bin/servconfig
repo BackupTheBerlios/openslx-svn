@@ -275,7 +275,9 @@ config_snmp
 config_afs
 
 # setup nfsv4/krb stuff
+# if nfsv4 required
 config_nfsv4
+# fi
 
 #############################################################################
 # NIS
