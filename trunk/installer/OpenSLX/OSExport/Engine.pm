@@ -31,38 +31,18 @@ use vars qw(%supportedExportTypes %supportedDistros);
 );
 
 %supportedDistros = (
-	'debian-3.1'
-		=> { module => 'Debian_3_1' },
-	'debian-4.0'
-		=> { module => 'Debian_4_0' },
-	'fedora-6'
-		=> { module => 'Fedora_6' },
-	'fedora-6-x86_64'
-		=> { module => 'Fedora_6_x86_64' },
-	'gentoo-2005.1'
-		=> { module => 'Gentoo_2005_1' },
-	'gentoo-2006.1'
-		=> { module => 'Gentoo_2006_1' },
-	'mandriva-2007.0'
-		=> { module => 'Mandriva_2007_0' },
-	'suse-9.3'
-		=> { module => 'SUSE_9_3' },
-	'suse-10.0'
-		=> { module => 'SUSE_10_0' },
-	'suse-10.0-x86_64'
-		=> { module => 'SUSE_10_0_x86_64' },
-	'suse-10.1'
-		=> { module => 'SUSE_10_1' },
-	'suse-10.1-x86_64'
-		=> { module => 'SUSE_10_1_x86_64' },
-	'suse-10.2'
-		=> { module => 'SUSE_10_2' },
-	'suse-10.2-x86_64'
-		=> { module => 'SUSE_10_2_x86_64' },
-	'ubuntu-6.06'
-		=> { module => 'Ubuntu_6_06' },
-	'ubuntu-6.10'
-		=> { module => 'Ubuntu_6_10' },
+	'<any>'
+		=> { module => 'Any' },
+	'debian'
+		=> { module => 'Debian' },
+	'fedora'
+		=> { module => 'Fedora' },
+	'gentoo'
+		=> { module => 'Gentoo' },
+	'suse'
+		=> { module => 'SUSE' },
+	'ubuntu'
+		=> { module => 'Ubuntu' },
 );
 
 ################################################################################
@@ -99,6 +79,18 @@ sub initialize
 	$self->{'distro-name'} = $distroName;
 
 	# load module for the requested distro:
+	if (!exists $supportedDistros{lc($distroName)}) {
+		# try without _x86_64:
+		$distroName =~ s[_x86_64$][];
+		if (!exists $supportedDistros{lc($distroName)}) {
+			# try basic distro-type (e.g. debian or suse):
+			$distroName =~ s[-.+$][];
+			if (!exists $supportedDistros{lc($distroName)}) {
+				# fallback to generic implementation:
+				$distroName = '<any>';
+			}
+		}
+	}
 	my $distroModule
 		= "OpenSLX::OSExport::Distro::"
 			.$supportedDistros{lc($distroName)}->{module};

@@ -1,11 +1,11 @@
-# SUSE_10_2.pm
-#	- provides SUSE-10.2-specific overrides of the OpenSLX OSExport API.
+# SUSE.pm
+#	- provides SUSE-specific overrides of the OpenSLX OSExport API.
 #
 # (c) 2006 - OpenSLX.com
 #
 # Oliver Tappe <ot@openslx.com>
 #
-package OpenSLX::OSExport::Distro::SUSE_10_2;
+package OpenSLX::OSExport::Distro::SUSE;
 
 use vars qw(@ISA $VERSION);
 @ISA = ('OpenSLX::OSExport::Distro::Base');
@@ -23,17 +23,9 @@ sub new
 {
 	my $class = shift;
 	my $self = {
-		'base-name' => 'suse-10.2',
+		'base-name' => 'suse',
 	};
 	return bless $self, $class;
-}
-
-sub initialize
-{
-	my $self = shift;
-	my $engine = shift;
-
-	$self->SUPER::initialize($engine);
 }
 
 sub initDistroInfo
