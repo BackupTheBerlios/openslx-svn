@@ -555,7 +555,7 @@ sub writeConfigurations
 	foreach my $system (@systems) {
 		next 	unless $system->{id} > 0;
 
-		vlog(0, _tr('exporting system %d:%s', $system->{id}, $system->{name}));
+		vlog(0, _tr('exporting system %d : %s', $system->{id}, $system->{name}));
 		$systemConfCount++;
 
 		my $info = $openslxDB->aggregatedSystemFileInfoFor($system);
