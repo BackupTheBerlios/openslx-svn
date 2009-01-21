@@ -308,7 +308,7 @@ sub generateInitalRamFS
 		$cmd .= qq[-f "$setup->{ramfs_fsmods}" ];
 	}
 	my $rootPath
-		= "$openslxConfig{'private-path'}/stage1/$vendorOS->{path}";
+		= "$openslxConfig{'stage1-path'}/$vendorOS->{path}";
 	$cmd .= "-i $pxeSysPath/initramfs -r $rootPath ";
 
 	# fill slxConf-hash...
@@ -467,6 +467,7 @@ slxconfig-demuxer [options]
       --private-path=<string>    path to private data
       --public-path=<string>     path to public (client-accesible) data
       --share-path=<string>      path to sharable data
+      --stage1-path=<string>     path to stage1 systems
       --temp-path=<string>       path to temporary data
       --tftpboot-path=<string>   path to root of tftp-server
       --verbose-level=<int>      level of logging verbosity (0-3)
@@ -586,6 +587,12 @@ Sets path to sharable data, where distro-specs and functionality templates
 will be stored.
 
 Default is $SLX_SHARE_PATH (usually F</opt/openslx/share>.
+
+=item B<--stage1-path=<string>>
+
+Sets path to stage1 systems, where distributor-systems will be installed.
+
+Default is $SLX_STAGE1_PATH (usually F</var/opt/openslx/stage1>.
 
 =item B<--temp-path=<string>>
 
