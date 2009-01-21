@@ -642,8 +642,7 @@ cp ${ROOTDIR}/lib/modules/${KERNVER}/modules.* \
   ${INSTDIR}/lib/modules/${KERNVER}
 
 # add the common default client configuration file - just to ensure to
-# have all major variables defined. !!These settings are most probably
-# overwritten by fileget in stage3 within initramfs!!
+# have all major variables defined. 
 echo "## common settings for clients sharing an InitRamFS" \
   > ${INSTDIR}/etc/initramfs-setup
 if [ -n "${CLCONFFILE}" ] ; then
