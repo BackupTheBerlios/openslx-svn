@@ -92,16 +92,16 @@ function install_prereq_packages()
 	pushd "${SLX_STAGE1_PATH}" >/dev/null
 	for package in ${SLX_PACKAGE_DOWNLOAD_PATH}/${SLX_BASE_PREREQ_PACKAGES}*; do
 		case "${package}" in
-		*.rpm)
-			rpm2cpio "${package}" | \
-				cpio -i --make-directories
-			;;
-		*.deb)
-			dpkg --root="${SLX_STAGE1_PATH}" --unpack "${package}"
-			;;
-		*)
-			echo "$0: Warning, unknown package type of ${package}. "
-			;;
+			*.deb)
+				dpkg --root="${SLX_STAGE1_PATH}" --unpack "${package}"
+				;;
+			*.rpm)
+				rpm2cpio "${package}" | \
+					cpio -i --make-directories
+				;;
+			*)
+				echo "$0: Warning, unknown package type of ${package}. "
+				;;
 		esac
 	done
 
