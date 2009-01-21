@@ -1,0 +1,8 @@
+SLX_INST_SOURCE_BASEURL="http://ftp-1.gwdg.de/pub/linux/debian/debian"
+SLX_INST_SOURCE_COMPONENTS="contrib main non-free"
+SLX_INST_SOURCE_DISTRIBUTION="sarge"
+SLX_INST_SOURCE_NAME_sarge31="Debian 3.1"
+SLX_INST_SOURCE_BASEURL_sarge31security="http://ftp-1.gwdg.de/pub/linux/debian/debian-security"
+SLX_INST_SOURCE_NAME_sarge31security="Debian 3.1 security"
+SLX_INST_SOURCE_DISTRIBUTION_sarge31security="sarge/updates"
+SLX_BASE_PREREQ_PACKAGES="pool/main/d/debootstrap/debootstrap_0.3.3.1_all.deb"
