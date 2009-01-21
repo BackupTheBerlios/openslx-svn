@@ -33,6 +33,10 @@ use OpenSLX::DBSchema;
 
 my (
 	$helpReq,
+	$listClientsReq,
+	$listExportsReq,
+	$listSystemsReq,
+	$listVendorOSesReq,
 	$manReq,
 	$verbose,
 	$versionReq,
@@ -40,6 +44,10 @@ my (
 
 GetOptions(
 	'help|?' => \$helpReq,
+	'list-clients' => \$listClientsReq,
+	'list-exports' => \$listExportsReq,
+	'list-systems' => \$listSystemsReq,
+	'list-vendor-oses' => \$listVendorOSesReq,
 	'man' => \$manReq,
 	'verbose' => \$verbose,
 	'version' => \$versionReq,
@@ -55,6 +63,40 @@ openslxInit();
 
 my $openslxDB = OpenSLX::ConfigDB->new();
 $openslxDB->connect();
+
+if ($listClientsReq) {
+	print _tr("List of the clients defined in config-DB:\n");
+	print join('', map { "\t$_->{name}\n" }
+#				   grep { $_->{id} > 0 }
+				   sort { $a->{name} cmp $b->{name} }
+				   $openslxDB->fetchClientByFilter());
+	exit 1;
+}
+
+if ($listExportsReq) {
+	print _tr("List of the exports defined in config-DB:\n");
+	print join('', map { "\t$_->{name}\n" }
+				   sort { $a->{name} cmp $b->{name} }
+				   $openslxDB->fetchExportByFilter());
+	exit 1;
+}
+
+if ($listSystemsReq) {
+	print _tr("List of the systems defined in config-DB:\n");
+	print join('', map { "\t$_->{name}\n" }
+#				   grep { $_->{id} > 0 }
+				   sort { $a->{name} cmp $b->{name} }
+				   $openslxDB->fetchSystemByFilter());
+	exit 1;
+}
+
+if ($listVendorOSesReq) {
+	print _tr("List of the vendor-OSes defined in config-DB:\n");
+	print join('', map { "\t$_->{name}\n" }
+				   sort { $a->{name} cmp $b->{name} }
+				   $openslxDB->fetchVendorOSByFilter());
+	exit 1;
+}
 
 my $action = shift @ARGV;
 if ($action =~ m[^add-system$]i) {
