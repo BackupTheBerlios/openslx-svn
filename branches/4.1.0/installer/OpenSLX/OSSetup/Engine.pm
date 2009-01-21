@@ -472,7 +472,8 @@ sub addInstalledVendorOSToConfigDB
 	my $vendorOSName = $self->{'vendor-os-name'};
 	my $vendorOS = $openslxDB->fetchVendorOSByFilter({'name' => $vendorOSName});
 	if (defined $vendorOS) {
-		if ($self->{'clone-source'} ne $vendorOS->{'clone_source'}) {
+		if ($vendorOS->{'clone_source'}
+		&& $self->{'clone-source'} ne $vendorOS->{'clone_source'}) {
 			$openslxDB->changeVendorOS(
 				$vendorOS->{id},
 				{ 'clone_source' => $self->{'clone-source'} }

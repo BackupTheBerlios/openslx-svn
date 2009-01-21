@@ -211,8 +211,9 @@ sub openslxInit
 		  );
 	}
 	if ($openslxConfig{'verbose-level'} >= 2) {
-		foreach my $k (sort keys %openslxConfig) {
-			vlog(2, "config-dump: $k = $openslxConfig{$k}");
+		foreach my $key (sort keys %openslxConfig) {
+			my $val = $openslxConfig{$key} || '';
+			vlog(2, "config-dump: $key = $val");
 		}
 	}
 
