@@ -368,6 +368,7 @@ sub readDistroInfo
 	# merge user-provided configuration distro defaults...
 	my %repository = %{$self->{distro}->{config}->{repository}};
 	my %selection = %{$self->{distro}->{config}->{selection}};
+	my %excludes = %{$self->{distro}->{config}->{excludes}};
 	my $package_subdir = $self->{distro}->{config}->{'package-subdir'};
 	my $prereq_packages = $self->{distro}->{config}->{'prereq-packages'};
 	my $bootstrap_prereq_packages
@@ -385,6 +386,10 @@ sub readDistroInfo
 	foreach my $selKey (keys %selection) {
 		$selection{$selKey} =~ s[<<<([^>]+)>>>][$selection{$1}]eg;
 	}
+	# ...expand selection definitions...
+	foreach my $exclKey (keys %excludes) {
+		$excludes{$exclKey} =~ s[<<<([^>]+)>>>][$excludes{$1}]eg;
+	}
 	# ...and store merged config:
 	$self->{'distro-info'} = {
 		'package-subdir' => $package_subdir,
@@ -393,6 +398,7 @@ sub readDistroInfo
 		'bootstrap-packages' => $bootstrap_packages,
 		'repository' => \%repository,
 		'selection' => \%selection,
+		'excludes' => \%excludes,
 	};
 
 	if ($openslxConfig{'verbose-level'} >= 2) {
@@ -408,6 +414,13 @@ sub readDistroInfo
 			vlog 2, "selection '$s':";
 			foreach my $sl (@selLines) {
 				vlog 3, "\t$sl";
+			}
+		}
+		foreach my $e (sort keys %excludes) {
+			my @exclLines = split "\n", $excludes{$e};
+			vlog 2, "excludes for '$e':";
+			foreach my $excl (@exclLines) {
+				vlog 3, "\t$excl";
 			}
 		}
 	}
@@ -820,11 +833,14 @@ sub stage1D_setupPackageSources()
 	my $self = shift;
 
 	vlog 1, "setting up package sources for meta packager...";
+	my $selectionName = $self->{'selection-name'};
+	my $pkgExcludes = $self->{'distro-info'}->{excludes}->{$selectionName};
+	my $excludeList = join ' ', string2Array($pkgExcludes);
 	$self->{'meta-packager'}->initPackageSources();
 	my ($rk, $repo);
 	while(($rk, $repo) = each %{$self->{'distro-info'}->{repository}}) {
 		vlog 2, "setting up package source $rk...";
-		$self->{'meta-packager'}->setupPackageSource($rk, $repo);
+		$self->{'meta-packager'}->setupPackageSource($rk, $repo, $excludeList);
 	}
 }
 
@@ -846,6 +862,7 @@ sub stage1D_updateBasicVendorOS()
 	vlog 1, "updating basic vendor-os...";
 	$self->{'meta-packager'}->startSession();
 	$self->{'meta-packager'}->updateBasicVendorOS();
+	$self->{'distro'}->updateDistroConfig();
 	$self->{'meta-packager'}->finishSession();
 }
 
@@ -857,16 +874,15 @@ sub stage1D_installPackageSelection
 
 	vlog 1, "installing package selection <$selectionName>...";
 	my $pkgSelection = $self->{'distro-info'}->{selection}->{$selectionName};
-	my @pkgs
-		= grep { length($_) > 0 }
-		  map { $_ =~ s[^\s*(.*?)\s*$][$1]; $_ }
-		  split "\n", $pkgSelection;
+	my @pkgs = string2Array($pkgSelection);
 	if (scalar(@pkgs) == 0) {
 		vlog 0, _tr("No packages listed for selection '%s', nothing to do.",
 					$selectionName);
 	} else {
+    	vlog 2, "installing these packages:\n".join("\n\t", @pkgs);
 		$self->{'meta-packager'}->startSession();
 		$self->{'meta-packager'}->installSelection(join " ", @pkgs);
+		$self->{'distro'}->updateDistroConfig();
 		$self->{'meta-packager'}->finishSession();
 	}
 }
@@ -937,8 +953,9 @@ sub string2Array
 	my $str = shift;
 
 	return
-		grep { length($_) > 0 }
-		map { $_ =~ s[^\s*(.+?)\s*$][$1]; $_ }
+		grep { length($_) > 0 && $_ !~ m[^\s*#]; }
+            # drop empty lines and comments
+		map { $_ =~ s[^\s*(.*?)\s*$][$1]; $_ }
 		split "\n", $str;
 }
 

@@ -55,7 +55,7 @@ sub fixPrerequiredFiles
 	}
 }
 
-sub finishSession
+sub updateDistroConfig
 {
 	my $self = shift;
 
@@ -67,7 +67,6 @@ sub finishSession
 	if (slxsystem("SuSEconfig")) {
 		die _tr("unable to run SuSEconfig (%s)", $!);
 	}
-	$self->SUPER::finishSession();
 }
 
 sub initDistroInfo
@@ -238,9 +237,6 @@ sub initDistroInfo
 			autoyast2-installation
 			bash
 			bc
-			beagle
-			beagle-firefox
-			beagle-index
 			bind-libs
 			bind-utils
 			binutils
@@ -442,7 +438,6 @@ sub initDistroInfo
 			kdeartwork3-kscreensaver
 			kdeartwork3-xscreensaver
 			kdebase3
-			kdebase3-beagle
 			kdebase3-kdm
 			kdebase3-ksysguardd
 			kdebase3-nsplugin
@@ -472,8 +467,6 @@ sub initDistroInfo
 			kdetv
 			kdeutils3
 			kernel-default
-			kerry
-			kio_beagle
 			kio_ipodslave
 			kio_iso
 			kio_slp
@@ -672,10 +665,7 @@ sub initDistroInfo
 			openssl
 			opensuse-manual_de
 			opensuse-manual_en
-			opensuse-quickstart_de
-			opensuse-quickstart_en
 			openSUSE-release
-			opensuse-updater
 			orbit2
 			pam
 			pam-config
@@ -759,7 +749,6 @@ sub initDistroInfo
 			rrdtool
 			rsync
 			ruby
-			rug
 			sane
 			sane-frontends
 			sash
@@ -952,16 +941,25 @@ sub initDistroInfo
 			yast2-xml
 			ypbind
 			yp-tools
-			zen-updater
 			zip
 			zisofs-tools
 			zlib
-			zmd
 			zsh
 			zvbi
-			zypper
 		",
 	};
+
+	$self->{config}->{'excludes'} = {
+		# these packages will never be installed:
+	    
+		'default' => "
+		",
+
+		'kde' => "
+			<<<default>>>
+		",
+	};
+
 }
 
 1;

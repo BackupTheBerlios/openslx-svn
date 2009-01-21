@@ -55,7 +55,7 @@ sub fixPrerequiredFiles
 	}
 }
 
-sub finishSession
+sub updateDistroConfig
 {
 	my $self = shift;
 
@@ -67,7 +67,6 @@ sub finishSession
 	if (slxsystem("SuSEconfig")) {
 		die _tr("unable to run SuSEconfig (%s)", $!);
 	}
-	$self->SUPER::finishSession();
 }
 
 sub initDistroInfo

@@ -56,6 +56,7 @@ sub setupPackageSource
 	my $self = shift;
 	my $repoName = shift;
 	my $repoInfo = shift;
+	my $excludeList = shift;
 
 	my $repoURL = $self->{engine}->selectBaseURL($repoInfo);
 	if (length($repoInfo->{'repo-subdir'})) {
@@ -67,6 +68,7 @@ sub setupPackageSource
 	open(REPO, "> $repoFile")
 		or die _tr("unable to create repo-file <%s> (%s)\n", $repoFile, $1);
 	print REPO $repoDescr;
+	print REPO "\nexclude=$excludeList\n";
 	close(REPO);
 }
 

@@ -122,6 +122,10 @@ sub startSession
 {
 }
 
+sub updateDistroConfig
+{
+}
+
 sub finishSession
 {
 }

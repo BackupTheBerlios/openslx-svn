@@ -17,7 +17,9 @@ use vars qw($VERSION);
 $VERSION = 1.01;		# API-version . implementation-version
 
 use strict;
+
 use Carp;
+use OpenSLX::Basics;
 
 ################################################################################
 ### interface methods
@@ -54,6 +56,9 @@ sub installSelection
 sub startSession
 {
 	my $self = shift;
+	
+	addCleanupFunction('slxos-setup::meta-packager', 
+	                   sub { $self->finishSession(); } );
 
 	system('mount -t proc proc /proc 2>/dev/null');
 
@@ -64,11 +69,13 @@ sub startSession
 sub finishSession
 {
 	my $self = shift;
-
+	
 	$self->{engine}->{distro}->finishSession();
 		# allow vendor specific extensions
 
 	system('umount /proc 2>/dev/null');
+
+	removeCleanupFunction('slxos-setup::meta-packager');
 }
 
 1;
