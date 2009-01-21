@@ -38,7 +38,7 @@ for suffix in "" local ${SLX_SYSTEM_VARIANTNAME}; do
 		. "${SLX_SYSTEM_CONFIG_PATH}/settings${suffix:+.$suffix}"
 done
 
-function slxossetup_rpm_suse()
+function slxossetup_rpm()
 {
 	SLX_METADATA_PATH="${SLX_PRIVATE_PATH}/metadata/${SLX_SYSTEM_NAME}"
 	SLX_STAGE1_PATH="${SLX_PRIVATE_PATH}/stage1/${SLX_SYSTEM_NAME}"
@@ -143,9 +143,6 @@ function slxossetup_rpm_suse()
 		packagelist="${packagelist} $( eval echo \$$variable)"
 	done
 
-	# Inform SUSE RPMs that we're doing installation
-	export YAST_IS_RUNNING="instsys"
-
 	smart --data-dir="${SLX_METADATA_PATH}" \
 		install \
 		${packagelist} \
@@ -155,7 +152,11 @@ function slxossetup_rpm_suse()
 function slxossetup()
 {
 	case "${SLX_SYSTEM_BASENAME}" in
-		*suse*) slxossetup_rpm_suse ;;
+		*suse*)
+			# Inform SUSE RPMs that we're performing an installation
+			export YAST_IS_RUNNING="instsys"
+			slxossetup_rpm
+			;;
 		*) echo "$0: Error, unkown system ${SLX_SYSTEM_BASENAME}" ;;
 	esac
 }
