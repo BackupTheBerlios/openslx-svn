@@ -102,7 +102,7 @@ sub fetchSystemsById
 	return $self->fetchSystemsByFilter({'id' => $id}, $resultCols);
 }
 
-sub fetchAllSystemIDsForClient
+sub fetchAllSystemIDsOfClient
 {
 	my $self = shift;
 	my $clientID = shift;
@@ -140,7 +140,7 @@ sub fetchClientsById
 	return $self->fetchClientsByFilter({'id' => $id}, $resultCols);
 }
 
-sub fetchAllClientIDsForSystem
+sub fetchAllClientIDsOfSystem
 {
 	my $self = shift;
 	my $clientID = shift;
@@ -165,6 +165,11 @@ sub _doInsert
 	my $dbh = $self->{'dbh'};
 	my $valRow = (@$valRows)[0];
 	return if !defined $valRow;
+
+	if ($table =~ m[_ref$]) {
+		# reference tables do not have IDs:
+		$ignoreIDs = 1;
+	}
 
 	my $needToGenerateIDs = $self->generateNextIdForTable(undef);
 	if (!$ignoreIDs && $needToGenerateIDs) {
@@ -203,14 +208,16 @@ sub _doDelete
 	my $self = shift;
 	my $table = shift;
 	my $IDs = shift;
+	my $idCol = shift;
 
 	my $dbh = $self->{'dbh'};
 
 	$IDs = [undef] unless defined $IDs;
+	$idCol = 'id' unless defined $idCol;
 	foreach my $id (@$IDs) {
 		my $sql = "DELETE FROM $table";
 		if (defined $id) {
-			$sql .= " WHERE id = ".$self->quote($id);
+			$sql .= " WHERE $idCol = ".$self->quote($id);
 		}
 		my $sth = $dbh->prepare($sql)
 			or confess _tr(q[Can't delete from table <%s> (%s)], $table,
@@ -220,6 +227,7 @@ sub _doDelete
 			or confess _tr(q[Can't delete from table <%s> (%s)], $table,
 						   $dbh->errstr);
 	}
+	return 1;
 }
 
 sub _doUpdate
@@ -256,6 +264,40 @@ sub _doUpdate
 			or confess _tr(q[Can't update table <%s> (%s)], $table,
 						   $dbh->errstr);
 	}
+	return 1;
+}
+
+sub _updateRefTable
+{
+	my $self = shift;
+	my $table = shift;
+	my $keyID = shift;
+	my $newValueIDs = shift;
+	my $keyCol = shift;
+	my $valueCol = shift;
+	my $oldValueIDs = shift;
+
+	my %lastValueIDs;
+	@lastValueIDs{@$oldValueIDs} = ();
+
+	foreach my $valueID (@$newValueIDs) {
+		if (!exists $lastValueIDs{$valueID}) {
+			# value-ID is new, create it
+			my $valRow = {
+				$keyCol => $keyID,
+				$valueCol => $valueID,
+			};
+			$self->_doInsert($table, [$valRow]);
+		} else {
+			# value-ID already exists, leave as is, but remove from hash:
+			delete $lastValueIDs{$valueID};
+		}
+	}
+
+	# all the remaining value-IDs need to be removed:
+	if (scalar keys %lastValueIDs) {
+		$self->_doDelete($table, keys %lastValueIDs, $valueCol);
+	}
 }
 
 sub addSystem
@@ -283,8 +325,26 @@ sub changeSystem
 	return $self->_doUpdate('system', $systemIDs, $valRows);
 }
 
-sub setClientIDsForSystem
+sub setClientIDsOfSystem
 {
+	my $self = shift;
+	my $systemID = shift;
+	my $clientIDs = shift;
+
+	my @currClients = $self->fetchAllClientIDsOfSystem($systemID);
+	$self->_updateRefTable('client_system_ref', $systemID, $clientIDs,
+						   'system_id', 'client_id', \@currClients);
+}
+
+sub setGroupIDsOfSystem
+{
+	my $self = shift;
+	my $systemID = shift;
+	my $groupIDs = shift;
+
+	my @currGroups = $self->fetchAllGroupIDsOfSystem($systemID);
+	$self->_updateRefTable('grop_system_ref', $systemID, $groupIDs,
+						   'system_id', 'group_id', \@currGroups);
 }
 
 sub addClient
@@ -312,8 +372,73 @@ sub changeClient
 	return $self->_doUpdate('client', $clientIDs, $valRows);
 }
 
-sub setSystemIDsForClient
+sub setSystemIDsOfClient
 {
+	my $self = shift;
+	my $clientID = shift;
+	my $systemIDs = shift;
+
+	my @currSystems = $self->fetchAllSystemsOfClient($clientID);
+	$self->_updateRefTable('client_system_ref', $clientID, $systemIDs,
+						   'client_id', 'system_id', \@currSystems);
+}
+
+sub setGroupIDsOfClient
+{
+	my $self = shift;
+	my $clientID = shift;
+	my $groupIDs = shift;
+
+	my @currGroups = $self->fetchAllGroupsOfClient($clientID);
+	$self->_updateRefTable('group_client_ref', $clientID, $groupIDs,
+						   'client_id', 'group_id', \@currGroups);
+}
+
+sub addGroup
+{
+	my $self = shift;
+	my $valRows = shift;
+
+	return $self->_doInsert('group', $valRows);
+}
+
+sub removeGroup
+{
+	my $self = shift;
+	my $groupIDs = shift;
+
+	return $self->_doDelete('group', $groupIDs);
+}
+
+sub changeGroup
+{
+	my $self = shift;
+	my $groupIDs = shift;
+	my $valRows = shift;
+
+	return $self->_doUpdate('group', $groupIDs, $valRows);
+}
+
+sub setClientIDsOfGroup
+{
+	my $self = shift;
+	my $groupID = shift;
+	my $clientIDs = shift;
+
+	my @currClients = $self->fetchAllClientsOfGroup($groupID);
+	$self->_updateRefTable('group_client_ref', $groupID, $clientIDs,
+						   'group_id', 'client_id', \@currClients);
+}
+
+sub setSystemIDsOfGroup
+{
+	my $self = shift;
+	my $groupID = shift;
+	my $systemIDs = shift;
+
+	my @currSystems = $self->fetchAllSystemsOfGroup($groupID);
+	$self->_updateRefTable('group_system_ref', $groupID, $systemIDs,
+						   'group_id', 'system_id', \@currSystems);
 }
 
 ################################################################################

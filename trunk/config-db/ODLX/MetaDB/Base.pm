@@ -229,7 +229,11 @@ sub fetchSystemsById
 {
 }
 
-sub fetchAllSystemIDsForClient
+sub fetchAllSystemIDsOfClient
+{
+}
+
+sub fetchAllSystemIDsOfGroup
 {
 }
 
@@ -241,7 +245,27 @@ sub fetchClientsById
 {
 }
 
-sub fetchAllClientIDsForSystem
+sub fetchAllClientIDsOfSystem
+{
+}
+
+sub fetchAllClientIDsOfGroup
+{
+}
+
+sub fetchGroupsByFilter
+{
+}
+
+sub fetchGroupsById
+{
+}
+
+sub fetchAllGroupIDsOfClient
+{
+}
+
+sub fetchAllGroupIDsOfSystem
 {
 }
 
@@ -269,7 +293,11 @@ sub changeSystem
 {
 }
 
-sub setClientIDsForSystem
+sub setClientIDsOfSystem
+{
+}
+
+sub setGroupIDsOfSystem
 {
 }
 
@@ -285,7 +313,31 @@ sub changeClient
 {
 }
 
-sub setSystemIDsForClient
+sub setSystemIDsOfClient
+{
+}
+
+sub setGroupIDsOfClient
+{
+}
+
+sub addGroup
+{
+}
+
+sub removeGroup
+{
+}
+
+sub changeGroup
+{
+}
+
+sub setClientIDsOfGroup
+{
+}
+
+sub setSystemIDsOfGroup
 {
 }
 

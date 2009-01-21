@@ -83,7 +83,7 @@ $DbSchema = {
 			@sharedAttributes,
 		],
 		'client' => [
-			# a client is a PC booting via net
+			# a client is a PC booting via network
 			'id:pk',			# primary key
 			'name:s.128',		# official name of PC (e.g. as given by sticker
 								# on case)
@@ -113,6 +113,12 @@ $DbSchema = {
 			# groups referring to their clients
 			'group_id:fk',		# foreign key
 			'client_id:fk',		# foreign key
+		],
+		'group_system_ref' => [
+			# groups referring to the systems each of their clients should
+			# offer for booting
+			'group_id:fk',		# foreign key
+			'system_id:fk',		# foreign key
 		],
 	},
 };
