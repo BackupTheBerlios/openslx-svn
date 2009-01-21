@@ -267,7 +267,6 @@ $DbSchema = {
 			'cols' => $DbSchema->{'tables'}->{'settings'},
 			'vals' => [
 				{	# add default configuration
-					'use_absolute_tftp' => '0',
 					'default_nicmods'
 						=> 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
 				},
