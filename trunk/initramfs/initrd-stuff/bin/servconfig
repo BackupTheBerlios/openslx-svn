@@ -349,7 +349,8 @@ Type=Application" >/mnt/etc/X11/sessions/default.desktop
     for i in /mnt/var/lib/vmware/vmsessions/*.desktop; do
       # only link if in right slxgrp
       slxgrpstr=$(sed \
-        'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/;/slxgrp=/!d' \         ${i} | sed '$!d;s/slxgrp=//')
+        'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/;/slxgrp=/!d' ${i} \
+        | sed '$!d;s/slxgrp=//')
       slxgrptest="false"
       # FIXME: maybe logfile sometime ;)
       #echo "=${slxgrpstr}="
