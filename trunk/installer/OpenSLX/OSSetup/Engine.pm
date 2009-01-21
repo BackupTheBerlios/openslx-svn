@@ -64,6 +64,8 @@ use vars qw(%supportedDistros);
 		=> { module => 'Ubuntu_6_06', support => 'clone' },
 	'ubuntu-6.10'
 		=> { module => 'Ubuntu_6_10', support => 'clone' },
+	'ubuntu-7.04'
+		=> { module => 'Ubuntu_7_04', support => 'clone' },
 );
 
 ################################################################################
