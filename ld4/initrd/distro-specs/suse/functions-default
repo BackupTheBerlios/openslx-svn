@@ -148,7 +148,7 @@ sed -e "s,DISPLAYMANAGER=.*,DISPLAYMANAGER=\"$start_xdmcp\"," \
 # started twice during bootup - quickhack ...
 #ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/S01xdm
 ln -sf ../xdm /mnt/etc/${D_INITDIR}/rc5.d/K20xdm
-echo -e "\t/etc/${D_INITDIR}/xdm start >${LOGFILE} 2>&1\n\
+echo -e "\tsleep 2; /etc/${D_INITDIR}/xdm start >${LOGFILE} 2>&1\n\
 \t( sleep 120; ln -sf ../xdm /etc/${D_INITDIR}/rc5.d/S01xdm \
 >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld
 }
@@ -315,7 +315,7 @@ StdFont=Nimbus Sans l,14,-1,5,48,0,0,0,0,0\n\
 FailFont=Nimbus Sans l,14,-1,5,74,0,0,0,0,0\n\
 AntiAliasing=true\nLanguage=$lang\n\
 EchoMode=OneStar\nShowLog=false\n\
-UseTheme=true\nTheme=/opt/kde3/share/apps/kdm/themes/dxs\n\
+UseTheme=true\nTheme=/opt/kde3/share/apps/kdm/themes/SUSE\n\
 UseBackground=false\n\
 BackgroundCfg=/etc/opt/kde3/share/config/kdm/backgroundrc\n\n\
 [X-:*-Greeter]\n\
