@@ -9,10 +9,7 @@
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 
-
-INSTDIR=/tmp/dxs-instrd
 DEBUG=1
-LINRC=${INSTDIR}/init
 COMETCEXCL="XF86Config*\nissue*\nmtab*\nfstab*\n"
 COMDIRINDXS="/tmp/scratch /var/lib/nobody"
 
@@ -63,28 +60,20 @@ else
 fi
 }
 
+# replace copy
 repco()
 {
-local SRC=$1
-local DEST=$2
-local HEADER=$3
+local FILENAME=$1
 # do not forget to define all variables which should be replaced within
 # the start and configuration scripts
-echo -e ${HEADER} >${DEST}
 sed -e "s,@@@INSTDIR@@@,${INSTDIR},g" \
     -e "s,@@@NWMODULES@@@,${NWMODULES},g" \
     -e "s,@@@KERNVER@@@,${KERNVER},g" \
     -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
     -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
     -e "s,@@@DISTRO@@@,${DISTRO},g" \
-    ${SRC} >> ${DEST}
-}
-
-# Cat from stdin to linuxrc, removing leading whitespace up to pipe symbol.
-# Note that here documents can only be indented with tabs, not with spaces.
-cat_linuxrc() {
-    sed 's/^[ \t]*|//'>> ${LINRC}
-    echo >> ${LINRC}
+    -e "s,@@@NETIF@@@,${NET_IF},g"
+    ${FILENAME} >> ${INSTDIR}/${FILENAME}
 }
 
 
@@ -187,14 +176,16 @@ resolve_modules() {
 #########################################################################
 # End of function declaration
 
-while getopts :hgMRk:i:m:r:o:s:Sut:d:D:I:V:a: a ; do
+while getopts :hgk:i:r:o:s:f:n:Sut:d:I:V:a: a ; do
     case $a in
 	\:|\?)	case $OPTARG in
 		k)  echo "-k requires kernel version parameter"
 		    ;;
-		i)  echo "-i requires initrd list parameter"
+		i)  echo "-i requires initrd path parameter"
 		    ;;
-		m)  echo "-m requires module list parameter"
+                f)  echo "-m requires file system module list parameter"
+		    ;;
+                n)  echo "-m requires network module list parameter"
 		    ;;
 		r)  echo "-r requires root dir parameter"
 		    ;;
@@ -202,10 +193,8 @@ while getopts :hgMRk:i:m:r:o:s:Sut:d:D:I:V:a: a ; do
 		    ;;
 		t)  echo "-t requires tmp dir parameter"
 		    ;;
-                d)  echo "-d requires linux distribution name (debian, ubuntu, suse-9.3, suse-10.1)"
+                d)  echo "-d requires linux distribution name"
                     ;;
-		D)  echo "-D requires dhcp interface parameter"
-		    ;;
 		I)  echo "-I requires network interface parameter"
 		    ;;
 		a)  echo "-a requires a DSDT parameter"
@@ -220,27 +209,23 @@ while getopts :hgMRk:i:m:r:o:s:Sut:d:D:I:V:a: a ; do
 	    ;;
 	g)  use_glibc=1
 	    ;;
-	k)  KERNELVER=$OPTARG
+	k)  KERNVER=$OPTARG
 	    ;;
-	i)  initrd_images=$OPTARG
+	i)  INITRD_PATH=$OPTARG
 	    ;;
-	m)  modules=$OPTARG
-	    modules_set=1
+	f)  FSMODULES=$OPTARG
+	    ;;
+	n)  NWMODULES=$OPTARG
 	    ;;
 	r)  ROOTDIR=$OPTARG
 	    ;;
-	s)  splash=$OPTARG
+	s)  SPLASH=$OPTARG
 	    ;;
-	t)  tmp_dir=$OPTARG
+	t)  INSTDIR=$OPTARG
 	    ;;
         d)  DISTRO=$OPTARG
-	D)  interface=$OPTARG
-	    interface=${interface#/dev/}
-	    use_dhcp=1
-	    ;;
- 	I)  interface=$OPTARG
- 	    interface=${interface#/dev/}
- 	    use_ipconfig=1
+            ;;
+ 	I)  NET_IF=$OPTARG
 	    ;;
 	a)  acpi_dsdt="$OPTARG"
 	    ;;
@@ -262,6 +247,10 @@ shift $(expr $OPTIND - 1)
 
 #########################################################################
 # End of parameter, argument interpretation
+
+if [ -z $INSTDIR ] ; then
+  INSTDIR=/tmp/dxs-instrd
+fi
 
 rm -rf ${INSTDIR}
 mkdir -p ${INSTDIR}/{dev,proc,tmp,mnt,root,bin,sbin,sys,lib}
@@ -349,9 +338,8 @@ for bbins in ip ifconfig; do
   else echo "Binary not found"; fi
 done
 
-# hwsetup and common init.d stuff from KNOPPIX, for DXS
-cp -a initrd-stuff/* ${INSTDIR}
-
+# copy and replace variable names
+find initrd-stuff -exec repco {} \;
 
 # distro dependet stuff for etc, booting !?
 
@@ -404,10 +392,23 @@ for lib in `shared_object_files ${INSTDIR}/bin/*` ; do
 done
 
 # add kernel modules and dependency files
-#KERNVER=2.6.13-15.7-default
-KERNVER=2.6.12-10-386
-NWMODULES="e100 tg3 via-rhine"
-FSMODULES="nbd nfs"
+if [ -z $KERNVER ] ; then
+  KERNVER = `ls -l ${ROOTDIR}/boot/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
+fi
+if [ -z $KERNVER ] ; then
+  KERNVER = `ls -l ${ROOTDIR}/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
+fi
+#KERNVER=2.6.12-10-386
+
+if [ -z $NWMODULES ] ; then
+  NWMODULES="e100 tg3 via-rhine r8169"
+fi
+if [ -z $FSMODULES ] ; then
+  FSMODULES="nbd nfs"
+fi
+if [ -z $INITRD_PATH ] ; then
+  INITRD_PATH="/tmp/dxsinitrd.gz"
+fi
 
 for module in `resolve_modules ${KERNVER} af_packet ${NWMODULES} ${FSMODULES}`; do
   mpath=${INSTDIR}/${module%/*}
@@ -416,19 +417,11 @@ for module in `resolve_modules ${KERNVER} af_packet ${NWMODULES} ${FSMODULES}`; 
 done
 cp /lib/modules/${KERNVER}/modules.* ${INSTDIR}/lib/modules/${KERNVER}
 
-DESC="#!${LRCSH}\n# Description:  universal (distro independent) initial \
-ramdisk for\n#\t\tlinux diskless clients.\n\t\t#variable replacement done \
-by $0\n#\n# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 13-12-2005\n\
-#\t\tN.N.\n#\t\tN.N.\n# Copyright:    (c) 2003, 2006 - RZ Universitaet \
-Freiburg\n"
-repco initrd-stuff/init ${INSTDIR}/init ${DESC}
+
+#repco initrd-stuff/init ${INSTDIR}/init 
 chmod 755 ${INSTDIR}/init ${INSTDIR}/bin/servconfig \
   ${INSTDIR}/bin/hwautocfg ${INSTDIR}/bin/dhcpmkconfig
-DESC="# Description: universal (distro independent) fcuntion definition\n\
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 07-01-2006\n\
-#\t\tN.N.\n#\t\tN.N.\n# Copyright:    (c) 2006 - RZ Universitaet \
-Freiburg\n" 
-repco initrd-stuff/etc/functions ${INSTDIR}/etc/functions ${DESC}
+#repco initrd-stuff/etc/functions ${INSTDIR}/etc/functions
 
 #########################################################################
 # End of file copy procedures
@@ -437,6 +430,6 @@ repco initrd-stuff/etc/functions ${INSTDIR}/etc/functions ${DESC}
 # finally create the compressed initial ramdisk cpio archive
 pushd . > /dev/null 2>&1
   cd ${INSTDIR}
-  find . ! -name "*~" | cpio -H newc --create | gzip -9 > /tmp/dxsinitrd.gz
+  find . ! -name "*~" | cpio -H newc --create | gzip -9 > $INITRD_PATH
 popd > /dev/null 2>&1
 
