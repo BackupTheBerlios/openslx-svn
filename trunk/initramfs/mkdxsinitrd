@@ -148,7 +148,7 @@ elif [ -L ${FPTB} ] ; then
 else
   cp ${FPTB} ${INSTDIR}/${DEST}
 fi
-slxldd --root-path=${ROOTDIR} ${FPTB#${ROOTDIR}*} >>${INSTDIR}/tmp/libraries
+slxldd --root-path=${ROOTDIR} ${FPTB} >>${INSTDIR}/tmp/libraries
 return 0
 }
 
