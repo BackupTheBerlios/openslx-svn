@@ -442,8 +442,9 @@ fi
 
 
 ## Write all results to logfile
-writelog "finished\nResults:\n\tMAC:\t\t00:50:56:0D:${mac}\n\tMem:\t\t${mem} MB
-  \tMax. res.:\t${xres}x${yres}\n\t\tCD-ROM_1:\t${cdr_1}\n\tCD-ROM_2:\t${cdr_2}\n"
+writelog "finished\nResults:\n\tMAC:\t\t00:50:56:0D:${mac}\n\tMem:\t\t
+  ${mem} MB \tMax. res.:\t${xres}x${yres}\n\t\tCD-ROM_1:\t${cdr_1}\n\t
+  CD-ROM_2:\t${cdr_2}\n"
 writelog "finished\nResults:\n\tDiskfile:\t${diskfile}\n\tDisktype:\t${hddrv}
   \tVMostype:\t${vmostype}\n\tDisplayname:\t${displayname}\n"
 
