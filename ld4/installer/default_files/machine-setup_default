@@ -19,7 +19,7 @@
 # 
 #
 # password of system administrator (root) as crypt -> 'dxs-root'
-root_pw='$2a$10$MoEYhIPZGCtR62R8UvBl3emNn2qMOuQpLQpfmNnhya4bGLhyF0pbu'
+root_pw=@@@root_pw@@@
 
 ## name service configuration defaults
 #
