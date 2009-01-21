@@ -2,7 +2,7 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 11-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 12-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
@@ -145,6 +145,10 @@ if [ -n "${NBD}" ] ; then
 fi
 # check if at least one type of IP configuration is availabe
 if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
+  echo -e "# You did not specify any advanced configuration mode for your \
+clients. You\nmight want to add the token 'dhcp' for DHCP configuration, \
+'file(=source)'\nfor config file get via TFTP or 'ldap(=source)' for LDAP \
+configuration to\nyour kernel command line." >> /etc/machine-setup 
   if strinfile "clientip" /etc/machine-setup ; then
     # IP configuration seems to be present in machine-setup file
     . /etc/machine-setup
