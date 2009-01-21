@@ -221,6 +221,18 @@ sub fetchSystemByID
 	return $self->_doSelect($sql);
 }
 
+sub fetchSystemAttrs
+{
+	my $self      = shift;
+	my $systemID  = $self->{dbh}->quote(shift);
+
+	my $sql = <<"	End-of-Here";
+		SELECT id, name, value FROM system_attr
+		WHERE system_id = $systemID
+	End-of-Here
+	return $self->_doSelect($sql);
+}
+
 sub fetchSystemIDsOfExport
 {
 	my $self     = shift;
@@ -626,6 +638,36 @@ sub changeSystem
 	return $self->_doUpdate('system', $systemIDs, $valRows);
 }
 
+sub setSystemAttr
+{
+	my $self      = shift;
+	my $systemID  = shift;
+	my $attrName  = shift;
+	my $attrValue = shift;
+
+	my $quotedSystemID  = $self->{dbh}->quote($systemID);
+	my $quotedAttrName  = $self->{dbh}->quote($attrName);
+
+	my $sql = <<"	End-of-Here";
+		SELECT id FROM system_attr
+		WHERE system_id = $quotedSystemID
+		AND name = $quotedAttrName
+	End-of-Here
+	my $id = $self->_doSelect($sql, 'id');
+	if ($id) {
+		return $self->_doUpdate(
+			'system_attr', [ $id ], [ { value => $attrValue } ] 
+		);
+	}
+	return $self->_doInsert(
+		'system_attr', [ { 
+			system_id => $systemID,
+			name      => $attrName,
+			value     => $attrValue,
+		} ] 
+	);
+}
+
 sub setClientIDsOfSystem
 {
 	my $self      = shift;
@@ -800,7 +842,7 @@ sub schemaFetchDBVersion
 {
 	my $self = shift;
 
-	my $dbh = $self->{'dbh'};
+	my $dbh = $self->{dbh};
 	local $dbh->{RaiseError} = 1;
 	my $row =
 	  eval { $dbh->selectrow_hashref('SELECT schema_version FROM meta'); };
@@ -809,6 +851,17 @@ sub schemaFetchDBVersion
 	return unless defined $row;
 	# no entry in meta-table
 	return $row->{schema_version};
+}
+
+sub schemaSetDBVersion
+{
+	my $self      = shift;
+	my $dbVersion = shift;
+
+	$self->{dbh}->do("UPDATE meta SET schema_version = '$dbVersion'")
+		or croak _tr('Unable to set DB-schema version to %s!', $dbVersion);
+
+	return 1;
 }
 
 sub schemaConvertTypeDescrToNative
@@ -870,14 +923,14 @@ sub schemaDropTable
 }
 
 sub schemaRenameTable
-{    # a rather simple-minded implementation that renames a table in several
-	   # steps:
-	   # 	- create the new table
-	   # 	- copy the data over from the old one
-	   # 	- drop the old table
-	   # This should be overriden for advanced DBs, as these more often than not
-	   # implement the 'ALTER TABLE <old> RENAME TO <new>' SQL-command (which
-	   # is much more efficient).
+{   # a rather simple-minded implementation that renames a table in several
+	# steps:
+	# 	- create the new table
+	# 	- copy the data over from the old one
+	# 	- drop the old table
+	# This should be overriden for advanced DBs, as these more often than not
+	# implement the 'ALTER TABLE <old> RENAME TO <new>' SQL-command (which
+	# is much more efficient).
 	my $self      = shift;
 	my $oldTable  = shift;
 	my $newTable  = shift;
@@ -902,15 +955,15 @@ sub schemaRenameTable
 }
 
 sub schemaAddColumns
-{    # a rather simple-minded implementation that adds columns to a table
-	   # in several steps:
-	   # 	- create a temp table with the new layout
-	   # 	- copy the data from the old table into the new one
-	   # 	- drop the old table
-	   # 	- rename the temp table to the original name
-	   # This should be overriden for advanced DBs, as these more often than not
-	   # implement the 'ALTER TABLE <old> RENAME TO <new>' SQL-command (which
-	   # is much more efficient).
+{   # a rather simple-minded implementation that adds columns to a table
+	# in several steps:
+	# 	- create a temp table with the new layout
+	# 	- copy the data from the old table into the new one
+	# 	- drop the old table
+	# 	- rename the temp table to the original name
+	# This should be overriden for advanced DBs, as these more often than not
+	# implement the 'ALTER TABLE <table> ADD COLUMN <col>' SQL-command (which
+	# is much more efficient).
 	my $self              = shift;
 	my $table             = shift;
 	my $newColDescrs      = shift;
@@ -944,15 +997,15 @@ sub schemaAddColumns
 }
 
 sub schemaDropColumns
-{    # a rather simple-minded implementation that drops columns from a table
-	    # in several steps:
-	    # 	- create a temp table with the new layout
-	    # 	- copy the data from the old table into the new one
-	    # 	- drop the old table
-	    # 	- rename the temp table to the original name
-	    # This should be overriden for advanced DBs, as these sometimes
-	    # implement the 'ALTER TABLE <old> DROP COLUMN <col>' SQL-command (which
-	    # is much more efficient).
+{   # a rather simple-minded implementation that drops columns from a table
+	# in several steps:
+	# 	- create a temp table with the new layout
+	# 	- copy the data from the old table into the new one
+	# 	- drop the old table
+	# 	- rename the temp table to the original name
+	# This should be overriden for advanced DBs, as these sometimes
+	# implement the 'ALTER TABLE <table> DROP COLUMN <col>' SQL-command (which
+	# is much more efficient).
 	my $self         = shift;
 	my $table        = shift;
 	my $dropColNames = shift;
@@ -977,15 +1030,15 @@ sub schemaDropColumns
 }
 
 sub schemaChangeColumns
-{    # a rather simple-minded implementation that changes columns
-	  # in several steps:
-	  # 	- create a temp table with the new layout
-	  # 	- copy the data from the old table into the new one
-	  # 	- drop the old table
-	  # 	- rename the temp table to the original name
-	  # This should be overriden for advanced DBs, as these sometimes
-	  # implement the 'ALTER TABLE <old> CHANGE COLUMN <col>' SQL-command (which
-	  # is much more efficient).
+{   # a rather simple-minded implementation that changes columns
+	# in several steps:
+	# 	- create a temp table with the new layout
+	# 	- copy the data from the old table into the new one
+	# 	- drop the old table
+	# 	- rename the temp table to the original name
+	# This should be overriden for advanced DBs, as these sometimes
+	# implement the 'ALTER TABLE <table> CHANGE COLUMN <col>' SQL-command (which
+	# is much more efficient).
 	my $self       = shift;
 	my $table      = shift;
 	my $colChanges = shift;

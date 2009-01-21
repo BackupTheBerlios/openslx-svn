@@ -183,11 +183,8 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 
 	$self->{'db-type'} = $dbType;
 	$self->{'meta-db'} = $metaDB;
-	foreach my $tk (keys %{$DbSchema->{tables}}) {
-		$metaDB->schemaDeclareTable($tk, $DbSchema->{tables}->{$tk});
-	}
 
-	_checkAndUpgradeDBSchemaIfNecessary($metaDB);
+	$self->_checkAndUpgradeDBSchemaIfNecessary($metaDB);
 
 	return 1;
 }
@@ -286,7 +283,9 @@ sub getColumnsOfTable
 	my $self      = shift;
 	my $tableName = shift;
 
-	return map { (/^(\w+)\W/) ? $1 : $_; } @{$DbSchema->{tables}->{$tableName}};
+	return 
+		map { (/^(\w+)\W/) ? $1 : $_; } 
+		@{$DbSchema->{tables}->{$tableName}->{cols}};
 }
 
 =item C<fetchVendorOSByFilter([%$filter], [$resultCols])>
@@ -510,6 +509,17 @@ sub fetchSystemByFilter
 
 	my @systems = $self->{'meta-db'}->fetchSystemByFilter($filter, $resultCols);
 
+	# unless specific result cols have been given, we mix in the attributes
+	# of each system, too:
+	if (!defined $resultCols) {
+		foreach my $system (@systems) {
+			my @attrs = $self->{'meta-db'}->fetchSystemAttrs($system->{id});
+			foreach my $attr (@attrs) {
+				$system->{"attr_$attr->{name}"} = $attr->{value};
+			}
+		}
+	}
+
 	return wantarray() ? @systems : shift @systems;
 }
 
@@ -542,6 +552,17 @@ sub fetchSystemByID
 	my $resultCols = shift;
 
 	my @systems = $self->{'meta-db'}->fetchSystemByID($ids, $resultCols);
+	
+	# unless specific result cols have been given, we mix in the attributes
+	# of each system, too:
+	if (!defined $resultCols) {
+		foreach my $system (@systems) {
+			my @attrs = $self->{'meta-db'}->fetchSystemAttrs($system->{id});
+			foreach my $attr (@attrs) {
+				$system->{"attr_$attr->{name}"} = $attr->{value};
+			}
+		}
+	}
 
 	return wantarray() ? @systems : shift @systems;
 }
@@ -1215,6 +1236,43 @@ sub changeSystem
 	my $valRows   = _aref(shift);
 
 	return $self->{'meta-db'}->changeSystem($systemIDs, $valRows);
+}
+
+=item C<setSystemAttr($systemID, $attrName, $attrValue)>
+
+Sets a value for an attribute of the given system. If the system already
+has a value for this attribute, it will be overwritten.
+
+=over
+
+=item Param C<systemID>
+
+The ID of the system whose attribute shall be changed.
+
+=item Param C<attrName>
+
+The name of the attribute to change.
+
+=item Param C<attrValue>
+
+The new value for the attribute.
+
+=item Return Value
+
+C<1> if the attribute could be set, C<undef> if not.
+
+=back
+
+=cut
+
+sub setSystemAttr
+{
+	my $self      = shift;
+	my $systemID  = shift;
+	my $attrName  = shift;
+	my $attrValue = shift;
+
+	return $self->{'meta-db'}->setSystemAttr($systemID, $attrName, $attrValue);
 }
 
 =item C<setClientIDsOfSystem($systemID, @$clientIDs)>
@@ -2621,22 +2679,38 @@ sub generatePlaceholderFor
 ################################################################################
 sub _checkAndUpgradeDBSchemaIfNecessary
 {
+	my $self   = shift;
 	my $metaDB = shift;
 
 	vlog(2, "trying to determine schema version...");
 	my $currVersion = $metaDB->schemaFetchDBVersion();
 	if (!defined $currVersion) {
-		# that's bad, someone has messed with our DB, as there is a
-		# database, but the 'meta'-table is empty. There might still
-		# be data in the other tables, but we have no way to find out
-		# which schema version they're in. So it's safer to give up:
+		# that's bad, someone has messed with our DB: there is a
+		# database, but the 'meta'-table is empty. 
+		# There might still be data in the other tables, but we have no way to 
+		# find out which schema version they're in. So it's safer to give up.
 		croak _tr('Could not determine schema version of database');
 	}
 
-	if ($currVersion < $DbSchema->{version}) {
-		vlog(1,
-		  _tr('Our schema-version is %s, DB is %s, upgrading DB...',
-			$DbSchema->{version}, $currVersion));
+	if ($currVersion == 0) {
+		vlog(1, _tr('Creating DB (schema version: %s)', $DbSchema->{version}));
+		foreach my $tableName (keys %{$DbSchema->{tables}}) {
+			# create table (optionally inserting default values, too)
+			$metaDB->schemaAddTable(
+				$tableName,
+				$DbSchema->{tables}->{$tableName}->{cols},
+				$DbSchema->{tables}->{$tableName}->{vals}
+			);
+		}
+		vlog(1, _tr('DB has been created successfully'));
+	} elsif ($currVersion < $DbSchema->{version}) {
+		vlog(
+			1,
+			_tr(
+				'Our schema-version is %s, DB is %s, upgrading DB...',
+				$DbSchema->{version}, $currVersion
+			)
+		);
 		foreach my $v (sort { $a <=> $b } keys %DbSchemaHistory) {
 			next if $v <= $currVersion;
 			my $changeSet = $DbSchemaHistory{$v};
@@ -2676,6 +2750,10 @@ sub _checkAndUpgradeDBSchemaIfNecessary
 						$changeDescr->{'col-renames'},
 						$changeDescr->{'cols'}
 					);
+				} elsif ($cmd eq 'perl-func') {
+					if (!$changeDescr->{code}->($self)) {
+						croak _tr('problem in perl-func cmd!');
+					}
 				} else {
 					croak _tr('UnknownDbSchemaCommand', $cmd);
 				}
@@ -2683,7 +2761,7 @@ sub _checkAndUpgradeDBSchemaIfNecessary
 		}
 		vlog(1, _tr('upgrade done'));
 	} else {
-		vlog(1, _tr('DB matches current schema version %s', $currVersion));
+		vlog(1, _tr('DB matches current schema version (%s)', $currVersion));
 	}
 
 	return 1;

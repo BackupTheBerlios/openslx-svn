@@ -218,11 +218,19 @@ sub schemaFetchDBVersion
 {
 }
 
-sub schemaConvertTypeDescrToNative
+sub schemaSetDBVersion
 {
 }
 
-sub schemaDeclareTable
+sub schemaCreate
+{
+}
+
+sub schemaUpgradeToCurrent
+{
+}
+
+sub schemaConvertTypeDescrToNative
 {
 }
 
