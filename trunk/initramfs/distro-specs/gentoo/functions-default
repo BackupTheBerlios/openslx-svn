@@ -278,7 +278,7 @@ testmkd /mnt/${kdmrcdir}
 # setting the path for kdmrc-file 
 # FIXME: hack - there is no other way in gentoo?!?
 sed -e 's,\(PIDFILE:.*\)|| \\$,\1 -- -config /var/lib/openslx/themes/displaymanager/kdmrc || \\,g'\
-    -i /mnt/etc/init.d/xdm
+    -i /mnt/etc/X11/startDM.sh
 
 # write configuration file - NOT using general config in /etc/functions
 ##config_kdm_template
@@ -311,7 +311,7 @@ Session=/usr/kde/3.5/share/config/kdm/Xsession
 AllowRootLogin=true
 AllowNullPasswd=false
 AllowShutdown=Root
-SessionsDirs=/etc/X11/sessions,/usr/share/xsessions
+SessionsDirs=/etc/X11/Sessions,/usr/share/xsessions
 ClientLogFile=.xsession-errors-%s
 [X-*-Greeter]
 LogoArea=Logo
