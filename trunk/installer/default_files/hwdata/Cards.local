@@ -9,7 +9,7 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# <SLX_SHARE_PATH>/share/templates/hwdata/Cards.local
+# <SLX_BASE_PATH>/share/templates/hwdata/Cards.local
 #
 # Local changes to the Cards file. All additions should be documented here, 
 # so that they are not lost ... They are prepended via mkdxsinitrd to the

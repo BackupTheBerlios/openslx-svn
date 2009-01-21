@@ -9,7 +9,7 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# <SLX_SHARE_PATH>/share/templates/hwdata/pcitable.local
+# <SLX_BASE_PATH>/share/templates/hwdata/pcitable.local
 #
 # local changes to the pcitables file. All additions should be documented 
 # here, so that they are not lost ... the pcitable file seems to be part of

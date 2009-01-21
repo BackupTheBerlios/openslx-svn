@@ -176,7 +176,7 @@ sub connect
 				vlog 0, "\t$dbMod\n";
 			}
 		}
-		die _tr('Please use slxsettings to switch to another db-type.');
+		die _tr('Please use slxsettings if you want to switch to another db-type.');
 	}
 
 	$self->{'db-type'} = $dbType;
@@ -957,7 +957,7 @@ sub aggregatedSystemFileInfoFor
 	$info->{'vendor-os'} = $vendorOS;
 
 	my $kernelPath
-		= "$openslxConfig{'stage1-path'}/$vendorOS->{name}/boot";
+		= "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}/boot";
 	$info->{'kernel-file'} = "$kernelPath/$system->{kernel}";
 
 	my $exportURI = $export->{'uri'};

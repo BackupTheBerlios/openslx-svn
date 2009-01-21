@@ -138,7 +138,7 @@ sub initialize
 	if ($actionType ne 'clone') {
 		# setup path to distribution-specific info:
 		my $sharedDistroInfoDir 
-			= "$openslxConfig{'share-path'}/distro-info/$distro->{'base-name'}";
+			= "$openslxConfig{'base-path'}/share/distro-info/$distro->{'base-name'}";
 		if (!-d $sharedDistroInfoDir) {
 			die _tr("unable to find shared distro-info in '%s'\n", 
 					$sharedDistroInfoDir);
@@ -164,7 +164,7 @@ sub initialize
 	}
 
 	$self->{'vendor-os-path'}
-		= "$openslxConfig{'stage1-path'}/$self->{'vendor-os-name'}";
+		= "$openslxConfig{'private-path'}/stage1/$self->{'vendor-os-name'}";
 	vlog 1, "vendor-OS path is '$self->{'vendor-os-path'}'";
 
 	if ($actionType ne 'clone') {
@@ -601,7 +601,7 @@ sub startLocalURLServersAsNeeded
 				= $self->hostIs64Bit()
 					? 'busybox.x86_64'
 					: 'busybox.i586';
-			my $busybox = "$openslxConfig{'share-path'}/busybox/$busyboxName";
+			my $busybox = "$openslxConfig{'base-path'}/share/busybox/$busyboxName";
 			my $port = 5080;
 			if ($localURL =~ m[:(\d+)/]) {
 				$port = $1;
@@ -653,13 +653,13 @@ sub stage1A_createBusyboxEnvironment
 		= $self->hostIs64Bit()
 			? 'busybox.x86_64'
 			: 'busybox.i586';
-	copyFile("$openslxConfig{'share-path'}/busybox/$busyboxName",
+	copyFile("$openslxConfig{'base-path'}/share/busybox/$busyboxName",
 			 "$self->{stage1aDir}/bin", 'busybox');
 
 	# determine all required libraries and copy those, too:
 	vlog 1, _tr("calling slxldd for $busyboxName");
 	my $slxlddCmd
-		= "slxldd $openslxConfig{'share-path'}/busybox/$busyboxName";
+		= "slxldd $openslxConfig{'base-path'}/share/busybox/$busyboxName";
 	vlog 2, "executing: $slxlddCmd";
 	my $requiredLibsStr = `$slxlddCmd`;
 	if ($?) {
@@ -682,7 +682,7 @@ sub stage1A_createBusyboxEnvironment
 
 	# create all needed links to busybox:
 	my $links
-		= slurpFile("$openslxConfig{'share-path'}/busybox/busybox.links");
+		= slurpFile("$openslxConfig{'base-path'}/share/busybox/busybox.links");
 	foreach my $linkTarget (split "\n", $links) {
 		linkFile('/bin/busybox', "$self->{stage1aDir}/$linkTarget");
 	}

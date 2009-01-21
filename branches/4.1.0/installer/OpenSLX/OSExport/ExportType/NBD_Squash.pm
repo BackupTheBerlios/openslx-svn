@@ -183,7 +183,7 @@ sub createSquashFS
 	# ... invoke mksquashfs ...
 	vlog 0, _tr("invoking mksquashfs...");
 	my $mksquashfsBinary
-		= "$openslxConfig{'share-path'}/squashfs/mksquashfs";
+		= "$openslxConfig{'base-path'}/share/squashfs/mksquashfs";
 	my $res = system("$mksquashfsBinary $source $target -ff $filterFile");
 	unlink($filterFile);
 		# ... remove filter file if done

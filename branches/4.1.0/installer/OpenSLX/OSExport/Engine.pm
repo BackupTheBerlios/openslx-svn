@@ -208,9 +208,9 @@ sub _initialize
 
 	# setup source and target paths:
 	$self->{'vendor-os-path'}
-		= "$openslxConfig{'stage1-path'}/$vendorOSName";
-	$self->{'export-path'}
-		= "$openslxConfig{'export-path'}/$exportType/$vendorOSName";
+		= "$openslxConfig{'private-path'}/stage1/$vendorOSName";
+	my $exportBasePath = "$openslxConfig{'public-path'}/export";
+	$self->{'export-path'} = "$exportBasePath/$exportType/$vendorOSName";
 	vlog 1, _tr("vendor-OS from '%s' will be exported to '%s'",
 				$self->{'vendor-os-path'}, $self->{'export-path'});
 }

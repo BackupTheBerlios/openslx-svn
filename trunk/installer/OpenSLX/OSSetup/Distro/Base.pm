@@ -50,7 +50,7 @@ sub initialize
 	}
 
 	$self->{'stage1a-binaries'} = {
-		"$openslxConfig{'share-path'}/busybox/busybox" => 'bin',
+		"$openslxConfig{'base-path'}/share/busybox/busybox" => 'bin',
 	};
 
 	$self->{'stage1b-faked-files'} = [

@@ -48,22 +48,17 @@ sub connect
 	my $dbSpec = $openslxConfig{'db-spec'};
 	if (!defined $dbSpec) {
 		# build $dbSpec from individual parameters:
-		my $dbBasepath = $openslxConfig{'db-basepath'};
-		my $dbDatadir = $openslxConfig{'db-datadir'}
-						|| "$openslxConfig{'db-name'}-csv";
+		my $dbBasepath = "$openslxConfig{'private-path'}/db";
+		my $dbDatadir = "$openslxConfig{'db-name'}-csv";
 		my $dbPath = "$dbBasepath/$dbDatadir";
-		if (!-e $dbPath) {
-			mkdir $dbPath
-				or die _tr("unable to create db-datadir %s! (%s)\n",
-						    $dbPath, $!);
-		}
+		system("mkdir -p $dbPath") 	unless -e $dbPath;
 		$dbSpec = "f_dir=$dbPath;csv_eol=\n;";
 	}
 	vlog 1, "trying to connect to CSV-database <$dbSpec>";
 	$self->{'dbh'} = DBI->connect("dbi:CSV:$dbSpec", undef, undef,
 								  {PrintError => 0})
-			or confess _tr("Cannot connect to database '%s' (%s)",
-						   $dbSpec, $DBI::errstr);
+			or die _tr("Cannot connect to database '%s' (%s)",
+					   $dbSpec, $DBI::errstr);
 }
 
 sub quote

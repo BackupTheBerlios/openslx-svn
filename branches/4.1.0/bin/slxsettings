@@ -84,12 +84,10 @@ while (scalar @ARGV) {
 # fetch current content of local settings file...
 my $settings = slurpFile("$openslxConfig{'config-path'}/settings");
 
-my $changeCount;
+my %changed;
 
 # ...set new values...
 foreach my $key (keys %givenSettings) {
-	next if $key eq 'config-path';
-		# config-path can't be changed, it is used to find settings
 	my $value = $givenSettings{$key};
 	next if !defined $value;
 	vlog 0, _tr("setting %s to '%s'", $key, $value) unless $quiet;
@@ -97,7 +95,7 @@ foreach my $key (keys %givenSettings) {
 	if (!($settings =~ s[^\s*$externalKey=.*?$][$externalKey=$value]ms)) {
 		$settings .= "$externalKey=$value\n";
 	}
-	$changeCount++;
+	$changed{$key}++;
 }
 
 # reset specified keys to fall back to default:
@@ -108,29 +106,41 @@ foreach my $key (@reset) {
 	} else {
 		vlog 0, _tr("option '%s' didn't exist in local settings!", $key) unless $quiet;
 	}
-	$changeCount++;
+	$changed{$key}++;
 }
 
 # ... and write local settings file if necessary
-if ($changeCount) {
+if (keys %changed) {
 	my $f = "$openslxConfig{'config-path'}/settings";
 	open(SETTINGS, "> $f")
 		or die _tr("Unable to write local settings file '%s' (%s)", $f, $!);
 	print SETTINGS $settings;
 	close(SETTINGS);
+
+	openslxInit();
+
+	foreach my $key (keys %changed) {
+		changedHandler($key, $openslxConfig{$key});
+	}
 }
 
-if (!$changeCount) {
+if (!keys %changed) {
+	print _tr("paths fixed at installation time:\n");
+	print qq[\t--base-path='$openslxConfig{'base-path'}'\n];
+	print qq[\t--config-path='$openslxConfig{'config-path'}'\n];
 	my $text
-		= $changeCount ? "resulting base settings:" : "current base settings:";
-	print "\n"._tr($text)."\n";
+		= keys %changed
+			? "resulting base settings (cmdline options):\n"
+			: "current base settings (cmdline options):\n";
+	print $text;
 	my @baseSettings = grep { exists $cmdlineConfig{$_} } keys %openslxConfig;
 	foreach my $key (sort @baseSettings) {
 		print qq[\t--$key='$openslxConfig{$key}'\n];
 	}
-	print "extended settings:\n";
+	print _tr("extended settings:\n");
 	my @extSettings = grep { !exists $cmdlineConfig{$_} } keys %openslxConfig;
 	foreach my $key (sort @extSettings) {
+		next if $key =~ m[^(base-path|config-path)$];
 		print qq[\t$key='$openslxConfig{$key}'\n];
 	}
 }
@@ -143,7 +153,22 @@ sub externalKeyFor
 	return "SLX_".uc($key);
 }
 
+sub changedHandler
+{
+	my $key = shift;
+	my $value = shift;
 
+	# invoke a key-specific change handler if it exists:
+	$key =~ tr[-][_];
+	eval { no strict 'refs'; "${key}_changed_handler"->(); };
+}
+
+sub private_path_changed_handler
+{
+	# create the default config folders (for default system only):
+	require OpenSLX::ConfigFolder;
+	OpenSLX::ConfigFolder::createConfigFolderForDefaultSystem();
+}
 
 =head1 NAME
 
@@ -159,22 +184,14 @@ slxsettings [options] [action ...]
 
 =head3 OpenSLX Options
 
-      --base-path=<string>       basic path to project files
-      --bin-path=<string>        path to binaries and scripts
-      --config-path=<string>     path to configuration files
-      --db-basepath=<string>     basic path to openslx database
-      --db-datadir=<string>      data folder created under db-basepath
       --db-name=<string>         name of database
       --db-spec=<string>         full DBI-specification of database
       --db-type=<string>         type of database to connect to
-      --export-path=<string>     path to root of all exported filesystems
       --locale=<string>          locale to use for translations
       --logfile=<string>         file to write logging output to
       --private-path=<string>    path to private data
       --public-path=<string>     path to public (client-accesible) data
-      --share-path=<string>      path to sharable data
       --temp-path=<string>       path to temporary data
-      --tftpboot-path=<string>   path to root of tftp-server
       --verbose-level=<int>      level of logging verbosity (0-3)
 
 =head3 General Options
@@ -219,37 +236,6 @@ settings and exit.
 
 =over 8
 
-=item B<<     --base-path=<string> >>
-
-Sets basic path to project files.
-
-Default is $SLX_BASE_PATH (usually F</opt/openslx>).
-
-=item B<<     --bin-path=<string> >>
-
-Sets path to binaries and scripts.
-
-Default is $SLX_BASE_PATH/bin (usually F</opt/openslx/bin>).
-
-=item B<<     --config-path=<string> >>
-
-Sets path to configuration files.
-
-Default is $SLX_CONFIG_PATH (usually F</etc/opt/openslx>).
-
-=item B<<     --db-basepath=<string> >>
-
-Sets basic path to openslx database.
-
-Default is $SLX_DB_PATH (usually F</var/opt/openslx/db>).
-
-=item B<<     --db-datadir=<string> >>
-
-Sets data folder created under db-basepath.
-
-Default is $SLX_DB_DATADIR (usually empty as it depends on db-type
-whether or not such a directory is required at all).
-
 =item B<<     --db-name=<string> >>
 
 Gives the name of the database to connect to.
@@ -268,13 +254,6 @@ Default is $SLX_DB_SPEC (usually empty as it will be built automatically).
 Sets the type of database to connect to (CSV, SQLite, mysql, ...).
 
 Default $SLX_DB_TYPE (usually C<CSV>).
-
-=item B<<     --export-path=<string> >>
-
-Sets path to root of all exported filesystems. For each type of export (NFS,
-NBD, ...) a separate folder will be created in here.
-
-Default is $SLX_EXPORT_PATH (usually F</srv/openslx/export>.
 
 =item B<<     --locale=<string> >>
 
@@ -301,30 +280,11 @@ Sets path to public (client-accesible) data.
 
 Default is $SLX_PUBLIC_PATH (usually F</srv/openslx>.
 
-=item B<<     --share-path=<string> >>
-
-Sets path to sharable data, where distro-specs and functionality templates
-will be stored.
-
-Default is $SLX_SHARE_PATH (usually F</opt/openslx/share>.
-
-=item B<<     --stage1-path=<string> >>
-
-Sets path to stage1 systems, where distributor-systems will be installed.
-
-Default is $SLX_STAGE1_PATH (usually F</var/opt/openslx/stage1>.
-
 =item B<<     --temp-path=<string> >>
 
 Sets path to temporary data.
 
 Default is $SLX_TEMP_PATH (usually F</tmp>.
-
-=item B<<     --tftpboot-path=<string> >>
-
-Sets path to root of tftp-server from which clients will access their files.
-
-Default is $SLX_TFTPBOOT_PATH (usually F</srv/openslx/tftpboot>.
 
 =item B<<     --verbose-level=<int> >>
 

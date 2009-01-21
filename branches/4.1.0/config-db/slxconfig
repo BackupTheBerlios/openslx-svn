@@ -33,6 +33,7 @@ use lib "$FindBin::RealBin/../config-db";
 
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB;
+use OpenSLX::ConfigFolder;
 use OpenSLX::DBSchema;
 
 my (
@@ -369,6 +370,13 @@ sub addSystemToConfigDB
 			unless exists $systemData->{attr_start_xdmcp};
 		$systemData->{attr_start_x} = 'yes'
 			unless exists $systemData->{attr_start_x};
+	}
+
+	my $systemConfigPath 
+		= "$openslxConfig{'private-path'}/config/$systemName/default";
+	if (!-e $systemConfigPath) {
+		# create the default (empty) config folders for this system:
+		createConfigFolderForSystem($systemName);
 	}
 
 	my $systemID = $openslxDB->addSystem([$systemData]);
@@ -806,23 +814,14 @@ slxsettings, slxos-setup, slxos-export, slxconfig-demuxer
 Being a part of OpenSLX, this script supports several other options
 which can be used to overrule the OpenSLX settings:
 
-    --base-path=<string>       basic path to project files
-    --bin-path=<string>        path to binaries and scripts
-    --config-path=<string>     path to configuration files
-    --db-basepath=<string>     basic path to openslx database
-    --db-datadir=<string>      data folder created under db-basepath
     --db-name=<string>         name of database
     --db-spec=<string>         full DBI-specification of database
     --db-type=<string>         type of database to connect to
-    --export-path=<string>     path to root of all exported filesystems
     --locale=<string>          locale to use for translations
     --logfile=<string>         file to write logging output to
     --private-path=<string>    path to private data
     --public-path=<string>     path to public (client-accesible) data
-    --share-path=<string>      path to sharable data
-    --stage1-path=<string>     path to stage1 systems
     --temp-path=<string>       path to temporary data
-    --tftpboot-path=<string>   path to root of tftp-server
     --verbose-level=<int>      level of logging verbosity (0-3)
 
 Please refer to the C<slxsettings>-manpage for a more detailed description

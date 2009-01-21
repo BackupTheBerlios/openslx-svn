@@ -378,16 +378,6 @@ the following entries in order to find out which database to connect to:
 
 =over
 
-=item C<$config{'db-basepath'}>
-
-Basic path to openslx database, defaults to path of running script
-
-=item C<$config{'db-datadir'}>
-
-Data folder created under db-basepath, default depends on db-type (many
-DBMSs don't have such a folder, as they do not store the data in the
-filesystem).
-
 =item C<$config{'db-spec'}>
 
 Full specification of database, a special string defining the

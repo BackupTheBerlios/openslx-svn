@@ -70,7 +70,8 @@ sub generateExportURI
 			: generatePlaceholderFor('serverip');
 	$server .= ":$export->{port}"		if length($export->{port});
 
-	return "nfs://$server$openslxConfig{'export-path'}/nfs/$vendorOS->{name}";
+	my $exportPath = "$openslxConfig{'public-path'}/export";
+	return "nfs://$server/$exportPath/nfs/$vendorOS->{name}";
 }
 
 sub requiredFSMods

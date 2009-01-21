@@ -51,8 +51,8 @@ sub connect
 	vlog 1, "trying to connect user <$user> to mysql-database <$dbSpec>";
 	$self->{'dbh'} = DBI->connect("dbi:mysql:$dbSpec", $user, '',
 								  {PrintError => 0})
-			or confess _tr("Cannot connect to database <%s> (%s)",
-						   $dbSpec, $DBI::errstr);
+			or die _tr("Cannot connect to database <%s> (%s)",
+					   $dbSpec, $DBI::errstr);
 }
 
 sub schemaConvertTypeDescrToNative

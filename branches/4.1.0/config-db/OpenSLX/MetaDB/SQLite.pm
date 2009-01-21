@@ -45,10 +45,10 @@ sub connect
 	my $dbSpec = $openslxConfig{'db-spec'};
 	if (!defined $dbSpec) {
 		# build $dbSpec from individual parameters:
-		my $dbBasepath = $openslxConfig{'db-basepath'};
-		my $dbDatadir = $openslxConfig{'db-datadir'} || 'sqlite';
+		my $dbBasepath = "$openslxConfig{'private-path'}/db";
+		my $dbDatadir = 'sqlite';
 		my $dbPath = "$dbBasepath/$dbDatadir";
-		mkdir $dbPath unless -e $dbPath;
+		system("mkdir -p $dbPath") 	unless -e $dbPath;
 		$dbSpec = "dbname=$dbPath/$openslxConfig{'db-name'}";
 	}
 	vlog 1, "trying to connect to SQLite-database <$dbSpec>";
@@ -57,8 +57,8 @@ sub connect
 so there is no support for %s available, sorry!\n%s], 'DBD::SQLite', 'SQLite', $@);
 	$self->{'dbh'} = DBI->connect("dbi:SQLite:$dbSpec", undef, undef,
 								  {PrintError => 0, AutoCommit => 1})
-			or confess _tr("Cannot connect to database <%s> (%s)",
-						   $dbSpec, $DBI::errstr);
+			or die _tr("Cannot connect to database <%s> (%s)",
+					   $dbSpec, $DBI::errstr);
 }
 
 sub schemaRenameTable
