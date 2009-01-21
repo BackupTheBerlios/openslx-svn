@@ -779,4 +779,482 @@ An array of client-IDs.
 
 =back
 
+
+
+=item C<fetchSettings()>
+
+Fetches all entries of the settings table, where a single row holds the info
+about all system wide configuration parameters.
+
+=over
+
+=item Return Value
+
+A hash containing all column values of the single row that lives
+int the settings table.
+
+=back
+
+
+=head2 Data Manipulation Methods
+
+The following methods need to be implemented in a MetaDB driver in order to
+allow the user to access change the underlying:
+
+
+
+=item C<addVendorOS(@$valRows)>
+
+Adds one or more vendor-OS to the database.
+
+=over
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the data of the new vendor-OS(es).
+
+=item Return Value
+
+The IDs of the new vendor-OS(es), C<undef> if the creation failed.
+
+=back
+
+
+
+=item C<removeVendorOS(@$vendorOSIDs)>
+
+Removes one or more vendor-OS from the database.
+
+=over
+
+=item Param C<vendorOSIDs>
+
+An array-ref containing the IDs of the vendor-OSes that shall be removed.
+
+=item Return Value
+
+C<1> if the vendorOS(es) could be removed, C<undef> if not.
+
+=back
+
+
+
+=item C<changeVendorOS(@$vendorOSIDs, @$valRows)>
+
+Changes the data of one or more vendor-OS.
+
+=over
+
+=item Param C<vendorOSIDs>
+
+An array-ref containing the IDs of the vendor-OSes that shall be changed.
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the new data for the vendor-OS(es).
+
+=item Return Value
+
+C<1> if the vendorOS(es) could be changed, C<undef> if not.
+
+=back
+
+
+
+=item C<addSystem(@$valRows)>
+
+Adds one or more systems to the database.
+
+=over
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the data of the new system(s).
+
+=item Return Value
+
+The IDs of the new system(s), C<undef> if the creation failed.
+
+=back
+
+
+
+=item C<removeSystem(@$systemIDs)>
+
+Removes one or more systems from the database.
+
+=over
+
+=item Param C<systemIDs>
+
+An array-ref containing the IDs of the systems that shall be removed.
+
+=item Return Value
+
+C<1> if the system(s) could be removed, C<undef> if not.
+
+=back
+
+
+
+=item C<changeSystem(@$systemIDs, @$valRows)>
+
+Changes the data of one or more systems.
+
+=over
+
+=item Param C<systemIDs>
+
+An array-ref containing the IDs of the systems that shall be changed.
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the new data for the system(s).
+
+=item Return Value
+
+C<1> if the system(s) could be changed, C<undef> if not.
+
+=back
+
+
+
+=item C<setClientIDsOfSystem($systemID, @$clientIDs)>
+
+Specifies all clients that should offer the given system for booting.
+
+=over
+
+=item Param C<systemID>
+
+The ID of the system whose clients you'd like to specify.
+
+=item Param C<clientIDs>
+
+An array-ref containing the IDs of the clients that shall be connected to the
+system.
+
+=item Return Value
+
+C<1> if the system/client references could be set, C<undef> if not.
+
+=back
+
+
+
+=item C<setGroupIDsOfSystem($systemID, @$groupIDs)>
+
+Specifies all groups that should offer the given system for booting.
+
+=over
+
+=item Param C<systemID>
+
+The ID of the system whose groups you'd like to specify.
+
+=item Param C<clientIDs>
+
+An array-ref containing the IDs of the groups that shall be connected to the
+system.
+
+=item Return Value
+
+C<1> if the system/group references could be set, C<undef> if not.
+
+=back
+
+
+
+=item C<addSystemVariant(@$valRows)>
+
+Adds one or more system-variants to the database.
+
+=over
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the data of the new system-variant(s).
+
+=item Return Value
+
+The IDs of the new system-variant(s), C<undef> if the creation failed.
+
+=back
+
+
+
+=item C<removeSystemVariant(@$systemVariantIDs)>
+
+Removes one or more system-variants from the database.
+
+=over
+
+=item Param C<systemIDs>
+
+An array-ref containing the IDs of the system-variants that shall be removed.
+
+=item Return Value
+
+C<1> if the system-variant(s) could be removed, C<undef> if not.
+
+=back
+
+
+
+=item C<changeSystemVariant(@$systemVariantIDs, @$valRows)>
+
+Changes the data of one or more system-variants.
+
+=over
+
+=item Param C<systemVariantIDs>
+
+An array-ref containing the IDs of the system-variants that shall be changed.
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the new data for the system-variant(s).
+
+=item Return Value
+
+C<1> if the system-variant(s) could be changed, C<undef> if not.
+
+=back
+
+
+
+=item C<addClient(@$valRows)>
+
+Adds one or more clients to the database.
+
+=over
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the data of the new client(s).
+
+=item Return Value
+
+The IDs of the new client(s), C<undef> if the creation failed.
+
+=back
+
+
+
+=item C<removeClient(@$clientIDs)>
+
+Removes one or more clients from the database.
+
+=over
+
+=item Param C<clientIDs>
+
+An array-ref containing the IDs of the clients that shall be removed.
+
+=item Return Value
+
+C<1> if the client(s) could be removed, C<undef> if not.
+
+=back
+
+
+
+=item C<changeClient(@$clientIDs, @$valRows)>
+
+Changes the data of one or more clients.
+
+=over
+
+=item Param C<clientIDs>
+
+An array-ref containing the IDs of the clients that shall be changed.
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the new data for the client(s).
+
+=item Return Value
+
+C<1> if the client(s) could be changed, C<undef> if not.
+
+=back
+
+
+
+=item C<setSystemIDsOfClient($clientID, @$clientIDs)>
+
+Specifies all systems that should be offered for booting by the given client.
+
+=over
+
+=item Param C<clientID>
+
+The ID of the client whose systems you'd like to specify.
+
+=item Param C<systemIDs>
+
+An array-ref containing the IDs of the systems that shall be connected to the
+client.
+
+=item Return Value
+
+C<1> if the client/system references could be set, C<undef> if not.
+
+=back
+
+
+
+=item C<setGroupIDsOfClient($clientID, @$groupIDs)>
+
+Specifies all groups that the given client shall be part of.
+
+=over
+
+=item Param C<clientID>
+
+The ID of the client whose groups you'd like to specify.
+
+=item Param C<groupIDs>
+
+An array-ref containing the IDs of the groups that the client should be part of.
+
+=item Return Value
+
+C<1> if the client/group references could be set, C<undef> if not.
+
+=back
+
+
+
+=item C<addGroup(@$valRows)>
+
+Adds one or more groups to the database.
+
+=over
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the data of the new group(s).
+
+=item Return Value
+
+The IDs of the new group(s), C<undef> if the creation failed.
+
+=back
+
+
+
+=item C<removeGroup(@$groupIDs)>
+
+Removes one or more groups from the database.
+
+=over
+
+=item Param C<groupIDs>
+
+An array-ref containing the IDs of the groups that shall be removed.
+
+=item Return Value
+
+C<1> if the group(s) could be removed, C<undef> if not.
+
+=back
+
+
+
+=item C<changeGroup(@$groupIDs, @$valRows)>
+
+Changes the data of one or more groups.
+
+=over
+
+=item Param C<groupIDs>
+
+An array-ref containing the IDs of the groups that shall be changed.
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the new data for the group(s).
+
+=item Return Value
+
+C<1> if the group(s) could be changed, C<undef> if not.
+
+=back
+
+
+
+=item C<setClientIDsOfGroup($groupID, @$clientIDs)>
+
+Specifies all clients that should be part of the given group.
+
+=over
+
+=item Param C<groupID>
+
+The ID of the group whose clients you'd like to specify.
+
+=item Param C<clientIDs>
+
+An array-ref containing the IDs of the clients that shall be part of the group.
+
+=item Return Value
+
+C<1> if the group/client references could be set, C<undef> if not.
+
+=back
+
+
+
+=item C<setSystemIDsOfGroup($groupID, @$groupIDs)>
+
+Specifies all systems that should be offered for booting by the given group.
+
+=over
+
+=item Param C<groupID>
+
+The ID of the group whose systems you'd like to specify.
+
+=item Param C<systemIDs>
+
+An array-ref containing the IDs of the systems that shall be connected to the
+group.
+
+=item Return Value
+
+C<1> if the group/system references could be set, C<undef> if not.
+
+=back
+
+
+
+=item C<changeSettings(%$settings)>
+
+Changes one or more of the system-wide setting parameters.
+
+=over
+
+=item Param C<settings>
+
+A hash-ref containing the column-names you'd like to change with their new
+values.
+
+=item Return Value
+
+C<1> if the settings could be changed, C<undef> if not.
+
+=back
+
+
+
+
+
+
+=head2 Schema Related Methods
+
+The following methods need to be implemented in a MetaDB driver in order to
+be able to automatically adjust to new database schema versions (by adding
+and/or removing tables and table-columns). 
+
 =cut
