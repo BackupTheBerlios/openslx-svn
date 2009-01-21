@@ -3,7 +3,9 @@
 # Description:  Script for generating dxs filesystem by
 #               cloning from rsync source for Diskless X Stations (v4.0)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 02-11-2005
+# Author(s):    Nico Dietrich
+#		Dirk von Suchodoletz <dirk@goe.net>, 02-11-2005
+#
 # Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
 #
 
@@ -98,7 +100,7 @@ distro_check() {
   esac
 }
 
-
+# what do we do here??
 configure() {
   export LANG="c"
 
@@ -113,7 +115,7 @@ configure() {
   fi
   . .config
 
-  # FIXME!! network autodetection seems not to work
+  # FIXME!! network autodetection seems not to work correctly
   if ! [ -z "${netmask}" -a -z "${broadcast}" -a -z "${netname}" -a -z "${server}" ] ; then
     ipcfg=( `ifconfig eth0 | grep "inet addr" | sed -e "s,[a-zA-Z]*:,,g"` )
     netmask=${ipcfg[3]}
@@ -177,7 +179,8 @@ configure() {
   # noetig??
   ask "Broadcast Address: " broadcast $broadcast
 
-  # evtl. optional?
+  # evtl. optional? --> besser in ein komplett eigenes Setup-Skript fuer
+  # machine-setup
   ask "Where automount home directories from? (A.B.C.D:/home-dir)" amt $server":/home"
 
   # more information here!! set useful default
@@ -197,7 +200,8 @@ configure() {
   # nfs / nbd / squash-fs?
 
 
-  # password for pxeboot-menu (caution: you can easily retrieve it in clear text!!)
+  # password for pxeboot-menu (caution: you can easily retrieve it in clear
+  # text!!)
   pxe_passwd="master"
 }
 
@@ -265,9 +269,13 @@ setup_server () {
   timestamp=`date +%Y%m%d-%H%M`
 
   # creating central dxs configuration directory structure if it doesn't exist
-  for dir in dhcp nfs atftpd pxelinux ; do
+  for dir in dhcp nfs atftpd pxelinux client.cfg ; do
     [ -d ${dxs_conf}/${dir} ] || mkdir -p ${dxs_conf}/${dir}
   done
+
+  # copy the client configuration default file - machine-setup
+  cp default_files/machine-setup_default \
+    ${client_conf}
 
   # creating new configuration files in $dxs_conf  
   # dhcp
@@ -277,7 +285,7 @@ setup_server () {
   # atftpd
   sed -e "s,@@@tftpbootdir@@@,${tftpbootdir}," default_files/${atftpd_conf_name} > ${dxs_conf}/${dxs_atftpd_conf}-${timestamp}
 
-   # nfs
+  # nfs
   echo -e "# Bla Blub\n \
   # NFS export entry for DXS\n\
   ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" >> ${dxs_conf}/${dxs_exports_conf}-${timestamp}
@@ -309,7 +317,9 @@ setup_server () {
   
   
   # backing up original files
-  for cfile in ${dhcpd_conf} ${atftpd_conf} ${exports_conf} ${tftpbootdir}/${pxedefault_conf} ; do
+  for cfile in \
+    ${dhcpd_conf} ${atftpd_conf} ${exports_conf} \
+    ${tftpbootdir}/${pxedefault_conf} ${client_conf} ; do
     if [ -f ${cfile} -a ! -L ${cfile} ] ; then
       echo "Copying old ${cfile} to ${cfile}.original"
       mv ${cfile} ${cfile}.original
@@ -332,9 +342,9 @@ footer() {
   echo -e "\nPlease assure to restart atftpd, nfs-kernel-server and dhcpd!\n"
   echo -e "\nInstallation finished.\n"
 
-  # TODO: tell user things he's got to configure aftewards - point to README
+  # TODO: tell user things he's got to configure afterwards - point to README
   #  * in dhcpd.conf - put in clients mac and ip addresses
-  #  * make services start
+  #  * make services start (automatically at server boot)
 
 }
 

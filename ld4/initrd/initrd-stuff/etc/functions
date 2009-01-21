@@ -390,7 +390,8 @@ sed -n -e '/nobody/p' /mnt/etc/passwd >> /tmp/newpasswd
 cp /tmp/newpasswd /mnt/etc/passwd
 # create the shadow from passwd file
 echo -e "root:"$root_pw":12958:0:10000::::" > /mnt/etc/shadow
-sed 's/:.*/:!:13078:0:99999:7:::/;/^root.*/d' /tmp/newpasswd >> /mnt/etc/shadow
+sed 's/:.*/:!:13078:0:99999:7:::/;/^root.*/d' /tmp/newpasswd \
+  >> /mnt/etc/shadow
 }
 
 #######################################################################

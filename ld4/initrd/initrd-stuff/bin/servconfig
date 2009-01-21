@@ -116,6 +116,7 @@ case ${DISTRO} in
     done
   ;;
   gentoo*)
+    # rather different runlevel concept
     rm /mnt/etc/*/.critical 2>/dev/null
     for i in ${D_INITSCRIPTS}; do
       ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/$i
