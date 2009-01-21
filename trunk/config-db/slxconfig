@@ -66,16 +66,22 @@ my $openslxDB = OpenSLX::ConfigDB->new();
 $openslxDB->connect();
 
 my $action = shift @ARGV || '';
-if ($action =~ m[^add-system$]i) {
+if ($action =~ m[^add-s]i) {
 	addSystemToConfigDB(@ARGV);
 }
-elsif ($action =~ m[^add-client$]i) {
+elsif ($action =~ m[^add-c]i) {
 	addClientToConfigDB(@ARGV);
 }
-elsif ($action =~ m[^change-system$]i) {
+elsif ($action =~ m[^change-v]i) {
+	changeVendorOSInConfigDB(@ARGV);
+}
+elsif ($action =~ m[^change-e]i) {
+	changeExportInConfigDB(@ARGV);
+}
+elsif ($action =~ m[^change-s]i) {
 	changeSystemInConfigDB(@ARGV);
 }
-elsif ($action =~ m[^change-client$]i) {
+elsif ($action =~ m[^change-c]i) {
 	changeClientInConfigDB(@ARGV);
 }
 elsif ($action =~ m[^list-c]) {
@@ -110,10 +116,10 @@ elsif ($action =~ m[^search-v]) {
 	print _tr("Matching vendor-OSes:\n");
 	searchVendorOSes(@ARGV);
 }
-elsif ($action =~ m[^remove-client$]i) {
+elsif ($action =~ m[^remove-cli]i) {
 	removeClientFromConfigDB(@ARGV);
 }
-elsif ($action =~ m[^remove-system$]i) {
+elsif ($action =~ m[^remove-sys]i) {
 	removeSystemFromConfigDB(@ARGV);
 }
 else {
@@ -122,17 +128,19 @@ else {
 			add-client
 			add-system
 			change-client
+			change-export
 			change-system
+			change-vendor-os
 			list-client
 			list-export
 			list-system
-			list-vendoros
+			list-vendor-os
 			remove-client
 			remove-system
 			search-client
 			search-export
 			search-system
-			search-vendoros
+			search-vendor-os
 		Try '%s --help' for more info.
 	END-OF-HERE
 }
@@ -395,6 +403,62 @@ sub searchVendorOSes
 	dumpElements('vendor-OS', undef,
 		sort { $a->{name} cmp $b->{name} }
 			$openslxDB->fetchVendorOSByFilter($vendorOSData));
+	return;
+}
+
+sub changeVendorOSInConfigDB
+{
+	my $vendorOSName = _cleanName(shift || '');
+
+	if (!length($vendorOSName)) {
+		die _tr(
+			"you have to specify the name for the vendor-OS you'd like to change!\n"
+		);
+	}
+
+	my @keys =
+		map { (/^(\w+)\W/) ? $1 : $_; } @{$DbSchema->{tables}->{vendor_os}};
+	my $vendorOSData = parseKeyValueArgs(\@keys, 'vendor_os', @_);
+
+	my $vendorOS = $openslxDB->fetchVendorOSByFilter({'name' => $vendorOSName});
+	if (!defined $vendorOS) {
+		die _tr("the vendor-OS '%s' doesn't exists in the DB, giving up!\n",
+			$vendorOSName);
+	}
+
+	$openslxDB->changeVendorOS($vendorOS->{id}, [$vendorOSData]);
+	vlog(0, _tr("vendor-OS '%s' has been successfully changed\n", $vendorOSName));
+	if ($verbose) {
+		listVendorOSes("id=$vendorOS->{id}");
+	}
+	return;
+}
+
+sub changeExportInConfigDB
+{
+	my $exportName = _cleanName(shift || '');
+
+	if (!length($exportName)) {
+		die _tr(
+			"you have to specify the name for the export you'd like to change!\n"
+		);
+	}
+
+	my @exportKeys =
+		map { (/^(\w+)\W/) ? $1 : $_; } @{$DbSchema->{tables}->{export}};
+	my $exportData = parseKeyValueArgs(\@exportKeys, 'export', @_);
+
+	my $export = $openslxDB->fetchExportByFilter({'name' => $exportName});
+	if (!defined $export) {
+		die _tr("the export '%s' doesn't exists in the DB, giving up!\n",
+			$exportName);
+	}
+
+	$openslxDB->changeExport($export->{id}, [$exportData]);
+	vlog(0, _tr("export '%s' has been successfully changed\n", $exportName));
+	if ($verbose) {
+		listExports("id=$export->{id}");
+	}
 	return;
 }
 
@@ -769,8 +833,8 @@ sub removeSystemFromConfigDB
 }
 
 sub _cleanName
-{    # removes 'name=""' constructs from the name, as it is rather tempting
-	    # for the user to type that ... (and we'd like to play along with DWIM)
+{	# removes 'name=""' constructs from the name, as it is rather tempting
+	# for the user to type that ... (and we'd like to play along with DWIM)
 	my $name = shift;
 
 	return unless defined $name;
@@ -810,13 +874,21 @@ adds a new client to the config-DB
 
 adds a new system to the config-DB
 
+=item B<<     change-vendor-os <vendor-os-name> [<key>=<value> ...] >>
+
+changes the data of an existing vendor-OS in the config-DB
+
+=item B<<     change-export <export-name> [<key>=<value> ...] >>
+
+changes the data of an existing export in the config-DB
+
 =item B<<     change-client <client-name> [<key>=<value> ...] >>
 
-changes the data of an existing system in the config-DB
+changes the data of an existing client in the config-DB
 
 =item B<<     change-system <system-name> [<key>=<value> ...] >>
 
-changes the data of an exiisting system in the config-DB
+changes the data of an existing system in the config-DB
 
 =item B<<     list-client [<client-name>] >>
 
@@ -830,7 +902,7 @@ lists export with given name
 
 lists system with given name
 
-=item B<<     list-vendoros [<vendorOS-name>] >>
+=item B<<     list-vendor-os [<vendorOS-name>] >>
 
 lists vendor-OS with given name
 
@@ -855,7 +927,7 @@ shows all exports in config-DB (optionally matching given criteria)
 shows all systems in config-DB (optionally matching given
 criteria)
 
-=item B<<     search-vendoros [<key>=<value> ...] >>
+=item B<<     search-vendor-os [<key>=<value> ...] >>
 
 shows all vendor-OSes in config-DB (optionally matching given criteria)
 
@@ -901,7 +973,7 @@ Prints the version and exits.
 
 =item B<<     slxconfig list-system >>
 
-=item B<<     slxconfig list-vendoros >>
+=item B<<     slxconfig list-vendor-os >>
 
 lists all existing instances of the respective DB-objects.
 
