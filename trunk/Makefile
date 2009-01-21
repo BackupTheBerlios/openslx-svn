@@ -51,6 +51,8 @@ endif
 ifeq ($(SLX_INSTALL_LOG),)
 	SLX_INSTALL_LOG = install.log
 endif
+#When adding new directory variables above, consider to add them to the
+#packaging tool for .deb packages too.
 
 tarball:
 	@OPENSLX_SVN_SNAPSHOT=$$( echo $${OPENSLX_SVN_SNAPSHOT} | \
