@@ -20,6 +20,7 @@ use File::Find;
 use File::Path;
 
 use OpenSLX::Basics;
+use OpenSLX::LibScanner;
 use OpenSLX::Utils;
 
 ################################################################################
@@ -32,6 +33,7 @@ sub new
 
 	checkParams($params, { 
 		'attrs'          => '!',
+		'debug-level'    => '?',
 		'export-name'    => '!',
 		'export-uri'     => '!',
 		'initramfs'      => '!',
@@ -49,6 +51,11 @@ sub new
 		$self->{'distro-ver'} = $2;
 	}
 	
+	$self->{'lib-scanner'} 
+		= OpenSLX::LibScanner->new({ 'root-path' => $self->{'root-path'} });
+	
+	$self->{'required-libs'} = {};
+
 	return bless $self, $class;
 }
 
@@ -58,16 +65,30 @@ sub execute
 
 	$self->_setupBuildPath();
 
-	$self->_addRequiredFSMods();
+	$self->_addRequiredFSModsAndTools();
 	
 	$self->_writeInitramfsSetup();
 
 	$self->_copyDistroSpecificFiles();
 	$self->_copyInitramfsFiles();
+	
+	$self->_copyBusybox();
+	
+	$self->_copyDhcpClient();
+
+	$self->_copyRamfsTools();
+	
+	$self->_copyRequiredFSTools();
+
+	if ($self->{'debug-level'}) {
+		$self->_copyDebugTools();
+	}
 
 #	foreach my $plugin (@{$self->{'plugin-instances'}}) {
 #		$plugin->specifyInitramfsAttrs($initramfsAttrs);
 #	}
+
+	$self->_copyRequiredLibs();
 
 	return;
 }
@@ -144,13 +165,13 @@ sub _copyInitramfsFiles
 		{
 			wanted => sub {
 				my $len = length($initramfsPath);
-				my $relName 
-					= length($File::Find::name) > $len
-						? substr($File::Find::name, $len+1)
-						: '';
-				my $file = followLink($File::Find::name);
+				my $file = $File::Find::name;
+				my $relName = length($file) > $len ? substr($file, $len+1) : '';
 				if (-d) {
 					mkpath("$self->{'build-path'}/$relName");
+				} elsif (-l $file) {
+					my $target = readlink $file;
+					slxsystem("ln -sf $target $self->{'build-path'}/$relName");
 				} elsif (qx{file $file} =~ m{ELF}) {
 					slxsystem("cp -p $file $self->{'build-path'}/$relName");
 				} else {
@@ -163,10 +184,15 @@ sub _copyInitramfsFiles
 						'COMDIRINDXS' => '/tmp/scratch /var/lib/nobody',
 						'COMETCEXCL'  => "XF86Config*\nissue*\nmtab*\nfstab*\n",
 						'KERNVER'     => $self->{'kernel-version'},
+						# keep serverip as it is (it is handled by init itself)
+						'serverip'    => '@@@serverip@@@',
 					);
 					$text =~ s{\@\@\@([^\@]+)\@\@\@}{
 						if (!exists $macro{$1}) {
-							warn "unknown macro \@\@\@$1\@\@\@ found in $File::Find::name";
+							warn _tr(
+								'unknown macro @@@%s@@@ found in %s', 
+								$1, $File::Find::name
+							);
 							'';
 						} else {
 							$macro{$1};
@@ -177,6 +203,9 @@ sub _copyInitramfsFiles
 					$text =~ s{^#!\s*/bin/sh}{#!/bin/ash};
 					
 					spitFile("$self->{'build-path'}/$relName", $text);
+					if (-x $file) {
+						chmod 0755, "$self->{'build-path'}/$relName";
+					}
 				}
 			},
 			no_chdir => 1,
@@ -187,7 +216,167 @@ sub _copyInitramfsFiles
 	return;
 }
 
-sub _addRequiredFSMods
+sub _copyBusybox
+{
+	my $self = shift;
+
+	$self->_copyPlatformSpecificBinary(
+		"$openslxConfig{'base-path'}/share/busybox/busybox", '/bin/busybox'
+	);
+	
+	my @busyboxApplets = qw(
+		ar arping ash bunzip2 cat chmod chown chroot cp cpio cut
+	    date dd df dmesg du echo env expr fdisk free grep gunzip hwclock
+	    insmod id ip kill killall ln ls lsmod mdev mkdir mknod mkswap 
+	    modprobe mount mv nice ping printf ps rdate rm rmmod sed sleep 
+	    sort swapoff swapon switch_root tar test tftp time touch tr 
+	    udhcpc umount uptime usleep vconfig vi wget zcat zcip
+	);
+	foreach my $applet (@busyboxApplets) {
+		slxsystem("ln -sf /bin/busybox $self->{'build-path'}/bin/$applet");
+	}
+	
+	# fake the sh link in busybox environment
+	my $shFake = '#!/bin/ash\n/bin/ash $@';
+	spitFile("$self->{'build-path'}/bin/sh", $shFake, { mode => 755 });
+
+	return;
+}
+
+sub _copyRamfsTools
+{
+	my $self = shift;
+	
+	my @ramfsTools = qw(ddcprobe 915resolution);
+	foreach my $tool (@ramfsTools) {
+		$self->_copyPlatformSpecificBinary(
+			"$openslxConfig{'base-path'}/share/ramfstools/$tool", 
+			"/bin/$tool"
+		);
+	}
+	
+	return;
+}
+	
+sub _copyDebugTools
+{
+	my $self = shift;
+	
+	my @debugTools = qw(strace);
+	foreach my $tool (@debugTools) {
+		my $toolPath = $self->_findBinary($tool);
+		if (!$toolPath) {
+			warn _tr('debug-tool "%s" is not available.', $tool);
+			next;
+		}
+		slxsystem("cp -p $toolPath $self->{'build-path'}/bin");
+		$self->_addRequiredLibsFor($toolPath);
+	}
+	
+	return;
+}
+	
+sub _copyDhcpClient
+{
+	my $self = shift;
+	
+	# TODO: instead of using dhclient, we should check if the client
+	#       provided by busybox still does not support fetching NIS stuff
+	#       (and implement that if it doesn't)
+
+	my $toolPath = $self->_findBinary('dhclient');
+	if (!$toolPath) {
+		warn _tr('tool "dhclient" is not available, using "udhcpc" instead.');
+		return;
+	}
+	slxsystem("cp -p $toolPath $self->{'build-path'}/bin");
+	$self->_addRequiredLibsFor($toolPath);
+	
+	return;
+}
+	
+sub _findBinary
+{
+	my $self   = shift;
+	my $binary = shift;
+	
+	my @binDirs = qw(
+		bin sbin usr/bin usr/sbin usr/local/bin usr/local/sbin usr/bin/X11
+	);
+	foreach my $binDir (@binDirs) {
+		my $binPath = "$self->{'root-path'}/$binDir/$binary";
+		return $binPath if -f $binPath && -x $binPath;
+	}
+	
+	return;
+}
+	
+sub _copyPlatformSpecificBinary
+{
+	my $self       = shift;
+	my $binaryPath = shift;
+	my $targetPath = shift;
+
+	my $binary = $self->_platformSpecificFileFor($binaryPath);
+	
+	slxsystem("cp -p $binary $self->{'build-path'}$targetPath");
+	$self->_addRequiredLibsFor($binary);
+
+	return;
+}
+
+sub _copyRequiredFSTools
+{
+	my $self = shift;
+
+	foreach my $tool (@{$self->{'fs-tools'}}) {
+		my $toolPath = $self->_findBinary($tool);
+		if (!$toolPath) {
+			die _tr('filesystem-tool "$tool" is not available, giving up!');
+		}
+		slxsystem("cp -p $toolPath $self->{'build-path'}/bin");
+		$self->_addRequiredLibsFor($toolPath);
+	}
+
+	return;
+}
+
+sub _copyRequiredLibs
+{
+	my $self = shift;
+
+	foreach my $lib (keys %{$self->{'required-libs'}}) {
+		slxsystem("cp -p $lib $self->{'build-path'}/lib/");
+	}
+
+	return;
+}
+
+sub _addRequiredLibsFor
+{
+	my $self   = shift;
+	my $binary = shift;
+
+	my @libs = $self->{'lib-scanner'}->determineRequiredLibs($binary);
+	foreach my $lib (@libs) {
+		$self->{'required-libs'}->{$lib} = 1;
+	}
+
+	return;
+}
+
+sub _platformSpecificFileFor
+{
+	my $self   = shift;
+	my $binary = shift;
+
+	if ($self->{'system-name'} =~ m{64}) {
+		return $binary . '.x86_64';
+	}
+	return $binary . '.i586';
+}
+
+sub _addRequiredFSModsAndTools
 {
 	my $self = shift;
 	
@@ -199,6 +388,9 @@ sub _addRequiredFSMods
 	}
 	$self->{attrs}->{ramfs_fsmods} = $fsMods;
 	
+	my @fsTools = $osExportEngine->requiredFSTools();
+	$self->{'fs-tools'} = \@fsTools;
+
 	return;
 }
 
