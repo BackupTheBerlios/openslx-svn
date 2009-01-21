@@ -4,7 +4,7 @@
 # diskless clients (executed in stage3 within initial ramfs). The file-
 # system is setup when servconfig starts
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 01-09-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 03-09-2006
 # Michael Janczyk <mj0>, 31-05-2006
 # Lars Mueller <lm@OpenSLX.com>, 23-06-2006
 # Oliver Tappe <ot@OpenSLX.com>, 23-06-2006
@@ -25,8 +25,11 @@
 # get location of logfile definition
 . /mnt/etc/${D_SYSCONFDIR}/logfile
 
-# heavy debugging output in level 3 and above ...
-[ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 10 -o $DEBUGLEVEL -eq 12 ] && \
+# script run timer
+[ $DEBUGLEVEL -eq 8 ] && echo "** SW setup started at $(sysup)"
+
+# heavy debugging output in level 3 and below 8 ...
+[ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 8 -o $DEBUGLEVEL -eq 12 ] && \
   set -x
 
 #######################################################################
@@ -38,37 +41,43 @@ cp -a /etc/sysconfig/files/* /mnt 2>/dev/null &
   cat /etc/boot.local >> /mnt/etc/${D_BOOTLOCAL}
 }
 
-# set greeting and add information on booted system (distro)
-len=$(expr length $DISTRO)
-dstr="$DISTRO)"
-while [ $len -le 11 ] ; do
-  dstr="$dstr "
-  len=$(expr $len + 1)
-done
-echo "
-  WELCOME TO                                       \n (\l)
-       _____  ______  ______ __    __    _______ __     __    __
-      /  _   |   _   |   ___|  |  |  |  |   ____|  |   |  |  |  |
-     |  | |  |  |_|  |  |_  |   |    |  |  |___ |  |         /  /
-     |  | |  |   ___/|   _|      |   |   ____   |  |     |     |
-     |  |_|  |  |    |  |___|  |  |  |   ____|  |  |___ /  /
-       _____/|__|    |______|__|  |__|  |_______|______|__|  |__|
-
-  Diskless Workstation (v4.1/$dstr         (c) <OpenSLX.ORG>
-">/mnt/etc/issue
-
 #######################################################################
 # read and unify configuration options - default configuration file,
 # from dhcp, ldap ...
 # wait for the appearance of configuration from several sources
 cfgcomplete
 . /etc/machine-setup
+[ $DEBUGLEVEL -eq 8 ] && echo "** Config info is complete at $(sysup)"
 
 # copy additional configuration and var files and directories
 # admins can place there files in /var/lib/openslx/config/...
 # to be packed during stage2 into (/srv/dxs)/tftpboot/client-config...)
 # ... in the near future ...
 cp -a /rootfs/* /mnt 2>/dev/null
+
+# set greeting and add information on booted system (distro)
+len=$(expr length $DISTRO)
+dstr="$DISTRO)"
+while [ $len -le 16 ] ; do
+  dstr="$dstr "
+  len=$(expr $len + 1)
+done
+len=$(expr length $host_name)
+while [ $len -le 30 ] ; do
+  space="$space "
+  len=$(expr $len + 1)
+done
+echo "
+   WELCOME TO                 $space        \n (\l)
+           _____  ______  ______ __    __    _______ __     __    __
+          /  _   |   _   |   ___|  |  |  |  |   ____|  |   |  |  |  |
+         |  | |  |  |_|  |  |_  |   |    |  |  |___ |  |        /  /
+         |  | |  |   ___/|   _|      |   |   ____   |  |     |    |
+         |  |_|  |  |    |  |___|  |  |  |   ____|  |  |___ /  /
+           _____/|__|    |______|__|  |__|  |_______|______|__|  |__|
+
+   Diskless Workstation (v4.1/$dstr   (c) <OpenSLX.ORG project>
+">/mnt/etc/issue
 
 #######################################################################
 # vmware stuff first part: two scenarios
@@ -332,6 +341,7 @@ fi
 # there might be the chance that we have a disk partition available, so
 # wait for completion of detection, setup process
 waitfor /tmp/tmpready 10000
+[ $DEBUGLEVEL -eq 8 ] && echo "** Setup of /tmp completed at $(sysup)"
 # create some directories and correct permissions
 tmpisdisk=$(sed -n '/\/tmp/p' /tmp/fstab 2>/dev/null)
 # if there is no local disk partition for /tmp then try to mount a rw
@@ -486,6 +496,9 @@ DisplayManager.*.reset:\t\t/etc/X11/xdm/Xreset" \
     ;;
   esac
 fi
+
+# script run timer
+[ $DEBUGLEVEL -eq 8 ] && echo "** SW setup finished at $(sysup)"
 
 # servconfig finished successfully
 echo "finished" > /tmp/svcfg

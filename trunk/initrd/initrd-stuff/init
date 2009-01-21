@@ -85,7 +85,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       DEBUGLEVEL=${opts#debug=}
       # Handle empty, extremly large or non-numeric input
       [ -z "$DEBUGLEVEL" ] && DEBUGLEVEL=0
-      #[[ "101" < "$DEBUGLEVEL" ]] && DEBUGLEVEL=100
+      [ $DEBUGLEVEL -eq 8 ] && echo "** SLX init started near $(sysup)"
     ;;
     # if configuration should be gathered by dhcp client
     dhcp)
@@ -185,7 +185,7 @@ fi
 echo "Setting debuglevel to ${DEBUGLEVEL}"
 export MODPRV=" "
 export LOGFILE
-if [ "${DEBUGLEVEL}" -gt 0 ] ; then
+if [ "${DEBUGLEVEL}" -gt 0 -a "${DEBUGLEVEL}" != 8 ] ; then
   # if LOGFILE should be used within initial ramdisk add '/mnt' in front
   # of the variable
   LOGFILE="/var/log/dxs-boot.log"
@@ -380,7 +380,8 @@ elif [ -z "$COWLOOP" ] ; then
   for path in ${D_BINDMPTS} ; do
     mkdir -p ${RWDIR}/${path} >/dev/null 2>&1
     mount -n --bind ${RWDIR}/${path} /mnt/${path}
-    [ ${DEBUGLEVEL} -gt 1 ] && echo "Created ${RWDIR}/${path} and mounted it to /mnt/$path"
+    [ ${DEBUGLEVEL} -gt 1 -a ${DEBUGLEVEL} != 8 ] && \
+      echo "Created ${RWDIR}/${path} and mounted it to /mnt/$path"
   done
   # see above ...
   ldcfg
@@ -392,7 +393,6 @@ elif [ -z "$COWLOOP" ] ; then
       # exclude them from etc copy process too
       echo ${path}|sed -e "s,/root/,," >>/tmp/etc.exclude
       mkdir -p /root/${path} >/dev/null 2>&1
-      #[ ${DEBUGLEVEL} -gt 0 ] && |      #echo " ${path} (without /root path component)" >>$LOGFILE
       mount -n --bind /mnt/${path} /root/${path} >/dev/null 2>&1
     fi
   done
@@ -454,8 +454,6 @@ usbfs\t\t/proc/bus/usb\tusbfs\t\tnoauto\t\t 0 0" >/mnt/etc/fstab || \
   error "$init_fstab"
 echo -e "rootfs / rootfs rw 0 0\ninitramdevs /dev tmpfs rw\
  0 0" > /mnt/etc/mtab
-[ -z "$UNIONFS" ] && echo -e "ramfs /tmp tmpfs rw 0 0\nramfs /root \
-tmpfs rw 0 0\n" >> /mnt/etc/mtab
 
 # copy library cache if generated
 if [ -z "${NOLDSC}" ] ; then
@@ -487,7 +485,7 @@ postinit
   /bin/postinit.local; }
 
 # start a debug shell in higher debug levels
-[ $DEBUGLEVEL -gt 2 ] && /bin/sh
+[ $DEBUGLEVEL -gt 2 -a $DEBUGLEVEL != 8 ] && /bin/sh
 
 # unmount the bind mounted modules directory
 for i in 0 40 100 200 300 500 800 1000 1200; do
@@ -500,11 +498,14 @@ done
 test -f /mnt/etc/inittab || error "$init_erritab"
 # close runlevel script for stuff to execute during early bootup
 d_mkrlscript close boot.ld ""
+# put /tmp into stage4 mtab
+sed -n "s,/mnt,,;/\/tmp /p" /proc/mounts >> /mnt/etc/mtab
 # preparations to leave initrd - umounting ...
 umount -n /sys || error "$init_errsys" nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1
 mount -n --move /dev /mnt/dev
 killall -9 udevd 2>/dev/null
+[ $DEBUGLEVEL -eq 8 ] && echo "** SLX init ended near $(sysup)"
 umount -n /proc
 # unset old environment variables
 unset debug date initrd ip dnbdroot nbdroot nfsroot vci vga

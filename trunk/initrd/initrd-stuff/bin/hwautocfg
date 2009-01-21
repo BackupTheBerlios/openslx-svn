@@ -3,7 +3,7 @@
 # universal (distro independent) hardware autoconfiguration script for 
 # OpenSLX linux diskless clients, using hwconfig from knoppix as base tool 
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 31-08-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 03-09-2006
 #
 # (c) 2003 - 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.org
@@ -218,8 +218,11 @@ done
 . /etc/sysconfig/config
 . /etc/distro-functions
 
+# script run timer
+[ $DEBUGLEVEL -eq 8 ] && echo "** HW setup started at $(sysup)"
+
 # heavy debugging output in level 3 and above and specific for 11
-[ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 10 -o $DEBUGLEVEL -eq 11 ] && \
+[ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 8 -o $DEBUGLEVEL -eq 11 ] && \
   set -x
 
 # set X11 configuration file
@@ -405,8 +408,11 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
   for hdpartnr in $(cat /tmp/hd_part | \
         sed -n -e "/ 44 /p"|sed -e "s/[[:space:]].*//") ; do
     # ext2fs_check_if_mount message supressed
-    ( mkfs.ext2 -Fq $hdpartnr 2>/dev/null; mount -n -o nocheck,noexec \
-      $hdpartnr /mnt/tmp 2>/dev/null; 
+    ( mkfs.ext2 -Fq $hdpartnr 2>/dev/null
+      umount /mnt/tmp 2>/dev/null
+      # if mounting of temp partion fails fall back to tmpfs on /tmp
+      mount -n -o nocheck,noexec $hdpartnr /mnt/tmp 2>/dev/null || \
+        mount -n -t tmpfs none /mnt/tmp 
       echo "$hdpartnr is mounted to /tmp" > /tmp/tmpready ) &
     echo -e "$hdpartnr\t/tmp\t\text2\t\tdefaults\t 0 0" >> /tmp/fstab
     part44=yes
@@ -445,5 +451,8 @@ fi
 # wait for completion of Xorg configuration
 waitfor /tmp/xready 10000
 cp /etc/xorg.conf ${D_XF86CONFFILE}
+
+# script run timer
+[ $DEBUGLEVEL -eq 8 ] && echo "** HW setup finished at $(sysup)"
 
 echo "finished" > /tmp/hwcfg

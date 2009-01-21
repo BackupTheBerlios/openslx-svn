@@ -1,14 +1,14 @@
 #!/bin/sh
 #
-# Description:  universal (distro independent) IP configuration writer for 
-#		several dhcp clients. The result is written in unified form
-#		to the /etc/machine-setup file
+# universal (distro independent) IP configuration writer for several dhcp 
+# clients used within OpenSLX initramfs. The result is written in unified
+# form to the /etc/machine-setup file
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-07-2006
-#               Lars Mueller, 23-06-2006
-#               Oliver Tappe, 23-06-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 03-09-2006
+# Lars Mueller, 23-06-2006
+# Oliver Tappe, 23-06-2006
 #
-# Copyright:    (c) 2006 - RZ Universitaet Freiburg
+# (c) 2006 - RZ Universitaet Freiburg
 
 # client variable should be exported via calling function
 cfgfile="/tmp/confviadhcp"
@@ -20,7 +20,7 @@ enabled\n# via kernel command line)."
 # heavy debugging output in level 3 and above ... and on 13
 #FIXME: DEBUGLEVEL is not propagated to this file (at least for Ubuntu)
 [ -z "$DEBUGLEVEL" ] && DEBUGLEVEL=0
-[ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 10 -o $DEBUGLEVEL -eq 13 ] && \
+[ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 8 -o $DEBUGLEVEL -eq 13 ] && \
   set -x
 case $0 in
   *dhcpcd*)

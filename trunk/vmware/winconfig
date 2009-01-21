@@ -3,19 +3,6 @@
 #
 # create Windows config file
 
-
-# NO LONGER NEEDED !!!!!
-# definition of some resolution variables
-#hostres=$(xvidtune -show | grep -ve "^$")
-#x_param=$(echo "${hostres}" | awk '{print $3}')
-#y_param=$(echo "${hostres}" | awk '{print $7}')
-#resolution="
-#    <resolution_x param=\"${x_param}\">\r
-#    </resolution_x>\r
-#    <resolution_y param=\"${y_param}\">\r
-#    </resolution_y>\r"
-
-
 # VMplayer does not need resolution change
 #if [ `which vmplayer 2>/dev/null` ] && [ -z "${vmrun}" ] \
 #  || [ "${vmrun}" = "vmplayer" ]; then
@@ -34,6 +21,6 @@ echo -e "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r
     </username>
   </eintrag>\r
 </settings>\r" \
-> /tmp/loop0/config.xml
+> /etc/vmware/fd-loop/config.xml
 
 sync

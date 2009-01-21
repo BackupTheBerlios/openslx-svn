@@ -81,7 +81,8 @@ netbios_workgroup="dxs-network"
 
 # configure and start vmware services
 vmware="no"
-#imgsrv="(proto://)$serverip/dxs/vmware"
+#vmware="(proto://)$serverip/dxs/vmware"
+# imgsrv is deprecated, because incorporated into vmware variable
 
 # kind of X11 display manager to run 
 start_xdmcp="xdm"

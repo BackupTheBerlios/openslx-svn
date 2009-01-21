@@ -193,7 +193,7 @@ cdr_2_name="/dev/cdrom1"
 floppya="FALSE"
 floppyb="FALSE"
 # place for the virtual floppy "B:"
-floppybname="/tmp/${clientip}-fd0.img"
+floppybname="/etc/vmware/loopimg/fd1.img"
 # resolution
 hostres=$(xvidtune -show | grep -ve "^$")
 xres=$(echo "${hostres}" | awk '{print $3}')
@@ -297,7 +297,7 @@ Image options:
         --include <includefile> include code right before program start
 	--displayaliases	aliases you can use with option -a
         --floppya               enable floppy disk
-        --floppyb               use /tmp/loop0 as floppy B,
+        --floppyb               use /etc/vmware/fd-loop as floppy B,
                                 needed for exchanging files w/ VMware
 VMware options:
         --run <program>         specify programm, e.g. vmware, vmplayer, ...

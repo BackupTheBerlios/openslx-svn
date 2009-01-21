@@ -28,7 +28,7 @@
 [ -z "$DEBUGLEVEL" ] && DEBUGLEVEL=0
 [ $DEBUGLEVEL -gt 1 ] && DEBUG="yes"
 # heavy debugging output in level 3 and above ...
-[ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 10 -o $DEBUGLEVEL -eq 14 ] && set -x
+[ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 8 -o $DEBUGLEVEL -eq 14 ] && set -x
 
 # Define some default output values if the script fails to find better values
 # Empty defaults, s.t. hwautocfg defines the defaults

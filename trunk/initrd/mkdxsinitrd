@@ -4,7 +4,7 @@
 #               ramdisks for linux diskless clients (stage2 system
 #               setup)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-08-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-09-2006
 #               Nico Dietrich
 #               Felix Endres
 #
@@ -647,14 +647,17 @@ chmod 755 ${INSTDIR}/init \
 if [ -f /var/lib/openslx/config/default/initramfs/machine-setup ] ; then
   cp /var/lib/openslx/config/default/initramfs/machine-setup \
     ${INSTDIR}/etc/machine-setup
+  echo "Using /var/lib/openslx/config/default/initramfs/machine-setup"
 # use the installed default machine-setup.default
 elif [ -f /usr/share/openslx/templates/machine-setup.default ] ; then
   cp /usr/share/openslx/templates/machine-setup.default \
     ${INSTDIR}/etc/machine-setup
+  echo "Using /usr/share/openslx/templates/machine-setup.default"
 # just compatibility for older versions
 elif [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
   cp /etc/dxs/client.cfg/machine-setup.default \
     ${INSTDIR}/etc/machine-setup
+  echo "Using /etc/dxs/client.cfg/machine-setup.default"
 # fixme: dirty hack if the installer does not creates a normal file
 elif [ -f /etc/dxs/client.cfg/machine-setup.default.new ] ; then
   cp /etc/dxs/client.cfg/machine-setup.default.new \
@@ -662,6 +665,7 @@ elif [ -f /etc/dxs/client.cfg/machine-setup.default.new ] ; then
 elif [ -f ../installer/default_files/machine-setup.default ] ; then
   cp ../installer/default_files/machine-setup.default \
     ${INSTDIR}/etc/machine-setup
+  echo "Using ../installer/default_files/machine-setup.default"
 else
   #inserted password for root for debugging purposes
   echo -e "# default for machine-setup does not exist\n# root logins are \
