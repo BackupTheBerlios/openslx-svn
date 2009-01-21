@@ -96,7 +96,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     # if ld.so.cache should not be generated
     noldsc)
       NOLDSC=yes;;
-    # additional source to union root filesystem with
+    # additional source to unify root filesystem with
     union*)
       UNIONFS=1
       UNIONDIRS=${opts#union=};;

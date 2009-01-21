@@ -434,7 +434,14 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
     echo -e "$hdpartnr\t/tmp\t\text2\t\tdefaults\t 0 0" >> /mnt/etc/fstab
     part44=yes
     break
-  done      
+  done
+  # put detected linux partitions into /etc/fstab with "noauto"
+  for hdpartnr in $(cat /tmp/hd_part | \
+        sed -n -e "/ 83 /p"|sed -e "s/[[:space:]].*//") ; do
+    mkdir -p /mnt/media/${hdpartnr#/dev/*} 2>/dev/null
+    echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
+noexec\t 0 0" >> /mnt/etc/fstab
+  done 
 done
 # determine if tmp preparation should wait for format/mount or not
 [ -z "$part44" ] && echo "finished" > /tmp/tmpready

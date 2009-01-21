@@ -211,11 +211,7 @@ if [ "x$start_x" != "xno" ] ; then
            /etc/X11/xdm \
            /etc/X11/sessions \
            /var/X11R6/bin \
-           /var/run/xdmctl \
-           /tmp/.ICE-unix \
-           /tmp/.X11-unix; do testmkd /mnt/$i; done
-  chmod a+rwxt /mnt/tmp/.ICE-unix 
-  chmod a+rwxt /mnt/tmp/.X11-unix
+           /var/run/xdmctl; do testmkd /mnt/$i; done
   echo "" > /mnt/etc/X11/xdm/Xservers
   # define additional sessions offered to the user (via dhcp/ldap config)
   # descsession -> deprecated by new vmware integration concept
@@ -340,14 +336,13 @@ config_nscd
 
 #######################################################################
 # preparation of /tmp directory (partition 44, nfs scratch, ramdisk)
-# waitfor /tmp/tmpready
-
-# the following should be moved here from X11 ...
-#           /tmp/.ICE-unix \
-#           /tmp/.X11-unix; do testmkd /mnt/$i; done
-#             chmod a+rwxt /mnt/tmp/.ICE-unix
-#               chmod a+rwxt /mnt/tmp/.X11-unix
-               
+waitfor /tmp/tmpready 10000
+# create some directories and correct permissions
+for i in \
+  /tmp/.ICE-unix \
+  /tmp/.X11-unix; do testmkd /mnt/$i; done
+chmod a+rwxt /mnt/tmp/.ICE-unix
+chmod a+rwxt /mnt/tmp/.X11-unix
 
 # servconfig finished successfully
 echo "finished" > /tmp/svcfg
