@@ -164,8 +164,7 @@ sub initDistroInfo
 	";
 
 	$self->{config}->{'selection'} = {
-		'default' => "
-		",
+		'default' => "",
 	}
 }
 

@@ -162,7 +162,8 @@ sub initDistroInfo
 	";
 
 	$self->{config}->{'selection'} = {
-		'default' => "list any packagenames here",
+		'default' => "
+		",
 	}
 }
 

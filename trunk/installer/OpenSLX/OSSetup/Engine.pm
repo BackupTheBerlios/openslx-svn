@@ -143,6 +143,8 @@ sub installVendorOS
 	}
 	$self->stage1C_cleanupBasicSystem();
 	$self->setupStage1D();
+	vlog 0, _tr("Vendor-OS <%s> installed succesfully.\n",
+				$self->{'vendor-os-name'});
 
 	$self->addInstalledVendorOSToConfigDB();
 }
@@ -152,6 +154,8 @@ sub updateVendorOS
 	my $self = shift;
 
 	$self->updateStage1D();
+	vlog 0, _tr("Vendor-OS <%s> updated succesfully.\n",
+				$self->{'vendor-os-name'});
 }
 
 sub addInstalledVendorOSToConfigDB
@@ -180,16 +184,16 @@ sub addInstalledVendorOSToConfigDB
 									  { 'name' => $vendorOSName },
 									  'id');
 		if (defined $vendorOS) {
-			print STDERR _tr("Vendor-OS <%s> already exists in OpenSLX-database!\n",
-							 $vendorOSName);
+			vlog 0, _tr("Vendor-OS <%s> already exists in OpenSLX-database!\n",
+						$vendorOSName);
 		} else {
 			my $id = addVendorOS($openslxDB, {
 				'name' => $vendorOSName,
 				'path' => $self->{'vendor-os-name'},
 			});
 
-			print STDERR _tr("Vendor-OS <%s> has been added to DB (ID=%s)\n",
-							 $vendorOSName, $id);
+			vlog 0, _tr("Vendor-OS <%s> has been added to DB (ID=%s).\n",
+						$vendorOSName, $id);
 		}
 
 		disconnectConfigDB($openslxDB);
@@ -620,10 +624,14 @@ sub stage1D_installPackageSelection
 	my $pkgSelection = $self->{'distro-info'}->{selection}->{$selectionName};
 	my @pkgs
 		= grep { length($_) > 0 }
-		  map { $_ =~ s[^\s*(.+?)\s*$][$1]; $_ }
+		  map { $_ =~ s[^\s*(.*?)\s*$][$1]; $_ }
 		  split "\n", $pkgSelection;
-	$self->{'meta-packager'}->installSelection(join " ", @pkgs);
-
+	if (scalar(@pkgs) == 0) {
+		vlog 0, _tr("No packages listed for selection <%s>, nothing to do.",
+					$selectionName);
+	} else {
+		$self->{'meta-packager'}->installSelection(join " ", @pkgs);
+	}
 }
 
 ################################################################################
