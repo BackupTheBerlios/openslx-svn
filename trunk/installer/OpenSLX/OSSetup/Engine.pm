@@ -449,7 +449,7 @@ sub downloadBaseFiles
 
 	my $pkgSubdir = $self->{'distro-info'}->{'package-subdir'};
 	my @URLs = @{$self->{'baseURLs'}};
-	my $maxTryCount = 5;	# TODO: make this configurable!
+	my $maxTryCount = $openslxConfig{'ossetup-max-try-count'};
 
 	my @foundFiles;
 	foreach my $fileVariantStr (@$files) {
