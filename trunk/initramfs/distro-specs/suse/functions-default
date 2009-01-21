@@ -94,14 +94,12 @@ hwclock &>/dev/null && hwclock -w;} ) &" \
   fi
 fi
 }
-
 # function for atd
 config_atd () {
 if [ "x$start_atd" = "xyes" ]; then
   rllinker "atd" "14" "04"
 fi
 }
-
 # function for configuration of cron services
 config_cron () {
 if [ "x$start_cron" = "xyes" ] ; then
@@ -118,7 +116,6 @@ if [ "x$start_cron" = "xyes" ] ; then
   fi 
 fi
 }
-
 # syslog service (different syslogs might be present)
 config_syslog () {
 if [ "x$start_syslog" != "xno" ] ; then
@@ -131,7 +128,6 @@ if [ "x$start_syslog" != "xno" ] ; then
   fi
 fi
 }
-
 # secure shell service
 config_sshd () {
 if [ "x$start_sshd" = "xyes" ] ; then
@@ -144,7 +140,6 @@ if [ "x$start_sshd" = "xyes" ] ; then
   fi
 fi
 }
-
 # snmp agent for remote monitoring
 config_snmp () {
 if [ "x$start_snmp" = "xyes" ] ; then
@@ -156,7 +151,6 @@ if [ "x$start_snmp" = "xyes" ] ; then
     # write service monitor depending on services started
   fi
 }
-
 # configure print server (lpd or cups)
 config_printer () {
 if [ "x${start_printdaemon}" != "x" ] && \
@@ -185,7 +179,6 @@ if [ "x$lpr_servers" != "x" ] && [ ! -e /rootfs/etc/cups/client.conf ] ; then
 #\t$date\n#\nServerName\t$lpr_servers" > /mnt/etc/cups/client.conf
 fi
 }
-
 # configure samba service
 config_samba () {
 if [ "$start_samba" != "no" ]; then
@@ -222,7 +215,6 @@ if [ "$start_samba" != "no" ]; then
         -i /mnt/etc/lisarc
 fi
 }
-
 # configure X display manager (/etc/${D_SYSCONFDIR}/displaymanager)
 config_dm_entry () {
 local dm="$1"  
@@ -246,12 +238,10 @@ else
   rm /etc/${D_INITBOOTD}/S02xdm) &\n" >>/mnt/etc/${D_INITDIR}/boot.slx
 fi
 }
-
 # configure X display manager (runlevel links and kind of manager)
 config_xdm () {
 config_dm_entry yes
 }
-
 # configure gdm as display manager
 config_gdm () {
 config_dm_entry yes
@@ -374,17 +364,13 @@ flexible=true\nhandled=true" >>/mnt/etc/opt/gnome/gdm/gdm.conf
   fi
 fi
 }
-
 # configure kdm as display manager
 config_kdm () {
 # first define directories for kdm
 kdmrcdir=/etc/opt/kde3/share/config/kdm
 xdmdir=/etc/X11/xdm
-
 testmkd /mnt/${kdmrcdir}
-
 config_dm_entry yes
-
 # write configuration file
 # use general config in /etc/functions
 config_kdm_template
@@ -400,7 +386,6 @@ else
   : # no bluetooth components installed
 fi
 }
-
 # set up keytable (function run in hwautocfg)
 # kbd runlevel link is set via config_distro to avoid clashes between
 # servconfig and hwautocfg settings
@@ -410,7 +395,6 @@ sed -e "s,KEYTABLE=.*,KEYTABLE=\"${KEYTABLE}\"," \
 echo -e "\tloadkeys ${KEYTABLE} >${LOGFILE} 2>&1\n" \
   >>/mnt/etc/${D_INITDIR}/boot.slx
 }
-
 # consolefont and language (function run in hwautocfg)
 consolefont () {
 echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
@@ -418,7 +402,6 @@ echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
 sed -e "s,RC_LANG=.*,RC_LANG=\"${LANG}\" # added in initrd," \
     -i /mnt/etc/${D_SYSCONFDIR}/language
 }
-
 # acpi and powersave daemons, required e.g. to shutdown the machine via
 # power button, no need for early start
 config_acpi () {
@@ -427,7 +410,6 @@ rllinker powersaved "23" "11"
 # dbus is required to run acpid and powersaved
 start_dreshal="yes"
 }
-
 # configure dbus (inter application communication for kde and gnome), hal
 # (hardware abstraction layer - used e.g. by powersaved) and resmgr
 # (resource manager - the user gets permissions to devices when loggin on)
@@ -470,8 +452,7 @@ if [ "x$start_dreshal" = "xyes" ]; then
   fi
 fi
 }
-
-# configure automounter
+# configure automounter (fixme: config version for NFSv4 might be required)
 config_automount () {
 if [ -e /mnt/etc/${D_SYSCONFDIR}/autofs ] ; then
   testmkd /var/lock/subsys
@@ -487,17 +468,15 @@ fi
 config_nscd () {
 if [ -e /mnt/etc/${D_INITDIR}/nscd ] ; then
   testmkd /mnt/var/run/nscd
-  rllinker "nscd" "02" "16"
+  rllinker "nscd" "16" "16"
 else
   error "$df_errnsc" nonfatal
 fi
 }
-
 # start portmapper (needed at least for nfs and nis services)
 config_portmap () {
 rllinker "portmap" "02" "20"
 }
-
 # start NIS
 config_nis () {
 if [ -f /mnt/etc/${D_INITDIR}/ypbind ] ; then
@@ -508,7 +487,6 @@ else
   error "$df_erryp" nonfatal
 fi
 }
-
 # start vmware
 config_vmware () {
 if [ -f /mnt/etc/${D_SYSCONFDIR}/vmware ] ; then
@@ -523,12 +501,11 @@ if [ -f /mnt/etc/${D_SYSCONFDIR}/vmware ] ; then
   sed -e "s,TARGETS =,TARGETS = vmware-prep," \
     /mnt/etc/${D_INITDIR}/.depend.start >> /etc/.depend.start
   echo "vmware-prep: " >> /etc/.depend.start
-  cp /etc/.depend.start /mnt/etc/${D_INITDIR}/.depend.start
+  mv /etc/.depend.start /mnt/etc/${D_INITDIR}/.depend.start
 else
   error "df_errvmw" nonfatal
 fi
 }
-
 # initialize runlevel skript to be executed during system startup
 # (before most of the normal boot init scripts)
 # this script should operate like a normal runlevel script
@@ -551,7 +528,6 @@ rerun\n# the mkdxsinitrd script to get them applied\n\
   ;;
 esac
 }
-
 # Xorg variable settings. Lots of stuff changes for newer Xorg servers
 displayvars () {
 synapticsdrv="/usr/X11R6/lib/modules/input/synaptics_drv.o"

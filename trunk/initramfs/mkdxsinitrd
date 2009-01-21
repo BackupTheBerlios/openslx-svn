@@ -416,10 +416,13 @@ case "${DISTRO}" in
         cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib
       ;;
       Dapper*|dapper*)
-	    DISTRO_VER=6.06
+        DISTRO_VER=6.06
       ;;
-	  Edgy*|edgy*)
-	    DISTRO_VER=6.10
+      Edgy*|edgy*)
+        DISTRO_VER=6.10
+      ;;
+      Feisty*|feisty*)
+        DISTRO_VER=7.04
       ;;
     esac
     ;;
@@ -429,11 +432,14 @@ case "${DISTRO}" in
       2005*)
         DISTRO_VER=2005.1
       ;;
-      2006*|*)
+      2006*)
         DISTRO_VER=2006.1
         mkdir -p ${INSTDIR}/lib/udev
         cp -r ${ROOTDIR}/lib/udev/* ${INSTDIR}/lib/udev/
         cp ${ROOTDIR}/etc/group ${INSTDIR}/etc/
+      ;;
+      2007*|*)
+        DISTRO_VER=2007.1
       ;;
     esac
   ;;
@@ -451,6 +457,9 @@ case "${DISTRO}" in
       ;;
       10.2)
         DISTRO_VER=10.2
+      ;;
+      10.3)
+        DISTRO_VER=10.3
       ;;
     esac
   ;;

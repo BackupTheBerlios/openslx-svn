@@ -9,7 +9,7 @@
 #
 # General information about OpenSLX can be found at http://openslx.org
 #
-# common functions file for the configuration of linux diskless clients
+# Common functions file for the configuration of linux diskless clients
 # (included by init, hwautocfg, servconfig, ... within OpenSLX initialramfs)
 
 #############################################################################
@@ -33,7 +33,6 @@ config_distro () {
 udev_hotplug () {
 :
 }
-
 
 #############################################################################
 # generate events with the sysfs trigger
@@ -518,11 +517,11 @@ sed '/^[a-zA-Z0-9]*:[a-zA-Z0-9]*:[1-9][0-9]\{3,4\}:/d;/^+:*/d;/^+$/d;
   > /tmp/newpasswd
 # and add user nobody again (is there a more elegant way?)
 sed -n -e '/nobody/p' /mnt/etc/passwd >> /tmp/newpasswd
-cp /tmp/newpasswd /mnt/etc/passwd
 # create the shadow from passwd file
 echo -e "root:"$root_pw":12958:0:10000::::" > /mnt/etc/shadow
 sed 's/:.*/:!:13078:0:99999:7:::/;/^root.*/d' /tmp/newpasswd \
   >> /mnt/etc/shadow
+mv /tmp/newpasswd /mnt/etc/passwd
 chmod 0640 /mnt/etc/shadow
 }
 
