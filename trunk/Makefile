@@ -135,6 +135,7 @@ supported."; \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/cdboot \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox \
+	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/splashy \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_PRIVATE_PATH)/config/default/initramfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_PRIVATE_PATH)/config/default/rootfs \
@@ -198,6 +199,7 @@ supported."; \
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/themes; cd ..; \
 	cp -pP tools/busybox{,.links,.x86_64,.i586} \
 	  $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox/; \
+	cp -p tools/splashy{,_update} $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/splashy/; \
 	cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
 
 	@   # create default config folder hierarchy:
