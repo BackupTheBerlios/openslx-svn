@@ -198,7 +198,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
           echo -e "\n# nfs root information gotten via kernel command \
 line in $0\n#nfsroot=\"${nfsserver}:${nfspath}\"\n" >> /etc/machine-setup
         ;;
-        *nbd)
+        *nbd*)
           nbdmod=$srvproto
           # get settings for nbd-client, filesystem equals to path in URI
           # notation
@@ -388,6 +388,18 @@ if [ -n "${nbdmod}" ] ; then
       usleep 100
       # switch off unneeded block read ahead
       echo "0" > /sys/block/nbd0/queue/read_ahead_kb
+      ;;
+    # dnbd2 by Vito di Leo
+    dnbd2)
+      RDEV=/dev/vnbd0
+      waitfor "${RDEV}" 20000 || error "$init_nbddev"
+      echo $nbdhost $nbdport > /sys/block/vnbd0/server0/sock
+      echo 1 > /sys/block/vnbd0/config/vid
+      echo 1 > /sys/block/vnbd0/config/rid
+      echo 1 > /sys/block/vnbd0/config/running
+      echo noop > /sys/block/vnbd0/queue/scheduler
+      # switch off unneeded block read ahead
+      echo "0" > /sys/block/vnbd0/queue/read_ahead_kb
       ;;
     # dnbd by Thorsten Zitterell
     dnbd)
