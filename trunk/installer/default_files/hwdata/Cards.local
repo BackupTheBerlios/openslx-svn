@@ -1,12 +1,18 @@
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
 #~/usr/share/hwdata/Cards.local
 #
 # local changes to the Cards file. All additions should be documented here, 
 # so that they are not lost ...
-#
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 11-11-2006
-#
-# (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.ORG Project
 
 # Dell GX620
 NAME Intel 945
@@ -24,3 +30,7 @@ NOCLOCKPROBE
 NAME NVIDIA GeForce 6100
 DRIVER nv
 NOCLOCKPROBE
+
+# HP AMD64 onboard ATI Radeon RS482
+NAME ATI Radeon RS482
+DRIVER radeon
