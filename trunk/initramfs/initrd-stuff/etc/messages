@@ -46,6 +46,9 @@ the network block device client. Unable to mount root\n  filesystem."
 init_nbddev="  For some reason the network block device /dev/${NBD}0 never \
 appeared.\n  You might want to check udev or your list of static device \
 files."
+init_dnbd2s="  After 100 retries, it was not possible to start the dnbd2 \
+service. Please\n  check that at least one server is available. You might \
+use the\n  /sys/block/vnbd0 interface for this."
 init_moddir="  The requested modules directory does not exist. That could \
 mean:\n  * The kernel was updated but mkdxsinitrd was not run afterwards.\n\
   * The mounted filesystem does not contain the modules directory at all.\n\

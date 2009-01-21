@@ -389,17 +389,25 @@ if [ -n "${nbdmod}" ] ; then
       # switch off unneeded block read ahead
       echo "0" > /sys/block/nbd0/queue/read_ahead_kb
       ;;
-    # dnbd2 by Vito di Leo
+    # dnbd2 by Vito Di Leo
     dnbd2)
       RDEV=/dev/vnbd0
       waitfor "${RDEV}" 20000 || error "$init_nbddev"
       echo $nbdhost $nbdport > /sys/block/vnbd0/server0/sock
       echo 1 > /sys/block/vnbd0/config/vid
       echo 1 > /sys/block/vnbd0/config/rid
-      echo 1 > /sys/block/vnbd0/config/running
       echo noop > /sys/block/vnbd0/queue/scheduler
-      # switch off unneeded block read ahead
-      echo "0" > /sys/block/vnbd0/queue/read_ahead_kb
+      i=0
+      while [ $(cat /sys/block/vnbd0/config/running) != 1 ] ; do
+        echo 1 > /sys/block/vnbd0/config/running
+        usleep 50
+        i=$(expr $i + 1)
+        if [ $i -ge 100 ] ; then
+          error "$init_dnbd2s"
+          break
+        fi
+      done
+      # echo "0" > /sys/block/vnbd0/queue/read_ahead_kb
       ;;
     # dnbd by Thorsten Zitterell
     dnbd)
