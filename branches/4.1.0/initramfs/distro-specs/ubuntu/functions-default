@@ -16,15 +16,13 @@
 
 # distro specific stuff to initialize
 preinit () {
-  echo "Creating dhcp user"
+  [ $DEBUGLEVEL -ge 1 ] && echo "Creating dhcp user"
   echo "dhcp:x:101:">>/etc/group
   echo "dhcp:x:101:101::/nonexistent:/bin/false" >>/etc/passwd
-
   # load unix module to provide sockets (is compiled into kernel on
   # the live CDs!?)
-  modprobe ${MODPRV} unix || error "$df_errumod" nonfatal
+  modprobe ${MODPRV} unix 2>/dev/null || error "$df_errumod" nonfatal
 }
-
 
 # overwrite settings set by hwautocfg, pathes will change for newer
 # Xorg version 7.X
@@ -172,7 +170,7 @@ keytable () {
 
 # consolefont
 consolefont () {
-echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
+echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
   >>/mnt/etc/${D_INITDIR}/boot.slx
 }
 
@@ -343,6 +341,7 @@ config_kdm_template
 # configure hal, dbus, resmgr and services like that
 config_dreshal () {
 if [ "x$start_dreshal" = "xyes" ]; then
+  testmkd /mnt/var/lib/dbus
   rllinker "dbus" 17 20 
 fi
 }
@@ -358,14 +357,14 @@ case "$switch" in
   init)
     echo -e "#!/bin/sh\n# skeleton of /etc/${D_INITDIR}/$name written \
 from $0\n# after you applied changes to the creation scripts you have to \
-rerun\n# the mkdxsinitrd script to get them applied" \
-      >/mnt/etc/${D_INITDIR}/$name
-    echo -e "\n\ncase \"\$1\" in\n    start)\techo -n \"$info\"" \
+rerun\n# the mkdxsinitrd script to get them applied\n\n\
+. /lib/lsb/init-functions\n" >/mnt/etc/${D_INITDIR}/$name
+    echo -e "\n\ncase \"\$1\" in\n    start)\n\tlog_begin_msg \"* $info\"" \
       >>/mnt/etc/${D_INITDIR}/$name
     chmod u+x /mnt/etc/${D_INITDIR}/$name
   ;;
   close)
-    echo -e "\t;;\n    stop)\n\t;;\nesac\nexit 0" \
+    echo -e "\tlog_end_msg 0\n\t;;\n    stop)\n\t;;\nesac\nexit 0" \
       >>/mnt/etc/${D_INITDIR}/$name
   ;;
 esac
