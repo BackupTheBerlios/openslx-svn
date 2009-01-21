@@ -302,9 +302,10 @@ copy_distro_stuff ${DISTRO} ${DISTRO_VER}
 mknod ${INSTDIR}/tmp/console c 5 1 &>/dev/null
 mknod ${INSTDIR}/tmp/null c 1 3 &>/dev/null
 mknod ${INSTDIR}/tmp/kmsg c 1 11 &>/dev/null
+mknod ${INSTDIR}/tmp/ctl b 241 255 &>/dev/null
 
 #if no klibc - klibc shell seems not to have enough functionality :-(
-for bbins in ash ash sh; do
+for bbins in bash ash sh; do
   if cobi ${bbins} bin ; then 
     ln -fs ${bbins} ${INSTDIR}/bin/sh
     [ "${bbins}" != "bash" ] && ln -fs ${bbins} ${INSTDIR}/bin/bash

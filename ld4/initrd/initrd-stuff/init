@@ -99,17 +99,18 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     noldsc)
       NOLDSC=yes;;
     # additional source to unify root filesystem with
-    union*)
+    union=*)
       UNIONFS=1
       UNIONDIRS=${opts#union=};;
     # if unionfs should be used
-    unionfs*)
+    unionfs)
       UNIONFS=1;;
     # if cowloop should be used, only ontop of network block device and in 
     # combination with classical fs, like ext2 useful
     cowloop*)
       COWLOOP=1
-      COWSIZE=${opts#cowloop=};;
+      #COWSIZE=${opts#cowloop=}
+      ;;
     # dnbd server:port 
     dnbdroot=*)
       NBD=dnbd # name of kernel module
@@ -235,7 +236,7 @@ if [ -n "${NBD}" ] ; then
     # network block device present in standard kernel
     nbd)
       RDEV=/dev/nbd0
-      waitfor "${RDEV}" 15000 || error "$init_nbddev"
+      waitfor "${RDEV}" 30000 || error "$init_nbddev"
       echo "0" > /sys/block/nbd0/queue/read_ahead_kb
       nbd-client $nbdhost $nbdport ${RDEV} || error "$init_nbdcl"
       # switch off unneeded block read ahead
@@ -272,13 +273,17 @@ if [ -n "${NBD}" ] ; then
     fi
     echo "Using Copy-on-Write block device for rw access"
     mount -n -t tmpfs -o size=${COWSIZE} ramfs ${RWDIR}
+    mkdir /dev/cow && cp -a /tmp/ctl /dev/cow
+    ln -s /dev/cowloop0 /dev/cow/0
     cowdev -a /dev/nbd0 ${RWDIR}/nbd.cow
+    usleep 10
     RWRO="rw"
     RDEV=/dev/cow/0
     # run ldconfig if not switched off via kernel command line
     [ -z "${NOLDSC}" ] && echo $init_ldcfg && ldconfig /etc/ld.so.cache &
-  fi  
-  mount -n -t $RFST -o $RWRO $RDEV /mnt  
+  fi
+  # finally mount the block device
+  mount -n -t $RFST -o $RWRO $RDEV /mnt
 fi
 
 # if no type of root filesystem is passed via kernel command line try
