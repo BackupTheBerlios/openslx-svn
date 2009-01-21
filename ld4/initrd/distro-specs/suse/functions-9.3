@@ -415,9 +415,14 @@ fi
 config_automount () {
 if [ -f /mnt/etc/${D_SYSCONFDIR}/autofs ] ; then
   testmkd /var/lock/subsys
+  echo -e "# /etc/${D_SYSCONFDIR}/autofs - file modified by\n#\t$0:\n#" \
+  > /etc/autofs
+  sed -e "s,AUTOFS_OPTIONS.*,AUTOFS_OPTIONS=\"--timeout 3\"," \
+    /mnt/etc/${D_SYSCONFDIR}/autofs >> /etc/autofs
+  cp /etc/autofs /mnt/etc/${D_SYSCONFDIR}/autofs
   rllinker "autofs" "18" "04"
 else
-  error "$df_erramt"
+  error "$df_erramt" nonfatal
 fi
 }
 # start name service caching daemon
@@ -426,7 +431,7 @@ if [ -f /mnt/etc/${D_INITDIR}/nscd ] ; then
   testmkd /mnt/var/run/nscd
   rllinker "nscd" "02" "16"
 else
-  error "$df_errnsc"
+  error "$df_errnsc" nonfatal
 fi
 }
 
@@ -440,29 +445,33 @@ config_nis () {
 if [ -f /mnt/etc/${D_INITDIR}/ypbind ] ; then
   rllinker "ypbind" "06" "16"
 else
-  error "$df_erryp"
+  error "$df_erryp" nonfatal
 fi
 }
 
 # start vmware
 config_vmware () {
-rllinker "vmware-prep" "18" "02"
-rllinker "vmware" "20" "02"
-# if running start scripts in parallel vmware-prep is not recognized
-# first solution: just avoid running in parallel
-#sed 's/PARALLEL=.*/PARALLEL=no/' /mnt/etc/${D_SYSCONFDIR}/boot \
-#  > /tmp/boot
-#cp /tmp/boot /mnt/etc/${D_SYSCONFDIR}/boot
-# second solution: vmware-prep script should be added to .depends.start
-sed -e "s,TARGETS =,TARGETS = vmware-prep," \
-  /mnt/etc/${D_INITDIR}/.depend.start >> /etc/.depend.start
+if [ -f /mnt/etc/${D_SYSCONFDIR}/vmware ] ; then
+  rllinker "vmware-prep" "18" "02"
+  rllinker "vmware" "20" "02"
+  # if running start scripts in parallel vmware-prep is not recognized
+  # first solution: just avoid running in parallel
+  #sed 's/PARALLEL=.*/PARALLEL=no/' /mnt/etc/${D_SYSCONFDIR}/boot \
+  #  > /tmp/boot
+  #cp /tmp/boot /mnt/etc/${D_SYSCONFDIR}/boot
+  # second solution: vmware-prep script should be added to .depends.start
+  sed -e "s,TARGETS =,TARGETS = vmware-prep," \
+    /mnt/etc/${D_INITDIR}/.depend.start >> /etc/.depend.start
   echo "vmware-prep: " >> /etc/.depend.start
   cp /etc/.depend.start /mnt/etc/${D_INITDIR}/.depend.start
-# this line should be added to /etc/hotplug.d/usb/50-usb.hotplug
-# to block linux from handling usb events during vmware sessions
-sed -e '/USB-specific/{;i\' \
-  -e 'ps aux |grep -i vmware| grep -v "grep" &>/dev/null && exit 0' \
-  -e ' }' -i /mnt/etc/hotplug.d/usb/50-usb.hotplug
+  # this line should be added to /etc/hotplug.d/usb/50-usb.hotplug
+  # to block linux from handling usb events during vmware sessions
+  sed -e '/USB-specific/{;i\' \
+    -e 'ps aux |grep -i vmware| grep -v "grep" &>/dev/null && exit 0' \
+    -e ' }' -i /mnt/etc/hotplug.d/usb/50-usb.hotplug
+else
+  error "df_errvmw" nonfatal
+fi
 }
 
 # initialize runlevel skript to be executed during system startup

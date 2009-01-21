@@ -126,6 +126,7 @@ df_errcron="  The cron start script $df_errserv"
 df_errsysl="  The syslog start script $df_errserv"
 df_errsshd="  The sshd start script $df_errserv"
 df_erryp="  The NIS client $df_errserv"
+df_errvmw="  VMware X86 emulation $df_errserv"
 df_erramnt="  Automounter $df_errserv"
 df_errnsc="  Name Service caching deamon $df_errserv\n This service might \
 be useful to take load from a ldap user directory."

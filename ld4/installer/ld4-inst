@@ -482,6 +482,8 @@ ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" \
         [ -z "$keep" ] && unlink ${2}
       fi
       # linking files 
+      # if SuSE und DHCP dann Kopie statt Link
+      #if ! expr index ${dxs_conf} "dhcp" 
       ln -sf ${dxs_conf}/${1}-${timestamp} ${2}${extension}
     fi
   done

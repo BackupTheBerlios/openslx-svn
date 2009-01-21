@@ -196,8 +196,8 @@ if [ -n "${automnt_src}" ] ; then
   # remove leading and trailing slash
   automnt_dir=${automnt_dir#/}
   automnt_dir=${automnt_dir%/}
-  test -d ${automnt_dir} || error "scfg_erradir"
-  strinstr "/" ${automnt_dir} || error "scfg_erratpld"
+  test -d ${automnt_dir} || error "$scfg_erradir"
+  strinstr "/" ${automnt_dir} || error "$scfg_erratpld"
   echo -e "/${automnt_dir}\t/etc/auto.${automnt_dir}\n" \
     >> /mnt/etc/auto.master
   echo -e "# /etc/auto.${automnt_dir} created by $0:\n" \
@@ -207,11 +207,6 @@ if [ -n "${automnt_src}" ] ; then
   # portmapper is needed for remote NFS sources
   config_portmap
 fi
-echo -e "# /etc/${D_SYSCONFDIR}/autofs - file modified by\n#\t$0:\n#" \
-  > /etc/autofs
-sed -e "s,AUTOFS_OPTIONS.*,AUTOFS_OPTIONS=\"--timeout 3\"," \
-  /mnt/etc/${D_SYSCONFDIR}/autofs >> /etc/autofs
-cp /etc/autofs /mnt/etc/${D_SYSCONFDIR}/autofs
 config_automount
 # fi
 
