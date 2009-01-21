@@ -340,6 +340,13 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
            "/dev/vmnet8 c 119 8" "/dev/vmmon c 10 165"; do
     mknod $i
   done
+  # create the vmware startup configuration file /etc/vmware/locations
+  # fixme --> ToDo
+  # echo -e "answer VNET_8_NAT yes\nanswer VNET_8_HOSTONLY_HOSTADDR \n\
+#192.168.100.1\nanswer VNET_8_HOSTONLY_NETMASK 255.255.255.0\n\
+#file /etc/vmware/vmnet8/dhcpd/dhcpd.conf\n\
+# remove_file /etc/vmware/not_configured" >/mnt/etc/vmware/locations
+
   chmod 0700 /dev/vmnet*
   chmod 1777 /mnt/etc/vmware/fd-loop
   # loop file for exchanging information between linux and vmware guest
