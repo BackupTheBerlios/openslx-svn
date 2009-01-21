@@ -82,20 +82,6 @@ sub linkFile
 	return;
 }
 
-sub checkFlags
-{
-	my $flags = shift || confess 'need to pass in flags-hashref!';
-	my $knownFlags  = shift || confess 'need to pass in knownFlags-arrayref!';
-
-	my %known;
-	@known{@$knownFlags} = ();
-	foreach my $flag (keys %$flags) {
-		next if exists $known{$flag};
-		cluck("flag '$flag' not known!");
-	}
-	return;
-}
-
 sub slurpFile
 {
 	my $fileName = shift || confess 'need to pass in fileName!';

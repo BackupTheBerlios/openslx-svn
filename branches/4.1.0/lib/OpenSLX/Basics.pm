@@ -23,13 +23,14 @@ $VERSION = 1.01;
 @ISA     = qw(Exporter);
 
 @EXPORT = qw(
-  &openslxInit %openslxConfig %cmdlineConfig
-  &_tr &trInit
-  &warn &die &croak &carp &confess &cluck
-  &callInSubprocess &executeInSubprocess &slxsystem
-  &vlog
-  &instantiateClass
-  &addCleanupFunction &removeCleanupFunction
+	&openslxInit %openslxConfig %cmdlineConfig
+	&_tr &trInit
+	&warn &die &croak &carp &confess &cluck
+	&callInSubprocess &executeInSubprocess &slxsystem
+	&vlog
+	&checkFlags
+	&instantiateClass
+	&addCleanupFunction &removeCleanupFunction
 );
 
 our (%openslxConfig, %cmdlineConfig, %openslxPath);
@@ -128,7 +129,7 @@ my %cleanupFunctions;
 # filehandle used for logging:
 my $openslxLog = *STDERR;
 
-$Carp::CarpLevel = 3;
+$Carp::CarpLevel = 1;
 
 # ------------------------------------------------------------------------------
 sub vlog
@@ -462,12 +463,31 @@ sub _doThrowOrWarn
 }
 
 # ------------------------------------------------------------------------------
+sub checkFlags
+{
+	my $flags = shift || confess 'need to pass in flags-hashref!';
+	my $knownFlags  = shift || confess 'need to pass in knownFlags-arrayref!';
+
+	my %known;
+	@known{@$knownFlags} = ();
+	foreach my $flag (keys %$flags) {
+		next if exists $known{$flag};
+		cluck("flag '$flag' not known!");
+	}
+	return;
+}
+
+# ------------------------------------------------------------------------------
 sub instantiateClass
 {
-	my $class            = shift;
-	my $requestedVersion = shift;
+	my $class = shift;
+	my $flags = shift || {};
 
-	my $moduleName = $class;
+	checkFlags($flags, ['pathToClass', 'version']);
+	my $pathToClass      = $flags->{pathToClass};
+	my $requestedVersion = $flags->{version};
+
+	my $moduleName = defined $pathToClass ? "$pathToClass/$class" : $class;
 	$moduleName =~ s[::][/]g;
 	$moduleName .= '.pm';
 	unless (eval { require $moduleName } ) {
