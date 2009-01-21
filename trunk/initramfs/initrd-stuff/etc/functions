@@ -197,7 +197,8 @@ mount -n -t nfs -o ro,nolock,tcp $nfsroot $dest || \
 return $ret
 }
 #############################################################################
-# disk formatter and mounter
+# disk formatter and mounter. some proper error message output should be
+# added
 diskfm () {
 local target=$1
 local fs
