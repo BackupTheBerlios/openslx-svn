@@ -455,6 +455,11 @@ fi
 if [ -n "${use_dhclient}" ] ; then
   if binfinder dhclient ; then
     cobi dhclient bin
+    if [ "$DISTRO_NAME" = "ubuntu" ] ; then
+      #Dhclient auf Ubu 6.10 streikt ohne libnss_compat
+      echo "/lib/libnss_compat.so.2" >> ${INSTDIR}/tmp/libraries
+      echo "/lib/libnsl.so.1" >> ${INSTDIR}/tmp/libraries
+    fi
   else
     echo "dhclient is not available"
   fi
