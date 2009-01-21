@@ -33,14 +33,18 @@ use OpenSLX::OSExport::Engine;
 my (
 	$helpReq,
 	$manReq,
-	$listReq,
+	$listExportedReq,
+	$listInstalledReq,
+	$listTypesReq,
 	$verbose,
 	$versionReq,
 );
 
 GetOptions(
 	'help|?' => \$helpReq,
-	'list' => \$listReq,
+	'list-exported' => \$listExportedReq,
+	'list-installed' => \$listInstalledReq,
+	'list-types' => \$listTypesReq,
 	'man' => \$manReq,
 	'verbose' => \$verbose,
 	'version' => \$versionReq,
@@ -54,9 +58,29 @@ if ($versionReq) {
 
 openslxInit();
 
-if ($listReq) {
+if ($listExportedReq) {
+	print _tr("List of exported vendor-OSes:\n");
+	foreach my $type (sort keys %supportedExportTypes) {
+		print join('', map {
+						s[^.+/][];
+						"\t$type/$_\n";
+					   }
+					   sort <$openslxConfig{'export-path'}/$type/*>);
+	}
+	exit 1;
+}
+if ($listInstalledReq) {
+	print _tr("List of installed vendor-OSes:\n");
+	print join('', map {
+					s[^.+/][];
+					"\t$_\n";
+				   }
+				   sort <$openslxConfig{'stage1-path'}/*>);
+	exit 1;
+}
+if ($listTypesReq) {
 	print _tr("List of supported export types:\n\t");
-	print join("\n\t", keys %supportedExportTypes)."\n";
+	print join("\n\t", sort keys %supportedExportTypes)."\n";
 	exit 1;
 }
 
@@ -109,7 +133,15 @@ slxos-export [options] <vendor-os-name> <export-type>
 
 Prints a brief help message and exits.
 
-=item B<--list>
+=item B<--list-exported>
+
+Lists all exported vendor-OSes and exits.
+
+=item B<--list-installed>
+
+Lists all installed vendor-OSes and exits.
+
+=item B<--list-types>
 
 Lists all supported export types and exits.
 
