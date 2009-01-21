@@ -111,8 +111,12 @@ echo "noldap" > /tmp/ldap-done
 # standard path (.../tftpboot/client-config/ ...)
 file="yes"
 
-# splashy stuff
-export nosplash=0
+# splashy stuff seems to depend on /proc/fb with VESA!?
+if cat /proc/fb |grep VESA > /dev/null 2>&1 ; then 
+  export nosplash=0
+else
+  export nosplash=1
+fi
 
 # read kernel commandline
 read KCMDLINE < /proc/cmdline
