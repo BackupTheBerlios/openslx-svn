@@ -181,8 +181,9 @@ line in $0\nnfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
     # deprecated: nfs server and path (will be removed soon)
     nfsroot=*)
       nfsroot=${opts#nfsroot=}
-      #root_path=
-      #nfsserver=
+      # conversion to new system:
+      root_path=${nfsroot#*:}
+      nfsserver=${nfsroot%:*}
       echo -e "\n# nfs root information gotten via kernel command line in $0\n\
 nfsroot=\"${nfsroot}\"\n" >> /etc/machine-setup
     ;;
