@@ -191,7 +191,7 @@ test -n "$domain_name_servers" && {
 # delete and create runlevel links for initial booting (SuSE, Debian, Ubuntu,
 # Fedora, ...)
 # splashy stuff
-if [ ${DEBUGLEVEL} = 0 -a ${nosplash} = 0 ]; then
+if [ ${nosplash} = 0 ]; then
   D_INITSCRIPTS="${D_INITSCRIPTS} splashy.stop"
   d_mkrlscript init splashy.stop "Stopping Splashy ..."
   echo -e "\t/var/lib/openslx/bin/splashy_update exit 2>/dev/null
@@ -271,7 +271,8 @@ auto.master." >/mnt/etc/auto.misc
         >> /mnt/etc/auto.${automnt_dir}
       # no tempfs needed if automounter operates on /home
       [ "${automnt_dir}" = "home" ] && umount -t tmpfs /mnt/home 2>/dev/null
-      # portmapper is needed for remote NFS sources
+      # portmapper is needed for remote NFS sources and local nfs directories
+      testmkd /mnt/var/lib/nfs/state
       config_portmap
     fi
   fi
@@ -469,7 +470,8 @@ if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
     *)
     tmpserv=$(uri_token $scratch server)
     tmppath=$(uri_token $scratch path)
-    # fixme - use nfsmnt and pass info on rw
+    # hanging mount processes might stop further setup - timeout
+    # should be configured ...
     mount -t nfs -o rw,nolock,intr,nodev,soft,timeo=2,nosuid \
       ${tmpserv}:${tmppath} /tmp/scratch >/dev/null 2>&1 && {
       mkdir -p /tmp/scratch/${clientip} >/dev/null 2>&1
@@ -555,11 +557,9 @@ $0: $date\n:0 local X :0 vt07\n" >/mnt/etc/X11/xdm/Xservers
       resmgr revoke nobody
       resmgr logout tty7
       killall X" >/mnt/var/X11R6/bin/kiosk
-      # early start of kiosk session if not late_dm is set
-      if [ "x$late_dm" != "xyes" ] ; then
-        echo -e "\t# kiosk start added by $0\n\t\
+      # early start of kiosk session
+      echo -e "\t# kiosk start added by $0\n\t\
 /var/X11R6/bin/kiosk &>/dev/null &" >>/mnt/etc/${D_INITDIR}/boot.slx
-      fi
       cp /etc/startgui /mnt/var/X11R6/bin
       chmod a+x /mnt/var/X11R6/bin/kiosk /mnt/var/X11R6/bin/startgui
       rm /mnt/var/run/kiosk 2>/dev/null
