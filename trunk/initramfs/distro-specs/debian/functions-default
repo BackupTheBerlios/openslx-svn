@@ -28,17 +28,6 @@ config_distro () {
   sed -e "s/.*initdefault/id:${D_INITDEFAULT}:initdefault/" -i /mnt/etc/inittab
 }
 
-# distro specific general function called from servconfig script
-config_distro () {
-# add the halt link to the 0 and 6 runlevel directories
-  ln -sf ../halt /mnt/etc/rc0.d/S90halt
-  ln -sf ../reboot /mnt/etc/rc6.d/S90reboot
-
-  # set default runlevel
-  sed -e "s/.*initdefault/id:${D_INITDEFAULT}:initdefault/" -i /mnt/etc/inittab
-}
-
-
 # linking runlevel scripts
 rllinker () {
 local script="$1"
@@ -189,6 +178,7 @@ done
 consolefont () {
 echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
   >>/mnt/etc/${D_INITDIR}/boot.slx
+chmod 744 /mnt/etc/${D_INITDIR}/boot.slx
 # fixme!! check for proper operation
 sed -e "s,LANGUAGE=.*,LANGUAGE=\"${LANG}\" # set within initramfs," \
     -e "s,LANG=.*,LANG=\"${LANG}\" # set within initramfs," \
