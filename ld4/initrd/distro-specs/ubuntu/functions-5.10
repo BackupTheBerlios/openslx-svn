@@ -31,6 +31,7 @@ config_distro () {
 # fixmee!! check ...
 #  ln -sf ../halt /mnt/etc/rc0.d/S90halt
 #  ln -sf ../halt /mnt/etc/rc6.d/S90reboot
+ :
 }
 
 # AUS SuSE-9.3
@@ -264,8 +265,8 @@ variable \${automnt_dir} appropriately in\n  machine-setup file." nonfatal
   echo -e "# /etc/sysconfig/autofs - file modified by\n#\t$0:\n#" \
     > /etc/autofs
   sed -e "s,AUTOFS_OPTIONS.*,AUTOFS_OPTIONS=\"--timeout 3\"," \
-    /mnt/etc/sysconfig/autofs >> /etc/autofs
-  cp /etc/autofs /mnt/etc/sysconfig/autofs
+    /mnt/etc/${D_SYSCONFDIR}/autofs >> /etc/autofs
+  cp /etc/autofs /mnt/etc/${D_SYSCONFDIR}/autofs
   config_portmap
   rllinker "autofs" "18" "04"
 fi
