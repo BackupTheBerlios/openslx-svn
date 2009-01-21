@@ -46,10 +46,10 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 	}
 	my $user = (getpwuid($>))[0];
 	vlog(1, "trying to connect user <$user> to mysql-database <$dbSpec>");
-	$self->{'dbh'} =
-	  DBI->connect("dbi:mysql:$dbSpec", $user, '', {PrintError => 0})
-	  or die _tr("Cannot connect to database <%s> (%s)", $dbSpec, $DBI::errstr);
-	return;
+	$self->{'dbh'} = DBI->connect(
+		"dbi:mysql:$dbSpec", $user, 'secret', {PrintError => 0}
+	) or die _tr("Cannot connect to database '%s' (%s)", $dbSpec, $DBI::errstr);
+	return 1;
 }
 
 sub schemaConvertTypeDescrToNative

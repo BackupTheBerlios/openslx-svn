@@ -49,10 +49,10 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 		$dbSpec = "dbname=$dbPath/$openslxConfig{'db-name'}";
 	}
 	vlog(1, "trying to connect to SQLite-database <$dbSpec>");
-	$self->{'dbh'} =
-	  DBI->connect("dbi:SQLite:$dbSpec", undef, undef,
-		{PrintError => 0, AutoCommit => 1})
-	  or die _tr("Cannot connect to database <%s> (%s)", $dbSpec, $DBI::errstr);
+	$self->{'dbh'} = DBI->connect(
+		"dbi:SQLite:$dbSpec", undef, undef,	
+		{PrintError => 0, AutoCommit => 1, unicode => 1}
+	) or die _tr("Cannot connect to database <%s> (%s)", $dbSpec, $DBI::errstr);
 	return 1;
 }
 

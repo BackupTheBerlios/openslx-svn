@@ -31,11 +31,14 @@ $VERSION = 1.01;
 	&checkFlags
 	&instantiateClass
 	&addCleanupFunction &removeCleanupFunction
+	&glob
 );
 
 our (%openslxConfig, %cmdlineConfig, %openslxPath);
 
-use subs qw(die warn);
+use subs qw(die warn glob);
+
+use open ':utf8';
 
 ################################################################################
 ### Module implementation
@@ -47,6 +50,8 @@ use Carp::Heavy;    # use it here to have it loaded immediately, not at
                     # be at a point in time where the script executes in
                     # a chrooted environment, such that the module can't
                     # be loaded anymore).
+use Encode;
+require File::Glob;
 use FindBin;
 use Getopt::Long;
 use POSIX qw(locale_h);
@@ -149,7 +154,7 @@ sub openslxInit
 {
 	# evaluate cmdline arguments:
 	Getopt::Long::Configure('no_pass_through');
-	GetOptions(%openslxCmdlineArgs) or return 0;
+	GetOptions(%openslxCmdlineArgs);
 
 	# try to read and evaluate config files:
 	my $configPath = $cmdlineConfig{'config-path'}
@@ -220,25 +225,19 @@ sub openslxInit
 # ------------------------------------------------------------------------------
 sub trInit
 {
-
-	# set the specified locale...
-	setlocale(LC_ALL, $openslxConfig{'locale'});
-
-	# ...and activate automatic charset conversion on all I/O streams:
+	# activate automatic charset conversion on all the standard I/O streams,
+	# just to give *some* support to shells in other charsets:
 	binmode(STDIN,  ":encoding($openslxConfig{'locale-charmap'})");
 	binmode(STDOUT, ":encoding($openslxConfig{'locale-charmap'})");
 	binmode(STDERR, ":encoding($openslxConfig{'locale-charmap'})");
-	use open ':locale';
 
 	my $locale = $openslxConfig{'locale'};
 	if (lc($locale) eq 'c') {
-
 		# treat locale 'c' as equivalent for 'posix':
 		$locale = 'posix';
 	}
 
 	if (lc($locale) ne 'posix') {
-
 		# parse locale and canonicalize it (e.g. to 'de_DE') and generate
 		# two filenames from it (language+country and language only):
 		if ($locale !~ m{^\s*([^_]+)(?:_(\w+))?}) {
@@ -472,6 +471,14 @@ sub _doThrowOrWarn
 		$func->("$msg\n");
 	}
 	return;
+}
+
+# ------------------------------------------------------------------------------
+sub glob
+{
+	return map {
+		decode('utf8', $_);
+	} File::Glob::bsd_glob(@_);
 }
 
 # ------------------------------------------------------------------------------
