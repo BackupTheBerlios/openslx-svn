@@ -116,10 +116,13 @@ if [ "x$start_cron" = "xyes" ] ; then
   fi 
 fi
 }
-# syslog service (different syslogs might be present)
+# syslog service (use syslog-ng for all versions)
 config_syslog () {
 if [ "x$start_syslog" != "xno" ] ; then
   if [ -f /mnt/etc/${D_INITDIR}/syslog ] ; then
+    sed -e "1i# modified in InitRamFS by $0" \
+        -e "s,SYSLOG_DAEMON=.*,SYSLOG_DAEMON=\"syslog-ng\"," \
+        -i /mnt/etc/sysconfig/syslog
     # logoutput depending on $start_syslog definitions
     sysngwriter /mnt/etc/syslog-ng/syslog-ng.conf
     rllinker syslog "02" "20"
