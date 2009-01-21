@@ -64,11 +64,10 @@ echo -e "# modified within initial ramfs/stage3\n/depend/a\\" >>/tmp/sedscript
 echo -e "\tafter $1\n}" >> /tmp/sedscript
 }
 
-
 # setup initial boot scripts (rather strange concept I did not get 
 # completely)
 initial_boot () {
-after=""
+local after=""
 local script
 d_mkrlscript init boot "Starting Gentoo base initialization"
 cat >>/mnt/etc/${D_INITDIR}/boot <<EOF
@@ -92,16 +91,17 @@ cat >>/mnt/etc/${D_INITDIR}/boot <<EOF
         eend \${ret} "\${errstr}"
 EOF
 d_mkrlscript close boot
-
-for script in boot boot.ld "${D_INITSCRIPTS}" ; do
-  ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/$i
+for script in boot boot.ld ${D_INITSCRIPTS} ; do
   # to get a certain order of scripts the after token of depends () might be
   # used
   rllinker "$script" "$after"
   after=$script
 done
+ls /mnt/etc/runlevels/boot
 # avoid the bullshit of "system initialization"
 sed -e "s/# System init.*//;s/si::.*//" -i /mnt/etc/inittab
+# initial script which is executed last
+lastinit=$after
 }
 
 # initialize boot.ld - skript to be executed during early system startup
@@ -209,17 +209,16 @@ local value=$2
 sed -e "s,$var=.*,$var=\"$value\"," -i /mnt/etc/rc.conf
 }
 
-# general display manager stuff
+# general display manager stuff like runlevel link and config file entry
 config_dm_entry () {
 local displmng=$1
-if [ -f /mnt/etc/${D_INITDIR}/${displmng} ] ; then
+if [ -f /mnt/etc/${D_INITDIR}/xdm ] ; then
   config_rc_entry "DISPLAYMANAGER" "${displmng}"
-  echo "Linking ${displmng}"
   if [ "x$late_dm" = "xyes" ] ; then
-    rllinker ${displmng}
+    rllinker xdm
   else
     D_INITSCRIPTS="${D_INITSCRIPTS} ${displmng}"
-    rllinker ${displmng} localmount
+    rllinker xdm "${lastinit}"
   fi
 else
   error "" nonfatal
