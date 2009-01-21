@@ -125,6 +125,10 @@ sub exportVendorOS
 {
 	my $self = shift;
 
+	if (!$self->{'exporter'}->checkRequirements($self->{'vendor-os-path'})) {
+		die _tr("clients wouldn't be able to access the exported root-fs!\nplease install the missing module(s) or use another export-type.");
+	}
+
 	$self->{'exporter'}->exportVendorOS(
 		$self->{'vendor-os-path'},
 		$self->{'export-path'}

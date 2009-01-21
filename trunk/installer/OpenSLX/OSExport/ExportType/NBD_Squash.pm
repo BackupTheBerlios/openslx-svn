@@ -72,17 +72,19 @@ sub checkRequirements
 	while (-l "$vendorOSPath/boot/$kernel") {
 		$kernel = readlink "$vendorOSPath/boot/$kernel";
 	}
-	if ($kernel !~ m[^vmlinuz-(.+?)(\..+)?$]) {
+	if ($kernel !~ m[^vmlinuz-(.+)$]) {
 		die _tr("unable to determine version of kernel '%s'!", $kernel);
 	}
 	my $kernelVer = $1;
 	if (!-e "$vendorOSPath/lib/modules/$kernelVer/kernel/drivers/block/nbd.ko") {
-		warn _tr("unable to find nbd-module for kernel '%s',\nclients wouldn't be able to access the exported root-fs!",
-				 $kernel);
+		warn _tr("unable to find nbd-module for kernel version '%s'.",
+				 $kernelVer);
+		return 0;
 	}
 	if (!-e "$vendorOSPath/lib/modules/$kernelVer/kernel/fs/squashfs.ko") {
-		warn _tr("unable to find squashfs-module for kernel '%s',\nclients wouldn't be able to access the exported root-fs!",
-				 $kernel);
+		warn _tr("unable to find squashfs-module for kernel version '%s'.",
+				 $kernelVer);
+		return 0;
 	}
 }
 
