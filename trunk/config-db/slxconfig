@@ -92,6 +92,10 @@ elsif ($action =~ m[^list-e]) {
 	print _tr("List of exports:\n");
 	listExports(@ARGV);
 }
+elsif ($action =~ m[^list-g]) {
+	print _tr("List of groups:\n");
+	listGroups(@ARGV);
+}
 elsif ($action =~ m[^list-s]) {
 	print _tr("List of systems:\n");
 	listSystems(@ARGV);
@@ -212,13 +216,43 @@ sub listClients
 		'client', undef,
 		map {
 			my @sysIDs = $openslxDB->fetchSystemIDsOfClient($_->{id});
-			$_->{systems} = join "\n", map { $_->{name} }
-				sort { $a->{name} cmp $b->{name} }
-				$openslxDB->fetchSystemByID(\@sysIDs, 'name');
+			$_->{systems} 
+				=	join "\n", 
+					map { $_->{name} }
+					sort { $a->{name} cmp $b->{name} }
+					$openslxDB->fetchSystemByID(\@sysIDs, 'name');
 			$_;
 		}
 		sort { $a->{name} cmp $b->{name} } 
-			 $openslxDB->fetchClientByFilter(\%nameSpec)
+		$openslxDB->fetchClientByFilter(\%nameSpec)
+	);
+	return;
+}
+
+sub listGroups
+{
+	my $name = _cleanName(shift);
+
+	my %nameSpec;
+
+	# set verbose mode if any params have been passed in:
+	if (defined $name) {
+		$verbose = 1;
+		$nameSpec{name} = $name;
+	}
+
+	dumpElements(
+		'groups', undef,
+		map {
+			my @sysIDs = $openslxDB->fetchSystemIDsOfGroup($_->{id});
+			$_->{systems} 
+				=	join "\n", map { $_->{name} }
+					sort { $a->{name} cmp $b->{name} }
+					$openslxDB->fetchSystemByID(\@sysIDs, 'name');
+			$_;
+		}
+		sort { $a->{name} cmp $b->{name} } 
+		$openslxDB->fetchGroupByFilter(\%nameSpec)
 	);
 	return;
 }
@@ -249,9 +283,9 @@ sub listExports
 				$_->{vendor_os_id} .= " ($vendorOS->{name})";
 			}
 			$_;
-			}
-			sort { $a->{name} eq $b->{name} || $a->{type} cmp $b->{type} }
-			$openslxDB->fetchExportByFilter(\%nameSpec)
+		}
+		sort { $a->{name} eq $b->{name} || $a->{type} cmp $b->{type} }
+		$openslxDB->fetchExportByFilter(\%nameSpec)
 	);
 	return;
 }
@@ -272,17 +306,19 @@ sub listSystems
 		'system', undef,
 		map {
 			my @clientIDs = $openslxDB->fetchClientIDsOfSystem($_->{id});
-			$_->{clients} = join "\n", map { $_->{name} }
-				sort { $a->{name} cmp $b->{name} }
-				$openslxDB->fetchClientByID(\@clientIDs, 'name');
+			$_->{clients} 
+				=	join "\n", 
+					map { $_->{name} }
+					sort { $a->{name} cmp $b->{name} }
+					$openslxDB->fetchClientByID(\@clientIDs, 'name');
 			my $export = $openslxDB->fetchExportByID($_->{export_id});
 			if (defined $export) {
 				$_->{export_id} = "$export->{name} ($export->{type})";
 			}
 			$_;
-			}
-			sort { $a->{name} cmp $b->{name} }
-			$openslxDB->fetchSystemByFilter(\%nameSpec)
+		}
+		sort { $a->{name} cmp $b->{name} }
+		$openslxDB->fetchSystemByFilter(\%nameSpec)
 	);
 	return;
 }
@@ -301,7 +337,7 @@ sub listVendorOSes
 
 	dumpElements('vendor-OS', undef,
 		sort { $a->{name} cmp $b->{name} }
-			$openslxDB->fetchVendorOSByFilter(\%nameSpec));
+		$openslxDB->fetchVendorOSByFilter(\%nameSpec));
 	return;
 }
 
@@ -319,13 +355,14 @@ sub searchClients
 		'client', undef,
 		map {
 			my @sysIDs = $openslxDB->fetchSystemIDsOfClient($_->{id});
-			$_->{systems} = join "\n", map { $_->{name} }
-				sort { $a->{name} cmp $b->{name} }
-				$openslxDB->fetchSystemByID(\@sysIDs, 'name');
+			$_->{systems} 
+				=	join "\n", map { $_->{name} }
+					sort { $a->{name} cmp $b->{name} }
+					$openslxDB->fetchSystemByID(\@sysIDs, 'name');
 			$_;
-			}
-			sort { $a->{name} cmp $b->{name} }
-			$openslxDB->fetchClientByFilter($clientData)
+		}
+		sort { $a->{name} cmp $b->{name} }
+		$openslxDB->fetchClientByFilter($clientData)
 	);
 	return;
 }
@@ -354,9 +391,9 @@ sub searchExports
 				$_->{vendor_os_id} .= " ($vendorOS->{name})";
 			}
 			$_;
-			}
-			sort { $a->{name} eq $b->{name} || $a->{type} cmp $b->{type} }
-			$openslxDB->fetchExportByFilter($exportData)
+		}
+		sort { $a->{name} eq $b->{name} || $a->{type} cmp $b->{type} }
+		$openslxDB->fetchExportByFilter($exportData)
 	);
 	return;
 }
