@@ -79,6 +79,14 @@ sub createSquashFS
 		# causes the filesystem to grow somewhat, so we remove it in order to
 		# get the smallest FS-file possible.
 
+	my $baseDir = dirname($target);
+	if (!-e $baseDir) {
+		if (system("mkdir -p $baseDir")) {
+			die _tr("unable to create directory '%s', giving up! (%s)\n",
+					$baseDir, $!);
+		}
+	}
+
 	# dump filter to a file ...
 	my $filterFile = "/tmp/slx-nbdsquash-filter-$$";
 	open(FILTERFILE,"> $filterFile")
