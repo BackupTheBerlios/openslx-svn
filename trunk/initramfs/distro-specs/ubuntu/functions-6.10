@@ -33,26 +33,6 @@ config_distro () {
   # how that is done for upstart??
 }
 
-# udev/hotplug - auto device discovery service
-# fixme: why does nothing happens here!? If default should be used just
-# skip that function here!! 
-# Result: 1 is bad, 0 is good
-udev_hotplug () {
-  local result=0
-  [ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "$df_errhotpl" nonfatal
-  echo "Enabling hotplug/udev"
-  #udevstart && result=0
-  #udevtrigger && result=0
-  udevd --daemon || result=1
-  [ ! -e /sbin/udevsend ] && result=1
-  echo "/sbin/udevsend/" > /proc/sys/kernel/hotplug
-  mkdir -p /dev/.udev/db /dev/.udev/queue
-  trigger_device_events
-  return $result
-:
-}
-
-
 
 
 
