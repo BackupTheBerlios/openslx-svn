@@ -84,6 +84,8 @@ openslxInit();
 
 my $openslxDB = connectConfigDB();
 
+my $settings = fetchSettings($openslxDB);
+
 my $clientConfigPath = "$openslxConfig{'private-path'}/config";
 if (!-d $clientConfigPath) {
 	die _tr("Unable to access client-config-path '%s'!", $clientConfigPath);
@@ -174,6 +176,20 @@ sub writeAttributesToFile
 		}
 	}
 	close(ATTRS);
+}
+
+sub writeSlxConfigToFile
+{
+	my $slxConf = shift;
+	my $fileName = shift;
+
+	return		if $dryRun;
+
+	open(SLXCONF, "> $fileName")		or die "unable to write to $fileName";
+	foreach my $key (sort keys %$slxConf) {
+		print SLXCONF qq[$key="$slxConf->{$key}"\n];
+	}
+	close(SLXCONF);
 }
 
 sub copyExternalSystemConfig
@@ -294,7 +310,28 @@ sub generateInitalRamFS
 	}
 	my $rootPath
 		= "$openslxConfig{'private-path'}/stage1/$vendorOS->{path}";
-	$cmd .= "-i $pxeSysPath/initramfs -r $rootPath";
+	$cmd .= "-i $pxeSysPath/initramfs -r $rootPath ";
+
+	# fill slxConf-hash...
+	my %slxConf;
+	# ...set date initrd has been generated...
+	my ($y, $m, $d) = localtime; $m++; $y+=1900;
+	$slxConf{'slxconf_date'} = sprintf('%04d-%02d-%02d', $y, $m, $d);
+	$slxConf{'slxconf_tftp_prefix'}
+		= $settings->{'use_absolute_tftp'}
+			? "$ENV{SLX_TFTPBOOT_PATH}/"
+			: "";
+	# ...set kernel version...
+	$setup->{'kernel'} =~ m[-(.+)$];
+	$slxConf{'slxconf_kernver'} = $1;
+	# ...set distro version...
+	$slxConf{'slxconf_distro'} = $vendorOS->{'name'};
+	# ...set list of network modules...
+	$slxConf{'slxconf_listnwmod'}
+		= $setup->{'ramfs_nicmods'} || $settings->{'default_nicmods'};
+	# ...now create slxconfig file and pass it to slxmkramfs:
+	writeSlxConfigToFile(\%slxConf, "$tempPath/slxconfig");
+	$cmd .= qq[-s "$tempPath/slxconfig" ];
 
 	$ENV{'SLX_PRIVATE_PATH'} = $openslxConfig{'private-path'};
 	$ENV{'SLX_PUBLIC_PATH'} = $openslxConfig{'public-path'};
