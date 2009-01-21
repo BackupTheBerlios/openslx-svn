@@ -204,7 +204,7 @@ esac
 }
 #############################################################################
 # load a certain module - name of module with path in argument one, the
-# error message in second argument
+# error message in second argument -- fixme!!
 loadmod () {
 local modpath=$1
 local module=`echo $modpath|sed -e "s,.*/,,"`
@@ -214,6 +214,15 @@ if [ -f $modpath ] ; then
   modprobe ${MODPRV} ${module#*.} || \
     echo "$error_modload '$module'. $msg"
 fi
+}
+modloader () {
+local path=$1
+local list=$2
+local mod
+for mod in $list ; do
+  insmod /lib/modules/${KERNEL}/${path}/${mod}.ko 2>/dev/null || \
+     modprobe ${MODPRV} ${mod}  2>/dev/null
+done
 }
 #############################################################################
 # compute prefix bit number from netmask

@@ -222,40 +222,40 @@ for section in Files ServerFlags Module InputDevice Monitor \
   echo -e "EndSection\n" >>$xfc
 done
 }
+#############################################################################
+# pre part
+hwpre () {
+echo "0 0 0 0" >/proc/sys/kernel/printk
+# start the knoppix hardware autodetection tool
+driverlist="parport parport_pc "
+# hack for pseudo modules (not to load) hopefully "usbcore" is present
+# as a module, might be exchanged with any other existing ...
+for i in $driverlist ; do 
+  echo -e "alias\t$i\tusbcore" >> /etc/modprobe.conf
+done
+( hwsetup -n -v > /tmp/hwsetup.info && echo "hwsetup" > /tmp/hwrun1 ) &
+( for mod in usbcore uhci-hcd ohci-hcd usbhid; do
+  modprobe -q $mod 2>/dev/null
+  usleep 5
+done; ) &
+return 0
+}
 
 #############################################################################
-# script starts here
+# network module part
+nwmod () {
+[ $DEBUGLEVEL -eq 20 ] && \
+  echo "** loading all defined network adaptor modules at $(sysup)"
+for mod in ${NWMODULES}; do
+  modprobe ${MODPRV} $mod || error "$init_errnwad"
+  usleep 5
+done
+return 0
+}
 
-# functions common for all distros
-. /etc/functions
-# functions common for all distros, messages contains all error and
-# info output
-. /etc/messages
-# load distro specific configuration variables and functions. distro
-# specific functions may overwrite functions defined in /etc/functions
-. /etc/sysconfig/config
-. /etc/distro-functions
-
-# script run timer
-[ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
-  echo "** HW setup started at $(sysup)"
-
-# heavy debugging output in level 3 and above and specific for 11
-[ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 8 -o $DEBUGLEVEL -eq 11 ] && \
-  set -x
-
-# set X11 configuration file
-if [ -n "${D_XF86CONFFILE}" ] ; then
-  D_XF86CONFFILE="/mnt/${D_XF86CONFFILE}"
-else
-  D_XF86CONFFILE="/mnt/etc/X11/xorg.conf"
-  error "$hcfg_xcfg" nonfatal
-fi
-
-# USB core is needed for presence of /proc/bus/usb (path seems to be deprecated
-# in recent kernels!?)
-modprobe ${MODPRV} usbcore &
-
+#############################################################################
+# main part
+hwmain () {
 # "drivers" (pseudo, placeholder strings, ...) to exclude from loading
 # depending on distro more hw modules have to be excluded too. use the
 # D_HWMODTOIGNORE for that purpose
@@ -276,14 +276,6 @@ done
 # and map the mousehandler to /dev/input/mice
 [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mousedev.ko ] && \
   modprobe ${MODPRV} mousedev
-
-# start the knoppix hardware autodetection tool
-( hwsetup -v > /tmp/hwsetup.info && echo "hwsetup" > /tmp/hwrun1 ) & 
-[ $DEBUGLEVEL -eq 21 ] && echo "** started 1st hwdetection at $(sysup)"
-
-# AGP configuration (agpgart and chipset specific driver) really needed?
-#modprobe ${MODPRV} agpgart || \
-#    modprobe ${MODPRV} agpgart agp_try_unsupported=1
 
 # wait for /tmp/hwsetup.info to appear
 waitfor /tmp/hwrun1 50000 || \
@@ -307,22 +299,16 @@ for driver in ata_piix sata_via sata_nv sata_sil sata_sis sata_svw \
     modprobe ${MODPRV} ${driver} &
     driverlist="${driverlist} ${driver}"; }
 done
-# check for USB, pcmcia and ieee1394 hardware drivers
-for driver in ohci-hcd uhci-hcd ehci-hcd ohci1394; do
+# check for USB2.0, pcmcia and ieee1394 hardware drivers
+for driver in ehci-hcd ohci1394; do
   strinfile " ${driver}" /tmp/hwsetup.info && {
     USB="yes"
     modprobe ${MODPRV} ${driver}
     driverlist="${driverlist} ${driver}"; }
 done
 [ -x /bin/mdev ] && mdev -s &
-# load usbhid (for USB keyboard/mouse) or remove usbcore module if USB 
-# is not present
-if [ -n "$USB" ] ; then
-  modprobe ${MODPRV} usbhid &
-else rmmod usbcore
-fi
-# remove unneeded network card modules
-for driver in ${NWMODULES}; do
+# remove unneeded network card and USB 1.1 modules
+for driver in ${NWMODULES} ohci-hcd uhci-hcd ; do
   strinfile " ${driver}" /tmp/hwsetup.info || {
     rmmod ${driver} &
     driverlist="${driverlist} ${driver}"; }
@@ -340,47 +326,17 @@ done
 if [ -n "${pcmcia}" ] ; then
   modprobe ${MODPRV} ds
 fi
-# sound card setup (alsa and oss compatibility drivers)
-if [ -f /etc/sysconfig/sound ] ; then
-  . /etc/sysconfig/sound
-  driver=${DRIVER}
-else driver="snd-dummy"
-fi
-# problem with a specific module not disabled (via above trick) when 
-# busybox is used
-#  rmmod snd_atiixp_modem snd_atiixp
-modprobe ${MODPRV} ${driver}
-driverlist="${driverlist} ${driver}"
-modprobe ${MODPRV} snd-pcm-oss 
-modprobe ${MODPRV} snd-mixer-oss
 
 [ $DEBUGLEVEL -eq 21 ] && echo "** module loading finished at $(sysup)"
 # rerun the knoppix hardware autodetection tool for USB and ide devices
 # like dvd or harddisk - wait a few seconds so hopefully the ide driver
 # is initialized 
 [ -x /bin/mdev ] && mdev -s &
-[ -n "$ide" ] && modprobe -q ide_generic 2>/dev/null 
 test -f /proc/bus/usb/devices || \
   mount -n -t usbfs usbfs /proc/bus/usb 2>/dev/null
 [ $DEBUGLEVEL -eq 21 ] && echo "** started 2nd hwdetection at $(sysup)"
 usleep 200 && hwsetup -v > /tmp/hwsetup.info
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
-# remaining drivers listed in /tmp/hwsetup.info
-cat /tmp/hwsetup.info| while read line ; do
-  if strinstr "driver:" "${line}"; then
-    driver=${line##driver: }
-    if ! strinstr " ${driver} " "${driverlist}"; then
-      strinstr "Card:" "${driver}" || strinstr "ps/2" "${driver}" || {
-        modprobe ${MODPRV} ${driver} &
-        usleep 50; }
-      driverlist="${driverlist} ${driver}"
-    fi
-  fi
-done
-# check if USB mouse and/or keyboard is connected and remove usbhid if
-# not (does not work properly)
-#strinfile "genericwheelusb" /tmp/hwsetup.info || \
-#  (strinfile "keybdev" /tmp/hwsetup.info || rmmod usbhid)
 
 # load IDE high level drivers
 if [ -n "$ide" ] ; then
@@ -404,24 +360,8 @@ if strinfile "SCSI" /tmp/hwsetup.info ; then
     echo -e 'KERNEL=="sg*",\t\tNAME="%k", GROUP="disk", MODE="666"' \
            >> /tmp/scanner-udev
 fi
-[ -x /bin/mdev ] && mdev -s &
+[ -x /bin/mdev ] && mdev -s
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished module loading at $(sysup)"
-
-# configure some variables from configuration file - wait for dhcp or ldap
-# confiurator to complete
-cfgcomplete
-. /etc/machine-setup
-[ $DEBUGLEVEL -eq 21 ] && echo "** finished waiting for config at $(sysup)"
-
-# run X11 / Xorg configurator if no xorg.conf file was provided by
-# ConfigTGZ (check for /rootfs/${D_XF86CONFFILE#/mnt})
-if [ -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then
-  echo "ready" > /tmp/xready
-else
-  . /etc/sysconfig/xserver >/dev/null 2>&1 || error "$hcfg_hwsetup" nonfatal
-  ( displaysetup /etc/xorg.conf; echo "ready" > /tmp/xready ) &
-fi
-  
 # get idea of availabe harddisk partitions, put swap partitions into
 # (/mnt)/etc/fstab and format and mount partitions of type 44 (unknown)
 [ $DEBUGLEVEL -eq 21 ] && echo "** starting hdd stuff at $(sysup)"
@@ -460,6 +400,60 @@ done
 [ -z "$part44" ] && echo "finished at $(sysup)" > /tmp/tmpready
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished hdd stuff at $(sysup)"
 
+# sound card setup (alsa and oss compatibility drivers)
+if [ -f /etc/sysconfig/sound ] ; then
+  . /etc/sysconfig/sound
+  driver=${DRIVER}
+else driver="snd-dummy"
+fi
+# problem with a specific module not disabled (via above trick) when
+# busybox is used
+#  rmmod snd_atiixp_modem snd_atiixp
+modprobe ${MODPRV} ${driver}
+driverlist="${driverlist} ${driver}"
+modprobe ${MODPRV} snd-pcm-oss
+modprobe ${MODPRV} snd-mixer-oss
+# remaining drivers listed in /tmp/hwsetup.info
+cat /tmp/hwsetup.info| while read line ; do
+  if strinstr "driver:" "${line}"; then
+    driver=${line##driver: }
+    if ! strinstr " ${driver} " "${driverlist}"; then
+      strinstr "Card:" "${driver}" || strinstr "ps/2" "${driver}" || {
+        modprobe ${MODPRV} ${driver} &
+        usleep 20; }
+      driverlist="${driverlist} ${driver}"
+    fi
+  fi
+done
+
+# check if USB mouse and/or keyboard is connected and remove usbhid if
+# not (does not work properly)
+#strinfile "genericwheelusb" /tmp/hwsetup.info || \
+#  (strinfile "keybdev" /tmp/hwsetup.info || rmmod usbhid)
+
+# configure some variables from configuration file - wait for dhcp or ldap
+# confiurator to complete
+cfgcomplete
+. /etc/machine-setup
+[ $DEBUGLEVEL -eq 21 ] && echo "** finished waiting for config at $(sysup)"
+
+# run X11 / Xorg configurator if no xorg.conf file was provided by
+# ConfigTGZ (check for /rootfs/${D_XF86CONFFILE#/mnt})
+# set X11 configuration file
+if [ -n "${D_XF86CONFFILE}" ] ; then
+  D_XF86CONFFILE="/mnt/${D_XF86CONFFILE}"
+else
+  D_XF86CONFFILE="/mnt/etc/X11/xorg.conf"
+  error "$hcfg_xcfg" nonfatal
+fi
+if [ -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then
+  echo "ready" > /tmp/xready
+else
+  . /etc/sysconfig/xserver >/dev/null 2>&1 || error "$hcfg_hwsetup" nonfatal
+  ( displaysetup /etc/xorg.conf; echo "ready" > /tmp/xready ) &
+fi
+  
+
 # wait for completion of clients root filesystem in /mnt and add
 # previously generated files to /mnt/etc ...
 #[ $DEBUGLEVEL -eq 21 ] && \
@@ -482,13 +476,44 @@ if [ -x /bin/mdev ] ; then
   testmkd /dev/input 
   mknod /dev/input/mice c 13 63 2>/dev/null
 fi
+return 0
+}
 
-# do not finish until tmp is setup properly
-#[ -n "$part44" ] && waitfor /tmp/tmpready 20000
-# not needed --> servconfig waits for it!
+#############################################################################
+# main script starts here
 
-# script run timer or debug information
+# functions common for all distros
+. /etc/functions
+# functions common for all distros, messages contains all error and
+# info output
+. /etc/messages
+# load distro specific configuration variables and functions. distro
+# specific functions may overwrite functions defined in /etc/functions
+. /etc/sysconfig/config
+. /etc/distro-functions
+
+# script run timer
 [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
-  echo "** HW setup finished at $(sysup)"
+  echo "** HW setup started at $(sysup)"
 
-echo "hwsetup finished at $(sysup)" > /tmp/hwcfg
+# heavy debugging output in level 3 and above and specific for 11
+[ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 8 -o $DEBUGLEVEL -eq 11 ] && \
+  set -x
+
+case $1 in
+  pre)
+    hwpre
+  ;;
+  nwmod)
+    nwmod
+  ;;
+  main)
+    hwmain
+    # main script run timer or debug information
+   [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
+      echo "** HW setup finished at $(sysup)"
+      echo "hwsetup finished at $(sysup)" > /tmp/hwcfg
+  ;;
+esac
+
+
