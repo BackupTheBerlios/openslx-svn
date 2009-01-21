@@ -187,15 +187,19 @@ sed -e "s,LANGUAGE=.*,LANGUAGE=\"${LANG}\" # set within initramfs," \
 
 # configure gdm as display manager
 config_gdm () {
-  ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/K20gdm
+ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/K20gdm
+if [ "x$late_dm" != "xyes" ] ; then
+  ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/S01gdm
+else
   echo -e "\t/etc/${D_INITDIR}/gdm start >${LOGFILE} 2>&1\n\
     \t( sleep 120; ln -sf /etc/${D_INITDIR}/gdm /etc/rc3.d/S01gdm \
     >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.slx
+fi
   # check for gdm user in passwd and group files
   # fixme!!
 #  echo "gdm:x:113:">>/mnt/etc/group
 #  echo "gdm:x:106:113:Gnome Display Manager:/var/lib/gdm:/bin/false" \
-    >>/mnt/etc/passwd
+#    >>/mnt/etc/passwd
 }
 
 # configure kdm as display manager
