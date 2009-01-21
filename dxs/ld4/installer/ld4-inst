@@ -14,6 +14,7 @@ header() {
   echo
 }
 
+
 # check needed things for installation
 precheck() {
   # check if running as root
@@ -52,6 +53,7 @@ ask() {
   echo "$2=\"$back\"" >> .config
 }
 
+
 distro_check() {
   case "${!1}" in
     Debian*|debian*|Sarge*|sarge*)
@@ -88,12 +90,13 @@ distro_check() {
           eval "$2=\"10.0\""
         ;;
         10*)
-          eval "$2=\"10.0\""
+          eval "$2=\"10.1\""
         ;;
       esac
     ;;
   esac
 }
+
 
 configure() {
   export LANG="c"
@@ -146,6 +149,7 @@ configure() {
     fi
   fi
 
+  # das grosse frage-antwort-spiel:
   ask "Server distribution: " server_distro ${server_distro}
   distro_check server_distro server_distro_ver
   echo "Using ${server_distro} as server distribution"
@@ -156,7 +160,6 @@ configure() {
 
   . config-${server_distro}
   
-  # das grosse frage-antwort-spiel:
   ask "Path for client system: " rootdir $rootdir
   ask "Path for tftpboot: " tftpbootdir $tftpbootdir
   ask "Which network do you want to use for DXS? (A.B.C.0) " netname $netname
@@ -181,41 +184,55 @@ configure() {
 
 copy_system() {
   rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-${client_distro} ${rsyncsource} ${rootdir}
+  # generate error message in case rsync didn't work and exit.
     
-  # mksquashfs
+  # mksquashfs (background process)
 }
+
 
 # setting up server site configuration files etc.
 setup_server () {
   # dhcp
   if [ -f ${dhcpd_conf} ] ; then
-    echo "Copying old dhcpd.conf to dhcpd.conf.bak"
-    mv ${dhcpd_conf} ${dhcpd_conf}.bak
+    echo "Copying old dhcpd.conf to dhcpd.conf.dxs.bak"
+    mv ${dhcpd_conf} ${dhcpd_conf}.dxs.bak
   fi
   cp default_files/dhcpd.conf ${dhcpd_conf}
-  sed -e "s,@@@server@@@,${server}"
+  sed -e "s,@@@server@@@,${server}," -i ${dhcpd_conf}
 
   # atftpd
   if [ -f ${atftpd_conf} ] ; then
-    echo "Copying old atftpd config file to ${atftpd_conf}.bak"
-    cp ${atftpd_conf} ${atftpd_conf}.bak
+    echo "Copying old atftpd config file to ${atftpd_conf}.dxs.bak"
+    cp ${atftpd_conf} ${atftpd_conf}.dxs.bak
   fi
-  sed -e 's,/tftpboot,${tftpbootdir},' -i ${atftpd_conf}
+  ## MISSING COPY - DISTRO SPECIFIC!!
+  sed -e "s,/tftpboot,${tftpbootdir}," -i ${atftpd_conf}
 
   # nfs
   exports_conf="/etc/exports"
   if [ -f ${exports_conf} ] ; then
-    echo "Copying old nfs export file to ${exports_conf}.bak"
-    mv ${exports_conf} ${exports_conf}.bak
+    echo "Copying old nfs export file to ${exports_conf}.dxs.bak"
+    mv ${exports_conf} ${exports_conf}.dxs.bak
   fi
+  echo "/nfsroot/dxs     ${netname}/${netmask}(ro,no_root_squash,async)" >> ${exports_conf}
   
-  # make services start
+  # pxe
+  if [ -e ${tftpbootdir} ] ; then
+    echo "Copying old tftpboot directory to ${tftpbootdir}.dxs.bak"
+    mv ${tftpbootdir} ${tftpbootdir}.dxs.bak
+  fi
+  cp -r default_files/tftpboot ${tftpbootdir}
+  sed -e "s,@@@server@@@,${server},g" -e "s,@@@tftpbootdir@@@,${tftpbootdir},g" -i ${tftpbootdir}/pxelinux.cfg/default
+
+  
+  # make services start  -- do we really want to do this?
 }
 
 
 create_initrd() {
-  # mkdxsinitrd
+  # ../mkdxsinitrd
 }
+
 
 
 ## ------ MAIN ------ ##
