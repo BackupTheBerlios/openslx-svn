@@ -99,6 +99,10 @@ if make install; then
     # For every link set the corresponding target with stripped prefix
     ln -sf ${link#*_SEPARATOR_}  ${link%_SEPARATOR_*}
   done;
+  #Correct location references in mkdxsinitrd:
+  for file in `grep -l --recursive /tmp/ld$$ /tmp/ld$$/* 2>/dev/null`; do 
+    sed -i 's#/tmp/ld[0-9]*##' $file
+  done;
 
   #Create the package
   dpkg-deb --build /tmp/ld$$ > /dev/null
