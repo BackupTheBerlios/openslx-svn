@@ -62,3 +62,9 @@ rootfs has the\n# prefix '/mnt'." \
 #and stage1\nfiles (please remove manually)"
 #	@rm -rf /usr/share/openslx
 #	@rm /usr/local/sbin/mkdxsinitrd
+
+clean:
+	@echo "Cleanup OpenSLX source directory "
+	@for file in openslx-*.tar.bz2; do \
+		rm -f $${file}; \
+	done
