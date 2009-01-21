@@ -180,9 +180,11 @@ echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
   >>/mnt/etc/${D_INITDIR}/boot.slx
 chmod 744 /mnt/etc/${D_INITDIR}/boot.slx
 # fixme!! check for proper operation
-sed -e "s,LANGUAGE=.*,LANGUAGE=\"${LANG}\" # set within initramfs," \
-    -e "s,LANG=.*,LANG=\"${LANG}\" # set within initramfs," \
-    -i /mnt/etc/environment
+# sed -e "s,LANGUAGE=.*,LANGUAGE=\"${LANG}\" # set within initramfs," \
+#     -e "s,LANG=.*,LANG=\"${LANG}\" # set within initramfs," \
+#     -i /mnt/etc/environment
+sed -e "s,LANG=.*,LANG=\"${LANG}\" # set within initramfs," \
+    -i /mnt/etc/default/locale
 }
 
 # configure gdm as display manager
