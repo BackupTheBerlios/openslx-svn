@@ -124,11 +124,12 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   fi
   if [ -n "${vmimgserv}" ] ; then
   testmkd /mnt/var/lib/vmware
-  case "${vmimgsprot}" in
+  case "${vmimgprot}" in
     *nbd)
     ;;
-    file)
-      # we expect the stuff on toplevel directory  
+    lbdev)
+      # we expect the stuff on toplevel directory, filesystem type should be
+      # autodetected here ... (vmimgserv is blockdev here) 
       mount -o ro /dev/${vmimgserv} /mnt/var/lib/vmware || error "$scfg_evmlm"
     ;;
     *)
