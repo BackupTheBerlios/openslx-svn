@@ -1044,12 +1044,12 @@ sub incrementGlobalCounter
 	my $self        = shift;
 	my $counterName = shift;
 
-	$self->start_transaction();
+	$self->startTransaction();
 	my $value = $self->fetchGlobalInfo($counterName);
 	return unless defined $value;
 	my $newValue = $value + 1;
 	$self->changeGlobalInfo($counterName, $newValue);
-	$self->commit_transaction();
+	$self->commitTransaction();
 
 	return $value;
 }
