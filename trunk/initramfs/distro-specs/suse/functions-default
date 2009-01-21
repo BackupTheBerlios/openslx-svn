@@ -3,11 +3,13 @@
 # inclusion of the main functions file). This file is the main base for the
 # several SuSE distro versions
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-12-2006
+# this file is distributed under the GPLv2, see ~/openslx/COPYING
+#
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 22-12-2006
 # mj0 09-11-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 OpenSLX.ORG Project
+# (c) 2006 OpenSLX GmbH
 
 # empty functions are defined at the beginning of /etc/functions
 

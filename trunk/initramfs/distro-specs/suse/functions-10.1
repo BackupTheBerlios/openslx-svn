@@ -1,11 +1,13 @@
 # configuration functions for SuSE 10.1 which differ from functions defined
 # in general SuSE base definitions ...  General changes should be done there,
-# version specific changes for the 10.1 go here.
+# version specific changes for the 10.1 go here
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-12-2006
+# this file is distributed under the GPLv2, see ~/openslx/COPYING
+#
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 22-12-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.ORG Project
+# (c) 2006 - OpenSLX GmbH
 
 # some specific stuff to initialize
 preinit () {
@@ -122,6 +124,8 @@ case "${XMODULE}" in
   radeon)
     # check ${XDESC}/ hwsetup.info device string in Cards file and then
     # for needed components
+    # not all radeon cards are properly supported by fglrx, so the decision on
+    # module might be done via hwsetup!?
     test -e /mnt/lib/modules/${KERNEL}/kernel/drivers/char/drm/fglrx.ko \
       && test -e /mnt/usr/X11R6/lib/modules/drivers/fglrx_drv.* && { 
         XMODULE=fglrx
@@ -129,7 +133,7 @@ case "${XMODULE}" in
         ln -sf /usr/X11R6/lib/libGL.so.1.2 \
           /mnt/usr/X11R6/lib/libGL.so.1 2>/dev/null
         }
-    # check whether to enable tvout
+    # check whether to enable tvout. option could be set in machine-setup
     if [ -n "$tvout" ] && [ "$tvout" != "no" -a "$tvout" != "NO" ] ; then
       [ "$tvout" = "yes" ] && tvout="PAL-B"
       TVOUT='\tOption\t\t"TVFormat" "'$tvout
@@ -137,7 +141,7 @@ case "${XMODULE}" in
     fi
   ;;
   nv)
-    # check for needed components
+    # check for needed components (kernel and libraries)
     test -e /mnt/lib/modules/${KERNEL}/kernel/drivers/char/drm/nvidia.ko \
       && test -e /mnt/usr/X11R6/lib/modules/drivers/nvidia_drv.* && {
         gllib=$(ls /mnt/usr/X11R6/lib/libGL.so.1.0.* 2>/dev/null|sed -n "1p")

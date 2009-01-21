@@ -1,13 +1,15 @@
 # configuration script for general Ubuntu to configure OpenSLX linux
 # diskless clients (executed within initial ramdisk after genconfig) 
 #
-# Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
+# this file is distributed under the GPLv2, see ~/openslx/COPYING
+#
+# Dirk von Suchodoletz <dirk@goe.net>, 22-12-2006
 # Nico Dietrich
 # Felix Endres
 # mj0, 12-12-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.ORG project
+# (c) 2006 - OpenSLX GmbH
 
 # empty functions are defined at the beginning of /etc/functions
 
@@ -23,7 +25,8 @@ preinit () {
 }
 
 
-#overwrite settings set by hwautocfg
+# overwrite settings set by hwautocfg, pathes will change for newer
+# Xorg version 7.X
 displayvars (){
 Files=' \t 	  FontPath\t\t       "/usr/share/X11/fonts/misc"\n
 \t        FontPath\t\t    "/usr/share/X11/fonts/100dpi/:unscaled"\n
