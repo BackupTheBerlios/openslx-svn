@@ -183,7 +183,8 @@ sub openslxInit
 sub trInit
 {
 	my $locale = $openslxConfig{'locale'};
-	$locale =~ tr[A-Z.\-][a-z__];
+	$locale =~ tr[A-Z.][a-z_];
+	$locale =~ tr[\-][]d;
 
 	my $trModule = "OpenSLX::Translations::$locale";
 	if ($loadedTranslationModule eq $trModule) {
@@ -196,7 +197,7 @@ sub trInit
 	if (eval "require OpenSLX::Translations::posix") {
 		%translations = %OpenSLX::Translations::posix::translations;
 	} else {
-		carp "Unable to load translations module 'posix' ($!).";
+		vlog 1, "Unable to load translations module 'posix' ($!).";
 	}
 
 	if ($locale ne 'posix') {
@@ -213,7 +214,7 @@ sub trInit
 			vlog 1, _tr("translations module %s loaded successfully",
 						$trModule);
 		} else {
-			carp "Unable to load translations module '$locale' ($!).";
+			vlog 1, "Unable to load translations module '$locale' ($!).";
 		}
 	}
 
