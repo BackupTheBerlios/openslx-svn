@@ -336,7 +336,11 @@ tftp -g -r $1 -l $dst $2 2>/dev/null
 # unpack part
 if [ -s $dst ] ; then
   # fixme: handle different types of packaging (gzip/bzip2)??
-  tar -xpzf $dst 2>/dev/null
+  if ! tar -xpzf $dst 2> /tmp/ConfTGZ-tar-error ; then
+     cat /tmp/ConfTGZ-tar-error
+     error "$unpack_ConfTGZ" nonfatal
+     rm /tmp/ConfTGZ-tar-error
+  fi
   [ "$DEBUGLEVEL" -le 2 -o "$DEBUGLEVEL" -eq 8  ] && rm $dst
   return 0
 else

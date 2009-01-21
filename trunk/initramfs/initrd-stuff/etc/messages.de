@@ -141,6 +141,8 @@ error_ldapcfg="  Die Konfiguration via ldap ist noch nicht implementiert."
 error_errdcfg="  Bis jetzt noch keine Konfigurationsdaten bekommen via dhcp .."
 error_errfcfg="  Bis jetzt noch keine Konfigurationsdaten bekommen via tftp ..."
 error_errlcfg="  Bis jetzt noch keine Konfigurationsdaten bekommen via ldap ..."
+unpack_ConfTGZ="  Fehler beim entpacken des ConfTGZ.\nSind Sie sicher, dass es im \
+richtigen Format ist?"
 
 
 # messages from distro functions
