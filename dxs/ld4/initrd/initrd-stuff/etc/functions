@@ -179,7 +179,7 @@ case $dhcp in
   dhclient)
     mkdhclconf $vci
     ln -s /bin/dhcpmkconfig /sbin/dhclient-script
-    dhclient -lf /var/lib/dhcp/dhclient.leases eth0 2>&1 >/dev/null || \
+    dhclient -q -lf /var/lib/dhcp/dhclient.leases eth0 2>&1 >/dev/null || \
       error "  Fatal error occured while trying to run dhclient.\n$commonerr" 
   ;;
   dhcpcd)

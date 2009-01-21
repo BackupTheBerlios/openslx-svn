@@ -45,3 +45,4 @@ INITSCRIPTS="boot.udev boot.proc boot.shm boot.klog boot.loadmodules boot.clock 
 XF86CONFFILE="/etc/X11/xorg.conf"
 XFONTPATH="/usr/X11R6/lib/X11/fonts/*"
 DEFAULTCOUNTRY="de"
+

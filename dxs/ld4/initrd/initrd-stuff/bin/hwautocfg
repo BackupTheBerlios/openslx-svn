@@ -132,7 +132,7 @@ complete\n  or non existant. The $0 script tried for a fully automatic\n\
   configuration of display"
 fi
 if [ -z "$HS" ] ; then error "  $msg timings requested but could not \
-establish horizontal\n  frequency in kHz." nonfatal
+establish\n  horizontal frequency in kHz." nonfatal
   HS=${HSYNCRANGE}
 fi
 if [ -z "$VS" ] ; then error "  $msg timings but could not establish \
@@ -294,9 +294,14 @@ DRIVERLIST=" "${DRIVERLIST}
 for DRIVER in ohci-hcd uhci-hcd ehci-hcd \
               ohci1394; do
   strinfile ${DRIVER} /tmp/hwsetup.info && {
+    USB="yes"
     modprobe ${MODPRV} ${DRIVER}
     DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
 done
+## modules for already plugged devices might not be loaded in ramdisk
+#if [ -n "$USB" ] ; then
+#  
+#fi 
 for DRIVER in yenta_socket i82365 pd6729 tcic; do
   strinfile ${DRIVER} /tmp/hwsetup.info && {
     modprobe ${MODPRV} ${DRIVER}

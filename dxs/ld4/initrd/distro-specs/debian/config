@@ -1,6 +1,7 @@
 # Description:  distro specific settings for Debian/Sarge
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-01-2006
+#               Blablub
 #
 # Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
 
@@ -16,13 +17,16 @@
 # anyhow
 # DISBINDMNT - any code which is specific in bind mount environment
 # RCDIRS - runlevel directories relative to /etc
-
+# XF86CONFFILE - name and location of XFree/Xorg config file, e.g.
+# /etc/X11/xorg.conf or /etc/X11/XF86config, ...
+# XFONTPATH - path(es) where X11 fonts are installed (with trailing /*)
+# DEFAULTCOUNTRY - localization (see common functions)
 
 SYSCONFDIR=/default
 DISETCEXCL="etc/gconf/*\n*.old\n*-\n\
-*.YaST2save\netc/autoinstall\nlogrotate*\nbootloader\n*~\n\
-*.SuSEconfig.saved\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
-X11/xdm/pixmaps\n*.rpmsave\ndhclient.script\ninit.d/boot.d/*\n\
+etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
+pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
+X11/xdm/pixmaps\ndhclient.script\ninit.d/boot.d/*\n\
 rc2.d/*\nrc5.d/*"
 BINDMPTS="tmp root home"
 DIRINBINDMNT="/var/run /var/log /var/tmp"
@@ -38,3 +42,6 @@ INITDIR="/init.d"
 INITBOOTD="/rcS.d"
 RCDIRS="/rc0.d /rc1.d /rc2.d /rc3.d /rc4.d /rc5.d /rc6.d"
 INITSCRIPTS="boot.udev boot.proc boot.shm boot.klog boot.loadmodules boot.clock boot.localnet boot.sysctl boot.ipconfig"
+XF86CONFFILE="/etc/X11/xorg.conf"
+XFONTPATH="/usr/X11R6/lib/X11/fonts/*"
+DEFAULTCOUNTRY="de"

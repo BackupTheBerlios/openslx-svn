@@ -275,6 +275,8 @@ DISTRO=suse
 case "${DISTRO}.${DISVER}" in
   SuSE*|suse*|Suse*|SuSe*)
 	DISTRO=suse-10.0
+        # hotplug/udev style and stuff
+	cp -a /etc/udev /etc/hotplug ${INSTDIR}/etc
 	;;
   Debian*|debian*|Sarge*|sarge*)
 	DISTRO=debian
@@ -334,8 +336,7 @@ for bbins in \
   cobi ${bbins} bin || echo "Program ${bbins} not found"
 done
 
-# style of hotplug/udev/dev
-cp -a /etc/udev ${INSTDIR}/etc
+# style of hotplug/udev/dev (for etc directories see above!!)
 for bbins in udev udevstart
   do
   cobi ${bbins} bin || echo "Program ${bbins} not found"

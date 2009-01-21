@@ -338,7 +338,7 @@ of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
 
 date
-ash
+#ash
 # IP configuration is made and should not be updated automatically
 killall -9 dhcpcd dhclient pump 2>/dev/null
 # unmount the bind mounted modules directory

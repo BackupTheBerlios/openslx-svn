@@ -2,7 +2,7 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-01-2006
 #		Blabla
 #		Blub
 #
@@ -164,4 +164,19 @@ config_dm () {
 consolefont () {
 echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
   >>/mnt/etc/${INITDIR}/boot.ld
+}
+
+# acpi and powersave
+config_acpi () {
+  echo >/dev/null
+}
+
+# configure xdm as display manager
+config_xdm () {
+  echo >/dev/null
+} 
+
+# configure gdm as display manager
+config_gdm () {
+  echo >/dev/null
 }
