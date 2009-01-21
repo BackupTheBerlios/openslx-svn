@@ -455,6 +455,10 @@ if [ -n "${UNIONFS}" ] ; then
   fi
   # run ldconfig if not switched off via kernel command line
   ldcfg
+  # runlevel directories should contain no links
+  for i in ${D_RCDIRS} ${D_INITBOOTD} ; do
+    rm -f /mnt/etc/$i/* 2>/dev/null
+  done
 elif [ -z "$COWLOOP" ] ; then
   echo "Using bind mounts to ramdisk for rw access"
   mount -n -t tmpfs -o size=${TMPFSSIZE} ramfs ${RWDIR}
