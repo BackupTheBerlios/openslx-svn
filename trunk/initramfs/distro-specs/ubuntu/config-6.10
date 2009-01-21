@@ -27,4 +27,5 @@
 # D_BOOTLOCAL - script for user specified stuff which should be started
 # during client bootup, path and file relative to /etc
 
-# no changes from default
+# mountvirtfs does not exist anymore -> use mountkernfs.sh
+D_INITSCRIPTS="mountkernfs.sh keymap.sh procps.sh bootlogd hwclock.sh sudo"
