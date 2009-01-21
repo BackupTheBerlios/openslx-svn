@@ -215,7 +215,7 @@ config_snmp 24 02
 # * VM images via additional mount (mount source NFS, NBD, ...)
 
 # create needed directories and files
-if [ "x$vmware" != "x" ] || [ "x$vmware" != "xno" ] ; then
+if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   # in the future other types of sources besides NFS should be supported
   for i in /var/lib/vmware /etc/vmware/vmnet1 /etc/vmware/vmnet8 \
            /var/run/vmware ; do
