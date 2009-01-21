@@ -104,8 +104,8 @@ if strinstr ":" "$rest" ; then
 else
   tmpval=$rest
   rest="${rest#*/}"
-  path="${tmpval#*/}"
-  server="${tmpval%/$path}"
+  server="$(echo $tmpval|sed 's,/.*,,')"
+  path="${tmpval#${server}}"
   port=""
 fi
 # get path and query components - URI path, query
@@ -310,18 +310,18 @@ echo "dhcp finished at $(sysup)" > /tmp/dhcp-done
 # function for retrieving configuration file (machine-setup) via tftp from a
 # predefined server or given source (file=tftp-server:/path via kernel
 # command line)
-# tftpget is helper function for fileget
-tftpgetunpack () {
+unpack () {
 # $1 is  config file name to get, $2 IP of server to get file from
-echo -e "tftp\t69/tcp\ntftp\t69/udp" > /etc/services
-local dst=/tmp/$(basename $1)
-# tftp get part
-# distinguish between busybox tftp and standalone (in.tftp) client
-tftp -g -r $1 -l $dst $2 2>/dev/null
-# unpack part
+local dst=$1
+echo "unpacking $dst" >>/tmp/fileblub
+ls -al $dst >>/tmp/fileblub
 if [ -s $dst ] ; then
   # fixme: handle different types of packaging (gzip/bzip2)??
-  tar -xpzf $dst 2>/dev/null
+  if ! tar -xpzf $dst 2> /tmp/ConfTGZ-tar-error ; then
+     cat /tmp/ConfTGZ-tar-error
+     error "$unpack_ConfTGZ" nonfatal
+     rm /tmp/ConfTGZ-tar-error
+  fi
   [ "$DEBUGLEVEL" -le 2 -o "$DEBUGLEVEL" -eq 8  ] && rm $dst
   return 0
 else
@@ -330,32 +330,50 @@ fi
 }
 fileget () {
 # get type of tftp available, alternatively use wget for ftp or http
-# (fixme: rewrite of fileget needed!!)
-# analyze file soure (URI) in $filesrc
-if [ -n "$filesrc" ] ; then
-  local srvproto=$(uri_token $filesrc prot)
-  local cfgfile="/$(uri_token $filesrc path)"
-  local tftpserver=$(checkip $(uri_token $filesrc server))
-  tftpgetunpack $tftp $cfgfile $tftpserver
+local cfgfile
+echo "$fileprot $filepath $filepath" > /tmp/fileblub
+[ "x$fileprot" = "x" ] && fileprot=tftp
+if [ "x$filepath" != "x" ] ; then
+  cfgfile=${filepath}
+  [ "x$fileserv" = "x" ] && fileserv=$(checkip ${serverip})
+  case "$fileprot" in
+   ftp|http)
+      wget $fileprot://$fileserv/$cfgfile -O /tmp/$(basename $cfgfile) \
+        2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
+   ;;
+   *)
+     tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv  \
+       && unpack /tmp/$(basename $cfgfile)
+   ;;
+   esac
 else
   # predefined value for openslx environment; it is expected that this
   # directory is just below the tftpboot/tftproot (path to which the
   # daemon is restricted to)
-  local cfgdir="client-config"
-  local tftpserver=$(checkip ${serverip})
+  filepath="client-config"
+  [ "x$fileserv" = "x" ] && fileserv=$(checkip ${serverip})
   # try to get configuration files successively; start with distro client
   # and try last distro default ...
   echo -e "\n## Configuration via fileget: Hierarchy is distro client \
 and as last\n# distro/default" >> /tmp/confviafile
   mac=$(echo $macaddr|sed "s/:/-/g")
-  for cfgfile in $cfgdir/$SYSTEM_NAME/01-$mac.tgz \
-                 $cfgdir/$SYSTEM_NAME/default.tgz ; do
-    tftpgetunpack $cfgfile $tftpserver && break
+  for cfgfile in ${filepath}/${SYSTEM_NAME}/01-$mac.tgz \
+                 ${filepath}/${SYSTEM_NAME}/default.tgz ; do
+    case "$fileprot" in
+      ftp|http)
+        wget $fileprot://$fileserv/$cfgfile -O /tmp/$(basename $cfgfile) \
+          2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
+      ;;
+      tftp)
+        tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv \
+           && { unpack /tmp/$(basename $cfgfile) && break; }
+      ;;
+    esac
   done
 fi
 test -f /initramfs/machine-setup && \
   cat /initramfs/machine-setup >> /tmp/confviafile
-echo "fileget via $srvproto finished" > /tmp/file-done
+echo "fileget via $fileprot from $fileserv/$cfgfile finished" >/tmp/file-done
 }
 
 #############################################################################

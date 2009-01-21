@@ -432,7 +432,7 @@ for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
     insmod id ip kill killall ln ls lsmod mdev mkdir \
     mknod mkswap modprobe mount mv nice ping printf ps rdate \
     rm rmmod sed sleep sort swapoff swapon switch_root tar test tftp \
-    time touch tr udhcpc umount uptime usleep vconfig vi zcat zcip; do
+    time touch tr udhcpc umount uptime usleep vconfig vi wget zcat zcip; do
   ln -fs /bin/busybox ${INSTDIR}/bin/$bbins
 done
 # fake the sh link in busybox environment

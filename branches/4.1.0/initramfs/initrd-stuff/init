@@ -144,9 +144,12 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       rm /tmp/ldap-done
     ;;
     # file source with tftp server and file location on the server
-    file=*)
-      file="yes"
-      filesrc=${opts#file=}
+    file=*|file)
+      if [ "${opts}" != "file" ] ; then
+        fileprot=$(uri_token ${opts#file=} prot)
+        fileserv=$(uri_token ${opts#file=} server)
+        filepath=$(uri_token ${opts#file=} path)
+      fi
     ;;
     # if ld.so.cache should be generated; should be switched on when composing
     # rootfs from more than one source
@@ -189,7 +192,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       case $srvproto in
         nfs)
           # nfsroot consists now of two different parts
-          nfspath=/$(uri_token $rootfs path)
+          nfspath=$(uri_token $rootfs path)
           nfsserver=$(uri_token $rootfs server)
           echo -e "\n# nfs root information gotten via kernel command \
 line in $0\n#nfsroot=\"${nfsserver}:${nfspath}\"\n" >> /etc/machine-setup
@@ -197,10 +200,11 @@ line in $0\n#nfsroot=\"${nfsserver}:${nfspath}\"\n" >> /etc/machine-setup
         *nbd*)
           nbdmod=$srvproto
           # get settings for nbd-client, filesystem equals to path in URI
-          # notation
+          # notation (remove leading slash from filesystem at the end)
           nbdhost=$(uri_token $rootfs server)
           nbdport=$(uri_token $rootfs port)
           nbdrfst=$(uri_token $rootfs path)
+          nbdrfst=${nbdrfst#/*}
         ;;
         aoe)
           echo "Not implemented yet"
@@ -360,7 +364,7 @@ if [ -n "${nbdmod}" ] ; then
   # load block device driver if needed
   modprobe ${MODPRV} ${nbdmod} || error "$init_errnbd"
   [ -x /bin/mdev ] && mdev -s
-  [ -z "$nbdrfst" ] && nbdrfst=ext2
+  [ -z "$nbdrfst" ] && nbdrfst=squashfs
   nbdhost=$(checkip $nbdhost)
   if [ $DEBUGLEVEL -eq 20 ] ; then
     echo "** starting setup of ${nbdmod} at $(sysup)"
@@ -458,7 +462,7 @@ if [ -z "${nbdmod}" -a -z "${nbdhost}" -a -z "${nfsroot}" ] ; then
   # information has to be read from dhcp and ldap configuration
   cfgcomplete
 fi
-# call function for nfs mounts
+#  mount nfs rootfs
 if [ -z "${nbdmod}" -a -z "${nbdserver}" ] ; then
   [ $DEBUGLEVEL -eq 20 ] && echo "** started nfs mount"
   . /etc/machine-setup
@@ -472,7 +476,10 @@ if [ -z "${nbdmod}" -a -z "${nbdserver}" ] ; then
     # the root_path should contain server ip and path in nfsroot notation
     nfsroot=${root_path}
   fi
-  nfsmnt ${nfsroot} || error "$init_nfs"
+  for proto in tcp udp fail; do
+    [ $proto = "fail" ] && { error "$init_nfs"; break; }
+    mount -n -t nfs -o ro,nolock,${proto} ${nfsroot} /mnt && break
+  done
   [ $DEBUGLEVEL -eq 20 ] && echo "** finished nfs mount at $(sysup)"
 fi
 
