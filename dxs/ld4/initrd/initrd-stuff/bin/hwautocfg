@@ -1,0 +1,371 @@
+#!/bin/sh
+#
+# Description:  universal (distro independent) hardware autoconfiguration 
+#		script for linux diskless clients, using hwconfig from 
+#		knoppix as base tool 
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-01-2006
+#		Blabla
+#		Blub
+#
+# Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
+
+# local functions
+displaysetup () {
+local xfc=$1
+# define some defaults
+local HSYNCRANGE="31.5-63.5"
+local VSYNCRANGE="60-90"
+local MAXRES="1024x768"
+local DEFAULTCOLORDPT=24
+# set variables representing the xorg.conf sections (version 6.8.x)
+local Module='\tLoad\t\t"dbe"\n
+\tLoad\t\t"extmod"\n
+\tLoad\t\t"type1"\n
+\tLoad\t\t"speedo"\n
+\tLoad\t\t"freetype"\n
+\tLoad\t\t"v4l"'
+local ServerFlags='\tOption\t\t"AllowMouseOpenFail"\n
+\tOption\t\t"blank time"\t\t"5"\n
+\tOption\t\t"standby time"\t\t"10"\n
+\tOption\t\t"suspend time"\t\t"15"\n
+\tOption\t\t"off time"\t\t"20"'
+local Files='\tRgbPath\t\t"/usr/X11R6/lib/X11/rgb"\n
+\tModulePath\t"/etc/X11/modules"\n
+\tModulePath\t"/usr/X11R6/lib/modules"\n
+\tFontPath\t"/usr/X11R6/lib/X11/fonts/misc/:unscaled"\n
+\tFontPath\t"/usr/X11R6/lib/X11/fonts/75dpi/:unscaled"\n
+\tFontPath\t"/usr/X11R6/lib/X11/fonts/100dpi/:unscaled"'
+local InputDevice='\tIdentifier\t"Keyboard1"\n
+\tDriver\t\t"keyboard"\n
+\tOption\t\t"XkbRules"\t\t"xfree86"\n
+\tOption\t\t"XkbLayout"\t\t"XKEYBOARD"\n
+\tOption\t\t"XkbModel"\t\t"pc105"'
+local InputMouseDef='\tIdentifier  "Mouse1"\n
+\tDriver\t\t"mouse"\n
+\tOption\t\t"Protocol"\t\t"imps/2"\n
+\tOption\t\t"Device"\t\t"/dev/input/mice"\n
+\tOption\t\t"Emulate3Buttons"\n
+\tOption\t\t"ZAxisMapping"\t\t"4 5"\n
+\tOption\t\t"Buttons"\t\t"3"'
+local Monitor='\tIdentifier "Default"\n
+\tModelName\t"MODEL"\n
+\tOption\t"CalcAlgorithm"\t"CheckDesktopGeometry"\n
+\tHorizSync\tHS\n
+\tVertRefresh\tVS\n
+\tUseModes\t"Default"\n
+\tOption\t"DPMS"\t"true"'
+local Modes='\tIdentifier "Default"'
+local Modelines='
+\t# crt modelines (refreshrates should be above 72Hz or enable uncommented lines)\n
+\tModeline "640x400"    25.175 640  664  760  800  400  409  411  450\n
+\tModeline "640x400"    31.5   640  672 736   832  400  401  404  445\n
+\tModeline "640x480"     31.50   640  680  720  864   480  488  491  521\n
+\tModeline "640x480"     45.80   640  672  768  864   480  488  494  530\n
+\tModeline "800x600"     50.00   800  856  976 1040   600  637  643  666\n
+\tModeline "800x600"     69.65   800  864  928 1088   600  604  610  640\n
+\t#Modeline "1024x768"    44.90  1024 1048 1208 1264   768  776  784  817 interlace\n
+\tModeline "1024x768"    80.00  1024 1052 1164 1360   768  784  787  823\n
+\tModeline "1024x768"    86.00  1024 1040 1152 1360   768  784  787  823\n
+\tModeline "1024x768"    98.90  1024 1056 1216 1408   768  782  788  822\n
+\tModeline "1024x768"   115.50  1024 1056 1248 1440   768  771  781  802\n
+\tModeline "1152x864"    92.00  1152 1208 1368 1474   864  865  875  895\n
+\tModeline "1152x864"   110.00  1152 1240 1324 1552   864  864  876  908\n
+\tModeline "1280x960"   112.00  1280 1312 1456 1704   960  963  970 1064\n
+\tModeline "1280x960"   142.00  1280 1312 1456 1712   960  963  970 1064\n
+\tModeline "1280x1024"  145.00  1280 1312 1456 1712  1024 1027 1030 1064\n
+\tModeline "1280x1024"  157.50  1280 1344 1504 1728  1024 1025 1028 1072\n
+\tModeline "1400x1050"  180.00  1400 1472 1672 1880  1050 1052 1055 1100\n
+\tModeline "1600x1200"  202.50  1600 1664 1856 2160  1200 1201 1204 1250\n
+\t# tft modlines (refreshrates of 60Hz schould be ok)\n
+\tModeline "lcd1024x768"    67.90  1024 1052 1164 1360   768  784  787  823\n
+\tModeline "lcd1280x1024"  108.00  1280 1328 1440 1688  1024 1025 1028 1066\n
+\tModeline "lcd1400x1050"  160.00  1400 1472 1672 1880  1050 1052 1055 1100'
+local Device='\tIdentifier\t"StdGraphics"\n
+\tVendorName\t\t"XDESC"\n
+\tDriver\t\t"XMODULE"'
+local Screen='\tIdentifier\t"Screen 1"\n
+\tDevice\t"StdGraphics"\n
+\tMonitor\t"Default"\n
+\tDefaultColorDepth CDP'
+local ServerLayout='\tIdentifier\t"Simple Layout"\n
+\tScreen\t"Screen 1"\n
+\tInputDevice "Keyboard1"\t"CoreKeyboard"\n
+\tInputDevice "Mouse1"\t"CorePointer"\n
+\tOption\t"BlankTime"\t"5"\n
+\tOption\t"StandbyTime"\t"10"\n
+\tOption\t"SuspendTime"\t"20"\n
+\tOption\t"OffTime"\t"30"'
+local DRI='\tGroup\t\t"video"\n
+\tMode\t\t0666'
+
+if [ -n "$hw_graphic" ] ; then
+  DRV=${hw_graphic% *}
+  CDP=${hw_graphic##* }
+  msg="Please check your graphic adaptor settings ($hw_graphic)."
+  if [ -z "$DRV" ] ; then error "  Manual configuration of your graphic \
+hardware module to set failed.\n  $msg" nonfatal
+    XMODULE=DRV
+  else
+    [ -z "${XMODULE}" ] && XMODULE=vesa
+  fi
+fi
+if [ -z "$CDP" ] ; then error "  Manual configuration of your graphic \
+systems color depth failed.\n  $msg" nonfatal
+  CDP=${DEFAULTCOLORDPT}
+fi
+
+if [ -n "$hw_monitor" ] ; then
+  # just cut all starting from k(Hz) ...
+  HS=${hw_monitor%k*}
+  VS=${hw_monitor%Hz*}
+  [ -z "$VS" ] && VS=${hw_monitor%hz*}
+  VS=${VS##* }
+  MR=${hw_monitor##* }
+  msg="Please check your predefined monitor settings ($hw_monitor): Manual\n\
+  configurtion of display"
+else
+  # gather monitor information automatically
+  ddcprobe > /tmp/ddcprobe
+  msg="Please check the output of ddcprobe. The settings where not \
+complete\n  or non existant. The $0 script tried for a fully automatic\n\
+  configuration of display"
+fi
+if [ -z "$HS" ] ; then error "  $msg timings requested but could not \
+establish horizontal\n  frequency in kHz." nonfatal
+  HS=${HSYNCRANGE}
+fi
+if [ -z "$VS" ] ; then error "  $msg timings but could not establish \
+vertical\n  frequency in Hz." nonfatal
+  VS=${VSYNCRANGE}
+fi
+if [ -z "$MR" ] ; then error "  $msg resolution requested but not \
+established." nonfatal
+  MR=${MAXRES}
+fi
+
+
+monmanual=yes
+
+# compute max resolution
+for res in 640x400 640x480 800x600 1024x768 1280x1024 1400x1050 1600x1200
+    do MODES="\"$res\" \"lcd$res\" $MODES"
+    [ "$res" = "$MR" ] && break
+done
+
+# finally write config file
+echo -e "#\n# autogenerated X hardware configuration by $0\n# \
+Dirk von Suchodoletz <dirk@goe.net>, $date" >$xfc
+echo -e "# DO NOT EDIT THIS FILE BUT '$0' INSTEAD!\n#" \
+  >>$xfc
+for section in Files ServerFlags Module InputDevice Monitor \
+    Modes Screen Device ServerLayout DRI ; do
+  echo "Section \"$section\"" >>$xfc
+  case "$section" in
+    Files)
+      echo -e ${Files} >>$xfc
+      # check for 64bit CPU/installation (fixme!!)
+      [ -n "$amd64" ] && \
+        echo '"\tModulePath\t"/usr/X11R6/lib64/modules"\n' >>$xfc
+      for i in ${XFONTPATH} ; do
+        echo -e "\tFontPath\t\"$i/\"" >>$xfc ; done
+    ;;
+    ServerFlags)  
+      echo -e ${ServerFlags} >>$xfc
+    ;;
+    Device)
+      echo -e ${Device} | sed -e "s,XMODULE,${XMODULE},g" \
+        -e "s,XDESC,${XDESC}," >>$xfc
+            # special options may be needed for some drivers
+            [ $DEBUGLEVEL -gt 1 ] && msg "X setup" \
+"adding for some Xfree86 modules \
+(radeon, s3virge, nvidia) special options to\nthe 'Device' section. Consult \
+hwsetup if you like to add more or remove some."
+            [ x$DRV = "xs3virge" ] && {
+            echo -e "\tOption\t\t\"XVideo\" \"Off\"\n" >>$xfc
+            [ $DEBUGLEVEL -gt 1 ] && msg  "X setup" \
+"added special option for \
+the s3virge module -> 'XVideo Off'. remove the\nappropriate line in hwsetup \
+if you like not to use it." ; }
+            [ x$DRV = "xnvidia" ] && {
+            echo -e "\tOption\t\t\"NvAGP\" \"3\"" >>$xfc
+            echo -e "\tOption\t\t\"NoLogo\" \"1\"" >>$xfc
+            [ $DEBUGLEVEL -gt 1 ] && msg  "X setup" \
+"added special option for \
+the nvidia module -> 'NvAGP '. it sets the use\nof internal or external \
+agpgart support." ; }
+            [ "$busid" ] && {
+            echo -e "\tOption\t\t\"BusID\" \"$busid\"" >>$xfc
+            [ $DEBUGLEVEL -gt 1 ] && msg  "X setup" \
+"added special option for \
+the 'BusID' information - it\ndefines the npostion of graphics adaptor in \
+pci/agp bus needed for acceleration." ; }
+    ;;
+    Module)
+      echo -e ${Module} >>$xfc
+      [ x$DRM = "xyes" ] && \
+        echo -e "\tLoad\t\t\"dri\"" >>$xfc
+      [ x$GLX != "xno" ] && \
+        echo -e "\tLoad\t\t\"glx\"" >>$xfc
+    ;;
+    Monitor)
+      echo -e ${Monitor} | \
+        sed -e "s,HS,${HS},g" -e "s,VS,${VS},g" >>$xfc
+    ;;
+    InputDevice)
+      echo -e ${InputDevice} | sed -e "s,XKEYBOARD,${XKEYBOARD},g" \
+        >>$xfc
+      [ "${XKEYBOARD}" = "de" ] && \
+        echo -e '\tOption\t\t"XkbVariant"\t\t"nodeadkeys"' >>$xfc
+      echo -e "EndSection\n\nSection \"$section\"" >>$xfc
+      echo -e $InputMouseDef >>$xfc
+    ;;
+    Modes)
+      echo -e ${Modes} >>$xfc
+      echo -e ${Modelines} >>$xfc
+    ;;
+    Screen)
+      echo -e ${Screen} | sed -e "s,CDP,${CDP}," >>$xfc
+      for BPP in 15 16 24 32
+        do echo -e '\tSubSection "Display"\n\t\tDepth\t'\
+          $BPP'\n\t\tModes\t'$MODES'\n\tEndSubSection' >>$xfc
+        [ $BPP = "$CDP" ] && break
+      done
+    ;;
+    ServerLayout)
+      echo -e ${ServerLayout} >>$xfc
+    ;;
+  esac
+  echo -e "EndSection\n" >>$xfc
+done
+# only if X is link itself (normally to /var/X11R6/bin/X) check!!
+link=`ls -l /mnt/usr/X11R6/bin/X 2>/dev/null`
+if strinstr "/var/X11R6" "$link" ; then
+  testmkd /mnt/var/X11R6/bin
+  for i in /usr/X11R6/bin/Xorg /usr/X11R6/bin/XFree86 ; do
+    [ -e "/mnt/$i" ] && { ln -sf $i /mnt/var/X11R6/bin/X; break; }
+  done
+fi
+}
+
+#######################################################################
+# script starts here
+
+# functions common for all distros
+. /etc/functions
+# load distro specific configuration variables and functions. distro
+# specific functions may overwrite functions defined in /etc/functions
+. /etc/sysconfig/config
+. /etc/distro-functions
+
+( hwsetup -v > /tmp/hwsetup.info && echo "hwsetup" > /tmp/completed ) &
+
+# ACPI configuration
+#if [ -d /proc/acpi ]; then
+#  if ! inkernelcmdline "noacpi" || ! inkernelcmdline "acpi=off"; then
+#    echo ACPIbla
+#    found=""
+#    for acpi in /lib/modules/$KERNEL/kernel/drivers/acpi/*; do
+#      acpi=`basename acpi`
+#      case "$acpi" in *_acpi)
+#        egrep -qi "${basename%%_acpi}" /proc/acpi/dsdt 2>/dev/null || continue ;;
+#      esac
+#    modprobe $basename >/dev/null 2>&1 && echo -n " ${YELLOW}$basename${GREEN}" && found="yes"
+#    done
+#  fi
+#else
+# APM
+#if checkbootparam "noapm"; then
+#echo " ${BLUE}Skipping APM Bios detection as requested on boot commandline.${NORMAL}"
+#else
+#modprobe apm power_off=1 >/dev/null 2>&1 && test -x /etc/init.d/apmd && /etc/init.d/apmd start && echo "${GREEN}APM Bios found, power management functions enabled.${NORMAL}"
+#fi
+#fi
+
+
+
+
+# AGP configuration (agpgart and chipset specific driver)
+modprobe ${MODPRV} agpgart || \
+    modprobe ${MODPRV} agpgart agp_try_unsupported=1
+
+# wait for /tmp/hwsetup.info to appear
+waitfor /tmp/completed 50000 || \
+  error "  Expected information from hwsetup to appear in \
+/tmp/hwsetup.info.\n  Unable to configure parts of the systems hardware. \
+Please check that\n  hwsetup is properly installed and executable."
+
+# "drivers" (pseudo, placeholder strings, ...) to exclude from loading
+DRIVERLIST="disabled unknown ignore pcspkr synaptics"
+# driver blacklist (real modules which fail to load)
+DRIVERLIST=" "${DRIVERLIST}
+# check for USB, pcmcia and ieee1394 hardware drivers
+for DRIVER in ohci-hcd uhci-hcd ehci-hcd \
+              ohci1394; do
+  strinfile ${DRIVER} /tmp/hwsetup.info && {
+    modprobe ${MODPRV} ${DRIVER}
+    DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
+done
+for DRIVER in yenta_socket i82365 pd6729 tcic; do
+  strinfile ${DRIVER} /tmp/hwsetup.info && {
+    modprobe ${MODPRV} ${DRIVER}
+    DRIVERLIST="${DRIVERLIST} ${DRIVER}"
+    PCMCIA="yes"; }
+done
+if [ -n "PCMCIA" ] ; then
+  #echo "pcmcia=\"yes\"" > config
+  modprobe ${MODPRV} ds
+fi
+# remove unneeded network card modules
+for DRIVER in ${NWMODULES}; do
+  strinfile ${DRIVER} /tmp/hwsetup.info || {
+    rmmod ${DRIVER}
+    DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
+done
+
+# sound card setup
+. /etc/sysconfig/sound || DRIVER="snd-dummy"
+modprobe ${MODPRV} ${DRIVER}
+DRIVERLIST="${DRIVERLIST} ${DRIVER}"
+
+# remaining drivers listed in /tmp/hwsetup.info
+cat /tmp/hwsetup.info| while read LINE ; do
+  if strinstr "driver:" "${LINE}"; then
+    DRIVER=${LINE##driver: }
+    if ! strinstr "${DRIVER}" "${DRIVERLIST}"; then
+      strinstr "Card:" "${DRIVER}" || strinstr "ps/2" "${DRIVER}" || {
+        modprobe ${MODPRV} ${DRIVER} &
+        usleep 10; }
+      DRIVERLIST="${DRIVERLIST} ${DRIVER}"
+    fi
+  fi
+done
+
+# configure some variables from configuration file - wait for dhcp or ldap
+# confiurator to complete
+waitfor /tmp/dhcp-done 10000 || error "  Did not get any configuration \
+data via dhcp until now ..." nonfatal
+waitfor /tmp/ldap-done 10000 || error "  Did not get any configuration \
+data via ldap until now ..." nonfatal
+. /etc/machine-setup
+waitfor /tmp/fscmpl 20000
+# run localizator and configure keyboard and console fonts
+DEFKEYTABLE="de-latin1-nodeadkeys"
+localization $country
+if [ -z "${KEYTABLE}" ] ; then
+  msg "Keyboard setup" "No settings found for keyboard, using default of \
+'${DEFKEYTABLE}' defined\nin $0."
+  KEYTABLE=${DEFKEYTABLE}
+fi
+echo -e "#!/bin/sh\n# entry added by $0: $date" \
+  >>/mnt/etc/${INITDIR}/boot.ld
+echo -e "loadkeys -q ${KEYTABLE}\n" >>/mnt/etc/${INITDIR}/boot.ld
+[ -n "${CONSOLE_FONT}" ] && consolefont
+
+# run X11 / Xorg configurator
+. /etc/sysconfig/xserver >/dev/null 2>&1 || error "  The xserver \
+configuration file generated by hwsetup could not\n  be found." nonfatal
+displaysetup "/mnt/${XF86CONFFILE}"
+
+echo "finished" > /tmp/hwcfg
+

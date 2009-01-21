@@ -1,0 +1,40 @@
+# Description:  distro specific settings for Debian/Sarge
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-01-2006
+#
+# Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
+
+# SYSCONFDIR - system wide configuration settings - /etc/sysconfig in SuSE 
+# and RedHat, /etc/default in Debian and Ubuntu
+# DISETCEXCL - list of files, wildcards to be excluded from /etc when using 
+# bind mounts
+# DIRINBINDMNT - lists of directories to be created in bind mounted rw
+# part of the client filesystem
+# RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# TempFS usage
+# DISDIRINDXS - directories in client filesystem which should be present 
+# anyhow
+# DISBINDMNT - any code which is specific in bind mount environment
+# RCDIRS - runlevel directories relative to /etc
+
+
+SYSCONFDIR=/default
+DISETCEXCL="opt/gnome/gconf/*\n*.old\n*-\n\
+*.YaST2save\netc/autoinstall\nlogrotate*\nbootloader\n*~\n\
+*.SuSEconfig.saved\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
+X11/xdm/pixmaps\n*.rpmsave\ndhclient.script\ninit.d/boot.d/*\n\
+init.d/rc3.d/*\ninit.d/rc5.d/*"
+BINDMPTS="tmp root home"
+DIRINBINDMNT="/var/run /var/log /var/tmp"
+RODIRSINRW="/etc/opt/gnome/gconf /etc/X11/xkb /var/adm /var/lib/texmf /var/lib/rpm"
+DISDIRINDXS="/var/X11R6/compose-cache \
+/var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
+/var/lib/pam_devperm /var/lib/bluetooth \
+/var/lib/texmf /var/lib/nfs/sm \
+/var/lib/misc /var/lib/acpi /var/spool/cron \
+/var/lock/subsys/sysconfig"
+DISBINDMNT="# "
+INITDIR="/init.d"
+INITBOOTD="/rc.boot"
+RCDIRS="/rc0.d /rc1.d /rc2.d /rc3.d /rc4.d /rc5.d /rc6.d /rcS.d"
+INITSCRIPTS="boot.udev boot.proc boot.shm boot.klog boot.loadmodules boot.clock boot.localnet boot.sysctl boot.ipconfig"

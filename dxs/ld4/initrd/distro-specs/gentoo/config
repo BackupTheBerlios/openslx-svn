@@ -1,0 +1,38 @@
+# Description:  distro specific settings for Gentoo
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 13-12-2005
+#
+# Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
+
+# SYSCONFDIR - system wide configuration settings in /etc - sysconfig in  
+# SuSE and RedHat, default in Debian and Ubuntu, conf.d in Gentoo
+# DISETCEXCL - list of files, wildcards to be excluded from /etc when using 
+# bind mounts
+# DIRINBINDMNT - lists of directories to be created in bind mounted rw
+# part of the client filesystem
+# RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# TempFS usage
+# DISDIRINDXS - directories in client filesystem which should be present 
+# anyhow
+# DISBINDMNT - any code which is specific in bind mount environment
+# RCDIRS - runlevel directories relative to /etc
+SYSCONFDIR=conf.d
+DISETCEXCL="opt/gnome/gconf/*\n*.old\n*-\n\
+*.YaST2save\netc/autoinstall\nlogrotate*\nbootloader\n*~\n\
+*.SuSEconfig.saved\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
+X11/xdm/pixmaps\n*.rpmsave\ndhclient.script\ninit.d/boot.d/*\n\
+init.d/rc3.d/*\ninit.d/rc5.d/*"
+BINDMPTS="tmp root home"
+DIRINBINDMNT="/var/run /var/log /var/tmp"
+RODIRSINRW="/var/adm /var/lib/texmf"
+DISDIRINDXS="/var/X11R6/compose-cache \
+/var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
+/var/lib/pam_devperm /var/lib/bluetooth \
+/var/lib/texmf /var/lib/nfs/sm /var/lib/nfs/state \
+/var/lib/misc /var/lib/acpi /var/spool/cron \
+/var/lock/subsys/sysconfig"
+DISBINDMNT="# spielspass fuer splash"
+INITDIR="/init.d"
+INITBOOTD="/runlevels/boot"
+RCDIRS="/runlevels/default /runlevels/nonetwork /runlevels/single"
+INITSCRIPTS=""

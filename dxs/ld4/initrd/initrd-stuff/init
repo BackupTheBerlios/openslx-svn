@@ -1,0 +1,355 @@
+# functions common for all distros
+. /etc/functions || ( echo -e "The functions file contains a lot of script \
+functionality. Without this\ninit script will not run." && exit 1 )
+# configuration settings (several file and directory variables)
+. /etc/sysconfig/config || error "  The distribution \
+specific configuration file could not be found"
+
+date
+export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
+export date="07-01-2006"
+exec < /dev/console > /dev/console 2>&1
+
+export KERNEL="@@@KERNVER@@@"
+export NWMODULES="@@@NWMODULES@@@"
+export DISTRO="@@@DISTRO@@@"
+
+DEVDIR="/dev"
+mount -n -t tmpfs -o 'size=25%,mode=0755' initramfsdevs ${DEVDIR}
+mkdir -p ${DEVDIR}/pts
+mkdir -p ${DEVDIR}/shm
+mkdir -p ${DEVDIR}/.udevdb
+
+[ ! -f /proc/cpuinfo ] && mount -n -tproc proc /proc
+echo 256 > /proc/sys/kernel/real-root-dev
+[ ! -d /sys/class ] && mount -n -tsysfs sysfs /sys
+
+# start device auto discovery (just the first case is tested yet)
+if [ -x /bin/udev -a -x /bin/udevstart ] ; then
+  echo "Starting udev"
+  echo "/bin/udev" > /proc/sys/kernel/hotplug
+  /bin/udevstart &
+elif [ -x /bin/hotplug ] ; then
+  echo "Enabling hotplug"
+  echo "/bin/hotplug" > /proc/sys/kernel/hotplug
+elif [ -s /dev.tgz ] ; then
+  echo "Using traditional static /dev entries"
+  tar -xpzf /dev.tgz -C / &
+fi
+# read kernel commandline
+TMPFSSIZE="50%"
+export DEBUGLEVEL=0
+echo "noldap" > /tmp/ldap-done
+echo "nodhcp" > /tmp/dhcp-done
+read KCMDLINE < /proc/cmdline
+export KCMDLINE
+for opts in ${KCMDLINE} ; do
+  case ${opts} in
+    # localization
+    country=*)
+      COUNTRY=${opts#country=}
+      echo -e "\n# localization information gotten via kernel command line \
+in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
+    ;;
+    # single token for debugging
+    debug)
+      DEBUGLEVEL=1;;
+    # debug level
+    debug=*)
+      DEBUGLEVEL=${opts#debug=};;
+    # if configuration should be gathered by dhcp client
+    dhcp)
+      DHCP="yes"
+      rm /tmp/dhcp-done;;
+    # if ldap configuration should be triggered
+    ldap)
+      LDAP="yes"
+      rm /tmp/ldap-done;;
+    # if ld.so.cache should not be generated
+    noldsc)
+      NOLDSC=yes;;
+    # if unionfs should be used
+    unionfs*)
+      UNIONFS=1;;
+    # dnbd server:port 
+    dnbdroot=*)
+      DNBDOPT=${opts#dnbdroot=};;
+    # nbd server:port,filesystem (filesystem is optional)
+    nbdroot=*)
+      NBDOPT=${opts#nbdroot=};;
+    # ip configuration client-ip:server-ip:gateway:netmask
+    ip=*)
+      IPINFO=${opts#ip=};;
+    # nfs server and path
+    nfsroot=*)
+      NFSROOT=${opts#nfsroot=}
+      echo -e "\n# nfs root information gotten via kernel command line \
+in $0\nnfsroot=\"${NFSROOT}\"" >> /etc/machine-setup
+    ;;
+    # size of tempfs if not max. 50% of RAM should be used
+    tmpfssize=*)
+      TMPFSSIZE=${opts#tmpfssize=};;
+    # vendor code identifier for dhcp requests
+    vci=*|VCI=*)
+      VCI=${opts#VCI=};;
+  esac
+done
+# check if at least one type of IP configuration is availabe
+if [ -z "$DHCP" -a -z "$LDAP" -a -z "$IPINFO" ] ; then
+  if strinfile "clientip" /etc/machine-setup ; then
+    # IP configuration seems to be present in machine-setup file
+    . /etc/machine-setup
+    IPINFO="ip=$clientip:$serverip:$gateway:$subnet_mask"
+  else
+    error "  Unable to setup at \
+least basic functionality, because no IP configuration\n  available. You \
+might pass that information via kernel command line\n  through setting of \
+'ipappend 1' in pxelinux.cfg/* or just enable dhcp\n  or ldap. They are \
+enabled via tokens ('ldap' or 'dhcp') in kernel\n  command line."
+  fi
+fi
+[ -z "$DHCP" -a -n "$LDAP" -a -z "$IPINFO" ] && error "  Unable to setup at \
+least basic functionality, because no IP configuration\n  available. Please \
+beware - ldap works only in combination of either\n  ipappend or similar or \
+with dhcp!"
+# set debug level and logfile
+echo "Setting debuglevel to ${DEBUGLEVEL}"
+export MODPRV=" "
+export LOGFILE
+if [ "${DEBUGLEVEL}" -gt 0 ] ; then
+  # if LOGFILE should be used within initial ramdisk add '/mnt' in fron
+  # of the variable
+  LOGFILE="/var/log/dxs-boot.log"
+  [ "${DEBUGLEVEL}" -gt 2 ] && { 
+    set -x
+    # modprobe should be verbose
+    MODPRV="-v"; }
+else
+  # switch off most of kernel debug output
+  echo "0 0 0 0" >/proc/sys/kernel/printk
+  # modprobe should stay quiet
+  MODPRV="-q"
+  LOGFILE="/dev/null"
+fi
+
+# load network adaptor modules
+modprobe ${MODPRV} -a ${NWMODULES} || error "  Failed to load the network \
+adaptor modules defined via mkdxsinitrd\n  run. Please rerun and list the \
+appropriate modules (without .ko)."
+# set up loopback networking (ipsetup - function defined in /etc/functions)
+ipsetup 127.0.0.1 255.0.0.0 0.0.0.0 127.255.255.255 lo
+
+# analyze ip information from the kernel command line and put parts
+# of it into several variables
+if [ -n "$IPINFO" ] ; then
+  IP=`echo $IPINFO|sed -e "s,:.*,,"`
+  SERVER=`echo $IPINFO|sed -e "s;[0-9\.]\{3,\}:;;" -e "s,:.*,,"`
+  GW=`echo $IPINFO|sed -e "s;[0-9\.]\{3,\}:[0-9\.]\{3,\}:;;" -e "s,:.*,,"`
+  # remove last colon after netmask if it was left there ...
+  IPINFO=`echo $IPINFO|sed -e "s,:$,,"`
+  NM=`echo $IPINFO|sed -e "s,.*:,,"`
+  echo -e "# ip configuration written by $0 script\nclientip=$IP\n\
+sub_netmask=$NM\ngateway=$GW\nserverip=$SERVER" \
+    >>/etc/machine-setup
+  # set static ip address via function ipsetup
+  ipsetup $IP $NM $GW 255.255.255.255 eth0
+else
+  noipyet="yes"
+fi
+# get configuration data via dhcp or ldap if available (in background)
+[ -n "$DHCP" ] && rundhcp ${VCI} &
+if [ -n "$noipyet" ] ; then
+  waitfor /tmp/dhcp-done 20000
+  . /etc/machine-setup
+  ipsetup $clientip $subnet_mask $gateway $broadcast_address eth0
+fi
+[ -n "$LDAP" ] && ldapconf &
+
+# if root filesystem should be imported via traditional network block device 
+if [ -n "${NBDOPT}" ] ; then
+  modprobe ${MODPRV} nbd || error "  Failed to load module nbd.ko. It is \
+needed if you intend to use\n  network block device (NBD) for the client \
+as root filesystem."
+  nbdhost=${NBDOPT%:*}
+  nbdopt=${NBDOPT#*:}
+  nbdport=${NBDOPT%,*}
+  nbdfs=${NBDOPT#*,}
+  echo "Diskless client using nbd server $nbdhost:$nbdport,$nbdfs"
+  nbd-client $nbdhost $nbdport /dev/nbd0
+  if [ -z "$nbdfs" ]; then 
+    RFST=ext2; 
+  else 
+    RFST=$nbdfs;
+    modprobe ${MODPRV} ${RFST}
+  fi
+fi
+
+# if root filesystem should be imported via udp based distributed network
+# block device
+if [ -n "${DNBDOPT}" ] ; then
+  modprobe ${MODPRV} dnbd || echo "failed to load dnbd!"
+
+fi
+
+# if no type of root filesystem is passed via kernel command line try
+# information gathered from dhcp process
+if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" -a -z "${NFSROOT}" ] ; then
+  # information has to be read from dhcp configuration
+  if [ -z "$noipyet" ] ; then
+    waitfor /tmp/dhcp-done 20000
+  fi
+  waitfor /tmp/ldap-done 20000
+  . /etc/machine-setup
+  NFSROOT=${serverip}:${root_path}
+fi
+
+# call function for nfs mounts
+if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" ] ; then
+  nfsmnt ${NFSROOT} ${MODPRV}
+fi
+
+# get the complete collection of kernel modules available
+mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
+  error "  The requested modules directory does not exist. That could mean:\n\
+  * The kernel was updated but mkdxsinitrd was not run afterwards.\n\
+  * The mounted filesystem does not contain the modules directory at all.\n\
+  You might want to check the list of mounted filesystems and if /mnt is\n\
+  not empty run 'ls /mnt/lib/modules' to check."
+# start hardware configuration as background process
+hwautocfg &
+
+# try to use unionfs for rw access if available
+RWDIR=/dev/shm
+if [ -n "${UNIONFS}" ] ; then
+  modprobe ${MODPRV} unionfs || { 
+    error "  Loading of UnionFS failed - Either module is not present or \
+module\n  does not match the running kernel. If you do not want to see this \
+\n  message remove the token 'unionfs' from kernel command line." nonfatal 
+    UNIONFS=""; }
+fi
+
+if [ -n "${UNIONFS}" ] ; then
+  echo -n "Using UnionFS for rw access"
+  mkdir -p ${RWDIR}/union ${RWDIR}/uniontmp
+  mount -n -t tmpfs none ${RWDIR}/uniontmp
+  mount -n --move /mnt /root
+  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/root=ro none /mnt
+  mkdir -p /mnt/uniontmp
+  mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp
+  [ -z "${NOLDSC}" ] && ldconfig /etc/ld.so.cache &
+else
+  echo -n "Using bind mounts to ramdisk for rw access"
+  mount -n -t tmpfs -o size=${TMPFSSIZE} ramfs ${RWDIR}
+  for path in ${BINDMPTS} ; do
+    mkdir -p ${RWDIR}/${path} >/dev/null 2>&1
+    mount -n --bind ${RWDIR}/${path} /mnt/${path}
+  done
+  [ -z "${NOLDSC}" ] && ldconfig /tmp/ld.so.cache &
+  for path in ${RODIRSINRW}; do
+    if [ -d /mnt/${path} ] ; then
+      LIST=${path}" "$LIST
+      # exclude them from etc copy process too
+      echo ${path}|sed -e "s,/root/,," >>/tmp/etc.exclude
+      mkdir -p /root/${path} >/dev/null 2>&1
+      #[ ${DEBUGLEVEL} -gt 0 ] && |      #echo " ${path} (without /root path component)" >>$LOGFILE
+      mount -n --bind /mnt/${path} /root/${path} >/dev/null 2>&1
+    fi
+  done
+  for path in /etc/${SYSCONFDIR} ${DIRINBINDMNT} ${LIST}; do
+    mkdir -p ${RWDIR}/${path}
+  done
+  testmkd ${RWDIR}/var/tmp
+  chmod a+rwxt ${RWDIR}/var/tmp >/dev/null 2>&1
+
+  echo -e "${DISETCEXCL} @@@COMETCEXCL@@@" >>/tmp/etc.exclude
+  # if ld.so.cache is to be generated then do not copy the file
+  [ -z "${NOLDSC}" ] && echo -e "ld.so.cache*" >>/tmp/etc.exclude
+  # for tar exclude lists might be used, more difficult for cp
+  cd /mnt
+  tar -X /tmp/etc.exclude -cp etc/* 2>/dev/null| \
+    tar -xp -C ${RWDIR}>/dev/null 2>&1;
+  cd /
+  mount -n --bind ${RWDIR}/etc /mnt/etc
+  mount -n --bind ${RWDIR}/var /mnt/var
+  # get the "covered" mounts back into filesystem structure
+  for i in ${LIST}; do
+    #rm -rf /* >/dev/null 2>&1
+    mount -n --move /root/$i /mnt/$i #>>$LOGFILE 2>&1
+  done
+  rm -rf /root/* >/dev/null 2>&1
+  # run some specific stuff !?
+fi
+echo "fs complete" >/tmp/fscmpl
+
+# write debug file information after filesystem setup completed
+echo -e "# /etc${SYSCONFDIR}/logfile - file created by $0\n#\n# logfile for linux diskless client specific debugging output\nLOGFILE=\"$LOGFILE\"\n#\n# debug level\nDEBUGLEVEL=\"$DEBUGLEVEL\"" > /mnt/etc/${SYSCONFDIR}/logfile || \
+  error "Unable to create the logfile configuration in /etc/${SYSCONFDIR}. \
+That\n  might indicate some severe error."
+
+# run distribution independent and dependent configuration of files and 
+# services
+servconfig &
+
+for path in @@@COMDIRINDXS@@@ ${DISDIRINDXS} ${DIRINBINDMNT} ; do
+  testmkd /mnt/${path}
+done
+for i in /var/run/utmp /var/log/wtmp /var/log/lastlog /etc/mtab ; do
+  echo -n > /mnt$i
+done
+chmod a+rwxt /mnt/tmp /mnt/tmp/scratch 2>/dev/null &
+chown 65534:0 /mnt/var/lib/nobody &
+echo -e "# /etc/fstab - file generated by\n#\t$0:\n#\tDirk von \
+Suchodoletz, dirk@goe.net\n\nrootfs\t\t/\t\trootfs\t\tro\t\t 0 0\n\
+proc\t\t/proc\t\tproc\t\tdefaults\t 0 0\ninitramdevs\t/dev\t\ttmpfs\
+\t\trw\t\t 0 0\ndevpts\t\t/dev/pts\tdevpts\t\tmode=0620,gid=5\t 0 0\n\
+usbfs\t\t/proc/bus/usb\tusbfs\t\tnoauto\t\t 0 0">/mnt/etc/fstab || \
+  error "Failed to create /etc/fstab in the clients root filesystem. The\n\
+  noexistence of the file might produce some unexpected behaviour of\n\
+  mount commands."
+
+date
+# copy library cache if generated
+if [ -z "${NOLDSC}" ] ; then
+  if waitfor /tmp/ldcfg 50000 ; then
+    test -s /mnt/tmp/ld.so.cache && {
+      cp /mnt/tmp/ld.so.cache /mnt/etc/ld.so.cache
+      rm /mnt/tmp/ld.so.cache; }
+  else 
+    error "  For some reason the generation of \
+ld.so.cache did not finish in time."
+  fi
+else
+  [ "${DEBUGLEVEL}" -gt 0 ] && echo -e "You decided not to recreate \
+/etc/ld.so.cache file. That might cause errors\nif libraries are installed \
+after this file was created on server." >> /mnt/${LOGFILE}
+fi
+# save machine configuration
+cp /etc/machine-setup /mnt/etc
+waitfor /tmp/hwcfg 20000 || error "  For some reason the hardware autoconfig \
+of this client did not finish in\n  time. You might check the process list \
+and list the modules loaded until\n  now."
+
+date
+#ash
+# IP configuration is made and should not be updated automatically
+killall -9 dhcpcd dhclient pump 2>/dev/null
+# unmount the bind mounted modules directory
+umount -n /lib/modules/${KERNEL} || error "Unmount of the kernel \
+modules directory failed for some reason."
+# reset hotplug
+echo "/sbin/hotplug" > /proc/sys/kernel/hotplug
+echo ""
+test -f /mnt/etc/inittab || error "  The file /etc/inittab does not exist or \
+is no regular one. It is needed\n  for the bootup procedure to follow."
+umount -n /sys || error "  Unmount of the kernel sys directory \
+failed for some\nreason.  You will get some error messages that some files \
+could not be\n  removed." nonfatal
+mount -n --move /dev /mnt/dev
+cd /mnt
+umount -n /proc
+[ -n "${UNIONFS}" ] && mount -n --move /root /mnt/mnt 
+pivot_root . mnt || error "  Could not execute pivot_root due to missing \
+command or wrong\n  parameters given."
+exec `which chroot` . sh -c 'rm -rf mnt/*; exec /sbin/init' \
+  <dev/console >dev/console 2>&1
+

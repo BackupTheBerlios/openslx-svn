@@ -1,0 +1,389 @@
+#!/bin/bash
+#
+# Description:  universal (distro independent) generator for initial
+#		ramdisks for linux diskless clients 
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 06-01-2006
+#		Blabla
+#		Blub
+#
+# Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
+
+
+INSTDIR=/tmp/dxs-instrd
+DEBUG=1
+LINRC=${INSTDIR}/init
+COMETCEXCL="XF86Config*\nissue*\nmtab*\nfstab*\n"
+COMDIRINDXS="/tmp/scratch /var/lib/nobody"
+set +x
+
+# distro specific settings read from configuration file
+# SYSCONFDIR - system wide configuration settings in /etc - sysconfig in  
+# SuSE and RedHat, default in Debian and Ubuntu, conf.d in Gentoo
+# DISETCEXCL - list of files, wildcards to be excluded from /etc when using 
+# bind mounts
+# DIRINBINDMNT - lists of directories to be created in bind mounted rw
+# part of the client filesystem
+# RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# TempFS usage
+# DISDIRINDXS - directories in client filesystem which should be present 
+# anyhow
+# DISBINDMNT - any code which is specific in bind mount environment
+# RCDIRS - runlevel directories relative to /etc
+
+SYSCONFDIR="<set in ~/distro-config/distro file>"
+DISETCEXCL="<set in ~/distro-config/distro file>"
+BINDMPTS="<set in ~/distro-config/distro file>"
+DIRINBINDMNT="<set in ~/distro-config/distro file>"
+RODIRSINRW="<set in ~/distro-config/distro file>"
+DISDIRINDXS="<set in ~/distro-config/distro file>"
+DISBINDMNT="<set in ~/distro-config/distro file>"
+INITDIR="<set in ~/distro-config/distro file>"
+INITBOOTD="<set in ~/distro-config/distro file>"
+RCDIRS="<set in ~/distro-config/distro file>"
+INITSCRIPTS="<set in ~/distro-config/distro file>"
+
+#########################################################################
+# End of global variable declaration, nothing needed to be changed at 
+# default below that line
+
+# copy some binary to given destination. Takes binary in $1 and 
+# destination in $2
+cobi()
+{
+local DEST=$2
+local FPTB=`which $1`
+if [ -z ${FPTB} ] ; then
+  return 1;
+else
+  cp ${FPTB} ${INSTDIR}/${DEST}
+fi
+}
+
+repco()
+{
+local SRC=$1
+local DEST=$2
+local HEADER=$3
+# do not forget to define all variables which should be replaced within
+# the start and configuration scripts
+echo -e ${HEADER} >${DEST}
+sed -e "s,@@@INSTDIR@@@,${INSTDIR},g" \
+    -e "s,@@@NWMODULES@@@,${NWMODULES},g" \
+    -e "s,@@@KERNVER@@@,${KERNVER},g" \
+    -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
+    -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
+    -e "s,@@@DISTRO@@@,${DISTRO},g" \
+    ${SRC} >> ${DEST}
+}
+
+# Cat from stdin to linuxrc, removing leading whitespace up to pipe symbol.
+# Note that here documents can only be indented with tabs, not with spaces.
+cat_linuxrc() {
+    sed 's/^[ \t]*|//'>> ${LINRC}
+    echo >> ${LINRC}
+}
+
+
+# Resolve dynamic library dependencies. Returns a list of symbolic links
+# to shared objects and shared object files for the binaries in $*.
+# stolen from SuSE mkinitrd
+shared_object_files() {
+    local LDD CHROOT initrd_libs lib_files lib_links lib link
+
+    LDD=`which ldd`
+    if [ ! -x $LDD ]; then
+	error 2 "I need $LDD."
+    fi
+
+    initrd_libs=( $(
+	$LDD "$@" \
+	| sed -ne 's:\t\(.* => \)\?\(/.*\) (0x[0-9a-f]*):\2:p'
+    ) )
+
+    # Evil hack: On some systems we have generic as well as optimized
+    # libraries, but the optimized libraries may not work with all
+    # kernel versions (e.g., the NPTL glibc libraries don't work with
+    # a 2.4 kernel). Use the generic versions of the libraries in the
+    # initrd (and guess the name).
+    local n optimized
+    for ((n=0; $n<${#initrd_libs[@]}; n++)); do
+	lib=${initrd_libs[$n]}
+	optimized="$(echo "$lib" | sed -e 's:.*/\([^/]\+/\)[^/]\+$:\1:')"
+	lib=${lib/$optimized/}
+	if [ "${optimized:0:3}" != "lib" -a -f "$lib" ]; then
+	    #echo "[Using $lib instead of ${initrd_libs[$n]}]" >&2
+	    initrd_libs[$n]="${lib/$optimized/}"
+	fi
+    done
+
+    for lib in "${initrd_libs[@]}"; do
+	case "$lib" in
+	linux-gate*)
+	    # This library is mapped into the process by the kernel
+	    # for vsyscalls (i.e., syscalls that don't need a user/
+	    # kernel address space transition) in 2.6 kernels.
+	    continue ;;
+	/*)
+	    lib="${lib:1}" ;;
+	*)
+	    # Library could not be found.
+	    oops 7 "Dynamic library $lib not found"
+	    continue ;;
+	esac
+
+	while [ -L "/$lib" ]; do
+	    echo $lib
+	    link="$(readlink "/$lib")"
+	    if [ x"${link:0:1}" == x"/" ]; then
+	        lib=${link#/}
+	    else
+	        lib="${lib%/*}/$link"
+	    fi
+	done
+	echo $lib
+    done \
+    | sort -u
+}
+
+# Resolve module dependencies and parameters. Returns a list of modules and
+# their parameters.
+resolve_modules() {
+    local kernel_version=$1 module
+    shift
+
+    for module in "$@"; do
+	local with_modprobe_conf
+	module=${module%.o}  # strip trailing ".o" just in case.
+	module=${module%.ko}  # strip trailing ".ko" just in case.
+	if [ -e /etc/modprobe.conf ]; then
+	    with_modprobe_conf="-C /etc/modprobe.conf"
+	fi
+	module_list=$(/sbin/modprobe $with_modprobe_conf \
+	    --set-version $kernel_version --ignore-install \
+	    --show-depends $module 2> /dev/null \
+	    | sed -ne 's:.*insmod /\?::p' )
+	if [ -z "$module_list" ]; then
+	    oops 7 "Cannot determine dependencies of module $module." \
+		"Is modules.dep up to date?"
+	fi
+	echo "$module_list"
+    done \
+    | awk ' # filter duplicates: we must not reorder modules here!
+	NF == 0     { next }
+	$1 in seen  { next }
+		    { seen[$1]=1
+		      print
+		    }
+    '
+    rm -f $temp
+}
+
+
+
+#########################################################################
+# End of function declaration
+
+while getopts :hgMRk:i:m:b:d:o:s:Sut:D:I:V:a: a ; do
+    case $a in
+	\:|\?)	case $OPTARG in
+		k)  echo "-k requires kernel list parameter"
+		    ;;
+		i)  echo "-i requires initrd list parameter"
+		    ;;
+		m)  echo "-m requires module list parameter"
+		    ;;
+		b)  echo "-b requires boot dir parameter"
+		    ;;
+		d)  echo "-d requires root device parameter"
+		    ;;
+		s)  echo "-s requires image size(s)"
+		    ;;
+		t)  echo "-t requires tmp dir parameter"
+		    ;;
+		D)  echo "-D requires dhcp interface parameter"
+		    ;;
+		I)  echo "-I requires network interface parameter"
+		    ;;
+		a)  echo "-a requires a DSDT parameter"
+		    ;;
+		V)  echo "-V requires an executable to run inside linuxrc"
+		    ;;
+		*)  echo "Unknown option: -$OPTARG"
+		    echo "Try mkinitrd -h"
+		    ;;
+	    esac
+	    exit 1
+	    ;;
+	g)  use_glibc=1
+	    ;;
+	k)  kernel_images=$OPTARG
+	    ;;
+	i)  initrd_images=$OPTARG
+	    ;;
+	m)  modules=$OPTARG
+	    modules_set=1
+	    ;;
+	b)  boot_dir=$OPTARG
+	    ;;
+	d)  rootdev=$OPTARG
+	    ;;
+	s)  splash=$OPTARG
+	    ;;
+	t)  tmp_dir=$OPTARG
+	    ;;
+	D)  interface=$OPTARG
+	    interface=${interface#/dev/}
+	    use_dhcp=1
+	    ;;
+ 	I)  interface=$OPTARG
+ 	    interface=${interface#/dev/}
+ 	    use_ipconfig=1
+	    ;;
+	a)  acpi_dsdt="$OPTARG"
+	    ;;
+	S)  use_selinux=1
+	    ;;
+	V)  vendor_init_script="$OPTARG"
+	    ;;
+	R)  mkinit_type="rd"
+	    ;;
+	u)  sysfs_root=1
+	    use_udev=
+	    ;;
+	h)  usage
+	    ;;
+    esac
+done
+shift $(expr $OPTIND - 1)
+
+
+#########################################################################
+# End of parameter, argument interpretation
+
+rm -rf ${INSTDIR}
+mkdir -p ${INSTDIR}/{dev,proc,tmp,mnt,root,bin,sbin,sys,lib}
+mkdir -p ${INSTDIR}/usr/share
+# needed for KNOPPIX hwsetup not to confuse with ${SYSCONFDIR}
+mkdir -p ${INSTDIR}/etc/sysconfig
+
+# source configuration file for the distribution used
+DISTRO=suse
+case "${DISTRO}.${DISVER}" in
+  SuSE*|suse*|Suse*|SuSe*)
+	DISTRO=suse-10.0
+	;;
+  Debian*|debian*|Sarge*|sarge*)
+	DISTRO=debian
+	;;
+  Gentoo*|gentoo*)
+	DISTRO=gentoo
+	;;
+esac
+cp distro-specs/${DISTRO}/config ${INSTDIR}/etc/sysconfig
+cp distro-specs/${DISTRO}/functions-${DISTRO} ${INSTDIR}/etc/distro-functions
+cp -a distro-specs/${DISTRO}/files ${INSTDIR}/etc/sysconfig
+
+#case ${DEBUG} 
+
+#if no klibc
+for bbins in ash bash sh; do
+  if cobi ${bbins} bin ; then 
+    LRCSH=/bin/${bbins}; ln -fs /bin/${bbins} ${INSTDIR}/bin/sh; break
+  else echo "Binary not found (1)"; fi
+done
+
+# if no klibc
+for bbins in ip ifconfig; do
+  if cobi ${bbins} bin
+  then 
+    LRCIP=/bin/${bbins} 
+    [ "${LRCIP}" = "ifconfig" ] && cobi route bin
+    break
+  else echo "Binary not found"; fi
+done
+
+# hwsetup and common init.d stuff from KNOPPIX, for DXS
+cp -a initrd-stuff/* ${INSTDIR}
+
+
+# distro dependet stuff for etc, booting !?
+
+# needed standard binaries
+for bbins in \
+    cat chmod chown chroot cp expr killall ln mkdir modprobe \
+    mount portmap pivot_root rmmod sed tar umount
+  do
+  cobi ${bbins} bin || echo "Program ${bbins} not found"
+done
+
+# one of the dhcp clients
+cobi dhcpcd bin
+mkdir -p ${INSTDIR}/var/{lib,run}
+
+# debug binaries
+for bbins in \
+    date ls lsmod lsof ps rm strace time
+  do
+  cobi ${bbins} bin || echo "Program ${bbins} not found"
+done
+
+# style of hotplug/udev/dev
+cp -a /etc/udev ${INSTDIR}/etc
+for bbins in udev udevstart
+  do
+  cobi ${bbins} bin || echo "Program ${bbins} not found"
+done
+
+# if nfs
+mkdir -p ${INSTDIR}/var/lib/nfs/state
+
+# if nbd
+# cobi nbd-client bin
+
+#if nfs - dann modul suchen, kopieren 
+
+# add needed libraries depending on choosen binaries
+for lib in `shared_object_files ${INSTDIR}/bin/*` ; do
+  baselib=`basename ${lib}`
+  test -e  ${INSTDIR}/lib/${baselib} || \
+    cp -a /${lib} ${INSTDIR}/lib
+done
+
+# add kernel modules and dependency files
+#KERNVER=2.6.13-15-default
+KERNVER=2.6.13-15.7-default
+NWMODULES="e100 tg3 via-rhine"
+FSMODULES="nbd nfs"
+
+for module in `resolve_modules ${KERNVER} af_packet ${NWMODULES} ${FSMODULES}`; do
+  mpath=${INSTDIR}/${module%/*}
+  mkdir -p ${mpath}
+  cp /$module ${mpath}
+done
+cp /lib/modules/${KERNVER}/modules.* ${INSTDIR}/lib/modules/${KERNVER}
+
+DESC="#!${LRCSH}\n# Description:  universal (distro independent) initial \
+ramdisk for\n#\t\tlinux diskless clients.\n\t\t#variable replacement done \
+by $0\n#\n# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 13-12-2005\n\
+#\t\tN.N.\n#\t\tN.N.\n# Copyright:    (c) 2003, 2006 - RZ Universitaet \
+Freiburg\n"
+repco initrd-stuff/init ${INSTDIR}/init ${DESC}
+chmod 755 ${INSTDIR}/init ${INSTDIR}/bin/servconfig \
+  ${INSTDIR}/bin/hwautocfg ${INSTDIR}/bin/dhcpmkconfig
+DESC="# Description: universal (distro independent) fcuntion definition\n\
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 07-01-2006\n\
+#\t\tN.N.\n#\t\tN.N.\n# Copyright:    (c) 2006 - RZ Universitaet \
+Freiburg\n" 
+repco initrd-stuff/etc/functions ${INSTDIR}/etc/functions ${DESC}
+
+#########################################################################
+# End of file copy procedures
+
+
+# finally create the compressed initial ramdisk cpio archive
+pushd . > /dev/null 2>&1
+  cd ${INSTDIR}
+  find . ! -name "*~" | cpio -H newc --create | gzip -9 > /tmp/dxsinitrd.gz
+popd > /dev/null 2>&1
+
