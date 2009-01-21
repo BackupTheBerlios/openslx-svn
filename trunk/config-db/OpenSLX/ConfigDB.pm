@@ -911,7 +911,7 @@ sub aggregatedSystemFileInfoFor
 		my $type = $export->{'type'};
 		my $serverIpToken = generatePlaceholderFor('serverip');
 		$exportURI
-			= "$type://$serverIpToken$openslxConfig{'export-path'}/$type/$vendorOS->{name}";
+			= "$type://$serverIpToken$openslxConfig{'export-path'}/$type/$export->{name}";
 	}
 
 	my $info = { %$system };
