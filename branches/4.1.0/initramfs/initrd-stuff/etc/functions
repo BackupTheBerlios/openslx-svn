@@ -370,21 +370,22 @@ testmkd () {
 # destination (incl. /mnt prefix)
 # sysngwriter $dest $start_syslog
 sysngwriter () {
-syslogngcfg=$1
+local mysyslogngcfg=$1
 # logging servers might be specified in $log_servers (from e.g. dhcp)
 # fixme!? only first logserver from dhcp variable is used
 [ -n "$log_servers" ] && start_syslog="syslog://${log_servers% *}:514/udp"
 echo -e "# File written by $0 within InitRamFS\n\
 source src {\n\tfile(\"/proc/kmsg\");\n\
 \tunix-dgram(\"/dev/log\");\n\tinternal();\n};\ndestination console_all {\
-\n\tfile(\"/dev/tty10\");\n};" >$syslogngcfg
+\n\tfile(\"/dev/tty10\");\n};" >$mysyslogngcfg
 case "$start_syslog" in
   yes|Yes|YES)
-    : # already defined
+    echo -e "\nlog {\n\tsource(src);\n\tdestination(console_all);\n};" \
+      >>$mysyslogngcfg
   ;;
   file)
     echo -e "destination allmessages {\n\tfile(\"/var/log/allmessages\");\n};\
-\nlog {\n\tsource(src); destination(allmessages);\n};" >>$syslogngcfg
+\nlog {\n\tsource(src); destination(allmessages);\n};" >>$mysyslogngcfg
   ;;
   *)
     syslogsrv=$(uri_token $start_syslog server)
@@ -393,8 +394,8 @@ case "$start_syslog" in
     [ -z ${syslogport} ] && syslogport=514
     [ -z ${syslogprot} ] && syslogprot=udp
     echo -e "destination loghost {\n\t${syslogprot}(\"${syslogsrv}\" \
-port(${syslogport}));\n};\nlog {\n\tsource(src); destination(loghost);\n};" \
-      >>$syslogngcfg
+port(${syslogport}));\n};\nlog {\n\tsource(src);\n\tdestination(loghost);\n};"\
+      >>$mysyslogngcfg
   ;;
 esac
 }
