@@ -129,16 +129,20 @@ sub spitFile
 
 	checkParams($flags, { 
 		'io-layer' => '?',
+		'mode'     => '?',
 	});
 	my $ioLayer = $flags->{'io-layer'} || 'utf8';
 
 	my $fh;
 	open($fh, ">:$ioLayer", $fileName)
-	  or croak _tr("unable to create file '%s' (%s)\n", $fileName, $!);
+		or croak _tr("unable to create file '%s' (%s)\n", $fileName, $!);
 	print $fh $content
-	  or croak _tr("unable to print to file '%s' (%s)\n", $fileName, $!);
+		or croak _tr("unable to print to file '%s' (%s)\n", $fileName, $!);
 	close($fh)
-	  or croak _tr("unable to close file '%s' (%s)\n", $fileName, $!);
+		or croak _tr("unable to close file '%s' (%s)\n", $fileName, $!);
+	if (defined $flags->{mode}) {
+		chmod $flags->{mode}, $fileName;
+	}
 	return;
 }
 
