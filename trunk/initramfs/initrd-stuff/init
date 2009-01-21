@@ -282,8 +282,9 @@ if [ -n "${nbdmod}" ] ; then
     nbd)
       RDEV=/dev/nbd0
       waitfor "${RDEV}" 30000 || error "$init_nbddev"
-      echo "0" > /sys/block/nbd0/queue/read_ahead_kb
-      nbd-client $nbdhost $nbdport ${RDEV} || error "$init_nbdcl"
+      while ! nbd-client $nbdhost $nbdport ${RDEV} ; do
+        usleep 10
+      done
       usleep 10
       # switch off unneeded block read ahead
       echo "0" > /sys/block/nbd0/queue/read_ahead_kb

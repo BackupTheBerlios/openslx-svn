@@ -2,7 +2,7 @@
 # (included by init, hwautocfg, servconfig, ... within OpenSLX initial 
 # ramfs) 
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 26-09-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 29-09-2006
 # Felix Endres, 30-04-2006
 # <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 # Tobias Maier
@@ -339,8 +339,9 @@ done
 if [ "$dhcp" = "none" ] ; then
   error "$error_nodhcp" nonfatal
 else
-  # ensure the interface is up
-  ipsetup 0.0.0.0 255.255.255.255 0.0.0.0 255.255.255.255 eth0 &
+  # ensure the interface is up - might produce conflicts - nbd could
+  # fail!!
+  # ipsetup 0.0.0.0 255.255.255.255 0.0.0.0 255.255.255.255 eth0 &
   [ -f /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko ] && \
     loadmod /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko \
       "needed for dhcp";
@@ -432,8 +433,9 @@ if [ -n "$FILESRC" ] ; then
   tftpgetunpack $tftp $cfgfile $tftpserver
 else
   # we expect the tftp-server to serve from $SLX_TFTPBOOT_PATH, so we
-  # just use the relative path from that here:
-  cfgdir="client-config"
+  # fixme!!!! just use the relative path from that here:
+  # the variable is nowhere to be seen, so it cannot be used here!?!?
+  cfgdir="/tftpboot/client-conf"
   local tftpserver=$serverip
   # try to get configuration files successively; start with distro client
   # and try last distro default ...
