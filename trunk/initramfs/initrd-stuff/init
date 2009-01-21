@@ -451,7 +451,7 @@ if [ -n "${UNIONFS}" -o -n "${UNION}" ] ; then
     error "$init_loadufs" nonfatal
     UNIONFS=""; }
 fi
-
+echo "Vor Union"
 # setup of client root filesystem dependent on the availability of UnionFS
 if [ -n "${UNIONFS}" ] ; then
   echo "Using UnionFS for rw access"
@@ -532,6 +532,7 @@ fi
 # script for stuff to execute during early bootup
 d_mkrlscript init boot.ld "Running configuration postponed from InitRamFS"
 echo "fs complete at $(sysup)" >/tmp/fscmpl
+echo "FS complete"
 
 # write debug file information after filesystem setup completed
 echo -e "# /etc${D_SYSCONFDIR}/logfile - file created by $0 (initramfs \
@@ -582,10 +583,12 @@ if [ -z "${NOLDSC}" ] ; then
 else
   error "$init_infldcfg" nonfatal
 fi
-# copy machine configuration (from global settings, additions made within
-# here and from dhcp/ldap sources) to client /etc for later checks
-waitfor /tmp/svcfg 20000 || error "$init_errsw"
+# wait a while for hardware setup to complete and copy stuff to stage4
 waitfor /tmp/hwcfg 30000 || error "$init_errhw"
+[ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
+  >> /mnt/etc/udev/rules.d/04-scanner.rules
+# wait a while for services setup to complete
+waitfor /tmp/svcfg 20000 || error "$init_errsw"
 # IP configuration is made and should not be updated automatically, udevd
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump udhcpc 2>/dev/null
@@ -614,8 +617,9 @@ done
 test -f /mnt/etc/inittab || error "$init_erritab"
 # close runlevel script for stuff to execute during early bootup
 d_mkrlscript close boot.ld ""
-# put /tmp into stage4 mtab
+# put /tmp into stage4 mtab and add stuff to stage4 fstab
 sed -n "s,/mnt,,;/\/tmp /p" /proc/mounts >> /mnt/etc/mtab
+[ -f /tmp/fstab ] && cat /tmp/fstab >> /mnt/etc/fstab
 # preparations to leave initramfs - umounting ...
 umount -n /sys || error "$init_errsys" nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1

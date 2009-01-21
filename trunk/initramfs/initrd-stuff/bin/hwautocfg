@@ -91,6 +91,13 @@ local DRI='\tGroup\t\t"video"\n
 # displayvars may overwrite the above settings
 displayvars
 
+# run localizator and configure X11 keyboard
+localization "${country}"
+if [ -z "${XKEYBOARD}" ] ; then
+  error "$hcfg_keyb" nonfatal
+  XKEYBOARD="de"
+fi
+
 # check if hardware definition variables are set and overwrite autodetected
 # values
 if [ -n "$hw_graphic" ] ; then
@@ -406,14 +413,6 @@ cfgcomplete
 . /etc/machine-setup
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished waiting for config at $(sysup)"
 
-# run localizator and configure keyboard and console fonts
-DEFKEYTABLE="de-latin1-nodeadkeys"
-localization $country
-if [ -z "${KEYTABLE}" ] ; then
-  error "$hcfg_keyb" nonfatal 
-  KEYTABLE=${DEFKEYTABLE}
-fi
-
 # run X11 / Xorg configurator if no xorg.conf file was provided by
 # ConfigTGZ (check for /rootfs/${D_XF86CONFFILE#/mnt})
 if [ -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then
@@ -463,27 +462,27 @@ done
 
 # wait for completion of clients root filesystem in /mnt and add
 # previously generated files to /mnt/etc ...
-[ $DEBUGLEVEL -eq 21 ] && \
-  echo -e "** if you did not run hwautocfg in background and exited the \n\
-debug shell, expect to wait from now on a while ..."
-waitfor /tmp/fscmpl 40000
-[ -f /tmp/fstab ] && cat /tmp/fstab >> /mnt/etc/fstab
-[ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
-  >> /mnt/etc/udev/rules.d/04-scanner.rules
+#[ $DEBUGLEVEL -eq 21 ] && \
+#  echo -e "** if you did not run hwautocfg in background and exited the \n\
+#debug shell, expect to wait from now on a while ..."
+#waitfor /tmp/fscmpl 40000
+#[ -f /tmp/fstab ] && cat /tmp/fstab >> /mnt/etc/fstab
+#[ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
+#  >> /mnt/etc/udev/rules.d/04-scanner.rules
 
 # add entries to initialize keytable and consolefont to boot.ld
 # postpone some commands into normal bootup environment
-echo -e "\t# entries added by $0: $date" >> /mnt/etc/${D_INITDIR}/boot.ld
-[ -n "${KEYTABLE}" ] && keytable
-[ -n "${CONSOLE_FONT}" ] && consolefont
+#echo -e "\t# entries added by $0: $date" >> /mnt/etc/${D_INITDIR}/boot.ld
+#[ -n "${KEYTABLE}" ] && keytable
+#[ -n "${CONSOLE_FONT}" ] && consolefont
 
 # finalize X configuration XBinPath contains pointer of to X binary
 # in /var/X11R6/bin/X - only needed if var is set
-displayvars
-if [ -n $XBinPath ] ; then
-  testmkd /mnt/var/X11R6/bin
-  ln -sf $XBinPath /mnt/var/X11R6/bin/X
-fi
+#displayvars
+#if [ -n $XBinPath ] ; then
+#  testmkd /mnt/var/X11R6/bin
+#  ln -sf $XBinPath /mnt/var/X11R6/bin/X
+#fi
 # if any new device appeared up to now
 if [ -x /bin/mdev ] ; then
   mdev -s &
@@ -492,12 +491,12 @@ if [ -x /bin/mdev ] ; then
 fi
 
 # wait for completion of Xorg configuration
-waitfor /tmp/xready 20000
-cp /etc/xorg.conf ${D_XF86CONFFILE}
+#waitfor /tmp/xready 20000
+#cp /etc/xorg.conf ${D_XF86CONFFILE}
 
 # do not finish until tmp is setup properly
-[ -n "$part44" ] && waitfor /tmp/tmpready 20000
-
+#[ -n "$part44" ] && waitfor /tmp/tmpready 20000
+# not needed --> servconfig waits for it!
 
 # script run timer or debug information
 [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \

@@ -83,6 +83,23 @@ echo "
 ">/mnt/etc/issue
 
 #############################################################################
+# set localization and add entries to initialize keytable and consolefont to
+# boot.ld
+DEFKEYTABLE="de-latin1-nodeadkeys"
+if [ -z "$country" ] ; then
+  error "$scfg_country" nonfatal
+  country="${D_DEFAULTCOUNTRY}"
+fi
+localization "${country}"
+if [ -z "${KEYTABLE}" ] ; then
+  error "$hcfg_keyb" nonfatal 
+  KEYTABLE=${DEFKEYTABLE}
+fi
+echo -e "\t# entries added by $0: $date" >> /mnt/etc/${D_INITDIR}/boot.ld
+[ -n "${KEYTABLE}" ] && keytable
+[ -n "${CONSOLE_FONT}" ] && consolefont
+
+#############################################################################
 # vmware stuff first part: two scenarios
 # * VM images in /usr/share/vmware - then simply link
 # * VM images via additional mount (mount source NFS, NBD, ...)
@@ -116,14 +133,6 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
     ln -s ${vmimgpath} /mnt/var/lib/vmware 2>/dev/null
   fi
 fi
-
-#############################################################################
-# set localization
-if [ -z "$country" ] ; then
-  error "$scfg_country" nonfatal
-  country="${D_DEFAULTCOUNTRY}"
-fi
-localization "${country}"
 
 #############################################################################
 # setup passwd and shadow for local system users like root, bin, daemon and
@@ -493,6 +502,14 @@ resmgr revoke nobody\nresmgr logout tty7\nkillall X" \
     ;;
   esac
   echo -e "# entry made by $0 $date\n$init" >> /mnt/etc/inittab
+  # wait for completion of Xorg configuration and finalize it
+  waitfor /tmp/xready 20000
+  cp /etc/xorg.conf /mnt/${D_XF86CONFFILE}
+  displayvars
+  if [ -n $XBinPath ] ; then
+    testmkd /mnt/var/X11R6/bin
+    ln -sf $XBinPath /mnt/var/X11R6/bin/X
+  fi
 fi
 
 # setup requested display manager

@@ -18,20 +18,23 @@ preinit () {
 # fake the existence of some helper binaries (which are not of any use
 # within initialramfs)
 shell="/bin/sh"
-[ -x /bin/busybox ] && shell="/bin/ash"
-for i in hwup ifup ; do
-  echo -e "#!$shell\n:" >/sbin/$i
-done
-mkdir /lib/udev /usr/sbin
-for i in usb_id scsi_id vol_id edd_id ata_id path_id cdrom_id idedma.sh mount.sh \
-         rename_netiface firmware.sh create_floppy_devices ; do
-  echo -e "#!$shell\n:" >/lib/udev/$i
-done
-echo -e "#!$shell\n:" >/usr/sbin/alsactl
-rm /etc/udev/rules.d/60-persistent-storage.rules 2>/dev/null
-chmod u+x /sbin/* /lib/udev/* /usr/sbin/*
-echo -e "tty:x:5:\ndisk:x:6:\nlp:x:7:\nkmem:x:9:\nuucp:x:14:\naudio:x:17:\n\
+if [ -x /bin/busybox ] ; then
+  shell="/bin/ash"
+else
+  for i in hwup ifup ; do
+    echo -e "#!$shell\n:" >/sbin/$i
+  done
+  mkdir /lib/udev /usr/sbin
+  for i in usb_id scsi_id vol_id edd_id ata_id path_id cdrom_id idedma.sh \
+           mount.sh rename_netiface firmware.sh create_floppy_devices ; do
+    echo -e "#!$shell\n:" >/lib/udev/$i
+  done
+  echo -e "#!$shell\n:" >/usr/sbin/alsactl
+  rm /etc/udev/rules.d/60-persistent-storage.rules 2>/dev/null
+  chmod u+x /sbin/* /lib/udev/* /usr/sbin/*
+  echo -e "tty:x:5:\ndisk:x:6:\nlp:x:7:\nkmem:x:9:\nuucp:x:14:\naudio:x:17:\n\
 video:x:33:" > /etc/group
+fi
 }
 
 # udev service

@@ -92,7 +92,7 @@ if [ -n "$2" ] ; then
     echo -e "${error_msg}${e_msg}${error_nfe}" >> ${LOGFILE}
   [ "$DEBUGLEVEL" -gt 1 -a "$DEBUGLEVEL" != 8 ] && \
     echo -e "${error_msg}${e_msg}${error_nfe}"
-  [ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && sleep 10
+  [ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && usleep 10
 else
   echo -e "${error_msg}${e_msg}${error_shell}"
   # load usb modules to have keyboard enabled - they might have to be
@@ -124,10 +124,14 @@ usleep () {
 if [ -x /bin/usleep ]; then
   /bin/usleep `expr $1 \* 1000`
 else
+  local i=0
   local starttime=$(sed -e "s, .*,,;s,\.,," /proc/uptime)
   while [ $(sed -e "s, .*,,;s,\.,," /proc/uptime) -le \
-    $(expr $starttime + $1 - 2) ]
-    do :
+    $(expr $starttime + $1 - 2) ] ; do
+    # burn some cycles
+    while [ $i -le 100 ] ; do
+      i=$(expr 1 + $i)
+    done
   done
 fi
 return 0
