@@ -192,7 +192,6 @@ sub fetchSystemsByFilter
 
 	my @systems
 		= $confDB->{'meta-db'}->fetchSystemsByFilter($filter, $resultCols);
-print scalar(@systems)."\n";
 	return wantarray() ? @systems : shift @systems;
 }
 
@@ -227,7 +226,7 @@ sub fetchSystemIDsOfGroup
 	my $confDB = shift;
 	my $groupID = shift;
 
-	return $confDB->{'meta-db'}->fetchSystemIDsOfClient($groupID);
+	return $confDB->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
 }
 
 sub fetchClientsByFilter
