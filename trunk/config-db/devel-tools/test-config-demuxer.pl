@@ -10,7 +10,7 @@ use strict;
 
 # add the folder this script lives in to perl's search path for modules:
 use FindBin;
-use lib "$FindBin::RealBin";
+use lib "$FindBin::RealBin/..";
 	# development path only (as script should never be installed)
 
 use OpenSLX::Basics;
