@@ -57,7 +57,7 @@ if ($versionReq) {
 
 openslxInit();
 
-my $action = shift @ARGV;
+my $action = shift @ARGV || '';
 
 if ($action =~ m[^list-av]i) {
 	my @pluginFolders = glob("$openslxConfig{'base-path'}/lib/plugins/*");
