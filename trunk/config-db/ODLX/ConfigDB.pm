@@ -20,13 +20,13 @@ use Exporter;
 
 my @accessExports = qw(
 	connectConfigDB disconnectConfigDB
-	fetchVendorOSesByFilter fetchVendorOSesByID fetchAllVendorOSIDsOfSystem
-	fetchSystemsByFilter fetchSystemsByID fetchAllSystemIDsOfClient
-	fetchAllSystemIDsOfGroup
-	fetchClientsByFilter fetchClientsByID fetchAllClientIDsOfSystem
-	fetchAllClientIDsOfGroup
-	fetchGroupsByFilter fetchGroupsByID fetchAllGroupIDsOfClient
-	fetchAllGroupIDsOfSystem
+	fetchVendorOSesByFilter fetchVendorOSesByID fetchVendorOSIDsOfSystem
+	fetchSystemsByFilter fetchSystemsByID fetchSystemIDsOfClient
+	fetchSystemIDsOfGroup
+	fetchClientsByFilter fetchClientsByID fetchClientIDsOfSystem
+	fetchClientIDsOfGroup
+	fetchGroupsByFilter fetchGroupsByID fetchGroupIDsOfClient
+	fetchGroupIDsOfSystem
 );
 my @manipulationExports = qw(
 	addVendorOS removeVendorOS changeVendorOS
@@ -192,6 +192,7 @@ sub fetchSystemsByFilter
 
 	my @systems
 		= $confDB->{'meta-db'}->fetchSystemsByFilter($filter, $resultCols);
+print scalar(@systems)."\n";
 	return wantarray() ? @systems : shift @systems;
 }
 
@@ -205,28 +206,28 @@ sub fetchSystemsByID
 	return wantarray() ? @systems : shift @systems;
 }
 
-sub fetchAllSystemIDsOfVendorOS
+sub fetchSystemIDsOfVendorOS
 {
 	my $confDB = shift;
 	my $vendorOSID = shift;
 
-	return $confDB->{'meta-db'}->fetchAllSystemIDsOfVendorOS($vendorOSID);
+	return $confDB->{'meta-db'}->fetchSystemIDsOfVendorOS($vendorOSID);
 }
 
-sub fetchAllSystemIDsOfClient
+sub fetchSystemIDsOfClient
 {
 	my $confDB = shift;
 	my $clientID = shift;
 
-	return $confDB->{'meta-db'}->fetchAllSystemIDsOfClient($clientID);
+	return $confDB->{'meta-db'}->fetchSystemIDsOfClient($clientID);
 }
 
-sub fetchAllSystemIDsOfGroup
+sub fetchSystemIDsOfGroup
 {
 	my $confDB = shift;
 	my $groupID = shift;
 
-	return $confDB->{'meta-db'}->fetchAllSystemIDsOfClient($groupID);
+	return $confDB->{'meta-db'}->fetchSystemIDsOfClient($groupID);
 }
 
 sub fetchClientsByFilter
@@ -248,20 +249,20 @@ sub fetchClientsByID
 	return wantarray() ? @clients : shift @clients;
 }
 
-sub fetchAllClientIDsOfSystem
+sub fetchClientIDsOfSystem
 {
 	my $confDB = shift;
 	my $systemID = shift;
 
-	return $confDB->{'meta-db'}->fetchAllClientIDsOfSystem($systemID);
+	return $confDB->{'meta-db'}->fetchClientIDsOfSystem($systemID);
 }
 
-sub fetchAllClientIDsOfGroup
+sub fetchClientIDsOfGroup
 {
 	my $confDB = shift;
 	my $groupID = shift;
 
-	return $confDB->{'meta-db'}->fetchAllClientIDsOfGroup($groupID);
+	return $confDB->{'meta-db'}->fetchClientIDsOfGroup($groupID);
 }
 
 sub fetchGroupsByFilter
@@ -285,20 +286,20 @@ sub fetchGroupsByID
 	return wantarray() ? @groups : shift @groups;
 }
 
-sub fetchAllGroupIDsOfSystem
+sub fetchGroupIDsOfSystem
 {
 	my $confDB = shift;
 	my $systemID = shift;
 
-	return $confDB->{'meta-db'}->fetchAllGroupIDsOfSystem($systemID);
+	return $confDB->{'meta-db'}->fetchGroupIDsOfSystem($systemID);
 }
 
-sub fetchAllGroupIDsOfClient
+sub fetchGroupIDsOfClient
 {
 	my $confDB = shift;
 	my $clientID = shift;
 
-	return $confDB->{'meta-db'}->fetchAllGroupIDsOfClient($clientID);
+	return $confDB->{'meta-db'}->fetchGroupIDsOfClient($clientID);
 }
 
 ################################################################################
@@ -348,7 +349,7 @@ sub addSystemIDsToVendorOS
 	my $newSystemIDs = _aref(shift);
 
 	my @systemIDs
-		= $confDB->{'meta-db'}->fetchAllSystemIDsOfVendorOS($vendorOSID);
+		= $confDB->{'meta-db'}->fetchSystemIDsOfVendorOS($vendorOSID);
 	push @systemIDs, @$newSystemIDs;
 	return setSystemIDsOfVendorOS($confDB, $vendorOSID, \@systemIDs);
 }
@@ -363,7 +364,7 @@ sub removeSystemIDsFromVendorOS
 	@toBeRemoved{@$removedSystemIDs} = ();
 	my @systemIDs
 		= grep { !exists $toBeRemoved{$_} }
-			   $confDB->{'meta-db'}->fetchAllSystemIDsOfVendorOS($vendorOSID);
+			   $confDB->{'meta-db'}->fetchSystemIDsOfVendorOS($vendorOSID);
 	return setSystemIDsOfVendorOS($confDB, $vendorOSID, \@systemIDs);
 }
 
@@ -410,7 +411,7 @@ sub addClientIDsToSystem
 	my $systemID = shift;
 	my $newClientIDs = _aref(shift);
 
-	my @clientIDs = $confDB->{'meta-db'}->fetchAllClientIDsOfSystem($systemID);
+	my @clientIDs = $confDB->{'meta-db'}->fetchClientIDsOfSystem($systemID);
 	push @clientIDs, @$newClientIDs;
 	return setClientIDsOfSystem($confDB, $systemID, \@clientIDs);
 }
@@ -425,7 +426,7 @@ sub removeClientIDsFromSystem
 	@toBeRemoved{@$removedClientIDs} = ();
 	my @clientIDs
 		= grep { !exists $toBeRemoved{$_} }
-			   $confDB->{'meta-db'}->fetchAllClientIDsOfSystem($systemID);
+			   $confDB->{'meta-db'}->fetchClientIDsOfSystem($systemID);
 	return setClientIDsOfSystem($confDB, $systemID, \@clientIDs);
 }
 
@@ -447,7 +448,7 @@ sub addGroupIDsToSystem
 	my $systemID = shift;
 	my $newGroupIDs = _aref(shift);
 
-	my @groupIDs = $confDB->{'meta-db'}->fetchAllGroupIDsOfSystem($systemID);
+	my @groupIDs = $confDB->{'meta-db'}->fetchGroupIDsOfSystem($systemID);
 	push @groupIDs, @$newGroupIDs;
 	return setGroupIDsOfSystem($confDB, $systemID, \@groupIDs);
 }
@@ -462,7 +463,7 @@ sub removeGroupIDsFromSystem
 	@toBeRemoved{@$toBeRemovedGroupIDs} = ();
 	my @groupIDs
 		= grep { !exists $toBeRemoved{$_} }
-			   $confDB->{'meta-db'}->fetchAllGroupIDsOfSystem($systemID);
+			   $confDB->{'meta-db'}->fetchGroupIDsOfSystem($systemID);
 	return setGroupIDsOfSystem($confDB, $systemID, \@groupIDs);
 }
 
@@ -509,7 +510,7 @@ sub addSystemIDsToClient
 	my $clientID = shift;
 	my $newSystemIDs = _aref(shift);
 
-	my @systemIDs = $confDB->{'meta-db'}->fetchAllSystemIDsOfClient($clientID);
+	my @systemIDs = $confDB->{'meta-db'}->fetchSystemIDsOfClient($clientID);
 	push @systemIDs, @$newSystemIDs;
 	return setSystemIDsOfClient($confDB, $clientID, \@systemIDs);
 }
@@ -524,7 +525,7 @@ sub removeSystemIDsFromClient
 	@toBeRemoved{@$removedSystemIDs} = ();
 	my @systemIDs
 		= grep { !exists $toBeRemoved{$_} }
-			   $confDB->{'meta-db'}->fetchAllSystemIDsOfClient($clientID);
+			   $confDB->{'meta-db'}->fetchSystemIDsOfClient($clientID);
 	return setSystemIDsOfClient($confDB, $clientID, \@systemIDs);
 }
 
@@ -546,7 +547,7 @@ sub addGroupIDsToClient
 	my $clientID = shift;
 	my $newGroupIDs = _aref(shift);
 
-	my @groupIDs = $confDB->{'meta-db'}->fetchAllGroupIDsOfClient($clientID);
+	my @groupIDs = $confDB->{'meta-db'}->fetchGroupIDsOfClient($clientID);
 	push @groupIDs, @$newGroupIDs;
 	return setGroupIDsOfClient($confDB, $clientID, \@groupIDs);
 }
@@ -561,7 +562,7 @@ sub removeGroupIDsFromClient
 	@toBeRemoved{@$toBeRemovedGroupIDs} = ();
 	my @groupIDs
 		= grep { !exists $toBeRemoved{$_} }
-			   $confDB->{'meta-db'}->fetchAllGroupIDsOfClient($clientID);
+			   $confDB->{'meta-db'}->fetchGroupIDsOfClient($clientID);
 	return setGroupIDsOfClient($confDB, $clientID, \@groupIDs);
 }
 
@@ -608,7 +609,7 @@ sub addClientIDsToGroup
 	my $groupID = shift;
 	my $newClientIDs = _aref(shift);
 
-	my @clientIDs = $confDB->{'meta-db'}->fetchAllClientIDsOfGroup($groupID);
+	my @clientIDs = $confDB->{'meta-db'}->fetchClientIDsOfGroup($groupID);
 	push @clientIDs, @$newClientIDs;
 	return setClientIDsOfGroup($confDB, $groupID, \@clientIDs);
 }
@@ -623,7 +624,7 @@ sub removeClientIDsFromGroup
 	@toBeRemoved{@$removedClientIDs} = ();
 	my @clientIDs
 		= grep { !exists $toBeRemoved{$_} }
-			   $confDB->{'meta-db'}->fetchAllClientIDsOfGroup($groupID);
+			   $confDB->{'meta-db'}->fetchClientIDsOfGroup($groupID);
 	return setClientIDsOfGroup($confDB, $groupID, \@clientIDs);
 }
 
@@ -645,7 +646,7 @@ sub addSystemIDsToGroup
 	my $groupID = shift;
 	my $newSystemIDs = _aref(shift);
 
-	my @systemIDs = $confDB->{'meta-db'}->fetchAllSystemIDsOfGroup($groupID);
+	my @systemIDs = $confDB->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
 	push @systemIDs, @$newSystemIDs;
 	return setSystemIDsOfGroup($confDB, $groupID, \@systemIDs);
 }
@@ -660,7 +661,7 @@ sub removeSystemIDsFromGroup
 	@toBeRemoved{@$removedSystemIDs} = ();
 	my @systemIDs
 		= grep { !exists $toBeRemoved{$_} }
-			   $confDB->{'meta-db'}->fetchAllSystemIDsOfGroup($groupID);
+			   $confDB->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
 	return setSystemIDsOfGroup($confDB, $groupID, \@systemIDs);
 }
 

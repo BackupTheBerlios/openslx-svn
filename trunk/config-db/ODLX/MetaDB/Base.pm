@@ -237,15 +237,15 @@ sub fetchSystemsById
 {
 }
 
-sub fetchAllSystemIDsOfVendorOS
+sub fetchSystemIDsOfVendorOS
 {
 }
 
-sub fetchAllSystemIDsOfClient
+sub fetchSystemIDsOfClient
 {
 }
 
-sub fetchAllSystemIDsOfGroup
+sub fetchSystemIDsOfGroup
 {
 }
 
@@ -257,11 +257,11 @@ sub fetchClientsById
 {
 }
 
-sub fetchAllClientIDsOfSystem
+sub fetchClientIDsOfSystem
 {
 }
 
-sub fetchAllClientIDsOfGroup
+sub fetchClientIDsOfGroup
 {
 }
 
@@ -273,11 +273,11 @@ sub fetchGroupsById
 {
 }
 
-sub fetchAllGroupIDsOfClient
+sub fetchGroupIDsOfClient
 {
 }
 
-sub fetchAllGroupIDsOfSystem
+sub fetchGroupIDsOfSystem
 {
 }
 
