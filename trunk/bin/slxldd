@@ -20,9 +20,9 @@ slxldd
     This script reimplements ldd in a way that should work for all
     binary formats supported by the binutils installed on the host system.
 
-    An example: if you have a folder containing an ia64 system, you can
-    invoke this script on a ia32-host in order to determine all the libraries
-    required by a binary of the ia64 target system.
+    An example: if you have a folder containing an x86_64 system, you can
+    invoke this script on a x86_32-host in order to determine all the libraries
+    required by a binary of the x86_64 target system.
 ];
 
 use File::Glob ':globally';
@@ -134,6 +134,16 @@ sub fetchLoaderConfig
 	if (!grep { m[^$rootPath/usr/lib$] } @libFolders) {
 		push @libFolders, "$rootPath/usr/lib";
 	}
+
+	# add lib32-folders for 64-bit Debians, as they do not 
+	# refer those in ld.so.conf (which I find strange...)
+	if (-e '/lib32' && !grep { m[^$rootPath/lib32$]}  @libFolders) {
+		push @libFolders, "$rootPath/lib32";
+	}
+	if (-e '/usr/lib32' 
+	&& !grep { m[^$rootPath/usr/lib32$] } @libFolders) {
+		push @libFolders, "$rootPath/usr/lib32";
+	}
 }
 
 sub addLib
@@ -169,7 +179,7 @@ sub addLib
 			}
 		}
 		if (!defined $libPath) {
-			die _tr("*** unable to find lib %s! ***\n", $lib);
+			die _tr("unable to find lib %s!\n", $lib);
 		}
 		print "$libPath\n";
 		$libInfo{$lib} = $libPath;
