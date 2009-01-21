@@ -210,13 +210,13 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
 line in $0\n#nfsroot=\"${nfsserver}:${nfspath}\"\n" >> /etc/machine-setup
         ;;
         *nbd*)
-          nbdmod=$srvproto
+          bldmod=$srvproto
           # get settings for nbd-client, filesystem equals to path in URI
           # notation (remove leading slash from filesystem at the end)
-          nbdhost=$(uri_token $rootfs server)
-          nbdport=$(uri_token $rootfs port)
-          nbdrfst=$(uri_token $rootfs path)
-          nbdrfst=${nbdrfst#/*}
+          bldhost=$(uri_token $rootfs server)
+          bldport=$(uri_token $rootfs port)
+          bldrfst=$(uri_token $rootfs path)
+          bldrfst=${bldrfst#/*}
         ;;
         aoe)
           echo "Not implemented yet"
@@ -226,6 +226,14 @@ line in $0\n#nfsroot=\"${nfsserver}:${nfspath}\"\n" >> /etc/machine-setup
           #iscsiserver=$(uri_token $rootfs server)
           #iscsiport=$(uri_token $rootfs port)
           #iscsitarget=$(uri_token $rootfs path)
+        ;;
+        device)
+          # use a local device for mounting root block device with given
+          # filesystem, e.g. rootfs=device://sda2/squashfs
+          bldmod=""
+          blddev=$(uri_token $rootfs server)
+          bldfst=$(uri_token $rootfs path)
+          bldfst=${bldfst#/*}
         ;;
       esac
     ;;
@@ -382,26 +390,26 @@ sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup
 [ -n "$file" ] && fileget &
 
 # if root filesystem should be imported via (d) network block device
-if [ -n "${nbdmod}" ] ; then
+if [ -n "${bldmod}" ] ; then
   # load block device driver if needed
-  modprobe ${MODPRV} ${nbdmod} || error "$init_errnbd"
+  modprobe ${MODPRV} ${bldmod} || error "$init_errbld"
   [ -x /bin/mdev ] && mdev -s
-  [ -z "$nbdrfst" ] && nbdrfst=squashfs
-  nbdhost=$(checkip $nbdhost)
+  [ -z "$bldrfst" ] && bldrfst=squashfs
+  bldhost=$(checkip $bldhost)
   if [ $DEBUGLEVEL -eq 20 ] ; then
-    echo "** starting setup of ${nbdmod} at $(sysup)"
+    echo "** starting setup of ${bldmod} at $(sysup)"
   else
-    echo "Diskless client using ${nbdmod} on $nbdhost:$nbdport with $nbdrfst"
+    echo "Diskless client using ${bldmod} on $bldhost:$bldport with $bldrfst"
   fi
   # fixme: check for fs in /proc/filesystems before trying to load the module
-  modprobe ${MODPRV} ${nbdrfst} || error "$init_errnbd" nonfatal
+  modprobe -a ${MODPRV} ${bldrfst} || error "$init_errbld" nonfatal
 
-  case "${nbdmod}" in
+  case "${bldmod}" in
     # network block device present in standard kernel
     nbd)
       RDEV=/dev/nbd0
       waitfor "${RDEV}" 20000 || error "$init_nbddev"
-      while ! nbd-client $nbdhost $nbdport ${RDEV} ; do
+      while ! nbd-client $bldhost $bldport ${RDEV} ; do
         usleep 10000
       done
       usleep 100
@@ -418,13 +426,13 @@ if [ -n "${nbdmod}" ] ; then
       [ -z "$rootfs" ] && \
         rootfs="$(cat /proc/cmdline|sed "s,.*rootfs=\",,;s,\".*,,") "
       i=0
-      while [ "x$nbdhost" != "x" ]; do
-        echo $nbdhost $nbdport > /sys/block/vnbd0/server${i}/sock
+      while [ "x$bldhost" != "x" ]; do
+        echo $bldhost $bldport > /sys/block/vnbd0/server${i}/sock
         i=$(($i + 1))
         rootfs=${rootfs#* }
-        nbdsp=$(echo ${rootfs}|sed "s, .*,,")
-        nbdhost=$(uri_token $nbdsp server)
-        nbdport=$(uri_token $nbdsp port)
+        bldsp=$(echo ${rootfs}|sed "s, .*,,")
+        bldhost=$(uri_token $bldsp server)
+        bldport=$(uri_token $bldsp port)
       done
       # quickhack, should be read in from URI
       echo 1 > /sys/block/vnbd0/config/vid
@@ -452,16 +460,20 @@ if [ -n "${nbdmod}" ] ; then
         clientopt="-c /dnbd/cache"
         waitfor /tmp/cache 10000
       fi
-      [ $(echo $nbdhost|sed "s,\..*,,") -ge 224 ] && \
+      [ $(echo $bldhost|sed "s,\..*,,") -ge 224 ] && \
         ip route add 224.0.0.0/4 dev $nwif
       waitfor /dev/dnbd0 10000 || error "$init_nbddev"
-      echo "dnbd-client -b $nbdhost -d $RDEV $clientopt"
-      while ! dnbd-client -b $nbdhost -d $RDEV $clientopt ; do
+      echo "dnbd-client -b $bldhost -d $RDEV $clientopt"
+      while ! dnbd-client -b $bldhost -d $RDEV $clientopt ; do
         usleep 10000
       done
       # problem with squashfs and cfq scheduler
       echo noop > /sys/block/dnbd0/queue/scheduler
       echo 0 > /sys/block/dnbd0/queue/read_ahead_kb
+      ;;
+    device)
+      # using clients local disk (partition is to be specified)
+      RDEV=/dev/$blddev
       ;;
   esac
   RWRO="ro"
@@ -473,7 +485,7 @@ if [ -n "${nbdmod}" ] ; then
   fi
   if [ -n "${cowloop}" ] ; then
     if [ -n "${unionfs}" -o -n "${aufs}" ] ; then
-      error "$init_cownonbd"
+      error "$init_cownobld"
       unset unionfs aufs
     fi
     echo "Using Copy-on-Write block device for rw access"
@@ -481,6 +493,7 @@ if [ -n "${nbdmod}" ] ; then
     mkdir /dev/cow && mknod /dev/cow/ctl b 241 255
     usleep 200
     ln -s /dev/cowloop0 /dev/cow/0
+    # fixme - cowdev depending on blockdev choosen above ...
     cowdev -a /dev/nbd0 ${rwdir}/nbd.cow
     usleep 200
     RWRO="rw"
@@ -494,7 +507,7 @@ if [ -n "${nbdmod}" ] ; then
   # finally mount the block device
   for i in 1 50 100 200 400 1000 ; do
     usleep $i
-    mount -n -t $nbdrfst -o $RWRO $RDEV /mnt 2>/dev/null && break
+    mount -n -t $bldrfst -o $RWRO $RDEV /mnt 2>/dev/null && break
   done
   [ $DEBUGLEVEL -eq 20 ] && echo "** finished nw blockdev stuff at $(sysup)"
 elif [ -n ${iscsiserver} ] ; then
@@ -514,12 +527,12 @@ fi
 
 # if no type of root filesystem is passed via kernel command line try
 # information gathered from dhcp process (only valid for nfs)
-if [ -z "${nbdmod}" -a -z "${nbdhost}" -a -z "${nfsroot}" ] ; then
+if [ -z "${bldmod}" -a -z "${bldhost}" -a -z "${nfsroot}" ] ; then
   # information has to be read from dhcp and ldap configuration
   cfgcomplete
 fi
 # mount nfs rootfs
-if [ -z "${nbdmod}" -a -z "${nbdserver}" ] ; then
+if [ -z "${bldmod}" -a -z "${bldserver}" ] ; then
   [ $DEBUGLEVEL -eq 20 ] && echo "** started nfs mount"
   # read in extended machine-setup
   . /etc/machine-setup
@@ -783,7 +796,7 @@ killall -9 hwautocfg servconfig 2>/mnt/dev/null
 [ -f /tmp/watchdogpid ] && kill $(cat /tmp/watchdogpid) 2>/mnt/dev/null
 umount -n /proc
 # unset old environment variables
-unset client debug date initrd ip dnbdroot nbdroot nfsroot rootfs ticks vci vga
+unset client debug date initrd ip bldroot nfsroot rootfs ticks vci vga
 unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
   SLXVERSION UDEVD_EXPECTED_SEQNUM PATH
 # new style of pivoting (switch_root or run-init)
