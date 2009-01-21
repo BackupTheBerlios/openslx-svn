@@ -395,8 +395,9 @@ command line)." >> /etc/machine-setup
   # udhcpc is part of busybox
   udhcpc)
     [ -n $vci ] && vci="-V $vci"
-    ln -s /bin/dhcpmkconfig /bin/udhcpc.script
-    udhcpc -b -q $vci -s /bin/udhcpc.script -i eth0
+    testmkd /usr/share/udhcpc
+    ln -s /bin/dhcpmkconfig /usr/share/udhcpc/default.script
+    udhcpc -b -q $vci -s /usr/share/udhcpc/default.script -i eth0
   ;;
   *)
   ;;
@@ -903,34 +904,20 @@ for i in boot.ld ${D_INITSCRIPTS}; do
   ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/K${revcnt}$i
 done
 }
-#############################################################################
-# find out if prerequisites for special X server modules are met (incomplete)
-checkglx () {
-case "${XMODULE}" in
-  radeon)
-    # check ${XDESC}/ hwsetup.info device string in Cards file and then
-    # for needed components
-    test -f /mnt/lib/modules/${KERNEL}/kernel/drivers/char/drm/fglrx.ko \
-      && test -f /mnt/usr/X11R6/lib/modules/drivers/fglrx_drv.* && \
-         XMODULE=fglrx
-      # there seems no problem, if no TV is connected
-      #TVOUT='\tOption\t\t"TVFormat" "PAL-B"\n
-#\tOption\t\t"DesktopSetup" "horizontal"'
-  ;;
-  nv)
-    #
-    # test -f /mnt/usr/X11R6/lib/modules/drivers/nvidia_drv.*
-  ;;
-esac
-}
 
 #############################################################################
 # dummy functions - avoid undefined functions in servconfig (functions are
 # normally overwritten by settings within distro-functions - a file generated
 # by slxmkramfs from <distro>/functions-default & ~-version
 
+# find out if prerequisites for special X server modules are met (distro
+# specific)
+checkglx () {
+:
+}
+
 # overwrite xorg configuration set by hwautocfg
-displayvars (){
+displayvars () {
 :
 }
 

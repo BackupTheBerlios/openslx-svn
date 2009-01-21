@@ -19,6 +19,7 @@
 - /etc/shadow*
 - /etc/samba/secrets.tdb
 - /etc/dxs
+- /etc/opt/openslx
 - /etc/resolv.conf.*
 - /etc/vmware/installer.sh
 - /etc/exports*

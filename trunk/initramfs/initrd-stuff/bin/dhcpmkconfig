@@ -4,7 +4,7 @@
 # clients used within OpenSLX initramfs. The result is written in unified
 # form to the /etc/machine-setup file
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 03-09-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 14-11-2006
 # Lars Mueller, 23-06-2006
 # Oliver Tappe, 23-06-2006
 #
@@ -55,14 +55,15 @@ enabled via kernel command\n# line)." >>$cfgfile
   ;;
   *udhcpc*)
     dhcl="udhcpc"; echo -e "$cfgmsg\n$infomsg" >>$cfgfile
-    unset infomsg HOME IFS mask lease interface
+    # if $cfgfile is changed change target for set output accordingly
+    unset infomsg HOME IFS mask lease interface cfgmsg cfgfile
     set | sed \
       -e "s,^P.*,,;s,ntpsrv,ntp_servers,;s,ip,clientip," \
       -e "s,serverid,serverip,;s,subnet,subnet_mask," \
       -e "s,router,gateway,;s,hostname,host_name," \
       -e "s,dns,domain_name_servers,;s,domain,domain_name," \
       -e "s,broadcast,broadcast_address,;s,dhc.*,,;/^$/d" \
-        >>$cfgfile
+        >>/tmp/confviadhcp
   ;;
 esac
 
