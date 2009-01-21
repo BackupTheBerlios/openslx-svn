@@ -86,7 +86,9 @@ sub vlog
 sub openslxInit
 {
 	# try to read and evaluate config files:
-	foreach my $f ("OpenSLX/openslxrc", "$ENV{HOME}/.openslxrc") {
+	foreach my $f ("/etc/openslx/settings.default",
+				   "/etc/openslx/settings.local",
+				   "$ENV{HOME}/.openslx/settings") {
 		next unless open(CONFIG, "<$f");
 		while(<CONFIG>) {
 			chomp;
