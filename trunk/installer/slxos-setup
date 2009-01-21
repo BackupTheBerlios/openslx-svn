@@ -114,9 +114,6 @@ if ($action =~ m[^import]i) {
 		print STDERR _tr("You need to specify exactly one source and one vendor-OS-name!\n");
 		pod2usage(2);
 	}
-	if ($source !~ m[^.+::?.+$]) {
-		die _tr("Unkown source format given, expected '<hostname>:<path>' or '<hostname>::<module>'!\n");
-	}
 	# we chdir into the script's folder such that all relative paths have
 	# a known starting point:
 	chdir($FindBin::RealBin)
