@@ -51,6 +51,8 @@ MENU MASTER PASSWD secret
 ];
 
 my (
+	$dhcpType,
+		# type of DHCP export format
 	$dryRun,
 		# dryRun won't touch any file
 	$systemConfCount,
@@ -62,10 +64,11 @@ my (
 	$versionReq,
 );
 
+$dhcpType = 'ISC';
+
 GetOptions(
+	'dhcp-type=s' => \$dhcpType,
 	'dry-run' => \$dryRun,
-		# dry-run doesn't write anything, just prints statistic about what
-		# would have been written
 	'help|?' => \$helpReq,
 	'man' => \$manReq,
 	'version' => \$versionReq,
@@ -323,6 +326,18 @@ sub writeSystemPXEFiles
 	}
 }
 
+sub writeDhcpConfig
+{
+	return unless defined $dhcpType;
+	my $dhcpModule = "OpenSLX::Export::DHCP::$dhcpType";
+	if (!eval "require $dhcpModule") {
+		die _tr("unable to load DHCP-Export backend '%s'! (%s)\n", $dhcpModule, $@);
+	}
+	my $dhcpBackend = $dhcpModule->new();
+	my @clients = fetchClientsByFilter($openslxDB);
+	$dhcpBackend->execute(\@clients);
+}
+
 sub writeClientConfigurationsForSystem
 {
 	my $system = shift;
@@ -383,6 +398,7 @@ sub writeConfigurations
 	$systemConfCount = $clientSystemConfCount = 0;
 	writeSystemConfigurations();
 	writePXEMenus();
+	writeDhcpConfig();
 }
 
 __END__
@@ -396,6 +412,7 @@ slxconfig-demuxer - OpenSLX configuration demultiplexer
 slxconfig-demuxer [options]
 
   Script Options:
+      --dhpc-type=s              specifies the type of DHCP-server (ISC,...)
       --dry-run                  avoids writing anything, for testing
 
   OpenSLX Options:
@@ -427,6 +444,11 @@ slxconfig-demuxer [options]
 =head3 Script Options
 
 =over 8
+
+=item B<--dhcp-type>
+
+Specifies the type of DHCP-export that shall be used. Currently, only 'ISC' is
+supported.
 
 =item B<--dry-run>
 
