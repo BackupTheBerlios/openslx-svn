@@ -403,19 +403,14 @@ if [ -n "$IDE" ] ; then
   # you might want to check /etc/sysconfig/floppy for more info
   strinfile "ZIP" /tmp/hwsetup.info && modprobe ${MODPRV} ide_floppy
   strinfile "CDROM" /tmp/hwsetup.info && modprobe ${MODPRV} ide_cd
-  strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} ide_disk &
+  strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} ide_disk
 fi
 
 # not rather precise ...
 if strinfile "SCSI" /tmp/hwsetup.info ; then
   strinfile "CDROM" /tmp/hwsetup.info && modprobe -a ${MODPRV} sr_mod sg
-  strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} sd_mod &
+  strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} sd_mod
 fi
-
-# cdrom/dvd und plattenkonfig. ergaenzen. Module sind hier geladen und
-# devices sind klar
-
-
 # fixme - psmouse entladen, falls nicht vorhanden
 
 # configure some variables from configuration file - wait for dhcp or ldap
@@ -427,6 +422,29 @@ data via ldap until now ..." nonfatal
 . /etc/machine-setup
 # wait for completion of clients root filesystem in /mnt
 waitfor /tmp/fscmpl 40000
+
+# postpone some commands into normal bootup environment
+echo -e "\t# entry added by $0: $date" \
+  >>/mnt/etc/${D_INITDIR}/boot.ld
+# cdrom/dvd und plattenkonfig. ergaenzen. Module sind hier geladen und
+# devices sind klar
+for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
+    sed -n -e '/device:/p' | sed -e 's/device: //') ; do
+  fdisk -l /dev/$hd| sed -n "/^\/dev\//p" > /tmp/hd_part
+  for hdpartnr in $(cat /tmp/hd_part | \
+      sed -n -e "/ 82 /p"|sed -e "s/[[:space:]].*//") ; do
+    echo -e "$hdpartnr\tswap\t\tswap\t\tdefaults\t0 0" >> /mnt/etc/fstab
+  done
+  # we use special non assigned partition type for harddisk scratch space
+  for hdpartnr in $(cat /tmp/hd_part | \
+        sed -n -e "/ 44 /p"|sed -e "s/[[:space:]].*//") ; do
+    echo -e "\t( mke2fs -q $hdpartnr; mount -n $hdpartnr /mnt/tmp ) &" \
+      >>/mnt/etc/${D_INITDIR}/boot.ld
+    #
+    break
+  done      
+done
+
 # run localizator and configure keyboard and console fonts
 DEFKEYTABLE="de-latin1-nodeadkeys"
 localization $country
@@ -435,8 +453,6 @@ if [ -z "${KEYTABLE}" ] ; then
 '${DEFKEYTABLE}' defined\nin $0."
   KEYTABLE=${DEFKEYTABLE}
 fi
-echo -e "\t# entry added by $0: $date" \
-  >>/mnt/etc/${D_INITDIR}/boot.ld
 echo -e "\tloadkeys -q ${KEYTABLE}\n" >>/mnt/etc/${D_INITDIR}/boot.ld
 [ -n "${CONSOLE_FONT}" ] && consolefont
 # run X11 / Xorg configurator

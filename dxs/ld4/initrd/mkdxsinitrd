@@ -7,7 +7,7 @@
 #		Nico Dietrich
 #		Blub
 #
-# Version:      0.3.1c
+# Version:      0.3.1d
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 
@@ -341,7 +341,7 @@ done
 
 # needed standard binaries
 for bbins in \
-    cat chmod chown chroot cp expr killall ln mkdir mknod modprobe \
+    cat chmod chown chroot cp expr fdisk killall ln mkdir modprobe \
     mount portmap rmmod sed tar umount
   do
   cobi ${bbins} bin || echo "Program ${bbins} not found"
