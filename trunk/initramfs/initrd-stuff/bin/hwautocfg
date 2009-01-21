@@ -417,9 +417,9 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
     ( mkfs.ext2 -Fq $hdpartnr 2>/dev/null
       umount /mnt/tmp 2>/dev/null
       # if mounting of temp partion fails fall back to tmpfs on /tmp
-      mount -n -o nocheck,noexec $hdpartnr /mnt/tmp 2>/dev/null || \
+      mount -t ext2 -n -o nocheck,noexec $hdpartnr /mnt/tmp 2>/dev/null || \
         mount -n -t tmpfs none /mnt/tmp 
-      echo "$hdpartnr is mounted to /tmp at $(sysup)" > /tmp/tmpready ) &
+      echo "$hdpartnr is mounted to /mnt/tmp at $(sysup)" > /tmp/tmpready ) &
     echo -e "$hdpartnr\t/tmp\t\text2\t\tdefaults\t 0 0" >> /tmp/fstab
     part44=yes
     break
