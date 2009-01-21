@@ -26,7 +26,7 @@ X11/xdm/pixmaps\n*.rpmsave\ndhclient.script\ninit.d/boot.d/*\n\
 rc2.d/*\nrc5.d/*"
 BINDMPTS="tmp root home"
 DIRINBINDMNT="/var/run /var/log /var/tmp"
-RODIRSINRW="etc/gconf etc/X11/xkb /var/adm /var/lib/texmf /var/lib/rpm"
+RODIRSINRW="etc/gconf etc/X11/xkb /var/adm /var/lib/texmf /var/lib/gdm"
 DISDIRINDXS="/var/X11R6/compose-cache \
 /var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
 /var/lib/pam_devperm /var/lib/bluetooth \
