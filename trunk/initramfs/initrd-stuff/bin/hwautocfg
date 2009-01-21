@@ -402,8 +402,8 @@ done ) &
 [ $DEBUGLEVEL -eq 21 ] && echo "** starting hdd stuff at $(sysup)"
 if [ "${disk}" = "yes" ] ; then
 for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
-    sed -n -e '/device:/p' | sed -e 's/device: //') ; do
-  fdisk -l /dev/$hd| sed -n "/^\/dev\//p" > /tmp/hd_part
+    sed -n -e '/device:/p'|sed -e 's/device: //') ; do
+  /mnt/sbin/fdisk -l /dev/$hd|sed -n "/^\/dev\//p" > /tmp/hd_part
   for hdpartnr in $(cat /tmp/hd_part | \
       sed -n -e "/ 82 /p"|sed -e "s/[[:space:]].*//") ; do
     echo -e "$hdpartnr\tswap\t\tswap\t\tdefaults\t 0 0" >> /tmp/fstab
@@ -413,15 +413,14 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
   # corrupted
   for hdpartnr in $(cat /tmp/hd_part | \
         sed -n -e "/ 44 /p"|sed -e "s/[[:space:]].*//") ; do
-    # ext2fs_check_if_mount message supressed
-    ( LD_LIBRARY_PATH=/mnt/lib /mnt/sbin/mkfs.ext2 -Fq $hdpartnr 2>/dev/null
-      umount /mnt/tmp 2>/dev/null
-      # if mounting of temp partion fails fall back to tmpfs on /tmp
-      mount -t ext2 -n -o nocheck,noexec $hdpartnr /mnt/tmp 2>/dev/null || \
-        mount -n -t tmpfs none /mnt/tmp 
-      echo "$hdpartnr is mounted to /mnt/tmp at $(sysup)" > /tmp/tmpready ) &
-    echo -e "$hdpartnr\t/tmp\t\text2\t\tdefaults\t 0 0" >> /tmp/fstab
-    part44=yes
+    # check for supported filesystem and formatter
+    ( if diskfm $hdpartnr ; then
+        echo "$hdpartnr is mounted to /mnt/tmp at $(sysup)" > /tmp/tmpready
+        echo -e "$hdpartnr\t/tmp\t\tauto\t\tdefaults\t 0 0" >> /tmp/fstab
+        part44=yes
+      else
+        echo "formatting failed for some reason ($(sysup))" > /tmp/tmpready
+      fi ) &
     break
   done
   # put detected linux partitions into /etc/fstab with "noauto"

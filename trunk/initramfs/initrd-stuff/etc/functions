@@ -241,6 +241,47 @@ mount -n -t nfs -o ro,nolock,tcp $nfsroot $dest || \
 return $ret
 }
 #############################################################################
+# disk formatter and mounter
+diskfm () {
+local target=$1
+local fs
+local path
+for fs in xfs ext2 reiserfs ; do
+  if strinfile "$fs" /proc/filesystems || modprobe ${MODPRV} $fs ; then
+    unset $found
+    for path in /sbin /bin /usr/sbin /usr/bin ; do
+      if test -x /mnt/$path/mkfs.$fs ; then
+        found=yes
+        case mkfs.$fs in
+          mkfs.xfs)
+            fopt="-f"
+            mopt="-o noexec"
+          ;;
+          mkfs.ext2)
+            fopt="-Fq"
+            mopt="-o nocheck,noexec"
+          ;;
+          mkfs.reiserfs)
+            fopt="-f"
+            mopt="-o noexec"
+          ;;
+        esac
+        LD_LIBRARY_PATH=/mnt/lib /mnt/$path/mkfs.$fs $fopt $target \
+          >/dev/null 2>&1 #|| error
+        umount /mnt/tmp 2>/dev/null
+        if mount -t $fs -n $mopt $target /mnt/tmp 2>/dev/null; then
+          return 0
+        else
+          mount -n -t tmpfs none /mnt/tmp
+        fi
+      fi
+    done
+    [ -z $found ] && break
+  else break
+  fi
+done
+}
+#############################################################################
 # create configuration file for dhclient
 mkdhclconf () {
 local vci=$1
