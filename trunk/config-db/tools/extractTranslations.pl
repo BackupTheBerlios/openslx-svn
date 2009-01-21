@@ -93,21 +93,21 @@ sub UpdateTrModule
 			if ($useKeyAsTranslation) {
 				# POSIX language: use key as translation:
 				$updatedTranslations
-					.= "\tqq{$tr}\n\t\t => qq{$tr},\n\n";
+					.= "\tqq{$tr}\n\t=>\n\tqq{$tr},\n\n";
 			} else {
 				# no translation available, we mark the key, such that a
 				# search for this key will fall back to the english message:
 				$updatedTranslations
-					.= "\tqq{NEW:$tr}\n\t\t => qq{$translations{$tr}},\n\n";
+					.= "\tqq{NEW:$tr}\n\t=>\n\tqq{$translations{$tr}},\n\n";
 			}
 		} else {
 			# use existing translation for key:
 			$updatedTranslations
-				.= "\tqq{$tr}\n\t\t => qq{$translations{$tr}},\n\n";
+				.= "\tqq{$tr}\n\t=>\n\tqq{$translations{$tr}},\n\n";
 		}
 	}
 	$text =~ s[%translations\s*=\s*\(\s*(.+)\s*\);]
-			  [$updatedTranslations);\n]os;
+			  [$updatedTranslations);]os;
 	chomp $text;
 	open(F, "> $trModule")
 		or die "could not open file $trModule for writing!";
