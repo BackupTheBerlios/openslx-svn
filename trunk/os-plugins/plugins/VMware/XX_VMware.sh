@@ -127,6 +127,10 @@ if [ -e /initramfs/plugin-conf/VMware.conf ]; then
 		      >>/mnt/etc/X11/sessions/default.desktop
 		    echo "Type=Application" >>/mnt/etc/X11/sessions/default.desktop
 		
+		    # all virtual machine clients
+		    cat ${vmdir}/xdialog-files/${pool}/*.xdialog \
+		      >>/mnt/var/X11R6/bin/xdialog.sh
+
 		    # /usr/share/xsessions/* files for the menu
 		    for i in /mnt/usr/share/xsessions/*.desktop; do
 		      # execute
@@ -139,9 +143,6 @@ if [ -e /initramfs/plugin-conf/VMware.conf ]; then
 		      echo "\"$(grep '^Comment=' ${i}|sed 's/^Comment=//')\" \\" \
 		        >>/mnt/var/X11R6/bin/xdialog.sh
 		    done
-		    # all virtual machine clients
-		    cat ${vmdir}/xdialog-files/${pool}/*.xdialog \
-		      >>/mnt/var/X11R6/bin/xdialog.sh
 		    # closing bracket as last line ends with '\'
 		    echo ")" >>/mnt/var/X11R6/bin/xdialog.sh
 		    chmod 755 /mnt/var/X11R6/bin/xdialog.sh
