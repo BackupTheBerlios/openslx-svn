@@ -243,7 +243,7 @@ nwmod () {
   echo "** loading all defined network adaptor modules at $(sysup)"
 for mod in ${NWMODULES}; do
   modprobe ${MODPRV} $mod || error "$init_errnwad"
-  usleep 5000 
+  usleep 10000 
 done
 return 0
 }
