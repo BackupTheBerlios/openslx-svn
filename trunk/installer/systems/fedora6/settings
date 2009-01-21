@@ -1,0 +1,19 @@
+SLX_INST_SOURCE_BASEURL_fedora6="http://ftp.gwdg.de/pub/linux/fedora/linux/core/6/i386/os"
+SLX_INST_SOURCE_PACKAGEKEYS_fedora6="
+RPM-GPG-KEY
+RPM-GPG-KEY-beta
+RPM-GPG-KEY-fedora
+RPM-GPG-KEY-fedora-extras
+RPM-GPG-KEY-fedora-legacy
+RPM-GPG-KEY-fedora-rawhide
+RPM-GPG-KEY-fedora-test
+RPM-GPG-KEY-rawhide
+"
+SLX_INST_SOURCE_NAME_fedora6="Fedora 6"
+SLX_INST_SOURCE_TYPE_fedora6="rpm-md"
+#SLX_INST_SOURCE_BASEURL_fedora6update="http://ftp.gwdg.de/pub/linux/fedora/linux/core/updates/6"
+#SLX_INST_SOURCE_NAME_fedora6update="Fedora 6 updates"
+#SLX_INST_SOURCE_TYPE_fedora6update="rpm-md"
+SLX_BASE_PREREQ_PACKAGES="glibc"
+SLX_BASE_PREREQ_CLEANUP_PATH="etc/localtime etc/nsswitch.conf etc/rpc usr/lib/gconv/gconv-modules"
+SLX_INSTALL_PACKAGES_MAIN="kernel bash"

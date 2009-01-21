@@ -1,0 +1,14 @@
+# Settings made here overwrite values from the settings file in the same
+# directory.
+# It's also possible to define addditional values here.
+
+# Use a local installation source.
+SLX_INST_SOURCE_BASEURL_fedora6="http://ftp-1.gwdg.de/pub/linux/fedora/linux/core/6/i386/os"
+#SLX_INST_SOURCE_BASEURL_fedora6update="http://ftp-1.gwdg.de/pub/linux/fedora/linux/core/updates/6"
+
+# Add more packages.
+# It's possible to habe more than one SLX_INSTALL_PACKAGES_* variable defined.
+# All SLX_INSTALL_PACKAGES_* are combined to one package list which is
+# in one step.
+SLX_INSTALL_PACKAGES_EDITORS="vim-enhanced emacs"
+SLX_INSTALL_PACKAGES_KDEPIM="kdepim"

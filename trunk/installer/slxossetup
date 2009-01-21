@@ -86,48 +86,57 @@ function slxossetup_rpm()
 	smart --data-dir="${SLX_METADATA_PATH}" \
 		update
 
-	# Download and unpack prerequired packages before any package installation
-	SLX_PACKAGE_PATH="${SLX_METADATA_PATH}/packages"
-	TMP_DIR=$( mktemp -d "${SLX_METADATA_PATH}/packages.XXXXXXXX")
-	if test $? -ne 0; then
-		echo "$0: Warning, can not create temp package download directory! "
-		echo "    Using ${SLX_PACKAGE_DOWNLOAD_PATH} instead. "
-		SLX_PACKAGE_DOWNLOAD_PATH="${SLX_PACKAGE_PATH}"
-	else
-		SLX_PACKAGE_DOWNLOAD_PATH="${TMP_DIR}"
+	if test "${SLX_BASE_PREREQ_PACKAGES}"; then
+		# Download and unpack prerequired packages before any package installation
+		SLX_PACKAGE_PATH="${SLX_METADATA_PATH}/packages"
+		TMP_DIR=$( mktemp -d "${SLX_METADATA_PATH}/packages.XXXXXXXX")
+		if test $? -ne 0; then
+			echo "$0: Warning, can not create temp package download directory! "
+			echo "    Using ${SLX_PACKAGE_DOWNLOAD_PATH} instead. "
+			SLX_PACKAGE_DOWNLOAD_PATH="${SLX_PACKAGE_PATH}"
+		else
+			SLX_PACKAGE_DOWNLOAD_PATH="${TMP_DIR}"
+		fi
+		test -d "${SLX_PACKAGE_DOWNLOAD_PATH}" || \
+			mkdir -p "${SLX_PACKAGE_DOWNLOAD_PATH}"
+		pushd "${SLX_PACKAGE_DOWNLOAD_PATH}" >/dev/null
+		smart --data-dir="${SLX_METADATA_PATH}" \
+			download \
+			"${SLX_BASE_PREREQ_PACKAGES}"
+		popd >/dev/null
+
+		test -d "${SLX_STAGE1_PATH}" || \
+			mkdir -p "${SLX_STAGE1_PATH}"
+		pushd "${SLX_STAGE1_PATH}" >/dev/null
+		for package in ${SLX_BASE_PREREQ_PACKAGES}; do
+			rpm2cpio ${SLX_PACKAGE_DOWNLOAD_PATH}/${package}-*.rpm | \
+				cpio -i --make-directories
+		done
+
+		# Move package from temp to package dir.
+		if test "${SLX_PACKAGE_DOWNLOAD_PATH}" != "${SLX_PACKAGE_PATH}"; then
+			test -d "${SLX_PACKAGE_PATH}" || \
+				mkdir -p "${SLX_PACKAGE_PATH}"
+			mv "${SLX_PACKAGE_DOWNLOAD_PATH}/"*.rpm "${SLX_PACKAGE_PATH}/"
+			rmdir "${SLX_PACKAGE_DOWNLOAD_PATH}"
+		fi
+
+		# Cleanup etc to prevent .rpnnew files
+		if test "${SLX_BASE_PREREQ_CLEANUP_PATH}"; then
+			for path in ${SLX_BASE_PREREQ_CLEANUP_PATH}; do
+				# Remove leading / as we do not like to delete e.g. /etc
+				path="${path#/}"
+				find "${path}" -type f -print0 | \
+					xargs -0 rm -f
+			done
+		fi
+		popd >/dev/null
 	fi
-	test -d "${SLX_PACKAGE_DOWNLOAD_PATH}" || \
-		mkdir -p "${SLX_PACKAGE_DOWNLOAD_PATH}"
-	pushd "${SLX_PACKAGE_DOWNLOAD_PATH}" >/dev/null
-	smart --data-dir="${SLX_METADATA_PATH}" \
-		download \
-		"${SLX_BASE_PREREQ_PACKAGES}"
-	popd >/dev/null
-
-	test -d "${SLX_STAGE1_PATH}" || \
-		mkdir -p "${SLX_STAGE1_PATH}"
-	pushd "${SLX_STAGE1_PATH}" >/dev/null
-	for package in $SLX_BASE_PREREQ_PACKAGES; do
-		rpm2cpio ${SLX_PACKAGE_DOWNLOAD_PATH}/${package}-*.rpm | \
-			cpio -i --make-directories
-	done
-
-	# Move package from temp to package dir.
-	if test "${SLX_PACKAGE_DOWNLOAD_PATH}" != "${SLX_PACKAGE_PATH}"; then
-		test -d "${SLX_PACKAGE_PATH}" || \
-			mkdir -p "${SLX_PACKAGE_PATH}"
-		mv "${SLX_PACKAGE_DOWNLOAD_PATH}/"*.rpm "${SLX_PACKAGE_PATH}/"
-		rmdir "${SLX_PACKAGE_DOWNLOAD_PATH}"
-	fi
-
-	# Cleanup etc to prevent .rpnnew files
-   # FIXME: This should be controled by the config file.
-	find etc/ -type f -print0 | \
-		xargs -0 rm -f
-	popd >/dev/null
 
 	# Install base system files
 	for file in ${SLX_SYSTEM_CONFIG_PATH}/BASE_FILE_*; do
+		# We might not have any BASE_FILE_* at all.
+		test -f "${file}" || continue
 		suffix="${file#${SLX_SYSTEM_CONFIG_PATH}/BASE_FILE_}"
 		dest_path=${suffix%__*}
 		dest_path="${dest_path//__//}"
@@ -155,6 +164,9 @@ function slxossetup()
 		*suse*)
 			# Inform SUSE RPMs that we're performing an installation
 			export YAST_IS_RUNNING="instsys"
+			slxossetup_rpm
+			;;
+		*fedora*)
 			slxossetup_rpm
 			;;
 		*) echo "$0: Error, unkown system ${SLX_SYSTEM_BASENAME}" ;;

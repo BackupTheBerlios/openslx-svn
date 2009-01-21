@@ -13,4 +13,5 @@ SLX_INST_SOURCE_BASEURL_opensuse102update="http://ftp.gwdg.de/pub/suse/update/10
 SLX_INST_SOURCE_NAME_opensuse102update="openSUSE 10.2 updates"
 SLX_INST_SOURCE_TYPE_opensuse102update="rpm-md"
 SLX_BASE_PREREQ_PACKAGES="glibc"
+SLX_BASE_PREREQ_CLEANUP_PATH="etc"
 SLX_INSTALL_PACKAGES_MAIN="kernel-default bash"
