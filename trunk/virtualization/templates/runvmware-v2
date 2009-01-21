@@ -74,6 +74,7 @@ vmbuild=
 vmopt="-X"
 
 # temporary disk space for logs, etc...
+# use /tmp/vmware/${USER} if /tmp sits on NFS import
 export tmpdir=/tmp/${USER}
 
 # configfile
@@ -317,6 +318,7 @@ runvmwareconfheader ()
   mainMem.useNamedFile = \"TRUE\"
   snapshot.disabled = \"TRUE\"
   tools.syncTime = \"TRUE\"
+  # use redoLogDir = \"/dev/shm\" if sitting on NFS import
   redoLogDir = \"${tmpdir}\"
   hints.hideAll = \"TRUE\"
   logging = \"FALSE\"

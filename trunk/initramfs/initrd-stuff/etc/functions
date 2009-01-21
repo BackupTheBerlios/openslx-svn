@@ -325,7 +325,8 @@ case $dhcp in
     [ -n $vci ] && vci="-V $vci"
     testmkd /usr/share/udhcpc
     ln -s /bin/dhcpmkconfig /usr/share/udhcpc/default.script
-    udhcpc -b -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null
+    # -b option is suboptimal here ...
+    udhcpc -t 8 -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null
   ;;
 esac
 echo "dhcp finished at $(sysup)" >/tmp/dhcp-done
