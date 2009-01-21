@@ -17,6 +17,7 @@
 - /var/tmp/*
 - /etc/shadow*
 - /etc/dxs
+- /etc/resolv.conf.*
 - /dev/*
 - /proc/*
 - /sys/*
