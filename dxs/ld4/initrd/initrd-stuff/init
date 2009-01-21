@@ -39,6 +39,7 @@ echo 256 > /proc/sys/kernel/real-root-dev
 [ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
 
 # start device auto discovery service - distro specific function
+bash
 udev_hotplug
 # read kernel commandline
 TMPFSSIZE="50%"
@@ -245,7 +246,6 @@ if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" -a -z "${NFSROOT}" ] ; then
   . /etc/machine-setup
   NFSROOT=${serverip}:${root_path}
 fi
-
 # call function for nfs mounts
 if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" ] ; then
   nfsmnt ${NFSROOT} ${MODPRV}
@@ -382,6 +382,7 @@ of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
 # close runlevel script for stuff to execute during early bootup
 d_mkbootld close
+bash
 # IP configuration is made and should not be updated automatically, udevd
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null

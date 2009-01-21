@@ -108,67 +108,6 @@ else
 fi
 }
 
-# Resolve dynamic library dependencies. Returns a list of symbolic links
-# to shared objects and shared object files for the binaries in $*.
-# stolen from SuSE mkinitrd
-shared_object_files() {
-    local LDD initrd_libs lib_files lib_links lib link
-
-    LDD=`which ldd`
-    if [ ! -x $LDD ]; then
-	error 2 "I need execution permission on ldd ($LDD)."
-    fi
-
-    initrd_libs=( $(
-	$LDD "$@" \
-	| sed -ne 's:\t\(.* => \)\?\(/.*\) (0x[0-9a-f]*):\2:p'
-    ) )
-
-    # Evil hack: On some systems we have generic as well as optimized
-    # libraries, but the optimized libraries may not work with all
-    # kernel versions (e.g., the NPTL glibc libraries don't work with
-    # a 2.4 kernel). Use the generic versions of the libraries in the
-    # initrd (and guess the name).
-    local n optimized
-    for ((n=0; $n<${#initrd_libs[@]}; n++)); do
-	lib=${initrd_libs[$n]}
-	optimized="$(echo "$lib" | sed -e 's:.*/\([^/]\+/\)[^/]\+$:\1:')"
-	lib=${lib/$optimized/}
-	if [ "${optimized:0:3}" != "lib" -a -f "$lib" ]; then
-	    #echo "[Using $lib instead of ${initrd_libs[$n]}]" >&2
-	    initrd_libs[$n]="${lib/$optimized/}"
-	fi
-    done
-
-    for lib in "${initrd_libs[@]}"; do
-	case "$lib" in
-	linux-gate*)
-	    # This library is mapped into the process by the kernel
-	    # for vsyscalls (i.e., syscalls that don't need a user/
-	    # kernel address space transition) in 2.6 kernels.
-	    continue ;;
-	/*)
-	    lib="${lib:1}" ;;
-	*)
-	    # Library could not be found.
-	    echo "Dynamic library $lib not found"
-	    continue ;;
-	esac
-
-	while [ -L "/$lib" ]; do
-	    echo $lib
-	    link="$(readlink "/$lib")"
-	    if [ x"${link:0:1}" == x"/" ]; then
-	        lib=${link#/}
-	    else
-	        lib="${lib%/*}/$link"
-	    fi
-	done
-	echo $lib
-    done \
-    | sort -u
-}
-
 # this function incrementally concats and copies distro-specific functions, 
 # configuration variables and files
 copy_distro_stuff() {
@@ -182,6 +121,9 @@ copy_distro_stuff() {
         10.0)
           copy_distro_stuff suse 9.3
         ;;
+        10.1)
+          copy_distro_stuff suse 10.0
+        ;; 
       esac
     ;;
     debian)
@@ -284,18 +226,18 @@ mkdir -p ${INSTDIR}/usr/share
 # needed for KNOPPIX hwsetup not to confuse with ${D_SYSCONFDIR}
 mkdir -p ${INSTDIR}/etc/sysconfig
 
-
+# fixme!! Funktion ermittelt die Distro des Servers NICHT des Clients!!
 # if no distro name is set, try to find the correct one via lsb_release
-if [ -z "${DISTRO}" ] ; then
-  for i in ${ROOTDIR}/bin/lsb_release ${ROOTDIR}/usr/bin/lsb_release; do
-    if [ -e $i ] ; then
-      $i > /dev/null 2>&1 || break
-      DISTRO=`. $i -i | sed "s/.*\t//"`
-      DISTRO_VER=`. $i -r | sed "s/.*\t//"`
-      break
-    fi
-  done
-fi
+#if [ -z "${DISTRO}" ] ; then
+#  for i in ${ROOTDIR}/bin/lsb_release ${ROOTDIR}/usr/bin/lsb_release; do
+#    if [ -e $i ] ; then
+#      $i > /dev/null 2>&1 || break
+#      DISTRO=`. $i -i | sed "s/.*\t//"`
+#      DISTRO_VER=`. $i -r | sed "s/.*\t//"`
+#      break
+#    fi
+#  done
+#fi
 
 # if still no distro name set, try to find it using significant files
 if [ -z "${DISTRO}" ] ; then
@@ -341,8 +283,12 @@ case "${DISTRO}" in
         # might be needed for older udev/hotplug
         # cp -a ${ROOTDIR}/etc/hotplug* ${INSTDIR}/etc
       ;;
-      10*|*)
+      10.0)
         DISTRO_VER=10.0
+      ;;
+      10*)
+        DISTRO_VER=10.1
+	cobi mknod bin
       ;;
     esac
      
@@ -362,7 +308,7 @@ copy_distro_stuff ${DISTRO} ${DISTRO_VER}
 
 
 #if no klibc
-for bbins in ash bash sh; do
+for bbins in bash ash sh; do
   if cobi ${bbins} bin ; then 
     ln -fs ${bbins} ${INSTDIR}/bin/sh
     [ "${bbins}" != "bash" ] && ln -fs ${bbins} ${INSTDIR}/bin/bash
@@ -403,7 +349,7 @@ done
 # style of hotplug/udev/dev (for etc directories see above!!)
 for bbins in udev udevd udevstart
   do
-  cobi ${bbins} bin || echo "Program ${bbins} not found"
+  cobi ${bbins} bin &>/dev/null || echo "Program ${bbins} not found"
 done
 
 # in suse 9.3 it could be better to use udev.static etc
@@ -436,10 +382,11 @@ case "${DISTRO}" in
 esac
 
 # add needed libraries depending on choosen binaries
-for lib in `shared_object_files ${INSTDIR}/bin/*` ; do
+for lib in `ldd /tmp/dxs-instrd/bin/* 2>/dev/null | sed -e "s,tls,," \
+  -ne 's:\t\(.* => \)\?\(/.*\) (0x[0-9a-f]*):\2:p' | sort -u` ; do
   baselib=`basename ${lib}`
   test -e  ${INSTDIR}/lib/${baselib} || \
-    cp -a /${ROOTDIR}/${lib} ${INSTDIR}/lib
+    cp /${ROOTDIR}/${lib} ${INSTDIR}/lib
 done
 
 # add kernel modules and dependency files
@@ -488,10 +435,13 @@ for module in af_packet ${NWMODULES} ${FSMODULES} ${DEBUGMODULES}; do
       nfs)
 	mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc/
 	mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd
+	mkdir -p ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/nfs_common
         cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc/sunrpc.ko \
-	 ${INSTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc &>/dev/null
+	  ${INSTDIR}/lib/modules/${KERNVER}/kernel/net/sunrpc &>/dev/null
 	cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd/lockd.ko \
-         ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd &>/dev/null
+          ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/lockd &>/dev/null
+	cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/fs/nfs_common/nfs_acl.ko \
+	  ${INSTDIR}/lib/modules/${KERNVER}/kernel/fs/nfs_common &>/dev/null
       ;;
     esac
   fi
