@@ -3,13 +3,11 @@
 #		changes should be done there, version specific changes for
 #		the 10.0 here.
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-04-2006
-#		Blabla
-#		Blub
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-05-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.1e
+# Version:      0.2.1f
 
 # 
 postinit () {
@@ -90,7 +88,7 @@ sed -e "s,TARGETS =,TARGETS = vmware-prep," \
   cp /etc/.depend.start /mnt/etc/${D_INITDIR}/.depend.start
 # during vmware sessions linux should not handle usb events/devices
 testmkd /mnt/var/X11R6/bin
-echo '#!/bin/sh'>> /mnt/etc/udev/rules.d/01-udev-vm.rules
+echo '#!/bin/sh'> /mnt/var/X11R6/bin/vm-udev
 echo -e "# Script for blocking linux from handling usb \
 devices\n# during vmware sessions. If you like to remove certain modules \
 add them\n# to the list below - Dirk von Suchodoletz, <dirk@goe.net>\n\
