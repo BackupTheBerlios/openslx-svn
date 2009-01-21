@@ -153,6 +153,7 @@ supported."; \
 	@cp bin/slx* $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/; \
 	cp config-db/slx* $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/; \
 	cp installer/slx* $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/; \
+	cp os-plugins/slx* $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/; \
 	tar --exclude=.svn -cp -C lib OpenSLX \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
 	tar --exclude=.svn --exclude *.example \
@@ -164,6 +165,10 @@ supported."; \
 	tar --exclude=.svn -cp -C config-db OpenSLX \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
 	tar --exclude=.svn -cp -C installer OpenSLX \
+	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
+	tar --exclude=.svn -cp -C os-plugins OpenSLX \
+	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
+	tar --exclude=.svn -cp -C os-plugins plugins \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
 
 	@   # link all binaries & scripts into user-path:

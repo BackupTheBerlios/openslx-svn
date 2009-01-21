@@ -45,6 +45,7 @@ use lib "$FindBin::RealBin";
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::ConfigFolder;
+use OpenSLX::OSPlugin::Engine;
 use OpenSLX::Utils;
 
 my $pxeDefaultTemplate = q[NOESCAPE 0
@@ -241,11 +242,10 @@ sub writeAttributesToFile
 	return if $dryRun;
 
 	my $content = "# attributes set by slxconfig-demuxer:\n";
-	my @attrs = (
-		$grepForAttributes
-			? sort grep { isAttribute($_) } keys %$attrHash
-			: keys %$attrHash
-	);    
+	my @attrs 
+		= $grepForAttributes
+			? grep { isAttribute($_) } sort keys %$attrHash
+			: sort keys %$attrHash;
 	foreach my $attr (@attrs) {
 		my $attrVal = $attrHash->{$attr} || '';
 		if (length($attrVal) > 0) {
@@ -279,8 +279,8 @@ sub writeSlxConfigToFile
 }
 
 sub copyExternalSystemConfig
-{    # copies local configuration extensions of given system from private
-	    # config folder (var/lib/openslx/config/...) into a temporary folder
+{   # copies local configuration extensions of given system from private
+    # config folder (var/lib/openslx/config/...) into a temporary folder
 	my $systemName = shift;
 	my $targetPath = shift;
 	my $clientName = shift;    # optional
@@ -428,13 +428,16 @@ sub generateInitalRamFS
 	}
 	my $rootPath = "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}";
 	$cmd .= "-i $pxeVendorOSPath/$info->{'initramfs-name'} -r $rootPath ";
+
+	# pass in system name:
 	$cmd .= "-S $info->{name} ";
-	# pass in system name
+
+	# use theme 'openslx':
 	$cmd .= "-s openslx ";
-	# use theme 'openslx'
-	$cmd .= "-d ";
+
 	# always use dhclient instead of the busybox-provided dhcp-client
-	# (since the latter is unable to fetch NIS-stuff).
+	# (since the latter is unable to fetch NIS-stuff):
+	$cmd .= "-d ";
 
 	# generate initramfs-setup file (with settings relevant for initramfs only):
 	my $initramfsAttrFile = "$tempPath/initramfs-setup";
@@ -445,18 +448,21 @@ sub generateInitalRamFS
 		'rootfs'        => $info->{'export-uri'} || '',
 	};
 	writeAttributesToFile($initramfsAttrs, $initramfsAttrFile, 0);
-	# and pass it to mkdxsinitrd:
+	# and pass the generated initramfs-setup file to mkdxsinitrd:
 	$cmd .= "-c $initramfsAttrFile ";
 
-	# ...set kernel version...
+	# ... set kernel version ...
 	my $kernelFile = basename(followLink($info->{'kernel-file'}));
 	$kernelFile =~ m[-(.+)$];
 	my $kernelVersion = $1;
 	$cmd .= "-k $kernelVersion ";
-	# ...add version info...
+
+	# ... add version info ...
 	my $slxver = `slxversion`;
 	chomp $slxver;
 	$ENV{'SLX_VERSION'} = $slxver;
+
+	# ... finally invoke mkdxsinitrd:
 	slxsystem($cmd) unless $dryRun;
 }
 
@@ -530,7 +536,6 @@ sub writeClientConfigurationsForSystem
 		if ($clientAttrDigest ne $info->{'attr-digest'}
 			|| -d $clientConfigPath)
 		{
-
 			vlog(
 				1,
 				_tr(
@@ -559,6 +564,60 @@ sub writeClientConfigurationsForSystem
 	}
 }
 
+sub writePluginConfigurationsForSystem
+{
+	my $info      = shift || confess 'need to pass in info-hash!';
+	my $buildPath = shift || confess 'need to pass in build-path!';
+
+	my $pluginConfPath = "$buildPath/initramfs/plugin-conf";
+	slxsystem("mkdir -p $pluginConfPath") unless -d $pluginConfPath;
+
+	my $pluginInitdPath = "$buildPath/initramfs/plugin-init.d";
+	slxsystem("mkdir -p $pluginInitdPath") unless -d $pluginInitdPath;
+	
+	foreach my $pluginName (OpenSLX::OSPlugin::Engine->getAvailablePlugins()) {
+		vlog(2, _tr("writing configuration file for plugin '%s'", $pluginName));
+
+		# create plugin engine and fetch specific plugin module config hash:
+		my $pluginEngine = OpenSLX::OSPlugin::Engine->new();
+		$pluginEngine->initialize($pluginName, $info->{'vendor-os'}->{name});
+		my $config = $pluginEngine->getPlugin()->getConfig();
+		
+		# skip inactive plugins
+		next unless $config->{active};
+
+		# write plugin configuration to a file:
+		my $content;
+		foreach my $attr (sort keys %$config) {
+			my $attrVal = $config->{$attr} || '';
+			if (length($attrVal) > 0) {
+				my $externalAttrName = externalAttrName($attr);
+				$content .= qq[$externalAttrName="$attrVal"\n];
+			}
+		}
+		my $fileName = "$pluginConfPath/${pluginName}.conf";
+		spitFile($fileName, $content);
+		if ($openslxConfig{'verbose-level'} > 2) {
+			vlog(0, "--- START OF $fileName ---");
+			vlog(0, $content);
+			vlog(0, "--- END OF $fileName --- ");
+		}
+		
+		# copy runlevel script to be used in stage3:
+		my $precedence = sprintf('%02d', $config->{precedence});
+		my $scriptFolder 
+			= "$openslxConfig{'base-path'}/lib/plugins/$pluginName";
+		my $scriptName = "$scriptFolder/XX_${pluginName}.sh";
+		my $targetName = "$pluginInitdPath/${precedence}_${pluginName}.sh";
+		if (slxsystem("cp $scriptName $targetName && chmod a+x $targetName")) {
+			die _tr(
+				"unable to copy runlevel script '%s' to '%s'! (%s)",
+				$scriptName, $targetName, $!
+			);
+		}
+	}
+}
+
 sub writeSystemConfiguration
 {
 	my $info = shift;
@@ -577,6 +636,8 @@ sub writeSystemConfiguration
 	);
 	my $attrFile = "$buildPath/initramfs/machine-setup";
 	writeAttributesToFile($info, $attrFile, 1);
+	
+	writePluginConfigurationsForSystem($info, $buildPath);
 
 	my $systemPath = "$tftpbootPath/client-config/$info->{'external-id'}";
 	createTarOfPath($buildPath, "default.tgz", $systemPath);

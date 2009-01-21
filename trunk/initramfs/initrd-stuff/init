@@ -723,6 +723,15 @@ if [ -n "$uniondirs" ]; then
   include_in_fsroot_union "$union_type" "$uniondirs"
 fi
 
+# check for any plugin-specific runlevel scripts and run them, if found:
+if [ -d /initramfs/plugin-init.d ]; then
+  for plugin_starter in /initramfs/plugin-init.d/*; do
+	[ $DEBUGLEVEL -gt 0 ] && \
+      echo "Running plugin starter $plugin_starter ..."
+    /bin/sh $plugin_starter
+  done
+fi
+
 # post init for some distro specific
 postinit
 [ -s /initramfs/postinit.local ] && \

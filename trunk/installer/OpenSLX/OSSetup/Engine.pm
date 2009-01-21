@@ -403,6 +403,37 @@ sub startChrootedShellForVendorOS
 	);
 }
 
+sub callChrootedFunctionForVendorOS
+{
+	my $self     = shift;
+	my $function = shift;
+
+	if (!-e $self->{'vendor-os-path'}) {
+		die _tr(
+			"can't call chrooted function for vendor-OS '%s', since it doesn't exist!\n",
+			$self->{'vendor-os-path'}
+		);
+	}
+
+	$self->startLocalURLServersAsNeeded();
+
+	callInSubprocess(
+		sub {
+			$self->changePersonalityIfNeeded();
+			$self->callChrootedFunctionInStage1D($function);
+		}
+	);
+
+	$self->touchVendorOS();
+	vlog(
+		0,
+		_tr(
+			"Chrooted function for vendor-OS '%s' has finished.\n",
+			$self->{'vendor-os-name'}
+		)
+	);
+}
+
 sub removeVendorOS
 {
 	my $self = shift;
@@ -1102,9 +1133,26 @@ sub startChrootedShellInStage1D
 	chrootInto($self->{'vendor-os-path'});
 
 	$self->{'meta-packager'}->startSession();
+
+	# will hang until user exits manually:
 	slxsystem('sh');
 
-	# hangs until user exits manually
+	$self->{'distro'}->updateDistroConfig();
+	$self->{'meta-packager'}->finishSession();
+}
+
+sub callChrootedFunctionInStage1D
+{
+	my $self     = shift;
+	my $function = shift;
+
+	chrootInto($self->{'vendor-os-path'});
+
+	$self->{'meta-packager'}->startSession();
+
+	# invoke given function:
+	$function->();
+
 	$self->{'distro'}->updateDistroConfig();
 	$self->{'meta-packager'}->finishSession();
 }
