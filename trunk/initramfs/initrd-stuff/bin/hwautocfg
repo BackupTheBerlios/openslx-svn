@@ -462,8 +462,11 @@ if strinstr "/var/X11R6" "$link" ; then
   done
 fi
 # wait for completion of Xorg configuration
-waitfor /tmp/xready 10000
+waitfor /tmp/xready 20000
 cp /etc/xorg.conf ${D_XF86CONFFILE}
+
+# do not finish until tmp is setup properly
+[ -n "$part44" ] && waitfor /tmp/tmpready 20000
 
 # script run timer
 [ $DEBUGLEVEL -eq 8 ] && echo "** HW setup finished at $(sysup)"
