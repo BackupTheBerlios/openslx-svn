@@ -97,15 +97,11 @@ sub checkRequirements
 {
 	my $self         = shift;
 	my $vendorOSPath = shift;
-	my $kernel       = shift || 'vmlinuz';
-	my $info         = shift;
 
-	$kernel = basename(followLink("$vendorOSPath/boot/$kernel"));
-	if ($kernel !~ m[-(.+)$]) {
-		die _tr("unable to determine version of kernel '%s'!", $kernel);
-	}
-	my $kernelVer = $1;
-	my @blockMods;
+	# determine most appropriate kernel version ...
+	my $kernelVer = $self->_pickKernelVersion($vendorOSPath);
+
+	# ... and check if that kernel-version provides all the required modules
 	my @blockModNames = $self->{'block-device'}->requiredBlockDeviceModules();
 	foreach my $blockModName (@blockModNames) {
 		my $blockMod =
@@ -118,7 +114,6 @@ sub checkRequirements
 			);
 			return;
 		}
-		push @blockMods, $blockMod;
 	}
 	my $squashfsMod = $self->_locateKernelModule(
 		$vendorOSPath,
@@ -132,10 +127,6 @@ sub checkRequirements
 		warn _tr("unable to find squashfs-module for kernel version '%s'.",
 			$kernelVer);
 		return;
-	}
-	push @blockMods, $squashfsMod;
-	if (defined $info) {
-		$info->{'kernel-mods'} = \@blockMods;
 	}
 	return 1;
 }
@@ -278,39 +269,6 @@ sub _mapRsyncFilter2Regex
 		  split "\n",
 		$rsyncFilter
 	);
-}
-
-sub _locateKernelModule
-{
-	my $self         = shift;
-	my $vendorOSPath = shift;
-	my $moduleName   = shift;
-	my $defaultPaths = shift;
-
-	vlog(1, _tr("locating kernel-module '%s'", $moduleName));
-	# check default paths first:
-	foreach my $defPath (@$defaultPaths) {
-		vlog(2, "trying $defPath/$moduleName");
-		my $target = followLink("$defPath/$moduleName", $vendorOSPath);
-		return $target unless !-e $target;
-	}
-	# use brute force to search for the newest incarnation of the module:
-	use File::Find;
-	my $location;
-	my $locationAge = 9999999;
-	vlog(2, "searching in $vendorOSPath/lib/modules");
-	find sub {
-		return unless $_ eq $moduleName;
-		if (-M _ < $locationAge) {
-			$locationAge = -M _;
-			$location    = $File::Find::name;
-			vlog(2, "located at $location (age=$locationAge days)");
-		}
-	}, "$vendorOSPath/lib/modules";
-	if (defined $location) {
-		return followLink($location, $vendorOSPath);
-	}
-	return;
 }
 
 sub _addBlockDeviceTagToExport

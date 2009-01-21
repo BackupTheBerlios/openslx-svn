@@ -68,6 +68,31 @@ sub purgeExport
 	return 1;
 }
 
+sub checkRequirements
+{
+	my $self         = shift;
+	my $vendorOSPath = shift;
+
+	# determine most appropriate kernel version ...
+	my $kernelVer = $self->_pickKernelVersion($vendorOSPath);
+
+	# ... and check if that kernel-version provides all the required modules
+	my $nfsMod = $self->_locateKernelModule(
+		$vendorOSPath,
+		'nfs.ko',
+		[
+			"$vendorOSPath/lib/modules/$kernelVer/kernel/fs/nfs",
+			"$vendorOSPath/lib/modules/$kernelVer/kernel/fs"
+		]
+	);
+	if (!defined $nfsMod) {
+		warn _tr("unable to find nfs-module for kernel version '%s'.",
+			$kernelVer);
+		return;
+	}
+	return 1;
+}
+
 sub generateExportURI
 {
 	my $self = shift;
