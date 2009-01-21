@@ -13,9 +13,9 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::MetaDB::CSV;
 
-use vars qw(@ISA $VERSION);
-@ISA = ('OpenSLX::MetaDB::DBI');
-$VERSION = 1.01;		# API-version . implementation-version
+use vars qw($VERSION);
+$VERSION = 1;		# API-version
+use base qw(OpenSLX::MetaDB::DBI);
 
 ################################################################################
 ### This class provides a MetaDB backend for CSV files (CSV = comma separated
@@ -26,8 +26,8 @@ $VERSION = 1.01;		# API-version . implementation-version
 use strict;
 use Carp;
 use Fcntl qw(:DEFAULT :flock);
+use DBD::CSV 0.22;
 use OpenSLX::Basics;
-use OpenSLX::MetaDB::DBI $VERSION;
 
 my $superVersion = $OpenSLX::MetaDB::DBI::VERSION;
 if ($superVersion < $VERSION) {
@@ -63,9 +63,6 @@ sub connect
 		$dbSpec = "f_dir=$dbPath;csv_eol=\n;";
 	}
 	vlog 1, "trying to connect to CSV-database <$dbSpec>";
-	eval ('require DBD::CSV; 1;')
-		or die _tr(qq[%s doesn't seem to be installed,
-so there is no support for %s available, sorry!\n%s], 'DBD::CSV', 'CSV', $@);
 	$self->{'dbh'} = DBI->connect("dbi:CSV:$dbSpec", undef, undef,
 								  {PrintError => 0})
 			or confess _tr("Cannot connect to database '%s' (%s)",

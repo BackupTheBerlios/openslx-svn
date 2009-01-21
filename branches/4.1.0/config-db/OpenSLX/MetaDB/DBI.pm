@@ -14,14 +14,13 @@
 package OpenSLX::MetaDB::DBI;
 
 use strict;
-use vars qw(@ISA $VERSION);
-@ISA = ('OpenSLX::MetaDB::Base');
-$VERSION = 1.01;		# API-version . implementation-version
+use vars qw($VERSION);
+$VERSION = 1;		# API-version
+use base qw(OpenSLX::MetaDB::Base);
 
 use Carp;
 use DBI;
 use OpenSLX::Basics;
-use OpenSLX::MetaDB::Base;
 
 my $superVersion = $OpenSLX::MetaDB::Base::VERSION;
 if ($superVersion < $VERSION) {

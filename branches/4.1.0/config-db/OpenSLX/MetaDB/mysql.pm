@@ -13,9 +13,9 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::MetaDB::mysql;
 
-use vars qw(@ISA $VERSION);
-@ISA = ('OpenSLX::MetaDB::DBI');
-$VERSION = 1.01;		# API-version . implementation-version
+use vars qw($VERSION);
+$VERSION = 1;		# API-version
+use base qw(OpenSLX::MetaDB::DBI);
 
 ################################################################################
 ### This class provides a MetaDB backend for mysql databases.
@@ -23,8 +23,8 @@ $VERSION = 1.01;		# API-version . implementation-version
 ################################################################################
 use strict;
 use Carp;
+use DBD::mysql;
 use OpenSLX::Basics;
-use OpenSLX::MetaDB::DBI $VERSION;
 
 my $superVersion = $OpenSLX::MetaDB::DBI::VERSION;
 if ($superVersion < $VERSION) {
@@ -53,9 +53,6 @@ sub connect
 	}
 	my $user = (getpwuid($>))[0];
 	vlog 1, "trying to connect user <$user> to mysql-database <$dbSpec>";
-	eval ('require DBD::mysql; 1;')
-		or die _tr(qq[%s doesn't seem to be installed,
-so there is no support for %s available, sorry!\n%s], 'DBD::mysql', 'mysql', $@);
 	$self->{'dbh'} = DBI->connect("dbi:mysql:$dbSpec", $user, '',
 								  {PrintError => 0})
 			or confess _tr("Cannot connect to database <%s> (%s)",

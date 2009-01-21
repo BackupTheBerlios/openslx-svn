@@ -13,9 +13,9 @@
 # -----------------------------------------------------------------------------
 package OpenSLX::MetaDB::SQLite;
 
-use vars qw(@ISA $VERSION);
-@ISA = ('OpenSLX::MetaDB::DBI');
-$VERSION = 1.01;		# API-version . implementation-version
+use vars qw($VERSION);
+$VERSION = 1;		# API-version
+use base qw(OpenSLX::MetaDB::DBI);
 
 ################################################################################
 ### This class provides a MetaDB backend for SQLite databases.
@@ -23,8 +23,8 @@ $VERSION = 1.01;		# API-version . implementation-version
 ################################################################################
 use strict;
 use Carp;
+use DBD::SQLite;
 use OpenSLX::Basics;
-use OpenSLX::MetaDB::DBI $VERSION;
 
 my $superVersion = $OpenSLX::MetaDB::DBI::VERSION;
 if ($superVersion < $VERSION) {
