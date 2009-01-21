@@ -16,7 +16,8 @@ test "${SLX_KERNEL_ARCH}" || \
 
 download_file () {
 	case "${file}" in
-		*.rpm)
+		*.deb) : ;;
+		*)
 			if test "${file##*.}" = 'noarch'; then
 				file="${file}.rpm"
 				test "${SLX_INST_SOURCE_PACKAGE_ARCHDIR}" && \
