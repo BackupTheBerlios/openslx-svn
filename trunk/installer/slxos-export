@@ -61,11 +61,15 @@ my $action = shift @ARGV;
 if ($action =~ m[^list-ex]i) {
 	print _tr("List of exported vendor-OSes:\n");
 	foreach my $type (sort keys %supportedExportTypes) {
-		print join('', map {
-						s[^.+/][];
-						"\t$type/$_\n";
-					   }
-					   sort <$openslxConfig{'export-path'}/$type/*>);
+		print join('',	map {
+							s[^.+/][];
+							"\t$type/$_\n";
+						}
+						grep {
+							# filter out RSYNC_TMP folders:
+							$_ !~ m[###];
+						}
+						sort <$openslxConfig{'export-path'}/$type/*>);
 	}
 } elsif ($action =~ m[^list-in]i) {
 	print _tr("List of installed vendor-OSes:\n");
