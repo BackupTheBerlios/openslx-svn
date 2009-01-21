@@ -9,7 +9,7 @@ gpg-pubkey-9c800aca-40d8063e.asc
 gpg-pubkey-a1912208-446a0899.asc
 "
 SLX_INST_SOURCE_NAME_opensuse102="openSUSE 10.2"
-SLX_INST_SOURCE_TYPE_opensuse102="yast2"
+SLX_INST_SOURCE_REPO_SUBDIR_opensuse102="suse"
 SLX_INST_SOURCE_BASEURL_opensuse102update="http://ftp.gwdg.de/pub/suse/update/10.2"
 SLX_INST_SOURCE_NAME_opensuse102update="openSUSE 10.2 updates"
 SLX_BASE_PREREQ_PACKAGES="
@@ -82,8 +82,16 @@ i586/udev-103-12.i586.rpm
 i586/util-linux-2.12r-61.i586.rpm
 noarch/pciutils-ids-2006.11.18-2.noarch.rpm
 noarch/suse-build-key-1.0-707.noarch.rpm
+i586/glib2-2.12.4-15.i586.rpm
+i586/gnome-filesystem-0.1-288.i586.rpm
+i586/libxml2-2.6.26-26.i586.rpm
+i586/libxml2-python-2.6.26-29.i586.rpm
 i586/rpm-python-4.4.2-76.i586.rpm
-i586/python-xml-2.5-19.i586.rpm
 i586/python-2.5-19.i586.rpm
-i586/smart-0.42-43.i586.rpm
+i586/python-sqlite-1.1.8-11.i586.rpm
+i586/python-urlgrabber-3.1.0-18.i586.rpm
+i586/python-xml-2.5-19.i586.rpm
+i586/sqlite-3.3.8-14.i586.rpm
+i586/yum-3.0.1-9.i586.rpm
+i586/yum-metadata-parser-1.0.2-23.i586.rpm
 "

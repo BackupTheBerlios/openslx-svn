@@ -8,7 +8,7 @@ gpg-pubkey-3d25d3d9-36e12d04.asc
 gpg-pubkey-9c800aca-40d8063e.asc
 "
 SLX_INST_SOURCE_NAME_suse101="SUSE Linux 10.1"
-SLX_INST_SOURCE_TYPE_suse101="yast2"
+SLX_INST_SOURCE_REPO_SUBDIR_suse101="suse"
 SLX_INST_SOURCE_BASEURL_suse101update="http://ftp.gwdg.de/pub/suse/update/10.1"
 SLX_INST_SOURCE_NAME_suse101update="SUSE Linux 10.1 updates"
 SLX_BOOTSTRAP_FAIL_WGET="no"
@@ -85,19 +85,22 @@ i586/perl-Bootloader-0.2.20-7.i586.rpm
 i586/perl-Bootloader-0.2.27-0.4.i586.rpm
 i586/perl-gettext-1.05-11.i586.rpm
 i586/permissions-2006.2.24-8.i586.rpm
-i586/python-2.4.2-18.i586.rpm
-i586/python-elementtree-1.2.6-18.i586.rpm
-i586/python-xml-2.4.2-18.i586.rpm
 i586/readline-5.1-22.i586.rpm
 i586/reiserfs-3.6.19-17.i586.rpm
-i586/rpm-python-4.4.2-40.i586.rpm
 i586/sed-4.1.4-15.i586.rpm
-i586/smart-0.41-23.i586.rpm
-i586/smart-0.41-23.2.i586.rpm
 i586/suse-release-10.1-9.i586.rpm
 i586/sysvinit-2.86-19.i586.rpm
 i586/udev-085-29.i586.rpm
 i586/udev-085-30.15.i586.rpm
 i586/util-linux-2.12r-35.i586.rpm
 noarch/suse-build-key-1.0-685.noarch.rpm
+i586/libxml2-2.6.23-13.i586.rpm
+i586/libxml2-python-2.6.23-15.i586.rpm
+i586/python-2.4.2-18.i586.rpm
+i586/python-elementtree-1.2.6-18.i586.rpm
+i586/python-sqlite-1.1.6-17.i586.rpm
+i586/python-urlgrabber-2.9.7-15.i586.rpm 
+i586/rpm-python-4.4.2-40.i586.rpm
+i586/sqlite-3.2.8-14.i586.rpm
+i586/yum-2.4.2-13.i586.rpm
 "

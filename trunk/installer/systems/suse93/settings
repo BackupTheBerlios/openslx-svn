@@ -51,8 +51,6 @@ i586/libgcc-3.3.5-5.i586.rpm
 i586/libselinux-1.21.7-3.i586.rpm
 i586/libstdc++-3.3.5-5.i586.rpm
 i586/libxcrypt-2.2-3.i586.rpm
-i586/libxml2-2.6.17-4.i586.rpm
-i586/libxml2-python-2.6.17-4.i586.rpm
 i586/libzio-0.1-5.i586.rpm
 i586/logrotate-3.7-35.i586.rpm
 i586/mdadm-1.9.0-3.2.i586.rpm
@@ -69,13 +67,9 @@ i586/perl-5.8.6-5.i586.rpm
 i586/perl-Bootloader-0.2-17.i586.rpm
 i586/perl-gettext-1.01-579.i586.rpm
 i586/permissions-2005.3.1-3.i586.rpm
-i586/python-2.4-14.i586.rpm
-i586/python-xml-2.4-14.i586.rpm
 i586/readline-5.0-7.2.i586.rpm
 i586/reiserfs-3.6.18-3.i586.rpm
-i586/rpm-python-4.1.1-208.i586.rpm
 i586/sed-4.1.4-3.i586.rpm
-i586/sqlite-3.1.3-3.i586.rpm
 i586/suse-release-9.3-4.i586.rpm
 i586/sysvinit-2.85-38.4.i586.rpm
 i586/tar-1.15.1-5.i586.rpm
@@ -83,4 +77,10 @@ i586/udev-053-15.2.i586.rpm
 i586/util-linux-2.12q-7.2.i586.rpm
 noarch/mkinitrd-1.2-26.noarch.rpm
 noarch/suse-build-key-1.0-665.noarch.rpm
+i586/libxml2-2.6.17-4.i586.rpm
+i586/libxml2-python-2.6.17-4.i586.rpm
+i586/python-2.4-14.i586.rpm
+i586/python-xml-2.4-14.i586.rpm
+i586/rpm-python-4.1.1-208.i586.rpm
+i586/sqlite-3.1.3-3.i586.rpm
 "

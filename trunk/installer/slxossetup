@@ -208,7 +208,7 @@ function setup_bootstrap_1c()
 	local dir file packagelist packagekey rc
 
 	case "${SLX_SYSTEM_BASENAME}" in
-		*debian*|*ubuntu**)
+		*debian*|*ubuntu*)
 			test -d "${SLX_STAGE1_FINAL_PATH}" || \
 				mkdir -p "${SLX_STAGE1_FINAL_PATH}"
 
@@ -264,7 +264,7 @@ function setup_bootstrap_1c()
 function setup_package_sources()
 {
 	case "${SLX_SYSTEM_BASENAME}" in
-		*debian*|*ubuntu**)
+		*debian*|*ubuntu*)
 			SOURCES_LIST="${SLX_STAGE1_PATH}/etc/apt/sources.list"
 			rm -f "${SOURCES_LIST}"
 		;;
@@ -311,12 +311,12 @@ function setup_package_sources()
 		echo "$0: Adding installation source name=\"${INST_SOURCE_NAME}\", baseurl=\"${INST_SOURCE_BASEURL}${INST_SOURCE_REPO_SUBDIR:+/${INST_SOURCE_REPO_SUBDIR}}\". "
 
 		case "${META_PACKAGER}" in
-			*debian*|*ubuntu**)
+			apt-get)
 				echo "deb ${INST_SOURCE_BASEURL} ${INST_SOURCE_DISTRIBUTION} ${INST_SOURCE_COMPONENTS}" \
 					>>${SOURCES_LIST}
 				# FIXME Add feature to sort the lines by given (?) priority.
 			;;
-			*suse*)
+			smart)
 				# Prefix the config name for optional parameters
 				test "${INST_SOURCE_PRIORITY}" && \
 					INST_SOURCE_PRIORITY="priority=\"${INST_SOURCE_PRIORITY}\""
@@ -330,7 +330,7 @@ function setup_package_sources()
 					${INST_SOURCE_PRIORITY} \
 					-y
 			;;
-			yum|*fedora*)
+			yum)
 				echo -e "[${INST_SOURCE_CHANNEL}]\nname=${INST_SOURCE_NAME}\nbaseurl=${INST_SOURCE_BASEURL}${INST_SOURCE_REPO_SUBDIR:+/${INST_SOURCE_REPO_SUBDIR}}" \
 					>${SLX_STAGE1_PATH}/etc/yum.repos.d/${INST_SOURCE_CHANNEL}.repo
 			;;
@@ -348,17 +348,17 @@ function update_system()
 	fi
 
 	case "${META_PACKAGER}" in
-		*debian*|*ubuntu**)
+		apt-get)
 			: ${SLX_STAGE1_UPDATE_OPTIONS:=-y}
 			: ${SLX_STAGE1_UPGRADE_OPTIONS:=-y}
 			chroot "${SLX_STAGE1_PATH}" apt-get update ${SLX_STAGE1_UPDATE_OPTIONS}
 			chroot "${SLX_STAGE1_PATH}" apt-get upgrade ${SLX_STAGE1_UPGRADE_OPTIONS}
 		;;
-		*suse*)
+		smart)
 			: ${SLX_STAGE1_UPGRADE_OPTIONS:=-y}
 			LC_ALL=POSIX chroot "${SLX_STAGE1_PATH}" smart upgrade --update ${SLX_STAGE1_UPGRADE_OPTIONS}
 		;;
-		yum|*fedora*)
+		yum)
 			: ${SLX_STAGE1_UPDATE_OPTIONS:=-y}
 			cp -p /proc/cpuinfo "${SLX_STAGE1_PATH}/proc/cpuinfo"
 			LC_ALL=POSIX chroot "${SLX_STAGE1_PATH}" yum ${SLX_STAGE1_UPDATE_OPTIONS} update
@@ -383,15 +383,15 @@ function install_slxselection()
 		return
 
 	case "${META_PACKAGER}" in
-		*debian*|*ubuntu**)
+		apt-get)
 			: ${SLX_STAGE1_INSTALL_OPTIONS:=-y}
 			chroot "${SLX_STAGE1_PATH}" apt-get install ${SLX_STAGE1_INSTALL_OPTIONS} ${packagelist}
 		;;
-		*suse*)
+		smart)
 			: ${SLX_STAGE1_INSTALL_OPTIONS:=-y}
 			LC_ALL=POSIX chroot "${SLX_STAGE1_PATH}" smart install ${SLX_STAGE1_INSTALL_OPTIONS} ${packagelist}
 		;;
-		yum|*fedora*)
+		yum)
 			: ${SLX_STAGE1_INSTALL_OPTIONS:=-y}
 			cp -p /proc/cpuinfo "${SLX_STAGE1_PATH}/proc/cpuinfo"
 			LC_ALL=POSIX chroot "${SLX_STAGE1_PATH}" yum ${SLX_STAGE1_INSTALL_OPTIONS} install ${packagelist}
@@ -437,14 +437,23 @@ function slxossetup()
 			# This is only important in stage 1c
 			export YAST_IS_RUNNING="instsys"
 			GLOBAL_SETTINGS="BASEURL PACKAGEKEYS"
+			test "${SLX_META_PACKAGER}" && \
+				META_PACKAGER="${SLX_META_PACKAGER}" || \
+				META_PACKAGER="yum"
 			REPO_TYPE="rpm-md"
 			;;
 		*fedora*)
 			GLOBAL_SETTINGS="BASEURL PACKAGEKEYS"
+			test "${SLX_META_PACKAGER}" && \
+				META_PACKAGER="${SLX_META_PACKAGER}" || \
+				META_PACKAGER="yum"
 			REPO_TYPE="rpm-md"
 			;;
-		*debian*|*ubuntu**)
+		*debian*|*ubuntu*)
 			GLOBAL_SETTINGS="BASEURL COMPONENTS DISTRIBUTION"
+			test "${SLX_META_PACKAGER}" && \
+				META_PACKAGER="${SLX_META_PACKAGER}" || \
+				META_PACKAGER="apt-get"
 			REPO_TYPE="apt-deb"
 			X86_ARCH='i386'
 			;;
@@ -461,10 +470,6 @@ function slxossetup()
 			;;
 		esac
 	fi
-
-	test "${SLX_META_PACKAGER}" && \
-		META_PACKAGER="${SLX_META_PACKAGER}" || \
-		META_PACKAGER="${SLX_SYSTEM_BASENAME}"
 
 	case "${SLX_OSSETUP_MODE}" in
 		bootstrap) slxossetup_busybox ;;
