@@ -189,7 +189,7 @@ sub initDistroInfo
 			i586/python-elementtree-1.2.6-18.i586.rpm
 			i586/python-xml-2.4.2-18.i586.rpm
 			i586/rpm-python-4.4.2-40.i586.rpm
-			i586/smart-0.41-23.2.i586.rpm
+			i586/smart-0.41-23.i586.rpm i586/smart-0.41-23.2.i586.rpm
 		",
 		'yum' => "
 			i586/libxml2-2.6.23-13.i586.rpm
