@@ -74,7 +74,6 @@ cat >>/mnt/etc/${D_INITDIR}/boot <<EOF
         #"Mounting /proc, /sys and /dev/pts filesystems"
         # file /etc/fstab in some scenarios not available
         mount -t proc proc /proc &>/dev/null
-        mount -t devpts -o mode=0620,gid=5 devpts /dev/pts
         if [ -d /sys ] ; then
           while read a b c ; do
             case "\$b" in
@@ -127,6 +126,7 @@ cat >>/mnt/etc/${D_INITDIR}/boot <<EOF
         }
         # Starting udev (normally handled by /sbin/rc sysinit)
         source "\${svclib}/addons/udev-start.sh"
+        mount -t devpts -o mode=0620,gid=5 devpts /dev/pts
         rm -rf /dev/.rcsysinit
         #/bin/bash
         eend \${ret} "\${errstr}"
