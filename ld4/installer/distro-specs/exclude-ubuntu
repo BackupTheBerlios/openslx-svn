@@ -23,6 +23,7 @@
 - /boot/initrd*
 - /boot/grub
 - /dev/*
+- /etc/shadow*
 - /proc/*
 - /sys/*
 - /tmp/*
