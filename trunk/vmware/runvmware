@@ -4,10 +4,10 @@
 #               X Stations and interactive session chooser (v4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-03-2006
-#               Michael Janczyk <mj0@uni-freiburg.de>, 10-11-2006
+#               Michael Janczyk <mj0@uni-freiburg.de>, 12-12-2006
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.16.507
+# Version:      0.16.531
 #
 ################################################################################
 
@@ -179,7 +179,7 @@ cdr_2_name="/dev/cdrom1"
 floppya="FALSE"
 floppyb="FALSE"
 # place for the virtual floppy "B:"
-floppybname="/etc/vmware/loopimg/fd.img"
+floppybname="/etc/vmware/loopimg/fd1.img"
 # resolution
 hostres=$(xvidtune -show 2>/dev/null| grep -ve "^$")
 xres=$(echo "${hostres}" | awk '{print $3}')
@@ -401,18 +401,17 @@ x_dialog ()
     exit 1
   fi
 
-  # --stderr because of 1>/dev/null
   # echoing to file because Xdialog sux when used w/ quotes
   echo -e "Xdialog ${dialogtitle} \
           --screen-center \
           --fill \
           --no-wrap \
-          --stderr \
+          --stdout \
           --no-tags \
           --ok-label \"START\" \
           --item-help \
           --menubox \"Please choose the image you would like to run:\" 35 80 0 \
-          $menu 1>/dev/null" \
+          $menu 2>/dev/null" \
   > ${tmpdir}/Xdialog
   
 . ${tmpdir}/Xdialog
@@ -605,7 +604,7 @@ mkdir -p ${vmhome} >/dev/null 2>&1
 if [ "${xdm}" = "all" -o "${xdm}" = "vm" ]; then
   x_dialog_check
   xdm_mode
-  args_dial=$(x_dialog 2>&1) # 2>&1, see function
+  args_dial=$(x_dialog)
   exec ${args_dial}
   exit 0
 elif [ -n "${xdmstart}" -a -z "${xdm}" ]; then
@@ -740,7 +739,7 @@ if [ -n "${istart}" ]; then
   x_dialog_check
 
   # create menu, etc...
-  startvm=$(x_dialog 2>&1) # 2>&1, see function
+  startvm=$(x_dialog)
 
   if [ -z "${startvm}" ]; then
     writelog "\rNo image selected, please retry or use option -s\n" 0 0
@@ -772,7 +771,7 @@ fi
 
 # define name for VMware window
 displayname=$(grep -m 1 -i "name" \
-  ${vmsessions}/${startvm}.desktop | awk -F "=" '{print $2}')
+  ${vmsessions}/*${startvm}.desktop | awk -F "=" '{print $2}')
 # if variable not set
 displayname=${displayname:-"VMware Image"}
 

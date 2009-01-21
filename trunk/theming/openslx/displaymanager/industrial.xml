@@ -92,11 +92,6 @@
               <item type="rect" id="plugin-specific-winbind">
                 <pos anchor="nw" x="100%" width="250"/>
                 <fixed>
-                  <item type="label" id="domain-label">
-                    <pos anchor="nw" x="0"/>
-                    <normal color="#ffffff" font="Sans 12"/>
-                    <stock type="domain-label"/>
-                  </item>
                   <item type="entry" id="domain-entry">
                     <pos anchor="nw" x="3%" y="30" height="24" width="100%"/>
                   </item>

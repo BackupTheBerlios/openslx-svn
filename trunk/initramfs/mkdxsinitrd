@@ -7,7 +7,7 @@
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 02-12-2006
 #               Nico Dietrich
 #               Felix Endres
-#               <mj0@uni-freiburg.de> (xenbr), 27-09-2006
+#               <mj0@uni-freiburg.de> (xenbr), 12-12-2006
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - openslx.org project
@@ -263,31 +263,29 @@ goto_script_dir()
 
 # add a bootsplash image to the initial ramdisk, only SuSE at the moment
 # theming
-
 add_theme() {
 
 theme="${theme}"
 splashsizes="640x480 800x600 1024x768 1280x1024 1400x1050 1600x1200"
 splash_image=
 splash_bin=$(chroot $ROOTDIR which splash)
+themes_dir="${SLX_SHARE_PATH}/themes/openslx/bootsplash"
+if [ -d "${SLX_SHARE_PATH}/themes/${theme}/bootsplash" ]; then
+  themes_dir="${SLX_SHARE_PATH}/themes/${theme}/bootsplash"
+elif [ -d "$ROOTDIR/etc/bootsplash/themes/${theme}" ]; then
+  themes_dir="/etc/bootsplash/themes/${theme}"
+elif [ -d "$ROOTDIR/usr/share/splash/themes/${theme}" ]; then
+  themes_dir="/usr/share/splash/themes/${theme}"
+fi
+
+#fixme: very ugly ;)
+mkdir -p $ROOTDIR/tmp/bootsplash
+cp -a $themes_dir/* $ROOTDIR/tmp/bootsplash
+themes=${themes_dir%bootsplash}
+echo -e "\n\tUsing ${themes} for themes.\n"
+themes_dir=$ROOTDIR/tmp/bootsplash
+
 if [ -n "$splashsizes" -a -n "$splash_bin" ]; then
-
-  themes_dir="${SLX_SHARE_PATH}/themes/openslx/bootsplash"
-  if [ -d "${SLX_SHARE_PATH}/themes/${theme}/bootsplash" ]; then
-    themes_dir="${SLX_SHARE_PATH}/themes/${theme}/bootsplash"
-  elif [ -d "$ROOTDIR/etc/bootsplash/themes/${theme}" ]; then
-    themes_dir="/etc/bootsplash/themes/${theme}"
-  elif [ -d "$ROOTDIR/usr/share/splash/themes/${theme}" ]; then
-    themes_dir="/usr/share/splash/themes/${theme}"
-  fi
-
-  #fixme: very ugly ;)
-  mkdir -p $ROOTDIR/tmp/bootsplash
-  cp -a $themes_dir/* $ROOTDIR/tmp/bootsplash
-  themes=${themes_dir%bootsplash}
-  echo -e "\n\tUsing ${themes} for themes.\n"
-  themes_dir=$ROOTDIR/tmp/bootsplash
-
   if [ -n "$themes_dir" -a \
      -d "$themes_dir" -o -L "$themes_dir" ]; then
     for size in $splashsizes; do
@@ -315,7 +313,6 @@ for image in $splash_image; do
 done
 
 rm -rf $ROOTDIR/tmp/bootsplash
-
 # kdm/Xdialog theme
 cp -a ${themes}* ${INSTDIR}/usr/share/themes
 }

@@ -4,6 +4,7 @@
 # Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
 # Nico Dietrich
 # Felix Endres
+# mj0, 12-12-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.ORG project
@@ -331,6 +332,10 @@ fi
 
 # configure kdm as display manager
 config_kdm () {
+# first define directories for kdm
+kdmrcdir=/etc/kde3/kdm
+xdmdir=/etc/kde3/kdm
+
 # fixme: check if a kdmrc was provided via ConfTGZ
 #[ -f /rootfs/etc/opt/???? kdmrc ] || \
 # echo " ..." > kdmrc
@@ -345,6 +350,9 @@ config_kdm () {
 #    \t( sleep 120; ln -sf /etc/${D_INITDIR}/kdm /etc/rc3.d/S01kdm \
 #    >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld
 #fi
+
+# write configuration file
+config_kdm_template
 }
 
 # configure hal, dbus, resmgr and services like that
@@ -387,7 +395,12 @@ rllinker "vmware-prep" "18" "02"
 rllinker "vmware" "20" "02"
 # during vmware sessions linux should not handle usb events/devices
 testmkd /mnt/var/X11R6/bin
+# add special path /var/X11R6/bin to the PATH variable
+# fixme!! add path directly to /etc/profile!?
+echo -e "# added path component by $0: $date\n\
+PATH=\"\$PATH:/var/X11R6/bin\"" >>/mnt/etc/profile
 echo '#!/bin/sh'>> /mnt/etc/udev/rules.d/01-udev-vm.rules
+# USB stuff
 echo -e "# Script for blocking linux from handling usb \
 devices\n# during vmware sessions. If you like to remove certain modules \
 add them\n# to the list below - Dirk von Suchodoletz, <dirk@goe.net>\n\
