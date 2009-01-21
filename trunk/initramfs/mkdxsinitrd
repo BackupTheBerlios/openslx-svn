@@ -68,8 +68,8 @@ SLX_CONFIG_PATH=@@@SLX_CONFIG_PATH@@@
 usage()
 {
   echo -e "mkdxsinitrd  [-dh] [-k kernel version] [-i path/file] \
-[-f module(s)] [-n module(s)] [-m module(s)] [-r path] [-s theme]\n\
-[-c machine-setup]"
+[-f module(s)] [-n module(s)] [-m module(s)] -r path [-s theme]\n\
+[-c machine-setup] -S system_name"
   echo "OPTIONEN"
   echo "  -c location of client configuration file (machine-setup)"
   echo "  -d use ISC dhclient instead of udhcpcd of busybox"
