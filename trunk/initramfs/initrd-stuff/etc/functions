@@ -912,8 +912,8 @@ done
 # by slxmkramfs from <distro>/functions-default & ~-version
 
 # find out if prerequisites for special X server modules are met (distro
-# specific)
-checkglx () {
+# specific) and enable tvout if required
+checkgraphix () {
 :
 }
 

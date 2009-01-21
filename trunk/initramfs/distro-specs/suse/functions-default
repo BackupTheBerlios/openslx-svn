@@ -13,6 +13,7 @@
 
 # distro specific function called from servconfig script
 config_distro () {
+# no need to run start scripts in parallel
 # enable magic sysrequest for the clients
 echo -e "# /etc/${D_SYSCONFDIR}/sysctl - file modified by $0 version $version"\
   > /mnt/etc/${D_SYSCONFDIR}/sysctl.new
@@ -30,6 +31,14 @@ echo -e "DXS VERSION = 4.1.0\nINITRAMFS GENERATION DATE = $date" \
 # add the halt link to the 0 and 6 runlevel directories
 ln -sf ../halt /mnt/etc/${D_INITDIR}/rc0.d/S20halt
 ln -sf ../halt /mnt/etc/${D_INITDIR}/rc6.d/S20reboot
+# enable execution of all important start scripts
+# running stuff in parallel seems to be rather useless and generates some
+# difficult to solve problems. If you want to try nevertheless enable the
+# following line and disable the latter one (switching off that feature)
+#sed -e "s,TARGETS =,TARGETS = xdm boot.ld," \
+#  -i /mnt/etc/${D_INITDIR}/.depend.boot
+sed -e "s,RUN_PARALLEL=.*,RUN_PARALLEL=\"no\"," \
+  -i /mnt/etc/${D_SYSCONFDIR}/boot
 # if YaST2 should be runnable (without much effect anyway) on the client
 testmkd /mnt/var/log/YaST2
 }
@@ -141,6 +150,7 @@ sed -e "s,DISPLAYMANAGER=.*,DISPLAYMANAGER=\"$start_xdmcp\"," \
 # start the display manager as early as possible, but avoid that it is
 # started twice during bootup ... late_dm can postpone the start of 
 # displaymanager and X if problems with keyboard, console occur ...
+# might be connected to running startup scripts in parallel, see above ...
 if [ "x$late_dm" = "xyes" ] ; then
   ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/S01xdm
   ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/K18xdm

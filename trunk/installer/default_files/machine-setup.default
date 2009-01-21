@@ -108,9 +108,27 @@ dm_allow_shutdown="user"
 
 # try to start g/k/xdm with X as fast as possible late_dm="no"
 # if there are problems with key, console etc. set late_dm="yes" - adds
-# about five seconds to graphical login delay
+# about five seconds to graphical login delay (might be connected to trying
+# of parallel starting boot scripts)
 #late_dm="yes"
 
 # should Xorg/XFree server be started or some special windowmanager be run
 # in kiosk mode e.g. start_x="kde"
 start_x="yes"
+
+## hardware specific stuff
+# define type of mouse and protocol - not needed in most cases
+#hw_mouse="ps/2 psaux"
+
+# define kind of graphic server module and colordepth to use - autodetected
+# in most cases
+#hw_graphic=""
+
+# define monitor settings here, horizontal, vertical frequencies and maximum
+# screen resolution; useful to overide automatically detected characteristics
+# or if no ddc information is available
+#hw_monitor
+
+# set tvout feature for certain graphic cards - not needed for average systems
+# "yes" (then PAL is used) or tv standard as expected by card driver
+#tvout="yes"
