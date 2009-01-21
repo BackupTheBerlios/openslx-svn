@@ -603,6 +603,12 @@ killall -9 dhcpcd dhclient pump udhcpc 2>/dev/null
 # copy machine configuration file into stage4 filesystem
 cp /etc/machine-setup /mnt/etc
 
+
+# If locations are given that should be unioned with the fs root, do it
+if [ -n "$uniondirs" ]; then
+  include_in_fsroot_union $uniondirs
+fi
+
 # post init for some distro specific (fixme!! more elegant solution)
 postinit
 [ -s /initramfs/postinit.local ] && \
@@ -611,6 +617,9 @@ postinit
   [ $DEBUGLEVEL -gt 0 ] && \
     echo "Running postinit.local - if boot stops here, check the script!"
   /bin/postinit.local; }
+
+
+
 
 # start a debug shell in higher debug levels
 [ $DEBUGLEVEL -gt 2 -a $DEBUGLEVEL != 8 ] && /bin/sh

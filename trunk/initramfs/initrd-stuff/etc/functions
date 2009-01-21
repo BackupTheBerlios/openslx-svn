@@ -938,45 +938,49 @@ for i in boot.ld ${D_INITSCRIPTS}; do
   #ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/K${revcnt}$i
 done
 }
-# This function gets an uri as parameter.
-# It will then try to mount this uri and add it to the union at /
-include_in_fsroot_union () {
-  ROOTFS=$1
-  srvproto=$(uri_token $ROOTFS prot)
-  case $srvproto in
-        nfs)
-          # nfsroot consists now of two different parts
-          root_path=/$(uri_token $ROOTFS path)
-          nfsserver=$(uri_token $ROOTFS server)
-          echo -e "NFS $ROOTFS parsed to $srvproto - $nfsserver - \
-$root_path" >> /tmp/felixtestlog
-          mkdir -p /mnt/tmp/rootunion
-          nfsmnt $nfsserver:$root_path /mnt/tmp/rootunion || error "Fehler beim mounten der zusatzunion (FIXME)"
-        ;;
-        *nbd)
-          nbdmod=$srvproto
-          # get settings for nbd-client, filesystem equals to path in URI
-          # notation
-          nbdhost=$(uri_token $ROOTFS server)
-          nbdport=$(uri_token $ROOTFS port)
-          nbdrfst=$(uri_token $ROOTFS path)
-          echo -e "(D)NBD $ROOTFS parsed to $srvproto - $nbdhost - \
-$nbdport - $nbdrfst" >> /tmp/felixtestlog
-          #FIXME: mount durchführen
-        ;;
-        aoe)
-          echo "Not implemented yet"
-        ;;
-        iscsi)
-          echo "Not implemented yet"
-          #iscsiserver=$(uri_token $ROOTFS server)
-          #iscsiport=$(uri_token $ROOTFS port)
-          #iscsitarget=$(uri_token $ROOTFS path)
-        ;;
-      esac
-  unionctl /mnt/ --add --after 1 --mode ro /mnt/tmp/rootunion
-  bash
 
+# This function gets an uri or a comma separated list of uris as parameter.
+# It will then try to mount these uris and add them to the union at /
+include_in_fsroot_union () {
+  union_id=0 # used to have guarantee differing names for the unions mount point
+  for ROOTFS in `echo $1 |sed 's/,/ /g'`; do
+    union_id=$(( $union_id + 1 ))
+    srvproto=$(uri_token $ROOTFS prot)
+    case $srvproto in
+          nfs)
+            # nfsroot consists now of two different parts
+            root_path=/$(uri_token $ROOTFS path)
+            nfsserver=$(uri_token $ROOTFS server)
+            echo -e "NFS $ROOTFS parsed to $srvproto - $nfsserver - \
+              $root_path" >> /tmp/felixtestlog
+            mkdir -p /mnt/tmp/${root_path}_${union_id}
+            nfsmnt $nfsserver:$root_path /mnt/tmp/${root_path}_${union_id} || error \
+	      "Fehler beim mounten der zusatzunion (FIXME)"
+          ;;
+          *nbd)
+	    echo "Not working yet"
+            nbdmod=$srvproto
+            # get settings for nbd-client, filesystem equals to path in URI
+            # notation
+            nbdhost=$(uri_token $ROOTFS server)
+            nbdport=$(uri_token $ROOTFS port)
+            nbdrfst=$(uri_token $ROOTFS path)
+            echo -e "(D)NBD $ROOTFS parsed to $srvproto - $nbdhost - \
+              $nbdport - $nbdrfst" >> /tmp/felixtestlog
+            #FIXME: mount durchführen
+          ;;
+          aoe)
+            echo "Not implemented yet"
+          ;;
+          iscsi)
+            echo "Not implemented yet"
+            #iscsiserver=$(uri_token $ROOTFS server)
+            #iscsiport=$(uri_token $ROOTFS port)
+            #iscsitarget=$(uri_token $ROOTFS path)
+          ;;
+        esac
+    unionctl /mnt/ --add --after 1 --mode ro /mnt/tmp/${root_path}_${union_id}
+ done 
 }
 
 # kdmrc template started from distro specific functions files
