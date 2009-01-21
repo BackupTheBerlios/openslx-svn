@@ -76,12 +76,21 @@ sub checkRequirements
 		die _tr("unable to determine version of kernel '%s'!", $kernel);
 	}
 	my $kernelVer = $1;
-	if (!-e "$vendorOSPath/lib/modules/$kernelVer/kernel/drivers/block/nbd.ko") {
+	if (!locateKernelModule(
+		$vendorOSPath,
+		'nbd.ko',
+		["$vendorOSPath/lib/modules/$kernelVer/kernel/drivers/block"])
+	) {
 		warn _tr("unable to find nbd-module for kernel version '%s'.",
 				 $kernelVer);
 		return 0;
 	}
-	if (!-e "$vendorOSPath/lib/modules/$kernelVer/kernel/fs/squashfs.ko") {
+	if (!locateKernelModule(
+		$vendorOSPath,
+		'squashfs.ko',
+		["$vendorOSPath/lib/modules/$kernelVer/kernel/fs/squashfs",
+		 "$vendorOSPath/lib/modules/$kernelVer/kernel/fs"])
+	) {
 		warn _tr("unable to find squashfs-module for kernel version '%s'.",
 				 $kernelVer);
 		return 0;
@@ -176,6 +185,34 @@ sub mapRsyncFilter2Regex
 			}
 		}
 		split "\n", shift;
+}
+
+sub locateKernelModule
+{
+	my $vendorOSPath = shift;
+	my $moduleName = shift;
+	my $defaultPaths = shift;
+
+	vlog 1, _tr("locating kernel-module '%s'", $moduleName);
+	# check default paths first:
+	foreach my $defPath (@$defaultPaths) {
+		vlog 2, "trying $defPath/$moduleName";
+		return "$defPath/$moduleName" 	if -e "$defPath/$moduleName";
+	}
+	# use brute force to search for the newest incarnation of the module:
+	use File::Find;
+	my $location;
+	my $locationAge = 9999999;
+	vlog 2, "searching in $vendorOSPath/lib/modules";
+	find sub {
+		return unless $_ eq $moduleName;
+		if (-M _ < $locationAge) {
+			$locationAge = -M _;
+			$location = $File::Find::name;
+			vlog 2, "located at $location (age=$locationAge days)";
+		}
+	}, "$vendorOSPath/lib/modules";
+	return $location;
 }
 
 1;
