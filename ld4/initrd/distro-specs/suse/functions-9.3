@@ -425,6 +425,8 @@ if [ -f /mnt/etc/${D_SYSCONFDIR}/autofs ] ; then
     # remove leading and trailing slash
     automnt_dir=${automnt_dir#/}
     automnt_dir=${automnt_dir%/}
+    test -d ${automnt_dir} || error "df_erradir"
+    strinstr "/" ${automnt_dir} || error "df_erratpld"
     echo -e "/${automnt_dir}\t/etc/auto.${automnt_dir}\n" \
       >> /mnt/etc/auto.master
     echo -e "# /etc/auto.${automnt_dir} created by $0:\n" \

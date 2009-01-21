@@ -2,7 +2,7 @@
 #		linux diskless clients (executed within initial
 #		ramdisk after genconfig) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 28-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-05-2006
 #		Nico Dietrich
 #		Felix Endres
 #
@@ -195,6 +195,11 @@ config_dreshal () {
 if [ "x$start_dreshal" = "xyes" ]; then
   :
 fi
+}
+
+# configure automounter
+config_automount () {
+:
 }
 
 # configure bluetooth services
