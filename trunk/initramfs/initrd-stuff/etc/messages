@@ -70,8 +70,8 @@ failed -\n  Either module is not present or module does not match the \
 running\n  kernel. If you do not want to see this message remove the token \
 'cowloop' from kernel command line."
 init_cownonbd="  Loading of cow module is of no sense if no network block \
-device is used or\n  UnionFS was specified as read write layer too. Remove \
-UnionFS token from\n  kernel commandline if cowloop should be used instead."
+device is used or\n  UnionFS/AUFS was specified as read write layer too. Remove \
+UnionFS/AUFS token from\n  kernel commandline if cowloop should be used instead."
 init_nfs="  Mount of root filesystem via NFS was requested via kernel command \
 line\nbut failed. There might be the following reasons for that:\n\
 * No nfs.ko module could be loaded and no NFS support was present in the\n\

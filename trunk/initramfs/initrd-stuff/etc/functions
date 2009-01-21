@@ -981,12 +981,12 @@ include_in_fsroot_union () {
             #iscsitarget=$(uri_token $ROOTFS path)
           ;;
         esac
-    if [ "X$union_type" == "Xunionfs" ]; then
-	echo "Using unionctl to mount ${root_path}_${union_id} (type: $union_type)"
+    if [ "X$union_type" == "XUnionFS" ]; then
+	[ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && echo "Using unionctl to mount ${root_path}_${union_id} (type: $union_type)"
 	unionctl /mnt/ --add --after 1 --mode ro /mnt/tmp/${root_path}_${union_id}
-    elif [ "X$union_type" == "Xaufs" ]; then 
+    elif [ "X$union_type" == "XAUFS" ]; then 
 	#unionctl for aufs is a sh script needing tools not included in our initrd
-	echo "Using aufs-mount to mount ${root_path}_${union_id} (type: $union_type)"
+	[ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && echo "Using aufs-mount to mount ${root_path}_${union_id} (type: $union_type)"
 	mount -n -o remount,add:1:/mnt/tmp/${root_path}_${union_id}=ro none /mnt
     else
 	error $init_loadunions nonfatal

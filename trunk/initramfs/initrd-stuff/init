@@ -389,9 +389,10 @@ if [ -n "${nbdmod}" ] ; then
     [ -x /bin/mdev ] && mdev -s
   fi
   if [ -n "${cowloop}" ] ; then
-    if [ -n "${unionfs}" ] ; then
+    if [ -n "${unionfs}" -o -n "${aufs}" ] ; then
       error "$init_cownonbd"
       unionfs="";
+      aufs="";
     fi
     echo "Using Copy-on-Write block device for rw access"
     mount -n -t tmpfs -o size=${cowsize} ramfs ${rwdir}
@@ -463,7 +464,7 @@ fi
 union_type=""
 # try to use unionfs for rw access if available
 if [ -n "${unionfs}" ]; then 
-  modprobe ${MODPRV} unionfs  && union_type="unionfs"
+  modprobe ${MODPRV} unionfs  && union_type="UnionFS"
   if [ -z "$union_type" ]; then 
 	error "$init_loadufs" nonfatal
 	unionfs="";
@@ -473,7 +474,7 @@ if [ -n "${unionfs}" ]; then
 fi
 # try to use aufs for rw access if available
 if [ -n "${aufs}" ]; then 
-  modprobe ${MODPRV} aufs   && union_type="aufs"
+  modprobe ${MODPRV} aufs   && union_type="AUFS"
   if [ -z "$union_type" ]; then 
 	error "$init_loadaufs" nonfatal
 	aufs="";
@@ -482,16 +483,17 @@ if [ -n "${aufs}" ]; then
   fi
 fi
 # setup of client root filesystem dependent on the availability of UnionFS
-if [ -n "${unionfs}" ] ; then
-  echo "Using UnionFS for rw access"
+if [ -n "${unionfs}" -o -n "${aufs}" ] ; then
+  echo "Using ${union_type} for rw access"
   mkdir -p ${rwdir}/union ${rwdir}/uniontmp /rorootfs
   mount -n -t tmpfs none ${rwdir}/uniontmp
   # hack for handling unionfs with patched run-init
   mount -n --move /mnt /rorootfs
-  if [ "$union_type" == "unionfs" ]; then
+  if [ "$union_type" == "UnionFS" ]; then
   	mount -n -t unionfs -o dirs=${rwdir}/uniontmp:/rorootfs=${nfsro}ro \
 	none /mnt
-  else  mount -n -t aufs -o br:/${rwdir}/uniontmp:/rorootfs=ro none /mnt
+  elif [ "$union_type" == "AUFS" ]; then   
+	mount -n -t aufs -o br:/${rwdir}/uniontmp:/rorootfs=ro none /mnt
   fi
   mkdir -p /mnt/uniontmp
   mount -n --move ${rwdir}/uniontmp /mnt/uniontmp
@@ -499,7 +501,7 @@ if [ -n "${unionfs}" ] ; then
   # if additional sources should be used for a combined root filesystem
   # probably more sources should be merged into union (${union} is defined)
   # allow more than one union??
-  if [ -n "${union}" ] ; then
+  if [ -n "${unionfs}" -o -n "${aufs}" ] ; then
     # for dir in "${union}"; do
     # testmkd /unionadd/$dir
     # mount $dir unionadd/$dir
