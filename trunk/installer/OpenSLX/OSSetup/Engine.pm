@@ -24,19 +24,38 @@ use OpenSLX::Basics;
 use vars qw(%supportedDistros);
 
 %supportedDistros = (
-#	'debian-3.1' 		=> 'Debian_3_1',
-#	'debian-4.0' 		=> 'Debian_4_0',
-	'fedora-6' 			=> 'Fedora_6',
-#	'fedora-6-x86_64' 	=> 'Fedora_6_x86_64',
-#	'mandriva-2007.0' 	=> 'Mandriva_2007_0',
-#	'suse-9.3' 			=> 'SUSE_9_3',
-#	'suse-10.0' 		=> 'SUSE_10_0',
-#	'suse-10.0-x86_64' 	=> 'SUSE_10_0_x86_64',
-	'suse-10.1' 		=> 'SUSE_10_1',
-#	'suse-10.1-x86_64' 	=> 'SUSE_10_1_x86_64',
-	'suse-10.2' 		=> 'SUSE_10_2',
-	'suse-10.2-x86_64' 	=> 'SUSE_10_2_x86_64',
-#	'ubuntu-6.10' 		=> 'Ubuntu_6_10',
+	'debian-3.1'
+		=> { module => 'Debian_3_1', support => 'clone', },
+	'debian-4.0'
+		=> { module => 'Debian_4_0', support => 'clone', },
+#	'fedora-6'
+#		=> { module => 'Fedora_6', support => 'clone,install', },
+#	'fedora-6-x86_64'
+#		=> { module => 'Fedora_6_x86_64', support => 'clone', },
+	'gentoo-2005.1'
+		=> { module => 'Gentoo_2005_1', support => 'clone', },
+	'gentoo-2006.1'
+		=> { module => 'Gentoo_2006_1', support => 'clone', },
+#	'mandriva-2007.0'
+#		=> { module => 'Mandriva_2007_0', support => 'clone', },
+	'suse-9.3'
+		=> { module => 'SUSE_9_3', support => 'clone', },
+	'suse-10.0'
+		=> { module => 'SUSE_10_0', support => 'clone', },
+	'suse-10.0-x86_64'
+		=> { module => 'SUSE_10_0_x86_64', support => 'clone', },
+	'suse-10.1'
+		=> { module => 'SUSE_10_1', support => 'clone,install', },
+	'suse-10.1-x86_64'
+		=> { module => 'SUSE_10_1_x86_64', support => 'clone', },
+	'suse-10.2'
+		=> { module => 'SUSE_10_2', support => 'clone,install', },
+	'suse-10.2-x86_64'
+		=> { module => 'SUSE_10_2_x86_64', support => 'clone,install', },
+	'ubuntu-6.06'
+		=> { module => 'Ubuntu_6_06', support => 'clone', },
+	'ubuntu-6.10'
+		=> { module => 'Ubuntu_6_10', support => 'clone', },
 );
 
 ################################################################################
@@ -63,13 +82,20 @@ sub initialize
 	if (!exists $supportedDistros{lc($distroName)}) {
 		print _tr("Sorry, distro '%s' is unsupported.\n", $distroName);
 		print _tr("List of supported distros:\n\t");
-		print join("\n\t", keys %supportedDistros)."\n";
+		print join("\n\t", sort keys %supportedDistros)."\n";
+		exit 1;
+	}
+	my $support = $supportedDistros{lc($distroName)}->{support};
+	if (!$cloneMode && $support !~ m[install]i) {
+		print _tr("Sorry, distro '%s' can not be installed, only cloned.\n",
+				  $distroName);
 		exit 1;
 	}
 
 	# load module for the requested distro:
 	my $distroModule
-		= "OpenSLX::OSSetup::Distro::".$supportedDistros{lc($distroName)};
+		= "OpenSLX::OSSetup::Distro::"
+			.$supportedDistros{lc($distroName)->{module}};
 	unless (eval "require $distroModule") {
 		if ($! == 2) {
 			die _tr("Distro-module <%s> not found!\n", $distroModule);
@@ -664,15 +690,13 @@ sub clone_fetchSource
 
 	vlog 0, _tr("Cloning vendor-OS from <%s>...\n", $source);
 	my (@includeList, @excludeList);
-	foreach my $filterFile ("../lib/distro-info/clone-filter-common",
-							"$self->{'distro-info-dir'}/clone-filter") {
-		if (open(FILTER, "< $filterFile")) {
-			while(<FILTER>) {
-				push @includeList, $_ if /^\+\s+/;
-				push @excludeList, $_ if /^\-\s+/;
-			}
-			close(FILTER);
+	my $filterFile = "../lib/distro-info/clone-filter-common";
+	if (open(FILTER, "< $filterFile")) {
+		while(<FILTER>) {
+			push @includeList, $_ if /^\+\s+/;
+			push @excludeList, $_ if /^\-\s+/;
 		}
+		close(FILTER);
 	}
 	my $excludeIncludeList = join("", @includeList, @excludeList);
 	vlog 1, "using exclude-include-filter:\n$excludeIncludeList\n";
