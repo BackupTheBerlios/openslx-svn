@@ -4,15 +4,17 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 11-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.0.2e
+# Version:      0.1.0a
 
 # check for configuration files to source
 
-# functions common for all distros
+# functions common for all distros, messages contains all error and info
+# output
+. /etc/messages
 . /etc/functions
 # load distro specific configuration variables and functions. distro
 # specific functions may overwrite functions defined in /etc/functions
@@ -229,7 +231,7 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
     ln -sf /usr/share/vmware /var/lib/vmware
   elif [ -n "${imgsrv}" ] ; then
     # nfsmnt script should be used here ...
-    nfsmnt ${imgsrv} /mnt/var/lib/vmware &
+    ( nfsmnt ${imgsrv} /mnt/var/lib/vmware || error "$scfg_nfs" nonfatal ) &
     #mount -n -t nfs -o ro,nolock,intr,nodev,soft,timeo=2,nosuid \
     #  ${imgsrv} 
   fi

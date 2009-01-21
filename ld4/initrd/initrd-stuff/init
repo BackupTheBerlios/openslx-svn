@@ -2,11 +2,11 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 07-04-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 11-04-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.4d
+# Version:      0.2.4e
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -299,7 +299,7 @@ if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" -a -z "${NFSROOT}" ] ; then
 fi
 # call function for nfs mounts
 if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" ] ; then
-  nfsmnt ${NFSROOT}
+  nfsmnt ${NFSROOT} || error "$init_nfs"
 fi
 
 # get the complete collection of kernel modules available
@@ -322,8 +322,7 @@ if [ -n "${UNIONFS}" ] ; then
   [ -n ${NFSROOT} ] && NFSRO=nfs
   mkdir -p ${RWDIR}/union ${RWDIR}/uniontmp
   mount -n -t tmpfs none ${RWDIR}/uniontmp
-  mount -n --move /mnt /root
-  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/root=${NFSRO}ro \
+  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/mnt=${NFSRO}ro \
     none /mnt
   mkdir -p /mnt/uniontmp
   mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp
@@ -454,11 +453,10 @@ umount -n /proc/bus/usb >/dev/null 2>&1
 mount -n --move /dev /mnt/dev
 killall -9 udevd 2>/dev/null
 umount -n /proc
-[ -n "${UNIONFS}" ] && mount -n --move /root /mnt/mnt 
 # unset old environment variables
 unset debug date initrd ip dnbdroot nbdroot nfsroot vci vga
 unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
   UDEVD_EXPECTED_SEQNUM
 #strinstr "bash" "$(ls -la /bin/sh)" && EE="-c"
 # new style of pivoting (exec -c would set an empty environment in bash)
-exec ${EE} run-init -c dev/console /mnt /sbin/init || error "$init_runinit"
+exec run-init -c dev/console /mnt /sbin/init || error "$init_runinit"

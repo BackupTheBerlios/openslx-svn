@@ -7,7 +7,7 @@
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.4.2c
+# Version:      0.4.2d
 
 #######################################################################
 # generate events with the sysfs trigger
@@ -56,9 +56,13 @@ if [ -n "$2" ] ; then
 else
   echo -e "${error_msg}${e_msg}${error_shell}"
   /bin/sh
-  echo "Rebooting now ..."
-  usleep 5
-  echo "b" > /proc/sysrq_trigger
+  echo -n "Reboot now? [y]"
+  read input
+#  [ -z "$input" -o "$input" = "y" -o "$input" = "Y" ] && {
+#    usleep 100
+#    [ -f /proc/sysrq-trigger ] || mount -t proc none /proc
+#    echo "b" > /proc/sysrq-trigger
+#  }
 fi
 }
 msg () {
@@ -152,12 +156,8 @@ nfsmnt ()
 {
 local nfsroot=$1
 local dest=$2
-if [ -z "$dest" ] ; then
-  dest="/mnt"
-  e_nfs="$error_rnfs"
-else
-  e_nfs="$error_gnfs"
-fi
+local ret=0
+[ -z "$dest" ] && dest="/mnt"
 for mnt in nfsmount mount none; do
   test -x /bin/$mnt && break;
 done
@@ -165,17 +165,18 @@ done
   loadmod /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko "$error_modnfs"
 case $mnt in
   nfsmount)
-    nfsmount -o ro $nfsroot $dest || error "$e_nfs"
+    nfsmount -o ro $nfsroot $dest || ret=1
   ;;
   mount)
-    portmap || error "$error_portm"
-    mount -n -t nfs -o ro,nolock $nfsroot $dest || error "$e_nfs"
+    portmap || { echo "$error_portm"; ret=1; }
+    mount -n -t nfs -o ro,nolock $nfsroot $dest || ret=1
     killall -9 portmap
   ;;
   none)
     error "$error_mntt"
   ;;
 esac
+return $ret
 }
 #######################################################################
 # create configuration file for dhclient
