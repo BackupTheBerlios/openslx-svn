@@ -2,6 +2,7 @@ Author: Adam Slattery slattery at students.missouri.edu
 Subject: [BusyBox] rpm2cpio bzip2 decompression (patch included)
 URL: http://www.busybox.net/lists/busybox/2004-May/011669.html
 CVS: http://www.busybox.net/cgi-bin/viewcvs.cgi/trunk/busybox/patches/rpm2cpio_bzip2.patch?rev=9001
+BugID: 1141
 
 Index: busybox-1.2.2/archival/Config.in
 ===================================================================
