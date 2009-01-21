@@ -168,7 +168,17 @@ sub connect
 					$dbModule, $VERSION, $modVersion);
 	}
 	my $metaDB = $dbModule->new();
-	$metaDB->connect($dbParams);
+	if (!eval '$metaDB->connect($dbParams);1') {
+		warn _tr("Unable to connect to DB-module <%s>\n%s", $dbModule, $@);
+		warn _tr("These DB-modules seem to work ok:");
+		foreach my $dbMod ('CSV', 'mysql', 'SQLite') {
+			if (eval "require DBD::$dbMod;") {
+				vlog 0, "\t$dbMod\n";
+			}
+		}
+		die _tr('Please use slxsettings to switch to another db-type.');
+	}
+
 	$self->{'db-type'} = $dbType;
 	$self->{'meta-db'} = $metaDB;
 	foreach my $tk (keys %{$DbSchema->{tables}}) {

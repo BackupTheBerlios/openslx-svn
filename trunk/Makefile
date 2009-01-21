@@ -120,12 +120,24 @@ install:
 	done; \
 	# specific database modules are optional, but we tell the user if \
 	# support for a database is missing: \
-	for m in CSV mysql SQLite; do \
+	DEFAULT_DB_TYPE=""; \
+	for m in SQLite CSV mysql; do \
 		if ! perl -e "use DBD::$$m" 2>>${SLX_INSTALL_LOG} ; then \
-			echo -e "  'DBD::$$m' not found, so $$m-databases will not be\
+			echo -e "  'DBD::$$m' not found, so $$m-databases will not be \
 supported."; \
+		else \
+			if test "$${DEFAULT_DB_TYPE}X" = "X"; then \
+				DEFAULT_DB_TYPE=$$m; \
+				echo "  db-type => $$m"; \
+			fi; \
 		fi; \
-	done;
+	done; \
+	if test "$${DEFAULT_DB_TYPE}X" = "X"; then \
+		echo "  None of the DB-modules is available! Please install one of them."; \
+		exit 1; \
+	else \
+		echo $${DEFAULT_DB_TYPE} >DEFAULT-DB-TYPE; \
+	fi;
 	@echo "Installing OpenSLX project files"
 	@mkdir -p $(DESTDIR)$(SLX_CONFIG_PATH) \
 	       -p $(DESTDIR)$(SLX_BASE_PATH)/lib \
@@ -232,6 +244,9 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 	    > $(DESTDIR)${SLX_BIN_PATH}/slxversion
 	@chmod a+x $(DESTDIR)${SLX_BIN_PATH}/slxversion
 	@ln -sf $(SLX_BIN_PATH)/slxversion $(DESTDIR)$(USR_BIN_PATH)/
+	@# set default db-type:
+	@DEFAULT_DB_TYPE=$$(cat DEFAULT-DB-TYPE); \
+	echo -n '  '; slxsettings --db-type="$${DEFAULT_DB_TYPE}"; \
 
 vmware_install:
 	@# we should read the config file here or better have a separate
