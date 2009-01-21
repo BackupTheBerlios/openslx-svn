@@ -67,8 +67,6 @@ trigger_device_events () {
 # mini udev of busybox or distro specific udev_hotplug
 runudev () {
 if [ -x /bin/mdev ] ; then
-  [ -c /dev/mem ] ||mknod /dev/mem c 1 1 2>/dev/null
-  [ -c /dev/zero ] || mknod /dev/zero c 1 5 2>/dev/null
   mdev -s
 else
   udev_hotplug
@@ -422,14 +420,10 @@ case $dhcp in
     dhcpcd $vci -L /var/lib/dhcp -c /bin/dhcpcd.exe -T -t 30 eth0 \
       >/dev/null 2>&1 || error "$error_dhcpcd"
   ;;
-  pump)
-      error "$error_pump"
-  ;;
-  # udhcpc is part of busybox; then we expect to have mknod installed
+  # udhcpc is part of busybox
   udhcpc)
     [ -n $vci ] && vci="-V $vci"
     testmkd /usr/share/udhcpc
-    test -c /dev/urandom || mknod /dev/urandom c 1 9 2>/dev/null
     ln -s /bin/dhcpmkconfig /usr/share/udhcpc/default.script
     udhcpc -b -q $vci -s /usr/share/udhcpc/default.script -i eth0 2>/dev/null
   ;;

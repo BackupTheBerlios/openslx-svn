@@ -1,16 +1,14 @@
 #!/bin/bash
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
 #
-# Description:  universal (distro independent) generator for initial
-#               ramdisks for linux diskless clients (stage2 system
-#               setup)
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
 #
-# Author(s):    Dirk von Suchodoletz <dvs@OpenSLX.com>, 04-02-2007
-#               Nico Dietrich
-#               Felix Endres
-#               <mj0@uni-freiburg.de> (xenbr), 09-01-2007
+# General information about OpenSLX can be found at http://openslx.org
 #
-# Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
-#               (c) 2006, 2007 - OpenSLX GmbH
+# Main script for generating the InitRamFS of OpenSLX clients, to constitute
+# the Stage3 boot stadium
 
 # debug level of script itself
 DEBUG=1
@@ -69,37 +67,25 @@ SLX_CONFIG_PATH=@@@SLX_CONFIG_PATH@@@
 
 usage()
 {
-  echo -e "mkdxsinitrd  [-bgh] [-k kernel version] [-i path/file] \
+  echo -e "mkdxsinitrd  [-dh] [-k kernel version] [-i path/file] \
 [-f module(s)] [-n module(s)] [-m module(s)] [-r path] [-s theme]\n\
 [-c machine-setup]"
   echo "OPTIONEN"
   echo "  -c location of client configuration file (machine-setup)"
-  echo "  -g     Benutze glibc als Basisbibliothek in der ramdisk."
-  echo "  -b     Use busybox instead of separate binaries."
-  echo "  -h     Zeige Informationen zur Benutzung."
-  echo "  -k Kernelversion"
-  echo "        mkdxsinitrd  versucht  die  aktuellste  Kernelversion zu finden."
-  echo "        Falls  dies  nicht  klappt,  oder  eine   andere   Kernelversion"
-  echo "        gewünscht  ist  kann  diese  hier angegeben werden (funktioniert"
-  echo "        natürlich nur für auf dem  Hostsystem  vorhandene  Kernelversion"
-  echo "        nen)."
+  echo "  -d use ISC dhclient instead of udhcpcd of busybox" 
+  echo "  -h show usage information"
+  echo "  -k kernel version"
   echo "  -i path/file"
   echo "        Optionale  Angabe wo die erstellte ramdisk hingeschrieben werden"
   echo "        soll."
-  echo "  -f Modulliste"
-  echo "        Kernelmodule die benutzt werden  sollen  um  das  Rootfilesystem"
-  echo "        über das dem Netzwerk zu mounten (z.B. nfs, nbd dnbd)."
-  echo "  -n Modulliste"
-  echo "        Kernelmodule zum Betrieb der Clientnetzwerkkarten (z.B. e100 tg3"
-  echo "        via-rhine)."
-  echo "  -m Modulliste"
-  echo "        Kernelmodule (misc) die nicht von -n bzw. -f abgedeckt werden"
-  echo "        (z.B. xenbr for xen network bridge)."
+  echo "  -f list of blockdev/filesystem modules"
+  echo "  -n list of network adaptor modules"
+  echo "  -m list of misc modules not covered by -f or -n"
   echo "  -r path"
   echo "        Pfad zum Wurzelverzeichnis des Ausgangssystems (Vendor-OS)"
   echo "        (z.B. /var/opt/openslx/stage1/suse-10.2)."
   echo "  -s theme (for splash)"
-  echo "  -d debug (add special modules to initramfs)"
+  echo "  -t tpm support (client security)"
   echo "  -D Name"
   echo "        Name der Distribution der Betriebsystemvorlage"
   echo "  -v Version"
@@ -196,8 +182,7 @@ else
      echo -e "slxconf_date=${DATE}\nslxconf_kernver=${KERNVER}\n\
 slxconf_listnwmod=\"${NWMODULES}\"\nslxconf_distro=${DISTRO}-${DISTRO_VER}\n\
 slxconf_slxver=\"4.0.8b\"" > ${INSTDIR}/etc/sysconfig/slxsystem.conf
-     [ "$use_busybox" = 1 ] && sed -e "s,^#!/bin/sh,#!/bin/ash," \
-       -i ${INSTDIR}/${FILENAME}
+     sed -e "s,^#!/bin/sh,#!/bin/ash," -i ${INSTDIR}/${FILENAME}
   fi
 fi
 }
@@ -320,7 +305,7 @@ cp -a ${themes}* ${INSTDIR}/usr/share/themes
 #########################################################################
 # End of function declaration
 
-while getopts :bhgk:c:i:r:o:s:f:n:m:Sut:d:v:I:V:a: a ; do
+while getopts :hk:c:i:r:o:s:f:n:m:Sut:d:v:I:V:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
@@ -332,8 +317,6 @@ while getopts :bhgk:c:i:r:o:s:f:n:m:Sut:d:v:I:V:a: a ; do
       m)  echo "-m requires misc module list parameter";;
       r)  echo "-r requires root dir parameter";;
       s)  echo "-s may require theme name";;
-      t)  echo "-t requires tmp dir parameter";;
-      d)  echo "-d requires debug level (integer)";;
       D)  echo "-D requires linux Distribution name";;
       v)  echo "-v requires linux distribution version";;
       I)  echo "-I requires network interface parameter";;
@@ -343,9 +326,8 @@ while getopts :bhgk:c:i:r:o:s:f:n:m:Sut:d:v:I:V:a: a ; do
     esac
     exit 1
     ;;
-    b)  use_busybox=1;;
     c)  CLCONFFILE=$OPTARG;;
-    g)  use_glibc=1;;
+    d) use_dhclient=1;;
     k)  KERNVER=$OPTARG;;
     i)  INITRD_PATH=$OPTARG ;;
     f)  FSMODULES=$OPTARG;;
@@ -353,17 +335,11 @@ while getopts :bhgk:c:i:r:o:s:f:n:m:Sut:d:v:I:V:a: a ; do
     m)  MISCMODULES=$OPTARG ;;
     r)  ROOTDIR=$OPTARG;;
     s)  theme=$OPTARG;;
-    t)  INSTDIR=$OPTARG;;
+    t)  use_tpm=1;;
     d)  IRFSDEBUG=$OPTARG;;
     D)  DISTRO=$OPTARG;;
     v)  DISTRO_VER=$OPTARG;;
-    I)  NET_IF=$OPTARG;;         # Not in use
-    a)  acpi_dsdt="$OPTARG";;    # Not in use
-    S)  use_selinux=1;;          # Not in use
     l)  local_init_script="$OPTARG";; # use for pre/postinit.local?
-    u)  sysfs_root=1             # Not in use
-	    use_udev=
-	    ;;
     h)  usage;;
   esac
 done
@@ -385,7 +361,7 @@ if [ -z "$INSTDIR" ] ; then
 fi
 rm -rf ${INSTDIR}
 mkdir -p ${INSTDIR}/{dev,proc,tmp,mnt,root,bin,sys,lib}
-mkdir -p ${INSTDIR}/var/{lib,run}
+mkdir -p ${INSTDIR}/var/{lib,run} ${INSTDIR}/var/lib/nfs/state
 ln -s /bin ${INSTDIR}/sbin
 mkdir -p ${INSTDIR}/usr/share
 # needed for KNOPPIX hwsetup tool not to be confused with ${D_SYSCONFDIR}
@@ -482,19 +458,6 @@ esac
 # at this point ${DISTRO} ${DISTRO_VER} should be fixed
 copy_distro_stuff ${DISTRO} ${DISTRO_VER}
 
-# binary and corresponding library copies could be avoided if a small
-# initial ramdisk environment of its own is generated from busybox,
-# dietlibc and similar, see OpenSLX project page ...
-
-# devices needed rather early (copied from /tmp to /dev in init)
-mknod ${INSTDIR}/tmp/console c 5 1 &>/dev/null
-mknod ${INSTDIR}/tmp/null c 1 3 &>/dev/null
-mknod ${INSTDIR}/tmp/kmsg c 1 11 &>/dev/null
-mknod ${INSTDIR}/tmp/ctl b 241 255 &>/dev/null
-# suse specific, but might be usable with other distros too
-mknod ${INSTDIR}/tmp/bootsplash p &>/dev/null
-
-
 if [ -z "$NWMODULES" ] ; then
   #NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32 8139too 8139cp"
   NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32"
@@ -512,99 +475,49 @@ chmod 755 ${INSTDIR}/init \
 if [ -d ${ROOTDIR}/lib64 ] ; then
   ARCH=x86_64
 else
-  ARCH=i386
+  ARCH=i586
 fi
 
-# test for the existance of busybox
-if [ "$use_busybox" = 1 ]; then
-  [ -x ${SLX_SHARE_PATH}/busybox/busybox.${ARCH} ] || {
-    unset use_busybox
-    echo "You wanted to include busybox for ${ARCH}, but did not provide \
-it in ${SLX_SHARE_PATH}/busybox directory."; }
-fi
-if [ -n "$use_busybox" ] ; then
-  # somehow the target platform should be defined and proper busybox copied
-  cp ${SLX_SHARE_PATH}/busybox/busybox ${INSTDIR}/bin
-  for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
-      date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \
-      insmod id ip kill killall ln ls lsmod mdev mkdir mke2fs mkfs.ext2 \
-      mkfs.ext3 mknod mkswap modprobe mount mv nice ping printf ps rdate \
-      rm rmmod sed sleep sort swapoff swapon switch_root tar test tftp \
-      time touch tr udhcpc umount uptime usleep vconfig vi zcat zcip; do
-    ln -fs /bin/busybox ${INSTDIR}/bin/$bbins
-  done
-  # fake the sh link in busybox environment
-  echo -e "#!/bin/ash\n/bin/ash \$@" > ${INSTDIR}/bin/sh
-  chmod a+x ${INSTDIR}/bin/sh
-  # binaries useful for debugging purposes
-  if [ $IRFSDEBUG -gt 2 ] ; then
-    for bbins in \
-      strace
-    do
-      cobi ${bbins} bin || echo "Program ${bbins} not found"
-    done
-  fi
-else
-  # find and copy a shell to be used within initialramfs
-  for bbins in bash ash sh; do
-    if cobi ${bbins} bin ; then
-      ln -fs ${bbins} ${INSTDIR}/bin/sh
-      [ "${bbins}" != "ash" ] && ln -fs ${bbins} ${INSTDIR}/bin/ash
-      [ "${bbins}" != "bash" ] && ln -fs ${bbins} ${INSTDIR}/bin/bash
-      break
-    else echo "Binary not found (${bbins})"; fi
-  done
-
-  # find and copy ip setup binaries
-  for bbins in ip ifconfig; do
-    if cobi ${bbins} bin ; then
-      [ "${bbins}" = "ifconfig" ] && cobi route bin
-      break
-    else echo "Binary not found"; fi
-  done
-
-  # needed standard binaries (in init, servconfig, hwautocfg, ... scripts)
+# copy the proper busybox depending on architecture (i586 for 32bit and
+# x86_64 for 64bit)
+cp ${SLX_SHARE_PATH}/busybox/busybox.${ARCH} ${INSTDIR}/bin/busybox
+for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
+    date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \
+    insmod id ip kill killall ln ls lsmod mdev mkdir mke2fs mkfs.ext2 \
+    mkfs.ext3 mknod mkswap modprobe mount mv nice ping printf ps rdate \
+    rm rmmod sed sleep sort swapoff swapon switch_root tar test tftp \
+    time touch tr udhcpc umount uptime usleep vconfig vi zcat zcip; do
+  ln -fs /bin/busybox ${INSTDIR}/bin/$bbins
+done
+# fake the sh link in busybox environment
+echo -e "#!/bin/ash\n/bin/ash \$@" > ${INSTDIR}/bin/sh
+chmod a+x ${INSTDIR}/bin/sh
+# binaries useful for debugging purposes
+if [ $IRFSDEBUG -gt 2 ] ; then
   for bbins in \
-      cat chmod chown chroot cp expr fdisk gzip killall ln ls mkdir \
-      mkfs.ext2 modprobe mount rmmod sed sort rm tar umount
-    do
+    strace
+  do
     cobi ${bbins} bin || echo "Program ${bbins} not found"
   done
-
-  # binaries useful for debugging purposes
-  if [ $IRFSDEBUG -gt 2 ] ; then
-    for bbins in \
-      date lsmod lsof ps strace time uptime
-    do
-      cobi ${bbins} bin || echo "Program ${bbins} not found"
-    done
-  fi
-
-  # tftp client binary for configuration via file - get machine-setup per
-  # tftp from dhcp (or specified other) server
-  for tftp in atftp tftp ; do
-    binfinder $tftp && break;
-  done
-  cobi $tftp bin || echo "Program ${tftp} not found"
-  cp /lib/libnss_files.so.2 ${INSTDIR}/lib
-  # one of the dhcp clients
-  for dhcp in dhclient dhcpcd pump ipconfig ; do
-    binfinder $dhcp && break;
-  done
-  cobi $dhcp bin
-
-  # hotplug/udev type and related stuff
-  cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
-
-  # type of hotplug/udev/dev (for etc directories see above!!)
-  for bbins in udev udevd udevstart udevtrigger udevsend ; do
-    cobi ${bbins} bin &>/dev/null || \
-    echo "Program ${bbins} not found; could be most probably ignored"
-  done
-  # if nfs is used as clients root filesystem
-  cobi portmap bin
-  mkdir -p ${INSTDIR}/var/lib/nfs/state
 fi
+
+# one of the dhcp clients (do we really need any other dhcp client?)
+if [ -n "${use_dhclient}" ] ; then
+  if binfinder $dhcp ; then
+    cobi $dhcp bin
+  else
+    echo "dhclient is not available"
+  fi
+fi
+
+# hotplug/udev type and related stuff / any need for that?
+# cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
+
+# type of hotplug/udev/dev (for etc directories see above!!)
+#  for bbins in udev udevd udevstart udevtrigger udevsend ; do
+#    cobi ${bbins} bin &>/dev/null || \
+#    echo "Program ${bbins} not found; could be most probably ignored"
+#  done
 
 # if nbd or dnbd is used as clients root filesystem
 if [ -n "${FSMODULES}" ] ; then
@@ -618,6 +531,12 @@ for i in ${FSMODULES}; do
     ;;
   esac
 done
+fi
+
+# if tpm should be used within InitRamFS ...
+if [ -n "${use_tpm}" ] ; then
+  MISCMODULES="${MISCMODULES} tpm"
+  # copy the other stuff
 fi
 
 # if unionfs
@@ -710,6 +629,7 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
 	  ${ddirprefix}/fs/nfs_common &>/dev/null
       ;;
       ext3)
+        # needed for ext2 support
         mkdir -p ${ddirprefix}/fs/jbd
         cp ${rdirprefix}/fs/jbd/jbd.ko \
           ${ddirprefix}/fs/jbd
@@ -733,6 +653,9 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
         #  cp ${rdirprefix}/drivers/scsi/$i.ko
         #    ${ddirprefix}/drivers/scsi
         #done
+      ;;
+      tpm)
+        # tpm module stuff
       ;;
     esac
   fi
