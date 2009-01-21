@@ -231,6 +231,7 @@ config_xdm () {
 # configure gdm as display manager
 config_gdm () {
   :
+# do not forget to add the $vmsessions (see SuSE config)
 }
 
 # configure kdm as display manager

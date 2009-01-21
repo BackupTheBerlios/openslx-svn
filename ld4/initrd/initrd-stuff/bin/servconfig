@@ -4,7 +4,7 @@
 #		for linux diskless clients (executed within initial
 #		ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 21-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-03-2006
 #		Blabla
 #		Blub
 #
@@ -185,6 +185,24 @@ config_sshd 12 10
 config_snmp 24 02
 
 #######################################################################
+# vmware stuff: two scenarios
+# * VM images in /usr/share/vmware - then simply link
+# * VM images via additional mount (mount source NFS, NBD, ...)
+
+# create needed directories and files
+if [ "x$vmware" != "x" ] || [ "x$vmware" != "xno" ] ; then
+  config_vmware
+  for i in /var/lib/vmware /etc/vmware/vmnet1 /etc/vmware/vmnet8 \
+           /var/run/vmware ; do
+    testmkd /mnt/$i
+  done
+  chmod 1777 /mnt/var/run/vmware
+  rm /mnt/etc/vmware/not_configured 2>/dev/null
+  # define a variable where gdm/kdm should look for additional sessions
+  export vmsessions=/var/lib/vmware/vmsessions
+fi
+
+#######################################################################
 # X11/GUI stuff
 if [ "x$start_x" != "xno" ] ; then
   # creating directories commonly needed for X11 in all distros
@@ -330,22 +348,6 @@ config_nscd
 #             chmod a+rwxt /mnt/tmp/.ICE-unix
 #               chmod a+rwxt /mnt/tmp/.X11-unix
                
-
-#######################################################################
-# vmware stuff: two scenarios
-# * VM images in /usr/share/vmware - then simply link
-# * VM images via additional mount (mount source NFS, NBD, ...)
-
-# create needed directories and files
-if [ "x$vmware" != "x" ] || [ "x$vmware" != "xno" ] ; then
-  config_vmware
-  for i in /var/lib/vmware /etc/vmware/vmnet1 /etc/vmware/vmnet8 \
-           /var/run/vmware ; do
-    testmkd /mnt/$i
-  done
-  chmod 1777 /mnt/var/run/vmware
-  rm /mnt/etc/vmware/not_configured 2>/dev/null
-fi
 
 # servconfig finished successfully
 echo "finished" > /tmp/svcfg

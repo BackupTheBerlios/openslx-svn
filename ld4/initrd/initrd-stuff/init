@@ -2,13 +2,13 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-03-2006
 #		Bla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.3b
+# Version:      0.2.3c
 
 # functions common for all distros
 errmsg="functions file contains a lot of script \
@@ -20,7 +20,7 @@ functionality. Without this\ninit script will not run."
 specific configuration file could not be found" && exit 1 )
 
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
-export date="12-02-2006"
+export date="23-03-2006"
 
 export DEBUGLEVEL=0
 export KERNEL="@@@KERNVER@@@"
@@ -96,6 +96,10 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     # if ld.so.cache should not be generated
     noldsc)
       NOLDSC=yes;;
+    # additional source to union root filesystem with
+    union*)
+      UNIONFS=1
+      UNIONDIRS=${opts#union=};;
     # if unionfs should be used
     unionfs*)
       UNIONFS=1;;
@@ -277,6 +281,12 @@ fi
 if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" ] ; then
   nfsmnt ${NFSROOT} ${MODPRV}
 fi
+
+# if additional sources should be used for a combined root filesystem
+if [ -n ${UNION} ] ; then
+  :
+fi
+
 # get the complete collection of kernel modules available
 mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
   error "  The requested modules directory does not exist. That could mean:\n\
@@ -303,10 +313,13 @@ fi
 msg="Starting ldconfig - switch it off via kernel cmdline option 'noldsc'"
 if [ -n "${UNIONFS}" ] ; then
   echo "Using UnionFS for rw access"
+  [ -n ${NFSROOT} ] && NFSRO=nfs
   mkdir -p ${RWDIR}/union ${RWDIR}/uniontmp
   mount -n -t tmpfs none ${RWDIR}/uniontmp
   mount -n --move /mnt /root
-  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/root=nfsro none /mnt
+  # probably more sources should be merged into union (${ADDFS} is defined)
+  mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/root=${NFSRO}ro${ADDFS} \
+    none /mnt
   mkdir -p /mnt/uniontmp
   mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp
   # run ldconfig if not switched off via kernel command line

@@ -4,7 +4,7 @@
 #		functions file). This file is the main base for the 
 #		following SuSE distributions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 21-03-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-03-2006
 #		Blabla
 #		Blub
 #
@@ -248,10 +248,8 @@ SuspendCommand=/usr/bin/powersave --suspend-to-disk
 BaseXsession=/etc/opt/gnome/gdm/Xsession
 SessionDesktopDir=/usr/share/xsessions/:/etc/X11/sessions/:\
 /etc/opt/gnome/dm/Sessions/:/opt/gnome/share/gdm/BuiltInSessions/:\
-/var/lib/vmware/import/vmsessions
+$vmsessions
 BaseXsession=/etc/opt/gnome/gdm/Xsession
-SessionDesktopDir=/usr/share/xsessions/:/etc/opt/gnome/dm/Sessions/:\
-/opt/gnome/share/gdm/BuiltInSessions/
 UserAuthFBDir=/tmp
 UserAuthFile=.Xauthority
 StandardXServer=/usr/X11R6/bin/X
