@@ -5,6 +5,8 @@ use warnings;
 
 use lib '/opt/openslx/lib';
 
+use Storable qw(dclone);
+
 # basic init
 use OpenSLX::ConfigDB qw(:support);
 
@@ -12,25 +14,25 @@ my $configDB = OpenSLX::ConfigDB->new;
 $configDB->connect();
 
 my $defaultAttrs = {	# mostly copied from DBSchema
-	'ramfs_fsmods' => '',
-	'ramfs_miscmods' => '',
+	'ramfs_fsmods' => undef,
+	'ramfs_miscmods' => undef,
 	'ramfs_nicmods' => 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
-	'ramfs_screen' => '',
+	'ramfs_screen' => undef,
 
-	'automnt_dir' => '',
-	'automnt_src' => '',
+	'automnt_dir' => undef,
+	'automnt_src' => undef,
 	'country' => 'de',
 	'dm_allow_shutdown' => 'user',
-	'hw_graphic' => '',
-	'hw_monitor' => '',
-	'hw_mouse' => '',
+	'hw_graphic' => undef,
+	'hw_monitor' => undef,
+	'hw_mouse' => undef,
 	'late_dm' => 'no',
 	'netbios_workgroup' => 'slx-network',
-	'nis_domain' => '',
-	'nis_servers' => '',
-	'sane_scanner' => '',
-	'scratch' => '',
-	'slxgrp' => '',
+	'nis_domain' => undef,
+	'nis_servers' => undef,
+	'sane_scanner' => undef,
+	'scratch' => undef,
+	'slxgrp' => undef,
 	'start_alsasound' => 'yes',
 	'start_atd' => 'no',
 	'start_cron' => 'no',
@@ -128,24 +130,24 @@ ok(
 # default client attributes:
 my $shouldBeAttrs1 = {
 	'ramfs_fsmods' => 'squashfs',
-	'ramfs_miscmods' => '',
+	'ramfs_miscmods' => undef,
 	'ramfs_nicmods' => 'forcedeth e1000 r8169',
-	'ramfs_screen' => '',
+	'ramfs_screen' => undef,
 
-	'automnt_dir' => '',
-	'automnt_src' => '',
+	'automnt_dir' => undef,
+	'automnt_src' => undef,
 	'country' => 'de',
 	'dm_allow_shutdown' => 'user',
-	'hw_graphic' => '',
-	'hw_monitor' => '',
-	'hw_mouse' => '',
+	'hw_graphic' => undef,
+	'hw_monitor' => undef,
+	'hw_mouse' => undef,
 	'late_dm' => 'no',
 	'netbios_workgroup' => 'slx-network',
-	'nis_domain' => '',
-	'nis_servers' => '',
-	'sane_scanner' => '',
-	'scratch' => '',
-	'slxgrp' => '',
+	'nis_domain' => undef,
+	'nis_servers' => undef,
+	'sane_scanner' => undef,
+	'scratch' => undef,
+	'slxgrp' => undef,
 	'start_alsasound' => 'yes',
 	'start_atd' => 'no',
 	'start_cron' => 'no',
@@ -272,45 +274,45 @@ ok(
 );
 
 # check merging of attributes into client, the order should be:
-# default client attributes overruled by group attributes (ordererd by priority) 
+# default client attributes overruled by group attributes (ordered by priority) 
 # overruled by specific client attributes:
 $shouldBeAttrs1 = {
-	'ramfs_fsmods' => '',
-	'ramfs_miscmods' => '',
-	'ramfs_nicmods' => '',
-	'ramfs_screen' => '',
+	'ramfs_fsmods' => undef,
+	'ramfs_miscmods' => undef,
+	'ramfs_nicmods' => undef,
+	'ramfs_screen' => undef,
 
-	'automnt_dir' => '',
-	'automnt_src' => '',
-	'country' => '',
-	'dm_allow_shutdown' => '',
-	'hw_graphic' => '',
-	'hw_monitor' => '',
-	'hw_mouse' => '',
-	'late_dm' => '',
-	'netbios_workgroup' => '',
-	'nis_domain' => '',
-	'nis_servers' => '',
-	'sane_scanner' => '',
+	'automnt_dir' => undef,
+	'automnt_src' => undef,
+	'country' => undef,
+	'dm_allow_shutdown' => undef,
+	'hw_graphic' => undef,
+	'hw_monitor' => undef,
+	'hw_mouse' => undef,
+	'late_dm' => undef,
+	'netbios_workgroup' => undef,
+	'nis_domain' => undef,
+	'nis_servers' => undef,
+	'sane_scanner' => undef,
 	'scratch' => '/dev/sdx3',
-	'slxgrp' => '',
-	'start_alsasound' => '',
-	'start_atd' => '',
-	'start_cron' => '',
-	'start_dreshal' => '',
-	'start_ntp' => '',
-	'start_nfsv4' => '',
-	'start_printer' => '',
-	'start_samba' => '',
+	'slxgrp' => undef,
+	'start_alsasound' => undef,
+	'start_atd' => undef,
+	'start_cron' => undef,
+	'start_dreshal' => undef,
+	'start_ntp' => undef,
+	'start_nfsv4' => undef,
+	'start_printer' => undef,
+	'start_samba' => undef,
 	'start_snmp' => 'yes',
-	'start_sshd' => '',
-	'start_syslog' => '',
-	'start_x' => '',
-	'start_xdmcp' => '',
-	'tex_enable' => '',
+	'start_sshd' => undef,
+	'start_syslog' => undef,
+	'start_x' => undef,
+	'start_xdmcp' => undef,
+	'tex_enable' => undef,
 	'timezone' => 'America/New_York',
-	'tvout' => '',
-	'vmware' => '',
+	'tvout' => undef,
+	'vmware' => undef,
 };
 my $mergedClient1 = $configDB->fetchClientByID(1);
 ok(
@@ -319,48 +321,48 @@ ok(
 );
 foreach my $key (sort keys %$shouldBeAttrs1) {
 	is(
-		$mergedClient1->{attrs}->{$key} || '', $shouldBeAttrs1->{$key} || '', 
+		$mergedClient1->{attrs}->{$key}, $shouldBeAttrs1->{$key}, 
 		"checking merged attribute $key for client 1"
 	);
 }
 
 $shouldBeAttrs3 = {
-	'ramfs_fsmods' => '',
-	'ramfs_miscmods' => '',
-	'ramfs_nicmods' => '',
-	'ramfs_screen' => '',
+	'ramfs_fsmods' => undef,
+	'ramfs_miscmods' => undef,
+	'ramfs_nicmods' => undef,
+	'ramfs_screen' => undef,
 
-	'automnt_dir' => '',
-	'automnt_src' => '',
-	'country' => '',
-	'dm_allow_shutdown' => '',
-	'hw_graphic' => '',
-	'hw_monitor' => '',
-	'hw_mouse' => '',
-	'late_dm' => '',
-	'netbios_workgroup' => '',
-	'nis_domain' => '',
-	'nis_servers' => '',
-	'sane_scanner' => '',
-	'scratch' => '',
-	'slxgrp' => '',
-	'start_alsasound' => '',
-	'start_atd' => '',
-	'start_cron' => '',
-	'start_dreshal' => '',
-	'start_ntp' => '',
-	'start_nfsv4' => '',
-	'start_printer' => '',
-	'start_samba' => '',
+	'automnt_dir' => undef,
+	'automnt_src' => undef,
+	'country' => undef,
+	'dm_allow_shutdown' => undef,
+	'hw_graphic' => undef,
+	'hw_monitor' => undef,
+	'hw_mouse' => undef,
+	'late_dm' => undef,
+	'netbios_workgroup' => undef,
+	'nis_domain' => undef,
+	'nis_servers' => undef,
+	'sane_scanner' => undef,
+	'scratch' => undef,
+	'slxgrp' => undef,
+	'start_alsasound' => undef,
+	'start_atd' => undef,
+	'start_cron' => undef,
+	'start_dreshal' => undef,
+	'start_ntp' => undef,
+	'start_nfsv4' => undef,
+	'start_printer' => undef,
+	'start_samba' => undef,
 	'start_snmp' => 'yes',
-	'start_sshd' => '',
-	'start_syslog' => '',
-	'start_x' => '',
-	'start_xdmcp' => '',
-	'tex_enable' => '',
+	'start_sshd' => undef,
+	'start_syslog' => undef,
+	'start_x' => undef,
+	'start_xdmcp' => undef,
+	'tex_enable' => undef,
 	'timezone' => 'Europe/London',
-	'tvout' => '',
-	'vmware' => '',
+	'tvout' => undef,
+	'vmware' => undef,
 };
 
 # remove all attributes from client 3
@@ -373,7 +375,7 @@ ok(
 );
 foreach my $key (sort keys %$shouldBeAttrs1) {
 	is(
-		$mergedClient3->{attrs}->{$key} || '', $shouldBeAttrs3->{$key} || '', 
+		$mergedClient3->{attrs}->{$key}, $shouldBeAttrs3->{$key}, 
 		"checking merged attribute $key for client 3"
 	);
 }
@@ -384,41 +386,41 @@ ok(
 	'group-IDs of default client have been set'
 );
 $shouldBeAttrs1 = {
-	'ramfs_fsmods' => '',
-	'ramfs_miscmods' => '',
-	'ramfs_nicmods' => '',
-	'ramfs_screen' => '',
+	'ramfs_fsmods' => undef,
+	'ramfs_miscmods' => undef,
+	'ramfs_nicmods' => undef,
+	'ramfs_screen' => undef,
 
-	'automnt_dir' => '',
-	'automnt_src' => '',
-	'country' => '',
-	'dm_allow_shutdown' => '',
-	'hw_graphic' => '',
-	'hw_monitor' => '',
-	'hw_mouse' => '',
-	'late_dm' => '',
-	'netbios_workgroup' => '',
-	'nis_domain' => '',
-	'nis_servers' => '',
-	'sane_scanner' => '',
+	'automnt_dir' => undef,
+	'automnt_src' => undef,
+	'country' => undef,
+	'dm_allow_shutdown' => undef,
+	'hw_graphic' => undef,
+	'hw_monitor' => undef,
+	'hw_mouse' => undef,
+	'late_dm' => undef,
+	'netbios_workgroup' => undef,
+	'nis_domain' => undef,
+	'nis_servers' => undef,
+	'sane_scanner' => undef,
 	'scratch' => '/dev/sdx3',
-	'slxgrp' => '',
-	'start_alsasound' => '',
-	'start_atd' => '',
-	'start_cron' => '',
-	'start_dreshal' => '',
-	'start_ntp' => '',
-	'start_nfsv4' => '',
-	'start_printer' => '',
-	'start_samba' => '',
+	'slxgrp' => undef,
+	'start_alsasound' => undef,
+	'start_atd' => undef,
+	'start_cron' => undef,
+	'start_dreshal' => undef,
+	'start_ntp' => undef,
+	'start_nfsv4' => undef,
+	'start_printer' => undef,
+	'start_samba' => undef,
 	'start_snmp' => 'yes',
-	'start_sshd' => '',
-	'start_syslog' => '',
-	'start_x' => '',
-	'start_xdmcp' => '',
-	'tex_enable' => '',
+	'start_sshd' => undef,
+	'start_syslog' => undef,
+	'start_x' => undef,
+	'start_xdmcp' => undef,
+	'tex_enable' => undef,
 	'timezone' => 'America/New_York',
-	'tvout' => '',
+	'tvout' => undef,
 	'vmware' => 'yes',
 };
 $mergedClient1 = $configDB->fetchClientByID(1);
@@ -428,47 +430,47 @@ ok(
 );
 foreach my $key (sort keys %$shouldBeAttrs1) {
 	is(
-		$mergedClient1->{attrs}->{$key} || '', $shouldBeAttrs1->{$key} || '', 
+		$mergedClient1->{attrs}->{$key}, $shouldBeAttrs1->{$key}, 
 		"checking merged attribute $key for client 1"
 	);
 }
 
 $shouldBeAttrs3 = {
-	'ramfs_fsmods' => '',
-	'ramfs_miscmods' => '',
-	'ramfs_nicmods' => '',
-	'ramfs_screen' => '',
+	'ramfs_fsmods' => undef,
+	'ramfs_miscmods' => undef,
+	'ramfs_nicmods' => undef,
+	'ramfs_screen' => undef,
 
-	'automnt_dir' => '',
-	'automnt_src' => '',
-	'country' => '',
-	'dm_allow_shutdown' => '',
-	'hw_graphic' => '',
-	'hw_monitor' => '',
-	'hw_mouse' => '',
-	'late_dm' => '',
-	'netbios_workgroup' => '',
-	'nis_domain' => '',
-	'nis_servers' => '',
-	'sane_scanner' => '',
+	'automnt_dir' => undef,
+	'automnt_src' => undef,
+	'country' => undef,
+	'dm_allow_shutdown' => undef,
+	'hw_graphic' => undef,
+	'hw_monitor' => undef,
+	'hw_mouse' => undef,
+	'late_dm' => undef,
+	'netbios_workgroup' => undef,
+	'nis_domain' => undef,
+	'nis_servers' => undef,
+	'sane_scanner' => undef,
 	'scratch' => '/dev/hdd1',
-	'slxgrp' => '',
-	'start_alsasound' => '',
-	'start_atd' => '',
-	'start_cron' => '',
-	'start_dreshal' => '',
-	'start_ntp' => '',
-	'start_nfsv4' => '',
-	'start_printer' => '',
-	'start_samba' => '',
+	'slxgrp' => undef,
+	'start_alsasound' => undef,
+	'start_atd' => undef,
+	'start_cron' => undef,
+	'start_dreshal' => undef,
+	'start_ntp' => undef,
+	'start_nfsv4' => undef,
+	'start_printer' => undef,
+	'start_samba' => undef,
 	'start_snmp' => 'yes',
-	'start_sshd' => '',
-	'start_syslog' => '',
-	'start_x' => '',
-	'start_xdmcp' => '',
-	'tex_enable' => '',
+	'start_sshd' => undef,
+	'start_syslog' => undef,
+	'start_x' => undef,
+	'start_xdmcp' => undef,
+	'tex_enable' => undef,
 	'timezone' => 'Europe/London',
-	'tvout' => '',
+	'tvout' => undef,
 	'vmware' => 'yes',
 };
 $mergedClient3 = $configDB->fetchClientByID(3);
@@ -478,37 +480,37 @@ ok(
 );
 foreach my $key (sort keys %$shouldBeAttrs1) {
 	is(
-		$mergedClient3->{attrs}->{$key} || '', $shouldBeAttrs3->{$key} || '', 
+		$mergedClient3->{attrs}->{$key}, $shouldBeAttrs3->{$key}, 
 		"checking merged attribute $key for client 3"
 	);
 }
 
 # finally we merge systems into clients and check the outcome of that
-my $fullMerge11 = { %$mergedClient1 };
+my $fullMerge11 = dclone($mergedClient1);
 ok(
 	mergeAttributes($fullMerge11, $mergedSystem1),
 	'merging system 1 into client 1'
 );
 my $shouldBeAttrs11 = {
 	'ramfs_fsmods' => 'squashfs',
-	'ramfs_miscmods' => '',
+	'ramfs_miscmods' => undef,
 	'ramfs_nicmods' => 'forcedeth e1000 r8169',
-	'ramfs_screen' => '',
+	'ramfs_screen' => undef,
 
-	'automnt_dir' => '',
-	'automnt_src' => '',
+	'automnt_dir' => undef,
+	'automnt_src' => undef,
 	'country' => 'de',
 	'dm_allow_shutdown' => 'user',
-	'hw_graphic' => '',
-	'hw_monitor' => '',
-	'hw_mouse' => '',
+	'hw_graphic' => undef,
+	'hw_monitor' => undef,
+	'hw_mouse' => undef,
 	'late_dm' => 'no',
 	'netbios_workgroup' => 'slx-network',
-	'nis_domain' => '',
-	'nis_servers' => '',
-	'sane_scanner' => '',
+	'nis_domain' => undef,
+	'nis_servers' => undef,
+	'sane_scanner' => undef,
 	'scratch' => '/dev/sdx3',
-	'slxgrp' => '',
+	'slxgrp' => undef,
 	'start_alsasound' => 'yes',
 	'start_atd' => 'no',
 	'start_cron' => 'no',
@@ -529,36 +531,36 @@ my $shouldBeAttrs11 = {
 };
 foreach my $key (sort keys %$shouldBeAttrs11) {
 	is(
-		$fullMerge11->{attrs}->{$key} || '', $shouldBeAttrs11->{$key} || '', 
+		$fullMerge11->{attrs}->{$key}, $shouldBeAttrs11->{$key}, 
 		"checking merged attribute $key for client 1 / system 1"
 	);
 }
 
-my $fullMerge31 = { %$mergedClient3 };
+my $fullMerge31 = dclone($mergedClient3);
 ok(
 	mergeAttributes($fullMerge31, $mergedSystem1),
 	'merging system 1 into client 3'
 );
 my $shouldBeAttrs31 = {
 	'ramfs_fsmods' => 'squashfs',
-	'ramfs_miscmods' => '',
+	'ramfs_miscmods' => undef,
 	'ramfs_nicmods' => 'forcedeth e1000 r8169',
-	'ramfs_screen' => '',
+	'ramfs_screen' => undef,
 
-	'automnt_dir' => '',
-	'automnt_src' => '',
+	'automnt_dir' => undef,
+	'automnt_src' => undef,
 	'country' => 'de',
 	'dm_allow_shutdown' => 'user',
-	'hw_graphic' => '',
-	'hw_monitor' => '',
-	'hw_mouse' => '',
+	'hw_graphic' => undef,
+	'hw_monitor' => undef,
+	'hw_mouse' => undef,
 	'late_dm' => 'no',
 	'netbios_workgroup' => 'slx-network',
-	'nis_domain' => '',
-	'nis_servers' => '',
-	'sane_scanner' => '',
+	'nis_domain' => undef,
+	'nis_servers' => undef,
+	'sane_scanner' => undef,
 	'scratch' => '/dev/hdd1',
-	'slxgrp' => '',
+	'slxgrp' => undef,
 	'start_alsasound' => 'yes',
 	'start_atd' => 'no',
 	'start_cron' => 'no',
@@ -579,12 +581,12 @@ my $shouldBeAttrs31 = {
 };
 foreach my $key (sort keys %$shouldBeAttrs31) {
 	is(
-		$fullMerge31->{attrs}->{$key} || '', $shouldBeAttrs31->{$key} || '', 
+		$fullMerge31->{attrs}->{$key}, $shouldBeAttrs31->{$key}, 
 		"checking merged attribute $key for client 3 / system 1"
 	);
 }
 
-my $fullMerge13 = { %$mergedClient1 };
+my $fullMerge13 = dclone($mergedClient1);
 ok(
 	mergeAttributes($fullMerge13, $mergedSystem3),
 	'merging system 3 into client 1'
@@ -629,12 +631,12 @@ my $shouldBeAttrs13 = {
 };
 foreach my $key (sort keys %$shouldBeAttrs13) {
 	is(
-		$fullMerge13->{attrs}->{$key} || '', $shouldBeAttrs13->{$key} || '', 
+		$fullMerge13->{attrs}->{$key}, $shouldBeAttrs13->{$key}, 
 		"checking merged attribute $key for client 1 / system 3"
 	);
 }
 
-my $fullMerge33 = { %$mergedClient3 };
+my $fullMerge33 = dclone($mergedClient3);
 ok(
 	mergeAttributes($fullMerge33, $mergedSystem3),
 	'merging system 3 into client 3'
@@ -679,7 +681,7 @@ my $shouldBeAttrs33 = {
 };
 foreach my $key (sort keys %$shouldBeAttrs33) {
 	is(
-		$fullMerge33->{attrs}->{$key} || '', $shouldBeAttrs33->{$key} || '', 
+		$fullMerge33->{attrs}->{$key}, $shouldBeAttrs33->{$key}, 
 		"checking merged attribute $key for client 3 / system 3"
 	);
 }

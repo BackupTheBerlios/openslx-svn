@@ -16,6 +16,8 @@ use warnings;
 our (@ISA, @EXPORT_OK, %EXPORT_TAGS, $VERSION);
 $VERSION = 1;    # API-version
 
+use Storable qw(dclone);
+
 use Exporter;
 @ISA = qw(Exporter);
 
@@ -81,7 +83,7 @@ to filtering (with boolean operators and hierarchical expressions)].
 =cut
 
 my @supportExports = qw(
-  isAttribute mergeAttributes pushAttributes
+  mergeAttributes pushAttributes
   externalIDForSystem externalIDForClient externalConfigNameForClient
   externalAttrName generatePlaceholderFor
 );
@@ -112,6 +114,7 @@ sub new
 	my $class = shift;
 
 	my $self = {
+		'db-schema' => OpenSLX::DBSchema->new,
 	};
 
 	return bless $self, $class;
@@ -182,7 +185,7 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 	$self->{'db-type'} = $dbType;
 	$self->{'meta-db'} = $metaDB;
 
-	$self->_checkAndUpgradeDBSchemaIfNecessary($metaDB);
+	$self->{'db-schema'}->checkAndUpgradeDBSchemaIfNecessary($metaDB);
 
 	return 1;
 }
@@ -281,55 +284,7 @@ sub getColumnsOfTable
 	my $self      = shift;
 	my $tableName = shift;
 
-	return	
-		map { (/^(\w+)\W/) ? $1 : $_; } 
-		@{$DbSchema->{tables}->{$tableName}->{cols}};
-}
-
-=item C<getKnownSystemAttrs()>
-
-Returns the attribute names that apply to systems.
-
-=over
-
-=item Return Value
-
-An array of attribute names.
-
-=back
-
-=cut
-
-sub getKnownSystemAttrs
-{
-	my $self = shift;
-
-	return 
-		grep { $AttributeInfo{$_}->{"applies_to_systems"} }
-		keys %AttributeInfo
-}
-
-=item C<getKnownClientAttrs()>
-
-Returns the attribute names that apply to clients.
-
-=over
-
-=item Return Value
-
-An array of attribute names.
-
-=back
-
-=cut
-
-sub getKnownClientAttrs
-{
-	my $self = shift;
-
-	return 
-		grep { $AttributeInfo{$_}->{"applies_to_clients"} }
-		keys %AttributeInfo
+	return $self->{'db-schema'}->getColumnsOfTable($tableName);
 }
 
 =item C<fetchVendorOSByFilter([%$filter], [$resultCols])>
@@ -1243,10 +1198,12 @@ The IDs of the new system(s), C<undef> if the creation failed.
 
 sub addSystem
 {
-	my $self    = shift;
-	my $valRows = _aref(shift);
+	my $self      = shift;
+	my $inValRows = _aref(shift);
 
-	_checkCols($valRows, 'system', qw(name export_id));
+	_checkCols($inValRows, 'system', qw(name export_id));
+
+	my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
 
 	foreach my $valRow (@$valRows) {
 		if (!$valRow->{kernel}) {
@@ -1264,7 +1221,7 @@ sub addSystem
 		}
 	}
 
-	return $self->{'meta-db'}->addSystem($valRows);
+	return $self->{'meta-db'}->addSystem($valRows, $attrValRows);
 }
 
 =item C<removeSystem(@$systemIDs)>
@@ -1324,47 +1281,49 @@ sub changeSystem
 {
 	my $self      = shift;
 	my $systemIDs = _aref(shift);
-	my $valRows   = _aref(shift);
+	my $inValRows = _aref(shift);
 
-	return $self->{'meta-db'}->changeSystem($systemIDs, $valRows);
+	my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
+
+	return $self->{'meta-db'}->changeSystem($systemIDs, $valRows, $attrValRows);
 }
 
-=item C<setSystemAttr($systemID, $attrName, $attrValue)>
-
-Sets a value for an attribute of the given system. If the system already
-has a value for this attribute, it will be overwritten.
-
-=over
-
-=item Param C<systemID>
-
-The ID of the system whose attribute shall be changed.
-
-=item Param C<attrName>
-
-The name of the attribute to change.
-
-=item Param C<attrValue>
-
-The new value for the attribute.
-
-=item Return Value
-
-C<1> if the attribute could be set, C<undef> if not.
-
-=back
-
-=cut
-
-sub setSystemAttr
-{
-	my $self      = shift;
-	my $systemID  = shift;
-	my $attrName  = shift;
-	my $attrValue = shift;
-
-	return $self->{'meta-db'}->setSystemAttr($systemID, $attrName, $attrValue);
-}
+#=item C<setSystemAttr($systemID, $attrName, $attrValue)>
+#
+#Sets a value for an attribute of the given system. If the system already
+#has a value for this attribute, it will be overwritten.
+#
+#=over
+#
+#=item Param C<systemID>
+#
+#The ID of the system whose attribute shall be changed.
+#
+#=item Param C<attrName>
+#
+#The name of the attribute to change.
+#
+#=item Param C<attrValue>
+#
+#The new value for the attribute.
+#
+#=item Return Value
+#
+#C<1> if the attribute could be set, C<undef> if not.
+#
+#=back
+#
+#=cut
+#
+#sub setSystemAttr
+#{
+#	my $self      = shift;
+#	my $systemID  = shift;
+#	my $attrName  = shift;
+#	my $attrValue = shift;
+#
+#	return $self->{'meta-db'}->setSystemAttr($systemID, $attrName, $attrValue);
+#}
 
 =item C<setClientIDsOfSystem($systemID, @$clientIDs)>
 
@@ -1608,10 +1567,12 @@ The IDs of the new client(s), C<undef> if the creation failed.
 
 sub addClient
 {
-	my $self    = shift;
-	my $valRows = _aref(shift);
+	my $self      = shift;
+	my $inValRows = _aref(shift);
 
-	_checkCols($valRows, 'client', qw(name mac));
+	_checkCols($inValRows, 'client', qw(name mac));
+
+	my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
 
 	foreach my $valRow (@$valRows) {
 		if (!$valRow->{boot_type}) {
@@ -1619,7 +1580,7 @@ sub addClient
 		}
 	}
 
-	return $self->{'meta-db'}->addClient($valRows);
+	return $self->{'meta-db'}->addClient($valRows, $attrValRows);
 }
 
 =item C<removeClient(@$clientIDs)>
@@ -1679,47 +1640,49 @@ sub changeClient
 {
 	my $self      = shift;
 	my $clientIDs = _aref(shift);
-	my $valRows   = _aref(shift);
+	my $inValRows = _aref(shift);
 
-	return $self->{'meta-db'}->changeClient($clientIDs, $valRows);
+	my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
+
+	return $self->{'meta-db'}->changeClient($clientIDs, $valRows, $attrValRows);
 }
 
-=item C<setClientAttr($clientID, $attrName, $attrValue)>
-
-Sets a value for an attribute of the given client. If the client already
-has a value for this attribute, it will be overwritten.
-
-=over
-
-=item Param C<clientID>
-
-The ID of the client whose attribute shall be changed.
-
-=item Param C<attrName>
-
-The name of the attribute to change.
-
-=item Param C<attrValue>
-
-The new value for the attribute.
-
-=item Return Value
-
-C<1> if the attribute could be set, C<undef> if not.
-
-=back
-
-=cut
-
-sub setClientAttr
-{
-	my $self      = shift;
-	my $clientID  = shift;
-	my $attrName  = shift;
-	my $attrValue = shift;
-
-	return $self->{'meta-db'}->setClientAttr($clientID, $attrName, $attrValue);
-}
+#=item C<setClientAttr($clientID, $attrName, $attrValue)>
+#
+#Sets a value for an attribute of the given client. If the client already
+#has a value for this attribute, it will be overwritten.
+#
+#=over
+#
+#=item Param C<clientID>
+#
+#The ID of the client whose attribute shall be changed.
+#
+#=item Param C<attrName>
+#
+#The name of the attribute to change.
+#
+#=item Param C<attrValue>
+#
+#The new value for the attribute.
+#
+#=item Return Value
+#
+#C<1> if the attribute could be set, C<undef> if not.
+#
+#=back
+#
+#=cut
+#
+#sub setClientAttr
+#{
+#	my $self      = shift;
+#	my $clientID  = shift;
+#	my $attrName  = shift;
+#	my $attrValue = shift;
+#
+#	return $self->{'meta-db'}->setClientAttr($clientID, $attrName, $attrValue);
+#}
 
 =item C<setSystemIDsOfClient($clientID, @$systemIDs)>
 
@@ -1957,17 +1920,19 @@ The IDs of the new group(s), C<undef> if the creation failed.
 
 sub addGroup
 {
-	my $self    = shift;
-	my $valRows = _aref(shift);
+	my $self      = shift;
+	my $inValRows = _aref(shift);
 
-	_checkCols($valRows, 'group', qw(name));
+	_checkCols($inValRows, 'group', qw(name));
+
+	my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
 
 	foreach my $valRow (@$valRows) {
 		if (!defined $valRow->{priority}) {
 			$valRow->{priority} = '50';
 		}
 	}
-	return $self->{'meta-db'}->addGroup($valRows);
+	return $self->{'meta-db'}->addGroup($valRows, $attrValRows);
 }
 
 =item C<removeGroup(@$groupIDs)>
@@ -2001,42 +1966,42 @@ sub removeGroup
 	return $self->{'meta-db'}->removeGroup($groupIDs);
 }
 
-=item C<setGroupAttr($groupID, $attrName, $attrValue)>
-
-Sets a value for an attribute of the given group. If the group already
-has a value for this attribute, it will be overwritten.
-
-=over
-
-=item Param C<groupID>
-
-The ID of the group whose attribute shall be changed.
-
-=item Param C<attrName>
-
-The name of the attribute to change.
-
-=item Param C<attrValue>
-
-The new value for the attribute.
-
-=item Return Value
-
-C<1> if the attribute could be set, C<undef> if not.
-
-=back
-
-=cut
-
-sub setGroupAttr
-{
-	my $self      = shift;
-	my $groupID  = shift;
-	my $attrName  = shift;
-	my $attrValue = shift;
-
-	return $self->{'meta-db'}->setGroupAttr($groupID, $attrName, $attrValue);
-}
+#=item C<setGroupAttr($groupID, $attrName, $attrValue)>
+#
+#Sets a value for an attribute of the given group. If the group already
+#has a value for this attribute, it will be overwritten.
+#
+#=over
+#
+#=item Param C<groupID>
+#
+#The ID of the group whose attribute shall be changed.
+#
+#=item Param C<attrName>
+#
+#The name of the attribute to change.
+#
+#=item Param C<attrValue>
+#
+#The new value for the attribute.
+#
+#=item Return Value
+#
+#C<1> if the attribute could be set, C<undef> if not.
+#
+#=back
+#
+#=cut
+#
+#sub setGroupAttr
+#{
+#	my $self      = shift;
+#	my $groupID  = shift;
+#	my $attrName  = shift;
+#	my $attrValue = shift;
+#
+#	return $self->{'meta-db'}->setGroupAttr($groupID, $attrName, $attrValue);
+#}
 
 =item C<changeGroup(@$groupIDs, @$valRows)>
 
@@ -2062,11 +2027,13 @@ C<1> if the group(s) could be changed, C<undef> if not.
 
 sub changeGroup
 {
-	my $self     = shift;
-	my $groupIDs = _aref(shift);
-	my $valRows  = _aref(shift);
+	my $self      = shift;
+	my $groupIDs  = _aref(shift);
+	my $inValRows = _aref(shift);
 
-	return $self->{'meta-db'}->changeGroup($groupIDs, $valRows);
+	my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
+
+	return $self->{'meta-db'}->changeGroup($groupIDs, $valRows, $attrValRows);
 }
 
 =item C<setClientIDsOfGroup($groupID, @$clientIDs)>
@@ -2525,7 +2492,7 @@ sub aggregatedSystemFileInfoFor
 	my $self   = shift;
 	my $system = shift;
 
-	my $info = {%$system};
+	my $info = dclone($system);
 
 	my $export = $self->fetchExportByID($system->{export_id});
 	if (!defined $export) {
@@ -2586,32 +2553,6 @@ sub aggregatedSystemFileInfoFor
 
 =over
 
-=item C<isAttribute($key)>
-
-Returns whether or not the given key is an exportable attribute.
-
-=over
-
-=item Param C<system>
-
-The key to check.
-
-=item Return Value
-
-1 if the given key is indeed an attribute (currently, this means that
-it starts with 'attr_'), 0 if not.
-
-=back
-
-=cut
-
-sub isAttribute
-{
-	my $key = shift;
-
-	return $key =~ m[^attr_];
-}
-
 =item C<mergeAttributes($target, $source)>
 
 Copies all attributes from source that are unset in target over (source extends target).
@@ -2648,7 +2589,7 @@ sub mergeAttributes
 		my $sourceVal = $sourceAttrs->{$key};
 		my $targetVal = $targetAttrs->{$key};
 		if (defined $sourceVal && !defined $targetVal) {
-			vlog(0, _tr("merging %s (val=%s)", $key, $sourceVal));
+			vlog(3, _tr("merging %s (val=%s)", $key, $sourceVal));
 			$targetAttrs->{$key} = $sourceVal;
 		}
 	}
@@ -2851,51 +2792,6 @@ sub generatePlaceholderFor
 ################################################################################
 ### private stuff
 ################################################################################
-sub _checkAndUpgradeDBSchemaIfNecessary
-{
-	my $self   = shift;
-	my $metaDB = shift;
-
-	vlog(2, "trying to determine schema version...");
-	my $currVersion = $metaDB->schemaFetchDBVersion();
-	if (!defined $currVersion) {
-		# that's bad, someone has messed with our DB: there is a
-		# database, but the 'meta'-table is empty. 
-		# There might still be data in the other tables, but we have no way to 
-		# find out which schema version they're in. So it's safer to give up.
-		croak _tr('Could not determine schema version of database');
-	}
-
-	if ($currVersion == 0) {
-		vlog(1, _tr('Creating DB (schema version: %s)', $DbSchema->{version}));
-		foreach my $tableName (keys %{$DbSchema->{tables}}) {
-			# create table (optionally inserting default values, too)
-			$metaDB->schemaAddTable(
-				$tableName,
-				$DbSchema->{tables}->{$tableName}->{cols},
-				$DbSchema->{tables}->{$tableName}->{vals}
-			);
-		}
-		$metaDB->schemaSetDBVersion($DbSchema->{version});
-		vlog(1, _tr('DB has been created successfully'));
-	} elsif ($currVersion < $DbSchema->{version}) {
-		vlog(
-			1,
-			_tr(
-				'Our schema-version is %s, DB is %s, upgrading DB...',
-				$DbSchema->{version}, $currVersion
-			)
-		);
-		$metaDB->schemaUpgradeDBFrom($currVersion);
-		$metaDB->schemaSetDBVersion($DbSchema->{version});
-		vlog(1, _tr('upgrade done'));
-	} else {
-		vlog(1, _tr('DB matches current schema version (%s)', $currVersion));
-	}
-
-	return 1;
-}
-
 sub _aref
 {    # transparently converts the given reference to an array-ref
 	my $ref = shift;
@@ -2925,6 +2821,22 @@ sub _checkCols
 	}
 
 	return 1;
+}
+
+sub _cloneAndUnhingeAttrs
+{
+	my $inValRows = shift;
+
+	# clone data and unhinge attrs
+	my (@valRows, @attrValRows);
+	foreach my $inValRow (@$inValRows) {
+		push @attrValRows, $inValRow->{attrs};
+		my $valRow = dclone($inValRow);
+		delete $valRow->{attrs};
+		push @valRows, $valRow;
+	}
+
+	return (\@valRows, \@attrValRows);
 }
 
 1;

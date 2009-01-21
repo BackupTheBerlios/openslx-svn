@@ -11,7 +11,7 @@
 # ISC.pm
 #	- provides ISC-specific implementation of DHCP export.
 # -----------------------------------------------------------------------------
-package OpenSLX::Export::DHCP::ISC;
+package OpenSLX::ConfigExport::DHCP::ISC;
 
 use strict;
 use warnings;

@@ -23,6 +23,7 @@ slxconfig
 use Getopt::Long qw(:config pass_through);
 use List::Util qw(max);
 use Pod::Usage;
+use Storable qw(dclone);
 
 # add the folder this script lives in and the lib-folder to perl's
 # search path for modules:
@@ -34,6 +35,7 @@ use lib "$FindBin::RealBin/../config-db";
 
 # development path to config-db
 
+use OpenSLX::AttributeRoster;
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB;
 use OpenSLX::ConfigFolder;
@@ -49,10 +51,9 @@ GetOptions(
 ) or pod2usage(2);
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
 if ($manReq) {
-	$ENV{LANG} = 'en_EN';
-
 	# avoid dubious problem with perldoc in combination with UTF-8 that
 	# leads to strange dashes and single-quotes being used
+	$ENV{LC_MESSAGES} = 'POSIX';
 	pod2usage(-verbose => 2);
 }
 if ($versionReq) {
@@ -89,6 +90,10 @@ elsif ($action =~ m[^change-s]i) {
 }
 elsif ($action =~ m[^change-c]i) {
 	changeClientInConfigDB(@ARGV);
+}
+elsif ($action =~ m[^list-a]) {
+	print _tr("List of known attributes:\n");
+	listAttributes(@ARGV);
 }
 elsif ($action =~ m[^list-c]) {
 	print _tr("List of clients:\n");
@@ -134,7 +139,7 @@ elsif ($action =~ m[^remove-c]i) {
 	removeClientFromConfigDB(@ARGV);
 }
 elsif ($action =~ m[^remove-g]i) {
-	removeClientFromConfigDB(@ARGV);
+	removeGroupFromConfigDB(@ARGV);
 }
 elsif ($action =~ m[^remove-s]i) {
 	removeSystemFromConfigDB(@ARGV);
@@ -150,6 +155,7 @@ else {
 			change-group
 			change-system
 			change-vendor-os
+			list-attributes
 			list-client
 			list-export
 			list-group
@@ -184,7 +190,7 @@ sub parseKeyValueArgs
 		}
 		my $key   = lc($1);
 		my $value = $2;
-		if ($value =~ m{^(?:UNDEF|NULL|-)$}) {
+		if ($value eq '-') {
 			$value = undef;
 		}
 		if (!grep { $_ eq $key } @$allowedKeys) {
@@ -212,7 +218,7 @@ sub parseKeyValueArgsWithAttrs
 		}
 		my $key   = lc($1);
 		my $value = $2;
-		if ($value =~ m{^(?:UNDEF|NULL|-)$}) {
+		if ($value eq '-') {
 			$value = undef;
 		}
 		if (grep { $_ eq $key } @$allowedKeys) {
@@ -224,7 +230,33 @@ sub parseKeyValueArgsWithAttrs
 		}
 	}
 
-	return (\%dataHash, \%attrHash);
+	if (wantarray) {
+		return (\%dataHash, \%attrHash);
+	}
+	else {
+		if (%attrHash) {
+			$dataHash{attrs} = \%attrHash;
+		}
+		return \%dataHash;
+	}
+}
+
+sub mergeNonExistingAttributes
+{
+	my $target = shift;
+	my $source = shift;
+
+	my $sourceAttrs = $source->{attrs} || {};
+
+	$target->{attrs} ||= {};
+	my $targetAttrs = $target->{attrs};
+
+	foreach my $key (keys %$sourceAttrs) {
+		next if exists $targetAttrs->{$key};
+		$targetAttrs->{$key} = $sourceAttrs->{$key};
+	}
+
+	return 1;
 }
 
 sub dumpElements
@@ -266,13 +298,41 @@ sub dumpElements
 				sort {
 					my $refCmp = ref($elem->{$a}) cmp ref($elem->{$b});
 					return $refCmp ? $refCmp : $a cmp $b;
-				} keys %$elem
+				} 
+				grep {
+					$_ ne 'name';
+				}
+				keys %$elem
 			);
 		}
 	}
 	else {
 		print join('', sort map { $nameClause->($_); } @_);
 	}
+
+	return 1;
+}
+
+sub listAttributes
+{
+	my $name = shift;
+
+	# always set verbose in order to give descriptive info
+	$verbose = 1;
+
+	my $attrInfo = OpenSLX::AttributeRoster->getAttrInfo($name);
+	if (!defined $attrInfo) {
+		die _tr('attribute "%s" is unknown!', $name);
+	}
+	dumpElements(
+		'attribute', undef,
+		map {
+			my $attr = dclone($attrInfo->{$_});
+			$attr->{name} = $_;
+			$attr;
+		}
+		sort keys %$attrInfo
+	);
 
 	return 1;
 }
@@ -323,7 +383,7 @@ sub listGroups
 	}
 
 	dumpElements(
-		'groups', undef,
+		'group', undef,
 		map {
 			my @systemIDs = $openslxDB->fetchSystemIDsOfGroup($_->{id});
 			$_->{systems} 
@@ -440,7 +500,7 @@ sub listVendorOSes
 sub searchClients
 {
 	my @clientKeys = $openslxDB->getColumnsOfTable('client');
-	my @clientAttrKeys = $openslxDB->getKnownClientAttrs();
+	my @clientAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
 	my ($clientData, $clientAttrs) = parseKeyValueArgsWithAttrs(
 		\@clientKeys, \@clientAttrKeys, 'client', @_
 	);
@@ -471,7 +531,7 @@ sub searchClients
 sub searchGroups
 {
 	my @groupKeys = $openslxDB->getColumnsOfTable('groups');
-	my @groupAttrKeys = $openslxDB->getKnownClientAttrs();
+	my @groupAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
 	my ($groupData, $groupAttrs) = parseKeyValueArgsWithAttrs(
 		\@groupKeys, \@groupAttrKeys, 'group', @_
 	);
@@ -537,7 +597,7 @@ sub searchExports
 sub searchSystems
 {
 	my @systemKeys = $openslxDB->getColumnsOfTable('system');
-	my @systemAttrKeys = $openslxDB->getKnownSystemAttrs();
+	my @systemAttrKeys = OpenSLX::AttributeRoster->getSystemAttrs();
 	my ($systemData, $systemAttrs) = parseKeyValueArgsWithAttrs(
 		\@systemKeys, \@systemAttrKeys, 'system', @_
 	);
@@ -651,7 +711,10 @@ sub addClientToConfigDB
 
 	my @clientKeys = $openslxDB->getColumnsOfTable('client');
 	push @clientKeys, 'systems';
-	my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
+	my @clientAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
+	my $clientData = parseKeyValueArgsWithAttrs(
+		\@clientKeys, \@clientAttrKeys, 'client', @_
+	);
 	$clientData->{name} = $clientName;
 
 	my @systemIDs;
@@ -709,14 +772,16 @@ sub addClientToConfigDB
 sub addGroupToConfigDB
 {
 	my $groupName = _cleanName(shift || '');
-
 	if (!length($groupName)) {
 		die _tr("you have to specify the name for the new group\n");
 	}
 
 	my @groupKeys = $openslxDB->getColumnsOfTable('groups');
 	push @groupKeys, 'systems', 'clients';
-	my $groupData = parseKeyValueArgs(\@groupKeys, 'groups', @_);
+	my @groupAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
+	my $groupData = parseKeyValueArgsWithAttrs(
+		\@groupKeys, \@groupAttrKeys, 'group', @_
+	);
 	$groupData->{name} = $groupName;
 
 	my @systemIDs;
@@ -784,8 +849,12 @@ sub addSystemToConfigDB
 
 	my @systemKeys = $openslxDB->getColumnsOfTable('system');
 	push @systemKeys, 'clients', 'export';
-	my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
+	my @systemAttrKeys = OpenSLX::AttributeRoster->getSystemAttrs();
+	my $systemData = parseKeyValueArgsWithAttrs(
+		\@systemKeys, \@systemAttrKeys, 'system', @_
+	);
 	$systemData->{name} = $systemName;
+	$systemData->{attrs} ||= {};
 
 	my $exportName = $systemData->{export} || '';
 	delete $systemData->{export};
@@ -827,21 +896,19 @@ sub addSystemToConfigDB
 			$systemName);
 	}
 
+	# activate kdm and X if system is based on kde:
 	if ($systemName =~ m[\bkde\b]) {
-
-		# activate kdm and X if system is based on kde:
-		$systemData->{attr_start_xdmcp} = 'kdm'
-			unless exists $systemData->{attr_start_xdmcp};
-		$systemData->{attr_start_x} = 'yes'
-			unless exists $systemData->{attr_start_x};
+		$systemData->{attrs}->{start_xdmcp} = 'kdm'
+			unless exists $systemData->{attrs}->{start_xdmcp};
+		$systemData->{attrs}->{start_x} = 'yes'
+			unless exists $systemData->{attrs}->{start_x};
 	}
+	# activate gdm and X if system is based on GNOME:
 	if ($systemName =~ m[\bgnome\b]) {
-
-		# activate gdm and X if system is based on GNOME:
-		$systemData->{attr_start_xdmcp} = 'gdm'
-			unless exists $systemData->{attr_start_xdmcp};
-		$systemData->{attr_start_x} = 'yes'
-			unless exists $systemData->{attr_start_x};
+		$systemData->{attrs}->{start_xdmcp} = 'gdm'
+			unless exists $systemData->{attrs}->{start_xdmcp};
+		$systemData->{attrs}->{start_x} = 'yes'
+			unless exists $systemData->{attrs}->{start_x};
 	}
 
 	my $systemConfigPath =
@@ -882,7 +949,10 @@ sub changeClientInConfigDB
 
 	my @clientKeys = $openslxDB->getColumnsOfTable('client');
 	push @clientKeys, 'systems', 'add-systems', 'remove-systems';
-	my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
+	my @clientAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
+	my $clientData = parseKeyValueArgsWithAttrs(
+		\@clientKeys, \@clientAttrKeys, 'client', @_
+	);
 
 	my $client = $openslxDB->fetchClientByFilter({'name' => $clientName});
 	if (!defined $client) {
@@ -966,13 +1036,18 @@ sub changeGroupInConfigDB
 	push @groupKeys, qw(
 		systems add-systems remove-systems clients add-clients remove-clients
 	);
-	my $groupData = parseKeyValueArgs(\@groupKeys, 'group', @_);
+	my @groupAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
+	my $groupData = parseKeyValueArgsWithAttrs(
+		\@groupKeys, \@groupAttrKeys, 'group', @_
+	);
 
 	my $group = $openslxDB->fetchGroupByFilter({'name' => $groupName});
 	if (!defined $group) {
 		die _tr("the group '%s' doesn't exists in the DB, giving up!\n",
 			$groupName);
 	}
+
+	mergeNonExistingAttributes($groupData, $group);
 
 	my (@systemIDs, @clientIDs);
 	if (exists $groupData->{systems}) {
@@ -1077,7 +1152,10 @@ sub changeSystemInConfigDB
 
 	my @systemKeys = $openslxDB->getColumnsOfTable('system');
 	push @systemKeys, 'clients', 'add-clients', 'remove-clients';
-	my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
+	my @systemAttrKeys = OpenSLX::AttributeRoster->getSystemAttrs();
+	my $systemData = parseKeyValueArgsWithAttrs(
+		\@systemKeys, \@systemAttrKeys, 'system', @_
+	);
 
 	my $system = $openslxDB->fetchSystemByFilter({'name' => $systemName});
 	if (!defined $system) {
@@ -1166,7 +1244,7 @@ sub removeClientFromConfigDB
 	return 1;
 }
 
-sub removegroupFromConfigDB
+sub removeGroupFromConfigDB
 {
 	my $groupName = _cleanName(shift || '');
 
@@ -1176,7 +1254,7 @@ sub removegroupFromConfigDB
 		);
 	}
 
-	my $groupData = parseKeyValueArgs(['name'], 'groups', @_);
+	my $groupData = parseKeyValueArgs(['name'], 'group', @_);
 
 	my $group = $openslxDB->fetchGroupByFilter({'name' => $groupName});
 	if (!defined $group) {
@@ -1268,7 +1346,7 @@ adds a new group to the config-DB
 
 =item B<<     change-vendor-os <vendor-os-name> [<key>=<value> ...] >>
 
-changes the data of an existing vendor-OS in the config-DB
+changes the data of an existing vendor-OS in the config-DB.
 
 =item B<<     change-export <export-name> [<key>=<value> ...] >>
 
@@ -1278,13 +1356,26 @@ changes the data of an existing export in the config-DB
 
 changes the data of an existing client in the config-DB
 
+Note: you can use the special value '-' to unset a key (mostly useful
+for attributes).
+
 =item B<<     change-group <group-name> [<key>=<value> ...] >>
 
 changes the data of an existing group in the config-DB
 
+Note: you can use the special value '-' to unset a key (mostly useful
+for attributes).
+
 =item B<<     change-system <system-name> [<key>=<value> ...] >>
 
 changes the data of an existing system in the config-DB
+
+Note: you can use the special value '-' to unset a key (mostly useful
+for attributes).
+
+=item B<<     list-attributes [<attr-name>] >>
+
+lists all attributes or the one with the given name
 
 =item B<<     list-client [<client-name>] >>
 
@@ -1389,6 +1480,16 @@ lists all existing instances of the respective DB-objects.
 
 =back
 
+=head3 Listing known attributes
+
+=over 8
+
+=item B<<     slxconfig list-attr >>
+
+lists all known attributes (--verbose will give details).
+
+=back
+
 =head3 Adding a new System to an exported Vendor-OS
 
 =over 8
@@ -1426,7 +1527,7 @@ associated with this client, yet (so it can't boot anything).
 
 =item B<<                          systems=suse-10.1,debian-4.0 \ >>
 
-=item B<<                          attr_start_x=no >>
+=item B<<                          start_x=no >>
 
 adds a new client named 'vmware-1', being identified by the MAC
 '01:02:03:04:05:06' to the config-DB. The systems 'suse-10.1' &
@@ -1442,10 +1543,11 @@ During boot, the X-server will not be started by this client
 
 =over 8
 
-=item B<<     slxconfig change-system suse-10.1 attr_start_xdmcp=gnome >>
+=item B<<     slxconfig change-system suse-10.1 start_xdmcp=gnome vmware=- >>
 
 will change the system named 'suse-10.1' such that it will use
-the GNOME session manager.
+the GNOME session manager. The attribute vmware is set to undefined (such that
+it will be inherited from the default system)
 
 =item B<<     slxconfig change-system suse-10.1 add-clients=vmware-1 >>
 
@@ -1463,7 +1565,7 @@ will remove the client 'vmware-1' from the system named
 
 =over 8
 
-=item B<<     slxconfig change-client PC131 attr_start_snmp=yes >>
+=item B<<     slxconfig change-client PC131 start_snmp=yes >>
 
 will change the client named 'PC131' such that it will start
 the SNMP daemon on all systems that it boots.

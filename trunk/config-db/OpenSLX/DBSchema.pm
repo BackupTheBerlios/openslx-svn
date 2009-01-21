@@ -16,24 +16,7 @@ package OpenSLX::DBSchema;
 use strict;
 use warnings;
 
-our (@ISA, @EXPORT, $VERSION);
-
-use Exporter;
-$VERSION = 0.2;
-@ISA = qw(Exporter);
-
-@EXPORT = qw(
-	$DbSchema %DbSchemaHistory %AttributeInfo
-);
-
-our ($DbSchema, %DbSchemaHistory, %AttributeInfo);
-
-
 use OpenSLX::Basics;
-
-use POSIX qw(locale_h);
-my $lang = setlocale(LC_MESSAGES);
-my $country = $lang =~ m[^\w\w_(\w\w)] ? lc($1) : 'us';
 
 ################################################################################
 ### DB-schema definition
@@ -51,7 +34,13 @@ my $country = $lang =~ m[^\w\w_(\w\w)] ? lc($1) : 'us';
 ### 		fk		=> foreign key (integer)
 ################################################################################
 
-$DbSchema = {
+use POSIX qw(locale_h);
+my $lang = setlocale(LC_MESSAGES);
+my $country = $lang =~ m[^\w\w_(\w\w)] ? lc($1) : 'us';
+
+my $VERSION = 0.2;
+
+my $DbSchema = {
 	'version' => $VERSION,
 	'tables' => {
 		'client' => {
@@ -170,7 +159,7 @@ $DbSchema = {
 			],
 			'vals' => [
 				{
-					'schema_version' => $DbSchema->{'version'},
+					'schema_version' => $VERSION,
 				},
 			],
 		},
@@ -213,16 +202,6 @@ $DbSchema = {
 				# attributes of default system
 				{
 					'system_id' => 0,
-					'name' => 'automnt_dir',
-					'value' => '',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'automnt_src',
-					'value' => '',
-				},
-				{
-					'system_id' => 0,
 					'name' => 'country',
 					'value' => "$country",
 				},
@@ -230,21 +209,6 @@ $DbSchema = {
 					'system_id' => 0,
 					'name' => 'dm_allow_shutdown',
 					'value' => 'user',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'hw_graphic',
-					'value' => '',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'hw_monitor',
-					'value' => '',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'hw_mouse',
-					'value' => '',
 				},
 				{
 					'system_id' => 0,
@@ -258,49 +222,9 @@ $DbSchema = {
 				},
 				{
 					'system_id' => 0,
-					'name' => 'nis_domain',
-					'value' => '',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'nis_servers',
-					'value' => '',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'ramfs_fsmods',
-					'value' => '',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'ramfs_miscmods',
-					'value' => '',
-				},
-				{
-					'system_id' => 0,
 					'name' => 'ramfs_nicmods',
 					'value' 
 						=> 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'ramfs_screen',
-					'value' => '',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'sane_scanner',
-					'value' => '',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'scratch',
-					'value' => '',
-				},
-				{
-					'system_id' => 0,
-					'name' => 'slxgrp',
-					'value' => '',
 				},
 				{
 					'system_id' => 0,
@@ -409,23 +333,301 @@ $DbSchema = {
 
 ################################################################################
 ###
-### Load the available AttrInfo-modules and build a hash containing info about
-### all known attributes from the data contained in those modules.
+### standard methods
 ###
 ################################################################################
+sub new
+{
+	my $class = shift;
 
-%AttributeInfo = ();
+	my $self = {
+	};
 
-my $libPath = "$openslxConfig{'base-path'}/lib";
-foreach my $module (glob("$libPath/OpenSLX/AttrInfo/*.pm")) {
-	next if $module !~ m{/([^/]+)\.pm$};
-	my $class = "OpenSLX::AttrInfo::$1";
-	vlog(2, "loading attr-info from module '$module'");
-	my $instance = instantiateClass($class);
-	my $attrInfo = $instance->AttrInfo();
-	foreach my $attr (keys %$attrInfo) {
-		$AttributeInfo{$attr} = $attrInfo->{$attr};
+	return bless $self, $class;
+}
+
+sub checkAndUpgradeDBSchemaIfNecessary
+{
+	my $self   = shift;
+	my $metaDB = shift;
+
+	vlog(2, "trying to determine schema version...");
+	my $currVersion = $metaDB->schemaFetchDBVersion();
+	if (!defined $currVersion) {
+		# that's bad, someone has messed with our DB: there is a
+		# database, but the 'meta'-table is empty. 
+		# There might still be data in the other tables, but we have no way to 
+		# find out which schema version they're in. So it's safer to give up.
+		croak _tr('Could not determine schema version of database');
 	}
+
+	if ($currVersion == 0) {
+		vlog(1, _tr('Creating DB (schema version: %s)', $DbSchema->{version}));
+		foreach my $tableName (keys %{$DbSchema->{tables}}) {
+			# create table (optionally inserting default values, too)
+			$metaDB->schemaAddTable(
+				$tableName,
+				$DbSchema->{tables}->{$tableName}->{cols},
+				$DbSchema->{tables}->{$tableName}->{vals}
+			);
+		}
+		$metaDB->schemaSetDBVersion($DbSchema->{version});
+		vlog(1, _tr('DB has been created successfully'));
+	} elsif ($currVersion < $DbSchema->{version}) {
+		vlog(
+			1,
+			_tr(
+				'Our schema-version is %s, DB is %s, upgrading DB...',
+				$DbSchema->{version}, $currVersion
+			)
+		);
+		$self->_schemaUpgradeDBFrom($metaDB, $currVersion);
+		$metaDB->schemaSetDBVersion($DbSchema->{version});
+		vlog(1, _tr('upgrade done'));
+	} else {
+		vlog(1, _tr('DB matches current schema version (%s)', $currVersion));
+	}
+
+	return 1;
+}
+
+sub getColumnsOfTable
+{
+	my $self      = shift;
+	my $tableName = shift;
+
+	return	
+		map { (/^(\w+)\W/) ? $1 : $_; } 
+		@{$DbSchema->{tables}->{$tableName}->{cols}};
+}
+
+################################################################################
+###
+### methods for upgrading the DB schema
+###
+################################################################################
+sub _schemaUpgradeDBFrom
+{
+	my $self        = shift;
+	my $metaDB      = shift;
+	my $currVersion = shift;
+
+	$self->_upgradeDBTo0_2($metaDB) if $currVersion < 0.2;
+
+	return 1;
+}
+
+sub _upgradeDBTo0_2
+{
+	my $self   = shift;
+	my $metaDB = shift;
+
+	# move attributes into separate tables ...
+	#
+	# ... system attributes ...
+	$metaDB->schemaAddTable(
+		'system_attr', 
+		[
+			'id:pk',
+			'system_id:fk',
+			'name:s.128',
+			'value:s.255',
+		]
+	);
+	foreach my $system ($metaDB->fetchSystemByFilter()) {
+		my %attrs;
+		foreach my $key (keys %$system) {
+			next if substr($key, 0, 5) ne 'attr_';
+			my $attrValue = $system->{$key} || '';
+			next if $system->{id} > 0 && !length($attrValue);
+			my $newAttrName = substr($key, 5);
+			$attrs{$newAttrName} = $attrValue;
+		}
+		$metaDB->setSystemAttrs($system->{id}, \%attrs);
+	}
+	$metaDB->schemaDropColumns(
+		'system',
+		[
+			'attr_automnt_dir',
+			'attr_automnt_src',
+			'attr_country',
+			'attr_dm_allow_shutdown',
+			'attr_hw_graphic',
+			'attr_hw_monitor',
+			'attr_hw_mouse',
+			'attr_late_dm',
+			'attr_netbios_workgroup',
+			'attr_nis_domain',
+			'attr_nis_servers',
+			'attr_ramfs_fsmods',
+			'attr_ramfs_miscmods',
+			'attr_ramfs_nicmods',
+			'attr_ramfs_screen',
+			'attr_sane_scanner',
+			'attr_scratch',
+			'attr_slxgrp',
+			'attr_start_alsasound',
+			'attr_start_atd',
+			'attr_start_cron',
+			'attr_start_dreshal',
+			'attr_start_ntp',
+			'attr_start_nfsv4',
+			'attr_start_printer',
+			'attr_start_samba',
+			'attr_start_snmp',
+			'attr_start_sshd',
+			'attr_start_syslog',
+			'attr_start_x',
+			'attr_start_xdmcp',
+			'attr_tex_enable',
+			'attr_timezone',
+			'attr_tvout',
+			'attr_vmware',
+		],
+		[
+			'id:pk',
+			'export_id:fk',
+			'name:s.64',
+			'label:s.64',
+			'kernel:s.128',
+			'kernel_params:s.512',
+			'hidden:b',
+			'comment:s.1024',
+		]
+	);
+	#
+	# ... client attributes ...
+	$metaDB->schemaAddTable(
+		'client_attr',
+		[
+			'id:pk',
+			'client_id:fk',
+			'name:s.128',
+			'value:s.255',
+		]
+	);
+	foreach my $client ($metaDB->fetchClientByFilter()) {
+		my %attrs;
+		foreach my $key (keys %$client) {
+			next if substr($key, 0, 5) ne 'attr_';
+			my $attrValue = $client->{$key} || '';
+			next if !length($attrValue);
+			my $newAttrName = substr($key, 5);
+			$attrs{$newAttrName} = $attrValue;
+		}
+		$metaDB->setClientAttrs($client->{id}, \%attrs);
+	}
+	$metaDB->schemaDropColumns(
+		'client',
+		[
+			'attr_automnt_dir',
+			'attr_automnt_src',
+			'attr_country',
+			'attr_dm_allow_shutdown',
+			'attr_hw_graphic',
+			'attr_hw_monitor',
+			'attr_hw_mouse',
+			'attr_late_dm',
+			'attr_netbios_workgroup',
+			'attr_nis_domain',
+			'attr_nis_servers',
+			'attr_sane_scanner',
+			'attr_scratch',
+			'attr_slxgrp',
+			'attr_start_alsasound',
+			'attr_start_atd',
+			'attr_start_cron',
+			'attr_start_dreshal',
+			'attr_start_ntp',
+			'attr_start_nfsv4',
+			'attr_start_printer',
+			'attr_start_samba',
+			'attr_start_snmp',
+			'attr_start_sshd',
+			'attr_start_syslog',
+			'attr_start_x',
+			'attr_start_xdmcp',
+			'attr_tex_enable',
+			'attr_timezone',
+			'attr_tvout',
+			'attr_vmware',
+		],
+		[
+			'id:pk',
+			'name:s.128',
+			'mac:s.20',
+			'boot_type:s.20',
+			'unbootable:b',
+			'kernel_params:s.128',
+			'comment:s.1024',
+		]
+	);
+	#
+	# ... group attributes ...
+	$metaDB->schemaAddTable(
+		'group_attr',
+		[
+			'id:pk',
+			'group_id:fk',
+			'name:s.128',
+			'value:s.255',
+		]
+	);
+	foreach my $group ($metaDB->fetchGroupByFilter()) {
+		my %attrs;
+		foreach my $key (keys %$group) {
+			next if substr($key, 0, 5) ne 'attr_';
+			my $attrValue = $group->{$key} || '';
+			next if !length($attrValue);
+			my $newAttrName = substr($key, 5);
+			$attrs{$newAttrName} = $attrValue;
+		}
+		$metaDB->setGroupAttrs($group->{id}, \%attrs);
+	}
+	$metaDB->schemaDropColumns(
+		'groups',
+		[
+			'attr_automnt_dir',
+			'attr_automnt_src',
+			'attr_country',
+			'attr_dm_allow_shutdown',
+			'attr_hw_graphic',
+			'attr_hw_monitor',
+			'attr_hw_mouse',
+			'attr_late_dm',
+			'attr_netbios_workgroup',
+			'attr_nis_domain',
+			'attr_nis_servers',
+			'attr_sane_scanner',
+			'attr_scratch',
+			'attr_slxgrp',
+			'attr_start_alsasound',
+			'attr_start_atd',
+			'attr_start_cron',
+			'attr_start_dreshal',
+			'attr_start_ntp',
+			'attr_start_nfsv4',
+			'attr_start_printer',
+			'attr_start_samba',
+			'attr_start_snmp',
+			'attr_start_sshd',
+			'attr_start_syslog',
+			'attr_start_x',
+			'attr_start_xdmcp',
+			'attr_tex_enable',
+			'attr_timezone',
+			'attr_tvout',
+			'attr_vmware',
+		],
+		[
+			'id:pk',
+			'name:s.128',
+			'priority:i',
+			'comment:s.1024',
+		]
+	);
+
+	return 1;
 }
 
 1;

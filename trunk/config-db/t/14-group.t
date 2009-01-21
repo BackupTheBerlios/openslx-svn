@@ -339,6 +339,33 @@ is($group1->{name}, q{GRP-'1'}, q{really got group named "GRP-'1'"});
 # changing nothing at all should succeed
 ok($configDB->changeGroup(1), 'changing nothing at all in group 1');
 
+# adding attributes should work
+$inGroup1->{attrs}->{slxgrp} = 'slxgrp1';
+$inGroup1->{attrs}->{vmware} = 'yes';
+ok($configDB->changeGroup(1, $inGroup1), 'adding attrs to group 1');
+$group1 = $configDB->fetchGroupByID(1);
+is($group1->{attrs}->{slxgrp}, 'slxgrp1', 'attr slxgrp has correct value');
+is($group1->{attrs}->{vmware}, 'yes', 'attr vmware has correct value');
+
+# changing an attribute should work
+$inGroup1->{attrs}->{vmware} = 'no';
+ok($configDB->changeGroup(1, $inGroup1), 'changing vmware in group 1');
+$group1 = $configDB->fetchGroupByID(1);
+is($group1->{attrs}->{slxgrp}, 'slxgrp1', 'attr slxgrp has correct value');
+is($group1->{attrs}->{vmware}, 'no', 'attr vmware has correct value');
+
+# deleting an attribute should remove it
+delete $inGroup1->{attrs}->{slxgrp};
+ok($configDB->changeGroup(1, $inGroup1), 'changing slxgrp in group 1');
+$group1 = $configDB->fetchGroupByID(1);
+ok(!exists $group1->{attrs}->{slxgrp}, 'attr slxgrp should be gone');
+
+# undef'ing an attribute should remove it, too
+$inGroup1->{attrs}->{vmware} = undef;
+ok($configDB->changeGroup(1, $inGroup1), 'undefining vmware in group 1');
+$group1 = $configDB->fetchGroupByID(1);
+ok(!exists $group1->{attrs}->{vmware}, 'attr vmware should be gone');
+
 # changing a non-existing column should fail
 ok(
 	! eval { $configDB->changeGroup(1, { xname => "xx" }) }, 

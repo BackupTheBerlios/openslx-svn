@@ -713,24 +713,16 @@ sub changeGlobalInfo
 
 sub addSystem
 {
-	my $self    = shift;
-	my $valRows = shift;
-
-	# separate the attribute hashes ...
-	my @attrValRows 
-		=	map {
-				my $attrs = $_->{attrs};
-				delete $_->{attrs};
-				$attrs;
-			}
-			@$valRows;
+	my $self        = shift;
+	my $valRows     = shift;
+	my $attrValRows = shift;
 
 	# ... store the systems to get the IDs ...
 	my @systemIDs = $self->_doInsert('system', $valRows);
 
 	# ... finally store the individual attribute sets
 	foreach my $id (@systemIDs) {
-		my $attrs = shift @attrValRows;
+		my $attrs = shift @$attrValRows;
 		next if !defined $attrs;
 		return if !$self->setSystemAttrs($id, $attrs);
 	}
@@ -751,17 +743,11 @@ sub changeSystem
 	my $self      = shift;
 	my $systemIDs = shift;
 	my $valRows   = shift;
+	my $attrValRows = shift;
 
-	# separate the attribute hashes and store them individually
-	my @attrValRows 
-		=	map {
-				my $attrs = $_->{attrs};
-				delete $_->{attrs};
-				$attrs;
-			}
-			@$valRows;
+	# store the attribute hashes individually
 	foreach my $id (@$systemIDs) {
-		my $attrs = shift @attrValRows;
+		my $attrs = shift @$attrValRows;
 		next if !defined $attrs;
 		return if !$self->setSystemAttrs($id, $attrs);
 	}
@@ -776,20 +762,21 @@ sub setSystemAttrs
 	my $systemID = shift;
 	my $attrs    = shift;
 
-	# we take the simple path and remove all attributes ...
+	# for now we take the simple path and remove all attributes ...
 	return if !$self->_doDelete('system_attr', [ $systemID ], 'system_id');
 
 	# ... and (re-)insert the given ones
-	foreach my $key (keys %$attrs) {
-		return if !$self->_doInsert(
-			'system_attr', [ {
-				system_id => $systemID,
-				name      => $key,
-				value     => $attrs->{$key},
-			} ]
-		);
-	}
-	return 1;
+	my @attrData 
+		=	map {
+				{
+					system_id => $systemID,
+					name      => $_,
+					value     => $attrs->{$_},
+				}			
+			}
+			grep { defined $attrs->{$_} }
+			keys %$attrs;
+	return $self->_doInsert('system_attr', [ @attrData ]);
 }
 
 sub setClientIDsOfSystem
@@ -822,22 +809,14 @@ sub addClient
 {
 	my $self    = shift;
 	my $valRows = shift;
-
-	# separate the attribute hashes ...
-	my @attrValRows 
-		=	map {
-				my $attrs = $_->{attrs};
-				delete $_->{attrs};
-				$attrs;
-			}
-			@$valRows;
+	my $attrValRows = shift;
 
 	# ... store the clients to get the IDs ...
 	my @clientIDs = $self->_doInsert('client', $valRows);
 
 	# ... finally store the individual attribute sets
 	foreach my $id (@clientIDs) {
-		my $attrs = shift @attrValRows;
+		my $attrs = shift @$attrValRows;
 		next if !defined $attrs;
 		return if !$self->setClientAttrs($id, $attrs);
 	}
@@ -855,20 +834,14 @@ sub removeClient
 
 sub changeClient
 {
-	my $self      = shift;
-	my $clientIDs = shift;
-	my $valRows   = shift;
+	my $self        = shift;
+	my $clientIDs   = shift;
+	my $valRows     = shift;
+	my $attrValRows = shift;
 
-	# separate the attribute hashes and store them individually
-	my @attrValRows 
-		=	map {
-				my $attrs = $_->{attrs};
-				delete $_->{attrs};
-				$attrs;
-			}
-			@$valRows;
+	# store the attribute hashes individually
 	foreach my $id (@$clientIDs) {
-		my $attrs = shift @attrValRows;
+		my $attrs = shift @$attrValRows;
 		next if !defined $attrs;
 		return if !$self->setClientAttrs($id, $attrs);
 	}
@@ -883,19 +856,21 @@ sub setClientAttrs
 	my $clientID = shift;
 	my $attrs    = shift;
 
-	# we take the simple path and remove all attributes ...
+	# for now we take the simple path and remove all attributes ...
 	return if !$self->_doDelete('client_attr', [ $clientID ], 'client_id');
 
 	# ... and (re-)insert the given ones
-	foreach my $key (keys %$attrs) {
-		return if !$self->_doInsert(
-			'client_attr', [ {
-				client_id => $clientID,
-				name      => $key,
-				value     => $attrs->{$key},
-			} ]
-		);
-	}
+	my @attrData 
+		=	map {
+				{
+					client_id => $clientID,
+					name      => $_,
+					value     => $attrs->{$_},
+				}			
+			}
+			grep { defined $attrs->{$_} }
+			keys %$attrs;
+	return $self->_doInsert('client_attr', [ @attrData ]);
 	return 1;
 }
 
@@ -927,24 +902,16 @@ sub setGroupIDsOfClient
 
 sub addGroup
 {
-	my $self    = shift;
-	my $valRows = shift;
-
-	# separate the attribute hashes ...
-	my @attrValRows 
-		=	map {
-				my $attrs = $_->{attrs};
-				delete $_->{attrs};
-				$attrs;
-			}
-			@$valRows;
+	my $self        = shift;
+	my $valRows     = shift;
+	my $attrValRows = shift;
 
 	# ... store the groups to get the IDs ...
 	my @groupIDs = $self->_doInsert('groups', $valRows);
 
 	# ... finally store the individual attribute sets
 	foreach my $id (@groupIDs) {
-		my $attrs = shift @attrValRows;
+		my $attrs = shift @$attrValRows;
 		next if !defined $attrs;
 		return if !$self->setGroupAttrs($id, $attrs);
 	}
@@ -962,20 +929,14 @@ sub removeGroup
 
 sub changeGroup
 {
-	my $self     = shift;
-	my $groupIDs = shift;
-	my $valRows  = shift;
+	my $self        = shift;
+	my $groupIDs    = shift;
+	my $valRows     = shift;
+	my $attrValRows = shift;
 
-	# separate the attribute hashes and store them individually
-	my @attrValRows 
-		=	map {
-				my $attrs = $_->{attrs};
-				delete $_->{attrs};
-				$attrs;
-			}
-			@$valRows;
+	# store the attribute hashes individually
 	foreach my $id (@$groupIDs) {
-		my $attrs = shift @attrValRows;
+		my $attrs = shift @$attrValRows;
 		next if !defined $attrs;
 		return if !$self->setGroupAttrs($id, $attrs);
 	}
@@ -990,19 +951,21 @@ sub setGroupAttrs
 	my $groupID = shift;
 	my $attrs   = shift;
 
-	# we take the simple path and remove all attributes ...
+	# for now we take the simple path and remove all attributes ...
 	return if !$self->_doDelete('group_attr', [ $groupID ], 'group_id');
 
 	# ... and (re-)insert the given ones
-	foreach my $key (keys %$attrs) {
-		return if !$self->_doInsert(
-			'group_attr', [ {
-				group_id => $groupID,
-				name      => $key,
-				value     => $attrs->{$key},
-			} ]
-		);
-	}
+	my @attrData 
+		=	map {
+				{
+					group_id => $groupID,
+					name     => $_,
+					value    => $attrs->{$_},
+				}			
+			}
+			grep { defined $attrs->{$_} }
+			keys %$attrs;
+	return $self->_doInsert('group_attr', [ @attrData ]);
 	return 1;
 }
 
@@ -1087,16 +1050,6 @@ sub schemaFetchDBVersion
 	return unless defined $row;
 	# no entry in meta-table
 	return $row->{schema_version};
-}
-
-sub schemaUpgradeDBFrom
-{
-	my $self        = shift;
-	my $currVersion = shift;
-
-	$self->_upgradeDBTo0_2() if $currVersion < 0.2;
-
-	return 1;
 }
 
 sub schemaSetDBVersion
@@ -1315,218 +1268,6 @@ sub schemaChangeColumns
 	$self->schemaDropTable($table, 1);
 	$self->schemaRenameTable($tempTable, $table, $colDescrs, 1);
 	return;
-}
-
-sub _upgradeDBTo0_2
-{
-	my $self = shift;
-
-	# move attributes into separate tables ...
-	#
-	# ... system attributes ...
-	$self->schemaAddTable(
-		'system_attr', 
-		[
-			'id:pk',
-			'system_id:fk',
-			'name:s.128',
-			'value:s.255',
-		]
-	);
-	foreach my $system ($self->fetchSystemByFilter()) {
-		my %attrs;
-		foreach my $key (keys %$system) {
-			next if substr($key, 0, 5) ne 'attr_';
-			my $attrValue = $system->{$key} || '';
-			next if $system->{id} > 0 && !length($attrValue);
-			my $newAttrName = substr($key, 5);
-			$attrs{$newAttrName} = $attrValue;
-		}
-		$self->setSystemAttrs($system->{id}, \%attrs);
-	}
-	$self->schemaDropColumns(
-		'system',
-		[
-			'attr_automnt_dir',
-			'attr_automnt_src',
-			'attr_country',
-			'attr_dm_allow_shutdown',
-			'attr_hw_graphic',
-			'attr_hw_monitor',
-			'attr_hw_mouse',
-			'attr_late_dm',
-			'attr_netbios_workgroup',
-			'attr_nis_domain',
-			'attr_nis_servers',
-			'attr_ramfs_fsmods',
-			'attr_ramfs_miscmods',
-			'attr_ramfs_nicmods',
-			'attr_ramfs_screen',
-			'attr_sane_scanner',
-			'attr_scratch',
-			'attr_slxgrp',
-			'attr_start_alsasound',
-			'attr_start_atd',
-			'attr_start_cron',
-			'attr_start_dreshal',
-			'attr_start_ntp',
-			'attr_start_nfsv4',
-			'attr_start_printer',
-			'attr_start_samba',
-			'attr_start_snmp',
-			'attr_start_sshd',
-			'attr_start_syslog',
-			'attr_start_x',
-			'attr_start_xdmcp',
-			'attr_tex_enable',
-			'attr_timezone',
-			'attr_tvout',
-			'attr_vmware',
-		],
-		[
-			'id:pk',
-			'export_id:fk',
-			'name:s.64',
-			'label:s.64',
-			'kernel:s.128',
-			'kernel_params:s.512',
-			'hidden:b',
-			'comment:s.1024',
-		]
-	);
-	#
-	# ... client attributes ...
-	$self->schemaAddTable(
-		'client_attr',
-		[
-			'id:pk',
-			'client_id:fk',
-			'name:s.128',
-			'value:s.255',
-		]
-	);
-	foreach my $client ($self->fetchClientByFilter()) {
-		my %attrs;
-		foreach my $key (keys %$client) {
-			next if substr($key, 0, 5) ne 'attr_';
-			my $attrValue = $client->{$key} || '';
-			next if !length($attrValue);
-			my $newAttrName = substr($key, 5);
-			$attrs{$newAttrName} = $attrValue;
-		}
-		$self->setClientAttrs($client->{id}, \%attrs);
-	}
-	$self->schemaDropColumns(
-		'client',
-		[
-			'attr_automnt_dir',
-			'attr_automnt_src',
-			'attr_country',
-			'attr_dm_allow_shutdown',
-			'attr_hw_graphic',
-			'attr_hw_monitor',
-			'attr_hw_mouse',
-			'attr_late_dm',
-			'attr_netbios_workgroup',
-			'attr_nis_domain',
-			'attr_nis_servers',
-			'attr_sane_scanner',
-			'attr_scratch',
-			'attr_slxgrp',
-			'attr_start_alsasound',
-			'attr_start_atd',
-			'attr_start_cron',
-			'attr_start_dreshal',
-			'attr_start_ntp',
-			'attr_start_nfsv4',
-			'attr_start_printer',
-			'attr_start_samba',
-			'attr_start_snmp',
-			'attr_start_sshd',
-			'attr_start_syslog',
-			'attr_start_x',
-			'attr_start_xdmcp',
-			'attr_tex_enable',
-			'attr_timezone',
-			'attr_tvout',
-			'attr_vmware',
-		],
-		[
-			'id:pk',
-			'name:s.128',
-			'mac:s.20',
-			'boot_type:s.20',
-			'unbootable:b',
-			'kernel_params:s.128',
-			'comment:s.1024',
-		]
-	);
-	#
-	# ... group attributes ...
-	$self->schemaAddTable(
-		'group_attr',
-		[
-			'id:pk',
-			'group_id:fk',
-			'name:s.128',
-			'value:s.255',
-		]
-	);
-	foreach my $group ($self->fetchGroupByFilter()) {
-		my %attrs;
-		foreach my $key (keys %$group) {
-			next if substr($key, 0, 5) ne 'attr_';
-			my $attrValue = $group->{$key} || '';
-			next if !length($attrValue);
-			my $newAttrName = substr($key, 5);
-			$attrs{$newAttrName} = $attrValue;
-		}
-		$self->setGroupAttrs($group->{id}, \%attrs);
-	}
-	$self->schemaDropColumns(
-		'groups',
-		[
-			'attr_automnt_dir',
-			'attr_automnt_src',
-			'attr_country',
-			'attr_dm_allow_shutdown',
-			'attr_hw_graphic',
-			'attr_hw_monitor',
-			'attr_hw_mouse',
-			'attr_late_dm',
-			'attr_netbios_workgroup',
-			'attr_nis_domain',
-			'attr_nis_servers',
-			'attr_sane_scanner',
-			'attr_scratch',
-			'attr_slxgrp',
-			'attr_start_alsasound',
-			'attr_start_atd',
-			'attr_start_cron',
-			'attr_start_dreshal',
-			'attr_start_ntp',
-			'attr_start_nfsv4',
-			'attr_start_printer',
-			'attr_start_samba',
-			'attr_start_snmp',
-			'attr_start_sshd',
-			'attr_start_syslog',
-			'attr_start_x',
-			'attr_start_xdmcp',
-			'attr_tex_enable',
-			'attr_timezone',
-			'attr_tvout',
-			'attr_vmware',
-		],
-		[
-			'id:pk',
-			'name:s.128',
-			'priority:i',
-			'comment:s.1024',
-		]
-	);
-
-	return 1;
 }
 
 1;

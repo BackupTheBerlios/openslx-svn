@@ -368,6 +368,33 @@ is($system1->{name}, q{SYS-'1'}, q{really got system named "SYS-'1'"});
 # changing nothing at all should succeed
 ok($configDB->changeSystem(1), 'changing nothing at all in system 1');
 
+# adding attributes should work
+$inSystem1->{attrs}->{slxgrp} = 'slxgrp1';
+$inSystem1->{attrs}->{vmware} = 'yes';
+ok($configDB->changeSystem(1, $inSystem1), 'adding attrs to system 1');
+$system1 = $configDB->fetchSystemByID(1);
+is($system1->{attrs}->{slxgrp}, 'slxgrp1', 'attr slxgrp has correct value');
+is($system1->{attrs}->{vmware}, 'yes', 'attr vmware has correct value');
+
+# changing an attribute should work
+$inSystem1->{attrs}->{vmware} = 'no';
+ok($configDB->changeSystem(1, $inSystem1), 'changing vmware in system 1');
+$system1 = $configDB->fetchSystemByID(1);
+is($system1->{attrs}->{slxgrp}, 'slxgrp1', 'attr slxgrp has correct value');
+is($system1->{attrs}->{vmware}, 'no', 'attr vmware has correct value');
+
+# deleting an attribute should remove it
+delete $inSystem1->{attrs}->{slxgrp};
+ok($configDB->changeSystem(1, $inSystem1), 'changing slxgrp in system 1');
+$system1 = $configDB->fetchSystemByID(1);
+ok(!exists $system1->{attrs}->{slxgrp}, 'attr slxgrp should be gone');
+
+# undef'ing an attribute should remove it, too
+$inSystem1->{attrs}->{vmware} = undef;
+ok($configDB->changeSystem(1, $inSystem1), 'undefining vmware in system 1');
+$system1 = $configDB->fetchSystemByID(1);
+ok(!exists $system1->{attrs}->{vmware}, 'attr vmware should be gone');
+
 # changing a non-existing column should fail
 ok(
 	! eval { $configDB->changeSystem(1, { xname => "xx" }) }, 

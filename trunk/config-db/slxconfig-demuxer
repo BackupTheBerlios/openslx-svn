@@ -75,6 +75,10 @@ my (
 	$versionReq,
 );
 
+if ($> != 0) {
+	die _tr("Sorry, this script can only be executed by the superuser!\n");
+}
+
 GetOptions(
 	'dhcp-export-type=s' => \$dhcpType,
 	'dry-run'            => \$dryRun,
@@ -85,9 +89,9 @@ GetOptions(
   or pod2usage(2);
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
 if ($manReq) {
-	$ENV{LANG} = 'en_EN';
 	# avoid dubious problem with perldoc in combination with UTF-8 that
 	# leads to strange dashes and single-quotes being used
+	$ENV{LC_MESSAGES} = 'POSIX';
 	pod2usage(-verbose => 2);
 }
 if ($versionReq) {
@@ -120,7 +124,7 @@ if (createConfigFolderForDefaultSystem()) {
 my $lockFile = "$openslxConfig{'private-path'}/config-demuxer.lock";
 lockScript($lockFile);
 
-END { unlockScript($lockFile); }
+END { unlockScript($lockFile) if defined $lockFile; }
 
 my $tempPath = "$openslxConfig{'temp-path'}/slxconfig-demuxer";
 if (!$dryRun) {
@@ -217,16 +221,15 @@ sub folderContainsFiles
 sub digestAttributes
 {    # returns a digest-string for the given attribute hash, in order to
 	    # facilitate comparing different attribute hashes.
-	my $attrs = shift;
+	my $object = shift;
 
+	my $attrs = $object->{attrs} || {};
 	my $attrsAsString 
-		=   join ';', 
-			map { 
-				my $val = $attrs->{$_} || '';
-				"$_=$val";
-			}
-		    sort { $a cmp $b }
-		    grep { isAttribute($_) } keys %$attrs;
+		=	join ';', 
+			map { "$_=$attrs->{$_}" }
+			sort
+			grep { defined $attrs->{$_} } 
+			keys %$attrs;
 
 	vlog(3, "Attribute-string: $attrsAsString");
 	use Digest::MD5 qw(md5_hex);
@@ -235,19 +238,15 @@ sub digestAttributes
 
 sub writeAttributesToFile
 {
-	my $attrHash          = shift;
+	my $object            = shift;
 	my $fileName          = shift;
-	my $grepForAttributes = shift;
 
 	return if $dryRun;
 
 	my $content = "# attributes set by slxconfig-demuxer:\n";
-	my @attrs 
-		= $grepForAttributes
-			? grep { isAttribute($_) } sort keys %$attrHash
-			: sort keys %$attrHash;
-	foreach my $attr (@attrs) {
-		my $attrVal = $attrHash->{$attr} || '';
+	my $attrs = $object->{attrs} || {};
+	foreach my $attr (sort keys %$attrs) {
+		my $attrVal = $attrs->{$attr} || '';
 		if (length($attrVal) > 0) {
 			my $externalAttrName = externalAttrName($attr);
 			$content .= qq[$externalAttrName="$attrVal"\n];
@@ -449,13 +448,15 @@ sub generateInitalRamFS
 	# generate initramfs-setup file (with settings relevant for initramfs only):
 	my $initramfsAttrFile = "$tempPath/initramfs-setup";
 	my $initramfsAttrs    = {
-		'host_name'		=> 'slx-client', # silly default just to have something
-		'ramfs_fsmods'  => $info->{'attr_ramfs_fsmods'} || '',
-		'ramfs_nicmods' => $info->{'attr_ramfs_nicmods'} || '',
-		'ramfs_screen'  => $info->{'attr_ramfs_screen'} || '',
-		'rootfs'        => $info->{'export-uri'} || '',
+		attrs => {
+			'host_name'		=> 'slx-client', # just to have something at all
+			'ramfs_fsmods'  => $info->{'attr_ramfs_fsmods'} || '',
+			'ramfs_nicmods' => $info->{'attr_ramfs_nicmods'} || '',
+			'ramfs_screen'  => $info->{'attr_ramfs_screen'} || '',
+			'rootfs'        => $info->{'export-uri'} || '',
+		},
 	};
-	writeAttributesToFile($initramfsAttrs, $initramfsAttrFile, 0);
+	writeAttributesToFile($initramfsAttrs, $initramfsAttrFile);
 	# and pass the generated initramfs-setup file to mkdxsinitrd:
 	$cmd .= "-c $initramfsAttrFile ";
 
@@ -502,7 +503,7 @@ sub writeSystemPXEFiles
 sub writeDhcpConfig
 {
 	vlog(0, _tr("sorry, exporting dhcp data is not implemented yet!"));
-	my $dhcpModule = "OpenSLX::Export::DHCP::$dhcpType";
+	my $dhcpModule = "OpenSLX::ConfigExport::DHCP::$dhcpType";
 	if (!eval { require $dhcpModule } ) {
 		die _tr("unable to load DHCP-Export backend '%s'! (%s)\n",
 			$dhcpModule, $@);
@@ -562,7 +563,7 @@ sub writeClientConfigurationsForSystem
 			copyExternalSystemConfig($externalSystemID, $buildPath,
 				$externalClientName);
 
-			writeAttributesToFile($client, $attrFile, 1);
+			writeAttributesToFile($client, $attrFile);
 
 			# create tar containing external system configuration
 			# and client attribute file, this time referring to the client
@@ -649,7 +650,7 @@ sub writeSystemConfiguration
 		)
 	);
 	my $attrFile = "$buildPath/initramfs/machine-setup";
-	writeAttributesToFile($info, $attrFile, 1);
+	writeAttributesToFile($info, $attrFile);
 	
 	writePluginConfigurationsForSystem($info, $buildPath);
 

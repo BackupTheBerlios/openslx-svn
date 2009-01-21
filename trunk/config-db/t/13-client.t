@@ -357,6 +357,33 @@ is($client1->{name}, q{CLI-'1'}, q{really got client named "CLI-'1'"});
 # changing nothing at all should succeed
 ok($configDB->changeClient(1), 'changing nothing at all in client 1');
 
+# adding attributes should work
+$inClient1->{attrs}->{slxgrp} = 'slxgrp1';
+$inClient1->{attrs}->{vmware} = 'yes';
+ok($configDB->changeClient(1, $inClient1), 'adding attrs to client 1');
+$client1 = $configDB->fetchClientByID(1);
+is($client1->{attrs}->{slxgrp}, 'slxgrp1', 'attr slxgrp has correct value');
+is($client1->{attrs}->{vmware}, 'yes', 'attr vmware has correct value');
+
+# changing an attribute should work
+$inClient1->{attrs}->{vmware} = 'no';
+ok($configDB->changeClient(1, $inClient1), 'changing vmware in client 1');
+$client1 = $configDB->fetchClientByID(1);
+is($client1->{attrs}->{slxgrp}, 'slxgrp1', 'attr slxgrp has correct value');
+is($client1->{attrs}->{vmware}, 'no', 'attr vmware has correct value');
+
+# deleting an attribute should remove it
+delete $inClient1->{attrs}->{slxgrp};
+ok($configDB->changeClient(1, $inClient1), 'changing slxgrp in client 1');
+$client1 = $configDB->fetchClientByID(1);
+ok(!exists $client1->{attrs}->{slxgrp}, 'attr slxgrp should be gone');
+
+# undef'ing an attribute should remove it, too
+$inClient1->{attrs}->{vmware} = undef;
+ok($configDB->changeClient(1, $inClient1), 'undefining vmware in client 1');
+$client1 = $configDB->fetchClientByID(1);
+ok(!exists $client1->{attrs}->{vmware}, 'attr vmware should be gone');
+
 # changing a non-existing column should fail
 ok(
 	! eval { $configDB->changeClient(1, { xname => "xx" }) }, 
