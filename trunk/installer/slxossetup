@@ -84,7 +84,7 @@ function install_prereq_packages()
 	pushd "${SLX_PACKAGE_DOWNLOAD_PATH}" >/dev/null
 	smart --data-dir="${SLX_METADATA_PATH}" \
 		download \
-		"${SLX_BASE_PREREQ_PACKAGES}"
+		${SLX_BASE_PREREQ_PACKAGES}
 	popd >/dev/null
 
 	test -d "${SLX_STAGE1_PATH}" || \
