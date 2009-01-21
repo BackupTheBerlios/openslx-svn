@@ -84,12 +84,16 @@ start_alsasound="yes"
 start_samba="may"
 netbios_workgroup="dxs-network"
 
+# nfs v4
+#start_nfsv4="no"
+
 # automounter home (/local_dir - top level directories only) and source 
 # (format (proto://)server/path)
 # if openslx server and server for the home is the same machine, you can
 # use @@@serverip@@@ instead of a fixed setting here
 #automnt_dir="/home"
 #automnt_src="(proto://)serverip/home"
+
 
 # scratch space on server "proto://serverip/slx/tmp"
 # if openslx server and server for the remote rw scratch is the same 
