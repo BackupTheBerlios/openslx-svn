@@ -431,8 +431,10 @@ fi
 #############################################################################
 # theming
 testmkd /mnt/var/lib/openslx/themes/displaymanager
-cp -a /usr/share/themes/displaymanager /usr/share/themes/Xdialog \
-  /usr/share/themes/bootsplash /mnt/var/lib/openslx/themes >/dev/null 2>&1
+[ -d /usr/share/themes/displaymanager ] && \
+  cp -a /usr/share/themes/displaymanager mnt/var/lib/openslx/themes
+[ -d /etc/splashy ] && ( cp -a /etc/splashy /mnt/etc; \
+  cp -a /bin/splashy* /var/lib/openslx/bin )
 
 #############################################################################
 # preparation of /tmp directory (partition 44, nfs scratch, ramdisk). there
