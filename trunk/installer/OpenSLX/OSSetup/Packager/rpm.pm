@@ -54,7 +54,7 @@ sub importTrustedPackageKeys
 	foreach my $keyFile (@$keyFiles) {
 		vlog 2, "importing package key $keyFile...";
 		if (system("rpm", "--root=$finalPath", "--import", "$keyFile")) {
-			die _tr("unable to import package key <%s> (%s)", $keyFile, $!);
+			die _tr("unable to import package key <%s> (%s)\n", $keyFile, $!);
 		}
 	}
 }
@@ -69,7 +69,7 @@ sub installPrerequiredPackages
 
 	if (system("rpm", "--root=$finalPath", "-ivh", "--nodeps", "--noscripts",
 			   "--force", @$pkgs)) {
-		die _tr("error during prerequired-package-installation (%s)", $!);
+		die _tr("error during prerequired-package-installation (%s)\n", $!);
 	}
 	system("rm", "-rf", "$finalPath/var/lib/rpm");
 }
@@ -83,7 +83,7 @@ sub installPackages
 	return unless defined $pkgs && scalar(@$pkgs);
 
 	if (system("rpm", "--root=$finalPath", "-ivh", @$pkgs)) {
-		die _tr("error during package-installation (%s)", $!);
+		die _tr("error during package-installation (%s)\n", $!);
 	}
 }
 

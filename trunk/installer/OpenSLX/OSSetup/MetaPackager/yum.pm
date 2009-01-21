@@ -54,17 +54,21 @@ sub setupPackageSource
 	my $repoFile
 		= "$self->{engine}->{'vendor-os-path'}/etc/yum.repos.d/$repoName.repo";
 	open(REPO, "> $repoFile")
-		or die _tr("unable to create repo-file <%s> (%s)", $repoFile, $1);
+		or die _tr("unable to create repo-file <%s> (%s)\n", $repoFile, $1);
 	print REPO $repoDescr;
 	close(REPO);
 }
 
-sub updateBasicSystem
+sub updateBasicVendorOS
 {
 	my $self = shift;
 
 	if (system("yum -y update")) {
-		die _tr("unable to update basic system (%s)", $!);
+		if ($! == 2) {
+			# file not found => yum isn't installed
+			die _tr("unable to update this vendor-os, as it seems to lack an installation of yum!\n");
+		}
+		die _tr("unable to update this vendor-os (%s)\n", $!);
 	}
 }
 
@@ -74,7 +78,7 @@ sub installSelection
 	my $pkgSelection = shift;
 
 	if (system("yum -y install $pkgSelection")) {
-		die _tr("unable to install selection (%s)", $!);
+		die _tr("unable to install selection (%s)\n", $!);
 	}
 	system('rm /proc/cpuinfo');
 }

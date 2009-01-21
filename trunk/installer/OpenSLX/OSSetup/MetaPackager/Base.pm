@@ -32,6 +32,14 @@ sub setupPackageSource
 {
 }
 
+sub updateBasicVendorOS
+{
+}
+
+sub installSelection
+{
+}
+
 1;
 ################################################################################
 
