@@ -1,0 +1,89 @@
+#!/bin/sh
+#TODO command line arguments processing (--help)
+tmp_ddcprobe_output=$1
+if [ -z $tmp_ddcprobe_output ]; then
+    tmp_ddcprobe_output=/tmp/ddcprobe_output
+    ddcprobe > ${tmp_ddcprobe_output} 
+fi
+failed=`sed -n '/edid.*failed/Ip' ${tmp_ddcprobe_output}`
+if [ -n "$failed" ]; then
+    echo "Error: Display seems to be incapable of providing DDC Information"
+    echo 'Recommended Screen Modes: "1024x768" "800x600" "640x480"'
+    exit 1;
+fi
+screen_size_in_qcm=$((`sed -n "s/[Ss]creen.*[Ss]ize[^0-9]*\([0-9]*\)[^0-9]*\([0-9]*\).*/\1 *  \2/p" ${tmp_ddcprobe_output}`))
+max_pixels=$((`echo "\`sed -n '/edid/I,$s/.*[ \t]\([0-9]\{3,4\}\)x\([0-9]\{3,4\}\).*/\2 * \1/p' ${tmp_ddcprobe_output}|sort -rn| sed -n 1p\`"`))
+manufacturing_year=`sed -n 's/manufact.*\([12][90][0-9][0-9]\).*/\1/Ip' ${tmp_ddcprobe_output}`
+
+if [ -z $screen_size_in_qcm ] || [ -z $manufacturing_year ] || [ -z $max_pixels ] ; then
+    echo "Error: Display seems to be incapable of providing all relevant DDC Information"
+    echo 'Recommended Screen Modes: "1024x768" "800x600" "640x480"'
+    exit 1;
+fi
+
+pix_per_qcm=$(($max_pixels/$screen_size_in_qcm))
+echo "Display size:	$screen_size_in_qcm qcm"
+echo "Max Pixels per qcm:	$pix_per_qcm"
+echo "Manufacturing year:	$manufacturing_year"
+# Set probability for having an LCD by means of age and size
+# 15" ~ 30.6cm x 23cm
+# 17" ~ 34cm x 27cm (17,1")
+# 19" ~ 38,6cm x 29cm
+# if older than 1998 it is most probably not a LCD
+if [ $manufacturing_year -lt 1998 ] ;then tft_probability=1
+# if older than 2002 is probably no LCD, especially if larger than 15"
+elif [ $manufacturing_year -lt 2002 ];then 
+    if [ $screen_size_in_qcm -gt 704 ]; then tft_probability=1
+    else tft_probability=20
+    fi
+# if older than 2003 is maybe no LCD, yet for sure if larger than 17"
+elif [ $manufacturing_year -lt 2003 ];then 
+    if [ $screen_size_in_qcm -gt 918 ]; then tft_probability=5
+    else tft_probability=40
+    fi
+# if older than 2005 is probable an LCD, but not if larger than 19"
+elif [ $manufacturing_year -lt 2005 ];then 
+    if [ $screen_size_in_qcm -gt 1121 ]; then tft_probability=10
+    else tft_probability=60
+    fi
+# in 2005 few people would buy a (new) CRT
+elif [ $manufacturing_year -lt 2006 ];then tft_probability=90 
+# after 2006 nobody would buy a new CRT
+else tft_probability=99
+fi
+if [ $pix_per_qcm -gt 1599 ]; then tft_probability=$(($tft_probability - 15))
+else tft_probability=$(($tft_probability + 15))
+fi
+echo -ne "Is a TFT:\t"
+if [ $tft_probability -ge 50 ]; then
+    echo -n "true"
+else echo -n "false"
+fi
+echo " ($tft_probability)"
+
+# Find the lines with two times 3 to 4 digits delimited by an x. Print with the two values reverted, so sort sorts w.r.t the 2nd value. Then swap back
+screen_resolutions=`sed -n '/edid/I,$s/.*[ \t]\([0-9]\{3,4\}\) *x *\([0-9]\{3,4\}\).*/\2 x \1/p' ${tmp_ddcprobe_output}| sort -r -n | uniq| sed -n 's/\([0-9]\{3,4\}\) x \([0-9]\{3,4\}\).*/"\2x\1"/p' `
+screen_resolutions=`echo $screen_resolutions`
+echo "Supported Screen Modes: $screen_resolutions"
+
+# For CRTs check if the highest frequency can be displayed with reasonable refresh rate (> 80Hz)
+if [ $tft_probability -lt 50 ]; then
+    highest_resolution=` echo $screen_resolutions | sed -n 's/"\([0-9x]*\)" .*/\1/p'`
+    #echo $highest_resolution
+    #Search for an @ in the same line as the highest resolution
+    freq_for_highest_res=`sed -n /$highest_resolution'/s/[^@]*@\([0-9]\{2,3\}\).*/\1/p' $tmp_ddcprobe_output | sort -nr|sed -n 1p`
+    #echo $freq_for_highest_res
+    if [ -z "$freq_for_highest_res" ]; then
+        #Search for a number followed by the term "Hz" in the same line as the highest resolution
+	freq_for_highest_res=`sed -n /$highest_resolution'/s/.*[^a-zA-Z0-9]\([0-9]\{2,3\}\)[ \t]*[Hh][Zz].*/\1/p' $tmp_ddcprobe_output | sort -nr|sed -n 1p`
+    fi
+    # Assure that the highest resolution is removed if we do not know at what refresh rate it is displayed
+    # Chances are it would be flickering at that resolution
+    if [ -z "$freq_for_highest_res" ]; then 
+        freq_for_highest_res=0
+    fi
+    if [ $freq_for_highest_res -lt 80 ]; then
+        screen_resolutions=` echo $screen_resolutions | sed -n 's/"[0-9x]*" \(.*\)/\1/p'`
+    fi
+fi
+echo "Recommended Screen Modes: $screen_resolutions"
