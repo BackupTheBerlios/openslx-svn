@@ -15,7 +15,7 @@
 # Dirk von Suchodoletz <dvs@OpenSLX.com>, 2006
 #
 # (c) 2003 - 2006 - RZ Universitaet Freiburg
-# 
+# (c) 2006 OpenSLX GmbH
 #
 # password of system administrator (root) as crypt -> 'dxs-root'
 # (will be changed soon) the password is not used if the admin provides
@@ -132,3 +132,6 @@ start_x="yes"
 # set tvout feature for certain graphic cards - not needed for average systems
 # "yes" (then PAL is used) or tv standard as expected by card driver
 #tvout="yes"
+
+# sane network scanner
+#sane_scanner=""

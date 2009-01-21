@@ -202,7 +202,7 @@ done
 # at this point a timer should be started to ensure an automated reboot
 # or halt of the machine if SLX init does not succeed (e.g. missing kernel
 # module for the network adaptor)
-if [ "${DEBUGLEVEL}" -lt 4 ] ; then
+if [ "${DEBUGLEVEL}" -lt 3 ] ; then
   [ -x /bin/busybox ] && shtype=a
   cat<<EOF > /bin/watchdog
 #!/bin/${shtype}sh
