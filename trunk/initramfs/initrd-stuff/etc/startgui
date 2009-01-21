@@ -3,67 +3,41 @@
 # Description: startgui runs as script replacement for xinit
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 19-05-2006
-#		Michael Janczyk, 26-08-2005
-# Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
+#		Michael Janczyk, 28-09-2007
+# Copyright:    (c) 2003, 2007 - RZ Universitaet Freiburg
 #
-# Version:      0.1.0b
+# Version:      0.1.0c
 #
 # /var/X11R6/bin/startgui
 # 
 ###########################################################################
 
-# functions
-error () {
-	$2 $1
-}
-
-sysresources=/usr/X11R6/lib/X11/Xresources
-sysmodmap=/usr/X11R6/lib/X11/Xmodmap
-
-# merge in defaults and keymaps
-
-if [ -f $sysresources ]; then
-    xrdb -merge $sysresources
-fi
-
 WM=$1
 [ $WM ] || WM=kde
 case "$WM" in
   *fvwm*)
-     fvwm2
+    fvwm2
   ;;
   *kde*)
-     mkdir ~/.kde &>/dev/null
-     cp -a /usr/share/dxs/WMsettings/kde ~/.kde
-    /opt/kde3/bin/startkde
+    startkde
   ;;
   *wmaker*|*windowmaker*)
-    mkdir ~/GNUstep &>/dev/null
-    cp -a /usr/share/dxs/WMsettings/windowmaker ~/GNUstep
     wmaker
   ;;
   *ice*)
     icewm
   ;;
   *gnome*)
-    cp -a /usr/share/dxs/WMsettings/gnome/.* ~/
     gnome
   ;;
   *citrix|Citrix|ICAClient|*wfica)
-    xsetroot -solid black
-    cp -a /etc/dxs/ICAClient/ ~/.ICAClient 
     wfica
   ;;
   *citrix-mgr|*citrix-indirect|*wfcmgr)
-    xsetroot -solid black
-    cp -a /etc/dxs/ICAClient/ ~/.ICAClient
     #
   ;;
   *vmware*)
-    xsetroot -solid black
-    mkdir -p $HOME/.vmware &>/dev/null
-    xterm -bg black -fg white -geometry 170x30+0-0 +sb -e \
-      "runvmware --xdm vm"
+    /var/X11R6/bin/xdialog.sh
   ;;
   *)
     if which $WM; then
