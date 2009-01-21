@@ -55,13 +55,28 @@ sub fixPrerequiredFiles
 	}
 }
 
+sub finishSession
+{
+	my $self = shift;
+
+	# make sure there's a /dev/zero, as SuSEconfig requires it:
+	if (!-e "/dev/zero" && slxsystem("mknod /dev/zero c 1 5")) {
+		die _tr("unable to create node '%s' (%s)\n", "/dev/zero", $!);
+	}
+	# invoke SuSEconfig in order to allow it to update the configuration:
+	if (slxsystem("SuSEconfig")) {
+		die _tr("unable to run SuSEconfig (%s)", $!);
+	}
+	$self->SUPER::finishSession();
+}
+
 sub initDistroInfo
 {
 	my $self = shift;
 	$self->{config}->{'repository'} = {
 		'base' => {
 			'urls' => "
-				ftp://ftp.gwdg.de/pub/opensuse/distribution/10.2/repo/oss
+				ftp://ftp5.gwdg.de/pub/opensuse/distribution/10.2/repo/oss
 				ftp://suse.inode.at/opensuse/distribution/10.2/repo/oss
 				http://mirrors.uol.com.br/pub/suse/distribution/10.2/repo/oss
 				ftp://klid.dk/opensuse/distribution/10.2/repo/oss
@@ -73,7 +88,7 @@ sub initDistroInfo
 		},
 		'base_non-oss' => {
 			'urls' => "
-				ftp://ftp.gwdg.de/pub/opensuse/distribution/10.2/repo/non-oss
+				ftp://ftp5.gwdg.de/pub/opensuse/distribution/10.2/repo/non-oss
 				ftp://suse.inode.at/opensuse/distribution/10.2/repo/non-oss
 				http://mirrors.uol.com.br/pub/suse/distribution/10.2/repo/non-oss
 				ftp://klid.dk/opensuse/distribution/10.2/repo/non-oss
@@ -123,6 +138,8 @@ sub initDistroInfo
 		i586/findutils-4.2.28-24.i586.rpm
 		i586/gawk-3.1.5-41.i586.rpm
 		i586/gdbm-1.8.3-261.i586.rpm
+		i586/glib2-2.12.4-15.i586.rpm
+		i586/gnome-filesystem-0.1-288.i586.rpm
 		i586/gpg-1.4.5-24.i586.rpm
 		i586/grep-2.5.1a-40.i586.rpm
 		i586/gzip-1.3.5-178.i586.rpm
@@ -137,6 +154,8 @@ sub initDistroInfo
 		i586/libstdc++41-4.1.2_20061115-5.i586.rpm
 		i586/libvolume_id-103-12.i586.rpm
 		i586/libxcrypt-2.4-30.i586.rpm
+		i586/libxml2-2.6.26-26.i586.rpm
+		i586/libxml2-python-2.6.26-29.i586.rpm
 		i586/libzio-0.2-20.i586.rpm
 		i586/limal-1.2.9-5.i586.rpm
 		i586/limal-bootloader-1.2.4-6.i586.rpm
@@ -147,7 +166,6 @@ sub initDistroInfo
 		i586/mkinitrd-1.2-149.i586.rpm
 		i586/mktemp-1.5-763.i586.rpm
 		i586/module-init-tools-3.2.2-62.i586.rpm
-		i586/nbd-2.8.7-14.i586.rpm
 		i586/ncurses-5.5-42.i586.rpm
 		i586/net-tools-1.60-606.i586.rpm
 		i586/openldap2-client-2.3.27-25.i586.rpm
@@ -160,31 +178,28 @@ sub initDistroInfo
 		i586/perl-Bootloader-0.4.5-3.i586.rpm
 		i586/perl-gettext-1.05-31.i586.rpm
 		i586/permissions-2006.11.13-5.i586.rpm
-		i586/readline-5.1-55.i586.rpm
-		i586/reiserfs-3.6.19-37.i586.rpm
-		i586/sed-4.1.5-21.i586.rpm
-		i586/squashfs-kmp-default-3.1_2.6.18.2_34-34.i586.rpm
-		i586/sysvinit-2.86-47.i586.rpm
-		i586/udev-103-12.i586.rpm
-		i586/util-linux-2.12r-61.i586.rpm
-		noarch/pciutils-ids-2006.11.18-2.noarch.rpm
-		noarch/suse-build-key-1.0-707.noarch.rpm
-		i586/glib2-2.12.4-15.i586.rpm
-		i586/gnome-filesystem-0.1-288.i586.rpm
-		i586/libxml2-2.6.26-26.i586.rpm
-		i586/libxml2-python-2.6.26-29.i586.rpm
-		i586/rpm-python-4.4.2-76.i586.rpm
 		i586/python-2.5-19.i586.rpm
 		i586/python-sqlite-1.1.8-11.i586.rpm
 		i586/python-urlgrabber-3.1.0-18.i586.rpm
 		i586/python-xml-2.5-19.i586.rpm
+		i586/readline-5.1-55.i586.rpm
+		i586/reiserfs-3.6.19-37.i586.rpm
+		i586/rpm-python-4.4.2-76.i586.rpm
+		i586/sed-4.1.5-21.i586.rpm
 		i586/sqlite-3.3.8-14.i586.rpm
+		i586/sysvinit-2.86-47.i586.rpm
+		i586/udev-103-12.i586.rpm
+		i586/util-linux-2.12r-61.i586.rpm
 		i586/yum-3.0.1-9.i586.rpm
 		i586/yum-metadata-parser-1.0.2-23.i586.rpm
+		noarch/pciutils-ids-2006.11.18-2.noarch.rpm
+		noarch/suse-build-key-1.0-707.noarch.rpm
 	";
 
 	$self->{config}->{'selection'} = {
 		'default' => "
+			nbd
+			squashfs-kmp-default
 		",
 
 		'kde' => "

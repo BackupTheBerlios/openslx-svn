@@ -55,6 +55,21 @@ sub fixPrerequiredFiles
 	}
 }
 
+sub finishSession
+{
+	my $self = shift;
+
+	# make sure there's a /dev/zero, as SuSEconfig requires it:
+	if (!-e "/dev/zero" && slxsystem("mknod /dev/zero c 1 5")) {
+		die _tr("unable to create node '%s' (%s)\n", "/dev/zero", $!);
+	}
+	# invoke SuSEconfig in order to allow it to update the configuration:
+	if (slxsystem("SuSEconfig")) {
+		die _tr("unable to run SuSEconfig (%s)", $!);
+	}
+	$self->SUPER::finishSession();
+}
+
 sub initDistroInfo
 {
 	my $self = shift;

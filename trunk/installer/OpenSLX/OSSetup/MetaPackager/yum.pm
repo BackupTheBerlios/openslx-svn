@@ -47,7 +47,6 @@ sub initPackageSources
 {
 	my $self = shift;
 
-	slxsystem("cp /proc/cpuinfo $self->{engine}->{'vendor-os-path'}/proc");
 	slxsystem("rm -f $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d/*");
 	slxsystem("mkdir -p $self->{engine}->{'vendor-os-path'}/etc/yum.repos.d");
 }
@@ -92,14 +91,6 @@ sub updateBasicVendorOS
 		}
 		die _tr("unable to update this vendor-os (%s)\n", $!);
 	}
-}
-
-sub cleanup
-{
-	my $self = shift;
-
-	slxsystem('umount /proc 2>/dev/null');
-	slxsystem('rm /proc/cpuinfo');
 }
 
 1;

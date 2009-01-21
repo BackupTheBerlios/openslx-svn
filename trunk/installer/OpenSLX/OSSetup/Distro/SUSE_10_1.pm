@@ -55,13 +55,28 @@ sub fixPrerequiredFiles
 	}
 }
 
+sub finishSession
+{
+	my $self = shift;
+
+	# make sure there's a /dev/zero, as SuSEconfig requires it:
+	if (!-e "/dev/zero" && slxsystem("mknod /dev/zero c 1 5")) {
+		die _tr("unable to create node '%s' (%s)\n", "/dev/zero", $!);
+	}
+	# invoke SuSEconfig in order to allow it to update the configuration:
+	if (slxsystem("SuSEconfig")) {
+		die _tr("unable to run SuSEconfig (%s)", $!);
+	}
+	$self->SUPER::finishSession();
+}
+
 sub initDistroInfo
 {
 	my $self = shift;
 	$self->{config}->{'repository'} = {
 		'base' => {
 			'urls' => "
-				ftp://ftp.gwdg.de/pub/opensuse/distribution/SL-10.1/inst-source
+				ftp://ftp5.gwdg.de/pub/opensuse/distribution/SL-10.1/inst-source
 				ftp://suse.inode.at/opensuse/distribution/SL-10.1/inst-source
 				http://mirrors.uol.com.br/pub/suse/distribution/SL-10.1/inst-source
 				ftp://klid.dk/opensuse/distribution/SL-10.1/inst-source
@@ -69,6 +84,18 @@ sub initDistroInfo
 				ftp://ftp.jaist.ac.jp/pub/Linux/openSUSE/distribution/SL-10.1/inst-source
 			",
 			'name' => 'SUSE Linux 10.1',
+			'repo-subdir' => 'suse',
+		},
+		'base_non-oss' => {
+			'urls' => "
+				ftp://ftp5.gwdg.de/pub/opensuse/distribution/SL-10.1/non-oss-inst-source
+				ftp://suse.inode.at/opensuse/distribution/SL-10.1/non-oss-inst-source
+				http://mirrors.uol.com.br/pub/suse/distribution/SL-10.1/non-oss-inst-source
+				ftp://klid.dk/opensuse/distribution/SL-10.1/non-oss-inst-source
+				ftp://ftp.estpak.ee/pub/suse/opensuse/distribution/SL-10.1/non-oss-inst-source
+				ftp://ftp.jaist.ac.jp/pub/Linux/openSUSE/distribution/SL-10.1/non-oss-inst-source
+			",
+			'name' => 'openSUSE 10.2 non-OSS',
 			'repo-subdir' => 'suse',
 		},
 		'base_update' => {

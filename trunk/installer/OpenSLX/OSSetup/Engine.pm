@@ -160,14 +160,22 @@ sub installVendorOS
 	}
 	$self->createVendorOSPath();
 
- 	$self->setupStage1A();
- 	executeInSubprocess( sub {
- 		# some tasks that involve a chrooted environment:
- 		changePersonalityIfNeeded($self->{distro}->{'base-name'});
- 		$self->setupStage1B();
- 		$self->setupStage1C();
- 	});
- 	$self->stage1C_cleanupBasicVendorOS();
+	my $baseSystemFile = "$self->{'vendor-os-path'}/.openslx-base-system";
+	if (-e $baseSystemFile) {
+		vlog 0, _tr("found existing base system, continuing...\n");
+	} else {
+		# basic setup, stage1a-c:
+	 	$self->setupStage1A();
+	 	executeInSubprocess( sub {
+	 		# some tasks that involve a chrooted environment:
+	 		changePersonalityIfNeeded($self->{distro}->{'base-name'});
+	 		$self->setupStage1B();
+	 		$self->setupStage1C();
+	 	});
+	 	$self->stage1C_cleanupBasicVendorOS();
+		slxsystem("touch $baseSystemFile");
+			# just touch the file, in order to indicate a basic system
+	}
 	executeInSubprocess( sub {
 		# another task that involves a chrooted environment:
 		changePersonalityIfNeeded($self->{distro}->{'base-name'});
@@ -175,6 +183,8 @@ sub installVendorOS
 	});
 	slxsystem("touch $installInfoFile");
 		# just touch the file, in order to indicate a proper installation
+	slxsystem("rm $baseSystemFile");
+		# no longer needed, we have a full system now
 	vlog 0, _tr("Vendor-OS '%s' installed succesfully.\n",
 				$self->{'vendor-os-name'});
 
@@ -671,7 +681,6 @@ sub setupStage1D
 	$self->stage1D_setupPackageSources();
 	$self->stage1D_updateBasicVendorOS();
 	$self->stage1D_installPackageSelection();
-	$self->{'meta-packager'}->cleanup();
 }
 
 sub updateStage1D
@@ -680,7 +689,6 @@ sub updateStage1D
 
 	vlog 1, "updating $self->{'vendor-os-name'}...";
 	$self->stage1D_updateBasicVendorOS();
-	$self->{'meta-packager'}->cleanup();
 }
 
 sub stage1D_setupPackageSources()
@@ -710,7 +718,9 @@ sub stage1D_updateBasicVendorOS()
 		or die _tr("unable to chroot into '%s' (%s)\n", $osDir, $!);
 
 	vlog 1, "updating basic vendor-os...";
+	$self->{'meta-packager'}->startSession();
 	$self->{'meta-packager'}->updateBasicVendorOS();
+	$self->{'meta-packager'}->finishSession();
 }
 
 sub stage1D_installPackageSelection
@@ -729,7 +739,9 @@ sub stage1D_installPackageSelection
 		vlog 0, _tr("No packages listed for selection '%s', nothing to do.",
 					$selectionName);
 	} else {
+		$self->{'meta-packager'}->startSession();
 		$self->{'meta-packager'}->installSelection(join " ", @pkgs);
+		$self->{'meta-packager'}->finishSession();
 	}
 }
 
