@@ -315,7 +315,7 @@ sub generateInitalRamFS
 	# fill slxConf-hash...
 	my %slxConf;
 	# ...set date initrd has been generated...
-	my ($y, $m, $d) = localtime; $m++; $y+=1900;
+	my ($d, $m, $y) = (localtime)[3,4,5]; $m++; $y+=1900;
 	$slxConf{'slxconf_date'} = sprintf('%04d-%02d-%02d', $y, $m, $d);
 	$slxConf{'slxconf_tftp_prefix'}
 		= $settings->{'use_absolute_tftp'}
