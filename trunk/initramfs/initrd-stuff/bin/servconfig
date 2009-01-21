@@ -351,23 +351,25 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   echo -e "mount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
     >> /mnt/etc/${D_INITDIR}/boot.slx
   # check here that mount finished and the important files are available
-  if [ "$noimg" = "yes" ] ; then
-    error "$scfg_vmdir" nonfatal
-  else
+  #if [ "$noimg" = "yes" ] ; then
+  #  error "$scfg_vmdir" nonfatal
+  #else
     # copy runvmware for vmware images and Xdialog sessionsmenu
-    cp /mnt/var/lib/vmware/templ/runvmware \
-      /mnt/var/X11R6/bin >/dev/null 2>&1
-  fi
+    #cp /mnt/var/lib/vmware/templ/runvmware \
+    #/mnt/var/X11R6/bin >/dev/null 2>&1
+  #fi
   config_vmware
   chmod 1777 /mnt/var/run/vmware
   # define a variable where gdm/kdm should look for additional sessions
   # do we really need it?
   # export vmsessions=/var/lib/vmware/vmsessions
+
   # create default.desktop for kdm
   echo "[Desktop Entry]" > /mnt/etc/X11/sessions/default.desktop
   echo "Encoding=UTF8" >> /mnt/etc/X11/sessions/default.desktop
   echo "Name=Default" >> /mnt/etc/X11/sessions/default.desktop
   echo "Name[de]=Standard" >> /mnt/etc/X11/sessions/default.desktop
+
   #I dont like this part, but there is no simple workaround. We need to
   #create xdialog.sh on every box :(
   #echo "Exec=/var/lib/vmware/xdialog-files/${pool}/xdialog.sh" \
@@ -405,6 +407,11 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   # closing bracket as last line ends with '\'
   echo ")" >> /mnt/etc/X11/xdialog.sh
   chmod 755 /mnt/etc/X11/xdialog.sh
+
+  # copy xdm files, so we could choose them before we log in
+  for i in ${vmdir}/xdmsessions/${pool}/*.desktop;do
+    cp ${i} /mnt/etc/X11/sessions/
+  done
 fi
 
 # theming
