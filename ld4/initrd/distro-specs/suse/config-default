@@ -49,5 +49,5 @@ D_INITSCRIPTS="boot.udev boot.proc boot.shm boot.klog boot.loadmodules boot.cloc
 D_XF86CONFFILE="/etc/X11/xorg.conf"
 D_XFONTPATH="/usr/X11R6/lib/X11/fonts/*"
 D_DEFAULTCOUNTRY="de"
-D_HWMODTOIGNORE="i8xx_tco ichxrom snd_atiixp_modem"
+D_HWMODTOIGNORE="i8xx-tco ichxrom snd-atiixp-modem"
 D_BOOTLOCAL="init.d/boot.local"

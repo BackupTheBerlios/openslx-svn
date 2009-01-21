@@ -771,8 +771,8 @@ case "${XMODULE}" in
       test -f /mnt/usr/X11R6/lib/modules/drivers/fglrx_drv.o && \
       XMODULE=fglrx
       # there seems no problem, if no TV is connected
-      TVOUT='\tOption\t"TVFormat" "PAL-B"\n
-\tOption\t"DesktopSetup" "horizontal"'
+      TVOUT='\tOption\t\t"TVFormat" "PAL-B"\n
+\tOption\t\t"DesktopSetup" "horizontal"'
   ;;
   nv)
     #

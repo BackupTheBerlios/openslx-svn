@@ -444,6 +444,7 @@ if [ -n "$use_busybox" ] ; then
         umount uname usleep vconfig vi; do
     ln -s /bin/busybox ${INSTDIR}/bin/$bbins
   done
+  # fake the sh link in busybox environment
   echo -e "#!/bin/ash\n/bin/ash $@" > ${INSTDIR}/bin/sh
   chmod a+x ${INSTDIR}/bin/sh
 else

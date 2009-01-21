@@ -234,6 +234,7 @@ fi
 if [ -n "$noipyet" ] ; then
   waitfor /tmp/dhcp-done 20000
   . /etc/machine-setup
+  [ -f /tmp/confviadhcp ] && . /tmp/confviadhcp
   [ -z "$clientip" -o -z "$subnet_mask" -o -z "$gateway" \
     -o -z "$broadcast_address" ] && error "$init_errdhcp"
   ipsetup $clientip $subnet_mask $gateway $broadcast_address eth0
@@ -358,7 +359,7 @@ if [ -n "${UNIONFS}" ] ; then
   mkdir -p ${RWDIR}/union ${RWDIR}/uniontmp /rorootfs
   mount -n -t tmpfs none ${RWDIR}/uniontmp
   # hack for handling unionfs with patched run-init
-  mount --move /mnt /rorootfs
+  mount -n --move /mnt /rorootfs
   mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/rorootfs=${NFSRO}ro \
     none /mnt
   mkdir -p /mnt/uniontmp
@@ -367,9 +368,8 @@ if [ -n "${UNIONFS}" ] ; then
   # probably more sources should be merged into union (${UNION} is defined)
   # allow more than one union??
   if [ -n "${UNION}" ] ; then
-    # mkdir /unionadd
-    # for dir in ${UNIONDIRS}; do
-    # mkdir /unionadd/$dir
+    # for dir in "${UNION}"; do
+    # testmkd /unionadd/$dir
     # mount $dir unionadd/$dir 
     # unionctl mnt --add --after /mnt --mode ro /unionadd/$dir
     # most probably it is a good idea to run ldconfig, so enable it

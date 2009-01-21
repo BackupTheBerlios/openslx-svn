@@ -3,24 +3,26 @@
 #               General changes should be done there, version specific 
 #               changes for the 10.1 here.
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-07-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.3.0b
+# Version:      0.3.0c
 
 # some specific stuff to initialize
 preinit () {
 # fake the existence of some helper binaries (which are not of any use
 # within initialramfs)
+shell="/bin/sh"
+[ -x /bin/busybox ] && shell="/bin/ash"
 for i in usb_id scsi_id vol_id edd_id ata_id path_id hwup ifup ; do
-  echo -e "#!/bin/sh\n:" >/sbin/$i
+  echo -e "#!$shell\n:" >/sbin/$i
 done
 mkdir /lib/udev /usr/sbin
 for i in idedma.sh mount.sh rename_netiface create_floppy_devices ; do
-  echo -e "#!/bin/sh\n:" >/lib/udev/$i
+  echo -e "#!$shell\n:" >/lib/udev/$i
 done
-echo -e "#!/bin/sh\n:" >/usr/sbin/alsactl
+echo -e "#!$shell\n:" >/usr/sbin/alsactl
 chmod u+x /sbin/* /lib/udev/* /usr/sbin/*
 }
 
@@ -74,3 +76,21 @@ PROGRAM=\"/var/X11R6/bin/vm-udev\", OPTIONS=\"ignore_device\"\n\
 SUBSYSTEM==\"usb\", ACTION==\"remove\", PROGRAM=\"/var/X11R6/bin/vm-udev\"" \
   >> /mnt/etc/udev/rules.d/01-udev-vm.rules
 }
+
+# set up keytable (function run in hwautocfg)
+# kbd runlevel link is in the list of initial runlevel scripts (see 
+# config-10.1 file)
+keytable () {
+# remove unneeded components from the startscript
+sed -e "/wanted keytable/,/^fi$/d;/load usb drivers/,/^esac$/d" \
+  -i /mnt/etc/${D_INITDIR}/kbd
+sed -e "s,KEYTABLE=.*,KEYTABLE=\"${KEYTABLE}\"," \
+  -i /mnt/etc/${D_SYSCONFDIR}/keyboard
+}
+
+# consolefont and language (function run in hwautocfg)
+consolefont () {
+sed -e "s,RC_LANG=.*,RC_LANG=\"${LANG}\" # added in initrd," \
+    -i /mnt/etc/${D_SYSCONFDIR}/language
+}
+

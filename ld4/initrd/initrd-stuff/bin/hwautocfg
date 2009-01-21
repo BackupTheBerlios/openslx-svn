@@ -4,7 +4,7 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 10-07-2006
 #		Felix Endres
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
@@ -52,20 +52,13 @@ local InputMouseDef='\tIdentifier  "Mouse1"\n
 \tOption\t\t"Buttons"\t\t"3"'
 local InputMouseSyn='\tIdentifier  "Mouse1"\n
 \tDriver\t\t"synaptics"\n
-\tOption\t\t"Protocol"\t\t"auto-dev"\n
-\tOption\t\t"Device"\t\t"/dev/psaux"\n
-\tOption\t\t"LeftEdge"\t\t"1700"\n
-\tOption\t\t"RightEdge"\t\t"5300"\n
-\tOption\t\t"TopEdge"\t\t"1700"\n
-\tOption\t\t"BottomEdge"\t\t"4200"\n
-\tOption\t\t"FingerLow"\t\t"25"\n
-\tOption\t\t"FingerHigh"\t\t"30"\n
-\tOption\t\t"MaxTapTime"\t\t"180"\n
-\tOption\t\t"MaxTapMove"\t\t"220"\n
-\tOption\t\t"VertScrollDelta"\t"100"\n
-\tOption\t\t"MinSpeed"\t\t"0.06"\n
-\tOption\t\t"MaxSpeed"\t\t"0.12"\n
-\tOption\t\t"AccelFactor"\t\t"0.0010"'
+\tOption\t\t"Protocol"\t\t"explorerps/2"\n
+\tOption\t\t"Device"\t\t"/dev/input/mice"\n
+\tOption\t\t"Emulate3Buttons"\t"on"\n
+\tOption\t\t"Buttons"\t\t"5"\n
+\tOption\t\t"InputFashion"\t\t"Mouse"\n
+\tOption\t\t"SHMConfig"\t\t"on"\n
+\tOption\t\t"ZAxisMapping"\t\t"4 5"'
 local Monitor='\tIdentifier "Default"\n
 \tModelName\t"MODEL"\n
 \tOption\t\t"CalcAlgorithm"\t"CheckDesktopGeometry"\n
@@ -455,7 +448,7 @@ done
 
 # wait for completion of clients root filesystem in /mnt
 waitfor /tmp/fscmpl 40000
-cat /tmp/fstab >> /mnt/etc/fstab
+[ -f /tmp/fstab ] && cat /tmp/fstab >> /mnt/etc/fstab
 
 # add entries to initialize keytable and consolefont to boot.ld
 # postpone some commands into normal bootup environment

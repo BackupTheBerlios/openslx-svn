@@ -29,8 +29,8 @@ export no_proxy" > /mnt/etc/SuSEconfig/profile
 echo -e "DXS VERSION = 4.0a\nINITRAMFS GENERATION DATE = $date" \
   >> /mnt/etc/SuSE-release
 # add the halt link to the 0 and 6 runlevel directories
-  ln -sf ../halt /mnt/etc/${D_INITDIR}/rc0.d/S20halt
-  ln -sf ../halt /mnt/etc/${D_INITDIR}/rc6.d/S20reboot
+ln -sf ../halt /mnt/etc/${D_INITDIR}/rc0.d/S20halt
+ln -sf ../halt /mnt/etc/${D_INITDIR}/rc6.d/S20reboot
 # if YaST2 should be runnable (without much effect anyway) on the client
 testmkd /mnt/var/log/YaST2
 }
@@ -347,15 +347,13 @@ cp /etc/bluetooth /mnt/etc/${D_SYSCONFDIR}/bluetooth
 }
 
 # set up keytable (function run in hwautocfg)
+# kbd runlevel link is set via config_distro to avoid clashes between
+# servconfig and hwautocfg settings
 keytable () {
-# remove unneeded components from the startscript
-sed -e "/wanted keytable/,/^fi$/d;/load usb drivers/,/^esac$/d" \
-  -i /mnt/etc/${D_INITDIR}/kbd
 sed -e "s,KEYTABLE=.*,KEYTABLE=\"${KEYTABLE}\"," \
   -i /mnt/etc/${D_SYSCONFDIR}/keyboard
-# just ensure that keytable is initialized before xdm starts
-ln -sf /etc/${D_INITDIR}/kbd /mnt/etc/${D_INITBOOTD}/S01kbd
-ln -sf /etc/${D_INITDIR}/kbd /mnt/etc/${D_INITBOOTD}/K20kbd
+echo -e "\tloadkeys ${KEYTABLE} >${LOGFILE} 2>&1\n" \
+  >>/mnt/etc/${D_INITDIR}/boot.ld
 }
 
 # consolefont and language (function run in hwautocfg)
