@@ -138,6 +138,7 @@ supported."; \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/splashy \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs \
+              -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools \
 	      -p $(SLX_BUILD_PATH)$(SLX_PRIVATE_PATH)/config/default/initramfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_PRIVATE_PATH)/config/default/rootfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/themes \
@@ -200,6 +201,8 @@ supported."; \
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/themes; cd ..; \
 	cp -pP tools/busybox{,.links,.x86_64,.i586} \
 	  $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox/; \
+        cp -pP tools/ddcprobe{,.x86_64,.i586} \
+          $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools; \
 	cp -p tools/splashy{,_update} $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/splashy/; \
 	cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
         cd initramfs/tpm; tar --exclude=.svn -cp * | \

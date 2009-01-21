@@ -388,7 +388,7 @@ if [ -z "$cdboot" ] ; then
     repco ${dirs##*initramfs/}
   done
   chmod 755 ${INSTDIR}/init \
-    ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
+    ${INSTDIR}/bin/{servconfig,hwautocfg,xconfig,dhcpmkconfig}
 else
   cp ${SLX_SHARE_PATH}/cdboot/init ${INSTDIR}/init
   chmod 755 ${INSTDIR}/init
@@ -401,10 +401,11 @@ else
   ARCH=i586
 fi
 
-# copy the proper busybox depending on architecture (i586 for 32bit and
-# x86_64 for 64bit)
+# copy the proper busybox, ddcprobe depending on architecture (i586 for 32bit
+# and x86_64 for 64bit)
 # fixme: At the moment the busybox does not support ext2 filesystem tools
 cp ${SLX_SHARE_PATH}/busybox/busybox.${ARCH} ${INSTDIR}/bin/busybox
+cp ${SLX_SHARE_PATH}/ramfstools/ddcprobe.${ARCH} ${INSTDIR}/bin/ddcprobe
 slxldd --root-path=${ROOTDIR} ${INSTDIR}/bin/busybox >>${INSTDIR}/tmp/libraries
 for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
     date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \

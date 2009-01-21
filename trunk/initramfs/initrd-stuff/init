@@ -765,9 +765,14 @@ fi
 waitfor /tmp/hwcfg 20000 || error "$init_errhw"
 [ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
   >> /mnt/etc/udev/rules.d/04-scanner.rules
-# wait for completion of Xorg configuration and finalize it
-waitfor /tmp/xready 10000 || error "$init_errxorg" nonfatal
-mv /etc/xorg.conf /mnt/${D_XF86CONFFILE}
+# move Xorg configuration to final destination depending if user or system
+# generated
+#waitfor /tmp/xready 10000 || error "$init_errxorg" nonfatal
+if [ -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then
+  mv /rootfs${D_XF86CONFFILE#/mnt} /mnt/${D_XF86CONFFILE}
+else
+  mv /tmp/xorg.conf /mnt/${D_XF86CONFFILE}
+fi
 # wait a while for services setup to complete
 waitfor /tmp/svcfg 10000 || error "$init_errsw"
 # IP configuration is complete and should not be updated automatically
