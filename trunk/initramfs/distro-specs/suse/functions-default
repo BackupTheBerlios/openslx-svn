@@ -236,8 +236,8 @@ sed -e "s,DISPLAYMANAGER=.*,DISPLAYMANAGER=\"$start_xdmcp\"," \
     -e "s,.*_XSERVER.*,DISPLAYMANAGER_STARTS_XSERVER=\"$dm\"," \
     -i /mnt/etc/${D_SYSCONFDIR}/displaymanager
 # start the display manager as early as possible in runlevel 5
-ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/S01xdm
-ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITDIR}/rc5.d/K18xdm
+ln -sf ../xdm /mnt/etc/${D_INITDIR}/rc5.d/S01xdm
+ln -sf ../xdm /mnt/etc/${D_INITDIR}/rc5.d/K18xdm
 sed -e "s,xdm: .*,xdm:," -i /mnt/etc/${D_INITDIR}/.depend.start
 }
 # configure X display manager (runlevel links and kind of manager)
@@ -420,20 +420,22 @@ config_dreshal () {
 local start=5
 local stop=18
 if [ "x$start_dreshal" = "xyes" ]; then
+  for dir in /var/run/dbus /var/run/resmgr/classes /var/run/hal \
+             /var/cache/hald /var/lib/PolicyKit; do
+    testmkd /mnt/$dir
+  done
   if [ -f /mnt/etc/${D_INITDIR}/dbus ] ; then
     strinfile "messagebus:" /mnt/etc/passwd || \
       echo "messagebus:x:100:101:User for D-BUS:/var/run/dbus:/bin/false" \
         >> /mnt/etc/passwd
     strinfile "messagebus:" /mnt/etc/group || \
       echo "messagebus:!:101:" >> /mnt/etc/group
-    testmkd /mnt/var/run/dbus
     # set permissions with userid
     echo -e "\tchown messagebus:messagebus /var/run/dbus 2>/dev/null" \
       >>/mnt/etc/${D_INITDIR}/boot.slx
     rllinker "dbus" $start $stop
   fi
   if [ -f /mnt/etc/${D_INITDIR}/resmgr ] ; then
-    testmkd /mnt/var/run/resmgr/classes
     start=$(($start + 1))
     stop=$(($stop - 1))
     rllinker "resmgr" $start $stop
@@ -444,10 +446,10 @@ if [ "x$start_dreshal" = "xyes" ]; then
         >> /mnt/etc/passwd
     strinfile "haldaemon:" /mnt/etc/group || \
       echo "haldaemon:!:103:" >> /mnt/etc/group
-    testmkd /mnt/var/run/hal
+    echo -n "" > /mnt/var/lib/PolicyKit/reload
     # set permissions with userid
-    echo -e "\tchown haldaemon:haldaemon /var/run/hal 2>/dev/null" \
-      >>/mnt/etc/${D_INITDIR}/boot.slx
+    echo -e "\tchown haldaemon:haldaemon /var/run/hal /var/cache/hald \
+      2>/dev/null" >>/mnt/etc/${D_INITDIR}/boot.slx
     start=$(($start + 1))
     stop=$(($stop - 1))
     rllinker "haldaemon" $start $stop
