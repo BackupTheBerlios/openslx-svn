@@ -369,7 +369,8 @@ data via dhcp until now ..." nonfatal
 waitfor /tmp/ldap-done 10000 || error "  Did not get any configuration \
 data via ldap until now ..." nonfatal
 . /etc/machine-setup
-waitfor /tmp/fscmpl 20000
+# wait for completion of clients root filesystem in /mnt
+waitfor /tmp/fscmpl 40000
 # run localizator and configure keyboard and console fonts
 DEFKEYTABLE="de-latin1-nodeadkeys"
 localization $country
@@ -378,9 +379,9 @@ if [ -z "${KEYTABLE}" ] ; then
 '${DEFKEYTABLE}' defined\nin $0."
   KEYTABLE=${DEFKEYTABLE}
 fi
-echo -e "# entry added by $0: $date" \
+echo -e "\t# entry added by $0: $date" \
   >>/mnt/etc/${D_INITDIR}/boot.ld
-echo -e "loadkeys -q ${KEYTABLE}\n" >>/mnt/etc/${D_INITDIR}/boot.ld
+echo -e "\tloadkeys -q ${KEYTABLE}\n" >>/mnt/etc/${D_INITDIR}/boot.ld
 [ -n "${CONSOLE_FONT}" ] && consolefont
 # run X11 / Xorg configurator
 . /etc/sysconfig/xserver >/dev/null 2>&1 || error "  The xserver \

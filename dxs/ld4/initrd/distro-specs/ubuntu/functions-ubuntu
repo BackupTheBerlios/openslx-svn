@@ -204,18 +204,19 @@ fi
 # initialize boot.ld - skript to be executed during early system startup
 # (before most of the normal boot init scripts)
 # this script should operate like a normal runlevel script (fixme!!)
-d_bootld () {
+d_mkbootld () {
 case "$1" in
   init)
     echo -e "#!/bin/sh\n# skeleton of /etc/${D_INITDIR}/boot.ld written \
 from $0" >/mnt/etc/${D_INITDIR}/boot.ld
-    echo -e '\n\ncase "$1" in    start)' \
+    echo -e '\n\ncase "$1" in\n    start)' \
       >>/mnt/etc/${D_INITDIR}/boot.ld
     echo -e '\techo -n "Running post configuration required by initrd"' \
       >>/mnt/etc/${D_INITDIR}/boot.ld
+    chmod u+x /mnt/etc/${D_INITDIR}/boot.ld
   ;;
   close)
-    echo -e "\t;;\n    stop)\n\t;;esac\nexit 0" \
+    echo -e "\t;;\n    stop)\n\t;;\nesac\nexit 0" \
       >>/mnt/etc/${D_INITDIR}/boot.ld
 
   ;;

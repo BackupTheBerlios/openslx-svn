@@ -3,7 +3,7 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-01-2006
 #		Blabla
 #		Blub
 #
@@ -66,17 +66,21 @@ repco()
 local FILENAME=$1
 # do not forget to define all variables which should be replaced within
 # the start and configuration scripts
-if [ -d ${FILENAME} ] ; then
-  mkdir -p;
+if [ -d initrd-stuff/${FILENAME} ] ; then
+  [ -d ${INSTDIR}/${FILENAME} ] || mkdir -p ${INSTDIR}/${FILENAME}
 else
-  sed -e "s,@@@INSTDIR@@@,${INSTDIR},g" \
-    -e "s,@@@NWMODULES@@@,${NWMODULES},g" \
-    -e "s,@@@KERNVER@@@,${KERNVER},g" \
-    -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
-    -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
-    -e "s,@@@DISTRO@@@,${DISTRO},g" \
-    -e "s,@@@NETIF@@@,${NET_IF},g" \
-    ${FILENAME} >> ${INSTDIR}/${FILENAME}
+  if file initrd-stuff/${FILENAME}| grep "ELF" &>/dev/null ; then
+    cp initrd-stuff/${FILENAME} ${INSTDIR}/${FILENAME}
+  else
+    sed -e "s,@@@INSTDIR@@@,${INSTDIR},g" \
+        -e "s,@@@NWMODULES@@@,${NWMODULES},g" \
+        -e "s,@@@KERNVER@@@,${KERNVER},g" \
+        -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
+        -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
+        -e "s,@@@DISTRO@@@,${DISTRO},g" \
+        -e "s,@@@NETIF@@@,${NET_IF},g" \
+          initrd-stuff/${FILENAME} >> ${INSTDIR}/${FILENAME}
+  fi
 fi
 }
 
@@ -159,10 +163,6 @@ resolve_modules() {
 	    --set-version $kernel_version --ignore-install \
 	    --show-depends $module 2> /dev/null \
 	    | sed -ne 's:.*insmod /\?::p' )
-	if [ -z "$module_list" ]; then
-	    echo "Cannot determine dependencies of module $module." \
-		"Is modules.dep up to date?"
-	fi
 	echo "$module_list"
     done \
     | awk ' # filter duplicates: we must not reorder modules here!
@@ -265,26 +265,23 @@ mkdir -p ${INSTDIR}/etc/sysconfig
 # source configuration file for the distribution used
 #DISTRO=debian
 
-if [ -z "${DISTRO}" ] ; then
-  for i in ${ROOTDIR}/bin/lsb_release ${ROOTDIR}/usr/bin/lsb_release; do
-    if [ -e $i ] ; then
-      DISTRO=`. $i -a | grep "Distributor" | sed "s/.*\t//"`
-	echo $DISTRO
-      DISTRO_VER=`. $i -a | grep "Release:" | sed "s/.*\t//"`
-      break
-    fi
-  done
-fi
+# fixmee!! Funktion knallt, wenn lsb_release nicht da!!
+#if [ -z "${DISTRO}" ] ; then
+#  for i in ${ROOTDIR}/bin/lsb_release ${ROOTDIR}/usr/bin/lsb_release; do
+#    if [ -e $i ] ; then
+#      DISTRO=`. $i -a | grep "Distributor" | sed "s/.*\t//"`
+#	echo $DISTRO
+#      DISTRO_VER=`. $i -a | grep "Release:" | sed "s/.*\t//"`
+#      break
+#    fi
+#  done
+#fi
 
 if [ -z "${DISTRO}" ] ; then
   if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
     DISTRO=suse
     DISTRO_VER=`grep "VERSION" /etc/SuSE-release | sed "s/.*= //"`
-  fi
-fi
-
-if [ -z "${DISTRO}" ] ; then
-  if [ -e ${ROOTDIR}/etc/debian-version ] ; then
+  elif [ -e ${ROOTDIR}/etc/debian-version ] ; then
     DISTRO=debian
     DISTRO_VER=`cat ${ROOTDIR}/etc/debian-version`
   fi
@@ -342,11 +339,6 @@ for bbins in ip ifconfig; do
   else echo "Binary not found"; fi
 done
 
-# copy and replace variable names
-find initrd-stuff -exec repco '{}' \;
-
-# distro dependet stuff for etc, booting !?
-
 # needed standard binaries
 for bbins in \
     cat chmod chown chroot cp expr killall ln mkdir modprobe \
@@ -383,6 +375,7 @@ mkdir -p ${INSTDIR}/var/lib/nfs/state
 
 #if nfs - dann modul suchen, kopieren 
 
+# distro specific additional stuff
 case "${DISTRO}" in 
   debian*)
     cp /lib/libnss_compat.so.2 ${INSTDIR}/lib;;
@@ -421,12 +414,13 @@ for module in `resolve_modules ${KERNVER} af_packet ${NWMODULES} ${FSMODULES}`; 
 done
 cp /lib/modules/${KERNVER}/modules.* ${INSTDIR}/lib/modules/${KERNVER}
 
-#die beiden repco-zeilen koennen hier bald weg, weil oben schon alles kopiert wird. 
-
-#repco initrd-stuff/init ${INSTDIR}/init 
+# initial ramdisk scripts: init, functions, servconfig, hwautocfg, ...
+# copy and replace variable names
+for dirs in `find initrd-stuff/* ! -regex ".*/\..*"` ; do
+  repco ${dirs##initrd-stuff/} 
+done
 chmod 755 ${INSTDIR}/init ${INSTDIR}/bin/servconfig \
   ${INSTDIR}/bin/hwautocfg ${INSTDIR}/bin/dhcpmkconfig
-#repco initrd-stuff/etc/functions ${INSTDIR}/etc/functions
 
 #########################################################################
 # End of file copy procedures

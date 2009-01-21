@@ -1,18 +1,35 @@
+# Description:  common function script for the configuration of
+#		linux diskless clients (included by init, hwautocfg,
+#		servconfig, ... within initial ramdisk) 
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-01-2006
+#		Blabla
+#		Blub
+#
+# Copyright:    (c) 2006 - RZ Universitaet Freiburg
+# 
+# Version:      0.4.1b
+
+
+
 #######################################################################
 # produce error message and if $2 is empty run (debug) shell 
 error() {
 local message="An error occured during execution of $0 script:\n\n$1\n"
-# check if LOGFILE is already defined
-[ -z "${LOGFILE}" ] && LOGFILE="/dev/null"
 # check if LOGFILE is really writeable
-[ -n "${LOGFILE}" ] && [ -w /mnt/${LOGFILE} ] || LOGFILE="/dev/null"
+if [ -n "${LOGFILE}" ] ; then
+  [ "${LOGFILE}" != "/dev/null" ] && \
+  [ -w /mnt/${LOGFILE} ] || LOGFILE="/dev/null"
+else LOGFILE="/dev/null"
+fi
 # if nonfatal error else fatal error message and shell
 if [ -n "$2" ] ; then
-[ "$DEBUGLEVEL" -ge 1 ] && \
-  echo -e "{$message}  This error is not fatal - continuing ...\n" \
-    >> /mnt/${LOGFILE} 
-[ "$DEBUGLEVEL" -gt 1 ] && \
-  echo -e "{$message}  This error is not fatal - continuing ...\n"
+  [ "$DEBUGLEVEL" -ge 1 ] && \
+    echo -e "$message  This error is not fatal - continuing ...\n" \
+      >> ${LOGFILE} 
+  [ "$DEBUGLEVEL" -gt 1 ] && \
+    echo -e "$message  This error is not fatal - continuing ...\n"
+  [ "$DEBUGLEVEL" -gt 2 ] && usleep 20
 else
   echo -e "Running shell for debugging purposes now ...\n"
   /bin/sh

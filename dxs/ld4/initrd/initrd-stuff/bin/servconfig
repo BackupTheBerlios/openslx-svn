@@ -10,7 +10,7 @@
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.0.1b
+# Version:      0.0.2a
 
 # check for configuration files to source
 
@@ -89,11 +89,6 @@ test -n "$domain_name_servers" && {
 # delete and create runlevel links for initial booting (SuSE, Debian,
 # ...)
 case ${DISTRO} in
-  suse*)
-    ${SUSESPECIFICSUBDIR} = "boot.d/"
-  ;;
-esac
-case ${DISTRO} in
   suse*|debian*|ubuntu*)
     for i in ${D_RCDIRS} ${D_INITBOOTD} ; do
       rm -f /mnt/etc/$i/*
@@ -104,8 +99,8 @@ case ${DISTRO} in
     for i in boot.ld ${D_INITSCRIPTS}; do 
       count=`expr $count + 1`
       revcnt=`expr 41 - $count`
-      ln -sf /etc${D_INITDIR}/$i /mnt/etc/init.d/${SUSESPECIFICSUBDIR}S${count}$i
-      ln -sf /etc${D_INITDIR}/$i /mnt/etc/init.d/${SUSESPECIFICSUBDIR}K${revcnt}$i
+      ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/S${count}$i
+      ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/K${revcnt}$i
     done
   ;;
   gentoo*)

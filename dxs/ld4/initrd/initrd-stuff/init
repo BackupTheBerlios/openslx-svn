@@ -1,6 +1,20 @@
+#!/bin/sh
+# Description:  main script for new type of initial ramdisk for
+#		linux diskless clients version 4 
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-01-2006
+#		Bla
+#		Blub
+#
+# Copyright:    (c) 2006 - RZ Universitaet Freiburg
+# 
+# Version:      0.2.1a
+
 # functions common for all distros
-. /etc/functions || ( echo -e "The functions file contains a lot of script \
-functionality. Without this\ninit script will not run." && exit 1 )
+errmsg="functions file contains a lot of script \
+functionality. Without this\ninit script will not run."
+. /etc/functions || ( echo -e "The main $errmsg" && exit 1 )
+. /etc/distro-functions || ( echo "The distro $errmsg"  && exit 1 )
 # configuration settings (several file and directory variables)
 . /etc/sysconfig/config || ( echo -e "  The distribution \
 specific configuration file could not be found" && exit 1 )
@@ -81,9 +95,11 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       UNIONFS=1;;
     # dnbd server:port 
     dnbdroot=*)
-      DNBDOPT=${opts#dnbdroot=};;
+      NBD=dnbd # name of kernel module
+      NBDOPT=${opts#dnbdroot=};;
     # nbd server:port,filesystem (filesystem is optional)
     nbdroot=*)
+      NBD=nbd # name of kernel module
       NBDOPT=${opts#nbdroot=};;
     # ip configuration client-ip:server-ip:gateway:netmask
     ip=*)
@@ -178,23 +194,41 @@ if [ -n "$noipyet" ] ; then
 fi
 [ -n "$LDAP" ] && ldapconf &
 
-# if root filesystem should be imported via traditional network block device 
-if [ -n "${NBDOPT}" ] ; then
-  modprobe ${MODPRV} nbd || error "  Failed to load module nbd.ko. It is \
-needed if you intend to use\n  network block device (NBD) for the client \
+# if root filesystem should be imported via (d) network block device 
+if [ -n "${NBD}" ] ; then
+  modprobe ${MODPRV} ${NBD} || error "  Failed to load module ${NBD}.ko. It \
+is needed if you intend to use\n  network block device (D)NBD for the client \
 as root filesystem."
   nbdhost=${NBDOPT%:*}
   nbdopt=${NBDOPT#*:}
   nbdport=${NBDOPT%,*}
   nbdfs=${NBDOPT#*,}
-  echo "Diskless client using nbd server $nbdhost:$nbdport,$nbdfs"
-  nbd-client $nbdhost $nbdport /dev/nbd0
+  echo "Diskless client using ${NBD} server $nbdhost:$nbdport,$nbdfs"
   if [ -z "$nbdfs" ]; then 
     RFST=ext2; 
   else 
     RFST=$nbdfs;
-    modprobe ${MODPRV} ${RFST}
+    modprobe ${MODPRV} ${RFST} || error "  Failed to load the requested \
+filesystem module for the client root\n  filesystem ontop of the (D)NBD."
   fi
+  case "${NBD}" in
+    # network block device present in standard kernel
+    nbd)
+      nbd-client $nbdhost $nbdport /dev/nbd0
+      RDEV=/dev/nbd0
+    ;;
+    # dnbd by Thorsten Zitterell
+    dnbd)
+      mkdir /dnbd
+      mount -t tmpfs tmpfs /dnbd
+      while ! dnbd-client -b $dnbdhost -d /dev/dnbd0; do # -c /dnbd/cache
+        usleep 10
+      done
+      echo $?
+      RDEV=/dev/dnbd0
+      usleep 20
+    ;;
+  esac
 fi
 
 # if root filesystem should be imported via udp based distributed network
@@ -242,23 +276,27 @@ module\n  does not match the running kernel. If you do not want to see this \
     UNIONFS=""; }
 fi
 
+# setup of client root filesystem dependent on the availability of UnionFS
+msg="Starting ldconfig - switch it off via kernel cmdline option 'noldsc'"
 if [ -n "${UNIONFS}" ] ; then
-  echo -n "Using UnionFS for rw access"
+  echo "Using UnionFS for rw access"
   mkdir -p ${RWDIR}/union ${RWDIR}/uniontmp
   mount -n -t tmpfs none ${RWDIR}/uniontmp
   mount -n --move /mnt /root
   mount -n -t unionfs -o dirs=${RWDIR}/uniontmp=rw:/root=ro none /mnt
   mkdir -p /mnt/uniontmp
   mount -n --move ${RWDIR}/uniontmp /mnt/uniontmp
-  [ -z "${NOLDSC}" ] && ldconfig /etc/ld.so.cache &
+  # run ldconfig if not switched off via kernel command line
+  [ -z "${NOLDSC}" ] && echo $msg && ldconfig /etc/ld.so.cache &
 else
-  echo -n "Using bind mounts to ramdisk for rw access"
+  echo "Using bind mounts to ramdisk for rw access"
   mount -n -t tmpfs -o size=${TMPFSSIZE} ramfs ${RWDIR}
   for path in ${D_BINDMPTS} ; do
     mkdir -p ${RWDIR}/${path} >/dev/null 2>&1
     mount -n --bind ${RWDIR}/${path} /mnt/${path}
   done
-  [ -z "${NOLDSC}" ] && ldconfig /tmp/ld.so.cache &
+  # see above ...
+  [ -z "${NOLDSC}" ] && echo $msg && ldconfig /tmp/ld.so.cache &
   for path in ${D_RODIRSINRW}; do
     if [ -d /mnt/${path} ] ; then
       LIST=${path}" "$LIST
@@ -334,9 +372,9 @@ if [ -z "${NOLDSC}" ] ; then
 ld.so.cache did not finish in time."
   fi
 else
-  [ "${DEBUGLEVEL}" -gt 0 ] && echo -e "You decided not to recreate \
-/etc/ld.so.cache file. That might cause errors\nif libraries are installed \
-after this file was created on server." >> /mnt/${LOGFILE}
+  error "  You decided not to recreate \
+/etc/ld.so.cache file. That might cause errors\n  if libraries are installed \
+after this file was created on server." nonfatal
 fi
 # save machine configuration
 cp /etc/machine-setup /mnt/etc
