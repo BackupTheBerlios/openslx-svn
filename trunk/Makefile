@@ -38,7 +38,7 @@ ifeq ($(SLX_INSTALL_LOG),)
 endif
 
 tarball:
-	@OPENSLX_VERSION_SVNREV=$$( svnversion); \
+	@OPENSLX_VERSION_SVNREV=$$( svnversion .); \
 	if test "$${OPENSLX_SVN_SNAPSHOT}" = "0"; then \
 		unset OPENSLX_SVN_SNAPSHOT; \
 		echo "OPENSLX_SVN_SNAPSHOT=\"0\"" \
