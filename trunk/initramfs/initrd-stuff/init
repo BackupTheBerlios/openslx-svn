@@ -447,7 +447,6 @@ if [ -n "${nbdmod}" ] ; then
         ip route add 224.0.0.0/4 dev $nwif
       waitfor /dev/dnbd0 10000 || error "$init_nbddev"
       echo "dnbd-client -b $nbdhost -d $RDEV $clientopt"
-      /bin/ash
       while ! dnbd-client -b $nbdhost -d $RDEV $clientopt ; do
         usleep 10000
       done
@@ -691,7 +690,7 @@ else
   error "$init_infldcfg" nonfatal
 fi
 # wait a while for hardware setup to complete and copy stuff to stage4
-waitfor /tmp/hwcfg 10000 || error "$init_errhw"
+waitfor /tmp/hwcfg 20000 || error "$init_errhw"
 [ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
   >> /mnt/etc/udev/rules.d/04-scanner.rules
 # wait for completion of Xorg configuration and finalize it

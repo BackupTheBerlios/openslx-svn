@@ -634,14 +634,14 @@ else
   error "$init_infldcfg" nonfatal
 fi
 # wait a while for hardware setup to complete and copy stuff to stage4
-waitfor /tmp/hwcfg 30000 || error "$init_errhw"
+waitfor /tmp/hwcfg 20000 || error "$init_errhw"
 [ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
   >> /mnt/etc/udev/rules.d/04-scanner.rules
 # wait for completion of Xorg configuration and finalize it
-waitfor /tmp/xready 20000 || error "$init_errxorg" nonfatal
+waitfor /tmp/xready 10000 || error "$init_errxorg" nonfatal
 mv /etc/xorg.conf /mnt/${D_XF86CONFFILE}
 # wait a while for services setup to complete
-waitfor /tmp/svcfg 20000 || error "$init_errsw"
+waitfor /tmp/svcfg 10000 || error "$init_errsw"
 # IP configuration is complete and should not be updated automatically
 killall -9 dhcpcd dhclient udhcpc 2>/dev/null
 # copy machine configuration file into stage4 filesystem
