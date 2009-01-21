@@ -124,8 +124,11 @@ distro_check() {
       Breezy*|breezy*)
       eval "$2=\"5.10\""
       ;;
-      Dapper*|dapper*|*)
+      Dapper*|dapper*)
       eval "$2=\"6.06\""
+      ;;
+      Edgy*|edgy*|*)
+      eval "$2=\"6.10\""
       ;;
     esac
     ;;
@@ -222,14 +225,17 @@ configure() {
   echo "Using ${server_distro} as server distribution"
 
   # ask for client distro
+  if [ -z ${client_distro} ] ; then
+    client_distro=$server_distro
+  fi
   ask "Client distribution (e.g. debian): " client_distro ${client_distro}
   ask "Client distribution version (numerical - e.g. 3.1): " \
     client_distro_ver ${client_distro_ver}
   distro_check client_distro client_distro_ver
-  echo "Using ${client_distro} as client distribution"
+  echo "Using ${client_distro}-$client_distro_ver as client distribution"
 
   if [ -z ${rootdir} ] ; then
-    rootdir="/nfsroot/"${client_distro}-${client_distro_ver}
+    rootdir="/srv/openslx/export/"${client_distro}-${client_distro_ver}
   fi
 
   . distro-specs/config-${server_distro}
@@ -534,6 +540,18 @@ dxs_pxedefault_conf="pxelinux/default"
 dxs_cl_dir="/var/opt/openslx/config/default/initramfs"
 dxs_client_conf="machine-setup.pls-configure"
 
+# Quick and dirty: rebuild the ramdisk  
+if [ "x$1" = "x-g" ]; then
+  echo "Creating initial ramdisk from last runs settings (if possible...)"
+  precheck
+  if [ -f .config ] ; then
+    . .config
+    create_initrd
+    exit 0
+  else
+    echo "No previous settings found. Please configure your installation first"
+  fi
+fi
 
 header
 precheck #(run as root, rsync etc.)
