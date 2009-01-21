@@ -200,7 +200,7 @@ function adjust_dhcpnextserver($tftpIP, $rbsDN){
 
    global $ds, $suffix, $ldapError;
    
-   if(!($result = uniLdapSearch($ds, "ou=RIPM,".$suffix, "(&(objectclass=Host)(hlprbservice=$rbsDN))", array("dn"), "dn", "sub", 0, 0))) {
+   if(!($result = uniLdapSearch($ds, "ou=RIPM,".$suffix, "(&(|(objectclass=Host)(objectclass=dhcpPool))(hlprbservice=$rbsDN))", array("dn"), "dn", "sub", 0, 0))) {
  		# redirect(5, "", $ldapError, FALSE);
   		echo "no search";
   		die;
@@ -436,7 +436,7 @@ function add_pxe($pxeDN,$pxecn,$rbsDN,$pxetimerange,$pxeattribs,$filenames,$conf
 			}
 		}
 	}
-	#print_r($pxeentry); echo "<br>";
+	print_r($pxeentry); echo "<br>";
 	print_r($pxeDN); echo "<br>";
 	if (ldap_add($ds,$pxeDN,$pxeentry)){
 		return 1;

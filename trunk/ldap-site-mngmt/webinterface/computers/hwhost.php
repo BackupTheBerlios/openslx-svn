@@ -7,7 +7,7 @@ $webseite = "hwhost.dwt";
 
 include('computers_header.inc.php');
 
-$mnr = 1; 
+$mnr = 0; 
 $sbmnr = -1;
 $mcnr = -1;
 
@@ -24,7 +24,7 @@ createComputersMenu($rollen, $mnr, $auDN, $sbmnr, $mcnr);
 $hostDN = $_GET['dn'];
 
 $attributes = array("hostname","domainname","ipaddress","hwaddress","description","dhcphlpcont",
-							"hw-mouse","hw-graphic","hw-monitor");
+							"hw-mouse","hw-graphic","hw-monitor","geolocation","geoattribut");
 $host = get_node_data($hostDN,$attributes);
 $hostip = explode('_',$host['ipaddress']);
 
@@ -33,11 +33,13 @@ $template->assign(array("HOSTDN" => $hostDN,
            			      "DOMAINNAME" => $host['domainname'],
            			      "HWADDRESS" => $host['hwaddress'],
            			      "IPADDRESS" => $hostip[0],
-           			      "DESCRIPTION" => $host['description'],           			      
-           		       	"DHCPCONT" => $host['dhcphlpcont'],           			      
-           		       	"MOUSE" => $host['hw-mouse'],          			      
+           			      "DESCRIPTION" => $host['description'],
+           		       	"DHCPCONT" => $host['dhcphlpcont'],
+           		       	"GEOLOC" => $host['geolocation'],
+           		       	"GEOATT" => $host['geoattribut'],
+           		       	"MOUSE" => $host['hw-mouse'],
            		       	"GRAPHIC" => $host['hw-graphic'],
-           		       	"MONITOR" => $host['hw-monitor'], 
+           		       	"MONITOR" => $host['hw-monitor'],
            		       	"DHCPLINK" => "<a href='dhcphost.php?dn=".$hostDN."&sbmnr=".$sbmnr."' class='headerlink'>",
            		       	"HOSTLINK" => "<a href='host.php?dn=".$hostDN."&sbmnr=".$sbmnr."' class='headerlink'>",
            		       	"RBSLINK" => "<a href='rbshost.php?dn=".$hostDN."&sbmnr=".$sbmnr."' class='headerlink'>",

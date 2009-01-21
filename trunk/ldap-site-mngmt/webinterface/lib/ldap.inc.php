@@ -1,13 +1,13 @@
 <?php
 /**
 * ldap.inc.php - LDAP-Bibliothek
-* Diese Bibliothek enthält alle Funktionen für den Zugriff auf den LDAP-Server.
+* Diese Bibliothek enthï¿½lt alle Funktionen fï¿½r den Zugriff auf den LDAP-Server.
 *
 * @param string ldapError
 * @param resource ds
 *
-* @author Timothy Burk, Mahir Yildirim, Johannes Sprenger, Daniel Höfler
-* @copyright Timothy Burk, Mahir Yildirim, Johannes Sprenger, Daniel Höfler
+* @author Timothy Burk, Mahir Yildirim, Johannes Sprenger, Daniel Hï¿½fler
+* @copyright Timothy Burk, Mahir Yildirim, Johannes Sprenger, Daniel Hï¿½fler
 */
 //Konfiguration laden
 require_once("config.inc.php");
@@ -15,9 +15,9 @@ require_once("config.inc.php");
 $ldapError = null;
 
 /**
-* uniLdapConnect($userRdn, $userPwd) - Führt den Bind am Gruppe1-LDAP-Server durch
+* uniLdapConnect($userRdn, $userPwd) - Fï¿½hrt den Bind am Gruppe1-LDAP-Server durch
 *
-* @param string userRdn UID für den Login
+* @param string userRdn UID fï¿½r den Login
 * @param string userPwd Loginpasswort
 *
 * @return boolean Erfolg bzw. Misserfolg
@@ -38,7 +38,7 @@ function uniLdapConnect($userRdn = "", $userPwd = "") {
               if($userRdn != "" && $userPwd != "") {
                 # Anmeldung als User.
                 if($result = @ldap_bind($ds, "uid=".$userRdn.",ou=people,".$suffix, $userPwd)) {
-                  # Bind erfolgreich ausgeführt
+                  # Bind erfolgreich ausgefï¿½hrt
                   return $ds;
                 } else {
                   # Bind nicht erfolreich.
@@ -53,7 +53,7 @@ function uniLdapConnect($userRdn = "", $userPwd = "") {
               } else {
                 # Anonymer Bind.
                 if($result = ldap_bind($ds)) {
-                  # Anonymer Bind erfolgreich ausgeführt
+                  # Anonymer Bind erfolgreich ausgefï¿½hrt
                   return $ds;
                 } else {
                   # Anonymer Bind nicht erfolreich.
@@ -77,9 +77,9 @@ function uniLdapConnect($userRdn = "", $userPwd = "") {
 
 
 /**
-* rzLdapConnect($userRdn, $userPwd) - Führt den Bind am RZ-LDAP-Server durch
+* rzLdapConnect($userRdn, $userPwd) - Fï¿½hrt den Bind am RZ-LDAP-Server durch
 *
-* @param string userRdn UID für den Login
+* @param string userRdn UID fï¿½r den Login
 * @param string userPwd Loginpasswort
 *
 * @return boolean Erfolg bzw. Misserfolg
@@ -99,7 +99,7 @@ function rzLdapConnect($userRdn = "", $userPwd = "") {
            if($userRdn != "" && $userPwd != "") {
              # Anmeldung als User.
              if($result = @ldap_bind($ds, "uid=".$userRdn.",ou=people,".$suffix_rz, $userPwd)) {
-               # Bind erfolgreich ausgeführt
+               # Bind erfolgreich ausgefï¿½hrt
                return $ds;
              } else {
                # Bind nicht erfolreich.
@@ -113,7 +113,7 @@ function rzLdapConnect($userRdn = "", $userPwd = "") {
            } else {
              # Anonymer Bind.
              if($result = ldap_bind($ds)) {
-               # Anonymer Bind erfolgreich ausgeführt
+               # Anonymer Bind erfolgreich ausgefï¿½hrt
                return $ds;
              } else {
                # Anonymer Bind nicht erfolreich.
@@ -133,14 +133,14 @@ function rzLdapConnect($userRdn = "", $userPwd = "") {
 
      /**
      * uniLdapSearch($ds, $base, $filter, $attributes, $sort, $mode, $resultLimit, $timeout)
-     * Sucht Einträge im LDAP-Server.
+     * Sucht Eintrï¿½ge im LDAP-Server.
      *
-     * Durchsucht den LDAP-Server vom Punkt $base ab nach Einträgen, die $filter entsprechen. Falls in $sort ein Feldname angegeben
-     * wurde, so wird danach sortiert. (ACHTUNG: die Funktion ldap_sort() ist nicht dokumentiert! Ich weiß nicht ob sie Sortierung
-     * nach mehreren Feldern zulässt und wie sie sich verhält, wenn zu einem Attribut mehrere Werte existieren.) $mode definiert die
-     * Art der Suche, wohingegen $resultLimit und $timeout die Anzahl der Ergebnis-Einträge bzw. die maximalen Suchdauer einschränken.
-     * Zurückgegeben werden die Attribute, die im Array $attributes aufgeführt sind. Im Erfolgsfalle wird ein multidimensionales Array
-     * zurückgeliefert, im Fehlerfalle FALSE. Dann steht die Fehlermeldung in der Variablen $ldapError.
+     * Durchsucht den LDAP-Server vom Punkt $base ab nach Eintrï¿½gen, die $filter entsprechen. Falls in $sort ein Feldname angegeben
+     * wurde, so wird danach sortiert. (ACHTUNG: die Funktion ldap_sort() ist nicht dokumentiert! Ich weiï¿½ nicht ob sie Sortierung
+     * nach mehreren Feldern zulï¿½sst und wie sie sich verhï¿½lt, wenn zu einem Attribut mehrere Werte existieren.) $mode definiert die
+     * Art der Suche, wohingegen $resultLimit und $timeout die Anzahl der Ergebnis-Eintrï¿½ge bzw. die maximalen Suchdauer einschrï¿½nken.
+     * Zurï¿½ckgegeben werden die Attribute, die im Array $attributes aufgefï¿½hrt sind. Im Erfolgsfalle wird ein multidimensionales Array
+     * zurï¿½ckgeliefert, im Fehlerfalle FALSE. Dann steht die Fehlermeldung in der Variablen $ldapError.
      *
      * @param string $base die DN, das Verzeichnis, in dem die Suche startet
      *
@@ -148,16 +148,16 @@ function rzLdapConnect($userRdn = "", $userPwd = "") {
      *
      * @param array attributes die Attributnamen, deren Werte im Ergebnis enthalten sein sollen.
      *
-     * @param string $sort Sortiert die Ergebnis-Einträge nach dem angegebenen Feldnamen (undokumentiert! s.o.)
+     * @param string $sort Sortiert die Ergebnis-Eintrï¿½ge nach dem angegebenen Feldnamen (undokumentiert! s.o.)
      *
-     * @param string $mode Der Modus: "one" liefert einen Eintrag, "list" alle Einträge des Verzeichnisses und "sub"
-     *                     schließt alle Untervezeichnisse mit ein.
+     * @param string $mode Der Modus: "one" liefert einen Eintrag, "list" alle Eintrï¿½ge des Verzeichnisses und "sub"
+     *                     schlieï¿½t alle Untervezeichnisse mit ein.
      *
-     * @param int $resultLimit die maximale Anzahl zurückgegebener Einträge
+     * @param int $resultLimit die maximale Anzahl zurï¿½ckgegebener Eintrï¿½ge
      *
      * @param int $timeout die maximale Suchzeit, bevor der LDAP-Server abbrechen soll
      *
-     * @return mixed multidimensionales array mit den Einträgen im Erfolgsfall, FALSE wenn ein Fehler auftrat
+     * @return mixed multidimensionales array mit den Eintrï¿½gen im Erfolgsfall, FALSE wenn ein Fehler auftrat
      *
      * @see ldap_read()
      * @see ldap_list()
@@ -201,8 +201,8 @@ function uniLdapSearch($ds, $base, $filter, $attributes, $sort, $mode, $resultLi
          return false;
      }
    } else {
-     # Kein gültiger Modus angegeben.
-     $ldapError .= "Es wurde kein gültiger Modus angegeben.";
+     # Kein gï¿½ltiger Modus angegeben.
+     $ldapError .= "Es wurde kein gï¿½ltiger Modus angegeben.";
      return false;
    }
    if($abfrage && ($entries = ldap_get_entries($ds, $resource))) {
@@ -218,11 +218,11 @@ function uniLdapSearch($ds, $base, $filter, $attributes, $sort, $mode, $resultLi
 /**
 * uniLdapAdd($ds, $dn, $daten, [$objectclass])
 *
-* Fügt ein neues Objekt in die LDAP-Datenbank ein.
+* Fï¿½gt ein neues Objekt in die LDAP-Datenbank ein.
 *
 * @param resource $ds Datenbankhandler
 * @param string $dn Distinguished Name des neuen Eintrages
-* @param array $daten Assoziatives Array mit den gewünschten Attributen
+* @param array $daten Assoziatives Array mit den gewï¿½nschten Attributen
 * @param string $objectclass Objektklasse des neuen Eintrages (Standard = "")
 *
 * @return boolean TRUE wenn Eintrag erfolgreich, FALSE wenn ein Fehler aufgetreten ist.
@@ -245,22 +245,22 @@ function uniLdapAdd($ds, $dn, $daten, $objectclass = "") {
 /**
 * uniLdapModify($ds, $dn, $daten_alt, $daten_neu, [$i])
 *
-* Universalfunktion zum Ändern von Attributen und Werten.
-* Bei Änderungsskripten muss zuerst ein Formular mit den alten Daten gefüllt werden. Die hierfür
-* durchgeführte Suche wird in einem unbehandelten Array in der SESSION gespeichert und wieder
-* ausgelesen, sobald die Änderungen gespeichert werden sollen. Es wird anschließend an diese Funktion
-* (als $daten_alt)gegeben, die das Array mit ldapArraySauber von allen unnötigen Einträgen befreit.
-* $daten_alt entspricht dann strukturell dem POST-Array des Änderungsformulars ($daten_neu).
-* Letzteres wird nun durch laufen, alle Einträge werden mit ihrer Entsprechnung aus $daten_alt verglichen
-* und ggf. werden dann Attribute geändert, gelöscht oder hinzugefügt.
+* Universalfunktion zum ï¿½ndern von Attributen und Werten.
+* Bei ï¿½nderungsskripten muss zuerst ein Formular mit den alten Daten gefï¿½llt werden. Die hierfï¿½r
+* durchgefï¿½hrte Suche wird in einem unbehandelten Array in der SESSION gespeichert und wieder
+* ausgelesen, sobald die ï¿½nderungen gespeichert werden sollen. Es wird anschlieï¿½end an diese Funktion
+* (als $daten_alt)gegeben, die das Array mit ldapArraySauber von allen unnï¿½tigen Eintrï¿½gen befreit.
+* $daten_alt entspricht dann strukturell dem POST-Array des ï¿½nderungsformulars ($daten_neu).
+* Letzteres wird nun durch laufen, alle Eintrï¿½ge werden mit ihrer Entsprechnung aus $daten_alt verglichen
+* und ggf. werden dann Attribute geï¿½ndert, gelï¿½scht oder hinzugefï¿½gt.
 *
 * @param resource $ds Datenbankhandler
 * @param string $dn Distinguished Name des Eintrages
-* @param array $daten_alt Dreidimensionales mixed Array der Form $array[int][string][int], so wie es von uniLdapSearch zurückgeliefert wird.
+* @param array $daten_alt Dreidimensionales mixed Array der Form $array[int][string][int], so wie es von uniLdapSearch zurï¿½ckgeliefert wird.
 * @param array $daten_neu Zweidimensionales mixed Array der Form $array[string][int], so wie ein Formular in $_POST gespeichert ist.
 * @param int $i Gibt an, welcher Eintrag der ersten Dimension von $daten_alt verwendet werden soll. (Standard: $i=0)
 *
-* @return boolean TRUE wenn Änderung erfolgreich, FALSE wenn ein Fehler aufgetreten ist.
+* @return boolean TRUE wenn ï¿½nderung erfolgreich, FALSE wenn ein Fehler aufgetreten ist.
 *
 * @see ldap_mod_replace()
 * @see ldap_mod_add()
@@ -279,16 +279,16 @@ function uniLdapModify($ds, $dn, $daten_alt, $daten_neu, $i = 0) {
         if(!(is_array($value_neu))) {
             # Wenn $value_neu ein Skalar ist...
             # (d.h., das Attribut $key darf nur einen Wert annehmen)
-            $value_neu = htmlentities(str_replace(chr(160),"",trim($value_neu)));               // ungewollte Leerzeichen und &nbsp; löschen
+            $value_neu = htmlentities(str_replace(chr(160),"",trim($value_neu)));               // ungewollte Leerzeichen und &nbsp; lï¿½schen
             if (isset($daten_alt[$key])) {
-				$daten_alt[$key] = str_replace(chr(160),"",trim($daten_alt[$key]));   // ungewollte Leerzeichen und &nbsp; löschen
+				$daten_alt[$key] = str_replace(chr(160),"",trim($daten_alt[$key]));   // ungewollte Leerzeichen und &nbsp; lï¿½schen
 			} else {
 				$daten_alt[$key] = "";
 			}
             if($daten_alt[$key] == "" && $value_neu != "") {
               # FALL 1:
               # Alter Wert ist leer, neuer Wert ist nicht leer.
-              # Füge neues Attribut hinzu.
+              # Fï¿½ge neues Attribut hinzu.
                 if(ldap_mod_add($ds, $dn, array($key => $value_neu))) {
                     $meldung .= "Add successfull: ".$key." -> ".$value_neu."<br>";
                 } else {
@@ -298,7 +298,7 @@ function uniLdapModify($ds, $dn, $daten_alt, $daten_neu, $i = 0) {
             } else if($daten_alt[$key] != "" && $value_neu == "") {
               # FALL 2:
               # Alter Wert ist nicht leer, neuer Wert ist leer.
-              # Lösche Attribut.
+              # Lï¿½sche Attribut.
                 if(ldap_mod_del($ds, $dn, array($key => $daten_alt[$key]))) {
                     $meldung .= "Delete successfull: ".$key." -> ".$daten_alt[$key]."<br>";
                 } else {
@@ -308,7 +308,7 @@ function uniLdapModify($ds, $dn, $daten_alt, $daten_neu, $i = 0) {
             } else if($daten_alt[$key] != "" && $value_neu != "" && $daten_alt[$key] != $value_neu) {
               # FALL 3:
               # Alter und neuer Wert sind nicht leer und beide sind ungleich.
-              # Ändere das Attribut. Der bisherige Wert wird überschrieben.
+              # ï¿½ndere das Attribut. Der bisherige Wert wird ï¿½berschrieben.
                 if(ldap_mod_replace($ds, $dn, array($key => $value_neu))) {
                     $meldung .= "Replace successfull: ".$key." -> ".$value_neu."<br>";
                 } else {
@@ -316,7 +316,7 @@ function uniLdapModify($ds, $dn, $daten_alt, $daten_neu, $i = 0) {
                 }
 
             } else {
-              # In allen anderen Fällen ist keine Änderung nötig
+              # In allen anderen Fï¿½llen ist keine ï¿½nderung nï¿½tig
             }
         } else {
             # Wenn $value_neu ein Array ist...
@@ -326,7 +326,7 @@ function uniLdapModify($ds, $dn, $daten_alt, $daten_neu, $i = 0) {
 				$value_alt = numArraySauber($daten_alt[$key]);
 		        foreach($value_alt as $item) {
 			        #$item = htmlentities($item);
-				    # Lösche alle alten Werte des Attributes $key.
+				    # Lï¿½sche alle alten Werte des Attributes $key.
 					if(ldap_mod_del($ds, $dn, array($key => $item))) {
 	                    $meldung .= "Delete successfull: ".$key." -> ".$item."<br>";
 		            } else {
@@ -336,7 +336,7 @@ function uniLdapModify($ds, $dn, $daten_alt, $daten_neu, $i = 0) {
 			}
             foreach($value_neu as $item) {
                 $item = htmlentities($item);
-                # Füge alle neuen Werte des Attributes $key ein.
+                # Fï¿½ge alle neuen Werte des Attributes $key ein.
                 if(ldap_mod_add($ds, $dn, array($key => $item))) {
                     $meldung .= "Add successfull: ".$key." -> ".$item."<br>";
                 } else {
@@ -355,36 +355,36 @@ function uniLdapModify($ds, $dn, $daten_alt, $daten_neu, $i = 0) {
 }
 
 /**
-* uniLdapDelete löscht beliebige Einträge mit dessen Subtree aus der Datenbank.
-* Dabei wird der wird der Baum ab dem Eintrag $dn zu allen Blättern durchlaufen (Es
-* können nur Blätter gelöscht werden!!) und die Einträge von hinten her bis einschließlich
-* $dn gelöscht
+* uniLdapDelete lï¿½scht beliebige Eintrï¿½ge mit dessen Subtree aus der Datenbank.
+* Dabei wird der wird der Baum ab dem Eintrag $dn zu allen Blï¿½ttern durchlaufen (Es
+* kï¿½nnen nur Blï¿½tter gelï¿½scht werden!!) und die Eintrï¿½ge von hinten her bis einschlieï¿½lich
+* $dn gelï¿½scht
 *
 * @param resource ds LDAP Directory Handle
 * @param string dn Distiguished Name
 *
 * @return boolean
 *
-* @author Daniel Höfler
+* @author Daniel Hï¿½fler
 */
 
 function uniLdapDelete($ds, $dn) {
-    # Überprüfung, ob zu löschender Eintrag vorhanden ist
+    # ï¿½berprï¿½fung, ob zu lï¿½schender Eintrag vorhanden ist
     if(!uniLdapSearch($ds, $dn, "objectclass=*", array("*"), "", "one", 0, 0)) {
-        $ldapError .= "Löschen fehlgeschlagen: Eintrag nicht gefunden".ldap_error($ds)."<br>\n";
+        $ldapError .= "Lï¿½schen fehlgeschlagen: Eintrag nicht gefunden".ldap_error($ds)."<br>\n";
         return false;
     }
     # Auslesen der Daten unterhalb von $dn
     $daten = uniLdapSearch($ds, $dn, "objectclass=*", array("*"), "", "list", 0, 0);
-    # for-Schleife wird nur ausgeführt, falls sich unterhalb von $dn Einträge befinden
+    # for-Schleife wird nur ausgefï¿½hrt, falls sich unterhalb von $dn Eintrï¿½ge befinden
     for($i = 0; $i < $daten['count']; $i++){
         uniLdapDelete($ds, $daten[$i]['dn']);
     }
-    # löschen der Blätter
+    # lï¿½schen der Blï¿½tter
     if(ldap_delete($ds, $dn)) {
         return true;
     } else {
-        $ldapError .= "Löschen fehlgeschlagen".ldap_error($ds)."<br>\n";
+        $ldapError .= "Lï¿½schen fehlgeschlagen".ldap_error($ds)."<br>\n";
         return false;
     }
 }
@@ -398,17 +398,17 @@ function uniLdapDelete($ds, $dn) {
 #  Weitere LDAP Funktionen 
 
 #
-# LDAP Funktionen um alle Objekte der AU eines bestimmten Typs mit gewählten Attributen zu holen
+# LDAP Funktionen um alle Objekte der AU eines bestimmten Typs mit gewï¿½hlten Attributen zu holen
 #
-function get_hosts($auDN,$attributes) 
+function get_hosts($auDN,$attributes,$sortattr) 
 {
 	global $ds, $suffix, $ldapError;
 	
-	#if ( $sortattr == ""){
-	#	$sortattr = "hostname";	
-	#}
+	if ( $sortattr == ""){
+		$sortattr = "hostname";
+	}
 	
-	if(!($result = uniLdapSearch($ds, "cn=computers,".$auDN, "(objectclass=Host)", $attributes, "hostname", "sub", 0, 0))) {
+	if(!($result = uniLdapSearch($ds, "cn=computers,".$auDN, "(objectclass=Host)", $attributes, $sortattr, "sub", 0, 0))) {
  		# redirect(5, "", $ldapError, FALSE);
   		echo "no search"; 
   		die;
@@ -514,6 +514,39 @@ function get_pxeconfigs($baseDN,$attributes)
  		# redirect(5, "", $ldapError, FALSE);
   		echo "no search"; 
   		die;
+	}
+	elseif(count($result) == 0){return $result;}
+	else{
+		$result = ldapArraySauber($result);
+		# print_r($result);printf("<br><br>");
+		$pxe_array = array();
+		foreach ($result as $item){
+			foreach ($attributes as $att){
+   			$atts[$att] = $item[$att];
+   		}
+   		$atts['baseDN'] = $baseDN;
+   		$atts['auDN'] = $auDN;
+   		$pxe_array[] = $atts;
+   	}
+   	if($attributes != false ){return $pxe_array;} 
+		else{return $result;}
+	}
+}
+
+function get_pxeconfigs2($clientDN,$attributes) 
+{
+	global $auDN, $ds, $suffix, $ldapError;
+	
+	if ($clientDN == ""){
+		$filter = "(objectclass=PxeConfig)";
+	}else{
+		$filter = "(&(objectclass=PxeConfig)(pxeclientdn=$clientDN))";
+	}
+	
+	if(!($result = uniLdapSearch($ds, "cn=pxe,".$auDN, $filter, $attributes, "", "list", 0, 0))) {
+		# redirect(5, "", $ldapError, FALSE);
+		echo "no search"; 
+		die;
 	}
 	elseif(count($result) == 0){return $result;}
 	else{
@@ -692,6 +725,31 @@ function get_childau($auDN,$attributes)
 	global $ds, $suffix, $ldapError;
 	
 	if(!($result = uniLdapSearch($ds, $auDN, "(objectclass=AdministrativeUnit)", $attributes, "ou", "list", 0, 0))) {
+ 		# redirect(5, "", $ldapError, FALSE);
+  		echo "no search";  
+  		die;
+	} 
+	else {
+		$result = ldapArraySauber($result); 
+	
+		$childau_array = array();
+   	foreach ($result as $item){
+			foreach ($attributes as $att){
+   			$atts[$att] = $item[$att];
+   		}
+   		$atts['auDN'] = $auDN;
+   		$childau_array[] = $atts;
+   	} 
+		if($attributes != false ){return $childau_array;}
+		else{return $result;}
+   }
+} 
+
+function get_all_aus($attributes)
+{
+	global $ds, $auDN, $suffix, $ldapError;
+	
+	if(!($result = uniLdapSearch($ds, "ou=RIPM,".$suffix, "(objectclass=AdministrativeUnit)", $attributes, "ou", "sub", 0, 0))) {
  		# redirect(5, "", $ldapError, FALSE);
   		echo "no search";  
   		die;

@@ -1,9 +1,16 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
 	<tr>
-		<td colspan='2'><h3>Dynamische DHCP Pools </h3></td>
+		<td width='80%'>
+			<h3>Dynamische DHCP Pools </h3>
+			Administration Ihrer eingetragenen <b>dynamischen DHCP Pools</b>:<br>
+			Bearbeiten von bzw. Anlegen neuer IP Ranges zur dynamischen Vergabe. Zulassen von unbekannten bzw. einschr&auml;nken auf bekannte Clients (d.h. im DHCP angelegte Clients).<br>
+			Sie k&ouml;nnen IP Ranges nur entsprechend der Ihnen noch frei verf&uuml;baren IP Adressen definieren.<br><br>
+			&Uuml;ber die <b>Eingabemaske</b> unten k&ouml;nnen Sie weitere Pools anlegen
+		</td>
+		<td>&nbsp;</td>
 	</tr>
 	
-	<tr><td>
+	<tr><td colspan='2'>
 		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
 			
 			<form action='dhcppools_change.php' method='post'>
@@ -17,11 +24,11 @@
 			   <!-- BEGIN DYNAMIC BLOCK: Dhcppools -->
 			
 			<tr height='50' valign='top'>
-				<td class='tab_d'><b>{SUBNET}/24</b><br><br>
+				<td class='tab_d_ohne'><b>{SUBNET}/24</b><br><br>
 				   <input type='checkbox' name='delpool[]' value='{POOLDN}' size='10' class='medium_form_field'>
-					Pool l&ouml;schen (H&auml;kchen setzen)</td>
+					Pool l&ouml;schen</td>
 				
-				<td class='tab_d'>
+				<td class='tab_d_ohne'>
 					
 				      <!-- BEGIN DYNAMIC BLOCK: Dhcpranges -->
 					 
@@ -39,18 +46,23 @@
 					<input type='Text' name='addrange2[]' value='' size='15' maxlength='15' class='medium_form_field'>
 				</td>
 			
-				<td class='tab_d'>
-				   <select name='unknownclients[]' size='3' class='small_form_selectbox'>
+				<td class='tab_d_ohne'>
+				   <select name='unknownclients[]' size='3' class='100_form_selectbox'>
 				      {UCSELECT}
 				   </select>
 					<input type='hidden' name='olduc[]' value='{UCNOW}'> &nbsp;
 				</td>
 			</tr>
+			<tr height='50' valign='top'>
+				<td class='tab_d'><b>Remote Boot Service:</b><br>{RBS}</td>
+				<td class='tab_d' colspan='2'>{RBSSELECT}</td>
+			</tr>
 			
 			<input type='hidden' name='pooldn[]' value='{POOLDN}'>
+			<input type='hidden' name='oldrbs[]' value='{OLDRBS}'>
 			<input type='hidden' name='subnet[]' value='{SUBNET}'>
 			<input type='hidden' name='subnetau[]' value='{SUBNETAU}'>
-			   
+			
 			   <!-- END DYNAMIC BLOCK: Dhcppools -->
 			
 			<input type='hidden' name='mnr' value='{MNR}'>
@@ -58,26 +70,27 @@
 		</table></td>
 	</tr>
 	<tr>
-		<td><input type='Submit' name='apply' value='anwenden' class='small_loginform_button'>
+		<td colspan='2'><input type='Submit' name='apply' value='anwenden' class='small_loginform_button'>
 		</form></td>
 	</tr>
 	
 	<tr>
-		<td height='50'></td>
+		<td height='50' colspan='2'></td>
 	</tr>
 	<tr>
 		<td colspan='2'><h4>Dynamischen DHCP Pool hinzuf&uuml;gen </h4></td>
 	</tr>
 	
 	<tr>
-		<td>
+		<td colspan='2'>
 		<table cellpadding='7' cellspacing='0' border='0' align='left' width='90%' style='border-width: 0 0 0 0;'>
 			<form action='dhcppool_add.php' method='post'>
 				
 			<tr valign='bottom'>
 				<td width='50%' class='tab_h'><b>IP Range (innerhalb eines Subnetzes)</b><br>
 				   weitere Ranges k&ouml;nnen sp&auml;ter hinzugef&uuml;gt werden</td>
-				<td width='50%' class='tab_h'><b>Unknown Clients</b></td>
+				<td width='20%' class='tab_h'><b>Unknown Clients</b></td>
+				<td width='30%' class='tab_h'><b>Remote Boot Service</b></td>
 			</tr>
 			
 			<tr height='50' valign='top'>
@@ -87,11 +100,13 @@
 					<input type='Text' name='addrange2' value='' size='15' maxlength='15' class='medium_form_field'>
 				</td>
 				<td class='tab_d'>
-					<select name='unknownclients' size='3' class='small_form_selectbox'>
+					<select name='unknownclients' size='3' class='100_form_selectbox'>
 						<option selected value='deny'> DENY </option>
 						<option value='allow'> ALLOW </option>
 						<option value='ignore'> IGNORE </option> 
 					</select>
+				</td>
+				<td class='tab_d'>{RBSADD}
 				</td>
 			</tr>
 				<input type='hidden' name='mnr' value='{MNR}'>	

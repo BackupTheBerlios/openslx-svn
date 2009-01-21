@@ -20,6 +20,8 @@ $addrange1 = $_POST['addrange1'];
 $addrange2 = $_POST['addrange2'];
 $uc = $_POST['unknownclients'];
 $olduc = $_POST['olduc'];
+$rbs = $_POST['rbs'];
+$oldrbs = $_POST['oldrbs'];
 
 # Array to fill with AUs to update dhcpMTime
 $au_to_update = array();
@@ -40,7 +42,7 @@ $mnr = $_POST['mnr'];
 #print_r($olduc); echo "<br><br>";
 #print_r($uc); echo "<br><br>";
 
-$seconds = 200;
+$seconds = 2;
 $url = "dhcppool.php?mnr=".$mnr;
  
 echo " 
@@ -85,6 +87,8 @@ for ($i=0;$i<count($delpool);$i++){
             array_splice ( &$addrange2, $nr, 1 );
             array_splice ( &$uc, $nr, 1 );
             array_splice ( &$olduc, $nr, 1 );
+            array_splice ( &$rbs, $nr, 1 );
+            array_splice ( &$oldrbs, $nr, 1 );
          }
          # da sich Arrays verkleinern, Wert in $key_r entsprechend verkleinern,
          $j=0; # Variable $j als Zähler um wieviel
@@ -111,6 +115,7 @@ for ($i=0;$i<count($pooldn);$i++){
    
    $entrydel = array();
    $entryadd = array();
+	$entryrbs = array();
    # DENY, ALLOW, IGNORE Unknown-clients verarbeiten
    if ( $uc[$i] != $olduc[$i] ){
       $dhcpoptdel = "dhcpopt".$olduc[$i];
@@ -125,6 +130,33 @@ for ($i=0;$i<count($pooldn);$i++){
    	# Subnet-AU auf DHCP-Modify setzen
 		$au_to_update [] = $subnetau[$i];
    }
+	# RBS
+	if ( $rbs[$i] != "none" && $rbs[$i] != $oldrbs[$i] ){
+		$dhcpdata = get_node_data($rbs[$i],array("tftpserverip","initbootfile"));
+	   $entryrbs ['hlprbservice'] = $rbs[$i];
+	   $entryrbs ['dhcpoptnext-server'] = $dhcpdata['tftpserverip'];
+      $entryrbs ['dhcpoptfilename'] = $dhcpdata['initbootfile'];
+		if ( $oldrbs[$i] == "" ){
+			echo "RBS add "; print_r($entryrbs); echo "<br>";
+   	   if ($result = ldap_mod_add($ds,$pooldn[$i],$entryrbs)){
+   	      echo "DHCP Pool erfolgreich in RBS eingebunden.<br>";
+			}
+		}elseif ( $rbs[$i] == "" ){
+			$entryrbs ['hlprbservice'] = array();
+			$entryrbs ['dhcpoptnext-server'] = array();
+			$entryrbs ['dhcpoptfilename'] = array();
+			echo "RBS delete "; echo "<br>";
+			if ($result = ldap_mod_del($ds,$pooldn[$i],$entryrbs)){
+				echo "DHCP Pool erfolgreich aus RBS gel&ouml;scht.<br>";
+			}
+		}else{
+			echo "RBS replace "; print_r($oldrbs[$i]); echo " with "; print_r($entryrbs); echo "<br>";
+   	   if ($result = ldap_mod_replace($ds,$pooldn[$i],$entryrbs)){
+      	   echo "DHCP Pool RBS Einbindung erfolgreich ge&auml;ndert.<br>";
+			}
+		}
+	}
+	
    # Ranges hinzufügen
    if ( $addrange1[$i] != "" && $addrange2[$i] != "" ){
       if ($syntax->check_ip_syntax($addrange1[$i]) && $syntax->check_ip_syntax($addrange2[$i])){
@@ -132,7 +164,7 @@ for ($i=0;$i<count($pooldn);$i++){
          $add1 = strrev(strchr(strrev($addrange1[$i]), "."));
          $add2 = strrev(strchr(strrev($addrange2[$i]), "."));
          if ( $net == $add1 && $net == $add2 ){
-            
+
             printf("Range in Pool %s hinzuf&uuml;gen<br>",$pooldn[$i]);
             # Range zusammenstellen
             $newrange = implode("_", array($addrange1[$i],$addrange2[$i]));

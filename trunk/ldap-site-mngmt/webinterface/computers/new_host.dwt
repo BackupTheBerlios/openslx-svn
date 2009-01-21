@@ -1,10 +1,10 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
-  	<tr>
-  		<td colspan='2'><h3>Neuen Rechner anlegen:</h3></td>
-  	</tr>
-  	<tr>
-  		<td height='20'></td>
-  	</tr>
+	<tr>
+		<td>
+			<h3>Neuer Rechner in &nbsp;<code class='font_object'>{AU}</code>&nbsp; anlegen:</h3>
+			
+		</td>
+	</tr>
   	
   	<tr><td>
   		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
@@ -57,6 +57,26 @@
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
 					<input type='Text' name='ip' value='{IP}' size='15' maxlength='15' class='medium_form_field'>
 				</td>
+			</tr><tr>
+			   <td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>DHCP: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				   <select name='dhcpcont' size='2' class='medium_form_selectbox'> 
+   	   	      <option selected value='none'>----------</option>
+   	   	      {DHCPSELECT}
+   	   	   </select>   
+   	   	   </td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Geographic Location </b> (Geb&auml;ude, Raum, ...) <b>:</b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[geolocation]' value='{GEOLOC}' size='30' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Geo Coordinates: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[geoattribut]' value='{GEOATT}' size='30' class='medium_form_field'>
+				</td>
 			</tr>
 			<tr>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>HW Mouse: </b>&nbsp;</td>
@@ -76,15 +96,7 @@
 					<input type='Text' name='attribs[hw-monitor]' value='{MONITOR}' size='30' class='medium_form_field'>
 				</td>
 			</tr>
-			<tr>
-			   <td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>DHCP: </b>&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-				   <select name='dhcpcont' size='2' class='medium_form_selectbox'> 
-   	   	      <option selected value='none'>----------</option>
-   	   	      {DHCPSELECT}
-   	   	   </select>   
-   	   	   </td>
-			</tr>
+			
 			
 		</table></td>
   	</tr>

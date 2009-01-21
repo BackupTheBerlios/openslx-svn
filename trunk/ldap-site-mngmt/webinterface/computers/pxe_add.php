@@ -11,8 +11,6 @@ $pxeend = $_POST['pxeend']; $pxeend = htmlentities($pxeend);
 $conffile = $_POST['conffile'];  $conffile = htmlentities($conffile);
 
 $mnr = $_POST['mnr'];
-$sbmnr = $_POST['sbmnr'];
-$mcnr = $_POST['mcnr'];
 
 $targets = $_POST['targets'];
 #print_r($targets); echo "<br>";
@@ -24,7 +22,7 @@ for ($i=0; $i<count($n); $i++){
 }
 #echo "Zielobjekte: ";print_r($targets); echo "<br>";
 
-$pxeattribs = $_POST['pxeattribs'];
+$pxeattribs = $_POST['attribs'];
 if (count($pxeattribs) != 0){
 	foreach (array_keys($pxeattribs) as $key){
 		$pxeatts[$key] = htmlentities($pxeattribs[$key]);
@@ -37,7 +35,7 @@ $get_pxecn = str_replace ( " ", "_", $pxecn );
 $get_pxeday = str_replace ( " ", "_", $pxeday );
 $get_pxebeg = str_replace ( " ", "_", $pxebeg );
 $get_pxeend = str_replace ( " ", "_", $pxeend );
-$url = "new_pxe.php?pxecn=".$get_pxecn."&pxeday=".$get_pxeday."&pxebeg=".$get_pxebeg."&pxeend=".$get_pxeend."&mnr=".$mnr."&sbmnr=".$sbmnr;
+$url = "new_pxe.php?pxecn=".$get_pxecn."&pxeday=".$get_pxeday."&pxebeg=".$get_pxebeg."&pxeend=".$get_pxeend."&mnr=".$mnr;
 
 echo " 
 <html>
@@ -135,7 +133,6 @@ if ( $pxecn != "" && $pxecn != "Hier_PXE_NAME_eintragen" && $rbsDN != "none" ){
 						$pxebeg = preg_replace ( '/0([0-9])/', '$1', $pxebeg);
 						$pxeend = preg_replace ( '/0([0-9])/', '$1', $pxeend);
 						
-						print_r($nodeDN);
 						# TimeRange auf Überschneidung mit vorhandenen checken
 						if(check_timerange_pxe($pxeday,$pxebeg,$pxeend,$targetDN,"")){
 							$pxetimerange = $pxeday."_".$pxebeg."_".$pxeend;

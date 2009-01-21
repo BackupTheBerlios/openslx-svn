@@ -7,7 +7,7 @@ $webseite = "rbshost.dwt";
 
 include('computers_header.inc.php');
 
-$mnr = 1; 
+$mnr = 0; 
 $sbmnr = -1;
 $mcnr = -1;
 
@@ -68,7 +68,7 @@ if (count($altrbs) != 0){
    }
 }
 $rbs_selectbox .= "<option value=''>Kein RBS</option>
-        					</select></td>";
+							</select></td>";
 
 # RBS Daten
 if ($rbsDN == ""){
@@ -128,7 +128,7 @@ $template->assign(array("HOSTDN" => $hostDN,
 
 
 # Rechnerspezifische PXEs
-$hostpxeconfigs = get_pxeconfigs($hostDN, array("dn","cn","description","timerange"));
+$hostpxeconfigs = get_pxeconfigs2($hostDN, array("dn","cn","description","timerange"));
 
 $template->assign(array("PXEDN" => "",
 								"PXECN" => "Keine PXE Config angelegt",
@@ -170,7 +170,8 @@ if (count($hostpxeconfigs) != 0){
 $template->assign(array("DEFPXEDN" => "",
    								"DEFPXECN" => "Keine PXE Config angelegt",
    								"DEFPXEDESC" => "",
-   								"DEFPXETR" => "",));
+   								"DEFPXETR" => "",
+									"PXEPLANDESC" => ""));
 $template->define_dynamic("Defpxes", "Webseite");
 
 if ($rbsDN != ""){
@@ -206,7 +207,7 @@ if ($rbsDN != ""){
       	}
       }
    }
-}
+#}
 
 ##########################################################
 # PXE Wochenübersicht
@@ -239,6 +240,8 @@ for ($i=0; $i<count($hostpxeconfigs); $i++){
 }
 
 include("pxe_wochenplan.php");
+
+}
 
 ###################################################################################
 

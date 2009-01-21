@@ -6,12 +6,13 @@ $syntax = new Syntaxcheck;
 $dhcp = $_POST['dhcpcont'];
 $olddhcp = $_POST['olddhcp'];
 
+$hostDN = $_POST['hostdn'];
 $hostip = $_POST['hostip'];
+$hostmac = $_POST['hostmac'];
 $fixedaddress = $_POST['fixadd'];
 $oldfixedaddress = $_POST['oldfixadd'];
 $oldrbs = $_POST['oldrbs'];
 
-$hostDN = $_POST['hostdn'];
 $sbmnr = $_POST['sbmnr'];
 
 $dhcp = htmlentities($dhcp);
@@ -55,7 +56,7 @@ echo "
 <tr><td>";
 
 ##########################################
-# DHCP
+# DHCP Einbindung
 
 if ($dhcp != "none" && $dhcp != $olddhcp){
    if ($dhcp != ""){
@@ -73,16 +74,21 @@ if ($dhcp != "none" && $dhcp != $olddhcp){
    	   	$mesg = "Fehler beim &auml;ndern des DHCP Dienstes zu <b>".$dhcpcn."</b>!<br><br>";
    	   }
 	   }else{
-	      if ( $hostip != "" ){
-	         $entrydhcp ['dhcpoptfixed-address'] = "ip";
-	      }
-	      echo "DHCP add "; print_r($entrydhcp); echo "<br>";
-	      if ($result = ldap_mod_add($ds,$hostDN,$entrydhcp)){
-	         update_dhcpmtime(array());
-   	   	$mesg = "Rechner erfolgreich in DHCP <b>".$dhcpcn." [Abt.: ".$dhcpau."]</b> angemeldet<br><br>";
-   	   }else{
-   	   	$mesg = "Fehler beim &auml;ndern des DHCP Dienstes zu <b>".$dhcpcn."</b>!<br><br>";
-   	   }
+			if ( $hostmac != ""){
+				if ( $hostip != "" ){
+					$entrydhcp ['dhcpoptfixed-address'] = "ip";
+				}
+				echo "DHCP add "; print_r($entrydhcp); echo "<br>";
+				if ($result = ldap_mod_add($ds,$hostDN,$entrydhcp)){
+					update_dhcpmtime(array());
+					$mesg = "Rechner erfolgreich in DHCP <b>".$dhcpcn." [Abt.: ".$dhcpau."]</b> angemeldet<br><br>";
+				}else{
+					$mesg = "Fehler beim &auml;ndern des DHCP Dienstes zu <b>".$dhcpcn."</b>!<br><br>";
+				}
+			}else{
+				$mesg = "Es ist keine MAC Adresse f&uuml;r den Rechner eingetragen.<br>
+							Dies ist jedoch Voraussetzung f&uuml;r einen DHCP Eintrag.<br><br>";
+			}
 	   }
 	}else{
 	   $entrydhcp ['dhcphlpcont'] = array();
@@ -106,7 +112,10 @@ if ($dhcp == "none"){
    echo " DHCP none <br>";
 }
 
+
+#############################
 # DHCP Option fixed-address
+
 if ($fixedaddress != "none" && $fixedaddress != $oldfixedaddress){
    if ($fixedaddress != ""){
       $entryfixadd ['dhcpoptfixed-address'] = $fixedaddress;
@@ -140,78 +149,81 @@ if ($fixedaddress != "none" && $fixedaddress != $oldfixedaddress){
 }
 
 #####################################
-# Restliche Attribute (u.a. Description)
+# Restliche Attribute ...
 
-$entryadd = array();
-$entrymod = array();
-$entrydel = array();
-
-foreach (array_keys($atts) as $key){
+#if (count($atts) != 0){
 	
-	if ( $oldatts[$key] == $atts[$key] ){
+	$entryadd = array();
+	$entrymod = array();
+	$entrydel = array();
 	
+	foreach (array_keys($atts) as $key){
+		
+		if ( $oldatts[$key] == $atts[$key] ){
+		
+		}
+		if ( $oldatts[$key] == "" && $atts[$key] != "" ){
+			# hier noch Syntaxcheck
+			$entryadd[$key] = $atts[$key];
+		}
+		if ( $oldatts[$key] != "" && $atts[$key] != "" && $oldatts[$key] != $atts[$key] ){
+			# hier noch Syntaxcheck
+			$entrymod[$key] = $atts[$key];
+		}
+		if ( $oldatts[$key] != "" && $atts[$key] == "" ){
+			# hier noch Syntaxcheck
+			$entrydel[$key] = $oldatts[$key];
+		}
 	}
-	if ( $oldatts[$key] == "" && $atts[$key] != "" ){
-		# hier noch Syntaxcheck
-		$entryadd[$key] = $atts[$key];
-	}
-	if ( $oldatts[$key] != "" && $atts[$key] != "" && $oldatts[$key] != $atts[$key] ){
-		# hier noch Syntaxcheck
-		$entrymod[$key] = $atts[$key];
-	}
-	if ( $oldatts[$key] != "" && $atts[$key] == "" ){
-		# hier noch Syntaxcheck
-		$entrydel[$key] = $oldatts[$key];
-	}
-}
-
-#print_r($entryadd); echo "<br>";
-#print_r($entrymod); echo "<br>";
-#print_r($entrydel); echo "<br>";
-
-
-if (count($entryadd) != 0 ){
+	
 	#print_r($entryadd); echo "<br>";
-	#echo "neu anlegen<br>"; 
-	foreach (array_keys($entryadd) as $key){
-		$addatts .= "<b>".$key."</b>,";
-	}
-	if(ldap_mod_add($ds,$hostDN,$entryadd)){
-		$mesg = "Attribute ".$addatts." erfolgreich eingetragen<br><br>";
-		update_dhcpmtime(array());
-	}else{
-		$mesg = "Fehler beim eintragen der Attribute ".$addatts."<br><br>";
-	}
-}
-
-if (count($entrymod) != 0 ){
 	#print_r($entrymod); echo "<br>";
-	#echo "&auml;ndern<br>";
-	foreach (array_keys($entrymod) as $key){
-		$modatts .= "<b>".$key."</b>,";
-	}
-	if(ldap_mod_replace($ds,$hostDN,$entrymod)){
-		$mesg = "Attribute ".$modatts." erfolgreich geaendert<br><br>";
-		update_dhcpmtime(array());
-	}else{
-		$mesg = "Fehler beim aendern der Attribute ".$modatts."<br><br>";
-	}
-}
-
-if (count($entrydel) != 0 ){
 	#print_r($entrydel); echo "<br>";
-	#echo "l&ouml;schen<br>";
-	foreach (array_keys($entrydel) as $key){
-		$delatts .= "<b>".$key."</b>,";
+	
+	
+	if (count($entryadd) != 0 ){
+		#print_r($entryadd); echo "<br>";
+		#echo "neu anlegen<br>"; 
+		foreach (array_keys($entryadd) as $key){
+			$addatts .= "<b>".$key."</b>,";
+		}
+		if(ldap_mod_add($ds,$hostDN,$entryadd)){
+			$mesg = "Attribute ".$addatts." erfolgreich eingetragen<br><br>";
+			update_dhcpmtime(array());
+		}else{
+			$mesg = "Fehler beim eintragen der Attribute ".$addatts."<br><br>";
+		}
 	}
-	if(ldap_mod_del($ds,$hostDN,$entrydel)){
-		$mesg = "Attribute ".$delatts." erfolgreich geloescht<br><br>";
-      update_dhcpmtime(array());
-	}else{
-		$mesg = "Fehler beim loeschen der Attribute ".$delatts."<br><br>";
+	
+	if (count($entrymod) != 0 ){
+		#print_r($entrymod); echo "<br>";
+		#echo "&auml;ndern<br>";
+		foreach (array_keys($entrymod) as $key){
+			$modatts .= "<b>".$key."</b>,";
+		}
+		if(ldap_mod_replace($ds,$hostDN,$entrymod)){
+			$mesg = "Attribute ".$modatts." erfolgreich geaendert<br><br>";
+			update_dhcpmtime(array());
+		}else{
+			$mesg = "Fehler beim aendern der Attribute ".$modatts."<br><br>";
+		}
 	}
-}
-
+	
+	if (count($entrydel) != 0 ){
+		#print_r($entrydel); echo "<br>";
+		#echo "l&ouml;schen<br>";
+		foreach (array_keys($entrydel) as $key){
+			$delatts .= "<b>".$key."</b>,";
+		}
+		if(ldap_mod_del($ds,$hostDN,$entrydel)){
+			$mesg = "Attribute ".$delatts." erfolgreich geloescht<br><br>";
+			update_dhcpmtime(array());
+		}else{
+			$mesg = "Fehler beim loeschen der Attribute ".$delatts."<br><br>";
+		}
+	}
+	
+#}
 
 #####################
 

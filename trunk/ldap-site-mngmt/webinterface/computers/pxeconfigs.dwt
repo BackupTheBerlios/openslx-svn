@@ -1,108 +1,41 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
-  	<tr>
-  		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 1;'><h4>{HOSTLINK} Allgemein </a></h4></td>
-  		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{DHCPLINK} DHCP </a></h4></td>
-  		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4><code class='font_object'> RBS/PXE </code></h4></td>
-  		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{HWLINK} Geo/Hardware </a></h4></td>
-  		<td>&nbsp;</td>
-  	</tr>
-  	<tr>
-  		<td height='20'></td>
-  	</tr>
-  	
-  	<tr>
-  		<td colspan='5'><h3>RBS/PXE Setup - Rechner &nbsp;<code class='font_object'> {HOSTNAME} </code> </h3></td>
-  	</tr>
-  	<tr>
-  		<td colspan='4' class='tab_d_ohne'>{NODHCP}&nbsp;</td>
-  	</tr>
-  	
-  	<tr><td colspan='5'>
-  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
-			
-			   <form action='rbshost_change.php' method='post'>
-			
-			<tr>
-				<td width='40%' class='tab_h'><b>Remote Boot Dienst Einbindung (DHCP/TFTP)</b></td>
-				<td width='60%' class='tab_h'><b>&nbsp;</b></td>
-			</tr>
-			
-			
-				
-					{RBS} 
-			
-			
-		</table></td>
-  	</tr>
-   
-   <input type='hidden' name='olddhcp' value='{OLDDHCP}'>
-   <input type='hidden' name='oldfixadd' value='{OLDFIXADD}'>
-	<input type='hidden' name='oldrbs' value='{OLDRBS}'>
-	<input type='hidden' name='hostip' value='{IPADDRESS}'>
-   <input type='hidden' name='hostdn' value='{HOSTDN}'>
-	<input type='hidden' name='sbmnr' value='{SBMNR}'>
-  	
-  	<tr>
-		<td colspan='4'><input type='Submit' name='apply' value='anwenden' class='small_loginform_button'>
-		</form></td>
+	<tr>
+		<td colspan='4'><h3>PXE Konfigurationen (Boot Men&uuml;s) &nbsp;<code class='font_object'> {AU} </code> </h3></td>
 	</tr>
 	
-   
-   <tr>
-  		<td height='20'></td>
-  	</tr>
-  	
-  	<tr><td colspan='5'>
-  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
-			
+	<tr><td colspan='4'>
+		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
 			<tr>
-				<td colspan='3' width='50%' class='tab_h'><b>Rechner-spezifische PXE Konfigurationen (Bootmen&uuml;s)</b></td>
+				<td width='20%' class='tab_h'><b>PXE Config</b></td>
+				<td width='20%' class='tab_h'><b>g&uuml;ltig f&uuml;r Client(s)</b></td>
+				<td width='30%' class='tab_h'><b>Time Range (G&uuml;ltigkeitsdauer)</b></td>
+				<td width='30%' class='tab_h'><b>&nbsp;</b></td>
 			</tr>
 			
-			<!-- BEGIN DYNAMIC BLOCK: Rechnerpxes -->	
+						
+			
+			<!-- BEGIN DYNAMIC BLOCK: Pxeconf -->	
 			<tr valign='top'>
-				<td width='20%' class='tab_d'>{PXECN} &nbsp;</td>
-				<td width='30%' class='tab_d'>{PXETR} &nbsp;</td>
-				<td class='tab_d'>{PXEDESC} &nbsp;</td>
+				<td class='tab_d'>{PXECN} &nbsp;</td>
+				<td class='tab_d'>{PXECLIENTS} &nbsp;</td>
+				<td class='tab_d'>{TRANGES} &nbsp;</td>
+				<td class='tab_d'> &nbsp;</td>
 			</tr>
-			<!-- END DYNAMIC BLOCK: Rechnerpxes -->
-			
-			
+			<!-- END DYNAMIC BLOCK: Pxeconf -->
+
 		</table></td>
-  	</tr>
-  	
-   <tr>
-  		<td height='20'></td>
-  	</tr>
-  	
-  	<tr><td colspan='5'>
-  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
-			
-			<tr>
-				<td colspan='3' width='50%' class='tab_h'><b>Default PXE Konfigurationen des Remote Boot Dienstes</b></td>
-			</tr>
-			
-			<!-- BEGIN DYNAMIC BLOCK: Defpxes -->	
-			<tr valign='top'>
-				<td width='20%' class='tab_d'>{DEFPXECN} &nbsp;</td>
-				<td width='30%' class='tab_d'>{DEFPXETR} &nbsp;</td>
-				<td class='tab_d'>{DEFPXEDESC} &nbsp;</td>
-			</tr>
-			<!-- END DYNAMIC BLOCK: Defpxes -->
-			
-			
-		</table></td>
-  	</tr>
-   
-   
-   <tr>
+	</tr>
+
+
+	<tr>
   		<td height='50'></td>
   	</tr>
   	
 	<tr>
-  		<td colspan='4'><h4>Wochen &Uuml;bersicht PXE Configs f&uuml;r Rechner &nbsp;<code class='font_object'>{HOSTNAME}</code>&nbsp; :</h4></td>
+  		<td colspan='4'><h4>Wochen &Uuml;bersicht PXE Configs:</h4></td>
   	</tr>
-	<tr><td colspan='4'>
+	<tr valign='top'>
+		<td width="70%">
   		<table cellpadding='0' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
 			<tr align='center'>
 				<td width='9%' style='border-color: black; border-style: solid; border-width: 2 0 2 2;'><b>Uhrzeit</b></td>
@@ -357,7 +290,7 @@
 
 		</table></td>
 		
-		<td colspan='2'>
+		<td  width="30%">
   		<table cellpadding='3' cellspacing='3' border='1' align='left' width='50%' style='border-width: 0 0 0 0;'>
 			<tr>
 				<td width='65%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'><b>PXE Config</b></td>

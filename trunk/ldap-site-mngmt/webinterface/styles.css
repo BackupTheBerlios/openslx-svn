@@ -20,7 +20,7 @@ a:active {
  text-decoration:underline;
 }
 body {
- font-family: Arial;
+ font-family: helvetica, arial, sans-serif;
  font-size: 10pt;
  color: #000000;
  background-color: #FFFFFF;
@@ -28,43 +28,43 @@ body {
  margin-left:0px;
 }
 h1 {
- font-family: Arial;
+ font-family: arial, helvetica, sans-serif;
  font-size: 25pt;
  font-weight: bold;
  color: #000000;
 }
 h2 {
- font-family: Arial;
+ font-family: arial, helvetica, sans-serif;
  font-size: 15pt;
  font-weight: bold;
  color: #000000;
 }
 h3 {
- font-family: Arial;
+ font-family: arial, helvetica, sans-serif;
  font-size: 12pt;
  font-weight: bold;
  color: #000000;
 }
 h4 {
- font-family: Arial;
+ font-family: arial, helvetica, sans-serif;
  font-size: 10pt;
  font-weight: bold;
  color: #000000;
 }
 .font_object {
- font-family: Arial;
+ font-family: arial, helvetica, sans-serif;
  font-weight: bold;
  color: #505050;
 }
 .balken {
- font-family: Arial;
+ font-family: arial, helvetica, sans-serif;
  font-size: 12pt;
  font-weight: bold;
  color: #FFFFFF;
  background-color: #006BB6;
 }
 .balken_mit_pd {
- font-family: Arial;
+ font-family: arial, helvetica, sans-serif;
  font-size: 12pt;
  font-weight: bold;
  color: #FFFFFF;
@@ -72,21 +72,39 @@ h4 {
  padding: 5;
 }
 .balken_kl {
- font-family: Arial;
+ font-family: arial, helvetica, sans-serif;
  font-size: 10pt;
  color: #FFFFFF;
  background-color: #006BB6;
 }
 .small_loginform_field {
- font-family: Arial;
- font-size: 8pt;
+ font-family: arial, helvetica, sans-serif;
+ font-size: 10pt;
  color: #000000;
  border-style: solid;
  border-width: 1px 1px;
  border-color: #000000;
  background-color: #C0C0C0;
+ padding: 3px;
+ margin: 3px;
 }
 .small_loginform_button {
+ font-family: arial, helvetica, sans-serif;
+ font-size: 10pt;
+ width: 80px;
+ color: #FFFFFF;
+ border-style: solid;
+ border-width: 1px 1px;
+ border-color: #000000;
+ background-color: #880000;
+ margin: 3px;
+}
+.small_loginform_text {
+ font-family: arial, helvetica, sans-serif;
+ font-size: 10pt;
+ color: #000000;
+}
+.tiny_loginform_button {
  font-family: Arial;
  font-size: 8pt;
  width: 60px;
@@ -96,8 +114,8 @@ h4 {
  border-color: #000000;
  background-color: #880000;
 }
-.small_loginform_text {
- font-family: Arial;
+.tiny_loginform_text {
+ font-family: arial, helvetica, sans-serif;
  font-size: 8pt;
  color: #000000;
 }
@@ -183,6 +201,16 @@ h4 {
  padding-left: 5px;
  margin: 5px;
 }
+.100_form_selectbox {
+ font-family: Arial;
+ font-size: 10pt;
+ border-style: solid;
+ border-width: 1px 1px;
+ border-color: #000000;
+ width: 100;
+ padding-left: 10px;
+ margin: 5px;
+}
 .tiny_form_selectbox {
  font-family: Arial;
  font-size: 10pt;
@@ -208,6 +236,16 @@ h4 {
  font-size: 0pt;
 }
 .standard_schrift {
+ font-family: Arial;
+ font-size: 10pt;
+ color: #FFFFFF;
+}
+.menue_schrift {
+ font-family: Arial;
+ font-size: 11pt;
+ color: #FFFFFF;
+}
+.submenue_schrift {
  font-family: Arial;
  font-size: 10pt;
  color: #FFFFFF;

@@ -47,12 +47,14 @@ if ( $childou != "" && $mainadmin != none && $mainadmin != "") {
 	$childou = preg_replace ( '/\s+([0-9A-Z])/', '$1', $childou);
 	
 	# AU Objekt anlegen
-	$sisters = get_childau($auDN,array("ou"));
+	# Test auf gleichnamige Geschwister-AUs
+	#$sisters = get_childau($auDN,array("ou"));
+	$sisters = get_all_aus(array("ou"));
 	$sister = 0;
 	foreach ($sisters as $item) {
-		if ($item['ou'] == $childou) {
-			$mesg = "Es existiert bereits eine untergeordnete AU mit dem eingegebenen OU!<br>
-				Bitte geben Sie einen anderen OU ein.<br><br>";
+		if ( strtolower($item['ou']) == strtolower($childou) ) {
+			$mesg = "Es existiert bereits eine AU mit dem eingegebenen 'ou' Namen!<br>
+				Bitte geben Sie einen anderen 'ou' Namen ein.<br><br>";
 			$get_childcn = str_replace ( " ", "_", $childcn );
 			$get_childdesc = str_replace ( " ", "_", $childdesc );
 			$url = "new_child.php?ou=Hier_andere_OU_eingeben&cn=".$get_childcn."&desc=".$get_childdesc."&childdomain=".$childdomain;

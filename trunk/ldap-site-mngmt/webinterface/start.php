@@ -37,9 +37,10 @@ foreach ($roles as $item){
 	$expDN = explode(',',$auDN);
 	$expOU = explode('=',$expDN[0]);
 	$au = $expOU[1];
+	$audata = get_au_data($auDN,array("cn","description"));
 	
-	$template->assign(array( "MA" => "", "HA" => "", "DA" => "", "ZA" => "", "RA" => ""));
-	$template->assign(array( "AU" => $au, "AUDN" => $auDN, "ROLLEN" => implode('_',$item['role'])));
+	$template->assign(array( "CN" => "","MA" => "", "HA" => "", "DA" => "", "ZA" => "", "RA" => ""));
+	$template->assign(array( "AU" => $au, "AUDN" => $auDN, "CN" => $audata[0]['cn'], "ROLLEN" => implode('_',$item['role'])));
 	
 	$rollen = "";
 	foreach ($item['role'] as $role){
@@ -78,4 +79,5 @@ $template->parse("PAGE", "Vorlage");
 
 # Fertige Seite an den Browser senden
 $template->FastPrint("PAGE");
+
 ?>

@@ -1,5 +1,7 @@
 <?php
 
+#################
+
 # 1. Title
 $titel = "Administrative Unit Management";
 # 2. Mainmenu Number (starting with 0)
@@ -31,5 +33,6 @@ $template->assign(array("SEITENTITEL" => $titel,
 
 include("au_menu.php");
 include("../common/ip_blocks.inc.php");
+
 
 ?>

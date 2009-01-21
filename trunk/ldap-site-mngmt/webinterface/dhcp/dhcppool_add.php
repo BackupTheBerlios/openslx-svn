@@ -6,6 +6,8 @@ $syntax = new Syntaxcheck;
 $range1 = $_POST['addrange1'];
 $range2 = $_POST['addrange2'];
 $unknownclients = $_POST['unknownclients'];
+$rbs = $_POST['rbs'];
+
 $mnr = $_POST['mnr'];
 
 $seconds = 2;
@@ -65,7 +67,7 @@ if ($syntax->check_ip_syntax($range1) && $syntax->check_ip_syntax($range2)){
          		$results = ldap_mod_replace($ds,$auDN,$entry);
          		if ($results){
          			echo "<br>Neue FIPBs erfolgreich eingetragen!<br>";
-         			$result = add_dhcppool($subnetdn,$range,$unknownclients,$result[0]['dhcphlpcont']);         			
+         			$result = add_dhcppool($subnetdn,$range,$unknownclients,$result[0]['dhcphlpcont'],$rbs);
          			if ($result){
          				echo "<br>Dynamischer DHCP Pool erfolgreich eingetragen!<br>" ;
          				update_dhcpmtime(array($subnetau));

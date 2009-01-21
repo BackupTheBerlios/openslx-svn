@@ -1,6 +1,6 @@
 <?php
 # Nach dem Logout wird die Session beim Aufruf der index.php zerstört.
-if(isset($_POST['Logout'])) {
+if(isset($_POST['Logout']) || $_SESSION['status'] != "in") {
     session_start();
     session_unregister('uid');
     session_unregister('userPassword');
@@ -8,13 +8,17 @@ if(isset($_POST['Logout'])) {
     session_unregister('dn');
     session_unregister('roles');
     session_unregister('au_dn');
+    session_unregister('status');
     session_destroy();
 }
 
-#Pfad festlegen wo die Dateien sich befinden
-include('standard_header.inc.php');
+###########################################################
 
-$titel = "Rechner und IP Management Startseite";
+#Pfad festlegen wo die Dateien sich befinden
+#include('standard_header.inc.php');
+include("class.FastTemplate.php");
+
+$titel = "Zentrales Client / IP Management";
 $webseite = "start.dwt";
 
 # neues Template-Objekt erstellen
@@ -23,9 +27,7 @@ $template = new FastTemplate(".");
 $template->define(array("Vorlage" => "index.dwt",
                         "Login" => "login_form.inc.html",
                         "Webseite" => $webseite));
-
 $template->assign(array("SEITENTITEL" => $titel));
-
 
 ############################################################ 
 
@@ -40,4 +42,5 @@ $template->parse("PAGE", "Vorlage");
 
 # Fertige Seite an den Browser senden
 $template->FastPrint("PAGE");
+
 ?>

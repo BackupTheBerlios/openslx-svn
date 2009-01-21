@@ -1,5 +1,7 @@
 <?php
 
+
+
 $template->assign(array("PFAD" => $START_PATH));
 
 # Daten in die Vorlage parsen

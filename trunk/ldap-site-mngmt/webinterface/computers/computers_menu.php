@@ -9,16 +9,16 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
 	if ( $mipb_array[0] == "" ){
 		$iprechnerlink = "no_ip.php?mnr=2";
 	}else{
-		$iprechnerlink = "ip_rechner.php";
+		$iprechnerlink = "ip_rechner.php?sort=ipaddress";
 	}
 	
    # Struktur der Registerkartenleiste
    # Hauptmenu
-   $hauptmenu = array(array("link" => "computers.php",
-                             "text" => "&Uuml;bersicht",
-                             "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")),
-    						  array("link" => "hostoverview.php",
-                             "text" => "Rechner",
+   $hauptmenu = array( #array("link" => "computers.php",
+                       #      "text" => "&Uuml;bersicht",
+                       #      "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")),
+    						  array("link" => "hostoverview.php?sort=hostname",
+                             "text" => "&Uuml;bersicht Rechner",
                              "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")),
                        array("link" => $iprechnerlink,
                              "text" => "IP Adressen Rechner",
@@ -32,9 +32,9 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
                        #array("link" => "new_mcdef.php",
                        #      "text" => "Neue MachineConfig",
                        #      "zugriff" => array("MainAdmin","HostAdmin")),
-                       array("link" => "new_pxe.php",
-                             "text" => "Neues PXE Bootmen&uuml;",
-                             "zugriff" => array("MainAdmin")));
+								array("link" => "pxeconfigs.php",
+                             "text" => "PXE Configs",
+                             "zugriff" => array("MainAdmin","DhcpAdmin")));
 	
 	# Submenus 
 	/*$computers_array = get_hosts($auDN,array("dn","hostname","ou"));
@@ -69,13 +69,17 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
   								"text" => $mcdef_array[$n]['cn'],
       	              	"zugriff" => array("MainAdmin","DhcpAdmin","HostAdmin"));
    }
+
+	$newpxe[] = array("link" => "new_pxe.php",
+							"text" => "Neue PXE Config anlegen",
+							"zugriff" => array("MainAdmin","DhcpAdmin"));
    
-  	$submenu = array(array(),
+  	$submenu = array(#array(),
     	              $comps,
     	              array(),
     	              #$groups,
     	              #$defmc,
-    	              array());
+    	              $newpxe);
    #echo "submenu: ";print_r($submenu);echo "<br><br>";
 	
    # Zusammenstellen der Menuleiste
@@ -161,7 +165,7 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
 						<td width='8%' align='right'><img src='../pics/".$zwisch2.".gif'></td>
  						<td width='5%' align='left' style='border-width:1 0 1 1;border-color:#000000;border-style:solid;padding:4;background-color:{FARBE_S}'>&nbsp;</td>
 		     			<td width='69%' align='left' style='border-width:1 1 1 0;border-color:#000000;border-style:solid;padding:4;padding-left:12px;background-color:{FARBE_S}'> 
-		     			<a href='".$item2['link']."' style='text-decoration:none'><b class='standard_schrift'>".$item2['text']."</b></a></td>
+		     			<a href='".$item2['link']."' style='text-decoration:none'><code class='submenue_schrift'>".$item2['text']."</code></a></td>
 						<td width='10%'>&nbsp;</td> 						
 					</tr>
 					";
@@ -218,7 +222,7 @@ function createComputersMenu($rollen , $mnr, $auDN, $sbmnr, $mcnr) {
                $farb="#505050";
             }
             else {
-               
+
                if(count($submenu[$i][0]) != 0){
                if($maxmenu == $i+1){$zwisch="<a href='{LINK_M}' style='border-style=none;text-decoration:none'>
                	<img style='border-width:0;border-style=none;' src='../pics/plus2.gif'></a>";}

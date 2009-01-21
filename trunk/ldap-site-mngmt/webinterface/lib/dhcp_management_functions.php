@@ -673,18 +673,18 @@ function check_ip_in_subnet($ip,$subnet) {
 
 #########################
 # Pools
-function add_dhcppool ($dhcpsubnetdn,$range,$unknownclients,$dhcpservicedn){
+function add_dhcppool ($dhcpsubnetdn,$range,$unknownclients,$dhcpservicedn,$rbssrvdn){
 
    global $ds, $suffix, $auDN, $ldapError;
-   
+
    if(!($result = uniLdapSearch($ds, "cn=dhcp,".$auDN,"(objectclass=*)", array("cn"), "dn", "list", 0, 0))) {
- 		# redirect(5, "", $ldapError, FALSE);
-  		echo "no search";
-  		die;
+		# redirect(5, "", $ldapError, FALSE);
+		echo "no search";
+		die;
 	}
 	$result = ldapArraySauber($result);
 
-   $dhcpcn_array = array();
+	$dhcpcn_array = array();
    foreach ($result as $item){
       $dhcpcn_array [] = $item['cn'];
    }
@@ -696,7 +696,7 @@ function add_dhcppool ($dhcpsubnetdn,$range,$unknownclients,$dhcpservicedn){
 	   }
 	}
    $dhcppoolDN = "cn=".$cn.",cn=dhcp,".$auDN;
-   
+
    $entrydhcp ['objectclass'][0] = "dhcpPool";
    $entrydhcp ['objectclass'][1] = "dhcpOptions";
    $entrydhcp ['objectclass'][2] = "top";
@@ -710,14 +710,16 @@ function add_dhcppool ($dhcpsubnetdn,$range,$unknownclients,$dhcpservicedn){
    }else{
       $entrydhcp ['dhcpoptdeny'] = "unknown-clients";
    }
+	if ( $rbssrvdn != "none" ){
+		$entrydhcp ['hlprbservice'] = $rbssrvdn;
+	}
 	
    print_r($dhcppoolDN);echo "<br><br>";
    print_r($entrydhcp);echo "<br><br>";
-   
+	
    if ($result = ldap_add($ds,$dhcppoolDN,$entrydhcp)){
      return 1;
    }else{return 0;}
-	
 	
 }
 

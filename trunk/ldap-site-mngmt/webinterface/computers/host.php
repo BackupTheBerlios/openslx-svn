@@ -7,7 +7,7 @@ $webseite = "host.dwt";
 
 include('computers_header.inc.php');
 
-$mnr = 1; 
+$mnr = 0; 
 $sbmnr = -1;
 $mcnr = -1;
 

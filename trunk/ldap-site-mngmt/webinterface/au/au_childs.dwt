@@ -16,8 +16,8 @@
 			
 			<!-- BEGIN DYNAMIC BLOCK: Childaus -->	
 			<tr>
-				<td class='tab_d'>{CHILDOU} &nbsp;</td>
-				<td class='tab_d'>{CHILDDOMAIN} &nbsp;</td>
+				<td class='tab_d' height='40'>{CHILDOU} &nbsp;</td>
+				<td class='tab_d' height='40'>{CHILDDOMAIN} &nbsp;</td>
 			</tr>
 			<!-- END DYNAMIC BLOCK: Childaus -->
 

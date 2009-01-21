@@ -173,6 +173,21 @@ function delete_host($hostDN){
 	}
 }
 
+function check_hostname($hostname){
+	
+	global $ds, $suffix, $auDN, $ldapError;
+	
+	$brothercheck = 0;
+	$brotherhosts = get_hosts($auDN,array("hostname"),"");
+	
+	foreach ($brotherhosts as $item){
+		if( $item['hostname'] == $hostname ){
+			$brothercheck = 1;
+			break;
+		}
+	}
+	return $brothercheck;
+}
 
 ###############################################################################
 # Funktionen zur Verwaltung von Rechnergruppen
@@ -400,6 +415,60 @@ function change_mc_timerange($mcDN,$newmcDN,$mctimerange){
 	} 
 }
 
+#####################################################################
+# Natürliches Sortieren (x.x.4.9 vor x.x.4.11 ) von mehr-dim Arrays der Art:
+# Array (
+#    [0] => Array (
+#            [hostname] = client01
+#            [ipaddress] = 132.230.4.11
+#        )
+#    [1] => Array (
+#            [hostname] = client02
+#            [ipaddress] = 132.230.4.9
+#        )
+# )
 
+/**
+ * @return Returns the array sorted as required
+ * @param $aryData Array containing data to sort
+ * @param $strIndex Name of column to use as an index
+ * @param $strSortBy Column to sort the array by
+ * @param $strSortType String containing either asc or desc [default to asc]
+ * @desc Naturally sorts an array using by the column $strSortBy
+ */
+function array_natsort($aryData, $strIndex, $strSortBy, $strSortType=false){
+	
+	// if the parameters are invalid
+	if (!is_array($aryData) || !$strIndex || !$strSortBy){
+		// return the array
+		return $aryData;
+	}
+	// create our temporary arrays
+	$arySort = $aryResult = array();
+	// loop through the array
+	foreach ($aryData as $aryRow){
+		// set up the value in the array
+		$arySort[$aryRow[$strIndex]] = $aryRow[$strSortBy];
+	}
+	// apply the natural sort
+	natsort($arySort);
+	// if the sort type is descending
+	if ($strSortType=="desc"){
+		// reverse the array
+		arsort($arySort);
+	}
+	// loop through the sorted and original data
+	foreach ($arySort as $arySortKey => $arySorted){
+		foreach ($aryData as $aryOriginal){
+			// if the key matches
+			if ($aryOriginal[$strIndex]==$arySortKey){
+				// add it to the output array
+				array_push($aryResult, $aryOriginal);
+			}
+		}
+	}
+	
+	return $aryResult;
+}
 
 ?>

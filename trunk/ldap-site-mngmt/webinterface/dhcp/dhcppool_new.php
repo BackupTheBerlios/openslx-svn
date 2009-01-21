@@ -21,38 +21,106 @@ createDhcpMenu($rollen, $mnr, $auDN, $sbmnr);
 
 ###################################################################################
 
-# DHCP Pools Daten holen						
-$attributes = array("dn","cn","dhcphlpcont","dhcprange","description","dhcpstatements","dhcpoptallow",
-							"dhcpoptdefault-lease-time","dhcpoptdeny","dhcpoptignore","dhcpoptmax-lease-time",
-							"dhcpoptgeneric","hlprbservice","dhcpoptfilename","dhcpoptnext-server");
-$pools = get_dhcppools($auDN, $attributes);
-
-if (count($pools) == 0){
-	redirect(0, "dhcpnopool.php?mnr=".$mnr, "", $addSessionId = TRUE);
-	die;
-}
-
-$template->assign(array("POOLDN" => "",
+$template->define_dynamic("Poolform", "Webseite");
+$template->assign(array("POOLFORMULAR" => "",
+								#"POOLDN" => "",
 								"CN" => "",
 								"SUBNETDN" => "",
-								"SUBNET" => "",
-								"RANGE1" => "",
-								"RANGE2" => "",
+								#"SUBNET" => "",
+								#"RANGE1" => "",
+								#"RANGE2" => "",
 								"DESCRIPTION" => "",
 								"STATEMENTS" => "",
-								"ALLOW" => "",
-								"DENY" => "",
-								"IGNORE" => "",
-								"RBS" => "",
-								"RBSSELECT" => "",
 								"DEFAULTLEASE" => "",
 								"MAXLEASE" => "",
            		       	"MNR" => $mnr));
 
+# DHCP Pools Daten holen						
+$attributes = array("dn","cn","dhcphlpcont","dhcprange","description","dhcpstatements","dhcpoptallow",
+							"dhcpoptdefault-lease-time","dhcpoptdeny","dhcpoptignore","dhcpoptmax-lease-time",
+							"dhcpoptgeneric");
+$pools = get_dhcppools($auDN, $attributes);
+#print_r($pools);
+
+if (count($pools) != 0){
+
+
+
+$poolform = "
+		<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+				<form action='dhcppools_change.php' method='post'>
+			
+			<tr>
+				<td width='30%' class='tab_h'><b>Subnetz</b></td>
+				<td width='50%' class='tab_h'><b>IP Ranges (innerhalb Subnetz)</b></td>
+				<td width='20%' class='tab_h'><b>Unknown Clients</b></td>
+			</tr>
+			
+			   <!-- BEGIN DYNAMIC BLOCK: Dhcppools -->
+			   
+			<tr height='50' valign='top'>
+				<td class='tab_d'><b>{SUBNET}/24</b><br><br>
+				   <input type='checkbox' name='delpool[]' value='{POOLDN}' size='10' class='medium_form_field'>
+					Pool l&ouml;schen (H&auml;kchen setzen)</td>
+				
+				<td class='tab_d'>
+				      
+				      <!-- BEGIN DYNAMIC BLOCK: Dhcpranges -->
+				      
+					<input type='Text' name='range1[]' value='{RANGE1}' size='15' maxlength='15' class='medium_form_field'>
+					 &nbsp;&nbsp; - &nbsp;&nbsp;
+					<input type='Text' name='range2[]' value='{RANGE2}' size='15' maxlength='15' class='medium_form_field'>
+					<input type='hidden' name='oldrange1[]' value='{RANGE1}'>
+					<input type='hidden' name='oldrange2[]' value='{RANGE2}'><br>
+					<input type='hidden' name='rangepooldn[]' value='{RPOOLDN}'>
+					   
+					   <!-- END DYNAMIC BLOCK: Dhcpranges -->
+					
+					<input type='Text' name='addrange1[]' value='' size='15' maxlength='15' class='medium_form_field'>
+					 &nbsp;&nbsp; - &nbsp;&nbsp;
+					<input type='Text' name='addrange2[]' value='' size='15' maxlength='15' class='medium_form_field'>
+				</td>
+			
+				<td class='tab_d'>
+				   <select name='unknownclients[]' size='3' class='small_form_selectbox'>
+				      {UCSELECT}
+				   </select>
+					<input type='hidden' name='olduc[]' value='{UCNOW}'> &nbsp;
+				</td>
+			</tr>
+			<!--<tr>
+			   <td colspan='3' class='tab_d'><input type='checkbox' name='delpool[]' value='{POOLDN}' size='10' class='medium_form_field'>
+					Pool l&ouml;schen (H&auml;kchen setzen)</td>
+			</tr>-->
+			
+			<input type='hidden' name='pooldn[]' value='{POOLDN}'>
+			<input type='hidden' name='subnet[]' value='{SUBNET}'>
+			<input type='hidden' name='subnetau[]' value='{SUBNETAU}'>
+			   
+			   <!-- END DYNAMIC BLOCK: Dhcppools -->
+			
+			<input type='hidden' name='mnr' value='{MNR}'>		
+
+		</table></td>
+  	</tr>
+  	<tr>
+		<td><input type='Submit' name='apply' value='anwenden' class='small_loginform_button'>
+		</form></td>
+	</tr>
+	
+	<tr>
+  		<td height='50'></td>
+  	</tr>";
+  	
+$template->assign(array("POOLFORMULAR" => $poolform));
+$template->parse("POOLFORM_LIST", "Poolform");
+#$template->clear_dynamic("Poolform");
+#$template->clear_parse("POOLFORM_LIST");
 
 $template->define_dynamic("Dhcppools", "Webseite");
 $template->define_dynamic("Dhcpranges", "Webseite");
-
 # Für jeden Pool ...
 foreach ($pools as $pool){
 	
@@ -61,8 +129,7 @@ foreach ($pools as $pool){
 	$subnetdnexp = ldap_explode_dn( $pool['dhcphlpcont'], 0);
 	$subnetauexp = array_slice($subnetdnexp, 3);
 	$subnetau = implode(',',$subnetauexp);	
-	$rbsDN = $pool['hlprbservice'];
-
+	
 	
    $template->clear_parse("DHCPRANGES_LIST");
    
@@ -108,34 +175,8 @@ foreach ($pools as $pool){
       $ucselectbox = "<option selected value='deny'> DENY </option>
                         <option value='allow'> ALLOW </option>
                         <option value='ignore'> IGNORE </option>";
-   }
-
-	# RBS Setup
-	$rbs_selectbox = "";
-	$rbs_addselectbox = "";
-	$altrbs = alternative_rbservices($rbsDN);
-	
-	$rbs_selectbox .= "<select name='rbs[]' size='4' class='tftp_form_selectbox'>
-									<option selected value='none'>----------</option>";
-	$rbs_addselectbox = "<select name='rbs' size='3' class='tftp_form_selectbox'>
-									<option selected value='none'>----------</option>";
-	if (count($altrbs) != 0){
-		foreach ($altrbs as $item){
-			$rbs_selectbox .= "<option value='".$item['dn']."'>".$item['cn']." ".$item['au']."</option>";
-			$rbs_addselectbox .= "<option value='".$item['dn']."'>".$item['cn']." ".$item['au']."</option>";
-		}
-	}
-	$rbs_selectbox .= "<option value=''>Kein RBS</option></select>";
-	$rbs_addselectbox .= "</select>";
-	
-	if ($rbsDN == ""){
-		$rbs = "Keine Einbindung";
-	}else{
-		$rbsdnexp = ldap_explode_dn($pool['hlprbservice'],1);
-		$rbs = $rbsdnexp[0]."<br>DHCP Next-Server: ".$pool['dhcpoptnext-server']."<br>DHCP Filename: ".$pool['dhcpoptfilename'];
-   }
-
-
+   }  
+   
    $template->assign(array("POOLDN" => $pool['dn'],
    								"CN" => $pool['cn'],
    								"SUBNETDN" => $pool['dhcphlpcont'],
@@ -145,18 +186,12 @@ foreach ($pools as $pool){
    								"STATEMENTS" => $pool['dhcpstatements'],
    								"UCSELECT" => $ucselectbox,
    								"UCNOW" => $unknownclients,
-   								"ALLOW" => $pool['dhcpoptallow'],
-   								"DENY" => $pool['dhcpoptdeny'],
-   								"IGNORE" => $pool['dhcpoptignore'],
-									"RBS" => $rbs,
-									"RBSSELECT" => $rbs_selectbox,
-									"RBSADD" => $rbs_addselectbox,
-									"OLDRBS" => $rbsDN,
    								"DEFAULTLEASE" => $pool['dhcpoptdefault-lease-time'],
    								"MAXLEASE" => $pool['dhcpoptmax-lease-time'],
               		       	"MNR" => $mnr));
    $template->parse("DHCPPOOLS_LIST", ".Dhcppools");
 
+}
 }
 
 ###################################################################################

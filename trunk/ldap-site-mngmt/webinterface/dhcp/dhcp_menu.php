@@ -1,29 +1,27 @@
 <?php
 
-function createDhcpMenu($rollen , $mnr, $auDN, $sbmnr) {
-   
-   global $template, $START_PATH, $rootAU; 
-   
-   $mipbs = get_maxipblocks_au($auDN);
-   #echo "MIPB: "; print_r ($mipbs); echo "<br>";
-   if ($mipbs[0] != ""){
-      $hauptmenu = array(array("link" => "dhcp.php",
+function createDhcpMenu($rollen, $mnr, $auDN, $sbmnr) {
+	
+	global $template, $START_PATH, $rootAU; 
+	
+	$mipbs = get_maxipblocks_au($auDN);
+	#echo "MIPB: "; print_r ($mipbs); echo "<br>";
+	if ($mipbs[0] != ""){
+		$hauptmenu = array();
+	}else{
+		$hauptmenu = array(array("link" => "no_dhcp.php",
                              "text" => "&Uuml;bersicht",
                              "zugriff" => "alle"));
-   }else{
-      $hauptmenu = array(array("link" => "no_dhcp.php",
-                             "text" => "&Uuml;bersicht",
-                             "zugriff" => "alle"));
-   }
-   
+	}
+	
 	$pools = get_dhcppools($auDN, array("dn"));
 	if (count($pools) == 0){
 		$poollink = "dhcpnopool.php";
 	}else{
 		$poollink = "dhcppool.php";
 	}   
-   
-   $i=1;
+	
+   $i=0;
    if ( $auDN == $rootAU ) {
       $dhcpservice_array = get_dhcpservices($auDN,array("dn","cn"));
       if (count($dhcpservice_array) == 0){
@@ -33,8 +31,8 @@ function createDhcpMenu($rollen , $mnr, $auDN, $sbmnr) {
       	$dhcpsvlink = "dhcpservice.php?mnr=1";
       }
       $hauptmenu []= array("link" => $dhcpsvlink,
-                             "text" => "DHCP Service",
-                             "zugriff" => array("MainAdmin","DhcpAdmin"));
+                           "text" => "DHCP Service",
+                           "zugriff" => array("MainAdmin","DhcpAdmin"));
       $i++;
    }
    if ($mipbs[0] != ""){
@@ -42,9 +40,9 @@ function createDhcpMenu($rollen , $mnr, $auDN, $sbmnr) {
          $hauptmenu [] = array("link" => "dhcpsubnets.php?mnr=".$i,
                                 "text" => "DHCP Subnets",
                                 "zugriff" => array("MainAdmin","DhcpAdmin"));
-         
-         $subnets = array();
-   	   # falls komplette Netze verfügbar, link zum Neuanlegen
+	
+	      $subnets = array();
+		   # falls komplette Netze verfügbar, link zum Neuanlegen
    	   if ( check_if_free_networks() ){
    	      #$dhcpsubnet_array = get_dhcpsubnets($auDN,array("dn","cn"));
    	      /*for ($j=0;$j<count($dhcpsubnet_array);$j++){
@@ -60,33 +58,28 @@ function createDhcpMenu($rollen , $mnr, $auDN, $sbmnr) {
          $hauptmenu [] = array("link" => $poollink."?mnr=".$i,
                                 "text" => "Dynamische DHCP Pools",
                                 "zugriff" => array("MainAdmin","DhcpAdmin"));
-   	                  
-         $submenu = array(array(),
+
+         $submenu = array(#array(),
           	              $subnets,
-          	              array());                       
-                                
+          	              array());
       }else{
          $hauptmenu [] = array("link" => $poollink."?mnr=".$i,
                                 "text" => "Dynamische DHCP Pools",
                                 "zugriff" => array("MainAdmin","DhcpAdmin"));
       }
    }
-   
-	#print_r ($hauptmenu);cho "<br>";
-   #print_r ($submenu);
-	#$rollen = array_keys($roles);
 
    # Zusammenstellen der Menuleiste
    $template->define_dynamic("Hauptmenu", "Menu");
    $template->define_dynamic("Submenu", "Menu");
    $i=0;
    $maxmenu = count($hauptmenu);
-   
-   foreach($hauptmenu as $item) {
-      $template->clear_parse("SUBMENU_LIST");
-      if($item['zugriff'] === "alle" || vergleicheArrays($rollen , $item['zugriff'])) {
-         
-         $subempty = 0;
+	
+	foreach($hauptmenu as $item) {
+		$template->clear_parse("SUBMENU_LIST");
+		if($item['zugriff'] === "alle" || vergleicheArrays($rollen , $item['zugriff'])) {
+			
+			$subempty = 0;
 			$j=0;
 			$maxsub = count($submenu[$mnr]);
 			if($maxsub > 0){
@@ -139,7 +132,7 @@ function createDhcpMenu($rollen , $mnr, $auDN, $sbmnr) {
       						<td width='8%'>&nbsp;</td>
       						<td width='8%' align='right'>".$zwisch."</td>
       		     			<td width='74%' align='left' style='border-width:1 1 1 1;border-color:#000000;border-style:solid;padding:2;padding-left:15px;background-color:{FARBE_S}'> 
-      		     			<a href='".$item2['link']."' style='text-decoration:none'><b class='standard_schrift'>".$item2['text']."</b></a></td>
+      		     			<a href='".$item2['link']."' style='text-decoration:none'><code class='submenue_schrift'>".$item2['text']."</code></a></td>
       						<td width='10%'>&nbsp;</td> 						
       					</tr>
       					";

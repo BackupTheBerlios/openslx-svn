@@ -13,9 +13,7 @@ $mcnr = -1;
 
 ###################################################################################
 
-$mnr = $_GET['mnr']; 
-$sbmnr = $_GET['sbmnr'];
-$mcnr = $_GET['mcnr'];
+$mnr = $_GET['mnr'];
 
 # Menuleisten erstellen
 createMainMenu($rollen, $mainnr);
@@ -87,12 +85,11 @@ $template->assign(array("PXEDN" => $pxeDN,
            		       	"NODEDN" => $nodeDN,
    	                  "NODE" => $nodednarray[0],
            		       	"DEFDN" => "cn=rbs,".$auDN,
-           		       	"PXELINK" => "<a href='pxe.php?dn=".$pxeDN."&sbmnr=".$sbmnr."' class='headerlink'>",
-           		       	"OPTLINK" => "<a href='pxe_globals.php?dn=".$pxeDN."&sbmnr=".$sbmnr."' class='headerlink'>",
+           		       	"PXELINK" => "<a href='pxe.php?dn=".$pxeDN."&mnr=".$mnr."' class='headerlink'>",
+           		       	"OPTLINK" => "<a href='pxe_globals.php?dn=".$pxeDN."&mnr=".$mnr."' class='headerlink'>",
            		       	"MNR" => $mnr,
-           		       	"SBMNR" => $sbmnr,
-           		       	"MCNR" => $mcnr));
-           		       	
+           		       	"SBMNR" => $sbmnr));
+
 
 # Für Submenü Einträge
 $template->assign(array("SUBRBSDN" => "",
@@ -146,46 +143,6 @@ foreach ($menuentries as $me){
 	$bgcdef = "";
 }
 
-
-################################################ 
-# PXE kopieren
-
-$hostorgroup = $exp[0];
-$hgexp = explode('=',$exp[0]);
-
-
-$hosts_array = get_hosts($auDN,array("dn","hostname"));
-$groups_array = get_groups($auDN,array("dn","cn"));
-
-$template->define_dynamic("Hosts", "Webseite");
-foreach ($hosts_array as $item){
-	$template->assign(array("HDN" => $item['dn'],
-                           "HN" => $item['hostname']));
-   $template->parse("HOSTS_LIST", ".Hosts");	
-}
-$template->define_dynamic("Groups", "Webseite");
-foreach ($groups_array as $item){
-	$template->assign(array("GDN" => $item['dn'],
-                           "GN" => $item['cn']));
-   $template->parse("GROUPS_LIST", ".Groups");	
-}
-
-$dnexp = ldap_explode_dn($pxeDN, 1);
-if ($dnexp[2] == "computers"){
-	$nodetyp = "rbshost";
-}
-if ($dnexp[2] == "groups"){
-	$nodetyp = "group";
-}
-# falls TR vorhanden dann soll sie gelöscht werden (flag deltr setzen)
-if (count($pxe['timerange']) != 0){
-	$template->assign(array("DELTR" => "1",
-									"NODETYP" => $nodetyp));
-}
-else{
-	$template->assign(array("DELTR" => "0",
-									"NODETYP" => $nodetyp));
-}
 
 ###################################################################################
 

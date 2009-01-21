@@ -1,11 +1,11 @@
 <?php
 /**
-* login_sicher.php führt einen Bind mit den eingegebenen Benutzerdaten durch.
-* Dabei erfolgt die Authetifizierung entsprechend der Ausführung bei der Präsentation des Projektes
+* login_sicher.php fï¿½hrt einen Bind mit den eingegebenen Benutzerdaten durch.
+* Dabei erfolgt die Authetifizierung entsprechend der Ausfï¿½hrung bei der Prï¿½sentation des Projektes
 * am RZ-LDAP. Das Passwort des Users wird aber nun nicht mehr auf dem Gruppe1 LDAP gespeichert. Dort
 * legt das Skript ein Standardpasswort an.
-* Im Fehlerfall wird eine Meldung ausgegeben und anschließend auf index.php weitergeleitet.
-* Bei erfolgreichem nicht anonymem Bind werden die Benutzerrechte ausgelesen und davon abhängig
+* Im Fehlerfall wird eine Meldung ausgegeben und anschlieï¿½end auf index.php weitergeleitet.
+* Bei erfolgreichem nicht anonymem Bind werden die Benutzerrechte ausgelesen und davon abhï¿½ngig
 * die entsprechende Startseite aufgerufen. dn, uid, userPassword, cn und die Rechte werden in
 * einer Session gespeichert.
 *
@@ -37,16 +37,16 @@ checkLogin($uid,$userPassword);
 *
 * Wenn RZ-LDAP-Login UND Gruppe1-LDAP-Login erfolgreich sind, dann ist der User
 * bereits im Gruppe1-LDAP eingetragen.
-* -> Mache Datenabgleich und anschließenden Login am Gruppe1-LDAP
+* -> Mache Datenabgleich und anschlieï¿½enden Login am Gruppe1-LDAP
 * Wenn RZ-LDAP-Login erfolgreich, Gruppe1-LDAP-Login jedoch nicht erfolgreich ist,
-* dann unterscheide zwischen zwei Möglichkeiten:
+* dann unterscheide zwischen zwei Mï¿½glichkeiten:
 * 1. Der User ist im Gruppe1-LDAP nicht angelegt,
-* 2. Der User ist im Gruppe1-LDAP zwar angelegt, aber das Passwort wurde auf dem RZ-LDAP inzwischen geändert.
+* 2. Der User ist im Gruppe1-LDAP zwar angelegt, aber das Passwort wurde auf dem RZ-LDAP inzwischen geï¿½ndert.
 * -> Login als Dummy und Check, ob UID vorhanden
 * Wenn RZ-LDAP-Login nicht erfolgreich, Gruppe1-LDAP-Login jedoch erfolgreich ist,
 * dann ist der User auf dem RZ-LDAP nicht gespeichert.
 * -> Login am Gruppe1-LDAP
-* In anderen Fällen waren die Zugangsdaten nicht korrekt.
+* In anderen Fï¿½llen waren die Zugangsdaten nicht korrekt.
 * -> Redirect auf index.php.
 *
 * Schema siehe auch /home/gruppe1/Praesentation/Login und Personen.pps
@@ -63,14 +63,14 @@ checkLogin($uid,$userPassword);
 */
 function checkLogin($uid = "", $userPassword = "") {
     global $userDn_rz, $userDN, $suffix, $suffix_rz, $ldapError, $standardPassword;
-    # Abfrage, ob das Loginformular Daten enthält
+    # Abfrage, ob das Loginformular Daten enthï¿½lt
     if(!(($uid == "") || ($userPassword == ""))) {
         # UID und Passwort wurden eingegeben
-        # Fallunterscheidung welche Logins möglich sind
+        # Fallunterscheidung welche Logins mï¿½glich sind
 		  /* if(($ds_rz = rzLdapConnect($uid,$userPassword)) && ($ds = uniLdapConnect($uid, $standardPassword))) {
             # Wenn RZ-LDAP-Login UND Gruppe1-LDAP-Login erfolgreich sind, dann ist der User
             # bereits im Gruppe1-LDAP eingetragen.
-            # -> Mache Datenabgleich und anschließenden Login am Gruppe1-LDAP
+            # -> Mache Datenabgleich und anschlieï¿½enden Login am Gruppe1-LDAP
             datenabgleich($uid, $userPassword, $ds_rz, $ds);
             ldap_unbind($ds);
             ldap_unbind($ds_rz);
@@ -78,10 +78,10 @@ function checkLogin($uid = "", $userPassword = "") {
             userLogin($uid, $userPassword);
         } else if(($ds_rz = rzLdapConnect($uid,$userPassword)) && !($ds = uniLdapConnect($uid, $standardPassword))) {
             # Wenn RZ-LDAP-Login erfolgreich, Gruppe1-LDAP-Login jedoch nicht erfolgreich ist,
-            # dann unterscheide zwischen zwei Möglichkeiten:
+            # dann unterscheide zwischen zwei Mï¿½glichkeiten:
             # 1. Der User ist im Gruppe1-LDAP nicht angelegt,
             # 2. Der User ist im Gruppe1-LDAP zwar angelegt, aber das Passwort wurde auf dem RZ-LDAP
-            #    inzwischen geändert.
+            #    inzwischen geï¿½ndert.
             # -> Login als Dummy und Check, ob UID vorhanden
             if(dummyUidCheck($uid)) {
                 #changePassword($uid,$userPassword);
@@ -99,23 +99,23 @@ function checkLogin($uid = "", $userPassword = "") {
             ldap_unbind($ds);
             userLogin($uid, $userPassword);
         } else {
-            # In anderen Fällen waren die Zugangsdaten nicht korrekt.
+            # In anderen Fï¿½llen waren die Zugangsdaten nicht korrekt.
             # -> Redirect auf index.php.
-            redirect(5, "index.php", "Bitte geben Sie korrekte Zugangsdaten ein.<br>".$ldapError, FALSE);
+            redirect(3, "index.php", "<h3>Bitte geben Sie korrekte Zugangsdaten ein.<h3>".$ldapError, FALSE);
             die;
         }
 
     } else {
         # UID und/oder Passwort wurden NICHT eingegeben
-        redirect(5, "index.php", "Bitte geben Sie User-Id und Passwort ein.<br>".$ldapError, FALSE);
+        redirect(3, "index.php", "<h3>Bitte geben Sie User-Id und Passwort ein.</h3>".$ldapError, FALSE);
         die;
     }
 }
 
 /**
-* dummyUidCheck($uid) - Überprüft, ob UID im Gruppe1-LPAD vorhanden ist.
+* dummyUidCheck($uid) - ï¿½berprï¿½ft, ob UID im Gruppe1-LPAD vorhanden ist.
 *
-* Über den Dummyuser wird eine Verbindung zum Gruppe1-LDAP aufgebaut und die angegebene
+* ï¿½ber den Dummyuser wird eine Verbindung zum Gruppe1-LDAP aufgebaut und die angegebene
 * UID wird gesucht.
 *
 * @param string UID
@@ -131,7 +131,7 @@ function dummyUidCheck($uid) {
         redirect(5, "index.php", "Dummy-Login fehlgeschlagen!<br>".$ldapError, FALSE);
         die;
     }
-    # Im nächsten Schritt wird überprüft, ob ein Eintrag mit der UID $uid schon vorliegt:
+    # Im nï¿½chsten Schritt wird ï¿½berprï¿½ft, ob ein Eintrag mit der UID $uid schon vorliegt:
     if(!($person_daten = uniLdapSearch($ds_dummy, "ou=people,".$suffix, "uid=$uid", array("*"), "", "list", 0, 0))) {
         redirect(5, "index.php", $ldapError, FALSE);
         die;
@@ -149,8 +149,8 @@ function dummyUidCheck($uid) {
 /**
 * userAnlegen($uid,$userPassword,$ds_rz)
 *
-* Legt mithilfe des Dummyusers einen noch nicht bei uns geführten User im Gruppe1-LDAP
-* mit den Daten des Rechenzentrums an. Das Passwort ist dabei für alle User in der config.inc.php festgelegt.
+* Legt mithilfe des Dummyusers einen noch nicht bei uns gefï¿½hrten User im Gruppe1-LDAP
+* mit den Daten des Rechenzentrums an. Das Passwort ist dabei fï¿½r alle User in der config.inc.php festgelegt.
 *
 * @param string UID
 * @param string Password
@@ -165,7 +165,7 @@ function userAnlegen($uid,$userPassword,$ds_rz) {
         redirect(5, "index.php", "Dummy-Login fehlgeschlagen!<br>".$ldapError, FALSE);
         die;
     }
-    # Im nächsten Schritt wird überprüft, ob ein Eintrag mit der UID $uid schon vorliegt:
+    # Im nï¿½chsten Schritt wird ï¿½berprï¿½ft, ob ein Eintrag mit der UID $uid schon vorliegt:
     $ruffelder = array("uid", "sn", "givenname", "uidnumber", "gidnumber", "homedirectory", "loginshell", "rufnutzernummer", "rufanrede", "rufeinrichtung", "rufmatnr", "rufaccounttype", "ruffakultaet", "mail", "rufdienst");
 
     if(!($person_daten = uniLdapSearch($ds_rz, "ou=people,".$suffix_rz, "uid=$uid", $ruffelder, "", "list", 0, 0))) {
@@ -219,7 +219,7 @@ function userAnlegen($uid,$userPassword,$ds_rz) {
 }
 
 /**
-* datenabgleich($uid, $userPassword, $ds_rz, $ds) - Überschreibt bei jedem Login die Daten des
+* datenabgleich($uid, $userPassword, $ds_rz, $ds) - ï¿½berschreibt bei jedem Login die Daten des
 * Gruppe1-LDAP mit denen des RZ-LDAP mithilfe des Dummyusers.
 *
 * @param string UID
@@ -236,7 +236,7 @@ function datenabgleich($uid, $userPassword, $ds_rz, $ds) {
         redirect(5, "index.php", "Dummy-Login fehlgeschlagen!<br>".$ldapError, FALSE);
         die;
     }
-    # Im nächsten Schritt wird überprüft, ob ein Eintrag mit der UID $uid schon vorliegt:
+    # Im nï¿½chsten Schritt wird ï¿½berprï¿½ft, ob ein Eintrag mit der UID $uid schon vorliegt:
     $ruffelder = array("uid", "sn", "givenname", "uidnumber", "gidnumber", "homedirectory", "loginshell", "rufnutzernummer", "rufanrede", "rufeinrichtung", "rufmatnr", "rufaccounttype", "ruffakultaet", "mail", "rufdienst");
 
     if(!($person_daten = uniLdapSearch($ds_rz, "ou=people,".$suffix_rz, "uid=$uid", $ruffelder, "", "list", 0, 0))) {
@@ -298,12 +298,12 @@ function datenabgleich($uid, $userPassword, $ds_rz, $ds) {
 }
 
 /**
-* userLogin($uid, $userPassword) - Führt den Login am Gruppe1-LDAP durch.
+* userLogin($uid, $userPassword) - Fï¿½hrt den Login am Gruppe1-LDAP durch.
 *
 * Nach erfolgreicher Identifikation und ggf. neuem Anlegen oder Datenabgleich wird
-* mit userLogin() der Bind am Gruppe1-LDAP durchgeführt.
+* mit userLogin() der Bind am Gruppe1-LDAP durchgefï¿½hrt.
 * Die Rechte und der CN des Users werden ausgelesen und in der Session gespeichert.
-* Anschließend leitet das Skript auf die Startseite der Verwaltung (person_daten_show.php) weiter.
+* Anschlieï¿½end leitet das Skript auf die Startseite der Verwaltung (person_daten_show.php) weiter.
 *
 * @param string UID
 * @param string Password
@@ -333,20 +333,22 @@ function userLogin($uid, $userPassword) {
     $_SESSION['dn'] = $userDN;
     $_SESSION['cn'] = $cn;
     $_SESSION['audn'] = "";
+    $_SESSION['status'] = "in";
+    $_SESSION['error'];
 
     # LDAP-Bind aufheben
     ldap_unbind($ds);
 	 
 	 $mesg = "<html>
 				<head>
-					<title>AU Management</title>
+					<title>AdminUnit Management</title>
 					<link rel='stylesheet' href='styles.css' type='text/css'>
 				</head>
 				<body>
-				<table border='0' cellpadding='30' cellspacing='0'> 
-				<tr><td>
-	 			Bitte haben Sie einen Moment Geduld, die Seite wird geladen... <br>
-	 			Falls nicht, klicken Sie bitte <a href='start.php'>hier</a>.
+				<table border='0' cellpadding='200' cellspacing='0' width='100%'> 
+				<tr valign='middle'><td align='center'>
+	 			<h3>Bitte einen Moment Geduld, die Seite wird geladen ... <br>
+	 			Falls nicht, klicken Sie bitte <a href='start.php'>hier</a>.<h3>
 	 			</td></tr>
 	 			</table>
 	 			</body>
@@ -355,7 +357,7 @@ function userLogin($uid, $userPassword) {
   	
    redirect(0, "start.php", $mesg, TRUE);
 	
-	# nichtmehr benötigte CSV-Dateien im tmp-Verzeichnis löschen
+	# nichtmehr benï¿½tigte CSV-Dateien im tmp-Verzeichnis lï¿½schen
 	# listen_sauber();
 }
 

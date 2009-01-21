@@ -69,7 +69,7 @@ foreach ($subnet_array as $subnet){
    $dhcpservice = "";
    if ($subnet['dhcphlpcont'] != ""){
       $exp = ldap_explode_dn($subnet['dhcphlpcont'],1);
-      $dhcpservice = $exp[0]." &nbsp;[".$exp[2]."]";
+      $dhcpservice = $exp[0]."<br>[".$exp[2]."]";
    }
    
    $subnetcn = "<a href='dhcpsubnet.php?dn=".$subnet['dn']."&mnr=".$mnr."' class='headerlink'><b>".$subnet['cn']."</b></a>";

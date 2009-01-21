@@ -79,34 +79,44 @@ if ( $oldhostname == $hostname ){
 }
 
 if ( $oldhostname != "" && $hostname != "" && $oldhostname != $hostname ){
-	echo "Hostname aendern<br>";
-	# hier noch Syntaxcheck
-	# Formulareingaben anpassen
-	$exphn = explode(" ",$hostname);
-	foreach ($exphn as $word){$expuc[] = ucfirst($word);}
-	$hostname = implode(" ",$expuc);
-	$hostname = preg_replace ( '/\s+([0-9A-Z])/', '$1', $hostname);
-	
-	$newhostDN = "hostname=".$hostname.",cn=computers,".$auDN;
-	# print_r($newhostDN); echo "<br><br>";
-	modify_host_dn($hostDN, $newhostDN);
-	$hostDN = $newhostDN;
-	
-	# newsubmenu holen...hosts neu holen, sortieren, ->position
-	#$newhosts = get_hosts($auDN,array("dn"));
-	#print_r($newhosts); echo "<br><br>";
-	#foreach ($newhosts as $item){
-	#	$newdnarray [] = $item['dn'];
-	#}
-	#$key = array_search($newhostDN, $newdnarray);
-	#print_r($key); echo "<br>";
-	 
-	$url = 'host.php?dn='.$newhostDN.'&sbmnr='.$sbmnr;
-
+	echo "Hostname &auml;ndern<br><br>";
+	# Check ob Host schon existiert in AU/Domain
+	$brothers = get_hosts($auDN,array("hostname"),"");
+	if ( check_hostname($hostname) ){
+		$url = "hostoverview.php";
+		$mesg = "Es existiert bereits ein Rechner mit dem Namen $hostname!<br><br>
+					Bitte geben Sie einen anderen Namen ein, oder l&ouml;schen
+					Sie zun&auml;chst den gleichnamigen Rechner.<br><br>
+					<a href=".$url." style='publink'><< &Uuml;bersicht Rechner</a>";
+		redirect(4, $url, $mesg, $addSessionId = TRUE);
+		die;
+	}else{
+		# Formulareingaben anpassen
+		$exphn = explode(" ",$hostname);
+		foreach ($exphn as $word){$expuc[] = ucfirst($word);}
+		$hostname = implode(" ",$expuc);
+		$hostname = preg_replace ( '/\s+([0-9A-Z])/', '$1', $hostname);
+		
+		$newhostDN = "hostname=".$hostname.",cn=computers,".$auDN;
+		# print_r($newhostDN); echo "<br><br>";
+		modify_host_dn($hostDN, $newhostDN);
+		$hostDN = $newhostDN;
+		
+		# newsubmenu holen...hosts neu holen, sortieren, ->position
+		#$newhosts = get_hosts($auDN,array("dn"));
+		#print_r($newhosts); echo "<br><br>";
+		#foreach ($newhosts as $item){
+		#	$newdnarray [] = $item['dn'];
+		#}
+		#$key = array_search($newhostDN, $newdnarray);
+		#print_r($key); echo "<br>";
+		
+		$url = 'host.php?dn='.$newhostDN.'&sbmnr='.$sbmnr;
+	}
 }
 
 if ( $oldhostname != "" && $hostname == "" ){
-	echo "Hostname loeschen!<br> 
+	echo "Hostname l&ouml;schen!<br>>br>
 			Dies ist Teil des DN, Sie werden den Rechner komplett l&ouml;schen<br><br>";
 	echo "Wollen Sie den Rechner <b>".$oldhostname."</b> mit seinen Hardware-Profilen (MachineConfigs) 
 			und PXE Bootmen&uuml;s wirklich l&ouml;schen?<br><br>
@@ -214,9 +224,15 @@ if ( $oldmac != "" && $mac == "" ){
 	}
 	else{
 		$entry['hwaddress'] = $oldmac;
+		$dhcptext = "";
+		if ($dhcphlpcont != ""){
+			$entry['dhcphlpcont'] = array();
+			$dhcptext = "Da die MAC-Adresse Voruassetzung f&uuml;r den
+						Eintrag DHCP Dienst ist, wurde der Client dort ausgetragen.<br>";
+		}
 		$result = ldap_mod_del($ds,$hostDN,$entry);
 		if($result){
-			$mesg = "MAC erfolgreich geloescht<br><br>";
+			$mesg = "MAC erfolgreich geloescht.<br>$dhcptext<br>";
 		}else{
 			$mesg = "Fehler beim loeschen der MAC<br><br>";
 		}

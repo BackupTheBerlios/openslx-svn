@@ -1,7 +1,7 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
   	
   	<tr>
-  		<td colspan='4' height='20'><h4><a href='{NODETYP}.php?dn={NODEDN}&mnr=1&sbmnr={SBMNR}&mcnr=-1' class='headerlink'><< Zur&uuml;ck zu Rechner &nbsp;{NODE}</a></h4></td>
+  		<td colspan='4' height='20'><h4><a href='pxeconfigs.php' class='headerlink'><< Zur&uuml;ck zur &Uuml;bersicht PXE Configs</a></h4></td>
   	</tr>
   	<tr>
   		<td height='20'>&nbsp;</td>

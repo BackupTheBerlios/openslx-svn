@@ -3,6 +3,10 @@
 # Max und Free IP Blocks
 $mipb_array = get_maxipblocks_au($auDN);
 $fipb_array = get_freeipblocks_au($auDN);
+#print_r($fipb_array); echo "<br>";
+natsort($mipb_array);
+natsort($fipb_array);
+#print_r($fipb_array); echo "<br>";
 #print_r(count($mipb_array)); echo "<br>";
 #print_r(count($fipb_array)); echo "<br>";
 $ipblocks = "";

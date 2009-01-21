@@ -8,13 +8,10 @@ $webseite = "new_pxe.dwt";
 include('computers_header.inc.php');
 
 $mnr = 2;
-$sbmnr = -1;
+$sbmnr = 0;
 $mcnr = -1;
 
 ###################################################################################
-
-$sbmnr = $_GET['sbmnr'];
-$mcnr = $_GET['mcnr']; 
 
 # Menuleisten erstellen
 createMainMenu($rollen, $mainnr);
@@ -31,38 +28,31 @@ $template->assign(array("PXECN" => $pxecn,
 								"PXEDAY" => $pxeday,
            			      "PXEBEG" => $pxebeg,
            			      "PXEEND" => $pxeend,
-           		       	# "LDAPURI" => "",
-           			      "FILEURI" => "",   
+           			      #"FILEURI" => "",
            			      "RBS" => "",
            			      "RBSAU" => "",
-           			      "NFS" => "",
-           			      "NFSROOT" => "",
-           			      "TFTP" => "",
-           			      "TFTPROOT" => "",
-           			      "FILE" => "",           			      
-           		       	"ALLOW" => "",          			      
-           		       	"CONSOLE" => "",
-           		       	"DEFAULT" => "menu.c32", 
-           			      "DISPLAY" => "",          			      
-           		       	"FONT" => "",
+           			      "FILE" => "",
+           		       	"ALLOW" => "",
+           		       	#"CONSOLE" => "",
+           			      #"DISPLAY" => "",
+           		       	#"FONT" => "",
            		       	"IMPLICIT" => "",
-           			      "KBDMAP" => "",          			      
+           			      #"KBDMAP" => "",
            		       	"MENMPW" => "",
-           		       	"MENTIT" => "",                   			      
+           		       	"MENTIT" => "",
            		       	"NOESC" => "1",
-           		       	"ONERR" => "",          			      
+           		       	"ONERR" => "",
            		       	"ONTIME" => "",
-           		       	"PROMPT" => "0",          			      
-           		       	"SAY" => "",
+           		       	"PROMPT" => "0",
+           		       	#"SAY" => "",
            		       	"SERIAL" => "",
-								"TIMEOUT" => "600",  			      
+								"TIMEOUT" => "600",
            		       	"NODEDN" => "cn=rbs,".$auDN,
            		       	"HDN" => "none",
 								"HN" => "",
 								"GDN" => "none",
 								"GN" => "", 
-           		       	"MNR" => $mnr,
-           		       	"SBMNR" => $sbmnr));
+           		       	"MNR" => $mnr));
 
 #############################################
 # RB Dienste holen
@@ -93,7 +83,7 @@ $template->define_dynamic("Altrbs", "Webseite");
 $hostorgroup = $exp[0];
 $hgexp = explode('=',$exp[0]);
 
-$hosts_array = get_hosts($auDN,array("dn","hostname","hlprbservice","hwaddress"));
+$hosts_array = get_hosts($auDN,array("dn","hostname","hlprbservice","hwaddress"),"");
 if ( count($hosts_array) != 0 ){
    $template->define_dynamic("Hosts", "Webseite");
    foreach ($hosts_array as $item){

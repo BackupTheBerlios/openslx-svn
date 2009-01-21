@@ -1,7 +1,7 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
   	
   	<tr>
-  		<td colspan='4' height='20'><h4><a href='{NODETYP}.php?dn={NODEDN}&mnr=1&sbmnr={SBMNR}&mcnr=-1' class='headerlink'><< Zur&uuml;ck zu Rechner &nbsp;{NODE}</a></h4></td>
+  		<td colspan='4' height='20'><h4><a href='pxeconfigs.php' class='headerlink'><< Zur&uuml;ck zur &Uuml;bersicht PXE Configs</a></h4></td>
   	</tr>
   	<tr>
   		<td height='20'>&nbsp;</td>
@@ -19,32 +19,63 @@
   		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{BMLINK} Bootmenue </a></h4></td>
   		<td>&nbsp;</td>
   	</tr>
-  	<tr>
-  		<td height='20'></td>
-  	</tr>
   	
-  	
-  	<tr>
-  		<td colspan='4'><h4>Allgemeine Parameter der PXE Konfiguration:</h4></td>
+	<tr>
+  		<td height='40'></td>
   	</tr>
+
   	<tr><td colspan='4'>
   		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
-			
+				
 				<form action='pxe_change.php' method='post'>
+				
 			<tr>
-				<td width='25%' style='border-color: black; border-style: solid; border-width: 3 0 1 0;'><b>Eindeutiger Name (cn):</b><br>(Bitte ohne Leerzeichen eingeben) &nbsp;</td>
-				<td width='5%' style='border-color: black; border-style: solid; border-width: 3 0 1 0;'>&nbsp;</td>
-				<td colspan='2' style='border-color: black; border-style: solid; border-width: 3 0 1 0;'>
+				<td width='25%' class='tab_d'><b>Eindeutiger Name (cn):</b><br>(Bitte ohne Leerzeichen eingeben) &nbsp;</td>
+				<td width='5%' class='tab_d'>&nbsp;</td>
+				<td colspan='2' class='tab_d'>
 					<font size='+2'><b>PXE_</b></font><input type='Text' name='pxecn' value='{PXECN}' size='50' class='medium_form_field'>
 					<input type='hidden' name='oldpxecn' value='{PXECN}'> &nbsp;
 				</td>
 			</tr>
-			
+		</table>
+	<tr>
+  		<td height='20'></td>
+  	</tr>
+  	
+  	
+  	
+	<tr><td colspan='4'>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			<tr>
+				<td colspan='4' class='tab_h'><h4>PXE Konfiguration zuordnen (mit Time Range):</h4></td>
+			</tr>
 			<tr valign='top'>
-				<td width='25%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'><b>G&uuml;ltigkeitsdauer <br>(Time Range(s)): </b><br>
-																																		Zum L&ouml;schen einer Time Range<br>H&auml;kchen setzen&nbsp;</td>
-				<td width='5%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>&nbsp;</td>
-				<td width='35%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+				<td class='tab_d'><b>Rechner / Gruppen</b><br>
+									(Mehrfachauswahl <br>m&ouml;glich)&nbsp;</td>
+				<td class='tab_d'>&nbsp;</td>
+				<td class='tab_d'>
+					<select name='targethosts[]' size='8' multiple class='small_form_selectbox'> 
+						<option selected value='none'>----- RECHNER -----</option>
+						<!-- BEGIN DYNAMIC BLOCK: Hosts -->
+						<option value='{HDN}'>{HN}</option>
+						<!-- END DYNAMIC BLOCK: Hosts -->
+					</select>
+				</td>
+				<td class='tab_d'>
+					<select name='targetgroups[]' size='8' multiple class='small_form_selectbox'>
+						<option selected value='none'>----- GRUPPEN -----</option>
+						<!-- BEGIN DYNAMIC BLOCK: Groups -->
+						<option value='{GDN}'>{GN}</option>
+						<!-- END DYNAMIC BLOCK: Groups -->
+					</select>
+				</td>
+			</tr>
+
+			<tr valign='top'>
+				<td width='25%' class='tab_d_ohne'><b>G&uuml;ltigkeitsdauer <br>(Time Range(s)): </b><br>
+				Zum L&ouml;schen einer Time Range<br>H&auml;kchen setzen&nbsp;</td>
+				<td width='5%' class='tab_d_ohne'>&nbsp;</td>
+				<td width='35%' class='tab_d_ohne'>
 					Eines der folgenden:<br>
 					
 					- <b>Datum</b> &nbsp;(dd.mm, z.B. 21.03/01.11) <br> 
@@ -52,7 +83,7 @@
 					- <b>Wochentag</b> &nbsp;(MO, DI, ... , SO) <br>
 					- <b>X</b> f&uuml;r <b>t&auml;glich</b> 
 					
-				<td width='35%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+				<td width='35%' class='tab_d_ohne'>
 					- <b>Uhrzeit</b> &nbsp;(Format: hh, z.B. 07-19)<br> 
 					- <b>X</b> f&uuml;r rund um die Uhr
 					
@@ -61,16 +92,16 @@
 			
 			<!-- BEGIN DYNAMIC BLOCK: TRanges -->
 			<tr valign='top'>
-				<td width='25%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>&nbsp;</td>
-				<td width='5%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+				<td width='25%' class='tab_d_ohne'>&nbsp;</td>
+				<td width='5%' class='tab_d_ohne'>
 					<input type='checkbox' name='deltr[]' value='{PXEDAY}_{PXEBEG}_{PXEEND}'>
 				&nbsp;</td>				
-				<td width='35%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+				<td width='35%' class='tab_d_ohne'>
 					<input type='Text' name='pxeday[]' value='{PXEDAY}' size='5' maxlength='5' class='medium_form_field'>
 					<input type='hidden' name='oldpxeday[]' value='{PXEDAY}'> &nbsp;<br>
 					
 					
-				<td width='35%' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+				<td width='35%' class='tab_d_ohne'>
 					<input type='Text' name='pxebeg[]' value='{PXEBEG}' size='2' maxlength='2' class='medium_form_field'>
 					<input type='hidden' name='oldpxebeg[]' value='{PXEBEG}'> <b><font size='+1'>:00</b> &nbsp;- &nbsp;</font>
 					<input type='Text' name='pxeend[]' value='{PXEEND}' size='2' maxlength='2' class='medium_form_field'>
@@ -80,12 +111,12 @@
 			<!-- END DYNAMIC BLOCK: TRanges -->
 			
 			<tr>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>Neue Time Range hinzuf&uuml;gen&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td class='tab_d'>Neue Time Range hinzuf&uuml;gen&nbsp;</td>
+				<td class='tab_d'>&nbsp;</td>
+				<td class='tab_d'>
 					<input type='Text' name='newpxeday' value='' size='5' maxlength='5' class='medium_form_field'>
 					
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td class='tab_d'>
 					<input type='Text' name='newpxebeg' value='' size='2' maxlength='2' class='medium_form_field'>
 					<b><font size='+1'>:00</b> &nbsp;- &nbsp;</font>
 					<input type='Text' name='newpxeend' value='' size='2' maxlength='2' class='medium_form_field'>
@@ -95,45 +126,12 @@
 			</tr>
 			
 		</table></td>
-  	</tr>
-  	
-	
+	</tr>
 	<tr>
-  		<td height='20'></td>
-  	</tr>
-  	<tr>
-  		<td colspan='4'><h4>PXE Dateiname:</h4>
-  		Achtung: &Auml;nderungen hier k&ouml;nnen zu nicht verwendeten PXE Dateien f&uuml;hren!<br>
-  		Sie sollten hier nur &Auml;nderungen vornehmen, wenn der PXE Datei offensichtlich ein falscher Name zugewiesen ist.<br>
-  		Wird z.B. vom betroffenen Rechner die MAC Adresse ge&auml;ndert, so wird dies vom System automatisch an dieser Stelle nachvollzogen.
-  		Diese Feld dient daher prim&auml;r der Kontrolle.</td>
-  	</tr>
-  	<tr>
-  		<td colspan='4'>
-  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
-		
-			<tr valign='top'>
-				<td width='40%' style='border-color: black; border-style: solid; border-width: 3 0 1 0;'>
-					<b>PXE Dateiname(n): </b><br>
-					Bei PXE von Gruppen ist f&uuml;r jeden Mitgliedsrechner<br>
-					der PXE Dateiname aufgelistet.
-				</td>
-				<td style='border-color: black; border-style: solid; border-width: 3 0 1 0;'>
-						<!-- BEGIN DYNAMIC BLOCK: Filenames -->
-					<input type='Text' name='filename[]' value='{FILE}' size='40' class='medium_form_field'>
-					<input type='hidden' name='oldfilename[]' value='{FILE}'> &nbsp;
-						<!-- END DYNAMIC BLOCK: Filenames -->
-					<input type='Text' name='newfilename' value='' size='40' class='medium_form_field'>
-				</td>
-			</tr>
-		
-  		</table></td>
-  	</tr>
-  	<tr>
 		<td>
 			<input type='hidden' name='nodedn' value='{NODEDN}'>
 			<input type='hidden' name='pxedn' value='{PXEDN}'>
-  			<input type='hidden' name='oldpxecn' value='{PXECN}'>
+			<input type='hidden' name='oldpxecn' value='{PXECN}'>
 			<input type='hidden' name='mnr' value='{MNR}'>
 			<input type='hidden' name='sbmnr' value='{SBMNR}'>
 			<input type='hidden' name='mcnr' value='{MCNR}'>						
@@ -141,66 +139,8 @@
 		</form></td>
 	</tr>
 	
-	
-	
 	<tr>
-  		<td height='50'></td>
-  	</tr>
-	
-	<tr>
-  		<td colspan='4'><h4>PXE Boot Men&uuml; &nbsp;<code class='font_object'>{PXECN}</code>&nbsp; kopieren:</h4>
-  		Beachten Sie, dass die Time Ranges des PXE Boot Men&uuml;s nicht kopiert werden.	Sie m&uuml;ssen diese anschlie&szlig;end 
-  		neu setzen. <br>
-  		Geben Sie bitte den eindeutigen Namen des neuen PXE Boot Men&uuml;s an.</td>
-  	</tr>
-  	<tr>
-  		<td colspan='4'>
-  		<table cellpadding='7' cellspacing='0' border='0' align='left' width='90%' style='border-width: 0 0 0 0;'>
-  			<form action='pxe_copy.php' method='post'>
-  			
-  			<tr  valign='top'>
-				<td style='border-color: black; border-style: solid; border-width: 3 0 1 0;'><b>Ziel Objekt:</b><br>
-									(Mehrfachauswahl m&ouml;glich)&nbsp;</td>
-				<td colspan='2' style='border-color: black; border-style: solid; border-width: 3 0 1 0;'>
-					
-					<select name='copytargets[]' size='10' multiple class='medium_form_selectbox'> 
-						<option selected value='none'>----------------------------</option>
-						<option value='{DEFDN}'>DEFAULT</option>
-						
-						<option value='none'>---- RECHNER -----</option>
-						<!-- BEGIN DYNAMIC BLOCK: Hosts -->
-						<option value='{HDN}'>{HN}</option>
-						<!-- END DYNAMIC BLOCK: Hosts -->
-						
-						<option value='none'>---- GRUPPEN -----</option>
-						<!-- BEGIN DYNAMIC BLOCK: Groups -->
-						<option value='{GDN}'>{GN}</option>
-						<!-- END DYNAMIC BLOCK: Groups -->
-					</select>
-				</td>
-			</tr>
-  			<tr>
-				<td width='30%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Eindeutiger Name (cn):</b><br>(Bitte ohne Leerzeichen eingeben) &nbsp;</td>
-				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<font size='+2'><b>PXE_</b></font><input type='Text' name='pxecncp' value='{PXECN}' size='50' class='medium_form_field'>
-					<input type='hidden' name='oldpxecncp' value='{PXECN}'> &nbsp;
-				</td>
-			</tr>
-  			
-  			<input type='hidden' name='pxedn' value='{PXEDN}'>
-  			<input type='hidden' name='oldpxecn' value='{PXECN}'>
-			<input type='hidden' name='mnr' value='{MNR}'>
-			<input type='hidden' name='sbmnr' value='{SBMNR}'>
-  			<input type='hidden' name='mcnr' value='{MCNR}'>  			
-  			<input type='hidden' name='deltr' value='{DELTR}'> 
-  			
-  		</table></td>
-  		</tr><tr><td>
-			 	<input type='Submit' name='apply' value='kopieren' class='small_loginform_button'>
-			</form></td></tr> 
-	
-	<tr>
-  		<td height='50'></td>
+  		<td height='60'></td>
   	</tr>
 	
 	<tr>
@@ -213,8 +153,8 @@
   			
   			
   			<tr>
-  				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
-  					Die PXE Config wird komplett gel&ouml;scht.
+  				<td class='tab_d_ohne'>
+  					Die PXE Config wird inklusive aller Client-Zuordnungen auf sie komplett gel&ouml;scht.
   			</tr>
   			
   			<input type='hidden' name='dn' value='{PXEDN}'>

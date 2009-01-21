@@ -1,30 +1,36 @@
 <?php
 
-    #Pfad festlegen wo die Anwendungsskripte sich befinden
-    #$START_PATH="http://localhost/lsm/";
-    $START_PATH="https://dhcp.uni-freiburg.de/";
+	# URL and Root Path of LSM Webinterface
+	$START_PATH="https://dhcp.uni-freiburg.de/";
+	#$START_PATH="http://localhost/lsm/";
 
-    # Anlegen einer Variablen für den Speicherort von den CSVs
-    # $TMPPATH_CSV="/home/gruppe1/public_html/htdocs/";
+	###################################
+	# LSM LDAP Directory Information
 
-    # einige LDAP-Angaben:
-    # der Anwendungs-LDAP
-    define('LDAP_HOST', 'ldap://foo.ruf.uni-freiburg.de');
-    #define('LDAP_HOST', 'ldaps://foo.ruf.uni-freiburg.de');
-    define('LDAP_PORT', 389);
-    #define('LDAP_PORT', 636);
-    $suffix = "dc=uni-freiburg,dc=de";
-	 $domsuffix = "uni-freiburg.de";
-	 $rootAU = "ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
-    
-    # der LDAP-Server für die Authentisierung der User
-    #define('LDAP_HOST', 'localhost');
-    #define('LDAP_PORT', 389);
-    #$suffix_rz = "dc=uni-freiburg,dc=de";
+	# LDAP Server
+	# Master
+	define('LDAP_HOST', 'ldap://foo.ruf.uni-freiburg.de');
+	#define('LDAP_HOST', 'ldaps://foo.ruf.uni-freiburg.de');
+	# Slave
+	#define('LDAP_HOST', 'ldap://bar.ruf.uni-freiburg.de');
+	#define('LDAP_HOST', 'ldaps://bar.ruf.uni-freiburg.de');
 
-    # einige Sachen, die aus Sicherheitsgründen in produktiven Umgebungen geändert werden sollten!!!
-    #$dummyUid      = "rz-ldap";  // Dummy-User für einige Aktionen - muss angelegt werden!!!
-    #$dummyPassword = "dummy";
+	# Local for Testing
+	#define('LDAP_HOST', 'localhost');
+	
+	define('LDAP_PORT', 389);
+	#define('LDAP_PORT', 636);
+	
+	$suffix = "dc=uni-freiburg,dc=de";
+	$domsuffix = "uni-freiburg.de";
+	$rootAU = "ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
+	###################################
 
-    #$standardPassword = "...";  // das Passwort mit dem alle User im Anwendungsldap angelegt werden!!!
+
+	# einige Sachen, die aus Sicherheitsgrï¿½nden in produktiven Umgebungen geï¿½ndert werden sollten!!!
+	#$dummyUid      = "rz-ldap";  // Dummy-User fï¿½r einige Aktionen - muss angelegt werden!!!
+	#$dummyPassword = "dummy";
+
+	#$standardPassword = "...";  // das Passwort mit dem alle User im Anwendungsldap angelegt werden!!!
+
 ?>

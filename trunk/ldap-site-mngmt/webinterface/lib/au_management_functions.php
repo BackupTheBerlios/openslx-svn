@@ -53,7 +53,7 @@ function new_childau($childDN,$childou,$childcn,$childdesc,$mainadmin){
 	if ($resultAU = ldap_add($ds,$childDN,$entryAU)){
 	
 		# alle Au Container anlegen
-		$containers = array("computers","dhcp","groups","rbs","roles");
+		$containers = array("computers","dhcp","groups","pxe","rbs","roles");
 		foreach ($containers as $cont){
 			$entryCont = array();
 			$entryCont ['objectclass'] = "AUContainer";
@@ -426,7 +426,7 @@ function change_child_domain($childdomain, $oldchilddomain, $childDN, $assocdom,
 		$entryAD['associateddomain'] = $assocdom;
 		#print_r($entryAD); echo "<br>";
 		if ($resultAD = ldap_mod_del($ds,$childDN,$entryAD)){
-		
+			
 			# neuen dc Knoten anlegen mit Rollen ...
 			if(new_child_domain($childdomain, $childDN, $assocdom, $domDN)){
 				

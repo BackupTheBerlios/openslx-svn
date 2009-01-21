@@ -4,14 +4,14 @@
   		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 1;'><h4>{HOSTLINK} Allgemein </a></h4></td>
   		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{DHCPLINK} DHCP </a></h4></td>
   		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{RBSLINK} RBS/PXE </a></h4></td>
-  		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4><code class='font_object'>Hardware</code></h4></td>
+  		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4><code class='font_object'>Geo/Hardware</code></h4></td>
   		<td>&nbsp;</td>
   	</tr>
   	<tr>
   		<td height='20'></td>
   	</tr>
   	<tr>
-  		<td colspan='5'><h3>Hardware Optionen - Rechner &nbsp;<code class='font_object'> {HOSTNAME} </code> </h3></td>
+  		<td colspan='5'><h3>Geo / Hardware Optionen - Rechner &nbsp;<code class='font_object'> {HOSTNAME} </code> </h3></td>
   	</tr>
   	
   	<tr><td colspan='5'>
@@ -20,10 +20,24 @@
 				<form action='hwhost_change.php' method='post'>
 			
 			<tr>
-				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
-				<td width='55%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+				<td width='35%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='65%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
 			</tr>
 			
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Geographic Location </b> (Geb&auml;ude, Raum, ...) <b>:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[geolocation]' value='{GEOLOC}' size='50' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[geolocation]' value='{GEOLOC}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Geo Coordinates: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[geoattribut]' value='{GEOATT}' size='50' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[geoattribut]' value='{GEOATT}'> &nbsp;
+				</td>
+			</tr>
 			<tr>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>HW Mouse: </b>&nbsp;</td>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>

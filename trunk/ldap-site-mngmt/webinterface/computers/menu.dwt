@@ -10,7 +10,10 @@
  		<td width="8%" align="left" style="border-width:1 0 1 1;border-color:#000000;border-style:solid;padding:5;background-color:{FARBE}">&nbsp;</td>
  		<td width="5%" align="left" style="border-width:1 0 1 0;border-color:#000000;border-style:solid;padding:5;background-color:{FARBE}">&nbsp;</td>
      	<td width="69%" align="left" style="border-width:1 1 1 0;border-color:#000000;border-style:solid;padding:5;background-color:{FARBE}">
-     	<a href="{LINK_M}" style="text-decoration:none"><b class="standard_schrift">{TEXT_M}</b></a></td>
+     		<a href="{LINK_M}" style="text-decoration:none">
+				<code class="submenue_schrift">{TEXT_M}</code>
+			</a>
+		</td>
 		<td width='10%'>&nbsp;</td>
 		
 		</tr>

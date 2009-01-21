@@ -1,9 +1,9 @@
 <form action="{PFAD}index.php" method="post">
  <table border="0" cellspacing="0" cellpadding="3">
   <tr valign='top' align='right'>
-   <td><p class="small_loginform_text">Eingeloggt als: </td>
+   <td><p class="tiny_loginform_text">Eingeloggt als: </td>
    <td><b> {USERCN} </b></td>
-   <td><input type="Submit" name="Logout" value="Logout" class="small_loginform_button"></p></td>
+   <td><input type="Submit" name="Logout" value="Logout" class="tiny_loginform_button"></p></td>
   </tr>
  </table>
 </form>

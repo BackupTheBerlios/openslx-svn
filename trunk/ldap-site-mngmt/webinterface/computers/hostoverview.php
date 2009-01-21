@@ -7,7 +7,7 @@ $webseite = "hostoverview.dwt";
 
 include('computers_header.inc.php');
 
-$mnr = 1; 
+$mnr = 0;
 $sbmnr = -1;
 $mcnr = -1;
 
@@ -19,18 +19,26 @@ createComputersMenu($rollen, $mnr, $auDN, $sbmnr, $mcnr);
 
 ###################################################################################
 
+$sort = "hostname";
+$sort = $_GET['sort'];
+
 $template->assign(array("DN" => "",
 								"HOSTNAME" => "Noch keine Rechner angelegt",
            			      "DOMAINNAME" => "",
            			      "HWADDRESS" => "",
-           			      "IPADDRESS" => "",            			      
+           			      "IPADDRESS" => "",
            		       	"DHCPCONT" => "",
            		       	"FIXADD" => "",
-           		       	"RBSCONT" => "",
-           		       	"NXTSRV" => ""));
+           		       	"DESC" => "",
+           		       	"RBSCONT" => ""));
 
-$attributes = array("dn","hostname","domainname","hwaddress","ipaddress","dhcphlpcont","dhcpoptfixed-address","hlprbservice","dhcpoptnext-server");
-$host_array = get_hosts($auDN,$attributes);
+$attributes = array("dn","hostname","domainname","hwaddress","ipaddress","description","dhcphlpcont","dhcpoptfixed-address","hlprbservice","dhcpoptnext-server");
+$host_array = get_hosts($auDN,$attributes,$sort);
+#print_r($host_array);
+
+if ($sort == "ipaddress"){
+	$host_array = array_natsort($host_array, "ipaddress", "ipaddress");
+}
 
 $template->define_dynamic("Rechner", "Webseite");
 
@@ -41,7 +49,7 @@ foreach ($host_array as $host){
 	$hostip = explode('_',$host['ipaddress']);
 	
 	$dhcpcont = "";
-	$dhcpfixadd = "";
+	$dhcpfixadd = "-";
 	if ( count($host['dhcphlpcont']) != 0 ){
 	   $dhcpexpdn = ldap_explode_dn($host['dhcphlpcont'],1);
 	   $dhcpcn = $dhcpexpdn[0];
@@ -62,25 +70,25 @@ foreach ($host_array as $host){
 	}
 	
 	
-	
-	$rbscont = "";
+	$rbscont = "-";
 	$dhcpnxtsrv = "";
 	if ( count($host['hlprbservice']) != 0 ){
 	   $rbsexpdn = ldap_explode_dn($host['hlprbservice'],1);
-	   $rbscont = $rbsexpdn[0]." <br>[".$rbsexpdn[2]."]";
+		$dhcpnxtsrv = $host['dhcpoptnext-server'];
+	   $rbscont = $rbsexpdn[0]." <br>[".$dhcpnxtsrv."]";
 	   
-	   $dhcpnxtsrv = $host['dhcpoptnext-server'];
+	   
 	}
 	
 	$template->assign(array("DN" => $host['dn'],
 								"HOSTNAME" => $hostname,
            			      "DOMAINNAME" => $host['domainname'],
            			      "HWADDRESS" => $host['hwaddress'],
-           			      "IPADDRESS" => $hostip[0],            			      
+           			      "IPADDRESS" => $hostip[0],
            		       	"DHCPCONT" => $dhcpcont,
            		       	"FIXADD" => $dhcpfixadd,
            		       	"RBSCONT" => $rbscont,
-           		       	"NXTSRV" => $dhcpnxtsrv,
+           		       	"DESC" => $host['description'],
            		       	"AUDN" => $auDN ));
 	$template->parse("RECHNER_LIST", ".Rechner");
 	

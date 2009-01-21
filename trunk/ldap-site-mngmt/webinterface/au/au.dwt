@@ -5,18 +5,18 @@
 	<link rel='stylesheet' href='../styles.css' type='text/css'></head>
 <body>
 
-<table cellpadding='0' cellspacing='0' border='0' width='95%' height='8%'>
+<table cellpadding='0' cellspacing='0' border='0' width='100%' style='background-color: #F0F0F0;border-color: #505050; border-style: solid; border-width: 0 0 1 0;'>
 	<tr>
-	<td width='35%'>
+	<td width='30%'>
 	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
 		<tr valign='top'> 
 			<td width='1'></td> 
-			<td><h2>Rechner und IP Management</h2></td>
+			<td><h2>Client / IP Management</h2></td>
 		</tr>
 	</table>
 	</td>
 	
-	<td width='40%'>
+	<td width='45%'>
 	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
 		<tr valign='top' align='left'>
 		<td>
@@ -36,16 +36,13 @@
 	</table>
 	</td>
 	</tr>
+	<tr>
+		<td colspan='3'>{MAINMENU}</td>
+	</tr>
 </table>
 
-<table cellpadding='5' cellspacing='0' border='0' width='95%' height='7%'>
-<tr>
-	<td>{MAINMENU}</td>
-</tr>
-</table>
-
-<hr align='center' width='98%' noshade>
-
+<!--<hr align='center' width='98%' noshade>-->
+<br>
 
 
 <table cellpadding='5' cellspacing='0' border='0' width='100%' height='85%'>

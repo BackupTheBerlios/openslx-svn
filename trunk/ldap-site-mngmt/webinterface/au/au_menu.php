@@ -134,7 +134,7 @@ function createAUMenu($rollen, $mnr, $auDN,$sbmnr) {
 									<td width='8%'>&nbsp;</td>
 									<td width='8%' align='right'><img src='../pics/".$zwisch.".gif'></td>
 									<td width='74%' align='left' style='border-width:1 1 1 1;border-color:#000000;border-style:solid;padding:4;padding-left:25px;background-color:{FARBE_S}'>
-										<a href='".$item2['link']."' style='text-decoration:none'><b class='standard_schrift'>".$item2['text']."</b></a></td>
+										<a href='".$item2['link']."' style='text-decoration:none'><code class='submenue_schrift'>".$item2['text']."</code></a></td>
 									<td width='10%'>&nbsp;</td>
 								</tr>";
 							

@@ -5,20 +5,20 @@
 * attributesToString($entry, $name, $delemiter = "", $pattern = "", $empty = "&nbsp") -
 * Gibt die Attribute eines LDAP-Eintrages formatiert aus
 *
-* Gibt die Attribute des Schlüssels $name des LDAP-Eintraes $entry aus. Mehrere Werte werden mit $delemiter
-* voneinander getrennt. Für jeden Wert des Attributes wird in $pattern an die Stelle "$name" (Dallarzeichen plus die Bezeichnung)
-* das aktuelle Attribut eingefügt - ähnlich (aber nicht gleich!) der String-Interpretation von PHP. Falls $pattern = "" wird
-* einfach der Wert zurück gegeben. Falls für den Schlüssel keine Attribut-Werte definiert sind, wird $empty zurück gegeben
+* Gibt die Attribute des Schlï¿½ssels $name des LDAP-Eintraes $entry aus. Mehrere Werte werden mit $delemiter
+* voneinander getrennt. Fï¿½r jeden Wert des Attributes wird in $pattern an die Stelle "$name" (Dallarzeichen plus die Bezeichnung)
+* das aktuelle Attribut eingefï¿½gt - ï¿½hnlich (aber nicht gleich!) der String-Interpretation von PHP. Falls $pattern = "" wird
+* einfach der Wert zurï¿½ck gegeben. Falls fï¿½r den Schlï¿½ssel keine Attribut-Werte definiert sind, wird $empty zurï¿½ck gegeben
 *
 * @param array entry LDAP-Array
 * @param string name Hashbezeichnung
 * @param string delimiter Trennzeichen
 * @param string pattern Muster
-* @param string empty Zeichen für leere Felder
+* @param string empty Zeichen fï¿½r leere Felder
 *
 * @return string Array-Werte als String
 *
-* @author Timothy Burk, lt. Musterlösung
+* @author Timothy Burk, lt. Musterlï¿½sung
 *
 */
 
@@ -51,7 +51,7 @@
  * liefert den ($i-ten) Wert des Attributes $name aus $entry
  * Eingabe ist entweder ein Datensatz aus dem ldapsearch-Ergebnis, oder
  * ein um die Meta-Infos (count) bereinigtes Ergebnis
- * sorry für die mangelhafte Doku - Thomas
+ * sorry fï¿½r die mangelhafte Doku - Thomas
  */
 
     function oneAttribute($entry, $name, $empty = "", $i = 0) {
@@ -72,11 +72,11 @@
      /**
      * redirect($seconds, $url, $msg = "", $addSessionId = TRUE) - leitet den Benutzer auf eine andere Seite weiter
      *
-     * Leitet den Benuzter nach $seconds Sekunden auf die Seite $url weiter. Während der Wartezeit bekommt der Benutzer
+     * Leitet den Benuzter nach $seconds Sekunden auf die Seite $url weiter. Wï¿½hrend der Wartezeit bekommt der Benutzer
      * die Information $msg mitgeteilt (Achtung: keine automatische Formatierung der $msg). Wenn $addSessionId TRUE ist,
-     * dann wird an den URL die SessionId angehängt.
+     * dann wird an den URL die SessionId angehï¿½ngt.
      *
-     * @author Timothy Burk, lt. Musterlösung
+     * @author Timothy Burk, lt. Musterlï¿½sung
      */
 
     function redirect($seconds, $url, $msg = "", $addSessionId = TRUE) {
@@ -106,8 +106,8 @@
 /**
 * getRights($ds, $userDn) - ermittelt die Rechte eines Users.
 *
-* Die Funktion erwartet ein Directory-Handle und den vollständigen Distiguished Name des
-* Users. Rückgabewert ist ein numerisches eindimensionales Array, welches die Rechte enthält.
+* Die Funktion erwartet ein Directory-Handle und den vollstï¿½ndigen Distiguished Name des
+* Users. Rï¿½ckgabewert ist ein numerisches eindimensionales Array, welches die Rechte enthï¿½lt.
 *
 * @param resource ds LDAP Directory Handle
 * @param string userDn Distinguishedname des Users
@@ -158,10 +158,10 @@ function getRoles($ds, $userDN) {
 
 
 /**
-* createMenu($rechte) - erstellt die Menuleiste abhängig von der Rechten des Users.
+* createMenu($rechte) - erstellt die Menuleiste abhï¿½ngig von der Rechten des Users.
 *
 * Die Navigationsleiste wird dynamisch erzeugt und von dieser Funktion direkt in das
-* entsprechende Template geparst. Dabei werden nur die Schaltflächen zur Verfügung
+* entsprechende Template geparst. Dabei werden nur die Schaltflï¿½chen zur Verfï¿½gung
 * gestellt, die der User mit seinen Rechten anzeigen darf.
 *
 * @param array rechte Eindimensionales Array mit den Rechten des Users
@@ -178,7 +178,7 @@ function createMainMenu($rollen , $mainnr) {
    $mipbs = get_maxipblocks_au($auDN);
    #echo "MIPB: "; print_r ($mipbs); echo "<br>";
    if ($mipbs[0] != ""){
-      $dhcplink = "dhcp/dhcp.php";
+      $dhcplink = "dhcp/dhcpsubnets.php?mnr=0";
    }else{
       $dhcplink = "dhcp/no_dhcp.php";
    }
@@ -193,7 +193,7 @@ function createMainMenu($rollen , $mainnr) {
                        #array("link" => "ip/ip.php",
                        #      "text" => "IP Management",
                        #      "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")),
-                       array("link" => "computers/computers.php",
+							  array("link" => "computers/hostoverview.php?sort=hostname",
                              "text" => "Rechner",
                              "zugriff" => array("MainAdmin","HostAdmin","DhcpAdmin")),
                        array("link" => $dhcplink,
@@ -277,7 +277,7 @@ function vergleicheArrays($a, $b) {
 /**
 * inputArraySauber($Array)
 *
-* Löscht aus einem Array, welches POST-Daten enthält leere Felder. Nötig für die Formatierung
+* Lï¿½scht aus einem Array, welches POST-Daten enthï¿½lt leere Felder. Nï¿½tig fï¿½r die Formatierung
 * vor dem Anlegen neuer Objekte.
 *
 * @param array _POST-Array
@@ -307,7 +307,7 @@ function inputArraySauber($Array) {
 /**
 * numArraySauber($Array)
 *
-* Löscht aus einemn numerischen Array leere Felder.
+* Lï¿½scht aus einemn numerischen Array leere Felder.
 *
 * @param array Numerisches Array
 *
@@ -335,8 +335,8 @@ function numArraySauber($Array) {
 * ldapArraySauber($Array, [$delEmpty])
 *
 * Bereinigt ein dreidimensionales Array, so wie es aus der Funktion uniLdapSearch kommt.
-* Dabei werden alle count-Felder sowie alle numerischen Felder in denen der Schlüssel
-* gespeichert ist entfernt. Attributarrays mit nur einem Element werden gelöscht, das Element
+* Dabei werden alle count-Felder sowie alle numerischen Felder in denen der Schlï¿½ssel
+* gespeichert ist entfernt. Attributarrays mit nur einem Element werden gelï¿½scht, das Element
 * wir als Skalar gespeichert.
 * Wenn $delEmpty = TRUE ist, werden nur nichtleere Felder gespeichert.
 *
@@ -390,14 +390,14 @@ function ldapArraySauber($Array, $delEmpty = FALSE) {
 /**
 * personOptionen($rechte)
 *
-* Enthält die möglichen Optionen, die auf einen User angewandt werden können als
+* Enthï¿½lt die mï¿½glichen Optionen, die auf einen User angewandt werden kï¿½nnen als
 * zweidimensionales Array mit folgenden Attributen:
 * [ziel]: Aufzurufendes PHP-Skript
-* [text]: Beschriftung der Schaltfläche
+* [text]: Beschriftung der Schaltflï¿½che
 * [desc]: Beschreibung der Funktion
-* [rechte][]: Array mit den erforderlichen Rechten für die jeweilige Option. array("alle") steht für "ohne Einschränkung".
+* [rechte][]: Array mit den erforderlichen Rechten fï¿½r die jeweilige Option. array("alle") steht fï¿½r "ohne Einschrï¿½nkung".
 *
-* Dieses in dieser Funktion gespeicherte Array wird abhängig von den übergebenen
+* Dieses in dieser Funktion gespeicherte Array wird abhï¿½ngig von den ï¿½bergebenen
 * Rechten um nicht erlaubte Optionen reduziert und dann ausgegeben.
 *
 * @param array $rechte Eindimensionales Array $_SESSION['rechte']
@@ -411,12 +411,12 @@ function personOptionen($rechte) {
     $optionen = array();
     $optionen[] = array("ziel" => $START_PATH."person/datensatz.php?aktion=edit",
                         "text" => "Userdaten bearbeiten",
-                        "desc" => "Anzeigen und Ändern der persönlichen Daten des Users.",
+                        "desc" => "Anzeigen und ï¿½ndern der persï¿½nlichen Daten des Users.",
                         "rechte" => array("writeMitarbeiter"),
                         "hidden" => array("aktion" => "edit"));
     $optionen[] = array("ziel" => $START_PATH."person/datensatz.php",
-                        "text" => "Datensatz löschen",
-                        "desc" => "Der User wird vollständig mit allen Daten aus der Datenbank gelöscht.",
+                        "text" => "Datensatz lï¿½schen",
+                        "desc" => "Der User wird vollstï¿½ndig mit allen Daten aus der Datenbank gelï¿½scht.",
                         "rechte" => array("writeMitarbeiter"),
                         "hidden" => array("aktion" => "delete"));
     $optionen[] = array("ziel" => $START_PATH."person/datensatz.php",
@@ -425,8 +425,8 @@ function personOptionen($rechte) {
                         "rechte" => array("writeMitarbeiter"),
                         "hidden" => array("aktion" => "archiv"));
     $optionen[] = array("ziel" => $START_PATH."person/vertrag_show.php",
-                        "text" => "Verträge bearbeiten",
-                        "desc" => "Bearbeiten oder Anlegen eines Vertrages. Sie können dabei zwischen verschiedenen Vertragsarten wählen.",
+                        "text" => "Vertrï¿½ge bearbeiten",
+                        "desc" => "Bearbeiten oder Anlegen eines Vertrages. Sie kï¿½nnen dabei zwischen verschiedenen Vertragsarten wï¿½hlen.",
                         "rechte" => array("writeVertrag", "readVertrag"));
     $optionen[] = array("ziel" => $START_PATH."urlaub/krank_angabe.php",
                         "text" => "Krankheitstage",
@@ -435,7 +435,7 @@ function personOptionen($rechte) {
                         "hidden" => array("uidToChange" => $utc_uid, "GName" => $utc_cn));
     $optionen[] = array("ziel" => $START_PATH."urlaub/liste.php",
                         "text" => "Urlaubstage anzeigen",
-                        "desc" => "Urlaubstage des Users in grafischer Übersicht anzeigen.",
+                        "desc" => "Urlaubstage des Users in grafischer ï¿½bersicht anzeigen.",
                         "rechte" => array("readKrankheitUrlaub"),
                         "hidden" => array("wer" => $utc_uid, "wann" => "g", "sub" => $utc_cn));
     $optionen[] = array("ziel" => $START_PATH."person/rechte_show.php",
@@ -461,12 +461,12 @@ function personOptionen($rechte) {
 * makeArrFromAttribute($a, $attribute)
 *
 * Ein zweidimensionales Array wird nach der ersten Dimension durchlaufen.
-* Dabei werden die Werte des angegebenen Attributes $attribute für alle
-* Einträge extrahiert und in einem neuen Array gespeichert, welches
-* anschließend zurückgegeben wird.
+* Dabei werden die Werte des angegebenen Attributes $attribute fï¿½r alle
+* Eintrï¿½ge extrahiert und in einem neuen Array gespeichert, welches
+* anschlieï¿½end zurï¿½ckgegeben wird.
 *
 * @param array $a Zweidimensionales Array
-* @param string $attribute Schlüsselname der zweiten Dimension
+* @param string $attribute Schlï¿½sselname der zweiten Dimension
 *
 * @return array Eindimensionales numerisches Array mit den Attributwerten.
 *
@@ -486,20 +486,20 @@ function makeArrFromAttribute($a, $attribute) {
 
 /**
 *  sortArrayByKey sortiert die 1.Dimension von bis zu 5-dimensionalen Arrays
-*  nach den Werten in einem beliebigen Schlüssel in beliebiger Dimension
+*  nach den Werten in einem beliebigen Schlï¿½ssel in beliebiger Dimension
 *
-*  PS: die Funktion sortArrayByKey ist nur sinnvoll, wenn sich die Array-Einträge
-*      der 1.Dim sehr ähnlich sind, sprich bei Suchergebnissen!!
+*  PS: die Funktion sortArrayByKey ist nur sinnvoll, wenn sich die Array-Eintrï¿½ge
+*      der 1.Dim sehr ï¿½hnlich sind, sprich bei Suchergebnissen!!
 *
 *  @param array $array : das zu sortierende Array
-*  @param string $sortKey : der Schlüssel, nach dem sortiert werden soll
+*  @param string $sortKey : der Schlï¿½ssel, nach dem sortiert werden soll
 *                           Bsp.:
 *                           es soll nach $array[$i][$j][$k]['sortkey'] sortiert werden
 *                          => $sortKey = "$j#$k#sortkey"
-*  @param string $sortDirection : die Sortierrichtung, gültige Werte sind "up", "down"
+*  @param string $sortDirection : die Sortierrichtung, gï¿½ltige Werte sind "up", "down"
 *
 *
-*  @author Daniel Höfler
+*  @author Daniel Hï¿½fler
 */
 function sortArrayByKey($array, $sortKey, $sortDirection = "up") {
     $sortKeyArray = explode("#", $sortKey);
@@ -533,7 +533,7 @@ function sortArrayByKey($array, $sortKey, $sortDirection = "up") {
                 break;
         }
     } else {
-        echo "zu viele Dimensionen!! Höchstens 4 Dimensionen möglich";
+        echo "zu viele Dimensionen!! Hï¿½chstens 4 Dimensionen mï¿½glich";
         return false;
     }
     if($sortDirection == "up") {
@@ -541,7 +541,7 @@ function sortArrayByKey($array, $sortKey, $sortDirection = "up") {
     } elseif($sortDirection == "down") {
         arsort($toSortKeys);
     } else {
-        echo "Keine gültige Sortierrichtung!!    Wählen sie \"up\" oder \"down\"\n";
+        echo "Keine gï¿½ltige Sortierrichtung!!    Wï¿½hlen sie \"up\" oder \"down\"\n";
         return false;
     }
     $sortArray = array();

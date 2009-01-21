@@ -7,7 +7,7 @@ $webseite = "dhcphost.dwt";
 
 include('computers_header.inc.php');
 
-$mnr = 1; 
+$mnr = 0; 
 $sbmnr = -1;
 $mcnr = -1;
 
@@ -24,9 +24,9 @@ createComputersMenu($rollen, $mnr, $auDN, $sbmnr, $mcnr);
 $hostDN = $_GET['dn'];
 
 # Rechner Daten
-$attributes = array("hostname","domainname","ipaddress","hwaddress","description","hlprbservice",
+$attributes = array("hostname","domainname","ipaddress","hwaddress","hlprbservice",
                      "dhcphlpcont","dhcpoptfixed-address","dhcpopthardware","dhcpoptfilename",
-                     "dhcpoptnext-server","dhcpoptmax-lease-time","dhcpoptdefault-lease-time","hw-mouse","hw-graphic","hw-monitor");
+                     "dhcpoptnext-server","dhcpoptmax-lease-time","dhcpoptdefault-lease-time");
 $host = get_node_data($hostDN,$attributes);
 $hostip = explode('_',$host['ipaddress']);
 # print_r($hostip); echo "<br><br>";
@@ -145,9 +145,9 @@ if ($dhcphlpcont == ""){
 				         <td class='tab_d_ohne'>&nbsp;</td>
 			         </tr>
 			         <tr valign='top'>
-			         	<td class='tab_d_ohne'><b>fixed-address:</b> &nbsp;</td>
-			         	<td class='tab_d_ohne'>".$fixedaddress."&nbsp;</td>
-				         <td class='tab_d_ohne'>
+			         	<td class='tab_d'><b>fixed-address:</b> &nbsp;</td>
+			         	<td class='tab_d'>".$fixedaddress."&nbsp;</td>
+				         <td class='tab_d'>
 				         <select name='fixadd' size='3' class='medium_form_selectbox'>
 				            ".$fixedaddselopt."
 				         </select>
@@ -158,16 +158,15 @@ if ($dhcphlpcont == ""){
 
 $template->assign(array("HOSTDN" => $hostDN,
 								"HOSTNAME" => $host['hostname'],
-           			      "DOMAINNAME" => $host['domainname'],
+           			      #"DOMAINNAME" => $host['domainname'],
            			      "HWADDRESS" => $host['hwaddress'],
            			      "IPADDRESS" => $hostip[0],
-           			      "DESCRIPTION" => $host['description'],
            			      "OLDDHCP" => $objectDN,
            			      "OLDFIXADD" => $host['dhcpoptfixed-address'],
-           			      "OLDRBS" => $rbsDN,         			      
+           			      "OLDRBS" => $rbsDN,
            		       	"DHCPCONT" => $dhcp,
-           		       	"HOST_DHCPOPT" => $host_dhcpopt,   			      
-           		       	"NEXTSERVER" => $host['dhcpoptnext-server'],          			      
+           		       	"HOST_DHCPOPT" => $host_dhcpopt,
+           		       	"NEXTSERVER" => $host['dhcpoptnext-server'],
            		       	"FILENAME" => $host['dhcpoptfilename'],
 								"DEFAULTLEASE" => $dhcpdefaultlease,
 								"MAXLEASE" => $dhcpmaxlease,

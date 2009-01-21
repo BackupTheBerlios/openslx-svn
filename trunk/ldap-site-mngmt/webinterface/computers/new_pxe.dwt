@@ -19,9 +19,9 @@
 				</td>
 			</tr>
 			<!--<tr valign='top'>
-				<td width='30%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Remote Boot Dienst <br>
-																																		ausw&auml;hlen: </b>&nbsp;</td>
-				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td width='30%' class='tab_d'><b>Remote Boot Dienst <br>
+					ausw&auml;hlen: </b>&nbsp;</td>
+				<td colspan='2' class='tab_d'>
 					<select name='rbs' size='5' class='medium_form_selectbox'> 
 						<option selected value='none'>----------</option>
 						
@@ -33,9 +33,9 @@
 				</td>
 			</tr>-->
 			<tr valign='top'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Ziel Objekt:</b><br>
+				<td class='tab_d'><b>Ziel Objekt:</b><br>
 									(Mehrfachauswahl m&ouml;glich)&nbsp;</td>
-				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td colspan='2' class='tab_d'>
 					<select name='targets[]' size='8' multiple class='medium_form_selectbox'> 
 						<option selected value='none'>----- RECHNER spezif. PXE -----</option>
 						<!-- BEGIN DYNAMIC BLOCK: Hosts -->
@@ -50,8 +50,8 @@
 				</td>
 			</tr>
 			<tr valign='top'>
-				<td width='30%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>G&uuml;ltigkeitsdauer <br>(Time Range): </b>&nbsp;</td>
-				<td width='40%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td width='30%' class='tab_d'><b>G&uuml;ltigkeitsdauer <br>(Time Range): </b>&nbsp;</td>
+				<td width='40%' class='tab_d'>
 					<input type='Text' name='pxeday' value='{PXEDAY}' size='5' maxlength='5' class='medium_form_field'>
 					&nbsp;<br>
 					Eines der folgenden:<br>
@@ -61,7 +61,7 @@
 					- <b>Wochentag</b> &nbsp;(Format: MO, DI, ... , SO) <br>
 					- <b>X</b> f&uuml;r <b>t&auml;glich</b> 
 					
-				<td width='30%' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td width='30%' class='tab_d'>
 					<input type='Text' name='pxebeg' value='{PXEBEG}' size='2' maxlength='2' class='medium_form_field'>
 					<b><font size='+1'>:00</b> &nbsp;- &nbsp;</font>
 					<input type='Text' name='pxeend' value='{PXEEND}' size='2' maxlength='2' class='medium_form_field'>
@@ -85,86 +85,76 @@
   		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
 			
 			<tr>
-				<td width='30%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
-				<td width='70%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+				<td width='30%' class='tab_h'><b>Attribut</b></td>
+				<td width='70%' class='tab_h'><b>Wert</b></td>
 			</tr>
 			
 			<tr>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Default: </b>&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[default]' value='{DEFAULT}' size='30' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[default]' value='{DEFAULT}'> &nbsp;
+				<td class='tab_d'><b>Default: </b>&nbsp;</td>
+				<td class='tab_d'>
+					<select name='attribs[default]' size='2' class='small_form_selectbox'> 
+						<option selected value='vesamenu.c32'>vesamenu.c32</option>
+						<option value='menu.c32'>menu.c32</option>
+					</select>
 				</td>
 			</tr>
 			<tr>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Menu Title: </b>&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				<td class='tab_d'><b>Menu Title: </b>&nbsp;</td>
+				<td class='tab_d'>
 					<input type='Text' name='attribs[menutitle]' value='{MENTIT}' size='30' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[menutitle]' value='{MENTIT}'> &nbsp;
 				</td>
 			</tr>
 			<tr>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Menu Master Passwd: </b>&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[menumasterpasswd]' value='{MENMPW}' size='30' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[menumasterpasswd]' value='{MENMPW}'> &nbsp;
+				<td class='tab_d'><b>Menu Master Passwd: </b>&nbsp;</td>
+				<td class='tab_d'>
+					<input type='Text' name='attribs[menumasterpasswd]' value='{MENMPW}' size='20' class='medium_form_field'>
 				</td>
 			</tr>
 			<tr>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Timeout: </b>&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[timeout]' value='{TIMEOUT}' size='30' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[timeout]' value='{TIMEOUT}'> &nbsp;
+				<td class='tab_d'><b>Timeout: </b>&nbsp;</td>
+				<td class='tab_d'>
+					<input type='Text' name='attribs[timeout]' value='{TIMEOUT}' size='10' class='medium_form_field'>
 				</td>
 			</tr>
 			<tr>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>No Escape: </b>&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[noescape]' value='{NOESC}' size='30' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[noescape]' value='{NOESC}'> &nbsp;
+				<td class='tab_d'><b>No Escape: </b>&nbsp;</td>
+				<td class='tab_d'>
+					<input type='Text' name='attribs[noescape]' value='{NOESC}' size='10' class='medium_form_field'>
 				</td>
 			</tr>
 			<tr>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Prompt: </b>&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[prompt]' value='{PROMPT}' size='30' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[prompt]' value='{PROMPT}'> &nbsp;
+				<td class='tab_d'><b>Prompt: </b>&nbsp;</td>
+				<td class='tab_d'>
+					<input type='Text' name='attribs[prompt]' value='{PROMPT}' size='10' class='medium_form_field'>
 				</td>
 			</tr>
 			<tr>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Allow Options: </b>&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[allowoptions]' value='{ALLOW}' size='30' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[allowoptions]' value='{ALLOW}'> &nbsp;
+				<td class='tab_d'><b>Allow Options: </b>&nbsp;</td>
+				<td class='tab_d'>
+					<input type='Text' name='attribs[allowoptions]' value='{ALLOW}' size='10' class='medium_form_field'>
 				</td>
 			</tr>
 			<tr>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>On Error: </b>&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[onerror]' value='{ONERR}' size='30' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[onerror]' value='{ONERR}'> &nbsp;
+				<td class='tab_d'><b>On Error: </b>&nbsp;</td>
+				<td class='tab_d'>
+					<input type='Text' name='attribs[onerror]' value='{ONERR}' size='20' class='medium_form_field'>
 				</td>
 			</tr>
 			<tr>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>ON Timeout: </b>&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[ontimeout]' value='{ONTIME}' size='30' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[ontimeout]' value='{ONTIME}'> &nbsp;
+				<td class='tab_d'><b>ON Timeout: </b>&nbsp;</td>
+				<td class='tab_d'>
+					<input type='Text' name='attribs[ontimeout]' value='{ONTIME}' size='20' class='medium_form_field'>
 				</td>
 			</tr>
-			<tr>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Client-Conf Dateiname <br>(File URI): &nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+			<!--<tr>
+				<td class='tab_d'><b>Client-Conf Dateiname <br>(File URI): &nbsp;</td>
+				<td class='tab_d'>
 					<input type='Text' name='conffile' value='{FILEURI}' size='50' class='medium_form_field'>
 					&nbsp;
 				</td>
-			</tr>
+			</tr>-->
 			
-			<input type='hidden' name='nodedn' value='{NODEDN}'>
-  			<input type='hidden' name='oldpxecn' value='{PXECN}'>
 			<input type='hidden' name='mnr' value='{MNR}'>
-			<input type='hidden' name='sbmnr' value='{SBMNR}'>
-			<input type='hidden' name='mcnr' value='{MCNR}'>					
 		</table></td>
   	</tr>
   	<tr>

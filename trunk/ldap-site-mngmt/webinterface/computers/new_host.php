@@ -7,7 +7,7 @@ $webseite = "new_host.dwt";
 
 include('computers_header.inc.php');
 
-$mnr = 1; 
+$mnr = 0;
 $sbmnr = -1;
 $mcnr = -1;
 
@@ -43,6 +43,8 @@ $template->assign(array("HOSTNAME" => $hostname,
            			      "MAC" => $mac,
            			      "IP" => $ip,
            			      "DHCPSELECT" => $dhcp_selectbox,
+           			      "GEOLOC" => "",
+           			      "GEOATT" => "",
            			      "MOUSE" => "",
            			      "GRAPHIC" => "",
            			      "MONITOR" => "",

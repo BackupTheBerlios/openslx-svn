@@ -4,7 +4,7 @@
   		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 1;'><h4><code class='font_object'>Allgemein</code></h4></td>
   		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{DHCPLINK} DHCP </a></h4></td>
   		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{RBSLINK} RBS/PXE </a></h4></td>
-  		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{HWLINK} Hardware </a></h4></td>
+  		<td align='center' width='15%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{HWLINK} Geo/Hardware </a></h4></td>
   		<td>&nbsp;</td>
   	</tr>
   	<tr>

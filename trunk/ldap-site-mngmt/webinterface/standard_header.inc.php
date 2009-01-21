@@ -2,6 +2,7 @@
 session_cache_expire(30);
 session_start();
 
+
 include('lib/config.inc.php');
 include('lib/ldap.inc.php');
 include('lib/ldap2.inc.php');
@@ -14,6 +15,21 @@ include('lib/dhcp_management_functions.php');
 include('lib/rbs_management_functions.php');
 include("class.FastTemplate.php");
 
+//print_r($_SESSION['status']);
+if ( !isset($_SESSION['status']) ){
+	redirect(0,"../index.php","",$addSessionId = FALSE);
+	exit;
+}
+if ( $_SESSION['status'] != "in" ){
+	//$_SESSION['status'] != "out";
+	redirect(0,"../index.php","",$addSessionId = FALSE);
+	exit;
+}
+
+ // Fehlerausgabe im Browser anschalten
+ini_set('display_errors', 0);
+// nur Laufzeitfehler ausgeben
+error_reporting(E_ALL ^ E_NOTICE | E_STRICT);
 
 $uid = $_SESSION['uid'];
 $userPassword = $_SESSION['userPassword'];
@@ -28,13 +44,13 @@ $rollen = $_SESSION['rollen'];
 if (!($ds = uniLdapConnect($uid,$userPassword))){
 	echo "<html>
 			<head>
-				<title>Rechner und IP Management</title>
+				<title>Zentrales Rechner / IP Management</title>
 				<link rel='stylesheet' href='../styles.css' type='text/css'>
 			</head>
 			<body>
 			<table border='0' cellpadding='30' cellspacing='0'> 
-			<tr><td>	
-			Es konnte keine Verbindung zum LDAP Server hergestellt werden!
+			<tr valign='middle'><td align='center'>
+			<h3>Es konnte keine Verbindung zum LDAP Server hergestellt werden!</h3>
 			</td></tr></table></body>
 			</html>
 			";
@@ -60,7 +76,7 @@ if ($auDN != ""){
    if ($expAuDn[1] == "ou=RIPM"){
    	$domDN = "ou=DNS,".$suffix;
    }
-   else{$domDN = $domain_data[0]['dn']; echo "<br>";}
+   else{$domDN = $domain_data[0]['dn']; }
    
    $domprefix = str_replace('.'.$domsuffix,'',$assocdom);
    # print_r($domprefix);

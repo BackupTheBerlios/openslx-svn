@@ -9,7 +9,7 @@ include('computers_header.inc.php');
 
 #############################################################################
 
-$mnr = 2;
+$mnr = 1;
 $sbmnr = -1;
 $mcnr = -1;
 
@@ -19,6 +19,9 @@ createComputersMenu($rollen, $mnr, $auDN, $sbmnr, $mcnr);
 
 #############################################################################
 
+$sort = "hostname";
+$sort = $_GET['sort'];
+
 $template->assign(array("IP" => "",
                         "OLDIP" => "",
                         "DHCPCONT" => "",
@@ -26,8 +29,12 @@ $template->assign(array("IP" => "",
                         "HOSTNAME" => "Noch keine Rechner angelegt",
                         "HOSTDN" => ""));
 
-$host_array = get_hosts($auDN,array("dn","hostname","ipaddress","dhcphlpcont","dhcpoptfixed-address"));
+$host_array = get_hosts($auDN,array("dn","hostname","ipaddress","dhcphlpcont","dhcpoptfixed-address"),$sort);
 # print_r ($host_array);
+
+if ($sort == "ipaddress"){
+	$host_array = array_natsort($host_array, "ipaddress", "ipaddress");
+}
 
 $template->define_dynamic("Hosts", "Webseite");
 
