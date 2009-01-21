@@ -448,8 +448,7 @@ rllinker "ypbind"
 
 # start vmware and vmware preparation services
 config_vmware () {
-# ensure that vmware is started after preparation
-rllinker "vmware" "vmware-prep"
+rllinker "vmware"
 # during vmware sessions linux should not handle usb events/devices
 testmkd /mnt/var/X11R6/bin
 echo '#!/bin/sh'>> /mnt/etc/udev/rules.d/01-udev-vm.rules

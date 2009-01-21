@@ -75,7 +75,6 @@ fi
 # fixme!! taken from SuSE10.0 untested here ...
 # prepare virtual machine environment (vmware, vmplayer)
 config_vmware () {
-rllinker "vmware-prep" "18" "02"
 rllinker "vmware" "20" "02"
 # during vmware sessions linux should not handle usb events/devices
 testmkd /mnt/var/X11R6/bin
