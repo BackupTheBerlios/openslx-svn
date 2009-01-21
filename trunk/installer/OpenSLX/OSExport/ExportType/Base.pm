@@ -26,21 +26,6 @@ sub initialize
 	my $engine = shift;
 
 	$self->{'engine'} = $engine;
-
-	# read filter information:
-	my (@includeList, @excludeList);
-	my $distroName = $engine->{'distro-name'};
-	my $filterFile = "../lib/distro-info/$distroName/export-filter";
-	if (open(FILTER, "< $filterFile")) {
-		while(<FILTER>) {
-			chomp;
-			push @includeList, "$_" if /^\+\s+/;
-			push @excludeList, "$_" if /^\-\s+/;
-		}
-		close(FILTER);
-	}
-	$self->{'exclude-list'} = \@excludeList;
-	$self->{'include-list'} = \@includeList;
 }
 
 sub exportVendorOS
