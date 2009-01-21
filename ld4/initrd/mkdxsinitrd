@@ -407,7 +407,7 @@ if [ -z "$KERNVER" ] ; then
 fi
 # if no vmlinuz found, go for vmlinuz-x.yz.uv...
 if [ -z "$KERNVER" ] ; then
-  KERNVER=`ls -lt /nfsroot/boot/vmlinuz* | grep vmlinuz | sed -n "1,1s/.*vmlinuz-//p"`
+  KERNVER=`ls -lt ${ROOTDIR}/boot/vmlinuz* | grep vmlinuz | sed -n "1,1s/.*vmlinuz-//p"`
   echo "No vmlinuz-link found. Using kernel version "$KERNVER
 fi
 
@@ -487,8 +487,9 @@ elif [ -f ../installer/default_files/machine-setup_default ] ; then
   cp ../installer/default_files/machine-setup_default \
     ${INSTDIR}/etc/machine-setup
 else
-  echo -e "# default for machine-setup does not exist\nroot logins are \
-disabled\nroot_pw='!'" > ${INSTDIR}/etc/machine-setup
+ #inserted password for root for debugging purposes
+  echo -e "# default for machine-setup does not exist\n# root logins are \
+disabled\nroot_pw='"'$1$T7VD/mmQ$aCP1WEaWplEsHe9khv4kK.'"'" > ${INSTDIR}/etc/machine-setup
 fi
 
 #########################################################################
