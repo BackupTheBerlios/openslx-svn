@@ -133,8 +133,8 @@ if strinstr ":" "$rest" ; then
 else
   tmpval=$rest
   rest="${rest#*/}"
-  server="${tmpval%/*}"
   path="${tmpval#*/}"
+  server="${tmpval%/$path}"
   port=""
 fi
 # get path and query components - URI path, query

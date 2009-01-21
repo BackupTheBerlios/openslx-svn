@@ -49,7 +49,7 @@ if [ "x$start_snmp" = "xyes" ] ; then
   fi
     # fixme!!
     # write service monitor depending on services started
-  fi
+fi
 }
 
 # consolefont

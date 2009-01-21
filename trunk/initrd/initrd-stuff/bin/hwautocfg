@@ -3,7 +3,7 @@
 # universal (distro independent) hardware autoconfiguration script for 
 # OpenSLX linux diskless clients, using hwconfig from knoppix as base tool 
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 30-08-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 31-08-2006
 #
 # (c) 2003 - 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.org
@@ -381,10 +381,15 @@ if [ -z "${KEYTABLE}" ] ; then
   KEYTABLE=${DEFKEYTABLE}
 fi
 
-# run X11 / Xorg configurator
-. /etc/sysconfig/xserver >/dev/null 2>&1 || error "$hcfg_hwsetup" nonfatal
-( displaysetup /etc/xorg.conf; echo "ready" > /tmp/xready ) &
-
+# run X11 / Xorg configurator if no xorg.conf file was provided by
+# ConfigTGZ (check for /rootfs/${D_XF86CONFFILE#/mnt})
+if [ -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then
+  echo "ready" > /tmp/xready
+else
+  . /etc/sysconfig/xserver >/dev/null 2>&1 || error "$hcfg_hwsetup" nonfatal
+  ( displaysetup /etc/xorg.conf; echo "ready" > /tmp/xready ) &
+fi
+  
 # get idea of availabe harddisk partitions, put swap partitions into
 # (/mnt)/etc/fstab and format and mount partitions of type 44 (unknown) 
 for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \

@@ -1,18 +1,15 @@
 #!/bin/sh
 #
-# Description:  universal (distro independent) configuration script
-#               for linux diskless clients (executed within initial
-#               ramdisk)
+# universal (distro independent) configuration script for OpenSLX linux
+# diskless clients (executed in stage3 within initial ramfs)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-08-2006
-#               Michael Janczyk <mj0>, 31-05-2006
-#               Lars Mueller <lm@openslx.org>, 23-06-2006
-#               Oliver Tappe <ot@openslx.org>, 23-06-2006
+# Dirk von Suchodoletz <dirk@goe.net>, 31-08-2006
+# Michael Janczyk <mj0>, 31-05-2006
+# Lars Mueller <lm@OpenSLX.com>, 23-06-2006
+# Oliver Tappe <ot@OpenSLX.com>, 23-06-2006
 #
-# Copyright:    (c) 2006 - RZ Universitaet Freiburg
-#               (c) 2006 - openslx.org project
-#
-# Version:      0.1.2c
+# (c) 2006 - RZ Universitaet Freiburg
+# (c) 2006 - OpenSLX.ORG Project
 
 # check for configuration files to source
 
@@ -55,7 +52,7 @@ echo "
                 |  |_|  | |  |_|  |  |  |___  |   ___/
                   _____/  |______/   |______| |__|
 
-         Diskless Workstation (v4.0/$dstr (c) <odl project>
+         Diskless Workstation (v4.1/$dstr (c) <OpenSLX.ORG>
 ">/mnt/etc/issue
 
 #######################################################################
@@ -83,16 +80,16 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
     ln -sf /usr/share/vmware /mnt/var/lib/vmware
   elif [ -n "${imgsrv}" ] ; then
   # get type, server and path of VMware image export
-  vmimgsprot=$(uri_token $imgsrv prot)
-  vmimgsserv=$(uri_token $imgsrv server)
-  vmimgspath="/$(uri_token $imgsrv path)"
-  case "$vmimgsprot" in
+  vmimgprot=$(uri_token $imgsrv prot)
+  vmimgserv=$(uri_token $imgsrv server)
+  vmimgpath="/$(uri_token $imgsrv path)"
+  case "${vmimgsprot}" in
     *nbd)
     ;;
     *)
     # we expect nfs mounts here ... 
-    nfsmnt ${imgsrv} /mnt/var/lib/vmware || {
-      error "$scfg_nfs" nonfatal; noimg=yes; }
+    nfsmnt ${vmimgserv}:${vmimgpath} /mnt/var/lib/vmware || {
+      error "${scfg_nfs}" nonfatal; noimg=yes; }
     ;;
   esac
   fi
@@ -104,7 +101,7 @@ if [ -z "$country" ] ; then
   error "$scfg_country" nonfatal
   country=${D_DEFAULTCOUNTRY}
 fi
-localization $country
+localization ${country}
 
 #######################################################################
 # setup passwd and shadow for local system users like root, bin, daemon
