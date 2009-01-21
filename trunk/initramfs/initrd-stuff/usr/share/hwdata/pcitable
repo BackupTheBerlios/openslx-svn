@@ -7220,7 +7220,7 @@
 0x8086	0x357b	"unknown"	"Intel Corp.|82835 Integrated Graphics Device"
 0x8086	0x3580	"intel-agp"	"Intel Corp.|852GM Host-Hub Interface Bridge"
 0x8086	0x3581	"unknown"	"Intel Corp.|82852GME/PM Virtual PCI to AGP Bridge"
-0x8086	0x3582	"Card:Intel 85x"	"Intel Corp.|852GM/852GME/855GM/855GME Chipset Graphics Controller"
+0x8086	0x3582	"Card:Intel 855"	"Intel Corp.|852GM/852GME/855GM/855GME Chipset Graphics Controller"
 0x8086	0x3584	"unknown"	"Intel Corp.|852GM System Memory Controller"
 0x8086	0x3585	"unknown"	"Intel Corp.|852GM Configuration Process"
 0x8086	0x3590	"e752x_edac"	"Intel Corp.|Server Memory Controller Hub"

@@ -201,7 +201,7 @@ supported."; \
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/themes; cd ..; \
 	cp -pP tools/busybox{,.links,.x86_64,.i586} \
 	  $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox/; \
-        cp -pP tools/ddcprobe{,.x86_64,.i586} \
+        cp -pP tools/{ddcprobe,915resolution}{,.x86_64,.i586} \
           $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools; \
 	cp -p tools/splashy{,_update} $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/splashy/; \
 	cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \

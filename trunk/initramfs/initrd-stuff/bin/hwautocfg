@@ -267,10 +267,16 @@ if [ ! -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then
     error "${xcfg_keyb}" nonfatal
   fi
   sed "s/XKEYBOARD/${XKEYBOARD}/" -i $xfc
-  # check for kind of xorg module used
-  # if intel
-  #   915resolution -l|sed -n "/32 bits/p" > /tmp/ires
-  # match existing and set missing resolutions
+  # check for kind of xorg module used and patch the i8,9XX VGA BIOS if needed
+  if strinfile '"i810"' $xfc && [ -f /tmp/res ] ; then
+    highres=$(sort -run /tmp/res|grep -i x -m 1)
+    915resolution -l|sed -n "s/Mode //;/32 bits/p" > /tmp/915res
+    strinfile ${highres} /tmp/915res || {
+      915resolution $(grep -i x -m 1 /tmp/915res|sed "s/\ :.*//") $(echo \
+        $highres|sed "s/x/\ /") 2>&1 >/dev/null;
+      # for some reason that does not work for a Dell laptop with i855 chipset
+      915resolution 3c $(echo $highres|sed "s/x/\ /") 2>&1 >/dev/null; }
+  fi
 fi
 
 # if any new device appeared up to now
