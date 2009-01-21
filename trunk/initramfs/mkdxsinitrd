@@ -553,7 +553,7 @@ else
   # needed standard binaries (in init, servconfig, hwautocfg, ... scripts)
   for bbins in \
       cat chmod chown chroot cp expr fdisk gzip killall ln ls mkdir \
-      mkfs.ext2 modprobe mount rmmod sed sort rm tar umount
+      mkfs.ext2 modprobe mount rmmod sed sleep sort rm tar umount
     do
     cobi ${bbins} bin || echo "Program ${bbins} not found"
   done
