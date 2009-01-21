@@ -98,10 +98,14 @@ sub ExtractTrStrings
 		if (!($tr =~ m[^'([^']+)'\s*(,.+?)*\s*$]os
 		|| $tr =~ m[^\"([^"]+)\"\s*(,.+?)*\s*$]os
 		|| $tr =~ m{^qq?\[([^\]]+)\]\s*(,.+?)*\s*$}os)) {
-			die "$File::Find::name: could not parse _tr()-argument: \n"
-				."$tr\nPlease correct and retry.\n";
+			die "$File::Find::name: could not parse _tr()-argument \n"
+				."\t$tr\nPlease correct and retry.\n";
 		}
 		$tr = $1;
+		if ($tr =~ m[(\$\w+)]) {
+			die "$File::Find::name: _tr()-argument\n\t$tr\n"
+				."contains variable '$1'.\nPlease correct and retry.\n";
+		}
 		$tr =~ s[\n][\\n]g;
 		$tr =~ s[\t][\\t]g;
 		$translatableStrings{$tr} = $tr;
@@ -122,13 +126,13 @@ sub UpdateTrModule
 	my $text = <F>;
 	close(F);
 	if ($text !~ m[%translations\s*=\s*\(\s*(.+)\s*\);]os) {
-		print "\t*** No translations found (?!?) file will be skipped! ***\n";
+		print "\t*** No translations found - file will be skipped! ***\n";
 		return;
 	}
 	my %translations;
 	# evaluate the hash read from file into %translations:
 	if (!eval "$&") {
-		print "\t*** translations can't be evaluated (?!?) file will be skipped! ***\n";
+		print "\t*** translations can't be evaluated - file will be skipped! ***\n";
 		return;
 	}
 	my $updatedTranslations = "%translations = (\n";
