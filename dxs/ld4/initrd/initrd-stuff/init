@@ -113,8 +113,8 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     tmpfssize=*)
       TMPFSSIZE=${opts#tmpfssize=};;
     # vendor code identifier for dhcp requests
-    vci=*|VCI=*)
-      VCI=${opts#VCI=};;
+    vci=*)
+      VCI=${opts#vci=};;
   esac
 done
 # check if at least one type of IP configuration is availabe
@@ -190,6 +190,10 @@ echo "dhcp:x:101:" > /etc/group
 if [ -n "$noipyet" ] ; then
   waitfor /tmp/dhcp-done 20000
   . /etc/machine-setup
+  [ -z "$clientip" -o -z "$subnet_mask" -o -z "$gateway" \
+    -o -z "$broadcast_address" ] && error "  Did not get complete IP \
+configuration via DHCP. You may want to add\n  a vendor code identifier \
+via kernel commandline (vci=VCI)."
   ipsetup $clientip $subnet_mask $gateway $broadcast_address eth0
 fi
 [ -n "$LDAP" ] && ldapconf &
@@ -377,7 +381,6 @@ and list the modules loaded until\n  now."
 waitfor /tmp/svcfg 20000 || error "  For some reason the software config \
 of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
-bash
 # IP configuration is made and should not be updated automatically
 killall -9 dhcpcd dhclient pump 2>/dev/null
 # unmount the bind mounted modules directory

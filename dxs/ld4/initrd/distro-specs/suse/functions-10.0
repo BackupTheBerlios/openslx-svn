@@ -15,8 +15,8 @@
 config_acpi () {
 local start_acpi=10
 local stop_acpi=12
-local start_powersave=`expr $1 + 5`
-local stop_powersave=`expr $1 - 1`
+local start_powersave=11
+local stop_powersave=11
 rllinker acpid "$start_acpi" "$stop_acpi"
 rllinker powersaved "$start_powersave" "$stop_powersave"
 }

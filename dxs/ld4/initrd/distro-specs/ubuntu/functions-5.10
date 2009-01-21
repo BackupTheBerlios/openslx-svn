@@ -34,8 +34,8 @@ done
 # second stop
 # function for ntp configuration
 config_ntp () {
-local start=$1
-local stop=$2
+local start=07
+local stop=14
 if [ -f /mnt/etc/init.d/ntp ] ; then
   echo -e "ntp:x:74:65534:NTP daemon:/var/lib/ntp:/bin/false" \
     >>/mnt/etc/passwd
@@ -54,7 +54,7 @@ fi
 # function for atd
 config_atd () {
 if [ "x$start_atd" = "xyes" ]; then
-  rllinker "atd" "$1" "$2"
+  rllinker "atd" "14" "04"
 fi
 }
 
@@ -87,7 +87,7 @@ config_sshd () {
 if [ "x$start_sshd" = "xyes" ] ; then
   if [ -f /mnt/etc/init.d/sshd ] ; then
     testmkd /mnt/var/lib/sshd; testmkd /mnt/var/lib/empty
-    rllinker "sshd" "$1" "$2"
+    rllinker "sshd" "12" "10"
   fi
 fi
 }
@@ -96,7 +96,7 @@ fi
 config_snmp () {
 if [ "x$start_snmp" = "xyes" ] ; then
   if [ -f /mnt/etc/init.d/snmpd ] ; then
-    rllinker "snmpd" "$1" "$2"
+    rllinker "snmpd" "24" "02"
     testmkd /mnt/var/lib/net-snmp >/dev/null 2>&1
   fi
     # fixme!!

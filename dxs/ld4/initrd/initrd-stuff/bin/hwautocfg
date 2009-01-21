@@ -174,8 +174,8 @@ for section in Files ServerFlags Module InputDevice Monitor \
       echo -e ${ServerFlags} >>$xfc
     ;;
     Device)
-      echo -e ${Device} | sed -e "s,XMODULE,${XMODULE},g" \
-        -e "s,XDESC,${XDESC}," >>$xfc
+      echo -e ${Device} | \
+        sed -e "s,XMODULE,${XMODULE}," -e "s%XDESC%${XDESC}%" >>$xfc
             # special options may be needed for some drivers
             [ $DEBUGLEVEL -gt 1 ] && msg "X setup" \
 "adding for some Xfree86 modules \
@@ -303,7 +303,7 @@ waitfor /tmp/hwrun1 50000 || \
 Please check that\n  hwsetup is properly installed and executable."
 
 # "drivers" (pseudo, placeholder strings, ...) to exclude from loading
-DRIVERLIST="disabled unknown ignore pcspkr synaptics"
+DRIVERLIST="disabled unknown ignore pcspkr synaptics keybdev"
 # driver blacklist (real modules which fail to load)
 DRIVERLIST=${DRIVERLIST}" hw_random"
 # check for USB, pcmcia and ieee1394 hardware drivers

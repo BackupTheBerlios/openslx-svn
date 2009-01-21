@@ -31,7 +31,7 @@ if [ -n "$2" ] ; then
     echo -e "$message  This error is not fatal - continuing ...\n"
   [ "$DEBUGLEVEL" -gt 2 ] && usleep 20
 else
-  echo -e "Running shell for debugging purposes now ...\n"
+  echo -e "$message  Running shell for debugging purposes now ...\n"
   /bin/sh
 fi
 }
