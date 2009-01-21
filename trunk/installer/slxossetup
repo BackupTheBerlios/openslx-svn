@@ -57,6 +57,12 @@ for suffix in "" local ${SLX_SYSTEM_VARIANTNAME}; do
 		. "${SLX_SYSTEM_CONFIG_PATH}/settings${suffix:+.$suffix}"
 done
 
+function ErrorMsg()
+{
+	echo "$0: $2"
+	exit $1
+}
+
 function setup_busybox_init()
 {
 	for dir in ${SLX_STAGE1_PATH}; do
@@ -216,9 +222,15 @@ function setup_bootstrap_1c()
 				chroot "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}" \
 					/bin/rpm --root="${SLX_STAGE1_FINAL_PATH}" --import "${packagekey}"
 			done
-			cd "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}"
-			packagelist=$( ls *.rpm)
-			cd - >/dev/null
+			for file in ${SLX_BASE_PREREQ_PACKAGES} ${SLX_BASE_BOOTSTRAP_PACKAGES}; do
+				test "${SLX_BOOTSTRAP_FAIL_WGET}" = "no" -a \
+					! -f ${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/${file##*/} && \
+					continue
+				packagelist="${packagelist} ${file##*/}"
+			done
+			test -z "{packagelist}" && \
+				ErrorMsg 1 "Packagelist to bootstrap from ${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH} is empty."
+
 			chroot "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}" \
 				/bin/rpm --root="${SLX_STAGE1_FINAL_PATH}" -ivh ${packagelist}
 			cp -p /etc/resolv.conf "${CHROOT_DIR}/${SLX_BOOTSTRAP_PATH}/${SLX_STAGE1_FINAL_PATH}/etc/"
