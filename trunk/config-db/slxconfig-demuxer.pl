@@ -46,7 +46,7 @@ my $clientConfigPath = "$openslxConfig{'private-path'}/config";
 if (!-d $clientConfigPath) {
 	die _tr("Unable to access client-config-path '%s'!", $clientConfigPath);
 }
-my $tempPath = "$openslxConfig{'temp-basepath'}/oslx-demuxer";
+my $tempPath = "$openslxConfig{'temp-path'}/slxconfig-demuxer";
 if (!$dryRun) {
 	mkdir $tempPath;
 	if (!-d $tempPath) {
