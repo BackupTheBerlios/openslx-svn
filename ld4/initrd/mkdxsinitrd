@@ -3,14 +3,14 @@
 # Description:  universal (distro independent) generator for initial
 #               ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 27-06-2006
 #               Nico Dietrich
 #               Felix Endres
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - odlx.org project
 #
-# Version:      0.4.0a
+# Version:      0.4.1a
 
 # debug level of script itself
 DEBUG=1
@@ -215,6 +215,50 @@ goto_script_dir()
   done
   [ $DEBUG -ge 2 ] && pwd
 
+}
+
+# add a bootsplash image to the initial ramdisk, only SuSE at the moment
+add_splash () {
+
+splashsizes="$SPLASH"
+splashsizes="800x600 1024x768 1280x1024 1400x1050 1600x1200"
+splash_bin=$(which splash)
+splash_image=
+THEME="SuSE"
+if [ -n "$splashsizes" -a -n "$splash_bin" ]; then
+
+  themes_dir=
+  if [ -d "$ROOTDIR/etc/bootsplash/themes" ]; then
+    themes_dir="$ROOTDIR/etc/bootsplash/themes"
+  elif [ -d "$ROOTDIR/usr/share/splash/themes" ]; then
+    themes_dir="$ROOTDIR/usr/share/splash/themes"
+  fi
+
+  echo -ne "Bootsplash:\t"
+  if [ -n "$themes_dir" -a \
+     -d "$themes_dir/$THEME" -o -L "$themes_dir/$THEME" ]; then
+    for size in $splashsizes; do
+      bootsplash_picture="$themes_dir/$THEME/images/bootsplash-$size.jpg"
+      cfgname="$themes_dir/$THEME/config/bootsplash-$size.cfg"
+      if [ ! -r $cfgname ] ; then
+        echo "disabled for resolution $size"
+      elif [ ! -r $bootsplash_picture ] ; then
+        echo "no image for resolution $size"
+      else
+        echo -n "${splash_image:+, }$THEME ($size)"
+        splash_image="$splash_image $cfgname"
+      fi
+    done
+    echo
+  else
+    echo "no theme selected"
+  fi
+fi
+
+# Include bootsplash image
+for image in $splash_image; do
+  $splash_bin -s -f $image >> $INSTDIR/bootsplash
+done
 }
 
 #########################################################################
@@ -589,6 +633,7 @@ fi
 #########################################################################
 # End of file copy procedures
 
+[ -n "$SPLASH" ] && add_splash
 
 # finally create the compressed initial ramdisk cpio archive
 pushd . > /dev/null 2>&1
