@@ -450,7 +450,7 @@ case "${DISTRO}" in
       2005*)
         DISTRO_VER=2005.1
       ;;
-	  2006*|*)
+      2006*|*)
         DISTRO_VER=2006.1
       ;;
     esac

@@ -1137,3 +1137,8 @@ config_portmap () {
 config_nis () {
 :
 }
+
+# konfigure keyboard layout
+keytable () {
+:
+}
