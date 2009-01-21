@@ -9,12 +9,12 @@ License:        GNU General Public License (GPL)
 Group:          Productivity/Networking/System
 Url:            http://openslx.org/
 Autoreqprov:    on
-Requires:       perl-DBD-CSV perl-DBD-SQLite perl-DBD-mysql
+Requires:       perl-DBD-SQLite perl-DBD-mysql
 #PreReq:
 Source:         %{name}-%{version}.tar.bz2
 Summary:        Open StateLess Extensions
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-BuildRequires:  perl-DBD-CSV perl-DBD-SQLite perl-DBD-mysql
+BuildRequires:  perl-DBD-SQLite perl-DBD-mysql
 
 %description
 OpenSLX aims on the Linux desktop as a middleware solution to provide easy

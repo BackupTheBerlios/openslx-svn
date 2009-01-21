@@ -83,9 +83,11 @@ my $translations;
 	# extended settings follow, which are only supported by slxsettings,
 	# but not by any other script:
 	#
-	'ossetup-max-try-count' => '5',
+	'db-user' 			    => undef,
+	'db-passwd' 			=> undef,
 	'default-shell' 		=> 'bash',
 	'default-timezone' 		=> 'Europe/Berlin',
+	'ossetup-max-try-count' => '5',
 );
 chomp($openslxConfig{'locale-charmap'});
 

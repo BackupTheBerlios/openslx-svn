@@ -155,7 +155,6 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 	# map db-type to name of module, such that the user doesn't have
 	# to type the correct case:
 	my %dbTypeMap = (
-		'csv'    => 'CSV',
 		'mysql'  => 'mysql',
 		'sqlite' => 'SQLite',
 	);
@@ -180,7 +179,7 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 	if (!$metaDB->connect($dbParams)) {
 		warn _tr("Unable to connect to DB-module <%s>\n%s", $dbModuleName, $@);
 		warn _tr("These DB-modules seem to work ok:");
-		foreach my $dbMod ('CSV', 'mysql', 'SQLite') {
+		foreach my $dbMod ('mysql', 'SQLite') {
 			my $fullDbModName = "DBD/$dbMod.pm";
 			if (eval { require $fullDbModName }) {
 				vlog(0, "\t$dbMod\n");

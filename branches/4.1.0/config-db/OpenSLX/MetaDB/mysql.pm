@@ -44,10 +44,22 @@ sub connect		## no critic (ProhibitBuiltinHomonyms)
 		# build $dbSpec from individual parameters:
 		$dbSpec = "database=$openslxConfig{'db-name'}";
 	}
-	my $user = (getpwuid($>))[0];
-	vlog(1, "trying to connect user <$user> to mysql-database <$dbSpec>");
+	my $dbUser
+		= $openslxConfig{'db-user'}
+			? $openslxConfig{'db-user'}
+			: (getpwuid($>))[0];
+	my $dbPasswd = $openslxConfig{'db-passwd'};
+	if (!defined $dbPasswd) {
+		use Term::ReadLine;
+		my $term = Term::ReadLine->new('slx');
+		my $attribs = $term->Attribs;
+		$attribs->{redisplay_function} = $attribs->{shadow_redisplay};
+        $dbPasswd = $term->readline("db-password> ");
+	}
+	
+	vlog(1, "trying to connect user '$dbUser' to mysql-database '$dbSpec'");
 	$self->{'dbh'} = DBI->connect(
-		"dbi:mysql:$dbSpec", $user, 'secret', {PrintError => 0}
+		"dbi:mysql:$dbSpec", $dbUser, $dbPasswd, {PrintError => 0}
 	) or die _tr("Cannot connect to database '%s' (%s)", $dbSpec, $DBI::errstr);
 	return 1;
 }

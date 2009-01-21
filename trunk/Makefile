@@ -110,7 +110,7 @@ install:
 		echo "Reading local settings..."; \
 		. ${SLX_CONFIG_PATH}/settings; \
 	fi; \
-	for m in $${SLX_DB_TYPE} SQLite CSV mysql; do \
+	for m in $${SLX_DB_TYPE} SQLite mysql; do \
 		if ! perl -Ilib -Iconfig-db -e "use OpenSLX::MetaDB::$$m" 2>>${SLX_INSTALL_LOG} ; then \
 			echo -e "  'DBD::$$m' not found (or too old), so $$m-databases will not be \
 supported."; \

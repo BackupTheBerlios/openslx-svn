@@ -58,7 +58,16 @@ if ($versionReq) {
 	exit 1;
 }
 
+if ($> != 0) {
+	die _tr("Sorry, this script can only be executed by the superuser!\n");
+}
+
 openslxInit() or pod2usage(2);
+
+# some settings must match a certain pattern:
+my %configPattern = (
+	'db-type' => '(SQLite|mysql)',
+);
 
 # the remaining cmdline arguments are set or reset actions, each followed
 # by a single argument:
@@ -89,6 +98,11 @@ while (scalar @ARGV) {
 
 # fetch current content of local settings file...
 my $fileName = "$openslxConfig{'config-path'}/settings";
+if (!-e $fileName) {
+	# create empty default settings file with tight mode (root-only access)
+	# [I know this isn't *secure* as such, but it's still better than nothing]
+	slxsystem("touch $fileName && chmod 0600 $fileName");
+}
 my $configObj = Config::General->new(
 	-ConfigFile     => $fileName, 
 	-SplitDelimiter => '\s*=\s*',
@@ -109,6 +123,12 @@ foreach my $key (keys %givenSettings) {
 	if ($key =~ m{^(base-path|config-path)$}) {
 		die _tr("option '%s' is fixed!", $key);
 	}
+	if (exists $configPattern{$key} && $value !~ m{$configPattern{$key}}) {
+		die _tr(
+			"option '%s' must match pattern '%s'!", $key, $configPattern{$key}
+		);
+	}
+
 	vlog(0, _tr("setting %s to '%s'", $key, $value)) unless $quiet;
 	my $externalKey = externalKeyFor($key);
 	if (!exists $settings{$externalKey} || $settings{$externalKey} ne $value) {
@@ -162,8 +182,13 @@ if (!keys %changed) {
 	my @extSettings = grep { !exists $cmdlineConfig{$_} } keys %openslxConfig;
 	foreach my $key (sort @extSettings) {
 		next if $key =~ m[^(base-path|config-path)$];
-		my $val = $openslxConfig{$key} || '';
-		print qq[\t$key='$val'\n];
+		my $val = $openslxConfig{$key};
+		if (defined $val) {
+			print qq[\t$key='$val'\n];
+		}
+		else {
+			print qq[\t$key=<unset>\n];
+		}
 	}
 }
 
@@ -280,9 +305,9 @@ Default is $SLX_DB_SPEC (usually empty as it will be built automatically).
 
 =item B<<     db-type=<string> >>
 
-Sets the type of database to connect to (CSV, SQLite, mysql, ...).
+Sets the type of database to connect to (SQLite, mysql, ...).
 
-Default $SLX_DB_TYPE (usually C<CSV>).
+Default $SLX_DB_TYPE (usually C<SQLite>).
 
 =item B<<     locale=<string> >>
 
