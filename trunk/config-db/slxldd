@@ -37,6 +37,8 @@ my (
 	$rootPath,
 	$versionReq,
 
+	@filesToDo,
+
 	@libFolders,
 	@libs,
 	%libInfo,
@@ -79,14 +81,13 @@ foreach my $file (@ARGV) {
 		# relative paths are relative to $rootPath:
 		$file = "$rootPath/$file";
 	}
-
 	if (!-e $file) {
 		die _tr("slxldd: unable to find file '%s'\n", $file);
 	}
+	push @filesToDo, $file;
+}
 
-	next if `file $file` =~ m[shell\s+script];
-		# silently ignore shell scripts
-
+foreach my $file (@filesToDo) {
 	addLibsForBinary($file);
 }
 
@@ -131,12 +132,20 @@ sub fetchLoaderConfig
 sub addLib
 {
 	my $lib = shift;
+	my $bitwidth = shift;
 
 	if (!exists $libInfo{$lib}) {
 		push @libs, $lib;
 		my $libPath;
 		foreach my $folder (@libFolders) {
 			if (-e "$folder/$lib") {
+				# have library matching name, now check if the platform is ok, too:
+				my $libFileInfo = `file --dereference $folder/$lib 2>/dev/null`;
+				if ($?) {
+					die _tr("unable to fetch file info for $folder/$lib, giving up!\n");
+				}
+				my $libBitwidth = ($libFileInfo =~ m[64-bit]i) ? 64 : 32;
+				next unless $bitwidth == $libBitwidth;
 				$libPath = "$folder/$lib";
 				last;
 			}
@@ -146,7 +155,7 @@ sub addLib
 		}
 		print "$libPath\n";
 		$libInfo{$lib} = $libPath;
-		addLibsForBinary($libPath);
+		push @filesToDo, $libPath;
 	}
 }
 
@@ -154,11 +163,22 @@ sub addLibsForBinary
 {
 	my $binary = shift;
 
-	# we try objdump...
+	# first do some checks:
+	my $fileInfo = `file --dereference $binary 2>/dev/null`;
+	if ($?) {
+		die _tr("unable to fetch file info for $binary, giving up!\n");
+	}
+	next if $fileInfo =~ m[shell\s+script];
+		# silently ignore shell scripts
+
+	my $bitwidth = ($fileInfo =~ m[64-bit]i) ? 64 : 32;
+		# determine whether binary is 32- or 64-bit platform
+
+	# now find out about needed libs, we first try objdump...
 	my $res = `objdump -p $binary 2>/dev/null`;
 	if (!$?) {
 		while($res =~ m[^\s*NEEDED\s*(.+?)\s*$]gm) {
-			addLib($1);
+			addLib($1, $bitwidth);
 		}
 	} else {
 		# ...objdump failed, so we try readelf instead:
@@ -167,7 +187,7 @@ sub addLibsForBinary
 			die _tr("neither objdump nor readelf seems to be installed, giving up!\n");
 		}
 		while($res =~ m{\(NEEDED\)[^\[]+\[(.+?)\]\s*$}gm) {
-			addLib($1);
+			addLib($1, $bitwidth);
 		}
 	}
 }
