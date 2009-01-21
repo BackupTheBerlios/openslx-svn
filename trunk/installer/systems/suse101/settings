@@ -1,0 +1,15 @@
+SLX_INST_SOURCE_BASEURL_suse101="http://ftp.gwdg.de/pub/opensuse/distribution/SL-10.1/inst-source"
+SLX_INST_SOURCE_PACKAGEKEYS_suse101="
+gpg-pubkey-0dfb3188-41ed929b.asc
+gpg-pubkey-1d061a62-427a396f.asc
+gpg-pubkey-307e3d54-44201d5d.asc
+gpg-pubkey-3d25d3d9-36e12d04.asc
+gpg-pubkey-9c800aca-40d8063e.asc
+"
+SLX_INST_SOURCE_NAME_suse101="SUSE Linux 10.1"
+SLX_INST_SOURCE_TYPE_suse101="yast2"
+SLX_INST_SOURCE_BASEURL_suse101update="http://ftp.gwdg.de/pub/suse/update/10.2"
+SLX_INST_SOURCE_NAME_suse101update="SUSE Linux 10.1 updates"
+SLX_INST_SOURCE_TYPE_suse101update="rpm-md"
+SLX_BASE_PREREQ_PACKAGES="glibc"
+SLX_INSTALL_PACKAGES_MAIN="kernel-default bash"
