@@ -42,7 +42,7 @@ local script="$1"
 local after="$2"
 # empty runlevel links - decision on running certain services is
 # passed via configuration
-if strinstr "$script" "boot boot.ld ${D_INITSCRIPTS}" ; then
+if strinstr "$script" "boot boot.slx ${D_INITSCRIPTS}" ; then
   ln -s /etc/${D_INITDIR}/$script /mnt/etc/runlevels/boot/$script
   echo $script >> /mnt/etc/runlevels/boot/.critical
 else
@@ -132,7 +132,7 @@ cat >>/mnt/etc/${D_INITDIR}/boot <<EOF
         eend \${ret} "\${errstr}"
 EOF
 d_mkrlscript close boot
-for script in boot boot.ld ${D_INITSCRIPTS} ; do
+for script in boot boot.slx ${D_INITSCRIPTS} ; do
   # to get a certain order of scripts the after token of depends () might be
   # used
   rllinker "$script" "$after"
@@ -144,10 +144,10 @@ sed -e "s/# System init.*//;s/si::.*//" -i /mnt/etc/inittab
 lastinit="$after"
 }
 
-# initialize boot.ld - skript to be executed during early system startup
+# initialize boot.slx - skript to be executed during early system startup
 # (before most of the normal boot init scripts)
 # this script should operate like a normal runlevel script
-# initialize boot.ld - skript to be executed during early system startup
+# initialize boot.slx - skript to be executed during early system startup
 # (before most of the normal boot init scripts)
 # this script should operate like a normal runlevel script (fixme!!)
 d_mkrlscript () {
@@ -183,7 +183,7 @@ if [ -e /mnt/etc/${D_INITDIR}/ntp ] ; then
     echo -e "\t# entries added by $0 (InitRamFS from $date)\n\
 \t( ntpdate -s -b $ntp_servers >${LOGFILE} 2>&1 && {\n\t  which \
 hwclock &>/dev/null && hwclock -w;} ) &" \
-      >>/mnt/etc/${D_INITDIR}/boot.ld
+      >>/mnt/etc/${D_INITDIR}/boot.slx
   elif [ "x$start_ntp" = "xyes" ] ; then
     rllinker "ntp"
   fi
@@ -413,7 +413,7 @@ fi
 # set consolefont
 consolefont () {
 echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
-  >>/mnt/etc/${D_INITDIR}/boot.ld
+  >>/mnt/etc/${D_INITDIR}/boot.slx
 config_rc_entry "CONSOLEFONT" "${CONSOLE_FONT}" "conf.d/consolefont"
 }
 

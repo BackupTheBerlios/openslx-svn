@@ -928,10 +928,10 @@ esac
 # be handled differently)
 initial_boot () {
 local count=10
-# boot.ld is a special runlevel script generated within initialramfs which
+# boot.slx is a special runlevel script generated within initialramfs which
 # should be executed before the normal runlevel scripts. Proper shutdown is
 # not needed!?
-for i in boot.ld ${D_INITSCRIPTS}; do
+for i in boot.slx ${D_INITSCRIPTS}; do
   count=`expr $count + 1`
   revcnt=`expr 41 - $count`
   ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/S${count}$i
@@ -1170,7 +1170,7 @@ config_bt () {
 :
 }
 
-# create a compliant runlevel script, needed for boot.ld and vmware-prep
+# create a compliant runlevel script, needed for boot.slx and vmware-prep
 d_mkrlscript () {
 :
 }

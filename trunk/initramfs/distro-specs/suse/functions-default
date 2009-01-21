@@ -40,7 +40,7 @@ ln -sf ../halt /mnt/etc/${D_INITDIR}/rc6.d/S20reboot
 # running stuff in parallel seems to be rather useless and generates some
 # difficult to solve problems. If you want to try nevertheless enable the
 # following line and disable the latter one (switching off that feature)
-#sed -e "s,TARGETS =,TARGETS = xdm boot.ld," \
+#sed -e "s,TARGETS =,TARGETS = xdm boot.slx," \
 #  -i /mnt/etc/${D_INITDIR}/.depend.boot
 sed -e "s,RUN_PARALLEL=.*,RUN_PARALLEL=\"no\"," \
   -i /mnt/etc/${D_SYSCONFDIR}/boot
@@ -77,7 +77,7 @@ if [ -e /mnt/etc/${D_INITDIR}/ntp ] ; then
     echo -e "\t# entries added by $0 (InitRamFS from $date)\n\
 \t( ntpdate -s -b $ntp_servers >${LOGFILE} 2>&1 && {\n\t  which \
 hwclock &>/dev/null && hwclock -w;} ) &" \
-      >>/mnt/etc/${D_INITDIR}/boot.ld
+      >>/mnt/etc/${D_INITDIR}/boot.slx
   elif [ "x$start_ntp" = "xyes" ] ; then
     rllinker "ntp" "07" "14"
   fi
@@ -166,7 +166,7 @@ if [ "x$late_dm" = "xyes" ] ; then
 else
   ln -sf /etc/${D_INITDIR}/xdm /mnt/etc/${D_INITBOOTD}/S02xdm
   echo -e "\t(sleep 60; ln -sf ../xdm /etc/${D_INITDIR}/rc5.d/S01xdm; \
-  rm /etc/${D_INITBOOTD}/S02xdm) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld
+  rm /etc/${D_INITBOOTD}/S02xdm) &\n" >>/mnt/etc/${D_INITDIR}/boot.slx
 fi
 }
 
@@ -333,13 +333,13 @@ keytable () {
 sed -e "s,KEYTABLE=.*,KEYTABLE=\"${KEYTABLE}\"," \
   -i /mnt/etc/${D_SYSCONFDIR}/keyboard
 echo -e "\tloadkeys ${KEYTABLE} >${LOGFILE} 2>&1\n" \
-  >>/mnt/etc/${D_INITDIR}/boot.ld
+  >>/mnt/etc/${D_INITDIR}/boot.slx
 }
 
 # consolefont and language (function run in hwautocfg)
 consolefont () {
 echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
-  >>/mnt/etc/${D_INITDIR}/boot.ld
+  >>/mnt/etc/${D_INITDIR}/boot.slx
 sed -e "s,RC_LANG=.*,RC_LANG=\"${LANG}\" # added in initrd," \
     -i /mnt/etc/${D_SYSCONFDIR}/language
 }
@@ -361,7 +361,7 @@ if [ "x$start_dreshal" = "xyes" ]; then
     testmkd /mnt/var/run/dbus
     # set permissions with userid
     echo -e "\tchown messagebus:messagebus /var/run/dbus 2>/dev/null" \
-      >>/mnt/etc/${D_INITDIR}/boot.ld
+      >>/mnt/etc/${D_INITDIR}/boot.slx
     rllinker "dbus" "$start" "$stop"
   fi
   if [ -f /mnt/etc/${D_INITDIR}/resmgr ] ; then
@@ -379,7 +379,7 @@ if [ "x$start_dreshal" = "xyes" ]; then
     testmkd /mnt/var/run/hal
     # set permissions with userid
     echo -e "\tchown haldaemon:haldaemon /var/run/hal 2>/dev/null" \
-      >>/mnt/etc/${D_INITDIR}/boot.ld
+      >>/mnt/etc/${D_INITDIR}/boot.slx
     start="0"`expr $start + 1`
     stop="0"`expr $start - 1`
     rllinker "haldaemon" "$start" "$stop"

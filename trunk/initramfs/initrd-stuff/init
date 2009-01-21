@@ -537,7 +537,7 @@ elif [ -z "${cowloop}" ] ; then
   # run some specific stuff !?
 fi
 # script for stuff to execute during early bootup
-d_mkrlscript init boot.ld "Running configuration postponed from InitRamFS"
+d_mkrlscript init boot.slx "Running configuration postponed from InitRamFS"
 echo "fs complete at $(sysup)" >/tmp/fscmpl
 
 # write debug file information after filesystem setup completed
@@ -635,7 +635,7 @@ done
 # check for inittab file (might fail for new style init -> upstart)
 test -f /mnt/etc/inittab || test -d /mnt/etc/event.d || error "$init_erritab"
 # close runlevel script for stuff to execute during early bootup
-d_mkrlscript close boot.ld ""
+d_mkrlscript close boot.slx ""
 # put /tmp into stage4 mtab and add stuff to stage4 fstab
 sed -n "s,/mnt,,;/\/tmp /p" /proc/mounts >> /mnt/etc/mtab
 [ -f /tmp/fstab ] && cat /tmp/fstab >> /mnt/etc/fstab

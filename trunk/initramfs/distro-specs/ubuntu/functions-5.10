@@ -55,7 +55,7 @@ fi
 # consolefont
 consolefont () {
 echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
-  >>/mnt/etc/${D_INITDIR}/boot.ld
+  >>/mnt/etc/${D_INITDIR}/boot.slx
 }
 # acpi and powersave
 config_acpi () {

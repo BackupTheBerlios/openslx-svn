@@ -83,7 +83,7 @@ echo "
 
 #############################################################################
 # set localization and add entries to initialize keytable and consolefont to
-# boot.ld
+# boot.slx
 DEFKEYTABLE="de-latin1-nodeadkeys"
 if [ -z "$country" ] ; then
   error "$scfg_country" nonfatal
@@ -94,7 +94,7 @@ if [ -z "${KEYTABLE}" ] ; then
   error "$hcfg_keyb" nonfatal 
   KEYTABLE=${DEFKEYTABLE}
 fi
-echo -e "\t# entries added by $0: $date" >> /mnt/etc/${D_INITDIR}/boot.ld
+echo -e "\t# entries added by $0: $date" >> /mnt/etc/${D_INITDIR}/boot.slx
 [ -n "${KEYTABLE}" ] && keytable
 [ -n "${CONSOLE_FONT}" ] && consolefont
 
@@ -499,7 +499,7 @@ resmgr revoke nobody\nresmgr logout tty7\nkillall X" \
       # early start of kiosk session if not late_dm is set
       if [ "x$late_dm" != "xyes" ] ; then
         echo -e "\t# kiosk start added by $0\n\t\
-/var/X11R6/bin/kiosk &>/dev/null &" >>/mnt/etc/${D_INITDIR}/boot.ld
+/var/X11R6/bin/kiosk &>/dev/null &" >>/mnt/etc/${D_INITDIR}/boot.slx
       fi
       cp /etc/startgui /mnt/var/X11R6/bin
       chmod a+x /mnt/var/X11R6/bin/kiosk /mnt/var/X11R6/bin/startgui

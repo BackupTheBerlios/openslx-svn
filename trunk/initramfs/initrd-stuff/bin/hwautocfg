@@ -466,9 +466,9 @@ else
   ( displaysetup /etc/xorg.conf; echo "ready" > /tmp/xready ) &
 fi
   
-# add entries to initialize keytable and consolefont to boot.ld
+# add entries to initialize keytable and consolefont to boot.slx
 # postpone some commands into normal bootup environment
-#echo -e "\t# entries added by $0: $date" >> /mnt/etc/${D_INITDIR}/boot.ld
+#echo -e "\t# entries added by $0: $date" >> /mnt/etc/${D_INITDIR}/boot.slx
 #[ -n "${KEYTABLE}" ] && keytable
 #[ -n "${CONSOLE_FONT}" ] && consolefont
 

@@ -93,9 +93,9 @@ if [ -f /mnt/etc/init.d/ntp ] ; then
   testmkd /mnt/var/lib/ntp/var/run/ntp &>/dev/null
   if [ "x$start_ntp" = "xinitial" ] ; then
     echo -e "# entry added by $0: $date" \
-      >>/mnt/etc/${D_INITDIR}/boot.ld
+      >>/mnt/etc/${D_INITDIR}/boot.slx
     echo "ntpdate -s -b $ntp_servers >${LOGFILE} 2>&1 &" \
-      >>/mnt/etc/${D_INITDIR}/boot.ld
+      >>/mnt/etc/${D_INITDIR}/boot.slx
   else
     rllinker "ntp" "20" "02"
   fi
@@ -214,7 +214,7 @@ done
 # consolefont and language
 consolefont () {
 echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
-  >>/mnt/etc/${D_INITDIR}/boot.ld
+  >>/mnt/etc/${D_INITDIR}/boot.slx
 # fixme!! check for proper operation
 sed -e "s,LANGUAGE=.*,LANGUAGE=\"${LANG}\" # set within initramfs," \
     -e "s,LANG=.*,LANG=\"${LANG}\" # set within initramfs," \
@@ -226,7 +226,7 @@ config_gdm () {
   ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/K20gdm
   echo -e "\t/etc/${D_INITDIR}/gdm start >${LOGFILE} 2>&1\n\
     \t( sleep 120; ln -sf /etc/${D_INITDIR}/gdm /etc/rc3.d/S01gdm \
-    >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.ld
+    >${LOGFILE} 2>&1) &\n" >>/mnt/etc/${D_INITDIR}/boot.slx
   # check for gdm user in passwd and group files
   # fixme!!
 #  echo "gdm:x:113:">>/mnt/etc/group

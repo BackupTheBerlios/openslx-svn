@@ -44,7 +44,7 @@ if [ "x$start_dreshal" = "xyes" ]; then
     testmkd /mnt/var/run/dbus
     # set permissions with userid
     echo -e "\tchown messagebus:messagebus /var/run/dbus 2>/dev/null" \
-      >>/mnt/etc/${D_INITDIR}/boot.ld
+      >>/mnt/etc/${D_INITDIR}/boot.slx
     rllinker "dbus" "$start" "$stop"
   fi
   if [ -e /mnt/etc/${D_INITDIR}/resmgr ] ; then
@@ -62,7 +62,7 @@ if [ "x$start_dreshal" = "xyes" ]; then
     testmkd /mnt/var/run/hal
     # set permissions with userid
     echo -e "\tchown haldaemon:haldaemon /var/run/hal 2>/dev/null" \
-      >>/mnt/etc/${D_INITDIR}/boot.ld
+      >>/mnt/etc/${D_INITDIR}/boot.slx
     start="0"`expr $start + 1`
     stop="0"`expr $start - 1`
     rllinker "hal" "$start" "$stop"
