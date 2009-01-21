@@ -104,8 +104,7 @@ vmsession2desktop_session () {
     for i in ${vmdir}/vmsessions/*.desktop; do
       session_name=$(cat ${i} | grep -iw "exec" \
         | awk -F "=" '{print $2}')
-      cp ${path}/desktop-session ${path}/${session_name}
-      chmod 755 ${path}/${session_name} >/dev/null 2>&1
+      ln -s ${path}/desktop-session ${path}/${session_name}
     done
   fi
 }
