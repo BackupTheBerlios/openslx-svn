@@ -2,13 +2,13 @@
 #		linux diskless clients (included by init, hwautocfg,
 #		servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-07-2006
 #	 	Felix Endres, 30-04-2006
 #		Tobias Maier
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.4.2e
+# Version:      0.5.0b
 
 #######################################################################
 # set of empty dummy functions (loaded before real functions in the 
@@ -165,10 +165,13 @@ case $ipcfg in
     if [ "$gw" != "0.0.0.0" ] ; then
       ip route add default via $gw
     fi
+    MAC=$(ip link show dev $if|sed -n "/ether [0-9e-f]\{2\}:.*/p" \
+      | sed -e "s/.*ether //;s/ .*//")
   ;;
   ipconfig)
     # fixme: to be checked
     ipconfig $ip::$gw:$nm:$if:none
+    MAC=""
   ;;
   ifconfig)
     if [ "$ip" = "0.0.0.0" ]; then
@@ -177,6 +180,8 @@ case $ipcfg in
       ifconfig $if $ip netmask $nm broadcast $bc
     fi
     [ "$gw" != "0.0.0.0" ] && route add default gw $gw
+    MAC=$(ifconfig $if|sed -n "/HWaddr [0-9A-F]\{2\}:.*/p" \
+      | sed -e "s/.*HWaddr //;y/ABCDEF/abcdef/")
   ;;
   none)
     error "$error_iptool"
@@ -265,8 +270,8 @@ case $dhcp in
   dhclient)
     mkdhclconf $vci
     ln -s /bin/dhcpmkconfig /bin/dhclient-script
-    dhclient -q -cf /etc/dhclient.conf -lf /var/lib/dhcp/dhclient.leases eth0 \
-  2>&1 >/dev/null || error "$error_dhclient"
+    dhclient -cf /etc/dhclient.conf -lf /var/lib/dhcp/dhclient.leases \
+      -q eth0 2>&1 >/dev/null || error "$error_dhclient"
   ;;
   dhcpcd)
     [ -n $vci ] && vci="-i $vci"
@@ -305,16 +310,23 @@ echo "dhcp finished" > /tmp/dhcp-done
 tftpget () {
 # $1 is type of tftp command, $2 is config file name to get, $3 IP of
 # server to get file from
+local dst=/tmp/$(basename $2)
 case "$1" in
-    atftp)
-      atftp -g -r $2 $3
+    */atftp)
+      atftp -g -r $2 -l $dst $3 2> /dev/null
     ;;
-    tftp)
-      echo "get $2" | tftp $3
+    */tftp)
+      # distinguish between busybox tftp and standalone (in.tftp) client
+      if [ -x /bin/busybox ] ; then
+        tftp -g -r $2 -l $dst $3 2> /dev/null
+      else
+        echo "get $2 $dst" | tftp $3 2> /dev/null 
+      fi
     ;;
 esac
 }
 fileget () {
+# get type of tftp available
 for tftp in /bin/atftp /bin/tftp ; do
   test -x $tftp && break
 done
@@ -324,17 +336,23 @@ if [ -n "$FILESRC" ] ; then
   tftpserver=${FILESRC%:*}
   tftpget $tftp $cfgfile $tftpserver
 else
-  cfgfile="/tftpboot/dxs-config"
-  # ensure that a / is at the end of path to config file
-  cfgfile=$cfgfile"/"
-  tftpserver=$serverip
-  # try to get configuration files successively; start with first part
-  # of the servers IP, add second part ...
-  set `IFS="."; echo $serverip`
-  for i in $1 $2 $3 $4 ; do
-    cfgfile=$cfgfile$i
-    tftpget $tftp $cfgfile $tftpserver 
-    cfgfile=$cfgfile"."
+  cfgdir="/tftpboot/client-config/"
+  local tftpserver=$serverip
+  # try to get configuration files successively; start with first most 
+  # generic file (global default), then global client, then distro default
+  # last distro client ...
+  echo -e "\n## Configuration via fileget: Hierarchy is first most \
+generic file\n# (global default), then global client, then distro default \
+and as last\n# distro/client" >> /tmp/confviafile
+  mac=$(echo $MAC|sed "s/:/-/g")
+  for cfgfile in $cfgdir/default $cfgdir/01-$mac \
+                 $cfgdir/$DISTRO/default $cfgdir/$DISTRO/01-$mac ; do
+    echo "# -> $cfgfile" >> /tmp/confviafile
+    if tftpget $tftp $cfgfile $tftpserver ; then
+      cat /tmp/$(basename $cfgfile) >> /tmp/confviafile
+    else
+      echo -e "# ... this file does not exist on server." >> /tmp/confviafile
+    fi
   done
 fi
 echo "tftp finished" > /tmp/file-done

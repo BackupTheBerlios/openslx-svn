@@ -2,12 +2,12 @@
 # Description:  main script for new type of initial ramdisk for
 #               linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 05-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-07-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - odlx.org project
 #
-# Version:      0.2.5a
+# Version:      0.2.6a
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -216,15 +216,15 @@ if [ -n "$IPINFO" ] ; then
       val=${val#*:} ; i=$(expr $i - 1); 
     done; 
   echo $val|sed "s/:.*//"; }
-  IP=$(getip 1)
-  SERVER=$(getip 2)
-  GW=$(getip 3)
-  NM=$(getip 4)
-  echo -e "# ip configuration written by $0 script\nclientip=$IP\n\
-sub_netmask=$NM\ngateway=$GW\nserverip=$SERVER" \
+  clientip=$(getip 1)
+  serverip=$(getip 2)
+  gateway=$(getip 3)
+  subnet_mask=$(getip 4)
+  echo -e "# ip configuration written by $0 script\nclientip=$clientip\n\
+subnet_mask=$sub_netmask\ngateway=$gateway\nserverip=$serverip" \
     >>/etc/machine-setup
   # set static ip address via function ipsetup
-  ipsetup $IP $NM $GW 255.255.255.255 eth0
+  ipsetup $clientip $subnet_mask $gateway 255.255.255.255 eth0
 else
   noipyet="yes"
 fi

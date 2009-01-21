@@ -4,11 +4,11 @@
 #               functions file). This file is the main base for the several
 #               SuSE distro versions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 23-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-07-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.3.0a
+# Version:      0.3.3a
 
 # empty functions are defined at the beginning of /etc/functions
 

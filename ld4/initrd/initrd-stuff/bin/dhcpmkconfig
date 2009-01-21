@@ -4,15 +4,15 @@
 #		several dhcp clients. The result is written in unified form
 #		to the /etc/machine-setup file
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 09-07-2006
 #               Lars Mueller, 23-06-2006
 #               Oliver Tappe, 23-06-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 
 # client variable should be exported via calling function
-echo -e "\n# ip configuration written by $0" \
-  >>/tmp/confviadhcp
+cfgfile="/tmp/confviadhcp"
+cfgmsg="\n## Configuration written by $0"
 infomsg="# --> You are using $dhcl. With this client you are not \
 able to\n# transfer any vendor specific, self defined dhcp options. If \
 this is\n# intended, use dhclient instead or get them via tftp (to be \
@@ -22,7 +22,7 @@ enabled\n# via kernel command line)."
   set -x
 case $0 in
   *dhcpcd*)
-    dhcl="dhcpcd"; echo -e "$infomsg" >>/tmp/confviadhcp
+    dhcl="dhcpcd"; echo -e "$cfgmsg\n$infomsg" >>/tmp/confviadhcp
     sed -e "s,',\",g;s,IPADDR,clientip,;s,NETMASK,subnet_mask," \
       -e "s,GATEWAY,gateway,;s,BROADCAST,broadcast_address," \
       -e "s,HOSTNAME,host_name,;s,DOMAIN,domain_name," \
@@ -32,25 +32,27 @@ case $0 in
       -e "s,NETWORK,network," \
       -e "s,DHCP..ADDR.*,,;s,.*TIME=.*,,;s,CL.*,,;/^$/d" \
       -e "s,INTER.*,,;s,DHCPSNAME.*,," /var/lib/dhcp/dhcpcd-eth0.info \
-        >>/tmp/confviadhcp
+        >>$cfgfile
   ;;
   *dhclient*)
-    echo -e "# --> You are using dhclient. Iy you wish to transfer other \
-vendor/user\n# specific variables, you have to add them in functions and \
-in\n# dhcpmkconfig script or use  tftp (to be enabled via kernel \
-command\n# line)." >>/tmp/confviadhcp
-    set | sed -n -e '/^new/p' | sed \
-      -e "s,^new_,,;s,fixed_address,clientip," \
-      -e "s,routers,gateway,;s,dhcp_server_identifier,serverip," \
-      -e "s,.*_t[iy][mp]e.*,,;s,.*_message_.*,,;/^$/d" \
-      -e "s,language=,country=,;s,ip_address,clientip," \
-        >>/tmp/confviadhcp
+    if [ $reason = "BOUND" ] ; then
+      echo -e "$cfgmsg\n# --> You are using dhclient. If you wish to \
+transfer other vendor/user\n# specific variables, you have to add \
+them in functions and in\n# dhcpmkconfig script or use  tftp (to be \
+enabled via kernel command\n# line)." >>$cfgfile
+      set | sed -n -e '/^new/p' | sed \
+        -e "s,^new_,,;s,fixed_address,clientip," \
+        -e "s,routers,gateway,;s,dhcp_server_identifier,serverip," \
+        -e "s,.*_t[iy][mp]e.*,,;s,.*_message_.*,,;/^$/d" \
+        -e "s,language=,country=,;s,ip_address,clientip," \
+          >>$cfgfile
+     fi
   ;;
   *pump*)
-    dhcl="pump"; echo -e "$infomsg" >>/tmp/confviadhcp
+    dhcl="pump"; echo -e "$cfgmsg\n$infomsg" >>$cfgfile
   ;;
   *udhcpc*)
-    dhcl="udhcpc"; echo -e "$infomsg" >>/tmp/confviadhcp
+    dhcl="udhcpc"; echo -e "$cfgmsg\n$infomsg" >>$cfgfile
     unset infomsg HOME IFS mask lease interface
     set | sed \
       -e "s,^P.*,,;s,ntpsrv,ntp_servers,;s,ip,clientip," \
@@ -58,7 +60,7 @@ command\n# line)." >>/tmp/confviadhcp
       -e "s,router,gateway,;s,hostname,host_name," \
       -e "s,dns,domain_name_servers,;s,domain,domain_name," \
       -e "s,broadcast,broadcast_address,;s,dhc.*,,;/^$/d" \
-        >>/tmp/confviadhcp
+        >>$cfgfile
   ;;
 esac
 
