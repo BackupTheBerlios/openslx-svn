@@ -95,7 +95,7 @@ if [ -n "$hw_monitor" ] ; then
   # just cut all starting from k(Hz) ...
   HS=${hw_monitor%k*}
   VS=${hw_monitor%Hz*}
-  [ -z "$VS" ] && VS=${hw_monitor%hz*}
+  [ "${hw_monitor}" == "$VS" ] && VS=${hw_monitor%hz*}
   VS=${VS##* }
   SCR_MODES=${hw_monitor##* }
 else
