@@ -96,14 +96,9 @@ fi
 config_syslog () {
 if [ "x$start_syslog" != "xno" ] ; then
   if [ -f /mnt/etc/${D_INITDIR}/syslog ] ; then
-  # how to configure remote log server?
-  # logging servers might be specified in $log_servers (from e.g. dhcp)
-    echo -e "# File modified by $0 within InitRamFS" \
-      > /etc/syslog-ng.conf
-    sed -e "s,.*dhcp/dev.*,,;s,.*named/dev.*,," \
-      /mnt/etc/syslog-ng/syslog-ng.conf >> /etc/syslog-ng.conf
-      cp /etc/syslog-ng.conf /mnt/etc/syslog-ng/syslog-ng.conf
-      rllinker syslog "02" "20"
+    # logoutput depending on $start_syslog definitions
+    sysngwriter /mnt/etc/syslog-ng/syslog-ng.conf
+    rllinker syslog "02" "20"
   else
     error "$df_errsysl" nonfatal
   fi
