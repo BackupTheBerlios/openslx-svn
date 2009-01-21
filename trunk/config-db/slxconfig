@@ -460,7 +460,7 @@ sub changeClientInConfigDB
 		delete $clientData->{'remove-systems'};
 	}
 
-	if (length($clientData->{mac})
+	if ($clientData->{mac}
 	&& $clientData->{mac} !~ m[^(?:[[:xdigit:]][[:xdigit:]]:){5}?[[:xdigit:]][[:xdigit:]]$]) {
 		die _tr("unknown MAC-format given, expected something like '01:02:03:04:05:06'!\n");
 	}
