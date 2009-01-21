@@ -355,10 +355,16 @@ sub slxsystem
 {
 	vlog 2, _tr("executing: %s", join ' ', @_);
 	my $res = system(@_);
-	if ($res > 0 && $res & 127) {
-		# child got killed, so we stop, too
-		die _tr("child-process reveived signal '%s', parent stops!", $res & 127);
-		exit;
+	if ($res > 0) {
+		# check if child got killed, if so we stop, too (unless the signal is 
+		# SIGPIPE, which we ignore in order to loop over failed FTP connections 
+		# and the like):
+		my $signalNo = $res & 127;
+		if ($signalNo > 0 && $signalNo != 13) {
+			die _tr("child-process reveived signal '%s', parent stops!", 
+					$signalNo);
+			exit;
+		}
 	}
 	return $res;
 }
