@@ -1,14 +1,18 @@
-# configuration script for Ubuntu V6.06 to configure OpenSLX linux diskless
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# configuration script for Ubuntu 6.10 to configure OpenSLX linux diskless
 # clients (merged in stage2 with ubuntu/functions-default - and loaded within
 # initial ramfs - stage3) It may overwrite settings from the default config
 # file (/etc/functions)
-#
-# Dirk von Suchodoletz <dirk@goe.net>, 31-08-2006
-# Nico Dietrich
-# Felix Endres, 29-08-2006
-#
-# (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.ORG Project
 
 # distro specific stuff to initialize
 preinit () {
@@ -20,6 +24,17 @@ preinit () {
 }
 
 # distro specific function called from servconfig script
+config_distro () {
+# add the halt link to the 0 and 6 runlevel directories
+  ln -sf ../init.d/halt /mnt/etc/rc0.d/S90halt
+  ln -sf ../init.d/reboot /mnt/etc/rc6.d/S90reboot
+  # set default runlevel
+  # how that is done for upstart??
+  # needed lateron (by hwsetup? - fixme, check if already copied by
+  # mkdxsinitrd!! If busybox is installed use tool directly ...)
+  /mnt/bin/mknod /dev/zero c 1 5
+  /mnt/bin/mknod /dev/mem c 1 1
+}
 
 # udev/hotplug - auto device discovery service
 # fixme: why does nothing happens here!? If default should be used just
