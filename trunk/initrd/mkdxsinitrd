@@ -235,10 +235,10 @@ splash_image=
 splash_bin=$(chroot $ROOTDIR which splash)
 if [ -n "$splashsizes" -a -n "$splash_bin" ]; then
 
-  themes_dir=
+  themes_dir="../theming/openslx/bootsplash"
   if [ -d "/usr/share/openslx/themes/${theme}/bootsplash" ]; then
     themes_dir="/usr/share/openslx/themes/${theme}/bootsplash"
-  if [ -d "$ROOTDIR/etc/bootsplash/themes/${theme}" ]; then
+  elif [ -d "$ROOTDIR/etc/bootsplash/themes/${theme}" ]; then
     themes_dir="/etc/bootsplash/themes/${theme}"
   elif [ -d "$ROOTDIR/usr/share/splash/themes/${theme}" ]; then
     themes_dir="/usr/share/splash/themes/${theme}"
@@ -248,20 +248,19 @@ if [ -n "$splashsizes" -a -n "$splash_bin" ]; then
   mkdir -p $ROOTDIR/tmp/bootsplash
   cp -a $themes_dir/* $ROOTDIR/tmp/bootsplash/
   themes_dir=$ROOTDIR/tmp/bootsplash
-  
-  echo -ne "Bootsplash:\t"
-  if [ -n "$ROOTDIR/$themes_dir" -a \
-     -d "$ROOTDIR/$themes_dir" -o -L "$ROOTDIR/$themes_dir" ]; then
+
+  if [ -n "$themes_dir" -a \
+     -d "$themes_dir" -o -L "$themes_dir" ]; then
     for size in $splashsizes; do
       bootsplash_picture="$themes_dir/images/bootsplash-$size.jpg"
       cfgname="$themes_dir/config/bootsplash-$size.cfg"
-      if [ ! -r $ROOTDIR/$cfgname ] ; then
+      if [ ! -r $cfgname ] ; then
         echo " disabled for resolution $size "
-      elif [ ! -r $ROOTDIR/$bootsplash_picture ] ; then
+      elif [ ! -r $bootsplash_picture ] ; then
         echo " no image for resolution $size "
       else
         echo -n "${splash_image:+, }$THEME ($size)"
-        splash_image=" $splash_image $cfgname "
+        splash_image=" $splash_image ${cfgname#$ROOTDIR} "
       fi
     done
     echo
@@ -716,7 +715,7 @@ strip  ${INSTDIR}/bin/*  ${INSTDIR}/lib/* &>/dev/null
 #########################################################################
 # End of file copy procedures
 
-[ -n "${theme}" ] && add_splash
+[ -n "${theme}" ] && add_theme
 
 # finally create the compressed initial ramdisk cpio archive
 pushd . > /dev/null 2>&1
