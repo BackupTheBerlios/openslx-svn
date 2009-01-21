@@ -3,4 +3,4 @@ atftpd_conf="/etc/default/atftpd"
 exports_conf="/etc/exports"
 
 # this variable choses which atftpd template file to chose
-atftpd_conf_name="atftpd_default"
+atftpd_conf_name="atftpd_sysconfig"

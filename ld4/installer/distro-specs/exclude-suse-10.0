@@ -8,8 +8,10 @@
 + /media
 + /mnt
 + /opt
++ /proc
 + /root
 + /sbin
++ /sys
 + /tmp
 + /usr
 + /var
@@ -25,6 +27,8 @@
 - /boot/grub
 - /dev/*
 - /etc/shadow*
+- /proc/*
+- /sys/*
 - /tmp/*
 - /root/*
 - /home/*

@@ -204,13 +204,59 @@ configure() {
 
 copy_system() {
   echo -e "\n\nSyncing system now\nPlease enter root password of client machine\n"
-  rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-${client_distro} ${rsyncsource} ${rootdir} || { echo "Rsync failed" ; exit 1 ; }
+  rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-${client_distro}-${client_distro_ver} ${rsyncsource} ${rootdir} || { echo "Rsync failed" ; exit 1 ; }
 
   # generate error message in case rsync didn't work and exit.
 
   # TODO: mksquashfs (background process)   
 }
 
+create_initrd() {
+  # find existing kernels
+  declare -i i=0
+  for kern in `find ${rootdir}/boot |grep vmlinuz` ; do
+    if ! [ -L $kern ] ; then
+      kernel[$i]=$kern
+      i=$i+1
+    fi
+  done
+
+  if [ $i -eq 0 ] ; then
+    echo "No kernels found in ${rootdir}/boot, so no initial ramdisk is created and linked to ${tftpbootdir}."
+    kernel_choice=""
+  elif [ $i -eq 1 ] ; then
+    echo "Found one kernel in ${rootdir}/boot."
+    kernel_choice="0"
+  else
+    echo -e "This is a list of existing kernels in your client OS: \n"
+    declare -i j=0
+    while [ $j -lt $i ] do
+      echo "$j: ${kernel[$j]}"
+      j=$j+1
+    done
+    ask "Please chose kernels to create initial ramdisks for (space separated numbers) " kernel_choice ${kernel_choice}
+  fi
+  choice=( ${kernel_choice} )
+  
+  # make sure /$tftbootdir exists
+  mkdir -p ${tftpbootdir}
+  
+  declare -i j=0
+  # FIXME: mkdxsinitrd currently wants to run from own directory
+  # ugly workaround...
+  cd ../initrd
+  while [ $j -lt ${#choice[@]} ] do
+    current_kernel=${kernel[$j]#${rootdir}/boot/vmlinuz-}
+    echo "Creating initial ramdisk for ${current_kernel}"
+    current_initrd=${tftpbootdir}/initrd-dxs-${current_kernel}
+    [ -f ${current_initrd} ] && rm ${current_initrd} 
+    ./mkdxsinitrd -r ${rootdir} -k ${current_kernel} -i ${current_initrd}
+
+    ln -sf ${kernel[$j]} ${tftpbootdir}/vmlinuz-${current_kernel}
+    j=$j+1
+  done
+  cd - 
+}
 
 # setting up server site configuration files etc.
 setup_server () {
@@ -229,7 +275,7 @@ setup_server () {
   # TODO: sed -e @@@example1@@@, netname+1 etc. - which ip addresses are safe to use?
 
   # atftpd
-  sed -e "s,/tftpboot,${tftpbootdir}," default_files/${atftpd_conf_name} > ${dxs_conf}/${dxs_atftpd_conf}-${timestamp}
+  sed -e "s,@@@tftpbootdir@@@,${tftpbootdir}," default_files/${atftpd_conf_name} > ${dxs_conf}/${dxs_atftpd_conf}-${timestamp}
 
    # nfs
   echo -e "# Bla Blub\n \
@@ -242,13 +288,31 @@ setup_server () {
 
   sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g;s,@@@pxe_passwd@@@,${pxe_passwd},g;s,@@@client_distro@@@,${client_distro},g;s,@@@client_distro_ver@@@,${client_distro_ver},g;s,@@@rootdir@@@,${rootdir},g" default_files/default > ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
 
-  # TODO: loop over kernel and initial ramdisks and create corresponding entries in default
+  declare -i j=0
+  while [ $j -lt ${#choice[@]} ] do
+    current_kernel=${kernel[$j]#${rootdir}/boot/vmlinuz-}
+    current_initrd=${tftpbootdir}/initrd-dxs-${current_kernel}
 
+    if [ $j -eq 0 ] ; then
+      default_string="MENU DEFAULT\n"
+    else
+      default_string=""
+    fi
+    echo -e "LABEL ${client_distro}-${current_kernel}\n \
+      ${default_string} \
+      MENU LABEL $j. ${client_distro}-${client_distro_ver} ${current_kernel} Diskless\n \
+      KERNEL ${server}::${tftpbootdir}/vmlinuz-${current_kernel}\n \
+      APPEND nfsroot=${server}:${rootdir} initrd=${server}::${tftpbootdir}/initrd-dxs-${current_kernel} apic dhcp noldsc vci=DXS\n \
+      ipappend 1\n\n" >> ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
+
+    j=$j+1
+  done
+  
   
   # backing up original files
   for cfile in ${dhcpd_conf} ${atftpd_conf} ${exports_conf} ${tftpbootdir}/${pxedefault_conf} ; do
     if [ -f ${cfile} -a ! -L ${cfile} ] ; then
-      echo "Copying old ${cfile} to ${cfile}"
+      echo "Copying old ${cfile} to ${cfile}.original"
       mv ${cfile} ${cfile}.original
     elif [ -L ${cfile} ] ; then 
       unlink ${cfile}
@@ -263,33 +327,6 @@ setup_server () {
 
 }
 
-
-create_initrd() {
-  # FIXME: mkdxsinitrd currently wants to run from own directory
-  # ugly workaround...
-  cd ../initrd
-
-  # TODO: loop over chosen kernels -> mkdxsinitrd -k ... and -i ...
-
-  ./mkdxsinitrd -r ${rootdir}
-  cd -
-
-  # generate links to kernels and initial ramdisks
-
-  # TODO: move this stuff in upper loop
-  if [ -e ${rootdir}/boot/vmlinuz ] ; then 
-    ln -sf ${rootdir}/boot/vmlinuz ${tftpbootdir}
-  elif [ -e ${rootdir}/vmlinuz ] ; then 
-    ln -sf ${rootdir}/boot/vmlinuz ${tftpbootdir}
-  elif [ -n "`ls ${rootdir}/boot/vmlinuz*`" ]; then
-    ln -sf `ls -1t ${rootdir}/boot/vmlinuz* | sed -n 1,1p` ${tftpbootdir}/vmlinuz
-  else echo "Could not find the Kernel. Please link the kernel to ${tftpbootdir}"
-  fi
-  # make sure /$tftbootdir exists
-  mkdir -p ${tftpbootdir}
-  ln -sf ${rootdir}/tmp/dxsinitrd.gz ${tftpbootdir}/initrd
-
-}
 
 
 footer() {
@@ -321,7 +358,7 @@ dxs_pxedefault_conf="pxelinux/default"
 header
 precheck #(run as root, rsync etc.)
 configure
-#copy_system
+copy_system
 create_initrd
 setup_server
 footer
