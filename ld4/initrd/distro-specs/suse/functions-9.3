@@ -4,11 +4,11 @@
 #		functions file). This file is the main base for the 
 #		following SuSE distributions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 10-05-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-05-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.2f
+# Version:      0.2.2g
 
 # distro specific stuff to initialize
 preinit () {
@@ -315,6 +315,9 @@ ServerCmd=/usr/X11R6/bin/X -br\n\
 ServerArgsLocal=-nolisten tcp\n\
 TerminateServer=true\n\
 Resources=/etc/X11/xdm/Xresources\nSetup=/etc/X11/xdm/Xsetup\n\
+UserPath=/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin:/var/X11R6/bin
+SystemPath=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:\
+/usr/X11R6/bin:/var/X11R6/bin
 Startup=/etc/X11/xdm/Xstartup\nReset=/etc/X11/xdm/Xreset\n\
 Session=/etc/X11/xdm/Xsession\nClientLogFile=.xsession-errors-%s\n\
 AutoReLogin=false\nAllowRootLogin=true\n\

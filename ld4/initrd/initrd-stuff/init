@@ -258,6 +258,7 @@ if [ -n "${NBD}" ] ; then
       waitfor "${RDEV}" 30000 || error "$init_nbddev"
       echo "0" > /sys/block/nbd0/queue/read_ahead_kb
       nbd-client $nbdhost $nbdport ${RDEV} || error "$init_nbdcl"
+      usleep 10
       # switch off unneeded block read ahead
       echo "0" > /sys/block/nbd0/queue/read_ahead_kb
       ;;
@@ -278,7 +279,7 @@ if [ -n "${NBD}" ] ; then
       RDEV=/dev/dnbd0
       ;;
   esac
-  usleep 20
+  usleep 10
   RWRO="ro"
   if [ -n "${COWLOOP}" -a -x /bin/cowdev ] ; then
     modprobe ${MODPRV} cowloop || {
