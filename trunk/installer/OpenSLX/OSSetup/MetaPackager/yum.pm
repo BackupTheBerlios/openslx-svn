@@ -79,7 +79,6 @@ sub installSelection
 	if (slxsystem("yum -y install $pkgSelection")) {
 		die _tr("unable to install selection (%s)\n", $!);
 	}
-	slxsystem('rm /proc/cpuinfo');
 }
 
 sub updateBasicVendorOS
