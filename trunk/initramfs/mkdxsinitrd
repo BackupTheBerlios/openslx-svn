@@ -4,7 +4,7 @@
 #               ramdisks for linux diskless clients (stage2 system
 #               setup)
 #
-# Author(s):    Dirk von Suchodoletz <dvs@OpenSLX.com>, 29-01-2007
+# Author(s):    Dirk von Suchodoletz <dvs@OpenSLX.com>, 04-02-2007
 #               Nico Dietrich
 #               Felix Endres
 #               <mj0@uni-freiburg.de> (xenbr), 09-01-2007
@@ -738,38 +738,41 @@ cp ${ROOTDIR}/lib/modules/${KERNVER}/modules.* \
 # are overwritten by fileget in stage3 within initramfs!!
 # fixme! it should be possible to provide the filename and location via
 # parameter
+echo "## common settings of machine-setup for clients sharing an InitRamFS" \
+  > ${INSTDIR}/etc/machine-setup
 if [ -n "${CLCONFFILE}" ] ; then
-  cp ${CLCONFFILE} ${INSTDIR}/etc/machine-setup
+  cat ${CLCONFFILE} >>${INSTDIR}/etc/machine-setup
   echo "Using ${CLCONFFILE}"
 elif [ -f ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup ] ; then
-  cp ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup \
-    ${INSTDIR}/etc/machine-setup
+  cat ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup \
+    >>${INSTDIR}/etc/machine-setup
   echo "Using ${SLX_PRIVATE_PATH}/config/default/initramfs/machine-setup"
 # use the installed default machine-setup.default
 elif [ -f ${SLX_SHARE_PATH}/templates/machine-setup.default ] ; then
-  cp ${SLX_SHARE_PATH}/templates/machine-setup.default \
-    ${INSTDIR}/etc/machine-setup
+  cat ${SLX_SHARE_PATH}/templates/machine-setup.default \
+    >>${INSTDIR}/etc/machine-setup
   echo "Using ${SLX_SHARE_PATH}/templates/machine-setup.default"
 # just compatibility for older versions
 elif [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
-  cp /etc/dxs/client.cfg/machine-setup.default \
-    ${INSTDIR}/etc/machine-setup
+  cat /etc/dxs/client.cfg/machine-setup.default \
+    >>${INSTDIR}/etc/machine-setup
   echo "Using /etc/dxs/client.cfg/machine-setup.default"
 # fixme: dirty hack if the installer does not creates a normal file
 elif [ -f /etc/dxs/client.cfg/machine-setup.default.new ] ; then
-  cp /etc/dxs/client.cfg/machine-setup.default.new \
-    ${INSTDIR}/etc/machine-setup
+  cat /etc/dxs/client.cfg/machine-setup.default.new \
+    >>${INSTDIR}/etc/machine-setup
 elif [ -f ../installer/default_files/machine-setup.default ] ; then
-  cp ../installer/default_files/machine-setup.default \
-    ${INSTDIR}/etc/machine-setup
+  cat ../installer/default_files/machine-setup.default \
+    >>${INSTDIR}/etc/machine-setup
   echo "Warning: Using ../installer/default_files/machine-setup.default"
 else
   #inserted password for root for debugging purposes
   # fixme - set more default values?!
   echo -e "# default for machine-setup does not exist\n# root logins are \
 disabled\nroot_pw='"'$1$T7VD/mmQ$aCP1WEaWplEsHe9khv4kK.'"'" \
-    > ${INSTDIR}/etc/machine-setup
+    >>${INSTDIR}/etc/machine-setup
 fi
+echo "## end of common machine-setup" >>${INSTDIR}/etc/machine-setup
 
 # custom hardware configuration files pcitable.local and Cards.local
 # fixme!! New source for these files (instead of templates)!

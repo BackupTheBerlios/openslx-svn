@@ -7,7 +7,7 @@
 # If you have any feedback please consult http://openslx.org/feedback and
 # send your feedback to feedback@openslx.org
 #
-# General information about OpenSLX can be found under http://openslx.org
+# General information about OpenSLX can be found at http://openslx.org
 #
 # common functions file for the configuration of linux diskless clients
 # (included by init, hwautocfg, servconfig, ... within OpenSLX initialramfs)
@@ -460,11 +460,11 @@ fi
 fileget () {
 # get type of tftp available, alternatively use wget for ftp or http
 # (fixme: rewrite of fileget needed!!)
-# analyze file soure (URI) in $FILESRC
-if [ -n "$FILESRC" ] ; then
-  local srvproto=$(uri_token $FILESRC prot)
-  local cfgfile="/$(uri_token $FILESRC path)"
-  local tftpserver=$(uri_token $FILESRC server)
+# analyze file soure (URI) in $filesrc
+if [ -n "$filesrc" ] ; then
+  local srvproto=$(uri_token $filesrc prot)
+  local cfgfile="/$(uri_token $filesrc path)"
+  local tftpserver=$(uri_token $filesrc server)
   tftpgetunpack $tftp $cfgfile $tftpserver
 else
   # predefined value for openslx environment; it is expected that this
