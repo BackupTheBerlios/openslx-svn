@@ -141,6 +141,14 @@ addSystemIDsToClient($openslxDB, $client2Id, [$system2Id]);
 
 disconnectConfigDB($openslxDB);
 
+if ($openslxConfig{'db-type'} =~ m[^\s*csv\s*$]i) {
+	my $csvFolder = "$openslxConfig{'db-basepath'}/$openslxConfig{'db-name'}-csv";
+	print "The test-database with the CSV-files has been created in\n";
+	print "\t$csvFolder\n";
+	print "You can change the dataset with a simple editor or using\n";
+	print "a spreadsheet software like 'OpenOffice Calc' or 'Gnumeric'.\n";
+}
+
 __END__
 
 =head1 NAME
