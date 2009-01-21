@@ -1,9 +1,10 @@
-# Description:  configuration script for SuSE 10.0 to configure
-#		linux diskless clients (included by init, hwautocfg,
-#		servconfig, ... within initial ramdisk after inclusion
-#		of the main functions file) 
+# Description:  configuration script for SuSE 9.3 to configure linux 
+#		diskless clients (included by init, hwautocfg, servconfig
+#		within initial ramdisk after inclusion of the main 
+#		functions file). This file is the main base for the 
+#		following SuSE distributions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 26-01-2006
 #		Blabla
 #		Blub
 #
@@ -14,7 +15,7 @@
 # distro specific stuff to initialize
 preinit () {
   # do nothing yet
-  echo > /dev/null
+  :
 }
 
 # linking runlevel scripts

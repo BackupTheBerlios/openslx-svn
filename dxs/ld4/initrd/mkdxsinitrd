@@ -3,11 +3,11 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-01-2006
-#		Blabla
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 26-01-2006
+#		Nico Dietrich
 #		Blub
 #
-# Version:      0.3.0a
+# Version:      0.3.0b
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 
@@ -164,34 +164,34 @@ shared_object_files() {
     | sort -u
 }
 
-# Resolve module dependencies and parameters. Returns a list of modules and
-# their parameters.
-#resolve_modules() {
-#    local kernel_version=$1 module
-#    shift
-#
-#    for module in "$@"; do
-#	local with_modprobe_conf
-#	module=${module%.o}  # strip trailing ".o" just in case.
-#	module=${module%.ko}  # strip trailing ".ko" just in case.
-#	#if [ -e /etc/modprobe.conf ]; then
-#	#    with_modprobe_conf="-C /etc/modprobe.conf"
-#	#fi
-#	module_list=$(/sbin/modprobe $with_modprobe_conf \
-#	    --set-version $kernel_version --ignore-install \
-#	    --show-depends $module 2> /dev/null \
-#	    | sed -ne 's:.*insmod /\?::p' )
-#	echo "$module_list"
-#    done \
-#    | awk ' # filter duplicates: we must not reorder modules here!
-#	NF == 0     { next }
-#	$1 in seen  { next }
-#		    { seen[$1]=1
-#		      print
-#		    }
-#    '
-#   rm -f $temp
-#}
+# this function incrementally concats and copies distro-specific functions, 
+# configuration variables and files
+copy_distro_stuff() {
+
+  # first insert dependencies
+  case $1 in
+    suse)
+      case $2 in
+        9.3)
+        ;;
+        10.0)
+          copy_distro_stuff suse 9.3
+        ;;
+      esac
+    ;;
+    debian)
+    ;;
+    ubuntu)
+    ;;
+    gentoo)
+    ;;
+  esac
+
+  # now insert the current stuff
+  cat distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig/config
+  cat distro-specs/$1/functions-$2 >>${INSTDIR}/etc/distro-functions
+  cp -a distro-specs/$1/files-$2 ${INSTDIR}/etc/sysconfig/files 2>/dev/null
+}
 
 #########################################################################
 # End of function declaration
@@ -348,33 +348,6 @@ esac
 # an dieser stelle sollte jetzt sichergestellt sein, dass sowohl DISTRO als auch DISTRO_VER eindeutig gesetzt sind!
 
 
-# this function incrementally concats and copies distro-specific functions, configuration variables and files
-copy_distro_stuff() {
-
-  # first insert dependencies
-  case $1 in
-    suse)
-      case $2 in
-        9.3)
-        ;;
-        10.0)
-          copy_distro_stuff suse 9.3
-        ;;
-      esac
-    ;;
-    debian)
-    ;;
-    ubuntu)
-    ;;
-    gentoo)
-    ;;
-  esac
-
-  # now insert the current stuff
-  cat distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig/config
-  cat distro-specs/$1/functions-$2 >>${INSTDIR}/etc/distro-functions
-  cp -a distro-specs/$1/files-$2 ${INSTDIR} 2>/dev/null
-}
 
 copy_distro_stuff ${DISTRO} ${DISTRO_VER}
 
@@ -473,15 +446,14 @@ fi
 
 mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
 for module in af_packet ${NWMODULES} ${FSMODULES}; do
-  echo "m: $module"
   mod=`cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
 2>/dev/null`
-  echo "m: $mod"
   if [ -n "$mod" ] ; then
     mpath=${INSTDIR}/${mod%/*}
-    echo $mpath
     mkdir -p ${mpath}
     cp ${ROOTDIR}/$mod ${mpath}
+    # fixmee!! selection of dependent modules could be handled a little bi
+    # more clever
     case "$module" in
       e100|8139too|via-rhine|sis900|epic100|sundance|8139cp|eepro100.ko|pcnet32)
         cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/drivers/net/mii.ko \
