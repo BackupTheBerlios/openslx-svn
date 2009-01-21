@@ -51,8 +51,10 @@ von slxmkramfs oder\n  mkdxsinitrd.\n  * Das eingehaengte Dateisystem \
 beinhaltet das Modul-Verzeichnis ueberhaupt nicht.\n    Sie sollten die Liste \
 der eingehaengten Dateisysteme pruefen und wenn /mnt\n    nicht leer ist, \
 'ls /mnt/lib/modules' ausfuehren."
-init_loadufs="  Laden von UnionFS schlug fehl - entweder das Modul nicht \
-vorhanden oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese Meldung \
+init_loadunions="  Stapeln mehrerer Verzeichnisse nicht möglich, da kein UnionFS/AUFS \
+Modul geladen ist"
+init_loadufs="  Laden von UnionFS oder AUFS schlug fehl - entweder die Module sind \
+nicht vorhanden, oder\n  sie passen nicht zum laufenden Kernel. Wenn Sie diese Meldung \
 nicht sehen wollen,\n  entfernen Sie das Token 'unionfs' von den Kernel Start \
 Optionen."
 init_loadcow="  Laden von Copy On Write (COW - Spezielles Block Geraet) Modul \

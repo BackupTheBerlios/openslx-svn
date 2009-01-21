@@ -454,9 +454,13 @@ fi
 
 # try to use unionfs for rw access if available
 if [ -n "${unionfs}" -o -n "${union}" ] ; then
-  modprobe ${MODPRV} unionfs || {
-    error "$init_loadufs" nonfatal
-    unionfs=""; }
+  union_type=""
+  modprobe ${MODPRV} unionfs  && union_type="unionfs"
+  modprobe ${MODPRV} aufs   && union_type="aufs"
+  if [ -z "$union_type" ]; then 
+	error "$init_loadufs" nonfatal
+	unionfs="";
+  fi
 fi
 
 # setup of client root filesystem dependent on the availability of UnionFS
@@ -466,8 +470,11 @@ if [ -n "${unionfs}" ] ; then
   mount -n -t tmpfs none ${rwdir}/uniontmp
   # hack for handling unionfs with patched run-init
   mount -n --move /mnt /rorootfs
-  mount -n -t unionfs -o dirs=${rwdir}/uniontmp:/rorootfs=${nfsro}ro \
-    none /mnt
+  if [ "$union_type" == "unionfs" ]; then
+  	mount -n -t unionfs -o dirs=${rwdir}/uniontmp:/rorootfs=${nfsro}ro \
+	none /mnt
+  else  mount -n -t aufs -o br:/${rwdir}/uniontmp:/rorootfs=ro none /mnt
+  fi
   mkdir -p /mnt/uniontmp
   mount -n --move ${rwdir}/uniontmp /mnt/uniontmp
   chmod 0755 /mnt/uniontmp /mnt
@@ -607,7 +614,7 @@ cp /etc/machine-setup /mnt/etc
 
 # If locations are given that should be unioned with the fs root, do it
 if [ -n "$uniondirs" ]; then
-  include_in_fsroot_union $uniondirs
+  include_in_fsroot_union $union_type $uniondirs
 fi
 
 # post init for some distro specific (fixme!! more elegant solution)

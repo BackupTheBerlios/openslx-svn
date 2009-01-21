@@ -51,9 +51,10 @@ mean:\n  * The kernel was updated but mkdxsinitrd was not run afterwards.\n\
   * The mounted filesystem does not contain the modules directory at all.\n\
   You might want to check the list of mounted filesystems and if /mnt is\n\
   not empty run 'ls /mnt/lib/modules' to check."
-init_loadufs="  Loading of UnionFS failed - Either module is not present or \
-module\n  does not match the running kernel. If you do not want to see this \
+init_loadufs="  Loading of UnionFS or AUFS failed - Either modules are not present or \
+do \nnot match the running kernel. If you do not want to see this \
 \n  message remove the token 'unionfs' from kernel command line."
+init_loadunions="  Stacking of directories failed, because UnionFS/AUFS is not loaded"
 init_loadcow="  Loading of Copy On Write (COW - special block device) module \
 failed -\n  Either module is not present or module does not match the \
 running\n  kernel. If you do not want to see this message remove the token \

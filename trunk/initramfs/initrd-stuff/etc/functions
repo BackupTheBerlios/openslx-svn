@@ -944,7 +944,8 @@ done
 # It will then try to mount these uris and add them to the union at /
 include_in_fsroot_union () {
   union_id=0 # used to have guarantee differing names for the unions mount point
-  for ROOTFS in `echo $1 |sed 's/,/ /g'`; do
+  union_type=$1
+  for ROOTFS in `echo $2 |sed 's/,/ /g'`; do
     union_id=$(( $union_id + 1 ))
     srvproto=$(uri_token $ROOTFS prot)
     case $srvproto in
@@ -980,7 +981,16 @@ include_in_fsroot_union () {
             #iscsitarget=$(uri_token $ROOTFS path)
           ;;
         esac
-    unionctl /mnt/ --add --after 1 --mode ro /mnt/tmp/${root_path}_${union_id}
+    if [ "X$union_type" == "Xunionfs" ]; then
+	echo "Using unionctl to mount ${root_path}_${union_id} (type: $union_type)"
+	unionctl /mnt/ --add --after 1 --mode ro /mnt/tmp/${root_path}_${union_id}
+    elif [ "X$union_type" == "Xaufs" ]; then 
+	#unionctl for aufs is a sh script needing tools not included in our initrd
+	echo "Using aufs-mount to mount ${root_path}_${union_id} (type: $union_type)"
+	mount -n -o remount,add:1:/mnt/tmp/${root_path}_${union_id}=ro none /mnt
+    else
+	error $init_loadunions nonfatal
+    fi
  done 
 }
 
