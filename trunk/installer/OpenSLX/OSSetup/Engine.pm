@@ -445,9 +445,12 @@ sub downloadBaseFiles
 try_next_url:
 		my $url = $URLs[$self->{'baseURL-index'}];
 		$url .= "/$pkgSubdir"	if length($pkgSubdir);
+		my @contFlags = ();
+		push @contFlags, '-c'	if ($url =~ m[^ftp]);
+			# continuing is only supported with FTP, but not with HTTP
 		foreach my $file (split '\s+', $fileVariantStr) {
 			vlog 2, "fetching <$file>...";
-			if (slxsystem("wget", "$url/$file") == 0) {
+			if (slxsystem("wget", @contFlags, "$url/$file") == 0) {
 				$foundFile = basename($file);
 				last;
 			}
