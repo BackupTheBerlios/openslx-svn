@@ -15,7 +15,7 @@ package OpenSLX::OSSetup::Distro::SUSE_10_2;
 
 use vars qw($VERSION);
 use base qw(OpenSLX::OSSetup::Distro::Base);
-$VERSION = 1.01;		# API-version . implementation-version
+$VERSION = 1.01;    # API-version . implementation-version
 
 use strict;
 use Carp;
@@ -28,31 +28,28 @@ use OpenSLX::OSSetup::Distro::Base 1;
 sub new
 {
 	my $class = shift;
-	my $self = {
-		'base-name' => 'suse-10.2',
-	};
+	my $self = {'base-name' => 'suse-10.2',};
 	return bless $self, $class;
 }
 
 sub initialize
 {
-	my $self = shift;
+	my $self   = shift;
 	my $engine = shift;
 
 	$self->SUPER::initialize($engine);
-	$self->{'packager-type'} = 'rpm';
+	$self->{'packager-type'}      = 'rpm';
 	$self->{'meta-packager-type'} = $ENV{SLX_META_PACKAGER} || 'smart';
-	$ENV{YAST_IS_RUNNING} = "instsys";
+	$ENV{YAST_IS_RUNNING}         = "instsys";
 }
 
 sub fixPrerequiredFiles
 {
-	my $self = shift;
+	my $self       = shift;
 	my $stage1cDir = shift;
 
-	if (system("chown root: $stage1cDir/etc/{group,passwd,shadow}")) {
-		die _tr("unable to fix pre-required files (%s)", $!);
-	}
+	chown(0, 0, "$stage1cDir/etc/group", "$stage1cDir/etc/passwd",
+		"$stage1cDir/etc/shadow");    
 }
 
 sub updateDistroConfig
@@ -83,7 +80,7 @@ sub initDistroInfo
 				ftp://ftp.estpak.ee/pub/suse/opensuse/distribution/10.2/repo/oss
 				ftp://ftp.jaist.ac.jp/pub/Linux/openSUSE/distribution/10.2/repo/oss
 			",
-			'name' => 'openSUSE 10.2',
+			'name'        => 'openSUSE 10.2',
 			'repo-subdir' => 'suse',
 		},
 		'base_non-oss' => {
@@ -95,14 +92,14 @@ sub initDistroInfo
 				ftp://ftp.estpak.ee/pub/suse/opensuse/distribution/10.2/repo/non-oss
 				ftp://ftp.jaist.ac.jp/pub/Linux/openSUSE/distribution/10.2/repo/non-oss
 			",
-			'name' => 'openSUSE 10.2 non-OSS',
+			'name'        => 'openSUSE 10.2 non-OSS',
 			'repo-subdir' => 'suse',
 		},
 		'base_update' => {
 			'urls' => "
 				ftp://ftp.gwdg.de/pub/suse/update/10.2
 			",
-			'name' => 'openSUSE 10.2 updates',
+			'name'        => 'openSUSE 10.2 updates',
 			'repo-subdir' => '',
 		},
 	};
@@ -963,4 +960,3 @@ sub initDistroInfo
 	};
 }
 
-1;

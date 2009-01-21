@@ -50,9 +50,8 @@ sub fixPrerequiredFiles
 	my $self = shift;
 	my $stage1cDir = shift;
 
-	if (system("chown root: $stage1cDir/etc/{group,passwd,shadow}")) {
-		die _tr("unable to fix pre-required files (%s)", $!);
-	}
+	chown(0, 0, "$stage1cDir/etc/group", "$stage1cDir/etc/passwd",
+		"$stage1cDir/etc/shadow");    
 }
 
 sub updateDistroConfig
