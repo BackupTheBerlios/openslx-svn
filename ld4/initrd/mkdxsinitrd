@@ -342,8 +342,13 @@ if [ -z "${DISTRO}" ] ; then
     DISTRO=${DISTRIB_ID}
     DISTRO_VER=${DISTRIB_RELEASE}
   elif [ -e ${ROOTDIR}/etc/debian_version ] ; then
-    DISTRO=debian
-    DISTRO_VER=`cat ${ROOTDIR}/etc/debian_version`
+	if [ $(grep Ubuntu /etc/issue | wc -l) -gt 0 ]; then
+		DISTRO=Ubuntu
+		DISTRO_VER=`sed 's/[Uu]buntu \([0-9]*\.[0-9]*\).*/\1/' /etc/issue`
+	else
+    		DISTRO=debian
+    		DISTRO_VER=`cat ${ROOTDIR}/etc/debian_version`
+	fi
   elif [ -e ${ROOTDIR}/etc/gentoo-release ] ; then
     DISTRO=gentoo
     # any idea on the versioning scheme??
