@@ -255,6 +255,8 @@ sub createTarOfPath
 ################################################################################
 sub writePXEMenus
 {
+	my @infos = @_;
+
 	my $pxePath = "$tftpbootPath/pxe";
 	my $pxeConfigPath = "$tftpbootPath/pxe/pxelinux.cfg";
 
@@ -291,18 +293,20 @@ sub writePXEMenus
 		next	if $dryRun;
 		open(PXE, ">$pxeFile")		or die "unable to write to $pxeFile";
 		print PXE $pxeTemplate;
-		my @systemIDs = $openslxDB->aggregatedSystemIDsOfClient($client);
-		my @systems = $openslxDB->fetchSystemByID(\@systemIDs);
-		foreach my $system (@systems) {
-			my $info = $openslxDB->aggregatedSystemFileInfoFor($system);
-			my $extSysID = externalIDForSystem($info);
-			my $append = $system->{kernel_params};
+		my %systemIDs;
+		@systemIDs{$openslxDB->aggregatedSystemIDsOfClient($client)} = ();
+		my @systemInfos = grep { exists $systemIDs{$_->{id}} } @infos;
+			# now @systemInfos holds all infos relevant to this client
+		foreach my $info (@systemInfos) {
+			my $extSysID = $info->{'external-id'};
+			my $kernelName = basename($info->{'kernel-file'});
+			my $append = $info->{kernel_params};
 			$append .= " initrd=$extSysID/initramfs";
 			$append .= " $clientAppend";
 			$append .= " rootfs=$info->{'export-uri'} file";
 			print PXE "LABEL openslx-$extSysID\n";
 			print PXE "\tMENU LABEL ^$info->{label}\n";
-			print PXE "\tKERNEL $extSysID/kernel\n";
+			print PXE "\tKERNEL $extSysID/$kernelName\n";
 			print PXE "\tAPPEND $append\n";
 			print PXE "\tIPAPPEND 1\n";
 		}
@@ -312,24 +316,25 @@ sub writePXEMenus
 
 sub generateInitalRamFS
 {
-	my $setup = shift;
-	my $vendorOS = shift;
+	my $info = shift;
 	my $pxeSysPath = shift;
+
+	my $vendorOS = $info->{'vendor-os'};
 
 	vlog 1, _tr('generating initialramfs %s/initramfs', $pxeSysPath);
 	my $cmd = "$openslxConfig{'bin-path'}/slxmkramfs ";
-	if ($setup->{ramfs_use_busybox}) {
+	if ($info->{ramfs_use_busybox}) {
 		$cmd .= '-b ';
 	}
-	my $debugLevel = $setup->{ramfs_debug_level};
+	my $debugLevel = $info->{ramfs_debug_level};
 	if ($debugLevel) {
 		$cmd .= qq[-d $debugLevel ];
 	}
-	if (length($setup->{ramfs_nicmods}) > 0) {
-		$cmd .= qq[-n "$setup->{ramfs_nicmods}" ];
+	if (length($info->{ramfs_nicmods}) > 0) {
+		$cmd .= qq[-n "$info->{ramfs_nicmods}" ];
 	}
-	if (length($setup->{ramfs_fsmods}) > 0) {
-		$cmd .= qq[-f "$setup->{ramfs_fsmods}" ];
+	if (length($info->{ramfs_fsmods}) > 0) {
+		$cmd .= qq[-f "$info->{ramfs_fsmods}" ];
 	}
 	my $rootPath
 		= "$openslxConfig{'stage1-path'}/$vendorOS->{name}";
@@ -340,17 +345,18 @@ sub generateInitalRamFS
 	# ...set date initrd has been generated...
 	$slxConf{'slxconf_date'} = $callDate;
 	# ...set kernel version...
-	my $kernelFile = readlink($setup->{'kernel-file'});
+	my $kernelFile = readlink($info->{'kernel-file'});
 	$kernelFile =~ m[-(.+)$];
 	$slxConf{'slxconf_kernver'} = $1;
 	# ...set distro version...
 	$slxConf{'slxconf_distro'} = $vendorOS->{'name'};
 	# ...set list of network modules...
 	$slxConf{'slxconf_listnwmod'}
-		= $setup->{'ramfs_nicmods'} || $settings->{'default_nicmods'};
+		= $info->{'ramfs_nicmods'} || $settings->{'default_nicmods'};
 	# ...add version info...
 	my $slxver = `slxversion`;
-	$slxConf{'slxconf_slxver'} = chomp $slxver;
+	chomp $slxver;
+	$slxConf{'slxconf_slxver'} = $slxver;
 	# ...now create slxsystem.conf file and pass it to slxmkramfs:
 	writeSlxConfigToFile(\%slxConf, "$tempPath/slxsystem.conf");
 	$cmd .= qq[-s "$tempPath/slxsystem.conf" ];
@@ -364,29 +370,25 @@ sub generateInitalRamFS
 
 sub writeSystemPXEFiles
 {
-	my $system = shift;
+	my $info = shift;
 
-	my $info = $openslxDB->aggregatedSystemFileInfoFor($system);
 	my $kernelFile = $info->{'kernel-file'};
 	my $kernelName = basename($kernelFile);
-	my $extSysID = externalIDForSystem($info);
 
 	my $pxePath = "$tftpbootPath/pxe";
-	my $pxeSysPath = "$pxePath/$extSysID";
-	if (-e $pxeSysPath) {
-		die _tr('PXE-system %s already exists!', $pxeSysPath);
-	}
-	mkdir $pxeSysPath;
-	vlog 1, _tr('copying kernel %s to %s/%s', $kernelFile, $pxeSysPath,
-				'kernel');
-	system(qq[cp -p "$kernelFile" $pxeSysPath/kernel])		unless $dryRun;
+	my $pxeSysPath = "$pxePath/$info->{'external-id'}";
+	mkdir $pxeSysPath		unless -e $pxeSysPath || $dryRun;
 
-	generateInitalRamFS($info, $info->{'vendor-os'}, $pxeSysPath);
+	my $targetKernel = "$pxeSysPath/$kernelName";
+	if (!-e $targetKernel) {
+		vlog 1, _tr('copying kernel %s to %s', $kernelFile, $targetKernel);
+		system(qq[cp -p "$kernelFile" "$targetKernel"])		unless $dryRun;
+	}
+	generateInitalRamFS($info, $pxeSysPath);
 }
 
 sub writeDhcpConfig
 {
-	return unless defined $dhcpType;
 vlog 0, _tr("sorry, exporting dhcp data is not done yet!");
 	my $dhcpModule = "OpenSLX::Export::DHCP::$dhcpType";
 	if (!eval "require $dhcpModule") {
@@ -399,11 +401,11 @@ vlog 0, _tr("sorry, exporting dhcp data is not done yet!");
 
 sub writeClientConfigurationsForSystem
 {
-	my $system = shift;
+	my $info = shift;
 	my $buildPath = shift;
 	my $attrFile = shift;
 
-	my @clientIDs = $openslxDB->aggregatedClientIDsOfSystem($system);
+	my @clientIDs = $openslxDB->aggregatedClientIDsOfSystem($info);
 	my @clients = $openslxDB->fetchClientByID(\@clientIDs);
 	foreach my $client (@clients) {
 		vlog 2, _tr("exporting client %d:%s", $client->{id}, $client->{name});
@@ -412,52 +414,60 @@ sub writeClientConfigurationsForSystem
 		# merge configurations of client, it's groups, default client and
 		# system and write the resulting attributes to a configuration file:
 		$openslxDB->mergeDefaultAndGroupAttributesIntoClient($client);
-		mergeAttributes($client, $system);
+		mergeAttributes($client, $info);
 		writeAttributesToFile($client, $attrFile);
 
 		# create tar containing external system configuration
 		# and client attribute file:
 		my $externalClientID = externalIDForClient($client);
-		my $externalSystemID = externalIDForSystem($system);
 		createTarOfPath($buildPath, "${externalClientID}.tgz",
-						"$tftpbootPath/client-config/$externalSystemID");
+						"$tftpbootPath/client-config/$info->{'external-id'}");
 	}
 }
 
-sub writeSystemConfigurations
+sub writeSystemConfiguration
 {
+	my $info = shift;
+
+	my $buildPath = "$tempPath/build";
+	copyExternalSystemConfig($info->{name}, $buildPath);
+
+	my $attrFile = "$buildPath/initramfs/machine-setup";
+	$openslxDB->mergeDefaultAttributesIntoSystem($info);
+	writeAttributesToFile($info, $attrFile);
+
+	my $systemPath = "$tftpbootPath/client-config/$info->{'external-id'}";
+	createTarOfPath($buildPath, "default.tgz", $systemPath);
+
+	writeSystemPXEFiles($info);
+
+	writeClientConfigurationsForSystem($info, $buildPath, $attrFile);
+
+	system("rm -rf $buildPath")		unless $dryRun;
+}
+
+sub writeConfigurations
+{
+	$systemConfCount = $clientSystemConfCount = 0;
 	my @systems = $openslxDB->fetchSystemByFilter();
+	my @infos;
 	foreach my $system (@systems) {
 		next 	unless $system->{id} > 0;
 
 		vlog 0, _tr('exporting system %d:%s', $system->{id}, $system->{name});
 		$systemConfCount++;
 
-		my $buildPath = "$tempPath/build";
-		copyExternalSystemConfig($system->{name}, $buildPath);
+		my $info = $openslxDB->aggregatedSystemFileInfoFor($system);
+		$info->{'external-id'} = externalIDForSystem($system);
 
-		my $attrFile = "$buildPath/initramfs/machine-setup";
-		$openslxDB->mergeDefaultAttributesIntoSystem($system);
-		writeAttributesToFile($system, $attrFile);
+		writeSystemConfiguration($info);
 
-		my $externalSystemID = externalIDForSystem($system);
-		my $systemPath = "$tftpbootPath/client-config/$externalSystemID";
-		createTarOfPath($buildPath, "default.tgz", $systemPath);
-
-		writeSystemPXEFiles($system);
-
-		writeClientConfigurationsForSystem($system, $buildPath, $attrFile);
-
-		system("rm -rf $buildPath")		unless $dryRun;
+		push @infos, $info;
 	}
-}
-
-sub writeConfigurations
-{
-	$systemConfCount = $clientSystemConfCount = 0;
-	writeSystemConfigurations();
-	writePXEMenus();
-	writeDhcpConfig();
+	writePXEMenus(@infos);
+	if (defined $dhcpType) {
+		writeDhcpConfig();
+	}
 }
 
 __END__
