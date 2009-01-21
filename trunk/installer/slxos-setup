@@ -60,8 +60,13 @@ if ($versionReq) {
 openslxInit();
 
 if ($listReq) {
-	print _tr("List of supported distros:\n\t");
-	print join("\n\t", keys %supportedDistros)."\n";
+	print _tr("List of supported distros:\n");
+	print join('', map {
+					"\t$_"
+					 .(' 'x(20-length($_)))
+					 ."\t($supportedDistros{$_}->{support})\n"
+				   }
+				   sort keys %supportedDistros);
 	exit 1;
 }
 
@@ -150,6 +155,7 @@ will be used as a OpenSLX-stage1-system (a.k.a. vendor-OS).
 
   Options:
       --help                   brief help message
+      --list                   show supported distros
       --man                    show full documentation
       --source=<string>        (rsync-)source to clone vendor-OS from
       --version                show version
@@ -167,6 +173,10 @@ will be used as a OpenSLX-stage1-system (a.k.a. vendor-OS).
 =item B<--help>
 
 Prints a brief help message and exits.
+
+=item B<--list>
+
+Lists all supported distros and exits.
 
 =item B<--man>
 
