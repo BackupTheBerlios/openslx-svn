@@ -235,19 +235,12 @@ else
 fi
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished hdd stuff at $(sysup)"
 
-# check if USB mouse and/or keyboard is connected and remove usbhid if
-# not (does not work properly)
-#strinfile "genericwheelusb" /tmp/hwsetup.info || \
-#  (strinfile "keybdev" /tmp/hwsetup.info || rmmod usbhid)
-
 # configure some variables from configuration file - wait for dhcp or ldap
 # confiurator to complete
 cfgcomplete
 . /etc/machine-setup
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished waiting for config at $(sysup)"
 
-# run X11 / Xorg configurator if no xorg.conf file was provided by
-# ConfigTGZ (check for /rootfs/${D_XF86CONFFILE#/mnt})
 # set X11 configuration file
 if [ -n "${D_XF86CONFFILE}" ] ; then
   D_XF86CONFFILE="/mnt/${D_XF86CONFFILE}"
@@ -255,6 +248,8 @@ else
   D_XF86CONFFILE="/mnt/etc/X11/xorg.conf"
   error "$hcfg_xcfg" nonfatal
 fi
+# move Xorg configuration if no xorg.conf file was provided by ConfigTGZ 
+# (check for /rootfs/${D_XF86CONFFILE#/mnt})
 if [ ! -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then
   . /etc/sysconfig/xserver >/dev/null 2>&1 || error "${hcfg_hwsetup}" nonfatal
   # replace OSS 3D server with proprietary one
@@ -264,13 +259,11 @@ if [ ! -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then
   [ -d "/mnt/usr/X11R6/lib64/modules" ] && \
     sed -e "/Section \"Files\"/a\ \ ModulePath    \"/usr/X11R6/lib64/modules\"" \
      -i $xfc
+  # check for kind of xorg module used
+  # if intel
+  #   915resolution -l|sed -n "/32 bits/p" > /tmp/ires
+  # match existing and set missing resolutions
 fi
-  
-# add entries to initialize keytable and consolefont to boot.slx
-# postpone some commands into normal bootup environment
-#echo -e "\t# entries added by $0: $date" >> /mnt/etc/${D_INITDIR}/boot.slx
-#[ -n "${KEYTABLE}" ] && keytable
-#[ -n "${CONSOLE_FONT}" ] && consolefont
 
 # if any new device appeared up to now
 if [ -x /bin/mdev ] ; then

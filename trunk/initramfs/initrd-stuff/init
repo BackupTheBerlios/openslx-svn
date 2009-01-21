@@ -767,11 +767,10 @@ waitfor /tmp/hwcfg 20000 || error "$init_errhw"
   >> /mnt/etc/udev/rules.d/04-scanner.rules
 # move Xorg configuration to final destination depending if user or system
 # generated
-#waitfor /tmp/xready 10000 || error "$init_errxorg" nonfatal
 if [ -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then
   mv /rootfs${D_XF86CONFFILE#/mnt} /mnt/${D_XF86CONFFILE}
 else
-  mv /tmp/xorg.conf /mnt/${D_XF86CONFFILE}
+  mv /tmp/xorg.conf /mnt/${D_XF86CONFFILE} || error "$init_errxorg" nonfatal
 fi
 # wait a while for services setup to complete
 waitfor /tmp/svcfg 10000 || error "$init_errsw"

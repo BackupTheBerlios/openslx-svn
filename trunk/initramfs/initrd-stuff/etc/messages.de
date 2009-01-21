@@ -201,21 +201,16 @@ hcfg_xcfg="  Sie sollten die Variable D_XF86CONFFILE in ihrer\n   \
 Distributions-Konfigurations-Datei definieren."
 hcfg_hwsetup="  Die xserver-Konfigurations-Datei, erstellt von hwsetup, konnte \
 nicht\n  gefunden werden."
-hcfg_keyb="  Keine Einstellungen fuer ihre Tastatur gefunden, benutze den Standard-Wert \
-'${DEFKEYTABLE}' definiert\n  in $0."
 gfx_msg="Bitte pruefen Sie ihre Grafik-Adapter-Einstellungen ($hw_graphic)."
-hcfg_gfxdrv="  Manuelle Konfiguration des Grafik-Treiber-Moduls schlug fehl. \
-\n  $gfx_msg"
-hcfg_gfxcdp="  Manuelle Konfiguration von ihrer Graphik-System-Farbtiefe \
-schlug fehl.\n  $gfx_msg"
 hw_msg="  Bitte pruefen Sie ihre vordefinierten Monitor-Einstellungen ($hw_monitor): \
-Automatische\n  Konfiguration des Bildschirms"
-hcfg_hfrq="  $hwmsg Timing wurde versucht, aber die horizontale Frequenz \
-konnte nicht erkannt werden. Benutze Standard Wertebereiche (${HSYNCRANGE})"
-hcfg_vfrq="  $hwmsg Timing wurde versucht, aber die vertikale Frequenz \
-konnte nicht erkannt werden. Benutze Standard Wertebereiche (${VSYNCRANGE})"
+Automatische\n  Konfiguration des Bildschirms."
 hcfg_res="  $hwmsg Aufloesung wurde versucht aber nicht eingerichtet. Benutze \
-Standard Aufloesungen (${DEFAULTMODES})"
+Standard-Aufloesungen (defined in xconfig)"
 hcfg_hwsetup="  Erwartete Informationen von hwsetup in \
 /tmp/hwsetup.info.\n  Teile des Systems koennen nicht eingerichtet werden. \
-Bitte pruefe, dass\n  hwsetup richtig installiert und ausfuehrbar ist."
+Bitte pruefen, dass\n  hwsetup richtig installiert und ausfuehrbar ist."
+
+# messages from xconfig
+hcfg_keyb="  Keine Einstellungen fuer ihre Tastatur gefunden, verwende den \
+Standard-Wert '${XKEYBOARD}' definiert\n  in $0."
+
