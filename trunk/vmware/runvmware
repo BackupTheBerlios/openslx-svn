@@ -7,7 +7,7 @@
 #               Michael Janczyk <mj0@uni-freiburg.de>, 10-01-2007
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
 #
-# Version:      0.16.610
+# Version:      0.16.611
 #
 ################################################################################
 
@@ -43,11 +43,13 @@ runvmwareconfheader ()
   ide0:0.fileName = \"${tmpdir}/disk\" 
 
   ide1:0.present = \"${cdr_1}\"
-  ide1:0.fileName = \"${cdr_1_name}\"
+  ide1:0.autodetect = \"TRUE\"
+  ide1:0.fileName = \"auto detect\"
   ide1:0.deviceType = \"cdrom-raw\"
 
   ide1:1.present = \"${cdr_2}\"
-  ide1:1.fileName = \"${cdr_2_name}\"
+  ide1:1.autodetect = \"TRUE\"
+  ide1:1.fileName = \"auto detect\"
   ide1:1.deviceType = \"cdrom-raw\"
 
   ###### scsi-disks ############################################################
@@ -69,7 +71,7 @@ runvmwareconfheader ()
 
   ###### floppies ##############################################################
   floppy0.present = \"${floppya}\"
-  floppy0.fileName = \"/dev/fd0\"
+  floppy0.fileName = \"auto detect\"
 
   floppy1.present = \"${floppyb}\"
   floppy1.fileType = \"file\"
@@ -174,9 +176,7 @@ memgig=
 permem=66
 # virtual devices
 cdr_1="FALSE"
-cdr_1_name="/dev/cdrom"
 cdr_2="FALSE"
-cdr_2_name="/dev/cdrom1"
 floppya="FALSE"
 floppyb="FALSE"
 # place for the virtual floppy "B:"
