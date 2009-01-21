@@ -2,13 +2,13 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 31-01-2006
 #		Bla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.1a
+# Version:      0.2.1b
 
 # functions common for all distros
 errmsg="functions file contains a lot of script \
@@ -385,9 +385,9 @@ of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
 # IP configuration is made and should not be updated automatically, udevd
 # should be killed if started within init
-killall -9 dhcpcd dhclient pump udevd 2>/dev/null
+killall -9 dhcpcd dhclient pump 2>/dev/null
 # unmount the bind mounted modules directory
-umount -n /lib/modules/${KERNEL} || {
+umount -n /lib/modules/${KERNEL} 2>/dev/null || {
   usleep 40 && umount -n /lib/modules/${KERNEL} || \
   error "Unmount of the kernel modules directory failed for some reason."
 }
@@ -402,6 +402,8 @@ could not be\n  removed." nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1
 mount -n --move /dev /mnt/dev
 cd /mnt
+# kill udevd
+[ -n "${UDEVD_EXPECTED_SEQNUM}" ] && killall -9 udevd 2>/dev/null
 umount -n /proc
 [ -n "${UNIONFS}" ] && mount -n --move /root /mnt/mnt 
 pivot_root . mnt || error "  Could not execute pivot_root due to missing \

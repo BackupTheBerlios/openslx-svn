@@ -382,7 +382,7 @@ strinfile "genericwheelusb" /tmp/hwsetup.info && modprobe ${MODPRV} usbhid
 if [ -n "IDE" ] ; then
   strinfile "CDROM" /tmp/hwsetup.info && modprobe ${MODPRV} ide_cd
   strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} ide_disk &
-fi ) &
+fi )
 # cdrom/dvd und plattenkonfig. ergaenzen. Module sind hier geladen und
 # devices sind klar
 
