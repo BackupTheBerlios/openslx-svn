@@ -357,7 +357,7 @@ dxs_pxedefault_conf="pxelinux/default"
 header
 precheck #(run as root, rsync etc.)
 configure
-#copy_system
+copy_system
 create_initrd
 setup_server
 footer
