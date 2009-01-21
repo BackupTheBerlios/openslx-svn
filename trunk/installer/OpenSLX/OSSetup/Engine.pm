@@ -1221,7 +1221,8 @@ sub _stage1A_setupResolver
 	}
 
 	copyFile('/etc/resolv.conf', "$self->{stage1aDir}/etc");
-	spitFile("$self->{stage1aDir}/etc/hosts", '127.0.0.1 localhost');
+	copyFile('/etc/nsswitch.conf', "$self->{stage1aDir}/etc");
+	spitFile("$self->{stage1aDir}/etc/hosts", "127.0.0.1 localhost\n");
 	copyFile("$libcFolder/libresolv*",    "$self->{stage1aDir}$libcFolder");
 	copyFile("$libcFolder/libnss_dns*",   "$self->{stage1aDir}$libcFolder");
 	copyFile("$libcFolder/libnss_files*", "$self->{stage1aDir}$libcFolder");
