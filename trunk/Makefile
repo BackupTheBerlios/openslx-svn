@@ -133,6 +133,7 @@ supported."; \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/cdboot \
+	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/tpm \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/splashy \
@@ -167,7 +168,7 @@ supported."; \
 	tar --exclude=.svn -cp -C os-plugins plugins \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
 
-	@   # copy distro-info (some parts into /opt, others into /etc
+	@   # copy distro-info (some parts into /opt, others into /etc):
 	@tar --exclude=.svn --exclude=*.example \
 	    -cp -C lib distro-info \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
@@ -201,6 +202,8 @@ supported."; \
 	  $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox/; \
 	cp -p tools/splashy{,_update} $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/splashy/; \
 	cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
+        cd initramfs/tpm; tar --exclude=.svn -cp * | \
+	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/tpm/; \
 
 	@   # create default config folder hierarchy:
 	@perl -Ilib -e 'use OpenSLX::ConfigFolder; createConfigFolderForDefaultSystem();'

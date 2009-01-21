@@ -37,11 +37,12 @@ mkdxsinitrd-Aufruf definiert\n  wurden, nicht laden. Bitte erneut aufrufen \
 und die passenden Module auflisten\n  (ohne Endung .ko)."
 init_nowlan="  Kein brauchbares WLAN-Interface gefunden. Wurden alle \
 notwendigen Kernel-\n  module ins InirRamFS eingebaut?"
-init_wlanf="  Ds WLAN Interface konnte nicht konfiguriert werden."
-init_2eif="  You seem to have more than one active (=module loaded) ethernet \
-interfaces\n  installed. This might induce problems, if your client started \
-PXE via one\n  interface, but tries to communicate over the other in linux \
-mode. Try\n  to reorder your network module list."
+init_wlanf="  Das WLAN Interface konnte nicht konfiguriert werden."
+init_2eif="  Es scheint mehr als eine Ethernet-Karte installiert und die \
+passenden\n  Kernel-Module geladen zu sein. Das kann fuer Probleme sorgen, da \
+evtl.\n  die nicht verbundene Netzwerkkarte als das erste Interface konfiguriert\
+ \n  wurde. Somit kann der Versuch des Verbindungsaufbaus auf der anderen\n  \
+Karte passieren. Zur Behebung die Liste attr_ramfs_nicmods geeignet umsortieren."
 init_errdhcp="  Keine komplette IP-Konfiguration ueber DHCP bekommen. \
 Eventuell sollten Sie\n ueber die Kernel Start Optionen eine Hersteller Code \
 ID (vendor code identifier)\n  (VCI=vci) hinzufuegen."
@@ -63,17 +64,17 @@ von slxmkramfs oder\n  mkdxsinitrd.\n  * Das eingehaengte Dateisystem \
 beinhaltet das Modul-Verzeichnis ueberhaupt nicht.\n    Sie sollten die Liste \
 der eingehaengten Dateisysteme pruefen und wenn /mnt\n    nicht leer ist, \
 'ls /mnt/lib/modules' ausfuehren."
-init_loadunions="  Stapeln mehrerer Verzeichnisse nicht möglich, da kein \
+init_loadunions="  Stapeln mehrerer Verzeichnisse nicht moeglich, da kein \
 UnionFS/AUFS\n  Modul geladen ist."
 init_loadaufs="  Laden von AUFS schlug fehl - entweder das Modul ist \
 nicht vorhanden, oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese \
 Meldung nicht sehen\n  wollen, entfernen Sie das Token 'aufs' von den Kernel \
 Start Optionen."
 init_noaufs_butufs="  AUFS wurde als Unification FS angegeben, ist jedoch nicht \
-vorhanden. UnionFS\n  steht aber scheinbar zu Verfügung. Wenn Sie dieses nutzen \
+vorhanden. UnionFS\n  steht aber scheinbar zu Verfuegung. Wenn Sie dieses nutzen \
 moechten fuegen\n  Sie bitte 'unionfs' zu den Kernel Start Optionen hinzu."
 init_noufs_butaufs="  UnionFS wurde als Unification FS angegeben, ist jedoch \
-nicht vorhanden. AUFS\n  steht aber scheinbar zu Verfügung. Wenn Sie dieses nutzen \
+nicht vorhanden. AUFS\n  steht aber scheinbar zu Verfuegung. Wenn Sie dieses nutzen \
 moechten fuegen Sie\n  bitte 'aufs' zu den Kernel Start Optionen hinzu."
 init_loadcow="  Laden von Copy On Write (COW - Spezielles Block Geraet) Modul \
 schlug fehl -\n  entweder das Modul nicht praesent oder es passt nicht zum \
@@ -83,10 +84,10 @@ init_loadufs="  Laden von UnionFS schlug fehl - entweder das Modul ist \
 nicht vorhanden, oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese Meldung \
 nicht sehen wollen,\n  entfernen Sie das Token 'unionfs' von den Kernel Start \
 Optionen."
-init_cownonbd="  Laden des cow Moduls ist sinnlos, wenn kein Netzwerk Block \
+init_cownonbd="  Laden des COW-Moduls ist sinnlos, wenn kein Netzwerk Block \
 Geraet benutzt wird oder\n  UnionFS als Lese- Schreib-Schicht spezifiziert \
-wurde. Entfernen Sie das UnionFS Token aus\n  den Kernel Start Optionen wenn \
-cowloop stattdessen verwendet werden soll."
+wurde. Entfernen Sie das UnionFS Token aus\n  den Kernel-Start-Optionen wenn \
+'cowloop' stattdessen verwendet werden soll."
 init_nfs="  Einhaengen des Wurzel Dateisystems ueber NFS wurde angefordert \
 durch die Kernel Start Optionen,\n  aber schlug fehl. Die folgenden Gruende \
 koennten verantwortlich sein:\n\
