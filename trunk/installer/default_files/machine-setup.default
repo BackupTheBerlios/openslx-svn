@@ -6,19 +6,13 @@
 #		New settings are simply appended, so that they might 
 #		overwrite previously defined variables 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-07-2006
-#		Blabla
-#		Blub
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-08-2006
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 # 
-## format variable="static_value" or variable="$serverip:123"       ##
-## it is possible to use the variables $serverip (the IP of the     ##
-## providing DHCP server - not neccessarily NFS server), $clientip  ##
-## (the IP of the client itself) and $host_name                     ##
-# 
 #
 # password of system administrator (root) as crypt -> 'dxs-root'
+# (will be changed soon)
 root_pw=@@@root_pw@@@
 
 ## name service configuration defaults
@@ -87,12 +81,12 @@ netbios_workgroup="dxs-network"
 automnt_dir="/home"
 #automnt_src="$serverip:/home"
 
-# scratch space on server "proto://$serverip:/dxs/tmp"
-scratch="$serverip:/dxs/tmp"
+# scratch space on server "proto://serverip/dxs/tmp"
+#scratch="(proto://)serverip:/dxs/tmp"
 
 # configure and start vmware services
 vmware="no"
-#imgsrv="(proto://)$serverip:/dxs/vmware"
+#imgsrv="(proto://)$serverip/dxs/vmware"
 
 # kind of X11 display manager to run 
 start_xdmcp="xdm"

@@ -2,7 +2,7 @@
 #               linux diskless clients (included by init, hwautocfg,
 #               servconfig, ... within initial ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 10-08-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-08-2006
 #               Felix Endres, 30-04-2006
 #               Tobias Maier
 #
@@ -348,13 +348,14 @@ echo "dhcp finished" > /tmp/dhcp-done
 # from a predefined server or given source (file=tftp-server:/path via
 # kernel command line)
 # tftpget is helper function for fileget 
-tftpget () {
+tftpgetunpack () {
 # $1 is  config file name to get, $2 IP of server to get file from
 for tftp in /bin/atftp /bin/tftp ; do
   test -x $tftp && break
 done
 echo -e "tftp\t69/tcp\ntftp\t69/udp" > /etc/services
 local dst=/tmp/$(basename $1)
+# tftp get part
 case "$tftp" in
     */atftp)
       atftp -g -r $1 -l $dst $2 2> /dev/null
@@ -368,6 +369,14 @@ case "$tftp" in
       fi
     ;;
 esac
+# unpack part (only gzip is supported)
+if [ -s $dst ] ; then
+  tar -xpzf $dst
+  rm $dst
+  return 0
+else
+  return 1
+fi
 }
 fileget () {
 # get type of tftp available, alternatively use wget for ftp or http 
@@ -377,7 +386,7 @@ if [ -n "$FILESRC" ] ; then
   srvproto=$(uri_token $FILESRC prot)
   cfgfile="/$(uri_token $FILESRC path)"
   tftpserver=$(uri_token $FILESRC server)
-  tftpget $tftp $cfgfile $tftpserver
+  tftpgetunpack $tftp $cfgfile $tftpserver
 else
   cfgdir="/tftpboot/client-config/"
   local tftpserver=$serverip
@@ -386,14 +395,14 @@ else
   echo -e "\n## Configuration via fileget: Hierarchy is distro client \
 and as last\n# distro/default" >> /tmp/confviafile
   mac=$(echo $MAC|sed "s/:/-/g")
-  for cfgfile in $cfgdir/$DISTRO/01-$mac $cfgdir/$DISTRO/default ; do
-    if tftpget $cfgfile $tftpserver ; then
-      : # unpack the tgz and distribute files
-    fi
+  for cfgfile in $cfgdir/$DISTRO/01-$mac.tgz $cfgdir/$DISTRO/default.tgz \
+                 $cfgdir/01-$mac.tgz $cfgdir/default.tgz ; do
+    tftpgetunpack $cfgfile $tftpserver && break
   done
 fi
 #echo "# -> $cfgfile" >> /tmp/confviafile
-#cat /tmp/$(basename $cfgfile) >> /tmp/confviafile
+test -f /initramfs/machine-setup && \
+  cat /initramfs/machine-setup >> /tmp/confviafile
 echo "fileget via $srvproto finished" > /tmp/file-done
 }
 
@@ -497,9 +506,12 @@ waitfor /tmp/file-done 10000 || error "$error_errfcfg" nonfatal
 waitfor /tmp/ldap-done 10000 || error "$error_errlcfg" nonfatal
 # concat the different files now into the central config file, order
 # matters - ldap data has highest priority
-for config in /tmp/confviadhcp /tmp/confviafile /tmp/confvialdap
-  do test -f $config && cat $config >> /etc/machine-setup
-done
+if ! [ -f /tmp/cfgcomplete ] ; then
+  for config in /tmp/confviadhcp /tmp/confviafile /tmp/confvialdap
+    do test -f $config && cat $config >> /etc/machine-setup
+  done
+echo "config completed" > /tmp/cfgcomplete
+fi
 }
 
 #######################################################################

@@ -6,7 +6,7 @@
 #
 # Copyright:    (c) 2006 - opendiskless.org project
 #
-# Version:      0.0.1b
+# Version:      0.0.1c
 
 tarball:
 	@echo "Creating tar ball "
@@ -27,11 +27,15 @@ install:
 	@cp -a initrd/distro-specs/* /usr/share/opendiskless/distro-specs
 	@cp installer/default_files/machine-setup.default \
 	  /usr/share/opendiskless/templates
-	@echo -e "#!/bin/sh\n#\n# this script allows the local admin to \
-extend the\n# capabilities at the beginning of the initramfs" \
+	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
+extend the\n# capabilities at the beginning of the initramfs. The toolset \
+is rather\n# restricted and you have to keep in mind that stage4 rootfs \
+has the\n# prefix '/mnt'." \
 	  > /var/lib/opendiskless/config/default/initramfs/preinit.local
-	@echo -e "#!/bin/sh\n#\n# this script allows the local admin to \
-extend the\n# capabilities at the end of the initramfs" \
+	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
+extend the\n# capabilities at the end of the initramfs. The toolset \
+is rather\n# restricted and you have to keep in mind that stage4 rootfs \
+has the\n# prefix '/mnt'." \
 	  > /var/lib/opendiskless/config/default/initramfs/postinit.local
 	@chmod u+x /var/lib/opendiskless/config/default/initramfs/*init.local
 

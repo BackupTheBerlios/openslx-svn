@@ -2,12 +2,12 @@
 # Description:  main script for new type of initial ramdisk for
 #               linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-08-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
-#               (c) 2006 - odlx.org project
+#               (c) 2006 - opendiskless.org project
 #
-# Version:      0.2.6d
+# Version:      0.2.6e
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -53,7 +53,8 @@ COWSIZE="50%"
 RWDIR=/dev/shm
 NFSRO="nfs"
 
-# run pre init script and user defined preinit.local (see Howto)
+# run pre init script and user defined preinit.local, copied by mkdxsinitrd
+# from /var/lib/opendiskless/config/... in stage2
 preinit
 [ -x /bin/preinit.local ] && /bin/preinit.local
 
@@ -470,9 +471,11 @@ waitfor /tmp/svcfg 20000 || error "$init_errsw"
 # should be killed if started within init
 killall -9 dhcpcd dhclient pump 2>/dev/null
 cp /etc/machine-setup /mnt/etc
-#bash
-# post init for some distro specific
+
+# post init for some distro specific (fixme!! more elegant solution)
 postinit
+[ -s /initramfs/postinit.local ] && \
+  cp /initramfs/postinit.local /bin/postinit.local
 [ -x /bin/postinit.local ] && /bin/postinit.local
 
 # start a debug shell in higher debug levels

@@ -4,14 +4,14 @@
 #               ramdisks for linux diskless clients (stage2 system
 #               setup)
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-08-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-08-2006
 #               Nico Dietrich
 #               Felix Endres
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
-#               (c) 2006 - odlx.org project
+#               (c) 2006 - opendiskless.org project
 #
-# Version:      0.4.5b
+# Version:      0.4.5c
 
 # debug level of script itself
 DEBUG=1
@@ -107,7 +107,7 @@ for ELEMENT in bin sbin usr/bin usr/sbin usr/local/bin \
     break
   fi
 done
-return "$RET"  
+return $RET 
 }
 
 # copy some binary to given destination. Takes binary in $1 and 
@@ -448,7 +448,7 @@ if [ -n "$use_busybox" ] ; then
     ln -s /bin/busybox ${INSTDIR}/bin/$bbins
   done
   # fake the sh link in busybox environment
-  echo -e "#!/bin/ash\n/bin/ash $@" > ${INSTDIR}/bin/sh
+  echo -e "#!/bin/ash\n/bin/ash \$@" > ${INSTDIR}/bin/sh
   chmod a+x ${INSTDIR}/bin/sh
 else
   # find and copy a shell to be used within initialramfs
@@ -471,8 +471,8 @@ else
 
   # needed standard binaries (in init, servconfig, hwautocfg, ... scripts)
   for bbins in \
-      cat chmod chown chroot cp expr fdisk killall ln ls mkdir mkfs.ext2 \
-      modprobe mount rmmod sed sort rm tar umount
+      cat chmod chown chroot cp expr fdisk gzip killall ln ls mkdir \
+      mkfs.ext2 modprobe mount rmmod sed sort rm tar umount
     do
     cobi ${bbins} bin || echo "Program ${bbins} not found"
   done
@@ -488,11 +488,10 @@ else
 
   # tftp client binary for configuration via file - get machine-setup per
   # tftp from dhcp (or specified other) server
-  #fixme: irgendwann mal nur konditional ...
   for tftp in atftp tftp ; do
-    binfinder $tftp && break
+    binfinder $tftp && break;
   done
-  cobi $tftp bin
+  cobi $tftp bin || echo "Program ${tftp} not found"
   cp /lib/libnss_files.so.2 ${INSTDIR}/lib
 fi
   
@@ -648,6 +647,10 @@ chmod 755 ${INSTDIR}/init \
 if [ -f /var/lib/opendiskless/default/initramfs/machine-setup ] ; then
   cp /var/lib/opendiskless/default/initramfs/machine-setup \
     ${INSTDIR}/etc/machine-setup
+# use the installed default machine-setup.default
+elif [ -f /usr/share/opendiskless/templates/machine-setup.default ] ; then
+  cp /usr/share/opendiskless/templates/machine-setup.default \
+    ${INSTDIR}/etc/machine-setup
 # just compatibility for older versions
 elif [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
   cp /etc/dxs/client.cfg/machine-setup.default \
@@ -677,14 +680,15 @@ if [ -f /usr/share/opendiskless/templates/Cards.local ] ; then
     ${INSTDIR}/usr/share/hwdata/Cards
 fi
 
-# finally copy user-supplied preinit files. postinit.local may be
-# part of fileget tgz (in stage3)
-for cfg in ${DISTRO}-${DISTRO_VER}/initramfs/preinit.local \
-           default/initramfs/preinit.local \
-           ${DISTRO}-${DISTRO_VER}/initramfs/postinit.local \
-           default/initramfs/postinit.local ; do
-  test -f /var/lib/opendiskless/config/$cfg && {
-    cp /var/lib/opendiskless/config/$cfg ${INSTDIR}; break; }
+# finally copy user-supplied preinit files. The client specific one
+# overwrites the system default one. postinit.local may be part of
+# fileget tgz (in stage3)
+for cfg in default/initramfs/preinit.local \
+           ${DISTRO}-${DISTRO_VER}/initramfs/preinit.local \
+           default/initramfs/postinit.local \
+           ${DISTRO}-${DISTRO_VER}/initramfs/postinit.local ; do
+  test -f /var/lib/opendiskless/config/$cfg && \
+    cp /var/lib/opendiskless/config/$cfg ${INSTDIR}/bin
 done
 
 # remove unneeded debug info, fixme not really tested yet

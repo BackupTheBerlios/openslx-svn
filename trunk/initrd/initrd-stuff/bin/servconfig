@@ -4,7 +4,7 @@
 #               for linux diskless clients (executed within initial
 #               ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-08-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-08-2006
 #               Michael Janczyk, 31-05-2006
 #               Lars Mueller <lm@opendiskless.org>, 23-06-2006
 #               Oliver Tappe <ot@opendiskless.org>, 23-06-2006
@@ -12,7 +12,7 @@
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - opendiskless.org project
 # 
-# Version:      0.1.2a
+# Version:      0.1.2b
 
 # check for configuration files to source
 
@@ -65,12 +65,11 @@ echo "
 cfgcomplete
 . /etc/machine-setup
 
-# hack for replacing variables ($serverip, $clientip, $host_name) in 
-# machine-setup
-sed -e "s/\$serverip/$serverip/;s/\$clientip/$clientip/" \
-  /etc/machine-setup > /etc/machine-setup.new
-cp /etc/machine-setup.new /etc/machine-setup
-. /etc/machine-setup
+# copy additional configuration and var files and directories
+# admins can place there files in /var/lib/opendiskless/config/...
+# to be packed during stage2 into (/srv/dxs)/tftpboot/client-config...)
+# ... in the near future ...
+cp -a /rootfs/* /mnt 2>/dev/null
 
 #######################################################################
 # vmware stuff first part: two scenarios
