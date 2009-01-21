@@ -295,12 +295,15 @@ else
 fi
 # load network adaptor modules
 hwautocfg nwmod
+#error "$init_noeth"
 
-# set up loopback networking (ipsetup - function defined in /etc/functions)
+# set up loopback networking
 [ $DEBUGLEVEL -eq 20 ] && echo "** starting ip config at $(sysup)"
-ipsetup 127.0.0.1 255.0.0.0 0.0.0.0 127.255.255.255 lo
+ip link set dev lo up
+ip addr add 127.0.0.1/8 dev lo
+ip link set dev eth0 up
 
-# Xen bridge config
+# XEN bridge config
 [ -n "$xenbr" ] && xenbr_config
 
 # analyze ip information from the kernel command line and put parts
@@ -319,8 +322,9 @@ if [ -n "$ipinfo" ] ; then
   echo -e "# ip configuration written by $0 script\nclientip=$clientip\n\
 subnet_mask=$subnet_mask\ngateway=$gateway\nserverip=$serverip" \
     >>/etc/machine-setup
-  # set static ip address via function ipsetup
-  ipsetup $clientip $subnet_mask $gateway 255.255.255.255 eth0
+  # set static ip address
+  ip addr add $clientip/$(nm2pref $subnet_mask) dev eth0
+  ip route add default via $gateway
 else
   noipyet="yes"
 fi
@@ -333,7 +337,8 @@ if [ -n "$noipyet" ] ; then
   [ -f /tmp/confviadhcp ] && . /tmp/confviadhcp
   [ -z "$clientip" -o -z "$subnet_mask" -o -z "$gateway" \
     -o -z "$broadcast_address" ] && error "$init_errdhcp"
-  ipsetup $clientip $subnet_mask $gateway $broadcast_address eth0
+  ip addr add $clientip/$(nm2pref $subnet_mask) broadcast $broadcast_address \
+    dev eth0
 fi
 # check if serverip is set as variable @@@serverip@@@
 sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup
@@ -380,6 +385,8 @@ if [ -n "${nbdmod}" ] ; then
         clientopt="-c /dnbd/cache"
         waitfor /tmp/cache 10000
       fi
+      [ $(echo $nbdhost|sed "s,\..*,,") -ge 224 ] && \
+        ip route add 224.0.0.0/4 dev eth0
       waitfor /dev/dnbd0 10000 || error "$init_nbddev"
       while ! dnbd-client -b $nbdhost -d /dev/dnbd0 $clientopt ; do
         usleep 100

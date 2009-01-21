@@ -243,32 +243,6 @@ done
 brctl addif ${bridge} ${pdev}
 }
 #############################################################################
-# configure IP address statically - first argument the ip address, second the 
-# netmask, then gateway and broadcast address and last interface. All 
-# arguments have to be present.
-ipsetup () {
-local ip=$1
-local nm=$2
-local gw=$3
-local bc=$4
-local if=$5
-local ret=0
-ip link set dev $if up 2>/dev/null || ret=1
-ip addr add $ip/`nm2pref $nm` broadcast $bc dev $if 2>/dev/null
-if [ "$gw" != "0.0.0.0" ] ; then
-  ip route add default via $gw 2>/dev/null
-fi
-MAC=$(ip link show dev $if|sed -n "/ether [0-9e-f]\{2\}:.*/p" \
-  | sed -e "s/.*ether //;s/ .*//")
-# if multicast is required for dnbd
-[ -n "$nbdhost" -a "$ip" != 127.0.0.1 ] && { nbdhost=$(checkip $nbdhost) 
-  [ $(echo $nbdhost|sed "s,\..*,,") -ge 224 ] && \
-  ip route add 224.0.0.0/4 dev $if; }
-# if something got wrong with the setup of the primary ethernet interface
-[ $ret -gt 0 -a $if = "eth0" ] && error "$init_noeth"
-return $ret
-}
-#############################################################################
 # replace @@@serverip@@@ with real serverip. Allows the usage of a variable 
 # for the server ip address (e.g. in machine-setup or kernel commandline)
 checkip ()
@@ -279,7 +253,6 @@ else
   echo $1
 fi
 }
-
 #############################################################################
 # nfs mounter for root filesystem and other sources
 nfsmnt ()
@@ -1029,47 +1002,38 @@ WallpaperMode=NoWallpaper" \
 checkgraphix () {
 :
 }
-
 # overwrite xorg configuration set by hwautocfg
 displayvars () {
 :
 }
-
 # function for ntp configuration
 config_ntp () {
 :
 }
-
 # function for afs
 config_afs () {
 :
 }
-
 # function for atd
 config_atd () {
 :
 }
-
 # function for configuration of cron services
 config_cron () {
 :
 }
-
 # syslog service
 config_syslog () {
 :
 }
-
 # secure shell service
 config_sshd () {
 :
 }
-
 # snmp agent for remote monitoring
 config_snmp () {
 :
 }
-
 # consolefont
 consolefont () {
 :
@@ -1078,83 +1042,66 @@ consolefont () {
 config_acpi () {
 :
 }
-
 # configure xdm as display manager
 config_xdm () {
 :
 }
-
 # configure kdm as display manager
 config_kdm () {
 :
 }
-
 # configure gdm as display manager
 config_gdm () {
 :
 }
-
 # configure hal, dbus, resmgr and services like that
 config_dreshal () {
 :
 }
-
 # configure automounter, simple NFSv3 imports only
 config_automount () {
 :
 }
-
 # configure print services / start requested printer daemon
 config_printer () {
 :
 }
-
 # configure bluetooth services
 config_bt () {
 :
 }
-
 # create a compliant runlevel script, needed for boot.slx and vmware-prep
 d_mkrlscript () {
 :
 }
-
 # start name service caching daemon
 config_nscd () {
 :
 }
-
 # prepare virtual machine environment (vmware, vmplayer)
 config_vmware () {
 :
 }
-
 # configure automounter
 config_automount () {
 :
 }
-
 # configure samba service (not winbind, but nmbd, smbd)
 config_samba () {
 :
 }
-
-
 # start portmapper (needed at least for nfs and nis services)
 config_portmap () {
 :
 }
-
 # start nis/ypbind 
 config_nis () {
 :
 }
-
 # configure nfsv4 stuff
 config_nfsv4 () {
 :
 }
-
 # configure keyboard layout
 keytable () {
 :
