@@ -35,6 +35,9 @@ with dhcp!"
 init_errnwad="  Failed to load the network \
 adaptor modules defined via mkdxsinitrd\n  run. Please rerun and list the \
 appropriate modules (without .ko)."
+init_nowlan="  No wireless LAN capable interface found. Did you provide the \
+proper kernel\n  modules?"
+init_wlanf="  Unable to configure the WLAN interface."
 init_errdhcp="  Did not get complete IP \
 configuration via DHCP. You may want to add\n  a vendor code identifier \
 via kernel commandline (vci=VCI)."

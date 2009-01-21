@@ -52,6 +52,7 @@ mkdir -p ${devdir}/pts ${devdir}/shm ${devdir}/.udevdb ${devdir}/.udev
 
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
 export date="${slxconf_date}"
+export nwif="eth0"
 
 export DEBUGLEVEL=0
 export KERNEL="${slxconf_kernver}"
@@ -124,7 +125,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     # essid for WLAN boot (experimental, might be moved to a module component
     # in later versions
     essid=*)
-      essid==${opts#essid=}
+      essid=${opts#essid=}
     ;;
     # if configuration should not be gathered by dhcp client
     nodhcp)
@@ -305,6 +306,7 @@ fi
 # load network adaptor modules
 hwautocfg nwmod
 if [ -n "${essid}" ] ; then
+  wlanlinksetup
   echo "Starting shell for testing of WLAN setup procedure"
   /bin/ash
 fi
@@ -313,8 +315,8 @@ fi
 [ $DEBUGLEVEL -eq 20 ] && echo "** starting ip config at $(sysup)"
 ip link set dev lo up
 ip addr add 127.0.0.1/8 dev lo
-ip link set dev eth0 up || error "$init_noeth"
-macaddr=$(ip link show dev eth0|sed -n "/ether [0-9e-f]\{2\}:.*/p" \
+ip link set dev $nwif up || error "$init_noeth"
+macaddr=$(ip link show dev $nwif|sed -n "/ether [0-9e-f]\{2\}:.*/p" \
   |sed -e "s/.*ether //;s/ .*//")
 
 # XEN bridge config
@@ -337,7 +339,7 @@ if [ -n "$ipinfo" ] ; then
 subnet_mask=$subnet_mask\ngateway=$gateway\nserverip=$serverip" \
     >>/etc/machine-setup
   # set static ip address
-  ip addr add $clientip/$(nm2pref $subnet_mask) dev eth0
+  ip addr add $clientip/$(nm2pref $subnet_mask) dev $nwif
   ip route add default via $gateway
 else
   noipyet="yes"
@@ -352,7 +354,7 @@ if [ -n "$noipyet" ] ; then
   [ -z "$clientip" -o -z "$subnet_mask" -o -z "$gateway" \
     -o -z "$broadcast_address" ] && error "$init_errdhcp"
   ip addr add $clientip/$(nm2pref $subnet_mask) broadcast $broadcast_address \
-    dev eth0
+    dev $nwif
 fi
 # check if serverip is set as variable @@@serverip@@@
 sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup
@@ -386,6 +388,7 @@ if [ -n "${nbdmod}" ] ; then
         usleep 100
       done
       usleep 100
+      echo noop > /sys/block/nbd0/queue/scheduler
       # switch off unneeded block read ahead
       echo "0" > /sys/block/nbd0/queue/read_ahead_kb
       ;;
@@ -412,6 +415,7 @@ if [ -n "${nbdmod}" ] ; then
     # dnbd by Thorsten Zitterell
     dnbd)
       # quickhack
+      RDEV=/dev/dnbd0
       if [ -z $nodnbdcache ] ; then  # variable not really used yet
         mkdir /dnbd
         mount -n -o 'size=10%' -t tmpfs tmpfs /dnbd
@@ -420,13 +424,16 @@ if [ -n "${nbdmod}" ] ; then
         waitfor /tmp/cache 10000
       fi
       [ $(echo $nbdhost|sed "s,\..*,,") -ge 224 ] && \
-        ip route add 224.0.0.0/4 dev eth0
+        ip route add 224.0.0.0/4 dev $nwif
       waitfor /dev/dnbd0 10000 || error "$init_nbddev"
-      while ! dnbd-client -b $nbdhost -d /dev/dnbd0 $clientopt ; do
-        usleep 100
-      done
-      echo "0" > /sys/block/dnbd0/queue/read_ahead_kb
-      RDEV=/dev/dnbd0
+      echo "dnbd-client -b $nbdhost -d $RDEV $clientopt"
+      /bin/ash
+      #while ! dnbd-client -b $nbdhost -d $RDEV $clientopt ; do
+      #  sleep 1
+      #done
+      # problem with squashfs and cfq scheduler
+      echo noop > /sys/block/dnbd0/queue/scheduler
+      echo 0 > /sys/block/dnbd0/queue/read_ahead_kb
       ;;
   esac
   RWRO="ro"

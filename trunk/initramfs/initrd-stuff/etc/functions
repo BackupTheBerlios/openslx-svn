@@ -153,7 +153,7 @@ local netdev="eth${vifnum}"
 local pdev="p${netdev}"
 local vdev="veth${vifnum}"
 local vif0="vif0.${vifnum}"
-# fixme: that is the mac address of eth0 device
+# fixme: that is the mac address of main ethernet device
 local mac=$macaddr
 
 brctl addbr ${bridge}
@@ -177,6 +177,21 @@ if [ "@@@serverip@@@" = "$1" -a -n "$serverip" ] ; then
   echo $serverip
 else
   echo $1
+fi
+}
+#############################################################################
+# definition of wlan interface name and wireless connect
+wlanlinksetup () {
+if=$(iwconfig 2>/dev/null|sed -n "/ESSID:/p"|sed "s/    .*//")
+if [ -n "$if" ] ; then
+  ip link set dev $if up
+  if iwconfig $if mode managed essid "${essid}"; then
+    nwif=$if
+  else
+    error "$init_nowlan"
+  fi
+else
+  error "$init_nowlan"
 fi
 }
 #############################################################################
@@ -281,7 +296,7 @@ else
   # ensure the interface is up - might produce conflicts - nbd could
   # fail!!
   [ -n "$noipyet" ] && \
-    ip link set dev eth0 up
+    ip link set dev $nwif up
   [ -f /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko ] && \
     modprobe ${MODPRV} af_packet   
   echo "Starting $dhcp for configuration"
@@ -293,14 +308,14 @@ case $dhcp in
     mkdhclconf $vci
     ln -s /bin/dhcpmkconfig /bin/dhclient-script
     dhclient -cf /etc/dhclient.conf -lf /var/lib/dhcp/dhclient.leases \
-      -q eth0 >/dev/null 2>&1 || error "$error_dhclient"
+      -q $nwif >/dev/null 2>&1 || error "$error_dhclient"
   ;;
   # udhcpc is a busybox applet
   udhcpc)
     [ -n $vci ] && vci="-V $vci"
     testmkd /usr/share/udhcpc
     ln -s /bin/dhcpmkconfig /usr/share/udhcpc/default.script
-    udhcpc -b -q $vci -s /usr/share/udhcpc/default.script -i eth0 2>/dev/null
+    udhcpc -b -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null
   ;;
 esac
 echo "dhcp finished at $(sysup)" > /tmp/dhcp-done
