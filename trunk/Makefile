@@ -110,18 +110,20 @@ install:
 	if ! perl -e '$$x=2' 2>>${SLX_INSTALL_LOG} ; then \
 		echo "  Perl is required, please install it."; \
 		exit 1; \
-	fi; \
-	# many of the following modules are part of core perl, but we check \
-	# for them just to be sure... \
-	for m in Carp DBI Fcntl FindBin Getopt::Long Pod::Usage ; do \
+	fi;
+
+	@   # many of the following modules are part of core perl, but we check
+	@   # for them just to be sure...
+	@for m in Carp DBI Fcntl FindBin Getopt::Long Pod::Usage ; do \
 		if ! perl -e "use $$m" 2>>${SLX_INSTALL_LOG} ; then \
 			echo "  The perl-module '$$m' is required, please install it."; \
 			exit 1; \
 		fi; \
-	done; \
-	# specific database modules are optional, but we tell the user if \
-	# support for a database is missing: \
-	DEFAULT_DB_TYPE=""; \
+	done;
+
+	@   # specific database modules are optional, but we tell the user if
+	@   # support for a database is missing:
+	@DEFAULT_DB_TYPE=""; \
 	for m in SQLite CSV mysql; do \
 		if ! perl -e "use DBD::$$m" 2>>${SLX_INSTALL_LOG} ; then \
 			echo -e "  'DBD::$$m' not found, so $$m-databases will not be \
@@ -157,15 +159,18 @@ supported."; \
 	for dir in $(USR_BIN_PATH); do \
 		test -d $(DESTDIR)$${dir} || \
 			mkdir -p $(DESTDIR)$${dir}; \
-	done; \
-	# copy license \
-	cp COPYING $(DESTDIR)$(SLX_BASE_PATH)/; \
-	# copy initramfs generator scripts (and inject SLX_CONFIG_PATH on the way): \
-	cp ./initramfs/mkdxsinitrd $(DESTDIR)$(SLX_BIN_PATH)/; \
+	done;
+
+	@   # copy license
+	@cp COPYING $(DESTDIR)$(SLX_BASE_PATH)/;
+
+	@   # copy initramfs generator scripts (and inject SLX_CONFIG_PATH on the way):
+	@cp ./initramfs/mkdxsinitrd $(DESTDIR)$(SLX_BIN_PATH)/; \
 	sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
-	  -i $(DESTDIR)$(SLX_BIN_PATH)/mkdxsinitrd; \
-	# copy all PERL-scripts and their required modules: \
-	cp bin/slx* $(DESTDIR)$(SLX_BIN_PATH)/; \
+	  -i $(DESTDIR)$(SLX_BIN_PATH)/mkdxsinitrd;
+
+	@   # copy all PERL-scripts and their required modules:
+	@cp bin/slx* $(DESTDIR)$(SLX_BIN_PATH)/; \
 	cp config-db/slx* $(DESTDIR)$(SLX_BIN_PATH)/; \
 	cp installer/slx* $(DESTDIR)$(SLX_BIN_PATH)/; \
 	tar --exclude=.svn -cp -C lib OpenSLX distro-info | \
@@ -174,11 +179,13 @@ supported."; \
 	  tar -xp -C $(DESTDIR)$(SLX_BASE_PATH)/lib; \
 	tar --exclude=.svn -cp -C installer OpenSLX | \
 	  tar -xp -C $(DESTDIR)$(SLX_BASE_PATH)/lib; \
-	# link all binaries & scripts into user-path: \
-	ln -sf $(SLX_BIN_PATH)/slx* $(DESTDIR)$(USR_BIN_PATH)/; \
+
+	@   # link all binaries & scripts into user-path:
+	@ln -sf $(SLX_BIN_PATH)/slx* $(DESTDIR)$(USR_BIN_PATH)/; \
 	ln -sf $(SLX_BIN_PATH)/mkdxsinitrd $(DESTDIR)$(USR_BIN_PATH)/; \
-	# copy shareable data: \
-	cd initramfs/initrd-stuff; tar --exclude=.svn -cp * | \
+
+	@   # copy shareable data:
+	@cd initramfs/initrd-stuff; tar --exclude=.svn -cp * | \
 	  tar -xp -C $(DESTDIR)$(SLX_SHARE_PATH)/initramfs; cd ../..; \
 	tar --exclude=.svn -cp -C initramfs distro-specs | \
 	  tar -xp -C $(DESTDIR)$(SLX_SHARE_PATH); \
@@ -193,8 +200,9 @@ supported."; \
 	cp -pP tools/busybox{,.links,.x86_64,.i586} \
 	  $(DESTDIR)$(SLX_SHARE_PATH)/busybox/; \
 	cp -p tools/mksquashfs $(DESTDIR)$(SLX_SHARE_PATH)/squashfs/; \
-	# create pre-/postinit scripts for us in initramfs: \
-	echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
+
+	@   # create pre-/postinit scripts for us in initramfs:
+	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
 extend the\n# capabilities at the beginning of the initramfs (stage3). \
 The toolset is rather\n# restricted and you have to keep in mind that \
 stage4 rootfs has the\n# prefix '/mnt'." \
@@ -206,8 +214,9 @@ rootfs has the\n# prefix '/mnt'. But you might use some special slx \
 functions via\n# inclusion: '. /etc/functions' ..." \
 	  > $(DESTDIR)$(SLX_PRIVATE_PATH)/config/default/initramfs/postinit.local; \
 	chmod u+x $(DESTDIR)$(SLX_PRIVATE_PATH)/config/default/initramfs/*init.local; \
-	# create complete default settings and empty local settings file: \
-	echo -e "# default setup for OpenSLX-installation\
+
+	@   # create complete default settings and empty local settings file:
+	@echo -e "# default setup for OpenSLX-installation\
 \nSLX_BASE_PATH=${SLX_BASE_PATH}\
 \nSLX_BIN_PATH=${SLX_BIN_PATH}\
 \nSLX_CONFIG_PATH=${SLX_CONFIG_PATH}\
@@ -222,8 +231,9 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 	test -e $(DESTDIR)$(SLX_CONFIG_PATH)/settings.local || \
 	  echo -e "# local setup for openslx (overrides settings.default)\n" \
 	    > $(DESTDIR)$(SLX_CONFIG_PATH)/settings.local; \
-	# create slxversion script: \
-	if test -e REVISION; then \
+
+	@   # create slxversion script:
+	@if test -e REVISION; then \
 		. REVISION; \
 	else \
 		OPENSLX_VERSION_SVNREV=$$(svnversion .); \
@@ -236,8 +246,9 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 	    > $(DESTDIR)${SLX_BIN_PATH}/slxversion; \
 	chmod a+x $(DESTDIR)${SLX_BIN_PATH}/slxversion; \
 	ln -sf $(SLX_BIN_PATH)/slxversion $(DESTDIR)$(USR_BIN_PATH)/; \
-	# set default db-type: \
-	DEFAULT_DB_TYPE=$$(cat DEFAULT-DB-TYPE); \
+
+	@   # set default db-type:
+	@DEFAULT_DB_TYPE=$$(cat DEFAULT-DB-TYPE); \
 	rm DEFAULT-DB-TYPE; \
 	echo -n '  '; slxsettings --db-type="$${DEFAULT_DB_TYPE}";
 
