@@ -8,12 +8,12 @@ $VERSION = 0.02;
 @ISA = qw(Exporter);
 
 @EXPORT = qw(
-	&openslxInit %openslxConfig
+	&openslxInit %openslxConfig %cmdlineConfig
 	&_tr &trInit
 	&vlog
 );
 
-use vars qw(%openslxConfig);
+use vars qw(%openslxConfig %cmdlineConfig);
 
 ################################################################################
 ### Module implementation
@@ -54,7 +54,7 @@ $openslxConfig{'tftpboot-path'}
 	= $ENV{SLX_TFTPBOOT_PATH} || "$openslxConfig{'public-path'}/tftpboot",
 
 # specification of cmdline arguments that are shared by all openslx-scripts:
-my %cmdlineConfig;
+%cmdlineConfig;
 my %openslxCmdlineArgs = (
 	'base-path=s' => \$cmdlineConfig{'base-path'},
 		# basic path to project files (binaries, functionality templates and
