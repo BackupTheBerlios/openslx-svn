@@ -7,10 +7,30 @@
 # (c) 2006 - OpenSLX.com
 
 tarball:
-	@echo "Creating tar ball "
-	@tar cfhj openslx.tar.bz2 \
-		--exclude-from=tools/tar_exclude_from \
-		.
+	@. VERSIONS; \
+	echo "Creating OpenSLX $${OPENSLX_VERSION_STRING} tar ball "; \
+	if test -e "../openslx-$${OPENSLX_VERSION_STRING}" -a \
+	! -L "../openslx-$${OPENSLX_VERSION_STRING}"; then \
+		echo "Error: ../openslx-$${OPENSLX_VERSION_STRING} exists and is not a sym link! "; \
+		exit 1; \
+	fi; \
+	svn_repo_name=$$( pwd); \
+	svn_repo_name="$${svn_repo_name##*/}"; \
+	if ! test -L "../openslx-$${OPENSLX_VERSION_STRING}"; then \
+		pushd .. >/dev/null; \
+		ln -s "$${svn_repo_name}" "openslx-$${OPENSLX_VERSION_STRING}"; \
+		popd >/dev/null; \
+		OPENSLX_SOURCEDIR_SYMLINK_CREATED="yes"; \
+	fi; \
+	pushd .. >/dev/null; \
+	tar cfhj \
+		"$${svn_repo_name}/openslx-$${OPENSLX_VERSION_STRING}.tar.bz2" \
+		--exclude-from="$${svn_repo_name}/tools/tar_exclude_from" \
+		"openslx-$${OPENSLX_VERSION_STRING}/"; \
+	test "$${OPENSLX_SOURCEDIR_SYMLINK_CREATED}" = "yes" && \
+		rm -f "openslx-$${OPENSLX_VERSION_STRING}"; \
+	popd >/dev/null
+
 install:
 	@echo "Installing openslx.org project files"
 	@mkdir -p /var/lib/openslx/config/default/initramfs \
