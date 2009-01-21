@@ -13,15 +13,9 @@
 # in general SuSE base definitions ...  General changes should be done there,
 # version specific changes for the version 10.0 go here.
 
-
 # prepare virtual machine environment (vmware, vmplayer)
 config_vmware () {
-rllinker "vmware-prep" "18" "02"
 rllinker "vmware" "20" "02"
-sed -e "s,TARGETS =,TARGETS = vmware-prep," \
-  /mnt/etc/${D_INITDIR}/.depend.start >> /etc/.depend.start
-  echo "vmware-prep: " >> /etc/.depend.start
-  cp /etc/.depend.start /mnt/etc/${D_INITDIR}/.depend.start
 # during vmware sessions linux should not handle usb events/devices
 testmkd /mnt/var/X11R6/bin
 echo '#!/bin/sh'> /mnt/var/X11R6/bin/vm-udev

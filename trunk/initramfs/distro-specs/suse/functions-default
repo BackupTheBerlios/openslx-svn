@@ -489,16 +489,6 @@ fi
 config_vmware () {
 if [ -f /mnt/etc/${D_SYSCONFDIR}/vmware ] ; then
   rllinker "vmware" "20" "02"
-  # if running start scripts in parallel vmware-prep is not recognized
-  # first solution: just avoid running in parallel
-  #sed 's/PARALLEL=.*/PARALLEL=no/' /mnt/etc/${D_SYSCONFDIR}/boot \
-  #  > /tmp/boot
-  #cp /tmp/boot /mnt/etc/${D_SYSCONFDIR}/boot
-  # second solution: vmware-prep script should be added to .depends.start
-  sed -e "s,TARGETS =,TARGETS = vmware-prep," \
-    /mnt/etc/${D_INITDIR}/.depend.start >> /etc/.depend.start
-  echo "vmware-prep: " >> /etc/.depend.start
-  mv /etc/.depend.start /mnt/etc/${D_INITDIR}/.depend.start
 else
   error "df_errvmw" nonfatal
 fi
