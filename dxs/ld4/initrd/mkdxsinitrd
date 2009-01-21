@@ -341,7 +341,7 @@ done
 
 # needed standard binaries
 for bbins in \
-    cat chmod chown chroot cp expr killall ln mkdir modprobe \
+    cat chmod chown chroot cp expr killall ln mkdir mknod modprobe \
     mount portmap rmmod sed tar umount
   do
   cobi ${bbins} bin || echo "Program ${bbins} not found"
