@@ -9,7 +9,7 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# Distro specific settings for OpenSuSE 10.2. This configuration might change
+# Distro specific settings for OpenSuSE 10.3. This configuration might change
 # settings from SuSE default configuration file
 
 # D_SYSCONFDIR - system wide configuration settings - /etc/sysconfig in SuSE
@@ -35,6 +35,7 @@ D_INITSCRIPTS="boot.udev boot.proc boot.klog boot.loadmodules boot.clock \
 boot.sysctl boot.ipconfig boot.swap"
 D_RODIRSINRW="/etc/gconf /etc/opt/kde3/share/icons /var/adm /var/lib/texmf \
 /var/lib/rpm /var/cache/fontconfig"
+D_BINDMPTS="tmp root home"
 #D_HWMODTOIGNORE="i8xx-tco ichxrom snd-atiixp-modem intel-rng pata_atiixp"
 D_HWMODTOIGNORE="i8xx-tco ichxrom snd-atiixp-modem intel-rng"
 D_XORGBIN=/usr/bin/Xorg
