@@ -89,6 +89,7 @@ sub initDistroInfo
 		+ /lib/modules/*/misc/vmmon.o
 		- /etc/dhcpd.conf*
 		- /etc/cron.*/*
+		- /etc/sysconfig/network/ifcfg-*
 		- /etc/X11/xdm/SuSEconfig.xdm
 		- /boot/initrd*
 		- /boot/grub

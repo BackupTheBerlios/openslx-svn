@@ -43,7 +43,7 @@ local Files='\tRgbPath\t\t"/usr/X11R6/lib/X11/rgb"\n
 \tFontPath\t"/usr/X11R6/lib/X11/fonts/75dpi/:unscaled"\n
 \tFontPath\t"/usr/X11R6/lib/X11/fonts/100dpi/:unscaled"'
 local InputDevice='\tIdentifier\t"Keyboard1"\n
-\tDriver\t\t"keyboard"\n
+\tDriver\t\t"kbd"\n
 \tOption\t\t"XkbRules"\t\t"xfree86"\n
 \tOption\t\t"XkbLayout"\t\t"XKEYBOARD"\n
 \tOption\t\t"XkbModel"\t\t"pc105"'
