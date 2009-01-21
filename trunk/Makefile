@@ -131,12 +131,15 @@ supported."; \
 	@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
 	  -i $(SLX_BIN_PATH)/slxmkramfs
 
-	@# copy all PERL-scripts from config-db and their required modules:
+	@# copy all PERL-scripts and their required modules:
 	@cp bin/slx* $(SLX_BIN_PATH)/
 	@cp config-db/slx* $(SLX_BIN_PATH)/
-	@tar --exclude=.svn -cp -C lib OpenSLX | \
+	@cp installer/slx* $(SLX_BIN_PATH)/
+	@tar --exclude=.svn -cp -C lib OpenSLX distro-info | \
 	  tar -xp -C $(SLX_BASE_PATH)/lib
 	@tar --exclude=.svn -cp -C config-db OpenSLX | \
+	  tar -xp -C $(SLX_BASE_PATH)/lib
+	@tar --exclude=.svn -cp -C installer OpenSLX | \
 	  tar -xp -C $(SLX_BASE_PATH)/lib
 
 	@# link all binaries & scripts into user-path:
