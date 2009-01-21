@@ -58,9 +58,17 @@ endif
 
 tarball:
 	@OPENSLX_VERSION_SVNREV=$$( svnversion); \
+	if test "$${OPENSLX_SVN_SNAPSHOT}" = "0"; then \
+		unset OPENSLX_SVN_SNAPSHOT; \
+		echo "OPENSLX_SVN_SNAPSHOT=\"0\"" \
+			>REVISION; \
+	else \
+		OPENSLX_SVN_SNAPSHOT="1"; \
+		rm -f REVISION; \
+	fi; \
 	. ./VERSIONS; \
 	echo "OPENSLX_VERSION_SVNREV=\"$${OPENSLX_VERSION_SVNREV}\"" \
-		>REVISION; \
+		>>REVISION; \
 	echo "Creating OpenSLX $${OPENSLX_VERSION_STRING} tar ball "; \
 	if test -e "../openslx-$${OPENSLX_VERSION_STRING}" -a \
 	! -L "../openslx-$${OPENSLX_VERSION_STRING}"; then \
@@ -212,6 +220,9 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 	else \
 		OPENSLX_VERSION_SVNREV=$$(svnversion .); \
 	fi; \
+	test "$${OPENSLX_SVN_SNAPSHOT}" = "0" && \
+		unset OPENSLX_SVN_SNAPSHOT || \
+		OPENSLX_SVN_SNAPSHOT="1"; \
 	. ./VERSIONS; \
 	  echo -e "#! /bin/sh\n\necho $${OPENSLX_VERSION_STRING}" \
 	    > $(DESTDIR)${SLX_BIN_PATH}/slxversion
