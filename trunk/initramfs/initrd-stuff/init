@@ -197,7 +197,7 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       case $srvproto in
         nfs)
           # nfsroot consists now of two different parts
-          nfspath=$(uri_token $rootfs path)
+          nfspath=/$(uri_token $rootfs path)
           nfsserver=$(uri_token $rootfs server)
           echo -e "\n# nfs root information gotten via kernel command \
 line in $0\n#nfsroot=\"${nfsserver}:${nfspath}\"\n" >> /etc/machine-setup
