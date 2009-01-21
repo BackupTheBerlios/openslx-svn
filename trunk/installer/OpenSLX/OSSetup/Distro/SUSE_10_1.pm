@@ -194,7 +194,6 @@ sub initDistroInfo
 
 	$self->{config}->{'selection'} = {
 		'default' => "
-			dhcp-client
 		",
 
 		'gnome' => "
