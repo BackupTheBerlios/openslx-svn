@@ -42,19 +42,19 @@ cp -a /etc/sysconfig/files/* /mnt 2>/dev/null &
 # set greeting
 len=$(expr length $DISTRO)
 dstr="$DISTRO)"
-while [ $len -le 8 ] ; do
+while [ $len -le 11 ] ; do
   dstr="$dstr "
   len=$(expr $len + 1)
 done
 echo "
-            WELCOME TO                            \n (\l)
-                  _____    _____     __       __   __ 
-                 /  _     |   _     |  |     |  |_|  |
-                |  | |  | |  | | |  |  |            /
-                |  |_|  | |  |_| |  |  |___   /  _    
-                  _____/  |______/  |______| |__| |__|
+         WELCOME TO                               \n (\l)
+                  _____    ______     __       __   __ 
+                 /  _     |   _      |  |     |  |_|  |
+                |  | |  | |  | |  |  |  |            /
+                |  |_|  | |  |_|  |  |  |___   /  _    
+                  _____/  |_______/  |______| |__| |__|
 
-            Diskless Workstation (v4.0/$dstr (c) <odlx project>
+         Diskless Workstation (v4.0/$dstr (c) <odlx project>
 ">/mnt/etc/issue
 
 #######################################################################
