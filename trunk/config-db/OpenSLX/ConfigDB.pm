@@ -1047,7 +1047,10 @@ sub externalConfigNameForClient
 sub externalAttrName
 {
 	my $attr = shift;
-	return substr($attr, 5);
+	if ($attr =~ m[^attr_]) {
+		return substr($attr, 5);
+	}
+	return $attr;
 }
 
 sub generatePlaceholderFor
