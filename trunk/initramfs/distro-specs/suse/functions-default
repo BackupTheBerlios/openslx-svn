@@ -148,6 +148,7 @@ local dm="$1"
 # should be stated that entries were made (fixmee how??)
 sed -e "s,DISPLAYMANAGER=.*,DISPLAYMANAGER=\"$start_xdmcp\"," \
     -e "s,.*_XSERVER.*,DISPLAYMANAGER_STARTS_XSERVER=\"$dm\"," \
+    -e "s,.*_AUTOLOGIN,DISPLAYMANAGER_AUTOLOGIN=\"\"," \
     -i /mnt/etc/${D_SYSCONFDIR}/displaymanager
 # start the display manager as early as possible, but avoid that it is
 # started twice during bootup ... late_dm can postpone the start of 
