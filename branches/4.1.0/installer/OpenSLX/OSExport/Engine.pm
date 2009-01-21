@@ -143,9 +143,8 @@ sub purgeExport
 sub generateExportURI
 {
 	my $self = shift;
-	my $export = shift;
 
-	return $self->{exporter}->generateExportURI($export);
+	return $self->{exporter}->generateExportURI(@_);
 }
 
 sub requiredFSMods

@@ -120,6 +120,7 @@ sub generateExportURI
 {
 	my $self = shift;
 	my $export = shift;
+	my $vendorOS = shift;
 
 	my $server
 		= length($export->{server_ip})

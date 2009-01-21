@@ -966,7 +966,7 @@ sub aggregatedSystemFileInfoFor
 		my $type = $export->{'type'};
 		my $osExportEngine = instantiateClass("OpenSLX::OSExport::Engine");
 		$osExportEngine->initializeFromExisting($export->{name});
-		$exportURI = $osExportEngine->generateExportURI($export);
+		$exportURI = $osExportEngine->generateExportURI($export, $vendorOS);
 	}
 	$info->{'export-uri'} = $exportURI;
 
