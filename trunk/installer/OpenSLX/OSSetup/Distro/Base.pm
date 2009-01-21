@@ -39,9 +39,15 @@ sub initialize
 
 	$self->{'stage1c-faked-files'} = [
 	];
+
+	$self->initDistroInfo();
 }
 
 sub fixPrerequiredFiles
+{
+}
+
+sub initDistroInfo
 {
 }
 

@@ -1,8 +1,8 @@
 # Use local installation sources.
-# $repository{base}->{url} = "ftp://gab/pub/opensuse/distribution/10.2/repo/oss";
-# $repository{update}->{url} = "ftp://gab/pub/suse/update/10.2";
+$repository{base}->{url} = "ftp://localhost/pub/opensuse/distribution/10.2/repo/oss";
+$repository{base_update}->{url} = "ftp://localhost/pub/suse/update/10.2";
 
 # Add a new selection:
-$selection{kde} = "$selection{default} kdepim3
-even more packagenames here
-and more";
+# $selection{'my-kde'} = "$selection{default}
+# foo
+# bar";

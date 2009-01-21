@@ -121,6 +121,9 @@ sub setupStage1
 
 	# parent, wait for child to do its work inside the chroot
 	waitpid($pid, 0);
+	if ($?) {
+		exit $?;
+	}
 	$self->stage1C_cleanupBasicSystem();
 	$self->setupStage1D();
 }
@@ -144,23 +147,23 @@ sub readDistroInfo
 	my $self = shift;
 
 	vlog 1, "reading configuration info for $self->{distro}->{'base-name'}...";
-	my (%repository,
-		%selection,
-		$base_url,
-		$package_subdir,
-		$prereq_packages,
-		$bootstrap_prereq_packages,
-		$bootstrap_packages);
-	foreach my $fn ('settings', 'settings.local') {
-		my $file = "$self->{'distro-info-dir'}/$fn";
-		if (-e $file) {
-			vlog 3, "reading configuration file $file...";
-			my $config = slurpFile($file);
-			if (!eval $config) {
-				die _tr("error in config-file <%s> (%s)", $file, $@)."\n";
-			}
+	# merge user-provided configuration distro defaults...
+	my %repository = %{$self->{distro}->{config}->{repository}};
+	my %selection = %{$self->{distro}->{config}->{selection}};
+	my $package_subdir = $self->{distro}->{config}->{'package-subdir'};
+	my $prereq_packages = $self->{distro}->{config}->{'prereq-packages'};
+	my $bootstrap_prereq_packages
+		= $self->{distro}->{config}->{'bootstrap-prereq-packages'};
+	my $bootstrap_packages = $self->{distro}->{config}->{'bootstrap-packages'};
+	my $file = "$self->{'distro-info-dir'}/settings.local";
+	if (-e $file) {
+		vlog 3, "reading configuration file $file...";
+		my $config = slurpFile($file);
+		if (!eval $config) {
+			die _tr("error in config-file <%s> (%s)", $file, $@)."\n";
 		}
 	}
+	# ...and store merged config:
 	$self->{'distro-info'} = {
 		'package-subdir' => $package_subdir,
 		'prereq-packages' => $prereq_packages,
@@ -169,8 +172,9 @@ sub readDistroInfo
 		'repository' => \%repository,
 		'selection' => \%selection,
 	};
+
 	if ($openslxConfig{'verbose-level'} >= 2) {
-		# dump distro-info:
+		# dump distro-info, if asked for:
 		foreach my $r (sort keys %repository) {
 			vlog 2, "repository '$r':";
 			foreach my $k (sort keys %{$repository{$r}}) {
@@ -577,8 +581,9 @@ sub string2Array
 	my $str = shift;
 
 	return
+		grep { length($_) > 0 }
 		map { $_ =~ s[^\s*(.+?)\s*$][$1]; $_ }
-		grep { length($_) > 0 } split "\n", $str;
+		split "\n", $str;
 }
 
 sub downloadFilesFrom
@@ -588,9 +593,10 @@ sub downloadFilesFrom
 
 	my @foundFiles;
 	foreach my $fileVariantStr (@$files) {
+		next unless $fileVariantStr =~ m[\S];
 		my $foundFile;
 		foreach my $file (split '\s+', $fileVariantStr) {
-		vlog 2, "fetching $file...";
+			vlog 2, "fetching <$file>...";
 			if (system("wget", "$baseURL/$file") == 0) {
 				$foundFile = basename($file);
 				last;

@@ -3,6 +3,6 @@ $repository{base}->{url} = 'ftp://localhost/pub/opensuse/distribution/SL-10.1/in
 $repository{base_update}->{url} = 'ftp://localhost/pub/suse/update/10.1';
 
 # Add a new selection:
-$selection{kde} = "$selection{default} kdepim3
-even more packagenames here
-and more";
+# $selection{'my-kde'} = "$selection{default}
+# foo
+# bar";
