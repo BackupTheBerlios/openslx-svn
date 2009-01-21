@@ -157,3 +157,6 @@ sub schemaChangeColumns
 	  or confess _tr(q[Can't change columns in table <%s> (%s)], $table,
 		$dbh->errstr);
 }
+
+1;
+

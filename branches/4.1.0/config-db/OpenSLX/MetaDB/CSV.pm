@@ -174,3 +174,4 @@ sub schemaDropTable
 	unlink "$dbh->{'f_dir'}/id-$table";
 }
 
+1;

@@ -43,3 +43,5 @@ sub execute
 print "ISC-DHCP: $client->{name}\n";
 	}
 }
+
+1;

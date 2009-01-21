@@ -100,3 +100,4 @@ sub schemaAddColumns
 	}
 }
 
+1;

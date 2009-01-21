@@ -136,3 +136,15 @@ sub followLink
 	return $path;
 }
 
+sub unshiftHereDoc
+{
+	my $content = shift;
+	return $content unless $content =~ m{^(\s+)};
+	my $shift = length($1);
+	return 
+		join "\n", 
+		map { substr($_, $shift); } 
+		split m{\n}, $content;
+}
+
+1;
