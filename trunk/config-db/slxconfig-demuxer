@@ -379,9 +379,10 @@ sub generateInitalRamFS
 		# (since the latter is unable to fetch NIS-stuff).
 
 	# ...set kernel version...
-	my $kernelFile = readlink($info->{'kernel-file'});
+	my $kernelFile = basename(followLink($info->{'kernel-file'}));
 	$kernelFile =~ m[-(.+)$];
-	$cmd .= "-k $1 ";
+	my $kernelVersion = $1;
+	$cmd .= "-k $kernelVersion ";
 	# ...add version info...
 	my $slxver = `slxversion`;
 	chomp $slxver;

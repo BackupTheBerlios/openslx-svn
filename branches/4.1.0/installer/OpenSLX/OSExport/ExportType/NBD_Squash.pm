@@ -23,6 +23,7 @@ use File::Basename;
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::OSExport::ExportType::Base 1.01;
+use OpenSLX::Utils;
 
 ################################################################################
 ### interface methods
@@ -68,34 +69,38 @@ sub checkRequirements
 	my $self = shift;
 	my $vendorOSPath = shift;
 	my $kernel = shift || 'vmlinuz';
+	my $info = shift;
 
-	while (-l "$vendorOSPath/boot/$kernel") {
-		$kernel = readlink "$vendorOSPath/boot/$kernel";
-	}
-	if ($kernel !~ m[^vmlinuz-(.+)$]) {
+	$kernel = basename(followLink("$vendorOSPath/boot/$kernel"));
+	if ($kernel !~ m[-(.+)$]) {
 		die _tr("unable to determine version of kernel '%s'!", $kernel);
 	}
 	my $kernelVer = $1;
-	if (!locateKernelModule(
+	my $nbdMod = locateKernelModule(
 		$vendorOSPath,
 		'nbd.ko',
-		["$vendorOSPath/lib/modules/$kernelVer/kernel/drivers/block"])
-	) {
+		["$vendorOSPath/lib/modules/$kernelVer/kernel/drivers/block"]
+	);
+	if (!defined $nbdMod) {
 		warn _tr("unable to find nbd-module for kernel version '%s'.",
 				 $kernelVer);
-		return 0;
+		return undef;
 	}
-	if (!locateKernelModule(
+	my $squashfsMod = locateKernelModule(
 		$vendorOSPath,
 		'squashfs.ko',
 		["$vendorOSPath/lib/modules/$kernelVer/kernel/fs/squashfs",
-		 "$vendorOSPath/lib/modules/$kernelVer/kernel/fs"])
-	) {
+		 "$vendorOSPath/lib/modules/$kernelVer/kernel/fs"]
+	);
+	if (!defined $squashfsMod) {
 		warn _tr("unable to find squashfs-module for kernel version '%s'.",
 				 $kernelVer);
-		return 0;
+		return undef;
 	}
-	1;
+	if (defined $info) {
+		$info->{'kernel-mods'} = [ $nbdMod, $squashfsMod ];
+	};
+	return 1;
 }
 
 sub addExportToConfigDB
@@ -232,7 +237,8 @@ sub locateKernelModule
 	# check default paths first:
 	foreach my $defPath (@$defaultPaths) {
 		vlog 2, "trying $defPath/$moduleName";
-		return "$defPath/$moduleName" 	if -e "$defPath/$moduleName";
+		my $target = followLink("$defPath/$moduleName", $vendorOSPath);
+		return $target		unless !-e $target;
 	}
 	# use brute force to search for the newest incarnation of the module:
 	use File::Find;
@@ -247,7 +253,10 @@ sub locateKernelModule
 			vlog 2, "located at $location (age=$locationAge days)";
 		}
 	}, "$vendorOSPath/lib/modules";
-	return $location;
+	if (defined $location) {
+		return followLink($location, $vendorOSPath);
+	}
+	return undef;
 }
 
 1;

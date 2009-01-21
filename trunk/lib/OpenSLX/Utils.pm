@@ -21,7 +21,7 @@ $VERSION = 1.01;
 @ISA = qw(Exporter);
 
 @EXPORT = qw(
-	&copyFile &fakeFile &linkFile &slurpFile
+	&copyFile &fakeFile &linkFile &slurpFile &followLink
 );
 
 ################################################################################
@@ -84,6 +84,23 @@ sub slurpFile
 	my $text = <F>;
 	close(F);
 	return $text;
+}
+
+sub followLink
+{
+	my $path = shift;
+	my $prefixedPath = shift || '';
+	
+	my $target;
+	while (-l "$path") {
+		$target = readlink "$path";
+		if (substr($target, 1, 1) eq '/') {
+			$path = "$prefixedPath/$target";
+		} else {
+			$path = $prefixedPath.dirname($path).'/'.$target;
+		}
+	}
+	return $path;
 }
 
 1;
