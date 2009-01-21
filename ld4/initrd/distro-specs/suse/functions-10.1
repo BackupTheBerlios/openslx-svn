@@ -22,10 +22,6 @@ echo -e "#!/bin/sh\n:" >/usr/sbin/alsactl
 chmod u+x /sbin/* /lib/udev/* /usr/sbin/*
 }
 
-postinit () {
-:
-}
-
 # udev service
 udev_hotplug () {
 local result=0
