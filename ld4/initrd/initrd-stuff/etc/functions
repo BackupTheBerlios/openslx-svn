@@ -100,7 +100,7 @@ echo -e "$1 info: $2"
 # the first argument gotten until zero
 usleep () {
 if [ -x /bin/usleep ]; then
-  /bin/usleep `expr $1 \* 80000`
+  /bin/usleep `expr $1 \* 60000`
 else
   local count=`expr $1 \* 10`
   while [ $count -gt 0 ] ; do count=`expr $count \- 1` ; done
@@ -741,6 +741,23 @@ for i in boot.ld ${D_INITSCRIPTS}; do
   ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/K${revcnt}$i
 done
 }
+#######################################################################
+# find out if prerequisites for special X server modules are met
+# incomplete
+check_glx () {
+case "${XMODULE}" in
+  radeon)
+    # check ${XDESC}/ hwsetup.info device string in Cards file and then 
+    # for needed components
+    test -f /lib/modules/${KERNEL}/kernel/drivers/char/drm/fglrx.ko && \
+      test -f /usr/X11R6/lib/modules/drivers/fglrx_drv.o
+  ;;
+  nv)
+    #
+    # test -f /usr/X11R6/lib/modules/drivers/nvidia_drv.o
+  ;;
+esac
+}
 
 #######################################################################
 # dummy functions
@@ -750,15 +767,6 @@ displayvars (){
 :
 }
 
-# AUS SuSE-9.3
-
-# linking runlevel scripts
-rllinker () {
- : 
-}
-
-# group of functions for the normal runlevels - first parameter is start
-# second stop
 # function for ntp configuration
 config_ntp () {
  : 
