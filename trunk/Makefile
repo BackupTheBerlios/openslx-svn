@@ -81,6 +81,7 @@ tarball:
 install:
 	@echo "Installing OpenSLX project files"
 	@mkdir -p $(SLX_CONFIG_PATH) \
+	       -p $(SLX_BASE_PATH)/lib \
 	       -p $(SLX_BIN_PATH) \
 	       -p $(SLX_SHARE_PATH)/templates \
 	       -p $(SLX_SHARE_PATH)/initramfs \
@@ -101,7 +102,8 @@ install:
 
 	@# copy all PERL-scripts from config-db and their required modules:
 	@cp config-db/slx* $(SLX_BIN_PATH)/
-	@tar --exclude=.svn -cp -C config-db OpenSLX | tar -xp -C $(SLX_BIN_PATH)
+	@tar --exclude=.svn -cp -C config-db OpenSLX | \
+	  tar -xp -C $(SLX_BASE_PATH)/lib
 
 	@# link all binaries & scripts into user-path:
 	@ln -sf $(SLX_BIN_PATH)/slx* $(USR_BIN_PATH)/

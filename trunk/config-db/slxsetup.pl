@@ -1,8 +1,12 @@
 #! /usr/bin/perl
 
-# add the folder this script lives in to perl's search path for modules:
+# add the lib-folder and the folder this script lives in to perl's search
+# path for modules:
 use FindBin;
-use lib $FindBin::Bin;
+use lib "$FindBin::RealBin/../lib";
+	# production path
+use lib "$FindBin::RealBin";
+	# development path
 
 use OpenSLX::Basics;
 
