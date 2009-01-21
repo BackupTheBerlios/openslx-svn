@@ -863,7 +863,7 @@ sub aggregatedSystemFileInfosOfSystem
 		my $type = $system->{'export_type'};
 		my $serverIpToken = '@@@server_ip@@@';
 		$exportURI
-			= "$type://$serverIpToken$openslxConfig{'public-path'}/$type/$vendorOS->{path}";
+			= "$type://$serverIpToken$openslxConfig{'export-path'}/$type/$vendorOS->{path}";
 	}
 
 	my @variantIDs = fetchSystemVariantIDsOfSystem($confDB, $system->{id});

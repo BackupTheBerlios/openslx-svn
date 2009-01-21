@@ -40,6 +40,7 @@ my $loadedTranslationModule;
 );
 $openslxConfig{'bin-path'} = "$openslxConfig{'base-path'}/bin",
 $openslxConfig{'db-basepath'} = "$openslxConfig{'private-path'}/db",
+$openslxConfig{'export-path'} = "$openslxConfig{'public-path'}/export",
 $openslxConfig{'share-path'} = "$openslxConfig{'base-path'}/share",
 $openslxConfig{'tftpboot-path'} = "$openslxConfig{'public-path'}/tftpboot",
 
@@ -69,6 +70,9 @@ my %openslxCmdlineArgs = (
 	'base-path=s' => \$cmdlineConfig{'base-path'},
 		# basic path to project files (binaries, functionality templates and
 		# distro-specs)
+	'export-path=s' => \$cmdlineConfig{'export-path'},
+		# path to root of all exports, each different export-type (e.g. nfs, nbd)
+		# has a separate subfolder in here.
 	'private-path=s' => \$cmdlineConfig{'private-path'},
 		# path to private data (which is accessible for clients and
 		# contains all data required for booting the clients)
