@@ -115,8 +115,8 @@ sub fetchLoaderConfigFile
 
 sub fetchLoaderConfig
 {
-	if (!-e "$rootPath/etc/ld.so.conf") {
-		die _tr("'%s' not found, maybe wrong root-path?\n", "$rootPath/etc/ld.so.conf");
+	if (!-e "$rootPath/etc") {
+		die _tr("'%s'-folder not found, maybe wrong root-path?\n", "$rootPath/etc");
 	}
 	fetchLoaderConfigFile("$rootPath/etc/ld.so.conf");
 
