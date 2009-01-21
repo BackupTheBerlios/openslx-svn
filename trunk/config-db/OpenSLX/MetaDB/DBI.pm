@@ -880,7 +880,6 @@ sub schemaAddColumns
 
 	my $dbh = $self->{'dbh'};
 	my $tempTable = "${table}_temp";
-	my @colNames = $self->_convertColDescrsToColNames($colDescrs);
 	my @newColNames = $self->_convertColDescrsToColNames($newColDescrs);
 	my $newColStr = join ', ', @newColNames;
 	vlog 1, "adding columns <$newColStr> to table <$table>..." unless $isSubCmd;

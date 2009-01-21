@@ -89,7 +89,7 @@ sub generateNextIdForTable
 
 	return 1 unless defined $table;
 
-	# now fetch the next ID from a table-specific file:
+	# ...fetch the next ID from a table-specific file:
 	my $dbh = $self->{'dbh'};
 	my $idFile = "$dbh->{'f_dir'}/id-$table";
 	sysopen(IDFILE, $idFile, O_RDWR|O_CREAT)
