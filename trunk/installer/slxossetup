@@ -49,7 +49,7 @@ function install_prereq_file
 {
 	# Install prerequired files
 	if test -d "${SLX_SYSTEM_CONFIG_PATH}/prereqfiles"; then
-		cp -a "${SLX_SYSTEM_CONFIG_PATH}"/prereqfiles/* "${SLX_STAGE1_PATH}"
+		cp -pr "${SLX_SYSTEM_CONFIG_PATH}"/prereqfiles/* "${SLX_STAGE1_PATH}"
 		find "${SLX_STAGE1_PATH}" -type d -name .svn -print0 | \
 			xargs -0 rm -rf
 	fi
