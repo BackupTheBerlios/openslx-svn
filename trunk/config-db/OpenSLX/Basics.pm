@@ -26,59 +26,68 @@ my %translations;
 my $loadedTranslationModule;
 
 # this hash will hold the active openslx configuration,
-# it is populated from config files and/or cmdline arguments:
+# the initial content is based on environment variables or default values.
+# Each value may be overrided from config files and/or cmdline arguments.
 %openslxConfig = (
-	'db-name' => 'openslx',
-	'db-type' => 'CSV',
+	'db-datadir' => $ENV{SLX_DB_DATADIR},
+	'db-name' => $ENV{SLX_DB_NAME} || 'openslx',
+	'db-spec' => $ENV{SLX_DB_SPEC},
+	'db-type' => $ENV{SLX_DB_TYPE} || 'CSV',
 	'locale' => $ENV{LANG},
 		# TODO: may need to be improved in order to be portable
 	'base-path' => $ENV{SLX_BASE_PATH} || '/opt/openslx',
 	'config-path' => $ENV{SLX_CONFIG_PATH} || '/etc/opt/openslx',
 	'private-path' => $ENV{SLX_PRIVATE_PATH} || '/var/opt/openslx',
 	'public-path' => $ENV{SLX_PUBLIC_PATH} || '/srv/openslx',
-	'temp-path' => $ENV{SLX_TEMP_BASE_PATH} || '/tmp',
+	'temp-path' => $ENV{SLX_TEMP_PATH} || '/tmp',
+	'verbose-level' => $ENV{SLX_VERBOSE_LEVEL} || '0',
 );
-$openslxConfig{'bin-path'} = "$openslxConfig{'base-path'}/bin",
-$openslxConfig{'db-basepath'} = "$openslxConfig{'private-path'}/db",
-$openslxConfig{'export-path'} = "$openslxConfig{'public-path'}/export",
-$openslxConfig{'share-path'} = "$openslxConfig{'base-path'}/share",
-$openslxConfig{'tftpboot-path'} = "$openslxConfig{'public-path'}/tftpboot",
+$openslxConfig{'bin-path'}
+	= $ENV{SLX_BIN_PATH} || "$openslxConfig{'base-path'}/bin",
+$openslxConfig{'db-basepath'}
+	= $ENV{SLX_DB_PATH} || "$openslxConfig{'private-path'}/db",
+$openslxConfig{'export-path'}
+	= $ENV{SLX_EXPORT_PATH} || "$openslxConfig{'public-path'}/export",
+$openslxConfig{'share-path'}
+	= $ENV{SLX_SHARE_PATH} || "$openslxConfig{'base-path'}/share",
+$openslxConfig{'tftpboot-path'}
+	= $ENV{SLX_TFTPBOOT_PATH} || "$openslxConfig{'public-path'}/tftpboot",
 
 # specification of cmdline arguments that are shared by all openslx-scripts:
 my %cmdlineConfig;
 my %openslxCmdlineArgs = (
-	'db-basepath=s' => \$cmdlineConfig{'db-basepath'},
-		# basic path to openslx database, defaults to "${private-path}/db"
-	'db-datadir=s' => \$cmdlineConfig{'db-datadir'},
-		# data folder created under db-basepath, default depends on db-type
-	'db-spec=s' => \$cmdlineConfig{'db-spec'},
-		# full specification of database, a special string defining the
-		# precise database to connect to (the contents of this string
-		# depend on db-type)
-	'db-name=s' => \$cmdlineConfig{'db-name'},
-		# name of database, defaults to 'openslx'
-	'db-type=s' => \$cmdlineConfig{'db-type'},
-		# type of database to connect to (CSV, SQLite, ...), defaults to 'CSV'
-	'locale=s' => \$cmdlineConfig{'locale'},
-		# locale to use for translations
-	'logfile=s' => \$cmdlineConfig{'locale'},
-		# file to write logging output to, defaults to STDERR
+	'base-path=s' => \$cmdlineConfig{'base-path'},
+		# basic path to project files (binaries, functionality templates and
+		# distro-specs)
 	'bin-path=s' => \$cmdlineConfig{'bin-path'},
 		# path to binaries and scripts
 	'config-path=s' => \$cmdlineConfig{'config-path'},
 		# path to configuration files
-	'base-path=s' => \$cmdlineConfig{'base-path'},
-		# basic path to project files (binaries, functionality templates and
-		# distro-specs)
+	'db-basepath=s' => \$cmdlineConfig{'db-basepath'},
+		# basic path to openslx database, defaults to "${private-path}/db"
+	'db-datadir=s' => \$cmdlineConfig{'db-datadir'},
+		# data folder created under db-basepath, default depends on db-type
+	'db-name=s' => \$cmdlineConfig{'db-name'},
+		# name of database, defaults to 'openslx'
+	'db-spec=s' => \$cmdlineConfig{'db-spec'},
+		# full specification of database, a special string defining the
+		# precise database to connect to (the contents of this string
+		# depend on db-type)
+	'db-type=s' => \$cmdlineConfig{'db-type'},
+		# type of database to connect to (CSV, SQLite, ...), defaults to 'CSV'
 	'export-path=s' => \$cmdlineConfig{'export-path'},
 		# path to root of all exports, each different export-type (e.g. nfs, nbd)
 		# has a separate subfolder in here.
+	'locale=s' => \$cmdlineConfig{'locale'},
+		# locale to use for translations
+	'logfile=s' => \$cmdlineConfig{'locale'},
+		# file to write logging output to, defaults to STDERR
 	'private-path=s' => \$cmdlineConfig{'private-path'},
-		# path to private data (which is accessible for clients and
-		# contains all data required for booting the clients)
+		# path to private data (which is *not* accesible by clients and contains
+		# database, vendorOSes and all local extensions [system specific scripts])
 	'public-path=s' => \$cmdlineConfig{'public-path'},
-		# path to public data (which contains database, vendorOSes
-		# and all local extensions [system specific scripts])
+		# path to public data (which is accesible by clients and contains
+		# PXE-configurations, kernels, initramfs and client configurations)
 	'share-path=s' => \$cmdlineConfig{'share-path'},
 		# path to sharable data (functionality templates and distro-specs)
 	'temp-path=s' => \$cmdlineConfig{'temp-path'},
@@ -104,7 +113,8 @@ sub vlog
 sub openslxInit
 {
 	# evaluate cmdline arguments:
-	GetOptions(%openslxCmdlineArgs);
+	Getopt::Long::Configure('no_pass_through');
+	GetOptions(%openslxCmdlineArgs) or return 0;
 
 	# try to read and evaluate config files:
 	my $configPath = $cmdlineConfig{'config-path'}
@@ -159,6 +169,8 @@ sub openslxInit
 
 	# setup translation "engine":
 	trInit();
+
+	return 1;
 }
 
 # ------------------------------------------------------------------------------
