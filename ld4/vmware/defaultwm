@@ -4,7 +4,7 @@
 #
 # Michael Janczyk <mj0@uni-freiburg.de>
 #
-# Last changes: 02-05-2006
+# Last changes: 15-05-2006
 #
 
 
@@ -22,11 +22,11 @@ x_dialog () {
   execute=
 
 
-  xdesktopsnr=( `ls ${xsessions} | grep -x ".*desktop" \
-    | grep -v "default.*" | wc -l 2>/dev/null` )
-  desktops=( `ls ${xsessions} | grep -x ".*desktop" \
-      | grep -v "default.*" | sort -bf 2>/dev/null; \
-      ls ${vmsessions} | grep -x ".*desktop" | sort -bf 2>/dev/null` )
+  xdesktopsnr=( `ls ${xsessions}/*.desktop | grep -v "default.*" \
+    | wc -l 2>/dev/null` )
+  desktops=( `ls ${xsessions}/*.desktop | grep -v "default.*" \
+    | sort -bf 2>/dev/null; \
+    ls ${vmsessions}/*.desktop | sort -bf 2>/dev/null` )
   desktopsnr=$(echo "${#desktops[*]}")
 
 
@@ -35,20 +35,20 @@ x_dialog () {
 
   while [ "${xdesktopsnr}" -gt "${args}" ]; do
     # exec in .desktop
-    execute[${i}]=$(grep -m 1 -i "exec" ${xsessions}/${desktops[${args}]} \
+    execute[${i}]=$(grep -m 1 -i "exec" ${desktops[${args}]} \
       | awk -F "=" '{print $2}')
     menu="$menu \"\${execute[${i}]}\""
     i=${i}+1
 
     # name in .desktop
-    execute[${i}]=$(grep -m 1 -i "name" ${xsessions}/${desktops[${args}]} \
+    execute[${i}]=$(grep -m 1 -i "name" ${desktops[${args}]} \
       | awk -F "=" '{print $2}')
     execute[${i}]=${execute[${i}]:-`echo ${execute[${i}-1]} | sed -e "s,-, ,g"`}
     menu="$menu \"\${execute[${i}]}\""
     i=${i}+1
 
     # comment in .desktop
-    execute[${i}]=$(grep -m 1 -i "comment" ${xsessions}/${desktops[${args}]} \
+    execute[${i}]=$(grep -m 1 -i "comment" ${desktops[${args}]} \
       | awk -F "=" '{print $2}')
     execute[${i}]="| Desktop Environment |
 ${execute[${i}]:-"No comment"}"
@@ -61,20 +61,20 @@ ${execute[${i}]:-"No comment"}"
 
   while [ "${desktopsnr}" -gt "${args}" ]; do
     # exec in .desktop
-    execute[${i}]=$(grep -m 1 -i "exec" ${vmsessions}/${desktops[${args}]} \
+    execute[${i}]=$(grep -m 1 -i "exec" ${desktops[${args}]} \
       | awk -F "=" '{print $2}')
     menu="$menu \"\${execute[${i}]}\""
     i=${i}+1
 
     # name in .desktop
-    execute[${i}]=$(grep -m 1 -i "name" ${vmsessions}/${desktops[${args}]} \
+    execute[${i}]=$(grep -m 1 -i "name" ${desktops[${args}]} \
       | awk -F "=" '{print $2}')
     execute[${i}]=${execute[${i}]:-`echo ${execute[${i}-1]} | sed -e "s,-, ,g"`}
     menu="$menu \"\${execute[${i}]}\""
     i=${i}+1
 
     # comment in .desktop
-    execute[${i}]=$(grep -m 1 -i "comment" ${vmsessions}/${desktops[${args}]} \
+    execute[${i}]=$(grep -m 1 -i "comment" ${desktops[${args}]} \
       | awk -F "=" '{print $2}')
     execute[${i}]="| VMware Image |
 ${execute[${i}]:-"No comment"}"

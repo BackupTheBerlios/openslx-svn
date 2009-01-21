@@ -10,7 +10,7 @@
 last_changes=$(head $0 | grep "@" | awk -F ", " '{print $2}' \
   | awk -F "-" '{print $3" "$2" "$1}' | sort -bfnr \
   | awk '{print $3"-"$2"-"$1}' | grep -m 1 [0-9])
-version=0.14.c
+version=0.14.d
 ################################################################################
 
 
@@ -219,7 +219,6 @@ workgroup="VMware-Workgroup"
 comment="Diskless X Station VMware Image"
 # image variables
 alias=
-spec=
 diskfile=
 rightsfile=
 noimage=0
@@ -273,10 +272,7 @@ USAGE: $0 [--options]
 
 Image options:
 	-i|--interactive        interactive mode with image selection
-	-o|--os <ostype>	start ostype, e.g. winxp, suse,...
-				(first part of image name (winxp-pro.vmdk))
-	-s|--spec <spec.>	specify your image, e.g. pro, home,...
-				(second part of image name (winxp-home.vmdk))
+	-s|--start <image name>	start image /\$vmdir/<image name>.vmdk
 	-a|--alias		use aliases
 	--silent		no stdout from runvmware
         --mem <n(M(h)),n(G(h))>	override autoallocation of memory, in percent
@@ -316,21 +312,13 @@ EOH
 checkalias () {
   if [ -r "${vmtempl}/alias" ]; then
 
-    writelog "Checking alias for ${ostype}${spec:+", ${spec}"}...\c" 0 1
+    writelog "Checking alias for ${startvm}...\c" 0 1
 
-    # ostype=
-    osalias=$(grep -v "#.*" ${vmtempl}/alias | grep -w "${ostype}" \
+    vmalias=$(grep -v "#.*" ${vmtempl}/alias | grep -w "${startvm}" \
       | awk '{print $1}')
-    [ -n "${osalias}" ] && ostype=${osalias}
+    [ -n "${vmalias}" ] && startvm=${vmalias}
 
-    # spec=
-    [ -n "${spec}" ] \
-      && specalias=$(grep -v "#.*" ${vmtempl}/alias | grep -w "${spec}" \
-      | awk '{print $1}')
-    [ -n "${specalias}" ] && spec=${specalias}
-
-    writelog "finished\nResult:" 0 1
-    writelog "\tOS=${ostype}${spec:+"\\\n\\\tSpec=$spec"}\n" 0 1
+    writelog "finished\nResult:\n\tVMimage name:\t${startvm}\n" 0 1
 
   else
     writelog "NO alias file found: ${vmtempl}/alias" 0 1
@@ -349,20 +337,20 @@ x_dialog () {
 
   while [ "${desktopsnr}" -gt "${args}" ]; do
     # exec in .desktop
-    execute[${i}]=$(grep -m 1 -i "exec" ${vmsessions}/${desktops[${args}]} \
+    execute[${i}]=$(grep -m 1 -i "exec" ${desktops[${args}]} \
       | awk -F "=" '{print $2}')
     menu="$menu \"\${execute[${i}]}\""
     i=${i}+1
 
     # name in .desktop
-    execute[${i}]=$(grep -m 1 -i "name" ${vmsessions}/${desktops[${args}]} \
+    execute[${i}]=$(grep -m 1 -i "name" ${desktops[${args}]} \
       | awk -F "=" '{print $2}')
     execute[${i}]=${execute[${i}]:-`echo ${execute[${i}-1]} | sed -e "s,-, ,g"`}
     menu="$menu \"\${execute[${i}]}\""
     i=${i}+1
 
     # comment in .desktop
-    execute[${i}]=$(grep -m 1 -i "comment" ${vmsessions}/${desktops[${args}]} \
+    execute[${i}]=$(grep -m 1 -i "comment" ${desktops[${args}]} \
       | awk -F "=" '{print $2}')
     execute[${i}]=${execute[${i}]:-"No comment"}
     menu="$menu \"\${execute[${i}]}\""
@@ -435,7 +423,7 @@ filecheck () {
     writelog "\tThe image you've specified has wrong rights." 0 1
     writelog "Filecheck says:\t\t`echo ${filecheck} \
       | awk '{print $1" "$3" "$4}'` ${rightsfile}" 0 1
-    writelog "Hint:\t\t\tUse nonpersistent-mode or change rights to rw" 0 0
+    writelog "Hint:\t\t\tUse nonpersistent-mode or change rights to rw\n" 0 0
     exit 1
   fi
                           
@@ -466,13 +454,9 @@ while [ ${nofclopt} -gt "${args}" ]; do
     -i|--interactive)
       inter="TRUE"
     ;;
-    -o|--os)
-      (( args=${args}+1 )) # needed for checking unknown options
-      ostype=${lineopts[${args}]}
-    ;;
-    -s|--spec)
+    -s|--start)
       (( args=${args}+1 ))
-      spec=${lineopts[${args}]}
+      startvm=${lineopts[${args}]}
     ;;
     -a|--alias)
       alias="TRUE"
@@ -589,9 +573,9 @@ writelog "Starting...`echo ${np} | sed -e \"s,i.*-,,g\" \
   | tr [a-z] [A-Z]`-mode\n" 1 1
 
 # log disksetup
-writelog "Directories:" 0 1
-writelog "\tTmpdir=${tmpdir}\n\tVMhome=${vmhome}\n" 0 1
-writelog "Tmpdir info:\n`mount | grep -i "/tmp "`\n" 0 1
+writelog "Directories:
+  \tTmpdir:\t\t${tmpdir}\n\tVMhome:\t\t${vmhome}\n\tTmpdir info:
+  \t`mount | grep -i "/tmp "`\n" 0 1
 
 
 
@@ -666,8 +650,9 @@ if [ -n "${guestres}" ]; then
   fi
 fi        
 
-writelog "finished\nResults:\n\tMAC=00:50:56:0D:${mac}\n\tMem=${mem} MB 
-  \tResolution=${xres}x${yres}\n\tCD-ROM_1=${cdr_1}\n\tCD-ROM_2=${cdr_2}\n" 0 1
+writelog "finished\nResults:\n\tMAC:\t\t00:50:56:0D:${mac}\n\tMem:\t\t${mem} MB
+  \tResolution:\t${xres}x${yres}\n\tCD-ROM_1:\t${cdr_1}
+  \tCD-ROM_2:\t${cdr_2}\n" 0 1
 
 
 
@@ -691,24 +676,21 @@ if [ -n "${inter}" ]; then
   if ! [ `which Xdialog 2>/dev/null` ]; then
     writelog "\rXdialog not found!      " 0 99
     writelog "Please install Xdialog for interactive mode, \c" 0 0
-    writelog "or use options -o/-s.\n" 0 0
+    writelog "or use option -s.\n" 0 0
     exit 1
   fi
 
   # create menu, etc...
-  args_zen=$(x_dialog 2>&1 | sed -e "s,-, ,") # 2>&1, see function
-  ostype=$(echo ${args_zen} | awk '{print $1}')
-  spec=$(echo ${args_zen} | awk '{print $2}')
+  startvm=$(x_dialog 2>&1) # 2>&1, see function
 
-  if [ -z "${args_zen}" ]; then
-    writelog "\rNo image selected, please retry or use option -o / -s\n" 0 0
-    writelog "No image was selected (opton -i); \c" 2 2
-    writelog "return value is: ${args_zen}\n" 2 2
+  if [ -z "${startvm}" ]; then
+    writelog "\rNo image selected, please retry or use option -s\n" 0 0
+    writelog "No image was selected (option -i); \c" 2 2
+    writelog "return value is: ${startvm}\n" 2 2
     exit 1
   fi
 
-  writelog "finished.\nResult:" 0 1
-  writelog "\tostype=${ostype}${spec:+\n\tspec=${spec}}\n" 0 1
+  writelog "finished.\nResult:\n\tVMimage:\t${startvm}\n" 0 1
 fi
 
 
@@ -719,10 +701,11 @@ fi
 # image allocation
 writelog "Starting image detection...\c" 0 1
 
-diskfile="${vmdir}/${ostype}${spec:+"-${spec}"}.vmdk"
+diskfile="${vmdir}/${startvm}.vmdk"
 
 # check if ${vmostype} defined via command line
 if [ -z "${comdef}" ]; then
+  ostype=$(echo ${startvm} | awk -F "-" '{print $1}')
   vmostype=$(grep -v "#.*" ${vmtempl}/ostype | grep -w "${ostype}" \
     | awk '{print $2}')
 
@@ -734,15 +717,16 @@ fi
 
 # define name for VMware window
 displayname=$(grep -m 1 -i "name" \
-  ${vmsessions}/${ostype}${spec:+"-${spec}"}.desktop | awk -F "=" '{print $2}')
+  ${vmsessions}/${startvm}.desktop | awk -F "=" '{print $2}')
 
 
-writelog "finished\nResults:\n\tDiskfile=${diskfile}" 0 1
-writelog "\tVMostype=${vmostype}\n\tDisplayname=${displayname}\n" 0 1
+writelog "finished\nResults:\n\tDiskfile:\t${diskfile}
+  \tVMimage:\t${vmostype}\n\tDisplayname:\t${displayname}\n" 0 1
 
 
 # link to windows image
-writelog "Linking \"ln -fs ${diskfile} ${tmpdir}/disk\"...\c" 0 1
+writelog "Linking \"ln -fs ${diskfile}
+  \t${tmpdir}/disk\"...\c" 0 1
 ln -fs ${diskfile} ${tmpdir}/disk
 writelog "finished\nResult:\n`ls -l ${tmpdir}/disk`\n" 0 1
 
@@ -768,9 +752,10 @@ runvmwareconfheader
 cp ${vmtempl}/nvram.5.0 ${tmpdir}/nvram 2>&1 >/dev/null
 
 # adjust volume
+writelog "Unmuting sound...\c" 0 0
 amixer -q sset Master 28 unmute
 amixer -q sset PCM 28 unmute
-
+writelog "finished\n" 0 0
 
 
 

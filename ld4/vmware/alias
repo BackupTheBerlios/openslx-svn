@@ -3,15 +3,8 @@
 # -NO DUPLICATE ENTRIES!!!-
 
 ###### 
-# -OSType-     | -aliases separated through spaces-
+# -OSType name-         | -aliases separated through spaces-
 #####
-windows98	win98
-windows2000	win2k
-windowsxp	winxppro winxp
-suse		suse93
-
-#####
-# -Spec names- | -aliases separated through spaces-
-#####
-kursversion	kurs
+winxppro-kursversion	winxppro windowsxp winxp
+suse-9.3		suse
 
