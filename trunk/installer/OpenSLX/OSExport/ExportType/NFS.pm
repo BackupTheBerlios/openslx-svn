@@ -74,11 +74,9 @@ sub determineIncludeExcludeList
 {
 	my $self = shift;
 
-	# Rsync uses a best (longest) match strategy. If there is more than one
-	# match with the same length, the first wins. This means that we have
-	# to mix the local specifications in front of the filterset given by
-	# the package (as the local filters should always overrule the vendor
-	# filters):
+	# Rsync uses a first match strategy, so we mix the local specifications
+	# in front of the filterset given by the package (as the local filters
+	# should always overrule the vendor filters):
 	my $distroName = $self->{engine}->{'distro-name'};
 	my $localFilterFile = "../lib/distro-info/$distroName/export-filter.local";
 	my $includeExcludeList = slurpFile($localFilterFile, 1);
