@@ -1,13 +1,11 @@
 #!/bin/sh
-# Description:  main script for new type of initial ramdisk for
-#               linux diskless clients version 4
+# main script for new type of initial ramdisk for OpenSLX linux diskless
+# clients version 4
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-08-2006
+# Dirk von Suchodoletz <dirk@goe.net>, 07-09-2006
 #
-# Copyright:    (c) 2006 - RZ Universitaet Freiburg
-#               (c) 2006 - openslx.org project
-#
-# Version:      0.2.6e
+# (c) 2006 - RZ Universitaet Freiburg
+# (c) 2006 - OpenSLX.ORG project
 
 # functions common for all distros, messages contains all error and info
 # output
@@ -46,8 +44,8 @@ echo 256 > /proc/sys/kernel/real-root-dev
 # redirect console (after /dev/console is available, and /dev mounted)
 exec < /dev/console > /dev/console 2>&1
 
-# set defaults for some important variables, might be overwritten via kernel
-# commandline
+# set defaults for some important variables, might be overwritten via
+# kernel commandline
 TMPFSSIZE="50%"
 COWSIZE="50%"
 RWDIR=/dev/shm
@@ -102,10 +100,9 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       LDAP="yes"
       rm /tmp/ldap-done
     ;;
-    # if (external, via tftp) configuration file retrieval should
-    # be triggered, if no source is given try dhcp server and
-    # predefined standard path (~/tftpboot/client-conf/default,
-    # client-conf/<name-of-export>/default, ...)
+    # if (external, via tftp) configuration file retrieval should be
+    # triggered, if no source is given try dhcp server and predefined
+    # standard path (~/tftpboot/client-conf/ ...)
     file)
       FILE="yes"
       rm /tmp/file-done
@@ -133,23 +130,41 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       COWLOOP=1
       #COWSIZE=${opts#cowloop=}
     ;;
-    # dnbd server:port,filesystem (filesystem is optional)
-    dnbdroot=*)
-      NBD=dnbd # name of kernel module
-      NBDOPT=${opts#dnbdroot=}
+    # rootfs will void the variables (d)nbdroot, nfsroot ...
+    # fixme: allow multiple rootfs sources to be unioned!?
+    # if strinstr " " "$ROOTFS" ...
+    rootfs=*)
+      ROOTFS=${opts#rootfs=}
+      srvproto=$(uri_token $ROOTFS prot)
+      case $srvproto in
+        nfs)
+          NFSROOT=$(uri_token $ROOTFS server)":/"$(uri_token $ROOTFS path)
+          echo -e "\n# nfs root information gotten via kernel command \
+line in $0\nnfsroot=\"${NFSROOT}\"\n" >> /etc/machine-setup
+        ;;
+        *nbd)
+          nbdmod=$srvproto
+          # get settings for nbd-client, filesystem equals to path in URI
+          # notation
+          nbdhost=$(uri_token $ROOTFS server)
+          nbdport=$(uri_token $ROOTFS port)
+          nbdrfst=$(uri_token $ROOTFS path)
+        ;;
+        aoe)
+          echo "Not implemented yet"
+        ;;
+        iscsi)
+          echo "Not implemented yet"
+        ;;
+      esac
     ;;
     # size of cache dnbd should use within ram
     dcsize=*)
       DNBDCACHESIZE=${opts#dcsize=};;
-    # nbd server:port,filesystem (filesystem is optional)
-    nbdroot=*)
-      NBD=nbd # name of kernel module
-      NBDOPT=${opts#nbdroot=}
-    ;;
     # ip configuration client-ip:server-ip:gateway:netmask
     ip=*)
       IPINFO=${opts#ip=};;
-    # nfs server and path
+    # deprecated: nfs server and path (will be removed soon)
     nfsroot=*)
       NFSROOT=${opts#nfsroot=}
       echo -e "\n# nfs root information gotten via kernel command line in $0\n\
@@ -247,19 +262,15 @@ fi
 [ -n "$FILE" ] && fileget &
 
 # if root filesystem should be imported via (d) network block device
-if [ -n "${NBD}" ] ; then
+if [ -n "${nbdmod}" ] ; then
   # load block device driver if needed
-  modprobe ${MODPRV} ${NBD} || error "$init_errnbd"
-  # get settings for nbd-client, filesystem equals to path in URI notation
-  nbdhost=$(uri_token $NBDOPT server)
-  nbdport=$(uri_token $NBDOPT port)
-  nbdrfst=$(uri_token $NBDOPT path)
+  modprobe ${MODPRV} ${nbdmod} || error "$init_errnbd"
   [ -z "$nbdrfst" ] && nbdrfst=ext2
-  echo "Diskless client using ${NBD} on $nbdhost:$nbdport with $nbdrfst"
+  echo "Diskless client using ${nbdmod} on $nbdhost:$nbdport with $nbdrfst"
   # fixme: check for fs in /proc/filesystems before trying to load the module
   modprobe ${MODPRV} ${nbdrfst} || error "$init_errnbd" nonfatal
 
-  case "${NBD}" in
+  case "${nbdmod}" in
     # network block device present in standard kernel
     nbd)
       RDEV=/dev/nbd0
@@ -322,7 +333,7 @@ fi
 
 # if no type of root filesystem is passed via kernel command line try
 # information gathered from dhcp process
-if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" -a -z "${NFSROOT}" ] ; then
+if [ -z "${nbdmod}" -a -z "${nbdhost}" -a -z "${NFSROOT}" ] ; then
   # information has to be read from dhcp configuration
   if [ -z "$noipyet" ] ; then
     waitfor /tmp/dhcp-done 20000
@@ -332,7 +343,7 @@ if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" -a -z "${NFSROOT}" ] ; then
   NFSROOT=${serverip}:${root_path}
 fi
 # call function for nfs mounts
-if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" ] ; then
+if [ -z "${nbdmod}" -a -z "${nbdserver}" ] ; then
   nfsmnt ${NFSROOT} || error "$init_nfs"
 fi
 
