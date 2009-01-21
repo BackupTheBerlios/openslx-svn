@@ -370,7 +370,7 @@ if strinfile "SCSI" /tmp/hwsetup.info ; then
   strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} sd_mod
   strinfile "SCANNER" /tmp/hwsetup.info && \
     echo -e 'KERNEL=="sg*",\t\tNAME="%k", GROUP="disk", MODE="666"' \
-    >> /etc/udev/rules.d/04-scanner.rules
+    >> /mnt/etc/udev/rules.d/04-scanner.rules
 fi
 # fixme - psmouse entladen, falls nicht vorhanden
 
