@@ -959,18 +959,6 @@ sub initDistroInfo
 			zvbi
 		",
 	};
-
-	$self->{config}->{'excludes'} = {
-		# these packages will never be installed:
-	    
-		'default' => "
-		",
-
-		'kde' => "
-			<<<default>>>
-		",
-	};
-
 }
 
 1;

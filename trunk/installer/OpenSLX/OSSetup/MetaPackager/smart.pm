@@ -48,6 +48,10 @@ sub initPackageSources
 	my $self = shift;
 
 	slxsystem("rm -f /etc/smart/channels/*");
+	# remove channel if it already exists
+	if (slxsystem("smart channel -y --remove-all")) {
+		die _tr("unable to remove existing channels (%s)\n", $!);
+	}
 }
 
 sub setupPackageSource
@@ -55,16 +59,28 @@ sub setupPackageSource
 	my $self = shift;
 	my $repoName = shift;
 	my $repoInfo = shift;
+	my $excludeList = shift;
 
-	my $repoURL = $self->{engine}->selectBaseURL($repoInfo);
+	my $repoSubdir;
 	if (length($repoInfo->{'repo-subdir'})) {
-		$repoURL .= "/$repoInfo->{'repo-subdir'}";
+		$repoSubdir = "/$repoInfo->{'repo-subdir'}";
 	}
-	my $repoDescrCmdline
-		= qq[$repoName name="$repoInfo->{name}" baseurl=$repoURL];
-	$repoDescrCmdline .= " type=rpm-md";
-	if (slxsystem("smart channel -y --add $repoDescrCmdline")) {
+	my $repoURLs = $self->{engine}->sortRepositoryURLs($repoInfo);
+	my $baseURL = shift @$repoURLs;
+	my $repoDescr
+		= qq[$repoName name="$repoInfo->{name}" baseurl=$baseURL$repoSubdir];
+	$repoDescr .= " type=rpm-md";
+	if (slxsystem("smart channel -y --add $repoDescr")) {
 		die _tr("unable to add channel '%s' (%s)\n", $repoName, $!);
+	}
+	unless ($ENV{SLX_NO_MIRRORS}) {
+		my $mirrorDescr;
+		foreach my $mirrorURL (@$repoURLs) {
+			$mirrorDescr .= " --add $baseURL$repoSubdir $mirrorURL$repoSubdir";
+		}
+		if (slxsystem("smart mirror $mirrorDescr")) {
+			die _tr("unable to add mirrors for channel '%s' (%s)\n", $repoName, $!);
+		}
 	}
 }
 

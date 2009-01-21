@@ -470,20 +470,6 @@ sub createMetaPackager
 	$self->{'meta-packager'} = $metaPackager;
 }
 
-sub selectBaseURL
-{
-	my $self = shift;
-	my $repoInfo = shift;
-
-	my $baseURL = $repoInfo->{url};
-	if (!defined $baseURL) {
-		my @baseURLs = string2Array($repoInfo->{urls});
-		# TODO: insert a closest mirror algorithm here!
-		$baseURL = $baseURLs[0];
-	}
-	return $baseURL;
-}
-
 sub sortRepositoryURLs
 {
 	my $self = shift;
@@ -530,7 +516,7 @@ try_next_url:
 			}
 		}
 		if (!defined $foundFile) {
-			if ($tryCount < $maxTryCount) {
+			if (!$ENV{SLX_NO_MIRRORS} && $tryCount < $maxTryCount) {
 				$tryCount++;
 				$self->{'baseURL-index'}
 					= ($self->{'baseURL-index'}+1) % scalar(@URLs);
@@ -538,7 +524,7 @@ try_next_url:
 							$URLs[$self->{'baseURL-index'}]);
 				goto try_next_url;
 			}
-			die _tr("unable to fetch '%s' from any mirrors!\n",
+			die _tr("unable to fetch '%s' from any source!\n",
 					$fileVariantStr);
 		}
 		push @foundFiles, $foundFile;

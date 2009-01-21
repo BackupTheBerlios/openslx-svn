@@ -58,11 +58,20 @@ sub setupPackageSource
 	my $repoInfo = shift;
 	my $excludeList = shift;
 
-	my $repoURL = $self->{engine}->selectBaseURL($repoInfo);
+	my $repoSubdir;
 	if (length($repoInfo->{'repo-subdir'})) {
-		$repoURL .= "/$repoInfo->{'repo-subdir'}";
+		$repoSubdir = "/$repoInfo->{'repo-subdir'}";
 	}
-	my $repoDescr = "[$repoName]\nname=$repoInfo->{name}\nbaseurl=$repoURL\n";
+	my $repoURLs = $self->{engine}->sortRepositoryURLs($repoInfo);
+	my $baseURL = shift @$repoURLs;
+
+	my $repoDescr 
+		= "[$repoName]\nname=$repoInfo->{name}\nbaseurl=$baseURL$repoSubdir\n";
+	unless ($ENV{SLX_NO_MIRRORS}) {
+		foreach my $mirrorURL (@$repoURLs) {
+			$repoDescr .= "        $mirrorURL$repoSubdir\n";
+		}
+	}
 	my $repoFile = "/etc/yum.repos.d/$repoName.repo";
 	open(REPO, "> $repoFile")
 		or die _tr("unable to create repo-file <%s> (%s)\n", $repoFile, $1);
