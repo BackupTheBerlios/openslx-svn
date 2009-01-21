@@ -21,7 +21,7 @@ $VERSION = 1.01;
 @ISA = qw(Exporter);
 
 @EXPORT = qw(
-	&copyFile &fakeFile &linkFile &slurpFile &instantiateClass
+	&copyFile &fakeFile &linkFile &slurpFile
 );
 
 ################################################################################
@@ -84,28 +84,6 @@ sub slurpFile
 	my $text = <F>;
 	close(F);
 	return $text;
-}
-
-sub instantiateClass
-{
-	my $class = shift;
-	my $requestedVersion = shift;
-
-	unless (eval "require $class") {
-		if ($! == 2) {
-			die _tr("Class <%s> not found!\n", $class);
-		} else {
-			die _tr("Unable to load class <%s> (%s)\n", $class, $@);
-		}
-	}
-	if (defined $requestedVersion) {
-		my $classVersion = $class->VERSION;
-		if ($classVersion < $requestedVersion) {
-			die _tr('Could not load class <%s> (Version <%s> required, but <%s> found)',
-					$class, $requestedVersion, $classVersion);
-		}
-	}
-	return $class->new;
 }
 
 1;
