@@ -47,7 +47,7 @@ my %translations;
 	'db-datadir' => $ENV{SLX_DB_DATADIR},
 	'db-name' => $ENV{SLX_DB_NAME} || 'openslx',
 	'db-spec' => $ENV{SLX_DB_SPEC},
-	'db-type' => $ENV{SLX_DB_TYPE} || 'CSV',
+	'db-type' => $ENV{SLX_DB_TYPE} || 'SQLite',
 	'locale' => setlocale(LC_MESSAGES),
 	'locale-charmap' => `locale charmap`,
 	'base-path' => $ENV{SLX_BASE_PATH} || '/opt/openslx',
