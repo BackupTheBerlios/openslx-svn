@@ -235,6 +235,7 @@ function setup_package_sources()
 			rm -f "${SLX_STAGE1_PATH}/etc/yum.repos.d/"*
 		;;
 	esac
+
 	# Add available installation sources to an installed system.
 	# For systems using apt we're able to do this from outside.
 	for variable in ${!SLX_INST_SOURCE_NAME_*}; do
@@ -244,6 +245,7 @@ function setup_package_sources()
 			INST_SOURCE_DISTRIBUTION \
 			INST_SOURCE_NAME \
 			INST_SOURCE_PRIORITY \
+			INST_SOURCE_REPO_SUBDIR \
 			INST_SOURCE_TYPE \
 			PACKAGEKEYS
 
@@ -253,6 +255,7 @@ function setup_package_sources()
 		test "${INST_SOURCE_NAME}" || \
 			INST_SOURCE_NAME="${INST_SOURCE_CHANNEL}"
 
+		INST_SOURCE_REPO_SUBDIR=$( eval echo \$SLX_INST_SOURCE_REPO_SUBDIR_${INST_SOURCE_CHANNEL})
 		INST_SOURCE_TYPE=$( eval echo \$SLX_INST_SOURCE_TYPE_${INST_SOURCE_CHANNEL})
 		# Use default repo type if not available from settings config file
 		test "${INST_SOURCE_TYPE}" || \
@@ -268,9 +271,9 @@ function setup_package_sources()
 				eval INST_SOURCE_${setting}=\$SLX_INST_SOURCE_${setting}
 		done
 
-		echo "$0: Adding installation source name=\"${INST_SOURCE_NAME}\", baseurl=\"${INST_SOURCE_BASEURL}\". "
+		echo "$0: Adding installation source name=\"${INST_SOURCE_NAME}\", baseurl=\"${INST_SOURCE_BASEURL}${INST_SOURCE_REPO_SUBDIR:+/${INST_SOURCE_REPO_SUBDIR}}\". "
 
-		case "${SLX_SYSTEM_BASENAME}" in
+		case "${META_PACKAGER}" in
 			*ubuntu*)
 				echo "deb ${INST_SOURCE_BASEURL} ${INST_SOURCE_DISTRIBUTION} ${INST_SOURCE_COMPONENTS}" \
 					>>${SOURCES_LIST}
@@ -290,8 +293,8 @@ function setup_package_sources()
 					${INST_SOURCE_PRIORITY} \
 					-y
 			;;
-			*fedora*)
-				echo -e "[${INST_SOURCE_CHANNEL}]\nname=${INST_SOURCE_NAME}\nbaseurl=${INST_SOURCE_BASEURL}" \
+			yum|*fedora*)
+				echo -e "[${INST_SOURCE_CHANNEL}]\nname=${INST_SOURCE_NAME}\nbaseurl=${INST_SOURCE_BASEURL}${INST_SOURCE_REPO_SUBDIR:+/${INST_SOURCE_REPO_SUBDIR}}" \
 					>${SLX_STAGE1_PATH}/etc/yum.repos.d/${INST_SOURCE_CHANNEL}.repo
 			;;
 		esac
@@ -307,7 +310,7 @@ function update_system()
 		exit 1
 	fi
 
-	case "${SLX_SYSTEM_BASENAME}" in
+	case "${META_PACKAGER}" in
 		*ubuntu*)
 			: ${SLX_STAGE1_UPDATE_OPTIONS:=-y}
 			: ${SLX_STAGE1_UPGRADE_OPTIONS:=-y}
@@ -318,10 +321,10 @@ function update_system()
 			: ${SLX_STAGE1_UPGRADE_OPTIONS:=-y}
 			LC_ALL=POSIX chroot "${SLX_STAGE1_PATH}" smart upgrade --update ${SLX_STAGE1_UPGRADE_OPTIONS}
 		;;
-		*fedora*)
+		yum|*fedora*)
 			: ${SLX_STAGE1_UPDATE_OPTIONS:=-y}
 			cp -p /proc/cpuinfo "${SLX_STAGE1_PATH}/proc/cpuinfo"
-			chroot "${SLX_STAGE1_PATH}" yum ${SLX_STAGE1_UPDATE_OPTIONS} update
+			LC_ALL=POSIX chroot "${SLX_STAGE1_PATH}" yum ${SLX_STAGE1_UPDATE_OPTIONS} update
 			rm "${SLX_STAGE1_PATH}/proc/cpuinfo"
 		;;
 	esac
@@ -341,7 +344,7 @@ function install_slxselection()
 	test -z "${packagelist}" && \
 		return
 	
-	case "${SLX_SYSTEM_BASENAME}" in
+	case "${META_PACKAGER}" in
 		*ubuntu*)
 			: ${SLX_STAGE1_INSTALL_OPTIONS:=-y}
 			chroot "${SLX_STAGE1_PATH}" apt-get install ${SLX_STAGE1_INSTALL_OPTIONS} ${packagelist}
@@ -350,7 +353,7 @@ function install_slxselection()
 			: ${SLX_STAGE1_INSTALL_OPTIONS:=-y}
 			LC_ALL=POSIX chroot "${SLX_STAGE1_PATH}" smart install ${SLX_STAGE1_INSTALL_OPTIONS} ${packagelist}
 		;;
-		*fedora*)
+		yum|*fedora*)
 			: ${SLX_STAGE1_INSTALL_OPTIONS:=-y}
 			cp -p /proc/cpuinfo "${SLX_STAGE1_PATH}/proc/cpuinfo"
 			chroot "${SLX_STAGE1_PATH}" yum ${SLX_STAGE1_INSTALL_OPTIONS} install ${packagelist}
@@ -629,6 +632,10 @@ function slxossetup()
 			;;
 		*) echo "$0: Error, unkown system ${SLX_SYSTEM_BASENAME}" ;;
 	esac
+
+	test "${SLX_META_PACKAGER}" && \
+		META_PACKAGER="${SLX_META_PACKAGER}" || \
+		META_PACKAGER="${SLX_SYSTEM_BASENAME}"
 
 	case "${SLX_OSSETUP_MODE}" in
 		install) slxossetup_busybox ;;

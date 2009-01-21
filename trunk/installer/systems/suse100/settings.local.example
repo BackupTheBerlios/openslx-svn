@@ -3,7 +3,7 @@
 # It's also possible to define addditional values here.
 
 # Use a local installation source.
-SLX_INST_SOURCE_BASEURL_suse100="http://ftp-1.gwdg.de/pub/opensuse/distribution/SL-10.0-OSS/inst-source"
+SLX_INST_SOURCE_BASEURL="http://ftp-1.gwdg.de/pub/opensuse/distribution/SL-10.0-OSS/inst-source"
 SLX_INST_SOURCE_BASEURL_suse100update="http://ftp-1.gwdg.de/pub/suse/update/10.0"
 
 # Add more packages.
