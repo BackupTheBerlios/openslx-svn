@@ -9,7 +9,7 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# configuration functions for SuSE 10.2 which differ from functions defined
+# Configuration functions for SuSE 10.2 which differ from functions defined
 # in general SuSE base definitions ...  General changes should be done there,
 # version specific changes for the 10.2 go here.
 
@@ -125,8 +125,8 @@ config_nfsv4 () {
 if [ "x$start_nfsv4" = "xyes" ]; then
   testmkd /mnt/var/lib/nfs/rpc_pipefs
   sed -e "s,NFS_SECURITY_GSS=.*,NFS_SECURITY_GSS=\"yes\"," \
-    -e "s,NFS4_SUPPORT=.*,NFS4_SUPPORT=\"yes\"," \
-    -i /mnt/etc/sysconfig/nfs
+      -e "s,NFS4_SUPPORT=.*,NFS4_SUPPORT=\"yes\"," \
+      -i /mnt/etc/sysconfig/nfs
   echo -e "rpc_pipefs\t/var/lib/nfs/rpc_pipefs rpc_pipefs defaults\t 0 0\n\
 nfsd\t\t/proc/fs/nfsd\tnfsd\t\tdefaults\t 0 0" >>/tmp/fstab
 echo -e "\t# stuff needed for nfsv4\n\tmount -t rpc_pipefs rpc_pipefs \

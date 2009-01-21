@@ -1,12 +1,17 @@
-# configuration script for SuSE 9.3 to configure OpenSLX linux diskless 
-# clients (included by init, hwautocfg, servconfig within initialramdfs after
-# inclusion of the main functions file). This file might overwrite settings 
-# from the main base for the several SuSE distro versions
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 16-12-2006
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
 #
-# (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.ORG Project
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# Configuration functions for SuSE 9.3 which differ from functions defined
+# in general SuSE base definitions ...  General changes should be done there,
+# version specific changes for the 9.3 go here.
 
 # distro specific stuff to initialize
 postinit () {
