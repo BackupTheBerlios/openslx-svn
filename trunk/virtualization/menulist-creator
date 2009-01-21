@@ -31,7 +31,7 @@ vmexecdir="/var/lib/vmware"
 templatevmware="${vmdir}/templates/runvmware-v2"
 
 # delete all priority files
-rm -rf ${vmdir}/runscripts/${i}/[0-9]_*.vmware
+rm -rf ${vmdir}/xdialog-files/${i}/[0-9]_*.vmware
 
 # Take all xml files and work with them
 for xml in *.xml;do
@@ -191,11 +191,11 @@ for xml in *.xml;do
     fi
     # ... remove startscript, xdmsessions and Xdialog files if it isn't active.
     if [ ${active} -ne 1 ]; then
-      if [ -f ${vmdir}/runscripts/${i}/${image}.vmware \
-           -o -f runscripts/${i}/${image}.virtualbox ]; then
-        rm -rf ${vmdir}/runscripts/${i}/${image}.*
-        rm -rf ${vmdir}/xdmsessions/${i}/${image}.desktop
-        rm -rf ${vmdir}/xdialog-files/${i}/${image}.xdialog
+      if [ -f ${vmdir}/runscripts/*/${image}.vmware \
+           -o -f runscripts/*/${image}.virtualbox ]; then
+        rm -rf ${vmdir}/runscripts/*/${image}.*
+        rm -rf ${vmdir}/xdmsessions/*/${image}.desktop
+        rm -rf ${vmdir}/xdialog-files/*/${image}.xdialog
       fi
     fi
 
@@ -215,8 +215,13 @@ for xml in *.xml;do
       echo "Encoding=UTF-8" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       echo "Type=XSession" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       #TODO: Fix path
-      echo "Exec=${vmexecdir}/runscripts/${i}/${image}" \
+      if [  "${vm}" = "vmware" ];then
+         echo "Exec=${vmexecdir}/runscripts/${i}/${image}.vmware" \
                 >> ${vmdir}/xdmsessions/${i}/${image}.desktop
+      else # it will be virtualbox
+         echo "Exec=${vmexecdir}/runscripts/${i}/${image}.virtualbox" \
+                >> ${vmdir}/xdmsessions/${i}/${image}.desktop
+      fi
       echo "Name=${short_description}" \
                 >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       echo "Comment=${comment}" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
@@ -229,7 +234,7 @@ for xml in *.xml;do
     
     # If we have vmware, build executeable from template and
     # Xdialog menu entrys
-    if [ "${vm}" = "vmware" ]; then
+    if [ "${vm}" = "vmware" -a "${active}" -eq 1 ]; then
 
       # virtualmachine executable form template
       sed -e "s/imagename=\"CHANGEIT\"/imagename=\"${image}\"/" \
@@ -241,23 +246,30 @@ for xml in *.xml;do
       chmod 755 ${vmdir}/runscripts/${i}/${image}.vmware
 
 
-      # If we have a priority defined we rename the file
-      if [ ${priority} ]; then
-        mv ${vmdir}/runscripts/${i}/${image}.vmware \
-            ${vmdir}/runscripts/${i}/${priority}_${image}.vmware
-      fi
-
-    
       # Xdialog menu entrys
       echo -e "\"${vmexecdir}/runscripts/${i}/${image}.vmware\" \\
             \"${short_description}\" \\
             \"${long_description}\" \\" \
             > ${vmdir}/xdialog-files/${i}/${image}.xdialog
 
+
+      # If we have a priority defined we rename the file
+      if [ ${priority} ]; then
+        mv ${vmdir}/xdialog-files/${i}/${image}.xdialog \
+             ${vmdir}/xdialog-files/${i}/${priority}_${image}.xdialog
+      fi
+
+    
+
     # if we have virtualbox, part here can only be vbox cause check above
-    else 
-      echo "Currently Virtualbox isn't implented"
-      exit 0
+    # TODO: i dont like this construction, fix it later
+    else
+      if [ "${active}" -eq 0 ];then
+        echo "${image} isnt enabled"
+      else 
+        echo "Currently Virtualbox isn't implented"
+        exit 0
+      fi
     fi
 
   done

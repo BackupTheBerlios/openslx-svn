@@ -35,5 +35,9 @@
     #Description: as xdm menu? If yes "true", else "false"
     <xdm param="false">
     </xdm>
+    #Description: priority, use a number to get it to a special possition
+    # should only be used by our department and noone else
+    <priority param="1">
+    </priority>
   </eintrag>
 </settings>
