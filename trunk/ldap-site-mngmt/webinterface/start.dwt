@@ -1,0 +1,37 @@
+
+
+<hr align='center' width='98%' noshade>
+
+<table cellpadding='5' cellspacing='0' border='0' width='100%' height='20%'>
+
+	<tr valign='middle' height='100%'>
+	<td width='100%' align='center'>
+	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
+		<tr><td align='center'>
+		
+		<h1>Rechner und IP Managment</h1>
+		
+		</td></tr>
+	</table>
+	</td>
+	
+	</tr>
+</table>
+
+<hr align='center' width='98%' noshade>
+
+<table cellpadding='5' cellspacing='0' border='0' width='100%' height='20%'>
+
+	<tr valign='middle' height='100%'>
+	<td width='100%' align='center'>
+	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
+		<tr><td align='center'>
+		
+		{LOGIN}
+		
+		</td></tr>
+	</table>
+	</td>
+	
+	</tr>
+</table>
