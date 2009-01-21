@@ -67,6 +67,7 @@ sub updateDistroConfig
 	if (slxsystem("SuSEconfig")) {
 		die _tr("unable to run SuSEconfig (%s)", $!);
 	}
+	$self->SUPER::updateDistroConfig();
 }
 
 sub initDistroInfo

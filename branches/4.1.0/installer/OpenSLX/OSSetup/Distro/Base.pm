@@ -124,6 +124,9 @@ sub startSession
 
 sub updateDistroConfig
 {
+	if (slxsystem("ldconfig")) {
+		die _tr("unable to run ldconfig (%s)", $!);
+	}
 }
 
 sub finishSession

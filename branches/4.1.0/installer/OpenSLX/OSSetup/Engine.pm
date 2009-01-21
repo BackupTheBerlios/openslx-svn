@@ -883,9 +883,6 @@ sub stage1D_installPackageSelection
 				}
 			} @pkgs;
 	if (scalar(@pkgs) == 0) {
-		vlog 0, _tr("No packages listed for selection '%s', nothing to do.",
-					$selectionName);
-	} else {
     	vlog 1, "installing these packages:\n".join("\n\t", @pkgs);
 		$self->{'meta-packager'}->startSession();
 		$self->{'meta-packager'}->installSelection(join " ", @pkgs);
