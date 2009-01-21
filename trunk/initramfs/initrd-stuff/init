@@ -65,8 +65,8 @@ mkdir -p ${devdir}/.udevdb
 [ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
 
 # fixme: shut down if script fails
-#trap "exec (sleep 30; echo o>/proc/sysrq-trigger)" \
-#  SIGHUP SIGINT SIGPIPE SIGTERM SIGIO
+trap "exec (sleep 30; echo o>/proc/sysrq-trigger)" \
+  SIGHUP SIGINT SIGPIPE SIGTERM
 
 # if no kernel version is set, try to get it directly from /proc
 if [ -z $KERNEL ] ; then
