@@ -106,7 +106,7 @@ sub showNbdParams
 
 	print (('#' x 80)."\n");
 	print _tr("Please make sure you start a corresponding nbd-server:\n\t%s\n",
-			  "nbd-server -r $self->{engine}->{'export-path'}");
+			  "nbd-server port $self->{engine}->{'export-path'} -r");
 	print (('#' x 80)."\n");
 }
 
