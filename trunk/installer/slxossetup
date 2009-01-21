@@ -62,7 +62,11 @@ function slxossetup_rpm()
 		SMART_CHANNEL="${variable##*_}"
 		SMART_BASEURL=$( eval echo \$$variable)
 		SMART_NAME=$( eval echo \$SLX_INST_SOURCE_NAME_${SMART_CHANNEL})
+		test "${SMART_NAME}" || \
+			SMART_NAME="${SMART_CHANNEL}"
 		SMART_TYPE=$( eval echo \$SLX_INST_SOURCE_TYPE_${SMART_CHANNEL})
+		test "${SMART_TYPE}" || \
+			SMART_TYPE="${REPO_TYPE}"
 		PACKAGEKEYS=$( eval echo \$SLX_INST_SOURCE_PACKAGEKEYS_${SMART_CHANNEL})
 
 		smart --data-dir="${SLX_METADATA_PATH}" \
@@ -182,9 +186,11 @@ function slxossetup()
 		*suse*)
 			# Inform SUSE RPMs that we're performing an installation
 			export YAST_IS_RUNNING="instsys"
+			REPO_TYPE="rpm-md"
 			slxossetup_rpm
 			;;
 		*fedora*)
+			REPO_TYPE="rpm-md"
 			slxossetup_rpm
 			;;
 		*) echo "$0: Error, unkown system ${SLX_SYSTEM_BASENAME}" ;;
