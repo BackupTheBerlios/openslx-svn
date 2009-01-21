@@ -2,8 +2,9 @@
 # (included by init, hwautocfg, servconfig, ... within OpenSLX initial 
 # ramfs) 
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 03-09-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 26-09-2006
 # Felix Endres, 30-04-2006
+# <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 # Tobias Maier
 #
 # (c) 2006 - RZ Universitaet Freiburg
@@ -192,6 +193,33 @@ local n=0
     esac
   done
 echo $n
+}
+#######################################################################
+# configure Xen bridge xenbr0
+xenbr_config () {
+modprobe netloop
+local vifnum="0"
+local bridge="xenbr${vifnum}"
+local netdev="eth${vifnum}"
+local pdev="p${netdev}"
+local vdev="veth${vifnum}"
+local vif0="vif0.${vifnum}"
+local mac=$(ip link show ${netdev} | sed -n '/^.*link\/ether/p' \
+          | sed -e 's/.*ether \(..:..:..:..:..:..\).*/\1/')
+
+brctl addbr ${bridge}
+brctl stp ${bridge} off
+brctl setfd ${bridge} 0
+brctl addif ${bridge} ${vif0}
+ip link set ${netdev} name ${pdev}
+ip link set ${vdev} name ${netdev}
+ip link set ${pdev} down arp off
+ip link set ${pdev} addr fe:ff:ff:ff:ff:ff
+ip link set ${netdev} addr ${mac} arp on
+ip link set ${bridge} up
+ip link set ${vif0} up
+ip link set ${pdev} up
+brctl addif ${bridge} ${pdev}
 }
 #######################################################################
 # configure IP address statically - first argument the ip address, 
@@ -403,7 +431,8 @@ if [ -n "$FILESRC" ] ; then
   tftpserver=$(uri_token $FILESRC server)
   tftpgetunpack $tftp $cfgfile $tftpserver
 else
-  cfgdir="client-conf"
+  # fixme: We need to know the prefix somehow
+  cfgdir="/tftpboot/client-conf"
   local tftpserver=$serverip
   # try to get configuration files successively; start with distro client
   # and try last distro default ...

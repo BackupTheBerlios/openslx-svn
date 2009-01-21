@@ -3,6 +3,7 @@
 # clients version 4
 #
 # Dirk von Suchodoletz <dirk@goe.net>, 07-09-2006
+# <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.ORG project
@@ -177,6 +178,8 @@ nfsroot=\"${NFSROOT}\"\n" >> /etc/machine-setup
 	# be distinguished from other (dhcp) clients
     vci=*)
       VCI=${opts#vci=};;
+    xenbr)
+      XENBR=1;;
   esac
 done
 # check if at least one type of IP configuration is availabe
@@ -224,6 +227,10 @@ for mod in ${NWMODULES}; do
 done
 # set up loopback networking (ipsetup - function defined in /etc/functions)
 ipsetup 127.0.0.1 255.0.0.0 0.0.0.0 127.255.255.255 lo
+
+# Xen bridge config
+[ -n "$XENBR" ] && xenbr_config
+
 # analyze ip information from the kernel command line and put parts
 # of it into several variables
 if [ -n "$IPINFO" ] ; then

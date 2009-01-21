@@ -7,7 +7,7 @@
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 18-09-2006
 #               Nico Dietrich
 #               Felix Endres
-#               mj0, 13-09-2006 theming added
+#               <mj0@uni-freiburg.de> (xenbr), 27-09-2006
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - openslx.org project
@@ -62,7 +62,7 @@ D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 usage()
 {
   echo -e "mkdxsinitrd  [-bgh] [-k kernel version] [-i path/file] \
-[-f module(s)] [-n module(s)] [-r path] [-s theme]\n"
+[-f module(s)] [-n module(s)] [-m module(s)] [-r path] [-s theme]\n"
   echo "OPTIONEN"
   echo "  -g     Benutze glibc als Basisbibliothek in der ramdisk."
   echo "  -b     Use busybox instead of separate binaries."
@@ -82,6 +82,9 @@ usage()
   echo "  -n Modulliste"
   echo "        Kernelmodule zum Betrieb der Clientnetzwerkkarten (z.B. e100 tg3"
   echo "        via-rhine)."
+  echo "  -m Modulliste"
+  echo "        Kernelmodule (misc) die nicht von -n bzw. -f abgedeckt werden"
+  echo "        (z.B. xenbr for xen network bridge)."
   echo "  -r path"
   echo "        Pfad zum Wurzelverzeichnis des zu exportierenden  Betriebsystems"
   echo "        (z.B. /export/10.1)."
@@ -287,7 +290,7 @@ cp -a ${themes}* ${INSTDIR}/usr/share/themes
 #########################################################################
 # End of function declaration
 
-while getopts :bhgk:i:r:o:s:f:n:Sut:d:v:I:V:a: a ; do
+while getopts :bhgk:i:r:o:s:f:n:m:Sut:d:v:I:V:a: a ; do
   case $a in
     \:|\?)
     case $OPTARG in
@@ -295,6 +298,7 @@ while getopts :bhgk:i:r:o:s:f:n:Sut:d:v:I:V:a: a ; do
       i)  echo "-i requires initrd path parameter";;
       f)  echo "-f requires file system module list parameter";;
       n)  echo "-n requires network module list parameter";;
+      m)  echo "-m requires misc module list parameter";;
       r)  echo "-r requires root dir parameter";;
       s)  echo "-s may require theme name";;
       t)  echo "-t requires tmp dir parameter";;
@@ -314,6 +318,7 @@ while getopts :bhgk:i:r:o:s:f:n:Sut:d:v:I:V:a: a ; do
     i)  INITRD_PATH=$OPTARG ;;
     f)  FSMODULES=$OPTARG;;
     n)  NWMODULES=$OPTARG ;;
+    m)  MISCMODULES=$OPTARG ;;
     r)  ROOTDIR=$OPTARG;;
     s)  theme=$OPTARG;;
     t)  INSTDIR=$OPTARG;;
@@ -551,7 +556,6 @@ cobi unionctl bin &>/dev/null || \
 cobi cowdev bin &>/dev/null || \
   echo "Program cowdev not found; could be ignored ..."
 
-
 # distro specific additional stuff
 case "${DISTRO}" in
   debian*)
@@ -610,7 +614,8 @@ fi
 
 # put all needed modules into initial ramdisk
 mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
-for module in af_packet unix ${NWMODULES} ${FSMODULES} ${DEBUGMODULES}; do
+for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
+  ${DEBUGMODULES}; do
   mod=`cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
 2>/dev/null`
 
@@ -643,6 +648,16 @@ for module in af_packet unix ${NWMODULES} ${FSMODULES} ${DEBUGMODULES}; do
         mkdir -p ${ddirprefix}/fs/jbd
         cp ${rdirprefix}/fs/jbd/jbd.ko \
           ${ddirprefix}/fs/jbd
+      ;;
+      netloop)
+        cobi brctl bin &>/dev/null || \
+          echo "Program brctl not found; could be ignored ..."
+        mkdir -p ${ddirprefix}/drivers/xen/netback
+        mkdir -p ${ddirprefix}/net/bridge
+        cp ${rdirprefix}/drivers/xen/netback/netloop.ko \
+          ${ddirprefix}/drivers/xen/netback &>/dev/null
+        cp ${rdirprefix}/net/bridge/bridge.ko \
+          ${ddirprefix}/net/bridge &>/dev/null
       ;;
     esac
   fi
