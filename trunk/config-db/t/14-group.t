@@ -1,5 +1,8 @@
 use Test::More qw(no_plan);
 
+use strict;
+use warnings;
+
 use lib '/opt/openslx/lib';
 
 # basic init
@@ -34,6 +37,11 @@ is(
 my $inGroup1 = {
 	'name'     => 'grp-1',
 	'comment'  => '',
+	'attrs'     => {
+		'slxgrp'     => 'slxgrp',
+		'start_snmp' => 'no',
+		'start_sshd' => 'yes',
+	},
 };
 is(
 	my $group1ID = $configDB->addGroup($inGroup1), 1,
@@ -49,6 +57,39 @@ my $fullGroup = {
 	'name'     => 'grp-nr-3',
 	'priority' => 50,
 	'comment'  => 'nuff said',
+	'attrs' => {
+		'automnt_dir'       => 'a',
+		'automnt_src'       => 'b',
+		'country'           => 'c',
+		'dm_allow_shutdown' => 'd',
+		'hw_graphic'        => 'e',
+		'hw_monitor'        => 'f',
+		'hw_mouse'          => 'g',
+		'late_dm'           => 'h',
+		'netbios_workgroup' => 'i',
+		'nis_domain'        => 'j',
+		'nis_servers'       => 'k',
+		'sane_scanner'      => 'p',
+		'scratch'           => 'q',
+		'slxgrp'            => 'r',
+		'start_alsasound'   => 's',
+		'start_atd'         => 't',
+		'start_cron'        => 'u',
+		'start_dreshal'     => 'v',
+		'start_ntp'         => 'w',
+		'start_nfsv4'       => 'x',
+		'start_printer'     => 'y',
+		'start_samba'       => 'z',
+		'start_snmp'        => 'A',
+		'start_sshd'        => 'B',
+		'start_syslog'      => 'C',
+		'start_x'           => 'D',
+		'start_xdmcp'       => 'E',
+		'tex_enable'        => 'F',
+		'timezone'          => 'G',
+		'tvout'             => 'H',
+		'vmware'            => 'I',
+	},
 };
 ok(
 	my ($group2ID, $group3ID) = $configDB->addGroup([
@@ -61,10 +102,42 @@ is($group3ID, 3, 'group 3 should have ID=3');
 
 # fetch group 3 by id and check all values
 ok(my $group3 = $configDB->fetchGroupByID(3), 'fetch group 3');
-is($group3->{id},       '3',         'group 3 - id');
-is($group3->{name},     'grp-nr-3',  'group 3 - name');
-is($group3->{priority}, 50,          'group 3 - priority');
-is($group3->{comment},  'nuff said', 'group 3 - comment');
+is($group3->{id},                         '3',         'group 3 - id');
+is($group3->{name},                       'grp-nr-3',  'group 3 - name');
+is($group3->{priority},                   50,          'group 3 - priority');
+is($group3->{comment},                    'nuff said', 'group 3 - comment');
+is($group3->{attrs}->{automnt_dir},       'a',         'group 3 - attr automnt_dir');
+is($group3->{attrs}->{automnt_src},       'b',         'group 3 - attr automnt_src');
+is($group3->{attrs}->{country},           'c',         'group 3 - attr country');
+is($group3->{attrs}->{dm_allow_shutdown}, 'd',         'group 3 - attr dm_allow_shutdown');
+is($group3->{attrs}->{hw_graphic},        'e',         'group 3 - attr hw_graphic');
+is($group3->{attrs}->{hw_monitor},        'f',         'group 3 - attr hw_monitor');
+is($group3->{attrs}->{hw_mouse},          'g',         'group 3 - attr hw_mouse');
+is($group3->{attrs}->{late_dm},           'h',         'group 3 - attr late_dm');
+is($group3->{attrs}->{netbios_workgroup}, 'i',         'group 3 - attr netbios_workgroup');
+is($group3->{attrs}->{nis_domain},        'j',         'group 3 - attr nis_domain');
+is($group3->{attrs}->{nis_servers},       'k',         'group 3 - attr nis_servers');
+is($group3->{attrs}->{sane_scanner},      'p',         'group 3 - attr sane_scanner');
+is($group3->{attrs}->{scratch},           'q',         'group 3 - attr scratch');
+is($group3->{attrs}->{slxgrp},            'r',         'group 3 - attr slxgrp');
+is($group3->{attrs}->{start_alsasound},   's',         'group 3 - attr start_alsasound');
+is($group3->{attrs}->{start_atd},         't',         'group 3 - attr start_atd');
+is($group3->{attrs}->{start_cron},        'u',         'group 3 - attr start_cron');
+is($group3->{attrs}->{start_dreshal},     'v',         'group 3 - attr start_dreshal');
+is($group3->{attrs}->{start_ntp},         'w',         'group 3 - attr start_ftp');
+is($group3->{attrs}->{start_nfsv4},       'x',         'group 3 - attr start_nfsv4');
+is($group3->{attrs}->{start_printer},     'y',         'group 3 - attr start_printer');
+is($group3->{attrs}->{start_samba},       'z',         'group 3 - attr start_samba');
+is($group3->{attrs}->{start_snmp},        'A',         'group 3 - attr start_snmp');
+is($group3->{attrs}->{start_sshd},        'B',         'group 3 - attr start_sshd');
+is($group3->{attrs}->{start_syslog},      'C',         'group 3 - attr start_syslog');
+is($group3->{attrs}->{start_x},           'D',         'group 3 - attr start_x');
+is($group3->{attrs}->{start_xdmcp},       'E',         'group 3 - attr start_xdmcp');
+is($group3->{attrs}->{tex_enable},        'F',         'group 3 - attr tex_enable');
+is($group3->{attrs}->{timezone},          'G',         'group 3 - attr timezone');
+is($group3->{attrs}->{tvout},             'H',         'group 3 - attr tvout');
+is($group3->{attrs}->{vmware},            'I',         'group 3 - attr vmware');
+is(keys %{$group3->{attrs}},              31,          'group 3 - attribute count');
 
 # fetch group 2 by a filter on id and check all values
 ok(
@@ -75,16 +148,21 @@ is($group2->{id},       2,         'group 2 - id');
 is($group2->{name},     'grp-2.0', 'group 2 - name');
 is($group2->{priority}, 30,        'group 2 - priority');
 is($group2->{comment},  undef,     'group 2 - comment');
+is(keys %{$group2->{attrs}}, 0,    'group 2 - attribute count');
 
 # fetch group 1 by filter on name and check all values
 ok(
 	my $group1 = $configDB->fetchGroupByFilter({ name => 'grp-1' }), 
 	'fetch group 1 by filter on name'
 );
-is($group1->{id},       1,       'group 1 - id');
-is($group1->{name},     'grp-1', 'group 1 - name');
-is($group1->{priority}, 50,      'group 1 - priority');
-is($group1->{comment},  '',      'group 1 - comment');
+is($group1->{id},                 1,         'group 1 - id');
+is($group1->{name},               'grp-1',   'group 1 - name');
+is($group1->{priority},           50,        'group 1 - priority');
+is($group1->{comment},            '',        'group 1 - comment');
+is(keys %{$group1->{attrs}},       3,        'group 1 - attribute count');
+is($group1->{attrs}->{slxgrp},     'slxgrp', 'group 1 - attr slxgrp');
+is($group1->{attrs}->{start_snmp}, 'no',     'group 1 - attr start_snmp');
+is($group1->{attrs}->{start_sshd}, 'yes',    'group 1 - attr start_sshd');
 
 # fetch groups 3 & 1 by id
 ok(
@@ -121,6 +199,14 @@ is(@groups1And3, 2, 'should have got 2 groups');
 is($groups1And3[0]->{id}, 1, 'first id should be 1');
 is($groups1And3[1]->{id}, 3, 'second id should be 3');
 
+# fetch group 2 by filter on comment being undef'd
+ok(
+	my @group2Only = $configDB->fetchGroupByFilter({ comment => undef }), 
+	'fetch group 2 by filter on comment being undefined'
+);
+is(@group2Only, 1, 'should have got 1 group');
+is($group2Only[0]->{id}, 2, 'first id should be 2');
+
 # try to fetch with multi-column filter
 ok(
 	($group1, $group3)
@@ -141,6 +227,83 @@ is(@groups1And3, 2, 'should have got 2 groups');
 @groups1And3 = sort { $a->{id} cmp $b->{id} } @groups1And3;
 is($groups1And3[0]->{id}, 1, 'first id should be 1');
 is($groups1And3[1]->{id}, 3, 'second id should be 3');
+
+# filter groups by different attributes & values in combination
+ok( 
+	my @group1Only = $configDB->fetchGroupByFilter( {}, undef, { 
+		start_snmp => 'no',
+	} ),
+	'fetch group 1 by filter on attribute start_snmp'
+);
+
+is(@group1Only, 1, 'should have got 1 group');
+is($group1Only[0]->{id}, 1, 'first id should be 1');
+
+ok(
+	@group1Only = $configDB->fetchGroupByFilter( undef, 'id', { 
+		start_snmp => 'no',
+		tex_enable => undef,
+	} ),
+	'fetch group 1 by filter on attribute start_snmp + non-existing attr'
+);
+is(@group1Only, 1, 'should have got 1 group');
+is($group1Only[0]->{id}, 1, 'first id should be 1');
+
+ok(
+	@group1Only = $configDB->fetchGroupByFilter( {
+		name     => 'grp-1',
+		priority => 50,
+	}, 'id', {
+		start_snmp => 'no',
+		tex_enable => undef,
+	} ),
+	'fetch group 1 by multiple filter on values and attributes'
+);
+is(@group1Only, 1, 'should have got 1 group');
+is($group1Only[0]->{id}, 1, 'first id should be 1');
+
+is(
+	$configDB->fetchGroupByFilter( {
+		comment => 'xxx',
+	}, 'id', {
+		start_snmp => 'no',
+		tex_enable => undef,
+	} ),
+	undef,
+	'mismatch group 1 by filter with incorrect value'
+);
+is(
+	$configDB->fetchGroupByFilter( {
+		name => 'grp-1',
+	}, 'id', {
+		start_snmp => 'yes',
+		tex_enable => undef,
+	} ),
+	undef,
+	'mismatch group 1 by filter with incorrect attribute value'
+);
+is(
+	$configDB->fetchGroupByFilter( {
+		name => 'grp-1',
+	}, 'id', {
+		start_sshd => undef,
+	} ),
+	undef,
+	'mismatch group 1 by filter with attribute not being empty'
+);
+
+# fetch groups 1 & 2 by filter on attribute start_samba not existing
+ok(
+	my @groups1And2 = $configDB->fetchGroupByFilter( {}, undef, {
+		start_samba => undef,
+	} ), 
+	'fetch groups 1 & 2 by filter on attribute start_samba not existing'
+);
+is(@groups1And2, 2, 'should have got 2 groups');
+# now sort by ID and check if we have really got 1 and 2
+@groups1And2 = sort { $a->{id} cmp $b->{id} } @groups1And2;
+is($groups1And2[0]->{id}, 1, 'first id should be 1');
+is($groups1And2[1]->{id}, 2, 'second id should be 2');
 
 # try to fetch a couple of non-existing groups by id
 is($configDB->fetchGroupByID(-1), undef, 'group with id -1 should not exist');
@@ -172,6 +335,9 @@ ok(
 );
 is($group1->{id},   1,          'really got group number 1');
 is($group1->{name}, q{GRP-'1'}, q{really got group named "GRP-'1'"});
+
+# changing nothing at all should succeed
+ok($configDB->changeGroup(1), 'changing nothing at all in group 1');
 
 # changing a non-existing column should fail
 ok(

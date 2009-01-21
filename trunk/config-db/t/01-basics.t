@@ -5,6 +5,9 @@ use lib '/opt/openslx/lib';
 # basic stuff
 use_ok(OpenSLX::ConfigDB);
 
+use strict;
+use warnings;
+
 # connecting and disconnecting
 ok(my $configDB = OpenSLX::ConfigDB->new, 'can create object');
 isa_ok($configDB, 'OpenSLX::ConfigDB');

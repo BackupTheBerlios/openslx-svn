@@ -1,5 +1,8 @@
 use Test::More qw(no_plan);
 
+use strict;
+use warnings;
+
 use lib '/opt/openslx/lib';
 
 # basic init
@@ -39,7 +42,7 @@ ok(
 	'client-ID 3 has been associated to group 1'
 );
 is(
-	@clientIDs = sort($configDB->fetchClientIDsOfGroup(1)),
+	my @clientIDs = sort($configDB->fetchClientIDsOfGroup(1)),
 	1, "group 1 should have one client-ID"
 );
 is($clientIDs[0], 3, "first client of group 1 should have ID 3");
@@ -48,7 +51,7 @@ is(
 	0, "group 3 should have no client-ID"
 );
 is(
-	@groupIDs = sort($configDB->fetchGroupIDsOfClient(0)),
+	my @groupIDs = sort($configDB->fetchGroupIDsOfClient(0)),
 	0, "default client should have no group-IDs"
 );
 is(

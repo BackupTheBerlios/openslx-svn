@@ -33,12 +33,7 @@ use OpenSLX::Basics;
 
 use POSIX qw(locale_h);
 my $lang = setlocale(LC_MESSAGES);
-my $country;
-if ($lang =~ m[^\w\w_(\w\w)]) {
-	$country = lc($1);
-} else {
-	$country = 'us';
-}
+my $country = $lang =~ m[^\w\w_(\w\w)] ? lc($1) : 'us';
 
 ################################################################################
 ### DB-schema definition
@@ -73,10 +68,20 @@ $DbSchema = {
 			],
 			'vals' => [
 				{	# add default client
-					'id' => 0,
-					'name' => '<<<default>>>',
-					'comment' => 'internal client that holds default values',
+					'id'         => 0,
+					'name'       => '<<<default>>>',
+					'comment'    => 'internal client that holds default values',
+					'unbootable' => 0,
 				},
+			],
+		},
+		'client_attr' => {
+			# attributes of clients
+			'cols' => [
+				'id:pk',			# primary key
+				'client_id:fk',		# foreign key to client
+				'name:s.128',		# attribute name
+				'value:s.255',		# attribute value
 			],
 		},
 		'client_system_ref' => {
@@ -132,6 +137,15 @@ $DbSchema = {
 				'priority:i',		# priority, used for order in group-list
 									# (from 0-highest to 99-lowest)
 				'comment:s.1024',	# internal comment (optional, for admins)
+			],
+		},
+		'group_attr' => {
+			# attributes of groups
+			'cols' => [
+				'id:pk',			# primary key
+				'group_id:fk',		# foreign key to group
+				'name:s.128',		# attribute name
+				'value:s.255',		# attribute value
 			],
 		},
 		'group_client_ref' => {
@@ -394,146 +408,9 @@ $DbSchema = {
 };
 
 ################################################################################
-### DB-schema history
 ###
-### 	This hash contains a description of all the different changes that have
-### 	taken place on the schema. Each version contains a changeset (array)
-### 	with the commands that take the schema from the last version to the
-### 	current.
-###
-### 	The following 'cmd'-types are supported:
-###
-### 		add-table => creates a new table
-### 			'table' => contains the name of the new table
-### 			'cols'	=> contains a list of column descriptions
-### 			'vals'	=> optional, contains list of data hashes to be inserted
-### 					   into new table
-###
-### 		drop-table => drops an existing table
-### 			'table	=> contains the name of the table to be dropped
-###
-### 		rename-table => renames a table
-### 			'old-table' => contains the old name of the table
-### 			'new-table' => contains the new name of the table
-### 			'cols' => contains a full list of column descriptions
-###
-### 		add-columns => adds columns to a table
-### 			'table' => the name of the table the columns should be added to
-### 			'new-cols' => contains a list of new column descriptions
-### 			'new-default-vals' => optional, a list of data hashes to be used
-###							 		  as default values for the new columns
-### 			'cols' => contains a full list of resulting column descriptions
-###
-### 		drop-columns => drops columns from a table
-### 			'table' => the name of the table the columns should be dropped from
-### 			'drop-cols' => a list of column names to be dropped
-### 			'cols'	=> contains a full list of resulting column descriptions
-###
-###			perl-func => a perl function invoked with config-DB object as param
-### 			'code'	=> the function (sub) that shall be executed
-###
-################################################################################
-
-%DbSchemaHistory = (
-	'0.01' => [
-		# there's no need to upgrade to the initial schema version, as we
-		# create the newest schema automatically if none exists yet.
-	],
-	'0.2' => [
-		# move attributes into separate tables ...
-		#
-		# ... system attributes ...
-		{
-			'cmd' => 'add-table',
-			'table' => 'system_attr',
-			'cols' => [
-				'id:pk',
-				'system_id:fk',
-				'name:s.128',
-				'value:s.255',
-			],
-		},
-		{
-			'cmd' => 'perl-func',
-			'code' => sub {
-				my $configDB = shift;
-				foreach my $system ($configDB->fetchSystemByFilter()) {
-					foreach my $key (keys %$system) {
-						next if substr($key, 0, 5) ne 'attr_';
-						my $attrValue = $system->{$key} || '';
-						next if $system->{id}>0 && !length($attrValue);
-						my $newAttrName = substr($key, 5);
-						$configDB->setSystemAttr(
-							$system->{id}, $newAttrName, $attrValue
-						);
-					}
-				}
-				1;
-			}
-		},
-		{
-			'cmd' => 'drop-columns',
-			'table' => 'system',
-			'drop-cols' => [
-				'attr_automnt_dir',
-				'attr_automnt_src',
-				'attr_country',
-				'attr_dm_allow_shutdown',
-				'attr_hw_graphic',
-				'attr_hw_monitor',
-				'attr_hw_mouse',
-				'attr_late_dm',
-				'attr_netbios_workgroup',
-				'attr_nis_domain',
-				'attr_nis_servers',
-				'attr_ramfs_fsmods',
-				'attr_ramfs_miscmods',
-				'attr_ramfs_nicmods',
-				'attr_ramfs_screen',
-				'attr_sane_scanner',
-				'attr_scratch',
-				'attr_slxgrp',
-				'attr_start_alsasound',
-				'attr_start_atd',
-				'attr_start_cron',
-				'attr_start_dreshal',
-				'attr_start_ntp',
-				'attr_start_nfsv4',
-				'attr_start_printer',
-				'attr_start_samba',
-				'attr_start_snmp',
-				'attr_start_sshd',
-				'attr_start_syslog',
-				'attr_start_x',
-				'attr_start_xdmcp',
-				'attr_tex_enable',
-				'attr_timezone',
-				'attr_tvout',
-				'attr_vmware',
-			],
-			'cols' => [
-				'id:pk',
-				'export_id:fk',
-				'name:s.64',
-				'label:s.64',
-				'kernel:s.128',
-				'kernel_params:s.512',
-				'hidden:b',
-				'comment:s.1024',
-			],
-		},
-		#
-		# ... client attributes ...
-		#
-		# ... group attributes ...
-	],
-);
-
-
-################################################################################
-###
-### Load all available AttrInfo modules and build the complete hash containing
-### info about all known attributes from that.
+### Load the available AttrInfo-modules and build a hash containing info about
+### all known attributes from the data contained in those modules.
 ###
 ################################################################################
 

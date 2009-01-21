@@ -1,5 +1,8 @@
 use Test::More qw(no_plan);
 
+use strict;
+use warnings;
+
 use lib '/opt/openslx/lib';
 
 # basic init
@@ -175,6 +178,9 @@ ok(
 );
 is($vendorOS1->{id},   1,          'really got vendor-OS number 1');
 is($vendorOS1->{name}, q{VOS-'1'}, q{really got vendor-OS named "VOS-'1'"});
+
+# changing nothing at all should succeed
+ok($configDB->changeVendorOS(1), 'changing nothing at all in vendor-OS 1');
 
 # changing a non-existing column should fail
 ok(

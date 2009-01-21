@@ -1,5 +1,8 @@
 use Test::More qw(no_plan);
 
+use strict;
+use warnings;
+
 use lib '/opt/openslx/lib';
 
 # basic init
@@ -39,7 +42,7 @@ ok(
 	'system-ID 3 has been associated to group 1'
 );
 is(
-	@systemIDs = sort($configDB->fetchSystemIDsOfGroup(1)),
+	my @systemIDs = sort($configDB->fetchSystemIDsOfGroup(1)),
 	1, "group 1 should have one system-ID"
 );
 is($systemIDs[0], 3, "first system of group 1 should have ID 3");
@@ -48,7 +51,7 @@ is(
 	0, "group 3 should have no system-ID"
 );
 is(
-	@groupIDs = sort($configDB->fetchGroupIDsOfSystem(0)),
+	my @groupIDs = sort($configDB->fetchGroupIDsOfSystem(0)),
 	0, "default system should have no group-IDs"
 );
 is(

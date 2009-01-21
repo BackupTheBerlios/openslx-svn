@@ -1,5 +1,8 @@
 use Test::More qw(no_plan);
 
+use strict;
+use warnings;
+
 use lib '/opt/openslx/lib';
 
 # basic init

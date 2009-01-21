@@ -1,5 +1,8 @@
 use Test::More qw(no_plan);
 
+use strict;
+use warnings;
+
 use lib '/opt/openslx/lib';
 
 # basic init
@@ -222,6 +225,9 @@ ok(
 );
 is($export1->{id},   1,          'really got export number 1');
 is($export1->{name}, q{EXP-'1'}, q{really got export named "EXP-'1'"});
+
+# changing nothing at all should succeed
+ok($configDB->changeExport(1), 'changing nothing at all in export 1');
 
 # changing a non-existing column should fail
 ok(

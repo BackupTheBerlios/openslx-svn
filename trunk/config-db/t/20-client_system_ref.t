@@ -1,5 +1,8 @@
 use Test::More qw(no_plan);
 
+use strict;
+use warnings;
+
 use lib '/opt/openslx/lib';
 
 # basic init
@@ -40,7 +43,7 @@ ok(
 	'system-ID 3 has been associated to client 1'
 );
 is(
-	@systemIDs = sort($configDB->fetchSystemIDsOfClient(0)),
+	my @systemIDs = sort($configDB->fetchSystemIDsOfClient(0)),
 	0, "default client should have no system-ID"
 );
 is(
@@ -53,7 +56,7 @@ is(
 	0, "client 3 should have no system-ID"
 );
 is(
-	@clientIDs = sort($configDB->fetchClientIDsOfSystem(0)),
+	my @clientIDs = sort($configDB->fetchClientIDsOfSystem(0)),
 	0, "default system should have no client-IDs"
 );
 is(

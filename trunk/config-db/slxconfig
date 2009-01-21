@@ -66,17 +66,23 @@ my $openslxDB = OpenSLX::ConfigDB->new();
 $openslxDB->connect();
 
 my $action = shift @ARGV || '';
-if ($action =~ m[^add-s]i) {
-	addSystemToConfigDB(@ARGV);
-}
-elsif ($action =~ m[^add-c]i) {
+if ($action =~ m[^add-c]i) {
 	addClientToConfigDB(@ARGV);
+}
+elsif ($action =~ m[^add-g]i) {
+	addGroupToConfigDB(@ARGV);
+}
+elsif ($action =~ m[^add-s]i) {
+	addSystemToConfigDB(@ARGV);
 }
 elsif ($action =~ m[^change-v]i) {
 	changeVendorOSInConfigDB(@ARGV);
 }
 elsif ($action =~ m[^change-e]i) {
 	changeExportInConfigDB(@ARGV);
+}
+elsif ($action =~ m[^change-g]i) {
+	changeGroupInConfigDB(@ARGV);
 }
 elsif ($action =~ m[^change-s]i) {
 	changeSystemInConfigDB(@ARGV);
@@ -112,6 +118,10 @@ elsif ($action =~ m[^search-e]) {
 	print _tr("Matching exports:\n");
 	searchExports(@ARGV);
 }
+elsif ($action =~ m[^search-g]) {
+	print _tr("Matching groups:\n");
+	searchGroups(@ARGV);
+}
 elsif ($action =~ m[^search-s]) {
 	print _tr("Matching systems:\n");
 	searchSystems(@ARGV);
@@ -120,10 +130,13 @@ elsif ($action =~ m[^search-v]) {
 	print _tr("Matching vendor-OSes:\n");
 	searchVendorOSes(@ARGV);
 }
-elsif ($action =~ m[^remove-cli]i) {
+elsif ($action =~ m[^remove-c]i) {
 	removeClientFromConfigDB(@ARGV);
 }
-elsif ($action =~ m[^remove-sys]i) {
+elsif ($action =~ m[^remove-g]i) {
+	removeClientFromConfigDB(@ARGV);
+}
+elsif ($action =~ m[^remove-s]i) {
 	removeSystemFromConfigDB(@ARGV);
 }
 else {
@@ -227,7 +240,7 @@ sub dumpElements
 			print join(
 				'',
 				map {
-					my $elemVal = $elem->{$_} || '';
+					my $elemVal = defined $elem->{$_} ? $elem->{$_} : '-';
 					if (ref($elemVal) eq 'HASH') {
 						my $spcLen 
 							= max(map { length($_) } keys %$elemVal) || 0;
@@ -237,7 +250,7 @@ sub dumpElements
 							map {
 								my $spc = ' ' x $spcLen;
 								my $val = $elemVal->{$_} || '';
-								$val =~ s[\n][\n\t$spc   ]g;
+								$val =~ s[\n][\n$ind$spc   ]g;
 								"$ind$_" . substr($spc, length($_)) . " = $val";
 							}
 							sort keys %$elemVal
@@ -246,7 +259,7 @@ sub dumpElements
 						"  $_:\n$subLines\n";
 					} else {
 						my $spc = ' ' x $spcLen;
-						$elemVal =~ s[\n][\n\t$spc   ]g;
+						$elemVal =~ s[\n][\n$ind$spc   ]g;
 						"$ind$_" . substr($spc, length($_)) . " = $elemVal\n";
 					}
 				}
@@ -285,6 +298,9 @@ sub listClients
 					map { $_->{name} }
 					sort { $a->{name} cmp $b->{name} }
 					$openslxDB->fetchSystemByID(\@sysIDs, 'name');
+			# rename attrs to ATTRIBUTES for display
+			$_->{ATTRIBUTES} = $_->{attrs};
+			delete $_->{attrs};
 			$_;
 		}
 		sort { $a->{name} cmp $b->{name} } 
@@ -319,6 +335,9 @@ sub listGroups
 				=	join "\n", map { $_->{name} }
 					sort { $a->{name} cmp $b->{name} }
 					$openslxDB->fetchClientByID(\@clientIDs, 'name');
+			# rename attrs to ATTRIBUTES for display
+			$_->{ATTRIBUTES} = $_->{attrs};
+			delete $_->{attrs};
 			$_;
 		}
 		sort { $a->{name} cmp $b->{name} } 
@@ -387,7 +406,9 @@ sub listSystems
 			if (defined $export) {
 				$_->{export_id} = "$export->{name} ($export->{type})";
 			}
-			$_->{ATTRIBUTES} = $openslxDB->fetchSystemAttrsAsHash($_->{id});
+			# rename attrs to ATTRIBUTES for display
+			$_->{ATTRIBUTES} = $_->{attrs};
+			delete $_->{attrs};
 			$_;
 		}
 		sort { $a->{name} cmp $b->{name} }
@@ -419,7 +440,10 @@ sub listVendorOSes
 sub searchClients
 {
 	my @clientKeys = $openslxDB->getColumnsOfTable('client');
-	my $clientData = parseKeyValueArgs(\@clientKeys, 'client', @_);
+	my @clientAttrKeys = $openslxDB->getKnownClientAttrs();
+	my ($clientData, $clientAttrs) = parseKeyValueArgsWithAttrs(
+		\@clientKeys, \@clientAttrKeys, 'client', @_
+	);
 
 	# set verbose mode if any params have been passed in:
 	$verbose = 1 if %$clientData;
@@ -432,10 +456,13 @@ sub searchClients
 				=	join "\n", map { $_->{name} }
 					sort { $a->{name} cmp $b->{name} }
 					$openslxDB->fetchSystemByID(\@sysIDs, 'name');
+			# rename attrs to ATTRIBUTES for display
+			$_->{ATTRIBUTES} = $_->{attrs};
+			delete $_->{attrs};
 			$_;
 		}
 		sort { $a->{name} cmp $b->{name} }
-		$openslxDB->fetchClientByFilter($clientData)
+		$openslxDB->fetchClientByFilter($clientData, undef, $clientAttrs)
 	);
 
 	return 1;
@@ -444,7 +471,10 @@ sub searchClients
 sub searchGroups
 {
 	my @groupKeys = $openslxDB->getColumnsOfTable('groups');
-	my $groupData = parseKeyValueArgs(\@groupKeys, 'groups', @_);
+	my @groupAttrKeys = $openslxDB->getKnownClientAttrs();
+	my ($groupData, $groupAttrs) = parseKeyValueArgsWithAttrs(
+		\@groupKeys, \@groupAttrKeys, 'group', @_
+	);
 
 	# set verbose mode if any params have been passed in:
 	$verbose = 1 if %$groupData;
@@ -462,10 +492,13 @@ sub searchGroups
 				=	join "\n", map { $_->{name} }
 					sort { $a->{name} cmp $b->{name} }
 					$openslxDB->fetchClientByID(\@clientIDs, 'name');
+			# rename attrs to ATTRIBUTES for display
+			$_->{ATTRIBUTES} = $_->{attrs};
+			delete $_->{attrs};
 			$_;
 		}
 		sort { $a->{name} cmp $b->{name} }
-		$openslxDB->fetchGroupByFilter($groupData)
+		$openslxDB->fetchGroupByFilter($groupData, undef, $groupAttrs)
 	);
 
 	return 1;
@@ -523,7 +556,9 @@ sub searchSystems
 			if (defined $export) {
 				$_->{export_id} = "$export->{name} ($export->{type})";
 			}
-			$_->{ATTRIBUTES} = $openslxDB->fetchSystemAttrsAsHash($_->{id});
+			# rename attrs to ATTRIBUTES for display
+			$_->{ATTRIBUTES} = $_->{attrs};
+			delete $_->{attrs};
 			$_;
 		}
 		sort { $a->{name} cmp $b->{name} }

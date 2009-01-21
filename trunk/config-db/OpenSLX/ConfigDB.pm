@@ -561,6 +561,15 @@ sub fetchSystemByFilter
 		$filter, $resultCols, $attrFilter
 	);
 
+	# unless specific result cols have been given, we mix in the attributes
+	# of each system, too:
+	if (!defined $resultCols) {
+		foreach my $system (@systems) {
+			$system->{attrs} 
+				= $self->{'meta-db'}->fetchSystemAttrs($system->{id});
+		}
+	}
+
 	return wantarray() ? @systems : shift @systems;
 }
 
@@ -596,89 +605,14 @@ sub fetchSystemByID
 	
 	# unless specific result cols have been given, we mix in the attributes
 	# of each system, too:
-#	if (!defined $resultCols) {
-#		foreach my $system (@systems) {
-#			$system->{attrs} 
-#				= $self->{'meta-db'}->fetchSystemAttrs($system->{id});
-#		}
-#	}
+	if (!defined $resultCols) {
+		foreach my $system (@systems) {
+			$system->{attrs} 
+				= $self->{'meta-db'}->fetchSystemAttrs($system->{id});
+		}
+	}
 
 	return wantarray() ? @systems : shift @systems;
-}
-
-=item C<fetchSystemAttrs($systemID, [$attrNames])>
-
-Fetches and returns the information about the attributes of the system
-with the given ID.
-
-=over
-
-=item Param C<$systemID>
-
-The ID of the system whose attributes you are interested in.
-
-=item Param C<$attrNames> [Optional]
-
-A comma-separated list of attribute names that shall be returned. If not 
-defined,all available attributes will be returned.
-
-=item Return Value
-
-An array of hash-refs containing the resulting data rows (or a single hash-ref
-mapping all attribute names to the respective value).
-
-=back
-
-=cut
-
-sub fetchSystemAttrs
-{
-	my $self      = shift;
-	my $systemID  = shift;
-	my $attrNames = shift;
-
-	my @attrs = $self->{'meta-db'}->fetchSystemAttrs($systemID, $attrNames);
-
-	return wantarray() ? @attrs : shift @attrs;
-}
-
-=item C<fetchSystemAttrsAsHash($systemID, [$attrNames])>
-
-Fetches and returns the information about the attributes of the system
-with the given ID.
-
-=over
-
-=item Param C<$systemID>
-
-The ID of the system whose attributes you are interested in.
-
-=item Param C<$attrNames> [Optional]
-
-A comma-separated list of attribute names that shall be returned. If not 
-defined,all available attributes will be returned.
-
-=item Return Value
-
-A single hash-ref mapping all attribute names to their respective value.
-
-=back
-
-=cut
-
-sub fetchSystemAttrsAsHash
-{
-	my $self      = shift;
-	my $systemID  = shift;
-	my $attrNames = shift;
-
-	my @attrs = $self->{'meta-db'}->fetchSystemAttrs($systemID, $attrNames);
-
-	my $Result = {};
-	foreach my $attr (@attrs) {
-		$Result->{$attr->{name}} = $attr->{value};
-	}
-	return $Result;
 }
 
 =item C<fetchSystemIDsOfExport($id)>
@@ -787,10 +721,23 @@ An array of hash-refs containing the resulting data rows.
 
 sub fetchClientByFilter
 {
-	my $self   = shift;
-	my $filter = shift;
+	my $self       = shift;
+	my $filter     = shift;
+	my $resultCols = shift;
+	my $attrFilter = shift;
 
-	my @clients = $self->{'meta-db'}->fetchClientByFilter($filter);
+	my @clients = $self->{'meta-db'}->fetchClientByFilter(
+		$filter, $resultCols, $attrFilter
+	);
+
+	# unless specific result cols have been given, we mix in the attributes
+	# of each client, too:
+	if (!defined $resultCols) {
+		foreach my $client (@clients) {
+			$client->{attrs} 
+				= $self->{'meta-db'}->fetchClientAttrs($client->{id});
+		}
+	}
 
 	return wantarray() ? @clients : shift @clients;
 }
@@ -824,6 +771,15 @@ sub fetchClientByID
 	my $resultCols = shift;
 
 	my @clients = $self->{'meta-db'}->fetchClientByID($ids, $resultCols);
+
+	# unless specific result cols have been given, we mix in the attributes
+	# of each client, too:
+	if (!defined $resultCols) {
+		foreach my $client (@clients) {
+			$client->{attrs} 
+				= $self->{'meta-db'}->fetchClientAttrs($client->{id});
+		}
+	}
 
 	return wantarray() ? @clients : shift @clients;
 }
@@ -911,8 +867,20 @@ sub fetchGroupByFilter
 	my $self       = shift;
 	my $filter     = shift;
 	my $resultCols = shift;
+	my $attrFilter = shift;
 
-	my @groups = $self->{'meta-db'}->fetchGroupByFilter($filter, $resultCols);
+	my @groups = $self->{'meta-db'}->fetchGroupByFilter(
+		$filter, $resultCols, $attrFilter
+	);
+
+	# unless specific result cols have been given, we mix in the attributes
+	# of each group, too:
+	if (!defined $resultCols) {
+		foreach my $group (@groups) {
+			$group->{attrs} 
+				= $self->{'meta-db'}->fetchGroupAttrs($group->{id});
+		}
+	}
 
 	return wantarray() ? @groups : shift @groups;
 }
@@ -946,6 +914,15 @@ sub fetchGroupByID
 	my $resultCols = shift;
 
 	my @groups = $self->{'meta-db'}->fetchGroupByID($ids, $resultCols);
+
+	# unless specific result cols have been given, we mix in the attributes
+	# of each group, too:
+	if (!defined $resultCols) {
+		foreach my $group (@groups) {
+			$group->{attrs} 
+				= $self->{'meta-db'}->fetchGroupAttrs($group->{id});
+		}
+	}
 
 	return wantarray() ? @groups : shift @groups;
 }
@@ -1707,6 +1684,43 @@ sub changeClient
 	return $self->{'meta-db'}->changeClient($clientIDs, $valRows);
 }
 
+=item C<setClientAttr($clientID, $attrName, $attrValue)>
+
+Sets a value for an attribute of the given client. If the client already
+has a value for this attribute, it will be overwritten.
+
+=over
+
+=item Param C<clientID>
+
+The ID of the client whose attribute shall be changed.
+
+=item Param C<attrName>
+
+The name of the attribute to change.
+
+=item Param C<attrValue>
+
+The new value for the attribute.
+
+=item Return Value
+
+C<1> if the attribute could be set, C<undef> if not.
+
+=back
+
+=cut
+
+sub setClientAttr
+{
+	my $self      = shift;
+	my $clientID  = shift;
+	my $attrName  = shift;
+	my $attrValue = shift;
+
+	return $self->{'meta-db'}->setClientAttr($clientID, $attrName, $attrValue);
+}
+
 =item C<setSystemIDsOfClient($clientID, @$systemIDs)>
 
 Specifies all systems that should be offered for booting by the given client.
@@ -1985,6 +1999,43 @@ sub removeGroup
 	}
 
 	return $self->{'meta-db'}->removeGroup($groupIDs);
+}
+
+=item C<setGroupAttr($groupID, $attrName, $attrValue)>
+
+Sets a value for an attribute of the given group. If the group already
+has a value for this attribute, it will be overwritten.
+
+=over
+
+=item Param C<groupID>
+
+The ID of the group whose attribute shall be changed.
+
+=item Param C<attrName>
+
+The name of the attribute to change.
+
+=item Param C<attrValue>
+
+The new value for the attribute.
+
+=item Return Value
+
+C<1> if the attribute could be set, C<undef> if not.
+
+=back
+
+=cut
+
+sub setGroupAttr
+{
+	my $self      = shift;
+	my $groupID  = shift;
+	my $attrName  = shift;
+	my $attrValue = shift;
+
+	return $self->{'meta-db'}->setGroupAttr($groupID, $attrName, $attrValue);
 }
 
 =item C<changeGroup(@$groupIDs, @$valRows)>
@@ -2588,13 +2639,17 @@ sub mergeAttributes
 	my $target = shift;
 	my $source = shift;
 
-	foreach my $key (keys %$source) {
-		next if !isAttribute($key);
-		my $sourceVal = $source->{$key} || '';
-		my $targetVal = $target->{$key} || '';
-		if (length($sourceVal) && !length($targetVal)) {
-			vlog(3, _tr("merging %s (val=%s)", $key, $sourceVal));
-			$target->{$key} = $sourceVal;
+	my $sourceAttrs = $source->{attrs} || {};
+
+	$target->{attrs} ||= {};
+	my $targetAttrs = $target->{attrs};
+
+	foreach my $key (keys %$sourceAttrs) {
+		my $sourceVal = $sourceAttrs->{$key};
+		my $targetVal = $targetAttrs->{$key};
+		if (defined $sourceVal && !defined $targetVal) {
+			vlog(0, _tr("merging %s (val=%s)", $key, $sourceVal));
+			$targetAttrs->{$key} = $sourceVal;
 		}
 	}
 
@@ -2628,11 +2683,16 @@ sub pushAttributes
 	my $target = shift;
 	my $source = shift;
 
-	foreach my $key (grep { isAttribute($_) } keys %$source) {
-		my $sourceVal = $source->{$key} || '';
-		if (length($sourceVal)) {
+	my $sourceAttrs = $source->{attrs} || {};
+
+	$target->{attrs} ||= {};
+	my $targetAttrs = $target->{attrs};
+
+	foreach my $key (keys %$sourceAttrs) {
+		my $sourceVal = $sourceAttrs->{$key};
+		if (defined $sourceVal) {
 			vlog(3, _tr("pushing %s (val=%s)", $key, $sourceVal));
-			$target->{$key} = $sourceVal;
+			$targetAttrs->{$key} = $sourceVal;
 		}
 	}
 
@@ -2826,54 +2886,7 @@ sub _checkAndUpgradeDBSchemaIfNecessary
 				$DbSchema->{version}, $currVersion
 			)
 		);
-		foreach my $v (sort { $a <=> $b } keys %DbSchemaHistory) {
-			next if $v <= $currVersion;
-			my $changeSet = $DbSchemaHistory{$v};
-			foreach my $c (0 .. scalar(@$changeSet) - 1) {
-				my $changeDescr = @{$changeSet}[$c];
-				my $cmd         = $changeDescr->{cmd};
-				if ($cmd eq 'add-table') {
-					$metaDB->schemaAddTable(
-						$changeDescr->{'table'},
-						$changeDescr->{'cols'},
-						$changeDescr->{'vals'}
-					);
-				} elsif ($cmd eq 'drop-table') {
-					$metaDB->schemaDropTable($changeDescr->{'table'});
-				} elsif ($cmd eq 'rename-table') {
-					$metaDB->schemaRenameTable(
-						$changeDescr->{'old-table'},
-						$changeDescr->{'new-table'},
-						$changeDescr->{'cols'}
-					);
-				} elsif ($cmd eq 'add-columns') {
-					$metaDB->schemaAddColumns(
-						$changeDescr->{'table'},
-						$changeDescr->{'new-cols'},
-						$changeDescr->{'new-default-vals'},
-						$changeDescr->{'cols'}
-					);
-				} elsif ($cmd eq 'drop-columns') {
-					$metaDB->schemaDropColumns(
-						$changeDescr->{'table'},
-						$changeDescr->{'drop-cols'},
-						$changeDescr->{'cols'}
-					);
-				} elsif ($cmd eq 'rename-columns') {
-					$metaDB->schemaRenameColumns(
-						$changeDescr->{'table'},
-						$changeDescr->{'col-renames'},
-						$changeDescr->{'cols'}
-					);
-				} elsif ($cmd eq 'perl-func') {
-					if (!$changeDescr->{code}->($self)) {
-						croak _tr('problem in perl-func cmd!');
-					}
-				} else {
-					croak _tr('UnknownDbSchemaCommand', $cmd);
-				}
-			}
-		}
+		$metaDB->schemaUpgradeDBFrom($currVersion);
 		$metaDB->schemaSetDBVersion($DbSchema->{version});
 		vlog(1, _tr('upgrade done'));
 	} else {

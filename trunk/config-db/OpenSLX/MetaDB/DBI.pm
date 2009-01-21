@@ -78,14 +78,13 @@ sub _trim
 
 sub _buildFilterClause
 {
-	my $self      = shift;
-	my $filter    = shift || {};
-	my $connector = shift;
+	my $self         = shift;
+	my $filter       = shift || {};
+	my $filterClause = shift || '';
 
-	my $filterClause = '';
-	my ($quotedVal);
+	my ($connector, $quotedVal);
 	foreach my $col (keys %$filter) {
-		$connector = !defined $connector ? 'WHERE' : 'AND';
+		$connector = !length($filterClause) ? 'WHERE' : 'AND';
 		if (defined $filter->{$col}) {
 			$quotedVal = $self->{dbh}->quote($filter->{$col});
 			$filterClause .= " $connector $col = $quotedVal";
@@ -94,42 +93,48 @@ sub _buildFilterClause
 		}
 	}
 	
-	return $filterClause;
+	return $filterClause || '';
 }
 
 sub _buildAttrFilterClause
 {
-	my $self       = shift;
-	my $attrFilter = shift || {};
-	my $connector = shift;
+	my $self         = shift;
+	my $attrFilter   = shift || {};
+	my $table        = shift;
+	my $filterClause = shift || '';
 
-	my $attrFilterClause = '';
-	my ($quotedName, $quotedValue);
+	my %tableMap = (
+		'client' => 'client',
+		'group'  => 'groups',
+		'system' => 'system',
+	);
+
+	my ($connector, $quotedName, $quotedValue);
 	foreach my $name (keys %$attrFilter) {
-		$connector = !defined $connector ? 'WHERE' : 'AND';
+		$connector = !length($filterClause) ? 'WHERE' : 'AND';
 		$quotedName = $self->{dbh}->quote($name);
 		if (defined $attrFilter->{$name}) {
 			$quotedValue = $self->{dbh}->quote($attrFilter->{$name});
-			$attrFilterClause .= <<"			End-of-Here";
+			$filterClause .= <<"			End-of-Here";
 				$connector EXISTS (
-					SELECT name FROM system_attr
+					SELECT name FROM ${table}_attr
 					WHERE name = $quotedName 
 					AND value = $quotedValue
-					AND system_id = system.id
+					AND ${table}_id = $tableMap{$table}.id
 				)
 			End-of-Here
 		} else {
-			$attrFilterClause .= <<"			End-of-Here";
+			$filterClause .= <<"			End-of-Here";
 				$connector NOT EXISTS (
-					SELECT name FROM system_attr
+					SELECT name FROM ${table}_attr
 					WHERE name = $quotedName 
-					AND system_id = system.id
+					AND ${table}_id = $tableMap{$table}.id
 				)
 			End-of-Here
 		}
 	}
 
-	return $attrFilterClause;
+	return $filterClause;
 }
 
 sub _doSelect
@@ -245,13 +250,13 @@ sub fetchSystemByFilter
 	my $attrFilter = shift;
 
 	$resultCols = '*' unless (defined $resultCols);
-	my $filterClause = $self->_buildFilterClause($filter, 'AND');
-	my $attrFilterClause = $self->_buildAttrFilterClause($attrFilter, 'AND');
+	my $filterClause = $self->_buildFilterClause($filter);
+	$filterClause = $self->_buildAttrFilterClause(
+		$attrFilter, 'system', $filterClause
+	);
 	my $sql = <<"	End-of-Here";
 		SELECT $resultCols FROM system
-		WHERE 1=1
 		$filterClause
-		$attrFilterClause
 	End-of-Here
 	return $self->_doSelect($sql);
 }
@@ -273,17 +278,17 @@ sub fetchSystemAttrs
 {
 	my $self      = shift;
 	my $systemID  = $self->{dbh}->quote(shift);
-	my $attrNames = shift;
 
 	my $sql = <<"	End-of-Here";
-		SELECT id, name, value FROM system_attr
+		SELECT name, value FROM system_attr
 		WHERE system_id = $systemID
 	End-of-Here
-	if (defined $attrNames) {
-		my $attrList = join ',', map { $self->{dbh}->quote($_) } @$attrNames;
-		$sql .= " AND name IN ($attrList)";
+	my @attrs = $self->_doSelect($sql);
+	my $Result = {};
+	foreach my $attr (@attrs) {
+		$Result->{$attr->{name}} = $attr->{value};
 	}
-	return $self->_doSelect($sql);
+	return $Result;
 }
 
 sub fetchSystemIDsOfExport
@@ -324,10 +329,17 @@ sub fetchClientByFilter
 	my $self       = shift;
 	my $filter     = shift;
 	my $resultCols = shift;
+	my $attrFilter = shift;
 
 	$resultCols = '*' unless (defined $resultCols);
 	my $filterClause = $self->_buildFilterClause($filter);
-	my $sql = "SELECT $resultCols FROM client $filterClause";
+	$filterClause = $self->_buildAttrFilterClause(
+		$attrFilter, 'client', $filterClause
+	);
+	my $sql = <<"	End-of-Here";
+		SELECT $resultCols FROM client
+		$filterClause
+	End-of-Here
 	return $self->_doSelect($sql);
 }
 
@@ -342,6 +354,23 @@ sub fetchClientByID
 	return if !length($idStr);
 	my $sql = "SELECT $resultCols FROM client WHERE id IN ($idStr)";
 	return $self->_doSelect($sql);
+}
+
+sub fetchClientAttrs
+{
+	my $self     = shift;
+	my $clientID = $self->{dbh}->quote(shift);
+
+	my $sql = <<"	End-of-Here";
+		SELECT name, value FROM client_attr
+		WHERE client_id = $clientID
+	End-of-Here
+	my @attrs = $self->_doSelect($sql);
+	my $Result = {};
+	foreach my $attr (@attrs) {
+		$Result->{$attr->{name}} = $attr->{value};
+	}
+	return $Result;
 }
 
 sub fetchClientIDsOfSystem
@@ -371,10 +400,17 @@ sub fetchGroupByFilter
 	my $self       = shift;
 	my $filter     = shift;
 	my $resultCols = shift;
+	my $attrFilter = shift;
 
 	$resultCols = '*' unless (defined $resultCols);
 	my $filterClause = $self->_buildFilterClause($filter);
-	my $sql = "SELECT $resultCols FROM groups $filterClause";
+	$filterClause = $self->_buildAttrFilterClause(
+		$attrFilter, 'group', $filterClause
+	);
+	my $sql = <<"	End-of-Here";
+		SELECT $resultCols FROM groups
+		$filterClause
+	End-of-Here
 	return $self->_doSelect($sql);
 }
 
@@ -389,6 +425,23 @@ sub fetchGroupByID
 	return if !length($idStr);
 	my $sql = "SELECT $resultCols FROM groups WHERE id IN ($idStr)";
 	return $self->_doSelect($sql);
+}
+
+sub fetchGroupAttrs
+{
+	my $self    = shift;
+	my $groupID = $self->{dbh}->quote(shift);
+
+	my $sql = <<"	End-of-Here";
+		SELECT name, value FROM group_attr
+		WHERE group_id = $groupID
+	End-of-Here
+	my @attrs = $self->_doSelect($sql);
+	my $Result = {};
+	foreach my $attr (@attrs) {
+		$Result->{$attr->{name}} = $attr->{value};
+	}
+	return $Result;
 }
 
 sub fetchGroupIDsOfSystem
@@ -505,20 +558,22 @@ sub _doUpdate
 
 	my $dbh    = $self->{'dbh'};
 	my $valRow = (@$valRows)[0];
-	return if !defined $valRow || !scalar keys %$valRow;
+	return 1 if !defined $valRow || !scalar keys %$valRow;
 
 	my $idx = 0;
 	foreach my $valRow (@$valRows) {
 		my $id      = $IDs->[$idx++];
 		my %valData = %$valRow;
-		delete $valData{'id'};
-		# filter column 'id' if present, as we don't want to update it
+		# fail if asked to change the column 'id', as that is bogus
+		return if exists $valData{id} && $valData{id} ne $id;
+		# filter column 'id' if present, as we don't want to write it
+		delete $valData{id};
 		my @cols = map { "$_ = " . $self->quote($valRow->{$_}) }
 		  grep { $_ ne 'id' }
 		  # filter column 'id' if present, as we don't want
 		  # to update it!
 		  keys %$valRow;
-		return if !@cols;
+		next if !@cols;
 		my $cols = join ', ', @cols;
 		my $sql = "UPDATE $table SET $cols";
 		if (defined $id) {
@@ -661,7 +716,26 @@ sub addSystem
 	my $self    = shift;
 	my $valRows = shift;
 
-	return $self->_doInsert('system', $valRows);
+	# separate the attribute hashes ...
+	my @attrValRows 
+		=	map {
+				my $attrs = $_->{attrs};
+				delete $_->{attrs};
+				$attrs;
+			}
+			@$valRows;
+
+	# ... store the systems to get the IDs ...
+	my @systemIDs = $self->_doInsert('system', $valRows);
+
+	# ... finally store the individual attribute sets
+	foreach my $id (@systemIDs) {
+		my $attrs = shift @attrValRows;
+		next if !defined $attrs;
+		return if !$self->setSystemAttrs($id, $attrs);
+	}
+
+	return @systemIDs;
 }
 
 sub removeSystem
@@ -678,37 +752,44 @@ sub changeSystem
 	my $systemIDs = shift;
 	my $valRows   = shift;
 
+	# separate the attribute hashes and store them individually
+	my @attrValRows 
+		=	map {
+				my $attrs = $_->{attrs};
+				delete $_->{attrs};
+				$attrs;
+			}
+			@$valRows;
+	foreach my $id (@$systemIDs) {
+		my $attrs = shift @attrValRows;
+		next if !defined $attrs;
+		return if !$self->setSystemAttrs($id, $attrs);
+	}
+
+	# finally update all systems in one go
 	return $self->_doUpdate('system', $systemIDs, $valRows);
 }
 
-sub setSystemAttr
+sub setSystemAttrs
 {
-	my $self      = shift;
-	my $systemID  = shift;
-	my $attrName  = shift;
-	my $attrValue = shift;
+	my $self     = shift;
+	my $systemID = shift;
+	my $attrs    = shift;
 
-	my $quotedSystemID  = $self->{dbh}->quote($systemID);
-	my $quotedAttrName  = $self->{dbh}->quote($attrName);
+	# we take the simple path and remove all attributes ...
+	return if !$self->_doDelete('system_attr', [ $systemID ], 'system_id');
 
-	my $sql = <<"	End-of-Here";
-		SELECT id FROM system_attr
-		WHERE system_id = $quotedSystemID
-		AND name = $quotedAttrName
-	End-of-Here
-	my $id = $self->_doSelect($sql, 'id');
-	if ($id) {
-		return $self->_doUpdate(
-			'system_attr', [ $id ], [ { value => $attrValue } ] 
+	# ... and (re-)insert the given ones
+	foreach my $key (keys %$attrs) {
+		return if !$self->_doInsert(
+			'system_attr', [ {
+				system_id => $systemID,
+				name      => $key,
+				value     => $attrs->{$key},
+			} ]
 		);
 	}
-	return $self->_doInsert(
-		'system_attr', [ { 
-			system_id => $systemID,
-			name      => $attrName,
-			value     => $attrValue,
-		} ] 
-	);
+	return 1;
 }
 
 sub setClientIDsOfSystem
@@ -742,7 +823,26 @@ sub addClient
 	my $self    = shift;
 	my $valRows = shift;
 
-	return $self->_doInsert('client', $valRows);
+	# separate the attribute hashes ...
+	my @attrValRows 
+		=	map {
+				my $attrs = $_->{attrs};
+				delete $_->{attrs};
+				$attrs;
+			}
+			@$valRows;
+
+	# ... store the clients to get the IDs ...
+	my @clientIDs = $self->_doInsert('client', $valRows);
+
+	# ... finally store the individual attribute sets
+	foreach my $id (@clientIDs) {
+		my $attrs = shift @attrValRows;
+		next if !defined $attrs;
+		return if !$self->setClientAttrs($id, $attrs);
+	}
+
+	return @clientIDs;
 }
 
 sub removeClient
@@ -759,7 +859,44 @@ sub changeClient
 	my $clientIDs = shift;
 	my $valRows   = shift;
 
+	# separate the attribute hashes and store them individually
+	my @attrValRows 
+		=	map {
+				my $attrs = $_->{attrs};
+				delete $_->{attrs};
+				$attrs;
+			}
+			@$valRows;
+	foreach my $id (@$clientIDs) {
+		my $attrs = shift @attrValRows;
+		next if !defined $attrs;
+		return if !$self->setClientAttrs($id, $attrs);
+	}
+
+	# finally update all systems in one go
 	return $self->_doUpdate('client', $clientIDs, $valRows);
+}
+
+sub setClientAttrs
+{
+	my $self     = shift;
+	my $clientID = shift;
+	my $attrs    = shift;
+
+	# we take the simple path and remove all attributes ...
+	return if !$self->_doDelete('client_attr', [ $clientID ], 'client_id');
+
+	# ... and (re-)insert the given ones
+	foreach my $key (keys %$attrs) {
+		return if !$self->_doInsert(
+			'client_attr', [ {
+				client_id => $clientID,
+				name      => $key,
+				value     => $attrs->{$key},
+			} ]
+		);
+	}
+	return 1;
 }
 
 sub setSystemIDsOfClient
@@ -793,7 +930,26 @@ sub addGroup
 	my $self    = shift;
 	my $valRows = shift;
 
-	return $self->_doInsert('groups', $valRows);
+	# separate the attribute hashes ...
+	my @attrValRows 
+		=	map {
+				my $attrs = $_->{attrs};
+				delete $_->{attrs};
+				$attrs;
+			}
+			@$valRows;
+
+	# ... store the groups to get the IDs ...
+	my @groupIDs = $self->_doInsert('groups', $valRows);
+
+	# ... finally store the individual attribute sets
+	foreach my $id (@groupIDs) {
+		my $attrs = shift @attrValRows;
+		next if !defined $attrs;
+		return if !$self->setGroupAttrs($id, $attrs);
+	}
+
+	return @groupIDs;
 }
 
 sub removeGroup
@@ -810,7 +966,44 @@ sub changeGroup
 	my $groupIDs = shift;
 	my $valRows  = shift;
 
+	# separate the attribute hashes and store them individually
+	my @attrValRows 
+		=	map {
+				my $attrs = $_->{attrs};
+				delete $_->{attrs};
+				$attrs;
+			}
+			@$valRows;
+	foreach my $id (@$groupIDs) {
+		my $attrs = shift @attrValRows;
+		next if !defined $attrs;
+		return if !$self->setGroupAttrs($id, $attrs);
+	}
+
+	# finally update all groups in one go
 	return $self->_doUpdate('groups', $groupIDs, $valRows);
+}
+
+sub setGroupAttrs
+{
+	my $self    = shift;
+	my $groupID = shift;
+	my $attrs   = shift;
+
+	# we take the simple path and remove all attributes ...
+	return if !$self->_doDelete('group_attr', [ $groupID ], 'group_id');
+
+	# ... and (re-)insert the given ones
+	foreach my $key (keys %$attrs) {
+		return if !$self->_doInsert(
+			'group_attr', [ {
+				group_id => $groupID,
+				name      => $key,
+				value     => $attrs->{$key},
+			} ]
+		);
+	}
+	return 1;
 }
 
 sub setClientIDsOfGroup
@@ -894,6 +1087,16 @@ sub schemaFetchDBVersion
 	return unless defined $row;
 	# no entry in meta-table
 	return $row->{schema_version};
+}
+
+sub schemaUpgradeDBFrom
+{
+	my $self        = shift;
+	my $currVersion = shift;
+
+	$self->_upgradeDBTo0_2() if $currVersion < 0.2;
+
+	return 1;
 }
 
 sub schemaSetDBVersion
@@ -1112,6 +1315,218 @@ sub schemaChangeColumns
 	$self->schemaDropTable($table, 1);
 	$self->schemaRenameTable($tempTable, $table, $colDescrs, 1);
 	return;
+}
+
+sub _upgradeDBTo0_2
+{
+	my $self = shift;
+
+	# move attributes into separate tables ...
+	#
+	# ... system attributes ...
+	$self->schemaAddTable(
+		'system_attr', 
+		[
+			'id:pk',
+			'system_id:fk',
+			'name:s.128',
+			'value:s.255',
+		]
+	);
+	foreach my $system ($self->fetchSystemByFilter()) {
+		my %attrs;
+		foreach my $key (keys %$system) {
+			next if substr($key, 0, 5) ne 'attr_';
+			my $attrValue = $system->{$key} || '';
+			next if $system->{id} > 0 && !length($attrValue);
+			my $newAttrName = substr($key, 5);
+			$attrs{$newAttrName} = $attrValue;
+		}
+		$self->setSystemAttrs($system->{id}, \%attrs);
+	}
+	$self->schemaDropColumns(
+		'system',
+		[
+			'attr_automnt_dir',
+			'attr_automnt_src',
+			'attr_country',
+			'attr_dm_allow_shutdown',
+			'attr_hw_graphic',
+			'attr_hw_monitor',
+			'attr_hw_mouse',
+			'attr_late_dm',
+			'attr_netbios_workgroup',
+			'attr_nis_domain',
+			'attr_nis_servers',
+			'attr_ramfs_fsmods',
+			'attr_ramfs_miscmods',
+			'attr_ramfs_nicmods',
+			'attr_ramfs_screen',
+			'attr_sane_scanner',
+			'attr_scratch',
+			'attr_slxgrp',
+			'attr_start_alsasound',
+			'attr_start_atd',
+			'attr_start_cron',
+			'attr_start_dreshal',
+			'attr_start_ntp',
+			'attr_start_nfsv4',
+			'attr_start_printer',
+			'attr_start_samba',
+			'attr_start_snmp',
+			'attr_start_sshd',
+			'attr_start_syslog',
+			'attr_start_x',
+			'attr_start_xdmcp',
+			'attr_tex_enable',
+			'attr_timezone',
+			'attr_tvout',
+			'attr_vmware',
+		],
+		[
+			'id:pk',
+			'export_id:fk',
+			'name:s.64',
+			'label:s.64',
+			'kernel:s.128',
+			'kernel_params:s.512',
+			'hidden:b',
+			'comment:s.1024',
+		]
+	);
+	#
+	# ... client attributes ...
+	$self->schemaAddTable(
+		'client_attr',
+		[
+			'id:pk',
+			'client_id:fk',
+			'name:s.128',
+			'value:s.255',
+		]
+	);
+	foreach my $client ($self->fetchClientByFilter()) {
+		my %attrs;
+		foreach my $key (keys %$client) {
+			next if substr($key, 0, 5) ne 'attr_';
+			my $attrValue = $client->{$key} || '';
+			next if !length($attrValue);
+			my $newAttrName = substr($key, 5);
+			$attrs{$newAttrName} = $attrValue;
+		}
+		$self->setClientAttrs($client->{id}, \%attrs);
+	}
+	$self->schemaDropColumns(
+		'client',
+		[
+			'attr_automnt_dir',
+			'attr_automnt_src',
+			'attr_country',
+			'attr_dm_allow_shutdown',
+			'attr_hw_graphic',
+			'attr_hw_monitor',
+			'attr_hw_mouse',
+			'attr_late_dm',
+			'attr_netbios_workgroup',
+			'attr_nis_domain',
+			'attr_nis_servers',
+			'attr_sane_scanner',
+			'attr_scratch',
+			'attr_slxgrp',
+			'attr_start_alsasound',
+			'attr_start_atd',
+			'attr_start_cron',
+			'attr_start_dreshal',
+			'attr_start_ntp',
+			'attr_start_nfsv4',
+			'attr_start_printer',
+			'attr_start_samba',
+			'attr_start_snmp',
+			'attr_start_sshd',
+			'attr_start_syslog',
+			'attr_start_x',
+			'attr_start_xdmcp',
+			'attr_tex_enable',
+			'attr_timezone',
+			'attr_tvout',
+			'attr_vmware',
+		],
+		[
+			'id:pk',
+			'name:s.128',
+			'mac:s.20',
+			'boot_type:s.20',
+			'unbootable:b',
+			'kernel_params:s.128',
+			'comment:s.1024',
+		]
+	);
+	#
+	# ... group attributes ...
+	$self->schemaAddTable(
+		'group_attr',
+		[
+			'id:pk',
+			'group_id:fk',
+			'name:s.128',
+			'value:s.255',
+		]
+	);
+	foreach my $group ($self->fetchGroupByFilter()) {
+		my %attrs;
+		foreach my $key (keys %$group) {
+			next if substr($key, 0, 5) ne 'attr_';
+			my $attrValue = $group->{$key} || '';
+			next if !length($attrValue);
+			my $newAttrName = substr($key, 5);
+			$attrs{$newAttrName} = $attrValue;
+		}
+		$self->setGroupAttrs($group->{id}, \%attrs);
+	}
+	$self->schemaDropColumns(
+		'groups',
+		[
+			'attr_automnt_dir',
+			'attr_automnt_src',
+			'attr_country',
+			'attr_dm_allow_shutdown',
+			'attr_hw_graphic',
+			'attr_hw_monitor',
+			'attr_hw_mouse',
+			'attr_late_dm',
+			'attr_netbios_workgroup',
+			'attr_nis_domain',
+			'attr_nis_servers',
+			'attr_sane_scanner',
+			'attr_scratch',
+			'attr_slxgrp',
+			'attr_start_alsasound',
+			'attr_start_atd',
+			'attr_start_cron',
+			'attr_start_dreshal',
+			'attr_start_ntp',
+			'attr_start_nfsv4',
+			'attr_start_printer',
+			'attr_start_samba',
+			'attr_start_snmp',
+			'attr_start_sshd',
+			'attr_start_syslog',
+			'attr_start_x',
+			'attr_start_xdmcp',
+			'attr_tex_enable',
+			'attr_timezone',
+			'attr_tvout',
+			'attr_vmware',
+		],
+		[
+			'id:pk',
+			'name:s.128',
+			'priority:i',
+			'comment:s.1024',
+		]
+	);
+
+	return 1;
 }
 
 1;

@@ -1,5 +1,8 @@
 use Test::More qw(no_plan);
 
+use strict;
+use warnings;
+
 use lib '/opt/openslx/lib';
 
 # basic init
@@ -10,7 +13,7 @@ $configDB->connect();
 
 # fetch global-info 'next-nbd-server-port'
 ok(
-	$globalInfo = $configDB->fetchGlobalInfo('next-nbd-server-port'), 
+	my $globalInfo = $configDB->fetchGlobalInfo('next-nbd-server-port'), 
 	'fetch global-info'
 );
 is($globalInfo, '5000', 'global-info - value');
