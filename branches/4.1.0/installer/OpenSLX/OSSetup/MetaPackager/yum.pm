@@ -68,7 +68,7 @@ sub setupPackageSource
 	open(REPO, "> $repoFile")
 		or die _tr("unable to create repo-file <%s> (%s)\n", $repoFile, $1);
 	print REPO $repoDescr;
-	print REPO "\nexclude=$excludeList\n";
+#	print REPO "\nexclude=$excludeList\n";
 	close(REPO);
 }
 
