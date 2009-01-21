@@ -164,7 +164,15 @@ version=$(head -n 15 $0 | grep "# Version: " | awk '{print $3}')
 
 # hardware variables
 # temporary disk space for logs, etc...
-export tmpdir=/tmp/${USER}
+preftmpdir=/tmp/${USER}
+# there are two different kinds of tmp needed:
+# user config -> preferences for all *.vmx (especially that hidden ram image)
+# and per vmx config (written to runvmware.conf)
+if cat /proc/mounts|grep -e " /tmp" 2>/dev/null| grep -e "nfs" &>/dev/null
+  then export tmpdir=/dev/shm/vmware
+else
+  export tmpdir=$preftmpdir
+fi
 
 mac=
 declare -i mem=0
@@ -591,11 +599,12 @@ done
 # create environment
 # remove leftover locks from former runs,
 # problems may occure if you run more then one vmware with this script
-rm -f ${tmpdir}/*LOCK >/dev/null 2>&1
+rm -f ${tmpdir}/*LOCK ${preftmpdir} >/dev/null 2>&1
 rm -f ${tmpdir}/*.${debug}.log >/dev/null 2>&1
 
 # create vmware directories
 mkdir -p ${tmpdir} >/dev/null 2>&1
+mkdir -p ${preftmpdir} >/dev/null 2>&1
 mkdir -p ${vmhome} >/dev/null 2>&1
 
 # NO X-server no runvmware ;)

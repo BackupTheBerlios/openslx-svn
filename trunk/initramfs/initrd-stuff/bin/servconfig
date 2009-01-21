@@ -437,6 +437,7 @@ if [ "x$start_x" != "xno" ] ; then
            /tmp/.ICE-unix \
            /tmp/.X11-unix ; do testmkd /mnt/$i; done
   chmod 1777 /mnt/tmp/.ICE-unix /mnt/tmp/.X11-unix
+  chown 0:0 /mnt/tmp/.ICE-unix /mnt/tmp/.X11-unix
   echo "# file emtied by $0 during initramfs" > /mnt/etc/X11/xdm/Xservers
   # define additional sessions offered to the user (via dhcp/ldap config)
   # descsession -> deprecated by new vmware integration concept
