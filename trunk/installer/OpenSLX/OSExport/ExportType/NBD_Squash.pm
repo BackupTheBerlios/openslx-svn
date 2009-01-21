@@ -43,11 +43,13 @@ sub exportVendorOS
 
 	# TODO: once the include/exclude-patch by Vito has been applied
 	#       to mksquashfs, the extra route via rsync isn't necessary anymore:
-	my $mksquashfsCanFilter = 0;
+	my $mksquashfsCanFilter = 1;
 	if ($mksquashfsCanFilter) {
-		# do filtering as part of mksquashfs (needs additional mapping of
-		# our internal (rsync-)filter format to regexes):
 		my $includeExcludeList = $self->determineIncludeExcludeList();
+		# in order to do the filtering as part of mksquashfs, we need to map
+		# our internal (rsync-)filter format to regexes:
+		$includeExcludeList
+			= mapRsyncFilter2Regex($source, $includeExcludeList);
 		vlog 1, _tr("using include-exclude-filter:\n%s\n", $includeExcludeList);
 		$self->createSquashFS($source, $target, $includeExcludeList);
 	} else {
@@ -76,9 +78,24 @@ sub createSquashFS
 		# mksquasfs isn't significantly faster if fs already exists, but it
 		# causes the filesystem to grow somewhat, so we remove it in order to
 		# get the smallest FS-file possible.
-	if (system("mksquashfs $source $target -info")) {
-		die _tr("unable to create squashfs for source '%s into target '%s', giving up! (%s)",
-				$source, $target, $!);
+
+	# dump filter to a file ...
+	my $filterFile = "/tmp/slx-nbdsquash-filter-$$";
+	open(FILTERFILE,"> $filterFile")
+		or die _tr("unable to create tmpfile '%s' (%s)", $filterFile, $!);
+	print FILTERFILE $includeExcludeList;
+	close(FILTERFILE);
+
+	# ... invoke mksquashfs ...
+	vlog 0, _tr("invoking mksquashfs...");
+	my $mksquashfsBinary
+		= "$openslxConfig{'share-path'}/squashfs/mksquashfs";
+	my $res = system("$mksquashfsBinary $source $target -ff $filterFile");
+	unlink($filterFile);
+		# ... remove filter file if done
+	if ($res) {
+		die _tr("unable to create squashfs for source '%s into target '%s', giving up! ($!)",
+				$source, $target);
 	}
 }
 
@@ -91,6 +108,40 @@ sub showNbdParams
 	print _tr("Please make sure you start a corresponding nbd-server:\n\t%s\n",
 			  "nbd-server -r $self->{engine}->{'export-path'}");
 	print (('#' x 80)."\n");
+}
+
+sub mapRsyncFilter2Regex
+{
+	my $sourcePath = shift;
+
+	return
+		join "\n",
+		map {
+			if ($_ =~ m[^([-+]\s*)(.+?)\s*$]) {
+				my $action = $1;
+				my $regex = $2;
+				$regex =~ s[\*\*][.+]g;
+					# '**' matches everything
+				$regex =~ s[\*][[^/]+]g;
+					# '*' matches anything except slashes
+				$regex =~ s[\?][[^/]?]g;
+					# '*' matches any single char except slash
+				$regex =~ s[\?][[^/]?]g;
+					# '*' matches any single char except slash
+				$regex =~ s[\.][\\.]g;
+					# escape any dots
+				if (substr($regex, 0, 1) eq '/') {
+					# absolute path given, need to extend by source-path:
+					"$action^$sourcePath$regex\$";
+				} else {
+					# filename pattern given, need to anchor to the end only:
+					"$action$regex\$";
+				}
+			} else {
+				$_;
+			}
+		}
+		split "\n", shift;
 }
 
 1;
