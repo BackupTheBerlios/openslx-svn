@@ -130,8 +130,8 @@ install:
 		. ${SLX_CONFIG_PATH}/settings.local; \
 	fi; \
 	for m in $${SLX_DB_TYPE} SQLite CSV mysql; do \
-		if ! perl -e "use DBD::$$m" 2>>${SLX_INSTALL_LOG} ; then \
-			echo -e "  'DBD::$$m' not found, so $$m-databases will not be \
+		if ! perl -Ilib -Iconfig-db -e "use OpenSLX::MetaDB::$$m" 2>>${SLX_INSTALL_LOG} ; then \
+			echo -e "  'DBD::$$m' not found (or too buggy), so $$m-databases will not be \
 supported."; \
 		else \
 			if test "$${DEFAULT_DB_TYPE}X" = "X"; then \
