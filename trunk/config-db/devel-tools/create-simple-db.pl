@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 #
-# slxsetup-test-data-simple.pl - Simple OpenSLX test data generator
+# create-simple-db.pl - Simple OpenSLX test data generator
 #
 # (c) 2006 - OpenSLX.com
 #

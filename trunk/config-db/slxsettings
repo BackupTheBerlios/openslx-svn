@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 #
-# slxsetup.pl - OpenSLX-script to show & change local settings
+# slxsettings - OpenSLX-script to show & change local settings
 #
 # (c) 2006 - OpenSLX.com
 #

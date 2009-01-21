@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 #
-# slxconfig-demuxer.pl - OpenSLX configuration demultiplexer
+# slxconfig-demuxer - OpenSLX configuration demultiplexer
 #
 # (c) 2006 - OpenSLX.com
 #
