@@ -6,6 +6,14 @@
 #
 # (c) 2006 - OpenSLX.com
 
+# the following should be filled via 'configure':
+USR_BIN_PATH=/usr/bin
+SLX_BIN_PATH=/opt/openslx/bin
+SLX_CONFIG_PATH=/etc/opt/openslx
+SLX_PRIVATE_PATH=/var/opt/openslx
+SLX_PUBLIC_PATH=/srv/openslx
+SLX_SHARE_PATH=/opt/openslx/share
+
 tarball:
 	@OPENSLX_SVN_SNAPSHOT=$$( echo $${OPENSLX_SVN_SNAPSHOT} | \
 		tr [:upper:] [:lower:]); \
@@ -38,40 +46,50 @@ tarball:
 
 install:
 	@echo "Installing OpenSLX project files"
-	@mkdir -p /var/lib/openslx/config/default/initramfs \
-	       -p /var/lib/openslx/config/default/rootfs \
-	       -p /var/lib/openslx/db \
-	       -p /var/lib/openslx/stage1 \
-	       -p /usr/share/openslx/distro-specs \
-	       -p /usr/share/openslx/templates \
-	       -p /usr/share/openslx/initramfs
-	@cp initrd/{mkdxsinitrd,slxmkramfs} /usr/local/bin
-	@chmod u+x /usr/local/bin/{mkdxsinitrd,slxmkramfs}
-	@cp -a initrd/initrd-stuff/* /usr/share/openslx/initramfs
-	@cp -a initrd/distro-specs/* /usr/share/openslx/distro-specs
-	@cp installer/default_files/machine-setup.default \
-	  /usr/share/openslx/templates
-	@cp -a installer/default_files/tftpboot /usr/share/openslx/
+	@mkdir -p $(SLX_CONFIG_PATH) \
+	       -p $(SLX_BIN_PATH) \
+	       -p $(SLX_SHARE_PATH)/distro-specs \
+	       -p $(SLX_SHARE_PATH)/templates \
+	       -p $(SLX_SHARE_PATH)/initramfs \
+	       -p $(SLX_PRIVATE_PATH)/config/default/initramfs \
+	       -p $(SLX_PRIVATE_PATH)/config/default/rootfs \
+	       -p $(SLX_PRIVATE_PATH)/db \
+	       -p $(SLX_PRIVATE_PATH)/stage1 \
+	       -p $(SLX_PUBLIC_PATH)/tftpboot
+	@cp initrd/{mkdxsinitrd,slxmkramfs} $(SLX_BIN_PATH)
+	@chmod u+x $(SLX_BIN_PATH)/{mkdxsinitrd,slxmkramfs}
+	@ln -sf $(SLX_BIN_PATH)/mkdxsinitrd $(USR_BIN)/
+	@ln -sf $(SLX_BIN_PATH)/slxmkramfs $(USR_BIN)/
+	@cp -a initrd/initrd-stuff/* $(SLX_SHARE_PATH)/initramfs
+	@cp -a initrd/distro-specs/* $(SLX_SHARE_PATH)/distro-specs
+	@cp -a installer/default_files/machine-setup.default \
+	  $(SLX_SHARE_PATH)/templates
+	@cp -a installer/default_files/tftpboot $(SLX_SHARE_PATH)
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
 extend the\n# capabilities at the beginning of the initramfs (stage3). \
 The toolset is rather\n# restricted and you have to keep in mind that \
 stage4 rootfs has the\n# prefix '/mnt'." \
-	  > /var/lib/openslx/config/default/initramfs/preinit.local
+	  > $(SLX_PRIVATE_PATH)/config/default/initramfs/preinit.local
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
 extend the\n# capabilities at the end of the initramfs (stage3). The \
 toolset is rather\n# restricted and you have to keep in mind that stage4 \
 rootfs has the\n# prefix '/mnt'. But you might use some special slx \
 functions via\# inclusion: '. /etc/functions' ..." \
-	  > /var/lib/openslx/config/default/initramfs/postinit.local
-	@chmod u+x /var/lib/openslx/config/default/initramfs/*init.local
-	@find /usr/share/openslx -depth -regex ".*/\..*" \
-	  -print0 | xargs -0 rm -rf {}
+	  > $(SLX_PRIVATE_PATH)/config/default/initramfs/postinit.local
+	@chmod u+x $(SLX_PRIVATE_PATH)/config/default/initramfs/*init.local
+	@echo -e "# default setup for openslx on this specific system\n" \
+	  > $(SLX_CONFIG_PATH)/settings.default
+	@echo -e "# local setup for openslx (overrides settings.default)\n" \
+	  > $(SLX_CONFIG_PATH)/settings.local
+	@find $(SLX_SHARE_PATH) -depth -regex ".*/\..*" -print0 | xargs -0 rm -rf {}
+	@chmod a+w $(SLX_PUBLIC_PATH)/tftpboot
+	@chmod a+w $(SLX_PRIVATE_PATH)/db
 
 #uninstall:
 #	@echo -e "Uninstalling openslx.org project files but keeping configs \
 #and stage1\nfiles (please remove manually)"
-#	@rm -rf /usr/share/openslx
-#	@rm /usr/local/sbin/mkdxsinitrd
+#	@rm -rf $(SLX_SHARE_PATH)
+#	@rm $(USE_BIN_PATH)/{mkdxsinitrd,slxmkramfs}
 
 clean:
 	@echo "Cleanup OpenSLX source directory "
