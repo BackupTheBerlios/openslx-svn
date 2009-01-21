@@ -112,37 +112,6 @@ uptime=$(sed -e "s, .*,," /proc/uptime)
 echo "${uptime} s."
 # if start times are kept, a summary of runtimes would be possible too
 }
-
-
-#############################################################################
-# micro sleep - argument takes number of milliseconds. either busybox command
-# or simply use uptime information
-usleep () {
-if [ -x /bin/usleep ]; then
-  /bin/usleep `expr $1 \* 1000`
-else
-  local i=0
-  local starttime=$(sed -e "s, .*,,;s,\.,," /proc/uptime)
-  while [ $(sed -e "s, .*,,;s,\.,," /proc/uptime) -le \
-    $(expr $starttime + $1 - 2) ] ; do
-    # burn some cycles
-    while [ $i -le 100 ] ; do
-      i=$(expr 1 + $i)
-    done
-  done
-fi
-return 0
-}
-# standard sleep command
-sleep () {
-if [ -x /bin/sleep ]; then
-  /bin/sleep $1
-#elif [ -x /bin/bash ]; then
-#  TMOUT=$1 read
-else
-  usleep `expr $1 \* 1000`
-fi 
-}
 #############################################################################
 # (re)generate dynamic linked libraries cache from /etc/ld.so.conf
 ldcfg () {
@@ -389,7 +358,7 @@ fi
 rundhcp ()
 {
 local vci="$1"
-for dhcp in dhclient dhcpcd pump udhcpc none; do
+for dhcp in dhclient dhcpcd udhcpc none; do
   test -e /bin/$dhcp && break;
 done
 if [ "$dhcp" = "none" ] ; then
