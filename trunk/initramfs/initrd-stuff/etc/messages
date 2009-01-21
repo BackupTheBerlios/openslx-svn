@@ -50,8 +50,8 @@ local file config\n  the system may work locally."
 init_errbld="  Failed to load \
 module ${NBD}.ko. It is needed if you intend to use\n  network block \
 device (D)NBD for the client as root filesystem."
-init_nbdcl="  Failed to start \
-the network block device client. Unable to mount root\n  filesystem."
+init_nbdcl="  Failed to start the network block device client. Unable to \
+mount root\n  filesystem."
 init_nbddev="  For some reason the network block device /dev/${NBD}0 never \
 appeared.\n  You might want to check udev or your list of static device \
 files."
@@ -103,11 +103,11 @@ finish in time."
 init_infldcfg="  You decided not to recreate \
 /etc/ld.so.cache file. That might cause errors\n  if libraries are installed \
 after this file was created on server."
-init_errcfg="of this client did not finish in\n  time. You might check the \
-process list and list the modules loaded until\n  now."
 init_errlfg="  The ConfTGZ filesource was some local device which was not \
 mounted successfully.\n  Either the wrong device was given or the filesystem \
 is not known to the kernel."
+init_errcfg="of this client did not finish in\n  time. You might check the \
+process list and list the modules loaded until\n  now."
 init_errhw="  For some reason the hardware autoconfig $init_errcfg"
 init_errxorg="  For some reason no xorg.conf appeared" 
 init_errsw="  For some reason the software configuration  $init_errcfg"
@@ -129,9 +129,6 @@ error_nfe="\n  -> This error is not fatal - continuing ...\n"
 error_shell="\n  -> Running shell for debugging purposes now ...\n"
 error_modload="Failed to load module "
 error_modnfs="needed for mounting rootfs"
-error_portm="  Portmapper should be present, if normal mount \
-command is used. Please\n  check your initial ramdisk setup (mkdxsinitrd)."
-error_mntt="  No suitable mount tool found."
 error_nodhcp="  You tried to configure system via dhcp, but no usable dhcp\n\
   client could be found. Please check that you have some client from\n\
   the following list installed: dhclient dhcpcd pump ipconfig."
@@ -155,11 +152,6 @@ detection\nwill probably arise."
 df_errserv="seems not to be installed or start script is\n  not available\
 so requesting the start of service make no sense. Please\n  disable service\
 or install the files/packages needed."
-# udev stuff will be handled via busybox mdev ...
-df_errudev="  udev daemon is not available. Some devices might not appear."
-df_errhotpl="  Hotplug subdirectory is missing! udev(d) might not work as \
-expected."
-###
 df_errcron="  The cron start script $df_errserv" 
 df_errsysl="  The syslog start script $df_errserv"
 df_errsshd="  The sshd start script $df_errserv"
