@@ -376,8 +376,8 @@ sub writeSystemPXEFiles
 	}
 	$vendorOSInitramfsMap{$info->{'vendor-os'}->{id}}++;
 	$info->{'initramfs-name'}
-		= sprintf "initramfs-%c",
-				  64+$vendorOSInitramfsMap{$info->{'vendor-os'}->{id}};
+		= sprintf "initramfs-%d",
+				  $vendorOSInitramfsMap{$info->{'vendor-os'}->{id}};
 	generateInitalRamFS($info, $pxeVendorOSPath);
 }
 
