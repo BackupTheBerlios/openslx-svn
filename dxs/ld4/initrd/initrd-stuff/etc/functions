@@ -130,8 +130,9 @@ running kernel - see error messages above\n\
 for mnt in nfsmount mount none; do
   test -x /bin/$mnt && break;
 done
-loadmod /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko \
-  "needed for mounting rootfs"
+[ -f /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko ] && \
+  loadmod /lib/modules/@@@KERNVER@@@/kernel/fs/nfs/nfs.ko \
+    "needed for mounting rootfs"
 case $mnt in
   nfsmount)
     nfsmount -o ro $nfsroot /mnt || error $errmsg
@@ -140,7 +141,6 @@ case $mnt in
     portmap || error "  Portmapper should be present, if normal mount \
 command is used. Please\n  check your initial ramdisk setup (mkdxsinitrd)."
     mount -n -t nfs -o ro $nfsroot /mnt || error $errmsg
-
     killall -9 portmap
   ;;
   none)
@@ -196,8 +196,9 @@ if [ "$dhcp" = "none" ] ; then
 else
   # ensure the interface is up
   ipsetup 0.0.0.0 255.255.255.255 0.0.0.0 255.255.255.255 eth0 &
-  loadmod /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko \
-    "needed for dhcp";
+  [ -f /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko ] && \
+    loadmod /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko \
+      "needed for dhcp";
   echo "Starting $dhcp for configuration"
   mkdir /var/lib/dhcp 2>&1 >/dev/null
 fi

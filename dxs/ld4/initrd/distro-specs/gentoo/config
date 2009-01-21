@@ -1,8 +1,8 @@
 # Description:  distro specific settings for Gentoo
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 13-12-2005
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 21-01-2006
 #
-# Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
+# Copyright:    (c) 2005,6 - RZ Universitaet Freiburg
 
 # D_SYSCONFDIR - system wide configuration settings in /etc - sysconfig in  
 # SuSE and RedHat, default in Debian and Ubuntu, conf.d in Gentoo
@@ -18,16 +18,16 @@
 # D_RCDIRS - runlevel directories relative to /etc
 D_SYSCONFDIR=conf.d
 D_ETCEXCL="opt/gnome/gconf/*\n*.old\n*-\n\
-*.YaST2save\netc/autoinstall\nlogrotate*\nbootloader\n*~\n\
-*.SuSEconfig.saved\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
-X11/xdm/pixmaps\n*.rpmsave\ndhclient.script\ninit.d/boot.d/*\n\
-init.d/rc3.d/*\ninit.d/rc5.d/*"
+etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
+pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
+X11/xdm/pixmaps\ndhclient.script\nrunlevels/boot/*\n\
+runlevels/default/*\nrunlevels/nonetwork/*"
 D_BINDMPTS="tmp root home"
 D_DIRINBINDMNT="/var/run /var/log /var/tmp"
 D_RODIRSINRW="/var/adm /var/lib/texmf"
 D_DIRINDXS="/var/X11R6/compose-cache \
-/var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
-/var/lib/pam_devperm /var/lib/bluetooth \
+/var/run/sysconfig/tmp /var/lib/init.d/started /var/lib/nobody \
+/var/lib/bluetooth \
 /var/lib/texmf /var/lib/nfs/sm /var/lib/nfs/state \
 /var/lib/misc /var/lib/acpi /var/spool/cron \
 /var/lock/subsys/sysconfig"
@@ -35,4 +35,8 @@ D_BINDMNT="# spielspass fuer splash"
 D_INITDIR="/init.d"
 D_INITBOOTD="/runlevels/boot"
 D_RCDIRS="/runlevels/default /runlevels/nonetwork /runlevels/single"
-D_INITSCRIPTS=""
+D_INITSCRIPTS="bootmisc clock modules urandom"
+D_XF86CONFFILE="/etc/X11/xorg.conf"
+D_XFONTPATH="/usr/share/fonts/*"
+D_DEFAULTCOUNTRY="de"
+

@@ -231,13 +231,6 @@ filesystem module for the client root\n  filesystem ontop of the (D)NBD."
   esac
 fi
 
-# if root filesystem should be imported via udp based distributed network
-# block device
-if [ -n "${DNBDOPT}" ] ; then
-  modprobe ${MODPRV} dnbd || echo "failed to load dnbd!"
-
-fi
-
 # if no type of root filesystem is passed via kernel command line try
 # information gathered from dhcp process
 if [ -z "${DNBDOPT}" -a -z "${NBDOPT}" -a -z "${NFSROOT}" ] ; then
@@ -385,17 +378,16 @@ waitfor /tmp/svcfg 20000 || error "  For some reason the software config \
 of this client did not finish in\n  time. You might check the process list \
 and list the modules loaded until\n  now."
 date
-bash
+#bash
 # IP configuration is made and should not be updated automatically
 killall -9 dhcpcd dhclient pump 2>/dev/null
 # unmount the bind mounted modules directory
 umount -n /lib/modules/${KERNEL} || error "Unmount of the kernel \
 modules directory failed for some reason."
-# close script for stuff to execute during early bootup
+# close runlevel script for stuff to execute during early bootup
 d_mkbootld close
 # reset hotplug
 echo "/sbin/hotplug" > /proc/sys/kernel/hotplug
-echo ""
 test -f /mnt/etc/inittab || error "  The file /etc/inittab does not exist or \
 is no regular one. It is needed\n  for the bootup procedure to follow."
 umount -n /sys || error "  Unmount of the kernel sys directory \

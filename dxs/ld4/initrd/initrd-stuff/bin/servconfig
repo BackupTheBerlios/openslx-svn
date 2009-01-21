@@ -104,6 +104,9 @@ case ${DISTRO} in
     done
   ;;
   gentoo*)
+    for i in ${D_INITSCRIPTS}; do
+      ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/$i
+    done
   ;;
 esac
 
