@@ -3,114 +3,43 @@
 # This script transforms the openslx project files to debians
 # binary package format .deb
 
-DEBUG=0
-# This function makes the directory of this script to the present working directory
-# It is called within precheck()
-# Does also work when called by symbolic links (even for nested links). 
-goto_script_dir()
-{
-  [ $DEBUG -ge 2 ] && echo "Aufgerufen wurde $0, checking if it is a link"
-  calleddetails=`ls -l $0` # get the file flags (e.g. lrwxrwxrwx)
-  [ $DEBUG -ge 2 ] && echo $calleddetails
-  
-  calleddir=${0%/*}  # Strip the filename from path
-  [ $DEBUG -ge 2 ] && echo "Wechsele ins Verzeichnis des aufgerufenen scripts/links ($calleddir)"
-  cd $calleddir
- 
-  while index=`expr index "$calleddetails" "l"`; 
-        [ $index -eq 1 ]; do
-
-    [ $DEBUG -ge 2 ] && echo "It is a link"
-    target=`echo $calleddetails | awk '{print $NF}'`
-    [ $DEBUG -ge 2 ] && echo "The target of the link is: $target"
-    hasslash=`expr index "$target" "/"`
-    if [ $hasslash -ne 0 ]; then 
-        targetpath=${target%/*} # extract the pathname
-        [ $DEBUG -ge 2 ] && echo "Following link to $targetpath"
-        cd $targetpath
-    else
-        [ $DEBUG -ge 2 ] && echo "It is in the same directory as the link"
-    fi
-    targetfile=`basename $target`
-    [ $DEBUG -ge 2 ] && echo "The target file of the link is: $targetfile"
-    calleddetails=`ls -l $targetfile` # get the file flags (e.g. lrwxrwxrwx)
-    [ $DEBUG -ge 2 ] && echo $calleddetails
-  done
-  [ $DEBUG -ge 2 ] && pwd
-
-}
 dpkg_deb=`which dpkg-deb`
 if [ -z "$dpkg_deb" ];then 
     echo "You need the program dpkg-deb (contained in package dpkg) to build a debian package"
     exit
 fi
 
-goto_script_dir
+# change into folder the this script lives in:
+cd $(dirname $(readlink -f $0))
 if [ ! -e ./Makefile ]; then
     echo "There is no makefile in this programs directory (`pwd`)."
     echo "Please run this script only embedded in the context of an openslx installation"
     exit
 fi
-# Manipulate the Path, make installs to, by placing it into a temporary directory
-mkdir -p /tmp/ld$$
-export USR_BIN_PATH="/tmp/ld$$/usr/bin"
-export SLX_CONFIG_PATH="/tmp/ld$$/etc/opt/openslx"
-export SLX_BASE_PATH="/tmp/ld$$/opt/openslx"
-export SLX_BIN_PATH="${SLX_BASE_PATH}/bin"
-export SLX_SHARE_PATH="${SLX_BASE_PATH}/share"
-export SLX_VMWARE_PATH="${SLX_BASE_PATH}/vmware"
-export SLX_PRIVATE_PATH="/tmp/ld$$/var/opt/openslx"
-export SLX_PUBLIC_PATH="/tmp/ld$$/srv/openslx"
-export SLX_EXPORT_PATH="${SLX_PUBLIC_PATH}/export"
-export SLX_TFTPBOOT_PATH="${SLX_PUBLIC_PATH}/tftpboot"
-export SLX_TEMP_PATH="/tmp/ld$$/tmp"
-export SLX_INSTALL_LOG="packaging.log"
-mkdir -p $USR_BIN_PATH
-mkdir -p $SLX_CONFIG_PATH
-mkdir -p $SLX_BASE_PATH
-mkdir -p $SLX_BIN_PATH
-mkdir -p $SLX_SHARE_PATH
-mkdir -p $SLX_VMWARE_PATH
-mkdir -p $SLX_PRIVATE_PATH
-mkdir -p $SLX_PUBLIC_PATH
-mkdir -p $SLX_EXPORT_PATH
-mkdir -p $SLX_TFTPBOOT_PATH
-mkdir -p $SLX_TEMP_PATH
 
-#Now "make install" installs the slx software to /tmp/ld$$
+export SLX_BUILD_PATH=/tmp/slx$$
+mkdir -p $SLX_BUILD_PATH
+# "make install" will install the slx software into $SLX_BUILD_PATH
 if make install; then
   #Create Temporary working directory
-  mkdir -p /tmp/ld$$/DEBIAN
-  mkdir -p /tmp/ld$$/usr/share/man/man1
-  cp packaging/default_files/control  /tmp/ld$$/DEBIAN/
-  cp packaging/default_files/prerm    /tmp/ld$$/DEBIAN/
-  cp packaging/default_files/postinst /tmp/ld$$/DEBIAN/
-  cp packaging/default_files/*.1 /tmp/ld$$/usr/share/man/man1/
-  gzip -9 /tmp/ld$$/usr/share/man/man1/*
+  mkdir -p $SLX_BUILD_PATH/DEBIAN
+  mkdir -p $SLX_BUILD_PATH/usr/share/man/man1
+  cp packaging/default_files/control  $SLX_BUILD_PATH/DEBIAN/
+  cp packaging/default_files/prerm    $SLX_BUILD_PATH/DEBIAN/
+  cp packaging/default_files/postinst $SLX_BUILD_PATH/DEBIAN/
+  cp packaging/default_files/*.1 $SLX_BUILD_PATH/usr/share/man/man1/
+  gzip -9 $SLX_BUILD_PATH/usr/share/man/man1/*
 
   #Set permissions
-  find /tmp/ld$$ -type d|xargs chmod 755
-  #Correct symbolic links
-  #1. find: print all symbolic links in our installation
-  #2. ls: print the long listing format for the links
-  #3. awk: extract the link position and link target and print them concatenated with a separator in between
-  #4. sed: remove the path prefix of our temporary installation for the link target (but not for the link position)
-  for link in `find /tmp/ld$$ -type l |xargs ls -l| awk '{print $8"_SEPARATOR_"$10}'|sed "s#_SEPARATOR_/tmp/ld$$#_SEPARATOR_#"`; do 
-    # For every link set the corresponding target with stripped prefix
-    ln -sf ${link#*_SEPARATOR_}  ${link%_SEPARATOR_*}
-  done;
-  #Correct location references in mkdxsinitrd:
-  for file in `grep -l --recursive /tmp/ld$$ /tmp/ld$$/* 2>/dev/null`; do 
-    sed -i 's#/tmp/ld[0-9]*##' $file
-  done;
+  find $SLX_BUILD_PATH -type d|xargs chmod 755
 
   #Create the package
-  dpkg-deb --build /tmp/ld$$ > /dev/null
+  dpkg-deb --build $SLX_BUILD_PATH > /dev/null
   . ./VERSIONS
-  mv /tmp/ld$$.deb ./openslx_$OPENSLX_VERSION_STRING.deb
+  mv $SLX_BUILD_PATH.deb ./openslx_$OPENSLX_VERSION_STRING.deb
   echo "Written './openslx_$OPENSLX_VERSION_STRING.deb':"
   ls -lh ./openslx_$OPENSLX_VERSION_STRING.deb
 fi
 #Clean up
-rm -rf /tmp/ld$$
+#rm -rf $SLX_BUILD_PATH
 
