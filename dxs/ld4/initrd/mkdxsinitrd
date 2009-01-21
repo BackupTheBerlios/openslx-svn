@@ -283,7 +283,7 @@ mkdir -p ${INSTDIR}/etc/sysconfig
 if [ -z "${DISTRO}" ] ; then
   for i in ${ROOTDIR}/bin/lsb_release ${ROOTDIR}/usr/bin/lsb_release; do
     if [ -e $i ] ; then
-      $i || break
+      $i > /dev/null 2>&1 || break
       DISTRO=`. $i -i | sed "s/.*\t//"`
       DISTRO_VER=`. $i -r | sed "s/.*\t//"`
       break
@@ -358,7 +358,7 @@ copy_distro_stuff() {
         9.3)
         ;;
         10.0)
-          copystuff suse 9.3
+          copy_distro_stuff suse 9.3
         ;;
       esac
     ;;
