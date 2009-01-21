@@ -1,13 +1,13 @@
 #!/bin/sh
 #
 # Description:  Script for preparing VMware environment Diskless
-#               X Stations (v3.3)
+#               X Stations (v3.3,v3.4)
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 05-08-2005
-#               Michael Janczyk <mj0@uni-freiburg.de>, 10-11-2005
+#               Michael Janczyk <mj0@uni-freiburg.de>, 07-12-2005
 # Copyright:    (c) 2003, 2005 - RZ Universitaet Freiburg
 #
-VERSION=0.13; LAST_CHANGES=10.11.05
+VERSION=0.13.1; LAST_CHANGES=07.12.05
 ################################################################################
 
 
@@ -477,7 +477,7 @@ while [ $# -gt "$NARG" ]; do
   ;;
   --version)
      echo -e "\n$0: LAST CHANGES $LAST_CHANGES | VERSION $VERSION\n" |\
-     awk -F "/" '{print "\t\t"$NF}'
+     awk -F "/" '{print "\t"$NF}'
      exit 0
   ;;
   -i)
@@ -664,7 +664,7 @@ fi
 
 
 # Floppy
-[ -L /dev/floppy ] && FLOPPYA="floppy0\.fileName = /dev/fd0"
+[ -d /sys/block/fd0 ] && FLOPPYA="floppy0\.fileName = /dev/fd0"
 
 
 writelog "finished\nResults:\n\tMAC=$MAC\n\tMEM=$MEM\n\tVMSCSI=$VMSCSI" 0 1
