@@ -276,7 +276,6 @@ sub _tr
 
 	my $formatStr = $translations{$trKey};
 	if (!defined $formatStr) {
-		vlog 2, "Translation key '$trKey' not found.";
 		$formatStr = $trOrig;
 	}
 	return sprintf($formatStr, @_);
@@ -311,9 +310,11 @@ sub executeInSubprocess
 # ------------------------------------------------------------------------------
 sub slxsystem
 {
+	vlog 2, _tr("executing: %s", join ' ', @_);
 	my $res = system(@_);
-	if ($res & 127) {
+	if ($res > 0 && $res & 127) {
 		# child got killed, so we stop, too
+		die _tr("child-process reveived signal '%s', parent stops!", $res & 127);
 		exit;
 	}
 	return $res;
