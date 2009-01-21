@@ -41,13 +41,14 @@ use OpenSLX::ConfigDB;
 use OpenSLX::ConfigFolder;
 use OpenSLX::Utils;
 
-my ($helpReq, $manReq, $verbose, $versionReq,);
+my ($helpReq, $inherited, $manReq, $verbose, $versionReq,);
 
 GetOptions(
-	'help|?'  => \$helpReq,
-	'man'     => \$manReq,
-	'verbose' => \$verbose,
-	'version' => \$versionReq,
+	'help|?'    => \$helpReq,
+	'inherited' => \$inherited,
+	'man'       => \$manReq,
+	'verbose'   => \$verbose,
+	'version'   => \$versionReq,
 ) or pod2usage(2);
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
 if ($manReq) {
@@ -302,7 +303,13 @@ sub dumpElements
 								$val =~ s[\n][\n$ind$spc   ]g;
 								"$ind$_" . substr($spc, length($_)) . " = $val";
 							}
-							sort keys %$elemVal
+							sort {
+								# drop [] construct (origin) from key for
+								# sorting purposes
+								(my $aa = $a) =~ s{^\s*\[.+\]\s*}{};
+								(my $bb = $b) =~ s{^\s*\[.+\]\s*}{};
+								return $aa cmp $bb;
+							} keys %$elemVal
 						);
 						$subLines ||= "$ind<none>";
 						"  $_:\n$subLines\n";
@@ -337,15 +344,9 @@ sub dumpElements
 
 sub listAttributes
 {
-	my $name = shift;
+	my $scope = shift;
 
-	# always set verbose in order to give descriptive info
-	$verbose = 1;
-
-	my $attrInfo = OpenSLX::AttributeRoster->getAttrInfo($name);
-	if (!defined $attrInfo) {
-		die _tr('attribute "%s" is unknown!', $name);
-	}
+	my $attrInfo = OpenSLX::AttributeRoster->getAttrInfo( { scope => $scope } );
 	dumpElements(
 		'attribute', undef,
 		map {
@@ -380,6 +381,20 @@ sub listClients
 					map { $_->{name} }
 					sort { $a->{name} cmp $b->{name} }
 					$openslxDB->fetchSystemByID(\@sysIDs, 'name');
+			if ($inherited) {
+				my $mergedClient = dclone($_);
+				my $originInfo = {};
+				$openslxDB->mergeDefaultAndGroupAttributesIntoClient(
+					$mergedClient, $originInfo
+				);
+				my $mergedAttrs = $mergedClient->{attrs} || {};
+				$_->{attrs} = {};
+				foreach my $attr (keys %$mergedAttrs) {
+					my $origin = $originInfo->{$attr};
+					my $enhancedName = $origin ? "[$origin] $attr" : $attr;
+					$_->{attrs}->{$enhancedName} = $mergedAttrs->{$attr};
+				}
+			}
 			# rename attrs to ATTRIBUTES for display
 			$_->{ATTRIBUTES} = $_->{attrs};
 			delete $_->{attrs};
@@ -495,15 +510,23 @@ sub listSystems
 					$export->{vendor_os_id}
 				);
 				my $mergedSystem = dclone($_);
-				$openslxDB->mergeDefaultAttributesIntoSystem($mergedSystem);
+				my $originInfo = {};
+				$openslxDB->mergeDefaultAttributesIntoSystem(
+					$mergedSystem, $originInfo
+				);
 				my $mergedAttrs = $mergedSystem->{attrs} || {};
 				foreach my $plugin (@installedPlugins) {
 					my $pluginScope = lc($plugin);
 					next if !$mergedAttrs->{"${pluginScope}::active"};
-					my $precedence = sprintf(
-						"%02d", $mergedAttrs->{"${pluginScope}::precedence"}
-					);
-					push(@activePlugins, "$precedence...$plugin");
+					push @activePlugins, $plugin;
+				}
+				if ($inherited) {
+					$_->{attrs} = {};
+					foreach my $attr (keys %$mergedAttrs) {
+						my $origin = $originInfo->{$attr};
+						my $enhancedName = $origin ? "[$origin] $attr" : $attr;
+						$_->{attrs}->{$enhancedName} = $mergedAttrs->{$attr};
+					}
 				}
 			}
 			$_->{PLUGINS} = [ sort @activePlugins ];
@@ -1395,6 +1418,7 @@ slxconfig [options] <action> <key-value-pairs>
 =head3 Options
 
     --help                     brief help message
+    --inherited                show inherited attributes, too
     --man                      show full documentation
     --verbose                  be more verbose
     --version                  show version
@@ -1446,7 +1470,7 @@ changes the data of an existing system in the config-DB
 Note: you can use the special value '-' to unset a key (mostly useful
 for attributes).
 
-=item B<<     list-attributes [<attr-name>] >>
+=item B<<     list-attributes [<attr-scope>] >>
 
 lists all attributes or the one with the given name
 
@@ -1549,7 +1573,16 @@ Prints the version and exits.
 
 =item B<<     slxconfig list-vendor-os >>
 
-lists all existing instances of the respective DB-objects.
+lists all existing instances of the respective DB-objects
+
+=item B<<     slxconfig list-system "<<<default>>>" >>
+
+Lists the details of the default-system.
+
+=item B<<     slxconfig --inherited list-system suse-10.2::nfs >>
+
+Lists the details of the 'suse-10.2::nfs'-system with all the attributes
+that it inherits from the default-system or the default-client.
 
 =back
 
@@ -1560,6 +1593,11 @@ lists all existing instances of the respective DB-objects.
 =item B<<     slxconfig list-attr >>
 
 lists all known attributes (--verbose will give details).
+
+=item B<<     slxconfig list-attr <scope> >>
+
+lists all known attributes for the given scope (use 'core' to see only 
+non-scoped attributes).
 
 =back
 
