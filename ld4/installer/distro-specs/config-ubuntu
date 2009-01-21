@@ -1,3 +1,5 @@
 dhcpd_conf="/etc/dhcp3/dhcpd.conf"
 atftpd_conf="/etc/default/atftpd"
 exports_conf="/etc/exports"
+
+atftpd_conf_name="atftpd_default"

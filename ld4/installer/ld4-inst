@@ -22,7 +22,7 @@ precheck() {
     echo -e "\nYou don't have the needed permission. Please rerun as root user!\n"
     exit 1
   fi
-  
+
   # check for existing programs:
   # rsync (server-side)
   which rsync >/dev/null
@@ -30,7 +30,7 @@ precheck() {
     echo -e "\nYou need to install rsync on server side before installing!\n"
     exit 1
   fi
-  
+
   # ssh, rsync (referenz-system-side) -> not possible in precheck
 
   # nfs-kernel-server, atftpd 
@@ -45,9 +45,9 @@ ask() {
   echo -n "* [ $3 ] "
   read userinput
   if [ -z "$userinput" ] ; then
-      local back=$3
+    local back=$3
   else
-      local back="$userinput"
+    local back="$userinput"
   fi
   eval "$2=\"$back\""
   sed -e '/'$2'=.*/d' -i .config
@@ -58,42 +58,42 @@ ask() {
 distro_check() {
   case "${!1}" in
     Debian*|debian*|Sarge*|sarge*)
-      eval "$1=\"debian\""
-      case "${!2}" in
-        Sarge*|sarge*|3.1*|*)
-          eval "$2=\"3.1\""
-        ;;
-      esac
+    eval "$1=\"debian\""
+    case "${!2}" in
+      Sarge*|sarge*|3.1*|*)
+      eval "$2=\"3.1\""
+      ;;
+    esac
     ;;
     Ubuntu*|ubuntu*)
-      eval "$1=\"ubuntu\""
-      case "${!2}" in
-        Breezy*|breezy*|*)
-          eval "$2=\"5.10\""
-        ;;
-      esac
+    eval "$1=\"ubuntu\""
+    case "${!2}" in
+      Breezy*|breezy*|*)
+      eval "$2=\"5.10\""
       ;;
+    esac
+    ;;
     Gentoo*|gentoo*)
-      eval "$1=\"gentoo\""
-      case "${!2}" in
-        2005*|*)
-          eval "$2=\"2005.1\""
-        ;;
-      esac
+    eval "$1=\"gentoo\""
+    case "${!2}" in
+      2005*|*)
+      eval "$2=\"2005.1\""
+      ;;
+    esac
     ;;
     SuSE*|suse*|Suse*|SuSe*|SUSE*|*)
-      eval "$1=\"suse\""
-      case "${!2}" in
-        9*)
-          eval "$2=\"9.3\""
-        ;;
-        10.0)
-          eval "$2=\"10.0\""
-        ;;
-        10*|*)
-          eval "$2=\"10.1\""
-        ;;
-      esac
+    eval "$1=\"suse\""
+    case "${!2}" in
+      9*)
+      eval "$2=\"9.3\""
+      ;;
+      10.0)
+      eval "$2=\"10.0\""
+      ;;
+      10*|*)
+      eval "$2=\"10.1\""
+      ;;
+    esac
     ;;
   esac
 }
@@ -101,7 +101,7 @@ distro_check() {
 
 configure() {
   export LANG="c"
-  
+
   if [ -f .config ] ; then
     echo -n "Use values from last installation? [Y/n] "
     read userinput
@@ -118,7 +118,7 @@ configure() {
     ipcfg=( `ifconfig eth0 | grep "inet addr" | sed -e "s,[a-zA-Z]*:,,g"` )
     netmask=${ipcfg[3]}
     broadcast=${ipcfg[2]}
-  # quickhack (more intelligent solution needed ...)
+    # quickhack (more intelligent solution needed ...)
     netname=`route -n | grep -m 1 eth0 | grep -v "UG" | awk '{ print $1 }'`
     server=${ipcfg[1]}
   fi
@@ -156,7 +156,7 @@ configure() {
   #ask "Server distribution version: " server_distro_ver ${server_distro_ver}
   distro_check server_distro server_distro_ver
   echo "Using ${server_distro} as server distribution"
-  
+
   # ask for client distro
   ask "Client distribution (e.g. debian): " client_distro ${client_distro}
   ask "Client distribution version (numerical - e.g. 3.1): " client_distro_ver ${client_distro_ver}
@@ -168,7 +168,7 @@ configure() {
   fi
 
   . distro-specs/config-${server_distro}
-  
+
   ask "Path for client system: " rootdir $rootdir
   ask "Path for tftpboot: " tftpbootdir $tftpbootdir
   ask "Which network do you want to use for DXS? (A.B.C.0) " netname $netname
@@ -186,17 +186,17 @@ configure() {
   # wo ist das referenzsystem? - was ist default ???
   if [ -z ${rsyncsource} ] ; then rsyncsource="localhost:/" ; fi
   ask "IP + Path to reference system: " rsyncsource $rsyncsource
-  
+
   # dns-server
   # domain-name
   # evtl. ntp-server
 
   # which kernel(s) to use to generate initial ramdisk(s)
-    # list available kernels and allow to chose from
-  
+  # list available kernels and allow to chose from
+
   # nfs / nbd / squash-fs?
 
-  
+
   # password for pxeboot-menu (caution: you can easily retrieve it in clear text!!)
   pxe_passwd="master"
 }
@@ -205,9 +205,9 @@ configure() {
 copy_system() {
   echo -e "\n\nSyncing system now\nPlease enter root password of client machine\n"
   rsync -avDe ssh --delete --exclude-from=distro-specs/exclude-${client_distro} ${rsyncsource} ${rootdir} || { echo "Rsync failed" ; exit 1 }
-  
+
   # generate error message in case rsync didn't work and exit.
-  
+
   # TODO: mksquashfs (background process)   
 }
 
@@ -217,7 +217,7 @@ setup_server () {
   echo -e "\n\nSetting up server configuration\n"
 
   timestamp=`date +%Y%m%d-%H%M`
-  
+
   # creating central dxs configuration directory structure if it doesn't exist
   for dir in dhcp nfs atftpd pxelinux ; do   # TODO etc...
     [ -d ${dxs_conf}/${dir} ] || mkdir -p ${dxs_conf}/${dir}
@@ -229,22 +229,22 @@ setup_server () {
   # TODO: sed -e @@@example1@@@, netname+1 etc. - which ip addresses are safe to use?
 
   # atftpd
-  sed -e "s,/tftpboot,${tftpbootdir}," default_files/atftpd_conf > ${dxs_conf}/${dxs_atftpd_conf}-${timestamp}
+  sed -e "s,/tftpboot,${tftpbootdir}," default_files/${atftpd_conf_name} > ${dxs_conf}/${dxs_atftpd_conf}-${timestamp}
 
   # nfs
   echo -e "# Bla Blub\n \
   # NFS export entry for DXS\n\
   ${rootdir} ${netname}/${netmask}(ro,no_root_squash,async)" >> ${dxs_conf}/${dxs_exports_conf}-${timestamp}
-  
+
   # pxe
   [ -d ${tftpbootdir} ] || mkdir -p ${tftpbootdir} 
   rsync -a --exclude=.svn default_files/tftpboot ${tftpbootdir}
-  
+
   sed -e "s,@@@server@@@,${server},g;s,@@@tftpbootdir@@@,${tftpbootdir},g;s,@@@pxe_passwd@@@,${pxe_passwd},g;s,@@@client_distro@@@,${client_distro},g;s,@@@client_distro_ver@@@,${client_distro_ver},g;s,@@@rootdir@@@,${rootdir},g" default_files/default > ${dxs_conf}/${dxs_pxedefault_conf}-${timestamp}
 
   # TODO: loop over kernel and initial ramdisks and create corresponding entries in default
 
-  
+
   # backing up original files
   for cfile in ${dhcpd_conf} ${atftpd_conf} ${exports_conf} ; do
     if [ -f ${cfile} -a ! -L ${cfile} ] ; then
@@ -269,14 +269,14 @@ create_initrd() {
 
   # ugly workaround...
   cd ../initrd
-  
+
   # TODO: loop over chosen kernels -> mkdxsinitrd -k ... and -i ...
 
   ./mkdxsinitrd -r ${rootdir}
-   cd -
+  cd -
 
   # generate links to kernels and initial ramdisks
-  
+
   # TODO: move this stuff in upper loop
   if [ -e ${rootdir}/boot/vmlinuz ] ; then 
     ln -s ${rootdir}/boot/vmlinuz ${tftpbootdir}
@@ -295,7 +295,7 @@ footer() {
   # TODO: tell user things he's got to configure aftewards - point to README
   #  * in dhcpd.conf - put in clients mac and ip addresses
   #  * make services start
-  
+
 }
 
 
