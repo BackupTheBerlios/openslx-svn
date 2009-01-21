@@ -66,14 +66,18 @@ repco()
 local FILENAME=$1
 # do not forget to define all variables which should be replaced within
 # the start and configuration scripts
-sed -e "s,@@@INSTDIR@@@,${INSTDIR},g" \
+if [ -d ${FILENAME} ] ; then
+  mkdir -p;
+else
+  sed -e "s,@@@INSTDIR@@@,${INSTDIR},g" \
     -e "s,@@@NWMODULES@@@,${NWMODULES},g" \
     -e "s,@@@KERNVER@@@,${KERNVER},g" \
     -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
     -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
     -e "s,@@@DISTRO@@@,${DISTRO},g" \
-    -e "s,@@@NETIF@@@,${NET_IF},g"
+    -e "s,@@@NETIF@@@,${NET_IF},g" \
     ${FILENAME} >> ${INSTDIR}/${FILENAME}
+fi
 }
 
 
@@ -248,7 +252,7 @@ shift $(expr $OPTIND - 1)
 #########################################################################
 # End of parameter, argument interpretation
 
-if [ -z $INSTDIR ] ; then
+if [ -z "$INSTDIR" ] ; then
   INSTDIR=/tmp/dxs-instrd
 fi
 
@@ -261,37 +265,37 @@ mkdir -p ${INSTDIR}/etc/sysconfig
 # source configuration file for the distribution used
 #DISTRO=debian
 
-if [ -z $DISTRO ] ; then
+if [ -z "${DISTRO}" ] ; then
   for i in ${ROOTDIR}/bin/lsb_release ${ROOTDIR}/usr/bin/lsb_release; do
     if [ -e $i ] ; then
-      DISTRO = `. $i -a | grep "Distributor" | sed "s/.*\t//"`
-      DISTRO_VER = `. $i -a | grep "Release:" | sed "s/.*\t//"`
+      DISTRO=`. $i -a | grep "Distributor" | sed "s/.*\t//"`
+	echo $DISTRO
+      DISTRO_VER=`. $i -a | grep "Release:" | sed "s/.*\t//"`
       break
     fi
   done
 fi
 
-if [ -z $DISTRO ] ; then
+if [ -z "${DISTRO}" ] ; then
   if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
     DISTRO=suse
     DISTRO_VER=`grep "VERSION" /etc/SuSE-release | sed "s/.*= //"`
   fi
 fi
 
-if [ -z $DISTRO ] ; then
+if [ -z "${DISTRO}" ] ; then
   if [ -e ${ROOTDIR}/etc/debian-version ] ; then
     DISTRO=debian
     DISTRO_VER=`cat ${ROOTDIR}/etc/debian-version`
   fi
 fi
 
-
 case "${DISTRO}" in
-  SuSE*|suse*|Suse*|SuSe*)
+  SuSE*|suse*|Suse*|SuSe*|SUSE*)
         case "${DISTRO_VER}" in
-          9*)
-            DISTRO=suse-9.3
-            ;;
+#          9*)
+#            DISTRO=suse-9.3
+#            ;;
           *)
             DISTRO=suse-10.0
             ;;
@@ -339,7 +343,7 @@ for bbins in ip ifconfig; do
 done
 
 # copy and replace variable names
-find initrd-stuff -exec repco {} \;
+find initrd-stuff -exec repco '{}' \;
 
 # distro dependet stuff for etc, booting !?
 
@@ -392,21 +396,21 @@ for lib in `shared_object_files ${INSTDIR}/bin/*` ; do
 done
 
 # add kernel modules and dependency files
-if [ -z $KERNVER ] ; then
+if [ -z "$KERNVER" ] ; then
   KERNVER=`ls -l ${ROOTDIR}/boot/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
 fi
-if [ -z $KERNVER ] ; then
+if [ -z "$KERNVER" ] ; then
   KERNVER=`ls -l ${ROOTDIR}/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
 fi
 #KERNVER=2.6.12-10-386
 
-if [ -z $NWMODULES ] ; then
+if [ -z "$NWMODULES" ] ; then
   NWMODULES="e100 tg3 via-rhine r8169"
 fi
-if [ -z $FSMODULES ] ; then
+if [ -z "$FSMODULES" ] ; then
   FSMODULES="nbd nfs"
 fi
-if [ -z $INITRD_PATH ] ; then
+if [ -z "$INITRD_PATH" ] ; then
   INITRD_PATH="/tmp/dxsinitrd.gz"
 fi
 
@@ -417,6 +421,7 @@ for module in `resolve_modules ${KERNVER} af_packet ${NWMODULES} ${FSMODULES}`; 
 done
 cp /lib/modules/${KERNVER}/modules.* ${INSTDIR}/lib/modules/${KERNVER}
 
+#die beiden repco-zeilen koennen hier bald weg, weil oben schon alles kopiert wird. 
 
 #repco initrd-stuff/init ${INSTDIR}/init 
 chmod 755 ${INSTDIR}/init ${INSTDIR}/bin/servconfig \
