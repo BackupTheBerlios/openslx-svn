@@ -140,6 +140,12 @@ preferencesheader () {
   ###### dont use it for your own configurations - it will be overwritten ######
   ######                                                                  ######
 
+################# wichtig #################
+# das *.vmem wird immer angelegt und frisst soviel Speicher, wie fuer den Gast
+# vorgesehen. Sollte nicht im tempfs liegen. NFS OK, da IO nur einmal beim
+# Start erheblich. Wird gesteuert ueber  tmpDirectory = /nfs-viel-platz
+# und darin wird dann vmware-$user angelegt.
+
   hints.hideAll = \"TRUE\"
   pref.exchangeSelections = \"TRUE\"
   pref.hotkey.shift = \"TRUE\"

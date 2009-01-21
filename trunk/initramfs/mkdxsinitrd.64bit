@@ -1,0 +1,760 @@
+#!/bin/bash
+#
+# Description:  universal (distro independent) generator for initial
+#               ramdisks for linux diskless clients (stage2 system
+#               setup)
+#
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-10-2006
+#               Nico Dietrich
+#               Felix Endres
+#               <mj0@uni-freiburg.de> (xenbr), 27-09-2006
+#
+# Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
+#               (c) 2006 - openslx.org project
+#
+# Version:      0.4.5d
+
+# debug level of script itself
+DEBUG=1
+# debug level of the initramfs (to trigger the addition of specific
+# binaries and kernel modules)
+IRFSDEBUG=1
+COMETCEXCL="XF86Config*\nissue*\nmtab*\nfstab*\n"
+COMDIRINDXS="/tmp/scratch /var/lib/nobody"
+
+# distro specific settings read from configuration file
+# D_SYSCONFDIR - system wide configuration settings in /etc - sysconfig in
+# SuSE and RedHat, default in Debian and Ubuntu, conf.d in Gentoo
+# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using
+# bind mounts
+# D_DIRINBINDMNT - lists of directories to be created in bind mounted rw
+# part of the client filesystem
+# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on
+# TempFS usage
+# D_DIRINDXS - directories in client filesystem which should be present
+# anyhow
+# D_BINDMNT - any code which is specific in bind mount environment
+# D_RCDIRS - runlevel directories relative to /etc
+# D_HWMODTOIGNORE -
+
+# just ensure that variables are set and the user gets an idea if
+# something fails
+D_SYSCONFDIR="<set in ~/distro-config/distro file>"
+D_ETCEXCL="<set in ~/distro-config/distro file>"
+D_BINDMPTS="<set in ~/distro-config/distro file>"
+D_DIRINBINDMNT="<set in ~/distro-config/distro file>"
+D_RODIRSINRW="<set in ~/distro-config/distro file>"
+D_DIRINDXS="<set in ~/distro-config/distro file>"
+D_BINDMNT="<set in ~/distro-config/distro file>"
+D_INITDIR="<set in ~/distro-config/distro file>"
+D_INITBOOTD="<set in ~/distro-config/distro file>"
+D_RCDIRS="<set in ~/distro-config/distro file>"
+D_RCDIRSINRW="<set in ~/distro-config/distro file>"
+D_INITSCRIPTS="<set in ~/distro-config/distro file>"
+D_XF86CONFFILE="<set in ~/distro-config/distro file>"
+D_XFONTPATH="<set in ~/distro-config/distro file>"
+D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
+# read in the global settings
+SLX_CONFIG_PATH=@@@SLX_CONFIG_PATH@@@
+[ -f $SLX_CONFIG_PATH/settings.default ] && \
+   . $SLX_CONFIG_PATH/settings.default
+[ -f $SLX_CONFIG_PATH/settings.local ] && \
+   . $SLX_CONFIG_PATH/settings.local
+
+#########################################################################
+# End of global variable declaration, nothing needed to be changed at
+# default below that line
+
+usage()
+{
+  echo -e "mkdxsinitrd  [-bgh] [-k kernel version] [-i path/file] \
+[-f module(s)] [-n module(s)] [-m module(s)] [-r path] [-s theme]\n"
+  echo "OPTIONEN"
+  echo "  -g     Benutze glibc als Basisbibliothek in der ramdisk."
+  echo "  -b     Use busybox instead of separate binaries."
+  echo "  -h     Zeige Informationen zur Benutzung."
+  echo "  -k Kernelversion"
+  echo "        mkdxsinitrd  versucht  die  aktuellste  Kernelversion zu finden."
+  echo "        Falls  dies  nicht  klappt,  oder  eine   andere   Kernelversion"
+  echo "        gewünscht  ist  kann  diese  hier angegeben werden (funktioniert"
+  echo "        natürlich nur für auf dem  Hostsystem  vorhandene  Kernelversion"
+  echo "        nen)."
+  echo "  -i path/file"
+  echo "        Optionale  Angabe wo die erstellte ramdisk hingeschrieben werden"
+  echo "        soll."
+  echo "  -f Modulliste"
+  echo "        Kernelmodule die benutzt werden  sollen  um  das  Rootfilesystem"
+  echo "        über das dem Netzwerk zu mounten (z.B. nfs, nbd dnbd)."
+  echo "  -n Modulliste"
+  echo "        Kernelmodule zum Betrieb der Clientnetzwerkkarten (z.B. e100 tg3"
+  echo "        via-rhine)."
+  echo "  -m Modulliste"
+  echo "        Kernelmodule (misc) die nicht von -n bzw. -f abgedeckt werden"
+  echo "        (z.B. xenbr for xen network bridge)."
+  echo "  -r path"
+  echo "        Pfad zum Wurzelverzeichnis des zu exportierenden  Betriebsystems"
+  echo "        (z.B. /export/10.1)."
+  echo "  -s theme (for splash)"
+  echo "  -d debug (add special modules to initramfs)"
+  echo "  -D Name"
+  echo "        Name der Distribution der Betriebsystemvorlage"
+  echo "  -v Version"
+  echo "        Versionskennung der Distribution der Betriebsystemvorlage"
+  exit 0
+}
+
+# replaces which command to find executables inside ROOTDIR
+binfinder()
+{
+local PROGRAM="$1"
+local RET=1
+for ELEMENT in bin sbin usr/bin usr/sbin usr/local/bin \
+               usr/local/sbin usr/bin/X11; do
+  if [ -f "${ROOTDIR}/$ELEMENT/$PROGRAM" ] && \
+     [ -x "${ROOTDIR}/$ELEMENT/$PROGRAM" ]; then
+    printf '%s\n' "${ROOTDIR}/$ELEMENT/$PROGRAM"
+    RET=0
+    break
+  fi
+done
+return $RET
+}
+
+# copy some binary to given destination. Takes binary in $1 and
+# destination in $2
+cobi()
+{
+local DEST=$2
+local FPTB=`binfinder $1`
+if [ -z ${FPTB} ] ; then
+  return 1;
+elif [ -L ${FPTB} ] ; then
+  # do not copy the link but the binary the link points to
+  local LINKDEST=`ls -la ${FPTB} | sed -e "s,.* ,,"`
+  case $LINKDEST in
+    /*) FPTB=${ROOTDIR}${LINKDEST}
+	;;
+    *) ;;
+  esac
+  cp ${FPTB} ${INSTDIR}/${DEST}
+else
+  cp ${FPTB} ${INSTDIR}/${DEST}
+fi
+# get an idea which libraries are needed
+# fixme: that might not work if executed on different architecture than
+# client root is
+chroot ${ROOTDIR} ldd ${FPTB#${ROOTDIR}*} >> ${INSTDIR}/tmp/libraries
+# possible solution: use the server binary, get library names and look
+# them up manually - fixme: does ldd understand foreign architecture
+# binaries
+}
+
+# replace copy
+repco()
+{
+local FILENAME=$1
+DATE=`date +%m-%d-%Y`
+# do not forget to define all variables which should be replaced within
+# the start and configuration scripts. All comment lines will be deleted.
+if [ -d initrd-stuff/${FILENAME} ] ; then
+  [ -d ${INSTDIR}/${FILENAME} ] || mkdir -p ${INSTDIR}/${FILENAME}
+else
+  if file initrd-stuff/${FILENAME}| grep "ELF" &>/dev/null ; then
+    cp initrd-stuff/${FILENAME} ${INSTDIR}/${FILENAME}
+  elif [ -L initrd-stuff/${FILENAME} ] ; then
+    cp -a initrd-stuff/${FILENAME} ${INSTDIR}/${FILENAME%/*}
+  else
+    sed -e "s,@@@INSTDIR@@@,${INSTDIR},g;s,@@@KERNVER@@@,${KERNVER},g" \
+        -e "s,@@@DISTRO@@@,${DISTRO}-${DISTRO_VER},g;s,@@@NETIF@@@,${NET_IF},g" \
+        -e "s,@@@NWMODULES@@@,${NWMODULES},g" \
+        -e "s,@@@COMDIRINDXS@@@,${COMDIRINDXS},g" \
+        -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
+        -e "s,@@@DATE@@@,${DATE},g;/^#[^!].*/d" \
+          initrd-stuff/${FILENAME} >> ${INSTDIR}/${FILENAME}
+    [ -x busybox -a "$use_busybox" = 1 ] && sed -e "s,^#!/bin/sh,#!/bin/ash," \
+      -i ${INSTDIR}/${FILENAME}
+  fi
+fi
+}
+
+copy_distro_stuff() {
+  # copy first the default distro dependent configuration (variables) and
+  # function files, then append to each the distro/version specific file
+  # variables, functions set in default might that way be overwritten by
+  # definitions in distro/version specific files
+  # fixme!! files should be taken from /usr/share/openslx/distro-specs
+  cat distro-specs/$1/config-default >${INSTDIR}/etc/sysconfig/config
+  cat distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig/config
+  #[ -f $SLX_CONFIG_PATH/settings.default ] && \
+  #   cat $SLX_CONFIG_PATH/settings.default >>${INSTDIR}/etc/sysconfig/config
+  #[ -f $SLX_CONFIG_PATH/settings.local ] && \
+  #   cat $SLX_CONFIG_PATH/settings.local >>${INSTDIR}/etc/sysconfig/config
+  cat distro-specs/$1/functions-default >${INSTDIR}/etc/distro-functions
+  cat distro-specs/$1/functions-$2 >>${INSTDIR}/etc/distro-functions
+  # would be cool not to copy .svn here ...
+  # fixme!! works only for etc directories. If dir exists then next copy places
+  # file into the existing dir
+  cp -a distro-specs/$1/files-default ${INSTDIR}/etc/sysconfig/files 2>/dev/null
+  # ... so remove them afterwards ...
+  find ${INSTDIR}/etc/sysconfig/files \
+    -regex ".*/\..*" -exec rm -rf {} 2>/dev/null \;
+}
+
+# This function makes the directory of this script to the present working
+# directory
+# It is called within precheck()
+# Does also work when called by symbolic links (even for nested links).
+goto_script_dir()
+{
+  [ $DEBUG -ge 2 ] && echo "Aufgerufen wurde $0, checking if it is a link"
+  calleddetails=`ls -l $0` # get the file flags (e.g. lrwxrwxrwx)
+  [ $DEBUG -ge 2 ] && echo $calleddetails
+
+  calleddir=${0%/*}  # Strip the filename from path
+  [ $DEBUG -ge 2 ] && echo "Wechsele ins Verzeichnis des aufgerufenen scripts/links ($calleddir)"
+  cd $calleddir
+
+  while index=`expr index "$calleddetails" "l"`;
+        [ $index -eq 1 ]; do
+
+    [ $DEBUG -ge 2 ] && echo "It is a link"
+    target=`echo $calleddetails | awk '{print $NF}'`
+    [ $DEBUG -ge 2 ] && echo "The target of the link is: $target"
+    hasslash=`expr index "$target" "/"`
+    if [ $hasslash -ne 0 ]; then
+        targetpath=${target%/*} # extract the pathname
+        [ $DEBUG -ge 2 ] && echo "Following link to $targetpath"
+        cd $targetpath
+    else
+        [ $DEBUG -ge 2 ] && echo "It is in the same directory as the link"
+    fi
+    targetfile=`basename $target`
+    [ $DEBUG -ge 2 ] && echo "The target file of the link is: $targetfile"
+    calleddetails=`ls -l $targetfile` # get the file flags (e.g. lrwxrwxrwx)
+    [ $DEBUG -ge 2 ] && echo $calleddetails
+  done
+  [ $DEBUG -ge 2 ] && pwd
+
+}
+
+# add a bootsplash image to the initial ramdisk, only SuSE at the moment
+# theming
+
+add_theme() {
+
+theme="${theme}"
+splashsizes="640x480 800x600 1024x768 1280x1024 1400x1050 1600x1200"
+splash_image=
+splash_bin=$(chroot $ROOTDIR which splash)
+if [ -n "$splashsizes" -a -n "$splash_bin" ]; then
+
+  themes_dir="../theming/openslx/bootsplash"
+  if [ -d "/opt/openslx/share/themes/${theme}/bootsplash" ]; then
+    themes_dir="/opt/openslx/share/themes/${theme}/bootsplash"
+  elif [ -d "$ROOTDIR/etc/bootsplash/themes/${theme}" ]; then
+    themes_dir="/etc/bootsplash/themes/${theme}"
+  elif [ -d "$ROOTDIR/usr/share/splash/themes/${theme}" ]; then
+    themes_dir="/usr/share/splash/themes/${theme}"
+  fi
+
+  #fixme: very ugly ;)
+  mkdir -p $ROOTDIR/tmp/bootsplash
+  cp -a $themes_dir/* $ROOTDIR/tmp/bootsplash
+  themes=${themes_dir%bootsplash}
+  echo -e "\n\tUsing ${themes} for themes.\n"
+  themes_dir=$ROOTDIR/tmp/bootsplash
+
+  if [ -n "$themes_dir" -a \
+     -d "$themes_dir" -o -L "$themes_dir" ]; then
+    for size in $splashsizes; do
+      bootsplash_picture="$themes_dir/images/bootsplash-$size.jpg"
+      cfgname="$themes_dir/config/bootsplash-$size.cfg"
+      if [ ! -r $cfgname ] ; then
+        echo " disabled for resolution $size "
+      elif [ ! -r $bootsplash_picture ] ; then
+        echo " no image for resolution $size "
+      else
+        echo -n "${splash_image:+, }$THEME ($size)"
+        splash_image=" $splash_image ${cfgname#$ROOTDIR} "
+      fi
+    done
+    echo
+  else
+    echo "no theme selected"
+  fi
+fi
+
+# Include bootsplash image
+for image in $splash_image; do
+  # fixme: ugly hack to have the splash binary
+  chroot $ROOTDIR $splash_bin -s -f $image >> ${INSTDIR}/bootsplash
+done
+
+rm -rf $ROOTDIR/tmp/bootsplash
+
+# kdm/Xdialog theme
+cp -a ${themes}* ${INSTDIR}/usr/share/themes
+}
+
+
+#########################################################################
+# End of function declaration
+
+while getopts :bhgk:i:r:o:s:f:n:m:Sut:d:v:I:V:a: a ; do
+  case $a in
+    \:|\?)
+    case $OPTARG in
+      k)  echo "-k requires kernel version parameter";;
+      i)  echo "-i requires initrd path parameter";;
+      f)  echo "-f requires file system module list parameter";;
+      n)  echo "-n requires network module list parameter";;
+      m)  echo "-m requires misc module list parameter";;
+      r)  echo "-r requires root dir parameter";;
+      s)  echo "-s may require theme name";;
+      t)  echo "-t requires tmp dir parameter";;
+      d)  echo "-d requires debug level (integer)";;
+      D)  echo "-D requires linux Distribution name";;
+      v)  echo "-v requires linux distribution version";;
+      I)  echo "-I requires network interface parameter";;
+      V)  echo "-V requires an executable to run inside linuxrc";;
+      *)  echo "Unknown option: -$OPTARG"
+          echo "Try mkinitrd -h";;
+    esac
+    exit 1
+    ;;
+    b)  use_busybox=1;;
+    g)  use_glibc=1;;
+    k)  KERNVER=$OPTARG;;
+    i)  INITRD_PATH=$OPTARG ;;
+    f)  FSMODULES=$OPTARG;;
+    n)  NWMODULES=$OPTARG ;;
+    m)  MISCMODULES=$OPTARG ;;
+    r)  ROOTDIR=$OPTARG;;
+    s)  theme=$OPTARG;;
+    t)  INSTDIR=$OPTARG;;
+    d)  IRFSDEBUG=$OPTARG;;
+    D)  DISTRO=$OPTARG;;
+    v)  DISTRO_VER=$OPTARG;;
+    I)  NET_IF=$OPTARG;;         # Not in use
+    a)  acpi_dsdt="$OPTARG";;    # Not in use
+    S)  use_selinux=1;;          # Not in use
+    l)  local_init_script="$OPTARG";; # use for pre/postinit.local?
+    u)  sysfs_root=1             # Not in use
+	    use_udev=
+	    ;;
+    h)  usage;;
+  esac
+done
+shift $(expr $OPTIND - 1)
+
+
+#########################################################################
+# End of parameter, argument interpretation
+
+#Change to the directory this script is located in
+goto_script_dir
+
+# set temporary setup directory, clean it and setup basic directory
+# structure
+if [ -z "$INSTDIR" ] ; then
+  INSTDIR=/tmp/slx-tmpramfs
+fi
+rm -rf ${INSTDIR}
+mkdir -p ${INSTDIR}/{dev,proc,tmp,mnt,root,bin,sys,lib}
+ln -s /bin ${INSTDIR}/sbin
+# hack for 64bit systems
+#ln -s /lib ${INSTDIR}/lib64
+mkdir -p ${INSTDIR}/usr/share
+# needed for KNOPPIX hwsetup tool not to be confused with ${D_SYSCONFDIR}
+mkdir -p ${INSTDIR}/etc/sysconfig
+
+# if still no distro name set, try to find it using significant files
+
+if [ -z "${DISTRO}" ] ; then
+  if [ -e ${ROOTDIR}/etc/SuSE-release ] ; then
+    DISTRO=suse
+    DISTRO_VER=`grep "VERSION" ${ROOTDIR}/etc/SuSE-release | sed "s/.*= //"`
+  elif [ -e ${ROOTDIR}/etc/lsb-release ] ; then
+    . ${ROOTDIR}/etc/lsb-release
+    DISTRO=${DISTRIB_ID}
+    DISTRO_VER=${DISTRIB_RELEASE}
+  elif [ -e ${ROOTDIR}/etc/debian_version ] ; then
+	if [ $(grep Ubuntu /etc/issue | wc -l) -gt 0 ]; then
+		DISTRO=Ubuntu
+		DISTRO_VER=`sed 's/[Uu]buntu \([0-9]*\.[0-9]*\).*/\1/' /etc/issue`
+	else
+    		DISTRO=debian
+    		DISTRO_VER=`cat ${ROOTDIR}/etc/debian_version`
+	fi
+  elif [ -e ${ROOTDIR}/etc/gentoo-release ] ; then
+    DISTRO=gentoo
+    # any idea on the versioning scheme??
+    DISTRO_VER=""
+  else
+    echo -e "Could not detect client distribution type and version. Please \
+specify\nas command line argument (-d <distro-name> -v <distro-version>)"
+    exit 1;
+  fi
+fi
+
+# unify the description of distribution and its version
+case "${DISTRO}" in
+  Debian*|debian*|Sarge*|sarge*)
+    DISTRO=debian
+    case "${DISTRO_VER}" in
+      Sarge*|sarge*|3.1*|*)
+        DISTRO_VER=3.1
+	mkdir -p ${INSTDIR}/lib/udev
+        cp -r ${ROOTDIR}/lib/udev/* ${INSTDIR}/lib/udev/
+      ;;
+    esac
+  ;;
+  Ubuntu*|ubuntu*)
+    DISTRO=ubuntu
+    case "${DISTRO_VER}" in
+      Breezy*|breezy*)
+        DISTRO_VER=5.10
+        cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib
+      ;;
+     Dapper*|dapper*)
+	DISTRO_VER=6.06
+      ;;
+    esac
+    ;;
+  Gentoo*|gentoo*)
+    DISTRO=gentoo
+    case "${DISTRO_VER}" in
+      2005*|*)
+        DISTRO_VER=2005.1
+      ;;
+    esac
+  ;;
+  SuSE*|suse*|Suse*|SuSe*|SUSE*|*)
+    DISTRO=suse
+    case "${DISTRO_VER}" in
+      9*)
+        DISTRO_VER=9.3
+      ;;
+      10.0)
+        DISTRO_VER=10.0
+      ;;
+      10*)
+        DISTRO_VER=10.1
+      ;;
+    esac
+
+  ;;
+esac
+# at this point ${DISTRO} ${DISTRO_VER} should be fixed
+copy_distro_stuff ${DISTRO} ${DISTRO_VER}
+
+# hotplug/udev type and related stuff
+cp -a ${ROOTDIR}/etc/udev ${INSTDIR}/etc
+
+# binary and corresponding library copies could be avoided if a small
+# initial ramdisk environment of its own is generated from busybox,
+# dietlibc and similar, see odlx project page ...
+
+# devices needed rather early (copied from /tmp to /dev in init)
+mknod ${INSTDIR}/tmp/console c 5 1 &>/dev/null
+mknod ${INSTDIR}/tmp/null c 1 3 &>/dev/null
+mknod ${INSTDIR}/tmp/kmsg c 1 11 &>/dev/null
+mknod ${INSTDIR}/tmp/ctl b 241 255 &>/dev/null
+# suse specific, but might be usable with other distros too
+mknod ${INSTDIR}/tmp/bootsplash p &>/dev/null
+
+# test for the existance of busybox
+if [ "$use_busybox" = 1 ]; then
+  [ -x busybox ] || {
+    unset use_busybox
+    echo "You wanted to include busybox, but did not provide it in \
+  initrd/ directory."; }
+fi
+if [ -n "$use_busybox" ] ; then
+  cp busybox ${INSTDIR}/bin
+  for bbins in [ arping ash cat chmod chown chroot cp date \
+        dd df dmesg echo expr fdisk free hwclock insmod ip \
+        kill killall ln ls lsmod mkdir mke2fs mkfs.ext2 \
+        mkfs.ext3 mknod modprobe mount mv ps rdate rm rmmod \
+        sed sort switch_root tar test tftp time udhcpc \
+        umount uname usleep vconfig vi; do
+    ln -s /bin/busybox ${INSTDIR}/bin/$bbins
+  done
+  # fake the sh link in busybox environment
+  echo -e "#!/bin/ash\n/bin/ash \$@" > ${INSTDIR}/bin/sh
+  chmod a+x ${INSTDIR}/bin/sh
+else
+  # find and copy a shell to be used within initialramfs
+  for bbins in bash ash sh; do
+    if cobi ${bbins} bin ; then
+      ln -fs ${bbins} ${INSTDIR}/bin/sh
+      [ "${bbins}" != "ash" ] && ln -fs ${bbins} ${INSTDIR}/bin/ash
+      [ "${bbins}" != "bash" ] && ln -fs ${bbins} ${INSTDIR}/bin/bash
+      break
+    else echo "Binary not found (${bbins})"; fi
+  done
+
+  # find and copy ip setup binaries
+  for bbins in ip ifconfig; do
+    if cobi ${bbins} bin ; then
+      [ "${bbins}" = "ifconfig" ] && cobi route bin
+      break
+    else echo "Binary not found"; fi
+  done
+
+  # needed standard binaries (in init, servconfig, hwautocfg, ... scripts)
+  for bbins in \
+      cat chmod chown chroot cp expr fdisk gzip killall ln ls mkdir \
+      mkfs.ext2 modprobe mount rmmod sed sort rm tar umount
+    do
+    cobi ${bbins} bin || echo "Program ${bbins} not found"
+  done
+
+  # binaries useful for debugging purposes
+  if [ $IRFSDEBUG -gt 2 ] ; then
+    for bbins in \
+      date lsmod lsof ps strace time
+    do
+      cobi ${bbins} bin || echo "Program ${bbins} not found"
+    done
+  fi
+
+  # tftp client binary for configuration via file - get machine-setup per
+  # tftp from dhcp (or specified other) server
+  for tftp in atftp tftp ; do
+    binfinder $tftp && break;
+  done
+  cobi $tftp bin || echo "Program ${tftp} not found"
+  cp /lib/libnss_files.so.2 ${INSTDIR}/lib
+fi
+
+# one of the dhcp clients
+for dhcp in dhclient dhcpcd pump ipconfig ; do
+  binfinder $dhcp && break;
+done
+cobi $dhcp bin
+mkdir -p ${INSTDIR}/var/{lib,run}
+
+# type of hotplug/udev/dev (for etc directories see above!!)
+for bbins in udev udevd udevstart udevtrigger udevsend
+  do
+  cobi ${bbins} bin &>/dev/null || \
+  echo "Program ${bbins} not found; could be most probably ignored"
+done
+
+# if nfs is used as clients root filesystem
+cobi portmap bin
+mkdir -p ${INSTDIR}/var/lib/nfs/state
+
+# if nbd or dnbd is used as clients root filesystem
+if [ -n "${FSMODULES}" ] ; then
+for i in ${FSMODULES}; do
+  case "$i" in
+    dnbd)
+      cobi dnbd-client bin
+    ;;
+    nbd)
+      cobi nbd-client bin
+    ;;
+  esac
+done
+fi
+
+# if unionfs
+cobi unionctl bin &>/dev/null || \
+  echo "Program unionctl not found; could be ignored ..."
+
+# if cowloop
+cobi cowdev bin &>/dev/null || \
+  echo "Program cowdev not found; could be ignored ..."
+
+# distro specific additional stuff
+case "${DISTRO}" in
+  debian*)
+    cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib;;
+esac
+
+# add needed libraries depending on choosen binaries. use chroot
+# on ldd, otherwise the detection does not work properly. ldd has to be
+# static linked binary
+# fixme: procedure might have to be changed
+for lib in `cat ${INSTDIR}/tmp/libraries 2>/dev/null | \
+  sed -e "s,tls,,;s,i686/cmov,," \
+  -ne 's:\t\(.* => \)\?\(/.*\) (0x[0-9a-f]*):\2:p' | sort -u` ; do
+  baselib=`basename ${lib}`
+  test -e  ${INSTDIR}/lib/${baselib} || \
+    cp /${ROOTDIR}/${lib} ${INSTDIR}/lib
+done
+rm ${INSTDIR}/tmp/libraries
+# temporaere grosse scheisse
+mv ${INSTDIR}/lib ${INSTDIR}/lib64
+mkdir ${INSTDIR}/lib
+cp /${ROOTDIR}/lib/ld-linux.so.2 ${INSTDIR}/lib
+cp /${ROOTDIR}/lib/libc.so.6 ${INSTDIR}/lib
+
+# add kernel modules and dependency files
+if [ -z "$KERNVER" ] ; then
+  KERNVER=`ls -l ${ROOTDIR}/boot/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
+fi
+if [ -z "$KERNVER" ] ; then
+  KERNVER=`ls -l ${ROOTDIR}/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
+fi
+# if no vmlinuz found, go for vmlinuz-x.yz.uv...
+if [ -z "$KERNVER" ] ; then
+  KERNVER=`ls -lt ${ROOTDIR}/boot/vmlinuz* | grep vmlinuz | sed -n "1,1s/.*vmlinuz-//p"`
+  echo "No vmlinuz-link found. Using kernel version "$KERNVER
+fi
+
+if [ -z "$KERNVER" ] ; then
+  echo "No kernel version set or detected - please use the -k flag! Exiting..."
+  exit 1
+fi
+
+if [ -z "$NWMODULES" ] ; then
+  #NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32 8139too 8139cp"
+  NWMODULES="forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32"
+fi
+if [ -z "$FSMODULES" ] ; then
+  FSMODULES="nbd nfs"
+fi
+if [ -z "$INITRD_PATH" ] ; then
+  INITRD_PATH="${ROOTDIR}/tmp/slxinitramfs.gz"
+fi
+
+# define modules to put into initial ramdisk for debugging
+#DEBUGMODULES="uhci_hcd usbhid"
+if [ $IRFSDEBUG -gt 1 ] ; then
+  DEBUGMODULES="uhci-hcd ohci-hcd usbhid"
+else
+  DEBUGMODULES=""
+fi
+
+# put all needed modules into initial ramdisk
+mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
+for module in af_packet unix ${NWMODULES} ${FSMODULES} ${MISCMODULES} \
+  ${DEBUGMODULES}; do
+  mod=`cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
+2>/dev/null`
+
+  if [ -n "$mod" ] ; then
+    mpath=${INSTDIR}/${mod%/*}
+    mkdir -p ${mpath}
+    cp ${ROOTDIR}/$mod ${mpath}
+    # fixmee!! selection of dependent modules could be handled a little bit
+    # more clever
+    rdirprefix="${ROOTDIR}/lib/modules/${KERNVER}/kernel"
+    ddirprefix="${INSTDIR}/lib/modules/${KERNVER}/kernel"
+    case "$module" in
+      e100|8139too|via-rhine|sis900|epic100|sundance|8139cp|eepro100|pcnet32)
+        cp ${rdirprefix}/drivers/net/mii.ko \
+           ${ddirprefix}/drivers/net &>/dev/null
+      ;;
+      nfs)
+        # create directory structure for modules needed and copy them
+        # to the proper place (as expected by modprobe/modules.dep)
+	mkdir -p ${ddirprefix}/net/sunrpc
+	mkdir -p ${ddirprefix}/fs/lockd ${ddirprefix}/fs/nfs_common
+        cp ${rdirprefix}/net/sunrpc/sunrpc.ko \
+	  ${ddirprefix}/net/sunrpc &>/dev/null
+	cp ${rdirprefix}/fs/lockd/lockd.ko \
+          ${ddirprefix}/fs/lockd &>/dev/null
+	cp ${rdirprefix}/fs/nfs_common/nfs_acl.ko \
+	  ${ddirprefix}/fs/nfs_common &>/dev/null
+      ;;
+      ext3)
+        mkdir -p ${ddirprefix}/fs/jbd
+        cp ${rdirprefix}/fs/jbd/jbd.ko \
+          ${ddirprefix}/fs/jbd
+      ;;
+      netloop)
+        cobi brctl bin &>/dev/null || \
+          echo "Program brctl not found; could be ignored ..."
+        mkdir -p ${ddirprefix}/drivers/xen/netback
+        mkdir -p ${ddirprefix}/net/bridge
+        cp ${rdirprefix}/drivers/xen/netback/netloop.ko \
+          ${ddirprefix}/drivers/xen/netback &>/dev/null
+        cp ${rdirprefix}/net/bridge/bridge.ko \
+          ${ddirprefix}/net/bridge &>/dev/null
+      ;;
+    esac
+  fi
+done
+cp ${ROOTDIR}/lib/modules/${KERNVER}/modules.* \
+  ${INSTDIR}/lib/modules/${KERNVER}
+
+# initial ramdisk scripts: init, functions, servconfig, hwautocfg, ...
+# copy and replace variable names
+for dirs in `find initrd-stuff/* ! -regex ".*/\..*"` ; do
+  repco ${dirs##initrd-stuff/}
+done
+chmod 755 ${INSTDIR}/init \
+  ${INSTDIR}/bin/{servconfig,hwautocfg,screenres,dhcpmkconfig}
+
+# add the common default client configuration file - just to ensure to
+# have all major variables defined. !!These settings are most probably
+# are overwritten by fileget in stage3 within initramfs!!
+if [ -f /var/opt/openslx/config/default/initramfs/machine-setup ] ; then
+  cp /var/opt/openslx/config/default/initramfs/machine-setup \
+    ${INSTDIR}/etc/machine-setup
+  echo "Using /var/opt/openslx/config/default/initramfs/machine-setup"
+# use the installed default machine-setup.default
+elif [ -f /opt/openslx/share/templates/machine-setup.default ] ; then
+  cp /opt/openslx/share/templates/machine-setup.default \
+    ${INSTDIR}/etc/machine-setup
+  echo "Using /opt/openslx/share/templates/machine-setup.default"
+# just compatibility for older versions
+elif [ -f /etc/dxs/client.cfg/machine-setup.default ] ; then
+  cp /etc/dxs/client.cfg/machine-setup.default \
+    ${INSTDIR}/etc/machine-setup
+  echo "Using /etc/dxs/client.cfg/machine-setup.default"
+# fixme: dirty hack if the installer does not creates a normal file
+elif [ -f /etc/dxs/client.cfg/machine-setup.default.new ] ; then
+  cp /etc/dxs/client.cfg/machine-setup.default.new \
+    ${INSTDIR}/etc/machine-setup
+elif [ -f ../installer/default_files/machine-setup.default ] ; then
+  cp ../installer/default_files/machine-setup.default \
+    ${INSTDIR}/etc/machine-setup
+  echo "Using ../installer/default_files/machine-setup.default"
+else
+  #inserted password for root for debugging purposes
+  echo -e "# default for machine-setup does not exist\n# root logins are \
+disabled\nroot_pw='"'$1$T7VD/mmQ$aCP1WEaWplEsHe9khv4kK.'"'" \
+    > ${INSTDIR}/etc/machine-setup
+fi
+
+# custom hardware configuration files pcitable.local and Cards.local
+# fixme!! New source for these files (instead of templates)!
+if [ -f /opt/openslx/share/templates/pcitable.local ] ; then
+  cat /opt/openslx/share/templates/pcitable.local >> \
+    ${INSTDIR}/usr/share/hwdata/pcitable
+fi
+if [ -f /opt/openslx/share/templates/Cards.local ] ; then
+  cat /opt/openslx/share/templates/Cards.local >> \
+    ${INSTDIR}/usr/share/hwdata/Cards
+fi
+
+# finally copy user-supplied preinit files. The client specific one
+# overwrites the system default one. postinit.local may be part of
+# fileget tgz (in stage3)
+for cfg in default/initramfs/preinit.local \
+           ${DISTRO}-${DISTRO_VER}/initramfs/preinit.local \
+           default/initramfs/postinit.local \
+           ${DISTRO}-${DISTRO_VER}/initramfs/postinit.local ; do
+  test -f /var/opt/openslx/config/$cfg && \
+    cp /var/opt/openslx/config/$cfg ${INSTDIR}/bin
+done
+
+# remove unneeded debug info, fixme not really tested yet
+strip  ${INSTDIR}/bin/*  ${INSTDIR}/lib/* &>/dev/null
+
+#########################################################################
+# End of file copy procedures
+
+[ -n "${theme}" ] && add_theme
+
+# finally create the compressed initial ramdisk cpio archive
+pushd . > /dev/null 2>&1
+  cd ${INSTDIR}
+  find . ! -name "*~" | cpio -H newc --create | gzip -9 > $INITRD_PATH
+popd > /dev/null 2>&1
+

@@ -3,7 +3,7 @@
 # universal (distro independent) hardware autoconfiguration script for 
 # OpenSLX linux diskless clients, using hwconfig from knoppix as base tool 
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 27-09-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 07-10-2006
 #
 # (c) 2003 - 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.org Project
@@ -141,8 +141,8 @@ for section in Files ServerFlags Module InputDevice Monitor \
     Files)
       echo -e ${Files} >>$xfc
       # check for 64bit CPU/installation (fixme!!)
-      [ -n "$amd64" ] && \
-        echo '"\tModulePath\t"/usr/X11R6/lib64/modules"\n' >>$xfc
+      [ -d "/mnt/usr/X11R6/lib64/modules" ] && \
+        echo -e '\tModulePath\t"/usr/X11R6/lib64/modules"\n' >>$xfc
       for i in ${D_XFONTPATH} ; do
         echo -e "\tFontPath\t\"$i/\"" >>$xfc ; done
     ;;

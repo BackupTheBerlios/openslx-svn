@@ -3,7 +3,7 @@
 # inclusion of the main functions file). This file is the main base for the
 # several SuSE distro versions
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 29-07-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 07-10-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
 # (c) 2006 OpenSLX.org Project
@@ -443,6 +443,8 @@ rllinker "portmap" "02" "20"
 config_nis () {
 if [ -f /mnt/etc/${D_INITDIR}/ypbind ] ; then
   rllinker "ypbind" "06" "16"
+  config_portmap
+  testmkd /mnt/var/yp/nicknames
 else
   error "$df_erryp" nonfatal
 fi
