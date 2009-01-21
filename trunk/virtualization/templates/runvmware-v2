@@ -484,7 +484,7 @@ filecheck
 # strings is the fastest and most secure way, vmplayer -v takes too much time
 # and resources
 vmbuild=$(strings /usr/lib/vmware/bin/vmplayer \
-    | grep Releasebuild-|sed 's/.*Releasebuild-//')
+    | grep -m 1 "build-"|sed 's/.*build-//')
 if [ ! -n ${vmbuild} ]; then
   vmbuild=$(vmplayer -v | sed 's/.*build-//')
 fi
