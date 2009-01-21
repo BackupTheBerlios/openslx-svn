@@ -420,6 +420,10 @@ fi
 if [ -z "$KERNVER" ] ; then
   KERNVER=`ls -l ${ROOTDIR}/vmlinuz | grep vmlinuz | sed "s/.*vmlinuz-//"`
 fi
+# if no vmlinuz found, go for vmlinuz-x.yz.uv...
+if [ -z "$KERNVER" ] ; then
+  KERNVER=`ls -lt /nfsroot/boot/vmlinuz* | grep vmlinuz | sed -n "1,1s/.*vmlinuz-//p"`
+fi
 
 if [ -z "$KERNVER" ] ; then
   echo "No kernel version set or detected - please use the -k flag! Exiting..."
