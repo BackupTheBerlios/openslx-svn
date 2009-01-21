@@ -238,6 +238,6 @@ and stage1"
 
 clean:
 	@echo "Cleanup OpenSLX source directory "
-	@for file in openslx-*.tar.bz2; do \
+	@for file in $(SLX_INSTALL_LOG) openslx-*.tar.bz2; do \
 		rm -f $${file}; \
 	done
