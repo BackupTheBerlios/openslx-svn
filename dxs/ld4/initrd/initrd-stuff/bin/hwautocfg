@@ -305,7 +305,7 @@ Please check that\n  hwsetup is properly installed and executable."
 # "drivers" (pseudo, placeholder strings, ...) to exclude from loading
 DRIVERLIST="disabled unknown ignore pcspkr synaptics"
 # driver blacklist (real modules which fail to load)
-DRIVERLIST="hw_random "${DRIVERLIST}
+DRIVERLIST=${DRIVERLIST}" hw_random "
 # check for USB, pcmcia and ieee1394 hardware drivers
 for DRIVER in ohci-hcd uhci-hcd ehci-hcd \
               ohci1394; do

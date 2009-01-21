@@ -3,9 +3,11 @@
 # Description:  universal (distro independent) generator for initial
 #		ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 20-01-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 24-01-2006
 #		Blabla
 #		Blub
+#
+# Version:      0.3.0a
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 
@@ -164,34 +166,32 @@ shared_object_files() {
 
 # Resolve module dependencies and parameters. Returns a list of modules and
 # their parameters.
-resolve_modules() {
-    local kernel_version=$1 module
-    shift
-
-    for module in "$@"; do
-	local with_modprobe_conf
-	module=${module%.o}  # strip trailing ".o" just in case.
-	module=${module%.ko}  # strip trailing ".ko" just in case.
-	if [ -e /etc/modprobe.conf ]; then
-	    with_modprobe_conf="-C /etc/modprobe.conf"
-	fi
-	module_list=$(/sbin/modprobe $with_modprobe_conf \
-	    --set-version $kernel_version --ignore-install \
-	    --show-depends $module 2> /dev/null \
-	    | sed -ne 's:.*insmod /\?::p' )
-	echo "$module_list"
-    done \
-    | awk ' # filter duplicates: we must not reorder modules here!
-	NF == 0     { next }
-	$1 in seen  { next }
-		    { seen[$1]=1
-		      print
-		    }
-    '
-    rm -f $temp
-}
-
-
+#resolve_modules() {
+#    local kernel_version=$1 module
+#    shift
+#
+#    for module in "$@"; do
+#	local with_modprobe_conf
+#	module=${module%.o}  # strip trailing ".o" just in case.
+#	module=${module%.ko}  # strip trailing ".ko" just in case.
+#	#if [ -e /etc/modprobe.conf ]; then
+#	#    with_modprobe_conf="-C /etc/modprobe.conf"
+#	#fi
+#	module_list=$(/sbin/modprobe $with_modprobe_conf \
+#	    --set-version $kernel_version --ignore-install \
+#	    --show-depends $module 2> /dev/null \
+#	    | sed -ne 's:.*insmod /\?::p' )
+#	echo "$module_list"
+#    done \
+#    | awk ' # filter duplicates: we must not reorder modules here!
+#	NF == 0     { next }
+#	$1 in seen  { next }
+#		    { seen[$1]=1
+#		      print
+#		    }
+#    '
+#   rm -f $temp
+#}
 
 #########################################################################
 # End of function declaration
@@ -394,14 +394,14 @@ mkdir -p ${INSTDIR}/var/lib/nfs/state
 # distro specific additional stuff
 case "${DISTRO}" in 
   debian*)
-    cp /lib/libnss_compat.so.2 ${INSTDIR}/lib;;
+    cp ${ROOTDIR}/lib/libnss_compat.so.2 ${INSTDIR}/lib;;
 esac
 
 # add needed libraries depending on choosen binaries
 for lib in `shared_object_files ${INSTDIR}/bin/*` ; do
   baselib=`basename ${lib}`
   test -e  ${INSTDIR}/lib/${baselib} || \
-    cp -a /${lib} ${INSTDIR}/lib
+    cp -a /${ROOTDIR}/${lib} ${INSTDIR}/lib
 done
 
 # add kernel modules and dependency files
@@ -423,12 +423,27 @@ if [ -z "$INITRD_PATH" ] ; then
   INITRD_PATH="/tmp/dxsinitrd.gz"
 fi
 
-for module in `resolve_modules ${KERNVER} af_packet ${NWMODULES} ${FSMODULES}`; do
-  mpath=${INSTDIR}/${module%/*}
-  mkdir -p ${mpath}
-  cp /$module ${mpath}
+mkdir -p ${INSTDIR}/lib/modules/${KERNVER}
+for module in af_packet ${NWMODULES} ${FSMODULES}; do
+  echo "m: $module"
+  mod=`cd /${ROOTDIR}; find "lib/modules/${KERNVER}" -name ${module}.ko \
+2>/dev/null`
+  echo "m: $mod"
+  if [ -n "$mod" ] ; then
+    mpath=${INSTDIR}/${mod%/*}
+    echo $mpath
+    mkdir -p ${mpath}
+    cp ${ROOTDIR}/$mod ${mpath}
+    case "$module" in
+      e100|8139too|via-rhine|sis900|epic100|sundance|8139cp|eepro100.ko|pcnet32)
+        cp ${ROOTDIR}/lib/modules/${KERNVER}/kernel/drivers/net/mii.ko \
+          ${INSTDIR}/lib/modules/${KERNVER}/kernel/drivers/net &>/dev/null
+      ;;
+    esac
+  fi
 done
-cp /lib/modules/${KERNVER}/modules.* ${INSTDIR}/lib/modules/${KERNVER}
+cp ${ROOTDIR}/lib/modules/${KERNVER}/modules.* \
+  ${INSTDIR}/lib/modules/${KERNVER}
 
 # initial ramdisk scripts: init, functions, servconfig, hwautocfg, ...
 # copy and replace variable names
