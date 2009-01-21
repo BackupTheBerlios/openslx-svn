@@ -15,7 +15,8 @@ $VERSION = 1.01;
 
 @EXPORT = qw(
 	&openslxInit %openslxConfig %cmdlineConfig
-	&_tr &trInit die
+	&_tr &trInit 
+	&die &executeInSubprocess &slxsystem
 	&vlog
 );
 
@@ -29,14 +30,13 @@ use FindBin;
 use Getopt::Long;
 use POSIX qw(locale_h);
 
-my $DEBUG = 0;
-
 my %translations;
 
 # this hash will hold the active openslx configuration,
 # the initial content is based on environment variables or default values.
 # Each value may be overrided from config files and/or cmdline arguments.
 %openslxConfig = (
+	'croak' => '0',
 	'db-datadir' => $ENV{SLX_DB_DATADIR},
 	'db-name' => $ENV{SLX_DB_NAME} || 'openslx',
 	'db-spec' => $ENV{SLX_DB_SPEC},
@@ -74,6 +74,8 @@ my %openslxCmdlineArgs = (
 		# path to binaries and scripts
 	'config-path=s' => \$cmdlineConfig{'config-path'},
 		# path to configuration files
+	'croak' => \$cmdlineConfig{'croak'},
+		# activates debug mode, this will show the lines where any error occured
 	'db-basepath=s' => \$cmdlineConfig{'db-basepath'},
 		# basic path to openslx database, defaults to "${private-path}/db"
 	'db-datadir=s' => \$cmdlineConfig{'db-datadir'},
@@ -274,14 +276,51 @@ sub _tr
 }
 
 # ------------------------------------------------------------------------------
+sub executeInSubprocess
+{
+	my $childFunc = shift;
+
+	my $pid = fork();
+	if (!$pid) {
+		# child...
+		# ...execute the given function and exit:
+		&$childFunc();
+		exit 0;
+	}
+
+	# parent...
+	# ...pass on interrupt- and terminate-signals to child...
+	local $SIG{INT} 
+		= sub { kill 'INT', $pid; waitpid($pid, 0); exit $? };
+	local $SIG{TERM} 
+		= sub { kill 'TERM', $pid; waitpid($pid, 0); exit $? };
+	# ...and wait for child to do its work:
+	waitpid($pid, 0);
+	if ($?) {
+		exit $?;
+	}
+}
+
+# ------------------------------------------------------------------------------
+sub slxsystem
+{
+	my $res = system(@_);
+	if ($res & 127) {
+		# child got killed, so we stop, too
+		exit;
+	}
+	return $res;
+}
+
+# ------------------------------------------------------------------------------
 sub die
 {
 	my $msg = shift;
-	if ($DEBUG) {
+	if ($openslxConfig{'croak'}) {
 		print STDERR "*** ";
 		croak $msg;
 	} else {
-		$msg =~ s[^][!!! ]igms;
+		$msg =~ s[^][*** ]igms;
 		chomp $msg;
 		print STDERR "$msg\n";
 		exit $!;
