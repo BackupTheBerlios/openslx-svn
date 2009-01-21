@@ -13,7 +13,28 @@ $VERSION = 0.01;
 
 use vars qw($DbSchema %DbSchemaHistory);
 
-# TODO: copy attributes from installer/default_files/dhcp.conf
+# configurable attributes for system, client and group:
+my @sharedAttributes = (
+	'attrDesktopSession:s.128',
+	'attrDomainName:s.64',
+	'attrDomainNameServers:s.128',
+	'attrFontServers:s.128',
+	'attrHwGraphic:s.64',
+	'attrHwMonitor:s.64',
+	'attrHwMouse:s.64',
+	'attrLanguage:s.64',
+	'attrLprServers:s.128',
+	'attrNetbiosWorkgroup:s.64',
+	'attrNisDomain:s.64',
+	'attrNisServers:s.128',
+	'attrNtpServers:s.128',
+	'attrStartRwhod:b',
+	'attrStartSnmp:b',
+	'attrStartX:s.64',
+	'attrStartXdmcp:s.64',
+	'attrTexEnable:b',
+	'attrVmware:b',
+);
 
 ################################################################################
 ### DB-schema definition
@@ -59,6 +80,7 @@ $DbSchema = {
 			'kernel_params:s.512',	# kernel-param string for pxe
 			'initramfs:s.128',		# name of initrd file
 			'hidden:b',				# hidden systems won't be offered for booting
+			@sharedAttributes,
 		],
 		'client' => [
 			# a client is a PC booting via net
@@ -68,6 +90,8 @@ $DbSchema = {
 			'mac:s.20',			# MAC of NIC used for booting
 			'descr:s.1024',		# internal description (for admins)
 			'boot_type:s.20',	# type of remote boot procedure (PXE, ...)
+			'unbootable:b',		# unbootable clients simply won't boot
+			@sharedAttributes,
 		],
 		'client_system_ref' => [
 			# clients referring to the systems they should offer for booting
@@ -75,10 +99,15 @@ $DbSchema = {
 			'system_id:fk',		# foreign key
 		],
 		'group' => [
-			# a group encapsulates a set of clients as one entity
+			# a group encapsulates a set of clients as one entity, managing
+			# a group-specific attribute set. All the different attribute
+			# sets a client inherits via group membership are folded into
+			# one resulting attribute set with respect to each group's priority.
 			'id:pk',			# primary key
 			'name:s.128',		# name of group
 			'descr:s.1024',		# internal description (for admins)
+			'priority:i',		# priority, used for order in group-list
+			@sharedAttributes,
 		],
 		'group_client_ref' => [
 			# groups referring to their clients
