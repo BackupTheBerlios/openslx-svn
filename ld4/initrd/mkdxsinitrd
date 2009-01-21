@@ -159,7 +159,7 @@ else
         -e "s,@@@COMETCEXCL@@@,${COMETCEXCL},g" \
         -e "s,@@@DATE@@@,${DATE},g;/^#[^!].*/d" \
           initrd-stuff/${FILENAME} >> ${INSTDIR}/${FILENAME}
-    [ -n $use_busybox ] && sed -e "s,/bin/sh,/bin/ash," \
+    [ -x busybox -a "$use_busybox" = 1 ] && sed -e "s,^#!/bin/sh,#!/bin/ash," \
       -i ${INSTDIR}/${FILENAME}
   fi
 fi
@@ -419,7 +419,11 @@ mknod ${INSTDIR}/tmp/kmsg c 1 11 &>/dev/null
 mknod ${INSTDIR}/tmp/ctl b 241 255 &>/dev/null
 
 # test for the existance of busybox
-if [ -x busybox -a "$use_busybox" = 1 ] ; then
+[ -x busybox -a "$use_busybox" = 1 ] || {
+  unset use_busybox
+  echo "You wanted to include busybox, but did not provide it in \
+initrd/ directory."; }
+if [ "$use_busybox" ] ; then
   cp busybox ${INSTDIR}/bin
   for bbins in [ arping ash cat chmod chown chroot cp date \
         dd df dmesg echo expr fdisk free hwclock insmod ip \

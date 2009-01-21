@@ -5,9 +5,9 @@
 #               ramdisk) 
 #
 # Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 27-06-2006
-#				Michael Janczyk, 31-05-2006
-#				Lars Mueller, 23-06-2006
-#				Oliver Tappe, 23-06-2006
+#               Michael Janczyk, 31-05-2006
+#               Lars Mueller, 23-06-2006
+#               Oliver Tappe, 23-06-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - odlx.org project
@@ -397,7 +397,7 @@ $date\nsleep 3; while ps aux|grep -i kiosk|grep -v \"grep\" &>/dev/null;\
 do\n  test -f /var/run/kiosk || break; sleep 3;\ndone\ntouch \
  /var/run/kiosk\nresmgr login nobody tty7\nresmgr grant nobody desktop\n\
 chown nobody /dev/dsp* /dev/audio* /dev/mixer* /dev/snd/control*\n\
-tar -zxvf /var/lib/vmware/templ/nobodyconf.tar.gz -C /var/lib/nobody\n\
+#tar -zxvf /var/lib/vmware/templ/nobodyconf.tar.gz -C /var/lib/nobody\n\
 chown -R nobody.nobody /var/lib/nobody\nsu -c 'xinit /var/X11R6/bin/startgui \
 $start_x -- vt7 -quiet' -l nobody &>/dev/null\nrm /var/run/kiosk\n\
 resmgr revoke nobody\nresmgr logout tty7\nkillall X" \
