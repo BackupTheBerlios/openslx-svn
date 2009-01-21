@@ -33,11 +33,13 @@ use lib "$FindBin::RealBin";
 	# development path
 
 use OpenSLX::Basics;
+use OpenSLX::ConfigDB qw(:access :manipulation);
 
 my (
 	$noShow,
 	$quiet,
 	@remove,
+	%cmdlineSettings,
 	$helpReq,
 	$manReq,
 	$versionReq,
@@ -50,6 +52,8 @@ GetOptions(
 		# will avoid printing anything
 	'remove=s' => \@remove,
 		# will avoid printing anything
+	'setting=s' => \%cmdlineSettings,
+		# accepts setting for db-table 'settings'
 
 	'help|?' => \$helpReq,
 	'man' => \$manReq,
@@ -64,7 +68,11 @@ if ($versionReq) {
 
 openslxInit() or pod2usage(2);
 
-# fetch current content of local settings file...
+# fetch slxconf entries...
+my $openslxDB = connectConfigDB();
+my $currSettings = fetchSettings($openslxDB);
+
+# ...and fetch current content of local settings file...
 open(SETTINGS, "< $openslxConfig{'config-path'}/settings.local");
 $/ = undef;
 my $settings = <SETTINGS>;
@@ -109,10 +117,27 @@ if ($changeCount) {
 	close(SETTINGS);
 }
 
+if (scalar(keys %cmdlineSettings) > 0) {
+	foreach my $key (keys %cmdlineSettings) {
+		if (exists $currSettings->{$key}) {
+			changeSettings($openslxDB, { $key => $cmdlineSettings{$key} });
+			$changeCount++;
+		} else {
+			die _tr("unknown settings key <%s>!\n", $key);
+		}
+	}
+	$currSettings = fetchSettings($openslxDB);
+}
+
 if (!($noShow || $quiet)) {
-	print "\n"._tr("resulting settings:")."\n";
+	my $text = $changeCount ? "resulting settings:" : "current settings:";
+	print "\n"._tr($text)."\n";
 	foreach my $key (sort keys %openslxConfig) {
-		print "\t$key=$openslxConfig{$key}\n";
+		print qq[\t$key="$openslxConfig{$key}"\n];
+	}
+	print "slxconf:\n";
+	foreach my $key (sort keys %$currSettings) {
+		print qq[\t$key="$currSettings->{$key}"\n];
 	}
 }
 
