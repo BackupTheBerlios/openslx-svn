@@ -33,9 +33,6 @@ config_distro () {
   # how that is done for upstart??
 }
 
-
-
-
 # x11 stuff
 descsession () {
 if [ "x$desktop_session" != "x" ] ; then
@@ -100,7 +97,7 @@ consolefont () {
 [ "$LANG" == "de_DE@euro" ] && LANG=de_DE.UTF8
 sed -e "s,LANGUAGE=.*,LANGUAGE=${LANG},;s,LANG=.*,LANG=${LANG}," \
     -i /mnt/etc/environment
-rllinker "console-screen.sh" "31" "03"
+rllinker "console-screen.sh" 31 3
 }
 
 # configure kdm as display manager
@@ -112,7 +109,7 @@ xdmdir=/etc/kde3/kdm
 testmkd /mnt/${kdmrcdir}
 
 #if [ "x$late_dm" = "xyes" ] ; then
- rllinker "kdm" "03" "01"
+ rllinker "kdm" 3 1
  if [ "x$start_xdmcp" = "xkdm" ]; then 
    echo /usr/bin/kdm > /mnt/etc/X11/default-display-manager
  fi

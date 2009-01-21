@@ -1,13 +1,16 @@
-# configuration script for general Debian to configure linux diskless clients
-# (executed within initialramfs after genconfig) 
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2007 - OpenSLX GmbH
 #
-# this file is distributed under the GPLv2, see ~/openslx/COPYING
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 22-12-2006
-# Felix Endres, 30-04-2006
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
 #
-# (c) 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX GmbH
+# General information about OpenSLX can be found at http://openslx.org
+#
+# Configuration script for general Debian distributions to setup linux
+# stateless clients (included within initial ramfs)
 
 # empty functions are defined at the beginning of /etc/functions
 
@@ -26,22 +29,6 @@ config_distro () {
   
   # set default runlevel
   sed -e "s/.*initdefault/id:${D_INITDEFAULT}:initdefault/" -i /mnt/etc/inittab
-}
-
-# udev/hotplug - auto device discovery service (deprecated, check and remove)
-# Result: 1 is bad, 0 is good
-udev_hotplug () {
-  local result=0
-  [ -d /etc/hotplug -a -d /etc/hotplug.d ] || error "$df_errhotpl" nonfatal
-  echo "Enabling hotplug/udev"
-  #udevstart && result=0
-  #udevtrigger && result=0
-  udevd --daemon || result=1
-  [ ! -e /sbin/udevsend ] && result=1
-  echo "/sbin/udevsend/" > /proc/sys/kernel/hotplug
-  mkdir -p /dev/.udev/db /dev/.udev/queue
-  trigger_device_events
-  return $result
 }
 
 # distro specific general function called from servconfig script
