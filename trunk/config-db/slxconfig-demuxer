@@ -48,15 +48,17 @@ use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::ConfigFolder;
 use OpenSLX::Utils;
 
-my $pxeDefaultTemplate = q[NOESCAPE 0
-PROMPT 0
-TIMEOUT 10
-DEFAULT menu.c32
-IMPLICIT 1
-ALLOWOPTIONS 1
-MENU TITLE Was möchten Sie tun (Auswahl mittels Cursortasten)?
-MENU MASTER PASSWD secret
-];
+my $pxeDefaultTemplate = unshiftHereDoc(<<'End-of-Here');
+	NOESCAPE 0
+	PROMPT 0
+	TIMEOUT 10
+	DEFAULT menu.c32
+	IMPLICIT 1
+	ALLOWOPTIONS 1
+	MENU TITLE Was möchten Sie tun (Auswahl mittels Cursortasten)?
+	MENU MASTER PASSWD secret
+End-of-Here
+utf8::decode($pxeDefaultTemplate);
 
 my (
 	$dhcpType,
