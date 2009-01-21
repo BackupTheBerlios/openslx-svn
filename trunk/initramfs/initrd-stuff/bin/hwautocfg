@@ -331,11 +331,11 @@ fi
 # rerun the knoppix hardware autodetection tool for USB and ide devices
 # like dvd or harddisk - wait a few seconds so hopefully the ide driver
 # is initialized 
-[ -x /bin/mdev ] && mdev -s &
+[ -x /bin/mdev ] && mdev -s
 test -f /proc/bus/usb/devices || \
   mount -n -t usbfs usbfs /proc/bus/usb 2>/dev/null
 [ $DEBUGLEVEL -eq 21 ] && echo "** started 2nd hwdetection at $(sysup)"
-usleep 200 && hwsetup -v > /tmp/hwsetup.info
+hwsetup -v > /tmp/hwsetup.info
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
 
 # load IDE high level drivers
@@ -361,7 +361,33 @@ if strinfile "SCSI" /tmp/hwsetup.info ; then
            >> /tmp/scanner-udev
 fi
 [ -x /bin/mdev ] && mdev -s
-[ $DEBUGLEVEL -eq 21 ] && echo "** finished module loading at $(sysup)"
+# sound card setup (alsa and oss compatibility drivers)
+( if [ -f /etc/sysconfig/sound ] ; then
+  . /etc/sysconfig/sound
+  driver=${DRIVER}
+else driver="snd-dummy"
+fi
+# problem with a specific module not disabled (via above trick) when
+# busybox is used
+#  rmmod snd_atiixp_modem snd_atiixp
+modprobe ${MODPRV} ${driver}
+driverlist="${driverlist} ${driver}"
+modprobe ${MODPRV} snd-pcm-oss
+modprobe ${MODPRV} snd-mixer-oss
+# remaining drivers listed in /tmp/hwsetup.info
+cat /tmp/hwsetup.info| while read line ; do
+  if strinstr "driver:" "${line}"; then
+    driver=${line##driver: }
+    if ! strinstr " ${driver} " "${driverlist}"; then
+      strinstr "Card:" "${driver}" || strinstr "ps/2" "${driver}" || {
+        modprobe ${MODPRV} ${driver} &
+        usleep 5; }
+      driverlist="${driverlist} ${driver}"
+    fi
+  fi
+done ) &
+[ $DEBUGLEVEL -eq 21 ] && echo "** finished most of module loading at $(sysup)"
+
 # get idea of availabe harddisk partitions, put swap partitions into
 # (/mnt)/etc/fstab and format and mount partitions of type 44 (unknown)
 [ $DEBUGLEVEL -eq 21 ] && echo "** starting hdd stuff at $(sysup)"
@@ -388,6 +414,8 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
     part44=yes
     break
   done
+  # determine if tmp preparation should wait for format/mount or not
+  [ -z "$part44" ] && echo "finished at $(sysup)" > /tmp/tmpready
   # put detected linux partitions into /etc/fstab with "noauto"
   for hdpartnr in $(cat /tmp/hd_part | \
         sed -n -e "/ 83 /p"|sed -e "s/[[:space:]].*//") ; do
@@ -396,35 +424,7 @@ for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
 noexec\t 0 0" >> /tmp/fstab
   done 
 done
-# determine if tmp preparation should wait for format/mount or not
-[ -z "$part44" ] && echo "finished at $(sysup)" > /tmp/tmpready
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished hdd stuff at $(sysup)"
-
-# sound card setup (alsa and oss compatibility drivers)
-if [ -f /etc/sysconfig/sound ] ; then
-  . /etc/sysconfig/sound
-  driver=${DRIVER}
-else driver="snd-dummy"
-fi
-# problem with a specific module not disabled (via above trick) when
-# busybox is used
-#  rmmod snd_atiixp_modem snd_atiixp
-modprobe ${MODPRV} ${driver}
-driverlist="${driverlist} ${driver}"
-modprobe ${MODPRV} snd-pcm-oss
-modprobe ${MODPRV} snd-mixer-oss
-# remaining drivers listed in /tmp/hwsetup.info
-cat /tmp/hwsetup.info| while read line ; do
-  if strinstr "driver:" "${line}"; then
-    driver=${line##driver: }
-    if ! strinstr " ${driver} " "${driverlist}"; then
-      strinstr "Card:" "${driver}" || strinstr "ps/2" "${driver}" || {
-        modprobe ${MODPRV} ${driver} &
-        usleep 20; }
-      driverlist="${driverlist} ${driver}"
-    fi
-  fi
-done
 
 # check if USB mouse and/or keyboard is connected and remove usbhid if
 # not (does not work properly)
@@ -453,17 +453,6 @@ else
   ( displaysetup /etc/xorg.conf; echo "ready" > /tmp/xready ) &
 fi
   
-
-# wait for completion of clients root filesystem in /mnt and add
-# previously generated files to /mnt/etc ...
-#[ $DEBUGLEVEL -eq 21 ] && \
-#  echo -e "** if you did not run hwautocfg in background and exited the \n\
-#debug shell, expect to wait from now on a while ..."
-#waitfor /tmp/fscmpl 40000
-#[ -f /tmp/fstab ] && cat /tmp/fstab >> /mnt/etc/fstab
-#[ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
-#  >> /mnt/etc/udev/rules.d/04-scanner.rules
-
 # add entries to initialize keytable and consolefont to boot.ld
 # postpone some commands into normal bootup environment
 #echo -e "\t# entries added by $0: $date" >> /mnt/etc/${D_INITDIR}/boot.ld
@@ -494,26 +483,28 @@ return 0
 
 # script run timer
 [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
-  echo "** HW setup started at $(sysup)"
+  echo "** HW $1 setup started at $(sysup)"
 
 # heavy debugging output in level 3 and above and specific for 11
 [ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 8 -o $DEBUGLEVEL -eq 11 ] && \
   set -x
 
 case $1 in
+  # pre initializsation: loading USB base modules, starting hwsetup
   pre)
     hwpre
   ;;
+  # loading network modules
   nwmod)
     nwmod
   ;;
+  # main part of hardware setup including Xorg
   main)
     hwmain
     # main script run timer or debug information
-   [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
+    [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
       echo "** HW setup finished at $(sysup)"
-      echo "hwsetup finished at $(sysup)" > /tmp/hwcfg
+    echo "hwsetup finished at $(sysup)" > /tmp/hwcfg
   ;;
 esac
-
 

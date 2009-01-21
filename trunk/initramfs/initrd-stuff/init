@@ -76,11 +76,6 @@ nfsro="nfs"
 
 # load usb modules for keyboard (reenable usb keyboards, otherwise the
 # admin has to wait until second run of hwsetup late in stage3)
-#echo "0 0 0 0" >/proc/sys/kernel/printk
-#( for mod in usbcore uhci-hcd ohci-hcd usbhid; do
-#  modprobe -q $mod 2>/dev/null
-#  usleep 5
-#done; echo "1 4 1 7" >/proc/sys/kernel/printk ) &
 hwautocfg pre
 
 # run pre init script and user defined preinit.local, copied by mkdxsinitrd
@@ -448,6 +443,7 @@ mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
 # start hardware configuration as background process if not a special 
 # debuglevel (21) is used for the option of manual hwautocfg start
 if [ ${DEBUGLEVEL} = 21 ] ; then
+  echo "You can run 'hwautocfg main &' manually now ..."
   /bin/sh
 else
   [ $DEBUGLEVEL -eq 20 ] && echo "** started hwautocfg in background at \
