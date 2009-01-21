@@ -90,8 +90,8 @@ chdir($FindBin::RealBin)
 my $engine = OpenSLX::OSSetup::Engine->new;
 if ($action =~ m[import]i) {
 	$engine->initialize($vendorOSName, 0, 'import');
-	if (!-e $engine->{'system-path'}) {
-		die _tr("'%s' doesn't exist, giving up!\n", $engine->{'system-path'});
+	if (!-e $engine->{'vendor-os-path'}) {
+		die _tr("'%s' doesn't exist, giving up!\n", $engine->{'vendor-os-path'});
 	}
 	$engine->addInstalledVendorOSToConfigDB();
 } elsif ($action =~ m[update]i) {

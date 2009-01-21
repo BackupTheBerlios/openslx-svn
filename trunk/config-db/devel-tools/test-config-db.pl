@@ -15,8 +15,11 @@ use lib "$FindBin::RealBin/../../lib";
 use lib "$FindBin::RealBin/..";
 	# development path to config-db stuff
 
+print "THIS IS CURRENTLY BROKEN!!!\n";
+exit 5;
+
 use OpenSLX::Basics;
-use OpenSLX::ConfigDB qw(:access :manipulation);
+use OpenSLX::ConfigDB;
 
 openslxInit();
 

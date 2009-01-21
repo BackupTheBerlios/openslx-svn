@@ -15,7 +15,7 @@ $VERSION = 1.01;
 
 @EXPORT = qw(
 	&openslxInit %openslxConfig %cmdlineConfig
-	&_tr &trInit
+	&_tr &trInit die
 	&vlog
 );
 
@@ -28,6 +28,8 @@ use Carp;
 use FindBin;
 use Getopt::Long;
 use POSIX qw(locale_h);
+
+my $DEBUG = 0;
 
 my %translations;
 
@@ -269,6 +271,21 @@ sub _tr
 		$formatStr = $trOrig;
 	}
 	return sprintf($formatStr, @_);
+}
+
+# ------------------------------------------------------------------------------
+sub die
+{
+	my $msg = shift;
+	if ($DEBUG) {
+		print STDERR "*** ";
+		croak $msg;
+	} else {
+		$msg =~ s[^][!!! ]igms;
+		chomp $msg;
+		print STDERR "$msg\n";
+		exit $!;
+	}
 }
 
 1;

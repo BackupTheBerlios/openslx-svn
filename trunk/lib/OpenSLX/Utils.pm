@@ -22,6 +22,7 @@ $VERSION = 1.01;
 ################################################################################
 use Carp;
 use OpenSLX::Basics;
+use File::Basename;
 
 sub copyFile
 {

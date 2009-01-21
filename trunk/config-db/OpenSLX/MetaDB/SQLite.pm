@@ -35,7 +35,7 @@ sub new
 	return bless $self, $class;
 }
 
-sub connectConfigDB
+sub connect
 {
 	my $self = shift;
 

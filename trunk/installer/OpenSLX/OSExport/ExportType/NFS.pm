@@ -63,7 +63,7 @@ sub exportViaRsync
 				$target, $!);
 	}
 	my $includeExcludeList = $self->determineIncludeExcludeList();
-	vlog 1, "using include-exclude-filter:\n$includeExcludeList\n";
+	vlog 1, _tr("using include-exclude-filter:\n%s\n", $includeExcludeList);
 	open(RSYNC, "| rsync -av --delete --exclude-from=- $source/ $target")
 		or die _tr("unable to start rsync for source '%s', giving up! (%s)",
 				   $source, $!);
@@ -97,7 +97,7 @@ sub addTargetToNfsExports
 
 	print (('#' x 80)."\n");
 	print _tr("Please make sure the following line is contained in /etc/exports\nin order to activate the NFS-export of this vendor-OS:\n\t%s\n",
-			  "$self->{engine}->{'export-path'}\t*(ro,root_squash,sync,no_subtree_check)");
+			  "$self->{engine}->{'export-path'}\t*(ro,root_squash,async,no_subtree_check)");
 	print (('#' x 80)."\n");
 
 # TODO : add something a bit more clever here...

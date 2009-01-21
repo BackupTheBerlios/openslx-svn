@@ -30,7 +30,7 @@ sub new
 	confess "Don't call OpenSLX::MetaDB::DBI::new directly!";
 }
 
-sub disconnectConfigDB
+sub disconnect
 {
 	my $self = shift;
 
@@ -83,7 +83,7 @@ sub _doSelect
 	return @vals;
 }
 
-sub fetchVendorOSesByFilter
+sub fetchVendorOSByFilter
 {
 	my $self = shift;
 	my $filter = shift;
@@ -99,7 +99,7 @@ sub fetchVendorOSesByFilter
 	return $self->_doSelect($sql);
 }
 
-sub fetchVendorOSesByID
+sub fetchVendorOSByID
 {
 	my $self = shift;
 	my $ids = shift;
@@ -112,7 +112,47 @@ sub fetchVendorOSesByID
 	return $self->_doSelect($sql);
 }
 
-sub fetchSystemsByFilter
+sub fetchExportByFilter
+{
+	my $self = shift;
+	my $filter = shift;
+	my $resultCols = shift;
+
+	$resultCols = '*' 		unless (defined $resultCols);
+	my $sql = "SELECT $resultCols FROM export";
+	my $connector;
+	foreach my $col (keys %$filter) {
+		$connector = !defined $connector ? 'WHERE' : 'AND';
+		$sql .= " $connector $col = '$filter->{$col}'";
+	}
+	return $self->_doSelect($sql);
+}
+
+sub fetchExportByID
+{
+	my $self = shift;
+	my $ids = shift;
+	my $resultCols = shift;
+
+	$resultCols = '*' 		unless (defined $resultCols);
+	my $idStr = join ',', @$ids;
+	return if !length($idStr);
+	my $sql = "SELECT $resultCols FROM export WHERE id IN ($idStr)";
+	return $self->_doSelect($sql);
+}
+
+sub fetchExportIDsOfVendorOS
+{
+	my $self = shift;
+	my $vendorOSID = shift;
+
+	my $sql = qq[
+		SELECT id FROM export WHERE vendor_os_id = '$vendorOSID'
+	];
+	return $self->_doSelect($sql, 'id');
+}
+
+sub fetchSystemByFilter
 {
 	my $self = shift;
 	my $filter = shift;
@@ -128,7 +168,7 @@ sub fetchSystemsByFilter
 	return $self->_doSelect($sql);
 }
 
-sub fetchSystemsByID
+sub fetchSystemByID
 {
 	my $self = shift;
 	my $ids = shift;
@@ -141,13 +181,13 @@ sub fetchSystemsByID
 	return $self->_doSelect($sql);
 }
 
-sub fetchSystemIDsOfVendorOS
+sub fetchSystemIDsOfExport
 {
 	my $self = shift;
-	my $vendorOSID = shift;
+	my $exportID = shift;
 
 	my $sql = qq[
-		SELECT id FROM system WHERE vendor_os_id = '$vendorOSID'
+		SELECT id FROM system WHERE export_id = '$exportID'
 	];
 	return $self->_doSelect($sql, 'id');
 }
@@ -174,47 +214,7 @@ sub fetchSystemIDsOfGroup
 	return $self->_doSelect($sql, 'system_id');
 }
 
-sub fetchSystemVariantsByFilter
-{
-	my $self = shift;
-	my $filter = shift;
-	my $resultCols = shift;
-
-	$resultCols = '*' unless (defined $resultCols);
-	my $sql = "SELECT $resultCols FROM system_variant";
-	my $connector;
-	foreach my $col (keys %$filter) {
-		$connector = !defined $connector ? 'WHERE' : 'AND';
-		$sql .= " $connector $col = '$filter->{$col}'";
-	}
-	return $self->_doSelect($sql);
-}
-
-sub fetchSystemVariantsByID
-{
-	my $self = shift;
-	my $ids = shift;
-	my $resultCols = shift;
-
-	$resultCols = '*' 		unless (defined $resultCols);
-	my $idStr = join ',', @$ids;
-	return if !length($idStr);
-	my $sql = "SELECT $resultCols FROM system_variant WHERE id IN ($idStr)";
-	return $self->_doSelect($sql);
-}
-
-sub fetchSystemVariantIDsOfSystem
-{
-	my $self = shift;
-	my $systemID = shift;
-
-	my $sql = qq[
-		SELECT id FROM system_variant WHERE system_id = '$systemID'
-	];
-	return $self->_doSelect($sql, 'id');
-}
-
-sub fetchClientsByFilter
+sub fetchClientByFilter
 {
 	my $self = shift;
 	my $filter = shift;
@@ -230,7 +230,7 @@ sub fetchClientsByFilter
 	return $self->_doSelect($sql);
 }
 
-sub fetchClientsByID
+sub fetchClientByID
 {
 	my $self = shift;
 	my $ids = shift;
@@ -265,7 +265,7 @@ sub fetchClientIDsOfGroup
 	return $self->_doSelect($sql, 'client_id');
 }
 
-sub fetchGroupsByFilter
+sub fetchGroupByFilter
 {
 	my $self = shift;
 	my $filter = shift;
@@ -281,7 +281,7 @@ sub fetchGroupsByFilter
 	return $self->_doSelect($sql);
 }
 
-sub fetchGroupsByID
+sub fetchGroupByID
 {
 	my $self = shift;
 	my $ids = shift;
@@ -526,6 +526,31 @@ sub changeVendorOS
 	return $self->_doUpdate('vendor_os', $vendorOSIDs, $valRows);
 }
 
+sub addExport
+{
+	my $self = shift;
+	my $valRows = shift;
+
+	return $self->_doInsert('export', $valRows);
+}
+
+sub removeExport
+{
+	my $self = shift;
+	my $exportIDs = shift;
+
+	return $self->_doDelete('export', $exportIDs);
+}
+
+sub changeExport
+{
+	my $self = shift;
+	my $exportIDs = shift;
+	my $valRows = shift;
+
+	return $self->_doUpdate('export', $exportIDs, $valRows);
+}
+
 sub addSystem
 {
 	my $self = shift;
@@ -571,31 +596,6 @@ sub setGroupIDsOfSystem
 	my @currGroups = $self->fetchGroupIDsOfSystem($systemID);
 	return $self->_updateRefTable('group_system_ref', $systemID, $groupIDs,
 						          'system_id', 'group_id', \@currGroups);
-}
-
-sub addSystemVariant
-{
-	my $self = shift;
-	my $valRows = shift;
-
-	return $self->_doInsert('system_variant', $valRows);
-}
-
-sub removeSystemVariant
-{
-	my $self = shift;
-	my $systemVariantIDs = shift;
-
-	return $self->_doDelete('system_variant', $systemVariantIDs);
-}
-
-sub changeSystemVariant
-{
-	my $self = shift;
-	my $systemVariantIDs = shift;
-	my $valRows = shift;
-
-	return $self->_doUpdate('system_variant', $systemVariantIDs, $valRows);
 }
 
 sub addClient

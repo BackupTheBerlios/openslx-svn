@@ -28,7 +28,7 @@ use lib "$FindBin::RealBin/..";
 	# development path to config-db stuff
 
 use OpenSLX::Basics;
-use OpenSLX::ConfigDB qw(:access :manipulation);
+use OpenSLX::ConfigDB;
 
 my (
 	$clobber,
@@ -53,12 +53,13 @@ if ($versionReq) {
 
 openslxInit() or pod2usage(2);
 
-my $openslxDB = connectConfigDB();
+my $openslxDB = OpenSLX::ConfigDB->new;
+$openslxDB->connect();
 
-my @systems = fetchSystemsByFilter($openslxDB);
+my @systems = $openslxDB->fetchSystemByFilter();
 my $systemCount = scalar(@systems)-1;
 	# ignore default system
-my @clients = fetchClientsByFilter($openslxDB);
+my @clients = $openslxDB->fetchClientByFilter();
 my $clientCount = scalar(@clients)-1;
 	# ignore default client
 if ($systemCount && $clientCount && !$clobber) {
@@ -75,70 +76,76 @@ Do you want to continue(%s/%s)? ], $systemCount, $clientCount, $yes, $no);
 	print "yes - starting...\n";
 }
 
-emptyDatabase($openslxDB);
+$openslxDB->emptyDatabase();
 
-my $vendorOs1Id = addVendorOS($openslxDB, {
-		'name' => "suse-10",
-		'comment' => "SuSE 10.0 Default-Installation",
-		'path' => "suse-10.0",
+my $vendorOs1Id = $openslxDB->addVendorOS({
+	'name' => "suse-10.0",
+	'comment' => "SuSE 10.0 Default-Installation",
 });
 
-my $vendorOs2Id = addVendorOS($openslxDB, {
-		'name' => "suse-10.1",
-		'comment' => "SuSE 10.1 Default-Installation",
-		'path' => "suse-10.1",
+my $vendorOs2Id = $openslxDB->addVendorOS({
+	'name' => "suse-10.1",
+	'comment' => "SuSE 10.1 Default-Installation",
+});
+
+my $export1Id = $openslxDB->addExport({
+	'vendor_os_id' => $vendorOs1Id,
+	'export_type' => 'nfs',
+});
+
+my $export2Id = $openslxDB->addExport({
+	'vendor_os_id' => $vendorOs2Id,
+	'export_type' => 'nfs',
 });
 
 my @systems;
 
-my $system1Id = addSystem($openslxDB, {
-	'name' => "suse-10.0",
+my $system1Id = $openslxDB->addSystem({
+	'name' => "suse-10.0-nfs-vmlinuz",
 	'label' => "SUSE LINUX 10.0",
 	'comment' => "Testsystem für openslx",
-	'vendor_os_id' => $vendorOs1Id,
+	'export_id' => $export1Id,
 	'ramfs_debug_level' => 0,
 	'ramfs_use_glibc' => 0,
 	'ramfs_use_busybox' => 0,
 	'ramfs_nicmods' => '',
 	'ramfs_fsmods' => '',
-	'kernel' => "boot/vmlinuz",
-	'kernel_params' => "",
-	'export_type' => 'nfs',
+	'kernel' => "vmlinuz",
+	'kernel_params' => "debug=8",
 	'attr_start_xdmcp' => 'kdm',
 });
 
-my $system2Id = addSystem($openslxDB, {
-	'name' => "suse-10.1",
+my $system2Id = $openslxDB->addSystem({
+	'name' => "suse-10.1-nfs-vmlinuz",
 	'label' => "SUSE LINUX 10.1",
 	'comment' => "Testsystem für openslx",
-	'vendor_os_id' => $vendorOs2Id,
+	'export_id' => $export2Id,
 	'ramfs_debug_level' => 0,
 	'ramfs_use_glibc' => 0,
 	'ramfs_use_busybox' => 0,
 	'ramfs_nicmods' => '',
 	'ramfs_fsmods' => '',
-	'kernel' => "boot/vmlinuz",
-	'kernel_params' => "debug=0",
-	'export_type' => 'nfs',
+	'kernel' => "vmlinuz",
+	'kernel_params' => "debug=8",
 	'attr_start_xdmcp' => 'kdm',
 });
 
-my $client1Id = addClient($openslxDB, {
+my $client1Id = $openslxDB->addClient({
 		'name' => "Client-1",
 		'mac' => "00:50:56:0D:03:38",
 		'boot_type' => 'pxe',
 });
 
-my $client2Id = addClient($openslxDB, {
+my $client2Id = $openslxDB->addClient({
 		'name' => "Client-2",
 		'mac' => "00:16:41:55:12:92",
 		'boot_type' => 'pxe',
 });
 
-addSystemIDsToClient($openslxDB, $client1Id, [$system1Id, $system2Id]);
-addSystemIDsToClient($openslxDB, $client2Id, [$system2Id]);
+$openslxDB->addSystemIDsToClient($client1Id, [$system1Id, $system2Id]);
+$openslxDB->addSystemIDsToClient($client2Id, [$system2Id]);
 
-disconnectConfigDB($openslxDB);
+$openslxDB->disconnect();
 
 if ($openslxConfig{'db-type'} =~ m[^\s*csv\s*$]i) {
 	my $csvFolder = "$openslxConfig{'db-basepath'}/$openslxConfig{'db-name'}-csv";

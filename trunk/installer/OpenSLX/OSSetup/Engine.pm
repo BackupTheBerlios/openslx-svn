@@ -117,7 +117,6 @@ sub initialize
 		die _tr("Could not load module <%s> (Version <%s> required, but <%s> found)\n",
 				$distroModule, 1.01, $modVersion);
 	}
-	$distroModule->import;
 	my $distro = $distroModule->new;
 	$distro->initialize($self);
 	$self->{distro} = $distro;
@@ -173,6 +172,9 @@ sub installVendorOS
 	}
 	$self->stage1C_cleanupBasicVendorOS();
 	$self->setupStage1D();
+	my $installInfoFile = "$self->{'vendor-os-path'}/.openslx-install-info";
+	system("touch $installInfoFile");
+		# just touch the file, in order to indicate a proper installation
 	vlog 0, _tr("Vendor-OS <%s> installed succesfully.\n",
 				$self->{'vendor-os-name'});
 
@@ -184,14 +186,18 @@ sub cloneVendorOS
 	my $self = shift;
 	my $source = shift;
 
+	$self->{'clone-source'} = $source;
 	my $lastCloneSource;
 	my $cloneInfoFile = "$self->{'vendor-os-path'}/.openslx-clone-info";
+	my $isReClone;
 	if (-e $self->{'vendor-os-path'}) {
-		if (!-e $cloneInfoFile) {
-			# oops, given vendor-os has not been cloned originally, we complain:
+		my $installInfoFile = "$self->{'vendor-os-path'}/.openslx-install-info";
+		if (-e $installInfoFile) {
+			# oops, given vendor-os has been installed, not cloned, we complain:
 			die _tr("The vendor-OS '%s' exists but it is no clone, refusing to clobber!\nPlease delete the folder manually, if that's really what you want...\n",
 					$self->{'vendor-os-path'});
-		} else {
+		} elsif (-e $cloneInfoFile) {
+			# check if last and current source match:
 			my $cloneInfo = slurpFile($cloneInfoFile);
 			if ($cloneInfo =~ m[^source\s*=\s*(.+?)\s*$]ims) {
 				$lastCloneSource = $1;
@@ -200,11 +206,17 @@ sub cloneVendorOS
 				# protect user from confusing sources (still allowed, though):
 				my $yes = _tr('yes');
 				my $no = _tr('no');
-				print _tr("Last time this vendor-OS was cloned, it has been cloned from '%s', now you specified a different source: '%s'\nWould you still like to proceed(%s/%s)? ",
+				print _tr("Last time this vendor-OS was cloned, it has been cloned from '%s', now you specified a different source: '%s'\nWould you still like to proceed (%s/%s)? ",
 						$lastCloneSource, $source, $yes, $no);
 				my $answer = <STDIN>;
 				exit 5		unless $answer =~ m[^\s*$yes]i;
 			}
+			$isReClone = 1;
+		} else {
+			# Neither the install-info nor the clone-info file exists. This
+			# probably means that the folder has been created by an older
+			# version of the tools. There's not much we can do, we simply
+			# trust our user and assume that he knows what he's doing.
 		}
 	}
 
@@ -218,8 +230,13 @@ sub cloneVendorOS
 		print CLONE_INFO "source=$source";
 		close CLONE_INFO;
 	}
-	vlog 0, _tr("Vendor-OS <%s> cloned succesfully.\n",
-				$self->{'vendor-os-name'});
+	if ($isReClone) {
+		vlog 0, _tr("Vendor-OS <%s> has been re-cloned succesfully.\n",
+					$self->{'vendor-os-name'});
+	} else {
+		vlog 0, _tr("Vendor-OS <%s> has been cloned succesfully.\n",
+					$self->{'vendor-os-name'});
+	}
 
 	$self->addInstalledVendorOSToConfigDB();
 }
@@ -258,28 +275,37 @@ sub addInstalledVendorOSToConfigDB
 			die _tr("Could not load module <%s> (Version <%s> required, but <%s> found)\n",
 					$configDBModule, 1.01, $modVersion);
 		}
-		$configDBModule->import(qw(:access :manipulation));
-		my $openslxDB = connectConfigDB();
+		my $openslxDB = $configDBModule->new();
+		$openslxDB->connect();
 		# insert new vendor-os if it doesn't already exist in DB:
 		my $vendorOSName = $self->{'vendor-os-name'};
 		my $vendorOS
-			= fetchVendorOSesByFilter($openslxDB,
-									  { 'name' => $vendorOSName },
-									  'id');
+			= $openslxDB->fetchVendorOSByFilter({ 'name' => $vendorOSName });
 		if (defined $vendorOS) {
-			vlog 0, _tr("Vendor-OS <%s> already exists in OpenSLX-database.\n",
-						$vendorOSName);
+			if ($self->{'clone-source'} ne $vendorOS->{'clone_source'}) {
+				$openslxDB->changeVendorOS($vendorOS->{id}, {
+					'clone_source' => $self->{'clone-source'},
+				});
+				vlog 0, _tr("Vendor-OS '%s' has been updated in OpenSLX-database.\n",
+							$vendorOSName);
+			} else {
+				vlog 0, _tr("No need to change vendor-OS '%s' in OpenSLX-database.\n",
+							$vendorOSName);
+			}
 		} else {
-			my $id = addVendorOS($openslxDB, {
+			my $data = {
 				'name' => $vendorOSName,
-				'path' => $self->{'vendor-os-name'},
-			});
+			};
+			if (length($self->{'clone-source'})) {
+				$data->{'clone_source'} = $self->{'clone-source'};
+			}
+			my $id = $openslxDB->addVendorOS($data);
 
-			vlog 0, _tr("Vendor-OS <%s> has been added to DB (ID=%s).\n",
+			vlog 0, _tr("Vendor-OS '%s' has been added to DB (ID=%s).\n",
 						$vendorOSName, $id);
 		}
 
-		disconnectConfigDB($openslxDB);
+		$openslxDB->disconnect();
 	}
 }
 
@@ -363,7 +389,6 @@ sub createPackager
 		die _tr("Could not load module <%s> (Version <%s> required, but <%s> found)\n",
 				$packagerModule, 1.01, $modVersion);
 	}
-	$packagerModule->import;
 	my $packager = $packagerModule->new;
 	$packager->initialize($self);
 	$self->{'packager'} = $packager;
@@ -387,7 +412,6 @@ sub createMetaPackager
 		die _tr("Could not load module <%s> (Version <%s> required, but <%s> found)\n",
 				$metaPackagerModule, 1.01, $modVersion);
 	}
-	$metaPackagerModule->import;
 	my $metaPackager = $metaPackagerModule->new;
 	$metaPackager->initialize($self);
 	$self->{'meta-packager'} = $metaPackager;
@@ -728,7 +752,8 @@ sub clone_fetchSource
 	my $self = shift;
 	my $source = shift;
 
-	vlog 0, _tr("Cloning vendor-OS from <%s>...\n", $source);
+	vlog 0, _tr("Cloning vendor-OS from '%s' to '%s'...\n", $source,
+				$self->{'vendor-os-path'});
 	my $excludeIncludeList = $self->clone_determineIncludeExcludeList();
 	vlog 1, "using exclude-include-filter:\n$excludeIncludeList\n";
 	open(RSYNC, "| rsync -av --delete --exclude-from=- $source $self->{'vendor-os-path'}")

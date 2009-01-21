@@ -21,11 +21,11 @@ sub new
 	confess "Don't create OpenSLX::MetaDB::Base - objects directly!";
 }
 
-sub connectConfigDB
+sub connect
 {
 }
 
-sub disconnectConfigDB
+sub disconnect
 {
 }
 
@@ -36,23 +36,35 @@ sub quote
 ################################################################################
 ### data access interface
 ################################################################################
-sub fetchVendorOSesByFilter
+sub fetchVendorOSByFilter
 {
 }
 
-sub fetchVendorOSesByID
+sub fetchVendorOSByID
 {
 }
 
-sub fetchSystemsByFilter
+sub fetchExportByFilter
 {
 }
 
-sub fetchSystemsByID
+sub fetchExportByID
 {
 }
 
-sub fetchSystemIDsOfVendorOS
+sub fetchExportIDsOfVendorOS
+{
+}
+
+sub fetchSystemByFilter
+{
+}
+
+sub fetchSystemByID
+{
+}
+
+sub fetchSystemIDsOfExport
 {
 }
 
@@ -64,23 +76,11 @@ sub fetchSystemIDsOfGroup
 {
 }
 
-sub fetchSystemVariantsByFilter
+sub fetchClientByFilter
 {
 }
 
-sub fetchSystemVariantsByID
-{
-}
-
-sub fetchSystemVariantIDsOfSystem
-{
-}
-
-sub fetchClientsByFilter
-{
-}
-
-sub fetchClientsByID
+sub fetchClientByID
 {
 }
 
@@ -92,11 +92,11 @@ sub fetchClientIDsOfGroup
 {
 }
 
-sub fetchGroupsByFilter
+sub fetchGroupByFilter
 {
 }
 
-sub fetchGroupsByID
+sub fetchGroupByID
 {
 }
 
@@ -136,6 +136,18 @@ sub changeVendorOS
 {
 }
 
+sub addExport
+{
+}
+
+sub removeExport
+{
+}
+
+sub changeExport
+{
+}
+
 sub addSystem
 {
 }
@@ -145,18 +157,6 @@ sub removeSystem
 }
 
 sub changeSystem
-{
-}
-
-sub addSystemVariant
-{
-}
-
-sub removeSystemVariant
-{
-}
-
-sub changeSystemVariant
 {
 }
 
@@ -425,7 +425,7 @@ allow the user to access data:
 
 =over
 
-=item C<fetchVendorOSesByFilter([%$filter], [$resultCols])>
+=item C<fetchVendorOSByFilter([%$filter], [$resultCols])>
 
 Fetches and returns information about all vendor-OSes that match the given
 filter.
@@ -447,7 +447,7 @@ An array of hash-refs containing the resulting data rows.
 
 =back
 
-=item C<fetchVendorOSesByID(@$ids, [$resultCols])>
+=item C<fetchVendorOSByID(@$ids, [$resultCols])>
 
 Fetches and returns information the vendor-OSes with the given IDs.
 
@@ -467,7 +467,65 @@ An array of hash-refs containing the resulting data rows.
 
 =back
 
-=item C<fetchSystemsByFilter([%$filter], [$resultCols])>
+=item C<fetchExportByFilter([%$filter], [$resultCols])>
+
+Fetches and returns information about all exports that match the given
+filter.
+
+=over
+
+=item Param C<filter>
+
+A hash-ref containing the filter criteria that shall be applied - default
+is no filtering. See L</"Filters"> for more info.
+
+=item Param C<resultCols>
+
+A string listing the columns that shall be returned - default is all columns.
+
+=item Return Value
+
+An array of hash-refs containing the resulting data rows.
+
+=back
+
+=item C<fetchExportByID(@$ids, [$resultCols])>
+
+Fetches and returns information the exports with the given IDs.
+
+=over
+
+=item Param C<ids>
+
+An array of the export-IDs you are interested in.
+
+=item Param C<resultCols>
+
+A string listing the columns that shall be returned - default is all columns.
+
+=item Return Value
+
+An array of hash-refs containing the resulting data rows.
+
+=back
+
+=item C<fetchExportIDsOfVendorOS($id)>
+
+Fetches the IDs of all exports that make use of the vendor-OS with the given ID.
+
+=over
+
+=item Param C<id>
+
+ID of the vendor-OS whose exports shall be returned.
+
+=item Return Value
+
+An array of system-IDs.
+
+=back
+
+=item C<fetchSystemByFilter([%$filter], [$resultCols])>
 
 Fetches and returns information about all systems that match the given filter.
 
@@ -489,7 +547,7 @@ An array of hash-refs containing the resulting data rows.
 
 =back
 
-=item C<fetchSystemsByID(@$ids, [$resultCols])>
+=item C<fetchSystemByID(@$ids, [$resultCols])>
 
 Fetches and returns information the systems with the given IDs.
 
@@ -509,15 +567,15 @@ An array of hash-refs containing the resulting data rows.
 
 =back
 
-=item C<fetchSystemIDsOfVendorOS($id)>
+=item C<fetchSystemIDsOfExport($id)>
 
-Fetches the IDs of all systems that make use of the vendor-OS with the given ID.
+Fetches the IDs of all systems that make use of the export with the given ID.
 
 =over
 
 =item Param C<id>
 
-ID of the vendor-OS whose systems shall be returned.
+ID of the export whose systems shall be returned.
 
 =item Return Value
 
@@ -559,67 +617,7 @@ An array of system-IDs.
 
 =back
 
-=item C<fetchSystemVariantsByFilter([%$filter], [$resultCols])>
-
-Fetches and returns information about all system variants that match the given
-filter.
-
-=over
-
-=item Param C<$filter>
-
-A hash-ref containing the filter criteria that shall be applied - default
-is no filtering. See L</"Filters"> for more info.
-
-=item Param C<$resultCols> [Optional]
-
-A comma-separated list of colunm names that shall be returned. If not defined,
-all available data must be returned.
-
-=item Return Value
-
-An array of hash-refs containing the resulting data rows.
-
-=back
-
-=item C<fetchSystemVariantsByID(@$ids, [$resultCols])>
-
-Fetches and returns information the systems variants with the given IDs.
-
-=over
-
-=item Param C<ids>
-
-An array of the system-variant-IDs you are interested in.
-
-=item Param C<resultCols>
-
-A string listing the columns that shall be returned - default is all columns.
-
-=item Return Value
-
-An array of hash-refs containing the resulting data rows.
-
-=back
-
-=item C<fetchSystemVariantIDsOfSystem($id)>
-
-Fetches the IDs of all system variants that belong to the system with the given
-ID.
-
-=over
-
-=item Param C<id>
-
-ID of the system whose variants shall be returned.
-
-=item Return Value
-
-An array of system-variant-IDs.
-
-=back
-
-=item C<fetchClientsByFilter([%$filter], [$resultCols])>
+=item C<fetchClientByFilter([%$filter], [$resultCols])>
 
 Fetches and returns information about all clients that match the given filter.
 
@@ -641,7 +639,7 @@ An array of hash-refs containing the resulting data rows.
 
 =back
 
-=item C<fetchClientsByID(@$ids, [$resultCols])>
+=item C<fetchClientByID(@$ids, [$resultCols])>
 
 Fetches and returns information the clients with the given IDs.
 
@@ -697,7 +695,7 @@ An array of client-IDs.
 
 
 
-=item C<fetchGroupsByFilter([%$filter], [$resultCols])>
+=item C<fetchGroupByFilter([%$filter], [$resultCols])>
 
 Fetches and returns information about all groups that match the given filter.
 
@@ -721,7 +719,7 @@ An array of hash-refs containing the resulting data rows.
 
 
 
-=item C<fetchGroupsByID(@$ids, [$resultCols])>
+=item C<fetchGroupByID(@$ids, [$resultCols])>
 
 Fetches and returns information the groups with the given IDs.
 
@@ -861,6 +859,64 @@ C<1> if the vendorOS(es) could be changed, C<undef> if not.
 
 
 
+=item C<addExport(@$valRows)>
+
+Adds one or more export to the database.
+
+=over
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the data of the new export(s).
+
+=item Return Value
+
+The IDs of the new export(s), C<undef> if the creation failed.
+
+=back
+
+
+
+=item C<removeExport(@$exportIDs)>
+
+Removes one or more export from the database.
+
+=over
+
+=item Param C<exportIDs>
+
+An array-ref containing the IDs of the exports that shall be removed.
+
+=item Return Value
+
+C<1> if the export(s) could be removed, C<undef> if not.
+
+=back
+
+
+
+=item C<changeExport(@$exportIDs, @$valRows)>
+
+Changes the data of one or more export.
+
+=over
+
+=item Param C<vendorOSIDs>
+
+An array-ref containing the IDs of the exports that shall be changed.
+
+=item Param C<valRows>
+
+An array-ref containing hash-refs with the new data for the export(s).
+
+=item Return Value
+
+C<1> if the export(s) could be changed, C<undef> if not.
+
+=back
+
+
+
 =item C<addSystem(@$valRows)>
 
 Adds one or more systems to the database.
@@ -960,64 +1016,6 @@ system.
 =item Return Value
 
 C<1> if the system/group references could be set, C<undef> if not.
-
-=back
-
-
-
-=item C<addSystemVariant(@$valRows)>
-
-Adds one or more system-variants to the database.
-
-=over
-
-=item Param C<valRows>
-
-An array-ref containing hash-refs with the data of the new system-variant(s).
-
-=item Return Value
-
-The IDs of the new system-variant(s), C<undef> if the creation failed.
-
-=back
-
-
-
-=item C<removeSystemVariant(@$systemVariantIDs)>
-
-Removes one or more system-variants from the database.
-
-=over
-
-=item Param C<systemIDs>
-
-An array-ref containing the IDs of the system-variants that shall be removed.
-
-=item Return Value
-
-C<1> if the system-variant(s) could be removed, C<undef> if not.
-
-=back
-
-
-
-=item C<changeSystemVariant(@$systemVariantIDs, @$valRows)>
-
-Changes the data of one or more system-variants.
-
-=over
-
-=item Param C<systemVariantIDs>
-
-An array-ref containing the IDs of the system-variants that shall be changed.
-
-=item Param C<valRows>
-
-An array-ref containing hash-refs with the new data for the system-variant(s).
-
-=item Return Value
-
-C<1> if the system-variant(s) could be changed, C<undef> if not.
 
 =back
 
@@ -1255,6 +1253,6 @@ C<1> if the settings could be changed, C<undef> if not.
 
 The following methods need to be implemented in a MetaDB driver in order to
 be able to automatically adjust to new database schema versions (by adding
-and/or removing tables and table-columns). 
+and/or removing tables and table-columns).
 
 =cut

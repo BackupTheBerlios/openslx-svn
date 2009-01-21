@@ -28,9 +28,8 @@ use lib "$FindBin::RealBin/../config-db";
 	# development path to config-db
 
 use OpenSLX::Basics;
-use OpenSLX::ConfigDB qw(:access :manipulation);
+use OpenSLX::ConfigDB;
 use OpenSLX::DBSchema;
-# use OpenSLX::OSSetup::Engine;
 
 my (
 	$helpReq,
@@ -54,7 +53,8 @@ if ($versionReq) {
 
 openslxInit();
 
-my $openslxDB = connectConfigDB();
+my $openslxDB = OpenSLX::ConfigDB->new();
+$openslxDB->connect();
 
 my $action = shift @ARGV;
 if ($action =~ m[^add-system$]i) {
@@ -66,7 +66,7 @@ if ($action =~ m[^add-system$]i) {
 	pod2usage(2);
 }
 
-disconnectConfigDB($openslxDB);
+$openslxDB->disconnect();
 
 exit;
 
@@ -96,20 +96,20 @@ sub addSystemToConfigDB
     my @systemKeys
 		= map { (/^(\w+)\W/) ? $1 : $_; }
 		  @{$DbSchema->{tables}->{system}};
-	push @systemKeys, 'clients', 'vendor_os';
+	push @systemKeys, 'clients', 'export';
     my $systemData = parseKeyValueArgs(\@systemKeys, 'system', @_);
 
-	if (!length($systemData->{vendor_os})) {
-        die _tr("you have to specify the vendor_os the new system shall be based on\n");
+	if (!length($systemData->{export})) {
+        die _tr("you have to specify the export the new system shall be using\n");
 	}
-    my $vendorOSName = $systemData->{vendor_os};
-	delete $systemData->{vendor_os};
-	my $vendorOS
-		= fetchVendorOSesByFilter($openslxDB, { 'name' => $vendorOSName });
-	if (!defined $vendorOS) {
-		die _tr("vendor-OS '%s' could not be found!\n", $vendorOSName);
+    my $exportName = $systemData->{export};
+	delete $systemData->{export};
+	my $export
+		= $openslxDB->fetchExportByFilter({ 'name' => $exportName });
+	if (!defined $export) {
+		die _tr("export '%s' could not be found in DB, giving up!\n", $exportName);
 	}
-	$systemData->{vendor_os_id} = $vendorOS->{id};
+	$systemData->{export_id} = $export->{id};
 
 	my @clientIDs;
 	my $clientNames;
@@ -117,10 +117,9 @@ sub addSystemToConfigDB
 		@clientIDs
 			= map {
 				my $client
-					= fetchClientsByFilter($openslxDB,
-										   { 'name' => $_ });
+					= $openslxDB->fetchClientByFilter({ 'name' => $_ });
 				if (!defined $client) {
-					die _tr("client '%s' doesn't exist!\n", $_);
+					die _tr("client '%s' doesn't exist in DB, giving up!\n", $_);
 				}
 				$client->{id};
 			  }
@@ -129,17 +128,14 @@ sub addSystemToConfigDB
 		delete $systemData->{clients};
 	}
 
-	if (!length($systemData->{export_type})) {
-		die _tr("you have to specify the export_type for this system ('nfs', 'nbd' or 'nbd-squash')\n");
+	if (!length($systemData->{kernel})) {
+		$systemData->{kernel} = 'vmlinuz';
 	}
 	if (!length($systemData->{name})) {
-		$systemData->{name} = $vendorOSName;
+		$systemData->{name} = "$exportName-$systemData->{kernel}";
 	}
 	if (!length($systemData->{label})) {
-		$systemData->{label} = $vendorOSName;
-	}
-	if (!length($systemData->{kernel})) {
-		$systemData->{kernel} = '/boot/vmlinuz';
+		$systemData->{label} = "$exportName-$systemData->{kernel}";
 	}
 	if (!length($systemData->{ramfs_debug_level})) {
 		$systemData->{ramfs_debug_level} = '0';
@@ -150,12 +146,19 @@ sub addSystemToConfigDB
 	if (!length($systemData->{ramfs_use_busybox})) {
 		$systemData->{ramfs_use_busybox} = '1';
 	}
-	my $systemID = addSystem($openslxDB, [$systemData]);
+
+	if ($openslxDB->fetchSystemByFilter({ 'name' => $systemData->{name} })) {
+		die _tr("the system '%s' already exists in the DB, giving up!\n",
+				$systemData->{name});
+	}
+	my $systemID = $openslxDB->addSystem([$systemData]);
+	vlog 0, _tr("system '%s' has been successfully added to DB (ID=%s)\n",
+				$systemData->{name}, $systemID);
 
 	if (scalar(@clientIDs)) {
-	    addClientIDsToSystem($openslxDB, $systemID, \@clientIDs);
+	    $openslxDB->addClientIDsToSystem($systemID, \@clientIDs);
 		if ($verbose) {
-			print _tr("clients of this system are:\n\t%s\n", $clientNames);
+			vlog 0, _tr("clients of this system are:\n\t%s\n", $clientNames);
 		}
 	}
 }
@@ -174,8 +177,7 @@ sub addClientToConfigDB
 		@systemIDs
 			= map {
 				my $system
-					= fetchSystemsByFilter($openslxDB,
-										   { 'name' => $_ });
+					= $openslxDB->fetchSystemByFilter({ 'name' => $_ });
 				if (!defined $system) {
 					die _tr("system '%s' doesn't exist!\n", $_);
 				}
@@ -196,10 +198,16 @@ sub addClientToConfigDB
 		$clientData->{boot_type} = 'pxe';
 	}
 
-	my $clientID = addClient($openslxDB, [$clientData]);
+	if ($openslxDB->fetchClientByFilter({ 'name' => $clientData->{name} })) {
+		die _tr("the client '%s' already exists in the DB, giving up!\n",
+				$clientData->{name});
+	}
+	my $clientID = $openslxDB->addClient([$clientData]);
+	vlog 0, _tr("client '%s' has been successfully added to DB (ID=%s)\n",
+				$clientData->{name}, $clientID);
 
 	if (scalar(@systemIDs)) {
-	    addSystemIDsToClient($openslxDB, $clientID, \@systemIDs);
+		$openslxDB->addSystemIDsToClient($clientID, \@systemIDs);
 		if ($verbose) {
 			print _tr("systems for this client are:\n\t%s\n", $systemNames);
 		}
@@ -218,14 +226,22 @@ and you can create clients for that system, too.
 
 =head2 Adding a new System to a Vendor-OS Export
 
-  slxconfig add-system <export-name> [<attribute=value> ...]
+  slxconfig add-system export-name=<export-name> [clients=<client-Names>] [<attribute=value> ...]
 
   The above syntax is used to add a new system to the config-DB. The new
-  system will use the given I<export> (an exported vendor-OS).
+  system will use the I<export> whose name is given.
+
+  If you specify clients (a comma-separated list of client names), the new system
+  will be used by the given clients.
 
 =head2 Adding a new Client
 
-  slxos-setup clone <vendor-os-name> --source=<rsync-source>
+  slxconfig add-client [systems=<system-IDs> [<attribute=value> ...]
+
+  The above syntax is used to add a new client to the config-DB.
+
+  If you specify systems (a comma-separated list of system names), the new client
+  will use the given systems.
 
 =head2 General Format
 

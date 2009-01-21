@@ -82,7 +82,7 @@ sub initialize
 {
 	my $self = shift;
 	my $vendorOSName = shift;
-	my $exportType = shift;
+	my $exportType = lc(shift);
 
 	if (!exists $supportedExportTypes{lc($exportType)}) {
 		print _tr("Sorry, export type '%s' is unsupported.\n", $exportType);
@@ -92,6 +92,7 @@ sub initialize
 	}
 
 	$self->{'vendor-os-name'} = $vendorOSName;
+	$self->{'export-name'} = "$vendorOSName-$exportType";
 	$vendorOSName =~ m[^(.+?\-[^-]+)];
 	my $distroName = $1;
 	$self->{'distro-name'} = $distroName;
@@ -112,7 +113,6 @@ sub initialize
 		die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
 				$distroModule, 1.01, $modVersion);
 	}
-	$distroModule->import;
 	my $distro = $distroModule->new;
 	$distro->initialize($self);
 	$self->{distro} = $distro;
@@ -133,7 +133,6 @@ sub initialize
 		die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
 				$exportTypeModule, 1.01, $modVersion);
 	}
-	$exportTypeModule->import;
 	my $exporter = $exportTypeModule->new;
 	$exporter->initialize($self);
 	$self->{'exporter'} = $exporter;
@@ -165,9 +164,6 @@ sub addExportToConfigDB
 {
 	my $self = shift;
 
-print "adding the export to the config-DB is not implemented yet, sorry!\n";
-return;
-
 	my $configDBModule = "OpenSLX::ConfigDB";
 	unless (eval "require $configDBModule") {
 		if ($! == 2) {
@@ -181,36 +177,36 @@ return;
 			die _tr('Could not load module <%s> (Version <%s> required, but <%s> found)',
 					$configDBModule, 1.01, $modVersion);
 		}
-		$configDBModule->import(qw(:access :manipulation));
-		my $openslxDB = connectConfigDB();
-		# insert new export if it doesn't already exist in DB:
-		my $exportName = $self->{'vendor-os-name'};
+		my $openslxDB = $configDBModule->new();
+		$openslxDB->connect();
 
-		my $export = fetchExportsByFilter(
-			$openslxDB, { 'name' => $exportName }, 'id'
-		);
+		# insert new export if it doesn't already exist in DB:
+		my $exportName = $self->{'export-name'};
+		my $export
+			= $openslxDB->fetchExportByFilter({'name' => $exportName});
 		if (defined $export) {
-			changeExport(
-				$openslxDB,
-				{
-					'name' => $exportName,
-					'path' => $self->{'vendor-os-name'},
-				}
-			);
-			vlog 0, _tr("Export <%s> has been updated in DB.\n", $exportName);
+			vlog 0, _tr("No need to change export '%s' in OpenSLX-database.\n",
+						$exportName);
 		} else {
-			my $id = addExport(
-				$openslxDB,
+			my $vendorOSName = $self->{'vendor-os-name'};
+			my $vendorOS
+				= $openslxDB->fetchVendorOSByFilter({'name' => $vendorOSName});
+			if (!defined $vendorOS) {
+				die _tr("vendor-OS '%s' could not be found in OpenSLX-database, giving up!\n",
+						$vendorOSName);
+			}
+			my $id = $openslxDB->addExport(
 				{
+					'vendor_os_id' => $vendorOS->{id},
 					'name' => $exportName,
-					'path' => $self->{'vendor-os-name'},
+					'export_type' => $self->{'export-type'},
 				}
 			);
 			vlog 0, _tr("Export <%s> has been added to DB (ID=%s).\n",
 						$exportName, $id);
 		}
 
-		disconnectConfigDB($openslxDB);
+		$openslxDB->disconnect();
 	}
 }
 
