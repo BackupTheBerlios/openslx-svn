@@ -97,7 +97,8 @@ binfinder()
 {
 local PROGRAM="$1"
 local RET=1
-for ELEMENT in bin sbin usr/bin usr/sbin usr/local/bin usr/bin/X11; do
+for ELEMENT in bin sbin usr/bin usr/sbin usr/local/bin \
+               usr/local/sbin usr/bin/X11; do
   if [ -f "${ROOTDIR}/$ELEMENT/$PROGRAM" ] && \
      [ -x "${ROOTDIR}/$ELEMENT/$PROGRAM" ]; then
     printf '%s\n' "${ROOTDIR}/$ELEMENT/$PROGRAM"

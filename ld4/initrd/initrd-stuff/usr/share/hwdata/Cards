@@ -1,4 +1,4 @@
-# $Revision: 1.165 $
+# $Revision: 1.178 $
 # This is the database of card definitions used by redhat-config-xfree86,
 # Xconfigurator, xf86cfg, anaconda, and many other X configuration programs.
 #
@@ -54,7 +54,7 @@ DRIVER vga
 # VESA driver
 NAME VESA driver (generic)
 CHIPSET VESA VBE 2.0
-DRIVER nv
+DRIVER vesa
 
 ######################################################################
 # Frame Buffer driver
@@ -154,11 +154,14 @@ SEE Chips & Technologies CT65550
 # bugzilla ID's are relevant and should be updated in the future should the
 # bugs get fixed and testing be required:
 # Bug ID's:  63284
+# Update: Aug 3, 2004 <mharris@redhat.com>
+# Warren has indicated the XaaNo options are no longer needed for this
+# hardware, so I've commented them out and updated bug 63284.
 NAME Chips & Technologies CT69000
 CHIPSET ct69000
-LINE Option "XaaNoPixmapCache"
-LINE Option "XaaNoScreenToScreenCopy"
-LINE Option "XaaNoCPUToScreenColorExpandFill"
+LINE #Option "XaaNoPixmapCache"
+LINE #Option "XaaNoScreenToScreenCopy"
+LINE #Option "XaaNoCPUToScreenColorExpandFill"
 LINE #Option "NoAccel"
 SEE Chips & Technologies CT65550
 
@@ -853,7 +856,7 @@ SEE S3 Trio64V+ (generic)
 NAME S3 Trio64V2 (generic)
 CHIPSET S3 Trio64V2
 #DRIVER s3
-DRIVER nv
+DRIVER vesa
 NOCLOCKPROBE
 #UNSUPPORTED
 
@@ -863,7 +866,7 @@ NOCLOCKPROBE
 NAME S3 Trio64V2 (Unsupported RAMDAC)
 CHIPSET s3virge
 #DRIVER s3
-DRIVER nv
+DRIVER vesa
 NOCLOCKPROBE
 
 NAME S3 Trio64V2/DX (generic)
@@ -1016,12 +1019,12 @@ SEE S3 968 (generic)
 NAME Spider Tarantula 64
 SEE S3 964 (generic)
 
-# Changed "DRIVER s3" to "DRIVER nv" for bug #70743.  Be sure to confirm
+# Changed "DRIVER s3" to "DRIVER vesa" for bug #70743.  Be sure to confirm
 # any changes to this with the reporter of that bug.  Aug 10, 2002 - mharris
 NAME Miro Crystal 20SV
 CHIPSET S3 964
 SERVER S3
-DRIVER nv
+DRIVER vesa
 CLOCKCHIP icd2061a
 #UNSUPPORTED
 
@@ -1240,7 +1243,6 @@ LINE      #Option "pci_retry"
 
 NAME S3 ViRGE/GX (generic)
 CHIPSET S3 ViRGE/GX
-SERVER SVGA
 DRIVER s3virge
 NOCLOCKPROBE
 LINE      #Option "xaa_benchmark"
@@ -1251,7 +1253,6 @@ LINE      #Option "pci_retry"
 
 NAME S3 ViRGE/GX2 (generic)
 CHIPSET S3 ViRGE/GX2
-SERVER SVGA
 DRIVER s3virge
 NOCLOCKPROBE
 LINE      #Option "xaa_benchmark"
@@ -1262,7 +1263,6 @@ LINE      #Option "pci_retry"
 
 NAME S3 ViRGE/MX (generic)
 CHIPSET S3 ViRGE/MX
-SERVER SVGA
 DRIVER s3virge
 NOCLOCKPROBE
 LINE      #Option "lcd_center"
@@ -1280,11 +1280,30 @@ SEE S3 ViRGE/MX (generic)
 # bug #59956 in bugzilla.  The bug reporter of the above report should be
 # consulted before changing this back to a native driver in the future.  This
 # is changed for 4.2.0 post RHL 7.3.  --  July 26, 2002 - Mike A. Harris
+# Update:  Bug #125866 has requested the driver for this hardware be changed
+# to use the "s3virge" driver.  I've investigated the original bug #59956 and
+# the PCI IDs are identical for all 3 users in those 2 bug reports, so I
+# assume the "s3virge" driver works now in X.Org X11 6.7.99.903 et al.  I'm
+# changing the default back from "vesa" to "s3virge" for the "S3 Trio3D" entry
+# here, but I've added a new one named "S3 Trio64 3D" as well, which also
+# defaults to the "s3virge" driver.  I've left the pcitable->Cards mapping
+# alone for the 0x8904 and 0x8903 entries so that they can be changed in the
+# future if a problem is discovered, however the new entry added to pcitable
+# is for the specific card referenced in these above bug reports, specified
+# including the subvendor/subdevice fields, so that we can assign drivers for
+# these card ranges in a more finely grained manner.
 NAME S3 Trio3D
-SERVER SVGA
 CHIPSET S3 Trio3D
 NOCLOCKPROBE
-DRIVER nv
+DRIVER s3virge
+
+# See above comment for "S3 Trio3D" as it applies to this one as well.
+# This "S3 Trio64 3D" entry is specifically for:
+#	01:01.0 Class 0300: 5333:8904 (rev 01) Subsystem: 1014:00db
+NAME S3 Trio64 3D
+CHIPSET S3 Trio3D
+NOCLOCKPROBE
+DRIVER s3virge
 
 NAME S3 86C365 (Trio3D)
 SEE S3 Trio3D
@@ -1532,13 +1551,13 @@ NOCLOCKPROBE
 NAME S3 Savage/MX
 CHIPSET Savage/MX
 DRIVER savage
-#DRIVER nv
+#DRIVER vesa
 NOCLOCKPROBE
 
 NAME S3 Savage/IX
 CHIPSET Savage/IX
 DRIVER savage
-#DRIVER nv
+#DRIVER vesa
 NOCLOCKPROBE
 
 NAME S3 ProSavage KM133
@@ -1546,7 +1565,7 @@ CHIPSET ProSavage/Twister
 DRIVER savage
 NOCLOCKPROBE
 
-NAME S3 ProSavage PM133 
+NAME S3 ProSavage PM133
 CHIPSET ProSavage/Twister
 DRIVER savage
 NOCLOCKPROBE
@@ -1556,9 +1575,16 @@ CHIPSET ProSavage/Twister
 DRIVER savage
 NOCLOCKPROBE
 
-NAME S3 ProSavage PN133 
+NAME S3 ProSavage PN133
 CHIPSET ProSavage/Twister
 DRIVER savage
+NOCLOCKPROBE
+
+# S3 UniChrome (via)
+
+NAME S3 UniChrome
+CHIPSET UniChrome
+DRIVER via
 NOCLOCKPROBE
 
 # Tseng Labs ET4000/ET6000
@@ -2051,6 +2077,16 @@ CHIPSET R300
 DRIVER radeon
 LINE #Option "nodri"
 
+NAME ATI Radeon Mobility 9600
+CHIPSET RV350
+DRIVER radeon
+LINE #Option "nodri"
+
+NAME ATI Radeon Mobility 9600 M10
+CHIPSET RV350
+DRIVER radeon
+LINE #Option "nodri"
+
 NAME ATI Radeon 9700
 CHIPSET R300
 DRIVER radeon
@@ -2071,6 +2107,11 @@ CHIPSET R350
 DRIVER radeon
 LINE #Option "nodri"
 
+NAME ATI Radeon 9800 XT
+CHIPSET R350
+DRIVER radeon
+LINE #Option "nodri"
+
 NAME ATI FireGL Z1/X1
 CHIPSET R300
 DRIVER radeon
@@ -2081,20 +2122,120 @@ CHIPSET R300
 DRIVER radeon
 LINE #Option "nodri"
 
+NAME ATI FireGL X2
+CHIPSET RV350
+DRIVER radeon
+LINE #Option "nodri"
+
 NAME ATI FireGL Z1
 CHIPSET R300
 DRIVER radeon
 LINE #Option "nodri"
 
-# No idea if this works or not.  I'm adding it here pointing to the vesa driver
-# for now (mharris Feb 10, 2002 - XFree86 4.2.99.901)
+NAME ATI FireGL T2
+CHIPSET RV350
+DRIVER radeon
+
+NAME ATI FireGL Mobility T2
+CHIPSET RV350
+DRIVER radeon
+
 NAME ATI Radeon Mobility U1
 CHIPSET R300
 DRIVER radeon
 LINE #Option "nodri"
 
+NAME ATI FireGL D1100
+DRIVER radeon
+
+NAME ATI FireGL M22 GL
+DRIVER radeon
+
+NAME ATI FireGL M24 GL
+DRIVER radeon
+
+NAME ATI FireGL Mobility T2e
+DRIVER radeon
+
+NAME ATI FireGL V3100
+DRIVER radeon
+
+NAME ATI FireGL V3200
+DRIVER radeon
+
+NAME ATI FireGL V5100
+DRIVER radeon
+
+NAME ATI FireGL V7100
+DRIVER radeon
+
+NAME ATI FireGL V7200
+DRIVER radeon
+
+NAME ATI FireGL X3
+DRIVER radeon
+
+NAME ATI Radeon 7000 IGP
+DRIVER radeon
+
+NAME ATI Radeon 9100 IGP
+DRIVER radeon
+
+NAME ATI Radeon 9100 PRO IGP
+DRIVER radeon
+
+NAME ATI Radeon 9200PRO
+DRIVER radeon
+
+NAME ATI Radeon IGP320
+DRIVER radeon
+
+NAME ATI Radeon IGP330/340/350
+DRIVER radeon
+
+NAME ATI Radeon IGP330M/340M/350M
+DRIVER radeon
+
+NAME ATI Radeon Mobility 7000
+DRIVER radeon
+
+NAME ATI Radeon Mobility 9100 IGP
+DRIVER radeon
+
+NAME ATI Radeon Mobility 9200
+DRIVER radeon
+
+NAME ATI Radeon Mobility 9200 IGP
+DRIVER radeon
+
+NAME ATI Radeon Mobility 9800
+DRIVER radeon
+
+NAME ATI Radeon Mobility M300
+DRIVER radeon
+
+NAME ATI Radeon Mobility X600
+DRIVER radeon
+
+NAME ATI Radeon X800
+DRIVER radeon
+
+NAME ATI Radeon X800LE
+DRIVER radeon
+
+NAME ATI Radeon X800PRO
+DRIVER radeon
+
+NAME ATI Radeon X800SE
+DRIVER radeon
+
 NAME ATI Radeon X300
-CHIPSET R300
+DRIVER radeon
+
+NAME ATI Radeon X600
+DRIVER radeon
+
+NAME ATI Radeon X800XT
 DRIVER radeon
 
 ######################################################################
@@ -2662,8 +2803,6 @@ NOCLOCKPROBE
 # tested #UNSUPPORTED by 12XL125 compaq laptop 03/30/2001
 NAME Trident CyberBlade (generic)
 CHIPSET CyberBlade
-SERVER SVGA
-#UNSUPPORTED
 DRIVER trident
 NOCLOCKPROBE
 
@@ -2795,24 +2934,7 @@ LINE     # Option "fifo_conserv"
 LINE     # Option "fifo_aggressive" 
 NOCLOCKPROBE
 
-NAME SiS 5597
-CHIPSET SiS5597
-SERVER SVGA
-DRIVER sis
-LINE     # Option "no_accel" # Use this if acceleration is causing problems
-LINE     # Option "fifo_moderate" 
-LINE     # Option "fifo_conserv" 
-LINE     # Option "fifo_aggressive" 
-LINE     # Option "fast_vram"
-LINE     # Option "pci_burst_on"
-LINE     # Option "xaa_benchmark" # DON'T use with "ext_eng_queue" !!!
-LINE     # Option "ext_eng_queue" # Turbo-queue. This can cause drawing
-LINE                              # errors, but gives some accel
-NOCLOCKPROBE
-
-NAME SiS 5598
-CHIPSET SIS5598
-SERVER SVGA
+NAME SiS 5597/5598
 DRIVER sis
 LINE     # Option "no_accel" # Use this if acceleration is causing problems
 LINE     # Option "fifo_moderate" 
@@ -2852,7 +2974,7 @@ NOCLOCKPROBE
 # mharris - Nov 23, 2002 - Commented out the swcursor option, if it is still
 # needed, then lets disable it right in the driver completely, or possibly
 # fix it.
-NAME SiS 530
+NAME SiS 530/620
 CHIPSET SiS530
 DRIVER sis
 LINE    #Option "swcursor"
@@ -2866,7 +2988,7 @@ CHIPSET SiS540
 DRIVER sis
 NOCLOCKPROBE
 
-NAME SiS 630
+NAME SiS 630/730
 CHIPSET SiS630
 DRIVER sis
 NOCLOCKPROBE
@@ -2881,9 +3003,39 @@ CHIPSET SiS300
 DRIVER sis
 NOCLOCKPROBE
 
+NAME SiS 300/305
+DRIVER sis
+NOCLOCKPROBE
+
 NAME SiS 315
 CHIPSET SiS315
 DRIVER sis
+NOCLOCKPROBE
+
+NAME SiS 315H
+CHIPSET SiS315H
+DRIVER sis
+NOCLOCKPROBE
+
+NAME SiS 315Pro
+DRIVER sis
+NOCLOCKPROBE
+
+NAME SiS 330 Xabre
+DRIVER sis
+NOCLOCKPROBE
+
+NAME SiS 340
+DRIVER sis
+NOCLOCKPROBE
+
+NAME SiS 550
+DRIVER sis
+NOCLOCKPROBE
+
+NAME SiS 660/661FX/M661FX/M661MX/741/741GX/M741/760/M760
+DRIVER sis
+NOCLOCKPROBE
 
 NAME MSI MS-4417
 SEE SiS 6326
@@ -2895,7 +3047,7 @@ NAME Miro Crystal DVD
 SEE SiS 6326
 
 NAME PC-Chips M567 Mainboard
-SEE SiS 5597
+SEE SiS 5597/5598
 
 NAME Diamond SpeedStar A50
 SEE SiS 6326
@@ -3224,6 +3376,81 @@ NAME NVIDIA Quadro FX (generic)
 CHIPSET Quadro FX
 DRIVER nv
 NOCLOCKPROBE
+
+NAME NVIDIA GeForce 6200
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA GeForce 6600
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA GeForce 6600 GT
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA GeForce 6610 XL
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA GeForce 6800
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA GeForce 6800 GT
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA GeForce 6800 LE
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA GeForce 6800 Ultra
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA GeForce FX 5100
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA GeForce FX 5500
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA GeForce Go 6600
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA GeForce Go 6600 TE/6200 TE
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA GeForce4 448 Go
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA Quadro FX 4000
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA Quadro FX 4400
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA Quadro FX 540
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA Quadro FX 700
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA Quadro NVS 50 PCI
+DRIVER nv
+NOCLOCKPROBE
+
+NAME NVIDIA Unknown (generic)
+DRIVER nv
 
 #########################################################################
 #
@@ -3613,7 +3840,7 @@ RAMDAC Bt463
 
 NAME EPSON CardPC (onboard)
 CHIPSET SPC8110
-DRIVER nv
+DRIVER vesa
 
 
 ######################################################################
@@ -3786,14 +4013,30 @@ CHIPSET Intel 865
 DRIVER i810
 NOCLOCKPROBE
 
+NAME Intel 915
+DRIVER i810
+NOCLOCKPROBE
+
 ######################################################################
 # 3Dfx Hardware
 #
 # Section fully updated by Mike A. Harris <mharris@redhat.com> for
 # XFree86 4.2.0 on Feb 9, 2002
 
-NAME Voodoo Banshee (generic)
-CHIPSET Voodoo Banshee
+# Alan Cox's new "voodoo" driver for Voodoo Graphics and Voodoo II
+#0x121a  0x0001  "Card:Voodoo Graphics"  "3Dfx Interactive, Inc.|Voodoo"
+NAME Voodoo Graphics
+CHIPSET Voodoo Graphics
+DRIVER voodoo
+
+# Alan Cox's new "voodoo" driver for Voodoo Graphics and Voodoo II
+#0x121a  0x0002  "Card:Voodoo II"    "3Dfx Interactive, Inc.|Voodoo 2"
+NAME Voodoo II
+CHIPSET Voodoo II
+DRIVER voodoo
+
+NAME Banshee (generic)
+CHIPSET Banshee
 DRIVER tdfx
 
 NAME Voodoo Rush (generic)
@@ -3816,16 +4059,16 @@ DRIVER tdfx
 NOCLOCKPROBE
 
 NAME Elsa Victory II
-SEE Voodoo Banshee (generic)
+SEE Banshee (generic)
 
 NAME Diamond Monster Fusion
-SEE Voodoo Banshee (generic)
+SEE Banshee (generic)
 
 NAME AOpen PA2010
-SEE Voodoo Banshee (generic)
+SEE Banshee (generic)
 
 NAME Chaintech Desperado 3F10
-SEE Voodoo Banshee (generic)
+SEE Banshee (generic)
 
 ######################################################################
 # VMWare Virtual Hardware
