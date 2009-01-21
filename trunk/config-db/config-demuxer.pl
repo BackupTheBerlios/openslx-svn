@@ -8,32 +8,25 @@ use lib $FindBin::Bin;
 use Fcntl qw(:DEFAULT :flock);
 use Getopt::Long qw(:config pass_through);
 use OpenSLX::Basics;
-use OpenSLX::ConfigDB;
+use OpenSLX::ConfigDB qw(:access :aggregation :support);
 
 my $pxelinux0Path = "/usr/share/syslinux/pxelinux.0";
 my $pxeConfigDefaultTemplate = q[NOESCAPE 0
 PROMPT 0
 TIMEOUT 100
-DEFAULT menu
+DEFAULT menu.c32
 IMPLICIT 1
 ALLOWOPTIONS 1
 ONERROR menu
 MENU TITLE What would you like to do? (use cursor to select)
 MENU MASTER PASSWD secret
+LABEL menu
+
 ];
 
 my (
 	$dryRun,
 		# dryRun won't touch any file
-	$defaultSystem,
-		# configuration specified by default system
-	$defaultClient,
-		# configuration specified by default client
-	%systemConf,
-		# system configurations - straight from DB
-	%clientConf,
-		# configurations for each client, folded info from client, groups
-		# and default client
 	$systemConfCount,
 		# number of system configurations written
 	$clientSystemConfCount,
@@ -69,14 +62,12 @@ if (!$dryRun) {
 		die _tr("Unable to create or access export-path '%s'!", $exportPath);
 	}
 	if (!-e "$exportPath/pxe/pxelinux.0") {
-		system("cp -a $pxelinux0Path $exportPath/pxe/pxelinux.0");
+		system(qq[cp -a "$pxelinux0Path" $exportPath/pxe/pxelinux.0]);
 	}
 }
 
 my $lockFile = "$exportPath/config-demuxer.lock";
 lockScript($lockFile);
-
-fetchConfigurations();
 
 writeConfigurations();
 
@@ -85,7 +76,7 @@ print "$wr $systemConfCount systems and $clientSystemConfCount client-configurat
 
 disconnectConfigDB($openslxDB);
 
-system("rm -rf $tempPath")		unless $dryRun || length($tempPath) == 0;
+system("rm -rf $tempPath")		unless $dryRun || length($tempPath) < 12;
 
 unlockScript($lockFile);
 
@@ -122,26 +113,6 @@ sub unlockScript
 	unlink $lockFile;
 }
 
-sub isAttribute
-{	# returns whether or not the given key is an exportable attribute
-	my $key = shift;
-
-	return $key =~ m[^attr];
-}
-
-sub mergeConfigAttributes
-{	# copies all attributes of source that are unset in target over
-	my $target = shift;
-	my $source = shift;
-
-	foreach my $key (grep { isAttribute($_) } keys %$source) {
-		if (length($source->{$key}) > 0 && length($target->{$key}) == 0) {
-			vlog 3, _tr("\tmerging %s (val=%s)", $key, $source->{$key});
-			$target->{$key} = $source->{$key};
-		}
-	}
-}
-
 sub writeAttributesToFile
 {
 	my $attrHash = shift;
@@ -153,17 +124,14 @@ sub writeAttributesToFile
 	my @attrs = sort grep { isAttribute($_) } keys %$attrHash;
 	foreach my $attr (@attrs) {
 		if (length($attrHash->{$attr}) > 0) {
-			my $shellVar = $attr;
-			# convert 'attrExampleName' to 'example_name':
-			$shellVar =~ s[([A-Z])]['_'.lc($1)]ge;
-			$shellVar = substr($shellVar, 5);
-			print ATTRS "$shellVar = $attrHash->{$attr}\n";
+			my $externalAttrName = externalAttrName($attr);
+			print ATTRS "$externalAttrName = $attrHash->{$attr}\n";
 		}
 	}
 	close(ATTRS);
 }
 
-sub copySystemConfig
+sub copyExternalSystemConfig
 {	# copies local configuration extensions of given system from private
 	# config folder (var/lib/openslx/config/...) into a temporary folder
 	my $systemName = shift;
@@ -171,6 +139,9 @@ sub copySystemConfig
 
 	return		if $dryRun;
 
+	if ($targetPath !~ m[$tempPath]) {
+		die _tr("system-error: illegal target-path <%s>!", $targetPath);
+	}
 	system("rm -rf $targetPath");
 	mkdir $targetPath;
 
@@ -203,16 +174,6 @@ sub createTarOfPath
 	}
 }
 
-sub externalClientIDFor
-{
-	my $client = shift;
-
-	my $mac = lc($client->{mac});
-		# PXE seems to expect MACs being all lowercase
-	$mac =~ tr[:][-];
-	return "01-$mac";
-}
-
 ################################################################################
 ###
 ################################################################################
@@ -220,21 +181,41 @@ sub writePXEMenus
 {
 	my $pxePath = "$exportPath/pxe/pxelinux.cfg";
 
-	foreach my $client (values %clientConf) {
-		my $externalClientID = externalClientIDFor($client);
+	my @clients = fetchClientsByFilter($openslxDB);
+	foreach my $client (@clients) {
+		my $externalClientID = externalIDForClient($client);
 		my $pxeFile = "$pxePath/$externalClientID";
-		vlog 1, _tr("writing PXE-file $pxeFile");
+		vlog 1, _tr("writing PXE-file %s", $pxeFile);
 		open(PXE, "> $pxeFile")		or die "unable to write to $pxeFile";
 		print PXE $pxeConfigDefaultTemplate;
-		foreach my $system (values %{$client->{systems}}) {
+		my @systemIDs = aggregatedSystemIDsOfClient($openslxDB, $client);
+		my @systems = fetchSystemsByID($openslxDB, \@systemIDs);
+		foreach my $system (@systems) {
 			print PXE "LABEL openslx-$system->{name}\n";
-			print PXE "\tMENU DEFAULT\n";
-			print PXE "\tMENU LABEL ^$system->{label}\n";
-			print PXE "\tKERNEL $system->{kernel}\n";
-			print PXE "\tAPPEND $system->{kernel_params}\n";
-			print PXE "\tIPAPPEND 1\n";
+			print PXE " MENU DEFAULT\n";
+			print PXE " MENU LABEL ^$system->{label}\n";
+			print PXE " KERNEL $system->{kernel}\n";
+			print PXE " append $system->{kernel_params}\n";
+			print PXE " ipappend 1\n";
 		}
 		close(PXE);
+ 	}
+}
+
+sub writeSystemPXEFiles
+{
+	my $system = shift;
+
+	my $pxePath = "$exportPath/pxe/pxelinux.cfg";
+
+	my @kernelFiles = aggregatedKernelFilesOfSystem($openslxDB, $system);
+	foreach my $kernelFile (@kernelFiles) {
+		vlog 1, _tr('copying kernel %s to %s/', $kernelFile, $pxePath);
+		system(qq[cp -a "$kernelFile" $pxePath/])		unless $dryRun;
+	}
+	foreach my $initramFile (aggregatedInitramFilesOfSystem($openslxDB, $system)) {
+		vlog 1, _tr('copying initramfs %s to %s/', $initramFile, $pxePath);
+		system(qq[cp -a "$initramFile" $pxePath/])		unless $dryRun;
 	}
 }
 
@@ -244,138 +225,53 @@ sub writeClientConfigurationsForSystem
 	my $buildPath = shift;
 	my $attrFile = shift;
 
-	foreach my $client (values %{$system->{clients}}) {
+	my @clientIDs = aggregatedClientIDsOfSystem($openslxDB, $system);
+	my @clients = fetchClientsByID($openslxDB, \@clientIDs);
+	foreach my $client (@clients) {
 		vlog 2, _tr("exporting client %d:%s", $client->{id}, $client->{name});
 		$clientSystemConfCount++;
 
-		# copy this client's configuration in order to
-		# merge system configuration into client config and write the
-		# resulting attributes to a configuration file:
-		my $clientSystemConf = { %$client };
-		mergeConfigAttributes($clientSystemConf, $system);
-		writeAttributesToFile($clientSystemConf, $attrFile);
+		# merge configurations of client, it's groups, default client and
+		# system and write the resulting attributes to a configuration file:
+		mergeDefaultAndGroupAttributesIntoClient($openslxDB, $client);
+		mergeAttributes($client, $system);
+		writeAttributesToFile($client, $attrFile);
 
-		my $externalClientID = externalClientIDFor($client);
+		# create tar containing external system configuration
+		# and client attribute file:
+		my $externalClientID = externalIDForClient($client);
+		my $externalSystemID = externalIDForSystem($system);
 		createTarOfPath($buildPath, "${externalClientID}.tgz",
-						"$exportPath/client-conf/$system->{name}");
+						"$exportPath/client-conf/$externalSystemID");
 	}
 }
 
 sub writeSystemConfigurations
 {
-	foreach my $system (values %systemConf) {
+	my @systems = fetchSystemsByFilter($openslxDB);
+	foreach my $system (@systems) {
+		next 	unless $system->{id} > 0;
+
 		vlog 2, _tr('exporting system %d:%s', $system->{id}, $system->{name});
 		$systemConfCount++;
 
 		my $buildPath = "$tempPath/build";
-		copySystemConfig($system->{name}, $buildPath);
+		copyExternalSystemConfig($system->{name}, $buildPath);
 
 		my $attrFile = "$buildPath/initramfs/machine-setup";
+		mergeDefaultAttributesIntoSystem($openslxDB, $system);
 		writeAttributesToFile($system, $attrFile);
 
-		createTarOfPath($buildPath, "default.tgz",
-						"$exportPath/client-conf/$system->{name}");
+		my $externalSystemID = externalIDForSystem($system);
+		my $systemPath = "$exportPath/client-conf/$externalSystemID";
+		createTarOfPath($buildPath, "default.tgz", $systemPath);
+
+		writeSystemPXEFiles($system);
 
 		writeClientConfigurationsForSystem($system, $buildPath, $attrFile);
 
 		system("rm -rf $buildPath")		unless $dryRun;
 	}
-}
-
-sub linkClientToSystems
-{
-	my ($client, @systemIDs) = @_;
-
-	my $clientID = $client->{id};
-	$client->{systems} = {}		unless exists $client->{systems};
-	foreach my $sysID (@systemIDs) {
-		my $sysConf = $systemConf{$sysID};
-		next if !defined $sysConf || $sysConf->{unbootable};
-
-		# refer from system to client:
-		$sysConf->{clients} = {}		unless exists $sysConf->{clients};
-		if (!exists $sysConf->{clients}->{$clientID}) {
-			vlog 2, _tr('linking client %d:%s to system %d:%s',
-						$clientID, $client->{name},
-						$sysID, $sysConf->{name});
-			$sysConf->{clients}->{$clientID} = $client;
-		}
-
-		# refer from client to system:
-		if (!exists $client->{systems}->{$sysID}) {
-			$client->{systems}->{$sysID} = $systemConf{$sysID};
-		}
-	}
-}
-
-sub fetchSystemConfigurations
-{
-	$defaultSystem = fetchSystemsByID($openslxDB, 0);
-
-	foreach my $s (fetchSystemsByFilter($openslxDB)) {
-		next unless $s->{id} > 0;
-		vlog 2, _tr('read system %d:%s...', $s->{id}, $s->{name});
-
-		# replace any whitespace in name, as we will use it as a
-		# directory name later:
-		$s->{name} =~ s[\s+][_]g;
-
-		# merge default system configuration into this system and store
-		# that into hash:
-		mergeConfigAttributes($s, $defaultSystem);
-		$systemConf{$s->{id}} = $s;
-	}
-}
-
-sub fetchClientConfigurations
-{
-	my %groups;
-	foreach my $g (fetchGroupsByFilter($openslxDB)) {
-		vlog 2, _tr('read group %d:%s...', $g->{id}, $g->{name});
-		$groups{$g->{id}} = $g;
-	}
-
-	$defaultClient = fetchClientsByID($openslxDB, 0);
-
-	foreach my $client (fetchClientsByFilter($openslxDB)) {
-		next unless $client->{id} > 0;
-		vlog 2, _tr('read client %d:%s...', $client->{id}, $client->{name});
-
-		# add all systems directly linked to client:
-		linkClientToSystems($client,
-							fetchSystemIDsOfClient($openslxDB, $client->{id}));
-
-		# now fetch and step over all groups this client belongs to
-		# (ordered by priority from highest to lowest):
-		my @clientGroups
-			= sort { $b->{priority} <=> $a->{priority} }
-			  map { $groups{$_} }
-			  grep { exists $groups{$_} }
-					# just to be safe: filter out unknown group-IDs
-			  fetchGroupIDsOfClient($openslxDB, $client->{id});
-		foreach my $group (@clientGroups) {
-			# fetch and add all systems that the client inherits from
-			# the current group:
-			linkClientToSystems($client,
-								fetchSystemIDsOfGroup($openslxDB, $group->{id}));
-
-			# merge configuration from this group into the current client:
-			vlog 3, _tr('merging from group %d:%s...', $group->{id}, $group->{name});
-			mergeConfigAttributes($client, $group);
-		}
-
-		# merge configuration from default client and store client
-		# configuration into hash:
-		vlog 3, _tr('merging from default client...');
-		mergeConfigAttributes($client, $defaultClient);
-		$clientConf{$client->{id}} = $client;
-	}
-}
-
-sub fetchConfigurations
-{
-	fetchSystemConfigurations();
-	fetchClientConfigurations();
 }
 
 sub writeConfigurations

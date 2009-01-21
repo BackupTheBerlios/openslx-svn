@@ -9,11 +9,13 @@ $VERSION = 1.01;		# API-version . implementation-version
 ### database.
 ### Aim of this abstraction is to hide the details of the data layout and
 ### the peculiarities of individual database types behind a simple interface
-### that offers straightforward access to and manipulation of the OpenSLX-systems
-### and -clients (without the need to use SQL).
-### The interface is divided into two parts:
+### that offers straightforward access to and manipulation of the
+### OpenSLX-systems and -clients (without the need to use SQL).
+### The interface is divided into four parts:
 ### 	- data access methods (getting data)
 ### 	- data manipulation methods (adding, removing and changing data)
+### 	- data aggregation methods (combining data in ways useful for apps)
+### 	- support methods
 ################################################################################
 use Exporter;
 @ISA = qw(Exporter);
@@ -23,17 +25,21 @@ my @accessExports = qw(
 	fetchVendorOSesByFilter fetchVendorOSesByID fetchVendorOSIDsOfSystem
 	fetchSystemsByFilter fetchSystemsByID fetchSystemIDsOfClient
 	fetchSystemIDsOfGroup
+	fetchSystemsVariantByFilter fetchSystemVariantsByID
+	fetchSystemVariantIDsOfSystem
 	fetchClientsByFilter fetchClientsByID fetchClientIDsOfSystem
 	fetchClientIDsOfGroup
 	fetchGroupsByFilter fetchGroupsByID fetchGroupIDsOfClient
 	fetchGroupIDsOfSystem
 );
+
 my @manipulationExports = qw(
 	addVendorOS removeVendorOS changeVendorOS
-	setSystemIDsOfVendorOS addSystemIDsToVendorOS removeSystemIDsFromVendorOS
 	addSystem removeSystem changeSystem
 	setClientIDsOfSystem addClientIDsToSystem removeClientIDsFromSystem
 	setGroupIDsOfSystem addGroupIDsToSystem removeGroupIDsFromSystem
+	addSystemVariant removeSystemVariant changeSystemVariant
+	removeSystemVariantIDsFromSystem
 	addClient removeClient changeClient
 	setSystemIDsOfClient addSystemIDsToClient removeSystemIDsFromClient
 	setGroupIDsOfClient addGroupIDsToClient removeGroupIDsFromClient
@@ -42,11 +48,26 @@ my @manipulationExports = qw(
 	setSystemIDsOfGroup addSystemIDsToGroup removeSystemIDsFromGroup
 );
 
+my @aggregationExports = qw(
+	mergeDefaultAttributesIntoSystem
+	mergeDefaultAndGroupAttributesIntoClient
+	aggregatedSystemIDsOfClient aggregatedClientIDsOfSystem
+	aggregatedKernelFilesOfSystem aggregatedInitramFilesOfSystem
+);
+
+my @supportExports = qw(
+	isAttribute mergeAttributes
+	externalIDForSystem externalIDForClient
+	externalAttrName
+);
+
 @EXPORT = @accessExports;
-@EXPORT_OK = @manipulationExports;
+@EXPORT_OK = (@manipulationExports, @aggregationExports, @supportExports);
 %EXPORT_TAGS = (
 	'access' => [ @accessExports ],
 	'manipulation' => [ @manipulationExports ],
+	'aggregation' => [ @aggregationExports ],
+	'support' => [ @supportExports ],
 );
 
 ################################################################################
@@ -119,6 +140,12 @@ sub _aref
 	return $ref;
 }
 
+sub _unique
+{	# return given array filtered to unique elements
+	my %seenIDs;
+	return grep { !$seenIDs{$_}++; } @_;
+}
+
 ################################################################################
 ### data access interface
 ################################################################################
@@ -177,10 +204,11 @@ sub fetchVendorOSesByFilter
 sub fetchVendorOSesByID
 {
 	my $confDB = shift;
-	my $id = shift;
+	my $ids = _aref(shift);
+	my $resultCols = shift;
 
-	my $filter = { 'id' => $id };
-	my @vendorOSes = $confDB->{'meta-db'}->fetchVendorOSesByFilter($filter);
+	my @vendorOSes
+		= $confDB->{'meta-db'}->fetchVendorOSesByID($ids, $resultCols);
 	return wantarray() ? @vendorOSes : shift @vendorOSes;
 }
 
@@ -198,10 +226,10 @@ sub fetchSystemsByFilter
 sub fetchSystemsByID
 {
 	my $confDB = shift;
-	my $id = shift;
+	my $ids = _aref(shift);
+	my $resultCols = shift;
 
-	my $filter = { 'id' => $id };
-	my @systems = $confDB->{'meta-db'}->fetchSystemsByFilter($filter);
+	my @systems = $confDB->{'meta-db'}->fetchSystemsByID($ids, $resultCols);
 	return wantarray() ? @systems : shift @systems;
 }
 
@@ -229,6 +257,36 @@ sub fetchSystemIDsOfGroup
 	return $confDB->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
 }
 
+sub fetchSystemVariantsByFilter
+{
+	my $confDB = shift;
+	my $filter = shift;
+	my $resultCols = shift;
+
+	my @systemVariants
+		= $confDB->{'meta-db'}->fetchSystemVariantsByFilter($filter, $resultCols);
+	return wantarray() ? @systemVariants : shift @systemVariants;
+}
+
+sub fetchSystemVariantsByID
+{
+	my $confDB = shift;
+	my $ids = _aref(shift);
+	my $resultCols = shift;
+
+	my @systemVariants
+		= $confDB->{'meta-db'}->fetchSystemVariantsByID($ids, $resultCols);
+	return wantarray() ? @systemVariants : shift @systemVariants;
+}
+
+sub fetchSystemVariantIDsOfSystem
+{
+	my $confDB = shift;
+	my $systemID = shift;
+
+	return $confDB->{'meta-db'}->fetchSystemVariantIDsOfSystem($systemID);
+}
+
 sub fetchClientsByFilter
 {
 	my $confDB = shift;
@@ -241,10 +299,10 @@ sub fetchClientsByFilter
 sub fetchClientsByID
 {
 	my $confDB = shift;
-	my $id = shift;
+	my $ids = _aref(shift);
+	my $resultCols = shift;
 
-	my $filter = { 'id' => $id };
-	my @clients = $confDB->{'meta-db'}->fetchClientsByFilter($filter);
+	my @clients = $confDB->{'meta-db'}->fetchClientsByID($ids, $resultCols);
 	return wantarray() ? @clients : shift @clients;
 }
 
@@ -278,10 +336,10 @@ sub fetchGroupsByFilter
 sub fetchGroupsByID
 {
 	my $confDB = shift;
-	my $id = shift;
+	my $ids = _aref(shift);
+	my $resultCols = shift;
 
-	my $filter = { 'id' => $id };
-	my @groups = $confDB->{'meta-db'}->fetchGroupsByFilter($filter);
+	my @groups = $confDB->{'meta-db'}->fetchGroupsByID($ids, $resultCols);
 	return wantarray() ? @groups : shift @groups;
 }
 
@@ -327,44 +385,6 @@ sub changeVendorOS
 	my $valRows = _aref(shift);
 
 	return $confDB->{'meta-db'}->changeVendorOS($vendorOSIDs, $valRows);
-}
-
-sub setSystemIDsOfVendorOS
-{
-	my $confDB = shift;
-	my $vendorOSID = shift;
-	my $systemIDs = _aref(shift);
-
-	my %seen;
-	my @uniqueSystemIDs = grep { !$seen{$_}++ } @$systemIDs;
-	return $confDB->{'meta-db'}->setSystemIDsOfVendorOS($vendorOSID,
-														\@uniqueSystemIDs);
-}
-
-sub addSystemIDsToVendorOS
-{
-	my $confDB = shift;
-	my $vendorOSID = shift;
-	my $newSystemIDs = _aref(shift);
-
-	my @systemIDs
-		= $confDB->{'meta-db'}->fetchSystemIDsOfVendorOS($vendorOSID);
-	push @systemIDs, @$newSystemIDs;
-	return setSystemIDsOfVendorOS($confDB, $vendorOSID, \@systemIDs);
-}
-
-sub removeSystemIDsFromVendorOS
-{
-	my $confDB = shift;
-	my $vendorOSID = shift;
-	my $removedSystemIDs = _aref(shift);
-
-	my %toBeRemoved;
-	@toBeRemoved{@$removedSystemIDs} = ();
-	my @systemIDs
-		= grep { !exists $toBeRemoved{$_} }
-			   $confDB->{'meta-db'}->fetchSystemIDsOfVendorOS($vendorOSID);
-	return setSystemIDsOfVendorOS($confDB, $vendorOSID, \@systemIDs);
 }
 
 sub addSystem
@@ -464,6 +484,31 @@ sub removeGroupIDsFromSystem
 		= grep { !exists $toBeRemoved{$_} }
 			   $confDB->{'meta-db'}->fetchGroupIDsOfSystem($systemID);
 	return setGroupIDsOfSystem($confDB, $systemID, \@groupIDs);
+}
+
+sub addSystemVariant
+{
+	my $confDB = shift;
+	my $valRows = _aref(shift);
+
+	return $confDB->{'meta-db'}->addSystemVariant($valRows);
+}
+
+sub removeSystemVariant
+{
+	my $confDB = shift;
+	my $systemVariantIDs = _aref(shift);
+
+	return $confDB->{'meta-db'}->removeSystemVariant($systemVariantIDs);
+}
+
+sub changeSystemVariant
+{
+	my $confDB = shift;
+	my $systemVariantIDs = _aref(shift);
+	my $valRows = _aref(shift);
+
+	return $confDB->{'meta-db'}->changeSystemVariant($systemVariantIDs, $valRows);
 }
 
 sub addClient
@@ -662,6 +707,188 @@ sub removeSystemIDsFromGroup
 		= grep { !exists $toBeRemoved{$_} }
 			   $confDB->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
 	return setSystemIDsOfGroup($confDB, $groupID, \@systemIDs);
+}
+
+################################################################################
+### data aggregation interface
+################################################################################
+sub mergeDefaultAttributesIntoSystem
+{	# merge default system configuration into given system
+	my $confDB = shift;
+	my $system = shift;
+	my $defaultSystem = shift;
+
+	$defaultSystem = fetchSystemsByID($confDB, 0)
+		unless defined $defaultSystem;
+
+	mergeAttributes($system, $defaultSystem);
+}
+
+sub mergeDefaultAndGroupAttributesIntoClient
+{	# merge default and group configurations into given client
+	my $confDB = shift;
+	my $client = shift;
+
+	# step over all groups this client belongs to
+	# (ordered by priority from highest to lowest):
+	my @groupIDs = fetchGroupIDsOfClient($confDB, $client->{id});
+	my @groups = sort { $b->{priority} <=> $a->{priority} }
+				 fetchGroupsByID($confDB, \@groupIDs);
+	foreach my $group (@groups) {
+		# merge configuration from this group into the current client:
+		vlog 3, _tr('merging from group %d:%s...', $group->{id}, $group->{name});
+		mergeAttributes($client, $group);
+	}
+
+	# merge configuration from default client:
+	vlog 3, _tr('merging from default client...');
+	my $defaultClient = fetchClientsByID($confDB, 0);
+	mergeAttributes($client, $defaultClient);
+}
+
+sub aggregatedSystemIDsOfClient
+{	# return aggregated list of system-IDs this client should offer
+	# (as indicated by itself, the default client and the client's groups)
+	my $confDB = shift;
+	my $client = shift;
+
+	# add all systems directly linked to client:
+	my @systemIDs = fetchSystemIDsOfClient($confDB, $client->{id});
+
+	# step over all groups this client belongs to:
+	my @groupIDs = fetchGroupIDsOfClient($confDB, $client->{id});
+	my @groups = fetchGroupsByID($confDB, \@groupIDs);
+	foreach my $group (@groups) {
+		# add all systems that the client inherits from the current group:
+		push @systemIDs, fetchSystemIDsOfGroup($confDB, $group->{id});
+	}
+
+	# add all systems inherited from default client
+	push @systemIDs, fetchSystemIDsOfClient($confDB, 0);
+
+	my %seenIDs;
+	return grep { !$seenIDs{$_}++; } @systemIDs;
+		# return unique list
+}
+
+sub aggregatedClientIDsOfSystem
+{	# return aggregated list of client-IDs this system is linked to
+	# (as indicated by itself, the default system and the system's groups)
+	my $confDB = shift;
+	my $system = shift;
+
+	# add all clients directly linked to system:
+	my @clientIDs = fetchClientIDsOfSystem($confDB, $system->{id});
+
+	# step over all groups this system belongs to:
+	my @groupIDs = fetchGroupIDsOfSystem($confDB, $system->{id});
+	my @groups = fetchGroupsByID($confDB, \@groupIDs);
+	foreach my $group (@groups) {
+		# add all clients that the system inherits from the current group:
+		push @clientIDs, fetchClientIDsOfGroup($confDB, $group->{id});
+	}
+
+	# add all clients inherited from default system
+	push @clientIDs, fetchClientIDsOfSystem($confDB, 0);
+
+	my %seenIDs;
+	return grep { !$seenIDs{$_}++; } @clientIDs;
+		# return unique list
+}
+
+sub aggregatedKernelFilesOfSystem
+{	# return aggregated list of kernel-files this system is using
+	# (as indicated by itself and system's variants)
+	my $confDB = shift;
+	my $system = shift;
+
+	my $vendorOS = fetchVendorOSesByID($confDB, $system->{vendor_os_id});
+	return () if !$vendorOS || !length($vendorOS->{path});
+	my $kernelPath
+		= "$openslxConfig{'private-basepath'}/stage1/$vendorOS->{path}";
+
+	my @variantIDs = fetchSystemVariantIDsOfSystem($confDB, $system->{id});
+	my @variants = fetchSystemVariantsByID($confDB, \@variantIDs);
+
+	my @kernelFiles	= map { "$kernelPath/$_->{kernel}" }
+					  grep { length($_->{kernel}) > 0 }
+					  ($system, @variants);
+	return _unique(@kernelFiles);
+}
+
+sub aggregatedInitramSetupsOfSystem
+{	# return aggregated list of initialramfs-setups this system is using
+	# (as indicated by itself and system's variants)
+	my $confDB = shift;
+	my $system = shift;
+
+	my $vendorOS = fetchVendorOSesByID($confDB, $system->{vendor_os_id});
+	return () if !$vendorOS || !length($vendorOS->{path});
+	my $kernelPath
+		= "$openslxConfig{'private-basepath'}/stage1/$vendorOS->{path}";
+
+	my @variantIDs = fetchSystemVariantIDsOfSystem($confDB, $system->{id});
+	my @variants = fetchSystemVariantsByID($confDB, \@variantIDs);
+
+	my @initramFiles = map { "$kernelPath/$_->{initramfs}" }
+					   grep { length($_->{initramfs}) > 0 }
+					   ($system, @variants);
+	return _unique(@initramFiles);
+}
+
+################################################################################
+### support interface
+################################################################################
+sub isAttribute
+{	# returns whether or not the given key is an exportable attribute
+	my $key = shift;
+
+	return $key =~ m[^attr];
+}
+
+sub mergeAttributes
+{	# copies all attributes of source that are unset in target over
+	my $target = shift;
+	my $source = shift;
+
+	foreach my $key (grep { isAttribute($_) } keys %$source) {
+		if (length($source->{$key}) > 0 && length($target->{$key}) == 0) {
+			vlog 3, _tr("merging %s (val=%s)", $key, $source->{$key});
+			$target->{$key} = $source->{$key};
+		}
+	}
+}
+
+sub externalIDForSystem
+{
+	my $system = shift;
+
+	return "default" if $system->{id} == 0;
+
+	my $externalID = $system->{name};
+	$externalID =~ s[\s+][_]g;
+		# replace any whitespace in name, such that the external ID can
+		# be used as a directory name (without complications)
+	return $externalID;
+}
+
+
+sub externalIDForClient
+{
+	my $client = shift;
+
+	return "default" if $client->{id} == 0;
+
+	my $mac = lc($client->{mac});
+		# PXE seems to expect MACs being all lowercase
+	$mac =~ tr[:][-];
+	return "01-$mac";
+}
+
+sub externalAttrName
+{
+	my $attr = shift;
+	return substr($attr, 5);
 }
 
 1;
