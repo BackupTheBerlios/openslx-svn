@@ -33,18 +33,12 @@ use OpenSLX::OSExport::Engine;
 my (
 	$helpReq,
 	$manReq,
-	$listExportedReq,
-	$listInstalledReq,
-	$listTypesReq,
 	$verbose,
 	$versionReq,
 );
 
 GetOptions(
 	'help|?' => \$helpReq,
-	'list-exported' => \$listExportedReq,
-	'list-installed' => \$listInstalledReq,
-	'list-types' => \$listTypesReq,
 	'man' => \$manReq,
 	'verbose' => \$verbose,
 	'version' => \$versionReq,
@@ -58,7 +52,9 @@ if ($versionReq) {
 
 openslxInit();
 
-if ($listExportedReq) {
+my $action = shift @ARGV;
+
+if ($action =~ m[^list-ex]i) {
 	print _tr("List of exported vendor-OSes:\n");
 	foreach my $type (sort keys %supportedExportTypes) {
 		print join('', map {
@@ -67,44 +63,45 @@ if ($listExportedReq) {
 					   }
 					   sort <$openslxConfig{'export-path'}/$type/*>);
 	}
-	exit 1;
-}
-if ($listInstalledReq) {
+} elsif ($action =~ m[^list-in]i) {
 	print _tr("List of installed vendor-OSes:\n");
 	print join('', map {
 					s[^.+/][];
 					"\t$_\n";
 				   }
 				   sort <$openslxConfig{'stage1-path'}/*>);
-	exit 1;
-}
-if ($listTypesReq) {
+} elsif ($action =~ m[^list-ty]i) {
 	print _tr("List of supported export types:\n\t");
 	print join("\n\t", sort keys %supportedExportTypes)."\n";
-	exit 1;
+} elsif ($action =~ m[^export]i) {
+	if (scalar(@ARGV) != 2) {
+		print STDERR _tr("You need to specify exactly one vendor-os-name and one export-type!\n");
+		pod2usage(2);
+	}
+	my $vendorOSName = shift @ARGV;
+	my $exportType = shift @ARGV;
+
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+
+	# create OSExport-engine for given export type and start it:
+	my $engine = OpenSLX::OSExport::Engine->new;
+	$engine->initialize($vendorOSName, $exportType);
+	if (!-e $engine->{'vendor-os-path'}) {
+		die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
+				$engine->{'vendor-os-path'});
+	}
+	$engine->exportVendorOS();
+} else {
+	print STDERR _tr("You need to specify exactly one action:
+	export
+	list-exported
+	list-installed
+	list-types
+Try '$0 --help' for more info.\n");
 }
-
-if (scalar(@ARGV) != 2) {
-	print STDERR _tr("You need to specify exactly one vendor-os-name and one export-type!\n");
-	pod2usage(2);
-}
-my $vendorOSName = $ARGV[0];
-my $exportType = $ARGV[1];
-
-# we chdir into the script's folder such that all relative paths have
-# a known starting point:
-chdir($FindBin::RealBin)
-	or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
-
-
-# create OSExport-engine for given export type and start it:
-my $engine = OpenSLX::OSExport::Engine->new;
-$engine->initialize($vendorOSName, $exportType);
-if (!-e $engine->{'vendor-os-path'}) {
-	die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
-			$engine->{'vendor-os-path'});
-}
-$engine->exportVendorOS();
 
 __END__
 
@@ -117,13 +114,24 @@ via a squashfs inside of a network block device.
 
 =head1 SYNOPSIS
 
-slxos-export [options] <vendor-os-name> <export-type>
+slxos-export [options] <action>
 
   Options:
       --help                   brief help message
-      --list                   show available export-types
       --man                    show full documentation
+      --verbose                show more information during execution
       --version                show version
+
+  Actions:
+      export <vendor-OS-name> <export-type>
+                               exports the vendor-OS with the given name via
+                               the given export type
+      list-exported
+                               list all exported vendor-OSes
+      list-installed
+                               list all installed vendor-OSes
+      list-types
+                               list all supported export types
 
 =head1 OPTIONS
 
@@ -133,26 +141,27 @@ slxos-export [options] <vendor-os-name> <export-type>
 
 Prints a brief help message and exits.
 
-=item B<--list-exported>
-
-Lists all exported vendor-OSes and exits.
-
-=item B<--list-installed>
-
-Lists all installed vendor-OSes and exits.
-
-=item B<--list-types>
-
-Lists all supported export types and exits.
-
 =item B<--man>
 
 Prints the manual page and exits.
+
+=item B<--verbose>
+
+Prints more information during execution of any action.
 
 =item B<--version>
 
 Prints the version and exits.
 
 =back
+
+=head1 EXAMPLES
+
+=head2 Exporting a Vendor-OS
+
+  slxos-export export suse-10.2 nfs
+
+      exports the installed vendor-OS suse-10.2 via nfs, the resulting
+      NFS-export will live in '/srv/openslx/export/nfs/suse-10.2'
 
 =cut

@@ -29,26 +29,16 @@ use lib "$FindBin::RealBin/../config-db";
 use OpenSLX::Basics;
 use OpenSLX::OSSetup::Engine;
 
-if ($> != 0) {
-	die _tr("Sorry, this script can only be executed by the superuser!\n");
-}
-
 my (
 	$helpReq,
-	$listInstalledReq,
-	$listSupportedReq,
 	$manReq,
-	$source,
 	$verbose,
 	$versionReq,
 );
 
 GetOptions(
 	'help|?' => \$helpReq,
-	'list-installed' => \$listInstalledReq,
-	'list-supported' => \$listSupportedReq,
 	'man' => \$manReq,
-	'source=s' => \$source,
 	'verbose' => \$verbose,
 	'version' => \$versionReq,
 ) or pod2usage(2);
@@ -59,9 +49,73 @@ if ($versionReq) {
 	exit 1;
 }
 
+if ($> != 0) {
+	die _tr("Sorry, this script can only be executed by the superuser!\n");
+}
+
 openslxInit();
 
-if ($listSupportedReq) {
+my $action = shift @ARGV;
+
+# create ossetup-engine for given distro and start it:
+my $engine = OpenSLX::OSSetup::Engine->new;
+if ($action =~ m[import]i) {
+	my $vendorOSName = shift @ARGV;
+	if (!defined $vendorOSName) {
+		print STDERR _tr("You need to give the name of the vendor-os you'd like to import!\n");
+		pod2usage(2);
+	}
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	$engine->initialize($vendorOSName, 'import');
+	if (!-e $engine->{'vendor-os-path'}) {
+		die _tr("'%s' doesn't exist, giving up!\n", $engine->{'vendor-os-path'});
+	}
+	$engine->addInstalledVendorOSToConfigDB();
+} elsif ($action =~ m[update]i) {
+	my $vendorOSName = shift @ARGV;
+	if (!defined $vendorOSName) {
+		print STDERR _tr("You need to give the name of the vendor-os you'd like to update!\n");
+		pod2usage(2);
+	}
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	$engine->initialize($vendorOSName, 'update');
+	$engine->updateVendorOS();
+} elsif ($action =~ m[install]i) {
+	my $vendorOSName = shift @ARGV;
+	if (!defined $vendorOSName) {
+		print STDERR _tr("You need to give the name of the vendor-os you'd like to install!\n");
+		pod2usage(2);
+	}
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	$engine->initialize($vendorOSName, 'install');
+	$engine->installVendorOS();
+} elsif ($action =~ m[clone]i) {
+	my $vendorOSName = shift @ARGV;
+	my $srcString = shift @ARGV;
+	if ($srcString !~ m[^\s*source=(.+?)\s*$]) {
+		print STDERR _tr("You need to specify a source you'd like to clone!\n");
+		pod2usage(2);
+	}
+	my $source = $1;
+	if ($source !~ m[^.+::?.+$]) {
+		die _tr("Unkown source format given, expected '<hostname>:<path>' or '<hostname>::<module>'!\n");
+	}
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	$engine->initialize($vendorOSName, 'clone');
+	$engine->cloneVendorOS($source);
+} elsif ($action =~ m[list-su]i) {
 	print _tr("List of supported distros:\n");
 	print join('', map {
 					"\t$_"
@@ -69,57 +123,22 @@ if ($listSupportedReq) {
 					 ."\t($supportedDistros{$_}->{support})\n"
 				   }
 				   sort keys %supportedDistros);
-	exit 1;
-}
-if ($listInstalledReq) {
+} elsif ($action =~ m[list-in]i) {
 	print _tr("List of installed vendor-OSes:\n");
 	print join('', map {
 					s[^.+/][];
 					"\t$_\n";
 				   }
 				   sort <$openslxConfig{'stage1-path'}/*>);
-	exit 1;
-}
-
-if (scalar(@ARGV) != 2) {
-	print STDERR _tr("You need to specify exactly one action and one vendor-OS name!\n");
-	pod2usage(2);
-}
-my $action = $ARGV[0];
-if ($action !~ m[^clone|import-into-db|install|update$]i) {
-	print STDERR _tr("You need to specify exactly one action:\n\tinstall, update, clone or import-into-db\n");
-	pod2usage(2);
-}
-my $vendorOSName = $ARGV[1];
-
-# we chdir into the script's folder such that all relative paths have
-# a known starting point:
-chdir($FindBin::RealBin)
-	or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
-
-# create ossetup-engine for given distro and start it:
-my $engine = OpenSLX::OSSetup::Engine->new;
-if ($action =~ m[import]i) {
-	$engine->initialize($vendorOSName, 'import');
-	if (!-e $engine->{'vendor-os-path'}) {
-		die _tr("'%s' doesn't exist, giving up!\n", $engine->{'vendor-os-path'});
-	}
-	$engine->addInstalledVendorOSToConfigDB();
-} elsif ($action =~ m[update]i) {
-	$engine->initialize($vendorOSName, 'update');
-	$engine->updateVendorOS();
-} elsif ($action =~ m[install]i) {
-	$engine->initialize($vendorOSName, 'install');
-	$engine->installVendorOS();
-} elsif ($action =~ m[clone]i) {
-	if (!length($source)) {
-		die _tr("You need to specify a source you'd like to clone!\n");
-	}
-	if ($source !~ m[^.+::?.+$]) {
-		die _tr("Unkown source format given, expected '<hostname>:<path>' or '<hostname>::<module>'!\n");
-	}
-	$engine->initialize($vendorOSName, 'clone');
-	$engine->cloneVendorOS($source);
+} else {
+	print STDERR _tr("You need to specify exactly one action:
+	clone
+	import-into-db
+	install
+	list-supported
+	list-installed
+	update
+Try '$0 --help' for more info.\n");
 }
 
 __END__
@@ -131,39 +150,27 @@ will be used as a OpenSLX-stage1-system (a.k.a. vendor-OS).
 
 =head1 SYNOPSIS
 
-=head2 Installing a Vendor-OS
-
-  slxos-setup install <vendor-os-name>
-
-=head2 Cloning an Operating System to Make a New Vendor-OS
-
-  slxos-setup clone <vendor-os-name> --source=<rsync-source>
-
-=head2 Updating a Vendor-OS
-
-  slxos-setup update <vendor-os-name>
-
-=head2 Importing an Existing Vendor-OS into the Config-DB
-
-  slxos-setup import-into-db <vendor-os-name>
-
-=head2 General Format
-
   slxos-setup [options] <action> <vendor-os-name>
 
   Options:
       --help                   brief help message
-      --list-installed         show installed vendor-OSes
-      --list-supported         show supported distros
       --man                    show full documentation
-      --source=<string>        (rsync-)source to clone vendor-OS from
+      --verbose                show more information during execution
       --version                show version
 
   Actions:
-      clone                    clones an existing operating system via rsync
-      import-into-db           imports a vendor-OS into the openslx-db
-      install                  installs a vendor-OS into a folder
-      update                   updates an installed vendor-OS
+      clone <vendor-os-name> source=<rsync-uri>
+                               clones an existing operating system via rsync
+      import-into-db <vendor-os-name>
+                               imports a vendor-OS into the openslx-db
+      install <vendor-os-name>
+                               installs a vendor-OS into a folder
+      list-installed
+                               show installed vendor-OSes
+      list-supported
+                               show supported distros
+      update <vendor-os-name>
+                               updates an installed vendor-OS
 
 =head1 OPTIONS
 
@@ -173,23 +180,13 @@ will be used as a OpenSLX-stage1-system (a.k.a. vendor-OS).
 
 Prints a brief help message and exits.
 
-=item B<--list-installed>
-
-Lists all installed vendor-OSes and exits.
-
-=item B<--list-supported>
-
-Lists all supported distros and exits.
-
 =item B<--man>
 
 Prints the manual page and exits.
 
-=item B<--source=<string>>
+=item B<--verbose>
 
-When cloning a vendor-OS, slxos-setup needs to know where to fetch
-the existing OS-files from. You can specify the rsync-uri with this
-option.
+Prints more information during execution of any action.
 
 =item B<--version>
 
@@ -222,6 +219,42 @@ In clone-mode, it is a good idea to specify some unqiue string as the selection
 part of the vendor-os-name, such that you will easily recognize the vendor-OS
 at a later stage. We recommend something like '-cloned-from-<name-of-rsync-source>'.
 
+=item B<rsync-uri>
+
+When cloning a vendor-OS, slxos-setup needs to know where to fetch
+the existing OS-files from. Please check the 'rsync' docs for what
+format an rsync-uri has.
+
 =back
+
+=head1 EXAMPLES
+
+=head2 Installing a Vendor-OS
+
+  slxos-setup install suse-10.2
+
+      installs the distro suse-10.2 as a new vendor-OS
+
+  slxos-setup install suse-10.2-gnome
+
+      installs the 'gnome'-selection of distro suse-10.2 as a new vendor-OS
+
+=head2 Cloning an Operating System to Make a New Vendor-OS
+
+  slxos-setup clone suse-10.2 --source=my_server:/
+
+      clones the suse-10.2 system from server 'my_server'
+
+=head2 Updating a Vendor-OS
+
+  slxos-setup update suse-10.2
+
+      updates the (existing) vendor-OS 'suse-10.2'
+
+=head2 Importing an Existing Vendor-OS into the Config-DB
+
+  slxos-setup import-into-db suse-10.2
+
+      imports the (existing) vendor-OS 'suse-10.2' into the config-DB
 
 =cut
