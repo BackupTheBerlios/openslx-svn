@@ -32,7 +32,14 @@ mem=
 totalmem=
 permem=66
 
-# virtual cd/dvd and drive devices
+# virtual fd/cd/dvd and drive devices, floppy b: for configuration
+if [ ! -d /sys/block/fd0 ]; then
+  floppya="FALSE"
+else
+  floppya="TRUE"
+fi
+floppyb="TRUE"
+floppybname="/etc/vmware/loopimg/fd.img"
 cdr_1="FALSE"
 cdr_2="FALSE"
 ide="TRUE"
@@ -45,7 +52,6 @@ xres=$(echo "${hostres}" | awk '{print $3}')
 yres=$(echo "${hostres}" | awk '{print $7}')
 
 # VMplayer buildversion
-tmp_vmbuild=
 vmbuild=
 
 # VMware start options
@@ -94,7 +100,7 @@ filecheck=
 
 # vmware image file
 imagename="CHANGEIT"
-diskfile="${vmdir}/$imagename"
+diskfile="${vmdir}/${imagename}"
 
 #TODO: check for a faster way, perhaps we should put this into XML
 #grepping every file could take much (network) resources. And if its
@@ -114,7 +120,7 @@ elif [ "${hddrv}" = "buslogic" ]; then
 fi
 
 # define name for VMware window
-displayname="CHANGIT"
+displayname="CHANGEIT"
 
 # Definition of the client system
 vmostype="CHANGEIT"
@@ -227,9 +233,6 @@ runvmwareconfheader ()
 
   ###### ide-disks #############################################################
   ide0:0.mode = \"${np}\"
-  #volker.currentchage
-  #ide0:0.present = \"TRUE\"
-  #ide0:0.fileName = \"${tmpdir}/disk\" 
   ide0:0.present = \"${ide}\"
   ide0:0.fileName = \"${diskfile}\" 
 
@@ -248,7 +251,7 @@ runvmwareconfheader ()
   scsi0.virtualDev = \"lsilogic\"
   scsi0:0.mode = \"${np}\"
   scsi0:0.present = \"${scsi}\"
-  scsi0:0.fileName = \"${diskfile}\
+  scsi0:0.fileName = \"${diskfile}\"
 
   ###### nics ##################################################################
   ethernet0.present = \"TRUE\"
@@ -263,6 +266,16 @@ runvmwareconfheader ()
   ###### usb ###################################################################
   usb.present = \"TRUE\"
   usb.generic.autoconnect = \"TRUE\"
+
+  ###### floppies ##############################################################
+  floppy0.present = \"${floppya}\"
+  floppy0.fileName = \"auto detect\"
+
+  # we need floppy b: this for our windows client configuration
+  floppy1.present = \"${floppyb}\"
+  floppy1.fileType = \"file\"
+  floppy1.fileName = \"${floppybname}\"
+  floppy1.startConnected = \"TRUE\"
 
   ###### ports #################################################################
   parallel0.present = \"FALSE\"
@@ -346,12 +359,10 @@ preferencesheader ()
 writelog ()
 {
   # write to stdout
-  # TODO: echo -e 
-  echo "$1"
+  echo -e "$1"
 
   # log in file
-  # TODO: echo -e 
-  echo "$1" >>${tmpdir}/runvmware.${USER}.log
+  echo -e "$1" >>${tmpdir}/runvmware.${USER}.log
 }
 
 
@@ -393,7 +404,7 @@ EOL
 writelog "##################################################\n"
 writelog "# File created by $0 (v.${version})\n# on $(date)\n"
 writelog "##################################################\n"
-writelog "Starting...$(echo ${np} | sed -e \"s/i.*-//g\" \
+writelog "Starting...$(echo ${np} | sed 's/i.*-//g' \
   | tr [a-z] [A-Z])-mode\n"
 
 ## log disksetup
@@ -416,11 +427,9 @@ mac=$(/sbin/ifconfig eth0 | grep eth0 | sed -e "s/ //g" \
 # get memory in MB
 totalmem=$(expr $(grep -i "memtotal" /proc/meminfo | awk '{print $2}') / 1024)
 
-#TODO
-writelog "DEBUG: $totalmem, $permem\n"
 # calculate memory for vmplayer
 # TODO: unhappy how it is calculated
-mem=$(expr ${totalmem} / 100 * ${permem} / 4*4)
+mem=$(expr ${totalmem} / 100 \* ${permem} / 4 \* 4)
 
 # check memory range
 memtest=${totalmem}-128
@@ -452,21 +461,12 @@ writelog "finished\nResults:\n\tDiskfile:\t${diskfile}\n\tDisktype:\t${hddrv}
 filecheck
 
 # VMPlayer Version.
-# Takes much time/resources, so we try to decrease it check first if
-# vmware is installed and has a build number in config if not then check
-# if we have an own configuration produces by servconfig
-# in worst case use the slow old option
-#TODO: build in the boot script
-tmp_vmbuild=$(grep "product.buildnumber" /etc/vmware/config )
-if [ -n ${tmp_vmbuild} ]; then
-  vmbuild=$(echo ${tmp_vmbuild} | awk -F "\"" '{print $2}')
-else 
-  tmp_vmbuild=$(grep "product.buildnumber" /etc/vmware/buildnumber)
-  if [ -n ${tmp_vmbuild} ]; then
-    vmbuild=$(echo ${tmp_vmbuild} | awk -F "\"" '{print $2}')
-  else
-    vmbuild=$(vmplayer -v | awk -F "-" '{print $2}')
-  fi
+# strings is the fastest and most secure way, vmplayer -v takes too much time
+# and resources
+vmbuild=$(strings /usr/lib/vmware/bin/vmplayer \
+    | grep Releasebuild-|sed 's/.*Releasebuild-//')
+if [ ! -n ${vmbuild} ]; then
+  vmbuild=$(vmplayer -v | sed 's/.*build-//')
 fi
 
 ### write configuration files ##################################################
@@ -476,10 +476,17 @@ preferencesheader
 # create VMware startup file
 runvmwareconfheader
 
-# Tricky, perhaps i need the winconfig for login/hostinformation
-# include file which is given via command line
-#TODO: include variable not present anymore. $include was a file
-#[ -n "${include}" ] && . ${include}
+# poolconfiguration config.xml
+#TODO: change default to global variable ${POOL} in the future
+sed -e "s/HOSTNAME/${hostname}/" \
+    -e "s/USER/${USER}/" /var/lib/vmware/templates/client-config.xml.default \
+    > /etc/vmware/fd-loop/config.xml
+
+# sync is needed to ensure that data is really written to virtual disk
+sync
+
+# own nvram. We need it for floppy drive b, default nvram has just drive a
+cp /var/lib/vmware/templates/nvram.5.0 ${tmpdir}/nvram
 
 # adjust volume
 writelog "Unmuting sound...\c"

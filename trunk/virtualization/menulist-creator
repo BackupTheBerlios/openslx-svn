@@ -24,11 +24,14 @@
 # Just needed if vmdir is somewhere else
 vmdir="." && cd ${vmdir}
 
+# were is vmdir, after we mountet this folder?
+vmexecdir="/var/lib/vmware"
+
 # template for runvmware
 templatevmware="${vmdir}/templates/runvmware-v2"
 
 # delete all priority files
-rm -rf ${vmdir}/runscripts/${i}/[0-9]_*.runvmware
+rm -rf ${vmdir}/runscripts/${i}/[0-9]_*.vmware
 
 # Take all xml files and work with them
 for xml in *.xml;do
@@ -69,16 +72,23 @@ for xml in *.xml;do
   # active when active=1 image, else disabled
   active=$(grep -i "<active param=\"true\"" ${xml} | wc -l)
 
+  #TODO: perhaps we should force an active flag, too
+
 
   # get list where the current image should be used
   pools=$(grep -i "<pools param=\"" ${xml} | awk -F "\"" '{ print $2 }')
+  
+  # we need the pool configuration
+  if ! [ "${pools}" ]; then
+    echo "PANIC, pools not correct defined in ${xml}"
+    exit 0
+  fi
 
- 
+
   # Virtualmachine (vmware or virtualbox)?
   vm=$(grep -i "<virtualmachine param=\"" ${xml} | awk -F "\"" '{ print $2 }')
   # Test if correct defined
   if [ "${vm}" != "vbox"  -a  "${vm}" != "vmware" ]; then
-    # TODO: Test
     echo "PANIC, virtualmachine not correct defined in ${xml}"
     exit 0
   fi
@@ -111,7 +121,7 @@ for xml in *.xml;do
   
   # os running in vmware?
   os=$(grep -i "<os param=\"" ${xml} | awk -F "\"" '{ print $2 }')
-  if [ "${os}" != "Linux"  -a  "${os}" != "Windows XP" ]; then
+  if [ "${os}" != "Linux"  -a  "${os}" != "winxppro" -a "${os}" != "Windows 2000" ]; then
     # TODO: test
     echo "PANIC, OS in virtual machine not correct defined in ${xml}"
     exit 0
@@ -163,7 +173,7 @@ for xml in *.xml;do
   fi
   
   # check if ${vmdir}/xdmsessions/ for .desktop files is available
-  if [ ! -d ${vmdir}/xdmsessions ]; then
+  if [ ! -d ${vmdir}/xdialog-files ]; then
     mkdir ${vmdir}/xdialog-files
   fi
  
@@ -191,7 +201,7 @@ for xml in *.xml;do
 
 
     # ... create desktopentry
-    if [ ${active} -eq 1 -a ${xdm} = "true"]; then
+    if [ ${active} -eq 1  -a  ${xdm} = "true" ]; then
 
       # create desktopentry
       echo -e "\nCreating runfiles for ${image} and pool ${i}\n"
@@ -205,7 +215,7 @@ for xml in *.xml;do
       echo "Encoding=UTF-8" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       echo "Type=XSession" >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       #TODO: Fix path
-      echo "Exec=/path/to/the/execfile/${image}" \
+      echo "Exec=${vmexecdir}/runscripts/${i}/${image}" \
                 >> ${vmdir}/xdmsessions/${i}/${image}.desktop
       echo "Name=${short_description}" \
                 >> ${vmdir}/xdmsessions/${i}/${image}.desktop
@@ -227,18 +237,19 @@ for xml in *.xml;do
           -e "s/vmostype=\"CHANGEIT\"/vmostype=\"${os}\"/" \
           -e "s/network=\"CHANGEIT\"/network=\"${network}\"/" \
       ${templatevmware} \
-      > ${vmdir}/runscripts/${i}/${image}.runvmware
+      > ${vmdir}/runscripts/${i}/${image}.vmware
+      chmod 755 ${vmdir}/runscripts/${i}/${image}.vmware
 
 
       # If we have a priority defined we rename the file
       if [ ${priority} ]; then
-        mv ${vmdir}/runscripts/${i}/${image}.runvmware \
-            ${vmdir}/runscripts/${i}/${priority}_${image}.runvmware
+        mv ${vmdir}/runscripts/${i}/${image}.vmware \
+            ${vmdir}/runscripts/${i}/${priority}_${image}.vmware
       fi
 
     
       # Xdialog menu entrys
-      echo -e "\"${vmdir}/runscripts/${i}/${image}.vmware\" \\
+      echo -e "\"${vmexecdir}/runscripts/${i}/${image}.vmware\" \\
             \"${short_description}\" \\
             \"${long_description}\" \\" \
             > ${vmdir}/xdialog-files/${i}/${image}.xdialog
@@ -259,6 +270,7 @@ for i in ${vmdir}/xdialog-files/*; do
   cat ${i}/*.xdialog >> ${i}/xdialog.sh
   #closing bracket as last line invoked with \
   echo ")" >> ${i}/xdialog.sh
+  chmod 755 ${i}/xdialog.sh
 done
 
 
