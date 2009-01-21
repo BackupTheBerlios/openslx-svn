@@ -279,9 +279,6 @@ sub addClientToConfigDB
 	if ($clientData->{mac} !~ m[^(?:[[:xdigit:]][[:xdigit:]]:){5}?[[:xdigit:]][[:xdigit:]]$]) {
 		die _tr("unknown MAC-format given, expected something like '01:02:03:04:05:06'!\n");
 	}
-	if (!length($clientData->{boot_type})) {
-		$clientData->{boot_type} = 'pxe';
-	}
 
 	if ($openslxDB->fetchClientByFilter({ 'name' => $clientData->{name} })) {
 		die _tr("the client '%s' already exists in the DB, giving up!\n",
@@ -335,22 +332,6 @@ sub addSystemToConfigDB
 			  }
 			  split '\s*,\s*', $systemData->{clients};
 		delete $systemData->{clients};
-	}
-
-	if (!length($systemData->{kernel})) {
-		$systemData->{kernel} = 'vmlinuz';
-	}
-	if (!length($systemData->{label})) {
-		$systemData->{label} = "$systemData->{name}";
-	}
-	if (!length($systemData->{ramfs_debug_level})) {
-		$systemData->{ramfs_debug_level} = '0';
-	}
-	if (!length($systemData->{ramfs_use_glibc})) {
-		$systemData->{ramfs_use_glibc} = '0';
-	}
-	if (!length($systemData->{ramfs_use_busybox})) {
-		$systemData->{ramfs_use_busybox} = '1';
 	}
 
 	if ($openslxDB->fetchSystemByFilter({ 'name' => $systemData->{name} })) {
