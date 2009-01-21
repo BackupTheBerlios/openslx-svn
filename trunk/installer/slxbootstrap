@@ -11,27 +11,9 @@ test -f /etc/slxbootstrap.conf
 
 test "${SLX_INST_SOURCE_PACKAGE_SUBDIR}" && \
 	SLX_INST_SOURCE_PACKAGE_SUBDIR="/${SLX_INST_SOURCE_PACKAGE_SUBDIR}"
-test "${SLX_KERNEL_ARCH}" || \
-	SLX_KERNEL_ARCH="${SLX_INST_ARCH}"
 
 download_file () {
-	case "${file}" in
-		*.deb) : ;;
-		*)
-			if test "${file##*.}" = 'noarch'; then
-				file="${file}.rpm"
-				test "${SLX_INST_SOURCE_PACKAGE_ARCHDIR}" && \
-					arch_sub_dir='/noarch'
-			elif test "${file##*.}" = 'SLX_KERNEL_ARCH'; then
-				file="${file%SLX_KERNEL_ARCH}${SLX_KERNEL_ARCH}.rpm"
-			else
-				file="${file}.${SLX_INST_ARCH}.rpm"
-				test "${SLX_INST_SOURCE_PACKAGE_ARCHDIR}" && \
-					arch_sub_dir="/${SLX_INST_ARCH}"
-			fi
-		;;
-	esac
-	wget "${SLX_INST_SOURCE_BASEURL}${SLX_INST_SOURCE_PACKAGE_SUBDIR}${arch_sub_dir}/${file}"
+	wget "${SLX_INST_SOURCE_BASEURL}${SLX_INST_SOURCE_PACKAGE_SUBDIR}/${file}"
 	if test $? != 0; then
 		if test "${SLX_BOOTSTRAP_FAIL_WGET}" = "no"; then
 			continue
