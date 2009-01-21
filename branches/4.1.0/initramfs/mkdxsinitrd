@@ -53,6 +53,7 @@ D_XFONTPATH="<set in ~/distro-config/distro file>"
 D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
 # read in the global settings
 SLX_CONFIG_PATH=@@@SLX_CONFIG_PATH@@@
+SLX_SHARE_PATH=@@@SLX_SHARE_PATH@@@
 [ -f $SLX_SHARE_PATH/settings.default ] && \
    . $SLX_SHARE_PATH/settings.default
 [ -f $SLX_CONFIG_PATH/settings ] && \
