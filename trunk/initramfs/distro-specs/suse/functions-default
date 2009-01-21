@@ -513,7 +513,13 @@ rerun\n# the mkdxsinitrd script to get them applied\n\
   ;;
 esac
 }
-# Xorg variable settings. Lots of stuff changes for newer Xorg servers
+# Xorg variable settings. Lots of stuff changed since 10.2
 displayvars () {
-synapticsdrv="/usr/X11R6/lib/modules/input/synaptics_drv.o"
+Files='\tModulePath\t"/etc/X11/modules"\n
+\tModulePath\t"/usr/lib/xorg/modules"\n
+\tFontPath\t"/usr/share/fonts/misc/:unscaled"\n
+\tFontPath\t"/usr/share/fonts/75dpi/:unscaled"\n
+\tFontPath\t"/usr/share/fonts/100dpi/:unscaled"'
+synapticsdrv="/usr/lib/xorg/modules/input/synaptics_drv.so"
 }
+

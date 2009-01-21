@@ -34,3 +34,7 @@ PROGRAM=\"/var/X11R6/bin/vm-udev\", OPTIONS=\"ignore_device\"\n\
 SUBSYSTEM==\"usb\", ACTION==\"remove\", PROGRAM=\"/var/X11R6/bin/vm-udev\"" \
   >> /mnt/etc/udev/rules.d/01-udev-vm.rules
 }
+# Xorg variable settings. Lots of stuff changes for newer Xorg servers
+displayvars () {
+synapticsdrv="/usr/X11R6/lib/modules/input/synaptics_drv.o"
+}
