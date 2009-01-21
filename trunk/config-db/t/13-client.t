@@ -131,7 +131,7 @@ ok(
 );
 is(@clients1And3, 2, 'should have got 2 clients');
 # now sort by ID and check if we have really got 1 and 3
-@clients1And2 = sort { $a->{id} cmp $b->{id} } @clients1And3;
+@clients1And3 = sort { $a->{id} cmp $b->{id} } @clients1And3;
 is($clients1And3[0]->{id}, 1, 'first id should be 1');
 is($clients1And3[1]->{id}, 3, 'second id should be 3');
 
@@ -147,7 +147,7 @@ is($client3, undef, 'should not get cli-nr-3');
 # try to fetch multiple occurrences of the same client, combined with
 # some unknown IDs
 ok(
-	my @clients1And3 = $configDB->fetchClientByID([ 1, 21, 4-1, 1, 4, 1, 1 ]), 
+	@clients1And3 = $configDB->fetchClientByID([ 1, 21, 4-1, 1, 4, 1, 1 ]), 
 	'fetch a complex set of clients by ID'
 );
 is(@clients1And3, 2, 'should have got 2 clients');
