@@ -284,13 +284,9 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   # define a variable where gdm/kdm should look for additional sessions
   export vmsessions=/var/lib/vmware/vmsessions
   # create default.desktop for kdm
-  echo '[Desktop Entry]
-  Encoding=UTF-8
-  Name=Default
-  Name[de]=Standard
-  Exec=defaultwm
-  TryExec=/usr/X11R6/bin/defaultwm
-  Type=Application' >/mnt/etc/X11/sessions/default.desktop
+  echo -e "[Desktop Entry]\nEncoding=UTF-8\nName=Default\n\
+Name[de]=Standard\nExec=defaultwm\nTryExec=/var/X11R6/bin/defaultwm\n\
+Type=Application" >/mnt/etc/X11/sessions/default.desktop
 fi
 
 #######################################################################
@@ -398,7 +394,7 @@ resmgr revoke nobody\nresmgr logout tty7\nkillall X" \
 /var/X11R6/bin/kiosk &>/dev/null &" >>/mnt/etc/${D_INITDIR}/boot.ld
       cp /etc/startgui /mnt/var/X11R6/bin
       chmod a+x /mnt/var/X11R6/bin/kiosk /mnt/var/X11R6/bin/startgui
-      rm /mnt/tmp/kiosk 2>/dev/null
+      rm /mnt/var/run/kiosk 2>/dev/null
     ;;
   esac
   # enable runlevel 5 (X11 gui under SuSE linux)
