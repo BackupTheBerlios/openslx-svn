@@ -35,6 +35,11 @@ Kombination mit IPAPPEND (PXE)\n  o.ae. oder DHCP!"
 init_errnwad="  Konnte die Netzwerk-Adapter, die durch den slx/mkramfs bzw. \
 mkdxsinitrd-Aufruf definiert\n  wurden, nicht laden. Bitte erneut aufrufen \
 und die passenden Module auflisten\n  (ohne Endung .ko)."
+init_wlanf="  Unable to configure the WLAN interface."
+init_2eif="  You seem to have more than one active (=module loaded) ethernet \
+interfaces\n  installed. This might induce problems, if your client started \
+PXE via one\n  interface, but tries to communicate over the other in linux \
+mode. Try\n  to reorder your network module list."
 init_errdhcp="  Keine komplette IP-Konfiguration ueber DHCP bekommen. \
 Eventuell sollten Sie\n ueber die Kernel Start Optionen eine Hersteller Code \
 ID (vendor code identifier)\n  (VCI=vci) hinzufuegen."

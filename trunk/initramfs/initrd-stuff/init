@@ -314,7 +314,8 @@ if [ -n "${essid}" ] ; then
   #echo "Starting shell for testing of WLAN setup procedure"
   #/bin/ash
 else
-  : # check here for the active ethernet link
+  # check here for the active ethernet link
+  ip link show dev eth1 >/dev/null 2>&1 && error "$init_2eif" nonfatal
 fi
 
 # set up loopback networking
