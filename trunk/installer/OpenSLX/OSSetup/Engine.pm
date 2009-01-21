@@ -76,7 +76,6 @@ sub initialize
 {
 	my $self = shift;
 	my $vendorOSName = shift;
-	my $protectVendorOSPath = shift;
 	my $actionType = shift;
 
 	if ($vendorOSName !~ m[^([^\-]+\-[^\-]+)(?:\-(.+))?]) {
@@ -141,9 +140,6 @@ sub initialize
 	$self->{'vendor-os-path'}
 		= "$openslxConfig{'stage1-path'}/$self->{'vendor-os-name'}";
 	vlog 1, "vendor-OS will be installed to '$self-vendor-os-path'}'";
-	if ($protectVendorOSPath && -e $self->{'vendor-os-path'}) {
-		die _tr("vendor-OS '%s' already exists, giving up!\n", $self->{'vendor-os-path'});
-	}
 
 	$self->createPackager();
 	$self->createMetaPackager();
@@ -154,26 +150,24 @@ sub installVendorOS
 {
 	my $self = shift;
 
+	my $installInfoFile = "$self->{'vendor-os-path'}/.openslx-install-info";
+	if (-e $installInfoFile) {
+		die _tr("vendor-OS '%s' already exists, giving up!\n", $self->{'vendor-os-path'});
+	}
 	$self->createVendorOSPath();
 
 	$self->setupStage1A();
-	my $pid = fork();
-	if (!$pid) {
-		# child, execute the tasks that involve a chrooted environment:
+	executeInSubprocess( sub {
+		# some tasks that involve a chrooted environment:
 		$self->setupStage1B();
 		$self->setupStage1C();
-		exit 0;
-	}
-
-	# parent, wait for child to do its work inside the chroot
-	waitpid($pid, 0);
-	if ($?) {
-		exit $?;
-	}
+	});
 	$self->stage1C_cleanupBasicVendorOS();
-	$self->setupStage1D();
-	my $installInfoFile = "$self->{'vendor-os-path'}/.openslx-install-info";
-	system("touch $installInfoFile");
+	executeInSubprocess( sub {
+		# another task that involves a chrooted environment:
+		$self->setupStage1D();
+	});
+	slxsystem("touch $installInfoFile");
 		# just touch the file, in order to indicate a proper installation
 	vlog 0, _tr("Vendor-OS <%s> installed succesfully.\n",
 				$self->{'vendor-os-name'});
@@ -365,7 +359,7 @@ sub createVendorOSPath
 {
 	my $self = shift;
 
-	if (system("mkdir -p $self->{'vendor-os-path'}")) {
+	if (slxsystem("mkdir -p $self->{'vendor-os-path'}")) {
 		die _tr("unable to create directory '%s', giving up! (%s)\n",
 				$self->{'vendor-os-path'}, $!);
 	}
@@ -445,7 +439,7 @@ sub setupStage1A
 	# we create *all* of the above folders by creating stage1cDir:
 	my $stage1cDir
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
-	if (system("mkdir -p $stage1cDir")) {
+	if (slxsystem("mkdir -p $stage1cDir")) {
 		die _tr("unable to create directory '%s', giving up! (%s)\n",
 				$stage1cDir, $!);
 	}
@@ -511,7 +505,7 @@ sub stage1A_copyPrerequiredFiles
 		tar --exclude=.svn -cp -C $self->{'distro-info-dir'}/prereqfiles . \\
 		| tar -xp -C $stage1cDir
 	];
-	if (system($cmd)) {
+	if (slxsystem($cmd)) {
 		die _tr("unable to copy folder with pre-required files to folder <%s> (%s)\n",
 				$stage1cDir, $!);
 	}
@@ -531,11 +525,11 @@ sub stage1A_copyTrustedPackageKeys
 		tar --exclude=.svn -cp -C $self->{'distro-info-dir'} trusted-package-keys \\
 		| tar -xp -C $stage1bDir
 	];
-	if (system($cmd)) {
+	if (slxsystem($cmd)) {
 		die _tr("unable to copy folder with trusted package keys to folder <%s> (%s)\n",
 				$stage1bDir, $!);
 	}
-	system("chmod 444 $stage1bDir/trusted-package-keys/*");
+	slxsystem("chmod 444 $stage1bDir/trusted-package-keys/*");
 
 	# install ultimately trusted keys (from distributor):
 	my $stage1cDir
@@ -566,7 +560,7 @@ sub stage1A_createRequiredFiles
 	}
 
 	mkdir "$stage1cDir/dev";
-	if (system("mknod $stage1cDir/dev/null c 1 3")) {
+	if (!-e "$stage1cDir/dev/null" && slxsystem("mknod $stage1cDir/dev/null c 1 3")) {
 		die _tr("unable to create node <%s> (%s)\n", "$stage1cDir/dev/null", $!);
 	}
 }
@@ -670,11 +664,11 @@ sub stage1C_cleanupBasicVendorOS
 
 	my $stage1cDir
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
-	if (system("mv $stage1cDir/* $self->{'vendor-os-path'}/")) {
+	if (slxsystem("mv $stage1cDir/* $self->{'vendor-os-path'}/")) {
 		die _tr("unable to move final setup to <%s> (%s)\n",
 				$self->{'vendor-os-path'}, $!);
 	}
-	if (system("rm -rf $self->{stage1aDir}")) {
+	if (slxsystem("rm -rf $self->{stage1aDir}")) {
 		die _tr("unable to remove temporary folder <%s> (%s)\n",
 				$self->{stage1aDir}, $!);
 	}
@@ -798,14 +792,23 @@ sub downloadFilesFrom
 	my $baseURL = shift;
 
 	my @foundFiles;
+	my @contFlags = ('-c');
+		# default to trying to continue partial downloads
 	foreach my $fileVariantStr (@$files) {
 		next unless $fileVariantStr =~ m[\S];
 		my $foundFile;
 		foreach my $file (split '\s+', $fileVariantStr) {
 			vlog 2, "fetching <$file>...";
-			if (system("wget", "$baseURL/$file") == 0) {
+retry:
+			if (slxsystem("wget", @contFlags, "$baseURL/$file") == 0) {
 				$foundFile = basename($file);
 				last;
+			}
+			if (scalar(@contFlags)) {
+				# server probably doesn't support continuing downloads, so we
+				# remove the continue-flag and retry:
+				shift @contFlags;
+				goto retry;
 			}
 		}
 		if (!defined $foundFile) {

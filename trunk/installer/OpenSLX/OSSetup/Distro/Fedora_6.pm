@@ -48,7 +48,7 @@ sub initDistroInfo
 	$self->{config}->{'repository'} = {
 		'base' => {
 			'urls' => "
-				http://ftp5.gwdg.de/pub/linux/fedora/linux/core/6/i386/os
+				ftp://ftp5.gwdg.de/pub/linux/fedora/linux/core/6/i386/os
 				http://mirror.linux.duke.edu/pub/fedora/linux/core/6/i386/os
 				ftp://www.las.ic.unicamp.br/pub/fedora/linux/core/6/i386/os
 				ftp://sunsite.mff.cuni.cz/pub/fedora/linux/core/6/i386/os
@@ -59,7 +59,7 @@ sub initDistroInfo
 		},
 		'base_update' => {
 			'urls' => '
-				http://ftp-1.gwdg.de/pub/linux/fedora/linux/core/updates/$releasever/$basearch/
+				ftp://ftp5.gwdg.de/pub/linux/fedora/linux/core/updates/$releasever/$basearch/
 			',
 			'name' => 'Fedora Core 6 updates',
 			'repo-subdir' => '',

@@ -100,16 +100,16 @@ chdir($FindBin::RealBin)
 # create ossetup-engine for given distro and start it:
 my $engine = OpenSLX::OSSetup::Engine->new;
 if ($action =~ m[import]i) {
-	$engine->initialize($vendorOSName, 0, 'import');
+	$engine->initialize($vendorOSName, 'import');
 	if (!-e $engine->{'vendor-os-path'}) {
 		die _tr("'%s' doesn't exist, giving up!\n", $engine->{'vendor-os-path'});
 	}
 	$engine->addInstalledVendorOSToConfigDB();
 } elsif ($action =~ m[update]i) {
-	$engine->initialize($vendorOSName, 0, 'update');
+	$engine->initialize($vendorOSName, 'update');
 	$engine->updateVendorOS();
 } elsif ($action =~ m[install]i) {
-	$engine->initialize($vendorOSName, 1, 'install');
+	$engine->initialize($vendorOSName, 'install');
 	$engine->installVendorOS();
 } elsif ($action =~ m[clone]i) {
 	if (!length($source)) {
@@ -118,7 +118,7 @@ if ($action =~ m[import]i) {
 	if ($source !~ m[^.+::?.+$]) {
 		die _tr("Unkown source format given, expected '<hostname>:<path>' or '<hostname>::<module>'!\n");
 	}
-	$engine->initialize($vendorOSName, 0, 'clone');
+	$engine->initialize($vendorOSName, 'clone');
 	$engine->cloneVendorOS($source);
 }
 

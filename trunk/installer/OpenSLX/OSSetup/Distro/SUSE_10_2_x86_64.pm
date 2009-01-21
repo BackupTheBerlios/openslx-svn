@@ -55,7 +55,7 @@ sub initDistroInfo
 	$self->{config}->{'repository'} = {
 		'base' => {
 			'urls' => "
-				http://ftp.gwdg.de/pub/opensuse/distribution/10.2/repo/oss
+				ftp://ftp.gwdg.de/pub/opensuse/distribution/10.2/repo/oss
 				ftp://suse.inode.at/opensuse/distribution/10.2/repo/oss
 				http://mirrors.uol.com.br/pub/suse/distribution/10.2/repo/oss
 				ftp://klid.dk/opensuse/distribution/10.2/repo/oss
@@ -67,7 +67,7 @@ sub initDistroInfo
 		},
 		'base_update' => {
 			'urls' => "
-				http://ftp.gwdg.de/pub/suse/update/10.2
+				ftp://ftp.gwdg.de/pub/suse/update/10.2
 			",
 			'name' => 'openSUSE 10.2 updates',
 			'repo-subdir' => '',
