@@ -2,9 +2,10 @@
 # in general SuSE base definitions ...  General changes should be done there,
 # version specific changes for the 10.1 go here.
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 05-09-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 27-09-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
+# (c) 2006 - OpenSLX.ORG Project
 
 # some specific stuff to initialize
 preinit () {
@@ -16,7 +17,8 @@ for i in usb_id scsi_id vol_id edd_id ata_id path_id hwup ifup ; do
   echo -e "#!$shell\n:" >/sbin/$i
 done
 mkdir /lib/udev /usr/sbin
-for i in idedma.sh mount.sh rename_netiface create_floppy_devices ; do
+for i in idedma.sh mount.sh rename_netiface \
+         firmware.sh create_floppy_devices ; do
   echo -e "#!$shell\n:" >/lib/udev/$i
 done
 echo -e "#!$shell\n:" >/usr/sbin/alsactl

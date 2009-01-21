@@ -1,14 +1,12 @@
-# Description:  configuration script for general SuSE to configure linux 
-#               diskless clients (included by init, hwautocfg, servconfig
-#               within initial ramdisk after inclusion of the main 
-#               functions file). This file is the main base for the several
-#               SuSE distro versions
+# configuration script for general SuSE to configure linux diskless clients 
+# (included by init, hwautocfg, servconfig within initial ramdisk after 
+# inclusion of the main functions file). This file is the main base for the
+# several SuSE distro versions
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-07-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 29-07-2006
 #
-# Copyright:    (c) 2006 - RZ Universitaet Freiburg
-# 
-# Version:      0.3.3a
+# (c) 2006 - RZ Universitaet Freiburg
+# (c) 2006 OpenSLX.org Project
 
 # empty functions are defined at the beginning of /etc/functions
 

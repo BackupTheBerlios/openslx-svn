@@ -436,6 +436,7 @@ else
   # fixme!!!! just use the relative path from that here:
   # the variable is nowhere to be seen, so it cannot be used here!?!?
   cfgdir="/tftpboot/client-conf"
+  # cfgdir="${SLX_TFTPBOOT_PATH}" # future setting
   local tftpserver=$serverip
   # try to get configuration files successively; start with distro client
   # and try last distro default ...

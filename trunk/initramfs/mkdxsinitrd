@@ -54,6 +54,12 @@ D_INITSCRIPTS="<set in ~/distro-config/distro file>"
 D_XF86CONFFILE="<set in ~/distro-config/distro file>"
 D_XFONTPATH="<set in ~/distro-config/distro file>"
 D_DEFAULTCOUNTRY="<set in ~/distro-config/distro file>"
+# read in the global settings
+#. /etc/opt/openslx/settings.default # temporarily
+# [ -f @@@SLX_CONFIG_PATH@@@/settings.default ] && \
+#    . @@@SLX_CONFIG_PATH@@@/settings.default
+# [ -f @@@SLX_CONFIG_PATH@@@/settings.local ] && \
+#    . @@@SLX_CONFIG_PATH@@@/settings.local
 
 #########################################################################
 # End of global variable declaration, nothing needed to be changed at
@@ -179,6 +185,7 @@ copy_distro_stuff() {
   # fixme!! files should be taken from /usr/share/openslx/distro-specs
   cat distro-specs/$1/config-default >${INSTDIR}/etc/sysconfig/config
   cat distro-specs/$1/config-$2 >>${INSTDIR}/etc/sysconfig/config
+  echo "SLX_TFTPBOOT_PATH=${SLX_TFTPBOOT_PATH}" >>${INSTDIR}/etc/sysconfig/config
   cat distro-specs/$1/functions-default >${INSTDIR}/etc/distro-functions
   cat distro-specs/$1/functions-$2 >>${INSTDIR}/etc/distro-functions
   # would be cool not to copy .svn here ...

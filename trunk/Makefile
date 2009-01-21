@@ -93,6 +93,10 @@ install:
 	       -p $(SLX_TFTPBOOT_PATH) \
 	       -p $(SLX_SHARE_PATH)/themes
 	@cp initramfs/{mkdxsinitrd,slxmkramfs} $(SLX_BIN_PATH)
+	# sed -e "s,@@@SLX_TFTPBOOT_PATH@@@,$(SLX_TFTPBOOT_PATH)" \
+	#  -i $(SLX_BIN_PATH)/mkdxsinitrd
+	# sed -e "s,@@@SLX_TFTPBOOT_PATH@@@,$(SLX_TFTPBOOT_PATH)" \
+	#  -i $(SLX_BIN_PATH)/slxmkramfs  
 	@chmod u+x $(SLX_BIN_PATH)/{mkdxsinitrd,slxmkramfs}
 	@ln -sf $(SLX_BIN_PATH)/mkdxsinitrd $(USR_BIN)/
 	@ln -sf $(SLX_BIN_PATH)/slxmkramfs $(USR_BIN)/

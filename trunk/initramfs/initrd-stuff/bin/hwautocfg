@@ -3,10 +3,10 @@
 # universal (distro independent) hardware autoconfiguration script for 
 # OpenSLX linux diskless clients, using hwconfig from knoppix as base tool 
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 19-09-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 27-09-2006
 #
 # (c) 2003 - 2006 - RZ Universitaet Freiburg
-# (c) 2006 - OpenSLX.org
+# (c) 2006 - OpenSLX.org Project
 
 # local functions used within hwautocfg
 displaysetup () {
@@ -296,7 +296,7 @@ for DRIVER in ohci-hcd uhci-hcd ehci-hcd ohci1394; do
     DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
 done
 # load usbhid (for USB keyboard/mouse) or remove usbcore module if USB 
-# not present
+# is not present
 if [ -n "$USB" ] ; then
   modprobe ${MODPRV} usbhid &
 else rmmod usbcore
@@ -315,6 +315,8 @@ for DRIVER in yenta_socket i82365 pd6729 tcic; do
     PCMCIA="yes"; }
 done
 # should we check for card reader modules too?
+# newer kernels support some of the major multicard readers which could
+# be found in some barebone systems like Pundits or in many laptops
 
 if [ -n "${PCMCIA}" ] ; then
   modprobe ${MODPRV} ds
