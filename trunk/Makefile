@@ -9,7 +9,7 @@
 
 # the following defaults should be filled via 'configure'
 # and each of them can be overriden by setting the environment variable
-# in the calling shell
+# in the shell that executes this Makefile
 ifeq ($(USR_BIN_PATH),)
 	USR_BIN_PATH = /usr/bin
 endif
@@ -85,7 +85,6 @@ install:
 	@echo "Installing OpenSLX project files"
 	@mkdir -p $(SLX_CONFIG_PATH) \
 	       -p $(SLX_BIN_PATH) \
-	       -p $(SLX_SHARE_PATH)/distro-specs \
 	       -p $(SLX_SHARE_PATH)/templates \
 	       -p $(SLX_SHARE_PATH)/initramfs \
 	       -p $(SLX_PRIVATE_PATH)/config/default/initramfs \
@@ -95,23 +94,35 @@ install:
 	       -p $(SLX_PUBLIC_PATH) \
 	       -p $(SLX_TFTPBOOT_PATH) \
 	       -p $(SLX_SHARE_PATH)/themes
+
+	@# copy initramfs generator scripts (and inject SLX_CONFIG_PATH on the way):
 	@cp initramfs/{mkdxsinitrd,slxmkramfs} $(SLX_BIN_PATH)
 	@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
 	  -i $(SLX_BIN_PATH)/mkdxsinitrd
 	@sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
 	  -i $(SLX_BIN_PATH)/slxmkramfs
-	@chmod u+x $(SLX_BIN_PATH)/{mkdxsinitrd,slxmkramfs}
-	@ln -sf $(SLX_BIN_PATH)/mkdxsinitrd $(USR_BIN)/
-	@ln -sf $(SLX_BIN_PATH)/slxmkramfs $(USR_BIN)/
-	@cp config-db/slxconfig-demuxer.pl $(SLX_BIN_PATH)/
-	@cp -r config-db/OpenSLX $(SLX_BIN_PATH)/
-	@ln -sf $(SLX_BIN_PATH)/slxconfig-demuxer.pl $(USR_BIN)/
-	@cp -a initramfs/initrd-stuff/* $(SLX_SHARE_PATH)/initramfs
-	@cp -a initramfs/distro-specs/* $(SLX_SHARE_PATH)/distro-specs
+
+	@# copy all PERL-scripts from config-db and their required modules:
+	@cp config-db/slx* $(SLX_BIN_PATH)/
+	@tar --exclude=.svn -cp -C config-db OpenSLX | tar -xp -C $(SLX_BIN_PATH)
+
+	@# link all binaries & scripts into user-path:
+	@ln -sf $(SLX_BIN_PATH)/slx* $(USR_BIN_PATH)/
+	@ln -sf $(SLX_BIN_PATH)/mkdxsinitrd $(USR_BIN_PATH)/
+
+	@# copy shareable data:
+	@cd initramfs/initrd-stuff; tar --exclude=.svn -cp * | \
+	  tar -xp -C $(SLX_SHARE_PATH)/initramfs; cd ../..
+	@tar --exclude=.svn -cp -C initramfs distro-specs | \
+	  tar -xp -C $(SLX_SHARE_PATH)
 	@cp -a installer/default_files/machine-setup.default \
 	  $(SLX_SHARE_PATH)/templates
-	@cp -a installer/default_files/tftpboot $(SLX_SHARE_PATH)
-	@cp -a theming/* $(SLX_SHARE_PATH)/themes
+	@tar --exclude=.svn -cp -C installer/default_files tftpboot | \
+	  tar -xp -C $(SLX_SHARE_PATH)
+	@cd theming; tar --exclude=.svn -cp * | \
+	  tar -xp -C $(SLX_SHARE_PATH)/themes; cd ..
+
+	@# create pre-/postinit scripts for us in initramfs:
 	@echo -e "#!/bin/sh\n#\n# This script allows the local admin to \
 extend the\n# capabilities at the beginning of the initramfs (stage3). \
 The toolset is rather\n# restricted and you have to keep in mind that \
@@ -124,6 +135,8 @@ rootfs has the\n# prefix '/mnt'. But you might use some special slx \
 functions via\n# inclusion: '. /etc/functions' ..." \
 	  > $(SLX_PRIVATE_PATH)/config/default/initramfs/postinit.local
 	@chmod u+x $(SLX_PRIVATE_PATH)/config/default/initramfs/*init.local
+
+	@# create complete default settings and empty local settings file:
 	@echo -e "# default setup for OpenSLX-installation\
 \nSLX_BASE_PATH=${SLX_BASE_PATH}\
 \nSLX_BIN_PATH=${SLX_BIN_PATH}\
@@ -139,9 +152,13 @@ functions via\n# inclusion: '. /etc/functions' ..." \
 	  > $(SLX_CONFIG_PATH)/settings.default
 	@echo -e "# local setup for openslx (overrides settings.default)\n" \
 	  > $(SLX_CONFIG_PATH)/settings.local
-	@find $(SLX_SHARE_PATH) -depth -regex ".*/\..*" -print0 | xargs -0 rm -rf {}
-	@chmod a+w $(SLX_PUBLIC_PATH)/tftpboot
-	@chmod a+w $(SLX_PRIVATE_PATH)/db
+
+	@# create slxversion script:
+	@OPENSLX_VERSION_SVNREV=$$(svnversion) . VERSIONS; \
+	  echo "echo $${OPENSLX_VERSION_STRING}" \
+	    > ${SLX_BIN_PATH}/slxversion
+	@chmod a+x ${SLX_BIN_PATH}/slxversion
+	@ln -sf $(SLX_BIN_PATH)/slxversion $(USR_BIN_PATH)/
 
 vmware_install:
 	@echo "Installing VMware files to $(SLX_VMWARE_PATH)"
@@ -150,11 +167,12 @@ vmware_install:
 	@cp -a vmware/* $(SLX_VMWARE_PATH)/templ/
 	@echo -e "Please configure your exports (add $(SLX_VMWARE_PATH) to your list).\nCopy your *.vmdk files into $(SLX_VMWARE_PATH). For interactive mode add for each virtual machine (*.vmdk) a .desktop file into ./vmsessions (example file $(SLX_VMWARE_PATH)/templ/desktop.template). Don't forget to install Xdialog!"
 
-#uninstall:
-#	@echo -e "Uninstalling openslx.org project files but keeping configs \
-#and stage1\nfiles (please remove manually)"
-#	@rm -rf $(SLX_SHARE_PATH)
-#	@rm $(USE_BIN_PATH)/{mkdxsinitrd,slxmkramfs}
+uninstall:
+	@echo -e "Uninstalling openslx.org project files but keeping configs \
+and stage1\nfiles in $SLX_PRIVATE_PATH (please remove manually)"
+	@rm -rf $(SLX_BASE_PATH)
+	@rm -rf $(SLX_PUBLIC_PATH)
+	@rm $(USR_BIN_PATH)/{mkdxsinitrd,slx*}
 
 clean:
 	@echo "Cleanup OpenSLX source directory "
