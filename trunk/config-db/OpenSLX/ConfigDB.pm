@@ -806,6 +806,15 @@ sub aggregatedSystemFileInfosOfSystem
 	my $kernelPath
 		= "$openslxConfig{'private-path'}/stage1/$vendorOS->{path}";
 
+	my $exportURI = $system->{'export_uri'};
+	if ($exportURI !~ m[\w]) {
+		# auto-generate export_uri if none has been given:
+		my $type = $system->{'export_type'};
+		my $serverIpToken = '@@@server_ip@@@';
+		$exportURI
+			= "$type://$serverIpToken$openslxConfig{'public-path'}/$type/$vendorOS->{path}";
+	}
+
 	my @variantIDs = fetchSystemVariantIDsOfSystem($confDB, $system->{id});
 	my @variants = fetchSystemVariantsByID($confDB, \@variantIDs);
 
@@ -814,6 +823,7 @@ sub aggregatedSystemFileInfosOfSystem
 		next if !length($sys->{kernel});
 		my %info = %$sys;
 		$info{'kernel-file'} = "$kernelPath/$sys->{kernel}";
+		$info{'export-uri'} = $exportURI;
 		if (!defined $info{'name'}) {
 			# compose full name and label for system-variant:
 			$info{'name'} = "$system->{name}-$info{name_addition}";

@@ -43,6 +43,7 @@ foreach my $id (1..10) {
 		'ramfs_fsmods' => ($id % 3)==2 ? 'nbd ext3 nfs reiserfs xfs' : '',
 		'kernel' => "boot/vmlinuz-2.6.13-15-default",
 		'kernel_params' => "splash=silent",
+		'export_type' => 'nfs',
 	};
 }
 addSystem($openslxDB, \@systems);

@@ -8,6 +8,7 @@ use lib $FindBin::Bin;
 use Fcntl qw(:DEFAULT :flock);
 use File::Basename;
 use Getopt::Long qw(:config pass_through);
+
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:access :aggregation :support);
 
@@ -205,7 +206,7 @@ sub writePXEMenus
 				my $append = $system->{kernel_params};
 				$append .= " initrd=$extSysID/initialramfs";
 				$append .= " $clientAppend";
-				$append .= " rootfs=nfs:///srv/openslx/nfsroot/suse-10.0";
+				$append .= " rootfs=$info->{'export-uri'}";
 				print PXE "LABEL openslx-$extSysID\n";
 #				print PXE "\tMENU DEFAULT\n";
 				print PXE "\tMENU LABEL ^$info->{label}\n";
