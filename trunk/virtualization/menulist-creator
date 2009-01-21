@@ -27,6 +27,9 @@ vmdir="." && cd ${vmdir}
 # template for runvmware
 templatevmware="${vmdir}/templates/runvmware-v2"
 
+# delete all priority files
+rm -rf ${vmdir}/runscripts/${i}/[0-9]_*.runvmware
+
 # Take all xml files and work with them
 for xml in *.xml;do
   
@@ -137,6 +140,8 @@ for xml in *.xml;do
     exit 0
   fi
 
+  # Get priority, use it for important Images in Xdialog
+  priority=$(grep "priority param=\"" ${xml} | awk -F "\"" '{print $2}')
   
   ##############################################################################
   ## main part,
@@ -223,6 +228,14 @@ for xml in *.xml;do
           -e "s/network=\"CHANGEIT\"/network=\"${network}\"/" \
       ${templatevmware} \
       > ${vmdir}/runscripts/${i}/${image}.runvmware
+
+
+      # If we have a priority defined we rename the file
+      if [ ${priority} ]; then
+        mv ${vmdir}/runscripts/${i}/${image}.runvmware \
+            ${vmdir}/runscripts/${i}/${priority}_${image}.runvmware
+      fi
+
     
       # Xdialog menu entrys
       echo -e "\"${vmdir}/runscripts/${i}/${image}.vmware\" \\

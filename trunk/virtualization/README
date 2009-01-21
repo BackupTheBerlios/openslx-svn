@@ -13,7 +13,9 @@ Structure and files:
             runvmware-v2 template, needed by menulist-creator
 - templates/Vorlage_VMWareImageAdministrator.xml:
             example xml file with verbose description
-- templates/
+- templates/xdialog.sh:
+            template with major program configuration of Xdialog
+            needed by menulist-creator
 
 Goal:
 - better documentation of source and virtualisation
