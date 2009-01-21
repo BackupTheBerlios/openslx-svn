@@ -96,11 +96,15 @@ msg () {
 echo -e "$1 info: $2"
 }
 #######################################################################
-# micro sleep - simply loop and delete 1 from the first argument gotten
-# until zero
+# micro sleep - either busybox command or simply loop and delete 1 from 
+# the first argument gotten until zero
 usleep () {
-local count=`expr $1 \* 10`
-while [ $count -gt 0 ] ; do count=`expr $count \- 1` ; done
+if [ -x /bin/usleep ]; then
+  /bin/usleep `expr $1 \* 80000`
+else
+  local count=`expr $1 \* 10`
+  while [ $count -gt 0 ] ; do count=`expr $count \- 1` ; done
+fi
 return 0
 }
 #######################################################################

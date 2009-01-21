@@ -4,7 +4,7 @@
 #               for linux diskless clients (executed within initial
 #               ramdisk) 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 27-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-07-2006
 #               Michael Janczyk, 31-05-2006
 #               Lars Mueller, 23-06-2006
 #               Oliver Tappe, 23-06-2006
@@ -28,7 +28,8 @@
 . /mnt/etc/${D_SYSCONFDIR}/logfile
 
 # heavy debugging output in level 3 and above ...
-[ $DEBUGLEVEL -gt 3 ] && set -x
+[ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 10 -o $DEBUGLEVEL -eq 12 ] && \
+  set -x
 
 #######################################################################
 # copy distro specific scripts, programs, libraries and configs
@@ -267,7 +268,7 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
   #fi
   # generate a runlevel script
   d_mkrlscript init vmware-prep "Starting preparation of vmware environment"
-  sed "s,^#.*,,;/^$/d;s,^,\\t," /etc/vmware-prep >> \
+  sed "s,^#.*,,;/^$/d;s,^,        ," /etc/vmware-prep >> \
     /mnt/etc/${D_INITDIR}/vmware-prep
   d_mkrlscript close vmware-prep ""
   chmod u+x /mnt/etc/${D_INITDIR}/vmware-prep

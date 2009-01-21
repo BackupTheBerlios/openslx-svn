@@ -3,7 +3,7 @@
 # Description:  universal (distro independent) generator for initial
 #               ramdisks for linux diskless clients 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 01-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-07-2006
 #               Nico Dietrich
 #               Felix Endres
 #
@@ -419,10 +419,12 @@ mknod ${INSTDIR}/tmp/kmsg c 1 11 &>/dev/null
 mknod ${INSTDIR}/tmp/ctl b 241 255 &>/dev/null
 
 # test for the existance of busybox
-[ -x busybox -a "$use_busybox" = 1 ] || {
-  unset use_busybox
-  echo "You wanted to include busybox, but did not provide it in \
-initrd/ directory."; }
+if [ "$use_busybox" = 1 ]; then
+  [ -x busybox ] || {
+    unset use_busybox
+    echo "You wanted to include busybox, but did not provide it in \
+  initrd/ directory."; }
+fi
 if [ "$use_busybox" ] ; then
   cp busybox ${INSTDIR}/bin
   for bbins in [ arping ash cat chmod chown chroot cp date \
@@ -433,6 +435,8 @@ if [ "$use_busybox" ] ; then
         umount uname usleep vconfig vi; do
     ln -s /bin/busybox ${INSTDIR}/bin/$bbins
   done
+  echo -e "#!/bin/ash\n/bin/ash $@" > ${INSTDIR}/bin/sh
+  chmod a+x ${INSTDIR}/bin/sh
 else
   # find and copy a shell to be used within initialramfs
   for bbins in bash ash sh; do

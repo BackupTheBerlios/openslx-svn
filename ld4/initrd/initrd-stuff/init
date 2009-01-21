@@ -2,7 +2,7 @@
 # Description:  main script for new type of initial ramdisk for
 #               linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 02-07-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-07-2006
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - odlx.org project
@@ -193,6 +193,7 @@ if [ "${DEBUGLEVEL}" -gt 0 ] ; then
     set -x
     # and the kernel too
     echo "7 7 7 7" >/proc/sys/kernel/printk; }
+  [ "${DEBUGLEVEL}" -gt 10 ] && set +x
 else
   # switch off most of kernel debug output
   echo "0 0 0 0" >/proc/sys/kernel/printk
@@ -315,9 +316,9 @@ if [ -n "${NBD}" ] ; then
     NFSRO=""  
   fi
   # finally mount the block device
-  for i in 50 100 ; do
+  for i in 5 40 60 ; do
     usleep $i
-    mount -n -t $RFST -o $RWRO $RDEV /mnt 2>/dev/null
+    mount -n -t $RFST -o $RWRO $RDEV /mnt 2>/dev/null && break
   done
 fi
 
@@ -477,7 +478,7 @@ postinit
 [ -x /bin/postinit.local ] && /bin/postinit.local
 
 # start a debug shell in higher debug levels
-[ $DEBUGLEVEL -gt 2 ] && start_shell
+[ $DEBUGLEVEL -gt 2 ] && /bin/sh
 
 # unmount the bind mounted modules directory
 for i in 0 40 100 200 300 500 800 1000 1200; do

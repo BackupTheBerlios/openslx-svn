@@ -4,7 +4,7 @@
 #		script for linux diskless clients, using hwconfig from 
 #		knoppix as base tool 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 29-06-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 03-07-2006
 #		Felix Endres
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
@@ -117,7 +117,7 @@ if [ -n "$hw_monitor" ] ; then
   VS=${VS##* }
   SCR_MODES="\"${hw_monitor##* }\""
 else
-  # Gather information about the Monitor capabilities 
+  # gather information about the monitor capabilities 
   screenres > /tmp/screenres
   VERTSR=`cat /tmp/screenres | sed -n '/Vertical Frequency Range/s/[^0-9]* \([0-9-]*\)/\1/p'`
   HORISR=`cat /tmp/screenres | sed -n '/Horizontal Frequency Range/s/[^0-9]* \([0-9-]*\)/\1/p'`
@@ -125,27 +125,22 @@ else
   VS=$VERTSR
   # compute max resolution
   SCR_MODES=`cat /tmp/screenres | sed -n '/Recommended Screen Modes:/s/[^"]*\(.*\)/\1/p'`
-#  # gather monitor information automatically
-#  ddcprobe > /tmp/ddcprobe
-#  hwmsg="Please check the output of ddcprobe. The settings where not \
-#complete\n  or non existant. The $0 script tried for a fully automatic\n\
-#  configuration of display"
 fi
 
-hwmsg="Please check your predefined monitor settings ($hw_monitor): Automatic\n\
-configuration of display"
-if [ -z "$HS" ] ; then error "  $hwmsg timings was attempted, but the \
-horizontal frequency could not be detected. Using default frequency \
-range (${HSYNCRANGE})" nonfatal
+#hwmsg="Please check your predefined monitor settings ($hw_monitor): Automatic\n\
+#configuration of display"
+if [ -z "$HS" ] ; then #error "  $hwmsg timings was attempted, but the \
+#horizontal frequency could not be detected. Using default frequency \
+#range (${HSYNCRANGE})" nonfatal
   HS=${HSYNCRANGE}
 fi
-if [ -z "$VS" ] ; then error "  $hwmsg timings was attempted, but the \
-vertical frequency could not be detected. Using default frequency \
-range (${VSYNCRANGE})" nonfatal
+if [ -z "$VS" ] ; then #error "  $hwmsg timings was attempted, but the \
+#vertical frequency could not be detected. Using default frequency \
+#range (${VSYNCRANGE})" nonfatal
   VS=${VSYNCRANGE}
 fi
-if [ -z "$SCR_MODES" ] ; then error "  $hwmsg resolution was attempted but not \
-established. Using default resolutions (${DEFAULTMODES})" nonfatal
+if [ -z "$SCR_MODES" ] ; then #error "  $hwmsg resolution was attempted but not \
+#established. Using default resolutions (${DEFAULTMODES})" nonfatal
   SCR_MODES=${DEFAULTMODES}
 fi
 monmanual=yes 
@@ -199,7 +194,7 @@ pci/agp bus needed for acceleration." ; }
     ;;
     Module)
       echo -e ${Module} >>$xfc
-      [ x$DRM = "xyes" ] && \
+      #[ "x$DRM" = "xyes" ] && \
         echo -e "\tLoad\t\t\"dri\"" >>$xfc
       [ x$GLX != "xno" ] && \
         echo -e "\tLoad\t\t\"glx\"" >>$xfc
@@ -225,7 +220,7 @@ pci/agp bus needed for acceleration." ; }
     ;;
     Screen)
       echo -e ${Screen} | sed -e "s,CDP,${CDP}," >>$xfc
-      for BPP in 15 16 24 32
+      for BPP in 15 16 24
         do echo -e '\tSubSection "Display"\n\t\tDepth\t'\
           $BPP'\n\t\tModes\t'$SCR_MODES'\n\tEndSubSection' >>$xfc
         [ $BPP = "$CDP" ] && break
@@ -233,6 +228,9 @@ pci/agp bus needed for acceleration." ; }
     ;;
     ServerLayout)
       echo -e ${ServerLayout} >>$xfc
+    ;;
+    DRI)
+      echo -e ${DRI} >>$xfc
     ;;
   esac
   echo -e "EndSection\n" >>$xfc
@@ -252,8 +250,9 @@ done
 . /etc/sysconfig/config
 . /etc/distro-functions
 
-# heavy debugging output in level 3 and above ...
-[ $DEBUGLEVEL -gt 3 ] && set -x
+# heavy debugging output in level 3 and above and specific for 11
+[ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 10 -o $DEBUGLEVEL -eq 11 ] && \
+  set -x
 
 # set X11 configuration file
 if [ -n "${D_XF86CONFFILE}" ] ; then
@@ -339,19 +338,6 @@ for DRIVER in ${NWMODULES}; do
     rmmod ${DRIVER} &
     DRIVERLIST="${DRIVERLIST} ${DRIVER}"; }
 done
-# sound card setup (alsa and oss compatibility drivers)
-if [ -f /etc/sysconfig/sound ] ; then
-  . /etc/sysconfig/sound
-else DRIVER="snd-dummy"
-fi
-# special hack
-#if [ "${DRIVER}" = "snd-atiixp" ] ; then
-#  rmmod snd_atiixp_modem snd_atiixp
-#fi
-modprobe ${MODPRV} ${DRIVER}
-
-DRIVERLIST="${DRIVERLIST} ${DRIVER} "
-modprobe -a ${MODPRV} snd_pcm_oss snd_mixer_oss
 # check for PCMCIA / cardbus stuff
 for DRIVER in yenta_socket i82365 pd6729 tcic; do
   strinfile ${DRIVER} /tmp/hwsetup.info && {
@@ -363,6 +349,18 @@ if [ -n "${PCMCIA}" ] ; then
   #echo "pcmcia=\"yes\"" > config
   modprobe ${MODPRV} ds
 fi
+# sound card setup (alsa and oss compatibility drivers)
+if [ -f /etc/sysconfig/sound ] ; then
+  . /etc/sysconfig/sound
+else DRIVER="snd-dummy"
+fi
+# problem with a specific module not disabled when busybox
+#  rmmod snd_atiixp_modem snd_atiixp
+modprobe ${MODPRV} ${DRIVER}
+DRIVERLIST="${DRIVERLIST} ${DRIVER} "
+modprobe ${MODPRV} snd-pcm-oss 
+modprobe ${MODPRV} snd-mixer-oss
+
 # rerun the knoppix hardware autodetection tool for USB and ide devices
 # like dvd or harddisk - wait a few seconds so hopefully the ide driver
 # is initialized 
@@ -370,13 +368,14 @@ test -f /proc/bus/usb/devices || mount -n -t usbfs usbfs /proc/bus/usb
 [ -n "$IDE" ] && modprobe -q ide_generic 2>/dev/null 
 usleep 10 && hwsetup -v > /tmp/hwsetup.info
 # remaining drivers listed in /tmp/hwsetup.info
+DRIVERLIST="${DRIVERLIST} ps/2 "
 cat /tmp/hwsetup.info| while read LINE ; do
   if strinstr "driver:" "${LINE}"; then
     DRIVER=${LINE##driver: }
     if ! strinstr " ${DRIVER} " "${DRIVERLIST}"; then
-      strinstr "Card:" "${DRIVER}" || strinstr "ps/2" "${DRIVER}" || {
+      strinstr "Card:" "${DRIVER}" || {
         modprobe ${MODPRV} ${DRIVER} &
-        usleep 10; }
+        usleep 8; }
       DRIVERLIST="${DRIVERLIST} ${DRIVER}"
     fi
   fi
@@ -389,9 +388,9 @@ strinfile "genericwheelusb" /tmp/hwsetup.info || \
 # load IDE high level drivers
 if [ -n "$IDE" ] ; then
   # you might want to check /etc/sysconfig/floppy for more info
-  strinfile "ZIP" /tmp/hwsetup.info && modprobe ${MODPRV} ide_floppy
-  strinfile "CDROM" /tmp/hwsetup.info && modprobe ${MODPRV} ide_cd
-  strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} ide_disk
+  strinfile "ZIP" /tmp/hwsetup.info && modprobe ${MODPRV} ide-floppy
+  strinfile "CDROM" /tmp/hwsetup.info && modprobe ${MODPRV} ide-cd
+  strinfile "HD" /tmp/hwsetup.info && modprobe ${MODPRV} ide-disk
 fi
 
 # not rather precise ...
