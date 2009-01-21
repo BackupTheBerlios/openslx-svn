@@ -130,21 +130,21 @@ slxsetup-test-data-simple.pl - Simple OpenSLX test data generator
 
 slxsetup-test-data-simple.pl [options]
 
-  Specific Options:
+  Script Options:
       --clobber           overwrites config-db without asking
 
   OpenSLX Options:
-      --db-basepath=s     basic path to openslx database
-      --db-datadir=s      data folder created under db-basepath
-      --db-spec=s         full DBI-specification of database
-      --db-name=s         name of database
-      --db-type=s         type of database to connect to
-      --locale=s          locale to use for translations
-      --logfile=s         file to write logging output to
+      --base-path=s       basic path to project files
       --bin-path=s        path to binaries and scripts
       --config-path=s     path to configuration files
-      --base-path=s       basic path to project files
+      --db-basepath=s     basic path to openslx database
+      --db-datadir=s      data folder created under db-basepath
+      --db-name=s         name of database
+      --db-spec=s         full DBI-specification of database
+      --db-type=s         type of database to connect to
       --export-path=s     path to root of all exported filesystems
+      --locale=s          locale to use for translations
+      --logfile=s         file to write logging output to
       --private-path=s    path to private data
       --public-path=s     path to public (client-accesible) data
       --share-path=s      path to sharable data
@@ -155,10 +155,11 @@ slxsetup-test-data-simple.pl [options]
   General Options:
       --help              brief help message
       --man               full documentation
+      --version           show version
 
 =head1 OPTIONS
 
-=head2 Script Options
+=head3 Script Options
 
 =over 8
 
@@ -169,7 +170,7 @@ config-db will be wiped!>
 
 =back
 
-=head2 OpenSLX Options
+=head3 OpenSLX Options
 
 =over 8
 
@@ -282,7 +283,7 @@ Default is $SLX_VERBOSE_LEVEL (usually 0, no logging).
 
 =back
 
-=head2 General Options
+=head3 General Options
 
 =over 8
 
@@ -293,6 +294,10 @@ Prints a brief help message and exits.
 =item B<--man>
 
 Prints the manual page and exits.
+
+=item B<--version>
+
+Prints the version and exits.
 
 =back
 
