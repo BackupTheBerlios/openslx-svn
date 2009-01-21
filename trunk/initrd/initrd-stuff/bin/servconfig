@@ -12,7 +12,7 @@
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 #               (c) 2006 - opendiskless.org project
 # 
-# Version:      0.1.2b
+# Version:      0.1.2c
 
 # check for configuration files to source
 
@@ -109,9 +109,12 @@ localization $country
 
 #######################################################################
 # setup passwd and shadow for local system users like root, bin, daemon
-# and nobody ... all other users should be added externally or with the
-# corresponding services
-basepasswd
+# and nobody if no user/admin provided passwd exists ...
+# the root password provided by machine-setup is used only if no passwd
+# file is provided (default case)
+if [ ! -f /rootfs/etc/passwd ] ; then
+  basepasswd
+fi
 
 #######################################################################
 # dns and ip configuration

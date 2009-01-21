@@ -6,13 +6,14 @@
 #		New settings are simply appended, so that they might 
 #		overwrite previously defined variables 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 15-08-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 16-08-2006
 #
 # Copyright:    (c) 2003 - 2006 - RZ Universitaet Freiburg
 # 
 #
 # password of system administrator (root) as crypt -> 'dxs-root'
-# (will be changed soon)
+# (will be changed soon) the password is not used if the admin provides
+# a passwd file via extended config tgz
 root_pw=@@@root_pw@@@
 
 ## name service configuration defaults
