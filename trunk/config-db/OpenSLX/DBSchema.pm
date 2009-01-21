@@ -159,9 +159,6 @@ $DbSchema = {
 		],
 		'settings' => [
 			# system-wide settings
-			'use_absolute_tftp:b',
-								# whether or not the TFTP-server requires the
-								# use of absolute path names
 			'default_nicmods:s.256',
 								# list of default network modules
 		],

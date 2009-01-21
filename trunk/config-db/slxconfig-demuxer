@@ -324,10 +324,6 @@ sub generateInitalRamFS
 	# ...set date initrd has been generated...
 	my ($d, $m, $y) = (localtime)[3,4,5]; $m++; $y+=1900;
 	$slxConf{'slxconf_date'} = sprintf('%04d-%02d-%02d', $y, $m, $d);
-	$slxConf{'slxconf_tftp_prefix'}
-		= $settings->{'use_absolute_tftp'}
-			? "$ENV{SLX_TFTPBOOT_PATH}/"
-			: "";
 	# ...set kernel version...
 	my $kernelFile = readlink($setup->{'kernel-file'});
 	$kernelFile =~ m[-(.+)$];
