@@ -19,7 +19,7 @@ use warnings;
 our (@ISA, @EXPORT, $VERSION);
 
 use Exporter;
-$VERSION = 0.2;
+$VERSION = 1.01;
 @ISA = qw(Exporter);
 
 @EXPORT = qw(
