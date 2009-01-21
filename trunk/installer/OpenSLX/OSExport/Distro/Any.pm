@@ -44,6 +44,9 @@ sub initDistroInfo
 		- /lib/klibc/events/*
 		- /boot/initrd*
 		- /boot/grub
+                + /lib/modules/*/misc/vmblock.o
+                + /lib/modules/*/misc/vmnet.o
+                + /lib/modules/*/misc/vmmon.o
 	";
 }
 

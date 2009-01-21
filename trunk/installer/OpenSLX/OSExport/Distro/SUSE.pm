@@ -72,6 +72,7 @@ sub initDistroInfo
 		- /opt/kde3/share/autostart/SUSEgreeter.desktop
 		- /media/*
 		+ /media
+		+ /lib/modules/*/misc/vmblock.o
 		+ /lib/modules/*/misc/vmnet.o
 		+ /lib/modules/*/misc/vmmon.o
 		- /etc/dhcpd.conf*
