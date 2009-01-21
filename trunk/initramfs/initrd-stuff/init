@@ -139,7 +139,11 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
     # if configuration should not be gathered by dhcp client
     nodhcp)
       nodhcp="yes"
-      echo "nodhcp" > /tmp/dhcp-done
+      echo "nodhcp" >/tmp/dhcp-done
+    ;;
+    nofile)
+      unset file
+      echo "nofile" >/tmp/file-done
     ;;
     # if ldap configuration should be triggered
     ldap)
@@ -152,9 +156,12 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
       rm /tmp/ldap-done
     ;;
     # file source with tftp server and file location on the server
-    file=*)
-      file="yes"
-      filesrc=${opts#file=}
+    file=*|file)
+      if [ "${opts}" != "file" ] ; then
+        fileprot=$(uri_token ${opts#file=} prot)
+        fileserv=$(uri_token ${opts#file=} server)
+        filepath=$(uri_token ${opts#file=} path)
+      fi
     ;;
     # if ld.so.cache should be generated; should be switched on when composing
     # rootfs from more than one source

@@ -276,7 +276,7 @@ elif [ -d "$ROOTDIR/usr/share/splash/themes/${theme}" ]; then
   themes_dir="/usr/share/splash/themes/${theme}"
 fi
 
-#fixme: very ugly ;)
+#fixme: very ugly ;) shouldn't do anything in $ROOTDIR/tmp
 mkdir -p $ROOTDIR/tmp/bootsplash
 cp -a $themes_dir/* $ROOTDIR/tmp/bootsplash
 themes=${themes_dir%bootsplash}
@@ -557,7 +557,7 @@ if [ -z "$FSMODULES" ] ; then
   FSMODULES="nbd nfs"
 fi
 if [ -z "$INITRD_PATH" ] ; then
-  INITRD_PATH="${ROOTDIR}/tmp/slxinitramfs.gz"
+  INITRD_PATH="/tmp/slxinitramfs.gz"
 fi
 
 # put all needed modules into initial ramdisk
