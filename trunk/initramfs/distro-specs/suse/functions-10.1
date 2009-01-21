@@ -2,7 +2,7 @@
 # in general SuSE base definitions ...  General changes should be done there,
 # version specific changes for the 10.1 go here.
 #
-# Dirk von Suchodoletz <dvs@OpenSLX.com>, 27-09-2006
+# Dirk von Suchodoletz <dvs@OpenSLX.com>, 20-11-2006
 #
 # (c) 2006 - RZ Universitaet Freiburg
 # (c) 2006 - OpenSLX.ORG Project
@@ -145,12 +145,23 @@ case "${XMODULE}" in
     # check for needed components
     test -e /mnt/lib/modules/${KERNEL}/kernel/drivers/char/drm/nvidia.ko \
       && test -e /mnt/usr/X11R6/lib/modules/drivers/nvidia_drv.* && {
-        gllib=$(ls /usr/X11R6/lib/libGL.so.1.0.* 2>/dev/null|sed -n "1p")
+        gllib=$(ls /mnt/usr/X11R6/lib/libGL.so.1.0.* 2>/dev/null|sed -n "1p")
         if [ -n "$gllib" ] ; then
-          ln -sf $gllib /mnt/usr/X11R6/lib/libGL.so.1 2>/dev/null
-          XMODULE=nvidia
-        fi
-        }
+          ln -sf ${gllib#/mnt} /mnt/usr/X11R6/lib/libGL.so.1 2>/dev/null
+          # same for GLcore lib
+          gllib=$(ls /mnt/usr/X11R6/lib/libGLcore.so.1.0.* 2>/dev/null|\
+            sed -n "1p")
+          ln -sf ${gllib#/mnt} /mnt/usr/X11R6/lib/libGLcore.so.1 2>/dev/null \
+            || fail=1
+          # load server modules (trick put the path before the official one)
+          testmkd /mnt/etc/X11/modules
+          ln -sf /usr/X11R6/lib/modules/updates/extensions/libglx.so \
+            /mnt/etc/X11/modules/libglx.so || fail=1
+          ln -sf /usr/X11R6/lib/modules/updates/drivers/nvidia_drv.so \
+            /mnt/etc/X11/modules/nvidia_drv.so || fail=1
+          [ -z $fail ] && XMODULE=nvidia
+       fi
+       }
   ;;
 esac
 }
