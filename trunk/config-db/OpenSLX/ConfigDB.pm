@@ -2416,14 +2416,15 @@ none
 
 sub mergeDefaultAttributesIntoSystem
 {
-	my $self   = shift;
-	my $system = shift;
+	my $self       = shift;
+	my $system     = shift;
+	my $originInfo = shift;
 
 	my $defaultSystem = $self->fetchSystemByFilter({name => '<<<default>>>'});
-	mergeAttributes($system, $defaultSystem);
+	mergeAttributes($system, $defaultSystem, $originInfo, 'default-system');
 
 	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
-	pushAttributes($system, $defaultClient);
+	pushAttributes($system, $defaultClient, $originInfo, 'default-client');
 
 	return 1;
 }
@@ -2448,8 +2449,9 @@ none
 
 sub mergeDefaultAndGroupAttributesIntoClient
 {
-	my $self   = shift;
-	my $client = shift;
+	my $self       = shift;
+	my $client     = shift;
+	my $originInfo = shift;
 
 	# step over all groups this client belongs to
 	# (ordered by priority from highest to lowest):
@@ -2466,13 +2468,13 @@ sub mergeDefaultAndGroupAttributesIntoClient
 			3,
 			_tr('merging from group %d:%s...', $group->{id}, $group->{name})
 		);
-		mergeAttributes($client, $group);
+		mergeAttributes($client, $group, $originInfo, "group '$group->{name}'");
 	}
 
 	# merge configuration from default client:
 	vlog(3, _tr('merging from default client...'));
 	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
-	mergeAttributes($client, $defaultClient);
+	mergeAttributes($client, $defaultClient, $originInfo, 'default-client');
 
 	return 1;
 }
@@ -2685,8 +2687,10 @@ none
 
 sub mergeAttributes
 {
-	my $target = shift;
-	my $source = shift;
+	my $target     = shift;
+	my $source     = shift;
+	my $originInfo = shift;
+	my $origin     = shift;
 
 	my $sourceAttrs = $source->{attrs} || {};
 
@@ -2699,6 +2703,9 @@ sub mergeAttributes
 		if (defined $sourceVal && !defined $targetVal) {
 			vlog(3, _tr("merging %s (val=%s)", $key, $sourceVal));
 			$targetAttrs->{$key} = $sourceVal;
+			if (defined $originInfo) {
+				$originInfo->{$key} = $origin;
+			}
 		}
 	}
 
@@ -2729,8 +2736,10 @@ none
 
 sub pushAttributes
 {
-	my $target = shift;
-	my $source = shift;
+	my $target     = shift;
+	my $source     = shift;
+	my $originInfo = shift;
+	my $origin     = shift;
 
 	my $sourceAttrs = $source->{attrs} || {};
 
@@ -2742,6 +2751,9 @@ sub pushAttributes
 		if (defined $sourceVal) {
 			vlog(3, _tr("pushing %s (val=%s)", $key, $sourceVal));
 			$targetAttrs->{$key} = $sourceVal;
+			if (defined $originInfo) {
+				$originInfo->{$key} = $origin;
+			}
 		}
 	}
 
