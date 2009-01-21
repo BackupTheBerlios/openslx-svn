@@ -9,14 +9,14 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # SquashFS.pm
-#	- provides SquashFS-specific overrides of the OpenSLX::OSExport::ExportType 
+#	- provides SquashFS-specific overrides of the OpenSLX::OSExport::ExportType
 #	  API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::FileSystem::SquashFS;
 
 use vars qw($VERSION);
 use base qw(OpenSLX::OSExport::FileSystem::Base);
-$VERSION = 1.01;		# API-version . implementation-version
+$VERSION = 1.01;    # API-version . implementation-version
 
 use strict;
 use Carp;
@@ -32,38 +32,48 @@ use OpenSLX::Utils;
 sub new
 {
 	my $class = shift;
-	my $self = {
-		'name' => 'sqfs',
-	};
+	my $self = {'name' => 'sqfs',};
 	return bless $self, $class;
 }
 
 sub initialize
 {
-	my $self = shift;
-	my $engine = shift;
+	my $self        = shift;
+	my $engine      = shift;
 	my $blockDevice = shift || confess('need to pass in block-device!');
 
-	$self->{'engine'} = $engine;
+	$self->{'engine'}       = $engine;
 	$self->{'block-device'} = $blockDevice;
 	my $exportBasePath = "$openslxConfig{'public-path'}/export";
-	$self->{'export-path'} 
-		= "$exportBasePath/sqfs/$engine->{'vendor-os-name'}";
+	$self->{'export-path'} = "$exportBasePath/sqfs/$engine->{'vendor-os-name'}";
 }
 
 sub exportVendorOS
 {
-	my $self = shift;
+	my $self   = shift;
 	my $source = shift;
 
 	my $includeExcludeList = $self->_determineIncludeExcludeList();
 	# in order to do the filtering as part of mksquashfs, we need to map
 	# our internal (rsync-)filter format to regexes:
-	$includeExcludeList
-		= $self->_mapRsyncFilter2Regex($source, $includeExcludeList);
+	$includeExcludeList =
+	  $self->_mapRsyncFilter2Regex($source, $includeExcludeList);
 	vlog(1, _tr("using include-exclude-filter:\n%s\n", $includeExcludeList));
 	my $target = $self->{'export-path'};
-	$self->_createSquashFS($source, $target, $includeExcludeList);
+
+	my $sourceTime = (stat($source))[9];
+	my $targetTime = (stat($target))[9];
+	vlog(2, "source-time=$sourceTime target-time=$targetTime");
+
+	if (defined $targetTime && $sourceTime < $targetTime) {
+		vlog(
+			0,
+			"!!! creation of squashfs skipped, as vendor-OS hasn't changed since last export!\n" 
+			  . "!!! Use 'touch $source' to force an export."
+		);
+	} else {
+		$self->_createSquashFS($source, $target, $includeExcludeList);
+	}
 	$self->_addBlockDeviceTagToExport($target);
 }
 
@@ -84,10 +94,10 @@ sub purgeExport
 
 sub checkRequirements
 {
-	my $self = shift;
+	my $self         = shift;
 	my $vendorOSPath = shift;
-	my $kernel = shift || 'vmlinuz';
-	my $info = shift;
+	my $kernel       = shift || 'vmlinuz';
+	my $info         = shift;
 
 	$kernel = basename(followLink("$vendorOSPath/boot/$kernel"));
 	if ($kernel !~ m[-(.+)$]) {
@@ -97,14 +107,14 @@ sub checkRequirements
 	my @blockMods;
 	my @blockModNames = $self->{'block-device'}->requiredBlockDeviceModules();
 	foreach my $blockModName (@blockModNames) {
-		my $blockMod = $self->_locateKernelModule(
-			$vendorOSPath,
-			"$blockModName.ko",
-			["$vendorOSPath/lib/modules/$kernelVer/kernel/drivers/block"]
-		);
+		my $blockMod =
+		  $self->_locateKernelModule($vendorOSPath, "$blockModName.ko",
+			["$vendorOSPath/lib/modules/$kernelVer/kernel/drivers/block"]);
 		if (!defined $blockMod) {
-			warn _tr("unable to find blockdevice-module '%s' for kernel version '%s'.",
-					 $blockModName, $kernelVer);
+			warn _tr(
+				"unable to find blockdevice-module '%s' for kernel version '%s'.",
+				$blockModName, $kernelVer
+			);
 			return undef;
 		}
 		push @blockMods, $blockMod;
@@ -112,25 +122,27 @@ sub checkRequirements
 	my $squashfsMod = $self->_locateKernelModule(
 		$vendorOSPath,
 		'squashfs.ko',
-		["$vendorOSPath/lib/modules/$kernelVer/kernel/fs/squashfs",
-		 "$vendorOSPath/lib/modules/$kernelVer/kernel/fs"]
+		[
+			"$vendorOSPath/lib/modules/$kernelVer/kernel/fs/squashfs",
+			"$vendorOSPath/lib/modules/$kernelVer/kernel/fs"
+		]
 	);
 	if (!defined $squashfsMod) {
 		warn _tr("unable to find squashfs-module for kernel version '%s'.",
-				 $kernelVer);
+			$kernelVer);
 		return undef;
 	}
 	push @blockMods, $squashfsMod;
 	if (defined $info) {
 		$info->{'kernel-mods'} = \@blockMods;
-	};
+	}
 	return 1;
 }
 
 sub addExportToConfigDB
 {
-	my $self = shift;
-	my $export = shift;
+	my $self      = shift;
+	my $export    = shift;
 	my $openslxDB = shift;
 
 	$export->{port} = $self->{'block-device'}->getExportPort($openslxDB);
@@ -141,8 +153,8 @@ sub addExportToConfigDB
 
 sub generateExportURI
 {
-	my $self = shift;
-	my $export = shift;
+	my $self     = shift;
+	my $export   = shift;
 	my $vendorOS = shift;
 
 	my $URI = $self->{'block-device'}->generateExportURI($export);
@@ -161,7 +173,7 @@ sub requiredFSMods
 
 sub showExportConfigInfo
 {
-	my $self = shift;
+	my $self   = shift;
 	my $export = shift;
 
 	$self->{'block-device'}->showExportConfigInfo($export);
@@ -173,41 +185,42 @@ sub showExportConfigInfo
 
 sub _createSquashFS
 {
-	my $self = shift;
-	my $source = shift;
-	my $target = shift;
+	my $self               = shift;
+	my $source             = shift;
+	my $target             = shift;
 	my $includeExcludeList = shift;
 
 	system("rm -f $target");
-		# mksquasfs isn't significantly faster if fs already exists, but it
-		# causes the filesystem to grow somewhat, so we remove it in order to
-		# get the smallest FS-file possible.
+	# mksquasfs isn't significantly faster if fs already exists, but it
+	# causes the filesystem to grow somewhat, so we remove it in order to
+	# get the smallest FS-file possible.
 
 	my $baseDir = dirname($target);
 	if (!-e $baseDir) {
 		if (system("mkdir -p $baseDir")) {
 			die _tr("unable to create directory '%s', giving up! (%s)\n",
-					$baseDir, $!);
+				$baseDir, $!);
 		}
 	}
 
 	# dump filter to a file ...
 	my $filterFile = "/tmp/slx-nbdsquash-filter-$$";
-	open(FILTERFILE,"> $filterFile")
-		or die _tr("unable to create tmpfile '%s' (%s)", $filterFile, $!);
+	open(FILTERFILE, "> $filterFile")
+	  or die _tr("unable to create tmpfile '%s' (%s)", $filterFile, $!);
 	print FILTERFILE $includeExcludeList;
 	close(FILTERFILE);
 
 	# ... invoke mksquashfs ...
 	vlog(0, _tr("invoking mksquashfs..."));
-	my $mksquashfsBinary
-		= "$openslxConfig{'base-path'}/share/squashfs/mksquashfs";
+	my $mksquashfsBinary =
+	  "$openslxConfig{'base-path'}/share/squashfs/mksquashfs";
 	my $res = system("$mksquashfsBinary $source $target -ff $filterFile");
 	unlink($filterFile);
-		# ... remove filter file if done
+	# ... remove filter file if done
 	if ($res) {
-		die _tr("unable to create squashfs for source '%s' as target '%s', giving up! (%s)",
-				$source, $target, $!);
+		die _tr(
+			"unable to create squashfs for source '%s' as target '%s', giving up! (%s)",
+			$source, $target, $!);
 	}
 }
 
@@ -218,37 +231,39 @@ sub _determineIncludeExcludeList
 	# Rsync uses a first match strategy, so we mix the local specifications
 	# in front of the filterset given by the package (as the local filters
 	# should always overrule the vendor filters):
-	my $distroName = $self->{engine}->{'distro-name'};
-	my $localFilterFile 
-		= "$openslxConfig{'config-path'}/distro-info/$distroName/export-filter";
+	my $distroName      = $self->{engine}->{'distro-name'};
+	my $localFilterFile =
+	  "$openslxConfig{'config-path'}/distro-info/$distroName/export-filter";
 	my $includeExcludeList = slurpFile($localFilterFile, 1);
 	$includeExcludeList .= $self->{engine}->{distro}->{'export-filter'};
 	$includeExcludeList =~ s[^\s+][]igms;
-		# remove any leading whitespace, as rsync doesn't like it
+	# remove any leading whitespace, as rsync doesn't like it
 	return $includeExcludeList;
 }
 
 sub _mapRsyncFilter2Regex
 {
-	my $self = shift;
-	my $sourcePath = shift;
+	my $self        = shift;
+	my $sourcePath  = shift;
+	my $rsyncFilter = shift;
 
-	return
-		join "\n",
+	return join(
+		"\n",
 		map {
-			if ($_ =~ m[^([-+]\s*)(.+?)\s*$]) {
+			if ($_ =~ m[^([-+]\s*)(.+?)\s*$])
+			{
 				my $action = $1;
-				my $regex = $2;
+				my $regex  = $2;
 				$regex =~ s[\*\*][.+]g;
-					# '**' matches everything
+				# '**' matches everything
 				$regex =~ s[\*][[^/]+]g;
-					# '*' matches anything except slashes
+				# '*' matches anything except slashes
 				$regex =~ s[\?][[^/]?]g;
-					# '*' matches any single char except slash
+				# '*' matches any single char except slash
 				$regex =~ s[\?][[^/]?]g;
-					# '*' matches any single char except slash
+				# '*' matches any single char except slash
 				$regex =~ s[\.][\\.]g;
-					# escape any dots
+				# escape any dots
 				if (substr($regex, 0, 1) eq '/') {
 					# absolute path given, need to extend by source-path:
 					"$action^$sourcePath$regex\$";
@@ -259,15 +274,17 @@ sub _mapRsyncFilter2Regex
 			} else {
 				$_;
 			}
-		}
-		split "\n", shift;
+		  }
+		  split "\n",
+		$rsyncFilter
+	);
 }
 
 sub _locateKernelModule
 {
-	my $self = shift;
+	my $self         = shift;
 	my $vendorOSPath = shift;
-	my $moduleName = shift;
+	my $moduleName   = shift;
 	my $defaultPaths = shift;
 
 	vlog(1, _tr("locating kernel-module '%s'", $moduleName));
@@ -275,7 +292,7 @@ sub _locateKernelModule
 	foreach my $defPath (@$defaultPaths) {
 		vlog(2, "trying $defPath/$moduleName");
 		my $target = followLink("$defPath/$moduleName", $vendorOSPath);
-		return $target		unless !-e $target;
+		return $target unless !-e $target;
 	}
 	# use brute force to search for the newest incarnation of the module:
 	use File::Find;
@@ -286,7 +303,7 @@ sub _locateKernelModule
 		return unless $_ eq $moduleName;
 		if (-M _ < $locationAge) {
 			$locationAge = -M _;
-			$location = $File::Find::name;
+			$location    = $File::Find::name;
 			vlog(2, "located at $location (age=$locationAge days)");
 		}
 	}, "$vendorOSPath/lib/modules";
@@ -298,26 +315,26 @@ sub _locateKernelModule
 
 sub _addBlockDeviceTagToExport
 {
-	my $self = shift;
+	my $self   = shift;
 	my $target = shift;
-	
-	my $tagName = "$target".'@'.lc($self->{'block-device'}->{name});
+
+	my $tagName = "$target" . '@' . lc($self->{'block-device'}->{name});
 	linkFile(basename($target), $tagName);
 }
 
 sub _removeBlockDeviceTagFromExport
 {
-	my $self = shift;
+	my $self   = shift;
 	my $target = shift;
-	
-	my $tagName = "$target".'@'.lc($self->{'block-device'}->{name});
+
+	my $tagName = "$target" . '@' . lc($self->{'block-device'}->{name});
 	slxsystem("rm $tagName");
 	# now find out whether or not there are any other tags left:
 	my $vendorOSName = basename($target);
 	opendir(DIR, dirname($target));
 	my @tags = grep { /^vendorOSName\@/ } readdir(DIR);
 	return @tags ? 0 : 1;
-		# return 1 if no more tags (i.e. it is safe to remove the image)
+	# return 1 if no more tags (i.e. it is safe to remove the image)
 }
 
 1;

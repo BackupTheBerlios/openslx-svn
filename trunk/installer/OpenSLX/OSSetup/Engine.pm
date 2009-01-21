@@ -216,6 +216,7 @@ sub installVendorOS
 	vlog(0, _tr("Vendor-OS '%s' installed succesfully.\n",
 				$self->{'vendor-os-name'}));
 
+	$self->touchVendorOS();
 	$self->addInstalledVendorOSToConfigDB();
 }
 
@@ -282,6 +283,7 @@ sub cloneVendorOS
 					$self->{'vendor-os-name'}));
 	}
 
+	$self->touchVendorOS();
 	$self->addInstalledVendorOSToConfigDB();
 }
 
@@ -300,6 +302,8 @@ sub updateVendorOS
 		$self->changePersonalityIfNeeded();
 		$self->updateStage1D();
 	});
+
+	$self->touchVendorOS();
 	vlog(0, _tr("Vendor-OS '%s' updated succesfully.\n",
 				$self->{'vendor-os-name'}));
 }
@@ -319,6 +323,8 @@ sub startChrootedShellForVendorOS
 		$self->changePersonalityIfNeeded();
 		$self->startChrootedShellInStage1D();
 	});
+
+	$self->touchVendorOS();
 	vlog(0, _tr("Chrooted shell for vendor-OS '%s' has been closed.\n",
 				$self->{'vendor-os-name'}));
 }
@@ -496,6 +502,16 @@ sub createVendorOSPath
 		die _tr("unable to create directory '%s', giving up! (%s)\n",
 				$self->{'vendor-os-path'}, $!);
 	}
+}
+
+sub touchVendorOS
+{
+	my $self = shift;
+
+	# touch root folder, as we are using this folder to determine the
+	# 'age' of the vendor-OS when trying to determine whether or not we
+	# need to re-export this vendor-OS:
+	slxsystem("touch $self->{'vendor-os-path'}");
 }
 
 sub createPackager
