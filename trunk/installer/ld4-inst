@@ -4,7 +4,7 @@
 #               cloning from rsync source for Diskless X Stations (v4.0)
 #
 # Author(s):    Nico Dietrich, 04-04-2006
-#		Dirk von Suchodoletz <dirk@goe.net>, 27-11-2006
+#		Dirk von Suchodoletz <dirk@goe.net>, 30-01-2007
 #               Michael Janczyk, <mj0>, 06-07-2006
 #
 # Copyright:    (c) 2003, 2006 - RZ Universitaet Freiburg
@@ -140,7 +140,7 @@ distro_check() {
       ;;
     esac
     ;;
-    SuSE*|suse*|Suse*|SuSe*|SUSE*|*)
+    SuSE*|suse*|Suse*|SuSe*|SUSE*|opensuse*|*)
     eval "$1=\"suse\""
     case "${!2}" in
       9*)
@@ -149,8 +149,11 @@ distro_check() {
       10.0)
       eval "$2=\"10.0\""
       ;;
-      10*|*)
+      10.1)
       eval "$2=\"10.1\""
+      ;;
+      10.2)
+      eval "$2=\"10.2\""
       ;;
     esac
     ;;
