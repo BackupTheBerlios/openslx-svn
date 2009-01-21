@@ -406,32 +406,28 @@ if [ -n "${nbdmod}" ] ; then
     dnbd2)
       RDEV=/dev/vnbd0
       waitfor "${RDEV}" 20000 || error "$init_nbddev"
-      # first dnbd2 server
-      echo $nbdhost $nbdport > /sys/block/vnbd0/server0/sock
       # check for others in machine-setup and then kernel cmdline
       rootfs="$(sed -n "/rootfs=/p" /etc/machine-setup|sed "s,rootfs=,,;s,\",,g") "
       [ -z "$rootfs" ] && \
         rootfs="$(cat /proc/cmdline|sed "s,.*rootfs=\",,;s,\".*,,") "
       i=0
       while [ "x$nbdhost" != "x" ]; do
+        echo $nbdhost $nbdport > /sys/block/vnbd0/server${i}/sock
         i=$(expr $i + 1)
         rootfs=${rootfs#* }
         nbdsp=$(echo ${rootfs}|sed "s, .*,,")
-        [ -z "$nbdsp" ] && break
         nbdhost=$(uri_token $nbdsp server)
         nbdport=$(uri_token $nbdsp port)
-        echo $nbdhost $nbdport > /sys/block/vnbd0/server${i}/sock
       done
-      cat /sys/block/vnbd0/server*/sock
       echo 1 > /sys/block/vnbd0/config/vid
       echo 1 > /sys/block/vnbd0/config/rid
       echo noop > /sys/block/vnbd0/queue/scheduler
       i=0
       while [ $(cat /sys/block/vnbd0/config/running) != 1 ] ; do
         echo 1 > /sys/block/vnbd0/config/running
-        usleep 50
+        usleep 5000
         i=$(expr $i + 1)
-        if [ $i -ge 100 ] ; then
+        if [ $i -ge 1000 ] ; then
           error "$init_dnbd2s"
           break
         fi
