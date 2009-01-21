@@ -105,6 +105,7 @@ sub fetchLoaderConfigFile
 {
 	my $ldConfFile = shift;
 
+	return unless -e $ldConfFile;
 	my $ldconfFH;
 	if (!open($ldconfFH, '<', $ldConfFile)) {
 		warn(_tr("unable to open file '%s' (%s)", $ldConfFile, $!));
