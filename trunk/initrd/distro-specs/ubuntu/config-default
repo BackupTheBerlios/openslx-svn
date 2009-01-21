@@ -12,10 +12,12 @@
 # D_DIRINBINDMNT - lists of directories to be created in bind mounted rw
 # part of the client filesystem
 # D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# D_RWDIRSINRO - Writable Subdirectories in the RO-Dirs (D_RODIRSINRW)  
 # TempFS usage
 # D_DIRINDXS - directories in client filesystem which should be present 
 # anyhow
 # D_BINDMNT - any code which is specific in bind mount environment
+# D_BINDMPTS - These directories will be created in the ramdisk and movemounted to the root ("/") this will also happen to /var and /etc
 # D_RCDIRS - runlevel directories relative to /etc
 # D_XF86CONFFILE - name and location of XFree/Xorg config file, e.g.
 # /etc/X11/xorg.conf or /etc/X11/XF86config, ...
@@ -33,8 +35,9 @@ pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
 X11/xdm/pixmaps\ndhclient.script\n\
 rc2.d/*\nrc5.d/*"
 D_BINDMPTS="tmp root home"
-D_DIRINBINDMNT="/var/run /var/log /var/tmp /var/lib/gdm"
-D_RODIRSINRW="etc/gconf etc/X11/xkb /var/adm /var/lib/texmf"
+D_DIRINBINDMNT="/var/run /var/log /var/tmp"
+D_RODIRSINRW="etc/gconf etc/X11/xkb /var/adm /var/lib/"
+D_RWDIRSINRO="/var/lib/gdm"
 D_DIRINDXS="/var/X11R6/compose-cache \
 /var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
 /var/lib/pam_devperm /var/lib/bluetooth \

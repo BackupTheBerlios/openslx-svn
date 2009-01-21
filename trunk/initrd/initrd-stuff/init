@@ -380,9 +380,12 @@ elif [ -z "$COWLOOP" ] ; then
   for path in ${D_BINDMPTS} ; do
     mkdir -p ${RWDIR}/${path} >/dev/null 2>&1
     mount -n --bind ${RWDIR}/${path} /mnt/${path}
+    [ ${DEBUGLEVEL} -gt 1 ] && echo "Created ${RWDIR}/${path} and mounted it to /mnt/$path"
   done
   # see above ...
   ldcfg
+  # Save the RO Directories mentioned in the distro-specific
+  # config to a temporary directory. They will lateron be restored 
   for path in ${D_RODIRSINRW}; do
     if [ -d /mnt/${path} ] ; then
       LIST=${path}" "$LIST
@@ -398,7 +401,6 @@ elif [ -z "$COWLOOP" ] ; then
   done
   testmkd ${RWDIR}/var/tmp
   chmod a+rwxt ${RWDIR}/var/tmp >/dev/null 2>&1
-
   echo -e "${D_ETCEXCL} @@@COMETCEXCL@@@" >>/tmp/etc.exclude
   # if ld.so.cache is to be generated then do not copy the file
   [ -z "${NOLDSC}" ] && echo -e "ld.so.cache*" >>/tmp/etc.exclude
@@ -433,6 +435,10 @@ servconfig &
 
 for path in @@@COMDIRINDXS@@@ ${D_DIRINDXS} ${D_DIRINBINDMNT} ; do
   testmkd /mnt/${path}
+done
+# Needed writable subdirs nested in readonly subdirs of writable one
+for path in ${D_RWDIRSINRO}; do
+  mount -n -t tmpfs none /mnt/${path}
 done
 for i in /var/run/utmp /var/log/wtmp /var/log/lastlog /etc/mtab ; do
   echo -n > /mnt/$i
