@@ -2,13 +2,13 @@
 # Description:  main script for new type of initial ramdisk for
 #		linux diskless clients version 4 
 #
-# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 04-02-2006
+# Author(s):    Dirk von Suchodoletz <dirk@goe.net>, 08-02-2006
 #		Bla
 #		Blub
 #
 # Copyright:    (c) 2006 - RZ Universitaet Freiburg
 # 
-# Version:      0.2.1c
+# Version:      0.2.2a
 
 # functions common for all distros
 errmsg="functions file contains a lot of script \
@@ -23,7 +23,7 @@ specific configuration file could not be found" && exit 1 )
 preinit
 date
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
-export date="07-02-2006"
+export date="08-02-2006"
 exec < /dev/console > /dev/console 2>&1
 
 export KERNEL="@@@KERNVER@@@"
@@ -345,7 +345,7 @@ for path in @@@COMDIRINDXS@@@ ${D_DIRINDXS} ${D_DIRINBINDMNT} ; do
   testmkd /mnt/${path}
 done
 for i in /var/run/utmp /var/log/wtmp /var/log/lastlog /etc/mtab ; do
-  echo -n > /mnt$i
+  echo -n > /mnt/$i
 done
 chmod a+rwxt /mnt/tmp /mnt/tmp/scratch 2>/dev/null &
 chown 65534:0 /mnt/var/lib/nobody &
@@ -402,14 +402,15 @@ failed for some\nreason.  You will get some error messages that some files \
 could not be\n  removed." nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1
 mount -n --move /dev /mnt/dev
-cd /mnt
+#cd /mnt
 # kill udevd
 [ -n "${UDEVD_EXPECTED_SEQNUM}" ] && killall -9 udevd 2>/dev/null
 umount -n /proc
 [ -n "${UNIONFS}" ] && mount -n --move /root /mnt/mnt 
-pivot_root . mnt || error "  Could not execute pivot_root due to missing \
-command or wrong\n  parameters given."
-echo "Exiting the initial ramdisk init"
-exec `which chroot` . sh -c 'rm -rf mnt/*; exec /sbin/init' \
-  <dev/console >dev/console 2>&1
-
+# --> pivot_root seems to be deprecated - check for older kernels too
+#pivot_root . mnt || error "  Could not execute pivot_root due to missing \
+#command or wrong\n  parameters given."
+#echo "Exiting the initial ramdisk init"
+#exec `which chroot` . sh -c 'rm -rf mnt/*; exec /sbin/init' \
+#  <dev/console >dev/console 2>&1
+exec run-init -c dev/console /mnt /sbin/init

@@ -16,7 +16,8 @@ preinit () {
 for i in usb_id scsi_id vol_id edd_id hwup ; do
   echo -e "#!/bin/sh\n:" >/sbin/$i
 done
-chmod u+x /sbin/*
+echo -e "#!/bin/sh\n:" >/lib/udev/mount.sh
+chmod u+x /sbin/* /lib/udev/mount.sh
 }
 
 # udev service
