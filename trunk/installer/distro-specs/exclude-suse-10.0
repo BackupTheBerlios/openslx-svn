@@ -2,8 +2,6 @@
 - *.rpmsave
 - *.rpmnew
 - *.YaST2save
-- *.old
-- *.bak
 - /lib/klibc/events/*
 - /boot/initrd*
 - /boot/grub
@@ -19,7 +17,6 @@
 - /var/lib/xdm
 - /var/adm/backup/rpmdb/*
 - /usr/share/vmware/*
-- *lost+found*
 - /media/*
 - /usr/X11R6/bin/BackGround
 - /opt/kde3/share/autostart/SUSEgreeter.desktop

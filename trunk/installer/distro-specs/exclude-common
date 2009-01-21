@@ -30,10 +30,13 @@
 - /root/*
 - /home/*
 - /mnt/*
+- /var/lib/vmware
 - /var/opt/openslx
 - /opt/openslx
 - .svn
 - *~
 - .*.cmd
+- *.old
+- *.bak
 - *lost+found*
 - /*
