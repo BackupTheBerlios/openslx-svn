@@ -8,61 +8,37 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Debian_4_0.pm
-#	- provides Debian-4.0-specific overrides of the OpenSLX OSSetup API.
+# Ubuntu.pm
+#	- provides Ubuntu-specific overrides of the OpenSLX OSSetup API.
 # -----------------------------------------------------------------------------
-package OpenSLX::OSSetup::Distro::Debian_4_0;
+package OpenSLX::OSSetup::Distro::Ubuntu;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::OSSetup::Distro::Debian);
+use base qw(OpenSLX::OSSetup::Distro::Base);
 
 use OpenSLX::Basics;
 
 ################################################################################
 ### implementation
 ################################################################################
-sub new
-{
-	my $class = shift;
-	my $self = {
-		'base-name' => 'debian-4.0',
-	};
-	return bless $self, $class;
-}
-
-sub initDistroInfo
+sub initialize
 {
 	my $self = shift;
-	$self->{config}->{'repository'} = {
-		'base' => {
-			'urls' => "
-			",
-			'name' => '',
-			'repo-subdir' => '',
-		},
-		'base_update' => {
-			'urls' => '
-			',
-			'name' => '',
-			'repo-subdir' => '',
-		},
-	};
+	my $engine = shift;
 
-	$self->{config}->{'package-subdir'} = '';
+	$self->SUPER::initialize($engine);
+	$self->{'packager-type'}       = 'dpkg';
+	$self->{'meta-packager-type'}  = $ENV{SLX_META_PACKAGER} || 'apt';
+	$self->{'stage1c-faked-files'} = [];
+	return;
+}
 
-	$self->{config}->{'prereq-packages'} = "
-	";
-
-	$self->{config}->{'bootstrap-prereq-packages'} = "";
-
-	$self->{config}->{'bootstrap-packages'} = "
-	";
-
-	$self->{config}->{'selection'} = {
-		'default' => "list any packagenames here",
-	};
+sub fixPrerequiredFiles
+{
+	my $self = shift;
+	my $stage1cDir = shift;
 	return;
 }
 

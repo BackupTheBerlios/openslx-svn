@@ -79,7 +79,7 @@ use vars qw(%supportedDistros);
 		module => 'Ubuntu_6_06',      support => 'clone'
 	},
 	'ubuntu-6.10' => {
-		module => 'Ubuntu_6_10',      support => 'clone'
+		module => 'Ubuntu_6_10',      support => 'clone,install'
 	},
 	'ubuntu-7.04' => { 
 		module => 'Ubuntu_7_04',      support => 'clone' 
@@ -167,7 +167,7 @@ sub initialize
 	my $distro;
 	my $distroClass = $supportedDistros{lc($distroName)}->{module};
 	if ($actionType =~ m{^(install|update|shell)}) {
-		$distro = instantiateClass($distroClass);
+		$distro = instantiateClass("OpenSLX::OSSetup::Distro::$distroClass");
 	}
 	else {
 		if (!eval { 
@@ -203,7 +203,7 @@ sub initialize
 			);
 		}
 		$self->{'config-distro-info-dir'} = $configDistroInfoDir;
-		$self->readDistroInfo();
+		$self->_readDistroInfo();
 	}
 
 	if (!$self->{'action-type'} eq 'install'
@@ -225,8 +225,8 @@ sub initialize
 	vlog(1, "vendor-OS path is '$self->{'vendor-os-path'}'");
 
 	if ($actionType =~ m{^(install|update|shell)}) {
-		$self->createPackager();
-		$self->createMetaPackager();
+		$self->_createPackager();
+		$self->_createMetaPackager();
 	}
 	return;
 }
@@ -240,9 +240,9 @@ sub installVendorOS
 		die _tr("vendor-OS '%s' already exists, giving up!\n",
 			$self->{'vendor-os-path'});
 	}
-	$self->createVendorOSPath();
+	$self->_createVendorOSPath();
 
-	$self->startLocalURLServersAsNeeded();
+	$self->_startLocalURLServersAsNeeded();
 
 	my $baseSystemFile = "$self->{'vendor-os-path'}/.openslx-base-system";
 	if (-e $baseSystemFile) {
@@ -250,24 +250,24 @@ sub installVendorOS
 	}
 	else {
 		# basic setup, stage1a-c:
-		$self->setupStage1A();
+		$self->_setupStage1A();
 		callInSubprocess(
 			sub {
 				# some tasks that involve a chrooted environment:
-				$self->changePersonalityIfNeeded();
-				$self->setupStage1B();
-				$self->setupStage1C();
+				$self->_changePersonalityIfNeeded();
+				$self->_setupStage1B();
+				$self->_setupStage1C();
 			}
 		);
-		$self->stage1C_cleanupBasicVendorOS();
+		$self->_stage1C_cleanupBasicVendorOS();
 		# just touch the file, in order to indicate a basic system:
 		slxsystem("touch $baseSystemFile");
 	}
 	callInSubprocess(
 		sub {
 			# another task that involves a chrooted environment:
-			$self->changePersonalityIfNeeded();
-			$self->setupStage1D();
+			$self->_changePersonalityIfNeeded();
+			$self->_setupStage1D();
 		}
 	);
 
@@ -285,7 +285,7 @@ sub installVendorOS
 		)
 	);
 
-	$self->touchVendorOS();
+	$self->_touchVendorOS();
 	$self->addInstalledVendorOSToConfigDB();
 	return;
 }
@@ -343,7 +343,7 @@ sub cloneVendorOS
 		}
 	}
 
-	$self->createVendorOSPath();
+	$self->_createVendorOSPath();
 
 	$self->clone_fetchSource($source);
 	if ($source ne $lastCloneSource) {
@@ -368,7 +368,7 @@ sub cloneVendorOS
 		);
 	}
 
-	$self->touchVendorOS();
+	$self->_touchVendorOS();
 	$self->addInstalledVendorOSToConfigDB();
 	return;
 }
@@ -382,16 +382,16 @@ sub updateVendorOS
 			$self->{'vendor-os-path'});
 	}
 
-	$self->startLocalURLServersAsNeeded();
+	$self->_startLocalURLServersAsNeeded();
 
 	callInSubprocess(
 		sub {
-			$self->changePersonalityIfNeeded();
-			$self->updateStage1D();
+			$self->_changePersonalityIfNeeded();
+			$self->_updateStage1D();
 		}
 	);
 
-	$self->touchVendorOS();
+	$self->_touchVendorOS();
 	vlog(
 		0,
 		_tr("Vendor-OS '%s' updated succesfully.\n", $self->{'vendor-os-name'})
@@ -410,16 +410,16 @@ sub startChrootedShellForVendorOS
 		);
 	}
 
-	$self->startLocalURLServersAsNeeded();
+	$self->_startLocalURLServersAsNeeded();
 
 	callInSubprocess(
 		sub {
-			$self->changePersonalityIfNeeded();
-			$self->startChrootedShellInStage1D();
+			$self->_changePersonalityIfNeeded();
+			$self->_startChrootedShellInStage1D();
 		}
 	);
 
-	$self->touchVendorOS();
+	$self->_touchVendorOS();
 	vlog(
 		0,
 		_tr(
@@ -442,16 +442,16 @@ sub callChrootedFunctionForVendorOS
 		);
 	}
 
-	$self->startLocalURLServersAsNeeded();
+	$self->_startLocalURLServersAsNeeded();
 
 	callInSubprocess(
 		sub {
-			$self->changePersonalityIfNeeded();
-			$self->callChrootedFunctionInStage1D($function);
+			$self->_changePersonalityIfNeeded();
+			$self->_callChrootedFunctionInStage1D($function);
 		}
 	);
 
-	$self->touchVendorOS();
+	$self->_touchVendorOS();
 	vlog(
 		0,
 		_tr(
@@ -607,7 +607,7 @@ sub pickKernelFile
 ################################################################################
 ### implementation methods
 ################################################################################
-sub readDistroInfo
+sub _readDistroInfo
 {
 	my $self = shift;
 
@@ -685,7 +685,7 @@ sub readDistroInfo
 	return;
 }
 
-sub createVendorOSPath
+sub _createVendorOSPath
 {
 	my $self = shift;
 
@@ -696,7 +696,7 @@ sub createVendorOSPath
 	return;
 }
 
-sub touchVendorOS
+sub _touchVendorOS
 {
 	my $self = shift;
 
@@ -707,7 +707,7 @@ sub touchVendorOS
 	return;
 }
 
-sub createPackager
+sub _createPackager
 {
 	my $self = shift;
 
@@ -719,7 +719,7 @@ sub createPackager
 	return;
 }
 
-sub createMetaPackager
+sub _createMetaPackager
 {
 	my $self = shift;
 
@@ -741,7 +741,7 @@ sub createMetaPackager
 	return;
 }
 
-sub sortRepositoryURLs
+sub _sortRepositoryURLs
 {
 	my $self     = shift;
 	my $repoInfo = shift;
@@ -769,7 +769,7 @@ sub sortRepositoryURLs
 	return \@URLs;
 }
 
-sub downloadBaseFiles
+sub _downloadBaseFiles
 {
 	my $self  = shift;
 	my $files = shift;
@@ -823,7 +823,7 @@ sub downloadBaseFiles
 	return @foundFiles;
 }
 
-sub startLocalURLServersAsNeeded
+sub _startLocalURLServersAsNeeded
 {
 	my $self = shift;
 
@@ -835,7 +835,7 @@ sub startLocalURLServersAsNeeded
 		next if $localURL =~ m[^\w+:];
 		if (!exists $self->{'local-http-servers'}->{$localURL}) {
 			my $busyboxName =
-				$self->hostIs64Bit()
+				$self->_hostIs64Bit()
 				? 'busybox.x86_64'
 				: 'busybox.i586';
 			my $busybox =
@@ -859,7 +859,7 @@ sub startLocalURLServersAsNeeded
 	return;
 }
 
-sub setupStage1A
+sub _setupStage1A
 {
 	my $self = shift;
 
@@ -878,47 +878,32 @@ sub setupStage1A
 			$stage1cDir, $!);
 	}
 
-	$self->stage1A_createBusyboxEnvironment();
-	$self->stage1A_copyPrerequiredFiles();
-	$self->stage1A_copyTrustedPackageKeys();
-	$self->stage1A_createRequiredFiles();
+	$self->_stage1A_createBusyboxEnvironment();
+	$self->_stage1A_copyPrerequiredFiles();
+	$self->_stage1A_copyTrustedPackageKeys();
+	$self->_stage1A_createRequiredFiles();
 	return;
 }
 
-sub stage1A_createBusyboxEnvironment
+sub _stage1A_createBusyboxEnvironment
 {
 	my $self = shift;
 
 	# copy busybox and all required binaries into stage1a-dir:
 	vlog(1, "creating busybox-environment...");
-	my $busyboxName = $self->hostIs64Bit() ? 'busybox.x86_64' : 'busybox.i586';
-	copyFile(
-		"$openslxConfig{'base-path'}/share/busybox/$busyboxName",
-		"$self->{stage1aDir}/bin", 'busybox'
-	);
-
-	# determine all required libraries and copy those, too:
-	vlog(1, _tr("calling slxldd for $busyboxName"));
-	my $slxlddCmd 
-		= "slxldd $openslxConfig{'base-path'}/share/busybox/$busyboxName";
-	vlog(2, "executing: $slxlddCmd");
-	my $requiredLibsStr = `$slxlddCmd`;
-	if ($?) {
-		die _tr(
-			"slxldd couldn't determine the libs required by busybox! (%s)", $?
-		);
-	}
-	chomp $requiredLibsStr;
-	vlog(2, "slxldd results:\n$requiredLibsStr");
+	my $busyboxName = $self->_hostIs64Bit() ? 'busybox.x86_64' : 'busybox.i586';
+	my $requiredLibs = copyBinaryWithRequiredLibs({
+		'binary' => "$openslxConfig{'base-path'}/share/busybox/$busyboxName",
+		'targetFolder'    => "$self->{stage1aDir}/bin",
+		'libTargetFolder' => "$self->{stage1aDir}",
+		'targetName'      => 'busybox',
+	});
 	my $libcFolder;
-	foreach my $lib (split "\n", $requiredLibsStr) {
-		vlog(3, "copying lib '$lib'");
-		my $libDir = dirname($lib);
-		copyFile($lib, "$self->{stage1aDir}$libDir");
+	foreach my $lib (split "\n", $requiredLibs) {
 		if ($lib =~ m[/libc.so.\d\s*$]) {
 			# note target folder of libc, as we need to copy the resolver libs
 			# into the same place:
-			$libcFolder = $libDir;
+			$libcFolder = dirname($lib);
 		}
 	}
 
@@ -928,7 +913,7 @@ sub stage1A_createBusyboxEnvironment
 	foreach my $linkTarget (split "\n", $links) {
 		linkFile('/bin/busybox', "$self->{stage1aDir}/$linkTarget");
 	}
-	if ($self->hostIs64Bit()) { 
+	if ($self->_hostIs64Bit()) { 
 		if (!-e "$self->{stage1aDir}/lib64") {
 			linkFile('/lib', "$self->{stage1aDir}/lib64");
 		}
@@ -937,11 +922,11 @@ sub stage1A_createBusyboxEnvironment
 		}
 	}
 
-	$self->stage1A_setupResolver($libcFolder);
+	$self->_stage1A_setupResolver($libcFolder);
 	return;
 }
 
-sub stage1A_setupResolver
+sub _stage1A_setupResolver
 {
 	my $self       = shift;
 	my $libcFolder = shift;
@@ -951,9 +936,11 @@ sub stage1A_setupResolver
 		$libcFolder = '/lib';
 	}
 
-	copyFile('/etc/resolv.conf',        "$self->{stage1aDir}/etc");
-	copyFile("$libcFolder/libresolv*",  "$self->{stage1aDir}$libcFolder");
-	copyFile("$libcFolder/libnss_dns*", "$self->{stage1aDir}$libcFolder");
+	copyFile('/etc/resolv.conf', "$self->{stage1aDir}/etc");
+	spitFile("$self->{stage1aDir}/etc/hosts", '127.0.0.1 localhost');
+	copyFile("$libcFolder/libresolv*",    "$self->{stage1aDir}$libcFolder");
+	copyFile("$libcFolder/libnss_dns*",   "$self->{stage1aDir}$libcFolder");
+	copyFile("$libcFolder/libnss_files*", "$self->{stage1aDir}$libcFolder");
 
 	my $stage1cDir 
 		= "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
@@ -961,7 +948,7 @@ sub stage1A_setupResolver
 	return;
 }
 
-sub stage1A_copyPrerequiredFiles
+sub _stage1A_copyPrerequiredFiles
 {
 	my $self = shift;
 
@@ -984,7 +971,7 @@ sub stage1A_copyPrerequiredFiles
 	return;
 }
 
-sub stage1A_copyTrustedPackageKeys
+sub _stage1A_copyTrustedPackageKeys
 {
 	my $self = shift;
 
@@ -1016,7 +1003,7 @@ sub stage1A_copyTrustedPackageKeys
 	return;
 }
 
-sub stage1A_createRequiredFiles
+sub _stage1A_createRequiredFiles
 {
 	my $self = shift;
 
@@ -1045,19 +1032,22 @@ sub stage1A_createRequiredFiles
 	return;
 }
 
-sub setupStage1B
+sub _setupStage1B
 {
 	my $self = shift;
 
 	vlog(1, "setting up stage1b for $self->{'vendor-os-name'}...");
-	$self->stage1B_chrootAndBootstrap();
+	$self->_stage1B_chrootAndBootstrap();
 	return;
 }
 
-sub stage1B_chrootAndBootstrap
+sub _stage1B_chrootAndBootstrap
 {
 	my $self = shift;
 
+	# give packager a chance to copy required files into stage1a-folder:
+	$self->{packager}->prepareBootstrap($self->{stage1aDir});
+	
 	chrootInto($self->{stage1aDir});
 
 	# chdir into slxbootstrap, as we want to drop packages into there:
@@ -1066,18 +1056,17 @@ sub stage1B_chrootAndBootstrap
 			"unable to chdir into '%s' (%s)\n", "/$self->{stage1bSubdir}", $!
 		);
 
-	# fetch prerequired packages:
-	$self->{'baseURLs'} 
-		= $self->sortRepositoryURLs(
-			$self->{'distro-info'}->{repository}->{base}
-		  );
+	# fetch prerequired packages and use them to bootstrap the packager:
+	$self->{'baseURLs'} = $self->_sortRepositoryURLs(
+		$self->{'distro-info'}->{repository}->{base}
+	);
 	$self->{'baseURL-index'} = 0;
 	my @pkgs = string2Array($self->{'distro-info'}->{'prereq-packages'});
-	my @prereqPkgs = $self->downloadBaseFiles(\@pkgs);
-	$self->{packager}->unpackPackages(\@prereqPkgs);
+	my @prereqPkgs = $self->_downloadBaseFiles(\@pkgs);
+	$self->{packager}->bootstrap(\@prereqPkgs);
 
 	@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-prereq-packages'});
-	my @bootstrapPrereqPkgs = $self->downloadBaseFiles(\@pkgs);
+	my @bootstrapPrereqPkgs = $self->_downloadBaseFiles(\@pkgs);
 	$self->{'bootstrap-prereq-packages'} = \@bootstrapPrereqPkgs;
 
 	@pkgs = string2Array($self->{'distro-info'}->{'bootstrap-packages'});
@@ -1088,22 +1077,22 @@ sub stage1B_chrootAndBootstrap
 				->{$self->{distro}->{'meta-packager-type'}}
 		)
 	);
-	my @bootstrapPkgs = $self->downloadBaseFiles(\@pkgs);
+	my @bootstrapPkgs = $self->_downloadBaseFiles(\@pkgs);
 	my @allPkgs = (@prereqPkgs, @bootstrapPrereqPkgs, @bootstrapPkgs);
 	$self->{'bootstrap-packages'} = \@allPkgs;
 	return;
 }
 
-sub setupStage1C
+sub _setupStage1C
 {
 	my $self = shift;
 
 	vlog(1, "setting up stage1c for $self->{'vendor-os-name'}...");
-	$self->stage1C_chrootAndInstallBasicVendorOS();
+	$self->_stage1C_chrootAndInstallBasicVendorOS();
 	return;
 }
 
-sub stage1C_chrootAndInstallBasicVendorOS
+sub _stage1C_chrootAndInstallBasicVendorOS
 {
 	my $self = shift;
 
@@ -1121,14 +1110,14 @@ sub stage1C_chrootAndInstallBasicVendorOS
 	# import any additional trusted package keys to rpm-DB:
 	my $keyDir = "/trusted-package-keys";
 	my $keyDirDH;
-	opendir($keyDirDH, $keyDir)
-		or die _tr("unable to opendir '%s' (%s)\n", $keyDir, $!);
-	my @keyFiles 
-		= map { "$keyDir/$_" }
-		  grep { $_ !~ m[^(\.\.?|pubring.gpg)$] } 
-		  readdir($keyDirDH);
-	closedir($keyDirDH);
-	$self->{packager}->importTrustedPackageKeys(\@keyFiles, $stage1cDir);
+	if (opendir($keyDirDH, $keyDir)) {
+		my @keyFiles 
+			= map { "$keyDir/$_" }
+			  grep { $_ !~ m[^(\.\.?|pubring.gpg)$] } 
+			  readdir($keyDirDH);
+		closedir($keyDirDH);
+		$self->{packager}->importTrustedPackageKeys(\@keyFiles, $stage1cDir);
+	}
 
 	# install all other bootstrap packages
 	$self->{packager}->installPackages(
@@ -1137,7 +1126,7 @@ sub stage1C_chrootAndInstallBasicVendorOS
 	return;
 }
 
-sub stage1C_cleanupBasicVendorOS
+sub _stage1C_cleanupBasicVendorOS
 {
 	my $self = shift;
 
@@ -1158,7 +1147,7 @@ sub stage1C_cleanupBasicVendorOS
 	return;
 }
 
-sub setupStage1D
+sub _setupStage1D
 {
 	my $self = shift;
 
@@ -1166,13 +1155,13 @@ sub setupStage1D
 
 	chrootInto($self->{'vendor-os-path'});
 
-	$self->stage1D_setupPackageSources();
-	$self->stage1D_updateBasicVendorOS();
-	$self->stage1D_installPackageSelection();
+	$self->_stage1D_setupPackageSources();
+	$self->_stage1D_updateBasicVendorOS();
+	$self->_stage1D_installPackageSelection();
 	return;
 }
 
-sub updateStage1D
+sub _updateStage1D
 {
 	my $self = shift;
 
@@ -1180,11 +1169,11 @@ sub updateStage1D
 
 	chrootInto($self->{'vendor-os-path'});
 
-	$self->stage1D_updateBasicVendorOS();
+	$self->_stage1D_updateBasicVendorOS();
 	return;
 }
 
-sub startChrootedShellInStage1D
+sub _startChrootedShellInStage1D
 {
 	my $self = shift;
 
@@ -1205,7 +1194,7 @@ sub startChrootedShellInStage1D
 	return;
 }
 
-sub callChrootedFunctionInStage1D
+sub _callChrootedFunctionInStage1D
 {
 	my $self     = shift;
 	my $function = shift;
@@ -1222,7 +1211,7 @@ sub callChrootedFunctionInStage1D
 	return;
 }
 
-sub stage1D_setupPackageSources
+sub _stage1D_setupPackageSources
 {
 	my $self = shift;
 
@@ -1239,7 +1228,7 @@ sub stage1D_setupPackageSources
 	return;
 }
 
-sub stage1D_updateBasicVendorOS
+sub _stage1D_updateBasicVendorOS
 {
 	my $self = shift;
 
@@ -1251,7 +1240,7 @@ sub stage1D_updateBasicVendorOS
 	return;
 }
 
-sub stage1D_installPackageSelection
+sub _stage1D_installPackageSelection
 {
 	my $self = shift;
 
@@ -1288,7 +1277,7 @@ sub stage1D_installPackageSelection
 	return;
 }
 
-sub clone_fetchSource
+sub _clone_fetchSource
 {
 	my $self   = shift;
 	my $source = shift;
@@ -1321,7 +1310,7 @@ sub clone_fetchSource
 	return;
 }
 
-sub clone_determineIncludeExcludeList
+sub _clone_determineIncludeExcludeList
 {
 	my $self = shift;
 
@@ -1339,12 +1328,12 @@ sub clone_determineIncludeExcludeList
 ################################################################################
 ### utility methods
 ################################################################################
-sub changePersonalityIfNeeded
+sub _changePersonalityIfNeeded
 {
 	my $self = shift;
 
 	my $distroName = $self->{distro}->{'base-name'};
-	if ($self->hostIs64Bit() && $distroName !~ m[_64]) {
+	if ($self->_hostIs64Bit() && $distroName !~ m[_64]) {
 		# trying to handle a 32-bit vendor-OS on a 64-bit machine, so we change
 		# the personality accordingly (from 64-bit to 32-bit):
 		my $syscallPH = 'syscall.ph';
@@ -1359,7 +1348,7 @@ sub changePersonalityIfNeeded
 	return;
 }
 
-sub hostIs64Bit
+sub _hostIs64Bit
 {
 	my $self = shift;
 
@@ -1367,41 +1356,7 @@ sub hostIs64Bit
 	return ($self->{arch} =~ m[64]);
 }
 
-################################################################################
-### utility functions
-################################################################################
-sub string2Array
-{
-	my $string = shift || '';
-
-	my @lines = split m[\n], $string;
-	for my $line (@lines) {
-		# remove leading and trailing whitespace:
-		$line =~ s{^\s*(.*?)\s*$}{$1};
-	}
-
-	# drop empty lines and comments:
-	return grep { length($_) > 0 && $_ !~ m[^\s*#]; } @lines;
-}
-
-sub chrootInto
-{
-	my $osDir = shift;
-
-	vlog(2, "chrooting into $osDir...");
-	chdir $osDir
-		or die _tr("unable to chdir into '%s' (%s)\n", $osDir, $!);
-
-	# ...do chroot
-	chroot "."
-		or die _tr("unable to chroot into '%s' (%s)\n", $osDir, $!);
-
-	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
-	return;
-}
-
 1;
-################################################################################
 
 =pod
 

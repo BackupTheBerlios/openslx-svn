@@ -8,17 +8,18 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Debian_4_0.pm
-#	- provides Debian-4.0-specific overrides of the OpenSLX OSSetup API.
+# apt.pm
+#	- provides apt-get-specific overrides of the OpenSLX::OSSetup::MetaPackager API.
 # -----------------------------------------------------------------------------
-package OpenSLX::OSSetup::Distro::Debian_4_0;
+package OpenSLX::OSSetup::MetaPackager::apt;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::OSSetup::Distro::Debian);
+use base qw(OpenSLX::OSSetup::MetaPackager::Base);
 
 use OpenSLX::Basics;
+use OpenSLX::Utils;
 
 ################################################################################
 ### implementation
@@ -27,42 +28,44 @@ sub new
 {
 	my $class = shift;
 	my $self = {
-		'base-name' => 'debian-4.0',
+		'name' => 'apt',
 	};
 	return bless $self, $class;
 }
 
-sub initDistroInfo
+sub initPackageSources
 {
 	my $self = shift;
-	$self->{config}->{'repository'} = {
-		'base' => {
-			'urls' => "
-			",
-			'name' => '',
-			'repo-subdir' => '',
-		},
-		'base_update' => {
-			'urls' => '
-			',
-			'name' => '',
-			'repo-subdir' => '',
-		},
-	};
 
-	$self->{config}->{'package-subdir'} = '';
+	return;
+}
 
-	$self->{config}->{'prereq-packages'} = "
-	";
+sub setupPackageSource
+{
+	my $self = shift;
+	my $repoName = shift;
+	my $repoInfo = shift;
+	my $excludeList = shift;
 
-	$self->{config}->{'bootstrap-prereq-packages'} = "";
+	my $repoSubdir = '';
+	if (length($repoInfo->{'repo-subdir'})) {
+		$repoSubdir = "/$repoInfo->{'repo-subdir'}";
+	}
+	return;
+}
 
-	$self->{config}->{'bootstrap-packages'} = "
-	";
+sub installSelection
+{
+	my $self = shift;
+	my $pkgSelection = shift;
 
-	$self->{config}->{'selection'} = {
-		'default' => "list any packagenames here",
-	};
+	return;
+}
+
+sub updateBasicVendorOS
+{
+	my $self = shift;
+
 	return;
 }
 

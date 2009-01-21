@@ -11,7 +11,7 @@
 # rpm.pm
 #	- provides rpm-specific overrides of the OpenSLX::OSSetup::Packager API.
 # -----------------------------------------------------------------------------
-package OpenSLX::OSSetup::Packager::rpm;
+package OpenSLX::OSSetup::Packager::dpkg;
 
 use strict;
 use warnings;
@@ -19,6 +19,7 @@ use warnings;
 use base qw(OpenSLX::OSSetup::Packager::Base);
 
 use OpenSLX::Basics;
+use OpenSLX::Utils;
 
 ################################################################################
 ### implementation
@@ -27,9 +28,22 @@ sub new
 {
 	my $class = shift;
 	my $self = {
-		'name' => 'rpm',
+		'name' => 'dpkg',
 	};
 	return bless $self, $class;
+}
+
+sub prepareBootstrap
+{
+	my $self       = shift;
+	my $stage1aDir = shift;
+	
+	copyBinaryWithRequiredLibs({
+		'binary'          => '/usr/bin/perl',
+		'targetFolder'    => "$stage1aDir/usr/bin",
+		'libTargetFolder' => $stage1aDir,
+	});
+
 }
 
 sub bootstrap
@@ -37,47 +51,24 @@ sub bootstrap
 	my $self = shift;
 	my $pkgs = shift;
 
-	foreach my $pkg (@$pkgs) {
-		vlog(2, "unpacking package $pkg...");
-		if (slxsystem("ash", "-c", "rpm2cpio $pkg | cpio -i -d -u")) {
-			warn _tr("unable to unpack package <%s> (%s)", $pkg, $!);
-				# TODO: change this back to die() if cpio-ing fedora6-glibc
-				#       doesn't crash anymore... (needs busybox update, I suppose)
-		}
+	my $debootstrapPkg = $pkgs->[0];
+	chdir '..';
+	vlog(2, "unpacking debootstrap ...");
+	if (slxsystem("ash", "-c", "ar x slxbootstrap/$debootstrapPkg")) {
+		die _tr("unable to unarchive package '%s' (%s)", $debootstrapPkg, $!);
 	}
-	return;
-}
-
-sub importTrustedPackageKeys
-{
-	my $self = shift;
-	my $keyFiles = shift;
-	my $finalPath = shift;
-
-	return unless defined $keyFiles;
-
-	foreach my $keyFile (@$keyFiles) {
-		vlog(2, "importing package key $keyFile...");
-		if (slxsystem("rpm", "--root=$finalPath", "--import", "$keyFile")) {
-			die _tr("unable to import package key <%s> (%s)\n", $keyFile, $!);
-		}
+	if (slxsystem("ash", "-c", "tar xzf data.tar.gz")) {
+		die _tr("unable to untar 'data.tar.gz (%s)", $!);
 	}
-	return;
-}
-
-sub installPrerequiredPackages
-{
-	my $self = shift;
-	my $pkgs = shift;
-	my $finalPath = shift;
-
-	return unless defined $pkgs && scalar(@$pkgs);
-
-	if (slxsystem("rpm", "--root=$finalPath", "-ivh", "--nodeps", "--noscripts",
-			   "--force", @$pkgs)) {
-		die _tr("error during prerequired-package-installation (%s)\n", $!);
+	if (slxsystem("ash", "-c", "rm -f debian-binary *.tar.gz")) {
+		die _tr("unable to cleanup package '%s' (%s)", $debootstrapPkg, $!);
 	}
-	slxsystem("rm", "-rf", "$finalPath/var/lib/rpm");
+	my $debootstrapCmd = <<"	END-OF-HERE";
+		/usr/sbin/debootstrap --arch i386 edgy /slxbootstrap/slxfinal http://localhost:5080/srv/ftp/pub/ubuntu
+	END-OF-HERE
+	if (slxsystem("ash", "-c", "/bin/ash $debootstrapCmd")) {
+		die _tr("unable to run debootstrap (%s)", $!);
+	}
 	return;
 }
 
