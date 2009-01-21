@@ -426,6 +426,7 @@ sub _schemaUpgradeDBFrom
 	my $currVersion = shift;
 
 	$self->_upgradeDBTo0_2($metaDB) if $currVersion < 0.2;
+	$self->_upgradeDBTo0_21($metaDB) if $currVersion < 0.21;
 
 	return 1;
 }
@@ -434,6 +435,8 @@ sub _upgradeDBTo0_2
 {
 	my $self   = shift;
 	my $metaDB = shift;
+
+	vlog(1, "upgrading schema version to 0.2 ...");
 
 	# move attributes into separate tables ...
 	#
@@ -647,6 +650,8 @@ sub _upgradeDBTo0_21
 {
 	my $self   = shift;
 	my $metaDB = shift;
+
+	vlog(1, "upgrading schema version to 0.21 ...");
 
 	# move attributes into separate tables ...
 	#
