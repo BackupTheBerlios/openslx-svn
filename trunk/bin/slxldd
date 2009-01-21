@@ -111,7 +111,8 @@ sub fetchLoaderConfigFile
 	while (<$ldconfFH>) {
 		chomp;
 		if (m{^\s*include\s+(.+?)\s*$}i) {
-			while (my $incFile = glob("$rootPath$1")) {
+			my @incFiles = glob("$rootPath$1");
+			foreach my $incFile (@incFiles) {
 				if ($incFile) {
 					fetchLoaderConfigFile($incFile);
 				}
