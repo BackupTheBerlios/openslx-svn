@@ -11,7 +11,7 @@ RPM-GPG-KEY-fedora-test
 RPM-GPG-KEY-rawhide
 "
 SLX_INST_SOURCE_NAME_fedora6="Fedora 6"
-SLX_INST_SOURCE_BASEURL_fedora6update='http://ftp-.gwdg.de/pub/linux/fedora/linux/core/updates/$releasever/$basearch/'
+SLX_INST_SOURCE_BASEURL_fedora6update='http://ftp-1.gwdg.de/pub/linux/fedora/linux/core/updates/$releasever/$basearch/'
 SLX_INST_SOURCE_NAME_fedora6update="Fedora 6 updates"
 SLX_BASE_PREREQ_PACKAGES="
 RPMS/beecrypt-4.1.2-10.1.1.i386.rpm
