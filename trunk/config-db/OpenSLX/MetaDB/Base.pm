@@ -225,7 +225,7 @@ sub fetchVendorOSesByFilter
 {
 }
 
-sub fetchVendorOSesById
+sub fetchVendorOSesByID
 {
 }
 
@@ -233,7 +233,7 @@ sub fetchSystemsByFilter
 {
 }
 
-sub fetchSystemsById
+sub fetchSystemsByID
 {
 }
 
@@ -249,11 +249,23 @@ sub fetchSystemIDsOfGroup
 {
 }
 
+sub fetchSystemVariantsByFilter
+{
+}
+
+sub fetchSystemVariantsByID
+{
+}
+
+sub fetchSystemVariantIDsOfSystem
+{
+}
+
 sub fetchClientsByFilter
 {
 }
 
-sub fetchClientsById
+sub fetchClientsByID
 {
 }
 
@@ -269,7 +281,7 @@ sub fetchGroupsByFilter
 {
 }
 
-sub fetchGroupsById
+sub fetchGroupsByID
 {
 }
 
@@ -305,10 +317,6 @@ sub changeVendorOS
 {
 }
 
-sub setSystemIDsOfVendorOS
-{
-}
-
 sub addSystem
 {
 }
@@ -318,6 +326,18 @@ sub removeSystem
 }
 
 sub changeSystem
+{
+}
+
+sub addSystemVariant
+{
+}
+
+sub removeSystemVariant
+{
+}
+
+sub changeSystemVariant
 {
 }
 

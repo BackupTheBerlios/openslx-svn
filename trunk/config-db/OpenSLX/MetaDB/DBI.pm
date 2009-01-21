@@ -55,6 +55,13 @@ sub quote
 ################################################################################
 ### data access functions
 ################################################################################
+sub _trim
+{
+	my $s = shift;
+	$s =~ s[^\s*(.*?)\s*$][$1];
+	return $s;
+}
+
 sub _doSelect
 {
 	my $self = shift;
@@ -63,6 +70,7 @@ sub _doSelect
 
 	my $dbh = $self->{'dbh'};
 
+	vlog 3, _trim($sql);
 	my $sth = $dbh->prepare($sql)
 		or confess _tr(q[Can't prepare SQL-statement <%s> (%s)], $sql,
 					   $dbh->errstr);
@@ -98,13 +106,17 @@ sub fetchVendorOSesByFilter
 	return $self->_doSelect($sql);
 }
 
-sub fetchVendorOSesById
+sub fetchVendorOSesByID
 {
 	my $self = shift;
-	my $id = shift;
+	my $ids = shift;
 	my $resultCols = shift;
 
-	return $self->fetchVendorOSesByFilter({'id' => $id}, $resultCols);
+	$resultCols = '*' 		unless (defined $resultCols);
+	my $idStr = join ',', @$ids;
+	return if !length($idStr);
+	my $sql = "SELECT $resultCols FROM vendor_os WHERE id IN ($idStr)";
+	return $self->_doSelect($sql);
 }
 
 sub fetchSystemsByFilter
@@ -123,13 +135,17 @@ sub fetchSystemsByFilter
 	return $self->_doSelect($sql);
 }
 
-sub fetchSystemsById
+sub fetchSystemsByID
 {
 	my $self = shift;
-	my $id = shift;
+	my $ids = shift;
 	my $resultCols = shift;
 
-	return $self->fetchSystemsByFilter({'id' => $id}, $resultCols);
+	$resultCols = '*' 		unless (defined $resultCols);
+	my $idStr = join ',', @$ids;
+	return if !length($idStr);
+	my $sql = "SELECT $resultCols FROM system WHERE id IN ($idStr)";
+	return $self->_doSelect($sql);
 }
 
 sub fetchSystemIDsOfVendorOS
@@ -165,6 +181,46 @@ sub fetchSystemIDsOfGroup
 	return $self->_doSelect($sql, 'system_id');
 }
 
+sub fetchSystemVariantsByFilter
+{
+	my $self = shift;
+	my $filter = shift;
+	my $resultCols = shift;
+
+	$resultCols = '*' unless (defined $resultCols);
+	my $sql = "SELECT $resultCols FROM system_variant";
+	my $connector;
+	foreach my $col (keys %$filter) {
+		$connector = !defined $connector ? 'WHERE' : 'AND';
+		$sql .= " $connector $col = '$filter->{$col}'";
+	}
+	return $self->_doSelect($sql);
+}
+
+sub fetchSystemVariantsByID
+{
+	my $self = shift;
+	my $ids = shift;
+	my $resultCols = shift;
+
+	$resultCols = '*' 		unless (defined $resultCols);
+	my $idStr = join ',', @$ids;
+	return if !length($idStr);
+	my $sql = "SELECT $resultCols FROM system_variant WHERE id IN ($idStr)";
+	return $self->_doSelect($sql);
+}
+
+sub fetchSystemVariantIDsOfSystem
+{
+	my $self = shift;
+	my $systemID = shift;
+
+	my $sql = qq[
+		SELECT id FROM system_variant WHERE system_id = '$systemID'
+	];
+	return $self->_doSelect($sql, 'id');
+}
+
 sub fetchClientsByFilter
 {
 	my $self = shift;
@@ -181,13 +237,17 @@ sub fetchClientsByFilter
 	return $self->_doSelect($sql);
 }
 
-sub fetchClientsById
+sub fetchClientsByID
 {
 	my $self = shift;
-	my $id = shift;
+	my $ids = shift;
 	my $resultCols = shift;
 
-	return $self->fetchClientsByFilter({'id' => $id}, $resultCols);
+	$resultCols = '*' 		unless (defined $resultCols);
+	my $idStr = join ',', @$ids;
+	return if !length($idStr);
+	my $sql = "SELECT $resultCols FROM client WHERE id IN ($idStr)";
+	return $self->_doSelect($sql);
 }
 
 sub fetchClientIDsOfSystem
@@ -198,7 +258,7 @@ sub fetchClientIDsOfSystem
 	my $sql = qq[
 		SELECT client_id FROM client_system_ref WHERE system_id = '$systemID'
 	];
-	return $self->_doSelect($sql, 'system_id');
+	return $self->_doSelect($sql, 'client_id');
 }
 
 sub fetchClientIDsOfGroup
@@ -209,7 +269,7 @@ sub fetchClientIDsOfGroup
 	my $sql = qq[
 		SELECT client_id FROM group_client_ref WHERE group_id = '$groupID'
 	];
-	return $self->_doSelect($sql, 'system_id');
+	return $self->_doSelect($sql, 'client_id');
 }
 
 sub fetchGroupsByFilter
@@ -219,7 +279,7 @@ sub fetchGroupsByFilter
 	my $resultCols = shift;
 
 	$resultCols = '*' 		unless (defined $resultCols);
-	my $sql = "SELECT $resultCols FROM group";
+	my $sql = "SELECT $resultCols FROM groups";
 	my $connector;
 	foreach my $col (keys %$filter) {
 		$connector = !defined $connector ? 'WHERE' : 'AND';
@@ -228,13 +288,17 @@ sub fetchGroupsByFilter
 	return $self->_doSelect($sql);
 }
 
-sub fetchGroupsById
+sub fetchGroupsByID
 {
 	my $self = shift;
-	my $id = shift;
+	my $ids = shift;
 	my $resultCols = shift;
 
-	return $self->fetchGroupsByFilter({'id' => $id}, $resultCols);
+	$resultCols = '*' 		unless (defined $resultCols);
+	my $idStr = join ',', @$ids;
+	return if !length($idStr);
+	my $sql = "SELECT $resultCols FROM groups WHERE id IN ($idStr)";
+	return $self->_doSelect($sql);
 }
 
 sub fetchGroupIDsOfSystem
@@ -466,17 +530,6 @@ sub changeVendorOS
 	return $self->_doUpdate('vendor_os', $vendorOSIDs, $valRows);
 }
 
-sub setSystemIDsOfVendorOS
-{
-	my $self = shift;
-	my $vendorOSID = shift;
-	my $systemIDs = shift;
-
-	my @currSystems = $self->fetchSystemsOfVendorOS($vendorOSID);
-	$self->_updateOneToManyRefAttr('system', $vendorOSID, $systemIDs,
-								   'vendor_os_id', \@currSystems);
-}
-
 sub addSystem
 {
 	my $self = shift;
@@ -522,6 +575,31 @@ sub setGroupIDsOfSystem
 	my @currGroups = $self->fetchGroupIDsOfSystem($systemID);
 	$self->_updateRefTable('grop_system_ref', $systemID, $groupIDs,
 						   'system_id', 'group_id', \@currGroups);
+}
+
+sub addSystemVariant
+{
+	my $self = shift;
+	my $valRows = shift;
+
+	return $self->_doInsert('system_variant', $valRows);
+}
+
+sub removeSystemVariant
+{
+	my $self = shift;
+	my $systemVariantIDs = shift;
+
+	return $self->_doDelete('system_variant', $systemVariantIDs);
+}
+
+sub changeSystemVariant
+{
+	my $self = shift;
+	my $systemVariantIDs = shift;
+	my $valRows = shift;
+
+	return $self->_doUpdate('system_variant', $systemVariantIDs, $valRows);
 }
 
 sub addClient
@@ -576,7 +654,7 @@ sub addGroup
 	my $self = shift;
 	my $valRows = shift;
 
-	return $self->_doInsert('group', $valRows);
+	return $self->_doInsert('groups', $valRows);
 }
 
 sub removeGroup
@@ -584,7 +662,7 @@ sub removeGroup
 	my $self = shift;
 	my $groupIDs = shift;
 
-	return $self->_doDelete('group', $groupIDs);
+	return $self->_doDelete('groups', $groupIDs);
 }
 
 sub changeGroup
@@ -593,7 +671,7 @@ sub changeGroup
 	my $groupIDs = shift;
 	my $valRows = shift;
 
-	return $self->_doUpdate('group', $groupIDs, $valRows);
+	return $self->_doUpdate('groups', $groupIDs, $valRows);
 }
 
 sub setClientIDsOfGroup
