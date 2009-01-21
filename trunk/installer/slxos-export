@@ -48,7 +48,12 @@ GetOptions(
 	'version' => \$versionReq,
 ) or pod2usage(2);
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
-pod2usage(-verbose => 2) if $manReq;
+if ($manReq) {
+	$ENV{LANG} = 'en_EN';
+		# avoid dubious problem with perldoc in combination with UTF-8 that
+		# leads to strange dashes and single-quotes being used
+	pod2usage(-verbose => 2)
+}
 if ($versionReq) {
 	system('slxversion');
 	exit 1;
