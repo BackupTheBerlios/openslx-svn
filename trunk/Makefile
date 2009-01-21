@@ -92,9 +92,9 @@ functions via\# inclusion: '. /etc/functions' ..." \
 vmware_install:
 	@echo "Installing VMware files to $(VMWARE_PATH)"
 	@mkdir -p $(VMWARE_PATH)/templ \
-	       -p $(VMWARE_PATH)/vmsessions
+	       -p $(VMWARE_PATH)/vmsessions/kdm
 	@cp -a vmware/* $(VMWARE_PATH)/templ/
-	@echo -e "Please configure your exports (add $(VMWARE_PATH) to your list).\nCopy your *.vmdk files into $(VMWARE_PATH). For interactive mode add for each virtual machine (*.vmdk) a .desktop file into ./vmsessions (example file $(VMWARE_PATH)/templ/desktop.template)."
+	@echo -e "Please configure your exports (add $(VMWARE_PATH) to your list).\nCopy your *.vmdk files into $(VMWARE_PATH). For interactive mode add for each virtual machine (*.vmdk) a .desktop file into ./vmsessions (example file $(VMWARE_PATH)/templ/desktop.template). Don't forget to install Xdialog!"
 
 #uninstall:
 #	@echo -e "Uninstalling openslx.org project files but keeping configs \

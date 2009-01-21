@@ -305,6 +305,8 @@ if [ "x$vmware" != "x" ] && [ "x$vmware" != "xno" ] ; then
       /mnt/var/X11R6/bin >/dev/null 2>&1
     cp /mnt/var/lib/vmware/templ/defaultwm \
       /mnt/var/X11R6/bin >/dev/null 2>&1
+    cp /mnt/var/lib/vmware/templ/kursimages \
+      /mnt/var/X11R6/bin >/dev/null 2>&1
   fi
   config_vmware
   chmod 1777 /mnt/var/run/vmware

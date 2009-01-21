@@ -33,7 +33,7 @@ AutoReLogin=false
 AllowRootLogin=true
 AllowNullPasswd=true
 AllowShutdown=All
-SessionsDirs=/etc/X11/sessions,/usr/share/xsessions,/opt/kde3/share/apps/kdm/sessions,/var/lib/vmware/vmsessions
+SessionsDirs=/etc/X11/sessions,/usr/share/xsessions,/opt/kde3/share/apps/kdm/sessions,/var/lib/vmware/vmsessions/kdm
 AuthNames=XDM-AUTHORIZATION-1,MIT-MAGIC-COOKIE-1
 
 [X-*-Greeter]

@@ -315,7 +315,7 @@ Session=/etc/X11/xdm/Xsession\nClientLogFile=.xsession-errors-%s\n\
 AutoReLogin=false\nAllowRootLogin=true\n\
 AllowNullPasswd=true\nAllowShutdown=All\n\
 SessionsDirs=/etc/X11/sessions,/usr/share/xsessions,\
-/opt/kde3/share/apps/kdm/sessions,$vmsessions\n\
+/opt/kde3/share/apps/kdm/sessions,$vmsessions/kdm\n\
 AuthNames=XDM-AUTHORIZATION-1,MIT-MAGIC-COOKIE-1\n\n\
 [X-*-Greeter]\n\
 ShowUsers=Selected\nSelectedUsers=\nUserList=false\n\

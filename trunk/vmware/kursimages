@@ -12,63 +12,27 @@
 
 
 
-
-
 # set X background
 res=$(xvidtune -show | grep -wo "\".*\"" | sed "s/\"//g")
 if ! [ -f /var/lib/openslx/themes/bootsplash/images/silent-${res}.jpg ]; then
-  img=$(ls /var/lib/openslx/themes/bootsplash/images/ | grep -m 1 "silent")
-  display -window root /var/lib/openslx/themes/bootsplash/images/${img}
-else 
-  display -window root /var/lib/openslx/themes/bootsplash/images/silent-${res}.jpg
+    img=$(ls /var/lib/openslx/themes/bootsplash/images/ | grep -m 1 "silent")
+    display -window root /var/lib/openslx/themes/bootsplash/images/${img}
+else
+    display -window root /var/lib/openslx/themes/bootsplash/images/silent-${res}.jpg
 fi
 
 
 x_dialog () {
-
-  xsessions="/usr/share/xsessions"
+  
   vmsessions="/var/lib/vmware/vmsessions"
   tmpdir="/tmp"
   menu=
   execute=
-
-
-  xdesktopsnr=( `ls ${xsessions}/*.desktop | grep -v "default.*" \
-    | wc -l 2>/dev/null` )
-  desktops=( `ls ${xsessions}/*.desktop | grep -v "default.*" \
-    | sort -bf 2>/dev/null; \
-    ls ${vmsessions}/*.desktop | sort -bf 2>/dev/null` )
+          
+  desktops=( `ls ${vmsessions}/*.desktop 2>/dev/null` )
   desktopsnr=$(echo "${#desktops[*]}")
-
-
   (( args=0 ))
   declare -i i=0
-
-  while [ "${xdesktopsnr}" -gt "${args}" ]; do
-    # exec in .desktop
-    execute[${i}]=$(grep -m 1 -i "exec" ${desktops[${args}]} \
-      | awk -F "=" '{print $2}')
-    menu="$menu \"\${execute[${i}]}\""
-    i=${i}+1
-
-    # name in .desktop
-    execute[${i}]=$(grep -m 1 -i "name" ${desktops[${args}]} \
-      | awk -F "=" '{print $2}')
-    execute[${i}]=${execute[${i}]:-`echo ${execute[${i}-1]} | sed -e "s,-, ,g"`}
-    menu="$menu \"\${execute[${i}]}\""
-    i=${i}+1
-
-    # comment in .desktop
-    execute[${i}]=$(grep -m 1 -i "comment" ${desktops[${args}]} \
-      | awk -F "=" '{print $2}')
-    execute[${i}]="| Desktop Environment |
-${execute[${i}]:-"No comment"}"
-    menu="$menu \"\${execute[${i}]}\""
-    i=${i}+1
-
-    (( args=${args}+1 ))
-  done
-
 
   while [ "${desktopsnr}" -gt "${args}" ]; do
     # exec in .desktop
@@ -87,8 +51,7 @@ ${execute[${i}]:-"No comment"}"
     # comment in .desktop
     execute[${i}]=$(grep -m 1 -i "comment" ${desktops[${args}]} \
       | awk -F "=" '{print $2}')
-    execute[${i}]="| VMware Image |
-${execute[${i}]:-"No comment"}"
+    execute[${i}]=${execute[${i}]:-"No comment"}
     menu="$menu \"\${execute[${i}]}\""
     i=${i}+1
 
@@ -98,7 +61,7 @@ ${execute[${i}]:-"No comment"}"
   # --stderr because of 1>/dev/null
   # echoing to file because Xdialog sux when used w/ quotes
   echo -e "Xdialog --rc-file /var/lib/openslx/themes/Xdialog/gtkrc \
-          --title \"Desktop / VMware-Image Menu\" \
+          --title \"VMware Image Menu\" \
           --screen-center \
           --fill \
           --no-wrap \
@@ -106,15 +69,18 @@ ${execute[${i}]:-"No comment"}"
           --no-tags \
           --ok-label \"START\" \
           --item-help \
-          --menubox \"Which desktop or VMware-image to start?\" 35 80 0 \
+          --menubox \"Please choose the image you would like to run:\" 35 80 0 \
           $menu 1>/dev/null" \
   > ${tmpdir}/Xdialog
+  
+. ${tmpdir}/Xdialog
+rm -f ${tmpdir}/Xdialog
 
-  . ${tmpdir}/Xdialog
-  rm -f ${tmpdir}/Xdialog
 }
+
 
 args_dial=$(x_dialog 2>&1) # 2>&1, see function
 exec ${args_dial}
 
 exit 0
+
