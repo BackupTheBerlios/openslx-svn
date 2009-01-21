@@ -493,7 +493,7 @@ fi
 }
 # start vmware
 config_vmware () {
-if [ -f /mnt/etc/${D_SYSCONFDIR}/vmware ] ; then
+if [ -f /mnt/etc/${D_INITDIR}/vmware ] ; then
   rllinker "vmware" 20 2
 else
   error "df_errvmw" nonfatal

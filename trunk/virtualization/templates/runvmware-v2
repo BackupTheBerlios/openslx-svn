@@ -296,7 +296,7 @@ runvmwareconfheader ()
 
   ###### misc ##################################################################
   tmpDirectory = \"${tmpdir}\"
-  mainMem.useNamedFile = \"FALSE\"
+  mainMem.useNamedFile = \"TRUE\"
   snapshot.disabled = \"TRUE\"
   tools.syncTime = \"TRUE\"
   redoLogDir = \"${tmpdir}\"
@@ -335,13 +335,13 @@ preferencesheader ()
   ###### tmpDirectory = /nfs-viel-platz und darin wird dann vmware-\$user ######
   ###### angelegt.                                                        ######
 
-  hints.hideAll = \"TRUE\"
-  pref.exchangeSelections = \"TRUE\"
-  pref.hotkey.shift = \"TRUE\"
-  pref.tip.startup = \"FALSE\"
+  hints.hideAll = \"true\"
+  pref.exchangeSelections = \"true\"
+  pref.hotkey.shift = \"true\"
+  pref.tip.startup = \"false\"
   pref.vmplayer.exit.vmAction = \"poweroff\"
-  pref.vmplayer.fullscreen.autohide = \"TRUE\"
-  pref.vmplayer.webUpdateOnStartup = \"FALSE\"
+  pref.vmplayer.fullscreen.autohide = \"true\"
+  pref.vmplayer.webUpdateOnStartup = \"false\"
   prefvmx.defaultVMPath = \"${vmhome}\"
   prefvmx.mru.config = \"${confile}:\"
   tmpDirectory = \"${tmpdir}\"

@@ -12,7 +12,7 @@
     <phone param="---">
     </phone>
     # Short description, shown in the menu
-    <short_description param="Diese Image dient Ihnen als Vorlage für Ihre Installationen. Laden Sie es auf Ihre lokale Festplatte und installieren Sie Ihre Programme!">
+    <short_description param="Vorlagen-Image">
     </short_description>
     # Define long description shown when the Image is chosen
     <long_description param="Diese Image dient Ihnen als Vorlage für Ihre Installationen. Laden Sie es auf Ihre lokale Festplatte und installieren Sie Ihre Programme!">
