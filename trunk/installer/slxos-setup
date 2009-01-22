@@ -159,6 +159,7 @@ if ($action =~ m[^import]i) {
 			$vendorOS =~ s[^.+/][];
 			"\t$vendorOS\n";
 		}
+		grep { -d $_ }
 		sort glob("$openslxConfig{'private-path'}/stage1/*")
 	);
 } else {

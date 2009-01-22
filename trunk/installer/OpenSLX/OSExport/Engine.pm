@@ -184,6 +184,9 @@ sub _initialize
 	my $exportName   = shift;
 	my $exportType   = lc(shift);
 
+	if ($vendorOSName eq '<<<default>>>') {
+		die _tr("you can't do that with the default vendor-OS!\n");
+	}
 	if (!grep { $_ eq $exportType } @supportedExportTypes) {
 		vlog(0,
 			    _tr("Sorry, export type '%s' is unsupported.\n", $exportType)

@@ -144,6 +144,9 @@ sub initialize
 	my $vendorOSName = shift;
 	my $actionType   = shift;
 
+	if ($vendorOSName eq '<<<default>>>') {
+		die _tr("you can't do that with the default vendor-OS!\n");
+	}
 	if ($vendorOSName !~ m[^([^\-]+\-[^\-]+)(?:\-(.+))?]) {
 		die _tr(    
 			"Given vendor-OS has unknown format, expected '<name>-<release>[-<selection>]'\n"

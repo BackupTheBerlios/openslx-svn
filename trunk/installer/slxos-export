@@ -60,14 +60,15 @@ openslxInit();
 my $action = shift @ARGV || '';
 
 if ($action =~ m[^list-ex]i) {
-	print _tr("List of exported vendor-OSes:\n");
+	print _tr("List of exported vendor-OSes (exports):\n");
 	foreach my $type (sort keys %supportedExportFileSystems) {
 		# list all image files, followed by the block devices using it:
 		my @files = map {
 			my $image = decode('utf8', $_);
 			$image =~ s[^.+/][];
 			$image;
-		} sort glob("$openslxConfig{'public-path'}/export/$type/*");
+		}
+		sort glob("$openslxConfig{'public-path'}/export/$type/*");
 		my %imageFiles;
 		foreach my $file (@files) {
 			if ($file =~ m[^(.+)@(.+)$]) {
@@ -83,22 +84,23 @@ if ($action =~ m[^list-ex]i) {
 			'',
 			map {
 				my $devices = join(',', @{$imageFiles{$_}});
+				my $name = "${_}::$type";
 				if (length($devices)) {
-					my $name = "$type/$_";
 					"\t$name".substr(' ' x 30, length($name))."($devices)\n";
 				} else {
-					"\t$type/$_\n";
+					"\t$name\n";
 				}
-			  }
-			  grep {
+			}
+			grep {
 				# filter out RSYNC_TMP folders:
 				$_ !~ m[###];
-			  }
-			  sort keys %imageFiles
+			}
+			sort keys %imageFiles
 		);
 	}
 } elsif ($action =~ m[^list-in]i) {
-	my @files = glob("$openslxConfig{'private-path'}/stage1/*");
+	my @vendorOSDirs 
+		= grep { -d $_ } glob("$openslxConfig{'private-path'}/stage1/*");
 	print _tr("List of installed vendor-OSes:\n");
 	print join(
 		'',
@@ -106,8 +108,8 @@ if ($action =~ m[^list-ex]i) {
 			my $vendorOS = decode('utf8', $_);
 			$vendorOS =~ s[^.+/][];
 			"\t$vendorOS\n";
-		  }
-		  sort @files
+		}
+		sort @vendorOSDirs
 	);
 } elsif ($action =~ m[^list-ty]i) {
 	print _tr("List of supported export types:\n\t");
