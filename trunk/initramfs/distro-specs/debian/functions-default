@@ -23,10 +23,14 @@ preinit () {
 
 # distro specific function called from servconfig script
 config_distro () {
-# add the halt link to the 0 and 6 runlevel directories
+  # add the halt link to the 0 and 6 runlevel directories
   ln -sf ../init.d/halt /mnt/etc/rc0.d/S90halt
   ln -sf ../init.d/reboot /mnt/etc/rc6.d/S90reboot
-  
+ 
+  # remove annoying udev rule set for changing eth interface
+  # fixme: not that simple, see ticket 187
+  #rm /mnt/etc/udev/rules.d/*persistent-net.rules >/dev/null 2>&1
+ 
   # set default runlevel
   sed -e "s/.*initdefault/id:${D_INITDEFAULT}:initdefault/" -i /mnt/etc/inittab
 }
@@ -193,7 +197,8 @@ done
 
 # consolefont and language
 consolefont () {
-echo -e "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
+# console font setting program not available in Debian 4!?
+echo -e "\t#setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
   >>/mnt/etc/${D_INITDIR}/boot.slx
 chmod 744 /mnt/etc/${D_INITDIR}/boot.slx
 # fixme!! check for proper operation

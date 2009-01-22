@@ -16,12 +16,13 @@
 
 # distro specific general function called from servconfig script
 config_distro () {
-echo -e "OpenSLX version ${SLXVERSION}\ninitramfs generation date $date" \
-  >> /mnt/etc/gentoo-release
-echo -e "# changes made to this file by $0 (initramfs from $date)" \
-  > /etc/rc.conf
-# keytable is set by hwautocfg script (added just for convenience here)
-config_rc_entry "KEYMAP" "${KEYTABLE}" "conf.d/keymaps"
+  echo -e "OpenSLX version ${SLXVERSION}\ninitramfs generation date $date" \
+    >> /mnt/etc/gentoo-release
+  echo -e "# changes made to this file by $0 (initramfs from $date)" \
+    > /etc/rc.conf
+  # keytable is set by hwautocfg script (added just for convenience here)
+  config_rc_entry "KEYMAP" "${KEYTABLE}" "conf.d/keymaps"
+  # fixme: check for strange udev rules which want to rename eth* names!
 }
 
 # linking runlevel scripts and defining execution order
