@@ -153,7 +153,7 @@ is($system3->{attrs}->{tex_enable},        'F',              'system 3 - attr te
 is($system3->{attrs}->{timezone},          'G',              'system 3 - attr timezone');
 is($system3->{attrs}->{tvout},             'H',              'system 3 - attr tvout');
 is($system3->{attrs}->{vmware},            'I',              'system 3 - attr vmware');
-is(keys %{$system3->{attrs}},              35,               'system 3 - attribute count');
+is(keys %{$system3->{attrs}},              34,               'system 3 - attribute count');
 
 # fetch system 2 by a filter on id and check all values
 ok(
