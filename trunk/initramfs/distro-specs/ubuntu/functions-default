@@ -322,8 +322,6 @@ fi
 
 # configure kdm as display manager
 config_kdm () {
-# first define directories for kdm
-testmkd /mnt/${D_KDMRCPATH}
 rllinker "kdm" 25 1
 if [ "x$start_xdmcp" = "xkdm" ]; then 
   # configure fallback if no kdm binary is present

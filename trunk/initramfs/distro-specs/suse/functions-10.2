@@ -15,11 +15,9 @@
 
 # display manager configuration
 config_kdm () {
-# first define directories for kdm
 # use different kdmrc than default, since 10.2 in /opt/kde/...
 echo "XDMOPTIONS=\" -config ${D_KDMRCPATH}\"" \
   >> /mnt/etc/sysconfig/displaymanager
-testmkd /mnt/${D_KDMRCPATH}
 config_dm_entry yes
 # write configuration file with general config from /etc/functions
 config_kdm_template

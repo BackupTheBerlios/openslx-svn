@@ -102,9 +102,6 @@ rllinker "console-screen.sh" 31 3
 
 # configure kdm as display manager
 config_kdm () {
-# first define directories for kdm
-testmkd /mnt/${D_KDMRCPATH}
-
 rllinker "kdm" 3 1
 if [ "x$start_xdmcp" = "xkdm" ]; then 
   echo /usr/bin/kdm > /mnt/etc/X11/default-display-manager

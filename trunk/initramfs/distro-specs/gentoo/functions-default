@@ -271,9 +271,6 @@ config_dm_entry gdm
 config_kdm () {
 config_dm_entry kdm
 
-# first define directories for kdm
-testmkd /mnt/${D_KDMRCPATH}
-
 # setting the path for kdmrc-file 
 # FIXME: hack - there is no other way in gentoo?!? Why the hell in "themes"
 # directory??

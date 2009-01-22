@@ -922,6 +922,8 @@ include_in_fsroot_union () {
 
 # kdmrc template started from distro specific functions files
 config_kdm_template () {
+testmkd /mnt/${D_KDMRCPATH}
+testmkd /mnt/var/lib/openslx/themes/displaymanager
 # check if a kdmrc was provided via ConfTGZ
 [ -f /rootfs/${D_KDMRCPATH}/kdmrc ] || \
   echo -e "# ${D_KDMRCPATH}/kdmrc - \

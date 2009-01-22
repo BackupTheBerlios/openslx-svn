@@ -368,8 +368,6 @@ fi
 }
 # configure kdm as display manager
 config_kdm () {
-# first define directories for kdm
-testmkd /mnt/${D_KDMRCPATH}
 config_dm_entry yes
 # write configuration file
 # use general config in /etc/functions
