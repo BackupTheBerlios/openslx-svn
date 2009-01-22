@@ -558,7 +558,9 @@ runinithook () {
 local hook=$1
 if [ -d /etc/init-hooks/$hook ]; then
   for hook_script in /etc/init-hooks/$hook/*.sh; do
-    . $hook_script
+    if [ -e $hook_script ]; then
+      . $hook_script
+    fi
   done
 fi
 }
