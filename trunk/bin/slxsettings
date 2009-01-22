@@ -72,8 +72,8 @@ my %configPattern = (
 # the remaining cmdline arguments are set or reset actions, each followed
 # by a single argument:
 while (scalar @ARGV) {
-	my $action = shift;
-	my $arg    = shift;
+	my $action = shift || '';
+	my $arg    = shift || '';
 	if ($action eq 'set') {
 		if ($arg !~ m[^([-\w]+)=(.+)$]) {
 			die _tr(
