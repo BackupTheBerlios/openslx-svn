@@ -50,7 +50,7 @@ D_RCDIRS="/rc0.d /rc1.d /rc2.d /rc3.d /rc4.d /rc5.d /rc6.d"
 D_INITDEFAULT="3"
 # fixme: is keymap.sh really needed? Should be handled in a simpler fashion
 # via boot.slx (see hwautocfg)
-D_INITSCRIPTS="mountkernfs.sh mountvirtfs udev procps.sh bootlogd keymap.sh hwclock.sh sudo dbus-1"
+D_INITSCRIPTS="mountkernfs.sh mountvirtfs udev procps.sh bootlogd $D_SPLASHY keymap.sh hwclock.sh sudo dbus-1"
 D_XF86CONFFILE="/etc/X11/xorg.conf"
 D_XORGBIN=/usr/X11R6/bin/X
 D_XFONTPATH="/usr/X11R6/lib/X11/fonts/*"

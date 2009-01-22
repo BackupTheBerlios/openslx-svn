@@ -14,6 +14,5 @@ if [ ${theme_nosplash} -eq 0 ]; then
         /bin/splashy boot 2>/dev/null
         
         # add splashy.stop (XX_theme) to runlevel scripts 
-        echo 'D_INITSCRIPTS="${D_INITSCRIPTS} splashy.stop"' \
-                >> /etc/sysconfig/config
+        export D_SPLASHY=splashy.stop
 fi

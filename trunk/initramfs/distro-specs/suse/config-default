@@ -54,7 +54,7 @@ D_INITDEFAULT="5"
 D_RCDIRS="/init.d/rc0.d /init.d/rc1.d /init.d/rc2.d /init.d/rc3.d \
 /init.d/rc4.d /init.d/rc5.d /init.d/rc6.d /init.d/rcS.d"
 D_INITSCRIPTS="boot.udev boot.proc boot.shm boot.klog boot.loadmodules \
-boot.clock boot.sysctl boot.ipconfig boot.swap"
+boot.clock boot.sysctl boot.ipconfig boot.swap $D_SPLASHY"
 D_XF86CONFFILE="/etc/X11/xorg.conf"
 D_XORGBIN=/usr/X11R6/bin/Xorg
 D_XFONTPATH="/usr/X11R6/lib/X11/fonts/*"
