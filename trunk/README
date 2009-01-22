@@ -1,7 +1,49 @@
-OpenSLX - Linux Diskless Clients Version 4
+WELCOME
+----------
+OpenSLX - Open StateLess eXtensions version 4.1
 
---> http://www.openslx.org (project pages)
---> http://www.openslx.org/trac/documentation (german only at the moment)
+OpenSLX is a software package for setting up, managing and booting of
+"stateless client systems" (a.k.a. "thin clients").
 
-Information on installation and needed packages and services could be
-found in the doc/ subdirectory.
+Information on installation and the required packages can be found in
+the doc/ folder (especially intro.txt). Further information is available
+through the web pages:
+
+--> http://www.openslx.org                                (project)
+--> http://www.openslx.org/de/doc/Linux_Stateless_Clients (documentation)
+--> http://lists.openslx.org                              (mailing lists)
+
+
+SNAPSHOT-RELEASES
+-----------------
+The snapshot-releases of OpenSLX are being made to expose the software to a 
+wider audience in order to gain more feedback on what works and what doesn't.
+
+New snapshots will be released in short timeframes - at least once a month -
+such that we can react to feedback promptly. Aim of the snapshot phase is to
+stabilize the software in preparation for the upcoming beta release.
+
+Upgrading from one snapshot to the other should be a seamless operation, as
+eventual differences between the DB-schema should be adjusted automatically.
+Only for *downgrades*, manual intervention might be needed.
+
+
+NOTES ABOUT THIS SNAPSHOT
+-------------------------
+* Cloning is the only form of vendor-OS creation we can currently recommend
+  for a vendor-OS that is meant to be run in production.
+  The fresh installation of a vendor-OS into a folder does not work properly
+  across all distributions, yet, so while it may be interesting to experiment
+  in that field, problems are more likely.
+
+
+FEEDBACK
+--------
+Questions, wishes and general feedback are very welcome. Please direct them
+to the appropriate mailing list, in this case the english users list:
+
+	mailto:openslx-users@openslx.org
+
+Have fun,
+
+	the OpenSLX-team
