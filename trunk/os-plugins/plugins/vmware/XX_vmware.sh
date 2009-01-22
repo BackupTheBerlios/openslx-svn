@@ -115,15 +115,13 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
 		# needed for VMware 5.5.3 and versions below
 		echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
 			>>/mnt/etc/${D_INITDIR}/boot.slx
-		# config_vmware deprecated?
-		#config_vmware
+
 		# link /etc/init.d/vmware, so it starts uppon boot
 		if [ -f /mnt/etc/${D_INITDIR}/vmware ] ; then
 			rllinker "vmware" 20 2
 		else
 			error "df_errvmw" nonfatal
 		fi
-
 		
 		chmod 1777 /mnt/var/run/vmware
 		# define a variable where gdm/kdm should look for additional sessions

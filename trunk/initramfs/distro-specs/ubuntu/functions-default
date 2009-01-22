@@ -373,18 +373,6 @@ rerun\n# the mkdxsinitrd script to get them applied\n\n\
 esac
 }
 
-# prepare virtual machine environment (vmware, vmplayer)
-config_vmware () {
-if [ -f /mnt/etc/init.d/vmware ] ; then
-# during vmware sessions linux should not handle usb events/devices
-# add special path /var/X11R6/bin to the PATH variable
-# fixme!! add path directly to /etc/profile!?
-echo -e "# added path component by $0: $date\n\
-PATH=\"\$PATH:/var/X11R6/bin\"" >>/mnt/etc/profile
-echo '#!/bin/sh'>> /mnt/etc/udev/rules.d/01-udev-vm.rules
-fi
-}
-
 # configure automounter
 config_automount () {
 if [ -f /mnt/etc/init.d/autofs ] ; then
