@@ -2,7 +2,8 @@
 # only activate with kernel option quiet and no debuglevel
 if grep -E "(VESA|VGA)" /proc/fb > /dev/null 2>&1 \
   && grep -qi " quiet " /proc/cmdline > /dev/null 2>&1 \
-  && [ $DEBUGLEVEL -eq 0 ] ; then
+  && [ $DEBUGLEVEL -eq 0 ] \
+  && [ -e /bin/splashy ] ; then
   export theme_nosplash=0
 else
   export theme_nosplash=1
