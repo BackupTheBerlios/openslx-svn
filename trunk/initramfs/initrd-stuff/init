@@ -101,7 +101,8 @@ runinithook '00-started'
 preinit
 [ -x /bin/preinit.local ] && /bin/preinit.local
 
-# start device auto discovery service - busybox (or distro specific function)
+# start device auto discovery service of busybox
+echo > /etc/mdev.conf
 mdev -s
 
 # switch off the several configuration methods, will be switched on
