@@ -129,6 +129,16 @@ sub postRemovalPhase
 	my $pluginTempPath       = shift;
 }
 
+sub suggestAdditionalKernelParams
+{	# called by config-demuxer in order to give the plugin a chance to add
+	# any kernel params it requires.
+	# In order to do so, the plugin should analyse the contents of the 
+	# given string ('kernel-params') and return a list of additional params 
+	# that it would like to see added.
+	my $self         = shift;
+	my $kernelParams = shift;
+}
+
 sub copyRequiredFilesIntoInitramfs
 {	# called by config-demuxer in order to give the plugin a chance to copy
 	# all required files from the vendor-OS into the initramfs.

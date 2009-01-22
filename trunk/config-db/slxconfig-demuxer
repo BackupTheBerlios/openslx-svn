@@ -540,6 +540,9 @@ sub makeInitRamFS
 	my $makeInitRamFSEngine = OpenSLX::MakeInitRamFS::Engine->new($params);
 	$makeInitRamFSEngine->execute($option{dryRun});
 
+	# copy back kernel-params, as they might have been changed (by plugins)
+	$info->{kernel_params} = $makeInitRamFSEngine->{'kernel-params'};
+
 	return;
 }
 

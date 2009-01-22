@@ -687,6 +687,13 @@ sub _handlePlugins
 		}
 		my $plugin = OpenSLX::OSPlugin::Roster->getPlugin($pluginName);
 		next if !$plugin;
+		my @suggestedKernelParams 
+			= $plugin->suggestAdditionalKernelParams($self->{'kernel-params'});
+		if (@suggestedKernelParams) {
+			$self->{'kernel-params'} 
+				.= ($self->{'kernel-params'} ? ' ' : '')
+					. join ' ', @suggestedKernelParams;
+		}
 		$plugin->copyRequiredFilesIntoInitramfs(
 			$self->{'build-path'}, $self->{attrs}, $self
 		);

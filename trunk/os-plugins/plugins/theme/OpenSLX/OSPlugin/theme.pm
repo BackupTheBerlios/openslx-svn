@@ -111,6 +111,28 @@ sub getAttrInfo
 	};
 }
 
+sub suggestAdditionalKernelParams
+{
+	my $self         = shift;
+	my $kernelParams = shift;
+
+	my @suggestedParams;
+	
+	# add vga=0x317 unless explicit vga-mode is already set
+	if ($kernelParams !~ m{\bvga=}) {
+		vlog(1, "theme-plugin: adding kernel-param vga=0x317");
+		push @suggestedParams, 'vga=0x317';
+	}
+
+	# add quiet, if not already set
+	if ($kernelParams !~ m{\bquiet\b}) {
+		vlog(1, "theme-plugin: adding kernel-param quiet");
+		push @suggestedParams, 'quiet';
+	}
+
+	return @suggestedParams;
+}
+
 sub copyRequiredFilesIntoInitramfs
 {
 	my $self                = shift;
