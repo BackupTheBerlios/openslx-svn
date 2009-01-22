@@ -1,0 +1,27 @@
+
+VirtualMachine Chooser - plugin
+===============================
+
+
+Please consider to run "make" in the folder src/vmchooser/ after any changes to the code.
+Static libraries of fltk-2 are in src/fltk-2/ and are used to link against the program.
+
+
+
+BUGS: 
+
+static version:
+ - Has to be run with "nice ./vmchooser", else there is a bug in the Xorg system,
+   therefore I suggest compiling the shared version for development purposes.
+
+   Simply change "STATIC=-static" to "STATIC= #-static" to enable the shared version.
+
+
+TODO:
+ - enable linux-serssions
+ - enable callbacks on entries <- Very important.
+
+
+ATTENTION:
+ This program is not yet released ;-)
+

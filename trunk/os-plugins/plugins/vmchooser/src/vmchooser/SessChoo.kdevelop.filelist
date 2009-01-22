@@ -1,0 +1,10 @@
+# KDevelop Custom Project File List
+Makefile
+SWindow.cxx
+inc
+inc/DataEntry.h
+inc/SWindow.h
+inc/functions.h
+main.cxx
+readXmlDir.cxx
+runImage.cxx
