@@ -111,4 +111,60 @@ sub getAttrInfo
 	};
 }
 
+sub copyRequiredFilesIntoInitramfs
+{
+	my $self                = shift;
+	my $targetPath          = shift;
+	my $attrs				= shift;
+	my $makeInitRamFSEngine = shift;
+	
+	my $themeDir = "$openslxConfig{'base-path'}/share/themes";
+	my $splashTheme = $attrs->{'theme::splash'} || '';
+	if ($splashTheme) {
+		my $splashThemeDir = "$themeDir/$splashTheme/bootsplash";
+		if (-d $splashThemeDir) {
+			my $splashyPath = "$openslxConfig{'base-path'}/share/splashy";
+			$makeInitRamFSEngine->addCMD(
+				"cp -p $splashyPath/* $targetPath/bin/"
+			);
+			$makeInitRamFSEngine->addCMD(
+				"mkdir -p $targetPath/etc/splashy"
+			);
+			$makeInitRamFSEngine->addCMD(
+				"cp -a $splashThemeDir/* $targetPath/etc/splashy/"
+			);
+		}
+	}
+	else {
+		$splashTheme = '<none>';
+	}
+
+	my $displayManagerTheme = $attrs->{'theme::displaymanager'} || '';
+	if ($displayManagerTheme) {
+		my $displayManagerThemeDir 
+			= "$themeDir/$displayManagerTheme/displaymanager";
+		if (-d $displayManagerThemeDir) {
+			$makeInitRamFSEngine->addCMD(
+				"mkdir -p $targetPath/usr/share/themes"
+			);
+			$makeInitRamFSEngine->addCMD(
+				"cp -a $displayManagerThemeDir $targetPath/usr/share/themes/"
+			);
+		}
+	}
+	else {
+		$displayManagerTheme = '<none>';
+	}
+
+	vlog(
+		0, 
+		_tr(
+			"theme-plugin: bootsplash=%s displaymanager=%s", 
+			$splashTheme, $displayManagerTheme
+		)
+	);
+
+	return;
+}
+
 1;

@@ -607,12 +607,12 @@ sub makeInitRamFS
 		'kernel-params'  => $info->{kernel_params} || '',
 		'kernel-version' => $kernelFile =~ m[-(.+)$] ? $1 : '',
 		'plugins'        => $info->{'active-plugins'},
-		'root-path'   
+		'root-path'
 			=> "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}",
 		'slx-version'    => $slxVersion,
 		'system-name'    => $info->{name},
 	};
-	# TODO: make this an explicit attribute, it's used at many places!
+	# TODO: make debug-level an explicit attribute, it's used in many places!
 	my $kernelParams = $info->{kernel_params} || '';
 	if ($kernelParams =~ m{debug(?:=(\d+))?}) {
 		my $debugLevel = defined $1 ? $1 : '1';

@@ -17,6 +17,7 @@ use strict;
 use warnings;
 
 use OpenSLX::Basics;
+use Storable qw(dclone);
 
 my %plugins;
 
@@ -37,6 +38,25 @@ sub getAvailablePlugins
 		$pluginInfo{$pluginName} = $plugins{$pluginName}->getInfo();
 	}
 	return \%pluginInfo;
+}
+
+=item C<getPlugin()>
+
+Returns an instance of the plugin with the given name
+
+=cut
+
+sub getPlugin
+{
+	my $class      = shift;
+	my $pluginName = shift;
+
+	$class->_init() if !%plugins;
+
+	my $plugin = $plugins{$pluginName};
+	return if !$plugin;
+
+	return dclone($plugin);
 }
 
 =item C<getPluginAttrInfo()>

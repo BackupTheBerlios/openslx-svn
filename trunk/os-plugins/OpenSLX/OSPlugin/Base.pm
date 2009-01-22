@@ -128,3 +128,15 @@ sub postRemovalPhase
 	my $pluginRepositoryPath = shift;
 	my $pluginTempPath       = shift;
 }
+
+sub copyRequiredFilesIntoInitramfs
+{	# called by config-demuxer in order to give the plugin a chance to copy
+	# all required files from the vendor-OS into the initramfs.
+	# N.B.: Only files that are indeed required by the initramfs should be
+	#       copied here, i.e. files that are needed *before* the root-fs
+	#       has been mounted!
+	my $self                = shift;
+	my $targetPath          = shift;
+	my $attrs				= shift;
+	my $makeInitRamFSEngine = shift;
+}
