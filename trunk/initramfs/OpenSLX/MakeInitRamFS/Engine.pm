@@ -701,7 +701,9 @@ sub _createInitRamFS
 	my $buildPath = $self->{'build-path'};
 	$self->addCMD(
 		"cd $buildPath "
-		. "&& find . | cpio -H newc --create | gzip -9 >$self->{initramfs}"
+		. "&& find . "
+			. "| cpio -H newc --quiet --create "
+			. "| gzip -9 >$self->{initramfs}"
 	);
 
 	return;
