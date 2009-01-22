@@ -104,10 +104,13 @@ for opts in ${KCMDLINE} ; do
     debug=*)
       DEBUGLEVEL=${opts#debug=};;
     nbd)
+      type=nbd
       file=irfsnbd;;
     nfs)
+      type=nfs
       file=irfsnfs;;
     dnbd2)
+      type=dnbd2
       file=irfsd2;;
   esac
 done
@@ -163,7 +166,7 @@ ip route add default via $router
 # user choose what kind of SLX client he wants to get
 
 # get kernel and initramfs, if something fails start debug shell
-echo "Fetching selected kernel and initial ramfs from the net ..."
+echo "Fetching selected kernel and initial ramfs ($type) from the net ..."
 ( wget -q -c -O /tmp/kernel \
   ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/kernel 2>/dev/null && \
 wget -q -c -O /tmp/iramfs \

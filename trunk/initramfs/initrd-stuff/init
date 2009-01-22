@@ -442,8 +442,7 @@ if [ -n "${bldmod}" ] ; then
       done
       usleep 100
       echo deadline > /sys/block/nbd0/queue/scheduler
-      # switch off unneeded block read ahead
-      echo "0" > /sys/block/nbd0/queue/read_ahead_kb
+      # echo "32" > /sys/block/nbd0/queue/read_ahead_kb
       ;;
     # dnbd2 by Vito Di Leo
     dnbd2)
@@ -468,6 +467,7 @@ if [ -n "${bldmod}" ] ; then
       echo 1 > /sys/block/vnbd0/config/rid
       echo deadline > /sys/block/vnbd0/queue/scheduler
       i=0
+      sleep 1
       while [ $(cat /sys/block/vnbd0/config/running) != 1 ] ; do
         echo 1 > /sys/block/vnbd0/config/running
         usleep 5000
@@ -476,7 +476,7 @@ if [ -n "${bldmod}" ] ; then
           error "$init_dnbd2s"; break
         fi
       done
-      # echo "256" > /sys/block/vnbd0/queue/read_ahead_kb
+      echo "32" > /sys/block/vnbd0/queue/read_ahead_kb
       ;;
     # dnbd by Thorsten Zitterell
     dnbd)
