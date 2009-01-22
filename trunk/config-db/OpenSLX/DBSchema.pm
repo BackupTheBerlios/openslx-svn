@@ -35,7 +35,7 @@ use OpenSLX::Basics;
 ### 		fk		=> foreign key (integer)
 ################################################################################
 
-my $VERSION = 0.25;
+my $VERSION = 0.26;
 
 my $DbSchema = {
 	'version' => $VERSION,
@@ -646,6 +646,29 @@ sub _schemaUpgradeDBFrom
 	
 		# drop attribute ramfs_screen
 		$metaDB->removeAttributeByName('ramfs_screen');
+	
+		return 1;
+	},
+	0.26 => sub {
+		my $metaDB = shift;
+	
+		# rename all exports and systems that contain a single colon to
+		# the current naming scheme with a double colon
+		foreach my $system ($metaDB->fetchSystemByFilter()) {
+			if ($system->{name} =~ m{^([^:]+):([^:]+)$}) {
+				if ($system->{label} eq $system->{name}) {
+					$system->{label} = "${1}::${2}";
+				}
+				$system->{name} = "${1}::${2}";
+				$metaDB->changeSystem([ $system->{id} ], [ $system ]);
+			}
+		}
+		foreach my $export ($metaDB->fetchExportByFilter()) {
+			if ($export->{name} =~ m{^([^:]+):([^:]+)$}) {
+				$export->{name} = "${1}::${2}";
+				$metaDB->changeExport([ $export->{id} ], [ $export ]);
+			}
+		}
 	
 		return 1;
 	},
