@@ -83,8 +83,8 @@ $(USR_BIN_PATH)/*" \
 release-tarball:
 	@export OPENSLX_SVN_SNAPSHOT=0; \
 	make tarball
-
-install:
+	
+install: check-upgrade
 	@if test "${TRACE_INSTALLATION}" = "1"; then set -x; fi; \
 	echo "Checking installation requirements..."; \
 	echo $$(date) >${SLX_INSTALL_LOG}; \
@@ -95,10 +95,12 @@ install:
 
 	@   # many of the following modules are part of core perl, but we check
 	@   # for them just to be sure...
-	@for m in Carp Config::General DBI Digest::MD5 Fcntl File::Basename FindBin \
-	          Getopt::Long Pod::Usage ; do \
+	@for m in Carp Config::General Cwd DBI Digest::MD5 Encode Fcntl \
+	          File::Basename File::Find File::Glob File::Path FindBin \
+	          Getopt::Long List::Util Pod::Usage POSIX Socket Storable \
+	          Sys::Hostname Term::ReadLine ; do \
 		if ! perl -e "use $$m" 2>>${SLX_INSTALL_LOG} ; then \
-			echo "  The perl-module '$$m' is required, please install it."; \
+			echo "  The perl module '$$m' is required, please install it."; \
 			exit 1; \
 		fi; \
 	done;
@@ -253,14 +255,45 @@ vmware_install:
 	@cp -a vmware/* $(SLX_BASE_PATH)/vmware/templ/
 	@echo -e "Please configure your exports (add $(SLX_BASE_PATH)/vmware to your list).\nCopy your *.vmdk files into $(SLX_BASE_PATH)/vmware. For interactive mode add for each virtual machine (*.vmdk) a .desktop file into ./vmsessions (example file $(SLX_BASE_PATH)/vmware/templ/desktop.template). Don't forget to install Xdialog!"
 
+prepare_upgrade:
+	@rm -rf $(SLX_BASE_PATH)
+	@rm -f $(USR_BIN_PATH)/slx*
+
 uninstall:
 	@echo "Uninstalling openslx.org project files but keeping configs \
 and stage1"
-	@echo "files in $(SLX_CONFIG_PATH) (please remove manually)"
 	@rm -rf $(SLX_BASE_PATH)
+	@echo "keeping files in $(SLX_CONFIG_PATH)"
+	@echo "keeping files in $(SLX_PRIVATE_PATH)"
 	@rm -rf $(SLX_PUBLIC_PATH)
-	@echo "files in $(SLX_PRIVATE_PATH) (please remove manually)"
 	@rm -f $(USR_BIN_PATH)/slx*
+
+mrproper:
+	@echo "Wiping all!"
+	@rm -rf $(SLX_BASE_PATH)
+	@rm -rf $(SLX_CONFIG_PATH)
+	@rm -rf $(SLX_PRIVATE_PATH)
+	@rm -rf $(SLX_PUBLIC_PATH)
+	@rm -f $(USR_BIN_PATH)/slx*
+
+check-upgrade:
+	@   # find out if there is an older version installed and, if so, clean that
+	@INSTALLED_VERSION=$$(slxversion 2>/dev/null); \
+	if ! test -z "$${INSTALLED_VERSION}"; then \
+		if test -e REVISION; then \
+			. REVISION; \
+		else \
+			OPENSLX_VERSION_SVNREV=$$(svnversion .); \
+		fi; \
+		test "$${OPENSLX_SVN_SNAPSHOT}" = "0" && \
+			unset OPENSLX_SVN_SNAPSHOT || \
+			OPENSLX_SVN_SNAPSHOT="1"; \
+		. ./VERSIONS; \
+		if test $${INSTALLED_VERSION} != $${OPENSLX_VERSION_STRING}; then \
+			echo "preparing upgrade from version ($${INSTALLED_VERSION})"; \
+			make prepare_upgrade; \
+		fi; \
+	fi
 
 clean:
 	@echo "Cleanup OpenSLX source directory "
