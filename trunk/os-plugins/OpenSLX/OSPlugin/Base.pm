@@ -18,48 +18,137 @@ use warnings;
 
 our $VERSION = 1.01;		# API-version . implementation-version
 
+=head1 NAME
+
+OpenSLX::OSPlugin::Base - the base class for all OpenSLX OS-plugins.
+
+=head1 DESCRIPTION
+
+This class defines the OpenSLX API for OS-plugins.
+
+The general idea behind OS-plugins is to extend any installed vendor-OS with
+a specific features. Each feature is implemented as a separate, small software 
+component in order to make them easy to understand and maintain. 
+
+Since all of these software components are plugged into the OpenSLX system by 
+means of a common API, we call them B<OS-plugin>s.
+
+This API can be separated into different parts:
+
+=over
+
+=item - L</Declarative Interface> (provide info about a plugin)
+
+=item - L</Vendor-OS Interface> (installing or removing a plugin into/from a 
+vendor-OS)
+
+=item - L</Initramfs Interface> (integrating a plugin into an initramfs)
+
+=item - L</Support Interface> (offers each plugin access to OpenSLX services)
+
+=back
+
+=head1 MORE INFO
+
+Please read the user-level introduction on plugins in the OpenSLX-wiki:
+L<http://openslx.org/trac/de/openslx/wiki/PluginKonzept> (in German).
+
+If you'd like to know how a plugin is implemented, please have a look at the
+'example' plugin, which contains some explainations and useful hints.
+
+If you have any questions regarding the concept of OS-plugins and their
+implementation, please drop a mail to: ot@openslx.com, or join the IRC-channel
+'#openslx' (on freenode).
+
+=cut
+
 use OpenSLX::Basics;
 
-################################################################################
-# if you have any questions regarding the concept of OS-plugins and their
-# implementation, please drop a mail to: ot@openslx.com, or join the IRC-channel
-# '#openslx' (on freenode).
-################################################################################
+=head1 PLUGIN API
+
+=head2 Declarative Interface
+
+=over
+
+=item new()
+
+Every plugin should provide a new-method and provide it's own name in the
+'name' entry of $self. 
+
+Please note that by convention, plugin names are all lowercase!
+
+=cut
 
 sub new
 {
 	confess "Creating OpenSLX::OSPlugin::Base-objects directly makes no sense!";
 }
 
+=item initialize()
+
+Initializes basic context for this plugin (esp. a reference to the OSPlugin
+engine that drives this plugin.
+
+=cut
+
 sub initialize
 {
 	my $self = shift;
 
-	# The os-plugin-engine drives us, it provides some useful services relevant 
-	# to installing stuff into the vendor-OS, like downloading functionality, 
-	# access to meta-packager, ...
 	$self->{'os-plugin-engine'} = shift;
 	
 	return;
 }
 
+=item getInfo()
+
+Returns a hash-ref with administrative information about this plugin (what does 
+it do and how does it relate to other plugins). Every plugin needs to provide
+this method and return the information about itself.
+
+=cut
+
 sub getInfo
-{	# returns a hash-ref with administrative information about this plugin
-	# (what does it do and how does it relate to other plugins)
+{
 	my $self = shift;
 
 	return {
 		# a short (one-liner) description of this plugin
 		description => '',
-		# a list of plugins that must have completed before this plugin can 
-		# be executed
-		mustRunAfter => [],
 	};
 }
 
+=item getAttrInfo()
+
+Returns a hash-ref with information about all attributes supported by this 
+specific plugin. 
+
+This default configuration will be added as attributes to the default system, 
+such that it can be overruled for any specific system by means of B<slxconfig>.
+
+The returned hash-ref must include at least the following entries:
+
+=over
+
+=item B<I<plugin-name>::active>
+
+Indicates whether or not this plugin is active (1 for active, 0 for inactive).
+
+=item B<I<plugin-name>::precedence>
+
+Specifies the execution precedence of this plugin with respect to all other
+plugins (plugins with lower precedences will be started before the ones with
+a higher precedence).
+
+Valid values range from 0-99. If your plugin does not have any requirements
+in this context, just specify the default value '50'.
+
+=back
+	
+=cut
+
 sub getAttrInfo
-{	# returns a hash-ref with information about all attributes supported
-	# by this specific plugin
+{
 	my $self = shift;
 
 	# This default configuration will be added as attributes to the default
@@ -71,107 +160,125 @@ sub getAttrInfo
 	};
 }
 
-sub preInstallationPhase
-{	# called before chrooting into vendor-OS root, should be used if any files
-	# have to be downloaded outside of the chroot (which might be necessary
-	# if the required files can't be installed via the meta-packager)
-	my $self = shift;
-	my $pluginRepositoryPath = shift;
-		# the folder where the stage1-plugin should store all files
-		# required by the corresponding stage3 runlevel script
-	my $pluginTempPath = shift;
-		# a temporary playground that will be cleaned up automatically
-	
-	return;
-}
+=back
+
+=head2 Vendor-OS Interface
+
+=over
+
+=item installationPhase()
+
+In this method, the plugin should install itself into the given vendor-OS.
+
+What "installation" means is up to the plugin. Some plugins may just copy
+a file from the OpenSLX host installation into the vendor-OS, while others may 
+need to download files from the internet and/or install packages through the
+vendor-OS' meta packager.
+
+N.B.: This method is invoked while chrooted into the vendor-OS root. In order to
+make the OpenSLX files from the host available, the OpenSLX base folder
+(normally /opt/openslx) will be mounted to /mnt/openslx. So if you have to copy
+any files from the host, fetch them from there.
+
+=cut
 
 sub installationPhase
-{	# called while chrooted to the vendor-OS root, most plugins will do all
-	# their installation work here
+{
 	my $self = shift;
 	my $pluginRepositoryPath = shift;
-		# the repository folder, this time from inside the chroot
+		# the repository folder, relative to the vendor-OS root
 	my $pluginTempPath = shift;
-		# the temporary folder, this time from inside the chroot
+		# the temporary folder, relative to the vendor-OS root
+	my $openslxPath = shift;
+		# the openslx base path bind-mounted into the chroot (/mnt/openslx)
 	
 	return;
 }
 
-sub postInstallationPhase
-{	# called after having returned from chrooted environment, should be used
-	# to cleanup any leftovers, if any such thing is necessary
-	my $self                 = shift;
-	my $pluginRepositoryPath = shift;
-	my $pluginTempPath       = shift;
-	
-	return;
-}
+=item removalPhase()
 
-sub preRemovalPhase
-{	# called before chrooting into vendor-OS root, should be used if any
-	# preparations outside of the chroot have to be made before the plugin 
-	# can be removed
-	my $self = shift;
-	my $pluginRepositoryPath = shift;
-		# the folder where the stage1-plugin has stored all files
-		# required by the corresponding stage3 runlevel script
-	my $pluginTempPath = shift;
-		# a temporary playground that will be cleaned up automatically
-	
-	return;
-}
+In this method, the plugin should remove itself from the given vendor-OS.
+
+What "removal" means is up to the plugin. Some plugins may just delete
+a file from the vendor-OS, while others may need to uninstall packages through 
+the vendor-OS' meta packager.
+
+N.B.: This method is invoked while chrooted into the vendor-OS root.
+
+=cut
 
 sub removalPhase
-{	# called while chrooted to the vendor-OS root, most plugins will do all
-	# their uninstallation work here
+{
 	my $self = shift;
 	my $pluginRepositoryPath = shift;
-		# the repository folder, this time from inside the chroot
+		# the repository folder, relative to the vendor-OS root
 	my $pluginTempPath = shift;
-		# the temporary folder, this time from inside the chroot
+		# the temporary folder, relative to the vendor-OS root
+	my $openslxPath = shift;
+		# the openslx base path bind-mounted into the chroot (/mnt/openslx)
 	
 	return;
 }
 
-sub postRemovalPhase
-{	# called after having returned from chrooted environment, should be used
-	# to cleanup any leftovers, if any such thing is necessary
-	my $self                 = shift;
-	my $pluginRepositoryPath = shift;
-	my $pluginTempPath       = shift;
-	
-	return;
-}
+=back
+
+=head2 Initramfs Interface
+
+All of the following methods are invoked by the config demuxer when it makes an 
+initramfs for a system that has this plugin activated. Through these methods,
+each plugin can integrate itself into that initramfs.
+
+=over
+
+=item suggestAdditionalKernelParams()
+
+Called in order to give the plugin a chance to add any kernel params it 
+requires.
+
+In order to do so, the plugin should return a list of additional kernel params 
+that it would like to see added.
+
+=cut
 
 sub suggestAdditionalKernelParams
-{	# called by config-demuxer in order to give the plugin a chance to add
-	# any kernel params it requires.
-	# In order to do so, the plugin should return a list of additional kernel
-	# params that it would like to see added.
+{
 	my $self                = shift;
 	my $makeInitRamFSEngine = shift;
 	
 	return;
 }
+
+=item suggestAdditionalKernelModules()
+
+Called in order to give the plugin a chance to add any kernel modules it 
+requires.
+
+In order to do so, the plugin should return the names of additional kernel
+modules that it would like to see added.
+	
+=cut
 
 sub suggestAdditionalKernelModules
-{	# called by config-demuxer in order to give the plugin a chance to add
-	# any kernel modules it requires.
-	# In order to do so, the plugin should return the names of additional kernel
-	# modules that it would like to see added.
+{
 	my $self                = shift;
 	my $makeInitRamFSEngine = shift;
 	
 	return;
 }
 
+=item copyRequiredFilesIntoInitramfs()
+
+Called in order to give the plugin a chance to copy all required files from the 
+vendor-OS into the initramfs.
+
+N.B.: Only files that are indeed required by the initramfs should be copied 
+here, i.e. files that are needed *before* the root-fs has been mounted. 
+All other files should be taken from the root-fs instead!
+
+=cut
+
 sub copyRequiredFilesIntoInitramfs
-{	# called by config-demuxer in order to give the plugin a chance to copy
-	# all required files from the vendor-OS into the initramfs.
-	# N.B.: Only files that are indeed required by the initramfs should be
-	#       copied here, i.e. files that are needed *before* the root-fs
-	#       has been mounted. 
-	#       All other files should be taken from the root-fs instead!
+{
 	my $self                = shift;
 	my $targetPath          = shift;
 	my $attrs				= shift;
@@ -180,12 +287,19 @@ sub copyRequiredFilesIntoInitramfs
 	return;
 }
 
+=item setupPluginInInitramfs()
+
+Called in order to let the plugin setup all the files it requires in the 
+initramfs.
+
+Normally, you don't need to override this method in your own plugin,
+as it is usually enough to override suggestAdditionalKernelParams(),
+suggestAdditionalKernelModules() and maybe copyRequiredFilesIntoInitramfs().
+
+=cut
+
 sub setupPluginInInitramfs
-{	# called by config-demuxer in order to let the plugin setup all the files
-	# it requires in the initramfs.
-	# Normally, you don't need to override this method in your own plugin,
-	# as it is usually enough to override suggestAdditionalKernelParams(),
-	# suggestAdditionalKernelModules() and maybe copyRequiredFilesIntoInitramfs().
+{
 	my $self                = shift;
 	my $attrs				= shift;
 	my $makeInitRamFSEngine = shift;
@@ -240,3 +354,13 @@ sub setupPluginInInitramfs
 
 	return 1;
 }
+
+=back
+
+=head2 Support Interface
+
+=over
+
+=cut
+
+1;

@@ -8,6 +8,9 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
+# vmchooser.pm
+#	- allows user to pick from a list of virtual machin images
+# -----------------------------------------------------------------------------
 package OpenSLX::OSPlugin::vmchooser;
 
 use strict;
@@ -18,11 +21,6 @@ use base qw(OpenSLX::OSPlugin::Base);
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
-################################################################################
-# if you have any questions regarding the concept of OS-plugins and their
-# implementation, please drop a mail to: ot@openslx.com, or join the IRC-channel
-# '#openslx' (on freenode).
-################################################################################
 sub new
 {
 	my $class = shift;
@@ -40,22 +38,17 @@ sub getInfo
 
 	return {
 		description => unshiftHereDoc(<<'		End-of-Here'),
-			this plugin will over a list of different, chooseable virtualmachine images
+			allows user to pick from a list of different virtual machine images
 		End-of-Here
 		mustRunAfter => [],
 	};
 }
 
 sub getAttrInfo
-{	# returns a hash-ref with information about all attributes supported
-	# by this specific plugin
+{
 	my $self = shift;
 
-	# This default configuration will be added as attributes to the default
-	# system, such that it can be overruled for any specific system by means
-	# of slxconfig.
 	return {
-		# attribute 'active' is mandatory for all plugins
 		'vmchooser::active' => {
 			applies_to_systems => 0,
 			applies_to_clients => 0,
@@ -66,7 +59,6 @@ sub getAttrInfo
 			content_descr => '1 means active - 0 means inactive',
 			default => '1',
 		},
-		# attribute 'precedence' is mandatory for all plugins
 		'vmchooser::precedence' => {
 			applies_to_systems => 1,
 			applies_to_clients => 1,
@@ -78,31 +70,6 @@ sub getAttrInfo
 			default => 50,
 		},
 	};
-}
-
-sub preInstallationPhase
-{	# called before chrooting into vendor-OS root, should be used if any files
-	# have to be downloaded outside of the chroot (which might be necessary
-	# if the required files can't be installed via the meta-packager)
-	my $self = shift;
-	my $pluginRepositoryPath = shift;
-		# the folder where the stage1-plugin should store all files
-		# required by the corresponding stage3 runlevel script
-	my $pluginTempPath = shift;
-		# a temporary playground that will be cleaned up automatically
-	
-	# uncomment the following if you need to copy files
-	## get path of files we need to install
-	#my $pluginName = $self->{'name'};
-
-	##my $pluginFilesPath
-	#	= "$openslxConfig{'base-path'}/lib/plugins/$pluginName/files";
-
-	## copy all needed files now
-	#my @files = ("file1", "file2");
-	#foreach my $file (@files) {
-	#	copyFile("$pluginFilesPath/$file", "$pluginRepositoryPath");
-	#}
 }
 
 1;

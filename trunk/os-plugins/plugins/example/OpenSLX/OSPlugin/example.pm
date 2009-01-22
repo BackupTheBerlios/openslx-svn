@@ -96,89 +96,59 @@ sub getAttrInfo
 	};
 }
 
-sub preInstallationPhase
-{	# called before chrooting into vendor-OS root, should be used if any files
-	# have to be downloaded outside of the chroot (which might be necessary
-	# if the required files can't be installed via the meta-packager)
-	my $self = shift;
-	my $pluginRepositoryPath = shift;
-		# the folder where the stage1-plugin should store all files
-		# required by the corresponding stage3 runlevel script
-	my $pluginTempPath = shift;
-		# a temporary playground that will be cleaned up automatically
-	
-	# in this example plugin, there's no need to do anything here ...
-	
-	# uncomment the following if you need to copy files
-	## get path of files we need to install
-	#my $pluginName = $self->{'name'};
-
-	##my $pluginFilesPath
-	#	= "$openslxConfig{'base-path'}/lib/plugins/$pluginName/files";
-
-	## copy all needed files now
-	#my @files = ("file1", "file2");
-	#foreach my $file (@files) {
-	#	copyFile("$pluginFilesPath/$file", "$pluginRepositoryPath");
-	#}
-}
-
 sub installationPhase
-{	# called while chrooted to the vendor-OS root, most plugins will do all
-	# their installation work here
+{	# called while chrooted to the vendor-OS root in order to give the plugin
+	# a chance to install required files into the vendor-OS.
 	my $self = shift;
 	
-	# name of current os
-	# $self->{'os-plugin-engine'}->{'vendor-os-name'} 
-	
 	my $pluginRepositoryPath = shift;
-		# the repository folder, this time from inside the chroot
+		# The folder where the stage1-plugin should store all files
+		# required by the corresponding stage3 runlevel script.
+		# As this method is being executed while chrooted into the vendor-OS,
+		# this path is relative to that root (i.e. directly usable).
 	my $pluginTempPath = shift;
-		# the temporary folder, this time from inside the chroot
+		# A temporary playground that will be cleaned up automatically.
+		# As this method is being executed while chrooted into the vendor-OS,
+		# this path is relative to that root (i.e. directly usable).
+	my $openslxPath = shift;
+		# the openslx base path bind-mounted into the chroot (/mnt/openslx)
 	
 	# for this example plugin, we simply create two files:
 	spitFile("$pluginRepositoryPath/right", "(-;\n");
 	spitFile("$pluginRepositoryPath/left", ";-)\n");
-}
 
-sub postInstallationPhase
-{	# called after having returned from chrooted environment, should be used
-	# to cleanup any leftovers, if any such thing is necessary
-	my $self                 = shift;
-	my $pluginRepositoryPath = shift;
-	my $pluginTempPath       = shift;
-	
-	# in this example plugin, there's no need to do anything here ...
-}
+	# Some plugins have to copy files from their plugin folder into the
+	# vendor-OS. In order to make this possible while chrooted, the host's
+	# /opt/openslx folder will be mounted to /mnt/openslx in the vendor-OS. 
+	# So each plugin could copy some files like this:
+	#
+	# # get our own name:
+	# my $pluginName = $self->{'name'};
+	#
+	# # get our own base path:
+	# my $pluginBasePath = "/mnt/openslx/lib/plugins/$pluginName";
+	#     
+	# # copy all needed files now:
+	# foreach my $file ( qw( file1, file2 ) ) {
+	#     copyFile("$pluginBasePath/$file", "$pluginRepositoryPath/");
+	# }
 
-sub preRemovalPhase
-{	# called before chrooting into vendor-OS root, should be used if any
-	# preparations outside of the chroot have to be made before the plugin 
-	# can be removed
-	my $self = shift;
-	my $pluginRepositoryPath = shift;
-		# the folder where the stage1-plugin has stored all files
-		# required by the corresponding stage3 runlevel script
-	my $pluginTempPath = shift;
-		# a temporary playground that will be cleaned up automatically
+	# name of current os
+	# $self->{'os-plugin-engine'}->{'vendor-os-name'} 
+
+	return;
 }
 
 sub removalPhase
-{	# called while chrooted to the vendor-OS root, most plugins will do all
-	# their uninstallation work here
+{	# called while chrooted to the vendor-OS root in order to give the plugin
+	# a chance to uninstall no longer required files from the vendor-OS.
 	my $self = shift;
 	my $pluginRepositoryPath = shift;
-		# the repository folder, this time from inside the chroot
+		# the repository folder, relative to the vendor-OS root
 	my $pluginTempPath = shift;
-		# the temporary folder, this time from inside the chroot
-}
+		# the temporary folder, relative to the vendor-OS root
 
-sub postRemovalPhase
-{	# called after having returned from chrooted environment, should be used
-	# to cleanup any leftovers, if any such thing is necessary
-	my $self                 = shift;
-	my $pluginRepositoryPath = shift;
-	my $pluginTempPath       = shift;
+	return;
 }
 
 1;

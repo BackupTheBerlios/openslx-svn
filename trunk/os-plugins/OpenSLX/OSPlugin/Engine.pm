@@ -19,6 +19,7 @@ use warnings;
 our $VERSION = 1.01;    # API-version . implementation-version
 
 use File::Basename;
+use File::Path;
 
 use OpenSLX::Basics;
 use OpenSLX::OSSetup::Engine;
@@ -71,28 +72,45 @@ sub installPlugin
 		$osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
 		$self->{'os-setup-engine'} = $osSetupEngine;
 
+		# bind mount openslx basepath to /mnt/openslx of vendor-OS:
+		my $basePath 			= $openslxConfig{'base-path'};
+		my $openslxPathInChroot = "$self->{'vendor-os-path'}/mnt/openslx";
+		mkpath( [ $openslxPathInChroot ] );
+		if (slxsystem("mount -o bind $basePath $openslxPathInChroot")) {
+			croak(
+				_tr(
+					"unable to bind mount '%s' to '%s'! (%s)", 
+					$basePath, $openslxPathInChroot, $!
+				)
+			);
+		}
+
+		# now let plugin install itself into vendor-OS
 		my $chrootedPluginRepoPath 
 			= "$openslxConfig{'base-path'}/plugin-repo/$self->{'plugin-name'}";
-		my $pluginRepoPath = "$self->{'vendor-os-path'}/$chrootedPluginRepoPath";
-		my $chrootedPluginTempPath = "/tmp/slx-plugin/$self->{'plugin-name'}";
-		my $pluginTempPath = "$self->{'vendor-os-path'}/$chrootedPluginTempPath";
+		my $pluginRepoPath 
+			= "$self->{'vendor-os-path'}/$chrootedPluginRepoPath";
+		my $chrootedPluginTempPath 
+			= "/tmp/slx-plugin/$self->{'plugin-name'}";
+		my $pluginTempPath 
+			= "$self->{'vendor-os-path'}/$chrootedPluginTempPath";
 		foreach my $path ($pluginRepoPath, $pluginTempPath) {
 			if (slxsystem("mkdir -p $path")) {
 				croak(_tr("unable to create path '%s'! (%s)", $path, $!));
 			}
 		}
-	
-		$self->{plugin}->preInstallationPhase($pluginRepoPath, $pluginTempPath);
-		
 		$self->{'os-setup-engine'}->callChrootedFunctionForVendorOS(
 			sub {
 				$self->{plugin}->installationPhase(
-					$chrootedPluginRepoPath, $chrootedPluginTempPath
+					$chrootedPluginRepoPath, $chrootedPluginTempPath,
+					'/mnt/openslx',
 				);
 			}
 		);
-		
-		$self->{plugin}->postInstallationPhase($pluginRepoPath, $pluginTempPath);
+
+		if (slxsystem("umount $openslxPathInChroot")) {
+			croak(_tr("unable to umount '%s'! (%s)", $openslxPathInChroot, $!));
+		}
 	}
 	
 	$self->_addInstalledPluginToDB();
@@ -119,17 +137,18 @@ sub removePlugin
 	
 		my $chrootedPluginRepoPath 
 			= "$openslxConfig{'base-path'}/plugin-repo/$self->{'plugin-name'}";
-		my $pluginRepoPath = "$self->{'vendor-os-path'}/$chrootedPluginRepoPath";
-		my $chrootedPluginTempPath = "/tmp/slx-plugin/$self->{'plugin-name'}";
-		my $pluginTempPath = "$self->{'vendor-os-path'}/$chrootedPluginTempPath";
+		my $pluginRepoPath 
+			= "$self->{'vendor-os-path'}/$chrootedPluginRepoPath";
+		my $chrootedPluginTempPath 
+			= "/tmp/slx-plugin/$self->{'plugin-name'}";
+		my $pluginTempPath 
+			= "$self->{'vendor-os-path'}/$chrootedPluginTempPath";
 		foreach my $path ($pluginRepoPath, $pluginTempPath) {
 			if (slxsystem("mkdir -p $path")) {
 				croak(_tr("unable to create path '%s'! (%s)", $path, $!));
 			}
 		}
 	
-		$self->{plugin}->preRemovalPhase($pluginRepoPath, $pluginTempPath);
-		
 		$self->{'os-setup-engine'}->callChrootedFunctionForVendorOS(
 			sub {
 				$self->{plugin}->removalPhase(
@@ -137,8 +156,6 @@ sub removePlugin
 				);
 			}
 		);
-		
-		$self->{plugin}->postRemovalPhase($pluginRepoPath, $pluginTempPath);
 	}
 	
 	$self->_removeInstalledPluginFromDB();

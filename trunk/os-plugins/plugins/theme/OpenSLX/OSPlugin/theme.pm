@@ -49,15 +49,10 @@ sub getInfo
 }
 
 sub getAttrInfo
-{	# returns a hash-ref with information about all attributes supported
-	# by this specific plugin
+{
 	my $self = shift;
 
-	# This default configuration will be added as attributes to the default
-	# system, such that it can be overruled for any specific system by means
-	# of slxconfig.
 	return {
-		# attribute 'active' is mandatory for all plugins
 		'theme::active' => {
 			applies_to_systems => 1,
 			applies_to_clients => 0,
@@ -68,7 +63,6 @@ sub getAttrInfo
 			content_descr => '1 means active - 0 means inactive',
 			default => '1',
 		},
-		# attribute 'precedence' is mandatory for all plugins
 		'theme::precedence' => {
 			applies_to_systems => 1,
 			applies_to_clients => 0,

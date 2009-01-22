@@ -18,6 +18,8 @@ use warnings;
 
 use base qw(OpenSLX::OSPlugin::Base);
 
+use File::Path;
+
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
@@ -90,27 +92,33 @@ sub getAttrInfo
 	};
 }
 
-sub preInstallationPhase
-{	# called before chrooting into vendor-OS root, should be used if any files
-	# have to be downloaded outside of the chroot (which might be necessary
-	# if the required files can't be installed via the meta-packager)
-	my $self = shift;
+sub installationPhase
+{
+	my $self                 = shift;
 	my $pluginRepositoryPath = shift;
-		# the folder where the stage1-plugin should store all files
-		# required by the corresponding stage3 runlevel script
-	my $pluginTempPath = shift;
-		# a temporary playground that will be cleaned up automatically
+	my $pluginTempPath       = shift;
+	my $openslxPath          = shift;
 
 	# get path of files we need to install
-	my $pluginName = $self->{'name'};
-	my $pluginFilesPath
-		= "$openslxConfig{'base-path'}/lib/plugins/$pluginName/files";
+	my $pluginFilesPath = "$openslxPath/lib/plugins/$self->{'name'}/files";
 
 	# copy all needed files now
-	my @files = ("dhcpd.conf", "nat.conf", "nvram.5.0", "runvmware-v2");
+	my @files = qw( dhcpd.conf nat.conf nvram.5.0 runvmware-v2 );
 	foreach my $file (@files) {
-		copyFile("$pluginFilesPath/$file", "$pluginRepositoryPath");
+		copyFile("$pluginFilesPath/$file", $pluginRepositoryPath);
 	}
+}
+
+sub removalPhase
+{
+	my $self                 = shift;
+	my $pluginRepositoryPath = shift;
+	my $pluginTempPath       = shift;
+	my $openslxPath          = shift;
+	
+	rmtree ( [ $pluginRepositoryPath ] );
+	
+	return;
 }
 
 1;
