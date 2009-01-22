@@ -108,6 +108,12 @@ use vars qw(%supportedDistros);
         'ubuntu-7.10_amd64' => {
                 module => 'Ubuntu',          support => 'clone'
         },
+        'ubuntu-8.04' => {
+                module => 'Ubuntu',          support => 'clone'
+        },
+        'ubuntu-8.04_amd64' => {
+                module => 'Ubuntu',          support => 'clone'
+        },
 );
 
 ################################################################################
