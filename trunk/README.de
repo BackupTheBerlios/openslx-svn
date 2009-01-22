@@ -3,7 +3,7 @@ WILLKOMMEN
 OpenSLX - Open StateLess eXtensions Version 4.1
 
 OpenSLX ist ein Softwarepaket zum Einrichten, Verwalten und Booten von 
-"Stateless Client Systems" (a.k.a. "Thin Clients").
+"Stateless Client Systems" (a.k.a. "diskless X stations").
 
 Informationen zur Installation und benötigten Paketen finden sich im
 Unterverzeichnis doc/ (insbesondere einstieg.txt), weiterführende Informationen
