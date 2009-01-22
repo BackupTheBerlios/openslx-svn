@@ -183,8 +183,8 @@ sub followLink
 	my $target;
 	while (-l "$path") {
 		$target = readlink "$path";
-		if (substr($target, 1, 1) eq '/') {
-			$path = "$prefixedPath/$target";
+		if (substr($target, 0, 1) eq '/') {
+			$path = "$prefixedPath$target";
 		}
 		else {
 			$path = $prefixedPath . dirname($path) . '/' . $target;
