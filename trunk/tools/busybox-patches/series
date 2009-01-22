@@ -1,4 +1,5 @@
 # series file useable by quilt
-bzip2-payload-1.7.1.diff
-cryptpw-blowfish-1.7.1.diff
-unionfs-run-init-1.7.1.diff
+bzip2-payload-1.8.2.diff
+cryptpw-blowfish-1.8.2.diff
+unionfs-run-init-1.8.2.diff
+vncpasswd-1.8.2.diff

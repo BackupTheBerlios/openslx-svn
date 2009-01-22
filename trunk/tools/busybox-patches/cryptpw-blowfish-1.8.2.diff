@@ -1,8 +1,8 @@
 diff -ruw busybox-1.6.1/include/usage.h busybox-1.6.1-openslx/include/usage.h
 --- busybox-1.6.1/include/usage.h	2007-06-30 17:06:45.000000000 +0200
 +++ busybox-1.6.1-openslx/include/usage.h	2007-08-04 15:41:14.000000000 +0200
-@@ -475,12 +475,23 @@
-        "	-c dir		Specify crontab directory"
+@@ -502,12 +502,23 @@
+        "	-c dir		Crontab directory"
 
  #define cryptpw_trivial_usage \
 -       "[-a des|md5] [string]"
@@ -48,7 +48,7 @@ diff -ruw busybox-1.6.1/loginutils/cryptpw.c busybox-1.6.1-openslx/loginutils/cr
 --- busybox-1.6.1/loginutils/cryptpw.c	2007-06-30 17:06:45.000000000 +0200
 +++ busybox-1.6.1-openslx/loginutils/cryptpw.c	2007-08-04 15:32:48.000000000 +0200
 @@ -10,16 +10,22 @@
- int cryptpw_main(int argc, char **argv);
+ int cryptpw_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
  int cryptpw_main(int argc, char **argv)
  {
 -	char salt[sizeof("$N$XXXXXXXX")];
