@@ -1,0 +1,1 @@
+scp /root/fs/ba-vito/tags/abgabe/kernel/dnbd2.ko 132.230.4.71:/var/opt/openslx/stage1/suse-10.2/lib/modules/2.6.18.8-0.3-default/kernel/drivers/block/
