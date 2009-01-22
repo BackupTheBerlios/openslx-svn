@@ -448,13 +448,19 @@ if [ -n "${bldmod}" ] ; then
     dnbd2)
       RDEV=/dev/vnbd0
       waitfor "${RDEV}" 20000 || error "$init_nbddev"
+      # quickhack, should be read in from URI
+      echo 1 > /sys/block/vnbd0/config/vid
+      echo 1 > /sys/block/vnbd0/config/rid
       # check for others in machine-setup and then kernel cmdline
       rootfs="$(sed -n "/rootfs=/p" /etc/initramfs-setup| \
         sed "s,rootfs=,,;s,\",,g") "
-      [ -z "$rootfs" ] && \
+      [ "$rootfs" = " " ] && \
         rootfs="$(cat /proc/cmdline|sed "s,.*rootfs=\",,;s,\".*,,") "
+      usleep 5000
       i=0
-      while [ "x$bldhost" != "x" ]; do
+      # assume no more than 16 different dnbd2 servers (default 4)
+      while [ "x$bldhost" != "x" -a $i -lt 16 ]; do
+        #echo "I: $i R: $rootfs P:$bldport H:$bldhost"
         echo $bldhost $bldport > /sys/block/vnbd0/server${i}/sock
         i=$(($i + 1))
         rootfs=${rootfs#* }
@@ -462,12 +468,10 @@ if [ -n "${bldmod}" ] ; then
         bldhost=$(uri_token $bldsp server)
         bldport=$(uri_token $bldsp port)
       done
-      # quickhack, should be read in from URI
-      echo 1 > /sys/block/vnbd0/config/vid
-      echo 1 > /sys/block/vnbd0/config/rid
-      echo deadline > /sys/block/vnbd0/queue/scheduler
+      # the deadline, cfq scheduler seem not a good idea here
+      echo noop > /sys/block/vnbd0/queue/scheduler
+      # needed for some reason to settle initialization
       i=0
-      sleep 1
       while [ $(cat /sys/block/vnbd0/config/running) != 1 ] ; do
         echo 1 > /sys/block/vnbd0/config/running
         usleep 5000
@@ -476,7 +480,7 @@ if [ -n "${bldmod}" ] ; then
           error "$init_dnbd2s"; break
         fi
       done
-      echo "32" > /sys/block/vnbd0/queue/read_ahead_kb
+      echo "64" > /sys/block/vnbd0/queue/read_ahead_kb
       ;;
     # dnbd by Thorsten Zitterell
     dnbd)

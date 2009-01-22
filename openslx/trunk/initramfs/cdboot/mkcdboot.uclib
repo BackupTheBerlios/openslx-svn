@@ -26,7 +26,7 @@ cp ${SLX_SHARE_PATH}/cdboot/init ${BUILDDIR}/init
 cp ${SLX_SHARE_PATH}/busybox/busybox.uclib.i586 ${BUILDDIR}/bin/busybox
 for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
     date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \
-    insmod id ip kill killall ln ls lsmod mdev mkdir \
+    insmod id ip ipcalc kill killall ln ls lsmod mdev mkdir \
     mknod mkswap modprobe mount mv nice ping printf ps rdate \
     rm rmmod sed sleep sort swapoff swapon switch_root tar test tftp \
     time touch tr udhcpc umount uptime usleep vconfig vi wget zcat zcip; do
