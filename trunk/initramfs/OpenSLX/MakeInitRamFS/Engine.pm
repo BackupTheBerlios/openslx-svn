@@ -467,7 +467,7 @@ sub _copyRequiredFSTools
 	foreach my $tool (@{$self->{'fs-tools'}}) {
 		my $toolPath = $self->_findBinary($tool);
 		if (!$toolPath) {
-			die _tr('filesystem-tool "$tool" is not available, giving up!');
+			die _tr('filesystem-tool "%s" is not available, giving up!', $tool);
 		}
 		$self->addCMD("cp -p $toolPath $self->{'build-path'}/bin");
 		$self->_addRequiredLibsFor($toolPath);
@@ -490,7 +490,9 @@ sub _copyRequiredLayeredFSTools
 	foreach my $tool (@tools) {
 		my $toolPath = $self->_findBinary($tool);
 		if (!$toolPath) {
-			die _tr('layered-fs-tool "$tool" is not available, giving up!');
+			die _tr(
+				'layered-fs-tool "%s" is not available, giving up!', $tool
+			);
 		}
 		$self->addCMD("cp -p $toolPath $self->{'build-path'}/bin");
 		$self->_addRequiredLibsFor($toolPath);
