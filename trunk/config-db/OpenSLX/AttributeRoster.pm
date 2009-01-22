@@ -410,14 +410,14 @@ sub getAttrInfo
 	}
 	elsif (defined $params->{scope}) {
 		my %MatchingAttributeInfo;
-		my $lcScope = lc($params->{scope});
+		my $selectedScope = lc($params->{scope});
 		foreach my $attr (keys %AttributeInfo) {
 			my $attrScope = '';
 			if ($attr =~ m{^(.+?)::}) {
-				$attrScope = $1;
+				$attrScope = lc($1);
 			}
-			if ((!$attrScope && $lcScope eq 'core') 
-			|| lc($attrScope) eq $lcScope) {
+			if ((!$attrScope && $selectedScope eq 'core') 
+			|| $attrScope eq $selectedScope) {
 				$MatchingAttributeInfo{$attr} = $AttributeInfo{$attr};
 			}
 		}

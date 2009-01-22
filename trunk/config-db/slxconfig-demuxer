@@ -498,7 +498,7 @@ sub generateInitialRamFS
 	$cmd .= "-S $info->{name} ";
 
 	# pass on theme, if any
-	my $theme = $attrs->{'theme::name'} || '';
+	my $theme = $attrs->{'theme::splash'} || '';
 	if (length $theme) {
 		$cmd .= "-s $theme ";
 	}
@@ -705,8 +705,7 @@ sub writePluginConfigurationsForSystem
 		vlog(2, _tr("checking configuration of plugin '%s'", $pluginName));
 
 		# skip inactive plugins
-		my $pluginScope = lc($pluginName);
-		next unless $attrs->{"${pluginScope}::active"};
+		next unless $attrs->{"${pluginName}::active"};
 		
 		push @activePlugins, $pluginName;
 
@@ -717,7 +716,7 @@ sub writePluginConfigurationsForSystem
 		vlog(2, _tr("writing configuration file for plugin '%s'", $pluginName));
 		# write plugin configuration to a file:
 		my $content;
-		my @pluginAttrs = grep { $_ =~ m{^${pluginScope}::} } keys %$attrs;
+		my @pluginAttrs = grep { $_ =~ m{^${pluginName}::} } keys %$attrs;
 		foreach my $attr (sort @pluginAttrs) {
 			my $attrVal = $attrs->{$attr};
 			next if !defined $attrVal;
@@ -734,7 +733,7 @@ sub writePluginConfigurationsForSystem
 		
 		# copy runlevel script to be used in stage3:
 		my $precedence 
-			= sprintf('%02d', $attrs->{"${pluginScope}::precedence"});
+			= sprintf('%02d', $attrs->{"${pluginName}::precedence"});
 		my $pluginFolder 
 			= "$openslxConfig{'base-path'}/lib/plugins/$pluginName";
 		my $scriptName = "$pluginFolder/XX_${pluginName}.sh";

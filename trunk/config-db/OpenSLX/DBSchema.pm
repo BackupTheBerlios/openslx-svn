@@ -35,7 +35,7 @@ use OpenSLX::Basics;
 ### 		fk		=> foreign key (integer)
 ################################################################################
 
-my $VERSION = 0.23;
+my $VERSION = 0.24;
 
 my $DbSchema = {
 	'version' => $VERSION,
@@ -621,6 +621,40 @@ sub _schemaUpgradeDBFrom
 		);
 	
 		$metaDB->schemaSetDBVersion(0.23);
+	
+		return 1;
+	},
+	0.24 => sub {
+		my $metaDB = shift;
+	
+		vlog(0, "upgrading schema version to 0.24");
+	
+		# split theme::name into theme::splash, theme::displaymanager and
+		# theme::desktop
+		foreach my $system ($metaDB->fetchSystemByFilter()) {
+			my $attrs = $system->{attrs} || {};
+			next if !exists $attrs->{'theme::name'};
+			$attrs->{'theme::splash'} 
+				= $attrs->{'theme::displaymanager'}
+				= $attrs->{'theme::desktop'} 
+				= $attrs->{'theme::name'};
+			delete $attrs->{'theme::name'};
+			$metaDB->setSystemAttrs($system->{id}, $attrs);
+		}
+	
+		# force all theme names to lowercase
+		foreach my $vendorOS ($metaDB->fetchVendorOSByFilter()) {
+			my @installedPlugins 
+				= $metaDB->fetchInstalledPlugins($vendorOS->{id});
+			foreach my $plugin (@installedPlugins) {
+				my $pluginName = $plugin->{plugin_name};
+print "$vendorOS->{id} $pluginName\n";
+				$metaDB->removeInstalledPlugin($vendorOS->{id}, $pluginName);
+				$metaDB->addInstalledPlugin($vendorOS->{id}, lc($pluginName));
+			}
+		}
+
+		$metaDB->schemaSetDBVersion(0.24);
 	
 		return 1;
 	},

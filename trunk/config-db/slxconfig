@@ -93,7 +93,9 @@ elsif ($action =~ m[^change-c]i) {
 	changeClientInConfigDB(@ARGV);
 }
 elsif ($action =~ m[^list-a]) {
-	print _tr("List of known attributes:\n");
+	print @ARGV 
+		? _tr("List of known attributes for scope '%s':\n", $ARGV[0])
+		: _tr("List of known attributes:\n");
 	listAttributes(@ARGV);
 }
 elsif ($action =~ m[^list-c]) {
@@ -352,6 +354,7 @@ sub listAttributes
 		map {
 			my $attr = dclone($attrInfo->{$_});
 			$attr->{name} = $_;
+			delete $attr->{content_regex};	# no use for display purposes
 			$attr;
 		}
 		sort keys %$attrInfo
@@ -516,8 +519,7 @@ sub listSystems
 				);
 				my $mergedAttrs = $mergedSystem->{attrs} || {};
 				foreach my $plugin (@installedPlugins) {
-					my $pluginScope = lc($plugin);
-					next if !$mergedAttrs->{"${pluginScope}::active"};
+					next if !$mergedAttrs->{"${plugin}::active"};
 					push @activePlugins, $plugin;
 				}
 				if ($inherited) {
@@ -695,12 +697,11 @@ sub searchSystems
 				$openslxDB->mergeDefaultAttributesIntoSystem($mergedSystem);
 				my $mergedAttrs = $mergedSystem->{attrs} || {};
 				foreach my $plugin (@installedPlugins) {
-					my $pluginScope = lc($plugin);
-					next if !$mergedAttrs->{"${pluginScope}::active"};
+					next if !$mergedAttrs->{"${plugin}::active"};
 					my $precedence = sprintf(
-						"%02d", $mergedAttrs->{"${pluginScope}::precedence"}
+						"%02d", $mergedAttrs->{"${plugin}::precedence"}
 					);
-					push(@activePlugins, "$precedence...$plugin");
+					push(@activePlugins, $plugin);
 				}
 			}
 			$_->{PLUGINS} = [ sort @activePlugins ];

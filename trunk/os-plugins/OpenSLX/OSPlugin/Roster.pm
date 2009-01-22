@@ -18,6 +18,46 @@ use warnings;
 
 use OpenSLX::Basics;
 
+my %plugins;
+
+=item C<getAvailablePlugins()>
+
+Returns a hash that keys the names of available plugins to their info hash.
+
+=cut
+
+sub getAvailablePlugins
+{
+	my $class = shift;
+
+	$class->_init() if !%plugins;
+
+	my %pluginInfo;
+	foreach my $pluginName (keys %plugins) {
+		$pluginInfo{$pluginName} = $plugins{$pluginName}->getInfo();
+	}
+	return \%pluginInfo;
+}
+
+=item C<getPluginAttrInfo()>
+
+Returns a hash that contains info about the attributes support by the 
+given plugin
+
+=cut
+
+sub getPluginAttrInfo
+{
+	my $class      = shift;
+	my $pluginName = shift;
+
+	$class->_init() if !%plugins;
+
+	return if !$plugins{$pluginName};
+
+	return $plugins{$pluginName}->getAttrInfo();
+}
+
 =item C<addAllDefaultAttributesToHash()>
 
 Fetches attribute info from all available plugins and adds it to the given
@@ -38,6 +78,22 @@ sub addAllDefaultAttributesToHash
 	my $class    = shift;
 	my $attrInfo = shift;
 
+	$class->_init() if !%plugins;
+
+	foreach my $plugin (values %plugins) {
+		my $pluginAttrInfo = $plugin->getAttrInfo();
+		foreach my $attr (keys %$pluginAttrInfo) {
+			$attrInfo->{$attr} = $pluginAttrInfo->{$attr};
+		}
+	}
+	return 1;
+}
+
+sub _init
+{
+	my $class = shift;
+
+	%plugins = ();
 	my $pluginPath = "$openslxConfig{'base-path'}/lib/plugins";
 	foreach my $modulePath (glob("$pluginPath/*")) {
 		next if $modulePath !~ m{/([^/]+)$};
@@ -45,12 +101,9 @@ sub addAllDefaultAttributesToHash
 		my $class = "OpenSLX::OSPlugin::$pluginName";
 		vlog(2, "loading plugin $class from path '$modulePath'");
 		my $plugin = instantiateClass($class, { pathToClass => $modulePath });
-		my $pluginAttrInfo = $plugin->getAttrInfo();
-		foreach my $attr (keys %$pluginAttrInfo) {
-			$attrInfo->{$attr} = $pluginAttrInfo->{$attr};
-		}
+		$plugins{$pluginName} = $plugin;
 	}
-	return 1;
+	return;
 }
 
 1;

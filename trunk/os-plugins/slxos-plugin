@@ -59,12 +59,30 @@ openslxInit();
 
 my $action = shift @ARGV || '';
 
-if ($action =~ m[^list-av]i) {
+if ($action =~ m[^list]i) {
 	my @pluginFolders = glob("$openslxConfig{'base-path'}/lib/plugins/*");
 	print _tr("List of available plugins:\n");
+	require OpenSLX::OSPlugin::Roster;
+	my $pluginInfo = OpenSLX::OSPlugin::Roster->getAvailablePlugins();
 	print join(
 		'', 
-		map { "\t$_\n" } OpenSLX::OSPlugin::Engine->getAvailablePlugins()
+		map {
+			if ($verbose) {
+				my $description = $pluginInfo->{$_}->{description};
+				$description 
+					.= "\t    " 
+						. _tr("The following attributes are suppported:")
+						. "\n\t        ";
+				my $pluginAttrs 
+					= OpenSLX::OSPlugin::Roster->getPluginAttrInfo($_);
+				$description .= join("\n\t        ", sort keys %$pluginAttrs);
+				"\n\t$_\n\t    $description\n";
+			}
+			else {
+				"\t$_\n";
+			}
+		} 
+		sort keys %$pluginInfo
 	);
 } elsif ($action =~ m[^install]i) {
 	if (scalar(@ARGV) != 2) {

@@ -36,16 +36,6 @@ sub new
 	return bless $self, $class;
 }
 
-sub getAvailablePlugins
-{	# Class-method!
-	my $class = shift;
-
-	return 
-		map { basename($_); }
-		sort 
-		glob("$openslxConfig{'base-path'}/lib/plugins/*");
-}
-
 sub initialize
 {
 	my $self         = shift;

@@ -26,7 +26,7 @@
 
 if [ -e /initramfs/plugin-conf/example.conf ]; then
 	. /initramfs/plugin-conf/example.conf
-	if [ $Example_active -ne 0 ]; then
+	if [ $example_active -ne 0 ]; then
 		[ $DEBUGLEVEL -gt 0 ] && echo "executing the 'example' os-plugin ...";
 
 		# for this example plugin, we simply take a filename from the 

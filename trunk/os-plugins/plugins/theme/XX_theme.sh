@@ -6,7 +6,7 @@
 . /etc/sysconfig/config
 if [ -e /initramfs/plugin-conf/theme.conf ]; then
 	. /initramfs/plugin-conf/theme.conf
-	if [ $Theme_active -ne 0 ]; then
+	if [ $theme_active -ne 0 ]; then
 		[ $DEBUGLEVEL -gt 0 ] && echo "executing the 'theme' os-plugin ...";
 	
 		testmkd /mnt/var/lib/openslx/themes/displaymanager

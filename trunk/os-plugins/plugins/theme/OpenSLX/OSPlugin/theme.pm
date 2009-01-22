@@ -40,7 +40,7 @@ sub getInfo
 
 	return {
 		description => unshiftHereDoc(<<'		End-of-Here'),
-			applies a graphical theme to the bootsplash and the displaymanager
+			Applies a graphical theme to the bootsplash and the displaymanager.
 		End-of-Here
 		mustRunAfter => [],
 	};
@@ -78,11 +78,31 @@ sub getAttrInfo
 			default => 30,
 		},
 
-		'theme::name' => {
+		'theme::splash' => {
 			applies_to_systems => 1,
 			applies_to_clients => 0,
 			description => unshiftHereDoc(<<'			End-of-Here'),
-				the name of the theme to apply (or unset for no theme)
+				name of the theme to apply to bootsplash (unset for no theme)
+			End-of-Here
+			content_regex => undef,
+			content_descr => undef,
+			default => 'openslx',
+		},
+		'theme::displaymanager' => {
+			applies_to_systems => 1,
+			applies_to_clients => 0,
+			description => unshiftHereDoc(<<'			End-of-Here'),
+				name of the theme to apply to displaymanager (unset for no theme)
+			End-of-Here
+			content_regex => undef,
+			content_descr => undef,
+			default => 'openslx',
+		},
+		'theme::desktop' => {
+			applies_to_systems => 1,
+			applies_to_clients => 0,
+			description => unshiftHereDoc(<<'			End-of-Here'),
+				name of the theme to apply to desktop (unset for no theme)
 			End-of-Here
 			content_regex => undef,
 			content_descr => undef,
