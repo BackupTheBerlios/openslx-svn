@@ -1,0 +1,52 @@
+arch = amd64
+package-subdir = pool
+prereq-packages = main/d/debootstrap/debootstrap_0.3.3.2ubuntu3_all.deb
+release-name = gutsy
+<repository base>
+	components = main restricted
+	distribution = gutsy
+	name = Ubuntu 7.10
+	repo-subdir = dists
+	file-for-speedtest = dists/gutsy/main/binary-amd64/Packages.bz2
+</repository>
+<repository base_security>
+	components = main restricted
+	distribution = gutsy-security
+	name = Ubuntu 7.10 Security
+	repo-subdir = dists
+	file-for-speedtest = dists/gutsy-security/main/binary-amd64/Packages.bz2
+</repository>
+<repository base_updates>
+	components = main restricted
+	distribution = gutsy-updates
+	name = Ubuntu 7.10 Updates
+	repo-subdir = dists
+	file-for-speedtest = dists/gutsy-updates/main/binary-amd64/Packages.bz2
+</repository>
+<selection minimal>
+	packages = <<END
+		language-pack-de
+		linux-image-generic
+	END
+</selection>
+<selection gnome>
+	base = minimal
+	packages = <<END
+		ubuntu-desktop
+	END
+</selection>
+<selection kde>
+	base = minimal
+	packages = <<END
+		kubuntu-desktop
+	END
+</selection>
+<selection xfce>
+	base = minimal
+	packages = <<END
+		xubuntu-desktop
+	END
+</selection>
+<selection default>
+	base = minimal
+</selection>
