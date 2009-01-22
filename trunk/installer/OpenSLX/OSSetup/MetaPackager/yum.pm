@@ -41,7 +41,8 @@ sub initPackageSources
 
 	slxsystem("rm -f /etc/yum.repos.d/*");
 	slxsystem("mkdir -p /etc/yum.repos.d");
-	return;
+
+	return 1;
 }
 
 sub setupPackageSource
@@ -66,18 +67,32 @@ sub setupPackageSource
 	}
 	my $repoFile = "/etc/yum.repos.d/$repoName.repo";
 	spitFile($repoFile, "$repoDescr\nexclude=$excludeList\n");
-	return;
+
+	return 1;
 }
 
 sub installSelection
 {
-	my $self = shift;
+	my $self         = shift;
 	my $pkgSelection = shift;
 
 	if (slxsystem("yum -y install $pkgSelection")) {
 		die _tr("unable to install selection (%s)\n", $!);
 	}
-	return;
+
+	return 1;
+}
+
+sub removeSelection
+{
+	my $self         = shift;
+	my $pkgSelection = shift;
+
+	if (slxsystem("yum -y remove $pkgSelection")) {
+		die _tr("unable to remove selection (%s)\n", $!);
+	}
+
+	return 1;
 }
 
 sub updateBasicVendorOS
@@ -91,7 +106,8 @@ sub updateBasicVendorOS
 		}
 		die _tr("unable to update this vendor-os (%s)\n", $!);
 	}
-	return;
+
+	return 1;
 }
 
 1;

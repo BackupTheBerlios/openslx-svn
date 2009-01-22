@@ -44,8 +44,6 @@ vendor-OS)
 
 =item - L</Initramfs Interface> (integrating a plugin into an initramfs)
 
-=item - L</Support Interface> (offers each plugin access to OpenSLX services)
-
 =back
 
 =head1 MORE INFO
@@ -356,11 +354,5 @@ sub setupPluginInInitramfs
 }
 
 =back
-
-=head2 Support Interface
-
-=over
-
-=cut
 
 1;

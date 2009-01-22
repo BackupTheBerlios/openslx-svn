@@ -61,7 +61,8 @@ sub initPackageSources
 		END-OF-HERE
 		spitFile('/etc/kernel-img.conf', $kernelConfig);
 	}
-	return;
+
+	return 1;
 }
 
 sub setupPackageSource
@@ -89,10 +90,11 @@ sub setupPackageSource
 
 sub installSelection
 {
-	my $self = shift;
+	my $self         = shift;
 	my $pkgSelection = shift;
+	my $doRefresh    = shift || 0;
 
-	if (slxsystem("apt-get -y update")) {
+	if ($doRefresh && slxsystem("apt-get -y update")) {
 		die _tr("unable to update repository info (%s)\n", $!);
 	}
 	if ('/var/cache/debconf/slx-defaults.dat') {
@@ -105,7 +107,20 @@ sub installSelection
 	}
 	delete $ENV{DEBCONF_DB_FALLBACK};
 	delete $ENV{DEBIAN_FRONTEND};
-	return;
+
+	return 1;
+}
+
+sub removeSelection
+{
+	my $self         = shift;
+	my $pkgSelection = shift;
+
+	if (slxsystem("apt-get -y remove $pkgSelection")) {
+		die _tr("unable to remove selection (%s)\n", $!);
+	}
+
+	return 1;
 }
 
 sub updateBasicVendorOS
@@ -118,7 +133,8 @@ sub updateBasicVendorOS
 	if (slxsystem("apt-get -y upgrade")) {
 		die _tr("unable to update this vendor-os (%s)\n", $!);
 	}
-	return;
+
+	return 1;
 }
 
 1;

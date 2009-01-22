@@ -25,9 +25,27 @@ use OpenSLX::Basics;
 use OpenSLX::OSSetup::Engine;
 use OpenSLX::Utils;
 
-################################################################################
-### interface methods
-################################################################################
+=head1 NAME
+
+OpenSLX::OSPlugin::Engine - driver class for plugin handling.
+
+=head1 DESCRIPTION
+
+This class works as a driver for the installation/removal of plugins
+into/from a vendor.
+
+Additionally, it provides the OS-Plugin support interface.
+
+=head1 PUBLIC METHODS
+
+=over
+
+=item new()
+
+Trivial constructor
+
+=cut
+
 sub new
 {
 	my $class = shift;
@@ -36,6 +54,13 @@ sub new
 
 	return bless $self, $class;
 }
+
+=item initialize($pluginName, $vendorOSName )
+
+Sets up basic data (I<$pluginName> and I<$vendorOSName>) as well as paths and 
+loads plugin.
+
+=cut
 
 sub initialize
 {
@@ -57,60 +82,51 @@ sub initialize
 
 		$self->{'plugin'} = $self->_loadPlugin();
 		return if !$self->{'plugin'};
+
+		$self->{'chrooted-plugin-repo-path'}
+			= "$openslxConfig{'base-path'}/plugin-repo/$self->{'plugin-name'}";
+		$self->{'plugin-repo-path'}
+			= "$self->{'vendor-os-path'}/$self->{'chrooted-plugin-repo-path'}";
+		$self->{'chrooted-plugin-temp-path'}
+			= "/tmp/slx-plugin/$self->{'plugin-name'}";
+		$self->{'plugin-temp-path'}
+			= "$self->{'vendor-os-path'}/$self->{'chrooted-plugin-temp-path'}";
+		$self->{'chrooted-openslx-base-path'} = '/mnt/openslx';
 	}
 	
 	return 1;
 }
+
+=back
+
+=head2 Driver Interface
+
+The following methods are invoked by the slxos-plugin script in order to
+install/remove a plugin into/from a vendor-OS:
+
+=over
+
+=item installPlugin()
+
+Creates an ossetup-engine for the current vendor-OS and asks that to invoke
+the plugin's installer method while chrooted into that vendor-OS.
+
+=cut
 
 sub installPlugin
 {
 	my $self = shift;
 
 	if ($self->{'vendor-os-name'} ne '<<<default>>>') {
-		# create ossetup-engine for given vendor-OS:
-		my $osSetupEngine = OpenSLX::OSSetup::Engine->new;
-		$osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
-		$self->{'os-setup-engine'} = $osSetupEngine;
-
-		# bind mount openslx basepath to /mnt/openslx of vendor-OS:
-		my $basePath 			= $openslxConfig{'base-path'};
-		my $openslxPathInChroot = "$self->{'vendor-os-path'}/mnt/openslx";
-		mkpath( [ $openslxPathInChroot ] );
-		if (slxsystem("mount -o bind $basePath $openslxPathInChroot")) {
-			croak(
-				_tr(
-					"unable to bind mount '%s' to '%s'! (%s)", 
-					$basePath, $openslxPathInChroot, $!
-				)
-			);
-		}
-
-		# now let plugin install itself into vendor-OS
-		my $chrootedPluginRepoPath 
-			= "$openslxConfig{'base-path'}/plugin-repo/$self->{'plugin-name'}";
-		my $pluginRepoPath 
-			= "$self->{'vendor-os-path'}/$chrootedPluginRepoPath";
-		my $chrootedPluginTempPath 
-			= "/tmp/slx-plugin/$self->{'plugin-name'}";
-		my $pluginTempPath 
-			= "$self->{'vendor-os-path'}/$chrootedPluginTempPath";
-		foreach my $path ($pluginRepoPath, $pluginTempPath) {
-			if (slxsystem("mkdir -p $path")) {
-				croak(_tr("unable to create path '%s'! (%s)", $path, $!));
-			}
-		}
-		$self->{'os-setup-engine'}->callChrootedFunctionForVendorOS(
+		$self->_callChrootedFunctionForPlugin(
 			sub {
 				$self->{plugin}->installationPhase(
-					$chrootedPluginRepoPath, $chrootedPluginTempPath,
-					'/mnt/openslx',
+					$self->{'chrooted-plugin-repo-path'}, 
+					$self->{'chrooted-plugin-temp-path'},
+					$self->{'chrooted-openslx-base-path'},
 				);
 			}
 		);
-
-		if (slxsystem("umount $openslxPathInChroot")) {
-			croak(_tr("unable to umount '%s'! (%s)", $openslxPathInChroot, $!));
-		}
 	}
 	
 	$self->_addInstalledPluginToDB();
@@ -118,41 +134,24 @@ sub installPlugin
 	return 1;
 }
 
-sub getPlugin
-{
-	my $self = shift;
+=item removePlugin()
 
-	return $self->{plugin};
-}
-	
+Creates an ossetup-engine for the current vendor-OS and asks that to invoke
+the plugin's removal method while chrooted into that vendor-OS.
+
+=cut
+
 sub removePlugin
 {
 	my $self = shift;
 
 	if ($self->{'vendor-os-name'} ne '<<<default>>>') {
-		# create ossetup-engine for given vendor-OS:
-		my $osSetupEngine = OpenSLX::OSSetup::Engine->new;
-		$osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
-		$self->{'os-setup-engine'} = $osSetupEngine;
-	
-		my $chrootedPluginRepoPath 
-			= "$openslxConfig{'base-path'}/plugin-repo/$self->{'plugin-name'}";
-		my $pluginRepoPath 
-			= "$self->{'vendor-os-path'}/$chrootedPluginRepoPath";
-		my $chrootedPluginTempPath 
-			= "/tmp/slx-plugin/$self->{'plugin-name'}";
-		my $pluginTempPath 
-			= "$self->{'vendor-os-path'}/$chrootedPluginTempPath";
-		foreach my $path ($pluginRepoPath, $pluginTempPath) {
-			if (slxsystem("mkdir -p $path")) {
-				croak(_tr("unable to create path '%s'! (%s)", $path, $!));
-			}
-		}
-	
-		$self->{'os-setup-engine'}->callChrootedFunctionForVendorOS(
+		$self->_callChrootedFunctionForPlugin(
 			sub {
 				$self->{plugin}->removalPhase(
-					$chrootedPluginRepoPath, $chrootedPluginTempPath
+					$self->{'chrooted-plugin-repo-path'}, 
+					$self->{'chrooted-plugin-temp-path'},
+					$self->{'chrooted-openslx-base-path'},
 				);
 			}
 		);
@@ -162,6 +161,13 @@ sub removePlugin
 
 	return 1;
 }
+
+=item getInstalledPlugins()
+
+Returns the list of names of the plugins that are installed into the current
+vendor-OS.
+
+=cut
 
 sub getInstalledPlugins
 {
@@ -183,6 +189,179 @@ sub getInstalledPlugins
 	return @installedPlugins;
 }
 
+=back
+
+=head2 Support Interface
+
+This is the plugin support interface for OS-plugins, which represents the 
+connection between a plugin's implementation and the rest of the OpenSLX system.
+
+Plugin implementations are meant to use this interface in order to find
+out details about the current vendor-OS or download files or install packages.
+
+=over
+
+=item vendorOSName()
+
+Returns the name of the current vendor-OS.
+
+=cut
+
+sub vendorOSName
+{
+	my $self = shift;
+
+	return $self->{'vendor-os-name'};
+}
+
+=item distroName()
+
+Returns the name of the distro that the current vendor-OS is based on.
+
+Each distro name always consists of the distro type, a dash and the
+distro version, like 'suse-10.2' or 'ubuntu-7.04'.
+
+=cut
+
+sub distroName
+{
+	my $self = shift;
+
+	return $self->{'ossetup-engine'}->distroName();
+}
+
+=item downloadFile($fileURL, $targetPath, $wgetOptions)
+
+Invokes busybox's wget to download a file from the given URL.
+
+=over
+
+=item I<$fileURL>
+
+The URL of the file to download.
+
+=item I<$targetPath> [optional]
+
+The directory where the file should be downloaded into. The default is the
+current plugin's temp directory.
+
+=item I<$wgetOptions> [optional]
+
+Any other options you'd like to pass to wget.
+
+=item I<Return Value>
+
+If the downloaded was successful this method returns C<1>, otherwise it dies.
+
+=back
+
+=cut
+
+sub downloadFile
+{
+	my $self        = shift;
+	my $fileURL     = shift || return;
+	my $targetPath  = shift || $self->{'chrooted-plugin-temp-path'};
+	my $wgetOptions = shift || '';
+
+	my $busybox = $self->{'ossetup-engine'}->busyboxBinary();
+	
+	if (slxsystem("$busybox wget -P $targetPath $wgetOptions $fileURL")) {
+		die _tr('unable to download file "%s"! (%s)', $fileURL, $!);
+	}
+
+	return 1;
+}
+
+=item getInstalledPackages()
+
+Returns the list of names of the packages that are already installed in the
+vendor-OS. Useful if a plugin wants to find out whether or not it has to 
+install additional packages.
+
+=cut
+
+sub getInstalledPackages
+{
+	my $self = shift;
+
+	my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
+	return if !$metaPackager;
+
+	return $metaPackager->getInstalledPackages();
+}
+
+=item installPackages($packages)
+
+Installs the given packages into the vendor-OS.
+
+N.B: Since this method uses the meta-packager of the vendor-OS, package 
+dependencies will be determined and solved automatically.
+
+=over
+
+=item I<$packages>
+
+Contains a list of package names (separated by spaces) that shall be installed.
+
+=item I<Return Value>
+
+If the packages have been installed successfully this method return 1,
+otherwise it dies.
+
+=back
+
+=cut
+
+sub installPackages
+{
+	my $self     = shift;
+	my $packages = shift;
+
+	return if !$packages;
+
+	my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
+	return if !$metaPackager;
+
+	return $metaPackager->installSelection($packages);
+}
+
+=item removePackages($packages)
+
+Removes the given packages from the vendor-OS.
+
+=over
+
+=item I<$packages> [ARRAY-ref]
+
+Contains a list of package names (separated by spaces) that shall be removed.
+
+=item I<Return Value>
+
+If the packages have been removed successfully this method return 1,
+otherwise it dies.
+
+=back
+
+=cut
+
+sub removePackages
+{
+	my $self     = shift;
+	my $packages = shift;
+
+	return if !$packages;
+
+	my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
+	return if !$metaPackager;
+
+	return $metaPackager->removeSelection($packages);
+}
+
+=back
+
+=cut
+
 sub _loadPlugin
 {
 	my $self = shift;
@@ -196,6 +375,41 @@ sub _loadPlugin
 	$plugin->initialize($self);
 
 	return $plugin;
+}
+
+sub _callChrootedFunctionForPlugin
+{
+	my $self     = shift;
+	my $function = shift;
+
+	# create ossetup-engine for given vendor-OS:
+	my $osSetupEngine = OpenSLX::OSSetup::Engine->new;
+	$osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
+	$self->{'os-setup-engine'} = $osSetupEngine;
+
+	# bind-mount openslx basepath to /mnt/openslx of vendor-OS:
+	my $basePath 			= $openslxConfig{'base-path'};
+	my $openslxPathInChroot = "$self->{'vendor-os-path'}/mnt/openslx";
+	mkpath( [ $openslxPathInChroot ] );
+	if (slxsystem("mount -o bind $basePath $openslxPathInChroot")) {
+		croak(
+			_tr(
+				"unable to bind mount '%s' to '%s'! (%s)", 
+				$basePath, $openslxPathInChroot, $!
+			)
+		);
+	}
+
+	# now let plugin install itself into vendor-OS
+	$self->{'os-setup-engine'}->callChrootedFunctionForVendorOS($function);
+
+	if (slxsystem("umount $openslxPathInChroot")) {
+		croak(_tr("unable to umount '%s'! (%s)", $openslxPathInChroot, $!));
+	}
+	
+	delete $self->{'os-setup-engine'};
+
+	return;
 }
 
 sub _addInstalledPluginToDB

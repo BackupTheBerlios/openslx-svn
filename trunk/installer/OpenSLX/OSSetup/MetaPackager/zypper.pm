@@ -41,7 +41,8 @@ sub initPackageSources
 
 	# remove any existing channels
 	slxsystem("rm -f /etc/zypp/repos.d/*");
-	return;
+
+	return 1;
 }
 
 sub setupPackageSource
@@ -61,21 +62,35 @@ sub setupPackageSource
 		die _tr("unable to add repo '%s' (%s)\n", $repoName, $!);
 	}
 
-	return;
+	return 1;
 }
 
 sub installSelection
 {
-	my $self = shift;
+	my $self         = shift;
 	my $pkgSelection = shift;
+	my $doRefresh    = shift || 0;
 
-	if (slxsystem("zypper --non-interactive refresh")) {
+	if ($doRefresh && slxsystem("zypper --non-interactive refresh")) {
 		die _tr("unable to update repo info (%s)\n", $!);
 	}
 	if (slxsystem("zypper --non-interactive install $pkgSelection")) {
 		die _tr("unable to install selection (%s)\n", $!);
 	}
-	return;
+
+	return 1;
+}
+
+sub removeSelection
+{
+	my $self         = shift;
+	my $pkgSelection = shift;
+
+	if (slxsystem("zypper --non-interactive remove $pkgSelection")) {
+		die _tr("unable to remove selection (%s)\n", $!);
+	}
+
+	return 1;
 }
 
 sub updateBasicVendorOS
@@ -89,7 +104,8 @@ sub updateBasicVendorOS
 		}
 		die _tr("unable to update this vendor-os (%s)\n", $!);
 	}
-	return;
+
+	return 1;
 }
 
 1;

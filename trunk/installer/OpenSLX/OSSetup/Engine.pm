@@ -212,7 +212,7 @@ sub initialize
 	$distro->initialize($self);
 	$self->{distro} = $distro;
 
-	if ($actionType =~ m{^(install|update|shell)}) {
+	if ($actionType =~ m{^(install|update|shell|plugin)}) {
 		# setup path to distribution-specific info:
 		my $sharedDistroInfoDir 
 			= "$openslxConfig{'base-path'}/share/distro-info/$self->{'distro-name'}";
@@ -261,7 +261,7 @@ sub initialize
 		= "$openslxConfig{'private-path'}/stage1/$self->{'vendor-os-name'}";
 	vlog(1, "vendor-OS path is '$self->{'vendor-os-path'}'");
 
-	if ($actionType =~ m{^(install|update|shell)}) {
+	if ($actionType =~ m{^(install|update|shell|plugin)}) {
 		$self->_createPackager();
 		$self->_createMetaPackager();
 	}
@@ -664,6 +664,27 @@ sub pickKernelFile
 	return $self->{distro}->pickKernelFile(@_);
 }
 
+sub distroName
+{
+	my $self = shift;
+
+	return $self->{'distro-name'};
+}
+
+sub metaPackager
+{
+	my $self = shift;
+
+	return $self->{'meta-packager'};
+}
+
+sub busyboxBinary
+{
+	my $self = shift;
+
+	return $self->{'busybox-binary'};
+}
+
 ################################################################################
 ### implementation methods
 ################################################################################
@@ -789,7 +810,7 @@ sub _configureBestMirrorsForRepository
 
 	my $allMirrorsFile
 		= "$self->{'shared-distro-info-dir'}/mirrors/$repoInfo->{key}";
-	my @allMirrors = string2Array(slurpFile($allMirrorsFile));
+	my @allMirrors = string2Array(scalar slurpFile($allMirrorsFile));
 
 	my $mirrorsToTryCount = $openslxConfig{'mirrors-to-try-count'} || 20;
 	my $mirrorsToUseCount = $openslxConfig{'mirrors-to-use-count'} || 5;
@@ -851,15 +872,24 @@ sub _configureBestMirrorsForRepository
 					!grep { $mirror eq $_ } @tryMirrors;
 				} @allMirrors;
 
-		# ... now pick randomly until we have reached the limit or there are 
+		# ... and pick randomly until we have reached the limit or there are 
 		# no more unused mirrors left
 		foreach my $count (@tryMirrors..$mirrorsToTryCount-1) {
 			last if !@untriedMirrors;
-			my $index = int(rand(scalar(@untriedMirrors)));
+			my $index = int(rand(scalar @untriedMirrors));
 			my $randomMirror = splice(@untriedMirrors, $index, 1);
 			push @tryMirrors, $randomMirror;
 			vlog(1, "\t$randomMirror\n");
 		}
+	}
+	
+	# just make sure we are not going to try/use more mirros than we have
+	# available
+	if ($mirrorsToTryCount > @tryMirrors) {
+		$mirrorsToTryCount = @tryMirrors;
+	}
+	if ($mirrorsToUseCount > $mirrorsToTryCount) {
+		$mirrorsToUseCount = $mirrorsToTryCount;
 	}
 
 	# ... fetch a file from all of these mirrors and measure the time taken ...
@@ -938,17 +968,14 @@ sub _speedTestMirror
 	}
 
 	# now measure the time it takes to download the file
-	my $tempFile = "$openslxConfig{'temp-path'}/slx-mirror-testfile";
-	unlink $tempFile if -e $tempFile;
 	my $wgetCmd 
-		= "$self->{'busybox-binary'} wget -q -O $tempFile $mirror/$file";
+		= "$self->{'busybox-binary'} wget -q -O - $mirror/$file >/dev/null";
 	my $start = time();
 	if (slxsystem($wgetCmd)) {
 		# just return any large number that is unlikely to be selected
 		return 10000;
 	}
 	my $time = time() - $start;
-	unlink $tempFile;
 	vlog(0, "\tfetched '$file' in $time seconds\n");
 	return $time;
 }
@@ -1092,7 +1119,7 @@ try_next_url:
 		foreach my $file (split '\s+', $fileVariantStr) {
 			my $basefile = basename($file);
 			vlog(2, "fetching <$file>...");
-			if (slxsystem("wget", "$url/$file") == 0) {
+			if (slxsystem("wget", "-c", "-O", "$basefile", "$url/$file") == 0) {
 				$foundFile = $basefile;
 				last;
 			}
@@ -1589,7 +1616,7 @@ sub _stage1D_installPackageSelection
 	}
 	else {
 		vlog(1, "installing these packages:\n" . join("\n\t", @pkgs));
-		$self->{'meta-packager'}->installSelection(join " ", @pkgs);
+		$self->{'meta-packager'}->installSelection(join " ", @pkgs, 1);
 	}
 	return;
 }

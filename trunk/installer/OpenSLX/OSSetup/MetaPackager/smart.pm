@@ -44,7 +44,7 @@ sub initPackageSources
 	if (slxsystem("smart channel -y --remove-all")) {
 		die _tr("unable to remove existing channels (%s)\n", $!);
 	}
-	return;
+	return 1;
 }
 
 sub setupPackageSource
@@ -79,21 +79,33 @@ sub setupPackageSource
 			);
 		}
 	}
-	return;
+	return 1;
 }
 
 sub installSelection
 {
-	my $self = shift;
+	my $self         = shift;
 	my $pkgSelection = shift;
+	my $doRefresh    = shift || 0;
 
-	if (slxsystem("smart update")) {
+	if ($doRefresh && slxsystem("smart update")) {
 		die _tr("unable to update channel info (%s)\n", $!);
 	}
 	if (slxsystem("smart install -y $pkgSelection")) {
 		die _tr("unable to install selection (%s)\n", $!);
 	}
-	return;
+	return 1;
+}
+
+sub removeSelection
+{
+	my $self         = shift;
+	my $pkgSelection = shift;
+
+	if (slxsystem("smart remove -y $pkgSelection")) {
+		die _tr("unable to remove selection (%s)\n", $!);
+	}
+	return 1;
 }
 
 sub updateBasicVendorOS
@@ -107,7 +119,7 @@ sub updateBasicVendorOS
 		}
 		die _tr("unable to update this vendor-os (%s)\n", $!);
 	}
-	return;
+	return 1;
 }
 
 1;
