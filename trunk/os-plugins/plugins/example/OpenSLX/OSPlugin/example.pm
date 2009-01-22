@@ -127,6 +127,10 @@ sub installationPhase
 {	# called while chrooted to the vendor-OS root, most plugins will do all
 	# their installation work here
 	my $self = shift;
+	
+	# name of current os
+	# $self->{'os-plugin-engine'}->{'vendor-os-name'} 
+	
 	my $pluginRepositoryPath = shift;
 		# the repository folder, this time from inside the chroot
 	my $pluginTempPath = shift;
