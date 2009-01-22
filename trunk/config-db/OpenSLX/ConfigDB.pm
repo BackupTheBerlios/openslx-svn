@@ -1029,6 +1029,15 @@ sub removeVendorOS
 	my $self        = shift;
 	my $vendorOSIDs = _aref(shift);
 
+	# drop all installed plugins before removing the vendor-OS
+	foreach my $vendorOSID (@$vendorOSIDs) {
+		my @installedPlugins 
+			= $self->{'meta-db'}->fetchInstalledPlugins($vendorOSID);
+		foreach my $plugin (@installedPlugins) {
+			my $pluginName = $plugin->{plugin_name};
+			$self->{'meta-db'}->removeInstalledPlugin($vendorOSID, $pluginName);
+		}
+	}
 	return $self->{'meta-db'}->removeVendorOS($vendorOSIDs);
 }
 
