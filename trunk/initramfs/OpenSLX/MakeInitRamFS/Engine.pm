@@ -589,7 +589,9 @@ sub _copyKernelModules
 	foreach my $moduleToBeCopied (sort keys %modulesToBeCopied) {
 		my $targetDir = "$self->{'build-path'}" . dirname($moduleToBeCopied);
 		$self->addCMD("mkdir -p $targetDir");
-		my $source = "$self->{'root-path'}$moduleToBeCopied";
+		my $source = followLink(
+			"$self->{'root-path'}$moduleToBeCopied", $self->{'root-path'}
+		);
 		my $target = "$self->{'build-path'}$moduleToBeCopied";
 		$self->addCMD("cp -p --dereference $source $target");
 	}
