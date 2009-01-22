@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - OpenSLX GmbH
+# Copyright (c) 2008 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -108,6 +108,19 @@ sub preInstallationPhase
 		# a temporary playground that will be cleaned up automatically
 	
 	# in this example plugin, there's no need to do anything here ...
+	
+	# uncomment the following if you need to copy files
+	## get path of files we need to install
+	#my $pluginName = $self->{'name'};
+
+	##my $pluginFilesPath
+	#	= "$openslxConfig{'base-path'}/lib/plugins/$pluginName/files";
+
+	## copy all needed files now
+	#my @files = ("file1", "file2");
+	#foreach my $file (@files) {
+	#	copyFile("$pluginFilesPath/$file", "$pluginRepositoryPath");
+	#}
 }
 
 sub installationPhase
