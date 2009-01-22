@@ -2,3 +2,4 @@
 .*.swp
 ldap-site-mngmt
 openslx-*.tar.bz2
+installer/obsolete
