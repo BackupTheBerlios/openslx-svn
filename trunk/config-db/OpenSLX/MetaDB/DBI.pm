@@ -207,7 +207,7 @@ sub fetchInstalledPlugins
 	my $vendorOSID = shift;
 	my $pluginName = shift;
 
-	return if !$vendorOSID;
+	return if !defined $vendorOSID;
 	my $nameClause 
 		= defined $pluginName 
 			? "AND plugin_name = '$pluginName'" 
@@ -707,7 +707,7 @@ sub addInstalledPlugin
 	my $vendorOSID = shift;
 	my $pluginName = shift;
 
-	return if !$vendorOSID || !$pluginName;
+	return if !defined $vendorOSID || !$pluginName;
 
 	return if $self->fetchInstalledPlugins($vendorOSID, $pluginName);
 	return $self->_doInsert('installed_plugin', [ {
@@ -722,7 +722,7 @@ sub removeInstalledPlugin
 	my $vendorOSID = shift;
 	my $pluginName = shift;
 
-	return if !$vendorOSID || !$pluginName;
+	return if !defined $vendorOSID || !$pluginName;
 
 	my $plugin = $self->fetchInstalledPlugins($vendorOSID, $pluginName);
 	return if !$plugin;

@@ -35,7 +35,7 @@ use OpenSLX::Basics;
 ### 		fk		=> foreign key (integer)
 ################################################################################
 
-my $VERSION = 0.27;
+my $VERSION = 0.28;
 
 my $DbSchema = {
 	'version' => $VERSION,
@@ -682,6 +682,15 @@ sub _schemaUpgradeDBFrom
 			name    => '<<<default>>>',
 			comment => 'holds default plugins for all vendor-OS',
 		}]);
+	
+		return 1;
+	},
+	0.28 => sub {
+		my $metaDB = shift;
+	
+		# correct effects of implementation error last time around that caused 
+		# the default vendor-OS to not have any plugins at all - so we add
+		# the default plugins here:
 		$metaDB->addInstalledPlugin(0, 'theme');
 	
 		return 1;
