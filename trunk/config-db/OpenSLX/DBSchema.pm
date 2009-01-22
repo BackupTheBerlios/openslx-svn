@@ -35,7 +35,7 @@ use OpenSLX::Basics;
 ### 		fk		=> foreign key (integer)
 ################################################################################
 
-my $VERSION = 0.24;
+my $VERSION = 0.25;
 
 my $DbSchema = {
 	'version' => $VERSION,
@@ -341,9 +341,13 @@ sub _schemaUpgradeDBFrom
 	my $metaDB      = shift;
 	my $currVersion = shift;
 
-	foreach my $version (sort { $a cmp $b } keys %DbSchemaHistory) {
+	foreach my $version (sort { $a <=> $b } keys %DbSchemaHistory) {
 		next if $currVersion >= $version;
-		$DbSchemaHistory{$version}->($metaDB);
+
+		vlog(0, "upgrading schema version to $version");
+		if ($DbSchemaHistory{$version}->($metaDB)) {
+			$metaDB->schemaSetDBVersion($version);
+		}
 	}
 
 	return 1;
@@ -352,8 +356,6 @@ sub _schemaUpgradeDBFrom
 %DbSchemaHistory = (
 	0.2 => sub {
 		my $metaDB = shift;
-	
-		vlog(0, "upgrading schema version to 0.2");
 	
 		# move attributes into separate tables ...
 		#
@@ -560,14 +562,10 @@ sub _schemaUpgradeDBFrom
 			]
 		);
 	
-		$metaDB->schemaSetDBVersion(0.2);
-	
 		return 1;
 	},
 	0.21 => sub {
 		my $metaDB = shift;
-	
-		vlog(0, "upgrading schema version to 0.21");
 	
 		# add new table installed_plugins
 		$metaDB->schemaAddTable(
@@ -579,27 +577,19 @@ sub _schemaUpgradeDBFrom
 			]
 		);
 	
-		$metaDB->schemaSetDBVersion(0.21);
-	
 		return 1;
 	},
 	0.22 => sub {
 		my $metaDB = shift;
 	
-		vlog(0, "upgrading schema version to 0.22");
-	
 		# dummy schema change, just to trigger the attribute synchronization
 		# into the default system
-	
-		$metaDB->schemaSetDBVersion(0.22);
 	
 		return 1;
 	},
 	0.23 => sub {
 		my $metaDB = shift;
 
-		vlog(0, "upgrading schema version to 0.23");
-	
 		# add new column system.descripion
 		$metaDB->schemaAddColumns(
 			'system',
@@ -620,14 +610,10 @@ sub _schemaUpgradeDBFrom
 			]
 		);
 	
-		$metaDB->schemaSetDBVersion(0.23);
-	
 		return 1;
 	},
 	0.24 => sub {
 		my $metaDB = shift;
-	
-		vlog(0, "upgrading schema version to 0.24");
 	
 		# split theme::name into theme::splash, theme::displaymanager and
 		# theme::desktop
@@ -653,7 +639,13 @@ sub _schemaUpgradeDBFrom
 			}
 		}
 
-		$metaDB->schemaSetDBVersion(0.24);
+		return 1;
+	},
+	0.25 => sub {
+		my $metaDB = shift;
+	
+		# drop attribute ramfs_screen
+		$metaDB->removeAttributeByName('ramfs_screen');
 	
 		return 1;
 	},

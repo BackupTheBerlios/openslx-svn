@@ -17,7 +17,6 @@ my $defaultAttrs = {	# mostly copied from DBSchema
 	'ramfs_fsmods' => undef,
 	'ramfs_miscmods' => undef,
 	'ramfs_nicmods' => 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
-	'ramfs_screen' => undef,
 
 	'automnt_dir' => undef,
 	'automnt_src' => undef,
@@ -74,7 +73,6 @@ my $sys3Attrs = {
 	'ramfs_fsmods' => '-4',
 	'ramfs_miscmods' => '-3',
 	'ramfs_nicmods' => '-2',
-	'ramfs_screen' => '-1',
 
 	'automnt_dir' => '1',
 	'automnt_src' => '2',
@@ -132,7 +130,6 @@ my $shouldBeAttrs1 = {
 	'ramfs_fsmods' => 'squashfs',
 	'ramfs_miscmods' => undef,
 	'ramfs_nicmods' => 'forcedeth e1000 r8169',
-	'ramfs_screen' => undef,
 
 	'automnt_dir' => undef,
 	'automnt_src' => undef,
@@ -183,7 +180,6 @@ my $shouldBeAttrs3 = {
 	'ramfs_fsmods' => '-4',
 	'ramfs_miscmods' => '-3',
 	'ramfs_nicmods' => '-2',
-	'ramfs_screen' => '-1',
 
 	'automnt_dir' => '1',
 	'automnt_src' => '2',
@@ -280,7 +276,6 @@ $shouldBeAttrs1 = {
 	'ramfs_fsmods' => undef,
 	'ramfs_miscmods' => undef,
 	'ramfs_nicmods' => undef,
-	'ramfs_screen' => undef,
 
 	'automnt_dir' => undef,
 	'automnt_src' => undef,
@@ -330,7 +325,6 @@ $shouldBeAttrs3 = {
 	'ramfs_fsmods' => undef,
 	'ramfs_miscmods' => undef,
 	'ramfs_nicmods' => undef,
-	'ramfs_screen' => undef,
 
 	'automnt_dir' => undef,
 	'automnt_src' => undef,
@@ -389,7 +383,6 @@ $shouldBeAttrs1 = {
 	'ramfs_fsmods' => undef,
 	'ramfs_miscmods' => undef,
 	'ramfs_nicmods' => undef,
-	'ramfs_screen' => undef,
 
 	'automnt_dir' => undef,
 	'automnt_src' => undef,
@@ -439,7 +432,6 @@ $shouldBeAttrs3 = {
 	'ramfs_fsmods' => undef,
 	'ramfs_miscmods' => undef,
 	'ramfs_nicmods' => undef,
-	'ramfs_screen' => undef,
 
 	'automnt_dir' => undef,
 	'automnt_src' => undef,
@@ -495,7 +487,6 @@ my $shouldBeAttrs11 = {
 	'ramfs_fsmods' => 'squashfs',
 	'ramfs_miscmods' => undef,
 	'ramfs_nicmods' => 'forcedeth e1000 r8169',
-	'ramfs_screen' => undef,
 
 	'automnt_dir' => undef,
 	'automnt_src' => undef,
@@ -545,7 +536,6 @@ my $shouldBeAttrs31 = {
 	'ramfs_fsmods' => 'squashfs',
 	'ramfs_miscmods' => undef,
 	'ramfs_nicmods' => 'forcedeth e1000 r8169',
-	'ramfs_screen' => undef,
 
 	'automnt_dir' => undef,
 	'automnt_src' => undef,
@@ -595,7 +585,6 @@ my $shouldBeAttrs13 = {
 	'ramfs_fsmods' => '-4',
 	'ramfs_miscmods' => '-3',
 	'ramfs_nicmods' => '-2',
-	'ramfs_screen' => '-1',
 
 	'automnt_dir' => '1',
 	'automnt_src' => '2',
@@ -645,7 +634,6 @@ my $shouldBeAttrs33 = {
 	'ramfs_fsmods' => '-4',
 	'ramfs_miscmods' => '-3',
 	'ramfs_nicmods' => '-2',
-	'ramfs_screen' => '-1',
 
 	'automnt_dir' => '1',
 	'automnt_src' => '2',

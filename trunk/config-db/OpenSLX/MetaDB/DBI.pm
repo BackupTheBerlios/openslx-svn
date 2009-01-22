@@ -878,6 +878,16 @@ sub addClient
 	return @clientIDs;
 }
 
+sub removeAttributeByName
+{
+	my $self     = shift;
+	my $attrName = shift;
+
+	return $self->_doDelete('system_attr', [ $attrName ], 'name')
+		&& $self->_doDelete('client_attr', [ $attrName ], 'name')
+		&& $self->_doDelete('group_attr', [ $attrName ], 'name');
+}
+
 sub removeClient
 {
 	my $self      = shift;

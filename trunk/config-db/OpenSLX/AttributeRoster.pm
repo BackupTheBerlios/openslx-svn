@@ -166,16 +166,6 @@ sub _init
 			content_descr => undef,
 			default => 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
 		},
-		'ramfs_screen' => {
-			applies_to_systems => 1,
-			applies_to_clients => 0,
-			description => unshiftHereDoc(<<'			End-of-Here'),
-				resolution of splash screen to use in stage3
-			End-of-Here
-			content_regex => undef,
-			content_descr => undef,
-			default => '',
-		},
 		'sane_scanner' => {
 			applies_to_systems => 1,
 			applies_to_clients => 1,

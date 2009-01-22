@@ -78,7 +78,6 @@ my $fullSystem = {
 		'ramfs_fsmods'      => 'l',
 		'ramfs_miscmods'    => 'm',
 		'ramfs_nicmods'     => 'n',
-		'ramfs_screen'      => 'o',
 		'sane_scanner'      => 'p',
 		'scratch'           => 'q',
 		'slxgrp'            => 'r',
@@ -134,7 +133,6 @@ is($system3->{attrs}->{nis_servers},       'k',              'system 3 - attr ni
 is($system3->{attrs}->{ramfs_fsmods},      'l',              'system 3 - attr ramfs_fsmods');
 is($system3->{attrs}->{ramfs_miscmods},    'm',              'system 3 - attr ramfs_miscmods');
 is($system3->{attrs}->{ramfs_nicmods},     'n',              'system 3 - attr ramfs_nicmods');
-is($system3->{attrs}->{ramfs_screen},      'o',              'system 3 - attr ramfs_screen');
 is($system3->{attrs}->{sane_scanner},      'p',              'system 3 - attr sane_scanner');
 is($system3->{attrs}->{scratch},           'q',              'system 3 - attr scratch');
 is($system3->{attrs}->{slxgrp},            'r',              'system 3 - attr slxgrp');
