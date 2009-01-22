@@ -51,11 +51,11 @@ done
 mkdir -p ${BUILDDIR}/iso/isolinux
 cp ${SLX_SHARE_PATH}/cdboot/isolinux.bin ${BUILDDIR}/iso/isolinux
 cp ${SLX_SHARE_PATH}/tftpboot/menu.c32 ${BUILDDIR}/iso/isolinux
-cp /boot/vmlinuz-${KERNVER} ${BUILDDIR}/iso/isolinux
+cp /boot/vmlinuz-${KERNVER} ${BUILDDIR}/iso/isolinux/vmlinuz
 pushd . > /dev/null 2>&1
   cd ${BUILDDIR}
-  find . ! -name "*~" | cpio -H newc --create | gzip -9 \
-    > ${BUILDDIR}/iso/isolinux/cd-initramfs
+  find . ! -name "*~" ! -path "./iso/*" | cpio -H newc --create | gzip -9 \
+    > ${BUILDDIR}/iso/isolinux/cdirfs
 popd > /dev/null 2>&1
 
 # starting to setup the menu driven boot chooser
@@ -64,11 +64,11 @@ MENU ROWS 9\nMENU TABMSGROW 15\nMENU CMDLINEROW 15\nMENU ENDROW -1\n\
 MENU TIMEOUTROW 15\nMENU HELPMSGROW 15\nMENU HELPMSGENDROW -1\n\
 MENU HSHIFT 0\nMENU VSHIFT 5\n\nMENU TITLE OpenSLX PreBoot ISO\
 " > ${BUILDDIR}/iso/isolinux/isolinux.cfg
-echo -e "\nTest to boot an OpenSLX Client" \
+echo -e "LABEL OpenSLX\n\tMENU LABEL Test to boot an OpenSLX Client" \
   >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
 echo -e "\tTEXT HELP\n\tYou should have DHCP running ...\n\tENDTEXT" \
   >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
-echo -e "\tKERNEL vmlinuz-${KERNVER}\n\tAPPEND initrd=cd-initramfs" \
+echo -e "\tKERNEL vmlinuz\n\tAPPEND initrd=cdirfs quiet" \
   >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
 
 # produce the iso image
@@ -77,4 +77,4 @@ mkisofs -b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -r -J -l \
 Project - http://www.openslx.org" -p "OpenSLX Project - \
 openslx-devel@openslx.org" -relaxed-filenames -V "OpenSLX BootCD" \
         -volset "OpenSLX Project - PreBoot CD for non PXE/TFTP start of a \
-Linux Stateless Client" ${BUILDDIR}/iso
+Linux Stateless Client"  -c isolinux/boot.cat ${BUILDDIR}/iso

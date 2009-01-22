@@ -37,6 +37,7 @@ echo $n
 # device files get their own filesystem (to be move mounted later)
 devdir="/dev"
 mount -n -t tmpfs -o 'size=25%,mode=0755' initramfsdevs ${devdir}
+NWMODULES="forcedeth e1000 e100 tg3 3c59x via-rhine r8169 pcnet32 b44 8139too"
 
 # create basic device files an directories in dev (for most hardware related
 # devices mdev should handle that)
@@ -61,10 +62,6 @@ mkdir -p ${devdir}/pts ${devdir}/shm ${devdir}/.udevdb ${devdir}/.udev
 [ -f /etc/initramfs-setup ] && . /etc/initramfs-setup 2>/dev/null
 
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
-
-export DEBUGLEVEL=0
-export KERNEL="${ramfs_kernver}"
-export NWMODULES="${ramfs_nicmods}"
 
 # set a default LAN interface, might be modified for WLAN or on machines with
 # more than one ethernet card built in
@@ -96,9 +93,8 @@ done
 
 # read kernel commandline
 read KCMDLINE < /proc/cmdline
-export KCMDLINE
 # read the system wide machine-setup and then the kernel commandline
-for opts in $(sed "s/#.*//" /etc/initramfs-setup) ${KCMDLINE} ; do
+for opts in ${KCMDLINE} ; do
   case ${opts} in
     debug)
       DEBUGLEVEL=1;;
@@ -132,18 +128,21 @@ fi
 # set up loopback networking and power up ethernet
 ip link set dev lo up
 ip addr add 127.0.0.1/8 dev lo
-ip link set dev $nwif up || echo "noeth"
+ip link set dev $nwif up || echo "I did not find any usable network adaptor."
 
 # start udhcpc here
 mkdir -p /usr/share/udhcpc
-echo -e '#!/bin/ash\nunset infomsg HOME IFS mask lease interface DEBUGLEVEL\n 
-set >/tmp/ipstuff' >/usr/share/udhcpc/default.script
+echo -e "#!/bin/ash\nunset infomsg HOME IFS mask lease interface DEBUGLEVEL \
+BOOT_IMAGE\nset >/tmp/ipstuff" >/usr/share/udhcpc/default.script
 chmod u+x /usr/share/udhcpc/default.script
-[ -f /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko ] && \
-  modprobe -q af_packet
+modprobe -q af_packet
 [ -n $vci ] && vci="-V $vci"
 udhcpc -b -q $vci -s /usr/share/udhcpc/default.script -i $nwif #2>/dev/null
-. /tmp/ipstuff || echo "no ip config"
+if test -e /tmp/ipstuff ; then
+  . /tmp/ipstuff
+else
+  echo "Did not get any proper IP configuration"
+fi
 ip addr add $ip/$(nm2pref $subnet) dev $nwif
 ip route add default via $router  
 
@@ -151,11 +150,11 @@ ip route add default via $router
 # user choose what kind of SLX client he wants to get
 
 # get kernel and initramfs
-wget -c -O /tmp/kernel http://132.230.4.73/trac/kdefault
-wget -c -O /tmp/iramfs http://132.230.4.73/trac/idefault
+wget -q -c -O /tmp/kernel ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/kernel
+wget -q -c -O /tmp/iramfs ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/iramfs
 /bin/ash
 
 # start the new kernel with initialramfs and cmdline
 kexec -l /tmp/kernel --initrd=/tmp/iramfs --append="ip=$ip:$siaddr:$router:$subnet\
-  file=http://132.230.4.73/trac/default.tgz debug=3"
+  file=http://132.230.4.4/default.tgz debug=3"
 kexec -e
