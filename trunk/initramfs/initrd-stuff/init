@@ -405,7 +405,7 @@ sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup
 [ $DEBUGLEVEL -eq 20 ] && echo "** finished ip config at $(sysup)"
 # ... or ldap if available (in background)
 [ -n "$ldap" ] && ldapconf &
-# ... or via tftp file get (in background)
+# ... or via (t)ftp/http file get (in background)
 [ -n "$file" ] && fileget &
 
 runinithook '15-have-ip-config'
