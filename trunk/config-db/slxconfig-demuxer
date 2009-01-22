@@ -522,7 +522,7 @@ sub makeInitRamFS
 		'export-name'    => $info->{export}->{name},
 		'export-uri'     => $info->{'export-uri'},
 		'initramfs'      => "$pxeVendorOSPath/$info->{'initramfs-name'}",
-		'kernel-params'  => $info->{kernel_params} || '',
+		'kernel-params'  => [ split ' ', ($info->{kernel_params} || '') ],
 		'kernel-version' => $kernelFile =~ m[-(.+)$] ? $1 : '',
 		'plugins'        => $info->{'active-plugins'},
 		'root-path'
@@ -530,9 +530,9 @@ sub makeInitRamFS
 		'slx-version'    => $slxVersion,
 		'system-name'    => $info->{name},
 	};
+
 	# TODO: make debug-level an explicit attribute, it's used in many places!
-	my $kernelParams = $info->{kernel_params} || '';
-	if ($kernelParams =~ m{debug(?:=(\d+))?}) {
+	if ($info->{kernel_params} =~ m{debug(?:=(\d+))?}) {
 		my $debugLevel = defined $1 ? $1 : '1';
 		$params->{'debug-level'} = $debugLevel;
 	}
@@ -541,7 +541,7 @@ sub makeInitRamFS
 	$makeInitRamFSEngine->execute($option{dryRun});
 
 	# copy back kernel-params, as they might have been changed (by plugins)
-	$info->{kernel_params} = $makeInitRamFSEngine->{'kernel-params'};
+	$info->{kernel_params} = join ' ', $makeInitRamFSEngine->kernelParams();
 
 	return;
 }
@@ -656,8 +656,6 @@ sub writePluginConfigurationsForSystem
 	my $buildPath = shift || confess 'need to pass in build-path!';
 
 	my $pluginConfPath  = "$buildPath/initramfs/plugin-conf";
-	my $pluginInitdPath = "$buildPath/initramfs/plugin-init.d";
-	my $initHooksPath   = "$buildPath/initramfs/init-hooks";
 
 	my $attrs = $info->{attrs} || {};
 
@@ -672,7 +670,7 @@ sub writePluginConfigurationsForSystem
 
 		next if $option{dryRun};
 
-		mkpath([ $pluginConfPath, $pluginInitdPath, $initHooksPath]);
+		mkpath([ $pluginConfPath ]);
 
 		vlog(2, _tr("writing configuration file for plugin '%s'", $pluginName));
 		# write plugin configuration to a file:
@@ -690,20 +688,6 @@ sub writePluginConfigurationsForSystem
 			vlog(0, "--- START OF $fileName ---");
 			vlog(0, $content);
 			vlog(0, "--- END OF $fileName --- ");
-		}
-		
-		# copy runlevel script to be used in stage3:
-		my $precedence 
-			= sprintf('%02d', $attrs->{"${pluginName}::precedence"});
-		my $pluginFolder 
-			= "$openslxConfig{'base-path'}/lib/plugins/$pluginName";
-		my $scriptName = "$pluginFolder/XX_${pluginName}.sh";
-		my $targetName = "$pluginInitdPath/${precedence}_${pluginName}.sh";
-		if (slxsystem("cp $scriptName $targetName && chmod a+x $targetName")) {
-			die _tr(
-				"unable to copy runlevel script '%s' to '%s'! (%s)",
-				$scriptName, $targetName, $!
-			);
 		}
 	}
 	$info->{'active-plugins'} = \@activePlugins;

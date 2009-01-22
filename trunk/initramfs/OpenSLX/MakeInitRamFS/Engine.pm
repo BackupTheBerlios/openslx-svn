@@ -93,6 +93,41 @@ sub execute
 	return;
 }
 
+sub haveKernelParam
+{
+	my $self  = shift;
+	my $param = shift;
+	
+	return ref $param eq 'Regexp'
+		? grep { $_ =~ $param } @{ $self->{'kernel-params'} }
+		: grep { $_ eq $param } @{ $self->{'kernel-params'} };
+}
+
+sub addKernelParams
+{
+	my $self = shift;
+	
+	push @{ $self->{'kernel-params'} }, @_;
+	
+	return;
+}
+
+sub kernelParams
+{
+	my $self = shift;
+	
+	return @{ $self->{'kernel-params'} };
+}
+
+sub addKernelModules
+{
+	my $self = shift;
+	
+	push @{ $self->{'suggested-kernel-modules'} }, @_;
+	
+	return;
+}
+
 ################################################################################
 ### implementation methods
 ################################################################################
@@ -128,7 +163,7 @@ sub _collectCMDs
 		$self->_copyDebugTools();
 	}
 
-	$self->_handlePlugins();
+	$self->_calloutToPlugins();
 
 	$self->{distro}->applyChanges($self);
 
@@ -446,10 +481,10 @@ sub _copyRequiredLayeredFSTools
 	my $self = shift;
 
 	my @tools;
-	if ($self->{'kernel-params'} =~ m{\bunionfs\b}) {
+	if ($self->haveKernelParam('unionfs')) {
 		push @tools, 'unionctl';
 	}
-	if ($self->{'kernel-params'} =~ m{\bcowloop\b}) {
+	if ($self->haveKernelParam('cowloop')) {
 		push @tools, 'cowdev';
 	}
 	foreach my $tool (@tools) {
@@ -695,45 +730,18 @@ sub _writeSlxSystemConf
 	return;
 }
 
-sub _handlePlugins
+sub _calloutToPlugins
 {
 	my $self = shift;
 
-	my $pluginSrcPath = "$openslxConfig{'base-path'}/lib/plugins";
-	my $buildPath = $self->{'build-path'};
+	my $pluginInitdPath = "$self->{'build-path'}/etc/plugin-init.d";
+	my $initHooksPath   = "$self->{'build-path'}/etc/init-hooks";
+	$self->addCMD("mkdir -p $pluginInitdPath $initHooksPath");
+
 	foreach my $pluginName (@{$self->{'plugins'}}) {
-		if (-d "$pluginSrcPath/$pluginName/init-hooks") {
-			my $hookSrcPath = "$pluginSrcPath/$pluginName/init-hooks";
-			$self->addCMD("cp -r $hookSrcPath/* $buildPath/etc/init-hooks/");
-		}
 		my $plugin = OpenSLX::OSPlugin::Roster->getPlugin($pluginName);
 		next if !$plugin;
-
-		my @suggestedKernelParams 
-			= $plugin->suggestAdditionalKernelParams($self->{'kernel-params'});
-		if (@suggestedKernelParams) {
-			my $paramsList = join ' ', @suggestedKernelParams;
-			vlog(
-				2, 
-				"plugin $pluginName suggests these kernel params: $paramsList"
-			);
-			$self->{'kernel-params'} 
-				.= ($self->{'kernel-params'} ? ' ' : '') . $paramsList;
-		}
-
-		my @suggestedModules = $plugin->suggestAdditionalKernelModules($self);
-		if (@suggestedModules) {
-			vlog(
-				2, 
-				"plugin $pluginName suggests these kernel modules: "
-				. join(',', @suggestedModules)
-			);
-			push @{ $self->{'suggested-kernel-modules'} }, @suggestedModules;
-		}
-
-		$plugin->copyRequiredFilesIntoInitramfs(
-			$self->{'build-path'}, $self->{attrs}, $self
-		);
+		$plugin->setupPluginInInitramfs($self->{attrs}, $self);
 	}
 	return;
 }

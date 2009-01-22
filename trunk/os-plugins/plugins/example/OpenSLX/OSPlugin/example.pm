@@ -30,7 +30,9 @@ sub new
 {
 	my $class = shift;
 
-	my $self = {};
+	my $self = {
+		name => 'example',
+	};
 
 	return bless $self, $class;
 }

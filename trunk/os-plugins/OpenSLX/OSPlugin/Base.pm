@@ -146,11 +146,10 @@ sub postRemovalPhase
 sub suggestAdditionalKernelParams
 {	# called by config-demuxer in order to give the plugin a chance to add
 	# any kernel params it requires.
-	# In order to do so, the plugin should analyse the contents of the 
-	# given string ('kernel-params') and return a list of additional params 
-	# that it would like to see added.
-	my $self         = shift;
-	my $kernelParams = shift;
+	# In order to do so, the plugin should return a list of additional kernel
+	# params that it would like to see added.
+	my $self                = shift;
+	my $makeInitRamFSEngine = shift;
 	
 	return;
 }
@@ -171,11 +170,73 @@ sub copyRequiredFilesIntoInitramfs
 	# all required files from the vendor-OS into the initramfs.
 	# N.B.: Only files that are indeed required by the initramfs should be
 	#       copied here, i.e. files that are needed *before* the root-fs
-	#       has been mounted!
+	#       has been mounted. 
+	#       All other files should be taken from the root-fs instead!
 	my $self                = shift;
 	my $targetPath          = shift;
 	my $attrs				= shift;
 	my $makeInitRamFSEngine = shift;
 	
 	return;
+}
+
+sub setupPluginInInitramfs
+{	# called by config-demuxer in order to let the plugin setup all the files
+	# it requires in the initramfs.
+	# Normally, you don't need to override this method in your own plugin,
+	# as it is usually enough to override suggestAdditionalKernelParams(),
+	# suggestAdditionalKernelModules() and maybe copyRequiredFilesIntoInitramfs().
+	my $self                = shift;
+	my $attrs				= shift;
+	my $makeInitRamFSEngine = shift;
+
+	my $pluginName      = $self->{name};
+	my $pluginSrcPath   = "$openslxConfig{'base-path'}/lib/plugins";
+	my $buildPath       = $makeInitRamFSEngine->{'build-path'};
+	my $pluginInitdPath = "$buildPath/etc/plugin-init.d";
+	my $initHooksPath   = "$buildPath/etc/init-hooks";
+
+	# copy runlevel script
+	my $precedence 
+		= sprintf('%02d', $attrs->{"${pluginName}::precedence"});
+	my $scriptName = "$pluginSrcPath/$pluginName/XX_${pluginName}.sh";
+	my $targetName = "$pluginInitdPath/${precedence}_${pluginName}.sh";
+	if (-e $scriptName) {
+		$makeInitRamFSEngine->addCMD("cp $scriptName $targetName");
+		$makeInitRamFSEngine->addCMD("chmod a+x $targetName");
+	}
+
+	# copy init hook scripts, if any
+	if (-d "$pluginSrcPath/$pluginName/init-hooks") {
+		my $hookSrcPath = "$pluginSrcPath/$pluginName/init-hooks";
+		$makeInitRamFSEngine->addCMD(
+			"cp -r $hookSrcPath/* $buildPath/etc/init-hooks/"
+		);
+	}
+
+	# invoke hook methods to suggest additional kernel params ...
+	my @suggestedParams 
+		= $self->suggestAdditionalKernelParams($makeInitRamFSEngine);
+	if (@suggestedParams) {
+		my $params = join ' ', @suggestedParams;
+		vlog(1, "plugin $pluginName suggests these kernel params: $params");
+		$makeInitRamFSEngine->addKernelParams(@suggestedParams);
+	}
+
+	# ... and kernel modules
+	my @suggestedModules 
+		= $self->suggestAdditionalKernelModules($makeInitRamFSEngine);
+	if (@suggestedModules) {
+		my $modules = join(',', @suggestedModules);
+		vlog(1, "plugin $pluginName suggests these kernel modules: $modules");
+		$makeInitRamFSEngine->addKernelModules(@suggestedModules);
+	}
+
+	# invoke hook method to copy any further files that are required in stage3
+	# before the root-fs has been mounted
+	$self->copyRequiredFilesIntoInitramfs(
+		$buildPath, $attrs, $makeInitRamFSEngine
+	);
+
+	return 1;
 }
