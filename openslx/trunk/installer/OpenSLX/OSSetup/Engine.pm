@@ -102,18 +102,18 @@ use vars qw(%supportedDistros);
 	'ubuntu-7.04_amd64' => { 
 		module => 'Ubuntu',          support => 'clone,install'
 	},
-        'ubuntu-7.10' => {
-                module => 'Ubuntu',          support => 'clone'
-        },
-        'ubuntu-7.10_amd64' => {
-                module => 'Ubuntu',          support => 'clone'
-        },
-        'ubuntu-8.04' => {
-                module => 'Ubuntu',          support => 'clone'
-        },
-        'ubuntu-8.04_amd64' => {
-                module => 'Ubuntu',          support => 'clone'
-        },
+	'ubuntu-7.10' => {
+		module => 'Ubuntu',			 support => 'clone'
+	},
+	'ubuntu-7.10_amd64' => {
+		module => 'Ubuntu',			 support => 'clone'
+	},
+	'ubuntu-8.04' => {
+		module => 'Ubuntu',			 support => 'clone'
+	},
+	'ubuntu-8.04_amd64' => {
+		module => 'Ubuntu',			 support => 'clone'
+	},
 );
 
 our $localHttpServerMasterPID;
