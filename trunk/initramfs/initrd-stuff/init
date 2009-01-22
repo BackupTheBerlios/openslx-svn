@@ -789,8 +789,8 @@ fi
 runinithook '70-before-plugins'
 
 # check for any plugin-specific runlevel scripts and run them, if found:
-if [ -d /initramfs/plugin-init.d ]; then
-  for plugin_starter in /initramfs/plugin-init.d/*; do
+if [ -d /etc/plugin-init.d ]; then
+  for plugin_starter in /etc/plugin-init.d/*.sh; do
     [ $DEBUGLEVEL -gt 0 ] \
       && echo "Running plugin starter $plugin_starter ..."
     . $plugin_starter
