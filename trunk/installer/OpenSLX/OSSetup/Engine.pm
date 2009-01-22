@@ -440,6 +440,9 @@ sub updateVendorOS
 		0,
 		_tr("Vendor-OS '%s' updated succesfully.\n", $self->{'vendor-os-name'})
 	);
+
+	$self->_installPlugins();
+
 	return;
 }
 
@@ -502,7 +505,7 @@ sub callChrootedFunctionForVendorOS
 
 	$self->_touchVendorOS();
 	vlog(
-		0,
+		1,
 		_tr(
 			"Chrooted function for vendor-OS '%s' has finished.\n",
 			$self->{'vendor-os-name'}
@@ -551,6 +554,8 @@ sub addInstalledVendorOSToConfigDB
 	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
 	$openslxDB->connect();
 
+	my @plugins;
+
 	# insert new vendor-os if it doesn't already exist in DB:
 	my $vendorOSName = $self->{'vendor-os-name'};
 	my $vendorOS = $openslxDB->fetchVendorOSByFilter({'name' => $vendorOSName});
@@ -580,7 +585,7 @@ sub addInstalledVendorOSToConfigDB
 		}
 	}
 	else {
-		my $data = {'name' => $vendorOSName,};
+		my $data = { 'name' => $vendorOSName };
 		if (length($self->{'clone-source'})) {
 			$data->{'clone_source'} = $self->{'clone-source'};
 		}
@@ -593,9 +598,15 @@ sub addInstalledVendorOSToConfigDB
 				$vendorOSName, $id
 			)
 		);
+		# install plugins from default vendor-OS into this new one
+		@plugins = $openslxDB->fetchInstalledPlugins(0);
 	}
 
 	$openslxDB->disconnect();
+	
+	# now that we have the list of plugins, we (re-)install all of them:
+	$self->_installPlugins(\@plugins);
+	
 	return;
 }
 
@@ -1631,6 +1642,48 @@ sub _clone_determineIncludeExcludeList
 	return $includeExcludeList;
 }
 
+sub _installPlugins
+{
+	my $self    = shift;
+	my $plugins = shift;
+
+	my $isReInstall = 0;
+
+	if (!$plugins) {
+		$plugins = [];
+		my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
+		$openslxDB->connect();
+		# fetch plugins from existing vendor-OS
+		my $vendorOS = $openslxDB->fetchVendorOSByFilter({
+			'name' => $self->{'vendor-os-name'}
+		});
+		if ($vendorOS) {
+			push @$plugins, $openslxDB->fetchInstalledPlugins($vendorOS->{id});
+			$isReInstall = 1;
+		}
+		$openslxDB->disconnect();
+	}
+
+	return if ! @$plugins;
+
+	require OpenSLX::OSPlugin::Engine;
+	vlog(
+		0, 
+		$isReInstall
+			? _tr("reinstalling plugins...\n")
+			: _tr("installing default plugins...\n")
+	);
+	for my $pluginName (@$plugins) {
+		my $pluginEngine = OpenSLX::OSPlugin::Engine->new();
+		vlog(0, _tr("\t%s\n", $pluginName));
+		$pluginEngine->initialize($pluginName, $self->{'vendor-os-name'});
+		$pluginEngine->installPlugin();
+	}
+	vlog(0, _tr("done with plugins.\n"));
+
+	return;
+}
+	
 ################################################################################
 ### utility methods
 ################################################################################
