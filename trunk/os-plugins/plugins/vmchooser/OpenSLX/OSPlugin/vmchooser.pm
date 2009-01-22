@@ -67,7 +67,7 @@ sub getAttrInfo
 			default => '1',
 		},
 		# attribute 'precedence' is mandatory for all plugins
-		'example::precedence' => {
+		'vmchooser::precedence' => {
 			applies_to_systems => 1,
 			applies_to_clients => 1,
 			description => unshiftHereDoc(<<'			End-of-Here'),
@@ -90,8 +90,6 @@ sub preInstallationPhase
 		# required by the corresponding stage3 runlevel script
 	my $pluginTempPath = shift;
 		# a temporary playground that will be cleaned up automatically
-	
-	# in this example plugin, there's no need to do anything here ...
 	
 	# uncomment the following if you need to copy files
 	## get path of files we need to install
