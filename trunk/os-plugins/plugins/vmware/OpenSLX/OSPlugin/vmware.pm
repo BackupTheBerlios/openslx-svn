@@ -79,6 +79,30 @@ sub getAttrInfo
 	};
 }
 
+sub preInstallationPhase
+{	# called before chrooting into vendor-OS root, should be used if any files
+	# have to be downloaded outside of the chroot (which might be necessary
+	# if the required files can't be installed via the meta-packager)
+	my $self = shift;
+	my $pluginRepositoryPath = shift;
+		# the folder where the stage1-plugin should store all files
+		# required by the corresponding stage3 runlevel script
+	my $pluginTempPath = shift;
+		# a temporary playground that will be cleaned up automatically
+
+	# get path of files we need to install
+	my $pluginName = $self->{'name'};
+	my $pluginFilesPath
+		= "$openslxConfig{'base-path'}/lib/plugins/$pluginName/files";
+
+	# copy all needed files now
+	my @files = ("dhcpd.conf", "nat.conf", "nvram.5.0", "runvmware-v2");
+	foreach my $file (@files) {
+		copyFile("$pluginFilesPath/$file", "$pluginRepositoryPath");
+	}
+}
+
+
 sub suggestAdditionalKernelModules
 {
 	my $self                = shift;

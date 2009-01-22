@@ -1,0 +1,8 @@
+<settings>
+  <eintrag>
+    <computername param="HOSTNAME">
+    </computername>
+    <username param="USER">
+    </username>
+  </eintrag>
+</settings>
