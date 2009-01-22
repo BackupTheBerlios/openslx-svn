@@ -30,10 +30,12 @@ slxconfig-demuxer
 ];
 
 use Config::General;
+use Digest::MD5 qw(md5_hex);
 use Fcntl qw(:DEFAULT :flock);
 use File::Basename;
 use File::Find;
 use File::Path;
+use List::Util qw(first);
 use Getopt::Long qw(:config pass_through);
 use Pod::Usage;
 use Storable qw(dclone);
@@ -74,11 +76,12 @@ my (
 		# number of systems that had errors
 	$clientSystemConfCount,
 		# number of (system-specific) client configurations written
-	%vendorOSInitramfsMap,
-		# keeping note of how many initramFSs have been created for a
-		# specific vendor-OS.
+	$initramfsCount,
+		# number of initramfs that were created
 	$makeInitRamFS,
 		# generate initial ramfs internally (new style)
+	@targetSystems,
+		# systems to create initramfs for, defaults to all systems
 	$helpReq,
 	$manReq,
 	$versionReq,
@@ -150,12 +153,45 @@ if (!$dryRun) {
 	}
 }
 my $tftpbootPath = "$openslxConfig{'public-path'}/tftpboot";
-if (!$dryRun) {
-	slxsystem("rm -rf $tftpbootPath/*");
-	mkpath( [ "$tftpbootPath/client-config", "$tftpbootPath/pxelinux.cfg" ] );
-	if (!-d $tftpbootPath) {
-		die _tr("Unable to create or access tftpboot-path '%s'!",
-			$tftpbootPath);
+
+my @demuxableSystems
+	= grep { $_->{name} ne '<<<default>>>' } $openslxDB->fetchSystemByFilter();
+if (@ARGV) {
+	# create initramfs only for systems given on cmdline
+	for my $systemName (@ARGV) {
+		if ($systemName eq '<<<default>>>') {
+			warn _tr(
+				'The default-system can not be demuxed - it will be skipped.'
+			);
+			next;
+		}
+		my $system = first { $_->{name} eq $systemName } @demuxableSystems;
+		if (!$system) {
+			warn _tr(
+				'The system "%s" is unknown and will be ignored.', $systemName
+			);
+			next;
+		}
+		push @targetSystems, $system;
+	}
+
+	# remove only the folders of the target systems
+	if (!$dryRun) {
+		rmtree("$tftpbootPath/pxelinux.cfg");
+		mkpath(["$tftpbootPath/client-config", "$tftpbootPath/pxelinux.cfg"]);
+		for my $targetSystem (@targetSystems) {
+			rmtree("$tftpbootPath/client-config/$targetSystem");
+		}
+	}
+}
+else {
+	# create initramfs for all systems
+	@targetSystems = @demuxableSystems;
+
+	# and cleanup everything
+	if (!$dryRun) {
+		rmtree("$tftpbootPath");
+		mkpath(["$tftpbootPath/client-config", "$tftpbootPath/pxelinux.cfg"]);
 	}
 }
 
@@ -165,6 +201,7 @@ my $wr = $dryRun ? 'would have written' : 'wrote';
 my $errCount = $systemErrCount ? $systemErrCount : 'no';
 print "\n", unshiftHereDoc(<<"End-of-Here");
 	$wr $systemConfCount system- and $clientSystemConfCount client-specific configurations to $tftpbootPath/client-config
+	$initramfsCount initramfs were created
 	$errCount system(s) had errors
 End-of-Here
 
@@ -250,7 +287,6 @@ sub digestAttributes
 			keys %$attrs;
 
 	vlog(3, "Attribute-string: $attrsAsString");
-	use Digest::MD5 qw(md5_hex);
 	return md5_hex($attrsAsString);
 }
 
@@ -593,6 +629,8 @@ sub writeSystemPXEFiles
 {
 	my $info = shift;
 
+	vlog(0, _tr('copying kernel and creating initramfs'));
+
 	my $kernelFile = $info->{'kernel-file'};
 	my $kernelName = basename($kernelFile);
 
@@ -605,15 +643,12 @@ sub writeSystemPXEFiles
 		vlog(1, _tr('copying kernel %s to %s', $kernelFile, $targetKernel));
 		slxsystem(qq[cp -p "$kernelFile" "$targetKernel"]) unless $dryRun;
 	}
-	$vendorOSInitramfsMap{$info->{'vendor-os'}->{id}}++;
-	$info->{'initramfs-name'} =
-	  sprintf("initramfs-%d",
-		$vendorOSInitramfsMap{$info->{'vendor-os'}->{id}});
 	if ($makeInitRamFS) {
 		makeInitRamFS($info, $pxeVendorOSPath);
 	} else {
 		generateInitialRamFS($info, $pxeVendorOSPath);
 	}
+	$initramfsCount++;
 	return;
 }
 
@@ -784,7 +819,11 @@ sub writeSystemConfiguration
 	my $systemPath = "$tftpbootPath/client-config/$info->{'external-id'}";
 	createTarOfPath($buildPath, "default.tgz", $systemPath);
 
-	writeSystemPXEFiles($info);
+	# copy kernel and generate initramfs only if this is a target system
+	$info->{'initramfs-name'} = "initramfs-$info->{id}";
+	if (grep { $_->{name} eq $info->{name} } @targetSystems) {
+		writeSystemPXEFiles($info);
+	}
 
 	writeClientConfigurationsForSystem($info, $buildPath, $attrFile);
 
@@ -794,12 +833,10 @@ sub writeSystemConfiguration
 
 sub writeConfigurations
 {
-	$systemConfCount = $systemErrCount = $clientSystemConfCount = 0;
-	my @systems = $openslxDB->fetchSystemByFilter();
+	$initramfsCount = $systemConfCount = $systemErrCount 
+		= $clientSystemConfCount = 0;
 	my @infos;
-	foreach my $system (@systems) {
-		next if $system->{name} eq '<<<default>>>';
-
+	foreach my $system (@demuxableSystems) {
 		vlog(
 			0, _tr("\ndemuxing system %d : %s", $system->{id}, $system->{name})
 		);
