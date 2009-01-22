@@ -8,7 +8,9 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
 	# load needed variables
 	. /initramfs/plugin-conf/vmware.conf
 
-	# Test if this plugin is activated
+	# Test if this plugin is activated...
+	# TODO: err... I think we could save this test due of a changed
+	#       plugin system
 	if [ $vmware_active -ne 0 ]; then
 
 		[ $DEBUGLEVEL -gt 0 ] && echo "executing the 'vmware' os-plugin ...";
@@ -33,10 +35,10 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
 		[ -z "${pool}" ] && pool="default"
 
 		# get source of vmware image server (get type, server and path)
-		if strinstr "/" "${vmware}" ; then
-			vmimgprot=$(uri_token ${vmware} prot)
-		  	vmimgserv=$(uri_token ${vmware} server)
-		  	vmimgpath="$(uri_token ${vmware} path)"
+		if strinstr "/" "${vmware_imagesrc}" ; then
+			vmimgprot=$(uri_token ${vmware_imagesrc} prot)
+		  	vmimgserv=$(uri_token ${vmware_imagesrc} server)
+		  	vmimgpath="$(uri_token ${vmware_imagesrc} path)"
 		fi
 		if [ -n "${vmimgserv}" ] ; then
 			testmkd /mnt/var/lib/vmware
@@ -113,8 +115,16 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
 		# needed for VMware 5.5.3 and versions below
 		echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
 			>>/mnt/etc/${D_INITDIR}/boot.slx
-		# TODO: we still use this function? Prove if we can delete it.
-		config_vmware
+		# config_vmware deprecated?
+		#config_vmware
+		# link /etc/init.d/vmware, so it starts uppon boot
+		if [ -f /mnt/etc/${D_INITDIR}/vmware ] ; then
+			rllinker "vmware" 20 2
+		else
+			error "df_errvmw" nonfatal
+		fi
+
+		
 		chmod 1777 /mnt/var/run/vmware
 		# define a variable where gdm/kdm should look for additional sessions
 		# do we really need it? looks like we can delete it...

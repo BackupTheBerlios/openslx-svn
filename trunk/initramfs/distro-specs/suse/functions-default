@@ -497,14 +497,6 @@ else
   error "$df_erryp" nonfatal
 fi
 }
-# start vmware
-config_vmware () {
-if [ -f /mnt/etc/${D_INITDIR}/vmware ] ; then
-  rllinker "vmware" 20 2
-else
-  error "df_errvmw" nonfatal
-fi
-}
 # initialize runlevel skript to be executed during system startup
 # (before most of the normal boot init scripts)
 # this script should operate like a normal runlevel script

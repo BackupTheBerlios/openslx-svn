@@ -439,9 +439,7 @@ rllinker "ypbind"
 
 # start vmware and vmware preparation services
 config_vmware () {
-rllinker "vmware"
 # during vmware sessions linux should not handle usb events/devices
-testmkd /mnt/var/X11R6/bin
 echo '#!/bin/sh'>> /mnt/etc/udev/rules.d/01-udev-vm.rules
 echo -e "# Script for blocking linux from handling usb \
 devices\n# during vmware sessions. If you like to remove certain modules \

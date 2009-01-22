@@ -1103,10 +1103,6 @@ d_mkrlscript () {
 config_nscd () {
 :
 }
-# prepare virtual machine environment (vmware, vmplayer)
-config_vmware () {
-:
-}
 # configure automounter
 config_automount () {
 :

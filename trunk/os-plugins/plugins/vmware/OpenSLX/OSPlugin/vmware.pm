@@ -75,6 +75,17 @@ sub getAttrInfo
 			content_descr => 'allowed range is from 01-99',
 			default => 70,
 		},
+		# attribute 'imagesrc' defines where we can find vmware images
+		'vmware::imagessrc' => {
+			applies_to_systems => 1,
+			applies_to_clients => 1,
+			description => unshiftHereDoc(<<'			End-of-Here'),
+				Where do we store our vmware images? NFS? Filesystem?
+			End-of-Here
+			content_regex => qr{^\d\d$},
+			content_descr => 'Allowed values: path or URI',
+			default => "",
+		},
 
 	};
 }
@@ -100,16 +111,6 @@ sub preInstallationPhase
 	foreach my $file (@files) {
 		copyFile("$pluginFilesPath/$file", "$pluginRepositoryPath");
 	}
-}
-
-
-sub suggestAdditionalKernelModules
-{
-	my $self                = shift;
-	my $makeInitRamFSEngine = shift;
-
-	# simply suggest these and see where we go from there (what is vmblock?)
-	return qw( vmmon vmnet vmblock );
 }
 
 1;
