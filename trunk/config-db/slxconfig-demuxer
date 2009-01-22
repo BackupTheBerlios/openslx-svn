@@ -714,11 +714,11 @@ sub writePluginConfigurationsForSystem
 
 sub writeSystemConfiguration
 {
-	my $info = shift;
+	my $info           = shift;
+	my $isTargetSystem = shift;
 
 	# if this is not a target system, we shall not write any configurations,
 	# but we simply incorporate inherited attributes
-	my $isTargetSystem = first { $_->{name} eq $info->{name} } @targetSystems;
 	if (!$isTargetSystem) {
 		$openslxDB->mergeDefaultAttributesIntoSystem($info);
 		$info->{'initramfs-name'} = "initramfs-$info->{id}";
@@ -752,6 +752,9 @@ sub writeSystemConfiguration
 	writeClientConfigurationsForSystem($info, $buildPath, $attrFile);
 
 	slxsystem("rm -rf $buildPath") unless $dryRun;
+
+	$systemConfCount++;
+
 	return;
 }
 
@@ -761,23 +764,34 @@ sub writeConfigurations
 		= $clientSystemConfCount = 0;
 	my @infos;
 	foreach my $system (@demuxableSystems) {
-		vlog(
-			0, _tr("\ndemuxing system %d : %s", $system->{id}, $system->{name})
-		);
+		my $isTargetSystem 
+			= first { $_->{name} eq $system->{name} } @targetSystems;
+		if ($isTargetSystem) {
+			vlog(
+				0, 
+				_tr("\ndemuxing system %d : %s", $system->{id}, $system->{name})
+			);
+		}
+		else {
+			vlog(
+				0, 
+				_tr(
+					"\nlinking demuxed system %d : %s into PXE menu",
+					$system->{id}, $system->{name}
+				)
+			);
+		}
 
 		my $success = eval {
 			my $info = $openslxDB->aggregatedSystemFileInfoFor($system);
 			$info->{'external-id'} = externalIDForSystem($system);
 
-			writeSystemConfiguration($info);
+			writeSystemConfiguration($info, $isTargetSystem);
 
 			push @infos, $info;
 			1;
 		};
-		if ($success) {
-			$systemConfCount++;
-		}
-		else {
+		if (!$success) {
 			print STDERR $@;
 			$systemErrCount++;
 		}
@@ -795,12 +809,10 @@ slxconfig-demuxer - OpenSLX configuration demultiplexer
 
 =head1 SYNOPSIS
 
-slxconfig-demuxer [options]
+slxconfig-demuxer [options] [<system-name> ...]
 
 =head3 Script Options
 
-    --dhcp-export-type=<string>  specifies the type of DHCP-server
-                                 (ISC,...)
     --dry-run                    avoids writing anything, for testing
 
 =head3 General Options
@@ -816,6 +828,10 @@ groups from the OpenSLX configuration database, mix & match the individual
 configurational attributes and then demultiplex the resulting information
 to a set of configuration files. These files are used by any OpenSLX-client
 during boot to find out which systems to offer for booting.
+
+If you invoke the script with one or more system names, only these systems
+will be demuxed. All other systems (which are expected to have been demuxed
+before) will just be linked into the PXE menu.
 
 The resulting files will be put into the OpenSLX-tftpboot-path.
 
@@ -905,11 +921,6 @@ appropriate settings.
 =head3 Script Options
 
 =over 8
-
-=item B<<     --dhcp-export-type >>
-
-Specifies the type of DHCP-export that shall be used. Currently, only 'ISC' is
-supported.
 
 =item B<<     --dry-run >>
 
