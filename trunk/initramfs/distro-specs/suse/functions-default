@@ -441,6 +441,16 @@ if [ "x$start_dreshal" = "xyes" ]; then
       >>/mnt/etc/${D_INITDIR}/boot.slx
     rllinker "dbus" $start $stop
   fi
+  if [ -f /mnt/etc/${D_INITDIR}/consolekit ] ; then
+    strinfile "polkituser:" /mnt/etc/passwd || \
+      echo "polkituser:x:104:106:PolicyKit:/var/run/PolicyKit:/bin/false" \
+        >> /mnt/etc/passwd
+    start=$(($start + 1))
+    stop=$(($stop - 1))
+    rllinker "consolekit" $start $stop
+    echo -n > /mnt/var/lib/misc/PolicyKit.reload
+    chmod a+x /mnt/var/lib/misc/PolicyKit.reload
+  fi
   if [ -f /mnt/etc/${D_INITDIR}/resmgr ] ; then
     start=$(($start + 1))
     stop=$(($stop - 1))
