@@ -147,12 +147,6 @@ supported."; \
 	@   # copy license
 	@cp COPYING $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/;
 
-	@   # copy initramfs generator scripts (and inject SLX_CONFIG_PATH, SLX_BASE_PATH on the way):
-	@cp ./initramfs/mkdxsinitrd $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/; \
-	sed -e "s,@@@SLX_CONFIG_PATH@@@,$(SLX_CONFIG_PATH)," \
-	    -e "s,@@@SLX_BASE_PATH@@@,$(SLX_BASE_PATH)," \
-	  -i $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/mkdxsinitrd;
-
 	@   # copy all PERL-scripts and their required modules:
 	@cp bin/slx* $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/; \
 	cp config-db/slx* $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/; \
@@ -182,7 +176,6 @@ supported."; \
 
 	@   # link all binaries & scripts into user-path:
 	@ln -sf $(SLX_BASE_PATH)/bin/slx* $(SLX_BUILD_PATH)$(USR_BIN_PATH)/; \
-	ln -sf $(SLX_BASE_PATH)/bin/mkdxsinitrd $(SLX_BUILD_PATH)$(USR_BIN_PATH)/; \
 
 	@   # copy shareable data:
 	@cd initramfs/cdboot;  tar --exclude=.svn -cp * | \
@@ -268,7 +261,6 @@ and stage1"
 	@rm -rf $(SLX_PUBLIC_PATH)
 	@echo "files in $(SLX_PRIVATE_PATH) (please remove manually)"
 	@rm -f $(USR_BIN_PATH)/slx*
-	@rm -f $(USR_BIN_PATH)/mkdxsinitrd
 
 clean:
 	@echo "Cleanup OpenSLX source directory "

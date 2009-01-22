@@ -78,8 +78,6 @@ my (
 		# number of (system-specific) client configurations written
 	$initramfsCount,
 		# number of initramfs that were created
-	$makeInitRamFS,
-		# generate initial ramfs internally (new style)
 	@targetSystems,
 		# systems to create initramfs for, defaults to all systems
 	$helpReq,
@@ -93,7 +91,6 @@ if ($> != 0) {
 
 GetOptions(
 	'dhcp-export-type=s' => \$dhcpType,
-	'makeinitramfs'      => \$makeInitRamFS,
 	'dry-run'            => \$dryRun,
 	'help|?'             => \$helpReq,
 	'man'                => \$manReq,
@@ -511,82 +508,6 @@ sub writePXEMenus
 	return;
 }
 
-sub generateInitialRamFS
-{
-	my $info            = shift;
-	my $pxeVendorOSPath = shift;
-
-	my $vendorOS = $info->{'vendor-os'};
-
-	my $osExportEngine = instantiateClass("OpenSLX::OSExport::Engine");
-	$osExportEngine->initializeFromExisting($info->{export}->{name});
-
-	vlog(1, _tr('generating initialramfs %s/initramfs', $pxeVendorOSPath));
-	my $cmd = "$openslxConfig{'base-path'}/bin/mkdxsinitrd ";
-	my $attrs = $info->{attrs} || {};
-	if ($attrs->{ramfs_nicmods}) {
-		$cmd .= qq[-n "$attrs->{ramfs_nicmods}" ];
-	}
-	my $fsMods = $attrs->{ramfs_fsmods} || '';
-	$fsMods .= ' ' . join(' ', $osExportEngine->requiredFSMods());
-	if ($fsMods) {
-		$cmd .= qq[-f "$fsMods" ];
-	}
-	if ($attrs->{ramfs_miscmods}) {
-		$cmd .= qq[-m "$attrs->{ramfs_miscmods}" ];
-	}
-	my $rootPath = "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}";
-	$cmd .= "-i $pxeVendorOSPath/$info->{'initramfs-name'} -r $rootPath ";
-
-	# pass in system name:
-	$cmd .= "-S $info->{name} ";
-
-	# pass on theme, if any
-	my $theme = $attrs->{'theme::splash'} || '';
-	if (length $theme) {
-		$cmd .= "-s $theme ";
-	}
-	
-	my $activePlugins = $info->{'active-plugins'};
-	if ($activePlugins) {
-		$cmd .= '-p ' . join(',', @$activePlugins) . ' ';
-	}
-
-	# always use dhclient instead of the busybox-provided dhcp-client
-	# (since the latter is unable to fetch NIS-stuff):
-	$cmd .= "-d ";
-
-	# generate initramfs-setup file (with settings relevant for initramfs only):
-	my $initramfsAttrFile = "$tempPath/initramfs-setup";
-	my $initramfsAttrs    = {
-		attrs => {
-			'host_name'		=> 'slx-client', # just to have something at all
-			'ramfs_fsmods'  => $attrs->{'ramfs_fsmods'} || '',
-			'ramfs_nicmods' => $attrs->{'ramfs_nicmods'} || '',
-			'ramfs_screen'  => $attrs->{'ramfs_screen'} || '',
-			'rootfs'        => $info->{'export-uri'} || '',
-		},
-	};
-	writeAttributesToFile($initramfsAttrs, $initramfsAttrFile);
-	# and pass the generated initramfs-setup file to mkdxsinitrd:
-	$cmd .= "-c $initramfsAttrFile ";
-
-	# ... set kernel version ...
-	my $kernelFile = basename(followLink($info->{'kernel-file'}));
-	$kernelFile =~ m[-(.+)$];
-	my $kernelVersion = $1;
-	$cmd .= "-k $kernelVersion ";
-
-	# ... add version info ...
-	my $slxver = `slxversion`;
-	chomp $slxver;
-	$ENV{'SLX_VERSION'} = $slxver;
-
-	# ... finally invoke mkdxsinitrd:
-	slxsystem($cmd) unless $dryRun;
-	return;
-}
-
 sub makeInitRamFS
 {
 	my $info            = shift;
@@ -643,11 +564,7 @@ sub writeSystemPXEFiles
 		vlog(1, _tr('copying kernel %s to %s', $kernelFile, $targetKernel));
 		slxsystem(qq[cp -p "$kernelFile" "$targetKernel"]) unless $dryRun;
 	}
-	if ($makeInitRamFS) {
-		makeInitRamFS($info, $pxeVendorOSPath);
-	} else {
-		generateInitialRamFS($info, $pxeVendorOSPath);
-	}
+	makeInitRamFS($info, $pxeVendorOSPath);
 	$initramfsCount++;
 	return;
 }
