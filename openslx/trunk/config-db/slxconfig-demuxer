@@ -129,11 +129,11 @@ if (createConfigFolderForDefaultSystem()) {
 chomp(my $slxVersion = qx{slxversion});
 
 my $lockFile = "$openslxConfig{'private-path'}/config-demuxer.lock";
-lockScript($lockFile);
+my $haveLock = lockScript($lockFile);
 
 END 
 {
-	unlockScript($lockFile) if defined $lockFile;
+	unlockScript($lockFile) if $haveLock;
 }
 
 my $tempPath = "$openslxConfig{'temp-path'}/slxconfig-demuxer";
@@ -144,7 +144,16 @@ if (!$option{dryRun}) {
 		die _tr("Unable to create or access temp-path '%s'!", $tempPath);
 	}
 }
+
 my $tftpbootPath = "$openslxConfig{'public-path'}/tftpboot";
+my $tftpbuildPath = "$openslxConfig{'public-path'}/tftpboot.new";
+if (!$option{dryRun}) {
+	mkpath([$tftpbootPath]);
+	rmtree("$tftpbuildPath/pxelinux.cfg");
+	mkpath(["$tftpbuildPath/client-config", "$tftpbuildPath/pxelinux.cfg"]);
+}
+
+my $rsyncDeleteClause;
 
 my @demuxableSystems
 	= grep { $_->{name} ne '<<<default>>>' } $openslxDB->fetchSystemByFilter();
@@ -166,25 +175,13 @@ if (@ARGV) {
 		}
 		push @targetSystems, $system;
 	}
-
-	# remove only the folders of the target systems
-	if (!$option{dryRun}) {
-		rmtree("$tftpbootPath/pxelinux.cfg");
-		mkpath(["$tftpbootPath/client-config", "$tftpbootPath/pxelinux.cfg"]);
-		for my $targetSystem (@targetSystems) {
-			rmtree("$tftpbootPath/client-config/$targetSystem");
-		}
-	}
+	$rsyncDeleteClause = '';
 }
 else {
 	# create initramfs for all systems
 	@targetSystems = @demuxableSystems;
-
-	# and cleanup everything
-	if (!$option{dryRun}) {
-		rmtree("$tftpbootPath");
-		mkpath(["$tftpbootPath/client-config", "$tftpbootPath/pxelinux.cfg"]);
-	}
+	# let rsync delete old files
+	$rsyncDeleteClause = '--delete';
 }
 
 writeConfigurations();
@@ -199,7 +196,16 @@ End-of-Here
 
 $openslxDB->disconnect();
 
-slxsystem("rm -rf $tempPath") unless $option{dryRun} || length($tempPath) < 12;
+if (!$option{dryRun}) {
+	rmtree([$tempPath]);
+	my $rsyncCmd = "rsync -a $rsyncDeleteClause --delay-updates $tftpbuildPath/ $tftpbootPath/";
+	slxsystem($rsyncCmd) == 0
+		or die _tr(
+			"unable to rsync files from '%s' to '%s'! (%s)", 
+			$tftpbuildPath, $tftpbootPath, $!
+		);
+	rmtree([$tftpbuildPath]);
+}
 
 exit;
 
@@ -232,6 +238,7 @@ is executing this script.\n], $lockFile
 			);
 		}
 	}
+	return 1;
 }
 
 sub unlockScript
@@ -391,8 +398,8 @@ sub writePXEMenus
 {
 	my @infos = @_;
 
-	my $pxePath       = "$tftpbootPath";
-	my $pxeConfigPath = "$tftpbootPath/pxelinux.cfg";
+	my $pxePath       = "$tftpbuildPath";
+	my $pxeConfigPath = "$tftpbuildPath/pxelinux.cfg";
 
 	if (!-e "$pxePath/pxelinux.0") {
 		my $pxelinux0Path =
@@ -556,7 +563,7 @@ sub writeSystemPXEFiles
 	my $kernelFile = $info->{'kernel-file'};
 	my $kernelName = basename($kernelFile);
 
-	my $pxePath         = "$tftpbootPath";
+	my $pxePath         = "$tftpbuildPath";
 	my $pxeVendorOSPath = "$pxePath/$info->{'vendor-os'}->{name}";
 	mkpath $pxeVendorOSPath unless -e $pxeVendorOSPath || $option{dryRun};
 
@@ -644,7 +651,7 @@ sub writeClientConfigurationsForSystem
 			my $externalClientID = externalIDForClient($client);
 			createTarOfPath(
 				$buildPath, "${externalClientID}.tgz",
-				"$tftpbootPath/client-config/$info->{'external-id'}"
+				"$tftpbuildPath/client-config/$info->{'external-id'}"
 			);
 		}
 	}
@@ -728,7 +735,7 @@ sub writeSystemConfiguration
 	
 	writePluginConfigurationsForSystem($info, $buildPath);
 
-	my $systemPath = "$tftpbootPath/client-config/$info->{'external-id'}";
+	my $systemPath = "$tftpbuildPath/client-config/$info->{'external-id'}";
 	createTarOfPath($buildPath, "default.tgz", $systemPath);
 
 	$info->{'initramfs-name'} = "initramfs-$info->{id}";
