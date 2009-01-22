@@ -35,7 +35,7 @@
 # during client bootup, path and file relative to /etc
 
 # mountvirtfs does not exist anymore -> use mountkernfs.sh
-D_INITSCRIPTS="mountkernfs.sh keyboard-setup mountdevsubfs.sh procps.sh bootlogd hwclock.sh sudo console-setup"
+D_INITSCRIPTS="mountkernfs.sh keyboard-setup mountdevsubfs.sh procps.sh bootlogd hwclock.sh sudo console-setup $D_SPLASHY"
 D_ETCEXCL="*.old\n*-\n\
 etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
 pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\

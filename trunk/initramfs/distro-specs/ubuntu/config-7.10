@@ -40,4 +40,4 @@ X11/xdm/pixmaps\ndhclient.script"
 D_RODIRSINRW="/etc/X11/xkb /var/lib/gconf /var/lib/dpkg /var/lib/aspell \
 /var/lib/pango /var/lib/defoma /var/cache/fontconfig"
 D_INITSCRIPTS="mountkernfs.sh keyboard-setup mountdevsubfs.sh procps.sh \
-bootlogd hwclock.sh sudo console-setup"
+bootlogd hwclock.sh sudo console-setup $D_SPLASHY"
