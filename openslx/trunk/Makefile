@@ -129,6 +129,10 @@ supported."; \
 	else \
 		echo $${DEFAULT_DB_TYPE} >DEFAULT-DB-TYPE; \
 	fi; \
+	if ! which rsync >/dev/null 2>&1; then \
+		echo "  rsync is required, please install it."; \
+		exit 1; \
+	fi; \
 	echo "Installing OpenSLX project files"; \
 	mkdir -p $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH) \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib \
