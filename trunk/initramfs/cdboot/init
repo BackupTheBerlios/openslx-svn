@@ -103,6 +103,12 @@ for opts in ${KCMDLINE} ; do
     # ... or a specified debug level (will be passed to next stage)
     debug=*)
       DEBUGLEVEL=${opts#debug=};;
+    nbd)
+      file=irfsnbd;;
+    nfs)
+      file=irfsnfs;;
+    dnbd2)
+      file=irfsd2;;
   esac
 done
 # at this point a timer should be started to ensure an automated reboot
@@ -161,7 +167,7 @@ echo "Fetching selected kernel and initial ramfs from the net ..."
 ( wget -q -c -O /tmp/kernel \
   ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/kernel 2>/dev/null && \
 wget -q -c -O /tmp/iramfs \
-  ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/iramfs 2>/dev/null ) || \
+  ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/$file 2>/dev/null ) || \
   /bin/ash
 
 # start a debug shell if needed, else set quiet kernel parameter

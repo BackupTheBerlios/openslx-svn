@@ -64,14 +64,17 @@ MENU ROWS 9\nMENU TABMSGROW 15\nMENU CMDLINEROW 15\nMENU ENDROW -1\n\
 MENU TIMEOUTROW 15\nMENU HELPMSGROW 15\nMENU HELPMSGENDROW -1\n\
 MENU HSHIFT 0\nMENU VSHIFT 5\n\nMENU TITLE OpenSLX PreBoot ISO\
 " > ${BUILDDIR}/iso/isolinux/isolinux.cfg
-echo -e "LABEL OpenSLX\n\tMENU LABEL Test to boot an OpenSLX Client" \
-  >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
-echo -e "\tTEXT HELP\n\tYou should have DHCP running ...\n\tFor more \
+for i in NBD NFS DNBD2 ; do
+  echo -e "LABEL OpenSLX\n\tMENU LABEL OpenSLX Client with $i as RootFS" \
+    >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
+  echo -e "\tTEXT HELP\n\tYou should have DHCP running ...\n\tFor more \
 information on this project consult the homepage on\n\t\t\
 http://www.openslx.org\n\tENDTEXT" \
-  >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
-echo -e "\tKERNEL vmlinuz\n\tAPPEND initrd=cdirfs quiet" \
-  >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
+    >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
+  type=$(echo $i|tr [:upper:] [:lower:])
+  echo -e "\tKERNEL vmlinuz\n\tAPPEND initrd=cdirfs $type quiet" \
+    >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
+done
 
 # write some info, if CD/DVD is still in drive
 echo -e "You seem to have the OpenSLX network demo CD/DVD still in your \
