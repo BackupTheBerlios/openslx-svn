@@ -49,3 +49,5 @@ D_XFONTPATH="/usr/share/fonts/*"
 D_DEFAULTCOUNTRY="de"
 D_HWMODTOIGNORE="i8xx-tco ichxrom snd-atiixp-modem intel-rng"
 D_BOOTLOCAL="conf.d/local.start"
+D_KDMRCPATH=/var/lib/openslx/themes/displaymanager
+D_XDMPATH=/etc/X11/kdm

@@ -63,3 +63,5 @@ D_XORGBIN=/usr/X11R6/bin/X
 D_XFONTPATH="/usr/share/fonts/*"
 D_DEFAULTCOUNTRY="de"
 D_BOOTLOCAL=""
+D_KDMRCPATH=/etc/kde3/kdm
+D_XDMPATH=/etc/kde3/kdm
