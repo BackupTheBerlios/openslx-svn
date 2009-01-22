@@ -41,25 +41,31 @@ use OpenSLX::ConfigDB;
 use OpenSLX::ConfigFolder;
 use OpenSLX::Utils;
 
-my ($helpReq, $inherited, $manReq, $verbose, $versionReq,);
+my %option;
 
 GetOptions(
-	'help|?'    => \$helpReq,
-	'inherited' => \$inherited,
-	'man'       => \$manReq,
-	'verbose'   => \$verbose,
-	'version'   => \$versionReq,
+	'help|?'    => \$option{helpReq},
+	'inherited' => \$option{inherited},
+	'man'       => \$option{manReq},
+	'verbose'   => \$option{verbose},
+	'version'   => \$option{versionReq},
 ) or pod2usage(2);
-pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
-if ($manReq) {
+pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $option{helpReq};
+if ($option{manReq}) {
 	# avoid dubious problem with perldoc in combination with UTF-8 that
 	# leads to strange dashes and single-quotes being used
 	$ENV{LC_MESSAGES} = 'POSIX';
 	pod2usage(-verbose => 2);
 }
-if ($versionReq) {
+if ($option{versionReq}) {
 	system('slxversion');
 	exit 1;
+}
+
+# if the user requested to see inherited attributes, we activate verbose mode,
+# too, such that we actually show attributes
+if ($option{inherited}) {
+	$option{verbose} = 1;
 }
 
 openslxInit();
@@ -281,7 +287,7 @@ sub dumpElements
 	my $objName = shift;
 	my $nameClause = shift || sub { "\t$_->{name}\n" };
 
-	if ($verbose) {
+	if ($option{verbose}) {
 		my $ind = ' ' x 4;
 		foreach my $elem (@_) {
 			print "$objName '$elem->{name}':\n";
@@ -371,40 +377,16 @@ sub listClients
 
 	# set verbose mode if any params have been passed in:
 	if (defined $name) {
-		$verbose = 1;
+		$option{verbose} = 1;
 		$nameSpec{name} = $name;
 	}
 
 	dumpElements(
 		'client', undef,
-		map {
-			my @sysIDs = $openslxDB->fetchSystemIDsOfClient($_->{id});
-			$_->{systems} 
-				=	join "\n", 
-					map { $_->{name} }
-					sort { $a->{name} cmp $b->{name} }
-					$openslxDB->fetchSystemByID(\@sysIDs, 'name');
-			if ($inherited) {
-				my $mergedClient = dclone($_);
-				my $originInfo = {};
-				$openslxDB->mergeDefaultAndGroupAttributesIntoClient(
-					$mergedClient, $originInfo
-				);
-				my $mergedAttrs = $mergedClient->{attrs} || {};
-				$_->{attrs} = {};
-				foreach my $attr (keys %$mergedAttrs) {
-					my $origin = $originInfo->{$attr};
-					my $enhancedName = $origin ? "[$origin] $attr" : $attr;
-					$_->{attrs}->{$enhancedName} = $mergedAttrs->{$attr};
-				}
-			}
-			# rename attrs to ATTRIBUTES for display
-			$_->{ATTRIBUTES} = $_->{attrs};
-			delete $_->{attrs};
-			$_;
-		}
-		sort { $a->{name} cmp $b->{name} } 
-		$openslxDB->fetchClientByFilter(\%nameSpec)
+		_expandClients(
+			sort { $a->{name} cmp $b->{name} } 
+			$openslxDB->fetchClientByFilter(\%nameSpec)
+		)
 	);
 
 	return 1;
@@ -418,30 +400,16 @@ sub listGroups
 
 	# set verbose mode if any params have been passed in:
 	if (defined $name) {
-		$verbose = 1;
+		$option{verbose} = 1;
 		$nameSpec{name} = $name;
 	}
 
 	dumpElements(
 		'group', undef,
-		map {
-			my @systemIDs = $openslxDB->fetchSystemIDsOfGroup($_->{id});
-			$_->{systems} 
-				=	join "\n", map { $_->{name} }
-					sort { $a->{name} cmp $b->{name} }
-					$openslxDB->fetchSystemByID(\@systemIDs, 'name');
-			my @clientIDs = $openslxDB->fetchClientIDsOfGroup($_->{id});
-			$_->{clients} 
-				=	join "\n", map { $_->{name} }
-					sort { $a->{name} cmp $b->{name} }
-					$openslxDB->fetchClientByID(\@clientIDs, 'name');
-			# rename attrs to ATTRIBUTES for display
-			$_->{ATTRIBUTES} = $_->{attrs};
-			delete $_->{attrs};
-			$_;
-		}
-		sort { $a->{name} cmp $b->{name} } 
-		$openslxDB->fetchGroupByFilter(\%nameSpec)
+		_expandGroups(
+			sort { $a->{name} cmp $b->{name} } 
+			$openslxDB->fetchGroupByFilter(\%nameSpec)
+		)
 	);
 
 	return 1;
@@ -455,7 +423,7 @@ sub listExports
 
 	# set verbose mode if any params have been passed in:
 	if (defined $name) {
-		$verbose = 1;
+		$option{verbose} = 1;
 		$nameSpec{name} = $name;
 	}
 
@@ -489,56 +457,16 @@ sub listSystems
 
 	# set verbose mode if any params have been passed in:
 	if (defined $name) {
-		$verbose = 1;
+		$option{verbose} = 1;
 		$nameSpec{name} = $name;
 	}
 
 	dumpElements(
 		'system', undef,
-		map {
-			my @clientIDs = $openslxDB->fetchClientIDsOfSystem($_->{id});
-			$_->{clients} 
-				=	join "\n", 
-					map { $_->{name} }
-					sort { $a->{name} cmp $b->{name} }
-					$openslxDB->fetchClientByID(\@clientIDs, 'name');
-			my @activePlugins;
-			my $export = $openslxDB->fetchExportByID($_->{export_id});
-			if (defined $export) {
-				$_->{export_id}
-					= "$export->{id} ($export->{name})";
-
-				# fetch detailed info about active plugins
-				my @installedPlugins = sort $openslxDB->fetchInstalledPlugins(
-					$export->{vendor_os_id}
-				);
-				my $mergedSystem = dclone($_);
-				my $originInfo = {};
-				$openslxDB->mergeDefaultAttributesIntoSystem(
-					$mergedSystem, $originInfo
-				);
-				my $mergedAttrs = $mergedSystem->{attrs} || {};
-				foreach my $plugin (@installedPlugins) {
-					next if !$mergedAttrs->{"${plugin}::active"};
-					push @activePlugins, $plugin;
-				}
-				if ($inherited) {
-					$_->{attrs} = {};
-					foreach my $attr (keys %$mergedAttrs) {
-						my $origin = $originInfo->{$attr};
-						my $enhancedName = $origin ? "[$origin] $attr" : $attr;
-						$_->{attrs}->{$enhancedName} = $mergedAttrs->{$attr};
-					}
-				}
-			}
-			$_->{PLUGINS} = [ sort @activePlugins ];
-			# rename attrs to ATTRIBUTES for display
-			$_->{ATTRIBUTES} = $_->{attrs};
-			delete $_->{attrs};
-			$_;
-		}
-		sort { $a->{name} cmp $b->{name} }
-		$openslxDB->fetchSystemByFilter(\%nameSpec)
+		_expandSystems(
+			sort { $a->{name} cmp $b->{name} }
+			$openslxDB->fetchSystemByFilter(\%nameSpec)
+		)
 	);
 
 	return 1;
@@ -552,7 +480,7 @@ sub listVendorOSes
 
 	# set verbose mode if any params have been passed in:
 	if (defined $name) {
-		$verbose = 1;
+		$option{verbose} = 1;
 		$nameSpec{name} = $name;
 	}
 
@@ -577,23 +505,14 @@ sub searchClients
 	);
 
 	# set verbose mode if any params have been passed in:
-	$verbose = 1 if %$clientData;
+	$option{verbose} = 1 if %$clientData;
 
 	dumpElements(
 		'client', undef,
-		map {
-			my @sysIDs = $openslxDB->fetchSystemIDsOfClient($_->{id});
-			$_->{systems} 
-				=	join "\n", map { $_->{name} }
-					sort { $a->{name} cmp $b->{name} }
-					$openslxDB->fetchSystemByID(\@sysIDs, 'name');
-			# rename attrs to ATTRIBUTES for display
-			$_->{ATTRIBUTES} = $_->{attrs};
-			delete $_->{attrs};
-			$_;
-		}
-		sort { $a->{name} cmp $b->{name} }
-		$openslxDB->fetchClientByFilter($clientData, undef, $clientAttrs)
+		_expandClients(
+			sort { $a->{name} cmp $b->{name} }
+			$openslxDB->fetchClientByFilter($clientData, undef, $clientAttrs)
+		)
 	);
 
 	return 1;
@@ -608,28 +527,14 @@ sub searchGroups
 	);
 
 	# set verbose mode if any params have been passed in:
-	$verbose = 1 if %$groupData;
+	$option{verbose} = 1 if %$groupData;
 
 	dumpElements(
 		'group', undef,
-		map {
-			my @systemIDs = $openslxDB->fetchSystemIDsOfGroup($_->{id});
-			$_->{systems} 
-				=	join "\n", map { $_->{name} }
-					sort { $a->{name} cmp $b->{name} }
-					$openslxDB->fetchSystemByID(\@systemIDs, 'name');
-			my @clientIDs = $openslxDB->fetchClientIDsOfGroup($_->{id});
-			$_->{clients} 
-				=	join "\n", map { $_->{name} }
-					sort { $a->{name} cmp $b->{name} }
-					$openslxDB->fetchClientByID(\@clientIDs, 'name');
-			# rename attrs to ATTRIBUTES for display
-			$_->{ATTRIBUTES} = $_->{attrs};
-			delete $_->{attrs};
-			$_;
-		}
-		sort { $a->{name} cmp $b->{name} }
-		$openslxDB->fetchGroupByFilter($groupData, undef, $groupAttrs)
+		_expandGroups(
+			sort { $a->{name} cmp $b->{name} }
+			$openslxDB->fetchGroupByFilter($groupData, undef, $groupAttrs)
+		)
 	);
 
 	return 1;
@@ -641,7 +546,7 @@ sub searchExports
 	my $exportData = parseKeyValueArgs(\@exportKeys, 'export', @_);
 
 	# set verbose mode if any params have been passed in:
-	$verbose = 1 if %$exportData;
+	$option{verbose} = 1 if %$exportData;
 
 	dumpElements(
 		'export',
@@ -674,44 +579,14 @@ sub searchSystems
 	);
 
 	# set verbose mode if any params have been passed in:
-	$verbose = 1 if %$systemData;
+	$option{verbose} = 1 if %$systemData;
 
 	dumpElements(
 		'system', undef,
-		map {
-			my @clientIDs = $openslxDB->fetchClientIDsOfSystem($_->{id});
-			$_->{clients} = join "\n", map { $_->{name} }
-				sort { $a->{name} cmp $b->{name} }
-				$openslxDB->fetchClientByID(\@clientIDs, 'name');
-			my @activePlugins;
-			my $export = $openslxDB->fetchExportByID($_->{export_id});
-			if (defined $export) {
-				$_->{export_id}
-					= "$export->{id} ($export->{name})";
-
-				# fetch detailed info about active plugins
-				my @installedPlugins = sort $openslxDB->fetchInstalledPlugins(
-					$export->{vendor_os_id}
-				);
-				my $mergedSystem = dclone($_);
-				$openslxDB->mergeDefaultAttributesIntoSystem($mergedSystem);
-				my $mergedAttrs = $mergedSystem->{attrs} || {};
-				foreach my $plugin (@installedPlugins) {
-					next if !$mergedAttrs->{"${plugin}::active"};
-					my $precedence = sprintf(
-						"%02d", $mergedAttrs->{"${plugin}::precedence"}
-					);
-					push(@activePlugins, $plugin);
-				}
-			}
-			$_->{PLUGINS} = [ sort @activePlugins ];
-			# rename attrs to ATTRIBUTES for display
-			$_->{ATTRIBUTES} = $_->{attrs};
-			delete $_->{attrs};
-			$_;
-		}
-		sort { $a->{name} cmp $b->{name} }
-		$openslxDB->fetchSystemByFilter($systemData, undef, $systemAttrs)
+		_expandSystems(
+			sort { $a->{name} cmp $b->{name} }
+			$openslxDB->fetchSystemByFilter($systemData, undef, $systemAttrs)
+		)
 	);
 
 	return 1;
@@ -723,7 +598,7 @@ sub searchVendorOSes
 	my $vendorOSData = parseKeyValueArgs(\@vendorOSKeys, 'vendor_os', @_);
 
 	# set verbose mode if any params have been passed in:
-	$verbose = 1 if %$vendorOSData;
+	$option{verbose} = 1 if %$vendorOSData;
 
 	dumpElements(
 		'vendor-OS', undef,
@@ -763,7 +638,7 @@ sub changeVendorOSInConfigDB
 		0, _tr("vendor-OS '%s' has been successfully changed\n", $vendorOSName)
 	);
 
-	listVendorOSes("id=$vendorOS->{id}") if $verbose;
+	listVendorOSes("id=$vendorOS->{id}") if $option{verbose};
 
 	return 1;
 }
@@ -790,7 +665,7 @@ sub changeExportInConfigDB
 	$openslxDB->changeExport($export->{id}, [$exportData]);
 	vlog(0, _tr("export '%s' has been successfully changed\n", $exportName));
 
-	listExports("id=$export->{id}") if $verbose;
+	listExports("id=$export->{id}") if $option{verbose};
 
 	return 1;
 }
@@ -856,7 +731,7 @@ sub addClientToConfigDB
 	if (@systemIDs) {
 		$openslxDB->addSystemIDsToClient($clientID, \@systemIDs);
 	}
-	if ($verbose) {
+	if ($option{verbose}) {
 		listClients("id=$clientID");
 	}
 
@@ -926,9 +801,7 @@ sub addGroupToConfigDB
 	if (@clientIDs) {
 		$openslxDB->addClientIDsToGroup($groupID, \@clientIDs);
 	}
-	if ($verbose) {
-		listGroups("id=$groupID");
-	}
+	listGroups("id=$groupID") if $option{verbose};
 
 	return 1;
 }
@@ -1023,9 +896,7 @@ sub addSystemToConfigDB
 	if (@clientIDs) {
 		$openslxDB->addClientIDsToSystem($systemID, \@clientIDs);
 	}
-	if ($verbose) {
-		listSystems("id=$systemID");
-	}
+	listSystems("id=$systemID") if $option{verbose};
 
 	return 1;
 }
@@ -1110,9 +981,7 @@ sub changeClientInConfigDB
 	if (@systemIDs) {
 		$openslxDB->setSystemIDsOfClient($client->{id}, \@systemIDs);
 	}
-	if ($verbose) {
-		listClients("id=$client->{id}");
-	}
+	listClients("id=$client->{id}") if $option{verbose};
 
 	return 1;
 }
@@ -1227,10 +1096,7 @@ sub changeGroupInConfigDB
 	if (@clientIDs) {
 		$openslxDB->setClientIDsOfGroup($group->{id}, \@clientIDs);
 	}
-	if ($verbose) {
-		listGroups("id=$group->{id}");
-	}
-
+	listGroups("id=$group->{id}") if $option{verbose};
 
 	return 1;
 }
@@ -1306,9 +1172,7 @@ sub changeSystemInConfigDB
 	if (@clientIDs) {
 		$openslxDB->setClientIDsOfSystem($system->{id}, \@clientIDs);
 	}
-	if ($verbose) {
-		listSystems("id=$system->{id}");
-	}
+	listSystems("id=$system->{id}")if $option{verbose};
 
 	return 1;
 }
@@ -1392,6 +1256,108 @@ sub removeSystemFromConfigDB
 	);
 
 	return 1;
+}
+
+sub _expandClients
+{	# expands info for given clients
+	return
+		map {
+			my @sysIDs = $openslxDB->fetchSystemIDsOfClient($_->{id});
+			$_->{systems} 
+				=	join "\n", 
+					map { $_->{name} }
+					sort { $a->{name} cmp $b->{name} }
+					$openslxDB->fetchSystemByID(\@sysIDs, 'name');
+			if ($option{inherited}) {
+				my $mergedClient = dclone($_);
+				my $originInfo = {};
+				$openslxDB->mergeDefaultAndGroupAttributesIntoClient(
+					$mergedClient, $originInfo
+				);
+				my $mergedAttrs = $mergedClient->{attrs} || {};
+				$_->{attrs} = {};
+				foreach my $attr (keys %$mergedAttrs) {
+					my $origin = $originInfo->{$attr};
+					my $enhancedName = $origin ? "[$origin] $attr" : $attr;
+					$_->{attrs}->{$enhancedName} = $mergedAttrs->{$attr};
+				}
+			}
+			# rename attrs to ATTRIBUTES for display
+			$_->{ATTRIBUTES} = $_->{attrs};
+			delete $_->{attrs};
+			$_;
+		}
+		@_;
+}
+
+sub _expandGroups
+{	# expands info for given groups
+	return
+		map {
+			my @systemIDs = $openslxDB->fetchSystemIDsOfGroup($_->{id});
+			$_->{systems} 
+				=	join "\n", map { $_->{name} }
+					sort { $a->{name} cmp $b->{name} }
+					$openslxDB->fetchSystemByID(\@systemIDs, 'name');
+			my @clientIDs = $openslxDB->fetchClientIDsOfGroup($_->{id});
+			$_->{clients} 
+				=	join "\n", map { $_->{name} }
+					sort { $a->{name} cmp $b->{name} }
+					$openslxDB->fetchClientByID(\@clientIDs, 'name');
+			# rename attrs to ATTRIBUTES for display
+			$_->{ATTRIBUTES} = $_->{attrs};
+			delete $_->{attrs};
+			$_;
+		}
+		@_;
+}
+
+sub _expandSystems
+{	# expands info for given systems
+	return
+		map {
+			my @clientIDs = $openslxDB->fetchClientIDsOfSystem($_->{id});
+			$_->{clients} 
+				=	join "\n", 
+					map { $_->{name} }
+					sort { $a->{name} cmp $b->{name} }
+					$openslxDB->fetchClientByID(\@clientIDs, 'name');
+			my @activePlugins;
+			my $export = $openslxDB->fetchExportByID($_->{export_id});
+			if (defined $export) {
+				$_->{export_id}
+					= "$export->{id} ($export->{name})";
+	
+				# fetch detailed info about active plugins
+				my @installedPlugins = sort $openslxDB->fetchInstalledPlugins(
+					$export->{vendor_os_id}
+				);
+				my $mergedSystem = dclone($_);
+				my $originInfo = {};
+				$openslxDB->mergeDefaultAttributesIntoSystem(
+					$mergedSystem, $originInfo
+				);
+				my $mergedAttrs = $mergedSystem->{attrs} || {};
+				foreach my $plugin (@installedPlugins) {
+					next if !$mergedAttrs->{"${plugin}::active"};
+					push @activePlugins, $plugin;
+				}
+				if ($option{inherited}) {
+					$_->{attrs} = {};
+					foreach my $attr (keys %$mergedAttrs) {
+						my $origin = $originInfo->{$attr};
+						my $enhancedName = $origin ? "[$origin] $attr" : $attr;
+						$_->{attrs}->{$enhancedName} = $mergedAttrs->{$attr};
+					}
+				}
+			}
+			$_->{PLUGINS} = [ sort @activePlugins ];
+			# rename attrs to ATTRIBUTES for display
+			$_->{ATTRIBUTES} = $_->{attrs};
+			delete $_->{attrs};
+			$_;
+		}
+		@_;
 }
 
 sub _cleanName
