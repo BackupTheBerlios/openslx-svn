@@ -642,7 +642,7 @@ sub _schemaUpgradeDBFrom
 			$metaDB->setSystemAttrs($system->{id}, $attrs);
 		}
 	
-		# force all theme names to lowercase
+		# force all plugin names to lowercase
 		foreach my $vendorOS ($metaDB->fetchVendorOSByFilter()) {
 			my @installedPlugins 
 				= $metaDB->fetchInstalledPlugins($vendorOS->{id});
