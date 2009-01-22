@@ -116,6 +116,9 @@ use vars qw(%supportedDistros);
         },
 );
 
+our $localHttpServerMasterPID;
+our %localHttpServers;
+
 ################################################################################
 ### interface methods
 ################################################################################
@@ -132,13 +135,13 @@ sub DESTROY
 {
 	my $self = shift;
 
-	my $httpServerPID = $self->{'local-http-server-master-pid'} || '0';
+	my $httpServerPID = $localHttpServerMasterPID || '0';
 	if ($httpServerPID == $$) {
 		# we are the master process, so we clean up all the servers that we
 		# have started:
-		while (my ($localURL, $pid) = each %{$self->{'local-http-servers'}}) {
+		while (my ($localURL, $serverInfo) = each %localHttpServers) {
 			vlog(1, _tr("stopping local HTTP-server for URL '%s'.", $localURL));
-			kill TERM => $pid;
+			kill TERM => $serverInfo->{pid};
 		}
 	}
 	return;
@@ -1160,7 +1163,7 @@ sub _startLocalURLServersAsNeeded
 {
 	my $self = shift;
 
-	$self->{'local-http-server-master-pid'} = $$;
+	$localHttpServerMasterPID ||= $$;
 
 	my $port = 5080;
 	my %portForURL;
@@ -1168,7 +1171,7 @@ sub _startLocalURLServersAsNeeded
 		my $localURL = $repoInfo->{'local-url'} || '';
 		next if !$localURL;
 		next if $localURL =~ m[^\w+:];	# anything with a protcol-spec is non-local
-		if (!exists $self->{'local-http-servers'}->{$localURL}) {
+		if (!exists $localHttpServers{$localURL}) {
 			my $pid 
 				= executeInSubprocess(
 					$self->{'busybox-binary'}, "httpd", '-p', $port, '-h', '/', '-f'
@@ -1179,15 +1182,13 @@ sub _startLocalURLServersAsNeeded
 					$localURL, $port
 				)
 			);
-			$self->{'local-http-servers'}->{$localURL} = $pid;
-			$repoInfo->{'local-url'} 
-				= "http://localhost:$port$localURL";
-			$portForURL{$localURL} = $port;
+			$repoInfo->{'local-url'} = "http://localhost:$port$localURL";
+			$localHttpServers{$localURL}->{pid} = $pid;
+			$localHttpServers{$localURL}->{url} = $repoInfo->{'local-url'};
 			$port++;
 		}
 		else {
-			$repoInfo->{'local-url'} 
-				= "http://localhost:$portForURL{$localURL}$localURL";
+			$repoInfo->{'local-url'} = $localHttpServers{$localURL}->{url};
 		}
 	}
 	return;
@@ -1622,7 +1623,7 @@ sub _stage1D_installPackageSelection
 	}
 	else {
 		vlog(1, "installing these packages:\n" . join("\n\t", @pkgs));
-		$self->{'meta-packager'}->installSelection(join " ", @pkgs, 1);
+		$self->{'meta-packager'}->installSelection(join(' ', @pkgs), 1);
 	}
 	return;
 }
@@ -1730,16 +1731,32 @@ sub _changePersonalityIfNeeded
 	if ($self->_hostIs64Bit() && $distroName !~ m[_64]) {
 		# trying to handle a 32-bit vendor-OS on a 64-bit machine, so we change
 		# the personality accordingly (from 64-bit to 32-bit):
-		my $syscallPH = 'syscall.ph';
-		eval { require $syscallPH }
-			or die _tr("unable to load '%s'\n", $syscallPH);
-		my $personalityPH = 'linux/personality.ph';
-		eval { require $personalityPH }
-			or die _tr("unable to load '%s'\n", $personalityPH);
+		$self->_loadPerlHeader('syscall.ph')
+			or die _tr("unable to load perl header '%s'\n", 'syscall.ph');
+		$self->_loadPerlHeader('linux/personality.ph')
+		|| $self->_loadPerlHeader('sys/personality.ph')
+			or die _tr("unable to load perl header '%s'\n", 'personality.ph');
 
 		syscall &SYS_personality, PER_LINUX32();
 	}
 	return;
+}
+
+sub _loadPerlHeader
+{
+	my $self   = shift;
+	my $phFile = shift;
+
+	if (!eval { require $phFile }) {
+		# perl-header has not been provided by host-OS, so we create it
+		# manually from C-header (via h2ph):
+		(my $hFile = $phFile) =~ s{\.ph$}{.h};
+		return if !-e "/usr/include/$hFile";
+		my $libDir = "$openslxConfig{'base-path'}/lib";
+		slxsystem("cd /usr/include && h2ph -d $libDir $hFile") == 0
+			or die _tr("unable to create %s! (%s)", $phFile, $!);
+	}
+	return eval { require $phFile; 1 };
 }
 
 sub _hostIs64Bit
