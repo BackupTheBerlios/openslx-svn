@@ -109,16 +109,24 @@ sub slurpFile
 		= exists $flags->{failIfMissing} ? $flags->{failIfMissing} : 1;
 	my $ioLayer = $flags->{'io-layer'} || 'utf8';
 
-	local $/;
 	my $fh;
 	if (!open($fh, "<:$ioLayer", $fileName)) {
 		return '' unless $failIfMissing;
 		croak _tr("could not open file '%s' for reading! (%s)", $fileName, $!);
 	}
-	my $content = <$fh>;
-	close($fh)
-	  or croak _tr("unable to close file '%s' (%s)\n", $fileName, $!);
-	return $content;
+	if (wantarray()) {
+		my @content = <$fh>;
+		close($fh)
+		  or croak _tr("unable to close file '%s' (%s)\n", $fileName, $!);
+		return @content;
+	}
+	else  {
+		local $/;
+		my $content = <$fh>;
+		close($fh)
+		  or croak _tr("unable to close file '%s' (%s)\n", $fileName, $!);
+		return $content;
+	}
 }
 
 sub spitFile
