@@ -1,5 +1,5 @@
 #!/bin/ash
-# Copyright (c) 2007 - OpenSLX GmbH
+# Copyright (c) 2008 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -9,11 +9,12 @@
 #
 # General information about OpenSLX can be found at http://openslx.org
 #
-# Main script for cd-boot demo initial ramdisk - preloading environment for
+# Main script for cd-boot demo initial ramfs - preloading environment for
 # for running OpenSLX linux stateless clients version 4 for testing
 
 #############################################################################
-# compute prefix bit number from netmask
+# helper function: compute prefix bit number from netmask
+# fixme: replace with ipcalc -p $ip $netmask
 nm2pref () {
 set $(IFS="."; echo $1)
 local n=0
@@ -130,22 +131,21 @@ ip link set dev lo up
 ip addr add 127.0.0.1/8 dev lo
 ip link set dev $nwif up || echo "I did not find any usable network adaptor."
 
-# start udhcpc here
+# start udhcpc, if no lease could be optained, start debug shell
 mkdir -p /usr/share/udhcpc
 echo -e "#!/bin/ash\nunset infomsg HOME IFS mask lease interface DEBUGLEVEL \
 BOOT_IMAGE\nset >/tmp/ipstuff" >/usr/share/udhcpc/default.script
 chmod u+x /usr/share/udhcpc/default.script
 modprobe -q af_packet
 [ -n $vci ] && vci="-V $vci"
-udhcpc -n -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null || \
-  echo "No answer from a DHCP server received"; /bin/ash 
+udhcpc -n -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null
 if test -e /tmp/ipstuff ; then
   . /tmp/ipstuff
   for i in $dns ; do
     echo "nameserver $i" >> /etc/resolv.conf
   done
 else
-  echo "Did not get any proper IP configuration"
+  echo "Did not get any proper IP configuration"; /bin/ash
 fi
 ip addr add $ip/$(nm2pref $subnet) dev $nwif
 ip route add default via $router  
@@ -153,10 +153,12 @@ ip route add default via $router
 # at this point a little selection script could be downloaded, which lets the
 # user choose what kind of SLX client he wants to get
 
-# get kernel and initramfs
-( wget -q -c -O /tmp/kernel ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/kernel && \
-wget -q -c -O /tmp/iramfs ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/iramfs ) || \
-/bin/ash
+# get kernel and initramfs, if something fails start debug shell
+( wget -q -c -O /tmp/kernel \
+  ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/kernel 2>/dev/null && \
+wget -q -c -O /tmp/iramfs \
+  ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/iramfs 2>/dev/null ) || \
+  /bin/ash
 
 # start the new kernel with initialramfs and cmdline
 kexec -l /tmp/kernel --initrd=/tmp/iramfs --append="ip=$ip:$siaddr:$router:$subnet\
