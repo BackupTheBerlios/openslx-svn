@@ -12,7 +12,26 @@
 # Main script for cd-boot demo initial ramfs - preloading environment for
 # for running OpenSLX linux stateless clients version 4 for testing
 
-
+fetchip () {
+# we expect to get an ip address within 10++ seconds
+( sleep 6 ; killall udhcpc >/dev/null 2>&1 ) &
+for i in 1 2 ; do
+  udhcpc -f -n -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null
+  if grep "ip=" /tmp/ipstuff >/dev/null 2>&1 ; then
+    . /tmp/ipstuff
+    for i in $dns ; do
+      echo "nameserver $i" >> /etc/resolv.conf
+    done
+    return
+  else
+    if [ $i -eq 1 ] ; then
+      sleep 1
+    else
+      echo "Did not get any proper IP configuration"; /bin/ash
+    fi
+  fi
+done
+}
 
 #############################################################################
 # device files get their own filesystem (to be move mounted later)
@@ -130,15 +149,7 @@ BOOT_IMAGE\nset >/tmp/ipstuff" >/usr/share/udhcpc/default.script
 chmod u+x /usr/share/udhcpc/default.script
 modprobe -q af_packet
 [ -n $vci ] && vci="-V $vci"
-udhcpc -t 5 -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null
-if grep "ip=" /tmp/ipstuff >/dev/null 2>&1 ; then
-  . /tmp/ipstuff
-  for i in $dns ; do
-    echo "nameserver $i" >> /etc/resolv.conf
-  done
-else
-  echo "Did not get any proper IP configuration"; /bin/ash
-fi
+fetchip
 ip addr add $ip/$(ipcalc -s -p $ip $subnet|sed s/.*=//) dev $nwif
 ip route add default via $router  
 
