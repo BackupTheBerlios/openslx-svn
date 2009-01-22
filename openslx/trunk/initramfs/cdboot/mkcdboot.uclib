@@ -1,0 +1,92 @@
+#!/bin/bash
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org
+#
+# Script for generating an uClib based InitRamFS for using a demo CD/DVD
+# (via kexec mechanism) instead of PXE/linux boot functionality
+
+BUILDDIR=/tmp/slxcdboot
+SLX_SHARE_PATH=/opt/openslx/share
+NWMODULES="forcedeth e1000 e100 tg3 3c59x via-rhine r8169 pcnet32 b44 8139too"
+KERNVER=$(uname -r)
+
+rm -rf ${BUILDDIR}
+mkdir -p ${BUILDDIR}/{dev,proc,tmp,root,bin,sys,lib,etc}
+mkdir -p ${BUILDDIR}/var/{lib,run}
+ln -s /bin ${BUILDDIR}/sbin
+
+cp ${SLX_SHARE_PATH}/cdboot/init ${BUILDDIR}/init
+  chmod 755 ${BUILDDIR}/init
+
+cp ${SLX_SHARE_PATH}/busybox/busybox.uclib.i586 ${BUILDDIR}/bin/busybox
+for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
+    date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \
+    insmod id ip kill killall ln ls lsmod mdev mkdir \
+    mknod mkswap modprobe mount mv nice ping printf ps rdate \
+    rm rmmod sed sleep sort swapoff swapon switch_root tar test tftp \
+    time touch tr udhcpc umount uptime usleep vconfig vi wget zcat zcip; do
+  ln -fs /bin/busybox ${BUILDDIR}/bin/$bbins
+done
+cp ${SLX_SHARE_PATH}/cdboot/kexec.uclib.i586 ${BUILDDIR}/bin/kexec
+
+cp -a ${SLX_SHARE_PATH}/cdboot/uclib/* ${BUILDDIR}/lib
+
+mkdir -p ${BUILDDIR}/lib/modules/${KERNVER}/kernel/drivers/net
+cp /lib/modules/${KERNVER}/modules.dep ${BUILDDIR}/lib/modules/${KERNVER}
+for module in af_packet unix ${NWMODULES} mii ; do
+    mod=$(cd /; find "lib/modules/${KERNVER}" -name ${module}.ko 2>/dev/null)
+    mpath=${BUILDDIR}/${mod%/*}
+    mkdir -p ${mpath}
+    cp /$mod /${mpath}
+done
+
+# finally create the compressed initial ramfs cpio archive
+mkdir -p ${BUILDDIR}/iso/isolinux
+cp ${SLX_SHARE_PATH}/cdboot/isolinux.bin ${BUILDDIR}/iso/isolinux
+cp ${SLX_SHARE_PATH}/tftpboot/menu.c32 ${BUILDDIR}/iso/isolinux
+cp /boot/vmlinuz-${KERNVER} ${BUILDDIR}/iso/isolinux/vmlinuz
+pushd . > /dev/null 2>&1
+  cd ${BUILDDIR}
+  find . ! -name "*~" ! -path "./iso/*" | cpio -H newc --create | gzip -9 \
+    > ${BUILDDIR}/iso/isolinux/cdirfs
+popd > /dev/null 2>&1
+
+# starting to setup the menu driven boot chooser
+echo -e "DEFAULT menu.c32\nPROMPT 0\nMENU WIDTH 78\nMENU MARGIN 9\n\
+MENU ROWS 9\nMENU TABMSGROW 15\nMENU CMDLINEROW 15\nMENU ENDROW -1\n\
+MENU TIMEOUTROW 15\nMENU HELPMSGROW 15\nMENU HELPMSGENDROW -1\n\
+MENU HSHIFT 0\nMENU VSHIFT 5\n\nMENU TITLE OpenSLX PreBoot ISO\
+" > ${BUILDDIR}/iso/isolinux/isolinux.cfg
+for i in NBD NFS DNBD2 ; do
+  echo -e "LABEL OpenSLX\n\tMENU LABEL OpenSLX Client with $i as RootFS" \
+    >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
+  echo -e "\tTEXT HELP\n\tYou should have DHCP running ...\n\tFor more \
+information on this project consult the homepage on\n\t\t\
+http://www.openslx.org\n\tENDTEXT" \
+    >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
+  type=$(echo $i|tr [:upper:] [:lower:])
+  echo -e "\tKERNEL vmlinuz\n\tAPPEND initrd=cdirfs $type quiet" \
+    >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
+done
+
+# write some info, if CD/DVD is still in drive
+echo -e "You seem to have the OpenSLX network demo CD/DVD still in your \
+optical\ndrive! This is not required. You may safely remove the medium \
+just\nafter the first kernel/initramfs is loaded ...\n\nIf you have any \
+feedback please consult http://openslx.org/feedback\nand send your comments \
+to feedback@openslx.org!"  > ${BUILDDIR}/iso/README
+echo -e "This package is free software distributed under the GPL version 2.\
+\nSee http://openslx.org/COPYING" > ${BUILDDIR}/iso/LICENSE
+
+# produce the iso image
+mkisofs -b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -r -J -l \
+        -boot-info-table -o OpenSLX.iso -joliet-long -publisher "OpenSLX \
+Project - http://www.openslx.org" -p "OpenSLX Project - \
+openslx-devel@openslx.org" -relaxed-filenames -V "OpenSLX BootCD" \
+        -volset "OpenSLX Project - PreBoot CD for non PXE/TFTP start of a \
+Linux Stateless Client"  -c isolinux/boot.cat ${BUILDDIR}/iso
