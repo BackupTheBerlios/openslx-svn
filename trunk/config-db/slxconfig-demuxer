@@ -96,7 +96,7 @@ pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $option{helpReq};
 if ($option{manReq}) {
 	# avoid dubious problem with perldoc in combination with UTF-8 that
 	# leads to strange dashes and single-quotes being used
-	$ENV{LC_MESSAGES} = 'POSIX';
+	$ENV{LC_ALL} = 'POSIX';
 	pod2usage(-verbose => 2);
 }
 if ($option{versionReq}) {
