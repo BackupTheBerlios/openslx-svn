@@ -42,20 +42,22 @@ sub initialize
 	my $pluginName   = shift;
 	my $vendorOSName = shift;
 
-	$self->{'plugin-name'}     = $pluginName;
-	$self->{'vendor-os-name'}  = $vendorOSName;
+	$self->{'vendor-os-name'} = $vendorOSName;
 
 	$self->{'vendor-os-path'} 
 		= "$openslxConfig{'private-path'}/stage1/$vendorOSName";
 	vlog(1, "vendor-OS path is '$self->{'vendor-os-path'}'");
 
-	$self->{'plugin-path'} 
-		= "$openslxConfig{'base-path'}/lib/plugins/$pluginName";
-	vlog(1, "plugin path is '$self->{'plugin-path'}'");
-	
-	$self->{'plugin'} = $self->_loadPlugin();
-	return if !$self->{'plugin'};
+	if ($pluginName) {
+		$self->{'plugin-name'} = $pluginName;
+		$self->{'plugin-path'} 
+			= "$openslxConfig{'base-path'}/lib/plugins/$pluginName";
+		vlog(1, "plugin path is '$self->{'plugin-path'}'");
 
+		$self->{'plugin'} = $self->_loadPlugin();
+		return if !$self->{'plugin'};
+	}
+	
 	return 1;
 }
 
@@ -63,34 +65,35 @@ sub installPlugin
 {
 	my $self = shift;
 
-	# create ossetup-engine for given vendor-OS:
-	my $osSetupEngine = OpenSLX::OSSetup::Engine->new;
-	$osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
-	$self->{'os-setup-engine'} = $osSetupEngine;
-	$self->{'distro-name'}     = $osSetupEngine->{'distro-name'};
+	if ($self->{'vendor-os-name'} ne '<<<default>>>') {
+		# create ossetup-engine for given vendor-OS:
+		my $osSetupEngine = OpenSLX::OSSetup::Engine->new;
+		$osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
+		$self->{'os-setup-engine'} = $osSetupEngine;
 
-	my $chrootedPluginRepoPath 
-		= "$openslxConfig{'base-path'}/plugin-repo/$self->{'plugin-name'}";
-	my $pluginRepoPath = "$self->{'vendor-os-path'}/$chrootedPluginRepoPath";
-	my $chrootedPluginTempPath = "/tmp/slx-plugin/$self->{'plugin-name'}";
-	my $pluginTempPath = "$self->{'vendor-os-path'}/$chrootedPluginTempPath";
-	foreach my $path ($pluginRepoPath, $pluginTempPath) {
-		if (slxsystem("mkdir -p $path")) {
-			croak(_tr("unable to create path '%s'! (%s)", $path, $!));
+		my $chrootedPluginRepoPath 
+			= "$openslxConfig{'base-path'}/plugin-repo/$self->{'plugin-name'}";
+		my $pluginRepoPath = "$self->{'vendor-os-path'}/$chrootedPluginRepoPath";
+		my $chrootedPluginTempPath = "/tmp/slx-plugin/$self->{'plugin-name'}";
+		my $pluginTempPath = "$self->{'vendor-os-path'}/$chrootedPluginTempPath";
+		foreach my $path ($pluginRepoPath, $pluginTempPath) {
+			if (slxsystem("mkdir -p $path")) {
+				croak(_tr("unable to create path '%s'! (%s)", $path, $!));
+			}
 		}
+	
+		$self->{plugin}->preInstallationPhase($pluginRepoPath, $pluginTempPath);
+		
+		$self->{'os-setup-engine'}->callChrootedFunctionForVendorOS(
+			sub {
+				$self->{plugin}->installationPhase(
+					$chrootedPluginRepoPath, $chrootedPluginTempPath
+				);
+			}
+		);
+		
+		$self->{plugin}->postInstallationPhase($pluginRepoPath, $pluginTempPath);
 	}
-
-	$self->{plugin}->preInstallationPhase($pluginRepoPath, $pluginTempPath);
-	
-	$self->{'os-setup-engine'}->callChrootedFunctionForVendorOS(
-		sub {
-			$self->{plugin}->installationPhase(
-				$chrootedPluginRepoPath, $chrootedPluginTempPath
-			);
-		}
-	);
-	
-	$self->{plugin}->postInstallationPhase($pluginRepoPath, $pluginTempPath);
 	
 	$self->_addInstalledPluginToDB();
 
@@ -108,38 +111,59 @@ sub removePlugin
 {
 	my $self = shift;
 
-	# create ossetup-engine for given vendor-OS:
-	my $osSetupEngine = OpenSLX::OSSetup::Engine->new;
-	$osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
-	$self->{'os-setup-engine'} = $osSetupEngine;
-	$self->{'distro-name'}     = $osSetupEngine->{'distro-name'};
-
-	my $chrootedPluginRepoPath 
-		= "$openslxConfig{'base-path'}/plugin-repo/$self->{'plugin-name'}";
-	my $pluginRepoPath = "$self->{'vendor-os-path'}/$chrootedPluginRepoPath";
-	my $chrootedPluginTempPath = "/tmp/slx-plugin/$self->{'plugin-name'}";
-	my $pluginTempPath = "$self->{'vendor-os-path'}/$chrootedPluginTempPath";
-	foreach my $path ($pluginRepoPath, $pluginTempPath) {
-		if (slxsystem("mkdir -p $path")) {
-			croak(_tr("unable to create path '%s'! (%s)", $path, $!));
+	if ($self->{'vendor-os-name'} ne '<<<default>>>') {
+		# create ossetup-engine for given vendor-OS:
+		my $osSetupEngine = OpenSLX::OSSetup::Engine->new;
+		$osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
+		$self->{'os-setup-engine'} = $osSetupEngine;
+	
+		my $chrootedPluginRepoPath 
+			= "$openslxConfig{'base-path'}/plugin-repo/$self->{'plugin-name'}";
+		my $pluginRepoPath = "$self->{'vendor-os-path'}/$chrootedPluginRepoPath";
+		my $chrootedPluginTempPath = "/tmp/slx-plugin/$self->{'plugin-name'}";
+		my $pluginTempPath = "$self->{'vendor-os-path'}/$chrootedPluginTempPath";
+		foreach my $path ($pluginRepoPath, $pluginTempPath) {
+			if (slxsystem("mkdir -p $path")) {
+				croak(_tr("unable to create path '%s'! (%s)", $path, $!));
+			}
 		}
+	
+		$self->{plugin}->preRemovalPhase($pluginRepoPath, $pluginTempPath);
+		
+		$self->{'os-setup-engine'}->callChrootedFunctionForVendorOS(
+			sub {
+				$self->{plugin}->removalPhase(
+					$chrootedPluginRepoPath, $chrootedPluginTempPath
+				);
+			}
+		);
+		
+		$self->{plugin}->postRemovalPhase($pluginRepoPath, $pluginTempPath);
 	}
-
-	$self->{plugin}->preRemovalPhase($pluginRepoPath, $pluginTempPath);
-	
-	$self->{'os-setup-engine'}->callChrootedFunctionForVendorOS(
-		sub {
-			$self->{plugin}->removalPhase(
-				$chrootedPluginRepoPath, $chrootedPluginTempPath
-			);
-		}
-	);
-	
-	$self->{plugin}->postRemovalPhase($pluginRepoPath, $pluginTempPath);
 	
 	$self->_removeInstalledPluginFromDB();
 
 	return 1;
+}
+
+sub getInstalledPlugins
+{
+	my $self = shift;
+	
+	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
+	$openslxDB->connect();
+	my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
+		name => $self->{'vendor-os-name'},
+	} );
+	if (!$vendorOS) {
+		die _tr(
+			'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
+		);
+	}
+	my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOS->{id});
+	$openslxDB->disconnect();
+
+	return @installedPlugins;
 }
 
 sub _loadPlugin

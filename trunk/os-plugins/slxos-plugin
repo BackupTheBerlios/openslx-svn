@@ -59,8 +59,9 @@ openslxInit();
 
 my $action = shift @ARGV || '';
 
-if ($action =~ m[^list]i) {
-	my @pluginFolders = glob("$openslxConfig{'base-path'}/lib/plugins/*");
+if ($action =~ m[^list-a]i) {
+	my @pluginFolders 
+		= grep { -d $_ } glob("$openslxConfig{'base-path'}/lib/plugins/*");
 	print _tr("List of available plugins:\n");
 	require OpenSLX::OSPlugin::Roster;
 	my $pluginInfo = OpenSLX::OSPlugin::Roster->getAvailablePlugins();
@@ -84,10 +85,34 @@ if ($action =~ m[^list]i) {
 		} 
 		sort keys %$pluginInfo
 	);
+} elsif ($action =~ m[^list-i]i) {
+	if (scalar(@ARGV) != 1) {
+		print STDERR _tr(
+			"You need to specify exactly one vendor-OS!\n"
+		);
+		pod2usage(2);
+	}
+	my $vendorOSName = shift @ARGV;
+	
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+
+	# create OSPlugin-engine for given vendor-OS and ask it for the installed
+	# plugins:
+	my $engine = OpenSLX::OSPlugin::Engine->new;
+	$engine->initialize(undef, $vendorOSName);
+	my @installedPlugins = $engine->getInstalledPlugins();
+	if (!@installedPlugins) {
+		push @installedPlugins, '<none>';
+	}
+	print _tr("List of plugins installed in vendor-OS '$vendorOSName':\n");
+	print join('', map { "\t$_\n" } sort @installedPlugins);
 } elsif ($action =~ m[^install]i) {
 	if (scalar(@ARGV) != 2) {
 		print STDERR _tr(
-			"You need to specify exactly one plugin-name and one vendor-os!\n"
+			"You need to specify exactly one plugin-name and one vendor-OS!\n"
 		);
 		pod2usage(2);
 	}
@@ -106,15 +131,19 @@ if ($action =~ m[^list]i) {
 		die _tr("plugin '%s' doesn't exist, giving up!\n",
 			$engine->{'plugin-path'});
 	}
-	if (!-e $engine->{'vendor-os-path'}) {
+	if ($vendorOSName ne '<<<default>>>' && !-e $engine->{'vendor-os-path'}) {
 		die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
 			$engine->{'vendor-os-path'});
 	}
-	$engine->installPlugin();
+	if ($engine->installPlugin()) {
+		print _tr(
+			"Plugin $pluginName has been installed into vendor-OS '$vendorOSName'.\n"
+		);
+	}
 } elsif ($action =~ m[^remove]i) {
 	if (scalar(@ARGV) != 2) {
 		print STDERR _tr(
-			"You need to specify exactly one plugin-name and one vendor-os!\n"
+			"You need to specify exactly one plugin-name and one vendor-OS!\n"
 		);
 		pod2usage(2);
 	}
@@ -133,16 +162,21 @@ if ($action =~ m[^list]i) {
 		die _tr("plugin '%s' doesn't exist, giving up!\n",
 			$engine->{'plugin-path'});
 	}
-	if (!-e $engine->{'vendor-os-path'}) {
+	if ($vendorOSName ne '<<<default>>>' && !-e $engine->{'vendor-os-path'}) {
 		die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
 			$engine->{'vendor-os-path'});
 	}
-	$engine->removePlugin();
+	if ($engine->removePlugin()) {
+		print _tr(
+			"Plugin $pluginName has been removed from vendor-OS '$vendorOSName'.\n"
+		);
+	}
 } else {
 	vlog(0, _tr(unshiftHereDoc(<<'	END-OF-HERE'), $0));
 		You need to specify exactly one action:
-			list-available
 			install <plugin-name> <vendor-OS-name>
+			list-available
+			list-installed
 			remove <plugin-name> <vendor-OS-name>
 		Try '%s --help' for more info.
 	END-OF-HERE
@@ -175,6 +209,10 @@ installs the OS-plugin with the given name into the specified vendor-OS
 =item B<<     list-available >>
 
 list all available OS-plugins
+
+=item B<<     list-installed <vendor-os-name> >>
+
+list all the plugins installed into the specified vendor-OS
 
 =item B<<     remove <plugin-name> <vendor-OS-name> >>
 
