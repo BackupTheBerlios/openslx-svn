@@ -7,12 +7,14 @@
 /usr/bin/basename
 /usr/bin/bunzip2
 /usr/bin/bzcat
+/usr/bin/bzip2
 /bin/cat
 /bin/chmod
 /bin/chown
 /usr/sbin/chroot
 /bin/cp
 /bin/cpio
+/usr/bin/cryptpw
 /usr/bin/cut
 /bin/date
 /bin/dd
@@ -20,6 +22,7 @@
 /bin/dmesg
 /usr/bin/du
 /bin/echo
+/bin/egrep
 /usr/bin/env
 /usr/bin/expr
 /bin/false
@@ -44,15 +47,13 @@
 /usr/bin/md5sum
 /sbin/mdev
 /bin/mkdir
-/sbin/mke2fs
-/sbin/mkfs.ext2
-/sbin/mkfs.ext3
 /bin/mknod
 /sbin/mkswap
 /sbin/modprobe
 /bin/mount
 /bin/mv
 /bin/nice
+/usr/bin/nmeter
 /bin/ping
 /usr/bin/printf
 /bin/ps
@@ -63,6 +64,7 @@
 /bin/sed
 /bin/sleep
 /usr/bin/sort
+/usr/bin/strings
 /sbin/swapoff
 /sbin/swapon
 /sbin/switch_root
@@ -81,6 +83,7 @@
 /bin/usleep
 /sbin/vconfig
 /bin/vi
+/usr/bin/vncpasswd
 /usr/bin/wc
 /usr/bin/wget
 /bin/zcat

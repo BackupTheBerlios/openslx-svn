@@ -1,7 +1,7 @@
 diff -ruw busybox-1.8.2/include/applets.h busybox-1.8.2-openslx/include/applets.h
 --- busybox-1.8.2/include/applets.h	2007-11-10 02:40:53.000000000 +0100
 +++ busybox-1.8.2-openslx/include/applets.h	2008-02-04 00:32:29.000000000 +0100
-@@ -371,6 +371,7 @@
+@@ -372,6 +372,7 @@
  USE_VCONFIG(APPLET(vconfig, _BB_DIR_SBIN, _BB_SUID_NEVER))
  USE_VI(APPLET(vi, _BB_DIR_BIN, _BB_SUID_NEVER))
  USE_VLOCK(APPLET(vlock, _BB_DIR_USR_BIN, _BB_SUID_ALWAYS))
@@ -12,7 +12,7 @@ diff -ruw busybox-1.8.2/include/applets.h busybox-1.8.2-openslx/include/applets.
 diff -ruw busybox-1.8.2/include/usage.h busybox-1.8.2-openslx/include/usage.h
 --- busybox-1.8.2/include/usage.h	2007-11-10 02:40:53.000000000 +0100
 +++ busybox-1.8.2-openslx/include/usage.h	2008-02-04 00:16:18.000000000 +0100
-@@ -4043,6 +4043,11 @@
+@@ -4070,6 +4070,11 @@
         "\n\nOptions:\n" \
         "	-a	Lock all VTs"
  
