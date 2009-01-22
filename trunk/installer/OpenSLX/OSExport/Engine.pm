@@ -42,9 +42,18 @@ our (
 	'sqfs' => 'SquashFS',
 );
 
-%supportedExportBlockDevices = ('nbd' => 'NBD', 'aoe' => 'AoE');
+%supportedExportBlockDevices = (
+	'dnbd2' => 'DNBD2', 
+	'nbd'   => 'NBD', 
+	'aoe'   => 'AoE',
+);
 
-@supportedExportTypes = ('nfs', 'sqfs-aoe', 'sqfs-nbd');
+@supportedExportTypes = (
+	'nfs', 
+	'sqfs-aoe', 
+	'sqfs-dnbd2',
+	'sqfs-nbd',
+);
 
 %supportedDistros = (
 	'<any>'  => {module => 'Any'},

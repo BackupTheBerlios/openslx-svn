@@ -51,7 +51,7 @@ sub getExportPort
 	my $self      = shift;
 	my $openslxDB = shift;
 
-	return $openslxDB->incrementGlobalCounter('next-dnbd2-server-port');
+	return $openslxDB->incrementGlobalCounter('next-nbd-server-port');
 }
 
 sub generateExportURI
@@ -86,16 +86,16 @@ sub showExportConfigInfo
 	my $self   = shift;
 	my $export = shift;
 
-	print(('#' x 80) . "\n");
-	print _tr(
+	print '#' x 80 , "\n", 
+	_tr(
 		"Please make sure you start a corresponding dnbd2-server:\n\t%s\n",
-		"Create or modify a config file like /etc/dnbd2/server.conf, looking like:",
-		"$server",
-		"$export->{port}",
-		"$self->{fs}->{'export-path'}
-		"dnbd2-server /etc/dnbd2/server.conf"
-	);
-	print(('#' x 80) . "\n");
+		"dnbd2-server /etc/dnbd2/server.conf\n"
+	),
+	"Create or modify a config file like /etc/dnbd2/server.conf, looking like:",
+	"<server>\n",
+	"$export->{port}\n",
+	"$self->{fs}->{'export-path'}\n",
+	'#' x 80, "\n";
 	return;
 }
 
