@@ -8,10 +8,10 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# MakeInitRamFS::Distro::Debian.pm
-#	- provides Debian-specific overrides of the MakeInitRamFS::Distro API.
+# MakeInitRamFS::Distro::SUSE.pm
+#	- provides SUSE-specific overrides of the MakeInitRamFS::Distro API.
 # -----------------------------------------------------------------------------
-package OpenSLX::MakeInitRamFS::Distro::Debian;
+package OpenSLX::MakeInitRamFS::Distro::SUSE;
 
 use strict;
 use warnings;
@@ -27,7 +27,7 @@ sub new
 {
 	my $class = shift;
 	my $self = {
-		'base-name' => 'debian',
+		'base-name' => 'suse',
 	};
 	return bless $self, $class;
 }
@@ -37,9 +37,7 @@ sub applyChanges
 	my $self   = shift;
 	my $engine = shift;
 
-	$engine->_addFilteredKernelModules( qw( af_packet hid unix ));
-
-	$engine->_addRequiredLib('/lib/libnss_compat.so.2');
+	$engine->_addFilteredKernelModules( qw( hid unix ));
 
 	return;
 }

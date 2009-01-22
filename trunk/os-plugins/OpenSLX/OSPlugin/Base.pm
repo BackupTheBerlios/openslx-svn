@@ -39,6 +39,8 @@ sub initialize
 	# to installing stuff into the vendor-OS, like downloading functionality, 
 	# access to meta-packager, ...
 	$self->{'os-plugin-engine'} = shift;
+	
+	return;
 }
 
 sub getInfo
@@ -79,6 +81,8 @@ sub preInstallationPhase
 		# required by the corresponding stage3 runlevel script
 	my $pluginTempPath = shift;
 		# a temporary playground that will be cleaned up automatically
+	
+	return;
 }
 
 sub installationPhase
@@ -89,6 +93,8 @@ sub installationPhase
 		# the repository folder, this time from inside the chroot
 	my $pluginTempPath = shift;
 		# the temporary folder, this time from inside the chroot
+	
+	return;
 }
 
 sub postInstallationPhase
@@ -97,6 +103,8 @@ sub postInstallationPhase
 	my $self                 = shift;
 	my $pluginRepositoryPath = shift;
 	my $pluginTempPath       = shift;
+	
+	return;
 }
 
 sub preRemovalPhase
@@ -109,6 +117,8 @@ sub preRemovalPhase
 		# required by the corresponding stage3 runlevel script
 	my $pluginTempPath = shift;
 		# a temporary playground that will be cleaned up automatically
+	
+	return;
 }
 
 sub removalPhase
@@ -119,6 +129,8 @@ sub removalPhase
 		# the repository folder, this time from inside the chroot
 	my $pluginTempPath = shift;
 		# the temporary folder, this time from inside the chroot
+	
+	return;
 }
 
 sub postRemovalPhase
@@ -127,6 +139,8 @@ sub postRemovalPhase
 	my $self                 = shift;
 	my $pluginRepositoryPath = shift;
 	my $pluginTempPath       = shift;
+	
+	return;
 }
 
 sub suggestAdditionalKernelParams
@@ -137,6 +151,19 @@ sub suggestAdditionalKernelParams
 	# that it would like to see added.
 	my $self         = shift;
 	my $kernelParams = shift;
+	
+	return;
+}
+
+sub suggestAdditionalKernelModules
+{	# called by config-demuxer in order to give the plugin a chance to add
+	# any kernel modules it requires.
+	# In order to do so, the plugin should return the names of additional kernel
+	# modules that it would like to see added.
+	my $self                = shift;
+	my $makeInitRamFSEngine = shift;
+	
+	return;
 }
 
 sub copyRequiredFilesIntoInitramfs
@@ -149,4 +176,6 @@ sub copyRequiredFilesIntoInitramfs
 	my $targetPath          = shift;
 	my $attrs				= shift;
 	my $makeInitRamFSEngine = shift;
+	
+	return;
 }

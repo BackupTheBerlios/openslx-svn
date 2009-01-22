@@ -8,15 +8,15 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# MakeInitRamFS::Ubuntu.pm
-#	- provides Ubuntu-specific overrides of the OpenSLX MakeInitRamFS API.
+# MakeInitRamFS::Distro::Ubuntu.pm
+#	- provides Ubuntu-specific overrides of the MakeInitRamFS::Distro API.
 # -----------------------------------------------------------------------------
 package OpenSLX::MakeInitRamFS::Distro::Ubuntu;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::MakeInitRamFS::Distro::Debian);
+use base qw(OpenSLX::MakeInitRamFS::Distro::Base);
 
 use OpenSLX::Basics;
 
@@ -30,6 +30,18 @@ sub new
 		'base-name' => 'ubuntu',
 	};
 	return bless $self, $class;
+}
+
+sub applyChanges
+{
+	my $self   = shift;
+	my $engine = shift;
+
+	$engine->_addFilteredKernelModules( qw( unix ));
+
+	$engine->_addRequiredLib('/lib/libnss_compat.so.2');
+
+	return;
 }
 
 1;

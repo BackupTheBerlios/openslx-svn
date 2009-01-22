@@ -133,6 +133,21 @@ sub suggestAdditionalKernelParams
 	return @suggestedParams;
 }
 
+sub suggestAdditionalKernelModules
+{
+	my $self                = shift;
+	my $makeInitRamFSEngine = shift;
+
+	my @suggestedModules;
+	
+	# Ubuntu needs vesafb and fbcon (which drags along some others)
+	if ($makeInitRamFSEngine->{'distro-name'} =~ m{^ubuntu}i) {
+		push @suggestedModules, qw(	vesafb fbcon )
+	}
+	
+	return @suggestedModules;
+}
+
 sub copyRequiredFilesIntoInitramfs
 {
 	my $self                = shift;
@@ -179,7 +194,7 @@ sub copyRequiredFilesIntoInitramfs
 	}
 
 	vlog(
-		0, 
+		1, 
 		_tr(
 			"theme-plugin: bootsplash=%s displaymanager=%s", 
 			$splashTheme, $displayManagerTheme

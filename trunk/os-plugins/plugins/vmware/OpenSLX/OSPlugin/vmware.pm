@@ -77,4 +77,15 @@ sub getAttrInfo
 	};
 }
 
+sub suggestAdditionalKernelModules
+{
+	my $self                = shift;
+	my $makeInitRamFSEngine = shift;
+
+	# simply suggest these and see where we go from there (what is vmblock?)
+	my @suggestedModules = qw( vmmon vmnet vmblock );
+	
+	return @suggestedModules;
+}
+
 1;

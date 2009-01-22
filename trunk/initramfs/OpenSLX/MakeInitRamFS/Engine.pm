@@ -63,6 +63,7 @@ sub new
 
 	my %distroMap = (
 		'debian' => 'Debian',
+		'suse'   => 'SUSE',
 		'ubuntu' => 'Ubuntu',
 	);
 	my $distroModule = $distroMap{$self->{'distro-name'}} || 'Base';
@@ -73,7 +74,9 @@ sub new
 	$self->{'lib-scanner'} 
 		= OpenSLX::LibScanner->new({ 'root-path' => $self->{'root-path'} });
 	
-	$self->{'required-libs'} = {};
+	$self->{'required-libs'}            = {};
+	$self->{'suggested-kernel-modules'} = [];
+	$self->{'filtered-kernel-modules'}  = [];
 
 	return bless $self, $class;
 }
@@ -119,8 +122,6 @@ sub _collectCMDs
 
 	$self->_copyRequiredLayeredFSTools();
 
-	$self->_copyKernelModules();
-	
 	$self->_copyPreAndPostinitFiles();
 
 	if ($self->{'debug-level'}) {
@@ -131,6 +132,8 @@ sub _collectCMDs
 
 	$self->{distro}->applyChanges($self);
 
+	$self->_copyKernelModules();
+	
 	$self->_copyRequiredLibs();
 	
 	$self->_createInitRamFS();
@@ -505,6 +508,15 @@ sub _addRequiredLib
 	return;
 }
 
+sub _addFilteredKernelModules
+{
+	my $self   = shift;
+
+	push @{ $self->{'filtered-kernel-modules'} }, @_;
+
+	return;
+}
+
 sub _copyKernelModules
 {
 	my $self = shift;
@@ -536,6 +548,8 @@ sub _copyKernelModules
 	my @kernelModules = qw(
 		af_packet unix hid usbhid uhci-hcd ohci-hcd
 	);
+	push @kernelModules, @{ $self->{'suggested-kernel-modules'} };
+
 	push @kernelModules, split ' ', $self->{attrs}->{ramfs_fsmods};
 	push @kernelModules, split ' ', $self->{attrs}->{ramfs_miscmods};
 	push @kernelModules, split ' ', $self->{attrs}->{ramfs_nicmods};
@@ -555,9 +569,14 @@ sub _copyKernelModules
 	# required modules
 	foreach my $kernelModule (@kernelModules) {
 		if (!$modulePath{$kernelModule}) {
-			warn _tr(
-				'kernel module "%s" not found (in modules.dep)', $kernelModule
-			);
+			if (! grep { $_ eq $kernelModule	} 
+				@{ $self->{'filtered-kernel-modules'} }
+			) {
+				warn _tr(
+					'kernel module "%s" not found (in modules.dep)', 
+					$kernelModule
+				);
+			}
 		}
 		foreach my $modulePath (@{$modulePath{$kernelModule}}) {
 			next if $modulesToBeCopied{$modulePath};
@@ -687,13 +706,29 @@ sub _handlePlugins
 		}
 		my $plugin = OpenSLX::OSPlugin::Roster->getPlugin($pluginName);
 		next if !$plugin;
+
 		my @suggestedKernelParams 
 			= $plugin->suggestAdditionalKernelParams($self->{'kernel-params'});
 		if (@suggestedKernelParams) {
+			my $paramsList = join ' ', @suggestedKernelParams;
+			vlog(
+				2, 
+				"plugin $pluginName suggests these kernel params: $paramsList"
+			);
 			$self->{'kernel-params'} 
-				.= ($self->{'kernel-params'} ? ' ' : '')
-					. join ' ', @suggestedKernelParams;
+				.= ($self->{'kernel-params'} ? ' ' : '') . $paramsList;
 		}
+
+		my @suggestedModules = $plugin->suggestAdditionalKernelModules($self);
+		if (@suggestedModules) {
+			vlog(
+				2, 
+				"plugin $pluginName suggests these kernel modules: "
+				. join(',', @suggestedModules)
+			);
+			push @{ $self->{'suggested-kernel-modules'} }, @suggestedModules;
+		}
+
 		$plugin->copyRequiredFilesIntoInitramfs(
 			$self->{'build-path'}, $self->{attrs}, $self
 		);
