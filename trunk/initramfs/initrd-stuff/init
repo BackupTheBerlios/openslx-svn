@@ -441,7 +441,7 @@ if [ -n "${bldmod}" ] ; then
         fi
       done
       usleep 100
-      echo noop > /sys/block/nbd0/queue/scheduler
+      echo deadline > /sys/block/nbd0/queue/scheduler
       # switch off unneeded block read ahead
       echo "0" > /sys/block/nbd0/queue/read_ahead_kb
       ;;
@@ -450,7 +450,8 @@ if [ -n "${bldmod}" ] ; then
       RDEV=/dev/vnbd0
       waitfor "${RDEV}" 20000 || error "$init_nbddev"
       # check for others in machine-setup and then kernel cmdline
-      rootfs="$(sed -n "/rootfs=/p" /etc/machine-setup|sed "s,rootfs=,,;s,\",,g") "
+      rootfs="$(sed -n "/rootfs=/p" /etc/initramfs-setup| \
+        sed "s,rootfs=,,;s,\",,g") "
       [ -z "$rootfs" ] && \
         rootfs="$(cat /proc/cmdline|sed "s,.*rootfs=\",,;s,\".*,,") "
       i=0

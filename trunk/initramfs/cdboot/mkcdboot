@@ -7,8 +7,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org
 #
-# Script for generating an InitRamFS for using a demo CD/DVD instead of
-# PXE/linux boot functionality
+# Script for generating an InitRamFS for using a demo CD/DVD (via kexec
+# mechanism) instead of PXE/linux boot functionality
 
 BUILDDIR=/tmp/slxcdboot
 SLX_SHARE_PATH=/opt/openslx/share
