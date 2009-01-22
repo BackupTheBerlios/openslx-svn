@@ -126,16 +126,10 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
 		# copy dhcpd.conf and nat for vmnet8 (nat)
 		# fixme: It should be possible to start just one vmware dhcp which should
 		# listen to both interfaces vmnet1 and vmnet8 ...
-		echo "   * DEBUG:"
-		ls /mnt/opt/openslx/plugin-repo/vmware/
-		echo "   * DEBUG2:"
-		ls /mnt/etc/vmware/vmnet8/{nat,dhcpd}
 		cp /mnt/opt/openslx/plugin-repo/vmware/dhcpd.conf \
 			/mnt/etc/vmware/vmnet8/dhcpd 2>/dev/null
 		cp /mnt/opt/openslx/plugin-repo/vmware/nat.conf \
 			/mnt/etc/vmware/vmnet8/nat 2>/dev/null
-		echo "   * DEBUG3:"
-		ls /mnt/etc/vmware/vmnet8/{nat,dhcp}
 
 		# TODO: perhaps we can a) kick out vmdir
 		#                      b) configure vmdir by plugin configuration
