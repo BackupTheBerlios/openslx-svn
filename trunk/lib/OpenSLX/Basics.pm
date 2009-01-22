@@ -383,7 +383,6 @@ sub slxsystem
 	vlog(2, _tr("executing: %s", join ' ', @_));
 	my $res = system(@_);
 	if ($res > 0) {
-
 		# check if child got killed, if so we stop, too (unless the signal is
 		# SIGPIPE, which we ignore in order to loop over failed FTP connections
 		# and the like):
@@ -447,8 +446,15 @@ sub _doThrowOrWarn
 	my $type = shift;
 	my $msg = shift;
 	
-	$msg =~ s[^\*\*\* ][]igms;
-	$msg =~ s[^][*** ]igms;
+	# use '°°°' for warnings and '***' for errors
+	if ($type eq 'carp' || $type eq 'warn' || $type eq 'cluck') {
+		$msg =~ s[^°°° ][]igms;
+		$msg =~ s[^][°°° ]igms;
+	}
+	else {
+		$msg =~ s[^\*\*\* ][]igms;
+		$msg =~ s[^][*** ]igms;
+	}
 
 	if ($openslxConfig{'debug-confess'}) {
 		my %functionFor = (
