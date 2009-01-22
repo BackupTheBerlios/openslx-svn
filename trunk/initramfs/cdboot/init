@@ -137,9 +137,13 @@ BOOT_IMAGE\nset >/tmp/ipstuff" >/usr/share/udhcpc/default.script
 chmod u+x /usr/share/udhcpc/default.script
 modprobe -q af_packet
 [ -n $vci ] && vci="-V $vci"
-udhcpc -b -q $vci -s /usr/share/udhcpc/default.script -i $nwif #2>/dev/null
+udhcpc -n -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null || \
+  echo "No answer from a DHCP server received"; /bin/ash 
 if test -e /tmp/ipstuff ; then
   . /tmp/ipstuff
+  for i in $dns ; do
+    echo "nameserver $i" >> /etc/resolv.conf
+  done
 else
   echo "Did not get any proper IP configuration"
 fi
@@ -150,8 +154,8 @@ ip route add default via $router
 # user choose what kind of SLX client he wants to get
 
 # get kernel and initramfs
-wget -q -c -O /tmp/kernel ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/kernel
-wget -q -c -O /tmp/iramfs ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/iramfs
+( wget -q -c -O /tmp/kernel ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/kernel && \
+wget -q -c -O /tmp/iramfs ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/iramfs ) || \
 /bin/ash
 
 # start the new kernel with initialramfs and cmdline

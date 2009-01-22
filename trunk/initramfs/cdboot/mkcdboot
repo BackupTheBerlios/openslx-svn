@@ -66,7 +66,9 @@ MENU HSHIFT 0\nMENU VSHIFT 5\n\nMENU TITLE OpenSLX PreBoot ISO\
 " > ${BUILDDIR}/iso/isolinux/isolinux.cfg
 echo -e "LABEL OpenSLX\n\tMENU LABEL Test to boot an OpenSLX Client" \
   >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
-echo -e "\tTEXT HELP\n\tYou should have DHCP running ...\n\tENDTEXT" \
+echo -e "\tTEXT HELP\n\tYou should have DHCP running ...\n\tFor more \
+information on this project consult the homepage on\n\t\t\
+http://www.openslx.org\n\tENDTEXT" \
   >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
 echo -e "\tKERNEL vmlinuz\n\tAPPEND initrd=cdirfs quiet" \
   >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
