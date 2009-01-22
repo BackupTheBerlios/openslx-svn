@@ -648,7 +648,6 @@ sub _schemaUpgradeDBFrom
 				= $metaDB->fetchInstalledPlugins($vendorOS->{id});
 			foreach my $plugin (@installedPlugins) {
 				my $pluginName = $plugin->{plugin_name};
-print "$vendorOS->{id} $pluginName\n";
 				$metaDB->removeInstalledPlugin($vendorOS->{id}, $pluginName);
 				$metaDB->addInstalledPlugin($vendorOS->{id}, lc($pluginName));
 			}
