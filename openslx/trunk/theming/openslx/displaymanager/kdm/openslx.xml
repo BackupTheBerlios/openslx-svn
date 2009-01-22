@@ -55,7 +55,7 @@
 				
 				<item type="rect">
 					<normal color="#000000" alpha="0.0"/>
-					<pos anchor="w" x="120" y="50%" width="100" height="100%"/>
+                                        <pos anchor="e" x="-140" y="50%" width="100%" height="100%"/>
 					
 					<!-- username-label -->
 					<item type="label">
@@ -75,7 +75,7 @@
 				
 				<item type="rect">
 					<normal color="#000000" alpha="0.0"/>
-					<pos anchor="w" x="220" y="50%" width="140" height="100%"/>
+                                        <pos anchor="e" x="100%" y="50%" width="140" height="100%"/>
 					
 					<!-- username-entry -->
 					<item type="entry" id="user-entry">
