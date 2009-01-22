@@ -939,8 +939,8 @@ ServerVTs=-7
 ConsoleTTYs=tty1,tty2,tty3,tty4,tty5,tty6
 [Xdmcp]
 Enable=$xdmcp
-Xaccess=/${xdmdir}/Xaccess
-Willing=/${xdmdir}/Xwilling
+Xaccess=/${D_XDMPATH}/Xaccess
+Willing=/${D_XDMPATH}/Xwilling
 [Shutdown]
 HaltCmd=/sbin/halt
 RebootCmd=/sbin/reboot
@@ -948,14 +948,14 @@ RebootCmd=/sbin/reboot
 ServerCmd=${D_XORGBIN} -br
 ServerArgsLocal=-nolisten tcp
 TerminateServer=true
-Resources=/${xdmdir}/Xresources
-Setup=/${xdmdir}/Xsetup
+Resources=/${D_XDMPATH}/Xresources
+Setup=/${D_XDMPATH}/Xsetup
 UserPath=/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin:/var/X11R6/bin
 SystemPath=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:\
 /usr/X11R6/bin:/var/X11R6/bin
-Startup=/${xdmdir}/Xstartup
-Reset=/${xdmdir}/Xreset
-Session=/${xdmdir}/Xsession
+Startup=/${D_XDMPATH}/Xstartup
+Reset=/${D_XDMPATH}/Xreset
+Session=/${D_XDMPATH}/Xsession
 ClientLogFile=.xsession-errors-%s
 AutoReLogin=false
 AllowRootLogin=true
