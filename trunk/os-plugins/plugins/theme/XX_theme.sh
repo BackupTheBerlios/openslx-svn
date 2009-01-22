@@ -33,7 +33,6 @@ if [ -e /initramfs/plugin-conf/theme.conf ]; then
                                 \n\trm -f /var/lib/openslx/bin/splashy_update 2>/dev/null" \
                                 >>/mnt/etc/${D_INITDIR}/splashy.stop
                         d_mkrlscript close splashy.stop ""
-                        D_SPLASHY=splashy.stop
 	        fi
         fi
 fi

@@ -9,4 +9,8 @@ else
   export theme_nosplash=1
 fi
 
-[ ${theme_nosplash} -eq 0 ] &&	/bin/splashy boot 2>/dev/null
+if [ ${theme_nosplash} -eq 0 ]; then
+        /bin/splashy boot 2>/dev/null
+        # add splashy.stop runlevel script
+        D_SPLASHY=splashy.stop
+fi
