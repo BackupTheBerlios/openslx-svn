@@ -716,6 +716,16 @@ sub writeSystemConfiguration
 {
 	my $info = shift;
 
+	# if this is not a target system, we shall not write any configurations,
+	# but we simply incorporate inherited attributes
+	my $isTargetSystem = first { $_->{name} eq $info->{name} } @targetSystems;
+	if (!$isTargetSystem) {
+		$openslxDB->mergeDefaultAttributesIntoSystem($info);
+		$info->{'initramfs-name'} = "initramfs-$info->{id}";
+		return;
+	}
+	
+	# write configuration files for this system
 	my $buildPath = "$tempPath/build";
 	copyExternalSystemConfig(externalIDForSystem($info), $buildPath);
 
@@ -736,11 +746,8 @@ sub writeSystemConfiguration
 	my $systemPath = "$tftpbootPath/client-config/$info->{'external-id'}";
 	createTarOfPath($buildPath, "default.tgz", $systemPath);
 
-	# copy kernel and generate initramfs only if this is a target system
 	$info->{'initramfs-name'} = "initramfs-$info->{id}";
-	if (grep { $_->{name} eq $info->{name} } @targetSystems) {
-		writeSystemPXEFiles($info);
-	}
+	writeSystemPXEFiles($info);
 
 	writeClientConfigurationsForSystem($info, $buildPath, $attrFile);
 
