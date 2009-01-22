@@ -44,6 +44,11 @@ sub initDistroInfo
 		- /var/lib/xdm
 		- /var/cache/man/*
 		- /usr/share/vmware/*
+		- /tmp/*
+		- /sys/*
+		- /proc/*
+		- /mnt/*
+		- /media/*
 		- /lib/klibc/events/*
 		- /boot/initrd*
 		- /boot/grub

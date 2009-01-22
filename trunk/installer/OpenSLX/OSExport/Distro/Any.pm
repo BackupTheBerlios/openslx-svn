@@ -47,12 +47,17 @@ sub initDistroInfo
 		- /var/cache/yum
 		- /var/cache/man/*
 		- /usr/share/vmware/*
+		- /tmp/*
+		- /sys/*
+		- /proc/*
+		- /mnt/*
+		- /media/*
+        + /lib/modules/*/misc/vmblock.o
+        + /lib/modules/*/misc/vmnet.o
+        + /lib/modules/*/misc/vmmon.o
 		- /lib/klibc/events/*
 		- /boot/initrd*
 		- /boot/grub
-                + /lib/modules/*/misc/vmblock.o
-                + /lib/modules/*/misc/vmnet.o
-                + /lib/modules/*/misc/vmmon.o
 	";
 	return;
 }

@@ -76,6 +76,9 @@ sub initDistroInfo
 		- /usr/bin/nw-manager
 		- /usr/X11R6/bin/BackGround
 		- /usr/bin/BackGround
+		- /tmp/*
+		- /sys/*
+		- /proc/*
 		- /opt/kde3/share/autostart/suseplugger.desktop
 		- /opt/kde3/share/autostart/susewatcher.desktop
 		- /opt/kde3/share/autostart/runupdater.desktop
@@ -88,6 +91,7 @@ sub initDistroInfo
 		- /opt/kde3/share/autostart/SUSEgreeter.desktop
 		- /opt/kde3/share/autostart/zen-updater-auto.desktop
 		- /opt/gnome/share/autostart/beagle*.desktop
+		- /mnt/*
 		- /media/*
 		+ /media
 		+ /lib/modules/*/misc/vmblock.o

@@ -45,6 +45,11 @@ sub initDistroInfo
 		- /var/lib/init.d/*
 		- /var/cache/man/*
 		- /usr/share/vmware/*
+		- /tmp/*
+		- /sys/*
+		- /proc/*
+		- /mnt/*
+		- /media/*
 		- /boot/initrd*
 		- /boot/grub
 	";

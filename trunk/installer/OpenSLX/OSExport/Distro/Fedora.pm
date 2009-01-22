@@ -48,6 +48,11 @@ sub initDistroInfo
 		- /var/cache/yum
 		- /var/cache/man/*
 		- /usr/share/vmware/*
+		- /tmp/*
+		- /sys/*
+		- /proc/*
+		- /mnt/*
+		- /media/*
 		- /lib/klibc/events/*
 		- /boot/initrd*
 		- /boot/grub
