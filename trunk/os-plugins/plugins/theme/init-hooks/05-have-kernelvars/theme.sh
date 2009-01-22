@@ -9,4 +9,11 @@ else
   export theme_nosplash=1
 fi
 
-[ ${theme_nosplash} -eq 0 ] &&	/bin/splashy boot 2>/dev/null
+if [ ${theme_nosplash} -eq 0 ]; then
+        # start splashy
+        /bin/splashy boot 2>/dev/null
+        
+        # add splashy.stop (XX_theme) to runlevel scripts 
+        echo 'D_INITSCRIPTS="${D_INITSCRIPTS} splashy.stop"' \
+                >> /etc/sysconfig/config
+fi
