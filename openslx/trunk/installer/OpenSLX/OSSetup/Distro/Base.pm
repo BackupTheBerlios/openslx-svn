@@ -233,29 +233,31 @@ sub setPasswordForUser
 	my $writePasswordFunction = sub {
 		# now read, change and write shadow-file in atomic manner:
 		my $shadowFile = '/etc/shadow';
+		if (!-e $shadowFile) {
+			spitFile( $shadowFile, '');
+		}
 		slxsystem("cp -r $shadowFile $shadowFile~");
 		my $shadowFH;
 		open($shadowFH, '+<', $shadowFile)
 			or croak _tr("could not open file '%s'! (%s)", $shadowFile, $!);
 		flock($shadowFH, LOCK_EX)
 			or croak _tr("could not lock file '%s'! (%s)", $shadowFile, $!);
+		my $lastChanged = int(time()/24/60/60);
+		my $newEntry 
+			= "$username:$hashedPassword:$lastChanged:0:99999:7:::";
 		my $content = do { local $/; <$shadowFH> };
 		if ($content =~ m{^$username:}ims) {
-			my $lastChanged = int(time()/24/60/60);
-			my $newEntry 
-				= "$username:$hashedPassword:$lastChanged:0:99999:7:::";
 			$content =~ s{^$username:.+?$}{$newEntry}ms;
-			seek($shadowFH, 0, 0);
-			print $shadowFH $content;
 		} else {
-			warn _tr(
-				"user '%s' doesn't exist - unable to set password! (%s)", 
-				$username
-			);
+			$content .= "$newEntry\n";
 		}
+		seek($shadowFH, 0, 0)
+			or croak _tr("could not seek file '%s'! (%s)", $shadowFile, $!);
+		print $shadowFH $content
+			or croak _tr("could not write to file '%s'! (%s)", $shadowFile, $!);
 		close($shadowFH)
 			or croak _tr("could not close file '%s'! (%s)", $shadowFile, $!);
-#		unlink "$shadowFile~";
+		unlink "$shadowFile~";
 	};
 	$self->{engine}->callChrootedFunctionForVendorOS($writePasswordFunction);
 }
