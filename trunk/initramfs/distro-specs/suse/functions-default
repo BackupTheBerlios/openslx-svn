@@ -360,7 +360,7 @@ $host_name\n\n\
 -audit 0\n\
 flexible=true\nhandled=true\nchooser=true" >>/mnt/etc/opt/gnome/gdm/gdm.conf
   else
-    if [ ! -d /mnt/etc/opt/gnome/gdm ];
+    if [ ! -d /mnt/etc/opt/gnome/gdm ] ; then
        testmkd /mnt/etc/opt/gnome/gdm 
     fi
     echo -e "\n[servers]\n0=Standard\n\n\

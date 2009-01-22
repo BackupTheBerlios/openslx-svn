@@ -1,53 +1,7 @@
 OpenSLX - Linux Diskless Clients Version 4
+
 --> http://www.openslx.org (Projektseiten)
 --> http://www.openslx.org/trac/documentation/Linux_Stateless_Clients
 
-Die Version 4 wählt einen komplett neuen Ansatz und ist in den meisten
-Punkten nicht zur Vorgängerin kompatibel. Die wesentlichen Änderungen 
-werden im folgenden kurz dargestellt. Es wurde ein völlig neuer Ansatz 
-gewählt, der diesmal um das InitRamFS zentriert ist:
-
-1. mkdxsinitrd (ersetzt mkinitrd) baut ein InitialRamFS:
-* Einfügen bestimmter Toolsets (Standardprogramme zum Setup, wie Busybox,
-dhclient, nbd-client, dnbd-client, ...) unabhängig von Distro
-* Es werden nur Basismodule für Netzwerkkarten und Netzwerk-Dateisystem
-(nbd, squashfs, dnbd(2), ...) ins Ramfs eingebaut (wie früher auch, nur
-konnte das klassische mkinitrd kein (D)NBD, UnionFS/AUFS unterstützen
-* Das InitRamFS wird durchaus größer als vorher und erreicht zur Zeit
-bis zu 3,5MByte
-
-mkdxsinitrd wird in der nächsten Zeit durch slxmkramfs ersetzt, welches
-Teil eines Config-Frameworks werden wird, dass sich um die Installation
-der Kernel, Erstellen der passenden Initramfs, Erstellen der machine-setup
-und des Packens des ConfTGZ kümmern wird.
-
-2. In der InitialRamdisk:
-* Laden der NW-Karten-Module, Setup des Root-Filesystems (NFS, NBD
-evtl. UnionFS, später auch AoE, iSCSI)
-* Start der Hardware-Konfiguration (distro-unabhängig) und Software-
-Konfiguration distro-abhängig (durch Laden von Dateien mit den benötigten
-Funktionen)
-* run-init ins spätere Filesystem der Clients, was komplett vorbereitet 
-ist (Transfer etlicher Aufgaben aus boot.ld in die initrd)
-
-3. Klassische Init-Start
-* fast alle Vorbereitungen fuer das System sind VORHER in Punkt 2.
-erfolgt. Wenige Sachen werden noch durch boot.ld erledigt (bzw. bei
-Benutzung von VMware mit vmware-prep). Es findet kein DHCP, kein Mounten
-von Platten, NFS o.ae. in diesem Punkt statt, das ist alles schon erfolgt.
-Die Anpassungen in der alten boot.ld sind alle nach 2. gewandert, ebenso
-wie das alte boot.servconf und boot.hwsetup.
-
-Ziel ist es, dass eine (beliebige) Distro durch einfaches Kopieren in 
-Unterverzeichnisse diskless bootbar wird. Alle notwendigen Schritte sollten 
-in der (generischen) Initial Ramdisk erfolgen. Distributionsspezifika werden
-durch Konfigurationsdateien (config) und angepasste Skripten abgebildet.
-Diese werden je nach gewählter Distro beim generieren der InitRD ausgewählt.
-
-Damit die Parallelinstallation besser möglich wird, gibt es getrennte 
-Verzeichnisse für TFTP (/tftpboot) und die (verschiedenen) Rootfilesysteme 
-der Clients (/export oder /nfsroot).
-
-Insgesamt booten Rechner mit der neuen Diskless Variante deutlich schneller 
-als früher ld3.4 1Minute++, nun 30Sekunden+ und generiert selbst im 
-Standard-NFS/Bindmount-Betrieb deutlich weniger Netzwerk-Traffic.
+Informationen zur Installation und benötigten Paketen finden sich im
+Unterverzeichnis doc/.

@@ -1,0 +1,4 @@
+This tool is simple C code without any dependencies beside libc. Just
+grab source from the homepage at: http://www.geocities.com/stomljen
+It might become deprecated with upcoming Xorg versions (directly inte-
+grated into Xserver), but will be of use for any older version ...

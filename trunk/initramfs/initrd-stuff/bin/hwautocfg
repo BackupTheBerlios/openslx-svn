@@ -274,7 +274,8 @@ if [ ! -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then
     strinfile ${highres} /tmp/915res || {
       915resolution $(grep -i x -m 1 /tmp/915res|sed "s/\ :.*//") $(echo \
         $highres|sed "s/x/\ /") 2>&1 >/dev/null;
-      # for some reason that does not work for a Dell laptop with i855 chipset
+      # for some reason the above does not work for a Dell laptop with Intel 
+      # 855 chipset, so add another mode too
       915resolution 3c $(echo $highres|sed "s/x/\ /") 2>&1 >/dev/null; }
   fi
 fi
