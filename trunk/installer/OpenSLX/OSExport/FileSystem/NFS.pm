@@ -147,10 +147,12 @@ sub _copyViaRsync
 	my $includeExcludeList = $self->_determineIncludeExcludeList();
 	vlog(1, _tr("using include-exclude-filter:\n%s\n", $includeExcludeList));
 	my $rsyncFH;
-	open(
-		$rsyncFH, '|-', 
-		"rsync -av --delete-excluded --exclude-from=- $source/ $target"
-	)
+	my $additionalRsyncOptions = $ENV{SLX_RSYNC_OPTIONS} || '';
+	my $rsyncCmd
+		= "rsync -av --delete-excluded --exclude-from=- $additionalRsyncOptions"
+			. " $source/ $target";
+	vlog(2, "executing: $rsyncCmd\n");
+	open($rsyncFH, '|-', $rsyncCmd)
 		or die _tr("unable to start rsync for source '%s', giving up! (%s)",
 				   $source, $!);
 	print $rsyncFH $includeExcludeList;

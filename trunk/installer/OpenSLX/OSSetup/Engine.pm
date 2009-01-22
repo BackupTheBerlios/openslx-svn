@@ -1608,8 +1608,10 @@ sub _clone_fetchSource
 	);
 	my $excludeIncludeList = $self->_clone_determineIncludeExcludeList();
 	vlog(1, "using exclude-include-filter:\n$excludeIncludeList\n");
+	my $additionalRsyncOptions = $ENV{SLX_RSYNC_OPTIONS} || '';
 	my $rsyncCmd 
-		= "rsync -av --delete --exclude-from=- $source $self->{'vendor-os-path'}";
+		= "rsync -av --delete --exclude-from=- $additionalRsyncOptions"
+			. " $source $self->{'vendor-os-path'}";
 	vlog(2, "executing: $rsyncCmd\n");
 	my $rsyncFH;
 	open($rsyncFH, '|-', $rsyncCmd)
