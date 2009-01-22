@@ -592,6 +592,8 @@ sub addInstalledVendorOSToConfigDB
 				)
 			);
 		}
+		# re-install plugins of this vendor-OS
+		@plugins = $openslxDB->fetchInstalledPlugins($vendorOS->{id});
 	}
 	else {
 		my $data = { 'name' => $vendorOSName };
