@@ -16,12 +16,18 @@ package OpenSLX::MakeInitRamFS::Engine;
 use strict;
 use warnings;
 
+use File::Basename;
 use File::Find;
 use File::Path;
 
 use OpenSLX::Basics;
 use OpenSLX::LibScanner;
 use OpenSLX::Utils;
+
+# TODO: implement support for the following (either here or as plugin):
+#			wlan
+#			tpm
+#			cdboot (must be implemented here!)
 
 ################################################################################
 ### interface methods
@@ -37,6 +43,7 @@ sub new
 		'export-name'    => '!',
 		'export-uri'     => '!',
 		'initramfs'      => '!',
+		'kernel-params'  => '!',
 		'kernel-version' => '!',
 		'plugins'        => '!',
 		'root-path'      => '!',
@@ -46,10 +53,20 @@ sub new
 
 	my $self = $params;
 
-	if ($self->{'system-name'} =~ m{^([^\-]+)-([^:\-]+)}) {
-		$self->{'distro-name'} = $1;
-		$self->{'distro-ver'} = $2;
-	}
+	$self->{'system-name'} =~ m{^([^\-]+)-([^:\-]+)}
+		or die "unable to extract distro-info from $self->{'system-name'}!";
+
+	$self->{'distro-name'} = $1;
+	$self->{'distro-ver'} = $2;
+
+	my %distroMap = (
+		'debian' => 'Debian',
+		'ubuntu' => 'Ubuntu',
+	);
+	my $distroModule = $distroMap{$self->{'distro-name'}} || 'Base';
+	$self->{distro} = instantiateClass(
+		"OpenSLX::MakeInitRamFS::Distro::$distroModule"
+	);
 	
 	$self->{'lib-scanner'} 
 		= OpenSLX::LibScanner->new({ 'root-path' => $self->{'root-path'} });
@@ -61,7 +78,24 @@ sub new
 
 sub execute
 {
+	my $self   = shift;
+	my $dryRun = shift;
+
+	$self->_collectCMDs();
+
+	$self->_executeCMDs() unless $dryRun;
+
+	return;
+}
+
+################################################################################
+### implementation methods
+################################################################################
+sub _collectCMDs
+{
 	my $self = shift;
+	
+	$self->{CMDs} = [];
 
 	$self->_setupBuildPath();
 
@@ -80,6 +114,12 @@ sub execute
 	
 	$self->_copyRequiredFSTools();
 
+	$self->_copyRequiredLayeredFSTools();
+
+	$self->_copyKernelModules();
+	
+	$self->_copyPreAndPostinitFiles();
+
 	if ($self->{'debug-level'}) {
 		$self->_copyDebugTools();
 	}
@@ -88,20 +128,54 @@ sub execute
 #		$plugin->specifyInitramfsAttrs($initramfsAttrs);
 #	}
 
+	$self->{distro}->applyChanges($self);
+
 	$self->_copyRequiredLibs();
+	
+	$self->_createInitRamFS();
 
 	return;
 }
 
-################################################################################
-### implementation methods
-################################################################################
+sub _executeCMDs
+{
+	my $self = shift;
+	
+	foreach my $cmd (@{$self->{CMDs}}) {
+		if (ref($cmd) eq 'HASH') {
+			vlog(3, "writing $cmd->{file}");
+			my $flags = defined $cmd->{mode} ? { mode => $cmd->{mode} } : undef;
+			spitFile($cmd->{file}, $cmd->{content}, $flags);
+		}
+		else {
+			vlog(0, "executing: $cmd");
+			if (slxsystem($cmd)) {
+				die _tr(
+					"unable to execute shell-cmd\n\t%s", $cmd
+				);
+			}
+		}
+	}
+
+	return;
+}
+
+sub _addCMD
+{
+	my $self = shift;
+	my $cmd  = shift;
+	
+	push @{$self->{CMDs}}, $cmd;
+
+	return;
+}
+	
 sub _setupBuildPath
 {
 	my $self = shift;
 	
 	my $buildPath = "$openslxConfig{'temp-path'}/slx-initramfs";
-	rmtree($buildPath);
+	$self->_addCMD("rm -rf $buildPath");
 
 	my @stdFolders = qw(
 		bin 
@@ -119,8 +193,10 @@ sub _setupBuildPath
 		var/lib/nfs/state
 		var/run
 	);
-	mkpath([ map { "$buildPath/$_"; } @stdFolders ]);
-	link '/bin', "$buildPath/sbin";
+	$self->_addCMD(
+		'mkdir -p ' . join(' ', map { "$buildPath/$_"; } @stdFolders)
+	);
+	$self->_addCMD("ln -sfn /bin $buildPath/sbin");
 	
 	$self->{'build-path'} = $buildPath;
 	
@@ -140,17 +216,27 @@ sub _copyDistroSpecificFiles
 	my $config = slurpFile("$distroSpecsPath/$distroName/config-default");
 	$config .= "\n";
 	$config .= slurpFile("$distroSpecsPath/$distroName/config-$distroVer");
-	spitFile("$self->{'build-path'}/etc/sysconfig/config");
+	$self->_addCMD( {
+		file    => "$self->{'build-path'}/etc/sysconfig/config",
+		content => $config,
+	} );
 		
 	# concatenate default- and distro-specific functions into one file
 	my $functions = slurpFile("$distroSpecsPath/$distroName/functions-default");
 	$functions .= "\n";
 	$functions 
 		.= slurpFile("$distroSpecsPath/$distroName/functions-$distroVer");
-	spitFile("$self->{'build-path'}/etc/distro-functions");
+	$self->_addCMD( {
+		file    => "$self->{'build-path'}/etc/distro-functions",
+		content => $functions,
+	} );
 	
 	my $defaultsPath = "$distroSpecsPath/$distroName/files-default";
-	slxsystem("cp -a $defaultsPath $self->{'build-path'}/etc/sysconfig/files");
+	if (-e $defaultsPath) {
+		$self->_addCMD(
+			"cp -a $defaultsPath $self->{'build-path'}/etc/sysconfig/files"
+		);
+	}
 		
 	return 1;
 }
@@ -168,12 +254,16 @@ sub _copyInitramfsFiles
 				my $file = $File::Find::name;
 				my $relName = length($file) > $len ? substr($file, $len+1) : '';
 				if (-d) {
-					mkpath("$self->{'build-path'}/$relName");
+					$self->_addCMD("mkdir -p $self->{'build-path'}/$relName");
 				} elsif (-l $file) {
 					my $target = readlink $file;
-					slxsystem("ln -sf $target $self->{'build-path'}/$relName");
+					$self->_addCMD(
+						"ln -sf $target $self->{'build-path'}/$relName"
+					);
 				} elsif (qx{file $file} =~ m{ELF}) {
-					slxsystem("cp -p $file $self->{'build-path'}/$relName");
+					$self->_addCMD(
+						"cp -p $file $self->{'build-path'}/$relName"
+					);
 				} else {
 					my $text = slurpFile($file, { 'io-layer' => 'bytes' } );
 
@@ -202,10 +292,11 @@ sub _copyInitramfsFiles
 					# force sh shebang over to ash
 					$text =~ s{^#!\s*/bin/sh}{#!/bin/ash};
 					
-					spitFile("$self->{'build-path'}/$relName", $text);
-					if (-x $file) {
-						chmod 0755, "$self->{'build-path'}/$relName";
-					}
+					$self->_addCMD( {
+						file    => "$self->{'build-path'}/$relName",
+						content => $text,
+						mode    => (-x $file ? 0755 : undef),
+					} );
 				}
 			},
 			no_chdir => 1,
@@ -233,12 +324,16 @@ sub _copyBusybox
 	    udhcpc umount uptime usleep vconfig vi wget zcat zcip
 	);
 	foreach my $applet (@busyboxApplets) {
-		slxsystem("ln -sf /bin/busybox $self->{'build-path'}/bin/$applet");
+		$self->_addCMD("ln -sf /bin/busybox $self->{'build-path'}/bin/$applet");
 	}
 	
 	# fake the sh link in busybox environment
 	my $shFake = '#!/bin/ash\n/bin/ash $@';
-	spitFile("$self->{'build-path'}/bin/sh", $shFake, { mode => 755 });
+	$self->_addCMD( {
+		file    => "$self->{'build-path'}/bin/sh", 
+		content => $shFake,
+		mode    => 0755
+	} );
 
 	return;
 }
@@ -266,10 +361,10 @@ sub _copyDebugTools
 	foreach my $tool (@debugTools) {
 		my $toolPath = $self->_findBinary($tool);
 		if (!$toolPath) {
-			warn _tr('debug-tool "%s" is not available.', $tool);
+			warn _tr('debug-tool "%s" is not available', $tool);
 			next;
 		}
-		slxsystem("cp -p $toolPath $self->{'build-path'}/bin");
+		$self->_addCMD("cp -p $toolPath $self->{'build-path'}/bin");
 		$self->_addRequiredLibsFor($toolPath);
 	}
 	
@@ -286,10 +381,10 @@ sub _copyDhcpClient
 
 	my $toolPath = $self->_findBinary('dhclient');
 	if (!$toolPath) {
-		warn _tr('tool "dhclient" is not available, using "udhcpc" instead.');
+		warn _tr('tool "dhclient" is not available, using "udhcpc" instead');
 		return;
 	}
-	slxsystem("cp -p $toolPath $self->{'build-path'}/bin");
+	$self->_addCMD("cp -p $toolPath $self->{'build-path'}/bin");
 	$self->_addRequiredLibsFor($toolPath);
 	
 	return;
@@ -319,7 +414,7 @@ sub _copyPlatformSpecificBinary
 
 	my $binary = $self->_platformSpecificFileFor($binaryPath);
 	
-	slxsystem("cp -p $binary $self->{'build-path'}$targetPath");
+	$self->_addCMD("cp -p $binary $self->{'build-path'}$targetPath");
 	$self->_addRequiredLibsFor($binary);
 
 	return;
@@ -334,7 +429,30 @@ sub _copyRequiredFSTools
 		if (!$toolPath) {
 			die _tr('filesystem-tool "$tool" is not available, giving up!');
 		}
-		slxsystem("cp -p $toolPath $self->{'build-path'}/bin");
+		$self->_addCMD("cp -p $toolPath $self->{'build-path'}/bin");
+		$self->_addRequiredLibsFor($toolPath);
+	}
+
+	return;
+}
+
+sub _copyRequiredLayeredFSTools
+{
+	my $self = shift;
+
+	my @tools;
+	if ($self->{'kernel-params'} =~ m{\bunionfs\b}) {
+		push @tools, 'unionctl';
+	}
+	if ($self->{'kernel-params'} =~ m{\bcowloop\b}) {
+		push @tools, 'cowdev';
+	}
+	foreach my $tool (@tools) {
+		my $toolPath = $self->_findBinary($tool);
+		if (!$toolPath) {
+			die _tr('layered-fs-tool "$tool" is not available, giving up!');
+		}
+		$self->_addCMD("cp -p $toolPath $self->{'build-path'}/bin");
 		$self->_addRequiredLibsFor($toolPath);
 	}
 
@@ -345,8 +463,18 @@ sub _copyRequiredLibs
 {
 	my $self = shift;
 
-	foreach my $lib (keys %{$self->{'required-libs'}}) {
-		slxsystem("cp -p $lib $self->{'build-path'}/lib/");
+	# separate 64-bit libs from 32-bit libs and copy them into different
+	# destination folders
+	my @libs64 = grep { $_ =~ m{/lib64/} } keys %{$self->{'required-libs'}};
+	my @libs32 = grep { $_ !~ m{/lib64/} } keys %{$self->{'required-libs'}};
+	if (@libs64) {
+		$self->_addCMD("mkdir -p $self->{'build-path'}/lib64");
+		foreach my $lib (@libs64) {
+			$self->_addCMD("cp -p $lib $self->{'build-path'}/lib64/");
+		}
+	}
+	foreach my $lib (@libs32) {
+		$self->_addCMD("cp -p $lib $self->{'build-path'}/lib/");
 	}
 
 	return;
@@ -359,9 +487,109 @@ sub _addRequiredLibsFor
 
 	my @libs = $self->{'lib-scanner'}->determineRequiredLibs($binary);
 	foreach my $lib (@libs) {
-		$self->{'required-libs'}->{$lib} = 1;
+		$self->_addRequiredLib($lib);
 	}
 
+	return;
+}
+
+sub _addRequiredLib
+{
+	my $self = shift;
+	my $lib  = shift;
+
+	$self->{'required-libs'}->{$lib} = 1;
+
+	return;
+}
+
+sub _copyKernelModules
+{
+	my $self = shift;
+	
+	# read modules.dep and use it to determine module dependencies
+	my $sourcePath = "$self->{'root-path'}/lib/modules/$self->{'kernel-version'}";
+	my @modulesDep = slurpFile("$sourcePath/modules.dep")
+		or die _tr('unable to open %s!', "$sourcePath/modules.dep");
+	my (%dependentModules, %modulePath, %modulesToBeCopied);
+	foreach my $modulesDep (@modulesDep) { 
+		next if $modulesDep !~ m{^(.+?)/([^/]+)\.ko:\s*(.*?)\s*$};
+		my $path = $1;
+		my $module = $2;
+		my $dependentsList = $3;
+		my $fullModulePath = "$path/$module.ko";
+		$modulePath{$module} = [] if !exists $modulePath{$module};
+		push @{$modulePath{$module}}, $fullModulePath;
+		$dependentModules{$fullModulePath} = [ split ' ', $dependentsList ];
+	}
+
+	my $targetPath 
+		= "$self->{'build-path'}/lib/modules/$self->{'kernel-version'}";
+	$self->_addCMD("mkdir -p $targetPath");
+	$self->_addCMD("cp -p $sourcePath/modules.* $targetPath/");
+	
+	# TODO: find out what's the story behing the supposedly required
+	#       modules 'af_packet', 'unix' and 'hid' (which seem to be
+	#       missing at least on some systems
+	my @kernelModules = qw(
+		af_packet unix hid usbhid uhci-hcd ohci-hcd
+	);
+	push @kernelModules, split ' ', $self->{attrs}->{ramfs_fsmods};
+	push @kernelModules, split ' ', $self->{attrs}->{ramfs_miscmods};
+	push @kernelModules, split ' ', $self->{attrs}->{ramfs_nicmods};
+
+	# a function that determines dependent modules recursively
+	my $addDependentsSub;
+	$addDependentsSub = sub {
+		my $modulePath = shift;
+		foreach my $dependentModule (@{$dependentModules{$modulePath}}) {
+			next if $modulesToBeCopied{$dependentModule};
+			$modulesToBeCopied{$dependentModule} = 1;
+			$addDependentsSub->($dependentModule);
+		}
+	};
+
+	# start with the given kernel modules (names) and build a list of all
+	# required modules
+	foreach my $kernelModule (@kernelModules) {
+		if (!$modulePath{$kernelModule}) {
+			warn _tr(
+				'kernel module "%s" not found (in modules.dep)', $kernelModule
+			);
+		}
+		foreach my $modulePath (@{$modulePath{$kernelModule}}) {
+			next if $modulesToBeCopied{$modulePath};
+			$modulesToBeCopied{$modulePath} = 1;
+			$addDependentsSub->($modulePath);
+		}
+	}
+	
+	# copy all the modules that we think are required
+	foreach my $moduleToBeCopied (sort keys %modulesToBeCopied) {
+		my $targetDir = "$self->{'build-path'}" . dirname($moduleToBeCopied);
+		$self->_addCMD("mkdir -p $targetDir");
+		my $source = "$self->{'root-path'}$moduleToBeCopied";
+		my $target = "$self->{'build-path'}$moduleToBeCopied";
+		$self->_addCMD("cp -p --dereference $source $target");
+	}
+	
+	return;
+}
+
+sub _copyPreAndPostinitFiles
+{
+	my $self = shift;
+
+	foreach my $cfg (
+		'default/initramfs/preinit.local',
+		"$self->{'system-name'}/initramfs/preinit.local",
+		'default/initramfs/postinit.local',
+        "$self->{'system-name'}/initramfs/postinit.local"
+	) {
+		my $cfgPath = "$openslxConfig{'private-path'}/config/$cfg";
+		next if !-f $cfgPath;
+		$self->_addCMD("cp -p $cfgPath $self->{'build-path'}/bin/");
+	}
 	return;
 }
 
@@ -411,7 +639,10 @@ sub _writeInitramfsSetup
 	foreach my $attr (keys %$initramfsAttrs) {
 		$content .= qq[$attr="$initramfsAttrs->{$attr}"\n];
 	}
-	spitFile("$self->{'build-path'}/etc/initramfs-setup", $content);
+	$self->_addCMD( {
+		file    => "$self->{'build-path'}/etc/initramfs-setup", 
+		content => $content
+	} );
 	
 	return;
 }
@@ -422,7 +653,7 @@ sub _writeSlxSystemConf
 	
 	# generate slxsystem.conf file with variables that are needed
 	# in stage3 init.
-	# TODO: either put this stuff in initramfs-setup or find another solution
+	# TODO: either put this stuff into initramfs-setup or find another solution
 	my $date = strftime("%d.%m.%Y", localtime);
 	my $slxConf = unshiftHereDoc(<<"	End-of-Here");
 		slxconf_date=$date
@@ -433,7 +664,23 @@ sub _writeSlxSystemConf
 		slxconf_system_name=$self->{'system-name'}
 		slxconf_slxver="$self->{'slx-version'}"
 	End-of-Here
-	spitFile("$self->{'build-path'}/etc/sysconfig/slxsystem.conf", $slxConf);
+	$self->_addCMD( {
+		file    => "$self->{'build-path'}/etc/sysconfig/slxsystem.conf", 
+		content => $slxConf
+	} );
+
+	return;
+}
+
+sub _createInitRamFS
+{
+	my $self = shift;
+
+	my $buildPath = $self->{'build-path'};
+	$self->_addCMD(
+		"cd $buildPath "
+		. "&& find . | cpio -H newc --create | gzip -9 >$self->{initramfs}"
+	);
 
 	return;
 }

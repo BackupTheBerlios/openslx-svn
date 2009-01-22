@@ -70,6 +70,8 @@ my (
 		# dryRun won't touch any file
 	$systemConfCount,
 		# number of system configurations written
+	$systemErrCount,
+		# number of systems that had errors
 	$clientSystemConfCount,
 		# number of (system-specific) client configurations written
 	%vendorOSInitramfsMap,
@@ -134,7 +136,10 @@ chomp(my $slxVersion = qx{slxversion});
 my $lockFile = "$openslxConfig{'private-path'}/config-demuxer.lock";
 lockScript($lockFile);
 
-END { unlockScript($lockFile) if defined $lockFile; }
+END 
+{
+	unlockScript($lockFile) if defined $lockFile;
+}
 
 my $tempPath = "$openslxConfig{'temp-path'}/slxconfig-demuxer";
 if (!$dryRun) {
@@ -156,9 +161,12 @@ if (!$dryRun) {
 
 writeConfigurations();
 
-my $wr = ($dryRun ? "would have written" : "wrote");
-print
-  "$wr $systemConfCount system- and $clientSystemConfCount client-specific configurations to $tftpbootPath/client-config\n";
+my $wr = $dryRun ? 'would have written' : 'wrote';
+my $errCount = $systemErrCount ? $systemErrCount : 'no';
+print "\n", unshiftHereDoc(<<"End-of-Here");
+	$wr $systemConfCount system- and $clientSystemConfCount client-specific configurations to $tftpbootPath/client-config
+	$errCount system(s) had errors
+End-of-Here
 
 $openslxDB->disconnect();
 
@@ -560,6 +568,7 @@ sub makeInitRamFS
 		'export-name'    => $info->{export}->{name},
 		'export-uri'     => $info->{'export-uri'},
 		'initramfs'      => "$pxeVendorOSPath/$info->{'initramfs-name'}",
+		'kernel-params'  => $info->{kernel_params} || '',
 		'kernel-version' => $kernelFile =~ m[-(.+)$] ? $1 : '',
 		'plugins'        => $info->{'active-plugins'},
 		'root-path'   
@@ -575,7 +584,7 @@ sub makeInitRamFS
 	}
 
 	my $makeInitRamFSEngine = OpenSLX::MakeInitRamFS::Engine->new($params);
-	$makeInitRamFSEngine->execute()		unless $dryRun;
+	$makeInitRamFSEngine->execute($dryRun);
 
 	return;
 }
@@ -785,23 +794,32 @@ sub writeSystemConfiguration
 
 sub writeConfigurations
 {
-	$systemConfCount = $clientSystemConfCount = 0;
+	$systemConfCount = $systemErrCount = $clientSystemConfCount = 0;
 	my @systems = $openslxDB->fetchSystemByFilter();
 	my @infos;
 	foreach my $system (@systems) {
 		next if $system->{name} eq '<<<default>>>';
 
 		vlog(
-			0,	_tr('exporting system %d : %s', $system->{id}, $system->{name})
+			0, _tr("\ndemuxing system %d : %s", $system->{id}, $system->{name})
 		);
-		$systemConfCount++;
 
-		my $info = $openslxDB->aggregatedSystemFileInfoFor($system);
-		$info->{'external-id'} = externalIDForSystem($system);
+		my $success = eval {
+			my $info = $openslxDB->aggregatedSystemFileInfoFor($system);
+			$info->{'external-id'} = externalIDForSystem($system);
 
-		writeSystemConfiguration($info);
+			writeSystemConfiguration($info);
 
-		push @infos, $info;
+			push @infos, $info;
+			1;
+		};
+		if ($success) {
+			$systemConfCount++;
+		}
+		else {
+			print STDERR $@;
+			$systemErrCount++;
+		}
 	}
 	writePXEMenus(@infos);
 	if (defined $dhcpType) {
