@@ -88,7 +88,7 @@
 					</item>
 					
 					<item type="pixmap" button="true" id="login_button">
-						<pos anchor="e" x="100%" y="60%" height="22"/>
+						<pos anchor="e" x="100%" y="60%" height="22" width="22"/>
 						<normal file="enter_inactive.png"/>
 						<prelight file="enter.png"/>
 					</item>
