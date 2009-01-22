@@ -66,10 +66,6 @@ End-of-Here
 utf8::decode($pxeDefaultTemplate);
 
 my (
-	$dhcpType,
-		# type of DHCP export format
-	$dryRun,
-		# dryRun won't touch any file
 	$systemConfCount,
 		# number of system configurations written
 	$systemErrCount,
@@ -80,9 +76,8 @@ my (
 		# number of initramfs that were created
 	@targetSystems,
 		# systems to create initramfs for, defaults to all systems
-	$helpReq,
-	$manReq,
-	$versionReq,
+	%option,
+		# cmdline option hash
 );
 
 if ($> != 0) {
@@ -90,21 +85,21 @@ if ($> != 0) {
 }
 
 GetOptions(
-	'dhcp-export-type=s' => \$dhcpType,
-	'dry-run'            => \$dryRun,
-	'help|?'             => \$helpReq,
-	'man'                => \$manReq,
-	'version'            => \$versionReq,
+	'dhcp-export-type=s' => \$option{dhcpType},
+	'dry-run'            => \$option{dryRun},
+	'help|?'             => \$option{helpReq},
+	'man'                => \$option{manReq},
+	'version'            => \$option{versionReq},
   )
   or pod2usage(2);
-pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
-if ($manReq) {
+pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $option{helpReq};
+if ($option{manReq}) {
 	# avoid dubious problem with perldoc in combination with UTF-8 that
 	# leads to strange dashes and single-quotes being used
 	$ENV{LC_MESSAGES} = 'POSIX';
 	pod2usage(-verbose => 2);
 }
-if ($versionReq) {
+if ($option{versionReq}) {
 	slxsystem('slxversion');
 	exit 1;
 }
@@ -142,7 +137,7 @@ END
 }
 
 my $tempPath = "$openslxConfig{'temp-path'}/slxconfig-demuxer";
-if (!$dryRun) {
+if (!$option{dryRun}) {
 	rmtree($tempPath);
 	mkpath($tempPath);
 	if (!-d $tempPath) {
@@ -173,7 +168,7 @@ if (@ARGV) {
 	}
 
 	# remove only the folders of the target systems
-	if (!$dryRun) {
+	if (!$option{dryRun}) {
 		rmtree("$tftpbootPath/pxelinux.cfg");
 		mkpath(["$tftpbootPath/client-config", "$tftpbootPath/pxelinux.cfg"]);
 		for my $targetSystem (@targetSystems) {
@@ -186,7 +181,7 @@ else {
 	@targetSystems = @demuxableSystems;
 
 	# and cleanup everything
-	if (!$dryRun) {
+	if (!$option{dryRun}) {
 		rmtree("$tftpbootPath");
 		mkpath(["$tftpbootPath/client-config", "$tftpbootPath/pxelinux.cfg"]);
 	}
@@ -194,7 +189,7 @@ else {
 
 writeConfigurations();
 
-my $wr = $dryRun ? 'would have written' : 'wrote';
+my $wr = $option{dryRun} ? 'would have written' : 'wrote';
 my $errCount = $systemErrCount ? $systemErrCount : 'no';
 print "\n", unshiftHereDoc(<<"End-of-Here");
 	$wr $systemConfCount system- and $clientSystemConfCount client-specific configurations to $tftpbootPath/client-config
@@ -204,7 +199,7 @@ End-of-Here
 
 $openslxDB->disconnect();
 
-slxsystem("rm -rf $tempPath") unless $dryRun || length($tempPath) < 12;
+slxsystem("rm -rf $tempPath") unless $option{dryRun} || length($tempPath) < 12;
 
 exit;
 
@@ -215,7 +210,7 @@ sub lockScript
 {
 	my $lockFile = shift;
 
-	return if $dryRun;
+	return if $option{dryRun};
 
 	# use a lock-file to singularize execution of this script:
 	if (-e $lockFile) {
@@ -243,7 +238,7 @@ sub unlockScript
 {
 	my $lockFile = shift;
 
-	return if $dryRun;
+	return if $option{dryRun};
 
 	close(LOCKFILE);
 	unlink $lockFile;
@@ -292,7 +287,7 @@ sub writeAttributesToFile
 	my $object   = shift;
 	my $fileName = shift;
 
-	return if $dryRun;
+	return if $option{dryRun};
 
 	my $content = "# attributes set by slxconfig-demuxer:\n";
 	my $attrs = $object->{attrs} || {};
@@ -321,7 +316,7 @@ sub writeSlxConfigToFile
 	my $slxConf  = shift;
 	my $fileName = shift;
 
-	return if $dryRun;
+	return if $option{dryRun};
 
 	my $content = '';
 	foreach my $key (sort keys %$slxConf) {
@@ -343,7 +338,7 @@ sub copyExternalSystemConfig
 		# executing 'rm -rf' in that case!
 		die _tr("system-error: illegal target-path <%s>!", $targetPath);
 	}
-	return if $dryRun;
+	return if $option{dryRun};
 
 	slxsystem("rm -rf $targetPath");
 	mkpath $targetPath;
@@ -380,7 +375,7 @@ sub createTarOfPath
 
 	my $tarFile = "$destinationPath/$tarName";
 	vlog(1, _tr('creating tar %s', $tarFile));
-	return if $dryRun;
+	return if $option{dryRun};
 
 	mkpath $destinationPath;
 	my $tarCmd = "cd $buildPath && tar czf $tarFile *";
@@ -402,16 +397,16 @@ sub writePXEMenus
 	if (!-e "$pxePath/pxelinux.0") {
 		my $pxelinux0Path =
 		  "$openslxConfig{'base-path'}/share/tftpboot/pxelinux.0";
-		slxsystem(qq[cp -p "$pxelinux0Path" $pxePath/]) unless $dryRun;
+		slxsystem(qq[cp -p "$pxelinux0Path" $pxePath/]) unless $option{dryRun};
 	}
 	if (!-e "$pxePath/menu.c32") {
 		my $menuc32Path = "$openslxConfig{'base-path'}/share/tftpboot/menu.c32";
-		slxsystem(qq[cp -p "$menuc32Path" $pxePath/]) unless $dryRun;
+		slxsystem(qq[cp -p "$menuc32Path" $pxePath/]) unless $option{dryRun};
 	}
 	if (!-e "$pxePath/vesamenu.c32") {
 		my $vesamenuc32Path =
 		  "$openslxConfig{'base-path'}/share/tftpboot/vesamenu.c32";
-		slxsystem(qq[cp -p "$vesamenuc32Path" $pxePath/]) unless $dryRun;
+		slxsystem(qq[cp -p "$vesamenuc32Path" $pxePath/]) unless $option{dryRun};
 	}
 
 	# fetch PXE-template, if any
@@ -449,9 +444,11 @@ sub writePXEMenus
 	}
 	if (defined $pic) {
 		my $pxeBackground 
-			= "$openslxConfig{'base-path'}/share/themes/${pxeTheme}/pxe/$pic";
+			= defined $pxeTheme
+				? "$openslxConfig{'base-path'}/share/themes/${pxeTheme}/pxe/$pic"
+				: $pic;
 		if (-e $pxeBackground) {
-			slxsystem(qq[cp "$pxeBackground" $pxePath/]) unless $dryRun;
+			slxsystem(qq[cp "$pxeBackground" $pxePath/]) unless $option{dryRun};
 		}
 	}
 
@@ -462,7 +459,7 @@ sub writePXEMenus
 		my $pxeFile          = "$pxeConfigPath/$externalClientID";
 		my $clientAppend     = $client->{kernel_params} || '';
 		vlog(1, _tr("writing PXE-file %s", $pxeFile));
-		next if $dryRun;
+		next if $option{dryRun};
 		my %systemIDs;
 		@systemIDs{$openslxDB->aggregatedSystemIDsOfClient($client)} = ();
 		my @systemInfos = grep { exists $systemIDs{$_->{id}} } @infos;
@@ -541,7 +538,7 @@ sub makeInitRamFS
 	}
 
 	my $makeInitRamFSEngine = OpenSLX::MakeInitRamFS::Engine->new($params);
-	$makeInitRamFSEngine->execute($dryRun);
+	$makeInitRamFSEngine->execute($option{dryRun});
 
 	return;
 }
@@ -557,12 +554,12 @@ sub writeSystemPXEFiles
 
 	my $pxePath         = "$tftpbootPath";
 	my $pxeVendorOSPath = "$pxePath/$info->{'vendor-os'}->{name}";
-	mkpath $pxeVendorOSPath unless -e $pxeVendorOSPath || $dryRun;
+	mkpath $pxeVendorOSPath unless -e $pxeVendorOSPath || $option{dryRun};
 
 	my $targetKernel = "$pxeVendorOSPath/$kernelName";
 	if (!-e $targetKernel) {
 		vlog(1, _tr('copying kernel %s to %s', $kernelFile, $targetKernel));
-		slxsystem(qq[cp -p "$kernelFile" "$targetKernel"]) unless $dryRun;
+		slxsystem(qq[cp -p "$kernelFile" "$targetKernel"]) unless $option{dryRun};
 	}
 	makeInitRamFS($info, $pxeVendorOSPath);
 	$initramfsCount++;
@@ -572,7 +569,7 @@ sub writeSystemPXEFiles
 sub writeDhcpConfig
 {
 	vlog(0, _tr("sorry, exporting dhcp data is not implemented yet!"));
-	my $dhcpModule = "OpenSLX::ConfigExport::DHCP::$dhcpType";
+	my $dhcpModule = "OpenSLX::ConfigExport::DHCP::$option{dhcpType}";
 	if (!eval { require $dhcpModule } ) {
 		die _tr("unable to load DHCP-Export backend '%s'! (%s)\n",
 			$dhcpModule, $@);
@@ -670,7 +667,7 @@ sub writePluginConfigurationsForSystem
 		
 		push @activePlugins, $pluginName;
 
-		next if $dryRun;
+		next if $option{dryRun};
 
 		mkpath([ $pluginConfPath, $pluginInitdPath, $initHooksPath]);
 
@@ -751,7 +748,7 @@ sub writeSystemConfiguration
 
 	writeClientConfigurationsForSystem($info, $buildPath, $attrFile);
 
-	slxsystem("rm -rf $buildPath") unless $dryRun;
+	slxsystem("rm -rf $buildPath") unless $option{dryRun};
 
 	$systemConfCount++;
 
@@ -797,7 +794,7 @@ sub writeConfigurations
 		}
 	}
 	writePXEMenus(@infos);
-	if (defined $dhcpType) {
+	if (defined $option{dhcpType}) {
 		writeDhcpConfig();
 	}
 	return;
