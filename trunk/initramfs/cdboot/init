@@ -142,7 +142,7 @@ chmod u+x /usr/share/udhcpc/default.script
 modprobe -q af_packet
 [ -n $vci ] && vci="-V $vci"
 udhcpc -n -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null
-if test -e /tmp/ipstuff ; then
+if grep "ip=" /tmp/ipstuff >/dev/null 2>&1 ; then
   . /tmp/ipstuff
   for i in $dns ; do
     echo "nameserver $i" >> /etc/resolv.conf
@@ -164,11 +164,16 @@ wget -q -c -O /tmp/iramfs \
   ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/iramfs 2>/dev/null ) || \
   /bin/ash
 
-# start a debug shell
-[ "${DEBUGLEVEL}" -gt 0 ] && /bin/ash
+# start a debug shell if needed, else set quiet kernel parameter
+if [ "${DEBUGLEVEL}" -gt 0 ] ; then
+  /bin/ash
+else
+  quiet=quiet
+  echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+fi
 
 # start the new kernel with initialramfs and cmdline
 echo "Booting OpenSLX client ..."
 kexec -l /tmp/kernel --initrd=/tmp/iramfs --append="ip=$ip:$siaddr:$router:$subnet\
-  file=ftp://132.230.4.4/default.tgz debug=${DEBUGLEVEL}"
+  file=ftp://132.230.4.4/default.tgz debug=${DEBUGLEVEL} $quiet"
 kexec -e

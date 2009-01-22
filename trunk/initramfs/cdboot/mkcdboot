@@ -73,6 +73,15 @@ http://www.openslx.org\n\tENDTEXT" \
 echo -e "\tKERNEL vmlinuz\n\tAPPEND initrd=cdirfs quiet" \
   >> ${BUILDDIR}/iso/isolinux/isolinux.cfg
 
+# write some info, if CD/DVD is still in drive
+echo -e "You seem to have the OpenSLX network demo CD/DVD still in your \
+optical\ndrive! This is not required. You may safely remove the medium \
+just\nafter the first kernel/initramfs is loaded ...\n\nIf you have any \
+feedback please consult http://openslx.org/feedback\nand send your comments \
+to feedback@openslx.org!"  > ${BUILDDIR}/iso/README
+echo -e "This package is free software distributed under the GPL version 2.\
+\nSee http://openslx.org/COPYING" > ${BUILDDIR}/iso/LICENSE
+
 # produce the iso image
 mkisofs -b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -r -J -l \
         -boot-info-table -o OpenSLX.iso -joliet-long -publisher "OpenSLX \
