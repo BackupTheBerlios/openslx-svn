@@ -4110,6 +4110,9 @@ NAME VMWare
 CHIPSET VMWare 
 DRIVER vmware
 
+NAME VMware virtual video card
+SEE VMWare
+
 ######################################################################
 # SUN Cards / Servers
 

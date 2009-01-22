@@ -26,6 +26,7 @@ config_kdm_template
 config_nfsv4 () {
 if [ "x$start_nfsv4" = "xyes" ]; then
   testmkd /mnt/var/lib/nfs/rpc_pipefs
+  testmkd /mnt/var/lib/nfs/sm
   sed -e "s,NFS_SECURITY_GSS=.*,NFS_SECURITY_GSS=\"yes\"," \
       -e "s,NFS4_SUPPORT=.*,NFS4_SUPPORT=\"yes\"," \
       -i /mnt/etc/sysconfig/nfs
@@ -36,8 +37,7 @@ echo -e "\t# stuff needed for nfsv4\n\tmount -t rpc_pipefs rpc_pipefs \
 >>/mnt/etc/${D_INITDIR}/boot.slx
   # portmap is required for any NFS
   config_portmap
-  rllinker "idmapd" 14 8
-  rllinker "gssd" 15 7
+  rllinker "nfs" 14 8
 fi
 }
 

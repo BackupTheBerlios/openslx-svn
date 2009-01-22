@@ -396,10 +396,27 @@ if [ -f /mnt/etc/init.d/autofs ] ; then
       -e "s,AUTOFS_OPTIONS.*,AUTOFS_OPTIONS=\"--timeout 3\"," \
       -i /mnt/etc/${D_SYSCONFDIR}/autofs
   config_portmap
-  rllinker "autofs" 18 4
+  rllinker "autofs" 12 4
 fi
 }
-
+# config nfsv4
+config_nfsv4 () {
+if [ "x$start_nfsv4" = "xyes" ]; then
+  testmkd /mnt/var/lib/nfs/rpc_pipefs
+  testmkd /mnt/var/lib/nfs/sm
+  sed -e "s,NEED_IDMAPD=.*,NEED_IDMAPD=\"yes\"," \
+      -e "s,NEED_GSSD=.*,NEED_GSSD=\"yes\"," \
+      -i /mnt/etc/${D_SYSCONFDIR}/nfs-common
+  echo -e "rpc_pipefs\t/var/lib/nfs/rpc_pipefs rpc_pipefs defaults\t 0 0\n\
+nfsd\t\t/proc/fs/nfsd\tnfsd\t\tdefaults\t 0 0" >>/tmp/fstab
+echo -e "\t# stuff needed for nfsv4\n\tmount -t rpc_pipefs rpc_pipefs \
+/var/lib/nfs/rpc_pipefs\n\tmount -t nfsd nfsd /proc/fs/nfsd" \
+>>/mnt/etc/${D_INITDIR}/boot.slx
+  # portmap is required for any NFS
+  config_portmap
+  rllinker "nfs-common" 10 8
+fi
+}
 # start portmapper (needed at least for nfs and nis services)
 config_portmap () {
   rllinker "portmap" 2 20
