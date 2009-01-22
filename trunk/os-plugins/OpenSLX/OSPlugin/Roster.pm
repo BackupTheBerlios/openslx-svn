@@ -118,6 +118,14 @@ sub _init
 	foreach my $modulePath (glob("$pluginPath/*")) {
 		next if $modulePath !~ m{/([^/]+)$};
 		my $pluginName = $1;
+		if (!-e "$modulePath/OpenSLX/OSPlugin/$pluginName.pm") {
+			vlog(
+				1, 
+				"skipped plugin-folder $modulePath as no corresponding perl "
+					. "module could be found."
+			);
+			next;
+		}
 		my $class = "OpenSLX::OSPlugin::$pluginName";
 		vlog(2, "loading plugin $class from path '$modulePath'");
 		my $plugin = instantiateClass($class, { pathToClass => $modulePath });
