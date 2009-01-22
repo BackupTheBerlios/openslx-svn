@@ -126,7 +126,8 @@ sub startSession
 		"slxos-setup::distro::chroot", sub { $self->finishSession(); }
 	);
 
-	# make sure there's a /dev/zero and /dev/null
+	# make sure there's a /dev/zero, /dev/null and /dev/urandom
+    # /dev/urandom for passwd chroot
 	if (!-e "$osDir/dev" && !mkdir("$osDir/dev")) {
 		die _tr("unable to create folder '%s' (%s)\n", "$osDir/dev", $!);
 	}
@@ -136,6 +137,10 @@ sub startSession
 	if (!-e "$osDir/dev/null" && slxsystem("mknod $osDir/dev/null c 1 3")) {
 		die _tr("unable to create node '%s' (%s)\n", "$osDir/dev/null", $!);
 	}
+	if (!-e "$osDir/dev/urandom" && slxsystem("mknod $osDir/dev/urandom c 1 9")) {
+		die _tr("unable to create node '%s' (%s)\n", "$osDir/dev/urandom", $!);
+    }
+
 
 	# fake proc, depending on what is needed ...
 	if (!-e "$osDir/proc" && !mkdir("$osDir/proc")) {
