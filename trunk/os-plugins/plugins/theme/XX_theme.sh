@@ -1,13 +1,13 @@
 #! /bin/sh
 #
-# stage3 part of 'Theme' plugin - the runlevel script
+# stage3 part of 'theme' plugin - the runlevel script
 #
 . /etc/functions
 . /etc/sysconfig/config
-if [ -e /initramfs/plugin-conf/Theme.conf ]; then
-	. /initramfs/plugin-conf/Theme.conf
+if [ -e /initramfs/plugin-conf/theme.conf ]; then
+	. /initramfs/plugin-conf/theme.conf
 	if [ $Theme_active -ne 0 ]; then
-		[ $DEBUGLEVEL -gt 0 ] && echo "executing the 'Theme' os-plugin ...";
+		[ $DEBUGLEVEL -gt 0 ] && echo "executing the 'theme' os-plugin ...";
 	
 		testmkd /mnt/var/lib/openslx/themes/displaymanager
 		testmkd /mnt/var/lib/openslx/bin
@@ -17,6 +17,6 @@ if [ -e /initramfs/plugin-conf/Theme.conf ]; then
                         sed -i "s,UseTheme=false,UseTheme=true," /mnt/${D_KDMRCPATH}/kdmrc
                 fi
 
-		[ $DEBUGLEVEL -gt 0 ] && echo "done with 'Theme' os-plugin ...";
+		[ $DEBUGLEVEL -gt 0 ] && echo "done with 'theme' os-plugin ...";
 	fi
 fi

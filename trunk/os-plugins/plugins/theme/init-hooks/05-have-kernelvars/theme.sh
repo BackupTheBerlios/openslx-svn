@@ -3,9 +3,9 @@
 if grep -E "(VESA|VGA)" /proc/fb > /dev/null 2>&1 \
   && grep -qi " quiet " /proc/cmdline > /dev/null 2>&1 \
   && [ $DEBUGLEVEL -eq 0 ] ; then
-  export Theme_nosplash=0
+  export theme_nosplash=0
 else
-  export Theme_nosplash=1
+  export theme_nosplash=1
 fi
 
-[ ${Theme_nosplash} -eq 0 ] &&	/bin/splashy boot 2>/dev/null
+[ ${theme_nosplash} -eq 0 ] &&	/bin/splashy boot 2>/dev/null

@@ -1,15 +1,15 @@
 #! /bin/sh
 
 # check if the configuration file is available
-if [ -e /initramfs/plugin-conf/VMware.conf ]; then
+if [ -e /initramfs/plugin-conf/vmware.conf ]; then
 
 	# load needed variables
-	. /initramfs/plugin-conf/VMware.conf
+	. /initramfs/plugin-conf/vmware.conf
 
 	# Test if this plugin is activated
-	if [ $VMware_active -ne 0 ]; then
+	if [ $vmware_active -ne 0 ]; then
 
-		[ $DEBUGLEVEL -gt 0 ] && echo "executing the 'VMware' os-plugin ...";
+		[ $DEBUGLEVEL -gt 0 ] && echo "executing the 'vmware' os-plugin ...";
 		
 		# Load general configuration
 		. /initramfs/machine-setup
@@ -19,7 +19,7 @@ if [ -e /initramfs/plugin-conf/VMware.conf ]; then
 		# D_INITDIR is defined in the following file:
 		. /etc/sysconfig/config
 		
-		echo "  * VMware part 1"
+		echo "  * vmware part 1"
 		#############################################################################
 		# vmware stuff first part: two scenarios
 		# * VM images in /usr/share/vmware - then simply link
@@ -62,7 +62,7 @@ if [ -e /initramfs/plugin-conf/VMware.conf ]; then
 		  fi
 		fi
 		
-		echo "  * VMware part 2"
+		echo "  * vmware part 2"
 		
 		#############################################################################
 		# vmware stuff second part: setting up the environment
@@ -166,7 +166,7 @@ if [ -e /initramfs/plugin-conf/VMware.conf ]; then
 		    /mnt/etc/vmware/vmnet8/nat 2>/dev/null
 		fi
 		
-		[ $DEBUGLEVEL -gt 0 ] && echo "done with 'VMware' os-plugin ...";
+		[ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmware' os-plugin ...";
 
 	fi
 fi

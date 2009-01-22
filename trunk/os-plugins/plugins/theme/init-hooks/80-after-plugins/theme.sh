@@ -1,4 +1,4 @@
-if [ ${Theme_nosplash} -eq 0 ]; then
+if [ ${theme_nosplash} -eq 0 ]; then
 
 	/bin/splashy_update "progress 80" >/dev/null 2>&1
 

@@ -8,10 +8,10 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Example.pm
+# example.pm
 #	- an example implementation of the OSPlugin API (i.e. an os-plugin)
 # -----------------------------------------------------------------------------
-package OpenSLX::OSPlugin::Example;
+package OpenSLX::OSPlugin::example;
 
 use strict;
 use warnings;
@@ -61,7 +61,7 @@ sub getAttrInfo
 			applies_to_systems => 1,
 			applies_to_clients => 0,
 			description => unshiftHereDoc(<<'			End-of-Here'),
-				should the 'Example'-plugin be executed during boot?
+				should the 'example'-plugin be executed during boot?
 			End-of-Here
 			content_regex => qr{^(0|1)$},
 			content_descr => '1 means active - 0 means inactive',
@@ -72,7 +72,7 @@ sub getAttrInfo
 			applies_to_systems => 1,
 			applies_to_clients => 0,
 			description => unshiftHereDoc(<<'			End-of-Here'),
-				the execution precedence of the 'Example' plugin
+				the execution precedence of the 'example' plugin
 			End-of-Here
 			content_regex => qr{^\d\d$},
 			content_descr => 'allowed range is from 01-99',

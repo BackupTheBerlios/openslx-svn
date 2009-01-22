@@ -8,10 +8,10 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# VMware.pm
-#	- an example implementation of the OSPlugin API (i.e. an os-plugin)
+# vmware.pm
+#	- declares necessary information for the vmware plugin
 # -----------------------------------------------------------------------------
-package OpenSLX::OSPlugin::VMware;
+package OpenSLX::OSPlugin::vmware;
 
 use strict;
 use warnings;
@@ -56,7 +56,7 @@ sub getAttrInfo
 			applies_to_systems => 1,
 			applies_to_clients => 0,
 			description => unshiftHereDoc(<<'			End-of-Here'),
-				should the 'VMware'-plugin be executed during boot?
+				should the 'vmware'-plugin be executed during boot?
 			End-of-Here
 			content_regex => qr{^(0|1)$},
 			content_descr => '1 means active - 0 means inactive',
@@ -67,7 +67,7 @@ sub getAttrInfo
 			applies_to_systems => 1,
 			applies_to_clients => 0,
 			description => unshiftHereDoc(<<'			End-of-Here'),
-				the execution precedence of the 'VMware' plugin
+				the execution precedence of the 'vmware' plugin
 			End-of-Here
 			content_regex => qr{^\d\d$},
 			content_descr => 'allowed range is from 01-99',
