@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE greeter SYSTEM "greeter.dtd">
+<greeter>
+	<item type="pixmap">
+		<normal file="color.png"/>
+		<pos x="0" y="0" width="100%" height="100%"/>
+		<box orientation="vertical" homogeneous="true">
+			
+			<item type="rect">
+				<normal color="#000000" alpha="0.0"/>
+				<pos anchor="n" x="50%" y="0%" width="100%" height="80%"/>
+				<box orientation="vertical" homogeneous="true">
+				
+					<item type="pixmap">
+						<normal file="welcome-time-shadowed.png"/>
+						<pos anchor="n" x="50%" y="0" width="80%" height="44"/>
+						<box orientation="horizontal" homogeneous="true">
+						
+							<!-- Wellcome on ... -->
+							<item type="label">
+								<pos anchor="w" x="10%" y="30%"/>
+								<normal color="#f0f0f0" font="Sans 11"/>
+								<stock type="welcome-label"/>
+							</item>
+						
+							<!-- clock -->
+							<item type="label" id="clock">
+								<pos anchor="e" x="90%" y="30%"/>
+								<normal color="#f0f0f0" font="Sans 11"/>
+								<text>%c</text>
+							</item>
+						
+						</box>
+					</item>
+				
+					<item type="rect">
+						<normal color="#000000" alpha="0.0"/>
+						<pos anchor="c" x="50%" y="10%" width="100%" height="160%"/>
+						<box orientation="vertical" homogeneous="true">
+							<item type="pixmap">
+								<normal file="openslx-logo-main.png"/>
+								<pos anchor="c" x="50%" y="50%" height="box"/>
+							</item>
+						</box>
+					</item>
+					
+				</box>
+			</item>
+			
+			<item type="pixmap">
+				<normal file="main-runner.png"/>
+				<pos anchor="c" x="50%" y="0%" width="100%" height="160"/>
+				<box orientation="horizontal" homogeneous="true">
+					
+					<item type="rect">
+						<normal color="#000000" alpha="0.0"/>
+						<pos anchor="w" x="0%" y="50%" width="100%" height="100%"/>
+						<box orientation="horizontal" homogeneous="true">
+					
+							<item type="pixmap">
+								<normal file="openslx-logo.png"/>
+								<pos anchor="c" x="70" y="50%"/>
+							</item>
+							
+							<item type="rect">
+								<normal color="#000000" alpha="0.0"/>
+								<pos anchor="c" x="50" y="50%" width="100%" height="100%"/>
+								<box orientation="vertical" homogeneous="true">
+								
+									<!-- username-label -->
+									<item type="label" id="pam-prompt">
+										<pos anchor="sw" x="5" y="80%"/>
+										<normal color="#f0f0f0" font="Sans 11"/>
+										<stock type="username-label"/>
+									</item>
+									
+									
+									<!-- username-entry -->
+									<item type="entry" id="user-pw-entry">
+										<normal color="#0f0f0f" font="Sans 11"/>
+										<pos anchor="nw" y="-10%" height="22" width="160"/>
+									</item>
+								
+								</box>
+							</item>
+						
+						</box>
+					</item>
+					
+					<item type="rect">
+						<normal color="#000000" alpha="0.0"/>
+						<pos anchor="c" x="50%" y="50%" width="100%" height="100%"/>
+						<box orientation="vertical" homogeneous="true">
+							
+							<item type="rect" id="caps-lock-warning">
+								<normal color="#000000" alpha="0.4"/>
+								<pos anchor="c" x="50%" y="50%" width="100%" height="30"/>
+								<box orientation="vertical" homogeneous="true">
+									
+									<item type="label">
+										<normal color="#ff8b00" font="Sans 11"/>
+										<pos anchor="c" x="50%" y="50%"/>
+										<stock type="caps-lock-warning"/>
+									</item>
+								
+								</box>
+							</item>
+							
+							<item type="pixmap">
+								<normal file="environment.png"/>
+								<pos anchor="c" x="50%" y="50%"/>
+							</item>
+							
+							<item type="rect">
+								<normal color="#000000" alpha="0.0"/>
+								<pos anchor="c" x="50%" y="50%" width="100%" height="40"/>
+								<box orientation="vertical" homogeneous="true">
+									<item type="label" id="pam-error">
+										<normal color="#ff8b00" font="Sans 11"/>
+										<pos anchor="c" x="50%" y="50%"/>
+										<text/>
+									</item>
+								</box>
+							</item>
+							
+						</box>
+					</item>
+					
+					
+					
+					<item type="rect">
+						<normal color="#000000" alpha="0.0"/>
+						<pos anchor="e" x="100%" y="50%" width="100%" height="100%"/>
+						<box orientation="vertical" homogeneous="true">
+						
+							<!-- session-button -->
+							<item type="rect" id="session_button" button="true">
+								<normal color="#000000" alpha="0.0"/>
+								<pos anchor="se" x="80%" y="95%" width="box" height="box"/>
+								<box orientation="horizontal">
+								
+									<item type="label">
+										<normal color="#bbbbbb" font="Sans 11"/>
+										<prelight color="#f0f0f0" font="Sans 11"/>
+										<active color="#ff8b00" font="Sans 11"/>
+										<pos anchor="e" x="100%" y="-24"/>
+										<text>Session</text>
+										<text xml:lang="en">Session</text>
+										<text xml:lang="de">Sitzung</text>
+									</item>
+									
+									<item type="rect" id="session_button" button="true">
+										<normal color="#000000" alpha="0.0"/>
+										<pos anchor="c" x="50%" y="50%" width="10"/>
+									</item>
+									
+									<item type="pixmap" id="session_button" button="true">
+										<normal file="sessions_inactive.png"/>
+										<prelight file="sessions.png"/>
+										<pos anchor="se" x="100%" y="100%"/>
+									</item>
+								
+								</box>
+							</item>
+							
+							<!-- menu-button -->
+							<item type="rect" id="system_button" button="true">
+								<normal color="#000000" alpha="0.0"/>
+								<pos anchor="ne" x="80%" y="5%" width="box" height="box"/>
+								<box orientation="horizontal">
+								
+									<item type="label">
+										<normal color="#bbbbbb" font="Sans 11"/>
+										<prelight color="#f0f0f0" font="Sans 11"/>
+										<active color="#ff8b00" font="Sans 11"/>
+										<pos anchor="e" x="100%" y="24"/>
+										<text>System Menu</text>
+										<text xml:lang="en">System Menu</text>
+										<text xml:lang="de">System Menü</text>
+									</item>
+									
+									<item type="rect" id="session_button" button="true">
+										<normal color="#000000" alpha="0.0"/>
+										<pos anchor="c" x="50%" y="50%" width="10"/>
+									</item>
+									
+									<item type="pixmap" id="system_button" button="true">
+										<normal file="system_inactive.png"/>
+										<prelight file="system.png"/>
+										<pos anchor="ne" x="100%" y="0%"/>
+									</item>
+								
+								</box>
+							</item>
+							
+						</box>
+					</item>
+
+				</box>
+			</item>
+			
+		</box>
+	</item>
+
+</greeter>
