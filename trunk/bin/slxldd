@@ -37,40 +37,32 @@ use Pod::Usage;
 use OpenSLX::Basics;
 use OpenSLX::LibScanner;
 
-my (
-	$helpReq,
-	$manReq,
-	$verbose,
-
-	$rootPath,
-	$versionReq,
-
+my %option = (
+	rootPath => '/',
 );
-
-$rootPath = '/';
 GetOptions(
-	'help|?'      => \$helpReq,
-	'man'         => \$manReq,
-	'root-path=s' => \$rootPath,
-	'verbose'     => \$verbose,
-	'version'     => \$versionReq,
+	'help|?'      => \$option{helpReq},
+	'man'         => \$option{manReq},
+	'root-path=s' => \$option{rootPath},
+	'verbose'     => \$option{verbose},
+	'version'     => \$option{versionReq},
   )
   or pod2usage(2);
-pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
-pod2usage(-verbose => 2) if $manReq;
-if ($versionReq) {
+pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $option{helpReq};
+pod2usage(-verbose => 2) if $option{manReq};
+if ($option{versionReq}) {
 	system('slxversion');
 	exit 1;
 }
 
 openslxInit();
 
-if (!$rootPath) {
+if (!$option{rootPath}) {
 	print STDERR _tr("You need to specify the root-path!\n");
 	pod2usage(2);
 }
 
-$rootPath =~ s[/+$][];
+$option{rootPath} =~ s[/+$][];
 # remove trailing slashes
 
 if (!@ARGV) {
@@ -79,8 +71,8 @@ if (!@ARGV) {
 }
 
 my $libScanner = OpenSLX::LibScanner->new({
-	'root-path' => $rootPath,
-	'verbose'   => $verbose,
+	'root-path' => $option{rootPath},
+	'verbose'   => $option{verbose},
 });
 
 my @libs = $libScanner->determineRequiredLibs(@ARGV);
