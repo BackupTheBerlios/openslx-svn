@@ -70,7 +70,7 @@ sub getAttrInfo
             End-of-Here
             content_regex => undef,
             content_descr => 'allowed: syslogd-ng, syslog',
-            default => syslog-ng,
+            default => 'syslog-ng',
         },
         'syslog::host' => {
             applies_to_systems => 1,
