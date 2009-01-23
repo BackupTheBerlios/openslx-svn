@@ -19,6 +19,8 @@ use warnings;
 
 use base qw(OpenSLX::OSPlugin::Base);
 
+use File::Path;
+
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
@@ -29,6 +31,8 @@ sub new
     my $self = {
         name => 'bootsplash',
     };
+
+    mkpath("$openslxConfig{'config-path'}/plugins/bootsplash/themes");
 
     return bless $self, $class;
 }
@@ -116,20 +120,31 @@ sub copyRequiredFilesIntoInitramfs
     my $attrs               = shift;
     my $makeInitRamFSEngine = shift;
     
-    my $themeDir = "$openslxConfig{'base-path'}/share/themes";
+    my $bootsplashDir = "$openslxConfig{'base-path'}/lib/plugins/bootsplash";
+    my $bootsplashConfigDir = "$openslxConfig{'config-path'}/plugins/bootsplash";
     my $bootsplashTheme = $attrs->{'bootsplash::theme'} || '';
+    my $splashyThemeDir = '';
+
     if ($bootsplashTheme) {
-        my $bootsplashThemeDir = "$themeDir/$bootsplashTheme/bootsplash";
+        my $bootsplashThemeDir = "$bootsplashDir/files/themes/$bootsplashTheme";
+        my $altThemeDir = "$bootsplashConfigDir/themes/$bootsplashTheme";
         if (-d $bootsplashThemeDir) {
-            my $splashyPath = "$openslxConfig{'base-path'}/share/splashy";
+            $splashyThemeDir = "$bootsplashThemeDir";
+        }
+        elsif (-d $altThemeDir) {
+            $splashyThemeDir = "$altThemeDir";
+        }
+        if (-d $splashyThemeDir) {
+            my $splashyPath = "$bootsplashDir/files/bin";
+print "6. $splashyPath";
             $makeInitRamFSEngine->addCMD(
-                "cp -p $splashyPath/* $targetPath/bin/"
+                "cp -p $splashyPath/splashy* $targetPath/bin/"
             );
             $makeInitRamFSEngine->addCMD(
                 "mkdir -p $targetPath/etc/splashy"
             );
             $makeInitRamFSEngine->addCMD(
-                "cp -a $bootsplashThemeDir/* $targetPath/etc/splashy/"
+                "cp -a $splashyThemeDir/* $targetPath/etc/splashy/"
             );
         }
     }
