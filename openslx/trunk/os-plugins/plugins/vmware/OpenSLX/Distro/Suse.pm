@@ -204,7 +204,7 @@ sub fillRunlevelScript
          ;;
         esac
         exit 0
-    End-of-Here
+        End-of-Here
     return $script;
 }
 
