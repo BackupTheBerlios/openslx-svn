@@ -35,7 +35,7 @@ sub preSystemInstallationHook
 	#
 	# in order to circumvent this problem, we manually install initrd-tools 
 	# (which contains mkinitrd) ...
-	$self->{engine}->{'meta-packager'}->installSelection('initrd-tools');
+	$self->{engine}->{'meta-packager'}->installPackages('initrd-tools');
 	# ... and replace /usr/sbin/mkinitrd with a dummy, in order to skip the 
 	# initrd-creation.
 	rename('/usr/sbin/mkinitrd', '/usr/sbin/_mkinitrd');
