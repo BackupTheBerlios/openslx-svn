@@ -380,6 +380,7 @@ pref.hideCursorOnUngrab = \"TRUE\"
 pref.autoFit = \"TRUE\"
 pref.autoFitFullScreen = \"fitGuestToHost\"
 pref.vmplayer.exit.vmAction = \"poweroff\"
+pref.vmplayer.confirmOnExit = \"TRUE\"
 
 # shared folders
 pref.enableAllSharedFolders = \"TRUE\"
