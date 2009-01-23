@@ -13,7 +13,13 @@ if [ -e /initramfs/plugin-conf/desktop.conf ]; then
     testmkd /mnt/var/lib/openslx/themes
     testmkd /mnt/var/lib/openslx/config
 
-    . /mnt/opt/openslx/plugin-repo/desktop/${desktop_manager}/desktop.sh
+    # problem which occures if exporting was forgotten (quick fix code)
+    if [ -e /mnt/opt/openslx/plugin-repo/desktop/${desktop_manager}/desktop.sh ]
+      then . /mnt/opt/openslx/plugin-repo/desktop/${desktop_manager}/desktop.sh
+    else
+      error fatal "This shouldn't fail - you might have forgotten to export \
+your system."
+    fi
 
     # TODO: move the following stuff into the gdm-specific desktop.sh
     #       (and perhaps handle through a template?)
