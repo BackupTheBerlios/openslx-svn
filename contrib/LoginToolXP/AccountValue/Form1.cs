@@ -185,7 +185,7 @@ namespace AccountValue
 
                     foreach (XmlNode printer in xnPrinters2.ChildNodes)
                     {
-                        System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p " + printer.Attributes["path"].InnerText + printer.Attributes["name"].InnerText);
+                        System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p " + printer.Attributes["path"].InnerText);
                     }
                 }
 
