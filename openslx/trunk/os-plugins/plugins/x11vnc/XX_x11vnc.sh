@@ -22,12 +22,19 @@ addvnc2xorg () {
       -e '/\"Module\"/a\\ \ Load         "vnc"' \
       -e '/n \"Device\"/a\\ \ Option       "usevnc"            "yes"' \
       -e '/n \"Device\"/a\\ \ Option       "rfbauth"           "/etc/X11/vncpasswd"' \
-      -i /mnt/etc/X11/xorg.conf
-  # password setting
-  echo "$x11vnc_pass" > /mnt/etc/X11/vncpasswd
-  echo -e "__BEGIN_VIEWONLY__\n$x11vnc_viewonlypass" >> /mnt/etc/X11/vncpasswd
-  # multiuser handling
-  sed -i "s/,/\n/" /mnt/etc/X11/vncpasswd
+      -e '/e  \"Generic Mouse\"/a\\ \ InputDevice  "VNC Keyboard"      "ExtraKeyboard"' \
+      -e '/e  \"Generic Mouse\"/a\\ \ InputDevice  "VNC Mouse"         "ExtraPointer"' \
+      -e '/\"CorePointer\"/ {
+a\
+EndSection\
+Section "InputDevice"\
+  Identifier   "VNC Keyboard"\
+  Driver       "rfbkeyb"\
+EndSection\
+Section "InputDevice"\
+  Identifier   "VNC Mouse"\
+  Driver       "rfbmouse"
+}'    -i /mnt/etc/X11/xorg.conf
 }
 
 # main script
@@ -116,6 +123,9 @@ if [ -e /initramfs/plugin-conf/x11vnc.conf ]; then
 
     # x11mod offers access to the running X server via module
     elif [ "$x11vnc_mode" = "x11mod" ]; then
+      # password setting (use stage4 environment)
+      echo -e "$x11vnc_pass\n$x11vnc_viewonlypass" | chroot /mnt vncpasswd -f \
+        > /mnt/etc/X11/vncpasswd
       ( waitfor /mnt/etc/X11/xorg.conf 10000; addvnc2xorg ) &
     fi
   fi

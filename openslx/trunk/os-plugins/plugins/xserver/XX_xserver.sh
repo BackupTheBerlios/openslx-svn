@@ -129,7 +129,7 @@ Section "Module"
   Load         "dri"
 EndSection
 Section "InputDevice"
-  Identifier "Generic Keyboard"
+  Identifier   "Generic Keyboard"
   Driver       "kbd"
   Option       "CoreKeyboard"
   Option       "XkbRules"          "xorg"

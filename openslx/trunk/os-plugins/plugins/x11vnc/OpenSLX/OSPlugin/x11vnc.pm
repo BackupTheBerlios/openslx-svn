@@ -37,8 +37,8 @@ sub getInfo
         description => unshiftHereDoc(<<'        End-of-Here'),
             enables x11vnc server (user or xorg)
         End-of-Here
-        # depends on xorg to be configured
-        precedence => 80,
+        # waits for xorg to add configuration if needed
+        precedence => 70,
     };
 }
 
