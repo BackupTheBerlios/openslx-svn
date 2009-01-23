@@ -1,5 +1,3 @@
-#!/bin/ash
-#
 # Copyright (c) 2008 - RZ Uni Freiburg
 # Copyright (c) 2008 - OpenSLX GmbH
 #
@@ -14,8 +12,8 @@
 # stage3 part of 'xserver' plugin - the runlevel script setting up the Xorg
 # configuration and checking for 3D capabilities and non-gpl drivers
 #
-. /etc/functions
-. /etc/distro-functions
+# script is included from init via the "." load function - thus it has all
+# variables and functions available
 
 xfc="/mnt/etc/X11/xorg.conf"
 

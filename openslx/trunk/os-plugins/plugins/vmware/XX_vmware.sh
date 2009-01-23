@@ -1,5 +1,3 @@
-#!/bin/ash
-#
 # Copyright (c) 2007..2008 - RZ Uni Freiburg
 # Copyright (c) 2008 - OpenSLX GmbH
 #
@@ -11,8 +9,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org
 #
-. /etc/functions
-. /etc/distro-functions
+# script is included from init via the "." load function - thus it has all
+# variables and functions available
 
 # TODO: nvram,functions
 # write /etc/vmware/config (if a non-standard location of vmware basedir is
@@ -36,7 +34,7 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     if [ -d /mnt/etc/vmware ] ; then
       rm -rf /mnt/etc/vmware/*
     else
-      testmkd -p /mnt/etc/vmware
+      testmkd /mnt/etc/vmware
     fi
     # write the /etc/vmware/slxvmconfig file
     # check for the several variables and write the several files:
