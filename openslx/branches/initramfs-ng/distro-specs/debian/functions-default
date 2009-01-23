@@ -59,6 +59,9 @@ config_distro () {
  
   # set default runlevel
   sed -e "s/.*initdefault/id:${D_INITDEFAULT}:initdefault/" -i /mnt/etc/inittab
+ 
+  # create needed auxiliary directories in (/mnt)/var,/etc,...
+  testmkd /mnt/var/run/screens root:utmp 0755
 }
 
 # initial (boot time) runlevel scripts
