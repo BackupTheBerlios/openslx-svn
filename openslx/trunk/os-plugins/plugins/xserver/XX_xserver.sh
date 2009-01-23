@@ -240,7 +240,7 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
         sed 's|.*ize:\ ||;s|\ mm||;s|x|\ |')"
       modes=$(grep -i "Resolution: .*@" /etc/hwinfo.display | \
         awk '{print $2}'| awk -F '@' '{print $1}'| sort -unr| \
-        tr "\n" " ")
+        tr "\n" "\" \"")
       [ -n "$vert" -a -n "$horz" ] && \
         sed -e "s|# Horizsync.*|  Horizsync    $horz|;\
                 s|# Vertrefre.*|  Vertrefresh  $vert|;\
@@ -248,9 +248,9 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
       [ -n "$size" ] && \
         sed -e "s|# DisplaySi.*|  DisplaySize  $size|" -i $xfc
       [ -n "$modes" ] && \
-        sed -e "s|# SubSection.*|  Subsection \"Display\"|;\
+        sed -e "s|# SubSection.*|  SubSection \"Display\"|;\
                 s|#   Depth        24.*|    Depth        24|;\
-                s|#   Modes.*|    Modes	$modes|;\
+                s|#   Modes.*|    Modes	\"$modes\"|;\
                 s|# EndSubSection.*|  EndSubSection|;" -i $xfc
 
     fi
