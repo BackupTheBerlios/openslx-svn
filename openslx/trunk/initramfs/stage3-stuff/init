@@ -140,8 +140,12 @@ in $0\ncountry=\"${COUNTRY}\"" >>/etc/initramfs-setup
     # ... or a specified debug level
     debug=*)
       DEBUGLEVEL=${opts#debug=}
-      [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
+      if [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] ; then
         echo "** SLX init started near $(sysup)"
+      elif [ $DEBUGLEVEL -ge 3 -a $DEBUGLEVEL -le 20 ] ; then
+        echo "Debug shell started on second console (tty2)"
+        getty -i -n -l /bin/ash 38400 tty2 &
+      fi
     ;;
     # essid for WLAN boot (experimental, might be moved to a module component
     # in later versions
