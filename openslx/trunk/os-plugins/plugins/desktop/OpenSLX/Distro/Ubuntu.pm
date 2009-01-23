@@ -129,8 +129,8 @@ sub setupKDEHOME
     my $path     = "/etc/profile.d/kde.sh";
 
     my $script = unshiftHereDoc(<<'    End-of-Here');
-        export KDEHOME=".kde-$(kde-config -v | grep KDE | \
-            awk {'print $2'})-ubuntu"
+        export KDEHOME=".kde$(kde-config -v | grep KDE | \
+            sed -e "s,KDE: \([0-9]\).*,\1,")-ubuntu"
     End-of-Here
 
     appendFile($path, $script);
