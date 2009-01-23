@@ -213,6 +213,18 @@ sub preInstallationPhase()
     my $pkgpath = $self->{attrs}->{'vmware::pkgpath'};
     my $vmpl10 = $self->{attrs}->{'vmware::vmpl1.0'};
     my $vmpl20 = $self->{attrs}->{'vmware::vmpl2.0'};
+    my $local = $self->{attrs}->{'vmware::local'};
+
+    if ($local == 0 && $vmpl10 == 0 && $vmpl20 == 0) {
+        print "\n\n * At least one kind needs to get installed/activated:\n";
+        print "   vmware::local=1  or\n";
+        print "   vmware::vmpl1.0=1  or\n";
+        print "   vmware::vmpl2.0=\n";
+        print " * vmware plugin was not installed!\n\n";
+        # TODO: write to mailingliste. exit 1 still let the plugin
+        # be installed in the database!
+        exit 1;
+    }
 
     if (! -d $pkgpath && ($vmpl10 == 1 || $vmpl20 == 1)) {
         print "\n\n * vmware::pkgpath: no such directory!\n";
@@ -248,18 +260,6 @@ sub installationPhase
     # TODO: write a list of installed/setted up and check it in stage3
     #       this will avoid conflict of configured vmware version in
     #       stage3 which are not setted up or installed in stage1
-    if ($self->{attrs}->{'vmware::local'} == 0 &&
-        $self->{attrs}->{'vmware::vmpl2.0'} == 0 &&
-        $self->{attrs}->{'vmware::vmpl2.0'} == 0) {
-        print "\n\n * At least one kind needs to get installed/activated:\n";
-        print "   vmware::local=1  or\n";
-        print "   vmware::vmpl1.0=1  or\n";
-        print "   vmware::vmpl2.0=\n";
-        print " * vmware plugin was not installed!\n\n";
-        # TODO: write to mailingliste. exit 1 still let the plugin
-        # be installed in the database!
-        exit 1;
-    }
     if ($self->{attrs}->{'vmware::local'} == 1) {
         $self->_localInstallation();
     }
