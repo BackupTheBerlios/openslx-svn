@@ -187,7 +187,12 @@ supported."; \
 	tar --exclude=.svn -cp -C initramfs initrd-stuff/ | \
 	  tar -xp --strip-components 1 \
 	      -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs; \
+	tar --exclude=.svn -cp -C initramfs stage3-stuff/ | \
+	  tar -xp --strip-components 1 \
+	      -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs; \
 	tar --exclude=.svn -cp -C initramfs distro-specs | \
+	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
+	tar --exclude=.svn -cp -C initramfs uclib-rootfs | \
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
   tar --exclude=.svn --exclude *.example -cp -C boot-env pxe | \
     tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/boot-env; \

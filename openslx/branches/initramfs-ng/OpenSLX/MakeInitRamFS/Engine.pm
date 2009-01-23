@@ -77,7 +77,6 @@ sub new
     $self->{'lib-scanner'} 
         = OpenSLX::LibScanner->new({ 'root-path' => $self->{'root-path'} });
     
-    $self->{'required-libs'}            = {};
     $self->{'suggested-kernel-modules'} = [];
     $self->{'filtered-kernel-modules'}  = [];
 
@@ -142,37 +141,22 @@ sub _collectCMDs
 
     $self->_setupBuildPath();
 
-    $self->_addRequiredFSModsAndTools();
+    $self->_addRequiredFSMods();
     
     $self->_writeInitramfsSetup();
     $self->_writeSlxSystemConf();
 
+    $self->_copyUclibcRootfs();
     $self->_copyDistroSpecificFiles();
     $self->_copyInitramfsFiles();
     
-    $self->_copyBusybox();
-    
-    $self->_copyDhcpClient();
-
-    $self->_copyRamfsTools();
-    
-    $self->_copyRequiredFSTools();
-
-    $self->_copyRequiredLayeredFSTools();
-
     $self->_copyPreAndPostinitFiles();
-
-    if ($self->{'debug-level'}) {
-        $self->_copyDebugTools();
-    }
 
     $self->_calloutToPlugins();
 
     $self->{distro}->applyChanges($self);
 
     $self->_copyKernelModules();
-    
-    $self->_copyRequiredLibs();
     
     $self->_createInitRamFS();
 
@@ -224,7 +208,6 @@ sub _setupBuildPath
         dev 
         etc
         etc/init-hooks
-        etc/sysconfig
         lib
         mnt 
         proc 
@@ -255,32 +238,29 @@ sub _copyDistroSpecificFiles
     my $distroName = $self->{'distro-name'};
     my $distroVer = $self->{'distro-ver'};
     
-    # concatenate default- and distro-specific configuration into one file
-    my $config = slurpFile("$distroSpecsPath/$distroName/config-default");
-    $config .= "\n";
-    $config .= slurpFile("$distroSpecsPath/$distroName/config-$distroVer");
-    $self->addCMD( {
-        file    => "$self->{'build-path'}/etc/sysconfig/config",
-        content => $config,
-    } );
-        
     # concatenate default- and distro-specific functions into one file
     my $functions = slurpFile("$distroSpecsPath/$distroName/functions-default");
     $functions .= "\n";
-    $functions 
-        .= slurpFile("$distroSpecsPath/$distroName/functions-$distroVer");
+    $functions .= slurpFile(
+        "$distroSpecsPath/$distroName/functions-$distroVer",
+        { failIfMissing => 0 }
+    );
     $self->addCMD( {
         file    => "$self->{'build-path'}/etc/distro-functions",
         content => $functions,
     } );
     
-    my $defaultsPath = "$distroSpecsPath/$distroName/files-default";
-    if (-e $defaultsPath) {
-        $self->addCMD(
-            "cp -a $defaultsPath $self->{'build-path'}/etc/sysconfig/files"
-        );
-    }
-        
+    return 1;
+}
+
+sub _copyUclibcRootfs
+{
+    my $self = shift;
+
+    my $uclibcRootfs = "$openslxConfig{'base-path'}/share/uclib-rootfs";
+
+    $self->addCMD("rsync -rlpt $uclibcRootfs/ $self->{'build-path'}");
+    
     return 1;
 }
 
@@ -315,8 +295,6 @@ sub _copyInitramfsFiles
                     #       different, better solution
                     my %macro = (
                         'COMDIRINDXS' => '/tmp/scratch /var/lib/nobody',
-                        'COMETCEXCL'  => "XF86Config*\nissue*\nmtab*\nfstab*\n",
-                        'KERNVER'     => $self->{'kernel-version'},
                         # keep serverip as it is (it is handled by init itself)
                         'serverip'    => '@@@serverip@@@',
                     );
@@ -350,86 +328,6 @@ sub _copyInitramfsFiles
     return;
 }
 
-sub _copyBusybox
-{
-    my $self = shift;
-
-    $self->_copyPlatformSpecificBinary(
-        "$openslxConfig{'base-path'}/share/busybox/busybox", '/bin/busybox'
-    );
-    
-    my $busyboxForHost 
-        = "$openslxConfig{'base-path'}/share/busybox/busybox"
-            . ( hostIs64Bit() ? '.x86_64' : '.i586' );
-
-    my @busyboxApplets = getAvailableBusyboxApplets($busyboxForHost);
-    foreach my $applet (@busyboxApplets) {
-        $self->addCMD("ln -sf /bin/busybox $self->{'build-path'}/bin/$applet");
-    }
-    
-    # fake the sh link in busybox environment
-    my $shFake = "#!/bin/ash\n/bin/ash \$\@";
-    $self->addCMD( {
-        file    => "$self->{'build-path'}/bin/sh", 
-        content => $shFake,
-        mode    => 0755
-    } );
-
-    return;
-}
-
-sub _copyRamfsTools
-{
-    my $self = shift;
-    
-    my @ramfsTools = qw(ddcprobe 915resolution);
-    foreach my $tool (@ramfsTools) {
-        $self->_copyPlatformSpecificBinary(
-            "$openslxConfig{'base-path'}/share/ramfstools/$tool", 
-            "/bin/$tool"
-        );
-    }
-    
-    return;
-}
-    
-sub _copyDebugTools
-{
-    my $self = shift;
-    
-    my @debugTools = qw(strace);
-    foreach my $tool (@debugTools) {
-        my $toolPath = $self->_findBinary($tool);
-        if (!$toolPath) {
-            warn _tr('debug-tool "%s" is not available', $tool);
-            next;
-        }
-        $self->addCMD("cp -p $toolPath $self->{'build-path'}/bin");
-        $self->_addRequiredLibsFor($toolPath);
-    }
-    
-    return;
-}
-    
-sub _copyDhcpClient
-{
-    my $self = shift;
-    
-    # TODO: instead of using dhclient, we should check if the client
-    #       provided by busybox still does not support fetching NIS stuff
-    #       (and implement that if it doesn't)
-
-    my $toolPath = $self->_findBinary('dhclient');
-    if (!$toolPath) {
-        warn _tr('tool "dhclient" is not available, using "udhcpc" instead');
-        return;
-    }
-    $self->addCMD("cp -p $toolPath $self->{'build-path'}/bin");
-    $self->_addRequiredLibsFor($toolPath);
-    
-    return;
-}
-    
 sub _findBinary
 {
     my $self   = shift;
@@ -446,105 +344,6 @@ sub _findBinary
     return;
 }
     
-sub _copyPlatformSpecificBinary
-{
-    my $self       = shift;
-    my $binaryPath = shift;
-    my $targetPath = shift;
-
-    my $binary = $self->_platformSpecificFileFor($binaryPath);
-    
-    $self->addCMD("cp -p $binary $self->{'build-path'}$targetPath");
-    $self->_addRequiredLibsFor($binary);
-
-    return;
-}
-
-sub _copyRequiredFSTools
-{
-    my $self = shift;
-
-    foreach my $tool (@{$self->{'fs-tools'}}) {
-        my $toolPath = $self->_findBinary($tool);
-        if (!$toolPath) {
-            die _tr('filesystem-tool "%s" is not available, giving up!', $tool);
-        }
-        $self->addCMD("cp -p $toolPath $self->{'build-path'}/bin");
-        $self->_addRequiredLibsFor($toolPath);
-    }
-
-    return;
-}
-
-sub _copyRequiredLayeredFSTools
-{
-    my $self = shift;
-
-    my @tools;
-    if ($self->haveKernelParam('unionfs')) {
-        push @tools, 'unionctl';
-    }
-    if ($self->haveKernelParam('cowloop')) {
-        push @tools, 'cowdev';
-    }
-    foreach my $tool (@tools) {
-        my $toolPath = $self->_findBinary($tool);
-        if (!$toolPath) {
-            die _tr(
-                'layered-fs-tool "%s" is not available, giving up!', $tool
-            );
-        }
-        $self->addCMD("cp -p $toolPath $self->{'build-path'}/bin");
-        $self->_addRequiredLibsFor($toolPath);
-    }
-
-    return;
-}
-
-sub _copyRequiredLibs
-{
-    my $self = shift;
-
-    # separate 64-bit libs from 32-bit libs and copy them into different
-    # destination folders
-    my @libs64 = grep { $_ =~ m{/lib64/} } keys %{$self->{'required-libs'}};
-    my @libs32 = grep { $_ !~ m{/lib64/} } keys %{$self->{'required-libs'}};
-    if (@libs64) {
-        $self->addCMD("mkdir -p $self->{'build-path'}/lib64");
-        foreach my $lib (@libs64) {
-            $self->addCMD("cp -p $lib $self->{'build-path'}/lib64/");
-        }
-    }
-    foreach my $lib (@libs32) {
-        $self->addCMD("cp -p $lib $self->{'build-path'}/lib/");
-    }
-
-    return;
-}
-
-sub _addRequiredLibsFor
-{
-    my $self   = shift;
-    my $binary = shift;
-
-    my @libs = $self->{'lib-scanner'}->determineRequiredLibs($binary);
-    foreach my $lib (@libs) {
-        $self->_addRequiredLib($lib);
-    }
-
-    return;
-}
-
-sub _addRequiredLib
-{
-    my $self = shift;
-    my $lib  = shift;
-
-    $self->{'required-libs'}->{$lib} = 1;
-
-    return;
-}
-
 sub _addFilteredKernelModules
 {
     my $self   = shift;
@@ -581,7 +380,7 @@ sub _copyKernelModules
     
     # TODO: find out what's the story behing the supposedly required
     #       modules 'af_packet', 'unix' and 'hid' (which seem to be
-    #       missing at least on some systems
+    #       missing at least on some systems)
     my @kernelModules = qw(
         af_packet unix hid usbhid uhci-hcd ohci-hcd
     );
@@ -664,7 +463,7 @@ sub _platformSpecificFileFor
     return $binary . '.i586';
 }
 
-sub _addRequiredFSModsAndTools
+sub _addRequiredFSMods
 {
     my $self = shift;
     
@@ -676,9 +475,6 @@ sub _addRequiredFSModsAndTools
     }
     $self->{attrs}->{ramfs_fsmods} = $fsMods;
     
-    my @fsTools = $osExportEngine->requiredFSTools();
-    $self->{'fs-tools'} = \@fsTools;
-
     return;
 }
 
@@ -725,7 +521,7 @@ sub _writeSlxSystemConf
         slxconf_slxver="$self->{'slx-version'}"
     End-of-Here
     $self->addCMD( {
-        file    => "$self->{'build-path'}/etc/sysconfig/slxsystem.conf", 
+        file    => "$self->{'build-path'}/etc/slxsystem.conf", 
         content => $slxConf
     } );
 
