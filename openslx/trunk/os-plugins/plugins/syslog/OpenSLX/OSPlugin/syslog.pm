@@ -8,11 +8,11 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# bootlog.pm
-#    - implementation of the 'bootlog' plugin, which installs  
-#     all needed information for a displaymanager and for the bootlog. 
+# syslog.pm
+#    - implementation of the 'syslog' plugin, which installs  
+#     all needed information for a displaymanager and for the syslog. 
 # -----------------------------------------------------------------------------
-package OpenSLX::OSPlugin::bootlog;
+package OpenSLX::OSPlugin::syslog;
 
 use strict;
 use warnings;
@@ -30,7 +30,7 @@ sub new
     my $class = shift;
 
     my $self = {
-        name => 'bootlog',
+        name => 'syslog',
     };
 
     return bless $self, $class;
@@ -53,21 +53,21 @@ sub getAttrInfo
     my $self = shift;
 
     return {
-        'bootlog::active' => {
+        'syslog::active' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                should the 'bootlog'-plugin be executed during boot?
+                should the 'syslog'-plugin be executed during boot?
             End-of-Here
             content_regex => qr{^(0|1)$},
             content_descr => '1 means active - 0 means inactive',
             default => '1',
         },
-        'bootlog::target' => {
+        'syslog::target' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                ip:port where bootlog shall be sent to
+                ip:port where syslog shall be sent to
             End-of-Here
             content_regex => undef,
             content_descr => 'allowed: gdm, kdm, xdm',
