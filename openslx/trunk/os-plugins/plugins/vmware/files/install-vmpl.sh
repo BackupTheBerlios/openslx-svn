@@ -54,6 +54,7 @@ if [ "${vmplversion}" != "vmpl1.0" ]; then
 fi
 mv vmware-player-distrib/doc vmroot/
 rm -rf vmware-player-distrib/
+rm -rf vmroot/lib/vmware/modules/binary
 
 echo "   * fixing file permission"
 chmod 04755 vmroot/lib/vmware/bin/vmware-vmx 
@@ -108,7 +109,7 @@ if [ "${vmplversion}" != "vmpl1.0" ]; then
   cd vmblock-only/
   sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
   make -s
-  cp vmblock.ko vmblock.o ../../../../../modules
+  mv vmblock.ko vmblock.o ../../../../../modules
   cd ..
 fi
 
@@ -116,14 +117,14 @@ echo "   * building vmmon module"
 cd vmmon-only
 sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
 make -s
-cp vmmon.ko vmmon.o ../../../../../modules
+mv vmmon.ko vmmon.o ../../../../../modules
 cd ..
     
 echo "   * building vmnet module"
 cd vmnet-only
 sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
 make -s
-cp vmnet.ko vmnet.o ../../../../../modules
+mv vmnet.ko vmnet.o ../../../../../modules
 cd ../../../../../..
         
 echo "   * setting up EULA"
