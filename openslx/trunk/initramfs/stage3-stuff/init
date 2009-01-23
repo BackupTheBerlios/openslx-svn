@@ -886,6 +886,8 @@ else
           fi
       fi
     done
+    # load variables defined by plugins to current environment
+    [ -f /tmp/env/wrapper.env ] && . /tmp/env/wrapper.env
   fi
 fi
 
