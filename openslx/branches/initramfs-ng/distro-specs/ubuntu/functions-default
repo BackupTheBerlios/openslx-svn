@@ -21,14 +21,13 @@
 # D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
 # TempFS usage
 # D_DIRINDXS - directories in client filesystem which should be present anyhow
-D_ETCEXCL="etc/gconf/*\n*.old\n*-\n\
-etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
-pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
+D_ETCEXCL="etc/gconf/*\n*.old\n*-\netc/autoinstall\nlogrotate*\nbootloader\n\
+*~\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
 X11/xdm/pixmaps\ndhclient.script"
 D_BINDMPTS="tmp root home media"
 D_DIRINBINDMNT="/var/run /var/log /var/tmp /var/lib/gdm"
 D_RODIRSINRW="/etc/X11/xkb /var/lib/gconf /var/lib/dpkg /var/lib/aspell \
-/var/lib/pango /var/lib/defoma"
+/var/lib/pango /var/lib/defoma /var/cache/fontconfig"
 #D_RWDIRSINRO="/var/lib/gdm"
 D_DIRINDXS="/var/X11R6/compose-cache \
 /var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \

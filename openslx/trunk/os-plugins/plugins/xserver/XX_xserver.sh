@@ -20,8 +20,8 @@
 if [ -e /initramfs/machine-setup ] ; then
   . /initramfs/machine-setup
 else
-  error "  The central configuration file 'machine-setup' is not present" \
-    nonfatal
+  error "  The central configuration file 'machine-setup' (produced by the \
+slxconfig-demuxer\n  and transported via fileget) is not present" nonfatal
 fi
 
 xfc="/mnt/etc/X11/xorg.conf"

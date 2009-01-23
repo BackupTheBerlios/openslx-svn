@@ -613,11 +613,11 @@ fi
 }
 # start portmapper (needed at least for nfs and nis services)
 config_portmap () {
-rllinker "portmap" 2 20
+  rllinker "portmap" 2 20
 }
 # start NIS (mostly deprecated)
 config_nis () {
-if [ -f /mnt/etc/init.d/ypbind ] ; then
+if [ -f /mnt/etc/init.d/ypbind -a ] ; then
   rllinker "ypbind" 6 16
   config_portmap
   testmkd /mnt/var/yp/nicknames
