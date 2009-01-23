@@ -380,8 +380,8 @@ sub KDMConfigHashForKiosk
     my $self = shift;
     
     my $configHash = $self->KDMConfigHashForWorkstation();
-    $configHash->{daemon}->{AutoLoginEnable} = 'true';
-    $configHash->{daemon}->{AutoLoginUser} = 'nobody';
+    $configHash->{'X-:0-Core'}->{AutoLoginEnable} = 'true';
+    $configHash->{'X-:0-Core'}->{AutoLoginUser} = 'nobody';
 
     return $configHash;
 }

@@ -67,9 +67,28 @@ sub KDMPathInfo
     
     my $pathInfo = $self->SUPER::KDMPathInfo();
     
-    $pathInfo->{config} = '/etc/kde3/kdm/kdmrc';
+    $pathInfo = {
+        config => '/etc/kde3/kdm/kdmrc',
+        paths => [
+            '/var/lib/kdm',
+            '/var/run/kdm',
+        ],
+    };
 
     return $pathInfo;
+}
+
+sub KDMConfigHashForWorkstation
+{
+    my $self = shift;
+    
+    my $configHash = $self->SUPER::KDMConfigHashForWorkstation();
+    $configHash->{'X-:0-Core'}->{Setup} = '/etc/kde3/kdm/Xsetup';
+    $configHash->{'X-:0-Core'}->{Startup} = '/etc/kde3/kdm/Xstartup';
+    $configHash->{'X-:0-Core'}->{Session} = '/etc/kde3/kdm/Xsession';
+    $configHash->{'X-:0-Core'}->{Reset} = '/etc/kde3/kdm/Xreset';
+
+    return $configHash;
 }
 
 sub setupKDMScript
@@ -81,7 +100,7 @@ sub setupKDMScript
     
     $script .= unshiftHereDoc(<<'    End-of-Here');
         rllinker kdm 1 10
-        echo '/usr/bin/kdm' > /mnt/etc/X11/default-display-manager
+        echo '/usr/bin/kdm' >/mnt/etc/X11/default-display-manager
         chroot /mnt update-alternatives --set x-window-manager /usr/bin/kwin
         chroot /mnt update-alternatives --set x-session-manager \
           /usr/bin/startkde
