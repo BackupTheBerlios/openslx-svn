@@ -37,8 +37,8 @@ sub setupXserverScript
 
     $script .= unshiftHereDoc(<<'    End-of-Here');
         # suse specific extension to stage3 xserver.sh
-        testmkd /mnt/var/X11R6/X
-        ln -s /usr/bin/Xorg /mnt/var/X11R6/X
+        testmkd /mnt/var/X11R6/bin
+        ln -s /usr/bin/Xorg /mnt/var/X11R6/bin/X
     End-of-Here
 
     return $script;
