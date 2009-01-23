@@ -53,6 +53,21 @@ sub setupGDMScript
             /mnt/etc/sysconfig/displaymanager
         sed -i "s/DEFAULT_WM=.*/DEFAULT_WM=\"$desktop_kind\"/" \
             /mnt/etc/sysconfig/windowmanager
+        #sed "s|XSESSION|/etc/xdm/Xsession|" -i /mnt$configFile
+        case ${desktop_allowshutdown} in
+          none)
+          ;;
+          root)
+            sed "s|AllowShutdown.*|AllowShutdown=true|;\
+                "s|SecureShutdown.*|SecureShutdown=true" -i /mnt$configFile
+          ;;
+          users)
+            sed "s|AllowShutdown.*|AllowShutdown=true|;\
+                "s|SecureShutdown.*|SecureShutdown=false" -i /mnt$configFile
+          ;;
+        esac
+        [ ${desktop_rootlogin} -ne 0 ] && \
+          sed "s|AllowRoot.*|AllowRoot=true|" -i /mnt$configFile
     End-of-Here
 
     return $script;

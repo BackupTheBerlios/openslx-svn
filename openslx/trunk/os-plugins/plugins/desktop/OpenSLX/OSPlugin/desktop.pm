@@ -111,7 +111,7 @@ sub getAttrInfo
             content_descr => 'one of the entries in "supported_themes"',
             default => 'openslx',
         },
-        'desktop::allow-shutdown' => {
+        'desktop::allowshutdown' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
@@ -123,7 +123,7 @@ sub getAttrInfo
             content_descr => 'possible entries "none", "root" or "users"',
             default => 'users',
         },
-        'desktop::allow-rootlogin' => {
+        'desktop::rootlogin' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
@@ -132,8 +132,19 @@ sub getAttrInfo
             End-of-Here
             content_descr => '1 means allowed - 0 means forbidden',
             content_regex => qr{^(0|1)$},
-            default => 'users',
+            default => '0',
         },
+        # kiosk mode just has the option to logon user nobody
+        #'desktop::auto-login' => {
+        #    applies_to_systems => 1,
+        #    applies_to_clients => 1,
+        #    description => unshiftHereDoc(<<'            End-of-Here'),
+        #        set an arbitrary user which is logged in automatically into
+        #        the graphical user interface (none disables, default).
+        #    End-of-Here
+        #    content_descr => 'none disables - <user> logins in that userid',
+        #    default => 'none',
+        #},
 
         # stage1
         'desktop::gdm' => {
@@ -544,7 +555,7 @@ sub _setupGDM
     $configHash = $self->{distro}->GDMConfigHashForChooser();
     $self->_writeConfigHash($configHash, "$repoPath/gdm/chooser/gdm.conf");
 
-    return;    
+    return;
 }
 
 sub _setupGDMScript

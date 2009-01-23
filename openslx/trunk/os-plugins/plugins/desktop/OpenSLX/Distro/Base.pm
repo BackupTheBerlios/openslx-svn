@@ -175,7 +175,6 @@ sub GDMConfigHashForWorkstation
         },
         'daemon' => {
             AutomaticLoginEnable => 'false',
-            BaseXsession => '/etc/X11/Xsession',
             Group => 'gdm',
             User => 'gdm',
         },
