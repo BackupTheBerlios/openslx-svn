@@ -35,7 +35,7 @@ use OpenSLX::Basics;
 ###         fk        => foreign key (integer)
 ################################################################################
 
-my $VERSION = 0.29;
+my $VERSION = 0.30;
 
 my $DbSchema = {
     'version' => $VERSION,
@@ -721,6 +721,15 @@ sub _schemaUpgradeDBFrom
                 'value:s.255',
             ],
         );
+    
+        return 1;
+    },
+    0.30 => sub {
+        my $metaDB = shift;
+    
+        # dummy schema change, just to trigger the attribute synchronization
+        # into the default system (required since plugins have been added
+        # and removed)
     
         return 1;
     },
