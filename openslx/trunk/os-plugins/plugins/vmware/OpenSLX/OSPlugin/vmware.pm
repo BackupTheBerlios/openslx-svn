@@ -69,7 +69,7 @@ sub getAttrInfo
             default => '1',
         },
         # attribute 'imagesrc' defines where we can find vmware images
-        'vmware::imagessrc' => {
+        'vmware::imagesrc' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
@@ -158,7 +158,11 @@ sub installationPhase
     my $vmbin  = "";
     my $vmfile = ""; # will be vmware or vmplayer
     my $vmversion = ""; # will be v1/2 (vmplayer)
-                             # or v5.x/6.x (vmware ws) --> build number might be needed too
+                        # Dirk: didnt we say we will always use vmplayer,
+                        #       even if vmware ws is installed?
+                        # or v5.x/6.x (vmware ws) --> build number might be needed too
+    my $vmbuildversion = "";
+    my @versioninfo; # array we get from _checkVersion
 
     # get path of files we need to install
     my $pluginFilesPath 
@@ -195,51 +199,31 @@ sub installationPhase
     #       (do not generate scripts for packages which are not installed)
     my @types = qw( local );
     foreach my $type (@types) {
-        # location of the vmware stuff, "local" for directly installed
-        # package (more sophisticated assignment might be needed ...)
+        # location of the vmware stuff
         if ($type eq "local") {
             $vmpath = "/usr/lib/vmware";
             $vmbin  = "/usr/bin";
-            # test if we use vmplayer or vmware - should be moved to subroutine +++!!, because
-            # needed in other places too ... (check in this routine both vmware/player, build)
             #TODO: error handling if non installed or not supported
             #      version of local
-            if (-e "/usr/lib/vmware/bin/vmware") {
-                $vmfile = "vmware";
-                # get version. read it out of the binary
-                open(FH, "/usr/lib/vmware/bin/vmware");
-                $/ = undef;
-                my $data = <FH>;
-                close FH;
-		#TODO: add the else case, if we cant find this string
-		if ($data =~ m{(\d\.\d)\.\d build-(\d)+}) {
-		    $vmversion = $1;
-		}
-                print "DEBUG: vmware ws version: $vmversion\n";
-                rename("/usr/bin/$vmfile", "/usr/bin/$vmfile.slx-bak");
-                linkFile("/var/X11R6/bin/$vmfile", "/usr/bin/$vmfile");
-            } elsif (-e "/usr/lib/vmware/bin/vmplayer") {
-                $vmfile = "vmplayer";
-                # dublicate of test for vmware - should be put into a function,
-                # e.g. in one which decides if workstation or player too ... (see above, exactly
-                # the same code for checking!!)
-                open(FH, "/usr/lib/vmware/bin/vmplayer");
-                $/ = undef;
-                my $data = <FH>;
-                close FH;
-		#TODO: add the else case, if we cant find this string
-		if ($data =~ m{(\d\.\d)\.\d build-(\d)+}) {
-		    $vmversion = $1;
-		}
-                chomp($vmversion);
+            # if vmware ws is installed, vmplayer is installed, too.
+            # we will only use vmplayer
+            if (-e "/usr/lib/vmware/bin/vmplayer") {
+                # perhaps not optimal with the array, but how to solve
+                # else if we don't want to open the file twice?
+                @versioninfo = $self->_checkVersion("/usr/lib/vmware/bin/vmplayer");
+                $vmbuildversion = pop(@versioninfo);
+                $vmversion = pop(@versioninfo);
+
                 print "DEBUG: vmplayer version: $vmversion\n";
-                rename("/usr/bin/$vmfile", "/usr/bin/$vmfile.slx-bak");
-                linkFile("/var/X11R6/bin/$vmfile", "/usr/bin/$vmfile");
+                print "       and build-version: $vmbuildversion\n";
+
+                rename("/usr/bin/vmplayer", "/usr/bin/vmplayer.slx-bak");
+                # TODO: rename ok, but linkfile will be in conflict
+                #       with local installed versions. => move to stage3
+                #linkFile("/var/X11R6/bin/vmplayer", "/usr/bin/vmplayer");
             }
         }
-
-        # (TODO: pathname not completely clear ...
-        #   -> should be the one of the plugin)
+        # TODO: here we will add the slx-installed versions
         else {
             $vmpath = "$self->{'pluginRepositoryPath'}/vmware/$type";
             $vmbin  = "$vmpath/bin";
@@ -247,6 +231,7 @@ sub installationPhase
             $vmversion = "TODO: get information from the stage1 flag";
             $vmfile = "TODO: get information from the stage1 flag";
         }
+
         my $runlevelScript = "$self->{'pluginRepositoryPath'}/vmware.$type";
         $self->_writeRunlevelScript($vmbin, $runlevelScript);
 
@@ -341,6 +326,32 @@ sub _writeRunlevelScript
     # rename($file, "${file}.slx-bak") if -e $file;
 
     spitFile($file, $runlevelScript);
+}
+
+
+# function checks vmplayer version and buildnumber
+sub _checkVersion
+{
+    my $self = shift;
+    my $file = shift;
+    my $vmversion = "";
+    my $vmbuildversion = "";
+
+    open(FH, "$file");
+    $/ = undef;
+    my $data = <FH>;
+    close FH;
+
+    #TODO: add the else case, if we cant find this string
+    if ($data =~ m{(\d\.\d)\.\d build-(\d+)}) {
+        $vmversion = $1;
+        $vmbuildversion = $2;
+    }
+    chomp($vmversion);
+    chomp($vmbuildversion);
+    my @returnarray = ($vmversion, $vmbuildversion);
+
+    return @returnarray;
 }
 
 1;
