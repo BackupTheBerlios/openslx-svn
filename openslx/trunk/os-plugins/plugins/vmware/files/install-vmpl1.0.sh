@@ -26,6 +26,10 @@ if [ "${REPLY}" == "YES" ]; then
     echo "   * Unpacking vmplayer"
     tar xfz VMware-player-2.0.4-93057.i386.tar.gz
 
+    # reduce some errors
+    echo "   * deleting old files if available"
+    rm -rf root
+
     echo "   * copying files..."
     mkdir root
     mkdir -p root/lib
