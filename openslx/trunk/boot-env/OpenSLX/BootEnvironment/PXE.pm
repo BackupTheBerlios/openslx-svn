@@ -61,14 +61,8 @@ sub writeBootloaderMenuFor
     my $clientAppend = $client->{kernel_params} || '';
     vlog(1, _tr("writing PXE-file %s", $pxeFile));
 
-    my $slxLabels = '';
+    # set label for each system
     foreach my $info (@$systemInfos) {
-        my $vendorOSName = $info->{'vendor-os'}->{name};
-        my $kernelName   = basename($info->{'kernel-file'});
-        my $append       = $info->{kernel_params};
-        $append .= " initrd=$vendorOSName/$info->{'initramfs-name'}";
-        $append .= " $clientAppend";
-        $slxLabels .= "LABEL openslx-$info->{'external-id'}\n";
         my $label = $info->{label} || '';
         if (!length($label) || $label eq $info->{name}) {
             if ($info->{name} =~ m{^(.+)::(.+)$}) {
@@ -79,7 +73,17 @@ sub writeBootloaderMenuFor
                 $label = $info->{name};
             }
         }
-        $slxLabels .= "\tMENU LABEL ^$label\n";
+        $info->{label} = $label;
+    }
+    my $slxLabels = '';
+    foreach my $info (sort { $a->{label} cmp $b->{label} } @$systemInfos) {
+        my $vendorOSName = $info->{'vendor-os'}->{name};
+        my $kernelName   = basename($info->{'kernel-file'});
+        my $append       = $info->{kernel_params};
+        $append .= " initrd=$vendorOSName/$info->{'initramfs-name'}";
+        $append .= " $clientAppend";
+        $slxLabels .= "LABEL openslx-$info->{'external-id'}\n";
+        $slxLabels .= "\tMENU LABEL ^$info->{label}\n";
         $slxLabels .= "\tKERNEL $vendorOSName/$kernelName\n";
         $slxLabels .= "\tAPPEND $append\n";
         $slxLabels .= "\tIPAPPEND 1\n";
