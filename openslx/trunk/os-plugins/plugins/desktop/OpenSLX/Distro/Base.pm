@@ -204,7 +204,7 @@ sub GDMConfigHashForWorkstation
             SecureShutdown => 'false',
             ShowDomain => 'false',
             DefaultWelcome => 'false',
-            Welcome => 'SLX Workstation: \%n',
+            Welcome => 'OpenSLX Workstation (%n)',
         },
         'gui' => {
         },
@@ -356,7 +356,7 @@ sub KDMConfigHashForWorkstation
             AllowShutdown => 'All',
         },
         'X-*-Greeter' => {
-            GreetString => 'OpenSLX (%h)',
+            GreetString => 'OpenSLX Workstation (%h)',
             SelectedUsers => '',
             ShowUsers => 'Selected',
             UserList => 'false',
