@@ -65,7 +65,7 @@ sub fillRunlevelScript
               # most probably nobody wants to run the parallel port driver ...
               #modprobe vm...
         End-of-Here
-    } else {
+    } elsif ($kind eq 'vmpl1.0') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
               # load module manuall
               vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
@@ -73,11 +73,25 @@ sub fillRunlevelScript
               insmod \${module_src_path}/vmmon.ko
               insmod \${module_src_path}/vmnet.ko
         End-of-Here
-        if ($kind ne "vmpl1.0") {
-            $script .= unshiftHereDoc(<<"            End-of-Here");
-                insmod \${module_src_path}/vmblock.ko
-            End-of-Here
-        }
+    } elsif ($kind ne "vmpl2.0") {
+        $script .= unshiftHereDoc(<<"        End-of-Here");
+              # load module manuall
+              vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
+              module_src_path=\${vmware_kind_path}/vmroot/modules
+              insmod \${module_src_path}/vmmon.ko
+              insmod \${module_src_path}/vmnet.ko
+              insmod \${module_src_path}/vmblock.ko
+        End-of-Here
+    } elsif ($kind eq 'vmpl2.5') {
+        $script .= unshiftHereDoc(<<"        End-of-Here");
+              # load module manuall
+              vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
+              module_src_path=\${vmware_kind_path}/vmroot/modules
+              insmod \${module_src_path}/vmmon.ko
+              insmod \${module_src_path}/vmnet.ko
+              insmod \${module_src_path}/vmci.ko
+              insmod \${module_src_path}/vmmon.ko
+        End-of-Here
     }
 
     # unload modules
@@ -87,7 +101,7 @@ sub fillRunlevelScript
         unload_modules() {
           # to be filled with the proper list within via the stage1
           # configuration script
-          rmmod vmmon vmblock vmnet 2>/dev/null
+          rmmod vmmon vmblock vmnet vmci vmmon 2>/dev/null
         }
     End-of-Here
 

@@ -93,6 +93,7 @@ if [ "${vmplversion}" != "vmpl2.5" ]; then
     vmroot/lib/vmware/libconf/etc/pango/pangorc
 
   echo "   * creating /etc/vmware"
+  rm -rf /etc/vmware
   mkdir -p /etc/vmware
 
   echo "   * unpacking kernel modules"
@@ -242,6 +243,7 @@ else
     vmroot/lib/vmware/libconf/etc/pango/pangorc
 
   echo "   * creating /etc/vmware"
+  rm -rf /etc/vmware
   mkdir -p /etc/vmware
 
   echo "   * unpacking kernel modules"

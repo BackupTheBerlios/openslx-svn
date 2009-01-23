@@ -30,13 +30,6 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     # Load general configuration
     . /initramfs/machine-setup
 
-    # prepare all needed vmware configuration files
-    if [ -d /mnt/etc/vmware ] ; then
-      rm -rf /mnt/etc/vmware/*
-    else
-      testmkd /mnt/etc/vmware
-    fi
-
     # write the /etc/vmware/slxvmconfig file
     # check for the several variables and write the several files:
     #  dhcpd.conf for vmnet* interfaces
@@ -255,6 +248,8 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       echo "vmplversion=1" > /mnt/etc/vmware/version
     elif [ "${vmware_kind}" = "vmpl2.0" ]; then
       echo "vmplversion=2" > /mnt/etc/vmware/version
+    elif [ "${vmware_kind}" = "vmpl2.5" ]; then
+      echo "vmplversion=2.5" > /mnt/etc/vmware/version
     elif [ "${vmware_kind}" = "local" ]; then
       version=$(strings /mnt/usr/lib/vmware/bin/vmplayer|grep -e '^[12]\.[0-9]\.[0-9]'|head -n 1|cut -c 1)
       echo "vmplversion=${version}" > /mnt/etc/vmware/version

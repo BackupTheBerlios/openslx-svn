@@ -130,13 +130,13 @@ sub getAttrInfo
             applies_to_systems => 1,
             applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                Which set of VMware binaries to use: installed (local) or provided by an
-                other plugin (e.g. Workstation 5.5: vmws5.5, Player 2.0: vmpl2.0, ...)
+                Which set of VMware binaries to use: installed (local) or provided by the
+                plugin itself (vmpl1.0, vmpl2.0, vmpl2.5)?
             End-of-Here
             # only allow the supported once...
             # TODO: modify if we know which of them work
             #content_regex => qr{^(local|vmws(5\.5|6.0)|vmpl(1\.0|2\.0))$},
-            content_regex => qr{^(local|vmpl2\.0|vmpl1\.0)$},
+            content_regex => qr{^(local|vmpl2\.0|vmpl1\.0|vmpl2\.5)$},
             content_descr => 'Allowed values: local, vmpl2.0',
             #TODO: what if we don't have a local installation. default
             #      is still local. Someone has a clue how to test
@@ -227,11 +227,12 @@ sub preInstallationPhase()
     my $vmpl25 = $self->{attrs}->{'vmware::vmpl2.5'};
     my $local = $self->{attrs}->{'vmware::local'};
 
-    if ($local == 0 && $vmpl10 == 0 && $vmpl20 == 0 && $vmpl20 == 0) {
+    if ($local == 0 && $vmpl10 == 0 && $vmpl20 == 0 && $vmpl25 == 0) {
         print "\n\n * At least one kind needs to get installed/activated:\n";
         print "     vmware::local=1  or\n";
         print "     vmware::vmpl1.0=1  or\n";
         print "     vmware::vmpl2.0=1\n";
+        print "     vmware::vmpl2.5=1\n";
         print " * vmware plugin was not installed!\n\n";
         exit 1;
     }
