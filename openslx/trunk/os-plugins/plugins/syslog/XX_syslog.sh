@@ -16,7 +16,7 @@
 
 # check if the plugin config directory is generally available or if the client
 # configuration failed somehow
-[ -d /initramfs/plugin-conf ] && error "${init_picfg}" nonfatal
+[ -d /initramfs/plugin-conf ] || error "${init_picfg}" nonfatal
 
 if [ -e /initramfs/plugin-conf/syslog.conf ]; then
   . /initramfs/plugin-conf/syslog.conf
