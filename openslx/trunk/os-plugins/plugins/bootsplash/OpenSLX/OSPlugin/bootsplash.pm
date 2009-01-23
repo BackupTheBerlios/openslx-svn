@@ -121,7 +121,8 @@ sub copyRequiredFilesIntoInitramfs
     my $makeInitRamFSEngine = shift;
     
     my $bootsplashDir = "$openslxConfig{'base-path'}/lib/plugins/bootsplash";
-    my $bootsplashConfigDir = "$openslxConfig{'config-path'}/plugins/bootsplash";
+    my $bootsplashConfigDir 
+        = "$openslxConfig{'config-path'}/plugins/bootsplash";
     my $bootsplashTheme = $attrs->{'bootsplash::theme'} || '';
     my $splashyThemeDir = '';
 
@@ -161,7 +162,7 @@ sub copyRequiredFilesIntoInitramfs
                 </splashy>
             End-of-Here
             $makeInitRamFSEngine->addCMD( {
-                file    => "$bootsplashConfigDir/config.xml",
+                file    => "$targetPath/etc/splashy/config.xml",
                 content => $splashyConfig,
             } );
         }
