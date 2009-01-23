@@ -440,8 +440,8 @@ sub _vmpl2Installation {
     my $self     = shift;
 
     my $kind   = "vmpl2.0";
-    my $vmpath = "/opt/openslx/plugin-repo/vmware/$kind/root/lib/vmware";
-    my $vmbin  = "/opt/openslx/plugin-repo/vmware/$kind/root/bin";
+    my $vmpath = "/opt/openslx/plugin-repo/vmware/$kind/vmroot/lib/vmware";
+    my $vmbin  = "/opt/openslx/plugin-repo/vmware/$kind/vmroot/bin";
     my $vmversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage?";
     my $vmbuildversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage1";
 
@@ -486,8 +486,8 @@ sub _vmpl1Installation {
     my $self     = shift;
 
     my $kind   = "vmpl1.0";
-    my $vmpath = "/opt/openslx/plugin-repo/vmware/$kind/root/lib/vmware";
-    my $vmbin  = "/opt/openslx/plugin-repo/vmware/$kind/root/bin";
+    my $vmpath = "/opt/openslx/plugin-repo/vmware/$kind/vmroot/lib/vmware";
+    my $vmbin  = "/opt/openslx/plugin-repo/vmware/$kind/vmroot/bin";
     my $vmversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage?";
     my $vmbuildversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage1";
 
