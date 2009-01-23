@@ -980,7 +980,7 @@ Language=$lang
 EchoMode=OneStar
 ShowLog=false
 UseTheme=false
-Theme=/var/lib/openslx/themes/kdm
+Theme=/var/lib/openslx/themes/displaymanager/kdm
 UseBackground=true
 BackgroundCfg=/var/lib/openslx/themes/displaymanager/backgroundrc
 [X-:*-Greeter]
