@@ -238,7 +238,8 @@ sub preInstallationPhase()
     }
 
     if (! -d $pkgpath && ($vmpl10 == 1 || $vmpl20 == 1 || $vmpl25 == 1)) {
-        print "\n\n * vmware::pkgpath: no such directory!\n";
+        print "\n\n * vmware::pkgpath: no such directory $pkgpath!\n";
+        print "   See wiki about vmware Plugin\n";
         print " * vmware plugin was not installed!\n\n";
         exit 1;
     }
@@ -336,7 +337,7 @@ sub checkStage3AttrValues
     
     my $vmimg = $stage3Attrs->{'vmware::imagesrc'} || '';
 
-    if ($vm_kind eq 'local' && ! -x "/usr/lib/vmware/bin/vmware") {
+    if ($vm_kind eq 'local' && ! -x "/usr/lib/vmware/bin/vmplayer") {
         push @problems, _tr(
             "No local executeable installation of vmware found! Using it as virtual machine wouldn't work!"
         );
