@@ -128,7 +128,7 @@ sub getAttrInfo
             applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
                 allow the system administrator to logon to the graphical
-                user interface (0 disallow, 1 allow).
+                user interface (1 allow, 0 disallow).
             End-of-Here
             content_descr => '1 means allowed - 0 means forbidden',
             content_regex => qr{^(0|1)$},

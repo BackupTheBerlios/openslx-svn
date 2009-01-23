@@ -46,9 +46,10 @@ sub setupGDMScript
     my $repoPath = shift;
 
     my $script = $self->SUPER::setupGDMScript($repoPath);
+    #my $configFile = $self->GDMPathInfo->{config};
     
     $script .= unshiftHereDoc(<<'    End-of-Here');
-        rllinker xdm 1 1
+        rllinker xdm 1 10
         sed -i 's/DISPLAYMANAGER=.*/DISPLAYMANAGER="gdm"/' \
             /mnt/etc/sysconfig/displaymanager
         sed -i "s/DEFAULT_WM=.*/DEFAULT_WM=\"$desktop_kind\"/" \
