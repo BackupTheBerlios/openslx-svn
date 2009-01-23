@@ -20,7 +20,7 @@ using System.Diagnostics;
 // #####################################################################################
 // (C) 2005 - 2006 Randolph Welte randy@uni-freiburg.de#################################
 // 
-// Bearbeitung Bohdan Dulya & Marco Haustein 2006 - 2007 ###############################
+// Bearbeitung Bohdan Dulya & Marco Haustein 2006 - 2008 ###############################
 
 
 namespace AccountValue
@@ -58,8 +58,8 @@ namespace AccountValue
 
 
         //Variablen die angeben was eingebunden werden soll
-        private String home;
-        private String shareds;
+        private String home = "true";
+        private String shareds = "false";
         private bool printers = false;
         private bool scanners = false;
 
@@ -75,15 +75,23 @@ namespace AccountValue
             // XML Settings aus Laufwerk B auslesen...
             // ################ Wichtig!! Gross schreiben!!! ##################
 
+
             try
             {
+                //Prüfe ob das Laufwerk B: verbunden ist
+                DirectoryInfo di = new DirectoryInfo("B:\\");
+                if (di.Exists == false)
+                    System.Threading.Thread.Sleep(5000 * 1);
+                
                 doc.Load("B:\\CONFIG.XML");
+
             }
             catch (Exception e)
             {
                 MessageBox.Show(e.Message, "Error: ", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 System.Environment.Exit(0);
             }
+            
             // TODO: ändern xml...
             /*try
             {
@@ -104,7 +112,8 @@ namespace AccountValue
             try
             {
                 XmlNode xnUser = doc.SelectSingleNode("/settings/eintrag/username");
-                textBox1.AppendText(xnUser.Attributes["param"].InnerText); //xml.getAttribute("/settings/eintrag/username", "param"));               
+                textBox1.AppendText(xnUser.Attributes["param"].InnerText); 
+                //xml.getAttribute("/settings/eintrag/username", "param"));               
             }
             catch (Exception e)
             {
@@ -145,8 +154,11 @@ namespace AccountValue
                 XmlNode xnShareds = doc.SelectSingleNode("/settings/eintrag/shareds");
                 XmlNode xnPrinters = doc.SelectSingleNode("/settings/eintrag/printers");
                 XmlNode xnScanners = doc.SelectSingleNode("/settings/eintrag/scanners");
-                home = xnHome.Attributes["param"].InnerText; 
-                shareds = xnShareds.Attributes["param"].InnerText;
+                
+                if (xnHome != null)
+                    home = xnHome.Attributes["param"].InnerText;
+                if (xnShareds != null)
+                    shareds = xnShareds.Attributes["param"].InnerText;
 
                 if (xnPrinters.FirstChild != null)
                     printers = true;
@@ -306,7 +318,8 @@ namespace AccountValue
 
                 catch (Exception err)
                 {
-                    MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Gemeinsamen Laufwerk L\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    
+                    MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Gemeinsamen Laufwerk \" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     maskedTextBox1.Text = "";
 
                     try
@@ -316,6 +329,7 @@ namespace AccountValue
                     catch { }
 
                     return;
+                    
                 }
 
                 //#################################################################
