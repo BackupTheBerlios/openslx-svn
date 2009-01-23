@@ -628,7 +628,7 @@ mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
 # debuglevel (21) is used for the option of manual hwautocfg start
 if [ ${DEBUGLEVEL} = 21 ] ; then
   echo "You can run 'hwautocfg main &' manually now ..."
-  /bin/sh
+  /bin/ash
 else
   [ $DEBUGLEVEL -eq 20 ] && echo "** started hwautocfg in background at \
 $(sysup)"
@@ -743,7 +743,7 @@ for linux diskless client specific debugging output\nLOGFILE=\"$LOGFILE\"\n#\
 # run distribution independent and dependent configuration of files and
 # services (offer debug shell in runlevel 22)
 if [ ${DEBUGLEVEL} = 22 ] ; then
-  /bin/sh
+  /bin/ash
 else
   servconfig &
 fi
@@ -786,15 +786,7 @@ runinithook '60-have-servconfig'
 
 # wait a while for hardware setup to complete and copy stuff to stage4
 waitfor /tmp/hwcfg 20000 || error "$init_errhw"
-[ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
-  >> /mnt/etc/udev/rules.d/04-scanner.rules
-# move Xorg configuration to final destination depending if user or system
-# generated
-if [ -f /rootfs/etc/X11/xorg.conf#/mnt} ] ; then
-  mv /rootfs/etc/X11/xorg.conf#/mnt} /mnt//etc/X11/xorg.conf}
-else
-  mv /tmp/xorg.conf /mnt//etc/X11/xorg.conf} || error "$init_errxorg" nonfatal
-fi
+
 # wait a while for services setup to complete
 waitfor /tmp/svcfg 10000 || error "$init_errsw"
 # IP configuration is complete and should not be updated automatically
@@ -825,11 +817,15 @@ runinithook '70-before-plugins'
 
 # check for any plugin-specific runlevel scripts and run them, if found:
 if [ -d /etc/plugin-init.d ]; then
+  # check if the plugin config directory is generally available or if the 
+  # client configuration failed somehow
+  [ -d /initramfs/plugin-conf ] && error "${init_picfg}" nonfatal
+
   for plugin_starter in /etc/plugin-init.d/*.sh; do
     if [ -e $plugin_starter ]; then
       [ $DEBUGLEVEL -gt 0 ] \
         && echo "Running plugin starter $plugin_starter ..."
-      . $plugin_starter
+      . $plugin_starter >>/tmp/plugin_starter 2>&1
     fi
   done
 fi
@@ -852,7 +848,7 @@ postinit
   /bin/postinit.local; }
 
 # start a debug shell in higher debug levels
-[ $DEBUGLEVEL -gt 2 -a $DEBUGLEVEL != 8 ] && /bin/sh
+[ $DEBUGLEVEL -gt 2 -a $DEBUGLEVEL != 8 ] && /bin/ash
 
 runinithook '90-postinit-done'
 

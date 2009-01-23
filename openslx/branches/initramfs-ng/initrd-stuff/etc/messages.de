@@ -130,6 +130,9 @@ Grund\n  fehl. Sie werden einige Fehlermeldungen bekommen,\
 \ndass einige Dateien nicht entfernt werden konnten."
 init_runinit="  Konnte switch_root/run-init nicht ausfuehren, wegen fehlender \
 Befehle\n  oder falsch angegebenen Parametern."
+init_picfg="  Das Plugin-Konfigurationsverzeichnis fehlt. Dieses könnte an einem \
+fehlgeschlagenen\n  holen der Client-Konfiguration liegen, weil entweder die \
+Datei nicht auf\n  dem Server verfuegbar ist oder der Transport nicht klappte."
 
 # messages from functions
 error_msg="Ein Fehler trat auf waehrend der Ausfuehrung des $0 Skripts:\n\n"

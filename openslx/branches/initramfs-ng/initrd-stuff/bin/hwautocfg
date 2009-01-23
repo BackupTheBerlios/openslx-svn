@@ -22,7 +22,7 @@ hwinfo --usb-ctrl --netcard | grep modprobe | grep -v ehci | \
 ash /etc/modprobe.base; mdev -s
 # optimization possible: exclude network and usb base drivers from the
 # following list
-( hwinfo --pci >/etc/hwinfo.data ) &
+( hwinfo --pci >/etc/hwinfo.data; hwinfo --mouse >/etc/hwinfo.mouse ) &
 return 0
 }
 

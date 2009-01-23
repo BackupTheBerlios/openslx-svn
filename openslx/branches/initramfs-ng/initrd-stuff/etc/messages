@@ -123,6 +123,10 @@ failed for some\nreason.  You will get some error messages that some files \
 could not be\n  removed."
 init_runinit="  Could not execute \
 run-init due to missing command or wrong\n  parameters given."
+init_picfg="  The plugin configuration directory is missing. This could be due \
+to failed\n  config get process at the beginning of stage3 setup. Either \
+requested\n  configuration file is missing in ~/client-config/<system> or a \
+general\n  transmission error."
 
 # messages from functions
 error_msg="An error occured during execution of $0 script:\n\n"
