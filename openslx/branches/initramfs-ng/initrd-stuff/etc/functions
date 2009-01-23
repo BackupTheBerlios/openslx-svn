@@ -327,7 +327,7 @@ else
   # try to get configuration files successively; start with distro client
   # and try last distro default ...
   echo -e "\n## Configuration via later fileget: Hierarchy is distro client \
-and as last\n# distro/default" >> /tmp/confviafile
+and as last\n# distro/default" >>/tmp/confviafile
   mac=$(echo $macaddr|sed "s/:/-/g")
   for cfgfile in ${filepath}/${SYSTEM_NAME}/01-$mac.tgz \
                  ${filepath}/${SYSTEM_NAME}/default.tgz ; do
@@ -343,6 +343,7 @@ and as last\n# distro/default" >> /tmp/confviafile
     esac
   done
 fi
+cat /initramfs/machine-setup >>/tmp/confviafile
 echo "fileget via $fileprot from $fileserv/$cfgfile finished" >/tmp/file-done
 }
 
@@ -444,13 +445,13 @@ root_pw="$1"
 # file
 sed '/^[a-zA-Z0-9]*:[a-zA-Z0-9]*:[1-9][0-9]\{3,4\}:/d;/^+:*/d;/^+$/d;
   /^[a-zA-Z0-9]*:[a-zA-Z0-9]*:[5-9][0-9]\{2\}:/d' /mnt/etc/passwd \
-  > /tmp/newpasswd
+  >/tmp/newpasswd
 # and add user nobody again (is there a more elegant way?)
 sed -n -e '/nobody/p' /mnt/etc/passwd >> /tmp/newpasswd
 # create the shadow from passwd file
 echo -e "root:"${root_pw}":12958:0:10000::::" > /mnt/etc/shadow
 sed 's/:.*/:!:13078:0:99999:7:::/;/^root.*/d' /tmp/newpasswd \
-  >> /mnt/etc/shadow
+  >>/mnt/etc/shadow
 mv /tmp/newpasswd /mnt/etc/passwd
 chmod 0640 /mnt/etc/shadow
 }
@@ -469,7 +470,7 @@ if ! test -f /tmp/cfgcomplete ; then
     >/etc/ext-initramfs-setup
   for config in /etc/initramfs-setup /tmp/confviadhcp /tmp/confviafile \
   	        /tmp/confvialdap
-    do test -f $config && cat $config >> /etc/ext-initramfs-setup
+    do test -f $config && cat $config >>/etc/ext-initramfs-setup
   done
 # check again and replace @@@serverip@@@ and produce a final version for
 # stage4 (no much use, just debugging)
@@ -477,7 +478,7 @@ sed "s,@@@serverip@@@,$serverip," -i /etc/ext-initramfs-setup
 . /etc/ext-initramfs-setup
 cp /etc/ext-initramfs-setup /mnt/etc/machine-setup
 mv /etc/ext-initramfs-setup /etc/initramfs-setup
-echo "config completed" > /tmp/cfgcomplete
+echo "config completed" >/tmp/cfgcomplete
 fi
 }
 
