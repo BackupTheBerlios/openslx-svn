@@ -15,7 +15,7 @@ DataEntry** readLinSess(char* path);
 void runImage(fltk::Widget* , void* p);
 
 /* building & executing command for different Virtualizer */
-string runImage(DataEntry&, char* confxml);
+string runImage(DataEntry&, string confxml);
 
 /* Globs for a specific filetype (2. argument) */
 glob_t* globber(char* path, char* filetype);
@@ -29,7 +29,7 @@ bool addPrinters(xmlNode* node, char* script);
 bool addScanners(xmlNode* node, char* script); 
 
 /* Write configuration xml */
-const char* writeConfXml(DataEntry& dat);
+string writeConfXml(DataEntry& dat);
 
 
 #endif /* _FUNCTIONS_H_ */

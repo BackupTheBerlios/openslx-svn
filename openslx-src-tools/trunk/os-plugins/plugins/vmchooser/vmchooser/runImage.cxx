@@ -4,6 +4,8 @@
 #include "inc/SWindow.h"
 #include "inc/functions.h"
 
+#include <sstream>
+
 #include <errno.h>
 #include <sys/wait.h>
 #include <iostream>
@@ -17,7 +19,7 @@
  ***************************************************************/
 void runImage(fltk::Widget*, void* p)
 {
-  char* confxml = 0;
+  string confxml;
   
   /* printf("runImage called\n"); */
   if ( p == NULL ) {
@@ -27,7 +29,7 @@ void runImage(fltk::Widget*, void* p)
   DataEntry& dat = *((DataEntry*) p);
   
   if(dat.imgtype == VMWARE) {
-    confxml = (char*) writeConfXml(dat);
+    confxml = writeConfXml(dat);
   }
   
   pid_t pid;
@@ -55,16 +57,13 @@ void runImage(fltk::Widget*, void* p)
  * Helper-function for runImage(Widget, void) 
  * - runs the chosen virtualizer image
  **/
-string runImage(DataEntry& dat, char* confxml)
+string runImage(DataEntry& dat, string confxml)
 {
   //cout << dat.imgtype << endl << VMWARE << endl;
   if (dat.imgtype == VMWARE) {
     //cout << confxml << endl;
     char* arg[] = { "/var/X11R6/bin/run-vmware.sh",
-            confxml,
-            (char*) dat.imgname.insert(0, "/var/lib/vmware/" ).c_str(),
-            (char*) dat.os.c_str(),
-            (char*)dat.network.c_str(),
+            (char*)confxml.c_str(),
             NULL };
     
     //cout << arg << endl; //"run-vmware.sh imagename os (Window-Title) network"
@@ -109,17 +108,14 @@ char* getFolderName() {
 }
 
 
-const char* writeConfXml(DataEntry& dat) {
-  
-  const int MAX_LENGTH = 300;
+string writeConfXml(DataEntry& dat) {
 
   //char* pname = getFolderName();
-  char pname[MAX_LENGTH];
-  strcpy(pname,"/var/lib/vmware/runscripts");
+  string pname = string().append("/var/lib/vmware/runscripts");
   xmlNodePtr cur = 0;
   xmlNodePtr root = 0;
   
-  strncat(pname, "/printer.sh", MAX_LENGTH);
+  string pskript = pname  +"/printer.sh";
   
   cur = xmlDocGetRootElement(dat.xml);
   if(cur == NULL) {
@@ -138,19 +134,23 @@ const char* writeConfXml(DataEntry& dat) {
   }
   
   // add "printers" and "scanners" - XML-Nodes
-  addPrinters(root, pname);
+  addPrinters(root, (char*)pskript.c_str());
   
   //char* pname = getFolderName();
-  strcpy(pname,"/var/lib/vmware/runscripts");
-  strncat(pname, "/scanner.sh", MAX_LENGTH);
-  addScanners(root, pname);
+  pskript = pname + "/scanners.sh";
+  addScanners(root, (char*)pskript.c_str());
   
   //xmlSaveFile("-", dat.xml);
   srand(time(NULL));
-  char xmlfile[50];
   
-  sprintf( xmlfile, "/tmp/run%d.xml", rand() );
+  string xmlfile;
+  ostringstream i;
+  i <<  "/tmp/run" << rand() << ".xml";
+  xmlfile = i.str();
   
-  xmlSaveFile( xmlfile, dat.xml);
+  //ofstream file("/tmp/debug", ios_base::app);
+  //file << xmlfile << rand()<< endl;
+  
+  xmlSaveFile( (char*) xmlfile.c_str(), dat.xml);
   return xmlfile;
 }

@@ -3,12 +3,12 @@
 
 #include <iostream>
 
-#include <img/gnome_48.xpm>
-#include <img/kde_48.xpm>
-#include <img/linux_48.xpm>
-#include <img/xp_48.xpm>
-#include <img/xp_locked_48.xpm>
-#include <img/xfce_48.xpm>
+#include <img/gnome_32.xpm>
+#include <img/kde_32.xpm>
+#include <img/linux_32.xpm>
+#include <img/xp_32.xpm>
+#include <img/xp_locked_32.xpm>
+#include <img/xfce_32.xpm>
 
 
 using namespace fltk;
@@ -146,25 +146,25 @@ void SWindow::unfold_entries() {
 char** SWindow::get_symbol(DataEntry* dat) {
   if(dat->imgtype == VMWARE) {
     if(dat->locked) {
-    	return xp_locked_48_xpm;
+    	return xp_locked_32_xpm;
     }
     else {
-    	return xp_48_xpm;
+    	return xp_32_xpm;
     }
   }
   if(dat->imgtype == LINUX) {
     if(dat->short_description.find("KDE")!= string::npos) {
-    	return kde_48_xpm;
+    	return kde_32_xpm;
     }
     if(dat->short_description.find("GNOME")!= string::npos) {
-    	return gnome_48_xpm;
+    	return gnome_32_xpm;
     }
-    if(dat->short_description.find("xfce")!= string::npos) {
-      return xfce_48_xpm;
+    if(dat->short_description.find("Xfce")!= string::npos) {
+      return xfce_32_xpm;
     }
-    return linux_48_xpm;
+    return linux_32_xpm;
   }
-  return xp_48_xpm;
+  return xp_32_xpm;
 }
 
 
