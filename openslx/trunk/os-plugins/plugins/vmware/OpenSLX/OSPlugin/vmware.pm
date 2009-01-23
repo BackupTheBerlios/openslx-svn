@@ -272,12 +272,13 @@ sub installationPhase
     # rename the default vmplayer script and create a link. 
     # uninstall routine takes care about plugin remove.
     # stage3 copys our own wrapper script
-    if (-e "/usr/bin/vmplayer") {
+    if (-e "/usr/bin/vmplayer" && ! -e "/usr/bin/vmplayer.slx-back") {
         rename("/usr/bin/vmplayer", "/usr/bin/vmplayer.slx-bak");
         linkFile("/var/X11R6/bin/vmplayer", "/usr/bin/vmplayer");
     }
     # the same with vmware, if ws is installed
-    if (-e "/usr/bin/vmware") {
+    if (-e "/usr/bin/vmware" && ! -e "/usr/bin/vmware.slx-bak") {
+        linkFile("/var/X11R6/bin/vmwarer", "/usr/bin/vmwarer");
         rename("/usr/bin/vmware", "/usr/bin/vmware.slx-bak");
     }
     # this kinda sucks. what if we have local installed vmplayer but
