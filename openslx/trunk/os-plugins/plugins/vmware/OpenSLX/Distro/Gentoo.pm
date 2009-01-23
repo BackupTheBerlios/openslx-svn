@@ -115,9 +115,9 @@ sub fillRunlevelScript
             # the path might be directly point to the plugin dir
     End-of-Here
     if ($kind eq 'vmpl2.5' || $kind eq 'local25') {
-        $script .= "\$location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid -n 0\n";
+        $script .= "$location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid -n 0\n";
     } else {
-        $script .= "\$location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid /dev/vmnet0 eth0\n";
+        $script .= "$location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid /dev/vmnet0 eth0\n";
     }
     $script .= unshiftHereDoc(<<"    End-of-Here");
           fi
