@@ -125,8 +125,8 @@ sub getAttrInfo
                 should the non-gpl ATI drivers be available (installed in  vendor-OS - not implemented yet)?
             End-of-Here
             content_regex => qr{^0|1$},
-            content_descr => '"0", "1" or "-" (for unset)',
-            default => undef,
+            content_descr => '"0", "1"',
+            default => '0',
         },
         'xserver::nvidia' => {
             applies_to_vendor_os => 1,
@@ -134,8 +134,8 @@ sub getAttrInfo
                 should the non-gpl NVidia drivers be available (installed in  vendor-OS - not implemented yet)?
             End-of-Here
             content_regex => qr{^0|1$},
-            content_descr => '"0", "1" or "-" (for unset)',
-            default => undef,
+            content_descr => '"0", "1"',
+            default => '0',
         },
         #'xserver::matrox' => {
         #    applies_to_vendor_os => 1,
@@ -144,8 +144,8 @@ sub getAttrInfo
         #        available (installed in vendor-OS)?
         #    End-of-Here
         #    content_regex => qr{^0|1$},
-        #    content_descr => '"0", "1" or "-" (for unset)',
-        #    default => undef,
+        #    content_descr => '"0", "1"',
+        #    default => '0',
         #},
     };
 }
