@@ -1,0 +1,5 @@
+  SWindow(char* p = "Choose your session!") :
+    fltk::Window(fltk::USEDEFAULT,fltk::USEDEFAULT,550,550,p,true),
+    go(160, 500, 380, 40, "Start"),
+    exit_btn(10, 500, 150, 40, "Exit"),
+    sel(10,10, 530, 480)
