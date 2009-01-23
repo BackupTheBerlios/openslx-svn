@@ -120,21 +120,6 @@ sub getAttrInfo
             content_descr => 'Allowed value: IP/Prefix',
             default => '192.168.102.1/24',
         },
-        # is to be discussed how to handle this - there is no single set of
-        # vmware files!! -> to be moved to vmwarebinaries plugin!?
-        # attribute 'binaries' defines whether or not VMware binaries shall
-        # be provided (by downloading them).
-        #'vmware::binaries' => {
-        #    applies_to_vendor_os => 1,
-        #    applies_to_systems => 0,
-        #    applies_to_clients => 0,
-        #    description => unshiftHereDoc(<<'            End-of-Here'),
-        #        Shall VMware binaries be downloaded and installed?
-        #    End-of-Here
-        #    content_regex => qr{^(0|1)$},
-        #    content_descr => 'Allowed values: 0 or 1',
-        #    default => '0',
-        #},
         # attribute 'kind' defines which set of VMware binaries should be 
         # activated ('local' provided with the main installation set).
         'vmware::kind' => {
@@ -151,6 +136,9 @@ sub getAttrInfo
             content_descr => 'Allowed values: local, vmws5.5, vmws6.0, vmpl1.0 ...',
             default => 'local',
         },
+        # ** set of attributes for the installation of VM Workstation/Player
+        # versions. More than one package could be installed in parallel.
+        # To be matched to/triggerd by 'vmware::kind'
     };
 }
 
@@ -163,11 +151,14 @@ sub installationPhase
     $self->{openslxPath}          = shift;
     $self->{attrs}                = shift;
 
+    # install requested packages by **/ or triggered by 'vmware::kind'
+    # check solution in "desktop plugin"
+
     my $vmpath = "";
     my $vmbin  = "";
     my $vmfile = ""; # will be vmware or vmplayer
     my $vmversion = ""; # will be v1/2 (vmplayer)
-                             # or v5.x/6.x (vmware ws)
+                             # or v5.x/6.x (vmware ws) --> build number might be needed too
 
     # get path of files we need to install
     my $pluginFilesPath 
@@ -179,11 +170,13 @@ sub installationPhase
     #             WS6.0 is compatible with vmplayer-v2
     #       1. check how to handle the different executable (vmware/vmplayer)
     #          1. Wrapper in stage4 which checks which one is
-    #             installed => one wrapperscript + v1-runvmware
+    #             activated in stage3 (there might be several versions installed)
+    #             => one wrapperscript + v1-runvmware
     #                                            + v2-runvmware
     #          2. v1-runvmware-workstation, v1-runvmware-vmplayer
     #             v2-runvmware-workstation, v2-runvmware-vmplayer
     #             keeping runvmware code in sync is more ugly then
+    #             OR: put differences to include files (which might be stored in /etc/vmware)
     #          3. check if its possible to have
     #             v1-runvmware-template   v2-runvmware-template
     #             in stage3 we add a variable if its vmware or vmplayer
@@ -194,22 +187,24 @@ sub installationPhase
     }
 
     # generate the runlevel scripts for all existing vmware installations,
-    # variants because we do not know which on is selected on client level 
+    # variants because we do not know which on is selected on client level
+    # in stage3 (we know the installed packages from ** / 'vmware::kind'
     # (code depends on distro/version and vmware location)
-    # for local ... other vm-installations
-    # TODO: generate list and check stage attribute flags so we don't
-    #       need to run this part for all possible but not requested ones
+    # for local ... and other vm-installations
+    # TODO: generate the list from ** / 'vmware::kind' (stage1 attributes)
+    #       (do not generate scripts for packages which are not installed)
     my @types = qw( local );
     foreach my $type (@types) {
-        #  location of the vmware stuff, "local" for directly installed
+        # location of the vmware stuff, "local" for directly installed
         # package (more sophisticated assignment might be needed ...)
-        if ( $type eq "local" ) {
+        if ($type eq "local") {
             $vmpath = "/usr/lib/vmware";
             $vmbin  = "/usr/bin";
-            # test if we use vmplayer or vmware
+            # test if we use vmplayer or vmware - should be moved to subroutine +++!!, because
+            # needed in other places too ... (check in this routine both vmware/player, build)
             #TODO: error handling if non installed or not supported
             #      version of local
-            if(-e "/usr/lib/vmware/bin/vmware"){
+            if (-e "/usr/lib/vmware/bin/vmware") {
                 $vmfile = "vmware";
                 # get version. read it out of the binary
                 open(FH, "/usr/lib/vmware/bin/vmware");
@@ -221,12 +216,13 @@ sub installationPhase
 		    $vmversion = $1;
 		}
                 print "DEBUG: vmware ws version: $vmversion\n";
-                rename ("/usr/bin/$vmfile", "/usr/bin/$vmfile.slx-bak");
+                rename("/usr/bin/$vmfile", "/usr/bin/$vmfile.slx-bak");
                 linkFile("/var/X11R6/bin/$vmfile", "/usr/bin/$vmfile");
             } elsif (-e "/usr/lib/vmware/bin/vmplayer") {
                 $vmfile = "vmplayer";
                 # dublicate of test for vmware - should be put into a function,
-                # e.g. in one which decides if workstation or player too ...
+                # e.g. in one which decides if workstation or player too ... (see above, exactly
+                # the same code for checking!!)
                 open(FH, "/usr/lib/vmware/bin/vmplayer");
                 $/ = undef;
                 my $data = <FH>;
@@ -237,7 +233,7 @@ sub installationPhase
 		}
                 chomp($vmversion);
                 print "DEBUG: vmplayer version: $vmversion\n";
-                rename ("/usr/bin/$vmfile", "/usr/bin/$vmfile.slx-bak");
+                rename("/usr/bin/$vmfile", "/usr/bin/$vmfile.slx-bak");
                 linkFile("/var/X11R6/bin/$vmfile", "/usr/bin/$vmfile");
             }
         }
@@ -245,8 +241,9 @@ sub installationPhase
         # (TODO: pathname not completely clear ...
         #   -> should be the one of the plugin)
         else {
-            $vmpath = "/opt/openslx/plugin-repo/vmware/$type";
+            $vmpath = "$self->{'pluginRepositoryPath'}/vmware/$type";
             $vmbin  = "$vmpath/bin";
+            # vmversion, build and vmware/player should be read via subroutine +++ named above!!
             $vmversion = "TODO: get information from the stage1 flag";
             $vmfile = "TODO: get information from the stage1 flag";
         }
@@ -268,18 +265,21 @@ sub installationPhase
                  "\$PREFIX"'/libconf' "\$@"
         End-of-Here
         # TODO: check if these will be overwritten if we have more as
-        # local defined
+        # local defined (add the version/type like vmpl1.0, vmws5.5, ...)
+        # then we have a lot of files easily distinguishable by there suffix
         spitFile("$self->{'pluginRepositoryPath'}/$vmfile", $script);
         chmod 0755, "$self->{'pluginRepositoryPath'}/$vmfile";
 
         # TODO: check how we can put the vmversion information to stage3.
         #       more or less only needed for local installation but can
-	#       also be used for quickswitch of vmware version in stage5
+	#       also be used for quickswitch of vmware version in stage4 - 
+	#       rather theoretical option for now - who should run the root scripts!?
+	#       (if it is requested later on, this feature might be added, but not relevant now)
 	#       Perhaps we write all installed player versions in this file
 	#       which get sourced by XX_vmware.sh
 
 	#       Conflict without rewrite of this code: local installed
-	#           vmware and vmplayer
+	#           vmware/player or(!) vmplayer
 	#       Solution:  substitude  "foreach my $type (@types) {"
 	#                  with _checkInstalled(local_vmplayer);
 	#                       _checkInstalled(local_vmwarews);
@@ -295,7 +295,9 @@ sub installationPhase
 	#		   local defined but would need then a
 	#		   local_ws and local_player which is less userfriendly
 	#	Dirk: see .4.2 suse-10.2-(test|main) system which includes
-	#		vmplayer and vmware ws
+	#		vmplayer or vmware ws/player (vmplayer is every time a part of the
+	#		workstation!! since version 5.5!! So if we have workstation, than
+	#		we have automatically vmplayer too)
 
     }
 
@@ -313,7 +315,7 @@ sub removalPhase
     my @files = qw( vmware vmplayer );
     foreach my $file (@files) {
         unlink("/usr/bin/$file");
-        rename ("/usr/bin/$file.slx-bak", "/usr/bin/$file");
+        rename("/usr/bin/$file.slx-bak", "/usr/bin/$file");
         # we only create in stage3 a file there... not needed
         #unlink("/var/X11R6/bin/$file");
     }
@@ -322,8 +324,8 @@ sub removalPhase
     return;
 }
 
-# shouldn't we make it a OpenSLX function and not just a vmware plugin
-# function. oh, i forgot, we are talking about the vmware plugin...
+# such a function will be implemented on a higher level some day. At first the
+# needed characteristics are collected and tried out with local subroutines
 sub _writeRunlevelScript
 {
     my $self     = shift;

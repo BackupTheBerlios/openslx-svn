@@ -66,7 +66,7 @@ stage3 setup" > /mnt/etc/vmware/slxvmconfig
     fi
     # write the common dhcpd.conf header for vmnet1,8
     if [ -n "$vmware_vmnet1" -o -n "$vmware_vmnet8" ] ; then
-      # use the dns servers know to the vmware host
+      # use the dns servers known to the vmware host
       # TODO: to be checked!!
       local dnslist=$(echo "$domain_name_servers"|sed "s/ /,/g")
       echo "# /etc/vmware/dhcpd.conf written in stage3 ..." \
@@ -248,10 +248,6 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
       >>/mnt/etc/${D_INITDIR}/boot.slx
     
-    # define a variable where gdm/kdm should look for additional sessions
-    # do we really need it? looks like we can delete it...
-    # export vmsessions=/var/lib/vmware/vmsessions
-
     # TODO: perhaps we can a) kick out vmdir
     #            b) configure vmdir by plugin configuration
     # TODO: How to start it. See Wiki. Currently a) implemnted
@@ -259,6 +255,10 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     #    /var/X11R6/bin/run-vmware.sh "$imagename" "$name_for_vmwindow" "$ostype_of_vm" "$kind_of_network"
     #   b) we write a wrapper and get the xml-file as attribute
     # A) wait for answer of Bastian
+
+    # this should be a switch for the different versions. local might be replaced with 
+    # vmpl1.0, vmws6.0 ... (after we know which type it is, after running subroutine +++ in vmware.pm)
+    # what we really want to know here (paths? - not only ...)
     if [ "${vmware_kind}" = "local" ]; then
       # TODO: Pseudocode1 as notes
       # if [vmwarekind=local]; then
@@ -266,14 +266,18 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       #   cp "based-on-this-information-runvmware"
 
       # copy depending run-vmware.sh
-      # where should we do the check if its vmplayer or vmware?
+      # where should we do the check if its vmplayer or vmware? --> we should pass this information
+      # via vmpl1.0, vmws6.0 - then we exactly know!!
       # where should we do the check if its v1 or v2
-      # we only have this problem
+      # just the same
       cp /mnt/opt/openslx/plugin-repo/vmware/runvmware-v2 \
         /mnt/var/X11R6/bin/run-vmware.sh
       # TODO: Pseudocode2 as notes
       # if [ not vmware_kind = local but vmplayer-2.0 ]; then
-      #   possibilitys:
+      # should be just the same as filling the /etc/vmware directory with the proper files for general
+      # vmware operation!
+
+      #   possibilities:
       #   1. copy needed files depending on the /initramfs/.../vmware.conf
       #   information. this way we also now the version
       #   2. copy needed files depending on the information like in
