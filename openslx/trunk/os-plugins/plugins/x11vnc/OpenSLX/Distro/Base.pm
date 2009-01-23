@@ -18,6 +18,8 @@ use warnings;
 
 our $VERSION = 1.01;        # API-version . implementation-version
 
+use File::Basename;
+
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
@@ -29,13 +31,12 @@ sub new
     my $class = shift;
     my $self = {};
     return bless $self, $class;
-
 }
 
 sub initialize
 {
     my $self = shift;
-    my $engine = shift;
+    $self->{engine} = shift;
 
     return 1;
 }
@@ -88,6 +89,24 @@ sub fillRunlevelScript
     return $script;
 }
 
+sub pathOf
+{
+    my $self   = shift;
+    my $binary = shift;
+    
+    return qx{which $binary 2>/dev/null};
+}
+
+sub isInPath
+{
+    my $self   = shift;
+    my $binary = shift;
+    
+    my $path = $self->pathOf($binary);
+
+    return $path ? 1 : 0;
+}
+
 sub isX11vncInstalled
 {
     my $self = shift;
@@ -97,7 +116,9 @@ sub isX11vncInstalled
 sub installX11vnc
 {
     my $self = shift;
-    $self->{engine}->installPackages('x11vnc');
+    $self->{engine}->installPackages(
+         $self->{engine}->getInstallablePackagesForSelection('x11vnc')
+    );
     return 1;
 }
 
