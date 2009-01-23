@@ -261,6 +261,8 @@ sub _writeWrapperScript
             #!/bin/sh
             # written by OpenSLX-plugin 'vmware' in Stage1
             # radically simplified version of the original script $file by VMware Inc.
+            #TODO: test it with local installed vmplayer!!!
+            LD_LIBRARY_PATH=$vmpath/lib
             PREFIX=$vmpath # depends on the vmware location
             exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \\
                 "\$PREFIX"'/lib' \\

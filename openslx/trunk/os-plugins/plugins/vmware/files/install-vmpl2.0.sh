@@ -35,6 +35,16 @@ if [ "${REPLY}" == "YES" ]; then
 	mv vmware-player-distrib/doc root/
     rm -rf vmware-player-distrib/
 
+    # I don't want to understand what vmware is doing, but without this
+    # step we need to have LD_LIBRARY_PATH with 53 entrys. welcome to
+    # library hell
+    echo "   * fixing librarys..."
+    cd root/lib/vmware/lib
+    mkdir test
+    mv lib* test
+    mv test/lib*/* .
+    cd ../../../..
+
 	echo "   * creating /etc/vmware"
 	mkdir -p /etc/vmware
 
