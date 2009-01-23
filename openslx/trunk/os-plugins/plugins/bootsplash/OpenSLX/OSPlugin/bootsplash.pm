@@ -113,6 +113,41 @@ sub suggestAdditionalKernelModules
     return @suggestedModules;
 }
 
+sub installationPhase
+{
+    my $self = shift;
+    my $info = shift;
+
+    $self->{pluginRepositoryPath} = $info->{'plugin-repo-path'};
+    $self->{openslxBasePath}      = $info->{'openslx-base-path'};
+    my $splashyBinPath =
+        "$self->{openslxBasePath}/lib/plugins/bootsplash/files/bin";
+    my $uClibcPath = "$self->{openslxBasePath}/share/uclib-rootfs/lib";
+    my $pluginRepoPath = "$self->{pluginRepositoryPath}";
+
+    # copy splashy_update into plugin-repo folder
+    mkpath("$pluginRepoPath/bin");
+    mkpath("$pluginRepoPath/lib");
+    slxsystem("cp -a $splashyBinPath/* $pluginRepoPath/bin") == 0
+        or die _tr(
+                "unable to copy splashy to $pluginRepoPath/bin"
+        );
+    slxsystem("cp -a $uClibcPath/libuClibc* pluginRepoPath/lib") == 0
+        or die _tr(
+                "unable to copy libuClibc to $pluginRepoPath/lib"
+        );
+
+    return;
+}
+
+sub removalPhase
+{
+    my $self = shift;
+    my $info = shift;
+
+    return;
+}
+
 sub copyRequiredFilesIntoInitramfs
 {
     my $self                = shift;
