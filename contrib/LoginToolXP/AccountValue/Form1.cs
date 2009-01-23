@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml; //instead of TL.XML
@@ -55,6 +56,7 @@ namespace AccountValue
         private String home;
         private String shareds;
         private String printers;
+        private String scanner;
 
         //#####################################################################
         public Form1()
@@ -137,9 +139,11 @@ namespace AccountValue
                 XmlNode xnHome = doc.SelectSingleNode("/settings/eintrag/home");
                 XmlNode xnShareds = doc.SelectSingleNode("/settings/eintrag/shareds");
                 XmlNode xnPrinters = doc.SelectSingleNode("/settings/eintrag/printers");
+                XmlNode xnScanner = doc.SelectSingleNode("/settings/eintrag/scanner");
                 home = xnHome.Attributes["param"].InnerText; 
                 shareds = xnShareds.Attributes["param"].InnerText; 
                 printers = xnPrinters.Attributes["param"].InnerText;
+                scanner = xnScanner.Attributes["param"].InnerText;
 
             }
             catch (Exception e)
@@ -295,6 +299,38 @@ namespace AccountValue
             //#################################################################
             // Drucker-Kontostand
             getAccountInformation();
+
+            
+            //#####################################################################################
+            //#### Fuege die IP-Adresse des Scanners in C:\sane\etc\sane.d\net.conf ###############
+            
+            string path = @"c:\sane\etc\sane.d\net.conf";
+            
+            try
+            {
+                using (StreamWriter sw = System.IO.File.CreateText(path)) { }
+                string path2 = path + "temp";
+
+                // Ensure that the target does not exist.
+                System.IO.File.Delete(path2);
+
+                // Copy the file.
+                System.IO.File.Copy(path, path2);
+                
+                // Delete the newly created file.
+                System.IO.File.Delete(path2);
+            }
+            catch {}
+
+            try
+            {
+                using (StreamWriter sw = System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(scanner);
+                }
+            }
+            catch {}
+
         }
 
 
