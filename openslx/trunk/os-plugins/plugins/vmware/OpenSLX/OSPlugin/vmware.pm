@@ -179,10 +179,50 @@ sub getAttrInfo
             content_descr => '1 means active - 0 means inactive',
             default => '0',
         },
+        'vmware::pkgpath' => {
+            applies_to_vendor_os => 1,
+            applies_to_system => 0,
+            applies_to_clients => 0,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                Path to VMware packages
+            End-of-Here
+            #TODO
+            #content_regex => qr{^(1|0)$},
+            content_descr => '1 means active - 0 means inactive',
+            default => '0',
+        },
         # ** set of attributes for the installation of VM Workstation/Player
         # versions. More than one package could be installed in parallel.
         # To be matched to/triggerd by 'vmware::kind'
     };
+}
+
+
+sub preInstallationPhase()
+{
+    my $self = shift;
+    my $info = shift;
+
+    $self->{pluginRepositoryPath} = $info->{'plugin-repo-path'};
+    $self->{pluginTempPath}       = $info->{'plugin-temp-path'};
+    $self->{openslxBasePath}      = $info->{'openslx-base-path'};
+    $self->{openslxConfigPath}    = $info->{'openslx-config-path'};
+    $self->{attrs}                = $info->{'plugin-attrs'};
+    $self->{vendorOsPath}         = $info->{'vendor-os-path'};
+    
+    my $pkgpath = $self->{attrs}->{'vmware::pkgpath'};
+
+    if (! -d $pkgpath) {
+        print "\n\npkgpath: no such directory!\n\n";
+        exit 1;
+    }
+
+    # todo: ask oliver about a similiar function
+    #       like copyFile() just for directorys
+    #       or fix the manual after checked the source of
+    #       copyFile() function. check if copyFile etc. perldoc
+    #       is somewhere in the wiki documented else do it!
+    system("cp -r $pkgpath $self->{pluginRepositoryPath}/packages");
 }
 
 
@@ -505,11 +545,12 @@ sub _vmpl2Installation {
     foreach my $file (@files) {
         copyFile("$pluginFilesPath/$file", "$installationPath");
     }
+
     # copy on depending runvmware file
     copyFile("$pluginFilesPath/runvmware-player-v2", "$installationPath", "runvmware");
 
     ##
-    ## Download and install the binarys
+    ## Install the binarys from given pkgpath
     system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-vmpl.sh $kind");
 
     ##
