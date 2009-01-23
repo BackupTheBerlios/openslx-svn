@@ -47,6 +47,8 @@ if [ -e /initramfs/plugin-conf/dropbear.conf ]; then
        else 
          dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key
        fi
+
+       echo "OpenSLX Debugshell (stage3)" >> /etc/motd
   
        /sbin/dropbear 
 
