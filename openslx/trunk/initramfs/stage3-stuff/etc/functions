@@ -326,8 +326,6 @@ else
 $filepath, fileserv:$fileserv" >>$LOGFILE
   # try to get configuration files successively; start with distro client
   # and try last distro default ...
-  echo -e "\n## Configuration via later fileget: Hierarchy is distro client \
-and as last\n# distro/default" >>/tmp/confviafile
   mac=$(echo $macaddr|sed "s/:/-/g")
   for cfgfile in ${filepath}/${SYSTEM_NAME}/01-$mac.tgz \
                  ${filepath}/${SYSTEM_NAME}/default.tgz ; do
@@ -342,6 +340,9 @@ and as last\n# distro/default" >>/tmp/confviafile
       ;;
     esac
   done
+  echo -e "\n## Configuration via fileget from ${fileprot}://${fileserv}/\
+${cfgfile}\n# Hierarchy is distro client and as last\n# distro/default" \
+    >>/tmp/confviafile
 fi
 cat /initramfs/machine-setup >>/tmp/confviafile
 echo "fileget via $fileprot from $fileserv/$cfgfile finished" >/tmp/file-done
