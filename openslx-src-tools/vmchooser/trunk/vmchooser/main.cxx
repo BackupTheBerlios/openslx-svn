@@ -42,9 +42,9 @@ int main(int argc, char** argv) {
   opt->addUsage("");
   
   opt->setFlag("help",'h');
+  opt->setFlag("version",'v');
   opt->setOption("path", 'p');
   opt->setOption("lpath", 'l');
-  opt->setFlag("version",'v');
   opt->setOption("size",'s');
   
   opt->processCommandArgs(argc, argv);
@@ -109,8 +109,9 @@ int main(int argc, char** argv) {
   }
   
   delete opt;
-  
-  cout << "virtual machine chooser 0.0.1"<< endl;
+ 
+  // just print out version information - helps testing
+  cout << "virtual machine chooser 0.0.2"<< endl;
   if(version) {
     exit(1);
   }

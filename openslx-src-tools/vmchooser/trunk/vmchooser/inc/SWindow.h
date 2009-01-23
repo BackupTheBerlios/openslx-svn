@@ -34,6 +34,7 @@ private:
 
   // currently selected Browser-Item
   fltk::Item* curr;
+  fltk::Item* oldcurr;
 
   // Two groups - Linux and VMWare
   fltk::ItemGroup* entgroup;

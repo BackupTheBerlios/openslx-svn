@@ -70,10 +70,15 @@ SWindow::SWindow(int w, int h, char* p):
  *********************************************************/
 void SWindow::cb_return()
 {
-  curr = (Item*) sel.item();
+  //if(!sel.item()) return;
+  //curr = (Item*) sel.item();
+  
   if(curr != 0 && curr->user_data()) {
     DataEntry* dat = (DataEntry*) curr->user_data();
-    runImage(curr, dat);
+    cout << dat->short_description << endl;
+    if(dat) {
+      runImage(curr, dat);
+    }
   }
 }
 
@@ -81,28 +86,30 @@ void SWindow::cb_return()
 /*******************************************************
  *  Callback for Selection-Browser in the center
  * ----------------------------------------------------
- * Changes info-Text at the bottom
+ * Starts the session if required -> Mouse Click
  *******************************************************/
 void SWindow::cb_select()
 {
+  if(!sel.item()) return;
+  //cout << "cb_select called with" << sel.item() << endl;
   sel.select_only_this();
   if (sel.item_is_parent() )
     {
       sel.set_item_opened(true);
+      return;
     }
-  if( curr == sel.item() && curr != NULL ) {
-    //Doubleclick
+  oldcurr = curr;
+  curr = (Item*)  sel.item();
+
+  if( curr == oldcurr ) {
+    // start image if it has data associated
+    // -> double click
     cout << ((DataEntry*)curr->user_data())->short_description << endl;
     if(curr->user_data()) {
       runImage(curr, (DataEntry*) curr->user_data() );
     }
     return;
   }
-  curr = (Item*) sel.item();
-//   if(curr->user_data()) {
-//     DataEntry* dat = (DataEntry*) curr->user_data();
-//     info.text(dat->description.c_str());
-//   }
 }
 
 
@@ -182,7 +189,10 @@ void SWindow::unfold_entries() {
     sel.set_item_opened(true);
   }
   sel.next_visible();
-  sel.select_only_this();
+  sel.select_only_this(1);
+  curr = (Item*) sel.item();
+  //sel.set_focus();
+  //sel.set_item_selected(true,1);
 }
 
 
