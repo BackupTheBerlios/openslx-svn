@@ -25,13 +25,13 @@ debug: ${OBJS}
 	${CC} ${LDFLAGS} -o vmchooserdbg $^ ${LIBS}
 
 ${OBJS}: %.o: %.cxx %.dep
-	${CC} ${CCFLAGS} -o $@ -c $< 
+	${CC} ${DEBUG_CCFLAGS} -o $@ -c $< 
 
 ${DEPS}: %.dep: %.cxx Makefile 
 	${CC} ${CCFLAGS} -MM $< > $@ 
 
 clean::
-	rm -f *~ *.o ${TARGET} 
+	rm -f *~ *.o ${TARGET} vmchooserdbg
 
 install:
 	cp vmchooser ../../../../openslx/trunk/os-plugins/plugins/vmchooser/files/

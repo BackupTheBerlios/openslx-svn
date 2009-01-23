@@ -8,7 +8,8 @@ using namespace std;
 enum ImgType {
 	LINUX,
 	VMWARE,
-	VBOX
+	VBOX,
+    OTHER
 };
 
 struct DataEntry {

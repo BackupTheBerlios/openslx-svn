@@ -11,7 +11,7 @@
 using namespace std;
 using namespace fltk;
 
-
+SWindow* mainwin;
 /**
  * MAIN
  *
@@ -62,6 +62,7 @@ int main(int argc, char** argv) {
   if(opt->getValue("path")!= NULL) {
     xmlpath = opt->getValue("path");
   }
+
   if (xmlpath == NULL) {
     // Default Path comes here
     xmlpath = (char *) "/var/lib/vmware/vmconfigs/";
@@ -111,7 +112,7 @@ int main(int argc, char** argv) {
   delete opt;
  
   // just print out version information - helps testing
-  cout << "virtual machine chooser 0.0.5"<< endl;
+  cout << "virtual machine chooser 0.0.6"<< endl;
   if(version) {
     exit(1);
   }
@@ -129,6 +130,7 @@ int main(int argc, char** argv) {
   lsessions = readLinSess(lsesspath);  
   
   SWindow& win = *SWindow::getInstance(width, height);
+  mainwin = &win;
   
   if(lsessions[0] != NULL) {
     win.set_lin_entries(lsessions);

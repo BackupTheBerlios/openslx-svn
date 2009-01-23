@@ -171,8 +171,10 @@ DataEntry* get_entry(xmlDoc * doc)
         if (tempc != NULL ) {
                 if ( strcmp(tempc,"vmware") == 0 ) {
                         de->imgtype = VMWARE;
-                } else {
+                } else if (strcmp(tempc,"virtualbox") == 0) {
                         de->imgtype = VBOX;
+                } else {
+                    de->imgtype = OTHER;
                 }
         }
         else {

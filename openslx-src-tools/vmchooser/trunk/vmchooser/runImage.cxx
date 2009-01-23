@@ -1,4 +1,6 @@
 #include <fltk/Widget.h>
+#include <fltk/ask.h>
+#include <fltk/run.h>
 
 #include "inc/DataEntry.h"
 #include "inc/SWindow.h"
@@ -12,9 +14,10 @@
 #include <string>
 #include <boost/regex.hpp>
 
+
 /* define MAX_LENGTH for string in getFolderName */
 const int MAX_LENGTH = 200;
-
+extern SWindow* mainwin;
 
 /** *************************************************************
  * void runImage runs a (virtual machine) image using fork()
@@ -31,26 +34,38 @@ void runImage(fltk::Widget*, void* p)
   
   DataEntry& dat = *((DataEntry*) p);
   
-  if(dat.imgtype == VMWARE) {
+  if(dat.imgtype == VMWARE || dat.imgtype == VBOX ) {
     confxml = writeConfXml(dat);
   }
   
   pid_t pid;
-  int status;
+  // in case you want to wait hours on your thread
+  //int status;
   pid = fork();
+  char* argv[] = { "mesgdisp",  ///opt/openslx/plugin-repo/vmchooser/
+        (char*) string("\n\nStarte Image: ").append(dat.short_description)
+        .append("\n").c_str(), NULL };
 
   switch( pid )  {
     case -1:
-      cout << "Something went wrong while forking!" << endl;
+      fltk::alert("Error occured during forking a thread of execution!");
       return;
       break;
     case 0:
-      exit(0);
+      mainwin->destroy();
+      fltk::wait();
+      cout << "calling " << argv[1] << endl;
+      execvp(argv[0], argv);
       break;
     default:
-      if( waitpid( pid, &status, 0 ) == -1 ) {
-        cerr << "No child with this pid (" << pid << ")" << endl;
-      }
+      // this is not really useful, as this
+      // blocks execution for about 5 seconds
+      // sometimes ;-)
+      //if( waitpid( pid, &status, 0 ) == -1 ) {
+      //  cerr << "No child with this pid (" << pid << ")" << endl;
+      //  fltk::alert("Failed to create child thread!");
+      //  return;
+      //}
       runImage(dat, confxml);
       break;
   }
@@ -71,6 +86,15 @@ string runImage(DataEntry& dat, string confxml)
     
     //cout << arg << endl; //"run-vmware.sh imagename os (Window-Title) network"
     execvp("/var/X11R6/bin/run-vmware.sh",  arg);
+  }
+  if (dat.imgtype == VBOX) {
+    char* arg[] = { (char *) "/var/X11R6/bin/run-virtualbox.sh",
+            (char*)confxml.c_str(),
+            NULL };
+    
+    //cout << arg << endl; //"run-vmware.sh imagename os (Window-Title) network"
+    execvp("/var/X11R6/bin/run-virtualbox.sh",  arg);
+
   }
   if(! dat.command.empty() ) {
     char* arg[] = { (char*) dat.command.c_str(), '\0' };
@@ -138,7 +162,7 @@ string writeConfXml(DataEntry& dat) {
   // add "printers" and "scanners" - XML-Nodes
   addPrinters(root, (char*)pskript.c_str());
   
-  pskript = pname + "/scanners.sh";
+  pskript = pname + "/scanner.sh";
   addScanners(root, (char*)pskript.c_str());
 
   // add hostname and username information
