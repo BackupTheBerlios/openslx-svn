@@ -67,6 +67,10 @@ config_distro () {
   # fix getty bug
   # (console login on tty1 is started too early)
   sed -i "s/start on runlevel 2/start on stopped rc2/" /mnt/etc/event.d/tty1
+
+  # for screen sessions
+  testmkd /mnt/var/run/screen 0775
+  chown root:utmp /mnt/var/run/uscreens
 }
 
 # initial (boot time) runlevel scripts
