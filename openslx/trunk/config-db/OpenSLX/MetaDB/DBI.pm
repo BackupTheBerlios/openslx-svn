@@ -552,10 +552,23 @@ sub _doInsert
         $sth->execute()
           or croak _tr(q[Can't insert into table <%s> (%s)], $table,
             $dbh->errstr);
-        if (!$ignoreIDs && !defined $valRow->{id}) {
-            # id has not been pre-specified, we need to fetch it from DB:
-            $valRow->{'id'} = $dbh->last_insert_id(undef, undef, $table, 'id');
-            vlog(3, "DB-generated id for <$table> is <$valRow->{id}>");
+        if (!$ignoreIDs) {
+            my $lastID = $dbh->last_insert_id(undef, undef, $table, 'id');
+            if (!defined $valRow->{id}) {
+                # id has not been pre-specified, we need to fetch it from DB:
+                $valRow->{'id'} = $lastID;
+                vlog(3, "DB-generated id for <$table> is <$valRow->{id}>");
+            }
+            elsif ($valRow->{'id'} != $lastID) {
+                # id has been pre-specified, but DB changed it, so we update
+                # it with the pre-specified value
+                my $sql2
+                    = "UPDATE $table SET id=$valRow->{'id'} WHERE id=$lastID";
+                vlog(3, $sql2);
+                $dbh->do($sql2) or croak _tr(
+                    q[Can't update table <%s> (%s)], $table, $dbh->errstr
+                );
+            }
         }
         push @ids, $valRow->{'id'};
     }
@@ -1332,8 +1345,8 @@ sub schemaAddTable
     $dbh->do($sql)
       or croak _tr(q[Can't create table <%s> (%s)], $table, $dbh->errstr);
     if (defined $initialVals) {
-        my $ignoreIDs = ($colDescrString !~ m[\bid\b]);
         # don't care about IDs if there's no 'id' column in this table
+        my $ignoreIDs = ($colDescrString !~ m[\bid\b]);
         $self->_doInsert($table, $initialVals, $ignoreIDs);
     }
     return;
