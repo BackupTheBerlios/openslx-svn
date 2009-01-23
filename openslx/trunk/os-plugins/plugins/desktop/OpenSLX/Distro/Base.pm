@@ -12,7 +12,7 @@
 #	- provides empty base of the OpenSLX OSPlugin Distro API for the desktop
 #     plugin.
 # -----------------------------------------------------------------------------
-package OpenSLX::Distro::base;
+package OpenSLX::Distro::Base;
 
 use strict;
 use warnings;
@@ -27,13 +27,15 @@ use OpenSLX::Utils;
 ################################################################################
 sub new
 {
-	confess "Creating OpenSLX::OSPlugin::Distro::Base-objects directly makes no sense!";
+	my $class = shift;
+	my $self = {};
+	return bless $self, $class;
 }
 
 sub initialize
 {
-	my $self = shift;
-	my $engine = shift;
+	my $self        = shift;
+	$self->{engine} = shift;
 	
 	return 1;
 }
@@ -44,22 +46,8 @@ sub isInPath
 	my $binary = shift;
 	
 	my $path = qx{which $binary 2>/dev/null};
-	
+
 	return $path ? 1 : 0;
-}
-
-sub isKDEInstalled
-{
-	my $self = shift;
-	
-	return $self->isInPath('startkde');
-}
-
-sub isKDMInstalled
-{
-	my $self = shift;
-
-	return $self->isInPath('kdm');
 }
 
 sub isGNOMEInstalled
@@ -74,6 +62,26 @@ sub isGDMInstalled
 	my $self = shift;
 
 	return $self->isInPath('gdm');
+}
+
+sub installGNOME
+{
+	my $self = shift;
+
+	$self->{engine}->installPackages(
+		$self->{engine}->getInstallablePackagesForSelection('gnome')
+	);
+
+	return 1;
+}
+
+sub installGDM
+{
+	my $self = shift;
+
+	$self->{engine}->installPackages('gdm');
+
+	return 1;
 }
 
 sub GDMPathInfo
@@ -151,13 +159,45 @@ sub GDMConfigHashForChooser
 	return $configHash;
 }
 
+sub isKDEInstalled
+{
+	my $self = shift;
+	
+	return $self->isInPath('startkde');
+}
+
+sub isKDMInstalled
+{
+	my $self = shift;
+
+	return $self->isInPath('kdm');
+}
+
+sub installKDE
+{
+	my $self = shift;
+
+	$self->{engine}->installPackages(
+		$self->{engine}->getInstallablePackagesForSelection('kde')
+	);
+
+	return 1;
+}
+
+sub installKDM
+{
+	my $self = shift;
+
+	$self->{engine}->installPackages('kdm');
+
+	return 1;
+}
+
 sub isXFCEInstalled
 {
 	my $self = shift;
 
-	# TODO: implement this!
-	warn "someone please implement this!";
-	return 0;
+	return $self->isInPath('startxfce4');
 }
 
 sub isXDMInstalled
@@ -165,6 +205,26 @@ sub isXDMInstalled
 	my $self = shift;
 
 	return $self->isInPath('xdm');
+}
+
+sub installXFCE
+{
+	my $self = shift;
+
+	$self->{engine}->installPackages(
+		$self->{engine}->getInstallablePackagesForSelection('xfce')
+	);
+
+	return 1;
+}
+
+sub installXDM
+{
+	my $self = shift;
+
+	$self->{engine}->installPackages('xdm');
+
+	return 1;
 }
 
 1;

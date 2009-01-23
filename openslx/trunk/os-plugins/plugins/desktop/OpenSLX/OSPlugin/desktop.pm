@@ -176,15 +176,15 @@ sub getDefaultAttrsForVendorOS
 
 	my $attrs = $self->getAttrInfo();
 	
-	if ($vendorOSName =~ m{kde$}) {
+	if ($vendorOSName =~ m{kde}) {
 		$attrs->{'desktop::manager'}->{default} = 'kdm';
 		$attrs->{'desktop::kind'}->{default} = 'kde';
 	}
-	elsif ($vendorOSName =~ m{gnome$}) {
+	elsif ($vendorOSName =~ m{gnome}) {
 		$attrs->{'desktop::manager'}->{default} = 'gdm';
 		$attrs->{'desktop::kind'}->{default} = 'gnome';
 	}
-	elsif ($vendorOSName =~ m{xfce$}) {
+	elsif ($vendorOSName =~ m{xfce}) {
 		$attrs->{'desktop::manager'}->{default} = 'xdm';
 		$attrs->{'desktop::kind'}->{default} = 'xcfe';
 	}
@@ -203,18 +203,35 @@ sub installationPhase
 	$self->{openslxPath}          = shift;
 	$self->{attrs}                = shift;
 	
+	# We are going to change some of the stage1 attributes during installation
+	# (basically we are filling the ones that are not defined). Since the result
+	# of these changes might change between invocations, we do not want to store
+	# the resulting values, but we want to store the original (undef).
+	# In order to do so, we copy all stage1 attributes directly into the
+	# object hash and change them there.
+	$self->{gdm}   = $self->{attrs}->{'desktop::gdm'};
+	$self->{kdm}   = $self->{attrs}->{'desktop::kdm'};
+	$self->{xdm}   = $self->{attrs}->{'desktop::xdm'};
+	$self->{gnome} = $self->{attrs}->{'desktop::gnome'};
+	$self->{kde}   = $self->{attrs}->{'desktop::kde'};
+	$self->{xcfe}  = $self->{attrs}->{'desktop::xfce'};
+	
+use Data::Dumper; print Dumper $self->{attrs};
+
 	$self->_installRequiredPackages();
-	$self->_determineAttrsByInstalledPackages();
+	$self->_fillUnsetStage1Attrs();
+	$self->_ensureSensibleStage3Attrs();
 
 use Data::Dumper; print Dumper $self->{attrs};
 
-	if ($self->{attrs}->{'desktop::gdm'}) {
+	# start to actually do something - according to current stage1 attributes
+	if ($self->{gdm}) {
 		$self->_setupGDM();
 	}
-	if ($self->{attrs}->{'desktop::kdm'}) {
+	if ($self->{kdm}) {
 		$self->_setupKDM();
 	}
-	if ($self->{attrs}->{'desktop::xdm'}) {
+	if ($self->{xdm}) {
 		$self->_setupXDM();
 	}
 
@@ -280,42 +297,82 @@ sub _installRequiredPackages
 
 	my $engine = $self->{'os-plugin-engine'};
 	
-	for my $desktop (qw( gnome kde xfce )) {
-		next if !$self->{attrs}->{"desktop::$desktop"};
-		my $packages = $engine->getPackagesForSelection($desktop);
-		$engine->installPackages($packages);
+	if ($self->{'gnome'} && !$self->{distro}->isGNOMEInstalled()) {
+		$self->{distro}->installGNOME();
 	}
-	
-	for my $dm (qw( gdm kdm xdm )) {
-		next if !$self->{attrs}->{"desktop::$dm"};
-		$engine->installPackages($dm);
+	if ($self->{'gdm'} && !$self->{distro}->isGDMInstalled()) {
+		$self->{distro}->installGDM();
+	}
+	if ($self->{'kde'} && !$self->{distro}->isKDEInstalled()) {
+		$self->{distro}->installKDE();
+	}
+	if ($self->{'kdm'} && !$self->{distro}->isKDMInstalled()) {
+		$self->{distro}->installKDM();
+	}
+	if ($self->{'xfce'} && !$self->{distro}->isXFCEInstalled()) {
+		$self->{distro}->installXFCE();
+	}
+	if ($self->{'xdm'} && !$self->{distro}->isXDMInstalled()) {
+		$self->{distro}->installXDM();
 	}
 
 	return 1;
 }
 
-sub _determineAttrsByInstalledPackages
+sub _fillUnsetStage1Attrs
 {
-	my $self  = shift;
-	my $attrs = shift;
-	
-	if (!defined $attrs->{'desktop::gnome'}) {
-		$attrs->{'desktop::gnome'} = $self->{distro}->isGNOMEInstalled();
+	my $self = shift;
+
+	if (!defined $self->{'gnome'}) {
+		$self->{'gnome'} = $self->{distro}->isGNOMEInstalled();
 	}
-	if (!defined $attrs->{'desktop::gdm'}) {
-		$attrs->{'desktop::gdm'} = $self->{distro}->isGDMInstalled();
+	if (!defined $self->{'gdm'}) {
+		$self->{'gdm'} = $self->{distro}->isGDMInstalled();
 	}
-	if (!defined $attrs->{'desktop::kde'}) {
-		$attrs->{'desktop::kde'} = $self->{distro}->isKDEInstalled();
+	if (!defined $self->{'kde'}) {
+		$self->{'kde'} = $self->{distro}->isKDEInstalled();
 	}
-	if (!defined $attrs->{'desktop::kdm'}) {
-		$attrs->{'desktop::kdm'} = $self->{distro}->isKDMInstalled();
+	if (!defined $self->{'kdm'}) {
+		$self->{'kdm'} = $self->{distro}->isKDMInstalled();
 	}
-	if (!defined $attrs->{'desktop::xfce'}) {
-		$attrs->{'desktop::xfde'} = $self->{distro}->isXFCEInstalled();
+	if (!defined $self->{'xfce'}) {
+		$self->{'xfce'} = $self->{distro}->isXFCEInstalled();
 	}
-	if (!defined $attrs->{'desktop::xdm'}) {
-		$attrs->{'desktop::xdm'} = $self->{distro}->isXDMInstalled();
+	if (!defined $self->{'xdm'}) {
+		$self->{'xdm'} = $self->{distro}->isXDMInstalled();
+	}
+
+	return 1;
+}
+
+sub _ensureSensibleStage3Attrs
+{
+	my $self = shift;
+
+	# check if current desktop kind is enabled at all and select another
+	# one, if it isn't
+	my $kind = $self->{attrs}->{'desktop::kind'} || '';
+	if (!$self->{$kind}) {
+		my @desktops = map { $self->{$_} ? $_ : () } qw( gnome kde xfce );
+		if (!@desktops) {
+			die _tr(
+				"no desktop kind is possible, plugin 'desktop' wouldn't work!"
+			);
+		}
+		$self->{attrs}->{'desktop::kind'} = $desktops[0];
+	}
+
+	# check if current desktop manager is enabled at all and select another
+	# one, if it isn't
+	my $manager = $self->{attrs}->{'desktop::manager'} || '';
+	if (!$self->{$manager}) {
+		my @managers = map { $self->{$_} ? $_ : () } qw( gdm kdm xdm );
+		if (!@managers) {
+			die _tr(
+				"no desktop manager is possible, plugin 'desktop' wouldn't work!"
+			);
+		}
+		$self->{attrs}->{'desktop::manager'} = $managers[0];
 	}
 
 	return 1;
@@ -327,7 +384,11 @@ sub _setupGDM
 	my $attrs = shift;
 	
 	my $repoPath = $self->{pluginRepositoryPath};
-	mkpath([ "$repoPath/gdm" ]);
+	mkpath([ 
+		"$repoPath/gdm/workstation",
+		"$repoPath/gdm/kiosk",
+		"$repoPath/gdm/chooser",
+	]);
 	
 	my $pathInfo   = $self->{distro}->GDMPathInfo();
 	$self->_setupGDMScript($pathInfo);
@@ -351,12 +412,17 @@ sub _setupGDMScript
 	
 	my $repoPath = $self->{pluginRepositoryPath};
 	my $configFile = $pathInfo->{config};
-	my $paths = join(' ', ( dirname($configFile), @{$pathInfo->{paths}} ));
+	my $paths 
+		= join(
+			' ', 
+			map  { '/mnt' . $_ } ( dirname($configFile), @{$pathInfo->{paths}} )
+		);
 	my $script = unshiftHereDoc(<<"	End-of-Here");
 		#!/bin/ash
 		# written by OpenSLX-plugin 'desktop'
-		mkdir -p $paths
-		ln -sf /mnt$repoPath/gdm/\$desktop_kind/gdm.conf $configFile
+		mkdir -p $paths 2>/dev/null
+		ln -sf $repoPath/gdm/\$desktop_mode/gdm.conf /mnt$configFile
+		rllinker gdm 1 15
 	End-of-Here
 	spitFile("$repoPath/gdm/desktop.sh", $script);
 	return;
@@ -391,6 +457,7 @@ sub _writeConfigHash
 					: '';
 			$content .= "$key=$value\n";
 		}
+		$content .= "\n";
 	}
 	spitFile($file, $content);
 }

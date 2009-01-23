@@ -20,6 +20,7 @@ our $VERSION = 1.01;    # API-version . implementation-version
 
 use File::Basename;
 use File::Path;
+use Storable;
 
 use OpenSLX::Basics;
 use OpenSLX::OSSetup::Engine;
@@ -110,9 +111,9 @@ sub initialize
 			);
 		}
 
-		# merge attributes that were not given on cmdline with the ones that
-		# already exists in the DB and finally with the default values
-		$self->{'plugin-attrs'} = $givenAttrs;
+		# merge attributes that were given on cmdline with the ones that
+		# already exist in the DB and finally with the default values
+		$self->{'plugin-attrs'} = { %$givenAttrs };
 		my $defaultAttrs = $self->{plugin}->getDefaultAttrsForVendorOS(
 			$vendorOSName
 		);
@@ -150,20 +151,47 @@ sub installPlugin
 	my $self = shift;
 
 	if ($self->{'vendor-os-name'} ne '<<<default>>>') {
+
+		# as the attrs may be changed by the plugin during installation, we
+		# have to find a way to pass them back to this process (remember;
+		# installation takes place in a forked process in order to do a chroot).
+		# We simply serialize the attributes into a temp and deserialize it
+		# in the calling process.
+		my $serializedAttrsFile 
+			= "$self->{'plugin-temp-path'}/serialized-attrs";
+		my $chrootedSerializedAttrsFile 
+			= "$self->{'chrooted-plugin-temp-path'}/serialized-attrs";
+	
+		mkpath([ $self->{'plugin-repo-path'}, $self->{'plugin-temp-path'} ]);
+	
+		# HACK: do a dummy serialization here in order to get Storable 
+		# completely loaded (otherwise it will complain in the chroot about 
+		# missing modules).
+		store $self->{'plugin-attrs'}, $serializedAttrsFile;
+	
 		$self->_callChrootedFunctionForPlugin(
 			sub {
+				# invoke plugin and let it install itself into vendor-OS
 				$self->{plugin}->installationPhase(
 					$self->{'chrooted-plugin-repo-path'}, 
 					$self->{'chrooted-plugin-temp-path'},
 					$self->{'chrooted-openslx-base-path'},
 					$self->{'plugin-attrs'},
 				);
+
+				# serialize possibly changed attributes (executed inside chroot)
+				store $self->{'plugin-attrs'}, $chrootedSerializedAttrsFile;
 			}
 		);
+
+		# now retrieve (deserialize) the current attributes and store them
+		$self->{'plugin-attrs'} = retrieve $serializedAttrsFile;
+		$self->_addInstalledPluginToDB();
+	
+		# cleanup temp path
+		rmtree([ $self->{'plugin-temp-path'} ]);
 	}
 	
-	$self->_addInstalledPluginToDB();
-
 	return 1;
 }
 
@@ -179,6 +207,9 @@ sub removePlugin
 	my $self = shift;
 
 	if ($self->{'vendor-os-name'} ne '<<<default>>>') {
+
+		mkpath([ $self->{'plugin-repo-path'}, $self->{'plugin-temp-path'} ]);
+
 		$self->_callChrootedFunctionForPlugin(
 			sub {
 				$self->{plugin}->removalPhase(
@@ -188,6 +219,8 @@ sub removePlugin
 				);
 			}
 		);
+
+		rmtree([ $self->{'plugin-temp-path'} ]);
 	}
 	
 	$self->_removeInstalledPluginFromDB();
@@ -308,8 +341,9 @@ sub downloadFile
 
 =item getInstalledPackages()
 
-Returns the list of names of the packages that are already installed in the
-vendor-OS. Useful if a plugin wants to find out whether or not it has to 
+Returns the list of names of the packages (as an array) that are already 
+installed in the vendor-OS. 
+Useful if a plugin wants to find out whether or not it has to 
 install additional packages.
 
 =cut
@@ -324,12 +358,22 @@ sub getInstalledPackages
 	return $metaPackager->getInstalledPackages();
 }
 
-sub getPackagesForSelection
+=item getInstallablePackagesForSelection()
+
+Looks at the selection with the given name and returns the list of names of the 
+packages (as one string separated by spaces) that need to be installed in order 
+to complete the selection.
+
+=cut
+
+sub getInstallablePackagesForSelection
 {
 	my $self      = shift;
 	my $selection = shift;
 
-	return $self->{'ossetup-engine'}->getPackagesForSelection($selection);
+	return $self->{'ossetup-engine'}->getInstallablePackagesForSelection(
+		$selection
+	);
 }
 
 
@@ -365,7 +409,7 @@ sub installPackages
 	my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
 	return if !$metaPackager;
 
-	return $metaPackager->installSelection($packages);
+	return $metaPackager->installPackages($packages);
 }
 
 =item removePackages($packages)
@@ -397,7 +441,7 @@ sub removePackages
 	my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
 	return if !$metaPackager;
 
-	return $metaPackager->removeSelection($packages);
+	return $metaPackager->removePackages($packages);
 }
 
 =back
@@ -417,6 +461,7 @@ sub _loadPlugin
 	# if there's a distro folder, instantiate the most appropriate distro class
 	my $distro;
 	if (-d "$self->{'plugin-path'}/OpenSLX/Distro") {
+		unshift @INC, $self->{'plugin-path'};
 		my $distroName = $self->distroName();
 		$distroName =~ tr{.-}{__};
 		my @distroModules;
@@ -425,16 +470,24 @@ sub _loadPlugin
 			$distroName = $1;
 		}
 		push @distroModules, $distroName;
-		push @distroModules, 'base';
+		push @distroModules, 'Base';
 		for my $distroModule (@distroModules) {
-print "trying $distroModule...\n";
 			last if eval {
 				$distro = instantiateClass(
-					$distroModule, { pathToClass => $self->{'plugin-path'} }
+					'OpenSLX::Distro::' . $distroModule, 
+					{ pathToClass => $self->{'plugin-path'} }
 				);
 				1;
 			};
 		}
+		shift @INC;
+		if (!$distro) {
+			die _tr(
+				'unable to load any distro module for vendor-OS %s',
+				$self->{'vendor-os-name'}
+			);
+		}
+		$distro->initialize($self);
 	}
 
 	$plugin->initialize($self, $distro);

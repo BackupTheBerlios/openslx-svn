@@ -9,14 +9,15 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # SUSE.pm
-#	- provides SUSE-specific overrides of the OpenSLX OSSetup API.
+#	- provides SUSE-specific overrides of the OpenSLX Distro API for the desktop
+#     plugin.
 # -----------------------------------------------------------------------------
 package OpenSLX::Distro::suse;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::Distro::base);
+use base qw(OpenSLX::Distro::Base);
 
 use OpenSLX::Basics;
 
