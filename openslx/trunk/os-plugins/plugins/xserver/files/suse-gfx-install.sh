@@ -112,6 +112,10 @@ if [ "$1" = "ati" ]; then
       rpm2cpio ${RNAME} | ${BUSYBOX} cpio -id > /dev/null
     done
     mv ./usr/X11R6/lib/* ./usr/lib/
+   # fix for fglrx_dri.so 
+    mkdir -p ./usr/X11R6/lib/dri
+    ln -s /opt/openslx/plugin-repo/xserver/ati/usr/lib/dri/fglrx_dri.so \
+    ./usr/X11R6/lib/dri/fglrx_dri.so
     mv ./usr ..
     mv ./etc ..
     find lib/ -name "*.ko" -exec mv {} ../modules \;
