@@ -251,12 +251,17 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/runvmware \
         /mnt/var/X11R6/bin/run-vmware.sh
     chmod 755 /mnt/var/X11R6/bin/run-vmware.sh
-    if [ "${vmware_kind}" = "vmpl2.0" ]; then
+
+
+    # affects only kernel and config depending configuration of not
+    # local installed versions
+    if [ "${vmware_kind}" != "local" ]; then
       # TODO: setup up kernel files
-      # need something in it. see
-      # http://openslx.org/trac/de/openslx/wiki/WasEsNochZuDokumentierenGilt
-      echo ""
+      cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/config \
+        /mnt/etc/vmware
+      chmod 644 /mnt/etc/vmware/config
     fi
+
     
     [ $DEBUGLEVEL -gt 0 ] && echo "  *  done with 'vmware' os-plugin ..."
 

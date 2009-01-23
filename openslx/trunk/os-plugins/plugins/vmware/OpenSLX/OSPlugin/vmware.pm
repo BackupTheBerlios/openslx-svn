@@ -294,6 +294,16 @@ sub _writeWrapperScript
     }
 }
 
+sub _wirteVmwareConfig {
+    my $self   = shift;
+    my $kind   = shift;
+    my $vmpath = shift;
+
+    my $config = "libdir = \"$vmpath\"";
+
+    spitFile("$self->{'pluginRepositoryPath'}/$kind/config", $config);
+    chmod 0755, "$self->{'pluginRepositoryPath'}/$kind/config";
+}
 
 ########################################################################
 ## Functions, which setup the different environments (local, ws-v(5.5|6),
@@ -438,6 +448,10 @@ sub _vmpl2Installation {
     ##
     ## Create wrapperscripts
     $self->_writeWrapperScript("$vmpath", "$kind", "player")
+
+    ##
+    ## Creating needed config /etc/vmware/config
+    $self->_wirteVmwareConfig("$kind", "$vmpath");
         
 }
 
