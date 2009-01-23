@@ -123,8 +123,23 @@ sub _copyUclibcRootfs
     my $self = shift;
 
     my $uclibcRootfs = "$openslxConfig{'base-path'}/share/uclib-rootfs";
+    
+    my @excludes = qw(
+        dialog
+        infocmp
+        kexec
+        libcurses.so*
+        libform.so*
+        libmenu.so*
+        libncurses.so*
+        libpanel.so*
+        mconf
+        tack tick toe tput tset
+    );
 
-    $self->addCMD("rsync -rlpt $uclibcRootfs/ $self->{'build-path'}");
+    my $exclOpts = join ' ', map { "--exclude $_" } @excludes;
+
+    $self->addCMD("rsync $exclOpts -rlpt $uclibcRootfs/ $self->{'build-path'}");
     
     return 1;
 }
