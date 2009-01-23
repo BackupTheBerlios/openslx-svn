@@ -25,7 +25,7 @@ if [ "$1" = "nvidia" ]; then
   #TODO: licence information... even suse requires an accept
   # TODO: let it automatical find the newest file... see ati section
   #       only problem should be the kernel package
-  if [ "10.2" -eq "$(lsb_release -r|sed 's/^.*\t//')" ]; then
+  if [ "10.2" = "$(lsb_release -r|sed 's/^.*\t//')" ]; then
     wget -q -c \
       ftp://download.nvidia.com/opensuse/10.2/i586/nvidia-gfxG01-kmp-bigsmp-173.14.12_2.6.18.8_0.10-0.1.i586.rpm \
       ftp://download.nvidia.com/opensuse/10.2/i586/nvidia-gfxG01-kmp-default-173.14.12_2.6.18.8_0.10-0.1.i586.rpm \
