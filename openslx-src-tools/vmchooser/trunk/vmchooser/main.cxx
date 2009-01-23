@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
   delete opt;
  
   // just print out version information - helps testing
-  cout << "virtual machine chooser 0.0.3"<< endl;
+  cout << "virtual machine chooser 0.0.4"<< endl;
   if(version) {
     exit(1);
   }

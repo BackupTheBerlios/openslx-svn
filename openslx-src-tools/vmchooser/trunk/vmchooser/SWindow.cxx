@@ -27,6 +27,7 @@ SWindow::SWindow(int w, int h, char* p)
   exit_btn(10, h-40, w/3 -10, 30, "EXIT"),
   sel(10,10, w-20, h-50)
 {
+//  sel.indented(1);
   begin();
   add_resizable(sel);
   add(exit_btn);
@@ -43,7 +44,6 @@ SWindow::SWindow(int w, int h, char* p)
   Style* sel_style = new Style(*fltk::Browser::default_style);
   
   
-  sel.indented(1);
   
   Font* f1 = font("sans");
   //Font* f1bold = f1->bold();
@@ -60,7 +60,7 @@ SWindow::SWindow(int w, int h, char* p)
   go.style(btn_style);
   sel.style(sel_style);
   
-  const int widths[]   = { 2*((w-30)/3), (w-30)/3, -1, 0 };
+  const int widths[]   = { -1,-1,-1,-1, 0 };
   sel.column_widths(widths);
   
   end();
@@ -132,8 +132,8 @@ void SWindow::set_lin_entries(DataEntry** ent)
   }
   map<string, DataEntry*>::iterator it= mapEntry.begin();
   for(;it!=mapEntry.end(); it++) {
-    Item* w= (Item*)sel.add_leaf(it->second->short_description.c_str() , lin_entgroup, (void*)it->second );
-       
+//    Item* w= (Item*)sel.add_leaf(it->second->short_description.c_str() , lin_entgroup, (void*)it->second );
+    Item* w= (Item*)lin_entgroup->add(it->second->short_description.c_str(), (void*)it->second );
     xpmImage* xpm = new xpmImage(get_symbol(it->second));
     ((Widget*) w)->image(xpm);
     w->tooltip(it->second->description.c_str());
@@ -198,6 +198,7 @@ void SWindow::unfold_entries() {
   curr = (Item*) sel.item();
   //sel.set_focus();
   //sel.set_item_selected(true,1);
+  //sel.indented(false);
 }
 
 

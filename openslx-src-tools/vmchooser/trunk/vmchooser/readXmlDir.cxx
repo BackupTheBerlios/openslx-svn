@@ -245,6 +245,7 @@ DataEntry** readXmlDir(char* path)
           while(fgets(line, MAX_LENGTH, inp ) != NULL) {
             xmlVec.push_back(string(line).substr(0,strlen(line)-1) );
           }
+          pclose(inp);
         }
 
         xmlDoc *doc = NULL;

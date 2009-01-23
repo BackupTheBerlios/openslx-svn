@@ -72,6 +72,16 @@ sub getAttrInfo
             content_descr => 'name of environment',
             default => 'default',
         },
+        'vmchooser::xmlpath' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                 location of XML configuration for virtual images
+            End-of-Here
+            content_descr => 'path to xml files',
+            default => '/var/lib/vmware/vmconfigs/',
+        },
+
     };
 }
 
