@@ -33,6 +33,9 @@ sub new
         name => 'desktop',
     };
 
+    my $localThemesDir = "$openslxConfig{'config-path'}/plugins/desktop/themes";
+    mkpath($localThemesDir) unless -e $localThemesDir;
+
     return bless $self, $class;
 }
 
