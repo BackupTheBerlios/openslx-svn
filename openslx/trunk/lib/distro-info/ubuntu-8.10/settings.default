@@ -1,0 +1,52 @@
+arch = i386
+package-subdir = pool
+prereq-packages = main/d/debootstrap/debootstrap_0.3.3.2ubuntu3_all.deb
+release-name = hardy
+<repository base>
+    components = main restricted
+    distribution = intrepid
+    name = Ubuntu 8.10
+    repo-subdir = dists
+    file-for-speedtest = dists/intrepid/main/binary-i386/Packages.bz2
+</repository>
+<repository base_security>
+    components = main restricted
+    distribution = intrepid-security
+    name = Ubuntu 8.10 Security
+    repo-subdir = dists
+    file-for-speedtest = dists/intrepid-security/main/binary-i386/Packages.bz2
+</repository>
+<repository base_updates>
+    components = main restricted
+    distribution = intrepid-updates
+    name = Ubuntu 8.10 Updates
+    repo-subdir = dists
+    file-for-speedtest = dists/intrepid-updates/main/binary-i386/Packages.bz2
+</repository>
+<selection minimal>
+    packages = <<END
+        language-pack-de
+        linux-image-generic
+    END
+</selection>
+<selection gnome>
+    base = minimal
+    packages = <<END
+        ubuntu-desktop
+    END
+</selection>
+<selection kde>
+    base = minimal
+    packages = <<END
+        kubuntu-desktop
+    END
+</selection>
+<selection xfce>
+    base = minimal
+    packages = <<END
+        xubuntu-desktop
+    END
+</selection>
+<selection default>
+    base = minimal
+</selection>
