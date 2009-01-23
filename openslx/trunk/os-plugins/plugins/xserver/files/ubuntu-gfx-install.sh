@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # gets needed packages for ubuntu nvidia/ati drivers
 # $1 = nvidia | ati

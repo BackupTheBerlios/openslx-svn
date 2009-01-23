@@ -225,6 +225,9 @@ sub installationPhase
     }
     if ($attrs->{'xserver::nvidia'} == 1) {
         copyFile("$pluginFilesPath/nvidia-install.sh", "$installationPath");
+        #TODO: handle distribution. Bastian, have you testet your
+        #      script? ;-)
+        copyFile("$pluginFilesPath/suse-gfx-install.sh", "$installationPath");
         system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/nvidia-install.sh");
     }
 
