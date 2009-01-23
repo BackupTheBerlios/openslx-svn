@@ -266,8 +266,8 @@ mkdir /var/lib/dhcp >/dev/null 2>&1
 testmkd /usr/share/udhcpc
 ln -sf /bin/dhcpmkconfig /usr/share/udhcpc/default.script
 # -b option is suboptimal here ...
-udhcpc -t 8 -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null
-echo "dhcp finished at $(sysup)" >/tmp/dhcp-done
+udhcpc -b -t 8 -q $vci -s /usr/share/udhcpc/default.script \
+  -i $nwif 2>/dev/null
 }
 
 #############################################################################
@@ -315,7 +315,7 @@ if [ "x$filepath" != "x" ] ; then
    ;;
    *)
      tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv  \
-       && unpack /tmp/$(basename $cfgfile)
+       && unpack /tmp/$(basename $cfgfile) 2>/dev/null
    ;;
    esac
 else
@@ -337,7 +337,7 @@ and as last\n# distro/default" >> /tmp/confviafile
           2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
       tftp)
-        tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv \
+        tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv 2>/dev/null\
            && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
     esac
@@ -440,6 +440,8 @@ echo "finished at $(sysup)" >/tmp/ldcfg
 # base passwd/shadow, the standard user present in every system. All other
 # system users should be generated within the service function
 basepasswd () {
+# hack (see Ticket #206)
+root_pw="$1"
 # strip every line with userid between 500 and 99999 from the passwd
 # file
 sed '/^[a-zA-Z0-9]*:[a-zA-Z0-9]*:[1-9][0-9]\{3,4\}:/d;/^+:*/d;/^+$/d;

@@ -84,6 +84,7 @@ nwif="eth0"
 # admin has to wait until second run of hwsetup late in stage3) and the
 # network adaptor modules, search for pci modules to load later on
 hwautocfg base
+ash
 
 # if no kernel version is set, try to get it directly from /proc
 if [ -z $KERNEL ] ; then
@@ -111,15 +112,15 @@ preinit
 # according to kernel commandline settings
 echo "noldap" > /tmp/ldap-done
 
-# External configuration file retrieval (per tftp) must be done, as otherwise
-# we will never get the machine-setup file. By default, we try a predefined
+# external configuration file retrieval (per tftp) must be done, as otherwise
+# we will never get the initramfs-setup file. By default, we try a predefined
 # standard path (.../tftpboot/client-config/ ...)
 file="yes"
 
 # read kernel commandline
 read KCMDLINE < /proc/cmdline
 export KCMDLINE
-# read the system wide machine-setup and then the kernel commandline
+# read the system wide initramfs-setup and then the kernel commandline
 for opts in $(sed "s/#.*//" /etc/initramfs-setup) ${KCMDLINE} ; do
   case ${opts} in
     # from IPAPPEND
@@ -129,8 +130,9 @@ for opts in $(sed "s/#.*//" /etc/initramfs-setup) ${KCMDLINE} ; do
     # localization
     country=*)
       COUNTRY=${opts#country=}
-      echo -e "\n# localization information gotten via kernel command line \
-in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
+      grep -E "country=" /etc/initramfs-setup >/dev/null 2>&1 && \
+        echo -e "\n# localization information gotten via kernel command line \
+in $0\ncountry=\"${COUNTRY}\"" >>/etc/initramfs-setup
     ;;
     # single token for debugging ...
     debug)
@@ -217,8 +219,10 @@ in $0\ncountry=\"${COUNTRY}\"" >> /etc/machine-setup
           # nfsroot consists now of two different parts
           nfspath=$(uri_token $rootfs path)
           nfsserver=$(uri_token $rootfs server)
-          echo -e "\n# nfs root information gotten via kernel command \
-line in $0\n#nfsroot=\"${nfsserver}:${nfspath}\"\n" >> /etc/machine-setup
+          grep -E "nfsserver" /etc/initramfs-setup >/dev/null 2>&1 || \
+            echo -e "# nfs root information gotten via kernel command \
+line in $0\nnfsserver=\"${nfsserver}\"\nnfspath=\"${nfspath}\"" \
+              >> /etc/initramfs-setup
         ;;
         *nbd*)
           bldmod=$srvproto
@@ -261,7 +265,7 @@ line in $0\n#nfsroot=\"${nfsserver}:${nfspath}\"\n" >> /etc/machine-setup
       nfsroot=${opts#nfsroot=}
       echo -e "\n# nfs root information gotten via kernel command line in \n\
 $0\n# deprecated: please use rootfs=nfs://...\nnfsroot=\"${nfsroot}\"\n" \
->> /etc/machine-setup
+>> /etc/initramfs-setup
     ;;
     # size of tempfs if not max. 50% of RAM should be used
     tmpfssize=*)
@@ -297,9 +301,9 @@ if [ -n "$nodhcp" -a -z "$ldap" -a -z "$ipinfo" -a $srvproto != "lbdev" ]
   then echo -e "# You did not specify any advanced configuration mode for \
 your clients. You\n# might want to add the token 'dhcp' for DHCP config, \
 'file(=source)'\n# for config file get via TFTP or 'ldap(=source)' for LDAP \
-configuration to\n# your kernel command line." >> /etc/machine-setup
+configuration to\n# your kernel command line." >> /etc/initramfs-setup
   if strinfile "clientip" /etc/initramfs-setup ; then
-    # IP configuration seems to be present in machine-setup file
+    # IP configuration seems to be present in initramfs-setup file
     # TODO: FIX this, as it will clobber all kernel-cmdline values!
     . /etc/initramfs-setup
     ipinfo="ip=$clientip:$serverip:$gateway:$subnet_mask"
@@ -383,7 +387,8 @@ ip link set dev lo up 2>/dev/null
 ip addr add 127.0.0.1/8 dev lo 2>/dev/null
 ip link set dev $nwif up  2>/dev/null || error "$init_noeth"
 
-# XEN bridge config
+# XEN bridge config (fixme: should be moved to plugin a special hook might be 
+# needed at this point)
 [ -n "$xenbr" ] && xenbr_config
 
 # analyze ip information from the kernel command line and put parts
@@ -413,6 +418,7 @@ fi
 # in ${vci} from kernel command line or initramfs-setup) ...
 [ -z "$nodhcp" ] && ( rundhcp ${vci}
   waitfor /tmp/confviadhcp 20000
+  echo "dhcp finished at $(sysup)" >/tmp/dhcp-done
   cat /tmp/confviadhcp >>/etc/initramfs-setup
   . /etc/initramfs-setup
   if [ -n "$noipyet" ] ; then
@@ -595,7 +601,7 @@ fi
 
 # if no type of root filesystem is passed via kernel command line try
 # information gathered from dhcp process (only valid for nfs)
-if [ -z "${bldmod}" -a -z "${bldhost}" -a -z "${nfsroot}" ] ; then
+if [ -z "${bldmod}" -a -z "${bldhost}" -a -z "${nfsserver}" ] ; then
   # information has to be read from dhcp and ldap configuration
   cfgcomplete
 fi
@@ -603,8 +609,8 @@ fi
 # mount nfs rootfs
 if [ -z "${bldmod}" -a -z "${bldserver}" ] ; then
   [ $DEBUGLEVEL -eq 20 ] && echo "** started nfs mount"
-  # read in extended machine-setup
-  . /etc/machine-setup
+  # read in extended initramfs-setup
+  . /etc/initramfs-setup
   # prefer nfsserver and nfspath from kernel commandline over the information
   # gotten from dhcp server
   if [ -n "${nfsserver}" -a -n "${nfspath}" ] ; then
@@ -795,11 +801,11 @@ waitfor /tmp/hwcfg 20000 || error "$init_errhw"
 # wait a while for services setup to complete
 waitfor /tmp/svcfg 10000 || error "$init_errsw"
 # IP configuration is complete and should not be updated automatically
-killall -9 dhcpcd dhclient udhcpc 2>/dev/null
+killall -9 udhcpc 2>/dev/null
 # copy machine configuration file into stage4 filesystem
-mv /etc/machine-setup /mnt/etc
+cat /etc/initramfs-setup >>/mnt/etc/machine-setup
 
-# if uniondirs is not set yet, maybe the unions were given via machine-setup
+# if uniondirs is not set yet, maybe the unions were given via initramfs-setup
 if [ -z "$uniondirs" ]; then
   if [ "$union_type" == "AUFS" ]; then
     # does it contain "://"?

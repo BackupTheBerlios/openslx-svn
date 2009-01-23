@@ -31,7 +31,7 @@ hwinfo --usb-ctrl --netcard | grep modprobe | grep -v ehci | \
 ash /etc/modprobe.base; mdev -s
 # optimization possible: exclude network and usb base drivers from the
 # following list
-( hwinfo --pci >/etc/hwinfo.data; hwinfo --mouse >/etc/hwinfo.mouse ) &
+( hwinfo --pci >/etc/hwinfo.data ) &
 return 0
 }
 
@@ -44,28 +44,27 @@ sed '/Driver Info #1/,/Config Status:/d' \
   /etc/hwinfo.data | grep modprobe | sed "s|.* Cmd: \"||;s|\"|$modloadbg|" \
     | sort -u >/etc/modprobe.pci
 ash /etc/modprobe.pci
-[ -x /bin/mdev ] && mdev -s
+mdev -s
+
+# load harddisk driver and check for harddisk
+( grep -E "IDE|SCSI" /etc/hwinfo.data >/dev/null 2>&1 && \
+    modprobe ${MODPRV} sd_mod
+  hwinfo --disk | sed -n "/Device File: /p" | sed "s|.*Device File: /dev/||" \
+    >/etc/hwinfo.disk; ) &
+[ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
+
 # load disk/optical high level drivers
 modprobe ${MODPRV} ide-cd
 modprobe ${MODPRV} sr_mod
 modprobe ${MODPRV} ide-floppy
-grep -E "IDE|SCSI" /etc/hwinfo.data >/dev/null 2>&1 && \
-  modprobe ${MODPRV} sd_mod
+mdev -s
 
-# load kernel module for ps2 mice
-[ -f /lib/modules/${KERNEL}/kernel/drivers/input/mouse/psmouse.ko ] && \
-  modprobe ${MODPRV} psmouse
-
-# and map the mousehandler to /dev/input/mice
-[ -f /lib/modules/${KERNEL}/kernel/drivers/input/mousedev.ko ] && \
-  modprobe ${MODPRV} mousedev
-
-hwinfo --disk | sed -n "/Device File: /p" | sed "s|.*Device File: /dev/||" \
-  >/etc/hwinfo.disk
-[ -s /etc/hwinfo.disk ] && disk=yes
-[ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
-
-[ -x /bin/mdev ] && mdev -s
+# load kernel module for ps2 mice and map the mousehandler to /dev/input/mice
+( [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mouse/psmouse.ko ] && \
+    modprobe ${MODPRV} psmouse 
+  [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mousedev.ko ] && \
+    modprobe ${MODPRV} mousedev
+  hwinfo --mouse >/etc/hwinfo.mouse ) &
 
 # complete the audio configuration and load the dummy module if no audio
 # hardware is present in the machine
@@ -79,7 +78,8 @@ modprobe ${MODPRV} snd-mixer-oss
 # get idea of availabe harddisk partitions, put swap partitions into
 # (/mnt)/etc/fstab and format and mount partitions of type 44 (unknown)
 [ $DEBUGLEVEL -eq 21 ] && echo "** starting hdd stuff at $(sysup)"
-if [ "${disk}" = "yes" ] ; then
+waitfor /etc/hwinfo.disk 10000
+if [ -s /etc/hwinfo.disk ] ; then
 for hd in $(cat /etc/hwinfo.disk) ; do
   fdisk -l /dev/$hd|sed -n "/^\/dev\//p" >/etc/disk.partition
   for hdpartnr in $(cat /etc/disk.partition | \
@@ -117,11 +117,10 @@ fi
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished hdd stuff at $(sysup)"
 
 # if any new device appeared up to now
-if [ -x /bin/mdev ] ; then
-  mdev -s &
-  testmkd /dev/input 
-  mknod /dev/input/mice c 13 63 2>/dev/null
-fi
+mdev -s
+testmkd /dev/input 
+mknod /dev/input/mice c 13 63 2>/dev/null
+
 # scanner setup (to be checked)
 [ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
   >>/mnt/etc/udev/rules.d/04-scanner.rules
