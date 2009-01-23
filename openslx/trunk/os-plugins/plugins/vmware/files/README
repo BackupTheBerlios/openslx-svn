@@ -18,8 +18,8 @@ Files
   This example files shows which VMware features are configureable for
   each virtual machine.
   Should be moved sooner or later to the vm-chooser plugin
-- install-vmpl2.0.sh
-  Install script, which will download and install vmplayer v2.0 if choosen
+- install-vmpl.sh
+  Install script, can handle different vmware version installations
 - mkdosfs
   linked against uclib for creating dos-formatted floppies for data 
   transport between host and guest (needed in stage3)

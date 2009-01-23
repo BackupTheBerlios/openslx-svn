@@ -168,6 +168,17 @@ sub getAttrInfo
             content_descr => '1 means active - 0 means inactive',
             default => '0',
         },
+        'vmware::vmpl2.5' => {
+            applies_to_vendor_os => 1,
+            applies_to_system => 0,
+            applies_to_clients => 0,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                Install and configure vmplayer v2
+            End-of-Here
+            content_regex => qr{^(1|0)$},
+            content_descr => '1 means active - 0 means inactive',
+            default => '0',
+        },
         'vmware::vmpl1.0' => {
             applies_to_vendor_os => 1,
             applies_to_system => 0,
@@ -213,9 +224,10 @@ sub preInstallationPhase()
     my $pkgpath = $self->{attrs}->{'vmware::pkgpath'};
     my $vmpl10 = $self->{attrs}->{'vmware::vmpl1.0'};
     my $vmpl20 = $self->{attrs}->{'vmware::vmpl2.0'};
+    my $vmpl25 = $self->{attrs}->{'vmware::vmpl2.5'};
     my $local = $self->{attrs}->{'vmware::local'};
 
-    if ($local == 0 && $vmpl10 == 0 && $vmpl20 == 0) {
+    if ($local == 0 && $vmpl10 == 0 && $vmpl20 == 0 && $vmpl20 == 0) {
         print "\n\n * At least one kind needs to get installed/activated:\n";
         print "     vmware::local=1  or\n";
         print "     vmware::vmpl1.0=1  or\n";
@@ -224,14 +236,14 @@ sub preInstallationPhase()
         exit 1;
     }
 
-    if (! -d $pkgpath && ($vmpl10 == 1 || $vmpl20 == 1)) {
+    if (! -d $pkgpath && ($vmpl10 == 1 || $vmpl20 == 1 || $vmpl25 == 1)) {
         print "\n\n * vmware::pkgpath: no such directory!\n";
         print " * vmware plugin was not installed!\n\n";
         exit 1;
     }
 
     # test just for the case we only set up local vmware
-    if (-d $pkgpath && ($vmpl10 == 1 || $vmpl20 == 1)) {
+    if (-d $pkgpath && ($vmpl10 == 1 || $vmpl20 == 1 || $vmpl25 == 1)) {
         # todo: ask oliver about a similiar function
         #       like copyFile() just for directorys
         #       or fix the manual after checked the source of
@@ -266,6 +278,9 @@ sub installationPhase
     }
     if ($self->{attrs}->{'vmware::vmpl1.0'} == 1) {
         $self->_vmpl1Installation();
+    }
+    if ($self->{attrs}->{'vmware::vmpl2.5'} == 1) {
+        $self->_vmpl25Installation();
     }
         
     ## prepration for our faster wrapper script
@@ -336,10 +351,17 @@ sub checkStage3AttrValues
     if ($vm_kind eq 'vmpl2.0' &&
         ! -d "/opt/openslx/plugin-repo/vmware/vmpl2.0/vmroot") {
         push @problems, _tr(
-            "No OpenSLX installation of VMware Player 2 found or installation failed. Using it as virtual machine wouldn't work!"
+            "No OpenSLX installation of VMware Player 2.0 found or installation failed. Using it as virtual machine wouldn't work!"
         );
     }
     
+    if ($vm_kind eq 'vmpl2.5' &&
+        ! -d "/opt/openslx/plugin-repo/vmware/vmpl2.5/vmroot") {
+        push @problems, _tr(
+            "No OpenSLX installation of VMware Player 2.5 found or installation failed. Using it as virtual machine wouldn't work!"
+        );
+    }
+
     if ($vm_kind eq 'vmpl1.0' &&
         ! -d "/opt/openslx/plugin-repo/vmware/vmpl1.0/vmroot") {
         push @problems, _tr(
@@ -565,6 +587,52 @@ sub _vmpl2Installation {
 
     # copy on depending runvmware file
     copyFile("$pluginFilesPath/runvmware-player-v2", "$installationPath", "runvmware");
+
+    ##
+    ## Install the binarys from given pkgpath
+    system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-vmpl.sh $kind");
+
+    ##
+    ## Create runlevel script
+    my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
+    $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
+
+    ##
+    ## Create wrapperscripts
+    $self->_writeWrapperScript("$vmpath", "$kind", "player");
+
+    ##
+    ## Creating needed config /etc/vmware/config
+    $self->_writeVmwareConfig("$kind", "$vmpath");
+        
+}
+
+sub _vmpl25Installation {
+    my $self     = shift;
+
+    my $kind   = "vmpl2.5";
+    my $vmpath = "/opt/openslx/plugin-repo/vmware/$kind/vmroot/lib/vmware";
+    my $vmbin  = "/opt/openslx/plugin-repo/vmware/$kind/vmroot/bin";
+    my $vmversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage?";
+    my $vmbuildversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage1";
+
+    my $pluginFilesPath 
+        = "$self->{'openslxBasePath'}/lib/plugins/$self->{'name'}/files";
+    my $installationPath = "$self->{'pluginRepositoryPath'}/$kind";
+
+    mkpath($installationPath);
+
+    ##
+    ## Copy needed files
+
+    # copy 'normal' needed files
+    my @files = qw( nvram.5.0 install-vmpl.sh );
+    foreach my $file (@files) {
+        copyFile("$pluginFilesPath/$file", "$installationPath");
+    }
+
+    # copy on depending runvmware file
+    copyFile("$pluginFilesPath/runvmware-player-v25", "$installationPath", "runvmware");
 
     ##
     ## Install the binarys from given pkgpath
