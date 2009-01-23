@@ -71,11 +71,22 @@ sub getAttrInfo
         },
         'xserver::ddcinfo' => {
             applies_to_systems => 1,
-            applies_to_clients => 0,
+            applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
             should the 'xserver'-plugin use the ddcinfo (if available) for
             the monitor/tft setup? Might help in scenarios with resolutions
             configured much lower than physically possible. (0 ignore, 1 use)
+            End-of-Here
+            content_regex => qr{^(0|1)$},
+            content_descr => '0 ignore ddcinfo, 1 use ddcinfo if available',
+            default => '0',
+        },
+        'xserver::prefnongpl' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+            should the 'xserver'-plugin use the non-gpl drivers for some graphic
+            adaptors if available (0 prefer gpl, 1 use the nongpl)
             End-of-Here
             content_regex => qr{^(0|1)$},
             content_descr => '0 ignore ddcinfo, 1 use ddcinfo if available',
