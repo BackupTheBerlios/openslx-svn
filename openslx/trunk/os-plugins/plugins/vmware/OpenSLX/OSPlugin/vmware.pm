@@ -179,20 +179,27 @@ sub installationPhase
     # variants because we do not know which on is selected on client level 
     # (code depends on distro/version and vmware location)
     # for local ... other vm-installations (TODO: generate list)
-    @files = qw( local );
-    foreach my $file (@files) {
+    @types = qw( local );
+    foreach my $type (@type) {
         #  location of the vmware stuff, "local" for directly installed
         # package (more sophisticated assignment might be needed ...)
-        if ( $file eq "local" ) {
-            my $vmpath = "/usr/lib/vmware";
-            my $vmbin  = "/usr/bin";
+        if ( $type eq "local" ) {
+            $vmpath = "/usr/lib/vmware";
+            $vmbin  = "/usr/bin";
         }
-        # if provided via another plugin (TODO: pathname not completely clear ...)
+        # if provided via another plugin
+        # -> why another plugin? Why should another plugin handle files
+        #    for vmware? Do we have another plugin which writes files
+        #    at the moment?
+        #    -> we don't have a .../vmwareXXX/ folder => .../vmware/
+        # (TODO: pathname not completely clear ...
+        #   -> should be the one of the plugin)
         else {
-            my $vmpath = "/opt/openslx/plugin-repo/vmwareXXX/$file";
-            my $vmbin  = "$vmpath/bin";
+            #my $vmpath = "/opt/openslx/plugin-repo/vmwareXXX/$type";
+            $vmpath = "/opt/openslx/plugin-repo/vmware/$type";
+            $vmbin  = "$vmpath/bin";
         }
-        my $runlevelScript = "$self->{'pluginRepositoryPath'}/vmware.$file";
+        my $runlevelScript = "$self->{'pluginRepositoryPath'}/vmware.$type";
         $self->_writeRunlevelScript($vmbin, $runlevelScript);
     }
 
@@ -212,7 +219,7 @@ sub installationPhase
             exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \
                  "\$PREFIX"'/lib' \
                  "\$PREFIX"'/bin/vmware' \
-                 "\$PREFIX"'/libconf' "$@"
+                 "\$PREFIX"'/libconf' "\$@"
         End-of-Here
         spitFile("$self->{'pluginRepositoryPath'}/$file", $script);
     }
@@ -235,6 +242,8 @@ sub removalPhase
     return;
 }
 
+# shouldn't we make it a OpenSLX function and not just a vmware plugin
+# function. oh, i forgot, we are talking about the vmware plugin...
 sub _writeRunlevelScript
 {
     my $self     = shift;
