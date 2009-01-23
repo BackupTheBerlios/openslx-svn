@@ -750,7 +750,6 @@ sub addInstalledPlugin
 				= defined $pluginAttrs->{$pluginAttrName} 
 					? $pluginAttrs->{$pluginAttrName}
 					: '-';
-print "$pluginAttrName: $currVal <=> $givenVal\n";
 			next if $currVal eq $givenVal;
 			return if ! $self->_doUpdate(
 				'installed_plugin_attr', [ $attrInfo->{id} ], [ {
@@ -883,7 +882,13 @@ sub setSystemAttrs
 					value     => $attrs->{$_},
 				}			
 			}
-			grep { defined $attrs->{$_} }
+			grep {
+				# Write undefined attributes for the default system, such that
+				# it shows all existing attributes. All other systems never
+				# write undefined attributes (if they have not defined a
+				# specific attribute, it is inherited from "above").
+				$systemID == 0 || defined $attrs->{$_} 
+			}
 			keys %$attrs;
 	$self->_doInsert('system_attr', \@attrData);
 	return 1;
