@@ -29,9 +29,19 @@ if [ -e /initramfs/plugin-conf/dropbear.conf ]; then
 
        # create dropbear config dir
        mkdir -p /etc/dropbear
-       
+
+       # touch some files to get rid of error msgs
+       touch /var/log/lastlog
+       touch /var/log/wtmp
+
+       # copy ssh auth keys from stage1
+       cp -r /mnt/root/.ssh /root
+
+       # give root a valid shell
+       sed -i /etc/passwd -e "s/bash/sh/"       
+
        # convert openssh rsa key to dropbear key - if available
-       if [ -e /mnt/etc/ssh/ssh_host_rsa_key ]
+       if [ -e /mnt/etc/ssh/ssh_host_rsa_key ]; then
          dropbearconvert openssh dropbear /mnt/etc/ssh/ssh_host_rsa_key \
            /etc/dropbear/dropbear_rsa_host_key
        else 
