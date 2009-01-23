@@ -34,12 +34,8 @@ config_distro () {
 # produce error message and if $2 is empty run (debug) shell
 error () {
 local e_msg="$1"
-# check if LOGFILE is really writeable
-if [ -n "${LOGFILE}" ] ; then
-  [ "${LOGFILE}" != "/dev/null" ] && \
-  [ -w /mnt/${LOGFILE} ] || LOGFILE="/dev/null"
-else LOGFILE="/dev/null"
-fi
+# set LOGFILE if not defined
+[ -z "${LOGFILE}" ] && LOGFILE="/dev/null"
 # if nonfatal error else fatal error message and shell
 if [ -n "$2" ] ; then
   [ "$DEBUGLEVEL" -ge 1 -a "$DEBUGLEVEL" != 8 ] && \

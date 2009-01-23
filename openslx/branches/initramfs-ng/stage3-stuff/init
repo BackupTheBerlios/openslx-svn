@@ -323,8 +323,7 @@ fi
 export MODPRV=" "
 export LOGFILE
 if [ "${DEBUGLEVEL}" -gt 0 -a "${DEBUGLEVEL}" != 8 ] ; then
-  # if LOGFILE should be used within initial ramdisk add '/mnt' in front
-  # of the variable
+  # set LOGFILE and move it later on into stage4
   LOGFILE="/var/log/slx-boot.log"
   echo "Starting OpenSLX client boot logging at $(date)" >$LOGFILE
   echo "1 4 1 7" >/proc/sys/kernel/printk
@@ -443,10 +442,17 @@ fi
 # check if serverip is set as variable @@@serverip@@@
 sed "s,@@@serverip@@@,$serverip," -i /etc/initramfs-setup
 [ $DEBUGLEVEL -eq 20 ] && echo "** finished ip config at $(sysup)"
+# on some network adaptors we need to wait for the link to come up
+dmesg | grep "link down" >/dev/null 2>&1 && for i in 1 1 1 1  ; do 
+  dmesg | grep "link up" >/dev/null 2>&1 && break
+  [ $DEBUGLEVEL -ge 1 ] && echo "network: waited half a second for the \
+link to come up" >>$LOGFILE
+  sleep $i
+done
 # ... or ldap if available (in background)
 [ -n "$ldap" ] && ldapconf &
 # ... or via (t)ftp/http file get (in background)
-[ -n "$file" ] && fileget
+[ -n "$file" ] && fileget &
 
 runinithook '15-have-ip-config'
 
@@ -895,8 +901,12 @@ killall -9 hwautocfg servconfig 2>/mnt/dev/null
   echo "** SLX init ended near $(sysup)"
 # kill the watchdog (autopoweroff, if stage3 init never finishes)
 [ -f /tmp/watchdogpid ] && kill $(cat /tmp/watchdogpid) 2>/mnt/dev/null
+# move logfile into stage4 filesystem (if exists)
+[ -f /var/log/slx-boot.log ] && mv /var/log/slx-boot.log \
+  /mnt/var/log/slx-s3boot.log
+
+# unmount /proc and unset all old,unneeded environment variables
 umount -n /proc
-# unset old environment variables
 unset client debug date initrd ip bldroot nfsroot rootfs ticks vci vga
 unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
   SLXVERSION UDEVD_EXPECTED_SEQNUM PATH
