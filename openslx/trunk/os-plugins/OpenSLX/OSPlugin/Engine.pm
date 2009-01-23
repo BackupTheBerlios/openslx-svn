@@ -182,6 +182,7 @@ sub installPlugin
         my $chrootedSerializedAttrsFile 
             = "$self->{'chrooted-plugin-temp-path'}/serialized-attrs";
     
+        rmtree([ $self->{'plugin-repo-path'}, $self->{'plugin-temp-path'} ]);
         mkpath([ $self->{'plugin-repo-path'}, $self->{'plugin-temp-path'} ]);
     
         # invoke plugin and let it prepare the installation
