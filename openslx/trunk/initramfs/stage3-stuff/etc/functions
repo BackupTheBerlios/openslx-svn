@@ -542,7 +542,7 @@ if [ -d /etc/init-hooks/$hook ]; then
     if [ -e $hook_script ]; then
       [ $DEBUGLEVEL -eq 15 ] \
           && sed '/^#!/ a\\set -x' -i $hook_script
-      init-wrapper $hook_script
+      /bin/init-wrapper $hook_script
     fi
   done
 fi
