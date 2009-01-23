@@ -45,8 +45,8 @@ config_distro () {
     rm -rf /mnt/etc/init.d/${dir}/*
   done
   # link the additional key setup (notbook special keys)
-  # grep -E "otebook" /etc/hwinfo.bios &&
-  [ -e /mnt/etc/init.d/hotkey-setup ] && rllinker "hotkey-setup" 25 25
+  [ grep -E "otebook" /etc/hwinfo.bios >/dev/null 2>&1 -a \
+    -e /mnt/etc/init.d/hotkey-setup ] && rllinker "hotkey-setup" 25 25
 
   # no need to run start scripts in parallel
   # enable magic sysrequest for the clients
