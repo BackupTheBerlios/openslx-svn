@@ -266,7 +266,7 @@ sub _writeRunlevelScript
         ### END INIT INFO
         load_modules() {
           # to be filled in via the stage1 configuration script
-          modprobe -qa vmmon vmnet vmblock 2>/dev/null
+          modprobe -qa vmmon vmnet vmblock 2>/dev/null || echo "Problem here!"
           # most probably nobody wants to run the parallel port driver ...
           #modprobe vm...
         }
@@ -331,6 +331,8 @@ sub _writeRunlevelScript
             echo -n "Starting vmware background services ..."
             # Ubuntu
             # log_begin_msg "Starting vmware background services ..."
+            . /etc/vmware/slxvmconfig
+            # add a proper error handling ...
             load_modules
             setup_vmnet0
             setup_vmnet1

@@ -30,9 +30,10 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     [ $DEBUGLEVEL -gt 0 ] && echo "executing the 'vmware' os-plugin ...";
     # Load general configuration
     . /initramfs/machine-setup
-    . /etc/functions
-    . /etc/distro-functions
-    . /etc/sysconfig/config
+    # evtl. völlig unnötig?!?
+    #. /etc/functions
+    #. /etc/distro-functions
+    #. /etc/sysconfig/config
 
     # prepare all needed vmware configuration files
     if [ -d /mnt/etc/vmware ] ; then
@@ -94,6 +95,7 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
     # copy the runlevelscript to the proper place and activate it
     cp /mnt/opt/openslx/plugin-repo/vmware/vmware.${vmware_kind} \
       /mnt/etc/${D_INITDIR}/vmware || echo "this should not happen ..."
+    chmod a+x /mnt/etc/${D_INITDIR}/vmware
     rllinker "vmware" 20 2
 
     #############################################################################
@@ -117,6 +119,7 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
       testmkd /mnt/var/lib/vmware
       case "${vmimgprot}" in
         *nbd)
+          # TODO: to be filled in ...
           ;;
         lbdev)
           # we expect the stuff on toplevel directory, filesystem type should be
@@ -153,13 +156,6 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
       mknod $i
     done
 
-    # create the vmware startup configuration file /etc/vmware/locations
-    # fixme --> ToDo
-    # echo -e "answer VNET_8_NAT yes\nanswer VNET_8_HOSTONLY_HOSTADDR \n\
-    #192.168.100.1\nanswer VNET_8_HOSTONLY_NETMASK 255.255.255.0\n\
-    #file /etc/vmware/vmnet8/dhcpd/dhcpd.conf\n\
-    # remove_file /etc/vmware/not_configured" >/mnt/etc/vmware/locations
-    
     chmod 0700 /dev/vmnet*
     chmod 1777 /mnt/etc/vmware/fd-loop
 
@@ -182,7 +178,7 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
     mount -n -t msdos -o loop,umask=000 /mnt/etc/vmware/loopimg/fd.img \
       /mnt/etc/vmware/fd-loop
     echo -e "usbfs\t\t/proc/bus/usb\tusbfs\t\tauto\t\t 0 0" >> /mnt/etc/fstab
-    # needed for VMware 5.5.3 and versions below
+    # needed for VMware 5.5.4 and versions below
     echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
       >>/mnt/etc/${D_INITDIR}/boot.slx
     
