@@ -80,6 +80,13 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
         ln -s ${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so \
         ${LINK_PATH}dri/fglrx_dri.so
       fi
+
+      # TODO: This should be fixed in linkage.sh - later
+      DRILPATH=/mnt/var/X11R6/lib/usr/X11R6/lib/modules/dri/
+      mkdir -p "${DRILPATH}"
+      ln -s ${PLUGIN_ROOTFS}/usr/lib/modules/dri/fglrx_dri.so "${DRILPATH}fglrx_dri.so"
+      # TODO: end
+
       ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 \
       ${LINK_PATH}libGL.so
       ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 \

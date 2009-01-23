@@ -96,7 +96,7 @@ if [ "$1" = "ati" ]; then
     echo "  * Downloading ati rpm packages... this could take some time..."
 
     #TODO: ADD SUFFIX for used kernel detection
-    SUFF=pae
+    SUFF="-pae"
     # add repository for nvidia drivers
     zypper addrepo http://www2.ati.com/suse/11.0/ ATI
     # confirm authenticity of key (once) 
@@ -117,7 +117,7 @@ if [ "$1" = "ati" ]; then
     mv ./usr/X11R6/lib/* ./usr/lib/
    # fix for fglrx_dri.so 
     mkdir -p ./usr/X11R6/lib/modules/dri
-    ln -s /opt/openslx/plugin-repo/xserver/ati/usr/lib/dri/fglrx_dri.so \
+    ln -s ../../../../lib/dri/glrx_dri.so \
     ./usr/X11R6/lib/modules/dri/fglrx_dri.so
     mv ./usr ..
     mv ./etc ..
