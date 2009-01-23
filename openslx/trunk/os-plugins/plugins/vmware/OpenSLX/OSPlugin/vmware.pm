@@ -209,7 +209,7 @@ sub installationPhase
             # test if we use vmplayer or vmware
             #TODO: error handling if non installed or not supported
             #      version of local
-            if(-e "/usr/bin/vmware"){
+            if(-e "/usr/lib/vmware/bin/vmware"){
                 $vmfile = "vmware";
                 # system() don't work, backticks or qx() needed!
                 $vmversion =
@@ -218,7 +218,7 @@ sub installationPhase
                 chomp($vmversion);
                 rename ("/usr/bin/$vmfile", "/usr/bin/$vmfile.slx-bak");
                 linkFile("/var/X11R6/bin/$vmfile", "/usr/bin/$vmfile");
-            } elsif (-e "/usr/bin/vmplayer") {
+            } elsif (-e "/usr/lib/vmware/bin/vmware") {
                 $vmfile = "vmplayer";
                 $vmversion =
                     qx(vmplayer -v|sed 's/VMware Player //'|sed 's/\..*//');
