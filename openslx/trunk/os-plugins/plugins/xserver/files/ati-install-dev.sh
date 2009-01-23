@@ -35,11 +35,11 @@ cd ati
 # packages and distribution stuff
 cd temp/common/lib/modules/fglrx/build_mod
 # faking environment
-uname_r=$(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)
+uname_r=$(find /lib/modules/2.6* -maxdepth 0|grep -v -e "^/lib/modules/$$"|sed 's,/lib/modules/,,g'|sort|tail -n1)
 sed -i "s,^uname_r.*$,uname_r=${uname_r}," make.sh
 sed -i "s,kernel_release=.*,kernel_release=${uname_r}," make.sh
 #uname -m: just x86_64 and ia64 will get checked. till we support 64bit
-# we'll use i386
+# we'll use i686
 sed -i "s,^uname_m.*$,uname_m=i686," make.sh
 sh make.sh
 
