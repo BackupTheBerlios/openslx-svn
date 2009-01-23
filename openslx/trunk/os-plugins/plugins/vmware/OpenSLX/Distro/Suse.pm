@@ -168,6 +168,8 @@ sub fillRunlevelScript
             echo -n "Starting vmware background services ..."
             # load the configuration file
             . /etc/vmware/slxvmconfig
+            # hack to access the first serial port
+            chmod a+rw /dev/ttyS0
             load_modules
             setup_vmnet0
             setup_vmnet1

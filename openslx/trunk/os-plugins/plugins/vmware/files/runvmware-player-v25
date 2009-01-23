@@ -37,7 +37,22 @@ vmostype=$(grep -i "<os param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 # Definition of the client system
 network_kind=$(grep -i "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 
-
+# serial port defined (e.g. "ttyS0" or "autodetect")
+serial=$(grep -i "<serial port=\"" ${xml} | awk -F "\"" '{ print $2 }')
+case "$serial" in
+  tty*)
+    serialdev="serial0.filename = \"/dev/${serial}\""
+    serial="TRUE"
+    ;;
+  autodetect)
+    serialdev="serial0.autodetect = \"TRUE\""
+    serial="TRUE"
+    ;;
+  *)
+    serialdev=""
+    serial="FALSE"
+    ;;
+esac
 
 ################################################################################
 ##
@@ -149,16 +164,7 @@ filecheck=
 diskfile="${vmdir}/${imagename}"
 
 #TODO: check for a faster way, perhaps we should put this into XML
-# oh - yeah!! Why not do it on the SERVER??? It has enough power and has
-# to do it once and not during every start on a client :)
-#grepping every file could take much (network) resources. And if its
-#an IDE Image, but has somewhere the string ddb.adapterType stuff can
-#become screwed
-# NOOOOOOO - We do not check on every start on every client!!!
-# NOOOOOOOOO the string ddb.adapterType we are looking for is part of the 
-# header of EVERY vmdk file (except *-flat.vmdk files) and is located in 
-# the first ~30 lines - so it's not that big deal grepping for it :)
-# check if IDE or SCSI
+# the grepping under some circumstances lets wait the user for ages ...
 if [ $(echo ${imagename} | grep -cv "\-flat.vmdk") ]; then
   hddrv=$(grep -m 1 -ia "ddb.adapterType" ${diskfile} | awk -F "\"" '{print $2}')
   if [ "${hddrv}" = "ide" ]; then
@@ -347,8 +353,11 @@ hgfs.mapRootShare = \"TRUE\"
 isolation.tools.dnd.disable = \"FALSE\"
 isolation.tools.copy.enable = \"TRUE\"
 isolation.tools.paste.enabled = \"TRUE\"
-gui.restricted = \"TRUE\"" \
-  >${conffile}
+gui.restricted = \"TRUE\"
+
+# serial port
+serial0.present = \"${serial}\"
+${serialdev}" >${conffile}
 
   # set the appropriate permissions for the vmware config file
   chmod u+rwx ${conffile} >/dev/null 2>&1
@@ -411,10 +420,6 @@ writelog ()
 }
 
 
-
-
-
-
 ### MAIN SECTION ###############################################################
 ##
 ## Main part of the script...
@@ -472,6 +477,9 @@ if [ "${totalmem}" -ge "2500" ]; then
   confdir=/dev/shm/vmware/$USER
   conffile=${confdir}/run-vmware.conf
   mkdir -p /dev/shm/vmware/$USER
+# if there is no scratch space on disk you have to waste your mem
+elif grep -qe "ramfs /tmp " /proc/mounts ; then
+  permem=30
 fi
 
 # calculate memory for vmplayer
@@ -572,9 +580,12 @@ if [ $(which vmplayer 2>/dev/null) ]; then writelog "Starting ..."
   writelog "... vmplayer ${vmopt} ${conffile}\n"
   # start fvwm for player 2+
   # problems with windows opening in background
-  which fvwm2 >/dev/null 2>&1 && \
-  ( echo "EdgeScroll 0 0" > ${redodir}/fvwm
-  fvwm2 -f ${redodir}/fvwm >/dev/null 2>&1 & )
+  if which fvwm2 >/dev/null 2>&1 ; then
+    ( echo "EdgeScroll 0 0" > ${redodir}/fvwm
+    fvwm2 -f ${redodir}/fvwm >/dev/null 2>&1 & )
+  else
+    kwin &
+  fi
   vmplayer ${vmopt} ${conffile} >/dev/null 2>&1
 else
   writelog "No VMware/VMPlayer found!\n"
