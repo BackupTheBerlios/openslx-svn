@@ -83,6 +83,7 @@ sub KDMConfigHashForWorkstation
     my $self = shift;
     
     my $configHash = $self->SUPER::KDMConfigHashForWorkstation();
+    $configHash->{'General'}->{PidFile} = '/var/run/kdm.pid';
     $configHash->{'X-:0-Core'}->{Setup} = '/etc/kde3/kdm/Xsetup';
     $configHash->{'X-:0-Core'}->{Startup} = '/etc/kde3/kdm/Xstartup';
     $configHash->{'X-:0-Core'}->{Session} = '/etc/kde3/kdm/Xsession';
