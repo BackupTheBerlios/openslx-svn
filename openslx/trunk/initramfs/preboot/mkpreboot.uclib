@@ -33,6 +33,7 @@ for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
   ln -fs /bin/busybox ${BUILDDIR}/bin/$bbins
 done
 cp ${SLX_SHARE_PATH}/preboot/kexec.uclib.i586 ${BUILDDIR}/bin/kexec
+cp ${SLX_SHARE_PATH}/preboot/dialog.uclib.i586 ${BUILDDIR}/bin/dialog
 
 cp -a ${SLX_SHARE_PATH}/preboot/uclib/* ${BUILDDIR}/lib
 
