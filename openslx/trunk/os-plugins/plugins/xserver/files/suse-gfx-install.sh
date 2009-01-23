@@ -48,8 +48,26 @@ if [ "$1" = "nvidia" ]; then
       find lib/ -name "*.ko" -exec mv {} ../modules \;
   fi
 
-  cd ..
+  if [ "11.0" = "$(lsb_release -r|sed 's/^.*\t//')" ]; then
+    # add repository for nvidia drivers
+    zypper addrepo http://download.nvidia.com/opensuse/11.0/ NVIDIA
+    # confirm authenticity of key (once) 
+    # -> After key is cached, this is obsolete
+    zypper se -r NVIDIA x11-video-nvidiaG01
+    # get URLs
+    zypper -n -vv install -D x11-video-nvidiaG01 > logfile
 
+    # take unique urls from logfile
+    URLS=$(cat logfile |  grep -P -o "http://.*? " | sort -u | xargs)
+    for RPM in $URLS; do
+      wget ${RPM}
+      RNAME=$(echo ${RPM} | sed -e 's,^.*/\(.*\)$,\1,g')
+      # TODO: the following is not working - I don't know why...
+      ${BUSYBOX} rpm2cpio ${RNAME} | ${BUSYBOX} cpio -idv 
+    done
+  fi
+
+  cd .. 
   # TODO: after development
   #rm -rf temp/
 fi

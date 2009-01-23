@@ -109,6 +109,7 @@ divert() {
       #TODO: Check this part. Every 2nd time of 'linkage.sh clean;linkage.sh both'
       #      the following error occurs:
       #      ln: creating symbolic link `/var/X11R6/lib//libGL.so.1/libGL.so.1': File exists
+      # this should not happen, because libGL.so.1 is no folder
       ln -s ${ROOT}${cmplib} ${LINK_PATH}$(echo ${cmplib} | sed -e 's/\/usr\/lib//g')
     else
 
@@ -144,6 +145,7 @@ uninstDist() {
   # somehow we have to repair this - what else? 
   # There is also a generic way, but this is only one file
   ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so.1
+  ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so
 
   # delete all remaining links to /opt/openslx and /var/X11R6/lib
   find /usr/lib -lname "${PLUGIN_PATH}*"  \
