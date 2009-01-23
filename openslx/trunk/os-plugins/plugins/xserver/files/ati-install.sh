@@ -1,97 +1,61 @@
 #!/bin/sh
 
-##########################################################
-# This file is responsible to extract system packages
-# out of corresponding driver archives
-# 
-# Arguments (optional):
-#  1: temporary folder, where we put all the extracted files in.
-#   - default: put all extracted files in ./ati-files
-#              and all driver files in ./ati-root
-#
-##########################################################
+cd /opt/openslx/plugin-repo/xserver
 
-#set -x
-
-DEBUG=false
-
-TMP_FOLDER="$1"
-FOLDER=`pwd`
-if [ "$TMP_FOLDER" -eq "" ]; then
-  TMP_FOLDER=${FOLDER}
-fi
-
-FILE_ATI=$FOLDER/ati-driver-installer*.run
-
-
-##########################################################
-# function ati_extract: Extract files from ATI-Package
-#--------------------------------------------------------
-#
-# This function extracts the package for the right system
-# from the driver archive of ATI.
-#
-##########################################################
-function ati_extract  {
-  INSTFOLDER=$1
-
-  
-  if [ -f ${FILE_ATI} ]; then
-    chmod +x ${FILE_ATI}
-    ${FILE_ATI} --extract ${TMP_FOLDER}/ati-files 2>&1 > /dev/null
-  else
-    echo "Could not extract ATI driver files!\n Please make sure that archive is not located in /tmp"
+# check if its already installed
+if [ -d ati ]; then
+  echo "   * ati driver seems to be installed"
+  echo "     If you want to reinstall ati drivers press \"y\" or else we will exit"
+  read
+  if [ "${REPLY}" != "y" ]; then
+    echo "   * ati is already installed. Nothing to do."
     exit
   fi
-  
-  # here we will just create a package to extract it later
-  # and have all things in one place
-  VERSION=`head ${FILE_ATI} | grep "label=" | sed -e 's,.*Driver-\(.*\)",\1,g'`
-  
-  # TODO: distinguish between 32-bit and 64-bit
-  PKGNAME="SuSE/SUSE102-IA32"
-
-  pushd ${TMP_FOLDER}/ati-files
-  ./ati-installer.sh $VERSION --buildpkg ${PKGNAME} 2>&1 > out.txt
-  
-  if [ `grep "successfully generated" out.txt | wc -l` -eq 1 ]; then
-    echo "* Package extracted from ATI driver archive..."
-  else
-    return
-  fi
-
-  if [ ! -d $INSTFOLDER ]; then
-    mkdir -p $INSTFOLDER
-  fi
-  PKG=`grep "successfully generated" out.txt | cut -d' ' -f2 `
-
-  # extract files into ati-root
-  pushd $INSTFOLDER
- 
-  rpm2cpio ${PKG} | cpio -i --make-directories 2>&1 > /dev/null 
-  if [ ! $? -eq 0 ]; then
-    echo "* Something went wrong extracting package!"
-  fi
-  
-  popd
-
-}
-
-
-
-
-
-##############################################
-# Here main script starts
-##############################################
-
-ati_extract $FOLDER/ati-root
-
-
-if [ $DEBUG == "true" ]
-then
-  /bin/bash
-  rm -rf ${TMP_FOLDER}/ati-files
-
+  echo "   * ati drivers will be reinstalled"
+  echo "   * deleting old files"
+  rm -rf ati/
 fi
+
+#TODO: check if we have ati files available (and not just nvidia's)
+FILE_ATI=$(ls packages/ati-driver-installer*.run|sort|tail -n 1)
+VERSION=$(head ${FILE_ATI} | grep "label=" | sed -e 's,.*Driver-\(.*\)",\1,g')
+
+mkdir ati
+mkdir ati/modules
+mkdir ati/atiroot
+cd ati
+
+#TODO: here we should do filecheck
+#../${FILE_ATI} --check
+
+# extract ati file
+../${FILE_ATI} --extract ./temp/ > /dev/null
+
+
+
+echo "  * build kernel modules"
+cd temp/common/lib/modules/fglrx/build_mod
+#TODO GCC4 haengt von GCC ab, hier version 4
+GCC_VERSION=4
+ln -s /opt/openslx/plugin-repo/xserver/ati/temp/arch/x86/lib/modules/fglrx/build_mod/libfglrx_ip.a.GCC${GCC_VERSION} .
+cp 2.6.x/Makefile .
+uname_r=$(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)
+sed -i "s,^KVER.*$,KVER = ${uname_r}," Makefile
+# TODO: less verbose
+make -C /lib/modules/2.6.18.8-0.9-bigsmp/build M=$(pwd) GCC_VER_MAJ=${GCC_VERSION}
+
+cd /opt/openslx/plugin-repo/xserver/ati
+
+echo "  * move kernel modules"
+mv temp/common/lib/modules/fglrx/build_mod/fglrx.ko modules/
+mv temp/common/* atiroot
+cp -r temp/arch/x86/* atiroot/
+rm -rf atiroot/lib
+rm -rf atiroot/opt
+rm -rf atiroot/usr/src
+
+# Todo: keep it for development purpose
+#rm -rf temp/
+
+sh
 

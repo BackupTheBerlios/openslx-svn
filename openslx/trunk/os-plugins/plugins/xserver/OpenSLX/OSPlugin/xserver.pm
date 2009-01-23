@@ -220,7 +220,7 @@ sub installationPhase
     my $installationPath = "$pluginRepoPath/";
     if ($attrs->{'xserver::ati'} == 1) {
         copyFile("$pluginFilesPath/ati-install.sh", "$installationPath");
-        #system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh");
+        system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh");
     }
     if ($attrs->{'xserver::nvidia'} == 1) {
         copyFile("$pluginFilesPath/nvidia-install.sh", "$installationPath");
