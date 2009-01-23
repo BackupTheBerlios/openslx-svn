@@ -135,7 +135,7 @@ sub getAttrInfo
             # only allow the supported once...
             # TODO: modify if we know which of them work
             #content_regex => qr{^(local|vmws(5\.5|6.0)|vmpl(1\.0|2\.0))$},
-            content_regex => qr{^(local|vmpl2\.0)$},
+            content_regex => qr{^(local|vmpl2\.0|vmpl1\.0)$},
             content_descr => 'Allowed values: local, vmpl2.0',
             #TODO: what if we don't have a local installation. default
             #      is still local. Someone has a clue how to test
