@@ -3,11 +3,12 @@
 
 #include <iostream>
 
-#include <img/gnome.xpm>
-#include <img/kde.xpm>
-#include <img/linux.xpm>
-#include <img/xp.xpm>
-#include <img/xp_locked.xpm>
+#include <img/gnome_48.xpm>
+#include <img/kde_48.xpm>
+#include <img/linux_48.xpm>
+#include <img/xp_48.xpm>
+#include <img/xp_locked_48.xpm>
+#include <img/xfce_48.xpm>
 
 
 using namespace fltk;
@@ -99,7 +100,8 @@ void SWindow::set_entries(DataEntry** ent, char* slxgroup)
       if(ent[i]->pools.empty() || ent[i]->pools.find(slxgroup) != string::npos) {
         Item* w= (Item*)sel.add_leaf(ent[i]->short_description.c_str(), entgroup, (void*)ent[i] );
         
-        ((Widget*) w)->image(new xpmImage(get_symbol(ent[i])));
+        xpmImage* xpm = new xpmImage(get_symbol(ent[i]));
+        ((Widget*) w)->image(xpm);
         w->tooltip(ent[i]->description.c_str());
         w->callback(&runImage, (void*)ent[i]);
       }
@@ -144,22 +146,25 @@ void SWindow::unfold_entries() {
 char** SWindow::get_symbol(DataEntry* dat) {
   if(dat->imgtype == VMWARE) {
     if(dat->locked) {
-    	return xp_locked;
+    	return xp_locked_48_xpm;
     }
     else {
-    	return xp;
+    	return xp_48_xpm;
     }
   }
   if(dat->imgtype == LINUX) {
     if(dat->short_description.find("KDE")!= string::npos) {
-    	return kde;
+    	return kde_48_xpm;
     }
     if(dat->short_description.find("GNOME")!= string::npos) {
-    	return gnome;
+    	return gnome_48_xpm;
     }
-    return linux_xpm;
+    if(dat->short_description.find("xfce")!= string::npos) {
+      return xfce_48_xpm;
+    }
+    return linux_48_xpm;
   }
-  return xp;
+  return xp_48_xpm;
 }
 
 

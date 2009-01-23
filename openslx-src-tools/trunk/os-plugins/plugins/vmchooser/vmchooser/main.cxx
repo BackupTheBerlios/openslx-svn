@@ -60,6 +60,7 @@ int main(int argc, char** argv) {
     xmlpath = opt->getValue("path");
   }
   if (xmlpath == NULL) {
+    // Default Path comes here
     xmlpath = "/var/lib/vmware/vmconfigs/";
   }
   
