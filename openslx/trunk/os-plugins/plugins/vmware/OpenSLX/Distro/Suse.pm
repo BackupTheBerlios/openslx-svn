@@ -95,15 +95,17 @@ sub fillRunlevelScript
     End-of-Here
 
     # setup vmnet0 and vmnet8
-    # depends on specific stage3 setting. I let this if in the code
-    # because else this whole if-reducing process will become more
-    # complicated and the code will get less understandable
+    # depends on specific stage3 setting. A complete rewrite would be
+    # needed (generation of proper runlevel scripts depending on distro
+    # and VMware version, see tickets #211, 290)
     $script .= unshiftHereDoc(<<"    End-of-Here");
         # the bridged interface
         setup_vmnet0() {
           if [ -n "\$vmnet0" ] ; then
             # the path might be directly point to the plugin dir
             $location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid /dev/vmnet0 eth0
+            # new style (v6.5)
+            #$location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid -n 0
           fi
         }
         # we definately prefer the hostonly interface for NATed operation too
