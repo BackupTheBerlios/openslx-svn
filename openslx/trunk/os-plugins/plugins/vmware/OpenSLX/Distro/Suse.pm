@@ -116,7 +116,6 @@ sub fillRunlevelScript
         $script .= "    $location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid /dev/vmnet0 eth0\n";
     }
     $script .= unshiftHereDoc(<<"        End-of-Here");
-            exit 0
           fi
         }
         # we definately prefer the hostonly interface for NATed operation too
@@ -180,12 +179,13 @@ sub fillRunlevelScript
             echo -n "Stopping vmware background services ..."
             killall vmnet-netifup vmnet-natd vmnet-bridge vmware vmplayer \\
               vmware-tray vmnet-dhcpd 2>/dev/null
-            # workaround, because we can kill more as we have started
-            rc_reset
             # wait for shutting down of interfaces. vmnet needs kinda
             # long
             sleep 1
             unload_modules
+            # workaround, because we can kill and unload more as we have
+            # started
+            rc_reset
             rc_status -v
           ;;
           # we don't need a status yet... at least as long as it is

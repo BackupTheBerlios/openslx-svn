@@ -115,7 +115,6 @@ sub fillRunlevelScript
         $script .= "    $location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid /dev/vmnet0 eth0\n";
     }
     $script .= unshiftHereDoc(<<"        End-of-Here");
-            exit 0
           fi
         }
         # we definately prefer the hostonly interface for NATed operation too

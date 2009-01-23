@@ -71,10 +71,10 @@ sub fillRunlevelScript
     # Load modules
     if ($kind eq 'local' || $kind eq 'local25') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-              # to be filled in via the stage1 configuration script
-              insmod /lib/modules/\$(uname -r)/misc/vmmon.o || return 1
-              insmod /lib/modules/\$(uname -r)/misc/vmnet.o || return 1
-              insmod /lib/modules/\$(uname -r)/misc/vmblock.o 2>/dev/null || return 0
+         # to be filled in via the stage1 configuration script
+         insmod /lib/modules/\$(uname -r)/misc/vmmon.o || return 1
+         insmod /lib/modules/\$(uname -r)/misc/vmnet.o || return 1
+         insmod /lib/modules/\$(uname -r)/misc/vmblock.o 2>/dev/null || return 0
         End-of-Here
     } elsif ($kind eq 'vmpl1.0') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
