@@ -75,6 +75,8 @@ sub getAttrInfo
             description => unshiftHereDoc(<<'            End-of-Here'),
                 Where do we store our vmware images? NFS? Filesystem?
             End-of-Here
+            #TODO: check if the input is valid
+            #content_regex => qr{^(0|1)$},
             content_descr => 'Allowed values: path or URI',
             default => '',
         },
@@ -87,6 +89,7 @@ sub getAttrInfo
                 Should the bridging (direct access of the vmware clients
                 to the ethernet the host is connected to) be enabled
             End-of-Here
+            content_regex => qr{^(0|1)$},
             content_descr => 'Allowed values: 0 or 1',
             default => '1',
         },
@@ -99,6 +102,8 @@ sub getAttrInfo
                 Format ServerIP/Netprefix without NAT
                 Format ServerIP/Netprefix,NAT enables NAT/Masquerading
             End-of-Here
+            #TODO: check if the input is valid
+            #content_regex => qr{^(0|1)$},
             content_descr => 'Allowed value: IP/Prefix[,NAT]',
             default => '192.168.101.1/24,NAT',
         },
@@ -110,6 +115,8 @@ sub getAttrInfo
             description => unshiftHereDoc(<<'            End-of-Here'),
                 Format ServerIP/Netprefix
             End-of-Here
+            #TODO: check if the input is valid
+            #content_regex => qr{^(0|1)$},
             content_descr => 'Allowed value: IP/Prefix',
             default => '192.168.102.1/24',
         },
@@ -138,7 +145,9 @@ sub getAttrInfo
                 Which set of VMware binaries to use: installed (local) or provided by an
                 other plugin (e.g. Workstation 5.5: vmws5.5, Player 2.0: vmpl2.0, ...)
             End-of-Here
-            content_regex => qr{^(0|1)$},
+            # only allow the supported once...
+            # TODO: modify if we know which of them work
+            content_regex => qr{^(local|vmws(5\.5|6.0)|vmpl(1\.0|2\.0))$},
             content_descr => 'Allowed values: local, vmws5.5, vmws6.0, vmpl1.0 ...',
             default => 'local',
         },
@@ -193,7 +202,7 @@ sub installationPhase
     foreach my $file (@files) {
     # OLTA: this backup strategy is useless if invoked twice, so I have
     #       deactivated it
-#        rename ("/usr/bin/$file", "/usr/bin/$file.slx-bak");
+    #    rename ("/usr/bin/$file", "/usr/bin/$file.slx-bak");
         linkFile("/var/X11R6/bin/$file", "/usr/bin/$file");
         my $script = unshiftHereDoc(<<"        End-of-Here");
             #!/bin/sh
@@ -238,7 +247,7 @@ sub _writeRunlevelScript
 
     # OLTA: this backup strategy is useless if invoked twice, so I have
     #       deactivated it
-#    rename($file, "${file}.slx-bak") if -e $file;
+    # rename($file, "${file}.slx-bak") if -e $file;
 
     spitFile($file, $runlevelScript);
 }

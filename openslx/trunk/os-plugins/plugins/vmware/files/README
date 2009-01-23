@@ -12,13 +12,6 @@ Files
   the Virtual Machine (see nvram below). Currently used internal and
   shouldn't affect normal OpenSLX users. Data will be available on every
   OpenSLX Client.
-- dhcpd.conf
-  DHCP Configuration file, which will be copied to
-  /etc/vmware/vmnet8/dhcpd/
-  Needed if you want to use NAT
-- nat.conf
-  NAT Configuration file, which will be copied to
-  /etc/vmware/vmnet8/nat/
 - nvram.5.0
   This nvram supports a second Floppy drive. Helpfull if you want to
   get some data from linux to your Windows VirtualMachine (like
