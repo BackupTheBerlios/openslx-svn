@@ -42,7 +42,7 @@ sub initialize
     if ($engine->{'action-type'} eq 'install') {
         # Inform SUSE RPMs that we're performing an installation - this is
         # only important for installations taking place in stage 1c:
-        $ENV{YAST_IS_RUNNING}         = "instsys";
+        $ENV{YAST_IS_RUNNING} = "instsys";
     }
 
     return;
@@ -53,8 +53,10 @@ sub fixPrerequiredFiles
     my $self       = shift;
     my $stage1cDir = shift;
 
-    chown(0, 0, "$stage1cDir/etc/group", "$stage1cDir/etc/passwd",
-        "$stage1cDir/etc/shadow");    
+    chown(
+        0, 0, "$stage1cDir/etc/group", "$stage1cDir/etc/passwd",
+        "$stage1cDir/etc/shadow"
+    );    
     return;
 }
 
