@@ -73,18 +73,19 @@ stage3 setup" > /mnt/etc/vmware/slxvmconfig
 
     # variable might contain ",NAT" which is to be taken off
     if [ -n "$vmware_vmnet1" ] ; then
-      local vmnet1=${vmware_vmnet1%,*}
-      local vmnat=${vmware_vmnet1#$vmnet1*}
-      local vmip=${vmnet1%/*}
-      local vmpx=${vmnet1#*/}
+      local vmnet1=${vmware_vmnet1%,*} # x.x.x.x/yy,NAT => 'x.x.x.x/yy'
+      local vmnat=${vmware_vmnet1#$vmnet1*} # x.x.x.x/yy,NAT => ',NAT'
+      local vmip=${vmnet1%/*} # x.x.x.x/yy => 'x.x.x.x'
+      local vmpx=${vmnet1#*/} # x.x.x.x/yy => 'yy'
+      local vmsub=$(echo $vmip |sed 's,\(.*\)\..*,\1,') # x.x.x.x => x.x.x
       echo -e "vmnet1=$vmnet1" >> /mnt/etc/vmware/slxvmconfig
-      [ -n "$vmnt" ] && echo "vmnet1nat=true" >> /mnt/etc/vmware/slxvmconfig
+      [ -n "$vmnat" ] && echo "vmnet1nat=true" >> /mnt/etc/vmware/slxvmconfig
       echo -e "\n# definition for virtual vmnet1 interface" \
         >> /mnt/etc/vmware/dhcpd.conf
       echo -e "subnet $(ipcalc -n $vmnet1|sed s/.*=//) netmask \
 $(ipcalc -m $vmnet1|sed s/.*=//) {" \
         >> /mnt/etc/vmware/dhcpd.conf 
-      echo -e "\trange $rstart $rend;" \
+      echo -e "\trange ${vmsub}.10 ${vmsub}.20;" \
         >> /mnt/etc/vmware/dhcpd.conf 
       echo -e "\toption broadcast $(ipcalc -b $vmnet1|sed s/.*=//);" \
         >> /mnt/etc/vmware/dhcpd.conf 
@@ -92,20 +93,21 @@ $(ipcalc -m $vmnet1|sed s/.*=//) {" \
         >> /mnt/etc/vmware/dhcpd.conf
       echo -e "}" \
         >> /mnt/etc/vmware/dhcpd.conf
-	  mknod /dev/vmnet1 c 119 1
+      mknod /dev/vmnet1 c 119 1
     fi
 
     # vmware nat interface configuration
     if [ -n "$vmware_vmnet8" ] ; then
       local vmip=${vmware_vmnet8%/*}
       local vmpx=${vmware_vmnet8#*/}
+      local vmsub=$(echo $vmip |sed 's,\(.*\)\..*,\1,') # x.x.x.x => x.x.x
       echo -e "vmnet8=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
       echo -e "\n# definition for virtual vmnet8 interface" \
         >> /mnt/etc/vmware/dhcpd.conf
       echo -e "subnet $(ipcalc -m $vmip/$vmpx|sed s/.*=//) netmask \
 $(ipcalc -n $vmip/$vmpx|sed s/.*=//) {" \
         >> /mnt/etc/vmware/dhcpd.conf
-      echo -e "\trange $rstart $rend;" \
+      echo -e "\trange ${vmsub}.10 ${vmsub}.20;" \
         >> /mnt/etc/vmware/dhcpd.conf
       echo -e "\toption broadcast $(ipcalc -b $vmip/$vmpx|sed s/.*=//);" \
         >> /mnt/etc/vmware/dhcpd.conf
@@ -113,7 +115,6 @@ $(ipcalc -n $vmip/$vmpx|sed s/.*=//) {" \
         >> /mnt/etc/vmware/dhcpd.conf
       echo -e "}" \
         >> /mnt/etc/vmware/dhcpd.conf
-      # generate the NAT configuration file
       echo -e "# Linux NAT configuration file" \
         > /mnt/etc/vmware/nat.conf
       echo -e "[host]" \
@@ -133,7 +134,7 @@ $(ipcalc -n $vmip/$vmpx|sed s/.*=//) {" \
       echo -e "[incomingudp]" \
         >> /mnt/etc/vmware/nat.conf
       echo "00:50:56:F1:30:50" > /mnt/etc/vmware/vmnet-natd-8.mac
-	  mknod /dev/vmnet8 c 119 8
+      mknod /dev/vmnet8 c 119 8
     fi
     # copy the runlevelscript to the proper place and activate it
     cp /mnt/opt/openslx/plugin-repo/vmware/vmware.${vmware_kind} \
