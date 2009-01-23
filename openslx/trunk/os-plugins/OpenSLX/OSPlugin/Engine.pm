@@ -353,10 +353,10 @@ sub getInstalledPackages
 {
     my $self = shift;
 
-    my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
-    return if !$metaPackager;
+    my $packager = $self->{'ossetup-engine'}->packager();
+    return if !$packager;
 
-    return $metaPackager->getInstalledPackages();
+    return $packager->getInstalledPackages();
 }
 
 =item getInstallablePackagesForSelection()

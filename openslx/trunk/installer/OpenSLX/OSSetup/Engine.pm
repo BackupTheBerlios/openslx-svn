@@ -690,6 +690,13 @@ sub metaPackager
     return $self->{'meta-packager'};
 }
 
+sub packager
+{
+    my $self = shift;
+
+    return $self->{'packager'};
+}
+
 sub getInstallablePackagesForSelection
 {
     my $self   = shift;
