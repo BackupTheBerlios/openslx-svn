@@ -689,7 +689,7 @@ sub metaPackager
 	return $self->{'meta-packager'};
 }
 
-sub getPackagesForSelection
+sub getInstallablePackagesForSelection
 {
 	my $self   = shift;
 	my $selKey = shift;
@@ -698,8 +698,13 @@ sub getPackagesForSelection
 
 	my $selection = $self->{'distro-info'}->{selection}->{$selKey};
 	return if !$selection;
+	
+	my @pkgs = split m{\s+}, $selection->{packages};
+	my %installedPkgs;
+	@installedPkgs{ $self->{'packager'}->getInstalledPackages() } = ();
+	@pkgs = grep { !exists $installedPkgs{$_} } @pkgs;
 
-	return $selection->{packages};
+	return join ' ', @pkgs;
 }
 
 sub busyboxBinary
