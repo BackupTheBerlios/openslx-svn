@@ -32,7 +32,7 @@ sub fillRunlevelScript
     my $kind     = shift;
 
     my $script = unshiftHereDoc(<<"    End-of-Here");
-        #! /bin/sh
+        #!/bin/sh
         # SuSE compatible start/stop script, generated via stage1 'vmware' plugin
         # installation
         #
@@ -59,26 +59,23 @@ sub fillRunlevelScript
     # Load modules
     if ($kind eq 'local' || $kind eq 'local25') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-              # to be filled in via the stage1 configuration script
-              insmod /lib/modules/\$(uname -r)/misc/vmmon.o || return 1
-              insmod /lib/modules/\$(uname -r)/misc/vmnet.o || return 1
-              insmod /lib/modules/\$(uname -r)/misc/vmblock.o 2>/dev/null || return 0
-              #insmod /lib/modules/\$(uname -r)/misc/vmci.o 2>/dev/null || return 0
-              # most probably nobody wants to run the parallel port driver ...
-              #modprobe vm...
+                  # to be filled in via the stage1 configuration script
+                  insmod /lib/modules/\$(uname -r)/misc/vmmon.o || return 1
+                  insmod /lib/modules/\$(uname -r)/misc/vmnet.o || return 1
+                  insmod /lib/modules/\$(uname -r)/misc/vmblock.o 2>/dev/null || return 0
         End-of-Here
     } elsif ($kind eq 'vmpl1.0') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-              # load module manuall
-              vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
-              module_src_path=\${vmware_kind_path}/vmroot/modules
-              insmod \${module_src_path}/vmmon.o
-              insmod \${module_src_path}/vmnet.o
+                  # load modules manually
+                  vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
+                  module_src_path=\${vmware_kind_path}/vmroot/modules
+                  insmod \${module_src_path}/vmmon.o
+                  insmod \${module_src_path}/vmnet.o
         End-of-Here
     } elsif ($kind ne "vmpl2.0") {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-              # load module manuall
-              vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
+              # load modules manually
+              vmware_kind_path=/opt/openyslx/plugin-repo/vmware/\${vmware_kind}/
               module_src_path=\${vmware_kind_path}/vmroot/modules
               insmod \${module_src_path}/vmmon.o
               insmod \${module_src_path}/vmnet.o
@@ -86,7 +83,7 @@ sub fillRunlevelScript
         End-of-Here
     } elsif ($kind eq 'vmpl2.5') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-              # load module manuall
+              # load modules manually
               vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
               module_src_path=\${vmware_kind_path}/vmroot/modules
               insmod \${module_src_path}/vmmon.o
