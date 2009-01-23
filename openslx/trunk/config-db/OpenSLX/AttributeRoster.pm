@@ -523,6 +523,11 @@ sub findProblematicValues
         my $value = $stage3Attrs->{$key};
         if ($key =~ m{^(.+)::.+?$}) {
             my $pluginName = $1;
+            if ($installedPlugins 
+            && !grep { $_->{plugin_name} eq $pluginName } @$installedPlugins) {
+                # avoid checking attributes of plugins that are not installed
+                next;
+            }
             $attrsByPlugin{$pluginName} ||= {};
             $attrsByPlugin{$pluginName}->{$key} = $value;
         }
