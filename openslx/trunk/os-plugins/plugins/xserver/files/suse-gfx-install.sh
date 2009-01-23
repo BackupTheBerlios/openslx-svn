@@ -75,7 +75,7 @@ if [ "$1" = "nvidia" ]; then
     # -> After key is cached, this is obsolete
     zypper se -r NVIDIA x11-video-nvidiaG01
     # get URLs by virtually installing nvidia-OpenGL driver
-    zypper -n -vv install -D nvidia-gfx-kmp${KSUFFIX} x11-video-nvidiaG01 > logfile
+    zypper -n -vv install -D x11-video-nvidiaG01 > logfile
 
     # take unique urls from logfile
     URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | sort -u | xargs)
@@ -122,7 +122,7 @@ if [ "$1" = "ati" ]; then
     # confirm authenticity of key (once) 
     # -> After key is cached, this is obsolete
     zypper se -r ATI x11-video-fglrxG01
-    # get URLs by virtually installing nvidia-OpenGL driver
+    # get URLs by virtually installing fglrx-OpenGL driver
     zypper -n -vv install -D ati-fglrxG01-kmp${KSUFFIX} x11-video-fglrxG01 > logfile
 
     # take unique urls from logfile
