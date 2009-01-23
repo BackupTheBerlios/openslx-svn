@@ -60,12 +60,18 @@ sub new
 
     $self->{'distro-name'} = lc($1);
     $self->{'distro-ver'} = $2;
+    
+    my $fullDistroName = lc($1) . '-' . $2;
 
-    my $distroModule 
-        = 'OpenSLX::MakeInitRamFS::Distro::' . ucfirst($self->{'distro-name'});
-    if (!eval { $self->{distro} = instantiateClass($distroModule); }) {
-        $self->{distro} 
-            = instantiateClass('OpenSLX::MakeInitRamFS::Distro::Base');
+    $self->{distro} = loadDistroModule({
+        distroName  => $fullDistroName,
+        distroScope => 'OpenSLX::MakeInitRamFS::Distro',
+    });
+    if (!$self->{distro}) {
+        die _tr(
+            'unable to load any MakeInitRamFS::Distro module for system %s!',
+            $self->{'system-name'}
+        );
     }
     
     $self->{'lib-scanner'} 
