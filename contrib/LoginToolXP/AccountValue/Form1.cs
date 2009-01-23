@@ -366,11 +366,14 @@ namespace AccountValue
                 String navigateTo = "https://myaccount.uni-freiburg.de/uadmin/pa?uid=" + textBox1.Text + "&pwd=" + maskedTextBox1.Text;
 
                 webBrowser1.Navigate(navigateTo);
+
+                timer1.Enabled = true;
+
             }
 
             else
             {
-                timer1.Enabled = true;
+                //timer1.Enabled = true;
                 timer2.Enabled = true;
             }
              
