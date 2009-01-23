@@ -3,7 +3,7 @@
 cd /opt/openslx/plugin-repo/vmware/
 
 ### Check if player are still installed
-if [ -d vmroot/ ]; then
+if [ -d ${1}/vmroot/ ]; then
   echo "    * $1 seems to be installed. There shouldn't be a need for a new installation."
   echo "      If you want to reinstall $1 press \"y\" else we will exit"
   read
@@ -16,10 +16,10 @@ fi
 
 
 ### Now define values
-if [ "$1" == "vmpl1.0" ]; then
+if [ "$1" = "vmpl1.0" ]; then
   vmplversion="vmpl1.0"
   tgzfile=$(ls packages/VMware-player-1.0.*|sort|tail -n 1)
-elif [ "$1" == "vmpl2.0" ]; then
+elif [ "$1" = "vmpl2.0" ]; then
   vmplversion="vmpl2.0"
   tgzfile=$(ls packages/VMware-player-2.0.*|sort|tail -n 1)
 else
