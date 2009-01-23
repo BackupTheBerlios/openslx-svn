@@ -41,10 +41,15 @@ void runImage(fltk::Widget*, void* p)
   pid_t pid;
   // in case you want to wait hours on your thread
   //int status;
+  char arg1[MAX_LENGTH];
+  strncpy(arg1, (char*) string("'\n\nStarte Image: ")
+  	.append(dat.short_description)
+	.append("\n'").c_str(),MAX_LENGTH);
+  char* argv[] = { "/opt/openslx/plugin-repo/vmchooser/mesgdisp", 
+        arg1, NULL };
+
+  printf("%s", arg1);
   pid = fork();
-  char* argv[] = { "mesgdisp",  ///opt/openslx/plugin-repo/vmchooser/
-        (char*) string("\n\nStarte Image: ").append(dat.short_description)
-        .append("\n").c_str(), NULL };
 
   switch( pid )  {
     case -1:
