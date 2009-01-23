@@ -1,4 +1,4 @@
-#!/bin/bash">
+#!/bin/bash
 #
 # Description:  Script for preparing VMware environment Diskless
 #               X Stations and interactive session chooser (v4)
@@ -26,8 +26,7 @@ imagename=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 # define name for VMware window. no utf8, perhaps we don't need it any
 # more. else change the next two lines
 #iconv -c -f utf-8 -t utf-8 < ${xml} > ${xml}.utf
-short_description=$(grep "short_description param=\"" ${xml}
-    | sed -e "s%&.*;%; %g" | awk -F "\"" '{print $2}')
+short_description=$(grep "short_description param=\"" ${xml} | sed -e "s%&.*;%; %g" | awk -F "\"" '{print $2}')
 # if ${short_description} not defined use ${image_name}
 short_description=${short_description:-"${image_name}"}
 displayname=${short_description}
