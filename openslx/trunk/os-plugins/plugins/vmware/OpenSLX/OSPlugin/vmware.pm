@@ -211,17 +211,21 @@ sub installationPhase
             #      version of local
             if(-e "/usr/lib/vmware/bin/vmware"){
                 $vmfile = "vmware";
-                # system() don't work, backticks or qx() needed!
+                # should be replaced with perl code (grepping in a textfile
+                # shouldn't be that complicated :))
                 $vmversion =
-                    qx(vmware -v | sed 's/VMware Workstation //'
-                                 | sed 's/\(\.[0-9]\)\..*/\1/');
+                    qx(strings /usr/lib/vmware/bin/vmplayer|
+                       grep -m 1 "build-"| sed "s,.*build-,,");
                 chomp($vmversion);
                 rename ("/usr/bin/$vmfile", "/usr/bin/$vmfile.slx-bak");
                 linkFile("/var/X11R6/bin/$vmfile", "/usr/bin/$vmfile");
             } elsif (-e "/usr/lib/vmware/bin/vmware") {
                 $vmfile = "vmplayer";
+                # dublicate of test for vmware - should be put into a function,
+                # e.g. in one which decides if workstation or player too ...
                 $vmversion =
-                    qx(vmplayer -v|sed 's/VMware Player //'|sed 's/\..*//');
+                    qx(strings /usr/lib/vmware/bin/vmplayer|
+                       grep -m 1 "build-"| sed "s,.*build-,,");
                 chomp($vmversion);
                 rename ("/usr/bin/$vmfile", "/usr/bin/$vmfile.slx-bak");
                 linkFile("/var/X11R6/bin/$vmfile", "/usr/bin/$vmfile");
