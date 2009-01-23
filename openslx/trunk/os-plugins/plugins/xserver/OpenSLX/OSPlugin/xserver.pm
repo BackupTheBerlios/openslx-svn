@@ -108,6 +108,17 @@ sub getAttrInfo
         # plugin specific attributes start here ...
 
         # stage1
+        'xserver::pkgpath' => {
+            applies_to_vendor_os => 0,
+            applies_to_vendor_os => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                Path to ATI or Nvidia package
+            End-of-Here
+            # TODO:
+            #content_regex => qr{^0|1$},
+            content_descr => 'Path to Nvidia or ATI packages',
+            default => '/root/xserver-pkgs',
+        },
         'xserver::ati' => {
             applies_to_vendor_os => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
@@ -139,12 +150,46 @@ sub getAttrInfo
     };
 }
 
+
+sub preInstallationPhase()
+{
+    my $self = shift;
+    my $info = shift;
+
+    $self->{pluginRepositoryPath} = $info->{'plugin-repo-path'};
+    $self->{pluginTempPath}       = $info->{'plugin-temp-path'};
+    $self->{openslxBasePath}      = $info->{'openslx-base-path'};
+    $self->{openslxConfigPath}    = $info->{'openslx-config-path'};
+    $self->{attrs}                = $info->{'plugin-attrs'};
+    $self->{vendorOsPath}         = $info->{'vendor-os-path'};
+                                        
+    my $pkgpath = $self->{attrs}->{'xserver::pkgpath'};
+    my $installAti = $self->{attrs}->{'xserver::ati'};
+    my $installNvidia = $self->{attrs}->{'xserver::nvidia'};
+
+    if (! -d $pkgpath && ($installAti == 1 || $installNvidia == 1)) {
+        print "\n\n * xserver::pkgpath: no such directory!\n";
+        print " * xserver plugin can't install ATI or Nvidia driver!\n\n";
+        # exit 1 => xserver plugin is not getting installed because ati
+        # or nvidia where selected but are not installable!
+        exit 1;
+    }
+
+    if (-d $pkgpath && ($installNvidia == 1 || $installAti == 1)) {
+        # Todo: use a openslx copy function!
+        system("cp -r $pkgpath $self->{pluginRepositoryPath}/packages");
+    }
+}
+
+
 sub installationPhase
 {   # called while chrooted to the vendor-OS root in order to give the plugin
     # a chance to install required files into the vendor-OS.
     my $self = shift;
     my $info = shift;
-    
+
+    # ehh... every plugin has it's own different installationPhase
+    # variable definition?
     my $pluginRepoPath = $info->{'plugin-repo-path'};
         # The folder where the stage1-plugin should store all files
         # required by the corresponding stage3 runlevel script.
@@ -165,6 +210,19 @@ sub installationPhase
     # write the distro specific extension (inclusion) of XX_xserver.sh
     my $script = $self->{distro}->setupXserverScript($pluginRepoPath);
     spitFile("$pluginRepoPath/xserver.sh", $script);
+
+    # if defined: build nvidia or ati binarys
+    my $pluginFilesPath =
+        "$openslxBasePath/lib/plugins/$self->{'name'}/files";
+    my $installationPath = "$pluginRepoPath/";
+    if ($attrs->{'xserver::ati'} == 1) {
+        copyFile("$pluginFilesPath/ati-install.sh", "$installationPath");
+        #system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh");
+    }
+    if ($attrs->{'xserver::nvidia'} == 1) {
+        copyFile("$pluginFilesPath/nvidia-install.sh", "$installationPath");
+        #system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/nvidia-install.sh");
+    }
 
     # Some plugins have to copy files from their plugin folder into the
     # vendor-OS. Here's an example for how to do that:
