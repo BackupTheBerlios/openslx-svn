@@ -126,19 +126,30 @@ sub startSession
     # (like for instance shown by apt-get)
     $ENV{LC_ALL} = 'POSIX';
 
-    # make sure there's a /dev/zero, /dev/null and /dev/urandom
-    # /dev/urandom for passwd chroot
+    # ensure that a couple of important devices exist
+    my %devInfo = (
+        mem     => { type => 'c', major => '1', minor =>  '1' },
+        null    => { type => 'c', major => '1', minor =>  '3' },
+        zero    => { type => 'c', major => '1', minor =>  '5' },
+        random  => { type => 'c', major => '1', minor =>  '8' },
+        urandom => { type => 'c', major => '1', minor =>  '9' },
+        kmsg    => { type => 'c', major => '1', minor => '11' },
+        tty     => { type => 'c', major => '5', minor =>  '0' },
+        console => { type => 'c', major => '5', minor =>  '1' },
+        ptmx    => { type => 'c', major => '5', minor =>  '2' },
+    );
     if (!-e "$osDir/dev" && !mkpath("$osDir/dev")) {
         die _tr("unable to create folder '%s' (%s)\n", "$osDir/dev", $!);
     }
-    if (!-e "$osDir/dev/zero" && slxsystem("mknod $osDir/dev/zero c 1 5")) {
-        die _tr("unable to create node '%s' (%s)\n", "$osDir/dev/zero", $!);
-    }
-    if (!-e "$osDir/dev/null" && slxsystem("mknod $osDir/dev/null c 1 3")) {
-        die _tr("unable to create node '%s' (%s)\n", "$osDir/dev/null", $!);
-    }
-    if (!-e "$osDir/dev/urandom" && slxsystem("mknod $osDir/dev/urandom c 1 9")) {
-        die _tr("unable to create node '%s' (%s)\n", "$osDir/dev/urandom", $!);
+    foreach my $dev (keys %devInfo) {
+        my $info = $devInfo{$dev};
+        if (!-e "/dev/$dev") {
+            if (slxsystem(
+                "mknod /dev/$dev $info->{type} $info->{major} $info->{minor}"
+            )) {
+                croak(_tr("unable to create dev-node '%s'! (%s)", $dev, $!));
+            }
+        }
     }
 
     # enter chroot jail
