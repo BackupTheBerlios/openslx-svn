@@ -37,7 +37,7 @@ if [ -e /initramfs/plugin-conf/xserver.conf -a \
   # xorg.conf in /rootfs/etc/X11/xorg.conf
   if [ $xserver_active -ne 0 -a ! -f /rootfs/${xfc#/mnt} ]; then
     [ $DEBUGLEVEL -gt 0 ] && echo "executing the 'xserver' os-plugin ...";
-    xmodule=$(grep -i -m 1 "XFree86 v4 Server Module" /etc/hwinfo.data | \
+    xmodule=$(grep -i -m 1 "XFree86 v4 Server Module" /etc/hwinfo.gfxcard | \
       sed "s/.*v4 Server Module: //")
     # proprietary ATI/NVidia modules listed a different way with hwinfo
     [ -z "$xmodule" ] || error "${hcfg_hwsetup}" nonfatal
@@ -66,7 +66,7 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
       cp -r ${PLUGIN_PATH}/etc/* /mnt/etc/
       if [ ! -d "${LINK_PATH}" ]; then
         # create linkage folder
-        mkdir -p ${LINK_PATH}
+        mkdir -p ${LINK_PATH}dri
       fi
 
       chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/fglrx.ko
@@ -74,6 +74,12 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
       # we need some pci.ids for fglrx driver
       cp -r "${PLUGIN_PATH}/etc/ati" /mnt/etc/
 
+      # if fglrx_dri.so is linked wrong -> we have to link it here
+      if [ "1" -eq "$( ls -l /usr/lib/dri/fglrx_dri.so \
+      | grep -o "/var/X11R6.*so$" | wc -l )" ]; then
+        ln -s ${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so \
+        ${LINK_PATH}dri/fglrx_dri.so
+      fi
       ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 \
       ${LINK_PATH}libGL.so
       ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 \
@@ -83,7 +89,7 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
     fi
 
     if [ $(grep -i -m 1 'nvidia' \
-        /etc/hwinfo.data | wc -l) -ge "1"  -a $xserver_prefnongpl -eq 1 ]
+        /etc/hwinfo.gfxcard | wc -l) -ge "1"  -a $xserver_prefnongpl -eq 1 ]
     then
       # we have an ati card here
       NVIDIA=1
