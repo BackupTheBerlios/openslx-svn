@@ -203,23 +203,18 @@ sub installationPhase
         if ($type eq "local") {
             $vmpath = "/usr/lib/vmware";
             $vmbin  = "/usr/bin";
-            #TODO: error handling if non installed or not supported
-            #      version of local
             # if vmware ws is installed, vmplayer is installed, too.
             # we will only use vmplayer
             if (-e "/usr/lib/vmware/bin/vmplayer") {
                 # perhaps not optimal with the array, but how to solve
                 # else if we don't want to open the file twice?
-                @versioninfo = $self->_checkVersion("/usr/lib/vmware/bin/vmplayer");
-                $vmbuildversion = pop(@versioninfo);
-                $vmversion = pop(@versioninfo);
+                @versioninfo =
+                    $self->_checkVersion("/usr/lib/vmware/bin/vmplayer", $type);
 
-                print "DEBUG: vmplayer version: $vmversion\n";
-                print "       and build-version: $vmbuildversion\n";
-
+                # TODO: rename ok? recheck
+                #       linkfile will be in conflict with local installed
+                #       versions. => move to stage3
                 rename("/usr/bin/vmplayer", "/usr/bin/vmplayer.slx-bak");
-                # TODO: rename ok, but linkfile will be in conflict
-                #       with local installed versions. => move to stage3
                 #linkFile("/var/X11R6/bin/vmplayer", "/usr/bin/vmplayer");
             }
         }
@@ -329,11 +324,15 @@ sub _writeRunlevelScript
 }
 
 
-# function checks vmplayer version and buildnumber
+# function checks vmplayer version and buildnumber and writes it to a
+# file
+# Ehhhh... do we really need this function? we only need one check for
+# local... damnit.
 sub _checkVersion
 {
     my $self = shift;
     my $file = shift;
+    my $type = shift;
     my $vmversion = "";
     my $vmbuildversion = "";
 
@@ -349,9 +348,17 @@ sub _checkVersion
     }
     chomp($vmversion);
     chomp($vmbuildversion);
-    my @returnarray = ($vmversion, $vmbuildversion);
 
-    return @returnarray;
+    #TODO: 1. check if the version is supported
+    #      2. write infos to file /opt/openslx/vmware/іnstalled_versions 
+    # style:
+    # local_supported = (yes|no)
+    # local_vmversion = $vmversion
+    # local_vmbuildversion = $vmbuildversion
+    # #check if we really need the following lines
+    # ws2_installed (yes|no)
+    # ws2_version = 2.x
+    # ...
 }
 
 1;
