@@ -70,6 +70,7 @@ SWindow::SWindow(int w, int h, char* p):
  *********************************************************/
 void SWindow::cb_return()
 {
+  curr = (Item*) sel.item();
   if(curr != 0 && curr->user_data()) {
     DataEntry* dat = (DataEntry*) curr->user_data();
     runImage(curr, dat);
