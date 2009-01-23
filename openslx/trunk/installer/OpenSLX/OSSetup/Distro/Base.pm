@@ -20,6 +20,7 @@ our $VERSION = 1.01;        # API-version . implementation-version
 
 use Fcntl qw(:DEFAULT :flock);
 use File::Basename;
+use File::Path;
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
@@ -126,9 +127,13 @@ sub startSession
         "slxos-setup::distro::chroot", sub { $self->finishSession(); }
     );
 
+    # setup a fixed locale environment to avoid warnings about unset locales
+    # (like for instance shown by apt-get)
+    $ENV{LC_ALL} = 'POSIX';
+
     # make sure there's a /dev/zero, /dev/null and /dev/urandom
     # /dev/urandom for passwd chroot
-    if (!-e "$osDir/dev" && !mkdir("$osDir/dev")) {
+    if (!-e "$osDir/dev" && !mkpath("$osDir/dev")) {
         die _tr("unable to create folder '%s' (%s)\n", "$osDir/dev", $!);
     }
     if (!-e "$osDir/dev/zero" && slxsystem("mknod $osDir/dev/zero c 1 5")) {
@@ -141,29 +146,35 @@ sub startSession
         die _tr("unable to create node '%s' (%s)\n", "$osDir/dev/urandom", $!);
     }
 
-
-    # fake proc, depending on what is needed ...
-    if (!-e "$osDir/proc" && !mkdir("$osDir/proc")) {
-        die _tr("unable to create folder '%s' (%s)\n", "$osDir/proc", $!);
-    }
-    if (!-e "$osDir/proc/cpuinfo" && slxsystem("cp /proc/cpuinfo $osDir/proc/")) {
-        die _tr("unable to copy file '%s' (%s)\n", "/proc/cpuinfo", $!);
-    }
-    # TODO: alternatively, we could mount proc, but that causes problems
-    #       when we are not able to umount it properly (which may happen
-    #       if 'umount' is not available in the chroot!)
-    #
-    # mount /proc
-#    if (!-e "$osDir/proc") {
-#        slxsystem("mkdir -p $osDir/proc");
-#    }
-#    if (slxsystem("mount -t proc proc $osDir/proc 2>/dev/null")) {
-#        die _tr("unable to mount '%s' (%s)\n", "$osDir/proc", $!);
-#    }
-
     # enter chroot jail
     chrootInto($osDir);
     $ENV{PATH} = join(':', @{$self->getDefaultPathList()});
+
+    # mount /proc (if we have 'mount' available)
+    if (qx{which mount 2>/dev/null}) {
+        if (!-e "$osDir/proc" && !mkpath("$osDir/proc")) {
+            die _tr("unable to create folder '%s' (%s)\n", "$osDir/proc", $!);
+        }
+        if (slxsystem("mount -t proc proc '/proc'")) {
+            warn _tr("unable to mount '%s' (%s)\n", "$osDir/proc", $!);
+        }
+    }
+
+    return;
+}
+
+sub finishSession
+{
+    my $self = shift;
+    
+    removeCleanupFunction('slxos-setup::distro::chroot');
+
+    # umount /proc (if we have 'umount' available)
+    if (qx{which umount 2>/dev/null}) {
+        if (slxsystem("umount /proc")) {
+            warn _tr("unable to umount '%s' (%s)\n", "/proc", $!);
+        }
+    }
 
     return;
 }
@@ -184,20 +195,6 @@ sub getDefaultPathList
         /opt/kde3/bin
         /opt/gnome/bin
     ) ];
-}
-
-sub finishSession
-{
-    my $self = shift;
-    
-    removeCleanupFunction('slxos-setup::distro::chroot');
-
-    # unmount /proc
-#    if (slxsystem('ash', '-c', 'umount /proc 2>/dev/null')) {
-#        die _tr("unable to unmount '%s' (%s)\n", "/proc", $!);
-#    }
-
-    return;
 }
 
 sub updateDistroConfig

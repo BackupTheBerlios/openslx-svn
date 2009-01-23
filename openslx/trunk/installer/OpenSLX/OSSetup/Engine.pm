@@ -31,6 +31,7 @@ use File::Basename;
 use URI;
 
 use OpenSLX::Basics;
+use OpenSLX::Syscall;
 use OpenSLX::Utils;
 
 use vars qw(%supportedDistros);
@@ -1521,8 +1522,13 @@ sub _setupStage1D
             $self->_stage1D_setupPackageSources();
             $self->_stage1D_updateBasicVendorOS();
             $self->{distro}->preSystemInstallationHook();
-            $self->_stage1D_installPackageSelection();
+            my $ok = eval {
+                $self->_stage1D_installPackageSelection();
+                1;
+            };
+            my $err = $ok ? undef : $@;
             $self->{distro}->postSystemInstallationHook();
+            die $err if defined $err;
         },
         updateConfig => 1,
     });
@@ -1576,7 +1582,7 @@ sub _callChrootedFunction
         'updateConfig' => '?',
     });
 
-    $self->{'distro'}->startSession($params->{chrootDir});
+    $self->{distro}->startSession($params->{chrootDir});
 
     # invoke given function:
     $params->{function}->();
@@ -1757,34 +1763,9 @@ sub _changePersonalityIfNeeded
 
     my $distroName = $self->{'distro-name'};
     if ($self->_hostIs64Bit() && $distroName !~ m[_64]) {
-        # trying to handle a 32-bit vendor-OS on a 64-bit machine, so we change
-        # the personality accordingly (from 64-bit to 32-bit):
-        $self->_loadPerlHeader('syscall.ph')
-            or die _tr("unable to load perl header '%s'\n", 'syscall.ph');
-        $self->_loadPerlHeader('linux/personality.ph')
-        || $self->_loadPerlHeader('sys/personality.ph')
-            or die _tr("unable to load perl header '%s'\n", 'personality.ph');
-
-        syscall &SYS_personality, PER_LINUX32();
+        OpenSLX::Syscall->enter32BitPersonality();
     }
     return;
-}
-
-sub _loadPerlHeader
-{
-    my $self   = shift;
-    my $phFile = shift;
-
-    if (!eval { require $phFile }) {
-        # perl-header has not been provided by host-OS, so we create it
-        # manually from C-header (via h2ph):
-        (my $hFile = $phFile) =~ s{\.ph$}{.h};
-        return if !-e "/usr/include/$hFile";
-        my $libDir = "$openslxConfig{'base-path'}/lib";
-        slxsystem("cd /usr/include && h2ph -d $libDir $hFile") == 0
-            or die _tr("unable to create %s! (%s)", $phFile, $!);
-    }
-    return eval { require $phFile; 1 };
 }
 
 sub _hostIs64Bit
