@@ -231,8 +231,6 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
       >>/mnt/etc/${D_INITDIR}/boot.slx
 
-    # TODO: perhaps we can a) kick out vmdir
-    #            b) configure vmdir by plugin configuration
 
     ## Copy version depending files
     cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/runvmware \

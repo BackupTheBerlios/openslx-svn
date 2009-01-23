@@ -250,6 +250,45 @@ sub removalPhase
     return;
 }
 
+sub checkStage3AttrValues
+{
+    my $self          = shift;
+    my $stage3Attrs   = shift;
+    my $vendorOSAttrs = shift;
+    my @problems;
+
+    my $vm_kind = $stage3Attrs->{'vmware::kind'} || '';
+    
+    
+    print "DEBUG $vm_kind\n";
+    my $vmimg = $stage3Attrs->{'vmware::imgsrc'} || '';
+    print "DEBUG $vmimg\n";
+
+    if ($vm_kind eq 'local' && ! -x "/usr/lib/vmware/bin/vmware") {
+        push @problems, _tr(
+            "No local executeable installation of vmware found! Using it as virtual machine wouldn't work!"
+        );
+    }
+
+    if ($vm_kind eq 'vmpl2.0' &&
+        ! -d "/opt/openslx/plugin-repo/vmware/vmpl2.0/vmroot") {
+        push @problems, _tr(
+            "No OpenSLX installation of VMware Player 2 found or installation failed. Using it as virtual machine wouldn't work!"
+        );
+    }
+    
+    if ($vm_kind eq 'vmpl1.0' &&
+        ! -d "/opt/openslx/plugin-repo/vmware/vmpl1.0/vmroot") {
+        push @problems, _tr(
+            "No OpenSLX installation of VMware Player 2 found or installation failed. Using it as virtual machine wouldn't work!"
+        );
+    }
+
+    return if !@problems;
+
+    return \@problems;
+}
+
 
 #######################################
 ## local, non-general OpenSLX functions
