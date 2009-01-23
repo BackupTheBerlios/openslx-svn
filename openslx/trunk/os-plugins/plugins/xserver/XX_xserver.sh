@@ -24,7 +24,12 @@ else
 slxconfig-demuxer\n  and transported via fileget) is not present" nonfatal
 fi
 
+# Xorg configuration file location
 xfc="/mnt/etc/X11/xorg.conf"
+# directory for libGL, DRI library links to point to proper library set
+# depending on the hardware environment
+glliblinks="/mnt/var/X11R6/lib/"
+testmkd ${glliblinks}
 
 # check for the existance of plugin configuration and non-existance of an
 # admin provided config file in ConfTGZ
@@ -43,7 +48,7 @@ if [ -e /initramfs/plugin-conf/xserver.conf -a \
     [ -z "$xmodule" ] || error "${hcfg_hwsetup}" nonfatal
     
     ######################################################################
-    # begin proprietary drivers section
+    # begin proprietary drivers section (xorg.conf part)
     ######################################################################
     set -x
 
@@ -54,95 +59,39 @@ if [ -e /initramfs/plugin-conf/xserver.conf -a \
       ATI=1
       PLUGIN_ROOTFS="/opt/openslx/plugin-repo/xserver/ati"
 
-      # this will be written before standard module path 
-      # into xorg.conf
+      # this will be written before standard module path into xorg.conf
       MODULE_PATH="${PLUGIN_ROOTFS}/usr/lib/xorg/modules/\,\
 ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
       xmodule="fglrx"
-      PLUGIN_PATH="/mnt${PLUGIN_ROOTFS}"
-      LINK_PATH="/mnt/var/X11R6/lib/"
+      PLUGIN_PATH="/mnt/${PLUGIN_ROOTFS}"
 
       # we need some database for driver initialization
-      cp -r ${PLUGIN_PATH}/etc/* /mnt/etc/
-      if [ ! -d "${LINK_PATH}" ]; then
-        # create linkage folder
-        mkdir -p ${LINK_PATH}dri
-      fi
-
-      chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/fglrx.ko
-
-      # we need some pci.ids for fglrx driver
-      cp -r "${PLUGIN_PATH}/etc/ati" /mnt/etc/
+      cp -r ${PLUGIN_PATH}/etc/* /mnt/etc
 
       # if fglrx_dri.so is linked wrong -> we have to link it here
       if [ "1" -eq "$( ls -l /usr/lib/dri/fglrx_dri.so \
-      | grep -o "/var/X11R6.*so$" | wc -l )" ]; then
-        ln -s ${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so \
-        ${LINK_PATH}dri/fglrx_dri.so
+        | grep -o "/var/X11R6.*so$" | wc -l )" ]; then
+          ln -s ${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so \
+            ${glliblinks}dri/fglrx_dri.so
       fi
-
-      # TODO: This should be fixed in linkage.sh - later
-      DRILPATH=/mnt/var/X11R6/lib/usr/X11R6/lib/modules/dri/
-      mkdir -p "${DRILPATH}"
-      ln -s ${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so "${DRILPATH}fglrx_dri.so"
-      # TODO: end
-
-      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 \
-      ${LINK_PATH}libGL.so
-      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 \
-      ${LINK_PATH}libGL.so.1
-      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 \
-      ${LINK_PATH}libGL.so.1.2
-    fi
-
-    if [ $(grep -i -m 1 'nvidia' \
+    elif [ $(grep -i -m 1 'nvidia' \
         /etc/hwinfo.gfxcard | wc -l) -ge "1"  -a $xserver_prefnongpl -eq 1 ]
     then
-      # we have an ati card here
+      # we have an nvidia card here
       NVIDIA=1
       PLUGIN_ROOTFS="/opt/openslx/plugin-repo/xserver/nvidia"
       MODULE_PATH="${PLUGIN_ROOTFS}/usr/lib/xorg/modules/\,\
 ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
       xmodule="nvidia"
       PLUGIN_PATH="/mnt${PLUGIN_ROOTFS}"
-      LINK_PATH="/mnt/var/X11R6/lib/"
-      if [ ! -d "${LINK_PATH}" ]; then
-        # create linkage folder
-        mkdir -p ${LINK_PATH}
-      fi
 
       # insert kernel driver
       chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/nvidia.ko
 
-      # create all relevant libGL links
-      # this is the most important thing
-      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGLcore.so.1 \
-      ${LINK_PATH}libGLcore.so.1
-
-      # create all relevant libGL links
-      # libGL.so.1 is a link to libGL.so.1.somebignumber
-      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 \
-      ${LINK_PATH}libGL.so
-      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 \
-      ${LINK_PATH}libGL.so.1
-      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 \
-      ${LINK_PATH}libGL.so.1.2
     fi
 
-    # link to default mesa libraries if no binary drivers are to be installed
-    if [ "${xmodule}" != "nvidia" -a "${xmodule}" != "fglrx" ]; then
-      if [ -e /usr/lib/libGL.so.1.2 ]; then
-       ln -sf /usr/lib/libGL.so.1.2 /var/X11R6/lib/libGL.so
-       ln -sf /usr/lib/libGL.so.1.2 /var/X11R6/lib/libGL.so.1
-      fi
-      if [ -e /usr/lib/libGL_MESA.1.2 ]; then
-       ln -sf /usr/lib/libGL_MESA.so.1.2 /var/X11R6/lib/libGL.so
-       ln -sf /usr/lib/libGL_MESA.so.1.2 /var/X11R6/lib/libGL.so.1
-      fi
-    fi
-    set +x
     ######################################################################
-    # end proprietary drivers section
+    # end proprietary drivers xorg.conf section
     ######################################################################
 
 
@@ -277,7 +226,45 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
           -i $xfc
     fi
 
+    # setup the matching OpenGL, DRI libraries depending on choosen driver
+    # type (mesa/gpl, fglrx, nvidia, (matrox)). We should not see nvidia,
+    # fglrx here if xserver_prefnongpl is set to "0"
+    if $(grep -q -iE ".*Driver.*fglrx.*" $xfc); then
+      DRILPATH=/mnt/var/X11R6/lib/usr/X11R6/lib/modules/dri/
+      testmkd "${DRILPATH}"
+      ln -fs ${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so ${DRILPATH}/fglrx_dri.so
+      ln -fs ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 ${glliblinks}/libGL.so
+      ln -fs ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 ${glliblinks}/libGL.so.1
+      ln -fs ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 ${glliblinks}/libGL.so.1.2
+
+      # impossible to load it directly via stage3 insmod?
+      chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/fglrx.ko
+      # we need some pci.ids for fglrx driver
+      cp -r "${PLUGIN_PATH}/etc/ati" /mnt/etc
+    elif $(grep -q -iE ".*Driver.*nvidia.*" $xfc); then
+      # create all relevant libGL links
+      # this is the most important thing
+      ln -sf ${PLUGIN_ROOTFS}/usr/lib/libGLcore.so.1 \
+        ${glliblinks}/libGLcore.so.1
+
+      # create all relevant libGL links
+      # libGL.so.1 for NVidia is a link to libGL.so.1.somebignumber
+      ln -sf ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 ${glliblinks}/libGL.so
+      ln -sf ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 ${glliblinks}/libGL.so.1
+      ln -sf ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 ${glliblinks}/libGL.so.1.2
+    else
+      if [ -e /mnt/usr/lib/libGL.so.1.2 ]; then
+        ln -sf /usr/lib/libGL.so.1.2 /mnt/var/X11R6/lib/libGL.so
+        ln -sf /usr/lib/libGL.so.1.2 /mnt/var/X11R6/lib/libGL.so.1
+      fi
+      if [ -e /usr/lib/libGL_MESA.1.2 ]; then
+       ln -sf /usr/lib/libGL_MESA.so.1.2 /mnt/var/X11R6/lib/libGL.so
+       ln -sf /usr/lib/libGL_MESA.so.1.2 /mnt/var/X11R6/lib/libGL.so.1
+      fi
+    fi
+
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'xserver' os-plugin ...";
+
     # some configurations produce no proper screen resolution without
     # Horizsync and Vertrefresh set (more enhancements might be needed for
     # really old displays like CRTs)

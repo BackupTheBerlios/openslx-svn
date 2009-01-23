@@ -51,8 +51,7 @@ sub setupXserverScript
 
     my $script = unshiftHereDoc(<<"    End-of-Here");
         # xserver.sh (base part)
-        # written by OpenSLX-plugin 'xserver'
-        # repoPath is $repoPath
+        # written by OpenSLX-plugin 'xserver', repoPath is $repoPath
 
     End-of-Here
     
