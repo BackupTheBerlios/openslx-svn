@@ -18,7 +18,7 @@
     <long_description param="Diese Image dient Ihnen als Vorlage für Ihre Installationen. Laden Sie es auf Ihre lokale Festplatte und installieren Sie Ihre Programme!">
     </long_description>
     #os running in vmware, needed for vmware config file
-    <os param="Windows XP">
+    <os param="winxppro">
     </os>
     # Network nat or bridged?
     <network param="nat">
