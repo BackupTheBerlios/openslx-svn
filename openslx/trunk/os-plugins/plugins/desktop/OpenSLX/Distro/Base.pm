@@ -349,6 +349,12 @@ sub KDMConfigHashForWorkstation
     my $self = shift;
     
     return {
+#        'General' => {
+#            StaticServers => ':0',
+#            ReserveServers => ':1,:2,:3',
+#            ServerVTs => '-7',
+#            ConsoleTTYs => 'tty1,tty2,tty3,tty4,tty5,tty6',
+#        },
         'X-:0-Core' => {
             AutoLoginEnable => 'false',
             AllowRootLogin => 'false',
@@ -357,7 +363,6 @@ sub KDMConfigHashForWorkstation
         'X-*-Greeter' => {
             GreetString => 'OpenSLX Workstation (%h)',
             SelectedUsers => '',
-            ShowUsers => 'Selected',
             UserList => 'false',
         },
         'X-:*-Greeter' => {
@@ -367,6 +372,7 @@ sub KDMConfigHashForWorkstation
         'X-:0-Greeter' => {
             LogSource => '/dev/xconsole',
             UseAdminSession => 'false',
+            PreselectUser => 'None',
         },
         'xdmcp' => {
             Enable => 'false',

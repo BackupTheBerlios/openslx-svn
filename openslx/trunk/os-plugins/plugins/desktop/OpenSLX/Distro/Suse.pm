@@ -85,6 +85,8 @@ sub setupKDMScript
     my $configFile = $pathInfo->{config};
     mkpath("/etc/opt/kdm");
     mkpath("/var/adm/kdm");
+    # maybe backup kdmrc.sysconfig sometimes
+    unlink("/var/adm/kdm/kdmrc.sysconfig");
     symlink("/etc/opt/kdm/kdmrc", "/var/adm/kdm/kdmrc.sysconfig");
 
     my $script = $self->SUPER::setupKDMScript($repoPath);
@@ -104,8 +106,6 @@ sub setupKDMScript
 
 sub setupKDEHOME
 {
-    print "Info: KDEHOME isn't set for SUSE at this point.\n";
-
     return;
 }
 
