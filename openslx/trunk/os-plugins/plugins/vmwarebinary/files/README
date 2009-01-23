@@ -1,0 +1,31 @@
+Files
+- client-config.xml.default
+  Describes how the xml config needs to look like which will be used by
+  the Virtual Machine (see nvram below). Currently used internal and
+  shouldn't affect normal OpenSLX users. Data will be available on every
+  OpenSLX Client.
+- dhcpd.conf
+  DHCP Configuration file, which will be copied to
+  /etc/vmware/vmnet8/dhcpd/
+  Needed if you want to use NAT
+  only needed in non-binary version
+- nat.conf
+  NAT Configuration file, which will be copied to
+  /etc/vmware/vmnet8/nat/
+  only needed in non-binary version
+- nvram.5.0
+  This nvram supports a second Floppy drive. Helpfull if you want to
+  get some data from linux to your Windows VirtualMachine (like
+  Scanner-IP or Userinformation)
+- runvmware-v2
+  The main script which will configure and start the Virtual Machine
+- Vorlage_VMwareImageAdministrator.xml
+  This example files shows which VMware features are configureable for
+  each virtual machine.
+  Should be moved sooner or later to the vm-chooser plugin
+- depmod.sh, insmod.sh, uname.sh
+  Fake environment to get the vmplayer configuration program running
+- installbinary.sh
+  Installation script, which takes care about the installation of vmplayer
+- locations
+  /etc/vmware/locations is needed by vmware-configure.pl
