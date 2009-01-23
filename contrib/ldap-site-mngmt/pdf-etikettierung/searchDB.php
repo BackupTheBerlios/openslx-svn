@@ -1,13 +1,30 @@
 <?php
+/**
+ * -----------------------------------------------------------------------------
+ * Copyright (c) 2008 - Rechenzentrum Uni FR, OpenSLX Project
+ *
+ * This program is free software distributed under the GPL version 2.
+ * See http://openslx.org/COPYING
+ *
+ * If you have any feedback please consult http://openslx.org/feedback and
+ * send your suggestions, praise, or complaints to feedback@openslx.org
+ *
+ * General information about OpenSLX can be found at http://openslx.org/
+ * -----------------------------------------------------------------------------
+ * searchDB.php
+ *     - Read data from the LDAP database ...
+ * -----------------------------------------------------------------------------
+ */
+
 session_start();
 
 require('ldap3.inc.php');
 
 $ds = uniLdapConnect(USER, PASS);
 
+// to be defined accordingly
 $auDN = "ou=Lehrpool1,ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
 $attributes = array("hostname", "domainname", "ipaddress", "hwaddress");
-
 
 
 $res = get_hosts($auDN, $attributes, "");

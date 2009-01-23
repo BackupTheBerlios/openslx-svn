@@ -1,27 +1,34 @@
 <?php
+/**
+ * -----------------------------------------------------------------------------
+ * Copyright (c) 2008 - Rechenzentrum Uni FR, OpenSLX Project
+ *
+ * This program is free software distributed under the GPL version 2.
+ * See http://openslx.org/COPYING
+ *
+ * If you have any feedback please consult http://openslx.org/feedback and
+ * send your suggestions, praise, or complaints to feedback@openslx.org
+ *
+ * General information about OpenSLX can be found at http://openslx.org/
+ * -----------------------------------------------------------------------------
+ * pdf.php
+ *    - Defines the design of the tags (layout of ten per sheet of A4 paper
+ *      with dimensions of 96mm x 50.8mm per tag). Inclusion of third party
+ *      code for PDF and semacode generation, see www.fpdf.de. To be installed
+ *      on the webserver.
+ *  ____________________________________
+ * | Organisation Logo                  |
+ * |   hostname             sema        |
+ * |   domainname           code        |
+ * |   IP address           picture     |
+ * |   MAC address                      |
+ * |   additional text                  |
+ * |____________________________________|
+ * -----------------------------------------------------------------------------
+ */
 
-/* Die Generierung der Etiketten ist ausgelegt auf
-*  10 Etiketten pro Blatt mit den Maßen 96mm x 50.8mm
-*  pro Etikett.
-*  
-*  Etikettendesin:
-*  _____________________________________
-*  | RZ-Logo                            |
-*  |    Hostname            Sema-       |
-*  |   domainname           Code-       |
-*  |   IP-Adresse           Bild        |
-*  |   MAC-Adresse                      |
-*  |   Zusatztext                       |
-*  |____________________________________|
-*/
-
-
-
-
-/* Einbinden von fpdf.php (www.fpdf.de) für die
-*  Generierung des PDF-Files und semacode.php
-*  für die Generierung der Semacodes.
-*/
+// inclusion of fpdf.php (www.fpdf.de) for the generation of the actual PDF
+// files and semacode.php for rendering of the semacodes.
 require('/usr/share/php/fpdf/fpdf.php');
 require('semacode.php');
 

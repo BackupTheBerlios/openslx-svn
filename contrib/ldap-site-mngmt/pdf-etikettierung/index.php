@@ -1,11 +1,29 @@
 <?php
+/**
+ * -----------------------------------------------------------------------------
+ * Copyright (c) 2008 - Rechenzentrum Uni FR, OpenSLX Project
+ *
+ * This program is free software distributed under the GPL version 2.
+ * See http://openslx.org/COPYING
+ *
+ * If you have any feedback please consult http://openslx.org/feedback and
+ * send your suggestions, praise, or complaints to feedback@openslx.org
+ *
+ * General information about OpenSLX can be found at http://openslx.org/
+ * -----------------------------------------------------------------------------
+ * index.php
+ *    - Generic part of the tag interface webpage displayed to the user
+ * -----------------------------------------------------------------------------
+ */
+
 session_start();
 $_SESSION["entries"];
 ?>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de">
  <head>
-  <title>Invetarisierungssystem des RZ der Uni Freiburg</title>
+  <title>Inventory Tags for the LDAP Site Management</title>
   <link rel="stylesheet" type="text/css" href="style.css">
  </head>
  <body>

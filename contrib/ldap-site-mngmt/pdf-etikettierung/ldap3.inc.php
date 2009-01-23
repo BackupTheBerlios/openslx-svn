@@ -1,44 +1,60 @@
 <?php
+/**
+ * -----------------------------------------------------------------------------
+ * Copyright (c) 2008 - Rechenzentrum Uni FR, OpenSLX Project
+ *
+ * This program is free software distributed under the GPL version 2.
+ * See http://openslx.org/COPYING
+ *
+ * If you have any feedback please consult http://openslx.org/feedback and
+ * send your suggestions, praise, or complaints to feedback@openslx.org
+ *
+ * General information about OpenSLX can be found at http://openslx.org/
+ * -----------------------------------------------------------------------------
+ * ldap3.in.php
+ *    - Include file for all LDAPv3 related database operation
+ * -----------------------------------------------------------------------------
+ */
 
-//Konfiguration laden
+// load configuration from file
 require_once("config3.inc.php");
 
 $ldapError = null;
 
 /**
-* uniLdapConnect($userRdn, $userPwd) - F�hrt den Bind am LDAP-Server durch
-*
-* @param string userRdn UID f�r den Login
-* @param string userPwd Loginpasswort
-*
-* @return boolean Erfolg bzw. Misserfolg
-*
-*/
+ * uniLdapConnect($userRdn, $userPwd) - F�hrt den Bind am LDAP-Server durch
+ *
+ * @param string userRdn UID f�r den Login
+ * @param string userPwd Loginpasswort
+ *
+ * @return boolean Erfolg bzw. Misserfolg
+ *
+ */
 function uniLdapConnect($userRdn = "", $userPwd = "") {
-   global $ldapError, $suffix;
-   if(!(defined("LDAP_HOST") && defined("LDAP_PORT"))) {
-       $ldapError = "Hostname und/oder Port des LDAP-Servers wurden nicht angegeben!";
-       return FALSE;
+    global $ldapError, $suffix;
+    if(!(defined("LDAP_HOST") && defined("LDAP_PORT"))) {
+        $ldapError = "Hostname und/oder Port des LDAP-Servers wurden nicht angegeben!";
+        return FALSE;
    }
    if($ds = ldap_connect(LDAP_HOST, LDAP_PORT)) {
        # Connect zum LDAP-Server OK
        if(ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3)) {
            # Optionen gesetzt
            #if (ldap_start_tls($ds)){
-              if($userRdn != "" && $userPwd != "") {
-                # Anmeldung als User.
-                if($result = @ldap_bind($ds, "uid=".$userRdn.",ou=people,".$suffix, $userPwd)) {
-                  # Bind erfolgreich ausgef�hrt
-                  return $ds;
-                } else {
-                  # Bind nicht erfolreich.
-                  if(ldap_error($ds) == "Invalid credentials") {
-                    $ldapError .= "Bind nicht erfolgreich: die Zugangsdaten sind nicht korrekt.<br>\n";
-                  } else {
-                    $ldapError .= "Bind als User nicht erfolgreich: ".ldap_error($ds)."<br>\n";
-                  }
-                  #print_r(ldap_error($ds));echo "<br><br>";
-                  return false;
+               if($userRdn != "" && $userPwd != "") {
+                   # Anmeldung als User.
+                   if($result = @ldap_bind($ds, "uid=".$userRdn.",ou=people,".$suffix, $userPwd)) {
+                   # Bind erfolgreich ausgef�hrt
+                   return $ds;
+               } else {
+                   # Bind nicht erfolreich.
+                   if(ldap_error($ds) == "Invalid credentials") {
+                       $ldapError .= "Bind nicht erfolgreich: die Zugangsdaten sind nicht korrekt.<br>\n";
+                   } else {
+                       $ldapError .= "Bind als User nicht erfolgreich: ".ldap_error($ds)."<br>\n";
+                   }
+                   #print_r(ldap_error($ds));echo "<br><br>";
+                   return false;
                 }
               } else {
                 # Anonymer Bind.
@@ -65,43 +81,46 @@ function uniLdapConnect($userRdn = "", $userPwd = "") {
    }
 }
 
-
-     /**
-     * uniLdapSearch($ds, $base, $filter, $attributes, $sort, $mode, $resultLimit, $timeout)
-     * Sucht Eintr�ge im LDAP-Server.
-     *
-     * Durchsucht den LDAP-Server vom Punkt $base ab nach Eintr�gen, die $filter entsprechen. Falls in $sort ein Feldname angegeben
-     * wurde, so wird danach sortiert. (ACHTUNG: die Funktion ldap_sort() ist nicht dokumentiert! Ich wei� nicht ob sie Sortierung
-     * nach mehreren Feldern zul�sst und wie sie sich verh�lt, wenn zu einem Attribut mehrere Werte existieren.) $mode definiert die
-     * Art der Suche, wohingegen $resultLimit und $timeout die Anzahl der Ergebnis-Eintr�ge bzw. die maximalen Suchdauer einschr�nken.
-     * Zur�ckgegeben werden die Attribute, die im Array $attributes aufgef�hrt sind. Im Erfolgsfalle wird ein multidimensionales Array
-     * zur�ckgeliefert, im Fehlerfalle FALSE. Dann steht die Fehlermeldung in der Variablen $ldapError.
-     *
-     * @param string $base die DN, das Verzeichnis, in dem die Suche startet
-     *
-     * @param string $filter die Suchbedingungen
-     *
-     * @param array attributes die Attributnamen, deren Werte im Ergebnis enthalten sein sollen.
-     *
-     * @param string $sort Sortiert die Ergebnis-Eintr�ge nach dem angegebenen Feldnamen (undokumentiert! s.o.)
-     *
-     * @param string $mode Der Modus: "one" liefert einen Eintrag, "list" alle Eintr�ge des Verzeichnisses und "sub"
-     *                     schlie�t alle Untervezeichnisse mit ein.
-     *
-     * @param int $resultLimit die maximale Anzahl zur�ckgegebener Eintr�ge
-     *
-     * @param int $timeout die maximale Suchzeit, bevor der LDAP-Server abbrechen soll
-     *
-     * @return mixed multidimensionales array mit den Eintr�gen im Erfolgsfall, FALSE wenn ein Fehler auftrat
-     *
-     * @see ldap_read()
-     * @see ldap_list()
-     * @see ldap_search()
-     * @see ldap_sort()
-     * @see ldap_get_entries()
-     * @see ldap_free_result()
-     *
-     */
+/**
+ * uniLdapSearch($ds, $base, $filter, $attributes, $sort, $mode, $resultLimit, $timeout)
+ * Sucht Eintr�ge im LDAP-Server.
+ *
+ * Durchsucht den LDAP-Server vom Punkt $base ab nach Eintr�gen, die $filter
+ * entsprechen. Falls in $sort ein Feldname angegeben wurde, so wird danach
+ * sortiert. (ACHTUNG: die Funktion ldap_sort() ist nicht dokumentiert! Ich
+ * wei� nicht ob sie Sortierung nach mehreren Feldern zul�sst und wie sie sich
+ * verh�lt, wenn zu einem Attribut mehrere Werte existieren.) $mode definiert
+ * die Art der Suche, wohingegen $resultLimit und $timeout die Anzahl der
+ * Ergebnis-Eintr�ge bzw. die maximalen Suchdauer einschr�nken.
+ * Zur�ckgegeben werden die Attribute, die im Array $attributes aufgef�hrt
+ * sind. Im Erfolgsfalle wird ein multidimensionales Array zur�ckgeliefert,
+ * im Fehlerfalle FALSE. Dann steht die Fehlermeldung in der Variablen $ldapError.
+ *
+ * @param string $base die DN, das Verzeichnis, in dem die Suche startet
+ *
+ * @param string $filter die Suchbedingungen
+ *
+ * @param array attributes die Attributnamen, deren Werte im Ergebnis enthalten sein sollen.
+ *
+ * @param string $sort Sortiert die Ergebnis-Eintr�ge nach dem angegebenen Feldnamen
+ *
+ * @param string $mode Der Modus: "one" liefert einen Eintrag, "list" alle Eintr�ge des Verzeichnisses und "sub"
+ *                     schlie�t alle Untervezeichnisse mit ein.
+ *
+ * @param int $resultLimit die maximale Anzahl zur�ckgegebener Eintr�ge
+ *
+ * @param int $timeout die maximale Suchzeit, bevor der LDAP-Server abbrechen soll
+ *
+ * @return mixed multidimensionales array mit den Eintr�gen im Erfolgsfall, FALSE wenn ein Fehler auftrat
+ *
+ * @see ldap_read()
+ * @see ldap_list()
+ * @see ldap_search()
+ * @see ldap_sort()
+ * @see ldap_get_entries()
+ * @see ldap_free_result()
+ *
+ */
 function uniLdapSearch($ds, $base, $filter, $attributes, $sort, $mode, $resultLimit, $timeout) {
    global $ldapError;
    $abfrage = false;
@@ -149,7 +168,6 @@ function uniLdapSearch($ds, $base, $filter, $attributes, $sort, $mode, $resultLi
      return false;
    }
 }
-
 
 
 
@@ -326,5 +344,5 @@ function ldapArraySauber($Array, $delEmpty = FALSE) {
 
 
 
-# ldapsearch -x -H ldap://132.230.9.131:389 -b "ou=Lehrpool1,ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de" -D "uid=marcoh,ou=people,dc=uni-freiburg,dc=de" -W -v "objectclass=Host" 
+# ldapsearch -x -H ldap://<server-ip>:389 -b "ou=Lehrpool1,ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de" -D "uid=marcoh,ou=people,dc=uni-freiburg,dc=de" -W -v "objectclass=Host" 
 

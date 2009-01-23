@@ -1,0 +1,16 @@
+Code for a simple web interface to produce info tags for hosts listed
+in the ldap site management database. These tags are formatted to be
+printed on defined 2x10 tag sheets. A semacode containing all human
+readable information is added to the tags right.
+
+The tags looks like:
+   ___________________________________
+  | Organisation Logo                 |
+  |   hostname             Sema-      |
+  |   domainname           Code-      |
+  |   IP-Adresse           Bild       |
+  |   MAC-Adresse                     |
+  |   Zusatztext                      |
+  |___________________________________|
+
+The OpenSLX Project
