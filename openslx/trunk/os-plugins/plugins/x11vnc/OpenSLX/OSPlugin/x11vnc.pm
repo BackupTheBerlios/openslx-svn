@@ -35,9 +35,10 @@ sub getInfo
     my $self = shift;
     return {
         description => unshiftHereDoc(<<'        End-of-Here'),
-            enables x11vnc server
+            enables x11vnc server (user or xorg)
         End-of-Here
-        precedence => 50,
+        # depends on xorg to be configured
+        precedence => 80,
     };
 }
 
@@ -67,7 +68,7 @@ sub getAttrInfo
             End-of-Here
             content_regex => qr{^(x11user|x11gen|fb)$},
             content_descr => 'x11user for user, x11gen for general X access or fb',
-            default => 'x11user',
+            default => 'x11gen',
         },
 
         'x11vnc::scale' => {
@@ -174,7 +175,6 @@ sub getAttrInfo
             content_descr => 'use 1 or yes to enable - 0 or no to disable',
             default => 'yes',
         },
-        
     };
 }
 
@@ -189,9 +189,10 @@ sub installationPhase
 
     # should we distinguish between the two different packages!?
     # libvnc should be part of the xorg package!? (so no check needed)
+    my $engine = $self->{'os-plugin-engine'};
     if (!isInPath('x11vnc')) {
-        $self->{'distro'}->installPackages(
-            $self->{'os-plugin-engine'}->getInstallablePackagesForSelection('x11vnc')
+        $engine->installPackages(
+            $engine->getInstallablePackagesForSelection('x11vnc')
         );
     } else {
         vlog(3, "x11vnc is already installed");
