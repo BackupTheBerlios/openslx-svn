@@ -108,8 +108,8 @@ if (createConfigFolderForDefaultSystem()) {
     );
 }
 
-# protect against parallel executions of writing OpenSLX scripts
-my $globalLock = grabLock('global');
+# protect against parallel execution of this script
+my $demuxerLock = grabLock('slxconfig-demuxer');
 
 my $tempPath = "$openslxConfig{'temp-path'}/slxconfig-demuxer";
 if (!$option{dryRun}) {
