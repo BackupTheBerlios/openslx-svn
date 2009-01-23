@@ -29,4 +29,3 @@ set | sed \
   -e "s,domain,domain_name,;s,dns,domain_name_servers," \
   -e "s,broadcast,broadcast_address,;s,dhc.*,,;/^$/d" \
   -e "/OPTIND.*/d" >>/tmp/confviadhcp
-
