@@ -42,9 +42,9 @@ sub getInfo
 
     return {
         description => unshiftHereDoc(<<'        End-of-Here'),
-            Sets up remote logging of boot process (via UPD).
+            Sets up system log service for SLX-clients.
         End-of-Here
-        mustRunAfter => [],
+        precedence => 50,
     };
 }
 
@@ -63,17 +63,186 @@ sub getAttrInfo
             content_descr => '1 means active - 0 means inactive',
             default => '1',
         },
-        'syslog::target' => {
+        'syslog::kind' => {
+            applies_to_vendor_os => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                kind of syslog to use (syslogd or syslog-ng)
+            End-of-Here
+            content_regex => undef,
+            content_descr => 'allowed: syslogd, syslog-ng',
+            default => undef,
+        },
+        'syslog::host' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                ip:port where syslog shall be sent to
+                name or IP-address of host where syslog shall be sent to
             End-of-Here
             content_regex => undef,
-            content_descr => 'allowed: gdm, kdm, xdm',
+            content_descr => 'a hostname or an IP address',
             default => undef,
         },
+        'syslog::port' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                port number (UDP) where syslog shall be sent to
+            End-of-Here
+            content_regex => undef,
+            content_descr => 'a port number',
+            default => 514,
+        },
     };
+}
+
+sub installationPhase
+{
+    my $self = shift;
+    
+    $self->{pluginRepositoryPath} = shift;
+    $self->{pluginTempPath}       = shift;
+    $self->{openslxPath}          = shift;
+    $self->{attrs}                = shift;
+    
+    # We are going to change some of the stage1 attributes during installation
+    # (basically we are filling the ones that are not defined). Since the result
+    # of these changes might change between invocations, we do not want to store
+    # the resulting values, but we want to store the original (undef).
+    # In order to do so, we copy all stage1 attributes directly into the
+    # object hash and change them there.
+    $self->{kind}  = lc($self->{attrs}->{'syslog::kind'});
+    
+    my $engine = $self->{'os-plugin-engine'};
+    
+    if ($self->{kind} eq 'syslog-ng' && !qx{which syslog-ng}) {
+        $engine->installPackages('syslog-ng');
+    }
+    if ($self->{kind} eq 'syslogd' && !qx{which syslogd}) {
+        $engine->installPackages('syslogd');
+    }
+
+    if (!$self->{kind}) {
+        if (qx{which syslog-ng}) {
+            $self->{kind} = 'syslog-ng';
+        }
+        elsif (qx{which syslogd}) {
+            $self->{kind} = 'syslogd';
+        }
+        else {
+            die _tr(
+                "no syslog daemon available, plugin 'syslog' wouldn't work!"
+            );
+        }
+        print _tr("selecting %s as syslog kind\n", $self->{kind});
+    }
+
+    # start to actually do something - according to current stage1 attributes
+    if ($self->{kind} eq 'syslog-ng') {
+        $self->_setupSyslogNG();
+    }
+    elsif ($self->{kind} eq 'syslogd') {
+die 'sorry, support for kind "syslogd" is not implemented yet!';
+        $self->_setupSyslogd();
+    }
+    else {
+        die _tr(
+            'unknown kind "%s" given, only "syslog-ng" and "syslogd" are supported!',
+            $self->{kind}
+        );
+    }
+
+    return;
+}
+
+sub removalPhase
+{
+    my $self = shift;
+    my $pluginRepositoryPath = shift;
+    my $pluginTempPath = shift;
+
+    return;
+}
+
+sub _setupSyslogNG
+{
+    my $self  = shift;
+    my $attrs = shift;
+    
+    my $repoPath = $self->{pluginRepositoryPath};
+
+    my $conf = unshiftHereDoc(<<'    End-of-Here');
+        #!/bin/ash
+        # written by OpenSLX-plugin 'syslog'
+
+        cat >/mnt/etc/syslog-ng/syslog-ng.conf <<END
+        # written by OpenSLX-plugin 'syslog'
+        source all {
+            file("/proc/kmsg");
+            unix-dgram("/dev/log");
+            internal();
+        };
+        destination console_all {
+            file("/dev/tty10");
+        };        
+        log {
+            source(all);
+            destination(console_all);
+        };
+        END
+        
+        if [ -n "${syslog_host}" ]; then
+        [ -z ${syslog_port} ] && syslog_port=514
+        cat >>/mnt/etc/syslog-ng/syslog-ng.conf <<END
+        destination loghost {
+            udp( "${syslog_host}" port(${syslog_port}) );
+        };
+        log {
+            source(all);
+            destination(loghost);
+        };
+        END
+        fi
+
+        if [ -n "${syslog_file}" ]; then
+        cat >>/mnt/etc/syslog-ng/syslog-ng.conf <<END
+        destination allmessages {
+            file("/var/log/allmessages");
+        };
+        log {
+            source(all);
+            destination(allmessages);
+        };
+        END
+        fi
+
+        rllinker syslog-ng 1 15
+
+    End-of-Here
+    spitFile("$repoPath/syslog.sh", $conf);
+    
+    return;    
+}
+
+sub _setupSyslogd
+{
+    my $self  = shift;
+    my $attrs = shift;
+    
+    my $repoPath = $self->{pluginRepositoryPath};
+
+    # TODO: implement!
+
+    my $conf = unshiftHereDoc(<<'    End-of-Here');
+        #!/bin/ash
+        # written by OpenSLX-plugin 'syslog'
+
+
+        rllinker syslogd 1 15
+
+    End-of-Here
+    spitFile("$repoPath/syslog.sh", $conf);
+    
+    return;    
 }
 
 1;
