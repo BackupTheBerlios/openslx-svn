@@ -232,6 +232,13 @@ config CRYPTPW
 	help
 	  Applet for crypting a string.
 
+config FEATURE_CRYPTPW_BLOWFISH 
+    bool "Support blowfish in cryptpw"
+    default y
+    depends on CRYPTPW
+    help
+      With this option cryptpw will support the blowfish cipher, too.
+
 config CHPASSWD
 	bool "chpasswd"
 	default n

@@ -558,12 +558,23 @@
      "\n	FILE	Replace crontab by FILE ('-': stdin)" \
 
 #define cryptpw_trivial_usage \
-       "[-a des|md5] [string]"
+     USE_FEATURE_CRYPTPW_BLOWFISH( \
+          "[-a des|md5|blowfish] [string]" \
+     ) \
+     SKIP_FEATURE_CRYPTPW_BLOWFISH( \
+          "[-a des|md5] [string]" \
+     )
 #define cryptpw_full_usage "\n\n" \
        "Output crypted string.\n" \
        "If string isn't supplied on cmdline, read it from stdin.\n" \
      "\nOptions:" \
      "\n	-a	Algorithm to use (default: md5)" \
+     "\n        Available algorithms:" \
+     USE_FEATURE_CRYPTPW_BLOWFISH( \
+        "\n           blowfish" \
+     ) \
+        "\n           des" \
+        "\n           md5"
 
 #define cttyhack_trivial_usage NOUSAGE_STR
 #define cttyhack_full_usage ""
