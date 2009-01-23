@@ -46,9 +46,9 @@ sub getDefaultDesktopManager
     my $self = shift;
     
     # the default implementation prefers GDM over KDM over XDM
-    return $self->isGDMInstalled() ? 'gdm' 
-        : $self->isKDMInstalled() ? 'kdm' 
-        : $self->isXDMInstalled() ? 'xdm' : undef;
+    return $self->isPackInstalled('gdm') ? 'gdm' 
+        : $self->isPackInstalled('kdm') ? 'kdm' 
+        : $self->isPackInstalled('xdm') ? 'xdm' : undef;
 }
 
 sub getDefaultDesktopKind
@@ -56,16 +56,9 @@ sub getDefaultDesktopKind
     my $self = shift;
     
     # the default implementation prefers GNOME over KDE over XFCE
-    return $self->isGNOMEInstalled() ? 'gnome' 
-        : $self->isKDEInstalled() ? 'kde' 
-        : $self->isXFCEInstalled() ? 'xfce' : undef;
-}
-
-sub isGNOMEInstalled
-{
-    my $self = shift;
-
-    return $self->isInPath('gnome-session');
+    return $self->isPackInstalled('gnome-session') ? 'gnome' 
+        : $self->isPackInstalled('startkde') ? 'kde' 
+        : $self->isPackInstalled('startxfce') ? 'xfce' : undef;
 }
 
 sub installGNOME
@@ -77,13 +70,6 @@ sub installGNOME
     );
 
     return 1;
-}
-
-sub isGDMInstalled
-{
-    my $self = shift;
-
-    return $self->isInPath('gdm');
 }
 
 sub installGDM
@@ -224,13 +210,6 @@ sub GDMConfigHashForChooser
     return $configHash;
 }
 
-sub isKDEInstalled
-{
-    my $self = shift;
-    
-    return $self->isInPath('startkde');
-}
-
 sub installKDE
 {
     my $self = shift;
@@ -240,13 +219,6 @@ sub installKDE
     );
 
     return 1;
-}
-
-sub isKDMInstalled
-{
-    my $self = shift;
-
-    return $self->isInPath('kdm');
 }
 
 sub installKDM
@@ -383,13 +355,6 @@ sub KDMConfigHashForChooser
     return $configHash;
 }
 
-sub isXFCEInstalled
-{
-    my $self = shift;
-
-    return $self->isInPath('startxfce4');
-}
-
 sub installXFCE
 {
     my $self = shift;
@@ -399,13 +364,6 @@ sub installXFCE
     );
 
     return 1;
-}
-
-sub isXDMInstalled
-{
-    my $self = shift;
-
-    return $self->isInPath('xdm');
 }
 
 sub installXDM
