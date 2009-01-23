@@ -207,28 +207,6 @@ sub installationPhase
 
     vlog(3, "install init file");
 
-    #if ( !-x "/usr/bin/x11vnc" ) {
-    #    # let's install x11vnc
-    #    my $vendorOSName = $self->{'os-plugin-engine'}->{'vendor-os-name'};
-    #    if ( $vendorOSName =~ m/(debian|ubuntu)/i ) {
-    #        my $cmd = "aptitude -y install x11vnc";
-    #        vlog(3, "executing: $cmd");
-    #        if (slxsystem($cmd)) {
-    #            die _tr("unable to execute shell-cmd\n\t%s", $cmd);
-    #        }
-    #    }
-    #    if ( $vendorOSName =~ m/suse/i ) {
-    #        # PLEASE TEST THIS!!!
-    #        my $cmd = "zypper -n in x11vnc";
-    #        vlog(3, "executing: $cmd");
-    #        if (slxsystem($cmd)) {
-    #            die _tr("unable to execute shell-cmd\n\t%s", $cmd);
-    #        }
-    #    }
-    #} else {
-    #    vlog(3, "x11vnc is already installed");
-    #}
-
 }
 
 sub removalPhase

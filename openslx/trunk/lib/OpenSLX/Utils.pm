@@ -658,4 +658,34 @@ sub grabLock
     return $lock;
 }
 
+=item B<pathOf()>
+
+Returns the path of a binary it is installed in.
+
+=cut
+
+sub pathOf
+{
+    my $self   = shift;
+    my $binary = shift;
+    
+    return qx{which $binary 2>/dev/null};
+}
+
+=item B<isInpath()>
+
+Returns whether a binary is found.
+
+=cut
+
+sub isInPath
+{
+    my $self   = shift;
+    my $binary = shift;
+    
+    my $path = $self->pathOf($binary);
+
+    return $path ? 1 : 0;
+}
+
 1;

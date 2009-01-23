@@ -66,11 +66,11 @@ sub getAttrInfo
         'syslog::kind' => {
             applies_to_vendor_os => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                kind of syslog to use (syslogd or syslog-ng)
+                kind of syslog to use (syslogd-ng or old-style syslog)
             End-of-Here
             content_regex => undef,
-            content_descr => 'allowed: syslogd, syslog-ng',
-            default => undef,
+            content_descr => 'allowed: syslogd-ng, syslog',
+            default => syslog-ng,
         },
         'syslog::host' => {
             applies_to_systems => 1,
