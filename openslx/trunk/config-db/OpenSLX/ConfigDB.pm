@@ -194,7 +194,7 @@ sub connect        ## no critic (ProhibitBuiltinHomonyms)
     # last DB-session and bring the DB up-to-date, if so
     my $pluginInfoHashVal 
         = OpenSLX::AttributeRoster->computeMD5HashOverAllAttrs();
-    my $pluginInfoHashValInDB = $metaDB->schemaFetchPluginInfoHashVal();
+    my $pluginInfoHashValInDB = $metaDB->schemaFetchPluginInfoHashVal() || '';
     vlog(1, "plugin-info-hashes: $pluginInfoHashVal <=> $pluginInfoHashValInDB");
     if ($pluginInfoHashValInDB ne $pluginInfoHashVal) {
         $self->cleanupAnyInconsistencies();
