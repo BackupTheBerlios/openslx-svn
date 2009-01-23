@@ -93,16 +93,10 @@ else
   rest="$var"
   prot=""
 fi
-# remove temporary '::' from path, since it conflicts with port specification
-if strinstr "::" "$rest" ; then
-  rest=$(echo $rest | sed -e 's,::,§§§§§,g')
-elif strinstr "\:\:" "$rest" ; then
-  rest=$(echo $rest | sed -e 's,\:\:,§§§§§,g')
-fi
 # get the server IP or name and port - URI authority
 # you get the path or other token without leading "/" - add it later if
 # needed (fixme: port might be broken)
-if strinstr ":" "$rest" ; then
+if echo "$rest" grep -e "[0-9,a-z]:[0-9]" >/dev/null 2>&1; then
   server="${rest%:*}"
   rest="${rest#*:}"
   path="${rest#*/}"
@@ -123,8 +117,7 @@ fi
 case "$2" in
   prot) echo "$prot" ;;
   server) echo "$server" ;;
-  # add '::' again to path
-  path) echo "$path" | sed -e 's,§§§§§,\:\:,g' ;;
+  path) echo "$path" ;;
   port) echo "$port" ;;
   query) echo "$query" ;;
 esac
