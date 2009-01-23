@@ -272,6 +272,7 @@ sub checkStage3AttrValues
 
     if ($vm_kind eq 'local' &&
         ! -d "/opt/openslx/plugin-repo/vmware/local") {
+        push @problems, _tr(
             "local vmware installation not configured by slxos-plugin!"
     }
 
