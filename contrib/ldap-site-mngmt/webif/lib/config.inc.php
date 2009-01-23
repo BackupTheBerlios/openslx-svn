@@ -49,6 +49,7 @@
 
 
 	$dummyUid      = "lsmdummy";
-	$dummyPassword = "dummy_pwd";
-	$standpwd      = "123_stand_user_pwd"
+	# Bitte nachfolgende Passwoerter aendern
+	$dummyPassword = "123_dummy";
+	$standpwd      = "123_user"
 ?>

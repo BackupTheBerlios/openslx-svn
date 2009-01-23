@@ -58,7 +58,7 @@ function checkLogin($uid = "", $userPassword = "") {
     if (!(($uid == "") || ($userPassword == ""))) {
         # UID und Passwort wurden eingegeben
         # Fallunterscheidung welche Logins möglich sind
-		  if ( $ds_rz = rzLdapConnect($uid,$userPassword) ) {
+		/*  if ( $ds_rz = rzLdapConnect($uid,$userPassword) ) {
             # RZ-LDAP-Login erfolgreich,
             # -> Mache Datenabgleich und anschließenden Login am LSM-LDAP
             datenabgleich($uid, $ds_rz);
@@ -73,7 +73,9 @@ function checkLogin($uid = "", $userPassword = "") {
 	             redirect(3, "index.php", "<h3>Benutzer lokal nicht angelegt!<h3>".$ldapError, FALSE);
             	 die;
             }
-        } elseif (!($ds_rz = rzLdapConnect($uid,$userPassword)) && ($ds = uniLdapConnect($uid,$userPassword)))  {
+        } 
+		else*/
+		if (!($ds_rz = rzLdapConnect($uid,$userPassword)) && ($ds = uniLdapConnect($uid,$userPassword)))  {
             # Wenn RZ-LDAP-Login nicht erfolgreich, LSM-LDAP-Login erfolgreich,
             # dann ist der User auf dem RZ-LDAP nicht gespeichert.
             # -> Login am LSM-LDAP (z.B. für lokale Spezialuser ... )

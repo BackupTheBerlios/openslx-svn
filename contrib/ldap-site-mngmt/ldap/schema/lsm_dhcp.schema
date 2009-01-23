@@ -1,0 +1,341 @@
+#####################################################################
+#
+#  LSM - DHCP Schema (angepasstes dhcp.schema)
+#
+#####################################################################
+
+
+#####################################################################
+#  Attribute Types
+#####################################################################
+
+# ---------------------------------------------------------
+# DHCP Host Objects
+# ---------------------------------------------------------
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.1
+	NAME 'dhcpHlpCont'
+	EQUALITY distinguishedNameMatch
+	DESC 'associates the host with a dhcpGroup, dhcpSubnet, dhcpClass, dhcpService.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE)
+
+
+
+#####################################################################
+# DHCP
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.2
+	NAME 'dhcpPrimaryDN'
+	EQUALITY distinguishedNameMatch
+	DESC 'The DN of the dhcpServer which is the primary server for the configuration.' 
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.3
+	NAME 'dhcpSecondaryDN'
+	EQUALITY distinguishedNameMatch
+	DESC 'The DN of dhcpServer(s) which provide backup service for the configuration.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.4
+	NAME 'dhcpStatements'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Flexible storage for specific data depending on what object this exists in. Like conditional statements, server parameters, etc. This allows the standard to evolve without needing to adjust the schema.' 
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.5
+	NAME 'dhcpRange' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'The starting & ending IP Addresses in the range (inclusive), separated by a hyphen; if the range only contains one address, then just the address can be specified with no hyphen.  Each range is defined as a separate value.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+#---> added new attribute-type dhcpObjectDesc and dhcpXxxxx attribs
+
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.6
+	NAME 'dhcpObjectDesc' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Describtion of the Object.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.7
+	NAME 'dhcpoptGeneric' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Generic dhcp option'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.8
+	NAME 'dhcpoptRoot-path' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp option root-path'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.9
+	NAME 'dhcpoptDomain-name-servers' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp option domain-name-servers.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.10
+	NAME 'dhcpoptDomain-name' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp option domain-name.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.11
+	NAME 'dhcpoptDhcp-max-message-size' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp dhcp-max-message-size.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.12
+	NAME 'dhcpoptNtp-servers' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp option ntp-servers.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.13
+	NAME 'dhcpoptVendor-encapsulated-options' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp option vendor-encapsulated-options.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.14
+	NAME 'dhcpoptRouters' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp option routers.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.15
+	NAME 'dhcpoptBroadcast-address' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp option broadcast-address.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.16
+	NAME 'dhcpoptNetmask' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'The subnet mask length for the subnet.  The mask can be easily computed from this length.' 
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+#for options withow the preceeding word "option" maked with the capital "O" in the name
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.17
+	NAME 'dhcpOptAllow' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp allow.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.18
+	NAME 'dhcpOptDeny' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp deny.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.19
+	NAME 'dhcpOptIgnore' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp ignore.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.20
+	NAME 'dhcpOptDefault-lease-time' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp default-lease-time.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.21
+	NAME 'dhcpOptMax-lease-time' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp max-lease-time.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.22
+	NAME 'dhcpOptUse-host-decl-names' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp use-host-decl-names.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.23
+	NAME 'dhcpOptDdns-update-style' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp ddns-update-style.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.24
+	NAME 'dhcpOptServer-identifier' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp server-identifier.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.25
+	NAME 'dhcpOptFixed-address' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp ip-address associated with MAC.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.26
+	NAME 'dhcpOptFilename' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp boot filename.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.27
+	NAME 'dhcpOptNext-server'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Next Bootserver for Networkboot.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.28
+	NAME 'dhcpOptHardware' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp client MAC-Address.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+## Statement attribs
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.29
+	NAME 'dhcpHlpStatementType' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'can be if,elseif,else.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.30
+	NAME 'dhcpHlpStatementCond' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'dhcp statement condition.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+## neue
+#attributetype ( 1.3.6.1.4.1.7579.1005.6.31
+#	NAME 'dhcpDescription'
+#	EQUALITY caseIgnoreIA5Match
+#	DESC 'Description of a DHCP Objekt.'
+#	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.32
+	NAME 'dhcpOfferDN'
+	EQUALITY distinguishedNameMatch
+	DESC 'DN of subtree-base of AUs in the hierarchy that can use this DHCP Service'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.33
+        NAME 'dhcpFailoverPeer'
+        EQUALITY caseIgnoreIA5Match
+        DESC 'DHCP Failover Peer Declaration'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.34
+        NAME 'OptionDefinition'
+        EQUALITY caseIgnoreIA5Match
+        DESC 'Definitions of Options'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.35
+        NAME 'submatchExp'
+        EQUALITY caseIgnoreIA5Match
+        DESC 'Submatch Expression in a Sublass Definition'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.36
+	NAME 'dhcpOptGet-lease-hostnames'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'DNS Lookup for every lease IP in dynamic Pools.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.37
+	NAME 'dhcpPermittedClients'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Client Permit Statement (e.g. allow/deny unknown-clients)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+	
+attributetype ( 1.3.6.1.4.1.7579.1005.6.38
+	NAME 'dhcpCondType'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Type of Conditional Programming Statement/Clause (if/elsif/else).'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.6.39
+	NAME 'dhcpBoolExpression'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Boolean Expression in Conditional Programming Statement.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+
+
+#####################################################################
+#  Object Classes
+#####################################################################
+
+objectclass ( 1.3.6.1.4.1.7579.1005.7.1
+	NAME 'dhcpHost'
+	DESC 'This represents information about a particular client'
+	SUP top AUXILIARY
+	MAY ( dhcpStatements $ dhcpHlpCont $ description ) )
+
+objectclass ( 1.3.6.1.4.1.7579.1005.7.2
+	NAME 'groupOfComputers'
+	DESC 'Groupobject of Computers.'
+	SUP top
+	MUST ( cn )
+	MAY ( member $ dhcpHlpCont $ description ) )
+
+objectclass ( 1.3.6.1.4.1.7579.1005.7.3
+	NAME 'dhcpService'
+	DESC 'Service object that represents the actual DHCP Service configuration. This is a container object.'
+	SUP top
+	MUST ( cn )
+	MAY ( dhcpPrimaryDN $ dhcpSecondaryDN $ description $ dhcpOfferDN $ dhcpFailoverPeer $ dhcpStatements $ OptionDefinition $ HlpRBService ) )
+
+objectclass ( 1.3.6.1.4.1.7579.1005.7.4
+	NAME 'dhcpSubnet'
+	DESC 'This class defines a subnet. This is a container object.'
+	SUP top
+	MUST ( cn $ dhcpoptNetmask )
+	MAY ( dhcpRange $ dhcpStatements $ dhcpHlpCont $ description $ HlpRBService ) )
+
+objectclass ( 1.3.6.1.4.1.7579.1005.7.5
+	NAME 'dhcpOptions'
+	DESC 'Represents information about a collection of options defined.'
+	SUP top AUXILIARY
+	MAY ( dhcpoptGeneric $ dhcpoptRoot-path $ dhcpoptDomain-name-servers $ 
+		dhcpoptDomain-name $ dhcpoptDhcp-max-message-size $ dhcpoptNtp-servers $ 
+		dhcpoptVendor-encapsulated-options $ dhcpoptRouters $ dhcpoptBroadcast-address $ 
+		dhcpOptAllow $ dhcpOptDeny $ dhcpOptIgnore $ dhcpOptDefault-lease-time $ 
+		dhcpOptMax-lease-time $ dhcpOptUse-host-decl-names $ dhcpOptDdns-update-style $ 
+		dhcpOptServer-identifier $ dhcpOptFilename $ dhcpOptNext-server $ dhcpOptFixed-address $
+		dhcpOptGet-lease-hostnames $dhcpPermittedClients ) )
+
+objectclass ( 1.3.6.1.4.1.7579.1005.7.6
+	NAME 'dhcpPool'
+	DESC 'This class defines a DHCP Pool for dynamic IP Ranges in a DHCP Subnet.'
+	SUP top
+	MUST ( cn $ dhcpRange )
+	MAY ( dhcpStatements $ dhcpHlpCont $ HlpRBService ) )
+
+objectclass ( 1.3.6.1.4.1.7579.1005.7.7
+	NAME 'dhcpClass' 
+	DESC 'Represents information about a collection of related clients.' 
+	SUP top
+	MUST cn
+	MAY ( dhcpHlpCont $ dhcpStatements ) )
+
+objectclass ( 1.3.6.1.4.1.7579.1005.7.8
+	NAME 'dhcpSubClass' 
+	DESC 'Represents information about a collection of related classes.' 
+	SUP top
+	MUST ( cn $ submatchExp )
+	MAY ( dhcpHlpCont $ dhcpStatements ) )
+
+objectclass ( 1.3.6.1.4.1.7579.1005.7.9
+	NAME 'dhcpOptionSpace' 
+	DESC 'Represents information about a DHCP Option Space.' 
+	SUP top
+	MUST cn
+	MAY ( dhcpHlpCont $ OptionDefinition ) )
+	
+objectclass ( 1.3.6.1.4.1.7579.1005.7.10
+	NAME 'dhcpCondStatement' 
+	DESC 'Represents conditional DHCP Programming Statement (if/elsif/else).'
+	SUP top
+	MUST ( cn $ dhcpCondType )
+	MAY ( dhcpHlpCont $ dhcpBoolExpression $ dhcpStatements $ description) )

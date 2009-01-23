@@ -97,14 +97,25 @@ function get_rbsoffers($auDN){
 		#print_r($result);echo "<br><br>";
 		
 		$rbs_offers = array();
-		foreach ($result as $rbs){
-			#print_r(strpos($auDN, $rbs['rbsofferdn']));echo "<br>";
-			if ( strpos($auDN, $rbs['rbsofferdn']) !== false )
-				$rbs_offers [] = $rbs['dn'];
+		foreach ($result as $rbs) {
+			if ( count($rbs['rbsofferdn']) > 1 ) {     # bei multi-value rbsofferdn
+				foreach ($rbs['rbsofferdn'] as $rbs_offer_dn) {
+					#print_r(strpos($auDN, $rbs['rbsofferdn']));echo "<br>";
+					if ( strpos($auDN, $rbs_offer_dn) !== false ) {
+						$rbs_offers [] = $rbs['dn'];
+					}
+				}
+			}
+			else {
+				#print_r(strpos($auDN, $rbs['rbsofferdn']));echo "<br>";
+				if ( strpos($auDN, $rbs['rbsofferdn']) !== false ) {
+					$rbs_offers [] = $rbs['dn'];
+				}
 			}
 		}
-		#print_r($rbs_offers);echo "<br><br>";
-		return $rbs_offers;
+	}
+	#print_r($rbs_offers);echo "<br><br>";
+	return $rbs_offers;
 }
 
 function get_rbsoffers_other($au_dn){

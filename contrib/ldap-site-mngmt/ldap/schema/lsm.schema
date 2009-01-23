@@ -1,0 +1,212 @@
+#####################################################################
+#
+#  LDAP Site Management Schema
+#
+#####################################################################
+
+
+
+#####################################################################
+#  Attribute Types
+#####################################################################
+
+# -------------------------------------------
+# Administrative Unit (AU) Container Objects
+# -------------------------------------------
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.1
+	NAME 'FreeIPBlock' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Range of free IP addresses' 
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.2 
+	NAME 'MaxIPBlock' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Full range of obtained IP addresses' 
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.3
+	NAME 'dhcpMTime'
+	EQUALITY integerMatch
+	DESC 'Last modification in DHCP object of AU (Unix time).'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.4
+	NAME 'dnsMTime'
+	EQUALITY integerMatch
+	DESC 'Last modification in DNS object of AU (Unix time).'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.5
+	NAME 'rbsMTime'        
+	EQUALITY integerMatch
+	DESC 'Last modification in RBS object of AU (Unix time).'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.6
+	NAME 'slxGroup'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'SLX Group in OpenSLX Config DB of the AU'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.7
+	NAME 'dhcpDynamicPools'
+	EQUALITY booleanMatch
+	DESC 'Boolean Flag. True if AU has right to manage dynamic DHCP Pools'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE )
+
+
+# -------------
+# Host Objects
+# -------------
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.8
+	NAME 'HostName'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Hostname of a Computer.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.9 
+	NAME 'DomainName'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Domainname of a Computer.' 
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.10
+	NAME 'IPAddress'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'IPAddress of a Computer.' 
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.11
+	NAME 'HWAddress'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Hardware Address of a Computers Network Interface.' 
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.12
+	NAME 'HlpRBService'
+	EQUALITY distinguishedNameMatch
+	DESC 'Remote Boot Service of Host.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.13
+	NAME 'InventarNr'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Inventarisierungs-Nummer.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.14
+	NAME 'hwInventarNr'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Hardware Inventarisierungs-Nummer.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.15
+	NAME 'geoLocation'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Location (geographic) of Host, e.g. Site, Room Nr, etc..'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.16
+	NAME 'geoAttribut'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Geographic Coordinates.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.17
+	NAME 'PXEConfigDN'
+	EQUALITY distinguishedNameMatch
+	DESC 'DN Reference to PXEConfig Object of Host.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.18
+	NAME 'TimeSlot' 
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Time Range consisting of ' 
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.19
+	NAME 'ForceBoot' 
+	EQUALITY booleanMatch
+	DESC 'Boolean Flag. If true: Host will be forced to reboot by WOL (in given TimeSlot)' 
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE)
+
+# eventl. nicht benoetigt:
+attributetype ( 1.3.6.1.4.1.7579.1005.4.20
+	NAME 'slxConfigDBID'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Client ID in OpenSLX Config Database.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.21
+	NAME 'Hw-mouse'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'hardware configuration option.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.22
+	NAME 'Hw-graphic'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'hardware configuration option.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.23
+	NAME 'Hw-monitor'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'hardware configuration option.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+
+
+#####################################################################
+#  Object Classes
+#####################################################################
+
+# -------------------
+# Adminitrative Unit
+# -------------------
+objectclass ( 1.3.6.1.4.1.7579.1005.5.1
+	NAME 'AdministrativeUnit'
+	DESC 'Administrative Unit.'
+	SUP organizationalUnit
+	MAY ( cn $ FreeIPBlock $ MaxIPBlock $ dhcpMTime $ dnsMTime $ rbsMTime $ slxGroup ) )
+
+objectclass ( 1.3.6.1.4.1.7579.1005.5.2
+	NAME 'AUContainer'
+	DESC 'Administrative Unit SUB Container.'
+	SUP top
+	MUST ( cn ) )
+
+
+# ----------------
+# Clients (Hosts)
+# ----------------
+
+objectclass ( 1.3.6.1.4.1.7579.1005.5.3
+	NAME 'Host'
+	DESC 'Computer'
+	SUP top
+	MUST ( HostName $ DomainName )
+	MAY ( IPAddress $ HWAddress $ description $ geoLocation $ geoAttribut $ slxConfigDBID $ 
+	  InventarNr $ hwInventarNr $ $ HlpRBService PXEConfigDN $ Hw-mouse $ Hw-graphic $ Hw-monitor ) )
+
+objectclass ( 1.3.6.1.4.1.7579.1005.5.4
+	NAME 'ActivePXEConfig'
+	DESC 'Active PXEConfig of a Host.'
+	SUP top
+	MUST ( cn ) 
+	MAY ( TimeSlot $ ForceBoot $ PXEConfigDN ) )
+
+
+## -------
+## Admins
+## -------
+#objectclass ( 1.3.6.1.4.1.7579.1005.5.5
+#	NAME 'Admins'
+#	DESC 'Group of Admins (DNs), nur member nicht must'
+#	SUP top STRUCTURAL
+#	MUST ( cn )
+#	MAY ( member $ seeAlso $ owner $ ou $ o $ description ) )
+#
