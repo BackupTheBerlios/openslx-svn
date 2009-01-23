@@ -84,7 +84,8 @@ sub setupKDMScript
     my $pathInfo   = $self->KDMPathInfo();
     my $configFile = $pathInfo->{config};
     mkpath("/etc/opt/kdm");
-    system("ln -sfn /etc/opt/kdm/kdmrc /var/adm/kdm/kdmrc.sysconfig");
+    mkpath("/var/adm/kdm");
+    symlink("/etc/opt/kdm/kdmrc", "/var/adm/kdm/kdmrc.sysconfig");
 
     my $script = $self->SUPER::setupKDMScript($repoPath);
     
