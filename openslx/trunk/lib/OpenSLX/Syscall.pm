@@ -65,6 +65,7 @@ sub _loadPerlHeader
     
     local @INC = @INC;
     push @INC, $phLibDir;
+    push @INC, "$phLibDir/asm";
 
     for my $phFile (@phFiles) {
         if (!eval { require $phFile }) {
