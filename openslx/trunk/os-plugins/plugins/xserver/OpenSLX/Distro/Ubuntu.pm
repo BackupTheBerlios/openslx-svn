@@ -34,7 +34,8 @@ sub setupXserverScript
     my $script = $self->SUPER::setupXserverScript($repoPath);
 
     $script .= unshiftHereDoc(<<'    End-of-Here');
-        # ubuntu specific extension to stage3 xserver.sh
+        # Ubuntu specific extension to stage3 xserver.sh
+        testmkd /mnt/var/run/xauth
     End-of-Here
 
     return $script;

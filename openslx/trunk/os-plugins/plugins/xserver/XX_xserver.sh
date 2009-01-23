@@ -46,7 +46,7 @@ if [ -e /initramfs/plugin-conf/xserver.conf -a \
       sed "s/.*v4 Server Module: //")
     # proprietary ATI/NVidia modules listed a different way with hwinfo
     [ -z "$xmodule" ] || error "${hcfg_hwsetup}" nonfatal
-    
+
     ######################################################################
     # begin proprietary drivers section (xorg.conf part)
     ######################################################################
@@ -267,7 +267,6 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
         ln -sf /usr/lib/libGL_MESA.so.1.2 /mnt/var/X11R6/lib/libGL.so.1.2
       fi
     fi
-
 
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'xserver' os-plugin ...";
 

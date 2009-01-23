@@ -36,8 +36,9 @@ sub setupXserverScript
     my $script = $self->SUPER::setupXserverScript($repoPath);
 
     $script .= unshiftHereDoc(<<'    End-of-Here');
-        # suse specific extension to stage3 xserver.sh
+        # SuSE specific extension to stage3 xserver.sh
         testmkd /mnt/var/X11R6/bin
+        testmkd /mnt/var/lib/xdm/authdir/authfiles 0700
         ln -s /usr/bin/Xorg /mnt/var/X11R6/bin/X
         rm /mnt/etc/X11/xdm/SuSEconfig.xdm
     End-of-Here
