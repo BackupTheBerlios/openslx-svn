@@ -713,8 +713,7 @@ elif [ -z "${cowloop}" ] ; then
   for path in /etc/${D_SYSCONFDIR} ${D_DIRINBINDMNT} ${list}; do
     mkdir -p ${rwdir}/${path}
   done
-  testmkd ${rwdir}/var/tmp
-  chmod a+rwxt ${rwdir}/var/tmp >/dev/null 2>&1
+  testmkd ${rwdir}/var/tmp 1777
   # exclude all sysv runlevel link stuff
   for i in ${D_RCDIRS} ${D_INITBOOTD} ; do
     echo "*$i/*" >>/tmp/etc.exclude

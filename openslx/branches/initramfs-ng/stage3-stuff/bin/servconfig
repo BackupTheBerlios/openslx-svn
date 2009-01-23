@@ -44,8 +44,10 @@ cfgcomplete
 # copy additional configuration and var files and directories
 # admins can place there files in /var/lib/openslx/config/...
 # to be packed during stage2 into (/srv/dxs)/tftpboot/client-config...)
-# ... in the near future ...
 cp -a /rootfs/* /mnt 2>/dev/null
+
+# copy passwd file for temporarily (within stage3 configuration) use by chown
+cp /mnt/etc/passwd /etc
 
 # set greeting and add information on booted system
 len=$(expr length ${SLXVERSION}${SYSTEM_NAME})

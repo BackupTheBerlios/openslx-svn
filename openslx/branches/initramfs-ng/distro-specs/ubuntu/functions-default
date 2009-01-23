@@ -213,11 +213,14 @@ config_acpi () {
   rllinker "udev" 11 25
 }
 
-# configure hal, dbus, resmgr and services like that
+# configure hal, dbus, policykitd and services like that
 config_dreshal () {
 if [ "x$start_dreshal" = "xyes" ]; then
   testmkd /mnt/var/lib/dbus
-  rllinker "dbus" 17 20 
+  rllinker "dbus" 17 20
+
+  testmkd /mnt/var/lib/PolicyKit root:polkituser 1770
+  testmkd /mnt/var/lib/PolicyKit-public root:polkituser
 fi
 }
 
