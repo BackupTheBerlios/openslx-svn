@@ -78,7 +78,7 @@ sub installationPhase
     #foreach my $file ( qw( file1 file2 ) ) {
     #    copyFile("$pluginBasePath/$file", "$pluginRepoPath/");
     #chmod 0755, "$pluginRepoPath/$file";
-    }
+    #}
     
     return;
 }
