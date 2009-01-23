@@ -84,7 +84,6 @@ nwif="eth0"
 # admin has to wait until second run of hwsetup late in stage3) and the
 # network adaptor modules, search for pci modules to load later on
 hwautocfg base
-ash
 
 # if no kernel version is set, try to get it directly from /proc
 if [ -z $KERNEL ] ; then
@@ -802,8 +801,6 @@ waitfor /tmp/hwcfg 20000 || error "$init_errhw"
 waitfor /tmp/svcfg 10000 || error "$init_errsw"
 # IP configuration is complete and should not be updated automatically
 killall -9 udhcpc 2>/dev/null
-# copy machine configuration file into stage4 filesystem
-cat /etc/initramfs-setup >>/mnt/etc/machine-setup
 
 # if uniondirs is not set yet, maybe the unions were given via initramfs-setup
 if [ -z "$uniondirs" ]; then

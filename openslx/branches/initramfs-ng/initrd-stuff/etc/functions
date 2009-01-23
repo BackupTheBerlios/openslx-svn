@@ -326,7 +326,7 @@ else
   [ "x$fileserv" = "x" ] && fileserv=$(checkip ${serverip})
   # try to get configuration files successively; start with distro client
   # and try last distro default ...
-  echo -e "\n## Configuration via fileget: Hierarchy is distro client \
+  echo -e "\n## Configuration via later fileget: Hierarchy is distro client \
 and as last\n# distro/default" >> /tmp/confviafile
   mac=$(echo $macaddr|sed "s/:/-/g")
   for cfgfile in ${filepath}/${SYSTEM_NAME}/01-$mac.tgz \
@@ -337,14 +337,12 @@ and as last\n# distro/default" >> /tmp/confviafile
           2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
       tftp)
-        tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv 2>/dev/null\
-           && { unpack /tmp/$(basename $cfgfile) && break; }
+        tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv \
+          2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
     esac
   done
 fi
-test -f /initramfs/machine-setup && \
-  cat /initramfs/machine-setup >> /tmp/confviafile
 echo "fileget via $fileprot from $fileserv/$cfgfile finished" >/tmp/file-done
 }
 
@@ -467,13 +465,18 @@ waitfor /tmp/ldap-done 10000 || error "$error_errlcfg" nonfatal
 # concatenate the different files now into the central config file, order
 # matters - ldap (not implemented yet) data has highest priority
 if ! test -f /tmp/cfgcomplete ; then
+  echo "## Stage3 configuration via initial/early /etc/initramfs-setup" \
+    >/etc/ext-initramfs-setup
   for config in /etc/initramfs-setup /tmp/confviadhcp /tmp/confviafile \
-  	            /tmp/confvialdap
-    do test -f $config && cat $config >> /etc/machine-setup
+  	        /tmp/confvialdap
+    do test -f $config && cat $config >> /etc/ext-initramfs-setup
   done
-# check again and replace @@@serverip@@@
-. /etc/machine-setup
-sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup
+# check again and replace @@@serverip@@@ and produce a final version for
+# stage4 (no much use, just debugging)
+sed "s,@@@serverip@@@,$serverip," -i /etc/ext-initramfs-setup
+. /etc/ext-initramfs-setup
+cp /etc/ext-initramfs-setup /mnt/etc/machine-setup
+mv /etc/ext-initramfs-setup /etc/initramfs-setup
 echo "config completed" > /tmp/cfgcomplete
 fi
 }
