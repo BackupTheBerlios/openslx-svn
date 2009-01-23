@@ -392,7 +392,6 @@ preferencesheader ()
   pref.eula.0.buildNumber = \"${vmbuild}\"
   pref.eula.1.appName = \"VMware Workstation\"
   pref.eula.1.buildNumber = \"${vmbuild}\"
-  pref.enableAllSharedFolders = "TRUE"
   " \
   >${vmhome}/preferences
 }
@@ -556,11 +555,6 @@ writelog "finished\n"
 if [ $(which vmplayer 2>/dev/null) ]; then writelog "\nStarting VMplayer..."
   # run VMplayer
   writelog "... vmplayer ${vmopt} ${confile}...\n"
-  # start fvwm for player 2+
-  # problems with windows opening in background
-  which fvwm2 && \
-  ( echo "EdgeScroll 0 0" >/tmp/fvwm-$USER
-  fvwm -f /tmp/fvwm-$USER & )
   vmplayer ${vmopt} ${confile} 2>&1 >/dev/null
 else
   writelog "\nNo VMware/VMPlayer found!\n"
