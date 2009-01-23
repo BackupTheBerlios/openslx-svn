@@ -215,9 +215,10 @@ sub pickKernelFile
 
     my $newestKernelFile;
     my $newestKernelFileSortKey = '';
-    foreach my $kernelFile (glob("$kernelPath/vmlinuz-*")) {
+    my $kernelPattern = '{vmlinuz,kernel-genkernel-x86}-*';
+    foreach my $kernelFile (glob("$kernelPath/$kernelPattern")) {
         next unless $kernelFile =~ m{
-            vmlinuz-(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?-(\d+(?:\.\d+)?)
+            (?:vmlinuz|x86)-(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?-(\d+(?:\.\d+)?)
         }x;
         my $sortKey 
             = sprintf("%02d.%02d.%02d.%02d-%2.1f", $1, $2, $3, $4||0, $5);
