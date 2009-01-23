@@ -889,7 +889,9 @@ sub setSystemAttrs
             $valueIsOK->($newAttrs->{$_}) && !exists $oldAttrs{$_}
         } keys %$newAttrs;
     my @attrsToBeDeleted 
-        = grep { !$valueIsOK->($newAttrs->{$_}) } keys %oldAttrs;
+        = grep { 
+            !exists $newAttrs->{$_} || !$valueIsOK->($newAttrs->{$_}) 
+        } keys %oldAttrs;
     my @attrsToBeUpdated
         = grep { 
             $valueIsOK->($newAttrs->{$_}) && exists $oldAttrs{$_}
