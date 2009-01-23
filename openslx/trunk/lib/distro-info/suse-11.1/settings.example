@@ -1,0 +1,23 @@
+# rename this file to 'settings' and edit it as you please
+# 
+# for a list of all options, have a look at the corresponding 
+# settings.default in /opt/openslx/share/distro-info
+
+# use local installation source
+#<repository base>
+#    local-url = /srv/ftp/pub/opensuse/distribution/11.1/repo/oss
+#</repository>
+#<repository base_non-oss>
+#    local-url = /srv/ftp/pub/opensuse/distribution/11.1/repo/non-oss
+#</repository>
+#<repository base_update>
+#    local-url = /srv/ftp/pub/suse/update/11.1
+#</repository>
+
+# add a new selection:
+#<selection my_kde>
+#    base = kde
+#    packages = <<END
+#        kinternet
+#    END
+#</selection>
