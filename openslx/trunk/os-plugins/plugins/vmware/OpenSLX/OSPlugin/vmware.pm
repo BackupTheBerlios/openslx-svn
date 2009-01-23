@@ -139,12 +139,11 @@ sub getAttrInfo
         },
         ##
         ## only stage1 setup options: different kinds to setup
-        ## TODO: write a list and check it in stage3
         'vmware::local' => {
             applies_to_vendor_os => 1,
             applies_to_system => 0,
             applies_to_clients => 0,
-            description => unshiftHereDoc(<<'           End-of-Here'),
+            description => unshiftHereDoc(<<'            End-of-Here'),
                 Set's up stage1 configuration for a local installed
                 vmplayer or vmware workstation
             End-of-Here
@@ -156,7 +155,7 @@ sub getAttrInfo
             applies_to_vendor_os => 1,
             applies_to_system => 0,
             applies_to_clients => 0,
-            description => unshiftHereDoc(<<'           End-of-Here'),
+            description => unshiftHereDoc(<<'            End-of-Here'),
                 Install and configure vmplayer v2
             End-of-Here
             content_regex => qr{^(1|0)$},
@@ -178,65 +177,17 @@ sub installationPhase
     $self->{pluginTempPath}       = shift;
     $self->{openslxPath}          = shift;
     $self->{attrs}                = shift;
+    
 
-    # install requested packages by **/ or triggered by 'vmware::kind'
-    # check solution in "desktop plugin"
-
-    # generate the runlevel scripts for all existing vmware installations,
-    # variants because we do not know which on is selected on client level
-    # in stage3 (we know the installed packages from ** / 'vmware::kind'
-    # (code depends on distro/version and vmware location)
-    # for local ... and other vm-installations
-    # TODO: generate the list from ** / 'vmware::kind' (stage1 attributes)
-    #       (do not generate scripts for packages which are not installed)
-    my @types = qw( local vmpl2.0 );
-    foreach my $type (@types) {
-        # location of the vmware stuff
-        if ($type eq "local") {
-            $self->_localInstallation();
-        }
-        # TODO: here we will add the slx-installed versions
-        elsif ($type eq "vmpl2.0") {
-            $self->_vmpl2Installation();
-        }
-        else {
-            #my $vmpath = "$self->{'pluginRepositoryPath'}/vmware/$type";
-            #my $vmbin  = "$vmpath/bin";
-            #$vmversion = "TODO: get information from the stage1 flag";
-            #$vmfile = "TODO: get information from the stage1 flag";
-        }
-
-
-
-        # TODO: check how we can put the vmversion information to stage3.
-        #       more or less only needed for local installation but can
-	#       also be used for quickswitch of vmware version in stage4 - 
-	#       rather theoretical option for now - who should run the root scripts!?
-	#       (if it is requested later on, this feature might be added, but not relevant now)
-	#       Perhaps we write all installed player versions in this file
-	#       which get sourced by XX_vmware.sh
-
-	#       Conflict without rewrite of this code: local installed
-	#           vmware/player or(!) vmplayer
-	#       Solution:  substitude  "foreach my $type (@types) {"
-	#                  with _checkInstalled(local_vmplayer);
-	#                       _checkInstalled(local_vmwarews);
-	#                       _checkInstalled(vmplayer1);
-	#                       _checkInstalled(vmplayer2);
-	#                  and so on
-	#                  while _checkInstalled pseudocode
-	#               sub _checkInstalled($type, $path) {
-	# 			check_for_version(see above)
-	#			write information of this version to file
-	#		}
-	#		=> results in conflict of local, we just have
-	#		   local defined but would need then a
-	#		   local_ws and local_player which is less userfriendly
-	#	Dirk: see .4.2 suse-10.2-(test|main) system which includes
-	#		vmplayer or vmware ws/player (vmplayer is every time a part of the
-	#		workstation!! since version 5.5!! So if we have workstation, than
-	#		we have automatically vmplayer too)
-
+    # kinds we will configure and install
+    # TODO: write a list of installed/setted up and check it in stage3
+    #       this will avoid conflict of configured vmware version in
+    #       stage3 which are not setted up or installed in stage1
+    if ($self->{attrs}->{'vmware::local'} == 1) {
+        $self->_localInstallation();
+    }
+    if ($self->{attrs}->{'vmware::vmpl2.0'} == 1) {
+        $self->_vmpl2Installation();
     }
 
 }

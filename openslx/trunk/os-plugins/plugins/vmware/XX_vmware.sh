@@ -236,7 +236,8 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     # TODO: isn't boot.slx dead/not functional due of missing ";; esac"?
     echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
       >>/mnt/etc/${D_INITDIR}/boot.slx
-    
+
+
     # TODO: perhaps we can a) kick out vmdir
     #            b) configure vmdir by plugin configuration
     # TODO: How to start it. See Wiki. Currently a) implemnted
@@ -247,31 +248,12 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
 
     ##
     ## Copy version depending files
-
-    if [ "${vmware_kind}" = "local" ]; then
-
-      # we know which version from stage1. in stage1 we copy the
-      # specific file
-      cp /mnt/opt/openslx/plugin-repo/vmware/local/runvmware \
-            /mnt/var/X11R6/bin/run-vmware.sh
-        
-      # TODO: Pseudocode2 as notes
-      # if [ not vmware_kind = local but vmplayer-2.0 ]; then
-      # should be just the same as filling the /etc/vmware directory with the proper files for general
-      # vmware operation!
-
-      #   possibilities:
-      #   1. copy needed files depending on the /initramfs/.../vmware.conf
-      #   information. this way we also now the version
-      #   2. copy needed files depending on the information like in
-      #   pseudocode1, there we will have then a list of all available
-      #   kinds and version. in the far future we could use this
-      #   informations to do a quickswitch in stage5
-      #   3. we just copy the depending runvmware file in its own $kind folder
-      #   cost use a few bytes, but takes less time in stage3
-      # fi
+    cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/runvmware \
+        /mnt/var/X11R6/bin/run-vmware.sh
+    if [ "${vmware_kind}" = "vmpl2.0" ]; then
+      # TODO: setup up kernel files
     fi
-
+    
     [ $DEBUGLEVEL -gt 0 ] && echo "  *  done with 'vmware' os-plugin ..."
 
   fi
