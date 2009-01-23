@@ -172,8 +172,6 @@ sub getAttrInfo
 
 Returns a hash-ref with the default attribute values for the given vendor-OS.
 
-
-
 =cut
 
 sub getDefaultAttrsForVendorOS
@@ -183,6 +181,44 @@ sub getDefaultAttrsForVendorOS
     # the default implementation does not change the default values at all:
     return $self->getAttrInfo();
 }
+
+=item checkValueForKey()
+
+Checks if the given value is allowed (and makes sense) for the given key.
+If the value is ok, this method returns 1 - if not, it dies with an appropriate 
+message.
+
+Plugins may override this implementation to do additional checks that look
+at the vendor-OS (stage1-)attributes.
+
+=cut
+
+sub checkValueForKey
+{
+    my $self  = shift;
+    my $key   = shift;
+    my $value = shift;
+
+    # undefined values are always allowed
+    return 1 if !defined $value;
+
+    # the default implementation checks the value against the regex of the 
+    # attribute (if any)
+    my $attrInfo 
+        = $self->getAttrInfo()->{$key}
+            || die _tr('attribute "%s" is unknown!', $key);
+
+    my $regex = $attrInfo->{content_regex};
+    return 1 if !$regex;
+    
+    return 1 if $value =~ m{$regex};
+    
+    die _tr(
+        "value given for attribute %s is not allowed.\nAllowed values are: %s",
+        $key, $attrInfo->{content_descr}
+    );
+}
+
 
 =back
 
