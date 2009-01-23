@@ -108,7 +108,7 @@ bool addPrinters(xmlNode* node, char* script) {
         xmlNodePtr pNode = xmlNewNode(NULL, (const xmlChar*) "printer");
         xmlNewProp(pNode, (const xmlChar*) "name", (const xmlChar*) info_printer.at(1).c_str());
         xmlNewProp ( pNode, (const xmlChar*) "path", (const xmlChar*)
-            string( string( "//" ) + info_printer.at(0) + string( "/" ) + info_printer.at(1) ).c_str() );
+            string( string( "\\\\" ) + info_printer.at(0) + string( "\\" ) + info_printer.at(1) ).c_str() );
 
         if(info_printer.size() > 2) {
           xmlAddChild( pNode, xmlNewText( (const xmlChar*) info_printer.at(2).c_str() ) );

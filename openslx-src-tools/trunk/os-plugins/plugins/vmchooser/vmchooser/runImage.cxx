@@ -57,9 +57,9 @@ void runImage(fltk::Widget*, void* p)
  **/
 string runImage(DataEntry& dat, char* confxml)
 {
-  cout << dat.imgtype << endl << VMWARE << endl;
+  //cout << dat.imgtype << endl << VMWARE << endl;
   if (dat.imgtype == VMWARE) {
-    cout << confxml << endl;
+    //cout << confxml << endl;
     char* arg[] = { "/var/X11R6/bin/run-vmware.sh",
             confxml,
             (char*) dat.imgname.insert(0, "/var/lib/vmware/" ).c_str(),
@@ -67,7 +67,7 @@ string runImage(DataEntry& dat, char* confxml)
             (char*)dat.network.c_str(),
             NULL };
     
-    cout << arg << endl; //"run-vmware.sh imagename os (Window-Title) network"
+    //cout << arg << endl; //"run-vmware.sh imagename os (Window-Title) network"
     execvp("/var/X11R6/bin/run-vmware.sh",  arg);
   }
   if(! dat.command.empty() ) {
@@ -146,6 +146,11 @@ const char* writeConfXml(DataEntry& dat) {
   addScanners(root, pname);
   
   //xmlSaveFile("-", dat.xml);
-  xmlSaveFile( "/tmp/run.xml", dat.xml);
-  return "/tmp/run.xml";
+  srand(time(NULL));
+  char xmlfile[50];
+  
+  sprintf( xmlfile, "/tmp/run%d.xml", rand() );
+  
+  xmlSaveFile( xmlfile, dat.xml);
+  return xmlfile;
 }

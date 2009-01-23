@@ -14,11 +14,18 @@
 
 #include <boost/regex.hpp>
 
+#include <vector>
+#include <iostream>
+
+#include "inc/constants.h"
 #include "inc/DataEntry.h"
 #include "inc/functions.h"
 
 
 #ifdef LIBXML_TREE_ENABLED
+
+
+vector<string> xmlVec;
 
 char* getAttribute(xmlDoc *doc, char* name)
 {
@@ -214,72 +221,54 @@ DataEntry* get_entry(xmlDoc * doc)
         return de;
 }
 
-static int errorfunc(const char* errpath, int errno)
-{
-        fprintf(stderr, "GLOB(): Fehler aufgetreten unter %s mit Fehlernummer %d \n",errpath, errno);
-        return 0;
-}
-
-
-static glob_t* globber(char* path, const char* filetype)
-{
-        glob_t* gResult = (glob_t*) malloc(sizeof(glob_t));
-        char* temp = (char*) malloc(strlen(path)+strlen(filetype)-1);
-        strcpy(temp, path);
-        strcat(temp, filetype);
-
-        if (glob(temp, GLOB_NOSORT, &errorfunc, gResult)) {
-                fprintf(stderr, "Fehler beim Öffnen des Ordners!\n");
-                return NULL;
-        }
-        return gResult;
-
-}
 
 
 DataEntry** readXmlDir(char* path)
 {
+  const int MAX_LENGTH = 256;
+  char line[MAX_LENGTH];
+  char* fpath = getFolderName();
+  FILE* inp;
+
         LIBXML_TEST_VERSION
         if ( path== NULL) {
                 return NULL;
         }
-        glob_t *gResult = globber(path, "/*.xml");
 
-        if ( gResult == NULL ) {
-                return NULL;
-        }
-
-        if ( gResult->gl_pathc == 0 ) {
-                return NULL;
+        if( (inp = popen(string(fpath).append("/")
+              .append(filterscript).append(" ")
+              .append(path).c_str(), "r" )) ) {
+          while(fgets(line, MAX_LENGTH, inp ) != NULL) {
+            xmlVec.push_back(string(line).substr(0,strlen(line)-1) );
+          }
         }
 
         xmlDoc *doc = NULL;
         int c = 0;
+        string::size_type loc;
 
-        DataEntry** result = (DataEntry**) malloc(gResult->gl_pathc * sizeof(DataEntry*) +1);
+        DataEntry** result = (DataEntry**) malloc(xmlVec.size() * sizeof(DataEntry*) +1);
 
-        for (int i=0; gResult->gl_pathv[i] != NULL; i++) {
-//                 if (strstr(gResult->gl_pathv[i], "Vorlage") != NULL) {
-//                         continue;
-//                 }
-                /* DEBUG */
-                /* printf("%s\n", gResult->gl_pathv[i]);
-                 */
-                struct stat m;
-                stat(gResult->gl_pathv[i], &m);
-
-		/* DEBUG */
-		// printf("File: %s, COUNT: %d\n", gResult->gl_pathv[i], gResult->gl_pathc);
+        for (unsigned int i=0; i < xmlVec.size(); i++) {
+                loc = xmlVec[i].find( "Vorlage" );
+                if( loc != string::npos ) {
+                  // FOUND Vorlage
+                  continue;
+                }
                 
-		if ( S_ISDIR(m.st_mode) ) {
+                struct stat m;
+                stat(xmlVec[i].c_str(), &m);
+
+
+                /* DEBUG */
+                //printf("File: %s, COUNT: %d\n", xmlVec[i].c_str(), xmlVec.size());
+                if ( S_ISDIR(m.st_mode) ) {
                         continue;
                 }
 
-                
-
-                doc = xmlReadFile(gResult->gl_pathv[i], NULL, XML_PARSE_RECOVER);
+                doc = xmlReadFile(xmlVec[i].c_str(), NULL, XML_PARSE_RECOVER);
                 if (doc == NULL) {
-                        fprintf(stderr, "error: could not parse file %s\n", gResult->gl_pathv[i]);
+                        fprintf(stderr, "error: could not parse file %s\n", xmlVec[i].c_str());
                         continue;
                 }
 
@@ -291,7 +280,6 @@ DataEntry** readXmlDir(char* path)
                 // xmlFreeDoc(doc);
         }
 
-        free(gResult);
         result[c] = NULL;
         return result;
 

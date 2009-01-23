@@ -108,7 +108,7 @@ bool addScanners(xmlNode* node, char* script) {
         xmlNodePtr pNode = xmlNewNode(NULL, (const xmlChar*) "scanner");
         xmlNewProp(pNode, (const xmlChar*) "name", (const xmlChar*) info_scanner.at(1).c_str());
         xmlNewProp ( pNode, (const xmlChar*) "path", (const xmlChar*)
-            string( string( "//" ) + info_scanner.at(0) + string( "/" ) + info_scanner.at(1) ).c_str() );
+            string( string( "\\\\" ) + info_scanner.at(0) + string( "\\" ) + info_scanner.at(1) ).c_str() );
 
         if(info_scanner.size() > 2) {
           xmlAddChild( pNode, xmlNewText( (const xmlChar*) info_scanner.at(2).c_str() ) );

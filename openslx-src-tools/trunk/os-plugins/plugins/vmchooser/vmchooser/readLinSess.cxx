@@ -62,8 +62,11 @@ DataEntry** readLinSess(char* path)
         int c = 0;
         
         for (int i=0; gResult->gl_pathv[i] != NULL; i++) {
-          ifstream desk(gResult->gl_pathv[i]);
+          if(string(gResult->gl_pathv[i]) == "default.desktop") {
+            continue;
+          }
           
+          ifstream desk(gResult->gl_pathv[i]);
           DataEntry* de = new DataEntry();
           de->imgtype = LINUX;
           while( desk.getline(line, MAX_LENGTH) ) {
