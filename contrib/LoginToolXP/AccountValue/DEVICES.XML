@@ -1,37 +1,49 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <env>
-<RZ>
-  <printer param="4">
-   <printer1>
-    <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
-    <name param="rzps1"></name>
-   </printer1>
-   <printer2>
-    <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
-    <name param="rzps2"></name>
-   </printer2>
-   <printer3>
-    <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
-    <name param="rzpooloce1"></name>
-   </printer3>
-   <printer4>
-    <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
-    <name param="rzpooloce2"></name>
-   </printer4>
-  </printer>
-</RZ>
-<UB>
- <printer param="2">
-  <printer1>
-   <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
-   <name param="ubps1"></name>
-  </printer1>
-  <printer2>
-   <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
-   <name param="ubps2"></name>
-  </printer2>
- </printer>
-</UB>
+  <RZ>
+    <printer param="4">
+      <printer1>
+        <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+        <name param="rzps1"></name>
+      </printer1>
+      <printer2>
+        <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+        <name param="rzps2"></name>
+      </printer2>
+      <printer3>
+        <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+        <name param="rzpooloce1"></name>
+      </printer3>
+      <printer4>
+        <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+        <name param="rzpooloce2"></name>
+      </printer4>
+    </printer>
+  </RZ>
+  <UB>
+    <printer param="2">
+      <printer1>
+        <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+        <name param="ubps1"></name>
+      </printer1>
+      <printer2>
+        <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+        <name param="ubps2"></name>
+      </printer2>
+    </printer>
+  </UB>
+  <CHEMIE>
+    <printer param="2">
+      <printer1>
+        <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+        <name param="chemieco"></name>
+      </printer1>
+      <printer2>
+        <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+        <name param="chemiesw"></name>
+      </printer2>
+    </printer>
+  </CHEMIE>
 </env>
 
 
