@@ -26,8 +26,9 @@ for tool in /usr/sbin/acpidump \
 done
 # no kernel messages
 echo "0 0 0 0" >/proc/sys/kernel/printk
-hwinfo --usb-ctrl --netcard | grep modprobe | grep -v ehci | \
-  sed 's/.* Cmd: "//;s/"//' | sort -u >/etc/modprobe.base
+nwcardlist=$(echo ${slxconf_listnwmod}|sed "s/\ /|/g")
+hwinfo --usb-ctrl --netcard | grep modprobe | grep -E "$nwcardlist" | \
+  grep -v ehci | sed 's/.* Cmd: "//;s/"//' | sort -u >/etc/modprobe.base
 ash /etc/modprobe.base; mdev -s
 # optimization possible: exclude network and usb base drivers from the
 # following list
@@ -154,6 +155,8 @@ return 0
 # load distro specific configuration variables and functions. distro
 # specific functions may overwrite functions defined in /etc/functions
 . /etc/distro-functions
+# source general slx settings
+. /etc/slxsystem.conf
 
 # script run timer
 [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
