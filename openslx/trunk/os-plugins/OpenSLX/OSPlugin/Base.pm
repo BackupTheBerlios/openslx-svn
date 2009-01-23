@@ -184,8 +184,7 @@ sub getDefaultAttrsForVendorOS
 
 =item checkStage3AttrValues()
 
-Checks if the stage3 values given in B<$stage3Attrs> are allowed and makes 
-sense.
+Checks if the stage3 values given in B<$stage3Attrs> are allowed and make sense.
 
 This method returns an array-ref of problems found. If there were no problems, 
 this methods returns undef.
