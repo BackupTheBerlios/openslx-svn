@@ -94,6 +94,7 @@ sub initDistroInfo
         - /opt/kde3/share/autostart/zen-updater-auto.desktop
         - /opt/gnome/share/autostart/beagle*.desktop
         - /opt/gnome/share/gnome/autostart/beagle*.desktop
+        - /usr/share/gnome/autostart/gpk-update-icon*.desktop
         - /mnt/*
         - /media/*
         + /media
