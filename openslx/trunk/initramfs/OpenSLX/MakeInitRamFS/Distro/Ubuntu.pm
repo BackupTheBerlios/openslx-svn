@@ -48,9 +48,9 @@ sub determineMatchingHwinfoVersion
     my $distroVersion = shift;
 
     # TODO: fill this map (see Suse.pm for an example)
-    my %suseMap = (
+    my %versionMap = (
     );
-    return $suseMap{$distroVersion}
+    return $versionMap{$distroVersion}
         || $self->SUPER::determineMatchingHwinfoVersion($distroVersion);
 }
 

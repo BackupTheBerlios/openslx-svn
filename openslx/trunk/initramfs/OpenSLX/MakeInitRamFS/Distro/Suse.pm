@@ -47,12 +47,12 @@ sub determineMatchingHwinfoVersion
     my $self          = shift;
     my $distroVersion = shift;
 
-    my %suseMap = (
+    my %versionMap = (
         '10.2' => '13.11',
         '10.3' => '14.19',
         '11.0' => '15.3',
     );
-    return $suseMap{$distroVersion}
+    return $versionMap{$distroVersion}
         || $self->SUPER::determineMatchingHwinfoVersion($distroVersion);
 }
 
