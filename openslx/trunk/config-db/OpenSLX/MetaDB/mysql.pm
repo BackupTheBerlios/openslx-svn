@@ -56,7 +56,10 @@ sub connect        ## no critic (ProhibitBuiltinHomonyms)
     
     vlog(1, "trying to connect user '$dbUser' to mysql-database '$dbSpec'");
     $self->{'dbh'} = DBI->connect(
-        "dbi:mysql:$dbSpec", $dbUser, $dbPasswd, {PrintError => 0}
+        "dbi:mysql:$dbSpec", $dbUser, $dbPasswd, {
+            PrintError => 0,
+            mysql_auto_reconnect => 1,
+        }
     ) or die _tr("Cannot connect to database '%s' (%s)", $dbSpec, $DBI::errstr);
     return 1;
 }

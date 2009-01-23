@@ -559,11 +559,12 @@ sub _doInsert
                 $valRow->{'id'} = $lastID;
                 vlog(3, "DB-generated id for <$table> is <$valRow->{id}>");
             }
-            elsif ($valRow->{'id'} != $lastID) {
+            elsif ($valRow->{'id'} ne $lastID) {
                 # id has been pre-specified, but DB changed it, so we update
                 # it with the pre-specified value
-                my $sql2
-                    = "UPDATE $table SET id=$valRow->{'id'} WHERE id=$lastID";
+                my $sql2 = unshiftHereDoc(<<"                End-of-Here");
+                    UPDATE $table SET id='$valRow->{'id'}' WHERE id='$lastID'
+                End-of-Here
                 vlog(3, $sql2);
                 $dbh->do($sql2) or croak _tr(
                     q[Can't update table <%s> (%s)], $table, $dbh->errstr
