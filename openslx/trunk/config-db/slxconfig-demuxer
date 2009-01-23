@@ -171,10 +171,12 @@ writeConfigurations();
 
 my $wr = $option{dryRun} ? 'would have written' : 'wrote';
 my $errCount = $systemErrCount ? $systemErrCount : 'no';
+my $statusString 
+    = $systemErrCount ? "$errCount system(s) had errors" : 'all systems ok';
 print "\n", unshiftHereDoc(<<"End-of-Here");
     $wr $systemConfCount system- and $clientSystemConfCount client-specific configurations to $tftpbootPath/client-config
     $initramfsCount initramfs were created
-    $errCount system(s) had errors
+    $statusString
 End-of-Here
 
 $openslxDB->disconnect();
