@@ -163,9 +163,27 @@ sub startSession
 
 	# enter chroot jail
 	chrootInto($osDir);
-	$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
+	$ENV{PATH} = join(':', @{$self->getDefaultPathList()});
 
 	return;
+}
+
+sub getDefaultPathList
+{
+	my $self = shift;
+	
+	return [ qw(
+		/sbin
+		/usr/sbin
+		/usr/local/sbin
+		/usr/local/bin
+		/usr/bin
+		/bin
+		/usr/bin/X11
+		/usr/X11R6/bin
+		/opt/kde3/bin
+		/opt/gnome/bin
+	) ];
 }
 
 sub finishSession
