@@ -14,10 +14,8 @@
 # clients version 4
 #############################################################################
 
-# fixme: shut down if script fails - this does not really work in case of
-# script crash
-trap "exec (sleep 30; echo o>/proc/sysrq-trigger)" \
-  SIGHUP SIGINT SIGPIPE SIGTERM SIGKILL
+# fixme: the primary init script should never fail, so move all critical code
+# into sub script calls (see ticket 259)
 
 # device files get their own filesystem (to be move mounted later)
 devdir="/dev"
@@ -940,8 +938,8 @@ mount -n --move /dev /mnt/dev
 
 runinithook '95-cleanup'
 
-# kill hwautocfg, servconfig
-killall -9 hwautocfg servconfig debugshell 2>/mnt/dev/null
+# kill hwautocfg, servconfig, hwinfo
+killall -9 hwautocfg servconfig debugshell hwinfo 2>/mnt/dev/null
 # runtimer
 [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
   echo "** SLX init ended near $(sysup)"

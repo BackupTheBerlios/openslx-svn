@@ -540,7 +540,9 @@ local hook=$1
 if [ -d /etc/init-hooks/$hook ]; then
   for hook_script in /etc/init-hooks/$hook/*.sh; do
     if [ -e $hook_script ]; then
-      . $hook_script
+      [ $DEBUGLEVEL -eq 15 ] \
+          && sed '/^#!/ a\\set -x' -i $hook_script
+      init-wrapper $hook_script
     fi
   done
 fi
