@@ -78,7 +78,7 @@ if ($action =~ m[^list-at]i) {
             if ($option{verbose}) {
                 my $output;
                 my $fill = ' ' x 28;
-                for my $key (qw( description content_descr content_regex )) {
+                for my $key (qw( description content_descr )) {
                     $output .= "\n\t    $key:" . ( ' ' x (15 - length($key)) );
                     chomp(my $value = $attr->{$key} || '');
                     $value =~ s{\n}{\n$fill}igms;
