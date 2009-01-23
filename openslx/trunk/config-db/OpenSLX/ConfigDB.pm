@@ -16,7 +16,7 @@ use warnings;
 our (@ISA, @EXPORT_OK, %EXPORT_TAGS, $VERSION);
 $VERSION = 1;    # API-version
 
-use Storable qw(dclone);
+use Clone qw(clone);
 
 use Exporter;
 @ISA = qw(Exporter);
@@ -2628,7 +2628,7 @@ sub aggregatedSystemFileInfoFor
     my $self   = shift;
     my $system = shift;
 
-    my $info = dclone($system);
+    my $info = clone($system);
 
     my $export = $self->fetchExportByID($system->{export_id});
     if (!defined $export) {
@@ -2953,7 +2953,7 @@ sub _cloneAndUnhingeAttrs
     my (@valRows, @attrValRows);
     foreach my $inValRow (@$inValRows) {
         push @attrValRows, $inValRow->{attrs};
-        my $valRow = dclone($inValRow);
+        my $valRow = clone($inValRow);
         delete $valRow->{attrs};
         push @valRows, $valRow;
     }

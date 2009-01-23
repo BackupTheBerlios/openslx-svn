@@ -29,6 +29,7 @@ slxconfig-demuxer
     Please use the --man option in order to read the full manual.
 ];
 
+use Clone qw(clone);
 use Config::General;
 use Digest::MD5 qw(md5_hex);
 use Fcntl qw(:DEFAULT :flock);
@@ -38,7 +39,6 @@ use File::Path;
 use List::Util qw(first);
 use Getopt::Long qw(:config pass_through);
 use Pod::Usage;
-use Storable qw(dclone);
 
 # add the lib-folder and the folder this script lives in to perl's search
 # path for modules:
@@ -522,7 +522,7 @@ sub makeInitRamFS
     my $vendorOS = $info->{'vendor-os'};
     my $kernelFile = basename(followLink($info->{'kernel-file'}));
 
-    my $attrs = dclone($info->{attrs} || {});
+    my $attrs = clone($info->{attrs} || {});
 
     my $params = {
         'attrs'          => $attrs,

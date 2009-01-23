@@ -5,7 +5,7 @@ use warnings;
 
 use lib '/opt/openslx/lib';
 
-use Storable qw(dclone);
+use Clone qw(clone);
 
 # basic init
 use OpenSLX::ConfigDB qw(:support);
@@ -478,7 +478,7 @@ foreach my $key (sort keys %$shouldBeAttrs1) {
 }
 
 # finally we merge systems into clients and check the outcome of that
-my $fullMerge11 = dclone($mergedClient1);
+my $fullMerge11 = clone($mergedClient1);
 ok(
     mergeAttributes($fullMerge11, $mergedSystem1),
     'merging system 1 into client 1'
@@ -527,7 +527,7 @@ foreach my $key (sort keys %$shouldBeAttrs11) {
     );
 }
 
-my $fullMerge31 = dclone($mergedClient3);
+my $fullMerge31 = clone($mergedClient3);
 ok(
     mergeAttributes($fullMerge31, $mergedSystem1),
     'merging system 1 into client 3'
@@ -576,7 +576,7 @@ foreach my $key (sort keys %$shouldBeAttrs31) {
     );
 }
 
-my $fullMerge13 = dclone($mergedClient1);
+my $fullMerge13 = clone($mergedClient1);
 ok(
     mergeAttributes($fullMerge13, $mergedSystem3),
     'merging system 3 into client 1'
@@ -625,7 +625,7 @@ foreach my $key (sort keys %$shouldBeAttrs13) {
     );
 }
 
-my $fullMerge33 = dclone($mergedClient3);
+my $fullMerge33 = clone($mergedClient3);
 ok(
     mergeAttributes($fullMerge33, $mergedSystem3),
     'merging system 3 into client 3'
