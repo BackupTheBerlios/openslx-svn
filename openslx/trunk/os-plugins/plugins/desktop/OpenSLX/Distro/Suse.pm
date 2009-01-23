@@ -87,6 +87,8 @@ sub setupKDMScript
     mkpath("/var/adm/kdm");
     # maybe backup kdmrc.sysconfig sometimes
     unlink("/var/adm/kdm/kdmrc.sysconfig");
+    # this file gets overwritten if this script is present
+    unlink("/opt/kde3/share/apps/kdm/read_sysconfig.sh");
     symlink("/etc/opt/kdm/kdmrc", "/var/adm/kdm/kdmrc.sysconfig");
 
     my $script = $self->SUPER::setupKDMScript($repoPath);

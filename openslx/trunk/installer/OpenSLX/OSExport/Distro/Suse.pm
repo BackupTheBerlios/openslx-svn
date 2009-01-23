@@ -81,6 +81,7 @@ sub initDistroInfo
         - /tmp/*
         - /sys/*
         - /proc/*
+        - /opt/kde3/share/apps/kdm/read_sysconfig.sh
         - /opt/kde3/share/autostart/suseplugger.desktop
         - /opt/kde3/share/autostart/susewatcher.desktop
         - /opt/kde3/share/autostart/runupdater.desktop
