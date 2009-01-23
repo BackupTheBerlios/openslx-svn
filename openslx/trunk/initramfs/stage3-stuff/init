@@ -17,7 +17,7 @@
 # fixme: shut down if script fails - this does not really work in case of
 # script crash
 trap "exec (sleep 30; echo o>/proc/sysrq-trigger)" \
-  SIGHUP SIGINT SIGPIPE SIGTERM
+  SIGHUP SIGINT SIGPIPE SIGTERM SIGKILL
 
 # device files get their own filesystem (to be move mounted later)
 devdir="/dev"
@@ -367,7 +367,7 @@ else
     # useless
     if [ -z "$bootmac" ] ; then
       bootmac="$macaddr"
-      error "$init_bootmac" nonfatal
+      [ "$ethif" != "eth0" ] && error "$init_bootmac" nonfatal
     fi
     if [ "$macaddr" = "$bootmac" ] ; then
       nwif=$ethif
