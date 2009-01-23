@@ -161,6 +161,20 @@ sub setupGDMScript
               /mnt$configFile
           fi
         fi
+        case "\${desktop_allowshutdown"} in
+          none)
+          ;;
+          root)
+            sed "s|AllowShutdown.*|AllowShutdown=true|;\
+                 s|SecureShutdown.*|SecureShutdown=true" -i /mnt$configFile
+          ;;
+          users)
+            sed "s|AllowShutdown.*|AllowShutdown=true|;\
+                 s|SecureShutdown.*|SecureShutdown=false" -i /mnt$configFile
+          ;;
+        esac
+        [ "\${desktop_rootlogin}" -ne 0 ] && \
+          sed "s|AllowRoot.*|AllowRoot=true|" -i /mnt$configFile
     End-of-Here
     
     return $script;

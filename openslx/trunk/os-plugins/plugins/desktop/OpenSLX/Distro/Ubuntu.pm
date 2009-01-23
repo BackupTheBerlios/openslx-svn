@@ -45,7 +45,8 @@ sub setupGDMScript
 
     my $script = $self->SUPER::setupGDMScript($repoPath);
 
-    my $configFile = $self->GDMPathInfo()->{config};
+    my $pathInfo   = $self->GDMPathInfo();
+    my $configFile = $pathInfo->{config};
     
     $script .= unshiftHereDoc(<<'    End-of-Here');
         rllinker gdm 1 1
@@ -55,20 +56,6 @@ sub setupGDMScript
           /usr/bin/gnome-session
         testmkd /mnt/var/lib/gdm root:gdm 1770
         sed "/[daemon]/ a\BaseXsession=/etc/gdm/Xsession" -i /mnt$configFile
-        case ${desktop_allowshutdown} in
-          none)
-          ;;
-          root)
-            sed "s|AllowShutdown.*|AllowShutdown=true|;\
-                 s|SecureShutdown.*|SecureShutdown=true" -i /mnt$configFile
-          ;;
-          users)
-            sed "s|AllowShutdown.*|AllowShutdown=true|;\
-                 s|SecureShutdown.*|SecureShutdown=false" -i /mnt$configFile
-          ;;
-        esac
-        [ ${desktop_rootlogin} -ne 0 ] && \
-          sed "s|AllowRoot.*|AllowRoot=true|" -i /mnt$configFile
     End-of-Here
 
     return $script;
