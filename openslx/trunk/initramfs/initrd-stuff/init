@@ -406,7 +406,7 @@ sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup
 # ... or ldap if available (in background)
 [ -n "$ldap" ] && ldapconf &
 # ... or via (t)ftp/http file get (in background)
-[ -n "$file" ] && fileget &
+[ -n "$file" ] && fileget
 
 runinithook '15-have-ip-config'
 
@@ -810,6 +810,8 @@ runinithook '80-after-plugins'
 # create links for initial stage4 boot scripts
 initial_boot $D_INITSCRIPTS
 
+runinithook '85-have-initial-boot'
+
 # post init for some distro specific
 postinit
 [ -s /initramfs/postinit.local ] && {
@@ -822,6 +824,8 @@ postinit
 
 # start a debug shell in higher debug levels
 [ $DEBUGLEVEL -gt 2 -a $DEBUGLEVEL != 8 ] && /bin/sh
+
+runinithook '90-postinit-done'
 
 # unmount the bind mounted modules directory
 export ticks
@@ -844,6 +848,8 @@ umount -n /sys || error "$init_errsys" nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1
 chmod 1777 /mnt/dev/shm /mnt/tmp /mnt/tmp/scratch 2>/dev/null
 mount -n --move /dev /mnt/dev
+
+runinithook '95-cleanup'
 
 # kill hwautocfg, servconfig
 killall -9 hwautocfg servconfig 2>/mnt/dev/null
