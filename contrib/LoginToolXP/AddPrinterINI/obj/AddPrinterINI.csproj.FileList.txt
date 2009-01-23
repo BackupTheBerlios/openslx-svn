@@ -1,5 +1,0 @@
-bin\Release\AddPrinterINI.exe
-bin\Release\AddPrinterINI.pdb
-obj\Release\ResolveAssemblyReference.cache
-obj\Release\AddPrinterINI.exe
-obj\Release\AddPrinterINI.pdb

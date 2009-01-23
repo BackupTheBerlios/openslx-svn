@@ -54,11 +54,10 @@ namespace AccountValue
         //Anzahl der Drucker in der Umgebung
         private int anz;
 
-        //Variablen, die Optionsfelder beschreiben
+        //Variablen die angeben was eingebunden werden soll
         private String home;
-        private String shared;
-        private String printer;
-        private String account;
+        private String shareds;
+        private String printers;
 
         //#####################################################################
         public Form1()
@@ -85,7 +84,7 @@ namespace AccountValue
             //############## Auslesen, in welcher Umgebung man ist ############
             try
             {
-                env = xml.getAttribute("/settings/eintrag/umgebung", "param");
+                env = xml.getAttribute("/settings/eintrag/pools", "param");
             }
             catch { }
 
@@ -144,13 +143,10 @@ namespace AccountValue
             //############### Parameter aus INI-Datei auslesen ################
             try
             {
-                IniFile datei;
-                datei = new IniFile(@"C:\Programme\Login\AccValue.ini");
-                
-                home = datei.IniReadValue("Home", "connect");
-                shared = datei.IniReadValue("Shared", "connect");
-                printer = datei.IniReadValue("Printer", "connect");
-                account = datei.IniReadValue("Account", "show");
+                home = xml.getAttribute("/settings/eintrag/home", "param");
+                shareds = xml.getAttribute("/settings/eintrag/shareds", "param");
+                printers = xml.getAttribute("/settings/eintrag/printers", "param");
+            
             }
             catch (Exception e)
             {
@@ -175,7 +171,7 @@ namespace AccountValue
             
             //######## Starte das script zum installieren der Drucker #########
 
-            if (printer == "yes")
+            if (printers == "true")
             {
                 //###### Auslesen von Settings für Druckerinstallation ######
                 try
@@ -275,7 +271,7 @@ namespace AccountValue
             //#################################################################
             // Homedirectory mounten...
 
-            if (home == "yes")
+            if (home == "true")
             {
                 try
                 {
@@ -316,7 +312,7 @@ namespace AccountValue
 
             //#################################################################
             // Shared Directory mounten...
-            if (shared == "yes")
+            if (shareds == "true")
             {
                 try
                 {
@@ -417,8 +413,8 @@ namespace AccountValue
 
                 f2.DesktopLocation = location;
 
-                if (account == "yes")
-                    f2.Show();
+                
+                f2.Show();
 
                 //Weils so schön war gleich nochmal ;-))
                 getAccountInformation();
@@ -504,9 +500,9 @@ namespace AccountValue
         private void timer2_Tick(object sender, EventArgs e)
         {
 
-            // Dsik Usage anzeigen...
+            // Disk Usage anzeigen...
 
-            if (home == "yes")
+            if (home == "true")
             {
 
                 DiskFreeSpace used = GetDiskFreeSpace("k:\\");

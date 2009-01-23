@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using SHDocVw;
 using System.Runtime.InteropServices;
+using TL.XML;
 
 
 
@@ -31,6 +32,7 @@ namespace AccountValue
         private String version = "0.3";
         Form1 f1;
         private String home;
+        tlxml xml = new tlxml();
 
 
 
@@ -52,14 +54,12 @@ namespace AccountValue
 
             try
             {
-                IniFile datei;
-                datei = new IniFile(@"C:\Programme\Login\AccValue.ini");
-
-                home = datei.IniReadValue("Home", "connect");
+                xml.loadFile("B:\\CONFIG.XML");
+                home = xml.getAttribute("/settings/eintrag/home", "param");
             }
             catch { }
 
-            if(home != "yes")
+            if(home != "true")
             {
                 pictureBox2.Visible = false;
             }
