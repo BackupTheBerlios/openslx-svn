@@ -215,13 +215,13 @@ sub removalPhase
     my $pluginTempPath       = shift;
     
     rmtree ( [ $pluginRepositoryPath ] );
-    # restore old start scripts
-    my @files = qw( vmware vmplayer );
-    foreach my $file (@files) {
-        rename ("/usr/bin/$file.slx-bak", "/usr/bin/$file");
-    }
+    # restore old start scripts - to be discussed
+    #my @files = qw( vmware vmplayer );
+    #foreach my $file (@files) {
+    #    rename ("/usr/bin/$file.slx-bak", "/usr/bin/$file");
+    #}
     # TODO: path is distro specific
-    rename ("/etc/init.d/vmware.slx-bak", "/etc/init.d/vmware");
+    #rename ("/etc/init.d/vmware.slx-bak", "/etc/init.d/vmware");
     return;
 }
 
@@ -307,31 +307,47 @@ sub _writeRunlevelScript
           fi
         }
         
-        case $1 in
+        # Ubuntu
+        # . /lib/lsb/init-functions
+        # SuSE
+        # . /etc/rc.status
+        # rc_reset
+        case \$1 in
           start)
-            # message output should match the given vendor-os
-            echo "Starting vmware background services ..."
+            # SuSE
+            echo -n "Starting vmware background services ..."
+            # Ubuntu
+            # log_begin_msg "Starting vmware background services ..."
             load_modules
             setup_vmnet0
             setup_vmnet1
             setup_vmnet8
             runvmdhcpd
+            # message output should match the given vendor-os
+            # Ubuntu ####
+            # log_warning_msg "Not starting because of something ...
+            # SuSE ####
+            # rc_status -v
           ;;
           stop)
             # message output should match the given vendor-os
-            echo "Stopping vmware background services ..."
+            echo -n "Stopping vmware background services ..."
             killall vmnet-netifup vmnet-natd vmnet-bridge vmware vmplayer \
               vmware-tray 2>/dev/null
             # wait for shutting down of interfaces
             usleep 50000
             unload_modules
+            # SuSE
+            # rc_status -v
           ;;
           status)
             echo "Say something useful here ..."
           ;;
         esac
-        
+        # Ubuntu
         exit 0
+        # SuSE (10.2)
+        # rc_exit
     End-of-Here
 
     # OLTA: this backup strategy is useless if invoked twice, so I have

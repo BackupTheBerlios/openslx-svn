@@ -55,7 +55,7 @@ stage3 setup" > /mnt/etc/vmware/slxvmconfig
       # use the dns servers know to the vmware host
       # TODO: to be checked!!
       local dnslist=$(echo "$domain_name_servers"|sed "s/ /,/g")
-      echo "# /etc/vmware/dhcpd.conf written in stage3 ...\nallow \
+      echo -e "# /etc/vmware/dhcpd.conf written in stage3 ...\nallow \
 unknown-clients;\ndefault-lease-time 1800;\nmax-lease-time 7200;\n\
 option domain-name-servers $dnslist;\noption domain-name \"vm.local\";" \
         > /mnt/etc/vmware/dhcpd.conf
@@ -66,9 +66,10 @@ option domain-name-servers $dnslist;\noption domain-name \"vm.local\";" \
       local vmnet1=${vmware_vmnet%,*}
       local vmip=${vmnet1%/*}
       local vmpx=${vmnet1#*/}
-      echo "vmnet1=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
+      echo "$vmnt, $vmnet1, $vmip, $vmpx"
+      echo -e "vmnet1=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
       [ -n "$vmnt" ] && echo "vmnet1nat=true" >> /mnt/etc/vmware/slxvmconfig
-      echo "subnet $(ipcalc -n $vmip/$vmpx|sed s/.*=//) netmask \
+      echo -e "subnet $(ipcalc -n $vmip/$vmpx|sed s/.*=//) netmask \
 $(ipcalc -n $vmip/$vmpx|sed s/.*=//) {\n\trange $rstart $rend;\n\
 \toption broadcast $(ipcalc -b $vmip/$vmpx|sed s/.*=//);\n\
 \toption routers $vmip;\n}" > /mnt/etc/vmware/dhcpd.conf
