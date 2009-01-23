@@ -842,6 +842,7 @@ sub _doThrowOrWarn
     return;
 }
 
+
 =back
 
 =cut

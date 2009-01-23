@@ -31,7 +31,6 @@ slxconfig-demuxer
 
 use Config::General;
 use Digest::MD5 qw(md5_hex);
-use Fcntl qw(:DEFAULT :flock);
 use File::Basename;
 use File::Find;
 use File::Path;
@@ -50,7 +49,6 @@ use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::ConfigFolder;
 use OpenSLX::OSPlugin::Roster;
-use OpenSLX::ScopedResource;
 use OpenSLX::Utils;
 
 my (
@@ -110,46 +108,8 @@ if (createConfigFolderForDefaultSystem()) {
     );
 }
 
-# protect against parallel executions of this script
-my $criticalSection = OpenSLX::ScopedResource->new({
-    name    => 'osplugin::session',
-    acquire => sub { 
-        return if $option{dryRun};
-    
-        # use a lock-file to singularize execution of this script:
-        my $lockFile = "$openslxConfig{'private-path'}/config-demuxer.lock";
-        if (-e $lockFile) {
-            my $ctime = (stat($lockFile))[10];
-            my $now   = time();
-            if ($now - $ctime > 15 * 60) {
-                # existing lock file is older than 15 minutes, wipe it:
-                unlink $lockFile;
-            }
-        }
-        if (!sysopen(LOCKFILE, $lockFile, O_RDWR | O_CREAT | O_EXCL)) {
-            if ($! == 13) {
-                die _tr(qq[Unable to create lock-file <%s>, exiting!\n], $lockFile);
-            } else {
-                die _tr(unshiftHereDoc(<<"                    End-of-Here"),
-                    Lock-file '%s' exists, script is already running.
-                    Please remove the logfile and try again if you are sure that no one else
-                    is executing this script.
-                    End-of-Here
-                    $lockFile
-                );
-            }
-        }
-        1 
-    },
-    release => sub {
-        return if $option{dryRun};
-    
-        my $lockFile = "$openslxConfig{'private-path'}/config-demuxer.lock";
-        close(LOCKFILE);
-        unlink $lockFile;
-        1
-    },
-});
+# protect against parallel executions of writing OpenSLX scripts
+my $globalLock = grabLock('global');
 
 my $tempPath = "$openslxConfig{'temp-path'}/slxconfig-demuxer";
 if (!$option{dryRun}) {

@@ -140,6 +140,9 @@ sub initialize
     $distro->initialize($self);
     $self->{distro} = $distro;
 
+    # protect against parallel executions of writing OpenSLX scripts
+    $self->{'vendor-os-lock'} = grabLock($vendorOSName);
+
     if ($actionType =~ m{^(install|update|shell|plugin)}) {
         # setup path to distribution-specific info:
         my $sharedDistroInfoDir 

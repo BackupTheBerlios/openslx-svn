@@ -627,6 +627,10 @@ sub _callChrootedFunctionForPlugin
     my $self     = shift;
     my $function = shift;
 
+    # create os-setup engine here in order to block access to the vendor-OS
+    # via other processes (which could cause problems)
+    my $osSetupEngine = $self->_osSetupEngine();
+
     # bind-mount openslx basepath to /mnt/openslx of vendor-OS:
     my $basePath         = $openslxConfig{'base-path'};
     my $basePathInChroot = "$self->{'vendor-os-path'}/mnt/opt/openslx";
@@ -667,7 +671,7 @@ sub _callChrootedFunctionForPlugin
     });
 
     # now let plugin install itself into vendor-OS
-    $self->_osSetupEngine()->callChrootedFunctionForVendorOS($function);
+    $osSetupEngine->callChrootedFunctionForVendorOS($function);
     
     return;
 }

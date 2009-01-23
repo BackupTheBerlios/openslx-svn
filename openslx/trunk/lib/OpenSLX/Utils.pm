@@ -23,18 +23,19 @@ $VERSION = 1.01;
 @ISA     = qw(Exporter);
 
 @EXPORT = qw(
-  copyFile fakeFile linkFile 
-  copyBinaryWithRequiredLibs
-  slurpFile spitFile appendFile
-  followLink 
-  unshiftHereDoc
-  string2Array
-  chrootInto
-  mergeHash
-  getFQDN
-  readPassword
-  hostIs64Bit
-  getAvailableBusyboxApplets
+    copyFile fakeFile linkFile 
+    copyBinaryWithRequiredLibs
+    slurpFile spitFile appendFile
+    followLink 
+    unshiftHereDoc
+    string2Array
+    chrootInto
+    mergeHash
+    getFQDN
+    readPassword
+    hostIs64Bit
+    getAvailableBusyboxApplets
+    grabLock
 );
 
 =head1 NAME
@@ -48,6 +49,7 @@ OpenSLX.
 
 =cut
 
+use Fcntl qw(:DEFAULT :flock);
 use File::Basename;
 use File::Path;
 use Socket;
@@ -55,6 +57,7 @@ use Sys::Hostname;
 use Term::ReadLine;
 
 use OpenSLX::Basics;
+use OpenSLX::ScopedResource;
 
 =head1 PUBLIC FUNCTIONS
 
@@ -582,6 +585,74 @@ sub getAvailableBusyboxApplets
             split m{,}, $rawAppletList;
             
     return @busyboxApplets;
+}
+
+=item grabLock()
+
+=cut
+
+sub grabLock
+{
+    my $lockName = shift || die 'you need to pass a lock-name to grabLock()!';
+
+    my $lockPath = "$openslxConfig{'private-path'}/locks";
+    mkpath($lockPath) unless -e $lockPath;
+    my $lockFile = "$lockPath/$lockName";
+
+    my $lockFH;
+
+    my $lock = OpenSLX::ScopedResource->new({
+        name    => "lock::$lockName",
+        acquire => sub { 
+            # use a lock-file to implement the actual locking:
+            if (-e $lockFile) {
+                my $ctime = (stat($lockFile))[10];
+                my $now   = time();
+                if ($now - $ctime > 15 * 60) {
+                    # existing lock file is older than 15 minutes, we consider
+                    # that to be a leftover (which shouldn't happen of course)
+                    # and wipe it:
+                    unlink $lockFile;
+                }
+            }
+            
+            local $| = 1;
+            my $waiting;
+            while(!(sysopen($lockFH, $lockFile, O_RDWR | O_CREAT | O_EXCL)
+                && print $lockFH getpgrp() . "\n")) {
+                if ($! == 13) {
+                    die _tr(
+                        qq[Unable to create lock "%s", giving up!], $lockFile
+                    );
+                } else {
+                    # check if the lock is owned by our own process group
+                    # and only block if it isn't (this allows recursive locking)
+                    my $pgrpOfLock 
+                        = slurpFile($lockFile, { failIfMissing => 0});
+                    last if $pgrpOfLock && $pgrpOfLock == getpgrp();
+
+                    # wait for lock to become available
+                    if (!$waiting) {
+                        print _tr('waiting for "%s"-lock ', $lockName);
+                        $waiting = 1;
+                    }
+                    else {
+                        print '.';
+                    }
+                    sleep(1);
+                }
+            }
+            print "ok\n" if $waiting;
+            1
+        },
+        release => sub {
+            close($lockFH);
+            unlink $lockFile;
+            1
+        },
+    });
+    
+    return $lock;
 }
 
 1;
