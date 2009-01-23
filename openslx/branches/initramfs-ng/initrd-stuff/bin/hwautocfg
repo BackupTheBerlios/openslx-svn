@@ -14,7 +14,7 @@
 # OpenSLX linux stateless clients, using hwconfig from knoppix as base tool 
 
 #############################################################################
-# pre part, load USB modules and start hardware detection pci and monitor
+# pre part, load USB modules and start hardware detection pci
 base () {
 # avoid annoying error messages because of missing scripts
 for tool in /usr/sbin/acpidump \
@@ -121,9 +121,19 @@ mdev -s
 testmkd /dev/input 
 mknod /dev/input/mice c 13 63 2>/dev/null
 
-# scanner setup (to be checked)
+# scanner setup (fixme: to be checked)
 [ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
   >>/mnt/etc/udev/rules.d/04-scanner.rules
+return 0
+}
+
+#############################################################################
+# cleanup/finishing part
+finish () {
+# remove unneeded disk and mouse drivers
+[ ! -s /etc/hwinfo.disk ] && rmmod sd_mod 2>/dev/null
+grep -i "/dev/psaux" >/dev/null 2>&1 || rmmod psmouse 2>/dev/null
+# more sophistication possible :)
 return 0
 }
 
@@ -160,5 +170,9 @@ case $1 in
     [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
       echo "** HW setup finished at $(sysup)"
     echo "hwsetup finished at $(sysup)" >/tmp/hwcfg
+  ;;
+  # remove unneeded kernel modules
+  finish)
+    finish
   ;;
 esac

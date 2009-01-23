@@ -794,8 +794,9 @@ fi
 
 runinithook '60-have-servconfig'
 
-# wait a while for hardware setup to complete and copy stuff to stage4
+# wait a while for hardware setup to complete and start cleanup procedure
 waitfor /tmp/hwcfg 20000 || error "$init_errhw"
+hwautocfg finish &
 
 # wait a while for services setup to complete
 waitfor /tmp/svcfg 10000 || error "$init_errsw"
