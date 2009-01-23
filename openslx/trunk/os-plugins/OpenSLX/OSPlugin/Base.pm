@@ -152,6 +152,8 @@ The returned hash-ref must include at least the following entries:
 
 Indicates whether or not this plugin is active (1 for active, 0 for inactive).
 
+=back
+
 =cut
 
 sub getAttrInfo
