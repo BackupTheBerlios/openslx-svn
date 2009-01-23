@@ -22,16 +22,24 @@ hwinfo --usb-ctrl --netcard | grep modprobe | grep -v ehci | \
 ash /etc/modprobe.base; mdev -s
 # optimization possible: exclude network and usb base drivers from the
 # following list
-( hwinfo --pci >/etc/hwinfo.data; grep modprobe /etc/hwinfo.data | \
-    sed '/$Driver Info #[1,2,3]/,/$Config Status/d;s/.* Cmd: "//;s/"//' | \
-      sort -u >/etc/modprobe.pci ) &
+( hwinfo --pci >/etc/hwinfo.data ) &
 return 0
 }
 
 #############################################################################
 # main part
 hwmain () {
+# activate the previously detected devices
+[ $DEBUGLEVEL -ge 2 ] && modloadbg=" >/dev/null 2>&1"
+sed '/$Driver Info #1/,/$Config Status/d' \
+  /etc/hwinfo.data | grep modprobe | sed "s/.* Cmd: \"//;s/\"/$modloadbg/" \
+    | sort -u >/etc/modprobe.pci
 ash /etc/modprobe.pci
+[ -x /bin/mdev ] && mdev -s
+# load disk/optical high level drivers
+modprobe ${MODPRV} ide-cd; modprobe ${MODPRV} ide-floppy
+grep -E "IDE|SCSI" /etc/hwinfo.data >/dev/null 2>&1 && \
+  modprobe ${MODPRV} sd_mod
 
 # load kernel module for ps2 mice
 [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mouse/psmouse.ko ] && \
@@ -41,62 +49,19 @@ ash /etc/modprobe.pci
 [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mousedev.ko ] && \
   modprobe ${MODPRV} mousedev
 
-hwinfo --disk | grep modprobe | sed 's/.* Cmd: "//;s/"//' \
-  >/etc/modprobe.disk
+hwinfo --disk sed 's/$Device File: "//' >/etc/hwinfo.disk
+[ -s /etc/hwinfo.disk ] && disk=yes
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
 
-# load IDE high level drivers
-if [ -n "$ide" ] ; then
-  # you might want to check /etc/sysconfig/floppy for more info
-  strinfile "ZIP" /tmp/hwsetup.info && modprobe ${MODPRV} ide-floppy
-  strinfile "CDROM" /tmp/hwsetup.info && modprobe ${MODPRV} ide-cd
-  strinfile "HD" /tmp/hwsetup.info && {
-    modprobe ${MODPRV} ide-disk
-    disk=yes; }
-fi
-
-# not rather precise ...
-if strinfile "SCSI" /tmp/hwsetup.info ; then
-  strinfile "CDROM" /tmp/hwsetup.info && { modprobe ${MODPRV} sr_mod;
-    modprobe ${MODPRV} sg;
-    # just for compatibility to hwsetup (which generates links to scd*)
-    ( waitfor /dev/sr0 1000 && for i in /dev/sr* ; do 
-      [ -e /dev/scd${i#/dev/sr} ] || cp -a -f $i /dev/scd${i#/dev/sr} ; done; ) &
-    }
-  strinfile "HD" /tmp/hwsetup.info && {
-    modprobe ${MODPRV} sd_mod
-    disk=yes; }
-  # check if a (scsi) scanner was detected
-  strinfile "SCANNER" /tmp/hwsetup.info && \
-    echo -e 'KERNEL=="sg*",\t\tNAME="%k", GROUP="disk", MODE="666"' \
-           >> /tmp/scanner-udev
-fi
 [ -x /bin/mdev ] && mdev -s
-# sound card setup (alsa and oss compatibility drivers)
-( if [ -f /etc/sysconfig/sound ] ; then
-  . /etc/sysconfig/sound
-  driver=${DRIVER}
-else driver="snd-dummy"
-fi
+
 # problem with a specific module not disabled (via above trick) when
 # busybox is used
 #  rmmod snd_atiixp_modem snd_atiixp
-modprobe ${MODPRV} ${driver}
-driverlist="${driverlist} ${driver}"
+
 modprobe ${MODPRV} snd-pcm-oss
 modprobe ${MODPRV} snd-mixer-oss
-# remaining drivers listed in /tmp/hwsetup.info
-cat /tmp/hwsetup.info| while read line ; do
-  if strinstr "driver:" "${line}"; then
-    driver=${line##driver: }
-    if ! strinstr " ${driver} " "${driverlist}"; then
-      strinstr "Card:" "${driver}" || strinstr "ps/2" "${driver}" || {
-        modprobe ${MODPRV} ${driver} &
-        usleep 5000; }
-      driverlist="${driverlist} ${driver}"
-    fi
-  fi
-done ) &
+
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished most of module loading at $(sysup)"
 
 # get idea of availabe harddisk partitions, put swap partitions into
