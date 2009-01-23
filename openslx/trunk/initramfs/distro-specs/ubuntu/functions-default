@@ -21,9 +21,9 @@
 # D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
 # TempFS usage
 # D_DIRINDXS - directories in client filesystem which should be present anyhow
-D_ETCEXCL="etc/gconf/*\n*.old\n*-\netc/autoinstall\nlogrotate*\nbootloader\n\
-*~\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
-X11/xdm/pixmaps\ndhclient.script"
+#D_ETCEXCL="etc/gconf/*\n*.old\n*-\netc/autoinstall\nlogrotate*\nbootloader\n\
+#*~\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
+#X11/xdm/pixmaps\ndhclient.script"
 D_BINDMPTS="tmp root home media"
 D_DIRINBINDMNT="/var/run /var/log /var/tmp /var/lib/gdm"
 D_RODIRSINRW="/etc/X11/xkb /var/lib/gconf /var/lib/dpkg /var/lib/aspell \
@@ -117,6 +117,16 @@ sed "s/LANG.*/LANG=\"${LANG}\"/" -i /mnt/etc/default/locale
 
 # group of functions for the normal runlevels - first parameter is start
 # second stop
+
+# configure udev
+config_udev () {
+    if [ -f /mnt/etc/init.d/udev ] ; then
+       rllinker "udev" 7 14
+    fi
+    if [ -f /mnt/etc/init.d/udev-finish ] ; then
+       rllinker "udev-finish" 24 2
+    fi
+}
 
 # function for ntp configuration
 config_ntp () {
