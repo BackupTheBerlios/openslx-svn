@@ -39,6 +39,7 @@ sub _collectCMDs
     $self->_writeSlxSystemConf();
 
     $self->_copyUclibcRootfs();
+    $self->_copyInit();
 
     $self->{distro}->applyChanges($self);
 
@@ -96,6 +97,16 @@ sub _copyUclibcRootfs
     my $exclOpts = join ' ', map { "--exclude $_" } @excludes;
 
     $self->addCMD("rsync $exclOpts -rlpt $uclibcRootfs/ $self->{'build-path'}");
+    
+    return 1;
+}
+
+sub _copyInit
+{
+    my $self = shift;
+
+    my $dataDir = "$openslxConfig{'base-path'}/share/boot-env/preboot-cd";
+    $self->addCMD("cp $dataDir/init $self->{'build-path'}/");
     
     return 1;
 }

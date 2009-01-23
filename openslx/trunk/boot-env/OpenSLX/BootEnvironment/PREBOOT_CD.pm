@@ -50,8 +50,6 @@ sub finalize
     my $self   = shift;
     my $delete = shift;
 
-    return if !$self->{prebootSystemInfo};
-
     return $self->SUPER::finalize($delete);
 }
 
@@ -62,13 +60,13 @@ sub writeBootloaderMenuFor
     my $externalClientID = shift;
     my $systemInfos      = shift || [];
 
+    $self->_prepareBootloaderConfigFolder() 
+        unless $self->{preparedBootloaderConfigFolder};
+
     my $prebootSystemInfo
         = clone($self->_pickSystemWithNewestKernel($systemInfos));
     $self->_createImage($client, $prebootSystemInfo);
 
-#    $self->_prepareBootloaderConfigFolder() 
-#        unless $self->{preparedBootloaderConfigFolder};
-#
 #    my $pxePath       = $self->{'target-path'};
 #    my $pxeConfigPath = "$pxePath/pxelinux.cfg";
 #
@@ -124,6 +122,21 @@ sub writeBootloaderMenuFor
     return 1;
 }
 
+sub _prepareBootloaderConfigFolder
+{
+    my $self = shift;
+    
+    my $bootloaderPath = "$self->{'target-path'}/bootloader";
+    if (!$self->{'dry-run'}) {
+        rmtree($bootloaderPath);
+        mkpath($bootloaderPath);
+    }
+
+    $self->{preparedBootloaderConfigFolder} = 1;
+
+    return 1;
+}
+
 sub _pickSystemWithNewestKernel
 {
     my $self        = shift;
@@ -168,7 +181,7 @@ sub _createImage
 
     # copy static data and init script
     my $dataDir = "$openslxConfig{'base-path'}/share/boot-env/preboot-cd";
-    slxsystem(qq{rsync -rlpt $dataDir/ "$imageDir/"})
+    slxsystem(qq{rsync -rlpt $dataDir/iso "$imageDir/"})
         unless $self->{'dry-run'};
 
     # copy kernel (take the one from the given system info)
@@ -180,6 +193,16 @@ sub _createImage
     # create initramfs
     my $initramfsName = qq{"$imageDir/iso/isolinux/initramfs"};
     $self->_makePrebootInitRamFS($info, $initramfsName);
+
+    # write trivial isolinux config
+    my $isolinuxConfig = unshiftHereDoc(<<"    End-of-Here");
+        DEFAULT OpenSLX
+        LABEL OpenSLX
+        SAY Now loading OpenSLX preboot environment ...
+        KERNEL vmlinuz
+        APPEND initrd=initramfs
+    End-of-Here
+    spitFile("$imageDir/iso/isolinux/isolinux.cfg", $isolinuxConfig);
 
     my $mkisoCmd = unshiftHereDoc(<<"    End-of-Here");
         mkisofs 
@@ -199,7 +222,7 @@ sub _createImage
         die _tr("unable to create ISO-image - log follows:\n%s", $log);
     }
 
-    rmtree($imageDir);
+#    rmtree($imageDir);
 
     return 1;
 }

@@ -102,20 +102,11 @@ for opts in ${KCMDLINE} ; do
     # ... or a specified debug level (will be passed to next stage)
     debug=*)
       DEBUGLEVEL=${opts#debug=};;
-    nbd)
-      type=nbd
-      file=irfsnbd;;
-    nfs)
-      type=nfs
-      file=irfsnfs;;
-    dnbd2)
-      type=dnbd2
-      file=irfsd2;;
   esac
 done
-# at this point a timer should be started to ensure an automated reboot
-# or halt of the machine if SLX init does not succeed (e.g. missing kernel
-# module for the network adaptor)
+
+# start a watchdog to ensure an automated reboot or halt of the machine if SLX
+# init does not succeed (e.g. missing kernel module for the network adaptor)
 if [ "${DEBUGLEVEL}" -gt 0 ] ; then
   cat<<EOF > /bin/watchdog
 #!/bin/ash
@@ -142,7 +133,7 @@ ip link set dev lo up
 ip addr add 127.0.0.1/8 dev lo
 ip link set dev $nwif up || echo "I did not find any usable network adaptor."
 
-# start udhcpc, if no lease could be optained, start debug shell
+# run udhcpc and start a debug shell if no lease could be obtained
 mkdir -p /usr/share/udhcpc
 echo -e "#!/bin/ash\nunset infomsg HOME IFS mask lease interface DEBUGLEVEL \
 BOOT_IMAGE\nset >/tmp/ipstuff" >/usr/share/udhcpc/default.script
@@ -157,10 +148,10 @@ ip route add default via $router
 # user choose what kind of SLX client he wants to get
 
 # get kernel and initramfs, if something fails start debug shell
-echo "Fetching selected kernel and initial ramfs ($type) from the net ..."
+echo "Fetching selected kernel and initial ramfs from the net ..."
 ( wget -q -c -O /tmp/kernel \
   ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/kernel 2>/dev/null && \
-wget -q -c -O /tmp/iramfs \
+wget -q -c -O /tmp/initramfs \
   ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/$file 2>/dev/null ) || \
   /bin/ash
 
@@ -174,6 +165,7 @@ fi
 
 # start the new kernel with initialramfs and cmdline
 echo "Booting OpenSLX client ..."
-kexec -l /tmp/kernel --initrd=/tmp/iramfs --append="ip=$ip:$siaddr:$router:$subnet\
+kexec -l /tmp/kernel --initrd=/tmp/initramfs \
+  --append="ip=$ip:$siaddr:$router:$subnet \
   file=ftp://132.230.4.4/default.tgz debug=${DEBUGLEVEL} $quiet"
 kexec -e
