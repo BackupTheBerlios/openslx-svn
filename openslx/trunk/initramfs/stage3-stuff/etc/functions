@@ -338,6 +338,8 @@ local cfgfile
 if [ "x$filepath" != "x" ] ; then
   cfgfile=${filepath}
   [ "x$fileserv" = "x" ] && fileserv=$(checkip ${serverip})
+  # waiting for dns if fireserv is a name
+  echo ${fileserv} | grep -qi [a-z] && waitfor /tmp/dhcp-done 10000
   [ $DEBUGLEVEL -ge 1 ] && echo "fileget -  fileprot:$fileprot, filepath:\
 $filepath, fileserv:$fileserv" >>$LOGFILE
   case "$fileprot" in
