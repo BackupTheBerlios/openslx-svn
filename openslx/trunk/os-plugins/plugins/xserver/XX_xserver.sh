@@ -253,13 +253,10 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
       ln -sf ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 ${glliblinks}/libGL.so.1
       ln -sf ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 ${glliblinks}/libGL.so.1.2
     else
-      if [ -e /mnt/usr/lib/libGL.so.1.2 ]; then
-        ln -sf /usr/lib/libGL.so.1.2 /mnt/var/X11R6/lib/libGL.so
-        ln -sf /usr/lib/libGL.so.1.2 /mnt/var/X11R6/lib/libGL.so.1
-      fi
       if [ -e /usr/lib/libGL_MESA.1.2 ]; then
        ln -sf /usr/lib/libGL_MESA.so.1.2 /mnt/var/X11R6/lib/libGL.so
        ln -sf /usr/lib/libGL_MESA.so.1.2 /mnt/var/X11R6/lib/libGL.so.1
+       ln -sf /usr/lib/libGL_MESA.so.1.2 /mnt/var/X11R6/lib/libGL.so.1.2
       fi
     fi
 
