@@ -30,6 +30,7 @@ before trying to invoke the respective syscall.
 
 =cut
 
+use Config;
 use File::Path;
 
 use OpenSLX::Basics;
@@ -60,27 +61,61 @@ sub _loadPerlHeader
 {
     my @phFiles = @_;
 
-    my $phLibDir = "$openslxConfig{'base-path'}/lib/ph";
-    mkpath($phLibDir) unless -e $phLibDir;
-    
+    my @alreadyLoaded = grep { exists $INC{$_} } @phFiles;
+    return if @alreadyLoaded;
+
+    my $phLibDir = $Config{installsitearch};
     local @INC = @INC;
-    push @INC, $phLibDir;
     push @INC, "$phLibDir/asm";
 
-    for my $phFile (@phFiles) {
-        if (!eval { require $phFile }) {
-            # perl-header has not been provided by host-OS, so we create it
-            # manually from C-header (via h2ph):
-            (my $hFile = $phFile) =~ s{\.ph$}{.h};
-            if (-e "/usr/include/$hFile") {
-                slxsystem("cd /usr/include && h2ph -d $phLibDir $hFile") == 0
-                    or die _tr('unable to create %s! (%s)', $phFile, $!);
-            }
-        }
-        return 1 if eval { require $phFile; 1 };
+    # Unability to load an existing Perl header may be caused by missing 
+    # asm-(kernel-)headers, since for instance openSUSE 11 does not provide 
+    # any of these).
+    # If they are missing, we just have a go at creating all of them:
+    mkpath($phLibDir) unless -e $phLibDir;
+    if (-l "/usr/include/asm" && !-e "$phLibDir/asm") {
+        my $asmFolder = readlink("/usr/include/asm");
+        slxsystem("cd /usr/include && h2ph -rQ -d $phLibDir $asmFolder") == 0
+            or die _tr('unable to create Perl-header from "asm" folder! (%s)', $!);
+        slxsystem("mv $phLibDir/$asmFolder $phLibDir/asm") == 0
+            or die _tr('unable to cleanup "asm" folder for Perl headers! (%s)', $!);
     }
+    elsif (-d "/usr/include/asm") {
+        slxsystem("cd /usr/include && h2ph -rQ -d $phLibDir asm") == 0
+            or die _tr('unable to create Perl-header from "asm" folder! (%s)', $!);
+    }
+    else {
+        die _tr(
+            'the folder "/usr/include/asm" is required - please install kernel headers!'
+        );
+    }
+    if (-e "usr/include/asm-generic" && !-e "$phLibDir/asm-generic") {
+        slxsystem("cd /usr/include && h2ph -rQ -d $phLibDir asm-generic") == 0
+            or die _tr('unable to create Perl-header from "asm-generic" folder! (%s)', $!);
+    }
+
+    for my $phFile (@phFiles) {
+        return 1 if eval { require $phFile };
+
+        warn(_tr(
+            'unable to load Perl-header "%s", trying to create it ...', 
+            $phFile
+        ));
+
+        # perl-header has not been provided by host-OS, so we create it
+        # manually from C-header (via h2ph):
+        (my $hFile = $phFile) =~ s{\.ph$}{.h};
+        if (-e "/usr/include/$hFile") {
+            slxsystem("cd /usr/include && h2ph -aQ -d $phLibDir $hFile") == 0
+                or die _tr('unable to create %s! (%s)', $phFile, $!);
+        }
+
+        return 1 if eval { require $phFile };
+    }
+
     die _tr(
-        'unable to load any of these perl headers: %s', join(',', @phFiles)
+        'unable to load any of these perl headers: %s (%s)', 
+        join(',', @phFiles), $@
     );
 }
 
