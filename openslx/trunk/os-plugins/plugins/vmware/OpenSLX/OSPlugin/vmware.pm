@@ -218,7 +218,7 @@ sub installationPhase
             PREFIX=$vmpath # depends on the vmware location
             exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \
                  "\$PREFIX"'/lib' \
-                 "\$PREFIX"'/bin/vmware' \
+                 "\$PREFIX"'/bin/$file' \
                  "\$PREFIX"'/libconf' "\$@"
         End-of-Here
         spitFile("$self->{'pluginRepositoryPath'}/$file", $script);
