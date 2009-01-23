@@ -1,0 +1,86 @@
+diff -wur busybox-1.10.2/include/usage.h busybox-1.10.2-openslx/include/usage.h
+--- busybox-1.10.2/include/usage.h	2008-05-08 17:22:45.000000000 +0200
++++ busybox-1.10.2-openslx/include/usage.h	2008-05-31 18:16:11.000000000 +0200
+@@ -532,12 +532,24 @@
+      "\n	FILE	Replace crontab by FILE ('-': stdin)" \
+ 
+ #define cryptpw_trivial_usage \
+-       "[-a des|md5] [string]"
++     USE_FEATURE_CRYPTPW_BLOWFISH( \
++	  "[-a des|md5|blowfish] [string]" \
++     ) \
++     SKIP_FEATURE_CRYPTPW_BLOWFISH( \
++        "[-a des|md5] [string]" \
++     )
+ #define cryptpw_full_usage \
+        "Output crypted string.\n" \
+        "If string isn't supplied on cmdline, read it from stdin.\n" \
+      "\nOptions:" \
+      "\n	-a	Algorithm to use (default: md5)" \
++        "\n    -a      Algorithm to use (default: md5)" \
++        "\n        Available algorithms:" \
++     USE_FEATURE_CRYPTPW_BLOWFISH( \
++        "\n           blowfish" \
++     ) \
++        "\n           des" \
++        "\n           md5"
+ 
+ #define cut_trivial_usage \
+        "[OPTION]... [FILE]..."
+@@ -4335,6 +4347,11 @@
+      "\nOptions:" \
+      "\n	-a	Lock all VTs" \
+ 
+ #define watch_trivial_usage \
+        "[-n seconds] [-t] COMMAND..."
+ #define watch_full_usage \
+diff -wur busybox-1.10.2/loginutils/Config.in busybox-1.10.2-openslx/loginutils/Config.in
+--- busybox-1.10.2/loginutils/Config.in	2008-04-19 05:50:36.000000000 +0200
++++ busybox-1.10.2-openslx/loginutils/Config.in	2008-05-31 18:15:51.000000000 +0200
+@@ -206,6 +206,13 @@
+ 	help
+ 	  Applet for crypting a string.
+ 
++config FEATURE_CRYPTPW_BLOWFISH
++	bool "Support blowfish in cryptpw"
++	default y
++	depends on CRYPTPW
++	help
++	  With this option cryptpw will support the blowfish cipher, too.
++
+ config CHPASSWD
+        bool "chpasswd"
+        default n
+diff -wur busybox-1.10.2/loginutils/cryptpw.c busybox-1.10.2-openslx/loginutils/cryptpw.c
+--- busybox-1.10.2/loginutils/cryptpw.c	2008-04-19 05:50:36.000000000 +0200
++++ busybox-1.10.2-openslx/loginutils/cryptpw.c	2008-05-31 18:15:51.000000000 +0200
+@@ -10,16 +10,22 @@
+ int cryptpw_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
+ int cryptpw_main(int argc ATTRIBUTE_UNUSED, char **argv)
+ {
+-	char salt[sizeof("$N$XXXXXXXX")];
++	char salt[sizeof("$2a$10$1234567890123456789012X")];
+ 
+-	if (!getopt32(argv, "a:", NULL) || argv[optind - 1][0] != 'd') {
++	if (!getopt32(argv, "a:", NULL)
++	|| (argv[optind - 1][0] != 'b' && argv[optind - 1][0] != 'd')) {
++		/* md5 */
+ 		strcpy(salt, "$1$");
+-		/* Too ugly, and needs even more magic to handle endianness: */
+-		//((uint32_t*)&salt)[0] = '$' + '1'*0x100 + '$'*0x10000;
+-		/* Hope one day gcc will do it itself (inlining strcpy) */
+-		crypt_make_salt(salt + 3, 4, 0); /* md5 */
++		crypt_make_salt(salt + 3, 4, 0);
++#if ENABLE_FEATURE_CRYPTPW_BLOWFISH
++	} else if (argv[optind - 1][0] == 'b') {
++		/* blowfish */
++		strcpy(salt, "$2a$10$");
++		crypt_make_salt(salt + 7, 11, 0);
++#endif
+ 	} else {
+-		crypt_make_salt(salt, 1, 0);     /* des */
++		/* des */
++		crypt_make_salt(salt, 1, 0);
+ 	}
+ 
+ 	puts(pw_encrypt(argv[optind] ? argv[optind] : xmalloc_getline(stdin), salt));
