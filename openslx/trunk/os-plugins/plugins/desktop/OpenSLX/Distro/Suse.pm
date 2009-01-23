@@ -48,9 +48,11 @@ sub setupGDMScript
     my $script = $self->SUPER::setupGDMScript($repoPath);
 
     my $configFile = $self->GDMPathInfo->{config};
-    
+
+    # include common stuff (independent of display manager used)
+    $script = _setupCommonDmScript($script);
+
     $script .= unshiftHereDoc(<<'    End-of-Here');
-        rllinker xdm 1 10
         sed -i 's/DISPLAYMANAGER=.*/DISPLAYMANAGER="gdm"/' \
             /mnt/etc/sysconfig/displaymanager
         [ $(grep -q DISPLAYMANAGER /mnt/etc/sysconfig/displaymanager) ] && \
@@ -94,9 +96,11 @@ sub setupKDMScript
     symlink("/etc/opt/kdm/kdmrc", "/var/adm/kdm/kdmrc.sysconfig");
 
     my $script = $self->SUPER::setupKDMScript($repoPath);
-    
+
+    # include common stuff (independent of display manager used)
+    $script = _setupCommonDmScript($script);
+
     $script .= unshiftHereDoc(<<'    End-of-Here');
-        rllinker xdm 1 10
         sed -i 's/DISPLAYMANAGER=.*/DISPLAYMANAGER="kdm"/' \
             /mnt/etc/sysconfig/displaymanager
         [ $(grep -q DISPLAYMANAGER /mnt/etc/sysconfig/displaymanager) ] && \
@@ -111,6 +115,27 @@ sub setupKDMScript
 sub setupKDEHOME
 {
     return;
+}
+
+sub _setupCommonDmScript
+{
+    my $script = shift;
+
+    $script .= unshiftHereDoc(<<'    End-of-Here');
+        rllinker xdm 1 10
+        # cleanup after users Xorg session
+        sed 's,^#!.*,,' /mnt/etc/X11/xdm/Xreset \
+          > /mnt/etc/X11/xdm/Xreset.system
+        echo -e '#!/bin/sh\n#\n# modified by desktop plugin in Stage3\n#\n
+        # remove safely any remaining files of the leaving user in /tmp
+        ( su -c "rm -rf /tmp/*" - $USER
+          echo "$USER files removed by $0" >/tmp/files.removed 2>/dev/null ) &
+        . /etc/X11/xdm/Xreset.system' >/mnt/etc/X11/xdm/Xreset
+        chmod a+x /mnt/etc/X11/xdm/Xreset*
+
+    End-of-Here
+
+    return $script;
 }
 
 1;

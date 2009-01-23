@@ -29,9 +29,9 @@ use OpenSLX::Utils;
 sub GDMPathInfo
 {
     my $self = shift;
-    
+
     my $pathInfo = $self->SUPER::GDMPathInfo();
-    
+
     # link gdm.conf-custom instead of gdm.conf
     $pathInfo->{config} = '/etc/opt/gnome/gdm/custom.conf';
 
@@ -41,12 +41,12 @@ sub GDMPathInfo
 sub GDMConfigHashForWorkstation
 {
     my $self = shift;
-    
+
     my $configHash = $self->SUPER::GDMConfigHashForWorkstation();
     $configHash->{'daemon'}->{SessionDesktopDir} =
         '/etc/X11/sessions/:/usr/share/xsessions/';
-                    
+
     return $configHash;
-}                        
+}
 
 1;

@@ -29,9 +29,9 @@ use OpenSLX::Utils;
 sub GDMPathInfo
 {
     my $self = shift;
-    
+
     my $pathInfo = $self->SUPER::GDMPathInfo();
-    
+
     # link gdm.conf-custom instead of gdm.conf
     $pathInfo->{config} = '/etc/gdm/gdm.conf-custom';
 
@@ -46,15 +46,26 @@ sub setupGDMScript
     my $script = $self->SUPER::setupGDMScript($repoPath);
 
     my $configFile = $self->GDMPathInfo->{config};
-    
-    $script .= unshiftHereDoc(<<"    End-of-Here");
+
+    $script .= unshiftHereDoc(<<'    End-of-Here');
+
+        # cleanup after users Xorg session
+        sed 's,^#!.*,,' /mnt/etc/gdm/PostSession/Default \
+          >/mnt/etc/gdm/PostSession/Default.system
+        echo -e '#! /bin/sh\n#\n# modified by desktop plugin in Stage3\n#\n
+        # remove safely any remaining files of the leaving user in /tmp
+        ( su -c "rm -rf /tmp/*"
+          echo "$USER files removed by $0" >/tmp/files.removed 2>/dev/null ) &
+        . /etc/gdm/PostSession/Default.system' >/mnt/etc/gdm/PostSession/Default
+        chmod a+x /mnt/etc/gdm/PostSession/Default*
+
         rllinker gdm 1 10
         echo '/usr/sbin/gdm' >/mnt/etc/X11/default-display-manager
         chroot /mnt update-alternatives --set x-window-manager /usr/bin/metacity
-        chroot /mnt update-alternatives --set x-session-manager \\
+        chroot /mnt update-alternatives --set x-session-manager \
           /usr/bin/gnome-session
         testmkd /mnt/var/lib/gdm root:gdm 1770
-        sed '/^\\[daemon\\]/ a\\BaseXsession=/etc/gdm/Xsession' \\
+        sed '/^\\[daemon\\]/ a\\BaseXsession=/etc/gdm/Xsession' \
           -i /mnt$configFile
     End-of-Here
 
@@ -64,9 +75,9 @@ sub setupGDMScript
 sub KDMPathInfo
 {
     my $self = shift;
-    
+
     my $pathInfo = $self->SUPER::KDMPathInfo();
-    
+
     $pathInfo = {
         config => '/etc/kde3/kdm/kdmrc',
         paths => [
@@ -111,10 +122,21 @@ sub setupKDMScript
     my $repoPath = shift;
 
     my $script = $self->SUPER::setupKDMScript($repoPath);
-    
+
     $script .= unshiftHereDoc(<<'    End-of-Here');
+
+        # cleanup after users Xorg session
+        sed 's,^#!.*,,' /mnt/etc/kde3/kdm/Xreset \
+          >/mnt/etc/kde3/kdm/Xreset.system
+        echo -e '#! /bin/sh\n#\n# modified by desktop plugin in Stage3\n#\n
+        # remove safely any remaining files of the leaving user in /tmp
+        ( su -c "rm -rf /tmp/*" - $USER
+          echo "$USER files removed by $0" >/tmp/files.removed 2>/dev/null ) &
+        . /etc/kde3/kdm/Xreset.system' >/mnt/etc/kde3/kdm/Xreset
+        chmod a+x /mnt/etc/kde3/kdm/Xreset*
+
         rllinker kdm 1 10
-        echo '/usr/bin/kdm' >/mnt/etc/X11/default-display-manager
+        echo '/usr/bin/kdm' > /mnt/etc/X11/default-display-manager
         chroot /mnt update-alternatives --set x-window-manager /usr/bin/kwin
         chroot /mnt update-alternatives --set x-session-manager \
           /usr/bin/startkde
