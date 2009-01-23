@@ -485,7 +485,7 @@ start_dreshal="yes"
 # (resource manager - the user gets permissions to devices when loggin on)
 # runlevel script for haldaemon is now haldaemon instead of hal
 config_dreshal () {
-local start=5
+local start=0
 local stop=18
 if [ "x$start_dreshal" = "xyes" ]; then
   for dir in /var/run/dbus /var/run/resmgr/classes /var/run/hal \
