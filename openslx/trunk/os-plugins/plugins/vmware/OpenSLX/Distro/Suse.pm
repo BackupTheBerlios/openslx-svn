@@ -53,10 +53,19 @@ sub fillRunlevelScript
 
         # helper functions
         load_modules() {
-          # to be filled in via the stage1 configuration script
-          modprobe -qa vmmon vmnet vmblock 2>/dev/null || return 1
-          # most probably nobody wants to run the parallel port driver ...
-          #modprobe vm...
+          if [ \${vmware_kind} = "local" ]; then
+            # to be filled in via the stage1 configuration script
+            modprobe -qa vmmon vmnet vmblock 2>/dev/null || return 1
+            # most probably nobody wants to run the parallel port driver ...
+            #modprobe vm...
+          else
+            # load module manuall
+            vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
+            module_src_path=\${vmware_kind_path}/root/lib/vmware/modules/source
+            insmod \${module_src_path}/vmblock.o
+            insmod \${module_src_path}/vmmon.o
+            insmod \${module_src_path}/vmnet.o
+          fi
         }
         unload_modules() {
           # to be filled with the proper list within via the stage1 configuration
@@ -133,8 +142,9 @@ sub fillRunlevelScript
             echo -n "Stopping vmware background services ..."
             killall vmnet-netifup vmnet-natd vmnet-bridge vmware vmplayer \\
               vmware-tray vmnet-dhcpd 2>/dev/null
-            # wait for shutting down of interfaces
-            usleep 50000
+            # wait for shutting down of interfaces. vmnet needs kinda
+            # long
+            usleep 500000
             unload_modules
             rc_status -v
           ;;

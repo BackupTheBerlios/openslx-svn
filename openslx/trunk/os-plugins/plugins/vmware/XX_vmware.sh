@@ -48,6 +48,7 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     # should contain (seems to be an average one)
     echo -e "# configuration file for vmware background services written in \
 stage3 setup" > /mnt/etc/vmware/slxvmconfig
+    echo "vmware_kind=${vmware_kind}" >> /mnt/etc/vmware/slxvmconfig
     if [ "$vmware_bridge" = 1 ] ; then
       echo "vmnet0=true" >> /mnt/etc/vmware/slxvmconfig
     fi
@@ -232,22 +233,22 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
 
     # TODO: perhaps we can a) kick out vmdir
     #            b) configure vmdir by plugin configuration
-    # TODO: How to start it. See Wiki. Currently a) implemnted
-    #   a) we get get information and start the programm with
-    #    /var/X11R6/bin/run-vmware.sh "$imagename" "$name_for_vmwindow" \
-    #       "$ostype_of_vm" "$kind_of_network"
-    #   b) we write a wrapper and get the xml-file as attribute
 
     ## Copy version depending files
     cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/runvmware \
         /mnt/var/X11R6/bin/run-vmware.sh
     chmod 755 /mnt/var/X11R6/bin/run-vmware.sh
+    cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmplayer \
+        /mnt/var/X11R6/bin/vmplayer
+    if [ -e /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmware ]; then
+      cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmware \
+          /mnt/var/X11R6/bin/vmware
+    fi
 
 
     # affects only kernel and config depending configuration of not
     # local installed versions
     if [ "${vmware_kind}" != "local" ]; then
-      # TODO: setup up kernel files
       cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/config \
         /mnt/etc/vmware
       chmod 644 /mnt/etc/vmware/config

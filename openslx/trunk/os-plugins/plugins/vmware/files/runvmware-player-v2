@@ -451,9 +451,9 @@ writelog "Starting with $(echo ${np} | sed 's/i.*-//g')-mode ...\n"
 
 ## log disksetup
 writelog "Directories:"
-writelog "\t\tTmpdir:\t\t${tmpdir}"
+writelog "\tTmpdir:\t\t${tmpdir}"
 writelog "\tVMhome:\t\t${vmhome}"
-writelog "\tTmpdir info:\t\t$(mount | grep -i "/tmp ")"
+writelog "\tTmpdir info:\t$(mount | grep -i "/tmp ")"
 
 ## configuring MAC address: first four bytes are fixed (00:50:56:0D) the
 ## last two bytes are taken from the local network adaptor
@@ -536,8 +536,11 @@ cp ${xml} /etc/vmware/fd-loop/config.xml
 sync
 
 # own nvram. We need it for floppy drive b, default nvram has just drive a
-# TODO: optimize, currently kinda inefficient, too much copys
-cp /opt/openslx/plugin-repo/vmware/*/nvram.5.0 ${tmpdir}/nvram
+# TODO: optimize, currently kinda inefficient, too much copys, but we
+# don't know which one is installed...
+for i in /opt/openslx/plugin-repo/vmware/*; do
+  cp ${i}/nvram.5.0 ${tmpdir}/nvram
+done
 
 # adjust volume
 writelog "Unmuting sound...\c"

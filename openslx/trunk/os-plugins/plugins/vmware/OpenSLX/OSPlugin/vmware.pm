@@ -196,7 +196,28 @@ sub installationPhase
     if ($self->{attrs}->{'vmware::vmpl2.0'} == 1) {
         $self->_vmpl2Installation();
     }
-
+        
+    ## prepration for our faster wrapper script
+    # rename the default vmplayer script and create a link. 
+    # uninstall routine takes care about plugin remove.
+    # stage3 copys our own wrapper script
+    if (-e "/usr/bin/vmplayer") {
+        rename("/usr/bin/vmplayer", "/usr/bin/vmplayer.slx-bak");
+        linkFile("/var/X11R6/bin/vmplayer", "/usr/bin/vmplayer");
+    }
+    # the same with vmware, if ws is installed
+    if (-e "/usr/bin/vmware") {
+        rename("/usr/bin/vmware", "/usr/bin/vmware.slx-bak");
+    }
+    # this kinda sucks. what if we have local installed vmplayer but
+    # plugin installed vmware workstation? what if we have a local
+    # installed vmware workstation but run plugin installed vmplayer
+    # without workstation. Link will go to nowhere... kinda ugly that
+    # /usr/ is ro.
+    # TODO: need to find a solution (if there is one possible with ro
+    # mounted /usr ...)
+    linkFile("/var/X11R6/bin/vmware", "/usr/bin/vmware");
+            
 }
 
 sub removalPhase
@@ -207,7 +228,7 @@ sub removalPhase
     # restore old start scripts - to be discussed
     my @files = qw( vmware vmplayer );
     foreach my $file (@files) {
-        if (-e $file) {
+        if (-e "/usr/bin/$file.slx-bak") {
             unlink("/usr/bin/$file");
             rename("/usr/bin/$file.slx-bak", "/usr/bin/$file");
         }
@@ -272,7 +293,7 @@ sub _writeWrapperScript
         if ($kind ne "local") {
             $script .= unshiftHereDoc(<<"            End-of-Here");
                 export LD_LIBRARY_PATH=$vmpath/lib
-                export GTK_PIXBUF_MODULE_FILE=$vmpath/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
+                export GDK_PIXBUF_MODULE_FILE=$vmpath/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
                 export GTK_IM_MODULE_FILE=$vmpath/libconf/etc/gtk-2.0/gtk.immodules
                 export FONTCONFIG_PATH=$vmpath/libconf/etc/fonts
                 export PANGO_RC_FILE=$vmpath/libconf/etc/pango/pangorc
@@ -299,12 +320,12 @@ sub _writeWrapperScript
     }
 }
 
-sub _wirteVmwareConfig {
+sub _writeVmwareConfig {
     my $self   = shift;
     my $kind   = shift;
     my $vmpath = shift;
 
-    my $config = "libdir = \"$vmpath\"";
+    my $config = "libdir = \"$vmpath\"\n";
 
     spitFile("$self->{'pluginRepositoryPath'}/$kind/config", $config);
     chmod 0755, "$self->{'pluginRepositoryPath'}/$kind/config";
@@ -396,20 +417,6 @@ sub _localInstallation
             $self->_writeWrapperScript("$vmpath", "$kind", "player")
         }
         
-        ##
-        ## replacement with our faster wrapper script
-        
-        # rename the default vmplayer script and copy it. remove function takes
-        # care about plugin remove. We only need this part if vmplayer
-        # or ws is installed on the local system
-        rename("/usr/bin/vmplayer", "/usr/bin/vmplayer.slx-bak");
-        copyFile("$self->{'pluginRepositoryPath'}/$kind/vmplayer", "/usr/bin");
-        # the same with vmware, if ws is installed
-        if (-e "/usr/bin/vmware") {
-            rename("/usr/bin/vmware", "/usr/bin/vmware.slx-bak");
-            copyFile("$self->{'pluginRepositoryPath'}/$kind/vmware", "/usr/bin");
-         }
-            
     }
     # else { TODO: errorhandling }
 }
@@ -456,7 +463,7 @@ sub _vmpl2Installation {
 
     ##
     ## Creating needed config /etc/vmware/config
-    $self->_wirteVmwareConfig("$kind", "$vmpath");
+    $self->_writeVmwareConfig("$kind", "$vmpath");
         
 }
 

@@ -18,7 +18,7 @@ if [ "${REPLY}" == "YES" ]; then
 
     echo "   * Downloading vmplayer now. This may take a while"
     cd /opt/openslx/plugin-repo/vmware/vmpl2.0
-    wget -c http://download3.vmware.com/software/vmplayer/VMware-player-2.0.2-59824.i386.tar.gz
+    wget -q -c http://download3.vmware.com/software/vmplayer/VMware-player-2.0.2-59824.i386.tar.gz
 
     echo "   * Unpacking vmplayer"
     tar xfz VMware-player-2.0.2-59824.i386.tar.gz
@@ -48,7 +48,7 @@ if [ "${REPLY}" == "YES" ]; then
       root/lib/vmware/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
     sed -i \
       's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/root/lib/vmware/libconf,' \
-      root/lib/vmware/libconf/etc/gtk-2.0/gdk-immodules
+      root/lib/vmware/libconf/etc/gtk-2.0/gtk.immodules
     sed -i \
       's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/root/lib/vmware/libconf,' \
       root/lib/vmware/libconf/etc/pango/pango.modules
@@ -89,11 +89,14 @@ if [ "${REPLY}" == "YES" ]; then
     cd vmnet-only
     sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
     make -s
-    cd ..
+    cd ../../../../../..
+        
+    echo "   * setting up EULA"
+    mv root/doc/EULA root/lib/vmware/share/EULA.txt
 
     # TODO: remove. just for debug reasons
-    echo "Press any return to process"
-    read
+    #echo "Press any return to process"
+    #read
 
     echo "   * finishing installation"
 
