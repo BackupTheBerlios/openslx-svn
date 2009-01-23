@@ -26,6 +26,7 @@ if [ "$1" = "nvidia" ]; then
   # TODO: let it automatical find the newest file... see ati section
   #       only problem should be the kernel package
   if [ "10.2" = "$(lsb_release -r|sed 's/^.*\t//')" ]; then
+    echo "  * Downloading nvidia rpm packages... this could take some time..."
     wget -q -c \
       ftp://download.nvidia.com/opensuse/10.2/i586/nvidia-gfxG01-kmp-bigsmp-173.14.12_2.6.18.8_0.10-0.1.i586.rpm \
       ftp://download.nvidia.com/opensuse/10.2/i586/nvidia-gfxG01-kmp-default-173.14.12_2.6.18.8_0.10-0.1.i586.rpm \
@@ -69,7 +70,7 @@ if [ "$1" = "ati" ]; then
   wget -q ${BASEURL}/repodata/primary.xml.gz
   gunzip primary.xml.gz
 
-  echo "  * Downloading rpm packages... this could take some time..."
+  echo "  * Downloading ati rpm packages... this could take some time..."
   # notice the i586! we can also get x86_64!
   for i in $(grep "<location href=.i586" primary.xml \
              |sed 's/.*<location href="//'|sed 's/".*//g')
