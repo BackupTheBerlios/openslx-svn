@@ -54,14 +54,15 @@ if [ "$1" = "nvidia" ]; then
     # confirm authenticity of key (once) 
     # -> After key is cached, this is obsolete
     zypper se -r NVIDIA x11-video-nvidiaG01
-    # get URLs
+    # get URLs by virtually installing nvidia-OpenGL driver
     zypper -n -vv install -D x11-video-nvidiaG01 > logfile
 
     # take unique urls from logfile
     URLS=$(cat logfile |  grep -P -o "http://.*? " | sort -u | xargs)
     for RPM in $URLS; do
-      wget ${RPM}
       RNAME=$(echo ${RPM} | sed -e 's,^.*/\(.*\)$,\1,g')
+      rm -rf ${RNAME}
+      wget ${RPM}
       # TODO: the following is not working - I don't know why...
       ${BUSYBOX} rpm2cpio ${RNAME} | ${BUSYBOX} cpio -idv 
     done
