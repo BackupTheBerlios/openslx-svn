@@ -52,7 +52,7 @@ if [ -e /initramfs/plugin-conf/xserver.conf -a \
     ######################################################################
     set -x
 
-    if [ $(grep -i -m 1 'fglrx' \
+    if [ $(grep -i -m 1 'Module: fglrx' \
         /etc/hwinfo.data | wc -l) -ge "1"  -a $xserver_prefnongpl -eq 1 ]
     then
       # we have an ati card here
@@ -74,7 +74,7 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
           ln -s ${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so \
             ${glliblinks}dri/fglrx_dri.so
       fi
-    elif [ $(grep -i -m 1 'nvidia' \
+    elif [ $(grep -i -m 1 'Module: nvidia' \
         /etc/hwinfo.gfxcard | wc -l) -ge "1"  -a $xserver_prefnongpl -eq 1 ]
     then
       # we have an nvidia card here
@@ -87,7 +87,7 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
 
       # if we can't find the nongpl kernel module, use gpl xorg
       # nvidia driver
-      if [ -e ${PLUGIN_ROOTFS}/modules/nvidia.ko ]; then
+      if [ -e ${PLUGIN_PATH}/modules/nvidia.ko ]; then
         # sometimes the kernel module needs agpgart
         modprobe agpgart
         # insert kernel driver
