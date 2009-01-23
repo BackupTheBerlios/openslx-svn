@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# Currently only suse 10.2 is supported!
+# Currently only suse 10.2 and 11.0 is supported!
 #
 
 BUSYBOX="/mnt/opt/openslx/share/busybox/busybox"
@@ -66,7 +66,7 @@ if [ "$1" = "nvidia" ]; then
     for RPM in $URLS; do
       RNAME=$(echo ${RPM} | sed -e 's,^.*/\(.*\)$,\1,g')
       rm -rf ${RNAME} 
-      wget ${RPM} 2>&1 /dev/null
+      wget ${RPM} 2>&1 > /dev/null
       # We use rpm2cpio from suse to extract
       rpm2cpio ${RNAME} | ${BUSYBOX} cpio -id > /dev/null
     done
@@ -94,20 +94,23 @@ if [ "$1" = "ati" ]; then
 
   if [ "11.0" = "`cat /etc/SuSE-release | tail -n1 | cut -d' ' -f3`" ]; then
     echo "  * Downloading ati rpm packages... this could take some time..."
+
+    #TODO: ADD SUFFIX for used kernel detection
+    SUFF=pae
     # add repository for nvidia drivers
     zypper addrepo http://www2.ati.com/suse/11.0/ ATI
     # confirm authenticity of key (once) 
     # -> After key is cached, this is obsolete
     zypper se -r ATI x11-video-fglrxG01
     # get URLs by virtually installing nvidia-OpenGL driver
-    zypper -n -vv install -D ati-fglrxG01-kmp-pae x11-video-fglrxG01 > logfile
+    zypper -n -vv install -D ati-fglrxG01-kmp${SUFF} x11-video-fglrxG01 > logfile
 
     # take unique urls from logfile
     URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | grep fglrx | sort -u | xargs)
     for RPM in $URLS; do
       RNAME=$(echo ${RPM} | sed -e 's,^.*/\(.*\)$,\1,g')
       rm -rf ${RNAME} 
-      wget ${RPM} 2>&1 /dev/null
+      wget ${RPM} 2>&1 > /dev/null
       # We use rpm2cpio from suse to extract
       rpm2cpio ${RNAME} | ${BUSYBOX} cpio -id > /dev/null
     done

@@ -82,7 +82,6 @@ divert() {
     # strip leading ROOT
     cmplib="${lib#${ROOT}}"
 
-    echo ${cmplib} ${lib}
     if [ -e "${cmplib}" -a -e "${lib}" ]; then
       # system folder conflicts with ROOT
       linkMesa ${cmplib}
