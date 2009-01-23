@@ -201,7 +201,7 @@ supported."; \
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
 	cd theming; tar --exclude=.svn -cp * | \
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/themes; cd ..; \
-	cp -pP tools/busybox{,.links,.x86_64,.i586,.uclib.i586} \
+	cp -pP tools/busybox{,.x86_64,.i586,.uclib.i586} \
 	  $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox/; \
         cp -pP tools/{ddcprobe,915resolution}{,.x86_64,.i586} \
           $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools; \
