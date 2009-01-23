@@ -52,6 +52,7 @@ namespace AccountValue
 
         private String home;
         private String shared;
+        private String printer;
         
         
         //
@@ -139,6 +140,7 @@ namespace AccountValue
 
         private void login_clicked()
         {
+            NetworkDrive oNetDrive = new NetworkDrive();
             //#########################################################################
             // Parameter aus INI-Datei auslesen
 
@@ -150,6 +152,7 @@ namespace AccountValue
                 
                 home = datei.IniReadValue("Home", "connect");
                 shared = datei.IniReadValue("Shared", "connect");
+                printer = datei.IniReadValue("Printer", "connect");
             }
             catch 
             {
@@ -179,102 +182,104 @@ namespace AccountValue
 
             //*****************************************************************
             //#################################################################
-            //Starte den script zum installieren von Drucker
+            //Starte das script zum installieren der Drucker
 
-            try
-            {
-                xmlD.loadFile("DEVICES.XML");
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message, "Error: ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                System.Environment.Exit(0);
-            }
-
-
-            if (env == "RZ")
+            if (printer == "yes")
             {
                 try
                 {
-                    anz = Convert.ToInt32(xmlD.getAttribute("/env/RZ/printer", "param"));
+                    xmlD.loadFile("DEVICES.XML");
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show(e.Message, "Error: ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    System.Environment.Exit(0);
+                }
 
-                    for (int i = 1; i <= anz; i++)
+
+                if (env == "RZ")
+                {
+                    try
                     {
-                        System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p \"\\\\pub-ps01.public.ads.uni-freiburg.de\\" + xmlD.getAttribute("/env/RZ/printer/printer" + Convert.ToString(i) + "/name", "param"));
+                        anz = Convert.ToInt32(xmlD.getAttribute("/env/RZ/printer", "param"));
+
+                        for (int i = 1; i <= anz; i++)
+                        {
+                            System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p \"\\\\pub-ps01.public.ads.uni-freiburg.de\\" + xmlD.getAttribute("/env/RZ/printer/printer" + Convert.ToString(i) + "/name", "param"));
+                        }
+                    }
+                    catch (Exception err)
+                    {
+                        MessageBox.Show(this, "Fehler: " + err.Message, "Installieren des Druckers nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
-                catch (Exception err)
+                else if (env == "UB")
                 {
-                    MessageBox.Show(this, "Fehler: " + err.Message, "Installieren des Druckers nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else if (env == "UB")
-                
-            {
-                try
-                {
-                    anz = Convert.ToInt32(xmlD.getAttribute("/env/UB/printer", "param"));
-
-                    for (int i = 1; i <= anz; i++)
+                    try
                     {
-                        System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p \"\\\\pub-ps01.public.ads.uni-freiburg.de\\" + xmlD.getAttribute("/env/UB/printer/printer" + Convert.ToString(i) + "/name", "param"));
+                        anz = Convert.ToInt32(xmlD.getAttribute("/env/UB/printer", "param"));
+
+                        for (int i = 1; i <= anz; i++)
+                        {
+                            System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p \"\\\\pub-ps01.public.ads.uni-freiburg.de\\" + xmlD.getAttribute("/env/UB/printer/printer" + Convert.ToString(i) + "/name", "param"));
+                        }
+                    }
+
+                    catch (Exception err)
+                    {
+                        MessageBox.Show(this, "Fehler: " + err.Message, "Installieren des Druckers nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+
+                }
+                else if (env == "CHEMIE")
+                {
+                    try
+                    {
+                        anz = Convert.ToInt32(xmlD.getAttribute("/env/CHEMIE/printer", "param"));
+
+                        for (int i = 1; i <= anz; i++)
+                        {
+                            System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p \"\\\\pub-ps01.public.ads.uni-freiburg.de\\" + xmlD.getAttribute("/env/CHEMIE/printer/printer" + Convert.ToString(i) + "/name", "param"));
+                        }
+                    }
+                    catch (Exception err)
+                    {
+                        MessageBox.Show(this, "Fehler: " + err.Message, "Installieren des Druckers nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
-                
-                catch (Exception err)
-                {
-                    MessageBox.Show(this, "Fehler: " + err.Message, "Installieren des Druckers nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                else { }
 
-            }
-            else if (env == "CHEMIE")
-            {
+
+
+
+                //#################################################################
+                // Drucker verbinden...
+
+                
+
                 try
                 {
-                    anz = Convert.ToInt32(xmlD.getAttribute("/env/CHEMIE/printer", "param"));
+                    oNetDrive.LocalDrive = "";
+                    oNetDrive.ShareName = "\\\\pub-ps01.public.ads.uni-freiburg.de";
+                    oNetDrive.MapDrive("PUBLIC\\" + textBox1.Text, maskedTextBox1.Text);
 
-                    for (int i = 1; i <= anz; i++)
+                    //Warte bis das Netz da ist
+                    System.Threading.Thread.Sleep(500 * 1);
+                }
+
+                catch (Exception err)
+                {
+                    MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Drucker\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    maskedTextBox1.Text = "";
+
+                    try
                     {
-                        System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p \"\\\\pub-ps01.public.ads.uni-freiburg.de\\" + xmlD.getAttribute("/env/CHEMIE/printer/printer" + Convert.ToString(i) + "/name", "param"));
+                        maskedTextBox1.Focus();
                     }
+                    catch { }
+
+                    return;
                 }
-                catch (Exception err)
-                {
-                    MessageBox.Show(this, "Fehler: " + err.Message, "Installieren des Druckers nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else { }
-
-
-
-
-            //#################################################################
-            // Drucker verbinden...
-            
-            NetworkDrive oNetDrive = new NetworkDrive();
-
-            try
-            {
-                oNetDrive.LocalDrive = "";
-                oNetDrive.ShareName = "\\\\pub-ps01.public.ads.uni-freiburg.de";
-                oNetDrive.MapDrive("PUBLIC\\" + textBox1.Text, maskedTextBox1.Text);
-                
-                //Warte bis das Netz da ist
-                System.Threading.Thread.Sleep(500 * 1);
-            }
-
-            catch (Exception err)
-            {
-                MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Drucker\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                maskedTextBox1.Text = "";
-
-                try
-                {
-                    maskedTextBox1.Focus();
-                }
-                catch { }
-
-                return;
             }
             
             //#################################################################

@@ -45,6 +45,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_6CEFC673C6874B52A49460681DDC51DA"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_6F3AC249D27649D79948ED2E59569B51"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -89,6 +95,12 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_C75C109F9AA3422088FC2CC1424AE42C"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_6CEFC673C6874B52A49460681DDC51DA"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -214,6 +226,20 @@
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
             "Identifier" = "8:_8D3A1D11_910F_403A_823D_D421AE981026"
+            "InstallerClass" = "11:FALSE"
+            "CustomActionData" = "8:"
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_D2CF3976CD4B4C3FA2FE4AE1DCD54E9A"
+            {
+            "Name" = "8:AddPrinterINI.exe"
+            "Condition" = "8:CHECKBOXA1=1"
+            "Object" = "8:_6CEFC673C6874B52A49460681DDC51DA"
+            "FileType" = "3:2"
+            "InstallAction" = "3:1"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:3"
+            "Identifier" = "8:_002A6D1D_0AAD_4070_837A_89755D72A552"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
@@ -382,6 +408,37 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_6CEFC673C6874B52A49460681DDC51DA"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:AddPrinterINI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_6CEFC673C6874B52A49460681DDC51DA"
+                    {
+                    "Name" = "8:AddPrinterINI.exe"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\AddPrinterINI\\bin\\Release\\AddPrinterINI.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_38492406821D42A084C5760DC45B3ED8"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6F3AC249D27649D79948ED2E59569B51"
