@@ -94,11 +94,10 @@ case ${TARGET} in
     # extract $DEB
     dpkg-deb -x ${NVIDIA_DEB} ${PLUGIN_FOLDER}/nvidia
 
-    # assemble modules
+    # assemble module - we just need the new one here
+    # TODO: modules for older graphics hardware can be found here
     cd modules/lib/linux-restricted-modules/${KVER}/
-    for module in nvidia nvidia_legacy nvidia_new; do
-      ld_static -d -r -o ${PLUGIN_FOLDER}/nvidia/modules/${module}.ko ${module}/*
-    done 
+    ld_static -d -r -o ${PLUGIN_FOLDER}/nvidia/modules/nvidia.ko nvidia_new/*
 
     #TODO: if we use this part, we need to copy the check from ati, too!
     #if [ -f /usr/lib/dri/fglrx_dri.so ]; then
