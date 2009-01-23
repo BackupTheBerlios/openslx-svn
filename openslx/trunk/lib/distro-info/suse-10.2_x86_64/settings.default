@@ -164,12 +164,6 @@ END
 		gdbm
 		glib2
 		glibc-i18ndata
-		gpg-pubkey
-		gpg-pubkey
-		gpg-pubkey
-		gpg-pubkey
-		gpg-pubkey
-		gpg-pubkey
 		gpm
 		hal-resmgr
 		hfsutils
