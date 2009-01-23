@@ -514,6 +514,9 @@ sub _localInstallation
             $vmversion = $1;
             $vmbuildversion = $2;
         }
+        if ($data =~ m{\0(2\.[05])\.[0-9]}) {
+            $vmversion = $1;
+        }
         # else { TODO: errorhandling if file or string doesn't exist }
         chomp($vmversion);
         chomp($vmbuildversion);
@@ -536,18 +539,25 @@ sub _localInstallation
             copyFile("$pluginFilesPath/$file", "$installationPath");
         }
         # copy depends on version and rename it to runvmware, saves one check in stage3
-        if ($vmversion < "6") {
+        if ($vmversion eq "1.0") {
             print "\n\nDEBUG: player version $vmversion, we use -v1\n\n";
             copyFile("$pluginFilesPath/runvmware-player-v1", "$installationPath", "runvmware");
-        } else {
+        } elsif ($vmversion eq "2.0") {
             print "\n\nDEBUG: player version $vmversion, we use -v2\n\n";
             copyFile("$pluginFilesPath/runvmware-player-v2", "$installationPath", "runvmware");
+        } elsif ($vmversion eq "2.5") {
+            print "\n\nDEBUG: player version $vmversion, we use -v25\n\n";
+            copyFile("$pluginFilesPath/runvmware-player-v25", "$installationPath", "runvmware");
         }
 
         ##
         ## Create runlevel script
         my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
-        $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
+        if ($vmversion eq "2.5") {
+            $self->_writeRunlevelScript($vmbin, $runlevelScript, "local25");
+        } else {
+            $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
+        }
 
         ##
         ## Create wrapperscripts

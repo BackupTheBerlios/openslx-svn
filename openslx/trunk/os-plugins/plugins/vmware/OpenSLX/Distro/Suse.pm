@@ -57,7 +57,7 @@ sub fillRunlevelScript
     End-of-Here
 
     # Load modules
-    if ($kind eq 'local') {
+    if ($kind eq 'local' || $kind eq 'local25') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
               # to be filled in via the stage1 configuration script
               insmod /lib/modules/\$(uname -r)/misc/vmmon.o || return 1
@@ -117,7 +117,7 @@ sub fillRunlevelScript
           if [ -n "\$vmnet0" ] ; then
             # the path might be directly point to the plugin dir
     End-of-Here
-    if ($kind eq 'vmpl2.5') {
+    if ($kind eq 'vmpl2.5'||$kind eq 'local25') {
         $script .= "\$location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid -n 0";
     } else {
         $script .= "\$location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid /dev/vmnet0 eth0";
