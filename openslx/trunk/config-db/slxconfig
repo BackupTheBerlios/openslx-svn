@@ -977,7 +977,7 @@ sub changeClientInConfigDB
             "you have to specify the name of the client you'd like to change!\n"
         );
     }
-
+    
     my @clientKeys = $openslxDB->getColumnsOfTable('client');
     push @clientKeys, 'systems', 'add-systems', 'remove-systems';
     my @clientAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
@@ -1442,6 +1442,9 @@ sub _cleanName
     if ($name =~ m[^name=(.+)$]) {
         return $1;
     }
+
+    # for convenience, we alias default to <<<default>>>
+    $name = '<<<default>>>' if $name eq 'default';
 
     return $name;
 }

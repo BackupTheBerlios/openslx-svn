@@ -132,6 +132,9 @@ if ($action =~ m[^list-at]i) {
     }
     my $vendorOSName = shift @ARGV;
     
+    # for convenience, we alias default to <<<default>>>
+    $vendorOSName = '<<<default>>>' if $vendorOSName eq 'default';
+
     # we chdir into the script's folder such that all relative paths have
     # a known starting point:
     chdir($FindBin::RealBin)
@@ -194,6 +197,9 @@ if ($action =~ m[^list-at]i) {
     my $vendorOSName = shift @ARGV;
     my $pluginAttrs  = parsePluginAttrs(1);
 
+    # for convenience, we alias default to <<<default>>>
+    $vendorOSName = '<<<default>>>' if $vendorOSName eq 'default';
+
     # we chdir into the script's folder such that all relative paths have
     # a known starting point:
     chdir($FindBin::RealBin)
@@ -230,6 +236,10 @@ if ($action =~ m[^list-at]i) {
         pod2usage(2);
     }
     my $vendorOSName = shift @ARGV;
+
+    # for convenience, we alias default to <<<default>>>
+    $vendorOSName = '<<<default>>>' if $vendorOSName eq 'default';
+    
     my $pluginAttrs  = parsePluginAttrs(0);
 
     # we chdir into the script's folder such that all relative paths have
