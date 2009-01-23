@@ -83,7 +83,7 @@ sub fillRunlevelScript
               insmod \${module_src_path}/vmmon.o
               insmod \${module_src_path}/vmnet.o
         End-of-Here
-    } elsif ($kind ne "vmpl2.0") {
+    } elsif ($kind eq "vmpl2.0") {
         $script .= unshiftHereDoc(<<"        End-of-Here");
               vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
               module_src_path=\${vmware_kind_path}/vmroot/modules
