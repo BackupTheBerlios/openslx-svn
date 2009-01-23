@@ -206,17 +206,19 @@ sub checkStage3AttrValues
     my $stage3Attrs   = shift;
     my $vendorOSAttrs = shift;
     
+    my @problems;
+
     my $manager = $stage3Attrs->{'desktop::manager'} || '';
     if ($manager eq 'kdm') {
         if (!defined $vendorOSAttrs->{'desktop::kdm'}) {
             if (!$self->{distro}->isKDMInstalled()) {
-                die _tr(
+                push @problems, _tr(
                     "KDM is not installed in vendor-OS, so using it as desktop manager wouldn't work!"
                 );
             }
         }
         elsif ($vendorOSAttrs->{'desktop::kdm'} == 0) {
-            die _tr(
+            push @problems, _tr(
                 "desktop::kdm is 0, so using KDM as desktop manager is not allowed for this vendor-OS!"
             );
         }
@@ -224,13 +226,13 @@ sub checkStage3AttrValues
     elsif ($manager eq 'gdm') {
         if (!defined $vendorOSAttrs->{'desktop::gdm'}) {
             if (!$self->{distro}->isGDMInstalled()) {
-                die _tr(
+                push @problems, _tr(
                     "GDM is not installed in vendor-OS, so using it as desktop manager wouldn't work!"
                 );
             }
         }
         elsif ($vendorOSAttrs->{'desktop::gdm'} == 0) {
-            die _tr(
+            push @problems, _tr(
                 "desktop::gdm is 0, so using GDM as desktop manager is not allowed for this vendor-OS!"
             );
         }
@@ -238,13 +240,13 @@ sub checkStage3AttrValues
     elsif ($manager eq 'xdm') {
         if (!defined $vendorOSAttrs->{'desktop::xdm'}) {
             if (!$self->{distro}->isXDMInstalled()) {
-                die _tr(
+                push @problems, _tr(
                     "XDM is not installed in vendor-OS, so using it as desktop manager wouldn't work!"
                 );
             }
         }
         elsif ($vendorOSAttrs->{'desktop::xdm'} == 0) {
-            die _tr(
+            push @problems, _tr(
                 "desktop::xdm is 0, so using XDM as desktop manager is not allowed for this vendor-OS!"
             );
         }
@@ -254,13 +256,13 @@ sub checkStage3AttrValues
     if ($kind eq 'kde') {
         if (!defined $vendorOSAttrs->{'desktop::kde'}) {
             if (!$self->{distro}->isKDEInstalled()) {
-                die _tr(
+                push @problems, _tr(
                     "KDE is not installed in vendor-OS, so using it as desktop kind wouldn't work!"
                 );
             }
         }
         elsif ($vendorOSAttrs->{'desktop::kde'} == 0) {
-            die _tr(
+            push @problems, _tr(
                 "desktop::kde is 0, so using KDE as desktop kind is not allowed for this vendor-OS!"
             );
         }
@@ -268,13 +270,13 @@ sub checkStage3AttrValues
     elsif ($kind eq 'gnome') {
         if (!defined $vendorOSAttrs->{'desktop::gnome'}) {
             if (!$self->{distro}->isGNOMEInstalled()) {
-                die _tr(
+                push @problems, _tr(
                     "GNOME is not installed in vendor-OS, so using it as desktop kind wouldn't work!"
                 );
             }
         }
         elsif ($vendorOSAttrs->{'desktop::gnome'} == 0) {
-            die _tr(
+            push @problems, _tr(
                 "desktop::gnome is 0, so using GNOME as desktop kind is not allowed for this vendor-OS!"
             );
         }
@@ -282,13 +284,13 @@ sub checkStage3AttrValues
     elsif ($kind eq 'xfce') {
         if (!defined $vendorOSAttrs->{'desktop::xfce'}) {
             if (!$self->{distro}->isXFCEInstalled()) {
-                die _tr(
+                push @problems, _tr(
                     "XFCE is not installed in vendor-OS, so using it as desktop kind wouldn't work!"
                 );
             }
         }
         elsif ($vendorOSAttrs->{'desktop::xfce'} == 0) {
-            die _tr(
+            push @problems, _tr(
                 "desktop::xfce is 0, so using XFCE as desktop kind is not allowed for this vendor-OS!"
             );
         }
@@ -298,13 +300,15 @@ sub checkStage3AttrValues
         = split ',', $vendorOSAttrs->{'desktop::supported_themes'} || '';
     my $theme = $stage3Attrs->{'desktop::theme'};
     if (defined $theme && !grep { $_ eq $theme } @supportedThemes) {
-        die _tr(
+        push @problems, _tr(
             "desktop::theme '%s' does not refer to a supported theme!\nSupported themes are: %s",
             $theme, $vendorOSAttrs->{'desktop::supported_themes'} || ''
         );
     }
 
-    return 1;
+    return if !@problems;
+
+    return \@problems;
 }
 
 sub installationPhase

@@ -641,14 +641,14 @@ sub writeClientConfigurationsForSystem
                 $externalSystemID, $buildPath, $externalClientName
             );
 
-            my $attrsOK = eval {
-                OpenSLX::AttributeRoster->checkValues(
-                    $client->{attrs}, $info->{'vendor-os'}->{name}
-                );
-                1;
-            };
-            if (!$attrsOK && $@) {
-                warn $@;
+            my $attrProblems = OpenSLX::AttributeRoster->findProblematicValues(
+                $client->{attrs}, $info->{'vendor-os'}->{name}, 
+                $info->{'installed-plugins'}
+            );
+            if ($attrProblems) {
+                my $complaint = join "\n", @$attrProblems;
+                $complaint =~ s{^}{client $client->{name}: }gms;
+                warn $complaint;
             }
 
             writeAttributesToFile($client, $attrFile);
@@ -746,14 +746,14 @@ sub writeSystemConfiguration
         )
     );
 
-    my $attrsOK = eval {
-        OpenSLX::AttributeRoster->checkValues(
-            $info->{attrs}, $info->{'vendor-os'}->{name}
-        );
-        1;
-    };
-    if (!$attrsOK && $@) {
-        warn $@;
+    my $attrProblems = OpenSLX::AttributeRoster->findProblematicValues(
+        $info->{attrs}, $info->{'vendor-os'}->{name}, 
+        $info->{'installed-plugins'}
+    );
+    if ($attrProblems) {
+        my $complaint = join "\n", @$attrProblems;
+        $complaint =~ s{^}{system $info->{name}: }gms;
+        warn $complaint;
     }
 
     my $attrFile = "$buildPath/initramfs/machine-setup";

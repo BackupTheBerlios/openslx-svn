@@ -498,21 +498,25 @@ sub getClientAttrs
         keys %AttributeInfo
 }
 
-=item C<checkValues()>
+=item C<findProblematicValues()>
 
 Checks if the given stage3 attribute values are allowed (and make sense).
-If all values are ok, this method returns 1 - if not, it dies with an 
-appropriate message.
+
+This method returns an array-ref of problems found. If there were no problems, 
+this methods returns undef.
 
 =cut
 
-sub checkValues
+sub findProblematicValues
 {
-    my $class        = shift;
-    my $stage3Attrs  = shift || {};
-    my $vendorOSName = shift;
+    my $class            = shift;
+    my $stage3Attrs      = shift || {};
+    my $vendorOSName     = shift;
+    my $installedPlugins = shift;
 
     $class->_init() if !%AttributeInfo;
+
+    my @problems;
 
     my %attrsByPlugin;
     foreach my $key (sort keys %{$stage3Attrs}) {
@@ -531,30 +535,39 @@ sub checkValues
             || die _tr('attribute "%s" is unknown!', $key);
         my $regex = $attrInfo->{content_regex};
         if ($regex && $value !~ $regex) {
-            die _tr(
+            push @problems, _tr(
                 "the value '%s' for attribute %s is not allowed.\nAllowed values are: %s",
                 $value, $key, $attrInfo->{content_descr}
             );
         }
     }
 
-    # if no vendorOS-name has been provided, we can't initialize any plugins,
-    # so we are done
-    return 1 if !$vendorOSName;
-    
-    # now give each plugin a chance to check it's own attributes by itself
-    foreach my $pluginName (sort keys %attrsByPlugin) {
-        # create & start OSPlugin-engine for vendor-OS and current plugin
-        my $engine = OpenSLX::OSPlugin::Engine->new;
-        $engine->initialize($pluginName, $vendorOSName);
-        if (!$engine->{'plugin-path'}) {
-            warn _tr('unable to create engine for plugin "%s"!', $pluginName);
-            next;
+    # if no vendorOS-name has been provided or there are no plugins installed, 
+    # we can't do any further checks
+    if ($vendorOSName && $installedPlugins) {
+        # now give each installed plugin a chance to check it's own attributes
+        # by itself
+        foreach my $pluginInfo (sort @$installedPlugins) {
+            my $pluginName = $pluginInfo->{plugin_name};
+            vlog 2, "checking attrs of plugin: $pluginName\n";
+            # create & start OSPlugin-engine for vendor-OS and current plugin
+            my $engine = OpenSLX::OSPlugin::Engine->new;
+            $engine->initialize($pluginName, $vendorOSName);
+            if (!$engine->{'plugin-path'}) {
+                warn _tr(
+                    'unable to create engine for plugin "%s"!', $pluginName
+                );
+                next;
+            }
+            $engine->checkStage3AttrValues(
+                $attrsByPlugin{$pluginName}, \@problems
+            );
         }
-        $engine->checkStage3AttrValues($attrsByPlugin{$pluginName});
     }
     
-    return 1;
+    return if !@problems;
+    
+    return \@problems;
 }
 
 1;

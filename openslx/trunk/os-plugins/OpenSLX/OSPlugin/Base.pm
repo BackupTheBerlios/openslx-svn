@@ -187,7 +187,8 @@ sub getDefaultAttrsForVendorOS
 Checks if the stage3 values given in B<$stage3Attrs> are allowed and makes 
 sense.
 
-If all values are ok, this method returns 1 - if not, it dies with an appropriate message.
+This method returns an array-ref of problems found. If there were no problems, 
+this methods returns undef.
 
 Plugins may override this implementation to do checks that for instance look
 at the stage1 vendor-OS-attributes given in B<$vendorOSAttrs>.
@@ -206,7 +207,7 @@ sub checkStage3AttrValues
 
     # this default implementation does no further checks (thus relying on the
     # attributte regex check that is done in the AttributeRoster)
-    return 1;
+    return;
 }
 
 =back

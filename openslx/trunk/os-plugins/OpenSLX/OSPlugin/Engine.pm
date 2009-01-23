@@ -157,8 +157,8 @@ sub installPlugin
         # as the attrs may be changed by the plugin during installation, we
         # have to find a way to pass them back to this process (remember;
         # installation takes place in a forked process in order to do a chroot).
-        # We simply serialize the attributes into a temp and deserialize it
-        # in the calling process.
+        # We simply serialize the attributes into a temp file and deserialize
+        # it in the calling process.
         my $serializedAttrsFile 
             = "$self->{'plugin-temp-path'}/serialized-attrs";
         my $chrootedSerializedAttrsFile 
@@ -458,8 +458,8 @@ install/remove a plugin into/from a vendor-OS:
 
 Checks if the stage3 values given in B<$stage3Attrs> are allowed and make sense.
 
-If all values are ok, this method returns 1 - if not, it dies with an 
-appropriate message.
+If all values are ok, this method returns 1 - if not, it extends the given
+problems array-ref with the problems that were found (and returns undef).
 
 This method chroots into the vendor-OS and then asks the plugin itself to check
 the attributes.
@@ -470,15 +470,44 @@ sub checkStage3AttrValues
 {
     my $self        = shift;
     my $stage3Attrs = shift;
+    my $problemsOut = shift;
 
+    # as the attrs may be changed by the plugin during installation, we
+    # have to find a way to pass them back to this process (remember;
+    # installation takes place in a forked process in order to do a chroot).
+    # We simply serialize the attributes into a temp file and deserialize
+    # it in the calling process.
+    my $serializedProblemsFile 
+        = "$self->{'plugin-temp-path'}/serialized-problems";
+    my $chrootedSerializedProblemsFile 
+        = "$self->{'chrooted-plugin-temp-path'}/serialized-problems";
+
+    mkpath([ $self->{'plugin-repo-path'}, $self->{'plugin-temp-path'} ]);
+
+    # HACK: do a dummy serialization here in order to get Storable 
+    # completely loaded (otherwise it will complain in the chroot about 
+    # missing modules).
+    store [], $serializedProblemsFile;
+    
     $self->_callChrootedFunctionForPlugin(
         sub {
             # let plugin check by itself
-            $self->{plugin}->checkStage3AttrValues(
+            my $problems = $self->{plugin}->checkStage3AttrValues(
                 $stage3Attrs, $self->{'vendorOS-attrs'}
             );
+
+            # serialize list of problems (executed inside chroot)
+            store($problems, $chrootedSerializedProblemsFile) if $problems;
         }
     );
+
+    # now retrieve (deserialize) the found problems and pass them on
+    my $problems = retrieve $serializedProblemsFile;
+    rmtree([ $self->{'plugin-temp-path'} ]);
+    if ($problems && ref($problems) eq 'ARRAY' && @$problems) {
+        push @$problemsOut, @$problems;
+        return;
+    }
 
     return 1;
 }

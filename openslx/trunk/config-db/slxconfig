@@ -269,12 +269,24 @@ sub checkGivenStage3Attrs
     my $stage3Attrs  = shift;
     my $vendorOSID   = shift;
     
+    my $attrProblems;
+
     if ($vendorOSID) {
         my $vendorOS = $openslxDB->fetchVendorOSByID($vendorOSID);
-        OpenSLX::AttributeRoster->checkValues($stage3Attrs, $vendorOS->{name});
+        my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOSID);
+        $attrProblems = OpenSLX::AttributeRoster->findProblematicValues(
+            $stage3Attrs, $vendorOS->{name}, \@installedPlugins
+        );
     }
     else {
-        OpenSLX::AttributeRoster->checkValues($stage3Attrs);
+        $attrProblems = OpenSLX::AttributeRoster->findProblematicValues(
+            $stage3Attrs
+        );
+    }
+
+    if ($attrProblems) {
+        my $complaint = join "\n", @$attrProblems;
+        die $complaint;
     }
 
     return 1;
