@@ -8,45 +8,21 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# base.pm
-#    - provides empty base of the OpenSLX OSPlugin Distro API for the vmware
-#     plugin.
+# SUSE.pm
+#    - provides SUSE-specific overrides of the OpenSLX OSSetup API.
 # -----------------------------------------------------------------------------
-package OpenSLX::Distro::Base;
+package OpenSLX::OSSetup::Distro::Gentoo;
 
 use strict;
 use warnings;
 
-our $VERSION = 1.01;        # API-version . implementation-version
+use base qw(OpenSLX::OSSetup::Distro::Base);
 
 use OpenSLX::Basics;
-use OpenSLX::Utils;
 
 ################################################################################
 ### interface methods
 ################################################################################
-sub new
-{
-    my $class = shift;
-    my $self = {};
-    return bless $self, $class;
-
-}
-
-sub initialize
-{
-    my $self = shift;
-    my $engine = shift;
-    
-    return 1;
-}
-
-sub getRunlevelScriptPath
-{
-    my $self = shift;
-    
-    return '/etc/init.d/vmware';
-}
 
 sub fillRunlevelScript
 {
@@ -54,27 +30,25 @@ sub fillRunlevelScript
     my $location = shift;
 
     my $script = unshiftHereDoc(<<"    End-of-Here");
-        #!/bin/sh
-        # completely generic start/stop script, generated via stage1 'vmware' plugin
-        # install
+        #!/sbin/runscript
+        # Gentoo compatible (hopefully) start/stop script, generated via stage1 'vmware'
+        # plugin installation
+        #
         # inspiration taken from vmware start script:
         #   Copyright 1998-2007 VMware, Inc.  All rights reserved.
         #
         # This script manages the services needed to run VMware software
-        
-        # Basic support for the Linux Standard Base Specification 1.3
-        ### BEGIN INIT INFO
-        # Provides: VMware
-        # Required-Start: \$syslog
-        # Required-Stop:
-        # Default-Start: 2 3 5
-        # Default-Stop: 0 6
-        # Short-Description: Manages the services needed to run VMware software
-        # Description: Manages the services needed to run VMware software
-        ### END INIT INFO
+
+        # dependency definitions
+        depend() {
+        #     use syslog
+        #     need ...
+        }
+
+        # helper functions
         load_modules() {
           # to be filled in via the stage1 configuration script
-          modprobe -qa vmmon vmnet vmblock 2>/dev/null || echo "Problem here!"
+          modprobe -qa vmmon vmnet vmblock 2>/dev/null || return 1
           # most probably nobody wants to run the parallel port driver ...
           #modprobe vm...
         }
@@ -127,31 +101,30 @@ sub fillRunlevelScript
               /var/run/vmware/dhcpd.leases -pf /var/run/vmnet-dhcpd-vmnet8.pid \$dhcpif
           fi
         }
-        case \$1 in
-          start)
-            echo "Starting vmware background services ..."
+
+        # start/stop functions
+        start() {
+            ebegin "Starting vmware background services ..."
             # load the configuration file
             . /etc/vmware/slxvmconfig
-            load_modules
-            setup_vmnet0
-            setup_vmnet1
-            setup_vmnet8
+            load_modules || eerror "The loading of vmware modules failed"
+            setup_vmnet0 || eerror "Problems setting up vmnet0 interface"
+            setup_vmnet1 || eerror "Problems setting up vmnet1 interface"
+            setup_vmnet8 || eerror "Problems setting up vmnet8 interface"
             runvmdhcpd
-          ;;
-          stop)
+            eend $?
+        }
+
+        stop() {
             # message output should match the given vendor-os
-            echo "Stopping vmware background services ..."
+            ebegin "Stopping vmware background services ..."
             killall vmnet-netifup vmnet-natd vmnet-bridge vmware vmplayer \
               vmware-tray 2>/dev/null
             # wait for shutting down of interfaces
             usleep 50000
             unload_modules
-          ;;
-          status)
-            echo "Say something useful here ..."
-          ;;
-        esac
-        exit 0
+            eend $?
+        }
     End-of-Here
     return $script;
 }

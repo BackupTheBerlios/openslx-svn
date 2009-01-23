@@ -8,16 +8,16 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# base.pm
-#    - provides empty base of the OpenSLX OSPlugin Distro API for the vmware
+# SUSE.pm
+#    - provides SUSE-specific overrides of the OpenSLX Distro API for the desktop
 #     plugin.
 # -----------------------------------------------------------------------------
-package OpenSLX::Distro::Base;
+package OpenSLX::Distro::suse;
 
 use strict;
 use warnings;
 
-our $VERSION = 1.01;        # API-version . implementation-version
+use base qw(OpenSLX::Distro::Base);
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
@@ -25,28 +25,6 @@ use OpenSLX::Utils;
 ################################################################################
 ### interface methods
 ################################################################################
-sub new
-{
-    my $class = shift;
-    my $self = {};
-    return bless $self, $class;
-
-}
-
-sub initialize
-{
-    my $self = shift;
-    my $engine = shift;
-    
-    return 1;
-}
-
-sub getRunlevelScriptPath
-{
-    my $self = shift;
-    
-    return '/etc/init.d/vmware';
-}
 
 sub fillRunlevelScript
 {
@@ -54,9 +32,10 @@ sub fillRunlevelScript
     my $location = shift;
 
     my $script = unshiftHereDoc(<<"    End-of-Here");
-        #!/bin/sh
-        # completely generic start/stop script, generated via stage1 'vmware' plugin
-        # install
+        #! /bin/sh
+        # SuSE compatible start/stop script, generated via stage1 'vmware' plugin
+        # installation
+        #
         # inspiration taken from vmware start script:
         #   Copyright 1998-2007 VMware, Inc.  All rights reserved.
         #
@@ -72,9 +51,11 @@ sub fillRunlevelScript
         # Short-Description: Manages the services needed to run VMware software
         # Description: Manages the services needed to run VMware software
         ### END INIT INFO
+
+        # helper functions
         load_modules() {
           # to be filled in via the stage1 configuration script
-          modprobe -qa vmmon vmnet vmblock 2>/dev/null || echo "Problem here!"
+          modprobe -qa vmmon vmnet vmblock 2>/dev/null || return 1
           # most probably nobody wants to run the parallel port driver ...
           #modprobe vm...
         }
@@ -127,9 +108,14 @@ sub fillRunlevelScript
               /var/run/vmware/dhcpd.leases -pf /var/run/vmnet-dhcpd-vmnet8.pid \$dhcpif
           fi
         }
+        # load the helper stuff
+        . /etc/rc.status
+        # reset the script status
+        rc_reset
+    
         case \$1 in
           start)
-            echo "Starting vmware background services ..."
+            echo -n "Starting vmware background services ..."
             # load the configuration file
             . /etc/vmware/slxvmconfig
             load_modules
@@ -137,18 +123,20 @@ sub fillRunlevelScript
             setup_vmnet1
             setup_vmnet8
             runvmdhcpd
+            rc_status -v
           ;;
           stop)
             # message output should match the given vendor-os
-            echo "Stopping vmware background services ..."
+            echo -n "Stopping vmware background services ..."
             killall vmnet-netifup vmnet-natd vmnet-bridge vmware vmplayer \
               vmware-tray 2>/dev/null
             # wait for shutting down of interfaces
             usleep 50000
             unload_modules
+            rc_status -v
           ;;
           status)
-            echo "Say something useful here ..."
+            echo -n "Say something useful here ..."
           ;;
         esac
         exit 0

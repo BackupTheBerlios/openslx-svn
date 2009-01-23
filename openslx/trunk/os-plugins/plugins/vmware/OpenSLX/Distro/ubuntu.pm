@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -8,16 +8,15 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# base.pm
-#    - provides empty base of the OpenSLX OSPlugin Distro API for the vmware
-#     plugin.
+# Ubuntu.pm
+#    - provides Ubuntu-specific overrides of the OpenSLX OSSetup API.
 # -----------------------------------------------------------------------------
-package OpenSLX::Distro::Base;
+package OpenSLX::Distro::ubuntu;
 
 use strict;
 use warnings;
 
-our $VERSION = 1.01;        # API-version . implementation-version
+use base qw(OpenSLX::Distro::Base);
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
@@ -25,28 +24,6 @@ use OpenSLX::Utils;
 ################################################################################
 ### interface methods
 ################################################################################
-sub new
-{
-    my $class = shift;
-    my $self = {};
-    return bless $self, $class;
-
-}
-
-sub initialize
-{
-    my $self = shift;
-    my $engine = shift;
-    
-    return 1;
-}
-
-sub getRunlevelScriptPath
-{
-    my $self = shift;
-    
-    return '/etc/init.d/vmware';
-}
 
 sub fillRunlevelScript
 {
@@ -54,8 +31,8 @@ sub fillRunlevelScript
     my $location = shift;
 
     my $script = unshiftHereDoc(<<"    End-of-Here");
-        #!/bin/sh
-        # completely generic start/stop script, generated via stage1 'vmware' plugin
+        #! /bin/sh
+        # Ubuntu specific start/stop script, generated via stage1 'vmware' plugin
         # install
         # inspiration taken from vmware start script:
         #   Copyright 1998-2007 VMware, Inc.  All rights reserved.
@@ -127,28 +104,33 @@ sub fillRunlevelScript
               /var/run/vmware/dhcpd.leases -pf /var/run/vmnet-dhcpd-vmnet8.pid \$dhcpif
           fi
         }
+        # initialize the lsb status messages
+        . /lib/lsb/init-functions
+
         case \$1 in
           start)
-            echo "Starting vmware background services ..."
+            log_daemon_msg "Starting vmware background services ..." "vmware"
             # load the configuration file
             . /etc/vmware/slxvmconfig
-            load_modules
-            setup_vmnet0
-            setup_vmnet1
-            setup_vmnet8
+            load_modules || log_warning_msg "The loading of vmware modules failed"
+            setup_vmnet0 || log_warning_msg "Problems setting up vmnet0 interface"
+            setup_vmnet1 || log_warning_msg "Problems setting up vmnet1 interface"
+            setup_vmnet8 || log_warning_msg "Problems setting up vmnet8 interface"
             runvmdhcpd
+            log_end_msg $?
           ;;
           stop)
             # message output should match the given vendor-os
-            echo "Stopping vmware background services ..."
+            log_daemon_msg "Stopping vmware background services ..." "vmware"
             killall vmnet-netifup vmnet-natd vmnet-bridge vmware vmplayer \
               vmware-tray 2>/dev/null
             # wait for shutting down of interfaces
             usleep 50000
             unload_modules
+            log_end_msg $?
           ;;
           status)
-            echo "Say something useful here ..."
+            log_daemon_msg "Say something useful here ..."
           ;;
         esac
         exit 0
