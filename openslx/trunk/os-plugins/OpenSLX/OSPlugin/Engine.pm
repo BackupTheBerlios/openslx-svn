@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - OpenSLX GmbH
+# Copyright (c) 2007, 2008 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -24,6 +24,7 @@ use Storable;
 
 use OpenSLX::Basics;
 use OpenSLX::OSSetup::Engine;
+use OpenSLX::ScopedResource;
 use OpenSLX::Utils;
 
 =head1 NAME
@@ -516,28 +517,30 @@ sub _callChrootedFunctionForPlugin
     # bind-mount openslx basepath to /mnt/openslx of vendor-OS:
     my $basePath             = $openslxConfig{'base-path'};
     my $openslxPathInChroot = "$self->{'vendor-os-path'}/mnt/openslx";
-    mkpath( [ $openslxPathInChroot ] );
-    if (slxsystem("mount -o bind $basePath $openslxPathInChroot")) {
-        croak(
-            _tr(
-                "unable to bind mount '%s' to '%s'! (%s)", 
-                $basePath, $openslxPathInChroot, $!
-            )
-        );
-    }
+    mkpath($openslxPathInChroot);
+
+    my $pluginSession = OpenSLX::ScopedResource->new({
+        name    => 'osplugin::session',
+        acquire => sub { 
+            # bind mount openslx base path into vendor-OS
+            slxsystem("mount -o bind -o ro $basePath $openslxPathInChroot") == 0
+                or die _tr(
+                    "unable to bind mount '%s' to '%s'! (%s)", 
+                    $basePath, $openslxPathInChroot, $!
+                );
+            1 
+        },
+        release => sub {
+            slxsystem("umount $openslxPathInChroot") == 0
+                or die _tr(
+                    "unable to umount '%s'! (%s)", $openslxPathInChroot, $!
+                );
+            1
+        },
+    });
 
     # now let plugin install itself into vendor-OS
-    my $ok = eval {
-        $self->{'ossetup-engine'}->callChrootedFunctionForVendorOS($function);
-    };
-
-    if (slxsystem("umount $openslxPathInChroot")) {
-        croak(_tr("unable to umount '%s'! (%s)", $openslxPathInChroot, $!));
-    }
-    
-    if (!$ok) {
-        die $@;
-    }
+    $self->{'ossetup-engine'}->callChrootedFunctionForVendorOS($function);
     
     return;
 }

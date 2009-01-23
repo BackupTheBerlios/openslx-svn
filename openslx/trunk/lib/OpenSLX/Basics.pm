@@ -30,12 +30,10 @@ $VERSION = 1.01;
     &vlog
     &checkParams
     &instantiateClass
-    &addCleanupFunction &removeCleanupFunction
 );
 
 our (%openslxConfig, %cmdlineConfig, %openslxPath);
 
-use sigtrap qw( die normal-signals error-signals );
 use subs qw(die warn);
 
 use open ':utf8';
@@ -138,8 +136,6 @@ my %openslxCmdlineArgs = (
     # level of logging verbosity (0-3)
     'verbose-level=i' => \$cmdlineConfig{'verbose-level'},
 );
-
-my %cleanupFunctions;
 
 # filehandle used for logging:
 my $openslxLog = *STDERR;
@@ -313,27 +309,20 @@ sub callInSubprocess
 
     my $pid = fork();
     if (!$pid) {
-
-        # child...
-        # ...execute the given function and exit:
-        my $ok = eval { $childFunc->(); 1 };
-        if (!$ok) {
-            print STDERR "*** $@";
-            exit 5;
-        }
+        # child -> execute the given function and exit:
+        eval { $childFunc->(); 1 }
+            or die $@;
         exit 0;
     }
 
-    # parent...
-    # ...pass on interrupt- and terminate-signals to child...
-    local $SIG{INT}  = sub { kill 'INT',  $pid; waitpid($pid, 0); exit $? };
-    local $SIG{TERM} = sub { kill 'TERM', $pid; waitpid($pid, 0); exit $? };
+    # parent -> pass on interrupt- and terminate-signals to child ...
+    $SIG{INT}  = sub { kill 'INT',  $pid; };
+    $SIG{TERM} = sub { kill 'TERM', $pid; };
 
-    # ...and wait for child to do its work:
+    # ... and wait until child has done its work
     waitpid($pid, 0);
-    if ($?) {
-        exit $?;
-    }
+    exit $? if $?;
+
     return;
 }
 
@@ -352,36 +341,6 @@ sub executeInSubprocess
 
     # parent...
     return $pid;
-}
-
-# ------------------------------------------------------------------------------
-sub addCleanupFunction
-{
-    my $name = shift;
-    my $func = shift;
-
-    $cleanupFunctions{$name} = $func;
-    return;
-}
-
-# ------------------------------------------------------------------------------
-sub removeCleanupFunction
-{
-    my $name = shift;
-
-    delete $cleanupFunctions{$name};
-    return;
-}
-
-# ------------------------------------------------------------------------------
-sub invokeCleanupFunctions
-{
-    my @funcNames = keys %cleanupFunctions;
-    foreach my $name (@funcNames) {
-        vlog(2, "invoking cleanup function '$name'...");
-        $cleanupFunctions{$name}->();
-    }
-    return;
 }
 
 # ------------------------------------------------------------------------------
@@ -426,7 +385,6 @@ sub warn
 # ------------------------------------------------------------------------------
 sub confess
 {
-    invokeCleanupFunctions();
     _doThrowOrWarn('confess', @_);
     return;
 }
@@ -434,7 +392,6 @@ sub confess
 # ------------------------------------------------------------------------------
 sub croak
 {
-    invokeCleanupFunctions();
     _doThrowOrWarn('croak', @_);
     return;
 }
@@ -442,7 +399,6 @@ sub croak
 # ------------------------------------------------------------------------------
 sub die
 {
-    invokeCleanupFunctions();
     _doThrowOrWarn('die', @_);
     return;
 }
@@ -634,12 +590,6 @@ sub instantiateClass
         }
     }
     return $class->new;
-}
-
-# ------------------------------------------------------------------------------
-END 
-{
-    invokeCleanupFunctions() if %cleanupFunctions;
 }
 
 1;

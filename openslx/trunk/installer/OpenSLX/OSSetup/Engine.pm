@@ -31,6 +31,7 @@ use File::Basename;
 use URI;
 
 use OpenSLX::Basics;
+use OpenSLX::ScopedResource;
 use OpenSLX::Syscall;
 use OpenSLX::Utils;
 
@@ -117,8 +118,7 @@ use vars qw(%supportedDistros);
     },
 );
 
-our $localHttpServerMasterPID;
-our %localHttpServers;
+my %localHttpServers;
 
 ################################################################################
 ### interface methods
@@ -130,22 +130,6 @@ sub new
     my $self = {};
 
     return bless $self, $class;
-}
-
-sub DESTROY
-{
-    my $self = shift;
-
-    my $httpServerPID = $localHttpServerMasterPID || '0';
-    if ($httpServerPID == $$) {
-        # we are the master process, so we clean up all the servers that we
-        # have started:
-        while (my ($localURL, $serverInfo) = each %localHttpServers) {
-            vlog(1, _tr("stopping local HTTP-server for URL '%s'.", $localURL));
-            kill TERM => $serverInfo->{pid};
-        }
-    }
-    return;
 }
 
 sub initialize
@@ -291,7 +275,11 @@ sub installVendorOS
     }
     $self->_createVendorOSPath();
 
-    $self->_startLocalURLServersAsNeeded();
+    my $httpServers = OpenSLX::ScopedResource->new({
+        name    => 'local-http-servers',
+        acquire => sub { $self->_startLocalURLServersAsNeeded(); 1 },
+        release => sub { $self->_stopLocalURLServers(); 1 },
+    });
 
     my $baseSystemFile = "$self->{'vendor-os-path'}/.openslx-base-system";
     if (-e $baseSystemFile) {
@@ -436,7 +424,11 @@ sub updateVendorOS
             $self->{'vendor-os-path'});
     }
 
-    $self->_startLocalURLServersAsNeeded();
+    my $httpServers = OpenSLX::ScopedResource->new({
+        name    => 'local-http-servers',
+        acquire => sub { $self->_startLocalURLServersAsNeeded(); 1 },
+        release => sub { $self->_stopLocalURLServers(); 1 },
+    });
 
     callInSubprocess(
         sub {
@@ -467,7 +459,11 @@ sub startChrootedShellForVendorOS
         );
     }
 
-    $self->_startLocalURLServersAsNeeded();
+    my $httpServers = OpenSLX::ScopedResource->new({
+        name    => 'local-http-servers',
+        acquire => sub { $self->_startLocalURLServersAsNeeded(); 1 },
+        release => sub { $self->_stopLocalURLServers(); 1 },
+    });
 
     callInSubprocess(
         sub {
@@ -500,7 +496,11 @@ sub callChrootedFunctionForVendorOS
         );
     }
 
-    $self->_startLocalURLServersAsNeeded();
+    my $httpServers = OpenSLX::ScopedResource->new({
+        name    => 'local-http-servers',
+        acquire => sub { $self->_startLocalURLServersAsNeeded(); 1 },
+        release => sub { $self->_stopLocalURLServers(); 1 },
+    });
 
     callInSubprocess(
         sub {
@@ -1189,8 +1189,6 @@ sub _startLocalURLServersAsNeeded
 {
     my $self = shift;
 
-    $localHttpServerMasterPID ||= $$;
-
     my $port = 5080;
     my %portForURL;
     foreach my $repoInfo (values %{$self->{'distro-info'}->{repository}}) {
@@ -1218,6 +1216,16 @@ sub _startLocalURLServersAsNeeded
         }
     }
     return;
+}
+
+sub _stopLocalURLServers
+{
+    my $self = shift;
+
+    while (my ($localURL, $serverInfo) = each %localHttpServers) {
+        vlog(1, _tr("stopping local HTTP-server for URL '%s'.", $localURL));
+        kill TERM => $serverInfo->{pid};
+    }
 }
 
 sub _setupStage1A
@@ -1582,15 +1590,20 @@ sub _callChrootedFunction
         'updateConfig' => '?',
     });
 
-    $self->{distro}->startSession($params->{chrootDir});
+    my $distro = $self->{distro};
+    my $distroSession = OpenSLX::ScopedResource->new({
+        name    => 'ossetup::distro::session',
+        acquire => sub { $distro->startSession($params->{chrootDir}); 1 },
+        release => sub { $distro->finishSession(); 1 },
+    });
 
-    # invoke given function:
-    $params->{function}->();
+    die $@ if ! eval {
+        # invoke given function:
+        $params->{function}->();
+        $distro->updateDistroConfig() if $params->{updateConfig};
+        1;
+    };
 
-    if ($params->{updateConfig}) {
-        $self->{'distro'}->updateDistroConfig();
-    }
-    $self->{'distro'}->finishSession();
     return;
 }
 

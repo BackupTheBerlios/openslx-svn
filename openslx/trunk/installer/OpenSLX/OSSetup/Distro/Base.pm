@@ -122,11 +122,6 @@ sub startSession
     my $self  = shift;
     my $osDir = shift;
     
-    # ensure that the session will be finished even if the script crashes:
-    addCleanupFunction(
-        "slxos-setup::distro::chroot", sub { $self->finishSession(); }
-    );
-
     # setup a fixed locale environment to avoid warnings about unset locales
     # (like for instance shown by apt-get)
     $ENV{LC_ALL} = 'POSIX';
@@ -152,7 +147,7 @@ sub startSession
 
     # mount /proc (if we have 'mount' available)
     if (qx{which mount 2>/dev/null}) {
-        if (!-e "$osDir/proc" && !mkpath("$osDir/proc")) {
+        if (!-e '/proc' && !mkpath('/proc')) {
             die _tr("unable to create folder '%s' (%s)\n", "$osDir/proc", $!);
         }
         if (slxsystem("mount -t proc proc '/proc'")) {
@@ -160,15 +155,13 @@ sub startSession
         }
     }
 
-    return;
+    return 1;
 }
 
 sub finishSession
 {
     my $self = shift;
     
-    removeCleanupFunction('slxos-setup::distro::chroot');
-
     # umount /proc (if we have 'umount' available)
     if (qx{which umount 2>/dev/null}) {
         if (slxsystem("umount /proc")) {
@@ -176,7 +169,7 @@ sub finishSession
         }
     }
 
-    return;
+    return 1;
 }
 
 sub getDefaultPathList
