@@ -1,6 +1,6 @@
 WELCOME
 ----------
-OpenSLX - Open StateLess eXtensions version 4.1
+OpenSLX - Open StateLess eXtensions version 4.9
 
 OpenSLX is a software package for setting up, managing and booting of
 "stateless client systems" (a.k.a. "diskless X stations").
@@ -14,21 +14,20 @@ through the web pages:
 --> http://lists.openslx.org                              (mailing lists)
 
 
-SNAPSHOT-RELEASES
+SVN-RELEASES
 -----------------
-The snapshot-releases of OpenSLX are being made to expose the software to a 
-wider audience in order to gain more feedback on what works and what doesn't.
+At the moment only SVN releases are available ...
 
-New snapshots will be released in short timeframes - at least once a month -
-such that we can react to feedback promptly. Aim of the snapshot phase is to
+New versions will be released in short timeframes - at least once a month -
+such that we can react to feedback promptly. Aim of the svn head phase is to
 stabilize the software in preparation for the upcoming beta release.
 
-Upgrading from one snapshot to the other should be a seamless operation, as
+Upgrading from one svn release to the other should be a seamless operation, as
 eventual differences between the DB-schema should be adjusted automatically.
 Only for *downgrades*, manual intervention might be needed.
 
 
-NOTES ABOUT THIS SNAPSHOT
+NOTES ABOUT THIS SVN-RELEASE
 -------------------------
 * Cloning is the only form of vendor-OS creation we can currently recommend
   for a vendor-OS that is meant to be run in production.

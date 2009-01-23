@@ -117,7 +117,7 @@ sub _getTemplate
     my $pxeDefaultTemplate = unshiftHereDoc(<<'    End-of-Here');
         NOESCAPE 0
         PROMPT 0
-        TIMEOUT 10
+        TIMEOUT 100
         DEFAULT menu.c32
         IMPLICIT 1
         ALLOWOPTIONS 1
