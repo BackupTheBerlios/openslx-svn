@@ -36,55 +36,6 @@ sub initialize
     my $engine = shift;
 
     $self->SUPER::initialize($engine);
-
-    $self->{'clone-filter'} = "
-        - /var/tmp/*
-        - /var/opt/openslx
-        - /var/lib/vmware
-        - /var/lib/ntp/*
-        + /var
-        - /usr/lib/vmware/modules/*
-        + /usr
-        - /tmp/*
-        + /tmp
-        - /sys/*
-        + /sys
-        + /sbin
-        - /root/*
-        + /root
-        - /proc/*
-        + /proc
-        - /opt/openslx
-        + /opt
-        - /media/*
-        + /media
-        - /mnt/*
-        + /mnt
-        + /lib64
-        + /lib
-        + /home/kde*
-        - /home/*
-        + /home
-        - /etc/vmware/installer.sh
-        - /etc/shadow*
-        - /etc/samba/secrets.tdb
-        - /etc/resolv.conf.*
-        - /etc/opt/openslx
-        - /etc/exports*
-        + /etc
-        - /dev/*
-        + /dev
-        + /boot
-        + /bin
-        - /*
-        - .svn
-        - .*.cmd
-        - *~
-        - *lost+found*
-        - *.old
-        - *.bak
-    ";
-
     $self->{'packager-type'} = 'rpm';
     
     # use 'zypper' as meta-packager from 10.2 onwards and use 'smart' for 
