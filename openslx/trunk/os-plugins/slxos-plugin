@@ -59,7 +59,46 @@ openslxInit();
 
 my $action = shift @ARGV || '';
 
-if ($action =~ m[^list-a]i) {
+if ($action =~ m[^list-at]i) {
+	my $plugin = shift @ARGV;
+	print 
+		$plugin 
+			? _tr("List of attributes supported by '%s' plugin:\n", $plugin)
+			: _tr("List of plugin attributes:\n");
+	my $attrs = {};
+	require OpenSLX::OSPlugin::Roster;
+	OpenSLX::OSPlugin::Roster->addAllAttributesToHash($attrs, $plugin);
+	print join(
+		'', 
+		map {
+			my $attr = $attrs->{$_};
+			my $stage 
+				= $attr->{applies_to_vendor_os} ? '[stage 1]' : '[stage 3]';
+			
+			if ($option{verbose}) {
+				my $output;
+				my $fill = ' ' x 28;
+				for my $key (qw( description content_descr content_regex )) {
+					$output .= "\n\t    $key:" . ( ' ' x (15 - length($key)) );
+					chomp(my $value = $attr->{$key} || '');
+					$value =~ s{\n}{\n$fill}igms;
+					$output .= $value;
+				}
+				"\n\t$stage:   $_$output\n";
+			}
+			else {
+				"\t$stage:   $_\n";
+			}
+		}
+		sort {
+			my $stageDiff 
+				= ($attrs->{$b}->{applies_to_vendor_os} || '') 
+					cmp ($attrs->{$a}->{applies_to_vendor_os} || '');
+			return $stageDiff ? $stageDiff : $a cmp $b;
+		} 
+		keys %$attrs
+	);
+} elsif ($action =~ m[^list-av]i) {
 	print _tr("List of available plugins:\n");
 	require OpenSLX::OSPlugin::Roster;
 	my $pluginInfo = OpenSLX::OSPlugin::Roster->getAvailablePlugins();
@@ -67,15 +106,10 @@ if ($action =~ m[^list-a]i) {
 		'', 
 		map {
 			if ($option{verbose}) {
-				my $description = $pluginInfo->{$_}->{description};
-				$description 
-					.= "\t    " 
-						. _tr("The following attributes are suppported:")
-						. "\n\t        ";
-				my $pluginAttrs 
-					= OpenSLX::OSPlugin::Roster->getPluginAttrInfo($_);
-				$description .= join("\n\t        ", sort keys %$pluginAttrs);
-				"\n\t$_\n\t    $description\n";
+				my $fill = ' ' x 12;
+				chomp(my $descr = $pluginInfo->{$_}->{description} || '');
+				$descr =~ s{\n}{\n$fill}igms;
+				"\n\t$_\n\t    $descr\n";
 			}
 			else {
 				"\t$_\n";
@@ -114,18 +148,27 @@ if ($action =~ m[^list-a]i) {
 				my $attributes 
 					= _tr("The following attributes were applied:")
 						. "\n\t        ";
-				my $pluginAttrs = $_->{attrs};
+				my $attrs = $_->{attrs};
+				my $attrInfo = {};
+				OpenSLX::OSPlugin::Roster->addAllStage1AttributesToHash(
+					$attrInfo, $_->{plugin_name}
+				);
 				$attributes .= join(
 					"\n\t        ", 
-					map { 
-						$_ . '=' 
-							. (
-								defined $pluginAttrs->{$_} 
-									? $pluginAttrs->{$_} 
-									: '-'
-							)  
+					map {
+						my $stage 
+							= $attrInfo->{$_}->{applies_to_vendor_os}
+								? '[stage 1]'
+								: '[stage 3]';
+						"$stage   $_=" 
+							. (defined $attrs->{$_} ? $attrs->{$_} : '-')
 					}
-					sort keys %$pluginAttrs
+					sort {
+						(($attrInfo->{$b}->{applies_to_vendor_os} || '') 
+							cmp ($attrInfo->{$a}->{applies_to_vendor_os} || ''))
+						|| ($a cmp $b);
+					} 
+					keys %$attrs
 				);
 				"\n\t$_->{plugin_name}\n\t    $attributes\n";
 			}
@@ -211,11 +254,11 @@ if ($action =~ m[^list-a]i) {
 } else {
 	vlog(0, _tr(unshiftHereDoc(<<'	END-OF-HERE'), $0));
 		You need to specify exactly one action:
-			install <plugin-name> <vendor-OS-name>
-			list-attributes
+			install <vendor-OS-name> <plugin-name> [<plugin-attr>=<value> ...]
+			list-attributes [<plugin-name>]
 			list-available
-			list-installed
-			remove <plugin-name> <vendor-OS-name>
+			list-installed <vendor-OS-name>
+			remove <vendor-OS-name> <plugin-name>
 		Try '%s --help' for more info.
 	END-OF-HERE
 }
@@ -274,22 +317,36 @@ slxos-plugin [options] <action>
 
 =item B<<     install <vendor-OS-name> <plugin-name> [<attr-name>=<value> ...] [<plugin-name>] ... >>
 
-installs the OS-plugin(s) with the given name(s) into the specified 
-vendor-OS, using any attribute values as specified
+Installs the OS-plugin(s) with the given name(s) into the specified 
+vendor-OS, using any attribute values as specified.
+
+In order to spare you RSI, you can leave out the plugin scope, each attribute
+will be searched in the plugin that precedes it (see examples in the manual).
+
+=item B<<     list-attributes [<plugin-name> >>
+
+List all attributes supported by the different OS-plugins. If you specify a
+plugin name, only the attributes of that plugin will be listed.
+
+In verbose mode, more details about the individual attributes are shown.
 
 =item B<<     list-available >>
 
-list all available OS-plugins, in verbose mode all the supported attributes
-are shown, too.
+List all available OS-plugins. 
+
+In verbose mode a short description of each plugin will be shown, too.
 
 =item B<<     list-installed <vendor-os-name> >>
 
-list all the plugins installed into the specified vendor-OS, in verbose mode
-all applied attributes are shown, too.
+List all the plugins installed into the specified vendor-OS. 
+
+In verbose mode all applied attributes are shown, too.
 
 =item B<<     remove <vendor-OS-name> <plugin-name> [<plugin-name>] ... >>
 
-removes the OS-plugin(s) with the given name(s) from the specified vendor-OS
+Removes the OS-plugin(s) with the given name(s) from the specified vendor-OS.
+
+If you pass in any attributes, they will be ignored.
 
 =back
 
@@ -336,7 +393,33 @@ Prints the version and exits.
 
 =item B<<     slxos-plugin install suse-10.2 example >>
 
-installs the plugin named 'example' into the installed vendor-OS 'suse-10.2'.
+Installs the plugin named 'example' into the installed vendor-OS 'suse-10.2'.
+
+=item B<<     slxos-plugin install suse-10.2 desktop gdm=1 kde=1 >>
+
+Installs the desktop plugin into suse-10.2 and specifies two attributes. These
+attributes will be stored into the vendor-OS and pulled from there by the
+config-demuxer whenever it demuxes a system based on the suse-10.2 vendor-OS.
+
+=item B<<     slxos-plugin install suse-10.2 desktop desktop::gdm=1 desktop::kde=1 >>
+
+Same as above, only this time with completely scoped attributes.
+
+=item B<<     slxos-plugin install suse-10.2 desktop gdm=1 vmware binary=1 >>
+
+Installs two plugins (desktop and vmware) into suse-10.2. The attribute gdm=1
+will be set for desktop, while binary=1 will be set for vmware.
+
+=item B<<     slxos-plugin install suse-10.2 desktop vmware binary=1 desktop::gdm=1 >>
+
+Same as above, only this time with a fully scoped attribute gdm=1, that will
+be set for the desktop plugin.
+
+=item B<<     slxos-plugin install suse-10.2 desktop vmware binary=1 gdm=1 >>
+
+Bogus example, which will install desktop and vmware, but try to set bianry=1
+and gdm=1 for the vmware plugin. This will fail, as vmware does not support
+an attribute named gdm.
 
 =back
 
@@ -346,10 +429,59 @@ installs the plugin named 'example' into the installed vendor-OS 'suse-10.2'.
 
 =item B<<     slxos-plugin remove suse-10.2 example >>
 
-removes the plugin named 'example' from the installed vendor-OS 'suse-10.2'.
+Removes the plugin named 'example' from the installed vendor-OS 'suse-10.2'.
+
+=item B<<     slxos-plugin remove suse-10.2 desktop vmware example >>
+
+Removes the three plugins desktop, vmware and example from suse-10.2.
 
 =back
 
+=head3 Listing Available Plugins
+
+=over 8
+
+=item B<<     slxos-plugin list-available >>
+
+Gives a short list of all available plugins and their description.
+
+=item B<<     slxos-plugin --verbose list-available >>
+
+Gives a detailed list of all available plugins and their description, including
+the names of all attributes supported by the respective plugin.
+
+=back
+
+=head3 Listing Attributes Supported by Plugins
+
+=over 8
+
+=item B<<     slxos-plugin list-attributes >>
+
+Gives a short list of all supported attributes, sorted by stage and name.
+
+=item B<<     slxos-plugin --verbose list-available desktop >>
+
+Gives a detailed list of the attributes supported by the 'desktop' plugin,
+including a description of the purpose and possible content values of each
+attribute.
+
+=back
+
+=head3 Listing Installed Plugins
+
+=over 8
+
+=item B<<     slxos-plugin list-installed suse-10.2 >>
+
+Gives a short list of the plugins that were installed into suse-10.2.
+
+=item B<<     slxos-plugin --verbose list-installed suse-10.2 >>
+
+Gives a detailed list of the plugins that were installed into suse-10.2,
+including a list of all.attributes and their respective values.
+
+=back
 =head1 SEE ALSO
 
 slxsettings, slxos-setup, slxconfig, slxconfig-demuxer
