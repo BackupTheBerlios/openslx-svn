@@ -1,0 +1,151 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	<tr>
+  		<td colspan='2'><h3>DHCP Service anlegen</td>
+  	</tr>
+  	<tr>
+  		<td height='20'></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+				<form action='dhcpservice_add.php' method='post'>
+			
+			<tr>
+				<td width='40%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='60%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+			</tr>
+			
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Eindeutiger DHCP Service Name (cn):</b><br>(Teil des dn, ohne Leerzeichen eingeben) &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<font size='+2'><b>DHCP_</b></font><input type='Text' name='cn' value='{CN}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Beschreibung:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[description]' value='{DESCRIPTION}' size='50' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50' valign='top'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				   <b>Wer soll Dienst nutzen d&uuml;rfen:</b><br>(W&auml;hlen Sie eine Abteilung,<br> 
+				   impliziert alle Unterabteilungen)
+				</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<select name='dhcpoffer' size='5' class='medium_form_selectbox'> 
+						<option selected value='{OFFERSELF}'>{SELFOU}</option>
+						
+						<!-- BEGIN DYNAMIC BLOCK: Dhcpoffers -->
+						<option value='{DHCPOFFER}'>{DHCPOFFEROU}</option>
+						<!-- END DYNAMIC BLOCK: Dhcpoffers -->
+						
+					</select>
+				</td>
+			</tr>
+			<!-- <tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>PRIMARY DN:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[primary]' value='{PRIMARY}' size='50' class='medium_form_field'>
+				</td>
+			</tr> -->
+	
+		</table></td>
+	</tr>
+	
+	<tr>
+  		<td height='40'></td>
+  	</tr>		
+	<tr>
+  		<td colspan='2'><h4>DHCP Optionen des Dienstes (Globaler Scope):</h4></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+			<tr valign='top'>
+				<td width='40%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Option</b></td>
+				<td width='60%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert(e)</b></td>
+			</tr>
+			
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Server Identifier:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[dhcpoptserver-identifier]' value='{SRVIDENT}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Default Lease Time:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[dhcpoptdefault-lease-time]' value='{DEFAULTLEASE}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Max Lease Time:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[dhcpoptmax-lease-time]' value='{MAXLEASE}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Use Host DCL Names:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[dhcpoptuse-host-decl-names]' value='{USEHOSTDCL}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>DHCP Max Message Size:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[dhcpoptdhcp-max-message-size]' value='{MAXMESSIZE}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>DDNS Update Style:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[dhcpoptddns-update-style]' value='{DDNSUPDATE}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Domain Name:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[dhcpoptdomain-name]' value='{DOMAINNAME}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Domain Name Servers:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[dhcpoptdomain-name-servers]' value='{DOMAINNAMESERVERS}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>NTP Servers:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[dhcpoptntp-servers]' value='{NTPSERVERS}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Allow:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[dhcpoptallow]' value='{ALLOW}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Deny:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[dhcpoptdeny]' value='{DENY}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			
+			<input type='hidden' name='mnr' value='{MNR}'>	
+			<input type='hidden' name='sbmnr' value='{SBMNR}'>			
+
+		</table></td>
+  	</tr>
+  	<tr>
+		<td><input type='Submit' name='apply' value='anlegen' class='small_loginform_button'>
+		</form></td>
+	</tr>
+
+  	
+</table>

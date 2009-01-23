@@ -1,0 +1,48 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	<tr>
+  		<td colspan='2'><h3>Untergeordnete AUs von - &nbsp;<code class='font_object'>{AU}</code></h3></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			<tr>
+				<td width='25%' class='tab_h'><b>Untergeordnete AU</b></td>
+				<td width='30%' class='tab_h'><b>DNS Zone</b></td>
+				<td class='tab_h'><b>Delegierte IP Bereiche</b></td>
+			</tr>
+			
+						
+			
+			<!-- BEGIN DYNAMIC BLOCK: Childaus -->	
+			<tr valign='top'>
+				<td class='tab_d'><b>{CHILDOU}</b> &nbsp;</td>
+				<td class='tab_d'>{CHILDDOMAIN} &nbsp;</td>
+				<td class='tab_d'>{CHILDIPS}&nbsp;</td>
+			</tr>
+			<!-- END DYNAMIC BLOCK: Childaus -->
+
+		</table></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr>
+		<td>
+			Zum Verwalten oder L&ouml;schen einer untergeordneten AU, w&auml;hlen Sie links entsprechenden Submen&uuml;-Eintrag.<br>
+			Dort k&ouml;nnen Sie auch den DNS Domainnamen der untergeordneten AU bearbeiten bzw. neu zuordnen (d.h. im <br>
+			DNS der Organisation aufnehmen).
+		</td>
+	</tr>
+	
+	<!-- <tr>
+  		<td height='40'></td>
+  	</tr>
+	<tr>
+  		<td colspan='2'><h4>Neue untergeordnete AU anlegen</h4> >> 
+			<a href='new_child.php?sbmnr=0' style='color:#FFFFFF;' class='small_loginform_button'>&nbsp; zur Eingabemaske &nbsp;</a>  		
+  		</td>
+  	</tr> -->
+  	
+</table>

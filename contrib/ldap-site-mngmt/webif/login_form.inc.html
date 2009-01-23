@@ -1,0 +1,29 @@
+<form name="loginform" action="{PFAD}login_sicher.php" method="post">
+ <table border="0" cellspacing="0" cellpadding="2">
+  <!--<tr>
+   <td colspan="2"><p><b>Benutzerlogin:</b></p></td>
+  </tr>-->
+  <!-- <tr>
+   <td colspan="3">&nbsp;</td>
+  </tr> -->
+  <tr>
+   <td><p class="small_loginform_text"><b>Benutzername:</b></p></td>
+   <td><input type="Text" name="uid" size="15" class="small_loginform_field" select> </td>
+   <td><p class="small_loginform_text">&nbsp;</p></td>
+  </tr>
+  <tr>
+   <td><p class="small_loginform_text"><b>Passwort:</b></p></td>
+   <td><input type="Password" name="userPassword" size="15" class="small_loginform_field"> </td>
+	<td><p class="small_loginform_text"><input type="image" src="pics/enter.png" alt="Absenden"></p></td>
+  </tr>
+  <!-- <tr>
+	<td><p class="small_loginform_text">&nbsp;</p></td>
+   <td align="right"><input type="Submit" name="Login" value="Anmelden" class="small_loginform_button"></td>
+   <td><p class="small_loginform_text">&nbsp;</p></td>
+  </tr> -->
+ </table>
+</form>
+
+<script type="text/javascript">
+	document.loginform.uid.focus();
+</script>

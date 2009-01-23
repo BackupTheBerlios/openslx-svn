@@ -1,0 +1,91 @@
+<html>
+
+<head>
+	<title>{SEITENTITEL}</title>
+	<link rel='stylesheet' href='../styles.css' type='text/css'></head>
+<body>
+
+<table cellpadding='0' cellspacing='0' border='0' width='100%' style='background-color: #3e5d72; border-color: #003366; border-style: solid; border-width: 0 0 2 0;'>
+	<tr><td height='5'></td></tr>	
+	<tr valign='middle'>
+	
+	<td width='6%' align="center">
+		<img src="../pics/rz-logo-klein.png" width="35" height="35" border="0" alt="">
+	</td>
+	<td width='35%' align="left">
+	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
+		<tr valign='middle'>
+			<td><p class='h2_header'> net&lowast;Client Management</p></td>
+		</tr>
+	</table>
+	</td>
+	
+	<td width='45%'>
+	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
+		<tr valign='middle' align='left'>
+		<td>
+			<code class='h4_header'><a href='../start.php' class='headerlink_white'>Startseite</a>
+			 &nbsp;>>&nbsp; <a href='../au/au.php' class='headerlink_white'>{AU}</a> &nbsp;[ {DOMAIN} ]</code>
+		</td>
+		</tr>
+	</table>
+	</td>
+		
+	
+	
+	<!-- <td width='22%'>
+	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
+		<tr valign='middle' align='right'> --> 
+		<td align='right' rowspan='2'>
+			{LOGIN}
+		</td>
+		<!-- 	</tr>
+	</table>
+	</td> -->
+	
+	</tr>
+	<tr valign='bottom'>
+		<td colspan='3' align='right'>{MAINMENU}</td>
+	</tr>
+</table>
+
+<br>
+
+<table cellpadding='0' cellspacing='0' border='0' width='100%' height='85%'>
+
+	<tr valign='top' height='100%'>
+	<td width='25%'>
+	<table cellpadding='0' cellspacing='0' border='0' width='100%'>
+		<tr>
+			<td>
+	
+			{NAVIGATION}
+		
+			</td>
+		</tr>
+		<tr>
+			<td>
+	
+		   {IPBLOCKS}
+		
+			</td>
+		</tr>
+	</table>
+	</td>
+	
+	<td width='75%'>
+	<table cellpadding='0' cellspacing='0' border='0' width='100%'>
+		<tr><td>
+		
+		{HAUPTFENSTER}
+		
+		</td></tr>
+	</table>
+	</td>
+	
+	</tr>
+</table>
+
+</body>
+
+</html>

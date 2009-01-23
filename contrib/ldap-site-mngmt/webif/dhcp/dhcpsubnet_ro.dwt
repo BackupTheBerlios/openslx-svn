@@ -1,0 +1,110 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	
+  	<tr>
+  		<td colspan='2' height='20'><h4><a href='dhcpsubnets.php?mnr={MNR}' class='headerlink'><< Zur&uuml;ck zur &Uuml;bersicht </a></h4></td>
+  	</tr>
+  	
+  	<tr>
+  		<td colspan='2'>
+	  		<h3>DHCP Subnet &nbsp;<code class='font_object'> {CN} / {NETMASK} </code> &nbsp;- (read-only zur Information)</h3>
+  			<h4>
+  			Sie haben keine Administrationsrechte f&uuml;r dieses DHCP Subnet<br>
+  			<br>
+  			Bei Fragen, &Auml;nderungsw&uuml;nschen wenden Sie sich bitte an die zentrale Administration unter
+  			<img src="../pics/dhcpadmin-mail.gif" width="195" height="20" border="0" alt="">
+  			</h4>
+  		</td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+			
+			<!--<tr>
+				<td width='30%' class='tab_h'><b>Attribut</b></td>
+				<td width='70%' class='tab_h'><b>Wert</b></td>
+			</tr>-->
+			
+			<tr valign='top'>
+				<td width='30%' class='tab_d_top'><b>DHCP Dienst Eintrag: <b></td>
+				<td width='70%' class='tab_d_top'>{DHCPSRV_RADIO}</td>
+			</tr>
+			
+			<tr>
+				<td class='tab_d'><b>Subnet Beschreibung:</b></td>
+				<td class='tab_d'>{DESCRIPTION}&nbsp;</td>
+			</tr>
+		</table></td>
+	</tr>
+	
+	<tr>
+  		<td height='20'></td>
+  	</tr>		
+	<tr>
+  		<td colspan='2'><h4>DHCP Optionen Subnet Scope:</h4></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+			<tr valign='top'>
+				<td width='30%' class='tab_h'><b>Option</b></td>
+				<td width='70%' class='tab_h' colspan='2'><b>Wert(e)</b></td>
+			</tr>
+			
+			<tr>
+				<td class='tab_d_ohne'><b>Routers (Default Gateway):</b></td>
+				<td class='tab_d_ohne' colspan='2'>{ROUTERS}&nbsp;</td>
+			</tr>
+			<tr>
+				<td class='tab_d_ohne'><b>Broadcast Address:</b></td>
+				<td class='tab_d_ohne' colspan='2'>{BROADCAST}&nbsp;</td>
+			</tr>
+			<tr>
+				<td class='tab_d_ohne'><b>Domain Name:</b></td>
+				<td class='tab_d_ohne' colspan='2'>{DOMAINNAME}&nbsp;</td>
+			</tr>
+			<tr>
+				<td class='tab_d'><b>Domain Name Servers:</b></td>
+				<td class='tab_d' colspan='2'>{DOMAINNAMESERVERS}&nbsp;</td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d_ohne'><b>Default Lease Time:</b></td>
+				<td class='tab_d_ohne' colspan='2'>{DLRO} </td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d_ohne'><b>Max Lease Time:</b></td>
+				<td class='tab_d_ohne' colspan='2'>{MLRO} </td>
+			</tr>
+			<tr>
+				<td class='tab_d'><b>Get Lease Hostnames:</b></td>
+				<td class='tab_d' colspan='2'>{GETLEASEHN}</td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d'><b>Unknown Clients</b><br>(kann in dynamischen Pools &uuml;berschrieben werden)</td>
+				<td class='tab_d' colspan='2'>{UCNOW}&nbsp;</td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d_ohne'><b>Allow:</b></td>
+				<td class='tab_d_ohne' colspan='2'>{ALLOW}&nbsp;</td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d'><b>Deny:</b></td>
+				<td class='tab_d' colspan='2'>{DENY}&nbsp;</td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d'><b>Remote Boot Service:</b></td>
+				<td class='tab_d' colspan='2'>{RBSRO}</tr>
+			
+			<input type='hidden' name='subnetdn' value='{SUBNETDN}'>
+			<input type='hidden' name='mnr' value='{MNR}'>	
+			<input type='hidden' name='sbmnr' value='{SBMNR}'>			
+
+		</table></td>
+  	</tr>
+	
+	
+	<tr>
+  		<td height='60'></td>
+  	</tr>
+
+  	
+</table>

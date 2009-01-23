@@ -1,0 +1,189 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	
+  	<tr>
+  		<td height='20'><h4><a href='gbm_overview.php?rbsdn={RBSDN}&mnr={MNR}&sbmnr={SBMNR}' class='headerlink'><< Zur&uuml;ck zur GBM &Uuml;bersicht</a></h4></td>
+  	</tr>
+  	<tr>
+  		<td height='20'>&nbsp;</td>
+  	</tr>
+  	
+  	<tr>
+  		<td colspan='2'><h3>Generisches Boot Image &nbsp;<code class='font_object'> {GBMCN} </code> </h3></td>
+  	</tr>
+  	<tr>
+  		<td height='20'></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+				<form action='gbm_change.php' method='post'>
+			
+			<tr>
+				<td width='40%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='60%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+			</tr>
+			
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Eindeutiger Name (cn):</b><br>(Teil des dn, ohne Leerzeichen eingeben) &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='gbmcn' value='{GBMCN}' size='50' class='medium_form_field'>
+					<input type='hidden' name='oldgbmcn' value='{GBMCN}'> &nbsp;
+				</td>
+			</tr>
+			
+		</table></td>
+	</tr>
+	
+	<tr>
+  		<td height='40'></td>
+  	</tr>		
+	
+	<tr>
+  		<td colspan='2'><h4>KERNEL und APPEND Parameter:</h4></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+			<tr>
+				<td width='20%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='35%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+				<td width='45%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>&nbsp;</b></td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>KERNEL</td>
+				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<font size='+1'>{TFTPIP}::{TFTPROOT}/{TFTPKERNEL}</font>
+					<input type='Text' name='attribs[kernel]' value='{KERNEL}' size='40' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[kernel]' value='{KERNEL}'> 
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'><b>APPEND</td>
+				<td align='right' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+					&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>&nbsp;
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'><b>Initialram FS: </b></td>
+				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+					<font size='+1'>initrd={TFTPIP}::{TFTPROOT}/{TFTPKERNEL}</font>
+					<input type='Text' name='attribs[initrd]' value='{INITRD}' size='40' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[initrd]' value='{INITRD}'>
+				</td>
+			</tr>
+			<tr valign='top'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'><b>Root Filesystem: </b></td>
+				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>					
+						<font size='+1'>rootfs={ROOTFS}</font>
+					</td>
+			</tr>
+			<tr valign='top'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>	<b>&Auml;ndern:</b><br>				
+						{FSURISELECT}
+					</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+				   bei NFS eventuell um spezifischen Pfad erweitern:<br>
+					<input type='Text' name='rootfssuffix' value='' size='35' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'><b>Debug-Level: </b>&nbsp;</td>
+				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+				   <font size='+1'>debug=</font>
+					<input type='Text' name='attribs[debug]' value='{DEBUG}' size='2' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[debug]' value='{DEBUG}'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Misc APPEND: </b><br>(wird hinten angef&uuml;gt)&nbsp;</td>
+				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[appendmisc]' value='{MISC}' size='80' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[appendmisc]' value='{MISC}'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>IPAPPEND: </b>&nbsp;</td>
+				<td colspan='2' style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[ipappend]' value='{IPAPPEND}' size='2' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[ipappend]' value='{IPAPPEND}'>
+				</td>
+			</tr>
+			
+			<input type='hidden' name='gbmdn' value='{GBMDN}'>
+			<input type='hidden' name='rbsdn' value='{RBSDN}'>
+			<input type='hidden' name='mnr' value='{MNR}'>	
+			<input type='hidden' name='sbmnr' value='{SBMNR}'>		
+
+		</table></td>
+  	</tr>
+  	<tr>
+		<td><input type='Submit' name='apply' value='anwenden' class='small_loginform_button'>
+		</form></td>
+	</tr>
+	
+	<tr>
+  		<td height='50'></td>
+  	</tr>
+	<tr>
+  		<td colspan='2'><h3>Daraus ergibt sich folgender generischer Bootmen&uuml;eintrag</h3></td>
+  	</tr>
+	<tr>
+  		<td colspan='2'>Diesen k&ouml;nnen Nutzer des Dienstes f&uuml;r ihre PXE-Configs verwenden und zu eigenen Men&uuml;eintr&auml;gen erweitern.</td>
+  	</tr>
+  	<tr>
+  		<td>
+  		<table cellpadding='20' cellspacing='0' border='0' align='left' width='80%' style='border-color: black; border-style: solid; border-width: 2 2 2 2;'>
+
+  			<tr>
+  				<td class='tab_d_ohne'>
+  					LABEL ..... <br>
+  					&nbsp;&nbsp;&nbsp; MENU LABEL ...... <br>
+  					&nbsp;&nbsp;&nbsp; KERNEL {TFTPIP}::/{TFTPKERNEL}{KERNEL} <br>
+  					&nbsp;&nbsp;&nbsp; APPEND initrd={TFTPIP}::/{TFTPKERNEL}{INITRD} rootfs={ROOTFS} debug={DEBUG} {MISC}<br>
+  					&nbsp;&nbsp;&nbsp; IPAPPEND {IPAPPEND}
+  				</td>			
+  			</tr>
+  			
+  			
+  		</table></td>
+  	</tr>
+	
+	<tr>
+  		<td height='40'></td>
+  	</tr>
+	
+	<tr>
+  		<td colspan='2'><h4>Generisches Boot Image &nbsp;<code class='font_object'>{GBMCN}</code>&nbsp; l&ouml;schen:</h4></td>
+  	</tr>
+  	<tr>
+  		<td>
+  		<table cellpadding='7' cellspacing='0' border='0' align='left' width='90%' style='border-width: 0 0 0 0;'>
+  			<form action='delete_confirm.php' method='post'>
+  			
+  			
+  			<tr>
+  				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+  					Das generische Boot Image wird komplett gel&ouml;scht. 
+  			</tr>
+  			
+  			<input type='hidden' name='dn' value='{GBMDN}'>
+  			<input type='hidden' name='name' value='{GBMCN}'>
+  			<input type='hidden' name='type' value='gbm'>
+  			<input type='hidden' name='delurl' value='gbm_delete.php'>
+  			<input type='hidden' name='backurl' value='gbm.php?dn={GBMDN}&mnr={MNR}&sbmnr={SBMNR}'>
+  			  			
+  		</table></td>
+  	</tr>
+  	<tr>
+  		<td>
+			<input type='Submit' name='apply' value='l&ouml;schen' class='small_loginform_button'>
+			</form></td>
+	</tr>
+
+  	
+</table>

@@ -1,0 +1,123 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	<tr>
+  		<td colspan='2'><h3>DHCP Subnet anlegen </h3></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+				<form action='dhcpsubnet_add.php' method='post'>
+			
+			<tr>
+				<td width='30%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='70%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+			</tr>
+			
+			<tr valign='top'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>DHCP Subnet (+ Netmask):</b><br>
+				   (Noch freie verf&uuml;gbare Netze) &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+				   <select name='dhcpsubnet' size='{SUBLIST}' class='medium_form_selectbox'> 
+						
+						<!-- BEGIN DYNAMIC BLOCK: Dhcpsubnets -->
+						<option value='{SUBNET}'>{CN} / {NETMASK}</option>
+						<!-- END DYNAMIC BLOCK: Dhcpsubnets -->
+						
+					</select>
+				</td>
+			</tr>
+			<tr valign='top'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>In DHCP Dienst anmelden:</b> </td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='checkbox' name='dhcpservice' value='{DHCPSRVDN}'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Beschreibung:</b></td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[description]' value='{DESCRIPTION}' size='50' class='medium_form_field'>
+				</td>
+			</tr>
+			<!--<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>IP Range:</b><br>(Zur dynamischen Vergabe)</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='range1' value='{RANGE1}' size='15' maxlength='15' class='medium_form_field'>
+					 &nbsp;&nbsp; - &nbsp;&nbsp;
+					<input type='Text' name='range2' value='{RANGE2}' size='15' maxlength='15' class='medium_form_field'>
+				</td>
+			</tr>-->
+	
+		</table></td>
+	</tr>
+	
+	<tr>
+  		<td height='30'></td>
+  	</tr>		
+	<tr>
+  		<td colspan='2'><h4>DHCP Optionen des Subnets (Subnet Scope):</h4></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+			<tr valign='top'>
+				<td width='30%' class='tab_h'><b>Option</b></td>
+				<td width='70%' class='tab_h' colspan='2'><b>Wert(e)</b></td>
+			</tr>
+			
+			<tr>
+				<td class='tab_d'><b>Routers:</b></td>
+				<td class='tab_d' colspan='2'>
+					<input type='Text' name='attribs[dhcpoptrouters]' value='{ROUTERS}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<!--<tr>
+				<td class='tab_d'><b>Broadcast Address:</b></td>
+				<td class='tab_d' colspan='2'>
+					<input type='Text' name='attribs[dhcpoptbroadcast-address]' value='{BROADCAST}' size='40' class='medium_form_field'>
+				</td>
+			</tr>-->
+			<tr height='50'>
+				<td class='tab_d'><b>Domain Name:</b></td>
+				<td class='tab_d' colspan='2'>
+					<input type='Text' name='attribs[dhcpoptdomain-name]' value='{DOMAINNAME}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td class='tab_d'><b>Domain Name Servers:</b></td>
+				<td class='tab_d'><b>{DOMAINNAMESERVERS}</b>&nbsp;</td>
+				<td class='tab_d'><b>Global vom DHCP Dienst vorgegeben</b>&nbsp;</td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d'><b>Default Lease Time:</b></td>
+				<td class='tab_d'>{DEFAULTLEASE} </td>				
+				<td class='tab_d'>{DLTEXT} </td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d'><b>Max Lease Time:</b></td>
+				<td class='tab_d'>{MAXLEASE} </td>
+				<td class='tab_d'>{MLTEXT} </td>
+			</tr>
+			<!-- <tr>
+				<td class='tab_d'><b>Next Server:</b></td>
+				<td class='tab_d' colspan='2'>
+					<input type='Text' name='attribs[dhcpoptnext-server]' value='{NEXTSERVER}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td class='tab_d'><b>Filename:</b></td>
+				<td class='tab_d' colspan='2'>
+					<input type='Text' name='attribs[dhcpoptfilename]' value='{FILENAME}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			</tr>-->
+			
+			<input type='hidden' name='mnr' value='{MNR}'>	
+			<input type='hidden' name='sbmnr' value='{SBMNR}'>			
+
+		</table></td>
+  	</tr>
+  	<tr>
+		<td><input type='Submit' name='apply' value='anlegen' class='small_loginform_button'>
+		</form></td>
+	</tr>
+  	
+</table>

@@ -1,0 +1,32 @@
+<table border='0' cellpadding='5' cellspacing='0' width='90%'> 
+  	<tr>
+  		<td colspan='2'><h3>Modul - DHCP Management: </h3></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr>
+  		<td>
+  		<p>Modul zur Verwaltung von DHCP Subnets, dynamischen Pools und Classes <br>
+  		Benutzen Sie die Navigation links, um die einzelnen Verwaltungsbereiche anzusteuern:</p>
+  		<ul>
+  			<li><p><b>DHCP Subnets</b><br>
+  					Verwalten Sie ihre Subnetze ...  </p>
+  				</li>
+  			<li><p><b>DHCP Pools</b><br>
+  					Weisen Sie ihren DHCP Subnets IP Ranges zur dynamischen Adressvergabe zu ...  </p>
+  				</li>
+  			<li><p><b>DHCP Classes</b><br>
+  					Verwalten Sie Klassen von DHCP Objekten ...</p>
+  				</li>
+  		</ul>
+  		
+  		<br>
+  		<p>Die Verwaltung von DHCP Hosts, etwa das Eintragen ihrer Rechner im zentralen DHCP Dienst, erfolgt &uuml;ber das<br> 
+  		Modul <a class='headerlink' href='../computers/computers.php' >Rechner Management</a>.
+  		
+  		</p>
+  		</td>
+  	</tr>
+
+</table>

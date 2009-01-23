@@ -1,0 +1,22 @@
+
+<table cellpadding='5' cellspacing='0' border='0' width='100%'>
+			
+			
+
+	<!-- BEGIN DYNAMIC BLOCK: Hauptmenu -->
+		
+		<tr valign='middle' align='left'>
+ 		
+     	<td width='8%' align='right' style="border-style=none;"></td> 
+ 		<td width="8%" align="left" style="border-width:1 0 1 1;border-color:#000000;border-style:solid;padding:5;background-color:{FARBE}">&nbsp;</td>
+     	<td width="74%" align="left" style="border-width:1 1 1 0;border-color:#000000;border-style:solid;padding:5;background-color:{FARBE}">
+     	<a href="{LINK_M}" style="text-decoration:none"><code class="submenue_schrift">{TEXT_M}</code></a></td>
+		<td width='10%'>&nbsp;</td>
+		
+		</tr>
+		<tr height='5'></tr>
+	<!-- END DYNAMIC BLOCK: Hauptmenu -->
+         
+
+
+</table>

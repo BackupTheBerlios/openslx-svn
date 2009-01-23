@@ -1,0 +1,124 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	
+  	<tr>
+  		<td colspan='2' height='20'><h4><a href='{BACKURL}?mnr={MNR}' class='headerlink'><< Zur&uuml;ck zur &Uuml;bersicht </a></h4></td>
+  	</tr>
+  	
+  	<tr>
+  		<td colspan='2'>
+  			<h3>Dynamischer IP Pool / DHCP Subnet <code class='font_object'> {SUBNET} </code><br></h3>
+  			<h4>Pool Administration - AU <code class='font_object'>{POOLAU}</code> (Objekt: <code class='font_object'>{CN}</code> )<br>
+  				 Subnet Administration - AU <code class='font_object'>{SUBNETAU}</code>
+  			</h4>
+  		</td>
+  	</tr>
+  	
+	{DHCPADDON}  	
+  	
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+				<form action='dhcppool_change.php' method='post'>
+			
+			<tr>
+				<td width='25%' class='tab_h'><b>Attribut</b></td>
+				<td width='75%' class='tab_h' colspan='2'><b>Wert</b></td>
+			</tr>
+			
+			<tr valign='top'>
+				<td class='tab_d'><b>Aktiv in DHCP: <b></td>
+				<td class='tab_d' colspan='2'>
+					{DHCPSRV_CHECK}
+					<input type='hidden' name='oldsubnetdn' value='{POOLHLPCONT}'>
+				</td>
+			</tr>
+			
+			<tr valign='top'>
+				<td class='tab_d'><br><b>dynamische IP Range:</b></td>
+				<td class='tab_d' colspan='2'>
+
+					<input type='Text' name='range1' value='{RANGE1}' size='15' maxlength='15' class='medium_form_field'>
+					 &nbsp; - &nbsp;
+					<input type='Text' name='range2' value='{RANGE2}' size='15' maxlength='15' class='medium_form_field'>
+					<input type='hidden' name='oldrange1' value='{RANGE1}'>
+					<input type='hidden' name='oldrange2' value='{RANGE2}'><br>
+					   					
+					<!--<input type='Text' name='addrange1' value='' size='15' maxlength='15' class='medium_form_field'>
+					 &nbsp; - &nbsp;
+					<input type='Text' name='addrange2' value='' size='15' maxlength='15' class='medium_form_field'>-->
+				</td>
+			</tr>
+			
+			<tr valign='top'>
+				<td class='tab_d'><b>Zugelassene <br>Dynamische Clients:</b></td>
+				<td class='tab_d' colspan='2'>
+				      {PCLSELECT}
+				</td>
+			</tr>
+			
+			<tr valign='top'>
+				<td class='tab_d_ohne'><br><b>Default Lease Time:</b></td>
+				<td class='tab_d_ohne'>{DEFAULTLEASE} </td>
+				<td class='tab_d_ohne'>{DLDATA} </td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d'><br><b>Max Lease Time:</b></td>
+				<td class='tab_d'>{MAXLEASE} </td>
+				<td class='tab_d'>{MLDATA} </td>
+			</tr>
+			
+			{OPTDOMAIN}
+			
+			<tr valign='top'>
+				<td class='tab_d'><br><b>Remote Boot Dienst:</b></td>
+				<td class='tab_d'>{RBSSELECT}</td>
+				<td class='tab_d'>{RBSDATA}&nbsp;</td>
+			</tr>
+			
+			<!--<tr valign='top'>
+				<td class='tab_d'><br><b>Beschreibung des Pools:</b></td>
+				<td class='tab_d' colspan='2'>
+					<input type='Text' name='attribs[description]' value='{DESCRIPTION}' size='50' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[description]' value='{DESCRIPTION}'>
+				</td>
+			</tr>-->
+			
+			
+			<input type='hidden' name='pooldn' value='{POOLDN}'>
+			<input type='hidden' name='poolaudn' value='{POOLAUDN}'>
+			<input type='hidden' name='subnet' value='{SUBNET}'>
+			<input type='hidden' name='subnetau' value='{SUBNETAU}'>
+			<input type='hidden' name='subnetaudn' value='{SUBNETAUDN}'>
+			<input type='hidden' name='mnr' value='{MNR}'>	
+			<input type='hidden' name='backurl' value='{BACKURL}'>			
+
+		</table></td>
+  	</tr>
+  	<tr>
+		<td><input type='Submit' name='apply' value='anwenden' class='small_loginform_button'>
+		</form></td>
+	</tr>
+	
+	
+	<tr>
+  		<td height='60'></td>
+  	</tr>
+	
+	<tr>
+  		<td>
+  			<h4>DHCP Pool &nbsp;<code class='font_object'>{CN}</code></h4>
+  			<form action='delete_confirm.php' method='post'>
+  			<input type='hidden' name='dn' value='{POOLDN}'>
+  			<input type='hidden' name='name' value='{CN}'>
+  			<input type='hidden' name='subnetaudn' value='{SUBNETAUDN}'>
+  			<input type='hidden' name='dhcpsrv' value='{DHCPNOW}'>
+  			<input type='hidden' name='mnr' value='{MNR}'>
+  			<input type='hidden' name='type' value='dhcp'>
+  			<input type='hidden' name='delurl' value='dhcppool_delete.php'>
+  			<input type='hidden' name='backurl' value='dhcppool_one.php?dn={POOLDN}&mnr={MNR}'>
+			<input type='Submit' name='apply' value='l&ouml;schen' class='small_loginform_button'>
+			</form>
+		</td>
+  	</tr>
+  	
+</table>

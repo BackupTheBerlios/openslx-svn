@@ -1,0 +1,115 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+	<tr>
+		<td width='80%' colspan='3'>
+			<h3>Dynamische DHCP Pools </h3>
+			Administration Ihrer eingetragenen <b>dynamischen DHCP Pools</b>:<br>
+			<!-- Bearbeiten von bzw. Anlegen neuer IP Ranges zur dynamischen Vergabe. Zulassen von unbekannten bzw. einschr&auml;nken auf bekannte Clients<br>
+			(d.h. im DHCP angelegte Clients).<br>
+			Sie k&ouml;nnen IP Ranges nur entsprechend der Ihnen noch frei verf&uuml;baren IP Adressen definieren.<br><br>
+			&Uuml;ber die <b>Eingabemaske</b> unten k&ouml;nnen Sie weitere Pools anlegen -->
+		</td>
+	</tr>
+	
+	<tr><td colspan='3'>
+		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+			<!--<form action='dhcppools_change.php' method='post'>-->
+			
+			<tr valign='top'>
+				<!--<td width='2%' class='tab_d_ohne'></td>-->
+				<td width='17%' class='tab_h'><b>Subnetz</b></td>
+				<td width='11%' class='tab_h'><b>IP Range(s)</b></td>
+				<td width='26%' class='tab_h'><b>zugelassene<br>dynamische Clients</b></td>
+				<td width='20%' class='tab_h'><b>Lease Times</b></td>
+				<td width='14%' class='tab_h'><b>RBS</b></td>
+			</tr>
+			
+			   <!-- BEGIN DYNAMIC BLOCK: Dhcppools -->
+			
+			<tr height='50' valign='top'>
+				<!--<td class='tab_d_ohne'><input type='checkbox' name='delpool[]' value='{POOLDN}' size='10' class='medium_form_field'></td>-->
+				<td class='tab_d'>{SUBNET}<br><br>
+					{POOLINK}<br>&nbsp;
+				   <!--<input type='checkbox' name='delpool[]' value='{POOLDN}' size='10' class='medium_form_field'>
+					Pool l&ouml;schen--></td>
+				
+				<td class='tab_d'>{IPRANGES}&nbsp;</td>
+				<td class='tab_d'>{PCL}&nbsp;</td>
+				<td class='tab_d'>DEF: <b>{DEFAULTLEASE}</b><br>MAX: <b>{MAXLEASE}</b></td>
+				<td class='tab_d'>{RBSRV}&nbsp;</td>
+			</tr>
+			
+			<input type='hidden' name='pooldn[]' value='{POOLDN}'>
+			<input type='hidden' name='oldrbs[]' value='{OLDRBS}'>
+			<input type='hidden' name='subnet[]' value='{SUBNET}'>
+			<input type='hidden' name='subnetau[]' value='{SUBNETAU}'>
+			
+			   <!-- END DYNAMIC BLOCK: Dhcppools -->
+			
+			<input type='hidden' name='mnr' value='{MNR}'>
+		
+		</table></td>
+	</tr>
+	
+	<!--<tr valign='top'>
+  		<td width='3%'>&nbsp;</td>
+  		<td width='9%'><img src="../pics/pfeil.gif" width="50" height="30" border="0" alt="&nbsp;"></td>
+  		<td ><b>Ausgew&auml;hlte DHCP Pools</b> &nbsp;&nbsp;<br><br>
+  			<input type='Submit' name='apply' value='l&ouml;schen' class='small_loginform_button'>
+			</form></td>
+  	</tr>-->
+  	
+	
+	<tr>
+		<td height='50' colspan='2'></td>
+	</tr>
+	<tr>
+		<td colspan='3'><h4>Neuen dynamischen DHCP Pool anlegen </h4></td>
+	</tr>
+	
+	<tr>
+		<td colspan='3'>
+		<table cellpadding='7' cellspacing='0' border='0' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			<form action='dhcppool_add.php' method='post'>
+				
+			<tr valign='bottom'>
+				<td class='tab_h' colspan='2'><b>Pool Optionen</b></td>
+			</tr>
+			
+			<tr height='50' valign='top'>
+				<td width='35%' class='tab_d'><b>IP Range (innerhalb eines Subnetzes)</b><br>
+				   weitere Ranges k&ouml;nnen sp&auml;ter hinzugef&uuml;gt werden</td>
+				<td class='tab_d'>
+					<input type='Text' name='addrange1' value='' size='15' maxlength='15' class='medium_form_field'>
+					 &nbsp; - &nbsp;
+					<input type='Text' name='addrange2' value='' size='15' maxlength='15' class='medium_form_field'>
+				</td>
+			</tr>
+			
+			<tr height='50' valign='top'>
+				<td class='tab_d'><b>Zugelassene Clients</b></td>
+				<td class='tab_d'>
+					<select name='unknownclients' size='3' class='form_400_selectbox'>
+						<option selected value='deny'> Im DHCP eingetragene Clients &nbsp;(deny unknown-clients)</option>
+						<option value='allow'> Alle Clients &nbsp;(allow unknown-clients)</option>
+					</select>
+				</td>
+			</tr>
+			
+			<!--<tr height='50' valign='top'>
+				<td class='tab_d'><b>Remote Boot Service</b></td>
+				<td class='tab_d'>{RBSADD}
+				</td>
+			</tr>-->
+				<input type='hidden' name='mnr' value='{MNR}'>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td colspan='3'>
+			<input type='Submit' name='apply' value='anlegen' class='small_loginform_button'>
+			</form></td>
+	</tr>
+
+</table>

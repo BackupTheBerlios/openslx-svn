@@ -1,0 +1,60 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'>
+
+	<tr>
+  		<td colspan='3' height='20'><h4><a href='dhcp_condstmts.php?mnr={MNR}' class='headerlink'><< Zur&uuml;ck zur &Uuml;bersicht </a></h4></td>
+  	</tr>
+  	
+	<!-- <tr>
+		<td width='80%' colspan='3'>
+			<h3>DHCP Conditional Statements </h3>
+		</td>
+	</tr> -->
+	
+	<tr><td colspan='3'>
+		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+			<form action='dhcp_cond_change.php?mnr={MNR}' method='post'>			
+			
+			<tr valign='bottom'>
+				<td class='tab_h' colspan='2'><b>DHCP Conditional Statement</b></td>
+			</tr>
+			
+			<tr>
+				<td width='15%' class='tab_d'>DHCP Scope</td>
+				<td width='85%' class='tab_d'>{SCOPE} </td>
+			</tr>
+			<tr>
+				<td class='tab_d'>cn</td>
+				<td class='tab_d'>
+					<input type='Text' name='cscn' value='{CSCN}' size='50' class='medium_form_field'></td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d_ohne' colspan='2'><br><b>{CSTYPE} &nbsp;&nbsp;&nbsp;
+				 <input type='Text' name='csboolexp' value='{CSBOOLEXP}' size='70' class='medium_form_field'>&nbsp; {</b></td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d_ohne'>&nbsp;</td>
+				<td class='tab_d_ohne'><b>vendor-encapsulated-options</b><br>
+					<input type='Text' name='veo' value='{CSVEO}' size='90' class='medium_form_field'>&nbsp;<b>;</b>
+					</td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d' colspan='2'><b>}</b><br><br></td>
+			</tr>
+				
+			<input type='hidden' name='olddhcpcont' value='{DHCPCONT}'>
+			
+			
+			
+			
+			<input type='hidden' name='mnr' value='{MNR}'>
+			<input type='hidden' name='backurl' value='dhcp_classes.php?mnr={MNR}'>
+
+		</table></td>
+	</tr>
+	<tr>
+		<td><input type='Submit' name='apply' value='anwenden' class='small_loginform_button'>
+		</form></td>
+	</tr>
+
+</table>

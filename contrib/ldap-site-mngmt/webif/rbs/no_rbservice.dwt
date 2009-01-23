@@ -1,0 +1,22 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	<tr>
+  		<td colspan='2'><h3>Remote Boot Service </h3>
+  		
+  		<p>Sie haben noch keinen <b>Remote Boot Service</b> eingerichtet.</p>
+  		
+  		<p>Um</p> 
+  		
+  		<ul>
+  			<li><p><b>Generische Boot Men&uuml;s</b></p></li>
+  			<li><p><b>Default PXE Bootmen&uuml;s</b></p></li>
+  		</ul>
+  		
+  		<p>anlegen zu k&ouml;nnen muss erst ein Remote Boot Service eingerichtet werden.</p>
+  		
+  		<p>Verwenden sie daf&uuml;r den Link <b>"Remote Boot Service"</b> im Navigationsmen&uuml; links, um
+  		zur Eingabemaske zu gelangen.</p>
+  		 
+  		</td>
+  	</tr>
+  	
+</table>

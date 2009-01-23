@@ -1,0 +1,64 @@
+<table cellpadding='0' cellspacing='0' border='0' width='100%' style='background-color: #3e5d72; border-color: #003366; border-style: solid; border-width: 0 0 2 0;'>
+	<tr valign='middle'>
+	
+	<td width='6%' align="center">
+		<img src="pics/rz-logo-klein.png" width="35" height="35" border="0" alt="">
+	</td>
+	<td width='35%' align="left">
+	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
+		<tr valign='middle'>
+			<td><p class='h2_header'>net&lowast;Client Management</p></td>
+		</tr>
+	</table>
+	</td>
+	
+	<td width='37%'>
+	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
+		<tr valign='middle' align='left'>
+		<td>
+			<code class='h4_header'><a href='start.php' class='headerlink_white'>Startseite</a>
+			 &nbsp;>>&nbsp;</code>
+		</td>
+		</tr>
+	</table>
+	</td>
+	<td width='22%'>
+	<table cellpadding='5' cellspacing='0' border='0' width='100%'>
+		<tr valign='middle' align='right'>
+		<td>
+			{LOGIN}
+		</td>
+		</tr>
+	</table>
+	</td>
+	</tr>
+</table>
+
+
+<table cellpadding='5' cellspacing='0' border='0' width='100%' height='85%'>
+
+	<tr valign='top' height='100%'>
+	<td width='95%'>
+	
+		<table border='0' cellpadding='10' cellspacing='0' width='100%'> 
+  			<tr>
+  				<td colspan='2'><h3>Admin Units (AU) in denen Sie Administrator sind</h3>
+					{TEXT}
+				</td>
+  			</tr>
+  			
+		  	<tr>
+		  		<td>
+		  		<table cellpadding='0' cellspacing='0' border='0' align='left' width='100%' style='border-width: 0 0 0 0;'>
+		
+					{TREE}
+					
+				</table>
+				</td>
+		  	</tr>
+		</table>
+			
+	</td>
+	</tr>
+</table>
+
