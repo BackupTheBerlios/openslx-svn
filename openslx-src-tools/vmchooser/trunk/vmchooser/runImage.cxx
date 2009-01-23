@@ -59,8 +59,10 @@ void runImage(fltk::Widget*, void* p)
     case 0:
       mainwin->destroy();
       fltk::wait();
-      cout << "calling " << argv[1] << endl;
-      execvp(argv[0], argv);
+      if(dat.imgtype == VMWARE || dat.imgtype == VBOX) {
+        cout << "calling " << argv[1] << endl;
+        execvp(argv[0], argv);
+      }
       break;
     default:
       // this is not really useful, as this
