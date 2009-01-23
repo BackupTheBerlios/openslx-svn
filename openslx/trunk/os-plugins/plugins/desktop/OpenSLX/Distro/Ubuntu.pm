@@ -78,6 +78,17 @@ sub KDMPathInfo
     return $pathInfo;
 }
 
+sub GDMConfigHashForWorkstation
+{
+    my $self = shift;
+
+    my $configHash = $self->SUPER::GDMConfigHashForWorkstation();
+    $configHash->{'daemon'}->{SessionDesktopDir} = 
+        '/usr/share/gdm/BuiltInSessions/:/usr/share/xsessions/:/etc/X11/sessions/';
+
+    return $configHash;
+}
+
 sub KDMConfigHashForWorkstation
 {
     my $self = shift;
@@ -88,6 +99,8 @@ sub KDMConfigHashForWorkstation
     $configHash->{'X-:0-Core'}->{Startup} = '/etc/kde3/kdm/Xstartup';
     $configHash->{'X-:0-Core'}->{Session} = '/etc/kde3/kdm/Xsession';
     $configHash->{'X-:0-Core'}->{Reset} = '/etc/kde3/kdm/Xreset';
+    $configHash->{'X-:0-Core'}->{SessionsDirs} = 
+        '/usr/share/xsessions,/usr/share/apps/kdm/sessions,/etc/X11/sessions';
 
     return $configHash;
 }
