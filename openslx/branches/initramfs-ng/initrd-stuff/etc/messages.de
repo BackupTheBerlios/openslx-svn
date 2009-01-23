@@ -194,8 +194,6 @@ Konfigurations-Datei. Benutzer\n  Standard Laender-Einstellung \
 '${D_DEFAULTCOUNTRY}' definiert in $0."
 
 # messages from hwautocfg
-hcfg_xcfg="  Sie sollten die Variable D_XF86CONFFILE in ihrer\n   \
-Distributions-Konfigurations-Datei definieren."
 hcfg_hwsetup="  Die xserver-Konfigurations-Datei, erstellt von hwsetup, konnte \
 nicht\n  gefunden werden."
 gfx_msg="Bitte pruefen Sie ihre Grafik-Adapter-Einstellungen ($hw_graphic)."

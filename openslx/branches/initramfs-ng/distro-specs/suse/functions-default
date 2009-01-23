@@ -289,6 +289,21 @@ EOF
   echo "$host_name" > /mnt/etc/HOSTNAME
 }
 
+# initial (boot time) runlevel scripts
+initial_boot () {
+local scripts=$*
+local count=10
+# boot.slx is a special runlevel script generated within initialramfs which
+# should be executed before the normal runlevel scripts. Proper shutdown is
+# not needed!?
+for i in boot.slx boot.udev boot.proc boot.klog boot.loadmodules boot.clock \
+boot.sysctl boot.ipconfig boot.swap $D_SPLASHY; do
+  count=$(($count + 1))
+  echo "boot-runlevelscript $i"
+  ln -sf /etc/init.d/$i /mnt/etc/init.d/boot.d/S${count}$i
+done
+}
+
 # linking runlevel scripts
 rllinker () {
 local script="$1"
