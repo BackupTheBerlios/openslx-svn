@@ -55,5 +55,7 @@ D_XF86CONFFILE="/etc/X11/xorg.conf"
 D_XORGBIN=/usr/X11R6/bin/X
 D_XFONTPATH="/usr/X11R6/lib/X11/fonts/*"
 D_DEFAULTCOUNTRY="de"
+# deprecated, moved to "desktop" plugin! Some of the preparations should
+# be moved to the debian "desktop.sh" script to be defined in debian.pm
 D_KDMRCPATH=/etc/kde3/kdm
 D_XDMPATH=/etc/kde3/kdm

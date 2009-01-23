@@ -173,6 +173,8 @@ sed -e "s,LANG=.*,LANG=\"${LANG}\" # set within initramfs," \
     -i /mnt/etc/default/locale
 }
 
+# deprecated, moved to "desktop" plugin! Some of the preparations should
+# be moved to the ubuntu "desktop.sh" script to be defined in debian.pm
 # configure gdm as display manager
 config_gdm () {
 ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/K20gdm
@@ -189,6 +191,7 @@ fi
 #/var/lib/gdm" >> /mnt/etc/${D_INITDIR}/boot.slx
 }
 
+# same as for gdm ...
 # configure kdm as display manager
 config_kdm () {
 # first define directories for kdm

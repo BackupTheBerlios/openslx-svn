@@ -922,6 +922,8 @@ include_in_fsroot_union () {
  done
 }
 
+# deprecated, moved to "desktop" plugin! Some of the preparations should
+# be moved to the respective "desktop.sh" script to be defined in <distro>.pm
 # kdmrc template started from distro specific functions files
 config_kdm_template () {
 testmkd /mnt/${D_KDMRCPATH}

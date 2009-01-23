@@ -193,10 +193,13 @@ config_acpi () {
   rllinker "udev" 11 25
 }
 
+# deprecated, moved to "desktop" plugin! Some of the preparations should
+# be moved to the ubuntu "desktop.sh" script to be defined in ubuntu.pm
 # configure gdm as display manager
 config_gdm () {
 ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/K20gdm
 if [ "x$start_xdmcp" = "xgdm" ]; then 
+  # existance is handled in Stage1 already!!
   #  configure fallback if no gdm binary present
   if ! binfinder gdm; then
     config_kdm
