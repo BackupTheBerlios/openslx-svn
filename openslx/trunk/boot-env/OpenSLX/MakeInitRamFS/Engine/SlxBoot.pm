@@ -19,10 +19,7 @@ use warnings;
 
 use base qw(OpenSLX::MakeInitRamFS::Engine::Base);
 
-use File::Basename;
 use File::Find;
-use File::Path;
-use POSIX qw(strftime);
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;

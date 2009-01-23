@@ -17,8 +17,6 @@ use strict;
 use warnings;
 
 use File::Basename;
-use File::Find;
-use File::Path;
 use POSIX qw(strftime);
 
 use OpenSLX::Basics;
