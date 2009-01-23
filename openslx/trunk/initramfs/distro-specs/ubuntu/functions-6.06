@@ -23,24 +23,6 @@ preinit () {
   NFSRO=""
 }
 
-# distro specific function called from servconfig script
-
-# x11 stuff
-descsession () {
-# variable desktop_session is most probably deprecated 
-if [ "x$desktop_session" != "x" ] ; then
-  windowmanagers="$desktop_session"
-else
-  windowmanagers="kde,gnome,icewm,failsafe"
-fi
-
-# add special path /var/X11R6/bin to the PATH variable
-# fixme!! add path directly to /etc/profile!?
-#[ "x$addpath" != "x" ] && \
-#  echo -e "# added path component by $0: $date\n\
-#PATH=\"\$PATH:/var/X11R6/bin\"" >>/mnt/etc/profile
-}
-
 # set up keytable (function run in hwautocfg)
 # fixme: is anything needed here - otherwise remove (and check that a 
 # dummy function is present)

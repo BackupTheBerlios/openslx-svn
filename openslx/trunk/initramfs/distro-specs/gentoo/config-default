@@ -49,8 +49,3 @@ D_XFONTPATH="/usr/share/fonts/*"
 D_DEFAULTCOUNTRY="de"
 D_HWMODTOIGNORE="i8xx-tco ichxrom snd-atiixp-modem intel-rng"
 D_BOOTLOCAL="conf.d/local.start"
-
-# deprecated, moved to "desktop" plugin! Some of the preparations should
-# be moved to the gentoo "desktop.sh" script to be defined in gentoo.pm
-D_KDMRCPATH=/var/lib/openslx/themes/displaymanager
-D_XDMPATH=/etc/X11/kdm

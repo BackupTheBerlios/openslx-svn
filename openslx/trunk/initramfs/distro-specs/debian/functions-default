@@ -143,15 +143,6 @@ if [ "x$start_snmp" = "xyes" ] ; then
   fi
 }
 
-# x11 stuff
-descsession () {
-# variable desktop_session is most probably deprecated in near future
-if [ "x$desktop_session" != "x" ] ; then
-  windowmanagers="$desktop_session"
-else
-  windowmanagers="kde,gnome,icewm,failsafe"
-fi
-
 # add special path /var/X11R6/bin to the PATH variable
 # fixme!! add path directly to /etc/profile!?
 #[ "x$addpath" != "x" ] && \
@@ -171,36 +162,6 @@ chmod 744 /mnt/etc/${D_INITDIR}/boot.slx
 #     -i /mnt/etc/environment
 sed -e "s,LANG=.*,LANG=\"${LANG}\" # set within initramfs," \
     -i /mnt/etc/default/locale
-}
-
-# deprecated, moved to "desktop" plugin! Some of the preparations should
-# be moved to the ubuntu "desktop.sh" script to be defined in debian.pm
-# configure gdm as display manager
-config_gdm () {
-ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/K20gdm
-ln -sf ../${D_INITDIR}/gdm /mnt/etc/rc3.d/S01gdm
-# check for gdm user in passwd file and add it if not present
-if ! grep "gdm:" /mnt/etc/passwd >/dev/null 2>&1; then
-  echo "gdm:x:113:">>/mnt/etc/group
-  echo "gdm:x:106:113:Gnome Display Manager:/var/lib/gdm:/bin/false" \
-    >>/mnt/etc/passwd
-fi
-# fixme: any directory with certain permissions needed?
-# testmkd /mnt/var/lib/gdm/.fontconfig
-# echo -e "\tchown gdm:gdm /var/lib/gdm/.fontconfig\n\t\chown root:gdm \
-#/var/lib/gdm" >> /mnt/etc/${D_INITDIR}/boot.slx
-}
-
-# same as for gdm ...
-# configure kdm as display manager
-config_kdm () {
-# first define directories for kdm
-ln -sf ../${D_INITDIR}/kdm /mnt/etc/rc3.d/K20kdm
-ln -sf ../${D_INITDIR}/kdm /mnt/etc/rc3.d/S20kdm
-
-# write configuration file
-# use general config in /etc/functions
-config_kdm_template
 }
 
 # configure hal, dbus, resmgr and services like that

@@ -13,15 +13,6 @@
 # in general SuSE base definitions ...  General changes should be done there,
 # version specific changes for the 10.2 go here.
 
-# display manager configuration
-config_kdm () {
-# use different kdmrc than default, since 10.2 in /opt/kde/...
-echo "XDMOPTIONS=\"-config ${D_KDMRCPATH}/kdmrc\"" \
-  >> /mnt/etc/sysconfig/displaymanager
-config_dm_entry yes
-# write configuration file with general config from /etc/functions
-config_kdm_template
-}
 # configure dbus (inter application communication for kde and gnome), hal
 # (hardware abstraction layer - used e.g. by powersaved), resmgr and 
 # policykitd (resource manager/policykitd - the user gets permissions to 
