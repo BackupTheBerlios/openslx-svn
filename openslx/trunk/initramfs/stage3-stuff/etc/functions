@@ -298,7 +298,7 @@ fi
 # tftp wrapper
 # usage tftp_get <path> <tftpdserver> [count]
 # count is optional - default is 3 - use -1 for indefinit 
-function tftp_get () {
+tftp_get () {
   local file="$1"
   local file_server="$2"
   local download_successfull=false
@@ -306,7 +306,7 @@ function tftp_get () {
 
   [ -z "$1" -o -z "$2" ] &&  \
     echo "Usage: tftp_get <path> <server> [count]" &&
-    exit 0;
+    return 0;
 
   [ "$countdown" = "" ] && countdown=3
 
@@ -317,8 +317,8 @@ function tftp_get () {
     [ "$countdown" = "0" ] && return 0;
     tftp -g -r $file -l /tmp/$(basename $file) $file_server
     [ -s /tmp/$(basename $file) ] && download_successfull=true
-    (( countdown-- ))
-    sleep 0.2
+    countdown=`expr $countdown - 1`
+    usleep 200000
     ! [ "$countdown" = "0" ] && [ $download_successfull ] && \
       echo "retry.."
   done
