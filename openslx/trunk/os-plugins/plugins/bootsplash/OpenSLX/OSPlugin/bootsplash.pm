@@ -132,7 +132,7 @@ sub installationPhase
         or die _tr(
                 "unable to copy splashy to $pluginRepoPath/bin"
         );
-    slxsystem("cp -a $uClibcPath/libuClibc* pluginRepoPath/lib") == 0
+    slxsystem("cp -a $uClibcPath/libuClibc* $pluginRepoPath/lib") == 0
         or die _tr(
                 "unable to copy libuClibc to $pluginRepoPath/lib"
         );
