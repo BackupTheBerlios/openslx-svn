@@ -185,7 +185,7 @@ void SWindow::unfold_entries() {
 /******************************************************
  * Helper function to get symbols for entries
  ******************************************************/
-char** SWindow::get_symbol(DataEntry* dat) {
+const char** SWindow::get_symbol(DataEntry* dat) {
   if(dat->imgtype == VMWARE) {
     if(dat->locked) {
     	return xp_locked_32_xpm;

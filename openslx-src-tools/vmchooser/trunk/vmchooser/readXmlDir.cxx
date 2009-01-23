@@ -102,7 +102,7 @@ DataEntry* get_entry(xmlDoc * doc)
         	de->xml_name = string(doc->name);
         }
 
-        tempc = getAttribute(doc,"short_description");
+        tempc = getAttribute(doc,(char *)"short_description");
         if (tempc != NULL ) {
                 de->short_description = tempc;
 		//printf("%s\n",de->short_description.c_str());
@@ -123,50 +123,50 @@ DataEntry* get_entry(xmlDoc * doc)
                 return NULL;
         }
 
-        tempc = getAttribute(doc,"long_description");
+        tempc = getAttribute(doc,(char *) "long_description");
         if (tempc != NULL ) {
                 de->description = tempc;
         }
         tempc = NULL;
 
-        tempc = getAttribute(doc,"creator");
+        tempc = getAttribute(doc,(char *) "creator");
         if (tempc != NULL ) {
                 de->creator = tempc;
         }
         tempc = NULL;
 
-        tempc = getAttribute(doc,"email");
+        tempc = getAttribute(doc,(char *) "email");
         if (tempc != NULL ) {
                 de->email = tempc;
         }
         tempc = NULL;
 
-        tempc = getAttribute(doc,"phone");
+        tempc = getAttribute(doc,(char *) "phone");
         if (tempc != NULL ) {
                 de->phone = tempc;
         }
         tempc = NULL;
 
-        tempc = getAttribute(doc,"image_name");
+        tempc = getAttribute(doc,(char *) "image_name");
         if (tempc != NULL ) {
                 de->imgname = tempc;
         }
         tempc = NULL;
 
-        tempc = getAttribute(doc,"os");
+        tempc = getAttribute(doc,(char *) "os");
         if (tempc != NULL ) {
                 de->os = tempc;
         }
         tempc = NULL;
 
-        tempc = getAttribute(doc,"network");
+        tempc = getAttribute(doc,(char *) "network");
         if (tempc != NULL ) {
                 de->network = tempc;
         }
         tempc = NULL;
         
 
-        tempc = getAttribute(doc,"virtualmachine");
+        tempc = getAttribute(doc,(char *) "virtualmachine");
         if (tempc != NULL ) {
                 if ( strcmp(tempc,"vmware") == 0 ) {
                         de->imgtype = VMWARE;
@@ -183,13 +183,13 @@ DataEntry* get_entry(xmlDoc * doc)
         }
         tempc = NULL;
 
-        tempc = getAttribute(doc,"active");
+        tempc = getAttribute(doc,(char *) "active");
         if (tempc != NULL ) {
                 de->active = (strstr(tempc,"true")!= NULL?true:false);
         }
         tempc = NULL;
         
-        tempc = getAttribute(doc,"locked");
+        tempc = getAttribute(doc,(char *) "locked");
         if (tempc != NULL ) {
                 de->locked = (strstr(tempc,"true")!= NULL?true:false);
         }
@@ -198,19 +198,19 @@ DataEntry* get_entry(xmlDoc * doc)
         }
         tempc = NULL;
 
-        tempc = getAttribute(doc,"pools");
+        tempc = getAttribute(doc,(char *) "pools");
         if (tempc != NULL ) {
                 de->pools = tempc;
         }
         tempc = NULL;
 
-        tempc = getAttribute(doc,"xdm");
+        tempc = getAttribute(doc,(char *) "xdm");
         if (tempc != NULL ) {
                 de->xdm = tempc;
         }
         tempc = NULL;
 
-        tempc = getAttribute(doc,"priority");
+        tempc = getAttribute(doc,(char *) "priority");
         if (tempc != NULL ) {
                 de->priority = atoi(tempc);
         }

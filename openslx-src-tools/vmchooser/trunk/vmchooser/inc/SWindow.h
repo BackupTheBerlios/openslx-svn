@@ -54,7 +54,7 @@ private:
    * ctor with some reasonable default values
    */
   //SWindow(char* p = "Choose your session!");
-  SWindow(int w, int h, char* p = "Choose your session!");
+  SWindow(int w, int h, char* p = (char *) "Choose your session!");
 
 public:
   static SWindow* getInstance(int w, int h) {
@@ -85,7 +85,7 @@ public:
   void set_entries(DataEntry** ent, char* slxgroup);
   void set_lin_entries(DataEntry** ent, char* slxgroup);
   
-  char** get_symbol(DataEntry* dat);
+  const char** get_symbol(DataEntry* dat);
 
   void free_entries();
   void unfold_entries();

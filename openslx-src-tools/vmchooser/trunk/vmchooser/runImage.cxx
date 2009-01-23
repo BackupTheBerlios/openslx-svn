@@ -62,7 +62,7 @@ string runImage(DataEntry& dat, string confxml)
   //cout << dat.imgtype << endl << VMWARE << endl;
   if (dat.imgtype == VMWARE) {
     //cout << confxml << endl;
-    char* arg[] = { "/var/X11R6/bin/run-vmware.sh",
+    char* arg[] = { (char *) "/var/X11R6/bin/run-vmware.sh",
             (char*)confxml.c_str(),
             NULL };
     

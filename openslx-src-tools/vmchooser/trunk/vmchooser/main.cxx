@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
   }
   if (xmlpath == NULL) {
     // Default Path comes here
-    xmlpath = "/var/lib/vmware/vmconfigs/";
+    xmlpath = (char *) "/var/lib/vmware/vmconfigs/";
   }
   
   /** SLX GROUP */
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
     slxgroup = opt->getValue("group");
   }
   if (slxgroup == NULL) {
-    slxgroup = "default";
+    slxgroup = (char *) "default";
   }
   
   /** LINUX SESSION PATH */
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
     lsesspath = opt->getValue("lpath");
   }
   if (lsesspath == NULL) {
-    lsesspath = "/usr/share/xsessions/";
+    lsesspath = (char *) "/usr/share/xsessions/";
   }
   
   /** Size of Window */

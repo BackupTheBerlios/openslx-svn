@@ -1,5 +1,5 @@
 /* XPM */
-static char * gnome_xpm[] = {
+static const char * gnome_xpm[] = {
 "64 65 2013 2",
 "  	c None",
 ". 	c #8A8F8B",
