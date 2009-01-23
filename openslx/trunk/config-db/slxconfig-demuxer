@@ -29,7 +29,6 @@ slxconfig-demuxer
     Please use the --man option in order to read the full manual.
 ];
 
-use Clone qw(clone);
 use Config::General;
 use Digest::MD5 qw(md5_hex);
 use Fcntl qw(:DEFAULT :flock);
@@ -50,7 +49,6 @@ use lib "$FindBin::RealBin";
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::ConfigFolder;
-use OpenSLX::MakeInitRamFS::Engine;
 use OpenSLX::OSPlugin::Roster;
 use OpenSLX::ScopedResource;
 use OpenSLX::Utils;
@@ -377,10 +375,9 @@ sub bootEnvironmentForType
     if (!$bootEnvMap{$bootType}) {
         my $bootEnv = instantiateClass("OpenSLX::BootEnvironment::$bootType");
         $bootEnv->initialize( {
-            'build-path' => $tftpbuildPath, 
-            'dry-run'    => $option{dryRun},
+            'target-path' => $tftpbuildPath, 
+            'dry-run'     => $option{dryRun},
         } );
-        $bootEnv->prepareBootloaderConfigFolder();
         $bootEnvMap{$bootType} = $bootEnv;
     }
     
@@ -413,68 +410,28 @@ sub writeBootloaderMenus
     return;
 }
 
-sub makeInitRamFS
+sub writeBootEnvironmentForSystem
 {
     my $info      = shift;
-    my $initramfs = shift;
+    my $buildPath = shift;
+    my $clients   = shift || [];
 
-    vlog(1, _tr('generating initialramfs %s', $initramfs));
-
-    my $vendorOS = $info->{'vendor-os'};
-    my $kernelFile = basename(followLink($info->{'kernel-file'}));
-
-    my $attrs = clone($info->{attrs} || {});
-
-    my $params = {
-        'attrs'          => $attrs,
-        'export-name'    => $info->{export}->{name},
-        'export-uri'     => $info->{'export-uri'},
-        'initramfs'      => $initramfs,
-        'kernel-params'  => [ split ' ', ($info->{kernel_params} || '') ],
-        'kernel-version' => $kernelFile =~ m[-(.+)$] ? $1 : '',
-        'plugins'        => $info->{'active-plugins'},
-        'root-path'
-            => "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}",
-        'slx-version'    => $slxVersion,
-        'system-name'    => $info->{name},
-    };
-
-    # TODO: make debug-level an explicit attribute, it's used in many places!
-    my $kernelParams = $info->{kernel_params} || '';
-    if ($kernelParams =~ m{debug(?:=(\d+))?}) {
-        my $debugLevel = defined $1 ? $1 : '1';
-        $params->{'debug-level'} = $debugLevel;
+    # handle all different kinds of "preboot-" environments (PXE, CD, grub, ...)
+    my %bootTypes;
+    foreach my $client (@$clients) {
+        my $type = $client->{boot_type} || 'pxe';
+        $bootTypes{$type}++;
     }
+    foreach my $bootType (sort keys %bootTypes) {
+        vlog(0, _tr("copying kernel and creating initramfs for $bootType boot"));
+    
+        my $bootEnv = bootEnvironmentForType($bootType);
+        $bootEnv->writeFilesRequiredForBooting(
+            $info, $buildPath, $slxVersion
+        );
 
-    my $makeInitRamFSEngine = OpenSLX::MakeInitRamFS::Engine->new($params);
-    $makeInitRamFSEngine->execute($option{dryRun});
-
-    # copy back kernel-params, as they might have been changed (by plugins)
-    $info->{kernel_params} = join ' ', $makeInitRamFSEngine->kernelParams();
-
-    return;
-}
-
-sub writeKernelAndInitramfsForSystem
-{
-    my $info = shift;
-
-    vlog(0, _tr('copying kernel and creating initramfs'));
-
-    my $kernelFile = $info->{'kernel-file'};
-    my $kernelName = basename($kernelFile);
-
-    my $vendorOSPath = "$tftpbuildPath/$info->{'vendor-os'}->{name}";
-    mkpath $vendorOSPath unless -e $vendorOSPath || $option{dryRun};
-
-    my $targetKernel = "$vendorOSPath/$kernelName";
-    if (!-e $targetKernel) {
-        vlog(1, _tr('copying kernel %s to %s', $kernelFile, $targetKernel));
-        slxsystem(qq[cp -p "$kernelFile" "$targetKernel"])
-            unless $option{dryRun};
+        $initramfsCount++;
     }
-    makeInitRamFS($info, "$vendorOSPath/$info->{'initramfs-name'}");
-    $initramfsCount++;
 
     return;
 }
@@ -498,11 +455,9 @@ sub writeClientConfigurationsForSystem
     my $info      = shift;
     my $buildPath = shift;
     my $attrFile  = shift;
+    my $clients   = shift || [];
 
-    my @clientIDs = $openslxDB->aggregatedClientIDsOfSystem($info);
-    my @clients   = $openslxDB->fetchClientByID(\@clientIDs);
-
-    foreach my $client (@clients) {
+    foreach my $client (@$clients) {
         next if $client->{name} eq '<<<default>>>';
             # skip default client, as it doesn't need any config-tgz
 
@@ -641,11 +596,12 @@ sub writeSystemConfiguration
     my $info           = shift;
     my $isTargetSystem = shift;
 
+    $info->{'initramfs-name'} = "initramfs-$info->{id}";
+
     # if this is not a target system, we shall not write any configurations,
     # but we simply incorporate inherited attributes
     if (!$isTargetSystem) {
         $openslxDB->mergeDefaultAttributesIntoSystem($info);
-        $info->{'initramfs-name'} = "initramfs-$info->{id}";
         return;
     }
     
@@ -683,10 +639,12 @@ sub writeSystemConfiguration
     my $systemPath = "$tftpbuildPath/client-config/$info->{'external-id'}";
     createTarOfPath($buildPath, "default.tgz", $systemPath);
 
-    $info->{'initramfs-name'} = "initramfs-$info->{id}";
-    writeKernelAndInitramfsForSystem($info);
+    my @clientIDs = $openslxDB->aggregatedClientIDsOfSystem($info);
+    my @clients   = $openslxDB->fetchClientByID(\@clientIDs);
 
-    writeClientConfigurationsForSystem($info, $buildPath, $attrFile);
+    writeBootEnvironmentForSystem($info, $buildPath, \@clients);
+
+    writeClientConfigurationsForSystem($info, $buildPath, $attrFile, \@clients);
 
     slxsystem("rm -rf $buildPath") unless $option{dryRun};
 

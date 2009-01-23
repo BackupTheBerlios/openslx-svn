@@ -29,7 +29,6 @@ use OpenSLX::Utils;
 # TODO: implement support for the following (either here or as plugin):
 #            wlan
 #            tpm
-#            cdboot (must be implemented here!)
 
 ################################################################################
 ### interface methods
@@ -378,9 +377,9 @@ sub _copyKernelModules
     $self->addCMD("mkdir -p $targetPath");
     $self->addCMD("cp -p $sourcePath/modules.* $targetPath/");
     
-    # TODO: find out what's the story behing the supposedly required
-    #       modules 'af_packet', 'unix' and 'hid' (which seem to be
-    #       missing at least on some systems)
+    # add a couple of kernel modules that we expect to be used in stage3
+    # (some of these modules do not exist on all distros, so they will be
+    # filtered out again by the respective distro object):
     my @kernelModules = qw(
         af_packet unix hid usbhid uhci-hcd ohci-hcd
     );

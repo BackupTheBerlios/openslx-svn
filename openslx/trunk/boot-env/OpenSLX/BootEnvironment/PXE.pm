@@ -18,33 +18,13 @@ use warnings;
 
 use base qw(OpenSLX::BootEnvironment::Base);
 
+use Clone qw(clone);
 use File::Basename;
 use File::Path;
 
 use OpenSLX::Basics;
+use OpenSLX::MakeInitRamFS::Engine;
 use OpenSLX::Utils;
-
-sub prepareBootloaderConfigFolder
-{
-    my $self = shift;
-    
-    my $basePath      = $openslxConfig{'base-path'};
-    my $pxePath       = $self->{'build-path'};
-    my $pxeConfigPath = "$pxePath/pxelinux.cfg";
-
-    if (!$self->{'dry-run'}) {
-        rmtree($pxeConfigPath);
-        mkpath($pxeConfigPath);
-
-        for my $file ('pxelinux.0', 'menu.c32', 'vesamenu.c32') {
-            if (!-e "$pxePath/$file") {
-                slxsystem(qq[cp -p "$basePath/share/tftpboot/$file" $pxePath/]);
-            }
-        }
-    }
-
-    return 1;
-}
 
 sub writeBootloaderMenuFor
 {
@@ -53,7 +33,10 @@ sub writeBootloaderMenuFor
     my $externalClientID = shift;
     my $systemInfos      = shift;
 
-    my $pxePath       = $self->{'build-path'};
+    $self->_prepareBootloaderConfigFolder() 
+        unless $self->{preparedBootloaderConfigFolder};
+
+    my $pxePath       = $self->{'target-path'};
     my $pxeConfigPath = "$pxePath/pxelinux.cfg";
 
     my $pxeConfig    = $self->_getTemplate();
@@ -105,6 +88,31 @@ sub writeBootloaderMenuFor
     # to convert in order to avoid showing gibberish on the client side...
     spitFile($pxeFile, $pxeConfig, { 'io-layer' => 'encoding(cp850)' } );
 
+    return 1;
+}
+
+sub writeFilesRequiredForBooting
+{
+    my $self       = shift;
+    my $info       = shift;
+    my $buildPath  = shift;
+    my $slxVersion = shift;
+
+    my $kernelFile = $info->{'kernel-file'};
+    my $kernelName = basename($kernelFile);
+
+    my $vendorOSPath = "$self->{'target-path'}/$info->{'vendor-os'}->{name}";
+    mkpath $vendorOSPath unless -e $vendorOSPath || $self->{'dry-run'};
+
+    my $targetKernel = "$vendorOSPath/$kernelName";
+    if (!-e $targetKernel) {
+        vlog(1, _tr('copying kernel %s to %s', $kernelFile, $targetKernel));
+        slxsystem(qq[cp -p "$kernelFile" "$targetKernel"])
+            unless $self->{'dry-run'};
+    }
+    my $initramfs = "$vendorOSPath/$info->{'initramfs-name'}";
+    $self->_makeInitRamFS($info, $initramfs, $slxVersion);
+    
     return 1;
 }
 
@@ -182,7 +190,7 @@ sub _getTemplate
                 ? "$basePath/share/themes/${pxeTheme}/pxe/$pic"
                 : $pic;
         if (-e $pxeBackground && !$self->{'dry-run'}) {
-            slxsystem(qq[cp "$pxeBackground" $self->{'build-path'}/]);
+            slxsystem(qq[cp "$pxeBackground" $self->{'target-path'}/]);
         }
     }
     
@@ -191,5 +199,72 @@ sub _getTemplate
     return $pxeTemplate;
 }
    
+sub _prepareBootloaderConfigFolder
+{
+    my $self = shift;
+    
+    my $basePath      = $openslxConfig{'base-path'};
+    my $pxePath       = $self->{'target-path'};
+    my $pxeConfigPath = "$pxePath/pxelinux.cfg";
+
+    if (!$self->{'dry-run'}) {
+        rmtree($pxeConfigPath);
+        mkpath($pxeConfigPath);
+
+        for my $file ('pxelinux.0', 'menu.c32', 'vesamenu.c32') {
+            if (!-e "$pxePath/$file") {
+                slxsystem(qq[cp -p "$basePath/share/tftpboot/$file" $pxePath/]);
+            }
+        }
+    }
+    
+    $self->{preparedBootloaderConfigFolder} = 1;
+
+    return 1;
+}
+
+sub _makeInitRamFS
+{
+    my $self       = shift;
+    my $info       = shift;
+    my $initramfs  = shift;
+    my $slxVersion = shift;
+
+    vlog(1, _tr('generating initialramfs %s', $initramfs));
+
+    my $vendorOS = $info->{'vendor-os'};
+    my $kernelFile = basename(followLink($info->{'kernel-file'}));
+
+    my $attrs = clone($info->{attrs} || {});
+
+    my $params = {
+        'attrs'          => $attrs,
+        'export-name'    => $info->{export}->{name},
+        'export-uri'     => $info->{'export-uri'},
+        'initramfs'      => $initramfs,
+        'kernel-params'  => [ split ' ', ($info->{kernel_params} || '') ],
+        'kernel-version' => $kernelFile =~ m[-(.+)$] ? $1 : '',
+        'plugins'        => $info->{'active-plugins'},
+        'root-path'
+            => "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}",
+        'slx-version'    => $slxVersion,
+        'system-name'    => $info->{name},
+    };
+
+    # TODO: make debug-level an explicit attribute, it's used in many places!
+    my $kernelParams = $info->{kernel_params} || '';
+    if ($kernelParams =~ m{debug(?:=(\d+))?}) {
+        my $debugLevel = defined $1 ? $1 : '1';
+        $params->{'debug-level'} = $debugLevel;
+    }
+
+    my $makeInitRamFSEngine = OpenSLX::MakeInitRamFS::Engine->new($params);
+    $makeInitRamFSEngine->execute($self->{'dry-run'});
+
+    # copy back kernel-params, as they might have been changed (by plugins)
+    $info->{kernel_params} = join ' ', $makeInitRamFSEngine->kernelParams();
+
+    return;
+}
 
 1;

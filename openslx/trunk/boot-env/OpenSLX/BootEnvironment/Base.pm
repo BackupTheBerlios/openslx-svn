@@ -35,15 +35,28 @@ sub initialize
     my $self   = shift;
     my $params = shift;
 
-    $self->{'build-path'} = $params->{'build-path'};
-    $self->{'dry-run'}    = $params->{'dry-run'};
+    $self->{'target-path'} = $params->{'target-path'};
+    $self->{'dry-run'}     = $params->{'dry-run'};
 
     return 1;
 }
 
-sub prepareBootloaderConfigFolder
+sub writeBootloaderMenuFor
 {
-    my $self = shift;
+    my $self             = shift;
+    my $client           = shift;
+    my $externalClientID = shift;
+    my $systemInfos      = shift;
+
+    return;
+}
+
+sub writeFilesRequiredForBooting
+{
+    my $self          = shift;
+    my $info          = shift;
+    my $tftpbuildPath = shift;
+    my $slxVersion    = shift;
 
     return;
 }
