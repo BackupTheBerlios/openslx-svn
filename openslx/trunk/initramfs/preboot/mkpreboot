@@ -20,7 +20,7 @@ mkdir -p ${BUILDDIR}/{dev,proc,tmp,root,bin,sys,lib,etc}
 mkdir -p ${BUILDDIR}/var/{lib,run}
 ln -s /bin ${BUILDDIR}/sbin
 
-cp ${SLX_SHARE_PATH}/cdboot/init ${BUILDDIR}/init
+cp ${SLX_SHARE_PATH}/preboot/init ${BUILDDIR}/init
   chmod 755 ${BUILDDIR}/init
 
 cp ${SLX_SHARE_PATH}/busybox/busybox.i586 ${BUILDDIR}/bin/busybox
@@ -49,7 +49,7 @@ done
 
 # finally create the compressed initial ramfs cpio archive
 mkdir -p ${BUILDDIR}/iso/isolinux
-cp ${SLX_SHARE_PATH}/cdboot/isolinux.bin ${BUILDDIR}/iso/isolinux
+cp ${SLX_SHARE_PATH}/preboot/isolinux.bin ${BUILDDIR}/iso/isolinux
 cp ${SLX_SHARE_PATH}/tftpboot/menu.c32 ${BUILDDIR}/iso/isolinux
 cp /boot/vmlinuz-${KERNVER} ${BUILDDIR}/iso/isolinux/vmlinuz
 pushd . > /dev/null 2>&1
