@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=virtual machine chooser (default)
+Name[de]=Virtuelle Maschine ausw�hlen
+Comment=This session starts the vm session chooser
+Comment[de]=Diese Sitzung startet das Auswahlmen� f�r die vorhandenen Sitzungen
+Exec=/opt/openslx/plugin-repo/vmchooser/vmchooser
+TryExec=/opt/openslx/plugin-repo/vmchooser/vmchooser
+Icon=
+Type=Application

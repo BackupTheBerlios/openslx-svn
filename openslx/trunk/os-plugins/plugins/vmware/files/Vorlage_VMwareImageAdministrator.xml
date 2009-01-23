@@ -43,7 +43,7 @@
     <priority param="1">
     </priority>
     #Description: Should printers be connected ? Which ?
-    <printers param="true">
+    <printers>
      <printer name="" path="">Human readable description</printer>
     </printers>
     #Description: Should scanners be connected ? Which ?
