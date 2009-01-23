@@ -1226,9 +1226,8 @@ sub _stage1A_createBusyboxEnvironment
     }
 
     # create all needed links to busybox:
-    my $links 
-        = slurpFile("$openslxConfig{'base-path'}/share/busybox/busybox.links");
-    foreach my $linkTarget (split "\n", $links) {
+    my @busyboxApplets = getAvailableBusyboxApplets($self->{'busybox-binary'});
+    foreach my $linkTarget (@busyboxApplets) {
         linkFile('/bin/busybox', "$self->{stage1aDir}/$linkTarget");
     }
     if ($self->_hostIs64Bit()) { 

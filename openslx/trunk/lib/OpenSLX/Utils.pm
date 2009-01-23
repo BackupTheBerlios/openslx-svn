@@ -34,6 +34,7 @@ $VERSION = 1.01;
   getFQDN
   readPassword
   hostIs64Bit
+  getAvailableBusyboxApplets
 );
 
 =head1 NAME
@@ -556,6 +557,31 @@ sub hostIs64Bit
 {
     my $arch = qx{uname -m};
     return $arch =~ m[64];
+}
+
+=item B<getAvailableBusyboxApplets()>
+
+Returns the list of the applets that is provided by the given busybox binary.
+
+=cut
+
+sub getAvailableBusyboxApplets
+{
+    my $busyboxBinary = shift;
+
+    my $busyboxHelp = qx{$busyboxBinary --help};
+    if ($busyboxHelp !~ m{defined functions:(.+)\z}ims) {
+        die "unable to parse busybox --help output:\n$busyboxHelp";
+    }
+    my $rawAppletList = $1;
+    my @busyboxApplets 
+        =    map {
+                $_ =~ s{\s+}{}igms;
+                $_;
+            }
+            split m{,}, $rawAppletList;
+            
+    return @busyboxApplets;
 }
 
 1;
