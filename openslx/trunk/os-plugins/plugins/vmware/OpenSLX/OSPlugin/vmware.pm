@@ -167,6 +167,17 @@ sub getAttrInfo
             content_descr => '1 means active - 0 means inactive',
             default => '0',
         },
+        'vmware::vmpl1.0' => {
+            applies_to_vendor_os => 1,
+            applies_to_system => 0,
+            applies_to_clients => 0,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                Install and configure vmplayer v1
+            End-of-Here
+            content_regex => qr{^(1|0)$},
+            content_descr => '1 means active - 0 means inactive',
+            default => '0',
+        },
         # ** set of attributes for the installation of VM Workstation/Player
         # versions. More than one package could be installed in parallel.
         # To be matched to/triggerd by 'vmware::kind'
@@ -195,6 +206,9 @@ sub installationPhase
     }
     if ($self->{attrs}->{'vmware::vmpl2.0'} == 1) {
         $self->_vmpl2Installation();
+    }
+    if ($self->{attrs}->{'vmware::vmpl1.0'} == 1) {
+        $self->_vmpl1Installation();
     }
         
     ## prepration for our faster wrapper script
@@ -467,5 +481,50 @@ sub _vmpl2Installation {
         
 }
 
+
+sub _vmpl1Installation {
+    my $self     = shift;
+
+    my $kind   = "vmpl1.0";
+    my $vmpath = "/opt/openslx/plugin-repo/vmware/$kind/root/lib/vmware";
+    my $vmbin  = "/opt/openslx/plugin-repo/vmware/$kind/root/bin";
+    my $vmversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage?";
+    my $vmbuildversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage1";
+
+    my $pluginFilesPath 
+        = "$self->{'openslxBasePath'}/lib/plugins/$self->{'name'}/files";
+    my $installationPath = "$self->{'pluginRepositoryPath'}/$kind";
+
+    mkpath($installationPath);
+
+    ##
+    ## Copy needed files
+
+    # copy 'normal' needed files
+    my @files = qw( nvram.5.0 install-vmpl1.0.sh );
+    foreach my $file (@files) {
+        copyFile("$pluginFilesPath/$file", "$installationPath");
+    }
+    # copy on depending runvmware file
+    copyFile("$pluginFilesPath/runvmware-player-v1", "$installationPath", "runvmware");
+
+    ##
+    ## Download and install the binarys
+    system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-$kind.sh");
+
+    ##
+    ## Create runlevel script
+    my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
+    $self->_writeRunlevelScript($vmbin, $runlevelScript);
+
+    ##
+    ## Create wrapperscripts
+    $self->_writeWrapperScript("$vmpath", "$kind", "player");
+
+    ##
+    ## Creating needed config /etc/vmware/config
+    $self->_writeVmwareConfig("$kind", "$vmpath");
+        
+}
 
 1;

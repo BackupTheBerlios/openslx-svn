@@ -7,11 +7,6 @@ files aren't needed any more!!
 
 
 Files
-- client-config.xml.default
-  Describes how the xml config needs to look like which will be used by
-  the Virtual Machine (see nvram below). Currently used internal and
-  shouldn't affect normal OpenSLX users. Data will be available on every
-  OpenSLX Client.
 - nvram.5.0
   This nvram supports a second Floppy drive. Helpfull if you want to
   get some data from linux to your Windows VirtualMachine (like
