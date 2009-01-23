@@ -138,9 +138,9 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     fi
     # copy the runlevelscript to the proper place and activate it
     cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmware.init \
-      /mnt/etc/${D_INITDIR}/vmware-env \
+      /mnt/etc/init.d/vmware-env \
       || echo "  * Error copying runlevel script. Shouldn't happen."
-    chmod a+x /mnt/etc/${D_INITDIR}/vmware-env
+    chmod a+x /mnt/etc/init.d/vmware-env
     rllinker "vmware-env" 20 2
 
     #############################################################################
@@ -226,7 +226,7 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     # needed for VMware 5.5.4 and versions below
     # TODO: isn't boot.slx dead/not functional due of missing ";; esac"?
     echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
-      >>/mnt/etc/${D_INITDIR}/boot.slx
+      >>/mnt/etc/init.d/boot.slx
 
 
     ## Copy version depending files
