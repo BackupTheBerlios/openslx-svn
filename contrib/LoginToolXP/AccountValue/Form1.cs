@@ -51,12 +51,17 @@ namespace AccountValue
         // private int FixHeight = 1024, FixWidth = 768;
 
         //#####################################################################
+        //Laufwerksbuchstabe
+        //'Z' wird für das erste Laufwerk benutzt, dann für jedes folgende
+        //Laufwerk immer um 1 dekrementiert also Y, X, usw.
+        private char dl = 'Z';
+
 
         //Variablen die angeben was eingebunden werden soll
         private String home;
         private String shareds;
         private String printers;
-        private String scanner;
+        private String scanners;
 
         //#####################################################################
         public Form1()
@@ -139,11 +144,11 @@ namespace AccountValue
                 XmlNode xnHome = doc.SelectSingleNode("/settings/eintrag/home");
                 XmlNode xnShareds = doc.SelectSingleNode("/settings/eintrag/shareds");
                 XmlNode xnPrinters = doc.SelectSingleNode("/settings/eintrag/printers");
-                XmlNode xnScanner = doc.SelectSingleNode("/settings/eintrag/scanner");
+                XmlNode xnScanners = doc.SelectSingleNode("/settings/eintrag/scanners");
                 home = xnHome.Attributes["param"].InnerText; 
                 shareds = xnShareds.Attributes["param"].InnerText; 
                 printers = xnPrinters.Attributes["param"].InnerText;
-                scanner = xnScanner.Attributes["param"].InnerText;
+                scanners = xnScanners.Attributes["param"].InnerText;
 
             }
             catch (Exception e)
@@ -265,16 +270,27 @@ namespace AccountValue
             {
                 try
                 {
-                    oNetDrive.LocalDrive = "l:";
+                    XmlNode xnShareds2 = doc.SelectSingleNode("/settings/eintrag/shareds");
 
-                    try
+                    foreach (XmlNode shared in xnShareds2.ChildNodes)
                     {
-                        oNetDrive.UnMapDrive();
-                    }
-                    catch { }
+                        oNetDrive.LocalDrive = dl + ":";
 
-                    oNetDrive.ShareName = "\\\\lehrpool.files.uni-freiburg.de\\lehrpool";
-                    oNetDrive.MapDrive("PUBLIC\\lehrpool", "(atom)9");
+                        try
+                        {
+                            oNetDrive.UnMapDrive();
+                        }
+                        catch { }
+
+                        oNetDrive.ShareName = shared.Attributes["path"].InnerText;
+                        oNetDrive.MapDrive(shared.Attributes["name"].InnerText, shared.Attributes["pass"].InnerText);
+
+                        createDesktopLinks("Gemeinsames Laufwerk "+ dl, dl+":\\");
+                        dl = Convert.ToChar(Convert.ToInt16(dl) - 1);
+
+                    }
+
+                        
                 }
 
                 catch (Exception err)
@@ -292,7 +308,7 @@ namespace AccountValue
                 }
 
                 //#################################################################
-                createDesktopLinks("Gemeinsames Laufwerk L", "l:\\");
+                //createDesktopLinks("Gemeinsames Laufwerk L", "l:\\");
             }
 
 
@@ -303,34 +319,38 @@ namespace AccountValue
             
             //#####################################################################################
             //#### Fuege die IP-Adresse des Scanners in C:\sane\etc\sane.d\net.conf ###############
-            
-            string path = @"c:\sane\etc\sane.d\net.conf";
-            
-            try
+
+            if (scanners == "true")
             {
-                using (StreamWriter sw = System.IO.File.CreateText(path)) { }
-                string path2 = path + "temp";
 
-                // Ensure that the target does not exist.
-                System.IO.File.Delete(path2);
+                string path = @"c:\sane\etc\sane.d\net.conf";
 
-                // Copy the file.
-                System.IO.File.Copy(path, path2);
-                
-                // Delete the newly created file.
-                System.IO.File.Delete(path2);
-            }
-            catch {}
-
-            try
-            {
-                using (StreamWriter sw = System.IO.File.CreateText(path))
+                try
                 {
-                    sw.WriteLine(scanner);
-                }
-            }
-            catch {}
+                    using (StreamWriter sw = System.IO.File.CreateText(path)) { }
+                    string path2 = path + "temp";
 
+                    // Ensure that the target does not exist.
+                    System.IO.File.Delete(path2);
+
+                    // Copy the file.
+                    System.IO.File.Copy(path, path2);
+
+                    // Delete the newly created file.
+                    System.IO.File.Delete(path2);
+                }
+                catch { }
+
+                try
+                {
+                    XmlNode xnScanner = doc.SelectSingleNode("/settings/eintrag/scanners/scanner");
+                    using (StreamWriter sw = System.IO.File.CreateText(path))
+                    {
+                        sw.WriteLine(xnScanner.Attributes["ip"].InnerText);
+                    }
+                }
+                catch { }
+            }
         }
 
 
