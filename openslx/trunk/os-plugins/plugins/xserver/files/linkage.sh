@@ -21,117 +21,84 @@ if [ ! -d "${LINK_PATH}" ]; then
 fi
 
 
-
-
-
-##########################################
-# saves a mesa file into MESAROOT
-# and creates a link
-##########################################
-linkMesa() {
-  file=$1
- 
-  # get path without /usr/lib/
-  bname=$(basename ${file})
-  l_path="$(echo ${file}|sed 's,${bname},,g')"
-  l_path="$(echo ${l_path}|sed 's,/usr/lib,,g')"
-  if [ ! -d "${LINK_PATH}${l_path}" ]; then
-    mkdir -p ${LINK_PATH}${l_path}
-  fi
-
-  if [ -h "${file}" ]; then
-    # this is a link
-    ln -sf ${LINK_PATH}$(echo $file| sed -e 's,/usr/lib,,g') $file # link to writable dir
-  elif [ -f "${file}" ]; then
-    # this is a real file
-    #ATTENTION: in NVIDIA-OpenGL implementation libGL.so.1.2 is a link.
-    #       This is a problem here, as we expect libGL.so.1.2 moved to
-    #       libGL_mesa.so.1.2  -> we have to filter this in
-    #       XX_xserver.sh
-    #       ATI OpenGL has that file -> no problem there
-    mv ${file} $(echo $file|sed -e 's,.so,_MESA.so,g') 2&>1 >/dev/null # rename file
-  fi
+VAL=0 # this is the return value of following helper functions
+stripstr() {
+  VAL=$(echo ${1} | sed -e "s,^${2},,g")
+}
+stripbase() {
+  VAL=$(echo ${1} | sed -e "s,$(basename ${1}),,g")
 }
 
 
 
-########################################
-# this is the main installation
-# 
-# ALL conflicting libs are detected
-# and linked to /var/X11R6/lib
+## additional helper functions without return value
+# moves mesa lib to backup
+mvmesa() {
+  MESALIB="$(echo ${1} | sed -e 's,\.so,_MESA.so,g')"
+  mv ${1} ${MESALIB}
+}
+
+# makes dir, if not exists
+testmkdir() {
+  if [ ! -d ${1} ]; then
+    mkdir -p ${1}
+  fi
+}
+
+
+#######################################
 #
-########################################
+#  Link all files FROM $1 to /usr/lib/
+#
+#  Conflicting files are linked to
+#  /var/X11R6/lib
+#
+#  mesa files are renamed to *_MESA.so*
+#
+#######################################
 divert() {
 
-  # root PATH 
-  # as first argument
-  ROOT="$1"
-  # files to compare 
-  CMPROOT="$2"
+  ROOT="${1}"
+  RR="/usr/lib"
+  LPATH="/var/X11R6/lib"
 
-  if [ -e "${ROOT}/installed" ]; then
-      echo "$1 already linked!"
-      return
-  fi
-
-  # go through all libs and see if they are conflicting
+  # link all shared objects in ${1}
   for lib in $(find ${ROOT} -wholename \
-	"*/xorg/modules" -prune -a '!' -type d \
-	-o -wholename '*so*'|xargs ); do
-    # strip leading ROOT
-    cmplib="${lib#${ROOT}}"
+	"*/xorg/modules" -prune -a '!' -type d -o -name '*so*'); do
 
+<<<<<<< .mine
+    # strip leading ROOT - to get e.g.: "/usr/lib/libGL.so.1.2"
+    stripstr ${lib} ${ROOT}
+    rlib=${VAL}
+    # strip leading /usr/lib/ - name for /var/X11R6/lib
+    stripstr ${rlib} ${RR}
+    divname=${VAL}
+=======
     if [ -e "${cmplib}" -a -e "${lib}" ]; then
       # system folder conflicts with ROOT
       linkMesa ${cmplib}
       continue
     fi
+>>>>>>> .r2371
 
-    # throwing away the basename
-    # leaving the folder
-    bname=$(basename ${lib})
-    l_path="$(echo ${cmplib}|sed 's,${bname},,g')"
-    l_path=${l_path#/usr/lib}
+    echo "${lib} ${rlib} ${divname} after stripping"
 
-    # here is the hairy function
-    # if CMPROOT="", just link the lib
-    # if two libs conflicts, link to /var/X11R6/lib/
-
-    if [ -n "${CMPROOT}" -a -e "${lib}" -a -e "${CMPROOT}${cmplib}" ]; then
-      # two roots are conflicting
-      # create a link into LINK_PATH
-      if [ -h "${LINK_PATH}$( echo ${cmplib}| sed 's,/usr/lib,,g')" ]; then
-        # it already exists
-        continue
-      fi
-      if [ ! -d "${LINK_PATH}${l_path}" -o ! -d "${l_path}" ]; then
-        mkdir -p ${LINK_PATH}${l_path} ${l_path}
-      fi
-      
-      # create link ladder (defaults to first called implementation)
-      #TODO: Check this part. Every 2nd time of 'linkage.sh clean;linkage.sh both'
-      #      the following error occurs:
-      #      ln: creating symbolic link `/var/X11R6/lib//libGL.so.1/libGL.so.1': File exists
-      # this should not happen, because libGL.so.1 is no folder
-      ln -s ${ROOT}${cmplib} ${LINK_PATH}$(echo ${cmplib} | sed -e 's/\/usr\/lib//g')
+    # divert, if exists
+    if [ -e ${rlib} ]; then
+      # back up mesa file
+      mvmesa ${rlib}
+      # link to /var/X11R6/lib
+      ln -s ${LPATH}${divname} ${rlib}
     else
-
-
-      # just link library to root folder
-      # nothing conflicts here
-      l_path="${cmplib/$(basename $lib)/}"
-      if [ ! -d "${l_path}" ]; then
-        mkdir -p ${l_path}
-      fi
-      ln -s $lib $cmplib
+      # it does not exist in /usr/lib/
+      # just link
+      ln -s ${lib} ${rlib}
     fi
+
   done
 
-  # mark as installed - we don't want to install it twice
-  date >> ${ROOT}/installed
+  touch ${ROOT}/installed
 }
-
 
 
 ###############################################
@@ -164,24 +131,19 @@ if [ "$1" = "clean" ]; then
 fi 
 
 if [ "$1" = "both" ]; then
-  divert $NVROOT $ATIROOT
-  divert $ATIROOT $NVROOT
-  ln -sf /var/X11R6/lib/libGL.so.1 /usr/lib/libGL.so.1
-  ln -sf /var/X11R6/lib/libGL.so.1 /usr/lib/libGL.so
+  divert $NVROOT
+  divert $ATIROOT
+#  /bin/bash
   exit
 fi
 
 if [ "$1" = "nvidia" ]; then
   divert ${NVROOT}
-  ln -sf /var/X11R6/lib/libGL.so.1 /usr/lib/libGL.so.1
-  ln -sf /var/X11R6/lib/libGL.so.1 /usr/lib/libGL.so
   exit
 fi
 
 if [ "$1" = "ati" ]; then
   divert ${ATIROOT}
-  ln -sf /var/X11R6/lib/libGL.so.1 /usr/lib/libGL.so.1
-  ln -sf /var/X11R6/lib/libGL.so.1 /usr/lib/libGL.so
   exit
 fi
 

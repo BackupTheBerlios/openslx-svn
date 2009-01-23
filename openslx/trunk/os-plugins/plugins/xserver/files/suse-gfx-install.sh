@@ -137,7 +137,7 @@ if [ "$1" = "ati" ]; then
     mv ./usr/X11R6/lib/* ./usr/lib/
    # fix for fglrx_dri.so 
     mkdir -p ./usr/X11R6/lib/modules/dri
-    ln -s ../../../../lib/dri/glrx_dri.so \
+    ln -s ../../../../lib/dri/fglrx_dri.so \
     ./usr/X11R6/lib/modules/dri/fglrx_dri.so
     mv ./usr ..
     mv ./etc ..
