@@ -5,8 +5,9 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml; //instead of TL.XML
 using aejw.Network;
-using TL.XML;
+//using TL.XML;
 using IWshRuntimeLibrary;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -31,28 +32,24 @@ namespace AccountValue
             ref long totalBytes,
             ref long totalFreeBytes);
 
-        tlxml xml = new tlxml();
-        tlxml xmlD = new tlxml();
+        XmlDocument doc = new XmlDocument();
 
         private DragExtender dragExtender1;
         private bool firsttime = true;
         private Form2 f2;
-        
+
         String resolution_x = "";
         String resolution_y = "";
-        
+
+
+
         // Wenn wahr, wird später die Auflösung umgestellt, fehlen die Parameter, dann nicht!
-        private bool change_resolution = true;
+        private bool change_resolution = false;
 
         private int tempHeight = 0, tempWidth = 0;
         // private int FixHeight = 1024, FixWidth = 768;
 
         //#####################################################################
-        //Variable, die die Umgebung beschreibt
-        private String env;
-
-        //Anzahl der Drucker in der Umgebung
-        private int anz;
 
         //Variablen die angeben was eingebunden werden soll
         private String home;
@@ -65,7 +62,7 @@ namespace AccountValue
             Screen Srn = Screen.PrimaryScreen;
             tempHeight = Srn.Bounds.Width;
             tempWidth = Srn.Bounds.Height;
-            
+
             InitializeComponent();
 
             // XML Settings aus Laufwerk B auslesen...
@@ -73,22 +70,15 @@ namespace AccountValue
 
             try
             {
-                xml.loadFile("B:\\CONFIG.XML");
+                doc.Load("B:\\CONFIG.XML");
             }
             catch (Exception e)
             {
                 MessageBox.Show(e.Message, "Error: ", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 System.Environment.Exit(0);
             }
-
-            //############## Auslesen, in welcher Umgebung man ist ############
-            try
-            {
-                env = xml.getAttribute("/settings/eintrag/pools", "param");
-            }
-            catch { }
-
-            try
+            // TODO: ändern xml...
+            /*try
             {
                 resolution_x = xml.getAttribute("/settings/eintrag/resolution_x", "param");
                 resolution_y = xml.getAttribute("/settings/eintrag/resolution_y", "param");
@@ -97,23 +87,24 @@ namespace AccountValue
             {
                 change_resolution = false;
             }
-
+            
 
             if (change_resolution)
             {
                 Resolution.CResolution ChangeRes = new Resolution.CResolution(Convert.ToInt32(resolution_x), Convert.ToInt32(resolution_y));
-            }
-                        
+            }*/
+
             try
             {
-                textBox1.AppendText(xml.getAttribute("/settings/eintrag/username", "param"));               
+                XmlNode xnUser = doc.SelectSingleNode("/settings/eintrag/username");
+                textBox1.AppendText(xnUser.Attributes["param"].InnerText); //xml.getAttribute("/settings/eintrag/username", "param"));               
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MessageBox.Show(e.Message, "Error: **********************", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 System.Environment.Exit(0);
             }
-                                      
+
             //resolution_x = "1680"; 
             //resolution_y = "1050";  
 
@@ -121,10 +112,10 @@ namespace AccountValue
             {
                 maskedTextBox1.Focus();
             }
-            catch {}
+            catch { }
         }
-        
-        
+
+
         private void Form1_Load(object sender, EventArgs e)
         {
         }
@@ -139,14 +130,17 @@ namespace AccountValue
         private void login_clicked()
         {
             //NetworkDrive oNetDrive = new NetworkDrive();
-            
-            //############### Parameter aus INI-Datei auslesen ################
+
+            //############### Parameter aus CONFIG.XML auslesen ################
             try
             {
-                home = xml.getAttribute("/settings/eintrag/home", "param");
-                shareds = xml.getAttribute("/settings/eintrag/shareds", "param");
-                printers = xml.getAttribute("/settings/eintrag/printers", "param");
-            
+                XmlNode xnHome = doc.SelectSingleNode("/settings/eintrag/home");
+                XmlNode xnShareds = doc.SelectSingleNode("/settings/eintrag/shareds");
+                XmlNode xnPrinters = doc.SelectSingleNode("/settings/eintrag/printers");
+                home = xnHome.Attributes["param"].InnerText; 
+                shareds = xnShareds.Attributes["param"].InnerText; 
+                printers = xnPrinters.Attributes["param"].InnerText;
+
             }
             catch (Exception e)
             {
@@ -155,7 +149,7 @@ namespace AccountValue
             }
 
             // Stehen überhaupt Login und Password drin?
-            
+
             if (textBox1.Text.Equals("") || maskedTextBox1.Text.Equals(""))
             {
                 try
@@ -168,74 +162,25 @@ namespace AccountValue
             }
 
             NetworkDrive oNetDrive = new NetworkDrive();
-            
+
             //######## Starte das script zum installieren der Drucker #########
 
             if (printers == "true")
             {
-                //###### Auslesen von Settings für Druckerinstallation ######
                 try
                 {
-                    xmlD.loadFile("DEVICES.XML");
+                    XmlNode xnPrinters2 = doc.SelectSingleNode("/settings/eintrag/printers");
+
+                    foreach (XmlNode printer in xnPrinters2.ChildNodes)
+                    {
+                        System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p " + printer.Attributes["path"].InnerText + printer.Attributes["name"].InnerText);
+                    }
                 }
-                catch (Exception e)
+
+                catch (Exception err)
                 {
-                    MessageBox.Show(e.Message, "Error: ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    System.Environment.Exit(0);
+                    MessageBox.Show(this, "Fehler: " + err.Message, "Installieren des Druckers nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-
-
-                if (env == "RZ")
-                {
-                    try
-                    {
-                        anz = Convert.ToInt32(xmlD.getAttribute("/env/RZ/printer", "param"));
-
-                        for (int i = 1; i <= anz; i++)
-                        {
-                            System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p \"\\\\pub-ps01.public.ads.uni-freiburg.de\\" + xmlD.getAttribute("/env/RZ/printer/printer" + Convert.ToString(i) + "/name", "param"));
-                        }
-                    }
-                    catch (Exception err)
-                    {
-                        MessageBox.Show(this, "Fehler: " + err.Message, "Installieren des Druckers nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                else if (env == "UB")
-                {
-                    try
-                    {
-                        anz = Convert.ToInt32(xmlD.getAttribute("/env/UB/printer", "param"));
-
-                        for (int i = 1; i <= anz; i++)
-                        {
-                            System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p \"\\\\pub-ps01.public.ads.uni-freiburg.de\\" + xmlD.getAttribute("/env/UB/printer/printer" + Convert.ToString(i) + "/name", "param"));
-                        }
-                    }
-
-                    catch (Exception err)
-                    {
-                        MessageBox.Show(this, "Fehler: " + err.Message, "Installieren des Druckers nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
-                }
-                else if (env == "CHEMIE")
-                {
-                    try
-                    {
-                        anz = Convert.ToInt32(xmlD.getAttribute("/env/CHEMIE/printer", "param"));
-
-                        for (int i = 1; i <= anz; i++)
-                        {
-                            System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p \"\\\\pub-ps01.public.ads.uni-freiburg.de\\" + xmlD.getAttribute("/env/CHEMIE/printer/printer" + Convert.ToString(i) + "/name", "param"));
-                        }
-                    }
-                    catch (Exception err)
-                    {
-                        MessageBox.Show(this, "Fehler: " + err.Message, "Installieren des Druckers nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                else { }
 
 
                 //#################################################################
@@ -346,7 +291,7 @@ namespace AccountValue
                 createDesktopLinks("Gemeinsames Laufwerk L", "l:\\");
             }
 
-            
+
             //#################################################################
             // Drucker-Kontostand
             getAccountInformation();
@@ -356,7 +301,7 @@ namespace AccountValue
         //#####################################################################
         private void getAccountInformation()
         {
-            
+
             if (firsttime)
             {
                 String navigateTo = "https://myaccount.uni-freiburg.de/uadmin/pa?uid=" + textBox1.Text + "&pwd=" + maskedTextBox1.Text;
@@ -372,7 +317,7 @@ namespace AccountValue
                 //timer1.Enabled = true;
                 timer2.Enabled = true;
             }
-             
+
         }
 
 
@@ -394,14 +339,14 @@ namespace AccountValue
 
                 if (change_resolution)
                 {
-                     x = Convert.ToInt32(resolution_x);
-                     y = Convert.ToInt32(resolution_y);
+                    x = Convert.ToInt32(resolution_x);
+                    y = Convert.ToInt32(resolution_y);
                 }
                 else
                 {
                     Screen screen = Screen.PrimaryScreen;
-                     x = screen.Bounds.Width;
-                     y = screen.Bounds.Height;
+                    x = screen.Bounds.Width;
+                    y = screen.Bounds.Height;
 
                 }
 
@@ -413,7 +358,7 @@ namespace AccountValue
 
                 f2.DesktopLocation = location;
 
-                
+
                 f2.Show();
 
                 //Weils so schön war gleich nochmal ;-))
@@ -553,8 +498,8 @@ namespace AccountValue
             {
                 f2.label5.Text = "Homelaufwerk nicht eingebunden.";
             }
-            }
+        }
 
-        
+
     }
 }

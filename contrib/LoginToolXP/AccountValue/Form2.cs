@@ -7,7 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using SHDocVw;
 using System.Runtime.InteropServices;
-using TL.XML;
+using System.Xml;
 
 
 
@@ -32,7 +32,7 @@ namespace AccountValue
         private String version = "0.3";
         Form1 f1;
         private String home;
-        tlxml xml = new tlxml();
+        XmlDocument doc = new XmlDocument();
 
 
 
@@ -54,8 +54,9 @@ namespace AccountValue
 
             try
             {
-                xml.loadFile("B:\\CONFIG.XML");
-                home = xml.getAttribute("/settings/eintrag/home", "param");
+                doc.Load("B:\\CONFIG.XML");
+                XmlNode xnHome = doc.SelectSingleNode("/settings/eintrag/home");
+                home = xnHome.Attributes["param"].InnerText;
             }
             catch { }
 
