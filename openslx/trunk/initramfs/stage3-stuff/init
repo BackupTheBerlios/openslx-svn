@@ -311,6 +311,10 @@ $0\n# deprecated: please use rootfs=nfs://...\nnfsroot=\"${nfsroot}\"\n" \
 done
 
 runinithook '05-have-kernelvars'
+# fixme: not the proper way to set this variable, needed due to wrapper
+# script switching (avoid slx-init crashes because of faulty init-hook
+# scripts)
+[ -e /tmp/bootsplash ] && D_SPLASHY=splashy.stop
 
 # at this point a timer should be started to ensure an automated reboot
 # or halt of the machine if SLX init does not succeed (e.g. missing kernel
