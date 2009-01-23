@@ -25,6 +25,18 @@
 #define _LINUX_PRIO_TREE_H
 #include <linux/fs.h>
 
+#ifndef PATH_MAX
+#ifdef _POSIX_VERSION
+#define PATH_MAX _POSIX_PATH_MAX
+#else
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#else
+#define PATH_MAX 1024
+#endif
+#endif
+#endif
+
 /**
  * @defgroup libhdBUSint Bus scanning code
  * @ingroup libhdInternals
@@ -2563,9 +2575,10 @@ char *hd_read_sysfs_link(char *base_dir, char *link_name)
 
   str_printf(&s, 0, "%s/%s", base_dir, link_name);
 
-  free_mem(buf);
-  buf = canonicalize_file_name(s);
-
+  // fix for segfault 
+  //free_mem(buf);
+  char foo[PATH_MAX];
+  buf = realpath(s,foo);
   free_mem(s);
 
   return buf;

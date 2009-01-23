@@ -15,8 +15,10 @@
   #define DBUS_API_SUBJECT_TO_CHANGE 1
 #endif
 
+#ifndef NODEP
 #include <dbus/dbus.h>
 #include <hal/libhal.h>
+#endif
 
 #include "hd.h"
 #include "hd_int.h"
@@ -95,6 +97,7 @@ void hd_scan_hal_basic(hd_data_t *hd_data)
 
 void read_hal(hd_data_t *hd_data)
 {
+#ifndef NODEP
   DBusError error;
   DBusConnection *conn;
   LibHalContext *hal_ctx;
@@ -220,8 +223,8 @@ void read_hal(hd_data_t *hd_data)
   dbus_connection_unref(conn);
 
   dbus_error_free(&error);
+#endif
 }
-
 
 void link_hal_tree(hd_data_t *hd_data)
 {

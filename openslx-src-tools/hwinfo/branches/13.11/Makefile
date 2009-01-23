@@ -4,11 +4,11 @@ TARGETS		= hwinfo hwinfo.pc
 CLEANFILES	= hwinfo hwinfo.pc hwinfo.static hwscan hwscan.static hwscand hwscanqueue doc/libhd doc/*~
 LIBDIR		= /usr/lib
 ULIBDIR		= $(LIBDIR)
-LIBS		= -lhd
-SLIBS		= -lhd -ldbus-1 -lhal
-TLIBS		= -lhd_tiny -ldbus-1 -lhal
-SO_LIBS		= -ldbus-1 -lhal
-TSO_LIBS	= -ldbus-1 -lhal
+LIBS		= -Wall -ggdb -lhd
+SLIBS		= -lhd 
+TLIBS		= -lhd_tiny
+SO_LIBS		=
+TSO_LIBS	= 
 
 export SO_LIBS
 
