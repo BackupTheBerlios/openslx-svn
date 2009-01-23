@@ -1,5 +1,5 @@
-# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2003..2006 - RZ Uni Freiburg
+# Copyright (c) 2006..2008 - OpenSLX GmbH
 #
 # This program/file is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -12,13 +12,34 @@
 # Configuration script for general Ubuntu to configure OpenSLX linux
 # stateless clients (executed within initial ramdisk after genconfig) 
 
+# distro specific configuration variables used in the setup functions
+# (formerly done via config-*, these variables are disputable ...)
+# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using 
+# bind mounts
+# D_DIRINBINDMNT - lists of directories to be created in bind mounted rw part
+# of the client filesystem
+# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# TempFS usage
+# D_DIRINDXS - directories in client filesystem which should be present anyhow
+D_ETCEXCL="etc/gconf/*\n*.old\n*-\netc/autoinstall\nlogrotate*\nbootloader\n\
+*~\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
+X11/xdm/pixmaps\ndhclient.script"
+D_BINDMPTS="tmp root home media"
+D_DIRINBINDMNT="/var/run /var/log /var/tmp /var/lib/gdm"
+D_RODIRSINRW="/etc/X11/xkb /var/lib/gconf /var/lib/dpkg /var/lib/aspell \
+/var/lib/pango /var/lib/defoma /var/cache/fontconfig"
+#D_RWDIRSINRO="/var/lib/gdm"
+D_DIRINDXS="/var/X11R6/compose-cache \
+/var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
+/var/lib/pam_devperm /var/lib/bluetooth \
+/var/lib/texmf /var/lib/nfs/sm \
+/var/lib/misc /var/lib/acpi /var/spool/cron \
+/var/lock/subsys/sysconfig"
+
 # empty functions are defined at the beginning of /etc/functions
 
 # distro specific stuff to initialize
 preinit () {
-  [ $DEBUGLEVEL -ge 1 ] && echo "Creating dhcp user"
-  echo "dhcp:x:101:">>/etc/group
-  echo "dhcp:x:101:101::/nonexistent:/bin/false" >>/etc/passwd
   # load unix module to provide sockets (is compiled into kernel on
   # the live CDs!?)
   modprobe ${MODPRV} unix 2>/dev/null || error "$df_errumod" nonfatal
@@ -26,30 +47,12 @@ preinit () {
   modprobe ${MODPRV} fbcon 2>/dev/null || error "$df_errumod" nonfatal
 }
 
-# overwrite settings set by hwautocfg, pathes will change for newer
-# Xorg version 7.X
-displayvars (){
-Files=' \t 	  FontPath\t\t       "/usr/share/X11/fonts/misc"\n
-\t        FontPath\t\t    "/usr/share/X11/fonts/100dpi/:unscaled"\n
-\t        FontPath\t\t    "/usr/share/X11/fonts/75dpi/:unscaled"\n
-\t        FontPath\t\t    "/usr/share/X11/fonts/Type1"\n
-\t        FontPath\t\t    "/usr/share/X11/fonts/100dpi"\n
-\t        FontPath\t\t    "/usr/share/X11/fonts/75dpi"\n
-'
-Module=' \t        Load\t	    "i2c"\n
-\t        Load\t	    "bitmap"\n
-\t        Load\t	    "ddc"\n
-\t        Load\t	    "dri"\n
-\t        Load\t	    "extmod"\n
-\t        Load\t	    "freetype"\n
-\t        Load\t	    "glx"\n
-\t        Load\t	    "int10"\n
-\t        Load\t	    "type1"\n
-\t        Load\t	    "vbe"\n'
-synapticsdrv=""
-}
 # distro specific function called from servconfig script
 config_distro () {
+  # clean the runlevel directories which will be populated by the stage3 setup
+  for dir in rc0.d rc1.d rc2.d rc3.d rc4.d rc5.d rc6.d rcS.d ; do
+    rm -rf /mnt/etc/${dir}/*
+  done
   # add the halt link to the 0 and 6 runlevel directories
   ln -sf ../init.d/halt /mnt/etc/rc0.d/S90halt
   ln -sf ../init.d/reboot /mnt/etc/rc6.d/S90reboot
@@ -57,8 +60,29 @@ config_distro () {
   # remove annoying udev rule set for changing eth interface
   rm /mnt/etc/udev/rules.d/*persistent-net.rules >/dev/null 2>&1
 
-  # set default runlevel
-  sed -e "s/.*initdefault/id:${D_INITDEFAULT}:initdefault/" -i /mnt/etc/inittab
+  # inittab is obsolete with the change to upstart in ubuntu 7.10, but to 
+  # prevent missunderstandings with the blank inittab created by openslx init
+  # we'll write a comment.. 
+  echo "# inittab is obsolete with the change to upstart from ubuntu 7.10" \
+    > /mnt/etc/inittab
+
+  # fix getty bug
+  # (console login on tty1 is started too early)
+  sed -i "s/start on runlevel 2/start on stopped rc2/" /mnt/etc/event.d/tty1
+}
+
+# initial (boot time) runlevel scripts
+initial_boot () {
+local count=10
+# boot.slx is a special runlevel script generated within initialramfs which
+# should be executed before the normal runlevel scripts. Proper shutdown is
+# not needed!?
+for i in boot.slx mountkernfs.sh keyboard-setup mountdevsubfs.sh procps.sh \
+bootlogd hwclock.sh sudo console-setup $D_SPLASHY; do
+  count=$(($count + 1))
+  [ $DEBUGLEVEL -ge 2 ] && echo "boot-runlevelscript $i"
+  ln -sf /etc/init.d/$i /mnt/etc/rcS.d/S${count}$i
+done
 }
 
 # linking runlevel scripts
@@ -84,6 +108,15 @@ for i in rc2.d/K$stop$script rc3.d/K$stop$script \
 done
 }
 
+# set up localization like keytable, console
+dlocale () {
+# fixme -- use keytable setup script here
+# echo -e "\t# entries added by $0: $date" >> /mnt/etc/init.d/boot.slx
+sed "s/LANG.*/LANG=\"${LANG}\"/" -i /mnt/etc/default/locale
+#echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
+#  >>/mnt/etc/init.d/boot.slx
+}
+
 # group of functions for the normal runlevels - first parameter is start
 # second stop
 # function for ntp configuration
@@ -106,7 +139,7 @@ if [ "x$start_atd" = "xyes" ]; then
 fi
 }
 
-# function for configuration of cron services
+# function for configuration of cron services (fixme: to be moved to a plugin?)
 config_cron () {
 if [ "x$start_cron" = "xyes" ] ; then
   if [ -f /mnt/etc/init.d/cron ] ; then
@@ -123,7 +156,7 @@ if [ "x$start_cron" = "xyes" ] ; then
 fi
 }
 
-# syslog service
+# syslog service (available as a plugin, to be deleted here)
 config_syslog () {
 if [ "x$start_syslog" != "xno" ] ; then
 # fixme, welcher Syslog wird verwendet?
@@ -135,7 +168,7 @@ if [ "x$start_syslog" != "xno" ] ; then
 #       echo -e "*.*;*.*;*.*;*kern.!*\t@$logserver" >>/mnt/etc/syslog.conf
 #  done
 #else syslog-ng
-#  if [ -f /mnt/etc/${D_INITDIR}/syslog ] ; then
+#  if [ -f /mnt/etc/init.d/syslog ] ; then
 #    # logoutput depending on $start_syslog definitions
 #    sysngwriter /mnt/etc/syslog-ng/syslog-ng.conf
   rllinker "sysklogd" 2 18
@@ -168,18 +201,6 @@ if [ "x$start_snmp" = "xyes" ] ; then
   fi
 }
 
-# set up keytable (function run in hwautocfg)
-keytable () {
-# fixme -- use keytable setup script here
-:
-}
-
-# consolefont
-consolefont () {
-echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
-  >>/mnt/etc/${D_INITDIR}/boot.slx
-}
-
 # acpi and powersave
 config_acpi () {
   rllinker "acpid" 10 19
@@ -192,11 +213,14 @@ config_acpi () {
   rllinker "udev" 11 25
 }
 
-# configure hal, dbus, resmgr and services like that
+# configure hal, dbus, policykitd and services like that
 config_dreshal () {
 if [ "x$start_dreshal" = "xyes" ]; then
   testmkd /mnt/var/lib/dbus
-  rllinker "dbus" 17 20 
+  rllinker "dbus" 17 20
+
+  testmkd /mnt/var/lib/PolicyKit root:polkituser 1770
+  testmkd /mnt/var/lib/PolicyKit-public root:polkituser
 fi
 }
 
@@ -209,17 +233,17 @@ local name="$2"
 local info="$3"
 case "$switch" in
   init)
-    echo -e "#!/bin/sh\n# skeleton of /etc/${D_INITDIR}/$name written \
+    echo -e "#!/bin/sh\n# skeleton of /etc/init.d/$name written \
 from $0\n# after you applied changes to the creation scripts you have to \
 rerun\n# the mkdxsinitrd script to get them applied\n\n\
-. /lib/lsb/init-functions\n" >/mnt/etc/${D_INITDIR}/$name
+. /lib/lsb/init-functions\n" >/mnt/etc/init.d/$name
     echo -e "\n\ncase \"\$1\" in\n    start)\n\tlog_begin_msg \"$info\"" \
-      >>/mnt/etc/${D_INITDIR}/$name
-    chmod u+x /mnt/etc/${D_INITDIR}/$name
+      >>/mnt/etc/init.d/$name
+    chmod u+x /mnt/etc/init.d/$name
   ;;
   close)
     echo -e "\tlog_end_msg 0\n\t;;\n    stop)\n\t;;\nesac\nexit 0" \
-      >>/mnt/etc/${D_INITDIR}/$name
+      >>/mnt/etc/init.d/$name
   ;;
 esac
 }
@@ -227,25 +251,9 @@ esac
 # configure automounter
 config_automount () {
 if [ -f /mnt/etc/init.d/autofs ] ; then
-  testmkd /var/lock/subsys
-  echo -e "# /etc/auto.master - file generated by $0:\n\
-/misc\t/etc/auto.misc" >/mnt/etc/auto.master
-  echo -e "# /etc/auto.misc - file generated by $0:\n" \
-    > /mnt/etc/auto.misc
-  if [ -n "${automnt_src}" ] ; then
-    # local directory and home directory server from machine-setup
-    [ -z "${automnt_dir}" ] && automnt_dir="/home"
-    strinstr "/" "${automnt_dir}" && error "$df_erratpld" nonfatal
-    automnt_dir=${automnt_dir#/}
-    echo -e "/home\t/etc/auto.${automnt_dir}\n" >> /mnt/etc/auto.master
-    echo -e "# /etc/auto.${automnt_dir} created by $0:\n" \
-      > /mnt/etc/auto.${automnt_dir}
-    echo -e "*\t-rsize=32768,wsize=32768,tcp,rw\t${automnt_src}/&" \
-      >> /mnt/etc/auto.${automnt_dir}
-  fi
-  sed -e "1i# /etc/${D_SYSCONFDIR}/autofs - file modified by\n#\t$0:\n#" \
-      -e "s,AUTOFS_OPTIONS.*,AUTOFS_OPTIONS=\"--timeout 3\"," \
-      -i /mnt/etc/${D_SYSCONFDIR}/autofs
+  testmkd /mnt/var/lock/subsys
+  sed -e "1i# /etc/${default}/autofs - file modified by\n#\t$0:\n#" \
+      -e "s,TIMEOUT.*,TIMEOUT=60," -i /mnt/etc/default/autofs
   config_portmap
   rllinker "autofs" 12 4
 fi
@@ -257,12 +265,12 @@ if [ "x$start_nfsv4" = "xyes" ]; then
   testmkd /mnt/var/lib/nfs/sm
   sed -e "s,NEED_IDMAPD=.*,NEED_IDMAPD=\"yes\"," \
       -e "s,NEED_GSSD=.*,NEED_GSSD=\"yes\"," \
-      -i /mnt/etc/${D_SYSCONFDIR}/nfs-common
+      -i /mnt/etc/${default}/nfs-common
   echo -e "rpc_pipefs\t/var/lib/nfs/rpc_pipefs rpc_pipefs defaults\t 0 0\n\
 nfsd\t\t/proc/fs/nfsd\tnfsd\t\tdefaults\t 0 0" >>/tmp/fstab
 echo -e "\t# stuff needed for nfsv4\n\tmount -t rpc_pipefs rpc_pipefs \
 /var/lib/nfs/rpc_pipefs\n\tmount -t nfsd nfsd /proc/fs/nfsd" \
->>/mnt/etc/${D_INITDIR}/boot.slx
+>>/mnt/etc/init.d/boot.slx
   # portmap is required for any NFS
   config_portmap
   rllinker "nfs-common" 10 8

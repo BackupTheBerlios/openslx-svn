@@ -1,5 +1,5 @@
-# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2003..2006 - RZ Uni Freiburg
+# Copyright (c) 2006..2007 - OpenSLX GmbH
 #
 # This program/file is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -9,27 +9,9 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# Configuration script for Ubuntu 7.04 to configure OpenSLX linux stateless
+# Configuration script for Ubuntu 8.04 configure OpenSLX linux stateless
 # clients (merged in stage2 with ubuntu/functions-default - and loaded within
 # initial ramfs - stage3) It may overwrite settings from the default config
 # file (/etc/functions)
 
-# distro specific function called from servconfig script
-config_distro () {
-  # add the halt link to the 0 and 6 runlevel directories
-  ln -sf ../init.d/halt /mnt/etc/rc0.d/S90halt
-  ln -sf ../init.d/reboot /mnt/etc/rc6.d/S90reboot
-  
-  # remove annoying udev rule set for changing eth interface
-  rm /mnt/etc/udev/rules.d/*persistent-net.rules >/dev/null 2>&1
-
-  # inittab is obsolete with the change to upstart in ubuntu 7.10, but to 
-  # prevent missunderstandings with the blank inittab created by openslx init
-  # we'll write a comment.. 
-  echo "# inittab is obsolete with the change to upstart in ubuntu 7.10" > /mnt/etc/inittab
-
-  # fix getty bug
-  # (console login on tty1 is started too early)
-  sed -i "s/start on runlevel 2/start on stopped rc2/" /mnt/etc/event.d/tty1
-}
-
+# no changes from default

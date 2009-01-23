@@ -1,0 +1,10 @@
+/* GNU ld script
+   Since Gentoo has critical dynamic libraries
+   in /lib, and the static versions in /usr/lib,
+   we need to have a "fake" dynamic lib in /usr/lib,
+   otherwise we run into linking problems.
+
+   See bug http://bugs.gentoo.org/4411 for more info.
+ */
+OUTPUT_FORMAT ( elf32-i386 )
+GROUP ( /lib/libcurses.so )

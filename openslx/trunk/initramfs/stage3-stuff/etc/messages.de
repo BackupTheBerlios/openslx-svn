@@ -1,0 +1,216 @@
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006 - 2008 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org
+#
+# Messages file for all error and info messages generated during client
+# bootup (within initialramfs) for OpenSLX linux diskless clients version 4
+# this file could be used for localization of error messages 
+
+# messages from (slx) init / Fehlermeldungen des SLX init
+init_errmsg="  ,,functions''-Datei beinhaltet viele Funktionen \
+der SLX Skripte. Ohne diese\n  wird das Init-Skript nicht funktionieren."
+init_mff="  Die Haupt $init_errmsg"
+init_dff="  Die Distro $init_errmsg"
+init_sscf="  Die SLX Konfigurations-Variablen wurden nicht gefunden. 
+Bitte stellen Sie die\n  SLX Konfigurations-Datei zur Verfuegung."
+init_noeth="  Konnte die Netzwerk-Schnittstelle nicht konfigurieren (eth0).\
+ Bitte pruefen,\n  ob das geeignete kernel-Modul vorhanden ist."
+init_errip="  Konnte die Grund-Funktionalitaet nicht einrichten, \
+da keine IP-Konfigurationen\n  vorhanden sind. Sie koennten diese \
+Informationen ueber die Kernel-Command-Line\n  durch die Einstellung \
+'ipappend 1' in pxelinux.cfg/* oder ldap\n  aktivieren. Sie werden durch \
+Token ('ldap')  in den Kernel Start Optionen\n  eingeschaltet."
+init_errldap="  Konnte nicht wenigstens die Grund-Funktionalitaet einrichten, \
+da keine IP-Konfigurationen\n  vorhanden sind. Achtung - ldap arbeitet nur in \
+Kombination mit IPAPPEND (PXE)\n  o.ae. oder DHCP!"
+init_errnwad="  Konnte die Netzwerk-Adapter, die durch den slx/mkramfs bzw. \
+mkdxsinitrd-Aufruf definiert\n  wurden, nicht laden. Bitte erneut aufrufen \
+und die passenden Module auflisten\n  (ohne Endung .ko)."
+init_nowlan="  Kein brauchbares WLAN-Interface gefunden. Wurden alle \
+notwendigen Kernel-\n  module ins InirRamFS eingebaut?"
+init_wlanf="  Das WLAN Interface konnte nicht konfiguriert werden."
+init_bootmac="  Es scheint mehr als eine Ethernet-Karte installiert und die \
+passenden\n  Kernel-Module geladen zu sein. Das kann fuer Probleme sorgen, da \
+evtl.\n  die nicht verbundene Netzwerkkarte als das erste Interface konfiguriert\
+ \n  wurde. Durch die Uebergabe der MAC Adresse des Bootdevices (IPAPPEND=3 in
+der PXElinux-Konfiguration) laesst sich dieses vermeiden."
+init_nveth="  Ihr System benutzt anscheinend eine NVidia-Netzwerkkarte. Hier \
+kann es\n  vorkommen, dass die MAC-Adresse nicht korrekt eingestellt wird. \
+Dieses laesst\n  sich durch die Uebergabe der MAC Adresse des Bootdevices \ 
+(IPAPPEND=3 in der PXElinux-Konfiguration) vermeiden."
+init_errdhcp="  Keine komplette IP-Konfiguration ueber DHCP bekommen. \
+Eventuell sollten Sie\n ueber die Kernel Start Optionen eine Hersteller Code \
+ID (vendor code identifier)\n  (VCI=vci) hinzufuegen."
+init_erripcfg="  Bis zu diesem Zeitpunkt konnte keine (gueltige) IP.\
+Konfiguration beschafft\n  werden. Die Maschine kann funktionieren, wenn \
+lokale Konfiguration per\n  Datei moeglich ist."
+init_errbld="  Konnte nicht das Modul ${NBD}.ko laden. Es wird gebraucht, \
+wenn Sie vorhaben, das\n  Netzwerk Block Geraet (network block device) (D)NBD \
+fuer den Klienten als Wurzel-Dateisystem zu verwenden."
+init_nbdcl="  Konnte den Network Block Geraete-Dienst nicht starten und damit \
+das Wurzel-Dateisystem\n  nicht einhaengen."
+init_nbddev="  Aus irgendeinem Grund ist /dev/${NBD}0 nie erschienen. Sie \
+sollten ihr udev-System\n  nach Listen von statischen Geraeten untersuchen."
+init_dnbd2s="  Nach 100 Versuchen konnte das dnbd2 Blockdevice keinen laufenden \
+Server finden.\n  Bitte ueberpruefen Sie die Erreichbarkeit."
+init_moddir="  Das angeforderte Modul-Verzeichnis existiert nicht. Das koennte \
+bedeuten:\n  * Der Kernel wurde ausgetauscht/erneuert ohne einen neuen Aufruf \
+von slxmkramfs oder\n  mkdxsinitrd.\n  * Das eingehaengte Dateisystem \
+beinhaltet das Modul-Verzeichnis ueberhaupt nicht.\n    Sie sollten die Liste \
+der eingehaengten Dateisysteme pruefen und wenn /mnt\n    nicht leer ist, \
+'ls /mnt/lib/modules' ausfuehren."
+init_loadunions="  Stapeln mehrerer Verzeichnisse nicht moeglich, da kein \
+UnionFS/AUFS\n  Modul geladen ist."
+init_loadaufs="  Laden von AUFS schlug fehl - entweder das Modul ist \
+nicht vorhanden, oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese \
+Meldung nicht sehen\n  wollen, entfernen Sie das Token 'aufs' von den Kernel \
+Start Optionen."
+init_noaufs_butufs="  AUFS wurde als Unification FS angegeben, ist jedoch nicht \
+vorhanden. UnionFS\n  steht aber scheinbar zu Verfuegung. Wenn Sie dieses nutzen \
+moechten fuegen\n  Sie bitte 'unionfs' zu den Kernel Start Optionen hinzu."
+init_noufs_butaufs="  UnionFS wurde als Unification FS angegeben, ist jedoch \
+nicht vorhanden. AUFS\n  steht aber scheinbar zu Verfuegung. Wenn Sie dieses nutzen \
+moechten fuegen Sie\n  bitte 'aufs' zu den Kernel Start Optionen hinzu."
+init_loadcow="  Laden von Copy On Write (COW - Spezielles Block Geraet) Modul \
+schlug fehl -\n  entweder das Modul nicht praesent oder es passt nicht zum \
+laufenden\n Kernel. Wenn Sie diese Meldung nicht sehen wollen, entfernen sie \
+das Token 'cowloop' aus den Kernel Start Optionen."
+init_loadufs="  Laden von UnionFS schlug fehl - entweder das Modul ist \
+nicht vorhanden, oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese Meldung \
+nicht sehen wollen,\n  entfernen Sie das Token 'unionfs' von den Kernel Start \
+Optionen."
+init_cownonbd="  Laden des COW-Moduls ist sinnlos, wenn kein Netzwerk Block \
+Geraet benutzt wird oder\n  UnionFS als Lese- Schreib-Schicht spezifiziert \
+wurde. Entfernen Sie das UnionFS Token aus\n  den Kernel-Start-Optionen wenn \
+'cowloop' stattdessen verwendet werden soll."
+init_nfs="  Einhaengen des Wurzel Dateisystems ueber NFS wurde angefordert \
+durch die Kernel Start Optionen,\n  aber schlug fehl. Die folgenden Gruende \
+koennten verantwortlich sein:\n\
+  * Kein nfs.ko (und weitere dafuer benoetigte) Modul konnte geladen werden und \
+keine NFS Unterstuetzung war im\n  laufenden Kernel vorhanden - siehe \
+Fehlermeldungen darueber.\n\
+  * Sie versuchten, einen falschen Pfad einzuhaengen ($nfsroot).\n\
+  * Kein NFS-Server laeuft oder Sie haben nicht die Zugriffsberechtigungen auf \
+diesen."
+init_ldcfg="  Starte ldconfig - normalerweise ausgeschaltet. Wird mit der Kernel \
+Start Option\n  'noldsc' aktiviert. Eventuell sollten Sie zusaetzliche \
+Bibliothekspfade\n  zur ld.so.conf hinzufuegen."
+init_errlog="  Konnte die Log-Datei Konfiguration nicht anlegen in \
+/etc/${D_SYSCONFDIR}. Das\n  koennte auf schwerwiegende Fehler hindeuten."
+init_fstab="Das Erzeugen von /etc/fstab im Wurzel-Dateisystem des Clients \
+schlug fehl.\n  Die Abwesenheit dieser Datei koennte unvorhergesehenes Verhalten \
+der mount-Befehle\n  verursachen."
+init_errldcfg="  Aus irgendeinem Grund konnte die Erstellung von ld.so.cache \
+nicht rechtzeitig fertiggestellt\n  werden."
+init_infldcfg="  Sie entschieden sich, die Datei /etc/ld.so.cache nicht neu \
+zu erstellen. Das koennte Fehler verursachen\n  wenn Bibliotheken installiert \
+werden nachdem diese Datei auf dem Server erstellt wurde."
+init_errlfg="  Die ConfTGZ Quelle war ein lokales Device, welches nicht korrekt \
+eingebunden werden\n  konnte. Entweder wurde das falsche Device/Partition \
+angegeben oder das\n  Dateisystem ist dem Kernel nicht bekannt."
+init_errcfg="des Clients nicht rechtzeitig beendet\n  Sie sollten die Prozess \
+Liste pruefen und die Module, die bis zum jetzigen Zeitpunkt geladen wurden."
+init_errhw="  Aus irgendeinem Grund wurde die Hardware Auto-Konfiguration \
+$init_errcfg"
+init_errsw="  Aus irgendeinem Grund wurde die Software Konfiguration  $init_errcfg"
+init_wait="  Wartete $i Schlaege das Kernel Modul Verzeichnis auszuhaengen ..."
+init_errumnt="  Das Kernel Modul Verzeichnis auszuhaengen \
+scheiterte aus irgendeinem Grund. Sind einige\n  ,,modprobe'' noch aktiv!?"
+init_erritab="  Die Datei /etc/inittab existiert nicht oder \
+ist keine regulaere. \nSie wird fuer den Boot-Process benoetigt."
+init_errsys="  Aushaengen des Kernel /sys Verzeichnisses schlug aus irgendeinem \
+Grund\n  fehl. Sie werden einige Fehlermeldungen bekommen,\
+\ndass einige Dateien nicht entfernt werden konnten."
+init_runinit="  Konnte switch_root/run-init nicht ausfuehren, wegen fehlender \
+Befehle\n  oder falsch angegebenen Parametern."
+init_picfg="  Das Plugin-Konfigurationsverzeichnis fehlt. Dieses könnte an einem \
+fehlgeschlagenen\n  holen der Client-Konfiguration liegen, weil entweder die \
+Datei nicht auf\n  dem Server verfuegbar ist oder der Transport nicht klappte."
+
+# messages from functions
+error_msg="Ein Fehler trat auf waehrend der Ausfuehrung des $0 Skripts:\n\n"
+error_nfe="\n  -> Dieser Fehler ist nicht schwerwiegend - setze fort ...\n"
+error_shell="\n  -> Fuehre Shell aus zum Debuggen ...\n"
+error_modload="Es schlug fehl, folgendes Modul zu laden:"
+error_modnfs="gebraucht zum einhaengen des Wurzel Dateisystems"
+error_nodhcp="  Sie versuchten ihr System mittels DHCP einzurichten, es wurde \
+aber kein brauchbarer DHCP\n  Client gefunden. Bitte pruefen Sie, ob sie einen \
+der folgenden Clients\n  installiert haben: dhclient dhcpcd pump udhcpc."
+error_dhcp="  Die folgenden Probleme koennten den Fehler verursachen:\n\
+  * Das af_packet.ko Modul ist weder geladen noch praesent im Kernel.\n\
+  * Kein Netzwerk Geraet ist praesent - weder ein passendes Modul\n\
+    wurde geladen noch ist praesent im laufenden Kernel.\n  Sie sollten \
+'lsmod' ausfuehren."
+error_dhclient="  Schwerer Fehler aufgetreten beim Aufrufen von dhclient.\n\
+$error_dhcp"
+error_ldapcfg="  Die Konfiguration via ldap ist noch nicht implementiert."
+error_errdcfg="  Bis jetzt noch keine Konfigurationsdaten bekommen via dhcp .."
+error_errfcfg="  Bis jetzt noch keine Konfigurationsdaten bekommen via tftp ..."
+error_errlcfg="  Bis jetzt noch keine Konfigurationsdaten bekommen via ldap ..."
+unpack_ConfTGZ="  Fehler beim entpacken des ConfTGZ.\nSind Sie sicher, dass es im \
+richtigen Format ist?"
+
+
+# messages from distro functions
+df_errumod="    Das Laden des \"unix\" Moduls schlug fehl. \nWahrscheinlich \
+werden Probleme bei der Hardware-Erkennung auftreten."
+df_errserv="ist entweder nicht installiert oder das Start-Skript ist nicht \
+verfuegbar.\n  Deswegen macht der Start des Dienstes keinen Sinn. Bitte \
+deaktivieren Sie den Start\n  oder installieren Sie die benoetigten Dateien."
+df_errcron="  Das cron Start-Skript $df_errserv" 
+df_errsysl="  Das syslog Start-Skript $df_errserv"
+df_errsshd="  Das sshd Start-Skript $df_errserv"
+df_erryp="  Der NIS-Klient $df_errserv"
+df_erramnt="  Der Automounter $df_errserv"
+df_errnsc="  Der Name Service Zwischenspeicherungs Daemon $df_errserv\n  \
+Dieser Dienst koennte nuetzlich sein, um Daten von einem ldap Benutzer-\
+Verzeichnis zu bekommen."
+df_errafsd="  Kein AFS Verzeichnis erreichbar"
+df_errafsn="  Der AFS-Client Dienst ist nicht verfuegbar"
+df_errkbd="  Keine nicht-englische Tastatur und/oder Konsolenunterstuetzung \
+installiert.\n  Falls gewuenscht/benoetigt diese im Stage1 nachinstallieren!"
+
+# messages from servconfig
+scfg_nfs="  Das Einhaengen einer NFS Quelle schlug fehl..."
+scfg_ntptz="  Die Zeitzonen-Datei wurde nicht gefunden (gebraucht fuer die \
+NTP-Zeit Dienst Konfiguration)."
+scfg_evmlm="  Das Einbinden der lokalen Festplatte(npartition) des VMware-\
+Image-Verzeichnisses\n  schlug fehl."
+scfg_vmdir="  Aus irgendeinem Grund kann das runvmware Skript nicht \
+verfuegbar zu kopieren.\n  Das koennte das Ergebnis eines fehlgeschlagenen \
+Mount-Versuchs sein\n   oder die Datei fehlt auf dem Server."
+scfg_vmchs="  Das Auswahltool/menu fuer Virtuelle Machinen ist nicht im \
+~/templates\n  Verzeichnis vorhanden. Deshalb wurde kein Default KDM Menu \
+Eintrag erzeugt."
+scfg_erradir="  Es wird nur eine Verzeichnis-Ebene erlaubt, den Automounter \
+zu installieren und das\n  Verzeichnis sollte existieren (auf dem \
+Server-Export) oder sollte anlegbar sein\n  (z.B. durch UnionFS beschreibbares \
+Wurzel-Verzeichnis)."
+scfg_erratpld="  Nur Verzeichnisse hoechster Ebene \
+als Einhaenge-Punkte fuer home\n  Verzeichnisse. Bitte setzen Sie die \
+Variable \${automnt_dir} entsprechend in\n  der machine-setup Datei."
+scfg_country="  Keine Konfiguration fuer die Lokalisierung gefunden in der \
+Konfigurations-Datei. Benutzer\n  Standard Laender-Einstellung \
+'${D_DEFAULTCOUNTRY}' definiert in $0."
+
+# messages from hwautocfg
+hcfg_hwsetup="  Die xserver-Konfigurations-Datei, erstellt von hwsetup, konnte \
+nicht\n  gefunden werden."
+gfx_msg="Bitte pruefen Sie ihre Grafik-Adapter-Einstellungen ($hw_graphic)."
+hw_msg="  Bitte pruefen Sie ihre vordefinierten Monitor-Einstellungen ($hw_monitor): \
+Automatische\n  Konfiguration des Bildschirms."
+hcfg_res="  $hwmsg Aufloesung wurde versucht aber nicht eingerichtet. Benutze \
+Standard-Aufloesungen (defined in xconfig)"
+hcfg_hwsetup="  Erwartete Informationen von hwsetup in \
+/tmp/hwsetup.info.\n  Teile des Systems koennen nicht eingerichtet werden. \
+Bitte pruefen, dass\n  hwsetup richtig installiert und ausfuehrbar ist."
+hcfg_keyb="  Keine Einstellungen fuer ihre Tastatur gefunden, verwende den \
+Standard-Wert '${XKEYBOARD}' definiert\n  in $0."
+

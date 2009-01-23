@@ -1,0 +1,185 @@
+#!/bin/ash
+# Copyright (c) 2003..2006 - RZ Uni Freiburg
+# Copyright (c) 2006..2008 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# Universal (distro independent) hardware autoconfiguration script for 
+# OpenSLX linux stateless clients, using SuSE hwinfo for configuration
+
+#############################################################################
+# pre part, load USB modules and start hardware detection pci
+base () {
+# avoid annoying error messages because of missing scripts
+for tool in /usr/sbin/acpidump \
+            /usr/bin/udevinfo \
+            /sbin/dmraid ; do
+              testmkd ${tool%/*}
+              echo -e "#!/bin/ash" >${tool}
+              chmod u+x ${tool}
+done
+# no kernel messages
+echo "0 0 0 0" >/proc/sys/kernel/printk
+modprobe ${MODPRV} usbhid &
+nwcardlist=$(echo ${slxconf_listnwmod}|sed "s/\ /|/g")
+hwinfo --netcard --usb-ctrl | grep modprobe | grep -E "$nwcardlist|hcd" | \
+  grep -v ehci | sed 's/.* Cmd: "//;s/"//' | sort -u >/etc/modprobe.base
+ash /etc/modprobe.base; mdev -s
+# optimization possible: exclude network and usb base drivers from the
+# following list (bios detection for non-hwautocfg component)
+( hwinfo --pci >/etc/hwinfo.data; hwinfo --bios >/etc/hwinfo.bios ) &
+return 0
+}
+
+#############################################################################
+# main part
+hwmain () {
+# activate the previously detected devices
+[ $DEBUGLEVEL -ge 2 ] || modloadbg=" >/dev/null 2>\&1"
+sed '/Driver Info #1/,/Config Status:/d' \
+  /etc/hwinfo.data | grep modprobe | sed "s|.* Cmd: \"||;s|\"|$modloadbg|" \
+    | sort -u >/etc/modprobe.pci
+ash /etc/modprobe.pci
+mdev -s
+
+# bluetooth setup (start it later if present, depends on firmware availa-
+# bility, interpreted by servconfig)
+#( hwinfo --bluetooth >/etc/hwinfo.bt ) &
+
+# load harddisk driver and check for harddisk
+( grep -q -E "IDE|SCSI" /etc/hwinfo.data && modprobe ${MODPRV} sd_mod
+  hwinfo --disk | sed -n "/Device File: /p" | sed "s|.*Device File: /dev/||" \
+    >/etc/hwinfo.disk; ) &
+[ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
+
+# load disk/optical high level drivers
+modprobe ${MODPRV} ide-cd
+modprobe ${MODPRV} sr_mod
+modprobe ${MODPRV} ide-floppy
+mdev -s
+
+# load kernel module for ps2 mice and map the mousehandler to /dev/input/mice
+( [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mouse/psmouse.ko ] && \
+    modprobe ${MODPRV} psmouse 
+  [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mousedev.ko ] && \
+    modprobe ${MODPRV} mousedev
+  testmkd /dev/input 
+  mknod /dev/input/mice c 13 63 2>/dev/null
+  hwinfo --mouse >/etc/hwinfo.mouse ) &
+
+# complete the audio configuration and load the dummy module if no audio
+# hardware is present in the machine
+grep -q -E "Audio|sound" /etc/hwinfo.data || modprobe snd-dummy
+modprobe ${MODPRV} snd-pcm-oss
+modprobe ${MODPRV} snd-mixer-oss
+
+[ $DEBUGLEVEL -eq 21 ] && echo "** finished most of module loading at $(sysup)"
+
+# get idea of availabe harddisk partitions, put swap partitions into
+# (/mnt)/etc/fstab and format and mount partitions of type 44 (unknown)
+[ $DEBUGLEVEL -eq 21 ] && echo "** starting hdd stuff at $(sysup)"
+waitfor /etc/hwinfo.disk 10000
+if [ -s /etc/hwinfo.disk ] ; then
+for hd in $(cat /etc/hwinfo.disk) ; do
+  fdisk -l /dev/$hd|sed -n "/^\/dev\//p" >/etc/disk.partition
+  for hdpartnr in $(cat /etc/disk.partition | \
+      sed -n -e "/ 82 /p"|sed -e "s/[[:space:]].*//") ; do
+    echo -e "$hdpartnr\tswap\t\tswap\t\tdefaults\t 0 0" >>/tmp/fstab
+  done
+  # we use special non assigned partition type (id44) for harddisk scratch 
+  # space, thus no normal filesystem will be incidentally deleted or
+  # corrupted
+  for hdpartnr in $(cat /etc/disk.partition | \
+        sed -n -e "/ 44 /p"|sed -e "s/[[:space:]].*//") ; do
+    # check for supported filesystem and formatter
+    ( if diskfm $hdpartnr ; then
+        echo "$hdpartnr is mounted to /mnt/tmp at $(sysup)" >/tmp/tmpready
+        echo -e "$hdpartnr\t/tmp\t\tauto\t\tdefaults\t 0 0" >>/tmp/fstab
+      else
+        echo "formatting failed for some reason ($(sysup))" >/tmp/tmpready
+      fi ) &
+    part44=yes
+    break
+  done
+  # put detected linux partitions into /etc/fstab with "noauto"
+  for hdpartnr in $(cat /etc/disk.partition | \
+        sed -n -e "/ 83 /p"|sed -e "s/[[:space:]].*//") ; do
+    mkdir -p /mnt/media/${hdpartnr#/dev/*} 2>/dev/null
+    echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
+noexec\t 0 0" >>/tmp/fstab
+  done 
+done
+# determine if tmp preparation should wait for format/mount or not
+[ -z "$part44" ] && echo "finished at $(sysup)" >/tmp/tmpready
+else
+  echo "no disk found ( $(sysup) )" >/tmp/tmpready
+fi
+[ $DEBUGLEVEL -eq 21 ] && echo "** finished hdd stuff at $(sysup)"
+
+# scanner setup (fixme: to be checked)
+hwinfo --scanner >/etc/hwinfo.scanner
+[ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
+  >>/mnt/etc/udev/rules.d/04-scanner.rules
+
+# if any new device appeared up to now
+mdev -s
+return 0
+}
+
+#############################################################################
+# cleanup/finishing part
+finish () {
+# remove unneeded disk and mouse drivers
+[ ! -s /etc/hwinfo.disk ] && rmmod sd_mod 2>/dev/null
+grep -q -i "/dev/psaux" || rmmod psmouse 2>/dev/null
+# more sophistication possible :)
+return 0
+}
+
+#############################################################################
+# main script starts here
+
+# functions common for all distros
+. /etc/functions
+# functions common for all distros, messages contains all error and
+# info output
+. /etc/messages
+# load distro specific configuration variables and functions. distro
+# specific functions may overwrite functions defined in /etc/functions
+. /etc/distro-functions
+# source general slx settings
+. /etc/slxsystem.conf
+
+# script run timer
+[ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
+  echo "** HW $1 setup started at $(sysup)"
+
+# heavy debugging output in level 3 and above and specific for 11
+[ $DEBUGLEVEL -gt 3 -a $DEBUGLEVEL -lt 8 -o $DEBUGLEVEL -eq 11 ] && \
+  set -x
+
+case $1 in
+  # pre initialization: loading USB base and network adaptor modules,
+  # detection of other pci bus modules
+  base)
+    base
+  ;;
+  # main part of hardware setup including Xorg
+  main)
+    hwmain
+    # main script run timer or debug information
+    [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
+      echo "** HW setup finished at $(sysup)"
+    echo "hwsetup finished at $(sysup)" >/tmp/hwcfg
+  ;;
+  # remove unneeded kernel modules
+  finish)
+    finish
+  ;;
+esac

@@ -1,0 +1,205 @@
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006 - 2008 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org
+#
+# Messages file for all error and info messages generated during client
+# bootup (within initialramfs) for OpenSLX linux diskless clients version 4
+# this file could be used for localization of error messages 
+
+# messages from (slx) init
+init_errmsg="The functions file contains a lot of slx scripts \
+functionality. Without this\ninit script will not run."
+init_mff="The main $init_errmsg"
+init_dff="The distro $init_errmsg"
+init_sscf="The slx configuration variables could not be found. Please
+provide the slxconfig file."
+init_noeth="  Unable to configure the ethernet device (eth0). Please check \
+for an\n  appropriate kernel module."
+init_errip="  Unable to setup at \
+least basic functionality, because no IP configuration\n  available. You \
+might pass that information via kernel command line\n  through setting of \
+'ipappend 1' in pxelinux.cfg/* or just enable dhcp\n  or ldap. They are \
+enabled via tokens ('ldap' or 'dhcp') in kernel\n  command line."
+init_errldap="  Unable to setup at \
+least basic functionality, because no IP configuration\n  available. Please \
+beware - ldap works only in combination of either\n  ipappend or similar or \
+with dhcp!"
+init_errnwad="  Failed to load the network \
+adaptor modules defined via mkdxsinitrd\n  run. Please rerun and list the \
+appropriate modules (without .ko)."
+init_nowlan="  No wireless LAN capable interface found. Did you provide the \
+proper kernel\n  modules?"
+init_wlanf="  Unable to configure the WLAN interface."
+init_bootmac="  If you have more than one ethernet adaptor present in your \
+machine or using\n  a NVidia chipset then it would be advisable to switch on \
+passing of the\n  boot MAC address via kernel commandline (IPAPPEND=3) in \
+your PXElinux\n  configuration."
+init_nveth="  Your system uses a NVidia ethernet chip which might to fail to \
+get the\n  original MAC address assigned. Use IPAPPEND=3 in your PXElinux \  configuration\n  to get the boot MAC address passed on."
+init_errdhcp="  Did not get complete IP \
+configuration via DHCP. You may want to add\n  a vendor code identifier \
+via kernel commandline (vci=VCI)."
+init_erripcfg="  Up to now no IP configuration is available. If there is any \
+local file config\n  the system may work locally."
+init_errbld="  Failed to load \
+module ${NBD}.ko. It is needed if you intend to use\n  network block \
+device (D)NBD for the client as root filesystem."
+init_nbdcl="  Failed to start the network block device client. Unable to \
+mount root\n  filesystem."
+init_nbddev="  For some reason the network block device /dev/${NBD}0 never \
+appeared.\n  You might want to check udev or your list of static device \
+files."
+init_dnbd2s="  After 100 retries, it was not possible to start the dnbd2 \
+service. Please\n  check that at least one server is available. You might \
+use the\n  /sys/block/vnbd0 interface for this."
+init_moddir="  The requested modules directory does not exist. That could \
+mean:\n  * The kernel was updated but mkdxsinitrd was not run afterwards.\n\
+  * The mounted filesystem does not contain the modules directory at all.\n\
+  You might want to check the list of mounted filesystems and if /mnt is\n\
+  not empty run 'ls /mnt/lib/modules' to check."
+init_loadaufs="  Loading of AUFS failed - Either the module is not present or \
+does \n  not match the running kernel. If you do not want to see this \
+\n  message remove the token 'aufs' from kernel command line."
+init_noaufs_butufs=" AUFS was chosen as Unification FS but is not available. \
+However UnionFS seems to be available. To put it to use append 'unionfs' to the \
+kernel command line."
+init_noufs_butaufs=" UnionFS was chosen as Unification FS but is not available. \
+However\n  AUFS seems to be available. To put it to use append 'aufs' to the\n  \
+kernel command line."
+init_loadufs="  Loading of UnionFS failed - Either the module is not present or \
+does \n  not match the running kernel. If you do not want to see this message\
+\n  remove the token 'unionfs' from kernel command line."
+init_loadunions="  Stacking of directories failed, because UnionFS/AUFS is not \
+loaded."
+init_loadcow="  Loading of Copy On Write (COW - special block device) module \
+failed -\n  Either module is not present or module does not match the \
+running\n  kernel. If you do not want to see this message remove the token \
+'cowloop' from kernel command line."
+init_cownobld="  Loading of cow module is of no sense if no network/other block \
+device is used or\n  UnionFS/AUFS was specified as read write layer too. Remove \
+UnionFS/AUFS token from\n  kernel commandline if cowloop should be used instead."
+init_nfs="  Mount of root filesystem via NFS was requested via kernel command \
+line\nbut failed. There might be the following reasons for that:\n\
+* No nfs.ko module could be loaded and no NFS support was present in the\n\
+running kernel - see error messages above\n\
+* You tried to mount from wrong server or path ($nfsroot)\n\
+* No NFS server is running or you do not have permissions"
+init_ldcfg="  Starting ldconfig - normally switched off. Enable it via kernel \
+cmdline option\n  'noldsc'. You might have/want to add additional library \
+pathes to the\n  ld.so.conf file."
+init_errlog="  Unable to create the logfile configuration in \
+/etc/${D_SYSCONFDIR}. That\n  might indicate some severe error."
+init_fstab="  Failed to create /etc/fstab in the clients root filesystem. The\n\
+  noexistence of the file might produce some unexpected behaviour of\n\
+  mount commands."
+init_errldcfg="  For some reason the generation of ld.so.cache did not \
+finish in time."
+init_infldcfg="  You decided not to recreate \
+/etc/ld.so.cache file. That might cause errors\n  if libraries are installed \
+after this file was created on server."
+init_errlfg="  The ConfTGZ filesource was some local device which was not \
+mounted successfully.\n  Either the wrong device was given or the filesystem \
+is not known to the kernel."
+init_errcfg="of this client did not finish in\n  time. You might check the \
+process list and list the modules loaded until\n  now."
+init_errhw="  For some reason the hardware autoconfig $init_errcfg"
+init_errxorg="  For some reason no xorg.conf appeared, check xconfig!" 
+init_errsw="  For some reason the software configuration  $init_errcfg"
+init_wait="  Waited $ticks ticks to unmount kernel module directory ..."
+init_errumnt="  Unmount of the kernel modules directory \
+failed for some reason. Some\n  modprobe still active!?"
+init_erritab="  The file /etc/inittab does not exist or is no regular one. It \
+is needed\n  for the bootup procedure to follow. If upstart is used instead no \
+inittab\n  is needed any more, but a proper configured events.d."
+init_errsys="  Unmount of the kernel sys directory \
+failed for some\nreason.  You will get some error messages that some files \
+could not be\n  removed."
+init_runinit="  Could not execute \
+run-init due to missing command or wrong\n  parameters given."
+init_picfg="  The plugin configuration directory is missing. This could be due \
+to failed\n  config get process at the beginning of stage3 setup. Either \
+requested\n  configuration file is missing in ~/client-config/<system> or a \
+general\n  transmission error."
+
+# messages from functions
+error_msg="An error occured during execution of $0 script:\n\n"
+error_nfe="\n  -> This error is not fatal - continuing ...\n"
+error_shell="\n  -> Running shell for debugging purposes now ...\n"
+error_modload="Failed to load module "
+error_modnfs="needed for mounting rootfs"
+error_nodhcp="  You tried to configure system via dhcp, but no usable dhcp\n\
+  client could be found. Please check that you have some client from\n\
+  the following list installed: dhclient dhcpcd pump ipconfig."
+error_dhcp="  The following problems could produce that error:\n\
+  * The af_packet.ko module is either not loaded nor present in kernel.\n\
+  * No network device is present - either no module matching the hardware\n\
+    was loaded nor present in kernel.\n  You might want to run 'lsmod'."
+error_dhclient="  Fatal error occured while trying to run dhclient.\n\
+$error_dhcp"
+error_ldapcfg="  The configuration via ldap is not implemented yet."
+error_errdcfg="  Did not get any configuration data via dhcp until now ..."
+error_errfcfg="  Did not get any configuration data via tftp until now ..."
+error_errlcfg="  Did not get any configuration data via ldap until now ..."
+unpack_ConfTGZ="  Error during unpacking of the ConfTGZ archive.\nAre you sure \
+it is in proper format?"
+
+
+# messages from distro functions
+df_errumod="    Failed to load the \"unix\" module. Problems with Hardware \
+detection\nwill probably arise."
+df_errserv="seems not to be installed or start script is\n  not available\
+so requesting the start of service make no sense. Please\n  disable service\
+or install the files/packages needed."
+df_errcron="  The cron start script $df_errserv" 
+df_errsysl="  The syslog start script $df_errserv"
+df_errsshd="  The sshd start script $df_errserv"
+df_erryp="  The NIS client $df_errserv"
+df_erramnt="  Automounter $df_errserv"
+df_errnsc="  Name Service caching deamon $df_errserv\n This service might \
+be useful to take load from a ldap user directory."
+df_errafsd="  No afs directory present."
+df_errafsn="  AFS client service is not available."
+df_errkbd="  No non-english keyboard and console settings are installed. \
+Please add\n  them to your stage1 to have them enabled."
+
+# messages from servconfig
+scfg_nfs="  Mount of some NFS source failed ..."
+scfg_ntptz="  No such timezone data file (needed for ntp time service \
+configuration)."
+scfg_evmlm="  Mounting of local device source for vmware directory failed \
+for some reason."
+scfg_vmdir="  For some reason the runvmware script is not available for \
+copying. That\n  could be the result of failed mount or simply missing \
+file on\n  server."
+scfg_vmchs="  The virtual machines lister/chooser is not available from \
+~/templates\n  directory. Thus no default k/gdm menu entry is created."
+scfg_erradir="  Only one directory level is allowed to hook up automounter \
+to and the\n  directory should exist (on the servers export) or should be \
+creatable\n  (e.g. because of UnionFS writeable root directory)."
+scfg_erratpld="  Only toplevel directories \
+are allowed as mount points for user home\n  directories. Please set the \
+variable \${automnt_dir} appropriately in\n  machine-setup file."
+scfg_country="  No configuration for localization found in config file. \
+Using default\n  country setting '${D_DEFAULTCOUNTRY}' defined in $0."
+
+# messages from hwautocfg
+hcfg_hwsetup="  The X server configuration file generated by hwautocfg could \
+not\n  be found."
+gfx_msg="Please check your graphic adaptor settings ($hw_graphic)."
+hw_msg="  Please check your predefined monitor settings ($hw_monitor): \
+Automatic\n  configuration of display"
+hcfg_res="  $hwmsg resolution was attempted but not established. Using \
+default resolutions (defined in xconfig)"
+hcfg_hwsetup="  Expected information from hwsetup to appear in \
+/tmp/hwsetup.info.\n  Unable to configure parts of the systems hardware. \
+Please check that\n  hwsetup is properly installed and executable."
+hcfg_keyb="  No settings found for keyboard, using default of '${XKEYBOARD}' \
+defined\n  in $0."
+
