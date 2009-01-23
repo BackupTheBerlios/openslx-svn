@@ -92,7 +92,11 @@ sub installationPhase
     chmod 0755, "$pluginRepoPath/$file";
     }
     
-    #copyFile("$pluginBasePath/default.desktop", "/usr/share/xsessions/");
+    if( -e "/usr/share/xsessions/default.desktop" ) {
+        cp "/usr/share/xsessions/default.desktop" \
+        	"/usr/share/xsessions/default.desktop.backup");
+    }
+    copyFile("$pluginBasePath/default.desktop", "/usr/share/xsessions/");
 
     return;
 }

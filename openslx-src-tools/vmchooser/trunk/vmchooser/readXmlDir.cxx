@@ -14,6 +14,7 @@
 
 #include <boost/regex.hpp>
 
+#include <cstring>
 #include <vector>
 #include <iostream>
 

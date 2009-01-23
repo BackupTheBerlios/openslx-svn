@@ -109,7 +109,7 @@ void SWindow::cb_select()
 /**********************************************************
  * Put entries in a Linux-Session Group into Browser
  *********************************************************/
-void SWindow::set_lin_entries(DataEntry** ent, char* slxgroup)
+void SWindow::set_lin_entries(DataEntry** ent)
 {
   this->lin_ent = ent;
   lin_entgroup = (ItemGroup*) sel.add_group("LINUX DESKTOP", &sel);
@@ -120,15 +120,14 @@ void SWindow::set_lin_entries(DataEntry** ent, char* slxgroup)
   }
   map<string, DataEntry*>::iterator it= mapEntry.begin();
   for(;it!=mapEntry.end(); it++) {
-     if( it->second->pools.empty() || it->second->pools.find(slxgroup) != string::npos) {
-        Item* w= (Item*)sel.add_leaf(it->second->short_description.c_str() , lin_entgroup, (void*)it->second );
-        
-        xpmImage* xpm = new xpmImage(get_symbol(it->second));
-        ((Widget*) w)->image(xpm);
-        w->tooltip(it->second->description.c_str());
-        w->callback(&runImage, (void*)it->second);
-      }
-    }
+    Item* w= (Item*)sel.add_leaf(it->second->short_description.c_str() , lin_entgroup, (void*)it->second );
+       
+    xpmImage* xpm = new xpmImage(get_symbol(it->second));
+    ((Widget*) w)->image(xpm);
+    w->tooltip(it->second->description.c_str());
+    w->callback(&runImage, (void*)it->second);
+    
+  }
   lin_entgroup->end();
 }
 
@@ -136,23 +135,22 @@ void SWindow::set_lin_entries(DataEntry** ent, char* slxgroup)
 /**********************************************************
  * Put entries in a VMWARE-Session Group into Browser
  *********************************************************/
-void SWindow::set_entries(DataEntry** ent, char* slxgroup)
+void SWindow::set_entries(DataEntry** ent)
 {
   this->ent = ent;
   sort_entries();
   
   entgroup =  (ItemGroup*)sel.add_group("VMWARE SESSIONS", &sel);
   for (int i=0; ent[i] != NULL; i++)
-    {
-      if(ent[i]->pools.empty() || ent[i]->pools.find(slxgroup) != string::npos) {
-        Item* w= (Item*)sel.add_leaf(ent[i]->short_description.c_str(), entgroup, (void*)ent[i] );
+  {
+    Item* w= (Item*)sel.add_leaf(ent[i]->short_description.c_str(), entgroup, (void*)ent[i] );
         
-        xpmImage* xpm = new xpmImage(get_symbol(ent[i]));
-        ((Widget*) w)->image(xpm);
-        w->tooltip(ent[i]->description.c_str());
-        w->callback(&runImage, (void*)ent[i]);
-      }
-    }
+    xpmImage* xpm = new xpmImage(get_symbol(ent[i]));
+    ((Widget*) w)->image(xpm);
+    w->tooltip(ent[i]->description.c_str());
+    w->callback(&runImage, (void*)ent[i]);
+     
+  }
   entgroup->end();
   
 }

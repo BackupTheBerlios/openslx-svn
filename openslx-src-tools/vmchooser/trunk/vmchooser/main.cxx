@@ -25,7 +25,7 @@ using namespace fltk;
 int main(int argc, char** argv) {
   AnyOption* opt = new AnyOption();
   char* xmlpath = NULL;
-  char* slxgroup = NULL;
+  //char* slxgroup = NULL;
   char* lsesspath = NULL;
   int width=0, height=0;
   
@@ -67,16 +67,20 @@ int main(int argc, char** argv) {
     xmlpath = (char *) "/var/lib/vmware/vmconfigs/";
   }
   
-  /** SLX GROUP */
-  if(opt->getValue('g')!=NULL) {
-    slxgroup = opt->getValue('g');
-  }
-  if(opt->getValue("group")!= NULL) {
-    slxgroup = opt->getValue("group");
-  }
-  if (slxgroup == NULL) {
-    slxgroup = (char *) "default";
-  }
+  /** SLX GROUP - OBSOLETE */
+  /** NOW THE SLX GROUP SHOULD BE SET THROUGH THE PLUGIN OPTIONS */
+  //if(opt->getValue('g')!=NULL) {
+  //  slxgroup = opt->getValue('g');
+  //}
+  //
+  //if(opt->getValue("group")!= NULL) {
+  //  slxgroup = opt->getValue("group");
+  //}
+  //if (slxgroup == NULL) {
+  //  // there should be a generic way to handle these groups
+  //  slxgroup = (char *) "default";
+  //}
+  /** OBSOLETE */
   
   /** LINUX SESSION PATH */
   if(opt->getValue('l')!=NULL) {
@@ -130,10 +134,10 @@ int main(int argc, char** argv) {
   SWindow& win = *SWindow::getInstance(width, height);
   
   if(lsessions[0] != NULL) {
-    win.set_lin_entries(lsessions, slxgroup);
+    win.set_lin_entries(lsessions);
   }
   if (sessions[0] != NULL) {
-          win.set_entries(sessions, slxgroup);
+          win.set_entries(sessions);
   }
   
   //cout << win.pname << endl;

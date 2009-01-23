@@ -13,6 +13,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <cstring>
 
 #include "inc/DataEntry.h"
 #include "inc/functions.h"
