@@ -27,4 +27,19 @@ use OpenSLX::Basics;
 
 # TODO: implement!
 
+sub setupKDEHOME
+{
+    my $self     = shift;
+    my $path     = "/etc/profile.d/kde.sh";
+
+    my $script = unshiftHereDoc(<<'    End-of-Here');
+        export KDEHOME=".kde-$(kde-config -v | grep KDE | \
+            awk {'print $2'})-gentoo"
+    End-of-Here
+
+    spitFile($path, $script);
+
+    return;
+}
+
 1;
