@@ -187,6 +187,9 @@ supported."; \
 	tar --exclude=.svn -cp -C initramfs stage3-stuff/ | \
 	  tar -xp --strip-components 1 \
 	      -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs; \
+  tar --exclude=.svn -cp -C initramfs tools | \
+    tar -xp --strip-components 1 \
+        -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools; \
 	tar --exclude=.svn -cp -C initramfs distro-specs | \
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
 	tar --exclude=.svn -cp -C initramfs uclib-rootfs | \
@@ -201,8 +204,6 @@ supported."; \
     $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates/; \
   tar --exclude=.svn -cp -C installer/default_files tftpboot | \
     tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
-  cp -a tools/hwinfo/{bin,lib}/*h* \
-    $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools; \
   cp -pP tools/busybox{,.x86_64,.i586} \
     $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox/; \
   cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
