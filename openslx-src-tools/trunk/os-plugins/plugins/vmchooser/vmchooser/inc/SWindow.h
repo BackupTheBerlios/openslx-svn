@@ -44,6 +44,10 @@ private:
   DataEntry** lin_ent;
   
   
+  int width;
+  int height;
+  
+  
   
 
   /**

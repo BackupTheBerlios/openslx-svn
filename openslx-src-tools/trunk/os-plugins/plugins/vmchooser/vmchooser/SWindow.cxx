@@ -18,54 +18,21 @@ using namespace std;
 /********************************************************
  * default constructur for the main window
  * ----------------------------------------------------
- * if you want to set the size, call second ctor
- ********************************************************/
-// SWindow::SWindow(char* p):
-//       fltk::Window(fltk::USEDEFAULT,fltk::USEDEFAULT,500,550,p, true),
-//       go(160, 520, 320, 20, "Ausführen"),
-//       exit_btn(10, 520, 140, 20, "Abbrechen"),
-//       sel(10,10, 480, 500)
-// {
-//   border(false);
-//   go.callback(cb_return,this);
-//   sel.callback(cb_select, this);
-//   exit_btn.callback(cb_exit, this);
-//     
-//     // Array for width of Select-Columns 
-//     // (one Column for a lock-symbol)
-//   int widths[] = { 450, 20 };
-//   sel.column_widths(widths);
-//   resizable(sel);
-//   end();
-//     //sel.style(fltk::Browser::default_style);
-//   sel.indented(1);
-// };
-
-
-/********************************************************
- * second constructur for the main window
- * ----------------------------------------------------
  * if you want to use default sizes, call first ctor
  ********************************************************/
 SWindow::SWindow(int w, int h, char* p):
     fltk::Window(fltk::USEDEFAULT,fltk::USEDEFAULT,w,h,p, true),
-    go(w/3 + 10, h-30, (2*w)/3 - 10 , 30, "Ausführen"),
-    exit_btn(10, h-30, w/3 -10, 30, "Abbrechen"),
-    sel(10,10, w-20, h-40)
+    go(w/3 + 10, h-40, (2*w)/3 - 20 , 30, "START"),
+    exit_btn(10, h-40, w/3 -10, 30, "EXIT"),
+    sel(10,10, w-20, h-50)
 {
+  width = w;
+  height = h;
+  
   border(false);
   go.callback(cb_return,this);
   sel.callback(cb_select, this);
   exit_btn.callback(cb_exit, this);
-    
-    // Array for width of Select-Columns 
-    // (one Column for a lock-symbol)
-  
-//   int v = w-20;
-//   int widths[] = { (7*v)/8, v/8 };
-//   sel.column_widths(widths);
-//   resizable(sel);
-  end();
   
   Style* btn_style = new Style(*fltk::ReturnButton::default_style);
   Style* sel_style = new Style(*fltk::Browser::default_style);
@@ -87,6 +54,11 @@ SWindow::SWindow(int w, int h, char* p):
   exit_btn.style(btn_style);
   go.style(btn_style);
   sel.style(sel_style);
+  
+  const int widths[]   = { 2*((w-30)/3), (w-30)/3, -1, 0 };
+  sel.column_widths(widths);
+  
+  end();
 };
 
 
@@ -116,7 +88,7 @@ void SWindow::cb_select()
     {
       sel.set_item_opened(true);
     }
-  if( curr == sel.item() ) {
+  if( curr == sel.item() && curr != NULL ) {
     //Doubleclick
     cout << ((DataEntry*)curr->user_data())->short_description << endl;
     if(curr->user_data()) {
@@ -147,12 +119,10 @@ void SWindow::set_lin_entries(DataEntry** ent, char* slxgroup)
         
         xpmImage* xpm = new xpmImage(get_symbol(ent[i]));
         ((Widget*) w)->image(xpm);
-        xpm->setsize(100,100);
         w->tooltip(ent[i]->description.c_str());
         w->callback(&runImage, (void*)ent[i]);
       }
     }
-
   lin_entgroup->end();
 }
 
@@ -175,12 +145,10 @@ void SWindow::set_entries(DataEntry** ent, char* slxgroup)
         ((Widget*) w)->image(xpm);
         w->tooltip(ent[i]->description.c_str());
         w->callback(&runImage, (void*)ent[i]);
-        
-        xpm->setsize(100,100);
       }
     }
-
   entgroup->end();
+  
 }
 
 /**************************************************************
@@ -209,7 +177,8 @@ void SWindow::unfold_entries() {
   if(sel.item_is_parent() ) {
     sel.set_item_opened(true);
   }
-  sel.deselect();
+  sel.next_visible();
+  sel.select_only_this();
 }
 
 

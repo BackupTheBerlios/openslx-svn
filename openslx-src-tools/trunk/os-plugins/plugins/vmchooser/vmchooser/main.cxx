@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
       return 1;
     }
     height = atoi(size.substr(i+1).c_str());
-    width = atoi(size.substr(0, size.size()-i-1).c_str());
+    width = atoi(size.substr(0, size.size()-i).c_str());
   }
   
   delete opt;
@@ -129,10 +129,10 @@ int main(int argc, char** argv) {
   
   SWindow& win = *SWindow::getInstance(width, height);
   
-  if(lsessions != NULL) {
+  if(lsessions[0] != NULL) {
     win.set_lin_entries(lsessions, slxgroup);
   }
-  if (sessions != NULL) {
+  if (sessions[0] != NULL) {
           win.set_entries(sessions, slxgroup);
   }
   
