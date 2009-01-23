@@ -1,0 +1,72 @@
+#!/bin/bash
+# --------------------------------
+# /etc/init.d/x11vnc
+# --------------------------------
+
+if [ -f /etc/x11vnc/x11vnc.conf ]
+then
+  . /etc/x11vnc/x11vnc.conf
+fi
+
+# find xauthority file
+find_xauth () {
+  TIMEOUT=5
+  XPID=`pidof X`
+  XRUNNING=$?
+  while [ "$XRUNNING" -ne "0" -a "$TIMEOUT" -gt "0" ]
+  do
+    echo -n "."
+    sleep 1
+    let "TIMEOUT-=1"
+    XPID=`pidof X`
+    XRUNNING=$?
+  done
+  if [ "$XRUNNING" -eq "0" ]; then
+    XAUTHORITY=`ps ex|grep bin/X|sed -e "s/ /\n/g"|grep "^XAUTHORITY"|sed -e "s/XAUTHORITY=//"`
+  else
+    echo " .. FAILED (no running X found)"
+  fi
+}
+
+START_COMMAND="x11vnc"
+
+case "$1" in
+  start)
+    echo -n " * Loading x11vnc "
+
+    if [ ! -f /etc/x11vnc/passwd ]; then
+      echo " .. FAILED (/etc/x11vnc/passwd not found)"
+      echo "   Create it manualy and retry starting x11vnc"
+      exit -1;
+    fi
+
+    #su -c "$COMMAND" -l x11vnc &
+    if [ $X11VNC_X11 = 1 ]; then
+      find_xauth
+      START_COMMAND="$START_COMMAND -auth $XAUTHORITY $X11VNC_PARAMS"
+    else
+      START_COMMAND="$START_COMMAND $X11VNC_PARAMS"
+    fi
+    OUTPUT=`$START_COMMAND`
+    echo "$START_COMMAND" >>/var/log/x11vnc.debug
+    echo "$OUTPUT" >>/var/log/x11vnc.debug
+    echo " .. OK"
+  ;;
+  stop)
+    pid=`pidof x11vnc`
+    if [ -z "$pid" ]
+    then
+     echo " * x11vnc not running.."
+     exit -1;
+    else
+     kill -9 $pid
+     echo " * x11vnc stopped"
+    fi
+  
+  ;;
+  *)
+    echo "x11vnc startscript"
+    echo "Usage: $0 (start|stop)" 
+  ;;
+esac
+exit 0 
