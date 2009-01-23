@@ -323,7 +323,7 @@ local count=10
 # should be executed before the normal runlevel scripts. Proper shutdown is
 # not needed!?
 for i in boot.udev boot.proc boot.klog boot.loadmodules boot.slx boot.clock \
-boot.sysctl boot.ipconfig boot.swap $D_SPLASHY; do
+boot.sysctl boot.ipconfig boot.swap $D_SPLASHY kbd; do
   count=$(($count + 1))
   [ $DEBUGLEVEL -ge 2 ] && echo "boot-runlevelscript $i"
   ln -sf /etc/init.d/$i /mnt/etc/init.d/boot.d/S${count}$i
