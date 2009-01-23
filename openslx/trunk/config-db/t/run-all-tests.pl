@@ -23,7 +23,7 @@ $cmdlineConfig{'db-type'}      = $ENV{SLX_DB_TYPE}      = 'SQLite';
 
 openslxInit();
 
-$Test::Harness::Verbose = 1 if $openslxConfig{'verbose-level'};
+$Test::Harness::Verbose = 1 if $openslxConfig{'log-level'};
 
 # remove the test-db if it already exists 
 my $metaDB = OpenSLX::MetaDB::SQLite->new();

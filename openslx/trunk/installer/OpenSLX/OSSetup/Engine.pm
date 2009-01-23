@@ -720,7 +720,7 @@ sub _readDistroInfo
     }
 
     # dump distro-info, if asked for:
-    if ($openslxConfig{'verbose-level'} >= 2) {
+    if ($openslxConfig{'log-level'} >= 2) {
         my $repository = $self->{'distro-info'}->{repository};
         foreach my $r (sort keys %$repository) {
             vlog(2, "repository '$r':");

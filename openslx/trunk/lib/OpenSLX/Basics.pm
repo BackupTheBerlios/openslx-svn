@@ -87,10 +87,10 @@ I<slxsettings>-script, so please look there if you'd like to know more.
     'locale-charmap' => `locale charmap`,
     'base-path'      => $ENV{SLX_BASE_PATH} || '/opt/openslx',
     'config-path'    => $ENV{SLX_CONFIG_PATH} || '/etc/opt/openslx',
+    'log-level'      => $ENV{SLX_VERBOSE_LEVEL} || '0',
     'private-path'   => $ENV{SLX_PRIVATE_PATH} || '/var/opt/openslx',
     'public-path'    => $ENV{SLX_PUBLIC_PATH} || '/srv/openslx',
     'temp-path'      => $ENV{SLX_TEMP_PATH} || '/tmp',
-    'verbose-level'  => $ENV{SLX_VERBOSE_LEVEL} || '0',
 
     #
     # options useful during development only:
@@ -148,6 +148,9 @@ my %openslxCmdlineArgs = (
     # locale-charmap to use for I/O (iso-8859-1, utf-8, etc.)
     'locale-charmap=s' => \$cmdlineConfig{'locale-charmap'},
 
+    # level of logging verbosity (0-3)
+    'log-level=i' => \$cmdlineConfig{'log-level'},
+
     # file to write logging output to, defaults to STDERR
     'logfile=s' => \$cmdlineConfig{'locale'},
 
@@ -161,9 +164,6 @@ my %openslxCmdlineArgs = (
 
     # path to temporary data (used during demuxing)
     'temp-path=s' => \$cmdlineConfig{'temp-path'},
-
-    # level of logging verbosity (0-3)
-    'verbose-level=i' => \$cmdlineConfig{'verbose-level'},
 );
 
 # filehandle used for logging:
@@ -199,7 +199,7 @@ sub openslxInit
     my $configPath 
         = $cmdlineConfig{'config-path'} || $openslxConfig{'config-path'};
     my $sharePath = "$openslxConfig{'base-path'}/share";
-    my $verboseLevel = $cmdlineConfig{'verbose-level'} || 0;
+    my $verboseLevel = $cmdlineConfig{'log-level'} || 0;
     foreach my $f (
         "$sharePath/settings.default", 
         "$configPath/settings",
@@ -246,7 +246,7 @@ sub openslxInit
                 )
             );
     }
-    if ($openslxConfig{'verbose-level'} >= 2) {
+    if ($openslxConfig{'log-level'} >= 2) {
         foreach my $key (sort keys %openslxConfig) {
             my $val = $openslxConfig{$key} || '';
             vlog(2, "config-dump: $key = $val");
@@ -269,7 +269,7 @@ the given I<$level>.
 sub vlog
 {
     my $minLevel = shift;
-    return if $minLevel > $openslxConfig{'verbose-level'};
+    return if $minLevel > $openslxConfig{'log-level'};
     my $str = join("", '-' x $minLevel, @_);
     if (substr($str, -1, 1) ne "\n") {
         $str .= "\n";

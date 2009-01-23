@@ -246,11 +246,11 @@ slxsettings [options] [action ...]
       db-spec=<string>           full DBI-specification of database
       db-type=<string>           type of database to connect to
       locale=<string>            locale to use for translations
+      log-level=<int>            level of logging verbosity (0-3)
       logfile=<string>           file to write logging output to
       private-path=<string>      path to private data
       public-path=<string>       path to public (client-accesible) data
       temp-path=<string>         path to temporary data
-      verbose-level=<int>        level of logging verbosity (0-3)
 
 =head3 General Options
 
@@ -340,7 +340,7 @@ Sets path to temporary data.
 
 Default is $SLX_TEMP_PATH (usually F</tmp>.
 
-=item B<<     verbose-level=<int> >>
+=item B<<     log-level=<int> >>
 
 Sets the level of logging verbosity (0-3).
 Prints additional output for debugging. N is a number between 0 and 3. Level

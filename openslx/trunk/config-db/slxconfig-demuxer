@@ -310,7 +310,7 @@ sub writeAttributesToFile
     # will never again try to fiddle with machine-setup directly the
     # file-system. From now on the DB is the keeper of that info.
     spitFile($fileName, $content);
-    if ($openslxConfig{'verbose-level'} > 2) {
+    if ($openslxConfig{'log-level'} > 2) {
         vlog(0, "--- START OF $fileName ---");
         vlog(0, $content);
         vlog(0, "--- END OF $fileName --- ");
@@ -695,7 +695,7 @@ sub writePluginConfigurationsForSystem
         }
         my $fileName = "$pluginConfPath/${pluginName}.conf";
         spitFile($fileName, $content);
-        if ($openslxConfig{'verbose-level'} > 2) {
+        if ($openslxConfig{'log-level'} > 2) {
             vlog(0, "--- START OF $fileName ---");
             vlog(0, $content);
             vlog(0, "--- END OF $fileName --- ");
@@ -958,11 +958,11 @@ which can be used to overrule the OpenSLX settings:
     --db-spec=<string>         full DBI-specification of database
     --db-type=<string>         type of database to connect to
     --locale=<string>          locale to use for translations
+    --log-level=<int>          level of logging verbosity (0-3)
     --logfile=<string>         file to write logging output to
     --private-path=<string>    path to private data
     --public-path=<string>     path to public (client-accesible) data
     --temp-path=<string>       path to temporary data
-    --verbose-level=<int>      level of logging verbosity (0-3)
 
 Please refer to the C<slxsettings>-manpage for a more detailed description
 of these options.
