@@ -182,6 +182,7 @@ sub preInstallationPhase()
         # Todo: use a openslx copy function!
         system("cp -r $pkgpath $self->{pluginRepositoryPath}/packages");
     }
+
 }
 
 
@@ -224,7 +225,13 @@ sub installationPhase
     }
     if ($attrs->{'xserver::nvidia'} == 1) {
         copyFile("$pluginFilesPath/nvidia-install.sh", "$installationPath");
-        #system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/nvidia-install.sh");
+        system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/nvidia-install.sh");
+    }
+
+    if ($attrs->{'xserver::nvidia'} == 1 
+            || $attrs->{'xserver::ati'} == 1 ) {
+        copyFile("$pluginFilesPath/ubuntu-gfx-install.sh",
+                "$installationPath");
     }
 
     # Some plugins have to copy files from their plugin folder into the

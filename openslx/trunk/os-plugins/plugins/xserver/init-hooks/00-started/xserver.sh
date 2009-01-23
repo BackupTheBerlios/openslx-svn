@@ -5,4 +5,5 @@
 
 ( hwinfo --monitor >/etc/hwinfo.display; grep "Generic Monitor" \
     /etc/hwinfo.display >/dev/null 2>&1 && rm /etc/hwinfo.display ) &
+( hwinfo --gfxcard >/etc/hwinfo.gfxcard ) &
 

@@ -19,8 +19,6 @@ else
   KVER=$(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)
 fi
 
-bash
-
 
 aptitude download linux-restricted-modules-${KVER} > /dev/null 2&>1
 MODULE_DEB=$(ls linux-restricted-modules-*.deb | tail -n1)
@@ -29,6 +27,10 @@ dpkg-deb -x ${MODULE_DEB} ${TMP_FOLDER}/modules
 case ${TARGET} in
   ati)
     aptitude download xorg-driver-fglrx > /dev/null 2&>1
+    if [ $? -eq 1 ]; then
+      echo "Didn't get package xorg-driver-fglrx! Starting debug shell.."
+      bash
+    fi
     FGLRX_DEB=$(ls xorg-driver-fglrx_*.deb | tail -n1)
     # extract $DEB into folder "atiroot"
     dpkg-deb -x ${FGLRX_DEB} ${PLUGIN_FOLDER}/ati/atiroot/
@@ -42,7 +44,10 @@ case ${TARGET} in
   ;;
   nvidia)
     aptitude download nvidia-glx-new > /dev/null 2&>1
-    #oder
+    if [ $? -eq 1 ]; then
+      echo "Didn't get package nvidia-glx-new! Starting debug shell.."
+      bash
+    fi   #oder
     #aptitude download nvidia-glx
     # extract $DEB into folder "nvroot"
     NVIDIA_DEB=$(ls nvidia-glx*.deb | tail -n1)
@@ -65,4 +70,20 @@ esac
 popd > /dev/null #${TMP_FOLDER}
 
 rm -rf ${TMP_FOLDER}/modules
+
+
+#
+#
+# TODO: move following line to a more general location
+#
+#
+if [ "${TARGET}" = "ati" ];then 
+  ln -s ${PLUGIN_FOLDER}/ati/atiroot/usr/lib/dri/fglrx_dri.so \
+        /usr/lib/dri/fglrx_dri.so
+fi
+
+#if [ "${TARGET}" -eq "nvidia" ];then 
+#  ln -s ${PLUGIN_FOLDER}/nvidia/nvroot/usr/lib/dri/nvidia_dri.so \
+#        /usr/lib/dri/fglrx_dri.so
+#fi
 
