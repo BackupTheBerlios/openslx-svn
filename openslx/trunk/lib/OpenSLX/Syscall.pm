@@ -48,7 +48,7 @@ sub enter32BitPersonality
     _loadPerlHeader('linux/personality.ph', 'sys/personality.ph');
 
     syscall(&SYS_personality, PER_LINUX32()) != -1
-        or die _tr("unable to invoke syscall '%s'! ($!)", 'personality');
+        or warn _tr("unable to invoke syscall '%s'! ($!)", 'personality');
 
     return;
 }
