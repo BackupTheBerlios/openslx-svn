@@ -140,7 +140,6 @@ supported."; \
         -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/boot-env \
         -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox \
         -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs \
-        -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/preboot \
         -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates \
         -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools \
@@ -180,9 +179,7 @@ supported."; \
 	@ln -sf $(SLX_BASE_PATH)/bin/slx* $(SLX_BUILD_PATH)$(USR_BIN_PATH)/; \
 
 	@   # copy shareable data:
-	@tar --exclude=.svn -cp -C initramfs preboot | \
-	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
-	tar --exclude=.svn -cp -C initramfs stage3-stuff/ | \
+	@tar --exclude=.svn -cp -C initramfs stage3-stuff/ | \
 	  tar -xp --strip-components 1 \
 	      -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs; \
   tar --exclude=.svn -cp -C initramfs tools | \
