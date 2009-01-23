@@ -89,6 +89,9 @@ sub fillRunlevelScript
               echo "1" > /proc/sys/net/ipv4/conf/eth0/forwarding 2>/dev/null
               #iptables -A -s vmnet1 -d eth0
             fi
+            $location/vmnet-dhcpd -cf /etc/vmware/dhcpd-vmnet1.conf \\
+              -lf /var/run/vmware/dhcpd-vmnet1.leases \\
+              -pf /var/run/vmnet-dhcpd-vmnet1.pid vmnet1
           fi
         }
         # incomplete ...
@@ -104,14 +107,9 @@ sub fillRunlevelScript
             # /etc/vmware/vmnet-natd-8.mac simply contains a mac like 00:50:56:F1:30:50
             $location/vmnet-natd -d /var/run/vmnet-natd-8.pid \\
               -m /etc/vmware/vmnet-natd-8.mac -c /etc/vmware/nat.conf
-            dhcpif="\$dhcpif vmnet8"
-          fi
-        }
-        runvmdhcpd() {
-          if [ -n "\$dhcpif" ] ; then
-            # the path might be directly point to the plugin dir
-            $location/vmnet-dhcpd -cf /etc/vmware/dhcpd.conf -lf \\
-              /var/run/vmware/dhcpd.leases -pf /var/run/vmnet-dhcpd-vmnet8.pid \$dhcpif
+            $location/vmnet-dhcpd -cf /etc/vmware/dhcpd-vmnet8.conf \\
+              -lf /var/run/vmware/dhcpd-vmnet8.leases \\
+              -pf /var/run/vmnet-dhcpd-vmnet8.pid vmnet8
           fi
         }
         # load the helper stuff
@@ -128,7 +126,6 @@ sub fillRunlevelScript
             setup_vmnet0
             setup_vmnet1
             setup_vmnet8
-            runvmdhcpd
             rc_status -v
           ;;
           stop)

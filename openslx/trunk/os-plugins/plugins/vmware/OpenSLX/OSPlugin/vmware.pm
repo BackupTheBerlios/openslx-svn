@@ -41,7 +41,9 @@ sub getInfo
 
     return {
         description => unshiftHereDoc(<<'        End-of-Here'),
-            !!! descriptive text missing here !!!
+           Module for enabling services of VMware Inc. on an OpenSLX stateless
+           client. This plugin might use pre-existing installations of VMware
+           tools or install addional variants and versions.
         End-of-Here
         precedence => 70,
     };
@@ -337,7 +339,7 @@ sub _localInstallation
     if (-e "/usr/lib/vmware/bin/vmplayer") {
 
         ##
-        ## Get and write version informations
+        ## Get and write version information
 
         # get version information about installed vmplayer
         open(FH, "/usr/lib/vmware/bin/vmplayer");
@@ -368,11 +370,11 @@ sub _localInstallation
         ## Copy needed files
 
         # copy 'normal' needed files
-        my @files = qw( nvram.5.0);
+        my @files = qw(nvram.5.0);
         foreach my $file (@files) {
             copyFile("$pluginFilesPath/$file", "$installationPath");
         }
-        # copy depends on version and rename it to runvmware, safes one check in stage3
+        # copy depends on version and rename it to runvmware, saves one check in stage3
         if ($vmversion < "6") {
             print "\n\nDEBUG: player version $vmversion, we use -v1\n\n";
             copyFile("$pluginFilesPath/runvmware-player-v1", "$installationPath", "runvmware");
@@ -395,7 +397,7 @@ sub _localInstallation
         }
         
         ##
-        ## replacement with our, faster wrapper script
+        ## replacement with our faster wrapper script
         
         # rename the default vmplayer script and copy it. remove function takes
         # care about plugin remove. We only need this part if vmplayer

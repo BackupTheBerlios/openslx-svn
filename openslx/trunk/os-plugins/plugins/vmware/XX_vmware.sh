@@ -13,10 +13,8 @@
 #
 
 # TODO: nvram,functions
-# check if we really need locations and config if we create our own
-# vmware start script ...
-# to be decided where: Stage1 or here in Stage3 --> 
-#  write /etc/vmware/locations, /etc/vmware/config, /etc/init.d/vmware
+# write /etc/vmware/config (if a non-standard location of vmware basedir is
+# to be configured), /etc/init.d/vmware
 
 # check if the configuration file is available
 if [ -e /initramfs/plugin-conf/vmware.conf ]; then
@@ -56,24 +54,24 @@ stage3 setup" > /mnt/etc/vmware/slxvmconfig
     # write the common dhcpd.conf header for vmnet1,8
     if [ -n "$vmware_vmnet1" -o -n "$vmware_vmnet8" ] ; then
       # use the dns servers known to the vmware host
-      # TODO: to be checked!!
       local dnslist=$(echo "$domain_name_servers"|sed "s/ /,/g")
-      echo "# /etc/vmware/dhcpd.conf written in stage3 ..." \
-        > /mnt/etc/vmware/dhcpd.conf
+      echo "# Common dhcpd.conf header written in stage3 ..." \
+        > /mnt/etc/vmware/dhcpd-head.conf
       echo "allow unknown-clients;" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-head.conf
       echo "default-lease-time 1800;" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-head.conf
       echo "max-lease-time 7200;" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-head.conf
       echo "option domain-name-servers $dnslist;" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-head.conf
      echo "option domain-name \"vm.local\";" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-head.conf
     fi
 
     # variable might contain ",NAT" which is to be taken off
     if [ -n "$vmware_vmnet1" ] ; then
+      cp /mnt/etc/vmware/dhcpd-head.conf /mnt/etc/vmware/dhcpd-vmnet1.conf
       local vmnet1=${vmware_vmnet1%,*} # x.x.x.x/yy,NAT => 'x.x.x.x/yy'
       local vmnat=${vmware_vmnet1#$vmnet1*} # x.x.x.x/yy,NAT => ',NAT'
       local vmip=${vmnet1%/*} # x.x.x.x/yy => 'x.x.x.x'">
@@ -82,40 +80,41 @@ stage3 setup" > /mnt/etc/vmware/slxvmconfig
       echo -e "vmnet1=$vmnet1" >> /mnt/etc/vmware/slxvmconfig
       [ -n "$vmnat" ] && echo "vmnet1nat=true" >> /mnt/etc/vmware/slxvmconfig
       echo -e "\n# definition for virtual vmnet1 interface" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-vmnet1.conf
       echo -e "subnet $(ipcalc -n $vmnet1|sed s/.*=//) netmask \
 $(ipcalc -m $vmnet1|sed s/.*=//) {" \
-        >> /mnt/etc/vmware/dhcpd.conf 
+        >> /mnt/etc/vmware/dhcpd-vmnet1.conf 
       echo -e "\trange ${vmsub}.10 ${vmsub}.20;" \
-        >> /mnt/etc/vmware/dhcpd.conf 
+        >> /mnt/etc/vmware/dhcpd-vmnet1.conf 
       echo -e "\toption broadcast-address $(ipcalc -b $vmnet1|sed s/.*=//);" \
-        >> /mnt/etc/vmware/dhcpd.conf 
+        >> /mnt/etc/vmware/dhcpd-vmnet1.conf 
       echo -e "\toption routers $vmip;" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-vmnet1.conf
       echo -e "}" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-vmnet1.conf
       mknod /dev/vmnet1 c 119 1
     fi
 
     # vmware nat interface configuration
     if [ -n "$vmware_vmnet8" ] ; then
+      cp /mnt/etc/vmware/dhcpd-head.conf /mnt/etc/vmware/dhcpd-vmnet8.conf
       local vmip=${vmware_vmnet8%/*}
       local vmpx=${vmware_vmnet8#*/}
       local vmsub=$(echo $vmip |sed 's,\(.*\)\..*,\1,') # x.x.x.x => x.x.x">
       echo -e "vmnet8=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
       echo -e "\n# definition for virtual vmnet8 interface" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-vmnet8.conf
       echo -e "subnet $(ipcalc -n $vmip/$vmpx|sed s/.*=//) netmask \
 $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-vmnet8.conf
       echo -e "\trange ${vmsub}.10 ${vmsub}.20;" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-vmnet8.conf
       echo -e "\toption broadcast-address $(ipcalc -b $vmip/$vmpx|sed s/.*=//);" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-vmnet8.conf
       echo -e "\toption routers $vmip;" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-vmnet8.conf
       echo -e "}" \
-        >> /mnt/etc/vmware/dhcpd.conf
+        >> /mnt/etc/vmware/dhcpd-vmnet8.conf
       echo -e "# Linux NAT configuration file" \
         > /mnt/etc/vmware/nat.conf
       echo -e "[host]" \
@@ -148,13 +147,6 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     # vmware stuff first part: two scenarios
     # * VM images in /usr/share/vmware - then simply link
     # * VM images via additional mount (mount source NFS, NBD, ...)
-
-    # TODO: shouldn't that handled by the vmchooser plugin!?!
-    #       since we have the vmchooser plugin yes... => commented out
-    # map slxgrp to pool, so it's better to understand
-    #pool=${slxgrp}
-    # if we dont have slxgrp defined
-    #[ -z "${pool}" ] && pool="default"
 
     # get source of vmware image server (get type, server and path)
     if strinstr "/" "${vmware_imagesrc}" ; then
@@ -201,7 +193,8 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     done
 
     # make vmware dhcpd more silent
-    touch /mnt/var/run/vmware/dhcpd.leases
+    touch /mnt/var/run/vmware/dhcpd-vmnet1.leases \
+          /mnt/var/run/vmware/dhcpd-vmnet8.leases
 
     # create the needed devices which effects all vmware options
     # they are not created automatically via module load
@@ -237,16 +230,14 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
       >>/mnt/etc/${D_INITDIR}/boot.slx
 
-
     # TODO: perhaps we can a) kick out vmdir
     #            b) configure vmdir by plugin configuration
     # TODO: How to start it. See Wiki. Currently a) implemnted
     #   a) we get get information and start the programm with
-    #    /var/X11R6/bin/run-vmware.sh "$imagename" "$name_for_vmwindow" "$ostype_of_vm" "$kind_of_network"
+    #    /var/X11R6/bin/run-vmware.sh "$imagename" "$name_for_vmwindow" \
+    #       "$ostype_of_vm" "$kind_of_network"
     #   b) we write a wrapper and get the xml-file as attribute
-    # A) wait for answer of Bastian
 
-    ##
     ## Copy version depending files
     cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/runvmware \
         /mnt/var/X11R6/bin/run-vmware.sh
@@ -262,7 +253,6 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       chmod 644 /mnt/etc/vmware/config
     fi
 
-    
     [ $DEBUGLEVEL -gt 0 ] && echo "  *  done with 'vmware' os-plugin ..."
 
   fi
