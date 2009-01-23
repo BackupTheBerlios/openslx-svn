@@ -49,7 +49,7 @@ sub preSystemInstallationHook
     
     $self->SUPER::preSystemInstallationHook();
 
-    # fake required /dev-entries
+    # create required /dev-entries
     my %devInfo = (
         mem     => { type => 'c', major => '1', minor =>  '1' },
         null    => { type => 'c', major => '1', minor =>  '3' },
