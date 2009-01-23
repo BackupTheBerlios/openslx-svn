@@ -30,3 +30,11 @@ set | sed \
   -e "s,broadcast,broadcast_address,;s,dhc.*,,;/^$/d" \
   -e "s,nissrv,nis_servers,;s,nisdomain_name,nis_domain," \
   -e "s,wins,netbios_name_servers,;/OPTIND.*/d" >>/tmp/confviadhcp
+
+# erzeugen einer lokalen /etc/resolv.conf
+echo -e "search $domain\n" >/etc/resolv.conf
+test -n "$dns" && {
+  for name in $dns; do
+    echo nameserver $name >>/etc/resolv.conf;
+  done; }
+
