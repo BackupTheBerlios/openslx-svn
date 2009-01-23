@@ -39,6 +39,7 @@ sub setupXserverScript
         # suse specific extension to stage3 xserver.sh
         testmkd /mnt/var/X11R6/bin
         ln -s /usr/bin/Xorg /mnt/var/X11R6/bin/X
+        rm /mnt/etc/X11/xdm/SuSEconfig.xdm
         # relevant for older xservers only: check for kind of xorg module used
         # and patch the i8,9XX VGA BIOS if needed
         #if strinfile '"i810"' $xfc && [ -f /etc/hwinfo.display ] ; then
