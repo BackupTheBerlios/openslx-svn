@@ -118,7 +118,7 @@ typedef enum probe_feature {
   pr_bios_fb, pr_bios_mode, pr_input, pr_block_mods, pr_bios_vesa,
   pr_cpuemu_debug, pr_scsi_noserial, pr_wlan, pr_bios_crc, pr_hal,
   pr_bios_vram, pr_bios_acpi, pr_bios_ddc_ports_1, pr_bios_ddc_ports_2,
-  pr_bios_ddc_ports_3, pr_bios_ddc_ports_4, pr_modules_pata,
+  pr_bios_ddc_ports_3, pr_bios_ddc_ports_4, pr_modules_pata, pr_net_eeprom,
   pr_max, pr_lxrc, pr_default, 
   pr_all		/**< pr_all must be last */
 } hd_probe_feature_t;
@@ -294,7 +294,7 @@ typedef enum bus_types {
   /** outside the range of the PCI values */
   bus_ps2 = 0x80, bus_serial, bus_parallel, bus_floppy, bus_scsi, bus_ide, bus_usb,
   bus_adb, bus_raid, bus_sbus, bus_i2o, bus_vio, bus_ccw, bus_iucv, bus_ps3_system_bus,
-  bus_virtio
+  bus_virtio, bus_ibmebus
 } hd_bus_types_t;
 
 /** @} */
@@ -2465,13 +2465,16 @@ typedef struct s_hd_t {
     unsigned wlan:1;		/**< WLAN card */
     unsigned with_acpi:1;	/**< acpi works fine */
     unsigned hotpluggable:1;	/**< hotpluggable storage device */
+    unsigned dualport:1;	/**< OSA Express device with two ports (S/390) */
   } is;
 
   struct tag_s {		/**< this struct is for internal purposes only */
     unsigned remove:1;		/**< schedule for removal */
     unsigned freeit:1;		/**< for internal memory management */
     unsigned fixed:1;		/**< fixed, do no longer modify this entry */
-    unsigned ser_skip:1;	/**< if serial line, don't scan for devices */
+    unsigned skip_mouse:1;	/**< if serial line, don't scan for mice */
+    unsigned skip_modem:1;	/**< if serial line, don't scan for modems */
+    unsigned skip_braille:1;	/**< if serial line, don't scan for braille devices */
     unsigned ser_device:2;	/**< if != 0: info about attached serial device; see serial.c */
   } tag;
 

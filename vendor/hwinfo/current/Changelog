@@ -1,3 +1,64 @@
+11/12/2008:	v15.21
+	- add some more instructions to the x86 emulation (bnc #406804)
+
+24/11/2008:	v15.20
+	- more ibm displays (bnc #446699)
+
+21/11/2008:	v15.19
+	- updated pci ids from latest pciutils-ids
+
+21/11/2008:	v15.18
+	- another ibm display (bnc #446699)
+
+18/11/2008:	v15.17
+	- only avoid mouse/modem detection on usb->serial adapter (bnc #408715)
+
+18/11/2008:	v15.16
+	- map video memory for vbe calls (bnc #441802)
+
+17/11/2008:	v15.15
+	- fix wlan detection (bnc #441778)
+
+14/11/2008:	v15.14
+	- more display sizes (bnc #441796)
+
+7/11/2008:	v15.13
+	- ibm kiosk system display sizes (bnc #441796)
+
+5/11/2008:	v15.12
+	- fix ehea detection (bnc #436954)
+
+15/10/2008:	v15.11
+	- removed ancient refs to ide-generic (bnc #433105)
+
+8/10/2008:	v15.10
+        - s390: dual port OSA Express devices are not detectable; fixing
+          dualport flag to 1 (fate #304080)
+	- s390: adapt to change in sysfs symlink structure (bnc #431533)
+
+6/10/2008:	v15.9
+	- one more fingerprint sensor
+
+6/10/2008:	v15.8
+	- re-reverse hardware item lists (bnc #388754, #414717)
+	- new fingerprint readers (bnc #429533)
+
+26/9/2008:	v15.7
+	- dump network card eeprom to log (bnc #430170)
+
+26/9/2008:	v15.6
+	- s390: dual port OSA Express devices are not detectable; fixing
+	  dualport flag to 1 (fate #304080)
+
+22/9/2008:	v15.5
+	- s390: added dualport flag for OSA devices (currently unused until
+	  we know what devices support it; fate #304080)
+
+15/9/2008:	v15.4
+	- fix build on x86 with 2.6.67 kernel includes
+	- add inital POWER6 ibmebus support for ehea network (bnc#394602 -LTC44938)
+	- use udevadm instead of udevinfo
+
 22/7/2008:	v15.3
 	- fixed compiling on s390
 

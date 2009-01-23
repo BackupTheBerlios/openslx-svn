@@ -421,13 +421,6 @@
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# non-pci ide interface
-
- vendor.id		special 0x3000
-&device.id		special 0x1000
-+driver.module.modprobe	ide-generic
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # sbus cards
 
  vendor.id		special 0x4001
@@ -623,12 +616,6 @@
 &device.id		special 0x3004
 +device.name		MyriCOM MyriNET Gigabit Ethernet
 
-# IBM ehea
- vendor.id		special 0x6001
-&device.id		special 0x1003
-+driver.module.modprobe	ehea
-
-
 # UML veth
  vendor.id		special 0x6010
 +vendor.name		UML
@@ -742,10 +729,28 @@
 
  vendor.id		usb 0x0483
 &device.id		usb 0x2016
+|vendor.id		usb 0x0483
+&device.id		usb 0x2015
+|vendor.id		usb 0x08ff
+&device.id		usb 0x5501
+|vendor.id		usb 0x08ff
+&device.id		usb 0x1600
+|vendor.id		usb 0x1162
+&device.id		usb 0x0300
 |vendor.id		usb 0x08ff
 &device.id		usb 0x2580
 |vendor.id		usb 0x045e
+&device.id		usb 0x00bb
+|vendor.id		usb 0x045e
+&device.id		usb 0x00bc
+|vendor.id		usb 0x045e
 &device.id		usb 0x00bd
+|vendor.id		usb 0x045e
+&device.id		usb 0x00ca
+|vendor.id		usb 0x05ba
+&device.id		usb 0x0007
+|vendor.id		usb 0x05ba
+&device.id		usb 0x000a
 |vendor.id		usb 0x061a
 &device.id		usb 0x0110
 |vendor.id		usb 0x061a

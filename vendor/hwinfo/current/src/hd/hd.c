@@ -259,6 +259,7 @@ static struct s_pr_flags {
   { pr_isapnp_mod,    0,              4    , "isapnp.mod"    },
   { pr_isapnp,        0,                  0, "pnpdump"       },	/* alias for isapnp */
   { pr_net,           0,            8|4|2|1, "net"           },
+  { pr_net_eeprom,    0,                  0, "net.eeprom"    },
   { pr_floppy,        0,            8|4|2|1, "floppy"        },
   { pr_misc,          pr_bios,      8|4|2|1, "misc"          },	// ugly hack!
   { pr_misc_serial,   pr_misc,      8|4|2|1, "misc.serial"   },
@@ -1809,9 +1810,11 @@ void hd_scan(hd_data_t *hd_data)
     if(hd_probe_feature(hd_data, pr_cpuemu)) hd_data->flags.cpuemu = 1;
     if(hd_probe_feature(hd_data, pr_udev)) hd_data->flags.udev = 1;
     if(!hd_probe_feature(hd_data, pr_bios_crc)) hd_data->flags.nobioscrc = 1;
+    hd_set_probe_feature(hd_data, pr_bios_vram);
     if(hd_probe_feature(hd_data, pr_bios_vram)) hd_data->flags.biosvram = 1;
     hd_set_probe_feature(hd_data, pr_bios_acpi);
     hd_set_probe_feature(hd_data, pr_modules_pata);
+    hd_set_probe_feature(hd_data, pr_net_eeprom);
     hd_data->flags.pata = hd_probe_feature(hd_data, pr_modules_pata) ? 1 : 0;
   }
 
@@ -5692,7 +5695,8 @@ void read_udevinfo(hd_data_t *hd_data)
   hd_udevinfo_t **uip, *ui;
   char *s = NULL, buf[256];
 
-  udevinfo = read_file("| " PROG_UDEVINFO " -e 2>/dev/null", 0, 0);
+  udevinfo = read_file("| " PROG_UDEVADM " info -e 2>/dev/null", 0, 0);
+  if(!udevinfo) udevinfo = read_file("| " PROG_UDEVINFO " -e 2>/dev/null", 0, 0);
 
   ADD2LOG("-----  udevinfo -----\n");
   for(sl = udevinfo; sl; sl = sl->next) {
@@ -6048,6 +6052,7 @@ char *hd_sysfs_id(char *path)
 {
   if(!path || !*path) return NULL;
 
+  //fprintf(stderr, "hd_sysfs_id %s\n",path);
   return strchr(path + 1, '/');
 }
 
