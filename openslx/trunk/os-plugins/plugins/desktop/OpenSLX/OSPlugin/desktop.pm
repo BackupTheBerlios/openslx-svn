@@ -44,7 +44,7 @@ sub getInfo
         description => unshiftHereDoc(<<'        End-of-Here'),
             Sets a desktop and creates needed configs, theme can be set as well.
         End-of-Here
-        mustRunAfter => [],
+        precedence => 40,
     };
 }
 
@@ -62,16 +62,6 @@ sub getAttrInfo
             content_regex => qr{^(0|1)$},
             content_descr => '1 means active - 0 means inactive',
             default => '1',
-        },
-        'desktop::precedence' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                the execution precedence of the 'desktop' plugin
-            End-of-Here
-            content_regex => qr{^\d\d$},
-            content_descr => 'allowed range is from 01-99',
-            default => 40,
         },
         'desktop::manager' => {
             applies_to_systems => 1,
@@ -365,6 +355,7 @@ sub _ensureSensibleStage3Attrs
                 "no desktop kind is possible, plugin 'desktop' wouldn't work!"
             );
         }
+        print _tr("selecting %s as desktop kind\n", $desktops[0]);
         $self->{attrs}->{'desktop::kind'} = $desktops[0];
     }
 
@@ -378,6 +369,7 @@ sub _ensureSensibleStage3Attrs
                 "no desktop manager is possible, plugin 'desktop' wouldn't work!"
             );
         }
+        print _tr("selecting %s as desktop manager\n", $managers[0]);
         $self->{attrs}->{'desktop::manager'} = $managers[0];
     }
 

@@ -41,7 +41,7 @@ sub getInfo
             allows user to pick from a list of different virtual machine images
             based on xml-files, which tell about available images.
         End-of-Here
-        mustRunAfter => []
+        precedence => 50,
     };
 }
 
@@ -59,16 +59,6 @@ sub getAttrInfo
             content_regex => qr{^(0|1)$},
             content_descr => '1 means active - 0 means inactive',
             default => '1',
-        },
-        'vmchooser::precedence' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                the execution precedence of the 'vmchooser' plugin
-            End-of-Here
-            content_regex => qr{^\d\d$},
-            content_descr => 'allowed range is from 01-99',
-            default => 50,
         },
     };
 }

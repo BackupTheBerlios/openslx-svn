@@ -105,6 +105,25 @@ Returns a hash-ref with administrative information about this plugin (what does
 it do and how does it relate to other plugins). Every plugin needs to provide
 this method and return the information about itself.
 
+The returned hash-ref must include at least the following entries:
+
+=over
+
+=item B<description>
+
+Explains the purpose of this plugins.
+
+=item B<precedence>
+
+Specifies the execution precedence of this plugin with respect to all other
+plugins (plugins with lower precedences will be started before the ones with
+a higher precedence).
+
+Valid values range from 0-99. If your plugin does not have any requirements
+in this context, just specify the default value '50'.
+
+=back
+    
 =cut
 
 sub getInfo
@@ -133,17 +152,6 @@ The returned hash-ref must include at least the following entries:
 
 Indicates whether or not this plugin is active (1 for active, 0 for inactive).
 
-=item B<I<plugin-name>::precedence>
-
-Specifies the execution precedence of this plugin with respect to all other
-plugins (plugins with lower precedences will be started before the ones with
-a higher precedence).
-
-Valid values range from 0-99. If your plugin does not have any requirements
-in this context, just specify the default value '50'.
-
-=back
-    
 =cut
 
 sub getAttrInfo
@@ -155,7 +163,6 @@ sub getAttrInfo
     # of slxconfig.
     return {
         # attribute 'active' is mandatory for all plugins
-        # attribute 'precedence' is mandatory for all plugins
     };
 }
 
@@ -316,7 +323,7 @@ suggestAdditionalKernelModules() and maybe copyRequiredFilesIntoInitramfs().
 sub setupPluginInInitramfs
 {
     my $self                = shift;
-    my $attrs                = shift;
+    my $attrs               = shift;
     my $makeInitRamFSEngine = shift;
 
     my $pluginName      = $self->{name};
@@ -326,8 +333,7 @@ sub setupPluginInInitramfs
     my $initHooksPath   = "$buildPath/etc/init-hooks";
 
     # copy runlevel script
-    my $precedence 
-        = sprintf('%02d', $attrs->{"${pluginName}::precedence"});
+    my $precedence = sprintf('%02d', $self->getInfo()->{precedence});
     my $scriptName = "$pluginSrcPath/$pluginName/XX_${pluginName}.sh";
     my $targetName = "$pluginInitdPath/${precedence}_${pluginName}.sh";
     if (-e $scriptName) {

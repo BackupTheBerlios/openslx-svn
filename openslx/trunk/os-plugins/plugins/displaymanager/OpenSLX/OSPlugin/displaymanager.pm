@@ -43,7 +43,7 @@ sub getInfo
         description => unshiftHereDoc(<<'        End-of-Here'),
             Sets a displaymanager and creates needed configs, theme can be set as well.
         End-of-Here
-        mustRunAfter => [],
+        precedence => 50,
     };
 }
 
@@ -61,16 +61,6 @@ sub getAttrInfo
             content_regex => qr{^(0|1)$},
             content_descr => '1 means active - 0 means inactive',
             default => '1',
-        },
-        'displaymanager::precedence' => {
-            applies_to_systems => 1,
-            applies_to_clients => 0,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                the execution precedence of the 'displaymanager' plugin
-            End-of-Here
-            content_regex => qr{^\d\d$},
-            content_descr => 'allowed range is from 01-99',
-            default => 40,
         },
         'displaymanager::xdmcp' => {
             applies_to_systems => 1,

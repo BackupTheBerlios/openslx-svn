@@ -37,7 +37,7 @@ sub getInfo
         description => unshiftHereDoc(<<'        End-of-Here'),
             enables x11vnc server
         End-of-Here
-        mustRunAfter => [],
+        precedence => 50,
     };
 }
 
@@ -55,17 +55,6 @@ sub getAttrInfo
             content_regex => qr{^(0|1)$},
             content_descr => '1 means active - 0 means inactive',
             default => '1',
-        },
-
-        'x11vnc::precedence' => {
-            applies_to_systems => 1,
-            applies_to_clients => 0,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                the execution precedence of the 'x11vnc' plugin
-            End-of-Here
-            content_regex => qr{^\d\d$},
-            content_descr => 'allowed range is from 01-99',
-            default => 50,
         },
 
         'x11vnc::mode' => {
