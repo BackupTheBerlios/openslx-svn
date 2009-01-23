@@ -2,7 +2,7 @@ ToDo!! There is an example script vmware-startscript which should be
 completed and incorporated into Stage1 plugin installer. It should be
 modified to look like the choosen vendor-os start scripts!
 
-The original /etc/init.d/vmware /etc/vmware/locations /etc/vmware/config
+The original /etc/init.d/vmware /etc/vmware/locations
 files aren't needed any more!!
 
 
@@ -25,3 +25,7 @@ Files
   Should be moved sooner or later to the vm-chooser plugin
 - install-vmpl2.0.sh
   Install script, which will download and install vmplayer v2.0 if choosen
+- mkdosfs
+  linked against uclib for creating dos-formatted floppies for data 
+  transport between host and guest (needed in stage3)
+
