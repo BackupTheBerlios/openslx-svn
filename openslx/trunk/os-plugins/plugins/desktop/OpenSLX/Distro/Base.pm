@@ -166,12 +166,12 @@ sub setupGDMScript
           ;;
           root)
             sed "s|AllowShutdown.*|AllowShutdown=true|;\\
-                 s|SecureShutdown.*|SecureShutdown=true" \\
+                 s|SecureShutdown.*|SecureShutdown=true|" \\
               -i /mnt$configFile
           ;;
           users)
             sed "s|AllowShutdown.*|AllowShutdown=true|;\\
-                 s|SecureShutdown.*|SecureShutdown=false" \\
+                 s|SecureShutdown.*|SecureShutdown=false|" \\
               -i /mnt$configFile
           ;;
         esac
