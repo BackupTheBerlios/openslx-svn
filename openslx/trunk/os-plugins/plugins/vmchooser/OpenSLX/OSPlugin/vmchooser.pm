@@ -51,8 +51,8 @@ sub getAttrInfo
 
     return {
         'vmchooser::active' => {
-            applies_to_systems => 0,
-            applies_to_clients => 0,
+            applies_to_systems => 1,
+            applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
                 should the 'vmchooser'-plugin be executed during boot?
             End-of-Here
@@ -82,8 +82,8 @@ sub installationPhase
         # the openslx base path bind-mounted into the chroot (/mnt/openslx)
     
     # for this example plugin, we simply create two files:
-    spitFile("$pluginRepositoryPath/right", "(-;\n");
-    spitFile("$pluginRepositoryPath/left", ";-)\n");
+    #spitFile("$pluginRepositoryPath/right", "(-;\n");
+    #spitFile("$pluginRepositoryPath/left", ";-)\n");
 
     # Some plugins have to copy files from their plugin folder into the
     # vendor-OS. In order to make this possible while chrooted, the host's
@@ -96,9 +96,10 @@ sub installationPhase
     
     
     # get our own base path:
-    my $pluginBasePath = "/mnt/openslx/lib/plugins/$pluginName";
+    my $pluginBasePath = "/mnt/openslx/lib/plugins/$pluginName/files";
     
     # copy all needed files now:
+    system( "bash") ;
     foreach my $file ( qw( vmchooser ) ) {
         copyFile("$pluginBasePath/$file", "$pluginRepositoryPath/");
     }
