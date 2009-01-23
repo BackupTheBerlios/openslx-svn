@@ -43,6 +43,10 @@
     <printers param="true">
      <printer name="" path=""></printer>
     </printers>
+    #Description: Should scanners be connected ? Which ?
+    <scanners>
+     <scanner name="" ip=""></scanner>
+    </scanners>
     #Description: Should the Homedrive be connected ?
     <home param="true">
     </home>
