@@ -147,7 +147,8 @@ EndSection
       testmkd /mnt/${file}
     done
     # if a synaptic touchpad is present, add it to the device list
-    if grep -q -E "ynaptics" /etc/hwinfo.mouse ; then
+    if grep -q -E "ynaptics" /etc/hwinfo.mouse || \ 
+       dmesg | grep -q -E "ynaptics" ; then
       sed -e '/\"CorePointer\"/ {
 a\
 EndSection\
