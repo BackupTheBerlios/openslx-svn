@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<RZ>
+  <drives param="1">
+   <drive1>
+    <path param="\\lehrpool.files.uni-freiburg.de\windows"></path>
+    <username param="lehrpool"></username>
+    <pass param="(atom)9"></pass>
+    <localdrive param="l:"></localdrive>
+    <shortcut param="Gemeinsames Laufwerk L"></shortcut>
+    <name param=""></name>
+   </drive1>
+  </drives>
+  <homedir>
+   <path param=".files.uni-freiburg.de\windows"></path>
+   <localdrive param="k:"></localdrive>
+   <shortcut param="Homeverzeichnis K"></shortcut>
+  </homedir>
+  <printer param="4">
+   <printer1>
+    <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+    <name param="rzps1"></name>
+   </printer1>
+   <printer2>
+    <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+    <name param="rzps2"></name>
+   </printer2>
+   <printer3>
+    <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+    <name param="rzpooloce1"></name>
+   </printer3>
+   <printer4>
+    <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+    <name param="rzpooloce2"></name>
+   </printer4>
+  </printer>
+</RZ>
+<UB>
+ <homedir>
+  <path param=".files.uni-freiburg.de\windows"></path>
+  <localdrive param="k:"></localdrive>
+  <shortcut param="Homeverzeichnis K"></shortcut>
+ </homedir>
+ <printer param="2">
+  <printer1>
+   <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+   <name param="ubps1"></name>
+  </printer1>
+  <printer2>
+   <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
+   <name param="ubps2"></name>
+  </printer2>
+ </printer>
+</UB>
+
+

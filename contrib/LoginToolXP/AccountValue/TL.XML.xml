@@ -1,0 +1,62 @@
+ <?xml version="1.0" ?>  
+<doc> 
+<assembly> 
+  <name>TL.XML</name>  
+  </assembly> 
+<members> 
+<member name="T:TL.XML.tlxml"> 
+  <summary>TL.XML MainClass</summary>  
+  </member> 
+<member name="M:TL.XML.tlxml.#ctor"> 
+  <summary>Constructor</summary>  
+  </member> 
+<member name="M:TL.XML.tlxml.loadFile(System.String)"> 
+  <summary>Loads a XML File</summary>  
+  <param name="filename">The File to load</param>  
+  </member> 
+<member name="M:TL.XML.tlxml.loadString(System.String)"> 
+  <summary>Loads a string of XML File</summary>  
+  <param name="strxml">The XML to load</param>  
+  </member> 
+<member name="M:TL.XML.tlxml.saveDocument(System.String)"> 
+  <summary>Saves the XML document</summary>  
+  <param name="filename">The File name to save as</param>  
+  </member> 
+<member name="M:TL.XML.tlxml.setAttribute(System.String,System.String,System.String)"> 
+  <summary>Creates or sets the value of an attribute</summary>  
+  <param name="xpath">The XPath to the node containing the attribute</param>  
+  <param name="name">The name of the attribute</param>  
+  <param name="val">The value of the attribute</param>  
+  </member> 
+<member name="M:TL.XML.tlxml.getAttribute(System.String,System.String)"> 
+  <summary>Returns the value of a specified attribute</summary>  
+  <param name="xpath">The path to the node</param>  
+  <param name="name">The name of the attribute</param>  
+  <returns>The value of an attribute</returns>  
+  </member> 
+<member name="M:TL.XML.tlxml.setNodeText(System.String,System.String)"> 
+  <summary>Sets the text of a node</summary>  
+  <param name="xpath">The path to the node</param>  
+  <param name="text">The new text for the node</param>  
+  </member> 
+<member name="M:TL.XML.tlxml.getNodeText(System.String)"> 
+  <summary>Returns the text of a node</summary>  
+  <param name="xpath">The path to the node</param>  
+  <returns>The text in the node</returns>  
+  </member> 
+<member name="M:TL.XML.tlxml.setNodeXml(System.String,System.String)"> 
+  <summary>Sets the XML Data of a node</summary>  
+  <param name="xpath">The path to the node</param>  
+  <param name="xml">The nodes new XML</param>  
+  </member> 
+<member name="M:TL.XML.tlxml.getNodeXml(System.String)"> 
+  <summary>Returns the XML Data for a node</summary>  
+  <param name="xpath">The path to the node</param>  
+  <returns>The nodes current XML</returns>  
+  </member> 
+<member name="P:TL.XML.tlxml.Document"> 
+  <summary>XmlDocument Property</summary>  
+  </member> 
+  </members> 
+  </doc>
+

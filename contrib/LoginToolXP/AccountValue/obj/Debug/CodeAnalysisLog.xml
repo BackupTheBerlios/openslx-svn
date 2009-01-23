@@ -1,0 +1,1038 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="c:\programme\microsoft visual studio 8\team tools\static analysis tools\fxcop\Xml\FxCopReport.Xsl"?>
+<FxCopReport Version="8">
+ <Namespaces>
+  <Namespace Name="aejw.Network">
+   <Messages>
+    <Message TypeName="IdentifiersShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1709" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+     <Issue Name="Namespace" Certainty="95" Level="Error">Correct the casing of namespace name 'aejw.Network'.</Issue>
+    </Message>
+    <Message Id="aejw" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+     <Issue Name="Namespace" Certainty="75" Level="CriticalWarning">Correct the spelling of the unrecognized token 'aejw' in namespace 'aejw.Network'.</Issue>
+    </Message>
+   </Messages>
+  </Namespace>
+ </Namespaces>
+ <Targets>
+  <Target Name="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue\bin\Debug\AccountValue.exe">
+   <Modules>
+    <Module Name="accountvalue.exe">
+     <Messages>
+      <Message TypeName="AssembliesShouldDeclareMinimumSecurity" Category="Microsoft.Usage" CheckId="CA2209" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+       <Issue Certainty="95" Level="CriticalError">No valid permission requests were found for assembly 'AccountValue'. You should always specify the minimum security permissions using SecurityAction.RequestMinimum. If assembly permission requests have been specified, they are not enforceable; use the PermView.exe tool to view the assembly's permissions. Whidbey customers can use PermCalc.exe which gives even more detailed information.</Issue>
+      </Message>
+      <Message TypeName="AssembliesShouldHaveValidStrongNames" Category="Microsoft.Design" CheckId="CA2210" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+       <Issue Name="NoStrongName" Certainty="95" Level="CriticalError">Sign 'AccountValue' with a strong name key.</Issue>
+      </Message>
+      <Message TypeName="MarkAssembliesWithClsCompliant" Category="Microsoft.Design" CheckId="CA1014" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+       <Issue Name="NoAttr" Certainty="95" Level="Error">'AccountValue' should be marked with CLSCompliantAttribute and its value should be true.</Issue>
+      </Message>
+     </Messages>
+     <Namespaces>
+      <Namespace Name="">
+       <Types>
+        <Type Name="DEVMODE1" Kind="Struct" Accessibility="Public" ExternallyVisible="True">
+         <Messages>
+          <Message TypeName="DeclareTypesInNamespaces" Category="Microsoft.Design" CheckId="CA1050" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+           <Issue Certainty="95" Level="Error">'DEVMODE1' should be declared inside a namespace.</Issue>
+          </Message>
+          <Message TypeName="LongAcronymsShouldBePascalCased" Category="Microsoft.Naming" CheckId="CA1705" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+           <Issue Name="Type" Certainty="85" Level="Error">Correct the capitalization of type name 'DEVMODE1'.</Issue>
+          </Message>
+          <Message TypeName="OverrideEqualsAndOperatorEqualsOnValueTypes" Category="Microsoft.Performance" CheckId="CA1815" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+           <Issue Name="Equals" Certainty="75" Level="Warning">'DEVMODE1' should override Equals.</Issue>
+           <Issue Name="op_Equality" Certainty="75" Level="Warning">'DEVMODE1' should override the equality (==) and inequality (!=) operators.</Issue>
+          </Message>
+         </Messages>
+         <Members>
+          <Member Name="dmBitsPerPel" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmBitsPerPel' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message Id="Pel" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="75" Level="CriticalWarning">Correct the spelling of the unrecognized token 'Pel' in member name 'DEVMODE1.dmBitsPerPel'.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmBitsPerPel'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmCollate" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmCollate' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmCollate'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmColor" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmColor' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmColor'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmCopies" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmCopies' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmCopies'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmDefaultSource" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmDefaultSource' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmDefaultSource'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmDeviceName" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmDeviceName' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmDeviceName'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmDisplayFlags" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmDisplayFlags' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmDisplayFlags'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmDisplayFrequency" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmDisplayFrequency' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmDisplayFrequency'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmDitherType" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmDitherType' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmDitherType'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmDriverExtra" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmDriverExtra' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmDriverExtra'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmDriverVersion" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmDriverVersion' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmDriverVersion'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmDuplex" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmDuplex' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmDuplex'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmFields" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmFields' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmFields'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmFormName" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmFormName' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmFormName'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmICMIntent" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmICMIntent' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="LongAcronymsShouldBePascalCased" Category="Microsoft.Naming" CheckId="CA1705" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of member name 'DEVMODE1.dmICMIntent'.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmICMIntent'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmICMMethod" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmICMMethod' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="LongAcronymsShouldBePascalCased" Category="Microsoft.Naming" CheckId="CA1705" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of member name 'DEVMODE1.dmICMMethod'.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmICMMethod'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmLogPixels" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmLogPixels' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmLogPixels'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmMediaType" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmMediaType' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmMediaType'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmOrientation" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmOrientation' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmOrientation'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmPanningHeight" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmPanningHeight' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmPanningHeight'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmPanningWidth" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmPanningWidth' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmPanningWidth'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmPaperLength" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmPaperLength' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmPaperLength'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmPaperSize" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmPaperSize' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmPaperSize'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmPaperWidth" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmPaperWidth' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmPaperWidth'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmPelsHeight" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmPelsHeight' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message Id="Pels" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="75" Level="CriticalWarning">Correct the spelling of the unrecognized token 'Pels' in member name 'DEVMODE1.dmPelsHeight'.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmPelsHeight'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmPelsWidth" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmPelsWidth' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message Id="Pels" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="75" Level="CriticalWarning">Correct the spelling of the unrecognized token 'Pels' in member name 'DEVMODE1.dmPelsWidth'.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmPelsWidth'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmPrintQuality" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmPrintQuality' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmPrintQuality'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmReserved1" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmReserved1' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmReserved1'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmReserved2" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmReserved2' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmReserved2'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmScale" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmScale' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmScale'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmSize" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmSize' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmSize'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmSpecVersion" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmSpecVersion' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmSpecVersion'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmTTOption" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmTTOption' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmTTOption'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="dmYResolution" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'dmYResolution' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error">Correct the capitalization of 'dm' in member name 'DEVMODE1.dmYResolution'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+         </Members>
+        </Type>
+        <Type Name="User_32" Kind="Class" Accessibility="Assembly" ExternallyVisible="False">
+         <Messages>
+          <Message TypeName="AvoidUninstantiatedInternalClasses" Category="Microsoft.Performance" CheckId="CA1812" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+           <Issue Certainty="75" Level="Warning">'User_32' is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static methods, consider adding a private constructor to prevent the compiler from generating a default constructor.</Issue>
+          </Message>
+         </Messages>
+         <Members>
+          <Member Name="ChangeDisplaySettings(DEVMODE1&amp;,System.Int32):System.Int32" Kind="Method" Static="True" Accessibility="Public" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="MovePInvokesToNativeMethodsClass" Category="Microsoft.Design" CheckId="CA1060" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="95" Level="CriticalWarning">Because it is a DllImport method, User_32.ChangeDisplaySettings(DEVMODE1&amp;, Int32):Int32 should be defined in a class named NativeMethods, SafeNativeMethods, or UnsafeNativeMethods.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="EnumDisplaySettings(System.String,System.Int32,DEVMODE1&amp;):System.Int32" Kind="Method" Static="True" Accessibility="Public" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="MovePInvokesToNativeMethodsClass" Category="Microsoft.Design" CheckId="CA1060" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="95" Level="CriticalWarning">Because it is a DllImport method, User_32.EnumDisplaySettings(String, Int32, DEVMODE1&amp;):Int32 should be defined in a class named NativeMethods, SafeNativeMethods, or UnsafeNativeMethods.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+         </Members>
+        </Type>
+       </Types>
+      </Namespace>
+      <Namespace Name="AccountValue">
+       <Types>
+        <Type Name="DragExtender" Kind="Class" Accessibility="Public" ExternallyVisible="True">
+         <Members>
+          <Member Name=".ctor()" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotInitializeUnnecessarily" Category="Microsoft.Performance" CheckId="CA1805" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="90" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="DragExtender.cs" Line="77">DragExtender..ctor() initializes field m_form of type System.Windows.Forms.Form to null. Remove this initialization as it will be done automatically by the runtime.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="GetDraggable(System.Windows.Forms.Control):System.Boolean" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message Id="Draggable" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="75" Level="CriticalWarning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="DragExtender.cs" Line="51">Correct the spelling of the unrecognized token 'Draggable' in member name 'DragExtender.GetDraggable(Control):Boolean'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="ReleaseCapture(System.IntPtr):System.Int32" Kind="Method" Static="True" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="MovePInvokesToNativeMethodsClass" Category="Microsoft.Design" CheckId="CA1060" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="95" Level="CriticalWarning">Because it is a DllImport method, DragExtender.ReleaseCapture(IntPtr):Int32 should be defined in a class named NativeMethods, SafeNativeMethods, or UnsafeNativeMethods.</Issue>
+            </Message>
+            <Message TypeName="PInvokesShouldNotBeVisible" Category="Microsoft.Interoperability" CheckId="CA1401" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="50" Level="CriticalError">Change the accessibility of DllImport 'DragExtender.ReleaseCapture(IntPtr):Int32' so that it is no longer visible from outside its assembly.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="SendMessage(System.IntPtr,System.Int32,System.Int32,System.Int32&amp;):System.Int32" Kind="Method" Static="True" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="MovePInvokesToNativeMethodsClass" Category="Microsoft.Design" CheckId="CA1060" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="95" Level="CriticalWarning">Because it is a DllImport method, DragExtender.SendMessage(IntPtr, Int32, Int32, Int32&amp;):Int32 should be defined in a class named NativeMethods, SafeNativeMethods, or UnsafeNativeMethods.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="SendMessage(System.IntPtr,System.Int32,System.Int32,System.Int32[]):System.Int32" Kind="Method" Static="True" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="AvoidUncalledPrivateCode" Category="Microsoft.Performance" CheckId="CA1811" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="75" Level="Warning">'DragExtender.SendMessage(IntPtr, Int32, Int32, Int32[]):Int32' appears to have no upstream public or protected callers.</Issue>
+            </Message>
+            <Message TypeName="MovePInvokesToNativeMethodsClass" Category="Microsoft.Design" CheckId="CA1060" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="95" Level="CriticalWarning">Because it is a DllImport method, DragExtender.SendMessage(IntPtr, Int32, Int32, Int32[]):Int32 should be defined in a class named NativeMethods, SafeNativeMethods, or UnsafeNativeMethods.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="SetDraggable(System.Windows.Forms.Control,System.Boolean):System.Void" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message Id="Draggable" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="75" Level="CriticalWarning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="DragExtender.cs" Line="60">Correct the spelling of the unrecognized token 'Draggable' in member name 'DragExtender.SetDraggable(Control, Boolean):Void'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+         </Members>
+        </Type>
+        <Type Name="Form1" Kind="Class" Accessibility="Public" ExternallyVisible="True">
+         <Members>
+          <Member Name=".ctor()" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotCatchGeneralExceptionTypes" Category="Microsoft.Design" CheckId="CA1031" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="95" Level="CriticalError" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="66">Modify 'Form1..ctor()' to catch a more specific exception than 'System.Object' or rethrow the exception.</Issue>
+            </Message>
+            <Message TypeName="DoNotInitializeUnnecessarily" Category="Microsoft.Performance" CheckId="CA1805" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="90" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.Designer.cs" Line="8">Form1..ctor() initializes field tempHeight of type System.Int32 to 0. Remove this initialization as it will be done automatically by the runtime.</Issue>
+             <Issue Certainty="90" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.Designer.cs" Line="8">Form1..ctor() initializes field tempWidth of type System.Int32 to 0. Remove this initialization as it will be done automatically by the runtime.</Issue>
+            </Message>
+            <Message Id="ChangeRes" TypeName="RemoveUnusedLocals" Category="Microsoft.Performance" CheckId="CA1804" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="95" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.Designer.cs" Line="8">Form1..ctor() declares a local, 'ChangeRes', of type Resolution.CResolution, which is never used or is only assigned to. Use this local or remove it.</Issue>
+            </Message>
+            <Message Id="System.Convert.ToInt32(System.String)" TypeName="SpecifyIFormatProvider" Category="Microsoft.Globalization" CheckId="CA1305" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="68">Form1..ctor() makes a call to System.Convert.ToInt32(System.String) that does not explicitly provide an IFormatProvider. This should be replaced with a call to System.Convert.ToInt32(System.String,System.IFormatProvider).</Issue>
+             <Issue Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="68">Form1..ctor() makes a call to System.Convert.ToInt32(System.String) that does not explicitly provide an IFormatProvider. This should be replaced with a call to System.Convert.ToInt32(System.String,System.IFormatProvider).</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="createDesktopLinks(System.String,System.String):System.Void" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message Id="this" TypeName="AvoidUnusedParameters" Category="Microsoft.Performance" CheckId="CA1801" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Name="MarkAsStatic" Certainty="95" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="337">The 'this' parameter (or 'Me' in VB) of Form1.createDesktopLinks(String, String):Void is never used. Mark the method as static (or Shared in VB) or use 'this'/Me in the method body.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="GetDiskFreeSpace(System.String):AccountValue.Form1+DiskFreeSpace" Kind="Method" Static="True" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotIndirectlyExposeMethodsWithLinkDemands" Category="Microsoft.Security" CheckId="CA2122" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="33" Level="CriticalError" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="356">Form1.GetDiskFreeSpace(String):DiskFreeSpace calls into Marshal.GetLastWin32Error():Int32 which has a LinkDemand. By making this call, Marshal.GetLastWin32Error():Int32 is indirectly exposed to user code. Review the following call stack that might expose a way to circumvent security protection: &#xD;&#xA;-&gt;System.Runtime.InteropServices.Marshal.GetLastWin32Error : Int32&#xD;&#xA;-&gt;AccountValue.Form1.GetDiskFreeSpace(System.String) : DiskFreeSpace</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="GetDiskFreeSpaceEx(System.String,System.Int64&amp;,System.Int64&amp;,System.Int64&amp;):System.Boolean" Kind="Method" Static="True" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="MarkBooleanPInvokeArgumentsWithMarshalAs" Category="Microsoft.Interoperability" CheckId="CA1414" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Return" Certainty="95" Level="Warning">Add the MarshalAsAttribute to the return type of PInvoke Form1.GetDiskFreeSpaceEx(String, Int64&amp;, Int64&amp;, Int64&amp;):Boolean. If the corresponding unmanaged return type is a 4-byte Win32 'BOOL', use MarshalAs(UnmanagedType.Bool). For a 1-byte C++ 'bool', use MarshalAs(UnmanagedType.U1).</Issue>
+            </Message>
+            <Message TypeName="MovePInvokesToNativeMethodsClass" Category="Microsoft.Design" CheckId="CA1060" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="95" Level="CriticalWarning">Because it is a DllImport method, Form1.GetDiskFreeSpaceEx(String, Int64&amp;, Int64&amp;, Int64&amp;):Boolean should be defined in a class named NativeMethods, SafeNativeMethods, or UnsafeNativeMethods.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="InitializeComponent():System.Void" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="DoNotIndirectlyExposeMethodsWithLinkDemands" Category="Microsoft.Security" CheckId="CA2122" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="33" Level="CriticalError" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.Designer.cs" Line="30">Form1.InitializeComponent():Void calls into WebBrowser.add_DocumentCompleted(WebBrowserDocumentCompletedEventHandler):Void which has a LinkDemand. By making this call, WebBrowser.add_DocumentCompleted(WebBrowserDocumentCompletedEventHandler):Void is indirectly exposed to user code. Review the following call stack that might expose a way to circumvent security protection: &#xD;&#xA;-&gt;System.Windows.Forms.WebBrowser.add_DocumentCompleted(System.Windows.Forms.WebBrowserDocumentCompletedEventHandler) : Void&#xD;&#xA;-&gt;AccountValue.Form1.InitializeComponent : Void&#xD;&#xA;-&gt;AccountValue.Form1.#ctor : Void</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="login_clicked():System.Void" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="DoNotCatchGeneralExceptionTypes" Category="Microsoft.Design" CheckId="CA1031" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="95" Level="CriticalError" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="219">Modify 'Form1.login_clicked():Void' to catch a more specific exception than 'System.Exception' or rethrow the exception.</Issue>
+             <Issue Certainty="95" Level="CriticalError" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="173">Modify 'Form1.login_clicked():Void' to catch a more specific exception than 'System.Exception' or rethrow the exception.</Issue>
+             <Issue Certainty="95" Level="CriticalError" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="163">Modify 'Form1.login_clicked():Void' to catch a more specific exception than 'System.Object' or rethrow the exception.</Issue>
+             <Issue Certainty="95" Level="CriticalError" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="184">Modify 'Form1.login_clicked():Void' to catch a more specific exception than 'System.Object' or rethrow the exception.</Issue>
+             <Issue Certainty="95" Level="CriticalError" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="105">Modify 'Form1.login_clicked():Void' to catch a more specific exception than 'System.Object' or rethrow the exception.</Issue>
+             <Issue Certainty="95" Level="CriticalError" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="211">Modify 'Form1.login_clicked():Void' to catch a more specific exception than 'System.Object' or rethrow the exception.</Issue>
+             <Issue Certainty="95" Level="CriticalError" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="231">Modify 'Form1.login_clicked():Void' to catch a more specific exception than 'System.Object' or rethrow the exception.</Issue>
+            </Message>
+            <Message TypeName="SpecifyMessageBoxOptions" Category="Microsoft.Globalization" CheckId="CA1300" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="176">Change Form1.login_clicked():Void to call the MessageBox.Show overload that specifies MessageBoxOptions, and make sure to set MessageBoxOptions.RightAlign and MessageBoxOptions.RtlReading if RightToLeft is set to RightToLeft.Yes on the parent control. If it is set to RightTolLeft.Inherit, check its parent until a value indicating Yes or No is found.</Issue>
+             <Issue Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="222">Change Form1.login_clicked():Void to call the MessageBox.Show overload that specifies MessageBoxOptions, and make sure to set MessageBoxOptions.RightAlign and MessageBoxOptions.RtlReading if RightToLeft is set to RightToLeft.Yes on the parent control. If it is set to RightTolLeft.Inherit, check its parent until a value indicating Yes or No is found.</Issue>
+            </Message>
+            <Message TypeName="TestForEmptyStringsUsingStringLength" Category="Microsoft.Performance" CheckId="CA1820" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Name="IsNullOrEmpty" Certainty="95" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="97">Replace the call to String.Equals("") in 'Form1.login_clicked():Void' with a call to String.IsNullOrEmpty.</Issue>
+             <Issue Name="IsNullOrEmpty" Certainty="95" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="97">Replace the call to String.Equals("") in 'Form1.login_clicked():Void' with a call to String.IsNullOrEmpty.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="timer2_Tick(System.Object,System.EventArgs):System.Void" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message Id="temp" TypeName="RemoveUnusedLocals" Category="Microsoft.Performance" CheckId="CA1804" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="95" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="381">Form1.timer2_Tick(Object, EventArgs):Void declares a local, 'temp', of type System.Int64, which is never used or is only assigned to. Use this local or remove it.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="webBrowser1_DocumentCompleted(System.Object,System.Windows.Forms.WebBrowserDocumentCompletedEventArgs):System.Void" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message Id="System.Convert.ToInt32(System.String)" TypeName="SpecifyIFormatProvider" Category="Microsoft.Globalization" CheckId="CA1305" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="289">Form1.webBrowser1_DocumentCompleted(Object, WebBrowserDocumentCompletedEventArgs):Void makes a call to System.Convert.ToInt32(System.String) that does not explicitly provide an IFormatProvider. This should be replaced with a call to System.Convert.ToInt32(System.String,System.IFormatProvider).</Issue>
+             <Issue Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Form1.cs" Line="290">Form1.webBrowser1_DocumentCompleted(Object, WebBrowserDocumentCompletedEventArgs):Void makes a call to System.Convert.ToInt32(System.String) that does not explicitly provide an IFormatProvider. This should be replaced with a call to System.Convert.ToInt32(System.String,System.IFormatProvider).</Issue>
+            </Message>
+           </Messages>
+          </Member>
+         </Members>
+        </Type>
+        <Type Name="Form1+DiskFreeSpace" Kind="Struct" Accessibility="Public" ExternallyVisible="True">
+         <Messages>
+          <Message TypeName="NestedTypesShouldNotBeVisible" Category="Microsoft.Design" CheckId="CA1034" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+           <Issue Certainty="90" Level="Error">Do not nest type 'AccountValue.Form1+DiskFreeSpace' or change its accessibility so that it is not externally visible.</Issue>
+          </Message>
+          <Message TypeName="OverrideEqualsAndOperatorEqualsOnValueTypes" Category="Microsoft.Performance" CheckId="CA1815" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+           <Issue Name="Equals" Certainty="75" Level="Warning">'AccountValue.Form1+DiskFreeSpace' should override Equals.</Issue>
+           <Issue Name="op_Equality" Certainty="75" Level="Warning">'AccountValue.Form1+DiskFreeSpace' should override the equality (==) and inequality (!=) operators.</Issue>
+          </Message>
+         </Messages>
+         <Members>
+          <Member Name="FreeBytesAvailable" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'FreeBytesAvailable' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="TotalBytes" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'TotalBytes' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="TotalFreeBytes" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'TotalFreeBytes' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+         </Members>
+        </Type>
+        <Type Name="Form2" Kind="Class" Accessibility="Public" ExternallyVisible="True">
+         <Members>
+          <Member Name="label1" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'label1' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="label2" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'label2' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="progressBar1" Kind="Field" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="90" Level="Error">Make 'progressBar1' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+         </Members>
+        </Type>
+       </Types>
+      </Namespace>
+      <Namespace Name="aejw.Network">
+       <Types>
+        <Type Name="NetworkDrive" Kind="Class" Accessibility="Public" ExternallyVisible="True">
+         <Members>
+          <Member Name=".ctor()" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="DoNotInitializeUnnecessarily" Category="Microsoft.Performance" CheckId="CA1805" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="90" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="59">NetworkDrive..ctor() initializes field lf_Force of type System.Boolean to false. Remove this initialization as it will be done automatically by the runtime.</Issue>
+             <Issue Certainty="90" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="59">NetworkDrive..ctor() initializes field lf_Persistent of type System.Boolean to false. Remove this initialization as it will be done automatically by the runtime.</Issue>
+             <Issue Certainty="90" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="59">NetworkDrive..ctor() initializes field lf_SaveCredentials of type System.Boolean to false. Remove this initialization as it will be done automatically by the runtime.</Issue>
+             <Issue Certainty="90" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="59">NetworkDrive..ctor() initializes field ls_PromptForCredentials of type System.Boolean to false. Remove this initialization as it will be done automatically by the runtime.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="MapDrive(System.String):System.Void" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message Id="0#" TypeName="IdentifiersShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1709" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Parameter" Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="125">Correct the casing of parameter name 'Password'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="MapDrive(System.String,System.String):System.Void" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message Id="Username" TypeName="CompoundWordsShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1702" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="ShouldBeCompoundWord" Certainty="80" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="129">The discrete term 'Username' in parameter 'Username' should be expressed as a compound term, 'UserName'.</Issue>
+            </Message>
+            <Message Id="0#" TypeName="IdentifiersShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1709" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Parameter" Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="129">Correct the casing of parameter name 'Username'.</Issue>
+            </Message>
+            <Message Id="1#" TypeName="IdentifiersShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1709" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Parameter" Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="129">Correct the casing of parameter name 'Password'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="ShowConnectDialog(System.Windows.Forms.Form):System.Void" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message Id="0#" TypeName="IdentifiersShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1709" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Parameter" Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="141">Correct the casing of parameter name 'ParentForm'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="ShowDisconnectDialog(System.Windows.Forms.Form):System.Void" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message Id="0#" TypeName="IdentifiersShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1709" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Parameter" Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="145">Correct the casing of parameter name 'ParentForm'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="UnMapDrive():System.Void" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
+           <Messages>
+            <Message TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Name="Member" Certainty="85" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="133">Correct the capitalization of 'Un' in member name 'NetworkDrive.UnMapDrive():Void'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="WNetAddConnection2A(aejw.Network.NetworkDrive+structNetResource&amp;,System.String,System.String,System.Int32):System.Int32" Kind="Method" Static="True" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="MovePInvokesToNativeMethodsClass" Category="Microsoft.Design" CheckId="CA1060" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="95" Level="CriticalWarning">Because it is a DllImport method, NetworkDrive.WNetAddConnection2A(structNetResource&amp;, String, String, Int32):Int32 should be defined in a class named NativeMethods, SafeNativeMethods, or UnsafeNativeMethods.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="WNetCancelConnection2A(System.String,System.Int32,System.Int32):System.Int32" Kind="Method" Static="True" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="MovePInvokesToNativeMethodsClass" Category="Microsoft.Design" CheckId="CA1060" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="95" Level="CriticalWarning">Because it is a DllImport method, NetworkDrive.WNetCancelConnection2A(String, Int32, Int32):Int32 should be defined in a class named NativeMethods, SafeNativeMethods, or UnsafeNativeMethods.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="WNetConnectionDialog(System.Int32,System.Int32):System.Int32" Kind="Method" Static="True" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="MovePInvokesToNativeMethodsClass" Category="Microsoft.Design" CheckId="CA1060" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="95" Level="CriticalWarning">Because it is a DllImport method, NetworkDrive.WNetConnectionDialog(Int32, Int32):Int32 should be defined in a class named NativeMethods, SafeNativeMethods, or UnsafeNativeMethods.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="WNetDisconnectDialog(System.Int32,System.Int32):System.Int32" Kind="Method" Static="True" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="MovePInvokesToNativeMethodsClass" Category="Microsoft.Design" CheckId="CA1060" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="95" Level="CriticalWarning">Because it is a DllImport method, NetworkDrive.WNetDisconnectDialog(Int32, Int32):Int32 should be defined in a class named NativeMethods, SafeNativeMethods, or UnsafeNativeMethods.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="WNetRestoreConnectionW(System.Int32,System.String):System.Int32" Kind="Method" Static="True" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="MovePInvokesToNativeMethodsClass" Category="Microsoft.Design" CheckId="CA1060" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="Breaking">
+             <Issue Certainty="95" Level="CriticalWarning">Because it is a DllImport method, NetworkDrive.WNetRestoreConnectionW(Int32, String):Int32 should be defined in a class named NativeMethods, SafeNativeMethods, or UnsafeNativeMethods.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="zDisplayDialog(System.Windows.Forms.Form,System.Int32):System.Void" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message Id="this" TypeName="AvoidUnusedParameters" Category="Microsoft.Performance" CheckId="CA1801" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Name="MarkAsStatic" Certainty="95" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="192">The 'this' parameter (or 'Me' in VB) of NetworkDrive.zDisplayDialog(Form, Int32):Void is never used. Mark the method as static (or Shared in VB) or use 'this'/Me in the method body.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="zMapDrive(System.String,System.String):System.Void" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="DoNotCatchGeneralExceptionTypes" Category="Microsoft.Design" CheckId="CA1031" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="95" Level="CriticalError" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="170">Modify 'NetworkDrive.zMapDrive(String, String):Void' to catch a more specific exception than 'System.Object' or rethrow the exception.</Issue>
+            </Message>
+            <Message TypeName="TestForEmptyStringsUsingStringLength" Category="Microsoft.Performance" CheckId="CA1820" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Name="IsNullOrEmpty" Certainty="95" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="167">Replace the call to String.op_Equality("") in 'NetworkDrive.zMapDrive(String, String):Void' with a call to String.IsNullOrEmpty.</Issue>
+             <Issue Name="IsNullOrEmpty" Certainty="95" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="168">Replace the call to String.op_Equality("") in 'NetworkDrive.zMapDrive(String, String):Void' with a call to String.IsNullOrEmpty.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+          <Member Name="zRestoreDrive():System.Void" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message Id="this" TypeName="AvoidUnusedParameters" Category="Microsoft.Performance" CheckId="CA1801" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Name="MarkAsStatic" Certainty="95" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="cNetworkDrives0015.cs" Line="185">The 'this' parameter (or 'Me' in VB) of NetworkDrive.zRestoreDrive():Void is never used. Mark the method as static (or Shared in VB) or use 'this'/Me in the method body.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+         </Members>
+        </Type>
+       </Types>
+      </Namespace>
+      <Namespace Name="Resolution">
+       <Types>
+        <Type Name="CResolution" Kind="Class" Accessibility="Assembly" ExternallyVisible="False">
+         <Members>
+          <Member Name=".ctor(System.Int32,System.Int32)" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="DoNotIndirectlyExposeMethodsWithLinkDemands" Category="Microsoft.Security" CheckId="CA2122" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="33" Level="CriticalError" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Resolution.cs" Line="72">CResolution..ctor(Int32, Int32) calls into Marshal.SizeOf(Object):Int32 which has a LinkDemand. By making this call, Marshal.SizeOf(Object):Int32 is indirectly exposed to user code. Review the following call stack that might expose a way to circumvent security protection: &#xD;&#xA;-&gt;System.Runtime.InteropServices.Marshal.SizeOf(System.Object) : Int32&#xD;&#xA;-&gt;Resolution.CResolution.#ctor(System.Int32,System.Int32) : Void&#xD;&#xA;-&gt;AccountValue.Form1.#ctor : Void</Issue>
+            </Message>
+            <Message Id="screen" TypeName="RemoveUnusedLocals" Category="Microsoft.Performance" CheckId="CA1804" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="95" Level="Warning" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Resolution.cs" Line="72">CResolution..ctor(Int32, Int32) declares a local, 'screen', of type System.Windows.Forms.Screen, which is never used or is only assigned to. Use this local or remove it.</Issue>
+            </Message>
+            <Message TypeName="SpecifyMessageBoxOptions" Category="Microsoft.Globalization" CheckId="CA1300" Status="Active" Created="2005-09-25 01:52:52Z" FixCategory="NonBreaking">
+             <Issue Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Resolution.cs" Line="96">Change CResolution..ctor(Int32, Int32) to call the MessageBox.Show overload that specifies MessageBoxOptions, and make sure to set MessageBoxOptions.RightAlign and MessageBoxOptions.RtlReading if RightToLeft is set to RightToLeft.Yes on the parent control. If it is set to RightTolLeft.Inherit, check its parent until a value indicating Yes or No is found.</Issue>
+             <Issue Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Resolution.cs" Line="97">Change CResolution..ctor(Int32, Int32) to call the MessageBox.Show overload that specifies MessageBoxOptions, and make sure to set MessageBoxOptions.RightAlign and MessageBoxOptions.RtlReading if RightToLeft is set to RightToLeft.Yes on the parent control. If it is set to RightTolLeft.Inherit, check its parent until a value indicating Yes or No is found.</Issue>
+             <Issue Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Resolution.cs" Line="114">Change CResolution..ctor(Int32, Int32) to call the MessageBox.Show overload that specifies MessageBoxOptions, and make sure to set MessageBoxOptions.RightAlign and MessageBoxOptions.RtlReading if RightToLeft is set to RightToLeft.Yes on the parent control. If it is set to RightTolLeft.Inherit, check its parent until a value indicating Yes or No is found.</Issue>
+             <Issue Certainty="95" Level="Error" Path="C:\Dokumente und Einstellungen\Randy\Eigene Dateien\Visual Studio 2005\Projects\AccountValue\AccountValue" File="Resolution.cs" Line="121">Change CResolution..ctor(Int32, Int32) to call the MessageBox.Show overload that specifies MessageBoxOptions, and make sure to set MessageBoxOptions.RightAlign and MessageBoxOptions.RtlReading if RightToLeft is set to RightToLeft.Yes on the parent control. If it is set to RightTolLeft.Inherit, check its parent until a value indicating Yes or No is found.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+         </Members>
+        </Type>
+       </Types>
+      </Namespace>
+     </Namespaces>
+    </Module>
+   </Modules>
+  </Target>
+ </Targets>
+ <Rules>
+  <Rule TypeName="AssembliesShouldDeclareMinimumSecurity" Category="Microsoft.Usage" CheckId="CA2209">
+   <Name>Assemblies should declare minimum security</Name>
+   <Description>Permission requests prevent security exceptions from being thrown after code in an assembly has already begun executing. With permission requests, the assembly does not load if it has insufficient permissions. This rule will fire if you have specified a permission request incorrectly, or incompletely. If you have specified requests but FxCop reports a violation for this rule, use the PermView.exe tool to view the security permissions in the assembly. An unenforceable permission appears as an empty permission set. Whidbey customers can use PermCalc.exe which gives even more detailed information. You should add attributes specifying what permissions your assembly will demand, might demand, and what permissions it does not want granted.  For example, the following attribute indicates that an assembly will, at minimum, require read access to the UserName environment variable: [assembly:EnvironmentPermissionAttribute(SecurityAction.RequestMinimum,&#xD;&#xA;Read="UserName")]. To specify permissions that the assembly might demand, use SecurityAction.RequestOptional. To specify permissions that the assembly must not be granted, use SecurityAction.RequestRefuse.</Description>
+   <Resolution Name="Default">No valid permission requests were found for assembly '{0}'. You should always specify the minimum security permissions using SecurityAction.RequestMinimum. If assembly permission requests have been specified, they are not enforceable; use the PermView.exe tool to view the assembly's permissions. Whidbey customers can use PermCalc.exe which gives even more detailed information.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Usage/AssembliesShouldDeclareMinimumSecurity.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="95">CriticalError</MessageLevel>
+   <File Name="UsageRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="AssembliesShouldHaveValidStrongNames" Category="Microsoft.Design" CheckId="CA2210">
+   <Name>Assemblies should have valid strong names</Name>
+   <Description>Either the assembly has no strong name, an invalid one, or the strong name is valid only because of the computer configuration. The assembly should not be deployed in this state. The most common causes of this are: 1) The assembly's contents were modified after it was signed. 2) The signing process failed. 3) The assembly was delay-signed. 4) A registry key existed that allowed the check to pass (where it would not have otherwise).</Description>
+   <Resolution Name="NoStrongName">Sign '{0}' with a strong name key.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Design/AssembliesShouldHaveValidStrongNames.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="95">CriticalError</MessageLevel>
+   <File Name="DesignRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="AvoidUncalledPrivateCode" Category="Microsoft.Performance" CheckId="CA1811">
+   <Name>Avoid uncalled private code</Name>
+   <Description>There is uncalled code that is not externally visible and is not a known runtime entry point. If this violation fires in error, please send a problem report to the FxCop team.</Description>
+   <Resolution Name="Default">'{0}' appears to have no upstream public or protected callers.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Performance/AvoidUncalledPrivateCode.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="75">Warning</MessageLevel>
+   <File Name="PerformanceRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="AvoidUninstantiatedInternalClasses" Category="Microsoft.Performance" CheckId="CA1812">
+   <Name>Avoid uninstantiated internal classes</Name>
+   <Description>An internal class was detected that is apparently never instantiated. This rule does not attempt to detect late-bound creation and will generate false positives if instances of a type are only created in this way (for example, by means of Activator.CreateInstance or by passing the type as an argument to a TypeConverter constructor).</Description>
+   <Resolution Name="Default">'{0}' is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static methods, consider adding a private constructor to prevent the compiler from generating a default constructor.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Performance/AvoidUninstantiatedInternalClasses.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="75">Warning</MessageLevel>
+   <File Name="PerformanceRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="AvoidUnusedParameters" Category="Microsoft.Performance" CheckId="CA1801">
+   <Name>Avoid unused parameters</Name>
+   <Description>Avoid declaring parameters that are not used in the method body. Unused parameters incur maintenance and performance costs. Sometimes a violation of this rule can point to an implementation bug in the method (i.e. the parameter should actually have been used in the method body). Exclude warnings of this rule if the parameter has to exist because of backward compatibility.</Description>
+   <Resolution Name="MarkAsStatic">The 'this' parameter (or 'Me' in VB) of {0} is never used. Mark the method as static (or Shared in VB) or use 'this'/Me in the method body.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Performance/AvoidUnusedParameters.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="95">Warning</MessageLevel>
+   <File Name="PerformanceRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="CompoundWordsShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1702">
+   <Name>Compound words should be cased correctly</Name>
+   <Description>Avoid creating compound words from terms which exist in the dictionary as discrete terms. Do not create a compound word such as 'StopWatch' or 'PopUp'. These terms are recognized in the dictionary and should be cased as 'Stopwatch' and 'Popup'.</Description>
+   <Resolution Name="ShouldBeCompoundWord">The discrete term '{0}' in {1} '{2}' should be expressed as a compound term, '{3}'.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Naming/CompoundWordsShouldBeCasedCorrectly.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="80">Error</MessageLevel>
+   <File Name="NamingRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="DeclareTypesInNamespaces" Category="Microsoft.Design" CheckId="CA1050">
+   <Name>Declare types in namespaces</Name>
+   <Description>A type should be defined inside a namespace to avoid duplication.</Description>
+   <Resolution Name="Default">'{0}' should be declared inside a namespace.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Design/DeclareTypesInNamespaces.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="95">Error</MessageLevel>
+   <File Name="DesignRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="DoNotCatchGeneralExceptionTypes" Category="Microsoft.Design" CheckId="CA1031">
+   <Name>Do not catch general exception types</Name>
+   <Description>You should not catch Exception or SystemException. Catching generic exception types can hide run-time problems from the library user, and can complicate debugging. You should catch only those exceptions that you can handle gracefully.</Description>
+   <Resolution Name="Default">Modify '{0}' to catch a more specific exception than '{1}' or rethrow the exception.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Design/DoNotCatchGeneralExceptionTypes.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="95">CriticalError</MessageLevel>
+   <File Name="DesignRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="DoNotDeclareVisibleInstanceFields" Category="Microsoft.Design" CheckId="CA1051">
+   <Name>Do not declare visible instance fields</Name>
+   <Description>Public or protected instance fields limit your ability to change the implementation details for those data items. Use properties instead. They do not compromise usability or performance and they do provide flexibility in that they conceal the  implementation details of the underlying data.</Description>
+   <Resolution Name="Default">Make '{0}' private or internal (Friend in VB, public private in C++) and provide a public or protected property to access it.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Design/DoNotDeclareVisibleInstanceFields.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="90">Error</MessageLevel>
+   <File Name="DesignRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="DoNotIndirectlyExposeMethodsWithLinkDemands" Category="Microsoft.Security" CheckId="CA2122">
+   <Name>Do not indirectly expose methods with link demands</Name>
+   <Description>Do not wrap a method protected by a LinkDemand with a method that does not perform a security check. A LinkDemand checks the permissions of the immediate caller rather than checking the permissions of all callers in the call stack. In this case, the permissions of the wrapper method will be checked. If the wrapper method does not, itself, check the permissions of callers higher in the call stack, malicious code might be able to execute the wrapped function even though it lacks permission to do so.</Description>
+   <Resolution Name="Default">{0} calls into {1} which has a LinkDemand. By making this call, {1} is indirectly exposed to user code. Review the following call stack that might expose a way to circumvent security protection: {2}</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Security/DoNotIndirectlyExposeMethodsWithLinkDemands.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="33">CriticalError</MessageLevel>
+   <File Name="SecurityRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="DoNotInitializeUnnecessarily" Category="Microsoft.Performance" CheckId="CA1805">
+   <Name>Do not initialize unnecessarily</Name>
+   <Description>Do not make initializations that have already been done by the runtime.</Description>
+   <Resolution Name="Default">{0} initializes field {1} of type {2} to {3}. Remove this initialization as it will be done automatically by the runtime.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Performance/DoNotInitializeUnnecessarily.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="90">Warning</MessageLevel>
+   <File Name="PerformanceRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="IdentifiersShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1709">
+   <Name>Identifiers should be cased correctly</Name>
+   <Description>Type, namespace, and member identifiers are pascal-cased. Parameter identifiers are camel-cased. The pascal-casing convention capitalizes the first letter of each word, as in BackColor. The camel-casing convention formats the first letter of the first word in lowercase and capitalizes the first letter of all subsequent words, as in backgroundColor.</Description>
+   <Resolution Name="Namespace">Correct the casing of namespace name '{0}'.</Resolution>
+   <Resolution Name="Parameter">Correct the casing of parameter name '{0}'.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Naming/IdentifiersShouldBeCasedCorrectly.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="95">Error</MessageLevel>
+   <File Name="NamingRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704">
+   <Name>Identifiers should be spelled correctly</Name>
+   <Description>The individual words that make up an identifier should not be abbreviated and should be spelled correctly. If this rule generates a false positive on a term that should be recognized, add the word to the FxCop custom dictionary.</Description>
+   <Resolution Name="Member">Correct the spelling of the unrecognized token '{0}' in member name '{1}'.</Resolution>
+   <Resolution Name="Namespace">Correct the spelling of the unrecognized token '{0}' in namespace '{1}'.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Naming/IdentifiersShouldBeSpelledCorrectly.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="75">CriticalWarning</MessageLevel>
+   <File Name="NamingRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="LongAcronymsShouldBePascalCased" Category="Microsoft.Naming" CheckId="CA1705">
+   <Name>Long acronyms should be pascal-cased</Name>
+   <Description>Acronyms of three or more letters should be Pascal-cased. For example, use XmlSpace rather than XMLSpace. A violation of this rule might be required for compatibility with existing, non-managed symbol schemes. In general, however, these symbols should not be visible outside the assembly that uses them.</Description>
+   <Resolution Name="Member">Correct the capitalization of member name '{0}'.</Resolution>
+   <Resolution Name="Type">Correct the capitalization of type name '{0}'.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Naming/LongAcronymsShouldBePascalCased.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="85">Error</MessageLevel>
+   <File Name="NamingRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="MarkAssembliesWithClsCompliant" Category="Microsoft.Design" CheckId="CA1014">
+   <Name>Mark assemblies with CLSCompliant</Name>
+   <Description>Assemblies should explicitly state their Cls compliance using the CLSCompliant attribute. An assembly without this attribute is not CLS-compliant. Assemblies, modules, and types can be CLS-compliant even if some parts of the assembly, module, or type are not CLS-compliant. The following rules apply: 1) If the element is marked CLSCompliant, any noncompliant members must have the CLSCompliant attribute present with its argument set to false. 2) A comparable CLS-compliant alternative member must be supplied for each member that is not CLS-compliant.</Description>
+   <Resolution Name="NoAttr">'{0}' should be marked with CLSCompliantAttribute and its value should be true.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Design/MarkAssembliesWithClsCompliant.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="95">Error</MessageLevel>
+   <File Name="DesignRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="MarkBooleanPInvokeArgumentsWithMarshalAs" Category="Microsoft.Interoperability" CheckId="CA1414">
+   <Name>Mark boolean pinvoke arguments with MarshalAs</Name>
+   <Description>All boolean pinvoke parameters and return types should be explicitly marked with the MarshalAs attribute. By default, the system will marshal all booleans as 4-byte UnmanagedType.Bool. This is the correct behavior for Win32 'BOOL' arguments but incorrect for C++ 'bool' arguments, which should be marshaled as 1-byte UnmanagedType.U1. For code maintainability reasons, always explicitly specify the marshaling information for boolean arguments and return values.</Description>
+   <Resolution Name="Return">Add the MarshalAsAttribute to the return type of PInvoke {0}. If the corresponding unmanaged return type is a 4-byte Win32 'BOOL', use MarshalAs(UnmanagedType.Bool). For a 1-byte C++ 'bool', use MarshalAs(UnmanagedType.U1).</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Interoperability/MarkBooleanPInvokeArgumentsWithMarshalAs.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="95">Warning</MessageLevel>
+   <File Name="InteroperabilityRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="MovePInvokesToNativeMethodsClass" Category="Microsoft.Design" CheckId="CA1060">
+   <Name>Move pinvokes to native methods class</Name>
+   <Description>This type contains members with the DllImport attribute. Members with the DllImport attribute should be contained in classes named NativeMethods, SafeNativeMethods, or UnsafeNativeMethods.</Description>
+   <Resolution Name="Default">Because it is a DllImport method, {0} should be defined in a class named NativeMethods, SafeNativeMethods, or UnsafeNativeMethods.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Design/MovePInvokesToNativeMethodsClass.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="95">CriticalWarning</MessageLevel>
+   <File Name="DesignRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="NestedTypesShouldNotBeVisible" Category="Microsoft.Design" CheckId="CA1034">
+   <Name>Nested types should not be visible</Name>
+   <Description>Do not use public, protected or protected internal (Protected Friend) nested types as a way of grouping types. Use namespaces for this purpose. There are very limited scenarios where nested types are the best design. Also, nested type member accessibility is not clearly understood by all audiences. Enumerators are exempt from this rule.</Description>
+   <Resolution Name="Default">Do not nest type '{0}' or change its accessibility so that it is not externally visible.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Design/NestedTypesShouldNotBeVisible.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="90">Error</MessageLevel>
+   <File Name="DesignRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="OverrideEqualsAndOperatorEqualsOnValueTypes" Category="Microsoft.Performance" CheckId="CA1815">
+   <Name>Override equals and operator equals on value types</Name>
+   <Description>The default System.ValueType implementation might not perform as well as a custom implementation.</Description>
+   <Resolution Name="Equals">'{0}' should override Equals.</Resolution>
+   <Resolution Name="op_Equality">'{0}' should override the equality (==) and inequality (!=) operators.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Performance/OverrideEqualsAndOperatorEqualsOnValueTypes.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="75">Warning</MessageLevel>
+   <File Name="PerformanceRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="PInvokesShouldNotBeVisible" Category="Microsoft.Interoperability" CheckId="CA1401">
+   <Name>PInvokes should not be visible</Name>
+   <Description>Interop layer should not be public. The DllImport attribute should not be applied to publicly accessible members (public or protected).</Description>
+   <Resolution Name="Default">Change the accessibility of DllImport '{0}' so that it is no longer visible from outside its assembly.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Interoperability/PInvokesShouldNotBeVisible.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="50">CriticalError</MessageLevel>
+   <File Name="InteroperabilityRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="RemoveUnusedLocals" Category="Microsoft.Performance" CheckId="CA1804">
+   <Name>Remove unused locals</Name>
+   <Description>Remove locals that are not used or are only assigned to in method implementations.</Description>
+   <Resolution Name="Default">{0} declares a local, '{1}', of type {2}, which is never used or is only assigned to. Use this local or remove it.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Performance/RemoveUnusedLocals.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="95">Warning</MessageLevel>
+   <File Name="PerformanceRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="ShortAcronymsShouldBeUppercase" Category="Microsoft.Naming" CheckId="CA1706">
+   <Name>Short acronyms should be uppercase</Name>
+   <Description>Two letter acronyms should be upper-cased. For example, use System.IO instead of System.Io. Although it may be common practice for some two letter acronyms to not be fully capitalized, violations of this rule should not be excluded for this reason. For example, 'DbConnection', is common but incorrect; use DBConnection. A violation of this rule might be required for compatibility with existing, non-managed symbol schemes. In general, however, these symbols should not be visible outside the assembly that uses them.</Description>
+   <Resolution Name="Member">Correct the capitalization of '{0}' in member name '{1}'.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Naming/ShortAcronymsShouldBeUppercase.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="85">Error</MessageLevel>
+   <File Name="NamingRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="SpecifyIFormatProvider" Category="Microsoft.Globalization" CheckId="CA1305">
+   <Name>Specify IFormatProvider</Name>
+   <Description>If an overload exists that takes an IFormatProvider argument, it should always be called in favor of an overload that does not. Some methods in the common language runtime convert a value to or from a string representation and take a string parameter that contains one or more characters, called format specifiers, which indicate how the value is to be converted. If the meaning of the format specifier varies by culture, a formatting object supplies the actual characters used in the string representation. In scenarios where sorting and comparison behavior should never change between cultures, specify CultureInfo.InvariantCulture.</Description>
+   <Resolution Name="Default">{0} makes a call to {1} that does not explicitly provide an IFormatProvider. This should be replaced with a call to {2}.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Globalization/SpecifyIFormatProvider.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="95">Error</MessageLevel>
+   <File Name="GlobalizationRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="SpecifyMessageBoxOptions" Category="Microsoft.Globalization" CheckId="CA1300">
+   <Name>Specify MessageBoxOptions</Name>
+   <Description>In order to run correctly on right-to-left systems, all calls to MessageBox.Show should use the overload that specifies MessageBoxOptions as an argument. Programs should detect whether they are running on a right-to-left system at run-time and pass the appropriate MessageBoxOptions value in order to display correctly.</Description>
+   <Resolution Name="Default">Change {0} to call the MessageBox.Show overload that specifies MessageBoxOptions, and make sure to set MessageBoxOptions.RightAlign and MessageBoxOptions.RtlReading if RightToLeft is set to RightToLeft.Yes on the parent control. If it is set to RightTolLeft.Inherit, check its parent until a value indicating Yes or No is found.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Globalization/SpecifyMessageBoxOptions.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="95">Error</MessageLevel>
+   <File Name="GlobalizationRules.dll" Version="8.0.0.0" />
+  </Rule>
+  <Rule TypeName="TestForEmptyStringsUsingStringLength" Category="Microsoft.Performance" CheckId="CA1820">
+   <Name>Test for empty strings using string length</Name>
+   <Description>To test for empty strings, check if String.Length is equal to zero. Constructs such as "".Equals(someString) and String.Empty.Equals(someString) are less efficient than testing the string length. Replace these with checks for someString.Length == 0.</Description>
+   <Resolution Name="IsNullOrEmpty">Replace the call to String.{0}({1}) in '{2}' with a call to String.IsNullOrEmpty.</Resolution>
+   <Owner />
+   <Url>http://www.gotdotnet.com/team/fxcop/docs/rules.aspx?version=unstable&amp;url=/Performance/TestForEmptyStringsUsingStringLength.html</Url>
+   <Email>fxcopbug@microsoft.com</Email>
+   <MessageLevel Certainty="95">Warning</MessageLevel>
+   <File Name="PerformanceRules.dll" Version="8.0.0.0" />
+  </Rule>
+ </Rules>
+</FxCopReport>
