@@ -668,7 +668,6 @@ Returns the path of a binary it is installed in.
 sub pathOf
 {
     my $binary = shift;
-    
     return qx{which $binary 2>/dev/null};
 }
 
@@ -681,23 +680,10 @@ Returns whether a binary is found.
 sub isInPath
 {
     my $binary = shift;
-    
     my $path = pathOf($binary);
 
     return $path ? 1 : 0;
 }
 
-=item B<isPackInstalled()>
-
-Check whether a certain package is installed. Could be refined somehow to use
-the package mechanism of the given distribution!?
-
-=cut
-
-sub isPackInstalled
-{
-    my $pack = shift;
-    return isInPath($pack);
-}
 
 1;

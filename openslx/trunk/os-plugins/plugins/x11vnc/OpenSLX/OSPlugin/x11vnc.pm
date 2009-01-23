@@ -189,7 +189,7 @@ sub installationPhase
 
     # should we distinguish between the two different packages!?
     # libvnc should be part of the xorg package!? (so no check needed)
-    if (!$self->{'distro'}->isPackInstalled('x11vnc')) {
+    if (!isInPath('x11vnc')) {
         $self->{'distro'}->installPackages(
             $self->{'os-plugin-engine'}->getInstallablePackagesForSelection('x11vnc')
         );
