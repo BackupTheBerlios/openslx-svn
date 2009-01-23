@@ -264,6 +264,7 @@ sub _writeWrapperScript
             #TODO: test it with local installed vmplayer!!!
             export LD_LIBRARY_PATH=$vmpath/lib
             export GTK_PIXBUF_MODULE_FILE=$vmpath/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
+            export FONTCONFIG_PATH=$vmpath/libconf/etc/fonts
             PREFIX=$vmpath # depends on the vmware location
             exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \\
                 "\$PREFIX"'/lib' \\
