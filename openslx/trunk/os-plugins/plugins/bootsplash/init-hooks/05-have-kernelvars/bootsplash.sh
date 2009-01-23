@@ -1,7 +1,8 @@
 # splashy depends on /proc/fb with VESA
 # only activate with kernel option quiet and no debuglevel
 if grep -E "(VESA|VGA)" /proc/fb > /dev/null 2>&1 \
-  && grep -qi " quiet " /proc/cmdline > /dev/null 2>&1 \
+  && grep -qie " quiet " -qie "^quiet " -qie " quiet$" /proc/cmdline \
+    > /dev/null 2>&1 \
   && [ $DEBUGLEVEL -eq 0 ] \
   && [ -e /bin/splashy ] ; then
     export no_bootsplash=0
