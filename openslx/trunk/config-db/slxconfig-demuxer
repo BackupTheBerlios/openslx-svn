@@ -575,10 +575,9 @@ sub createBootEnvironmentsForSystem
         vlog(0, _tr("creating boot environment for $bootType"));
     
         my $bootEnv = bootEnvironmentForType($bootType);
-        $bootEnv->writeFilesRequiredForBooting(
+        $initramfsCount += $bootEnv->writeFilesRequiredForBooting(
             $info, $buildPath, $slxVersion
         );
-        $initramfsCount++;
 
         my $systemPath 
             = "$bootEnv->{'target-path'}/client-config/$info->{'external-id'}";
