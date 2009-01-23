@@ -156,11 +156,15 @@ in $0\ncountry=\"${COUNTRY}\"" >>/etc/initramfs-setup
         chmod u+x /bin/debugshell
         getty -i -n -l /bin/debugshell 38400 tty2 &
         # start logging (debuglevel >=3)
+        # fixme: SuSE hangs in Creating /var/log/boot.msg if activated
         echo "Syslogd started on third console (tty3)"
-        syslogd -C2048
-        logread -f > /dev/tty3 &
-        logread -f >> /var/log/messages &
-        klogd
+        # just to have some name in syslog
+        echo "(slx init)" >/proc/sys/kernel/hostname
+        #syslogd -C2048
+        syslogd #-O /var/log/messages
+	klogd
+        #logread -f > /dev/tty3 2>/dev/null &
+        #logread -f >> /var/log/messages 2>/dev/null &
       fi
     ;;
     # essid for WLAN boot (experimental, might be moved to a module component
@@ -359,8 +363,6 @@ else
   # modprobe should stay quiet
   MODPRV="-q"
   LOGFILE="/dev/null"
-  # redirect console (after /dev/null is available, and /dev mounted)
-  #[ "${DEBUGLEVEL}" != 8 ] && exec < /dev/console > /dev/null 2>&1
 fi
 
 # check for WLAN specific settings and check for multiple ethernet interfaces
@@ -441,14 +443,15 @@ if [ -z "$nodhcp" ] ; then
     waitfor /tmp/dhcp-done 20000
     . /tmp/confviadhcp
     # by now there should be a proper ip configuration present
-    if [ -z "$clientip" -o -z "$subnet_mask" -o -z "$gateway" -o \
-         -z "$broadcast_address" ] ; then error "$init_errdhcp"
+    if [ -z "$clientip" -o -z "$subnet_mask" -o -z "$broadcast_address" ]
+      then error "$init_errdhcp"
     else
       { ip addr add \
           $clientip/$(ipcalc -s -p $clientip $subnet_mask|sed s/.*=//) \
-          broadcast $broadcast_address dev $nwif 2>/dev/null && \
-        ip route add default via $gateway 2>/dev/null; } || \
-          error "$init_erripcfg"
+          broadcast $broadcast_address dev $nwif 2>/dev/null || \
+            error "$init_erripcfg"; }
+      # if gateway is available set it
+      [ -n $gateway ] && ip route add default via $gateway 2>/dev/null
     fi
     # fixme: to be checked!!
     #  else
@@ -484,7 +487,7 @@ if [ -n "${bldmod}" ] ; then
   for module in ${bldmod} ; do
     modprobe ${MODPRV} ${module} || error "$init_errbld"
   done
-  [ -x /bin/mdev ] && mdev -s
+  mdev -s
   [ -z "$bldrfst" ] && bldrfst=squashfs
   bldhost=$(checkip $bldhost)
   if [ $DEBUGLEVEL -eq 20 ] ; then
@@ -494,6 +497,9 @@ if [ -n "${bldmod}" ] ; then
   fi
   # fixme: check for fs in /proc/filesystems before trying to load the module
   modprobe ${MODPRV} ${bldrfst} || error "$init_errbld" nonfatal
+
+  # for debugging: interface might not be properly up - check reachability
+  [ $DEBUGLEVEL -ge 1 ] && ping -c 1 -w 15 ${bldhost} >/dev/null 2>&1
 
   case "${srvproto}" in
     # network block device present in standard kernel
@@ -651,6 +657,8 @@ if [ -z "${bldmod}" -a -z "${bldserver}" ] ; then
     # we got a problem here
     error "$init_nfssp" fatal
   fi
+  # interface might not be properly up - check reachability
+  ping -c 1 -w 15 ${nfsserver} >/dev/null 2>&1
   for proto in tcp udp fail; do
     [ $proto = "fail" ] && { error "$init_nfs"; break; }
     mount -n -t nfs -o ro,nolock,${proto} ${nfsroot} /mnt && break
@@ -924,7 +932,6 @@ sed -n "s,/mnt,,;/\/tmp /p" /proc/mounts >> /mnt/etc/mtab
 umount -n /sys || error "$init_errsys" nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1
 chmod 1777 /mnt/dev/shm /mnt/tmp 2>/dev/null
-mount -n --move /dev /mnt/dev
 
 runinithook '95-cleanup'
 
@@ -934,13 +941,20 @@ killall -9 hwautocfg servconfig debugshell hwinfo 2>/mnt/dev/null
 [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
   echo "** SLX init ended near $(sysup)"
 # kill the watchdog (autopoweroff, if stage3 init never finishes)
-[ -f /tmp/watchdogpid ] && kill $(cat /tmp/watchdogpid) 2>/mnt/dev/null
-# move logfile into stage4 filesystem (if exists)
+[ -f /tmp/watchdogpid ] && kill $(cat /tmp/watchdogpid) 2>/dev/null
+# stop logging services if required and move logfile into stage4 filesystem
+# (if exists)
+killall klogd 2>/dev/null
 [ -f /var/log/slx-boot.log ] && mv /var/log/slx-boot.log \
   /mnt/var/log/slx-s3boot.log && cp /var/log/messages \
-  /mnt/var/log/messages_slx
+  /mnt/var/log/messages 2>/dev/null
+# if no syslog plugin was configured, start the daemon again writing to no
+# logfile directly (useless fake test as placeholder) 
+#[ ! -e syslog ] && syslogd -O /mnt/var/log/testfile
 
-# unmount /proc and unset all old,unneeded environment variables
+# move /dev and unmount /proc and unset all old, unneeded environment
+# variables
+mount -n --move /dev /mnt/dev
 umount -n /proc
 unset client debug date initrd ip bldroot nfsroot rootfs ticks vci vga
 unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \

@@ -1,4 +1,4 @@
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2006..2008 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -41,6 +41,7 @@ use vars qw(%supportedDistros);
     'debian-3.1'        => 'clone,install,update,shell',
     'debian-4.0'        => 'clone,install,update,shell',
     'debian-4.0_amd64'  => 'clone,install,update,shell',
+    'debian-5.0'        => 'clone,update,shell',
     'fedora-6'          => 'clone,install,update,shell',
     'fedora-6_x86_64'   => 'clone,install,update,shell',
     'gentoo-2007.X'     => 'clone',
@@ -52,6 +53,8 @@ use vars qw(%supportedDistros);
     'suse-10.3_x86_64'  => 'clone,update,shell',
     'suse-11.0'         => 'clone,update,shell',
     'suse-11.0_x86_64'  => 'clone,update,shell',
+    'suse-11.1'         => 'clone,update,shell',
+    'suse-11.1_x86_64'  => 'clone,update,shell',
     'ubuntu-7.04'       => 'clone,install,update,shell',
     'ubuntu-7.04_amd64' => 'clone,install,update,shell',
     'ubuntu-7.10'       => 'clone,update,shell',
@@ -59,6 +62,7 @@ use vars qw(%supportedDistros);
     'ubuntu-8.04'       => 'clone,update,shell',
     'ubuntu-8.04_amd64' => 'clone,update,shell',
     'ubuntu-8.10'       => 'clone,update,shell',
+    'ubuntu-8.04_amd64' => 'clone,update,shell',
 );
 
 my %localHttpServers;
