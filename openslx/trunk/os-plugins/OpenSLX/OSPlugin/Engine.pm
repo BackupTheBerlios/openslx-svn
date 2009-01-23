@@ -466,6 +466,8 @@ install/remove a plugin into/from a vendor-OS:
 
 Checks if the stage3 values given in B<$stage3Attrs> are allowed and make sense.
 
+This method gets also invoken whenever changes by slxconfig where made.
+
 If all values are ok, this method returns 1 - if not, it extends the given
 problems array-ref with the problems that were found (and returns undef).
 
