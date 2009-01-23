@@ -326,8 +326,10 @@ sub callInSubprocess
     my $pid = fork();
     if (!$pid) {
         # child -> execute the given function and exit:
-        eval { $childFunc->(); 1 }
-            or die $@;
+        if (! eval { $childFunc->(); 1 }) {
+            $@ = "*** $@" unless substr( $@, 0, 4) eq '*** ';
+            print STDERR "$@\n";
+        }
         exit 0;
     }
 
@@ -803,14 +805,13 @@ sub _doThrowOrWarn
     my $type = shift;
     my $msg = shift;
     
-    # use '°°°' for warnings and '***' for errors
+    # use '!  ' for warnings and '***' for errors
+    $msg =~ s[^(!  |\*\*\*) ][]gms;
     if ($type eq 'carp' || $type eq 'warn' || $type eq 'cluck') {
-        $msg =~ s[^(!  |\*\*\*) ][]igms;
-        $msg =~ s[^][!   ]igms;
+        $msg =~ s[^][!   ]gms;
     }
     else {
-        $msg =~ s[^(!  |\*\*\*) ][]igms;
-        $msg =~ s[^][*** ]igms;
+        $msg =~ s[^][*** ]gms;
     }
 
     if ($openslxConfig{'debug-confess'}) {
