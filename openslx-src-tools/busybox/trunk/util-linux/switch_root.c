@@ -96,6 +96,11 @@ int switch_root_main(int argc UNUSED_PARAM, char **argv)
 
 	// Overmount / with newdir and chroot into it.  The chdir is needed to
 	// recalculate "." and ".." links.
+
+	if ( !lstat("/rorootfs", &st1 ) )
+		if ( mount("/rorootfs", "/", NULL, MS_MOVE, NULL) )
+			bb_error_msg_and_die("moving rorootfs");
+
 	if (mount(".", "/", NULL, MS_MOVE, NULL))
 		bb_error_msg_and_die("error moving root");
 	xchroot(".");
