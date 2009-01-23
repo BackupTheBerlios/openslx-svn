@@ -12,9 +12,9 @@
 # script is included from init via the "." load function - thus it has all
 # variables and functions available
 
-[ -e /etc/functions ]        && . /etc/functions
-[ -e /etc/distro-functions ] && . /etc/distro-functions
-[ -d /etc/sysconfig ] && . /etc/sysconfig/config
+# check if the plugin config directory is generally available or if the client
+# configuration failed somehow
+[ -d /initramfs/plugin-conf ] && error "${init_picfg}" nonfatal
 
 if [ -e /initramfs/plugin-conf/x11vnc.conf ]; then
   . /initramfs/plugin-conf/x11vnc.conf

@@ -14,11 +14,16 @@
 # script is included from init via the "." load function - thus it has all
 # variables and functions available
 
-testmkd /mnt/var/log/xen
-testmkd /mnt/var/run/xend
-testmkd /mnt/var/run/xenstored
+if [ -e /initramfs/plugin-conf/xen.conf ]; then
+  . /initramfs/plugin-conf/xen.conf
+  if [ $xen_active -ne 0 ]; then
+    testmkd /mnt/var/log/xen
+    testmkd /mnt/var/run/xend
+    testmkd /mnt/var/run/xenstored
 
-rllinker "xendomains" 14 8
-rllinker "xend" 13 9
+    rllinker "xendomains" 14 8
+    rllinker "xend" 13 9
 
-modprobe loop max_loop=64
+    modprobe loop max_loop=64
+  fi
+fi

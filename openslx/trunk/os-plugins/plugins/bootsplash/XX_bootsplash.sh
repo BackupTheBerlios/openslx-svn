@@ -1,5 +1,3 @@
-#!/bin/ash
-#
 # Copyright (c) 2007..2008 - RZ Uni Freiburg
 # Copyright (c) 2008 - OpenSLX GmbH
 #
@@ -13,9 +11,9 @@
 #
 # stage3 part of 'bootsplash' plugin - the runlevel script
 #
-. /etc/functions
-. /etc/distro-functions
-[ -d /etc/sysconfig ] && . /etc/sysconfig/config
+# script is included from init via the "." load function - thus it has all
+# variables and functions available
+
 if [ -e /initramfs/plugin-conf/bootsplash.conf ]; then
   . /initramfs/plugin-conf/bootsplash.conf
   if [ $bootsplash_active -ne 0 ]; then
