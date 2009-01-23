@@ -66,20 +66,12 @@ divert() {
   for lib in $(find ${ROOT} -wholename \
 	"*/xorg/modules" -prune -a '!' -type d -o -name '*so*'); do
 
-<<<<<<< .mine
     # strip leading ROOT - to get e.g.: "/usr/lib/libGL.so.1.2"
     stripstr ${lib} ${ROOT}
     rlib=${VAL}
     # strip leading /usr/lib/ - name for /var/X11R6/lib
     stripstr ${rlib} ${RR}
     divname=${VAL}
-=======
-    if [ -e "${cmplib}" -a -e "${lib}" ]; then
-      # system folder conflicts with ROOT
-      linkMesa ${cmplib}
-      continue
-    fi
->>>>>>> .r2371
 
     echo "${lib} ${rlib} ${divname} after stripping"
 
