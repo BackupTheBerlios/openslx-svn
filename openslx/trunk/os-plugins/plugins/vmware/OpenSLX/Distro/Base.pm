@@ -12,7 +12,7 @@
 #    - provides empty base of the OpenSLX OSPlugin Distro API for the vmware
 #     plugin.
 # -----------------------------------------------------------------------------
-package OpenSLX::Distro::base;
+package OpenSLX::Distro::Base;
 
 use strict;
 use warnings;
@@ -27,7 +27,10 @@ use OpenSLX::Utils;
 ################################################################################
 sub new
 {
-    confess "Creating OpenSLX::OSPlugin::Distro::Base-objects directly makes no sense!";
+    my $class = shift;
+    my $self = {};
+    return bless $self, $class;
+
 }
 
 sub initialize
