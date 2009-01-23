@@ -35,7 +35,7 @@ sub GDMPathInfo
     my $pathInfo = $self->SUPER::GDMPathInfo();
     
     # create gdm.conf-custom instead of gdm.conf
-    $pathInfo->{config} = '/etc/X11/gdm/gdm.conf-custom';
+    $pathInfo->{config} = '/etc/gdm/gdm.conf-custom';
 
     return $pathInfo;
 }
