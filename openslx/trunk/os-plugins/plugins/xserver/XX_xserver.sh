@@ -85,6 +85,8 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
       xmodule="nvidia"
       PLUGIN_PATH="/mnt${PLUGIN_ROOTFS}"
 
+      # sometimes the kernel module needs agpgart
+      modprobe agpgart
       # insert kernel driver
       chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/nvidia.ko
 
@@ -237,7 +239,7 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
       ln -fs ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 ${glliblinks}/libGL.so.1
       ln -fs ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 ${glliblinks}/libGL.so.1.2
 
-      # impossible to load it directly via stage3 insmod?
+      # impossible to load it directly via stage3 insmod - yes, somehow this is too big
       chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/fglrx.ko
       # we need some pci.ids for fglrx driver
       cp -r "${PLUGIN_PATH}/etc/ati" /mnt/etc
