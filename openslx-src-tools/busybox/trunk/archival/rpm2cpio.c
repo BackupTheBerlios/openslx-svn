@@ -75,13 +75,23 @@ int rpm2cpio_main(int argc, char **argv)
 	skip_header(rpm_fd);
 
 	xread(rpm_fd, &magic, 2);
-	if ((magic[0] != 0x1f) || (magic[1] != 0x8b)) {
-		bb_error_msg_and_die("invalid gzip magic");
-	}
-
+	if ((magic[0] == 0x1f) && (magic[1] == 0x8b)) {
 	if (unpack_gz_stream(rpm_fd, STDOUT_FILENO) < 0) {
-		bb_error_msg("error inflating");
+			bb_error_msg("error inflating (gzip)");
+		}
 	}
+	else if ((magic[0] == 'B') && (magic[1] == 'Z')) {
+#ifdef CONFIG_FEATURE_RPM2CPIO_BZIP2
+		/* return to position before magic (eek..!) */
+		lseek(rpm_fd, -2, SEEK_CUR);
+		if (unpack_bz2_stream(rpm_fd, fileno(stdout)) != 0)
+			bb_error_msg("error inflating (bzip2)");
+#else
+		bb_error_msg_and_die("bzip2 not supported");
+#endif
+	}
+	else
+		bb_error_msg_and_die("not gzip or bzip2 compressed");
 
 	close(rpm_fd);
 
