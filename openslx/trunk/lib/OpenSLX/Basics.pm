@@ -605,9 +605,11 @@ sub instantiateClass
     $moduleName .= '.pm';
 
     vlog(3, "trying to load $moduleName...");
-    my @originalINC = @INC;
-    if (!eval { unshift @INC, @$incPaths; require $moduleName; 1 } ) {
-        @INC = @originalINC;
+    foreach my $incPath (@$incPaths) {
+        next if grep { $_ eq $incPath } @INC;
+        unshift @INC, $incPath;
+    }
+    if (!eval { require $moduleName; 1 } ) {
         # check if module does not exists anywhere in search path
         if (!-e $moduleName) {
             return if $flags->{acceptMissing};
@@ -616,7 +618,6 @@ sub instantiateClass
         # some other error (probably compilation problems)
         die _tr("Unable to load module '%s' (%s)\n", $moduleName, $@);
     }
-    @INC = @originalINC;
     if (defined $requestedVersion) {
         my $classVersion = $class->VERSION;
         if ($classVersion < $requestedVersion) {
@@ -682,7 +683,6 @@ you can specify that base path via the I<$pathToClass> param.
 
 =cut
 
-
 sub loadDistroModule
 {
     my $params = shift;
@@ -724,8 +724,7 @@ sub loadDistroModule
             vlog(1, "trying ${distroScope}::$distroModule ...");
             my $flags = { acceptMissing => 1 };
             if ($pathToClass) {
-                $flags->{pathToClass} = $pathToClass;
-                $flags->{incPaths}    = [ $pathToClass ];
+                $flags->{incPaths} = [ $pathToClass ];
             }
             $distro = instantiateClass("${distroScope}::$distroModule", $flags);
             return 0 if !$distro;   # module does not exist, try next
