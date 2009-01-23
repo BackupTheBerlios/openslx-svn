@@ -98,17 +98,6 @@ sub initialize
         $self->{'chrooted-openslx-base-path'}   = '/mnt/opt/openslx';
         $self->{'chrooted-openslx-config-path'} = '/mnt/etc/opt/openslx';
 
-        # check and store given attribute set
-        my $knownAttrs = $self->{plugin}->getAttrInfo();
-        my @unknownAttrs 
-            = grep { !exists $knownAttrs->{$_} } keys %$givenAttrs;
-        if (@unknownAttrs) {
-            die _tr(
-                "The plugin '%s' does not support these attributes:\n\t%s",
-                $pluginName, join(',', @unknownAttrs)
-            );
-        }
-
         # merge attributes that were given on cmdline with the ones that
         # already exist in the DB and finally with the default values
         $self->{'plugin-attrs'} = { %$givenAttrs };
@@ -150,10 +139,41 @@ sub installPlugin
     
     $self->_checkIfRequiredPluginsAreInstalled();
 
+    # look for unknown attributes
+    my $attrs = $self->{'plugin-attrs'};
+    my $attrInfos = $self->{plugin}->getAttrInfo();
+    my @unknownAttrs = grep { !exists $attrInfos->{$_} } keys %$attrs;
+    if (@unknownAttrs) {
+        die _tr(
+            "The plugin '%s' does not support these attributes:\n\t%s",
+            $self->{'plugin-name'}, join(',', @unknownAttrs)
+        );
+    }
+
+    # check all attr-values against the regex of the attribute (if any)
+    my @attrProblems;
+    foreach my $attr (keys %$attrs) {
+        my $value = $attrs->{$attr};
+        next if !defined $value;
+        my $attrInfo = $attrInfos->{$attr};
+        my $regex = $attrInfo->{content_regex};
+        if ($regex && $value !~ $regex) {
+            push @attrProblems, _tr(
+                "the value '%s' for attribute %s is not allowed.\nAllowed values are: %s",
+                $value, $attr, $attrInfo->{content_descr}
+            );
+        }
+    }
+
+    if (@attrProblems) {
+        my $complaint = join "\n", @attrProblems;
+        die $complaint;
+    }
+
     if ($self->{'vendor-os-name'} ne '<<<default>>>') {
 
         # as the attrs may be changed by the plugin during installation, we
-        # have to find a way to pass them back to this process (remember;
+        # have to find a way to pass them back to this process (remember:
         # installation takes place in a forked process in order to do a chroot).
         # We simply serialize the attributes into a temp file and deserialize
         # it in the calling process.
@@ -163,11 +183,6 @@ sub installPlugin
             = "$self->{'chrooted-plugin-temp-path'}/serialized-attrs";
     
         mkpath([ $self->{'plugin-repo-path'}, $self->{'plugin-temp-path'} ]);
-    
-        # HACK: do a dummy serialization here in order to get Storable 
-        # completely loaded (otherwise it will complain in the chroot about 
-        # missing modules).
-        store $self->{'plugin-attrs'}, $serializedAttrsFile;
     
         # invoke plugin and let it prepare the installation
         $self->{plugin}->preInstallationPhase( {
@@ -179,6 +194,11 @@ sub installPlugin
             'vendor-os-path'      => $self->{'vendor-os-path'},
         } );
 
+        # HACK: do a dummy serialization here in order to get Storable 
+        # completely loaded (otherwise it will complain in the chroot about 
+        # missing modules).
+        store $self->{'plugin-attrs'}, $serializedAttrsFile;
+    
         $self->_callChrootedFunctionForPlugin(
             sub {
                 # invoke plugin and let it install itself into vendor-OS
@@ -202,11 +222,22 @@ sub installPlugin
 
         # now retrieve (deserialize) the current attributes and store them
         $self->{'plugin-attrs'} = retrieve $serializedAttrsFile;
-    
+
         # cleanup temp path
         rmtree([ $self->{'plugin-temp-path'} ]);
     }
-    
+
+    # now update the vendorOS-attrs and let the plugin itself check the
+    # stage3 attrs    
+    $self->{'vendorOS-attrs'} = $self->{'plugin-attrs'};
+    $self->checkStage3AttrValues(
+        $self->{'plugin-attrs'}, \@attrProblems
+    );
+    if (@attrProblems) {
+        my $complaint = join "\n", @attrProblems;
+        die $complaint;
+    }
+
     $self->_addInstalledPluginToDB();
 
     return 1;
@@ -510,10 +541,9 @@ sub checkStage3AttrValues
     my $stage3Attrs = shift;
     my $problemsOut = shift;
 
-    # as the attrs may be changed by the plugin during installation, we
-    # have to find a way to pass them back to this process (remember;
+    # we have to pass any problems back to this process (remember:
     # installation takes place in a forked process in order to do a chroot).
-    # We simply serialize the attributes into a temp file and deserialize
+    # We simply serialize the problems into a temp file and deserialize
     # it in the calling process.
     my $serializedProblemsFile 
         = "$self->{'plugin-temp-path'}/serialized-problems";
