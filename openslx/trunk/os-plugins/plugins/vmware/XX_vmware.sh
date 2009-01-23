@@ -24,7 +24,8 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
   # load needed variables
   . /initramfs/plugin-conf/vmware.conf
 
-  # Test if this plugin is activated...
+  # Test if this plugin is activated... more or less useless with the
+  # new plugin system
   if [ $vmware_active -ne 0 ]; then
 
     [ $DEBUGLEVEL -gt 0 ] && echo "executing the 'vmware' os-plugin ...";
@@ -35,11 +36,22 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     #. /etc/distro-functions
     #. /etc/sysconfig/config
 
+
+    # copy files, /usr/bin/{vmware,vmplayer} are linked to
+    # /var/X11R6/bin in stage1. This way the wrapper of vmware or
+    # vmplayer will work like the usual once. And its compatible with
+    # the runvmware-v2 skript. No path-changes needed
+    if [ "${vmware_kind}" = "local" ]; then
+      cp /mnt/opt/openslx/plugin-repo/vmware/vmware \
+         /mnt/opt/openslx/plugin-repo/vmware/vmplayer \
+         /mnt/var/X11R6/bin
+    fi
+
     # prepare all needed vmware configuration files
     if [ -d /mnt/etc/vmware ] ; then
       rm -rf /mnt/etc/vmware/*
     else
-      mkdir -p /mnt/etc/vmware
+      testmkd -p /mnt/etc/vmware
     fi
     # write the /etc/vmware/slxvmconfig file
     # check for the several variables and write the several files:
@@ -63,7 +75,7 @@ stage3 setup" > /mnt/etc/vmware/slxvmconfig
         >> /mnt/etc/vmware/dhcpd.conf
       echo "default-lease-time 1800;" \
         >> /mnt/etc/vmware/dhcpd.conf
-      echo "nmax-lease-time 7200;" \
+      echo "max-lease-time 7200;" \
         >> /mnt/etc/vmware/dhcpd.conf
       echo "option domain-name-servers $dnslist;" \
         >> /mnt/etc/vmware/dhcpd.conf
@@ -87,7 +99,7 @@ $(ipcalc -m $vmnet1|sed s/.*=//) {" \
         >> /mnt/etc/vmware/dhcpd.conf 
       echo -e "\trange ${vmsub}.10 ${vmsub}.20;" \
         >> /mnt/etc/vmware/dhcpd.conf 
-      echo -e "\toption broadcast $(ipcalc -b $vmnet1|sed s/.*=//);" \
+      echo -e "\toption broadcast-address $(ipcalc -b $vmnet1|sed s/.*=//);" \
         >> /mnt/etc/vmware/dhcpd.conf 
       echo -e "\toption routers $vmip;" \
         >> /mnt/etc/vmware/dhcpd.conf
@@ -104,12 +116,12 @@ $(ipcalc -m $vmnet1|sed s/.*=//) {" \
       echo -e "vmnet8=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
       echo -e "\n# definition for virtual vmnet8 interface" \
         >> /mnt/etc/vmware/dhcpd.conf
-      echo -e "subnet $(ipcalc -m $vmip/$vmpx|sed s/.*=//) netmask \
-$(ipcalc -n $vmip/$vmpx|sed s/.*=//) {" \
+      echo -e "subnet $(ipcalc -n $vmip/$vmpx|sed s/.*=//) netmask \
+$(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
         >> /mnt/etc/vmware/dhcpd.conf
       echo -e "\trange ${vmsub}.10 ${vmsub}.20;" \
         >> /mnt/etc/vmware/dhcpd.conf
-      echo -e "\toption broadcast $(ipcalc -b $vmip/$vmpx|sed s/.*=//);" \
+      echo -e "\toption broadcast-address $(ipcalc -b $vmip/$vmpx|sed s/.*=//);" \
         >> /mnt/etc/vmware/dhcpd.conf
       echo -e "\toption routers $vmip;" \
         >> /mnt/etc/vmware/dhcpd.conf
@@ -139,7 +151,7 @@ $(ipcalc -n $vmip/$vmpx|sed s/.*=//) {" \
     # copy the runlevelscript to the proper place and activate it
     cp /mnt/opt/openslx/plugin-repo/vmware/vmware.${vmware_kind} \
       /mnt/etc/${D_INITDIR}/vmware \
-      || echo "Error copying runlevel script. Shouldn't happen."
+      || echo "  * Error copying runlevel script. Shouldn't happen."
     chmod a+x /mnt/etc/${D_INITDIR}/vmware
     rllinker "vmware" 20 2
 
@@ -199,6 +211,9 @@ $(ipcalc -n $vmip/$vmpx|sed s/.*=//) {" \
       testmkd /mnt/$i
     done
 
+    # make vmware dhcpd more silent
+    touch /mnt/var/run/vmware/dhcpd.leases
+
     # create the needed devices which effects all vmware options
     # they are not created automatically via module load
     for i in "/dev/vmnet0 c 119 0" "/dev/vmmon c 10 165"; do
@@ -207,6 +222,7 @@ $(ipcalc -n $vmip/$vmpx|sed s/.*=//) {" \
 
     chmod 0700 /dev/vmnet*
     chmod 1777 /mnt/etc/vmware/fd-loop
+    chmod 1777 /mnt/var/run/vmware
 
     # loop file for exchanging information between linux and vmware guest
     if modprobe ${MODPRV} loop; then
@@ -232,11 +248,10 @@ $(ipcalc -n $vmip/$vmpx|sed s/.*=//) {" \
     echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
       >>/mnt/etc/${D_INITDIR}/boot.slx
     
-    chmod 1777 /mnt/var/run/vmware
     # define a variable where gdm/kdm should look for additional sessions
     # do we really need it? looks like we can delete it...
     # export vmsessions=/var/lib/vmware/vmsessions
-    
+
     # TODO: perhaps we can a) kick out vmdir
     #            b) configure vmdir by plugin configuration
     # TODO: How to start it. See Wiki. Currently a) implemnted
@@ -247,7 +262,9 @@ $(ipcalc -n $vmip/$vmpx|sed s/.*=//) {" \
     cp /mnt/opt/openslx/plugin-repo/vmware/runvmware-v2 \
       /mnt/var/X11R6/bin/run-vmware.sh
 
-    [ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmware' os-plugin ...";
+    [ $DEBUGLEVEL -gt 0 ] && echo "  *  done with 'vmware' os-plugin ..."
 
   fi
+else
+  [ $DEBUGLEVEL -gt 0 ] && echo "  * Configuration of vmware plugin failed"
 fi

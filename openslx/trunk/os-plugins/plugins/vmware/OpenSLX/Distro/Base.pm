@@ -86,7 +86,7 @@ sub fillRunlevelScript
         # distinction is made via enabled forwarding
         setup_vmnet1() {
           if [ -n "\$vmnet1" ] ; then
-            test -c /dev/vmnet1 || mknod c 119 1 /dev/vmnet1
+            #test -c /dev/vmnet1 || mknod c 119 1 /dev/vmnet1
             # the path might be directly point to the plugin dir
             $location/vmnet-netifup -d /var/run/vmnet-netifup-vmnet1.pid \\
               /dev/vmnet1 vmnet1
@@ -103,7 +103,7 @@ sub fillRunlevelScript
         # incomplete ...
         setup_vmnet8() {
           if [ -n "\$vmnet8" ] ; then
-            test -c /dev/vmnet1 || mknod c 119 8 /dev/vmnet8
+            #test -c /dev/vmnet8 || mknod c 119 8 /dev/vmnet8
             # /etc/vmware/vmnet-natd-8.mac simply contains a mac like 00:50:56:F1:30:50
             $location/vmnet-natd -d /var/run/vmnet-natd-8.pid \\
               -m /etc/vmware/vmnet-natd-8.mac -c /etc/vmware/nat.conf
@@ -114,7 +114,6 @@ sub fillRunlevelScript
         runvmdhcpd() {
           if [ -n "\$dhcpif" ] ; then
             # the path might be directly point to the plugin dir
-            mkdir /var/run/vmware 2>/dev/null
             $location/vmnet-dhcpd -cf /etc/vmware/dhcpd.conf -lf \\
               /var/run/vmware/dhcpd.leases -pf /var/run/vmnet-dhcpd-vmnet8.pid \$dhcpif
           fi
@@ -134,13 +133,16 @@ sub fillRunlevelScript
             # message output should match the given vendor-os
             echo "Stopping vmware background services ..."
             killall vmnet-netifup vmnet-natd vmnet-bridge vmware vmplayer \\
-              vmware-tray 2>/dev/null
+              vmware-tray vmnet-dhcpd 2>/dev/null
             # wait for shutting down of interfaces
             usleep 50000
             unload_modules
           ;;
-          status)
-            echo "Say something useful here ..."
+          #status)
+          #  echo "Say something useful here ..."
+          #;;
+          restart)
+            "\$0" stop && "\$0" start
           ;;
         esac
         exit 0

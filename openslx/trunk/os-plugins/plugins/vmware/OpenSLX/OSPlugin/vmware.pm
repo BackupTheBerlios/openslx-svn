@@ -203,22 +203,26 @@ sub installationPhase
         $self->_writeRunlevelScript($vmbin, $runlevelScript);
     }
 
-    # generate links for the user executables vmware and player and a 
-    # simplified version of the start script
+    # creat our own simplified version of the vmware and player wrapper
+    # Depending on the configured kind it will be copied in stage3
     @files = qw( vmware vmplayer );
     foreach my $file (@files) {
     # OLTA: this backup strategy is useless if invoked twice, so I have
     #       deactivated it
-    #    rename ("/usr/bin/$file", "/usr/bin/$file.slx-bak");
-        linkFile("/usr/bin/$file", "/var/X11R6/bin/$file");
+    # VOLKER: we need to remove them, because /usr isn't tempfs. So we
+    #         backup it. I don't see where it is invoken twice
+        rename ("/usr/bin/$file", "/usr/bin/$file.slx-bak");
+        # because of tempfs of /var but not /usr we link the file
+        # to /var/..., where we can write in stage3
+        linkFile("/var/X11R6/bin/$file", "/usr/bin/$file");
         my $script = unshiftHereDoc(<<"        End-of-Here");
             #!/bin/sh
             # written by OpenSLX-plugin 'vmware' in Stage1
             # radically simplified version of the original script $file by VMware Inc.
             PREFIX=$vmpath # depends on the vmware location
-            exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \
-                 "\$PREFIX"'/lib' \
-                 "\$PREFIX"'/bin/$file' \
+            exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \\
+                 "\$PREFIX"'/lib' \\
+                 "\$PREFIX"'/bin/$file' \\
                  "\$PREFIX"'/libconf' "\$@"
         End-of-Here
         spitFile("$self->{'pluginRepositoryPath'}/$file", $script);
@@ -236,8 +240,10 @@ sub removalPhase
     # restore old start scripts - to be discussed
     my @files = qw( vmware vmplayer );
     foreach my $file (@files) {
-    #    rename ("/usr/bin/$file.slx-bak", "/usr/bin/$file");
-        unlink("/var/X11R6/bin/$file");
+        unlink("/usr/bin/$file");
+        rename ("/usr/bin/$file.slx-bak", "/usr/bin/$file");
+        # we only create in stage3 a file there... not needed
+        #unlink("/var/X11R6/bin/$file");
     }
     # TODO: path is distro specific
     #rename ("/etc/init.d/vmware.slx-bak", "/etc/init.d/vmware");
