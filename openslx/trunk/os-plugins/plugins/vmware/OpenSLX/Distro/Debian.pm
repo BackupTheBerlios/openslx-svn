@@ -30,6 +30,7 @@ sub fillRunlevelScript
 {
     my $self     = shift;
     my $location = shift;
+    my $kind     = shift;
 
     my $script = unshiftHereDoc(<<"    End-of-Here");
         #! /bin/sh
@@ -52,27 +53,47 @@ sub fillRunlevelScript
         ### END INIT INFO
  
         load_modules() {
-          if [ \${vmware_kind} = "local" ]; then
-            # to be filled in via the stage1 configuration script
-            modprobe -qa vmmon vmnet vmblock 2>/dev/null || return 1
-            # most probably nobody wants to run the parallel port driver ...
-            #modprobe vm...
-          else
-            # load module manuall
-            vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
-            module_src_path=\${vmware_kind_path}/vmroot/modules
-            if [ \${vmware_kind} != "vmpl1.0" ]; then
-              insmod \${module_src_path}/vmblock.ko
-            fi
-            insmod \${module_src_path}/vmmon.ko
-            insmod \${module_src_path}/vmnet.ko
-          fi
+    End-of-Here
+    
+    # Load modules
+    if ($kind eq 'local') {
+        $script .= unshiftHereDoc(<<"        End-of-Here");
+              # to be filled in via the stage1 configuration script
+              modprobe -qa vmmon vmnet vmblock 2>/dev/null || return 1
+              # most probably nobody wants to run the parallel port driver ...
+              #modprobe vm...
+        End-of-Here
+    } else {
+        $script .= unshiftHereDoc(<<"        End-of-Here");
+              # load module manuall
+              vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
+              module_src_path=\${vmware_kind_path}/vmroot/modules
+              insmod \${module_src_path}/vmmon.ko
+              insmod \${module_src_path}/vmnet.ko
+        End-of-Here
+        if ($kind ne "vmpl1.0") {
+            $script .= unshiftHereDoc(<<"            End-of-Here");
+                insmod \${module_src_path}/vmblock.ko
+            End-of-Here
         }
+    }
+
+    # unload modules
+    $script .= unshiftHereDoc(<<"    End-of-Here");
+        }
+
         unload_modules() {
-          # to be filled with the proper list within via the stage1 configuration
-          # script
+          # to be filled with the proper list within via the stage1
+          # configuration script
           rmmod vmmon vmblock vmnet 2>/dev/null
         }
+    End-of-Here
+
+    # setup vmnet0 and vmnet8
+    # depends on specific stage3 setting. I let this if in the code
+    # because else this whole if-reducing process will become more
+    # complicated and the code will get less understandable
+    $script .= unshiftHereDoc(<<"    End-of-Here");
         # the bridged interface
         setup_vmnet0() {
           if [ -n "\$vmnet0" ] ; then
@@ -101,7 +122,7 @@ sub fillRunlevelScript
             fi
             $location/vmnet-dhcpd -cf /etc/vmware/dhcpd-vmnet1.conf -lf \\
               /var/run/vmware/dhcpd-vmnet1.leases \\
-              -pf /var/run/vmnet-dhcpd-vmnet1.pid vmnet1
+              -pf /var/run/vmnet-dhcpd-vmnet1.pid vmnet1 2>/dev/null # or logfile 
           fi
         }
         # incomplete ...
@@ -116,10 +137,10 @@ sub fillRunlevelScript
             ip link set vmnet8 up
             # /etc/vmware/vmnet-natd-8.mac simply contains a mac like 00:50:56:F1:30:50
             $location/vmnet-natd -d /var/run/vmnet-natd-8.pid \\
-              -m /etc/vmware/vmnet-natd-8.mac -c /etc/vmware/nat.conf
+              -m /etc/vmware/vmnet-natd-8.mac -c /etc/vmware/nat.conf 2>/dev/null # or logfile 
             $location/vmnet-dhcpd -cf /etc/vmware/dhcpd-vmnet8.conf \\
               -lf /var/run/vmware/dhcpd-vmnet8.leases \\
-              -pf /var/run/vmnet-dhcpd-vmnet1.pid vmnet8
+              -pf /var/run/vmnet-dhcpd-vmnet1.pid vmnet8 2>/dev/null # or logfile 
           fi
         }
         # initialize the lsb status messages

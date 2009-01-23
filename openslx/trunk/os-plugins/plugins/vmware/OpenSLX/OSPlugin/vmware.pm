@@ -260,9 +260,7 @@ sub checkStage3AttrValues
     my $vm_kind = $stage3Attrs->{'vmware::kind'} || '';
     
     
-    print "DEBUG $vm_kind\n";
     my $vmimg = $stage3Attrs->{'vmware::imagesrc'} || '';
-    print "DEBUG $vmimg\n";
 
     if ($vm_kind eq 'local' && ! -x "/usr/lib/vmware/bin/vmware") {
         push @problems, _tr(
@@ -307,10 +305,11 @@ sub _writeRunlevelScript
     my $self     = shift;
     my $location = shift;
     my $file     = shift;
+    my $kind     = shift;
     
     # $location points to the path where vmware helpers are installed
     # call the distrospecific fillup
-    my $runlevelScript = $self->{distro}->fillRunlevelScript($location);
+    my $runlevelScript = $self->{distro}->fillRunlevelScript($location, $kind);
 
     # OLTA: this backup strategy is useless if invoked twice, so I have
     #       deactivated it
@@ -467,7 +466,7 @@ sub _localInstallation
         ##
         ## Create runlevel script
         my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
-        $self->_writeRunlevelScript($vmbin, $runlevelScript);
+        $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
 
         ##
         ## Create wrapperscripts
@@ -515,7 +514,7 @@ sub _vmpl2Installation {
     ##
     ## Create runlevel script
     my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
-    $self->_writeRunlevelScript($vmbin, $runlevelScript);
+    $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
 
     ##
     ## Create wrapperscripts
@@ -561,7 +560,7 @@ sub _vmpl1Installation {
     ##
     ## Create runlevel script
     my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
-    $self->_writeRunlevelScript($vmbin, $runlevelScript);
+    $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
 
     ##
     ## Create wrapperscripts
