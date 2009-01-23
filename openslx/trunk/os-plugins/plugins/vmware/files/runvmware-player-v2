@@ -537,7 +537,7 @@ sync
 
 # own nvram. We need it for floppy drive b, default nvram has just drive a
 # TODO: optimize, currently kinda inefficient, too much copys
-cp /opt/openslx/plugin-repo/vmware */nvram.5.0 ${tmpdir}/nvram
+cp /opt/openslx/plugin-repo/vmware/*/nvram.5.0 ${tmpdir}/nvram
 
 # adjust volume
 writelog "Unmuting sound...\c"

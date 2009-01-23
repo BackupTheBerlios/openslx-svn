@@ -334,7 +334,7 @@ sub _localInstallation
         # perhaps we need to recheck the following check. depending
         # on the installation it could differ and has multiple build-
         # strings
-        if ($data =~ m{(\d\.\d) build-(\d+)}) {
+        if ($data =~ m{[^\d\.](\d\.\d) build-(\d+)}) {
             $vmversion = $1;
             $vmbuildversion = $2;
         }

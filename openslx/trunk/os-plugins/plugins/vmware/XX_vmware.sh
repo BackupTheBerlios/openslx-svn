@@ -101,7 +101,7 @@ $(ipcalc -m $vmnet1|sed s/.*=//) {" \
     if [ -n "$vmware_vmnet8" ] ; then
       local vmip=${vmware_vmnet8%/*}
       local vmpx=${vmware_vmnet8#*/}
-      uocal vmsub=$(echo $vmip |sed 's,\(.*\)\..*,\1,') # x.x.x.x => x.x.x">
+      local vmsub=$(echo $vmip |sed 's,\(.*\)\..*,\1,') # x.x.x.x => x.x.x">
       echo -e "vmnet8=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
       echo -e "\n# definition for virtual vmnet8 interface" \
         >> /mnt/etc/vmware/dhcpd.conf
