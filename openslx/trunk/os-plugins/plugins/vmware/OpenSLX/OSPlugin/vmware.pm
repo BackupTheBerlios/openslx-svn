@@ -231,7 +231,7 @@ sub preInstallationPhase()
     }
 
     # test just for the case we only set up local vmware
-    if (-d $pkgpath) {
+    if (-d $pkgpath && ($vmpl10 == 1 || $vmpl20 == 1)) {
         # todo: ask oliver about a similiar function
         #       like copyFile() just for directorys
         #       or fix the manual after checked the source of
