@@ -79,7 +79,7 @@
 					
 					<!-- username-entry -->
 					<item type="entry" id="user-entry">
-						<pos anchor="w" x="0" y="40%" height="22" width="140"/>
+						<pos anchor="w" x="0" y="40%" height="22" width="114"/>
 					</item>
 					
 					<!-- password-entry -->

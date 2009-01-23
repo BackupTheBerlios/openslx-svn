@@ -103,7 +103,7 @@ sub suggestAdditionalKernelModules
     
     # Ubuntu needs vesafb and fbcon (which drags along some others)
     if ($makeInitRamFSEngine->{'distro-name'} =~ m{^ubuntu}i) {
-        push @suggestedModules, qw(    vesafb fbcon )
+        push @suggestedModules, qw( vesafb fbcon )
     }
     
     return @suggestedModules;
@@ -113,7 +113,7 @@ sub copyRequiredFilesIntoInitramfs
 {
     my $self                = shift;
     my $targetPath          = shift;
-    my $attrs        = shift;
+    my $attrs               = shift;
     my $makeInitRamFSEngine = shift;
     
     my $themeDir = "$openslxConfig{'base-path'}/share/themes";
