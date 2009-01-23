@@ -417,12 +417,15 @@ sub writeClientConfigurationsForSystem
     my $info      = shift;
     my $buildPath = shift;
     my $attrFile  = shift;
+    my $bootType  = shift;
     my $clients   = shift || [];
-    my $bootEnvs  = shift || [];
 
     foreach my $client (@$clients) {
         next if $client->{name} eq '<<<default>>>';
             # skip default client, as it doesn't need any config-tgz
+            
+        next if ($client->{boot_type} || 'pxe') ne $bootType;
+            # skip clients with non-matching boot type
 
         my $externalSystemID   = $info->{'external-id'};
         my $externalClientName = externalConfigNameForClient($client);
@@ -481,12 +484,11 @@ sub writeClientConfigurationsForSystem
             # be accessed from the client-PC, which doesn't know about the
             # name it is referred to in the openslx-config-DB:
             my $externalClientID = externalIDForClient($client);
-            foreach my $bootEnv (@$bootEnvs) {
-                createTarOfPath(
-                    $buildPath, "${externalClientID}.tgz",
-                    "$bootEnv->{'target-path'}/client-config/$externalSystemID"
-                );
-            }
+            my $bootEnv = bootEnvironmentForType($bootType);
+            createTarOfPath(
+                $buildPath, "${externalClientID}.tgz",
+                "$bootEnv->{'target-path'}/client-config/$externalSystemID"
+            );
         }
     }
     return;
@@ -569,12 +571,10 @@ sub createBootEnvironmentsForSystem
         my $type = $client->{boot_type} || 'pxe';
         $bootTypes{$type}++;
     }
-    my @bootEnvs;
     foreach my $bootType (sort keys %bootTypes) {
         vlog(0, _tr("creating boot environment for $bootType"));
     
         my $bootEnv = bootEnvironmentForType($bootType);
-        push @bootEnvs, $bootEnv;
         $bootEnv->writeFilesRequiredForBooting(
             $info, $buildPath, $slxVersion
         );
@@ -583,10 +583,11 @@ sub createBootEnvironmentsForSystem
         my $systemPath 
             = "$bootEnv->{'target-path'}/client-config/$info->{'external-id'}";
         createTarOfPath($buildPath, "default.tgz", $systemPath);
+
+        writeClientConfigurationsForSystem(
+            $info, $buildPath, $attrFile, $bootType, $clients
+        );
     }
-    writeClientConfigurationsForSystem(
-        $info, $buildPath, $attrFile, $clients, \@bootEnvs
-    );
 
     return;
 }
