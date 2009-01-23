@@ -18,6 +18,8 @@ use warnings;
 
 use base qw(OpenSLX::OSPlugin::Base);
 
+use File::Path;
+
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
@@ -105,7 +107,7 @@ sub copyRequiredFilesIntoInitramfs
     my $targetPath         = shift;
     my $attrs               = shift;
     my $makeInitRamFSEngine = shift;
-    my $pluginRepoPath = $info->{'plugin-repo-path'};
+    my $pluginRepoPath = "$openslxConfig{'base-path'}/lib/plugins/wlanboot";
     
     $makeInitRamFSEngine->addCMD(
        "cp -p $pluginRepoPath/files/bin/* $targetPath/bin/"
@@ -113,6 +115,9 @@ sub copyRequiredFilesIntoInitramfs
     $makeInitRamFSEngine->addCMD(
        "cp -a $pluginRepoPath/files/firmware $targetPath/lib"
     );
+    vlog(1, _tr("wlanboot-plugin: ..."));
+
+    return;
 }
 
 1;
