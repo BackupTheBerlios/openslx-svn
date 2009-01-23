@@ -17,12 +17,12 @@ CONFFILE="/initramfs/plugin-conf/vmchooser.conf"
 if [ -e $CONFFILE ]; then
   . $CONFFILE
   if [ $vmchooser_active -ne 0 ] ; then
-    [ $DEBUGLEVEL -gt 0 ] && echo "executing the 'vmchooser' os-plugin ..."
-    [ $DEBUGLEVEL -gt 0 ] && echo "copying default .desktop file ..."
+    [ $DEBUGLEVEL -gt 0 ] && echo "vmchooser: copying default .desktop file ..."
     # we expect to have this directory to be interpreted by gdm/kdm
     testmkd /mnt/etc/X11/sessions
     cp /mnt/opt/openslx/plugin-repo/vmchooser/default.desktop \
       /mnt/etc/X11/sessions/
+    cp $CONFFILE /mnt/opt/openslx/plugin-repo/vmchooser/stage3.conf
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmchooser' os-plugin ..."
   fi
 fi

@@ -7,15 +7,15 @@
 #
 
 
-if [ -f /etc/machine-setup ]; then
-  . /etc/machine-setup
+if [ -f /opt/openslx/plugin-repo/vmchooser/stage3.conf ]; then
+  . /opt/openslx/plugin-repo/vmchooser/stage3.conf
 fi
 
-if [ -n $slxgrp ]; then
+if [ -n ${env} ]; then
   for FILE in $1/*.xml
   do
     # filter all xmls with pool-param not equal to slxgroup
-    if [ `grep "<pools param=\".*$slxgrp.*\"" $FILE | wc -l` -eq 1 ]; then
+    if [ `grep "<pools param=\".*${env}.*\"" $FILE | wc -l` -eq 1 ]; then
       echo $FILE;
     fi
   done

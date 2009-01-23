@@ -61,6 +61,17 @@ sub getAttrInfo
             content_descr => '1 means active - 0 means inactive',
             default => '1',
         },
+        'vmchooser::env' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                environment, seperates pools based on XML configuration
+            End-of-Here
+            #TODO:
+            #content_regex => qr{^(0|1)$},
+            content_descr => 'name of environment',
+            default => 'default',
+        },
     };
 }
 
@@ -78,7 +89,7 @@ sub installationPhase
     my $pluginBasePath = "$openslxBasePath/lib/plugins/$pluginName/files";
     foreach my $file ( qw( vmchooser printer.sh scanner.sh xmlfilter.sh default.desktop ) ) {
         copyFile("$pluginBasePath/$file", "$pluginRepoPath/");
-	chmod 0755, "$pluginRepoPath/$file";
+    chmod 0755, "$pluginRepoPath/$file";
     }
     
     #copyFile("$pluginBasePath/default.desktop", "/usr/share/xsessions/");
