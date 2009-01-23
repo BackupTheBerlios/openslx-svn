@@ -399,29 +399,29 @@ if [ -n "$ipinfo" ] ; then
   serverip=$(getip 2)
   gateway=$(getip 3)
   subnet_mask=$(getip 4)
-  echo -e "# ip configuration written by $0 script\nclientip=$clientip\n\
+  echo -e "# ip configuration written by $0 script:\nclientip=$clientip\n\
 subnet_mask=$subnet_mask\ngateway=$gateway\nserverip=$serverip" \
-    >>/etc/machine-setup
+    >>/etc/initramfs-setup
   # set static ip address
-  ip addr add \
-    $clientip/$(ipcalc -s -p $clientip $subnet_mask|sed s/.*=//) dev $nwif
-  ip route add default via $gateway
+  ip addr add $clientip/$(ipcalc -s -p $clientip $subnet_mask|sed s/.*=//) \
+    dev $nwif 2>/dev/null
+  ip route add default via $gateway 2>/dev/null
 else
   noipyet="yes"
 fi
 # get configuration data via dhcp (with vendor code identifier if present
-# in ${vci} from kernel command line or machine-setup) ...
+# in ${vci} from kernel command line or initramfs-setup) ...
 [ -z "$nodhcp" ] && rundhcp ${vci} &
 if [ -n "$noipyet" ] ; then
   waitfor /tmp/dhcp-done 20000
-  if [ -f /etc/machine-setup ] ; then
-    . /etc/machine-setup
+  if [ -f /etc/initramfs-setup ] ; then
+    . /etc/initramfs-setup
     [ -f /tmp/confviadhcp ] && . /tmp/confviadhcp
     [ -z "$clientip" -o -z "$subnet_mask" -o -z "$gateway" \
       -o -z "$broadcast_address" ] && error "$init_errdhcp"
     ip addr add $clientip/$(ipcalc -s -p $clientip $subnet_mask) \
-      broadcast $broadcast_address dev $nwif
-    ip route add default via $gateway
+      broadcast $broadcast_address dev $nwif 2>/dev/null
+    ip route add default via $gateway 2>/dev/null
   else
     if [ -n "$file" -a "$srvproto" = "lbdev" ] ; then
       error "$init_erripcfg" nonfatal
@@ -431,7 +431,7 @@ if [ -n "$noipyet" ] ; then
   fi
 fi
 # check if serverip is set as variable @@@serverip@@@
-sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup
+sed "s,@@@serverip@@@,$serverip," -i /etc/initramfs-setup
 [ $DEBUGLEVEL -eq 20 ] && echo "** finished ip config at $(sysup)"
 # ... or ldap if available (in background)
 [ -n "$ldap" ] && ldapconf &
@@ -481,7 +481,7 @@ if [ -n "${bldmod}" ] ; then
       # quickhack, should be read in from URI
       echo 1 > /sys/block/vnbd0/config/vid
       echo 1 > /sys/block/vnbd0/config/rid
-      # check for others in machine-setup and then kernel cmdline
+      # check for others in initramfs-setup and then kernel cmdline
       rootfs="$(sed -n "/rootfs=/p" /etc/initramfs-setup| \
         sed "s,rootfs=,,;s,\",,g") "
       [ "$rootfs" = " " ] && \
