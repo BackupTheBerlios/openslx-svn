@@ -183,9 +183,17 @@ namespace AccountValue
                 {
                     XmlNode xnPrinters2 = doc.SelectSingleNode("/settings/eintrag/printers");
 
+                    System.Diagnostics.ProcessStartInfo sendInfo;
+
                     foreach (XmlNode printer in xnPrinters2.ChildNodes)
                     {
-                        System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p " + printer.Attributes["path"].InnerText);
+                        sendInfo = new System.Diagnostics.ProcessStartInfo("cscript");
+                        sendInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                        sendInfo.Arguments = "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p " + printer.Attributes["path"].InnerText;
+                        System.Diagnostics.Process.Start(sendInfo);//.WaitForExit();
+                        sendInfo = null;
+
+                        //System.Diagnostics.Process.Start("cscript", "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p " + printer.Attributes["path"].InnerText);
                     }
                 }
 
