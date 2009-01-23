@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
 
   
   win.unfold_entries();
-  win.show(argc,argv);
+  win.show(); // argc,argv
   win.border(false);
 
   bool retval = run();
