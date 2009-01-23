@@ -2430,15 +2430,11 @@ sub mergeDefaultAttributesIntoSystem
     my $installedPlugins = shift;
     my $originInfo       = shift;
 
-    # first look into default system
-    my $defaultSystem = $self->fetchSystemByFilter({name => '<<<default>>>'});
-    mergeAttributes($system, $defaultSystem, $originInfo, 'default-system');
-
-    # push any attributes found in the plugins that are installed into
+    # merge any attributes found in the plugins that are installed into
     # the vendor-OS:
     if (ref $installedPlugins eq 'ARRAY' && @$installedPlugins) {
         for my $plugin (@$installedPlugins) {
-            pushAttributes($system, $plugin, $originInfo, 'vendor-OS');
+            mergeAttributes($system, $plugin, $originInfo, 'vendor-OS');
         }
 
         # the above will have merged stage1 attributes, too, so we remove
@@ -2450,7 +2446,12 @@ sub mergeDefaultAttributesIntoSystem
         }
     }
 
-    # finally push the attributes specified for the system itself
+    # merge yet unset stuff from default system
+    my $defaultSystem = $self->fetchSystemByFilter({name => '<<<default>>>'});
+    mergeAttributes($system, $defaultSystem, $originInfo, 'default-system');
+
+    # finally push the attributes specified for the default client (these
+    # overrule anything else)
     my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
     pushAttributes($system, $defaultClient, $originInfo, 'default-client');
 
