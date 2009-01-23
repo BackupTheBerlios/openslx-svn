@@ -103,6 +103,8 @@ sub addAllStage3AttributesToHash
 	foreach my $plugin (values %plugins) {
 		my $pluginAttrInfo = $plugin->getAttrInfo();
 		foreach my $attr (keys %$pluginAttrInfo) {
+			next if !$pluginAttrInfo->{$attr}->{applies_to_systems} 
+				&& !$pluginAttrInfo->{$attr}->{applies_to_clients};
 			$attrInfo->{$attr} = $pluginAttrInfo->{$attr};
 		}
 	}
