@@ -82,25 +82,27 @@ void addInfo(xmlNode* node) {
     else {
       cerr << "<hostname> node could not be created!" << endl;
     }
-    compnamenode = xmlNewNode(NULL, (const xmlChar*) "computername");
-    if(compnamenode != NULL) {
-      xmlNewProp(compnamenode, (const xmlChar*) "param", (const xmlChar*) hostname);
-      // Add this node to the beginning of available children
-      // -> that is because bootpgm only looks in the first 500 chars
-      if(firstchild != NULL) {
-        xmlAddPrevSibling(firstchild, compnamenode);
-      }
-      xmlFreeNode(compnamenode);
-    }
-    else {
-      cerr << "<computername> node could not be created!" << endl;
-    }
   }
   else {
     // add param value to existant hostname-node
     xmlSetProp(hostnamenode, (const xmlChar*) "param", (xmlChar*) hostname);
   }
- 
+
+  // We need to add computername-node as the first node
+  compnamenode = xmlNewNode(NULL, (const xmlChar*) "computername");
+  if(compnamenode != NULL) {
+    xmlNewProp(compnamenode, (const xmlChar*) "param", (const xmlChar*) hostname);
+    // Add this node to the beginning of available children
+    // -> that is because bootpgm only looks in the first 500 chars
+    if(firstchild != NULL) {
+      xmlAddPrevSibling(firstchild, compnamenode);
+    }
+    //xmlFreeNode(compnamenode);
+  }
+  else {
+    cerr << "<computername> node could not be created!" << endl;
+  }
+
   return;
 }
 
