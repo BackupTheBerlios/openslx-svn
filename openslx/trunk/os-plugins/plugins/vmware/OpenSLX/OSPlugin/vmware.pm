@@ -221,8 +221,6 @@ sub preInstallationPhase()
         print "     vmware::vmpl1.0=1  or\n";
         print "     vmware::vmpl2.0=1\n";
         print " * vmware plugin was not installed!\n\n";
-        # TODO: write to mailingliste. exit 1 still let the plugin
-        # be installed in the database!
         exit 1;
     }
 
