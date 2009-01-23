@@ -99,7 +99,12 @@ sub initDistroInfo
         + /lib/modules/*/misc/vmblock.o
         + /lib/modules/*/misc/vmnet.o
         + /lib/modules/*/misc/vmmon.o
-        - /etc/dhcpd.conf*
+        - /etc/*rpmnew
+        - /etc/*rpmorig
+        - /etc/*YaST2save
+        - /etc/*pptp*
+        - /etc/*ppp*
+        - /etc/dhcp*
         - /etc/cron.*/*
         - /etc/sysconfig/network/ifcfg-*
         - /etc/X11/xdm/SuSEconfig.xdm
