@@ -47,7 +47,8 @@ sub getInfo
 }
 
 sub getAttrInfo
-{    # returns a hash-ref with information about all attributes supported
+{
+    # returns a hash-ref with information about all attributes supported
     # by this specific plugin
     my $self = shift;
 
@@ -87,6 +88,43 @@ sub getAttrInfo
             content_descr => 'Allowed values: path or URI',
             default => '',
         },
+        # attribute 'bridge' defines if bridged network mode should be
+        # switched on
+        'vmware::bridge' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                Should the bridging (direct access of the vmware clients
+                to the ethernet the host is connected to) be enabled
+            End-of-Here
+            content_descr => 'Allowed values: 0 or 1',
+            default => '',
+        },
+        # attribute 'vmnet1' defines if the host connection network mode 
+        # should be switched on and NAT should be enabled
+        'vmware::vmnet1' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                Format ServerIP/Netprefix without NAT
+                Format ServerIP/Netprefix,NAT enables NAT/Masquerading
+            End-of-Here
+            content_descr => 'Allowed value: IP/Prefix[,NAT]',
+            default => '',
+        },
+        # attribute 'vmnet8' defines if vmware specific NATed network mode
+        # should be switched on
+        'vmware::vmnet8' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                Format ServerIP/Netprefix
+            End-of-Here
+            content_descr => 'Allowed value: IP/Prefix',
+            default => '',
+        },
+        # is to be discussed how to handle this - there is no single set of
+        # vmware files!!
         # attribute 'binaries' defines whether or not VMware binaries shall
         # be provided (by downloading them).
         'vmware::binaries' => {

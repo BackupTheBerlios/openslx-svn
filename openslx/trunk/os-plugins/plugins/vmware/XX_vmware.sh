@@ -38,6 +38,50 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     . /etc/functions
     # D_INITDIR is defined in the following file:
     . /etc/sysconfig/config
+
+    # prepare all needed vmware configuration files
+    testmkd /mnt/etc/vmware
+    # write the /etc/vmware/slxvmconfig file
+    # check for the several variables and write the several files
+    echo -e "# configuration file for vmware background services written in \
+stage3 setup" > /mnt/etc/vmware/slxvmconfig
+    if [ "bridge" = 1 ] ; then
+      echo "vmnet0=true" >> /mnt/etc/vmware/slxvmconfig
+    fi
+    # write the common dhcpd.conf header
+    if [ -n "vmnet1" -o -n "vmnet8" ] ; then
+      local dnslist=
+      echo "# /etc/vmware/dhcpd.conf written in stage3 ...\nallow \
+unknown-clients;\ndefault-lease-time 1800;\nmax-lease-time 7200;\n\
+option domain-name-servers $dnslist;\noption domain-name \"vm.local\";" \
+        > /mnt/etc/vmware/dhcpd.conf
+    fi
+    if [ -n "vmnet1" ] ; then
+      local vmnt=${vmnet1%,*}
+      vmnet1=${vmnet%,*}
+      local vmip=${vmnet1%/*}
+      local vmpx=${vmnet1#*/}
+      echo "vmnet1=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
+      [ -n "$vmnt" ] && echo "vmnet1nat=true" >> /mnt/etc/vmware/slxvmconfig
+      echo "subnet $(ipcalc -n $vmip/$vmpx|sed s/.*=//) netmask \
+$(ipcalc -n $vmip/$vmpx|sed s/.*=//) {\n\trange $rstart $rend;\n\
+\toption broadcast $(ipcalc -b $vmip/$vmpx|sed s/.*=//);\n\
+\toption routers $vmip;\n}" > /mnt/etc/vmware/dhcpd.conf
+    fi
+    if [ -n "vmnet8" ] ; then
+      local vmip=${vmnet8%/*}
+      local vmpx=${vmnet8#*/}
+      echo "vmnet8=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
+      echo "\nsubnet $(ipcalc -n $vmip/$vmpx|sed s/.*=//) netmask \
+$(ipcalc -n $vmip/$vmpx|sed s/.*=//) {\n\trange $rstart $rend;\n\
+\toption broadcast $(ipcalc -b $vmip/$vmpx|sed s/.*=//);\n\
+\toption routers $vmip;\n}" > /mnt/etc/vmware/dhcpd.conf
+      # generate the NAT configuration file
+      echo "# Linux NAT configuration file\n[host]\nip = $vmip/$vmpx\n\
+device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
+[incomingudp]" > /mnt/etc/vmware/nat.conf
+      echo "00:50:56:F1:30:50" > /mnt/etc/vmware/vmnet-natd-8.mac
+    fi
     
     echo "  * vmware part 1"
     #############################################################################

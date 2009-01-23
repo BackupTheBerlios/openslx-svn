@@ -1,3 +1,11 @@
+ToDo!! There is an example script vmware-startscript which should be
+completed and incorporated into Stage1 plugin installer. It should be
+modified to look like the choosen vendor-os start scripts!
+
+The original /etc/init.d/vmware /etc/vmware/locations /etc/vmware/config
+files aren't needed any more!!
+
+
 Files
 - client-config.xml.default
   Describes how the xml config needs to look like which will be used by
