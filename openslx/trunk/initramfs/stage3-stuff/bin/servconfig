@@ -150,6 +150,9 @@ config_syslog
 # might require dbus
 config_acpi
 
+# configure udev
+config_udev
+
 # configure dbus - distro dependent function config_dreshal - handle
 # all stuff regarding dependent services like dbus, resmgr, hal ...
 # (check for runlevel scripts, passwd entries, directories ...)

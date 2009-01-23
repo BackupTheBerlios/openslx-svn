@@ -855,6 +855,10 @@ include_in_fsroot_union () {
 initial_boot () {
 :
 }
+# function for udev configuration
+config_udev () {
+:
+}
 # function for ntp configuration
 config_ntp () {
 :
