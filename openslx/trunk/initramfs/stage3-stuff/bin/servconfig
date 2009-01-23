@@ -27,7 +27,7 @@
 . /etc/slxsystem.conf
 
 # load variables defined by plugins
-[ -f /tmp/env/wrapper.env ] . /tmp/env/wrapper.env
+[ -f /tmp/env/wrapper.env ] && . /tmp/env/wrapper.env
 
 # script run timer
 [ $DEBUGLEVEL -eq 8 ] && echo "** SW setup started at $(sysup)"
