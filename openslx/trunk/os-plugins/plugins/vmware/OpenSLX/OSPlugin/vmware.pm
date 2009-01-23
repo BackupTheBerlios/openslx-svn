@@ -189,7 +189,7 @@ sub getAttrInfo
             #TODO
             #content_regex => qr{^(1|0)$},
             content_descr => '1 means active - 0 means inactive',
-            default => '0',
+            default => '/root/vmware-pkgs',
         },
         # ** set of attributes for the installation of VM Workstation/Player
         # versions. More than one package could be installed in parallel.
@@ -211,18 +211,24 @@ sub preInstallationPhase()
     $self->{vendorOsPath}         = $info->{'vendor-os-path'};
     
     my $pkgpath = $self->{attrs}->{'vmware::pkgpath'};
+    my $vmpl10 = $self->{attrs}->{'vmware::vmpl1.0'};
+    my $vmpl20 = $self->{attrs}->{'vmware::vmpl2.0'};
 
-    if (! -d $pkgpath) {
-        print "\n\npkgpath: no such directory!\n\n";
+    if (! -d $pkgpath && ($vmpl10 == 1 || $vmpl20 == 1)) {
+        print "\n\n * vmware::pkgpath: no such directory!\n";
+        print " * vmware plugin was not installed!\n\n";
         exit 1;
     }
 
-    # todo: ask oliver about a similiar function
-    #       like copyFile() just for directorys
-    #       or fix the manual after checked the source of
-    #       copyFile() function. check if copyFile etc. perldoc
-    #       is somewhere in the wiki documented else do it!
-    system("cp -r $pkgpath $self->{pluginRepositoryPath}/packages");
+    # test just for the case we only set up local vmware
+    if (-d $pkgpath) {
+        # todo: ask oliver about a similiar function
+        #       like copyFile() just for directorys
+        #       or fix the manual after checked the source of
+        #       copyFile() function. check if copyFile etc. perldoc
+        #       is somewhere in the wiki documented else do it!
+        system("cp -r $pkgpath $self->{pluginRepositoryPath}/packages");
+    }
 }
 
 
@@ -242,6 +248,18 @@ sub installationPhase
     # TODO: write a list of installed/setted up and check it in stage3
     #       this will avoid conflict of configured vmware version in
     #       stage3 which are not setted up or installed in stage1
+    if ($self->{attrs}->{'vmware::local'} == 0 &&
+        $self->{attrs}->{'vmware::vmpl2.0'} == 0 &&
+        $self->{attrs}->{'vmware::vmpl2.0'} == 0) {
+        print "\n\n * At least one kind needs to get installed/activated:\n";
+        print "   vmware::local=1  or\n";
+        print "   vmware::vmpl1.0=1  or\n";
+        print "   vmware::vmpl2.0=\n";
+        print " * vmware plugin was not installed!\n\n";
+        # TODO: write to mailingliste. exit 1 still let the plugin
+        # be installed in the database!
+        exit 1;
+    }
     if ($self->{attrs}->{'vmware::local'} == 1) {
         $self->_localInstallation();
     }

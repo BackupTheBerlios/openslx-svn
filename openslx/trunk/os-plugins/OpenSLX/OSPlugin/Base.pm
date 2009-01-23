@@ -358,6 +358,8 @@ The given parameters are similar to the ones for installationPhase(), except
 that all paths are now relative to the root-fs instead of being relative to the 
 chroot (i.e. the paths are ready to be used from outside the chroot):
 
+A "exit 1;" will result in a not installed plugin.
+
 =over
 
 =item C<plugin-repo-path>
