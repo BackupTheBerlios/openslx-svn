@@ -87,6 +87,8 @@ sub fillRunlevelScript
         setup_vmnet8() {
           if [ -n "\$vmnet8" ] ; then
             #test -c /dev/vmnet8 || mknod c 119 8 /dev/vmnet8
+            $location/vmnet-netifup -d /var/run/vmnet-netifup-vmnet8.pid \\
+              /dev/vmnet8 vmnet8
             # /etc/vmware/vmnet-natd-8.mac simply contains a mac like 00:50:56:F1:30:50
             $location/vmnet-natd -d /var/run/vmnet-natd-8.pid \\
               -m /etc/vmware/vmnet-natd-8.mac -c /etc/vmware/nat.conf
