@@ -193,12 +193,6 @@ supported."; \
     tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/; \
   cp -p boot-env/pxe/menu-template.example \
     $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/; \
-  cp -a installer/default_files/machine-setup.default \
-    $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates/; \
-  cp -a installer/default_files/hwdata/{pcitable.local,Cards.local} \
-    $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates/; \
-  tar --exclude=.svn -cp -C installer/default_files tftpboot | \
-    tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
   cp -pP tools/busybox{,.x86_64,.i586} \
     $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox/; \
   cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
