@@ -42,8 +42,11 @@ sub getInfo
 
     return {
         description => unshiftHereDoc(<<'        End-of-Here'),
-        This plugin tries to integrate binary graphics drivers into the system.
+        This plugin tries to configure the local Xorg-Server and 
+	integrates binary graphics drivers (closed sourced) into the system.
         Notice that you need to have kernel-headers installed to work properly.
+	You need to download the driver packages yourself and write the 
+	download folder into the right option.
         End-of-Here
         precedence => 80,
     };
@@ -112,7 +115,7 @@ sub getAttrInfo
             applies_to_vendor_os => 0,
             applies_to_vendor_os => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                Path to ATI or Nvidia package
+                Path to downloaded ATI or Nvidia package
             End-of-Here
             # TODO:
             #content_regex => qr{^0|1$},

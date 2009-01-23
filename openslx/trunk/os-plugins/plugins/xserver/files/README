@@ -9,8 +9,65 @@ Most are identical, even when 64bit packages have a different name
 Only a couple of cards have its own special package. We need to
 investigate, if they are different or one package works for all.
 
+It seems - only for the FireMV 2200 PCI graphics card, they offer an older version (8.25) of the unified fglrx-driver. For the FirMV PCIE-Card they offer a more recent Version (8.5).
+By the time of writing the drivers were at version 8.7
+
+From the ATI-FAQ:
+
+Q2: Which ATI graphics cards can use this driver?
+A2: The ATI Proprietary Linux driver currently supports Radeon 8500 and later AGP or PCI Express graphics products, as well as ATI FireGL 8700 and later products. We do not currently plan to include support for any products earlier than this. 
+
+Support for earlier graphics card can be achieved by "radeon" or "ati" drivers!
+
+===================================================================================
+
 Infos about nvidia packages:
 they seem to differ much more as ati if you search directly for a
 specific graphic card. But if you take a look on
 http://www.nvidia.com/object/unix.html there seem to be just 3 different
-versions - all for different architectures (ia32, ia64, amd64)
+ersions - all for different architectures (ia32, ia64, amd64)
+
+
+
+Supported graphics cards can be read from the nvidia-documentation
+
+For the 173.14.12-NVIDIA-Driver go to
+http://www.nvidia.com/object/linux_display_ia32_173.14.12.html
+and click on "Supported Products List" on the right side
+
+(below each unified driver a line to symbolize the evolution of drivers - correct me if I'm wrong)
+
+173.14.12 driver: GeForce FX 5100 & all newer supported
+           |---------------------------------->
+ 71.86.06 driver: Riva TNT - GeForce 6800 Ultra
+|---------------|
+ 96.43.07 driver: some GeForce3 - GeForce 7900 ??
+     |---------------|
+
+The Question is, wether we need to support older graphics cards. 
+Probably we don't need to bother because the user can download right 
+driver package for his needs - almost the same interfaces for the installer...
+
+
+
+==================================================================================
+Taken from the readme on 
+http://us.download.nvidia.com/XFree86/Linux-x86/96.43.07/README/README.txt
+
+since 96.43.07 no longer supported in the unified driver:
+
+    NVIDIA chip name                      Device PCI ID
+    ----------------------------------    ----------------------------------
+    RIVA TNT                              0x0020
+    RIVA TNT2/TNT2 Pro                    0x0028
+    RIVA TNT2 Ultra                       0x0029
+    Vanta/Vanta LT                        0x002C
+    RIVA TNT2 Model 64/Model 64 Pro       0x002D
+    Aladdin TNT2                          0x00A0
+    GeForce 256                           0x0100
+    GeForce DDR                           0x0101
+    Quadro                                0x0103
+    GeForce2 GTS/GeForce2 Pro             0x0150
+    GeForce2 Ti                           0x0151
+    GeForce2 Ultra                        0x0152
+    Quadro2 Pro                           0x0153 
