@@ -881,6 +881,7 @@ On top of that, each client may have its own set of system files, too (e.g.
 some config files required to install a special kind of hardware available only
 on that client). These files are copied from 
 F<< $SLX_PROVATE_PATH/config/<system-name>/01-<MAC-of-client> >>.
+
 =back
 
 =head2 MIXING & MATCHING (THE DEMUXER)
