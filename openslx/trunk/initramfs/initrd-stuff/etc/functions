@@ -143,32 +143,6 @@ local i
 echo $n
 }
 #############################################################################
-# configure Xen bridge xenbr0
-xenbr_config () {
-modprobe ${MODPRV} netloop
-local ipls
-local vifnum="0"
-local bridge="xenbr${vifnum}"
-local netdev="eth${vifnum}"
-local pdev="p${netdev}"
-local vdev="veth${vifnum}"
-local vif0="vif0.${vifnum}"
-# fixme: that is the mac address of main ethernet device
-local mac=$macaddr
-
-brctl addbr ${bridge}
-brctl stp ${bridge} off
-brctl setfd ${bridge} 0
-brctl addif ${bridge} ${vif0}
-for ipls in "${netdev} name ${pdev}" "${vdev} name ${netdev}" \
-            "${pdev} down arp off" "${pdev} addr fe:ff:ff:ff:ff:ff" \
-            "${netdev} addr ${mac} arp on" "${netdev} addr ${mac} arp on" \
-            "${bridge} up" "${vif0} up" "${pdev} up" ; do
-  ip link set ${ipls}
-done
-brctl addif ${bridge} ${pdev}
-}
-#############################################################################
 # replace @@@serverip@@@ with real serverip. Allows the usage of a variable
 # for the server ip address (e.g. in machine-setup or kernel commandline)
 checkip ()
@@ -358,7 +332,7 @@ fileget () {
 local cfgfile
 [ "x$fileprot" = "x" ] && fileprot=tftp
 if [ "x$filepath" != "x" ] ; then
-  cfgfile=${filepath}
+  cfgfile="${filepath}"
   [ "x$fileserv" = "x" ] && fileserv=$(checkip ${serverip})
   case "$fileprot" in
    ftp|http)
@@ -372,12 +346,12 @@ if [ "x$filepath" != "x" ] ; then
      mkdir /tmp/$ldev
      echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
      mount -o ro /dev/$ldev /tmp/$ldev || error "$init_errlfg"
-     unpack /tmp/$ldev/$cfgfile
+     unpack /tmp/$ldev/"$cfgfile"
      umount /dev/$ldev
    ;;
    *)
-     tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv  \
-       && unpack /tmp/$(basename $cfgfile)
+     tftp -g -r '$cfgfile' -l /tmp/$(basename "$cfgfile") "$fileserv"  \
+       && unpack /tmp/$(basename "$cfgfile")
    ;;
    esac
 else

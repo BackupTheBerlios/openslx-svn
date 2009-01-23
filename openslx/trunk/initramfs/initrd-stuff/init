@@ -346,6 +346,8 @@ else
   ip link show dev eth1 >/dev/null 2>&1 && error "$init_2eif" nonfatal
 fi
 
+runinithook '10-have-nw-modules'
+
 # set up loopback networking
 [ $DEBUGLEVEL -eq 20 ] && echo "** starting ip config at $(sysup)"
 ip link set dev lo up
@@ -353,9 +355,6 @@ ip addr add 127.0.0.1/8 dev lo
 ip link set dev $nwif up || error "$init_noeth"
 macaddr=$(ip link show dev $nwif|sed -n "/ether [0-9e-f]\{2\}:.*/p" \
   |sed -e "s/.*ether //;s/ .*//")
-
-# XEN bridge config
-[ -n "$xenbr" ] && xenbr_config
 
 # analyze ip information from the kernel command line and put parts
 # of it into several variables
