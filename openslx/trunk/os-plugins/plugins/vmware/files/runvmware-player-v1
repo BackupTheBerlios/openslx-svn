@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash">
 #
 # Description:  Script for preparing VMware environment Diskless
 #               X Stations and interactive session chooser (v4)
@@ -18,7 +18,7 @@
 ## Read needed variables from XML file
 ##
 ################################################################################
-$xml = $1
+xml=$1
 
 # file name of the image
 imagename=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
@@ -27,7 +27,7 @@ imagename=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 # more. else change the next two lines
 #iconv -c -f utf-8 -t utf-8 < ${xml} > ${xml}.utf
 short_description=$(grep "short_description param=\"" ${xml}
-    sed -e "s%&.*;%; %g" | awk -F "\"" '{print $2}')
+    | sed -e "s%&.*;%; %g" | awk -F "\"" '{print $2}')
 # if ${short_description} not defined use ${image_name}
 short_description=${short_description:-"${image_name}"}
 displayname=${short_description}
@@ -448,13 +448,13 @@ EOL
 writelog "##################################################\n"
 writelog "# File created by $0 (v.${version})\n# on $(date)\n"
 writelog "##################################################\n"
-writelog "Starting...$(echo ${np} | sed 's/i.*-//g' \
-  | tr [a-z] [A-Z])-mode\n"
+writelog "Starting with $(echo ${np} | sed 's/i.*-//g')-mode ...\n"
 
 ## log disksetup
-writelog "Directories:
-  \tTmpdir:\t\t${tmpdir}\n\tVMhome:\t\t${vmhome}\n\tTmpdir info:\
-  \t$(mount | grep -i "/tmp ")\n"
+writelog "Directories:"
+writelog "\t\tTmpdir:\t\t${tmpdir}"
+writelog "\tVMhome:\t\t${vmhome}"
+writelog "\tTmpdir info:\t\t$(mount | grep -i "/tmp ")"
 
 ## configuring MAC address: first four bytes are fixed (00:50:56:0D) the
 ## last two bytes are taken from the local network adaptor
@@ -478,8 +478,10 @@ mem=$(expr ${totalmem} / 100 \* ${permem} / 4 \* 4)
 # check memory range
 memtest=${totalmem}-128
 if [ "${mem}" -lt "128" ] || [ "${mem}" -gt "${totalmem}" ]; then
-  writelog "\n\n\tYour memory is out of range: ${mem} MB.
-    \tMin. 128 MB for host and guest!\n\tTry --mem option.\n"
+  writelog "\n\n"
+  writelog "\tYour memory is out of range: ${mem} MB."
+  writelog "\tMin. 128 MB for host and guest!"
+  writelog "tTry --mem option."
   exit 1
 fi
 
@@ -495,11 +497,19 @@ fi
 
 
 ## Write all results to logfile
-writelog "finished\nResults:\n\tMAC:\t\t00:50:56:0D:${mac}\n\tMem:\t\t
-  ${mem} MB \tMax. res.:\t${xres}x${yres}\n\t\tCD-ROM_1:\t${cdr_1}\n\t
-  CD-ROM_2:\t${cdr_2}\n"
-writelog "finished\nResults:\n\tDiskfile:\t${diskfile}\n\tDisktype:\t${hddrv}
-  \tVMostype:\t${vmostype}\n\tDisplayname:\t${displayname}\n"
+writelog "finished"
+writelog "Results:"
+writelog "\tMAC:\t\t00:50:56:0D:${mac}"
+writelog "\tMem:\t\t${mem} MB"
+writelog "\tMax. res.:\t${xres}x${yres}"
+writelog "\tCD-ROM_1:\t${cdr_1}"
+writelog "\tCD-ROM_2:\t${cdr_2}"
+writelog "finished"
+writelog "Results:"
+writelog "\tDiskfile:\t${diskfile}"
+writelog "\tDisktype:\t${hddrv}"
+writelog "\tVMostype:\t${vmostype}"
+writelog "\tDisplayname:\t${displayname}"
 
 # check if image exists, etc...
 filecheck
@@ -521,38 +531,14 @@ preferencesheader
 runvmwareconfheader
 
 # poolconfiguration config.xml
-#TODO: change default to global variable ${POOL} in the future
-#comment out cause of scanner... we do it now by hand... just a hack
-#TODO: cleaner source...
-#sed -e "s/HOSTNAME/${hostname}/" \
-#    -e "s/USER/${USER}/" /var/lib/vmware/templates/client-config.xml.default \
-#    > /etc/vmware/fd-loop/config.xml
-#echo "<settings>" > /etc/vmware/fd-loop/config.xml
-#echo "  <eintrag>" >> /etc/vmware/fd-loop/config.xml
-#echo "   <computername param=\"${hostname}\">" >> /etc/vmware/fd-loop/config.xml
-#echo "   </computername>" >> /etc/vmware/fd-loop/config.xml
-#echo "   <username param=\"${USER}\">" >> /etc/vmware/fd-loop/config.xml
-#echo "   </username>" >> /etc/vmware/fd-loop/config.xml
-# if we have a scanner, then copy scannerinformation to this xml
-#sanelines="$(wc -l /etc/sane.d/net.conf|awk '{ print $1 };')"
-#if [ -f /etc/sane.d/net.conf ] && [ "${sanelines}" -eq 1 ]; then
-#  echo "<scanner param=\"$(cat /etc/sane.d/net.conf)\">" \
-#     >> /etc/vmware/fd-loop/config.xml
-#  echo "</scanner>" >> /etc/vmware/fd-loop/config.xml
-#fi
-#echo "  </eintrag>" >> /etc/vmware/fd-loop/config.xml
-#echo "</settings>" >> /etc/vmware/fd-loop/config.xml
-# copy config file we get from vmchooser
 cp ${xml} /etc/vmware/fd-loop/config.xml
-
 
 # sync is needed to ensure that data is really written to virtual disk
 sync
 
 # own nvram. We need it for floppy drive b, default nvram has just drive a
-# TODO: Take care if plugin-repo changes
-#cp /var/lib/vmware/templates/nvram.5.0 ${tmpdir}/nvram
-cp /opt/openslx/plugin-repo/nvram.5.0 ${tmpdir}/nvram
+# TODO: optimize, currently kinda inefficient, too much copys
+cp /opt/openslx/plugin-repo/vmware */nvram.5.0 ${tmpdir}/nvram
 
 # adjust volume
 writelog "Unmuting sound...\c"

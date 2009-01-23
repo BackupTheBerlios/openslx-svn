@@ -18,13 +18,10 @@ if [ "${REPLY}" == "YES" ]; then
 
     echo "   * Downloading vmplayer now. This may take a while"
     cd /opt/openslx/plugin-repo/vmware/vmpl2.0
-    #TODO: during development we have this file and dont need to download it
-    #wget -c http://download3.vmware.com/software/vmplayer/VMware-player-2.0.2-59824.i386.tar.gz
+    wget -c http://download3.vmware.com/software/vmplayer/VMware-player-2.0.2-59824.i386.tar.gz
 
     echo "   * Unpacking vmplayer"
-    #tar xfz VMware-player-2.0.2-59824.i386.tar.gz
-    #TODO: just for developing purpose
-    tar xfz ../../VMware-player-2.0.2-59824.i386.tar.gz
+    tar xfz VMware-player-2.0.2-59824.i386.tar.gz
 
     echo "   * copying files..."
     mkdir root

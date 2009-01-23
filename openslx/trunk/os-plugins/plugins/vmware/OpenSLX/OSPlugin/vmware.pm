@@ -261,17 +261,24 @@ sub _writeWrapperScript
             #!/bin/sh
             # written by OpenSLX-plugin 'vmware' in Stage1
             # radically simplified version of the original script $file by VMware Inc.
-            #TODO: test it with local installed vmplayer!!!
-            export LD_LIBRARY_PATH=$vmpath/lib
-            export GTK_PIXBUF_MODULE_FILE=$vmpath/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
-            export GTK_IM_MODULE_FILE=$vmpath/libconf/etc/gtk-2.0/gtk.immodules
-            export FONTCONFIG_PATH=$vmpath/libconf/etc/fonts
-            export PANGO_RC_FILE=$vmpath/libconf/etc/pango/pangorc
-            # possible needed... but what are they good for?
-            #export GTK_DATA_PREFIX=
-            #export GTK_EXE_PREFIX=
-            #export GTK_PATH=
+        End-of-Here
 
+        # kinda ugly and we only need it for local. Preserves errors
+        if ($kind ne "local") {
+            $script .= unshiftHereDoc(<<"            End-of-Here");
+                export LD_LIBRARY_PATH=$vmpath/lib
+                export GTK_PIXBUF_MODULE_FILE=$vmpath/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
+                export GTK_IM_MODULE_FILE=$vmpath/libconf/etc/gtk-2.0/gtk.immodules
+                export FONTCONFIG_PATH=$vmpath/libconf/etc/fonts
+                export PANGO_RC_FILE=$vmpath/libconf/etc/pango/pangorc
+                # possible needed... but what are they good for?
+                #export GTK_DATA_PREFIX=
+                #export GTK_EXE_PREFIX=
+                #export GTK_PATH=
+            End-of-Here
+        }
+
+        $script .= unshiftHereDoc(<<"        End-of-Here");
             PREFIX=$vmpath # depends on the vmware location
             exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \\
                 "\$PREFIX"'/lib' \\

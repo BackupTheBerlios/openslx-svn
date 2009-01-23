@@ -101,7 +101,7 @@ $(ipcalc -m $vmnet1|sed s/.*=//) {" \
     if [ -n "$vmware_vmnet8" ] ; then
       local vmip=${vmware_vmnet8%/*}
       local vmpx=${vmware_vmnet8#*/}
-      local vmsub=$(echo $vmip |sed 's,\(.*\)\..*,\1,') # x.x.x.x => x.x.x
+      uocal vmsub=$(echo $vmip |sed 's,\(.*\)\..*,\1,') # x.x.x.x => x.x.x">
       echo -e "vmnet8=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
       echo -e "\n# definition for virtual vmnet8 interface" \
         >> /mnt/etc/vmware/dhcpd.conf
@@ -250,8 +250,12 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     ## Copy version depending files
     cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/runvmware \
         /mnt/var/X11R6/bin/run-vmware.sh
+    chmod 755 /mnt/var/X11R6/bin/run-vmware.sh
     if [ "${vmware_kind}" = "vmpl2.0" ]; then
       # TODO: setup up kernel files
+      # need something in it. see
+      # http://openslx.org/trac/de/openslx/wiki/WasEsNochZuDokumentierenGilt
+      echo ""
     fi
     
     [ $DEBUGLEVEL -gt 0 ] && echo "  *  done with 'vmware' os-plugin ..."
