@@ -65,7 +65,7 @@ sub setupKDMScript
 
     # SUSE reads /var/adm/kdm/kdmrc.sysconfig, so we link that to
     # our config file
-    my $pathInfo   = $self->GDMPathInfo();
+    my $pathInfo   = $self->KDMPathInfo();
     my $configFile = $pathInfo->{config};
     mkpath("/etc/opt/kdm");
     system("ln -sfn /etc/opt/kdm/kdmrc /var/adm/kdm/kdmrc.sysconfig");

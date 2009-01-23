@@ -152,9 +152,9 @@ sub setupGDMScript
         # activate theme only if the corresponding xml file is found
         # (otherwise fall back to default theme of vendor-OS)
         if [ -n "\$desktop_theme" ]; then
-          thdir=/opt/openslx/plugin-repo/desktop/themes/\$desktop_theme/gdm
+          thdir=/opt/openslx/plugin-repo/desktop/themes/gdm
           theme=\$desktop_theme
-          if [ -e /mnt\$thdir/\$theme/\$theme.xml ]; then
+          if [ -e /mnt\$thdir/\$theme/theme.xml ]; then
             sed -i "s,\\[greeter\\],[greeter]\\nGraphicalThemeDir=\$thdir," \\
               /mnt$configFile
             sed -i "s,\\[greeter\\],[greeter]\\nGraphicalTheme=\$theme," \\
@@ -298,10 +298,10 @@ sub setupKDMScript
         # activate theme only if the corresponding xml file is found
         # (otherwise fall back to default theme of vendor-OS)
         if [ -n "\$desktop_theme" ]; then
-          thdir=/opt/openslx/plugin-repo/desktop/themes/\$desktop_theme/kdm
           theme=\$desktop_theme
-          if [ -e /mnt\$thdir/\$theme.xml ]; then
-            sed -i "s,\\[X-\\*-Greeter\\],[X-*-Greeter]\\nTheme=\$thdir," \\
+          thfile=/opt/openslx/plugin-repo/desktop/themes/kdm/\$theme/theme.xml
+          if [ -e /mnt\$thfile ]; then
+            sed -i "s,\\[X-\\*-Greeter\\],[X-*-Greeter]\\nTheme=\$thfile," \\
               /mnt$configFile
             sed -i "s,\\[X-\\*-Greeter\\],[X-*-Greeter]\\nUseTheme=true," \\
               /mnt$configFile

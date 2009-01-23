@@ -33,8 +33,12 @@ sub new
         name => 'desktop',
     };
 
-    my $localThemesDir = "$openslxConfig{'config-path'}/plugins/desktop/themes";
-    mkpath($localThemesDir) unless -e $localThemesDir;
+    my $localGDMThemesDir 
+        = "$openslxConfig{'config-path'}/plugins/desktop/themes/gdm";
+    mkpath($localGDMThemesDir) unless -e $localGDMThemesDir;
+    my $localKDMThemesDir 
+        = "$openslxConfig{'config-path'}/plugins/desktop/themes/kdm";
+    mkpath($localKDMThemesDir) unless -e $localKDMThemesDir;
 
     return bless $self, $class;
 }
@@ -432,6 +436,8 @@ sub _fillUnsetStage1Attrs
     }
     if (!defined $self->{'supported_themes'}) {
         $self->{'supported_themes'} = join ",", $self->_getAvailableThemes();
+        $self->{attrs}->{'desktop::supported_themes'} 
+            = $self->{'supported_themes'};
     }
 
     return 1;
@@ -608,15 +614,21 @@ sub _setupSupportedThemes
     for my $theme (@supportedThemes) {
         THEME_DIR:
         foreach my $themeBaseDir (@themeBaseDirs) {
-            my $themeDir = "$themeBaseDir/$theme";
-            next THEME_DIR if !-d $themeDir;
+            my $gdmThemeDir = "$themeBaseDir/gdm/$theme";
+            my $kdmThemeDir = "$themeBaseDir/kdm/$theme";
+            next THEME_DIR if !-d $gdmThemeDir && !-d $kdmThemeDir;
+                # any of both dirs is enough
 
             # copy theme into plugin-repo folder
-            my $themeTargetPath = "$self->{pluginRepositoryPath}/themes";
-            mkpath($themeTargetPath);
             vlog(1, "installing theme '$theme'...");
-            slxsystem("cp -a $themeDir $themeTargetPath/$theme") == 0
-                or die _tr('unable to copy theme %s (%s)', $theme, $!);
+            my $gdmThemeTargetPath = "$self->{pluginRepositoryPath}/themes/gdm";
+            mkpath($gdmThemeTargetPath);
+            slxsystem("cp -a $gdmThemeDir $gdmThemeTargetPath/$theme") == 0
+                or die _tr('unable to copy GDM-theme %s (%s)', $theme, $!);
+            my $kdmThemeTargetPath = "$self->{pluginRepositoryPath}/themes/kdm";
+            mkpath($kdmThemeTargetPath);
+            slxsystem("cp -a $kdmThemeDir $kdmThemeTargetPath/$theme") == 0
+                or die _tr('unable to copy KDM-theme %s (%s)', $theme, $!);
             next THEME;
         }
         warn _tr('theme "%s" not found - skipped!', $theme);
@@ -629,7 +641,7 @@ sub _getAvailableThemes
 {
     my $self = shift;
 
-    my @availableThemes;
+    my %availableThemes;
 
     # return all themes found in any of these two folders
     my @themeBaseDirs = (
@@ -637,13 +649,17 @@ sub _getAvailableThemes
         "$self->{openslxBasePath}/lib/plugins/desktop/themes",
     );
     for my $themeBaseDir (@themeBaseDirs) {
-        push @availableThemes, 
-            map { basename $_ } grep { -d $_ } glob("$themeBaseDir/*");
+        my @foundGDMThemes 
+            = map { basename $_ } grep { -d $_ } glob("$themeBaseDir/gdm/*");
+        @availableThemes{@foundGDMThemes} = ();
+        my @foundKDMThemes 
+            = map { basename $_ } grep { -d $_ } glob("$themeBaseDir/kdm/*");
+        @availableThemes{@foundKDMThemes} = ();
     }
 
-    vlog(1, _tr("available themes: %s", join ",", @availableThemes));
+    vlog(1, _tr("available themes: %s", join ",", keys %availableThemes));
 
-    return @availableThemes;
+    return keys %availableThemes;
 }
 
 1;
