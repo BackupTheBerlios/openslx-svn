@@ -326,15 +326,15 @@ sub setupKDMScript
         fi
         case "\${desktop_allowshutdown}" in
           none)
-            sed "s|AllowShutdown.*|AllowShutdown='None'|" \\
+            sed "s|AllowShutdown.*|AllowShutdown=None|" \\
               -i /mnt$configFile
           ;;
           root)
-            sed "s|AllowShutdown.*|AllowShutdown='Root'|" \\
+            sed "s|AllowShutdown.*|AllowShutdown=Root|" \\
               -i /mnt$configFile
           ;;
           users)
-            sed "s|AllowShutdown.*|AllowShutdown='All'|" \\
+            sed "s|AllowShutdown.*|AllowShutdown=All|" \\
               -i /mnt$configFile
           ;;
         esac
