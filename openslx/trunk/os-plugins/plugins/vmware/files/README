@@ -23,3 +23,5 @@ Files
   This example files shows which VMware features are configureable for
   each virtual machine.
   Should be moved sooner or later to the vm-chooser plugin
+- install-vmpl2.0.sh
+  Install script, which will download and install vmplayer v2.0 if choosen

@@ -162,13 +162,16 @@ sub installationPhase
     # for local ... and other vm-installations
     # TODO: generate the list from ** / 'vmware::kind' (stage1 attributes)
     #       (do not generate scripts for packages which are not installed)
-    my @types = qw( local );
+    my @types = qw( local vmpl2.0 );
     foreach my $type (@types) {
         # location of the vmware stuff
         if ($type eq "local") {
             $self->_localInstallation();
         }
         # TODO: here we will add the slx-installed versions
+        elsif ($type eq "vmpl2.0") {
+            $self->_vmpl2Installation();
+        }
         else {
             #my $vmpath = "$self->{'pluginRepositoryPath'}/vmware/$type";
             #my $vmbin  = "$vmpath/bin";
@@ -400,6 +403,50 @@ sub _localInstallation
 }
 
 
+sub _vmpl2Installation {
+    my $self     = shift;
+
+    my $kind   = "vmpl2.0";
+    my $vmpath = "/opt/openslx/plugin-repo/vmware/$kind/root/lib/vmware";
+    my $vmbin  = "/opt/openslx/plugin-repo/vmware/$kind/root/bin";
+    my $vmversion = "TODO_we_know_it";
+    my $vmbuildversion = "TODO_we_know_it";
+
+    my $pluginFilesPath 
+        = "$self->{'openslxPath'}/lib/plugins/$self->{'name'}/files";
+    my $installationPath = "$self->{'pluginRepositoryPath'}/$kind";
+
+    mkpath($installationPath);
+
+
+    ##
+    ## Copy needed files
+
+    # copy 'normal' needed files
+    my @files = qw( nvram.5.0 install-vmpl2.0.sh );
+    foreach my $file (@files) {
+        copyFile("$pluginFilesPath/$file", "$installationPath");
+    }
+    # copy on depending runvmware file
+    copyFile("$pluginFilesPath/runvmware-player-v2", "$installationPath", "runvmware");
+
+    ##
+    ## Download and install the binarys
+    system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-$kind.sh");
+
+
+
+    ##
+    ## Create runlevel script
+    my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
+    $self->_writeRunlevelScript($vmbin, $runlevelScript);
+
+    ##
+    ## Create wrapperscripts
+    #TODO: change local
+    $self->_writeWrapperScript("$vmpath", "$kind", "player")
+        
+}
 
 
 1;
