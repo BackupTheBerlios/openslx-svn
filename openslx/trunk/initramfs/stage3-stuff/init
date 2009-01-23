@@ -156,10 +156,11 @@ in $0\ncountry=\"${COUNTRY}\"" >>/etc/initramfs-setup
         chmod u+x /bin/debugshell
         getty -i -n -l /bin/debugshell 38400 tty2 &
         # start logging (debuglevel >=3)
-        echo "Syslog started on third console (tty3)"
+        echo "Syslogd started on third console (tty3)"
         syslogd -C2048
-        klogd
         logread -f > /dev/tty3 &
+        logread -f >> /var/log/messages &
+        klogd
       fi
     ;;
     # essid for WLAN boot (experimental, might be moved to a module component
@@ -936,7 +937,8 @@ killall -9 hwautocfg servconfig debugshell hwinfo 2>/mnt/dev/null
 [ -f /tmp/watchdogpid ] && kill $(cat /tmp/watchdogpid) 2>/mnt/dev/null
 # move logfile into stage4 filesystem (if exists)
 [ -f /var/log/slx-boot.log ] && mv /var/log/slx-boot.log \
-  /mnt/var/log/slx-s3boot.log
+  /mnt/var/log/slx-s3boot.log && cp /var/log/messages \
+  /mnt/var/log/messages_slx
 
 # unmount /proc and unset all old,unneeded environment variables
 umount -n /proc
