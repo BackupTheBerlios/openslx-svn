@@ -205,7 +205,10 @@ if [ "x$start_dreshal" = "xyes" ]; then
          /mnt/etc/dbus-1/system.d/nm-* \
          /mnt/etc/dbus-1/event.d/*NetworkManager*
   sed -i /mnt/etc/PolicyKit/PolicyKit.conf \
-      -e "s/\(<\/config>\)/<match action=\"org.freedesktop.hal.storage.mount-removable\">\n<return result=\"yes\"\/>\n<\/match>\n\1/"
+      -e "s/\(<\/config>\)/    @@new@@\n\1/" \
+      -e "s/@@new@@/<match action=\"@@action@@\">\n@@return@@\n    <\/match>/" \
+      -e "s/@@action@@/org.freedesktop.hal.storage.mount-removable/" \
+      -e "s/@@return@@/        <return result=\"yes\"\/>/"
   sed -i /mnt/etc/dbus-1/system.d/hal.conf \
       -e "s/^\([^d]*\)deny\(.*Volume.*\)/\1allow\2/"
   rllinker "dbus" 17 20
