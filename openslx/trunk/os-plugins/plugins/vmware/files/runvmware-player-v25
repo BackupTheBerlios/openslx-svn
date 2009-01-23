@@ -6,10 +6,10 @@
 #               orwards it into B drive of vmplayer
 #
 # Author(s):    see project authors file
-#               last changes mj0, 17/10/2008
+#               last changes mj0, 20/10/2008
 # Copyright:    (c) 2003 - 2008 - RZ Universitaet Freiburg
 #
-# Version:      0.19
+# Version:      0.19.1
 #
 ################################################################################
 
@@ -155,19 +155,23 @@ diskfile="${vmdir}/${imagename}"
 #an IDE Image, but has somewhere the string ddb.adapterType stuff can
 #become screwed
 # NOOOOOOO - We do not check on every start on every client!!!
+# NOOOOOOOOO the string ddb.adapterType we are looking for is part of the 
+# header of EVERY vmdk file (except *-flat.vmdk files) and is located in 
+# the first ~30 lines - so it's not that big deal grepping for it :)
 # check if IDE or SCSI
-#hddrv=$(grep -m 1 -ia "ddb.adapterType" ${diskfile} | awk -F "\"" '{print $2}')
-#if [ "${hddrv}" = "ide" ]; then
-#  ide="TRUE"
-#  scsi="FALSE"
-#elif [ "${hddrv}" = "lsilogic" ]; then
-#  ide="FALSE"
-#  scsi="TRUE"  
-#elif [ "${hddrv}" = "buslogic" ]; then
-#  ide="FALSE"
-#  scsi="TRUE"  
-#fi
-
+if [ $(echo ${imagename} | grep -cv "\-flat.vmdk") ]; then
+  hddrv=$(grep -m 1 -ia "ddb.adapterType" ${diskfile} | awk -F "\"" '{print $2}')
+  if [ "${hddrv}" = "ide" ]; then
+    ide="TRUE"
+    scsi="FALSE"
+  elif [ "${hddrv}" = "lsilogic" ]; then
+    ide="FALSE"
+    scsi="TRUE"  
+  elif [ "${hddrv}" = "buslogic" ]; then
+    ide="FALSE"
+    scsi="TRUE"  
+  fi
+fi
 
 # command line variables
 # start with this this default commmand line options + extra
