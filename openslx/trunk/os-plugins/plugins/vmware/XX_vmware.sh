@@ -1,6 +1,6 @@
 #!/bin/ash
 #
-# Copyright (c) 2007, 2008 - RZ Uni Freiburg
+# Copyright (c) 2007..2008 - RZ Uni Freiburg
 # Copyright (c) 2008 - OpenSLX GmbH
 #
 # This program/file is free software distributed under the GPL version 2.
