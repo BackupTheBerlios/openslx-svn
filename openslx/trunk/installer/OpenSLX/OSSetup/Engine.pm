@@ -1643,7 +1643,7 @@ sub _stage1D_installPackageSelection
 	}
 	else {
 		vlog(1, "installing these packages:\n" . join("\n\t", @pkgs));
-		$self->{'meta-packager'}->installSelection(join(' ', @pkgs), 1);
+		$self->{'meta-packager'}->installPackages(join(' ', @pkgs), 1);
 	}
 	return;
 }

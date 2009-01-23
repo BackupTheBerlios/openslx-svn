@@ -49,11 +49,11 @@ sub updateBasicVendorOS
 {
 }
 
-sub installSelection
+sub installPackages
 {
 }
 
-sub removeSelection
+sub removePackages
 {
 }
 

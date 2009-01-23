@@ -71,19 +71,21 @@ sub setupPackageSource
 	return 1;
 }
 
-sub installSelection
+sub installPackages
 {
-	my $self         = shift;
-	my $pkgSelection = shift;
+	my $self     = shift;
+	my $packages = shift;
 
-	if (slxsystem("yum -y install $pkgSelection")) {
+	$packages =~ tr{\n}{ };
+
+	if (slxsystem("yum -y install $packages")) {
 		die _tr("unable to install selection (%s)\n", $!);
 	}
 
 	return 1;
 }
 
-sub removeSelection
+sub removePackages
 {
 	my $self         = shift;
 	my $pkgSelection = shift;

@@ -65,23 +65,25 @@ sub setupPackageSource
 	return 1;
 }
 
-sub installSelection
+sub installPackages
 {
-	my $self         = shift;
-	my $pkgSelection = shift;
-	my $doRefresh    = shift || 0;
+	my $self      = shift;
+	my $packages  = shift;
+	my $doRefresh = shift || 0;
+
+	$packages =~ tr{\n}{ };
 
 	if ($doRefresh && slxsystem("zypper --non-interactive refresh")) {
 		die _tr("unable to update repo info (%s)\n", $!);
 	}
-	if (slxsystem("zypper --non-interactive install $pkgSelection")) {
+	if (slxsystem("zypper --non-interactive install $packages")) {
 		die _tr("unable to install selection (%s)\n", $!);
 	}
 
 	return 1;
 }
 
-sub removeSelection
+sub removePackages
 {
 	my $self         = shift;
 	my $pkgSelection = shift;

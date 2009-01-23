@@ -82,22 +82,24 @@ sub setupPackageSource
 	return 1;
 }
 
-sub installSelection
+sub installPackages
 {
-	my $self         = shift;
-	my $pkgSelection = shift;
-	my $doRefresh    = shift || 0;
+	my $self      = shift;
+	my $packages  = shift;
+	my $doRefresh = shift || 0;
+
+	$packages =~ tr{\n}{ };
 
 	if ($doRefresh && slxsystem("smart update")) {
 		die _tr("unable to update channel info (%s)\n", $!);
 	}
-	if (slxsystem("smart install -y $pkgSelection")) {
+	if (slxsystem("smart install -y $packages")) {
 		die _tr("unable to install selection (%s)\n", $!);
 	}
 	return 1;
 }
 
-sub removeSelection
+sub removePackages
 {
 	my $self         = shift;
 	my $pkgSelection = shift;

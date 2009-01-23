@@ -88,11 +88,13 @@ sub setupPackageSource
 	return;
 }
 
-sub installSelection
+sub installPackages
 {
-	my $self         = shift;
-	my $pkgSelection = shift;
-	my $doRefresh    = shift || 0;
+	my $self      = shift;
+	my $packages  = shift;
+	my $doRefresh = shift || 0;
+
+	$packages =~ tr{\n}{ };
 
 	if ($doRefresh && slxsystem("apt-get -y update")) {
 		die _tr("unable to update repository info (%s)\n", $!);
@@ -102,7 +104,7 @@ sub installSelection
 			= "'File{/var/cache/debconf/slx-defaults.dat}'";
 	}
 	$ENV{DEBIAN_FRONTEND} = 'noninteractive';
-	if (slxsystem("apt-get -y install $pkgSelection")) {
+	if (slxsystem("apt-get -y install $packages")) {
 		die _tr("unable to install selection (%s)\n", $!);
 	}
 	delete $ENV{DEBCONF_DB_FALLBACK};
@@ -111,7 +113,7 @@ sub installSelection
 	return 1;
 }
 
-sub removeSelection
+sub removePackages
 {
 	my $self         = shift;
 	my $pkgSelection = shift;
