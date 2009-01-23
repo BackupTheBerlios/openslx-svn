@@ -188,7 +188,7 @@ Checks if the given value is allowed (and makes sense) for the given key.
 If the value is ok, this method returns 1 - if not, it dies with an appropriate 
 message.
 
-Plugins may override this implementation to do additional checks that look
+Plugins may override this implementation to do checks that for instance look 
 at the vendor-OS (stage1-)attributes.
 
 =cut
@@ -199,24 +199,9 @@ sub checkValueForKey
     my $key   = shift;
     my $value = shift;
 
-    # undefined values are always allowed
-    return 1 if !defined $value;
-
-    # the default implementation checks the value against the regex of the 
-    # attribute (if any)
-    my $attrInfo 
-        = $self->getAttrInfo()->{$key}
-            || die _tr('attribute "%s" is unknown!', $key);
-
-    my $regex = $attrInfo->{content_regex};
-    return 1 if !$regex;
-    
-    return 1 if $value =~ m{$regex};
-    
-    die _tr(
-        "value given for attribute %s is not allowed.\nAllowed values are: %s",
-        $key, $attrInfo->{content_descr}
-    );
+    # this default implementation does no further checks (thus relying on the
+    # attributte regex check that is done in the AttributeRoster)
+    return 1;
 }
 
 

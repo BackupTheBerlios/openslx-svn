@@ -162,8 +162,8 @@ sub _init
             description => unshiftHereDoc(<<'            End-of-Here'),
                 list of network card modules to load
             End-of-Here
-            content_regex => undef,
-            content_descr => undef,
+            content_regex => qr{^\s*([-\w]+\s*)*$},
+            content_descr => 'a space-separated list of NIC modules',
             default => 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
         },
         'sane_scanner' => {
@@ -495,4 +495,43 @@ sub getClientAttrs
         keys %AttributeInfo
 }
 
+=item C<checkValueForKey()>
+
+Checks if the given value is allowed (and makes sense) for the given key.
+If the value is ok, this method returns 1 - if not, it dies with an appropriate 
+message.
+
+=cut
+
+sub checkValueForKey
+{
+    my $class = shift;
+    my $key   = shift;
+    my $value = shift;
+
+    $class->_init() if !%AttributeInfo;
+
+    # undefined values are always allowed
+    return 1 if !defined $value;
+
+    # check the value against the regex of the attribute (if any)
+    my $attrInfo = $AttributeInfo{$key}
+        || die _tr('attribute "%s" is unknown!', $key);
+    my $regex = $attrInfo->{content_regex};
+    if ($regex && $value !~ m{$regex}) {
+        die _tr(
+            "value given for attribute %s is not allowed.\nAllowed values are: %s",
+            $key, $attrInfo->{content_descr}
+        );
+    }
+
+    # let plugin check by itself
+    if ($key =~ m{^(.+)::.+?$}) {
+        my $pluginName = $1;
+        my $plugin
+            = OpenSLX::OSPlugin::Roster->getPlugin($pluginName)
+                || die _tr('unable to load plugin "%s"', $pluginName);
+        $plugin->checkValueForKey($key, $value);
+    }
+}
 1;

@@ -39,7 +39,6 @@ use OpenSLX::AttributeRoster;
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB;
 use OpenSLX::ConfigFolder;
-use OpenSLX::OSPlugin::Roster;
 use OpenSLX::Utils;
 
 my %option;
@@ -248,12 +247,7 @@ sub parseKeyValueArgsWithAttrs
         if (grep { $_ eq $key } @$allowedKeys) {
             $dataHash{$key} = $value;
         } elsif (grep { $_ eq $key } @$allowedAttrKeys) {
-            $key =~ m{^(.+)::.+?$};
-            my $pluginName = $1;
-            my $plugin 
-                = OpenSLX::OSPlugin::Roster->getPlugin($pluginName)
-                    || die _tr('unable to load plugin "%s"', $pluginName);
-            $plugin->checkValueForKey($key, $value);
+            OpenSLX::AttributeRoster->checkValueForKey($key, $value);
             $attrHash{$key} = $value;
         } else {
             die _tr("unknown key '%s' specified for %s\n", $key, $table);
