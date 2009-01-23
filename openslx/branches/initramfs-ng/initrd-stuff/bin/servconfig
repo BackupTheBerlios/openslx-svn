@@ -86,10 +86,7 @@ if [ -z "${country}" ] ; then
   country="us"
 fi
 localization "${country}"
-if [ -z "${KEYTABLE}" ] ; then
-  error "$hcfg_keyb" nonfatal
-  KEYTABLE="us"
-fi
+
 # add this information for activation via distro specific function
 [ -n "${KEYTABLE}" ] && keytable
 [ -n "${CONSOLE_FONT}" ] && consolefont

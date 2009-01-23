@@ -817,10 +817,6 @@ runinithook '70-before-plugins'
 
 # check for any plugin-specific runlevel scripts and run them, if found:
 if [ -d /etc/plugin-init.d ]; then
-  # check if the plugin config directory is generally available or if the 
-  # client configuration failed somehow
-  [ -d /initramfs/plugin-conf ] && error "${init_picfg}" nonfatal
-
   for plugin_starter in /etc/plugin-init.d/*.sh; do
     if [ -e $plugin_starter ]; then
       [ $DEBUGLEVEL -gt 0 ] \

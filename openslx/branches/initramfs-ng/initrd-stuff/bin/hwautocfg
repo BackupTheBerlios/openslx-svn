@@ -16,6 +16,15 @@
 #############################################################################
 # pre part, load USB modules and start hardware detection pci and monitor
 base () {
+# avoid annoying error messages because of missing scripts
+for tool in /usr/sbin/acpidump \
+            /usr/bin/udevinfo \
+            /sbin/dmraid ; do
+              testmkd ${tool%/*}
+              echo -e "#!/bin/ash" >${tool}
+              chmod u+x ${tool}
+done
+# no kernel messages
 echo "0 0 0 0" >/proc/sys/kernel/printk
 hwinfo --usb-ctrl --netcard | grep modprobe | grep -v ehci | \
   sed 's/.* Cmd: "//;s/"//' | sort -u >/etc/modprobe.base
