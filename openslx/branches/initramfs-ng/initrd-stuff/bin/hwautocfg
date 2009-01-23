@@ -38,9 +38,8 @@ ash /etc/modprobe.pci
 [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mousedev.ko ] && \
   modprobe ${MODPRV} mousedev
 
-# wait depending on time of modules to load a little bit before the next
-# round of hardware detection
-usleep ${modwaittime} && hwsetup -v > /tmp/hwsetup.info
+hwinfo --disk | grep modprobe | sed 's/.* Cmd: "//;s/"//' \
+  >/etc/modprobe.disk
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
 
 # load IDE high level drivers
