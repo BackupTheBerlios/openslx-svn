@@ -8,9 +8,6 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Basics.pm
-#    - provides basic functionality of the OpenSLX config-db.
-# -----------------------------------------------------------------------------
 package OpenSLX::Basics;
 
 use strict;
@@ -24,7 +21,7 @@ $VERSION = 1.01;
 
 @EXPORT = qw(
     &openslxInit %openslxConfig %cmdlineConfig
-    &_tr &trInit
+    &_tr
     &warn &die &croak &carp &confess &cluck
     &callInSubprocess &executeInSubprocess &slxsystem
     &vlog
@@ -32,15 +29,23 @@ $VERSION = 1.01;
     &instantiateClass &loadDistroModule
 );
 
+=head1 NAME
+
+OpenSLX::Basics - implements basic functionality for OpenSLX.
+
+=head1 DESCRIPTION
+
+This module exports basic functions, which are expected to be used all across
+OpenSLX.
+
+=cut
+
 our (%openslxConfig, %cmdlineConfig, %openslxPath);
 
 use subs qw(die warn);
 
 use open ':utf8';
 
-################################################################################
-### Module implementation
-################################################################################
 require Carp;       # do not import anything as we are going to overload carp
                     # and croak!
 use Carp::Heavy;    # use it here to have it loaded immediately, not at
@@ -57,9 +62,23 @@ use POSIX qw(locale_h);
 
 my $translations;
 
-# this hash will hold the active openslx configuration,
-# the initial content is based on environment variables or default values.
-# Each value may be overridden from config files and/or cmdline arguments.
+=head1 PUBLIC VARIABLES
+
+=over
+
+=item B<%openslxConfig>
+
+This hash holds the active openslx configuration. 
+
+The initial content is based on environment variables or default values. Calling
+C<openslxInit()> will read the configuration files and/or cmdline arguments
+and modify this hash accordingly.
+
+The individual entries of this hash are documented in the manual of the
+I<slxsettings>-script, so please look there if you'd like to know more.
+
+=cut
+
 %openslxConfig = (
     'db-name' => $ENV{SLX_DB_NAME} || 'openslx',
     'db-spec' => $ENV{SLX_DB_SPEC},
@@ -94,6 +113,16 @@ my $translations;
     'pxe-theme-menu-margin'              => '9',
 );
 chomp($openslxConfig{'locale-charmap'});
+
+=item B<%cmdlineConfig>
+
+This hash holds the config items that were specified via cmdline. This can be
+useful if you need to find out which settings have been specified via cmdline
+and which ones have come from a config file.
+
+Currently, only the slxsettings script and some tests make use of this hash.
+
+=cut
 
 # specification of cmdline arguments that are shared by all openslx-scripts:
 my %openslxCmdlineArgs = (
@@ -142,20 +171,24 @@ my $openslxLog = *STDERR;
 
 $Carp::CarpLevel = 1;
 
-# ------------------------------------------------------------------------------
-sub vlog
-{
-    my $minLevel = shift;
-    return if $minLevel > $openslxConfig{'verbose-level'};
-    my $str = join("", '-' x $minLevel, @_);
-    if (substr($str, -1, 1) ne "\n") {
-        $str .= "\n";
-    }
-    print $openslxLog $str;
-    return;
-}
+=back
 
-# ------------------------------------------------------------------------------
+=head1 PUBLIC FUNCTIONS
+
+=over
+
+=item B<openslxInit()>
+
+Initializes OpenSLX environment - every script should invoke this function
+before it invokes any other.
+
+Basically, this function reads in the configuration and sets up logging
+and translation backends.
+
+Returns 1 upon success and dies in case of a problem.
+
+=cut
+
 sub openslxInit
 {
     # evaluate cmdline arguments:
@@ -221,69 +254,40 @@ sub openslxInit
     }
 
     # setup translation "engine":
-    trInit();
+    _trInit();
 
     return 1;
 }
 
-# ------------------------------------------------------------------------------
-sub trInit
+=item B<vlog($level, $message)>
+
+Logs the given I<$message> if the current log level is equal or greater than
+the given I<$level>.
+
+=cut
+
+sub vlog
 {
-    # activate automatic charset conversion on all the standard I/O streams,
-    # just to give *some* support to shells in other charsets:
-    binmode(STDIN,  ":encoding($openslxConfig{'locale-charmap'})");
-    binmode(STDOUT, ":encoding($openslxConfig{'locale-charmap'})");
-    binmode(STDERR, ":encoding($openslxConfig{'locale-charmap'})");
-
-    my $locale = $openslxConfig{'locale'};
-    if (lc($locale) eq 'c') {
-        # treat locale 'c' as equivalent for 'posix':
-        $locale = 'posix';
+    my $minLevel = shift;
+    return if $minLevel > $openslxConfig{'verbose-level'};
+    my $str = join("", '-' x $minLevel, @_);
+    if (substr($str, -1, 1) ne "\n") {
+        $str .= "\n";
     }
-
-    if (lc($locale) ne 'posix') {
-        # parse locale and canonicalize it (e.g. to 'de_DE') and generate
-        # two filenames from it (language+country and language only):
-        if ($locale !~ m{^\s*([^_]+)(?:_(\w+))?}) {
-            die "locale $locale has unknown format!?!";
-        }
-        my @locales;
-        if (defined $2) {
-            push @locales, lc($1) . '_' . uc($2);
-        }
-        push @locales, lc($1);
-
-        # try to load any of the Translation modules (starting with the more
-        # specific one [language+country]):
-        my $loadedTranslationModule;
-        foreach my $trName (@locales) {
-            vlog(2,    "trying to load translation module $trName...");
-            my $trModule = "OpenSLX/Translations/$trName.pm";
-            my $trModuleSpec = "OpenSLX::Translations::$trName";
-            if (eval { require $trModule } ) {
-                # copy the translations available in the given locale into our 
-                # hash:
-                $translations = $trModuleSpec->getAllTranslations();
-                $loadedTranslationModule = $trModule;
-                vlog(
-                    1,
-                    _tr(
-                        "translations module %s loaded successfully", $trModule
-                    )
-                );
-                last;
-            }
-        }
-        if (!defined $loadedTranslationModule) {
-            vlog(1,
-                "unable to load any translations module for locale '$locale' ($!)."
-            );
-        }
-    }
+    print $openslxLog $str;
     return;
 }
 
-# ------------------------------------------------------------------------------
+=item B<_tr($originalMsg, @msgParams)>
+
+Translates the english text given in I<$originalMsg> to the currently selected
+language, passing on any given additional I<$msgParams> to the translation
+process (as printf arguments).
+
+N.B.: although it starts with an underscore, this is still a public function!
+
+=cut
+
 sub _tr
 {
     my $trOrig = shift;
@@ -302,7 +306,19 @@ sub _tr
     return sprintf($formatStr, @_);
 }
 
-# ------------------------------------------------------------------------------
+=item B<callInSubprocess($childFunc)>
+
+Forks the current process and invokes the code given in I<$childFunc> in the
+child process. The parent blocks until the child has executed that function.
+
+If an error occured during execution of I<$childFunc>, the parent process will
+cleanup the child and then pass back that error with an invocation of die().
+
+If the process of executing I<$childFunc> is being interrupted by a signal,
+the parent will cleanup and then exit with an appropriate exit code.
+
+=cut
+
 sub callInSubprocess
 {
     my $childFunc = shift;
@@ -326,7 +342,16 @@ sub callInSubprocess
     return;
 }
 
-# ------------------------------------------------------------------------------
+=item B<executeInSubprocess(@cmdlineArgs)>
+
+Forks the current process and executes the program given in I<@cmdlineArgs> in 
+the child process. 
+
+The parent process returns immediately after having spawned the new process, 
+returning the process-ID of the child.
+
+=cut
+
 sub executeInSubprocess
 {
     my @cmdlineArgs = @_;
@@ -343,7 +368,19 @@ sub executeInSubprocess
     return $pid;
 }
 
-# ------------------------------------------------------------------------------
+=item B<slxsystem(@cmdlineArgs)>
+
+Executes a new program specified by I<@cmdlineArgs> and waits until it is done.
+
+Returns the exit code of the execution (usually 0 if everything is ok).
+
+If any signal (other than SIGPIPE) interrupts the execution, this function
+dies with an appropriate error message. SIGPIPE is being ignored in order
+to ignore any failed FTP connections and the like (we just return the
+error code instead).
+
+=cut
+
 sub slxsystem
 {
     vlog(2, _tr("executing: %s", join ' ', @_));
@@ -354,103 +391,63 @@ sub slxsystem
         # and the like):
         my $signalNo = $res & 127;
         if ($signalNo > 0 && $signalNo != 13) {
-            die _tr("child-process reveived signal '%s', parent stops!",
-                $signalNo);
+            die _tr(
+                "child-process received signal '%s', parent stops!", $signalNo
+            );
         }
     }
     return $res;
 }
 
-# ------------------------------------------------------------------------------
+=item B<cluck()>, B<carp()>, B<warn()>, B<confess()>, B<croak()>, B<die()>
+
+Overrides of the respective functions in I<Carp::> or I<CORE::> that mark
+any warnings with '°°°' and any errors with '***' in order to make them
+more visible in the output.
+
+=cut
+
 sub cluck
 {
     _doThrowOrWarn('cluck', @_);
     return;
 }
 
-# ------------------------------------------------------------------------------
 sub carp
 {
     _doThrowOrWarn('carp', @_);
     return;
 }
 
-# ------------------------------------------------------------------------------
 sub warn
 {
     _doThrowOrWarn('warn', @_);
     return;
 }
 
-# ------------------------------------------------------------------------------
 sub confess
 {
     _doThrowOrWarn('confess', @_);
     return;
 }
 
-# ------------------------------------------------------------------------------
 sub croak
 {
     _doThrowOrWarn('croak', @_);
     return;
 }
 
-# ------------------------------------------------------------------------------
 sub die
 {
     _doThrowOrWarn('die', @_);
     return;
 }
 
-# ------------------------------------------------------------------------------
-sub _doThrowOrWarn
-{
-    my $type = shift;
-    my $msg = shift;
-    
-    # use '°°°' for warnings and '***' for errors
-    if ($type eq 'carp' || $type eq 'warn' || $type eq 'cluck') {
-        $msg =~ s[^°°° ][]igms;
-        $msg =~ s[^][°°° ]igms;
-    }
-    else {
-        $msg =~ s[^\*\*\* ][]igms;
-        $msg =~ s[^][*** ]igms;
-    }
+=item B<checkParams($params, $paramsSpec)>
 
-    if ($openslxConfig{'debug-confess'}) {
-        my %functionFor = (
-            'carp' => sub { Carp::cluck @_ },
-            'cluck' => sub { Carp::cluck @_ },
-            'confess' => sub { Carp::confess @_ },
-            'croak' => sub { Carp::confess @_ },
-            'die' => sub { Carp::confess @_ },
-            'warn' => sub { Carp::cluck @_ },
-        );
-        my $func = $functionFor{$type};
-        $func->($msg);
-    }
-    else {
-        chomp $msg;
-        my %functionFor = (
-            'carp' => sub { Carp::carp @_ },
-            'cluck' => sub { Carp::cluck @_ },
-            'confess' => sub { Carp::confess @_ },
-            'croak' => sub { Carp::croak @_ },
-            'die' => sub { CORE::die @_},
-            'warn' => sub { CORE::warn @_ },
-        );
-        my $func = $functionFor{$type};
-        $func->("$msg\n");
-    }
-    return;
-}
-
-=item checkParams()
-
-Utility function that can be used by any method that accepts param-hashes
-to check if the given parameters actually match the expectations.
+Utility function that can be used by any function that accepts param-hashes
+to check if the parameters given in I<$params> actually match the expectations
+specified in I<$paramsSpec>.
 
 Each individual parameter has a specification that describes the expectation
 that the calling function has towards this param. The following specifications
@@ -463,9 +460,6 @@ are supported:
 * '?class=...' - if the parameter has been given, it must be an object of the given class
 
 The function will confess for any unknown, missing, or non-matching param.
-
-If accepted as useful, this function could be moved to a utility module of
-the framework in order to be available to all other OTRS-modules.
 
 =cut
 
@@ -554,7 +548,41 @@ sub checkParams
     return scalar 1;
 }
 
-# ------------------------------------------------------------------------------
+=item B<instantiateClass($class, $flags)>
+
+Loads the required module and instantiates an object of the class given in 
+I<$class>.
+
+The following flags can be specified via I<$flags>-hashref:
+
+=over
+
+=item acceptMissing   [optional]
+
+Usually, this function will die if the corresponding module could not be found
+(acceptMissing == 0). Pass in acceptMissing => 1 if you want this function
+to return undef instead.
+
+=item pathToClass   [optional]
+
+Sometimes, the module specified in I<$class> lives relative to another path.
+If so, you can specify the base path of that module via this flag.
+
+=item incPaths   [optional]
+
+Some modules live outside of the standard perl search paths. If you'd like to
+load such a module, you can specify one (or more) paths that will be added
+to @INC while trying to load the module.
+
+=item version   [optional]
+
+If you require a specific version of the module, you can specify the version
+number via the I<$version> flag.
+
+=back
+
+=cut
+
 sub instantiateClass
 {
     my $class = shift;
@@ -598,6 +626,61 @@ sub instantiateClass
     return $class->new;
 }
 
+=item B<loadDistroModule($params)>
+
+Tries to determine the most appropriate distro module for the context specified
+via the given I<$params>.
+
+During that process, this function will try to load several different modules,
+working its way from the most specific down to a generic fallback. 
+
+For example: when given I<suse-10.3_x86_64> as distroName, this function would 
+try the following modules:
+
+=over
+
+=item I<Suse_10_3_x86_64>
+
+=item I<Suse_10_3>
+
+=item I<Suse_10>
+
+=item I<Suse>
+
+=item I<Base>                    (or whatever has been given as fallback name)
+
+=back
+
+The I<$params>-hashref supports the following entries:
+
+=over
+
+=item distroName
+
+Specifies the name of the distro as it was retrieved from the vendor-OS
+(e.g. 'suse-10.2' or 'ubuntu-8.04_amd64').
+
+=item distroScope
+
+Specifies the scope of the required distro class (e.g. 
+'OpenSLX::OSSetup::Distro' or 'vmware::OpenSLX::Distro').
+
+=item fallbackName   [optional]
+
+Instead of the default 'Base', you can specify the name of a different fallback
+class that will be tried if no module matching the given distro name could be
+found.
+
+=item pathToClass   [optional]
+
+If you require the distro modules to be loaded relative to a specific path,
+you can specify that base path via the I<$pathToClass> param.
+
+=back
+
+=cut
+
+
 sub loadDistroModule
 {
     my $params = shift;
@@ -617,16 +700,14 @@ sub loadDistroModule
 
     # try to load the distro module starting with the given name and then
     # working the way upwards (from most specific to generic).
-    # When given 'suse-10.3_x86_64', this would try the following modules:
-    #   Suse_10_3_x86_64
-    #   Suse_10_3_x86           (pretty senseless, but what the heck ...)
-    #   Suse_10_3
-    #   Suse_10
-    #   Suse
-    #   Base                    (or whatever has been given as fallback name)
     $distroName =~ tr{.-}{__};
     my @distroModules;
-    while($distroName =~ m{^(.+)_[^_]*$}) {
+    my $blockRX = qr{
+        ^(.+?)_     # everything before the last block (the rest is dropped)
+        (?:x86_)?   # takes care to treat 'x86_64' as one block
+        [^_]*$      # the last _-block
+    }x;
+    while($distroName =~ m{$blockRX}) {
         push @distroModules, $distroName;
         $distroName = $1;
     }
@@ -660,5 +741,108 @@ sub loadDistroModule
 
     return $distro;
 }
+
+sub _trInit
+{
+    # activate automatic charset conversion on all the standard I/O streams,
+    # just to give *some* support to shells in other charsets:
+    binmode(STDIN,  ":encoding($openslxConfig{'locale-charmap'})");
+    binmode(STDOUT, ":encoding($openslxConfig{'locale-charmap'})");
+    binmode(STDERR, ":encoding($openslxConfig{'locale-charmap'})");
+
+    my $locale = $openslxConfig{'locale'};
+    if (lc($locale) eq 'c') {
+        # treat locale 'c' as equivalent for 'posix':
+        $locale = 'posix';
+    }
+
+    if (lc($locale) ne 'posix') {
+        # parse locale and canonicalize it (e.g. to 'de_DE') and generate
+        # two filenames from it (language+country and language only):
+        if ($locale !~ m{^\s*([^_]+)(?:_(\w+))?}) {
+            die "locale $locale has unknown format!?!";
+        }
+        my @locales;
+        if (defined $2) {
+            push @locales, lc($1) . '_' . uc($2);
+        }
+        push @locales, lc($1);
+
+        # try to load any of the Translation modules (starting with the more
+        # specific one [language+country]):
+        my $loadedTranslationModule;
+        foreach my $trName (@locales) {
+            vlog(2,    "trying to load translation module $trName...");
+            my $trModule = "OpenSLX/Translations/$trName.pm";
+            my $trModuleSpec = "OpenSLX::Translations::$trName";
+            if (eval { require $trModule } ) {
+                # copy the translations available in the given locale into our 
+                # hash:
+                $translations = $trModuleSpec->getAllTranslations();
+                $loadedTranslationModule = $trModule;
+                vlog(
+                    1,
+                    _tr(
+                        "translations module %s loaded successfully", $trModule
+                    )
+                );
+                last;
+            }
+        }
+        if (!defined $loadedTranslationModule) {
+            vlog(1,
+                "unable to load any translations module for locale '$locale' ($!)."
+            );
+        }
+    }
+    return;
+}
+
+sub _doThrowOrWarn
+{
+    my $type = shift;
+    my $msg = shift;
+    
+    # use '°°°' for warnings and '***' for errors
+    if ($type eq 'carp' || $type eq 'warn' || $type eq 'cluck') {
+        $msg =~ s[^°°° ][]igms;
+        $msg =~ s[^][°°° ]igms;
+    }
+    else {
+        $msg =~ s[^\*\*\* ][]igms;
+        $msg =~ s[^][*** ]igms;
+    }
+
+    if ($openslxConfig{'debug-confess'}) {
+        my %functionFor = (
+            'carp' => sub { Carp::cluck @_ },
+            'cluck' => sub { Carp::cluck @_ },
+            'confess' => sub { Carp::confess @_ },
+            'croak' => sub { Carp::confess @_ },
+            'die' => sub { Carp::confess @_ },
+            'warn' => sub { Carp::cluck @_ },
+        );
+        my $func = $functionFor{$type};
+        $func->($msg);
+    }
+    else {
+        chomp $msg;
+        my %functionFor = (
+            'carp' => sub { Carp::carp @_ },
+            'cluck' => sub { Carp::cluck @_ },
+            'confess' => sub { Carp::confess @_ },
+            'croak' => sub { Carp::croak @_ },
+            'die' => sub { CORE::die @_},
+            'warn' => sub { CORE::warn @_ },
+        );
+        my $func = $functionFor{$type};
+        $func->("$msg\n");
+    }
+    return;
+}
+
+=back
+
+=cut
 
 1;

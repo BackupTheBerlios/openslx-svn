@@ -18,7 +18,41 @@ use warnings;
 
 our $VERSION = 1.01;
 
+=head1 NAME
+
+OpenSLX::Syscall - provides wrapper functions for syscalls.
+
+=head1 DESCRIPTION
+
+This module exports one wrapper function for each syscall that OpenSLX is
+using. Each of these functions takes care to load all required Perl-headers
+before trying to invoke the respective syscall.
+
+=cut
+
 use OpenSLX::Basics;
+
+=head1 PUBLIC FUNCTIONS
+
+=over
+
+=item B<enter32BitPersonality()>
+
+Invokes the I<personality()> syscall in order to enter the 32-bit personality
+(C<PER_LINUX32>).
+
+=cut
+
+sub enter32BitPersonality
+{
+    _loadPerlHeader('syscall.ph');
+    _loadPerlHeader('linux/personality.ph', 'sys/personality.ph');
+
+    syscall(&SYS_personality, PER_LINUX32()) != -1
+        or warn _tr("unable to invoke syscall '%s'! ($!)", 'personality');
+
+    return;
+}
 
 sub _loadPerlHeader
 {
@@ -42,15 +76,8 @@ sub _loadPerlHeader
     );
 }
 
-sub enter32BitPersonality
-{
-    _loadPerlHeader('syscall.ph');
-    _loadPerlHeader('linux/personality.ph', 'sys/personality.ph');
+=back
 
-    syscall(&SYS_personality, PER_LINUX32()) != -1
-        or warn _tr("unable to invoke syscall '%s'! ($!)", 'personality');
-
-    return;
-}
+=cut
 
 1;

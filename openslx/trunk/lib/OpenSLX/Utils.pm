@@ -36,9 +36,17 @@ $VERSION = 1.01;
   hostIs64Bit
 );
 
-################################################################################
-### Module implementation
-################################################################################
+=head1 NAME
+
+OpenSLX::Utils - provides utility functions for OpenSLX.
+
+=head1 DESCRIPTION
+
+This module exports utility functions, which are expected to be used all across
+OpenSLX.
+
+=cut
+
 use File::Basename;
 use File::Path;
 use Socket;
@@ -47,7 +55,19 @@ use Term::ReadLine;
 
 use OpenSLX::Basics;
 
-# TODO: write POD for all these functions!
+=head1 PUBLIC FUNCTIONS
+
+=over
+
+=item B<copyFile($fileName, $targetDir, $targetFileName)>
+
+Copies the file specified by I<$fileName> to the folder I<$targetDir>,
+preserving the permissions and optionally renaming it to I<$targetFileName> 
+during the process.
+
+If I<$targetDir> does not exist yet, it will be created.
+
+=cut
 
 sub copyFile
 {
@@ -69,17 +89,37 @@ sub copyFile
     return;
 }
 
+=item B<fakeFile($fullPath)>
+
+Creates the (empty) file I<$fullPath> unless it already exists.
+
+If the parent directory of I<$fullPath> does not exist yet, it will be created.
+
+=cut
+
 sub fakeFile
 {
     my $fullPath = shift || croak 'need to pass in full path!';
 
+    return if -e $fullPath;
+
     my $targetDir = dirname($fullPath);
     mkpath($targetDir) unless -d $targetDir;
+
     if (system("touch", $fullPath)) {
         croak(_tr("unable to create file '%s' (%s)", $fullPath, $!));
     }
     return;
 }
+
+=item B<linkFile($linkTarget, $linkName)>
+
+Creates the link I<$linkName> that points to I<$linkTarget>. 
+
+If the directory where the new link shall live does not exist yet, it will be 
+created.
+
+=cut
 
 sub linkFile
 {
@@ -98,6 +138,28 @@ sub linkFile
     }
     return;
 }
+
+=item B<slurpFile($fileName, $flags)>
+
+Reads the file specified by <$fileName> and returns the contents.
+
+The optional hash-ref I<$flags> supports the following entries:
+
+=over
+
+=item failIfMissing
+
+Specifies what shall happen if the file does not exist: die (failIfMissing == 1)
+or return an empty string (failIfMissing == 0). Defaults to 1.
+
+=item io-layer
+
+Specifies the Perl-IO-layer that shall be applied to the file (defaults to 
+'utf8').
+
+=back
+
+=cut
 
 sub slurpFile
 {
@@ -132,6 +194,28 @@ sub slurpFile
     }
 }
 
+=item B<spitFile($fileName, $content, $flags)>
+
+Writes the given I<$content> to the file specified by <$fileName>, creating
+the file (and any missing directories) if it does not exist yet.
+
+The optional hash-ref I<$flags> supports the following entries:
+
+=over
+
+=item io-layer
+
+Specifies the Perl-IO-layer that shall be applied to the file (defaults to 
+'utf8').
+
+=item mode
+
+Specifies the file mode that shall be applied to the file (via chmod).
+
+=back
+
+=cut
+
 sub spitFile
 {
     my $fileName = shift || croak 'need to pass in a fileName!';
@@ -143,6 +227,9 @@ sub spitFile
         'mode'     => '?',
     });
     my $ioLayer = $flags->{'io-layer'} || 'utf8';
+
+    my $targetDir = dirname($fileName);
+    mkpath($targetDir) unless -d $targetDir;
 
     my $fh;
     open($fh, ">:$ioLayer", $fileName)
@@ -157,6 +244,24 @@ sub spitFile
     return;
 }
 
+=item B<appendFile($fileName, $content, $flags)>
+
+Appends the given I<$content> to the file specified by <$fileName>, creating
+the file (and any missing directories) if it does not exist yet.
+
+The optional hash-ref I<$flags> supports the following entries:
+
+=over
+
+=item io-layer
+
+Specifies the Perl-IO-layer that shall be applied to the file (defaults to 
+'utf8').
+
+=back
+
+=cut
+
 sub appendFile
 {
     my $fileName = shift || croak 'need to pass in a fileName!';
@@ -168,6 +273,9 @@ sub appendFile
     });
     my $ioLayer = $flags->{'io-layer'} || 'utf8';
 
+    my $targetDir = dirname($fileName);
+    mkpath($targetDir) unless -d $targetDir;
+
     my $fh;
     open($fh, ">>:$ioLayer", $fileName)
       or croak _tr("unable to create file '%s' (%s)\n", $fileName, $!);
@@ -177,6 +285,16 @@ sub appendFile
       or croak _tr("unable to close file '%s' (%s)\n", $fileName, $!);
     return;
 }
+
+=item B<followLink($path, $prefixedPath)>
+
+Deeply traverses the given I<$path> until it no longer contains a link and
+returns the resulting file or directory.
+
+If you pass in a I<$prefixedPath>, each link will be resolved relatively to
+that path (useful for example with respect to chroot-environments).
+
+=cut
 
 sub followLink
 {
@@ -196,11 +314,52 @@ sub followLink
     return $path;
 }
 
+=item B<copyBinaryWithRequiredLibs($params)>
+
+Copies a binary to a specified folder, taking along all the libraries that
+are required by this binary.
+
+The hash-ref I<$params> supports the following entries:
+
+=over
+
+=item binary
+
+The full path to the binary that shall be copied.
+
+=item targetFolder
+
+The full path to the folder where the binary shall be copied to.
+
+=item libTargetFolder
+
+Defines a path relatively to which all required libs will be copied to. 
+
+An example: during execution of 
+
+    copyBinaryWithRequiredLibs({
+        binary          => '/bin/ls',
+        targetFolder    => '/tmp/slx-initramfs/bin',
+        libTargetFolder => '/tmp/slx-initramfs',
+    });
+
+the library C<lib/libc-2.6.1.so> will be copied to 
+C</tmp/slx-initramfs/lib/libc-2.6.1.so>.
+
+=item targetName   [optional]
+
+If you'd like to rename the binary while copying, you can specify the new name
+in this entry.
+
+=back
+
+=cut
+
 sub copyBinaryWithRequiredLibs {
     my $params = shift;
     
     checkParams($params, {
-        'binary'             => '!',    # file to copy
+        'binary'             => '!', # file to copy
         'targetFolder'    => '!',    # where file shall be copied to
         'libTargetFolder' => '!',    # base target folder for libs
         'targetName'      => '?',    # name of binary in target folder
@@ -231,6 +390,27 @@ sub copyBinaryWithRequiredLibs {
     return $requiredLibsStr;
 }
 
+=item B<unshiftHereDoc($content)>
+
+Returns the here-doc (or string) given in I<$content> such that the leading
+whitespace found on the first line will be removed from all lines.
+
+As an example: if you pass in the string
+
+        #!/bin/sh
+        if [ -n "$be_nice" ]; then
+          echo "bummer!" >/etc/passwd
+        fi
+        
+you will get this:
+
+#!/bin/sh
+if [ -n "$be_nice" ]; then
+  echo "bummer!" >/etc/passwd
+fi
+
+=cut
+
 sub unshiftHereDoc
 {
     my $content = shift;
@@ -239,6 +419,16 @@ sub unshiftHereDoc
     $content =~ s[^$shiftStr][]gms;
     return $content;
 }
+
+=item B<string2Array($string)>
+
+Returns the given string split into an array, using newlines as separator.
+
+In the resulting array, empty entries will have been removed and each entry
+will be trimmed of leading or trailing whitespace and comments (lines starting
+with a #).
+
+=cut
 
 sub string2Array
 {
@@ -254,6 +444,13 @@ sub string2Array
     return grep { length($_) > 0 && $_ !~ m[^\s*#]; } @lines;
 }
 
+=item B<chrootInto($osDir)>
+
+Does a chroot() into the given directory (which is supposed to contain at
+least the fragments of an operating system).
+
+=cut
+
 sub chrootInto
 {
     my $osDir = shift;
@@ -267,6 +464,18 @@ sub chrootInto
         or die _tr("unable to chroot into '%s' (%s)\n", $osDir, $!);
     return;
 }
+
+=item B<mergeHash($targetHash, $sourceHash, $fillOnly)>
+
+Deeply copies values from I<$sourceHash> into I<$targetHash>. 
+
+If you pass in 1 for I<$fillOnly>, only hash entries that do not exist in 
+I<$targetHash> will be copied (C<Merge>-mode), otherwise all values from 
+I<$sourceHash> will be copied over (C<Push>-mode).
+
+Returns the resulting I<$targetHash> for convenience.
+
+=cut
 
 sub mergeHash
 {
@@ -297,7 +506,15 @@ sub mergeHash
             $targetHash->{$key} = $sourceVal;
         }
     }
+    return $targetHash;
 }
+
+=item B<getFQDN()>
+
+Determines the fully-qualified-domain-name (FQDN) of the computer executing
+this function and returns it.
+
+=cut
 
 sub getFQDN
 {
@@ -310,6 +527,13 @@ sub getFQDN
     return $FQDN;
 }
 
+=item B<readPassword($prompt)>
+
+Outputs the given I<$prompt> and then reads a password from the terminal
+(trying to make sure that the characters are not echoed in a readable form).
+
+=cut
+
 sub readPassword
 {
     my $prompt = shift;
@@ -320,6 +544,13 @@ sub readPassword
 
     return $term->readline($prompt);
 }
+
+=item B<hostIs64Bit()>
+
+Returns 1 if the host (the computer executing this function) is running a
+64-bit OS, 0 if not (i.e. 32-bit).
+
+=cut
 
 sub hostIs64Bit
 {

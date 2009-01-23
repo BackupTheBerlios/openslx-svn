@@ -8,9 +8,6 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# ConfigFolder.pm
-#    - provides utility functions for generation of configuration folders
-# -----------------------------------------------------------------------------
 package OpenSLX::ConfigFolder;
 
 use strict;
@@ -27,11 +24,44 @@ $VERSION = 1.01;
     &createConfigFolderForSystem
 );
 
-################################################################################
-### Module implementation
-################################################################################
+=head1 NAME
+
+OpenSLX::ConfigFolder - implements configuration folder related functionality 
+for OpenSLX.
+
+=head1 DESCRIPTION
+
+This module exports functions that create configuration folders for specific
+system, which will be used by the slxconfig-demuxer when building an initramfs
+for each system.
+
+=cut
+
 use OpenSLX::Basics;
 use OpenSLX::Utils;
+
+=head1 PUBLIC FUNCTIONS
+
+=over
+
+=item B<createConfigFolderForDefaultSystem()>
+
+Creates the configuration folder for the default system.
+
+The resulting folder will be named C<default> and will be created
+in the I<OpenSLX-private-path>C</config>-folder (usually 
+C</var/opt/openslx/config>).
+
+Within that folder, two subfolders, C<initramfs> and C<rootfs> will be created.
+
+In the C<initramfs>-subfolder, two files will be created: C<preinit.local>
+and C<postinit.local>, who are empty stub-scripts meant to be edited by the 
+OpenSLX admin.
+
+The functions returns 1 if any folder or file had to be created and 0 if all the
+required folders & files already existed.
+
+=cut
 
 sub createConfigFolderForDefaultSystem
 {
@@ -81,6 +111,24 @@ sub createConfigFolderForDefaultSystem
     return $result;
 }
 
+=item B<createConfigFolderForSystem($systemName)>
+
+Creates the configuration folder for the system whose name has been given in
+I<$systemName>.
+
+The resulting folder will be named just like the system and will be created
+in the I<OpenSLX-private-path>C</config>-folder (usually 
+C</var/opt/openslx/config>).
+
+In that folder, a single subfolder C<default> will be created (representing
+the default setup for all clients of that system). Within that folder, two
+subfolders, C<initramfs> and C<rootfs> will be created.
+
+The functions returns 1 if any folder had to be created and 0 if all the
+required folders already existed.
+
+=cut
+
 sub createConfigFolderForSystem
 {
     my $systemName = shift || confess "need to pass in system-name!";
@@ -98,5 +146,9 @@ sub createConfigFolderForSystem
     }
     return $result;
 }
+
+=back
+
+=cut
 
 1;
