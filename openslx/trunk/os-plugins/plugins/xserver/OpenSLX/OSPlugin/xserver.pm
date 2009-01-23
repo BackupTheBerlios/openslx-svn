@@ -111,17 +111,19 @@ sub getAttrInfo
         # plugin specific attributes start here ...
 
         # stage1
-        'xserver::pkgpath' => {
-            applies_to_vendor_os => 0,
-            applies_to_vendor_os => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                Path to downloaded ATI or Nvidia package
-            End-of-Here
-            # TODO:
-            #content_regex => qr{^0|1$},
-            content_descr => 'Path to Nvidia or ATI packages',
-            default => '/root/xserver-pkgs',
-        },
+# Currently we don't need it anymore. Perhaps in the future, thats
+# why it's just commented out
+#        'xserver::pkgpath' => {
+#            applies_to_vendor_os => 0,
+#            applies_to_vendor_os => 1,
+#            description => unshiftHereDoc(<<'            End-of-Here'),
+#                Path to downloaded ATI or Nvidia package
+#            End-of-Here
+#            # TODO:
+#            #content_regex => qr{^0|1$},
+#            content_descr => 'Path to Nvidia or ATI packages',
+#            default => '/root/xserver-pkgs',
+#        },
         'xserver::ati' => {
             applies_to_vendor_os => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
@@ -166,22 +168,24 @@ sub preInstallationPhase()
     $self->{attrs}                = $info->{'plugin-attrs'};
     $self->{vendorOsPath}         = $info->{'vendor-os-path'};
                                         
-    my $pkgpath = $self->{attrs}->{'xserver::pkgpath'};
-    my $installAti = $self->{attrs}->{'xserver::ati'};
-    my $installNvidia = $self->{attrs}->{'xserver::nvidia'};
+## Due of the fact that we download now our files we don't need this
+## part anymore. Maybe in the future. Thats why it's just commented out
+#    my $pkgpath = $self->{attrs}->{'xserver::pkgpath'};
+#    my $installAti = $self->{attrs}->{'xserver::ati'};
+#    my $installNvidia = $self->{attrs}->{'xserver::nvidia'};
 
-    if (! -d $pkgpath && ($installAti == 1 || $installNvidia == 1)) {
-        print "\n\n * xserver::pkgpath: no such directory!\n";
-        print " * xserver plugin can't install ATI or Nvidia driver!\n\n";
-        # exit 1 => xserver plugin is not getting installed because ati
-        # or nvidia where selected but are not installable!
-        exit 1;
-    }
-
-    if (-d $pkgpath && ($installNvidia == 1 || $installAti == 1)) {
-        # Todo: use a openslx copy function!
-        system("cp -r $pkgpath $self->{pluginRepositoryPath}/packages");
-    }
+#    if (! -d $pkgpath && ($installAti == 1 || $installNvidia == 1)) {
+#        print "\n\n * xserver::pkgpath: no such directory!\n";
+#        print " * xserver plugin can't install ATI or Nvidia driver!\n\n";
+#        # exit 1 => xserver plugin is not getting installed because ati
+#        # or nvidia where selected but are not installable!
+#        exit 1;
+#    }
+#
+#    if (-d $pkgpath && ($installNvidia == 1 || $installAti == 1)) {
+#        # Todo: use a openslx copy function!
+#        system("cp -r $pkgpath $self->{pluginRepositoryPath}/packages");
+#    }
 
 }
 
