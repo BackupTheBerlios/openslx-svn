@@ -66,7 +66,6 @@ sub fillRunlevelScript
         End-of-Here
     } elsif ($kind eq 'vmpl1.0') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-                  # load modules manually
                   vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
                   module_src_path=\${vmware_kind_path}/vmroot/modules
                   insmod \${module_src_path}/vmmon.o
@@ -74,22 +73,19 @@ sub fillRunlevelScript
         End-of-Here
     } elsif ($kind ne "vmpl2.0") {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-              # load modules manually
-              vmware_kind_path=/opt/openyslx/plugin-repo/vmware/\${vmware_kind}/
-              module_src_path=\${vmware_kind_path}/vmroot/modules
-              insmod \${module_src_path}/vmmon.o
-              insmod \${module_src_path}/vmnet.o
-              insmod \${module_src_path}/vmblock.o
+                  vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
+                  module_src_path=\${vmware_kind_path}/vmroot/modules
+                  insmod \${module_src_path}/vmmon.o
+                  insmod \${module_src_path}/vmnet.o
+                  insmod \${module_src_path}/vmblock.o
         End-of-Here
     } elsif ($kind eq 'vmpl2.5') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-              # load modules manually
-              vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
-              module_src_path=\${vmware_kind_path}/vmroot/modules
-              insmod \${module_src_path}/vmmon.o
-              insmod \${module_src_path}/vmnet.o
-              #insmod \${module_src_path}/vmci.o
-              insmod \${module_src_path}/vmmon.o
+                  vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
+                  module_src_path=\${vmware_kind_path}/vmroot/modules
+                  insmod \${module_src_path}/vmmon.o
+                  insmod \${module_src_path}/vmnet.o
+                  insmod \${module_src_path}/vmblock.o
         End-of-Here
     }
 
@@ -100,7 +96,7 @@ sub fillRunlevelScript
         unload_modules() {
           # to be filled with the proper list within via the stage1
           # configuration script
-          rmmod vmmon vmblock vmnet vmci vmmon 2>/dev/null
+          rmmod vmmon vmblock vmnet vmmon 2>/dev/null
         }
     End-of-Here
 

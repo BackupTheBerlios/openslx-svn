@@ -58,13 +58,9 @@ sub fillRunlevelScript
               insmod /lib/modules/\$(uname -r)/misc/vmmon.o || return 1
               insmod /lib/modules/\$(uname -r)/misc/vmnet.o || return 1
               insmod /lib/modules/\$(uname -r)/misc/vmblock.o 2>/dev/null || return 0
-              #insmod /lib/modules/\$(uname -r)/misc/vmci.o 2>/dev/null || return 0
-              # most probably nobody wants to run the parallel port driver ...
-              #modprobe vm...
         End-of-Here
     } elsif ($kind eq 'vmpl1.0') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-              # load module manuall
               vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
               module_src_path=\${vmware_kind_path}/vmroot/modules
               insmod \${module_src_path}/vmmon.o
@@ -72,7 +68,6 @@ sub fillRunlevelScript
         End-of-Here
     } elsif ($kind ne "vmpl2.0") {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-              # load module manuall
               vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
               module_src_path=\${vmware_kind_path}/vmroot/modules
               insmod \${module_src_path}/vmmon.o
@@ -81,13 +76,11 @@ sub fillRunlevelScript
         End-of-Here
     } elsif ($kind eq 'vmpl2.5') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-              # load module manuall
               vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
               module_src_path=\${vmware_kind_path}/vmroot/modules
               insmod \${module_src_path}/vmmon.o
               insmod \${module_src_path}/vmnet.o
-              #insmod \${module_src_path}/vmci.o
-              insmod \${module_src_path}/vmmon.o
+              insmod \${module_src_path}/vmblock.o
         End-of-Here
     }
 
@@ -98,7 +91,7 @@ sub fillRunlevelScript
         unload_modules() {
           # to be filled with the proper list within via the stage1
           # configuration script
-          rmmod vmmon vmblock vmnet vmci vmmon 2>/dev/null
+          rmmod vmmon vmblock vmnet vmmon 2>/dev/null
         }
     End-of-Here
 
