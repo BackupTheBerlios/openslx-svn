@@ -306,26 +306,64 @@ sub synchronizeAttributesWithDB
     return if !$defaultSystem;
 
     # fetch all known attributes from attribute roster and merge these 
-    # into the existing attributes of the default system
+    # into the existing attributes of the default system and client
     my $attrInfo = OpenSLX::AttributeRoster->getAttrInfo();
 
-    # add new attributes to default system
-    my @newAttrs 
-        = grep { !exists $defaultSystem->{attrs}->{$_} } keys %{$attrInfo};
-    foreach my $attr (@newAttrs) {
+    # add new system attributes to default system
+    my @newSystemAttrs
+        =   grep { 
+                $attrInfo->{$_}->{applies_to_systems}
+                && !exists $defaultSystem->{attrs}->{$_} 
+            } keys %{$attrInfo};
+    foreach my $attr (@newSystemAttrs) {
         $defaultSystem->{attrs}->{$attr} = $attrInfo->{$attr}->{default};
     }
     
-    # remove unknown attributes from default system
-    my @unknownAttrs 
-        = grep { !exists $attrInfo->{$_} } keys %{$defaultSystem->{attrs}};
-    foreach my $unknownAttr (@unknownAttrs) {
+    # remove unknown system attributes from default system
+    my @unknownSystemAttrs
+        =   grep { 
+                !exists $attrInfo->{$_}
+                || !$attrInfo->{$_}->{applies_to_systems}
+            } keys %{$defaultSystem->{attrs}};
+    foreach my $unknownAttr (@unknownSystemAttrs) {
         delete $defaultSystem->{attrs}->{$unknownAttr};
     }
     
     # now write back the updated default system if necessary
-    if (@newAttrs || @unknownAttrs) {
+    if (@newSystemAttrs || @unknownSystemAttrs) {
         return if !$self->changeSystem(0, $defaultSystem);
+    }
+    
+    my $defaultClient = $self->fetchClientByID(0);
+    return if !$defaultClient;
+
+    # add new client attributes to default client (deal only with
+    # attributes that are client-only)
+    my @newClientAttrs
+        =   grep { 
+                $attrInfo->{$_}->{applies_to_clients}
+                && !$attrInfo->{$_}->{applies_to_systems}
+                && !exists $defaultClient->{attrs}->{$_} 
+            } keys %{$attrInfo};
+    foreach my $attr (@newClientAttrs) {
+        $defaultClient->{attrs}->{$attr} = $attrInfo->{$attr}->{default};
+    }
+    
+    # remove unknown client attributes from default client (deal only with
+    # attributes that are client-only)
+    my @unknownClientAttrs
+        =   grep { 
+                !exists $attrInfo->{$_}
+                || !$attrInfo->{$_}->{applies_to_clients}
+                || $attrInfo->{$_}->{applies_to_systems}
+            } keys %{$defaultClient->{attrs}};
+    foreach my $unknownAttr (@unknownClientAttrs) {
+        delete $defaultClient->{attrs}->{$unknownAttr};
+    }
+    
+    # now write back the updated default client if necessary
+    if (@newClientAttrs || @unknownClientAttrs) {
+        return if !$self->changeClient(0, $defaultClient);
     }
     
     return 1;

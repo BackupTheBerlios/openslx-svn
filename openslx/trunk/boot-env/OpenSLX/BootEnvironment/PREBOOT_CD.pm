@@ -72,7 +72,7 @@ sub writeBootloaderMenuFor
 #
 #    my $pxeConfig    = $self->_getTemplate();
 #    my $pxeFile      = "$pxeConfigPath/$externalClientID";
-#    my $clientAppend = $client->{kernel_params} || '';
+#    my $clientAppend = $client->{attrs}->{kernel_params_client} || '';
 #    vlog(1, _tr("writing PXE-file %s", $pxeFile));
 #
 #    # set label for each system
@@ -93,7 +93,7 @@ sub writeBootloaderMenuFor
 #    foreach my $info (sort { $a->{label} cmp $b->{label} } @$systemInfos) {
 #        my $vendorOSName = $info->{'vendor-os'}->{name};
 #        my $kernelName   = basename($info->{'kernel-file'});
-#        my $append       = $info->{kernel_params};
+#        my $append       = $info->{attrs}->{kernel_params};
 #        $append .= " initrd=$vendorOSName/$info->{'initramfs-name'}";
 #        $append .= " $clientAppend";
 #        $slxLabels .= "LABEL openslx-$info->{'external-id'}\n";
@@ -245,7 +245,8 @@ sub _makePrebootInitRamFS
         'export-name'    => undef,
         'export-uri'     => undef,
         'initramfs'      => $initramfs,
-        'kernel-params'  => [ split ' ', ($info->{kernel_params} || '') ],
+        'kernel-params'  
+            => [ split ' ', ($info->{attrs}->{kernel_params} || '') ],
         'kernel-version' => $kernelFile =~ m[-(.+)$] ? $1 : '',
         'plugins'        => '',
         'root-path'
@@ -255,7 +256,7 @@ sub _makePrebootInitRamFS
     };
 
     # TODO: make debug-level an explicit attribute, it's used in many places!
-    my $kernelParams = $info->{kernel_params} || '';
+    my $kernelParams = $info->{attrs}->{kernel_params} || '';
     if ($kernelParams =~ m{debug(?:=(\d+))?}) {
         my $debugLevel = defined $1 ? $1 : '1';
         $params->{'debug-level'} = $debugLevel;
@@ -266,7 +267,8 @@ sub _makePrebootInitRamFS
     $makeInitRamFSEngine->execute($self->{'dry-run'});
 
     # copy back kernel-params, as they might have been changed (by plugins)
-    $info->{kernel_params} = join ' ', $makeInitRamFSEngine->kernelParams();
+    $info->{attrs}->{kernel_params} 
+        = join ' ', $makeInitRamFSEngine->kernelParams();
 
     return;
 }

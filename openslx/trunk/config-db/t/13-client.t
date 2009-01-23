@@ -60,7 +60,6 @@ my $fullClient = {
     'name'          => 'cli-nr-3',
     'mac'           => '01:02:03:04:05:03',
     'comment'       => 'nuff said',
-    'kernel_params' => 'debug=3 console=ttyS1',
     'unbootable'    => '0',
     'boot_type'     => 'pxe',
     'attrs' => {
@@ -71,6 +70,7 @@ my $fullClient = {
         'hw_graphic'        => 'e',
         'hw_monitor'        => 'f',
         'hw_mouse'          => 'g',
+        'kernel_params_client' => 'debug=3 console=ttyS1',
         'late_dm'           => 'h',
         'netbios_workgroup' => 'i',
         'nis_domain'        => 'j',
@@ -113,7 +113,6 @@ is($client3->{name},          'cli-nr-3',              'client 3 - name');
 is($client3->{mac},           '01:02:03:04:05:03',     'client 3 - mac');
 is($client3->{comment},       'nuff said',             'client 3 - comment');
 is($client3->{boot_type},     'pxe',                   'client 3 - boot_type');
-is($client3->{kernel_params}, 'debug=3 console=ttyS1', 'client 3 - kernel_params');
 is($client3->{unbootable},    '0',                     'client 3 - unbootable');
 is($client3->{attrs}->{automnt_dir},       'a',              'client 3 - attr automnt_dir');
 is($client3->{attrs}->{automnt_src},       'b',              'client 3 - attr automnt_src');
@@ -122,6 +121,7 @@ is($client3->{attrs}->{dm_allow_shutdown}, 'd',              'client 3 - attr dm
 is($client3->{attrs}->{hw_graphic},        'e',              'client 3 - attr hw_graphic');
 is($client3->{attrs}->{hw_monitor},        'f',              'client 3 - attr hw_monitor');
 is($client3->{attrs}->{hw_mouse},          'g',              'client 3 - attr hw_mouse');
+is($client3->{attrs}->{kernel_params_client}, 'debug=3 console=ttyS1', 'client 3 - attr kernel_params_client');
 is($client3->{attrs}->{late_dm},           'h',              'client 3 - attr late_dm');
 is($client3->{attrs}->{netbios_workgroup}, 'i',              'client 3 - attr netbios_workgroup');
 is($client3->{attrs}->{nis_domain},        'j',              'client 3 - attr nis_domain');
@@ -169,10 +169,7 @@ ok(
 is($client1->{id},            1,                   'client 1 - id');
 is($client1->{name},          'cli-1',             'client 1 - name');
 is($client1->{mac},           '01:02:03:04:05:01', 'client 1 - mac');
-is($client1->{unbootable},    undef,               'client 1 - unbootable');
 is($client1->{comment},       '',                  'client 1 - comment');
-is($client1->{boot_type},     'pxe',               'client 1 - boot_type');
-is($client1->{kernel_params}, undef,               'client 1 - kernel_params');
 is(keys %{$client1->{attrs}}, 3,                   'client 1 - attribute count');
 is($client1->{attrs}->{slxgrp},     'slxgrp',      'client 1 - attr slxgrp');
 is($client1->{attrs}->{start_snmp}, 'no',          'client 1 - attr start_snmp');

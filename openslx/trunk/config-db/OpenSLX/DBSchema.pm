@@ -34,7 +34,7 @@ use OpenSLX::Basics;
 ###         fk        => foreign key (integer)
 ################################################################################
 
-my $VERSION = 0.33;
+my $VERSION = 0.34;
 
 my $DbSchema = {
     'version' => $VERSION,
@@ -43,20 +43,16 @@ my $DbSchema = {
             # a client is a PC booting via network
             'cols' => [
                 'id:pk',            # primary key
-                'name:s.128',        # official name of PC (e.g. as given by sticker
+                'name:s.128',       # official name of PC (e.g. as given by sticker
                                     # on case)
-                'mac:s.20',            # MAC of NIC used for booting
-                'boot_type:s.20',    # type of remote boot procedure (PXE, ...)
-                'unbootable:b',        # unbootable clients simply won't boot
-                'kernel_params:s.128',    # client-specific kernel-args (e.g. console)
-                'comment:s.1024',    # internal comment (optional, for admins)
+                'mac:s.20',         # MAC of NIC used for booting
+                'comment:s.1024',   # internal comment (optional, for admins)
             ],
             'vals' => [
                 {   # add default client
                     'id'         => 0,
                     'name'       => '<<<default>>>',
                     'comment'    => 'internal client that holds default values',
-                    'unbootable' => 0,
                 },
             ],
         },
@@ -64,16 +60,16 @@ my $DbSchema = {
             # attributes of clients
             'cols' => [
                 'id:pk',            # primary key
-                'client_id:fk',        # foreign key to client
-                'name:s.128',        # attribute name
-                'value:s.255',        # attribute value
+                'client_id:fk',     # foreign key to client
+                'name:s.128',       # attribute name
+                'value:s.255',      # attribute value
             ],
         },
         'client_system_ref' => {
             # clients referring to the systems they should offer for booting
             'cols' => [
-                'client_id:fk',        # foreign key
-                'system_id:fk',        # foreign key
+                'client_id:fk',     # foreign key
+                'system_id:fk',     # foreign key
             ],
         },
         'export' => {
@@ -85,12 +81,12 @@ my $DbSchema = {
                 'name:s.64',        # unique name of export, is automatically
                                     # constructed like this:
                                     #   <vendor-os-name>-<export-type>
-                'vendor_os_id:fk',    # foreign key
-                'comment:s.1024',    # internal comment (optional, for admins)
+                'vendor_os_id:fk',  # foreign key
+                'comment:s.1024',   # internal comment (optional, for admins)
                 'type:s.10',        # 'nbd', 'nfs', ...
-                'server_ip:s.16',    # IP of exporting server, if empty the
+                'server_ip:s.16',   # IP of exporting server, if empty the
                                     # boot server will be used
-                'port:i',            # some export types need to use a specific
+                'port:i',           # some export types need to use a specific
                                     # port for each incarnation, if that's the
                                     # case you can specify it here
                 'uri:s.255',        # path to export (squashfs or NFS-path), if
@@ -101,8 +97,8 @@ my $DbSchema = {
         'global_info' => {
             # a home for global counters and other info
             'cols' => [
-                'id:s.32',            # key
-                'value:s.128',        # value
+                'id:s.32',          # key
+                'value:s.128',      # value
             ],
             'vals' => [
                 {   # add nbd-server-port
@@ -118,34 +114,34 @@ my $DbSchema = {
             # one resulting attribute set with respect to each group's priority.
             'cols' => [
                 'id:pk',            # primary key
-                'name:s.128',        # name of group
-                'priority:i',        # priority, used for order in group-list
+                'name:s.128',       # name of group
+                'priority:i',       # priority, used for order in group-list
                                     # (from 0-highest to 99-lowest)
-                'comment:s.1024',    # internal comment (optional, for admins)
+                'comment:s.1024',   # internal comment (optional, for admins)
             ],
         },
         'group_attr' => {
             # attributes of groups
             'cols' => [
                 'id:pk',            # primary key
-                'group_id:fk',        # foreign key to group
-                'name:s.128',        # attribute name
-                'value:s.255',        # attribute value
+                'group_id:fk',      # foreign key to group
+                'name:s.128',       # attribute name
+                'value:s.255',      # attribute value
             ],
         },
         'group_client_ref' => {
             # groups referring to their clients
             'cols' => [
-                'group_id:fk',        # foreign key
-                'client_id:fk',        # foreign key
+                'group_id:fk',      # foreign key
+                'client_id:fk',     # foreign key
             ],
         },
         'group_system_ref' => {
             # groups referring to the systems each of their clients should
             # offer for booting
             'cols' => [
-                'group_id:fk',        # foreign key
-                'system_id:fk',        # foreign key
+                'group_id:fk',      # foreign key
+                'system_id:fk',     # foreign key
             ],
         },
         'installed_plugin' => {
@@ -153,8 +149,8 @@ my $DbSchema = {
             # vendor-OS
             'cols' => [
                 'id:pk',            # primary key
-                'vendor_os_id:fk',    # foreign key
-                'plugin_name:s.64',    # name of installed plugin
+                'vendor_os_id:fk',  # foreign key
+                'plugin_name:s.64', # name of installed plugin
                                     # (e.g. suse-9.3-kde, debian-3.1-ppc,
                                     # suse-10.2-cloned-from-kiwi).
                                     # This is used as the folder name for the
@@ -166,8 +162,8 @@ my $DbSchema = {
             'cols' => [
                 'id:pk',            # primary key
                 'installed_plugin_id:fk',    # foreign key to installed plugin
-                'name:s.128',        # attribute name
-                'value:s.255',        # attribute value
+                'name:s.128',       # attribute name
+                'value:s.255',      # attribute value
             ],
         },
         'meta' => {
@@ -192,24 +188,21 @@ my $DbSchema = {
             # clients associated with this system
             'cols' => [
                 'id:pk',            # primary key
-                'export_id:fk',        # foreign key
+                'export_id:fk',     # foreign key
                 'name:s.64',        # unique name of system, is automatically
                                     # constructed like this:
                                     #   <vendor-os-name>-<export-type>-<kernel>
-                'label:s.64',        # name visible to user (pxe-label)
+                'label:s.64',       # name visible to user (pxe-label)
                                     # if empty, this will be autocreated from
                                     # the name
-                'kernel:s.128',        # path to kernel file, relative to /boot
-                'kernel_params:s.512',    # kernel-param string for pxe
-                'hidden:b',                # hidden systems won't be offered for booting
+                'kernel:s.128',     # path to kernel file, relative to /boot
                 'description:s.512',# visible description (for PXE TEXT)
-                'comment:s.1024',    # internal comment (optional, for admins)
+                'comment:s.1024',   # internal comment (optional, for admins)
             ],
             'vals' => [
                 {   # add default system
                     'id' => 0,
                     'name' => '<<<default>>>',
-                    'hidden' => 1,
                     'comment' => 'internal system that holds default values',
                 },
             ],
@@ -218,9 +211,9 @@ my $DbSchema = {
             # attributes of systems
             'cols' => [
                 'id:pk',            # primary key
-                'system_id:fk',        # foreign key to system
-                'name:s.128',        # attribute name
-                'value:s.255',        # attribute value
+                'system_id:fk',     # foreign key to system
+                'name:s.128',       # attribute name
+                'value:s.255',      # attribute value
             ],
         },
         'vendor_os' => {
@@ -233,8 +226,8 @@ my $DbSchema = {
                                     # suse-10.2-cloned-from-kiwi).
                                     # This is used as the folder name for the
                                     # corresponding stage1, too.
-                'comment:s.1024',    # internal comment (optional, for admins)
-                'clone_source:s.255',    # if vendor-OS was cloned, this contains
+                'comment:s.1024',   # internal comment (optional, for admins)
+                'clone_source:s.255',   # if vendor-OS was cloned, this contains
                                         # the rsync-URI pointing to the original
             ],
         },
@@ -741,6 +734,59 @@ sub _schemaUpgradeDBFrom
             [
                 'plugin_info_hash:s.32',
                 'schema_version:s.5',
+            ]
+        );
+    
+        return 1;
+    },
+    0.34 => sub {
+        my $metaDB = shift;
+
+        # turn client fields 'boot_type', 'kernel_params' and 'unbootable' 
+        # into attributes:
+        foreach my $client ($metaDB->fetchClientByFilter()) {
+            my $attrs = $metaDB->fetchClientAttrs($client->{id});
+            $attrs->{boot_type}            = $client->{boot_type} || 'pxe';
+            $attrs->{kernel_params_client} = $client->{kernel_params};
+            $attrs->{unbootable}           = $client->{unbootable};
+            $metaDB->setClientAttrs($client->{id}, $attrs);
+        }
+        $metaDB->schemaDropColumns(
+            'client',
+            [
+                'boot_type',
+                'kernel_params',
+                'unbootable',
+            ],
+            [
+                'id:pk',
+                'name:s.128',
+                'mac:s.20',
+                'comment:s.1024',
+            ]
+        );
+    
+        # turn system fields 'hidden' and 'kernel_params' into attributes:
+        foreach my $system ($metaDB->fetchSystemByFilter()) {
+            my $attrs = $metaDB->fetchSystemAttrs($system->{id});
+            $attrs->{hidden}        = $system->{hidden};
+            $attrs->{kernel_params} = $system->{kernel_params};
+            $metaDB->setSystemAttrs($system->{id}, $attrs);
+        }
+        $metaDB->schemaDropColumns(
+            'system',
+            [
+                'hidden',
+                'kernel_params',
+            ],
+            [
+                'id:pk',
+                'export_id:fk',
+                'name:s.64',
+                'label:s.64',
+                'kernel:s.128',
+                'description:s.512',
+                'comment:s.1024',
             ]
         );
     

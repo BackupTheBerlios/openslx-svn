@@ -106,7 +106,7 @@ sub writeFilesRequiredForBooting
         my $file = $cached->{file};
         vlog(1, _tr('copying initialramfs %s from %s', $initramfsName, $file));
         slxsystem("cp -a $file $initramfsName") unless $self->{'dry-run'};
-        $info->{kernel_params} = $cached->{kernel_params};
+        $info->{attrs}->{kernel_params} = $cached->{attrs}->{kernel_params};
         return 0;
     }
     else {
@@ -114,7 +114,7 @@ sub writeFilesRequiredForBooting
         $self->_makeInitRamFS($info, $initramfsName);
         $initramfsMap{$initramfsID} = {
             file          => $initramfsName,
-            kernel_params => $info->{kernel_params},
+            kernel_params => $info->{attrs}->{kernel_params},
         };
         return 1;
     }
@@ -138,7 +138,8 @@ sub _makeInitRamFS
         'export-name'    => $info->{export}->{name},
         'export-uri'     => $info->{'export-uri'},
         'initramfs'      => $initramfs,
-        'kernel-params'  => [ split ' ', ($info->{kernel_params} || '') ],
+        'kernel-params'  
+            => [ split ' ', ($info->{attrs}->{kernel_params} || '') ],
         'kernel-version' => $kernelFile =~ m[-(.+)$] ? $1 : '',
         'plugins'        => $info->{'active-plugins'},
         'root-path'
@@ -148,7 +149,7 @@ sub _makeInitRamFS
     };
 
     # TODO: make debug-level an explicit attribute, it's used in many places!
-    my $kernelParams = $info->{kernel_params} || '';
+    my $kernelParams = $info->{attrs}->{kernel_params} || '';
     if ($kernelParams =~ m{debug(?:=(\d+))?}) {
         my $debugLevel = defined $1 ? $1 : '1';
         $params->{'debug-level'} = $debugLevel;
@@ -159,7 +160,8 @@ sub _makeInitRamFS
     $makeInitRamFSEngine->execute($self->{'dry-run'});
 
     # copy back kernel-params, as they might have been changed (by plugins)
-    $info->{kernel_params} = join ' ', $makeInitRamFSEngine->kernelParams();
+    $info->{attrs}->{kernel_params} 
+        = join ' ', $makeInitRamFSEngine->kernelParams();
 
     return;
 }

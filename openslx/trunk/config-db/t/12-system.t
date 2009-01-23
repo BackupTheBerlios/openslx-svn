@@ -61,7 +61,6 @@ my $fullSystem = {
     'export_id'           => 3,
     'comment'             => 'nuff said',
     'label'               => 'BlingBling System - really kuul!',
-    'kernel_params'       => 'debug=3 console=ttyS1',
     'hidden'              => '1',
     'attrs' => {
         'automnt_dir'       => 'a',
@@ -71,6 +70,7 @@ my $fullSystem = {
         'hw_graphic'        => 'e',
         'hw_monitor'        => 'f',
         'hw_mouse'          => 'g',
+        'kernel_params'     => 'debug=3 console=ttyS1',
         'late_dm'           => 'h',
         'netbios_workgroup' => 'i',
         'nis_domain'        => 'j',
@@ -117,7 +117,6 @@ is($system3->{kernel},              'vmlinuz-2.6.22.13-0.3-default',        'sys
 is($system3->{export_id},           '3',                     'system 3 - export_id');
 is($system3->{comment},             'nuff said',             'system 3 - comment');
 is($system3->{label},               'BlingBling System - really kuul!', 'system 3 - label');
-is($system3->{kernel_params},       'debug=3 console=ttyS1', 'system 3 - kernel_params');
 is($system3->{hidden},              '1',                     'system 3 - hidden');
 is($system3->{attrs}->{automnt_dir},       'a',              'system 3 - attr automnt_dir');
 is($system3->{attrs}->{automnt_src},       'b',              'system 3 - attr automnt_src');
@@ -126,6 +125,7 @@ is($system3->{attrs}->{dm_allow_shutdown}, 'd',              'system 3 - attr dm
 is($system3->{attrs}->{hw_graphic},        'e',              'system 3 - attr hw_graphic');
 is($system3->{attrs}->{hw_monitor},        'f',              'system 3 - attr hw_monitor');
 is($system3->{attrs}->{hw_mouse},          'g',              'system 3 - attr hw_mouse');
+is($system3->{attrs}->{kernel_params},     'debug=3 console=ttyS1', 'system 3 - attr kernel_params');
 is($system3->{attrs}->{late_dm},           'h',              'system 3 - attr late_dm');
 is($system3->{attrs}->{netbios_workgroup}, 'i',              'system 3 - attr netbios_workgroup');
 is($system3->{attrs}->{nis_domain},        'j',              'system 3 - attr nis_domain');
@@ -178,9 +178,9 @@ is($system1->{export_id},     '1',       'system 1 - export_id');
 is($system1->{kernel},        'vmlinuz', 'system 1 - kernel');
 is($system1->{comment},       '',        'system 1 - comment');
 is($system1->{label},         'sys-1',   'system 1 - label');
-is($system1->{kernel_params}, undef,     'system 1 - kernel_params');
 is($system1->{hidden},        undef,     'system 1 - hidden');
 is(keys %{$system1->{attrs}}, 3,         'system 1 - attribute count');
+is($system1->{attrs}->{kernel_params},  undef,                   'system 1 - attr kernel_params');
 is($system1->{attrs}->{ramfs_fsmods},   'squashfs',              'system 1 - attr ramfs_fsmods');
 is($system1->{attrs}->{ramfs_nicmods},  'e1000 forcedeth r8169', 'system 1 - attr ramfs_nicmods');
 is($system1->{attrs}->{start_sshd},     'yes',                   'system 1 - attr start_sshd');

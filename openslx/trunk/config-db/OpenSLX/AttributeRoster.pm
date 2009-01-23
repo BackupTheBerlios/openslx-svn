@@ -59,6 +59,33 @@ sub _init
             content_descr => undef,
             default => '',
         },
+        'boot_type' => {
+            applies_to_systems => 0,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                Selects the boot technology for this client.
+                Currently the following boot types are supported:
+                    pxe    (is the default)
+                        uses PXE to boot client over LAN
+                    preboot-cd
+                        generates a bootable CD-image that can be used to
+                        remotely boot the systems referred to by this client
+            End-of-Here
+            content_regex => qr{^(pxe|preboot-cd)$},
+            content_descr => '"pxe" or "preboot-cd"',
+            default => 'pxe',
+        },
+        'boot_uri' => {
+            applies_to_systems => 0,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                specifies the wget(able) address of the remote bootloader 
+                archive that shall be loaded from the preboot environment
+            End-of-Here
+            content_regex => undef,
+            content_descr => 'an uri supported by wget',
+            default => '',
+        },
         'country' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
@@ -68,6 +95,36 @@ sub _init
             content_regex => undef,
             content_descr => undef,
             default => 'de',
+        },
+        'hidden' => {
+            applies_to_systems => 1,
+            applies_to_clients => 0,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                specifies whether or not this system is offered for booting
+            End-of-Here
+            content_regex => qr{^(0|1)$},
+            content_descr => '0: system is bootable - 1: system is hidden',
+            default => '0',
+        },
+        'kernel_params' => {
+            applies_to_systems => 1,
+            applies_to_clients => 0,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                params to build kernel cmdline for this system
+            End-of-Here
+            content_regex => undef,
+            content_descr => 'kernel cmdline fragment',
+            default => 'quiet',
+        },
+        'kernel_params_client' => {
+            applies_to_systems => 0,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                client-specific params for kernel cmdline
+            End-of-Here
+            content_regex => undef,
+            content_descr => 'kernel cmdline fragment',
+            default => '',
         },
         'ramfs_fsmods' => {
             applies_to_systems => 1,
@@ -99,17 +156,6 @@ sub _init
             content_descr => 'a space-separated list of NIC modules',
             default => 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
         },
-# TODO: check if we still need this, as it is not being used anywhere
-#        'sane_scanner' => {
-#            applies_to_systems => 1,
-#            applies_to_clients => 1,
-#            description => unshiftHereDoc(<<'            End-of-Here'),
-#                !!!descriptive text missing here!!!
-#            End-of-Here
-#            content_regex => undef,
-#            content_descr => undef,
-#            default => '',
-#        },
         'scratch' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
@@ -120,28 +166,6 @@ sub _init
             content_descr => undef,
             default => '',
         },
-# TODO: check if we still need this, as it is not being used anywhere
-#        'slxgrp' => {
-#            applies_to_systems => 1,
-#            applies_to_clients => 1,
-#            description => unshiftHereDoc(<<'            End-of-Here'),
-#                !!!descriptive text missing here!!!
-#            End-of-Here
-#            content_regex => undef,
-#            content_descr => undef,
-#            default => '',
-#        },
-# TODO: check if we still need this, as it is not being used anywhere
-#        'start_alsasound' => {
-#            applies_to_systems => 1,
-#            applies_to_clients => 1,
-#            description => unshiftHereDoc(<<'            End-of-Here'),
-#                !!!descriptive text missing here!!!
-#            End-of-Here
-#            content_regex => undef,
-#            content_descr => undef,
-#            default => 'yes',
-#        },
         'start_atd' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
@@ -192,28 +216,6 @@ sub _init
             content_descr => undef,
             default => 'no',
         },
-# TODO: check if we still need this, as it is not being used anywhere
-#        'start_printer' => {
-#            applies_to_systems => 1,
-#            applies_to_clients => 1,
-#            description => unshiftHereDoc(<<'            End-of-Here'),
-#                !!!descriptive text missing here!!!
-#            End-of-Here
-#            content_regex => undef,
-#            content_descr => undef,
-#            default => 'no',
-#        },
-# TODO: check if we still need this, as it is not being used anywhere
-#        'start_samba' => {
-#            applies_to_systems => 1,
-#            applies_to_clients => 1,
-#            description => unshiftHereDoc(<<'            End-of-Here'),
-#                !!!descriptive text missing here!!!
-#            End-of-Here
-#            content_regex => undef,
-#            content_descr => undef,
-#            default => 'may',
-#        },
         'start_snmp' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
@@ -243,6 +245,16 @@ sub _init
             content_regex => undef,
             content_descr => undef,
             default => 'Europe/Berlin',
+        },
+        'unbootable' => {
+            applies_to_systems => 0,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                specifies whether or not this client is allowed to boot
+            End-of-Here
+            content_regex => qr{^(0|1)$},
+            content_descr => '0: client can boot - 1: client is blocked',
+            default => '0',
         },
     );
     

@@ -58,7 +58,7 @@ sub writeBootloaderMenuFor
 
     my $pxeConfig    = $self->_getTemplate();
     my $pxeFile      = "$pxeConfigPath/$externalClientID";
-    my $clientAppend = $client->{kernel_params} || '';
+    my $clientAppend = $client->{attrs}->{kernel_params_client} || '';
     vlog(1, _tr("writing PXE-file %s", $pxeFile));
 
     # set label for each system
@@ -79,7 +79,7 @@ sub writeBootloaderMenuFor
     foreach my $info (sort { $a->{label} cmp $b->{label} } @$systemInfos) {
         my $vendorOSName = $info->{'vendor-os'}->{name};
         my $kernelName   = basename($info->{'kernel-file'});
-        my $append       = $info->{kernel_params};
+        my $append       = $info->{attrs}->{kernel_params};
         $append .= " initrd=$vendorOSName/$info->{'initramfs-name'}";
         $append .= " $clientAppend";
         $slxLabels .= "LABEL openslx-$info->{'external-id'}\n";
