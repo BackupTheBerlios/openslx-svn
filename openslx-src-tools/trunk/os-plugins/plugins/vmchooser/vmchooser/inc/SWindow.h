@@ -5,6 +5,7 @@
 #include <fltk/Window.h>
 #include <fltk/ReturnButton.h>
 #include <fltk/Browser.h>
+#include <fltk/Font.h>
 //#include <fltk/TextDisplay.h>
 #include <fltk/ItemGroup.h>
 #include <fltk/Item.h>
@@ -48,30 +49,12 @@ private:
   /**
    * ctor with some reasonable default values
    */
-  SWindow(char* p = "Choose your session!") :
-    fltk::Window(fltk::USEDEFAULT,fltk::USEDEFAULT,500,550,p, true),
-    go(160, 520, 320, 20, "Ausführen"),
-    exit_btn(10, 520, 140, 20, "Abbrechen"),
-    sel(10,10, 480, 500)
-  {
-    border(false);
-    go.callback(cb_return,this);
-    sel.callback(cb_select, this);
-    exit_btn.callback(cb_exit, this);
-    
-    // Array for width of Select-Columns 
-    // (one Column for a lock-symbol)
-    int widths[] = { 450, 20 };
-    sel.column_widths(widths);
-    resizable(sel);
-    end();
-    //sel.style(fltk::Browser::default_style);
-    sel.indented(1);
-  };
+  //SWindow(char* p = "Choose your session!");
+  SWindow(int w, int h, char* p = "Choose your session!");
 
 public:
-  static SWindow* getInstance() {
-    static SWindow instance;
+  static SWindow* getInstance(int w, int h) {
+    static SWindow instance(w,h);
     return &instance;
   }
   

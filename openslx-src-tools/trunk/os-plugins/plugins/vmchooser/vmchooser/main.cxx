@@ -27,6 +27,7 @@ int main(int argc, char** argv) {
   char* xmlpath = NULL;
   char* slxgroup = NULL;
   char* lsesspath = NULL;
+  int width=0, height=0;
   
   opt->setVerbose();
   opt->autoUsagePrint(true);
@@ -36,6 +37,7 @@ int main(int argc, char** argv) {
   opt->addUsage("\t{-p |--path=} path to vmware (.xml) files");
   opt->addUsage("\t{-l |--lpath=} path to linux session (.desktop) files");
   opt->addUsage("\t{-g |--group=} group name");
+  opt->addUsage("\t{-s |--size=} [widthxheight]");
   opt->addUsage("\t{-h |--help} prints help");
   opt->addUsage("");
   
@@ -43,6 +45,7 @@ int main(int argc, char** argv) {
   opt->setOption("path", 'p');
   opt->setOption("lpath", 'l');
   opt->setOption("group",'g');
+  opt->setOption("size",'s');
   
   opt->processCommandArgs(argc, argv);
   
@@ -86,6 +89,31 @@ int main(int argc, char** argv) {
     lsesspath = "/usr/share/xsessions/";
   }
   
+  /** Size of Window */
+  string size;
+  unsigned int i;
+  
+  if(opt->getValue('s')!=NULL) {
+    size = opt->getValue('s');
+  }
+  if(opt->getValue("size")!= NULL) {
+    size = opt->getValue("size");
+  }
+  
+  if (size.empty()) {
+    width = 500;
+    height = 550;
+  }
+  else {
+    i = size.find_first_of("x");
+    if( i == string::npos) {
+      cerr << "Please write <width>x<height> as argument for -s|--size." << endl;
+      return 1;
+    }
+    height = atoi(size.substr(i+1).c_str());
+    width = atoi(size.substr(0, size.size()-i-1).c_str());
+  }
+  
   delete opt;
   
   /* read xml files */
@@ -99,7 +127,7 @@ int main(int argc, char** argv) {
   }
   lsessions = readLinSess(lsesspath);
   
-  SWindow& win = *SWindow::getInstance();
+  SWindow& win = *SWindow::getInstance(width, height);
   
   if(lsessions != NULL) {
     win.set_lin_entries(lsessions, slxgroup);

@@ -14,6 +14,82 @@
 using namespace fltk;
 using namespace std;
 
+
+/********************************************************
+ * default constructur for the main window
+ * ----------------------------------------------------
+ * if you want to set the size, call second ctor
+ ********************************************************/
+// SWindow::SWindow(char* p):
+//       fltk::Window(fltk::USEDEFAULT,fltk::USEDEFAULT,500,550,p, true),
+//       go(160, 520, 320, 20, "Ausführen"),
+//       exit_btn(10, 520, 140, 20, "Abbrechen"),
+//       sel(10,10, 480, 500)
+// {
+//   border(false);
+//   go.callback(cb_return,this);
+//   sel.callback(cb_select, this);
+//   exit_btn.callback(cb_exit, this);
+//     
+//     // Array for width of Select-Columns 
+//     // (one Column for a lock-symbol)
+//   int widths[] = { 450, 20 };
+//   sel.column_widths(widths);
+//   resizable(sel);
+//   end();
+//     //sel.style(fltk::Browser::default_style);
+//   sel.indented(1);
+// };
+
+
+/********************************************************
+ * second constructur for the main window
+ * ----------------------------------------------------
+ * if you want to use default sizes, call first ctor
+ ********************************************************/
+SWindow::SWindow(int w, int h, char* p):
+    fltk::Window(fltk::USEDEFAULT,fltk::USEDEFAULT,w,h,p, true),
+    go(w/3 + 10, h-30, (2*w)/3 - 10 , 30, "Ausführen"),
+    exit_btn(10, h-30, w/3 -10, 30, "Abbrechen"),
+    sel(10,10, w-20, h-40)
+{
+  border(false);
+  go.callback(cb_return,this);
+  sel.callback(cb_select, this);
+  exit_btn.callback(cb_exit, this);
+    
+    // Array for width of Select-Columns 
+    // (one Column for a lock-symbol)
+  
+//   int v = w-20;
+//   int widths[] = { (7*v)/8, v/8 };
+//   sel.column_widths(widths);
+//   resizable(sel);
+  end();
+  
+  Style* btn_style = new Style(*fltk::ReturnButton::default_style);
+  Style* sel_style = new Style(*fltk::Browser::default_style);
+  
+  
+  sel.indented(1);
+  
+  Font* f1 = font("sans bold");
+  //Font* f1bold = f1->bold();
+  
+  btn_style->textsize(16);
+  btn_style->labelsize(16);
+  btn_style->labelfont(f1);
+  btn_style->textfont(f1);
+  
+  sel_style->textfont(f1);
+  sel_style->textsize(16);
+  
+  exit_btn.style(btn_style);
+  go.style(btn_style);
+  sel.style(sel_style);
+};
+
+
 /********************************************************
  * Callback for ReturnButton at the bottom of the GUI
  * ----------------------------------------------------
