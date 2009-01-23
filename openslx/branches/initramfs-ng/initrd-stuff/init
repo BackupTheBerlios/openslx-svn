@@ -350,9 +350,15 @@ if [ -n "${essid}" ] ; then
   #/bin/ash
 else
   # check here for the active ethernet link
-  for ethif in "eth0 eth1 eth2 eth3" ; do
+  for ethif in eth0 eth1 eth2 eth3 ; do
     macaddr=$(ip link show dev $ethif 2>/dev/null | \
       sed -n "/ether [0-9e-f]\{2\}:.*/p" | sed -e "s/.*ether //;s/ .*//")
+    # if there is no bootmac present in kernel commandline any checks are
+    # useless
+    if [ -z "$bootmac" ] ; then
+      bootmac="$macaddr"
+      error "$init_bootmac" nonfatal
+    fi
     if [ "$macaddr" = "$bootmac" ] ; then
       nwif=$ethif
       break

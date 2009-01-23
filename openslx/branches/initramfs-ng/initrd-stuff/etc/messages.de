@@ -36,11 +36,15 @@ und die passenden Module auflisten\n  (ohne Endung .ko)."
 init_nowlan="  Kein brauchbares WLAN-Interface gefunden. Wurden alle \
 notwendigen Kernel-\n  module ins InirRamFS eingebaut?"
 init_wlanf="  Das WLAN Interface konnte nicht konfiguriert werden."
-init_2eif="  Es scheint mehr als eine Ethernet-Karte installiert und die \
+init_bootmac="  Es scheint mehr als eine Ethernet-Karte installiert und die \
 passenden\n  Kernel-Module geladen zu sein. Das kann fuer Probleme sorgen, da \
 evtl.\n  die nicht verbundene Netzwerkkarte als das erste Interface konfiguriert\
- \n  wurde. Somit kann der Versuch des Verbindungsaufbaus auf der anderen\n  \
-Karte passieren. Zur Behebung die Liste attr_ramfs_nicmods geeignet umsortieren."
+ \n  wurde. Durch die Uebergabe der MAC Adresse des Bootdevices (IPAPPEND=3 in
+der PXElinux-Konfiguration) laesst sich dieses vermeiden."
+init_nveth="  Ihr System benutzt anscheinend eine NVidia-Netzwerkkarte. Hier \
+kann es\n  vorkommen, dass die MAC-Adresse nicht korrekt eingestellt wird. \
+Dieses laesst\n  sich durch die Uebergabe der MAC Adresse des Bootdevices \ 
+(IPAPPEND=3 in der PXElinux-Konfiguration) vermeiden."
 init_errdhcp="  Keine komplette IP-Konfiguration ueber DHCP bekommen. \
 Eventuell sollten Sie\n ueber die Kernel Start Optionen eine Hersteller Code \
 ID (vendor code identifier)\n  (VCI=vci) hinzufuegen."

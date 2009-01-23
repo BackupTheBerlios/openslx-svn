@@ -37,10 +37,12 @@ appropriate modules (without .ko)."
 init_nowlan="  No wireless LAN capable interface found. Did you provide the \
 proper kernel\n  modules?"
 init_wlanf="  Unable to configure the WLAN interface."
-init_2eif="  You seem to have more than one active (=module loaded) ethernet \
-interfaces\n  installed. This might induce problems, if your client started \
-PXE via one\n  interface, but tries to communicate over the other in linux \
-mode. Try\n  to reorder your network module list."
+init_bootmac="  If you have more than one ethernet adaptor present in your \
+machine or using\n  a NVidia chipset then it would be advisable to switch on \
+passing of the\n  boot MAC address via kernel commandline (IPAPPEND=3) in \
+your PXElinux\n  configuration."
+init_nveth="  Your system uses a NVidia ethernet chip which might to fail to \
+get the\n  original MAC address assigned. Use IPAPPEND=3 in your PXElinux \  configuration\n  to get the boot MAC address passed on."
 init_errdhcp="  Did not get complete IP \
 configuration via DHCP. You may want to add\n  a vendor code identifier \
 via kernel commandline (vci=VCI)."
