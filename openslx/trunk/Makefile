@@ -144,8 +144,6 @@ supported."; \
         -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates \
         -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools \
-	      -p $(SLX_BUILD_PATH)$(SLX_PRIVATE_PATH)/config/default/initramfs \
-	      -p $(SLX_BUILD_PATH)$(SLX_PRIVATE_PATH)/config/default/rootfs \
 	      -p $(SLX_BUILD_PATH)${USR_BIN_PATH};
 
 	@   # copy license
