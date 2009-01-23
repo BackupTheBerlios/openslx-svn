@@ -1,5 +1,8 @@
 #! /bin/sh
 #
+[ -e /etc/functions ]        && . /etc/functions
+[ -e /etc/distro-functions ] && . /etc/distro-functions
+[ -e /etc/sysconfig/config ] && . /etc/sysconfig/config
 
 if [ -e /initramfs/plugin-conf/x11vnc.conf ]; then
 	. /initramfs/plugin-conf/x11vnc.conf
@@ -83,12 +86,7 @@ if [ -e /initramfs/plugin-conf/x11vnc.conf ]; then
 		echo "X11VNC_PARAMS=\"$PARAMS\"" >> /mnt/etc/x11vnc/x11vnc.conf
 		echo "X11VNC_X11=\"$X11VNC_X11\"" >> /mnt/etc/x11vnc/x11vnc.conf
 
-		ln -sf ../init.d/x11vnc /mnt/etc/rc0.d/K20x11vnc
-		ln -sf ../init.d/x11vnc /mnt/etc/rc1.d/K20x11vnc
-		ln -sf ../init.d/x11vnc /mnt/etc/rc6.d/K20x11vnc
-		ln -sf ../init.d/x11vnc /mnt/etc/rc2.d/S20x11vnc
-		ln -sf ../init.d/x11vnc /mnt/etc/rc3.d/S20x11vnc
-		ln -sf ../init.d/x11vnc /mnt/etc/rc4.d/S20x11vnc
+		rllinker "x11vnc" 30 10
 
 		[ $DEBUGLEVEL -gt 0 ] && echo "done with 'x11vnc' os-plugin ...";
 	fi

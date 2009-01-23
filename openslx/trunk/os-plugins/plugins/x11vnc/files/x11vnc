@@ -10,21 +10,31 @@ fi
 
 # find xauthority file
 find_xauth () {
-  TIMEOUT=5
-  XPID=`pidof X`
-  XRUNNING=$?
-  while [ "$XRUNNING" -ne "0" -a "$TIMEOUT" -gt "0" ]
-  do
-    echo -n "."
-    sleep 1
-    let "TIMEOUT-=1"
-    XPID=`pidof X`
-    XRUNNING=$?
-  done
-  if [ "$XRUNNING" -eq "0" ]; then
-    XAUTHORITY=`ps ex|grep bin/X|sed -e "s/ /\n/g"|grep "^XAUTHORITY"|sed -e "s/XAUTHORITY=//"`
+  FOUND=0
+  RETRIES=4
+  [ -z "$1" ] && RETRIES="$1"
+
+  [ -e "/var/lib/kdm/" ] && 
+     XAUTHFILE_KDM=`find /var/lib/kdm/ -iname "A\:0-*"`
+  [ -e "/var/lib/xdm/authdir/authfiles/" ] && 
+     XAUTHFILE_XDM=`find /var/lib/xdm/authdir/authfiles/ -iname "A\:0-*"`
+  [ -e "/var/lib/gdm/" ] && 
+     XAUTHFILE_GDM=`find /var/lib/gdm/ -iname *Xauth*`
+  
+  [ -f "$XAUTHFILE_KDM" ] && FOUND=1 && XAUTHORITY="$XAUTHFILE_KDM"
+  [ -f "$XAUTHFILE_XDM" ] && FOUND=1 && XAUTHORITY="$XAUTHFILE_XDM"
+  [ -f "$XAUTHFILE_GDM" ] && FOUND=1 && XAUTHORITY="$XAUTHFILE_GDM"
+
+  if [ "$FOUND" -eq "0" ]; then
+    if [ "$RETRIES" -gt "0" ]; then
+      let "RETRIES-=1"
+      find_xauth "$RETRIES"
+    else
+      echo " .. FAILED (can't find way to authenticate myself against X)"
+      exit -1
+    fi
   else
-    echo " .. FAILED (no running X found)"
+    echo "found ($XAUTHORITY)"
   fi
 }
 

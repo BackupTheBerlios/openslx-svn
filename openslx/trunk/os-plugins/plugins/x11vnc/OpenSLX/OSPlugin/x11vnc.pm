@@ -211,7 +211,7 @@ sub installationPhase
 	  }
 	  if ( $self->{'os-plugin-engine'}->{'vendor-os-name'} =~ m/suse/i ) {
 	   # PLEASE TEST THIS!!!
-	    my $cmd = "yast --install x11vnc";
+	    my $cmd = "zypper -n in x11vnc";
 	    vlog(3, "executing: $cmd");
 	    if (slxsystem($cmd)) {
 	      die _tr(
