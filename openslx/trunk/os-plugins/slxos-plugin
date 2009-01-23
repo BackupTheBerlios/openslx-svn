@@ -329,7 +329,7 @@ vendor-OS, using any attribute values as specified.
 In order to spare you RSI, you can leave out the plugin scope, each attribute
 will be searched in the plugin that precedes it (see examples in the manual).
 
-=item B<<     list-attributes [<plugin-name> >>
+=item B<<     list-attributes [<plugin-name>] >>
 
 List all attributes supported by the different OS-plugins. If you specify a
 plugin name, only the attributes of that plugin will be listed.
