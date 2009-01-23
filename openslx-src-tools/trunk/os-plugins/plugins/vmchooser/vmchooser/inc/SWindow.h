@@ -24,15 +24,13 @@ class SWindow : public fltk::Window {
 private:
   // ReturnButton to start the session
   fltk::ReturnButton go;
+  
+  // Button to exit
+  fltk::Button exit_btn;
 
   // Browser to select sessions
   fltk::Browser sel;
 
-  // TextDisplay to display info about current session
-//  fltk::TextDisplay info;
-  // TextBuffer buf is used for info
-//  fltk::TextBuffer buf;
-  
   // currently selected Browser-Item
   fltk::Item* curr;
 
@@ -52,25 +50,21 @@ private:
    */
   SWindow(char* p = "Choose your session!") :
     fltk::Window(fltk::USEDEFAULT,fltk::USEDEFAULT,500,550,p, true),
-    go(10,520, 490, 20, "Ausführen"),
-    sel(10,10, 480, 500) //,
-//    info(10, 510, 480, 110),
-//    buf()
+    go(160, 520, 320, 20, "Ausführen"),
+    exit_btn(10, 520, 140, 20, "Abbrechen"),
+    sel(10,10, 480, 500)
   {
     border(false);
     go.callback(cb_return,this);
     sel.callback(cb_select, this);
-    
+    exit_btn.callback(cb_exit, this);
     
     // Array for width of Select-Columns 
     // (one Column for a lock-symbol)
     int widths[] = { 450, 20 };
     sel.column_widths(widths);
-//    info.callback(cb_info, this);
     resizable(sel);
     end();
-    
-//    info.wrap_mode(true, 0);
     //sel.style(fltk::Browser::default_style);
     sel.indented(1);
   };
@@ -93,13 +87,13 @@ public:
   static void cb_select(fltk::Widget*, void* w) {
     ((SWindow*)w)->cb_select();
   };
-  static void cb_info(fltk::Widget*, void* w) {
-    ((SWindow*)w)->cb_info();
-  };
+  
+  static void cb_exit(fltk::Widget*, void* w) {
+    exit(0);
+  }
 
   void cb_return();
   void cb_select();
-  void cb_info();
 
   void set_entries(DataEntry** ent, char* slxgroup);
   void set_lin_entries(DataEntry** ent, char* slxgroup);

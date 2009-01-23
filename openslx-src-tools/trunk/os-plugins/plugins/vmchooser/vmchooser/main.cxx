@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
   /** HELP  */
   if(opt->getFlag("help") || opt->getFlag('h')) {
     opt->printUsage();
-    return 1;
+    return 0;
   }
   
   /** XML - PATH */

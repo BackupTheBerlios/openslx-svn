@@ -7,7 +7,7 @@ LDFLAGS=-L../fltk-2/lib/ ../fltk-2/lib/libfltk2.a -lpng ../fltk-2/lib/libfltk2_i
 
 all: main.o anyoption.o SWindow.o readXmlDir.o readLinSess.o runImage.o addPrinters.o addScanners.o
 	${CXX} ${STATIC} main.o anyoption.o SWindow.o runImage.o readLinSess.o readXmlDir.o addPrinters.o addScanners.o -o vmchooser ${LDFLAGS} ${BOOST}
-	strip vmchooser
+	#strip vmchooser
 
 main.o: main.cxx
 	${CXX} ${CFLAGS} -c main.cxx -o main.o	

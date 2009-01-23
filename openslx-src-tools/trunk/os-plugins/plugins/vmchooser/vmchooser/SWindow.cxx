@@ -55,13 +55,6 @@ void SWindow::cb_select()
 //   }
 }
 
-/**
- * Callback for TextDisplay at the bottom - change it?
- */
-void SWindow::cb_info()
-{
-}
-
 
 /**********************************************************
  * Put entries in a Linux-Session Group into Browser
@@ -170,6 +163,8 @@ char** SWindow::get_symbol(DataEntry* dat) {
 
 /******************************************************
  * Sort entries to consider priorities
+ *
+ * -> puts smallest priority number on top
  ******************************************************/
 void SWindow::sort_entries() {
   if(this->ent == NULL ) {
@@ -180,7 +175,7 @@ void SWindow::sort_entries() {
   // worst case sort - but it is enough for this few entries
   for(int i=0; ent[i] != '\0'; i++) {
     for(int j=0; ent[j] != '\0'; j++) {
-      if(ent[j]->priority > ent[i]->priority && j>i) {
+      if(ent[j]->priority < ent[i]->priority && j > i) {
         // swap element i with j (as i is alway larger j)
         ptr = ent[i];
         ent[i] = ent[j];
