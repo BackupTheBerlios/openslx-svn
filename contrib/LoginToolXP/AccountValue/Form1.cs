@@ -50,7 +50,8 @@ namespace AccountValue
         //Anzahl der Drucker in der Umgebung
         private int anz;
 
-       
+        private String home;
+        private String shared;
         
         
         //
@@ -62,9 +63,8 @@ namespace AccountValue
             
             InitializeComponent();
 
+
             
-
-
             // XML Settings aus Laufwerk B auslesen...
 
             // Wichtig!! Gross schreiben!!
@@ -139,6 +139,29 @@ namespace AccountValue
 
         private void login_clicked()
         {
+            //#########################################################################
+            // Parameter aus INI-Datei auslesen
+
+            try
+            {
+                IniFile datei;
+                datei = new IniFile(@"C:\Programme\Login\AccValue.ini");
+
+                
+                home = datei.IniReadValue("Home", "connect");
+                shared = datei.IniReadValue("Shared", "connect");
+            }
+            catch 
+            {
+ 
+            }
+
+
+            //************************************************************************
+
+
+
+
             //#################################################################
             // Stehen überhaupt Login und Password drin?
             
@@ -257,80 +280,87 @@ namespace AccountValue
             //#################################################################
             // Homedirectory mounten...
 
-            
-            try
+            if (home == "yes")
             {
-                oNetDrive.LocalDrive = "k:";
-
-                
-                try
-                {
-                    oNetDrive.UnMapDrive();
-                }
-                catch { }
-                
-
-                oNetDrive.ShareName = "\\\\" + textBox1.Text + ".files.uni-freiburg.de\\" + textBox1.Text;
-                oNetDrive.MapDrive("PUBLIC\\" + textBox1.Text, maskedTextBox1.Text);
-                
-            }
-
-            catch (Exception err)
-            {
-                MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Homedirectory\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                maskedTextBox1.Text = "";
 
                 try
                 {
-                    maskedTextBox1.Focus();
-                }
-                catch { }
+                    oNetDrive.LocalDrive = "k:";
 
-                return;
+
+                    try
+                    {
+                        oNetDrive.UnMapDrive();
+                    }
+                    catch { }
+
+
+                    oNetDrive.ShareName = "\\\\" + textBox1.Text + ".files.uni-freiburg.de\\" + textBox1.Text;
+                    oNetDrive.MapDrive("PUBLIC\\" + textBox1.Text, maskedTextBox1.Text);
+
+                }
+
+                catch (Exception err)
+                {
+                    MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Homedirectory\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    maskedTextBox1.Text = "";
+
+                    try
+                    {
+                        maskedTextBox1.Focus();
+                    }
+                    catch { }
+
+                    return;
+                }
+
+                //#################################################################
+
+                createDesktopLinks("Homeverzeichnis K", "k:\\");
+
             }
             
 
-            //#################################################################
-
-            createDesktopLinks("Homeverzeichnis K", "k:\\");
-
+            
 
             //#################################################################
             // Shared Directory mounten...
 
-
-            try
+            if (shared == "yes")
             {
-                oNetDrive.LocalDrive = "l:";
-
-                
                 try
                 {
-                    oNetDrive.UnMapDrive();
+                    oNetDrive.LocalDrive = "l:";
+
+
+                    try
+                    {
+                        oNetDrive.UnMapDrive();
+                    }
+                    catch { }
+
+
+                    oNetDrive.ShareName = "\\\\lehrpool.files.uni-freiburg.de\\lehrpool";
+                    oNetDrive.MapDrive("PUBLIC\\lehrpool", "(atom)9");
                 }
-                catch { }
-                
 
-                oNetDrive.ShareName = "\\\\lehrpool.files.uni-freiburg.de\\lehrpool";
-                oNetDrive.MapDrive("PUBLIC\\lehrpool", "(atom)9");
-            }
-
-            catch (Exception err)
-            {
-                MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Gemeinsamen Laufwerk L\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                maskedTextBox1.Text = "";
-
-                try
+                catch (Exception err)
                 {
-                    maskedTextBox1.Focus();
+                    MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Gemeinsamen Laufwerk L\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    maskedTextBox1.Text = "";
+
+                    try
+                    {
+                        maskedTextBox1.Focus();
+                    }
+                    catch { }
+
+                    return;
                 }
-                catch { }
 
-                return;
+                //#################################################################
+                createDesktopLinks("Gemeinsames Laufwerk L", "l:\\");
             }
-
-            //#################################################################
-            createDesktopLinks("Gemeinsames Laufwerk L", "l:\\");
 
 
             //#################################################################
