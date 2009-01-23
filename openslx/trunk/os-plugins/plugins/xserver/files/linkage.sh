@@ -46,14 +46,12 @@ function linkMesa() {
     mkdir -p ${LINK_PATH}${l_path}
   fi
 
-  if [ -e "/${file}" ]; then
-    file=${file/\/usr\/lib/}
-    # move file to the mesa implementation PATH
-    mv "/usr/lib/${file}" "${MESAROOT}${file}" >/dev/null 2&>1
-    # create links from link-PATH to mesa-PATH
-    ln -s "${MESAROOT}${file}" "${LINK_PATH}${file}"
-    # create links from sys-PATH to link-PATH
-    ln -s "${LINK_PATH}${file}" "/usr/lib/${file}"
+  if [ -f "${file}" ]; then
+    # this is a real file
+    mv ${file} ${file/\.so/_MESA.so} 2&>1 >/dev/null # rename file
+  elif [ -h "${file}" ]; then
+    # this is a link
+    ln -sf ${LINK_PATH}${file/\/usr\/lib/} $file # link to writable dir
   fi
 }
 
@@ -63,11 +61,8 @@ function linkMesa() {
 # this is the main installation
 # 
 # ALL conflicting libs are detected
-# and linked accordingly 
+# and linked to /var/X11R6/lib
 #
-# saves a link of all conflicting 
-# libraries into ${LINK_PATH}
-# and into system root
 ########################################
 function divert() {
 
@@ -85,7 +80,7 @@ function divert() {
     cmplib="${lib#${ROOT}}"
 
 
-    if [ -f "${cmplib}" -a -f "${lib}" ]; then
+    if [ -e "${cmplib}" -a -e "${lib}" ]; then
       # system folder conflicts with ROOT
       linkMesa ${cmplib}
       continue
@@ -96,14 +91,14 @@ function divert() {
     l_path="${cmplib/$(basename $lib)/}"
     l_path=${l_path#/usr/lib}
 
-    # here is the hairy thing
+    # here is the hairy function
     # if CMPROOT="", just link the lib
     # if two libs conflicts, link to /var/X11R6/lib/
 
     if [ -n "${CMPROOT}" -a -e "${lib}" -a -e "${CMPROOT}${cmplib}" ]; then
       # two roots are conflicting
       # create a link into LINK_PATH
-      if [ -h "${l_path}${cmplib}" ]; then
+      if [ -h "${LINK_PATH}${cmplib/\/usr\/lib/}" ]; then
         # it already exists
         continue
       fi
@@ -113,7 +108,6 @@ function divert() {
       
       # create link ladder (defaults to first called implementation)
       ln -s ${ROOT}${cmplib} ${LINK_PATH}${cmplib}
-      ln -s ${LINK_PATH}${cmplib} $cmplib
     else
 
 
@@ -136,18 +130,20 @@ function divert() {
 # just run this function to clean up system
 ###############################################
 function uninstDist() {
-  # put mesa implementation back to 
-  mv ${MESAROOT}/usr/* /usr/lib/
+  # put mesa implementation back into place
+  for file in $(find /usr/lib/ -name '*_MESA.so*' | xargs); do
+    mv $file ${file/_MESA\.so/.so}
+  done
 
-  # somehow we have to repair this
+  # somehow we have to repair this - what else? 
+  # There is also a generic way, but this is only one file
   ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so.1
 
   # delete all remaining links to /opt/openslx and /var/X11R6/lib
   find /usr/lib -lname "${PLUGIN_PATH}*"  \
     -o -lname "${LINK_PATH}*" |xargs rm -rf 
   # delete LINK_PATH
-  rm -rf ${LINK_PATH}  # we could also delete ${MESAROOT}
-
+  rm -rf ${LINK_PATH} 
 }
 
 if [ "$1" = "clean" ]; then
