@@ -94,6 +94,7 @@ sub initialize
 	my $self = shift;
 
 	$self->{'os-plugin-engine'} = shift;
+	$self->{'distro'}           = shift;
 	
 	return;
 }
@@ -156,6 +157,22 @@ sub getAttrInfo
 		# attribute 'active' is mandatory for all plugins
 		# attribute 'precedence' is mandatory for all plugins
 	};
+}
+
+=item getDefaultAttrsForVendorOS()
+
+Returns a hash-ref with the default attribute values for the given vendor-OS.
+
+
+
+=cut
+
+sub getDefaultAttrsForVendorOS
+{
+	my $self = shift;
+
+	# the default implementation does not change the default values at all:
+	return $self->getAttrInfo();
 }
 
 =back

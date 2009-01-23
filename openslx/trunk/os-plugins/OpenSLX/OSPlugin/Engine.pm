@@ -81,6 +81,11 @@ sub initialize
 			= "$openslxConfig{'base-path'}/lib/plugins/$pluginName";
 		vlog(1, "plugin path is '$self->{'plugin-path'}'");
 
+		# create ossetup-engine for given vendor-OS:
+		my $osSetupEngine = OpenSLX::OSSetup::Engine->new;
+		$osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
+		$self->{'ossetup-engine'} = $osSetupEngine;
+
 		$self->{'plugin'} = $self->_loadPlugin();
 		return if !$self->{'plugin'};
 
@@ -104,8 +109,13 @@ sub initialize
 				$pluginName, join(',', @unknownAttrs)
 			);
 		}
+
+		# merge attributes that were not given on cmdline with the ones that
+		# already exists in the DB and finally with the default values
 		$self->{'plugin-attrs'} = $givenAttrs;
-		my $defaultAttrs = $self->{plugin}->getAttrInfo();
+		my $defaultAttrs = $self->{plugin}->getDefaultAttrsForVendorOS(
+			$vendorOSName
+		);
 		my $dbAttrs = $self->_fetchInstalledPluginAttrs($vendorOSName);
 		for my $attrName (keys %$defaultAttrs) {
 			next if exists $givenAttrs->{$attrName};
@@ -314,6 +324,15 @@ sub getInstalledPackages
 	return $metaPackager->getInstalledPackages();
 }
 
+sub getPackagesForSelection
+{
+	my $self      = shift;
+	my $selection = shift;
+
+	return $self->{'ossetup-engine'}->getPackagesForSelection($selection);
+}
+
+
 =item installPackages($packages)
 
 Installs the given packages into the vendor-OS.
@@ -395,7 +414,30 @@ sub _loadPlugin
 	);
 	return if !$plugin;
 
-	$plugin->initialize($self);
+	# if there's a distro folder, instantiate the most appropriate distro class
+	my $distro;
+	if (-d "$self->{'plugin-path'}/OpenSLX/Distro") {
+		my $distroName = $self->distroName();
+		$distroName =~ tr{.-}{__};
+		my @distroModules;
+		while($distroName =~ m{^(.+)_[^_]*$}) {
+			push @distroModules, $distroName;
+			$distroName = $1;
+		}
+		push @distroModules, $distroName;
+		push @distroModules, 'base';
+		for my $distroModule (@distroModules) {
+print "trying $distroModule...\n";
+			last if eval {
+				$distro = instantiateClass(
+					$distroModule, { pathToClass => $self->{'plugin-path'} }
+				);
+				1;
+			};
+		}
+	}
+
+	$plugin->initialize($self, $distro);
 
 	return $plugin;
 }
@@ -404,11 +446,6 @@ sub _callChrootedFunctionForPlugin
 {
 	my $self     = shift;
 	my $function = shift;
-
-	# create ossetup-engine for given vendor-OS:
-	my $osSetupEngine = OpenSLX::OSSetup::Engine->new;
-	$osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
-	$self->{'os-setup-engine'} = $osSetupEngine;
 
 	# bind-mount openslx basepath to /mnt/openslx of vendor-OS:
 	my $basePath 			= $openslxConfig{'base-path'};
@@ -424,14 +461,18 @@ sub _callChrootedFunctionForPlugin
 	}
 
 	# now let plugin install itself into vendor-OS
-	$self->{'os-setup-engine'}->callChrootedFunctionForVendorOS($function);
+	my $ok = eval {
+		$self->{'ossetup-engine'}->callChrootedFunctionForVendorOS($function);
+	};
 
 	if (slxsystem("umount $openslxPathInChroot")) {
 		croak(_tr("unable to umount '%s'! (%s)", $openslxPathInChroot, $!));
 	}
 	
-	delete $self->{'os-setup-engine'};
-
+	if (!$ok) {
+		die $@;
+	}
+	
 	return;
 }
 

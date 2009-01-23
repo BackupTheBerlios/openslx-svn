@@ -520,7 +520,7 @@ sub callChrootedFunctionForVendorOS
 			$self->{'vendor-os-name'}
 		)
 	);
-	return;
+	return 1;
 }
 
 sub removeVendorOS
@@ -687,6 +687,19 @@ sub metaPackager
 	my $self = shift;
 
 	return $self->{'meta-packager'};
+}
+
+sub getPackagesForSelection
+{
+	my $self   = shift;
+	my $selKey = shift;
+
+	return if !$selKey;
+
+	my $selection = $self->{'distro-info'}->{selection}->{$selKey};
+	return if !$selection;
+
+	return $selection->{packages};
 }
 
 sub busyboxBinary
@@ -1717,7 +1730,7 @@ sub _installPlugins
 			: _tr("installing default plugins...\n")
 	);
 	for my $pluginInfo (@$plugins) {
-		my $pluginName = $pluginInfo->{name};
+		my $pluginName = $pluginInfo->{plugin_name};
 		my $pluginEngine = OpenSLX::OSPlugin::Engine->new();
 		vlog(0, _tr("\t%s\n", $pluginName));
 		$pluginEngine->initialize(

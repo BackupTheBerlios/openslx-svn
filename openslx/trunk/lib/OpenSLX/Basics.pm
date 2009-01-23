@@ -313,7 +313,11 @@ sub callInSubprocess
 
 		# child...
 		# ...execute the given function and exit:
-		&$childFunc();
+		my $ok = eval { $childFunc->(); 1 };
+		if (!$ok) {
+			print STDERR "*** $@";
+			exit 5;
+		}
 		exit 0;
 	}
 
