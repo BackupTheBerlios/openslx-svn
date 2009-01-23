@@ -1,6 +1,0 @@
-SLX_INST_SOURCE_BASEURL="ftp://gab/pub/debian"
-SLX_INST_SOURCE_COMPONENTS_etch40dvd="main restricted"
-SLX_INST_SOURCE_NAME_etch40dvd="Debian 3.1 DVD"
-SLX_INST_SOURCE_PRIORITY_etch40dvd="10"
-SLX_INST_SOURCE_BASEURL_etch40="http://ftp-1.gwdg.de/pub/linux/debian/debian"
-SLX_INST_SOURCE_BASEURL_etch40security="http://ftp-1.gwdg.de/pub/linux/debian/debian"

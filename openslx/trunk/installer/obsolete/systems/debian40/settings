@@ -1,8 +1,0 @@
-SLX_INST_SOURCE_BASEURL="http://ftp-1.gwdg.de/pub/linux/debian/debian"
-SLX_INST_SOURCE_COMPONENTS="contrib main non-free"
-SLX_INST_SOURCE_DISTRIBUTION="etch"
-SLX_INST_SOURCE_NAME_etch40="Debian 4.0"
-SLX_INST_SOURCE_BASEURL_etch40security="http://ftp-1.gwdg.de/pub/linux/debian/debian-security"
-SLX_INST_SOURCE_NAME_etch40security="Debian 4.0 security"
-SLX_INST_SOURCE_DISTRIBUTION_etch40security="etch/updates"
-SLX_BASE_PREREQ_PACKAGES="pool/main/d/debootstrap/debootstrap_0.3.3.1_all.deb"
