@@ -225,7 +225,6 @@ sub _addLib
             push @folders, split ':', $rpath;
         }
         foreach my $folder (@folders) {
-print "checking $folder/$lib...\n";
             if (-e "$folder/$lib") {
                 # have library matching name, now check if the platform is ok, too:
                 my $libFileInfo =
