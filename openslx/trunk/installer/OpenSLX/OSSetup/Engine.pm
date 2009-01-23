@@ -535,7 +535,7 @@ sub addInstalledVendorOSToConfigDB
                 )
             );
         }
-        # re-install plugins of this vendor-OS
+        # fetch installed plugins of this vendor-OS in order to reinstall them
         @plugins = $openslxDB->fetchInstalledPlugins($vendorOS->{id});
     }
     else {
@@ -552,14 +552,15 @@ sub addInstalledVendorOSToConfigDB
                 $vendorOSName, $id
             )
         );
-        # install plugins from default vendor-OS into this new one
+        # fetch plugins from default vendor-OS in order to install those into
+        # this new one
         @plugins = $openslxDB->fetchInstalledPlugins(0);
     }
 
     $openslxDB->disconnect();
     
     # now that we have the list of plugins, we (re-)install all of them:
-    $self->_installPlugins(\@plugins);
+    $self->_installPlugins(\@plugins, defined $vendorOS);
     
     return;
 }
@@ -1675,10 +1676,9 @@ sub _clone_determineIncludeExcludeList
 
 sub _installPlugins
 {
-    my $self    = shift;
-    my $plugins = shift;
-
-    my $isReInstall = 0;
+    my $self        = shift;
+    my $plugins     = shift;
+    my $isReInstall = shift;
 
     if (!$plugins) {
         $plugins = [];

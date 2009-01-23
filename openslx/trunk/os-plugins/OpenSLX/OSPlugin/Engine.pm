@@ -75,18 +75,13 @@ sub initialize
 
     $self->{'vendor-os-path'} 
         = "$openslxConfig{'private-path'}/stage1/$vendorOSName";
-    vlog(1, "vendor-OS path is '$self->{'vendor-os-path'}'");
+    vlog(2, "vendor-OS path is '$self->{'vendor-os-path'}'");
 
     if ($pluginName) {
         $self->{'plugin-name'} = $pluginName;
         $self->{'plugin-path'} 
             = "$openslxConfig{'base-path'}/lib/plugins/$pluginName";
         vlog(1, "plugin path is '$self->{'plugin-path'}'");
-
-        # create ossetup-engine for given vendor-OS:
-        my $osSetupEngine = OpenSLX::OSSetup::Engine->new;
-        $osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
-        $self->{'ossetup-engine'} = $osSetupEngine;
 
         $self->{'plugin'} = $self->_loadPlugin();
         return if !$self->{'plugin'};
@@ -143,8 +138,7 @@ install/remove a plugin into/from a vendor-OS:
 
 =item installPlugin()
 
-Creates an ossetup-engine for the current vendor-OS and asks that to invoke
-the plugin's installer method while chrooted into that vendor-OS.
+Invokes the plugin's installer method while chrooted into that vendor-OS.
 
 =cut
 
@@ -188,19 +182,19 @@ sub installPlugin
 
         # now retrieve (deserialize) the current attributes and store them
         $self->{'plugin-attrs'} = retrieve $serializedAttrsFile;
-        $self->_addInstalledPluginToDB();
     
         # cleanup temp path
         rmtree([ $self->{'plugin-temp-path'} ]);
     }
     
+    $self->_addInstalledPluginToDB();
+
     return 1;
 }
 
 =item removePlugin()
 
-Creates an ossetup-engine for the current vendor-OS and asks that to invoke
-the plugin's removal method while chrooted into that vendor-OS.
+Invokes the plugin's removal method while chrooted into that vendor-OS.
 
 =cut
 
@@ -295,7 +289,7 @@ sub distroName
 {
     my $self = shift;
 
-    return $self->{'ossetup-engine'}->distroName();
+    return $self->_osSetupEngine()->distroName();
 }
 
 =item downloadFile($fileURL, $targetPath, $wgetOptions)
@@ -332,7 +326,7 @@ sub downloadFile
     my $targetPath  = shift || $self->{'chrooted-plugin-temp-path'};
     my $wgetOptions = shift || '';
 
-    my $busybox = $self->{'ossetup-engine'}->busyboxBinary();
+    my $busybox = $self->_osSetupEngine()->busyboxBinary();
     
     if (slxsystem("$busybox wget -P $targetPath $wgetOptions $fileURL")) {
         die _tr('unable to download file "%s"! (%s)', $fileURL, $!);
@@ -354,7 +348,7 @@ sub getInstalledPackages
 {
     my $self = shift;
 
-    my $packager = $self->{'ossetup-engine'}->packager();
+    my $packager = $self->_osSetupEngine()->packager();
     return if !$packager;
 
     return $packager->getInstalledPackages();
@@ -373,7 +367,7 @@ sub getInstallablePackagesForSelection
     my $self      = shift;
     my $selection = shift;
 
-    return $self->{'ossetup-engine'}->getInstallablePackagesForSelection(
+    return $self->_osSetupEngine()->getInstallablePackagesForSelection(
         $selection
     );
 }
@@ -407,7 +401,7 @@ sub installPackages
 
     return if !$packages;
 
-    my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
+    my $metaPackager = $self->_osSetupEngine()->metaPackager();
     return if !$metaPackager;
 
     return $metaPackager->installPackages($packages);
@@ -439,7 +433,7 @@ sub removePackages
 
     return if !$packages;
 
-    my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
+    my $metaPackager = $self->_osSetupEngine()->metaPackager();
     return if !$metaPackager;
 
     return $metaPackager->removePackages($packages);
@@ -581,7 +575,7 @@ sub _callChrootedFunctionForPlugin
     });
 
     # now let plugin install itself into vendor-OS
-    $self->{'ossetup-engine'}->callChrootedFunctionForVendorOS($function);
+    $self->_osSetupEngine()->callChrootedFunctionForVendorOS($function);
     
     return;
 }
@@ -649,6 +643,20 @@ sub _removeInstalledPluginFromDB
     $openslxDB->disconnect();
 
     return 1;
+}
+
+sub _osSetupEngine
+{
+    my $self = shift;
+    
+    if (!$self->{'ossetup-engine'}) {
+        # create ossetup-engine for given vendor-OS:
+        my $osSetupEngine = OpenSLX::OSSetup::Engine->new;
+        $osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
+        $self->{'ossetup-engine'} = $osSetupEngine;
+    }
+
+    return $self->{'ossetup-engine'};
 }
 
 1;
