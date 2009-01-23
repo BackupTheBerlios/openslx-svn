@@ -57,11 +57,20 @@ stage3 setup" > /mnt/etc/vmware/slxvmconfig
       # use the dns servers know to the vmware host
       # TODO: to be checked!!
       local dnslist=$(echo "$domain_name_servers"|sed "s/ /,/g")
-      echo -e "# /etc/vmware/dhcpd.conf written in stage3 ...\nallow \
-unknown-clients;\ndefault-lease-time 1800;\nmax-lease-time 7200;\n\
-option domain-name-servers $dnslist;\noption domain-name \"vm.local\";\n" \
-        > /mnt/etc/vmware/dhcpd.conf
+      echo "# /etc/vmware/dhcpd.conf written in stage3 ..." \
+        > /mnt/etc/vmware/dhcpd.confallow 
+      echo "unknown-clients;" \
+        >> /mnt/etc/vmware/dhcpd.conf
+      echo "default-lease-time 1800;" \
+        >> /mnt/etc/vmware/dhcpd.conf
+      echo "nmax-lease-time 7200;" \
+        >> /mnt/etc/vmware/dhcpd.conf
+      echo "option domain-name-servers $dnslist;" \
+        >> /mnt/etc/vmware/dhcpd.conf
+     echo "option domain-name \"vm.local\";" \
+        >> /mnt/etc/vmware/dhcpd.conf
     fi
+
     # variable might contain ",NAT" which is to be taken off
     if [ -n "$vmware_vmnet1" ] ; then
       local vmnet1=${vmware_vmnet1%,*}
@@ -70,31 +79,66 @@ option domain-name-servers $dnslist;\noption domain-name \"vm.local\";\n" \
       local vmpx=${vmnet1#*/}
       echo -e "vmnet1=$vmnet1" >> /mnt/etc/vmware/slxvmconfig
       [ -n "$vmnt" ] && echo "vmnet1nat=true" >> /mnt/etc/vmware/slxvmconfig
-      echo -e "# definition for virtual vmnet1 interface\n\
-subnet $(ipcalc -n $vmnet1|sed s/.*=//) netmask \
-$(ipcalc -m $vmnet1|sed s/.*=//) {\n\trange $rstart $rend;\n\
-\toption broadcast $(ipcalc -b $vmnet1|sed s/.*=//);\n\
-\toption routers $vmip;\n}" >> /mnt/etc/vmware/dhcpd.conf
+      echo -e "\n# definition for virtual vmnet1 interface" \
+        >> /mnt/etc/vmware/dhcpd.conf
+      echo -e "subnet $(ipcalc -n $vmnet1|sed s/.*=//) netmask \
+$(ipcalc -m $vmnet1|sed s/.*=//) {" \
+        >> /mnt/etc/vmware/dhcpd.conf 
+      echo -e "\trange $rstart $rend;" \
+        >> /mnt/etc/vmware/dhcpd.conf 
+      echo -e "\toption broadcast $(ipcalc -b $vmnet1|sed s/.*=//);" \
+        >> /mnt/etc/vmware/dhcpd.conf 
+      echo -e "\toption routers $vmip;" \
+        >> /mnt/etc/vmware/dhcpd.conf
+      echo -e "}" \
+        >> /mnt/etc/vmware/dhcpd.conf
+	  mknod /dev/vmnet1 c 119 1
     fi
+
     # vmware nat interface configuration
     if [ -n "$vmware_vmnet8" ] ; then
       local vmip=${vmware_vmnet8%/*}
       local vmpx=${vmware_vmnet8#*/}
       echo -e "vmnet8=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
-      echo -e "\n# definition for virtual vmnet8 interface\n\
-subnet $(ipcalc -m $vmip/$vmpx|sed s/.*=//) netmask \
-$(ipcalc -n $vmip/$vmpx|sed s/.*=//) {\n\trange $rstart $rend;\n\
-\toption broadcast $(ipcalc -b $vmip/$vmpx|sed s/.*=//);\n\
-\toption routers $vmip;\n}" >> /mnt/etc/vmware/dhcpd.conf
+      echo -e "\n# definition for virtual vmnet8 interface" \
+        >> /mnt/etc/vmware/dhcpd.conf
+      echo -e "subnet $(ipcalc -m $vmip/$vmpx|sed s/.*=//) netmask \
+$(ipcalc -n $vmip/$vmpx|sed s/.*=//) {" \
+        >> /mnt/etc/vmware/dhcpd.conf
+      echo -e "\trange $rstart $rend;" \
+        >> /mnt/etc/vmware/dhcpd.conf
+      echo -e "\toption broadcast $(ipcalc -b $vmip/$vmpx|sed s/.*=//);" \
+        >> /mnt/etc/vmware/dhcpd.conf
+      echo -e "\toption routers $vmip;" \
+        >> /mnt/etc/vmware/dhcpd.conf
+      echo -e "}" \
+        >> /mnt/etc/vmware/dhcpd.conf
       # generate the NAT configuration file
-      echo -e "# Linux NAT configuration file\n[host]\nip = $vmip/$vmpx\n\
-device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
-[incomingudp]" > /mnt/etc/vmware/nat.conf
+      echo -e "# Linux NAT configuration file" \
+        > /mnt/etc/vmware/nat.conf
+      echo -e "[host]" \
+        >> /mnt/etc/vmware/nat.conf
+      echo -e "ip = $vmip/$vmpx" \
+        >> /mnt/etc/vmware/nat.conf
+      echo -e "device = /dev/vmnet8" \
+        >> /mnt/etc/vmware/nat.conf
+      echo -e "activeFTP = 1" \
+        >> /mnt/etc/vmware/nat.conf
+      echo -e "[udp]"
+        >> /mnt/etc/vmware/nat.conf
+      echo -e "timeout = 60"
+        >> /mnt/etc/vmware/nat.conf
+      echo -e "[incomingtcp]" \
+        >> /mnt/etc/vmware/nat.conf
+      echo -e "[incomingudp]" \
+        >> /mnt/etc/vmware/nat.conf
       echo "00:50:56:F1:30:50" > /mnt/etc/vmware/vmnet-natd-8.mac
+	  mknod /dev/vmnet8 c 119 8
     fi
     # copy the runlevelscript to the proper place and activate it
     cp /mnt/opt/openslx/plugin-repo/vmware/vmware.${vmware_kind} \
-      /mnt/etc/${D_INITDIR}/vmware || echo "this should not happen ..."
+      /mnt/etc/${D_INITDIR}/vmware \
+      || echo "Error copying runlevel script. Shouldn't happen."
     chmod a+x /mnt/etc/${D_INITDIR}/vmware
     rllinker "vmware" 20 2
 
@@ -104,10 +148,11 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
     # * VM images via additional mount (mount source NFS, NBD, ...)
 
     # TODO: shouldn't that handled by the vmchooser plugin!?!
+    #       since we have the vmchooser plugin yes... => commented out
     # map slxgrp to pool, so it's better to understand
-    pool=${slxgrp}
+    #pool=${slxgrp}
     # if we dont have slxgrp defined
-    [ -z "${pool}" ] && pool="default"
+    #[ -z "${pool}" ] && pool="default"
 
     # get source of vmware image server (get type, server and path)
     if strinstr "/" "${vmware_imagesrc}" ; then
@@ -126,7 +171,10 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
           # autodetected here ... (vmimgserv is blockdev here)
           vmbdev=/dev/${vmimgserv}
           waitfor ${vmbdev} 20000
-          echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
+          echo "ext2"     > /etc/filesystems
+		  echo "reiserfs" >> /etc/filesystems
+		  echo "vfat"     >> /etc/filesystems
+		  echo "xfs"      >> /etc/filesystems
           mount -o ro ${vmbdev} /mnt/var/lib/vmware || error "$scfg_evmlm" nonfatal
           ;;
         *)
@@ -150,9 +198,9 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
       testmkd /mnt/$i
     done
 
-    # create needed devices (not created automatically via module load)
-    for i in "/dev/vmnet0 c 119 0" "/dev/vmnet1 c 119 1" \
-             "/dev/vmnet8 c 119 8" "/dev/vmmon c 10 165"; do
+    # create the needed devices which effects all vmware options
+    # they are not created automatically via module load
+    for i in "/dev/vmnet0 c 119 0" "/dev/vmmon c 10 165"; do
       mknod $i
     done
 
@@ -179,6 +227,7 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
       /mnt/etc/vmware/fd-loop
     echo -e "usbfs\t\t/proc/bus/usb\tusbfs\t\tauto\t\t 0 0" >> /mnt/etc/fstab
     # needed for VMware 5.5.4 and versions below
+    # TODO: isn't boot.slx dead/not functional due of missing ";; esac"?
     echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
       >>/mnt/etc/${D_INITDIR}/boot.slx
     
@@ -193,6 +242,7 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
     #   a) we get get information and start the programm with
     #    /var/X11R6/bin/run-vmware.sh "$imagename" "$name_for_vmwindow" "$ostype_of_vm" "$kind_of_network"
     #   b) we write a wrapper and get the xml-file as attribute
+    # TODO: stage2 or stage3?
     cp /mnt/opt/openslx/plugin-repo/vmware/runvmware-v2 \
       /mnt/var/X11R6/bin/run-vmware.sh
 
