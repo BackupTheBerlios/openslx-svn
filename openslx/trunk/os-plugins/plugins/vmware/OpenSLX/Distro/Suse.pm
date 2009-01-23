@@ -53,6 +53,7 @@ sub fillRunlevelScript
 
         # helper functions
         load_modules() {
+          # shouldn't be in here (see ticket 240)
           if [ \${vmware_kind} = "local" ]; then
             # to be filled in via the stage1 configuration script
             modprobe -qa vmmon vmnet vmblock 2>/dev/null || return 1
@@ -62,6 +63,7 @@ sub fillRunlevelScript
             # load module manuall
             vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
             module_src_path=\${vmware_kind_path}/vmroot/modules
+            # shouldn't be in here (see ticket 240)
             if [ \${vmware_kind} != "vmpl1.0" ]; then
               insmod \${module_src_path}/vmblock.ko
             fi
@@ -96,13 +98,14 @@ sub fillRunlevelScript
             ip link set vmnet1 up
             if [ -n "\$vmnet1nat" ] ; then
               # needs refinement interface name for eth0 is known in stage3 already
+              # available from \$nwif
               echo "1" > /proc/sys/net/ipv4/conf/vmnet1/forwarding 2>/dev/null
               echo "1" > /proc/sys/net/ipv4/conf/eth0/forwarding 2>/dev/null
               #iptables -A -s vmnet1 -d eth0
             fi
             $location/vmnet-dhcpd -cf /etc/vmware/dhcpd-vmnet1.conf \\
               -lf /var/run/vmware/dhcpd-vmnet1.leases \\
-              -pf /var/run/vmnet-dhcpd-vmnet1.pid vmnet1
+              -pf /var/run/vmnet-dhcpd-vmnet1.pid vmnet1 2>/dev/null # or logfile
           fi
         }
         # incomplete ...
@@ -117,10 +120,10 @@ sub fillRunlevelScript
             ip link set vmnet8 up
             # /etc/vmware/vmnet-natd-8.mac simply contains a mac like 00:50:56:F1:30:50
             $location/vmnet-natd -d /var/run/vmnet-natd-8.pid \\
-              -m /etc/vmware/vmnet-natd-8.mac -c /etc/vmware/nat.conf
+              -m /etc/vmware/vmnet-natd-8.mac -c /etc/vmware/nat.conf >/dev/null # or logfile
             $location/vmnet-dhcpd -cf /etc/vmware/dhcpd-vmnet8.conf \\
               -lf /var/run/vmware/dhcpd-vmnet8.leases \\
-              -pf /var/run/vmnet-dhcpd-vmnet8.pid vmnet8
+              -pf /var/run/vmnet-dhcpd-vmnet8.pid vmnet8 2>/dev/null # or logfile
           fi
         }
         # load the helper stuff

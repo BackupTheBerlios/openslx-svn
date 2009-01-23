@@ -29,10 +29,6 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     [ $DEBUGLEVEL -gt 0 ] && echo "executing the 'vmware' os-plugin ...";
     # Load general configuration
     . /initramfs/machine-setup
-    # evtl. völlig unnötig?!?
-    #. /etc/functions
-    #. /etc/distro-functions
-    #. /etc/sysconfig/config
 
     # prepare all needed vmware configuration files
     if [ -d /mnt/etc/vmware ] ; then
@@ -48,6 +44,8 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     # should contain (seems to be an average one)
     echo -e "# configuration file for vmware background services written in \
 stage3 setup" > /mnt/etc/vmware/slxvmconfig
+    # fixme: sollte unnötig sein, das hier zu tun. "vmware-env" kann hier voll
+    # determiniert werden, siehe Ticket 240
     echo "vmware_kind=${vmware_kind}" >> /mnt/etc/vmware/slxvmconfig
     if [ "$vmware_bridge" = 1 ] ; then
       echo "vmnet0=true" >> /mnt/etc/vmware/slxvmconfig
@@ -139,10 +137,10 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     fi
     # copy the runlevelscript to the proper place and activate it
     cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmware.init \
-      /mnt/etc/${D_INITDIR}/vmware \
+      /mnt/etc/${D_INITDIR}/vmware-env \
       || echo "  * Error copying runlevel script. Shouldn't happen."
-    chmod a+x /mnt/etc/${D_INITDIR}/vmware
-    rllinker "vmware" 20 2
+    chmod a+x /mnt/etc/${D_INITDIR}/vmware-env
+    rllinker "vmware-env" 20 2
 
     #############################################################################
     # vmware stuff first part: two scenarios
@@ -189,7 +187,7 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     
     # create needed directories and files
     for i in /var/run/vmware /etc/vmware/loopimg \
-             /etc/vmware/fd-loop /var/X11R6/bin /etc/X11/sessions; do
+             /etc/vmware/fd-loop /var/X11R6/bin; do
       testmkd /mnt/$i
     done
 
