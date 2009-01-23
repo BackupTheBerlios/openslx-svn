@@ -73,7 +73,7 @@ divert() {
     stripstr ${rlib} ${RR}
     divname=${VAL}
 
-    echo "${lib} ${rlib} ${divname} after stripping"
+    #echo "${lib} ${rlib} ${divname} after stripping"
 
     # divert, if exists
     if [ -e ${rlib} ]; then

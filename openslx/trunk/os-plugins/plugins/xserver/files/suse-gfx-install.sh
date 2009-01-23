@@ -81,8 +81,9 @@ if [ "$1" = "nvidia" ]; then
     URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | sort -u | xargs)
     for RPM in $URLS; do
       RNAME=$(echo ${RPM} | sed -e 's,^.*/\(.*\)$,\1,g')
-      rm -rf ${RNAME} 
-      wget ${RPM} 2>&1 > /dev/null
+      if [ ! -e ${RNAME} ]; then
+        wget ${RPM} > /dev/null
+      fi
       # We use rpm2cpio from suse to extract
       rpm2cpio ${RNAME} | ${BUSYBOX} cpio -id > /dev/null
     done
@@ -129,9 +130,10 @@ if [ "$1" = "ati" ]; then
     URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | grep fglrx | sort -u | xargs)
     for RPM in $URLS; do
       RNAME=$(echo ${RPM} | sed -e 's,^.*/\(.*\)$,\1,g')
-      rm -rf ${RNAME} 
-      wget ${RPM} 2>&1 > /dev/null
-      # We use rpm2cpio from suse to extract
+      if [ ! -e ${RNAME} ]; then
+        wget ${RPM} > /dev/null
+      fi
+      # We use rpm2cpio from suse to extract -> propably new rpm version
       rpm2cpio ${RNAME} | ${BUSYBOX} cpio -id > /dev/null
     done
     mv ./usr/X11R6/lib/* ./usr/lib/
