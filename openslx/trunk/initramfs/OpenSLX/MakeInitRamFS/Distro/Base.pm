@@ -37,4 +37,12 @@ sub applyChanges
 {
 }
 
+sub determineMatchingHwinfoVersion
+{
+    my $self          = shift;
+    my $distroVersion = shift;
+    
+    return '15.3';
+}
+
 1;

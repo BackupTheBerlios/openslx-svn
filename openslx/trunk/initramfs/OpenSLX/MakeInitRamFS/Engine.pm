@@ -146,6 +146,7 @@ sub _collectCMDs
     $self->_writeSlxSystemConf();
 
     $self->_copyUclibcRootfs();
+    $self->_copyHwinfo();
     $self->_copyDistroSpecificFiles();
     $self->_copyInitramfsFiles();
     
@@ -259,6 +260,27 @@ sub _copyUclibcRootfs
     my $uclibcRootfs = "$openslxConfig{'base-path'}/share/uclib-rootfs";
 
     $self->addCMD("rsync -rlpt $uclibcRootfs/ $self->{'build-path'}");
+    
+    return 1;
+}
+
+sub _copyHwinfo
+{
+    my $self = shift;
+
+    my $baseDir = "$openslxConfig{'base-path'}/share/ramfstools/hwinfo";
+
+    my $version = $self->{distro}->determineMatchingHwinfoVersion(
+        $self->{'distro-ver'}
+    );
+
+    $self->addCMD("cp $baseDir/bin/hwinfo-$version $self->{'build-path'}/usr/bin/hwinfo");
+    my $libHD = "libhd.so.$version";
+    $self->addCMD("cp $baseDir/lib/$libHD $self->{'build-path'}/usr/lib");
+    my $libName = $libHD;
+    while($libName =~ s{\.\d+$}{}g) {
+        $self->addCMD("ln -sf $libHD $self->{'build-path'}/usr/lib/$libName");
+    }
     
     return 1;
 }
