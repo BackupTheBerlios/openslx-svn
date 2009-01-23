@@ -15,10 +15,21 @@
 # script is included from init via the "." load function - thus it has all
 # variables and functions available
 
+# read the central configuration file (fixme: should the keyboard layout
+# defined within the xserver plugin settings - probably not, dvs)
+if [ -e /initramfs/machine-setup ] ; then
+  . /initramfs/machine-setup
+else
+  error "  The central configuration file 'machine-setup' is not present" \
+    nonfatal
+fi
+
 xfc="/mnt/etc/X11/xorg.conf"
 
 if [ -e /initramfs/plugin-conf/xserver.conf ]; then
   . /initramfs/plugin-conf/xserver.conf
+  # keyboard setup
+  localization "${country}"
   # do not start any configuration if the admin provided a preconfigured
   # xorg.conf in /rootfs/etc/X11/xorg.conf
   if [ $xserver_active -ne 0 -a ! -f /rootfs/${xfc#/mnt} ]; then
@@ -56,17 +67,17 @@ Section "InputDevice"
   Option       "CoreKeyboard"
   Option       "XkbRules"          "xorg"
   Option       "XkbModel"          "pc105"
-  Option       "XkbLayout"         "XKEYBOARD"
+  Option       "XkbLayout"         "us"
   Option       "XkbVariant"        "nodeadkeys"
 EndSection
 Section "InputDevice"
   Identifier   "Generic Mouse"
   Driver       "mouse"
   Option       "CorePointer"
-  Option       "Device"            "/dev/input/mice"
-  Option       "Protocol"          "ImPS/2"
-  Option       "ZAxisMapping"      "4 5"
-  Option       "Emulate3Buttons"   "true"
+# Option       "Device"            "/dev/input/mice"
+# Option       "Protocol"          "ImPS/2"
+# Option       "ZAxisMapping"      "4 5"
+# Option       "Emulate3Buttons"   "true"
 EndSection
 Section "InputDevice"
   Driver       "wacom"
@@ -102,10 +113,10 @@ Section "Screen"
   Device       "Generic Video Card"
   Monitor      "Generic Display"
   DefaultDepth 24
-  SubSection "Display"
-    Depth        24
-    Modes        "1024x768" "800x600"
-  EndSubSection
+# SubSection "Display"
+#   Depth        24
+#   Modes        "1024x768" "800x600"
+# EndSubSection
 EndSection
 Section "ServerLayout"
   Identifier   "Default Layout"
@@ -120,7 +131,7 @@ Section "DRI"
   Mode    0666
 EndSection
 '   >> $xfc
-    sed "s/vesa/$xmodule/" -i $xfc
+    sed "s/vesa/$xmodule/;s/\"us\"/\"${XKEYBOARD}\"/" -i $xfc
 
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'xserver' os-plugin ...";
   fi
