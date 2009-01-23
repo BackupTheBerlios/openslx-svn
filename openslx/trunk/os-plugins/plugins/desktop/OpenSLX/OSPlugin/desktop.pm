@@ -226,13 +226,9 @@ sub installationPhase
     $self->{kde}   = $self->{attrs}->{'desktop::kde'};
     $self->{xcfe}  = $self->{attrs}->{'desktop::xfce'};
     
-use Data::Dumper; print Dumper $self->{attrs};
-
     $self->_installRequiredPackages();
     $self->_fillUnsetStage1Attrs();
     $self->_ensureSensibleStage3Attrs();
-
-use Data::Dumper; print Dumper $self->{attrs};
 
     # start to actually do something - according to current stage1 attributes
     if ($self->{gdm}) {
