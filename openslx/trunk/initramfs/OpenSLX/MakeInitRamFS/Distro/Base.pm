@@ -9,15 +9,15 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # MakeInitRamFS::Base.pm
-#	- provides empty base of the distro-specific part of the OpenSLX
-#	  MakeInitRamFS API.
+#    - provides empty base of the distro-specific part of the OpenSLX
+#      MakeInitRamFS API.
 # -----------------------------------------------------------------------------
 package OpenSLX::MakeInitRamFS::Distro::Base;
 
 use strict;
 use warnings;
 
-our $VERSION = 1.01;		# API-version . implementation-version
+our $VERSION = 1.01;        # API-version . implementation-version
 
 use OpenSLX::Basics;
 
@@ -26,11 +26,11 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {
-		'base-name' => 'base',
-	};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {
+        'base-name' => 'base',
+    };
+    return bless $self, $class;
 }
 
 sub applyChanges

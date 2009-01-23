@@ -9,8 +9,8 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # DNBD2.pm
-#	- provides DNBD2+Squashfs-specific overrides of the
-#	  OpenSLX::OSExport::BlockDevice API.
+#    - provides DNBD2+Squashfs-specific overrides of the
+#      OpenSLX::OSExport::BlockDevice API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::BlockDevice::DNBD2;
 
@@ -30,73 +30,73 @@ use OpenSLX::Utils;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {'name' => 'dnbd2',};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {'name' => 'dnbd2',};
+    return bless $self, $class;
 }
 
 sub initialize
 {
-	my $self   = shift;
-	my $engine = shift;
-	my $fs     = shift;    
+    my $self   = shift;
+    my $engine = shift;
+    my $fs     = shift;    
 
-	$self->{'engine'} = $engine;
-	$self->{'fs'}     = $fs;
-	return;
+    $self->{'engine'} = $engine;
+    $self->{'fs'}     = $fs;
+    return;
 }
 
 sub getExportPort
 {
-	my $self      = shift;
-	my $openslxDB = shift;
+    my $self      = shift;
+    my $openslxDB = shift;
 
-	return $openslxDB->incrementGlobalCounter('next-nbd-server-port');
+    return $openslxDB->incrementGlobalCounter('next-nbd-server-port');
 }
 
 sub generateExportURI
 {
-	my $self   = shift;
-	my $export = shift;
+    my $self   = shift;
+    my $export = shift;
 
-	my $serverIP = $export->{server_ip} || '';
-	my $server 
-		= length($serverIP) ? $serverIP : generatePlaceholderFor('serverip');
-	$server .= ":$export->{port}" if length($export->{port});
+    my $serverIP = $export->{server_ip} || '';
+    my $server 
+        = length($serverIP) ? $serverIP : generatePlaceholderFor('serverip');
+    $server .= ":$export->{port}" if length($export->{port});
 
-	return "dnbd2://$server";
+    return "dnbd2://$server";
 }
 
 sub requiredBlockDeviceModules
 {
-	my $self = shift;
+    my $self = shift;
 
-	return qw( dnbd2 );
+    return qw( dnbd2 );
 }
 
 sub requiredBlockDeviceTools
 {
-	my $self = shift;
+    my $self = shift;
 
-	return qw( );
+    return qw( );
 }
 
 sub showExportConfigInfo
 {
-	my $self   = shift;
-	my $export = shift;
+    my $self   = shift;
+    my $export = shift;
 
-	print '#' x 80 , "\n", 
-	_tr(
-		"Please make sure you start a corresponding dnbd2-server:\n\t%s\n",
-		"dnbd2-server /etc/dnbd2/server.conf\n"
-	),
-	"Create or modify a config file like /etc/dnbd2/server.conf, looking like:",
-	"<server>\n",
-	"$export->{port}\n",
-	"$self->{fs}->{'export-path'}\n",
-	'#' x 80, "\n";
-	return;
+    print '#' x 80 , "\n", 
+    _tr(
+        "Please make sure you start a corresponding dnbd2-server:\n\t%s\n",
+        "dnbd2-server /etc/dnbd2/server.conf\n"
+    ),
+    "Create or modify a config file like /etc/dnbd2/server.conf, looking like:",
+    "<server>\n",
+    "$export->{port}\n",
+    "$self->{fs}->{'export-path'}\n",
+    '#' x 80, "\n";
+    return;
 }
 
 1;

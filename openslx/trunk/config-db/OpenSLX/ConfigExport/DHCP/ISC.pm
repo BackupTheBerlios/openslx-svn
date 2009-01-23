@@ -9,14 +9,14 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # ISC.pm
-#	- provides ISC-specific implementation of DHCP export.
+#    - provides ISC-specific implementation of DHCP export.
 # -----------------------------------------------------------------------------
 package OpenSLX::ConfigExport::DHCP::ISC;
 
 use strict;
 use warnings;
 
-our $VERSION = 1.01;		# API-version . implementation-version
+our $VERSION = 1.01;        # API-version . implementation-version
 
 ################################################################################
 ### This class provides an ISC specific implementation for DHCP export.
@@ -28,18 +28,18 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {};
+    return bless $self, $class;
 }
 
 sub execute
 {
-	my $self = shift;
-	my $clients = shift;
+    my $self = shift;
+    my $clients = shift;
 
-	vlog(1, _tr("writing dhcp-config for %s clients", scalar(@$clients)));
-	foreach my $client (@$clients) {
+    vlog(1, _tr("writing dhcp-config for %s clients", scalar(@$clients)));
+    foreach my $client (@$clients) {
 print "ISC-DHCP: $client->{name}\n";
-	}
+    }
 }

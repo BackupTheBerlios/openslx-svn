@@ -30,7 +30,7 @@ use lib "$FindBin::RealBin";
 use lib "$FindBin::RealBin/../lib";
 
 use lib "$FindBin::RealBin/../config-db";
-	# development path to config-db
+    # development path to config-db
 
 use OpenSLX::Basics;
 use OpenSLX::OSSetup::Engine;
@@ -39,24 +39,24 @@ use OpenSLX::Utils;
 my %option;
 
 GetOptions(
-	'help|?'  => \$option{helpReq},
-	'man'     => \$option{manReq},
-	'version' => \$option{versionReq},
+    'help|?'  => \$option{helpReq},
+    'man'     => \$option{manReq},
+    'version' => \$option{versionReq},
 ) or pod2usage(2);
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $option{helpReq};
 if ($option{manReq}) {
-	# avoid dubious problem with perldoc in combination with UTF-8 that
-	# leads to strange dashes and single-quotes being used
-	$ENV{LC_ALL} = 'POSIX';
-	pod2usage(-verbose => 2)
+    # avoid dubious problem with perldoc in combination with UTF-8 that
+    # leads to strange dashes and single-quotes being used
+    $ENV{LC_ALL} = 'POSIX';
+    pod2usage(-verbose => 2)
 }
 if ($option{versionReq}) {
-	system('slxversion');
-	exit 1;
+    system('slxversion');
+    exit 1;
 }
 
 if ($> != 0) {
-	die _tr("Sorry, this script can only be executed by the superuser!\n");
+    die _tr("Sorry, this script can only be executed by the superuser!\n");
 }
 
 openslxInit();
@@ -66,130 +66,130 @@ my $action = shift @ARGV || '';
 # create ossetup-engine for given distro and start it:
 my $engine = OpenSLX::OSSetup::Engine->new;
 if ($action =~ m[^import]i) {
-	my $vendorOSName = shift @ARGV;
-	if (!defined $vendorOSName) {
-		print STDERR _tr("You need to give the name of the vendor-os you'd like to import!\n");
-		pod2usage(2);
-	}
-	# we chdir into the script's folder such that all relative paths have
-	# a known starting point:
-	chdir($FindBin::RealBin)
-		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
-	$engine->initialize($vendorOSName, 'import');
-	if (!-e $engine->{'vendor-os-path'}) {
-		die _tr("'%s' doesn't exist, giving up!\n", $engine->{'vendor-os-path'});
-	}
-	$engine->addInstalledVendorOSToConfigDB();
+    my $vendorOSName = shift @ARGV;
+    if (!defined $vendorOSName) {
+        print STDERR _tr("You need to give the name of the vendor-os you'd like to import!\n");
+        pod2usage(2);
+    }
+    # we chdir into the script's folder such that all relative paths have
+    # a known starting point:
+    chdir($FindBin::RealBin)
+        or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+    $engine->initialize($vendorOSName, 'import');
+    if (!-e $engine->{'vendor-os-path'}) {
+        die _tr("'%s' doesn't exist, giving up!\n", $engine->{'vendor-os-path'});
+    }
+    $engine->addInstalledVendorOSToConfigDB();
 } elsif ($action =~ m[^update]i) {
-	my $vendorOSName = shift @ARGV;
-	if (!defined $vendorOSName) {
-		print STDERR _tr("You need to give the name of the vendor-os you'd like to update!\n");
-		pod2usage(2);
-	}
-	# we chdir into the script's folder such that all relative paths have
-	# a known starting point:
-	chdir($FindBin::RealBin)
-		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
-	$engine->initialize($vendorOSName, 'update');
-	$engine->updateVendorOS();
+    my $vendorOSName = shift @ARGV;
+    if (!defined $vendorOSName) {
+        print STDERR _tr("You need to give the name of the vendor-os you'd like to update!\n");
+        pod2usage(2);
+    }
+    # we chdir into the script's folder such that all relative paths have
+    # a known starting point:
+    chdir($FindBin::RealBin)
+        or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+    $engine->initialize($vendorOSName, 'update');
+    $engine->updateVendorOS();
 } elsif ($action =~ m[^shell]i) {
-	my $vendorOSName = shift @ARGV;
-	if (!defined $vendorOSName) {
-		print STDERR _tr("You need to give the name of the vendor-os you'd like to start of shell for!\n");
-		pod2usage(2);
-	}
-	# we chdir into the script's folder such that all relative paths have
-	# a known starting point:
-	chdir($FindBin::RealBin)
-		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
-	$engine->initialize($vendorOSName, 'shell');
-	$engine->startChrootedShellForVendorOS();
+    my $vendorOSName = shift @ARGV;
+    if (!defined $vendorOSName) {
+        print STDERR _tr("You need to give the name of the vendor-os you'd like to start of shell for!\n");
+        pod2usage(2);
+    }
+    # we chdir into the script's folder such that all relative paths have
+    # a known starting point:
+    chdir($FindBin::RealBin)
+        or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+    $engine->initialize($vendorOSName, 'shell');
+    $engine->startChrootedShellForVendorOS();
 } elsif ($action =~ m[^install]i) {
-	my $vendorOSName = shift @ARGV;
-	if (!defined $vendorOSName) {
-		print STDERR _tr("You need to give the name of the vendor-os you'd like to install!\n");
-		pod2usage(2);
-	}
-	# we chdir into the script's folder such that all relative paths have
-	# a known starting point:
-	chdir($FindBin::RealBin)
-		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
-	$engine->initialize($vendorOSName, 'install');
-	my $rootPassword = readPassword("root-password for new system> ");
-	$engine->installVendorOS({ 'root-password' => $rootPassword });
+    my $vendorOSName = shift @ARGV;
+    if (!defined $vendorOSName) {
+        print STDERR _tr("You need to give the name of the vendor-os you'd like to install!\n");
+        pod2usage(2);
+    }
+    # we chdir into the script's folder such that all relative paths have
+    # a known starting point:
+    chdir($FindBin::RealBin)
+        or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+    $engine->initialize($vendorOSName, 'install');
+    my $rootPassword = readPassword("root-password for new system> ");
+    $engine->installVendorOS({ 'root-password' => $rootPassword });
 } elsif ($action =~ m[^clone]i) {
-	my $source = shift @ARGV;
-	my $vendorOSName = shift @ARGV;
-	if (!defined $source || !defined $vendorOSName) {
-		print STDERR _tr("You need to specify exactly one source and one vendor-OS-name!\n");
-		pod2usage(2);
-	}
-	# we chdir into the script's folder such that all relative paths have
-	# a known starting point:
-	chdir($FindBin::RealBin)
-		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
-	$engine->initialize($vendorOSName, 'clone');
-	$engine->cloneVendorOS($source);
+    my $source = shift @ARGV;
+    my $vendorOSName = shift @ARGV;
+    if (!defined $source || !defined $vendorOSName) {
+        print STDERR _tr("You need to specify exactly one source and one vendor-OS-name!\n");
+        pod2usage(2);
+    }
+    # we chdir into the script's folder such that all relative paths have
+    # a known starting point:
+    chdir($FindBin::RealBin)
+        or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+    $engine->initialize($vendorOSName, 'clone');
+    $engine->cloneVendorOS($source);
 } elsif ($action =~ m[^remove]i) {
-	my $vendorOSName = shift @ARGV;
-	if (!defined $vendorOSName) {
-		print STDERR _tr("You need to specify exactly one vendor-OS-name!\n");
-		pod2usage(2);
-	}
-	# we chdir into the script's folder such that all relative paths have
-	# a known starting point:
-	chdir($FindBin::RealBin)
-		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
-	$engine->initialize($vendorOSName, 'remove');
-	$engine->removeVendorOS();
+    my $vendorOSName = shift @ARGV;
+    if (!defined $vendorOSName) {
+        print STDERR _tr("You need to specify exactly one vendor-OS-name!\n");
+        pod2usage(2);
+    }
+    # we chdir into the script's folder such that all relative paths have
+    # a known starting point:
+    chdir($FindBin::RealBin)
+        or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+    $engine->initialize($vendorOSName, 'remove');
+    $engine->removeVendorOS();
 } elsif ($action =~ m[^list-se]i) {
-	my $vendorOSName = shift @ARGV;
-	if (!defined $vendorOSName) {
-		print STDERR _tr("You need to specify exactly one vendor-OS-name!\n");
-		pod2usage(2);
-	}
-	# we chdir into the script's folder such that all relative paths have
-	# a known starting point:
-	chdir($FindBin::RealBin)
-		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
-	$engine->initialize($vendorOSName, 'install');
-	print _tr("List of supported selections for '%s':\n", $vendorOSName);
-	print join('', map { "\t$_\n" }
-				   sort keys %{$engine->{'distro-info'}->{selection}});
+    my $vendorOSName = shift @ARGV;
+    if (!defined $vendorOSName) {
+        print STDERR _tr("You need to specify exactly one vendor-OS-name!\n");
+        pod2usage(2);
+    }
+    # we chdir into the script's folder such that all relative paths have
+    # a known starting point:
+    chdir($FindBin::RealBin)
+        or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+    $engine->initialize($vendorOSName, 'install');
+    print _tr("List of supported selections for '%s':\n", $vendorOSName);
+    print join('', map { "\t$_\n" }
+                   sort keys %{$engine->{'distro-info'}->{selection}});
 } elsif ($action =~ m[^list-su]i) {
-	print _tr("List of supported distros:\n");
-	print join('', map {
-					"\t$_"
-					 .(' 'x(20-length($_)))
-					 ."\t($supportedDistros{$_}->{support})\n"
-				   }
-				   sort keys %supportedDistros);
+    print _tr("List of supported distros:\n");
+    print join('', map {
+                    "\t$_"
+                     .(' 'x(20-length($_)))
+                     ."\t($supportedDistros{$_}->{support})\n"
+                   }
+                   sort keys %supportedDistros);
 } elsif ($action =~ m[^list-in]i) {
-	print _tr("List of installed vendor-OSes:\n");
-	print join(
-		'', 
-		map {
-			my $vendorOS = decode('utf8', $_);
-			$vendorOS =~ s[^.+/][];
-			"\t$vendorOS\n";
-		}
-		grep { -d $_ }
-		sort glob("$openslxConfig{'private-path'}/stage1/*")
-	);
+    print _tr("List of installed vendor-OSes:\n");
+    print join(
+        '', 
+        map {
+            my $vendorOS = decode('utf8', $_);
+            $vendorOS =~ s[^.+/][];
+            "\t$vendorOS\n";
+        }
+        grep { -d $_ }
+        sort glob("$openslxConfig{'private-path'}/stage1/*")
+    );
 } else {
-	vlog(0, _tr(unshiftHereDoc(<<'	END-OF-HERE'), $0));
-		You need to specify exactly one action:
-			clone
-			import-into-db
-			install
-			list-installed
-			list-selections
-			list-supported
-			remove
-			shell
-			update
-		Try '%s --help' for more info.
-	END-OF-HERE
+    vlog(0, _tr(unshiftHereDoc(<<'    END-OF-HERE'), $0));
+        You need to specify exactly one action:
+            clone
+            import-into-db
+            install
+            list-installed
+            list-selections
+            list-supported
+            remove
+            shell
+            update
+        Try '%s --help' for more info.
+    END-OF-HERE
 }
 
 
@@ -289,9 +289,9 @@ cloned, imported or updated. It corresponds to a folder in the OpenSLX-
 stage1-path (usually /var/opt/openslx/stage1).
 The general format of a vendor-os-name is:
 
-	<distro-name>-<release-version>
+    <distro-name>-<release-version>
 or
-	<distro-name>-<release-version>-<selection>
+    <distro-name>-<release-version>-<selection>
 
 The distro-name is something like 'suse' or 'fedora', and the release-version
 is a numerical version, e.g. '10.1' or '6'.

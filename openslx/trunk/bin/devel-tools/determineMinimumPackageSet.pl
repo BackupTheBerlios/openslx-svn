@@ -28,26 +28,26 @@ use Getopt::Long;
 use Pod::Usage;
 
 my (
-	$helpReq,
-	$verbose,
-	$versionReq,
+    $helpReq,
+    $verbose,
+    $versionReq,
 
-	%pkgs,
-	@leafPkgs,
+    %pkgs,
+    @leafPkgs,
 );
 
 my $rpmOutFile = "/tmp/minpkgset.rpmout";
 my $rpmErrFile = "/tmp/minpkgset.rpmerr";
 
 GetOptions(
-	'help|?' => \$helpReq,
-	'verbose' => \$verbose,
-	'version' => \$versionReq,
+    'help|?' => \$helpReq,
+    'verbose' => \$verbose,
+    'version' => \$versionReq,
 ) or pod2usage(2);
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $helpReq;
 if ($versionReq) {
-	system('slxversion');
-	exit 1;
+    system('slxversion');
+    exit 1;
 }
 
 determineMinimumPackageSet();
@@ -60,90 +60,90 @@ exit;
 
 sub slurpFile
 {
-	my $file = shift;
+    my $file = shift;
 
-	my $fh;
-	open($fh, '<', $file)
-		or die _tr("could not open file '%s' for reading! (%s)", $file, $!);
-	local $/ = undef;
-	my $text = <$fh>;
-	close($fh);
-	return $text;
+    my $fh;
+    open($fh, '<', $file)
+        or die _tr("could not open file '%s' for reading! (%s)", $file, $!);
+    local $/ = undef;
+    my $text = <$fh>;
+    close($fh);
+    return $text;
 }
 
 sub rpmDie
 {
-	my $rpmCmd = shift;
+    my $rpmCmd = shift;
 
-	print "\n*** An error occurred when executing the following rpm-command:\n";
-	print "\t$rpmCmd\n";
-	my $err = slurpFile($rpmErrFile);
-	print "*** The error was:\n";
-	print "\t$err\n";
-	exit 5;
+    print "\n*** An error occurred when executing the following rpm-command:\n";
+    print "\t$rpmCmd\n";
+    my $err = slurpFile($rpmErrFile);
+    print "*** The error was:\n";
+    print "\t$err\n";
+    exit 5;
 }
 
 sub callRpm
 {
-	my $rpmCmd = shift;
+    my $rpmCmd = shift;
 
-	my $res	= system("$rpmCmd >$rpmOutFile 2>$rpmErrFile");
-	exit 1 if ($res & 127);		# child caught a signal
-	rpmDie($rpmCmd) if -s $rpmErrFile;
-	my $out = slurpFile($rpmOutFile);
-	return ($res, $out);
+    my $res    = system("$rpmCmd >$rpmOutFile 2>$rpmErrFile");
+    exit 1 if ($res & 127);        # child caught a signal
+    rpmDie($rpmCmd) if -s $rpmErrFile;
+    my $out = slurpFile($rpmOutFile);
+    return ($res, $out);
 }
 
 sub handlePackage
 {
-	my $pkgName = shift;
+    my $pkgName = shift;
 
-	# if any other package requires it, the current package is not a leaf!
-	print "\tdirectly required..." 		if $verbose;
-	my ($rpmRes, $rpmOut) = callRpm(qq[rpm -q --whatrequires "$pkgName"]);
-	print $rpmRes ? "no\n" : "yes\n" 		if $verbose;
-	return 0 unless $rpmRes;
+    # if any other package requires it, the current package is not a leaf!
+    print "\tdirectly required..."         if $verbose;
+    my ($rpmRes, $rpmOut) = callRpm(qq[rpm -q --whatrequires "$pkgName"]);
+    print $rpmRes ? "no\n" : "yes\n"         if $verbose;
+    return 0 unless $rpmRes;
 
-	print "\tany of its provides required..." 		if $verbose;
-	($rpmRes, $rpmOut) = callRpm(qq[rpm -q --provides "$pkgName"]);
-	my $provides
-		=	join ' ',
-			map { 
-				my $rpm = $_;
-				$rpm =~ s[^\s*(.+?)\s*$][$1];
-				qq["$rpm"];
-			}
-			split "\n", $rpmOut;
-	($rpmRes, $rpmOut) = callRpm(qq[rpm -q --whatrequires $provides]);
-	if ($rpmRes == 0) {
-		# ignore if rpm tells us that a provides is required by
-		# the package that provides it:
-		$rpmRes = 1;
-		while($rpmOut =~ m[^\s*(.+?)\s*]gm) {
-			if ($1 ne $pkgName) {
-				$rpmRes = 0;
-				last;
-			}
-		}
-	}
-	print $rpmRes ? "no\n" : "yes\n" 		if $verbose;
-	return 0 unless $rpmRes;
+    print "\tany of its provides required..."         if $verbose;
+    ($rpmRes, $rpmOut) = callRpm(qq[rpm -q --provides "$pkgName"]);
+    my $provides
+        =    join ' ',
+            map { 
+                my $rpm = $_;
+                $rpm =~ s[^\s*(.+?)\s*$][$1];
+                qq["$rpm"];
+            }
+            split "\n", $rpmOut;
+    ($rpmRes, $rpmOut) = callRpm(qq[rpm -q --whatrequires $provides]);
+    if ($rpmRes == 0) {
+        # ignore if rpm tells us that a provides is required by
+        # the package that provides it:
+        $rpmRes = 1;
+        while($rpmOut =~ m[^\s*(.+?)\s*]gm) {
+            if ($1 ne $pkgName) {
+                $rpmRes = 0;
+                last;
+            }
+        }
+    }
+    print $rpmRes ? "no\n" : "yes\n"         if $verbose;
+    return 0 unless $rpmRes;
 
-	print "!!! adding $pkgName\n"		if $verbose;
-	push @leafPkgs, $pkgName;
-	return 1;
+    print "!!! adding $pkgName\n"        if $verbose;
+    push @leafPkgs, $pkgName;
+    return 1;
 }
 
 sub determineMinimumPackageSet
 {
-	my ($rpmRes, $allPkgs)
-		= callRpm(qq[rpm -qa --queryformat "%{NAME}\n"]);
-	foreach my $p (sort split "\n", $allPkgs) {
-		print "$p...\n" 		if $verbose;
-		print "."		unless $verbose;
-		handlePackage($p);
-	}
-	return;
+    my ($rpmRes, $allPkgs)
+        = callRpm(qq[rpm -qa --queryformat "%{NAME}\n"]);
+    foreach my $p (sort split "\n", $allPkgs) {
+        print "$p...\n"         if $verbose;
+        print "."        unless $verbose;
+        handlePackage($p);
+    }
+    return;
 }
 
 __END__

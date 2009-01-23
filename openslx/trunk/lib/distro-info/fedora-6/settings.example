@@ -13,8 +13,8 @@
 
 # add a new selection:
 #<selection my_kde>
-#	base = kde
-#	packages = <<END
-#		kinternet
-#	END
+#    base = kde
+#    packages = <<END
+#        kinternet
+#    END
 #</selection>

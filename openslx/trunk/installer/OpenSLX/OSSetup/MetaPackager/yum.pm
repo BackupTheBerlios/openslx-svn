@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # yum.pm
-#	- provides yum-specific overrides of the OpenSLX::OSSetup::MetaPackager API.
+#    - provides yum-specific overrides of the OpenSLX::OSSetup::MetaPackager API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::MetaPackager::yum;
 
@@ -26,90 +26,90 @@ use OpenSLX::Utils;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {
-		'name' => 'yum',
-	};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {
+        'name' => 'yum',
+    };
+    return bless $self, $class;
 }
 
 sub initPackageSources
 {
-	my $self = shift;
+    my $self = shift;
 
-	$ENV{LC_ALL} = 'POSIX';
+    $ENV{LC_ALL} = 'POSIX';
 
-	slxsystem("rm -f /etc/yum.repos.d/*");
-	slxsystem("mkdir -p /etc/yum.repos.d");
+    slxsystem("rm -f /etc/yum.repos.d/*");
+    slxsystem("mkdir -p /etc/yum.repos.d");
 
-	return 1;
+    return 1;
 }
 
 sub setupPackageSource
 {
-	my $self        = shift;
-	my $repoName    = shift;
-	my $repoInfo    = shift;
-	my $excludeList = shift;
-	my $repoURLs    = shift;
+    my $self        = shift;
+    my $repoName    = shift;
+    my $repoInfo    = shift;
+    my $excludeList = shift;
+    my $repoURLs    = shift;
 
-	my $repoSubdir;
-	if (length($repoInfo->{'repo-subdir'})) {
-		$repoSubdir = "/$repoInfo->{'repo-subdir'}";
-	}
-	my $baseURL = shift @$repoURLs;
+    my $repoSubdir;
+    if (length($repoInfo->{'repo-subdir'})) {
+        $repoSubdir = "/$repoInfo->{'repo-subdir'}";
+    }
+    my $baseURL = shift @$repoURLs;
 
-	my $repoDescr 
-		= "[$repoName]\nname=$repoInfo->{name}\nbaseurl=$baseURL$repoSubdir\n";
+    my $repoDescr 
+        = "[$repoName]\nname=$repoInfo->{name}\nbaseurl=$baseURL$repoSubdir\n";
 
-	foreach my $mirrorURL (@$repoURLs) {
-		$repoDescr .= "        $mirrorURL$repoSubdir\n";
-	}
-	my $repoFile = "/etc/yum.repos.d/$repoName.repo";
-	spitFile($repoFile, "$repoDescr\nexclude=$excludeList\n");
+    foreach my $mirrorURL (@$repoURLs) {
+        $repoDescr .= "        $mirrorURL$repoSubdir\n";
+    }
+    my $repoFile = "/etc/yum.repos.d/$repoName.repo";
+    spitFile($repoFile, "$repoDescr\nexclude=$excludeList\n");
 
-	return 1;
+    return 1;
 }
 
 sub installPackages
 {
-	my $self     = shift;
-	my $packages = shift;
+    my $self     = shift;
+    my $packages = shift;
 
-	$packages =~ tr{\n}{ };
+    $packages =~ tr{\n}{ };
 
-	if (slxsystem("yum -y install $packages")) {
-		die _tr("unable to install selection (%s)\n", $!);
-	}
+    if (slxsystem("yum -y install $packages")) {
+        die _tr("unable to install selection (%s)\n", $!);
+    }
 
-	return 1;
+    return 1;
 }
 
 sub removePackages
 {
-	my $self         = shift;
-	my $pkgSelection = shift;
+    my $self         = shift;
+    my $pkgSelection = shift;
 
-	if (slxsystem("yum -y remove $pkgSelection")) {
-		die _tr("unable to remove selection (%s)\n", $!);
-	}
+    if (slxsystem("yum -y remove $pkgSelection")) {
+        die _tr("unable to remove selection (%s)\n", $!);
+    }
 
-	return 1;
+    return 1;
 }
 
 sub updateBasicVendorOS
 {
-	my $self = shift;
+    my $self = shift;
 
-	if (slxsystem("yum -y update")) {
-		if ($! == 2) {
-			# file not found => yum isn't installed
-			die _tr("unable to update this vendor-os, as it seems to lack an installation of yum!\n");
-		}
-		die _tr("unable to update this vendor-os (%s)\n", $!);
-	}
+    if (slxsystem("yum -y update")) {
+        if ($! == 2) {
+            # file not found => yum isn't installed
+            die _tr("unable to update this vendor-os, as it seems to lack an installation of yum!\n");
+        }
+        die _tr("unable to update this vendor-os (%s)\n", $!);
+    }
 
-	return 1;
+    return 1;
 }
 
 1;

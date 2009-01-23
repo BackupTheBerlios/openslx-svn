@@ -11,7 +11,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # slxsettings
-#	- OpenSLX-script to show & change local settings
+#    - OpenSLX-script to show & change local settings
 # -----------------------------------------------------------------------------
 use strict;
 use warnings;
@@ -46,68 +46,68 @@ use OpenSLX::Utils;
 my (@reset, %givenSettings, %option);
 
 GetOptions(
-	'quiet'   => \$option{quiet},
-	'help|?'  => \$option{helpReq},
-	'man'     => \$option{manReq},
-	'version' => \$option{versionReq},
+    'quiet'   => \$option{quiet},
+    'help|?'  => \$option{helpReq},
+    'man'     => \$option{manReq},
+    'version' => \$option{versionReq},
 );
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $option{helpReq};
 pod2usage(-verbose => 2) if $option{manReq};
 if ($option{versionReq}) {
-	system('slxversion');
-	exit 1;
+    system('slxversion');
+    exit 1;
 }
 
 if ($> != 0) {
-	die _tr("Sorry, this script can only be executed by the superuser!\n");
+    die _tr("Sorry, this script can only be executed by the superuser!\n");
 }
 
 openslxInit() or pod2usage(2);
 
 # some settings must match a certain pattern:
 my %configPattern = (
-	'db-type' => '(SQLite|mysql)',
+    'db-type' => '(SQLite|mysql)',
 );
 
 # the remaining cmdline arguments are set or reset actions, each followed
 # by a single argument:
 while (scalar @ARGV) {
-	my $action = shift || '';
-	my $arg    = shift || '';
-	if ($action eq 'set') {
-		if ($arg !~ m[^([-\w]+)=(.+)$]) {
-			die _tr(
-				"set-argument '%s' has unknown format, expected '<key>=<value>!'",
-				$arg
-			);
-		}
-		$givenSettings{$1} = $2;
-	}
-	elsif ($action eq 'reset') {
-		push @reset, $arg;
-	}
-	else {
-		die _tr(unshiftHereDoc(<<'		END-OF-HERE'), $arg, $0);
-			action '%s' is not understood! Known actions are:
-				set
-				reset
-			Try '%s --help' for more info.
-		END-OF-HERE
-	}
+    my $action = shift || '';
+    my $arg    = shift || '';
+    if ($action eq 'set') {
+        if ($arg !~ m[^([-\w]+)=(.+)$]) {
+            die _tr(
+                "set-argument '%s' has unknown format, expected '<key>=<value>!'",
+                $arg
+            );
+        }
+        $givenSettings{$1} = $2;
+    }
+    elsif ($action eq 'reset') {
+        push @reset, $arg;
+    }
+    else {
+        die _tr(unshiftHereDoc(<<'        END-OF-HERE'), $arg, $0);
+            action '%s' is not understood! Known actions are:
+                set
+                reset
+            Try '%s --help' for more info.
+        END-OF-HERE
+    }
 }
 
 # fetch current content of local settings file...
 my $fileName = "$openslxConfig{'config-path'}/settings";
 if (!-e $fileName) {
-	# create empty default settings file with tight mode (root-only access)
-	# [I know this isn't *secure* as such, but it's still better than nothing]
-	slxsystem("touch $fileName && chmod 0600 $fileName");
+    # create empty default settings file with tight mode (root-only access)
+    # [I know this isn't *secure* as such, but it's still better than nothing]
+    slxsystem("touch $fileName && chmod 0600 $fileName");
 }
 my $configObj = Config::General->new(
-	-ConfigFile     => $fileName, 
-	-SplitDelimiter => '\s*=\s*',
-	-SplitPolicy    => 'custom',
-	-StoreDelimiter => '=',
+    -ConfigFile     => $fileName, 
+    -SplitDelimiter => '\s*=\s*',
+    -SplitPolicy    => 'custom',
+    -StoreDelimiter => '=',
 );
 my %settings = $configObj->getall();
 
@@ -115,116 +115,116 @@ my %changed;
 
 # ...set new values...
 foreach my $key (keys %givenSettings) {
-	my $value = $givenSettings{$key};
-	next if !defined $value;
-	if (!exists $openslxConfig{$key}) {
-		die _tr("option '%s' is not known!", $key);
-	}
-	if ($key =~ m{^(base-path|config-path)$}) {
-		die _tr("option '%s' is fixed!", $key);
-	}
-	if (exists $configPattern{$key} && $value !~ m{$configPattern{$key}}) {
-		die _tr(
-			"option '%s' must match pattern '%s'!", $key, $configPattern{$key}
-		);
-	}
+    my $value = $givenSettings{$key};
+    next if !defined $value;
+    if (!exists $openslxConfig{$key}) {
+        die _tr("option '%s' is not known!", $key);
+    }
+    if ($key =~ m{^(base-path|config-path)$}) {
+        die _tr("option '%s' is fixed!", $key);
+    }
+    if (exists $configPattern{$key} && $value !~ m{$configPattern{$key}}) {
+        die _tr(
+            "option '%s' must match pattern '%s'!", $key, $configPattern{$key}
+        );
+    }
 
-	vlog(0, _tr("setting %s to '%s'", $key, $value)) unless $option{quiet};
-	my $externalKey = externalKeyFor($key);
-	if (!exists $settings{$externalKey} || $settings{$externalKey} ne $value) {
-		$settings{$externalKey} = $value;
-	}
-	$changed{$key}++;
+    vlog(0, _tr("setting %s to '%s'", $key, $value)) unless $option{quiet};
+    my $externalKey = externalKeyFor($key);
+    if (!exists $settings{$externalKey} || $settings{$externalKey} ne $value) {
+        $settings{$externalKey} = $value;
+    }
+    $changed{$key}++;
 }
 
 # reset specified keys to fall back to default:
 foreach my $key (@reset) {
-	my $externalKey = externalKeyFor($key);
-	if (exists $settings{$externalKey}) {
-		delete $settings{$externalKey};
-		vlog(0,
-			_tr("removing option '%s' from local settings", $key))
-			  unless $option{quiet};
-	} else {
-		vlog(0,
-			_tr("option '%s' didn't exist in local settings!", $key))
-			  unless $option{quiet};
-	}
-	$changed{$key}++;
+    my $externalKey = externalKeyFor($key);
+    if (exists $settings{$externalKey}) {
+        delete $settings{$externalKey};
+        vlog(0,
+            _tr("removing option '%s' from local settings", $key))
+              unless $option{quiet};
+    } else {
+        vlog(0,
+            _tr("option '%s' didn't exist in local settings!", $key))
+              unless $option{quiet};
+    }
+    $changed{$key}++;
 }
 
 # ... and write local settings file if necessary
 if (keys %changed) {
-	$configObj->save_file($fileName, \%settings);
+    $configObj->save_file($fileName, \%settings);
 
-	openslxInit();
+    openslxInit();
 
-	foreach my $key (keys %changed) {
-		changedHandler($key, $openslxConfig{$key});
-	}
+    foreach my $key (keys %changed) {
+        changedHandler($key, $openslxConfig{$key});
+    }
 }
 
 if (!keys %changed) {
-	print _tr("paths fixed at installation time:\n");
-	print qq[\tbase-path='$openslxConfig{'base-path'}'\n];
-	print qq[\tconfig-path='$openslxConfig{'config-path'}'\n];
-	my $text =
-	  keys %changed
-	  ? "resulting base settings (cmdline options):\n"
-	  : "current base settings (cmdline options):\n";
-	print $text;
-	my @baseSettings = grep { exists $cmdlineConfig{$_} } keys %openslxConfig;
-	foreach my $key (sort @baseSettings) {
-		my $val = $openslxConfig{$key} || '';
-		print qq[\t$key='$val'\n];
-	}
-	print _tr("extended settings:\n");
-	my @extSettings = grep { !exists $cmdlineConfig{$_} } keys %openslxConfig;
-	foreach my $key (sort @extSettings) {
-		next if $key =~ m[^(base-path|config-path)$];
-		my $val = $openslxConfig{$key};
-		if (defined $val) {
-			print qq[\t$key='$val'\n];
-		}
-		else {
-			print qq[\t$key=<unset>\n];
-		}
-	}
+    print _tr("paths fixed at installation time:\n");
+    print qq[\tbase-path='$openslxConfig{'base-path'}'\n];
+    print qq[\tconfig-path='$openslxConfig{'config-path'}'\n];
+    my $text =
+      keys %changed
+      ? "resulting base settings (cmdline options):\n"
+      : "current base settings (cmdline options):\n";
+    print $text;
+    my @baseSettings = grep { exists $cmdlineConfig{$_} } keys %openslxConfig;
+    foreach my $key (sort @baseSettings) {
+        my $val = $openslxConfig{$key} || '';
+        print qq[\t$key='$val'\n];
+    }
+    print _tr("extended settings:\n");
+    my @extSettings = grep { !exists $cmdlineConfig{$_} } keys %openslxConfig;
+    foreach my $key (sort @extSettings) {
+        next if $key =~ m[^(base-path|config-path)$];
+        my $val = $openslxConfig{$key};
+        if (defined $val) {
+            print qq[\t$key='$val'\n];
+        }
+        else {
+            print qq[\t$key=<unset>\n];
+        }
+    }
 }
 
 sub externalKeyFor
 {
-	my $key = shift;
+    my $key = shift;
 
-	$key =~ tr[-][_];
-	return "SLX_" . uc($key);
+    $key =~ tr[-][_];
+    return "SLX_" . uc($key);
 }
 
 sub changedHandler
 {
-	my $key   = shift;
-	my $value = shift;
+    my $key   = shift;
+    my $value = shift;
 
-	# invoke a key-specific change handler if it exists:
-	$key =~ tr[-][_];
+    # invoke a key-specific change handler if it exists:
+    $key =~ tr[-][_];
 
-	# we do the following function call in an eval as that function may simply
-	# not exist:
-	eval {
-		no strict 'refs';		## no critic (ProhibitNoStrict)
-		"${key}_changed_handler"->();
-	};
-	
-	return;
+    # we do the following function call in an eval as that function may simply
+    # not exist:
+    eval {
+        no strict 'refs';        ## no critic (ProhibitNoStrict)
+        "${key}_changed_handler"->();
+    };
+    
+    return;
 }
 
 sub private_path_changed_handler
 {
-	# create the default config folders (for default system only):
-	require OpenSLX::ConfigFolder;
-	OpenSLX::ConfigFolder::createConfigFolderForDefaultSystem();
+    # create the default config folders (for default system only):
+    require OpenSLX::ConfigFolder;
+    OpenSLX::ConfigFolder::createConfigFolderForDefaultSystem();
 
-	return;
+    return;
 }
 
 =head1 NAME

@@ -9,14 +9,14 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # Base.pm
-#	- provides empty base of the OpenSLX OSExport::BlockDevice API.
+#    - provides empty base of the OpenSLX OSExport::BlockDevice API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::BlockDevice::Base;
 
 use strict;
 use warnings;
 
-our $VERSION = 1.01;		# API-version . implementation-version
+our $VERSION = 1.01;        # API-version . implementation-version
 
 use OpenSLX::Basics;
 
@@ -25,7 +25,7 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	confess "Creating OpenSLX::OSExport::BlockDevice::Base-objects directly makes no sense!";
+    confess "Creating OpenSLX::OSExport::BlockDevice::Base-objects directly makes no sense!";
 }
 
 sub initialize

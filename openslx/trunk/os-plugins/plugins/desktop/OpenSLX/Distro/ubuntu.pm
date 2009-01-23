@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # Ubuntu.pm
-#	- provides Ubuntu-specific overrides of the OpenSLX OSSetup API.
+#    - provides Ubuntu-specific overrides of the OpenSLX OSSetup API.
 # -----------------------------------------------------------------------------
 package OpenSLX::Distro::ubuntu;
 

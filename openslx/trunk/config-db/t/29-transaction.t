@@ -30,7 +30,7 @@ my @clients2    = $configDB->fetchClientByFilter();
 my @groups2     = $configDB->fetchGroupByFilter();
 
 is( 
-	scalar @vendorOSes2, scalar @vendorOSes, "should still have all vendor-OSes"
+    scalar @vendorOSes2, scalar @vendorOSes, "should still have all vendor-OSes"
 );
 is(scalar @exports2, scalar @exports, "should still have all exports");
 is(scalar @systems2, scalar @systems, "should still have all systems");

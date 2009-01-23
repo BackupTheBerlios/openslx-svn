@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # OSPlugin::Roster.pm
-#	- provides information about all available plugins
+#    - provides information about all available plugins
 # -----------------------------------------------------------------------------
 package OpenSLX::OSPlugin::Roster;
 
@@ -29,15 +29,15 @@ Returns a hash that keys the names of available plugins to their info hash.
 
 sub getAvailablePlugins
 {
-	my $class = shift;
+    my $class = shift;
 
-	$class->_init() if !%plugins;
+    $class->_init() if !%plugins;
 
-	my %pluginInfo;
-	foreach my $pluginName (keys %plugins) {
-		$pluginInfo{$pluginName} = $plugins{$pluginName}->getInfo();
-	}
-	return \%pluginInfo;
+    my %pluginInfo;
+    foreach my $pluginName (keys %plugins) {
+        $pluginInfo{$pluginName} = $plugins{$pluginName}->getInfo();
+    }
+    return \%pluginInfo;
 }
 
 =item C<getPlugin()>
@@ -48,15 +48,15 @@ Returns an instance of the plugin with the given name
 
 sub getPlugin
 {
-	my $class      = shift;
-	my $pluginName = shift;
+    my $class      = shift;
+    my $pluginName = shift;
 
-	$class->_init() if !%plugins;
+    $class->_init() if !%plugins;
 
-	my $plugin = $plugins{$pluginName};
-	return if !$plugin;
+    my $plugin = $plugins{$pluginName};
+    return if !$plugin;
 
-	return dclone($plugin);
+    return dclone($plugin);
 }
 
 =item C<getPluginAttrInfo()>
@@ -68,14 +68,14 @@ given plugin
 
 sub getPluginAttrInfo
 {
-	my $class      = shift;
-	my $pluginName = shift;
+    my $class      = shift;
+    my $pluginName = shift;
 
-	$class->_init() if !%plugins;
+    $class->_init() if !%plugins;
 
-	return if !$plugins{$pluginName};
+    return if !$plugins{$pluginName};
 
-	return $plugins{$pluginName}->getAttrInfo();
+    return $plugins{$pluginName}->getAttrInfo();
 }
 
 =item C<addAllAttributesToHash()>
@@ -98,11 +98,11 @@ added.
 
 sub addAllAttributesToHash
 {
-	my $class      = shift;
-	my $attrInfo   = shift;
-	my $pluginName = shift;
+    my $class      = shift;
+    my $attrInfo   = shift;
+    my $pluginName = shift;
 
-	return $class->_addAttributesToHash($attrInfo, $pluginName, sub { 1 } );
+    return $class->_addAttributesToHash($attrInfo, $pluginName, sub { 1 } );
 }
 
 =item C<addAllStage1AttributesToHash()>
@@ -125,14 +125,14 @@ added.
 
 sub addAllStage1AttributesToHash
 {
-	my $class      = shift;
-	my $attrInfo   = shift;
-	my $pluginName = shift;
+    my $class      = shift;
+    my $attrInfo   = shift;
+    my $pluginName = shift;
 
-	return $class->_addAttributesToHash($attrInfo, $pluginName, sub {
-		my $attr = shift;
-		return $attr->{applies_to_vendor_os};
-	} );
+    return $class->_addAttributesToHash($attrInfo, $pluginName, sub {
+        my $attr = shift;
+        return $attr->{applies_to_vendor_os};
+    } );
 }
 
 =item C<addAllStage3AttributesToHash()>
@@ -155,59 +155,59 @@ added.
 
 sub addAllStage3AttributesToHash
 {
-	my $class      = shift;
-	my $attrInfo   = shift;
-	my $pluginName = shift;
+    my $class      = shift;
+    my $attrInfo   = shift;
+    my $pluginName = shift;
 
-	return $class->_addAttributesToHash($attrInfo, $pluginName, sub {
-		my $attr = shift;
-		return $attr->{applies_to_systems} || $attr->{applies_to_clients};
-	} );
+    return $class->_addAttributesToHash($attrInfo, $pluginName, sub {
+        my $attr = shift;
+        return $attr->{applies_to_systems} || $attr->{applies_to_clients};
+    } );
 }
 
 sub _addAttributesToHash
 {
-	my $class      = shift;
-	my $attrInfo   = shift;
-	my $pluginName = shift;
-	my $testFunc   = shift;
+    my $class      = shift;
+    my $attrInfo   = shift;
+    my $pluginName = shift;
+    my $testFunc   = shift;
 
-	$class->_init() if !%plugins;
+    $class->_init() if !%plugins;
 
-	foreach my $plugin (values %plugins) {
-		next if $pluginName && $plugin->{name} ne $pluginName;
-		my $pluginAttrInfo = $plugin->getAttrInfo();
-		foreach my $attr (keys %$pluginAttrInfo) {
-			next if !$testFunc->($pluginAttrInfo->{$attr});
-			$attrInfo->{$attr} = dclone($pluginAttrInfo->{$attr});
-		}
-	}
-	return 1;
+    foreach my $plugin (values %plugins) {
+        next if $pluginName && $plugin->{name} ne $pluginName;
+        my $pluginAttrInfo = $plugin->getAttrInfo();
+        foreach my $attr (keys %$pluginAttrInfo) {
+            next if !$testFunc->($pluginAttrInfo->{$attr});
+            $attrInfo->{$attr} = dclone($pluginAttrInfo->{$attr});
+        }
+    }
+    return 1;
 }
 
 sub _init
 {
-	my $class = shift;
+    my $class = shift;
 
-	%plugins = ();
-	my $pluginPath = "$openslxConfig{'base-path'}/lib/plugins";
-	foreach my $modulePath (glob("$pluginPath/*")) {
-		next if $modulePath !~ m{/([^/]+)$};
-		my $pluginName = $1;
-		if (!-e "$modulePath/OpenSLX/OSPlugin/$pluginName.pm") {
-			vlog(
-				1, 
-				"skipped plugin-folder $modulePath as no corresponding perl "
-					. "module could be found."
-			);
-			next;
-		}
-		my $class = "OpenSLX::OSPlugin::$pluginName";
-		vlog(2, "loading plugin $class from path '$modulePath'");
-		my $plugin = instantiateClass($class, { pathToClass => $modulePath });
-		$plugins{$pluginName} = $plugin;
-	}
-	return;
+    %plugins = ();
+    my $pluginPath = "$openslxConfig{'base-path'}/lib/plugins";
+    foreach my $modulePath (glob("$pluginPath/*")) {
+        next if $modulePath !~ m{/([^/]+)$};
+        my $pluginName = $1;
+        if (!-e "$modulePath/OpenSLX/OSPlugin/$pluginName.pm") {
+            vlog(
+                1, 
+                "skipped plugin-folder $modulePath as no corresponding perl "
+                    . "module could be found."
+            );
+            next;
+        }
+        my $class = "OpenSLX::OSPlugin::$pluginName";
+        vlog(2, "loading plugin $class from path '$modulePath'");
+        my $plugin = instantiateClass($class, { pathToClass => $modulePath });
+        $plugins{$pluginName} = $plugin;
+    }
+    return;
 }
 
 1;

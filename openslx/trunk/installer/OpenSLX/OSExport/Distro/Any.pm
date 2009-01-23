@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # Any.pm
-#	- provides generic overrides of the OpenSLX OSExport API.
+#    - provides generic overrides of the OpenSLX OSExport API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::Distro::Any;
 
@@ -25,41 +25,41 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {
-		'base-name' => 'any',
-	};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {
+        'base-name' => 'any',
+    };
+    return bless $self, $class;
 }
 
 sub initDistroInfo
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{'export-filter'} = "
-		- /var/tmp/*
-		- /var/spool/*
-		- /var/run/*
-		- /var/lock/*
-		- /var/log/*
-		- /var/lib/xdm
-		- /var/lib/smart
-		- /var/cache/yum
-		- /var/cache/man/*
-		- /usr/share/vmware/*
-		- /tmp/*
-		- /sys/*
-		- /proc/*
-		- /mnt/*
-		- /media/*
+    $self->{'export-filter'} = "
+        - /var/tmp/*
+        - /var/spool/*
+        - /var/run/*
+        - /var/lock/*
+        - /var/log/*
+        - /var/lib/xdm
+        - /var/lib/smart
+        - /var/cache/yum
+        - /var/cache/man/*
+        - /usr/share/vmware/*
+        - /tmp/*
+        - /sys/*
+        - /proc/*
+        - /mnt/*
+        - /media/*
         + /lib/modules/*/misc/vmblock.o
         + /lib/modules/*/misc/vmnet.o
         + /lib/modules/*/misc/vmmon.o
-		- /lib/klibc/events/*
-		- /boot/initrd*
-		- /boot/grub
-	";
-	return;
+        - /lib/klibc/events/*
+        - /boot/initrd*
+        - /boot/grub
+    ";
+    return;
 }
 
 1;

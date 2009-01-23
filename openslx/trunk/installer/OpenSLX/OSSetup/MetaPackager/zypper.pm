@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # zypper.pm
-#	- provides zypper-specific overrides of the OpenSLX::OSSetup::MetaPackager API.
+#    - provides zypper-specific overrides of the OpenSLX::OSSetup::MetaPackager API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::MetaPackager::zypper;
 
@@ -26,88 +26,88 @@ use OpenSLX::Utils;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {
-		'name' => 'zypper',
-	};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {
+        'name' => 'zypper',
+    };
+    return bless $self, $class;
 }
 
 sub initPackageSources
 {
-	my $self = shift;
+    my $self = shift;
 
-	$ENV{LC_ALL} = 'POSIX';
+    $ENV{LC_ALL} = 'POSIX';
 
-	# remove any existing channels
-	slxsystem("rm -f /etc/zypp/repos.d/*");
+    # remove any existing channels
+    slxsystem("rm -f /etc/zypp/repos.d/*");
 
-	return 1;
+    return 1;
 }
 
 sub setupPackageSource
 {
-	my $self        = shift;
-	my $repoName    = shift;
-	my $repoInfo    = shift;
-	my $excludeList = shift;
-	my $repoURLs    = shift;
+    my $self        = shift;
+    my $repoName    = shift;
+    my $repoInfo    = shift;
+    my $excludeList = shift;
+    my $repoURLs    = shift;
 
-	my $repoSubdir = '';
-	if (length($repoInfo->{'repo-subdir'})) {
-		$repoSubdir = "/$repoInfo->{'repo-subdir'}";
-	}
-	my $baseURL = shift @$repoURLs;
-	if (slxsystem("zypper addrepo -n $baseURL$repoSubdir $repoName")) {
-		die _tr("unable to add repo '%s' (%s)\n", $repoName, $!);
-	}
+    my $repoSubdir = '';
+    if (length($repoInfo->{'repo-subdir'})) {
+        $repoSubdir = "/$repoInfo->{'repo-subdir'}";
+    }
+    my $baseURL = shift @$repoURLs;
+    if (slxsystem("zypper addrepo -n $baseURL$repoSubdir $repoName")) {
+        die _tr("unable to add repo '%s' (%s)\n", $repoName, $!);
+    }
 
-	return 1;
+    return 1;
 }
 
 sub installPackages
 {
-	my $self      = shift;
-	my $packages  = shift;
-	my $doRefresh = shift || 0;
+    my $self      = shift;
+    my $packages  = shift;
+    my $doRefresh = shift || 0;
 
-	$packages =~ tr{\n}{ };
+    $packages =~ tr{\n}{ };
 
-	if ($doRefresh && slxsystem("zypper --non-interactive refresh")) {
-		die _tr("unable to update repo info (%s)\n", $!);
-	}
-	if (slxsystem("zypper --non-interactive install $packages")) {
-		die _tr("unable to install selection (%s)\n", $!);
-	}
+    if ($doRefresh && slxsystem("zypper --non-interactive refresh")) {
+        die _tr("unable to update repo info (%s)\n", $!);
+    }
+    if (slxsystem("zypper --non-interactive install $packages")) {
+        die _tr("unable to install selection (%s)\n", $!);
+    }
 
-	return 1;
+    return 1;
 }
 
 sub removePackages
 {
-	my $self         = shift;
-	my $pkgSelection = shift;
+    my $self         = shift;
+    my $pkgSelection = shift;
 
-	if (slxsystem("zypper --non-interactive remove $pkgSelection")) {
-		die _tr("unable to remove selection (%s)\n", $!);
-	}
+    if (slxsystem("zypper --non-interactive remove $pkgSelection")) {
+        die _tr("unable to remove selection (%s)\n", $!);
+    }
 
-	return 1;
+    return 1;
 }
 
 sub updateBasicVendorOS
 {
-	my $self = shift;
+    my $self = shift;
 
-	if (slxsystem("zypper --non-interactive update")) {
-		if ($! == 2) {
-			# file not found => zypper isn't installed
-			die _tr("unable to update this vendor-os, as it seems to lack an installation of zypper!\n");
-		}
-		die _tr("unable to update this vendor-os (%s)\n", $!);
-	}
+    if (slxsystem("zypper --non-interactive update")) {
+        if ($! == 2) {
+            # file not found => zypper isn't installed
+            die _tr("unable to update this vendor-os, as it seems to lack an installation of zypper!\n");
+        }
+        die _tr("unable to update this vendor-os (%s)\n", $!);
+    }
 
-	return 1;
+    return 1;
 }
 
 1;

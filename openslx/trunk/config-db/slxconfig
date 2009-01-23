@@ -17,7 +17,7 @@ my $abstract = q[
 slxconfig
     This script can be used to display or change the OpenSLX configuration
     database. You can create systems that use a specific vendor-OS
-	and you can create clients for these systems, too.
+    and you can create clients for these systems, too.
 ];
 
 use Getopt::Long qw(:config pass_through);
@@ -44,28 +44,28 @@ use OpenSLX::Utils;
 my %option;
 
 GetOptions(
-	'help|?'    => \$option{helpReq},
-	'inherited' => \$option{inherited},
-	'man'       => \$option{manReq},
-	'verbose'   => \$option{verbose},
-	'version'   => \$option{versionReq},
+    'help|?'    => \$option{helpReq},
+    'inherited' => \$option{inherited},
+    'man'       => \$option{manReq},
+    'verbose'   => \$option{verbose},
+    'version'   => \$option{versionReq},
 ) or pod2usage(2);
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $option{helpReq};
 if ($option{manReq}) {
-	# avoid dubious problem with perldoc in combination with UTF-8 that
-	# leads to strange dashes and single-quotes being used
-	$ENV{LC_ALL} = 'POSIX';
-	pod2usage(-verbose => 2);
+    # avoid dubious problem with perldoc in combination with UTF-8 that
+    # leads to strange dashes and single-quotes being used
+    $ENV{LC_ALL} = 'POSIX';
+    pod2usage(-verbose => 2);
 }
 if ($option{versionReq}) {
-	system('slxversion');
-	exit 1;
+    system('slxversion');
+    exit 1;
 }
 
 # if the user requested to see inherited attributes, we activate verbose mode,
 # too, such that we actually show attributes
 if ($option{inherited}) {
-	$option{verbose} = 1;
+    $option{verbose} = 1;
 }
 
 openslxInit();
@@ -75,1309 +75,1309 @@ $openslxDB->connect();
 
 my $action = shift @ARGV || '';
 if ($action =~ m[^add-c]i) {
-	addClientToConfigDB(@ARGV);
+    addClientToConfigDB(@ARGV);
 }
 elsif ($action =~ m[^add-g]i) {
-	addGroupToConfigDB(@ARGV);
+    addGroupToConfigDB(@ARGV);
 }
 elsif ($action =~ m[^add-s]i) {
-	addSystemToConfigDB(@ARGV);
+    addSystemToConfigDB(@ARGV);
 }
 elsif ($action =~ m[^change-v]i) {
-	changeVendorOSInConfigDB(@ARGV);
+    changeVendorOSInConfigDB(@ARGV);
 }
 elsif ($action =~ m[^change-e]i) {
-	changeExportInConfigDB(@ARGV);
+    changeExportInConfigDB(@ARGV);
 }
 elsif ($action =~ m[^change-g]i) {
-	changeGroupInConfigDB(@ARGV);
+    changeGroupInConfigDB(@ARGV);
 }
 elsif ($action =~ m[^change-s]i) {
-	changeSystemInConfigDB(@ARGV);
+    changeSystemInConfigDB(@ARGV);
 }
 elsif ($action =~ m[^change-c]i) {
-	changeClientInConfigDB(@ARGV);
+    changeClientInConfigDB(@ARGV);
 }
 elsif ($action =~ m[^list-a]) {
-	print @ARGV 
-		? _tr("List of known attributes for scope '%s':\n", $ARGV[0])
-		: _tr("List of known attributes:\n");
-	listAttributes(@ARGV);
+    print @ARGV 
+        ? _tr("List of known attributes for scope '%s':\n", $ARGV[0])
+        : _tr("List of known attributes:\n");
+    listAttributes(@ARGV);
 }
 elsif ($action =~ m[^list-c]) {
-	print _tr("List of clients:\n");
-	listClients(@ARGV);
+    print _tr("List of clients:\n");
+    listClients(@ARGV);
 }
 elsif ($action =~ m[^list-e]) {
-	print _tr("List of exports:\n");
-	listExports(@ARGV);
+    print _tr("List of exports:\n");
+    listExports(@ARGV);
 }
 elsif ($action =~ m[^list-g]) {
-	print _tr("List of groups:\n");
-	listGroups(@ARGV);
+    print _tr("List of groups:\n");
+    listGroups(@ARGV);
 }
 elsif ($action =~ m[^list-s]) {
-	print _tr("List of systems:\n");
-	listSystems(@ARGV);
+    print _tr("List of systems:\n");
+    listSystems(@ARGV);
 }
 elsif ($action =~ m[^list-v]) {
-	print _tr("List of vendor-OSes:\n");
-	listVendorOSes(@ARGV);
+    print _tr("List of vendor-OSes:\n");
+    listVendorOSes(@ARGV);
 }
 elsif ($action =~ m[^search-c]) {
-	print _tr("Matching clients:\n");
-	searchClients(@ARGV);
+    print _tr("Matching clients:\n");
+    searchClients(@ARGV);
 }
 elsif ($action =~ m[^search-e]) {
-	print _tr("Matching exports:\n");
-	searchExports(@ARGV);
+    print _tr("Matching exports:\n");
+    searchExports(@ARGV);
 }
 elsif ($action =~ m[^search-g]) {
-	print _tr("Matching groups:\n");
-	searchGroups(@ARGV);
+    print _tr("Matching groups:\n");
+    searchGroups(@ARGV);
 }
 elsif ($action =~ m[^search-s]) {
-	print _tr("Matching systems:\n");
-	searchSystems(@ARGV);
+    print _tr("Matching systems:\n");
+    searchSystems(@ARGV);
 }
 elsif ($action =~ m[^search-v]) {
-	print _tr("Matching vendor-OSes:\n");
-	searchVendorOSes(@ARGV);
+    print _tr("Matching vendor-OSes:\n");
+    searchVendorOSes(@ARGV);
 }
 elsif ($action =~ m[^remove-c]i) {
-	removeClientFromConfigDB(@ARGV);
+    removeClientFromConfigDB(@ARGV);
 }
 elsif ($action =~ m[^remove-g]i) {
-	removeGroupFromConfigDB(@ARGV);
+    removeGroupFromConfigDB(@ARGV);
 }
 elsif ($action =~ m[^remove-s]i) {
-	removeSystemFromConfigDB(@ARGV);
+    removeSystemFromConfigDB(@ARGV);
 }
 else {
-	vlog(0, _tr(unshiftHereDoc(<<'	END-OF-HERE'), $0));
-		You need to specify exactly one of these actions:
-			add-client
-			add-group
-			add-system
-			change-client
-			change-export
-			change-group
-			change-system
-			change-vendor-os
-			list-attributes
-			list-client
-			list-export
-			list-group
-			list-system
-			list-vendor-os
-			remove-client
-			remove-group
-			remove-system
-			search-client
-			search-export
-			search-group
-			search-system
-			search-vendor-os
-		Try '%s --help' for more info.
-	END-OF-HERE
+    vlog(0, _tr(unshiftHereDoc(<<'    END-OF-HERE'), $0));
+        You need to specify exactly one of these actions:
+            add-client
+            add-group
+            add-system
+            change-client
+            change-export
+            change-group
+            change-system
+            change-vendor-os
+            list-attributes
+            list-client
+            list-export
+            list-group
+            list-system
+            list-vendor-os
+            remove-client
+            remove-group
+            remove-system
+            search-client
+            search-export
+            search-group
+            search-system
+            search-vendor-os
+        Try '%s --help' for more info.
+    END-OF-HERE
 }
 
 $openslxDB->disconnect();
 
 sub parseKeyValueArgs
 {
-	my $allowedKeys = shift;
-	my $table       = shift;
+    my $allowedKeys = shift;
+    my $table       = shift;
 
-	my %dataHash;
-	while (my $param = shift) {
-		if ($param !~ m[^\s*([\w\-:]+)\s*=(.*)$]) {
-			die _tr(
-				"value specification %s has unknown format, expected <key>=<value>\n",
-				$param
-			);
-		}
-		my $key   = lc($1);
-		my $value = $2;
-		if (!grep { $_ eq $key } @$allowedKeys) {
-			die _tr("unknown key '%s' specified for %s\n", $key, $table);
-		}
+    my %dataHash;
+    while (my $param = shift) {
+        if ($param !~ m[^\s*([\w\-:]+)\s*=(.*)$]) {
+            die _tr(
+                "value specification %s has unknown format, expected <key>=<value>\n",
+                $param
+            );
+        }
+        my $key   = lc($1);
+        my $value = $2;
+        if (!grep { $_ eq $key } @$allowedKeys) {
+            die _tr("unknown key '%s' specified for %s\n", $key, $table);
+        }
 
-		# replace escaped newlines and tab chars by the respective real thing
-		$value =~ s{\\n}{\n}gms;
-		$value =~ s{\\t}{\t}gms;
+        # replace escaped newlines and tab chars by the respective real thing
+        $value =~ s{\\n}{\n}gms;
+        $value =~ s{\\t}{\t}gms;
 
-		# accept '-' as placeholder for undefined
-		if ($value eq '-') {
-			$value = undef;
-		}
+        # accept '-' as placeholder for undefined
+        if ($value eq '-') {
+            $value = undef;
+        }
 
-		$dataHash{$key} = $value;
-	}
+        $dataHash{$key} = $value;
+    }
 
-	return \%dataHash;
+    return \%dataHash;
 }
 
 sub parseKeyValueArgsWithAttrs
 {
-	my $allowedKeys     = shift;
-	my $allowedAttrKeys = shift;
-	my $table           = shift;
+    my $allowedKeys     = shift;
+    my $allowedAttrKeys = shift;
+    my $table           = shift;
 
-	my (%dataHash, %attrHash);
-	while (my $param = shift) {
-		if ($param !~ m[^\s*([\w\-:]+)\s*=(.*)$]) {
-			die _tr(
-				"value specification %s has unknown format, expected <key>=<value>\n",
-				$param
-			);
-		}
-		my $key   = lc($1);
-		my $value = $2;
+    my (%dataHash, %attrHash);
+    while (my $param = shift) {
+        if ($param !~ m[^\s*([\w\-:]+)\s*=(.*)$]) {
+            die _tr(
+                "value specification %s has unknown format, expected <key>=<value>\n",
+                $param
+            );
+        }
+        my $key   = lc($1);
+        my $value = $2;
 
-		# replace escaped newlines and tab chars by the respective real thing
-		$value =~ s{\\n}{\n}gms;
-		$value =~ s{\\t}{\t}gms;
+        # replace escaped newlines and tab chars by the respective real thing
+        $value =~ s{\\n}{\n}gms;
+        $value =~ s{\\t}{\t}gms;
 
-		# accept '-' as placeholder for undefined
-		if ($value eq '-') {
-			$value = undef;
-		}
+        # accept '-' as placeholder for undefined
+        if ($value eq '-') {
+            $value = undef;
+        }
 
-		if (grep { $_ eq $key } @$allowedKeys) {
-			$dataHash{$key} = $value;
-		} elsif (grep { $_ eq $key } @$allowedAttrKeys) {
-			$attrHash{$key} = $value;
-		} else {
-			die _tr("unknown key '%s' specified for %s\n", $key, $table);
-		}
-	}
+        if (grep { $_ eq $key } @$allowedKeys) {
+            $dataHash{$key} = $value;
+        } elsif (grep { $_ eq $key } @$allowedAttrKeys) {
+            $attrHash{$key} = $value;
+        } else {
+            die _tr("unknown key '%s' specified for %s\n", $key, $table);
+        }
+    }
 
-	if (wantarray) {
-		return (\%dataHash, \%attrHash);
-	}
-	else {
-		if (%attrHash) {
-			$dataHash{attrs} = \%attrHash;
-		}
-		return \%dataHash;
-	}
+    if (wantarray) {
+        return (\%dataHash, \%attrHash);
+    }
+    else {
+        if (%attrHash) {
+            $dataHash{attrs} = \%attrHash;
+        }
+        return \%dataHash;
+    }
 }
 
 sub mergeNonExistingAttributes
 {
-	my $target = shift;
-	my $source = shift;
+    my $target = shift;
+    my $source = shift;
 
-	my $sourceAttrs = $source->{attrs} || {};
+    my $sourceAttrs = $source->{attrs} || {};
 
-	$target->{attrs} ||= {};
-	my $targetAttrs = $target->{attrs};
+    $target->{attrs} ||= {};
+    my $targetAttrs = $target->{attrs};
 
-	foreach my $key (keys %$sourceAttrs) {
-		next if exists $targetAttrs->{$key};
-		$targetAttrs->{$key} = $sourceAttrs->{$key};
-	}
+    foreach my $key (keys %$sourceAttrs) {
+        next if exists $targetAttrs->{$key};
+        $targetAttrs->{$key} = $sourceAttrs->{$key};
+    }
 
-	return 1;
+    return 1;
 }
 
 sub dumpElements
 {
-	my $objName = shift;
-	my $nameClause = shift || sub { "\t$_->{name}\n" };
+    my $objName = shift;
+    my $nameClause = shift || sub { "\t$_->{name}\n" };
 
-	if ($option{verbose}) {
-		my $ind = ' ' x 4;
-		foreach my $elem (@_) {
-			print "$objName '$elem->{name}':\n";
-			my $spcLen = max map { length($_) } keys %$elem;
-			print join(
-				'',
-				map {
-					my $elemVal = defined $elem->{$_} ? $elem->{$_} : '-';
-					if (ref($elemVal) eq 'HASH') {
-						my $spcLen 
-							= max(map { length($_) } keys %$elemVal) || 0;
-						my $spc = ' ' x $spcLen;
-						my $subLines = join(
-							"\n",
-							map {
-								my $spc = ' ' x $spcLen;
-								my $val 
-									= defined $elemVal->{$_}
-										? $elemVal->{$_} 
-										: '';
-								$val =~ s[\n][\n$ind$spc   ]g;
-								"$ind$_" . substr($spc, length($_)) . " = $val";
-							}
-							sort {
-								# drop [] construct (origin) from key for
-								# sorting purposes
-								(my $aa = $a) =~ s{^\s*\[.+\]\s*}{};
-								(my $bb = $b) =~ s{^\s*\[.+\]\s*}{};
-								return $aa cmp $bb;
-							} keys %$elemVal
-						);
-						$subLines ||= "$ind<none>";
-						"  $_:\n$subLines\n";
-					} elsif (ref($elemVal) eq 'ARRAY') {
-						my $subLines 
-							= join( "\n", map { "$ind$_"	} sort @$elemVal);
-						$subLines ||= "$ind<none>";
-						"  $_:\n$subLines\n";
-					} else {
-						my $spc = ' ' x $spcLen;
-						$elemVal =~ s[\n][\n$ind$spc   ]g;
-						"$ind$_" . substr($spc, length($_)) . " = $elemVal\n";
-					}
-				}
-				sort {
-					my $refCmp = ref($elem->{$a}) cmp ref($elem->{$b});
-					return $refCmp ? $refCmp : $a cmp $b;
-				} 
-				grep {
-					$_ ne 'name';
-				}
-				keys %$elem
-			);
-		}
-	}
-	else {
-		print join('', sort map { $nameClause->($_); } @_);
-	}
+    if ($option{verbose}) {
+        my $ind = ' ' x 4;
+        foreach my $elem (@_) {
+            print "$objName '$elem->{name}':\n";
+            my $spcLen = max map { length($_) } keys %$elem;
+            print join(
+                '',
+                map {
+                    my $elemVal = defined $elem->{$_} ? $elem->{$_} : '-';
+                    if (ref($elemVal) eq 'HASH') {
+                        my $spcLen 
+                            = max(map { length($_) } keys %$elemVal) || 0;
+                        my $spc = ' ' x $spcLen;
+                        my $subLines = join(
+                            "\n",
+                            map {
+                                my $spc = ' ' x $spcLen;
+                                my $val 
+                                    = defined $elemVal->{$_}
+                                        ? $elemVal->{$_} 
+                                        : '';
+                                $val =~ s[\n][\n$ind$spc   ]g;
+                                "$ind$_" . substr($spc, length($_)) . " = $val";
+                            }
+                            sort {
+                                # drop [] construct (origin) from key for
+                                # sorting purposes
+                                (my $aa = $a) =~ s{^\s*\[.+\]\s*}{};
+                                (my $bb = $b) =~ s{^\s*\[.+\]\s*}{};
+                                return $aa cmp $bb;
+                            } keys %$elemVal
+                        );
+                        $subLines ||= "$ind<none>";
+                        "  $_:\n$subLines\n";
+                    } elsif (ref($elemVal) eq 'ARRAY') {
+                        my $subLines 
+                            = join( "\n", map { "$ind$_"    } sort @$elemVal);
+                        $subLines ||= "$ind<none>";
+                        "  $_:\n$subLines\n";
+                    } else {
+                        my $spc = ' ' x $spcLen;
+                        $elemVal =~ s[\n][\n$ind$spc   ]g;
+                        "$ind$_" . substr($spc, length($_)) . " = $elemVal\n";
+                    }
+                }
+                sort {
+                    my $refCmp = ref($elem->{$a}) cmp ref($elem->{$b});
+                    return $refCmp ? $refCmp : $a cmp $b;
+                } 
+                grep {
+                    $_ ne 'name';
+                }
+                keys %$elem
+            );
+        }
+    }
+    else {
+        print join('', sort map { $nameClause->($_); } @_);
+    }
 
-	return 1;
+    return 1;
 }
 
 sub listAttributes
 {
-	my $scope = shift;
+    my $scope = shift;
 
-	my $attrInfo = OpenSLX::AttributeRoster->getAttrInfo( { scope => $scope } );
-	dumpElements(
-		'attribute', undef,
-		map {
-			my $attr = dclone($attrInfo->{$_});
-			$attr->{name} = $_;
-			delete $attr->{content_regex};	# no use for display purposes
-			$attr;
-		}
-		sort keys %$attrInfo
-	);
+    my $attrInfo = OpenSLX::AttributeRoster->getAttrInfo( { scope => $scope } );
+    dumpElements(
+        'attribute', undef,
+        map {
+            my $attr = dclone($attrInfo->{$_});
+            $attr->{name} = $_;
+            delete $attr->{content_regex};    # no use for display purposes
+            $attr;
+        }
+        sort keys %$attrInfo
+    );
 
-	return 1;
+    return 1;
 }
 
 sub listClients
 {
-	my $name = _cleanName(shift);
+    my $name = _cleanName(shift);
 
-	my %nameSpec;
+    my %nameSpec;
 
-	# set verbose mode if any params have been passed in:
-	if (defined $name) {
-		$option{verbose} = 1;
-		$nameSpec{name} = $name;
-	}
+    # set verbose mode if any params have been passed in:
+    if (defined $name) {
+        $option{verbose} = 1;
+        $nameSpec{name} = $name;
+    }
 
-	dumpElements(
-		'client', undef,
-		_expandClients(
-			sort { $a->{name} cmp $b->{name} } 
-			$openslxDB->fetchClientByFilter(\%nameSpec)
-		)
-	);
+    dumpElements(
+        'client', undef,
+        _expandClients(
+            sort { $a->{name} cmp $b->{name} } 
+            $openslxDB->fetchClientByFilter(\%nameSpec)
+        )
+    );
 
-	return 1;
+    return 1;
 }
 
 sub listGroups
 {
-	my $name = _cleanName(shift);
+    my $name = _cleanName(shift);
 
-	my %nameSpec;
+    my %nameSpec;
 
-	# set verbose mode if any params have been passed in:
-	if (defined $name) {
-		$option{verbose} = 1;
-		$nameSpec{name} = $name;
-	}
+    # set verbose mode if any params have been passed in:
+    if (defined $name) {
+        $option{verbose} = 1;
+        $nameSpec{name} = $name;
+    }
 
-	dumpElements(
-		'group', undef,
-		_expandGroups(
-			sort { $a->{name} cmp $b->{name} } 
-			$openslxDB->fetchGroupByFilter(\%nameSpec)
-		)
-	);
+    dumpElements(
+        'group', undef,
+        _expandGroups(
+            sort { $a->{name} cmp $b->{name} } 
+            $openslxDB->fetchGroupByFilter(\%nameSpec)
+        )
+    );
 
-	return 1;
+    return 1;
 }
 
 sub listExports
 {
-	my $name = _cleanName(shift);
+    my $name = _cleanName(shift);
 
-	my %nameSpec;
+    my %nameSpec;
 
-	# set verbose mode if any params have been passed in:
-	if (defined $name) {
-		$option{verbose} = 1;
-		$nameSpec{name} = $name;
-	}
+    # set verbose mode if any params have been passed in:
+    if (defined $name) {
+        $option{verbose} = 1;
+        $nameSpec{name} = $name;
+    }
 
-	dumpElements(
-		'export',
-		sub {
-			"\t$_->{name}"
-				. substr(' ' x 30, length($_->{name}))
-				. "($_->{type})\n";
-		},
-		map {
-			my $vendorOS =
-				$openslxDB->fetchVendorOSByID($_->{vendor_os_id}, 'name');
-			if (defined $vendorOS) {
-				$_->{vendor_os_id} .= " ($vendorOS->{name})";
-			}
-			$_;
-		}
-		sort { $a->{name} eq $b->{name} || $a->{type} cmp $b->{type} }
-		$openslxDB->fetchExportByFilter(\%nameSpec)
-	);
+    dumpElements(
+        'export',
+        sub {
+            "\t$_->{name}"
+                . substr(' ' x 30, length($_->{name}))
+                . "($_->{type})\n";
+        },
+        map {
+            my $vendorOS =
+                $openslxDB->fetchVendorOSByID($_->{vendor_os_id}, 'name');
+            if (defined $vendorOS) {
+                $_->{vendor_os_id} .= " ($vendorOS->{name})";
+            }
+            $_;
+        }
+        sort { $a->{name} eq $b->{name} || $a->{type} cmp $b->{type} }
+        $openslxDB->fetchExportByFilter(\%nameSpec)
+    );
 
-	return 1;
+    return 1;
 }
 
 sub listSystems
 {
-	my $name = _cleanName(shift);
+    my $name = _cleanName(shift);
 
-	my %nameSpec;
+    my %nameSpec;
 
-	# set verbose mode if any params have been passed in:
-	if (defined $name) {
-		$option{verbose} = 1;
-		$nameSpec{name} = $name;
-	}
+    # set verbose mode if any params have been passed in:
+    if (defined $name) {
+        $option{verbose} = 1;
+        $nameSpec{name} = $name;
+    }
 
-	dumpElements(
-		'system', undef,
-		_expandSystems(
-			sort { $a->{name} cmp $b->{name} }
-			$openslxDB->fetchSystemByFilter(\%nameSpec)
-		)
-	);
+    dumpElements(
+        'system', undef,
+        _expandSystems(
+            sort { $a->{name} cmp $b->{name} }
+            $openslxDB->fetchSystemByFilter(\%nameSpec)
+        )
+    );
 
-	return 1;
+    return 1;
 }
 
 sub listVendorOSes
 {
-	my $name = _cleanName(shift);
+    my $name = _cleanName(shift);
 
-	my %nameSpec;
+    my %nameSpec;
 
-	# set verbose mode if any params have been passed in:
-	if (defined $name) {
-		$option{verbose} = 1;
-		$nameSpec{name} = $name;
-	}
+    # set verbose mode if any params have been passed in:
+    if (defined $name) {
+        $option{verbose} = 1;
+        $nameSpec{name} = $name;
+    }
 
-	dumpElements('vendor-OS', undef,
-		map {
-			my @plugins = $openslxDB->fetchInstalledPlugins($_->{id});
-			$_->{plugins} 
-				= @plugins 
-					? join(',', sort map { $_->{plugin_name} } @plugins) 
-					: '<none>';
-			$_;
-		}
-		sort { $a->{name} cmp $b->{name} }
-		$openslxDB->fetchVendorOSByFilter(\%nameSpec));
+    dumpElements('vendor-OS', undef,
+        map {
+            my @plugins = $openslxDB->fetchInstalledPlugins($_->{id});
+            $_->{plugins} 
+                = @plugins 
+                    ? join(',', sort map { $_->{plugin_name} } @plugins) 
+                    : '<none>';
+            $_;
+        }
+        sort { $a->{name} cmp $b->{name} }
+        $openslxDB->fetchVendorOSByFilter(\%nameSpec));
 
-	return 1;
+    return 1;
 }
 
 sub searchClients
 {
-	my @clientKeys = $openslxDB->getColumnsOfTable('client');
-	my @clientAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
-	my ($clientData, $clientAttrs) = parseKeyValueArgsWithAttrs(
-		\@clientKeys, \@clientAttrKeys, 'client', @_
-	);
+    my @clientKeys = $openslxDB->getColumnsOfTable('client');
+    my @clientAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
+    my ($clientData, $clientAttrs) = parseKeyValueArgsWithAttrs(
+        \@clientKeys, \@clientAttrKeys, 'client', @_
+    );
 
-	# set verbose mode if any params have been passed in:
-	$option{verbose} = 1 if %$clientData;
+    # set verbose mode if any params have been passed in:
+    $option{verbose} = 1 if %$clientData;
 
-	dumpElements(
-		'client', undef,
-		_expandClients(
-			sort { $a->{name} cmp $b->{name} }
-			$openslxDB->fetchClientByFilter($clientData, undef, $clientAttrs)
-		)
-	);
+    dumpElements(
+        'client', undef,
+        _expandClients(
+            sort { $a->{name} cmp $b->{name} }
+            $openslxDB->fetchClientByFilter($clientData, undef, $clientAttrs)
+        )
+    );
 
-	return 1;
+    return 1;
 }
 
 sub searchGroups
 {
-	my @groupKeys = $openslxDB->getColumnsOfTable('groups');
-	my @groupAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
-	my ($groupData, $groupAttrs) = parseKeyValueArgsWithAttrs(
-		\@groupKeys, \@groupAttrKeys, 'group', @_
-	);
+    my @groupKeys = $openslxDB->getColumnsOfTable('groups');
+    my @groupAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
+    my ($groupData, $groupAttrs) = parseKeyValueArgsWithAttrs(
+        \@groupKeys, \@groupAttrKeys, 'group', @_
+    );
 
-	# set verbose mode if any params have been passed in:
-	$option{verbose} = 1 if %$groupData;
+    # set verbose mode if any params have been passed in:
+    $option{verbose} = 1 if %$groupData;
 
-	dumpElements(
-		'group', undef,
-		_expandGroups(
-			sort { $a->{name} cmp $b->{name} }
-			$openslxDB->fetchGroupByFilter($groupData, undef, $groupAttrs)
-		)
-	);
+    dumpElements(
+        'group', undef,
+        _expandGroups(
+            sort { $a->{name} cmp $b->{name} }
+            $openslxDB->fetchGroupByFilter($groupData, undef, $groupAttrs)
+        )
+    );
 
-	return 1;
+    return 1;
 }
 
 sub searchExports
 {
-	my @exportKeys = $openslxDB->getColumnsOfTable('export');
-	my $exportData = parseKeyValueArgs(\@exportKeys, 'export', @_);
+    my @exportKeys = $openslxDB->getColumnsOfTable('export');
+    my $exportData = parseKeyValueArgs(\@exportKeys, 'export', @_);
 
-	# set verbose mode if any params have been passed in:
-	$option{verbose} = 1 if %$exportData;
+    # set verbose mode if any params have been passed in:
+    $option{verbose} = 1 if %$exportData;
 
-	dumpElements(
-		'export',
-		sub {
-			"\t$_->{name}"
-				. substr(' ' x 30, length($_->{name}))
-				. "($_->{type})\n";
-		},
-		map {
-			my $vendorOS =
-				$openslxDB->fetchVendorOSByID($_->{vendor_os_id}, 'name');
-			if (defined $vendorOS) {
-				$_->{vendor_os_id} .= " ($vendorOS->{name})";
-			}
-			$_;
-		}
-		sort { $a->{name} eq $b->{name} || $a->{type} cmp $b->{type} }
-		$openslxDB->fetchExportByFilter($exportData)
-	);
+    dumpElements(
+        'export',
+        sub {
+            "\t$_->{name}"
+                . substr(' ' x 30, length($_->{name}))
+                . "($_->{type})\n";
+        },
+        map {
+            my $vendorOS =
+                $openslxDB->fetchVendorOSByID($_->{vendor_os_id}, 'name');
+            if (defined $vendorOS) {
+                $_->{vendor_os_id} .= " ($vendorOS->{name})";
+            }
+            $_;
+        }
+        sort { $a->{name} eq $b->{name} || $a->{type} cmp $b->{type} }
+        $openslxDB->fetchExportByFilter($exportData)
+    );
 
-	return 1;
+    return 1;
 }
 
 sub searchSystems
 {
-	my @systemKeys = $openslxDB->getColumnsOfTable('system');
-	my @systemAttrKeys = OpenSLX::AttributeRoster->getSystemAttrs();
-	my ($systemData, $systemAttrs) = parseKeyValueArgsWithAttrs(
-		\@systemKeys, \@systemAttrKeys, 'system', @_
-	);
+    my @systemKeys = $openslxDB->getColumnsOfTable('system');
+    my @systemAttrKeys = OpenSLX::AttributeRoster->getSystemAttrs();
+    my ($systemData, $systemAttrs) = parseKeyValueArgsWithAttrs(
+        \@systemKeys, \@systemAttrKeys, 'system', @_
+    );
 
-	# set verbose mode if any params have been passed in:
-	$option{verbose} = 1 if %$systemData;
+    # set verbose mode if any params have been passed in:
+    $option{verbose} = 1 if %$systemData;
 
-	dumpElements(
-		'system', undef,
-		_expandSystems(
-			sort { $a->{name} cmp $b->{name} }
-			$openslxDB->fetchSystemByFilter($systemData, undef, $systemAttrs)
-		)
-	);
+    dumpElements(
+        'system', undef,
+        _expandSystems(
+            sort { $a->{name} cmp $b->{name} }
+            $openslxDB->fetchSystemByFilter($systemData, undef, $systemAttrs)
+        )
+    );
 
-	return 1;
+    return 1;
 }
 
 sub searchVendorOSes
 {
-	my @vendorOSKeys = $openslxDB->getColumnsOfTable('vendor_os');
-	my $vendorOSData = parseKeyValueArgs(\@vendorOSKeys, 'vendor_os', @_);
+    my @vendorOSKeys = $openslxDB->getColumnsOfTable('vendor_os');
+    my $vendorOSData = parseKeyValueArgs(\@vendorOSKeys, 'vendor_os', @_);
 
-	# set verbose mode if any params have been passed in:
-	$option{verbose} = 1 if %$vendorOSData;
+    # set verbose mode if any params have been passed in:
+    $option{verbose} = 1 if %$vendorOSData;
 
-	dumpElements(
-		'vendor-OS', undef,
-		map {
-			my @plugins = $openslxDB->fetchInstalledPlugins($_->{id});
-			$_->{plugins} 
-				= @plugins 
-					? join(',', sort map { $_->{plugin_name} } @plugins) 
-					: '<none>';
-			$_;
-		}
-		sort { $a->{name} cmp $b->{name} }
-		$openslxDB->fetchVendorOSByFilter($vendorOSData)
-	);
+    dumpElements(
+        'vendor-OS', undef,
+        map {
+            my @plugins = $openslxDB->fetchInstalledPlugins($_->{id});
+            $_->{plugins} 
+                = @plugins 
+                    ? join(',', sort map { $_->{plugin_name} } @plugins) 
+                    : '<none>';
+            $_;
+        }
+        sort { $a->{name} cmp $b->{name} }
+        $openslxDB->fetchVendorOSByFilter($vendorOSData)
+    );
 
-	return 1;
+    return 1;
 }
 
 sub changeVendorOSInConfigDB
 {
-	my $vendorOSName = _cleanName(shift || '');
+    my $vendorOSName = _cleanName(shift || '');
 
-	if (!length($vendorOSName)) {
-		die _tr(
-			"you have to specify the name for the vendor-OS you'd like to change!\n"
-		);
-	}
+    if (!length($vendorOSName)) {
+        die _tr(
+            "you have to specify the name for the vendor-OS you'd like to change!\n"
+        );
+    }
 
-	my @keys = $openslxDB->getColumnsOfTable('vendor_os');
-	my $vendorOSData = parseKeyValueArgs(\@keys, 'vendor_os', @_);
+    my @keys = $openslxDB->getColumnsOfTable('vendor_os');
+    my $vendorOSData = parseKeyValueArgs(\@keys, 'vendor_os', @_);
 
-	my $vendorOS = $openslxDB->fetchVendorOSByFilter({'name' => $vendorOSName});
-	if (!defined $vendorOS) {
-		die _tr("the vendor-OS '%s' doesn't exists in the DB, giving up!\n",
-			$vendorOSName);
-	}
+    my $vendorOS = $openslxDB->fetchVendorOSByFilter({'name' => $vendorOSName});
+    if (!defined $vendorOS) {
+        die _tr("the vendor-OS '%s' doesn't exists in the DB, giving up!\n",
+            $vendorOSName);
+    }
 
-	$openslxDB->changeVendorOS($vendorOS->{id}, [$vendorOSData]);
-	vlog(
-		0, _tr("vendor-OS '%s' has been successfully changed\n", $vendorOSName)
-	);
+    $openslxDB->changeVendorOS($vendorOS->{id}, [$vendorOSData]);
+    vlog(
+        0, _tr("vendor-OS '%s' has been successfully changed\n", $vendorOSName)
+    );
 
-	listVendorOSes("id=$vendorOS->{id}") if $option{verbose};
+    listVendorOSes("id=$vendorOS->{id}") if $option{verbose};
 
-	return 1;
+    return 1;
 }
 
 sub changeExportInConfigDB
 {
-	my $exportName = _cleanName(shift || '');
+    my $exportName = _cleanName(shift || '');
 
-	if (!length($exportName)) {
-		die _tr(
-			"you have to specify the name for the export you'd like to change!\n"
-		);
-	}
+    if (!length($exportName)) {
+        die _tr(
+            "you have to specify the name for the export you'd like to change!\n"
+        );
+    }
 
-	my @exportKeys = $openslxDB->getColumnsOfTable('export');
-	my $exportData = parseKeyValueArgs(\@exportKeys, 'export', @_);
+    my @exportKeys = $openslxDB->getColumnsOfTable('export');
+    my $exportData = parseKeyValueArgs(\@exportKeys, 'export', @_);
 
-	my $export = $openslxDB->fetchExportByFilter({'name' => $exportName});
-	if (!defined $export) {
-		die _tr("the export '%s' doesn't exists in the DB, giving up!\n",
-			$exportName);
-	}
+    my $export = $openslxDB->fetchExportByFilter({'name' => $exportName});
+    if (!defined $export) {
+        die _tr("the export '%s' doesn't exists in the DB, giving up!\n",
+            $exportName);
+    }
 
-	$openslxDB->changeExport($export->{id}, [$exportData]);
-	vlog(0, _tr("export '%s' has been successfully changed\n", $exportName));
+    $openslxDB->changeExport($export->{id}, [$exportData]);
+    vlog(0, _tr("export '%s' has been successfully changed\n", $exportName));
 
-	listExports("id=$export->{id}") if $option{verbose};
+    listExports("id=$export->{id}") if $option{verbose};
 
-	return 1;
+    return 1;
 }
 
 sub addClientToConfigDB
 {
-	my $clientName = _cleanName(shift || '');
+    my $clientName = _cleanName(shift || '');
 
-	if (!length($clientName)) {
-		die _tr("you have to specify the name for the new client\n");
-	}
+    if (!length($clientName)) {
+        die _tr("you have to specify the name for the new client\n");
+    }
 
-	my @clientKeys = $openslxDB->getColumnsOfTable('client');
-	push @clientKeys, 'systems';
-	my @clientAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
-	my $clientData = parseKeyValueArgsWithAttrs(
-		\@clientKeys, \@clientAttrKeys, 'client', @_
-	);
-	$clientData->{name} = $clientName;
+    my @clientKeys = $openslxDB->getColumnsOfTable('client');
+    push @clientKeys, 'systems';
+    my @clientAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
+    my $clientData = parseKeyValueArgsWithAttrs(
+        \@clientKeys, \@clientAttrKeys, 'client', @_
+    );
+    $clientData->{name} = $clientName;
 
-	my @systemIDs;
-	if (exists $clientData->{systems}) {
-		@systemIDs = map {
-			my $system = $openslxDB->fetchSystemByFilter({'name' => $_});
-			if (!defined $system) {
-				die _tr("system '%s' doesn't exist!\n", $_);
-			}
-			$system->{id};
-			}
-			split '\s*,\s*', $clientData->{systems};
-		delete $clientData->{systems};
-	}
+    my @systemIDs;
+    if (exists $clientData->{systems}) {
+        @systemIDs = map {
+            my $system = $openslxDB->fetchSystemByFilter({'name' => $_});
+            if (!defined $system) {
+                die _tr("system '%s' doesn't exist!\n", $_);
+            }
+            $system->{id};
+            }
+            split '\s*,\s*', $clientData->{systems};
+        delete $clientData->{systems};
+    }
 
-	if (!$clientData->{mac}) {
-		die _tr("you have to specify the MAC for the new client\n");
-	}
-	if ($clientData->{mac} !~
-		m[^(?:[[:xdigit:]][[:xdigit:]]:){5}?[[:xdigit:]][[:xdigit:]]$])
-	{
-		die _tr(
-			"unknown MAC-format given, expected something like '01:02:03:04:05:06'!\n"
-		);
-	}
+    if (!$clientData->{mac}) {
+        die _tr("you have to specify the MAC for the new client\n");
+    }
+    if ($clientData->{mac} !~
+        m[^(?:[[:xdigit:]][[:xdigit:]]:){5}?[[:xdigit:]][[:xdigit:]]$])
+    {
+        die _tr(
+            "unknown MAC-format given, expected something like '01:02:03:04:05:06'!\n"
+        );
+    }
 
-	if ($openslxDB->fetchClientByFilter({'name' => $clientName})) {
-		die _tr("the client '%s' already exists in the DB, giving up!\n",
-			$clientName);
-	}
-	if ($openslxDB->fetchClientByFilter({'mac' => $clientData->{mac}})) {
-		die _tr(
-			"a client with the MAC '%s' already exists in the DB, giving up!\n",
-			$clientData->{mac}
-		);
-	}
-	my $clientID = $openslxDB->addClient([$clientData]);
-	vlog(
-		0,
-		_tr(
-			"client '%s' has been successfully added to DB (ID=%s)\n",
-			$clientName, $clientID
-		)
-	);
-	if (@systemIDs) {
-		$openslxDB->addSystemIDsToClient($clientID, \@systemIDs);
-	}
-	if ($option{verbose}) {
-		listClients("id=$clientID");
-	}
+    if ($openslxDB->fetchClientByFilter({'name' => $clientName})) {
+        die _tr("the client '%s' already exists in the DB, giving up!\n",
+            $clientName);
+    }
+    if ($openslxDB->fetchClientByFilter({'mac' => $clientData->{mac}})) {
+        die _tr(
+            "a client with the MAC '%s' already exists in the DB, giving up!\n",
+            $clientData->{mac}
+        );
+    }
+    my $clientID = $openslxDB->addClient([$clientData]);
+    vlog(
+        0,
+        _tr(
+            "client '%s' has been successfully added to DB (ID=%s)\n",
+            $clientName, $clientID
+        )
+    );
+    if (@systemIDs) {
+        $openslxDB->addSystemIDsToClient($clientID, \@systemIDs);
+    }
+    if ($option{verbose}) {
+        listClients("id=$clientID");
+    }
 
-	return 1;
+    return 1;
 }
 
 sub addGroupToConfigDB
 {
-	my $groupName = _cleanName(shift || '');
-	if (!length($groupName)) {
-		die _tr("you have to specify the name for the new group\n");
-	}
+    my $groupName = _cleanName(shift || '');
+    if (!length($groupName)) {
+        die _tr("you have to specify the name for the new group\n");
+    }
 
-	my @groupKeys = $openslxDB->getColumnsOfTable('groups');
-	push @groupKeys, 'systems', 'clients';
-	my @groupAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
-	my $groupData = parseKeyValueArgsWithAttrs(
-		\@groupKeys, \@groupAttrKeys, 'group', @_
-	);
-	$groupData->{name} = $groupName;
+    my @groupKeys = $openslxDB->getColumnsOfTable('groups');
+    push @groupKeys, 'systems', 'clients';
+    my @groupAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
+    my $groupData = parseKeyValueArgsWithAttrs(
+        \@groupKeys, \@groupAttrKeys, 'group', @_
+    );
+    $groupData->{name} = $groupName;
 
-	my @systemIDs;
-	if (exists $groupData->{systems}) {
-		@systemIDs = map {
-			my $system = $openslxDB->fetchSystemByFilter({'name' => $_});
-			if (!defined $system) {
-				die _tr("system '%s' doesn't exist!\n", $_);
-			}
-			$system->{id};
-			}
-			split '\s*,\s*', $groupData->{systems};
-		delete $groupData->{systems};
-	}
-	my @clientIDs;
-	if (exists $groupData->{clients}) {
-		@clientIDs = map {
-			my $client = $openslxDB->fetchClientByFilter({'name' => $_});
-			if (!defined $client) {
-				die _tr("client '%s' doesn't exist in DB, giving up!\n", $_);
-			}
-			$client->{id};
-			}
-			split '\s*,\s*', $groupData->{clients};
-		delete $groupData->{clients};
-	}
+    my @systemIDs;
+    if (exists $groupData->{systems}) {
+        @systemIDs = map {
+            my $system = $openslxDB->fetchSystemByFilter({'name' => $_});
+            if (!defined $system) {
+                die _tr("system '%s' doesn't exist!\n", $_);
+            }
+            $system->{id};
+            }
+            split '\s*,\s*', $groupData->{systems};
+        delete $groupData->{systems};
+    }
+    my @clientIDs;
+    if (exists $groupData->{clients}) {
+        @clientIDs = map {
+            my $client = $openslxDB->fetchClientByFilter({'name' => $_});
+            if (!defined $client) {
+                die _tr("client '%s' doesn't exist in DB, giving up!\n", $_);
+            }
+            $client->{id};
+            }
+            split '\s*,\s*', $groupData->{clients};
+        delete $groupData->{clients};
+    }
 
-	if (!defined $groupData->{priority} || !length($groupData->{priority})) {
-		$groupData->{priority} = 50;
-		vlog(0, _tr("priority of new group has been set to default (50)."));
-	}
+    if (!defined $groupData->{priority} || !length($groupData->{priority})) {
+        $groupData->{priority} = 50;
+        vlog(0, _tr("priority of new group has been set to default (50)."));
+    }
 
-	if ($openslxDB->fetchGroupByFilter({'name' => $groupName})) {
-		die _tr("the group '%s' already exists in the DB, giving up!\n",
-			$groupName);
-	}
-	my $groupID = $openslxDB->addGroup([$groupData]);
-	vlog(
-		0,
-		_tr(
-			"group '%s' has been successfully added to DB (ID=%s)\n",
-			$groupName, $groupID
-		)
-	);
-	if (@systemIDs) {
-		$openslxDB->addSystemIDsToGroup($groupID, \@systemIDs);
-	}
-	if (@clientIDs) {
-		$openslxDB->addClientIDsToGroup($groupID, \@clientIDs);
-	}
-	listGroups("id=$groupID") if $option{verbose};
+    if ($openslxDB->fetchGroupByFilter({'name' => $groupName})) {
+        die _tr("the group '%s' already exists in the DB, giving up!\n",
+            $groupName);
+    }
+    my $groupID = $openslxDB->addGroup([$groupData]);
+    vlog(
+        0,
+        _tr(
+            "group '%s' has been successfully added to DB (ID=%s)\n",
+            $groupName, $groupID
+        )
+    );
+    if (@systemIDs) {
+        $openslxDB->addSystemIDsToGroup($groupID, \@systemIDs);
+    }
+    if (@clientIDs) {
+        $openslxDB->addClientIDsToGroup($groupID, \@clientIDs);
+    }
+    listGroups("id=$groupID") if $option{verbose};
 
-	return 1;
+    return 1;
 }
 
 sub addSystemToConfigDB
 {
-	my $systemName = _cleanName(shift || '');
+    my $systemName = _cleanName(shift || '');
 
-	if (!length($systemName)) {
-		die _tr("you have to specify the name of the new system!\n");
-	}
+    if (!length($systemName)) {
+        die _tr("you have to specify the name of the new system!\n");
+    }
 
-	my @systemKeys = $openslxDB->getColumnsOfTable('system');
-	push @systemKeys, 'clients', 'export';
-	my @systemAttrKeys = OpenSLX::AttributeRoster->getSystemAttrs();
-	my $systemData = parseKeyValueArgsWithAttrs(
-		\@systemKeys, \@systemAttrKeys, 'system', @_
-	);
-	$systemData->{name} = $systemName;
-	$systemData->{attrs} ||= {};
+    my @systemKeys = $openslxDB->getColumnsOfTable('system');
+    push @systemKeys, 'clients', 'export';
+    my @systemAttrKeys = OpenSLX::AttributeRoster->getSystemAttrs();
+    my $systemData = parseKeyValueArgsWithAttrs(
+        \@systemKeys, \@systemAttrKeys, 'system', @_
+    );
+    $systemData->{name} = $systemName;
+    $systemData->{attrs} ||= {};
 
-	my $exportName = $systemData->{export} || '';
-	delete $systemData->{export};
-	if (!length($exportName)) {
-		$exportName = $systemName;
+    my $exportName = $systemData->{export} || '';
+    delete $systemData->{export};
+    if (!length($exportName)) {
+        $exportName = $systemName;
 
-		# try falling back to given system name
-	}
-	my $export = $openslxDB->fetchExportByFilter({'name' => $exportName});
-	if (!defined $export) {
-		die _tr("export '%s' could not be found in DB, giving up!\n",
-			$exportName);
-	}
-	$systemData->{export_id} = $export->{id};
+        # try falling back to given system name
+    }
+    my $export = $openslxDB->fetchExportByFilter({'name' => $exportName});
+    if (!defined $export) {
+        die _tr("export '%s' could not be found in DB, giving up!\n",
+            $exportName);
+    }
+    $systemData->{export_id} = $export->{id};
 
-	my @clientIDs;
-	if (exists $systemData->{clients}) {
-		@clientIDs = map {
-			my $client = $openslxDB->fetchClientByFilter({'name' => $_});
-			if (!defined $client) {
-				die _tr("client '%s' doesn't exist in DB, giving up!\n", $_);
-			}
-			$client->{id};
-			}
-			split '\s*,\s*', $systemData->{clients};
-		delete $systemData->{clients};
-	}
-	else {
-		# no clients given, so we add this system to the default client,
-		# which will make this system bootable by *all* clients (unless
-		# they are configured otherwise).
-		my $defaultClient =
-			$openslxDB->fetchClientByFilter({'name' => '<<<default>>>'});
-		push @clientIDs, $defaultClient->{id};
-	}
+    my @clientIDs;
+    if (exists $systemData->{clients}) {
+        @clientIDs = map {
+            my $client = $openslxDB->fetchClientByFilter({'name' => $_});
+            if (!defined $client) {
+                die _tr("client '%s' doesn't exist in DB, giving up!\n", $_);
+            }
+            $client->{id};
+            }
+            split '\s*,\s*', $systemData->{clients};
+        delete $systemData->{clients};
+    }
+    else {
+        # no clients given, so we add this system to the default client,
+        # which will make this system bootable by *all* clients (unless
+        # they are configured otherwise).
+        my $defaultClient =
+            $openslxDB->fetchClientByFilter({'name' => '<<<default>>>'});
+        push @clientIDs, $defaultClient->{id};
+    }
 
-	if ($openslxDB->fetchSystemByFilter({'name' => $systemName})) {
-		die _tr("the system '%s' already exists in the DB, giving up!\n",
-			$systemName);
-	}
+    if ($openslxDB->fetchSystemByFilter({'name' => $systemName})) {
+        die _tr("the system '%s' already exists in the DB, giving up!\n",
+            $systemName);
+    }
 
-	# activate kdm and X if system is based on kde:
-	if ($systemName =~ m[\bkde\b]) {
-		$systemData->{attrs}->{start_xdmcp} = 'kdm'
-			unless exists $systemData->{attrs}->{start_xdmcp};
-		$systemData->{attrs}->{start_x} = 'yes'
-			unless exists $systemData->{attrs}->{start_x};
-	}
-	# activate gdm and X if system is based on GNOME:
-	if ($systemName =~ m[\bgnome\b]) {
-		$systemData->{attrs}->{start_xdmcp} = 'gdm'
-			unless exists $systemData->{attrs}->{start_xdmcp};
-		$systemData->{attrs}->{start_x} = 'yes'
-			unless exists $systemData->{attrs}->{start_x};
-	}
+    # activate kdm and X if system is based on kde:
+    if ($systemName =~ m[\bkde\b]) {
+        $systemData->{attrs}->{start_xdmcp} = 'kdm'
+            unless exists $systemData->{attrs}->{start_xdmcp};
+        $systemData->{attrs}->{start_x} = 'yes'
+            unless exists $systemData->{attrs}->{start_x};
+    }
+    # activate gdm and X if system is based on GNOME:
+    if ($systemName =~ m[\bgnome\b]) {
+        $systemData->{attrs}->{start_xdmcp} = 'gdm'
+            unless exists $systemData->{attrs}->{start_xdmcp};
+        $systemData->{attrs}->{start_x} = 'yes'
+            unless exists $systemData->{attrs}->{start_x};
+    }
 
-	my $systemConfigPath =
-		"$openslxConfig{'private-path'}/config/$systemName/default";
-	if (!-e $systemConfigPath) {
-		# create the default (empty) config folders for this system:
-		createConfigFolderForSystem($systemName);
-	}
+    my $systemConfigPath =
+        "$openslxConfig{'private-path'}/config/$systemName/default";
+    if (!-e $systemConfigPath) {
+        # create the default (empty) config folders for this system:
+        createConfigFolderForSystem($systemName);
+    }
 
-	my $systemID = $openslxDB->addSystem([$systemData]);
-	vlog(
-		0,
-		_tr(
-			"system '%s' has been successfully added to DB (ID=%s)\n",
-			$systemName, $systemID
-		)
-	);
-	if (@clientIDs) {
-		$openslxDB->addClientIDsToSystem($systemID, \@clientIDs);
-	}
-	listSystems("id=$systemID") if $option{verbose};
+    my $systemID = $openslxDB->addSystem([$systemData]);
+    vlog(
+        0,
+        _tr(
+            "system '%s' has been successfully added to DB (ID=%s)\n",
+            $systemName, $systemID
+        )
+    );
+    if (@clientIDs) {
+        $openslxDB->addClientIDsToSystem($systemID, \@clientIDs);
+    }
+    listSystems("id=$systemID") if $option{verbose};
 
-	return 1;
+    return 1;
 }
 
 sub changeClientInConfigDB
 {
-	my $clientName = _cleanName(shift || '');
+    my $clientName = _cleanName(shift || '');
 
-	if (!length($clientName)) {
-		die _tr(
-			"you have to specify the name of the client you'd like to change!\n"
-		);
-	}
+    if (!length($clientName)) {
+        die _tr(
+            "you have to specify the name of the client you'd like to change!\n"
+        );
+    }
 
-	my @clientKeys = $openslxDB->getColumnsOfTable('client');
-	push @clientKeys, 'systems', 'add-systems', 'remove-systems';
-	my @clientAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
-	my $clientData = parseKeyValueArgsWithAttrs(
-		\@clientKeys, \@clientAttrKeys, 'client', @_
-	);
+    my @clientKeys = $openslxDB->getColumnsOfTable('client');
+    push @clientKeys, 'systems', 'add-systems', 'remove-systems';
+    my @clientAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
+    my $clientData = parseKeyValueArgsWithAttrs(
+        \@clientKeys, \@clientAttrKeys, 'client', @_
+    );
 
-	my $client = $openslxDB->fetchClientByFilter({'name' => $clientName});
-	if (!defined $client) {
-		die _tr("the client '%s' doesn't exists in the DB, giving up!\n",
-			$clientName);
-	}
+    my $client = $openslxDB->fetchClientByFilter({'name' => $clientName});
+    if (!defined $client) {
+        die _tr("the client '%s' doesn't exists in the DB, giving up!\n",
+            $clientName);
+    }
 
-	mergeNonExistingAttributes($clientData, $client);
+    mergeNonExistingAttributes($clientData, $client);
 
-	my @systemIDs;
-	if (exists $clientData->{systems}) {
-		@systemIDs = map {
-			my $system = $openslxDB->fetchSystemByFilter({'name' => $_});
-			if (!defined $system) {
-				die _tr("system '%s' doesn't exist!\n", $_);
-			}
-			$system->{id};
-		}
-		split ",", $clientData->{systems};
-		delete $clientData->{systems};
-	}
-	if (exists $clientData->{'add-systems'}) {
-		@systemIDs = $openslxDB->fetchSystemIDsOfClient($client->{id});
-		push @systemIDs, map {
-			my $system = $openslxDB->fetchSystemByFilter({'name' => $_});
-			if (!defined $system) {
-				die _tr("system '%s' doesn't exist!\n", $_);
-			}
-			$system->{id};
-		}
-		split ",", $clientData->{'add-systems'};
-		delete $clientData->{'add-systems'};
-	}
-	if (exists $clientData->{'remove-systems'}) {
-		@systemIDs = $openslxDB->fetchSystemIDsOfClient($client->{id});
-		foreach my $sysName (split ",", $clientData->{'remove-systems'}) {
-			my $system = $openslxDB->fetchSystemByFilter({'name' => $sysName});
-			if (!defined $system) {
-				die _tr("system '%s' doesn't exist!\n", $sysName);
-			}
-			@systemIDs = grep { $_ != $system->{id} } @systemIDs;
-		}
-		delete $clientData->{'remove-systems'};
-	}
+    my @systemIDs;
+    if (exists $clientData->{systems}) {
+        @systemIDs = map {
+            my $system = $openslxDB->fetchSystemByFilter({'name' => $_});
+            if (!defined $system) {
+                die _tr("system '%s' doesn't exist!\n", $_);
+            }
+            $system->{id};
+        }
+        split ",", $clientData->{systems};
+        delete $clientData->{systems};
+    }
+    if (exists $clientData->{'add-systems'}) {
+        @systemIDs = $openslxDB->fetchSystemIDsOfClient($client->{id});
+        push @systemIDs, map {
+            my $system = $openslxDB->fetchSystemByFilter({'name' => $_});
+            if (!defined $system) {
+                die _tr("system '%s' doesn't exist!\n", $_);
+            }
+            $system->{id};
+        }
+        split ",", $clientData->{'add-systems'};
+        delete $clientData->{'add-systems'};
+    }
+    if (exists $clientData->{'remove-systems'}) {
+        @systemIDs = $openslxDB->fetchSystemIDsOfClient($client->{id});
+        foreach my $sysName (split ",", $clientData->{'remove-systems'}) {
+            my $system = $openslxDB->fetchSystemByFilter({'name' => $sysName});
+            if (!defined $system) {
+                die _tr("system '%s' doesn't exist!\n", $sysName);
+            }
+            @systemIDs = grep { $_ != $system->{id} } @systemIDs;
+        }
+        delete $clientData->{'remove-systems'};
+    }
 
-	if ($clientData->{name} && $client->{name} eq '<<<default>>>') {
-		die _tr(
-			"you can't rename the default client - no changes were made!\n");
-	}
+    if ($clientData->{name} && $client->{name} eq '<<<default>>>') {
+        die _tr(
+            "you can't rename the default client - no changes were made!\n");
+    }
 
-	if (   $clientData->{mac}
-		&& $clientData->{mac} !~
-		m[^(?:[[:xdigit:]][[:xdigit:]]:){5}?[[:xdigit:]][[:xdigit:]]$])
-	{
-		die _tr(
-			"unknown MAC-format given, expected something like '01:02:03:04:05:06'!\n"
-		);
-	}
+    if (   $clientData->{mac}
+        && $clientData->{mac} !~
+        m[^(?:[[:xdigit:]][[:xdigit:]]:){5}?[[:xdigit:]][[:xdigit:]]$])
+    {
+        die _tr(
+            "unknown MAC-format given, expected something like '01:02:03:04:05:06'!\n"
+        );
+    }
 
-	$openslxDB->changeClient($client->{id}, [$clientData]);
-	vlog(0, _tr("client '%s' has been successfully changed\n", $clientName));
-	if (@systemIDs) {
-		$openslxDB->setSystemIDsOfClient($client->{id}, \@systemIDs);
-	}
-	listClients("id=$client->{id}") if $option{verbose};
+    $openslxDB->changeClient($client->{id}, [$clientData]);
+    vlog(0, _tr("client '%s' has been successfully changed\n", $clientName));
+    if (@systemIDs) {
+        $openslxDB->setSystemIDsOfClient($client->{id}, \@systemIDs);
+    }
+    listClients("id=$client->{id}") if $option{verbose};
 
-	return 1;
+    return 1;
 }
 
 sub changeGroupInConfigDB
 {
-	my $groupName = _cleanName(shift || '');
+    my $groupName = _cleanName(shift || '');
 
-	if (!length($groupName)) {
-		die _tr(
-			"you have to specify the name of the group you'd like to change!\n"
-		);
-	}
+    if (!length($groupName)) {
+        die _tr(
+            "you have to specify the name of the group you'd like to change!\n"
+        );
+    }
 
-	my @groupKeys = $openslxDB->getColumnsOfTable('group');
-	push @groupKeys, qw(
-		systems add-systems remove-systems clients add-clients remove-clients
-	);
-	my @groupAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
-	my $groupData = parseKeyValueArgsWithAttrs(
-		\@groupKeys, \@groupAttrKeys, 'group', @_
-	);
+    my @groupKeys = $openslxDB->getColumnsOfTable('group');
+    push @groupKeys, qw(
+        systems add-systems remove-systems clients add-clients remove-clients
+    );
+    my @groupAttrKeys = OpenSLX::AttributeRoster->getClientAttrs();
+    my $groupData = parseKeyValueArgsWithAttrs(
+        \@groupKeys, \@groupAttrKeys, 'group', @_
+    );
 
-	my $group = $openslxDB->fetchGroupByFilter({'name' => $groupName});
-	if (!defined $group) {
-		die _tr("the group '%s' doesn't exists in the DB, giving up!\n",
-			$groupName);
-	}
+    my $group = $openslxDB->fetchGroupByFilter({'name' => $groupName});
+    if (!defined $group) {
+        die _tr("the group '%s' doesn't exists in the DB, giving up!\n",
+            $groupName);
+    }
 
-	mergeNonExistingAttributes($groupData, $group);
+    mergeNonExistingAttributes($groupData, $group);
 
-	my (@systemIDs, @clientIDs);
-	if (exists $groupData->{systems}) {
-		@systemIDs = map {
-			my $system = $openslxDB->fetchSystemByFilter({'name' => $_});
-			if (!defined $system) {
-				die _tr("system '%s' doesn't exist!\n", $_);
-			}
-			$system->{id};
-		}
-		split ",", $groupData->{systems};
-		delete $groupData->{systems};
-	}
-	if (exists $groupData->{'add-systems'}) {
-		@systemIDs = $openslxDB->fetchSystemIDsOfGroup($group->{id});
-		push @systemIDs, map {
-			my $system = $openslxDB->fetchSystemByFilter({'name' => $_});
-			if (!defined $system) {
-				die _tr("system '%s' doesn't exist!\n", $_);
-			}
-			$system->{id};
-		}
-		split ",", $groupData->{'add-systems'};
-		delete $groupData->{'add-systems'};
-	}
-	if (exists $groupData->{'remove-systems'}) {
-		@systemIDs = $openslxDB->fetchSystemIDsOfGroup($group->{id});
-		foreach my $sysName (split ',', $groupData->{'remove-systems'}) {
-			my $system = $openslxDB->fetchSystemByFilter({'name' => $sysName});
-			if (!defined $system) {
-				die _tr("system '%s' doesn't exist!\n", $sysName);
-			}
-			@systemIDs = grep { $_ != $system->{id} } @systemIDs;
-		}
-		delete $groupData->{'remove-systems'};
-	}
-	if (exists $groupData->{clients}) {
-		@clientIDs = map {
-			my $client = $openslxDB->fetchClientByFilter({'name' => $_});
-			if (!defined $client) {
-				die _tr("client '%s' doesn't exist in DB, giving up!\n", $_);
-			}
-			$client->{id};
-		}
-		split ",", $groupData->{clients};
-		delete $groupData->{clients};
-	}
-	if (exists $groupData->{'add-clients'}) {
-		@clientIDs = $openslxDB->fetchClientIDsOfGroup($group->{id});
-		push @clientIDs, map {
-			my $client = $openslxDB->fetchClientByFilter({'name' => $_});
-			if (!defined $client) {
-				die _tr("client '%s' doesn't exist!\n", $_);
-			}
-			$client->{id};
-		}
-		split ",", $groupData->{'add-clients'};
-		delete $groupData->{'add-clients'};
-	}
-	if (exists $groupData->{'remove-clients'}) {
-		@clientIDs = $openslxDB->fetchClientIDsOfGroup($group->{id});
-		foreach my $clientName (split ",", $groupData->{'remove-clients'}) {
-			my $client =
-				$openslxDB->fetchClientByFilter({'name' => $clientName});
-			if (!defined $client) {
-				die _tr("client '%s' doesn't exist!\n", $clientName);
-			}
-			@clientIDs = grep { $_ != $client->{id} } @clientIDs;
-		}
-		delete $groupData->{'remove-clients'};
-	}
+    my (@systemIDs, @clientIDs);
+    if (exists $groupData->{systems}) {
+        @systemIDs = map {
+            my $system = $openslxDB->fetchSystemByFilter({'name' => $_});
+            if (!defined $system) {
+                die _tr("system '%s' doesn't exist!\n", $_);
+            }
+            $system->{id};
+        }
+        split ",", $groupData->{systems};
+        delete $groupData->{systems};
+    }
+    if (exists $groupData->{'add-systems'}) {
+        @systemIDs = $openslxDB->fetchSystemIDsOfGroup($group->{id});
+        push @systemIDs, map {
+            my $system = $openslxDB->fetchSystemByFilter({'name' => $_});
+            if (!defined $system) {
+                die _tr("system '%s' doesn't exist!\n", $_);
+            }
+            $system->{id};
+        }
+        split ",", $groupData->{'add-systems'};
+        delete $groupData->{'add-systems'};
+    }
+    if (exists $groupData->{'remove-systems'}) {
+        @systemIDs = $openslxDB->fetchSystemIDsOfGroup($group->{id});
+        foreach my $sysName (split ',', $groupData->{'remove-systems'}) {
+            my $system = $openslxDB->fetchSystemByFilter({'name' => $sysName});
+            if (!defined $system) {
+                die _tr("system '%s' doesn't exist!\n", $sysName);
+            }
+            @systemIDs = grep { $_ != $system->{id} } @systemIDs;
+        }
+        delete $groupData->{'remove-systems'};
+    }
+    if (exists $groupData->{clients}) {
+        @clientIDs = map {
+            my $client = $openslxDB->fetchClientByFilter({'name' => $_});
+            if (!defined $client) {
+                die _tr("client '%s' doesn't exist in DB, giving up!\n", $_);
+            }
+            $client->{id};
+        }
+        split ",", $groupData->{clients};
+        delete $groupData->{clients};
+    }
+    if (exists $groupData->{'add-clients'}) {
+        @clientIDs = $openslxDB->fetchClientIDsOfGroup($group->{id});
+        push @clientIDs, map {
+            my $client = $openslxDB->fetchClientByFilter({'name' => $_});
+            if (!defined $client) {
+                die _tr("client '%s' doesn't exist!\n", $_);
+            }
+            $client->{id};
+        }
+        split ",", $groupData->{'add-clients'};
+        delete $groupData->{'add-clients'};
+    }
+    if (exists $groupData->{'remove-clients'}) {
+        @clientIDs = $openslxDB->fetchClientIDsOfGroup($group->{id});
+        foreach my $clientName (split ",", $groupData->{'remove-clients'}) {
+            my $client =
+                $openslxDB->fetchClientByFilter({'name' => $clientName});
+            if (!defined $client) {
+                die _tr("client '%s' doesn't exist!\n", $clientName);
+            }
+            @clientIDs = grep { $_ != $client->{id} } @clientIDs;
+        }
+        delete $groupData->{'remove-clients'};
+    }
 
-	if (defined $groupData->{priority} && $groupData->{priority} !~ m{^\d+$}) {
-		die _tr("unknown priority-format given, expected an integer!\n");
-	}
+    if (defined $groupData->{priority} && $groupData->{priority} !~ m{^\d+$}) {
+        die _tr("unknown priority-format given, expected an integer!\n");
+    }
 
-	$openslxDB->changeGroup($group->{id}, [$groupData]);
-	vlog(0, _tr("group '%s' has been successfully changed\n", $groupName));
-	if (@systemIDs) {
-		$openslxDB->setSystemIDsOfGroup($group->{id}, \@systemIDs);
-	}
-	if (@clientIDs) {
-		$openslxDB->setClientIDsOfGroup($group->{id}, \@clientIDs);
-	}
-	listGroups("id=$group->{id}") if $option{verbose};
+    $openslxDB->changeGroup($group->{id}, [$groupData]);
+    vlog(0, _tr("group '%s' has been successfully changed\n", $groupName));
+    if (@systemIDs) {
+        $openslxDB->setSystemIDsOfGroup($group->{id}, \@systemIDs);
+    }
+    if (@clientIDs) {
+        $openslxDB->setClientIDsOfGroup($group->{id}, \@clientIDs);
+    }
+    listGroups("id=$group->{id}") if $option{verbose};
 
-	return 1;
+    return 1;
 }
 
 sub changeSystemInConfigDB
 {
-	my $systemName = _cleanName(shift || '');
+    my $systemName = _cleanName(shift || '');
 
-	if (!length($systemName)) {
-		die _tr(
-			"you have to specify the name of the system you'd like to change!\n"
-		);
-	}
+    if (!length($systemName)) {
+        die _tr(
+            "you have to specify the name of the system you'd like to change!\n"
+        );
+    }
 
-	my @systemKeys = $openslxDB->getColumnsOfTable('system');
-	push @systemKeys, 'clients', 'add-clients', 'remove-clients';
-	my @systemAttrKeys = OpenSLX::AttributeRoster->getSystemAttrs();
-	my $systemData = parseKeyValueArgsWithAttrs(
-		\@systemKeys, \@systemAttrKeys, 'system', @_
-	);
+    my @systemKeys = $openslxDB->getColumnsOfTable('system');
+    push @systemKeys, 'clients', 'add-clients', 'remove-clients';
+    my @systemAttrKeys = OpenSLX::AttributeRoster->getSystemAttrs();
+    my $systemData = parseKeyValueArgsWithAttrs(
+        \@systemKeys, \@systemAttrKeys, 'system', @_
+    );
 
-	my $system = $openslxDB->fetchSystemByFilter({'name' => $systemName});
-	if (!defined $system) {
-		die _tr("the system '%s' doesn't exists in the DB, giving up!\n",
-			$systemName);
-	}
+    my $system = $openslxDB->fetchSystemByFilter({'name' => $systemName});
+    if (!defined $system) {
+        die _tr("the system '%s' doesn't exists in the DB, giving up!\n",
+            $systemName);
+    }
 
-	mergeNonExistingAttributes($systemData, $system);
+    mergeNonExistingAttributes($systemData, $system);
 
-	my @clientIDs;
-	if (exists $systemData->{clients}) {
-		@clientIDs = map {
-			my $client = $openslxDB->fetchClientByFilter({'name' => $_});
-			if (!defined $client) {
-				die _tr("client '%s' doesn't exist in DB, giving up!\n", $_);
-			}
-			$client->{id};
-		}
-		split ",", $systemData->{clients};
-		delete $systemData->{clients};
-	}
-	if (exists $systemData->{'add-clients'}) {
-		@clientIDs = $openslxDB->fetchClientIDsOfSystem($system->{id});
-		push @clientIDs, map {
-			my $client = $openslxDB->fetchClientByFilter({'name' => $_});
-			if (!defined $client) {
-				die _tr("client '%s' doesn't exist!\n", $_);
-			}
-			$client->{id};
-		}
-		split ",", $systemData->{'add-clients'};
-		delete $systemData->{'add-clients'};
-	}
-	if (exists $systemData->{'remove-clients'}) {
-		@clientIDs = $openslxDB->fetchClientIDsOfSystem($system->{id});
-		foreach my $clientName (split ",", $systemData->{'remove-clients'}) {
-			my $client =
-				$openslxDB->fetchClientByFilter({'name' => $clientName});
-			if (!defined $client) {
-				die _tr("client '%s' doesn't exist!\n", $clientName);
-			}
-			@clientIDs = grep { $_ != $client->{id} } @clientIDs;
-		}
-		delete $systemData->{'remove-clients'};
-	}
-	if ($systemData->{name} && $system->{name} eq '<<<default>>>') {
-		die _tr(
-			"you can't rename the default system - no changes were made!\n");
-	}
+    my @clientIDs;
+    if (exists $systemData->{clients}) {
+        @clientIDs = map {
+            my $client = $openslxDB->fetchClientByFilter({'name' => $_});
+            if (!defined $client) {
+                die _tr("client '%s' doesn't exist in DB, giving up!\n", $_);
+            }
+            $client->{id};
+        }
+        split ",", $systemData->{clients};
+        delete $systemData->{clients};
+    }
+    if (exists $systemData->{'add-clients'}) {
+        @clientIDs = $openslxDB->fetchClientIDsOfSystem($system->{id});
+        push @clientIDs, map {
+            my $client = $openslxDB->fetchClientByFilter({'name' => $_});
+            if (!defined $client) {
+                die _tr("client '%s' doesn't exist!\n", $_);
+            }
+            $client->{id};
+        }
+        split ",", $systemData->{'add-clients'};
+        delete $systemData->{'add-clients'};
+    }
+    if (exists $systemData->{'remove-clients'}) {
+        @clientIDs = $openslxDB->fetchClientIDsOfSystem($system->{id});
+        foreach my $clientName (split ",", $systemData->{'remove-clients'}) {
+            my $client =
+                $openslxDB->fetchClientByFilter({'name' => $clientName});
+            if (!defined $client) {
+                die _tr("client '%s' doesn't exist!\n", $clientName);
+            }
+            @clientIDs = grep { $_ != $client->{id} } @clientIDs;
+        }
+        delete $systemData->{'remove-clients'};
+    }
+    if ($systemData->{name} && $system->{name} eq '<<<default>>>') {
+        die _tr(
+            "you can't rename the default system - no changes were made!\n");
+    }
 
-	$openslxDB->changeSystem($system->{id}, $systemData);
-	vlog(0, _tr("system '%s' has been successfully changed\n", $systemName));
-	if (@clientIDs) {
-		$openslxDB->setClientIDsOfSystem($system->{id}, \@clientIDs);
-	}
-	listSystems("id=$system->{id}")if $option{verbose};
+    $openslxDB->changeSystem($system->{id}, $systemData);
+    vlog(0, _tr("system '%s' has been successfully changed\n", $systemName));
+    if (@clientIDs) {
+        $openslxDB->setClientIDsOfSystem($system->{id}, \@clientIDs);
+    }
+    listSystems("id=$system->{id}")if $option{verbose};
 
-	return 1;
+    return 1;
 }
 
 sub removeClientFromConfigDB
 {
-	my $clientName = _cleanName(shift || '');
+    my $clientName = _cleanName(shift || '');
 
-	if (!length($clientName)) {
-		die _tr(
-			"you have to specify the name of the client you'd like to remove!\n"
-		);
-	}
+    if (!length($clientName)) {
+        die _tr(
+            "you have to specify the name of the client you'd like to remove!\n"
+        );
+    }
 
-	my $clientData = parseKeyValueArgs(['name'], 'client', @_);
+    my $clientData = parseKeyValueArgs(['name'], 'client', @_);
 
-	my $client = $openslxDB->fetchClientByFilter({'name' => $clientName});
-	if (!defined $client) {
-		die _tr("the client '%s' doesn't exists in the DB, giving up!\n",
-			$clientName);
-	}
-	if ($client->{name} eq '<<<default>>>') {
-		die _tr("you can't remove the default client!\n");
-	}
-	$openslxDB->removeClient($client->{id});
-	vlog(0,
-		_tr("client '%s' has been successfully removed from DB\n", $clientName)
-	);
+    my $client = $openslxDB->fetchClientByFilter({'name' => $clientName});
+    if (!defined $client) {
+        die _tr("the client '%s' doesn't exists in the DB, giving up!\n",
+            $clientName);
+    }
+    if ($client->{name} eq '<<<default>>>') {
+        die _tr("you can't remove the default client!\n");
+    }
+    $openslxDB->removeClient($client->{id});
+    vlog(0,
+        _tr("client '%s' has been successfully removed from DB\n", $clientName)
+    );
 
-	return 1;
+    return 1;
 }
 
 sub removeGroupFromConfigDB
 {
-	my $groupName = _cleanName(shift || '');
+    my $groupName = _cleanName(shift || '');
 
-	if (!length($groupName)) {
-		die _tr(
-			"you have to specify the name of the group you'd like to remove!\n"
-		);
-	}
+    if (!length($groupName)) {
+        die _tr(
+            "you have to specify the name of the group you'd like to remove!\n"
+        );
+    }
 
-	my $groupData = parseKeyValueArgs(['name'], 'group', @_);
+    my $groupData = parseKeyValueArgs(['name'], 'group', @_);
 
-	my $group = $openslxDB->fetchGroupByFilter({'name' => $groupName});
-	if (!defined $group) {
-		die _tr("the group '%s' doesn't exists in the DB, giving up!\n",
-			$groupName);
-	}
-	$openslxDB->removeGroup($group->{id});
-	vlog(0,
-		_tr("group '%s' has been successfully removed from DB\n", $groupName)
-	);
+    my $group = $openslxDB->fetchGroupByFilter({'name' => $groupName});
+    if (!defined $group) {
+        die _tr("the group '%s' doesn't exists in the DB, giving up!\n",
+            $groupName);
+    }
+    $openslxDB->removeGroup($group->{id});
+    vlog(0,
+        _tr("group '%s' has been successfully removed from DB\n", $groupName)
+    );
 
-	return 1;
+    return 1;
 }
 
 sub removeSystemFromConfigDB
 {
-	my $systemName = _cleanName(shift || '');
+    my $systemName = _cleanName(shift || '');
 
-	if (!length($systemName)) {
-		die _tr(
-			"you have to specify the name of the system you'd like to remove!\n"
-		);
-	}
+    if (!length($systemName)) {
+        die _tr(
+            "you have to specify the name of the system you'd like to remove!\n"
+        );
+    }
 
-	my $systemData = parseKeyValueArgs(['name'], 'system', @_);
+    my $systemData = parseKeyValueArgs(['name'], 'system', @_);
 
-	my $system = $openslxDB->fetchSystemByFilter({'name' => $systemName});
-	if (!defined $system) {
-		die _tr("the system '%s' doesn't exists in the DB, giving up!\n",
-			$systemName);
-	}
-	if ($system->{name} eq '<<<default>>>') {
-		die _tr("you can't remove the default system!\n");
-	}
-	$openslxDB->removeSystem($system->{id});
-	vlog(0,
-		_tr("system '%s' has been successfully removed from DB\n", $systemName)
-	);
+    my $system = $openslxDB->fetchSystemByFilter({'name' => $systemName});
+    if (!defined $system) {
+        die _tr("the system '%s' doesn't exists in the DB, giving up!\n",
+            $systemName);
+    }
+    if ($system->{name} eq '<<<default>>>') {
+        die _tr("you can't remove the default system!\n");
+    }
+    $openslxDB->removeSystem($system->{id});
+    vlog(0,
+        _tr("system '%s' has been successfully removed from DB\n", $systemName)
+    );
 
-	return 1;
+    return 1;
 }
 
 sub _expandClients
-{	# expands info for given clients
-	return
-		map {
-			my @sysIDs = $openslxDB->fetchSystemIDsOfClient($_->{id});
-			$_->{systems} 
-				=	join "\n", 
-					map { $_->{name} }
-					sort { $a->{name} cmp $b->{name} }
-					$openslxDB->fetchSystemByID(\@sysIDs, 'name');
-			if ($option{inherited}) {
-				my $mergedClient = dclone($_);
-				my $originInfo = {};
-				$openslxDB->mergeDefaultAndGroupAttributesIntoClient(
-					$mergedClient, $originInfo
-				);
-				my $mergedAttrs = $mergedClient->{attrs} || {};
-				$_->{attrs} = {};
-				foreach my $attr (keys %$mergedAttrs) {
-					my $origin = $originInfo->{$attr};
-					my $enhancedName = $origin ? "[$origin] $attr" : $attr;
-					$_->{attrs}->{$enhancedName} = $mergedAttrs->{$attr};
-				}
-			}
-			# rename attrs to ATTRIBUTES for display
-			$_->{ATTRIBUTES} = $_->{attrs};
-			delete $_->{attrs};
-			$_;
-		}
-		@_;
+{   # expands info for given clients
+    return
+        map {
+            my @sysIDs = $openslxDB->fetchSystemIDsOfClient($_->{id});
+            $_->{systems} 
+                =    join "\n", 
+                    map { $_->{name} }
+                    sort { $a->{name} cmp $b->{name} }
+                    $openslxDB->fetchSystemByID(\@sysIDs, 'name');
+            if ($option{inherited}) {
+                my $mergedClient = dclone($_);
+                my $originInfo = {};
+                $openslxDB->mergeDefaultAndGroupAttributesIntoClient(
+                    $mergedClient, $originInfo
+                );
+                my $mergedAttrs = $mergedClient->{attrs} || {};
+                $_->{attrs} = {};
+                foreach my $attr (keys %$mergedAttrs) {
+                    my $origin = $originInfo->{$attr};
+                    my $enhancedName = $origin ? "[$origin] $attr" : $attr;
+                    $_->{attrs}->{$enhancedName} = $mergedAttrs->{$attr};
+                }
+            }
+            # rename attrs to ATTRIBUTES for display
+            $_->{ATTRIBUTES} = $_->{attrs};
+            delete $_->{attrs};
+            $_;
+        }
+        @_;
 }
 
 sub _expandGroups
-{	# expands info for given groups
-	return
-		map {
-			my @systemIDs = $openslxDB->fetchSystemIDsOfGroup($_->{id});
-			$_->{systems} 
-				=	join "\n", map { $_->{name} }
-					sort { $a->{name} cmp $b->{name} }
-					$openslxDB->fetchSystemByID(\@systemIDs, 'name');
-			my @clientIDs = $openslxDB->fetchClientIDsOfGroup($_->{id});
-			$_->{clients} 
-				=	join "\n", map { $_->{name} }
-					sort { $a->{name} cmp $b->{name} }
-					$openslxDB->fetchClientByID(\@clientIDs, 'name');
-			# rename attrs to ATTRIBUTES for display
-			$_->{ATTRIBUTES} = $_->{attrs};
-			delete $_->{attrs};
-			$_;
-		}
-		@_;
+{   # expands info for given groups
+    return
+        map {
+            my @systemIDs = $openslxDB->fetchSystemIDsOfGroup($_->{id});
+            $_->{systems} 
+                =    join "\n", map { $_->{name} }
+                    sort { $a->{name} cmp $b->{name} }
+                    $openslxDB->fetchSystemByID(\@systemIDs, 'name');
+            my @clientIDs = $openslxDB->fetchClientIDsOfGroup($_->{id});
+            $_->{clients} 
+                =    join "\n", map { $_->{name} }
+                    sort { $a->{name} cmp $b->{name} }
+                    $openslxDB->fetchClientByID(\@clientIDs, 'name');
+            # rename attrs to ATTRIBUTES for display
+            $_->{ATTRIBUTES} = $_->{attrs};
+            delete $_->{attrs};
+            $_;
+        }
+        @_;
 }
 
 sub _expandSystems
-{	# expands info for given systems
-	return
-		map {
-			my @clientIDs = $openslxDB->fetchClientIDsOfSystem($_->{id});
-			$_->{clients} 
-				=	join "\n", 
-					map { $_->{name} }
-					sort { $a->{name} cmp $b->{name} }
-					$openslxDB->fetchClientByID(\@clientIDs, 'name');
-			my @activePlugins;
-			my $export = $openslxDB->fetchExportByID($_->{export_id});
-			if (defined $export) {
-				$_->{export_id}
-					= "$export->{id} ($export->{name})";
-	
-				# fetch detailed info about active plugins
-				my @installedPlugins = $openslxDB->fetchInstalledPlugins(
-					$export->{vendor_os_id}
-				);
-				my $mergedSystem = dclone($_);
-				my $originInfo = {};
-				$openslxDB->mergeDefaultAttributesIntoSystem(
-					$mergedSystem, \@installedPlugins, $originInfo
-				);
-				my $mergedAttrs = $mergedSystem->{attrs} || {};
-				foreach my $plugin (@installedPlugins) {
-					next if !$mergedAttrs->{"$plugin->{plugin_name}::active"};
-					push @activePlugins, $plugin;
-				}
-				if ($option{inherited}) {
-					$_->{attrs} = {};
-					foreach my $attr (keys %$mergedAttrs) {
-						my $origin = $originInfo->{$attr};
-						my $enhancedName = $origin ? "[$origin] $attr" : $attr;
-						$_->{attrs}->{$enhancedName} = $mergedAttrs->{$attr};
-					}
-				}
-			}
-			$_->{PLUGINS} = [ sort map { $_->{plugin_name} } @activePlugins ];
-			# rename attrs to ATTRIBUTES for display
-			$_->{ATTRIBUTES} = $_->{attrs};
-			delete $_->{attrs};
-			$_;
-		}
-		@_;
+{   # expands info for given systems
+    return
+        map {
+            my @clientIDs = $openslxDB->fetchClientIDsOfSystem($_->{id});
+            $_->{clients} 
+                =    join "\n", 
+                    map { $_->{name} }
+                    sort { $a->{name} cmp $b->{name} }
+                    $openslxDB->fetchClientByID(\@clientIDs, 'name');
+            my @activePlugins;
+            my $export = $openslxDB->fetchExportByID($_->{export_id});
+            if (defined $export) {
+                $_->{export_id}
+                    = "$export->{id} ($export->{name})";
+    
+                # fetch detailed info about active plugins
+                my @installedPlugins = $openslxDB->fetchInstalledPlugins(
+                    $export->{vendor_os_id}
+                );
+                my $mergedSystem = dclone($_);
+                my $originInfo = {};
+                $openslxDB->mergeDefaultAttributesIntoSystem(
+                    $mergedSystem, \@installedPlugins, $originInfo
+                );
+                my $mergedAttrs = $mergedSystem->{attrs} || {};
+                foreach my $plugin (@installedPlugins) {
+                    next if !$mergedAttrs->{"$plugin->{plugin_name}::active"};
+                    push @activePlugins, $plugin;
+                }
+                if ($option{inherited}) {
+                    $_->{attrs} = {};
+                    foreach my $attr (keys %$mergedAttrs) {
+                        my $origin = $originInfo->{$attr};
+                        my $enhancedName = $origin ? "[$origin] $attr" : $attr;
+                        $_->{attrs}->{$enhancedName} = $mergedAttrs->{$attr};
+                    }
+                }
+            }
+            $_->{PLUGINS} = [ sort map { $_->{plugin_name} } @activePlugins ];
+            # rename attrs to ATTRIBUTES for display
+            $_->{ATTRIBUTES} = $_->{attrs};
+            delete $_->{attrs};
+            $_;
+        }
+        @_;
 }
 
 sub _cleanName
-{	# removes 'name=""' constructs from the name, as it is rather tempting
-	# for the user to type that ... (and we'd like to play along with DWIM)
-	my $name = shift;
+{   # removes 'name=""' constructs from the name, as it is rather tempting
+    # for the user to type that ... (and we'd like to play along with DWIM)
+    my $name = shift;
 
-	return unless defined $name;
+    return unless defined $name;
 
-	if ($name =~ m[^name=(.+)$]) {
-		return $1;
-	}
+    if ($name =~ m[^name=(.+)$]) {
+        return $1;
+    }
 
-	return $name;
+    return $name;
 }
 
 =head1 NAME

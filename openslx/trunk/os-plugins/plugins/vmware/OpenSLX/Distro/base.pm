@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # base.pm
-#	- provides empty base of the OpenSLX OSPlugin Distro API for the vmware
+#    - provides empty base of the OpenSLX OSPlugin Distro API for the vmware
 #     plugin.
 # -----------------------------------------------------------------------------
 package OpenSLX::Distro::base;
@@ -17,7 +17,7 @@ package OpenSLX::Distro::base;
 use strict;
 use warnings;
 
-our $VERSION = 1.01;		# API-version . implementation-version
+our $VERSION = 1.01;        # API-version . implementation-version
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
@@ -27,15 +27,15 @@ use OpenSLX::Utils;
 ################################################################################
 sub new
 {
-	confess "Creating OpenSLX::OSPlugin::Distro::Base-objects directly makes no sense!";
+    confess "Creating OpenSLX::OSPlugin::Distro::Base-objects directly makes no sense!";
 }
 
 sub initialize
 {
-	my $self = shift;
-	my $engine = shift;
-	
-	return 1;
+    my $self = shift;
+    my $engine = shift;
+    
+    return 1;
 }
 
 

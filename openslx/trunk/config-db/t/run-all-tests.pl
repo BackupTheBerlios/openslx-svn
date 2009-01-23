@@ -28,8 +28,8 @@ $Test::Harness::Verbose = 1 if $openslxConfig{'verbose-level'};
 # remove the test-db if it already exists 
 my $metaDB = OpenSLX::MetaDB::SQLite->new();
 if ($metaDB->databaseExists()) {
-	print "removing leftovers of slx-test-db\n";
-	$metaDB->dropDatabase();
+    print "removing leftovers of slx-test-db\n";
+    $metaDB->dropDatabase();
 }
 runtests(glob("*.t"));
 

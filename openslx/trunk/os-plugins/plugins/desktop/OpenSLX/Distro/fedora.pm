@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # Fedora.pm
-#	- provides Fedora-specific overrides of the OpenSLX OSSetup API.
+#    - provides Fedora-specific overrides of the OpenSLX OSSetup API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::Fedora;
 
@@ -25,24 +25,24 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {};
+    return bless $self, $class;
 }
 
 sub initialize
 {
-	my $self = shift;
-	my $engine = shift;
+    my $self = shift;
+    my $engine = shift;
 
-	$self->SUPER::initialize($engine);
-	$self->{'packager-type'}       = 'rpm';
-	$self->{'meta-packager-type'}  = $ENV{SLX_META_PACKAGER} || 'yum';
-	$self->{'stage1c-faked-files'} = [
-		'/etc/fstab',
-		'/etc/mtab',
-	];
-	return;
+    $self->SUPER::initialize($engine);
+    $self->{'packager-type'}       = 'rpm';
+    $self->{'meta-packager-type'}  = $ENV{SLX_META_PACKAGER} || 'yum';
+    $self->{'stage1c-faked-files'} = [
+        '/etc/fstab',
+        '/etc/mtab',
+    ];
+    return;
 }
 
 1;

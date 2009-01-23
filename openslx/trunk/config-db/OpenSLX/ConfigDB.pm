@@ -111,13 +111,13 @@ Returns an object representing a database handle to the config database.
 
 sub new
 {
-	my $class = shift;
+    my $class = shift;
 
-	my $self = {
-		'db-schema' => OpenSLX::DBSchema->new,
-	};
+    my $self = {
+        'db-schema' => OpenSLX::DBSchema->new,
+    };
 
-	return bless $self, $class;
+    return bless $self, $class;
 }
 
 =item C<connect()>
@@ -145,49 +145,49 @@ The precise name of the database that should be connected (defaults to 'openslx'
 
 =cut
 
-sub connect		## no critic (ProhibitBuiltinHomonyms)
+sub connect        ## no critic (ProhibitBuiltinHomonyms)
 {
-	my $self     = shift;
-	my $dbParams = shift;
-	# hash-ref with any additional info that might be required by
-	# specific metadb-module (not used yet)
+    my $self     = shift;
+    my $dbParams = shift;
+    # hash-ref with any additional info that might be required by
+    # specific metadb-module (not used yet)
 
-	my $dbType = $openslxConfig{'db-type'};
-		# name of underlying database module...
+    my $dbType = $openslxConfig{'db-type'};
+        # name of underlying database module...
 
-	my $dbModuleName = "OpenSLX/MetaDB/$dbType.pm";
-	my $dbModule = "OpenSLX::MetaDB::$dbType";
-	unless (eval { require $dbModuleName } ) {
-		if ($! == 2) {
-			die _tr(
-				"Unable to load DB-module <%s>\nthat database type is not supported (yet?)\n",
-				$dbModuleName
-			);
-		} else {
-			die _tr("Unable to load DB-module <%s> (%s)\n", $dbModuleName, $@);
-		}
-	}
-	my $metaDB = $dbModule->new();
-	if (!$metaDB->connect($dbParams)) {
-		warn _tr("Unable to connect to DB-module <%s>\n%s", $dbModuleName, $@);
-		warn _tr("These DB-modules seem to work ok:");
-		foreach my $dbMod ('mysql', 'SQLite') {
-			my $fullDbModName = "DBD/$dbMod.pm";
-			if (eval { require $fullDbModName }) {
-				vlog(0, "\t$dbMod\n");
-			}
-		}
-		die _tr(
-			'Please use slxsettings if you want to switch to another db-type.'
-		);
-	}
+    my $dbModuleName = "OpenSLX/MetaDB/$dbType.pm";
+    my $dbModule = "OpenSLX::MetaDB::$dbType";
+    unless (eval { require $dbModuleName } ) {
+        if ($! == 2) {
+            die _tr(
+                "Unable to load DB-module <%s>\nthat database type is not supported (yet?)\n",
+                $dbModuleName
+            );
+        } else {
+            die _tr("Unable to load DB-module <%s> (%s)\n", $dbModuleName, $@);
+        }
+    }
+    my $metaDB = $dbModule->new();
+    if (!$metaDB->connect($dbParams)) {
+        warn _tr("Unable to connect to DB-module <%s>\n%s", $dbModuleName, $@);
+        warn _tr("These DB-modules seem to work ok:");
+        foreach my $dbMod ('mysql', 'SQLite') {
+            my $fullDbModName = "DBD/$dbMod.pm";
+            if (eval { require $fullDbModName }) {
+                vlog(0, "\t$dbMod\n");
+            }
+        }
+        die _tr(
+            'Please use slxsettings if you want to switch to another db-type.'
+        );
+    }
 
-	$self->{'db-type'} = $dbType;
-	$self->{'meta-db'} = $metaDB;
+    $self->{'db-type'} = $dbType;
+    $self->{'meta-db'} = $metaDB;
 
-	$self->{'db-schema'}->checkAndUpgradeDBSchemaIfNecessary($self);
+    $self->{'db-schema'}->checkAndUpgradeDBSchemaIfNecessary($self);
 
-	return 1;
+    return 1;
 }
 
 =item C<disconnect()>
@@ -198,11 +198,11 @@ Tears down the connection to the database and cleans up.
 
 sub disconnect
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{'meta-db'}->disconnect();
+    $self->{'meta-db'}->disconnect();
 
-	return 1;
+    return 1;
 }
 
 =item C<startTransaction()>
@@ -214,11 +214,11 @@ changes apply as a whole or not at all.
 
 sub startTransaction
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{'meta-db'}->startTransaction();
+    $self->{'meta-db'}->startTransaction();
 
-	return 1;
+    return 1;
 }
 
 =item C<commitTransaction()>
@@ -230,11 +230,11 @@ will be applied to the database.
 
 sub commitTransaction
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{'meta-db'}->commitTransaction();
+    $self->{'meta-db'}->commitTransaction();
 
-	return 1;
+    return 1;
 }
 
 =item C<rollbackTransaction()>
@@ -246,11 +246,11 @@ will be undone.
 
 sub rollbackTransaction
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{'meta-db'}->rollbackTransaction();
+    $self->{'meta-db'}->rollbackTransaction();
 
-	return 1;
+    return 1;
 }
 
 =back
@@ -281,10 +281,10 @@ An array of column names.
 
 sub getColumnsOfTable
 {
-	my $self      = shift;
-	my $tableName = shift;
+    my $self      = shift;
+    my $tableName = shift;
 
-	return $self->{'db-schema'}->getColumnsOfTable($tableName);
+    return $self->{'db-schema'}->getColumnsOfTable($tableName);
 }
 
 =item C<fetchVendorOSByFilter([%$filter], [$resultCols])>
@@ -313,14 +313,14 @@ An array of hash-refs containing the resulting data rows.
 
 sub fetchVendorOSByFilter
 {
-	my $self       = shift;
-	my $filter     = shift;
-	my $resultCols = shift;
+    my $self       = shift;
+    my $filter     = shift;
+    my $resultCols = shift;
 
-	my @vendorOS 
-		= $self->{'meta-db'}->fetchVendorOSByFilter($filter, $resultCols);
+    my @vendorOS 
+        = $self->{'meta-db'}->fetchVendorOSByFilter($filter, $resultCols);
 
-	return wantarray() ? @vendorOS : shift @vendorOS;
+    return wantarray() ? @vendorOS : shift @vendorOS;
 }
 
 =item C<fetchVendorOSByID(@$ids, [$resultCols])>
@@ -347,13 +347,13 @@ An array of hash-refs containing the resulting data rows.
 
 sub fetchVendorOSByID
 {
-	my $self       = shift;
-	my $ids        = _aref(shift);
-	my $resultCols = shift;
+    my $self       = shift;
+    my $ids        = _aref(shift);
+    my $resultCols = shift;
 
-	my @vendorOS = $self->{'meta-db'}->fetchVendorOSByID($ids, $resultCols);
+    my @vendorOS = $self->{'meta-db'}->fetchVendorOSByID($ids, $resultCols);
 
-	return wantarray() ? @vendorOS : shift @vendorOS;
+    return wantarray() ? @vendorOS : shift @vendorOS;
 }
 
 =item C<fetchInstalledPlugins($vendorOSID)>
@@ -381,11 +381,11 @@ An array with the plugin names.
 
 sub fetchInstalledPlugins
 {
-	my $self       = shift;
-	my $vendorOSID = shift;
-	my $pluginName = shift;
+    my $self       = shift;
+    my $vendorOSID = shift;
+    my $pluginName = shift;
 
-	$self->{'meta-db'}->fetchInstalledPlugins($vendorOSID, $pluginName);
+    $self->{'meta-db'}->fetchInstalledPlugins($vendorOSID, $pluginName);
 }
 
 =item C<fetchExportByFilter([%$filter], [$resultCols])>
@@ -414,13 +414,13 @@ An array of hash-refs containing the resulting data rows.
 
 sub fetchExportByFilter
 {
-	my $self       = shift;
-	my $filter     = shift;
-	my $resultCols = shift;
+    my $self       = shift;
+    my $filter     = shift;
+    my $resultCols = shift;
 
-	my @exports = $self->{'meta-db'}->fetchExportByFilter($filter, $resultCols);
+    my @exports = $self->{'meta-db'}->fetchExportByFilter($filter, $resultCols);
 
-	return wantarray() ? @exports : shift @exports;
+    return wantarray() ? @exports : shift @exports;
 }
 
 =item C<fetchExportByID(@$ids, [$resultCols])>
@@ -447,13 +447,13 @@ An array of hash-refs containing the resulting data rows.
 
 sub fetchExportByID
 {
-	my $self       = shift;
-	my $ids        = _aref(shift);
-	my $resultCols = shift;
+    my $self       = shift;
+    my $ids        = _aref(shift);
+    my $resultCols = shift;
 
-	my @exports = $self->{'meta-db'}->fetchExportByID($ids, $resultCols);
+    my @exports = $self->{'meta-db'}->fetchExportByID($ids, $resultCols);
 
-	return wantarray() ? @exports : shift @exports;
+    return wantarray() ? @exports : shift @exports;
 }
 
 =item C<fetchExportIDsOfVendorOS($id)>
@@ -476,10 +476,10 @@ An array of system-IDs.
 
 sub fetchExportIDsOfVendorOS
 {
-	my $self       = shift;
-	my $vendorOSID = shift;
+    my $self       = shift;
+    my $vendorOSID = shift;
 
-	return $self->{'meta-db'}->fetchExportIDsOfVendorOS($vendorOSID);
+    return $self->{'meta-db'}->fetchExportIDsOfVendorOS($vendorOSID);
 }
 
 =item C<fetchGlobalInfo($id)>
@@ -502,10 +502,10 @@ The value of the requested global info.
 
 sub fetchGlobalInfo
 {
-	my $self = shift;
-	my $id   = shift;
+    my $self = shift;
+    my $id   = shift;
 
-	return $self->{'meta-db'}->fetchGlobalInfo($id);
+    return $self->{'meta-db'}->fetchGlobalInfo($id);
 }
 
 =item C<fetchSystemByFilter([%$filter], [$resultCols])>
@@ -539,25 +539,25 @@ An array of hash-refs containing the resulting data rows.
 
 sub fetchSystemByFilter
 {
-	my $self       = shift;
-	my $filter     = shift;
-	my $resultCols = shift;
-	my $attrFilter = shift;
+    my $self       = shift;
+    my $filter     = shift;
+    my $resultCols = shift;
+    my $attrFilter = shift;
 
-	my @systems = $self->{'meta-db'}->fetchSystemByFilter(
-		$filter, $resultCols, $attrFilter
-	);
+    my @systems = $self->{'meta-db'}->fetchSystemByFilter(
+        $filter, $resultCols, $attrFilter
+    );
 
-	# unless specific result cols have been given, we mix in the attributes
-	# of each system, too:
-	if (!defined $resultCols) {
-		foreach my $system (@systems) {
-			$system->{attrs} 
-				= $self->{'meta-db'}->fetchSystemAttrs($system->{id});
-		}
-	}
+    # unless specific result cols have been given, we mix in the attributes
+    # of each system, too:
+    if (!defined $resultCols) {
+        foreach my $system (@systems) {
+            $system->{attrs} 
+                = $self->{'meta-db'}->fetchSystemAttrs($system->{id});
+        }
+    }
 
-	return wantarray() ? @systems : shift @systems;
+    return wantarray() ? @systems : shift @systems;
 }
 
 =item C<fetchSystemByID(@$ids, [$resultCols])>
@@ -584,22 +584,22 @@ An array of hash-refs containing the resulting data rows.
 
 sub fetchSystemByID
 {
-	my $self       = shift;
-	my $ids        = _aref(shift);
-	my $resultCols = shift;
+    my $self       = shift;
+    my $ids        = _aref(shift);
+    my $resultCols = shift;
 
-	my @systems = $self->{'meta-db'}->fetchSystemByID($ids, $resultCols);
-	
-	# unless specific result cols have been given, we mix in the attributes
-	# of each system, too:
-	if (!defined $resultCols) {
-		foreach my $system (@systems) {
-			$system->{attrs} 
-				= $self->{'meta-db'}->fetchSystemAttrs($system->{id});
-		}
-	}
+    my @systems = $self->{'meta-db'}->fetchSystemByID($ids, $resultCols);
+    
+    # unless specific result cols have been given, we mix in the attributes
+    # of each system, too:
+    if (!defined $resultCols) {
+        foreach my $system (@systems) {
+            $system->{attrs} 
+                = $self->{'meta-db'}->fetchSystemAttrs($system->{id});
+        }
+    }
 
-	return wantarray() ? @systems : shift @systems;
+    return wantarray() ? @systems : shift @systems;
 }
 
 =item C<fetchSystemIDsOfExport($id)>
@@ -622,10 +622,10 @@ An array of system-IDs.
 
 sub fetchSystemIDsOfExport
 {
-	my $self     = shift;
-	my $exportID = shift;
+    my $self     = shift;
+    my $exportID = shift;
 
-	return $self->{'meta-db'}->fetchSystemIDsOfExport($exportID);
+    return $self->{'meta-db'}->fetchSystemIDsOfExport($exportID);
 }
 
 =item C<fetchSystemIDsOfClient($id)>
@@ -649,10 +649,10 @@ An array of system-IDs.
 
 sub fetchSystemIDsOfClient
 {
-	my $self     = shift;
-	my $clientID = shift;
+    my $self     = shift;
+    my $clientID = shift;
 
-	return $self->{'meta-db'}->fetchSystemIDsOfClient($clientID);
+    return $self->{'meta-db'}->fetchSystemIDsOfClient($clientID);
 }
 
 =item C<fetchSystemIDsOfGroup($id)>
@@ -676,10 +676,10 @@ An array of system-IDs.
 
 sub fetchSystemIDsOfGroup
 {
-	my $self    = shift;
-	my $groupID = shift;
+    my $self    = shift;
+    my $groupID = shift;
 
-	return $self->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
+    return $self->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
 }
 
 =item C<fetchClientByFilter([%$filter], [$resultCols])>
@@ -708,25 +708,25 @@ An array of hash-refs containing the resulting data rows.
 
 sub fetchClientByFilter
 {
-	my $self       = shift;
-	my $filter     = shift;
-	my $resultCols = shift;
-	my $attrFilter = shift;
+    my $self       = shift;
+    my $filter     = shift;
+    my $resultCols = shift;
+    my $attrFilter = shift;
 
-	my @clients = $self->{'meta-db'}->fetchClientByFilter(
-		$filter, $resultCols, $attrFilter
-	);
+    my @clients = $self->{'meta-db'}->fetchClientByFilter(
+        $filter, $resultCols, $attrFilter
+    );
 
-	# unless specific result cols have been given, we mix in the attributes
-	# of each client, too:
-	if (!defined $resultCols) {
-		foreach my $client (@clients) {
-			$client->{attrs} 
-				= $self->{'meta-db'}->fetchClientAttrs($client->{id});
-		}
-	}
+    # unless specific result cols have been given, we mix in the attributes
+    # of each client, too:
+    if (!defined $resultCols) {
+        foreach my $client (@clients) {
+            $client->{attrs} 
+                = $self->{'meta-db'}->fetchClientAttrs($client->{id});
+        }
+    }
 
-	return wantarray() ? @clients : shift @clients;
+    return wantarray() ? @clients : shift @clients;
 }
 
 =item C<fetchClientByID(@$ids, [$resultCols])>
@@ -753,22 +753,22 @@ An array of hash-refs containing the resulting data rows.
 
 sub fetchClientByID
 {
-	my $self       = shift;
-	my $ids        = _aref(shift);
-	my $resultCols = shift;
+    my $self       = shift;
+    my $ids        = _aref(shift);
+    my $resultCols = shift;
 
-	my @clients = $self->{'meta-db'}->fetchClientByID($ids, $resultCols);
+    my @clients = $self->{'meta-db'}->fetchClientByID($ids, $resultCols);
 
-	# unless specific result cols have been given, we mix in the attributes
-	# of each client, too:
-	if (!defined $resultCols) {
-		foreach my $client (@clients) {
-			$client->{attrs} 
-				= $self->{'meta-db'}->fetchClientAttrs($client->{id});
-		}
-	}
+    # unless specific result cols have been given, we mix in the attributes
+    # of each client, too:
+    if (!defined $resultCols) {
+        foreach my $client (@clients) {
+            $client->{attrs} 
+                = $self->{'meta-db'}->fetchClientAttrs($client->{id});
+        }
+    }
 
-	return wantarray() ? @clients : shift @clients;
+    return wantarray() ? @clients : shift @clients;
 }
 
 =item C<fetchClientIDsOfSystem($id)>
@@ -792,10 +792,10 @@ An array of client-IDs.
 
 sub fetchClientIDsOfSystem
 {
-	my $self     = shift;
-	my $systemID = shift;
+    my $self     = shift;
+    my $systemID = shift;
 
-	return $self->{'meta-db'}->fetchClientIDsOfSystem($systemID);
+    return $self->{'meta-db'}->fetchClientIDsOfSystem($systemID);
 }
 
 =item C<fetchClientIDsOfGroup($id)>
@@ -819,10 +819,10 @@ An array of client-IDs.
 
 sub fetchClientIDsOfGroup
 {
-	my $self    = shift;
-	my $groupID = shift;
+    my $self    = shift;
+    my $groupID = shift;
 
-	return $self->{'meta-db'}->fetchClientIDsOfGroup($groupID);
+    return $self->{'meta-db'}->fetchClientIDsOfGroup($groupID);
 }
 
 =item C<fetchGroupByFilter([%$filter], [$resultCols])>
@@ -851,25 +851,25 @@ An array of hash-refs containing the resulting data rows.
 
 sub fetchGroupByFilter
 {
-	my $self       = shift;
-	my $filter     = shift;
-	my $resultCols = shift;
-	my $attrFilter = shift;
+    my $self       = shift;
+    my $filter     = shift;
+    my $resultCols = shift;
+    my $attrFilter = shift;
 
-	my @groups = $self->{'meta-db'}->fetchGroupByFilter(
-		$filter, $resultCols, $attrFilter
-	);
+    my @groups = $self->{'meta-db'}->fetchGroupByFilter(
+        $filter, $resultCols, $attrFilter
+    );
 
-	# unless specific result cols have been given, we mix in the attributes
-	# of each group, too:
-	if (!defined $resultCols) {
-		foreach my $group (@groups) {
-			$group->{attrs} 
-				= $self->{'meta-db'}->fetchGroupAttrs($group->{id});
-		}
-	}
+    # unless specific result cols have been given, we mix in the attributes
+    # of each group, too:
+    if (!defined $resultCols) {
+        foreach my $group (@groups) {
+            $group->{attrs} 
+                = $self->{'meta-db'}->fetchGroupAttrs($group->{id});
+        }
+    }
 
-	return wantarray() ? @groups : shift @groups;
+    return wantarray() ? @groups : shift @groups;
 }
 
 =item C<fetchGroupByID(@$ids, [$resultCols])>
@@ -896,22 +896,22 @@ An array of hash-refs containing the resulting data rows.
 
 sub fetchGroupByID
 {
-	my $self       = shift;
-	my $ids        = _aref(shift);
-	my $resultCols = shift;
+    my $self       = shift;
+    my $ids        = _aref(shift);
+    my $resultCols = shift;
 
-	my @groups = $self->{'meta-db'}->fetchGroupByID($ids, $resultCols);
+    my @groups = $self->{'meta-db'}->fetchGroupByID($ids, $resultCols);
 
-	# unless specific result cols have been given, we mix in the attributes
-	# of each group, too:
-	if (!defined $resultCols) {
-		foreach my $group (@groups) {
-			$group->{attrs} 
-				= $self->{'meta-db'}->fetchGroupAttrs($group->{id});
-		}
-	}
+    # unless specific result cols have been given, we mix in the attributes
+    # of each group, too:
+    if (!defined $resultCols) {
+        foreach my $group (@groups) {
+            $group->{attrs} 
+                = $self->{'meta-db'}->fetchGroupAttrs($group->{id});
+        }
+    }
 
-	return wantarray() ? @groups : shift @groups;
+    return wantarray() ? @groups : shift @groups;
 }
 
 =item C<fetchGroupIDsOfSystem($id)>
@@ -935,10 +935,10 @@ An array of client-IDs.
 
 sub fetchGroupIDsOfSystem
 {
-	my $self     = shift;
-	my $systemID = shift;
+    my $self     = shift;
+    my $systemID = shift;
 
-	return $self->{'meta-db'}->fetchGroupIDsOfSystem($systemID);
+    return $self->{'meta-db'}->fetchGroupIDsOfSystem($systemID);
 }
 
 =item C<fetchGroupIDsOfClient($id)>
@@ -962,10 +962,10 @@ An array of client-IDs.
 
 sub fetchGroupIDsOfClient
 {
-	my $self     = shift;
-	my $clientID = shift;
+    my $self     = shift;
+    my $clientID = shift;
 
-	return $self->{'meta-db'}->fetchGroupIDsOfClient($clientID);
+    return $self->{'meta-db'}->fetchGroupIDsOfClient($clientID);
 }
 
 =back
@@ -994,13 +994,13 @@ The IDs of the new vendor-OS(es), C<undef> if the creation failed.
 
 sub addVendorOS
 {
-	my $self    = shift;
-	my $valRows = _aref(shift);
+    my $self    = shift;
+    my $valRows = _aref(shift);
 
-	_checkCols($valRows, 'vendor_os', 'name');
+    _checkCols($valRows, 'vendor_os', 'name');
 
-	my @IDs = $self->{'meta-db'}->addVendorOS($valRows);
-	return wantarray() ? @IDs : $IDs[0];
+    my @IDs = $self->{'meta-db'}->addVendorOS($valRows);
+    return wantarray() ? @IDs : $IDs[0];
 }
 
 =item C<removeVendorOS(@$vendorOSIDs)>
@@ -1023,19 +1023,19 @@ C<1> if the vendorOS(es) could be removed, C<undef> if not.
 
 sub removeVendorOS
 {
-	my $self        = shift;
-	my $vendorOSIDs = _aref(shift);
+    my $self        = shift;
+    my $vendorOSIDs = _aref(shift);
 
-	# drop all installed plugins before removing the vendor-OS
-	foreach my $vendorOSID (@$vendorOSIDs) {
-		my @installedPlugins 
-			= $self->{'meta-db'}->fetchInstalledPlugins($vendorOSID);
-		foreach my $plugin (@installedPlugins) {
-			my $pluginName = $plugin->{plugin_name};
-			$self->{'meta-db'}->removeInstalledPlugin($vendorOSID, $pluginName);
-		}
-	}
-	return $self->{'meta-db'}->removeVendorOS($vendorOSIDs);
+    # drop all installed plugins before removing the vendor-OS
+    foreach my $vendorOSID (@$vendorOSIDs) {
+        my @installedPlugins 
+            = $self->{'meta-db'}->fetchInstalledPlugins($vendorOSID);
+        foreach my $plugin (@installedPlugins) {
+            my $pluginName = $plugin->{plugin_name};
+            $self->{'meta-db'}->removeInstalledPlugin($vendorOSID, $pluginName);
+        }
+    }
+    return $self->{'meta-db'}->removeVendorOS($vendorOSIDs);
 }
 
 =item C<changeVendorOS(@$vendorOSIDs, @$valRows)>
@@ -1062,11 +1062,11 @@ C<1> if the vendorOS(es) could be changed, C<undef> if not.
 
 sub changeVendorOS
 {
-	my $self        = shift;
-	my $vendorOSIDs = _aref(shift);
-	my $valRows     = _aref(shift);
+    my $self        = shift;
+    my $vendorOSIDs = _aref(shift);
+    my $valRows     = _aref(shift);
 
-	return $self->{'meta-db'}->changeVendorOS($vendorOSIDs, $valRows);
+    return $self->{'meta-db'}->changeVendorOS($vendorOSIDs, $valRows);
 }
 
 =item C<addInstalledPlugin($vendorOSID, $pluginName)>
@@ -1093,17 +1093,17 @@ The ID of the new reference entry, C<undef> if the creation failed.
 
 sub addInstalledPlugin
 {
-	my $self        = shift;
-	my $vendorOSID  = shift;
-	my $pluginName  = shift;
-	my $pluginAttrs = shift || {};
+    my $self        = shift;
+    my $vendorOSID  = shift;
+    my $pluginName  = shift;
+    my $pluginAttrs = shift || {};
 
-	# make sure the attributes of this plugin are available via default system
-	$self->{'db-schema'}->synchronizeAttributesWithDefaultSystem($self);
+    # make sure the attributes of this plugin are available via default system
+    $self->{'db-schema'}->synchronizeAttributesWithDefaultSystem($self);
 
-	return $self->{'meta-db'}->addInstalledPlugin(
-		$vendorOSID, $pluginName, $pluginAttrs
-	);
+    return $self->{'meta-db'}->addInstalledPlugin(
+        $vendorOSID, $pluginName, $pluginAttrs
+    );
 }
 
 =item C<removeInstalledPlugin($vendorOSID, $pluginName)>
@@ -1130,11 +1130,11 @@ The name of the plugin that has been uninstalled
 
 sub removeInstalledPlugin
 {
-	my $self       = shift;
-	my $vendorOSID = shift;
-	my $pluginName = shift;
+    my $self       = shift;
+    my $vendorOSID = shift;
+    my $pluginName = shift;
 
-	return $self->{'meta-db'}->removeInstalledPlugin($vendorOSID, $pluginName);
+    return $self->{'meta-db'}->removeInstalledPlugin($vendorOSID, $pluginName);
 }
 
 =item C<addExport(@$valRows)>
@@ -1157,13 +1157,13 @@ The IDs of the new export(s), C<undef> if the creation failed.
 
 sub addExport
 {
-	my $self    = shift;
-	my $valRows = _aref(shift);
+    my $self    = shift;
+    my $valRows = _aref(shift);
 
-	_checkCols($valRows, 'export', qw(name vendor_os_id type));
+    _checkCols($valRows, 'export', qw(name vendor_os_id type));
 
-	my @IDs = $self->{'meta-db'}->addExport($valRows);
-	return wantarray() ? @IDs : $IDs[0];
+    my @IDs = $self->{'meta-db'}->addExport($valRows);
+    return wantarray() ? @IDs : $IDs[0];
 }
 
 =item C<removeExport(@$exportIDs)>
@@ -1186,10 +1186,10 @@ C<1> if the export(s) could be removed, C<undef> if not.
 
 sub removeExport
 {
-	my $self      = shift;
-	my $exportIDs = _aref(shift);
+    my $self      = shift;
+    my $exportIDs = _aref(shift);
 
-	return $self->{'meta-db'}->removeExport($exportIDs);
+    return $self->{'meta-db'}->removeExport($exportIDs);
 }
 
 =item C<changeExport(@$exportIDs, @$valRows)>
@@ -1216,11 +1216,11 @@ C<1> if the export(s) could be changed, C<undef> if not.
 
 sub changeExport
 {
-	my $self      = shift;
-	my $exportIDs = _aref(shift);
-	my $valRows   = _aref(shift);
+    my $self      = shift;
+    my $exportIDs = _aref(shift);
+    my $valRows   = _aref(shift);
 
-	return $self->{'meta-db'}->changeExport($exportIDs, $valRows);
+    return $self->{'meta-db'}->changeExport($exportIDs, $valRows);
 }
 
 =item C<incrementGlobalCounter($counterName)>
@@ -1243,17 +1243,17 @@ The value the global counter had before it was incremented.
 
 sub incrementGlobalCounter
 {
-	my $self        = shift;
-	my $counterName = shift;
+    my $self        = shift;
+    my $counterName = shift;
 
-	$self->startTransaction();
-	my $value = $self->fetchGlobalInfo($counterName);
-	return unless defined $value;
-	my $newValue = $value + 1;
-	$self->changeGlobalInfo($counterName, $newValue);
-	$self->commitTransaction();
+    $self->startTransaction();
+    my $value = $self->fetchGlobalInfo($counterName);
+    return unless defined $value;
+    my $newValue = $value + 1;
+    $self->changeGlobalInfo($counterName, $newValue);
+    $self->commitTransaction();
 
-	return $value;
+    return $value;
 }
 
 =item C<changeGlobalInfo($id, $value)>
@@ -1280,13 +1280,13 @@ The value the global counter had before it was incremented.
 
 sub changeGlobalInfo
 {
-	my $self  = shift;
-	my $id    = shift;
-	my $value = shift;
+    my $self  = shift;
+    my $id    = shift;
+    my $value = shift;
 
-	return if !defined $self->{'meta-db'}->fetchGlobalInfo($id);
+    return if !defined $self->{'meta-db'}->fetchGlobalInfo($id);
 
-	return $self->{'meta-db'}->changeGlobalInfo($id, $value);
+    return $self->{'meta-db'}->changeGlobalInfo($id, $value);
 }
 
 =item C<addSystem(@$valRows)>
@@ -1309,31 +1309,31 @@ The IDs of the new system(s), C<undef> if the creation failed.
 
 sub addSystem
 {
-	my $self      = shift;
-	my $inValRows = _aref(shift);
+    my $self      = shift;
+    my $inValRows = _aref(shift);
 
-	_checkCols($inValRows, 'system', qw(name export_id));
+    _checkCols($inValRows, 'system', qw(name export_id));
 
-	my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
+    my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
 
-	foreach my $valRow (@$valRows) {
-		if (!$valRow->{kernel}) {
-			$valRow->{kernel} = 'vmlinuz';
-			vlog(
-				1,
-				_tr(
-					"setting kernel of system '%s' to 'vmlinuz'!",
-					$valRow->{name}
-				)
-			);
-		}
-		if (!$valRow->{label}) {
-			$valRow->{label} = $valRow->{name};
-		}
-	}
+    foreach my $valRow (@$valRows) {
+        if (!$valRow->{kernel}) {
+            $valRow->{kernel} = 'vmlinuz';
+            vlog(
+                1,
+                _tr(
+                    "setting kernel of system '%s' to 'vmlinuz'!",
+                    $valRow->{name}
+                )
+            );
+        }
+        if (!$valRow->{label}) {
+            $valRow->{label} = $valRow->{name};
+        }
+    }
 
-	my @IDs = $self->{'meta-db'}->addSystem($valRows, $attrValRows);
-	return wantarray() ? @IDs : $IDs[0];
+    my @IDs = $self->{'meta-db'}->addSystem($valRows, $attrValRows);
+    return wantarray() ? @IDs : $IDs[0];
 }
 
 =item C<removeSystem(@$systemIDs)>
@@ -1356,15 +1356,15 @@ C<1> if the system(s) could be removed, C<undef> if not.
 
 sub removeSystem
 {
-	my $self      = shift;
-	my $systemIDs = _aref(shift);
+    my $self      = shift;
+    my $systemIDs = _aref(shift);
 
-	foreach my $system (@$systemIDs) {
-		$self->setGroupIDsOfSystem($system);
-		$self->setClientIDsOfSystem($system);
-	}
+    foreach my $system (@$systemIDs) {
+        $self->setGroupIDsOfSystem($system);
+        $self->setClientIDsOfSystem($system);
+    }
 
-	return $self->{'meta-db'}->removeSystem($systemIDs);
+    return $self->{'meta-db'}->removeSystem($systemIDs);
 }
 
 =item C<changeSystem(@$systemIDs, @$valRows)>
@@ -1391,13 +1391,13 @@ C<1> if the system(s) could be changed, C<undef> if not.
 
 sub changeSystem
 {
-	my $self      = shift;
-	my $systemIDs = _aref(shift);
-	my $inValRows = _aref(shift);
+    my $self      = shift;
+    my $systemIDs = _aref(shift);
+    my $inValRows = _aref(shift);
 
-	my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
+    my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
 
-	return $self->{'meta-db'}->changeSystem($systemIDs, $valRows, $attrValRows);
+    return $self->{'meta-db'}->changeSystem($systemIDs, $valRows, $attrValRows);
 }
 
 #=item C<setSystemAttr($systemID, $attrName, $attrValue)>
@@ -1429,12 +1429,12 @@ sub changeSystem
 #
 #sub setSystemAttr
 #{
-#	my $self      = shift;
-#	my $systemID  = shift;
-#	my $attrName  = shift;
-#	my $attrValue = shift;
+#    my $self      = shift;
+#    my $systemID  = shift;
+#    my $attrName  = shift;
+#    my $attrValue = shift;
 #
-#	return $self->{'meta-db'}->setSystemAttr($systemID, $attrName, $attrValue);
+#    return $self->{'meta-db'}->setSystemAttr($systemID, $attrName, $attrValue);
 #}
 
 =item C<setClientIDsOfSystem($systemID, @$clientIDs)>
@@ -1462,18 +1462,18 @@ C<1> if the system/client references could be set, C<undef> if not.
 
 sub setClientIDsOfSystem
 {
-	my $self      = shift;
-	my $systemID  = shift;
-	my $clientIDs = _aref(shift);
+    my $self      = shift;
+    my $systemID  = shift;
+    my $clientIDs = _aref(shift);
 
-	# associating a client to the default system makes no sense
-	return 0 if $systemID == 0;
+    # associating a client to the default system makes no sense
+    return 0 if $systemID == 0;
 
-	my @uniqueClientIDs = _unique(@$clientIDs);
+    my @uniqueClientIDs = _unique(@$clientIDs);
 
-	return $self->{'meta-db'}->setClientIDsOfSystem(
-		$systemID, \@uniqueClientIDs
-	);
+    return $self->{'meta-db'}->setClientIDsOfSystem(
+        $systemID, \@uniqueClientIDs
+    );
 }
 
 =item C<addClientIDsToSystem($systemID, @$clientIDs)>
@@ -1501,14 +1501,14 @@ C<1> if the system/client references could be set, C<undef> if not.
 
 sub addClientIDsToSystem
 {
-	my $self         = shift;
-	my $systemID     = shift;
-	my $newClientIDs = _aref(shift);
+    my $self         = shift;
+    my $systemID     = shift;
+    my $newClientIDs = _aref(shift);
 
-	my @clientIDs = $self->{'meta-db'}->fetchClientIDsOfSystem($systemID);
-	push @clientIDs, @$newClientIDs;
+    my @clientIDs = $self->{'meta-db'}->fetchClientIDsOfSystem($systemID);
+    push @clientIDs, @$newClientIDs;
 
-	return $self->setClientIDsOfSystem($systemID, \@clientIDs);
+    return $self->setClientIDsOfSystem($systemID, \@clientIDs);
 }
 
 =item C<removeClientIDsFromSystem($systemID, @$clientIDs)>
@@ -1536,17 +1536,17 @@ C<1> if the system/client references could be set, C<undef> if not.
 
 sub removeClientIDsFromSystem
 {
-	my $self             = shift;
-	my $systemID         = shift;
-	my $removedClientIDs = _aref(shift);
+    my $self             = shift;
+    my $systemID         = shift;
+    my $removedClientIDs = _aref(shift);
 
-	my %toBeRemoved;
-	@toBeRemoved{@$removedClientIDs} = ();
-	my @clientIDs =
-	  grep { !exists $toBeRemoved{$_} }
-	  $self->{'meta-db'}->fetchClientIDsOfSystem($systemID);
+    my %toBeRemoved;
+    @toBeRemoved{@$removedClientIDs} = ();
+    my @clientIDs =
+      grep { !exists $toBeRemoved{$_} }
+      $self->{'meta-db'}->fetchClientIDsOfSystem($systemID);
 
-	return $self->setClientIDsOfSystem($systemID, \@clientIDs);
+    return $self->setClientIDsOfSystem($systemID, \@clientIDs);
 }
 
 =item C<setGroupIDsOfSystem($systemID, @$groupIDs)>
@@ -1574,16 +1574,16 @@ C<1> if the system/group references could be set, C<undef> if not.
 
 sub setGroupIDsOfSystem
 {
-	my $self     = shift;
-	my $systemID = shift;
-	my $groupIDs = _aref(shift);
+    my $self     = shift;
+    my $systemID = shift;
+    my $groupIDs = _aref(shift);
 
-	# associating a group to the default system makes no sense
-	return 0 if $systemID == 0;
+    # associating a group to the default system makes no sense
+    return 0 if $systemID == 0;
 
-	my @uniqueGroupIDs = _unique(@$groupIDs);
+    my @uniqueGroupIDs = _unique(@$groupIDs);
 
-	return $self->{'meta-db'}->setGroupIDsOfSystem($systemID, \@uniqueGroupIDs);
+    return $self->{'meta-db'}->setGroupIDsOfSystem($systemID, \@uniqueGroupIDs);
 }
 
 =item C<addGroupIDsToSystem($systemID, @$groupIDs)>
@@ -1611,14 +1611,14 @@ C<1> if the system/group references could be set, C<undef> if not.
 
 sub addGroupIDsToSystem
 {
-	my $self        = shift;
-	my $systemID    = shift;
-	my $newGroupIDs = _aref(shift);
+    my $self        = shift;
+    my $systemID    = shift;
+    my $newGroupIDs = _aref(shift);
 
-	my @groupIDs = $self->{'meta-db'}->fetchGroupIDsOfSystem($systemID);
-	push @groupIDs, @$newGroupIDs;
+    my @groupIDs = $self->{'meta-db'}->fetchGroupIDsOfSystem($systemID);
+    push @groupIDs, @$newGroupIDs;
 
-	return $self->setGroupIDsOfSystem($systemID, \@groupIDs);
+    return $self->setGroupIDsOfSystem($systemID, \@groupIDs);
 }
 
 =item C<removeGroupIDsFromSystem($systemID, @$groupIDs)>
@@ -1646,17 +1646,17 @@ C<1> if the system/group references could be set, C<undef> if not.
 
 sub removeGroupIDsFromSystem
 {
-	my $self                = shift;
-	my $systemID            = shift;
-	my $toBeRemovedGroupIDs = _aref(shift);
+    my $self                = shift;
+    my $systemID            = shift;
+    my $toBeRemovedGroupIDs = _aref(shift);
 
-	my %toBeRemoved;
-	@toBeRemoved{@$toBeRemovedGroupIDs} = ();
-	my @groupIDs =
-	  grep { !exists $toBeRemoved{$_} }
-	  $self->{'meta-db'}->fetchGroupIDsOfSystem($systemID);
+    my %toBeRemoved;
+    @toBeRemoved{@$toBeRemovedGroupIDs} = ();
+    my @groupIDs =
+      grep { !exists $toBeRemoved{$_} }
+      $self->{'meta-db'}->fetchGroupIDsOfSystem($systemID);
 
-	return $self->setGroupIDsOfSystem($systemID, \@groupIDs);
+    return $self->setGroupIDsOfSystem($systemID, \@groupIDs);
 }
 
 =item C<addClient(@$valRows)>
@@ -1679,21 +1679,21 @@ The IDs of the new client(s), C<undef> if the creation failed.
 
 sub addClient
 {
-	my $self      = shift;
-	my $inValRows = _aref(shift);
+    my $self      = shift;
+    my $inValRows = _aref(shift);
 
-	_checkCols($inValRows, 'client', qw(name mac));
+    _checkCols($inValRows, 'client', qw(name mac));
 
-	my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
+    my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
 
-	foreach my $valRow (@$valRows) {
-		if (!$valRow->{boot_type}) {
-			$valRow->{boot_type} = 'pxe';
-		}
-	}
+    foreach my $valRow (@$valRows) {
+        if (!$valRow->{boot_type}) {
+            $valRow->{boot_type} = 'pxe';
+        }
+    }
 
-	my @IDs = $self->{'meta-db'}->addClient($valRows, $attrValRows);
-	return wantarray() ? @IDs : $IDs[0];
+    my @IDs = $self->{'meta-db'}->addClient($valRows, $attrValRows);
+    return wantarray() ? @IDs : $IDs[0];
 }
 
 =item C<removeClient(@$clientIDs)>
@@ -1716,15 +1716,15 @@ C<1> if the client(s) could be removed, C<undef> if not.
 
 sub removeClient
 {
-	my $self      = shift;
-	my $clientIDs = _aref(shift);
+    my $self      = shift;
+    my $clientIDs = _aref(shift);
 
-	foreach my $client (@$clientIDs) {
-		$self->setGroupIDsOfClient($client);
-		$self->setSystemIDsOfClient($client);
-	}
+    foreach my $client (@$clientIDs) {
+        $self->setGroupIDsOfClient($client);
+        $self->setSystemIDsOfClient($client);
+    }
 
-	return $self->{'meta-db'}->removeClient($clientIDs);
+    return $self->{'meta-db'}->removeClient($clientIDs);
 }
 
 =item C<changeClient(@$clientIDs, @$valRows)>
@@ -1751,13 +1751,13 @@ C<1> if the client(s) could be changed, C<undef> if not.
 
 sub changeClient
 {
-	my $self      = shift;
-	my $clientIDs = _aref(shift);
-	my $inValRows = _aref(shift);
+    my $self      = shift;
+    my $clientIDs = _aref(shift);
+    my $inValRows = _aref(shift);
 
-	my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
+    my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
 
-	return $self->{'meta-db'}->changeClient($clientIDs, $valRows, $attrValRows);
+    return $self->{'meta-db'}->changeClient($clientIDs, $valRows, $attrValRows);
 }
 
 #=item C<setClientAttr($clientID, $attrName, $attrValue)>
@@ -1789,12 +1789,12 @@ sub changeClient
 #
 #sub setClientAttr
 #{
-#	my $self      = shift;
-#	my $clientID  = shift;
-#	my $attrName  = shift;
-#	my $attrValue = shift;
+#    my $self      = shift;
+#    my $clientID  = shift;
+#    my $attrName  = shift;
+#    my $attrValue = shift;
 #
-#	return $self->{'meta-db'}->setClientAttr($clientID, $attrName, $attrValue);
+#    return $self->{'meta-db'}->setClientAttr($clientID, $attrName, $attrValue);
 #}
 
 =item C<setSystemIDsOfClient($clientID, @$systemIDs)>
@@ -1822,16 +1822,16 @@ C<1> if the client/system references could be set, C<undef> if not.
 
 sub setSystemIDsOfClient
 {
-	my $self      = shift;
-	my $clientID  = shift;
-	my $systemIDs = _aref(shift);
+    my $self      = shift;
+    my $clientID  = shift;
+    my $systemIDs = _aref(shift);
 
-	# filter out the default system, as no client should be associated to it
-	my @uniqueSystemIDs = grep { $_ > 0; } _unique(@$systemIDs);
+    # filter out the default system, as no client should be associated to it
+    my @uniqueSystemIDs = grep { $_ > 0; } _unique(@$systemIDs);
 
-	return $self->{'meta-db'}->setSystemIDsOfClient(
-		$clientID, \@uniqueSystemIDs
-	);
+    return $self->{'meta-db'}->setSystemIDsOfClient(
+        $clientID, \@uniqueSystemIDs
+    );
 }
 
 =item C<addSystemIDsToClient($clientID, @$systemIDs)>
@@ -1859,14 +1859,14 @@ C<1> if the client/system references could be set, C<undef> if not.
 
 sub addSystemIDsToClient
 {
-	my $self         = shift;
-	my $clientID     = shift;
-	my $newSystemIDs = _aref(shift);
+    my $self         = shift;
+    my $clientID     = shift;
+    my $newSystemIDs = _aref(shift);
 
-	my @systemIDs = $self->{'meta-db'}->fetchSystemIDsOfClient($clientID);
-	push @systemIDs, @$newSystemIDs;
+    my @systemIDs = $self->{'meta-db'}->fetchSystemIDsOfClient($clientID);
+    push @systemIDs, @$newSystemIDs;
 
-	return $self->setSystemIDsOfClient($clientID, \@systemIDs);
+    return $self->setSystemIDsOfClient($clientID, \@systemIDs);
 }
 
 =item C<removeSystemIDsFromClient($clientID, @$systemIDs)>
@@ -1894,17 +1894,17 @@ C<1> if the client/system references could be set, C<undef> if not.
 
 sub removeSystemIDsFromClient
 {
-	my $self             = shift;
-	my $clientID         = shift;
-	my $removedSystemIDs = _aref(shift);
+    my $self             = shift;
+    my $clientID         = shift;
+    my $removedSystemIDs = _aref(shift);
 
-	my %toBeRemoved;
-	@toBeRemoved{@$removedSystemIDs} = ();
-	my @systemIDs =
-	  grep { !exists $toBeRemoved{$_} }
-	  $self->{'meta-db'}->fetchSystemIDsOfClient($clientID);
+    my %toBeRemoved;
+    @toBeRemoved{@$removedSystemIDs} = ();
+    my @systemIDs =
+      grep { !exists $toBeRemoved{$_} }
+      $self->{'meta-db'}->fetchSystemIDsOfClient($clientID);
 
-	return $self->setSystemIDsOfClient($clientID, \@systemIDs);
+    return $self->setSystemIDsOfClient($clientID, \@systemIDs);
 }
 
 =item C<setGroupIDsOfClient($clientID, @$groupIDs)>
@@ -1931,13 +1931,13 @@ C<1> if the client/group references could be set, C<undef> if not.
 
 sub setGroupIDsOfClient
 {
-	my $self     = shift;
-	my $clientID = shift;
-	my $groupIDs = _aref(shift);
+    my $self     = shift;
+    my $clientID = shift;
+    my $groupIDs = _aref(shift);
 
-	my @uniqueGroupIDs = _unique(@$groupIDs);
+    my @uniqueGroupIDs = _unique(@$groupIDs);
 
-	return $self->{'meta-db'}->setGroupIDsOfClient($clientID, \@uniqueGroupIDs);
+    return $self->{'meta-db'}->setGroupIDsOfClient($clientID, \@uniqueGroupIDs);
 }
 
 =item C<addGroupIDsToClient($clientID, @$groupIDs)>
@@ -1965,14 +1965,14 @@ C<1> if the client/group references could be set, C<undef> if not.
 
 sub addGroupIDsToClient
 {
-	my $self        = shift;
-	my $clientID    = shift;
-	my $newGroupIDs = _aref(shift);
+    my $self        = shift;
+    my $clientID    = shift;
+    my $newGroupIDs = _aref(shift);
 
-	my @groupIDs = $self->{'meta-db'}->fetchGroupIDsOfClient($clientID);
-	push @groupIDs, @$newGroupIDs;
+    my @groupIDs = $self->{'meta-db'}->fetchGroupIDsOfClient($clientID);
+    push @groupIDs, @$newGroupIDs;
 
-	return $self->setGroupIDsOfClient($clientID, \@groupIDs);
+    return $self->setGroupIDsOfClient($clientID, \@groupIDs);
 }
 
 =item C<removeGroupsIDsFromClient($clientID, @$groupIDs)>
@@ -2000,17 +2000,17 @@ C<1> if the client/group references could be set, C<undef> if not.
 
 sub removeGroupIDsFromClient
 {
-	my $self                = shift;
-	my $clientID            = shift;
-	my $toBeRemovedGroupIDs = _aref(shift);
+    my $self                = shift;
+    my $clientID            = shift;
+    my $toBeRemovedGroupIDs = _aref(shift);
 
-	my %toBeRemoved;
-	@toBeRemoved{@$toBeRemovedGroupIDs} = ();
-	my @groupIDs =
-	  grep { !exists $toBeRemoved{$_} }
-	  $self->{'meta-db'}->fetchGroupIDsOfClient($clientID);
+    my %toBeRemoved;
+    @toBeRemoved{@$toBeRemovedGroupIDs} = ();
+    my @groupIDs =
+      grep { !exists $toBeRemoved{$_} }
+      $self->{'meta-db'}->fetchGroupIDsOfClient($clientID);
 
-	return $self->setGroupIDsOfClient($clientID, \@groupIDs);
+    return $self->setGroupIDsOfClient($clientID, \@groupIDs);
 }
 
 =item C<addGroup(@$valRows)>
@@ -2033,20 +2033,20 @@ The IDs of the new group(s), C<undef> if the creation failed.
 
 sub addGroup
 {
-	my $self      = shift;
-	my $inValRows = _aref(shift);
+    my $self      = shift;
+    my $inValRows = _aref(shift);
 
-	_checkCols($inValRows, 'group', qw(name));
+    _checkCols($inValRows, 'group', qw(name));
 
-	my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
+    my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
 
-	foreach my $valRow (@$valRows) {
-		if (!defined $valRow->{priority}) {
-			$valRow->{priority} = '50';
-		}
-	}
-	my @IDs = $self->{'meta-db'}->addGroup($valRows, $attrValRows);
-	return wantarray() ? @IDs : $IDs[0];
+    foreach my $valRow (@$valRows) {
+        if (!defined $valRow->{priority}) {
+            $valRow->{priority} = '50';
+        }
+    }
+    my @IDs = $self->{'meta-db'}->addGroup($valRows, $attrValRows);
+    return wantarray() ? @IDs : $IDs[0];
 }
 
 =item C<removeGroup(@$groupIDs)>
@@ -2069,15 +2069,15 @@ C<1> if the group(s) could be removed, C<undef> if not.
 
 sub removeGroup
 {
-	my $self     = shift;
-	my $groupIDs = _aref(shift);
+    my $self     = shift;
+    my $groupIDs = _aref(shift);
 
-	foreach my $group (@$groupIDs) {
-		$self->setSystemIDsOfGroup($group, []);
-		$self->setClientIDsOfGroup($group, []);
-	}
+    foreach my $group (@$groupIDs) {
+        $self->setSystemIDsOfGroup($group, []);
+        $self->setClientIDsOfGroup($group, []);
+    }
 
-	return $self->{'meta-db'}->removeGroup($groupIDs);
+    return $self->{'meta-db'}->removeGroup($groupIDs);
 }
 
 #=item C<setGroupAttr($groupID, $attrName, $attrValue)>
@@ -2109,12 +2109,12 @@ sub removeGroup
 #
 #sub setGroupAttr
 #{
-#	my $self      = shift;
-#	my $groupID  = shift;
-#	my $attrName  = shift;
-#	my $attrValue = shift;
+#    my $self      = shift;
+#    my $groupID  = shift;
+#    my $attrName  = shift;
+#    my $attrValue = shift;
 #
-#	return $self->{'meta-db'}->setGroupAttr($groupID, $attrName, $attrValue);
+#    return $self->{'meta-db'}->setGroupAttr($groupID, $attrName, $attrValue);
 #}
 
 =item C<changeGroup(@$groupIDs, @$valRows)>
@@ -2141,13 +2141,13 @@ C<1> if the group(s) could be changed, C<undef> if not.
 
 sub changeGroup
 {
-	my $self      = shift;
-	my $groupIDs  = _aref(shift);
-	my $inValRows = _aref(shift);
+    my $self      = shift;
+    my $groupIDs  = _aref(shift);
+    my $inValRows = _aref(shift);
 
-	my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
+    my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
 
-	return $self->{'meta-db'}->changeGroup($groupIDs, $valRows, $attrValRows);
+    return $self->{'meta-db'}->changeGroup($groupIDs, $valRows, $attrValRows);
 }
 
 =item C<setClientIDsOfGroup($groupID, @$clientIDs)>
@@ -2174,13 +2174,13 @@ C<1> if the group/client references could be set, C<undef> if not.
 
 sub setClientIDsOfGroup
 {
-	my $self      = shift;
-	my $groupID   = shift;
-	my $clientIDs = _aref(shift);
+    my $self      = shift;
+    my $groupID   = shift;
+    my $clientIDs = _aref(shift);
 
-	my @uniqueClientIDs = _unique(@$clientIDs);
+    my @uniqueClientIDs = _unique(@$clientIDs);
 
-	return $self->{'meta-db'}->setClientIDsOfGroup($groupID, \@uniqueClientIDs);
+    return $self->{'meta-db'}->setClientIDsOfGroup($groupID, \@uniqueClientIDs);
 }
 
 =item C<addClientIDsToGroup($groupID, @$clientIDs)>
@@ -2207,14 +2207,14 @@ C<1> if the group/client references could be set, C<undef> if not.
 
 sub addClientIDsToGroup
 {
-	my $self         = shift;
-	my $groupID      = shift;
-	my $newClientIDs = _aref(shift);
+    my $self         = shift;
+    my $groupID      = shift;
+    my $newClientIDs = _aref(shift);
 
-	my @clientIDs = $self->{'meta-db'}->fetchClientIDsOfGroup($groupID);
-	push @clientIDs, @$newClientIDs;
+    my @clientIDs = $self->{'meta-db'}->fetchClientIDsOfGroup($groupID);
+    push @clientIDs, @$newClientIDs;
 
-	return $self->setClientIDsOfGroup($groupID, \@clientIDs);
+    return $self->setClientIDsOfGroup($groupID, \@clientIDs);
 }
 
 =item C<removeClientIDsFromGroup($groupID, @$clientIDs)>
@@ -2241,17 +2241,17 @@ C<1> if the group/client references could be set, C<undef> if not.
 
 sub removeClientIDsFromGroup
 {
-	my $self             = shift;
-	my $groupID          = shift;
-	my $removedClientIDs = _aref(shift);
+    my $self             = shift;
+    my $groupID          = shift;
+    my $removedClientIDs = _aref(shift);
 
-	my %toBeRemoved;
-	@toBeRemoved{@$removedClientIDs} = ();
-	my @clientIDs =
-	  grep { !exists $toBeRemoved{$_} }
-	  $self->{'meta-db'}->fetchClientIDsOfGroup($groupID);
+    my %toBeRemoved;
+    @toBeRemoved{@$removedClientIDs} = ();
+    my @clientIDs =
+      grep { !exists $toBeRemoved{$_} }
+      $self->{'meta-db'}->fetchClientIDsOfGroup($groupID);
 
-	return $self->setClientIDsOfGroup($groupID, \@clientIDs);
+    return $self->setClientIDsOfGroup($groupID, \@clientIDs);
 }
 
 =item C<setSystemIDsOfGroup($groupID, @$systemIDs)>
@@ -2279,14 +2279,14 @@ C<1> if the group/system references could be set, C<undef> if not.
 
 sub setSystemIDsOfGroup
 {
-	my $self      = shift;
-	my $groupID   = shift;
-	my $systemIDs = _aref(shift);
+    my $self      = shift;
+    my $groupID   = shift;
+    my $systemIDs = _aref(shift);
 
-	# filter out the default system, as no group should be associated to it
-	my @uniqueSystemIDs = grep { $_ > 0; } _unique(@$systemIDs);
+    # filter out the default system, as no group should be associated to it
+    my @uniqueSystemIDs = grep { $_ > 0; } _unique(@$systemIDs);
 
-	return $self->{'meta-db'}->setSystemIDsOfGroup($groupID, \@uniqueSystemIDs);
+    return $self->{'meta-db'}->setSystemIDsOfGroup($groupID, \@uniqueSystemIDs);
 }
 
 =item C<addSystemIDsToGroup($groupID, @$systemIDs)>
@@ -2313,14 +2313,14 @@ C<1> if the group/system references could be set, C<undef> if not.
 
 sub addSystemIDsToGroup
 {
-	my $self         = shift;
-	my $groupID      = shift;
-	my $newSystemIDs = _aref(shift);
+    my $self         = shift;
+    my $groupID      = shift;
+    my $newSystemIDs = _aref(shift);
 
-	my @systemIDs = $self->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
-	push @systemIDs, @$newSystemIDs;
+    my @systemIDs = $self->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
+    push @systemIDs, @$newSystemIDs;
 
-	return $self->setSystemIDsOfGroup($groupID, \@systemIDs);
+    return $self->setSystemIDsOfGroup($groupID, \@systemIDs);
 }
 
 =item C<removeSystemIDsFromGroup($groupID, @$systemIDs)>
@@ -2347,17 +2347,17 @@ C<1> if the group/system references could be set, C<undef> if not.
 
 sub removeSystemIDsFromGroup
 {
-	my $self             = shift;
-	my $groupID          = shift;
-	my $removedSystemIDs = _aref(shift);
+    my $self             = shift;
+    my $groupID          = shift;
+    my $removedSystemIDs = _aref(shift);
 
-	my %toBeRemoved;
-	@toBeRemoved{@$removedSystemIDs} = ();
-	my @systemIDs =
-	  grep { !exists $toBeRemoved{$_} }
-	  $self->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
+    my %toBeRemoved;
+    @toBeRemoved{@$removedSystemIDs} = ();
+    my @systemIDs =
+      grep { !exists $toBeRemoved{$_} }
+      $self->{'meta-db'}->fetchSystemIDsOfGroup($groupID);
 
-	return $self->setSystemIDsOfGroup($groupID, \@systemIDs);
+    return $self->setSystemIDsOfGroup($groupID, \@systemIDs);
 }
 
 =item C<emptyDatabase()>
@@ -2375,27 +2375,27 @@ none
 =cut
 
 sub emptyDatabase
-{    # clears all user-data from the database
-	my $self = shift;
+{   # clears all user-data from the database
+    my $self = shift;
 
-	my @groupIDs = map { $_->{id} } $self->fetchGroupByFilter();
-	$self->removeGroup(\@groupIDs);
+    my @groupIDs = map { $_->{id} } $self->fetchGroupByFilter();
+    $self->removeGroup(\@groupIDs);
 
-	my @clientIDs = map { $_->{id} }
-	  grep { $_->{name} ne '<<<default>>>' } $self->fetchClientByFilter();
-	$self->removeClient(\@clientIDs);
+    my @clientIDs = map { $_->{id} }
+      grep { $_->{name} ne '<<<default>>>' } $self->fetchClientByFilter();
+    $self->removeClient(\@clientIDs);
 
-	my @sysIDs = map { $_->{id} }
-	  grep { $_->{name} ne '<<<default>>>' } $self->fetchSystemByFilter();
-	$self->removeSystem(\@sysIDs);
+    my @sysIDs = map { $_->{id} }
+      grep { $_->{name} ne '<<<default>>>' } $self->fetchSystemByFilter();
+    $self->removeSystem(\@sysIDs);
 
-	my @exportIDs = map { $_->{id} } $self->fetchExportByFilter();
-	$self->removeExport(\@exportIDs);
+    my @exportIDs = map { $_->{id} } $self->fetchExportByFilter();
+    $self->removeExport(\@exportIDs);
 
-	my @vendorOSIDs = map { $_->{id} } $self->fetchVendorOSByFilter();
-	$self->removeVendorOS(\@vendorOSIDs);
+    my @vendorOSIDs = map { $_->{id} } $self->fetchVendorOSByFilter();
+    $self->removeVendorOS(\@vendorOSIDs);
 
-	return 1;
+    return 1;
 }
 
 =back
@@ -2425,36 +2425,36 @@ none
 
 sub mergeDefaultAttributesIntoSystem
 {
-	my $self             = shift;
-	my $system           = shift;
-	my $installedPlugins = shift;
-	my $originInfo       = shift;
+    my $self             = shift;
+    my $system           = shift;
+    my $installedPlugins = shift;
+    my $originInfo       = shift;
 
-	# first look into default system
-	my $defaultSystem = $self->fetchSystemByFilter({name => '<<<default>>>'});
-	mergeAttributes($system, $defaultSystem, $originInfo, 'default-system');
+    # first look into default system
+    my $defaultSystem = $self->fetchSystemByFilter({name => '<<<default>>>'});
+    mergeAttributes($system, $defaultSystem, $originInfo, 'default-system');
 
-	# push any attributes found in the plugins that are installed into
-	# the vendor-OS:
-	if (ref $installedPlugins eq 'ARRAY' && @$installedPlugins) {
-		for my $plugin (@$installedPlugins) {
-			pushAttributes($system, $plugin, $originInfo, 'vendor-OS');
-		}
+    # push any attributes found in the plugins that are installed into
+    # the vendor-OS:
+    if (ref $installedPlugins eq 'ARRAY' && @$installedPlugins) {
+        for my $plugin (@$installedPlugins) {
+            pushAttributes($system, $plugin, $originInfo, 'vendor-OS');
+        }
 
-		# the above will have merged stage1 attributes, too, so we remove
-		# these from the resulting system (as they do not apply to systems)
-		my @stage3AttrNames = OpenSLX::AttributeRoster->getStage3Attrs();
-		for my $attr (keys %{$system->{attrs}}) {
-			next if grep { $attr eq $_ } @stage3AttrNames;
-			delete $system->{attrs}->{$attr};
-		}
-	}
+        # the above will have merged stage1 attributes, too, so we remove
+        # these from the resulting system (as they do not apply to systems)
+        my @stage3AttrNames = OpenSLX::AttributeRoster->getStage3Attrs();
+        for my $attr (keys %{$system->{attrs}}) {
+            next if grep { $attr eq $_ } @stage3AttrNames;
+            delete $system->{attrs}->{$attr};
+        }
+    }
 
-	# finally push the attributes specified for the system itself
-	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
-	pushAttributes($system, $defaultClient, $originInfo, 'default-client');
+    # finally push the attributes specified for the system itself
+    my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
+    pushAttributes($system, $defaultClient, $originInfo, 'default-client');
 
-	return 1;
+    return 1;
 }
 
 =item C<mergeDefaultAndGroupAttributesIntoClient($client)>
@@ -2477,34 +2477,34 @@ none
 
 sub mergeDefaultAndGroupAttributesIntoClient
 {
-	my $self       = shift;
-	my $client     = shift;
-	my $originInfo = shift;
+    my $self       = shift;
+    my $client     = shift;
+    my $originInfo = shift;
 
-	# step over all groups this client belongs to
-	# (ordered by priority from highest to lowest):
-	my @groupIDs = _unique(
-		$self->fetchGroupIDsOfClient(0), 
-		$self->fetchGroupIDsOfClient($client->{id})
-	);
-	my @groups
-		= sort { $a->{priority} <=> $b->{priority} }
-		  $self->fetchGroupByID(\@groupIDs);
-	foreach my $group (@groups) {
-		# merge configuration from this group into the current client:
-		vlog(
-			3,
-			_tr('merging from group %d:%s...', $group->{id}, $group->{name})
-		);
-		mergeAttributes($client, $group, $originInfo, "group '$group->{name}'");
-	}
+    # step over all groups this client belongs to
+    # (ordered by priority from highest to lowest):
+    my @groupIDs = _unique(
+        $self->fetchGroupIDsOfClient(0), 
+        $self->fetchGroupIDsOfClient($client->{id})
+    );
+    my @groups
+        = sort { $a->{priority} <=> $b->{priority} }
+          $self->fetchGroupByID(\@groupIDs);
+    foreach my $group (@groups) {
+        # merge configuration from this group into the current client:
+        vlog(
+            3,
+            _tr('merging from group %d:%s...', $group->{id}, $group->{name})
+        );
+        mergeAttributes($client, $group, $originInfo, "group '$group->{name}'");
+    }
 
-	# merge configuration from default client:
-	vlog(3, _tr('merging from default client...'));
-	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
-	mergeAttributes($client, $defaultClient, $originInfo, 'default-client');
+    # merge configuration from default client:
+    vlog(3, _tr('merging from default client...'));
+    my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
+    mergeAttributes($client, $defaultClient, $originInfo, 'default-client');
 
-	return 1;
+    return 1;
 }
 
 =item C<aggregatedSystemIDsOfClient($client)>
@@ -2528,25 +2528,25 @@ A list of unqiue system-IDs.
 
 sub aggregatedSystemIDsOfClient
 {
-	my $self   = shift;
-	my $client = shift;
+    my $self   = shift;
+    my $client = shift;
 
-	# add all systems directly linked to client:
-	my @systemIDs = $self->fetchSystemIDsOfClient($client->{id});
+    # add all systems directly linked to client:
+    my @systemIDs = $self->fetchSystemIDsOfClient($client->{id});
 
-	# step over all groups this client belongs to:
-	my @groupIDs = $self->fetchGroupIDsOfClient($client->{id});
-	my @groups   = $self->fetchGroupByID(\@groupIDs);
-	foreach my $group (@groups) {
-		# add all systems that the client inherits from the current group:
-		push @systemIDs, $self->fetchSystemIDsOfGroup($group->{id});
-	}
+    # step over all groups this client belongs to:
+    my @groupIDs = $self->fetchGroupIDsOfClient($client->{id});
+    my @groups   = $self->fetchGroupByID(\@groupIDs);
+    foreach my $group (@groups) {
+        # add all systems that the client inherits from the current group:
+        push @systemIDs, $self->fetchSystemIDsOfGroup($group->{id});
+    }
 
-	# add all systems inherited from default client
-	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
-	push @systemIDs, $self->fetchSystemIDsOfClient($defaultClient->{id});
+    # add all systems inherited from default client
+    my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
+    push @systemIDs, $self->fetchSystemIDsOfClient($defaultClient->{id});
 
-	return _unique(@systemIDs);
+    return _unique(@systemIDs);
 }
 
 =item C<aggregatedClientIDsOfSystem($system)>
@@ -2570,36 +2570,36 @@ A list of unqiue client-IDs.
 
 sub aggregatedClientIDsOfSystem
 {
-	my $self   = shift;
-	my $system = shift;
+    my $self   = shift;
+    my $system = shift;
 
-	# add all clients directly linked to system:
-	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
-	my @clientIDs = $self->fetchClientIDsOfSystem($system->{id});
+    # add all clients directly linked to system:
+    my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
+    my @clientIDs = $self->fetchClientIDsOfSystem($system->{id});
 
-	if (grep { $_ == $defaultClient->{id}; } @clientIDs) {
-		# add *all* client-IDs if the system is being referenced by
-		# the default client, as that means that all clients should offer
-		# this system for booting:
-		push(
-			@clientIDs,
-			map { $_->{id} } $self->fetchClientByFilter(undef, 'id')
-		);
-	}
+    if (grep { $_ == $defaultClient->{id}; } @clientIDs) {
+        # add *all* client-IDs if the system is being referenced by
+        # the default client, as that means that all clients should offer
+        # this system for booting:
+        push(
+            @clientIDs,
+            map { $_->{id} } $self->fetchClientByFilter(undef, 'id')
+        );
+    }
 
-	# step over all groups this system belongs to:
-	my @groupIDs = $self->fetchGroupIDsOfSystem($system->{id});
-	my @groups   = $self->fetchGroupByID(\@groupIDs);
-	foreach my $group (@groups) {
-		# add all clients that the system inherits from the current group:
-		push @clientIDs, $self->fetchClientIDsOfGroup($group->{id});
-	}
+    # step over all groups this system belongs to:
+    my @groupIDs = $self->fetchGroupIDsOfSystem($system->{id});
+    my @groups   = $self->fetchGroupByID(\@groupIDs);
+    foreach my $group (@groups) {
+        # add all clients that the system inherits from the current group:
+        push @clientIDs, $self->fetchClientIDsOfGroup($group->{id});
+    }
 
-	# add all clients inherited from default system
-	my $defaultSystem = $self->fetchSystemByFilter({name => '<<<default>>>'});
-	push @clientIDs, $self->fetchClientIDsOfSystem($defaultSystem->{id});
+    # add all clients inherited from default system
+    my $defaultSystem = $self->fetchSystemByFilter({name => '<<<default>>>'});
+    push @clientIDs, $self->fetchClientIDsOfSystem($defaultSystem->{id});
 
-	return _unique(@clientIDs);
+    return _unique(@clientIDs);
 }
 
 =item C<aggregatedSystemFileInfoFor($system)>
@@ -2624,65 +2624,65 @@ this system, as well as the specific kernel-file and export-URI being used.
 
 sub aggregatedSystemFileInfoFor
 {
-	my $self   = shift;
-	my $system = shift;
+    my $self   = shift;
+    my $system = shift;
 
-	my $info = dclone($system);
+    my $info = dclone($system);
 
-	my $export = $self->fetchExportByID($system->{export_id});
-	if (!defined $export) {
-		die _tr(
-			"DB-problem: system '%s' references export with id=%s, but that doesn't exist!",
-			$system->{name}, $system->{export_id} || ''
-		);
-	}
-	$info->{'export'} = $export;
+    my $export = $self->fetchExportByID($system->{export_id});
+    if (!defined $export) {
+        die _tr(
+            "DB-problem: system '%s' references export with id=%s, but that doesn't exist!",
+            $system->{name}, $system->{export_id} || ''
+        );
+    }
+    $info->{'export'} = $export;
 
-	my $vendorOS = $self->fetchVendorOSByID($export->{vendor_os_id});
-	if (!defined $vendorOS) {
-		die _tr(
-			"DB-problem: export '%s' references vendor-OS with id=%s, but that doesn't exist!",
-			$export->{name}, $export->{vendor_os_id} || ''
-		);
-	}
-	$info->{'vendor-os'} = $vendorOS;
-	
-	my @installedPlugins = $self->fetchInstalledPlugins($vendorOS->{id});
-	$info->{'installed-plugins'} = \@installedPlugins;
+    my $vendorOS = $self->fetchVendorOSByID($export->{vendor_os_id});
+    if (!defined $vendorOS) {
+        die _tr(
+            "DB-problem: export '%s' references vendor-OS with id=%s, but that doesn't exist!",
+            $export->{name}, $export->{vendor_os_id} || ''
+        );
+    }
+    $info->{'vendor-os'} = $vendorOS;
+    
+    my @installedPlugins = $self->fetchInstalledPlugins($vendorOS->{id});
+    $info->{'installed-plugins'} = \@installedPlugins;
 
-	# check if the specified kernel file really exists (follow links while
-	# checking) and if not, find the newest kernel file that is available.
-	my $kernelPath 
-		= "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}/boot";
-	my $kernelFile = "$kernelPath/$system->{kernel}";
-	while (-l $kernelFile) {
-		$kernelFile = followLink($kernelFile);
-	}
-	if (!-e $kernelFile) {
-		# pick best kernel file available
-		my $osSetupEngine = instantiateClass("OpenSLX::OSSetup::Engine");
-		$osSetupEngine->initialize($vendorOS->{name}, 'none');
-		$kernelFile = $osSetupEngine->pickKernelFile($kernelPath);
-		warn(
-			_tr(
-				"setting kernel of system '%s' to '%s'!",
-				$info->{name}, $kernelFile
-			)
-		);
-	}
-	$info->{'kernel-file'} = $kernelFile;
+    # check if the specified kernel file really exists (follow links while
+    # checking) and if not, find the newest kernel file that is available.
+    my $kernelPath 
+        = "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}/boot";
+    my $kernelFile = "$kernelPath/$system->{kernel}";
+    while (-l $kernelFile) {
+        $kernelFile = followLink($kernelFile);
+    }
+    if (!-e $kernelFile) {
+        # pick best kernel file available
+        my $osSetupEngine = instantiateClass("OpenSLX::OSSetup::Engine");
+        $osSetupEngine->initialize($vendorOS->{name}, 'none');
+        $kernelFile = $osSetupEngine->pickKernelFile($kernelPath);
+        warn(
+            _tr(
+                "setting kernel of system '%s' to '%s'!",
+                $info->{name}, $kernelFile
+            )
+        );
+    }
+    $info->{'kernel-file'} = $kernelFile;
 
-	# auto-generate export_uri if none has been given
-	my $exportURI = $export->{'uri'} || '';
-	if ($exportURI !~ m[\w]) {
-		# instantiate OSExport engine and ask it for exportURI
-		my $osExportEngine = instantiateClass("OpenSLX::OSExport::Engine");
-		$osExportEngine->initializeFromExisting($export->{name});
-		$exportURI = $osExportEngine->generateExportURI($export, $vendorOS);
-	}
-	$info->{'export-uri'} = $exportURI;
+    # auto-generate export_uri if none has been given
+    my $exportURI = $export->{'uri'} || '';
+    if ($exportURI !~ m[\w]) {
+        # instantiate OSExport engine and ask it for exportURI
+        my $osExportEngine = instantiateClass("OpenSLX::OSExport::Engine");
+        $osExportEngine->initializeFromExisting($export->{name});
+        $exportURI = $osExportEngine->generateExportURI($export, $vendorOS);
+    }
+    $info->{'export-uri'} = $exportURI;
 
-	return $info;
+    return $info;
 }
 
 =back
@@ -2715,32 +2715,32 @@ none
 
 sub mergeAttributes
 {
-	my $target     = shift;
-	my $source     = shift;
-	my $originInfo = shift;
-	my $origin     = shift;
+    my $target     = shift;
+    my $source     = shift;
+    my $originInfo = shift;
+    my $origin     = shift;
 
-	my $sourceAttrs = $source->{attrs} || {};
+    my $sourceAttrs = $source->{attrs} || {};
 
-	$target->{attrs} ||= {};
-	my $targetAttrs = $target->{attrs};
+    $target->{attrs} ||= {};
+    my $targetAttrs = $target->{attrs};
 
-	foreach my $key (keys %$sourceAttrs) {
-		my $sourceVal = $sourceAttrs->{$key};
-		my $targetVal = $targetAttrs->{$key};
-		if (!defined $targetVal) {
-			vlog(3, _tr(
-				"merging %s (val=%s)", $key, 
-				defined $sourceVal ? $sourceVal : ''
-			));
-			$targetAttrs->{$key} = $sourceVal;
-			if (defined $originInfo) {
-				$originInfo->{$key} = $origin;
-			}
-		}
-	}
+    foreach my $key (keys %$sourceAttrs) {
+        my $sourceVal = $sourceAttrs->{$key};
+        my $targetVal = $targetAttrs->{$key};
+        if (!defined $targetVal) {
+            vlog(3, _tr(
+                "merging %s (val=%s)", $key, 
+                defined $sourceVal ? $sourceVal : ''
+            ));
+            $targetAttrs->{$key} = $sourceVal;
+            if (defined $originInfo) {
+                $originInfo->{$key} = $origin;
+            }
+        }
+    }
 
-	return 1;
+    return 1;
 }
 
 =item C<pushAttributes($target, $source)>
@@ -2767,28 +2767,28 @@ none
 
 sub pushAttributes
 {
-	my $target     = shift;
-	my $source     = shift;
-	my $originInfo = shift;
-	my $origin     = shift;
+    my $target     = shift;
+    my $source     = shift;
+    my $originInfo = shift;
+    my $origin     = shift;
 
-	my $sourceAttrs = $source->{attrs} || {};
+    my $sourceAttrs = $source->{attrs} || {};
 
-	$target->{attrs} ||= {};
-	my $targetAttrs = $target->{attrs};
+    $target->{attrs} ||= {};
+    my $targetAttrs = $target->{attrs};
 
-	foreach my $key (keys %$sourceAttrs) {
-		my $sourceVal = $sourceAttrs->{$key};
-		if (defined $sourceVal) {
-			vlog(3, _tr("pushing %s (val=%s)", $key, $sourceVal));
-			$targetAttrs->{$key} = $sourceVal;
-			if (defined $originInfo) {
-				$originInfo->{$key} = $origin;
-			}
-		}
-	}
+    foreach my $key (keys %$sourceAttrs) {
+        my $sourceVal = $sourceAttrs->{$key};
+        if (defined $sourceVal) {
+            vlog(3, _tr("pushing %s (val=%s)", $key, $sourceVal));
+            $targetAttrs->{$key} = $sourceVal;
+            if (defined $originInfo) {
+                $originInfo->{$key} = $origin;
+            }
+        }
+    }
 
-	return 1;
+    return 1;
 }
 
 =item C<externalIDForSystem($system)>
@@ -2812,14 +2812,14 @@ The external ID (name) of the given system.
 
 sub externalIDForSystem
 {
-	my $system = shift;
+    my $system = shift;
 
-	return "default" if $system->{name} eq '<<<default>>>';
+    return "default" if $system->{name} eq '<<<default>>>';
 
-	my $name = $system->{name};
-	$name =~ tr[/][_];
+    my $name = $system->{name};
+    $name =~ tr[/][_];
 
-	return $name;
+    return $name;
 }
 
 =item C<externalIDForClient($client)>
@@ -2843,15 +2843,15 @@ The external ID (MAC) of the given client.
 
 sub externalIDForClient
 {
-	my $client = shift;
+    my $client = shift;
 
-	return "default" if $client->{name} eq '<<<default>>>';
+    return "default" if $client->{name} eq '<<<default>>>';
 
-	my $mac = lc($client->{mac});
-	# PXE seems to expect MACs being all lowercase
-	$mac =~ tr[:][-];
+    my $mac = lc($client->{mac});
+    # PXE seems to expect MACs being all lowercase
+    $mac =~ tr[:][-];
 
-	return "01-$mac";
+    return "01-$mac";
 }
 
 =item C<externalConfigNameForClient($client)>
@@ -2875,14 +2875,14 @@ The external name of the given client.
 
 sub externalConfigNameForClient
 {
-	my $client = shift;
+    my $client = shift;
 
-	return "default" if $client->{name} eq '<<<default>>>';
+    return "default" if $client->{name} eq '<<<default>>>';
 
-	my $name = $client->{name};
-	$name =~ tr[/][_];
+    my $name = $client->{name};
+    $name =~ tr[/][_];
 
-	return $name;
+    return $name;
 }
 
 =item C<generatePlaceholdersFor($varName)>
@@ -2905,59 +2905,59 @@ The given variable as a placeholder string.
 
 sub generatePlaceholderFor
 {
-	my $varName = shift;
+    my $varName = shift;
 
-	return '@@@' . $varName . '@@@';
+    return '@@@' . $varName . '@@@';
 }
 
 ################################################################################
 ### private stuff
 ################################################################################
 sub _aref
-{    # transparently converts the given reference to an array-ref
-	my $ref = shift;
+{   # transparently converts the given reference to an array-ref
+    my $ref = shift;
 
-	return [] unless defined $ref;
-	$ref = [$ref] unless ref($ref) eq 'ARRAY';
+    return [] unless defined $ref;
+    $ref = [$ref] unless ref($ref) eq 'ARRAY';
 
-	return $ref;
+    return $ref;
 }
 
 sub _unique
-{    # return given array filtered to unique elements
-	my %seenIDs;
-	return grep { !$seenIDs{$_}++; } @_;
+{   # return given array filtered to unique elements
+    my %seenIDs;
+    return grep { !$seenIDs{$_}++; } @_;
 }
 
 sub _checkCols
 {
-	my $valRows  = shift;
-	my $table    = shift;
-	my @colNames = @_;
+    my $valRows  = shift;
+    my $table    = shift;
+    my @colNames = @_;
 
-	foreach my $valRow (@$valRows) {
-		foreach my $col (@colNames) {
-			die "need to set '$col' for $table!" if !$valRow->{$col};
-		}
-	}
+    foreach my $valRow (@$valRows) {
+        foreach my $col (@colNames) {
+            die "need to set '$col' for $table!" if !$valRow->{$col};
+        }
+    }
 
-	return 1;
+    return 1;
 }
 
 sub _cloneAndUnhingeAttrs
 {
-	my $inValRows = shift;
+    my $inValRows = shift;
 
-	# clone data and unhinge attrs
-	my (@valRows, @attrValRows);
-	foreach my $inValRow (@$inValRows) {
-		push @attrValRows, $inValRow->{attrs};
-		my $valRow = dclone($inValRow);
-		delete $valRow->{attrs};
-		push @valRows, $valRow;
-	}
+    # clone data and unhinge attrs
+    my (@valRows, @attrValRows);
+    foreach my $inValRow (@$inValRows) {
+        push @attrValRows, $inValRow->{attrs};
+        my $valRow = dclone($inValRow);
+        delete $valRow->{attrs};
+        push @valRows, $valRow;
+    }
 
-	return (\@valRows, \@attrValRows);
+    return (\@valRows, \@attrValRows);
 }
 
 1;

@@ -9,14 +9,14 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # Base.pm
-#	- provides empty base of the OpenSLX OSPlugin API.
+#    - provides empty base of the OpenSLX OSPlugin API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSPlugin::Base;
 
 use strict;
 use warnings;
 
-our $VERSION = 1.01;		# API-version . implementation-version
+our $VERSION = 1.01;        # API-version . implementation-version
 
 =head1 NAME
 
@@ -79,7 +79,7 @@ Please note that by convention, plugin names are all lowercase!
 
 sub new
 {
-	confess "Creating OpenSLX::OSPlugin::Base-objects directly makes no sense!";
+    confess "Creating OpenSLX::OSPlugin::Base-objects directly makes no sense!";
 }
 
 =item initialize()
@@ -91,12 +91,12 @@ engine that drives this plugin.
 
 sub initialize
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{'os-plugin-engine'} = shift;
-	$self->{'distro'}           = shift;
-	
-	return;
+    $self->{'os-plugin-engine'} = shift;
+    $self->{'distro'}           = shift;
+    
+    return;
 }
 
 =item getInfo()
@@ -109,12 +109,12 @@ this method and return the information about itself.
 
 sub getInfo
 {
-	my $self = shift;
+    my $self = shift;
 
-	return {
-		# a short (one-liner) description of this plugin
-		description => '',
-	};
+    return {
+        # a short (one-liner) description of this plugin
+        description => '',
+    };
 }
 
 =item getAttrInfo()
@@ -143,20 +143,20 @@ Valid values range from 0-99. If your plugin does not have any requirements
 in this context, just specify the default value '50'.
 
 =back
-	
+    
 =cut
 
 sub getAttrInfo
 {
-	my $self = shift;
+    my $self = shift;
 
-	# This default configuration will be added as attributes to the default
-	# system, such that it can be overruled for any specific system by means 
-	# of slxconfig.
-	return {
-		# attribute 'active' is mandatory for all plugins
-		# attribute 'precedence' is mandatory for all plugins
-	};
+    # This default configuration will be added as attributes to the default
+    # system, such that it can be overruled for any specific system by means 
+    # of slxconfig.
+    return {
+        # attribute 'active' is mandatory for all plugins
+        # attribute 'precedence' is mandatory for all plugins
+    };
 }
 
 =item getDefaultAttrsForVendorOS()
@@ -169,10 +169,10 @@ Returns a hash-ref with the default attribute values for the given vendor-OS.
 
 sub getDefaultAttrsForVendorOS
 {
-	my $self = shift;
+    my $self = shift;
 
-	# the default implementation does not change the default values at all:
-	return $self->getAttrInfo();
+    # the default implementation does not change the default values at all:
+    return $self->getAttrInfo();
 }
 
 =back
@@ -199,15 +199,15 @@ any files from the host, fetch them from there.
 
 sub installationPhase
 {
-	my $self = shift;
-	my $pluginRepositoryPath = shift;
-		# the repository folder, relative to the vendor-OS root
-	my $pluginTempPath = shift;
-		# the temporary folder, relative to the vendor-OS root
-	my $openslxPath = shift;
-		# the openslx base path bind-mounted into the chroot (/mnt/openslx)
-	
-	return;
+    my $self = shift;
+    my $pluginRepositoryPath = shift;
+        # the repository folder, relative to the vendor-OS root
+    my $pluginTempPath = shift;
+        # the temporary folder, relative to the vendor-OS root
+    my $openslxPath = shift;
+        # the openslx base path bind-mounted into the chroot (/mnt/openslx)
+    
+    return;
 }
 
 =item removalPhase()
@@ -224,15 +224,15 @@ N.B.: This method is invoked while chrooted into the vendor-OS root.
 
 sub removalPhase
 {
-	my $self = shift;
-	my $pluginRepositoryPath = shift;
-		# the repository folder, relative to the vendor-OS root
-	my $pluginTempPath = shift;
-		# the temporary folder, relative to the vendor-OS root
-	my $openslxPath = shift;
-		# the openslx base path bind-mounted into the chroot (/mnt/openslx)
-	
-	return;
+    my $self = shift;
+    my $pluginRepositoryPath = shift;
+        # the repository folder, relative to the vendor-OS root
+    my $pluginTempPath = shift;
+        # the temporary folder, relative to the vendor-OS root
+    my $openslxPath = shift;
+        # the openslx base path bind-mounted into the chroot (/mnt/openslx)
+    
+    return;
 }
 
 =back
@@ -257,10 +257,10 @@ that it would like to see added.
 
 sub suggestAdditionalKernelParams
 {
-	my $self                = shift;
-	my $makeInitRamFSEngine = shift;
-	
-	return;
+    my $self                = shift;
+    my $makeInitRamFSEngine = shift;
+    
+    return;
 }
 
 =item suggestAdditionalKernelModules()
@@ -270,15 +270,15 @@ requires.
 
 In order to do so, the plugin should return the names of additional kernel
 modules that it would like to see added.
-	
+    
 =cut
 
 sub suggestAdditionalKernelModules
 {
-	my $self                = shift;
-	my $makeInitRamFSEngine = shift;
-	
-	return;
+    my $self                = shift;
+    my $makeInitRamFSEngine = shift;
+    
+    return;
 }
 
 =item copyRequiredFilesIntoInitramfs()
@@ -294,12 +294,12 @@ All other files should be taken from the root-fs instead!
 
 sub copyRequiredFilesIntoInitramfs
 {
-	my $self                = shift;
-	my $targetPath          = shift;
-	my $attrs				= shift;
-	my $makeInitRamFSEngine = shift;
-	
-	return;
+    my $self                = shift;
+    my $targetPath          = shift;
+    my $attrs                = shift;
+    my $makeInitRamFSEngine = shift;
+    
+    return;
 }
 
 =item setupPluginInInitramfs()
@@ -315,59 +315,59 @@ suggestAdditionalKernelModules() and maybe copyRequiredFilesIntoInitramfs().
 
 sub setupPluginInInitramfs
 {
-	my $self                = shift;
-	my $attrs				= shift;
-	my $makeInitRamFSEngine = shift;
+    my $self                = shift;
+    my $attrs                = shift;
+    my $makeInitRamFSEngine = shift;
 
-	my $pluginName      = $self->{name};
-	my $pluginSrcPath   = "$openslxConfig{'base-path'}/lib/plugins";
-	my $buildPath       = $makeInitRamFSEngine->{'build-path'};
-	my $pluginInitdPath = "$buildPath/etc/plugin-init.d";
-	my $initHooksPath   = "$buildPath/etc/init-hooks";
+    my $pluginName      = $self->{name};
+    my $pluginSrcPath   = "$openslxConfig{'base-path'}/lib/plugins";
+    my $buildPath       = $makeInitRamFSEngine->{'build-path'};
+    my $pluginInitdPath = "$buildPath/etc/plugin-init.d";
+    my $initHooksPath   = "$buildPath/etc/init-hooks";
 
-	# copy runlevel script
-	my $precedence 
-		= sprintf('%02d', $attrs->{"${pluginName}::precedence"});
-	my $scriptName = "$pluginSrcPath/$pluginName/XX_${pluginName}.sh";
-	my $targetName = "$pluginInitdPath/${precedence}_${pluginName}.sh";
-	if (-e $scriptName) {
-		$makeInitRamFSEngine->addCMD("cp $scriptName $targetName");
-		$makeInitRamFSEngine->addCMD("chmod a+x $targetName");
-	}
+    # copy runlevel script
+    my $precedence 
+        = sprintf('%02d', $attrs->{"${pluginName}::precedence"});
+    my $scriptName = "$pluginSrcPath/$pluginName/XX_${pluginName}.sh";
+    my $targetName = "$pluginInitdPath/${precedence}_${pluginName}.sh";
+    if (-e $scriptName) {
+        $makeInitRamFSEngine->addCMD("cp $scriptName $targetName");
+        $makeInitRamFSEngine->addCMD("chmod a+x $targetName");
+    }
 
-	# copy init hook scripts, if any
-	if (-d "$pluginSrcPath/$pluginName/init-hooks") {
-		my $hookSrcPath = "$pluginSrcPath/$pluginName/init-hooks";
-		$makeInitRamFSEngine->addCMD(
-			"cp -r $hookSrcPath/* $buildPath/etc/init-hooks/"
-		);
-	}
+    # copy init hook scripts, if any
+    if (-d "$pluginSrcPath/$pluginName/init-hooks") {
+        my $hookSrcPath = "$pluginSrcPath/$pluginName/init-hooks";
+        $makeInitRamFSEngine->addCMD(
+            "cp -r $hookSrcPath/* $buildPath/etc/init-hooks/"
+        );
+    }
 
-	# invoke hook methods to suggest additional kernel params ...
-	my @suggestedParams 
-		= $self->suggestAdditionalKernelParams($makeInitRamFSEngine);
-	if (@suggestedParams) {
-		my $params = join ' ', @suggestedParams;
-		vlog(1, "plugin $pluginName suggests these kernel params: $params");
-		$makeInitRamFSEngine->addKernelParams(@suggestedParams);
-	}
+    # invoke hook methods to suggest additional kernel params ...
+    my @suggestedParams 
+        = $self->suggestAdditionalKernelParams($makeInitRamFSEngine);
+    if (@suggestedParams) {
+        my $params = join ' ', @suggestedParams;
+        vlog(1, "plugin $pluginName suggests these kernel params: $params");
+        $makeInitRamFSEngine->addKernelParams(@suggestedParams);
+    }
 
-	# ... and kernel modules
-	my @suggestedModules 
-		= $self->suggestAdditionalKernelModules($makeInitRamFSEngine);
-	if (@suggestedModules) {
-		my $modules = join(',', @suggestedModules);
-		vlog(1, "plugin $pluginName suggests these kernel modules: $modules");
-		$makeInitRamFSEngine->addKernelModules(@suggestedModules);
-	}
+    # ... and kernel modules
+    my @suggestedModules 
+        = $self->suggestAdditionalKernelModules($makeInitRamFSEngine);
+    if (@suggestedModules) {
+        my $modules = join(',', @suggestedModules);
+        vlog(1, "plugin $pluginName suggests these kernel modules: $modules");
+        $makeInitRamFSEngine->addKernelModules(@suggestedModules);
+    }
 
-	# invoke hook method to copy any further files that are required in stage3
-	# before the root-fs has been mounted
-	$self->copyRequiredFilesIntoInitramfs(
-		$buildPath, $attrs, $makeInitRamFSEngine
-	);
+    # invoke hook method to copy any further files that are required in stage3
+    # before the root-fs has been mounted
+    $self->copyRequiredFilesIntoInitramfs(
+        $buildPath, $attrs, $makeInitRamFSEngine
+    );
 
-	return 1;
+    return 1;
 }
 
 =back

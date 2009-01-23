@@ -9,14 +9,14 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # Base.pm
-#	- provides empty base of the OpenSLX MetaDB API.
+#    - provides empty base of the OpenSLX MetaDB API.
 # -----------------------------------------------------------------------------
 package OpenSLX::MetaDB::Base;
 
 use strict;
 use warnings;
 
-our $VERSION = 1.01;		# API-version . implementation-version
+our $VERSION = 1.01;        # API-version . implementation-version
 
 use OpenSLX::Basics;
 
@@ -25,10 +25,10 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	confess "Don't create OpenSLX::MetaDB::Base - objects directly!";
+    confess "Don't create OpenSLX::MetaDB::Base - objects directly!";
 }
 
-sub connect		## no critic (ProhibitBuiltinHomonyms)
+sub connect        ## no critic (ProhibitBuiltinHomonyms)
 {
 }
 
@@ -119,12 +119,12 @@ sub fetchGroupIDsOfSystem
 ### data manipulation interface
 ################################################################################
 sub generateNextIdForTable
-{	# some DBs (CSV for instance) aren't able to generate any IDs, so we
-	# offer an alternative way (by pre-specifying IDs for INSERTs).
-	# NB: if this method is called without a tablename, it returns:
-	# 	  1 if this backend requires manual ID generation
-	# 	  0 if not.
-	return;
+{   # some DBs (CSV for instance) aren't able to generate any IDs, so we
+    # offer an alternative way (by pre-specifying IDs for INSERTs).
+    # NB: if this method is called without a tablename, it returns:
+    #       1 if this backend requires manual ID generation
+    #       0 if not.
+    return;
 }
 
 sub addVendorOS

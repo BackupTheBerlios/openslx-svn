@@ -9,8 +9,8 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # AoE.pm
-#	- provides ATA-over-Ethernet specific overrides of the
-#	  OpenSLX::OSExport::BlockDevice API.
+#    - provides ATA-over-Ethernet specific overrides of the
+#      OpenSLX::OSExport::BlockDevice API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::BlockDevice::AoE;
 
@@ -36,71 +36,71 @@ use OpenSLX::Utils;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {'name' => 'aoe',};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {'name' => 'aoe',};
+    return bless $self, $class;
 }
 
 sub initialize
 {
-	my $self   = shift;
-	my $engine = shift;
-	my $fs     = shift;    
+    my $self   = shift;
+    my $engine = shift;
+    my $fs     = shift;    
 
-	$self->{'engine'} = $engine;
-	$self->{'fs'}     = $fs;
-	return;
+    $self->{'engine'} = $engine;
+    $self->{'fs'}     = $fs;
+    return;
 }
 
 sub getExportPort
 {
-	my $self      = shift;
-	my $openslxDB = shift;
+    my $self      = shift;
+    my $openslxDB = shift;
 
-	return $openslxDB->incrementGlobalCounter('next-nbd-server-port');
+    return $openslxDB->incrementGlobalCounter('next-nbd-server-port');
 }
 
 sub generateExportURI
 {
-	my $self   = shift;
-	my $export = shift;
+    my $self   = shift;
+    my $export = shift;
 
-	my $serverIP = $export->{server_ip} || '';
-	my $server 
-		= length($serverIP) ? $serverIP : generatePlaceholderFor('serverip');
-	$server .= ":$export->{port}" if length($export->{port});
+    my $serverIP = $export->{server_ip} || '';
+    my $server 
+        = length($serverIP) ? $serverIP : generatePlaceholderFor('serverip');
+    $server .= ":$export->{port}" if length($export->{port});
 
-	return "aoe://$server";
+    return "aoe://$server";
 }
 
 sub requiredBlockDeviceModules
 {
-	my $self = shift;
+    my $self = shift;
 
-	return qw( aoe );
+    return qw( aoe );
 }
 
 sub requiredBlockDeviceTools
 {
-	my $self = shift;
+    my $self = shift;
 
-	# TODO: is there any such tool?
+    # TODO: is there any such tool?
 
-	return;
+    return;
 }
 
 sub showExportConfigInfo
 {
-	my $self   = shift;
-	my $export = shift;
+    my $self   = shift;
+    my $export = shift;
 
-	print(('#' x 80) . "\n");
-	print _tr(
-		"Please make sure you start a corresponding aoe-server:\n\t%s\n",
-		"... (don't know how this is done yet)"
-	);
-	print(('#' x 80) . "\n");
-	return;
+    print(('#' x 80) . "\n");
+    print _tr(
+        "Please make sure you start a corresponding aoe-server:\n\t%s\n",
+        "... (don't know how this is done yet)"
+    );
+    print(('#' x 80) . "\n");
+    return;
 }
 
 1;

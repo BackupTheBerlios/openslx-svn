@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # Engine.pm
-#	- provides driver engine for the OSPlugin API.
+#    - provides driver engine for the OSPlugin API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSPlugin::Engine;
 
@@ -49,11 +49,11 @@ Trivial constructor
 
 sub new
 {
-	my $class = shift;
+    my $class = shift;
 
-	my $self = {};
+    my $self = {};
 
-	return bless $self, $class;
+    return bless $self, $class;
 }
 
 =item initialize($pluginName, $vendorOSName )
@@ -65,69 +65,69 @@ loads plugin.
 
 sub initialize
 {
-	my $self         = shift;
-	my $pluginName   = shift;
-	my $vendorOSName = shift;
-	my $givenAttrs   = shift || {};
+    my $self         = shift;
+    my $pluginName   = shift;
+    my $vendorOSName = shift;
+    my $givenAttrs   = shift || {};
 
-	$self->{'vendor-os-name'} = $vendorOSName;
+    $self->{'vendor-os-name'} = $vendorOSName;
 
-	$self->{'vendor-os-path'} 
-		= "$openslxConfig{'private-path'}/stage1/$vendorOSName";
-	vlog(1, "vendor-OS path is '$self->{'vendor-os-path'}'");
+    $self->{'vendor-os-path'} 
+        = "$openslxConfig{'private-path'}/stage1/$vendorOSName";
+    vlog(1, "vendor-OS path is '$self->{'vendor-os-path'}'");
 
-	if ($pluginName) {
-		$self->{'plugin-name'} = $pluginName;
-		$self->{'plugin-path'} 
-			= "$openslxConfig{'base-path'}/lib/plugins/$pluginName";
-		vlog(1, "plugin path is '$self->{'plugin-path'}'");
+    if ($pluginName) {
+        $self->{'plugin-name'} = $pluginName;
+        $self->{'plugin-path'} 
+            = "$openslxConfig{'base-path'}/lib/plugins/$pluginName";
+        vlog(1, "plugin path is '$self->{'plugin-path'}'");
 
-		# create ossetup-engine for given vendor-OS:
-		my $osSetupEngine = OpenSLX::OSSetup::Engine->new;
-		$osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
-		$self->{'ossetup-engine'} = $osSetupEngine;
+        # create ossetup-engine for given vendor-OS:
+        my $osSetupEngine = OpenSLX::OSSetup::Engine->new;
+        $osSetupEngine->initialize($self->{'vendor-os-name'}, 'plugin');
+        $self->{'ossetup-engine'} = $osSetupEngine;
 
-		$self->{'plugin'} = $self->_loadPlugin();
-		return if !$self->{'plugin'};
+        $self->{'plugin'} = $self->_loadPlugin();
+        return if !$self->{'plugin'};
 
-		$self->{'chrooted-plugin-repo-path'}
-			= "$openslxConfig{'base-path'}/plugin-repo/$self->{'plugin-name'}";
-		$self->{'plugin-repo-path'}
-			= "$self->{'vendor-os-path'}/$self->{'chrooted-plugin-repo-path'}";
-		$self->{'chrooted-plugin-temp-path'}
-			= "/tmp/slx-plugin/$self->{'plugin-name'}";
-		$self->{'plugin-temp-path'}
-			= "$self->{'vendor-os-path'}/$self->{'chrooted-plugin-temp-path'}";
-		$self->{'chrooted-openslx-base-path'} = '/mnt/openslx';
+        $self->{'chrooted-plugin-repo-path'}
+            = "$openslxConfig{'base-path'}/plugin-repo/$self->{'plugin-name'}";
+        $self->{'plugin-repo-path'}
+            = "$self->{'vendor-os-path'}/$self->{'chrooted-plugin-repo-path'}";
+        $self->{'chrooted-plugin-temp-path'}
+            = "/tmp/slx-plugin/$self->{'plugin-name'}";
+        $self->{'plugin-temp-path'}
+            = "$self->{'vendor-os-path'}/$self->{'chrooted-plugin-temp-path'}";
+        $self->{'chrooted-openslx-base-path'} = '/mnt/openslx';
 
-		# check and store given attribute set
-		my $knownAttrs = $self->{plugin}->getAttrInfo();
-		my @unknownAttrs 
-			= grep { !exists $knownAttrs->{$_} } keys %$givenAttrs;
-		if (@unknownAttrs) {
-			die _tr(
-				"The plugin '%s' does not support these attributes:\n\t%s",
-				$pluginName, join(',', @unknownAttrs)
-			);
-		}
+        # check and store given attribute set
+        my $knownAttrs = $self->{plugin}->getAttrInfo();
+        my @unknownAttrs 
+            = grep { !exists $knownAttrs->{$_} } keys %$givenAttrs;
+        if (@unknownAttrs) {
+            die _tr(
+                "The plugin '%s' does not support these attributes:\n\t%s",
+                $pluginName, join(',', @unknownAttrs)
+            );
+        }
 
-		# merge attributes that were given on cmdline with the ones that
-		# already exist in the DB and finally with the default values
-		$self->{'plugin-attrs'} = { %$givenAttrs };
-		my $defaultAttrs = $self->{plugin}->getDefaultAttrsForVendorOS(
-			$vendorOSName
-		);
-		my $dbAttrs = $self->_fetchInstalledPluginAttrs($vendorOSName);
-		for my $attrName (keys %$defaultAttrs) {
-			next if exists $givenAttrs->{$attrName};
-			$self->{'plugin-attrs'}->{$attrName}
-				= exists $dbAttrs->{$attrName}
-					? $dbAttrs->{$attrName}
-					: $defaultAttrs->{$attrName}->{default};
-		}
-	}
-	
-	return 1;
+        # merge attributes that were given on cmdline with the ones that
+        # already exist in the DB and finally with the default values
+        $self->{'plugin-attrs'} = { %$givenAttrs };
+        my $defaultAttrs = $self->{plugin}->getDefaultAttrsForVendorOS(
+            $vendorOSName
+        );
+        my $dbAttrs = $self->_fetchInstalledPluginAttrs($vendorOSName);
+        for my $attrName (keys %$defaultAttrs) {
+            next if exists $givenAttrs->{$attrName};
+            $self->{'plugin-attrs'}->{$attrName}
+                = exists $dbAttrs->{$attrName}
+                    ? $dbAttrs->{$attrName}
+                    : $defaultAttrs->{$attrName}->{default};
+        }
+    }
+    
+    return 1;
 }
 
 =back
@@ -148,51 +148,51 @@ the plugin's installer method while chrooted into that vendor-OS.
 
 sub installPlugin
 {
-	my $self = shift;
+    my $self = shift;
 
-	if ($self->{'vendor-os-name'} ne '<<<default>>>') {
+    if ($self->{'vendor-os-name'} ne '<<<default>>>') {
 
-		# as the attrs may be changed by the plugin during installation, we
-		# have to find a way to pass them back to this process (remember;
-		# installation takes place in a forked process in order to do a chroot).
-		# We simply serialize the attributes into a temp and deserialize it
-		# in the calling process.
-		my $serializedAttrsFile 
-			= "$self->{'plugin-temp-path'}/serialized-attrs";
-		my $chrootedSerializedAttrsFile 
-			= "$self->{'chrooted-plugin-temp-path'}/serialized-attrs";
-	
-		mkpath([ $self->{'plugin-repo-path'}, $self->{'plugin-temp-path'} ]);
-	
-		# HACK: do a dummy serialization here in order to get Storable 
-		# completely loaded (otherwise it will complain in the chroot about 
-		# missing modules).
-		store $self->{'plugin-attrs'}, $serializedAttrsFile;
-	
-		$self->_callChrootedFunctionForPlugin(
-			sub {
-				# invoke plugin and let it install itself into vendor-OS
-				$self->{plugin}->installationPhase(
-					$self->{'chrooted-plugin-repo-path'}, 
-					$self->{'chrooted-plugin-temp-path'},
-					$self->{'chrooted-openslx-base-path'},
-					$self->{'plugin-attrs'},
-				);
+        # as the attrs may be changed by the plugin during installation, we
+        # have to find a way to pass them back to this process (remember;
+        # installation takes place in a forked process in order to do a chroot).
+        # We simply serialize the attributes into a temp and deserialize it
+        # in the calling process.
+        my $serializedAttrsFile 
+            = "$self->{'plugin-temp-path'}/serialized-attrs";
+        my $chrootedSerializedAttrsFile 
+            = "$self->{'chrooted-plugin-temp-path'}/serialized-attrs";
+    
+        mkpath([ $self->{'plugin-repo-path'}, $self->{'plugin-temp-path'} ]);
+    
+        # HACK: do a dummy serialization here in order to get Storable 
+        # completely loaded (otherwise it will complain in the chroot about 
+        # missing modules).
+        store $self->{'plugin-attrs'}, $serializedAttrsFile;
+    
+        $self->_callChrootedFunctionForPlugin(
+            sub {
+                # invoke plugin and let it install itself into vendor-OS
+                $self->{plugin}->installationPhase(
+                    $self->{'chrooted-plugin-repo-path'}, 
+                    $self->{'chrooted-plugin-temp-path'},
+                    $self->{'chrooted-openslx-base-path'},
+                    $self->{'plugin-attrs'},
+                );
 
-				# serialize possibly changed attributes (executed inside chroot)
-				store $self->{'plugin-attrs'}, $chrootedSerializedAttrsFile;
-			}
-		);
+                # serialize possibly changed attributes (executed inside chroot)
+                store $self->{'plugin-attrs'}, $chrootedSerializedAttrsFile;
+            }
+        );
 
-		# now retrieve (deserialize) the current attributes and store them
-		$self->{'plugin-attrs'} = retrieve $serializedAttrsFile;
-		$self->_addInstalledPluginToDB();
-	
-		# cleanup temp path
-		rmtree([ $self->{'plugin-temp-path'} ]);
-	}
-	
-	return 1;
+        # now retrieve (deserialize) the current attributes and store them
+        $self->{'plugin-attrs'} = retrieve $serializedAttrsFile;
+        $self->_addInstalledPluginToDB();
+    
+        # cleanup temp path
+        rmtree([ $self->{'plugin-temp-path'} ]);
+    }
+    
+    return 1;
 }
 
 =item removePlugin()
@@ -204,28 +204,28 @@ the plugin's removal method while chrooted into that vendor-OS.
 
 sub removePlugin
 {
-	my $self = shift;
+    my $self = shift;
 
-	if ($self->{'vendor-os-name'} ne '<<<default>>>') {
+    if ($self->{'vendor-os-name'} ne '<<<default>>>') {
 
-		mkpath([ $self->{'plugin-repo-path'}, $self->{'plugin-temp-path'} ]);
+        mkpath([ $self->{'plugin-repo-path'}, $self->{'plugin-temp-path'} ]);
 
-		$self->_callChrootedFunctionForPlugin(
-			sub {
-				$self->{plugin}->removalPhase(
-					$self->{'chrooted-plugin-repo-path'}, 
-					$self->{'chrooted-plugin-temp-path'},
-					$self->{'chrooted-openslx-base-path'},
-				);
-			}
-		);
+        $self->_callChrootedFunctionForPlugin(
+            sub {
+                $self->{plugin}->removalPhase(
+                    $self->{'chrooted-plugin-repo-path'}, 
+                    $self->{'chrooted-plugin-temp-path'},
+                    $self->{'chrooted-openslx-base-path'},
+                );
+            }
+        );
 
-		rmtree([ $self->{'plugin-temp-path'} ]);
-	}
-	
-	$self->_removeInstalledPluginFromDB();
+        rmtree([ $self->{'plugin-temp-path'} ]);
+    }
+    
+    $self->_removeInstalledPluginFromDB();
 
-	return 1;
+    return 1;
 }
 
 =item getInstalledPlugins()
@@ -237,22 +237,22 @@ vendor-OS.
 
 sub getInstalledPlugins
 {
-	my $self = shift;
-	
-	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
-	$openslxDB->connect();
-	my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-		name => $self->{'vendor-os-name'},
-	} );
-	if (!$vendorOS) {
-		die _tr(
-			'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-		);
-	}
-	my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOS->{id});
-	$openslxDB->disconnect();
+    my $self = shift;
+    
+    my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
+    $openslxDB->connect();
+    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
+        name => $self->{'vendor-os-name'},
+    } );
+    if (!$vendorOS) {
+        die _tr(
+            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
+        );
+    }
+    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOS->{id});
+    $openslxDB->disconnect();
 
-	return @installedPlugins;
+    return @installedPlugins;
 }
 
 =back
@@ -275,9 +275,9 @@ Returns the name of the current vendor-OS.
 
 sub vendorOSName
 {
-	my $self = shift;
+    my $self = shift;
 
-	return $self->{'vendor-os-name'};
+    return $self->{'vendor-os-name'};
 }
 
 =item distroName()
@@ -291,9 +291,9 @@ distro version, like 'suse-10.2' or 'ubuntu-7.04'.
 
 sub distroName
 {
-	my $self = shift;
+    my $self = shift;
 
-	return $self->{'ossetup-engine'}->distroName();
+    return $self->{'ossetup-engine'}->distroName();
 }
 
 =item downloadFile($fileURL, $targetPath, $wgetOptions)
@@ -325,18 +325,18 @@ If the downloaded was successful this method returns C<1>, otherwise it dies.
 
 sub downloadFile
 {
-	my $self        = shift;
-	my $fileURL     = shift || return;
-	my $targetPath  = shift || $self->{'chrooted-plugin-temp-path'};
-	my $wgetOptions = shift || '';
+    my $self        = shift;
+    my $fileURL     = shift || return;
+    my $targetPath  = shift || $self->{'chrooted-plugin-temp-path'};
+    my $wgetOptions = shift || '';
 
-	my $busybox = $self->{'ossetup-engine'}->busyboxBinary();
-	
-	if (slxsystem("$busybox wget -P $targetPath $wgetOptions $fileURL")) {
-		die _tr('unable to download file "%s"! (%s)', $fileURL, $!);
-	}
+    my $busybox = $self->{'ossetup-engine'}->busyboxBinary();
+    
+    if (slxsystem("$busybox wget -P $targetPath $wgetOptions $fileURL")) {
+        die _tr('unable to download file "%s"! (%s)', $fileURL, $!);
+    }
 
-	return 1;
+    return 1;
 }
 
 =item getInstalledPackages()
@@ -350,12 +350,12 @@ install additional packages.
 
 sub getInstalledPackages
 {
-	my $self = shift;
+    my $self = shift;
 
-	my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
-	return if !$metaPackager;
+    my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
+    return if !$metaPackager;
 
-	return $metaPackager->getInstalledPackages();
+    return $metaPackager->getInstalledPackages();
 }
 
 =item getInstallablePackagesForSelection()
@@ -368,12 +368,12 @@ to complete the selection.
 
 sub getInstallablePackagesForSelection
 {
-	my $self      = shift;
-	my $selection = shift;
+    my $self      = shift;
+    my $selection = shift;
 
-	return $self->{'ossetup-engine'}->getInstallablePackagesForSelection(
-		$selection
-	);
+    return $self->{'ossetup-engine'}->getInstallablePackagesForSelection(
+        $selection
+    );
 }
 
 
@@ -401,15 +401,15 @@ otherwise it dies.
 
 sub installPackages
 {
-	my $self     = shift;
-	my $packages = shift;
+    my $self     = shift;
+    my $packages = shift;
 
-	return if !$packages;
+    return if !$packages;
 
-	my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
-	return if !$metaPackager;
+    my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
+    return if !$metaPackager;
 
-	return $metaPackager->installPackages($packages);
+    return $metaPackager->installPackages($packages);
 }
 
 =item removePackages($packages)
@@ -433,15 +433,15 @@ otherwise it dies.
 
 sub removePackages
 {
-	my $self     = shift;
-	my $packages = shift;
+    my $self     = shift;
+    my $packages = shift;
 
-	return if !$packages;
+    return if !$packages;
 
-	my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
-	return if !$metaPackager;
+    my $metaPackager = $self->{'ossetup-engine'}->metaPackager();
+    return if !$metaPackager;
 
-	return $metaPackager->removePackages($packages);
+    return $metaPackager->removePackages($packages);
 }
 
 =back
@@ -450,148 +450,148 @@ sub removePackages
 
 sub _loadPlugin
 {
-	my $self = shift;
-	
-	my $pluginModule = "OpenSLX::OSPlugin::$self->{'plugin-name'}";
-	my $plugin = instantiateClass(
-		$pluginModule, { pathToClass => $self->{'plugin-path'} }
-	);
-	return if !$plugin;
+    my $self = shift;
+    
+    my $pluginModule = "OpenSLX::OSPlugin::$self->{'plugin-name'}";
+    my $plugin = instantiateClass(
+        $pluginModule, { pathToClass => $self->{'plugin-path'} }
+    );
+    return if !$plugin;
 
-	# if there's a distro folder, instantiate the most appropriate distro class
-	my $distro;
-	if (-d "$self->{'plugin-path'}/OpenSLX/Distro") {
-		unshift @INC, $self->{'plugin-path'};
-		my $distroName = $self->distroName();
-		$distroName =~ tr{.-}{__};
-		my @distroModules;
-		while($distroName =~ m{^(.+)_[^_]*$}) {
-			push @distroModules, $distroName;
-			$distroName = $1;
-		}
-		push @distroModules, $distroName;
-		push @distroModules, 'Base';
-		for my $distroModule (@distroModules) {
-			last if eval {
-				$distro = instantiateClass(
-					'OpenSLX::Distro::' . $distroModule, 
-					{ pathToClass => $self->{'plugin-path'} }
-				);
-				1;
-			};
-		}
-		shift @INC;
-		if (!$distro) {
-			die _tr(
-				'unable to load any distro module for vendor-OS %s',
-				$self->{'vendor-os-name'}
-			);
-		}
-		$distro->initialize($self);
-	}
+    # if there's a distro folder, instantiate the most appropriate distro class
+    my $distro;
+    if (-d "$self->{'plugin-path'}/OpenSLX/Distro") {
+        unshift @INC, $self->{'plugin-path'};
+        my $distroName = $self->distroName();
+        $distroName =~ tr{.-}{__};
+        my @distroModules;
+        while($distroName =~ m{^(.+)_[^_]*$}) {
+            push @distroModules, $distroName;
+            $distroName = $1;
+        }
+        push @distroModules, $distroName;
+        push @distroModules, 'Base';
+        for my $distroModule (@distroModules) {
+            last if eval {
+                $distro = instantiateClass(
+                    'OpenSLX::Distro::' . $distroModule, 
+                    { pathToClass => $self->{'plugin-path'} }
+                );
+                1;
+            };
+        }
+        shift @INC;
+        if (!$distro) {
+            die _tr(
+                'unable to load any distro module for vendor-OS %s',
+                $self->{'vendor-os-name'}
+            );
+        }
+        $distro->initialize($self);
+    }
 
-	$plugin->initialize($self, $distro);
+    $plugin->initialize($self, $distro);
 
-	return $plugin;
+    return $plugin;
 }
 
 sub _callChrootedFunctionForPlugin
 {
-	my $self     = shift;
-	my $function = shift;
+    my $self     = shift;
+    my $function = shift;
 
-	# bind-mount openslx basepath to /mnt/openslx of vendor-OS:
-	my $basePath 			= $openslxConfig{'base-path'};
-	my $openslxPathInChroot = "$self->{'vendor-os-path'}/mnt/openslx";
-	mkpath( [ $openslxPathInChroot ] );
-	if (slxsystem("mount -o bind $basePath $openslxPathInChroot")) {
-		croak(
-			_tr(
-				"unable to bind mount '%s' to '%s'! (%s)", 
-				$basePath, $openslxPathInChroot, $!
-			)
-		);
-	}
+    # bind-mount openslx basepath to /mnt/openslx of vendor-OS:
+    my $basePath             = $openslxConfig{'base-path'};
+    my $openslxPathInChroot = "$self->{'vendor-os-path'}/mnt/openslx";
+    mkpath( [ $openslxPathInChroot ] );
+    if (slxsystem("mount -o bind $basePath $openslxPathInChroot")) {
+        croak(
+            _tr(
+                "unable to bind mount '%s' to '%s'! (%s)", 
+                $basePath, $openslxPathInChroot, $!
+            )
+        );
+    }
 
-	# now let plugin install itself into vendor-OS
-	my $ok = eval {
-		$self->{'ossetup-engine'}->callChrootedFunctionForVendorOS($function);
-	};
+    # now let plugin install itself into vendor-OS
+    my $ok = eval {
+        $self->{'ossetup-engine'}->callChrootedFunctionForVendorOS($function);
+    };
 
-	if (slxsystem("umount $openslxPathInChroot")) {
-		croak(_tr("unable to umount '%s'! (%s)", $openslxPathInChroot, $!));
-	}
-	
-	if (!$ok) {
-		die $@;
-	}
-	
-	return;
+    if (slxsystem("umount $openslxPathInChroot")) {
+        croak(_tr("unable to umount '%s'! (%s)", $openslxPathInChroot, $!));
+    }
+    
+    if (!$ok) {
+        die $@;
+    }
+    
+    return;
 }
 
 sub _addInstalledPluginToDB
 {
-	my $self = shift;
-	
-	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
-	$openslxDB->connect();
-	my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-		name => $self->{'vendor-os-name'},
-	} );
-	if (!$vendorOS) {
-		die _tr(
-			'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-		);
-	}
-	$openslxDB->addInstalledPlugin(
-		$vendorOS->{id}, $self->{'plugin-name'}, $self->{'plugin-attrs'}
-	);
-	$openslxDB->disconnect();
+    my $self = shift;
+    
+    my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
+    $openslxDB->connect();
+    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
+        name => $self->{'vendor-os-name'},
+    } );
+    if (!$vendorOS) {
+        die _tr(
+            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
+        );
+    }
+    $openslxDB->addInstalledPlugin(
+        $vendorOS->{id}, $self->{'plugin-name'}, $self->{'plugin-attrs'}
+    );
+    $openslxDB->disconnect();
 
-	return 1;
+    return 1;
 }
 
 sub _fetchInstalledPluginAttrs
 {
-	my $self = shift;
-	
-	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
-	$openslxDB->connect();
-	my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-		name => $self->{'vendor-os-name'},
-	} );
-	if (!$vendorOS) {
-		die _tr(
-			'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-		);
-	}
-	my $installedPlugin = $openslxDB->fetchInstalledPlugins(
-		$vendorOS->{id}, $self->{'plugin-name'}
-	);
-	$openslxDB->disconnect();
+    my $self = shift;
+    
+    my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
+    $openslxDB->connect();
+    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
+        name => $self->{'vendor-os-name'},
+    } );
+    if (!$vendorOS) {
+        die _tr(
+            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
+        );
+    }
+    my $installedPlugin = $openslxDB->fetchInstalledPlugins(
+        $vendorOS->{id}, $self->{'plugin-name'}
+    );
+    $openslxDB->disconnect();
 
-	return {} if !$installedPlugin;
-	return $installedPlugin->{attrs};
+    return {} if !$installedPlugin;
+    return $installedPlugin->{attrs};
 }
 
 sub _removeInstalledPluginFromDB
 {
-	my $self = shift;
-	
-	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
-	$openslxDB->connect();
-	my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-		name => $self->{'vendor-os-name'},
-	} );
-	if (!$vendorOS) {
-		die _tr(
-			'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-		);
-	}
-	$openslxDB->removeInstalledPlugin($vendorOS->{id}, $self->{'plugin-name'});
-	$openslxDB->disconnect();
+    my $self = shift;
+    
+    my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
+    $openslxDB->connect();
+    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
+        name => $self->{'vendor-os-name'},
+    } );
+    if (!$vendorOS) {
+        die _tr(
+            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
+        );
+    }
+    $openslxDB->removeInstalledPlugin($vendorOS->{id}, $self->{'plugin-name'});
+    $openslxDB->disconnect();
 
-	return 1;
+    return 1;
 }
 
 1;

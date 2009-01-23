@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # Debian.pm
-#	- provides Debian-specific overrides of the OpenSLX OSExport API.
+#    - provides Debian-specific overrides of the OpenSLX OSExport API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::Distro::Debian;
 
@@ -25,35 +25,35 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {
-		'base-name' => 'debian',
-	};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {
+        'base-name' => 'debian',
+    };
+    return bless $self, $class;
 }
 
 sub initDistroInfo
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{'export-filter'} = "
-		- /var/tmp/*
-		- /var/spool/*
-		- /var/run/*
-		- /var/log/*
-		- /var/lib/xdm
-		- /var/cache/man/*
-		- /usr/share/vmware/*
-		- /tmp/*
-		- /sys/*
-		- /proc/*
-		- /mnt/*
-		- /media/*
-		- /lib/klibc/events/*
-		- /boot/initrd*
-		- /boot/grub
-	";
-	return;
+    $self->{'export-filter'} = "
+        - /var/tmp/*
+        - /var/spool/*
+        - /var/run/*
+        - /var/log/*
+        - /var/lib/xdm
+        - /var/cache/man/*
+        - /usr/share/vmware/*
+        - /tmp/*
+        - /sys/*
+        - /proc/*
+        - /mnt/*
+        - /media/*
+        - /lib/klibc/events/*
+        - /boot/initrd*
+        - /boot/grub
+    ";
+    return;
 }
 
 1;

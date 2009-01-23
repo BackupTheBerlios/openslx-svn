@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # Ubuntu.pm
-#	- provides Ubuntu-specific overrides of the OpenSLX OSExport API.
+#    - provides Ubuntu-specific overrides of the OpenSLX OSExport API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::Distro::Ubuntu;
 
@@ -25,37 +25,37 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {
-		'base-name' => 'ubuntu',
-	};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {
+        'base-name' => 'ubuntu',
+    };
+    return bless $self, $class;
 }
 
 sub initDistroInfo
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{'export-filter'} = "
-		- /var/tmp/*
-		- /var/spool/*
-		- /var/run/*
-		- /var/log/*
-		- /var/lib/xdm
-		- /var/cache/man/*
-		- /usr/share/vmware/*
-		- /tmp/*
-		- /sys/*
-		- /proc/*
-		- /mnt/*
-		- /media/*
-		- /lib/klibc/events/*
-		- /initrd*
-		- /etc/cron.*/*
-		- /boot/initrd*
-		- /boot/grub
-	";
-	return;
+    $self->{'export-filter'} = "
+        - /var/tmp/*
+        - /var/spool/*
+        - /var/run/*
+        - /var/log/*
+        - /var/lib/xdm
+        - /var/cache/man/*
+        - /usr/share/vmware/*
+        - /tmp/*
+        - /sys/*
+        - /proc/*
+        - /mnt/*
+        - /media/*
+        - /lib/klibc/events/*
+        - /initrd*
+        - /etc/cron.*/*
+        - /boot/initrd*
+        - /boot/grub
+    ";
+    return;
 }
 
 1;

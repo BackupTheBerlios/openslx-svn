@@ -9,14 +9,14 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # Base.pm
-#	- provides empty base of the OpenSLX OSSetup::Packager API.
+#    - provides empty base of the OpenSLX OSSetup::Packager API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Packager::Base;
 
 use strict;
 use warnings;
 
-our $VERSION = 1.01;		# API-version . implementation-version
+our $VERSION = 1.01;        # API-version . implementation-version
 
 use OpenSLX::Basics;
 
@@ -25,16 +25,16 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	confess "Creating OpenSLX::OSSetup::Packager::Base-objects directly makes no sense!";
+    confess "Creating OpenSLX::OSSetup::Packager::Base-objects directly makes no sense!";
 }
 
 sub initialize
 {
-	my $self = shift;
-	my $engine = shift;
+    my $self = shift;
+    my $engine = shift;
 
-	$self->{'engine'} = $engine;
-	return;
+    $self->{'engine'} = $engine;
+    return;
 }
 
 sub prepareBootstrap

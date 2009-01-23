@@ -11,7 +11,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # slxldd
-#	- OpenSLX-rewrite of ldd that works on multiple architectures.
+#    - OpenSLX-rewrite of ldd that works on multiple architectures.
 # -----------------------------------------------------------------------------
 use strict;
 use warnings;
@@ -38,41 +38,41 @@ use OpenSLX::Basics;
 use OpenSLX::LibScanner;
 
 my %option = (
-	rootPath => '/',
+    rootPath => '/',
 );
 GetOptions(
-	'help|?'      => \$option{helpReq},
-	'man'         => \$option{manReq},
-	'root-path=s' => \$option{rootPath},
-	'verbose'     => \$option{verbose},
-	'version'     => \$option{versionReq},
+    'help|?'      => \$option{helpReq},
+    'man'         => \$option{manReq},
+    'root-path=s' => \$option{rootPath},
+    'verbose'     => \$option{verbose},
+    'version'     => \$option{versionReq},
   )
   or pod2usage(2);
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $option{helpReq};
 pod2usage(-verbose => 2) if $option{manReq};
 if ($option{versionReq}) {
-	system('slxversion');
-	exit 1;
+    system('slxversion');
+    exit 1;
 }
 
 openslxInit();
 
 if (!$option{rootPath}) {
-	print STDERR _tr("You need to specify the root-path!\n");
-	pod2usage(2);
+    print STDERR _tr("You need to specify the root-path!\n");
+    pod2usage(2);
 }
 
 $option{rootPath} =~ s[/+$][];
 # remove trailing slashes
 
 if (!@ARGV) {
-	print STDERR _tr("You need to specify at least one file!\n");
-	pod2usage(2);
+    print STDERR _tr("You need to specify at least one file!\n");
+    pod2usage(2);
 }
 
 my $libScanner = OpenSLX::LibScanner->new({
-	'root-path' => $option{rootPath},
-	'verbose'   => $option{verbose},
+    'root-path' => $option{rootPath},
+    'verbose'   => $option{verbose},
 });
 
 my @libs = $libScanner->determineRequiredLibs(@ARGV);

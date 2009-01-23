@@ -38,21 +38,21 @@ use OpenSLX::Utils;
 my %option;
 
 GetOptions(
-	'help|?'  => \$option{helpReq},
-	'man'     => \$option{manReq},
-	'version' => \$option{versionReq},
+    'help|?'  => \$option{helpReq},
+    'man'     => \$option{manReq},
+    'version' => \$option{versionReq},
   )
   or pod2usage(2);
 pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $option{helpReq};
 if ($option{manReq}) {
-	# avoid dubious problem with perldoc in combination with UTF-8 that
-	# leads to strange dashes and single-quotes being used
-	$ENV{LC_ALL} = 'POSIX';
-	pod2usage(-verbose => 2);
+    # avoid dubious problem with perldoc in combination with UTF-8 that
+    # leads to strange dashes and single-quotes being used
+    $ENV{LC_ALL} = 'POSIX';
+    pod2usage(-verbose => 2);
 }
 if ($option{versionReq}) {
-	system('slxversion');
-	exit 1;
+    system('slxversion');
+    exit 1;
 }
 
 openslxInit();
@@ -60,109 +60,109 @@ openslxInit();
 my $action = shift @ARGV || '';
 
 if ($action =~ m[^list-ex]i) {
-	print _tr("List of exported vendor-OSes (exports):\n");
-	foreach my $type (sort keys %supportedExportFileSystems) {
-		# list all image files, followed by the block devices using it:
-		my @files = map {
-			my $image = decode('utf8', $_);
-			$image =~ s[^.+/][];
-			$image;
-		}
-		sort glob("$openslxConfig{'public-path'}/export/$type/*");
-		my %imageFiles;
-		foreach my $file (@files) {
-			if ($file =~ m[^(.+)@(.+)$]) {
-				# it's a link referring to a block device using this image,
-				# we collect the name of the block device:
-				push @{$imageFiles{$1}}, $2;
-			} else {
-				# it's an image file, we setup an empty array of block devices:
-				$imageFiles{$file} = [];
-			}
-		}
-		print join(
-			'',
-			map {
-				my $devices = join(',', @{$imageFiles{$_}});
-				my $name = "${_}::$type";
-				if (length($devices)) {
-					"\t$name".substr(' ' x 30, length($name))."($devices)\n";
-				} else {
-					"\t$name\n";
-				}
-			}
-			grep {
-				# filter out RSYNC_TMP folders:
-				$_ !~ m[###];
-			}
-			sort keys %imageFiles
-		);
-	}
+    print _tr("List of exported vendor-OSes (exports):\n");
+    foreach my $type (sort keys %supportedExportFileSystems) {
+        # list all image files, followed by the block devices using it:
+        my @files = map {
+            my $image = decode('utf8', $_);
+            $image =~ s[^.+/][];
+            $image;
+        }
+        sort glob("$openslxConfig{'public-path'}/export/$type/*");
+        my %imageFiles;
+        foreach my $file (@files) {
+            if ($file =~ m[^(.+)@(.+)$]) {
+                # it's a link referring to a block device using this image,
+                # we collect the name of the block device:
+                push @{$imageFiles{$1}}, $2;
+            } else {
+                # it's an image file, we setup an empty array of block devices:
+                $imageFiles{$file} = [];
+            }
+        }
+        print join(
+            '',
+            map {
+                my $devices = join(',', @{$imageFiles{$_}});
+                my $name = "${_}::$type";
+                if (length($devices)) {
+                    "\t$name".substr(' ' x 30, length($name))."($devices)\n";
+                } else {
+                    "\t$name\n";
+                }
+            }
+            grep {
+                # filter out RSYNC_TMP folders:
+                $_ !~ m[###];
+            }
+            sort keys %imageFiles
+        );
+    }
 } elsif ($action =~ m[^list-in]i) {
-	my @vendorOSDirs 
-		= grep { -d $_ } glob("$openslxConfig{'private-path'}/stage1/*");
-	print _tr("List of installed vendor-OSes:\n");
-	print join(
-		'',
-		map {
-			my $vendorOS = decode('utf8', $_);
-			$vendorOS =~ s[^.+/][];
-			"\t$vendorOS\n";
-		}
-		sort @vendorOSDirs
-	);
+    my @vendorOSDirs 
+        = grep { -d $_ } glob("$openslxConfig{'private-path'}/stage1/*");
+    print _tr("List of installed vendor-OSes:\n");
+    print join(
+        '',
+        map {
+            my $vendorOS = decode('utf8', $_);
+            $vendorOS =~ s[^.+/][];
+            "\t$vendorOS\n";
+        }
+        sort @vendorOSDirs
+    );
 } elsif ($action =~ m[^list-ty]i) {
-	print _tr("List of supported export types:\n\t");
-	print join("\n\t", sort @supportedExportTypes) . "\n";
+    print _tr("List of supported export types:\n\t");
+    print join("\n\t", sort @supportedExportTypes) . "\n";
 } elsif ($action =~ m[^export]i) {
-	if (scalar(@ARGV) != 2) {
-		print STDERR _tr(
-			"You need to specify exactly one vendor-os-name and one export-type!\n"
-		);
-		pod2usage(2);
-	}
-	my $vendorOSName = shift @ARGV;
-	my $exportType   = shift @ARGV;
+    if (scalar(@ARGV) != 2) {
+        print STDERR _tr(
+            "You need to specify exactly one vendor-os-name and one export-type!\n"
+        );
+        pod2usage(2);
+    }
+    my $vendorOSName = shift @ARGV;
+    my $exportType   = shift @ARGV;
 
-	# we chdir into the script's folder such that all relative paths have
-	# a known starting point:
-	chdir($FindBin::RealBin)
-	  or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+    # we chdir into the script's folder such that all relative paths have
+    # a known starting point:
+    chdir($FindBin::RealBin)
+      or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 
-	# create OSExport-engine for given export type and start it:
-	my $engine = OpenSLX::OSExport::Engine->new;
-	$engine->initializeForNew($vendorOSName, $exportType);
-	if (!-e $engine->{'vendor-os-path'}) {
-		die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
-			$engine->{'vendor-os-path'});
-	}
-	$engine->exportVendorOS();
+    # create OSExport-engine for given export type and start it:
+    my $engine = OpenSLX::OSExport::Engine->new;
+    $engine->initializeForNew($vendorOSName, $exportType);
+    if (!-e $engine->{'vendor-os-path'}) {
+        die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
+            $engine->{'vendor-os-path'});
+    }
+    $engine->exportVendorOS();
 } elsif ($action =~ m[^remove]i) {
-	if (scalar(@ARGV) != 1) {
-		print STDERR _tr("You need to specify exactly one export-name!\n");
-		pod2usage(2);
-	}
-	my $exportName = shift @ARGV;
+    if (scalar(@ARGV) != 1) {
+        print STDERR _tr("You need to specify exactly one export-name!\n");
+        pod2usage(2);
+    }
+    my $exportName = shift @ARGV;
 
-	# we chdir into the script's folder such that all relative paths have
-	# a known starting point:
-	chdir($FindBin::RealBin)
-	  or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+    # we chdir into the script's folder such that all relative paths have
+    # a known starting point:
+    chdir($FindBin::RealBin)
+      or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 
-	# create OSExport-engine for given export type and start it:
-	my $engine = OpenSLX::OSExport::Engine->new;
-	$engine->initializeFromExisting($exportName);
-	$engine->purgeExport();
+    # create OSExport-engine for given export type and start it:
+    my $engine = OpenSLX::OSExport::Engine->new;
+    $engine->initializeFromExisting($exportName);
+    $engine->purgeExport();
 } else {
-	vlog(0, _tr(unshiftHereDoc(<<'	END-OF-HERE'), $0));
-		You need to specify exactly one action:
-			export
-			list-exported
-			list-installed
-			list-types
-			remove
-		Try '%s --help' for more info.
-	END-OF-HERE
+    vlog(0, _tr(unshiftHereDoc(<<'    END-OF-HERE'), $0));
+        You need to specify exactly one action:
+            export
+            list-exported
+            list-installed
+            list-types
+            remove
+        Try '%s --help' for more info.
+    END-OF-HERE
 }
 
 =head1 NAME

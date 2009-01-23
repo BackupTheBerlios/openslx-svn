@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # Debian_3_1.pm
-#	- provides Debian-3.1-specific overrides of the OpenSLX OSSetup API.
+#    - provides Debian-3.1-specific overrides of the OpenSLX OSSetup API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::Debian_3_1;
 
@@ -26,30 +26,30 @@ use OpenSLX::Utils;
 ################################################################################
 sub preSystemInstallationHook
 {
-	my $self = shift;
-	
-	$self->SUPER::preSystemInstallationHook();
+    my $self = shift;
+    
+    $self->SUPER::preSystemInstallationHook();
 
-	# when the kernel package is being configured, it insists on trying to
-	# create an initrd, which neither works nor makes sense in our environment.
-	#
-	# in order to circumvent this problem, we manually install initrd-tools 
-	# (which contains mkinitrd) ...
-	$self->{engine}->{'meta-packager'}->installPackages('initrd-tools');
-	# ... and replace /usr/sbin/mkinitrd with a dummy, in order to skip the 
-	# initrd-creation.
-	rename('/usr/sbin/mkinitrd', '/usr/sbin/_mkinitrd');
-	spitFile('/usr/sbin/mkinitrd', "#! /bin/sh\ntouch \$2\n");
-	chmod 0755, '/usr/sbin/mkinitrd';
+    # when the kernel package is being configured, it insists on trying to
+    # create an initrd, which neither works nor makes sense in our environment.
+    #
+    # in order to circumvent this problem, we manually install initrd-tools 
+    # (which contains mkinitrd) ...
+    $self->{engine}->{'meta-packager'}->installPackages('initrd-tools');
+    # ... and replace /usr/sbin/mkinitrd with a dummy, in order to skip the 
+    # initrd-creation.
+    rename('/usr/sbin/mkinitrd', '/usr/sbin/_mkinitrd');
+    spitFile('/usr/sbin/mkinitrd', "#! /bin/sh\ntouch \$2\n");
+    chmod 0755, '/usr/sbin/mkinitrd';
 }
 
 sub postSystemInstallationHook
 {
-	my $self = shift;
+    my $self = shift;
 
-	# restore /usr/sbin/mkinitrd
-	rename('/usr/sbin/_mkinitrd', '/usr/sbin/mkinitrd');
-	$self->SUPER::postSystemInstallationHook();
+    # restore /usr/sbin/mkinitrd
+    rename('/usr/sbin/_mkinitrd', '/usr/sbin/mkinitrd');
+    $self->SUPER::postSystemInstallationHook();
 }
 
 1;

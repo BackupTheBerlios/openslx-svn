@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # Fedora.pm
-#	- provides Fedora-specific overrides of the OpenSLX OSExport API.
+#    - provides Fedora-specific overrides of the OpenSLX OSExport API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::Distro::Fedora;
 
@@ -25,41 +25,41 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {
-		'base-name' => 'fedora',
-	};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {
+        'base-name' => 'fedora',
+    };
+    return bless $self, $class;
 }
 
 sub initDistroInfo
 {
-	my $self = shift;
+    my $self = shift;
 
-	# TODO: check and refine this!
-	$self->{'export-filter'} = "
-		- /var/tmp/*
-		- /var/spool/*
-		- /var/run/*
-		- /var/lock/*
-		- /var/log/*
-		- /var/lib/xdm
-		- /var/lib/smart
-		- /var/cache/yum
-		- /var/cache/man/*
-		- /usr/share/vmware/*
-		- /tmp/*
-		- /sys/*
-		- /proc/*
-		- /mnt/*
-		- /media/*
-		- /lib/klibc/events/*
-		- /boot/initrd*
-		- /boot/grub
-		- *.rpmsave
-		- *.rpmnew
-	";
-	return;
+    # TODO: check and refine this!
+    $self->{'export-filter'} = "
+        - /var/tmp/*
+        - /var/spool/*
+        - /var/run/*
+        - /var/lock/*
+        - /var/log/*
+        - /var/lib/xdm
+        - /var/lib/smart
+        - /var/cache/yum
+        - /var/cache/man/*
+        - /usr/share/vmware/*
+        - /tmp/*
+        - /sys/*
+        - /proc/*
+        - /mnt/*
+        - /media/*
+        - /lib/klibc/events/*
+        - /boot/initrd*
+        - /boot/grub
+        - *.rpmsave
+        - *.rpmnew
+    ";
+    return;
 }
 
 1;

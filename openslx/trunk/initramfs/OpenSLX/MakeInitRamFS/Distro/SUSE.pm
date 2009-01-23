@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # MakeInitRamFS::Distro::SUSE.pm
-#	- provides SUSE-specific overrides of the MakeInitRamFS::Distro API.
+#    - provides SUSE-specific overrides of the MakeInitRamFS::Distro API.
 # -----------------------------------------------------------------------------
 package OpenSLX::MakeInitRamFS::Distro::SUSE;
 
@@ -25,21 +25,21 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {
-		'base-name' => 'suse',
-	};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {
+        'base-name' => 'suse',
+    };
+    return bless $self, $class;
 }
 
 sub applyChanges
 {
-	my $self   = shift;
-	my $engine = shift;
+    my $self   = shift;
+    my $engine = shift;
 
-	$engine->_addFilteredKernelModules( qw( hid unix ));
+    $engine->_addFilteredKernelModules( qw( hid unix ));
 
-	return;
+    return;
 }
 
 1;

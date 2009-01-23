@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # Any_Clone.pm
-#	- provides generic clone-only overrides of the OpenSLX OSSetup API.
+#    - provides generic clone-only overrides of the OpenSLX OSSetup API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::Any_Clone;
 
@@ -23,9 +23,9 @@ use base qw(OpenSLX::OSSetup::Distro::Base);
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {};
+    return bless $self, $class;
 }
 
 1;

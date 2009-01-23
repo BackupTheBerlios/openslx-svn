@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # SUSE.pm
-#	- provides SUSE-specific overrides of the OpenSLX OSExport API.
+#    - provides SUSE-specific overrides of the OpenSLX OSExport API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::Distro::SUSE;
 
@@ -25,89 +25,89 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {
-		'base-name' => 'suse',
-	};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {
+        'base-name' => 'suse',
+    };
+    return bless $self, $class;
 }
 
 sub initDistroInfo
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{'export-filter'} = "
-		- /var/tmp/*
-		- /var/spool/*
-		- /var/run/*
-		- /var/mail
-		- /var/log/*
-		- /var/lock/*
-		- /var/lib/zypp/*
-		- /var/lib/zmd
-		- /var/lib/xdm
-		- /var/lib/vm*
-		- /var/lib/suspend*
-		- /var/lib/smart
-		- /var/lib/sax
-		- /var/lib/hardware/*
-		- /var/lib/gdm/*
-		- /var/lib/dhcp*
-		- /var/lib/bluetooth/
-		- /var/lib/YaST2/you/mnt/*
-		- /var/lib/YaST2/backup_boot_sectors
-		- /var/cache/sax
-		- /var/cache/libx11/compose/*
-		- /var/cache/beagle
-		- /var/cache/yum
-		- /var/cache/man/*
-		- /var/adm/backup/rpmdb/*
-		- /var/adm/mount/AP*
-		- /var/adm/SuSEconfig
-		- /usr/share/vmware/*
-		- /usr/lib/zen-updater
-		+ /usr/lib/python*/*/*.o
-		+ /usr/lib/perl5/*/*/*/*.o
-		+ /usr/lib/gcc/*/*/*.o
-		+ /usr/lib/*.o
-		+ /usr/X11R6/lib/modules/drivers/*.o
-		+ /usr/X11R6/lib/modules/drivers/linux/*.o
-		- /usr/bin/zen-*
-		- /usr/bin/nw-manager
-		- /usr/X11R6/bin/BackGround
-		- /usr/bin/BackGround
-		- /tmp/*
-		- /sys/*
-		- /proc/*
-		- /opt/kde3/share/autostart/suseplugger.desktop
-		- /opt/kde3/share/autostart/susewatcher.desktop
-		- /opt/kde3/share/autostart/runupdater.desktop
-		- /opt/kde3/share/autostart/profile_chooser-autostart.desktop
-		- /opt/kde3/share/autostart/opensuseupdater.desktop
-		- /opt/kde3/share/autostart/knetworkmanager-autostart.desktop
-		- /opt/kde3/share/autostart/kerry.autostart.desktop
-		- /opt/kde3/share/autostart/kinternet.desktop
-		- /opt/kde3/share/autostart/beagled.desktop
-		- /opt/kde3/share/autostart/SUSEgreeter.desktop
-		- /opt/kde3/share/autostart/zen-updater-auto.desktop
-		- /opt/gnome/share/autostart/beagle*.desktop
-		- /mnt/*
-		- /media/*
-		+ /media
-		+ /lib/modules/*/misc/vmblock.o
-		+ /lib/modules/*/misc/vmnet.o
-		+ /lib/modules/*/misc/vmmon.o
-		- /etc/dhcpd.conf*
-		- /etc/cron.*/*
-		- /etc/sysconfig/network/ifcfg-*
-		- /etc/X11/xdm/SuSEconfig.xdm
-		- /boot/initrd*
-		- /boot/grub
-		- *.rpmsave
-		- *.rpmnew
-		- *.YaST2save
-	";
-	return;
+    $self->{'export-filter'} = "
+        - /var/tmp/*
+        - /var/spool/*
+        - /var/run/*
+        - /var/mail
+        - /var/log/*
+        - /var/lock/*
+        - /var/lib/zypp/*
+        - /var/lib/zmd
+        - /var/lib/xdm
+        - /var/lib/vm*
+        - /var/lib/suspend*
+        - /var/lib/smart
+        - /var/lib/sax
+        - /var/lib/hardware/*
+        - /var/lib/gdm/*
+        - /var/lib/dhcp*
+        - /var/lib/bluetooth/
+        - /var/lib/YaST2/you/mnt/*
+        - /var/lib/YaST2/backup_boot_sectors
+        - /var/cache/sax
+        - /var/cache/libx11/compose/*
+        - /var/cache/beagle
+        - /var/cache/yum
+        - /var/cache/man/*
+        - /var/adm/backup/rpmdb/*
+        - /var/adm/mount/AP*
+        - /var/adm/SuSEconfig
+        - /usr/share/vmware/*
+        - /usr/lib/zen-updater
+        + /usr/lib/python*/*/*.o
+        + /usr/lib/perl5/*/*/*/*.o
+        + /usr/lib/gcc/*/*/*.o
+        + /usr/lib/*.o
+        + /usr/X11R6/lib/modules/drivers/*.o
+        + /usr/X11R6/lib/modules/drivers/linux/*.o
+        - /usr/bin/zen-*
+        - /usr/bin/nw-manager
+        - /usr/X11R6/bin/BackGround
+        - /usr/bin/BackGround
+        - /tmp/*
+        - /sys/*
+        - /proc/*
+        - /opt/kde3/share/autostart/suseplugger.desktop
+        - /opt/kde3/share/autostart/susewatcher.desktop
+        - /opt/kde3/share/autostart/runupdater.desktop
+        - /opt/kde3/share/autostart/profile_chooser-autostart.desktop
+        - /opt/kde3/share/autostart/opensuseupdater.desktop
+        - /opt/kde3/share/autostart/knetworkmanager-autostart.desktop
+        - /opt/kde3/share/autostart/kerry.autostart.desktop
+        - /opt/kde3/share/autostart/kinternet.desktop
+        - /opt/kde3/share/autostart/beagled.desktop
+        - /opt/kde3/share/autostart/SUSEgreeter.desktop
+        - /opt/kde3/share/autostart/zen-updater-auto.desktop
+        - /opt/gnome/share/autostart/beagle*.desktop
+        - /mnt/*
+        - /media/*
+        + /media
+        + /lib/modules/*/misc/vmblock.o
+        + /lib/modules/*/misc/vmnet.o
+        + /lib/modules/*/misc/vmmon.o
+        - /etc/dhcpd.conf*
+        - /etc/cron.*/*
+        - /etc/sysconfig/network/ifcfg-*
+        - /etc/X11/xdm/SuSEconfig.xdm
+        - /boot/initrd*
+        - /boot/grub
+        - *.rpmsave
+        - *.rpmnew
+        - *.YaST2save
+    ";
+    return;
 }
 
 1;

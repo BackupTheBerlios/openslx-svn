@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # base.pm
-#	- provides empty base of the OpenSLX OSPlugin Distro API for the desktop
+#    - provides empty base of the OpenSLX OSPlugin Distro API for the desktop
 #     plugin.
 # -----------------------------------------------------------------------------
 package OpenSLX::Distro::Base;
@@ -17,7 +17,7 @@ package OpenSLX::Distro::Base;
 use strict;
 use warnings;
 
-our $VERSION = 1.01;		# API-version . implementation-version
+our $VERSION = 1.01;        # API-version . implementation-version
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
@@ -27,204 +27,204 @@ use OpenSLX::Utils;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {};
+    return bless $self, $class;
 }
 
 sub initialize
 {
-	my $self        = shift;
-	$self->{engine} = shift;
-	
-	return 1;
+    my $self        = shift;
+    $self->{engine} = shift;
+    
+    return 1;
 }
 
 sub isInPath
 {
-	my $self   = shift;
-	my $binary = shift;
-	
-	my $path = qx{which $binary 2>/dev/null};
+    my $self   = shift;
+    my $binary = shift;
+    
+    my $path = qx{which $binary 2>/dev/null};
 
-	return $path ? 1 : 0;
+    return $path ? 1 : 0;
 }
 
 sub isGNOMEInstalled
 {
-	my $self = shift;
+    my $self = shift;
 
-	return $self->isInPath('gnome-session');
+    return $self->isInPath('gnome-session');
 }
 
 sub isGDMInstalled
 {
-	my $self = shift;
+    my $self = shift;
 
-	return $self->isInPath('gdm');
+    return $self->isInPath('gdm');
 }
 
 sub installGNOME
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{engine}->installPackages(
-		$self->{engine}->getInstallablePackagesForSelection('gnome')
-	);
+    $self->{engine}->installPackages(
+        $self->{engine}->getInstallablePackagesForSelection('gnome')
+    );
 
-	return 1;
+    return 1;
 }
 
 sub installGDM
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{engine}->installPackages('gdm');
+    $self->{engine}->installPackages('gdm');
 
-	return 1;
+    return 1;
 }
 
 sub GDMPathInfo
 {
-	my $self = shift;
-	
-	my $pathInfo = {
-		config => '/etc/gdm/gdm.conf',
-		paths => [
-			'/var/lib/gdm',
-			'/var/log/gdm',
-		],
-	};
+    my $self = shift;
+    
+    my $pathInfo = {
+        config => '/etc/gdm/gdm.conf',
+        paths => [
+            '/var/lib/gdm',
+            '/var/log/gdm',
+        ],
+    };
 
-	return $pathInfo;
+    return $pathInfo;
 }
 
 sub GDMConfigHashForWorkstation
 {
-	my $self = shift;
-	
-	return {
-		'chooser' => {
-		},
-		'daemon' => {
-			AutomaticLoginEnable => 'false',
-			BaseXsession => '/etc/X11/Xsession',
-			Group => 'gdm',
-			User => 'gdm',
-		},
-		'debug' => {
-			Enable => 'false',
-		},
-		'greeter' => {
-			AllowShutdown => 'true',
-			Browser => 'false',
-			MinimalUID => '500',
-			SecureShutdown => 'false',
-			ShowDomain => 'false',
-		},
-		'gui' => {
-		},
-		'security' => {
-			AllowRemoteRoot => 'false',
-			DisallowTCP => 'true',
-			SupportAutomount => 'true',
-		},
-		'server' => {
-		},
-		'xdmcp' => {
-			Enable => 'false',
-		},
-	};
+    my $self = shift;
+    
+    return {
+        'chooser' => {
+        },
+        'daemon' => {
+            AutomaticLoginEnable => 'false',
+            BaseXsession => '/etc/X11/Xsession',
+            Group => 'gdm',
+            User => 'gdm',
+        },
+        'debug' => {
+            Enable => 'false',
+        },
+        'greeter' => {
+            AllowShutdown => 'true',
+            Browser => 'false',
+            MinimalUID => '500',
+            SecureShutdown => 'false',
+            ShowDomain => 'false',
+        },
+        'gui' => {
+        },
+        'security' => {
+            AllowRemoteRoot => 'false',
+            DisallowTCP => 'true',
+            SupportAutomount => 'true',
+        },
+        'server' => {
+        },
+        'xdmcp' => {
+            Enable => 'false',
+        },
+    };
 }
 
 sub GDMConfigHashForKiosk
 {
-	my $self = shift;
-	
-	my $configHash = $self->GDMConfigHashForWorkstation();
+    my $self = shift;
+    
+    my $configHash = $self->GDMConfigHashForWorkstation();
 
-	$configHash->{daemon}->{AutomaticLoginEnable} = 'true';
-	$configHash->{daemon}->{AutomaticLogin} = 'nobody';
+    $configHash->{daemon}->{AutomaticLoginEnable} = 'true';
+    $configHash->{daemon}->{AutomaticLogin} = 'nobody';
 
-	return $configHash;
+    return $configHash;
 }
 
 sub GDMConfigHashForChooser
 {
-	my $self = shift;
-	
-	my $configHash = $self->GDMConfigHashForWorkstation();
-	$configHash->{xdmcp}->{Enable} = 'true';
+    my $self = shift;
+    
+    my $configHash = $self->GDMConfigHashForWorkstation();
+    $configHash->{xdmcp}->{Enable} = 'true';
 
-	return $configHash;
+    return $configHash;
 }
 
 sub isKDEInstalled
 {
-	my $self = shift;
-	
-	return $self->isInPath('startkde');
+    my $self = shift;
+    
+    return $self->isInPath('startkde');
 }
 
 sub isKDMInstalled
 {
-	my $self = shift;
+    my $self = shift;
 
-	return $self->isInPath('kdm');
+    return $self->isInPath('kdm');
 }
 
 sub installKDE
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{engine}->installPackages(
-		$self->{engine}->getInstallablePackagesForSelection('kde')
-	);
+    $self->{engine}->installPackages(
+        $self->{engine}->getInstallablePackagesForSelection('kde')
+    );
 
-	return 1;
+    return 1;
 }
 
 sub installKDM
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{engine}->installPackages('kdm');
+    $self->{engine}->installPackages('kdm');
 
-	return 1;
+    return 1;
 }
 
 sub isXFCEInstalled
 {
-	my $self = shift;
+    my $self = shift;
 
-	return $self->isInPath('startxfce4');
+    return $self->isInPath('startxfce4');
 }
 
 sub isXDMInstalled
 {
-	my $self = shift;
+    my $self = shift;
 
-	return $self->isInPath('xdm');
+    return $self->isInPath('xdm');
 }
 
 sub installXFCE
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{engine}->installPackages(
-		$self->{engine}->getInstallablePackagesForSelection('xfce')
-	);
+    $self->{engine}->installPackages(
+        $self->{engine}->getInstallablePackagesForSelection('xfce')
+    );
 
-	return 1;
+    return 1;
 }
 
 sub installXDM
 {
-	my $self = shift;
+    my $self = shift;
 
-	$self->{engine}->installPackages('xdm');
+    $self->{engine}->installPackages('xdm');
 
-	return 1;
+    return 1;
 }
 
 1;

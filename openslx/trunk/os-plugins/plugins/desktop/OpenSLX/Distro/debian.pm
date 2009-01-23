@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # debian.pm
-#	- provides Debian-specific overrides of the OpenSLX Distro API for the 
+#    - provides Debian-specific overrides of the OpenSLX Distro API for the 
 #     desktop plugin.
 # -----------------------------------------------------------------------------
 package OpenSLX::Distro::debian;

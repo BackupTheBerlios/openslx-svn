@@ -12,99 +12,99 @@ my $configDB = OpenSLX::ConfigDB->new;
 $configDB->connect();
 
 ok(
-	my $system = $configDB->fetchSystemByFilter, 
-	'one system [default] should exist (scalar context)'
+    my $system = $configDB->fetchSystemByFilter, 
+    'one system [default] should exist (scalar context)'
 );
 
 foreach my $requiredCol (qw(name export_id)) {
-	my $wrongSystem = {
-		'name'      => 'name',
-		'export_id' => 1,
-		'comment'   => 'has column missing',
-	};
-	delete $wrongSystem->{$requiredCol};
-	ok(
-		! eval { my $systemID = $configDB->addSystem($wrongSystem); },
-		"inserting a system without '$requiredCol' column should fail"
-	);
+    my $wrongSystem = {
+        'name'      => 'name',
+        'export_id' => 1,
+        'comment'   => 'has column missing',
+    };
+    delete $wrongSystem->{$requiredCol};
+    ok(
+        ! eval { my $systemID = $configDB->addSystem($wrongSystem); },
+        "inserting a system without '$requiredCol' column should fail"
+    );
 }
 
 is(
-	my @systems = $configDB->fetchSystemByFilter, 1, 
-	'still just one system [default] should exist (array context)'
+    my @systems = $configDB->fetchSystemByFilter, 1, 
+    'still just one system [default] should exist (array context)'
 );
 
 my $inSystem1 = {
-	'name'      => 'sys-1',
-	'export_id' => 1,
-	'comment'   => '',
-	'attrs'     => {
-		'ramfs_fsmods'  => 'squashfs',
-		'ramfs_nicmods' => 'e1000 forcedeth r8169',
-		'start_sshd'    => 'yes',
-	},
+    'name'      => 'sys-1',
+    'export_id' => 1,
+    'comment'   => '',
+    'attrs'     => {
+        'ramfs_fsmods'  => 'squashfs',
+        'ramfs_nicmods' => 'e1000 forcedeth r8169',
+        'start_sshd'    => 'yes',
+    },
 };
 is(
-	my $system1ID = $configDB->addSystem($inSystem1), 1,
-	'first system has ID 1'
+    my $system1ID = $configDB->addSystem($inSystem1), 1,
+    'first system has ID 1'
 );
 
 my $inSystem2 = {
-	'name'      => 'sys-2.0',
-	'kernel'    => 'vmlinuz',
-	'export_id' => 1,
-	'comment'   => undef,
+    'name'      => 'sys-2.0',
+    'kernel'    => 'vmlinuz',
+    'export_id' => 1,
+    'comment'   => undef,
 };
 my $fullSystem = {
-	'name'                => 'sys-nr-3',
-	'kernel'              => 'vmlinuz-2.6.22.13-0.3-default',
-	'export_id'           => 3,
-	'comment'             => 'nuff said',
-	'label'               => 'BlingBling System - really kuul!',
-	'kernel_params'       => 'debug=3 console=ttyS1',
-	'hidden'              => '1',
-	'attrs' => {
-		'automnt_dir'       => 'a',
-		'automnt_src'       => 'b',
-		'country'           => 'c',
-		'dm_allow_shutdown' => 'd',
-		'hw_graphic'        => 'e',
-		'hw_monitor'        => 'f',
-		'hw_mouse'          => 'g',
-		'late_dm'           => 'h',
-		'netbios_workgroup' => 'i',
-		'nis_domain'        => 'j',
-		'nis_servers'       => 'k',
-		'ramfs_fsmods'      => 'l',
-		'ramfs_miscmods'    => 'm',
-		'ramfs_nicmods'     => 'n',
-		'sane_scanner'      => 'p',
-		'scratch'           => 'q',
-		'slxgrp'            => 'r',
-		'start_alsasound'   => 's',
-		'start_atd'         => 't',
-		'start_cron'        => 'u',
-		'start_dreshal'     => 'v',
-		'start_ntp'         => 'w',
-		'start_nfsv4'       => 'x',
-		'start_printer'     => 'y',
-		'start_samba'       => 'z',
-		'start_snmp'        => 'A',
-		'start_sshd'        => 'B',
-		'start_syslog'      => 'C',
-		'start_x'           => 'D',
-		'start_xdmcp'       => 'E',
-		'tex_enable'        => 'F',
-		'timezone'          => 'G',
-		'tvout'             => 'H',
-		'vmware'            => 'I',
-	},
+    'name'                => 'sys-nr-3',
+    'kernel'              => 'vmlinuz-2.6.22.13-0.3-default',
+    'export_id'           => 3,
+    'comment'             => 'nuff said',
+    'label'               => 'BlingBling System - really kuul!',
+    'kernel_params'       => 'debug=3 console=ttyS1',
+    'hidden'              => '1',
+    'attrs' => {
+        'automnt_dir'       => 'a',
+        'automnt_src'       => 'b',
+        'country'           => 'c',
+        'dm_allow_shutdown' => 'd',
+        'hw_graphic'        => 'e',
+        'hw_monitor'        => 'f',
+        'hw_mouse'          => 'g',
+        'late_dm'           => 'h',
+        'netbios_workgroup' => 'i',
+        'nis_domain'        => 'j',
+        'nis_servers'       => 'k',
+        'ramfs_fsmods'      => 'l',
+        'ramfs_miscmods'    => 'm',
+        'ramfs_nicmods'     => 'n',
+        'sane_scanner'      => 'p',
+        'scratch'           => 'q',
+        'slxgrp'            => 'r',
+        'start_alsasound'   => 's',
+        'start_atd'         => 't',
+        'start_cron'        => 'u',
+        'start_dreshal'     => 'v',
+        'start_ntp'         => 'w',
+        'start_nfsv4'       => 'x',
+        'start_printer'     => 'y',
+        'start_samba'       => 'z',
+        'start_snmp'        => 'A',
+        'start_sshd'        => 'B',
+        'start_syslog'      => 'C',
+        'start_x'           => 'D',
+        'start_xdmcp'       => 'E',
+        'tex_enable'        => 'F',
+        'timezone'          => 'G',
+        'tvout'             => 'H',
+        'vmware'            => 'I',
+    },
 };
 ok(
-	my ($system2ID, $system3ID) = $configDB->addSystem([
-		$inSystem2, $fullSystem
-	]),
-	'add two more systems'
+    my ($system2ID, $system3ID) = $configDB->addSystem([
+        $inSystem2, $fullSystem
+    ]),
+    'add two more systems'
 );
 is($system2ID, 2, 'system 2 should have ID=2');
 is($system3ID, 3, 'system 3 should have ID=3');
@@ -157,8 +157,8 @@ is(keys %{$system3->{attrs}},              34,               'system 3 - attribu
 
 # fetch system 2 by a filter on id and check all values
 ok(
-	my $system2 = $configDB->fetchSystemByFilter({ id => 2 }), 
-	'fetch system 2 by filter on id'
+    my $system2 = $configDB->fetchSystemByFilter({ id => 2 }), 
+    'fetch system 2 by filter on id'
 );
 is($system2->{id},            2,         'system 2 - id');
 is($system2->{name},          'sys-2.0', 'system 2 - name');
@@ -169,8 +169,8 @@ is(keys %{$system2->{attrs}}, 0,         'system 2 - attribute count');
 
 # fetch system 1 by filter on name and check all values
 ok(
-	my $system1 = $configDB->fetchSystemByFilter({ name => 'sys-1' }), 
-	'fetch system 1 by filter on name'
+    my $system1 = $configDB->fetchSystemByFilter({ name => 'sys-1' }), 
+    'fetch system 1 by filter on name'
 );
 is($system1->{id},            1,         'system 1 - id');
 is($system1->{name},          'sys-1',   'system 1 - name');
@@ -187,8 +187,8 @@ is($system1->{attrs}->{start_sshd},     'yes',                   'system 1 - att
 
 # fetch systems 3 & 1 by id
 ok(
-	my @systems3And1 = $configDB->fetchSystemByID([3, 1]), 
-	'fetch systems 3 & 1 by id'
+    my @systems3And1 = $configDB->fetchSystemByID([3, 1]), 
+    'fetch systems 3 & 1 by id'
 );
 is(@systems3And1, 2, 'should have got 2 systems');
 # now sort by ID and check if we have really got 3 and 1
@@ -198,21 +198,21 @@ is($systems3And1[1]->{id}, 3, 'second id should be 3');
 
 # fetching systems by id without giving any should yield undef
 is(
-	$configDB->fetchSystemByID(), undef,
-	'fetch systems by id without giving any'
+    $configDB->fetchSystemByID(), undef,
+    'fetch systems by id without giving any'
 );
 
 # fetching systems by filter without giving any should yield all of them
 ok(
-	@systems = $configDB->fetchSystemByFilter(),
-	'fetch systems by filter without giving any'
+    @systems = $configDB->fetchSystemByFilter(),
+    'fetch systems by filter without giving any'
 );
 is(@systems, 4, 'should have got all four systems');
 
 # fetch systems 1 & 2 by filter on export_id
 ok(
-	my @systems1And2 = $configDB->fetchSystemByFilter({ export_id => '1' }), 
-	'fetch systems 1 & 2 by filter on export_id'
+    my @systems1And2 = $configDB->fetchSystemByFilter({ export_id => '1' }), 
+    'fetch systems 1 & 2 by filter on export_id'
 );
 is(@systems1And2, 2, 'should have got 2 systems');
 # now sort by ID and check if we have really got 1 and 2
@@ -222,8 +222,8 @@ is($systems1And2[1]->{id}, 2, 'second id should be 2');
 
 # fetch systems 1 & 2 by filter on hidden being undef'd
 ok(
-	@systems1And2 = $configDB->fetchSystemByFilter({ hidden => undef }), 
-	'fetch systems 1 & 2 by filter on hidden being undefined'
+    @systems1And2 = $configDB->fetchSystemByFilter({ hidden => undef }), 
+    'fetch systems 1 & 2 by filter on hidden being undefined'
 );
 is(@systems1And2, 2, 'should have got 2 systems');
 # now sort by ID and check if we have really got 1 and 2
@@ -233,9 +233,9 @@ is($systems1And2[1]->{id}, 2, 'second id should be 2');
 
 # try to fetch with multi-column filter
 ok(
-	($system2, $system3)
-		= $configDB->fetchSystemByFilter({ export_id => '1', id => 2 }), 
-	'fetching system with export_id=1 and id=2 should work'
+    ($system2, $system3)
+        = $configDB->fetchSystemByFilter({ export_id => '1', id => 2 }), 
+    'fetching system with export_id=1 and id=2 should work'
 );
 is($system2->{name}, 'sys-2.0', 'should have got sys-2.0');
 is($system3, undef, 'should not get sys-nr-3');
@@ -243,8 +243,8 @@ is($system3, undef, 'should not get sys-nr-3');
 # try to fetch multiple occurrences of the same system, combined with
 # some unknown IDs
 ok(
-	my @systems1And3 = $configDB->fetchSystemByID([ 1, 21, 4-1, 1, 3, 1, 1 ]), 
-	'fetch a complex set of systems by ID'
+    my @systems1And3 = $configDB->fetchSystemByID([ 1, 21, 4-1, 1, 3, 1, 1 ]), 
+    'fetch a complex set of systems by ID'
 );
 is(@systems1And3, 2, 'should have got 2 systems');
 # now sort by ID and check if we have really got 1 and 3
@@ -254,74 +254,74 @@ is($systems1And3[1]->{id}, 3, 'second id should be 3');
 
 # filter systems by different attributes & values in combination
 ok( 
-	my @system1Only = $configDB->fetchSystemByFilter( {}, undef, { 
-		ramfs_nicmods => 'e1000 forcedeth r8169'
-	} ),
-	'fetch system 1 by filter on attribute ramfs_nicmods'
+    my @system1Only = $configDB->fetchSystemByFilter( {}, undef, { 
+        ramfs_nicmods => 'e1000 forcedeth r8169'
+    } ),
+    'fetch system 1 by filter on attribute ramfs_nicmods'
 );
 
 is(@system1Only, 1, 'should have got 1 system');
 is($system1Only[0]->{id}, 1, 'first id should be 1');
 
 ok(
-	@system1Only = $configDB->fetchSystemByFilter( undef, 'id', { 
-		ramfs_nicmods => 'e1000 forcedeth r8169',
-		slxgrp        => undef,
-	} ),
-	'fetch system 1 by filter on attribute ramfs_nicmods'
+    @system1Only = $configDB->fetchSystemByFilter( undef, 'id', { 
+        ramfs_nicmods => 'e1000 forcedeth r8169',
+        slxgrp        => undef,
+    } ),
+    'fetch system 1 by filter on attribute ramfs_nicmods'
 );
 is(@system1Only, 1, 'should have got 1 system');
 is($system1Only[0]->{id}, 1, 'first id should be 1');
 
 ok(
-	@system1Only = $configDB->fetchSystemByFilter( {
-		export_id => 1,
-		hidden    => undef,
-	}, 'id', {
-		ramfs_nicmods => 'e1000 forcedeth r8169',
-		slxgrp        => undef,
-	} ),
-	'fetch system 1 by multiple filter on values and attributes'
+    @system1Only = $configDB->fetchSystemByFilter( {
+        export_id => 1,
+        hidden    => undef,
+    }, 'id', {
+        ramfs_nicmods => 'e1000 forcedeth r8169',
+        slxgrp        => undef,
+    } ),
+    'fetch system 1 by multiple filter on values and attributes'
 );
 is(@system1Only, 1, 'should have got 1 system');
 is($system1Only[0]->{id}, 1, 'first id should be 1');
 
 is(
-	$configDB->fetchSystemByFilter( {
-		export_id => 2,
-	}, 'id', {
-		ramfs_nicmods => 'e1000 forcedeth r8169',
-		slxgrp        => undef,
-	} ),
-	undef,
-	'mismatch system 1 by filter with incorrect value'
+    $configDB->fetchSystemByFilter( {
+        export_id => 2,
+    }, 'id', {
+        ramfs_nicmods => 'e1000 forcedeth r8169',
+        slxgrp        => undef,
+    } ),
+    undef,
+    'mismatch system 1 by filter with incorrect value'
 );
 is(
-	$configDB->fetchSystemByFilter( {
-		export_id => 1,
-	}, 'id', {
-		ramfs_nicmods => 'xxxx',
-		slxgrp        => undef,
-	} ),
-	undef,
-	'mismatch system 1 by filter with incorrect attribute value'
+    $configDB->fetchSystemByFilter( {
+        export_id => 1,
+    }, 'id', {
+        ramfs_nicmods => 'xxxx',
+        slxgrp        => undef,
+    } ),
+    undef,
+    'mismatch system 1 by filter with incorrect attribute value'
 );
 is(
-	$configDB->fetchSystemByFilter( {
-		name      => 'sys-1',
-	}, 'id', {
-		start_sshd => undef,
-	} ),
-	undef,
-	'mismatch system 1 by filter with attribute not being empty'
+    $configDB->fetchSystemByFilter( {
+        name      => 'sys-1',
+    }, 'id', {
+        start_sshd => undef,
+    } ),
+    undef,
+    'mismatch system 1 by filter with attribute not being empty'
 );
 
 # fetch systems 1 & 2 by filter on attribute start_samba not existing
 ok(
-	@systems1And2 = $configDB->fetchSystemByFilter( {}, undef, {
-		start_samba => undef,
-	} ), 
-	'fetch systems 1 & 2 by filter on attribute start_samba not existing'
+    @systems1And2 = $configDB->fetchSystemByFilter( {}, undef, {
+        start_samba => undef,
+    } ), 
+    'fetch systems 1 & 2 by filter on attribute start_samba not existing'
 );
 is(@systems1And2, 2, 'should have got 2 systems');
 # now sort by ID and check if we have really got 1 and 2
@@ -331,34 +331,34 @@ is($systems1And2[1]->{id}, 2, 'second id should be 2');
 
 # try to fetch a couple of non-existing systems by id
 is(
-	$configDB->fetchSystemByID(-1), undef, 
-	'system with id -1 should not exist'
+    $configDB->fetchSystemByID(-1), undef, 
+    'system with id -1 should not exist'
 );
 ok($configDB->fetchSystemByID(0), 'system with id 0 should exist');
 is(
-	$configDB->fetchSystemByID(1 << 31 + 1000), undef, 
-	'trying to fetch another unknown system'
+    $configDB->fetchSystemByID(1 << 31 + 1000), undef, 
+    'trying to fetch another unknown system'
 );
 
 # try to fetch a couple of non-existing systems by filter
 is(
-	$configDB->fetchSystemByFilter({ id => 4 }), undef, 
-	'fetching system with id=4 by filter should fail'
+    $configDB->fetchSystemByFilter({ id => 4 }), undef, 
+    'fetching system with id=4 by filter should fail'
 );
 is(
-	$configDB->fetchSystemByFilter({ name => 'sys-1.x' }), undef, 
-	'fetching system with name="sys-1.x" should fail'
+    $configDB->fetchSystemByFilter({ name => 'sys-1.x' }), undef, 
+    'fetching system with name="sys-1.x" should fail'
 );
 is(
-	$configDB->fetchSystemByFilter({ export_id => '2', id => 1 }), undef, 
-	'fetching system with export_id=2 and id=1 should fail'
+    $configDB->fetchSystemByFilter({ export_id => '2', id => 1 }), undef, 
+    'fetching system with export_id=2 and id=1 should fail'
 );
 
 # rename system 1 and then fetch it by its new name
 ok($configDB->changeSystem(1, { name => q{SYS-'1'} }), 'changing system 1');
 ok(
-	$system1 = $configDB->fetchSystemByFilter({ name => q{SYS-'1'} }), 
-	'fetching renamed system 1'
+    $system1 = $configDB->fetchSystemByFilter({ name => q{SYS-'1'} }), 
+    'fetching renamed system 1'
 );
 is($system1->{id},   1,          'really got system number 1');
 is($system1->{name}, q{SYS-'1'}, q{really got system named "SYS-'1'"});
@@ -395,8 +395,8 @@ ok(!exists $system1->{attrs}->{vmware}, 'attr vmware should be gone');
 
 # changing a non-existing column should fail
 ok(
-	! eval { $configDB->changeSystem(1, { xname => "xx" }) }, 
-	'changing unknown colum should fail'
+    ! eval { $configDB->changeSystem(1, { xname => "xx" }) }, 
+    'changing unknown colum should fail'
 );
 
 ok(! $configDB->changeSystem(1, { id => 23 }), 'changing id should fail');

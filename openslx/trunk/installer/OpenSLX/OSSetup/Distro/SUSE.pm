@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # SUSE.pm
-#	- provides SUSE-specific overrides of the OpenSLX OSSetup API.
+#    - provides SUSE-specific overrides of the OpenSLX OSSetup API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::SUSE;
 
@@ -25,61 +25,61 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self = {};
-	return bless $self, $class;
+    my $class = shift;
+    my $self = {};
+    return bless $self, $class;
 }
 
 sub initialize
 {
-	my $self   = shift;
-	my $engine = shift;
+    my $self   = shift;
+    my $engine = shift;
 
-	$self->SUPER::initialize($engine);
-	$self->{'packager-type'}      = 'rpm';
-	$self->{'meta-packager-type'} = $ENV{SLX_META_PACKAGER} || 'smart';
+    $self->SUPER::initialize($engine);
+    $self->{'packager-type'}      = 'rpm';
+    $self->{'meta-packager-type'} = $ENV{SLX_META_PACKAGER} || 'smart';
 
-	if ($engine->{'action-type'} eq 'install') {
-		# Inform SUSE RPMs that we're performing an installation - this is
-		# only important for installations taking place in stage 1c:
-		$ENV{YAST_IS_RUNNING}         = "instsys";
-	}
+    if ($engine->{'action-type'} eq 'install') {
+        # Inform SUSE RPMs that we're performing an installation - this is
+        # only important for installations taking place in stage 1c:
+        $ENV{YAST_IS_RUNNING}         = "instsys";
+    }
 
-	return;
+    return;
 }
 
 sub fixPrerequiredFiles
 {
-	my $self       = shift;
-	my $stage1cDir = shift;
+    my $self       = shift;
+    my $stage1cDir = shift;
 
-	chown(0, 0, "$stage1cDir/etc/group", "$stage1cDir/etc/passwd",
-		"$stage1cDir/etc/shadow");    
-	return;
+    chown(0, 0, "$stage1cDir/etc/group", "$stage1cDir/etc/passwd",
+        "$stage1cDir/etc/shadow");    
+    return;
 }
 
 sub updateDistroConfig
 {
-	my $self = shift;
+    my $self = shift;
 
-	# invoke SuSEconfig in order to allow it to update the configuration:
-	if (slxsystem('SuSEconfig')) {
-		die _tr("unable to run SuSEconfig (%s)", $!);
-	}
-	$self->SUPER::updateDistroConfig();
-	return;
+    # invoke SuSEconfig in order to allow it to update the configuration:
+    if (slxsystem('SuSEconfig')) {
+        die _tr("unable to run SuSEconfig (%s)", $!);
+    }
+    $self->SUPER::updateDistroConfig();
+    return;
 }
 
 sub hashPassword
 {
-	my $self = shift;
-	my $password = shift;
-	
-	my $busyboxBin = $self->{engine}->{'busybox-binary'};
-	my $hashedPassword = qx{$busyboxBin cryptpw -a blowfish '$password'};
-	chomp $hashedPassword;
+    my $self = shift;
+    my $password = shift;
+    
+    my $busyboxBin = $self->{engine}->{'busybox-binary'};
+    my $hashedPassword = qx{$busyboxBin cryptpw -a blowfish '$password'};
+    chomp $hashedPassword;
 
-	return $hashedPassword;
+    return $hashedPassword;
 }
 
 1;

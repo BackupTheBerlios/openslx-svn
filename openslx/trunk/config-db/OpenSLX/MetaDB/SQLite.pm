@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # SQLite.pm
-#	- provides SQLite-specific overrides of the OpenSLX MetaDB API.
+#    - provides SQLite-specific overrides of the OpenSLX MetaDB API.
 # -----------------------------------------------------------------------------
 package OpenSLX::MetaDB::SQLite;
 
@@ -30,102 +30,102 @@ use OpenSLX::Basics;
 ################################################################################
 sub new
 {
-	my $class = shift;
-	my $self  = {};
-	return bless $self, $class;
+    my $class = shift;
+    my $self  = {};
+    return bless $self, $class;
 }
 
 sub databaseExists
 {
-	my $self = shift;
-	
-	my $fullDBPath = $self->_getDBPath() . "/$openslxConfig{'db-name'}";
+    my $self = shift;
+    
+    my $fullDBPath = $self->_getDBPath() . "/$openslxConfig{'db-name'}";
 print "$fullDBPath\n";
-	return -e $fullDBPath;
+    return -e $fullDBPath;
 }
 
 sub dropDatabase
 {
-	my $self = shift;
-	
-	if ($self->{dbh}) {
-		die "need to disconnect before you can drop the database!";
-	}
-	
-	my $fullDBPath = $self->_getDBPath() . "/$openslxConfig{'db-name'}";
-	system("rm -rf $fullDBPath") if -e $fullDBPath;
+    my $self = shift;
+    
+    if ($self->{dbh}) {
+        die "need to disconnect before you can drop the database!";
+    }
+    
+    my $fullDBPath = $self->_getDBPath() . "/$openslxConfig{'db-name'}";
+    system("rm -rf $fullDBPath") if -e $fullDBPath;
 }
 
-sub connect		## no critic (ProhibitBuiltinHomonyms)
+sub connect        ## no critic (ProhibitBuiltinHomonyms)
 {
-	my $self = shift;
+    my $self = shift;
 
-	my $dbSpec = $openslxConfig{'db-spec'};
-	if (!defined $dbSpec) {
-		# build $dbSpec from individual parameters:
-		my $dbPath = $self->_getDBPath;
-		system("mkdir -p $dbPath") unless -e $dbPath;
-		$dbSpec = "dbname=$dbPath/$openslxConfig{'db-name'}";
-	}
-	vlog(1, "trying to connect to SQLite-database <$dbSpec>");
-	$self->{'dbh'} = DBI->connect(
-		"dbi:SQLite:$dbSpec", undef, undef,	
-		{PrintError => 0, AutoCommit => 1, unicode => 1}
-	) or die _tr("Cannot connect to database <%s> (%s)", $dbSpec, $DBI::errstr);
-	return 1;
+    my $dbSpec = $openslxConfig{'db-spec'};
+    if (!defined $dbSpec) {
+        # build $dbSpec from individual parameters:
+        my $dbPath = $self->_getDBPath;
+        system("mkdir -p $dbPath") unless -e $dbPath;
+        $dbSpec = "dbname=$dbPath/$openslxConfig{'db-name'}";
+    }
+    vlog(1, "trying to connect to SQLite-database <$dbSpec>");
+    $self->{'dbh'} = DBI->connect(
+        "dbi:SQLite:$dbSpec", undef, undef,    
+        {PrintError => 0, AutoCommit => 1, unicode => 1}
+    ) or die _tr("Cannot connect to database <%s> (%s)", $dbSpec, $DBI::errstr);
+    return 1;
 }
 
 sub schemaRenameTable
 {
-	my $self      = shift;
-	my $oldTable  = shift;
-	my $newTable  = shift;
-	my $colDescrs = shift;
-	my $isSubCmd  = shift;
+    my $self      = shift;
+    my $oldTable  = shift;
+    my $newTable  = shift;
+    my $colDescrs = shift;
+    my $isSubCmd  = shift;
 
-	my $dbh = $self->{'dbh'};
-	vlog(1, "renaming table <$oldTable> to <$newTable>...") unless $isSubCmd;
-	my $sql = "ALTER TABLE $oldTable RENAME TO $newTable";
-	vlog(3, $sql);
-	$dbh->do($sql)
-	  or croak(_tr(q[Can't rename table <%s> (%s)], $oldTable, $dbh->errstr));
-	return;
+    my $dbh = $self->{'dbh'};
+    vlog(1, "renaming table <$oldTable> to <$newTable>...") unless $isSubCmd;
+    my $sql = "ALTER TABLE $oldTable RENAME TO $newTable";
+    vlog(3, $sql);
+    $dbh->do($sql)
+      or croak(_tr(q[Can't rename table <%s> (%s)], $oldTable, $dbh->errstr));
+    return;
 }
 
 sub schemaAddColumns
 {
-	my $self              = shift;
-	my $table             = shift;
-	my $newColDescrs      = shift;
-	my $newColDefaultVals = shift;
-	my $colDescrs         = shift;
-	my $isSubCmd          = shift;
+    my $self              = shift;
+    my $table             = shift;
+    my $newColDescrs      = shift;
+    my $newColDefaultVals = shift;
+    my $colDescrs         = shift;
+    my $isSubCmd          = shift;
 
-	my $dbh         = $self->{'dbh'};
-	my $newColNames = $self->_convertColDescrsToColNamesString($newColDescrs);
-	vlog(1, "adding columns <$newColNames> to table <$table>")
-	  unless $isSubCmd;    
-	foreach my $colDescr (@$newColDescrs) {
-		my $colDescrString =
-		  $self->_convertColDescrsToDBNativeString([$colDescr]);
-		my $sql = "ALTER TABLE $table ADD COLUMN $colDescrString";
-		vlog(3, $sql);
-		$dbh->do($sql)
-		  or croak(_tr(q[Can't add column to table <%s> (%s)], $table,
-			$dbh->errstr));
-	}
-	# if default values have been provided, we apply them now:
-	if (defined $newColDefaultVals) {
-		$self->_doUpdate($table, undef, $newColDefaultVals);
-	}
-	return;
+    my $dbh         = $self->{'dbh'};
+    my $newColNames = $self->_convertColDescrsToColNamesString($newColDescrs);
+    vlog(1, "adding columns <$newColNames> to table <$table>")
+      unless $isSubCmd;    
+    foreach my $colDescr (@$newColDescrs) {
+        my $colDescrString =
+          $self->_convertColDescrsToDBNativeString([$colDescr]);
+        my $sql = "ALTER TABLE $table ADD COLUMN $colDescrString";
+        vlog(3, $sql);
+        $dbh->do($sql)
+          or croak(_tr(q[Can't add column to table <%s> (%s)], $table,
+            $dbh->errstr));
+    }
+    # if default values have been provided, we apply them now:
+    if (defined $newColDefaultVals) {
+        $self->_doUpdate($table, undef, $newColDefaultVals);
+    }
+    return;
 }
 
 sub _getDBPath
 {
-	my $self = shift;
+    my $self = shift;
 
-	return "$openslxConfig{'private-path'}/db/sqlite";
+    return "$openslxConfig{'private-path'}/db/sqlite";
 }
 
 1;

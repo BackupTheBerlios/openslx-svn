@@ -12,90 +12,90 @@ my $configDB = OpenSLX::ConfigDB->new;
 $configDB->connect();
 
 is(
-	my $group = $configDB->fetchGroupByFilter, undef,
-	'no group should exist (scalar context)'
+    my $group = $configDB->fetchGroupByFilter, undef,
+    'no group should exist (scalar context)'
 );
 
 foreach my $requiredCol (qw(name)) {
-	my $wrongGroup = {
-		'name'     => 'name',
-		'priority' => 41,
-		'comment'  => 'has column missing',
-	};
-	delete $wrongGroup->{$requiredCol};
-	ok(
-		! eval { my $groupID = $configDB->addGroup($wrongGroup); },
-		"inserting a group without '$requiredCol' column should fail"
-	);
+    my $wrongGroup = {
+        'name'     => 'name',
+        'priority' => 41,
+        'comment'  => 'has column missing',
+    };
+    delete $wrongGroup->{$requiredCol};
+    ok(
+        ! eval { my $groupID = $configDB->addGroup($wrongGroup); },
+        "inserting a group without '$requiredCol' column should fail"
+    );
 }
 
 is(
-	my @groups = $configDB->fetchGroupByFilter, 0, 
-	'still no group should exist (array context)'
+    my @groups = $configDB->fetchGroupByFilter, 0, 
+    'still no group should exist (array context)'
 );
 
 my $inGroup1 = {
-	'name'     => 'grp-1',
-	'comment'  => '',
-	'attrs'     => {
-		'slxgrp'     => 'slxgrp',
-		'start_snmp' => 'no',
-		'start_sshd' => 'yes',
-	},
+    'name'     => 'grp-1',
+    'comment'  => '',
+    'attrs'     => {
+        'slxgrp'     => 'slxgrp',
+        'start_snmp' => 'no',
+        'start_sshd' => 'yes',
+    },
 };
 is(
-	my $group1ID = $configDB->addGroup($inGroup1), 1,
-	'first group has ID 1'
+    my $group1ID = $configDB->addGroup($inGroup1), 1,
+    'first group has ID 1'
 );
 
 my $inGroup2 = {
-	'name'       => 'grp-2.0',
-	'priority'   => 30,
-	'comment'    => undef,
+    'name'       => 'grp-2.0',
+    'priority'   => 30,
+    'comment'    => undef,
 };
 my $fullGroup = {
-	'name'     => 'grp-nr-3',
-	'priority' => 50,
-	'comment'  => 'nuff said',
-	'attrs' => {
-		'automnt_dir'       => 'a',
-		'automnt_src'       => 'b',
-		'country'           => 'c',
-		'dm_allow_shutdown' => 'd',
-		'hw_graphic'        => 'e',
-		'hw_monitor'        => 'f',
-		'hw_mouse'          => 'g',
-		'late_dm'           => 'h',
-		'netbios_workgroup' => 'i',
-		'nis_domain'        => 'j',
-		'nis_servers'       => 'k',
-		'sane_scanner'      => 'p',
-		'scratch'           => 'q',
-		'slxgrp'            => 'r',
-		'start_alsasound'   => 's',
-		'start_atd'         => 't',
-		'start_cron'        => 'u',
-		'start_dreshal'     => 'v',
-		'start_ntp'         => 'w',
-		'start_nfsv4'       => 'x',
-		'start_printer'     => 'y',
-		'start_samba'       => 'z',
-		'start_snmp'        => 'A',
-		'start_sshd'        => 'B',
-		'start_syslog'      => 'C',
-		'start_x'           => 'D',
-		'start_xdmcp'       => 'E',
-		'tex_enable'        => 'F',
-		'timezone'          => 'G',
-		'tvout'             => 'H',
-		'vmware'            => 'I',
-	},
+    'name'     => 'grp-nr-3',
+    'priority' => 50,
+    'comment'  => 'nuff said',
+    'attrs' => {
+        'automnt_dir'       => 'a',
+        'automnt_src'       => 'b',
+        'country'           => 'c',
+        'dm_allow_shutdown' => 'd',
+        'hw_graphic'        => 'e',
+        'hw_monitor'        => 'f',
+        'hw_mouse'          => 'g',
+        'late_dm'           => 'h',
+        'netbios_workgroup' => 'i',
+        'nis_domain'        => 'j',
+        'nis_servers'       => 'k',
+        'sane_scanner'      => 'p',
+        'scratch'           => 'q',
+        'slxgrp'            => 'r',
+        'start_alsasound'   => 's',
+        'start_atd'         => 't',
+        'start_cron'        => 'u',
+        'start_dreshal'     => 'v',
+        'start_ntp'         => 'w',
+        'start_nfsv4'       => 'x',
+        'start_printer'     => 'y',
+        'start_samba'       => 'z',
+        'start_snmp'        => 'A',
+        'start_sshd'        => 'B',
+        'start_syslog'      => 'C',
+        'start_x'           => 'D',
+        'start_xdmcp'       => 'E',
+        'tex_enable'        => 'F',
+        'timezone'          => 'G',
+        'tvout'             => 'H',
+        'vmware'            => 'I',
+    },
 };
 ok(
-	my ($group2ID, $group3ID) = $configDB->addGroup([
-		$inGroup2, $fullGroup
-	]),
-	'add two more groups'
+    my ($group2ID, $group3ID) = $configDB->addGroup([
+        $inGroup2, $fullGroup
+    ]),
+    'add two more groups'
 );
 is($group2ID, 2, 'group 2 should have ID=2');
 is($group3ID, 3, 'group 3 should have ID=3');
@@ -141,8 +141,8 @@ is(keys %{$group3->{attrs}},              31,          'group 3 - attribute coun
 
 # fetch group 2 by a filter on id and check all values
 ok(
-	my $group2 = $configDB->fetchGroupByFilter({ id => 2 }), 
-	'fetch group 2 by filter on id'
+    my $group2 = $configDB->fetchGroupByFilter({ id => 2 }), 
+    'fetch group 2 by filter on id'
 );
 is($group2->{id},       2,         'group 2 - id');
 is($group2->{name},     'grp-2.0', 'group 2 - name');
@@ -152,8 +152,8 @@ is(keys %{$group2->{attrs}}, 0,    'group 2 - attribute count');
 
 # fetch group 1 by filter on name and check all values
 ok(
-	my $group1 = $configDB->fetchGroupByFilter({ name => 'grp-1' }), 
-	'fetch group 1 by filter on name'
+    my $group1 = $configDB->fetchGroupByFilter({ name => 'grp-1' }), 
+    'fetch group 1 by filter on name'
 );
 is($group1->{id},                 1,         'group 1 - id');
 is($group1->{name},               'grp-1',   'group 1 - name');
@@ -166,8 +166,8 @@ is($group1->{attrs}->{start_sshd}, 'yes',    'group 1 - attr start_sshd');
 
 # fetch groups 3 & 1 by id
 ok(
-	my @groups3And1 = $configDB->fetchGroupByID([3, 1]), 
-	'fetch groups 3 & 1 by id'
+    my @groups3And1 = $configDB->fetchGroupByID([3, 1]), 
+    'fetch groups 3 & 1 by id'
 );
 is(@groups3And1, 2, 'should have got 2 groups');
 # now sort by ID and check if we have really got 3 and 1
@@ -177,21 +177,21 @@ is($groups3And1[1]->{id}, 3, 'second id should be 3');
 
 # fetching groups by id without giving any should yield undef
 is(
-	$configDB->fetchGroupByID(), undef,
-	'fetch groups by id without giving any'
+    $configDB->fetchGroupByID(), undef,
+    'fetch groups by id without giving any'
 );
 
 # fetching groups by filter without giving any should yield all of them
 ok(
-	@groups = $configDB->fetchGroupByFilter(),
-	'fetch groups by filter without giving any'
+    @groups = $configDB->fetchGroupByFilter(),
+    'fetch groups by filter without giving any'
 );
 is(@groups, 3, 'should have got all three groups');
 
 # fetch groups 1 & 2 by filter on priority
 ok(
-	my @groups1And3 = $configDB->fetchGroupByFilter({ priority => 50 }), 
-	'fetch groups 1 & 3 by filter on priority'
+    my @groups1And3 = $configDB->fetchGroupByFilter({ priority => 50 }), 
+    'fetch groups 1 & 3 by filter on priority'
 );
 is(@groups1And3, 2, 'should have got 2 groups');
 # now sort by ID and check if we have really got 1 and 3
@@ -201,17 +201,17 @@ is($groups1And3[1]->{id}, 3, 'second id should be 3');
 
 # fetch group 2 by filter on comment being undef'd
 ok(
-	my @group2Only = $configDB->fetchGroupByFilter({ comment => undef }), 
-	'fetch group 2 by filter on comment being undefined'
+    my @group2Only = $configDB->fetchGroupByFilter({ comment => undef }), 
+    'fetch group 2 by filter on comment being undefined'
 );
 is(@group2Only, 1, 'should have got 1 group');
 is($group2Only[0]->{id}, 2, 'first id should be 2');
 
 # try to fetch with multi-column filter
 ok(
-	($group1, $group3)
-		= $configDB->fetchGroupByFilter({ priority => '50', id => 1 }), 
-	'fetching group with priority=50 and id=1 should work'
+    ($group1, $group3)
+        = $configDB->fetchGroupByFilter({ priority => '50', id => 1 }), 
+    'fetching group with priority=50 and id=1 should work'
 );
 is($group1->{name}, 'grp-1', 'should have got grp-1');
 is($group3, undef, 'should not get grp-nr-3');
@@ -219,8 +219,8 @@ is($group3, undef, 'should not get grp-nr-3');
 # try to fetch multiple occurrences of the same group, combined with
 # some unknown IDs
 ok(
-	@groups1And3 = $configDB->fetchGroupByID([ 1, 21, 4-1, 1, 4, 1, 1 ]), 
-	'fetch a complex set of groups by ID'
+    @groups1And3 = $configDB->fetchGroupByID([ 1, 21, 4-1, 1, 4, 1, 1 ]), 
+    'fetch a complex set of groups by ID'
 );
 is(@groups1And3, 2, 'should have got 2 groups');
 # now sort by ID and check if we have really got 1 and 3
@@ -230,74 +230,74 @@ is($groups1And3[1]->{id}, 3, 'second id should be 3');
 
 # filter groups by different attributes & values in combination
 ok( 
-	my @group1Only = $configDB->fetchGroupByFilter( {}, undef, { 
-		start_snmp => 'no',
-	} ),
-	'fetch group 1 by filter on attribute start_snmp'
+    my @group1Only = $configDB->fetchGroupByFilter( {}, undef, { 
+        start_snmp => 'no',
+    } ),
+    'fetch group 1 by filter on attribute start_snmp'
 );
 
 is(@group1Only, 1, 'should have got 1 group');
 is($group1Only[0]->{id}, 1, 'first id should be 1');
 
 ok(
-	@group1Only = $configDB->fetchGroupByFilter( undef, 'id', { 
-		start_snmp => 'no',
-		tex_enable => undef,
-	} ),
-	'fetch group 1 by filter on attribute start_snmp + non-existing attr'
+    @group1Only = $configDB->fetchGroupByFilter( undef, 'id', { 
+        start_snmp => 'no',
+        tex_enable => undef,
+    } ),
+    'fetch group 1 by filter on attribute start_snmp + non-existing attr'
 );
 is(@group1Only, 1, 'should have got 1 group');
 is($group1Only[0]->{id}, 1, 'first id should be 1');
 
 ok(
-	@group1Only = $configDB->fetchGroupByFilter( {
-		name     => 'grp-1',
-		priority => 50,
-	}, 'id', {
-		start_snmp => 'no',
-		tex_enable => undef,
-	} ),
-	'fetch group 1 by multiple filter on values and attributes'
+    @group1Only = $configDB->fetchGroupByFilter( {
+        name     => 'grp-1',
+        priority => 50,
+    }, 'id', {
+        start_snmp => 'no',
+        tex_enable => undef,
+    } ),
+    'fetch group 1 by multiple filter on values and attributes'
 );
 is(@group1Only, 1, 'should have got 1 group');
 is($group1Only[0]->{id}, 1, 'first id should be 1');
 
 is(
-	$configDB->fetchGroupByFilter( {
-		comment => 'xxx',
-	}, 'id', {
-		start_snmp => 'no',
-		tex_enable => undef,
-	} ),
-	undef,
-	'mismatch group 1 by filter with incorrect value'
+    $configDB->fetchGroupByFilter( {
+        comment => 'xxx',
+    }, 'id', {
+        start_snmp => 'no',
+        tex_enable => undef,
+    } ),
+    undef,
+    'mismatch group 1 by filter with incorrect value'
 );
 is(
-	$configDB->fetchGroupByFilter( {
-		name => 'grp-1',
-	}, 'id', {
-		start_snmp => 'yes',
-		tex_enable => undef,
-	} ),
-	undef,
-	'mismatch group 1 by filter with incorrect attribute value'
+    $configDB->fetchGroupByFilter( {
+        name => 'grp-1',
+    }, 'id', {
+        start_snmp => 'yes',
+        tex_enable => undef,
+    } ),
+    undef,
+    'mismatch group 1 by filter with incorrect attribute value'
 );
 is(
-	$configDB->fetchGroupByFilter( {
-		name => 'grp-1',
-	}, 'id', {
-		start_sshd => undef,
-	} ),
-	undef,
-	'mismatch group 1 by filter with attribute not being empty'
+    $configDB->fetchGroupByFilter( {
+        name => 'grp-1',
+    }, 'id', {
+        start_sshd => undef,
+    } ),
+    undef,
+    'mismatch group 1 by filter with attribute not being empty'
 );
 
 # fetch groups 1 & 2 by filter on attribute start_samba not existing
 ok(
-	my @groups1And2 = $configDB->fetchGroupByFilter( {}, undef, {
-		start_samba => undef,
-	} ), 
-	'fetch groups 1 & 2 by filter on attribute start_samba not existing'
+    my @groups1And2 = $configDB->fetchGroupByFilter( {}, undef, {
+        start_samba => undef,
+    } ), 
+    'fetch groups 1 & 2 by filter on attribute start_samba not existing'
 );
 is(@groups1And2, 2, 'should have got 2 groups');
 # now sort by ID and check if we have really got 1 and 2
@@ -309,29 +309,29 @@ is($groups1And2[1]->{id}, 2, 'second id should be 2');
 is($configDB->fetchGroupByID(-1), undef, 'group with id -1 should not exist');
 is($configDB->fetchGroupByID(0), undef, 'group with id 0 should not exist');
 is(
-	$configDB->fetchGroupByID(1 << 31 + 1000), undef, 
-	'trying to fetch another unknown group'
+    $configDB->fetchGroupByID(1 << 31 + 1000), undef, 
+    'trying to fetch another unknown group'
 );
 
 # try to fetch a couple of non-existing groups by filter
 is(
-	$configDB->fetchGroupByFilter({ id => 4 }), undef, 
-	'fetching group with id=4 by filter should fail'
+    $configDB->fetchGroupByFilter({ id => 4 }), undef, 
+    'fetching group with id=4 by filter should fail'
 );
 is(
-	$configDB->fetchGroupByFilter({ name => 'grp-1.x' }), undef, 
-	'fetching group with name="grp-1.x" should fail'
+    $configDB->fetchGroupByFilter({ name => 'grp-1.x' }), undef, 
+    'fetching group with name="grp-1.x" should fail'
 );
 is(
-	$configDB->fetchGroupByFilter({ priority => '22', id => 1 }), undef, 
-	'fetching group with priority=22 and id=1 should fail'
+    $configDB->fetchGroupByFilter({ priority => '22', id => 1 }), undef, 
+    'fetching group with priority=22 and id=1 should fail'
 );
 
 # rename group 1 and then fetch it by its new name
 ok($configDB->changeGroup(1, { name => q{GRP-'1'} }), 'changing group 1');
 ok(
-	$group1 = $configDB->fetchGroupByFilter({ name => q{GRP-'1'} }), 
-	'fetching renamed group 1'
+    $group1 = $configDB->fetchGroupByFilter({ name => q{GRP-'1'} }), 
+    'fetching renamed group 1'
 );
 is($group1->{id},   1,          'really got group number 1');
 is($group1->{name}, q{GRP-'1'}, q{really got group named "GRP-'1'"});
@@ -368,8 +368,8 @@ ok(!exists $group1->{attrs}->{vmware}, 'attr vmware should be gone');
 
 # changing a non-existing column should fail
 ok(
-	! eval { $configDB->changeGroup(1, { xname => "xx" }) }, 
-	'changing unknown colum should fail'
+    ! eval { $configDB->changeGroup(1, { xname => "xx" }) }, 
+    'changing unknown colum should fail'
 );
 
 ok(! $configDB->changeGroup(1, { id => 23 }), 'changing id should fail');
