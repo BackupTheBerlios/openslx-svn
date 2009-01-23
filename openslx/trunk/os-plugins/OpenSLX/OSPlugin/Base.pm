@@ -318,11 +318,143 @@ corresponding stage3 runlevel script.
 
 A temporary playground that will be cleaned up automatically.
 
+=item C<openslx-base-path>
+
+In order to make the OpenSLX files from the host available, the OpenSLX base 
+folder (normally /opt/openslx) will be mounted into the chroot. 
+So if you have to copy any files from the host, fetch them from this path.
+
+=item C<openslx-config-path>
+
+In order to make the OpenSLX config files from the host available, the OpenSLX 
+config folder (normally /etc/opt/openslx) will be mounted into the chroot. 
+So if you have to copy any config files from the host, fetch them from this 
+path.
+
+=item C<plugin-attrs>
+
+Contains the attributes in effect for the installation of this plugin.
+
 =back
 
 =cut
 
 sub removalPhase
+{
+    my $self = shift;
+    my $info = shift;
+    
+    return;
+}
+
+=item preInstallationPhase()
+
+In this method, any preparations for installation of the plugin into a vendor-OS
+should be executed. As this method is being called immediately before the chroot
+is entered, this is the last/only chance to copy any files into the chroot that
+are required from within (in installationPhase()).
+
+The given parameters are similar to the ones for installationPhase(), except 
+that all paths are now relative to the root-fs instead of being relative to the 
+chroot (i.e. the paths are ready to be used from outside the chroot):
+
+=over
+
+=item C<plugin-repo-path>
+
+The folder where the stage1-plugin should store all files required by the 
+corresponding stage3 runlevel script.
+
+=item C<plugin-temp-path>
+
+A temporary playground that will be cleaned up automatically. 
+
+If a plugin needs to unpack any archives, these archives should be copied to
+this folder (as it will be cleaned automatically).
+
+=item C<openslx-base-path>
+
+In order to make the OpenSLX files from the host available, the OpenSLX base 
+folder (normally /opt/openslx) will be mounted into the chroot. 
+So if you have to copy any files from the host, fetch them from this path.
+
+=item C<openslx-config-path>
+
+In order to make the OpenSLX config files from the host available, the OpenSLX 
+config folder (normally /etc/opt/openslx) will be mounted into the chroot. 
+So if you have to copy any config files from the host, fetch them from this 
+path.
+
+=item C<plugin-attrs>
+
+Contains the attributes in effect for the installation of this plugin.
+
+=item C<vendor-os-path>
+
+Contains the path to the vendor-OS into which the plugin will be installed.
+
+=back
+
+=cut
+
+sub preInstallationPhase
+{
+    my $self = shift;
+    my $info = shift;
+    
+    return;
+}
+
+=item postRemovalPhase()
+
+In this method, any plugin has the chance to do any necessary cleanup that
+must be executed outside of the chroot.
+
+This method is invoked immediately after leaving the chroot into the vendor-OS 
+root, but before the plugin-temp-path has been cleaned up. So if required, any
+files could be copied out of the temp-path somewhere into the root-fs.
+
+The given parameters are similar to the ones for removalPhase(), except that all
+paths are now relative to the root-fs instead of being relative to the chroot
+(i.e. the paths are ready to be used from outside the chroot):
+
+=over
+
+=item C<plugin-repo-path>
+
+The folder where the stage1-plugin should store all files required by the 
+corresponding stage3 runlevel script.
+
+=item C<plugin-temp-path>
+
+A temporary playground that will be cleaned up automatically.
+
+=item C<openslx-base-path>
+
+In order to make the OpenSLX files from the host available, the OpenSLX base 
+folder (normally /opt/openslx) will be mounted into the chroot. 
+So if you have to copy any files from the host, fetch them from this path.
+
+=item C<openslx-config-path>
+
+In order to make the OpenSLX config files from the host available, the OpenSLX 
+config folder (normally /etc/opt/openslx) will be mounted into the chroot. 
+So if you have to copy any config files from the host, fetch them from this 
+path.
+
+=item C<plugin-attrs>
+
+Contains the attributes in effect for the installation of this plugin.
+
+=item C<vendor-os-path>
+
+Contains the path to the vendor-OS from which the plugin has been removed.
+
+=back
+
+=cut
+
+sub postRemovalPhase
 {
     my $self = shift;
     my $info = shift;

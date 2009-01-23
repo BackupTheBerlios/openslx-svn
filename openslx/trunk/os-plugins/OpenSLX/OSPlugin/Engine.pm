@@ -169,6 +169,16 @@ sub installPlugin
         # missing modules).
         store $self->{'plugin-attrs'}, $serializedAttrsFile;
     
+        # invoke plugin and let it prepare the installation
+        $self->{plugin}->preInstallationPhase( {
+            'plugin-repo-path'    => $self->{'plugin-repo-path'},
+            'plugin-temp-path'    => $self->{'plugin-temp-path'},
+            'openslx-base-path'   => $openslxConfig{'base-path'},
+            'openslx-config-path' => $openslxConfig{'config-path'},
+            'plugin-attrs'        => $self->{'plugin-attrs'},
+            'vendor-os-path'      => $self->{'vendor-os-path'},
+        } );
+
         $self->_callChrootedFunctionForPlugin(
             sub {
                 # invoke plugin and let it install itself into vendor-OS
@@ -234,6 +244,16 @@ sub removePlugin
                 } );
             }
         );
+
+        # invoke plugin and let it prepare the installation
+        $self->{plugin}->postRemovalPhase( {
+            'plugin-repo-path'    => $self->{'plugin-repo-path'},
+            'plugin-temp-path'    => $self->{'plugin-temp-path'},
+            'openslx-base-path'   => $openslxConfig{'base-path'},
+            'openslx-config-path' => $openslxConfig{'config-path'},
+            'plugin-attrs'        => $self->{'plugin-attrs'},
+            'vendor-os-path'      => $self->{'vendor-os-path'},
+        } );
 
         rmtree([ $self->{'plugin-repo-path'}, $self->{'plugin-temp-path'} ]);
     }
