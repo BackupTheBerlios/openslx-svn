@@ -37,7 +37,7 @@ sub setupKDEHOME
             awk {'print $2'})-gentoo"
     End-of-Here
 
-    spitFile($path, $script);
+    appendFile($path, $script);
 
     return;
 }

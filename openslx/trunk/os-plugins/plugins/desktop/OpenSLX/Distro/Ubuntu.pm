@@ -133,7 +133,10 @@ sub setupKDEHOME
             awk {'print $2'})-ubuntu"
     End-of-Here
 
-    spitFile($path, $script);
+    appendFile($path, $script);
+    # TODO: a nicer solution to this hack
+    # ensures, that .kde-.../share/apps directory exists
+    # otherwise KDE progs will complain every time with a warning window
     system('grep -q "mkdir -m 700 -p \$kdehome/share/apps" /usr/bin/startkde ||\
         sed -i -e "s,mkdir -m 700 -p \$kdehome/share/config,\
 mkdir -m 700 -p \$kdehome/share/config\nmkdir -m 700 -p \$kdehome/share/apps," \

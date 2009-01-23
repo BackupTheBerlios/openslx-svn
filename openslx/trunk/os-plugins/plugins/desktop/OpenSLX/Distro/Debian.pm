@@ -66,7 +66,7 @@ sub setupKDEHOME
             awk {'print $2'})-debian"
     End-of-Here
 
-    spitFile($path, $script);
+    appendFile($path, $script);
 
     return;
 }

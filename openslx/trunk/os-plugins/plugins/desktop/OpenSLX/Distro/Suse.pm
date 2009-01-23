@@ -96,7 +96,7 @@ sub setupKDEHOME
             awk {'print $2'})-suse"
     End-of-Here
 
-    spitFile($path, $script);
+    appendFile($path, $script);
 
     return;
 }
