@@ -17,7 +17,8 @@
 testmkd /mnt/var/log/xen
 testmkd /mnt/var/run/xend
 testmkd /mnt/var/run/xenstored
-cd /mnt/etc/init.d/rc5.d
+
 rllinker "xendomains" 14 8
 rllinker "xend" 13 9
+
 modprobe loop max_loop=64

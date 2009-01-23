@@ -21,7 +21,7 @@ if [ -e /initramfs/plugin-conf/xserver.conf ]; then
   . /initramfs/plugin-conf/xserver.conf
   # do not start any configuration if the admin provided a preconfigured
   # xorg.conf in /rootfs/etc/X11/xorg.conf
-  if [ $example_active -ne 0 -a ! -f /rootfs/${xfc#/mnt} ]; then
+  if [ $xserver_active -ne 0 -a ! -f /rootfs/${xfc#/mnt} ]; then
     [ $DEBUGLEVEL -gt 0 ] && echo "executing the 'xserver' os-plugin ...";
     xmodule=$(grep -i -m 1 "XFree86 v4 Server Module" /etc/hwinfo.data | \
       sed "s/.*v4 Server Module: //")
