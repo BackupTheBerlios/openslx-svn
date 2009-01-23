@@ -16,11 +16,10 @@ using namespace std;
 /********************************************************
  * Callback for ReturnButton at the bottom of the GUI
  * ----------------------------------------------------
- * Should start chosen session entry
+ * Should start chosen session entry -> if something is selected
  *********************************************************/
 void SWindow::cb_return()
 {
-  //cout << " Pressed Button!" << endl;
   if(curr != 0 && curr->user_data()) {
     DataEntry* dat = (DataEntry*) curr->user_data();
     runImage(curr, dat);
@@ -42,17 +41,17 @@ void SWindow::cb_select()
     }
   if( curr == sel.item() ) {
     //Doubleclick
+    cout << ((DataEntry*)curr->user_data())->short_description << endl;
     if(curr->user_data()) {
       runImage(curr, (DataEntry*) curr->user_data() );
     }
     return;
   }
   curr = (Item*) sel.item();
-  //cout << it->user_data() << endl;
-  if(curr->user_data()) {
-    DataEntry* dat = (DataEntry*) curr->user_data();
-    info.text(dat->description.c_str());
-  }
+//   if(curr->user_data()) {
+//     DataEntry* dat = (DataEntry*) curr->user_data();
+//     info.text(dat->description.c_str());
+//   }
 }
 
 /**
@@ -76,8 +75,8 @@ void SWindow::set_lin_entries(DataEntry** ent, char* slxgroup)
       if( ent[i]->pools.empty() || ent[i]->pools.find(slxgroup) != string::npos) {
         Item* w= (Item*)sel.add_leaf(ent[i]->short_description.c_str() , lin_entgroup, (void*)ent[i] );
         
-        // Why is just "new" working here ???
         ((Widget*) w)->image(new xpmImage(get_symbol(ent[i])));
+        w->tooltip(ent[i]->description.c_str());
         w->callback(&runImage, (void*)ent[i]);
       }
     }
@@ -99,8 +98,8 @@ void SWindow::set_entries(DataEntry** ent, char* slxgroup)
       if(ent[i]->pools.empty() || ent[i]->pools.find(slxgroup) != string::npos) {
         Item* w= (Item*)sel.add_leaf(ent[i]->short_description.c_str(), entgroup, (void*)ent[i] );
         
-        // Why is just "new" working here ??
         ((Widget*) w)->image(new xpmImage(get_symbol(ent[i])));
+        w->tooltip(ent[i]->description.c_str());
         w->callback(&runImage, (void*)ent[i]);
       }
     }
@@ -159,5 +158,5 @@ char** SWindow::get_symbol(DataEntry* dat) {
     }
     return linux_xpm;
   }
-  return linux_xpm;
+  return xp_xpm;
 }

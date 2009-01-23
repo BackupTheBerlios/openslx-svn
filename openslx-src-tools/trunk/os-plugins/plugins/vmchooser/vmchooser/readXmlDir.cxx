@@ -90,6 +90,10 @@ DataEntry* get_entry(xmlDoc * doc)
 {
         char *tempc = NULL;
         DataEntry* de = new DataEntry();
+        
+        if(doc->name != NULL) {
+        	de->xml_name = string(doc->name);
+        }
 
         tempc = getAttribute(doc,"short_description");
         if (tempc != NULL ) {
@@ -157,7 +161,7 @@ DataEntry* get_entry(xmlDoc * doc)
 
         tempc = getAttribute(doc,"virtualmachine");
         if (tempc != NULL ) {
-                if ( strcmp(tempc,"vmware") ) {
+                if ( strcmp(tempc,"vmware") == 0 ) {
                         de->imgtype = VMWARE;
                 } else {
                         de->imgtype = VBOX;
@@ -204,6 +208,8 @@ DataEntry* get_entry(xmlDoc * doc)
                 de->priority = atoi(tempc);
         }
         tempc = NULL;
+        
+        de->xml = doc;
 
         return de;
 }
@@ -253,9 +259,9 @@ DataEntry** readXmlDir(char* path)
         DataEntry** result = (DataEntry**) malloc(gResult->gl_pathc * sizeof(DataEntry*) +1);
 
         for (int i=0; gResult->gl_pathv[i] != NULL; i++) {
-                if (strstr(gResult->gl_pathv[i], "Vorlage") != NULL) {
-                        continue;
-                }
+//                 if (strstr(gResult->gl_pathv[i], "Vorlage") != NULL) {
+//                         continue;
+//                 }
                 /* DEBUG */
                 /* printf("%s\n", gResult->gl_pathv[i]);
                  */
@@ -281,7 +287,8 @@ DataEntry** readXmlDir(char* path)
                 if (result[c] != NULL) {
                         c++;
                 }
-                xmlFreeDoc(doc);
+                /* xmlDoc still needed to write back information for VMware etc. */
+                // xmlFreeDoc(doc);
         }
 
         free(gResult);

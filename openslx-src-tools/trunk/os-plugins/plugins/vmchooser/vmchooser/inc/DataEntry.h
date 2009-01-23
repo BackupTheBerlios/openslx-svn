@@ -2,6 +2,7 @@
 #define DATAENTRY_H_
 
 #include <string>
+#include <libxml/tree.h>
 using namespace std;
 
 enum ImgType {
@@ -32,6 +33,8 @@ struct DataEntry {
 	int priority;
 	
 	string command;
+	string xml_name;
+	xmlDoc* xml;
 	
 };
 

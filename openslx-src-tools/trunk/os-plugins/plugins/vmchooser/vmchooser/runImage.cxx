@@ -2,22 +2,32 @@
 
 #include "inc/DataEntry.h"
 #include "inc/SWindow.h"
+#include "inc/functions.h"
+
 #include <sys/wait.h>
 #include <iostream>
 #include <string>
 #include <boost/regex.hpp>
 
+
 /** *************************************************************
  * void runImage runs a (virtual machine) image using fork()
+ *		calling runImage(DataEntry*)
  ***************************************************************/
 void runImage(fltk::Widget*, void* p)
 {
+  char* confxml = 0;
+  
   /* printf("runImage called\n"); */
   if ( p == NULL ) {
     return;
   }
   
   DataEntry& dat = *((DataEntry*) p);
+  
+  if(dat.imgtype == VMWARE) {
+    confxml = (char*) writeConfXml(dat);
+  }
   
   pid_t pid;
   int status;
@@ -29,7 +39,7 @@ void runImage(fltk::Widget*, void* p)
       return;
       break;
     case 0:
-      runImage(dat);
+      runImage(dat, confxml);
       break;
     default:
       exit(0);
@@ -48,17 +58,94 @@ void runImage(fltk::Widget*, void* p)
  * Helper-function for runImage(Widget, void) 
  * - runs the chosen virtualizer image
  **/
-string runImage(DataEntry& dat)
+string runImage(DataEntry& dat, char* confxml)
 {
   if (dat.imgtype == VMWARE) {
-  	char* arg[] = { strcat("/var/lib/vmware/",dat.imgname.c_str()),
-		(char*) dat.os.c_str(),
-		(char*)dat.network.c_str(), '\0' };
-	// run-vmware.sh imagename os (Window-Title) network
-	execvp("/var/X11R6/bin/run-vmware.sh", arg );
+    //cout << dat.xml_name << endl;
+    char* arg[] = { "/var/X11R6/bin/run-vmware.sh",
+            confxml,
+            strcat("/var/lib/vmware/",dat.imgname.c_str()),
+            (char*) dat.os.c_str(),
+            (char*)dat.network.c_str(),
+             '\0' };
+    // run-vmware.sh imagename os (Window-Title) network
+    execvp("/var/X11R6/bin/run-vmware.sh", arg );
   }
   if(! dat.command.empty() ) {
-    execvp((char*) dat.command.c_str(), NULL);
+    char* arg[] = { (char*) dat.command.c_str(), '\0' };
+    execvp((char*) dat.command.c_str(), arg);
   }
   return string();
+}
+
+
+
+
+/**
+ * Helper-Function: Get folder name
+ */
+char* getFolderName() {
+  const int MAX_LENGTH = 200;
+
+  /* Var for the folder name */
+  char* pname = (char*) malloc(MAX_LENGTH);
+  int result;
+
+  result = readlink("/proc/self/exe", pname, MAX_LENGTH);
+  if (result > 0) {
+    pname[result] = 0; /* add the NULL - not done by readlink */
+  }
+
+  int i=result-1;
+  while(pname[i] != '/' && i >= 0) {
+    pname[i] = '\0';
+    i--;
+  }
+  if(pname[i] == '/' ) {
+    pname[i] = '\0';
+  }
+
+  return pname;
+
+}
+
+
+const char* writeConfXml(DataEntry& dat) {
+  
+  const int MAX_LENGTH = 300;
+
+  char* pname = getFolderName();
+  xmlNodePtr cur = 0;
+  xmlNodePtr root = 0;
+  
+  strncat(pname, "/printer.sh", MAX_LENGTH);
+  
+  cur = xmlDocGetRootElement(dat.xml);
+  if(cur == NULL) {
+    printf("Empty XML Document %s!", dat.xml_name.c_str());
+    return dat.xml_name.c_str();
+  }
+  
+  // xmlNode "eintrag"
+  root = cur->children;
+  while(xmlStrcmp(root->name, (const xmlChar*)"eintrag") != 0) {
+    root = root->next;
+  }
+  if(xmlStrcmp(root->name, (const xmlChar *)"eintrag") != 0){
+    fprintf(stderr, "%s is not a valid xml file!", dat.xml_name.c_str());
+    return dat.xml_name.c_str();
+  }
+  
+  // add "printers" and "scanners" - XML-Nodes
+  addPrinters(root, pname);
+  
+  pname = getFolderName();
+  strncat(pname, "/scanner.sh", MAX_LENGTH);
+  addScanners(root, pname);
+  
+  free(pname);
+  
+  //xmlSaveFile("-", dat.xml);
+  xmlSaveFile( "/tmp/run.xml", dat.xml);
+  return "/tmp/run.xml";
 }

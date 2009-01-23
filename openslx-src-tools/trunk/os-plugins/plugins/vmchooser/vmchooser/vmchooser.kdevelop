@@ -18,8 +18,8 @@
     <run>
       <directoryradio>executable</directoryradio>
       <mainprogram>/home/bastian/studium/hiwi/openslx/openslx-src-tools/trunk/os-plugins/plugins/vmchooser/vmchooser</mainprogram>
-      <programargs>-p xmltest</programargs>
-      <globaldebugarguments>-p xmltest</globaldebugarguments>
+      <programargs/>
+      <globaldebugarguments/>
       <globalcwd>/home/bastian/studium/hiwi/openslx/openslx-src-tools/trunk/os-plugins/plugins/vmchooser</globalcwd>
       <useglobalprogram>false</useglobalprogram>
       <terminal>false</terminal>

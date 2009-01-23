@@ -44,11 +44,11 @@
     </priority>
     #Description: Should printers be connected ? Which ?
     <printers param="true">
-     <printer name="" path=""></printer>
+     <printer name="" path="">Human readable description</printer>
     </printers>
     #Description: Should scanners be connected ? Which ?
     <scanners>
-     <scanner name="" ip=""></scanner>
+     <scanner name="" path="">Description</scanner>
     </scanners>
     #Description: Should the Homedrive be connected ?
     <home param="true">
@@ -57,5 +57,7 @@
     <shareds param="true">
      <shared name="" path="" pass=""></shared>
     </shareds>
+    <locked param="true">
+    </locked>
   </eintrag>
 </settings>

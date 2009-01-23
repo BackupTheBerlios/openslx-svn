@@ -7,13 +7,29 @@
 
 #include "DataEntry.h"
 
-DataEntry** readXmlDir(char* path); /* Attention: returns malloced array */
+/* Attention: both return malloced array */
+DataEntry** readXmlDir(char* path);
 DataEntry** readLinSess(char* path);
 
-void runImage(fltk::Widget* , void* p); /* This is thought as a callback-function for the Select-Browser */
-string runImage(DataEntry&); /* building command for different Virtualizer */
+/* This is thought as a callback-function for the Select-Browser */
+void runImage(fltk::Widget* , void* p);
 
-glob_t* globber(char* path, char* filetype); /* Globs for a specific filetype */
+/* building & executing command for different Virtualizer */
+string runImage(DataEntry&, char* confxml);
+
+/* Globs for a specific filetype (2. argument) */
+glob_t* globber(char* path, char* filetype);
+
+/* Gets folder name of this program */
+char* getFolderName();
+
+/* Reads output from a skript (2. argument) */
+/* Adds the elements into xmlNode "printers" (1. argument) */
+bool addPrinters(xmlNode* node, char* script); 
+bool addScanners(xmlNode* node, char* script); 
+
+/* Write configuration xml */
+const char* writeConfXml(DataEntry& dat);
 
 
 #endif /* _FUNCTIONS_H_ */

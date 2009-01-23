@@ -1,33 +1,40 @@
 
 STATIC=# -static
 CXX=g++
-CFLAGS=-c -O2 -I../fltk-2/include/ -I. -Wall -g3
-XMLFLAG=`xml2-config --cflags`
+CFLAGS=-c -O2 -I../fltk-2/include/ -I. -Wall -g3 `xml2-config --cflags`
 BOOST=-lboost_regex-s
 LDFLAGS=-L../fltk-2/lib/ ../fltk-2/lib/libfltk2.a -lpng ../fltk-2/lib/libfltk2_images.a -ljpeg -lz -lXi -lXinerama -lpthread -lm -lXext -lsupc++ -lXrender -lfontconfig -lxml2 -lXft -lXdmcp -lXau -ldl -lz -lfreetype -lX11
 
-all: main SWindow readXmlDir readLinSess runImage
-	${CXX} ${STATIC} main.o SWindow.o runImage.o readLinSess.o readXmlDir.o -o vmchooser ${LDFLAGS} ${BOOST}
+all: main.o anyoption.o SWindow.o readXmlDir.o readLinSess.o runImage.o addPrinters.o addScanners.o
+	${CXX} ${STATIC} main.o anyoption.o SWindow.o runImage.o readLinSess.o readXmlDir.o addPrinters.o addScanners.o -o vmchooser ${LDFLAGS} ${BOOST}
 	strip vmchooser
+
+main.o: main.cxx
+	${CXX} ${CFLAGS} -c main.cxx -o main.o	
+
+anyoption.o: anyoption.cpp inc/anyoption.h
+	${CXX} ${CFLAGS} -o anyoption.o anyoption.cpp
 	
-SWindow:
+SWindow.o: SWindow.cxx inc/SWindow.h
 	${CXX} ${CFLAGS} -c SWindow.cxx -o SWindow.o
 
-readXmlDir:
-	${CXX} ${CFLAGS} ${XMLFLAG} -o readXmlDir.o readXmlDir.cxx
+readXmlDir.o: readXmlDir.cxx inc/functions.h
+	${CXX} ${CFLAGS} -o readXmlDir.o readXmlDir.cxx
 
-readLinSess:
+readLinSess.o: readLinSess.cxx inc/functions.h
 	${CXX} ${CFLAGS} -o readLinSess.o readLinSess.cxx
 
-runImage:
+runImage.o: runImage.cxx inc/functions.h
 	${CXX} ${CFLAGS} -o runImage.o runImage.cxx
 
-main:
-	${CXX} ${CFLAGS} -c main.cxx -o main.o
+addPrinters.o: addPrinters.cxx inc/functions.h
+	${CXX} ${CFLAGS} -o addPrinters.o addPrinters.cxx
 
+addScanners.o: addScanners.cxx inc/functions.h
+	${CXX} ${CFLAGS} -o addScanners.o addScanners.cxx
 
 clean:
-	rm -rf *.o test
+	rm -rf *.o vmchooser
 
 install:
 	cp vmchooser ../../../../../../openslx/trunk/os-plugins/plugins/vmchooser/files/

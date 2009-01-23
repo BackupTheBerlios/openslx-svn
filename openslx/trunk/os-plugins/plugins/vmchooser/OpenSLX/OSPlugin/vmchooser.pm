@@ -75,7 +75,7 @@ sub installationPhase
     # copy all needed files now:
     my $pluginName = $self->{'name'};
     my $pluginBasePath = "$openslxBasePath/lib/plugins/$pluginName/files";
-    foreach my $file ( qw( vmchooser ) ) {
+    foreach my $file ( qw( vmchooser printer.sh scanner.sh ) ) {
         copyFile("$pluginBasePath/$file", "$pluginRepoPath/");
     }
 

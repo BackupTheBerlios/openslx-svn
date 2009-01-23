@@ -29,3 +29,5 @@ Needed libraries to run:
 * Some static libraries of fltk-2 - svn version - are located 
 in fltk-2/ and could be used to link against this program.
 - as images are enabled, you should have libjpeg and libpng too.
+===================================
+
