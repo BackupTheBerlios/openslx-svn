@@ -12,7 +12,7 @@ fi
 find_xauth () {
   FOUND=0
   RETRIES=4
-  [ -z "$1" ] && RETRIES="$1"
+  [ -z "$1" ] || RETRIES="$1"
 
   [ -e "/var/lib/kdm/" ] && 
      XAUTHFILE_KDM=`find /var/lib/kdm/ -iname "A\:0-*"`
@@ -30,11 +30,11 @@ find_xauth () {
       let "RETRIES-=1"
       find_xauth "$RETRIES"
     else
-      echo " .. FAILED (can't find way to authenticate myself against X)"
+      echo "start FAILED (can't find way to authenticate myself against X)" >>/var/log/x11vnc.debug
       exit -1
     fi
   else
-    echo "found ($XAUTHORITY)"
+    echo "found authfile ($XAUTHORITY)" >>/var/log/x11vnc.debug
   fi
 }
 
@@ -42,11 +42,10 @@ START_COMMAND="x11vnc"
 
 case "$1" in
   start)
-    echo -n " * Loading x11vnc "
 
     if [ ! -f /etc/x11vnc/passwd ]; then
-      echo " .. FAILED (/etc/x11vnc/passwd not found)"
-      echo "   Create it manualy and retry starting x11vnc"
+      echo " start FAILED (/etc/x11vnc/passwd not found)" >>/var/log/x11vnc.debug
+      echo "   Create it manualy and retry starting x11vnc" >>/var/log/x11vnc.debug
       exit -1;
     fi
 
@@ -60,17 +59,16 @@ case "$1" in
     OUTPUT=`$START_COMMAND`
     echo "$START_COMMAND" >>/var/log/x11vnc.debug
     echo "$OUTPUT" >>/var/log/x11vnc.debug
-    echo " .. OK"
   ;;
   stop)
     pid=`pidof x11vnc`
     if [ -z "$pid" ]
     then
-     echo " * x11vnc not running.."
+     echo "x11vnc not running" >>/var/log/x11vnc.debug
      exit -1;
     else
      kill -9 $pid
-     echo " * x11vnc stopped"
+    echo "x11vnc stopped" >>/var/log/x11vnc.debug
     fi
   
   ;;

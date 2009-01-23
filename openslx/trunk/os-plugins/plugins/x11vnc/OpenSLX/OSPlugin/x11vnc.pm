@@ -184,9 +184,14 @@ sub installationPhase
 
     # get path of files we need to install
     my $pluginFilesPath = "$openslxBasePath/lib/plugins/$self->{'name'}/files";
+    my $script = $self->{distro}->fillRunlevelScript();
 
     # copy all needed files now
-    copyFile("$pluginFilesPath/x11vnc", "/etc/init.d");
+    copyFile("$pluginFilesPath/x11vnc-init", "$pluginRepositoryPath");
+
+    spitFile("/etc/init.d/x11vnc", $script);
+    chmod 0755, "/etc/init.d/x11vnc";
+
     vlog(3, "install init file");
 
     if ( !-x "/usr/bin/x11vnc" ) {
