@@ -12,7 +12,7 @@
 #    - provides SUSE-specific overrides of the Distro API for the xserver
 #      plugin.
 # -----------------------------------------------------------------------------
-package xserver::OpenSLX::Distro::Suse;
+package xserver::OpenSLX::Distro::Suse_10_2;
 
 use strict;
 use warnings;
