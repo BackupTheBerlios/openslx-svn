@@ -8,10 +8,10 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# vmware.pm
-#    - declares necessary information for the qemukvmplugin
+# qemukvm.pm
+#    - declares necessary information for the qemukvm plugin
 # -----------------------------------------------------------------------------
-package OpenSLX::OSPlugin::vmware;
+package OpenSLX::OSPlugin::qemukvm;
 
 use strict;
 use warnings;
@@ -27,7 +27,6 @@ use OpenSLX::Utils;
 sub new
 {
     my $class = shift;
-
     my $self = {
         name => 'qemukvm',
     };
@@ -113,7 +112,7 @@ sub installationPhase
     my $engine = $self->{'os-plugin-engine'};
     
     # different names of the tool (should be unified somehow!?)
-    if (!isInPath('qemu-kvm' || !isInPath('kvm')) {
+    if (!isInPath('qemu-kvm') || !isInPath('kvm')) {
         $engine->installPackages(
             $engine->getInstallablePackagesForSelection('qemu-kvm')
         );
@@ -126,7 +125,6 @@ sub removalPhase
     my $self = shift;
     my $info = shift;
 
-    
     return;
 }
 
@@ -135,9 +133,9 @@ sub checkStage3AttrValues
     my $self          = shift;
     my $stage3Attrs   = shift;
     my $vendorOSAttrs = shift;
-    my @problems;
+    #my @problems;
 
-    my $vmimg = $stage3Attrs->{'qemukvm::imagesrc'} || '';
+    #my $vmimg = $stage3Attrs->{'qemukvm::imagesrc'} || '';
 
     return;
 }
