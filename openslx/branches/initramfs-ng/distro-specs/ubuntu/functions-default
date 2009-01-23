@@ -108,6 +108,15 @@ for i in rc2.d/K$stop$script rc3.d/K$stop$script \
 done
 }
 
+# set up localization like keytable, console
+dlocale () {
+# fixme -- use keytable setup script here
+# echo -e "\t# entries added by $0: $date" >> /mnt/etc/init.d/boot.slx
+sed "s/LANG.*/LANG=\"${LANG}\"" -i /mnt/etc/default/locale
+#echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
+#  >>/mnt/etc/init.d/boot.slx
+}
+
 # group of functions for the normal runlevels - first parameter is start
 # second stop
 # function for ntp configuration
@@ -130,7 +139,7 @@ if [ "x$start_atd" = "xyes" ]; then
 fi
 }
 
-# function for configuration of cron services
+# function for configuration of cron services (fixme: to be moved to a plugin?)
 config_cron () {
 if [ "x$start_cron" = "xyes" ] ; then
   if [ -f /mnt/etc/init.d/cron ] ; then
@@ -147,7 +156,7 @@ if [ "x$start_cron" = "xyes" ] ; then
 fi
 }
 
-# syslog service
+# syslog service (available as a plugin, to be deleted here)
 config_syslog () {
 if [ "x$start_syslog" != "xno" ] ; then
 # fixme, welcher Syslog wird verwendet?
@@ -190,15 +199,6 @@ if [ "x$start_snmp" = "xyes" ] ; then
     # fixme!!
     # write service monitor depending on services started
   fi
-}
-
-# set up keytable, console etc
-dlocale () {
-# fixme -- use keytable setup script here
-# echo -e "\t# entries added by $0: $date" >> /mnt/etc/init.d/boot.slx
-sed "s/LANG.*/LANG=\"${LANG}\"" -i /mnt/etc/default/locale
-#echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
-#  >>/mnt/etc/init.d/boot.slx
 }
 
 # acpi and powersave

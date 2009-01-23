@@ -465,42 +465,6 @@ if [ "x$lpr_servers" != "x" ] && [ ! -e /rootfs/etc/cups/client.conf ] ; then
 #\t$date\n#\nServerName\t$lpr_servers" > /mnt/etc/cups/client.conf
 fi
 }
-# configure samba service
-config_samba () {
-if [ "$start_samba" != "no" ]; then
-  testmkd /mnt/var/run/samba
-  if [ "$start_samba" = "yes" ] && [ -f /mnt/etc/init.d/smb ] ; then
-    rllinker "smb" 27 2
-    rllinker "nmb" 28 2
-  fi
-  # set up samba configuration with NetBIOS name servers etc.
-  if [ "x$netbios_name_servers" != "x" ]; then
-    wins_server="\\twins server = $netbios_name_servers"
-  else
-    wins_server=";\\twins server = 127.0.0.1"
-  fi
-  if [ "x$netbios_workgroup" != "x" ]; then
-    workgroup="workgroup = $new_netbios_workgroup"
-  else
-    workgroup="workgroup = openslx"
-  fi
-  # avoid to overwrite admin provided samba configuration file
-  [ ! -f /rootfs/etc/samba/smb.conf ] && [ -f /mnt/etc/samba/smb.conf ] && \
-    sed -e "1i# modified in InitRamFS by $0" \
-        -e "s,\s*netbios name.*,netbios name = ${host_name},g" \
-        -e "s,\s*interfaces.*,interfaces = ${clientip}/${subnet_mask},g" \
-        -e "s,;.*wins server.*,$wins_server,g"   \
-        -e "s,\s*workgroup =.*,$workgroup,g" \
-        -i  /mnt/etc/samba/smb.conf;
-  # special kde network discovery service
-  [ -f /mnt/etc/lisarc ] && [ ! -f /rootfs/etc/lisarc ] &&
-    sed -e "1i# modified in InitRamFS by $0" \
-        -e "s,AllowedA.*,AllowedAddresses=${clientip}/${subnet_mask};,g" \
-        -e "s,BroadcastN.*,BroadcastNetwork=${clientip}/${subnet_mask};,g" \
-        -e "s,PingAdd.*,PingAddresses=${clientip}/${subnet_mask};,g" \
-        -i /mnt/etc/lisarc
-fi
-}
 # configure bluetooth services
 config_bt () {
 if [ -e /mnt/etc/sysconf/bluetooth ] ; then
