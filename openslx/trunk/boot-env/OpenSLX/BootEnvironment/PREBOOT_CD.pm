@@ -62,7 +62,8 @@ sub writeBootloaderMenuFor
     my $externalClientID = shift;
     my $systemInfos      = shift || [];
 
-    my $prebootSystemInfo = clone($systemInfos->[0]);
+    my $prebootSystemInfo
+        = clone($self->_pickSystemWithNewestKernel($systemInfos));
     $self->_createImage($client, $prebootSystemInfo);
 
 #    $self->_prepareBootloaderConfigFolder() 
@@ -121,6 +122,31 @@ sub writeBootloaderMenuFor
 #    spitFile($pxeFile, $pxeConfig, { 'io-layer' => 'encoding(cp850)' } );
 
     return 1;
+}
+
+sub _pickSystemWithNewestKernel
+{
+    my $self        = shift;
+    my $systemInfos = shift;
+
+    my $systemWithNewestKernel;
+    my $newestKernelFileSortKey = '';
+    foreach my $system (@$systemInfos) {
+        next unless $system->{'kernel-file'} =~ m{
+            (?:vmlinuz|x86)-(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?-(\d+(?:\.\d+)?)
+        }x;
+        my $sortKey 
+            = sprintf("%02d.%02d.%02d.%02d-%2.1f", $1, $2, $3, $4||0, $5);
+        if ($newestKernelFileSortKey lt $sortKey) {
+            $systemWithNewestKernel  = $system;
+            $newestKernelFileSortKey = $sortKey;
+        }
+    }
+
+    if (!defined $systemWithNewestKernel) {
+        die _tr("unable to pick a system to be used for preboot!");
+    }
+    return $systemWithNewestKernel;
 }
 
 sub _createImage
