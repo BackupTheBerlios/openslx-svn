@@ -1,0 +1,7 @@
+##########################################
+#                                        #
+#  Dieses System wird in ca. 10 Minuten  #
+#  heruntergefahren. Bitte sichern Sie   #
+#  alle Daten und loggen sich dann aus.  #
+#                                        #
+##########################################
