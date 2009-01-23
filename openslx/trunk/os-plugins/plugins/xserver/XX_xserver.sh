@@ -229,7 +229,7 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
     # setup the matching OpenGL, DRI libraries depending on choosen driver
     # type (mesa/gpl, fglrx, nvidia, (matrox)). We should not see nvidia,
     # fglrx here if xserver_prefnongpl is set to "0"
-    if $(grep -q -iE ".*Driver.*fglrx.*" $xfc); then
+    if [ "${xmodule}" = "fglrx" ]; then
       DRILPATH=/mnt/var/X11R6/lib/usr/X11R6/lib/modules/dri/
       testmkd "${DRILPATH}"
       ln -fs ${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so ${DRILPATH}/fglrx_dri.so
@@ -241,7 +241,7 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
       chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/fglrx.ko
       # we need some pci.ids for fglrx driver
       cp -r "${PLUGIN_PATH}/etc/ati" /mnt/etc
-    elif $(grep -q -iE ".*Driver.*nvidia.*" $xfc); then
+    elif [ "${xmodule}" = "nvidia" ]; then
       # create all relevant libGL links
       # this is the most important thing
       ln -sf ${PLUGIN_ROOTFS}/usr/lib/libGLcore.so.1 \
@@ -253,7 +253,8 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
       ln -sf ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 ${glliblinks}/libGL.so.1
       ln -sf ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 ${glliblinks}/libGL.so.1.2
     else
-      if [ -e /usr/lib/libGL_MESA.1.2 ]; then
+      if [ -e /mnt/usr/lib/libGL_MESA.1.2 ]; then
+       ## TODO: Somehow this is never true ??? 
        ln -sf /usr/lib/libGL_MESA.so.1.2 /mnt/var/X11R6/lib/libGL.so
        ln -sf /usr/lib/libGL_MESA.so.1.2 /mnt/var/X11R6/lib/libGL.so.1
        ln -sf /usr/lib/libGL_MESA.so.1.2 /mnt/var/X11R6/lib/libGL.so.1.2
