@@ -77,7 +77,7 @@ sub getAttrInfo
 			applies_to_systems => 1,
 			applies_to_clients => 1,
 			description => unshiftHereDoc(<<'			End-of-Here'),
-				which display manager to start: gdm, kdm, xdm?)
+				which display manager to start: gdm, kdm or xdm?
 			End-of-Here
 			content_regex => qr{^(g|k|x)dm$},
 			content_descr => 'allowed: gdm, kdm, xdm',
@@ -87,9 +87,9 @@ sub getAttrInfo
 			applies_to_systems => 1,
 			applies_to_clients => 1,
 			description => unshiftHereDoc(<<'			End-of-Here'),
-				which desktop environment shall be used: gnome, kde, xfce, ...)
+				which desktop environment shall be used: gnome, kde, or xfce?
 			End-of-Here
-			content_regex => undef,
+			content_regex => qr{^(gnome,kde,xfce)$},
 			content_descr => 'allowed: gnome, kde, xfce',
 			default => undef,
 		},
@@ -97,28 +97,38 @@ sub getAttrInfo
 			applies_to_systems => 1,
 			applies_to_clients => 1,
 			description => unshiftHereDoc(<<'			End-of-Here'),
-				which type of operation mode: kiosk, workstation, remote-desktop, ...?)
+				which type of operation mode shall be activated:
+				    workstattion, kiosk or chooser?
 			End-of-Here
-			content_regex => undef,
-			content_descr => 'allowed: ...',
+			content_regex => qr{^(workstation|kiosk|chooser)$},
+			content_descr => 'allowed: workstation,kiosk,chooser',
 			default => 'workstation',
 		},
 		'desktop::theme' => {
 			applies_to_systems => 1,
+			applies_to_clients => 1,
 			description => unshiftHereDoc(<<'			End-of-Here'),
 				name of the theme to apply to the desktop (unset for no theme)
 			End-of-Here
-			content_regex => undef,
-			content_descr => undef,
+			content_descr => 'one of the entries in "supported_themes"',
 			default => 'openslx',
+		},
+		'desktop::supported_themes' => {
+			applies_to_vendor_os => 1,
+			description => unshiftHereDoc(<<'			End-of-Here'),
+				name of all themes that shall be installed in vendor-OS (such
+				that they can be selected via 'desktop::theme' in stage 3).
+			End-of-Here
+			content_descr => 'a comma-separated list of theme names',
+			default => 'openslx,blue,circles',
 		},
 		'desktop::gdm' => {
 			applies_to_vendor_os => 1,
 			description => unshiftHereDoc(<<'			End-of-Here'),
 				should gdm be available (installed in vendor-OS)?
 			End-of-Here
-			content_regex => undef,
-			content_descr => '1 or 0',
+			content_regex => qr{^0|1$},
+			content_descr => '"0", "1" or "-" (for unset)',
 			default => undef,
 		},
 		'desktop::kdm' => {
@@ -126,8 +136,8 @@ sub getAttrInfo
 			description => unshiftHereDoc(<<'			End-of-Here'),
 				should kdm be available (installed in vendor-OS)?
 			End-of-Here
-			content_regex => undef,
-			content_descr => '1 or 0',
+			content_regex => qr{^0|1$},
+			content_descr => '"0", "1" or "-" (for unset)',
 			default => undef,
 		},
 		'desktop::xdm' => {
@@ -135,8 +145,8 @@ sub getAttrInfo
 			description => unshiftHereDoc(<<'			End-of-Here'),
 				should xdm be available (installed in vendor-OS)?
 			End-of-Here
-			content_regex => undef,
-			content_descr => '1 or 0',
+			content_regex => qr{^0|1$},
+			content_descr => '"0", "1" or "-" (for unset)',
 			default => undef,
 		},
 		'desktop::gnome' => {
@@ -144,8 +154,8 @@ sub getAttrInfo
 			description => unshiftHereDoc(<<'			End-of-Here'),
 				should gnome be available (installed in vendor-OS)?
 			End-of-Here
-			content_regex => undef,
-			content_descr => '1 or 0',
+			content_regex => qr{^0|1$},
+			content_descr => '"0", "1" or "-" (for unset)',
 			default => undef,
 		},
 		'desktop::kde' => {
@@ -153,8 +163,8 @@ sub getAttrInfo
 			description => unshiftHereDoc(<<'			End-of-Here'),
 				should kde be available (installed in vendor-OS)?
 			End-of-Here
-			content_regex => undef,
-			content_descr => '1 or 0',
+			content_regex => qr{^0|1$},
+			content_descr => '"0", "1" or "-" (for unset)',
 			default => undef,
 		},
 		'desktop::xfce' => {
@@ -162,8 +172,8 @@ sub getAttrInfo
 			description => unshiftHereDoc(<<'			End-of-Here'),
 				should xfce be available (installed in vendor-OS)?
 			End-of-Here
-			content_regex => undef,
-			content_descr => '1 or 0',
+			content_regex => qr{^0|1$},
+			content_descr => '"0", "1" or "-" (for unset)',
 			default => undef,
 		},
 	};
