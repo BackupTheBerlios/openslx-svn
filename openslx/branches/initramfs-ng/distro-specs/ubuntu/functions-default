@@ -192,17 +192,13 @@ if [ "x$start_snmp" = "xyes" ] ; then
   fi
 }
 
-# set up keytable (function run in hwautocfg)
-keytable () {
+# set up keytable, console etc
+dlocale () {
 # fixme -- use keytable setup script here
 # echo -e "\t# entries added by $0: $date" >> /mnt/etc/init.d/boot.slx
-:
-}
-
-# consolefont
-consolefont () {
-echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
-  >>/mnt/etc/init.d/boot.slx
+sed "s/LANG.*/LANG=\"${LANG}\"" -i /mnt/etc/default/locale
+#echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
+#  >>/mnt/etc/init.d/boot.slx
 }
 
 # acpi and powersave

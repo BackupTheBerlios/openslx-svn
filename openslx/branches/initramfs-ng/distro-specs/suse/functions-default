@@ -511,18 +511,13 @@ else
   : # no bluetooth components installed
 fi
 }
-# set up keytable (function run in hwautocfg)
-# kbd runlevel link is set via config_distro to avoid clashes between
-# servconfig and hwautocfg settings
-keytable () {
+# set up localization like keytable and consolefont
+dlocale () {
 echo -e "\t# entries added by $0: $date" >> /mnt/etc/init.d/boot.slx
 sed -e "s,KEYTABLE=.*,KEYTABLE=\"${KEYTABLE}\"," \
   -i /mnt/etc/sysconf/keyboard
 echo -e "\tloadkeys ${KEYTABLE} >${LOGFILE} 2>&1\n" \
   >>/mnt/etc/init.d/boot.slx
-}
-# consolefont and language (function run in hwautocfg)
-consolefont () {
 echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
   >>/mnt/etc/init.d/boot.slx
 sed -e "s,RC_LANG=.*,RC_LANG=\"${LANG}\" # added in initrd," \

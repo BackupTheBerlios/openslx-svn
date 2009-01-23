@@ -773,6 +773,8 @@ case "$country" in
     TZ="America/New_York"
   ;;
 esac
+# start distrospecific localization
+dlocale
 }
 
 #############################################################################

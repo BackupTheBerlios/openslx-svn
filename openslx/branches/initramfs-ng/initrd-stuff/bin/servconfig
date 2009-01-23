@@ -84,11 +84,8 @@ if [ -z "${country}" ] ; then
   error "$scfg_country" nonfatal
   country="us"
 fi
+# do localization (this functions starts a distro specific setup)
 localization "${country}"
-
-# add this information for activation via distro specific function
-[ -n "${KEYTABLE}" ] && keytable
-[ -n "${CONSOLE_FONT}" ] && consolefont
 
 #############################################################################
 # setup passwd and shadow for local system users like root, bin, daemon and
