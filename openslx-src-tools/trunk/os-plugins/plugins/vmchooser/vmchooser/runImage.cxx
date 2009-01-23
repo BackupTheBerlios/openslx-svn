@@ -40,17 +40,13 @@ void runImage(fltk::Widget*, void* p)
       return;
       break;
     case 0:
-      runImage(dat, confxml);
+      exit(0);
       break;
     default:
-      exit(0);
       if( waitpid( pid, &status, 0 ) == -1 ) {
         cerr << "No child with this pid (" << pid << ")" << endl;
-        return;
       }
-      else {
-        exit(0);
-      }
+      runImage(dat, confxml);
       break;
   }
 }
@@ -71,7 +67,7 @@ string runImage(DataEntry& dat, char* confxml)
             (char*)dat.network.c_str(),
             NULL };
     
-    cout << "run-vmware.sh imagename os (Window-Title) network" << endl;
+    cout << arg << endl; //"run-vmware.sh imagename os (Window-Title) network"
     execvp("/var/X11R6/bin/run-vmware.sh",  arg);
   }
   if(! dat.command.empty() ) {
