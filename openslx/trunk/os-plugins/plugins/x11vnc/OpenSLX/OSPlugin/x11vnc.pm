@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - OpenSLX GmbH
+# Copyright (c) 2007, 2008 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -61,11 +61,13 @@ sub getAttrInfo
             applies_to_systems => 1,
             applies_to_clients => 0,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                set x11vnc to listen on X11(default) or console fb
+                set x11vnc to listen on Xorg user sessions (default), general
+                access to the Xorg server (including displaymanager login) and
+                console framebuffer.
             End-of-Here
-            content_regex => qr{^(x11|fb)$},
-            content_descr => 'x11 means listen current X session - fb means listen to tty1 console',
-            default => 'x11',
+            content_regex => qr{^(x11user|x11gen|fb)$},
+            content_descr => 'x11user for user, x11gen for general X access or fb',
+            default => 'x11user',
         },
 
         'x11vnc::scale' => {
@@ -105,7 +107,8 @@ sub getAttrInfo
             applies_to_systems => 1,
             applies_to_clients => 0,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                set authentication type of the vnc connection
+                set authentication type of the vnc connection. rfbauth is
+                available for x11user and fb only.
             End-of-Here
             content_regex => qr{^(passwd|rfbauth|none)$},
             content_descr => 'choose: passwd, rfbauth, none',
@@ -116,8 +119,8 @@ sub getAttrInfo
             applies_to_systems => 1,
             applies_to_clients => 0,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                set allowed hosts (multiple hosts are seperated by semicolons, (simple) subnets are possible too
-                e.g. "192.168.")
+                set allowed hosts (multiple hosts are seperated by semicolons, 
+                (simple) subnets are possible too e.g. "192.168.")
             End-of-Here
             content_regex => undef,
             content_descr => undef,
@@ -128,7 +131,8 @@ sub getAttrInfo
             applies_to_systems => 1,
             applies_to_clients => 0,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                force x11vnc to only accept local connections and only listen on the loopback device
+                force x11vnc to only accept local connections and only listen
+                on the loopback device
             End-of-Here
             content_regex => qr{^(1|0|yes|no)$},
             content_descr => 'use 1 or yes to enable - 0 or no to disable',
@@ -139,8 +143,9 @@ sub getAttrInfo
             applies_to_systems => 1,
             applies_to_clients => 0,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                viewonly password (you can add multiple passwords seperated by semicolons)
-                (if you're using rfb-auth only the first one is used)
+                viewonly password (you can add multiple passwords seperated
+                by semicolons, if you're using rfbauth only the first one is
+                used)
             End-of-Here
             content_regex => undef,
             content_descr => undef,
@@ -151,8 +156,8 @@ sub getAttrInfo
             applies_to_systems => 1,
             applies_to_clients => 0,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                viewonly password (you can add multiple passwords seperated by semicolons)
-                (disabled with rfb-auth)
+                viewonly password (you can add multiple passwords seperated by
+                semicolons, disabled with rfb-auth)
             End-of-Here
             content_regex => undef,
             content_descr => undef,
@@ -182,6 +187,14 @@ sub installationPhase
     my $pluginTempPath       = $info->{'plugin-temp-path'};
     my $openslxBasePath      = $info->{'openslx-base-path'};
 
+    # should we distinguish between the two different packages!?
+    # libvnc should be part of the xorg package!? (so no check needed)
+    if (!$self->{distro}->isX11vncInstalled()) {
+        $self->{distro}->installX11vnc();
+    } else {
+        vlog(3, "x11vnc is already installed");
+    }
+
     # get path of files we need to install
     my $pluginFilesPath = "$openslxBasePath/lib/plugins/$self->{'name'}/files";
     my $script = $self->{distro}->fillRunlevelScript();
@@ -194,27 +207,27 @@ sub installationPhase
 
     vlog(3, "install init file");
 
-    if ( !-x "/usr/bin/x11vnc" ) {
-        # let's install x11vnc
-        my $vendorOSName = $self->{'os-plugin-engine'}->{'vendor-os-name'};
-        if ( $vendorOSName =~ m/(debian|ubuntu)/i ) {
-            my $cmd = "aptitude -y install x11vnc";
-            vlog(3, "executing: $cmd");
-            if (slxsystem($cmd)) {
-                die _tr("unable to execute shell-cmd\n\t%s", $cmd);
-            }
-        }
-        if ( $vendorOSName =~ m/suse/i ) {
-            # PLEASE TEST THIS!!!
-            my $cmd = "zypper -n in x11vnc";
-            vlog(3, "executing: $cmd");
-            if (slxsystem($cmd)) {
-                die _tr("unable to execute shell-cmd\n\t%s", $cmd);
-            }
-        }
-    } else {
-        vlog(3, "x11vnc is already installed");
-    }
+    #if ( !-x "/usr/bin/x11vnc" ) {
+    #    # let's install x11vnc
+    #    my $vendorOSName = $self->{'os-plugin-engine'}->{'vendor-os-name'};
+    #    if ( $vendorOSName =~ m/(debian|ubuntu)/i ) {
+    #        my $cmd = "aptitude -y install x11vnc";
+    #        vlog(3, "executing: $cmd");
+    #        if (slxsystem($cmd)) {
+    #            die _tr("unable to execute shell-cmd\n\t%s", $cmd);
+    #        }
+    #    }
+    #    if ( $vendorOSName =~ m/suse/i ) {
+    #        # PLEASE TEST THIS!!!
+    #        my $cmd = "zypper -n in x11vnc";
+    #        vlog(3, "executing: $cmd");
+    #        if (slxsystem($cmd)) {
+    #            die _tr("unable to execute shell-cmd\n\t%s", $cmd);
+    #        }
+    #    }
+    #} else {
+    #    vlog(3, "x11vnc is already installed");
+    #}
 
 }
 
