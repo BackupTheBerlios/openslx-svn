@@ -200,10 +200,14 @@ sub _setupSyslogNG
         };
         destination console_all {
             file("/dev/tty10");
-        };        
+        };
+        destination default_logfile {
+            file("/var/log/messages");
+        }; 
         log {
             source(all);
             destination(console_all);
+            destination(default_logfile);
         };
         END
         

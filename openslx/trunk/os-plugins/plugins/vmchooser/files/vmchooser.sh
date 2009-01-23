@@ -5,5 +5,5 @@ if [ -e "/etc/opt/openslx/vmchooser-stage3.conf" ]; then
 fi
 
 
-/opt/openslx/plugin-repo/vmchooser/vmchooser -p ${vmchooser_xmlpath}
+/opt/openslx/plugin-repo/vmchooser/vmchooser -p${vmchooser_xmlpath}
 

@@ -950,7 +950,7 @@ killall klogd 2>/dev/null
   /mnt/var/log/messages 2>/dev/null
 # if no syslog plugin was configured, start the daemon again writing to no
 # logfile directly (useless fake test as placeholder) 
-#[ ! -e syslog ] && syslogd -O /mnt/var/log/testfile
+[ ! -d /mnt/opt/openslx/plugin-repo/syslog/ ] && syslogd -O /mnt/var/log/testfile
 
 # move /dev and unmount /proc and unset all old, unneeded environment
 # variables
