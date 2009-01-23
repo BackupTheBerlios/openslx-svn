@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/ash
 #
 # stage3 part of 'example' plugin - the runlevel script
 #
@@ -25,14 +25,14 @@
 # to: ot@openslx.com, or join the IRC-channel '#openslx' (on freenode).
 
 if [ -e /initramfs/plugin-conf/example.conf ]; then
-	. /initramfs/plugin-conf/example.conf
-	if [ $example_active -ne 0 ]; then
-		[ $DEBUGLEVEL -gt 0 ] && echo "executing the 'example' os-plugin ...";
+  . /initramfs/plugin-conf/example.conf
+  if [ $example_active -ne 0 ]; then
+    [ $DEBUGLEVEL -gt 0 ] && echo "executing the 'example' os-plugin ...";
 
-		# for this example plugin, we simply take a filename from the 
-		# configuration and cat that file (output the smiley):
-		cat /mnt/opt/openslx/plugin-repo/example/$preferred_side
+    # for this example plugin, we simply take a filename from the 
+    # configuration and cat that file (output the smiley):
+    cat /mnt/opt/openslx/plugin-repo/example/$preferred_side
 
-		[ $DEBUGLEVEL -gt 0 ] && echo "done with 'example' os-plugin ...";
-	fi
+    [ $DEBUGLEVEL -gt 0 ] && echo "done with 'example' os-plugin ...";
+  fi
 fi
