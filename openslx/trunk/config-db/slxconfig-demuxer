@@ -648,7 +648,7 @@ sub writeClientConfigurationsForSystem
                 1;
             };
             if (!$attrsOK && $@) {
-                warn substr($@, 4);     # remove leading '*** '
+                warn $@;
             }
 
             writeAttributesToFile($client, $attrFile);
@@ -745,6 +745,17 @@ sub writeSystemConfiguration
             $info->{'attr-digest'}
         )
     );
+
+    my $attrsOK = eval {
+        OpenSLX::AttributeRoster->checkValues(
+            $info->{attrs}, $info->{'vendor-os'}->{name}
+        );
+        1;
+    };
+    if (!$attrsOK && $@) {
+        warn $@;
+    }
+
     my $attrFile = "$buildPath/initramfs/machine-setup";
     writeAttributesToFile($info, $attrFile);
     
