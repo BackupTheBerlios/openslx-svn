@@ -41,11 +41,19 @@ of the svn distribution of openslx. Do not forget to
 enter "make install" in openslx/trunk .
 
 Needed libraries to compile:
- - All sorts of X libs
+ - All sorts of X libs and development files
  - fltk-2 (see note *)
- - libxml2
+ - libxml2 (libxml2-dev on Ubuntu)
  - libboost-regex_s (static - 
    a dynamic version can be enabled by changing the Makefile)
+   (libboost-dev/libboost-regex-dev on Ubuntu)
+ - libpng-dev (libpng12-dev on Ubuntu)
+ - libjpeg-dev (libjpeg-dev on Ubuntu)
+ - libxi-dev (libxi-dev on Ubuntu)
+ - libxinerama-dev (libxinerama-dev on Ubuntu)
+ - libxrender-dev (libxrender-dev on Ubuntu)
+ - libxconfig1-dev (libxconfig1-dev on Ubuntu)
+ - libxft-dev (libxft-dev on Ubuntu)
 
 Needed libraries to run:
  - All sorts of X libs

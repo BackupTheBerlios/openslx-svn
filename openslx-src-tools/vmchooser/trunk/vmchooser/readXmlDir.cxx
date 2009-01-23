@@ -215,7 +215,7 @@ DataEntry* get_entry(xmlDoc * doc)
                 de->priority = atoi(tempc);
         }
         else {
-                de->priority = 1;
+                de->priority = 5;
         }
         tempc = NULL;
         
