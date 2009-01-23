@@ -33,9 +33,9 @@ sub loadDistro {
             return 0 if !$distro;   # module does not exist, try next
             1;
         };
-     
     if (!$loaded) {
         $distro = instantiateClass("OpenSLX::DistroUtils::Base");
+        print ('couldnt load distro class');
     }
     return $distro;
 }

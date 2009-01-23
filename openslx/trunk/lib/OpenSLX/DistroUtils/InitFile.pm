@@ -16,6 +16,9 @@ package OpenSLX::DistroUtils::InitFile;
 use strict;
 use warnings;
 
+use OpenSLX::Basics;
+use OpenSLX::Utils;
+
 sub new {
     my $class  = shift;
     my $params = shift || {};
@@ -30,8 +33,8 @@ sub new {
 sub _initialConfigHash() {
     return {
         'name'  =>  "",
-        'requiredStart' => "",
-        'requiredStop' => "",
+        'requiredStart' => "\$remote_fs",
+        'requiredStop' => "\$remote_fs",
         'defaultStart' => "2 3 4 5",
         'defaultStop' => "1",
         'shortDesc' => "",
@@ -54,6 +57,10 @@ sub _initialConfigHash() {
         },
         'reload'    => {
             'blockDesc' => "reload: defines reload function for initscript",
+            'content'   => {}
+        },
+        'force-reload'    => {
+            'blockDesc' => "force-reload: defines force-reload function for initscript",
             'content'   => {}
         },
         'restart'   => {
@@ -100,6 +107,51 @@ sub setDesc {
     return $self;
 }
 
+sub addScript {
+    my $self = shift;
+    my $name = shift;
+    my $script = shift;
+    my $flags = shift || {};
+    my $block       = $flags->{block} || 'start';
+    my $required    = $flags->{required} || 1;
+    my $errormsg    = $flags->{errormsg} || "$name failed!";
+    my $priority    = $flags->{priority} || 5;
+    
+    push(@{$self->{'configHash'}->{'highlevelConfig'}},
+    {
+        name => $name,
+        script => $script,
+        block => $block,
+        required => $required,
+        priority => $priority,
+        errormsg => $errormsg,
+        type => 'script'
+    });
+    return 1;
+}
+
+sub addDaemon {
+    my $self = shift;
+    my $binary = shift;
+    my $parameters = shift || "";
+    my $flags = shift || {};
+    my $required    = $flags->{required} || 1;
+    my $desc        = $flags->{desc} || "$binary";
+    my $errormsg    = $flags->{errormsg} || "$desc failed!";
+    my $priority    = $flags->{priority} || 5;
+    
+    push(@{$self->{'configHash'}->{'highlevelConfig'}},
+    {
+        binary => $binary,
+        parameters => $parameters,
+        desc => $desc,
+        errormsg => $errormsg,
+        required => $required,
+        priority => $priority,
+        type => 'daemon'
+    });
+    return 1;
+}
 
 
 1;

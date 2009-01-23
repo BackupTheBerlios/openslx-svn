@@ -33,12 +33,21 @@ $VERSION = 1.01;
 @EXPORT = qw(
   newInitFile
   getInitFileForDistro
+  simpleInitFile
 );
 
 
 
 sub newInitFile {
     return OpenSLX::DistroUtils::InitFile->new();
+}
+
+
+sub simpleInitFile {
+    my $config = shift;
+    my $initFile = OpenSLX::DistroUtils::InitFile->new();
+    
+    return $initFile->simpleSetup($config);
 }
 
 

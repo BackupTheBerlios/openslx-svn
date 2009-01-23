@@ -43,16 +43,15 @@ sub _combineBlock
     
     $output = "#";
     $output .= $block->{'blockDesc'};
-    $output .= "\n  ";
+    $output .= "\n";
     
     my $content = $block->{'content'};
     while ( ($priority, $contentArray) = each %$content )
     {
-        $output .= join("\n  ", @$contentArray);
-        $output .= "\n  ";
+        $output .= join("\n", @$contentArray);
+        $output .= "\n";
     }
     
-    $output .= "\n";
     return $output;
 }
 
@@ -84,12 +83,36 @@ sub _renderInfoBlock
     );
 }
 
+sub _insertSystemHelperFunctions
+{
+    my $self = shift;
+    my $content = shift;
+    
+    # do some regex
+    
+    # ubuntu:
+    # log_end_msg
+    # log_progress_msg
+    # log_daemon_msg
+    # log_action_msg
+    
+    # start-stop-daemon
+    
+    # suse http://de.opensuse.org/Paketbau/SUSE-Paketkonventionen/Init-Skripte
+    
+    return $content;
+}
+
 sub generateInitFile
 {
     my $self = shift;
     my $initFile = shift;
+    my $block;
     
     my $config = $initFile->{'configHash'};
+    
+        print  Dumper($initFile->{'configHash'});
+    
     
     $output = "#!/bin/sh\n\n";
     $output .= $self->_renderInfoBlock($config);
@@ -103,7 +126,9 @@ sub generateInitFile
     $output .= "case \"\$1\" in \n";
     if (keys(%{$config->{'start'}->{'content'}}) > 0) {
         $output .= "  start)\n";
-        $output .= $self->_combineBlock($config->{'start'});
+        $block = $self->_combineBlock($config->{'start'});
+        $block =~ s/^/    /mg;
+        $output .= $block;
         $output .= "  ;;\n";
     } else {
         # trigger error
@@ -111,7 +136,9 @@ sub generateInitFile
     }
     if (keys(%{$config->{'stop'}->{'content'}}) > 0) {
         $output .= "  stop)\n";
-        $output .= $self->_combineBlock($config->{'stop'});
+        $block = $self->_combineBlock($config->{'stop'});
+        $block =~ s/^/    /mg;
+        $output .= $block;
         $output .= "  ;;\n";
     } else {
         # trigger error
@@ -119,22 +146,30 @@ sub generateInitFile
     }
     if (keys(%{$config->{'reload'}->{'content'}}) > 0) {
         $output .= "  reload)\n";
-        $output .= $self->_combineBlock($config->{'relaod'});
+        $block = $self->_combineBlock($config->{'reload'});
+        $block =~ s/^/    /mg;
+        $output .= $block;
         $output .= "  ;;\n";
     }
     if (keys(%{$config->{'restart'}->{'content'}}) > 0) {
         $output .= "  restart)\n";
-        $output .= $self->_combineBlock($config->{'restart'});
+        $block = $self->_combineBlock($config->{'restart'});
+        $block =~ s/^/    /mg;
+        $output .= $block;
         $output .= "  ;;\n";
     }
     if (keys(%{$config->{'status'}->{'content'}}) > 0) {
         $output .= "  status)\n";
-        $output .= $self->_combineBlock($config->{'status'});
+        $block = $self->_combineBlock($config->{'status'});
+        $block =~ s/^/    /mg;
+        $output .= $block;
         $output .= "  ;;\n";
     }
     if (keys(%{$config->{'usage'}->{'content'}}) > 0) {
         $output .= "  *)\n";
-        $output .= $self->_combineBlock($config->{'usage'});
+        $block = $self->_combineBlock($config->{'usage'});
+        $block =~ s/^/    /mg;
+        $output .= $block;
         $output .= "  exit 1\n";
     } else {
         # try to generate usage
