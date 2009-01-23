@@ -228,18 +228,18 @@ sub installationPhase
         copyFile("$pluginFilesPath/ubuntu-gfx-install.sh", "$installationPath");
         copyFile("$pluginFilesPath/suse-gfx-install.sh", "$installationPath");
         copyFile("$pluginFilesPath/linkage.sh", "$installationPath");
-        # be on the safe side
-        system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh clean");
+        # be on the safe side (BASH) - Ubuntu sets some crazy stupid 'dash' shell otherwise
+        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh clean");
     }
     if ($attrs->{'xserver::ati'} == 1) {
         copyFile("$pluginFilesPath/ati-install.sh", "$installationPath");
-        system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh");
-        system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh ati");
+        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh");
+        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh ati");
     }
     if ($attrs->{'xserver::nvidia'} == 1) {
         copyFile("$pluginFilesPath/nvidia-install.sh", "$installationPath");
-        system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/nvidia-install.sh");
-        system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh nvidia");
+        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/nvidia-install.sh");
+        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh nvidia");
     }
 
     # Some plugins have to copy files from their plugin folder into the
