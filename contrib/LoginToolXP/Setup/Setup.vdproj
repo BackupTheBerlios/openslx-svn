@@ -15,8 +15,20 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_0B3C5C4570503C015A5A27DB69145347"
+        "OwnerKey" = "8:_C75C109F9AA3422088FC2CC1424AE42C"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_2090767A8C924DAB94AD7E2E90818FDB"
         "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_3727BA2BC99AB5C0EF14147BB804FFD4"
+        "OwnerKey" = "8:_D3A0649D474FB5C807A35347567DEE12"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -27,14 +39,14 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_6F3AC249D27649D79948ED2E59569B51"
-        "OwnerKey" = "8:_UNDEFINED"
+        "MsmKey" = "8:_67D47D858D9254837C0F3BD4FF7C6449"
+        "OwnerKey" = "8:_C75C109F9AA3422088FC2CC1424AE42C"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_8524EE25B7164E1BCCD5102B0649FFFC"
-        "OwnerKey" = "8:_C75C109F9AA3422088FC2CC1424AE42C"
+        "MsmKey" = "8:_6F3AC249D27649D79948ED2E59569B51"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -45,20 +57,14 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_AEF94E5450300FF9B3205D771C2741C6"
-        "OwnerKey" = "8:_F673630F7FD9CA90FDAB647DAA08721F"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_BA8F14A5D457A1469AE2BC3B729AF35A"
+        "MsmKey" = "8:_AE1D8C91E64BDED0F601CD3408A2BA03"
         "OwnerKey" = "8:_C75C109F9AA3422088FC2CC1424AE42C"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_C6916AF19BCE06381DD9E25EFC63E1FC"
-        "OwnerKey" = "8:_E791F4889B3B0E7944F287ED19153557"
+        "OwnerKey" = "8:_0B3C5C4570503C015A5A27DB69145347"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -69,7 +75,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_E791F4889B3B0E7944F287ED19153557"
+        "MsmKey" = "8:_D3A0649D474FB5C807A35347567DEE12"
         "OwnerKey" = "8:_C75C109F9AA3422088FC2CC1424AE42C"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -81,12 +87,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_F673630F7FD9CA90FDAB647DAA08721F"
-        "OwnerKey" = "8:_C75C109F9AA3422088FC2CC1424AE42C"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_C75C109F9AA3422088FC2CC1424AE42C"
         "MsmSig" = "8:_UNDEFINED"
@@ -94,25 +94,25 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_8524EE25B7164E1BCCD5102B0649FFFC"
+        "OwnerKey" = "8:_AE1D8C91E64BDED0F601CD3408A2BA03"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_F673630F7FD9CA90FDAB647DAA08721F"
+        "OwnerKey" = "8:_D3A0649D474FB5C807A35347567DEE12"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_E791F4889B3B0E7944F287ED19153557"
+        "OwnerKey" = "8:_0B3C5C4570503C015A5A27DB69145347"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_BA8F14A5D457A1469AE2BC3B729AF35A"
+        "OwnerKey" = "8:_67D47D858D9254837C0F3BD4FF7C6449"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -189,24 +189,10 @@
     {
         "CustomAction"
         {
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_AF5B01E2FBB74960884A48B81D298B3A"
-            {
-            "Name" = "8:NOTEPAD.EXE"
-            "Condition" = "8:CHECKBOXA2=1"
-            "Object" = "8:_F5F1876EBA8B41D9B1731328B05036CC"
-            "FileType" = "3:2"
-            "InstallAction" = "3:2"
-            "Arguments" = "8:/Commit"
-            "EntryPoint" = "8:"
-            "Sequence" = "3:1"
-            "Identifier" = "8:_09B2DE80_A853_4C59_8037_2A07B65AF526"
-            "InstallerClass" = "11:FALSE"
-            "CustomActionData" = "8:"
-            }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_BB4A6EEEF871469E94F2407479884A2C"
             {
             "Name" = "8:AddSharedINI.exe"
-            "Condition" = "8:"
+            "Condition" = "8:CHECKBOXA3=1"
             "Object" = "8:_429574033CBD41DE8EB0EC1A21048E3A"
             "FileType" = "3:2"
             "InstallAction" = "3:1"
@@ -214,7 +200,7 @@
             "EntryPoint" = "8:"
             "Sequence" = "3:2"
             "Identifier" = "8:_B6F96788_6BA6_4493_8D3A_077653181ADF"
-            "InstallerClass" = "11:TRUE"
+            "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_C7F15B31E5F4428882A021A18DFAF04D"
@@ -224,11 +210,11 @@
             "Object" = "8:_2090767A8C924DAB94AD7E2E90818FDB"
             "FileType" = "3:2"
             "InstallAction" = "3:1"
-            "Arguments" = "8:/Install"
+            "Arguments" = "8:"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
             "Identifier" = "8:_8D3A1D11_910F_403A_823D_D421AE981026"
-            "InstallerClass" = "11:TRUE"
+            "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
         }
@@ -254,6 +240,37 @@
         }
         "File"
         {
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_0B3C5C4570503C015A5A27DB69145347"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:Interop.IWshRuntimeLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_0B3C5C4570503C015A5A27DB69145347"
+                    {
+                    "Name" = "8:Interop.IWshRuntimeLibrary.DLL"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:Interop.IWshRuntimeLibrary.DLL"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_38492406821D42A084C5760DC45B3ED8"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_2090767A8C924DAB94AD7E2E90818FDB"
             {
             "AssemblyRegister" = "3:1"
@@ -283,6 +300,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_3727BA2BC99AB5C0EF14147BB804FFD4"
+            {
+            "SourcePath" = "8:shdocvw.dll"
+            "TargetName" = "8:shdocvw.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_38492406821D42A084C5760DC45B3ED8"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:4"
+            "Exclude" = "11:TRUE"
+            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_429574033CBD41DE8EB0EC1A21048E3A"
@@ -316,6 +353,37 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_67D47D858D9254837C0F3BD4FF7C6449"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:ColorProgressBar, Version=1.0.2094.42124, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_67D47D858D9254837C0F3BD4FF7C6449"
+                    {
+                    "Name" = "8:ColorProgressBar.DLL"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:ColorProgressBar.DLL"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_38492406821D42A084C5760DC45B3ED8"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6F3AC249D27649D79948ED2E59569B51"
             {
             "SourcePath" = "8:..\\AccountValue\\login.ico"
@@ -334,37 +402,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_8524EE25B7164E1BCCD5102B0649FFFC"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:TL.XML, Version=0.4.0.0, Culture=neutral"
-                "ScatterAssemblies"
-                {
-                    "_8524EE25B7164E1BCCD5102B0649FFFC"
-                    {
-                    "Name" = "8:TL.XML.DLL"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:TL.XML.DLL"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_38492406821D42A084C5760DC45B3ED8"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_99B95D9E5E114E15AD92F4E303B11AA6"
@@ -387,40 +424,20 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_AEF94E5450300FF9B3205D771C2741C6"
-            {
-            "SourcePath" = "8:ieframe.dll"
-            "TargetName" = "8:ieframe.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_38492406821D42A084C5760DC45B3ED8"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:4"
-            "Exclude" = "11:TRUE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_BA8F14A5D457A1469AE2BC3B729AF35A"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_AE1D8C91E64BDED0F601CD3408A2BA03"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:ColorProgressBar, Version=1.0.2094.42124, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:TL.XML, Version=0.4.0.0, Culture=neutral"
                 "ScatterAssemblies"
                 {
-                    "_BA8F14A5D457A1469AE2BC3B729AF35A"
+                    "_AE1D8C91E64BDED0F601CD3408A2BA03"
                     {
-                    "Name" = "8:ColorProgressBar.DLL"
+                    "Name" = "8:TL.XML.DLL"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:ColorProgressBar.DLL"
+            "SourcePath" = "8:TL.XML.DLL"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_38492406821D42A084C5760DC45B3ED8"
@@ -489,20 +506,20 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_E791F4889B3B0E7944F287ED19153557"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_D3A0649D474FB5C807A35347567DEE12"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Interop.IWshRuntimeLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Interop.SHDocVw, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_E791F4889B3B0E7944F287ED19153557"
+                    "_D3A0649D474FB5C807A35347567DEE12"
                     {
-                    "Name" = "8:Interop.IWshRuntimeLibrary.DLL"
+                    "Name" = "8:Interop.SHDocVw.DLL"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:Interop.IWshRuntimeLibrary.DLL"
+            "SourcePath" = "8:Interop.SHDocVw.DLL"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_38492406821D42A084C5760DC45B3ED8"
@@ -538,37 +555,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F673630F7FD9CA90FDAB647DAA08721F"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Interop.SHDocVw, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_F673630F7FD9CA90FDAB647DAA08721F"
-                    {
-                    "Name" = "8:Interop.SHDocVw.DLL"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:Interop.SHDocVw.DLL"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_38492406821D42A084C5760DC45B3ED8"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
         }
@@ -649,7 +635,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Login_Printer-Account_Value"
         "ProductCode" = "8:{EF0E290A-00F7-477B-A24A-1350A90ED398}"
-        "PackageCode" = "8:{2E402559-BB1F-4B48-B41A-C21218D43F3F}"
+        "PackageCode" = "8:{390F19CB-886D-4352-B814-1419E6CD845E}"
         "UpgradeCode" = "8:{A5545C6D-BEB8-4E4A-BA31-4FD269444F73}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
