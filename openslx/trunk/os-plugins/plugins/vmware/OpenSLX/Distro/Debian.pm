@@ -61,7 +61,9 @@ sub fillRunlevelScript
             # load module manuall
             vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
             module_src_path=\${vmware_kind_path}/vmroot/modules
-            insmod \${module_src_path}/vmblock.ko
+            if [ \${vmware_kind} != "vmpl1.0" ]; then
+              insmod \${module_src_path}/vmblock.ko
+            fi
             insmod \${module_src_path}/vmmon.ko
             insmod \${module_src_path}/vmnet.ko
           fi

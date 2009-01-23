@@ -1,9 +1,23 @@
 #!/bin/sh
 
+### Check if player are still installed
+if [ -d /opt/openslx/plugin-repo/vmware/$1/vmroot ]; then
+    echo "    * $1 seems to be installed. There shouldn't be a need for a new installation."
+    echo "      If you want to reinstall $1 press \"y\" else we will exit"
+    read
+    if [ "${REPLY}" != "y" ]; then
+       echo "    * $1 is already installed. Nothing to do."
+       exit
+    fi
+    echo "     * $1 will be reinstalled"
+fi
+
+
+### Now define values
 if [ "$1" == "vmpl1.0" ]; then
     vmplversion="vmpl1.0"
-    url=http://download3.vmware.com/software/vmplayer/VMware-player-2.0.4-93057.i386.tar.gz
-    tgzfile=VMware-player-2.0.4-93057.i386.tar.gz
+    url=http://download3.vmware.com/software/vmplayer/VMware-player-1.0.7-91707.tar.gz
+    tgzfile=VMware-player-1.0.7-91707.tar.gz
 else if [ "$1" == "vmpl2.0" ]; then
         vmplversion="vmpl2.0"
         url=http://download3.vmware.com/software/vmplayer/VMware-player-2.0.4-93057.i386.tar.gz
@@ -11,6 +25,11 @@ else if [ "$1" == "vmpl2.0" ]; then
     fi
 fi
 
+
+### Give informations about the EULA
+echo ""
+echo "EULA information for $vmplversion"
+echo ""
 echo "This script will download and install vmplayer from http://www.vmware.com/"
 echo "Please go to http://vmware.com/download/player/player_reg.html"
 echo "and ..."
@@ -25,6 +44,8 @@ echo
 read
 echo 
 
+
+### EULA information passed, install depending player now
 if [ "${REPLY}" == "YES" ]; then
 
     echo "   * Downloading vmplayer as ${vmplversion} now. This may take a while"
@@ -44,7 +65,9 @@ if [ "${REPLY}" == "YES" ]; then
     mkdir -p vmroot/lib
     mv vmware-player-distrib/lib vmroot/lib/vmware
     mv vmware-player-distrib/bin vmroot/
-    mv vmware-player-distrib/sbin vmroot/
+    if [ "${vmplversion}" != "vmpl1.0" ]; then
+      mv vmware-player-distrib/sbin vmroot/
+    fi
     mv vmware-player-distrib/doc vmroot/
     rm -rf vmware-player-distrib/
 
@@ -82,19 +105,24 @@ if [ "${REPLY}" == "YES" ]; then
     cd vmroot/lib/vmware/modules/source
     tar xf vmnet.tar
     tar xf vmmon.tar
-    tar xf vmblock.tar
+    if [ "${vmplversion}" != "vmpl1.0" ]; then
+      tar xf vmblock.tar
+    fi
 
     echo "   * building vmblock module"
-    cd vmblock-only/
     # TODO: check if /boot/vmlinuz is available if we get the kernel version this way
     #       perhaps we don't need a check... perhaps openslx always use
     #       /boot/vmlinuz
     #       This problem happens 3 times. see below!
     # TODO: error check if build environment isn't installed...
-    sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
-    make -s
-    cp vmblock.ko vmblock.o ../../../../../modules
-    cd ..
+    #TODO: vmblock only v2
+    if [ "${vmplversion}" != "vmpl1.0" ]; then
+      cd vmblock-only/
+      sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
+      make -s
+      cp vmblock.ko vmblock.o ../../../../../modules
+      cd ..
+    fi
 
     echo "   * building vmmon module"
     cd vmmon-only
@@ -112,10 +140,6 @@ if [ "${REPLY}" == "YES" ]; then
         
     echo "   * setting up EULA"
     mv vmroot/doc/EULA vmroot/lib/vmware/share/EULA.txt
-
-    # TODO: remove. just for debug reasons
-    #echo "Press any return to process"
-    #read
 
     echo "   * finishing installation"
 

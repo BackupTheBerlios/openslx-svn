@@ -252,6 +252,19 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       chmod 644 /mnt/etc/vmware/config
     fi
 
+    # write version information for image problem (v2 images don't run
+    # on v1 players
+    if [ "${vmware_kind}" = "vmpl1.0" ]; then
+      echo "vmplversion=1" > /mnt/etc/vmware/version
+    fi
+    if [ "${vmware_kind}" = "vmpl2.0" ]; then
+      echo "vmplversion=2" > /mnt/etc/vmware/version
+    fi
+    if [ "${vmware_kind}" != "local" ]; then
+      version=$(strings /usr/lib/vmware/bin/vmplayer|head -1|cut -c 1)
+      echo "vmplversion=${version}" > /mnt/etc/vmware/version
+    fi
+
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmware' os-plugin ..."
 
   fi

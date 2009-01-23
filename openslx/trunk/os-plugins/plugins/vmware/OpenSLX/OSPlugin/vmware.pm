@@ -270,6 +270,11 @@ sub checkStage3AttrValues
         );
     }
 
+    if ($vm_kind eq 'local' &&
+        ! -d "/opt/openslx/plugin-repo/vmware/local") {
+            "local vmware installation not configured by slxos-plugin!"
+    }
+
     if ($vm_kind eq 'vmpl2.0' &&
         ! -d "/opt/openslx/plugin-repo/vmware/vmpl2.0/vmroot") {
         push @problems, _tr(
@@ -280,7 +285,7 @@ sub checkStage3AttrValues
     if ($vm_kind eq 'vmpl1.0' &&
         ! -d "/opt/openslx/plugin-repo/vmware/vmpl1.0/vmroot") {
         push @problems, _tr(
-            "No OpenSLX installation of VMware Player 2 found or installation failed. Using it as virtual machine wouldn't work!"
+            "No OpenSLX installation of VMware Player 1 found or installation failed. Using it as virtual machine wouldn't work!"
         );
     }
 
