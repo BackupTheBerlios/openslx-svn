@@ -6,10 +6,10 @@
 #               orwards it into B drive of vmplayer
 #
 # Author(s):    see project authors file
-#               last changes mj0, 16/10/2008
+#               last changes mj0, 17/10/2008
 # Copyright:    (c) 2003 - 2008 - RZ Universitaet Freiburg
 #
-# Version:      0.18
+# Version:      0.18.1
 #
 ################################################################################
 
@@ -302,6 +302,7 @@ runvmwareconfheader ()
 
   ###### usb ###################################################################
   usb.present = \"TRUE\"
+  ehci.present= \"TRUE\"
   usb.generic.autoconnect = \"TRUE\"
 
   ###### floppies ##############################################################
