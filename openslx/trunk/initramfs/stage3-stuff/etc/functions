@@ -261,8 +261,8 @@ mkdir /var/lib/dhcp >/dev/null 2>&1
 [ -n $vci ] && vci="-V $vci"
 testmkd /usr/share/udhcpc
 ln -sf /bin/dhcpmkconfig /usr/share/udhcpc/default.script
-# -b option is suboptimal here ...
-udhcpc -b -t 8 -q $vci -s /usr/share/udhcpc/default.script \
+# -o option gets additionally the nis* options, but described other way round
+udhcpc -b -o -t 8 -q $vci -s /usr/share/udhcpc/default.script \
   -i $nwif 2>/dev/null
 }
 
