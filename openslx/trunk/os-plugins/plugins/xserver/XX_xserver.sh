@@ -45,23 +45,23 @@ if [ -e /initramfs/plugin-conf/xserver.conf ]; then
     then
       # we have an ati card here
       ATI=1
-      MODULE_PATH="/opt/openslx/plugin-repo/xserver/ati/atiroot/usr/lib/xorg/modules/\,\
-/opt/openslx/plugin-repo/xserver/ati/atiroot/usr/X11R6/lib/modules/\,"
+      MODULE_PATH="/opt/openslx/plugin-repo/xserver/ati/usr/lib/xorg/modules/\,\
+/opt/openslx/plugin-repo/xserver/ati/usr/X11R6/lib/modules/\,"
       xmodule="fglrx"
       LINKAGE="/mnt/var/lib/X11R6/xserver/usr/lib/"
-      cp -r /mnt/opt/openslx/plugin-repo/xserver/ati/atiroot/etc/* /mnt/etc/
+      cp -r /mnt/opt/openslx/plugin-repo/xserver/ati/etc/* /mnt/etc/
       ln -s \
-      /mnt/opt/openslx/plugin-repo/xserver/ati/atiroot/usr/lib/libGL.so.1.2 \
+      /mnt/opt/openslx/plugin-repo/xserver/ati/usr/lib/libGL.so.1.2 \
       ${LINKAGE}libGL.so.1
       ln -s \
-      /mnt/opt/openslx/plugin-repo/xserver/ati/atiroot/usr/lib/libGL.so.1.2 \
+      /mnt/opt/openslx/plugin-repo/xserver/ati/usr/lib/libGL.so.1.2 \
       ${LINKAGE}libGL.so.1.2
       
       # TODO: This is probably Ubuntu-specific
-      echo "/opt/openslx/plugin-repo/xserver/ati/atiroot/usr/lib/\n\
-/opt/openslx/plugin-repo/xserver/ati/atiroot/usr/X11R6/lib/" \
+      echo "/opt/openslx/plugin-repo/xserver/ati/usr/lib/\n\
+/opt/openslx/plugin-repo/xserver/ati/usr/X11R6/lib/" \
       > /mnt/etc/ld.so.conf.d/999opengl.conf
-      ldsc="on" # regenerate ld.so.cache
+      ldsc="1" # regenerate ld.so.cache
     fi
 
     set +x
