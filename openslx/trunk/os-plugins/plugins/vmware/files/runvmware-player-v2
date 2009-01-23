@@ -516,9 +516,11 @@ filecheck
 # VMPlayer Version.
 # strings is the fastest and most secure way, vmplayer -v takes too much time
 # and resources
-vmbuild=$(strings /usr/lib/vmware/bin/vmplayer \
-    | grep -m 1 "build-"|sed 's/.*build-//')
-if [ ! -n ${vmbuild} ]; then
+# TODO: fine a faster solution with different installed vmplayer
+#       perhaps via stage1 + /etc/vmware/vmversion
+#vmbuild=$(strings /usr/lib/vmware/bin/vmplayer \
+#    | grep -m 1 "build-"|sed 's/.*build-//')
+if [ -z ${vmbuild} ]; then
   vmbuild=$(vmplayer -v | sed 's/.*build-//')
 fi
 
