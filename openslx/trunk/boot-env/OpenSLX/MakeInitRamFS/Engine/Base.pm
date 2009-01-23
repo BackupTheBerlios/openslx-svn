@@ -361,6 +361,7 @@ sub _createInitRamFS
     my $self = shift;
 
     my $buildPath = $self->{'build-path'};
+    $self->addCMD("chroot $buildPath ldconfig");
     $self->addCMD(
         "cd $buildPath "
         . "&& find . "
