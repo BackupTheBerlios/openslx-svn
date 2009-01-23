@@ -138,7 +138,7 @@ supported."; \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates \
-	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/cdboot \
+	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/preboot \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/tpm \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox \
@@ -185,8 +185,8 @@ supported."; \
 	@ln -sf $(SLX_BASE_PATH)/bin/slx* $(SLX_BUILD_PATH)$(USR_BIN_PATH)/; \
 
 	@   # copy shareable data:
-	@cd initramfs/cdboot;  tar --exclude=.svn -cp * | \
-	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/cdboot; \
+	@cd initramfs/preboot;  tar --exclude=.svn -cp * | \
+	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/preboot; \
 	cd ../initrd-stuff;  tar --exclude=.svn -cp * | \
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs; cd ../..; \
 	tar --exclude=.svn -cp -C initramfs distro-specs | \
