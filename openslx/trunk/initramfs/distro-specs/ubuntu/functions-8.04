@@ -14,7 +14,12 @@
 # initial ramfs - stage3) It may overwrite settings from the default config
 # file (/etc/functions)
 
-config_udev {
-  rllinker "udev" 7 14
-  rllinker "udev-finish" 24 2
+config_udev () {
+    if [ -f /mnt/etc/init.d/udev ] ; then
+       rllinker "udev" 7 14
+    fi
+    if [ -f /mnt/etc/init.d/udev-finish ] ; then
+       rllinker "udev-finish" 24 2
+    fi
 }
+
