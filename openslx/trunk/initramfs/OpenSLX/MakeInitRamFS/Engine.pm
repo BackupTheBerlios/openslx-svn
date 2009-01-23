@@ -361,7 +361,7 @@ sub _copyBusybox
 	    insmod id ip kill killall ln ls lsmod mdev mkdir mknod mkswap 
 	    modprobe mount mv nice ping printf ps rdate rm rmmod sed sleep 
 	    sort swapoff swapon switch_root tar test tftp time touch tr 
-	    udhcpc umount uptime usleep vconfig vi wget zcat zcip
+	    udhcpc umount uptime usleep vconfig vi vncpasswd wget zcat zcip
 	);
 	foreach my $applet (@busyboxApplets) {
 		$self->addCMD("ln -sf /bin/busybox $self->{'build-path'}/bin/$applet");
