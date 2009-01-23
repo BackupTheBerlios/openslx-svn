@@ -486,8 +486,11 @@ sub listVendorOSes
 
 	dumpElements('vendor-OS', undef,
 		map {
-			my @plugins = sort $openslxDB->fetchInstalledPlugins($_->{id});
-			$_->{plugins} = @plugins ? join(',', @plugins) : '<none>';
+			my @plugins = $openslxDB->fetchInstalledPlugins($_->{id});
+			$_->{plugins} 
+				= @plugins 
+					? join(',', sort map { $_->{plugin_name} } @plugins) 
+					: '<none>';
 			$_;
 		}
 		sort { $a->{name} cmp $b->{name} }
@@ -603,8 +606,11 @@ sub searchVendorOSes
 	dumpElements(
 		'vendor-OS', undef,
 		map {
-			my @plugins = sort $openslxDB->fetchInstalledPlugins($_->{id});
-			$_->{plugins} = @plugins ? join(',', @plugins) : '<none>';
+			my @plugins = $openslxDB->fetchInstalledPlugins($_->{id});
+			$_->{plugins} 
+				= @plugins 
+					? join(',', sort map { $_->{plugin_name} } @plugins) 
+					: '<none>';
 			$_;
 		}
 		sort { $a->{name} cmp $b->{name} }
@@ -1329,7 +1335,7 @@ sub _expandSystems
 					= "$export->{id} ($export->{name})";
 	
 				# fetch detailed info about active plugins
-				my @installedPlugins = sort $openslxDB->fetchInstalledPlugins(
+				my @installedPlugins = $openslxDB->fetchInstalledPlugins(
 					$export->{vendor_os_id}
 				);
 				my $mergedSystem = dclone($_);
@@ -1339,7 +1345,7 @@ sub _expandSystems
 				);
 				my $mergedAttrs = $mergedSystem->{attrs} || {};
 				foreach my $plugin (@installedPlugins) {
-					next if !$mergedAttrs->{"${plugin}::active"};
+					next if !$mergedAttrs->{"$plugin->{plugin_name}::active"};
 					push @activePlugins, $plugin;
 				}
 				if ($option{inherited}) {
@@ -1351,7 +1357,7 @@ sub _expandSystems
 					}
 				}
 			}
-			$_->{PLUGINS} = [ sort @activePlugins ];
+			$_->{PLUGINS} = [ sort map { $_->{plugin_name} } @activePlugins ];
 			# rename attrs to ATTRIBUTES for display
 			$_->{ATTRIBUTES} = $_->{attrs};
 			delete $_->{attrs};
