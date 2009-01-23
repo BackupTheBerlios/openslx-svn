@@ -69,7 +69,9 @@ void SWindow::set_lin_entries(DataEntry** ent, char* slxgroup)
       if( ent[i]->pools.empty() || ent[i]->pools.find(slxgroup) != string::npos) {
         Item* w= (Item*)sel.add_leaf(ent[i]->short_description.c_str() , lin_entgroup, (void*)ent[i] );
         
-        ((Widget*) w)->image(new xpmImage(get_symbol(ent[i])));
+        xpmImage* xpm = new xpmImage(get_symbol(ent[i]));
+        ((Widget*) w)->image(xpm);
+        xpm->setsize(100,100);
         w->tooltip(ent[i]->description.c_str());
         w->callback(&runImage, (void*)ent[i]);
       }
@@ -97,6 +99,8 @@ void SWindow::set_entries(DataEntry** ent, char* slxgroup)
         ((Widget*) w)->image(xpm);
         w->tooltip(ent[i]->description.c_str());
         w->callback(&runImage, (void*)ent[i]);
+        
+        xpm->setsize(100,100);
       }
     }
 
