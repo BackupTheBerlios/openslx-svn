@@ -142,6 +142,7 @@ sub getAttrInfo
     };
 }
 
+
 sub installationPhase
 {
     my $self                      = shift;
@@ -154,42 +155,6 @@ sub installationPhase
     # install requested packages by **/ or triggered by 'vmware::kind'
     # check solution in "desktop plugin"
 
-    my $vmpath = "";
-    my $vmbin  = "";
-    my $vmfile = ""; # will be vmware or vmplayer
-    my $vmversion = ""; # will be v1/2 (vmplayer)
-                        # Dirk: didnt we say we will always use vmplayer,
-                        #       even if vmware ws is installed?
-                        # or v5.x/6.x (vmware ws) --> build number might be needed too
-    my $vmbuildversion = "";
-    my @versioninfo; # array we get from _checkVersion
-
-    # get path of files we need to install
-    my $pluginFilesPath 
-        = "$self->{'openslxPath'}/lib/plugins/$self->{'name'}/files";
-
-    # copy all needed files (TODO: nvram should depend on the "kind" of vmware ...)
-    # TODO: create a second runvmware version... for v5.5/6.0 or v1/2
-    #       AFAIR WS5.5 is compatible with vmplayer-v1 and
-    #             WS6.0 is compatible with vmplayer-v2
-    #       1. check how to handle the different executable (vmware/vmplayer)
-    #          1. Wrapper in stage4 which checks which one is
-    #             activated in stage3 (there might be several versions installed)
-    #             => one wrapperscript + v1-runvmware
-    #                                            + v2-runvmware
-    #          2. v1-runvmware-workstation, v1-runvmware-vmplayer
-    #             v2-runvmware-workstation, v2-runvmware-vmplayer
-    #             keeping runvmware code in sync is more ugly then
-    #             OR: put differences to include files (which might be stored in /etc/vmware)
-    #          3. check if its possible to have
-    #             v1-runvmware-template   v2-runvmware-template
-    #             in stage3 we add a variable if its vmware or vmplayer
-    #             to it
-    my @files = qw( vmware-init nvram.5.0 runvmware-v2 );
-    foreach my $file (@files) {
-        copyFile("$pluginFilesPath/$file", $self->{'pluginRepositoryPath'});
-    }
-
     # generate the runlevel scripts for all existing vmware installations,
     # variants because we do not know which on is selected on client level
     # in stage3 (we know the installed packages from ** / 'vmware::kind'
@@ -201,54 +166,17 @@ sub installationPhase
     foreach my $type (@types) {
         # location of the vmware stuff
         if ($type eq "local") {
-            $vmpath = "/usr/lib/vmware";
-            $vmbin  = "/usr/bin";
-            # if vmware ws is installed, vmplayer is installed, too.
-            # we will only use vmplayer
-            if (-e "/usr/lib/vmware/bin/vmplayer") {
-                # perhaps not optimal with the array, but how to solve
-                # else if we don't want to open the file twice?
-                @versioninfo =
-                    $self->_checkVersion("/usr/lib/vmware/bin/vmplayer", $type);
-
-                # TODO: rename ok? recheck
-                #       linkfile will be in conflict with local installed
-                #       versions. => move to stage3
-                rename("/usr/bin/vmplayer", "/usr/bin/vmplayer.slx-bak");
-                #linkFile("/var/X11R6/bin/vmplayer", "/usr/bin/vmplayer");
-            }
+            $self->_localInstallation();
         }
         # TODO: here we will add the slx-installed versions
         else {
-            $vmpath = "$self->{'pluginRepositoryPath'}/vmware/$type";
-            $vmbin  = "$vmpath/bin";
-            # vmversion, build and vmware/player should be read via subroutine +++ named above!!
-            $vmversion = "TODO: get information from the stage1 flag";
-            $vmfile = "TODO: get information from the stage1 flag";
+            #my $vmpath = "$self->{'pluginRepositoryPath'}/vmware/$type";
+            #my $vmbin  = "$vmpath/bin";
+            #$vmversion = "TODO: get information from the stage1 flag";
+            #$vmfile = "TODO: get information from the stage1 flag";
         }
 
-        my $runlevelScript = "$self->{'pluginRepositoryPath'}/vmware.$type";
-        $self->_writeRunlevelScript($vmbin, $runlevelScript);
 
-        # create our own simplified version of the vmware and player wrapper
-        # Depending on the configured kind it will be copied in stage3
-        # because of tempfs of /var but not /usr we link the file
-        # to /var/..., where we can write in stage3
-        my $script = unshiftHereDoc(<<"        End-of-Here");
-            #!/bin/sh
-            # written by OpenSLX-plugin 'vmware' in Stage1
-            # radically simplified version of the original script $vmfile by VMware Inc.
-            PREFIX=$vmpath # depends on the vmware location
-            exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \\
-                 "\$PREFIX"'/lib' \\
-                 "\$PREFIX"'/bin/$vmfile' \\
-                 "\$PREFIX"'/libconf' "\$@"
-        End-of-Here
-        # TODO: check if these will be overwritten if we have more as
-        # local defined (add the version/type like vmpl1.0, vmws5.5, ...)
-        # then we have a lot of files easily distinguishable by there suffix
-        spitFile("$self->{'pluginRepositoryPath'}/$vmfile", $script);
-        chmod 0755, "$self->{'pluginRepositoryPath'}/$vmfile";
 
         # TODO: check how we can put the vmversion information to stage3.
         #       more or less only needed for local installation but can
@@ -291,21 +219,22 @@ sub removalPhase
     
     rmtree ( [ $pluginRepositoryPath ] );
     # restore old start scripts - to be discussed
-    # TODO: check if this can result in an error or conflict
     my @files = qw( vmware vmplayer );
     foreach my $file (@files) {
-        unlink("/usr/bin/$file");
-        rename("/usr/bin/$file.slx-bak", "/usr/bin/$file");
-        # we only create in stage3 a file there... not needed
-        #unlink("/var/X11R6/bin/$file");
+        if (-e $file) {
+            unlink("/usr/bin/$file");
+            rename("/usr/bin/$file.slx-bak", "/usr/bin/$file");
+        }
     }
-    # TODO: path is distro specific
-    #rename ("/etc/init.d/vmware.slx-bak", "/etc/init.d/vmware");
     return;
 }
 
-# such a function will be implemented on a higher level some day. At first the
-# needed characteristics are collected and tried out with local subroutines
+
+#######################################
+## local, non-general OpenSLX functions
+#######################################
+
+# write the runlevelscript depending on the version
 sub _writeRunlevelScript
 {
     my $self     = shift;
@@ -324,41 +253,153 @@ sub _writeRunlevelScript
 }
 
 
-# function checks vmplayer version and buildnumber and writes it to a
-# file
-# Ehhhh... do we really need this function? we only need one check for
-# local... damnit.
-sub _checkVersion
+# writes the wrapper script for vmware workstation and player, depending
+# on the flag. If player: just player wrapper, if ws: ws+player wrapper
+# usage: _writeWrapperScript("$vmpath", "$kind", "player")
+#        _writeWrapperScript("$vmpath", "$kind", "ws")
+sub _writeWrapperScript
 {
-    my $self = shift;
-    my $file = shift;
-    my $type = shift;
+    my $self   = shift;
+    my $vmpath = shift;
+    my $kind   = shift;
+    my $type   = shift;
+    my @files;
+
+    if ("$type" eq "ws") {
+        @files = qw(vmware vmplayer);
+    } else {
+        @files = qw(vmplayer);
+    }
+
+    foreach my $file (@files) {
+        # create our own simplified version of the vmware and player wrapper
+        # Depending on the configured kind it will be copied in stage3
+        # because of tempfs of /var but not /usr we link the file
+        # to /var/..., where we can write in stage3
+        my $script = unshiftHereDoc(<<"        End-of-Here");
+            #!/bin/sh
+            # written by OpenSLX-plugin 'vmware' in Stage1
+            # radically simplified version of the original script $file by VMware Inc.
+            PREFIX=$vmpath # depends on the vmware location
+            exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \\
+                "\$PREFIX"'/lib' \\
+                "\$PREFIX"'/bin/$file' \\
+                "\$PREFIX"'/libconf' "\$@"
+        End-of-Here
+
+        # TODO: check if these will be overwritten if we have more as
+        # local defined (add the version/type like vmpl1.0, vmws5.5, ...)
+        # then we have a lot of files easily distinguishable by there suffix
+        spitFile("$self->{'pluginRepositoryPath'}/$kind/$file", $script);
+        chmod 0755, "$self->{'pluginRepositoryPath'}/$kind/$file";
+    }
+}
+
+
+########################################################################
+## Functions, which setup the different environments (local, ws-v(5.5|6),
+##                                                    player-v(1|2)
+## Seperation makes this file more readable. Has a bigger benefit as
+## one big copy function. Makes integration of new versions easier.
+########################################################################
+
+# local installation
+sub _localInstallation
+{
+    my $self     = shift;
+
+    my $vmpath = "/usr/lib/vmware";
+    my $vmbin  = "/usr/bin";
     my $vmversion = "";
     my $vmbuildversion = "";
 
-    open(FH, "$file");
-    $/ = undef;
-    my $data = <FH>;
-    close FH;
+    my $pluginFilesPath 
+        = "$self->{'openslxPath'}/lib/plugins/$self->{'name'}/files";
+    my $installationPath = "$self->{'pluginRepositoryPath'}/local";
 
-    #TODO: add the else case, if we cant find this string
-    if ($data =~ m{(\d\.\d)\.\d build-(\d+)}) {
-        $vmversion = $1;
-        $vmbuildversion = $2;
+    mkpath($installationPath);
+
+    # if vmware ws is installed, vmplayer is installed, too.
+    # we will only use vmplayer
+    if (-e "/usr/lib/vmware/bin/vmplayer") {
+
+        ##
+        ## Get and write version informations
+
+        # get version information about installed vmplayer
+        open(FH, "/usr/lib/vmware/bin/vmplayer");
+        $/ = undef;
+        my $data = <FH>;
+        close FH;
+        # perhaps we need to recheck the following check. depending
+        # on the installation it could differ and has multiple build-
+        # strings
+        if ($data =~ m{(\d\.\d) build-(\d+)}) {
+            $vmversion = $1;
+            $vmbuildversion = $2;
+        }
+        # else { TODO: errorhandling if file or string doesn't exist }
+        chomp($vmversion);
+        chomp($vmbuildversion);
+
+        # write informations about local installed vmplayer in file
+        # TODO: perhaps we don't need this file.
+        # TODO2: write vmbuildversion and stuff in runvmware in stage1
+        open FILE, ">$self->{'pluginRepositoryPath'}/local/versioninfo.txt"
+            or die $!;
+        print FILE "vmversion=\"$vmversion\"\n";
+        print FILE "vmbuildversion=\"$vmbuildversion\"\n";
+        close FILE;
+
+        ##
+        ## Copy needed files
+
+        # copy 'normal' needed files
+        my @files = qw( nvram.5.0);
+        foreach my $file (@files) {
+            copyFile("$pluginFilesPath/$file", "$installationPath");
+        }
+        # copy depends on version and rename it to runvmware, safes one check in stage3
+        if ($vmversion < "6") {
+            print "\n\nDEBUG: player version $vmversion, we use -v1\n\n";
+            copyFile("$pluginFilesPath/runvmware-player-v1", "$installationPath", "runvmware");
+        } else {
+            print "\n\nDEBUG: player version $vmversion, we use -v2\n\n";
+            copyFile("$pluginFilesPath/runvmware-player-v2", "$installationPath", "runvmware");
+        }
+
+        ##
+        ## Create runlevel script
+        my $runlevelScript = "$self->{'pluginRepositoryPath'}/local/vmware.init";
+        $self->_writeRunlevelScript($vmbin, $runlevelScript);
+
+        ##
+        ## Create wrapperscripts
+        if (-e "/usr/bin/vmware") {
+            $self->_writeWrapperScript("$vmpath", "local", "ws")
+        } else {
+            $self->_writeWrapperScript("$vmpath", "local", "player")
+        }
+        
+        ##
+        ## replacement with our, faster wrapper script
+        
+        # rename the default vmplayer script and copy it. remove function takes
+        # care about plugin remove. We only need this part if vmplayer
+        # or ws is installed on the local system
+        rename("/usr/bin/vmplayer", "/usr/bin/vmplayer.slx-bak");
+        copyFile("$self->{'pluginRepositoryPath'}/local/vmplayer", "/usr/bin");
+        # the same with vmware, if ws is installed
+        if (-e "/usr/bin/vmware") {
+            rename("/usr/bin/vmware", "/usr/bin/vmware.slx-bak");
+            copyFile("$self->{'pluginRepositoryPath'}/local/vmware", "/usr/bin");
+         }
+            
     }
-    chomp($vmversion);
-    chomp($vmbuildversion);
-
-    #TODO: 1. check if the version is supported
-    #      2. write infos to file /opt/openslx/vmware/іnstalled_versions 
-    # style:
-    # local_supported = (yes|no)
-    # local_vmversion = $vmversion
-    # local_vmbuildversion = $vmbuildversion
-    # #check if we really need the following lines
-    # ws2_installed (yes|no)
-    # ws2_version = 2.x
-    # ...
+    # else { TODO: errorhandling }
 }
+
+
+
 
 1;

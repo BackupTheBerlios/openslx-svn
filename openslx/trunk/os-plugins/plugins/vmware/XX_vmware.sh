@@ -36,17 +36,6 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     #. /etc/distro-functions
     #. /etc/sysconfig/config
 
-
-    # copy files, /usr/bin/{vmware,vmplayer} are linked to
-    # /var/X11R6/bin in stage1. This way the wrapper of vmware or
-    # vmplayer will work like the usual once. And its compatible with
-    # the runvmware-v2 skript. No path-changes needed
-    if [ "${vmware_kind}" = "local" ]; then
-      cp /mnt/opt/openslx/plugin-repo/vmware/vmware \
-         /mnt/opt/openslx/plugin-repo/vmware/vmplayer \
-         /mnt/var/X11R6/bin
-    fi
-
     # prepare all needed vmware configuration files
     if [ -d /mnt/etc/vmware ] ; then
       rm -rf /mnt/etc/vmware/*
@@ -149,7 +138,7 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       mknod /dev/vmnet8 c 119 8
     fi
     # copy the runlevelscript to the proper place and activate it
-    cp /mnt/opt/openslx/plugin-repo/vmware/vmware.${vmware_kind} \
+    cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmware.init \
       /mnt/etc/${D_INITDIR}/vmware \
       || echo "  * Error copying runlevel script. Shouldn't happen."
     chmod a+x /mnt/etc/${D_INITDIR}/vmware
@@ -256,22 +245,16 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     #   b) we write a wrapper and get the xml-file as attribute
     # A) wait for answer of Bastian
 
-    # this should be a switch for the different versions. local might be replaced with 
-    # vmpl1.0, vmws6.0 ... (after we know which type it is, after running subroutine +++ in vmware.pm)
-    # what we really want to know here (paths? - not only ...)
-    if [ "${vmware_kind}" = "local" ]; then
-      # TODO: Pseudocode1 as notes
-      # if [vmwarekind=local]; then
-      #   source /foo/bar/baz/stage1-file-with-local-version-info
-      #   cp "based-on-this-information-runvmware"
+    ##
+    ## Copy version depending files
 
-      # copy depending run-vmware.sh
-      # where should we do the check if its vmplayer or vmware? --> we should pass this information
-      # via vmpl1.0, vmws6.0 - then we exactly know!!
-      # where should we do the check if its v1 or v2
-      # just the same
-      cp /mnt/opt/openslx/plugin-repo/vmware/runvmware-v2 \
-        /mnt/var/X11R6/bin/run-vmware.sh
+    if [ "${vmware_kind}" = "local" ]; then
+
+      # we know which version from stage1. in stage1 we copy the
+      # specific file
+      cp /mnt/opt/openslx/plugin-repo/vmware/local/runvmware \
+            /mnt/var/X11R6/bin/run-vmware.sh
+        
       # TODO: Pseudocode2 as notes
       # if [ not vmware_kind = local but vmplayer-2.0 ]; then
       # should be just the same as filling the /etc/vmware directory with the proper files for general
@@ -284,6 +267,8 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       #   pseudocode1, there we will have then a list of all available
       #   kinds and version. in the far future we could use this
       #   informations to do a quickswitch in stage5
+      #   3. we just copy the depending runvmware file in its own $kind folder
+      #   cost use a few bytes, but takes less time in stage3
       # fi
     fi
 
