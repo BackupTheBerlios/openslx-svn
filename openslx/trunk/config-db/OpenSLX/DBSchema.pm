@@ -34,7 +34,7 @@ use OpenSLX::Basics;
 ###         fk        => foreign key (integer)
 ################################################################################
 
-my $VERSION = 0.32;
+my $VERSION = 0.33;
 
 my $DbSchema = {
     'version' => $VERSION,
@@ -173,11 +173,16 @@ my $DbSchema = {
         'meta' => {
             # information about the database as such
             'cols' => [
-                'schema_version:s.5',    # schema-version currently implemented by DB
+                'plugin_info_hash:s.32',    # hash-value identifying a specific
+                                            # set of plugins and their 
+                                            # attributes
+                'schema_version:s.5',       # schema-version currently 
+                                            # implemented by DB
             ],
             'vals' => [
                 {
-                    'schema_version' => $VERSION,
+                    'plugin_info_hash' => '',
+                    'schema_version'   => $VERSION,
                 },
             ],
         },
@@ -720,6 +725,24 @@ sub _schemaUpgradeDBFrom
     
         # dummy schema change, just to trigger the attribute synchronization,
         # as the 'theme' plugin has been removed
+    
+        return 1;
+    },
+    0.33 => sub {
+        my $metaDB = shift;
+
+        # add new column meta.plugin_info_hash
+        $metaDB->schemaAddColumns(
+            'meta',
+            [
+                'plugin_info_hash:s.32',
+            ],
+            undef,
+            [
+                'plugin_info_hash:s.32',
+                'schema_version:s.5',
+            ]
+        );
     
         return 1;
     },

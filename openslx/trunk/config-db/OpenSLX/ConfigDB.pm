@@ -151,9 +151,8 @@ The precise name of the database that should be connected (defaults to 'openslx'
 sub connect        ## no critic (ProhibitBuiltinHomonyms)
 {
     my $self     = shift;
-    my $dbParams = shift;
-    # hash-ref with any additional info that might be required by
-    # specific metadb-module (not used yet)
+    my $dbParams = shift;   # hash-ref with any additional info that might be 
+                            # required by specific metadb-module (not used yet)
 
     my $dbType = $openslxConfig{'db-type'};
         # name of underlying database module...
@@ -190,6 +189,17 @@ sub connect        ## no critic (ProhibitBuiltinHomonyms)
 
     $self->{'db-schema'}->checkAndUpgradeDBSchemaIfNecessary($self)
         or die _tr('unable to check/update DB schema!');
+    
+    # check if any plugins (or plugin-attributes) have been added/removed since 
+    # last DB-session and bring the DB up-to-date, if so
+    my $pluginInfoHashVal
+        = OpenSLX::OSPlugin::Roster->computeMD5HashOverAvailablePlugins();
+    my $pluginInfoHashValInDB = $metaDB->schemaFetchPluginInfoHashVal();
+    vlog(1, "plugin-info-hashes: $pluginInfoHashVal <=> $pluginInfoHashValInDB");
+    if ($pluginInfoHashValInDB ne $pluginInfoHashVal) {
+        $self->cleanupAnyInconsistencies();
+        return if !$metaDB->schemaSetPluginInfoHashVal($pluginInfoHashVal);
+    }
     
     return 1;
 }
@@ -1284,9 +1294,6 @@ sub addInstalledPlugin
     my $vendorOSID  = shift;
     my $pluginName  = shift;
     my $pluginAttrs = shift || {};
-
-    # make sure the attributes of this plugin are available via default system
-    $self->synchronizeAttributesWithDB();
 
     return $self->{'meta-db'}->addInstalledPlugin(
         $vendorOSID, $pluginName, $pluginAttrs

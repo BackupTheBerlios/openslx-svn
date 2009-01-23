@@ -1273,6 +1273,29 @@ sub schemaSetDBVersion
     return 1;
 }
 
+sub schemaFetchPluginInfoHashVal
+{
+    my $self = shift;
+
+    my $row 
+        = $self->{dbh}->selectrow_hashref('SELECT plugin_info_hash FROM meta');
+
+    return $row->{plugin_info_hash};
+}
+
+sub schemaSetPluginInfoHashVal
+{
+    my $self              = shift;
+    my $pluginInfoHashVal = shift;
+
+    $self->{dbh}->do("UPDATE meta SET plugin_info_hash = '$pluginInfoHashVal'")
+        or croak _tr(
+            'Unable to set plugin-info-hash-value to %s!', $pluginInfoHashVal
+        );
+
+    return 1;
+}
+
 sub schemaConvertTypeDescrToNative
 {   # a default implementation, many DBs need to override...
     my $self      = shift;
