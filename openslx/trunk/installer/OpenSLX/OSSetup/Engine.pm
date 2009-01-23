@@ -437,6 +437,11 @@ sub callChrootedFunctionForVendorOS
         );
     }
 
+    # avoid trying to chroot into a 64-bit vendor-OS if the host is only 32-bit:
+    if (!$self->_hostIs64Bit() && -e "$self->{'vendor-os-path'}/lib64") {
+        die _tr("you can't use a 64-bit vendor-OS on a 32-bit host, sorry!\n");
+    }
+
     my $httpServers = OpenSLX::ScopedResource->new({
         name    => 'local-http-servers',
         acquire => sub { $self->_startLocalURLServersAsNeeded(); 1 },
