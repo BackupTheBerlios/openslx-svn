@@ -142,7 +142,8 @@ static const char *normalize(const char *arg)
  * Other settings are found in global variables.
  */
 #if !ENABLE_GETOPT_LONG
-#define generate_output(argv,argc,optstr,longopts) generate_output(argv,argc,optstr)
+#define generate_output(argv,argc,optstr,longopts) \
+	generate_output(argv,argc,optstr)
 #endif
 static int generate_output(char **argv, int argc, const char *optstr, const struct option *longopts)
 {
@@ -156,7 +157,8 @@ static int generate_output(char **argv, int argc, const char *optstr, const stru
 	if (quiet_errors) /* No error reporting from getopt(3) */
 		opterr = 0;
 
-	/* Reset getopt(3) (see libbb/getopt32.c for long rant) */
+	/* We used it already in main() in getopt32(),
+	 * we *must* reset getopt(3): */
 #ifdef __GLIBC__
 	optind = 0;
 #else /* BSD style */
@@ -238,14 +240,13 @@ static struct option *add_long_options(struct option *long_options, char *option
 				if (tlen == 0)
 					bb_error_msg_and_die("empty long option specified");
 			}
-			long_options = xrealloc(long_options,
-					sizeof(long_options[0]) * (long_nr+2));
+			long_options = xrealloc_vector(long_options, 4, long_nr);
 			long_options[long_nr].has_arg = arg_opt;
-			long_options[long_nr].flag = NULL;
+			/*long_options[long_nr].flag = NULL; - xrealloc_vector did it */
 			long_options[long_nr].val = LONG_OPT;
 			long_options[long_nr].name = xstrdup(tokptr);
 			long_nr++;
-			memset(&long_options[long_nr], 0, sizeof(long_options[0]));
+			/*memset(&long_options[long_nr], 0, sizeof(long_options[0])); - xrealloc_vector did it */
 		}
 		tokptr = strtok(NULL, ", \t\n");
 	}
@@ -255,9 +256,9 @@ static struct option *add_long_options(struct option *long_options, char *option
 
 static void set_shell(const char *new_shell)
 {
-	if (!strcmp(new_shell,"bash") || !strcmp(new_shell,"sh"))
+	if (!strcmp(new_shell, "bash") || !strcmp(new_shell, "sh"))
 		return;
-	if (!strcmp(new_shell,"tcsh") || !strcmp(new_shell,"csh"))
+	if (!strcmp(new_shell, "tcsh") || !strcmp(new_shell, "csh"))
 		option_mask32 |= SHELL_IS_TCSH;
 	else
 		bb_error_msg("unknown shell '%s', assuming bash", new_shell);

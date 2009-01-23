@@ -176,10 +176,10 @@ struct globals {
 #define INIT_G() do { } while (0)
 
 
-static void fatal_cannot(const char *m1) ATTRIBUTE_NORETURN;
+static void fatal_cannot(const char *m1) NORETURN;
 static void fatal_cannot(const char *m1)
 {
-	bb_perror_msg("fatal: cannot %s", m1);
+	bb_perror_msg("fatal: can't %s", m1);
 	_exit(151);
 }
 
@@ -293,7 +293,7 @@ static unsigned svstatus_print(const char *m)
 	return pid ? 1 : 2;
 }
 
-static int status(const char *unused ATTRIBUTE_UNUSED)
+static int status(const char *unused UNUSED_PARAM)
 {
 	int r;
 
@@ -417,7 +417,7 @@ int sv_main(int argc, char **argv)
 	unsigned i, want_exit;
 	char *x;
 	char *action;
-	const char *varservice = "/var/service/";
+	const char *varservice = CONFIG_SV_DEFAULT_SERVICE_DIR;
 	unsigned services;
 	char **servicex;
 	unsigned waitsec = 7;

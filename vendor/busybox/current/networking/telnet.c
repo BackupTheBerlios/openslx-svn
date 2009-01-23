@@ -52,14 +52,14 @@ enum {
 
 typedef unsigned char byte;
 
+enum { netfd = 3 };
+
 struct globals {
-	int	netfd; /* console fd:s are 0 and 1 (and 2) */
-	short	iaclen; /* could even use byte */
+	int	iaclen; /* could even use byte, but it's a loss on x86 */
 	byte	telstate; /* telnet negotiation state from network input */
 	byte	telwish;  /* DO, DONT, WILL, WONT */
 	byte    charmode;
 	byte    telflags;
-	byte	gotsig;
 	byte	do_termios;
 #if ENABLE_FEATURE_TELNET_TTYPE
 	char	*ttype;
@@ -95,13 +95,13 @@ static int subneg(byte c);
 
 static void iacflush(void)
 {
-	write(G.netfd, G.iacbuf, G.iaclen);
+	write(netfd, G.iacbuf, G.iaclen);
 	G.iaclen = 0;
 }
 
 #define write_str(fd, str) write(fd, str, sizeof(str) - 1)
 
-static void doexit(int ev) ATTRIBUTE_NORETURN;
+static void doexit(int ev) NORETURN;
 static void doexit(int ev)
 {
 	cookmode();
@@ -112,7 +112,7 @@ static void conescape(void)
 {
 	char b;
 
-	if (G.gotsig)	/* came from line  mode... go raw */
+	if (bb_got_signal)	/* came from line  mode... go raw */
 		rawmode();
 
 	write_str(1, "\r\nConsole escape. Commands are:\r\n\n"
@@ -126,13 +126,13 @@ static void conescape(void)
 
 	switch (b) {
 	case 'l':
-		if (!G.gotsig) {
+		if (!bb_got_signal) {
 			do_linemode();
 			goto rrturn;
 		}
 		break;
 	case 'c':
-		if (G.gotsig) {
+		if (bb_got_signal) {
 			will_charmode();
 			goto rrturn;
 		}
@@ -148,11 +148,11 @@ static void conescape(void)
 
 	write_str(1, "continuing...\r\n");
 
-	if (G.gotsig)
+	if (bb_got_signal)
 		cookmode();
 
  rrturn:
-	G.gotsig = 0;
+	bb_got_signal = 0;
 
 }
 
@@ -191,7 +191,7 @@ static void handlenetoutput(int len)
 			outbuf[j++] = 0x00;
 	}
 	if (j > 0)
-		write(G.netfd, outbuf, j);
+		write(netfd, outbuf, j);
 }
 
 static void handlenetinput(int len)
@@ -523,12 +523,6 @@ static int subneg(byte c)
 	return FALSE;
 }
 
-static void fgotsig(int sig)
-{
-	G.gotsig = sig;
-}
-
-
 static void rawmode(void)
 {
 	if (G.do_termios)
@@ -545,7 +539,7 @@ static void cookmode(void)
 #define USE_POLL 1
 
 int telnet_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
-int telnet_main(int argc, char **argv)
+int telnet_main(int argc UNUSED_PARAM, char **argv)
 {
 	char *host;
 	int port;
@@ -573,9 +567,6 @@ int telnet_main(int argc, char **argv)
 		cfmakeraw(&G.termios_raw);
 	}
 
-	if (argc < 2)
-		bb_show_usage();
-
 #if ENABLE_FEATURE_TELNET_AUTOLOGIN
 	if (1 & getopt32(argv, "al:", &G.autologin))
 		G.autologin = getenv("USER");
@@ -590,20 +581,20 @@ int telnet_main(int argc, char **argv)
 	if (*argv) /* extra params?? */
 		bb_show_usage();
 
-	G.netfd = create_and_connect_stream_or_die(host, port);
+	xmove_fd(create_and_connect_stream_or_die(host, port), netfd);
 
-	setsockopt(G.netfd, SOL_SOCKET, SO_KEEPALIVE, &const_int_1, sizeof(const_int_1));
+	setsockopt(netfd, SOL_SOCKET, SO_KEEPALIVE, &const_int_1, sizeof(const_int_1));
 
-	signal(SIGINT, fgotsig);
+	signal(SIGINT, record_signo);
 
 #ifdef USE_POLL
-	ufds[0].fd = 0; ufds[1].fd = G.netfd;
+	ufds[0].fd = 0; ufds[1].fd = netfd;
 	ufds[0].events = ufds[1].events = POLLIN;
 #else
 	FD_ZERO(&readfds);
 	FD_SET(STDIN_FILENO, &readfds);
-	FD_SET(G.netfd, &readfds);
-	maxfd = G.netfd + 1;
+	FD_SET(netfd, &readfds);
+	maxfd = netfd + 1;
 #endif
 
 	while (1) {
@@ -619,7 +610,7 @@ int telnet_main(int argc, char **argv)
 			/* timeout */
 		case -1:
 			/* error, ignore and/or log something, bay go to loop */
-			if (G.gotsig)
+			if (bb_got_signal)
 				conescape();
 			else
 				sleep(1);
@@ -642,17 +633,17 @@ int telnet_main(int argc, char **argv)
 #ifdef USE_POLL
 			if (ufds[1].revents) /* well, should check POLLIN, but ... */
 #else
-			if (FD_ISSET(G.netfd, &rfds))
+			if (FD_ISSET(netfd, &rfds))
 #endif
 			{
-				len = read(G.netfd, G.buf, DATABUFSIZE);
+				len = read(netfd, G.buf, DATABUFSIZE);
 				if (len <= 0) {
 					write_str(1, "Connection closed by foreign host\r\n");
 					doexit(EXIT_FAILURE);
 				}
-				TRACE(0, ("Read netfd (%d): %d\n", G.netfd, len));
+				TRACE(0, ("Read netfd (%d): %d\n", netfd, len));
 				handlenetinput(len);
 			}
 		}
-	}
+	} /* while (1) */
 }

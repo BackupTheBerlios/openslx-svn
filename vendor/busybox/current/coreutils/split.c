@@ -1,7 +1,7 @@
 /* vi: set sw=4 ts=4: */
 /*
  * split - split a file into pieces
- * Copyright (c) 2007 Bernhard Fischer
+ * Copyright (c) 2007 Bernhard Reutner-Fischer
  *
  * Licensed under GPLv2 or later, see file LICENSE in this tarball for details.
  */
@@ -56,7 +56,7 @@ enum { READ_BUFFER_SIZE = COMMON_BUFSIZE - 1 };
 #define SPLIT_OPT_a (1<<2)
 
 int split_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
-int split_main(int argc ATTRIBUTE_UNUSED, char **argv)
+int split_main(int argc UNUSED_PARAM, char **argv)
 {
 	unsigned suffix_len = 2;
 	char *pfx;

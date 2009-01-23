@@ -15,13 +15,13 @@
 
 static smallint fd_count = 2;
 
-static void handle_sigchld(int sig ATTRIBUTE_UNUSED)
+static void handle_sigchld(int sig UNUSED_PARAM)
 {
 	fd_count = 0;
 }
 
 int script_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
-int script_main(int argc ATTRIBUTE_UNUSED, char **argv)
+int script_main(int argc UNUSED_PARAM, char **argv)
 {
 	int opt;
 	int mode;
@@ -179,7 +179,8 @@ int script_main(int argc ATTRIBUTE_UNUSED, char **argv)
 	setsid();
 	ioctl(0, TIOCSCTTY, 0 /* 0: don't forcibly steal */);
 
-	/* signal(SIGCHLD, SIG_DFL); - exec does this for us */
+	/* Non-ignored signals revert to SIG_DFL on exec anyway */
+	/*signal(SIGCHLD, SIG_DFL);*/
 	execl(shell, shell, shell_opt, shell_arg, NULL);
 	bb_simple_perror_msg_and_die(shell);
 }

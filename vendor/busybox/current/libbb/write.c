@@ -2,7 +2,7 @@
 /*
  * Utility routines.
  *
- * Copyright (C) 2008 Bernhard Fischer
+ * Copyright (C) 2008 Bernhard Reutner-Fischer
  *
  * Licensed under GPLv2 or later, see file LICENSE in this tarball for details.
  */
@@ -11,7 +11,7 @@
 
 /* Open file and write string str to it, close file.
  * Die on any open or write-error.  */
-void xopen_xwrite_close(const char* file, const char* str)
+void FAST_FUNC xopen_xwrite_close(const char* file, const char* str)
 {
 	int fd = xopen(file, O_WRONLY);
 

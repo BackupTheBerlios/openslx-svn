@@ -5,7 +5,7 @@
  * by Matthew Grant <grantma@anathoth.gen.nz>
  *
  * iso-format handling added by Robert Griebl <griebl@gmx.de>
- * bugfixes and cleanup by Bernhard Fischer
+ * bugfixes and cleanup by Bernhard Reutner-Fischer
  *
  * Licensed under GPLv2 or later, see file LICENSE in this tarball for details.
 */
@@ -39,7 +39,7 @@ static void maybe_set_utc(int opt)
 }
 
 int date_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
-int date_main(int argc ATTRIBUTE_UNUSED, char **argv)
+int date_main(int argc UNUSED_PARAM, char **argv)
 {
 	struct tm tm_time;
 	time_t tm;

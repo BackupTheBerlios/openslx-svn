@@ -69,7 +69,7 @@ static int read_yn(const char *line, void *arg)
 
 
 /* find option 'code' in opt_list */
-struct option_set *find_option(struct option_set *opt_list, uint8_t code)
+struct option_set* FAST_FUNC find_option(struct option_set *opt_list, uint8_t code)
 {
 	while (opt_list && opt_list->data[OPT_CODE] < code)
 		opt_list = opt_list->next;
@@ -90,7 +90,7 @@ static void attach_option(struct option_set **opt_list,
 	if (!existing) {
 		DEBUG("Attaching option %02x to list", option->code);
 
-#if ENABLE_FEATURE_RFC3397
+#if ENABLE_FEATURE_UDHCP_RFC3397
 		if ((option->flags & TYPE_MASK) == OPTION_STR1035)
 			/* reuse buffer and length for RFC1035-formatted string */
 			buffer = (char *)dname_enc(NULL, 0, buffer, &length);
@@ -109,7 +109,7 @@ static void attach_option(struct option_set **opt_list,
 
 		new->next = *curr;
 		*curr = new;
-#if ENABLE_FEATURE_RFC3397
+#if ENABLE_FEATURE_UDHCP_RFC3397
 		if ((option->flags & TYPE_MASK) == OPTION_STR1035 && buffer != NULL)
 			free(buffer);
 #endif
@@ -119,7 +119,7 @@ static void attach_option(struct option_set **opt_list,
 	/* add it to an existing option */
 	DEBUG("Attaching option %02x to existing member of list", option->code);
 	if (option->flags & OPTION_LIST) {
-#if ENABLE_FEATURE_RFC3397
+#if ENABLE_FEATURE_UDHCP_RFC3397
 		if ((option->flags & TYPE_MASK) == OPTION_STR1035)
 			/* reuse buffer and length for RFC1035-formatted string */
 			buffer = (char *)dname_enc(existing->data + 2,
@@ -139,7 +139,7 @@ static void attach_option(struct option_set **opt_list,
 			memcpy(existing->data + existing->data[OPT_LEN] + 2, buffer, length);
 			existing->data[OPT_LEN] += length;
 		} /* else, ignore the data, we could put this in a second option in the future */
-#if ENABLE_FEATURE_RFC3397
+#if ENABLE_FEATURE_UDHCP_RFC3397
 		if ((option->flags & TYPE_MASK) == OPTION_STR1035 && buffer != NULL)
 			free(buffer);
 #endif
@@ -155,7 +155,7 @@ static int read_opt(const char *const_line, void *arg)
 	char *line;
 	const struct dhcp_option *option;
 	int retval, length, idx;
-	char buffer[8] __attribute__((aligned(4)));
+	char buffer[8] ALIGNED(4);
 	uint16_t *result_u16 = (uint16_t *) buffer;
 	uint32_t *result_u32 = (uint32_t *) buffer;
 
@@ -190,7 +190,7 @@ static int read_opt(const char *const_line, void *arg)
 				retval = read_ip(val, buffer + 4);
 			break;
 		case OPTION_STRING:
-#if ENABLE_FEATURE_RFC3397
+#if ENABLE_FEATURE_UDHCP_RFC3397
 		case OPTION_STR1035:
 #endif
 			length = strlen(val);
@@ -266,7 +266,7 @@ static int read_staticlease(const char *const_line, void *arg)
 
 	addStaticLease(arg, mac_bytes, ip);
 
-	if (ENABLE_FEATURE_UDHCP_DEBUG) printStaticLeases(arg);
+	if (ENABLE_UDHCP_DEBUG) printStaticLeases(arg);
 
 	return 1;
 }
@@ -307,60 +307,38 @@ static const struct config_keyword keywords[] = {
 };
 enum { KWS_WITH_DEFAULTS = ARRAY_SIZE(keywords) - 6 };
 
-
-/*
- * Domain names may have 254 chars, and string options can be 254
- * chars long. However, 80 bytes will be enough for most, and won't
- * hog up memory. If you have a special application, change it
- */
-#define READ_CONFIG_BUF_SIZE 80
-
-void read_config(const char *file)
+void FAST_FUNC read_config(const char *file)
 {
-	FILE *in;
-	char buffer[READ_CONFIG_BUF_SIZE], *token, *line;
-	unsigned i, lineno;
+	parser_t *parser;
+	const struct config_keyword *k;
+	unsigned i;
+	char *token[2];
 
 	for (i = 0; i < KWS_WITH_DEFAULTS; i++)
 		keywords[i].handler(keywords[i].def, keywords[i].var);
 
-	in = fopen_or_warn(file, "r");
-	if (!in)
-		return;
-
-	lineno = 0;
-	while (fgets(buffer, READ_CONFIG_BUF_SIZE, in)) {
-		lineno++;
-		/* *strchrnul(buffer, '\n') = '\0'; - trim() will do it */
-		*strchrnul(buffer, '#') = '\0';
-
-		token = strtok(buffer, " \t");
-		if (!token) continue;
-		line = strtok(NULL, "");
-		if (!line) continue;
-
-		trim(line); /* remove leading/trailing whitespace */
-
-		for (i = 0; i < ARRAY_SIZE(keywords); i++) {
-			if (!strcasecmp(token, keywords[i].keyword)) {
-				if (!keywords[i].handler(line, keywords[i].var)) {
-					bb_error_msg("can't parse line %u in %s at '%s'",
-							lineno, file, line);
+	parser = config_open(file);
+	while (config_read(parser, token, 2, 2, "# \t", PARSE_NORMAL)) {
+		for (k = keywords, i = 0; i < ARRAY_SIZE(keywords); k++, i++) {
+			if (!strcasecmp(token[0], k->keyword)) {
+				if (!k->handler(token[1], k->var)) {
+					bb_error_msg("can't parse line %u in %s",
+							parser->lineno, file);
 					/* reset back to the default value */
-					keywords[i].handler(keywords[i].def, keywords[i].var);
+					k->handler(k->def, k->var);
 				}
 				break;
 			}
 		}
 	}
-	fclose(in);
+	config_close(parser);
 
 	server_config.start_ip = ntohl(server_config.start_ip);
 	server_config.end_ip = ntohl(server_config.end_ip);
 }
 
 
-void write_leases(void)
+void FAST_FUNC write_leases(void)
 {
 	int fp;
 	unsigned i;
@@ -402,7 +380,7 @@ void write_leases(void)
 }
 
 
-void read_leases(const char *file)
+void FAST_FUNC read_leases(const char *file)
 {
 	int fp;
 	unsigned i;

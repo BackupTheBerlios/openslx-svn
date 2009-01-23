@@ -30,7 +30,7 @@ struct arpMsg {
 	uint8_t  tHaddr[6];     /* 20 target's hardware address */
 	uint8_t  tInaddr[4];    /* 26 target's IP address */
 	uint8_t  pad[18];       /* 2a pad for min. ethernet payload (60 bytes) */
-} ATTRIBUTE_PACKED;
+} PACKED;
 
 enum {
 	ARP_MSG_SIZE = 0x2a
@@ -39,7 +39,7 @@ enum {
 
 /* Returns 1 if no reply received */
 
-int arpping(uint32_t test_ip, uint32_t from_ip, uint8_t *from_mac, const char *interface)
+int FAST_FUNC arpping(uint32_t test_ip, uint32_t from_ip, uint8_t *from_mac, const char *interface)
 {
 	int timeout_ms;
 	struct pollfd pfd[1];

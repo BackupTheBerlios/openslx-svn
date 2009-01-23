@@ -678,7 +678,7 @@ static const char secu_str[] ALIGN1 =
 ;
 
 // Parse 512 byte disk identification block and print much crap.
-static void identify(uint16_t *val) ATTRIBUTE_NORETURN;
+static void identify(uint16_t *val) NORETURN;
 static void identify(uint16_t *val)
 {
 	uint16_t ii, jj, kk;
@@ -1759,7 +1759,7 @@ static void process_dev(char *devname)
 		}
 	}
 	if (get_unmask) {
-		if(!ioctl_or_warn(fd, HDIO_GET_UNMASKINTR, &parm))
+		if (!ioctl_or_warn(fd, HDIO_GET_UNMASKINTR, &parm))
 			print_value_on_off("unmaskirq", parm);
 	}
 
@@ -1777,25 +1777,25 @@ static void process_dev(char *devname)
 #endif
 #ifdef HDIO_GET_QDMA
 	if (get_dma_q) {
-		if(!ioctl_or_warn(fd, HDIO_GET_QDMA, &parm))
+		if (!ioctl_or_warn(fd, HDIO_GET_QDMA, &parm))
 			print_value_on_off("queue_depth", parm);
 	}
 #endif
 	if (get_keep) {
-		if(!ioctl_or_warn(fd, HDIO_GET_KEEPSETTINGS, &parm))
+		if (!ioctl_or_warn(fd, HDIO_GET_KEEPSETTINGS, &parm))
 			print_value_on_off("keepsettings", parm);
 	}
 
 	if (get_nowerr) {
-		if(!ioctl_or_warn(fd, HDIO_GET_NOWERR, &parm))
+		if (!ioctl_or_warn(fd, HDIO_GET_NOWERR, &parm))
 			print_value_on_off("nowerr", parm);
 	}
 	if (get_readonly) {
-		if(!ioctl_or_warn(fd, BLKROGET, &parm))
+		if (!ioctl_or_warn(fd, BLKROGET, &parm))
 			print_value_on_off("readonly", parm);
 	}
 	if (get_readahead) {
-		if(!ioctl_or_warn(fd, BLKRAGET, &parm))
+		if (!ioctl_or_warn(fd, BLKRAGET, &parm))
 			print_value_on_off("readahead", parm);
 	}
 	if (get_geom) {
@@ -1908,7 +1908,7 @@ static int fromhex(unsigned char c)
 	bb_error_msg_and_die("bad char: '%c' 0x%02x", c, c);
 }
 
-static void identify_from_stdin(void) ATTRIBUTE_NORETURN;
+static void identify_from_stdin(void) NORETURN;
 static void identify_from_stdin(void)
 {
 	uint16_t sbuf[256];

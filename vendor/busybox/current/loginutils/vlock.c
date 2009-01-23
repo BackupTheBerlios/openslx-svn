@@ -18,21 +18,21 @@
 #include <sys/vt.h>
 #include "libbb.h"
 
-static void release_vt(int signo ATTRIBUTE_UNUSED)
+static void release_vt(int signo UNUSED_PARAM)
 {
 	/* If -a, param is 0, which means:
 	 * "no, kernel, we don't allow console switch away from us!" */
 	ioctl(STDIN_FILENO, VT_RELDISP, (unsigned long) !option_mask32);
 }
 
-static void acquire_vt(int signo ATTRIBUTE_UNUSED)
+static void acquire_vt(int signo UNUSED_PARAM)
 {
 	/* ACK to kernel that switch to console is successful */
 	ioctl(STDIN_FILENO, VT_RELDISP, VT_ACKACQ);
 }
 
 int vlock_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
-int vlock_main(int argc ATTRIBUTE_UNUSED, char **argv)
+int vlock_main(int argc UNUSED_PARAM, char **argv)
 {
 	struct vt_mode vtm;
 	struct termios term;
@@ -40,7 +40,7 @@ int vlock_main(int argc ATTRIBUTE_UNUSED, char **argv)
 	struct vt_mode ovtm;
 	uid_t uid;
 	struct passwd *pw;
-
+/* XXX: xgetpwuid */
 	uid = getuid();
 	pw = getpwuid(uid);
 	if (pw == NULL)
@@ -87,7 +87,7 @@ int vlock_main(int argc ATTRIBUTE_UNUSED, char **argv)
 	term.c_iflag |= IGNBRK;
 	term.c_lflag &= ~ISIG;
 	term.c_lflag &= ~(ECHO | ECHOCTL);
-	tcsetattr(STDIN_FILENO, TCSANOW, &term);
+	tcsetattr_stdin_TCSANOW(&term);
 
 	do {
 		printf("Virtual console%s locked by %s.\n",
@@ -101,6 +101,6 @@ int vlock_main(int argc ATTRIBUTE_UNUSED, char **argv)
 	} while (1);
 
 	ioctl(STDIN_FILENO, VT_SETMODE, &ovtm);
-	tcsetattr(STDIN_FILENO, TCSANOW, &oterm);
+	tcsetattr_stdin_TCSANOW(&oterm);
 	fflush_stdout_and_exit(EXIT_SUCCESS);
 }

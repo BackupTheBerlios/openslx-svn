@@ -29,6 +29,8 @@
  * - use xfunc_error_retval
  */
 
+/* This is a NOEXEC applet. Be very careful! */
+
 #include "libbb.h"
 
 #if ENABLE_FEATURE_ENV_LONG_OPTIONS
@@ -39,7 +41,7 @@ static const char env_longopts[] ALIGN1 =
 #endif
 
 int env_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
-int env_main(int argc ATTRIBUTE_UNUSED, char **argv)
+int env_main(int argc UNUSED_PARAM, char **argv)
 {
 	/* cleanenv was static - why? */
 	char *cleanenv[1];
@@ -119,5 +121,3 @@ int env_main(int argc ATTRIBUTE_UNUSED, char **argv)
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-

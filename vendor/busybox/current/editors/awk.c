@@ -499,7 +499,7 @@ static void chain_group(void);
 static var *evaluate(node *, var *);
 static rstream *next_input_file(void);
 static int fmt_num(char *, int, const char *, double, int);
-static int awk_exit(int) ATTRIBUTE_NORETURN;
+static int awk_exit(int) NORETURN;
 
 /* ---- error handling ---- */
 
@@ -512,7 +512,7 @@ static const char EMSG_TOO_FEW_ARGS[] ALIGN1 = "Too few arguments for builtin";
 static const char EMSG_NOT_ARRAY[] ALIGN1 = "Not an array";
 static const char EMSG_POSSIBLE_ERROR[] ALIGN1 = "Possible syntax error";
 static const char EMSG_UNDEF_FUNC[] ALIGN1 = "Call to undefined function";
-#if !ENABLE_FEATURE_AWK_MATH
+#if !ENABLE_FEATURE_AWK_LIBM
 static const char EMSG_NO_MATH[] ALIGN1 = "Math support is not compiled in";
 #endif
 
@@ -521,7 +521,7 @@ static void zero_out_var(var * vp)
 	memset(vp, 0, sizeof(*vp));
 }
 
-static void syntax_error(const char *const message) ATTRIBUTE_NORETURN;
+static void syntax_error(const char *const message) NORETURN;
 static void syntax_error(const char *const message)
 {
 	bb_error_msg_and_die("%s:%i: %s", g_progname, g_lineno, message);
@@ -681,6 +681,18 @@ static ALWAYS_INLINE int isalnum_(int c)
 	return (isalnum(c) || c == '_');
 }
 
+static double my_strtod(char **pp)
+{
+#if ENABLE_DESKTOP
+	if ((*pp)[0] == '0'
+	 && ((((*pp)[1] | 0x20) == 'x') || isdigit((*pp)[1]))
+	) {
+		return strtoull(*pp, pp, 0);
+	}
+#endif
+	return strtod(*pp, pp);
+}
+
 /* -------- working with variables (set/get/copy/etc) -------- */
 
 static xhash *iamarray(var *v)
@@ -790,7 +802,7 @@ static double getvar_i(var *v)
 		v->number = 0;
 		s = v->string;
 		if (s && *s) {
-			v->number = strtod(s, &s);
+			v->number = my_strtod(&s);
 			if (v->type & VF_USER) {
 				skip_spaces(&s);
 				if (*s != '\0')
@@ -802,6 +814,19 @@ static double getvar_i(var *v)
 		v->type |= VF_CACHED;
 	}
 	return v->number;
+}
+
+/* Used for operands of bitwise ops */
+static unsigned long getvar_i_int(var *v)
+{
+	double d = getvar_i(v);
+
+	/* Casting doubles to longs is undefined for values outside
+	 * of target type range. Try to widen it as much as possible */
+	if (d >= 0)
+		return (unsigned long)d;
+	/* Why? Think about d == -4294967295.0 (assuming 32bit longs) */
+	return - (long) (unsigned long) (-d);
 }
 
 static var *copyvar(var *dest, const var *src)
@@ -852,11 +877,11 @@ static var *nvalloc(int n)
 
 	if (!g_cb) {
 		size = (n <= MINNVBLOCK) ? MINNVBLOCK : n;
-		g_cb = xmalloc(sizeof(nvblock) + size * sizeof(var));
+		g_cb = xzalloc(sizeof(nvblock) + size * sizeof(var));
 		g_cb->size = size;
 		g_cb->pos = g_cb->nv;
 		g_cb->prev = pb;
-		g_cb->next = NULL;
+		/*g_cb->next = NULL; - xzalloc did it */
 		if (pb) pb->next = g_cb;
 	}
 
@@ -973,7 +998,7 @@ static uint32_t next_token(uint32_t expected)
 
 		} else if (*p == '.' || isdigit(*p)) {
 			/* it's a number */
-			t_double = strtod(p, &p);
+			t_double = my_strtod(&p);
 			if (*p == '.')
 				syntax_error(EMSG_UNEXP_TOKEN);
 			tc = TC_NUMBER;
@@ -1473,8 +1498,10 @@ static regex_t *as_regex(node *op, regex_t *preg)
 /* gradually increasing buffer */
 static void qrealloc(char **b, int n, int *size)
 {
-	if (!*b || n >= *size)
-		*b = xrealloc(*b, *size = n + (n>>1) + 80);
+	if (!*b || n >= *size) {
+		*size = n + (n>>1) + 80;
+		*b = xrealloc(*b, *size);
+	}
 }
 
 /* resize field storage space */
@@ -1997,8 +2024,8 @@ static var *exec_builtin(node *op, var *res)
 	switch (info & OPNMASK) {
 
 	case B_a2:
-#if ENABLE_FEATURE_AWK_MATH
-		setvar_i(res, atan2(getvar_i(av[i]), getvar_i(av[1])));
+#if ENABLE_FEATURE_AWK_LIBM
+		setvar_i(res, atan2(getvar_i(av[0]), getvar_i(av[1])));
 #else
 		syntax_error(EMSG_NO_MATH);
 #endif
@@ -2015,7 +2042,7 @@ static var *exec_builtin(node *op, var *res)
 		n = awk_split(as[0], spl, &s);
 		s1 = s;
 		clear_array(iamarray(av[1]));
-		for (i=1; i<=n; i++)
+		for (i = 1; i <= n; i++)
 			setari_u(av[1], i, nextword(&s1));
 		free(s);
 		setvar_i(res, n);
@@ -2028,34 +2055,34 @@ static var *exec_builtin(node *op, var *res)
 		if (i < 0) i = 0;
 		n = (nargs > 2) ? getvar_i(av[2]) : l-i;
 		if (n < 0) n = 0;
-		s = xmalloc(n+1);
-		strncpy(s, as[0]+i, n);
-		s[n] = '\0';
+		s = xstrndup(as[0]+i, n);
 		setvar_p(res, s);
 		break;
 
+	/* Bitwise ops must assume that operands are unsigned. GNU Awk 3.1.5:
+	 * awk '{ print or(-1,1) }' gives "4.29497e+09", not "-2.xxxe+09" */
 	case B_an:
-		setvar_i(res, (long)getvar_i(av[0]) & (long)getvar_i(av[1]));
+		setvar_i(res, getvar_i_int(av[0]) & getvar_i_int(av[1]));
 		break;
 
 	case B_co:
-		setvar_i(res, ~(long)getvar_i(av[0]));
+		setvar_i(res, ~getvar_i_int(av[0]));
 		break;
 
 	case B_ls:
-		setvar_i(res, (long)getvar_i(av[0]) << (long)getvar_i(av[1]));
+		setvar_i(res, getvar_i_int(av[0]) << getvar_i_int(av[1]));
 		break;
 
 	case B_or:
-		setvar_i(res, (long)getvar_i(av[0]) | (long)getvar_i(av[1]));
+		setvar_i(res, getvar_i_int(av[0]) | getvar_i_int(av[1]));
 		break;
 
 	case B_rs:
-		setvar_i(res, (long)((unsigned long)getvar_i(av[0]) >> (unsigned long)getvar_i(av[1])));
+		setvar_i(res, getvar_i_int(av[0]) >> getvar_i_int(av[1]));
 		break;
 
 	case B_xo:
-		setvar_i(res, (long)getvar_i(av[0]) ^ (long)getvar_i(av[1]));
+		setvar_i(res, getvar_i_int(av[0]) ^ getvar_i_int(av[1]));
 		break;
 
 	case B_lo:
@@ -2400,7 +2427,7 @@ static var *evaluate(node *op, var *res)
 						X.rsm->F = popen(L.s, "r");
 						X.rsm->is_pipe = TRUE;
 					} else {
-						X.rsm->F = fopen(L.s, "r");		/* not xfopen! */
+						X.rsm->F = fopen_for_read(L.s);		/* not xfopen! */
 					}
 				}
 			} else {
@@ -2438,7 +2465,7 @@ static var *evaluate(node *op, var *res)
 			case F_rn:
 				R.d = (double)rand() / (double)RAND_MAX;
 				break;
-#if ENABLE_FEATURE_AWK_MATH
+#if ENABLE_FEATURE_AWK_LIBM
 			case F_co:
 				R.d = cos(L.d);
 				break;
@@ -2606,7 +2633,7 @@ static var *evaluate(node *op, var *res)
 				L.d /= R.d;
 				break;
 			case '&':
-#if ENABLE_FEATURE_AWK_MATH
+#if ENABLE_FEATURE_AWK_LIBM
 				L.d = pow(L.d, R.d);
 #else
 				syntax_error(EMSG_NO_MATH);

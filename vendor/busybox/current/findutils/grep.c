@@ -87,7 +87,11 @@ enum {
 
 struct globals {
 	int max_matches;
+#if !ENABLE_EXTRA_COMPAT
 	int reflags;
+#else
+	RE_TRANSLATE_TYPE case_fold; /* RE_TRANSLATE_TYPE is [[un]signed] char* */
+#endif
 	smalluint invert_search;
 	smalluint print_filename;
 	smalluint open_errors;
@@ -96,6 +100,7 @@ struct globals {
 	int lines_before;
 	int lines_after;
 	char **before_buf;
+	USE_EXTRA_COMPAT(size_t *before_buf_size;)
 	int last_line_printed;
 #endif
 	/* globals used internally */
@@ -109,7 +114,19 @@ struct globals {
 	}; \
 } while (0)
 #define max_matches       (G.max_matches         )
+#if !ENABLE_EXTRA_COMPAT
 #define reflags           (G.reflags             )
+#else
+#define case_fold         (G.case_fold           )
+/* http://www.delorie.com/gnu/docs/regex/regex_46.html */
+#define reflags           re_syntax_options
+#undef REG_NOSUB
+#undef REG_EXTENDED
+#undef REG_ICASE
+#define REG_NOSUB    bug:is:here /* should not be used */
+#define REG_EXTENDED RE_SYNTAX_EGREP
+#define REG_ICASE    bug:is:here /* should not be used */
+#endif
 #define invert_search     (G.invert_search       )
 #define print_filename    (G.print_filename      )
 #define open_errors       (G.open_errors         )
@@ -117,6 +134,7 @@ struct globals {
 #define lines_before      (G.lines_before        )
 #define lines_after       (G.lines_after         )
 #define before_buf        (G.before_buf          )
+#define before_buf_size   (G.before_buf_size     )
 #define last_line_printed (G.last_line_printed   )
 #define pattern_head      (G.pattern_head        )
 #define cur_file          (G.cur_file            )
@@ -124,14 +142,24 @@ struct globals {
 
 typedef struct grep_list_data_t {
 	char *pattern;
-	regex_t preg;
+/* for GNU regex, matched_range must be persistent across grep_file() calls */
+#if !ENABLE_EXTRA_COMPAT
+	regex_t compiled_regex;
+	regmatch_t matched_range;
+#else
+	struct re_pattern_buffer compiled_regex;
+	struct re_registers matched_range;
+#endif
 #define ALLOCATED 1
 #define COMPILED 2
 	int flg_mem_alocated_compiled;
 } grep_list_data_t;
 
-
-static void print_line(const char *line, int linenum, char decoration)
+#if !ENABLE_EXTRA_COMPAT
+#define print_line(line, line_len, linenum, decoration) \
+	print_line(line, linenum, decoration)
+#endif
+static void print_line(const char *line, size_t line_len, int linenum, char decoration)
 {
 #if ENABLE_FEATURE_GREP_CONTEXT
 	/* Happens when we go to next file, immediately hit match
@@ -139,8 +167,9 @@ static void print_line(const char *line, int linenum, char decoration)
 	if (linenum < 1)
 		return;
 	/* possibly print the little '--' separator */
-	if ((lines_before || lines_after) && did_print_line &&
-			last_line_printed != linenum - 1) {
+	if ((lines_before || lines_after) && did_print_line
+	 && last_line_printed != linenum - 1
+	) {
 		puts("--");
 	}
 	/* guard against printing "--" before first line of first file */
@@ -152,17 +181,50 @@ static void print_line(const char *line, int linenum, char decoration)
 	if (PRINT_LINE_NUM)
 		printf("%i%c", linenum, decoration);
 	/* Emulate weird GNU grep behavior with -ov */
-	if ((option_mask32 & (OPT_v|OPT_o)) != (OPT_v|OPT_o))
+	if ((option_mask32 & (OPT_v|OPT_o)) != (OPT_v|OPT_o)) {
+#if !ENABLE_EXTRA_COMPAT
 		puts(line);
+#else
+		fwrite(line, 1, line_len, stdout);
+		putchar('\n');
+#endif
+	}
 }
+
+#if ENABLE_EXTRA_COMPAT
+/* Unlike getline, this one removes trailing '\n' */
+static ssize_t FAST_FUNC bb_getline(char **line_ptr, size_t *line_alloc_len, FILE *file)
+{
+	ssize_t res_sz;
+	char *line;
+
+	res_sz = getline(line_ptr, line_alloc_len, file);
+	line = *line_ptr;
+
+	if (res_sz > 0) {
+		if (line[res_sz - 1] == '\n')
+			line[--res_sz] = '\0';
+	} else {
+		free(line); /* uclibc allocates a buffer even on EOF. WTF? */
+	}
+	return res_sz;
+}
+#endif
 
 static int grep_file(FILE *file)
 {
-	char *line;
 	smalluint found;
 	int linenum = 0;
 	int nmatches = 0;
-	regmatch_t regmatch;
+#if !ENABLE_EXTRA_COMPAT
+	char *line;
+#else
+	char *line = NULL;
+	ssize_t line_len;
+	size_t line_alloc_len;
+#define rm_so start[0]
+#define rm_eo end[0]
+#endif
 #if ENABLE_FEATURE_GREP_CONTEXT
 	int print_n_lines_after = 0;
 	int curpos = 0; /* track where we are in the circular 'before' buffer */
@@ -171,7 +233,13 @@ static int grep_file(FILE *file)
 	enum { print_n_lines_after = 0 };
 #endif /* ENABLE_FEATURE_GREP_CONTEXT */
 
-	while ((line = xmalloc_fgetline(file)) != NULL) {
+	while (
+#if !ENABLE_EXTRA_COMPAT
+		(line = xmalloc_fgetline(file)) != NULL
+#else
+		(line_len = bb_getline(&line, &line_alloc_len, file)) >= 0
+#endif
+	) {
 		llist_t *pattern_ptr = pattern_head;
 		grep_list_data_t *gl = gl; /* for gcc */
 
@@ -184,19 +252,36 @@ static int grep_file(FILE *file)
 			} else {
 				if (!(gl->flg_mem_alocated_compiled & COMPILED)) {
 					gl->flg_mem_alocated_compiled |= COMPILED;
-					xregcomp(&(gl->preg), gl->pattern, reflags);
+#if !ENABLE_EXTRA_COMPAT
+					xregcomp(&gl->compiled_regex, gl->pattern, reflags);
+#else
+					memset(&gl->compiled_regex, 0, sizeof(gl->compiled_regex));
+					gl->compiled_regex.translate = case_fold; /* for -i */
+					if (re_compile_pattern(gl->pattern, strlen(gl->pattern), &gl->compiled_regex))
+						bb_error_msg_and_die("bad regex '%s'", gl->pattern);
+#endif
 				}
-				regmatch.rm_so = 0;
-				regmatch.rm_eo = 0;
-				if (regexec(&(gl->preg), line, 1, &regmatch, 0) == 0) {
+#if !ENABLE_EXTRA_COMPAT
+				gl->matched_range.rm_so = 0;
+				gl->matched_range.rm_eo = 0;
+#endif
+				if (
+#if !ENABLE_EXTRA_COMPAT
+					regexec(&gl->compiled_regex, line, 1, &gl->matched_range, 0) == 0
+#else
+					re_search(&gl->compiled_regex, line, line_len,
+							/*start:*/ 0, /*range:*/ line_len,
+							&gl->matched_range) >= 0
+#endif
+				) {
 					if (!(option_mask32 & OPT_w))
 						found = 1;
 					else {
 						char c = ' ';
-						if (regmatch.rm_so)
-							c = line[regmatch.rm_so - 1];
+						if (gl->matched_range.rm_so)
+							c = line[gl->matched_range.rm_so - 1];
 						if (!isalnum(c) && c != '_') {
-							c = line[regmatch.rm_eo];
+							c = line[gl->matched_range.rm_eo];
 							if (!c || (!isalnum(c) && c != '_'))
 								found = 1;
 						}
@@ -261,7 +346,7 @@ static int grep_file(FILE *file)
 
 					/* now print each line in the buffer, clearing them as we go */
 					while (before_buf[idx] != NULL) {
-						print_line(before_buf[idx], first_buf_entry_line_num, '-');
+						print_line(before_buf[idx], before_buf_size[idx], first_buf_entry_line_num, '-');
 						free(before_buf[idx]);
 						before_buf[idx] = NULL;
 						idx = (idx + 1) % lines_before;
@@ -277,13 +362,25 @@ static int grep_file(FILE *file)
 						/* -Fo just prints the pattern
 						 * (unless -v: -Fov doesnt print anything at all) */
 						if (found)
-							print_line(gl->pattern, linenum, ':');
-					} else {
-						line[regmatch.rm_eo] = '\0';
-						print_line(line + regmatch.rm_so, linenum, ':');
-					}
+							print_line(gl->pattern, strlen(gl->pattern), linenum, ':');
+					} else while (1) {
+						char old = line[gl->matched_range.rm_eo];
+						line[gl->matched_range.rm_eo] = '\0';
+						print_line(line + gl->matched_range.rm_so,
+								gl->matched_range.rm_eo - gl->matched_range.rm_so,
+								linenum, ':');
+						line[gl->matched_range.rm_eo] = old;
+#if !ENABLE_EXTRA_COMPAT
+						break;
+#else
+						if (re_search(&gl->compiled_regex, line, line_len,
+								gl->matched_range.rm_eo, line_len - gl->matched_range.rm_eo, 
+								&gl->matched_range) < 0)
+							break;
+#endif
+					} 
 				} else {
-					print_line(line, linenum, ':');
+					print_line(line, line_len, linenum, ':');
 				}
 			}
 		}
@@ -291,12 +388,13 @@ static int grep_file(FILE *file)
 		else { /* no match */
 			/* if we need to print some context lines after the last match, do so */
 			if (print_n_lines_after) {
-				print_line(line, linenum, '-');
+				print_line(line, strlen(line), linenum, '-');
 				print_n_lines_after--;
 			} else if (lines_before) {
 				/* Add the line to the circular 'before' buffer */
 				free(before_buf[curpos]);
 				before_buf[curpos] = line;
+				USE_EXTRA_COMPAT(before_buf_size[curpos] = line_len;)
 				curpos = (curpos + 1) % lines_before;
 				/* avoid free(line) - we took the line */
 				line = NULL;
@@ -304,13 +402,14 @@ static int grep_file(FILE *file)
 		}
 
 #endif /* ENABLE_FEATURE_GREP_CONTEXT */
+#if !ENABLE_EXTRA_COMPAT
 		free(line);
-
+#endif
 		/* Did we print all context after last requested match? */
 		if ((option_mask32 & OPT_m)
 		 && !print_n_lines_after && nmatches == max_matches)
 			break;
-	}
+	} /* while (read line) */
 
 	/* special-case file post-processing for options where we don't print line
 	 * matches, just filenames and possibly match counts */
@@ -370,12 +469,12 @@ static void load_regexes_from_file(llist_t *fopt)
 	}
 }
 
-static int file_action_grep(const char *filename,
-			struct stat *statbuf ATTRIBUTE_UNUSED,
+static int FAST_FUNC file_action_grep(const char *filename,
+			struct stat *statbuf UNUSED_PARAM,
 			void* matched,
-			int depth ATTRIBUTE_UNUSED)
+			int depth UNUSED_PARAM)
 {
-	FILE *file = fopen(filename, "r");
+	FILE *file = fopen_for_read(filename);
 	if (file == NULL) {
 		if (!SUPPRESS_ERR_MSGS)
 			bb_simple_perror_msg(filename);
@@ -428,15 +527,16 @@ int grep_main(int argc, char **argv)
 			lines_after = Copt;
 		if (!(option_mask32 & OPT_B)) /* not overridden */
 			lines_before = Copt;
-		//option_mask32 |= OPT_A|OPT_B; /* for parser */
 	}
 	/* sanity checks */
 	if (option_mask32 & (OPT_c|OPT_q|OPT_l|OPT_L)) {
 		option_mask32 &= ~OPT_n;
 		lines_before = 0;
 		lines_after = 0;
-	} else if (lines_before > 0)
-		before_buf = xzalloc(lines_before * sizeof(char *));
+	} else if (lines_before > 0) {
+		before_buf = xzalloc(lines_before * sizeof(before_buf[0]));
+		USE_EXTRA_COMPAT(before_buf_size = xzalloc(lines_before * sizeof(before_buf_size[0]));)
+	}
 #else
 	/* with auto sanity checks */
 	/* -H unsets -h; -c,-q or -l unset -n; -e,-f are lists; -m N */
@@ -459,17 +559,34 @@ int grep_main(int argc, char **argv)
 	if (ENABLE_FEATURE_GREP_FGREP_ALIAS && applet_name[0] == 'f')
 		option_mask32 |= OPT_F;
 
+#if !ENABLE_EXTRA_COMPAT
 	if (!(option_mask32 & (OPT_o | OPT_w)))
 		reflags = REG_NOSUB;
+#endif
 
 	if (ENABLE_FEATURE_GREP_EGREP_ALIAS
 	 && (applet_name[0] == 'e' || (option_mask32 & OPT_E))
 	) {
 		reflags |= REG_EXTENDED;
 	}
+#if ENABLE_EXTRA_COMPAT
+	else {
+		reflags = RE_SYNTAX_GREP;
+	}
+#endif
 
-	if (option_mask32 & OPT_i)
+	if (option_mask32 & OPT_i) {
+#if !ENABLE_EXTRA_COMPAT
 		reflags |= REG_ICASE;
+#else
+		int i;
+		case_fold = xmalloc(256);
+		for (i = 0; i < 256; i++)
+			case_fold[i] = (unsigned char)i;
+		for (i = 'a'; i <= 'z'; i++)
+			case_fold[i] = (unsigned char)(i - ('a' - 'A'));
+#endif
+	}
 
 	argv += optind;
 	argc -= optind;
@@ -514,7 +631,7 @@ int grep_main(int argc, char **argv)
 				}
 			}
 			/* else: fopen(dir) will succeed, but reading won't */
-			file = fopen(cur_file, "r");
+			file = fopen_for_read(cur_file);
 			if (file == NULL) {
 				if (!SUPPRESS_ERR_MSGS)
 					bb_simple_perror_msg(cur_file);
@@ -537,7 +654,7 @@ int grep_main(int argc, char **argv)
 			if (gl->flg_mem_alocated_compiled & ALLOCATED)
 				free(gl->pattern);
 			if (gl->flg_mem_alocated_compiled & COMPILED)
-				regfree(&(gl->preg));
+				regfree(&gl->compiled_regex);
 			free(gl);
 			free(pattern_head_ptr);
 		}

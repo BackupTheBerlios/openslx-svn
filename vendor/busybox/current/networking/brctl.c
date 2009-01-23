@@ -2,7 +2,7 @@
 /*
  * Small implementation of brctl for busybox.
  *
- * Copyright (C) 2008 by Bernhard Fischer
+ * Copyright (C) 2008 by Bernhard Reutner-Fischer
  *
  * Some helper functions from bridge-utils are
  * Copyright (C) 2000 Lennert Buytenhek
@@ -81,7 +81,7 @@ static void arm_ioctl(unsigned long *args,
 
 
 int brctl_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
-int brctl_main(int argc ATTRIBUTE_UNUSED, char **argv)
+int brctl_main(int argc UNUSED_PARAM, char **argv)
 {
 	static const char keywords[] ALIGN1 =
 		"addbr\0" "delbr\0" "addif\0" "delif\0"

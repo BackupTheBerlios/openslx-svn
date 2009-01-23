@@ -16,19 +16,22 @@
 #undef _tolower
 #define _tolower(X) ((X)|((char) 0x20))
 
-char bb_process_escape_sequence(const char **ptr)
+char FAST_FUNC bb_process_escape_sequence(const char **ptr)
 {
+	/* bash builtin "echo -e '\ec'" interprets \e as ESC,
+	 * but coreutils "/bin/echo -e '\ec'" does not.
+	 * manpages tend to support coreutils way. */
 	static const char charmap[] ALIGN1 = {
-		'a',  'b',  'f',  'n',  'r',  't',  'v',  '\\', 0,
-		'\a', '\b', '\f', '\n', '\r', '\t', '\v', '\\', '\\' };
+		'a',  'b', /*'e',*/ 'f',  'n',  'r',  't',  'v',  '\\', 0,
+		'\a', '\b', /*27,*/ '\f', '\n', '\r', '\t', '\v', '\\', '\\' };
 
 	const char *p;
 	const char *q;
-	unsigned int num_digits;
-	unsigned int r;
-	unsigned int n;
-	unsigned int d;
-	unsigned int base;
+	unsigned num_digits;
+	unsigned r;
+	unsigned n;
+	unsigned d;
+	unsigned base;
 
 	num_digits = n = 0;
 	base = 8;

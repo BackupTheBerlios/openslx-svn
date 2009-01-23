@@ -96,44 +96,55 @@ remove_iacs(struct tsession *ts, int *pnum_totty)
 
 			*totty++ = c;
 			ptr++;
-			/* We now map \r\n ==> \r for pragmatic reasons.
+			/* We map \r\n ==> \r for pragmatic reasons.
 			 * Many client implementations send \r\n when
 			 * the user hits the CarriageReturn key.
 			 */
 			if (c == '\r' && ptr < end && (*ptr == '\n' || *ptr == '\0'))
 				ptr++;
-		} else {
-			/*
-			 * TELOPT_NAWS support!
-			 */
-			if ((ptr+2) >= end) {
-				/* only the beginning of the IAC is in the
-				buffer we were asked to process, we can't
-				process this char. */
-				break;
-			}
-
-			/*
-			 * IAC -> SB -> TELOPT_NAWS -> 4-byte -> IAC -> SE
-			 */
-			else if (ptr[1] == SB && ptr[2] == TELOPT_NAWS) {
-				struct winsize ws;
-
-				if ((ptr+8) >= end)
-					break;	/* incomplete, can't process */
-				ws.ws_col = (ptr[3] << 8) | ptr[4];
-				ws.ws_row = (ptr[5] << 8) | ptr[6];
-				ioctl(ts->ptyfd, TIOCSWINSZ, (char *)&ws);
-				ptr += 9;
-			} else {
-				/* skip 3-byte IAC non-SB cmd */
-#if DEBUG
-				fprintf(stderr, "Ignoring IAC %s,%s\n",
-					TELCMD(ptr[1]), TELOPT(ptr[2]));
-#endif
-				ptr += 3;
-			}
+			continue;
 		}
+
+		if ((ptr+1) >= end)
+			break;
+		if (ptr[1] == NOP) { /* Ignore? (putty keepalive, etc.) */
+			ptr += 2;
+			continue;
+		}
+		if (ptr[1] == IAC) { /* Literal IAC? (emacs M-DEL) */
+			*totty++ = ptr[1];
+			ptr += 2;
+			continue;
+		}
+
+		/*
+		 * TELOPT_NAWS support!
+		 */
+		if ((ptr+2) >= end) {
+			/* only the beginning of the IAC is in the
+			buffer we were asked to process, we can't
+			process this char. */
+			break;
+		}
+		/*
+		 * IAC -> SB -> TELOPT_NAWS -> 4-byte -> IAC -> SE
+		 */
+		if (ptr[1] == SB && ptr[2] == TELOPT_NAWS) {
+			struct winsize ws;
+			if ((ptr+8) >= end)
+				break;	/* incomplete, can't process */
+			ws.ws_col = (ptr[3] << 8) | ptr[4];
+			ws.ws_row = (ptr[5] << 8) | ptr[6];
+			ioctl(ts->ptyfd, TIOCSWINSZ, (char *)&ws);
+			ptr += 9;
+			continue;
+		}
+		/* skip 3-byte IAC non-SB cmd */
+#if DEBUG
+		fprintf(stderr, "Ignoring IAC %s,%s\n",
+				TELCMD(ptr[1]), TELOPT(ptr[2]));
+#endif
+		ptr += 3;
 	}
 
 	num_totty = totty - ptr0;
@@ -171,6 +182,8 @@ make_new_session(
 	ndelay_on(fd);
 #if ENABLE_FEATURE_TELNETD_STANDALONE
 	ts->sockfd_read = sock;
+	/* SO_KEEPALIVE by popular demand */
+	setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &const_int_1, sizeof(const_int_1));
 	ndelay_on(sock);
 	if (!sock) { /* We are called with fd 0 - we are in inetd mode */
 		sock++; /* so use fd 1 for output */
@@ -180,6 +193,8 @@ make_new_session(
 	if (sock > maxfd)
 		maxfd = sock;
 #else
+	/* SO_KEEPALIVE by popular demand */
+	setsockopt(0, SOL_SOCKET, SO_KEEPALIVE, &const_int_1, sizeof(const_int_1));
 	/* ts->sockfd_read = 0; - done by xzalloc */
 	ts->sockfd_write = 1;
 	ndelay_on(0);
@@ -229,11 +244,10 @@ make_new_session(
 	/* open the child's side of the tty. */
 	/* NB: setsid() disconnects from any previous ctty's. Therefore
 	 * we must open child's side of the tty AFTER setsid! */
-	fd = xopen(tty_name, O_RDWR); /* becomes our ctty */
-	dup2(fd, 0);
-	dup2(fd, 1);
-	dup2(fd, 2);
-	while (fd > 2) close(fd--);
+	close(0);
+	xopen(tty_name, O_RDWR); /* becomes our ctty */
+	xdup2(0, 1);
+	xdup2(0, 2);
 	tcsetpgrp(0, getpid()); /* switch this tty's process group to us */
 
 	/* The pseudo-terminal allocated to the client is configured to operate in
@@ -244,7 +258,7 @@ make_new_session(
 	termbuf.c_iflag |= ICRNL;
 	termbuf.c_iflag &= ~IXOFF;
 	/*termbuf.c_lflag &= ~ICANON;*/
-	tcsetattr(0, TCSANOW, &termbuf);
+	tcsetattr_stdin_TCSANOW(&termbuf);
 
 	/* Uses FILE-based I/O to stdout, but does fflush(stdout),
 	 * so should be safe with vfork.
@@ -252,7 +266,7 @@ make_new_session(
 	 * issue files, and they may block writing to fd 1,
 	 * (parent is supposed to read it, but parent waits
 	 * for vforked child to exec!) */
-	print_login_issue(issuefile, NULL);
+	print_login_issue(issuefile, tty_name);
 
 	/* Exec shell / login / whatever */
 	login_argv[0] = loginpath;
@@ -330,7 +344,7 @@ free_session(struct tsession *ts)
 
 #endif
 
-static void handle_sigchld(int sig ATTRIBUTE_UNUSED)
+static void handle_sigchld(int sig UNUSED_PARAM)
 {
 	pid_t pid;
 	struct tsession *ts;
@@ -352,7 +366,7 @@ static void handle_sigchld(int sig ATTRIBUTE_UNUSED)
 }
 
 int telnetd_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
-int telnetd_main(int argc ATTRIBUTE_UNUSED, char **argv)
+int telnetd_main(int argc UNUSED_PARAM, char **argv)
 {
 	fd_set rdfdset, wrfdset;
 	unsigned opt;

@@ -127,12 +127,12 @@ static void warn_cannot(const char *m)
 	bb_perror_msg("%s: warning: cannot %s", dir, m);
 }
 
-static void s_child(int sig_no ATTRIBUTE_UNUSED)
+static void s_child(int sig_no UNUSED_PARAM)
 {
 	write(selfpipe.wr, "", 1);
 }
 
-static void s_term(int sig_no ATTRIBUTE_UNUSED)
+static void s_term(int sig_no UNUSED_PARAM)
 {
 	sigterm = 1;
 	write(selfpipe.wr, "", 1); /* XXX */
@@ -247,7 +247,7 @@ static void update_status(struct svdir *s)
 
 static unsigned custom(struct svdir *s, char c)
 {
-	int pid;
+	pid_t pid;
 	int w;
 	char a[10];
 	struct stat st;
@@ -336,10 +336,11 @@ static void startservice(struct svdir *s)
 				xdup2(logpipe.wr, 1);
 			}
 		}
-		bb_signals(0
+		/* Non-ignored signals revert to SIG_DFL on exec anyway */
+		/*bb_signals(0
 			+ (1 << SIGCHLD)
 			+ (1 << SIGTERM)
-			, SIG_DFL);
+			, SIG_DFL);*/
 		sig_unblock(SIGCHLD);
 		sig_unblock(SIGTERM);
 		execvp(*run, run);
@@ -434,7 +435,7 @@ static int ctrl(struct svdir *s, char c)
 }
 
 int runsv_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
-int runsv_main(int argc ATTRIBUTE_UNUSED, char **argv)
+int runsv_main(int argc UNUSED_PARAM, char **argv)
 {
 	struct stat s;
 	int fd;
@@ -584,7 +585,7 @@ int runsv_main(int argc ATTRIBUTE_UNUSED, char **argv)
 			continue;
 
 		for (;;) {
-			int child;
+			pid_t child;
 			int wstat;
 
 			child = wait_any_nohang(&wstat);

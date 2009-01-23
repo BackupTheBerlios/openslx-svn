@@ -1,5 +1,5 @@
 VERSION = 1
-PATCHLEVEL = 11
+PATCHLEVEL = 13
 SUBLEVEL = 1
 EXTRAVERSION =
 NAME = Unnamed
@@ -456,6 +456,7 @@ libs-y		:= \
 		libbb/ \
 		libpwdgrp/ \
 		loginutils/ \
+		mailutils/ \
 		miscutils/ \
 		modutils/ \
 		networking/ \
@@ -505,7 +506,7 @@ endif
 # command line.
 # This allow a user to issue only 'make' to build a kernel including modules
 # Defaults busybox but it is usually overridden in the arch makefile
-all: busybox
+all: busybox doc
 
 -include $(srctree)/arch/$(ARCH)/Makefile
 
@@ -932,8 +933,9 @@ endif # CONFIG_MODULES
 # make distclean Remove editor backup files, patch leftover files and the like
 
 # Directories & files removed with 'make clean'
-CLEAN_DIRS  += $(MODVERDIR)
-CLEAN_FILES +=	busybox busybox_unstripped* System.map .kernelrelease \
+CLEAN_DIRS  += $(MODVERDIR) _install 0_lib
+CLEAN_FILES +=	busybox busybox_unstripped* busybox.links \
+                System.map .kernelrelease \
                 .tmp_kallsyms* .tmp_version .tmp_busybox* .tmp_System.map
 
 # Directories & files removed with 'make mrproper'
@@ -944,7 +946,8 @@ MRPROPER_FILES += .config .config.old include/asm .version .old_version \
 		  include/usage_compressed.h \
 		  include/applet_tables.h \
 		  applets/usage \
-		  .kernelrelease Module.symvers tags TAGS cscope*
+		  .kernelrelease Module.symvers tags TAGS cscope* \
+		  busybox_old
 
 # clean - Delete most, but leave enough to build external modules
 #
@@ -960,9 +963,15 @@ clean: archclean $(clean-dirs)
 	$(call cmd,rmdirs)
 	$(call cmd,rmfiles)
 	@find . $(RCS_FIND_IGNORE) \
-	 	\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
+		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \) \
 		-type f -print | xargs rm -f
+
+PHONY += doc-clean
+doc-clean: rm-files := docs/busybox.pod \
+		  docs/BusyBox.html docs/BusyBox.1 docs/BusyBox.txt
+doc-clean:
+	$(call cmd,rmfiles)
 
 # mrproper - Delete all generated files, including .config
 #
@@ -984,9 +993,9 @@ PHONY += distclean
 
 distclean: mrproper
 	@find $(srctree) $(RCS_FIND_IGNORE) \
-	 	\( -name '*.orig' -o -name '*.rej' -o -name '*~' \
+		\( -name '*.orig' -o -name '*.rej' -o -name '*~' \
 		-o -name '*.bak' -o -name '#*#' -o -name '.*.orig' \
-	 	-o -name '.*.rej' -o -name '*.tmp' -o -size 0 \
+		-o -name '.*.rej' -o -name '*.tmp' -o -size 0 \
 		-o -name '*%' -o -name '.*.cmd' -o -name 'core' \) \
 		-type f -print | xargs rm -f
 
@@ -1090,7 +1099,7 @@ clean:	rm-dirs := $(MODVERDIR)
 clean: $(clean-dirs)
 	$(call cmd,rmdirs)
 	@find $(KBUILD_EXTMOD) $(RCS_FIND_IGNORE) \
-	 	\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
+		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \) \
 		-type f -print | xargs rm -f
 

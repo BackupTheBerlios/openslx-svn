@@ -4,7 +4,7 @@
  * dmesg - display/control kernel ring buffer.
  *
  * Copyright 2006 Rob Landley <rob@landley.net>
- * Copyright 2006 Bernhard Fischer <rep.nop@aon.at>
+ * Copyright 2006 Bernhard Reutner-Fischer <rep.nop@aon.at>
  *
  * Licensed under GPLv2, see file LICENSE in this tarball for details.
  */
@@ -13,7 +13,7 @@
 #include "libbb.h"
 
 int dmesg_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
-int dmesg_main(int argc ATTRIBUTE_UNUSED, char **argv)
+int dmesg_main(int argc UNUSED_PARAM, char **argv)
 {
 	int len;
 	char *buf;

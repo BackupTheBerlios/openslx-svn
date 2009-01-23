@@ -176,7 +176,7 @@ static void mke2fs_error_msg_and_die(int retval, const char *fmt, ...)
 
 	if (retval) {
 		va_start(ap, fmt);
-		fprintf(stderr,"\nCould not ");
+		fprintf(stderr, "\nCould not ");
 		vfprintf(stderr, fmt, ap);
 		fprintf(stderr, "\n");
 		va_end(ap);
@@ -209,7 +209,7 @@ static void mke2fs_warning_msg(int retval, char *fmt, ... )
 
 	if (retval) {
 		va_start(ap, fmt);
-		fprintf(stderr,"\nWarning: ");
+		fprintf(stderr, "\nWarning: ");
 		vfprintf(stderr, fmt, ap);
 		fprintf(stderr, "\n");
 		va_end(ap);
@@ -225,7 +225,7 @@ static void read_bb_file(ext2_filsys fs, badblocks_list *bb_list,
 	FILE		*f;
 	errcode_t	retval;
 
-	f = xfopen(bad_blocks_file, "r");
+	f = xfopen_for_read(bad_blocks_file);
 	retval = ext2fs_read_bb_FILE(fs, f, bb_list, invalid_block);
 	fclose (f);
 	mke2fs_error_msg_and_die(retval, "read bad blocks from list");
@@ -676,7 +676,7 @@ static int set_os(struct ext2_super_block *sb, char *os)
 		return 1;
 	}
 
-	if((sb->s_creator_os = e2p_string2os(os)) >= 0) {
+	if ((sb->s_creator_os = e2p_string2os(os)) >= 0) {
 		return 1;
 	} else if (!strcasecmp("GNU", os)) {
 		sb->s_creator_os = EXT2_OS_HURD;
@@ -1187,7 +1187,7 @@ int mke2fs_main (int argc, char **argv)
 
 	if (ENABLE_FEATURE_CLEAN_UP)
 		atexit(mke2fs_clean_up);
-	if(!PRS(argc, argv))
+	if (!PRS(argc, argv))
 		return 0;
 
 #ifdef CONFIG_TESTIO_DEBUG
