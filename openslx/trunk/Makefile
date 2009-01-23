@@ -244,7 +244,17 @@ supported."; \
 	@   # set default db-type:
 	@DEFAULT_DB_TYPE=$$(cat DEFAULT-DB-TYPE); \
 	rm DEFAULT-DB-TYPE; \
-	echo -n '  '; slxsettings set db-type="$${DEFAULT_DB_TYPE}";
+	echo -n '  '; slxsettings set db-type="$${DEFAULT_DB_TYPE}"; \
+
+	@   # create required Perl headers that may be missing
+	@if ! test -e ${SLX_BASE_PATH}/lib/ph/asm; then \
+	  echo "Converting kernel C-headers into Perl-headers ..."; \
+	  mkdir -p ${SLX_BASE_PATH}/lib/ph; \
+	  pushd /usr/include >/dev/null; \
+	  h2ph -rQ -d ${SLX_BASE_PATH}/lib/ph asm-x86; \
+	  popd >/dev/null; \
+	  mv ${SLX_BASE_PATH}/lib/ph/asm-x86 ${SLX_BASE_PATH}/lib/ph/asm; \
+	fi;
 
 vmware_install:
 	@# we should read the config file here or better have a separate

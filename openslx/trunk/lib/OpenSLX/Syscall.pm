@@ -30,6 +30,8 @@ before trying to invoke the respective syscall.
 
 =cut
 
+use File::Path;
+
 use OpenSLX::Basics;
 
 =head1 PUBLIC FUNCTIONS
@@ -58,14 +60,19 @@ sub _loadPerlHeader
 {
     my @phFiles = @_;
 
+    my $phLibDir = "$openslxConfig{'base-path'}/lib/ph";
+    mkpath($phLibDir) unless -e $phLibDir;
+    
+    local @INC = @INC;
+    push @INC, $phLibDir;
+
     for my $phFile (@phFiles) {
         if (!eval { require $phFile }) {
             # perl-header has not been provided by host-OS, so we create it
             # manually from C-header (via h2ph):
             (my $hFile = $phFile) =~ s{\.ph$}{.h};
             if (-e "/usr/include/$hFile") {
-                my $libDir = "$openslxConfig{'base-path'}/lib";
-                slxsystem("cd /usr/include && h2ph -d $libDir $hFile") == 0
+                slxsystem("cd /usr/include && h2ph -d $phLibDir $hFile") == 0
                     or die _tr('unable to create %s! (%s)', $phFile, $!);
             }
         }
