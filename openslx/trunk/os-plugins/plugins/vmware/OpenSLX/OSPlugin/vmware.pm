@@ -132,8 +132,9 @@ sub getAttrInfo
             End-of-Here
             # only allow the supported once...
             # TODO: modify if we know which of them work
-            content_regex => qr{^(local|vmws(5\.5|6.0)|vmpl(1\.0|2\.0))$},
-            content_descr => 'Allowed values: local, vmws5.5, vmws6.0, vmpl1.0 ...',
+            #content_regex => qr{^(local|vmws(5\.5|6.0)|vmpl(1\.0|2\.0))$},
+            content_regex => qr{^(local|vmpl2\.0)$},
+            content_descr => 'Allowed values: local, vmpl2.0',
             default => 'local',
         },
         # ** set of attributes for the installation of VM Workstation/Player
@@ -311,6 +312,7 @@ sub _localInstallation
 {
     my $self     = shift;
 
+    my $kind   = "local";
     my $vmpath = "/usr/lib/vmware";
     my $vmbin  = "/usr/bin";
     my $vmversion = "";
@@ -318,7 +320,7 @@ sub _localInstallation
 
     my $pluginFilesPath 
         = "$self->{'openslxPath'}/lib/plugins/$self->{'name'}/files";
-    my $installationPath = "$self->{'pluginRepositoryPath'}/local";
+    my $installationPath = "$self->{'pluginRepositoryPath'}/$kind";
 
     mkpath($installationPath);
 
@@ -348,7 +350,7 @@ sub _localInstallation
         # write informations about local installed vmplayer in file
         # TODO: perhaps we don't need this file.
         # TODO2: write vmbuildversion and stuff in runvmware in stage1
-        open FILE, ">$self->{'pluginRepositoryPath'}/local/versioninfo.txt"
+        open FILE, ">$self->{'pluginRepositoryPath'}/$kind/versioninfo.txt"
             or die $!;
         print FILE "vmversion=\"$vmversion\"\n";
         print FILE "vmbuildversion=\"$vmbuildversion\"\n";
@@ -373,15 +375,15 @@ sub _localInstallation
 
         ##
         ## Create runlevel script
-        my $runlevelScript = "$self->{'pluginRepositoryPath'}/local/vmware.init";
+        my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
         $self->_writeRunlevelScript($vmbin, $runlevelScript);
 
         ##
         ## Create wrapperscripts
         if (-e "/usr/bin/vmware") {
-            $self->_writeWrapperScript("$vmpath", "local", "ws")
+            $self->_writeWrapperScript("$vmpath", "$kind", "ws")
         } else {
-            $self->_writeWrapperScript("$vmpath", "local", "player")
+            $self->_writeWrapperScript("$vmpath", "$kind", "player")
         }
         
         ##
@@ -391,11 +393,11 @@ sub _localInstallation
         # care about plugin remove. We only need this part if vmplayer
         # or ws is installed on the local system
         rename("/usr/bin/vmplayer", "/usr/bin/vmplayer.slx-bak");
-        copyFile("$self->{'pluginRepositoryPath'}/local/vmplayer", "/usr/bin");
+        copyFile("$self->{'pluginRepositoryPath'}/$kind/vmplayer", "/usr/bin");
         # the same with vmware, if ws is installed
         if (-e "/usr/bin/vmware") {
             rename("/usr/bin/vmware", "/usr/bin/vmware.slx-bak");
-            copyFile("$self->{'pluginRepositoryPath'}/local/vmware", "/usr/bin");
+            copyFile("$self->{'pluginRepositoryPath'}/$kind/vmware", "/usr/bin");
          }
             
     }
@@ -409,15 +411,14 @@ sub _vmpl2Installation {
     my $kind   = "vmpl2.0";
     my $vmpath = "/opt/openslx/plugin-repo/vmware/$kind/root/lib/vmware";
     my $vmbin  = "/opt/openslx/plugin-repo/vmware/$kind/root/bin";
-    my $vmversion = "TODO_we_know_it";
-    my $vmbuildversion = "TODO_we_know_it";
+    my $vmversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage?";
+    my $vmbuildversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage1";
 
     my $pluginFilesPath 
         = "$self->{'openslxPath'}/lib/plugins/$self->{'name'}/files";
     my $installationPath = "$self->{'pluginRepositoryPath'}/$kind";
 
     mkpath($installationPath);
-
 
     ##
     ## Copy needed files
@@ -434,8 +435,6 @@ sub _vmpl2Installation {
     ## Download and install the binarys
     system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-$kind.sh");
 
-
-
     ##
     ## Create runlevel script
     my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
@@ -443,7 +442,6 @@ sub _vmpl2Installation {
 
     ##
     ## Create wrapperscripts
-    #TODO: change local
     $self->_writeWrapperScript("$vmpath", "$kind", "player")
         
 }
