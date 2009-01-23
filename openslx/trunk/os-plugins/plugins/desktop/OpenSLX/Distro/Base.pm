@@ -203,6 +203,8 @@ sub GDMConfigHashForWorkstation
             MinimalUID => '500',
             SecureShutdown => 'false',
             ShowDomain => 'false',
+            DefaultWelcome => 'false',
+            Welcome => 'SLX Workstation: \%n',
         },
         'gui' => {
         },
