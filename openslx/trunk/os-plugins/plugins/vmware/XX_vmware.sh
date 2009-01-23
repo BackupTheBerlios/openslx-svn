@@ -25,18 +25,12 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
   . /initramfs/plugin-conf/vmware.conf
 
   # Test if this plugin is activated...
-  # TODO: err... I think we could save this test due of a changed
-  #     plugin system
   if [ $vmware_active -ne 0 ]; then
 
     [ $DEBUGLEVEL -gt 0 ] && echo "executing the 'vmware' os-plugin ...";
-    
     # Load general configuration
     . /initramfs/machine-setup
-    # we need to load the function file for:
-    # uri_token, testmkd
     . /etc/functions
-    # D_INITDIR is defined in the following file:
     . /etc/sysconfig/config
 
     # prepare all needed vmware configuration files

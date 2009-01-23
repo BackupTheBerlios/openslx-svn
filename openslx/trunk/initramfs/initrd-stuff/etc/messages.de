@@ -163,7 +163,6 @@ df_errcron="  Das cron Start-Skript $df_errserv"
 df_errsysl="  Das syslog Start-Skript $df_errserv"
 df_errsshd="  Das sshd Start-Skript $df_errserv"
 df_erryp="  Der NIS-Klient $df_errserv"
-df_errvmw="  Die VMware X86 Emulation $df_errserv"
 df_erramnt="  Der Automounter $df_errserv"
 df_errnsc="  Der Name Service Zwischenspeicherungs Daemon $df_errserv\n  \
 Dieser Dienst koennte nuetzlich sein, um Daten von einem ldap Benutzer-\

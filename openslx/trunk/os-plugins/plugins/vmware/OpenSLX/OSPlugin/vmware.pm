@@ -125,28 +125,40 @@ sub getAttrInfo
             default => '192.168.102.1/24',
         },
         # is to be discussed how to handle this - there is no single set of
-        # vmware files!!
+        # vmware files!! -> to be moved to vmwarebinaries plugin!?
         # attribute 'binaries' defines whether or not VMware binaries shall
         # be provided (by downloading them).
-        'vmware::binaries' => {
-            applies_to_vendor_os => 1,
-            applies_to_systems => 0,
-            applies_to_clients => 0,
+        #'vmware::binaries' => {
+        #    applies_to_vendor_os => 1,
+        #    applies_to_systems => 0,
+        #    applies_to_clients => 0,
+        #    description => unshiftHereDoc(<<'            End-of-Here'),
+        #        Shall VMware binaries be downloaded and installed?
+        #    End-of-Here
+        #    content_regex => qr{^(0|1)$},
+        #    content_descr => 'Allowed values: 0 or 1',
+        #    default => '0',
+        #},
+        # attribute 'kind' defines which set of VMware binaries should be 
+        # activated ('local' provided with the main installation set).
+        'vmware::kind' => {
+            applies_to_vendor_os => 0,
+            applies_to_systems => 1,
+            applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                Shall VMware binaries be downloaded and installed?
+                Which set of VMware binaries to use?
             End-of-Here
             content_regex => qr{^(0|1)$},
-            content_descr => 'Allowed values: 0 or 1',
-            default => '1',
+            content_descr => 'Allowed values: local, path to vmware installation',
+            default => 'local',
         },
-
     };
 }
 
 sub installationPhase
 {
-    my $self                 = shift;
-    
+    my $self                      = shift;
+
     $self->{pluginRepositoryPath} = shift;
     $self->{pluginTempPath}       = shift;
     $self->{openslxPath}          = shift;
@@ -160,6 +172,24 @@ sub installationPhase
     foreach my $file (@files) {
         copyFile("$pluginFilesPath/$file", $self->{'pluginRepositoryPath'});
     }
+    # generate links for the user executables vmware and player and a 
+    # simplified version of the start script
+    @files = qw( vmware vmplayer );
+    foreach my $file (@files) {
+        rename ("/usr/bin/$file", "/usr/bin/$file.slx-bak");
+        linkFile("/var/X11R6/bin/$file", "/usr/bin/$file");
+        my $script = unshiftHereDoc(<<"        End-of-Here");
+            #!/bin/sh
+            # written by OpenSLX-plugin 'vmware' in Stage1
+            PREFIX=/usr/lib/vmware # depends on the vmware location
+            exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \
+                 "\$PREFIX"'/lib' \
+                 "\$PREFIX"'/bin/vmware' \
+                 "\$PREFIX"'/libconf' "$@"
+        End-of-Here
+        spitFile("$self->{'pluginRepositoryPath'}/$file", $script);
+    }
+
 }
 
 sub removalPhase
@@ -169,7 +199,11 @@ sub removalPhase
     my $pluginTempPath       = shift;
     
     rmtree ( [ $pluginRepositoryPath ] );
-    
+    # restore old start scripts
+    my @files = qw( vmware vmplayer );
+    foreach my $file (@files) {
+        rename ("/usr/bin/$file.slx-bak", "/usr/bin/$file");
+    }
     return;
 }
 
