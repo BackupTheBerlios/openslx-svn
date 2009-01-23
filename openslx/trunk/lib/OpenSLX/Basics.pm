@@ -35,6 +35,7 @@ $VERSION = 1.01;
 
 our (%openslxConfig, %cmdlineConfig, %openslxPath);
 
+use sigtrap qw( die normal-signals error-signals );
 use subs qw(die warn);
 
 use open ':utf8';
@@ -42,7 +43,7 @@ use open ':utf8';
 ################################################################################
 ### Module implementation
 ################################################################################
-require Carp;        # do not import anything as we are going to overload carp
+require Carp;       # do not import anything as we are going to overload carp
                     # and croak!
 use Carp::Heavy;    # use it here to have it loaded immediately, not at
                     # the time when carp() is being invoked (which might
@@ -166,13 +167,15 @@ sub openslxInit
     GetOptions(%openslxCmdlineArgs);
 
     # try to read and evaluate config files:
-    my $configPath = $cmdlineConfig{'config-path'}
-      || $openslxConfig{'config-path'};
+    my $configPath 
+        = $cmdlineConfig{'config-path'} || $openslxConfig{'config-path'};
     my $sharePath = "$openslxConfig{'base-path'}/share";
     my $verboseLevel = $cmdlineConfig{'verbose-level'} || 0;
-    foreach my $f ("$sharePath/settings.default", "$configPath/settings",
-        "$ENV{HOME}/.openslx/settings")
-    {
+    foreach my $f (
+        "$sharePath/settings.default", 
+        "$configPath/settings",
+        "$ENV{HOME}/.openslx/settings"
+    ) {
         next unless -e $f;
         if ($verboseLevel >= 2) {
             vlog(0, "reading config-file $f...");
@@ -207,12 +210,12 @@ sub openslxInit
 
     if (defined $openslxConfig{'logfile'}) {
         open($openslxLog, '>>', $openslxConfig{'logfile'})
-          or croak(
-            _tr(
-                "unable to append to logfile '%s'! (%s)",    
-                $openslxConfig{'logfile'}, $!
-            )
-          );
+            or croak(
+                _tr(
+                    "unable to append to logfile '%s'! (%s)",    
+                    $openslxConfig{'logfile'}, $!
+                )
+            );
     }
     if ($openslxConfig{'verbose-level'} >= 2) {
         foreach my $key (sort keys %openslxConfig) {
@@ -631,6 +634,12 @@ sub instantiateClass
         }
     }
     return $class->new;
+}
+
+# ------------------------------------------------------------------------------
+END 
+{
+    invokeCleanupFunctions() if %cleanupFunctions;
 }
 
 1;
