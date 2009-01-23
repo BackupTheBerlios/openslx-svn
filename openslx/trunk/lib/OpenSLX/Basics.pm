@@ -805,11 +805,11 @@ sub _doThrowOrWarn
     
     # use '°°°' for warnings and '***' for errors
     if ($type eq 'carp' || $type eq 'warn' || $type eq 'cluck') {
-        $msg =~ s[^!   ][]igms;
+        $msg =~ s[^(!  |\*\*\*) ][]igms;
         $msg =~ s[^][!   ]igms;
     }
     else {
-        $msg =~ s[^\*\*\* ][]igms;
+        $msg =~ s[^(!  |\*\*\*) ][]igms;
         $msg =~ s[^][*** ]igms;
     }
 
