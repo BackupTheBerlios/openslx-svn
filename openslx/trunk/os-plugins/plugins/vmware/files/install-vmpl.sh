@@ -193,7 +193,19 @@ else
   # temp/vmware-player/files/index.theme ... hopefully not needed,
   # temp/vmware-player/share => /usr/share ... icons 
   # temp/vmware-player/etc/... => /etc
-  # temp/vmware-player/build => unknown... not found on system
+  # temp/vmware-player/build => unknown...  not found...
+
+  
+  # etc/vmware/
+  #   bootstrap => Path definitions. confusing due of version 1.0
+  #                 which looks like the instller version
+  #                 perhaps just for installer... hopefully
+  #   config => path definition, networking, different configurations
+  #   database => sqlite3 db. includes all files mapped to component
+  #               hopefully just used by installer and some path config
+  #   networking => networking config... has options which are in
+  #                 dhcpd.conf, hopefully not needed
+  #   vmnet(1|8) => we know it from v1/v2
 
 
 #  echo "   * fixing file permission"
