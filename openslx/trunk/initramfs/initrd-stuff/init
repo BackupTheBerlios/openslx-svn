@@ -456,7 +456,6 @@ if [ -n "${bldmod}" ] ; then
         sed "s,rootfs=,,;s,\",,g") "
       [ "$rootfs" = " " ] && \
         rootfs="$(cat /proc/cmdline|sed "s,.*rootfs=\",,;s,\".*,,") "
-      usleep 5000
       i=0
       # assume no more than 16 different dnbd2 servers (default 4)
       while [ "x$bldhost" != "x" -a $i -lt 16 ]; do
@@ -468,15 +467,16 @@ if [ -n "${bldmod}" ] ; then
         bldhost=$(uri_token $bldsp server)
         bldport=$(uri_token $bldsp port)
       done
-      # the deadline, cfq scheduler seem not a good idea here
-      echo noop > /sys/block/vnbd0/queue/scheduler
+      # the cfq scheduler seem not a good idea here
+      echo deadline > /sys/block/vnbd0/queue/scheduler
       # needed for some reason to settle initialization
+      sleep 1
       i=0
       while [ $(cat /sys/block/vnbd0/config/running) != 1 ] ; do
+        usleep 100000
         echo 1 > /sys/block/vnbd0/config/running
-        usleep 5000
         i=$(($i + 1))
-        if [ $i -ge 1000 ] ; then
+        if [ $i -ge 50 ] ; then
           error "$init_dnbd2s"; break
         fi
       done
