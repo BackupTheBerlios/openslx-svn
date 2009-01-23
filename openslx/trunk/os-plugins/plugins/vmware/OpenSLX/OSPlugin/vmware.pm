@@ -146,10 +146,11 @@ sub getAttrInfo
             applies_to_systems => 1,
             applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                Which set of VMware binaries to use?
+                Which set of VMware binaries to use: installed (local) or provided by an
+                other plugin (e.g. Workstation 5.5: vmws5.5, Player 2.0: vmpl2.0, ...)
             End-of-Here
             content_regex => qr{^(0|1)$},
-            content_descr => 'Allowed values: local, path to vmware installation',
+            content_descr => 'Allowed values: local, vmws5.5, vmws6.0, vmpl1.0 ...',
             default => 'local',
         },
     };
@@ -164,27 +165,38 @@ sub installationPhase
     $self->{openslxPath}          = shift;
     $self->{attrs}                = shift;
 
-    # location of the vmware stuff
-    # if $vmware::kind 'local'
-    my $vmpath = "/usr/lib/vmware";
-    my $vmbin  = "/usr/bin";
-    # if $vmware::kind '/opt/openslx/plugin...'
-    #my $vmpath = $vmware::kind
-    #my $vmbin  = "$vmpath/bin";
+    my $vmpath = "";
+    my $vmbin  = "";
 
     # get path of files we need to install
     my $pluginFilesPath 
         = "$self->{'openslxPath'}/lib/plugins/$self->{'name'}/files";
 
-    # copy all needed files
+    # copy all needed files (TODO: nvram should depend on the "kind" of vmware ...)
     my @files = qw( vmware-init nvram.5.0 runvmware-v2 );
     foreach my $file (@files) {
         copyFile("$pluginFilesPath/$file", $self->{'pluginRepositoryPath'});
     }
-    # generate the runlevel script (depends on distro/version and vmware 
-    # location)
-    my $runlevelScriptPath = $self->{distro}->getRunlevelScriptPath();
-    $self->_writeRunlevelScript($vmbin, $runlevelScriptPath);
+    # generate the runlevel scripts for all existing vmware installations,
+    # variants because we do not know which on is selected on client level 
+    # (code depends on distro/version and vmware location)
+    # for local ... other vm-installations (TODO: generate list)
+    @files = qw( local );
+    foreach my $file (@files) {
+        #  location of the vmware stuff, "local" for directly installed
+        # package (more sophisticated assignment might be needed ...)
+        if ( $file eq "local" ) {
+            my $vmpath = "/usr/lib/vmware";
+            my $vmbin  = "/usr/bin";
+        }
+        # if provided via another plugin (TODO: pathname not completely clear ...)
+        else {
+            my $vmpath = "/opt/openslx/plugin-repo/vmwareXXX/$file";
+            my $vmbin  = "$vmpath/bin";
+        }
+        my $runlevelScript = "$self->{'pluginRepositoryPath'}/vmware.$file";
+        $self->_writeRunlevelScript($vmbin, $runlevelScript);
+    }
 
     # generate links for the user executables vmware and player and a 
     # simplified version of the start script
@@ -235,8 +247,9 @@ sub _writeRunlevelScript
     my $script = unshiftHereDoc(<<"    End-of-Here");
         #!/bin/sh
         #
-        # parts taken from vmware start script:
-        # Copyright 1998-2007 VMware, Inc.  All rights reserved.
+        # generated via stage1 'vmware' plugin install
+        # inspiration taken from vmware start script:
+        #   Copyright 1998-2007 VMware, Inc.  All rights reserved.
         #
         # This script manages the services needed to run VMware software
         

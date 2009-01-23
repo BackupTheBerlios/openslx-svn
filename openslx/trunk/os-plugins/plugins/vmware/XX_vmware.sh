@@ -31,6 +31,7 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     # Load general configuration
     . /initramfs/machine-setup
     . /etc/functions
+    . /etc/distro-functions
     . /etc/sysconfig/config
 
     # prepare all needed vmware configuration files
@@ -57,50 +58,50 @@ stage3 setup" > /mnt/etc/vmware/slxvmconfig
       local dnslist=$(echo "$domain_name_servers"|sed "s/ /,/g")
       echo -e "# /etc/vmware/dhcpd.conf written in stage3 ...\nallow \
 unknown-clients;\ndefault-lease-time 1800;\nmax-lease-time 7200;\n\
-option domain-name-servers $dnslist;\noption domain-name \"vm.local\";" \
+option domain-name-servers $dnslist;\noption domain-name \"vm.local\";\n" \
         > /mnt/etc/vmware/dhcpd.conf
     fi
     # variable might contain ",NAT" which is to be taken off
     if [ -n "$vmware_vmnet1" ] ; then
-      local vmnt=${vmware_vmnet1%,*}
-      local vmnet1=${vmware_vmnet%,*}
+      local vmnet1=${vmware_vmnet1%,*}
+      local vmnat=${vmware_vmnet1#$vmnet1*}
       local vmip=${vmnet1%/*}
       local vmpx=${vmnet1#*/}
-      echo "$vmnt, $vmnet1, $vmip, $vmpx"
-      echo -e "vmnet1=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
+      echo -e "vmnet1=$vmnet1" >> /mnt/etc/vmware/slxvmconfig
       [ -n "$vmnt" ] && echo "vmnet1nat=true" >> /mnt/etc/vmware/slxvmconfig
-      echo -e "subnet $(ipcalc -n $vmip/$vmpx|sed s/.*=//) netmask \
-$(ipcalc -n $vmip/$vmpx|sed s/.*=//) {\n\trange $rstart $rend;\n\
-\toption broadcast $(ipcalc -b $vmip/$vmpx|sed s/.*=//);\n\
-\toption routers $vmip;\n}" > /mnt/etc/vmware/dhcpd.conf
+      echo -e "# definition for virtual vmnet1 interface\n\
+subnet $(ipcalc -n $vmnet1|sed s/.*=//) netmask \
+$(ipcalc -m $vmnet1|sed s/.*=//) {\n\trange $rstart $rend;\n\
+\toption broadcast $(ipcalc -b $vmnet1|sed s/.*=//);\n\
+\toption routers $vmip;\n}" >> /mnt/etc/vmware/dhcpd.conf
     fi
-    # vmware nat interface
+    # vmware nat interface configuration
     if [ -n "$vmware_vmnet8" ] ; then
       local vmip=${vmware_vmnet8%/*}
       local vmpx=${vmware_vmnet8#*/}
-      echo "vmnet8=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
-      echo "\nsubnet $(ipcalc -n $vmip/$vmpx|sed s/.*=//) netmask \
+      echo -e "vmnet8=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
+      echo -e "\n# definition for virtual vmnet8 interface\n\
+subnet $(ipcalc -m $vmip/$vmpx|sed s/.*=//) netmask \
 $(ipcalc -n $vmip/$vmpx|sed s/.*=//) {\n\trange $rstart $rend;\n\
 \toption broadcast $(ipcalc -b $vmip/$vmpx|sed s/.*=//);\n\
-\toption routers $vmip;\n}" > /mnt/etc/vmware/dhcpd.conf
+\toption routers $vmip;\n}" >> /mnt/etc/vmware/dhcpd.conf
       # generate the NAT configuration file
-      echo "# Linux NAT configuration file\n[host]\nip = $vmip/$vmpx\n\
+      echo -e "# Linux NAT configuration file\n[host]\nip = $vmip/$vmpx\n\
 device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
 [incomingudp]" > /mnt/etc/vmware/nat.conf
       echo "00:50:56:F1:30:50" > /mnt/etc/vmware/vmnet-natd-8.mac
     fi
-    # copy the runlevelscript to the proper place
-    cp /mnt/opt/openslx/plugin-repo/vmware/vmware-init \
-      /mnt/etc/${D_INITDIR}/vmware
+    # copy the runlevelscript to the proper place and activate it
+    cp /mnt/opt/openslx/plugin-repo/vmware/vmware.${vmware_kind} \
+      /mnt/etc/${D_INITDIR}/vmware || echo "this should not happen ..."
     rllinker "vmware" 20 2
 
-
-    echo "  * vmware part 1"
     #############################################################################
     # vmware stuff first part: two scenarios
     # * VM images in /usr/share/vmware - then simply link
     # * VM images via additional mount (mount source NFS, NBD, ...)
 
+    # TODO: shouldn't that handled by the vmchooser plugin!?!
     # map slxgrp to pool, so it's better to understand
     pool=${slxgrp}
     # if we dont have slxgrp defined
@@ -137,20 +138,18 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
       esac
     fi
     
-    echo "  * vmware part 2"
-    
     #############################################################################
     # vmware stuff second part: setting up the environment
     
     # create needed directories and files
     for i in /var/run/vmware /etc/vmware/loopimg \
-      /etc/vmware/fd-loop /var/X11R6/bin /etc/X11/sessions; do
+             /etc/vmware/fd-loop /var/X11R6/bin /etc/X11/sessions; do
       testmkd /mnt/$i
     done
 
     # create needed devices (not created automatically via module load)
     for i in "/dev/vmnet0 c 119 0" "/dev/vmnet1 c 119 1" \
-      "/dev/vmnet8 c 119 8" "/dev/vmmon c 10 165"; do
+             "/dev/vmnet8 c 119 8" "/dev/vmmon c 10 165"; do
       mknod $i
     done
 
