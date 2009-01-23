@@ -30,6 +30,9 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     # Load general configuration
     . /initramfs/machine-setup
 
+    testmkd /mnt/tmp/vmware 1777
+    testmkd /dev/shm/vmware 1777
+
     # write the /etc/vmware/slxvmconfig file
     # check for the several variables and write the several files:
     #  dhcpd.conf for vmnet* interfaces
