@@ -239,7 +239,7 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
       size="$(grep -m 1 " Size: " /etc/hwinfo.display | \
         sed 's|.*ize:\ ||;s|\ mm||;s|x|\ |')"
       modes=$(grep -i "Resolution: .*@" /etc/hwinfo.display | \
-        awk '{print $2}'| awk -F '@' '{print "\"" $1 "\""}'| sort -unr| \
+        awk '{print $2}'| sort -unr| awk -F '@' '{print "\"" $1 "\""}'|\
         tr "\n" " ")
       [ -n "$vert" -a -n "$horz" ] && \
         sed -e "s|# Horizsync.*|  Horizsync    $horz|;\
