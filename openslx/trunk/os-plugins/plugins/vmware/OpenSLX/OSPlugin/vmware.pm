@@ -261,7 +261,7 @@ sub checkStage3AttrValues
     
     
     print "DEBUG $vm_kind\n";
-    my $vmimg = $stage3Attrs->{'vmware::imgsrc'} || '';
+    my $vmimg = $stage3Attrs->{'vmware::imagesrc'} || '';
     print "DEBUG $vmimg\n";
 
     if ($vm_kind eq 'local' && ! -x "/usr/lib/vmware/bin/vmware") {
