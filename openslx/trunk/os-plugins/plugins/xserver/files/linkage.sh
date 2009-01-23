@@ -44,6 +44,11 @@ linkMesa() {
     ln -sf ${LINK_PATH}$(echo $file| sed -e 's,/usr/lib,,g') $file # link to writable dir
   elif [ -f "${file}" ]; then
     # this is a real file
+    #ATTENTION: in NVIDIA-OpenGL implementation libGL.so.1.2 is a link.
+    #       This is a problem here, as we expect libGL.so.1.2 moved to
+    #       libGL_mesa.so.1.2  -> we have to filter this in
+    #       XX_xserver.sh
+    #       ATI OpenGL has that file -> no problem there
     mv ${file} $(echo $file|sed -e 's,.so,_MESA.so,g') 2&>1 >/dev/null # rename file
   fi
 }

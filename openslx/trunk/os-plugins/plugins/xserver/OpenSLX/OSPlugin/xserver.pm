@@ -228,6 +228,8 @@ sub installationPhase
         copyFile("$pluginFilesPath/ubuntu-gfx-install.sh", "$installationPath");
         copyFile("$pluginFilesPath/suse-gfx-install.sh", "$installationPath");
         copyFile("$pluginFilesPath/linkage.sh", "$installationPath");
+        # be on the safe side
+        system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh clean");
     }
     if ($attrs->{'xserver::ati'} == 1) {
         copyFile("$pluginFilesPath/ati-install.sh", "$installationPath");

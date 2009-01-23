@@ -25,7 +25,10 @@ if [ "$1" = "nvidia" ]; then
   #TODO: licence information... even suse requires an accept
   # TODO: let it automatical find the newest file... see ati section
   #       only problem should be the kernel package
-  if [ "10.2" = "$(cat /etc/SuSE-release | tail -n1 | cut -d' ' -f3)" ]; then
+
+  # TODO: the following check doesn't work - why?
+  # this is wasted time for suse-11.0 users 
+  if [ "10.2" = "`cat /etc/SuSE-release | tail -n1 | cut -d' ' -f3`" ]; then
     echo "  * Downloading nvidia rpm packages... this could take some time..."
     wget -q -c \
       ftp://download.nvidia.com/opensuse/10.2/i586/nvidia-gfxG01-kmp-bigsmp-173.14.12_2.6.18.8_0.10-0.1.i586.rpm \
@@ -48,7 +51,8 @@ if [ "$1" = "nvidia" ]; then
       find lib/ -name "*.ko" -exec mv {} ../modules \;
   fi
 
-  if [ "11.0" = "$(cat /etc/SuSE-release | tail -n1 | cut -d' ' -f3)" ]; then
+  if [ "11.0" = "`cat /etc/SuSE-release | tail -n1 | cut -d' ' -f3`" ]; then
+    echo "  * Downloading nvidia rpm packages... this could take some time..."
     # add repository for nvidia drivers
     zypper addrepo http://download.nvidia.com/opensuse/11.0/ NVIDIA
     # confirm authenticity of key (once) 
@@ -58,19 +62,20 @@ if [ "$1" = "nvidia" ]; then
     zypper -n -vv install -D x11-video-nvidiaG01 > logfile
 
     # take unique urls from logfile
-    URLS=$(cat logfile |  grep -P -o "http://.*? " | sort -u | xargs)
+    URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | sort -u | xargs)
     for RPM in $URLS; do
       RNAME=$(echo ${RPM} | sed -e 's,^.*/\(.*\)$,\1,g')
-      rm -rf ${RNAME}
-      wget ${RPM}
-      # TODO: the following is not working - I don't know why...
-      ${BUSYBOX} rpm2cpio ${RNAME} | ${BUSYBOX} cpio -idv 
+      rm -rf ${RNAME} 
+      wget ${RPM} 2>&1 /dev/null
+      # We use rpm2cpio from suse to extract
+      rpm2cpio ${RNAME} | ${BUSYBOX} cpio -id > /dev/null
     done
+    mv ./usr/X11R6/lib/* ./usr/lib/
     mv ./usr ..
     find lib/ -name "*.ko" -exec mv {} ../modules \;
-    #echo "DEBUG xserver SUSE-GFX-INSTALL.SH"
-    #/bin/bash
-    #echo "END DEBUG"
+#   echo "DEBUG xserver SUSE-GFX-INSTALL.SH NVIDIA"
+#   /bin/bash
+#   echo "END DEBUG"
   fi
 
   cd .. 
@@ -86,6 +91,35 @@ fi
 if [ "$1" = "ati" ]; then
   mkdir -p ati/modules ati/temp
   cd ati/temp
+
+  if [ "11.0" = "`cat /etc/SuSE-release | tail -n1 | cut -d' ' -f3`" ]; then
+    echo "  * Downloading ati rpm packages... this could take some time..."
+    # add repository for nvidia drivers
+    zypper addrepo http://www2.ati.com/suse/11.0/ ATI
+    # confirm authenticity of key (once) 
+    # -> After key is cached, this is obsolete
+    zypper se -r ATI x11-video-fglrxG01
+    # get URLs by virtually installing nvidia-OpenGL driver
+    zypper -n -vv install -D ati-fglrxG01-kmp-pae x11-video-fglrxG01 > logfile
+
+    # take unique urls from logfile
+    URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | grep fglrx | sort -u | xargs)
+    for RPM in $URLS; do
+      RNAME=$(echo ${RPM} | sed -e 's,^.*/\(.*\)$,\1,g')
+      rm -rf ${RNAME} 
+      wget ${RPM} 2>&1 /dev/null
+      # We use rpm2cpio from suse to extract
+      rpm2cpio ${RNAME} | ${BUSYBOX} cpio -id > /dev/null
+    done
+    mv ./usr/X11R6/lib/* ./usr/lib/
+    mv ./usr ..
+    mv ./etc ..
+    find lib/ -name "*.ko" -exec mv {} ../modules \;
+#    echo "DEBUG xserver SUSE-GFX-INSTALL.SH ATI"
+#    /bin/bash
+#    echo "END DEBUG"
+  else
+
 
   #TODO: licence information... even suse requires an accept
   BASEURL="http://www2.ati.com/suse/$(lsb_release -r|sed 's/^.*\t//')"
@@ -123,6 +157,7 @@ if [ "$1" = "ati" ]; then
   #${BUSYBOX} rpm2cpio nvidia-gfxG01-kmp-default-173.14.12_2.6.18.8_0.10-0.1.i586.rpm | ${BUSYBOX} cpio -idv
   #TODO: take care about the kernel issue. Find won't work with two equal kernelmodules in lib/...
   find lib/ -name "*.ko" -exec mv {} ../modules \;
+  fi
 
   cd ..
 

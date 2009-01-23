@@ -60,14 +60,25 @@ if [ -e /initramfs/plugin-conf/xserver.conf -a \
 ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
       xmodule="fglrx"
       PLUGIN_PATH="/mnt${PLUGIN_ROOTFS}"
-      LINK_PATH="/mnt/var/lib/X11R6/lib/"
+      LINK_PATH="/mnt/var/X11R6/lib/"
 
       # we need some database for driver initialization
       cp -r ${PLUGIN_PATH}/etc/* /mnt/etc/
-      # this is the most important thing
-      ln -s ${PLUGIN_PATH}/usr/lib/libGL.so.1.2 \
+      if [ ! -d "${LINK_PATH}" ]; then
+        # create linkage folder
+        mkdir -p ${LINK_PATH}
+      fi
+
+      chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/fglrx.ko
+
+      # we need some pci.ids for fglrx driver
+      cp -r "${PLUGIN_PATH}/etc/ati" /mnt/etc/
+
+      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 \
+      ${LINK_PATH}libGL.so
+      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 \
       ${LINK_PATH}libGL.so.1
-      ln -s ${PLUGIN_PATH}/usr/lib/libGL.so.1.2 \
+      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 \
       ${LINK_PATH}libGL.so.1.2
     fi
 
@@ -81,10 +92,27 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
 ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
       xmodule="nvidia"
       PLUGIN_PATH="/mnt${PLUGIN_ROOTFS}"
-      LINK_PATH="/mnt/var/lib/X11R6/lib/"
-      ln -s ${PLUGIN_PATH}/usr/lib/libGL.so.1.2 \
+      LINK_PATH="/mnt/var/X11R6/lib/"
+      if [ ! -d "${LINK_PATH}" ]; then
+        # create linkage folder
+        mkdir -p ${LINK_PATH}
+      fi
+
+      # insert kernel driver
+      chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/nvidia.ko
+
+      # create all relevant libGL links
+      # this is the most important thing
+      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGLcore.so.1 \
+      ${LINK_PATH}libGLcore.so.1
+
+      # create all relevant libGL links
+      # libGL.so.1 is a link to libGL.so.1.somebignumber
+      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 \
+      ${LINK_PATH}libGL.so
+      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 \
       ${LINK_PATH}libGL.so.1
-      ln -s ${PLUGIN_PATH}/usr/lib/libGL.so.1.2 \
+      ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 \
       ${LINK_PATH}libGL.so.1.2
     fi
     set +x
