@@ -750,7 +750,17 @@ sub _calloutToPlugins
     foreach my $pluginName (@{$self->{'plugins'}}) {
         my $plugin = OpenSLX::OSPlugin::Roster->getPlugin($pluginName);
         next if !$plugin;
-        $plugin->setupPluginInInitramfs($self->{attrs}, $self);
+
+        # create a hash only containing the attributes relating to the
+        # current plugin 
+        my $allAttrs = $self->{attrs};
+        my %pluginAttrs;
+        for my $attrName (grep { $_ =~ m{^${pluginName}::} } keys %$allAttrs) {
+            $pluginAttrs{$attrName} = $allAttrs->{$attrName};
+        }
+
+        # let plugin setup itself in the initramfs
+        $plugin->setupPluginInInitramfs(\%pluginAttrs, $self);
     }
     return;
 }
