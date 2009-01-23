@@ -8,8 +8,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Debian.pm
-#    - provides Debian-specific overrides of the OpenSLX OSExport API.
+# OSExport/Distro/Debian.pm
+#    - provides Debian-specific overrides of the OSExport Distro API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::Distro::Debian;
 

@@ -58,18 +58,15 @@ sub new
     $self->{'system-name'} =~ m{^([^\-]+)-([^:\-]+)}
         or die "unable to extract distro-info from $self->{'system-name'}!";
 
-    $self->{'distro-name'} = $1;
+    $self->{'distro-name'} = lc($1);
     $self->{'distro-ver'} = $2;
 
-    my %distroMap = (
-        'debian' => 'Debian',
-        'suse'   => 'SUSE',
-        'ubuntu' => 'Ubuntu',
-    );
-    my $distroModule = $distroMap{$self->{'distro-name'}} || 'Base';
-    $self->{distro} = instantiateClass(
-        "OpenSLX::MakeInitRamFS::Distro::$distroModule"
-    );
+    my $distroModule 
+        = 'OpenSLX::MakeInitRamFS::Distro::' . ucfirst($self->{'distro-name'});
+    if (!eval { $self->{distro} = instantiateClass($distroModule); }) {
+        $self->{distro} 
+            = instantiateClass('OpenSLX::MakeInitRamFS::Distro::Base');
+    }
     
     $self->{'lib-scanner'} 
         = OpenSLX::LibScanner->new({ 'root-path' => $self->{'root-path'} });

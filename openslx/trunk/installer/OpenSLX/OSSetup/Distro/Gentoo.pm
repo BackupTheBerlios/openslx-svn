@@ -8,8 +8,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# SUSE.pm
-#    - provides SUSE-specific overrides of the OpenSLX OSSetup API.
+# OSSetup/Distro/Gentoo.pm
+#    - provides Gentoo-specific overrides of the OSSetup Distro API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::Gentoo;
 

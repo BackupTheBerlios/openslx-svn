@@ -8,21 +8,34 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# SUSE.pm
-#    - provides SUSE-specific overrides of the OpenSLX Distro API for the desktop
-#     plugin.
+# syslog/OpenSLX/Distro/Suse.pm
+#    - provides SUSE-specific overrides of the Distro API for the syslog plugin.
 # -----------------------------------------------------------------------------
-package OpenSLX::Distro::suse;
+package syslog::OpenSLX::Distro::Suse;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::Distro::Base);
+use base qw(syslog::OpenSLX::Distro::Base);
 
 use OpenSLX::Basics;
 
 ################################################################################
 ### interface methods
 ################################################################################
+
+sub runlevelInfo
+{
+    my $self  = shift;
+    my $attrs = shift;
+    
+    my $rlInfo = $self->SUPER::runlevelInfo($attrs);
+
+    # SUSE uses a script named 'syslog', no matter if syslogd or syslog-ng 
+    # is installed
+    $rlInfo->{scriptName} = 'syslog';
+
+    return $rlInfo;
+}
 
 1;

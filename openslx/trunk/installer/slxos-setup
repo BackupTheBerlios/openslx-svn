@@ -160,7 +160,7 @@ if ($action =~ m[^import]i) {
     print join('', map {
                     "\t$_"
                      .(' 'x(20-length($_)))
-                     ."\t($supportedDistros{$_}->{support})\n"
+                     ."\t($supportedDistros{$_})\n"
                    }
                    sort keys %supportedDistros);
 } elsif ($action =~ m[^list-in]i) {

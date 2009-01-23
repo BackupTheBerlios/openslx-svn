@@ -8,8 +8,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Any.pm
-#    - provides generic overrides of the OpenSLX OSExport API.
+# OSExport/Distro/Any.pm
+#    - provides generic overrides of the OSExport Distro API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::Distro::Any;
 

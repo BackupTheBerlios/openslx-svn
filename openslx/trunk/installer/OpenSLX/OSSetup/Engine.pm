@@ -38,84 +38,32 @@ use OpenSLX::Utils;
 use vars qw(%supportedDistros);
 
 %supportedDistros = (
-    'debian-3.1' => {
-        module => 'Debian_3_1',      support => 'clone,install'
-    },
-    'debian-4.0' => {
-        module => 'Debian',          support => 'clone,install'
-    },
-    'debian-4.0_amd64' => {
-        module => 'Debian',          support => 'clone,install'
-    },
-    'fedora-6' => {
-        module => 'Fedora',          support => 'clone,install'
-    },
-    'fedora-6_x86_64' => {
-        module => 'Fedora',          support => 'clone,install'
-    },
-    'gentoo-2006.X' => {
-        module => 'Gentoo',          support => 'clone'
-    },
-    'gentoo-2007.X' => {
-        module => 'Gentoo',          support => 'clone'
-    },
-    'mandriva-2007.0' => {
-        module => 'Mandriva_2007_0', support => 'clone'
-    },
-    'suse-9.3' => {
-        module => 'SUSE',            support => 'clone'
-    },
-    'suse-10.0'    => {
-        module => 'SUSE',            support => 'clone'
-    },
-    'suse-10.0_x86_64' => {
-        module => 'SUSE',            support => 'clone'
-    },
-    'suse-10.1' => {
-        module => 'SUSE',            support => 'clone,install'
-    },
-    'suse-10.1_x86_64' => {
-        module => 'SUSE',            support => 'clone,install'
-    },
-    'suse-10.2' => {
-        module => 'SUSE',            support => 'clone,install'
-    },
-    'suse-10.2_x86_64' => {
-        module => 'SUSE',            support => 'clone,install'
-    },
-    'suse-10.3' => {
-        module => 'SUSE',            support => 'clone'
-    },
-    'suse-10.3_x86_64' => {
-        module => 'SUSE',            support => 'clone'
-    },
-    'ubuntu-6.06' => {
-        module => 'Ubuntu',          support => 'clone'
-    },
-    'ubuntu-6.10' => {
-        module => 'Ubuntu',          support => 'clone,install'
-    },
-    'ubuntu-6.10_amd64' => {
-        module => 'Ubuntu',          support => 'clone,install'
-    },
-    'ubuntu-7.04' => { 
-        module => 'Ubuntu',          support => 'clone,install'
-    },
-    'ubuntu-7.04_amd64' => { 
-        module => 'Ubuntu',          support => 'clone,install'
-    },
-    'ubuntu-7.10' => {
-        module => 'Ubuntu',             support => 'clone'
-    },
-    'ubuntu-7.10_amd64' => {
-        module => 'Ubuntu',             support => 'clone'
-    },
-    'ubuntu-8.04' => {
-        module => 'Ubuntu',             support => 'clone'
-    },
-    'ubuntu-8.04_amd64' => {
-        module => 'Ubuntu',             support => 'clone'
-    },
+    'debian-3.1'        => 'clone,install',
+    'debian-4.0'        => 'clone,install',
+    'debian-4.0_amd64'  => 'clone,install',
+    'fedora-6'          => 'clone,install',
+    'fedora-6_x86_64'   => 'clone,install',
+    'gentoo-2006.X'     => 'clone',
+    'gentoo-2007.X'     => 'clone',
+    'mandriva-2007.0'   => 'clone',
+    'suse-9.3'          => 'clone',
+    'suse-10.0'         => 'clone',
+    'suse-10.0_x86_64'  => 'clone',
+    'suse-10.1'         => 'clone,install',
+    'suse-10.1_x86_64'  => 'clone,install',
+    'suse-10.2'         => 'clone,install',
+    'suse-10.2_x86_64'  => 'clone,install',
+    'suse-10.3'         => 'clone',
+    'suse-10.3_x86_64'  => 'clone',
+    'ubuntu-6.06'       => 'clone',
+    'ubuntu-6.10'       => 'clone,install',
+    'ubuntu-6.10_amd64' => 'clone,install',
+    'ubuntu-7.04'       => 'clone,install',
+    'ubuntu-7.04_amd64' => 'clone,install',
+    'ubuntu-7.10'       => 'clone',
+    'ubuntu-7.10_amd64' => 'clone',
+    'ubuntu-8.04'       => 'clone',
+    'ubuntu-8.04_amd64' => 'clone',
 );
 
 my %localHttpServers;
@@ -146,20 +94,20 @@ sub initialize
             "Given vendor-OS has unknown format, expected '<name>-<release>[-<selection>]'\n"
         );
     }
-    my $distroName = $1;
+    my $distroName = lc($1);
     my $selectionName = $2 || 'default';
     $self->{'vendor-os-name'} = $vendorOSName;
     $self->{'action-type'}    = $actionType;
-    $self->{'distro-name'}    = lc($distroName);
+    $self->{'distro-name'}    = $distroName;
     $self->{'selection-name'} = $selectionName;
     $self->{'clone-source'}   = '';
-    if (!exists $supportedDistros{lc($distroName)}) {
+    if (!exists $supportedDistros{$distroName}) {
         print _tr("Sorry, distro '%s' is unsupported.\n", $distroName);
         print _tr("List of supported distros:\n\t");
         print join("\n\t", sort keys %supportedDistros) . "\n";
         exit 1;
     }
-    my $support = $supportedDistros{lc($distroName)}->{support};
+    my $support = $supportedDistros{$distroName};
     if ($support !~ m[install]i) {
         if ($actionType eq 'install') {
             print _tr(
@@ -185,22 +133,16 @@ sub initialize
     }
 
     # load module for the requested distro:
-    my $distro;
-    my $distroClass = $supportedDistros{lc($distroName)}->{module};
-    if ($actionType =~ m{^(install|update|shell)}) {
-        $distro = instantiateClass("OpenSLX::OSSetup::Distro::$distroClass");
-    }
-    else {
-        if (!eval { 
-            $distro = instantiateClass("OpenSLX::OSSetup::Distro::$distroClass") 
-        }) {
-            vlog(2, "could not load distro module '$distroClass' ($@) ...");
-            vlog(2, "falling back to module 'Any_Clone'");
-            # allow fallback to generic clone module, such that we can clone
-            # distro's for which there is no specific distro-module yet
-            # (like for example for Gentoo):
-            $distro = instantiateClass("OpenSLX::OSSetup::Distro::Any_Clone") 
-        }
+    my $distro = loadDistroModule({
+        distroName   => $distroName,
+        distroScope  => 'OpenSLX::OSSetup::Distro',
+        fallbackName => 'Any_Clone',
+    });
+    if (!$distro) {
+        die _tr(
+            'unable to load any OSSetup::Distro module for vendor-OS %s!', 
+            $vendorOSName
+        );
     }
 
     $distro->initialize($self);
@@ -1707,10 +1649,12 @@ sub _clone_fetchSource
             )
         );
     print $rsyncFH $excludeIncludeList;
-    close($rsyncFH)
-        or croak _tr(
+    if (!close($rsyncFH)) {
+        print "rsync-result=", 0+$!, "\n";
+        croak _tr(
             "unable to clone from source '%s', giving up! (%s)\n", $source, $!
         );
+    }
     return;
 }
 

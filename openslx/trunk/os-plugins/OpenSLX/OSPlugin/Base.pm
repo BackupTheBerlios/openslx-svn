@@ -303,7 +303,7 @@ sub copyRequiredFilesIntoInitramfs
 {
     my $self                = shift;
     my $targetPath          = shift;
-    my $attrs                = shift;
+    my $attrs               = shift;
     my $makeInitRamFSEngine = shift;
     
     return;

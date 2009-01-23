@@ -8,10 +8,10 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# SUSE.pm
-#    - provides SUSE-specific overrides of the OpenSLX OSExport API.
+# OSExport/Distro/Suse.pm
+#    - provides SUSE-specific overrides of the OSExport Distro API.
 # -----------------------------------------------------------------------------
-package OpenSLX::OSExport::Distro::SUSE;
+package OpenSLX::OSExport::Distro::Suse;
 
 use strict;
 use warnings;

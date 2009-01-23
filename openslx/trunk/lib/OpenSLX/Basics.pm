@@ -29,7 +29,7 @@ $VERSION = 1.01;
     &callInSubprocess &executeInSubprocess &slxsystem
     &vlog
     &checkParams
-    &instantiateClass
+    &instantiateClass &loadDistroModule
 );
 
 our (%openslxConfig, %cmdlineConfig, %openslxPath);
@@ -561,18 +561,23 @@ sub instantiateClass
     my $flags = shift || {};
 
     checkParams($flags, { 
-        'acceptMissing' => '?', 
-        'pathToClass'   => '?', 
+        'acceptMissing' => '?',
+        'pathToClass'   => '?',
+        'incPaths'      => '?',
         'version'       => '?',
     });
     my $pathToClass      = $flags->{pathToClass};
     my $requestedVersion = $flags->{version};
+    my $incPaths         = $flags->{incPaths} || [];
 
     my $moduleName = defined $pathToClass ? "$pathToClass/$class" : $class;
     $moduleName =~ s[::][/]g;
     $moduleName .= '.pm';
 
-    if (!eval { require $moduleName } ) {
+    vlog(3, "trying to load $moduleName...");
+    my @originalINC = @INC;
+    if (!eval { unshift @INC, @$incPaths; require $moduleName; 1 } ) {
+        @INC = @originalINC;
         # check if module does not exists anywhere in search path
         if (!-e $moduleName) {
             return if $flags->{acceptMissing};
@@ -581,6 +586,7 @@ sub instantiateClass
         # some other error (probably compilation problems)
         die _tr("Unable to load module '%s' (%s)\n", $moduleName, $@);
     }
+    @INC = @originalINC;
     if (defined $requestedVersion) {
         my $classVersion = $class->VERSION;
         if ($classVersion < $requestedVersion) {
@@ -590,6 +596,69 @@ sub instantiateClass
         }
     }
     return $class->new;
+}
+
+sub loadDistroModule
+{
+    my $params = shift;
+    
+    checkParams($params, {
+        'distroName'   => '!',
+        'distroScope'  => '!',
+        'fallbackName' => '?',
+        'pathToClass'  => '?',
+    });
+    my $distroName   = ucfirst(lc($params->{distroName}));
+    my $distroScope  = $params->{distroScope};
+    my $fallbackName = $params->{fallbackName} || 'Base';
+    my $pathToClass  = $params->{pathToClass};
+    
+    vlog(1, "finding a ${distroScope} module for $distroName ...");
+
+    # try to load the distro module starting with the given name and then
+    # working the way upwards (from most specific to generic).
+    # When given 'suse-10.3_x86_64', this would try the following modules:
+    #   Suse_10_3_x86_64
+    #   Suse_10_3_x86           (pretty senseless, but what the heck ...)
+    #   Suse_10_3
+    #   Suse_10
+    #   Suse
+    #   Base                    (or whatever has been given as fallback name)
+    $distroName =~ tr{.-}{__};
+    my @distroModules;
+    while($distroName =~ m{^(.+)_[^_]*$}) {
+        push @distroModules, $distroName;
+        $distroName = $1;
+    }
+    push @distroModules, $distroName;
+    push @distroModules, $fallbackName;
+
+    my $pluginBasePath = "$openslxConfig{'base-path'}/lib/plugins";
+
+    my $distro;
+    for my $distroModule (@distroModules) {
+        my $loaded = eval {
+            vlog(1, "trying ${distroScope}::$distroModule ...");
+            my $flags = { acceptMissing => 1 };
+            if ($pathToClass) {
+                $flags->{pathToClass} = $pathToClass;
+                $flags->{incPaths}    = [ $pathToClass ];
+            }
+            $distro = instantiateClass("${distroScope}::$distroModule", $flags);
+            return 0 if !$distro;   # module does not exist, try next
+            vlog(1, "ok - using ${distroScope}::$distroModule.");
+            1;
+        };
+        last if $loaded;
+        if (!defined $loaded) {
+            vlog(0, _tr(
+                "Error when trying to load distro module '%s':\n%s", 
+                $distroModule, $@
+            ));
+        }
+    }
+
+    return $distro;
 }
 
 1;

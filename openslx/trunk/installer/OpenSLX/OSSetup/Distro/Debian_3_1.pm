@@ -8,8 +8,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Debian_3_1.pm
-#    - provides Debian-3.1-specific overrides of the OpenSLX OSSetup API.
+# OSSetup/Distro/Debian_3_1.pm
+#    - provides Debian-3.1-specific overrides of the OSSetup Distro API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::Debian_3_1;
 

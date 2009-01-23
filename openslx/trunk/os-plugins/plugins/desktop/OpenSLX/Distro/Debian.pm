@@ -8,15 +8,16 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Ubuntu.pm
-#    - provides Ubuntu-specific overrides of the OpenSLX OSSetup API.
+# desktop/OpenSLX/Distro/Debian.pm
+#    - provides Debian-specific overrides of the Distro API for the desktop 
+#      plugin.
 # -----------------------------------------------------------------------------
-package OpenSLX::Distro::ubuntu;
+package desktop::OpenSLX::Distro::Debian;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::Distro::Base);
+use base qw(desktop::OpenSLX::Distro::Base);
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
@@ -24,5 +25,7 @@ use OpenSLX::Utils;
 ################################################################################
 ### interface methods
 ################################################################################
+
+# TODO: implement!
 
 1;

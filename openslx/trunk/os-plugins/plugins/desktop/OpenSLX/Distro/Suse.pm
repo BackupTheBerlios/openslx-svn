@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -8,16 +8,16 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# debian.pm
-#    - provides Debian-specific overrides of the OpenSLX Distro API for the 
-#     desktop plugin.
+# desktop/OpenSLX/Distro/Suse.pm
+#    - provides SUSE-specific overrides of the Distro API for the desktop
+#      plugin.
 # -----------------------------------------------------------------------------
-package OpenSLX::Distro::debian;
+package desktop::OpenSLX::Distro::Suse;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::Distro::Base);
+use base qw(desktop::OpenSLX::Distro::Base);
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
@@ -26,6 +26,14 @@ use OpenSLX::Utils;
 ### interface methods
 ################################################################################
 
-### Erbe von Ubuntu!
+sub GDMRunlevelLinks
+{
+    my $self   = shift;
+    
+    return unshiftHereDoc(<<"    End-of-Here");
+        rllinker earlygdm 1 15
+        rllinker xdm      15 1
+    End-of-Here
+}
 
 1;

@@ -8,8 +8,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Fedora.pm
-#    - provides Fedora-specific overrides of the OpenSLX OSExport API.
+# OSExport/Distro/Fedora.pm
+#    - provides Fedora-specific overrides of the OSExport Distro API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::Distro::Fedora;
 

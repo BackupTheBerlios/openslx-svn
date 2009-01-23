@@ -8,8 +8,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Debian.pm
-#    - provides Debian-specific overrides of the OpenSLX OSSetup API.
+# OSSetup/Distro/Debian.pm
+#    - provides Debian-specific overrides of the OSSetup Distro API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::Debian;
 

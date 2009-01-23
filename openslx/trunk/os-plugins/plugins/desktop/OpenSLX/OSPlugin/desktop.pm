@@ -420,8 +420,8 @@ sub _setupGDMScript
         # written by OpenSLX-plugin 'desktop'
         mkdir -p $paths 2>/dev/null
         ln -sf $repoPath/gdm/\$desktop_mode/gdm.conf /mnt$configFile
-        rllinker gdm 1 15
     End-of-Here
+    $script .= $self->{distro}->GDMRunlevelLinks();
     spitFile("$repoPath/gdm/desktop.sh", $script);
     return;
 }

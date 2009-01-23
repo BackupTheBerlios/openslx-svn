@@ -8,17 +8,18 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# SUSE.pm
-#    - provides SUSE-specific overrides of the OpenSLX OSSetup API.
+# vmware/OpenSLX/Distro/Suse.pm
+#    - provides SUSE-specific overrides of the Distro API for the vmware plugin.
 # -----------------------------------------------------------------------------
-package OpenSLX::OSSetup::Distro::Gentoo;
+package vmware::OpenSLX::Distro::Suse;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::OSSetup::Distro::Base);
+use base qw(vmware::OpenSLX::Distro::Base);
 
 use OpenSLX::Basics;
+use OpenSLX::Utils;
 
 ################################################################################
 ### interface methods
@@ -30,20 +31,25 @@ sub fillRunlevelScript
     my $location = shift;
 
     my $script = unshiftHereDoc(<<"    End-of-Here");
-        #!/sbin/runscript
-        # Gentoo compatible (hopefully) start/stop script, generated via stage1 'vmware'
-        # plugin installation
+        #! /bin/sh
+        # SuSE compatible start/stop script, generated via stage1 'vmware' plugin
+        # installation
         #
         # inspiration taken from vmware start script:
         #   Copyright 1998-2007 VMware, Inc.  All rights reserved.
         #
         # This script manages the services needed to run VMware software
-
-        # dependency definitions
-        depend() {
-        #     use syslog
-        #     need ...
-        }
+        
+        # Basic support for the Linux Standard Base Specification 1.3
+        ### BEGIN INIT INFO
+        # Provides: VMware
+        # Required-Start: \$syslog
+        # Required-Stop:
+        # Default-Start: 2 3 5
+        # Default-Stop: 0 6
+        # Short-Description: Manages the services needed to run VMware software
+        # Description: Manages the services needed to run VMware software
+        ### END INIT INFO
 
         # helper functions
         load_modules() {
@@ -101,30 +107,38 @@ sub fillRunlevelScript
               /var/run/vmware/dhcpd.leases -pf /var/run/vmnet-dhcpd-vmnet8.pid \$dhcpif
           fi
         }
-
-        # start/stop functions
-        start() {
-            ebegin "Starting vmware background services ..."
+        # load the helper stuff
+        . /etc/rc.status
+        # reset the script status
+        rc_reset
+    
+        case \$1 in
+          start)
+            echo -n "Starting vmware background services ..."
             # load the configuration file
             . /etc/vmware/slxvmconfig
-            load_modules || eerror "The loading of vmware modules failed"
-            setup_vmnet0 || eerror "Problems setting up vmnet0 interface"
-            setup_vmnet1 || eerror "Problems setting up vmnet1 interface"
-            setup_vmnet8 || eerror "Problems setting up vmnet8 interface"
+            load_modules
+            setup_vmnet0
+            setup_vmnet1
+            setup_vmnet8
             runvmdhcpd
-            eend $?
-        }
-
-        stop() {
+            rc_status -v
+          ;;
+          stop)
             # message output should match the given vendor-os
-            ebegin "Stopping vmware background services ..."
+            echo -n "Stopping vmware background services ..."
             killall vmnet-netifup vmnet-natd vmnet-bridge vmware vmplayer \\
               vmware-tray 2>/dev/null
             # wait for shutting down of interfaces
             usleep 50000
             unload_modules
-            eend $?
-        }
+            rc_status -v
+          ;;
+          status)
+            echo -n "Say something useful here ..."
+          ;;
+        esac
+        exit 0
     End-of-Here
     return $script;
 }

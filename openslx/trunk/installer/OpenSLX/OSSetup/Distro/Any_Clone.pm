@@ -8,8 +8,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Any_Clone.pm
-#    - provides generic clone-only overrides of the OpenSLX OSSetup API.
+# OSSetup/Distro/Any_Clone.pm
+#    - provides generic clone-only overrides of the OSSetup Distro API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::Any_Clone;
 

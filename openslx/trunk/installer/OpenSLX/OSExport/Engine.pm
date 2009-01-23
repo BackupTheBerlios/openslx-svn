@@ -24,7 +24,7 @@ use Exporter;
 
 @EXPORT = qw(
   %supportedExportFileSystems %supportedExportBlockDevices
-  @supportedExportTypes %supportedDistros
+  @supportedExportTypes
 );
 
 use File::Basename;
@@ -34,7 +34,7 @@ use OpenSLX::Utils;
 
 our (
   %supportedExportFileSystems, %supportedExportBlockDevices,
-  @supportedExportTypes, %supportedDistros
+  @supportedExportTypes,
 );
 
 %supportedExportFileSystems = (
@@ -53,15 +53,6 @@ our (
     'sqfs-aoe', 
     'sqfs-dnbd2',
     'sqfs-nbd',
-);
-
-%supportedDistros = (
-    '<any>'  => {module => 'Any'},
-    'debian' => {module => 'Debian'},
-    'fedora' => {module => 'Fedora'},
-    'gentoo' => {module => 'Gentoo'},
-    'suse'   => {module => 'SUSE'},
-    'ubuntu' => {module => 'Ubuntu'},
 );
 
 ################################################################################
@@ -213,25 +204,21 @@ sub _initialize
     $self->{'export-name'}    = $exportName;
     $self->{'export-type'}    = $exportType;
     $vendorOSName =~ m[^(.+?\-[^-]+)];
-    my $distroName = $1;
-    $self->{'distro-name'} = $distroName;
+    $self->{'distro-name'} = lc($1);
+    my $distroName = ucfirst(lc($1));
 
     # load module for the requested distro:
-    if (!exists $supportedDistros{lc($distroName)}) {
-        # try without _x86_64:
-        $distroName =~ s[_x86_64$][];
-        if (!exists $supportedDistros{lc($distroName)}) {
-            # try basic distro-type (e.g. debian or suse):
-            $distroName =~ s[-.+$][];
-            if (!exists $supportedDistros{lc($distroName)}) {
-                # fallback to generic implementation:
-                $distroName = '<any>';
-            }
-        }
+    my $distro = loadDistroModule({
+        distroName   => $distroName,
+        distroScope  => 'OpenSLX::OSExport::Distro',
+        fallbackName => 'Any',
+    });
+    if (!$distro) {
+        die _tr(
+            'unable to load any OSExport::Distro module for vendor-OS %s!', 
+            $vendorOSName
+        );
     }
-    my $distroModuleName = $supportedDistros{lc($distroName)}->{module};
-    my $distro           =
-      instantiateClass("OpenSLX::OSExport::Distro::$distroModuleName");
     $distro->initialize($self);
     $self->{distro} = $distro;
 

@@ -8,11 +8,10 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# base.pm
-#    - provides empty base of the OpenSLX OSPlugin Distro API for the desktop
-#     plugin.
+# desktop/OpenSLX/Distro/Base.pm
+#    - provides base implementation of the Distro API for the desktop plugin.
 # -----------------------------------------------------------------------------
-package OpenSLX::Distro::Base;
+package desktop::OpenSLX::Distro::Base;
 
 use strict;
 use warnings;
@@ -97,6 +96,15 @@ sub GDMPathInfo
     };
 
     return $pathInfo;
+}
+
+sub GDMRunlevelLinks
+{
+    my $self   = shift;
+    
+    return unshiftHereDoc(<<"    End-of-Here");
+        rllinker gdm 15 15
+    End-of-Here
 }
 
 sub GDMConfigHashForWorkstation

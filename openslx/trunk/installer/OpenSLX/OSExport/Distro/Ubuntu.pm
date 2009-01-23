@@ -8,8 +8,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Ubuntu.pm
-#    - provides Ubuntu-specific overrides of the OpenSLX OSExport API.
+# OSExport/Distro/Ubuntu.pm
+#    - provides Ubuntu-specific overrides of the OSExport Distro API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::Distro::Ubuntu;
 

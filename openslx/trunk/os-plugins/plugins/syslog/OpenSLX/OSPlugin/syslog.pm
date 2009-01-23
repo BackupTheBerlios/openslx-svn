@@ -92,6 +92,16 @@ sub getAttrInfo
             content_descr => 'a port number',
             default => 514,
         },
+        'syslog::file' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                name of file where all log messages shall be written
+            End-of-Here
+            content_regex => undef,
+            content_descr => 'a complete file path',
+            default => undef,
+        },
     };
 }
 
@@ -170,7 +180,9 @@ sub _setupSyslogNG
     
     my $repoPath = $self->{pluginRepositoryPath};
 
-    my $conf = unshiftHereDoc(<<'    End-of-Here');
+    my $rlInfo = $self->{distro}->runlevelInfo($attrs);
+
+    my $conf = unshiftHereDoc(<<"    End-of-Here");
         #!/bin/ash
         # written by OpenSLX-plugin 'syslog'
 
@@ -190,11 +202,11 @@ sub _setupSyslogNG
         };
         END
         
-        if [ -n "${syslog_host}" ]; then
-        [ -z ${syslog_port} ] && syslog_port=514
+        if [ -n "\${syslog_host}" ]; then
+        [ -z \${syslog_port} ] && syslog_port=514
         cat >>/mnt/etc/syslog-ng/syslog-ng.conf <<END
         destination loghost {
-            udp( "${syslog_host}" port(${syslog_port}) );
+            udp( "\${syslog_host}" port(\${syslog_port}) );
         };
         log {
             source(all);
@@ -203,10 +215,10 @@ sub _setupSyslogNG
         END
         fi
 
-        if [ -n "${syslog_file}" ]; then
+        if [ -n "\${syslog_file}" ]; then
         cat >>/mnt/etc/syslog-ng/syslog-ng.conf <<END
         destination allmessages {
-            file("/var/log/allmessages");
+            file("\${syslog_file}");
         };
         log {
             source(all);
@@ -215,7 +227,7 @@ sub _setupSyslogNG
         END
         fi
 
-        rllinker syslog-ng 1 15
+        rllinker $rlInfo->{scriptName} $rlInfo->{startAt} $rlInfo->{stopAt}
 
     End-of-Here
     spitFile("$repoPath/syslog.sh", $conf);
@@ -230,6 +242,8 @@ sub _setupSyslogd
     
     my $repoPath = $self->{pluginRepositoryPath};
 
+    my $rlInfo = $self->{distro}->runlevelInfo($attrs);
+
     # TODO: implement!
 
     my $conf = unshiftHereDoc(<<'    End-of-Here');
@@ -237,7 +251,7 @@ sub _setupSyslogd
         # written by OpenSLX-plugin 'syslog'
 
 
-        rllinker syslogd 1 15
+        rllinker $rlInfo->{scriptName} $rlInfo->{startAt} $rlInfo->{stopAt}
 
     End-of-Here
     spitFile("$repoPath/syslog.sh", $conf);

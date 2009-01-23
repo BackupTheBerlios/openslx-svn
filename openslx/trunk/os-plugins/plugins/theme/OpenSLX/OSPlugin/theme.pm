@@ -126,7 +126,7 @@ sub suggestAdditionalKernelModules
     
     # Ubuntu needs vesafb and fbcon (which drags along some others)
     if ($makeInitRamFSEngine->{'distro-name'} =~ m{^ubuntu}i) {
-        push @suggestedModules, qw(    vesafb fbcon )
+        push @suggestedModules, qw( vesafb fbcon )
     }
     
     return @suggestedModules;

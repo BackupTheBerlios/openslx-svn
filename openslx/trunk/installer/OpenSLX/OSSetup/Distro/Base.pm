@@ -8,8 +8,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Base.pm
-#    - provides empty base of the OpenSLX OSSetup API.
+# OSSetup/Distro/Base.pm
+#    - provides base implementation of the OSSetup Distro API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::Base;
 

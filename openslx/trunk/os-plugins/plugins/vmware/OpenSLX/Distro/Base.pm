@@ -8,11 +8,10 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# base.pm
-#    - provides empty base of the OpenSLX OSPlugin Distro API for the vmware
-#     plugin.
+# vmware/OpenSLX/Distro/Base.pm
+#    - provides base implementation of the Distro API for the vmware plugin.
 # -----------------------------------------------------------------------------
-package OpenSLX::Distro::Base;
+package vmware::OpenSLX::Distro::Base;
 
 use strict;
 use warnings;

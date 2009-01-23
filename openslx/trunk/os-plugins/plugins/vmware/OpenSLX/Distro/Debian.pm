@@ -8,16 +8,16 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# SUSE.pm
-#    - provides SUSE-specific overrides of the OpenSLX Distro API for the desktop
-#     plugin.
+# vmware/OpenSLX/Distro/debian.pm
+#    - provides Debian-specific overrides of the Distro API for the vmware 
+#      plugin.
 # -----------------------------------------------------------------------------
-package OpenSLX::Distro::suse;
+package vmware::OpenSLX::Distro::Debian;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::Distro::Base);
+use base qw(vmware::OpenSLX::Distro::Base);
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
@@ -33,9 +33,8 @@ sub fillRunlevelScript
 
     my $script = unshiftHereDoc(<<"    End-of-Here");
         #! /bin/sh
-        # SuSE compatible start/stop script, generated via stage1 'vmware' plugin
-        # installation
-        #
+        # Ubuntu specific start/stop script, generated via stage1 'vmware' plugin
+        # install
         # inspiration taken from vmware start script:
         #   Copyright 1998-2007 VMware, Inc.  All rights reserved.
         #
@@ -51,11 +50,9 @@ sub fillRunlevelScript
         # Short-Description: Manages the services needed to run VMware software
         # Description: Manages the services needed to run VMware software
         ### END INIT INFO
-
-        # helper functions
         load_modules() {
           # to be filled in via the stage1 configuration script
-          modprobe -qa vmmon vmnet vmblock 2>/dev/null || return 1
+          modprobe -qa vmmon vmnet vmblock 2>/dev/null || echo "Problem here!"
           # most probably nobody wants to run the parallel port driver ...
           #modprobe vm...
         }
@@ -108,35 +105,33 @@ sub fillRunlevelScript
               /var/run/vmware/dhcpd.leases -pf /var/run/vmnet-dhcpd-vmnet8.pid \$dhcpif
           fi
         }
-        # load the helper stuff
-        . /etc/rc.status
-        # reset the script status
-        rc_reset
-    
+        # initialize the lsb status messages
+        . /lib/lsb/init-functions
+
         case \$1 in
           start)
-            echo -n "Starting vmware background services ..."
+            log_daemon_msg "Starting vmware background services ..." "vmware"
             # load the configuration file
             . /etc/vmware/slxvmconfig
-            load_modules
-            setup_vmnet0
-            setup_vmnet1
-            setup_vmnet8
+            load_modules || log_warning_msg "The loading of vmware modules failed"
+            setup_vmnet0 || log_warning_msg "Problems setting up vmnet0 interface"
+            setup_vmnet1 || log_warning_msg "Problems setting up vmnet1 interface"
+            setup_vmnet8 || log_warning_msg "Problems setting up vmnet8 interface"
             runvmdhcpd
-            rc_status -v
+            log_end_msg $?
           ;;
           stop)
             # message output should match the given vendor-os
-            echo -n "Stopping vmware background services ..."
+            log_daemon_msg "Stopping vmware background services ..." "vmware"
             killall vmnet-netifup vmnet-natd vmnet-bridge vmware vmplayer \\
               vmware-tray 2>/dev/null
             # wait for shutting down of interfaces
             usleep 50000
             unload_modules
-            rc_status -v
+            log_end_msg $?
           ;;
           status)
-            echo -n "Say something useful here ..."
+            log_daemon_msg "Say something useful here ..."
           ;;
         esac
         exit 0

@@ -8,22 +8,16 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# debian.pm
-#    - provides Debian-specific overrides of the OpenSLX Distro API for the 
-#     desktop plugin.
+# vmware/OpenSLX/Distro/Ubuntu.pm
+#    - provides Ubuntu-specific overrides of the Distro API for the vmware
+#      plugin.
 # -----------------------------------------------------------------------------
-package OpenSLX::Distro::debian;
+package vmware::OpenSLX::Distro::Ubuntu;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::Distro::Base);
-
-use OpenSLX::Basics;
-use OpenSLX::Utils;
-
-################################################################################
-### interface methods
-################################################################################
+# inherit everything from Debian (as Ubuntu is based on it anyway)
+use base qw(vmware::OpenSLX::Distro::Debian);
 
 1;

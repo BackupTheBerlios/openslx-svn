@@ -8,8 +8,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Gentoo.pm
-#    - provides Gentoo-specific overrides of the OpenSLX OSExport API.
+# OSExport/Distro/Gentoo.pm
+#    - provides Gentoo-specific overrides of the OSExport Distro API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSExport::Distro::Gentoo;
 

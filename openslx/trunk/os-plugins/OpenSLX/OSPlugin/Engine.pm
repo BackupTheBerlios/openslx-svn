@@ -462,39 +462,13 @@ sub _loadPlugin
     # if there's a distro folder, instantiate the most appropriate distro class
     my $distro;
     if (-d "$self->{'plugin-path'}/OpenSLX/Distro") {
-        unshift @INC, $self->{'plugin-path'};
-        my $distroName = $self->distroName();
-        $distroName =~ tr{.-}{__};
-        my @distroModules;
-        while($distroName =~ m{^(.+)_[^_]*$}) {
-            push @distroModules, $distroName;
-            $distroName = $1;
-        }
-        push @distroModules, $distroName;
-        push @distroModules, 'Base';
-        for my $distroModule (@distroModules) {
-            my $loaded = eval {
-                vlog(1, "trying distro-module $distroModule...");
-                $distro = instantiateClass(
-                    'OpenSLX::Distro::' . $distroModule, 
-                    {
-                        pathToClass => $self->{'plugin-path'},
-                        acceptMissing => 1,
-                    }
-                );
-                return 0 if !$distro;
-                vlog(1, "using $distroModule.");
-                1;
-            };
-            last if $loaded;
-            if (!defined $loaded) {
-                vlog(0, _tr(
-                    "Error when trying to load distro module '%s':\n%s", 
-                    $distroModule, $@
-                ));
-            }
-        }
-        shift @INC;
+        my $pluginBasePath = "$openslxConfig{'base-path'}/lib/plugins";
+        my $distroScope = $plugin->{name} . '::OpenSLX::Distro';
+        $distro = loadDistroModule({
+            distroName  => $self->distroName(),
+            distroScope => $distroScope,
+            pathToClass => $pluginBasePath,
+        });
         if (!$distro) {
             die _tr(
                 'unable to load any distro module for vendor-OS %s in plugin %s',

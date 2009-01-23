@@ -8,8 +8,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Fedora.pm
-#    - provides Fedora-specific overrides of the OpenSLX OSSetup API.
+# OSSetup/Distro/Fedora.pm
+#    - provides Fedora-specific overrides of the OSSetup Distro API.
 # -----------------------------------------------------------------------------
 package OpenSLX::OSSetup::Distro::Fedora;
 

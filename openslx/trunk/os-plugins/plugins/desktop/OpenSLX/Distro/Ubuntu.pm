@@ -8,52 +8,24 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# OSExport/Distro/Base.pm
-#    - provides base implementation of the OSExport Distro API.
+# desktop/OpenSLX/Distro/Ubuntu.pm
+#    - provides Ubuntu-specific overrides of the distro API for the desktop
+#      plugin.
 # -----------------------------------------------------------------------------
-package OpenSLX::OSExport::Distro::Base;
+package desktop::OpenSLX::Distro::Ubuntu;
 
 use strict;
 use warnings;
 
-our $VERSION = 1.01;        # API-version . implementation-version
+use base qw(desktop::OpenSLX::Distro::Base);
 
 use OpenSLX::Basics;
+use OpenSLX::Utils;
 
 ################################################################################
 ### interface methods
 ################################################################################
-sub new
-{
-    confess "Creating OpenSLX::OSExport::Distro::Base-objects directly makes no sense!";
-}
 
-sub initialize
-{
-    my $self = shift;
-    my $engine = shift;
-
-    $self->{'engine'} = $engine;
-
-    $self->initDistroInfo();
-    return;
-}
-
-sub initDistroInfo
-{
-}
+# TODO: implement!
 
 1;
-################################################################################
-
-=pod
-
-=head1 NAME
-
-OpenSLX::OSExport::Distro::Base
-
-=head1 SYNOPSIS
-
-...
-
-=cut

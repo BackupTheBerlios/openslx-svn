@@ -1,4 +1,4 @@
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2008 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -8,18 +8,18 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# Ubuntu.pm
-#    - provides Ubuntu-specific overrides of the OpenSLX OSSetup API.
+# vmware/OpenSLX/Distro/Gentoo.pm
+#    - provides Gentoo-specific overrides of the Distro API for the vmware
+#      plugin.
 # -----------------------------------------------------------------------------
-package OpenSLX::Distro::ubuntu;
+package vmware::OpenSLX::Distro::Gentoo;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::Distro::Base);
+use base qw(vmware::OpenSLX::Distro::Base);
 
 use OpenSLX::Basics;
-use OpenSLX::Utils;
 
 ################################################################################
 ### interface methods
@@ -31,27 +31,25 @@ sub fillRunlevelScript
     my $location = shift;
 
     my $script = unshiftHereDoc(<<"    End-of-Here");
-        #! /bin/sh
-        # Ubuntu specific start/stop script, generated via stage1 'vmware' plugin
-        # install
+        #!/sbin/runscript
+        # Gentoo compatible (hopefully) start/stop script, generated via stage1 'vmware'
+        # plugin installation
+        #
         # inspiration taken from vmware start script:
         #   Copyright 1998-2007 VMware, Inc.  All rights reserved.
         #
         # This script manages the services needed to run VMware software
-        
-        # Basic support for the Linux Standard Base Specification 1.3
-        ### BEGIN INIT INFO
-        # Provides: VMware
-        # Required-Start: \$syslog
-        # Required-Stop:
-        # Default-Start: 2 3 5
-        # Default-Stop: 0 6
-        # Short-Description: Manages the services needed to run VMware software
-        # Description: Manages the services needed to run VMware software
-        ### END INIT INFO
+
+        # dependency definitions
+        depend() {
+        #     use syslog
+        #     need ...
+        }
+
+        # helper functions
         load_modules() {
           # to be filled in via the stage1 configuration script
-          modprobe -qa vmmon vmnet vmblock 2>/dev/null || echo "Problem here!"
+          modprobe -qa vmmon vmnet vmblock 2>/dev/null || return 1
           # most probably nobody wants to run the parallel port driver ...
           #modprobe vm...
         }
@@ -104,36 +102,30 @@ sub fillRunlevelScript
               /var/run/vmware/dhcpd.leases -pf /var/run/vmnet-dhcpd-vmnet8.pid \$dhcpif
           fi
         }
-        # initialize the lsb status messages
-        . /lib/lsb/init-functions
 
-        case \$1 in
-          start)
-            log_daemon_msg "Starting vmware background services ..." "vmware"
+        # start/stop functions
+        start() {
+            ebegin "Starting vmware background services ..."
             # load the configuration file
             . /etc/vmware/slxvmconfig
-            load_modules || log_warning_msg "The loading of vmware modules failed"
-            setup_vmnet0 || log_warning_msg "Problems setting up vmnet0 interface"
-            setup_vmnet1 || log_warning_msg "Problems setting up vmnet1 interface"
-            setup_vmnet8 || log_warning_msg "Problems setting up vmnet8 interface"
+            load_modules || eerror "The loading of vmware modules failed"
+            setup_vmnet0 || eerror "Problems setting up vmnet0 interface"
+            setup_vmnet1 || eerror "Problems setting up vmnet1 interface"
+            setup_vmnet8 || eerror "Problems setting up vmnet8 interface"
             runvmdhcpd
-            log_end_msg $?
-          ;;
-          stop)
+            eend $?
+        }
+
+        stop() {
             # message output should match the given vendor-os
-            log_daemon_msg "Stopping vmware background services ..." "vmware"
+            ebegin "Stopping vmware background services ..."
             killall vmnet-netifup vmnet-natd vmnet-bridge vmware vmplayer \\
               vmware-tray 2>/dev/null
             # wait for shutting down of interfaces
             usleep 50000
             unload_modules
-            log_end_msg $?
-          ;;
-          status)
-            log_daemon_msg "Say something useful here ..."
-          ;;
-        esac
-        exit 0
+            eend $?
+        }
     End-of-Here
     return $script;
 }
