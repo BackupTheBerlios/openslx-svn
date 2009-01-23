@@ -1699,7 +1699,7 @@ sub _installPlugins
     }
 
     return if ! @$plugins;
-
+    
     require OpenSLX::OSPlugin::Engine;
     vlog(
         0, 
@@ -1707,7 +1707,11 @@ sub _installPlugins
             ? _tr("reinstalling plugins...\n")
             : _tr("installing default plugins...\n")
     );
-    for my $pluginInfo (@$plugins) {
+    for my $pluginInfo (
+        sort { 
+            $self->_sortPluginsByDependency($a->{plugin_name}, $b->{plugin_name}); 
+        } @$plugins
+    ) {
         my $pluginName = $pluginInfo->{plugin_name};
         my $pluginEngine = OpenSLX::OSPlugin::Engine->new();
         vlog(0, _tr("\t%s\n", $pluginName));
@@ -1721,6 +1725,23 @@ sub _installPlugins
     return;
 }
     
+sub _sortPluginsByDependency
+{
+    my $self        = shift;
+    my $pluginNameA = shift;
+    my $pluginNameB = shift;
+    
+    my $pluginA = OpenSLX::OSPlugin::Roster->getPlugin($pluginNameA);
+    if ($pluginA->dependsOnPlugin($pluginNameB)) {
+        return 1;
+    }
+    my $pluginB = OpenSLX::OSPlugin::Roster->getPlugin($pluginNameB);
+    if ($pluginB->dependsOnPlugin($pluginNameA)) {
+        return -1;
+    }
+    return 0;
+}
+
 ################################################################################
 ### utility methods
 ################################################################################

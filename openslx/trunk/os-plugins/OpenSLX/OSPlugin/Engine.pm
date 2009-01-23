@@ -23,6 +23,7 @@ use File::Path;
 use Storable;
 
 use OpenSLX::Basics;
+use OpenSLX::OSPlugin::Roster;
 use OpenSLX::OSSetup::Engine;
 use OpenSLX::ScopedResource;
 use OpenSLX::Utils;
@@ -146,6 +147,8 @@ Invokes the plugin's installer method while chrooted into that vendor-OS.
 sub installPlugin
 {
     my $self = shift;
+    
+    $self->_checkIfRequiredPluginsAreInstalled();
 
     if ($self->{'vendor-os-name'} ne '<<<default>>>') {
 
@@ -208,6 +211,8 @@ Invokes the plugin's removal method while chrooted into that vendor-OS.
 sub removePlugin
 {
     my $self = shift;
+
+    $self->_checkIfPluginIsRequiredByOthers();
 
     if ($self->{'vendor-os-name'} ne '<<<default>>>') {
 
@@ -635,6 +640,83 @@ sub _addInstalledPluginToDB
     );
     $openslxDB->disconnect();
 
+    return 1;
+}
+
+sub _checkIfRequiredPluginsAreInstalled
+{
+    my $self = shift;
+    
+    my $requiredPlugins = $self->{plugin}->getInfo()->{required} || [];
+    return 1 if !@$requiredPlugins;
+
+    my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
+    $openslxDB->connect();
+    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
+        name => $self->{'vendor-os-name'},
+    } );
+    if (!$vendorOS) {
+        die _tr(
+            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
+        );
+    }
+    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOS->{id});
+    $openslxDB->disconnect();
+    
+    my @missingPlugins 
+        =   grep {
+                my $required = $_;
+                ! grep { $_->{plugin_name} eq $required } @installedPlugins;
+            }
+            @$requiredPlugins;
+
+    if (@missingPlugins) {
+        die _tr(
+            'the plugin "%s" requires the following plugins to be installed first: "%s"!', 
+            $self->{'plugin-name'}, join(',', @missingPlugins)
+        );
+    }        
+    
+    return 1;
+}
+
+sub _checkIfPluginIsRequiredByOthers
+{
+    my $self = shift;
+    
+    my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
+    $openslxDB->connect();
+    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
+        name => $self->{'vendor-os-name'},
+    } );
+    if (!$vendorOS) {
+        die _tr(
+            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
+        );
+    }
+    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOS->{id});
+    $openslxDB->disconnect();
+    
+    my @lockingPlugins
+        =   grep {
+                my $installed 
+                    = OpenSLX::OSPlugin::Roster->getPlugin($_->{plugin_name});
+                my $requiredByInstalled 
+                    = $installed
+                        ? ($installed->getInfo()->{required} || [])
+                        : [];
+                grep { $_ eq $self->{'plugin-name'} } @$requiredByInstalled;
+            }
+            @installedPlugins;
+
+    if (@lockingPlugins) {
+        die _tr(
+            'the plugin "%s" is required by the following plugins: "%s"!', 
+            $self->{'plugin-name'}, 
+            join(',', map { $_->{plugin_name} } @lockingPlugins)
+        );
+    }        
+    
     return 1;
 }
 

@@ -51,6 +51,7 @@ use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::ConfigFolder;
 use OpenSLX::MakeInitRamFS::Engine;
+use OpenSLX::OSPlugin::Roster;
 use OpenSLX::ScopedResource;
 use OpenSLX::Utils;
 
@@ -586,8 +587,24 @@ sub writePluginConfigurationsForSystem
 
         # skip inactive plugins
         next unless $attrs->{"${pluginName}::active"};
-        
         push @activePlugins, $pluginName;
+        
+        my $plugin = OpenSLX::OSPlugin::Roster->getPlugin($pluginName);
+        my $requiredPlugins = $plugin->getInfo()->{required} || [];
+        my @missingPlugins 
+            =   grep {
+                    my $required = $_;
+                    ! grep {
+                        $_->{plugin_name} eq $required
+                    } @{$info->{'installed-plugins'}};
+                }
+                @$requiredPlugins;
+        if (@missingPlugins) {
+            die _tr(
+                'the plugin "%s" requires the following plugins to be installed: "%s"!', 
+                $pluginName, join(',', @missingPlugins)
+            );
+        }
 
         next if $option{dryRun};
 

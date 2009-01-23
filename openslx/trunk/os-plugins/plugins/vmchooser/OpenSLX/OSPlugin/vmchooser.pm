@@ -42,6 +42,7 @@ sub getInfo
             based on xml-files, which tell about available images.
         End-of-Here
         precedence => 50,
+        required => [ qw( vmware ) ],
     };
 }
 

@@ -61,6 +61,7 @@ implementation, please drop a mail to: ot@openslx.com, or join the IRC-channel
 =cut
 
 use OpenSLX::Basics;
+use OpenSLX::OSPlugin::Roster;
 
 =head1 PLUGIN API
 
@@ -121,6 +122,13 @@ a higher precedence).
 
 Valid values range from 0-99. If your plugin does not have any requirements
 in this context, just specify the default value '50'.
+
+=item B<required>
+
+Specifies the list of plugins that are required by this plugin.
+
+Before any plugin can be installed, all other plugins that are required by it
+must have been installed.
 
 =back
     
@@ -207,6 +215,23 @@ sub checkStage3AttrValues
     # this default implementation does no further checks (thus relying on the
     # attributte regex check that is done in the AttributeRoster)
     return;
+}
+
+=item dependsOnPlugin()
+
+=cut
+
+sub dependsOnPlugin
+{
+    my $self      = shift;
+    my $otherName = shift;
+    
+    if (!defined $self->{dependsOn}) {
+        my @dependsOn = $self->_determineAllPluginsWeDependOn();
+        $self->{dependsOn} = \@dependsOn;
+    }
+    
+    return grep { $_ eq $otherName } @{$self->{dependsOn}};
 }
 
 =back
@@ -437,6 +462,28 @@ sub setupPluginInInitramfs
     );
 
     return 1;
+}
+
+sub _determineAllPluginsWeDependOn
+{
+    my $self = shift;
+    my $seen = shift || {};
+
+    return if $seen->{$self->{name}};
+    $seen->{$self->{name}} = 1;
+
+    my %dependsOn;
+    if ($self->getInfo()->{required}) {
+        @dependsOn{@{$self->getInfo()->{required}}} = ();
+    }
+
+    foreach my $depName (keys %dependsOn) {
+        my $depPlugin = OpenSLX::OSPlugin::Roster->getPlugin($depName);
+        my @subDeps = $depPlugin->_determineAllPluginsWeDependOn($seen);
+        @dependsOn{@subDeps} = ();
+    }
+
+    return keys %dependsOn;
 }
 
 =back

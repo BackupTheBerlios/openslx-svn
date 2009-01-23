@@ -109,7 +109,13 @@ if ($action =~ m[^list-at]i) {
                 my $fill = ' ' x 12;
                 chomp(my $descr = $pluginInfo->{$_}->{description} || '');
                 $descr =~ s{\n}{\n$fill}igms;
-                "\n\t$_\n\t    $descr\n";
+                my $pluginStr = "$_";
+                my $required = $pluginInfo->{$_}->{required} || [];
+                if (@$required) {
+                    $pluginStr 
+                        .= _tr('   (requires: %s)', join(',', @$required));
+                }
+                "\n\t$pluginStr\n\t    $descr\n";
             }
             else {
                 "\t$_\n";
