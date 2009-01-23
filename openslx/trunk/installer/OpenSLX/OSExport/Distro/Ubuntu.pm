@@ -44,6 +44,8 @@ sub initDistroInfo
         - /var/lib/xdm
         - /var/cache/man/*
         - /usr/share/vmware/*
+        - /usr/share/autostart/trackerd.desktop
+        - /usr/share/autostart/knetworkmanager.desktop
         - /tmp/*
         - /sys/*
         - /proc/*
@@ -54,6 +56,14 @@ sub initDistroInfo
         - /etc/cron.*/*
         - /boot/initrd*
         - /boot/grub
+        - /etc/xdg/adept_notifier_auto.desktop
+        - /etc/xdg/evolution*alarm*notify
+        - /etc/xdg/knetworkmanager*
+        - /etc/xdg/nm-applet.desktop
+        - /etc/xdg/system-config-printer-applet-kde.desktop
+        - /etc/xdg/autostart/tracker*
+        - /etc/xdg/update-notifier.desktop
+        - /etc/xdg/user-dirs-update-gtk.desktop
     ";
     return;
 }

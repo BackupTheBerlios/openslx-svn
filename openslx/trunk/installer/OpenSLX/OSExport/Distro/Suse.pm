@@ -77,6 +77,7 @@ sub initDistroInfo
         - /usr/bin/nw-manager
         - /usr/X11R6/bin/BackGround
         - /usr/bin/BackGround
+        - /usr/share/autostart/SUSEgreeter.desktop
         - /tmp/*
         - /sys/*
         - /proc/*

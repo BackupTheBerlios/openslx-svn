@@ -67,6 +67,7 @@ sub initialize
         - /var/tmp/*
         - /var/opt/openslx
         - /var/lib/vmware
+        - /var/lib/ntp/*
         + /var
         - /usr/lib/vmware/modules/*
         + /usr
@@ -95,7 +96,6 @@ sub initialize
         - /etc/resolv.conf.*
         - /etc/opt/openslx
         - /etc/exports*
-        - /etc/dxs
         + /etc
         - /dev/*
         + /dev
