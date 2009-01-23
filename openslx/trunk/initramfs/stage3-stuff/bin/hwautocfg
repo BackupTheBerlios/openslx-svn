@@ -33,7 +33,8 @@ hwinfo --netcard --usb-ctrl | grep modprobe | grep -E "$nwcardlist|hcd" | \
 ash /etc/modprobe.base; mdev -s
 # optimization possible: exclude network and usb base drivers from the
 # following list (bios detection for non-hwautocfg component)
-( hwinfo --pci >/etc/hwinfo.data; hwinfo --bios >/etc/hwinfo.bios ) &
+( hwinfo --pci >/etc/hwinfo.data; echo "read pci device list at $(sysup)" \
+    >/tmp/hwdataready; hwinfo --bios >/etc/hwinfo.bios ) &
 return 0
 }
 
@@ -42,6 +43,7 @@ return 0
 hwmain () {
 # activate the previously detected devices
 [ $DEBUGLEVEL -ge 2 ] || modloadbg=" >/dev/null 2>\&1"
+waitfor /tmp/hwdataready 10000
 sed '/Driver Info #1/,/Config Status:/d' \
   /etc/hwinfo.data | grep modprobe | sed "s|.* Cmd: \"||;s|\"|$modloadbg|" \
     | sort -u >/etc/modprobe.pci
@@ -54,8 +56,9 @@ mdev -s
 
 # load harddisk driver and check for harddisk
 ( grep -q -E "IDE|SCSI" /etc/hwinfo.data && modprobe ${MODPRV} sd_mod
-  hwinfo --disk | sed -n "/Device File: /p" | sed "s|.*Device File: /dev/||" \
-    >/etc/hwinfo.disk; ) &
+  hwinfo --disk | sed -n "/Device File: /p" | \
+    sed -e "s|.*Device File: /dev/||;s| .*||" >/etc/hwinfo.disk
+  echo "disk detection finished at $(sysup)" >/tmp/diskready; ) &
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
 
 # load disk/optical high level drivers
@@ -84,44 +87,43 @@ modprobe ${MODPRV} snd-mixer-oss
 # get idea of availabe harddisk partitions, put swap partitions into
 # (/mnt)/etc/fstab and format and mount partitions of type 44 (unknown)
 [ $DEBUGLEVEL -eq 21 ] && echo "** starting hdd stuff at $(sysup)"
-waitfor /etc/hwinfo.disk 10000
+waitfor /tmp/diskready 20000
 if [ -s /etc/hwinfo.disk ] ; then
-for hd in $(cat /etc/hwinfo.disk) ; do
-  fdisk -l /dev/$hd|sed -n "/^\/dev\//p" >/etc/disk.partition
-  for hdpartnr in $(cat /etc/disk.partition | \
-      sed -n -e "/ 82 /p"|sed -e "s/[[:space:]].*//") ; do
-    echo -e "$hdpartnr\tswap\t\tswap\t\tdefaults\t 0 0" >>/tmp/fstab
-  done
-  # we use special non assigned partition type (id44) for harddisk scratch 
-  # space, thus no normal filesystem will be incidentally deleted or
-  # corrupted
-  for hdpartnr in $(cat /etc/disk.partition | \
+  for hd in $(cat /etc/hwinfo.disk) ; do
+    fdisk -l /dev/$hd|sed -n "/^\/dev\//p" >/etc/disk.partition
+    for hdpartnr in $(cat /etc/disk.partition | \
+        sed -n -e "/ 82 /p"|sed -e "s/[[:space:]].*//") ; do
+      echo -e "$hdpartnr\tswap\t\tswap\t\tdefaults\t 0 0" >>/tmp/fstab
+    done
+    # we use special non assigned partition type (id44) for harddisk scratch 
+    # space, thus no normal filesystem will be incidentally deleted or
+    # corrupted
+    for hdpartnr in $(cat /etc/disk.partition | \
         sed -n -e "/ 44 /p"|sed -e "s/[[:space:]].*//") ; do
-    # check for supported filesystem and formatter
-    ( if diskfm $hdpartnr ; then
-        echo "$hdpartnr is mounted to /mnt/tmp at $(sysup)" >/tmp/tmpready
-        echo -e "$hdpartnr\t/tmp\t\tauto\t\tdefaults\t 0 0" >>/tmp/fstab
-      else
-        echo "formatting failed for some reason ($(sysup))" >/tmp/tmpready
-      fi ) &
-    part44=yes
-    break
-  done
-  # put detected linux partitions into /etc/fstab with "noauto"
-  for hdpartnr in $(cat /etc/disk.partition | \
+      # check for supported filesystem and formatter
+      ( if diskfm $hdpartnr ; then
+          echo "$hdpartnr is mounted to /mnt/tmp at $(sysup)" >/tmp/tmpready
+          echo -e "$hdpartnr\t/tmp\t\tauto\t\tdefaults\t 0 0" >>/tmp/fstab
+        else
+          echo "formatting failed for some reason ($(sysup))" >/tmp/tmpready
+        fi ) &
+      part44=yes
+      break
+    done
+    # put detected linux partitions into /etc/fstab with "noauto"
+    for hdpartnr in $(cat /etc/disk.partition | \
         sed -n -e "/ 83 /p"|sed -e "s/[[:space:]].*//") ; do
-    mkdir -p /mnt/media/${hdpartnr#/dev/*} 2>/dev/null
-    echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
+      mkdir -p /mnt/media/${hdpartnr#/dev/*} 2>/dev/null
+      echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
 noexec\t 0 0" >>/tmp/fstab
-  done 
-done
-# determine if tmp preparation should wait for format/mount or not
-[ -z "$part44" ] && echo "finished at $(sysup)" >/tmp/tmpready
+    done 
+  done
+  # determine if tmp preparation should wait for format/mount or not
+  [ -z "$part44" ] && echo "finished at $(sysup)" >/tmp/tmpready
 else
-  echo "no disk found ( $(sysup) )" >/tmp/tmpready
+  echo "no harddisk found ( $(sysup) )" >/tmp/tmpready
 fi
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished hdd stuff at $(sysup)"
-
 # scanner setup (fixme: to be checked)
 hwinfo --scanner >/etc/hwinfo.scanner
 [ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \

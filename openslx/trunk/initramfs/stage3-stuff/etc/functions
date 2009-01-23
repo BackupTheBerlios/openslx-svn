@@ -384,7 +384,7 @@ $filepath, fileserv:$fileserv" >>$LOGFILE
     esac
   done
   echo -e "\n## Configuration via fileget from ${fileprot}://${fileserv}/\
-${cfgfile}\n# Hierarchy is distro client and as last\n# distro/default" \
+${cfgfile}\n# Hierarchy is distro client and as last distro/default" \
     >>/tmp/confviafile
 fi
 cat /initramfs/machine-setup >>/tmp/confviafile
