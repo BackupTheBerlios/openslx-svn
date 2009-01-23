@@ -255,16 +255,21 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
 
     # write version information for image problem (v2 images don't run
     # on v1 players)
-    if [ "${vmware_kind}" = "vmpl1.0" ]; then
-      echo "vmplversion=1" > /mnt/etc/vmware/version
-    elif [ "${vmware_kind}" = "vmpl2.0" ]; then
-      echo "vmplversion=2.0" > /mnt/etc/vmware/version
-    elif [ "${vmware_kind}" = "vmpl2.5" ]; then
-      echo "vmplversion=2.5" > /mnt/etc/vmware/version
-    elif [ "${vmware_kind}" = "local" ]; then
-      . /mnt/opt/openslx/plugin-repo/vmware/local/versioninfo.txt
-      echo "vmplversion=${vmversion}" > /mnt/etc/vmware/version
-    fi
+    case ${vmware_kind} in
+      "vmpl1.0")
+        echo "vmplversion=1" >/mnt/etc/vmware/version
+      ;;
+      "vmpl2.0")
+        echo "vmplversion=2.0" >/mnt/etc/vmware/version
+      ;;
+      "vmpl2.5")
+        echo "vmplversion=2.5" >/mnt/etc/vmware/version
+      ;;
+      "local*")
+        . /mnt/opt/openslx/plugin-repo/vmware/local/versioninfo.txt
+        echo "vmplversion=${vmversion}" > /mnt/etc/vmware/version
+      ;;
+    esac
 
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmware' os-plugin ..."
 
