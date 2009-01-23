@@ -1,71 +1,57 @@
 #!/bin/sh
+
 ##########################################################
 # Installs NVIDIA binary drivers into openslx plugin-repo
 ##########################################################
-#
-# $1 should be package folder
-# $2 is temporary folder - defaults to /opt/openslx/plugin-repo/xserver/nvidia/tmp
-#
-set -x
-
 PLUGIN_PATH="/opt/openslx/plugin-repo/xserver"
-TMP_FOLDER="$2"
-PKG_FOLDER="$1"
+TMP_FOLDER="/opt/openslx/plugin-repo/xserver/nvidia/temp"
+PKG_FOLDER="/opt/openslx/plugin-repo/xserver/packages"
+MODULES_FOLDER="/opt/openslx/plugin-repo/xserver/modules"
 
-if [ "${TMP_FOLDER}" -eq "" ]; then
-  TMP_FOLDER="${PLUGIN_PATH}/nvidia/tmp"
-fi
-if [ ! -d ${TMP_FOLDER} ]; then
-  mkdir -p ${TMP_FOLDER}
-fi
-# change working directory to ${TMP_FOLDER}
-pushd ${TMP_FOLDER}
+#TODO: check if we still have .../xserver/nvidia folder
 
-if [ ! -d "${PKG_FOLDER}" || ! -f "${PKG_FOLDER}/NVIDIA-Linux-*.run" ]; then
-  echo "Can't find driver package from NVIDIA. Exiting!"
-  exit 1
-fi
+mkdir -p ${TMP_FOLDER} ${MODULES_FOLDER}
+cd ${PKG_FOLDER}
+FILE=$(ls NVIDIA-Linux-*|sort|tail -n 1)
 
-# file to call - binary driver package from vendor
-FILE=${PKG_FOLDER}/NVIDIA-Linux-*.run
-# extract to ${FILE/.run/} 
-./${FILE} -x
+echo "  * extracting package"
+cd ${TMP_FOLDER}
+${PKG_FOLDER}/${FILE} -x > /dev/null
+#todo: check if it extracted like it should...
 
-# or do we need precompiled? I guess not
-NVPATH=${FILE/.run/}
-rm -rf "${NVPATH}/usr/src/nv/precompiled" 
-cp -R "${NVPATH}/usr" "${PLUGIN_PATH}/nvidia"
+NVPATH=${TMP_FOLDER}/${FILE/.run/}
+mv "${NVPATH}/usr" "${PLUGIN_PATH}/nvidia"
 
-# kernel version - pick needed kernel version
+echo "  * prepare kernel module"
 UNAME_R=$(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)
-pushd ${PLUGIN_PATH}/nvidia/usr/src/nv/
-
-##############
-# DON'T LOAD THIS MODULE ON SERVER OR WHATEVER SYSTEM THIS MAY BE
-sed \
- -e '/.* modprobe .*/d' \
- -i ${PLUGIN_PATH}/nvidia/usr/src/nv/Makefile.kbuild
- -i ${PLUGIN_PATH}/nvidia/usr/src/nv/Makefile.nvidia
+cd ${PLUGIN_PATH}/nvidia/usr/src/nv/
+# dont load module
+sed -e '/.* modprobe .*/d' \
+ -i ${PLUGIN_PATH}/nvidia/usr/src/nv/Makefile.kbuild \
+ -i ${PLUGIN_PATH}/nvidia/usr/src/nv/Makefile.nvidia \
  -i ${PLUGIN_PATH}/nvidia/usr/src/nv/makefile
-###############
+# fake kernel
+# Bastian: the SYSSRC way didnt work in chroot!
+sed -e "s/..shell uname -r./${UNAME_R}/" \
+ -i ${PLUGIN_PATH}/nvidia/usr/src/nv/Makefile.kbuild \
+ -i ${PLUGIN_PATH}/nvidia/usr/src/nv/Makefile.nvidia \
+ -i ${PLUGIN_PATH}/nvidia/usr/src/nv/makefile
 
+echo "  * compile kernel module"
+make module > /dev/null 2&>1
 
-
-############################################
-# build kernel modules
-############################################
-# compile nvidia.ko module with selected kernel
-make SYSSRC=/lib/modules/${UNAME_R}/build module > /dev/null 2&>1
-if [ $? -eq 0 ]; then
-  echo "Successfully built module nvidia.ko!"
-  mkdir -p /lib/modules/${UNAME_R}/video
-  cp ${PLUGIN_PATH}/nvidia/usr/src/nv/nvidia.ko /lib/modules/${UNAME_R}/video/
+# somehow $? isn't trustworthy...
+if [ -e nvidia.ko ]; then
+  echo "  * Successfully built module nvidia.ko!"
+  mv nvidia.ko ${MODULES_FOLDER}
 else
-  echo "Something went wrong while building nvidia.ko module!"
+  echo -e "\n\n  * Something went wrong while building nvidia.ko module!\n\n\n"
+  #TODO: handle this error => mark plugin as not installed
 fi
-popd
 
-
+#TODO: remove comment
+#echo "  * cleanup"
+#rm -rf ${TMP_FOLDER} ${PLUGIN_PATH}/nvidia/usr/src
 
 # TODO: perhaps we don't need this part! - it's very slow
 #/./${TEMP_FOLDER}/nvidia-files/nvidia-installer -s --x-prefix=${TEMP_FOLDER} \
