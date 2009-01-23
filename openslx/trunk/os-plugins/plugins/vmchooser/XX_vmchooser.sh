@@ -12,20 +12,10 @@ if [ -e $CONFFILE ]; then
                 Name[de]=Virtuelle Maschine auswählen
                 Comment=This session starts the vm session chooser
                 Comment[de]=Diese Sitzung startet das Auswahlmenü für die vorhandenen Sitzungen
-                Exec=/etc/X11/sessions/default.sh
-                TryExec=/etc/X11/sessions/default.sh
+                Exec=/opt/openslx/plugin-repo/vmchooser/vmchooser -s /etc/X11/sessions/
+                TryExec=/opt/openslx/plugin-repo/vmchooser/vmchooser -s /etc/X11/sessions/
 		Icon=
                 Type=Application' >> /mnt/etc/X11/sessions/default.desktop
-
-
-		[ $DEBUGLEVEL -gt 0 ] && echo "creating wrapper script ...";
-		echo '#!/bin/bash
-		# This script was created from XX_vmchooser.sh
-		# and is a wrapper script for the vmchooser program
-		/opt/openslx/plugin-repo/vmchooser/vmchooser -s /etc/X11/sessions/
-		/etc/X11/sessions/session.sh &
-		' >> /mnt/etc/X11/sessions/default.sh
-		chmod +x /mnt/etc/X11/sessions/default.sh
 
 		[ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmchooser' os-plugin ...";
 	fi

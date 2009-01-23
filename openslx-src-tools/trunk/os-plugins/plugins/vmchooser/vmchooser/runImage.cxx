@@ -4,6 +4,7 @@
 #include "inc/SWindow.h"
 #include "inc/functions.h"
 
+#include <errno.h>
 #include <sys/wait.h>
 #include <iostream>
 #include <string>
@@ -60,16 +61,18 @@ void runImage(fltk::Widget*, void* p)
  **/
 string runImage(DataEntry& dat, char* confxml)
 {
+  cout << dat.imgtype << endl << VMWARE << endl;
   if (dat.imgtype == VMWARE) {
-    //cout << dat.xml_name << endl;
+    cout << confxml << endl;
     char* arg[] = { "/var/X11R6/bin/run-vmware.sh",
             confxml,
-            strcat("/var/lib/vmware/",dat.imgname.c_str()),
+            (char*) dat.imgname.insert(0, "/var/lib/vmware/" ).c_str(),
             (char*) dat.os.c_str(),
             (char*)dat.network.c_str(),
-             '\0' };
-    // run-vmware.sh imagename os (Window-Title) network
-    execvp("/var/X11R6/bin/run-vmware.sh", arg );
+            NULL };
+    
+    cout << "run-vmware.sh imagename os (Window-Title) network" << endl;
+    execvp("/var/X11R6/bin/run-vmware.sh",  arg);
   }
   if(! dat.command.empty() ) {
     char* arg[] = { (char*) dat.command.c_str(), '\0' };

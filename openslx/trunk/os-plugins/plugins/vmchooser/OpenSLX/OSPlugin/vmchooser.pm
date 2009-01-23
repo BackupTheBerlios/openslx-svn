@@ -77,6 +77,7 @@ sub installationPhase
     my $pluginBasePath = "$openslxBasePath/lib/plugins/$pluginName/files";
     foreach my $file ( qw( vmchooser printer.sh scanner.sh ) ) {
         copyFile("$pluginBasePath/$file", "$pluginRepoPath/");
+	chmod 0755, "$pluginRepoPath/$file";
     }
 
     return;
