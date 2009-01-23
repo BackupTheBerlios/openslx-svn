@@ -107,10 +107,10 @@ EndSection
 Section "Monitor"
   Identifier   "Generic Display"
   Option       "DPMS"
-# Horizsync    could be enabled via xserver::ddcinfo attribute
+# Modelname    "could be enabled via xserver::ddcinfo attribute"
 # Vertrefresh  ...
+# Horizsync    ...
 # DisplaySize  ...
-# Model        ...
 EndSection
 Section "Screen"
   Identifier   "Default Screen"
@@ -160,28 +160,28 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
 }'    -i $xfc
     fi
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'xserver' os-plugin ...";
-    # run distro specific generated stage3 script
-    [ -e /mnt/opt/openslx/plugin-repo/xserver/xserver.sh ] && \
-      . /mnt/opt/openslx/plugin-repo/xserver/xserver.sh
+    # some configurations produce no proper screen resolution without
+    # Horizsync and Vertrefresh set (more enhancements might be needed for
+    # really old displays like CRTs)
     if [ $xserver_ddcinfo -ne 0 ] ; then
       # read /etc/hwinfo.display started at "runinithook '00-started'"
-      # and add
-      #   Horizsync       M-N
-      #   Vertrefresh     O-P in Monitor section
       vert=$(grep -m 1 "Vert.*Range:" /etc/hwinfo.display | \
         sed 's|.*Range:\ ||;s|\ Hz||')
       horz=$(grep -m 1 "Hor.*Range:" /etc/hwinfo.display | \
         sed 's|.*Range:\ ||;s|\ kHz||')
       modl=$(grep -m 1 " Model: " /etc/hwinfo.display | \
         sed 's|.*Model:\ ||;s|"||g')
-      size="0 0"
       size="$(grep -m 1 " Size: " /etc/hwinfo.display | \
         sed 's|.*ize:\ ||;s|\ mm||;s|x|\ |')"
       [ -n "$vert" -a -n "$horz" ] && \
         sed -e "s|# Horizsync.*|  Horizsync    $horz|;\
                 s|# Vertrefre.*|  Vertrefresh  $vert|;\
-                s|# DisplaySi.*|  DisplaySize  $size|;\
                 s|# Modelname.*|  Modelname    \"$modl\"|" -i $xfc
+      [ -n "$size" ] && \
+        sed -e "s|# DisplaySi.*|  DisplaySize  $size|" -i $xfc
+    # run distro specific generated stage3 script
+    [ -e /mnt/opt/openslx/plugin-repo/xserver/xserver.sh ] && \
+      . /mnt/opt/openslx/plugin-repo/xserver/xserver.sh
     fi
   fi
 fi
