@@ -70,22 +70,19 @@ if [ "$1" = "nvidia" ]; then
   if [ "11.0" = "`cat /etc/SuSE-release | tail -n1 | cut -d' ' -f3`" ]; then
     echo "  * Downloading nvidia rpm packages... this could take some time..."
     # add repository for nvidia drivers
-    zypper addrepo http://download.nvidia.com/opensuse/11.0/ NVIDIA
-    # confirm authenticity of key (once) 
-    # -> After key is cached, this is obsolete
-    zypper se -r NVIDIA x11-video-nvidiaG01
+    zypper --no-gpg-checks addrepo http://download.nvidia.com/opensuse/11.0/ NVIDIA > /dev/null 2>&1
     # get URLs by virtually installing nvidia-OpenGL driver
-    zypper -n -vv install -D x11-video-nvidiaG01 > logfile
+    zypper --no-gpg-checks -n -vv install -D x11-video-nvidiaG01 2>&1 > logfile
 
     # take unique urls from logfile
     URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | sort -u | xargs)
     for RPM in $URLS; do
       RNAME=$(echo ${RPM} | sed -e 's,^.*/\(.*\)$,\1,g')
       if [ ! -e ${RNAME} ]; then
-        wget ${RPM} > /dev/null
+        wget ${RPM} > /dev/null 2>&1
       fi
       # We use rpm2cpio from suse to extract
-      rpm2cpio ${RNAME} | ${BUSYBOX} cpio -id > /dev/null
+      rpm2cpio ${RNAME} | ${BUSYBOX} cpio -id > /dev/null 2>&1
     done
     mv ./usr/X11R6/lib/* ./usr/lib/
     mv ./usr ..
@@ -119,19 +116,16 @@ if [ "$1" = "ati" ]; then
     echo "  * Downloading ati rpm packages... this could take some time..."
 
      # add repository for nvidia drivers
-    zypper addrepo http://www2.ati.com/suse/11.0/ ATI
-    # confirm authenticity of key (once) 
-    # -> After key is cached, this is obsolete
-    zypper se -r ATI x11-video-fglrxG01
+    zypper --no-gpg-checks addrepo http://www2.ati.com/suse/11.0/ ATI > /dev/null 2>&1 
     # get URLs by virtually installing fglrx-OpenGL driver
-    zypper -n -vv install -D ati-fglrxG01-kmp${KSUFFIX} x11-video-fglrxG01 > logfile
+    zypper --no-gpg-checks -n -vv install -D ati-fglrxG01-kmp${KSUFFIX} x11-video-fglrxG01 > logfile
 
     # take unique urls from logfile
     URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | grep fglrx | sort -u | xargs)
     for RPM in $URLS; do
       RNAME=$(echo ${RPM} | sed -e 's,^.*/\(.*\)$,\1,g')
       if [ ! -e ${RNAME} ]; then
-        wget ${RPM} > /dev/null
+        wget ${RPM} > /dev/null 2>&1 
       fi
       # We use rpm2cpio from suse to extract -> propably new rpm version
       rpm2cpio ${RNAME} | ${BUSYBOX} cpio -id > /dev/null
