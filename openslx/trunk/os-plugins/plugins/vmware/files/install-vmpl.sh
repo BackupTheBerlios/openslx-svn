@@ -99,15 +99,9 @@ if [ "${vmplversion}" != "vmpl1.0" ]; then
 fi
 
 echo "   * building vmblock module"
-# TODO: check if /boot/vmlinuz is available if we get the kernel version this way
-#       perhaps we don't need a check... perhaps openslx always use
-#       /boot/vmlinuz
-#       This problem happens 3 times. see below!
-# TODO: error check if build environment isn't installed...
-#TODO: vmblock only v2
 if [ "${vmplversion}" != "vmpl1.0" ]; then
   cd vmblock-only/
-  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
+  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)%" Makefile
   make -s
   mv vmblock.ko vmblock.o ../../../../../modules
   cd ..
@@ -115,14 +109,14 @@ fi
 
 echo "   * building vmmon module"
 cd vmmon-only
-sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
+sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)%" Makefile
 make -s
 mv vmmon.ko vmmon.o ../../../../../modules
 cd ..
     
 echo "   * building vmnet module"
 cd vmnet-only
-sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
+sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)%" Makefile
 make -s
 mv vmnet.ko vmnet.o ../../../../../modules
 cd ../../../../../..
