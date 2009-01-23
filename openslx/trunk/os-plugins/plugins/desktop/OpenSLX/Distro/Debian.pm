@@ -26,6 +26,17 @@ use OpenSLX::Utils;
 ### interface methods
 ################################################################################
 
-# TODO: implement!
+sub patchGDMScript
+{
+    my $self   = shift;
+    my $script = shift;
+    
+    $script .= unshiftHereDoc(<<'    End-of-Here');
+        rllinker gdm 1 1
+        echo '/usr/bin/gdm' > /mnt/etc/X11/default-display-manager
+    End-of-Here
+    return $script;
+}
+
 
 1;

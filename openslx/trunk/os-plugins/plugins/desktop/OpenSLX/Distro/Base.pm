@@ -39,12 +39,20 @@ sub initialize
     return 1;
 }
 
+sub pathOf
+{
+    my $self   = shift;
+    my $binary = shift;
+    
+    return qx{which $binary 2>/dev/null};
+}
+
 sub isInPath
 {
     my $self   = shift;
     my $binary = shift;
     
-    my $path = qx{which $binary 2>/dev/null};
+    my $path = $self->pathOf($binary);
 
     return $path ? 1 : 0;
 }
@@ -98,13 +106,14 @@ sub GDMPathInfo
     return $pathInfo;
 }
 
-sub GDMRunlevelLinks
+sub patchGDMScript
 {
     my $self   = shift;
+    my $script = shift;
     
-    return unshiftHereDoc(<<"    End-of-Here");
-        rllinker gdm 15 15
-    End-of-Here
+    # default implementation does nothing!
+    
+    return $script;
 }
 
 sub GDMConfigHashForWorkstation
@@ -124,7 +133,7 @@ sub GDMConfigHashForWorkstation
             Enable => 'false',
         },
         'greeter' => {
-            AllowShutdown => 'true',
+            AllowShutdown => 'false',
             Browser => 'false',
             MinimalUID => '500',
             SecureShutdown => 'false',

@@ -26,6 +26,28 @@ use OpenSLX::Utils;
 ### interface methods
 ################################################################################
 
-# TODO: implement!
+sub GDMPathInfo
+{
+    my $self = shift;
+    
+    my $pathInfo = $self->SUPER::GDMPathInfo();
+    
+    # link gdm.conf-custom instead of gdm.conf
+    $pathInfo->{config} = '/etc/gdm/gdm.conf-custom';
+
+    return $pathInfo;
+}
+
+sub patchGDMScript
+{
+    my $self   = shift;
+    my $script = shift;
+    
+    $script .= unshiftHereDoc(<<'    End-of-Here');
+        rllinker gdm 1 1
+        echo '/usr/sbin/gdm' > /mnt/etc/X11/default-display-manager
+    End-of-Here
+    return $script;
+}
 
 1;

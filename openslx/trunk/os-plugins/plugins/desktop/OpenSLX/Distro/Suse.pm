@@ -26,14 +26,29 @@ use OpenSLX::Utils;
 ### interface methods
 ################################################################################
 
-sub GDMRunlevelLinks
+sub GDMPathInfo
+{
+    my $self = shift;
+    
+    my $pathInfo = $self->SUPER::GDMPathInfo();
+    
+    # link gdm.conf-custom instead of gdm.conf
+    $pathInfo->{config} = '/etc/X11/gdm/gdm.conf-custom';
+
+    return $pathInfo;
+}
+
+sub patchGDMScript
 {
     my $self   = shift;
+    my $script = shift;
     
-    return unshiftHereDoc(<<"    End-of-Here");
-        rllinker earlygdm 1 15
-        rllinker xdm      15 1
+    $script .= unshiftHereDoc(<<'    End-of-Here');
+        rllinker xdm 1 1
+        sed -i 's/DISPLAYMANAGER=.*/DISPLAYMANAGER="gdm"/' \
+            /mnt/etc/sysconfig/displaymanager
     End-of-Here
+    return $script;
 }
 
 1;

@@ -230,6 +230,7 @@ sub installationPhase
     if ($self->{xdm}) {
         $self->_setupXDM();
     }
+    $self->_setupSupportedThemes();
 
     return;
 }
@@ -379,7 +380,6 @@ sub _ensureSensibleStage3Attrs
 sub _setupGDM
 {
     my $self = shift;
-    my $attrs = shift;
     
     my $repoPath = $self->{pluginRepositoryPath};
     mkpath([ 
@@ -418,10 +418,26 @@ sub _setupGDMScript
     my $script = unshiftHereDoc(<<"    End-of-Here");
         #!/bin/ash
         # written by OpenSLX-plugin 'desktop'
+
         mkdir -p $paths 2>/dev/null
-        ln -sf $repoPath/gdm/\$desktop_mode/gdm.conf /mnt$configFile
+
+        mkdir -p \$(dirname /mnt$configFile) 2>/dev/null
+        cp /mnt/$repoPath/gdm/\$desktop_mode/gdm.conf /mnt$configFile
+
+        # activate theme only if the corresponding xml file is found
+        # (otherwise fall back to default theme of vendor-OS)
+        if [ -n "\$desktop_theme" ]; then
+          thdir=/opt/openslx/plugin-repo/desktop/themes
+          theme=\$desktop_theme
+          if [ -e /mnt\$thdir/\$desktop_theme/gdm/\${theme}.xml ]; then
+            sed -i "s,\\[greeter\\],[greeter]\\nGraphicalThemeDir=\$thdir," \\
+              /mnt/$configFile
+            sed -i "s,\\[greeter\\],[greeter]\\nGraphicalTheme=\$theme," \\
+              /mnt/$configFile
+          fi
+        fi
     End-of-Here
-    $script .= $self->{distro}->GDMRunlevelLinks();
+    $script = $self->{distro}->patchGDMScript($script);
     spitFile("$repoPath/gdm/desktop.sh", $script);
     return;
 }
@@ -429,14 +445,11 @@ sub _setupGDMScript
 sub _setupKDM
 {
     my $self = shift;
-    my $attrs = shift;
-    
 }
 
 sub _setupXDM
 {
     my $self = shift;
-    my $attrs = shift;
 }
 
 sub _writeConfigHash
@@ -458,6 +471,30 @@ sub _writeConfigHash
         $content .= "\n";
     }
     spitFile($file, $content);
+}
+
+sub _setupSupportedThemes
+{
+    my $self = shift;
+
+    my $supportedThemes = $self->{attrs}->{'desktop::supported_themes'} || '';
+    my @supportedThemes = split m{\s*,\s*}, $supportedThemes;
+    return if !@supportedThemes;
+
+    my $themeBaseDir = "$self->{openslxPath}/share/themes";
+    THEME:
+    for my $theme (@supportedThemes) {
+        my $themeDir = "$themeBaseDir/$theme/displaymanager";
+        if (!-e $themeDir) {
+            warn _tr('theme "%s" not found - skipped!', $theme);
+            next;
+        }
+        my $themeTargetPath = "$self->{pluginRepositoryPath}/themes/";
+        mkpath($themeTargetPath);
+        vlog(1, "installing theme '$theme'...");
+        slxsystem("cp -a $themeDir $themeTargetPath/$theme") == 0
+            or die _tr('unable to copy theme %s (%s)', $theme, $!);
+    }
 }
 
 1;
