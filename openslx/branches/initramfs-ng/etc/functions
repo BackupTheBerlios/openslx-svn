@@ -1,0 +1,1003 @@
+# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org
+#
+# Common functions file for the configuration of linux diskless clients
+# (included by init, hwautocfg, servconfig, ... within OpenSLX initialramfs)
+
+#############################################################################
+# set of empty dummy functions (loaded before real functions in the
+# distro specific files - to have no undeclared function in init, serv-
+# config, hwautocfg, ...
+
+# distro specific funtion called at the beginning of init script
+preinit () {
+:
+}
+# distro specific funtion called at the end of init script
+postinit () {
+:
+}
+# distro specific general function called from servconfig script
+config_distro () {
+:
+}
+
+#############################################################################
+# produce error message and if $2 is empty run (debug) shell
+error () {
+local e_msg="$1"
+# check if LOGFILE is really writeable
+if [ -n "${LOGFILE}" ] ; then
+  [ "${LOGFILE}" != "/dev/null" ] && \
+  [ -w /mnt/${LOGFILE} ] || LOGFILE="/dev/null"
+else LOGFILE="/dev/null"
+fi
+# if nonfatal error else fatal error message and shell
+if [ -n "$2" ] ; then
+  [ "$DEBUGLEVEL" -ge 1 -a "$DEBUGLEVEL" != 8 ] && \
+    echo -e "${error_msg}${e_msg}${error_nfe}" >> ${LOGFILE}
+  [ "$DEBUGLEVEL" -gt 1 -a "$DEBUGLEVEL" != 8 ] && \
+    echo -e "${error_msg}${e_msg}${error_nfe}"
+  [ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && usleep 10
+else
+  echo -e "${error_msg}${e_msg}${error_shell}"
+  /bin/ash
+  echo -n "Reboot now? [y] (nothing happens here at the moment)"
+  exec < /dev/console > /dev/console
+  #input="y"
+  #read input
+  #[ -z "$input" -o "$input" = "y" -o "$input" = "Y" ] && {
+  #  sleep 4
+  #  [ -f /proc/sysrq-trigger ] || mount -t proc none /proc
+  #  echo "b" > /proc/sysrq-trigger
+  #}
+fi
+}
+#############################################################################
+# system uptime for performance analysis
+sysup () {
+uptime=$(sed -e "s, .*,," /proc/uptime)
+echo "${uptime} s."
+# if start times are kept, a summary of runtimes would be possible too
+}
+#############################################################################
+# (re)generate dynamic linked libraries cache from /etc/ld.so.conf
+ldcfg () {
+[ -n "${ldsc}" ] && echo -e "$init_ldcfg" && ldconfig /tmp/ld.so.cache &
+}
+#############################################################################
+# URI interpreter $1 variable to interprete, $2 type of token to return
+# prot: tftp, http, nbd, ... server: IP or FQDN
+uri_token () {
+local var=$1
+local prot
+local rest
+local server
+local path
+local port
+local tmpval
+local query=""
+# first check if URI starts with prot:// - URI scheme
+if strinstr "://" "$1" ; then
+  prot=${var%://*}
+  rest=${var#*://}
+else
+  rest="$var"
+  prot=""
+fi
+# remove temporary '::' from path, since it conflicts with port specification
+if strinstr "::" "$rest" ; then
+  rest=$(echo $rest | sed -e 's,::,§§§§§,g')
+elif strinstr "\:\:" "$rest" ; then
+  rest=$(echo $rest | sed -e 's,\:\:,§§§§§,g')
+fi
+# get the server IP or name and port - URI authority
+# you get the path or other token without leading "/" - add it later if
+# needed (fixme: port might be broken)
+if strinstr ":" "$rest" ; then
+  server="${rest%:*}"
+  rest="${rest#*:}"
+  path="${rest#*/}"
+  port="${rest%/$path}"
+else
+  tmpval=$rest
+  rest="${rest#*/}"
+  server="$(echo $tmpval|sed 's,/.*,,')"
+  path="${tmpval#${server}}"
+  port=""
+fi
+# get path and query components - URI path, query
+if strinstr "\?" "$rest" ; then
+  path="${path%\?*}"
+  query="${rest#*\?}"
+fi
+# return the requested token
+case "$2" in
+  prot) echo "$prot" ;;
+  server) echo "$server" ;;
+  # add '::' again to path
+  path) echo "$path" | sed -e 's,§§§§§,\:\:,g' ;;
+  port) echo "$port" ;;
+  query) echo "$query" ;;
+esac
+}
+#############################################################################
+# compute prefix bit number from netmask
+nm2pref () {
+set $(IFS="."; echo $1)
+local n=0
+local i
+  for i in $1 $2 $3 $4 ; do
+    case $i in
+        0) break ;;
+      128) n=$(($n + 1)) ; break ;;
+      192) n=$(($n + 2)) ; break ;;
+      224) n=$(($n + 3)) ; break ;;
+      240) n=$(($n + 4)) ; break ;;
+      252) n=$(($n + 6)) ; break ;;
+      254) n=$(($n + 7)) ; break ;;
+      255) n=$(($n + 8)) ; continue ;;
+    esac
+  done
+echo $n
+}
+#############################################################################
+# replace @@@serverip@@@ with real serverip. Allows the usage of a variable
+# for the server ip address (e.g. in machine-setup or kernel commandline)
+checkip ()
+{
+if [ "@@@serverip@@@" = "$1" -a -n "$serverip" ] ; then
+  echo $serverip
+else
+  echo $1
+fi
+}
+#############################################################################
+# definition of wlan interface name and wireless connect
+wlanlinksetup () {
+local wlanif=$(iwconfig 2>/dev/null|sed -n "/ESSID:/p"|sed "s/    .*//")
+if [ -n "$if" ] ; then
+  ip link set dev ${wlanif} up
+  if iwconfig ${wlanif} mode managed essid "${essid}"; then
+    nwif=${wlanif}
+  else
+    error "$init_nowlan"
+  fi
+else
+  error "$init_nowlan"
+fi
+}
+#############################################################################
+# replacement for which command to find executables inside stage4 rootfs
+binfinder()
+{
+local program="$1"
+local s4path
+local notfound=1
+for s4path in bin sbin usr/bin usr/sbin usr/local/bin \
+              usr/local/sbin usr/bin/X11; do
+  if [ -f "/mnt/$s4path/$program" ] && \
+     [ -x "/mnt/$s4path/$program" ]; then
+    printf '%s\n' "/$s4path/$program"
+    notfound=0
+    break
+  fi
+done
+return $notfound
+}
+#############################################################################
+# disk formatter and mounter. some proper error message output should be
+# added. It uses programs invoked from stage 4 root filesystem. First
+# argument is blockdev or file to be formatted, second mountpoint if not
+# /mnt/tmp (default)
+diskfm () {
+local target=$1
+local mntpnt=$2
+local fs
+local path
+for fs in xfs ext2 reiserfs ; do
+  if strinfile "$fs" /proc/filesystems || modprobe ${MODPRV} $fs ; then
+    unset $found
+    for path in /sbin /bin /usr/sbin /usr/bin ; do
+      if test -x /mnt/$path/mkfs.$fs ; then
+        found=yes
+        case mkfs.$fs in
+          mkfs.xfs)
+            fopt="-f"
+            mopt="-o noexec"
+          ;;
+          mkfs.ext2)
+            fopt="-Fq"
+            mopt="-o nocheck,noexec"
+          ;;
+          mkfs.reiserfs)
+            fopt="-f"
+            mopt="-o noexec"
+          ;;
+        esac
+        LD_LIBRARY_PATH=/mnt/lib /mnt/$path/mkfs.$fs $fopt $target \
+          >/dev/null 2>&1 #|| error
+        if [ -z $mntpnt ] ; then
+          umount /mnt/tmp 2>/dev/null
+          if mount -t $fs -n $mopt $target /mnt/tmp 2>/dev/null; then
+            return 0
+          else
+            mount -n -t tmpfs none /mnt/tmp
+          fi
+        else
+          testmkd $mntpnt
+          mount -t $fs -n -o loop $target $mntpnt 2>/dev/null
+          return 0
+        fi
+      fi
+    done
+    [ -z $found ] && break
+  else break
+  fi
+done
+}
+#############################################################################
+# create configuration file for dhclient
+mkdhclconf () {
+local vci=$1
+# provide dhclient with proper configuration
+echo -e "option bootlocal-script code 221\t= string;\n\
+option language code 222\t\t= string;\n\
+option start-x code 223\t\t\t= string;\n\
+option start-snmp code 224\t\t= string;\n\
+option start-sshd code 225\t\t= string;\n\
+option start-xdmcp code 226\t\t= string;\n\
+option start-cron code 227\t\t= string;\n\
+option crontab-entries code 228\t\t= string;\n\
+option start-rwhod code 229\t\t= string;\n\
+option start-printdaemon code 230\t= string;\n\
+option desktop-session code 231\t\t= string;\n\
+option tex-enable code 232\t\t= string;\n\
+option netbios-workgroup code 233\t= string;\n\
+option vmware code 234\t\t\t= string;\n\
+option hw-mouse code 252\t\t= string;\n\
+option hw-graphic code 253\t\t= string;\n\
+option hw-monitor code 254\t\t= string;\n\n\
+send dhcp-lease-time 86400;\nsend dhcp-max-message-size 1400;\n\
+request;\nscript \"/bin/dhclient-script\";" >> /etc/dhclient.conf
+if [ -n "$vci" ] ; then
+  echo "send vendor-class-identifier \"$vci\";" >> /etc/dhclient.conf
+fi
+}
+
+#############################################################################
+# dhcp client function (supporting dhclient and udhcp, latter is preferred)
+rundhcp ()
+{
+local vci="$1"
+for dhcp in dhclient udhcpc none; do
+  test -e /bin/$dhcp && break;
+done
+if [ "$dhcp" = "none" ] ; then
+  error "$error_nodhcp" nonfatal
+else
+  # ensure the interface is up - might produce conflicts - nbd could
+  # fail!!
+  [ -n "$noipyet" ] && \
+    ip link set dev $nwif up
+  [ -f /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko ] && \
+    modprobe ${MODPRV} af_packet   
+  echo "Starting $dhcp for configuration"
+  mkdir /var/lib/dhcp >/dev/null 2>&1
+fi
+export client="$dhcp"
+case $dhcp in
+  dhclient)
+    mkdhclconf $vci
+    ln -s /bin/dhcpmkconfig /bin/dhclient-script
+    dhclient -cf /etc/dhclient.conf -lf /var/lib/dhcp/dhclient.leases \
+      -q $nwif >/dev/null 2>&1 || error "$error_dhclient"
+  ;;
+  # udhcpc is a busybox applet
+  udhcpc)
+    [ -n $vci ] && vci="-V $vci"
+    testmkd /usr/share/udhcpc
+    ln -s /bin/dhcpmkconfig /usr/share/udhcpc/default.script
+    # -b option is suboptimal here ...
+    udhcpc -t 8 -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null
+  ;;
+esac
+echo "dhcp finished at $(sysup)" >/tmp/dhcp-done
+}
+
+#############################################################################
+# function for retrieving configuration file (machine-setup) via tftp from a
+# predefined server or given source (file=tftp-server:/path via kernel
+# command line)
+unpack () {
+# $1 is  config file name to get, $2 IP of server to get file from
+local dst=$1
+if [ -s $dst ] ; then
+  # fixme: handle different types of packaging (gzip/bzip2)??
+  if ! tar -xpzf $dst 2> /tmp/ConfTGZ-tar-error ; then
+     cat /tmp/ConfTGZ-tar-error
+     error "$unpack_ConfTGZ" nonfatal
+     rm /tmp/ConfTGZ-tar-error
+  fi
+  [ "$DEBUGLEVEL" -le 2 -o "$DEBUGLEVEL" -eq 8  ] && rm $dst
+  return 0
+else
+  return 1
+fi
+}
+fileget () {
+# normally tftp would be used, alternatively use wget for ftp or http
+# if local device file is specified - mount and unmount after copying
+local cfgfile
+[ "x$fileprot" = "x" ] && fileprot=tftp
+if [ "x$filepath" != "x" ] ; then
+  cfgfile="${filepath}"
+  [ "x$fileserv" = "x" ] && fileserv=$(checkip ${serverip})
+  case "$fileprot" in
+   ftp|http)
+     wget $fileprot://$fileserv/$cfgfile -O /tmp/$(basename $cfgfile) \
+       2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
+   ;;
+   file)
+     local ldev=$fileserv
+     echo "Waiting for /mnt/etc ...."
+     waitfor /mnt/etc 10000
+     mkdir /tmp/$ldev
+     echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
+     mount -o ro /dev/$ldev /tmp/$ldev || error "$init_errlfg"
+     unpack /tmp/$ldev/"$cfgfile"
+     umount /dev/$ldev
+   ;;
+   *)
+     tftp -g -r "$cfgfile" -l /tmp/$(basename "$cfgfile") $fileserv  \
+       && unpack /tmp/$(basename "$cfgfile")
+   ;;
+   esac
+else
+  # predefined value for openslx environment; it is expected that this
+  # directory is just below the tftpboot (path to which the daemon is
+  # restricted to)
+  filepath="client-config"
+  [ "x$fileserv" = "x" ] && fileserv=$(checkip ${serverip})
+  # try to get configuration files successively; start with distro client
+  # and try last distro default ...
+  echo -e "\n## Configuration via fileget: Hierarchy is distro client \
+and as last\n# distro/default" >> /tmp/confviafile
+  mac=$(echo $macaddr|sed "s/:/-/g")
+  for cfgfile in "${filepath}/${SYSTEM_NAME}/01-${mac}.tgz" \
+                 "${filepath}/${SYSTEM_NAME}/default.tgz" ; do
+    case "$fileprot" in
+      ftp|http)
+        wget $fileprot://$fileserv/"$cfgfile" -O /tmp/$(basename "$cfgfile") \
+          2>/dev/null && { unpack /tmp/$(basename "$cfgfile") && break; }
+      ;;
+      tftp)
+        tftp -g -r "$cfgfile" -l /tmp/$(basename "$cfgfile") $fileserv \
+           && { unpack /tmp/$(basename "$cfgfile") && break; }
+      ;;
+    esac
+  done
+fi
+test -f /initramfs/machine-setup && \
+  cat /initramfs/machine-setup >> /tmp/confviafile
+echo "fileget via $fileprot from $fileserv/$cfgfile finished" >/tmp/file-done
+}
+
+#############################################################################
+# function for creating directories after testing of their existance avoids
+# to recreate directories in union mounts
+testmkd () {
+  test -d $1 || mkdir -p $1 >/dev/null 2>&1
+}
+
+#############################################################################
+# function for writing a syslog-ng.conf file. First parameter is absolute
+# destination (incl. /mnt prefix)
+# sysngwriter $dest $start_syslog
+sysngwriter () {
+local mysyslogngcfg=$1
+# logging servers might be specified in $log_servers (from e.g. dhcp)
+# fixme!? only first logserver from dhcp variable is used
+[ -n "$log_servers" ] && start_syslog="syslog://${log_servers% *}:514/udp"
+echo -e "# File written by $0 within InitRamFS\n\
+source src {\n\tfile(\"/proc/kmsg\");\n\
+\tunix-dgram(\"/dev/log\");\n\tinternal();\n};\ndestination console_all {\
+\n\tfile(\"/dev/tty10\");\n};" >$mysyslogngcfg
+case "$start_syslog" in
+  yes|Yes|YES)
+    echo -e "\nlog {\n\tsource(src);\n\tdestination(console_all);\n};" \
+      >>$mysyslogngcfg
+  ;;
+  file)
+    echo -e "destination allmessages {\n\tfile(\"/var/log/allmessages\");\n};\
+\nlog {\n\tsource(src); destination(allmessages);\n};" >>$mysyslogngcfg
+  ;;
+  *)
+    syslogsrv=$(uri_token $start_syslog server)
+    syslogport=$(uri_token $start_syslog port)
+    syslogprot=$(uri_token $start_syslog path)
+    [ -z ${syslogport} ] && syslogport=514
+    [ -z ${syslogprot} ] && syslogprot=udp
+    echo -e "destination loghost {\n\t${syslogprot}(\"${syslogsrv}\" \
+port(${syslogport}));\n};\nlog {\n\tsource(src);\n\tdestination(loghost);\n};"\
+      >>$mysyslogngcfg
+  ;;
+esac
+}
+
+#############################################################################
+# simple basename replacement
+basename () {
+  local b=${1##*/}
+  echo ${b%$2}
+}
+
+#############################################################################
+# simple string in string search
+strinstr (){
+  case "$2" in *$1*) return 0;; esac
+  return 1
+}
+
+#############################################################################
+# simple string in file search, for the future grep should be used instead
+strinfile (){
+  case "$(cat $2)" in *$1*) return 0;; esac
+  return 1
+}
+
+
+#############################################################################
+# check boot commandline for specified option
+inkernelcmdline (){
+strinstr " $1" "${KCMDLINE}"
+return "$?"
+}
+
+#############################################################################
+# wait for a file to appear and stop after maxwait counts
+waitfor () {
+local file=$1
+local maxwait=$2
+local count=0
+[ -z $file ] && return 0
+[ -z $maxwait ] && maxwait=5000
+while [ ! -e $file ] ; do
+  usleep 1000 
+  count=$(($count + 1))
+  [ $count -gt $maxwait ] && return 1
+done
+return 0
+}
+
+#############################################################################
+# ldconfig is needed if rootfilesystem is composed of several parts. Search
+# for ldconfig and execute it
+# check that /mnt/etc/ld.so.conf is never lost
+ldconfig () {
+local cachefile="$1"
+for ldcfg in /mnt/sbin/ldconfig \
+             /mnt/bin/ldconfig \
+             /mnt/usr/sbin/ldconfig; do
+  test -x $ldcfg && {
+    $ldcfg -r /mnt -C $cachefile; break; }
+done
+echo "finished at $(sysup)" >/tmp/ldcfg
+}
+
+#############################################################################
+# base passwd/shadow, the standard user present in every system. All other
+# system users should be generated within the service function
+basepasswd () {
+# strip every line with userid between 500 and 99999 from the passwd
+# file
+sed '/^[a-zA-Z0-9]*:[a-zA-Z0-9]*:[1-9][0-9]\{3,4\}:/d;/^+:*/d;/^+$/d;
+  /^[a-zA-Z0-9]*:[a-zA-Z0-9]*:[5-9][0-9]\{2\}:/d' /mnt/etc/passwd \
+  > /tmp/newpasswd
+# and add user nobody again (is there a more elegant way?)
+sed -n -e '/nobody/p' /mnt/etc/passwd >> /tmp/newpasswd
+# create the shadow from passwd file
+echo -e "root:"${root_pw}":12958:0:10000::::" > /mnt/etc/shadow
+sed 's/:.*/:!:13078:0:99999:7:::/;/^root.*/d' /tmp/newpasswd \
+  >> /mnt/etc/shadow
+mv /tmp/newpasswd /mnt/etc/passwd
+chmod 0640 /mnt/etc/shadow
+}
+
+#############################################################################
+# wait for the completion of configuration file (machine-setup). It is
+# composed from different sources
+cfgcomplete () {
+waitfor /tmp/dhcp-done 10000 || error "$error_errdcfg" nonfatal
+waitfor /tmp/file-done 10000 || error "$error_errfcfg" nonfatal
+waitfor /tmp/ldap-done 10000 || error "$error_errlcfg" nonfatal
+# concatenate the different files now into the central config file, order
+# matters - ldap (not implemented yet) data has highest priority
+if ! test -f /tmp/cfgcomplete ; then
+  for config in /etc/initramfs-setup /tmp/confviadhcp /tmp/confviafile \
+  	            /tmp/confvialdap
+    do test -f $config && cat $config >> /etc/machine-setup
+  done
+# check again and replace @@@serverip@@@
+. /etc/machine-setup
+sed "s,@@@serverip@@@,$serverip," -i /etc/machine-setup
+echo "config completed" > /tmp/cfgcomplete
+fi
+}
+
+#############################################################################
+# execute all shell scripts in the given init-hook folder
+runinithook () {
+local hook=$1
+if [ -d /etc/init-hooks/$hook ]; then
+  for hook_script in /etc/init-hooks/$hook/*.sh; do
+    if [ -e $hook_script ]; then
+      . $hook_script
+    fi
+  done
+fi
+}
+
+#############################################################################
+# localization simply derived from $language variable set in machine-setup or
+# other sources - mostly taken from knoppix
+localization () {
+country="$1"
+CONSOLE_FONT="lat9w-16.psfu"
+case "$country" in
+  # German version
+  de*)
+    COUNTRY="de"
+    LANG="de_DE.UTF8"
+    KEYTABLE="de-latin1-nodeadkeys"
+    XKEYBOARD="de"
+    KDEKEYBOARD="de"
+    CHARSET="utf8"
+    KDEKEYBOARDS="us,fr"
+    TZ="Europe/Berlin"
+  ;;
+  # Belgian version
+  be*)
+    COUNTRY="be"
+    LANG="C"
+    KEYTABLE="be2-latin1"
+    XKEYBOARD="be"
+    KDEKEYBOARD="be"
+    CHARSET="iso8859-15"
+    KDEKEYBOARDS="us,de,fr"
+    TZ="Europe/Brussels"
+  ;;
+  # Bulgarian version
+  bg*)
+    COUNTRY="bg"
+    LANG="bg_BG"
+    KEYTABLE="bg"
+    XKEYBOARD="bg"
+    KDEKEYBOARD="bg"
+    CHARSET="microsoft-cp1251"
+    KDEKEYBOARDS="us,de,fr"
+    TZ="Europe/Sofia"
+  ;;
+  # Switzerland (basically de with some modifications)
+  ch)
+    LANGUAGE="de"
+    COUNTRY="ch"
+    LANG="de_CH"
+    KEYTABLE="sg-latin1"
+    XKEYBOARD="de_CH"
+    KDEKEYBOARD="de_CH"
+    CHARSET="iso8859-15"
+    KDEKEYBOARDS="de,us,fr"
+    TZ="Europe/Zurich"
+  ;;
+  # Simplified Chinese
+  cn)
+    COUNTRY="cn"
+    LANG="zh_CN.GB2312"
+    KEYTABLE="us"
+    XKEYBOARD="us"
+    KDEKEYBOARD="us"
+    CHARSET="gb2312.1980-0"
+    KDEKEYBOARDS="us,de,fr"
+    XMODIFIERS="@im=Chinput"
+    TZ="Asia/Shanghai"
+  ;;
+  # Czechoslovakia
+  cs|cz)
+    LANGUAGE="cs"
+    COUNTRY="cs"
+    LANG="cs_CZ"
+    KEYTABLE="cz-lat2"
+    XKEYBOARD="cs"
+    KDEKEYBOARD="cz"
+    CHARSET="iso8859-2"
+    KDEKEYBOARDS="us,de,fr"
+    TZ="Europe/Prague"
+    CONSOLE_FONT="iso02g"
+  ;;
+  # Denmark
+  dk|da)
+    COUNTRY="dk"
+    LANG="da_DK"
+    # Workaround: "dk" broken in gettext, use da:da_DK
+    LANGUAGE="da:da_DK"
+    KEYTABLE="dk"
+    XKEYBOARD="dk"
+    KDEKEYBOARD="dk"
+    CHARSET="iso8859-15"
+    KDEKEYBOARDS="dk,de,us,fr"
+    TZ="Europe/Copenhagen"
+  ;;
+  es)
+  # Spain
+    COUNTRY="es"
+    LANG="es_ES@euro"
+    KEYTABLE="es"
+    XKEYBOARD="es"
+    KDEKEYBOARD="es"
+    CHARSET="iso8859-15"
+    KDEKEYBOARDS="de,us,fr"
+    TZ="Europe/Madrid"
+  ;;
+  # Finland
+  fi)
+    COUNTRY="fi"
+    LANG="fi_FI@euro"
+    KEYTABLE="fi"
+    XKEYBOARD="fi"
+    KDEKEYBOARD="fi"
+    CHARSET="iso8859-15"
+    KDEKEYBOARDS="us"
+    TZ="Europe/Helsinki"
+  ;;
+  # France
+  fr*)
+    COUNTRY="fr"
+    LANG="fr_FR@euro"
+    KEYTABLE="fr"
+    XKEYBOARD="fr"
+    KDEKEYBOARD="fr"
+    CHARSET="iso8859-15"
+    KDEKEYBOARDS="de,us"
+    TZ="Europe/Paris"
+  ;;
+  he|il)
+  # Hebrew version
+    LANGUAGE="he"
+    COUNTRY="il"
+    LANG="he_IL"
+    KEYTABLE="us"
+    XKEYBOARD="us"
+    KDEKEYBOARD="il"
+    CHARSET="iso8859-8"
+    KDEKEYBOARDS="us,fr,de"
+    TZ="Asia/Jerusalem"
+  ;;
+  # Ireland
+  ie)
+    COUNTRY="ie"
+    LANG="en_IE@euro"
+    KEYTABLE="uk"
+    XKEYBOARD="uk"
+    KDEKEYBOARD="gb"
+    CHARSET="iso8859-15"
+    KDEKEYBOARDS="us,de,es,fr,it"
+    TZ="Europe/Dublin"
+  ;;
+  # Italy
+  it)
+    COUNTRY="it"
+    LANG="it_IT@euro"
+    KEYTABLE="it"
+    XKEYBOARD="it"
+    KDEKEYBOARD="it"
+    CHARSET="iso8859-15"
+    KDEKEYBOARDS="fr,us,de"
+    TZ="Europe/Rome"
+  ;;
+  # Japan
+  ja)
+    COUNTRY="jp"
+    LANG="ja_JP"
+    LANGUAGE="ja"
+    KEYTABLE="us"
+    XKEYBOARD="us"
+    KDEKEYBOARD="us"
+    CHARSET="iso8859-15"
+    KDEKEYBOARDS="fr,us,de"
+    TZ="Asia/Tokyo"
+  ;;
+  # The Netherlands
+  nl)
+    COUNTRY="nl"
+    LANG="nl_NL@euro"
+    KEYTABLE="us"
+    XKEYBOARD="us"
+    KDEKEYBOARD="en_US"
+    CHARSET="iso8859-15"
+    KDEKEYBOARDS="nl,de,fr"
+    TZ="Europe/Amsterdam"
+  ;;
+  # Poland
+  pl)
+    COUNTRY="pl"
+    LANG="pl_PL"
+    KEYTABLE="pl"
+    XKEYBOARD="pl"
+    KDEKEYBOARD="pl"
+    CHARSET="iso8859-2"
+    KDEKEYBOARDS="de,us,fr"
+    TZ="Europe/Warsaw"
+    CONSOLE_FONT="iso02g"
+  ;;
+  # Russia
+  ru)
+    COUNTRY="ru"
+    LANG="ru_RU.KOI8-R"
+    KEYTABLE="ru"
+    XKEYBOARD="ru"
+    KDEKEYBOARD="ru"
+    CHARSET="koi8-r"
+    CONSOLE_FONT="Cyr_a8x16"
+    KDEKEYBOARDS="de,us,fr"
+    TZ="Europe/Moscow"
+  ;;
+  # Slovakia
+  sk)
+    COUNTRY="sk"
+    LANG="sk"
+    KEYTABLE="sk-qwerty"
+    XKEYBOARD="sk"
+    KDEKEYBOARD="sk"
+    CHARSET="iso8859-2"
+    KDEKEYBOARDS="us,de"
+    TZ="Europe/Bratislava"
+    CONSOLE_FONT="iso02g"
+  ;;
+  # Slovenia
+  sl)
+    LANGUAGE="sl"
+    COUNTRY="si"
+    LANG="sl_SI"
+    KEYTABLE="slovene"
+    XKEYBOARD="sl"
+    KDEKEYBOARD="si"
+    CHARSET="iso8859-2"
+    KDEKEYBOARDS="us,de"
+    TZ="Europe/Ljubljana"
+    CONSOLE_FONT="iso02g"
+  ;;
+  tr)
+# Turkish version (guessed)
+    COUNTRY="tr"
+    LANG="tr_TR"
+    KEYTABLE="tr_q-latin5"
+    XKEYBOARD="tr"
+    KDEKEYBOARD="tr"
+    CHARSET="iso8859-9"
+    KDEKEYBOARDS="us,de,fr"
+    TZ="Europe/Istanbul"
+  ;;
+  # Taiwan - Traditional Chinese version
+  tw)
+    COUNTRY="tw"
+    LANG="zh_TW.Big5"
+    LANGUAGE="zh_TW.Big5"
+    KEYTABLE="us"
+    XKEYBOARD="us"
+    KDEKEYBOARD="us"
+    CHARSET="iso8859-1"
+    KDEKEYBOARDS="us"
+    XMODIFIERS="@im=xcin"
+    TZ="Asia/Taipei"
+  ;;
+  # Great Britian
+  uk)
+    COUNTRY="uk"
+    LANG="en_GB"
+    LANGUAGE="en"
+    KEYTABLE="uk"
+    XKEYBOARD="uk"
+    KDEKEYBOARD="gb"
+    CHARSET="iso8859-1"
+    KDEKEYBOARDS="us"
+    TZ="Europe/London"
+  ;;
+  # US and default configuration
+  *)
+    LANGUAGE="us"
+    COUNTRY="us"
+    LANG="C"
+    KEYTABLE="us"
+    XKEYBOARD="us"
+    KDEKEYBOARD="us"
+    CHARSET="iso8859-1"
+    KDEKEYBOARDS="de,fr"
+    TZ="America/New_York"
+  ;;
+esac
+}
+#############################################################################
+# setup initial boot scripts (for most standard distributions, gentoo is to
+# be handled differently)
+initial_boot () {
+local scripts=$*
+local count=10
+# boot.slx is a special runlevel script generated within initialramfs which
+# should be executed before the normal runlevel scripts. Proper shutdown is
+# not needed!?
+for i in boot.slx $scripts; do
+  count=$(($count + 1))
+  echo "boot-runlevelscript $i"
+  ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/S${count}$i
+  # uncomment if proper shutdown of bootup scripts is required
+  #revcnt=$((41 - $count))
+  #ln -sf /etc${D_INITDIR}/$i /mnt/etc/${D_INITBOOTD}/K${revcnt}$i
+done
+}
+
+# This function gets an uri or a comma separated list of uris as parameter.
+# It will then try to mount these uris and add them to the union at /
+include_in_fsroot_union () {
+  union_id=0 # used to have guarantee differing names for the unions mount point
+  union_type=$1
+  for ROOTFS in $(echo $2 |sed 's/,/ /g'); do
+    union_id=$(($union_id + 1))
+    srvproto=$(uri_token $ROOTFS prot)
+    case $srvproto in
+          nfs)
+            # nfsroot consists now of two different parts
+            root_path=$(uri_token $ROOTFS path)
+            nfsserver=$(uri_token $ROOTFS server)
+            mkdir -p /mnt/tmp/${root_path}_${union_id}
+            for proto in tcp udp fail; do
+              [ $proto = "fail" ] && { error "$scfg_nfs"; break; }
+              mount -n -t nfs -o ro,nolock,$proto $nfsserver:$root_path \
+                /mnt/tmp/${root_path}_${union_id} && break
+            done
+          ;;
+          *nbd)
+	    echo "Not working yet"
+            nbdmod=$srvproto
+            # get settings for nbd-client, filesystem equals to path in URI
+            # notation
+            nbdhost=$(uri_token $ROOTFS server)
+            nbdport=$(uri_token $ROOTFS port)
+            nbdrfst=$(uri_token $ROOTFS path)
+            echo -e "(D)NBD $ROOTFS parsed to $srvproto - $nbdhost - \
+              $nbdport - $nbdrfst" >> /tmp/felixtestlog
+            #FIXME: mount durchführen
+          ;;
+          aoe)
+            echo "Not implemented yet"
+          ;;
+          iscsi)
+            echo "Not implemented yet"
+            #iscsiserver=$(uri_token $ROOTFS server)
+            #iscsiport=$(uri_token $ROOTFS port)
+            #iscsitarget=$(uri_token $ROOTFS path)
+          ;;
+        esac
+    if [ "X$union_type" == "XUnionFS" ]; then
+      [ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && \
+        echo "Using unionctl to mount ${root_path}_${union_id} (type: \
+          $union_type)"
+      unionctl /mnt/ --add --after 1 --mode ro /mnt/tmp/${root_path}_${union_id}
+    elif [ "X$union_type" == "XAUFS" ]; then
+      # unionctl for aufs is a sh script needing tools not included in our
+      # initramfs
+      [ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && \
+        echo "Using aufs-mount to mount ${root_path}_${union_id} (type: $union_type)"
+      mount -n -o remount,add:1:/mnt/tmp/${root_path}_${union_id}=ro none /mnt
+    else
+      error ${init_loadunions} nonfatal
+    fi
+ done
+}
+
+#############################################################################
+# dummy functions - avoid undefined functions in servconfig (functions are
+# normally overwritten by settings within distro-functions) - a file 
+# generated by mkdxsinitrd from <distro>/functions-default & ~-version
+
+# find out if prerequisites for special X server modules are met (distro
+# specific) and enable tvout if required
+checkgraphix () {
+:
+}
+# overwrite xorg configuration set by hwautocfg
+displayvars () {
+:
+}
+# function for ntp configuration
+config_ntp () {
+:
+}
+# function for afs
+config_afs () {
+:
+}
+# function for atd
+config_atd () {
+:
+}
+# function for configuration of cron services
+config_cron () {
+:
+}
+# syslog service
+config_syslog () {
+:
+}
+# secure shell service
+config_sshd () {
+:
+}
+# snmp agent for remote monitoring
+config_snmp () {
+:
+}
+# consolefont
+consolefont () {
+:
+}
+# acpi and powersave
+config_acpi () {
+:
+}
+# configure hal, dbus, resmgr and services like that
+config_dreshal () {
+:
+}
+# configure automounter, simple NFSv3 imports only
+config_automount () {
+:
+}
+# configure print services / start requested printer daemon
+config_printer () {
+:
+}
+# configure bluetooth services
+config_bt () {
+:
+}
+# create a compliant runlevel script, needed for boot.slx and vmware-prep
+d_mkrlscript () {
+:
+}
+# start name service caching daemon
+config_nscd () {
+:
+}
+# configure automounter
+config_automount () {
+:
+}
+# configure samba service (not winbind, but nmbd, smbd)
+config_samba () {
+:
+}
+# start portmapper (needed at least for nfs and nis services)
+config_portmap () {
+:
+}
+# start nis/ypbind
+config_nis () {
+:
+}
+# configure nfsv4 stuff
+config_nfsv4 () {
+:
+}
+# configure keyboard layout
+keytable () {
+:
+}
