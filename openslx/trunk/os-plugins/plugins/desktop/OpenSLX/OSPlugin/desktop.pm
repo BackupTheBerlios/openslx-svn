@@ -428,7 +428,7 @@ sub _fillUnsetStage1Attrs
         $self->{'xdm'} = $self->{distro}->isXDMInstalled();
     }
     if (!defined $self->{'supported_themes'}) {
-#        $self->{'supported_themes'} = $self->{distro}->getSupportedThemes();
+        $self->{'supported_themes'} = join ",", $self->_getAvailableThemes();
     }
 
     return 1;
@@ -582,6 +582,8 @@ sub _writeConfigHash
         $content .= "\n";
     }
     spitFile($file, $content);
+
+    return;
 }
 
 sub _setupSupportedThemes
@@ -592,20 +594,53 @@ sub _setupSupportedThemes
     my @supportedThemes = split m{\s*,\s*}, $supportedThemes;
     return if !@supportedThemes;
 
-    my $themeBaseDir = "$self->{openslxBasePath}/lib/plugins/desktop/themes";
+    # Every theme is copied from the folder where it is found first, such that
+    # themes in the config folder will be preferred to a theme with the same
+    # name living in the base folder
+    my @themeBaseDirs = (
+        "$self->{openslxConfigPath}/plugins/desktop/themes",
+        "$self->{openslxBasePath}/lib/plugins/desktop/themes",
+    );
     THEME:
     for my $theme (@supportedThemes) {
-        my $themeDir = "$themeBaseDir/$theme";
-        if (!-e $themeDir) {
-            warn _tr('theme "%s" not found - skipped!', $theme);
-            next;
+        THEME_DIR:
+        foreach my $themeBaseDir (@themeBaseDirs) {
+            my $themeDir = "$themeBaseDir/$theme";
+            next THEME_DIR if !-d $themeDir;
+
+            # copy theme into plugin-repo folder
+            my $themeTargetPath = "$self->{pluginRepositoryPath}/themes";
+            mkpath($themeTargetPath);
+            vlog(1, "installing theme '$theme'...");
+            slxsystem("cp -a $themeDir $themeTargetPath/$theme") == 0
+                or die _tr('unable to copy theme %s (%s)', $theme, $!);
+            next THEME;
         }
-        my $themeTargetPath = "$self->{pluginRepositoryPath}/themes";
-        mkpath($themeTargetPath);
-        vlog(1, "installing theme '$theme'...");
-        slxsystem("cp -a $themeDir $themeTargetPath/$theme") == 0
-            or die _tr('unable to copy theme %s (%s)', $theme, $!);
+        warn _tr('theme "%s" not found - skipped!', $theme);
     }
+
+    return;
+}
+
+sub _getAvailableThemes
+{
+    my $self = shift;
+
+    my @availableThemes;
+
+    # return all themes found in any of these two folders
+    my @themeBaseDirs = (
+        "$self->{openslxConfigPath}/plugins/desktop/themes",
+        "$self->{openslxBasePath}/lib/plugins/desktop/themes",
+    );
+    for my $themeBaseDir (@themeBaseDirs) {
+        push @availableThemes, 
+            map { basename $_ } grep { -d $_ } glob("$themeBaseDir/*");
+    }
+
+    vlog(1, _tr("available themes: %s", join ",", @availableThemes));
+
+    return @availableThemes;
 }
 
 1;
