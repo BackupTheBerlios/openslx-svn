@@ -138,17 +138,11 @@ else
   cd ${vmplversion}
 
   echo "   * Manipulating and extracting vmplayer ${vmplversion} package. this may take a while"
-  # VMware is ..... they dont get ride about 
-  # ${vmplversion} --help if you're not running X, even
-  # if the output is in console. Only sudo or root login
-  # works to get attributes..... grrrrr
-  # and, of course, it want to deinstall its old crap first
-  # we need to remove the deinstallation shit and take care
-  # that there's no char more or less as in the original!
-  # of course, their extraction needs root priv... senceless
   
-  # fool non-root user extraction... for testing
+  # fool non-root user extraction... just for testing
   sed -i 's/ exit 1/ echo 1/' ../${tgzfile}
+  # don't use deinstallation stuff and checks of /etc...
+  # and don't modify file size, else it wont work!
   sed -i 's/ migrate_networks/ echo te_networks/' ../${tgzfile} 
   sed -i 's/ uninstall_legacy/ echo tall_legacy/' ../${tgzfile} 
   sed -i 's/ uninstall_rpm/ echo tall_rpm/' ../${tgzfile} 
@@ -166,15 +160,41 @@ else
   rm -rf vmroot
 
   echo "   * copying files..."
-  mkdir vmroot
-  mkdir -p vmroot/modules
+  mkdir -p vmroot
   mkdir -p vmroot/lib
+  ##
+  ## /usr/lib/vmware
+  ##
   mv temp/vmware-player/lib vmroot/lib/vmware
-  mv temp/vmware-player/bin vmroot/
-  mv temp/vmware-player/sbin vmroot/
-  mv temp/vmware-player/doc vmroot/
-#  rm -rf vmware-player-distrib/
-  rm -rf vmroot/lib/vmware/modules/binary
+  # the following shouldn't be needed, just to have it 1:1 self-created
+  # copy of /usr/lib/vmware 
+  mv temp/vmware-installer vmroot/lib/vmware/installer
+  rm -rf vmroot/lib/vmware/installer/.installer
+  rm -rf vmroot/lib/vmware/installer/bootstrap
+  mkdir -p vmroot/lib/vmware/setup
+  mv temp/vmware-player-setup/vmware-config vmroot/lib/vmware/setup
+  # files that differ so far... yes the normal hack we know from v1َ/v2a
+  # .../installer/ shouldn't be needed, too
+  #vmroot/lib/vmware/installer/lib/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
+  #vmroot/lib/vmware/installer/lib/libconf/etc/gtk-2.0/gtk.immodules
+  #vmroot/lib/vmware/installer/lib/libconf/etc/pango/pango.modules
+  #vmroot/lib/vmware/installer/lib/libconf/etc/pango/pangorc
+  #vmroot/lib/vmware/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
+  #vmroot/lib/vmware/libconf/etc/gtk-2.0/gtk.immodules
+  #vmroot/lib/vmware/libconf/etc/pango/pango.modules
+  #vmroot/lib/vmware/libconf/etc/pango/pangorc
+
+  ##
+  ## left files/dirs
+  ##
+  # temp/vmware-player/sbin => /usr/sbin
+  # temp/vmware-player/doc/ => /usr/share/doc/vmware-player/ => EULA
+  # temp/vmware-player/bin => /usr/bin
+  # temp/vmware-player/files/index.theme ... hopefully not needed,
+  # temp/vmware-player/share => /usr/share ... icons 
+  # temp/vmware-player/etc/... => /etc
+  # temp/vmware-player/build => unknown... not found on system
+
 
 #  echo "   * fixing file permission"
 #  chmod 04755 vmroot/lib/vmware/bin/vmware-vmx 
