@@ -143,8 +143,11 @@ in $0\ncountry=\"${COUNTRY}\"" >>/etc/initramfs-setup
       if [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] ; then
         echo "** SLX init started near $(sysup)"
       elif [ $DEBUGLEVEL -ge 3 -a $DEBUGLEVEL -le 20 ] ; then
+        # create, start a debug shell process
         echo "Debug shell started on second console (tty2)"
-        getty -i -n -l /bin/ash 38400 tty2 &
+        echo -e "#!/bin/ash\nash" >/bin/debugshell
+        chmod u+x /bin/debugshell
+        getty -i -n -l /bin/debugshell 38400 tty2 &
       fi
     ;;
     # essid for WLAN boot (experimental, might be moved to a module component
@@ -874,12 +877,16 @@ postinit
 
 runinithook '90-postinit-done'
 
-# unmount the bind mounted modules directory
+# unmount the bind mounted modules directory and nfs /tmp/scratch (if present)
 export ticks
 for ticks in 0 1 2 5 10 20 30; do
   sleep $ticks && umount -n /lib/modules/${KERNEL} 2>/dev/null && break
   error "$init_wait" nonfatal
 done
+mount 2>/dev/null | grep -q "/tmp/scratch type nfs" && \
+  for ticks in 0 1 2 5 10 20 30; do
+    sleep $ticks && umount -n /tmp/scratch 2>/dev/null && break
+  done
 
 mount 2>/dev/null | grep -q /lib/modules/${KERNEL} && error "$init_errumnt"
 # check for inittab file (might fail for new style init -> upstart)
@@ -892,13 +899,13 @@ sed -n "s,/mnt,,;/\/tmp /p" /proc/mounts >> /mnt/etc/mtab
 # preparations to leave initramfs - umounting ...
 umount -n /sys || error "$init_errsys" nonfatal
 umount -n /proc/bus/usb >/dev/null 2>&1
-chmod 1777 /mnt/dev/shm /mnt/tmp /mnt/tmp/scratch 2>/dev/null
+chmod 1777 /mnt/dev/shm /mnt/tmp 2>/dev/null
 mount -n --move /dev /mnt/dev
 
 runinithook '95-cleanup'
 
 # kill hwautocfg, servconfig
-killall -9 hwautocfg servconfig 2>/mnt/dev/null
+killall -9 hwautocfg servconfig debugshell 2>/mnt/dev/null
 # runtimer
 [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
   echo "** SLX init ended near $(sysup)"

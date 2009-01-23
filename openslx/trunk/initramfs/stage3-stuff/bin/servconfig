@@ -278,8 +278,11 @@ if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
       # should be configured ... it is possible to mount "nolock" only
       mount -t nfs -o rw,tcp,nolock,intr,nodev,soft,timeo=2,nosuid \
         ${tmpserv}:${tmppath} /tmp/scratch >/dev/null 2>&1 && {
+        if [ -d /tmp/scratch/${clientip} ] ; then
+          mv /tmp/scratch/${clientip} /tmp/scratch/${clientip}.totrash
+          rm -rf /tmp/scratch/${clientip}.totrash 2>/dev/null &
+        fi
         testmkd /tmp/scratch/${clientip}
-        umount /tmp/scratch
         # no need for tempfs there ...
         umount /mnt/tmp >/dev/null 2>&1
         mount -t nfs -o rw,tcp,nolock,intr,nodev,soft,timeo=2,nosuid \

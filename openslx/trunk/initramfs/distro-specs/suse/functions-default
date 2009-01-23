@@ -31,7 +31,7 @@ X11/xdm/pixmaps\n*.rpmsave\ndhclient*script"
 D_BINDMPTS="tmp root media home"
 D_DIRINBINDMNT="/var/run /var/log /var/tmp"
 D_RODIRSINRW="/etc/opt/gnome/gconf /etc/X11/xkb /var/adm /var/lib/texmf \
-/var/lib/rpm"
+/var/lib/rpm /var/cache/fontconfig"
 D_DIRINDXS="/var/X11R6/compose-cache /var/run/sysconfig/tmp /var/adm \
 /var/lib/rpm /var/lib/nobody /var/lib/pam_devperm /var/lib/bluetooth \
 /var/lib/texmf /var/lib/nfs/sm /var/lib/misc /var/lib/acpi /var/spool/cron \
@@ -579,7 +579,7 @@ config_portmap () {
 }
 # start NIS (mostly deprecated)
 config_nis () {
-if [ -f /mnt/etc/init.d/ypbind -a ] ; then
+if [ -f /mnt/etc/init.d/ypbind ] ; then
   rllinker "ypbind" 6 16
   config_portmap
   testmkd /mnt/var/yp/nicknames
