@@ -46,6 +46,7 @@ sub getInfo
            tools or install addional variants and versions.
         End-of-Here
         precedence => 70,
+        required => [ qw( desktop ) ],
     };
 }
 
