@@ -301,29 +301,29 @@ fi
 tftp_get () {
   local file="$1"
   local file_server="$2"
-  local download_successfull=false
+  local download_successful=0
   local countdown="$3"
 
   [ -z "$1" -o -z "$2" ] &&  \
-    echo "Usage: tftp_get <path> <server> [count]" &&
-    return 0;
+    echo "[tftp_get] Usage: tftp_get <path> <server> [count]" &&
+    return 1;
 
   [ "$countdown" = "" ] && countdown=3
 
-  echo "tftp_get trying to get \"$file\" from \"$file_server\"..."
+  echo "[tftp_get] trying to get \"$file\" from \"$file_server\"..."
 
-  until ! [ $download_successfull ]
+  until [ $download_successful -eq 1 ]
   do
-    [ "$countdown" = "0" ] && return 0;
+    [ "$countdown" = "0" ] && echo "[tftp_get] ..failed!" && return 0;
     tftp -g -r $file -l /tmp/$(basename $file) $file_server
-    [ -s /tmp/$(basename $file) ] && download_successfull=true
+    [ -s /tmp/$(basename $file) ] && download_successful=1
     countdown=`expr $countdown - 1`
     usleep 200000
-    ! [ "$countdown" = "0" ] && [ $download_successfull ] && \
-      echo "retry.."
+    ! [ "$countdown" = "0" ] && [ $download_successful -eq 0 ] && \
+      echo "[tftp_get] retry.."
   done
-
-  return 1;
+  echo "[tftp_get] ..successful!"
+  return 0;
 }
 
 fileget () {
@@ -352,7 +352,7 @@ $filepath, fileserv:$fileserv" >>$LOGFILE
      umount /dev/$ldev
    ;;
    *)
-     tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv  \
+     tftp_get $cfgfile $fileserv  \
        && unpack /tmp/$(basename $cfgfile) 2>>$LOGFILE
    ;;
    esac
@@ -375,7 +375,7 @@ $filepath, fileserv:$fileserv" >>$LOGFILE
           2>>$LOGFILE && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
       tftp)
-        tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv \
+        tftp_get $cfgfile $fileserv \
           2>>$LOGFILE && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
     esac
