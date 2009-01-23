@@ -38,32 +38,32 @@ use OpenSLX::Utils;
 use vars qw(%supportedDistros);
 
 %supportedDistros = (
-    'debian-3.1'        => 'clone,install',
-    'debian-4.0'        => 'clone,install',
-    'debian-4.0_amd64'  => 'clone,install',
-    'fedora-6'          => 'clone,install',
-    'fedora-6_x86_64'   => 'clone,install',
+    'debian-3.1'        => 'clone,install,update,shell',
+    'debian-4.0'        => 'clone,install,update,shell',
+    'debian-4.0_amd64'  => 'clone,install,update,shell',
+    'fedora-6'          => 'clone,install,update,shell',
+    'fedora-6_x86_64'   => 'clone,install,update,shell',
     'gentoo-2006.X'     => 'clone',
     'gentoo-2007.X'     => 'clone',
     'mandriva-2007.0'   => 'clone',
-    'suse-9.3'          => 'clone',
-    'suse-10.0'         => 'clone',
-    'suse-10.0_x86_64'  => 'clone',
-    'suse-10.1'         => 'clone,install',
-    'suse-10.1_x86_64'  => 'clone,install',
-    'suse-10.2'         => 'clone,install',
-    'suse-10.2_x86_64'  => 'clone,install',
-    'suse-10.3'         => 'clone',
-    'suse-10.3_x86_64'  => 'clone',
-    'ubuntu-6.06'       => 'clone',
-    'ubuntu-6.10'       => 'clone,install',
-    'ubuntu-6.10_amd64' => 'clone,install',
-    'ubuntu-7.04'       => 'clone,install',
-    'ubuntu-7.04_amd64' => 'clone,install',
-    'ubuntu-7.10'       => 'clone',
-    'ubuntu-7.10_amd64' => 'clone',
-    'ubuntu-8.04'       => 'clone',
-    'ubuntu-8.04_amd64' => 'clone',
+    'suse-9.3'          => 'clone,shell',
+    'suse-10.0'         => 'clone,shell',
+    'suse-10.0_x86_64'  => 'clone,shell',
+    'suse-10.1'         => 'clone,install,update,shell',
+    'suse-10.1_x86_64'  => 'clone,install,update,shell',
+    'suse-10.2'         => 'clone,install,update,shell',
+    'suse-10.2_x86_64'  => 'clone,install,update,shell',
+    'suse-10.3'         => 'clone,update,shell',
+    'suse-10.3_x86_64'  => 'clone,update,shell',
+    'ubuntu-6.06'       => 'clone,update,shell',
+    'ubuntu-6.10'       => 'clone,install,update,shell',
+    'ubuntu-6.10_amd64' => 'clone,install,update,shell',
+    'ubuntu-7.04'       => 'clone,install,update,shell',
+    'ubuntu-7.04_amd64' => 'clone,install,update,shell',
+    'ubuntu-7.10'       => 'clone,update,shell',
+    'ubuntu-7.10_amd64' => 'clone,update,shell',
+    'ubuntu-8.04'       => 'clone,update,shell',
+    'ubuntu-8.04_amd64' => 'clone,update,shell',
 );
 
 my %localHttpServers;
@@ -108,28 +108,26 @@ sub initialize
         exit 1;
     }
     my $support = $supportedDistros{$distroName};
-    if ($support !~ m[install]i) {
-        if ($actionType eq 'install') {
-            print _tr(
-                "Sorry, distro '%s' can not be installed, only cloned!\n", 
-                $distroName
-            );
-            exit 1;
-        }
-        elsif ($actionType eq 'update') {
-            print _tr(
-                "Sorry, vendor-OS '%s' has been cloned, don't know how to update it!\n", 
-                $distroName
-            );
-            exit 1;
-        }
-        elsif ($actionType eq 'shell') {
-            print _tr(
-                "Sorry, vendor-OS '%s' has been cloned, no support for chrooted shell available!\n", 
-                $distroName
-            );
-            exit 1;
-        }
+    if ($actionType eq 'install' && $support !~ m[install]i) {
+        print _tr(
+            "Sorry, distro '%s' can not be installed, only cloned!\n", 
+            $distroName
+        );
+        exit 1;
+    }
+    elsif ($actionType eq 'update' && $support !~ m[(update)]i) {
+        print _tr(
+            "Sorry, update support for vendor-OS '%s' has not been implemented!\n", 
+            $distroName
+        );
+        exit 1;
+    }
+    elsif ($actionType eq 'shell' && $support !~ m[(shell)]i) {
+        print _tr(
+            "Sorry, vendor-OS '%s' has no support for chrooted shells available!\n",
+            $distroName
+        );
+        exit 1;
     }
 
     # load module for the requested distro:
@@ -176,7 +174,8 @@ sub initialize
         $self->{'busybox-binary'} 
             = "$openslxConfig{'base-path'}/share/busybox/$busyboxName";
     
-        $self->_readDistroInfo();
+        my $setupMirrorsIfNecessary = $actionType eq 'install';
+        $self->_readDistroInfo($setupMirrorsIfNecessary);
     }
 
     if ($self->{'action-type'} eq 'install'
@@ -670,7 +669,8 @@ sub busyboxBinary
 ################################################################################
 sub _readDistroInfo
 {
-    my $self = shift;
+    my $self                    = shift;
+    my $setupMirrorsIfNecessary = shift || 0;
 
     vlog(1, "reading configuration info for $self->{'vendor-os-name'}...");
 
@@ -703,14 +703,16 @@ sub _readDistroInfo
         }
     }
     
-    # fetch mirrors for all repositories:
+    # fetch mirrors for all repositories (if requested):
     foreach my $repoKey (keys %{$self->{'distro-info'}->{repository}}) {
         my $repo = $self->{'distro-info'}->{repository}->{$repoKey};
         $repo->{key} = $repoKey;
         # if there is local URL, only that is used, otherwise we fetch the
         # configured mirrors:
         if (!$repo->{'local-url'}) {
-            $repo->{urls} = $self->_fetchConfiguredMirrorsForRepository($repo);
+            $repo->{urls} = $self->_fetchConfiguredMirrorsForRepository(
+                $repo, $setupMirrorsIfNecessary
+            );
         }
     }
 
@@ -749,12 +751,14 @@ sub _readDistroInfo
 
 sub _fetchConfiguredMirrorsForRepository
 {
-    my $self     = shift;
-    my $repoInfo = shift;
+    my $self                    = shift;
+    my $repoInfo                = shift;
+    my $setupMirrorsIfNecessary = shift;
 
     my $configuredMirrorsFile
         = "$self->{'config-distro-info-dir'}/mirrors/$repoInfo->{key}";
     if (!-e $configuredMirrorsFile) {
+        return '' if !$setupMirrorsIfNecessary;
         vlog(0, 
             _tr(
                 "repo '%s' has no configured mirrors, let's pick some ...",
