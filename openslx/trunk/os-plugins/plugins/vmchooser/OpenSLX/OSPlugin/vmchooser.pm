@@ -89,7 +89,7 @@ sub installationPhase
     # vendor-OS. In order to make this possible while chrooted, the host's
     # /opt/openslx folder will be mounted to /mnt/openslx in the vendor-OS. 
     # get our own name:
-    #my $pluginName = $self->{'name'};
+    my $pluginName = $self->{'name'};
     
     
     # get our own base path:
