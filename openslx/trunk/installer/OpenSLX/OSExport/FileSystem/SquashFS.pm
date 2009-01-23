@@ -207,11 +207,24 @@ sub _createSquashFS
     my $filterFile = "/tmp/slx-nbdsquash-filter-$$";
     spitFile($filterFile, $includeExcludeList);
 
+    # add uclib-root environment to stage2 by mounting it temporarily to stage1
+    # subdirectory of openslx stuff
+    my $uclibcRootfs = "$openslxConfig{'base-path'}/share/uclib-rootfs";
+    vlog(0, _tr("preparing stage1 to add uclib-rootfs..."));
+    my $res = system("mkdir -p $source/opt/openslx/uclib-rootfs"); 
+    $res = system("mount -o ro --bind $uclibcRootfs $source/opt/openslx/uclib-rootfs");
+    if ($res) {
+        die _tr(
+            "unable to prepare addition of uclib-rootfs in '%s', giving up! (%s)",
+            $source, $!);
+    }
+
     # ... invoke mksquashfs ...
     vlog(0, _tr("invoking mksquashfs..."));
     my $mksquashfsBinary =
       "$openslxConfig{'base-path'}/share/squashfs/mksquashfs";
-    my $res = system("$mksquashfsBinary $source $target -ff $filterFile");
+    $res = system("$mksquashfsBinary $source $target -ff $filterFile");
+    $res = system("umount $source/opt/openslx/uclib-rootfs");
     unlink($filterFile);
     # ... remove filter file if done
     if ($res) {

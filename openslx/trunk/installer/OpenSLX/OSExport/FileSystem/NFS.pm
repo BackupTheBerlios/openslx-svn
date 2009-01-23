@@ -61,7 +61,7 @@ sub exportVendorOS
     }
     
     $self->_copyViaRsync($source, $target);
-
+    $self->_copyUclibEnv($target);
     return;
 }
 
@@ -234,5 +234,42 @@ sub _isTargetBindMounted
     return 0;
 }
 
+sub _copyUclibEnv
+{
+    my $self         = shift;
+    my $target       = shift;
+
+    $target .= "/opt/openslx/uclib-rootfs";
+
+    if (system("mkdir -p $target")) {
+        die _tr("unable to create directory '%s', giving up! (%s)\n",
+                $target, $!);
+    }
+
+    my $uclibcRootfs = "$openslxConfig{'base-path'}/share/uclib-rootfs";
+    my @excludes = qw(
+        dialog
+        kexec
+        libcurses.so*
+        libncurses.so*
+        mconf
+        strace
+    );
+    my $exclOpts = join ' ', map { "--exclude $_" } @excludes;
+    my $includeExcludeList = $self->_determineIncludeExcludeList();
+    vlog(1, _tr("using exclude-filter:\n%s\n", $exclOpts));
+    my $rsyncFH;
+    my $rsyncCmd
+        = "rsync -av --delete-excluded --exclude-from=-" . " $uclibcRootfs/ $target";
+    vlog(2, "executing: $rsyncCmd\n");
+    open($rsyncFH, '|-', $rsyncCmd)
+        or die _tr("unable to start rsync for source '%s', giving up! (%s)",
+                   $uclibcRootfs, $!);
+    print $rsyncFH $exclOpts;
+    close($rsyncFH)
+        or die _tr("unable to copy to target '%s', giving up! (%s)",
+                   $target, $!);
+    return;
+}
 
 1;
