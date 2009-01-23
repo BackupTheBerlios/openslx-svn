@@ -1,17 +1,33 @@
 #!/bin/sh
 
 #
-# Currently only suse 10.2 and 11.0 is supported!
+# Currently suse 10.2 and 11.0 is supported!
 #
 
 BUSYBOX="/mnt/opt/openslx/share/busybox/busybox"
 
 cd /opt/openslx/plugin-repo/xserver
 
-#
+if [ -s /boot/vmlinuz ]; then 
+    KSUFFIX=$(ls -l /boot/vmlinuz | grep -P -o -e "-[a-z]*$" )
+else 
+    KSUFFIX=$(ls /boot/vmlinuz-* | head -n1 | grep -P -o -e "-[a-z]*$" )
+fi
+
+if [ -z "${KSUFFIX}" ]; then
+    echo "Could not determine proper local kernel suffix!"
+    echo "This is needed to install kernel modules for graphics drivers!"
+    exit 1
+fi
+
+##########################################################################
 # NVidia section
-#
+##########################################################################
 if [ "$1" = "nvidia" ]; then
+  if [ -e nvidia/usr/lib/libGL.so.1 ]; then
+    exit
+  fi
+
   #To handle it under suse is kinda retarded. SuSE 10.2's zypper don't know
   #a flag similiar to "--download-only" (should be supported in a later
   #SuSE Version!)
@@ -59,7 +75,7 @@ if [ "$1" = "nvidia" ]; then
     # -> After key is cached, this is obsolete
     zypper se -r NVIDIA x11-video-nvidiaG01
     # get URLs by virtually installing nvidia-OpenGL driver
-    zypper -n -vv install -D x11-video-nvidiaG01 > logfile
+    zypper -n -vv install -D nvidia-gfx-kmp${KSUFFIX} x11-video-nvidiaG01 > logfile
 
     # take unique urls from logfile
     URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | sort -u | xargs)
@@ -80,30 +96,34 @@ if [ "$1" = "nvidia" ]; then
 
   cd .. 
   # TODO: after development
-  #rm -rf temp/
+  rm -rf temp/
 fi
 
 
 
-#
+############################################################################
 # ATI section
-#
+############################################################################
 if [ "$1" = "ati" ]; then
+  if [ -e ati/usr/lib/libGL.so.1.2 ]; then
+    exit
+  fi
+
   mkdir -p ati/modules ati/temp
   cd ati/temp
 
   if [ "11.0" = "`cat /etc/SuSE-release | tail -n1 | cut -d' ' -f3`" ]; then
+    ## SUSE 11.0 Section ###
+
     echo "  * Downloading ati rpm packages... this could take some time..."
 
-    #TODO: ADD SUFFIX for used kernel detection
-    SUFF="-pae"
-    # add repository for nvidia drivers
+     # add repository for nvidia drivers
     zypper addrepo http://www2.ati.com/suse/11.0/ ATI
     # confirm authenticity of key (once) 
     # -> After key is cached, this is obsolete
     zypper se -r ATI x11-video-fglrxG01
     # get URLs by virtually installing nvidia-OpenGL driver
-    zypper -n -vv install -D ati-fglrxG01-kmp${SUFF} x11-video-fglrxG01 > logfile
+    zypper -n -vv install -D ati-fglrxG01-kmp${KSUFFIX} x11-video-fglrxG01 > logfile
 
     # take unique urls from logfile
     URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | grep fglrx | sort -u | xargs)
@@ -127,43 +147,44 @@ if [ "$1" = "ati" ]; then
 #    echo "END DEBUG"
   else
 
-
-  #TODO: licence information... even suse requires an accept
-  BASEURL="http://www2.ati.com/suse/$(lsb_release -r|sed 's/^.*\t//')"
-  # if it dont work in the future, check .../repodata/repomd.xml
-  wget -q ${BASEURL}/repodata/primary.xml.gz
-  gunzip primary.xml.gz
-
-  echo "  * Downloading ati rpm packages... this could take some time..."
-  # notice the i586! we can also get x86_64!
-  for i in $(grep "<location href=.i586" primary.xml \
-             |sed 's/.*<location href="//'|sed 's/".*//g')
-  do
-    wget -c -q ${BASEURL}/${i}
-  done
-
-  # TODO: move output to /dev/null when main development is over
-  ${BUSYBOX} rpm2cpio $(find . -name "x11*")| ${BUSYBOX} cpio -idv > /dev/null
-
-  rm -rf ./usr/include
-  rm -rf ./usr/lib/pm-utils
-  rm -rf ./usr/lib/powersave
-  # Todo: recheck after development progress, perhaps an nvidia x11 tool needs /usr/share/pixmaps
-  #       same with var id's
-  #rm -rf ./usr/share
-
-  mv ./usr ..
-
-  # TODO: matching kernel problem... our openslx system picks -bigsmp - unintentionally!
-  if [ "10.2" = "$(lsb_release -r|sed 's/^.*\t//')" ]; then
-    ${BUSYBOX} rpm2cpio $(find . -name "ati-fglrx*bigsmp*") | ${BUSYBOX} cpio -idv > /dev/null
-  fi
-  if [ "11.0" = "$(lsb_release -r|sed 's/^.*\t//')" ]; then
-    ${BUSYBOX} rpm2cpio $(find . -name "ati-fglrx*default*") | ${BUSYBOX} cpio -idv > /dev/null
-  fi
-  #${BUSYBOX} rpm2cpio nvidia-gfxG01-kmp-default-173.14.12_2.6.18.8_0.10-0.1.i586.rpm | ${BUSYBOX} cpio -idv
-  #TODO: take care about the kernel issue. Find won't work with two equal kernelmodules in lib/...
-  find lib/ -name "*.ko" -exec mv {} ../modules \;
+    ## SUSE 10.2 Section ##
+  
+    #TODO: licence information... even suse requires an accept
+    BASEURL="http://www2.ati.com/suse/$(lsb_release -r|sed 's/^.*\t//')"
+    # if it dont work in the future, check .../repodata/repomd.xml
+    wget -q ${BASEURL}/repodata/primary.xml.gz
+    gunzip primary.xml.gz
+  
+    echo "  * Downloading ati rpm packages... this could take some time..."
+    # notice the i586! we can also get x86_64!
+    for i in $(grep "<location href=.i586" primary.xml \
+               |sed 's/.*<location href="//'|sed 's/".*//g')
+    do
+      wget -c -q ${BASEURL}/${i}
+    done
+  
+    # TODO: move output to /dev/null when main development is over
+    ${BUSYBOX} rpm2cpio $(find . -name "x11*")| ${BUSYBOX} cpio -idv > /dev/null
+  
+    rm -rf ./usr/include
+    rm -rf ./usr/lib/pm-utils
+    rm -rf ./usr/lib/powersave
+    # Todo: recheck after development progress, perhaps an nvidia x11 tool needs /usr/share/pixmaps
+    #       same with var id's
+    #rm -rf ./usr/share
+  
+    mv ./usr ..
+  
+    # TODO: matching kernel problem... our openslx system picks -bigsmp - unintentionally!
+    if [ "10.2" = "$(lsb_release -r|sed 's/^.*\t//')" ]; then
+      ${BUSYBOX} rpm2cpio $(find . -name "ati-fglrx*bigsmp*") | ${BUSYBOX} cpio -idv > /dev/null
+    fi
+    if [ "11.0" = "$(lsb_release -r|sed 's/^.*\t//')" ]; then
+      ${BUSYBOX} rpm2cpio $(find . -name "ati-fglrx*default*") | ${BUSYBOX} cpio -idv > /dev/null
+    fi
+    #${BUSYBOX} rpm2cpio nvidia-gfxG01-kmp-default-173.14.12_2.6.18.8_0.10-0.1.i586.rpm | ${BUSYBOX} cpio -idv
+    #TODO: take care about the kernel issue. Find won't work with two equal kernelmodules in lib/...
+    find lib/ -name "*.ko" -exec mv {} ../modules \;
   fi
 
   cd ..
