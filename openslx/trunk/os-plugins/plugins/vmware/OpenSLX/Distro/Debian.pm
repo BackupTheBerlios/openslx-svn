@@ -59,7 +59,9 @@ sub fillRunlevelScript
     if ($kind eq 'local') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
               # to be filled in via the stage1 configuration script
-              modprobe -qa vmmon vmnet vmblock 2>/dev/null || return 1
+              insmod /lib/modules/\$(uname -r)/misc/vmmon.ko || return 1
+              insmod /lib/modules/\$(uname -r)/misc/vmnet.ko || return 1
+              insmod /lib/modules/\$(uname -r)/misc/vmblock.ko 2>/dev/null || return 0
               # most probably nobody wants to run the parallel port driver ...
               #modprobe vm...
         End-of-Here
