@@ -158,6 +158,7 @@ in $0\ncountry=\"${COUNTRY}\"" >>/etc/initramfs-setup
         # start logging (debuglevel >=3)
         echo "Syslog started on third console (tty3)"
         syslogd -C2048
+        klogd
         logread -f > /dev/tty3 &
       fi
     ;;
