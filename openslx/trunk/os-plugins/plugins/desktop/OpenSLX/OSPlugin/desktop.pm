@@ -475,9 +475,9 @@ sub _fillUnsetStage1Attrs
         $self->{'xdm'} = $self->{distro}->isXDMInstalled();
     }
     if (!defined $self->{'supported_themes'}) {
-        $self->{'supported_themes'} = join ",", $self->_getAvailableThemes();
         $self->{attrs}->{'desktop::supported_themes'} 
-            = $self->{'supported_themes'};
+            = $self->{'supported_themes'} 
+            = join ",", $self->_getAvailableThemes();
     }
 
     return 1;
