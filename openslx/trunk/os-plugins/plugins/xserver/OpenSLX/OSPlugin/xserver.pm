@@ -219,22 +219,18 @@ sub installationPhase
     my $pluginFilesPath =
         "$openslxBasePath/lib/plugins/$self->{'name'}/files";
     my $installationPath = "$pluginRepoPath/";
+    # TODO: handle it better. We know the distribution in stage1
+    if ($attrs->{'xserver::nvidia'} == 1  || $attrs->{'xserver::ati'} == 1 ) {
+        copyFile("$pluginFilesPath/ubuntu-gfx-install.sh", "$installationPath");
+        copyFile("$pluginFilesPath/suse-gfx-install.sh", "$installationPath");
+    }
     if ($attrs->{'xserver::ati'} == 1) {
         copyFile("$pluginFilesPath/ati-install.sh", "$installationPath");
         system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh");
     }
     if ($attrs->{'xserver::nvidia'} == 1) {
         copyFile("$pluginFilesPath/nvidia-install.sh", "$installationPath");
-        #TODO: handle distribution. Bastian, have you testet your
-        #      script? ;-)
-        copyFile("$pluginFilesPath/suse-gfx-install.sh", "$installationPath");
         system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/nvidia-install.sh");
-    }
-
-    if ($attrs->{'xserver::nvidia'} == 1 
-            || $attrs->{'xserver::ati'} == 1 ) {
-        copyFile("$pluginFilesPath/ubuntu-gfx-install.sh",
-                "$installationPath");
     }
 
     # Some plugins have to copy files from their plugin folder into the
