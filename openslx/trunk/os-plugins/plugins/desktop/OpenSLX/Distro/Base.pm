@@ -59,18 +59,31 @@ sub isInPath
     return $path ? 1 : 0;
 }
 
+sub getDefaultDesktopManager
+{
+    my $self = shift;
+    
+    # the default implementation prefers GDM over KDM over XDM
+    return $self->isGDMInstalled() ? 'gdm' 
+        : $self->isKDMInstalled() ? 'kdm' 
+        : $self->isXDMInstalled() ? 'xdm' : undef;
+}
+
+sub getDefaultDesktopKind
+{
+    my $self = shift;
+    
+    # the default implementation prefers GNOME over KDE over XFCE
+    return $self->isGNOMEInstalled() ? 'gnome' 
+        : $self->isKDEInstalled() ? 'kde' 
+        : $self->isXFCEInstalled() ? 'xfce' : undef;
+}
+
 sub isGNOMEInstalled
 {
     my $self = shift;
 
     return $self->isInPath('gnome-session');
-}
-
-sub isGDMInstalled
-{
-    my $self = shift;
-
-    return $self->isInPath('gdm');
 }
 
 sub installGNOME
@@ -82,6 +95,13 @@ sub installGNOME
     );
 
     return 1;
+}
+
+sub isGDMInstalled
+{
+    my $self = shift;
+
+    return $self->isInPath('gdm');
 }
 
 sub installGDM
@@ -132,7 +152,7 @@ sub setupGDMScript
         # activate theme only if the corresponding xml file is found
         # (otherwise fall back to default theme of vendor-OS)
         if [ -n "\$desktop_theme" ]; then
-          thdir=/opt/openslx/plugin-repo/desktop/themes/openslx/gdm
+          thdir=/opt/openslx/plugin-repo/desktop/themes/\$desktop_theme/gdm
           theme=\$desktop_theme
           if [ -e /mnt\$thdir/\$theme/\$theme.xml ]; then
             sed -i "s,\\[greeter\\],[greeter]\\nGraphicalThemeDir=\$thdir," \\
@@ -189,7 +209,6 @@ sub GDMConfigHashForKiosk
     my $self = shift;
     
     my $configHash = $self->GDMConfigHashForWorkstation();
-
     $configHash->{daemon}->{AutomaticLoginEnable} = 'true';
     $configHash->{daemon}->{AutomaticLogin} = 'nobody';
 
@@ -213,13 +232,6 @@ sub isKDEInstalled
     return $self->isInPath('startkde');
 }
 
-sub isKDMInstalled
-{
-    my $self = shift;
-
-    return $self->isInPath('kdm');
-}
-
 sub installKDE
 {
     my $self = shift;
@@ -231,6 +243,13 @@ sub installKDE
     return 1;
 }
 
+sub isKDMInstalled
+{
+    my $self = shift;
+
+    return $self->isInPath('kdm');
+}
+
 sub installKDM
 {
     my $self = shift;
@@ -240,18 +259,113 @@ sub installKDM
     return 1;
 }
 
+sub KDMPathInfo
+{
+    my $self = shift;
+    
+    my $pathInfo = {
+        config => '/etc/opt/kdm/kdmrc',
+        paths => [
+            '/var/adm/kdm',
+            '/var/lib/kdm',
+        ],
+    };
+
+    return $pathInfo;
+}
+
+sub setupKDMScript
+{
+    my $self     = shift;
+    my $repoPath = shift;
+
+    my $pathInfo   = $self->KDMPathInfo();
+    my $configFile = $pathInfo->{config};
+    
+    my $paths 
+        = join(
+            ' ', 
+            map  { '/mnt' . $_ } ( dirname($configFile), @{$pathInfo->{paths}} )
+        );
+    my $script = unshiftHereDoc(<<"    End-of-Here");
+        #!/bin/ash
+        # written by OpenSLX-plugin 'desktop'
+
+        mkdir -p $paths 2>/dev/null
+
+        cp /mnt/$repoPath/kdm/\$desktop_mode/kdmrc /mnt$configFile
+
+        # activate theme only if the corresponding xml file is found
+        # (otherwise fall back to default theme of vendor-OS)
+        if [ -n "\$desktop_theme" ]; then
+          thdir=/opt/openslx/plugin-repo/desktop/themes/\$desktop_theme/kdm
+          theme=\$desktop_theme
+          if [ -e /mnt\$thdir/\$theme.xml ]; then
+            sed -i "s,\\[X-\\*-Greeter\\],[X-*-Greeter]\\nTheme=\$thdir," \\
+              /mnt$configFile
+            sed -i "s,\\[X-\\*-Greeter\\],[X-*-Greeter]\\nUseTheme=true," \\
+              /mnt$configFile
+          fi
+        fi
+    End-of-Here
+    
+    return $script;
+}
+
+sub KDMConfigHashForWorkstation
+{
+    my $self = shift;
+    
+    return {
+        'X-:0-Core' => {
+            AutoLoginEnable => 'false',
+        },
+        'X-*-Greeter' => {
+            GreetString => 'OpenSLX (%h)',
+            SelectedUsers => '',
+            ShowUsers => 'Selected',
+            UserList => 'false',
+        },
+        'X-:*-Greeter' => {
+            AllowClose => 'false',
+            UseAdminSession => 'true',
+        },
+        'X-:0-Greeter' => {
+            LogSource => '/dev/xconsole',
+            UseAdminSession => 'false',
+        },
+        'xdmcp' => {
+            Enable => 'false',
+        },
+    };
+}
+
+sub KDMConfigHashForKiosk
+{
+    my $self = shift;
+    
+    my $configHash = $self->KDMConfigHashForWorkstation();
+    $configHash->{daemon}->{AutoLoginEnable} = 'true';
+    $configHash->{daemon}->{AutoLoginUser} = 'nobody';
+
+    return $configHash;
+}
+
+sub KDMConfigHashForChooser
+{
+    my $self = shift;
+    
+    my $configHash = $self->KDMConfigHashForWorkstation();
+    $configHash->{xdmcp}->{Enable} = 'true';
+
+    return $configHash;
+}
+
 sub isXFCEInstalled
 {
     my $self = shift;
 
     return $self->isInPath('startxfce4');
-}
-
-sub isXDMInstalled
-{
-    my $self = shift;
-
-    return $self->isInPath('xdm');
 }
 
 sub installXFCE
@@ -263,6 +377,13 @@ sub installXFCE
     );
 
     return 1;
+}
+
+sub isXDMInstalled
+{
+    my $self = shift;
+
+    return $self->isInPath('xdm');
 }
 
 sub installXDM

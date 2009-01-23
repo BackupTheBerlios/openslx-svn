@@ -70,7 +70,7 @@ sub getAttrInfo
                 which display manager to start: gdm, kdm or xdm?
             End-of-Here
             content_regex => qr{^(g|k|x)dm$},
-            content_descr => 'allowed: gdm, kdm, xdm',
+            content_descr => '"gdm", "kdm" or "xdm"',
             default => undef,
         },
         'desktop::kind' => {
@@ -79,8 +79,8 @@ sub getAttrInfo
             description => unshiftHereDoc(<<'            End-of-Here'),
                 which desktop environment shall be used: gnome, kde, or xfce?
             End-of-Here
-            content_regex => qr{^(gnome,kde,xfce)$},
-            content_descr => 'allowed: gnome, kde, xfce',
+            content_regex => qr{^(gnome|kde|xfce)$},
+            content_descr => '"gnome", "kde" or "xfce"',
             default => undef,
         },
         'desktop::mode' => {
@@ -91,7 +91,7 @@ sub getAttrInfo
                     workstattion, kiosk or chooser?
             End-of-Here
             content_regex => qr{^(workstation|kiosk|chooser)$},
-            content_descr => 'allowed: workstation,kiosk,chooser',
+            content_descr => '"workstation", "kiosk" or "chooser"',
             default => 'workstation',
         },
         'desktop::theme' => {
@@ -189,7 +189,10 @@ sub getDefaultAttrsForVendorOS
         $attrs->{'desktop::kind'}->{default} = 'xcfe';
     }
     else {
-        # TODO: chroot into vendor-OS and determine the available desktop
+        $attrs->{'desktop::manager'}->{default}
+            = $self->{distro}->getDefaultDesktopManager();
+        $attrs->{'desktop::kind'}->{default}
+            = $self->{distro}->getDefaultDesktopKind();
     }
     return $attrs;
 }
@@ -418,6 +421,38 @@ sub _setupGDMScript
 sub _setupKDM
 {
     my $self = shift;
+
+    my $repoPath = $self->{pluginRepositoryPath};
+    mkpath([ 
+        "$repoPath/kdm/workstation",
+        "$repoPath/kdm/kiosk",
+        "$repoPath/kdm/chooser",
+    ]);
+    
+    $self->_setupKDMScript();
+
+    my $configHash = $self->{distro}->KDMConfigHashForWorkstation();
+    $self->_writeConfigHash($configHash, "$repoPath/kdm/workstation/kdmrc");
+    
+    $configHash = $self->{distro}->KDMConfigHashForKiosk();
+    $self->_writeConfigHash($configHash, "$repoPath/kdm/kiosk/kdmrc");
+
+    $configHash = $self->{distro}->KDMConfigHashForChooser();
+    $self->_writeConfigHash($configHash, "$repoPath/kdm/chooser/kdmrc");
+
+    return;
+}
+
+sub _setupKDMScript
+{
+    my $self = shift;
+    
+    my $repoPath = $self->{pluginRepositoryPath};
+    my $script = $self->{distro}->setupKDMScript($repoPath);
+
+    spitFile("$repoPath/kdm/desktop.sh", $script);
+
+    return;
 }
 
 sub _setupXDM

@@ -19,6 +19,8 @@ use warnings;
 
 use base qw(desktop::OpenSLX::Distro::Base);
 
+use File::Path;
+
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
@@ -32,7 +34,7 @@ sub GDMPathInfo
     
     my $pathInfo = $self->SUPER::GDMPathInfo();
     
-    # link gdm.conf-custom instead of gdm.conf
+    # create gdm.conf-custom instead of gdm.conf
     $pathInfo->{config} = '/etc/X11/gdm/gdm.conf-custom';
 
     return $pathInfo;
@@ -49,6 +51,33 @@ sub setupGDMScript
         rllinker xdm 1 1
         sed -i 's/DISPLAYMANAGER=.*/DISPLAYMANAGER="gdm"/' \
             /mnt/etc/sysconfig/displaymanager
+        sed -i "s/DEFAULT_WM=.*/DEFAULT_WM=\"$desktop_kind\"/" \
+            /mnt/etc/sysconfig/windowmanager
+    End-of-Here
+
+    return $script;
+}
+
+sub setupKDMScript
+{
+    my $self     = shift;
+    my $repoPath = shift;
+
+    # SUSE reads /var/adm/kdm/kdmrc.sysconfig, so we link that to
+    # our config file
+    my $pathInfo   = $self->GDMPathInfo();
+    my $configFile = $pathInfo->{config};
+    mkpath("/etc/opt/kdm");
+    system("ln -sfn /etc/opt/kdm/kdmrc /var/adm/kdm/kdmrc.sysconfig");
+
+    my $script = $self->SUPER::setupKDMScript($repoPath);
+    
+    $script .= unshiftHereDoc(<<'    End-of-Here');
+        rllinker xdm 1 1
+        sed -i 's/DISPLAYMANAGER=.*/DISPLAYMANAGER="kdm"/' \
+            /mnt/etc/sysconfig/displaymanager
+        sed -i "s/DEFAULT_WM=.*/DEFAULT_WM=\"$desktop_kind\"/" \
+            /mnt/etc/sysconfig/windowmanager
     End-of-Here
 
     return $script;
