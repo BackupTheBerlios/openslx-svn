@@ -122,6 +122,33 @@ export KCMDLINE
 # read the system wide initramfs-setup and then the kernel commandline
 for opts in $(sed "s/#.*//" /etc/initramfs-setup) ${KCMDLINE} ; do
   case ${opts} in
+    # shut down pc
+    shutdown)
+      cat <<EOL
+
+
+
+                #####
+               #     # #    # #    # ##### ##### # #    #  ####
+               #       #    # #    #   #     #   # ##   # #    #
+                #####  ###### #    #   #     #   # # #  # #
+                     # #    # #    #   #     #   # #  # # #  ###
+               #     # #    # #    #   #     #   # #   ## #    #
+                #####  #    #  ####    #     #   # #    #  ####
+
+                ######                          ######   #####
+                #     #  ####  #    # #    #    #     # #     #
+                #     # #    # #    # ##   #    #     # #
+                #     # #    # #    # # #  #    ######  #
+                #     # #    # # ## # #  # #    #       #
+                #     # #    # ##  ## #   ##    #       #     #
+                ######   ####  #    # #    #    #        #####
+
+
+
+EOL
+      echo "o" >/proc/sysrq-trigger
+    ;;
     # from IPAPPEND
     BOOTIF=*)
       bootmac=$(echo ${opts} | sed "s/.*=01-//;s/-/:/g")
