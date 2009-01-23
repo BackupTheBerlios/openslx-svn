@@ -1,0 +1,8 @@
+[GdmGreeterTheme]
+Encoding=UTF-8
+Greeter=openslx.xml
+Name=OpenSLX GDM theme
+Description=GDM Port of Daemonic KDM theme for FreeBSD
+Author=MJanc / KDM by aceph <aceph@ventcore.net>
+Copyright=Creative Commons
+Screenshot=screenshot.png

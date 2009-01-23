@@ -38,15 +38,18 @@ sub GDMPathInfo
     return $pathInfo;
 }
 
-sub patchGDMScript
+sub setupGDMScript
 {
-    my $self   = shift;
-    my $script = shift;
+    my $self     = shift;
+    my $repoPath = shift;
+
+    my $script = $self->SUPER::setupGDMScript($repoPath);
     
     $script .= unshiftHereDoc(<<'    End-of-Here');
         rllinker gdm 1 1
         echo '/usr/sbin/gdm' > /mnt/etc/X11/default-display-manager
     End-of-Here
+
     return $script;
 }
 

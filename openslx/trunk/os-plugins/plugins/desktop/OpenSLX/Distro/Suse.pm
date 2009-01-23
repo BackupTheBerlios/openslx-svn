@@ -38,16 +38,19 @@ sub GDMPathInfo
     return $pathInfo;
 }
 
-sub patchGDMScript
+sub setupGDMScript
 {
-    my $self   = shift;
-    my $script = shift;
+    my $self     = shift;
+    my $repoPath = shift;
+
+    my $script = $self->SUPER::setupGDMScript($repoPath);
     
     $script .= unshiftHereDoc(<<'    End-of-Here');
         rllinker xdm 1 1
         sed -i 's/DISPLAYMANAGER=.*/DISPLAYMANAGER="gdm"/' \
             /mnt/etc/sysconfig/displaymanager
     End-of-Here
+
     return $script;
 }
 

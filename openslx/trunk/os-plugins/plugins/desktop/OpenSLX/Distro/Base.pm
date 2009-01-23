@@ -18,6 +18,8 @@ use warnings;
 
 our $VERSION = 1.01;        # API-version . implementation-version
 
+use File::Basename;
+
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
@@ -106,12 +108,40 @@ sub GDMPathInfo
     return $pathInfo;
 }
 
-sub patchGDMScript
+sub setupGDMScript
 {
-    my $self   = shift;
-    my $script = shift;
+    my $self     = shift;
+    my $repoPath = shift;
+
+    my $pathInfo   = $self->GDMPathInfo();
+    my $configFile = $pathInfo->{config};
     
-    # default implementation does nothing!
+    my $paths 
+        = join(
+            ' ', 
+            map  { '/mnt' . $_ } ( dirname($configFile), @{$pathInfo->{paths}} )
+        );
+    my $script = unshiftHereDoc(<<"    End-of-Here");
+        #!/bin/ash
+        # written by OpenSLX-plugin 'desktop'
+
+        mkdir -p $paths 2>/dev/null
+
+        cp /mnt/$repoPath/gdm/\$desktop_mode/gdm.conf /mnt$configFile
+
+        # activate theme only if the corresponding xml file is found
+        # (otherwise fall back to default theme of vendor-OS)
+        if [ -n "\$desktop_theme" ]; then
+          thdir=/opt/openslx/plugin-repo/desktop/themes/openslx/gdm
+          theme=\$desktop_theme
+          if [ -e /mnt\$thdir/\$theme/\$theme.xml ]; then
+            sed -i "s,\\[greeter\\],[greeter]\\nGraphicalThemeDir=\$thdir," \\
+              /mnt$configFile
+            sed -i "s,\\[greeter\\],[greeter]\\nGraphicalTheme=\$theme," \\
+              /mnt$configFile
+          fi
+        fi
+    End-of-Here
     
     return $script;
 }
