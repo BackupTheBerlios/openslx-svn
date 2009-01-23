@@ -133,7 +133,7 @@ sub getAttrInfo
             End-of-Here
             content_descr => '1 means allowed - 0 means forbidden',
             content_regex => qr{^(0|1)$},
-            default => '0',
+            default => '1',
         },
         # kiosk mode just has the option to logon user nobody
         #'desktop::auto-login' => {
