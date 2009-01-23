@@ -422,20 +422,20 @@ else
 fi
 # get configuration data via dhcp (with vendor code identifier if present
 # in ${vci} from kernel command line or initramfs-setup) ...
-[ -z "$nodhcp" ] && ( rundhcp ${vci}
-  waitfor /tmp/confviadhcp 20000
-  echo "dhcp finished at $(sysup)" >/tmp/dhcp-done
-  . /tmp/confviadhcp
+if [ -z "$nodhcp" ] ; then
+  ( rundhcp ${vci}; echo "dhcp finished at $(sysup)" >/tmp/dhcp-done ) &
   if [ -n "$noipyet" ] ; then
+    waitfor /tmp/dhcp-done 20000
+    . /tmp/confviadhcp
     # by now there should be a proper ip configuration present
-    if [ -z "$clientip" -o -z "$subnet_mask" -o -z "$gateway" \
-        -o -z "$broadcast_address" ] ; then
-      error "$init_errdhcp"
+    if [ -z "$clientip" -o -z "$subnet_mask" -o -z "$gateway" -o \
+         -z "$broadcast_address" ] ; then error "$init_errdhcp"
     else
-      { ip addr add $clientip/$(ipcalc -s -p $clientip $subnet_mask) \
+      { ip addr add \
+          $clientip/$(ipcalc -s -p $clientip $subnet_mask|sed s/.*=//) \
           broadcast $broadcast_address dev $nwif 2>/dev/null && \
         ip route add default via $gateway 2>/dev/null; } || \
-        error "$init_erripcfg"
+          error "$init_erripcfg"
     fi
     # fixme: to be checked!!
     #  else
@@ -445,10 +445,12 @@ fi
     #      error "$init_erripcfg"
     #    fi
     #  fi
-  fi; ) &
+  fi
+fi
 # check if serverip is set as variable @@@serverip@@@
 sed "s,@@@serverip@@@,$serverip," -i /etc/initramfs-setup
 [ $DEBUGLEVEL -eq 20 ] && echo "** finished ip config at $(sysup)"
+
 # on some network adaptors we need to wait for the link to come up
 dmesg | grep -q "link down" && for i in 1 1 1 1  ; do 
   dmesg | grep -q "link up" && break

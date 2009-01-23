@@ -262,7 +262,7 @@ mkdir /var/lib/dhcp >/dev/null 2>&1
 testmkd /usr/share/udhcpc
 ln -sf /bin/dhcpmkconfig /usr/share/udhcpc/default.script
 # -o option gets additionally the nis* options, but described other way round
-udhcpc -b -o -t 8 -q $vci -s /usr/share/udhcpc/default.script \
+udhcpc -o -t 8 -q $vci -s /usr/share/udhcpc/default.script \
   -i $nwif 2>/dev/null
 }
 
