@@ -12,8 +12,8 @@ if [ -e $CONFFILE ]; then
                 Name[de]=Virtuelle Maschine auswählen
                 Comment=This session starts the vm session chooser
                 Comment[de]=Diese Sitzung startet das Auswahlmenü für die vorhandenen Sitzungen
-                Exec=/opt/openslx/plugin-repo/vmchooser/vmchooser -s /etc/X11/sessions/
-                TryExec=/opt/openslx/plugin-repo/vmchooser/vmchooser -s /etc/X11/sessions/
+                Exec=/opt/openslx/plugin-repo/vmchooser/vmchooser
+                TryExec=/opt/openslx/plugin-repo/vmchooser/vmchooser
 		Icon=
                 Type=Application' >> /mnt/etc/X11/sessions/default.desktop
 
