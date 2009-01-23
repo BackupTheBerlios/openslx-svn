@@ -179,8 +179,8 @@ sub installationPhase
     # variants because we do not know which on is selected on client level 
     # (code depends on distro/version and vmware location)
     # for local ... other vm-installations (TODO: generate list)
-    my @type = qw( local );
-    foreach my $type (@type) {
+    my @types = qw( local );
+    foreach my $type (@types) {
         #  location of the vmware stuff, "local" for directly installed
         # package (more sophisticated assignment might be needed ...)
         if ( $type eq "local" ) {
@@ -210,6 +210,8 @@ sub installationPhase
     # OLTA: this backup strategy is useless if invoked twice, so I have
     #       deactivated it
     #    rename ("/usr/bin/$file", "/usr/bin/$file.slx-bak");
+    	# TODO: check if it will really build a link.
+	#       somehow i cant see one in stage1
         linkFile("/var/X11R6/bin/$file", "/usr/bin/$file");
         my $script = unshiftHereDoc(<<"        End-of-Here");
             #!/bin/sh
@@ -221,6 +223,7 @@ sub installationPhase
                  "\$PREFIX"'/bin/vmware' \
                  "\$PREFIX"'/libconf' "\$@"
         End-of-Here
+	# TODO: run chmod 755 after creation
         spitFile("$self->{'pluginRepositoryPath'}/$file", $script);
     }
 }

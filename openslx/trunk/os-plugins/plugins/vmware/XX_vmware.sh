@@ -124,9 +124,9 @@ $(ipcalc -n $vmip/$vmpx|sed s/.*=//) {" \
         >> /mnt/etc/vmware/nat.conf
       echo -e "activeFTP = 1" \
         >> /mnt/etc/vmware/nat.conf
-      echo -e "[udp]"
+      echo -e "[udp]" \
         >> /mnt/etc/vmware/nat.conf
-      echo -e "timeout = 60"
+      echo -e "timeout = 60" \
         >> /mnt/etc/vmware/nat.conf
       echo -e "[incomingtcp]" \
         >> /mnt/etc/vmware/nat.conf
