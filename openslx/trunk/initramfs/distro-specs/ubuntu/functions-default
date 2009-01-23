@@ -200,7 +200,7 @@ if [ "x$start_dreshal" = "xyes" ]; then
   chown root:polkituser /mnt/var/lib/misc/PolicyKit.reload
   rm -rf /mnt/etc/dbus-1/system.d/*etwork*anager.conf \
          /mnt/etc/dbus-1/system.d/nm-* \
-         /etc/dbus-1/event.d/*NetworkManager
+         /mnt/etc/dbus-1/event.d/*NetworkManager*
   rllinker "dbus" 17 20
   rllinker "hal" 18 15
   if [ ! -e /mnt/etc/init.d/policykit ] ; then
