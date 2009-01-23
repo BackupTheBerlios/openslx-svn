@@ -164,14 +164,27 @@ sub installationPhase
     $self->{openslxPath}          = shift;
     $self->{attrs}                = shift;
 
+    # location of the vmware stuff
+    # if $vmware::kind 'local'
+    my $vmpath = "/usr/lib/vmware";
+    my $vmbin  = "/usr/bin";
+    # if $vmware::kind '/opt/openslx/plugin...'
+    #my $vmpath = $vmware::kind
+    #my $vmbin  = "$vmpath/bin";
+
     # get path of files we need to install
     my $pluginFilesPath = "$self->{'openslxPath'}/lib/plugins/$self->{'name'}/files";
 
-    # copy all needed files now
+    # copy all needed files
     my @files = qw( vmware-init nvram.5.0 runvmware-v2 );
     foreach my $file (@files) {
         copyFile("$pluginFilesPath/$file", $self->{'pluginRepositoryPath'});
     }
+    # generate the runlevel script (depends on distro/version and vmware location)
+    # TODO: the path to the runlevel directory is distro specific!!
+    rename ("/etc/init.d/vmware", "/etc/init.d/vmware.slx-bak");
+    $self->_writeRunlevelScript($vmbin, "/etc/init.d/vmware");
+
     # generate links for the user executables vmware and player and a 
     # simplified version of the start script
     @files = qw( vmware vmplayer );
@@ -181,7 +194,8 @@ sub installationPhase
         my $script = unshiftHereDoc(<<"        End-of-Here");
             #!/bin/sh
             # written by OpenSLX-plugin 'vmware' in Stage1
-            PREFIX=/usr/lib/vmware # depends on the vmware location
+            # radically simplified version of the original script $file by VMware Inc.
+            PREFIX=$vmpath # depends on the vmware location
             exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \
                  "\$PREFIX"'/lib' \
                  "\$PREFIX"'/bin/vmware' \
@@ -204,7 +218,120 @@ sub removalPhase
     foreach my $file (@files) {
         rename ("/usr/bin/$file.slx-bak", "/usr/bin/$file");
     }
+    # TODO: path is distro specific
+    rename ("/etc/init.d/vmware.slx-bak", "/etc/init.d/vmware");
     return;
+}
+
+sub _writeRunlevelScript
+{
+    my $self = shift;
+    my $location = shift;
+    my $file = shift;
+    
+    # $location points to the path where vmware helpers are installed
+    my $script = unshiftHereDoc(<<"    End-of-Here");
+        #!/bin/sh
+        #
+        # parts taken from vmware start script:
+        # Copyright 1998-2007 VMware, Inc.  All rights reserved.
+        #
+        # This script manages the services needed to run VMware software
+        
+        # Basic support for the Linux Standard Base Specification 1.3
+        # Used by insserv and other LSB compliant tools.
+        ### BEGIN INIT INFO
+        # Provides: VMware
+        # Required-Start: \$syslog
+        # Required-Stop:
+        # Default-Start: 2 3 5
+        # Default-Stop: 0 6
+        # Short-Description: Manages the services needed to run VMware software
+        # Description: Manages the services needed to run VMware software
+        ### END INIT INFO
+        load_modules() {
+          # to be filled in via the stage1 configuration script
+          modprobe -qa vmmon vmnet vmblock 2>/dev/null
+          # most probably nobody wants to run the parallel port driver ...
+          #modprobe vm...
+        }
+        unload_modules() {
+          # to be filled with the proper list within via the stage1 configuration
+          # script
+          rmmod vmmon vmblock vmnet 2>/dev/null
+        }
+        # the bridged interface
+        setup_vmnet0() {
+          if [ -n "\$vmnet0" ] ; then
+            # the path might be directly point to the plugin dir
+            $location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid /dev/vmnet0 eth0
+          fi
+        }
+        # we definately prefer the hostonly interface for NATed operation too
+        # distinction is made via enabled forwarding
+        setup_vmnet1() {
+          if [ -n "\$vmnet1" ] ; then
+            test -c /dev/vmnet1 || mknod c 119 1 /dev/vmnet1
+            # the path might be directly point to the plugin dir
+            $location/vmnet-netifup -d /var/run/vmnet-netifup-vmnet1.pid \
+              /dev/vmnet1 vmnet1
+            dhcpif="\$dhcpif vmnet1"
+            ip addr add \$vmnet1 dev vmnet1
+            if [ -n "\$vmnet1nat" ] ; then
+              # needs refinement interface name for eth0 is known in stage3 already
+              echo "1" > /proc/sys/net/ipv4/conf/vmnet1/forwarding 2>/dev/null
+              echo "1" > /proc/sys/net/ipv4/conf/eth0/forwarding 2>/dev/null
+              #iptables -A -s vmnet1 -d eth0
+            fi
+          fi
+        }
+        # incomplete ...
+        setup_vmnet8() {
+          if [ -n "\$vmnet8" ] ; then
+            test -c /dev/vmnet1 || mknod c 119 8 /dev/vmnet8
+            # /etc/vmware/vmnet-natd-8.mac simply contains a mac like 00:50:56:F1:30:50
+            $location/vmnet-natd -d /var/run/vmnet-natd-8.pid \
+              -m /etc/vmware/vmnet-natd-8.mac -c /etc/vmware/nat.conf
+            dhcpif="\$dhcpif vmnet8"
+            ip addr add \$vmnet8 dev vmnet8
+          fi
+        }
+        runvmdhcpd() {
+          if [ -n "\$dhcpif" ] ; then
+            # the path might be directly point to the plugin dir
+            mkdir /var/run/vmware 2>/dev/null
+            $location/vmnet-dhcpd -cf /etc/vmware/dhcpd.conf -lf \
+              /var/run/vmware/dhcpd.leases -pf /var/run/vmnet-dhcpd-vmnet8.pid \$dhcpif
+          fi
+        }
+        
+        case $1 in
+          start)
+            # message output should match the given vendor-os
+            echo "Starting vmware background services ..."
+            load_modules
+            setup_vmnet0
+            setup_vmnet1
+            setup_vmnet8
+            runvmdhcpd
+          ;;
+          stop)
+            # message output should match the given vendor-os
+            echo "Stopping vmware background services ..."
+            killall vmnet-netifup vmnet-natd vmnet-bridge vmware vmplayer \
+              vmware-tray 2>/dev/null
+            # wait for shutting down of interfaces
+            usleep 50000
+            unload_modules
+          ;;
+          status)
+            echo "Say something useful here ..."
+          ;;
+        esac
+        
+        exit 0
+    End-of-Here
+    spitFile($file, $script);
 }
 
 1;
