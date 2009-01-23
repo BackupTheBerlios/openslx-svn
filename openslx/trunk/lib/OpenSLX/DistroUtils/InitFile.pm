@@ -67,6 +67,10 @@ sub _initialConfigHash() {
             'blockDesc' => "restart: defines restart function for initscript",
             'content'   => {}
         },
+        'try-restart'   => {
+            'blockDesc' => "restart: defines restart function for initscript",
+            'content'   => {}
+        },
         'status'    => {
             'blockDesc' => "status: defines status function for initscript",
             'content'   => {}
@@ -133,16 +137,19 @@ sub addScript {
 sub addDaemon {
     my $self = shift;
     my $binary = shift;
+       $binary =~ m/\/([^\/]*)$/;
+    my $shortname = $1;
     my $parameters = shift || "";
     my $flags = shift || {};
     my $required    = $flags->{required} || 1;
-    my $desc        = $flags->{desc} || "$binary";
+    my $desc        = $flags->{desc} || "$shortname";
     my $errormsg    = $flags->{errormsg} || "$desc failed!";
     my $priority    = $flags->{priority} || 5;
     
     push(@{$self->{'configHash'}->{'highlevelConfig'}},
     {
         binary => $binary,
+        shortname => $shortname,
         parameters => $parameters,
         desc => $desc,
         errormsg => $errormsg,
