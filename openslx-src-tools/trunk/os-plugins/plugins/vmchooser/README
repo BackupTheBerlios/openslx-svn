@@ -1,0 +1,31 @@
+
+VM Chooser Helper Program
+==================================
+
+This is the program used by the vmchooser-plugin, which
+is part of the openslx-system.
+
+You just need to compile this, if you have local changes.
+The most recent svn version is also included in binary format 
+in the main folder of this openslx-distribution.
+
+Enter "make" to compile everything.
+Enter "make install" to install it to the proper path 
+of the svn distribution of openslx. Do not forget to
+enter "make install" in openslx/trunk .
+
+Needed libraries to compile:
+ - All sorts of X libs
+ - fltk-2 (see note *)
+ - libxml2
+ - libboost-regex_s (static - 
+   a dynamic version can be enabled by changing the Makefile)
+
+Needed libraries to run:
+ - All sorts of X libs
+ - libxml2
+
+===================================
+* Some static libraries of fltk-2 - svn version - are located 
+in fltk-2/ and could be used to link against this program.
+- as images are enabled, you should have libjpeg and libpng too.

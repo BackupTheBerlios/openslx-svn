@@ -88,18 +88,15 @@ sub installationPhase
     # Some plugins have to copy files from their plugin folder into the
     # vendor-OS. In order to make this possible while chrooted, the host's
     # /opt/openslx folder will be mounted to /mnt/openslx in the vendor-OS. 
-    # So each plugin could copy some files like this:
-    #
-    
     # get our own name:
-    my $pluginName = $self->{'name'};
+    #my $pluginName = $self->{'name'};
     
     
     # get our own base path:
     my $pluginBasePath = "/mnt/openslx/lib/plugins/$pluginName/files";
     
     # copy all needed files now:
-    system( "bash") ;
+    #system( "bash") ;
     foreach my $file ( qw( vmchooser ) ) {
         copyFile("$pluginBasePath/$file", "$pluginRepositoryPath/");
     }

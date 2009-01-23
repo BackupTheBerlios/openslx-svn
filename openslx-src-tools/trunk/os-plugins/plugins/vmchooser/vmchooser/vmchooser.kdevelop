@@ -7,20 +7,20 @@
     <projectmanagement>KDevCustomProject</projectmanagement>
     <primarylanguage>C++</primarylanguage>
     <ignoreparts/>
-    <projectname>SessChoo</projectname>
-    <projectdirectory>.</projectdirectory>
+    <projectname>vmchooser</projectname>
+    <projectdirectory>./</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description></description>
-    <defaultencoding></defaultencoding>
-    <versioncontrol></versioncontrol>
+    <description/>
+    <defaultencoding/>
+    <versioncontrol/>
   </general>
   <kdevcustomproject>
     <run>
       <directoryradio>executable</directoryradio>
-      <mainprogram>/home/bastian/studium/hiwi/fltk-2/SessChoo/test</mainprogram>
+      <mainprogram>/home/bastian/studium/hiwi/openslx/openslx-src-tools/trunk/os-plugins/plugins/vmchooser/vmchooser</mainprogram>
       <programargs>-p xmltest</programargs>
       <globaldebugarguments>-p xmltest</globaldebugarguments>
-      <globalcwd>/home/bastian/studium/hiwi/fltk-2/SessChoo</globalcwd>
+      <globalcwd>/home/bastian/studium/hiwi/openslx/openslx-src-tools/trunk/os-plugins/plugins/vmchooser</globalcwd>
       <useglobalprogram>false</useglobalprogram>
       <terminal>false</terminal>
       <autocompile>false</autocompile>
@@ -47,13 +47,13 @@
     <blacklist/>
     <build>
       <buildtool>make</buildtool>
-      <builddir></builddir>
+      <builddir/>
     </build>
     <other>
       <prio>0</prio>
-      <otherbin></otherbin>
-      <defaulttarget></defaulttarget>
-      <otheroptions></otheroptions>
+      <otherbin/>
+      <defaulttarget/>
+      <otheroptions/>
       <selectedenvironment>default</selectedenvironment>
       <environments>
         <default/>
@@ -64,9 +64,9 @@
       <numberofjobs>0</numberofjobs>
       <prio>0</prio>
       <dontact>false</dontact>
-      <makebin></makebin>
-      <defaulttarget></defaulttarget>
-      <makeoptions></makeoptions>
+      <makebin/>
+      <defaulttarget/>
+      <makeoptions/>
       <selectedenvironment>default</selectedenvironment>
       <environments>
         <default/>
@@ -75,11 +75,11 @@
   </kdevcustomproject>
   <kdevdebugger>
     <general>
-      <dbgshell></dbgshell>
-      <gdbpath></gdbpath>
-      <configGdbScript></configGdbScript>
-      <runShellScript></runShellScript>
-      <runGdbScript></runGdbScript>
+      <dbgshell/>
+      <gdbpath/>
+      <configGdbScript/>
+      <runShellScript/>
+      <runGdbScript/>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>false</floatingtoolbar>
@@ -180,7 +180,7 @@
       <includePaths>.;</includePaths>
     </codecompletion>
     <creategettersetter>
-      <prefixGet></prefixGet>
+      <prefixGet/>
       <prefixSet>set</prefixSet>
       <prefixVariable>m_,_</prefixVariable>
       <parameterName>theValue</parameterName>
@@ -193,7 +193,7 @@
       <orientation>Vertical</orientation>
     </splitheadersource>
     <references>
-      <pcs>automatic_%2Fhome%2Fbastian%2Fstudium%2Fhiwi%2Ffltk-2%2FSessChoo</pcs>
+      <pcs>automatic_%2Fhome%2Fbastian%2Fstudium%2Fhiwi%2Fopenslx%2Fopenslx-src-tools%2Ftrunk%2Fos-plugins%2Fplugins%2Fvmchooser%2Fvmchooser</pcs>
     </references>
   </kdevcppsupport>
   <cppsupportpart>
@@ -203,15 +203,15 @@
     </filetemplates>
   </cppsupportpart>
   <ctagspart>
-    <customArguments></customArguments>
-    <customTagfilePath>/home/bastian/studium/hiwi/fltk-2/SessChoo/tags</customTagfilePath>
+    <customArguments/>
+    <customTagfilePath>/home/bastian/studium/hiwi/openslx/openslx-src-tools/trunk/os-plugins/plugin/vmchooser/tags</customTagfilePath>
     <activeTagsFiles/>
   </ctagspart>
   <kdevdocumentation>
     <projectdoc>
-      <docsystem></docsystem>
-      <docurl></docurl>
-      <usermanualurl></usermanualurl>
+      <docsystem/>
+      <docurl/>
+      <usermanualurl/>
     </projectdoc>
   </kdevdocumentation>
   <kdevfileview>

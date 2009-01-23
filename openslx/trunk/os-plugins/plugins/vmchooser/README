@@ -2,26 +2,18 @@
 VirtualMachine Chooser - plugin
 ===============================
 
+This Plugin uses an external program to show 
+a list of sessions, from which a user can choose.
 
-Please consider to run "make" in the folder src/vmchooser/ after any changes to the code.
-Static libraries of fltk-2 are in src/fltk-2/ and are used to link against the program.
+This Programm is included in binary format. You
+can look into the sources at 
+svn://svn.openslx.org/srv/svn/openslx/openslx-src-tools/os-plugins/plugins/vmchooser/
 
-
-
-BUGS: 
-
-static version:
- - Has to be run with "nice ./vmchooser", else there is a bug in the Xorg system,
-   therefore I suggest compiling the shared version for development purposes.
-
-   Simply change "STATIC=-static" to "STATIC= #-static" to enable the shared version.
+There you can change the program to your needs 
+and compile it with the included Makefile.
 
 
-TODO:
- - enable linux-serssions
- - enable callbacks on entries <- Very important.
-
-
-ATTENTION:
- This program is not yet released ;-)
+Use at your own risk! 
+No warranty is given by the author 
+of this software for any purposes!
 

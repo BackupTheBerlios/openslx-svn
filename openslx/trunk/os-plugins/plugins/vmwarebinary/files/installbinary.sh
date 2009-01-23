@@ -19,7 +19,7 @@ if [ ${REPLY} == "YES" ]; then
 
 	echo "	* Downloading vmplayer now. This may take a while"
 	cd /opt/openslx/plugin-repo/vmwarebinary/
-	todo, during development we have this file and dont need to download it
+	#todo, during development we have this file and dont need to download it
 	wget -c http://download3.vmware.com/software/vmplayer/VMware-player-2.0.2-59824.i386.tar.gz
 
 	echo "	* Unpacking vmplayer"

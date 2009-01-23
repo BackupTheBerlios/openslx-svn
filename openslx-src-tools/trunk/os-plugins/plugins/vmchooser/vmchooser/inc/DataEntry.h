@@ -25,11 +25,13 @@ struct DataEntry {
 	string network;	
 	
 	bool active;
+	bool locked;
+	string password;
 	string pools;
 	string xdm;
 	int priority;
 	
-	string command; 
+	string command;
 	
 };
 

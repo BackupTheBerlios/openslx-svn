@@ -8,10 +8,10 @@
 #include "DataEntry.h"
 
 DataEntry** readXmlDir(char* path); /* Attention: returns malloced array */
-DataEntry** readLinSession(char* path);
+DataEntry** readLinSess(char* path);
 
 void runImage(fltk::Widget* , void* p); /* This is thought as a callback-function for the Select-Browser */
-string buildCommand(DataEntry*); /* building command for different Virtualizer */
+string buildCommand(DataEntry&); /* building command for different Virtualizer */
 
 glob_t* globber(char* path, char* filetype); /* Globs for a specific filetype */
 
