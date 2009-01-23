@@ -142,6 +142,20 @@ if ($action =~ m[^import]i) {
 		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 	$engine->initialize($vendorOSName, 'remove');
 	$engine->removeVendorOS();
+} elsif ($action =~ m[^list-se]i) {
+	my $vendorOSName = shift @ARGV;
+	if (!defined $vendorOSName) {
+		print STDERR _tr("You need to specify exactly one vendor-OS-name!\n");
+		pod2usage(2);
+	}
+	# we chdir into the script's folder such that all relative paths have
+	# a known starting point:
+	chdir($FindBin::RealBin)
+		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+	$engine->initialize($vendorOSName, 'install');
+	print _tr("List of supported selections for '%s':\n", $vendorOSName);
+	print join('', map { "\t$_\n" }
+				   sort keys %{$engine->{'distro-info'}->{selection}});
 } elsif ($action =~ m[^list-su]i) {
 	print _tr("List of supported distros:\n");
 	print join('', map {
@@ -168,8 +182,9 @@ if ($action =~ m[^import]i) {
 			clone
 			import-into-db
 			install
-			list-supported
 			list-installed
+			list-selections
+			list-supported
 			remove
 			shell
 			update
@@ -212,6 +227,10 @@ installs a vendor-OS into a folder
 =item B<<     list-installed >>
 
 show installed vendor-OSes
+
+=item B<<     list-selections <vendor-os-name> >>
+
+show available selections for given vendor-OS
 
 =item B<<     list-supported >>
 
@@ -284,9 +303,10 @@ If you do not specify any selection, you will get the default selection of
 that distribution.
 
 If you pass an unknown selection, you will see a list of the selections
-that are available.
+that are available. The available selections for any vendor-OS can be requested
+via the 'list-selections' action.
 
-In clone-mode, it is a good idea to specify some unqiue string as the selection
+In clone-mode, it is a good idea to specify some unique string as the selection
 part of the vendor-os-name, such that you will easily recognize the vendor-OS
 at a later stage. We recommend something like '-cloned-from-<name-of-rsync-source>'.
 
