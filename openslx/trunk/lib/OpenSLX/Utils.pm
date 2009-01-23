@@ -36,7 +36,8 @@ $VERSION = 1.01;
     hostIs64Bit
     getAvailableBusyboxApplets
     grabLock
-    isPackInstalled pathOf isInPath
+    pathOf
+    isInPath
 );
 
 =head1 NAME

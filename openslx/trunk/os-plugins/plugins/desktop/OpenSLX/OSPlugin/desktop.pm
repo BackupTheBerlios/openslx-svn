@@ -254,7 +254,7 @@ sub checkStage3AttrValues
     if ($manager eq 'kdm') {
         if (!defined $vendorOSAttrs->{'desktop::kdm'} 
         || $vendorOSAttrs->{'desktop::kdm'} == 1) {
-            if (!$self->{distro}->isPackInstalled('kdm')) {
+            if (!$self->{distro}->isKDMInstalled()) {
                 push @problems, _tr(
                     "KDM is not installed in vendor-OS, so using it as desktop manager wouldn't work!"
                 );
@@ -269,7 +269,7 @@ sub checkStage3AttrValues
     elsif ($manager eq 'gdm') {
         if (!defined $vendorOSAttrs->{'desktop::gdm'}
         || $vendorOSAttrs->{'desktop::gdm'} == 1) {
-            if (!$self->{distro}->isPackInstalled('gdm')) {
+            if (!$self->{distro}->isGDMInstalled()) {
                 push @problems, _tr(
                     "GDM is not installed in vendor-OS, so using it as desktop manager wouldn't work!"
                 );
@@ -284,7 +284,7 @@ sub checkStage3AttrValues
     elsif ($manager eq 'xdm') {
         if (!defined $vendorOSAttrs->{'desktop::xdm'}
         || $vendorOSAttrs->{'desktop::xdm'} == 1) {
-            if (!$self->{distro}->isPackInstalled('xdm')) {
+            if (!$self->{distro}->isXDMInstalled()) {
                 push @problems, _tr(
                     "XDM is not installed in vendor-OS, so using it as desktop manager wouldn't work!"
                 );
@@ -301,7 +301,7 @@ sub checkStage3AttrValues
     if ($kind eq 'kde') {
         if (!defined $vendorOSAttrs->{'desktop::kde'}
         || $vendorOSAttrs->{'desktop::kde'} == 1) {
-            if (!$self->{distro}->isPackInstalled('startkde')) {
+            if (!$self->{distro}->isKDEInstalled()) {
                 push @problems, _tr(
                     "KDE is not installed in vendor-OS, so using it as desktop kind wouldn't work!"
                 );
@@ -316,7 +316,7 @@ sub checkStage3AttrValues
     elsif ($kind eq 'gnome') {
         if (!defined $vendorOSAttrs->{'desktop::gnome'}
         || $vendorOSAttrs->{'desktop::gnome'} == 1) {
-            if (!$self->{distro}->isPackInstalled('gnome-session')) {
+            if (!$self->{distro}->isGNOMEInstalled()) {
                 push @problems, _tr(
                     "GNOME is not installed in vendor-OS, so using it as desktop kind wouldn't work!"
                 );
@@ -331,7 +331,7 @@ sub checkStage3AttrValues
     elsif ($kind eq 'xfce') {
         if (!defined $vendorOSAttrs->{'desktop::xfce'}
         || $vendorOSAttrs->{'desktop::xfce'} == 1) {
-            if (!$self->{distro}->isPackInstalled('startxfce')) {
+            if (!$self->{distro}->isXFCEInstalled()) {
                 push @problems, _tr(
                     "XFCE is not installed in vendor-OS, so using it as desktop kind wouldn't work!"
                 );
@@ -433,25 +433,22 @@ sub _installRequiredPackages
 
     my $engine = $self->{'os-plugin-engine'};
     
-    if ($self->{'gnome'} && 
-        !$self->{distro}->isPackInstalled('gnome-session')) {
-             $self->{distro}->installGNOME();
+    if ($self->{'gnome'} && !$self->{distro}->isGNOMEInstalled()) {
+        $self->{distro}->installGNOME();
     }
-    if ($self->{'gdm'} && !$self->{distro}->isPackInstalled('gdm')) {
-             $self->{distro}->installGDM();
+    if ($self->{'gdm'} && !$self->{distro}->isGDMInstalled()) {
+        $self->{distro}->installGDM();
     }
-    if ($self->{'kde'} &&
-        !$self->{distro}->isPackInstalled('startkde')) {
-             $self->{distro}->installKDE();
+    if ($self->{'kde'} && !$self->{distro}->isKDEInstalled()) {
+        $self->{distro}->installKDE();
     }
-    if ($self->{'kdm'} && !$self->{distro}->isPackInstalled('kdm')) {
+    if ($self->{'kdm'} && !$self->{distro}->isKDMInstalled()) {
         $self->{distro}->installKDM();
     }
-    if ($self->{'xfce'} && 
-        !$self->{distro}->isPackInstalled('startxfce')) {
-             $self->{distro}->installXFCE();
+    if ($self->{'xfce'} && !$self->{distro}->isXFCEInstalled()) {
+        $self->{distro}->installXFCE();
     }
-    if ($self->{'xdm'} && !$self->{distro}->isPackInstalled('xdm')) {
+    if ($self->{'xdm'} && !$self->{distro}->isXDMInstalled()) {
         $self->{distro}->installXDM();
     }
 
@@ -463,24 +460,22 @@ sub _fillUnsetStage1Attrs
     my $self = shift;
 
     if (!defined $self->{'gnome'}) {
-        $self->{'gnome'} = 
-            $self->{distro}->isPackInstalled('gnome-session');
+        $self->{'gnome'} = $self->{distro}->isGNOMEInstalled();
     }
     if (!defined $self->{'gdm'}) {
-        $self->{'gdm'} =
-            $self->{distro}->isPackInstalled('gdm');
+        $self->{'gdm'} = $self->{distro}->isGDMInstalled();
     }
     if (!defined $self->{'kde'}) {
-        $self->{'kde'} = $self->{distro}->isPackInstalled('startkde');
+        $self->{'kde'} = $self->{distro}->isKDEInstalled();
     }
     if (!defined $self->{'kdm'}) {
-        $self->{'kdm'} = $self->{distro}->isPackInstalled('kdm');
+        $self->{'kdm'} = $self->{distro}->isKDMInstalled();
     }
     if (!defined $self->{'xfce'}) {
-        $self->{'xfce'} = $self->{distro}->isPackInstalled('startxfce');
+        $self->{'xfce'} = $self->{distro}->isXFCEInstalled();
     }
     if (!defined $self->{'xdm'}) {
-        $self->{'xdm'} = $self->{distro}->isPackInstalled('xdm');
+        $self->{'xdm'} = $self->{distro}->isXDMInstalled();
     }
     if (!defined $self->{'supported_themes'}) {
         $self->{attrs}->{'desktop::supported_themes'} 
