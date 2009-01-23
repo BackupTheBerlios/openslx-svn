@@ -59,32 +59,32 @@ sub fillRunlevelScript
     if ($kind eq 'local' || $kind eq 'local25') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
               # to be filled in via the stage1 configuration script
-              insmod /lib/modules/\$(uname -r)/misc/vmmon.o || return 1
-              insmod /lib/modules/\$(uname -r)/misc/vmnet.o || return 1
+              insmod /lib/modules/\$(uname -r)/misc/vmmon.ko || return 1
+              insmod /lib/modules/\$(uname -r)/misc/vmnet.ko || return 1
               insmod /lib/modules/\$(uname -r)/misc/vmblock.o 2>/dev/null || return 0
         End-of-Here
     } elsif ($kind eq 'vmpl1.0') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
               vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
               module_src_path=\${vmware_kind_path}/vmroot/modules
-              insmod \${module_src_path}/vmmon.o
-              insmod \${module_src_path}/vmnet.o
+              insmod \${module_src_path}/vmmon.ko
+              insmod \${module_src_path}/vmnet.ko
         End-of-Here
     } elsif ($kind eq "vmpl2.0") {
         $script .= unshiftHereDoc(<<"        End-of-Here");
               vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
               module_src_path=\${vmware_kind_path}/vmroot/modules
-              insmod \${module_src_path}/vmmon.o
-              insmod \${module_src_path}/vmnet.o
-              insmod \${module_src_path}/vmblock.o
+              insmod \${module_src_path}/vmmon.ko
+              insmod \${module_src_path}/vmnet.ko
+              insmod \${module_src_path}/vmblock.ko
         End-of-Here
     } elsif ($kind eq 'vmpl2.5') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
               vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
               module_src_path=\${vmware_kind_path}/vmroot/modules
-              insmod \${module_src_path}/vmmon.o
-              insmod \${module_src_path}/vmnet.o
-              insmod \${module_src_path}/vmblock.o
+              insmod \${module_src_path}/vmmon.ko
+              insmod \${module_src_path}/vmnet.ko
+              insmod \${module_src_path}/vmblock.ko
         End-of-Here
     }
 
