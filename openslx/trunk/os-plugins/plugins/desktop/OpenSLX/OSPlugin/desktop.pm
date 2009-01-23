@@ -299,7 +299,7 @@ sub checkStage3AttrValues
     my $theme = $stage3Attrs->{'desktop::theme'};
     if (defined $theme && !grep { $_ eq $theme } @supportedThemes) {
         die _tr(
-            "'%s' is not a supported theme!\nSupported themes are: %s",
+            "desktop::theme '%s' does not refer to a supported theme!\nSupported themes are: %s",
             $theme, $vendorOSAttrs->{'desktop::supported_themes'} || ''
         );
     }

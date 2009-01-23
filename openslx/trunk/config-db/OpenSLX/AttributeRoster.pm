@@ -510,7 +510,7 @@ sub checkValues
 {
     my $class        = shift;
     my $stage3Attrs  = shift || {};
-    my $vendorOSName = shift or die ('need vendor-OS-name!');
+    my $vendorOSName = shift;
 
     $class->_init() if !%AttributeInfo;
 
@@ -538,6 +538,10 @@ sub checkValues
         }
     }
 
+    # if no vendorOS-name has been provided, we can't initialize any plugins,
+    # so we are done
+    return 1 if !$vendorOSName;
+    
     # now give each plugin a chance to check it's own attributes by itself
     foreach my $pluginName (sort keys %attrsByPlugin) {
         # create & start OSPlugin-engine for vendor-OS and current plugin
@@ -549,6 +553,8 @@ sub checkValues
         }
         $engine->checkStage3AttrValues($attrsByPlugin{$pluginName});
     }
+    
+    return 1;
 }
 
 1;

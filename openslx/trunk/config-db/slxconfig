@@ -269,9 +269,13 @@ sub checkGivenStage3Attrs
     my $stage3Attrs  = shift;
     my $vendorOSID   = shift;
     
-    my $vendorOS = $openslxDB->fetchVendorOSByID($vendorOSID);
-    
-    OpenSLX::AttributeRoster->checkValues($stage3Attrs, $vendorOS->{name});
+    if ($vendorOSID) {
+        my $vendorOS = $openslxDB->fetchVendorOSByID($vendorOSID);
+        OpenSLX::AttributeRoster->checkValues($stage3Attrs, $vendorOS->{name});
+    }
+    else {
+        OpenSLX::AttributeRoster->checkValues($stage3Attrs);
+    }
 
     return 1;
 }
@@ -711,6 +715,8 @@ sub addClientToConfigDB
     );
     $clientData->{name} = $clientName;
 
+    checkGivenStage3Attrs($clientData->{attrs});
+
     my @systemIDs;
     if (exists $clientData->{systems}) {
         @systemIDs = map {
@@ -777,6 +783,8 @@ sub addGroupToConfigDB
         \@groupKeys, \@groupAttrKeys, 'group', @_
     );
     $groupData->{name} = $groupName;
+
+    checkGivenStage3Attrs($groupData->{attrs});
 
     my @systemIDs;
     if (exists $groupData->{systems}) {
@@ -951,6 +959,8 @@ sub changeClientInConfigDB
             $clientName);
     }
 
+    checkGivenStage3Attrs($clientData->{attrs});
+
     mergeNonExistingAttributes($clientData, $client);
 
     my @systemIDs;
@@ -1037,6 +1047,8 @@ sub changeGroupInConfigDB
         die _tr("the group '%s' doesn't exists in the DB, giving up!\n",
             $groupName);
     }
+
+    checkGivenStage3Attrs($groupData->{attrs});
 
     mergeNonExistingAttributes($groupData, $group);
 
