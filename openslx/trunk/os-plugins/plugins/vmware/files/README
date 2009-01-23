@@ -16,8 +16,9 @@ Files
   This nvram supports a second Floppy drive. Helpfull if you want to
   get some data from linux to your Windows VirtualMachine (like
   Scanner-IP or Userinformation)
-- runvmware-v2
-  The main script which will configure and start the Virtual Machine
+- runvmware-player-v1 and runvmware-player-v2
+  The main script which will configure and start the Virtual Machine.
+  Two different, depending on the player-version
 - Vorlage_VMwareImageAdministrator.xml
   This example files shows which VMware features are configureable for
   each virtual machine.
