@@ -10,6 +10,7 @@
 #include <linux/file.h>
 /* use red-black library of kernel */
 #include <linux/rbtree.h>
+#include <linux/version.h>
 #include <asm/uaccess.h>
 
 #include "../common/dnbd-cliserv.h"
@@ -42,8 +43,12 @@ int dnbd_cache_search(dnbd_cache_t * cache, struct request *req)
 	size_t blksize;
 	void *kaddr;
 
-	int i;
-	struct bio *bio;
+	#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
+		int i;
+		struct bio *bio;
+	#else
+		struct req_iterator iter;
+	#endif
 	struct bio_vec *bvec;
 
 	int result = 0, rbytes;
@@ -75,8 +80,12 @@ int dnbd_cache_search(dnbd_cache_t * cache, struct request *req)
       found:
 	cache->hits++;
 	offset = cn->rb_data * blksize;
+	#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
 	rq_for_each_bio(bio, req) {
 		bio_for_each_segment(bvec, bio, i) {
+	#else
+	rq_for_each_segment(bvec, req, iter) {
+	#endif
 			if (bvec->bv_len > blksize) {
 				printk(KERN_WARNING
 				       "bvec->bv_len greater than cache block size\n");
@@ -103,7 +112,9 @@ int dnbd_cache_search(dnbd_cache_t * cache, struct request *req)
 			result += rbytes;
 			if (result == blksize)
 				goto out;
+	#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
 		}
+	#endif
 	}
 
       out:

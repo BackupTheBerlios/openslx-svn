@@ -15,6 +15,7 @@
   *
   */
 
+#include <linux/version.h>
 #include <linux/module.h>
 #include <linux/proc_fs.h>
 #include <linux/blkdev.h>
@@ -25,7 +26,9 @@
 #include <linux/bio.h>
 
 #include <linux/errno.h>	/* error codes */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,18))
 #include <linux/devfs_fs_kernel.h>
+#endif
 #include <asm/uaccess.h>
 #include <linux/file.h>
 
@@ -213,7 +216,6 @@ static void dnbd_xfer_to_cache(dnbd_device_t * dnbd, struct sk_buff *skb,
 static int inline dnbd_recv_reply(dnbd_device_t * dnbd)
 {
 	mm_segment_t oldfs = get_fs();
-	int i;
 	unsigned int nsect = 0;
 	int err;
 	struct sk_buff *skb;
@@ -221,7 +223,12 @@ static int inline dnbd_recv_reply(dnbd_device_t * dnbd)
 	int remain, offset, tocopy;
 	dnbd_reply_t *reply;
 	struct request *req = NULL;
-	struct bio *bio;
+        #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
+		int i;
+		struct bio *bio;
+	#else
+		struct req_iterator iter;
+	#endif
 	struct bio_vec *bvec;
 	int tt;
 	void *kaddr;
@@ -306,8 +313,12 @@ static int inline dnbd_recv_reply(dnbd_device_t * dnbd)
 	nsect = 0;
 	err = 0;
 	/* copy network data to BIOs */
-	rq_for_each_bio(bio, req) {
-		bio_for_each_segment(bvec, bio, i) {
+        #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
+        rq_for_each_bio(bio, req) {
+                bio_for_each_segment(bvec, bio, i) {
+        #else
+        rq_for_each_segment(bvec, req, iter) {
+        #endif
 			tocopy = bvec->bv_len;
 			if (tocopy > remain)
 				goto nobytesleft;
@@ -329,7 +340,9 @@ static int inline dnbd_recv_reply(dnbd_device_t * dnbd)
 			offset += tocopy;
 			remain -= tocopy;
 			nsect += bvec->bv_len >> 9;
+        #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
 		}
+	#endif
 	}
       nobytesleft:
 	/* end request partially or fully */
@@ -1160,7 +1173,9 @@ static int __init dnbd_init(void)
 	printk(KERN_INFO "dnbd: module loaded with major %i\n",
 	       dnbd_major);
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,17))
 	devfs_mk_dir("dnbd");
+#endif
 	for (i = 0; i < MAX_DNBD; i++) {
 		struct gendisk *disk = dnbd_dev[i].disk;
 		dnbd_dev[i].state = DNBD_STATE_LOADED;
@@ -1194,7 +1209,9 @@ static int __init dnbd_init(void)
 		disk->private_data = &dnbd_dev[i];
 		disk->flags |= GENHD_FL_SUPPRESS_PARTITION_INFO;
 		sprintf(disk->disk_name, "dnbd%d", i);
+		#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,17))
 		sprintf(disk->devfs_name, "dnbd/%d", i);
+		#endif
 		set_capacity(disk, 0);
 
 		/* initialize cache */
@@ -1243,7 +1260,9 @@ static void __exit dnbd_exit(void)
 			put_disk(disk);
 		}
 	}
+	#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,17))
 	devfs_remove("dnbd");
+	#endif
 	unregister_blkdev(dnbd_major, "dnbd");
 
 	for (i = 0; (i < MAX_DNBD && i < 100); i++) {
