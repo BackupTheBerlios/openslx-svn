@@ -11,7 +11,7 @@
 # MakeInitRamFS::Distro::SUSE.pm
 #    - provides SUSE-specific overrides of the MakeInitRamFS::Distro API.
 # -----------------------------------------------------------------------------
-package OpenSLX::MakeInitRamFS::Distro::SUSE;
+package OpenSLX::MakeInitRamFS::Distro::Suse;
 
 use strict;
 use warnings;
