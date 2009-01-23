@@ -205,7 +205,9 @@ sub _prepareBootloaderConfigFolder
 
         for my $file ('pxelinux.0', 'menu.c32', 'vesamenu.c32') {
             if (!-e "$pxePath/$file") {
-                slxsystem(qq[cp -p "$basePath/share/tftpboot/$file" $pxePath/]);
+                slxsystem(
+                    qq[cp -p "$basePath/share/boot-env/pxe/$file" $pxePath/]
+                );
             }
         }
     }
