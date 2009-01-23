@@ -38,4 +38,15 @@ sub GDMPathInfo
     return $pathInfo;
 }
 
+sub GDMConfigHashForWorkstation
+{
+    my $self = shift;
+    
+    my $configHash = $self->SUPER::GDMConfigHashForWorkstation();
+    $configHash->{'daemon'}->{SessionDesktopDir} =
+        '/usr/share/xsessions/:/etc/X11/sessions/';
+                    
+    return $configHash;
+}                        
+
 1;
