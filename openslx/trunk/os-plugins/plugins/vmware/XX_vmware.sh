@@ -228,9 +228,10 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
 
     # disable VMware swapping 
     echo '.encoding = "UTF-8"
-    prefvmx.useRecommendedLockedMemSize = "TRUE"
-    prefvmx.minVmMemPct = "100"' \
-    >/etc/vmware/config
+      prefvmx.useRecommendedLockedMemSize = "TRUE"
+      prefvmx.minVmMemPct = "100"' | \
+      sed -e "s/^ *//" \
+      >/mnt/etc/vmware/config
 
     ## Copy version depending files
     cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/runvmware \
