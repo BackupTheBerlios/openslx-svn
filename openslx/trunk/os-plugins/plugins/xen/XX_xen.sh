@@ -1,13 +1,23 @@
-#! /bin/sh
+# Copyright (c) 2007..2008 - RZ Uni Freiburg
+# Copyright (c) 2008 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org
 #
 # stage3 part of 'xen' plugin - the runlevel script
 #
-mkdir -p /mnt/var/log/xen &
-mkdir -p /mnt/var/run/xend &
-mkdir -p /mnt/var/run/xenstored &
+# script is included from init via the "." load function - thus it has all
+# variables and functions available
+
+testmkd /mnt/var/log/xen
+testmkd /mnt/var/run/xend
+testmkd /mnt/var/run/xenstored
 cd /mnt/etc/init.d/rc5.d
-ln -s ../xendomains K08xendomains
-ln -s ../xend K09xend
-ln -s ../xend S13xend
-ln -s ../xendomains S14xendomains
+rllinker "xendomains" 14 8
+rllinker "xend" 13 9
 modprobe loop max_loop=64

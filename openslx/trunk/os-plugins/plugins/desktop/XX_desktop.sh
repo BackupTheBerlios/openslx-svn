@@ -1,5 +1,3 @@
-#!/bin/ash
-#
 # Copyright (c) 2007..2008 - RZ Uni Freiburg
 # Copyright (c) 2008 - OpenSLX GmbH
 #
@@ -13,9 +11,9 @@
 #
 # stage3 part of 'desktop' plugin - the runlevel script
 #
-. /etc/functions
-. /etc/distro-functions
-[ -d /etc/sysconfig ] && . /etc/sysconfig/config
+# script is included from init via the "." load function - thus it has all
+# variables and functions available
+
 if [ -e /initramfs/plugin-conf/desktop.conf ]; then
   . /initramfs/plugin-conf/desktop.conf
   if [ $desktop_active -ne 0 ]; then
@@ -28,16 +26,17 @@ if [ -e /initramfs/plugin-conf/desktop.conf ]; then
     if [ -e /mnt/opt/openslx/plugin-repo/desktop/${desktop_manager}/desktop.sh ]
       then . /mnt/opt/openslx/plugin-repo/desktop/${desktop_manager}/desktop.sh
     else
-      error fatal "This shouldn't fail - you might have forgotten to export \
-your system."
+      error "This shouldn't fail - you might have forgotten to export \
+your system." fatal
     fi
 
     # TODO: move the following stuff into the gdm-specific desktop.sh
     #       (and perhaps handle through a template?)
     if [ "${desktop_manager}" = "XXXkdm" ]; then
       cp -a /usr/share/themes/kdm /mnt/var/lib/openslx/themes
-      sed -i "s,Theme=.*,Theme=/var/lib/openslx/themes/kdm," /mnt/etc/kde3/kdm/kdmrc
-      sed -i "s,UseTheme=.*,UseTheme=true," /mnt/etc/kde3/kdm/kdmrc
+      sed "s,Theme=.*,Theme=/var/lib/openslx/themes/kdm," \
+        -i /mnt/etc/kde3/kdm/kdmrc
+      sed "s,UseTheme=.*,UseTheme=true," -i /mnt/etc/kde3/kdm/kdmrc
     fi
 
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'desktop' os-plugin ...";

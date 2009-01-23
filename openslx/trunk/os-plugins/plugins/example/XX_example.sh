@@ -1,4 +1,10 @@
-#!/bin/ash
+# Copyright (c) 2008 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
 #
 # stage3 part of 'example' plugin - the runlevel script
 #
@@ -23,6 +29,9 @@
 #
 # if you have any questions regarding the use of this file, please drop a mail
 # to: ot@openslx.com, or join the IRC-channel '#openslx' (on freenode).
+#
+# script is included from init via the "." load function - thus it has all
+# variables and functions available
 
 if [ -e /initramfs/plugin-conf/example.conf ]; then
   . /initramfs/plugin-conf/example.conf
