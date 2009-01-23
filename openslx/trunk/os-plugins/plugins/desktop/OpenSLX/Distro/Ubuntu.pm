@@ -100,7 +100,7 @@ sub KDMConfigHashForWorkstation
     $configHash->{'X-:0-Core'}->{Session} = '/etc/kde3/kdm/Xsession';
     $configHash->{'X-:0-Core'}->{Reset} = '/etc/kde3/kdm/Xreset';
     $configHash->{'X-:0-Core'}->{SessionsDirs} = 
-        '/etc/X11/sessions,/usr/share/xsessions,/usr/share/apps/kdm/sessions'
+        '/etc/X11/sessions,/usr/share/xsessions,/usr/share/apps/kdm/sessions';
 
     return $configHash;
 }
