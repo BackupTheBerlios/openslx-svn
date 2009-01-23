@@ -25,7 +25,7 @@ if [ "$1" = "nvidia" ]; then
   #TODO: licence information... even suse requires an accept
   # TODO: let it automatical find the newest file... see ati section
   #       only problem should be the kernel package
-  if [ "10.2" = "$(lsb_release -r|sed 's/^.*\t//')" ]; then
+  if [ "10.2" = "$(cat /etc/SuSE-release | tail -n1 | cut -d' ' -f3)" ]; then
     echo "  * Downloading nvidia rpm packages... this could take some time..."
     wget -q -c \
       ftp://download.nvidia.com/opensuse/10.2/i586/nvidia-gfxG01-kmp-bigsmp-173.14.12_2.6.18.8_0.10-0.1.i586.rpm \
@@ -48,7 +48,7 @@ if [ "$1" = "nvidia" ]; then
       find lib/ -name "*.ko" -exec mv {} ../modules \;
   fi
 
-  if [ "11.0" = "$(lsb_release -r|sed 's/^.*\t//')" ]; then
+  if [ "11.0" = "$(cat /etc/SuSE-release | tail -n1 | cut -d' ' -f3)" ]; then
     # add repository for nvidia drivers
     zypper addrepo http://download.nvidia.com/opensuse/11.0/ NVIDIA
     # confirm authenticity of key (once) 
@@ -66,6 +66,11 @@ if [ "$1" = "nvidia" ]; then
       # TODO: the following is not working - I don't know why...
       ${BUSYBOX} rpm2cpio ${RNAME} | ${BUSYBOX} cpio -idv 
     done
+    mv ./usr ..
+    find lib/ -name "*.ko" -exec mv {} ../modules \;
+    #echo "DEBUG xserver SUSE-GFX-INSTALL.SH"
+    #/bin/bash
+    #echo "END DEBUG"
   fi
 
   cd .. 

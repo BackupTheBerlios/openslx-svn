@@ -21,12 +21,16 @@ using namespace std;
  * ----------------------------------------------------
  * if you want to use default sizes, call first ctor
  ********************************************************/
-SWindow::SWindow(int w, int h, char* p):
-    fltk::Window(fltk::USEDEFAULT,fltk::USEDEFAULT,w,h,p, true),
-    go(w/3 + 10, h-40, (2*w)/3 - 20 , 30, "START"),
-    exit_btn(10, h-40, w/3 -10, 30, "EXIT"),
-    sel(10,10, w-20, h-50)
+SWindow::SWindow(int w, int h, char* p)
+: fltk::Window(w,h,p),
+  go(w/3 + 10, h-40, (2*w)/3 - 20 , 30, "START"),
+  exit_btn(10, h-40, w/3 -10, 30, "EXIT"),
+  sel(10,10, w-20, h-50)
 {
+  begin();
+  add_resizable(sel);
+  add(exit_btn);
+  add(go);
   width = w;
   height = h;
   
@@ -41,7 +45,7 @@ SWindow::SWindow(int w, int h, char* p):
   
   sel.indented(1);
   
-  Font* f1 = font("sans bold");
+  Font* f1 = font("sans");
   //Font* f1bold = f1->bold();
   
   btn_style->textsize(16);
@@ -60,6 +64,7 @@ SWindow::SWindow(int w, int h, char* p):
   sel.column_widths(widths);
   
   end();
+  sel.take_focus();
 };
 
 
@@ -90,6 +95,8 @@ void SWindow::cb_return()
  *******************************************************/
 void SWindow::cb_select()
 {
+  oldcurr = curr;
+  curr = (Item*)  sel.item();
   if(!sel.item()) return;
   //cout << "cb_select called with" << sel.item() << endl;
   sel.select_only_this();
@@ -98,8 +105,6 @@ void SWindow::cb_select()
       sel.set_item_opened(true);
       return;
     }
-  oldcurr = curr;
-  curr = (Item*)  sel.item();
 
   if( curr == oldcurr ) {
     // start image if it has data associated
