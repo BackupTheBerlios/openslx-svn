@@ -184,6 +184,10 @@ config_acpi () {
 config_dreshal () {
 if [ "x$start_dreshal" = "xyes" ]; then
   testmkd /mnt/var/lib/dbus
+  testmkd /mnt/var/lib/misc
+  testmkd /mnt/var/cache/hald
+  touch /mnt/var/lib/misc/PolicyKit.reload
+  chown root:polkituser /mnt/var/lib/misc/PolicyKit.reload
   rllinker "dbus" 17 20
   if [ ! -e /mnt/etc/init.d/policykit ] ; then
     testmkd /mnt/var/lib/PolicyKit root:polkituser 1770
@@ -244,6 +248,7 @@ config_nis () {
 # name service caching daemon (useful in most cases)
 config_nscd () {
   if [ -f /mnt/etc/init.d/nscd ] ; then
+    testmkd /mnt/var/cache/nscd
     rllinker "nscd" 20 5
   fi
 }
