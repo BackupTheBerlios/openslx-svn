@@ -793,10 +793,12 @@ fi
 runinithook '60-have-servconfig'
 
 # wait a while for hardware setup to complete and start cleanup procedure
+[ $DEBUGLEVEL -gt 1 ] && echo "Waiting for hwautocfg to finish ..."
 waitfor /tmp/hwcfg 20000 || error "$init_errhw"
 hwautocfg finish &
 
 # wait a while for services setup to complete
+[ $DEBUGLEVEL -gt 1 ] && echo "Waiting for servconfig to finish ..."
 waitfor /tmp/svcfg 10000 || error "$init_errsw"
 # IP configuration is complete and should not be updated automatically
 killall -9 udhcpc 2>/dev/null
@@ -823,14 +825,20 @@ fi
 runinithook '70-before-plugins'
 
 # check for any plugin-specific runlevel scripts and run them, if found:
-if [ -d /etc/plugin-init.d ]; then
-  for plugin_starter in /etc/plugin-init.d/*.sh; do
-    if [ -e $plugin_starter ]; then
-      [ $DEBUGLEVEL -gt 0 ] \
-        && echo "Running plugin starter $plugin_starter ..."
-      . $plugin_starter >>/tmp/plugin_starter 2>&1
-    fi
-  done
+if [ ${DEBUGLEVEL} = 25 ] ; then
+  /bin/ash
+else
+  if [ -d /etc/plugin-init.d ]; then
+    for plugin_starter in /etc/plugin-init.d/*.sh; do
+      if [ -e $plugin_starter ]; then
+        [ $DEBUGLEVEL -gt 0 ] \
+          && echo "Running plugin starter $plugin_starter ..."
+        [ $DEBUGLEVEL -eq 15 ] \
+          && sed '/^#!/ a\\set -x' -i $plugin_starter
+        . $plugin_starter >>/tmp/plugin_starter 2>&1
+      fi
+    done
+  fi
 fi
 
 runinithook '80-after-plugins'
