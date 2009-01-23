@@ -254,7 +254,7 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       chmod 644 /mnt/etc/vmware/config
     fi
 
-    [ $DEBUGLEVEL -gt 0 ] && echo "  *  done with 'vmware' os-plugin ..."
+    [ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmware' os-plugin ..."
 
   fi
 else

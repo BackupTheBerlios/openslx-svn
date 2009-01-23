@@ -60,19 +60,19 @@ if [ "${REPLY}" == "YES" ]; then
 
     echo "   * fixing gdk and pango config files"
     sed -i \
-      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf,' \
+      "s,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf," \
       vmroot/lib/vmware/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
     sed -i \
-      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf,' \
+      "s,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf," \
       vmroot/lib/vmware/libconf/etc/gtk-2.0/gtk.immodules
     sed -i \
-      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf,' \
+      "s,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf," \
       vmroot/lib/vmware/libconf/etc/pango/pango.modules
     sed -i \
-      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf,' \
+      "s,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf," \
       vmroot/lib/vmware/libconf/etc/pango/pangorc
     sed -i \
-      's,/etc/pango/pango/,/etc/pango/,' \
+      "s,/etc/pango/pango/,/etc/pango/," \
       vmroot/lib/vmware/libconf/etc/pango/pangorc
 
     echo "   * creating /etc/vmware"
