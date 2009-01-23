@@ -125,18 +125,17 @@ sub fillRunlevelScript
             # the path might be directly point to the plugin dir
     End-of-Here
     if ($kind eq 'vmpl2.5' || $kind eq 'local25') {
-      $script .= "$location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid -n 0\n";
+      $script .= "    $location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid -n 0\n";
     } else {
-      $script .= "$location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid /dev/vmnet0 eth0\n";
+      $script .= "    $location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid /dev/vmnet0 eth0\n";
     }
-    $script .= unshiftHereDoc(<<"    End-of-Here");
+    $script .= unshiftHereDoc(<<"        End-of-Here");
           fi
         }
         # we definately prefer the hostonly interface for NATed operation too
         # distinction is made via enabled forwarding
         setup_vmnet1() {
           if [ -n "\$vmnet1" ] ; then
-            #test -c /dev/vmnet1 || mknod c 119 1 /dev/vmnet1
             # the path might be directly point to the plugin dir
             $location/vmnet-netifup -d /var/run/vmnet-netifup-vmnet1.pid \\
               /dev/vmnet1 vmnet1
