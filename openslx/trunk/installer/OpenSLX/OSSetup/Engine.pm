@@ -1004,13 +1004,18 @@ sub _expandSelection
 	my $selection = $self->{'distro-info'}->{selection}->{$selKey};
 
 	if ($selection->{base}) {
-		# add all packages from base selection to the current one:
-		my $base = $selection->{base};
-		return if !exists $self->{'distro-info'}->{selection}->{$base};
-		my $baseSelection = $self->{'distro-info'}->{selection}->{$base};
-		$self->_expandSelection($base, $seen);
+		# add all packages from base selection(s) to the current one:
+		my $basePackages = '';
+		for my $base (split ',', $selection->{base}) {
+			my $baseSelection = $self->{'distro-info'}->{selection}->{$base}
+				or die _tr(
+					'base-selection "%s" is unknown (referenced in "%s")!', 
+					$base, $selKey
+				);
+			$self->_expandSelection($base, $seen);
+			$basePackages .= $baseSelection->{packages} || '';
+		}
 		my $packages = $selection->{packages} || '';
-		my $basePackages = $baseSelection->{packages} || '';
 		$selection->{packages} = $basePackages . "\n" . $packages;
 	}
 	return;
