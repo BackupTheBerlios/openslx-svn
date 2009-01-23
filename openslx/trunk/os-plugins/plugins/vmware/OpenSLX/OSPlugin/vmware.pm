@@ -179,7 +179,7 @@ sub installationPhase
     # variants because we do not know which on is selected on client level 
     # (code depends on distro/version and vmware location)
     # for local ... other vm-installations (TODO: generate list)
-    @types = qw( local );
+    my @type = qw( local );
     foreach my $type (@type) {
         #  location of the vmware stuff, "local" for directly installed
         # package (more sophisticated assignment might be needed ...)
