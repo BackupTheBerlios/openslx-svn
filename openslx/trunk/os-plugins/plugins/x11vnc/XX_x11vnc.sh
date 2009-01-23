@@ -19,10 +19,15 @@
 # function to add vnc functionality to xorg server
 addvnc2xorg () {
   sed -e '/^# autog/a# modified by x11vnc plugin (adding vnc module config)' \
-      -e '/\"Module\"/a\\ \\ Load         "vnc"' \
-      -e '/\"Device\"/a\\ \\ Option       "rfbauth"\t "/etc/X11"' \
-      -e '/\"Device\"/a\\ \\ Option       "usevnc"\t   "yes"}' \
+      -e '/\"Module\"/a\\ \ Load         "vnc"' \
+      -e '/n \"Device\"/a\\ \ Option       "usevnc"            "yes"' \
+      -e '/n \"Device\"/a\\ \ Option       "rfbauth"           "/etc/X11/vncpasswd"' \
       -i /mnt/etc/X11/xorg.conf
+  # password setting
+  echo "$x11vnc_pass" > /mnt/etc/X11/vncpasswd
+  echo -e "__BEGIN_VIEWONLY__\n$x11vnc_viewonlypass" >> /mnt/etc/X11/vncpasswd
+  # multiuser handling
+  sed -i "s/,/\n/" /mnt/etc/X11/vncpasswd
 }
 
 # main script
@@ -97,7 +102,7 @@ if [ -e /initramfs/plugin-conf/x11vnc.conf ]; then
 
       # scale desktop
       if [ "$x11vnc_scale" != "" ]; then
-        $PARAMS="$PARAMS -scale $x11vnc_scale"
+        PARAMS="$PARAMS -scale $x11vnc_scale"
       fi
 
       # write config file
@@ -109,8 +114,12 @@ if [ -e /initramfs/plugin-conf/x11vnc.conf ]; then
 
       [ $DEBUGLEVEL -gt 0 ] && echo "done with 'x11vnc' os-plugin ...";
 
-  # x11gen allows a general access to the running X server at every time
-  elif [ "$x11vnc_mode" = "x11gen" ]
-    ( waitfor /mnt/etc/X11/xorg.conf 10000; addvnc2xorg ) &
+    # x11mod offers access to the running X server via module
+    elif [ "$x11vnc_mode" = "x11mod" ]; then
+      ( waitfor /mnt/etc/X11/xorg.conf 10000; addvnc2xorg ) &
+    fi
   fi
+else
+  [ $DEBUGLEVEL -gt 2 ] && \
+    echo "No configuration file found for x11vnc plugin."
 fi

@@ -66,9 +66,9 @@ sub getAttrInfo
                 access to the Xorg server (including displaymanager login) and
                 console framebuffer.
             End-of-Here
-            content_regex => qr{^(x11user|x11gen|fb)$},
-            content_descr => 'x11user for user, x11gen for general X access or fb',
-            default => 'x11gen',
+            content_regex => qr{^(x11user|x11mod|fb)$},
+            content_descr => 'x11user for user, x11mod for access via Xorg module or fb',
+            default => 'x11user',
         },
 
         'x11vnc::scale' => {
