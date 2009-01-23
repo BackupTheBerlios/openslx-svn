@@ -262,8 +262,8 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     elif [ "${vmware_kind}" = "vmpl2.5" ]; then
       echo "vmplversion=2.5" > /mnt/etc/vmware/version
     elif [ "${vmware_kind}" = "local" ]; then
-      version=$(strings /mnt/usr/lib/vmware/bin/vmplayer|grep -e '^[12]\.[0-9]\.[0-9]'|head -n 1|cut -c 1-3)
-      echo "vmplversion=${version}" > /mnt/etc/vmware/version
+      . /mnt/opt/openslx/plugin-repo/vmware/local/versioninfo.txt
+      echo "vmplversion=${vmversion}" > /mnt/etc/vmware/version
     fi
 
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmware' os-plugin ..."
