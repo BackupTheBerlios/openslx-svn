@@ -33,11 +33,14 @@ namespace AccountValue
 
         tlxml xml = new tlxml();
         tlxml xmlD = new tlxml();
+
         private DragExtender dragExtender1;
         private bool firsttime = true;
         private Form2 f2;
+        
         String resolution_x = "";
         String resolution_y = "";
+        
         // Wenn wahr, wird später die Auflösung umgestellt, fehlen die Parameter, dann nicht!
         private bool change_resolution = true;
 
@@ -51,23 +54,23 @@ namespace AccountValue
         //Anzahl der Drucker in der Umgebung
         private int anz;
 
+        //Variablen, die Optionsfelder beschreiben
         private String home;
         private String shared;
         private String printer;
         private String account;
 
-        //
+        //#####################################################################
         public Form1()
         {
             Screen Srn = Screen.PrimaryScreen;
             tempHeight = Srn.Bounds.Width;
             tempWidth = Srn.Bounds.Height;
-
+            
             InitializeComponent();
 
             // XML Settings aus Laufwerk B auslesen...
-
-            // Wichtig!! Gross schreiben!!
+            // ################ Wichtig!! Gross schreiben!!! ##################
 
             try
             {
@@ -79,6 +82,7 @@ namespace AccountValue
                 System.Environment.Exit(0);
             }
 
+            //############## Auslesen, in welcher Umgebung man ist ############
             try
             {
                 env = xml.getAttribute("/settings/eintrag/umgebung", "param");
@@ -100,19 +104,17 @@ namespace AccountValue
             {
                 Resolution.CResolution ChangeRes = new Resolution.CResolution(Convert.ToInt32(resolution_x), Convert.ToInt32(resolution_y));
             }
-
+                        
             try
             {
-
-                textBox1.AppendText(xml.getAttribute("/settings/eintrag/username", "param"));
-
+                textBox1.AppendText(xml.getAttribute("/settings/eintrag/username", "param"));               
             }
-            catch (Exception e)
+            catch(Exception e)
             {
                 MessageBox.Show(e.Message, "Error: **********************", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 System.Environment.Exit(0);
             }
-
+                                      
             //resolution_x = "1680"; 
             //resolution_y = "1050";  
 
@@ -120,16 +122,15 @@ namespace AccountValue
             {
                 maskedTextBox1.Focus();
             }
-            catch { }
-
+            catch {}
         }
-
-
-
+        
+        
         private void Form1_Load(object sender, EventArgs e)
         {
         }
 
+        //############## Wenn der Knopf "Anmelden" angecklickt wird ###########
         private void button1_Click(object sender, EventArgs e)
         {
             login_clicked();
@@ -139,47 +140,44 @@ namespace AccountValue
         private void login_clicked()
         {
             //NetworkDrive oNetDrive = new NetworkDrive();
-            //#########################################################################
-            // Parameter aus INI-Datei auslesen
-
+            
+            //############### Parameter aus INI-Datei auslesen ################
             try
             {
                 IniFile datei;
                 datei = new IniFile(@"C:\Programme\Login\AccValue.ini");
-
+                
                 home = datei.IniReadValue("Home", "connect");
                 shared = datei.IniReadValue("Shared", "connect");
                 printer = datei.IniReadValue("Printer", "connect");
                 account = datei.IniReadValue("Account", "show");
             }
-            catch
+            catch (Exception e)
             {
+                MessageBox.Show(e.Message, "Error: ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Environment.Exit(0);
             }
 
-
-
-            //#################################################################
             // Stehen überhaupt Login und Password drin?
-
+            
             if (textBox1.Text.Equals("") || maskedTextBox1.Text.Equals(""))
             {
                 try
                 {
                     maskedTextBox1.Focus();
                 }
-
                 catch { }
 
                 return;
             }
 
             NetworkDrive oNetDrive = new NetworkDrive();
-            //*****************************************************************
-            //#################################################################
-            //Starte das script zum installieren der Drucker
+            
+            //######## Starte das script zum installieren der Drucker #########
 
             if (printer == "yes")
             {
+                //###### Auslesen von Settings für Druckerinstallation ######
                 try
                 {
                     xmlD.loadFile("DEVICES.XML");
@@ -273,6 +271,7 @@ namespace AccountValue
                     return;
                 }
             }
+
             //#################################################################
             // Homedirectory mounten...
 
@@ -282,17 +281,14 @@ namespace AccountValue
                 {
                     oNetDrive.LocalDrive = "k:";
 
-
                     try
                     {
                         oNetDrive.UnMapDrive();
                     }
                     catch { }
 
-
                     oNetDrive.ShareName = "\\\\" + textBox1.Text + ".files.uni-freiburg.de\\" + textBox1.Text;
                     oNetDrive.MapDrive("PUBLIC\\" + textBox1.Text, maskedTextBox1.Text);
-
                 }
 
                 catch (Exception err)
@@ -322,18 +318,15 @@ namespace AccountValue
             // Shared Directory mounten...
             if (shared == "yes")
             {
-
                 try
                 {
                     oNetDrive.LocalDrive = "l:";
-
 
                     try
                     {
                         oNetDrive.UnMapDrive();
                     }
                     catch { }
-
 
                     oNetDrive.ShareName = "\\\\lehrpool.files.uni-freiburg.de\\lehrpool";
                     oNetDrive.MapDrive("PUBLIC\\lehrpool", "(atom)9");
@@ -357,10 +350,9 @@ namespace AccountValue
                 createDesktopLinks("Gemeinsames Laufwerk L", "l:\\");
             }
 
-
+            
             //#################################################################
             // Drucker-Kontostand
-
             getAccountInformation();
         }
 
@@ -368,7 +360,7 @@ namespace AccountValue
         //#####################################################################
         private void getAccountInformation()
         {
-
+            
             if (firsttime)
             {
                 String navigateTo = "https://myaccount.uni-freiburg.de/uadmin/pa?uid=" + textBox1.Text + "&pwd=" + maskedTextBox1.Text;
@@ -381,7 +373,7 @@ namespace AccountValue
                 timer1.Enabled = true;
                 timer2.Enabled = true;
             }
-
+             
         }
 
 
@@ -403,14 +395,14 @@ namespace AccountValue
 
                 if (change_resolution)
                 {
-                    x = Convert.ToInt32(resolution_x);
-                    y = Convert.ToInt32(resolution_y);
+                     x = Convert.ToInt32(resolution_x);
+                     y = Convert.ToInt32(resolution_y);
                 }
                 else
                 {
                     Screen screen = Screen.PrimaryScreen;
-                    x = screen.Bounds.Width;
-                    y = screen.Bounds.Height;
+                     x = screen.Bounds.Width;
+                     y = screen.Bounds.Height;
 
                 }
 
@@ -422,8 +414,8 @@ namespace AccountValue
 
                 f2.DesktopLocation = location;
 
-
-                f2.Show();
+                if (account == "yes")
+                    f2.Show();
 
                 //Weils so schön war gleich nochmal ;-))
                 getAccountInformation();
@@ -520,8 +512,8 @@ namespace AccountValue
 
             double percet_usage = ((100 / disk_quota) * used_bytes);
 
-
-
+            
+            
             if ((int)percet_usage < 0)
                 percet_usage = 0;
 
@@ -535,13 +527,13 @@ namespace AccountValue
             double quota = disk_quota / 1024 / 1024;
             double usedb = used_bytes / 1024 / 1024;
             double freespace = free_bytes / 1024 / 1024;
-
-
+           
+  
             f2.label5.Text = "Quota: " + quota.ToString("N2") + " MBytes";
             f2.label8.Text = "Belegt: " + usedb.ToString("N2") + " MBytes";
             f2.label6.Text = "Frei: " + freespace.ToString("N2") + " MBytes";
 
-
+  
 
             if ((int)percet_usage >= 90)
             {
@@ -556,6 +548,6 @@ namespace AccountValue
             f2.label9.Text = ((int)percet_usage).ToString() + "%";
         }
 
-
+        
     }
 }

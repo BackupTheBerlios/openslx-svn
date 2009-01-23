@@ -3,3 +3,8 @@ E:\AccountValue\LoginToolXP\AddHomeINI\bin\Release\AddHomeINI.pdb
 E:\AccountValue\LoginToolXP\AddHomeINI\obj\Release\ResolveAssemblyReference.cache
 E:\AccountValue\LoginToolXP\AddHomeINI\obj\Release\AddHomeINI.exe
 E:\AccountValue\LoginToolXP\AddHomeINI\obj\Release\AddHomeINI.pdb
+E:\AccountValue\LoginToolXP\AddHomeINI\bin\Debug\AddHomeINI.exe
+E:\AccountValue\LoginToolXP\AddHomeINI\bin\Debug\AddHomeINI.pdb
+E:\AccountValue\LoginToolXP\AddHomeINI\obj\Debug\ResolveAssemblyReference.cache
+E:\AccountValue\LoginToolXP\AddHomeINI\obj\Debug\AddHomeINI.exe
+E:\AccountValue\LoginToolXP\AddHomeINI\obj\Debug\AddHomeINI.pdb

@@ -33,4 +33,3 @@ obj\Release\AccountValue.csproj.GenerateResource.Cache
 obj\Release\AccountValue.exe
 obj\Release\AccountValue.pdb
 bin\Release\TL.XML.xml
-bin\Debug\TL.XML.xml
