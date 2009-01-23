@@ -126,7 +126,7 @@ int udhcpc_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
 int udhcpc_main(int argc ATTRIBUTE_UNUSED, char **argv)
 {
 	uint8_t *temp, *message;
-	char *str_c, *str_V, *str_h, *str_F, *str_r;
+	char *str_c, *str_V, *str_h, *str_F, *str_r, *curr_option;
 	USE_FEATURE_UDHCP_PORT(char *str_P;)
 	llist_t *list_O = NULL;
 	int tryagain_timeout = 20;
@@ -259,9 +259,9 @@ int udhcpc_main(int argc ATTRIBUTE_UNUSED, char **argv)
 	if (opt & OPT_o)
 		client_config.no_default_options = 1;
 	while (list_O) {
-		int n = index_in_strings(dhcp_option_strings, llist_pop(&list_O));
+		int n = index_in_strings(dhcp_option_strings, curr_option = llist_pop(&list_O));
 		if (n < 0)
-			bb_error_msg_and_die("unknown option '%s'", list_O->data);
+			bb_error_msg_and_die("unknown option '%s'", curr_option);
 		n = dhcp_options[n].code;
 		client_config.opt_mask[n >> 3] |= 1 << (n & 7);
 	}
