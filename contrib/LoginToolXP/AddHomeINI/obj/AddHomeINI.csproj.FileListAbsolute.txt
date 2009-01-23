@@ -1,0 +1,5 @@
+E:\AccountValue\LoginToolXP\AddHomeINI\bin\Release\AddHomeINI.exe
+E:\AccountValue\LoginToolXP\AddHomeINI\bin\Release\AddHomeINI.pdb
+E:\AccountValue\LoginToolXP\AddHomeINI\obj\Release\ResolveAssemblyReference.cache
+E:\AccountValue\LoginToolXP\AddHomeINI\obj\Release\AddHomeINI.exe
+E:\AccountValue\LoginToolXP\AddHomeINI\obj\Release\AddHomeINI.pdb

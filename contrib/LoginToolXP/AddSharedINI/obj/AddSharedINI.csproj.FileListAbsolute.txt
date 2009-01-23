@@ -1,0 +1,5 @@
+E:\AccountValue\LoginToolXP\AddSharedINI\bin\Release\AddSharedINI.exe
+E:\AccountValue\LoginToolXP\AddSharedINI\bin\Release\AddSharedINI.pdb
+E:\AccountValue\LoginToolXP\AddSharedINI\obj\Release\ResolveAssemblyReference.cache
+E:\AccountValue\LoginToolXP\AddSharedINI\obj\Release\AddSharedINI.exe
+E:\AccountValue\LoginToolXP\AddSharedINI\obj\Release\AddSharedINI.pdb
