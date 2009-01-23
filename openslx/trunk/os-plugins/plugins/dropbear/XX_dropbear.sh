@@ -19,10 +19,26 @@ if [ -e /initramfs/plugin-conf/dropbear.conf ]; then
   . /initramfs/plugin-conf/dropbear.conf
   if [ $dropbear_active -ne 0 ]; then
     [ $DEBUGLEVEL -gt 0 ] && echo "executing the 'dropbear' os-plugin ...";
+
+       # setup links to multibinary
+       ln -sf /mnt/opt/openslx/plugin-repo/dropbear/dropbearmulti /sbin/dropbear
+       ln -sf /mnt/opt/openslx/plugin-repo/dropbear/dropbearmulti /sbin/dropbearkey
+       ln -sf /mnt/opt/openslx/plugin-repo/dropbear/dropbearmulti /sbin/dropbearconvert
+       ln -sf /mnt/opt/openslx/plugin-repo/dropbear/dropbearmulti /bin/dbclient
+       ln -sf /mnt/opt/openslx/plugin-repo/dropbear/dropbearmulti /bin/scp
+
+       # create dropbear config dir
+       mkdir -p /etc/dropbear
+       
+       # convert openssh rsa key to dropbear key - if available
+       if [ -e /mnt/etc/ssh/ssh_host_rsa_key ]
+         dropbearconvert openssh dropbear /mnt/etc/ssh/ssh_host_rsa_key \
+           /etc/dropbear/dropbear_rsa_host_key
+       else 
+         dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key
+       fi
   
-       /mnt/opt/openslx/plugin-repo/dropbear/bin/dropbear \
-        -d /mnt/etc/ssh/ssh_host_dsa_key \
-        -r /mnt/etc/ssh/ssh_host_rsa_key
+       /sbin/dropbear 
 
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'dropbear' os-plugin ...";
 

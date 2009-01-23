@@ -85,8 +85,7 @@ sub installationPhase
 
     my $filesDir = "$openslxBasePath/lib/plugins/dropbear/files";
 
-	copyFile("$filesDir/bin/dropbear","$pluginRepoPath/bin");
-	copyFile("$filesDir/bin/dropbearkey","$pluginRepoPath/bin");
+	copyFile("$filesDir/dropbearmulti","$pluginRepoPath");
 
     return;
 }
