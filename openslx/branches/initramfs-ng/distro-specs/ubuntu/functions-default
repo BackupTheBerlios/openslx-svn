@@ -12,6 +12,31 @@
 # Configuration script for general Ubuntu to configure OpenSLX linux
 # stateless clients (executed within initial ramdisk after genconfig) 
 
+# distro specific configuration variables used in the setup functions
+# (formerly done via config-*, these variables are disputable ...)
+# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using 
+# bind mounts
+# D_DIRINBINDMNT - lists of directories to be created in bind mounted rw part
+# of the client filesystem
+# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# TempFS usage
+# D_DIRINDXS - directories in client filesystem which should be present anyhow
+D_ETCEXCL="etc/gconf/*\n*.old\n*-\n\
+etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
+pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
+X11/xdm/pixmaps\ndhclient.script"
+D_BINDMPTS="tmp root home media"
+D_DIRINBINDMNT="/var/run /var/log /var/tmp /var/lib/gdm"
+D_RODIRSINRW="/etc/X11/xkb /var/lib/gconf /var/lib/dpkg /var/lib/aspell \
+/var/lib/pango /var/lib/defoma"
+#D_RWDIRSINRO="/var/lib/gdm"
+D_DIRINDXS="/var/X11R6/compose-cache \
+/var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
+/var/lib/pam_devperm /var/lib/bluetooth \
+/var/lib/texmf /var/lib/nfs/sm \
+/var/lib/misc /var/lib/acpi /var/spool/cron \
+/var/lock/subsys/sysconfig"
+
 # empty functions are defined at the beginning of /etc/functions
 
 # distro specific stuff to initialize

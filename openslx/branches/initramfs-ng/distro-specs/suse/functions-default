@@ -1,5 +1,5 @@
-# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
-# Copyright (c) 2006 - 2008 - OpenSLX GmbH
+# Copyright (c) 2003..2006 - RZ Uni Freiburg
+# Copyright (c) 2006..2008 - OpenSLX GmbH
 #
 # This program/file is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -13,6 +13,31 @@
 # (included by init, hwautocfg, servconfig within InitialRamFS after 
 # inclusion of the main functions file). This file is the main base for the
 # several SuSE distro versions
+
+# settings of central variables (formerly done via config-*, these variables
+# are disputable ...)
+# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using 
+# bind mounts
+# D_DIRINBINDMNT - lists of directories to be created in bind mounted rw
+# part of the client filesystem
+# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# TempFS usage
+# D_DIRINDXS - directories in client filesystem which should be present 
+# anyhow
+D_ETCEXCL="*.old\n*-\n*.rpmorig\n*.rpmnew\n\
+*.YaST2save\netc/autoinstall\nlogrotate*\nbootloader\n*~\n\
+*.SuSEconfig.saved\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
+X11/xdm/pixmaps\n*.rpmsave\ndhclient*script"
+D_BINDMPTS="tmp root media home"
+D_DIRINBINDMNT="/var/run /var/log /var/tmp"
+D_RODIRSINRW="/etc/opt/gnome/gconf /etc/X11/xkb /var/adm /var/lib/texmf \
+/var/lib/rpm"
+D_DIRINDXS="/var/X11R6/compose-cache \
+/var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
+/var/lib/pam_devperm /var/lib/bluetooth \
+/var/lib/texmf /var/lib/nfs/sm \
+/var/lib/misc /var/lib/acpi /var/spool/cron \
+/var/lock/subsys/sysconfig"
 
 # empty functions are defined at the beginning of /etc/functions
 

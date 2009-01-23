@@ -704,7 +704,7 @@ elif [ -z "${cowloop}" ] ; then
     echo "*$i/*" >>/tmp/etc.exclude
   done
   # add list of files to be excluded and common excludes to the filter list
-  echo -e "${D_ETCEXCL}\n@@@COMETCEXCL@@@" >>/tmp/etc.exclude
+  echo -e "${D_ETCEXCL}\n*~\n*.old\n*-\nxorg.conf*" >>/tmp/etc.exclude
   # if ld.so.cache is to be generated then do not copy the file
   [ -n "${ldsc}" ] && echo -e "ld.so.cache*" >>/tmp/etc.exclude
   # for tar exclude lists might be used, more difficult for cp
@@ -784,10 +784,10 @@ waitfor /tmp/hwcfg 20000 || error "$init_errhw"
   >> /mnt/etc/udev/rules.d/04-scanner.rules
 # move Xorg configuration to final destination depending if user or system
 # generated
-if [ -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then
-  mv /rootfs${D_XF86CONFFILE#/mnt} /mnt/${D_XF86CONFFILE}
+if [ -f /rootfs/etc/X11/xorg.conf#/mnt} ] ; then
+  mv /rootfs/etc/X11/xorg.conf#/mnt} /mnt//etc/X11/xorg.conf}
 else
-  mv /tmp/xorg.conf /mnt/${D_XF86CONFFILE} || error "$init_errxorg" nonfatal
+  mv /tmp/xorg.conf /mnt//etc/X11/xorg.conf} || error "$init_errxorg" nonfatal
 fi
 # wait a while for services setup to complete
 waitfor /tmp/svcfg 10000 || error "$init_errsw"
