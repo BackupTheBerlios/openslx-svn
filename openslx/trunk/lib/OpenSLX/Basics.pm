@@ -605,13 +605,14 @@ sub instantiateClass
     $moduleName .= '.pm';
 
     vlog(3, "trying to load $moduleName...");
+    local @INC = @INC;
     foreach my $incPath (@$incPaths) {
         next if grep { $_ eq $incPath } @INC;
         unshift @INC, $incPath;
     }
     if (!eval { require $moduleName; 1 } ) {
         # check if module does not exists anywhere in search path
-        if (!-e $moduleName) {
+        if ($! == 2) {
             return if $flags->{acceptMissing};
             die _tr("Module '%s' not found!\n", $moduleName);
         }
@@ -733,10 +734,10 @@ sub loadDistroModule
         };
         last if $loaded;
         if (!defined $loaded) {
-            vlog(0, _tr(
+            die _tr(
                 "Error when trying to load distro module '%s':\n%s", 
                 $distroModule, $@
-            ));
+            );
         }
     }
 
