@@ -78,10 +78,70 @@ sub getPluginAttrInfo
 	return $plugins{$pluginName}->getAttrInfo();
 }
 
+=item C<addAllAttributesToHash()>
+
+Fetches attribute info from all available plugins and adds it to the given 
+hash-ref.
+
+If a plugin name has been given, only the attributes of that plugin will be
+added.
+
+=over
+
+=item Return Value
+
+1
+
+=back
+
+=cut
+
+sub addAllAttributesToHash
+{
+	my $class      = shift;
+	my $attrInfo   = shift;
+	my $pluginName = shift;
+
+	return $class->_addAttributesToHash($attrInfo, $pluginName, sub { 1 } );
+}
+
+=item C<addAllStage1AttributesToHash()>
+
+Fetches attribute info relevant for stage1 (i.e. vendor-OS-attributes) 
+from all available plugins and adds it to the given hash-ref.
+
+If a plugin name has been given, only the attributes of that plugin will be
+added.
+
+=over
+
+=item Return Value
+
+1
+
+=back
+
+=cut
+
+sub addAllStage1AttributesToHash
+{
+	my $class      = shift;
+	my $attrInfo   = shift;
+	my $pluginName = shift;
+
+	return $class->_addAttributesToHash($attrInfo, $pluginName, sub {
+		my $attr = shift;
+		return $attr->{applies_to_vendor_os};
+	} );
+}
+
 =item C<addAllStage3AttributesToHash()>
 
 Fetches attribute info relevant for stage3 (i.e. system- or client-attributes) 
 from all available plugins and adds it to the given hash-ref.
+
+If a plugin name has been given, only the attributes of that plugin will be
+added.
 
 =over
 
@@ -95,17 +155,31 @@ from all available plugins and adds it to the given hash-ref.
 
 sub addAllStage3AttributesToHash
 {
-	my $class    = shift;
-	my $attrInfo = shift;
+	my $class      = shift;
+	my $attrInfo   = shift;
+	my $pluginName = shift;
+
+	return $class->_addAttributesToHash($attrInfo, $pluginName, sub {
+		my $attr = shift;
+		return $attr->{applies_to_systems} || $attr->{applies_to_clients};
+	} );
+}
+
+sub _addAttributesToHash
+{
+	my $class      = shift;
+	my $attrInfo   = shift;
+	my $pluginName = shift;
+	my $testFunc   = shift;
 
 	$class->_init() if !%plugins;
 
 	foreach my $plugin (values %plugins) {
+		next if $pluginName && $plugin->{name} ne $pluginName;
 		my $pluginAttrInfo = $plugin->getAttrInfo();
 		foreach my $attr (keys %$pluginAttrInfo) {
-			next if !$pluginAttrInfo->{$attr}->{applies_to_systems} 
-				&& !$pluginAttrInfo->{$attr}->{applies_to_clients};
-			$attrInfo->{$attr} = $pluginAttrInfo->{$attr};
+			next if !$testFunc->($pluginAttrInfo->{$attr});
+			$attrInfo->{$attr} = dclone($pluginAttrInfo->{$attr});
 		}
 	}
 	return 1;
