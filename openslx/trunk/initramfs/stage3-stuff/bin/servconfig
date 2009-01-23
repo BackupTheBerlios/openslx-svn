@@ -94,7 +94,8 @@ localization "${country}"
 #############################################################################
 # setup passwd and shadow for local system users like root, bin, daemon and
 # nobody if no user/admin provided passwd exists ... fixme: see #206
-basepasswd $(sed "/+::0/d;s/root://;s/:.*//" /rootfs/etc/shadow 2>/dev/null)
+[ ! -e /rootfs/etc/shadow ] && \
+  basepasswd $(sed "/+::0/d;s/root://;s/:.*//" /rootfs/etc/shadow 2>/dev/null)
 
 #############################################################################
 # dns and ip configuration
