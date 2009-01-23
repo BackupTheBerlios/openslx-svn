@@ -46,6 +46,9 @@ if [ "${REPLY}" == "YES" ]; then
     mv test/lib*/* .
     cd ../../../..
 
+    echo "   * changing file permission"
+    chmod 04755 root/lib/vmware/lib/bin/vmware-vmx
+
     echo "   * fixing gdk and pango config files"
     sed -i \
       's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/root/lib/vmware/libconf,' \
