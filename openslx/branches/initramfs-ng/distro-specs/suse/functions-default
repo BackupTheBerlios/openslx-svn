@@ -310,6 +310,9 @@ fi
 rc_reset
 exit 0' >/mnt/etc/init.d/boot
 
+  # create needed auxiliary directories in (/mnt)/var,/etc,...
+  testmkd /mnt/var/run/uscreens root:root 0755
+
   # enable execution of all important start scripts
   # running stuff in parallel seems to be rather useless and generates some
   # difficult to solve problems. If you want to try nevertheless enable the

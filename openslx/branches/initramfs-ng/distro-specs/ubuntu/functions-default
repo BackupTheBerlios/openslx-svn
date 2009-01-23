@@ -69,6 +69,9 @@ config_distro () {
   # fix getty bug
   # (console login on tty1 is started too early)
   sed -i "s/start on runlevel 2/start on stopped rc2/" /mnt/etc/event.d/tty1
+
+  # create needed auxiliary directories in (/mnt)/var,/etc,...
+  testmkd /mnt/var/run/screens root:utmp 0755
 }
 
 # initial (boot time) runlevel scripts
@@ -194,7 +197,7 @@ config_snmp () {
 if [ "x$start_snmp" = "xyes" ] ; then
   if [ -f /mnt/etc/init.d/snmpd ] ; then
     rllinker "snmpd" 24 2
-    testmkd /mnt/var/lib/net-snmp >/dev/null 2>&1
+    testmkd /mnt/var/lib/net-snmp
   fi
     # fixme!!
     # write service monitor depending on services started
