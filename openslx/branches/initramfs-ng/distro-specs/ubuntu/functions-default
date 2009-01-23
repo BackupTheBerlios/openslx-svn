@@ -48,7 +48,6 @@ config_distro () {
 
 # initial (boot time) runlevel scripts
 initial_boot () {
-local scripts=$*
 local count=10
 # boot.slx is a special runlevel script generated within initialramfs which
 # should be executed before the normal runlevel scripts. Proper shutdown is

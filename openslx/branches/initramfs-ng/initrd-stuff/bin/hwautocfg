@@ -145,12 +145,8 @@ cfgcomplete
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished waiting for config at $(sysup)"
 
 # set X11 configuration file
-if [ -n "${D_XF86CONFFILE}" ] ; then
-  D_XF86CONFFILE="/mnt/${D_XF86CONFFILE}"
-else
-  D_XF86CONFFILE="/mnt/etc/X11/xorg.conf"
-  error "$hcfg_xcfg" nonfatal
-fi
+D_XF86CONFFILE="/mnt/etc/X11/xorg.conf"
+
 # finish Xorg configuration if no xorg.conf file was provided by ConfigTGZ 
 # (check for /rootfs/${D_XF86CONFFILE#/mnt})
 if [ ! -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then 
