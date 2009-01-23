@@ -30,14 +30,16 @@ return 0
 # main part
 hwmain () {
 # activate the previously detected devices
-[ $DEBUGLEVEL -ge 2 ] && modloadbg=" >/dev/null 2>&1"
-sed '/$Driver Info #1/,/$Config Status/d' \
-  /etc/hwinfo.data | grep modprobe | sed "s/.* Cmd: \"//;s/\"/$modloadbg/" \
+[ $DEBUGLEVEL -ge 2 ] || modloadbg=" >/dev/null 2>\&1"
+sed '/Driver Info #1/,/Config Status:/d' \
+  /etc/hwinfo.data | grep modprobe | sed "s|.* Cmd: \"||;s|\"|$modloadbg|" \
     | sort -u >/etc/modprobe.pci
 ash /etc/modprobe.pci
 [ -x /bin/mdev ] && mdev -s
 # load disk/optical high level drivers
-modprobe ${MODPRV} ide-cd; modprobe ${MODPRV} ide-floppy
+modprobe ${MODPRV} ide-cd
+modprobe ${MODPRV} sr_mod
+modprobe ${MODPRV} ide-floppy
 grep -E "IDE|SCSI" /etc/hwinfo.data >/dev/null 2>&1 && \
   modprobe ${MODPRV} sd_mod
 
@@ -49,16 +51,17 @@ grep -E "IDE|SCSI" /etc/hwinfo.data >/dev/null 2>&1 && \
 [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mousedev.ko ] && \
   modprobe ${MODPRV} mousedev
 
-hwinfo --disk sed 's/$Device File: "//' >/etc/hwinfo.disk
+hwinfo --disk | sed -n "/Device File: /p" | sed "s|.*Device File: /dev/||" \
+  >/etc/hwinfo.disk
 [ -s /etc/hwinfo.disk ] && disk=yes
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
 
 [ -x /bin/mdev ] && mdev -s
 
-# problem with a specific module not disabled (via above trick) when
-# busybox is used
-#  rmmod snd_atiixp_modem snd_atiixp
-
+# complete the audio configuration and load the dummy module if no audio
+# hardware is present in the machine
+grep -E "Audio|sound" /etc/hwinfo.data >/dev/null 2>&1 || \
+  modprobe snd-dummy
 modprobe ${MODPRV} snd-pcm-oss
 modprobe ${MODPRV} snd-mixer-oss
 
@@ -68,83 +71,41 @@ modprobe ${MODPRV} snd-mixer-oss
 # (/mnt)/etc/fstab and format and mount partitions of type 44 (unknown)
 [ $DEBUGLEVEL -eq 21 ] && echo "** starting hdd stuff at $(sysup)"
 if [ "${disk}" = "yes" ] ; then
-for hd in $(cat /tmp/hwsetup.info|sed -n -e '/HD$/,/device:/p'| \
-    sed -n -e '/device:/p'|sed -e 's/device: //') ; do
-  /mnt/sbin/fdisk -l /dev/$hd|sed -n "/^\/dev\//p" > /tmp/hd_part
-  for hdpartnr in $(cat /tmp/hd_part | \
+for hd in $(cat /etc/hwinfo.disk) ; do
+  fdisk -l /dev/$hd|sed -n "/^\/dev\//p" >/etc/disk.partition
+  for hdpartnr in $(cat /etc/disk.partition | \
       sed -n -e "/ 82 /p"|sed -e "s/[[:space:]].*//") ; do
-    echo -e "$hdpartnr\tswap\t\tswap\t\tdefaults\t 0 0" >> /tmp/fstab
+    echo -e "$hdpartnr\tswap\t\tswap\t\tdefaults\t 0 0" >>/tmp/fstab
   done
   # we use special non assigned partition type (id44) for harddisk scratch 
   # space, thus no normal filesystem will be incidentally deleted or
   # corrupted
-  for hdpartnr in $(cat /tmp/hd_part | \
+  for hdpartnr in $(cat /etc/disk.partition | \
         sed -n -e "/ 44 /p"|sed -e "s/[[:space:]].*//") ; do
     # check for supported filesystem and formatter
     ( if diskfm $hdpartnr ; then
-        echo "$hdpartnr is mounted to /mnt/tmp at $(sysup)" > /tmp/tmpready
-        echo -e "$hdpartnr\t/tmp\t\tauto\t\tdefaults\t 0 0" >> /tmp/fstab
+        echo "$hdpartnr is mounted to /mnt/tmp at $(sysup)" >/tmp/tmpready
+        echo -e "$hdpartnr\t/tmp\t\tauto\t\tdefaults\t 0 0" >>/tmp/fstab
       else
-        echo "formatting failed for some reason ($(sysup))" > /tmp/tmpready
+        echo "formatting failed for some reason ($(sysup))" >/tmp/tmpready
       fi ) &
     part44=yes
     break
   done
   # put detected linux partitions into /etc/fstab with "noauto"
-  for hdpartnr in $(cat /tmp/hd_part | \
+  for hdpartnr in $(cat /etc/disk.partition | \
         sed -n -e "/ 83 /p"|sed -e "s/[[:space:]].*//") ; do
     mkdir -p /mnt/media/${hdpartnr#/dev/*} 2>/dev/null
     echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
-noexec\t 0 0" >> /tmp/fstab
+noexec\t 0 0" >>/tmp/fstab
   done 
 done
 # determine if tmp preparation should wait for format/mount or not
-[ -z "$part44" ] && echo "finished at $(sysup)" > /tmp/tmpready
+[ -z "$part44" ] && echo "finished at $(sysup)" >/tmp/tmpready
 else
-  echo "no disk found ( $(sysup) )" > /tmp/tmpready
+  echo "no disk found ( $(sysup) )" >/tmp/tmpready
 fi
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished hdd stuff at $(sysup)"
-
-# configure some variables from configuration file - wait for dhcp or ldap
-# confiurator to complete
-cfgcomplete
-. /etc/machine-setup
-[ $DEBUGLEVEL -eq 21 ] && echo "** finished waiting for config at $(sysup)"
-
-# set X11 configuration file
-D_XF86CONFFILE="/mnt/etc/X11/xorg.conf"
-
-# finish Xorg configuration if no xorg.conf file was provided by ConfigTGZ 
-# (check for /rootfs/${D_XF86CONFFILE#/mnt})
-if [ ! -f /rootfs${D_XF86CONFFILE#/mnt} ] ; then 
-  xfc="/tmp/xorg.conf"
-  . /etc/sysconfig/xserver >/dev/null 2>&1 || error "${hcfg_hwsetup}" nonfatal
-  # replace OSS 3D server with proprietary one
-  checkgraphix
-  sed -e "s/\"vesa\"/\"${XMODULE}\"/" -i $xfc
-  # check for 64bit CPU/installation (fixme!!)
-  [ -d "/mnt/usr/X11R6/lib64/modules" ] && \
-    sed -e "/Section \"Files\"/a\ \ ModulePath    \"/usr/X11R6/lib64/modules\"" \
-     -i $xfc
-  # run localizator and configure X11 keyboard
-  localization "${country}"
-  if [ -z "${XKEYBOARD}" ] ; then
-    XKEYBOARD="us"
-    error "${xcfg_keyb}" nonfatal
-  fi
-  sed "s/XKEYBOARD/${XKEYBOARD}/" -i $xfc
-  # check for kind of xorg module used and patch the i8,9XX VGA BIOS if needed
-  if strinfile '"i810"' $xfc && [ -f /tmp/res ] ; then
-    highres=$(sort -run /tmp/res|grep -i x -m 1)
-    915resolution -l|sed -n "s/Mode //;/32 bits/p" > /tmp/915res
-    strinfile ${highres} /tmp/915res || {
-      915resolution $(grep -i x -m 1 /tmp/915res|sed "s/\ :.*//") $(echo \
-        $highres|sed "s/x/\ /") 2>&1 >/dev/null;
-      # for some reason the above does not work for a Dell laptop with Intel 
-      # 855 chipset, so add another mode too
-      915resolution 3c $(echo $highres|sed "s/x/\ /") 2>&1 >/dev/null; }
-  fi
-fi
 
 # if any new device appeared up to now
 if [ -x /bin/mdev ] ; then
@@ -152,6 +113,9 @@ if [ -x /bin/mdev ] ; then
   testmkd /dev/input 
   mknod /dev/input/mice c 13 63 2>/dev/null
 fi
+# scanner setup (to be checked)
+[ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
+  >>/mnt/etc/udev/rules.d/04-scanner.rules
 return 0
 }
 
@@ -187,6 +151,6 @@ case $1 in
     # main script run timer or debug information
     [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
       echo "** HW setup finished at $(sysup)"
-    echo "hwsetup finished at $(sysup)" > /tmp/hwcfg
+    echo "hwsetup finished at $(sysup)" >/tmp/hwcfg
   ;;
 esac
