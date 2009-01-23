@@ -24,8 +24,9 @@ for tool in /usr/sbin/acpidump \
               echo -e "#!/bin/ash" >${tool}
               chmod u+x ${tool}
 done
-# no kernel messages
+# no kernel messages, switch on hotplug via /sbin/mdev
 echo "0 0 0 0" >/proc/sys/kernel/printk
+echo "/sbin/mdev" >/proc/sys/kernel/hotplug
 modprobe ${MODPRV} usbhid &
 nwcardlist=$(echo ${slxconf_listnwmod}|sed "s/\ /|/g")
 hwinfo --netcard --usb-ctrl | grep modprobe | grep -E "$nwcardlist|hcd" | \
@@ -138,10 +139,13 @@ return 0
 #############################################################################
 # cleanup/finishing part
 finish () {
+mdev -s
 # remove unneeded disk and mouse drivers
 [ ! -s /etc/hwinfo.disk ] && rmmod sd_mod 2>/dev/null
 grep -q -i "/dev/psaux" || rmmod psmouse 2>/dev/null
 # more sophistication possible :)
+# remove /sbin/mdev as not available in stage4
+echo >/proc/sys/kernel/hotplug
 return 0
 }
 
