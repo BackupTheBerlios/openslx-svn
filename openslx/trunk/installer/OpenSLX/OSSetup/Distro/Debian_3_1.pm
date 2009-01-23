@@ -43,13 +43,32 @@ sub preSystemInstallationHook
     chmod 0755, '/usr/sbin/mkinitrd';
 }
 
-sub postSystemInstallationHook
+sub startSession
 {
-    my $self = shift;
+    my $self  = shift;
+    my $osDir = shift;
+
+    $self->SUPER::startSession($osDir);    
+
+    # As in preSystemInstallationHook, we replace /usr/sbin/mkinitrd with a 
+    # dummy, in order to skip the initrd-creation.
+    #
+    # During installation, this might not exist yet, so we better check
+    if (-e '/usr/sbin/mkinitrd') {
+        rename('/usr/sbin/mkinitrd', '/usr/sbin/_mkinitrd');
+        spitFile('/usr/sbin/mkinitrd', "#! /bin/sh\ntouch \$2\n");
+        chmod 0755, '/usr/sbin/mkinitrd';
+    }
+}
+
+sub finishSession
+{
+    my $self  = shift;
 
     # restore /usr/sbin/mkinitrd
     rename('/usr/sbin/_mkinitrd', '/usr/sbin/mkinitrd');
-    $self->SUPER::postSystemInstallationHook();
+
+    $self->SUPER::finishSession();
 }
 
 1;

@@ -88,13 +88,32 @@ sub preSystemInstallationHook
     chmod 0755, '/usr/sbin/invoke-rc.d';
 }
 
-sub postSystemInstallationHook
+sub startSession
 {
-    my $self = shift;
+    my $self  = shift;
+    my $osDir = shift;
+
+    $self->SUPER::startSession($osDir);    
+
+    # As in preSystemInstallationHook, we replace /usr/sbin/invoke-rc.d by a 
+    # dummy.
+    #
+    # During installation, this might not exist yet, so we better check
+    if (-e '/usr/sbin/invoke-rc.d') {
+        rename('/usr/sbin/invoke-rc.d', '/usr/sbin/_invoke-rc.d');
+        spitFile('/usr/sbin/invoke-rc.d', "#! /bin/sh\nexit 0\n");
+        chmod 0755, '/usr/sbin/invoke-rc.d';
+    }
+}
+
+sub finishSession
+{
+    my $self  = shift;
 
     # restore /usr/sbin/invoke-rc.d
     rename('/usr/sbin/_invoke-rc.d', '/usr/sbin/invoke-rc.d');
-    $self->SUPER::postSystemInstallationHook();
+
+    $self->SUPER::finishSession();
 }
 
 sub setPasswordForUser
