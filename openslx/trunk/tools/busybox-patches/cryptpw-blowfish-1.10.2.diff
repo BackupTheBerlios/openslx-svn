@@ -27,13 +27,6 @@ diff -wur busybox-1.10.2/include/usage.h busybox-1.10.2-openslx/include/usage.h
  
  #define cut_trivial_usage \
         "[OPTION]... [FILE]..."
-@@ -4335,6 +4347,11 @@
-      "\nOptions:" \
-      "\n	-a	Lock all VTs" \
- 
- #define watch_trivial_usage \
-        "[-n seconds] [-t] COMMAND..."
- #define watch_full_usage \
 diff -wur busybox-1.10.2/loginutils/Config.in busybox-1.10.2-openslx/loginutils/Config.in
 --- busybox-1.10.2/loginutils/Config.in	2008-04-19 05:50:36.000000000 +0200
 +++ busybox-1.10.2-openslx/loginutils/Config.in	2008-05-31 18:15:51.000000000 +0200
