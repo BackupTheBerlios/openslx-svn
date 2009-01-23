@@ -1,3 +1,4 @@
+#!/bin/ash
 # Copyright (c) 2003..2006 - RZ Uni Freiburg
 # Copyright (c) 2006..2008 - OpenSLX GmbH
 #
@@ -23,7 +24,7 @@
 # load distro specific configuration functions. Distro specific functions may
 # overwrite functions defined in /etc/functions
 . /etc/distro-functions
-. /etc/sysconfig/slxsystem.conf
+. /etc/slxsystem.conf
 
 # script run timer
 [ $DEBUGLEVEL -eq 8 ] && echo "** SW setup started at $(sysup)"

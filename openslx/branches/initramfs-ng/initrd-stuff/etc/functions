@@ -125,9 +125,8 @@ esac
 #############################################################################
 # load the kernel nfs module if not compiled in
 nfsmod () {
-if cat /proc/filesystems | grep -i nfs >/dev/null 2>&1 ; then
-  modprobe ${MODPRV} 2>/dev/null || error "$error_nfsmod" nonfatal
-fi
+cat /proc/filesystems | grep -E "[[:space:]]nfs" >/dev/null 2>&1 || \
+  { modprobe ${MODPRV} nfs 2>/dev/null || error "$error_nfsmod" nonfatal; }
 }
 #############################################################################
 # configure Xen bridge xenbr0
