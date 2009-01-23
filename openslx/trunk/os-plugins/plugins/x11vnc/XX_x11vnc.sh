@@ -43,7 +43,7 @@ if [ -e /initramfs/plugin-conf/x11vnc.conf ]; then
   if [ $x11vnc_active -ne 0 ]; then
     [ $DEBUGLEVEL -gt 0 ] && echo "executing the 'x11vnc' os-plugin ...";
     # configure x11vnc user mode or framebuffer
-    if [ "$x11vnc_mode" = "x11user" || "$x11vnc_mode" = "fb" ] ; then
+    if [ "$x11vnc_mode" = "x11user" -o "$x11vnc_mode" = "fb" ] ; then
       # create config dir for stage 3
       mkdir -p /mnt/etc/x11vnc  
       # default parameters
