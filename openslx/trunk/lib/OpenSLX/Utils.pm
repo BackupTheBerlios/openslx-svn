@@ -33,6 +33,7 @@ $VERSION = 1.01;
   mergeHash
   getFQDN
   readPassword
+  hostIs64Bit
 );
 
 ################################################################################
@@ -316,6 +317,12 @@ sub readPassword
 	$attribs->{redisplay_function} = $attribs->{shadow_redisplay};
 
     return $term->readline($prompt);
+}
+
+sub hostIs64Bit
+{
+	my $arch = qx{uname -m};
+	return $arch =~ m[64];
 }
 
 1;
