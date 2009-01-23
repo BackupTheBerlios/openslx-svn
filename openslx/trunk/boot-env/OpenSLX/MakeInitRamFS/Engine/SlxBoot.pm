@@ -73,7 +73,8 @@ sub _setupBuildPath
         lib
         mnt 
         proc 
-        root 
+        root
+        sbin
         sys 
         tmp 
         usr/share
@@ -84,7 +85,6 @@ sub _setupBuildPath
     $self->addCMD(
         'mkdir -p ' . join(' ', map { "$buildPath/$_"; } @stdFolders)
     );
-    $self->addCMD("ln -sfn /bin $buildPath/sbin");
     
     $self->{'build-path'} = $buildPath;
     
@@ -123,16 +123,16 @@ sub _copyUclibcRootfs
     
     my @excludes = qw(
         dialog
-        infocmp
         kexec
         libcurses.so*
-        libform.so*
-        libmenu.so*
         libncurses.so*
-        libpanel.so*
         mconf
-        tack tick toe tput tset
     );
+    
+    # exclude strace unless this system is in debug mode
+    if (!$self->{'debug-level'}) {
+        push @excludes, 'strace';
+    }
 
     my $exclOpts = join ' ', map { "--exclude $_" } @excludes;
 
