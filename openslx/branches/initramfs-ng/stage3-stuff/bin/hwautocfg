@@ -26,6 +26,7 @@ for tool in /usr/sbin/acpidump \
 done
 # no kernel messages
 echo "0 0 0 0" >/proc/sys/kernel/printk
+modprobe ${MODPRV} usbhid &
 nwcardlist=$(echo ${slxconf_listnwmod}|sed "s/\ /|/g")
 hwinfo --usb-ctrl --netcard | grep modprobe | grep -E "$nwcardlist|hcd" | \
   grep -v ehci | sed 's/.* Cmd: "//;s/"//' | sort -u >/etc/modprobe.base
