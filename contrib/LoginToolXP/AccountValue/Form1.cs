@@ -60,8 +60,8 @@ namespace AccountValue
         //Variablen die angeben was eingebunden werden soll
         private String home;
         private String shareds;
-        private String printers;
-        private String scanners;
+        private bool printers = false;
+        private bool scanners = false;
 
         //#####################################################################
         public Form1()
@@ -146,10 +146,13 @@ namespace AccountValue
                 XmlNode xnPrinters = doc.SelectSingleNode("/settings/eintrag/printers");
                 XmlNode xnScanners = doc.SelectSingleNode("/settings/eintrag/scanners");
                 home = xnHome.Attributes["param"].InnerText; 
-                shareds = xnShareds.Attributes["param"].InnerText; 
-                printers = xnPrinters.Attributes["param"].InnerText;
-                scanners = xnScanners.Attributes["param"].InnerText;
+                shareds = xnShareds.Attributes["param"].InnerText;
 
+                if (xnPrinters.FirstChild != null)
+                    printers = true;
+                if (xnScanners.FirstChild != null)
+                    scanners = true;
+                
             }
             catch (Exception e)
             {
@@ -174,7 +177,7 @@ namespace AccountValue
 
             //######## Starte das script zum installieren der Drucker #########
 
-            if (printers == "true")
+            if (printers == true)
             {
                 try
                 {
@@ -320,7 +323,7 @@ namespace AccountValue
             //#####################################################################################
             //#### Fuege die IP-Adresse des Scanners in C:\sane\etc\sane.d\net.conf ###############
 
-            if (scanners == "true")
+            if (scanners == true)
             {
 
                 string path = @"c:\sane\etc\sane.d\net.conf";
