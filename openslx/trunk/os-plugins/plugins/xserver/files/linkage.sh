@@ -162,16 +162,22 @@ fi
 if [ "$1" = "both" ]; then
   divert $NVROOT $ATIROOT
   divert $ATIROOT $NVROOT
+  ln -sf /var/X11R6/lib/libGL.so.1 /usr/lib/libGL.so.1
+  ln -sf /var/X11R6/lib/libGL.so.1 /usr/lib/libGL.so
   exit
 fi
 
 if [ "$1" = "nvidia" ]; then
   divert ${NVROOT}
+  ln -sf /var/X11R6/lib/libGL.so.1 /usr/lib/libGL.so.1
+  ln -sf /var/X11R6/lib/libGL.so.1 /usr/lib/libGL.so
   exit
 fi
 
 if [ "$1" = "ati" ]; then
   divert ${ATIROOT}
+  ln -sf /var/X11R6/lib/libGL.so.1 /usr/lib/libGL.so.1
+  ln -sf /var/X11R6/lib/libGL.so.1 /usr/lib/libGL.so
   exit
 fi
 
