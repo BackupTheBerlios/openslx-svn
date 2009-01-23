@@ -60,9 +60,17 @@ struct srv_info *fastest_server(uint16_t *srtt, dnbd2_device_t *dev)
  * This function can be enqueued in a workqueue. It removes srv_info
  * from the list of servers.
  */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+void del_server_work(void *data)
+#else
 void del_server_work(struct work_struct *work)
+#endif
 {
-	struct srv_info *srv_info = container_of(work, struct srv_info, work);
+	#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+		struct srv_info *srv_info = data;
+	#else
+		struct srv_info *srv_info = container_of(work, struct srv_info, work);
+	#endif
 	dnbd2_device_t *dev = srv_info->dev;
 
 	down(&dev->servers_mutex);
@@ -80,9 +88,17 @@ void del_server_work(struct work_struct *work)
  * This function can be enqueued in a workqueue. Read comment on
  * schedule_activate_fastest in servers.h
  */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+void activate_fastest_work(void *data)
+#else
 void activate_fastest_work(struct work_struct *work)
+#endif
 {
-	dnbd2_device_t *dev = container_of(work, dnbd2_device_t, work);
+	#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+		dnbd2_device_t *dev = data;	
+	#else
+		dnbd2_device_t *dev = container_of(work, dnbd2_device_t, work);
+	#endif
 	struct srv_info *alt_srv, *next_srv;
 	uint16_t min, srtt;
 	int newsrv = 0;
@@ -341,15 +357,21 @@ void enqueue_hb(struct srv_info *srv_info)
 
 void schedule_del_server(struct srv_info *srv_info)
 {
-	PREPARE_WORK(&srv_info->work, del_server_work); //, srv_info);
-	/* Change in /<linuxheaders>/include/linux/workqueue.h */
+	#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+		PREPARE_WORK(&srv_info->work, del_server_work, srv_info);
+	#else
+		PREPARE_WORK(&srv_info->work, del_server_work);
+	#endif
 	schedule_work(&srv_info->work);
 }
 
 
 void schedule_activate_fastest(dnbd2_device_t *dev)
 {
-	PREPARE_WORK(&dev->work, activate_fastest_work); //, dev);
-	/* Change in /<linuxheaders>/include/linux/workqueue.h */
+	#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+		PREPARE_WORK(&dev->work, activate_fastest_work, dev);
+	#else
+		PREPARE_WORK(&dev->work, activate_fastest_work);
+	#endif
 	schedule_work(&dev->work);
 }

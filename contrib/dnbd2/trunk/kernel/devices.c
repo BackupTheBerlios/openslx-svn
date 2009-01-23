@@ -106,8 +106,13 @@ int add_device(dnbd2_device_t *dev, int minor)
 	 * Prepare dnbd2_device_t. Please use the
 	 * same order as in dnbd2.h.
 	 */
-	INIT_WORK(&dev->work, NULL); //, NULL);
-	/* Change in /<linuxheaders>/include/linux/workqueue.h */
+
+	#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+		INIT_WORK(&dev->work, NULL, NULL);
+	#else
+		INIT_WORK(&dev->work, NULL); 
+	#endif
+
 	spin_lock_init(&dev->kmap_lock);
 	for (i=0 ; i<POOL_SIZE ; i++)
 		dev->info_pool[i].cnt = -1;
@@ -145,7 +150,11 @@ int add_device(dnbd2_device_t *dev, int minor)
 		init_completion(&srv_info->rx_start);
 		init_completion(&srv_info->rx_stop);
 		init_waitqueue_head(&srv_info->wq);
-		INIT_WORK(&srv_info->work, NULL); //, NULL);
+	#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+		INIT_WORK(&srv_info->work, NULL, NULL);
+	#else
+		INIT_WORK(&srv_info->work, NULL);
+	#endif
 		/* Change in /<linuxheaders>/include/linux/workqueue.h */
 		srv_info->dev = dev;
 	}

@@ -11,6 +11,7 @@
 #include <linux/wait.h>
 #include <linux/inet.h>
 #include <linux/in.h>
+#include <linux/version.h>
 #include <asm/semaphore.h>
 #include <net/sock.h>
 #include "../include/dnbd2.h"
