@@ -136,7 +136,6 @@ sub copyRequiredFilesIntoInitramfs
         }
         if (-d $splashyThemeDir) {
             my $splashyPath = "$bootsplashDir/files/bin";
-print "6. $splashyPath";
             $makeInitRamFSEngine->addCMD(
                 "cp -p $splashyPath/splashy* $targetPath/bin/"
             );
