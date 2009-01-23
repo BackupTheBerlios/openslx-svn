@@ -42,10 +42,10 @@ sub getInfo
 
     return {
         description => unshiftHereDoc(<<'        End-of-Here'),
-		This plugin tries to integrate binary graphics drivers into the system.
-		Notice that you need to have kernel-headers installed to work properly.
+        This plugin tries to integrate binary graphics drivers into the system.
+        Notice that you need to have kernel-headers installed to work properly.
         End-of-Here
-        precedence => 50,
+        precedence => 80,
     };
 }
 
@@ -63,7 +63,7 @@ sub getAttrInfo
             applies_to_systems => 1,
             applies_to_clients => 0,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                should the 'example'-plugin be executed during boot?
+            should the 'xserver'-plugin be executed during boot?
             End-of-Here
             content_regex => qr{^(0|1)$},
             content_descr => '1 means active - 0 means inactive',
@@ -71,17 +71,7 @@ sub getAttrInfo
         },
 
         # plugin specific attributes start here ...
-        'xserver::preferred_side' => {
-            applies_to_systems => 1,
-            applies_to_clients => 0,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                determines to which side you have to tilt your head in order
-                to read the smiley
-            End-of-Here
-            content_regex => qr{^(left|right)$},
-            content_descr => q{'left' will print ';-)' - 'right' will print '(-;'},
-            default => 'left',
-        },
+
     };
 }
 

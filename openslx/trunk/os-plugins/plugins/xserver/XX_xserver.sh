@@ -13,6 +13,9 @@
 #
 # stage3 part of 'xserver' plugin - the runlevel script setting up the Xorg
 # configuration and checking for 3D capabilities and non-gpl drivers
+#
+. /etc/functions
+. /etc/distro-functions
 
 xfc="/mnt/etc/X11/xorg.conf"
 

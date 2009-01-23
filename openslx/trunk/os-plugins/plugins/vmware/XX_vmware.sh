@@ -11,6 +11,8 @@
 #
 # General information about OpenSLX can be found at http://openslx.org
 #
+. /etc/functions
+. /etc/distro-functions
 
 # TODO: nvram,functions
 # write /etc/vmware/config (if a non-standard location of vmware basedir is
@@ -164,11 +166,9 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
           # autodetected here ... (vmimgserv is blockdev here)
           vmbdev=/dev/${vmimgserv}
           waitfor ${vmbdev} 20000
-          echo "ext2"     > /etc/filesystems
-          echo "reiserfs" >> /etc/filesystems
-          echo "vfat"     >> /etc/filesystems
-          echo "xfs"      >> /etc/filesystems
-          mount -o ro ${vmbdev} /mnt/var/lib/vmware || error "$scfg_evmlm" nonfatal
+          echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
+          mount -o ro ${vmbdev} /mnt/var/lib/vmware || \
+            error "$scfg_evmlm" nonfatal
           ;;
         *)
           # we expect nfs mounts here ...
@@ -251,14 +251,12 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     fi
 
     # write version information for image problem (v2 images don't run
-    # on v1 players
+    # on v1 players)
     if [ "${vmware_kind}" = "vmpl1.0" ]; then
       echo "vmplversion=1" > /mnt/etc/vmware/version
-    fi
-    if [ "${vmware_kind}" = "vmpl2.0" ]; then
+    elif [ "${vmware_kind}" = "vmpl2.0" ]; then
       echo "vmplversion=2" > /mnt/etc/vmware/version
-    fi
-    if [ "${vmware_kind}" = "local" ]; then
+    elif [ "${vmware_kind}" = "local" ]; then
       version=$(strings /usr/lib/vmware/bin/vmplayer|head -n 1|cut -c 1)
       echo "vmplversion=${version}" > /mnt/etc/vmware/version
     fi
