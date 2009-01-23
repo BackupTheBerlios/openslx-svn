@@ -41,24 +41,6 @@ sub initialize
     return 1;
 }
 
-sub pathOf
-{
-    my $self   = shift;
-    my $binary = shift;
-    
-    return qx{which $binary 2>/dev/null};
-}
-
-sub isInPath
-{
-    my $self   = shift;
-    my $binary = shift;
-    
-    my $path = $self->pathOf($binary);
-
-    return $path ? 1 : 0;
-}
-
 sub getDefaultDesktopManager
 {
     my $self = shift;

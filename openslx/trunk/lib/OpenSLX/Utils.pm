@@ -688,4 +688,18 @@ sub isInPath
     return $path ? 1 : 0;
 }
 
+=item B<isPackInstalled()>
+
+Check whether a certain package is installed. Could be refined somehow to use
+the package mechanism of the given distribution!?
+
+=cut
+
+sub isPackInstalled
+{
+    my $self = shift;
+    my $pack = shift;
+    return $self->isInPath($pack);
+}
+
 1;

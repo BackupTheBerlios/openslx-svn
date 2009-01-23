@@ -89,19 +89,4 @@ sub fillRunlevelScript
     return $script;
 }
 
-sub isX11vncInstalled
-{
-    my $self = shift;
-    return $self->isInPath('x11vnc');
-}
-
-sub installX11vnc
-{
-    my $self = shift;
-    $self->{engine}->installPackages(
-         $self->{engine}->getInstallablePackagesForSelection('x11vnc')
-    );
-    return 1;
-}
-
 1;

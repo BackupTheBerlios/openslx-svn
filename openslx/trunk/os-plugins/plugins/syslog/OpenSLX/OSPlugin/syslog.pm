@@ -126,11 +126,18 @@ sub installationPhase
     
     my $engine = $self->{'os-plugin-engine'};
     
-    if ($self->{kind} eq 'syslog-ng' && !qx{which syslog-ng}) {
-        $engine->installPackages('syslog-ng');
+    if ($self->{kind} eq 'syslog-ng' && 
+        !$self->{distro}->isPackInstalled('syslog-ng')) {
+        $engine->installPackages(
+            $self->{engine}->getInstallablePackagesForSelection('syslog-ng')
+        );
     }
-    if ($self->{kind} eq 'syslogd' && !qx{which syslogd}) {
-        $engine->installPackages('syslogd');
+    # not sure if we ever should setup this service
+    if ($self->{kind} eq 'syslogd' &&
+        !$self->{distro}->isPackInstalled('syslog')) {
+        $engine->installPackages(
+            $self->{engine}->getInstallablePackagesForSelection('syslog')
+        );
     }
 
     if (!$self->{kind}) {
