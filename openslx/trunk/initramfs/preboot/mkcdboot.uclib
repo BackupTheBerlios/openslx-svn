@@ -10,7 +10,7 @@
 # Script for generating an uClib based InitRamFS for using a demo CD/DVD
 # (via kexec mechanism) instead of PXE/linux boot functionality
 
-BUILDDIR=/tmp/slxcdboot
+BUILDDIR=/tmp/slxpreboot
 SLX_SHARE_PATH=/opt/openslx/share
 NWMODULES="forcedeth e1000 e100 tg3 3c59x via-rhine r8169 pcnet32 b44 8139too"
 KERNVER=$(uname -r)
@@ -20,21 +20,21 @@ mkdir -p ${BUILDDIR}/{dev,proc,tmp,root,bin,sys,lib,etc}
 mkdir -p ${BUILDDIR}/var/{lib,run}
 ln -s /bin ${BUILDDIR}/sbin
 
-cp ${SLX_SHARE_PATH}/cdboot/init ${BUILDDIR}/init
+cp ${SLX_SHARE_PATH}/preboot/init ${BUILDDIR}/init
   chmod 755 ${BUILDDIR}/init
 
 cp ${SLX_SHARE_PATH}/busybox/busybox.uclib.i586 ${BUILDDIR}/bin/busybox
 for bbins in [ ar arping ash bunzip2 cat chmod chown chroot cp cpio cut \
     date dd df dmesg du echo env expr fdisk free grep gunzip hwclock \
-    insmod id ip ipcalc kill killall ln ls lsmod mdev mkdir \
-    mknod mkswap modprobe mount mv nice ping printf ps rdate \
+    insmod id ip ipcalc kill killall ln loadfont loadkmap ls lsmod mdev \
+    mkdir mknod mkswap modprobe mount mv nice ping printf ps rdate \
     rm rmmod sed sleep sort swapoff swapon switch_root tar test tftp \
     time touch tr udhcpc umount uptime usleep vconfig vi wget zcat zcip; do
   ln -fs /bin/busybox ${BUILDDIR}/bin/$bbins
 done
-cp ${SLX_SHARE_PATH}/cdboot/kexec.uclib.i586 ${BUILDDIR}/bin/kexec
+cp ${SLX_SHARE_PATH}/preboot/kexec.uclib.i586 ${BUILDDIR}/bin/kexec
 
-cp -a ${SLX_SHARE_PATH}/cdboot/uclib/* ${BUILDDIR}/lib
+cp -a ${SLX_SHARE_PATH}/preboot/uclib/* ${BUILDDIR}/lib
 
 mkdir -p ${BUILDDIR}/lib/modules/${KERNVER}/kernel/drivers/net
 cp /lib/modules/${KERNVER}/modules.dep ${BUILDDIR}/lib/modules/${KERNVER}
@@ -47,7 +47,7 @@ done
 
 # finally create the compressed initial ramfs cpio archive
 mkdir -p ${BUILDDIR}/iso/isolinux
-cp ${SLX_SHARE_PATH}/cdboot/isolinux.bin ${BUILDDIR}/iso/isolinux
+cp ${SLX_SHARE_PATH}/preboot/isolinux.bin ${BUILDDIR}/iso/isolinux
 cp ${SLX_SHARE_PATH}/tftpboot/menu.c32 ${BUILDDIR}/iso/isolinux
 cp /boot/vmlinuz-${KERNVER} ${BUILDDIR}/iso/isolinux/vmlinuz
 pushd . > /dev/null 2>&1
