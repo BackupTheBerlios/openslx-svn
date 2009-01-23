@@ -20,10 +20,10 @@ slxconfig
     and you can create clients for these systems, too.
 ];
 
+use Clone qw(clone);
 use Getopt::Long qw(:config pass_through);
 use List::Util qw(max);
 use Pod::Usage;
-use Storable qw(dclone);
 
 # add the folder this script lives in and the lib-folder to perl's
 # search path for modules:
@@ -247,7 +247,6 @@ sub parseKeyValueArgsWithAttrs
         if (grep { $_ eq $key } @$allowedKeys) {
             $dataHash{$key} = $value;
         } elsif (grep { $_ eq $key } @$allowedAttrKeys) {
-            OpenSLX::AttributeRoster->checkValueForKey($key, $value);
             $attrHash{$key} = $value;
         } else {
             die _tr("unknown key '%s' specified for %s\n", $key, $table);
@@ -263,6 +262,18 @@ sub parseKeyValueArgsWithAttrs
         }
         return \%dataHash;
     }
+}
+
+sub checkGivenStage3Attrs
+{
+    my $stage3Attrs  = shift;
+    my $vendorOSID   = shift;
+    
+    my $vendorOS = $openslxDB->fetchVendorOSByID($vendorOSID);
+    
+    OpenSLX::AttributeRoster->checkValues($stage3Attrs, $vendorOS->{name});
+
+    return 1;
 }
 
 sub mergeNonExistingAttributes
@@ -359,7 +370,7 @@ sub listAttributes
     dumpElements(
         'attribute', undef,
         map {
-            my $attr = dclone($attrInfo->{$_});
+            my $attr = clone($attrInfo->{$_});
             $attr->{name} = $_;
             delete $attr->{content_regex};    # no use for display purposes
             $attr;
@@ -488,7 +499,14 @@ sub listVendorOSes
     dumpElements('vendor-OS', undef,
         map {
             my @plugins = $openslxDB->fetchInstalledPlugins($_->{id});
-            $_->{plugins} 
+            my %attrHash;
+            foreach my $plugin (@plugins) {
+                foreach my $attr (keys %{$plugin->{attrs}}) {
+                    $attrHash{$attr} = $plugin->{attrs}->{$attr};
+                }
+            }
+            $_->{ATTRIBUTES} = \%attrHash;
+            $_->{PLUGINS} 
                 = @plugins 
                     ? join(',', sort map { $_->{plugin_name} } @plugins) 
                     : '<none>';
@@ -844,6 +862,8 @@ sub addSystemToConfigDB
     }
     $systemData->{export_id} = $export->{id};
 
+    checkGivenStage3Attrs($systemData->{attrs}, $export->{vendor_os_id});
+
     my @clientIDs;
     if (exists $systemData->{clients}) {
         @clientIDs = map {
@@ -1118,6 +1138,11 @@ sub changeSystemInConfigDB
         );
     }
 
+    my $system = $openslxDB->fetchSystemByFilter({'name' => $systemName});
+    if (!defined $system) {
+        die _tr("the system '%s' doesn't exists in the DB, giving up!\n",
+            $systemName);
+    }
     my @systemKeys = $openslxDB->getColumnsOfTable('system');
     push @systemKeys, 'clients', 'add-clients', 'remove-clients';
     my @systemAttrKeys = OpenSLX::AttributeRoster->getSystemAttrs();
@@ -1125,11 +1150,8 @@ sub changeSystemInConfigDB
         \@systemKeys, \@systemAttrKeys, 'system', @_
     );
 
-    my $system = $openslxDB->fetchSystemByFilter({'name' => $systemName});
-    if (!defined $system) {
-        die _tr("the system '%s' doesn't exists in the DB, giving up!\n",
-            $systemName);
-    }
+    my $export = $openslxDB->fetchExportByID($system->{export_id});
+    checkGivenStage3Attrs($systemData->{attrs}, $export->{vendor_os_id});
 
     mergeNonExistingAttributes($systemData, $system);
 
@@ -1276,7 +1298,7 @@ sub _expandClients
                     sort { $a->{name} cmp $b->{name} }
                     $openslxDB->fetchSystemByID(\@sysIDs, 'name');
             if ($option{inherited}) {
-                my $mergedClient = dclone($_);
+                my $mergedClient = clone($_);
                 my $originInfo = {};
                 $openslxDB->mergeDefaultAndGroupAttributesIntoClient(
                     $mergedClient, $originInfo
@@ -1325,21 +1347,20 @@ sub _expandSystems
         map {
             my @clientIDs = $openslxDB->fetchClientIDsOfSystem($_->{id});
             $_->{clients} 
-                =    join "\n", 
+                =   join "\n", 
                     map { $_->{name} }
                     sort { $a->{name} cmp $b->{name} }
                     $openslxDB->fetchClientByID(\@clientIDs, 'name');
             my @activePlugins;
             my $export = $openslxDB->fetchExportByID($_->{export_id});
             if (defined $export) {
-                $_->{export_id}
-                    = "$export->{id} ($export->{name})";
+                $_->{export_id} = "$export->{id} ($export->{name})";
     
                 # fetch detailed info about active plugins
                 my @installedPlugins = $openslxDB->fetchInstalledPlugins(
                     $export->{vendor_os_id}
                 );
-                my $mergedSystem = dclone($_);
+                my $mergedSystem = clone($_);
                 my $originInfo = {};
                 $openslxDB->mergeDefaultAttributesIntoSystem(
                     $mergedSystem, \@installedPlugins, $originInfo

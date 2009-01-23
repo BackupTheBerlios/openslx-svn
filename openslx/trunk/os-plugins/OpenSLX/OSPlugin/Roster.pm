@@ -17,7 +17,7 @@ use strict;
 use warnings;
 
 use OpenSLX::Basics;
-use Storable qw(dclone);
+use Clone qw(clone);
 
 my %plugins;
 
@@ -56,7 +56,7 @@ sub getPlugin
     my $plugin = $plugins{$pluginName};
     return if !$plugin;
 
-    return dclone($plugin);
+    return clone($plugin);
 }
 
 =item C<getPluginAttrInfo()>
@@ -179,7 +179,7 @@ sub _addAttributesToHash
         my $pluginAttrInfo = $plugin->getAttrInfo();
         foreach my $attr (keys %$pluginAttrInfo) {
             next if !$testFunc->($pluginAttrInfo->{$attr});
-            $attrInfo->{$attr} = dclone($pluginAttrInfo->{$attr});
+            $attrInfo->{$attr} = clone($pluginAttrInfo->{$attr});
         }
     }
     return 1;

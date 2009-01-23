@@ -182,28 +182,32 @@ sub getDefaultAttrsForVendorOS
     return $self->getAttrInfo();
 }
 
-=item checkValueForKey()
+=item checkStage3AttrValues()
 
-Checks if the given value is allowed (and makes sense) for the given key.
-If the value is ok, this method returns 1 - if not, it dies with an appropriate 
-message.
+Checks if the stage3 values given in B<$stage3Attrs> are allowed and makes 
+sense.
 
-Plugins may override this implementation to do checks that for instance look 
-at the vendor-OS (stage1-)attributes.
+If all values are ok, this method returns 1 - if not, it dies with an appropriate message.
+
+Plugins may override this implementation to do checks that for instance look
+at the stage1 vendor-OS-attributes given in B<$vendorOSAttrs>.
+
+N.B.: this method is called while being chrooted into the vendor-OS, so it
+      may invoke all distro methods that expect to be run in this environment,
+      too
 
 =cut
 
-sub checkValueForKey
+sub checkStage3AttrValues
 {
-    my $self  = shift;
-    my $key   = shift;
-    my $value = shift;
+    my $self          = shift;
+    my $stage3Attrs   = shift;
+    my $vendorOSAttrs = shift;
 
     # this default implementation does no further checks (thus relying on the
     # attributte regex check that is done in the AttributeRoster)
     return 1;
 }
-
 
 =back
 

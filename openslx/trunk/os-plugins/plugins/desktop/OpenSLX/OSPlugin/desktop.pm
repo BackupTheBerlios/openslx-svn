@@ -53,6 +53,7 @@ sub getAttrInfo
     my $self = shift;
 
     return {
+        # stage3
         'desktop::active' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
@@ -69,7 +70,7 @@ sub getAttrInfo
             description => unshiftHereDoc(<<'            End-of-Here'),
                 which display manager to start: gdm, kdm or xdm?
             End-of-Here
-            content_regex => qr{^(g|k|x)dm$},
+            content_regex => qr{^(gdm|kdm|xdm)$},
             content_descr => '"gdm", "kdm" or "xdm"',
             default => undef,
         },
@@ -103,6 +104,8 @@ sub getAttrInfo
             content_descr => 'one of the entries in "supported_themes"',
             default => 'openslx',
         },
+
+        # stage1
         'desktop::supported_themes' => {
             applies_to_vendor_os => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
@@ -195,6 +198,113 @@ sub getDefaultAttrsForVendorOS
             = $self->{distro}->getDefaultDesktopKind();
     }
     return $attrs;
+}
+
+sub checkStage3AttrValues
+{
+    my $self          = shift;
+    my $stage3Attrs   = shift;
+    my $vendorOSAttrs = shift;
+    
+    my $manager = $stage3Attrs->{'desktop::manager'} || '';
+    if ($manager eq 'kdm') {
+        if (!defined $vendorOSAttrs->{'desktop::kdm'}) {
+            if (!$self->{distro}->isKDMInstalled()) {
+                die _tr(
+                    "KDM is not installed in vendor-OS, so using it as desktop manager wouldn't work!"
+                );
+            }
+        }
+        elsif ($vendorOSAttrs->{'desktop::kdm'} == 0) {
+            die _tr(
+                "desktop::kdm is 0, so using KDM as desktop manager is not allowed for this vendor-OS!"
+            );
+        }
+    }
+    elsif ($manager eq 'gdm') {
+        if (!defined $vendorOSAttrs->{'desktop::gdm'}) {
+            if (!$self->{distro}->isGDMInstalled()) {
+                die _tr(
+                    "GDM is not installed in vendor-OS, so using it as desktop manager wouldn't work!"
+                );
+            }
+        }
+        elsif ($vendorOSAttrs->{'desktop::gdm'} == 0) {
+            die _tr(
+                "desktop::gdm is 0, so using GDM as desktop manager is not allowed for this vendor-OS!"
+            );
+        }
+    }
+    elsif ($manager eq 'xdm') {
+        if (!defined $vendorOSAttrs->{'desktop::xdm'}) {
+            if (!$self->{distro}->isXDMInstalled()) {
+                die _tr(
+                    "XDM is not installed in vendor-OS, so using it as desktop manager wouldn't work!"
+                );
+            }
+        }
+        elsif ($vendorOSAttrs->{'desktop::xdm'} == 0) {
+            die _tr(
+                "desktop::xdm is 0, so using XDM as desktop manager is not allowed for this vendor-OS!"
+            );
+        }
+    }
+
+    my $kind = $stage3Attrs->{'desktop::kind'} || '';
+    if ($kind eq 'kde') {
+        if (!defined $vendorOSAttrs->{'desktop::kde'}) {
+            if (!$self->{distro}->isKDEInstalled()) {
+                die _tr(
+                    "KDE is not installed in vendor-OS, so using it as desktop kind wouldn't work!"
+                );
+            }
+        }
+        elsif ($vendorOSAttrs->{'desktop::kde'} == 0) {
+            die _tr(
+                "desktop::kde is 0, so using KDE as desktop kind is not allowed for this vendor-OS!"
+            );
+        }
+    }
+    elsif ($kind eq 'gnome') {
+        if (!defined $vendorOSAttrs->{'desktop::gnome'}) {
+            if (!$self->{distro}->isGNOMEInstalled()) {
+                die _tr(
+                    "GNOME is not installed in vendor-OS, so using it as desktop kind wouldn't work!"
+                );
+            }
+        }
+        elsif ($vendorOSAttrs->{'desktop::gnome'} == 0) {
+            die _tr(
+                "desktop::gnome is 0, so using GNOME as desktop kind is not allowed for this vendor-OS!"
+            );
+        }
+    }
+    elsif ($kind eq 'xfce') {
+        if (!defined $vendorOSAttrs->{'desktop::xfce'}) {
+            if (!$self->{distro}->isXFCEInstalled()) {
+                die _tr(
+                    "XFCE is not installed in vendor-OS, so using it as desktop kind wouldn't work!"
+                );
+            }
+        }
+        elsif ($vendorOSAttrs->{'desktop::xfce'} == 0) {
+            die _tr(
+                "desktop::xfce is 0, so using XFCE as desktop kind is not allowed for this vendor-OS!"
+            );
+        }
+    }
+
+    my @supportedThemes 
+        = split ',', $vendorOSAttrs->{'desktop::supported_themes'} || '';
+    my $theme = $stage3Attrs->{'desktop::theme'};
+    if (defined $theme && !grep { $_ eq $theme } @supportedThemes) {
+        die _tr(
+            "'%s' is not a supported theme!\nSupported themes are: %s",
+            $theme, $vendorOSAttrs->{'desktop::supported_themes'} || ''
+        );
+    }
+
+    return 1;
 }
 
 sub installationPhase

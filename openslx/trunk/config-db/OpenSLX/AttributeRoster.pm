@@ -17,6 +17,7 @@ use strict;
 use warnings;
 
 use OpenSLX::Basics;
+use OpenSLX::OSPlugin::Engine;
 use OpenSLX::OSPlugin::Roster;
 use OpenSLX::Utils;
 
@@ -370,6 +371,8 @@ sub _init
     
     # and add all plugin attributes, too
     OpenSLX::OSPlugin::Roster->addAllStage3AttributesToHash(\%AttributeInfo);
+
+    return 1;
 }
 
 =item C<getAttrInfo()>
@@ -495,43 +498,57 @@ sub getClientAttrs
         keys %AttributeInfo
 }
 
-=item C<checkValueForKey()>
+=item C<checkValues()>
 
-Checks if the given value is allowed (and makes sense) for the given key.
-If the value is ok, this method returns 1 - if not, it dies with an appropriate 
-message.
+Checks if the given stage3 attribute values are allowed (and make sense).
+If all values are ok, this method returns 1 - if not, it dies with an 
+appropriate message.
 
 =cut
 
-sub checkValueForKey
+sub checkValues
 {
-    my $class = shift;
-    my $key   = shift;
-    my $value = shift;
+    my $class        = shift;
+    my $stage3Attrs  = shift || {};
+    my $vendorOSName = shift or die ('need vendor-OS-name!');
 
     $class->_init() if !%AttributeInfo;
 
-    # undefined values are always allowed
-    return 1 if !defined $value;
+    my %attrsByPlugin;
+    foreach my $key (sort keys %{$stage3Attrs}) {
+        my $value = $stage3Attrs->{$key};
+        if ($key =~ m{^(.+)::.+?$}) {
+            my $pluginName = $1;
+            $attrsByPlugin{$pluginName} ||= {};
+            $attrsByPlugin{$pluginName}->{$key} = $value;
+        }
 
-    # check the value against the regex of the attribute (if any)
-    my $attrInfo = $AttributeInfo{$key}
-        || die _tr('attribute "%s" is unknown!', $key);
-    my $regex = $attrInfo->{content_regex};
-    if ($regex && $value !~ m{$regex}) {
-        die _tr(
-            "value given for attribute %s is not allowed.\nAllowed values are: %s",
-            $key, $attrInfo->{content_descr}
-        );
+        # undefined values are always allowed
+        next if !defined $value;
+
+        # check the value against the regex of the attribute (if any)
+        my $attrInfo = $AttributeInfo{$key}
+            || die _tr('attribute "%s" is unknown!', $key);
+        my $regex = $attrInfo->{content_regex};
+        if ($regex && $value !~ $regex) {
+            die _tr(
+                "the value '%s' for attribute %s is not allowed.\nAllowed values are: %s",
+                $value, $key, $attrInfo->{content_descr}
+            );
+        }
     }
 
-    # let plugin check by itself
-    if ($key =~ m{^(.+)::.+?$}) {
-        my $pluginName = $1;
-        my $plugin
-            = OpenSLX::OSPlugin::Roster->getPlugin($pluginName)
-                || die _tr('unable to load plugin "%s"', $pluginName);
-        $plugin->checkValueForKey($key, $value);
+    # now give each plugin a chance to check it's own attributes by itself
+    foreach my $pluginName (sort keys %attrsByPlugin) {
+        # create & start OSPlugin-engine for vendor-OS and current plugin
+        my $engine = OpenSLX::OSPlugin::Engine->new;
+        $engine->initialize($pluginName, $vendorOSName);
+        if (!$engine->{'plugin-path'}) {
+            warn _tr('unable to create engine for plugin "%s"!', $pluginName);
+            next;
+        }
+        $engine->checkStage3AttrValues($attrsByPlugin{$pluginName});
     }
 }
+
 1;

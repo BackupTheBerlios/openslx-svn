@@ -126,6 +126,7 @@ sub initialize
                     ? $dbAttrs->{$attrName}
                     : $defaultAttrs->{$attrName}->{default};
         }
+        $self->{'vendorOS-attrs'} = $dbAttrs;
     }
     
     return 1;
@@ -377,7 +378,6 @@ sub getInstallablePackagesForSelection
     );
 }
 
-
 =item installPackages($packages)
 
 Installs the given packages into the vendor-OS.
@@ -443,6 +443,44 @@ sub removePackages
     return if !$metaPackager;
 
     return $metaPackager->removePackages($packages);
+}
+
+=back
+
+=head2 Driver Interface
+
+The following methods are invoked by the slxos-plugin script in order to
+install/remove a plugin into/from a vendor-OS:
+
+=over
+
+=item checkStage3AttrValues()
+
+Checks if the stage3 values given in B<$stage3Attrs> are allowed and make sense.
+
+If all values are ok, this method returns 1 - if not, it dies with an 
+appropriate message.
+
+This method chroots into the vendor-OS and then asks the plugin itself to check
+the attributes.
+
+=cut
+
+sub checkStage3AttrValues
+{
+    my $self        = shift;
+    my $stage3Attrs = shift;
+
+    $self->_callChrootedFunctionForPlugin(
+        sub {
+            # let plugin check by itself
+            $self->{plugin}->checkStage3AttrValues(
+                $stage3Attrs, $self->{'vendorOS-attrs'}
+            );
+        }
+    );
+
+    return 1;
 }
 
 =back
