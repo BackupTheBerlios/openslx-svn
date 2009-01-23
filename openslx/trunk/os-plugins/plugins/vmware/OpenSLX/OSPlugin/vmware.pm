@@ -450,7 +450,7 @@ sub _vmpl2Installation {
 
     ##
     ## Create wrapperscripts
-    $self->_writeWrapperScript("$vmpath", "$kind", "player")
+    $self->_writeWrapperScript("$vmpath", "$kind", "player");
 
     ##
     ## Creating needed config /etc/vmware/config
