@@ -1,0 +1,14 @@
+diff -wur busybox-1.11.0/util-linux/switch_root.c busybox-1.11.0-patched/util-linux/switch_root.c
+--- busybox-1.11.0/util-linux/switch_root.c	2008-06-25 14:51:38.000000000 +0200
++++ busybox-1.11.0-patched/util-linux/switch_root.c	2008-07-10 17:54:56.000000000 +0200
+@@ -105,6 +105,10 @@
+ 	// Overmount / with newdir and chroot into it.  The chdir is needed to
+ 	// recalculate "." and ".." links.
+ 
++	if ( !lstat("/rorootfs", &st1 ) )
++		if ( mount("/rorootfs", "/", NULL, MS_MOVE, NULL) )
++			bb_error_msg_and_die("moving rorootfs");
++
+ 	if (mount(".", "/", NULL, MS_MOVE, NULL))
+ 		bb_error_msg_and_die("error moving root");
+ 	xchroot(".");
