@@ -210,9 +210,7 @@ sub installationPhase
     # OLTA: this backup strategy is useless if invoked twice, so I have
     #       deactivated it
     #    rename ("/usr/bin/$file", "/usr/bin/$file.slx-bak");
-    	# TODO: check if it will really build a link.
-	#       somehow i cant see one in stage1
-        linkFile("/var/X11R6/bin/$file", "/usr/bin/$file");
+        linkFile("/usr/bin/$file", "/var/X11R6/bin/$file");
         my $script = unshiftHereDoc(<<"        End-of-Here");
             #!/bin/sh
             # written by OpenSLX-plugin 'vmware' in Stage1
@@ -223,8 +221,8 @@ sub installationPhase
                  "\$PREFIX"'/bin/vmware' \
                  "\$PREFIX"'/libconf' "\$@"
         End-of-Here
-	# TODO: run chmod 755 after creation
         spitFile("$self->{'pluginRepositoryPath'}/$file", $script);
+        chmod 0755, "$self->{'pluginRepositoryPath'}/$file";
     }
 }
 
@@ -236,10 +234,11 @@ sub removalPhase
     
     rmtree ( [ $pluginRepositoryPath ] );
     # restore old start scripts - to be discussed
-    #my @files = qw( vmware vmplayer );
-    #foreach my $file (@files) {
+    my @files = qw( vmware vmplayer );
+    foreach my $file (@files) {
     #    rename ("/usr/bin/$file.slx-bak", "/usr/bin/$file");
-    #}
+        unlink("/var/X11R6/bin/$file");
+    }
     # TODO: path is distro specific
     #rename ("/etc/init.d/vmware.slx-bak", "/etc/init.d/vmware");
     return;
