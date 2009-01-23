@@ -39,7 +39,6 @@
 # wait for the appearance of configuration from several sources
 cfgcomplete
 . /etc/initramfs-setup
-. /initramfs/machine-setup
 [ $DEBUGLEVEL -eq 8 ] && echo "** Config info is complete at $(sysup)"
 
 # copy additional configuration and var files and directories
@@ -172,7 +171,7 @@ removable devices is mostly deprecated, so /misc is not\nactivated in \
 auto.master." >/mnt/etc/auto.misc
     fi
     if [ -n "${automnt_src}" ] ; then
-      # local directory and home directory server from machine-setup
+      # local directory and home directory server from initialramfs-setup
       [ -z "${automnt_dir}" ] && automnt_dir="/home"
       # remove leading and trailing slash
       automnt_dir=${automnt_dir#/}
