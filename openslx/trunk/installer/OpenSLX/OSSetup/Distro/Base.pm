@@ -143,9 +143,9 @@ sub startSession
     }
     foreach my $dev (keys %devInfo) {
         my $info = $devInfo{$dev};
-        if (!-e "/dev/$dev") {
+        if (!-e "$osDir//dev/$dev") {
             if (slxsystem(
-                "mknod /dev/$dev $info->{type} $info->{major} $info->{minor}"
+                "mknod $osDir//dev/$dev $info->{type} $info->{major} $info->{minor}"
             )) {
                 croak(_tr("unable to create dev-node '%s'! (%s)", $dev, $!));
             }
