@@ -196,6 +196,7 @@ fi
 config_printer
 
 # configure bluetooth services
+#[ -s /etc/hwinfo.bt ] if existance of bt devices should play any role
 config_bt
 
 #############################################################################

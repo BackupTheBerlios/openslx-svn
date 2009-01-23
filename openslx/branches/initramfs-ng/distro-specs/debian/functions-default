@@ -200,7 +200,7 @@ chmod 744 /mnt/etc/init.d/boot.slx
 # sed -e "s,LANGUAGE=.*,LANGUAGE=\"${LANG}\" # set within initramfs," \
 #     -e "s,LANG=.*,LANG=\"${LANG}\" # set within initramfs," \
 #     -i /mnt/etc/environment
-sed -e "s,LANG=.*,LANG=\"${LANG}\" # set within initramfs," \
+sed -e "s,LANG=.*,LANG=\"${LANG}\," # set within initramfs," \
     -i /mnt/etc/default/locale
 }
 

@@ -64,6 +64,8 @@ mdev -s
     modprobe ${MODPRV} psmouse 
   [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mousedev.ko ] && \
     modprobe ${MODPRV} mousedev
+  testmkd /dev/input 
+  mknod /dev/input/mice c 13 63 2>/dev/null
   hwinfo --mouse >/etc/hwinfo.mouse ) &
 
 # complete the audio configuration and load the dummy module if no audio
@@ -116,14 +118,18 @@ else
 fi
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished hdd stuff at $(sysup)"
 
-# if any new device appeared up to now
-mdev -s
-testmkd /dev/input 
-mknod /dev/input/mice c 13 63 2>/dev/null
+# bluetooth setup
+( hwinfo --bluetooth | grep modprobe | sed 's/.* Cmd: "//;s/"//' | \
+    sort -u >/etc/modprobe.bt
+  ash /etc/modprobe.bt ) &
 
 # scanner setup (fixme: to be checked)
+hwinfo --scanner >/etc/hwinfo.scanner
 [ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
   >>/mnt/etc/udev/rules.d/04-scanner.rules
+
+# if any new device appeared up to now
+mdev -s
 return 0
 }
 
