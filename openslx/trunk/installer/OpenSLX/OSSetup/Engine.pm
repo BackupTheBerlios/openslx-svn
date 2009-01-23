@@ -1783,6 +1783,7 @@ sub _changePersonalityIfNeeded
 
     my $distroName = $self->{'distro-name'};
     if ($self->_hostIs64Bit() && $distroName !~ m[_64]) {
+        vlog(2, 'entering 32-bit personality');
         OpenSLX::Syscall->enter32BitPersonality();
     }
     return;
