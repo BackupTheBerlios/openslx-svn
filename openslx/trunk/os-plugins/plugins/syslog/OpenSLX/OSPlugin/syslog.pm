@@ -100,7 +100,7 @@ sub getAttrInfo
             End-of-Here
             content_regex => undef,
             content_descr => 'a complete file path',
-            default => undef,
+            default => '/var/log/messages',
         },
     };
 }
@@ -201,13 +201,9 @@ sub _setupSyslogNG
         destination console_all {
             file("/dev/tty10");
         };
-        destination default_logfile {
-            file("/var/log/messages");
-        }; 
         log {
             source(all);
             destination(console_all);
-            destination(default_logfile);
         };
         END
         
