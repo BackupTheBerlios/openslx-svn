@@ -28,8 +28,8 @@ D_RODIRSINRW="/etc/gconf /etc/X11/xkb /var/adm /var/lib/texmf /var/lib/rpm \
 /var/cache/fontconfig"
 D_DIRINDXS="/var/X11R6/compose-cache /var/run/sysconfig/tmp /var/adm \
 /var/lib/rpm /var/lib/nobody /var/lib/pam_devperm /var/lib/bluetooth \
-/var/lib/texmf /var/lib/nfs/sm /var/lib/misc /var/lib/acpi /var/spool/cron \
-/var/lock/subsys/sysconfig"
+/var/lib/texmf /var/lib/nfs/sm /var/lib/nfs/sm.bak /var/lib/misc \
+/var/lib/acpi /var/spool/cron /var/lock/subsys/sysconfig"
 
 # empty functions are defined at the beginning of /etc/functions
 
