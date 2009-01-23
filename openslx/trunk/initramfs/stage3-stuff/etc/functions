@@ -322,7 +322,7 @@ tftp_get () {
     fi
     tftp -g -r $file -l /tmp/$(basename $file) $file_server
     [ -s /tmp/$(basename $file) ] && download_successful=1
-    countdown=`expr $countdown - 1`
+    countdown=$(expr $countdown - 1)
     usleep 200000
   done
   [ $DEBUGLEVEL -ge 1 ] && \
@@ -390,7 +390,8 @@ $filepath, fileserv:$fileserv" >>$LOGFILE
 ${cfgfile}\n# Hierarchy is distro client and as last distro/default" \
     >>/tmp/confviafile
 fi
-cat /initramfs/machine-setup >>/tmp/confviafile
+cat /initramfs/machine-setup >>/tmp/confviafile 2>/dev/null || \
+  error "$nomachsetup"
 echo "fileget via $fileprot from $fileserv/$cfgfile finished" >/tmp/file-done
 [ $DEBUGLEVEL -ge 1 ] && echo "fileget from $cfgfile finished" >>$LOGFILE
 }

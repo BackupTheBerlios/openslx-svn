@@ -156,7 +156,9 @@ error_errfcfg="  Bis jetzt noch keine Konfigurationsdaten bekommen via tftp ..."
 error_errlcfg="  Bis jetzt noch keine Konfigurationsdaten bekommen via ldap ..."
 unpack_ConfTGZ="  Fehler beim entpacken des ConfTGZ.\nSind Sie sicher, dass es im \
 richtigen Format ist?"
-
+nomachsetup="  Die Datei machine-setup nicht gefunden. Es koennte sein, dass das \
+Konfigurations-\n  paket nicht erfolgreich vom Server beschafft wurde. Ihr \
+OpenSLX Client\n  wird deshalb nicht wie erwartet funktionieren."
 
 # messages from distro functions
 df_errumod="    Das Laden des \"unix\" Moduls schlug fehl. \nWahrscheinlich \
