@@ -47,7 +47,7 @@ if [ "${REPLY}" == "YES" ]; then
     cd ../../../..
 
     echo "   * changing file permission"
-    chmod 04755 root/lib/vmware/lib/bin/vmware-vmx
+    chmod 04755 root/lib/vmware/bin/vmware-vmx
 
     echo "   * fixing gdk and pango config files"
     sed -i \
