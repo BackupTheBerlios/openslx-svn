@@ -217,9 +217,9 @@ sub preInstallationPhase()
 
     if ($local == 0 && $vmpl10 == 0 && $vmpl20 == 0) {
         print "\n\n * At least one kind needs to get installed/activated:\n";
-        print "   vmware::local=1  or\n";
-        print "   vmware::vmpl1.0=1  or\n";
-        print "   vmware::vmpl2.0=\n";
+        print "     vmware::local=1  or\n";
+        print "     vmware::vmpl1.0=1  or\n";
+        print "     vmware::vmpl2.0=1\n";
         print " * vmware plugin was not installed!\n\n";
         # TODO: write to mailingliste. exit 1 still let the plugin
         # be installed in the database!
