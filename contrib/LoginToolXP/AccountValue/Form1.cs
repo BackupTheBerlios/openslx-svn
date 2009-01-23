@@ -74,7 +74,7 @@ namespace AccountValue
 
             try
             {
-                xml.loadFile("C:\\CONFIG.XML");
+                xml.loadFile("B:\\CONFIG.XML");
             }
             catch (Exception e)
             {
@@ -257,18 +257,18 @@ namespace AccountValue
                     System.Threading.Thread.Sleep(500 * 1);
                 }
 
-                catch (Exception err)
+                catch //Exception err)
                 {
-                    MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Drucker\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    maskedTextBox1.Text = "";
+                    //MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Drucker\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    //maskedTextBox1.Text = "";
 
-                    try
-                    {
-                        maskedTextBox1.Focus();
-                    }
-                    catch { }
+                    //try
+                    //{
+                    //    maskedTextBox1.Focus();
+                    //}
+                    //catch { }
 
-                    return;
+                    //return;
                 }
             }
 

@@ -57,6 +57,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_9A930671C0A645839ACF07C883F69971"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_AEF94E5450300FF9B3205D771C2741C6"
         "OwnerKey" = "8:_F673630F7FD9CA90FDAB647DAA08721F"
         "MsmSig" = "8:_UNDEFINED"
@@ -481,6 +487,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9A930671C0A645839ACF07C883F69971"
+            {
+            "SourcePath" = "8:..\\AccountValue\\AccValue.ini"
+            "TargetName" = "8:AccValue.ini"
+            "Tag" = "8:"
+            "Folder" = "8:_38492406821D42A084C5760DC45B3ED8"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_AEF94E5450300FF9B3205D771C2741C6"
             {
             "SourcePath" = "8:ieframe.dll"
@@ -723,7 +749,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Login_Printer-Account_Value"
         "ProductCode" = "8:{EF0E290A-00F7-477B-A24A-1350A90ED398}"
-        "PackageCode" = "8:{9061B924-044E-4A67-98D4-5E964C431BEE}"
+        "PackageCode" = "8:{BD175986-0453-40E7-8188-0FB71C992E4E}"
         "UpgradeCode" = "8:{A5545C6D-BEB8-4E4A-BA31-4FD269444F73}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
