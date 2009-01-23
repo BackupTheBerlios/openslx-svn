@@ -145,6 +145,14 @@ config RPM2CPIO
 	help
 	  Converts an RPM file into a CPIO archive.
 
+config FEATURE_RPM2CPIO_BZIP2
+	bool "  Support bzip2 decompression"
+	default n
+	depends on RPM2CPIO
+	help
+	  If you enable this option you'll be able to extract
+	  rpms compressed with bzip2.
+
 config RPM
 	bool "rpm"
 	default n
