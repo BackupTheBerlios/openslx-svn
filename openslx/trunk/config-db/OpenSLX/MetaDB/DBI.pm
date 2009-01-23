@@ -320,8 +320,8 @@ sub fetchSystemByID
 
 sub fetchSystemAttrs
 {
-    my $self      = shift;
-    my $systemID  = $self->{dbh}->quote(shift);
+    my $self     = shift;
+    my $systemID = $self->{dbh}->quote(shift);
 
     my $sql = unshiftHereDoc(<<"    End-of-Here");
         SELECT name, value FROM system_attr
@@ -867,30 +867,56 @@ sub setSystemAttrs
 {
     my $self     = shift;
     my $systemID = shift;
-    my $attrs    = shift;
+    my $newAttrs = shift;
 
-    # TODO: improve this, as it is pretty slow!
-    # for now we take the simple path and remove all attributes ...
-    $self->_doDelete('system_attr', [ $systemID ], 'system_id');
+    # fetch info about existing attrs
+    my $sql = "SELECT * FROM system_attr WHERE system_id = $systemID";
+    my %oldAttrs = map { ($_->{name}, $_) } $self->_doSelect($sql);
 
-    # ... and (re-)insert the given ones
+    # We write undefined attributes for the default system only, such that
+    # it shows all existing attributes. All other systems never write undefined 
+    # attributes (if they have not defined a specific attribute, it is 
+    # inherited from "above"). We encapsulate that decision in the following
+    # delegate
+    my $valueIsOK = sub {
+        my $value = shift;
+        return $systemID == 0 || defined $value;
+    };
+
+    # determine the required actions ...
+    my @attrsToBeInserted
+        = grep { 
+            $valueIsOK->($newAttrs->{$_}) && !exists $oldAttrs{$_}
+        } keys %$newAttrs;
+    my @attrsToBeDeleted 
+        = grep { !$valueIsOK->($newAttrs->{$_}) } keys %oldAttrs;
+    my @attrsToBeUpdated
+        = grep { 
+            $valueIsOK->($newAttrs->{$_}) && exists $oldAttrs{$_}
+            && ($oldAttrs{$_}->{value} || '') ne ($newAttrs->{$_} || '')
+        } keys %$newAttrs;
+
+    # ... insert the new ones ...
     my @attrData 
-        =    map {
+        =   map {
                 {
                     system_id => $systemID,
                     name      => $_,
-                    value     => $attrs->{$_},
-                }            
+                    value     => $newAttrs->{$_},
+                }
             }
-            grep {
-                # Write undefined attributes for the default system, such that
-                # it shows all existing attributes. All other systems never
-                # write undefined attributes (if they have not defined a
-                # specific attribute, it is inherited from "above").
-                $systemID == 0 || defined $attrs->{$_} 
-            }
-            keys %$attrs;
+            @attrsToBeInserted;
     $self->_doInsert('system_attr', \@attrData);
+
+    # ... delete the old ones ...
+    my @oldIDs = map { $oldAttrs{$_}->{id} } @attrsToBeDeleted;
+    $self->_doDelete('system_attr', \@oldIDs);
+
+    # ... and update the changed ones ...
+    my @IDs   = map { $oldAttrs{$_}->{id} } @attrsToBeUpdated;
+    @attrData = map { { value => $newAttrs->{$_} } } @attrsToBeUpdated;
+    $self->_doUpdate('system_attr', \@IDs, \@attrData);
+
     return 1;
 }
 
@@ -979,24 +1005,45 @@ sub setClientAttrs
 {
     my $self     = shift;
     my $clientID = shift;
-    my $attrs    = shift;
+    my $newAttrs = shift;
 
-    # TODO: improve this, as it is pretty slow!
-    # for now we take the simple path and remove all attributes ...
-    $self->_doDelete('client_attr', [ $clientID ], 'client_id');
+    # fetch info about existing attrs
+    my $sql = "SELECT * FROM client_attr WHERE client_id = $clientID";
+    my %oldAttrs = map { ($_->{name}, $_) } $self->_doSelect($sql);
 
-    # ... and (re-)insert the given ones
+    # determine the required actions ...
+    my @attrsToBeInserted
+        = grep { 
+            defined $newAttrs->{$_} && !exists $oldAttrs{$_}
+        } keys %$newAttrs;
+    my @attrsToBeDeleted = grep { !defined $newAttrs->{$_} } keys %oldAttrs;
+    my @attrsToBeUpdated
+        = grep { 
+            defined $newAttrs->{$_} && exists $oldAttrs{$_}
+            && ($oldAttrs{$_}->{value} || '') ne ($newAttrs->{$_} || '')
+        } keys %$newAttrs;
+
+    # ... insert the new ones ...
     my @attrData 
-        =    map {
+        =   map {
                 {
                     client_id => $clientID,
                     name      => $_,
-                    value     => $attrs->{$_},
-                }            
+                    value     => $newAttrs->{$_},
+                }
             }
-            grep { defined $attrs->{$_} }
-            keys %$attrs;
+            @attrsToBeInserted;
     $self->_doInsert('client_attr', \@attrData);
+
+    # ... delete the old ones ...
+    my @oldIDs = map { $oldAttrs{$_}->{id} } @attrsToBeDeleted;
+    $self->_doDelete('client_attr', \@oldIDs);
+
+    # ... and update the changed ones ...
+    my @IDs   = map { $oldAttrs{$_}->{id} } @attrsToBeUpdated;
+    @attrData = map { { value => $newAttrs->{$_} } } @attrsToBeUpdated;
+    $self->_doUpdate('client_attr', \@IDs, \@attrData);
+
     return 1;
 }
 
@@ -1073,26 +1120,47 @@ sub changeGroup
 
 sub setGroupAttrs
 {
-    my $self    = shift;
+    my $self     = shift;
     my $groupID = shift;
-    my $attrs   = shift;
+    my $newAttrs = shift;
 
-    # TODO: improve this, as it is pretty slow!
-    # for now we take the simple path and remove all attributes ...
-    $self->_doDelete('group_attr', [ $groupID ], 'group_id');
+    # fetch info about existing attrs
+    my $sql = "SELECT * FROM group_attr WHERE group_id = $groupID";
+    my %oldAttrs = map { ($_->{name}, $_) } $self->_doSelect($sql);
 
-    # ... and (re-)insert the given ones
+    # determine the required actions ...
+    my @attrsToBeInserted
+        = grep { 
+            defined $newAttrs->{$_} && !exists $oldAttrs{$_}
+        } keys %$newAttrs;
+    my @attrsToBeDeleted = grep { !defined $newAttrs->{$_} } keys %oldAttrs;
+    my @attrsToBeUpdated
+        = grep { 
+            defined $newAttrs->{$_} && exists $oldAttrs{$_}
+            && ($oldAttrs{$_}->{value} || '') ne ($newAttrs->{$_} || '')
+        } keys %$newAttrs;
+
+    # ... insert the new ones ...
     my @attrData 
-        =    map {
+        =   map {
                 {
                     group_id => $groupID,
-                    name     => $_,
-                    value    => $attrs->{$_},
-                }            
+                    name      => $_,
+                    value     => $newAttrs->{$_},
+                }
             }
-            grep { defined $attrs->{$_} }
-            keys %$attrs;
+            @attrsToBeInserted;
     $self->_doInsert('group_attr', \@attrData);
+
+    # ... delete the old ones ...
+    my @oldIDs = map { $oldAttrs{$_}->{id} } @attrsToBeDeleted;
+    $self->_doDelete('group_attr', \@oldIDs);
+
+    # ... and update the changed ones ...
+    my @IDs   = map { $oldAttrs{$_}->{id} } @attrsToBeUpdated;
+    @attrData = map { { value => $newAttrs->{$_} } } @attrsToBeUpdated;
+    $self->_doUpdate('group_attr', \@IDs, \@attrData);
+
     return 1;
 }
 
