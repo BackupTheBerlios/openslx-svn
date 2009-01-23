@@ -47,6 +47,8 @@ use Term::ReadLine;
 
 use OpenSLX::Basics;
 
+# TODO: write POD for all these functions!
+
 sub copyFile
 {
     my $fileName       = shift || croak 'need to pass in a fileName!';
