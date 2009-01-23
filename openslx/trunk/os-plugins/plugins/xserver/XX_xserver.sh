@@ -73,29 +73,29 @@ EndSection
 Section "InputDevice"
   Identifier   "Generic Mouse"
   Driver       "mouse"
-  Option       "CorePointer"
 # Option       "Device"            "/dev/input/mice"
 # Option       "Protocol"          "ImPS/2"
 # Option       "ZAxisMapping"      "4 5"
 # Option       "Emulate3Buttons"   "true"
+  Option       "CorePointer"
 EndSection
 Section "InputDevice"
   Driver       "wacom"
-  Identifier   "stylus"
+  Identifier   "Stylus"
   Option       "Device"            "/dev/input/wacom"
   Option       "Type"              "stylus"
   Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
 EndSection
 Section "InputDevice"
   Driver       "wacom"
-  Identifier   "eraser"
+  Identifier   "Eraser"
   Option       "Device"            "/dev/input/wacom"
   Option       "Type"              "eraser"
   Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
 EndSection
 Section "InputDevice"
   Driver       "wacom"
-  Identifier   "cursor"
+  Identifier   "Cursor"
   Option       "Device"            "/dev/input/wacom"
   Option       "Type"              "cursor"
   Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
@@ -123,16 +123,33 @@ Section "ServerLayout"
   Screen       "Default Screen"
   InputDevice  "Generic Keyboard"
   InputDevice  "Generic Mouse"
-  InputDevice  "stylus"            "SendCoreEvents"
-  InputDevice  "cursor"            "SendCoreEvents"
-  InputDevice  "eraser"            "SendCoreEvents"
+  InputDevice  "Stylus"            "SendCoreEvents"
+  InputDevice  "Cursor"            "SendCoreEvents"
+  InputDevice  "Eraser"            "SendCoreEvents"
 EndSection
 Section "DRI"
   Mode    0666
 EndSection
 '   >> $xfc
     sed "s/vesa/$xmodule/;s/\"us\"/\"${XKEYBOARD}\"/" -i $xfc
-
+    # these directories might be distro specific
+    for file in /var/lib/xkb/compiled ; do
+      testmkd /mnt/${file}
+    done
+    # if a synaptic touchpad is present, add it to the device list
+    if grep -E "ynaptics" /etc/hwinfo.mouse ; then
+      sed -e '/\"CorePointer\"/ {
+a\
+EndSection\
+Section "InputDevice"\
+  Identifier   "Synaptics TP"\
+  Driver       "synaptics"\
+  Option       "Device"            "/dev/input/mice"\
+  Option       "SendCoreEvents"    "true"
+}' -e '/Device  "Generic Mouse"/ {
+a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
+}' -i $xfc
+    fi
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'xserver' os-plugin ...";
   fi
 fi
