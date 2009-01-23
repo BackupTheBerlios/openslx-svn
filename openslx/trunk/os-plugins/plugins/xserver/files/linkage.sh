@@ -72,6 +72,14 @@ divert() {
     # strip leading /usr/lib/ - name for /var/X11R6/lib
     stripstr ${rlib} ${RR}
     divname=${VAL}
+    rootname=${RR}
+    if [ "${VAL}" = "${rlib}" ]; then
+      # Nothing has been stripped - sounds like /usr/X11R6 etc.
+      stripstr ${rlib} "/usr/X11R6/lib"
+      divname=${VAL}
+      rootname="/usr/X11R6/lib"
+    fi 
+
 
     #echo "${lib} ${rlib} ${divname} after stripping"
 
@@ -80,11 +88,13 @@ divert() {
       # back up mesa file
       mvmesa ${rlib}
       # link to /var/X11R6/lib
-      ln -s ${LPATH}${divname} ${rlib}
+      ln -sf ${LPATH}${divname} ${rlib}
     else
       # it does not exist in /usr/lib/
-      # just link
-      ln -s ${lib} ${rlib}
+      # just create folder and link
+      stripbase ${divname}
+      testmkdir ${rootname}${VAL}
+      ln -sf ${lib} ${rlib}
     fi
 
   done
