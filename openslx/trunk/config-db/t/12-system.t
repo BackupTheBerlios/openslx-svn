@@ -61,43 +61,24 @@ my $fullSystem = {
     'export_id'           => 3,
     'comment'             => 'nuff said',
     'label'               => 'BlingBling System - really kuul!',
-    'hidden'              => '1',
     'attrs' => {
         'automnt_dir'       => 'a',
         'automnt_src'       => 'b',
         'country'           => 'c',
-        'dm_allow_shutdown' => 'd',
-        'hw_graphic'        => 'e',
-        'hw_monitor'        => 'f',
-        'hw_mouse'          => 'g',
+        'hidden'            => '1',
         'kernel_params'     => 'debug=3 console=ttyS1',
-        'late_dm'           => 'h',
-        'netbios_workgroup' => 'i',
-        'nis_domain'        => 'j',
-        'nis_servers'       => 'k',
         'ramfs_fsmods'      => 'l',
         'ramfs_miscmods'    => 'm',
         'ramfs_nicmods'     => 'n',
-        'sane_scanner'      => 'p',
         'scratch'           => 'q',
-        'slxgrp'            => 'r',
-        'start_alsasound'   => 's',
         'start_atd'         => 't',
         'start_cron'        => 'u',
         'start_dreshal'     => 'v',
         'start_ntp'         => 'w',
         'start_nfsv4'       => 'x',
-        'start_printer'     => 'y',
-        'start_samba'       => 'z',
         'start_snmp'        => 'A',
         'start_sshd'        => 'B',
-        'start_syslog'      => 'C',
-        'start_x'           => 'D',
-        'start_xdmcp'       => 'E',
-        'tex_enable'        => 'F',
         'timezone'          => 'G',
-        'tvout'             => 'H',
-        'vmware'            => 'I',
     },
 };
 ok(
@@ -117,43 +98,24 @@ is($system3->{kernel},              'vmlinuz-2.6.22.13-0.3-default',        'sys
 is($system3->{export_id},           '3',                     'system 3 - export_id');
 is($system3->{comment},             'nuff said',             'system 3 - comment');
 is($system3->{label},               'BlingBling System - really kuul!', 'system 3 - label');
-is($system3->{hidden},              '1',                     'system 3 - hidden');
 is($system3->{attrs}->{automnt_dir},       'a',              'system 3 - attr automnt_dir');
 is($system3->{attrs}->{automnt_src},       'b',              'system 3 - attr automnt_src');
 is($system3->{attrs}->{country},           'c',              'system 3 - attr country');
-is($system3->{attrs}->{dm_allow_shutdown}, 'd',              'system 3 - attr dm_allow_shutdown');
-is($system3->{attrs}->{hw_graphic},        'e',              'system 3 - attr hw_graphic');
-is($system3->{attrs}->{hw_monitor},        'f',              'system 3 - attr hw_monitor');
-is($system3->{attrs}->{hw_mouse},          'g',              'system 3 - attr hw_mouse');
+is($system3->{attrs}->{hidden},            '1',              'system 3 - attr hidden');
 is($system3->{attrs}->{kernel_params},     'debug=3 console=ttyS1', 'system 3 - attr kernel_params');
-is($system3->{attrs}->{late_dm},           'h',              'system 3 - attr late_dm');
-is($system3->{attrs}->{netbios_workgroup}, 'i',              'system 3 - attr netbios_workgroup');
-is($system3->{attrs}->{nis_domain},        'j',              'system 3 - attr nis_domain');
-is($system3->{attrs}->{nis_servers},       'k',              'system 3 - attr nis_servers');
 is($system3->{attrs}->{ramfs_fsmods},      'l',              'system 3 - attr ramfs_fsmods');
 is($system3->{attrs}->{ramfs_miscmods},    'm',              'system 3 - attr ramfs_miscmods');
 is($system3->{attrs}->{ramfs_nicmods},     'n',              'system 3 - attr ramfs_nicmods');
-is($system3->{attrs}->{sane_scanner},      'p',              'system 3 - attr sane_scanner');
 is($system3->{attrs}->{scratch},           'q',              'system 3 - attr scratch');
-is($system3->{attrs}->{slxgrp},            'r',              'system 3 - attr slxgrp');
-is($system3->{attrs}->{start_alsasound},   's',              'system 3 - attr start_alsasound');
 is($system3->{attrs}->{start_atd},         't',              'system 3 - attr start_atd');
 is($system3->{attrs}->{start_cron},        'u',              'system 3 - attr start_cron');
 is($system3->{attrs}->{start_dreshal},     'v',              'system 3 - attr start_dreshal');
 is($system3->{attrs}->{start_ntp},         'w',              'system 3 - attr start_ftp');
 is($system3->{attrs}->{start_nfsv4},       'x',              'system 3 - attr start_nfsv4');
-is($system3->{attrs}->{start_printer},     'y',              'system 3 - attr start_printer');
-is($system3->{attrs}->{start_samba},       'z',              'system 3 - attr start_samba');
 is($system3->{attrs}->{start_snmp},        'A',              'system 3 - attr start_snmp');
 is($system3->{attrs}->{start_sshd},        'B',              'system 3 - attr start_sshd');
-is($system3->{attrs}->{start_syslog},      'C',              'system 3 - attr start_syslog');
-is($system3->{attrs}->{start_x},           'D',              'system 3 - attr start_x');
-is($system3->{attrs}->{start_xdmcp},       'E',              'system 3 - attr start_xdmcp');
-is($system3->{attrs}->{tex_enable},        'F',              'system 3 - attr tex_enable');
 is($system3->{attrs}->{timezone},          'G',              'system 3 - attr timezone');
-is($system3->{attrs}->{tvout},             'H',              'system 3 - attr tvout');
-is($system3->{attrs}->{vmware},            'I',              'system 3 - attr vmware');
-is(keys %{$system3->{attrs}},              34,               'system 3 - attribute count');
+is(keys %{$system3->{attrs}},              17,               'system 3 - attribute count');
 
 # fetch system 2 by a filter on id and check all values
 ok(
@@ -178,9 +140,7 @@ is($system1->{export_id},     '1',       'system 1 - export_id');
 is($system1->{kernel},        'vmlinuz', 'system 1 - kernel');
 is($system1->{comment},       '',        'system 1 - comment');
 is($system1->{label},         'sys-1',   'system 1 - label');
-is($system1->{hidden},        undef,     'system 1 - hidden');
 is(keys %{$system1->{attrs}}, 3,         'system 1 - attribute count');
-is($system1->{attrs}->{kernel_params},  undef,                   'system 1 - attr kernel_params');
 is($system1->{attrs}->{ramfs_fsmods},   'squashfs',              'system 1 - attr ramfs_fsmods');
 is($system1->{attrs}->{ramfs_nicmods},  'e1000 forcedeth r8169', 'system 1 - attr ramfs_nicmods');
 is($system1->{attrs}->{start_sshd},     'yes',                   'system 1 - attr start_sshd');
@@ -213,17 +173,6 @@ is(@systems, 4, 'should have got all four systems');
 ok(
     my @systems1And2 = $configDB->fetchSystemByFilter({ export_id => '1' }), 
     'fetch systems 1 & 2 by filter on export_id'
-);
-is(@systems1And2, 2, 'should have got 2 systems');
-# now sort by ID and check if we have really got 1 and 2
-@systems1And2 = sort { $a->{id} cmp $b->{id} } @systems1And2;
-is($systems1And2[0]->{id}, 1, 'first id should be 1');
-is($systems1And2[1]->{id}, 2, 'second id should be 2');
-
-# fetch systems 1 & 2 by filter on hidden being undef'd
-ok(
-    @systems1And2 = $configDB->fetchSystemByFilter({ hidden => undef }), 
-    'fetch systems 1 & 2 by filter on hidden being undefined'
 );
 is(@systems1And2, 2, 'should have got 2 systems');
 # now sort by ID and check if we have really got 1 and 2
@@ -276,7 +225,7 @@ is($system1Only[0]->{id}, 1, 'first id should be 1');
 ok(
     @system1Only = $configDB->fetchSystemByFilter( {
         export_id => 1,
-        hidden    => undef,
+        comment   => '',
     }, 'id', {
         ramfs_nicmods => 'e1000 forcedeth r8169',
         slxgrp        => undef,
@@ -319,9 +268,9 @@ is(
 # fetch systems 1 & 2 by filter on attribute start_samba not existing
 ok(
     @systems1And2 = $configDB->fetchSystemByFilter( {}, undef, {
-        start_samba => undef,
+        start_snmp => undef,
     } ), 
-    'fetch systems 1 & 2 by filter on attribute start_samba not existing'
+    'fetch systems 1 & 2 by filter on attribute start_snmp not existing'
 );
 is(@systems1And2, 2, 'should have got 2 systems');
 # now sort by ID and check if we have really got 1 and 2
