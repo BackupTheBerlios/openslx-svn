@@ -5,6 +5,32 @@ VM Chooser Helper Program
 This is the program used by the vmchooser-plugin, which
 is part of the openslx-system.
 
+
+
+==================================
+FAQ
+==================================
+
+What does it do?
+ It handles xml-files for the virtual-machines plugins 
+ or linux sessions after the login-screen.
+ If chosen, it starts the proper virtualizer script or the linux session
+ as a background process and terminates itself.
+
+How can I install it?
+ Type "make install" in the vmchooser Folder and it gets installed
+ in the right folder (if you have the whole svn structure locally).
+ Then you have to install the "vmchooser"-plugin to your VendorOS.
+
+What command-line parameters are available?
+ "-p|--path=" In this (abolute) path are your xml-files for the virtualizer-plugin
+ "-l|--lpath=" In this (absolute) path are your linux sessions
+ "-g|--group=" Show only entries valid for this group
+ "-h|--help" Show help
+
+==================================
+
+
 You just need to compile this, if you have local changes.
 The most recent svn version is also included in binary format 
 in the main folder of this openslx-distribution.

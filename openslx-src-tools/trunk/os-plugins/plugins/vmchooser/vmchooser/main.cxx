@@ -66,10 +66,10 @@ int main(int argc, char** argv) {
   
   /** SLX GROUP */
   if(opt->getValue('g')!=NULL) {
-    xmlpath = opt->getValue('g');
+    slxgroup = opt->getValue('g');
   }
   if(opt->getValue("group")!= NULL) {
-    xmlpath = opt->getValue("group");
+    slxgroup = opt->getValue("group");
   }
   if (slxgroup == NULL) {
     slxgroup = "default";
