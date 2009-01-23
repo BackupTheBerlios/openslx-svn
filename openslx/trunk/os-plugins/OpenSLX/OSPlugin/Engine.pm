@@ -530,7 +530,10 @@ sub _loadPlugin
     
     my $pluginModule = "OpenSLX::OSPlugin::$self->{'plugin-name'}";
     my $plugin = instantiateClass(
-        $pluginModule, { pathToClass => $self->{'plugin-path'} }
+        $pluginModule, { 
+            acceptMissing => 1,
+            pathToClass   => $self->{'plugin-path'},
+        }
     );
     return if !$plugin;
 

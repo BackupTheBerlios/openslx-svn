@@ -536,8 +536,11 @@ sub findProblematicValues
         next if !defined $value;
 
         # check the value against the regex of the attribute (if any)
-        my $attrInfo = $AttributeInfo{$key}
-            || die _tr('attribute "%s" is unknown!', $key);
+        my $attrInfo = $AttributeInfo{$key};
+        if (!$attrInfo) {
+            push @problems, _tr('attribute "%s" is unknown!', $key);
+            next;
+        }
         my $regex = $attrInfo->{content_regex};
         if ($regex && $value !~ $regex) {
             push @problems, _tr(
@@ -557,8 +560,7 @@ sub findProblematicValues
             vlog 2, "checking attrs of plugin: $pluginName\n";
             # create & start OSPlugin-engine for vendor-OS and current plugin
             my $engine = OpenSLX::OSPlugin::Engine->new;
-            $engine->initialize($pluginName, $vendorOSName);
-            if (!$engine->{'plugin-path'}) {
+            if (!$engine->initialize($pluginName, $vendorOSName)) {
                 warn _tr(
                     'unable to create engine for plugin "%s"!', $pluginName
                 );
