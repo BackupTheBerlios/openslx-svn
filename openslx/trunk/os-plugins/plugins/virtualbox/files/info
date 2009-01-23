@@ -1,0 +1,2 @@
+# register disk rw saved
+VBoxManage registerimage disk <filename> -type immutable
