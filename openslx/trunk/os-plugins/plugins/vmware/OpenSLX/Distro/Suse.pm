@@ -146,7 +146,8 @@ sub fillRunlevelScript
           #  echo -n "Say something useful here ..."
           #;;
           restart)
-            "\$0" stop && "\$0" start
+            "\$0" stop
+            "\$0" start
           ;;
           *)
             echo "Usage: `basename "\$0"` {start|stop|restart}"
