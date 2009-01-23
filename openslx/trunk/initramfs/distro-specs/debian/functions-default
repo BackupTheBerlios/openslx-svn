@@ -70,7 +70,7 @@ initial_boot () {
   # boot.slx is a special runlevel script generated within initialramfs which
   # should be executed before the normal runlevel scripts. Proper shutdown is
   # not needed!?
-  for i in boot.slx mountkernfs.sh mountvirtfs udev procps.sh bootlogd \
+  for i in mountkernfs.sh mountvirtfs boot.slx udev procps.sh bootlogd \
       $D_SPLASHY keymap.sh hwclock.sh sudo dbus-1; do
     count=$(($count + 1))
     [ $DEBUGLEVEL -ge 2 ] && echo "boot-runlevelscript $i"

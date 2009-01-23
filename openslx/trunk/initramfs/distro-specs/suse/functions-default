@@ -328,7 +328,7 @@ local count=10
 # boot.slx is a special runlevel script generated within initialramfs which
 # should be executed before the normal runlevel scripts. Proper shutdown is
 # not needed!?
-for i in boot.slx boot.udev boot.proc boot.klog boot.loadmodules boot.clock \
+for i in boot.udev boot.proc boot.klog boot.loadmodules boot.slx boot.clock \
 boot.sysctl boot.ipconfig boot.swap $D_SPLASHY; do
   count=$(($count + 1))
   [ $DEBUGLEVEL -ge 2 ] && echo "boot-runlevelscript $i"

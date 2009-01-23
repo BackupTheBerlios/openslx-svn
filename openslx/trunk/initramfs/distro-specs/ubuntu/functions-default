@@ -29,11 +29,9 @@ D_DIRINBINDMNT="/var/run /var/log /var/tmp /var/lib/gdm"
 D_RODIRSINRW="/etc/X11/xkb /var/lib/gconf /var/lib/dpkg /var/lib/aspell \
 /var/lib/pango /var/lib/defoma /var/cache/fontconfig"
 #D_RWDIRSINRO="/var/lib/gdm"
-D_DIRINDXS="/var/X11R6/compose-cache \
-/var/run/sysconfig/tmp /var/adm /var/lib/rpm /var/lib/nobody \
-/var/lib/pam_devperm /var/lib/bluetooth \
-/var/lib/texmf /var/lib/nfs/sm \
-/var/lib/misc /var/lib/acpi /var/spool/cron \
+D_DIRINDXS="/var/X11R6/compose-cache /var/run/sysconfig/tmp /var/adm \
+/var/lib/nobody /var/lib/pam_devperm /var/lib/bluetooth /var/lib/texmf \
+/var/lib/nfs/sm /var/lib/misc /var/lib/acpi /var/spool/cron \
 /var/lock/subsys/sysconfig"
 
 # empty functions are defined at the beginning of /etc/functions
@@ -77,7 +75,7 @@ local count=10
 # boot.slx is a special runlevel script generated within initialramfs which
 # should be executed before the normal runlevel scripts. Proper shutdown is
 # not needed!?
-for i in boot.slx mountkernfs.sh keyboard-setup mountdevsubfs.sh procps.sh \
+for i in mountkernfs.sh mountdevsubfs.sh boot.slx keyboard-setup procps \
 bootlogd hwclock.sh sudo console-setup $D_SPLASHY; do
   count=$(($count + 1))
   [ $DEBUGLEVEL -ge 2 ] && echo "boot-runlevelscript $i"
