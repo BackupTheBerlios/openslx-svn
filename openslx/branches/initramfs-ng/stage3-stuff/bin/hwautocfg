@@ -11,7 +11,7 @@
 # General information about OpenSLX can be found under http://openslx.org
 #
 # Universal (distro independent) hardware autoconfiguration script for 
-# OpenSLX linux stateless clients, using hwconfig from knoppix as base tool 
+# OpenSLX linux stateless clients, using SuSE hwinfo for configuration
 
 #############################################################################
 # pre part, load USB modules and start hardware detection pci

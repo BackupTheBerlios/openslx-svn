@@ -298,10 +298,12 @@ local cfgfile
 if [ "x$filepath" != "x" ] ; then
   cfgfile=${filepath}
   [ "x$fileserv" = "x" ] && fileserv=$(checkip ${serverip})
+  [ $DEBUGLEVEL -ge 1 ] && echo "fileget -  fileprot:$fileprot, filepath:\
+$filepath, fileserv:$fileserv" >>$LOGFILE
   case "$fileprot" in
    ftp|http)
      wget $fileprot://$fileserv/$cfgfile -O /tmp/$(basename $cfgfile) \
-       2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
+       2>>$LOGFILE && { unpack /tmp/$(basename $cfgfile) && break; }
    ;;
    file)
      local ldev=$fileserv
@@ -315,7 +317,7 @@ if [ "x$filepath" != "x" ] ; then
    ;;
    *)
      tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv  \
-       && unpack /tmp/$(basename $cfgfile) 2>/dev/null
+       && unpack /tmp/$(basename $cfgfile) 2>>$LOGFILE
    ;;
    esac
 else
@@ -324,6 +326,8 @@ else
   # restricted to)
   filepath="client-config"
   [ "x$fileserv" = "x" ] && fileserv=$(checkip ${serverip})
+  [ $DEBUGLEVEL -ge 1 ] && echo "fileget - fileprot:$fileprot, filepath:\
+$filepath, fileserv:$fileserv" >>$LOGFILE
   # try to get configuration files successively; start with distro client
   # and try last distro default ...
   echo -e "\n## Configuration via later fileget: Hierarchy is distro client \
@@ -334,17 +338,18 @@ and as last\n# distro/default" >>/tmp/confviafile
     case "$fileprot" in
       ftp|http)
         wget $fileprot://$fileserv/$cfgfile -O /tmp/$(basename $cfgfile) \
-          2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
+          2>>$LOGFILE && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
       tftp)
         tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv \
-          2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
+          2>>$LOGFILE && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
     esac
   done
 fi
 cat /initramfs/machine-setup >>/tmp/confviafile
 echo "fileget via $fileprot from $fileserv/$cfgfile finished" >/tmp/file-done
+[ $DEBUGLEVEL -ge 1 ] && echo "fileget from $cfgfile finished" >>$LOGFILE
 }
 
 #############################################################################

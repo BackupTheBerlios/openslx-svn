@@ -44,6 +44,10 @@ config_distro () {
   for dir in rc0.d rc1.d rc2.d rc3.d rc4.d rc5.d rc6.d boot.d ; do
     rm -rf /mnt/etc/init.d/${dir}/*
   done
+  # link the additional key setup (notbook special keys)
+  # grep -E "otebook" /etc/hwinfo.bios &&
+  [ -e /mnt/etc/init.d/hotkey-setup ] && rllinker "hotkey-setup" 25 25
+
   # no need to run start scripts in parallel
   # enable magic sysrequest for the clients
   sed -e "1i# /etc/sysconfig/sysctl - modified by $0 version $version" \
@@ -326,7 +330,7 @@ local count=10
 for i in boot.slx boot.udev boot.proc boot.klog boot.loadmodules boot.clock \
 boot.sysctl boot.ipconfig boot.swap $D_SPLASHY; do
   count=$(($count + 1))
-  echo "boot-runlevelscript $i"
+  [ $DEBUGLEVEL -ge 2 ] && echo "boot-runlevelscript $i"
   ln -sf /etc/init.d/$i /mnt/etc/init.d/boot.d/S${count}$i
 done
 }

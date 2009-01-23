@@ -27,7 +27,7 @@ mount -n -t tmpfs -o 'size=25%,mode=0755' initramfsdevs ${devdir}
 [ ! -f /proc/cpuinfo ] && mount -n -t proc proc /proc
 [ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
 
-# create basic device files an directories in dev (for most hardware related
+# create basic device files an directories (in dev - for most hardware related
 # devices mdev should handle that)
 for i in "/dev/mem c 1 1" "/dev/null c 1 3" "/dev/zero c 1 5" \
          "/dev/urandom c 1 9" "/dev/kmsg c 1 11" "/dev/tty0 c 4 0" \
@@ -40,7 +40,7 @@ for i in "/dev/mem c 1 1" "/dev/null c 1 3" "/dev/zero c 1 5" \
   mknod $i
 done
 mkdir -p ${devdir}/pts ${devdir}/shm ${devdir}/.udevdb ${devdir}/.udev \
-  ${devdir}/.initramfs
+  ${devdir}/.initramfs /var/log
 
 # start device auto discovery/setup service of busybox
 echo >/etc/mdev.conf
@@ -326,6 +326,7 @@ if [ "${DEBUGLEVEL}" -gt 0 -a "${DEBUGLEVEL}" != 8 ] ; then
   # if LOGFILE should be used within initial ramdisk add '/mnt' in front
   # of the variable
   LOGFILE="/var/log/slx-boot.log"
+  echo "Starting OpenSLX client boot logging at $(date)" >$LOGFILE
   echo "1 4 1 7" >/proc/sys/kernel/printk
   [ "${DEBUGLEVEL}" -ge 2 ] && MODPRV="-v"
   [ "${DEBUGLEVEL}" -gt 3 -a "${DEBUGLEVEL}" -le 10 ] && {

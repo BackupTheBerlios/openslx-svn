@@ -80,7 +80,7 @@ local count=10
 for i in boot.slx mountkernfs.sh keyboard-setup mountdevsubfs.sh procps.sh \
 bootlogd hwclock.sh sudo console-setup $D_SPLASHY; do
   count=$(($count + 1))
-  echo "boot-runlevelscript $i"
+  [ $DEBUGLEVEL -ge 2 ] && echo "boot-runlevelscript $i"
   ln -sf /etc/init.d/$i /mnt/etc/rcS.d/S${count}$i
 done
 }
