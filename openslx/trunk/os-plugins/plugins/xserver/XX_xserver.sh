@@ -176,7 +176,7 @@ Section "ServerLayout"
 EndSection
 Section "DRI"
   Mode    0666
-EndSection'   >> $xfc
+EndSection' >> $xfc
     # if no module was detected, stick to vesa module
     if [ -n "$xmodule" ] ; then
       sed "s/vesa/$xmodule/;s/\"us\"/\"${XKEYBOARD}\"/" -i $xfc
@@ -255,6 +255,13 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
 EndSection
 Section "InputDevice"
   Driver       "wacom"
+  Identifier   "Pad"
+  Option       "Device"            "/dev/input/wacom"
+  Option       "Type"              "pad"
+  Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
+EndSection
+Section "InputDevice"
+  Driver       "wacom"
   Identifier   "Eraser"
   Option       "Device"            "/dev/input/wacom"
   Option       "Type"              "eraser"
@@ -267,8 +274,9 @@ Section "InputDevice"
   Option       "Type"              "cursor"
   Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
 EndSection' >> ${xfc}
-      sed -e "s,/dev/in.*,/dev/${wacomdev}," \
+      sed -e "s,/dev/input/wacom,/dev/${wacomdev}," \
           -e '/e  \"Generic Mouse\"/a\\ \ InputDevice  "Stylus"            "SendCoreEvents"' \
+          -e '/e  \"Generic Mouse\"/a\\ \ InputDevice  "Pad"               "SendCoreEvents"' \
           -e '/e  \"Generic Mouse\"/a\\ \ InputDevice  "Cursor"            "SendCoreEvents"' \
           -e '/e  \"Generic Mouse\"/a\\ \ InputDevice  "Eraser"            "SendCoreEvents"' \
           -i ${xfc}
