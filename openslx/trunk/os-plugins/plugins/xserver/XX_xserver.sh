@@ -85,10 +85,16 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
       xmodule="nvidia"
       PLUGIN_PATH="/mnt${PLUGIN_ROOTFS}"
 
-      # sometimes the kernel module needs agpgart
-      modprobe agpgart
-      # insert kernel driver
-      chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/nvidia.ko
+      # if we can't find the nongpl kernel module, use gpl xorg
+      # nvidia driver
+      if [ -e ${PLUGIN_ROOTFS}/modules/nvidia.ko ]; then
+        # sometimes the kernel module needs agpgart
+        modprobe agpgart
+        # insert kernel driver
+        chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/nvidia.ko
+      else
+         xmodule="nv"
+      fi
 
     fi
 
