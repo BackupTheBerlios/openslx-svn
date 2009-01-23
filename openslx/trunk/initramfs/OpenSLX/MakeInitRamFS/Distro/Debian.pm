@@ -39,8 +39,6 @@ sub applyChanges
 
     $engine->_addFilteredKernelModules( qw( af_packet hid unix ));
 
-    $engine->_addRequiredLib('/lib/libnss_compat.so.2');
-
     return;
 }
 
