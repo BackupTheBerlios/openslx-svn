@@ -5,13 +5,9 @@ if grep -E "(VESA|VGA)" /proc/fb > /dev/null 2>&1 \
     > /dev/null 2>&1 \
   && [ $DEBUGLEVEL -eq 0 ] \
   && [ -e /bin/splashy ] ; then
-    export no_bootsplash=0
-else
-  export no_bootsplash=1
-fi
-
-if [ ${no_bootsplash} -eq 0 ]; then
-  /bin/splashy boot 2>/dev/null
-  # add splashy.stop runlevel script
-  D_SPLASHY=splashy.stop
+    echo "we have bootsplash" >/tmp/bootsplash
+    /bin/splashy boot 2>/dev/null
+    # add splashy.stop runlevel script (does not work any more here,
+    # temporarily moved to init awaiting a proper solution)
+    #D_SPLASHY=splashy.stop
 fi
