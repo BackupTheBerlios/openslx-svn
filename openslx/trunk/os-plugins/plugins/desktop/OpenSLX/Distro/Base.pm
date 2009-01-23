@@ -147,7 +147,7 @@ sub setupGDMScript
 
         mkdir -p $paths 2>/dev/null
 
-        cp /mnt/$repoPath/gdm/\$desktop_mode/gdm.conf /mnt$configFile
+        cp /mnt$repoPath/gdm/\$desktop_mode/gdm.conf /mnt$configFile
 
         # activate theme only if the corresponding xml file is found
         # (otherwise fall back to default theme of vendor-OS)
@@ -293,7 +293,7 @@ sub setupKDMScript
 
         mkdir -p $paths 2>/dev/null
 
-        cp /mnt/$repoPath/kdm/\$desktop_mode/kdmrc /mnt$configFile
+        cp /mnt$repoPath/kdm/\$desktop_mode/kdmrc /mnt$configFile
 
         # activate theme only if the corresponding xml file is found
         # (otherwise fall back to default theme of vendor-OS)

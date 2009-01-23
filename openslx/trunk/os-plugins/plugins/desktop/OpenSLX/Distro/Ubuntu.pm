@@ -48,9 +48,23 @@ sub setupGDMScript
     $script .= unshiftHereDoc(<<'    End-of-Here');
         rllinker gdm 1 1
         echo '/usr/sbin/gdm' > /mnt/etc/X11/default-display-manager
+        chroot /mnt update-alternatives --set x-window-manager /usr/bin/metacity
+        chroot /mnt update-alternatives --set x-session-manager \
+          /usr/bin/gnome-session
     End-of-Here
 
     return $script;
+}
+
+sub KDMPathInfo
+{
+    my $self = shift;
+    
+    my $pathInfo = $self->SUPER::KDMPathInfo();
+    
+    $pathInfo->{config} = '/etc/kde3/kdm/kdmrc';
+
+    return $pathInfo;
 }
 
 sub setupKDMScript
@@ -63,6 +77,9 @@ sub setupKDMScript
     $script .= unshiftHereDoc(<<'    End-of-Here');
         rllinker kdm 1 1
         echo '/usr/bin/kdm' > /mnt/etc/X11/default-display-manager
+        chroot /mnt update-alternatives --set x-window-manager /usr/bin/kwin
+        chroot /mnt update-alternatives --set x-session-manager \
+          /usr/bin/startkde
     End-of-Here
 
     return $script;
