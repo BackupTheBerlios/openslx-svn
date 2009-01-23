@@ -26,6 +26,25 @@ use OpenSLX::Basics;
 use OpenSLX::MakeInitRamFS::Engine;
 use OpenSLX::Utils;
 
+sub initialize
+{
+    my $self   = shift;
+    my $params = shift;
+    
+    return if !$self->SUPER::initialize($params);
+
+    $self->{'original-path'} = "$openslxConfig{'public-path'}/tftpboot";
+    $self->{'target-path'}   = "$openslxConfig{'public-path'}/tftpboot.new";
+
+    if (!$self->{'dry-run'}) {
+        mkpath([$self->{'original-path'}]);
+        rmtree($self->{'target-path'});
+        mkpath("$self->{'target-path'}/client-config");
+    }
+
+    return 1;
+}
+
 sub writeBootloaderMenuFor
 {
     my $self             = shift;

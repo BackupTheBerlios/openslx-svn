@@ -162,14 +162,7 @@ if (!$option{dryRun}) {
     }
 }
 
-my $tftpbootPath = "$openslxConfig{'public-path'}/tftpboot";
-my $tftpbuildPath = "$openslxConfig{'public-path'}/tftpboot.new";
-if (!$option{dryRun}) {
-    mkpath([$tftpbootPath]);
-    mkpath("$tftpbuildPath/client-config");
-}
-
-my $rsyncDeleteClause;
+my $deleteInFinalize = 0;
 
 my @demuxableSystems
     = grep { $_->{name} ne '<<<default>>>' } $openslxDB->fetchSystemByFilter();
@@ -191,13 +184,11 @@ if (@ARGV) {
         }
         push @targetSystems, $system;
     }
-    $rsyncDeleteClause = '';
 }
 else {
     # create initramfs for all systems
     @targetSystems = @demuxableSystems;
-    # let rsync delete old files
-    $rsyncDeleteClause = '--delete';
+    $deleteInFinalize = 1;
 }
 
 writeConfigurations();
@@ -207,22 +198,18 @@ my $errCount = $systemErrCount ? $systemErrCount : 'no';
 my $statusString 
     = $systemErrCount ? "$errCount system(s) had errors" : 'all systems ok';
 print "\n", unshiftHereDoc(<<"End-of-Here");
-    $wr $systemConfCount system- and $clientSystemConfCount client-specific configurations to $tftpbootPath/client-config
+    $wr $systemConfCount system-specific and $clientSystemConfCount client-specific configurations
     $initramfsCount initramfs were created
     $statusString
 End-of-Here
 
 $openslxDB->disconnect();
 
-if (!$option{dryRun}) {
-    rmtree([$tempPath]);
-    my $rsyncCmd = "rsync -a $rsyncDeleteClause --delay-updates $tftpbuildPath/ $tftpbootPath/";
-    slxsystem($rsyncCmd) == 0
-        or die _tr(
-            "unable to rsync files from '%s' to '%s'! (%s)", 
-            $tftpbuildPath, $tftpbootPath, $!
-        );
-    rmtree([$tftpbuildPath]);
+rmtree([$tempPath]);
+
+# allow all boot-environments to clean up and active the new configuration
+foreach my $bootEnv (values %bootEnvMap) {
+    $bootEnv->finalize($deleteInFinalize);
 }
 
 exit;
@@ -317,7 +304,7 @@ sub copyExternalSystemConfig
     my $targetPath = shift;
     my $clientName = shift;    # optional
 
-    if ($targetPath !~ m[$tempPath]) {
+    if ($targetPath !~ m[^$tempPath]) {
         # bail if target-path isn't within temp folder, as we do not dare
         # executing 'rm -rf' in that case!
         die _tr("system-error: illegal target-path <%s>!", $targetPath);
@@ -370,13 +357,14 @@ sub createTarOfPath
 
 sub bootEnvironmentForType
 {
-    my $bootType = uc(shift || 'pxe');
+    my $bootType = shift || 'pxe';
+    
+    $bootType =~ tr{[a-z]\-}{[A-Z]_};
 
     if (!$bootEnvMap{$bootType}) {
         my $bootEnv = instantiateClass("OpenSLX::BootEnvironment::$bootType");
         $bootEnv->initialize( {
-            'target-path' => $tftpbuildPath, 
-            'dry-run'     => $option{dryRun},
+            'dry-run' => $option{dryRun},
         } );
         $bootEnvMap{$bootType} = $bootEnv;
     }
@@ -410,32 +398,6 @@ sub writeBootloaderMenus
     return;
 }
 
-sub writeBootEnvironmentForSystem
-{
-    my $info      = shift;
-    my $buildPath = shift;
-    my $clients   = shift || [];
-
-    # handle all different kinds of "preboot-" environments (PXE, CD, grub, ...)
-    my %bootTypes;
-    foreach my $client (@$clients) {
-        my $type = $client->{boot_type} || 'pxe';
-        $bootTypes{$type}++;
-    }
-    foreach my $bootType (sort keys %bootTypes) {
-        vlog(0, _tr("copying kernel and creating initramfs for $bootType boot"));
-    
-        my $bootEnv = bootEnvironmentForType($bootType);
-        $bootEnv->writeFilesRequiredForBooting(
-            $info, $buildPath, $slxVersion
-        );
-
-        $initramfsCount++;
-    }
-
-    return;
-}
-
 sub writeDhcpConfig
 {
     vlog(0, _tr("sorry, exporting dhcp data is not implemented yet!"));
@@ -456,12 +418,13 @@ sub writeClientConfigurationsForSystem
     my $buildPath = shift;
     my $attrFile  = shift;
     my $clients   = shift || [];
+    my $bootEnvs  = shift || [];
 
     foreach my $client (@$clients) {
         next if $client->{name} eq '<<<default>>>';
             # skip default client, as it doesn't need any config-tgz
 
-        my $externalSystemID   = externalIDForSystem($info);
+        my $externalSystemID   = $info->{'external-id'};
         my $externalClientName = externalConfigNameForClient($client);
         my $clientConfigPath
             = "$clientConfigPath/$externalSystemID/$externalClientName";
@@ -493,12 +456,14 @@ sub writeClientConfigurationsForSystem
             );
             $clientSystemConfCount++;
 
-            # merge default, system and client configuration files into
-            # the system configuration for the current client:
+            # merge default, system and client configuration folders into
+            # a configuration folder specific to the current client:
             copyExternalSystemConfig(
                 $externalSystemID, $buildPath, $externalClientName
             );
 
+            # check attributes against illegal values and write them into
+            # a file if they're ok:
             my $attrProblems = OpenSLX::AttributeRoster->findProblematicValues(
                 $client->{attrs}, $info->{'vendor-os'}->{name}, 
                 $info->{'installed-plugins'}
@@ -508,19 +473,20 @@ sub writeClientConfigurationsForSystem
                 $complaint =~ s{^}{client $client->{name}: }gms;
                 warn $complaint;
             }
-
             writeAttributesToFile($client, $attrFile);
 
-            # create tar containing external system configuration
+            # create a tar containing the external configuration folder
             # and client attribute file, this time referring to the client
             # via its external ID (the PXE-style MAC), as the TGZ needs to
             # be accessed from the client-PC, which doesn't know about the
             # name it is referred to in the openslx-config-DB:
             my $externalClientID = externalIDForClient($client);
-            createTarOfPath(
-                $buildPath, "${externalClientID}.tgz",
-                "$tftpbuildPath/client-config/$info->{'external-id'}"
-            );
+            foreach my $bootEnv (@$bootEnvs) {
+                createTarOfPath(
+                    $buildPath, "${externalClientID}.tgz",
+                    "$bootEnv->{'target-path'}/client-config/$externalSystemID"
+                );
+            }
         }
     }
     return;
@@ -591,6 +557,40 @@ sub writePluginConfigurationsForSystem
     return;
 }
 
+sub createBootEnvironmentsForSystem
+{
+    my $info      = shift;
+    my $buildPath = shift;
+    my $attrFile  = shift;
+    my $clients   = shift || [];
+
+    my %bootTypes;
+    foreach my $client (@$clients) {
+        my $type = $client->{boot_type} || 'pxe';
+        $bootTypes{$type}++;
+    }
+    my @bootEnvs;
+    foreach my $bootType (sort keys %bootTypes) {
+        vlog(0, _tr("creating boot environment for $bootType"));
+    
+        my $bootEnv = bootEnvironmentForType($bootType);
+        push @bootEnvs, $bootEnv;
+        $bootEnv->writeFilesRequiredForBooting(
+            $info, $buildPath, $slxVersion
+        );
+        $initramfsCount++;
+
+        my $systemPath 
+            = "$bootEnv->{'target-path'}/client-config/$info->{'external-id'}";
+        createTarOfPath($buildPath, "default.tgz", $systemPath);
+    }
+    writeClientConfigurationsForSystem(
+        $info, $buildPath, $attrFile, $clients, \@bootEnvs
+    );
+
+    return;
+}
+
 sub writeSystemConfiguration
 {
     my $info           = shift;
@@ -636,15 +636,10 @@ sub writeSystemConfiguration
     
     writePluginConfigurationsForSystem($info, $buildPath);
 
-    my $systemPath = "$tftpbuildPath/client-config/$info->{'external-id'}";
-    createTarOfPath($buildPath, "default.tgz", $systemPath);
-
+    # create all required (pre-)boot-environments (PXE, CD, ...)
     my @clientIDs = $openslxDB->aggregatedClientIDsOfSystem($info);
     my @clients   = $openslxDB->fetchClientByID(\@clientIDs);
-
-    writeBootEnvironmentForSystem($info, $buildPath, \@clients);
-
-    writeClientConfigurationsForSystem($info, $buildPath, $attrFile, \@clients);
+    createBootEnvironmentsForSystem($info, $buildPath, $attrFile, \@clients);
 
     slxsystem("rm -rf $buildPath") unless $option{dryRun};
 

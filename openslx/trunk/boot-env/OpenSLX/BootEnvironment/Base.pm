@@ -18,6 +18,8 @@ use warnings;
 
 our $VERSION = 1.01;        # API-version . implementation-version
 
+use File::Path;
+
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB;
 
@@ -35,10 +37,36 @@ sub initialize
     my $self   = shift;
     my $params = shift;
 
-    $self->{'target-path'} = $params->{'target-path'};
-    $self->{'dry-run'}     = $params->{'dry-run'};
+    $self->{'dry-run'} = $params->{'dry-run'};
 
     return 1;
+}
+
+sub finalize
+{
+    my $self   = shift;
+    my $delete = shift;
+
+    return 1 if $self->{'dry-run'};
+    
+    my $rsyncDeleteClause = $delete ? '--delete' : '';
+    my $rsyncCmd 
+        = "rsync -a $rsyncDeleteClause --delay-updates $self->{'target-path'}/ $self->{'original-path'}/";
+    slxsystem($rsyncCmd) == 0
+        or die _tr(
+            "unable to rsync files from '%s' to '%s'! (%s)", 
+            $self->{'target-path'}, $self->{'original-path'}, $!
+        );
+    rmtree([$self->{'target-path'}]);
+
+    return 1;
+}
+
+sub targetPath
+{
+    my $self = shift;
+    
+    return $self->{'target-path'};
 }
 
 sub writeBootloaderMenuFor
