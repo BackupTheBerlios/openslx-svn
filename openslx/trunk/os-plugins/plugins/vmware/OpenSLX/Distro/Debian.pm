@@ -166,7 +166,7 @@ sub fillRunlevelScript
               vmware-tray vmnet-dhcpd 2>/dev/null
             # wait for shutting down of interfaces. vmnet needs kinda
             # long
-            usleep 500000
+            sleep 5
             unload_modules
             log_end_msg $?
           ;;

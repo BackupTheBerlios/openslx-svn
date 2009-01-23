@@ -174,7 +174,7 @@ sub fillRunlevelScript
             rc_reset
             # wait for shutting down of interfaces. vmnet needs kinda
             # long
-            usleep 500000
+            sleep 5
             unload_modules
             rc_status -v
           ;;
