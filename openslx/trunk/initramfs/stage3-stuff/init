@@ -875,10 +875,17 @@ else
     for plugin_starter in /etc/plugin-init.d/*.sh; do
       if [ -e $plugin_starter ]; then
         [ $DEBUGLEVEL -gt 0 ] \
-          && echo "Running plugin starter $plugin_starter ..."
+          && echo -n "Running plugin starter $plugin_starter ..."
         [ $DEBUGLEVEL -eq 15 ] \
           && sed '/^#!/ a\\set -x' -i $plugin_starter
-        . $plugin_starter >>/tmp/plugin_starter 2>&1
+          init-wrapper $plugin_starter >>/tmp/plugin_starter 2>&1
+          if [ $? -eq 0 ]; then
+            [ $DEBUGLEVEL -gt 0 ] \
+            && echo " ok"
+          else
+            [ $DEBUGLEVEL -gt 0 ] \
+            && echo " failed"
+          fi
       fi
     done
   fi
