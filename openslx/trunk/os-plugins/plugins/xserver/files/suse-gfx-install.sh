@@ -42,8 +42,7 @@ if [ "$1" = "nvidia" ]; then
       mv ./usr ..
 
       # TODO: matching kernel problem... our openslx system picks -bigsmp - unintentionally!
-      ${BUSYBOX} rpm2cpio
-      nvidia-gfxG01-kmp-bigsmp-173.14.12_2.6.18.8_0.10-0.1.i586.rpm | ${BUSYBOX} cpio -idv > /dev/null
+      ${BUSYBOX} rpm2cpio nvidia-gfxG01-kmp-bigsmp-173.14.12_2.6.18.8_0.10-0.1.i586.rpm | ${BUSYBOX} cpio -idv > /dev/null
       #${BUSYBOX} rpm2cpio nvidia-gfxG01-kmp-default-173.14.12_2.6.18.8_0.10-0.1.i586.rpm | ${BUSYBOX} cpio -idv
       #TODO: take care about the kernel issue. Find won't work with two equal kernelmodules in lib/...
       find lib/ -name "*.ko" -exec mv {} ../modules \;
