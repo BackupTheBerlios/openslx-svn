@@ -32,7 +32,7 @@ hwinfo --netcard --usb-ctrl | grep modprobe | grep -E "$nwcardlist|hcd" | \
   grep -v ehci | sed 's/.* Cmd: "//;s/"//' | sort -u >/etc/modprobe.base
 ash /etc/modprobe.base; mdev -s
 # optimization possible: exclude network and usb base drivers from the
-# following list
+# following list (bios detection for non-hwautocfg component)
 ( hwinfo --pci >/etc/hwinfo.data; hwinfo --bios >/etc/hwinfo.bios ) &
 return 0
 }
@@ -47,6 +47,10 @@ sed '/Driver Info #1/,/Config Status:/d' \
     | sort -u >/etc/modprobe.pci
 ash /etc/modprobe.pci
 mdev -s
+
+# bluetooth setup (start it later if present, depends on firmware availa-
+# bility, interpreted by servconfig)
+#( hwinfo --bluetooth >/etc/hwinfo.bt ) &
 
 # load harddisk driver and check for harddisk
 ( grep -E "IDE|SCSI" /etc/hwinfo.data >/dev/null 2>&1 && \
@@ -119,11 +123,6 @@ else
   echo "no disk found ( $(sysup) )" >/tmp/tmpready
 fi
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished hdd stuff at $(sysup)"
-
-# bluetooth setup
-( hwinfo --bluetooth | grep modprobe | sed 's/.* Cmd: "//;s/"//' | \
-    sort -u >/etc/modprobe.bt
-  ash /etc/modprobe.bt ) &
 
 # scanner setup (fixme: to be checked)
 hwinfo --scanner >/etc/hwinfo.scanner
