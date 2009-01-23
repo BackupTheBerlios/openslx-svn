@@ -261,7 +261,7 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       echo "vmplversion=2" > /mnt/etc/vmware/version
     fi
     if [ "${vmware_kind}" != "local" ]; then
-      version=$(strings /usr/lib/vmware/bin/vmplayer|head -1|cut -c 1)
+      version=$(strings /usr/lib/vmware/bin/vmplayer|head -n 1|cut -c 1)
       echo "vmplversion=${version}" > /mnt/etc/vmware/version
     fi
 
