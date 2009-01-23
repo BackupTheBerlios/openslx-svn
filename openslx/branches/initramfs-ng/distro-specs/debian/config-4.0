@@ -1,0 +1,32 @@
+# Copyright (c) 2007 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# Version specific general settings for Debian Edge (4.1)
+
+# D_SYSCONFDIR - system wide configuration settings - /etc/sysconfig in SuSE 
+# and RedHat, /etc/default in Debian and Ubuntu
+# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using 
+# bind mounts
+# D_DIRINBINDMNT - lists of directories to be created in bind mounted rw
+# part of the client filesystem
+# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# TempFS usage
+# D_DIRINDXS - directories in client filesystem which should be present 
+# anyhow
+# D_RCDIRS - runlevel directories relative to /etc
+# D_XF86CONFFILE - name and location of XFree/Xorg config file, e.g.
+# /etc/X11/xorg.conf or /etc/X11/XF86config, ...
+# D_XFONTPATH - path(es) where X11 fonts are installed (with trailing /*)
+# D_DEFAULTCOUNTRY - localization (see common functions)
+# D_HWMODTOIGNORE - hardware modules which should not tried to load (because
+# already in kernel, nonexistent, ...)
+
+D_RODIRSINRW="etc/gconf etc/X11/xkb /var/cache/fontconfig /var/lib/texmf \
+/var/lib/dpkg"
