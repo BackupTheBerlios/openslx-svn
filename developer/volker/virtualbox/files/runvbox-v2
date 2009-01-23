@@ -17,10 +17,13 @@
 ##
 ################################################################################
 xml=$1
+# todo: change it! We need to mount it like vmware, but it could be the
+# same
+imgpath="/var/lib/vmware"
 
 # file name of the image
-imagename=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
-imagename=~/vbox/testhdd.vdi
+imagename="${imgpath}/$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')"
+imagename="${imgpath}/vbox-winxppro_20gb.vdi"
 
 # define name for VirtualBox window. no utf8, perhaps we don't need it any
 # more. else change the next two lines
@@ -34,10 +37,14 @@ imagename=~/vbox/testhdd.vdi
 
 # Definition of the network kind. we should only need: nat, hostif
 network_kind=$(grep -i "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }')
-network_kind=nat
+network_kind="nat"
 # compatibility to vmware xml's
 if [ ${network_kind} = "bridge" ]; then
   network_kind="hostif"
+else
+  # wrong configuration or nat, hostonly currently not supported, do we
+  # really need it?
+  network_kind="nat"
 fi
 
 ################################################################################
@@ -59,7 +66,7 @@ VBoxManage registerimage disk ${imagename} -type immutable
 diskuid="$(VBoxManage showvdiinfo ${imagename} |grep UUID|awk '{ print $2; }')"
 
 # Create Image and register it, so we are able to modify and start it
-VBoxManage createvm -name "${ID}" -uuid ${diskuid} -register
+VBoxManage createvm -name "${ID}" -register
 
 
 ################################################################################
@@ -68,13 +75,17 @@ VBoxManage createvm -name "${ID}" -uuid ${diskuid} -register
 ##
 ################################################################################
 
+# Add harddisk
+VBoxManage modifyvm "${ID}" -hda ${diskuid}
+
 ## check if we have enough free memory
 # get memory in MB
 totalmem=$(expr $(grep -i "memtotal" /proc/meminfo | awk '{print $2}') / 1024)
 # calculate memory for virtualbox
-mem=$(expr ${totalmem} / 100 \* ${permem} / 4 \* 4)
+mem=$(expr ${totalmem} / 100 \* 66 / 4 \* 4)
 # check memory range
 memtest=${totalmem}-128
+
 if [ "${mem}" -lt "128" ] || [ "${mem}" -gt "${totalmem}" ]; then
   echo "\n\n"
   echo "\tYour memory is out of range: ${mem} MB."
@@ -86,7 +97,7 @@ VBoxManage modifyvm "${ID}" -memory ${mem}
 
 ## look for cdrom, dvd and add them to the vm config file
 for cdrs in /dev/cdrom*; do
-  if [ -L $cdrs ]; then
+  if [ -L ${cdrs} ]; then
     VBoxManage modifyvm "${ID}" -dvd host:${cdrs} 
   fi
 done
@@ -100,7 +111,7 @@ VBoxManage modifyvm "${ID}" -boot1 disk
 # Network settings
 VBoxManage modifyvm "${ID}" -nic1 ${network_kind}
 #VBoxManage modifyvm "${ID}" -nictype1 Am79C970a|aM79c973|82540em
-if [ ${network_kind} = "hostif"]; then
+if [ "${network_kind}" = "hostif" ]; then
   VBoxManage modifyvm "${ID}" -hostifdev1 eth0
 fi
 # Per default each virtual network card is assigned a random address by
