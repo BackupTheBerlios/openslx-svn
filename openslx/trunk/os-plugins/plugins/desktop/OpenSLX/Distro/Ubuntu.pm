@@ -62,7 +62,7 @@ sub setupKDMScript
     
     $script .= unshiftHereDoc(<<'    End-of-Here');
         rllinker kdm 1 1
-        echo '/usr/sbin/kdm' > /mnt/etc/X11/default-display-manager
+        echo '/usr/bin/kdm' > /mnt/etc/X11/default-display-manager
     End-of-Here
 
     return $script;
