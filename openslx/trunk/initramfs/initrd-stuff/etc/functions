@@ -396,7 +396,7 @@ echo "fileget via $fileprot from $fileserv/$cfgfile finished" >/tmp/file-done
 # to recreate directories in union mounts
 testmkd () {
   test -d $1 || mkdir -p $1 >/dev/null 2>&1
-  for i in "$2" "$3" ; do
+  [ $# -ge 2 ] && for i in "$2" "$3" ; do
     echo "$i"|grep -E "^[0-9]{3,4}$" >/dev/null 2>&1 && \
       chmod "$i" $1 >/dev/null 2>&1
     echo "$i"|grep -E ":." >/dev/null 2>&1 && \
