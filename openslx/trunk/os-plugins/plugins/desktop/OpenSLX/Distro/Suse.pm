@@ -53,6 +53,8 @@ sub setupGDMScript
         rllinker xdm 1 10
         sed -i 's/DISPLAYMANAGER=.*/DISPLAYMANAGER="gdm"/' \
             /mnt/etc/sysconfig/displaymanager
+        [ $(grep -q DISPLAYMANAGER /mnt/etc/sysconfig/displaymanager) ] && \
+            echo "DISPLAYMANAGER=\"gdm\"" >> /mnt/etc/sysconfig/displaymanager
         sed -i "s/DEFAULT_WM=.*/DEFAULT_WM=\\"\$desktop_kind\\"/" \
             /mnt/etc/sysconfig/windowmanager
         #sed "s|XSESSION|/etc/xdm/Xsession|" -i /mnt$configFile
@@ -79,6 +81,8 @@ sub setupKDMScript
         rllinker xdm 1 10
         sed -i 's/DISPLAYMANAGER=.*/DISPLAYMANAGER="kdm"/' \
             /mnt/etc/sysconfig/displaymanager
+        [ $(grep -q DISPLAYMANAGER /mnt/etc/sysconfig/displaymanager) ] && \
+            echo "DISPLAYMANAGER=\"kdm\"" >> /mnt/etc/sysconfig/displaymanager
         sed -i "s/DEFAULT_WM=.*/DEFAULT_WM=\"$desktop_kind\"/" \
             /mnt/etc/sysconfig/windowmanager
     End-of-Here
