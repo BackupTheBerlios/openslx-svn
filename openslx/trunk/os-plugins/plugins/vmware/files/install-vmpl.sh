@@ -176,21 +176,11 @@ else
   mkdir -p vmroot/lib/vmware/setup
   mv temp/vmware-player-setup/vmware-config vmroot/lib/vmware/setup
   mv temp/vmware-player/doc vmroot/
-  # files that differ so far... yes the normal hack we know from v1َ/v2a
-  # .../installer/ shouldn't be needed, too
-  #vmroot/lib/vmware/installer/lib/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
-  #vmroot/lib/vmware/installer/lib/libconf/etc/gtk-2.0/gtk.immodules
-  #vmroot/lib/vmware/installer/lib/libconf/etc/pango/pango.modules
-  #vmroot/lib/vmware/installer/lib/libconf/etc/pango/pangorc
-  #vmroot/lib/vmware/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
-  #vmroot/lib/vmware/libconf/etc/gtk-2.0/gtk.immodules
-  #vmroot/lib/vmware/libconf/etc/pango/pango.modules
-  #vmroot/lib/vmware/libconf/etc/pango/pangorc
+  mv temp/vmware-player/bin vmroot/
 
   ##
   ## left files/dirs
   ##
-  # temp/vmware-player/bin => /usr/bin
   # temp/vmware-player/files/index.theme ... hopefully not needed,
   # temp/vmware-player/share => /usr/share ... icons 
   # temp/vmware-player/etc/... => /etc
@@ -209,9 +199,12 @@ else
   #   vmnet(1|8) => we know it from v1/v2
 
   echo "   * fixing file permission"
+  chmod 755 vmroot/lib/vmware/bin/*
   chmod 04755 vmroot/lib/vmware/bin/vmware-vmx 
-  chmod 04755 vmroot/lib/vmware/bin/vmware-debug
-  chmod 04755 vmroot/lib/vmware/bin/vmware-stats
+  chmod 04755 vmroot/lib/vmware/bin/vmware-vmx-debug
+  chmod 04755 vmroot/lib/vmware/bin/vmware-vmx-stats
+  chmod 755 vmroot/bin/*
+  chmod 755 vmroot/lib/vmware/lib/wrapper-gtk24.sh
 
   # I don't want to understand what vmware is doing, but without this
   # step we need to have LD_LIBRARY_PATH with 53 entrys. welcome to
@@ -251,8 +244,8 @@ else
   tar xf vmnet.tar
   tar xf vmmon.tar
   tar xf vmblock.tar
-  tar xf vmci.tar
-  tar xf vmppuser.tar
+  #tar xf vmci.tar        # just for 2 or more VMs => not needed
+  #tar xf vmppuser.tar    # we don't need it
   tar xf vsock.tar
 
   echo "   * building vmblock module"
@@ -276,21 +269,6 @@ else
   mv vmnet.ko vmnet.o ../../../../../modules
   cd ..
         
-  echo "   * building vmci module"
-  cd vmci-only
-  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /boot/vmlinuz* -maxdepth 0|sed 's,/boot/vmlinuz-,,g'|sort|tail -n 1)%" Makefile
-  make -s
-  mv vmci.ko vmci.o ../../../../../modules
-  cd ..
-
-  # This module is optional and compilation can become painful
-  #echo "   * building vmppuser module"
-  #cd vmppuser-only
-  #sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /boot/vmlinuz* -maxdepth 0|sed 's,/boot/vmlinuz-,,g'|sort|tail -n 1)%" Makefile
-  #make -s
-  #mv vmppuser.ko vmppuser.o ../../../../../modules
-  #cd ..
-
   echo "   * building vmsock module"
   cd vsock-only
   sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /boot/vmlinuz* -maxdepth 0|sed 's,/boot/vmlinuz-,,g'|sort|tail -n 1)%" Makefile

@@ -192,6 +192,17 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     for i in "/dev/vmnet0 c 119 0" "/dev/vmmon c 10 165"; do
       mknod $i
     done
+    # looks like it gets created by insmod
+    # but permission wasnt correct. 666 was on a testclient
+    # won't work here. two systems, to different node informations
+    # we have to run it after vmci is loaded
+    # and we don't need vmci, because its just for communications
+    # between more as one VM
+    #if [ "${vmware_kind}" = "vmpl2.5" && ! -e /dev/vmci ]; then
+    #  mknod --mode=666 /dev/vmci c 10 $(cat /proc/misc|grep vmci|awk '{print $1}')
+    #elsif [ "${vmware_kind}" == "vmpl2.5" ]; then
+    #  chmod 666 /dev/vmci
+    #fi
 
     chmod 0700 /dev/vmnet*
     chmod 1777 /mnt/etc/vmware/fd-loop

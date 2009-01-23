@@ -72,9 +72,10 @@ sub fillRunlevelScript
     if ($kind eq 'local') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
               # to be filled in via the stage1 configuration script
-              insmod /lib/modules/\$(uname -r)/misc/vmmon.ko || return 1
-              insmod /lib/modules/\$(uname -r)/misc/vmnet.ko || return 1
-              insmod /lib/modules/\$(uname -r)/misc/vmblock.ko 2>/dev/null || return 0
+              insmod /lib/modules/\$(uname -r)/misc/vmmon.o || return 1
+              insmod /lib/modules/\$(uname -r)/misc/vmnet.o || return 1
+              insmod /lib/modules/\$(uname -r)/misc/vmblock.o 2>/dev/null || return 0
+              #insmod /lib/modules/\$(uname -r)/misc/vmci.o 2>/dev/null || return 0
               # most probably nobody wants to run the parallel port driver ...
               #modprobe vm...
         End-of-Here
@@ -83,27 +84,27 @@ sub fillRunlevelScript
               # load module manuall
               vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
               module_src_path=\${vmware_kind_path}/vmroot/modules
-              insmod \${module_src_path}/vmmon.ko
-              insmod \${module_src_path}/vmnet.ko
+              insmod \${module_src_path}/vmmon.o
+              insmod \${module_src_path}/vmnet.o
         End-of-Here
     } elsif ($kind ne "vmpl2.0") {
         $script .= unshiftHereDoc(<<"        End-of-Here");
               # load module manuall
               vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
               module_src_path=\${vmware_kind_path}/vmroot/modules
-              insmod \${module_src_path}/vmmon.ko
-              insmod \${module_src_path}/vmnet.ko
-              insmod \${module_src_path}/vmblock.ko
+              insmod \${module_src_path}/vmmon.o
+              insmod \${module_src_path}/vmnet.o
+              insmod \${module_src_path}/vmblock.o
         End-of-Here
     } elsif ($kind eq 'vmpl2.5') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
               # load module manuall
               vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
               module_src_path=\${vmware_kind_path}/vmroot/modules
-              insmod \${module_src_path}/vmmon.ko
-              insmod \${module_src_path}/vmnet.ko
-              insmod \${module_src_path}/vmci.ko
-              insmod \${module_src_path}/vmmon.ko
+              insmod \${module_src_path}/vmmon.o
+              insmod \${module_src_path}/vmnet.o
+              #insmod \${module_src_path}/vmci.o
+              insmod \${module_src_path}/vmmon.o
         End-of-Here
     }
 
@@ -129,7 +130,13 @@ sub fillRunlevelScript
         setup_vmnet0() {
           if [ -n "\$vmnet0" ] ; then
             # the path might be directly point to the plugin dir
-            $location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid /dev/vmnet0 eth0
+    End-of-Here
+    if ($kind eq 'vmpl2.5') {
+      $script .= "\$location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid -n 0";
+    } else {
+      $script .= "\$location/vmnet-bridge -d /var/run/vmnet-bridge-0.pid /dev/vmnet0 eth0";
+    }
+    $script .= unshiftHereDoc(<<"    End-of-Here");
           fi
         }
         # we definately prefer the hostonly interface for NATed operation too
