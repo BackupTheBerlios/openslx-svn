@@ -2,3 +2,15 @@ ati-install.sh: Installer for ATI drivers
 nvidia-install.sh: Installer for NVIDIA drivers
 
 Currently in development and not useable!
+
+
+Infos about ati-packages:
+Most are identical, even when 64bit packages have a different name
+Only a couple of cards have its own special package. We need to
+investigate, if they are different or one package works for all.
+
+Infos about nvidia packages:
+they seem to differ much more as ati if you search directly for a
+specific graphic card. But if you take a look on
+http://www.nvidia.com/object/unix.html there seem to be just 3 different
+versions - all for different architectures (ia32, ia64, amd64)
