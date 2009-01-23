@@ -189,9 +189,9 @@ sub installationPhase
 
     # should we distinguish between the two different packages!?
     # libvnc should be part of the xorg package!? (so no check needed)
-    if (!$self->{distro}->isPackInstalled('x11vnc')) {
-        $self->{distro}->installPackages(
-            $self->{engine}->getInstallablePackagesForSelection('x11vnc')
+    if (!$self->{'distro'}->isPackInstalled('x11vnc')) {
+        $self->{'distro'}->installPackages(
+            $self->{'os-plugin-engine'}->getInstallablePackagesForSelection('x11vnc')
         );
     } else {
         vlog(3, "x11vnc is already installed");

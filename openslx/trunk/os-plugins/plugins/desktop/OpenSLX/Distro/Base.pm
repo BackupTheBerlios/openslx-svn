@@ -46,9 +46,9 @@ sub getDefaultDesktopManager
     my $self = shift;
     
     # the default implementation prefers GDM over KDM over XDM
-    return $self->isPackInstalled('gdm') ? 'gdm' 
-        : $self->isPackInstalled('kdm') ? 'kdm' 
-        : $self->isPackInstalled('xdm') ? 'xdm' : undef;
+    return isPackInstalled('gdm') ? 'gdm' 
+        : isPackInstalled('kdm') ? 'kdm' 
+        : isPackInstalled('xdm') ? 'xdm' : undef;
 }
 
 sub getDefaultDesktopKind
@@ -56,9 +56,9 @@ sub getDefaultDesktopKind
     my $self = shift;
     
     # the default implementation prefers GNOME over KDE over XFCE
-    return $self->isPackInstalled('gnome-session') ? 'gnome' 
-        : $self->isPackInstalled('startkde') ? 'kde' 
-        : $self->isPackInstalled('startxfce') ? 'xfce' : undef;
+    return isPackInstalled('gnome-session') ? 'gnome' 
+        : isPackInstalled('startkde') ? 'kde' 
+        : isPackInstalled('startxfce') ? 'xfce' : undef;
 }
 
 sub installGNOME

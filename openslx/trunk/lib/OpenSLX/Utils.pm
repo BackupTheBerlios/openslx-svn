@@ -36,6 +36,7 @@ $VERSION = 1.01;
     hostIs64Bit
     getAvailableBusyboxApplets
     grabLock
+    isPackInstalled pathOf isInPath
 );
 
 =head1 NAME
@@ -666,7 +667,6 @@ Returns the path of a binary it is installed in.
 
 sub pathOf
 {
-    my $self   = shift;
     my $binary = shift;
     
     return qx{which $binary 2>/dev/null};
@@ -680,10 +680,9 @@ Returns whether a binary is found.
 
 sub isInPath
 {
-    my $self   = shift;
     my $binary = shift;
     
-    my $path = $self->pathOf($binary);
+    my $path = pathOf($binary);
 
     return $path ? 1 : 0;
 }
@@ -697,9 +696,8 @@ the package mechanism of the given distribution!?
 
 sub isPackInstalled
 {
-    my $self = shift;
     my $pack = shift;
-    return $self->isInPath($pack);
+    return isInPath($pack);
 }
 
 1;

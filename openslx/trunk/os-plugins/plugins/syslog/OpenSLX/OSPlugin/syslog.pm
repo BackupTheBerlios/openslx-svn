@@ -66,7 +66,7 @@ sub getAttrInfo
         'syslog::kind' => {
             applies_to_vendor_os => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                kind of syslog to use (syslogd-ng or old-style syslog)
+                kind of syslog to use \(syslogd-ng or old-style syslog\)
             End-of-Here
             content_regex => undef,
             content_descr => 'allowed: syslogd-ng, syslog',
@@ -127,16 +127,16 @@ sub installationPhase
     my $engine = $self->{'os-plugin-engine'};
     
     if ($self->{kind} eq 'syslog-ng' && 
-        !$self->{distro}->isPackInstalled('syslog-ng')) {
+        !isPackInstalled('syslog-ng')) {
         $engine->installPackages(
-            $self->{engine}->getInstallablePackagesForSelection('syslog-ng')
+            $engine->getInstallablePackagesForSelection('syslog-ng')
         );
     }
     # not sure if we ever should setup this service
     if ($self->{kind} eq 'syslogd' &&
-        !$self->{distro}->isPackInstalled('syslog')) {
+        !isPackInstalled('syslog')) {
         $engine->installPackages(
-            $self->{engine}->getInstallablePackagesForSelection('syslog')
+            $engine->getInstallablePackagesForSelection('syslog')
         );
     }
 
