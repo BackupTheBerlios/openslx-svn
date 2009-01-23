@@ -455,7 +455,7 @@ sub _vmpl2Installation {
     ## Copy needed files
 
     # copy 'normal' needed files
-    my @files = qw( nvram.5.0 install-vmpl2.0.sh );
+    my @files = qw( nvram.5.0 install-vmpl.sh );
     foreach my $file (@files) {
         copyFile("$pluginFilesPath/$file", "$installationPath");
     }
@@ -464,7 +464,7 @@ sub _vmpl2Installation {
 
     ##
     ## Download and install the binarys
-    system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-$kind.sh");
+    system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-vmpl.sh $kind");
 
     ##
     ## Create runlevel script
@@ -501,7 +501,7 @@ sub _vmpl1Installation {
     ## Copy needed files
 
     # copy 'normal' needed files
-    my @files = qw( nvram.5.0 install-vmpl1.0.sh );
+    my @files = qw( nvram.5.0 install-vmpl.sh );
     foreach my $file (@files) {
         copyFile("$pluginFilesPath/$file", "$installationPath");
     }
@@ -510,7 +510,7 @@ sub _vmpl1Installation {
 
     ##
     ## Download and install the binarys
-    system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-$kind.sh");
+    system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-vmpl.sh $kind");
 
     ##
     ## Create runlevel script

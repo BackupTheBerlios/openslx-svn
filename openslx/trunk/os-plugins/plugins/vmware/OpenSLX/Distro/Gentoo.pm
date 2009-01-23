@@ -56,10 +56,10 @@ sub fillRunlevelScript
           else
             # load module manuall
             vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
-            module_src_path=\${vmware_kind_path}/root/lib/vmware/modules/source
-            insmod \${module_src_path}/vmblock.o
-            insmod \${module_src_path}/vmmon.o
-            insmod \${module_src_path}/vmnet.o
+            module_src_path=\${vmware_kind_path}/vmroot/modules
+            insmod \${module_src_path}/vmblock.ko
+            insmod \${module_src_path}/vmmon.ko
+            insmod \${module_src_path}/vmnet.ko
           fi
         }
         unload_modules() {

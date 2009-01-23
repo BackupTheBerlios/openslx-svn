@@ -25,52 +25,52 @@ if [ "${REPLY}" == "YES" ]; then
 
     #reduce some errors
     echo "   * removeing old files"
-    rm -rf root
+    rm -rf vmroot
 
     echo "   * copying files..."
-    mkdir root
-    mkdir -p root/lib
-    mv vmware-player-distrib/lib root/lib/vmware
-    mv vmware-player-distrib/bin root/
-    mv vmware-player-distrib/sbin root/
-    mv vmware-player-distrib/doc root/
+    mkdir vmroot
+    mkdir -p vmroot/lib
+    mv vmware-player-distrib/lib vmroot/lib/vmware
+    mv vmware-player-distrib/bin vmroot/
+    mv vmware-player-distrib/sbin vmroot/
+    mv vmware-player-distrib/doc vmroot/
     rm -rf vmware-player-distrib/
 
     # I don't want to understand what vmware is doing, but without this
     # step we need to have LD_LIBRARY_PATH with 53 entrys. welcome to
     # library hell
     echo "   * fixing librarys..."
-    cd root/lib/vmware/lib
+    cd vmroot/lib/vmware/lib
     mkdir test
     mv lib* test
     mv test/lib*/* .
     cd ../../../..
 
     echo "   * changing file permission"
-    chmod 04755 root/lib/vmware/bin/vmware-vmx
+    chmod 04555 vmroot/lib/vmware/bin/vmware-vmx
 
     echo "   * fixing gdk and pango config files"
     sed -i \
-      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/root/lib/vmware/libconf,' \
-      root/lib/vmware/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
+      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/vmroot/lib/vmware/libconf,' \
+      vmroot/lib/vmware/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
     sed -i \
-      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/root/lib/vmware/libconf,' \
-      root/lib/vmware/libconf/etc/gtk-2.0/gtk.immodules
+      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/vmroot/lib/vmware/libconf,' \
+      vmroot/lib/vmware/libconf/etc/gtk-2.0/gtk.immodules
     sed -i \
-      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/root/lib/vmware/libconf,' \
-      root/lib/vmware/libconf/etc/pango/pango.modules
+      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/vmroot/lib/vmware/libconf,' \
+      vmroot/lib/vmware/libconf/etc/pango/pango.modules
     sed -i \
-      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/root/lib/vmware/libconf,' \
-      root/lib/vmware/libconf/etc/pango/pangorc
+      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/vmroot/lib/vmware/libconf,' \
+      vmroot/lib/vmware/libconf/etc/pango/pangorc
     sed -i \
       's,/etc/pango/pango/,/etc/pango/,' \
-      root/lib/vmware/libconf/etc/pango/pangorc
+      vmroot/lib/vmware/libconf/etc/pango/pangorc
 
     echo "   * creating /etc/vmware"
     mkdir -p /etc/vmware
 
     echo "   * unpacking kernel modules"
-    cd root/lib/vmware/modules/source
+    cd vmroot/lib/vmware/modules/source
     tar xf vmnet.tar
     tar xf vmmon.tar
     tar xf vmblock.tar
@@ -99,7 +99,7 @@ if [ "${REPLY}" == "YES" ]; then
     cd ../../../../../..
         
     echo "   * setting up EULA"
-    mv root/doc/EULA root/lib/vmware/share/EULA.txt
+    mv vmroot/doc/EULA vmroot/lib/vmware/share/EULA.txt
 
     # TODO: remove. just for debug reasons
     #echo "Press any return to process"
