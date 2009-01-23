@@ -1,6 +1,5 @@
 # configure Xen bridge xenbr0
 xenbr_config () {
-  echo -e "Configuring Xen...\c"
   modprobe ${MODPRV} netloop
   local ipls
   local vifnum="0"
@@ -23,6 +22,5 @@ xenbr_config () {
     ip link set ${ipls}
   done
   brctl addif ${bridge} ${pdev}
-  echo " OK"
   exit 0
 }

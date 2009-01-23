@@ -28,7 +28,7 @@ sub new
     my $class = shift;
 
     my $self = {
-        name => 'bootsplash',
+        name => 'xen',
     };
 
     return bless $self, $class;
@@ -71,7 +71,7 @@ sub suggestAdditionalKernelModules
 
     my @suggestedModules;
     
-    # Ubuntu needs vesafb and fbcon (which drags along some others)
+    # Xen needs bridge module and for SUSE 10.2 netloop other OS: to be checked
     if ($makeInitRamFSEngine->{'distro-name'} =~ m{^suse}i) {
         push @suggestedModules, qw( bridge netloop )
     }

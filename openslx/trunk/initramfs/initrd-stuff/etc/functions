@@ -350,7 +350,7 @@ if [ "x$filepath" != "x" ] ; then
      umount /dev/$ldev
    ;;
    *)
-     tftp -g -r '$cfgfile' -l /tmp/$(basename "$cfgfile") "$fileserv"  \
+     tftp -g -r "$cfgfile" -l /tmp/$(basename "$cfgfile") $fileserv  \
        && unpack /tmp/$(basename "$cfgfile")
    ;;
    esac
@@ -365,16 +365,16 @@ else
   echo -e "\n## Configuration via fileget: Hierarchy is distro client \
 and as last\n# distro/default" >> /tmp/confviafile
   mac=$(echo $macaddr|sed "s/:/-/g")
-  for cfgfile in ${filepath}/${SYSTEM_NAME}/01-$mac.tgz \
-                 ${filepath}/${SYSTEM_NAME}/default.tgz ; do
+  for cfgfile in "${filepath}/${SYSTEM_NAME}/01-${mac}.tgz" \
+                 "${filepath}/${SYSTEM_NAME}/default.tgz" ; do
     case "$fileprot" in
       ftp|http)
-        wget $fileprot://$fileserv/$cfgfile -O /tmp/$(basename $cfgfile) \
-          2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
+        wget $fileprot://$fileserv/"$cfgfile" -O /tmp/$(basename "$cfgfile") \
+          2>/dev/null && { unpack /tmp/$(basename "$cfgfile") && break; }
       ;;
       tftp)
-        tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv \
-           && { unpack /tmp/$(basename $cfgfile) && break; }
+        tftp -g -r "$cfgfile" -l /tmp/$(basename "$cfgfile") $fileserv \
+           && { unpack /tmp/$(basename "$cfgfile") && break; }
       ;;
     esac
   done
