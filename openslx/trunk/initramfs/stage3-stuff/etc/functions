@@ -316,7 +316,7 @@ tftp_get () {
   do
     if [ "$countdown" = "0" ]; then
       [ $DEBUGLEVEL -ge 1 ] && \
-        echo "[tftp_get] failed to get \"$file\" from \"$file_server\" !"
+        echo "[tftp_get] failed to get \"$file\" from \"$file_server\"!"
       return 0;
     fi
     tftp -g -r $file -l /tmp/$(basename $file) $file_server

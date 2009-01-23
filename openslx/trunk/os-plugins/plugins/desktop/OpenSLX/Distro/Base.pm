@@ -142,7 +142,6 @@ sub setupGDMScript
             map  { '/mnt' . $_ } ( dirname($configFile), @{$pathInfo->{paths}} )
         );
     my $script = unshiftHereDoc(<<"    End-of-Here");
-        #!/bin/ash
         # written by OpenSLX-plugin 'desktop'
 
         mkdir -p $paths 2>/dev/null
