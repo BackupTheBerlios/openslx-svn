@@ -52,7 +52,7 @@ sub getAttrInfo
     return {
         'bootsplash::active' => {
             applies_to_systems => 1,
-            applies_to_clients => 0,
+            applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
                 should the 'bootsplash'-plugin be executed during boot?
             End-of-Here
@@ -73,7 +73,7 @@ sub getAttrInfo
 
         'bootsplash::theme' => {
             applies_to_systems => 1,
-            applies_to_clients => 0,
+            applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
                 name of the theme to apply to bootsplash (unset for no theme)
             End-of-Here
