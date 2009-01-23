@@ -221,7 +221,7 @@ sub removePlugin
             }
         );
 
-        rmtree([ $self->{'plugin-temp-path'} ]);
+        rmtree([ $self->{'plugin-repo-path'}, $self->{'plugin-temp-path'} ]);
     }
     
     $self->_removeInstalledPluginFromDB();
