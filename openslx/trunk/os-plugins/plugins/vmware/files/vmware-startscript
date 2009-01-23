@@ -29,11 +29,8 @@
 
 # read the configuration file generated in stage3 to configure the
 # host internal interfaces
-#. /etc/vmware/slxvmconfig
-# testing only
-vmnet0=""
-vmnet1="192.168.101.1/24"
-vmnet8=""
+. /etc/vmware/slxvmconfig
+
 
 load_modules() {
   # to be filled in via the stage1 configuration script
@@ -42,8 +39,9 @@ load_modules() {
   #modprobe vm...
 }
 unload_modules() {
-  # to be filled in via the stage1 configuration script
-  rmmod vmmon vmblock vmnet #2>/dev/null
+  # to be filled with the proper list within via the stage1 configuration
+  # script
+  rmmod vmmon vmblock vmnet 2>/dev/null
 }
 # the bridged interface
 setup_vmnet0() {

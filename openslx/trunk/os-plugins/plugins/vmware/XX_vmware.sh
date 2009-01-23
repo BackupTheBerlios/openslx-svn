@@ -42,23 +42,30 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     # prepare all needed vmware configuration files
     testmkd /mnt/etc/vmware
     # write the /etc/vmware/slxvmconfig file
-    # check for the several variables and write the several files
+    # check for the several variables and write the several files:
+    #  dhcpd.conf for vmnet* interfaces
+    #  nat.conf for the NAT configuration of vmnet8
+    #  TODO: vmnet-natd-8.mac not clear if really needed and which mac it
+    # should contain (seems to be an average one)
     echo -e "# configuration file for vmware background services written in \
 stage3 setup" > /mnt/etc/vmware/slxvmconfig
-    if [ "bridge" = 1 ] ; then
+    if [ "$vmware_bridge" = 1 ] ; then
       echo "vmnet0=true" >> /mnt/etc/vmware/slxvmconfig
     fi
-    # write the common dhcpd.conf header
-    if [ -n "vmnet1" -o -n "vmnet8" ] ; then
-      local dnslist=
+    # write the common dhcpd.conf header for vmnet1,8
+    if [ -n "$vmware_vmnet1" -o -n "$vmware_vmnet8" ] ; then
+      # use the dns servers know to the vmware host
+      # TODO: to be checked!!
+      local dnslist=$(echo "$domain_name_servers"|sed "s/ /,/g")
       echo "# /etc/vmware/dhcpd.conf written in stage3 ...\nallow \
 unknown-clients;\ndefault-lease-time 1800;\nmax-lease-time 7200;\n\
 option domain-name-servers $dnslist;\noption domain-name \"vm.local\";" \
         > /mnt/etc/vmware/dhcpd.conf
     fi
-    if [ -n "vmnet1" ] ; then
-      local vmnt=${vmnet1%,*}
-      vmnet1=${vmnet%,*}
+    # variable might contain ",NAT" which is to be taken off
+    if [ -n "$vmware_vmnet1" ] ; then
+      local vmnt=${vmware_vmnet1%,*}
+      local vmnet1=${vmware_vmnet%,*}
       local vmip=${vmnet1%/*}
       local vmpx=${vmnet1#*/}
       echo "vmnet1=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
@@ -68,9 +75,10 @@ $(ipcalc -n $vmip/$vmpx|sed s/.*=//) {\n\trange $rstart $rend;\n\
 \toption broadcast $(ipcalc -b $vmip/$vmpx|sed s/.*=//);\n\
 \toption routers $vmip;\n}" > /mnt/etc/vmware/dhcpd.conf
     fi
-    if [ -n "vmnet8" ] ; then
-      local vmip=${vmnet8%/*}
-      local vmpx=${vmnet8#*/}
+    # vmware nat interface
+    if [ -n "$vmware_vmnet8" ] ; then
+      local vmip=${vmware_vmnet8%/*}
+      local vmpx=${vmware_vmnet8#*/}
       echo "vmnet8=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
       echo "\nsubnet $(ipcalc -n $vmip/$vmpx|sed s/.*=//) netmask \
 $(ipcalc -n $vmip/$vmpx|sed s/.*=//) {\n\trange $rstart $rend;\n\
