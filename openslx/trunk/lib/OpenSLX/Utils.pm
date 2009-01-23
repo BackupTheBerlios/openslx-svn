@@ -597,6 +597,9 @@ sub grabLock
 
     my $lockPath = "$openslxConfig{'private-path'}/locks";
     mkpath($lockPath) unless -e $lockPath;
+
+    # drop any trailing slashes from lock name:
+    $lockName =~ s{/+$}{};
     my $lockFile = "$lockPath/$lockName";
 
     my $lockFH;
