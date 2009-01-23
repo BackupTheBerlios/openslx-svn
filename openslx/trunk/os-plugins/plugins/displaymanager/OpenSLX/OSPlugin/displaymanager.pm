@@ -104,14 +104,14 @@ sub copyRequiredFilesIntoInitramfs
 	
 	my $themeDir = "$openslxConfig{'base-path'}/share/themes";
         my $displaymanagerXdmcp = $attrs->{'displaymanager::xdmcp'} || '';
-	my $xdmcpConfigDir = "$openslxConfig{'base-path'}/lib/plugins/displaymanager/config/$displaymanagerXdmcp";
+	my $xdmcpConfigDir = "$openslxConfig{'base-path'}/lib/plugins/displaymanager/files/$displaymanagerXdmcp";
 	my $displaymanagerTheme = $attrs->{'displaymanager::theme'} || '';
 	if ($displaymanagerTheme) {
 		my $displaymanagerThemeDir 
 			= "$themeDir/$displaymanagerTheme/displaymanager/$displaymanagerXdmcp";
 		if (-d $displaymanagerThemeDir) {
                         $makeInitRamFSEngine->addCMD(
-                                "mkdir -p $targetPath/usr/share/config"
+                                "mkdir -p $targetPath/usr/share/files"
                         );
 			$makeInitRamFSEngine->addCMD(
 				"mkdir -p $targetPath/usr/share/themes"
@@ -120,7 +120,7 @@ sub copyRequiredFilesIntoInitramfs
 				"cp -a $displaymanagerThemeDir $targetPath/usr/share/themes/"
 			);
                         $makeInitRamFSEngine->addCMD(
-                                "cp -a $xdmcpConfigDir $targetPath/usr/share/config/"
+                                "cp -a $xdmcpConfigDir $targetPath/usr/share/files"
                         );
 		}
 	}
