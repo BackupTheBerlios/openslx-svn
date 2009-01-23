@@ -41,5 +41,11 @@ sub initialize
     return 1;
 }
 
+sub getRunlevelScriptPath
+{
+    my $self = shift;
+    
+    return '/etc/init.d/vmware';
+}
 
 1;

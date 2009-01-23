@@ -173,23 +173,26 @@ sub installationPhase
     #my $vmbin  = "$vmpath/bin";
 
     # get path of files we need to install
-    my $pluginFilesPath = "$self->{'openslxPath'}/lib/plugins/$self->{'name'}/files";
+    my $pluginFilesPath 
+        = "$self->{'openslxPath'}/lib/plugins/$self->{'name'}/files";
 
     # copy all needed files
     my @files = qw( vmware-init nvram.5.0 runvmware-v2 );
     foreach my $file (@files) {
         copyFile("$pluginFilesPath/$file", $self->{'pluginRepositoryPath'});
     }
-    # generate the runlevel script (depends on distro/version and vmware location)
-    # TODO: the path to the runlevel directory is distro specific!!
-    rename ("/etc/init.d/vmware", "/etc/init.d/vmware.slx-bak");
-    $self->_writeRunlevelScript($vmbin, "/etc/init.d/vmware");
+    # generate the runlevel script (depends on distro/version and vmware 
+    # location)
+    my $runlevelScriptPath = $self->{distro}->getRunlevelScriptPath();
+    $self->_writeRunlevelScript($vmbin, $runlevelScriptPath);
 
     # generate links for the user executables vmware and player and a 
     # simplified version of the start script
     @files = qw( vmware vmplayer );
     foreach my $file (@files) {
-        rename ("/usr/bin/$file", "/usr/bin/$file.slx-bak");
+    # OLTA: this backup strategy is useless if invoked twice, so I have
+    #       deactivated it
+#        rename ("/usr/bin/$file", "/usr/bin/$file.slx-bak");
         linkFile("/var/X11R6/bin/$file", "/usr/bin/$file");
         my $script = unshiftHereDoc(<<"        End-of-Here");
             #!/bin/sh
@@ -203,7 +206,6 @@ sub installationPhase
         End-of-Here
         spitFile("$self->{'pluginRepositoryPath'}/$file", $script);
     }
-
 }
 
 sub removalPhase
@@ -225,9 +227,9 @@ sub removalPhase
 
 sub _writeRunlevelScript
 {
-    my $self = shift;
+    my $self     = shift;
     my $location = shift;
-    my $file = shift;
+    my $file     = shift;
     
     # $location points to the path where vmware helpers are installed
     my $script = unshiftHereDoc(<<"    End-of-Here");
@@ -331,6 +333,11 @@ sub _writeRunlevelScript
         
         exit 0
     End-of-Here
+
+    # OLTA: this backup strategy is useless if invoked twice, so I have
+    #       deactivated it
+#    rename($file, "${file}.slx-bak") if -e $file;
+
     spitFile($file, $script);
 }
 
