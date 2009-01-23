@@ -102,9 +102,9 @@ sub copyRequiredFilesIntoInitramfs
 	my $attrs		= shift;
 	my $makeInitRamFSEngine = shift;
 	
-	my $xdmcpConfigDir = "$openslxConfig{'base-path'}/lib/plugins/displaymanager/config/$displaymanagerXdmcp";
 	my $themeDir = "$openslxConfig{'base-path'}/share/themes";
         my $displaymanagerXdmcp = $attrs->{'displaymanager::xdmcp'} || '';
+	my $xdmcpConfigDir = "$openslxConfig{'base-path'}/lib/plugins/displaymanager/config/$displaymanagerXdmcp";
 	my $displaymanagerTheme = $attrs->{'displaymanager::theme'} || '';
 	if ($displaymanagerTheme) {
 		my $displaymanagerThemeDir 
