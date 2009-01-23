@@ -36,7 +36,7 @@ for i in "/dev/mem c 1 1" "/dev/null c 1 3" "/dev/zero c 1 5" \
          "/dev/tty7 c 4 7" "/dev/tty8 c 4 8" "/dev/tty9 c 4 9" \
          "/dev/tty10 c 4 10" "/dev/tty c 5 0" "/dev/console c 5 1" \
          "/dev/ptmx c 5 2" "/dev/psaux c 10 1" "/dev/agpgart c 10 175" \
-         "/dev/fb0 c 29 0" "/dev/xconsole p"; do
+         "/dev/fb0 c 29 0" "/dev/rtc c 10 135" "/dev/xconsole p"; do
   mknod $i
 done
 mkdir -p ${devdir}/pts ${devdir}/shm ${devdir}/.udevdb ${devdir}/.udev \
