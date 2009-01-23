@@ -351,7 +351,7 @@ $date\n*\n%hostlist\t$x_display_manager\n*\t\tCHOOSER %hostlist"\
     yes|YES|direct|DIRECT|query|QUERY)
       # direct connection onto the own displaymanager, which
       # should be enabled then
-      [ "x$start_xdmcp" = "xno" ] && $start_xdmcp="yes"
+#      [ "x$start_xdmcp" = "xno" ] && $start_xdmcp="yes"
       init=""
       dsx="yes"
       xdmcp="false"
