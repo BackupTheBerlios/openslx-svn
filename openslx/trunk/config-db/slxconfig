@@ -98,6 +98,9 @@ elsif ($action =~ m[^change-s]i) {
 elsif ($action =~ m[^change-c]i) {
     changeClientInConfigDB(@ARGV);
 }
+elsif ($action =~ m[^cleanup-db]i) {
+    cleanupConfigDB(@ARGV);
+}
 elsif ($action =~ m[^list-a]) {
     print @ARGV 
         ? _tr("List of known attributes for scope '%s':\n", $ARGV[0])
@@ -164,6 +167,7 @@ else {
             change-group
             change-system
             change-vendor-os
+            cleanup-db
             list-attributes
             list-client
             list-export
@@ -290,6 +294,11 @@ sub checkGivenStage3Attrs
     }
 
     return 1;
+}
+
+sub cleanupConfigDB
+{
+    return $openslxDB->cleanupAnyInconsistencies();
 }
 
 sub mergeNonExistingAttributes
@@ -1488,6 +1497,15 @@ changes the data of an existing system in the config-DB
 
 Note: you can use the special value '-' to unset a key (mostly useful
 for attributes).
+
+=item B<<     cleanup-db >>
+
+utility command that looks for any inconsistencies in the DB (stale references
+and/or references to plugins that do not exists) and removes them.
+
+You should only invoke this if you are a developer and have removed one or
+more plugins from the repository and would like to get rid of the left-overs
+in your local DB.
 
 =item B<<     list-attributes [<attr-scope>] >>
 

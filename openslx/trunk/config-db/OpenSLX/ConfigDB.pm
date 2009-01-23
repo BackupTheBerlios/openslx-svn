@@ -188,8 +188,9 @@ sub connect        ## no critic (ProhibitBuiltinHomonyms)
     $self->{'db-type'} = $dbType;
     $self->{'meta-db'} = $metaDB;
 
-    $self->{'db-schema'}->checkAndUpgradeDBSchemaIfNecessary($self);
-
+    $self->{'db-schema'}->checkAndUpgradeDBSchemaIfNecessary($self)
+        or die _tr('unable to check/update DB schema!');
+    
     return 1;
 }
 
@@ -256,6 +257,27 @@ sub rollbackTransaction
     return 1;
 }
 
+=item C<cleanupAnyInconsistencies()>
+
+Looks for any inconsistencies (stale references, references to non-existing
+plugins, ...) and removes them from the DB.
+
+=cut
+
+sub cleanupAnyInconsistencies
+{
+    my $self = shift;
+
+    $self->synchronizeAttributesWithDB();
+
+    return if !$self->_removeStaleSystemAttributes();
+    return if !$self->_removeStaleGroupAttributes();
+    return if !$self->_removeStaleClientAttributes();
+    return if !$self->_removeStaleVendorOSAttributes();
+
+    return 1;
+}
+
 =item C<synchronizeAttributesWithDB()>
 
 Makes sure that all known attributes are referenced by the default system
@@ -268,8 +290,7 @@ stale attributes removed, too.
 
 sub synchronizeAttributesWithDB
 {
-    my $self            = shift;
-    my $removeStaleRefs = shift;
+    my $self = shift;
 
     my $defaultSystem = $self->fetchSystemByID(0);
     return if !$defaultSystem;
@@ -297,23 +318,16 @@ sub synchronizeAttributesWithDB
         return if !$self->changeSystem(0, $defaultSystem);
     }
     
-    if ($removeStaleRefs) {
-        return if !$self->removeStaleSystemAttributes();
-        return if !$self->removeStaleGroupAttributes();
-        return if !$self->removeStaleClientAttributes();
-        return if !$self->removeStaleVendorOSAttributes();
-    }
-
     return 1;
 }
 
-=item C<removeStaleSystemAttributes()>
+=item C<_removeStaleSystemAttributes()>
 
 Removes any stale attributes from every system.
 
 =cut
 
-sub removeStaleSystemAttributes
+sub _removeStaleSystemAttributes
 {
     my $self = shift;
 
@@ -334,13 +348,13 @@ sub removeStaleSystemAttributes
     return 1;
 }
 
-=item C<removeStaleGroupAttributes()>
+=item C<_removeStaleGroupAttributes()>
 
 Removes any stale attributes from every group.
 
 =cut
 
-sub removeStaleGroupAttributes
+sub _removeStaleGroupAttributes
 {
     my $self = shift;
 
@@ -361,13 +375,13 @@ sub removeStaleGroupAttributes
     return 1;
 }
 
-=item C<removeStaleClientAttributes()>
+=item C<_removeStaleClientAttributes()>
 
 Removes any stale attributes from every client.
 
 =cut
 
-sub removeStaleClientAttributes
+sub _removeStaleClientAttributes
 {
     my $self = shift;
 
@@ -388,13 +402,13 @@ sub removeStaleClientAttributes
     return 1;
 }
 
-=item C<removeStaleVendorOSAttributes()>
+=item C<_removeStaleVendorOSAttributes()>
 
 Removes any stale attributes from every vendor-OS.
 
 =cut
 
-sub removeStaleVendorOSAttributes
+sub _removeStaleVendorOSAttributes
 {
     my $self = shift;
 
@@ -1272,7 +1286,7 @@ sub addInstalledPlugin
     my $pluginAttrs = shift || {};
 
     # make sure the attributes of this plugin are available via default system
-    $self->synchronizeAttributesWithDB(0);
+    $self->synchronizeAttributesWithDB();
 
     return $self->{'meta-db'}->addInstalledPlugin(
         $vendorOSID, $pluginName, $pluginAttrs

@@ -279,8 +279,8 @@ sub checkAndUpgradeDBSchemaIfNecessary
             );
         }
         $metaDB->schemaSetDBVersion($DbSchema->{version});
-        $configDB->synchronizeAttributesWithDB(1)
-            or die _tr('unable to synchronize attributes with DB!');
+        $configDB->cleanupAnyInconsistencies() 
+            or die _tr('unable to cleanup DB!');
         vlog(1, _tr('DB has been created successfully'));
     } elsif ($currVersion < $DbSchema->{version}) {
         vlog(
@@ -291,8 +291,8 @@ sub checkAndUpgradeDBSchemaIfNecessary
             )
         );
         $self->_schemaUpgradeDBFrom($metaDB, $currVersion);
-        $configDB->synchronizeAttributesWithDB(1)
-            or die _tr('unable to synchronize attributes with DB!');
+        $configDB->cleanupAnyInconsistencies() 
+            or die _tr('unable to cleanup DB!');
         vlog(1, _tr('upgrade done'));
     } else {
         vlog(1, _tr('DB matches current schema version (%s)', $currVersion));
