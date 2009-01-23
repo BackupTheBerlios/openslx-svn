@@ -190,10 +190,10 @@ sub connect        ## no critic (ProhibitBuiltinHomonyms)
     $self->{'db-schema'}->checkAndUpgradeDBSchemaIfNecessary($self)
         or die _tr('unable to check/update DB schema!');
     
-    # check if any plugins (or plugin-attributes) have been added/removed since 
+    # check if any attributes or plugins have been added/removed since 
     # last DB-session and bring the DB up-to-date, if so
-    my $pluginInfoHashVal
-        = OpenSLX::OSPlugin::Roster->computeMD5HashOverAvailablePlugins();
+    my $pluginInfoHashVal 
+        = OpenSLX::AttributeRoster->computeMD5HashOverAllAttrs();
     my $pluginInfoHashValInDB = $metaDB->schemaFetchPluginInfoHashVal();
     vlog(1, "plugin-info-hashes: $pluginInfoHashVal <=> $pluginInfoHashValInDB");
     if ($pluginInfoHashValInDB ne $pluginInfoHashVal) {

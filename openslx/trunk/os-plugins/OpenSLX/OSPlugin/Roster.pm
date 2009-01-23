@@ -18,7 +18,6 @@ use warnings;
 
 use OpenSLX::Basics;
 use Clone qw(clone);
-use Digest::MD5 qw(md5_hex);
 
 my %plugins;
 
@@ -39,28 +38,6 @@ sub getAvailablePlugins
         $pluginInfo{$pluginName} = $plugins{$pluginName}->getInfo();
     }
     return \%pluginInfo;
-}
-
-=item C<computeMD5HashOverAvailablePlugins()>
-
-Returns a MD5 hash representing the list of available plugins and all their
-attributes.
-
-=cut
-
-sub computeMD5HashOverAvailablePlugins
-{
-    my $class = shift;
-
-    $class->_init() if !%plugins;
-
-    my $pluginInfoString = '';
-    foreach my $pluginName (sort keys %plugins) {
-        my $attrInfo = $plugins{$pluginName}->getAttrInfo();
-        my $attrList = join ',', sort keys %$attrInfo;
-        $pluginInfoString .= $pluginName . '(' . $attrList . ')';
-    }
-    return md5_hex($pluginInfoString);
 }
 
 =item C<getPlugin()>

@@ -16,6 +16,8 @@ package OpenSLX::AttributeRoster;
 use strict;
 use warnings;
 
+use Digest::MD5 qw(md5_hex);
+
 use OpenSLX::Basics;
 use OpenSLX::OSPlugin::Engine;
 use OpenSLX::OSPlugin::Roster;
@@ -67,76 +69,6 @@ sub _init
             content_descr => undef,
             default => 'de',
         },
-        'dm_allow_shutdown' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => 'user',
-        },
-        'hw_graphic' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => '',
-        },
-        'hw_monitor' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => '',
-        },
-        'hw_mouse' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => '',
-        },
-        'netbios_workgroup' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => 'slx-network',
-        },
-        'nis_domain' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => '',
-        },
-        'nis_servers' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => '',
-        },
         'ramfs_fsmods' => {
             applies_to_systems => 1,
             applies_to_clients => 0,
@@ -167,16 +99,17 @@ sub _init
             content_descr => 'a space-separated list of NIC modules',
             default => 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
         },
-        'sane_scanner' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => '',
-        },
+# TODO: check if we still need this, as it is not being used anywhere
+#        'sane_scanner' => {
+#            applies_to_systems => 1,
+#            applies_to_clients => 1,
+#            description => unshiftHereDoc(<<'            End-of-Here'),
+#                !!!descriptive text missing here!!!
+#            End-of-Here
+#            content_regex => undef,
+#            content_descr => undef,
+#            default => '',
+#        },
         'scratch' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
@@ -187,26 +120,28 @@ sub _init
             content_descr => undef,
             default => '',
         },
-        'slxgrp' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => '',
-        },
-        'start_alsasound' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => 'yes',
-        },
+# TODO: check if we still need this, as it is not being used anywhere
+#        'slxgrp' => {
+#            applies_to_systems => 1,
+#            applies_to_clients => 1,
+#            description => unshiftHereDoc(<<'            End-of-Here'),
+#                !!!descriptive text missing here!!!
+#            End-of-Here
+#            content_regex => undef,
+#            content_descr => undef,
+#            default => '',
+#        },
+# TODO: check if we still need this, as it is not being used anywhere
+#        'start_alsasound' => {
+#            applies_to_systems => 1,
+#            applies_to_clients => 1,
+#            description => unshiftHereDoc(<<'            End-of-Here'),
+#                !!!descriptive text missing here!!!
+#            End-of-Here
+#            content_regex => undef,
+#            content_descr => undef,
+#            default => 'yes',
+#        },
         'start_atd' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
@@ -257,26 +192,28 @@ sub _init
             content_descr => undef,
             default => 'no',
         },
-        'start_printer' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => 'no',
-        },
-        'start_samba' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => 'may',
-        },
+# TODO: check if we still need this, as it is not being used anywhere
+#        'start_printer' => {
+#            applies_to_systems => 1,
+#            applies_to_clients => 1,
+#            description => unshiftHereDoc(<<'            End-of-Here'),
+#                !!!descriptive text missing here!!!
+#            End-of-Here
+#            content_regex => undef,
+#            content_descr => undef,
+#            default => 'no',
+#        },
+# TODO: check if we still need this, as it is not being used anywhere
+#        'start_samba' => {
+#            applies_to_systems => 1,
+#            applies_to_clients => 1,
+#            description => unshiftHereDoc(<<'            End-of-Here'),
+#                !!!descriptive text missing here!!!
+#            End-of-Here
+#            content_regex => undef,
+#            content_descr => undef,
+#            default => 'may',
+#        },
         'start_snmp' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
@@ -297,46 +234,6 @@ sub _init
             content_descr => undef,
             default => 'yes',
         },
-        'start_syslogd' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => 'yes',
-        },
-        'start_x' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => 'yes',
-        },
-        'start_xdmcp' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => 'kdm',
-        },
-        'tex_enable' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => 'no',
-        },
         'timezone' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
@@ -346,26 +243,6 @@ sub _init
             content_regex => undef,
             content_descr => undef,
             default => 'Europe/Berlin',
-        },
-        'tvout' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => 'no',
-        },
-        'vmware' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                !!!descriptive text missing here!!!
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => 'no',
         },
     );
     
@@ -575,6 +452,35 @@ sub findProblematicValues
     return if !@problems;
     
     return \@problems;
+}
+
+=item C<computeMD5HashOverAllAttrs()>
+
+Returns a MD5 hash representing the list of all attributes (including plugins).
+
+=cut
+
+sub computeMD5HashOverAllAttrs
+{
+    my $class = shift;
+
+    $class->_init() if !%AttributeInfo;
+
+    my %attrNames;
+    @attrNames{keys %AttributeInfo} = ();
+    
+    my $pluginInfo = OpenSLX::OSPlugin::Roster->getAvailablePlugins();
+    if ($pluginInfo) {
+        foreach my $pluginName (sort keys %$pluginInfo) {
+            my $attrInfo 
+                = OpenSLX::OSPlugin::Roster->getPluginAttrInfo($pluginName);
+            @attrNames{keys %$attrInfo} = ();
+        }
+    }
+    
+    my $attrNamesAsString = join ',', sort keys %attrNames;
+
+    return md5_hex($attrNamesAsString);
 }
 
 1;
