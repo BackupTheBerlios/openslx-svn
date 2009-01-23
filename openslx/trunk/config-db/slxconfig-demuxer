@@ -668,7 +668,8 @@ sub writePluginConfigurationsForSystem
 	my $attrs = $info->{attrs} || {};
 
 	my @activePlugins;
-	foreach my $pluginName (@{$info->{'installed-plugins'}}) {
+	foreach my $pluginInfo (@{$info->{'installed-plugins'}}) {
+		my $pluginName = $pluginInfo->{plugin_name};
 		vlog(2, _tr("checking configuration of plugin '%s'", $pluginName));
 
 		# skip inactive plugins
@@ -686,7 +687,9 @@ sub writePluginConfigurationsForSystem
 		my @pluginAttrs = grep { $_ =~ m{^${pluginName}::} } keys %$attrs;
 		foreach my $attr (sort @pluginAttrs) {
 			my $attrVal = $attrs->{$attr};
-			next if !defined $attrVal;
+			if (!defined $attrVal) {
+				$attrVal = '';
+			}
 			my $attrName = substr($attr, index($attr, '::')+2);
 			$content .= qq[${pluginName}_$attrName="$attrVal"\n];
 		}
@@ -721,7 +724,9 @@ sub writeSystemConfiguration
 	my $buildPath = "$tempPath/build";
 	copyExternalSystemConfig(externalIDForSystem($info), $buildPath);
 
-	$openslxDB->mergeDefaultAttributesIntoSystem($info);
+	$openslxDB->mergeDefaultAttributesIntoSystem(
+		$info, $info->{'installed-plugins'}
+	);
 	$info->{'attr-digest'} = digestAttributes($info);
 	vlog(
 		2,

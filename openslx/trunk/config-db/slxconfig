@@ -1335,7 +1335,7 @@ sub _expandSystems
 				my $mergedSystem = dclone($_);
 				my $originInfo = {};
 				$openslxDB->mergeDefaultAttributesIntoSystem(
-					$mergedSystem, $originInfo
+					$mergedSystem, \@installedPlugins, $originInfo
 				);
 				my $mergedAttrs = $mergedSystem->{attrs} || {};
 				foreach my $plugin (@installedPlugins) {

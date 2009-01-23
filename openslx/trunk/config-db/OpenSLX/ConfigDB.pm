@@ -2406,8 +2406,8 @@ sub emptyDatabase
 
 =item C<mergeDefaultAttributesIntoSystem($system)>
 
-merges default system attributes into the given system hash and pushes the default
-client attributes on top of that.
+merges vendor-OS-specific plugin attributes and default system attributes into 
+the given system hash, and pushes the default client attributes on top of that.
 
 =over
 
@@ -2425,12 +2425,30 @@ none
 
 sub mergeDefaultAttributesIntoSystem
 {
-	my $self       = shift;
-	my $system     = shift;
-	my $originInfo = shift;
+	my $self             = shift;
+	my $system           = shift;
+	my $installedPlugins = shift;
+	my $originInfo       = shift;
 
+	# first look into default system
 	my $defaultSystem = $self->fetchSystemByFilter({name => '<<<default>>>'});
 	mergeAttributes($system, $defaultSystem, $originInfo, 'default-system');
+
+	# then merge any attributes found in the plugins that are installed
+	# into the vendor-OS:
+	if (ref $installedPlugins eq 'ARRAY' && @$installedPlugins) {
+		for my $plugin (@$installedPlugins) {
+			mergeAttributes($system, $plugin, $originInfo, 'vendor-OS');
+		}
+
+		# the above will have merged stage1 attributes, too, so we remove
+		# these from the resulting system (as they do not apply to systems)
+		my @stage3AttrNames = OpenSLX::AttributeRoster->getStage3Attrs();
+		for my $attr (keys %{$system->{attrs}}) {
+			next if grep { $attr eq $_ } @stage3AttrNames;
+			delete $system->{attrs}->{$attr};
+		}
+	}
 
 	my $defaultClient = $self->fetchClientByFilter({name => '<<<default>>>'});
 	pushAttributes($system, $defaultClient, $originInfo, 'default-client');
@@ -2709,8 +2727,11 @@ sub mergeAttributes
 	foreach my $key (keys %$sourceAttrs) {
 		my $sourceVal = $sourceAttrs->{$key};
 		my $targetVal = $targetAttrs->{$key};
-		if (defined $sourceVal && !defined $targetVal) {
-			vlog(3, _tr("merging %s (val=%s)", $key, $sourceVal));
+		if (!defined $targetVal) {
+			vlog(3, _tr(
+				"merging %s (val=%s)", $key, 
+				defined $sourceVal ? $sourceVal : ''
+			));
 			$targetAttrs->{$key} = $sourceVal;
 			if (defined $originInfo) {
 				$originInfo->{$key} = $origin;
