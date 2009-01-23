@@ -69,6 +69,18 @@ sub getAttrInfo
             content_descr => '1 means active - 0 means inactive',
             default => '1',
         },
+        'xserver::ddcinfo' => {
+            applies_to_systems => 1,
+            applies_to_clients => 0,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+            should the 'xserver'-plugin use the ddcinfo (if available) for
+            the monitor/tft setup? Might help in scenarios with resolutions
+            configured much lower than physically possible. (0 ignore, 1 use)
+            End-of-Here
+            content_regex => qr{^(0|1)$},
+            content_descr => '0 ignore ddcinfo, 1 use ddcinfo if available',
+            default => '0',
+        },
 
         # plugin specific attributes start here ...
 

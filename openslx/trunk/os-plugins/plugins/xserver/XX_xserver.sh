@@ -131,6 +131,11 @@ Section "DRI"
   Mode    0666
 EndSection
 '   >> $xfc
+    # if no module was detected, stick to vesa module
+    if [ -z "$xmodule" ] ; then
+      xmodule=vesa
+      error "xserver: no proper module was detected"
+    fi
     sed "s/vesa/$xmodule/;s/\"us\"/\"${XKEYBOARD}\"/" -i $xfc
     # these directories might be distro specific
     for file in /var/lib/xkb/compiled ; do
@@ -151,8 +156,16 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
 }' -i $xfc
     fi
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'xserver' os-plugin ...";
+    # run distro specific generated stage3 script
+    [ -e /mnt/opt/openslx/plugin-repo/xserver/xserver.sh ] && \
+      . /mnt/opt/openslx/plugin-repo/xserver/xserver.sh
+    if [ $xserver_ddcinfo -ne 0 ] ; then
+      # read /etc/hwinfo.monitor started at "runinithook '00-started'"
+      # and add
+      #   Horizsync       28.0-65.0??
+      #   Vertrefresh     57.0-63.0??
+      # in Monitor section
+      :
+    fi
   fi
-  # run distro specific generated stage3 script
-  [ -e /mnt/opt/openslx/plugin-repo/xserver/xserver.sh ] && \
-    . /mnt/opt/openslx/plugin-repo/xserver/xserver.sh
 fi
