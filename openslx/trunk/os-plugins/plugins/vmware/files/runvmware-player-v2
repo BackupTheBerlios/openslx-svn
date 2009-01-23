@@ -302,7 +302,7 @@ runvmwareconfheader ()
 
   ###### usb ###################################################################
   usb.present = \"TRUE\"
-  ehci.present= \"TRUE\"
+  ehci.present = \"TRUE\"
   usb.generic.autoconnect = \"TRUE\"
 
   ###### floppies ##############################################################

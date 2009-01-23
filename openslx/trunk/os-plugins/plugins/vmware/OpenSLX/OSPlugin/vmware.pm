@@ -116,12 +116,12 @@ sub getAttrInfo
             applies_to_systems => 1,
             applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                Format ServerIP/Netprefix
+                Format ServerIP/Netprefix. Last octet will be omitted
             End-of-Here
             #TODO: check if the input is valid
             #content_regex => qr{^(0|1)$},
-            content_descr => 'Allowed value: IP/Prefix',
-            default => '192.168.102.1/24',
+            content_descr => 'Allowed value: IP/Prefix. Last octet will be omitted',
+            default => '192.168.102.x/24',
         },
         # attribute 'kind' defines which set of VMware binaries should be 
         # activated ('local' provided with the main installation set).

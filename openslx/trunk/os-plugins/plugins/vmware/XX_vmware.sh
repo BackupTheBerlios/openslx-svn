@@ -81,6 +81,7 @@ $(ipcalc -m $vmnet1|sed s/.*=//) {" \
         >> /mnt/etc/vmware/dhcpd-vmnet1.conf 
       echo -e "\toption broadcast-address $(ipcalc -b $vmnet1|sed s/.*=//);" \
         >> /mnt/etc/vmware/dhcpd-vmnet1.conf 
+      # Maybe a different ip is needed s. nat: vmnet="${vmsub}.2"
       echo -e "\toption routers $vmip;" \
         >> /mnt/etc/vmware/dhcpd-vmnet1.conf
       echo -e "}" \
@@ -91,9 +92,13 @@ $(ipcalc -m $vmnet1|sed s/.*=//) {" \
     # vmware nat interface configuration
     if [ -n "$vmware_vmnet8" ] ; then
       cp /mnt/etc/vmware/dhcpd-head.conf /mnt/etc/vmware/dhcpd-vmnet8.conf
-      local vmip=${vmware_vmnet8%/*}
+      local vmnet8ip=${vmware_vmnet8%/*}
       local vmpx=${vmware_vmnet8#*/}
-      local vmsub=$(echo $vmip |sed 's,\(.*\)\..*,\1,') # x.x.x.x => x.x.x">
+      local vmsub=$(echo $vmnet8ip |sed 's,\(.*\)\..*,\1,') # x.x.x.x => x.x.x">
+      # vmip is user for vmnet8 device
+      # vmnet is user for config files nat.conf/dhcp
+      local vmip="${vmsub}.1"
+      local vmnet="${vmsub}.2"
       echo -e "vmnet8=$vmip/$vmpx" >> /mnt/etc/vmware/slxvmconfig
       echo -e "\n# definition for virtual vmnet8 interface" \
         >> /mnt/etc/vmware/dhcpd-vmnet8.conf
@@ -104,7 +109,7 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
         >> /mnt/etc/vmware/dhcpd-vmnet8.conf
       echo -e "\toption broadcast-address $(ipcalc -b $vmip/$vmpx|sed s/.*=//);" \
         >> /mnt/etc/vmware/dhcpd-vmnet8.conf
-      echo -e "\toption routers $vmip;" \
+      echo -e "\toption routers $vmnet;" \
         >> /mnt/etc/vmware/dhcpd-vmnet8.conf
       echo -e "}" \
         >> /mnt/etc/vmware/dhcpd-vmnet8.conf
@@ -112,7 +117,7 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
         > /mnt/etc/vmware/nat.conf
       echo -e "[host]" \
         >> /mnt/etc/vmware/nat.conf
-      echo -e "ip = $vmip/$vmpx" \
+      echo -e "ip = $vmnet/$vmpx" \
         >> /mnt/etc/vmware/nat.conf
       echo -e "device = /dev/vmnet8" \
         >> /mnt/etc/vmware/nat.conf
