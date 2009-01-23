@@ -45,6 +45,11 @@ if [ "${REPLY}" == "YES" ]; then
     mv test/lib*/* .
     cd ../../../..
 
+    echo "   * fixing gdk config file"
+    sed -i \
+      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/root/lib/vmware/libconf,' \
+      root/lib/vmware/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
+
 	echo "   * creating /etc/vmware"
 	mkdir -p /etc/vmware
 

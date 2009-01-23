@@ -262,7 +262,8 @@ sub _writeWrapperScript
             # written by OpenSLX-plugin 'vmware' in Stage1
             # radically simplified version of the original script $file by VMware Inc.
             #TODO: test it with local installed vmplayer!!!
-            LD_LIBRARY_PATH=$vmpath/lib
+            export LD_LIBRARY_PATH=$vmpath/lib
+            export GTK_PIXBUF_MODULE_FILE=$vmpath/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
             PREFIX=$vmpath # depends on the vmware location
             exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \\
                 "\$PREFIX"'/lib' \\
