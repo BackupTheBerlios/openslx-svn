@@ -149,8 +149,6 @@ const char* writeConfXml(DataEntry& dat) {
   strncat(pname, "/scanner.sh", MAX_LENGTH);
   addScanners(root, pname);
   
-  free(pname);
-  
   //xmlSaveFile("-", dat.xml);
   xmlSaveFile( "/tmp/run.xml", dat.xml);
   return "/tmp/run.xml";
