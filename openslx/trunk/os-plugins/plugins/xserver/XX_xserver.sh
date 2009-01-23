@@ -179,9 +179,9 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
                 s|# Modelname.*|  Modelname    \"$modl\"|" -i $xfc
       [ -n "$size" ] && \
         sed -e "s|# DisplaySi.*|  DisplaySize  $size|" -i $xfc
+    fi
     # run distro specific generated stage3 script
     [ -e /mnt/opt/openslx/plugin-repo/xserver/xserver.sh ] && \
       . /mnt/opt/openslx/plugin-repo/xserver/xserver.sh
-    fi
   fi
 fi

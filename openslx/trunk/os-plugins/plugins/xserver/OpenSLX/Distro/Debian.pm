@@ -40,4 +40,10 @@ sub setupXserverScript
     return $script;
 }
 
+# stage3 script might need to add special path /var/X11R6/bin to the PATH variable
+# # fixme!! add path directly to /etc/profile!?
+# #[ "x$addpath" != "x" ] && \
+# #  echo -e "# added path component by $0: $date\n\
+# #PATH=\"\$PATH:/var/X11R6/bin\"" >>/mnt/etc/profile
+
 1;
