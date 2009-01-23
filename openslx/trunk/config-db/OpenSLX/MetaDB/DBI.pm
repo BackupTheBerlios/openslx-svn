@@ -895,7 +895,9 @@ sub setSystemAttrs
     my @attrsToBeUpdated
         = grep { 
             $valueIsOK->($newAttrs->{$_}) && exists $oldAttrs{$_}
-            && ($oldAttrs{$_}->{value} || '') ne ($newAttrs->{$_} || '')
+            && ((defined($oldAttrs{$_}->{value}) xor defined($newAttrs->{$_}))
+                || (defined($oldAttrs{$_}->{value}) && defined($newAttrs->{$_})
+                    && $oldAttrs{$_}->{value} ne $newAttrs->{$_}))
         } keys %$newAttrs;
 
     # ... insert the new ones ...
