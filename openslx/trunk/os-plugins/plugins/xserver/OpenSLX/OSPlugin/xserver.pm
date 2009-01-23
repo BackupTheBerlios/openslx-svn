@@ -8,10 +8,9 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# example.pm
-#    - an example implementation of the OSPlugin API (i.e. an os-plugin)
+# xserver.pm
 # -----------------------------------------------------------------------------
-package OpenSLX::OSPlugin::bindrivers;
+package OpenSLX::OSPlugin::xserver;
 
 use strict;
 use warnings;
@@ -31,7 +30,7 @@ sub new
     my $class = shift;
 
     my $self = {
-        name => 'example',
+        name => 'xserver',
     };
 
     return bless $self, $class;
@@ -60,7 +59,7 @@ sub getAttrInfo
     # of slxconfig.
     return {
         # attribute 'active' is mandatory for all plugins
-        'bindrivers::active' => {
+        'xserver::active' => {
             applies_to_systems => 1,
             applies_to_clients => 0,
             description => unshiftHereDoc(<<'            End-of-Here'),
@@ -72,7 +71,7 @@ sub getAttrInfo
         },
 
         # plugin specific attributes start here ...
-        'bindrivers::preferred_side' => {
+        'xserver::preferred_side' => {
             applies_to_systems => 1,
             applies_to_clients => 0,
             description => unshiftHereDoc(<<'            End-of-Here'),
