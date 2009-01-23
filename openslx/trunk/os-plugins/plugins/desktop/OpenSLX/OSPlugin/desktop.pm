@@ -52,6 +52,7 @@ sub getInfo
             Sets a desktop and creates needed configs, theme can be set as well.
         End-of-Here
         precedence => 40,
+        required => [ qw( xserver ) ],
     };
 }
 
