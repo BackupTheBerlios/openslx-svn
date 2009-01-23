@@ -34,7 +34,8 @@ ash /etc/modprobe.base; mdev -s
 # optimization possible: exclude network and usb base drivers from the
 # following list (bios detection for non-hwautocfg component)
 ( hwinfo --pci >/etc/hwinfo.data; echo "read pci device list at $(sysup)" \
-    >/tmp/hwdataready; hwinfo --bios >/etc/hwinfo.bios ) &
+    >/tmp/hwdataready ) &
+( usleep 100000 ; hwinfo --bios >/etc/hwinfo.bios ) &
 return 0
 }
 

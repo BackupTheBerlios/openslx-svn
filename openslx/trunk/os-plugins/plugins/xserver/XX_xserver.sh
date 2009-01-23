@@ -146,27 +146,6 @@ Section "InputDevice"
 # Option       "Emulate3Buttons"   "true"
   Option       "CorePointer"
 EndSection
-Section "InputDevice"
-  Driver       "wacom"
-  Identifier   "Stylus"
-  Option       "Device"            "/dev/input/wacom"
-  Option       "Type"              "stylus"
-  Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
-EndSection
-Section "InputDevice"
-  Driver       "wacom"
-  Identifier   "Eraser"
-  Option       "Device"            "/dev/input/wacom"
-  Option       "Type"              "eraser"
-  Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
-EndSection
-Section "InputDevice"
-  Driver       "wacom"
-  Identifier   "Cursor"
-  Option       "Device"            "/dev/input/wacom"
-  Option       "Type"              "cursor"
-  Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
-EndSection
 Section "Device"
   Identifier   "Generic Video Card"
   Driver       "vesa"
@@ -194,14 +173,10 @@ Section "ServerLayout"
   Screen       "Default Screen"
   InputDevice  "Generic Keyboard"
   InputDevice  "Generic Mouse"
-  InputDevice  "Stylus"            "SendCoreEvents"
-  InputDevice  "Cursor"            "SendCoreEvents"
-  InputDevice  "Eraser"            "SendCoreEvents"
 EndSection
 Section "DRI"
   Mode    0666
-EndSection
-'   >> $xfc
+EndSection'   >> $xfc
     # if no module was detected, stick to vesa module
     if [ -n "$xmodule" ] ; then
       sed "s/vesa/$xmodule/;s/\"us\"/\"${XKEYBOARD}\"/" -i $xfc
@@ -267,8 +242,37 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
         ln -sf /usr/lib/libGL_MESA.so.1.2 /mnt/var/X11R6/lib/libGL.so.1.2
       fi
     fi
-
-    [ $DEBUGLEVEL -gt 0 ] && echo "done with 'xserver' os-plugin ...";
+ 
+    # check if tablet hardware available, read device information from file
+    if [ -e /etc/tablet.conf ]; then
+      . /etc/tablet.conf
+      echo -e 'Section "InputDevice"
+  Driver       "wacom"
+  Identifier   "Stylus"
+  Option       "Device"            "/dev/input/wacom"
+  Option       "Type"              "stylus"
+  Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
+EndSection
+Section "InputDevice"
+  Driver       "wacom"
+  Identifier   "Eraser"
+  Option       "Device"            "/dev/input/wacom"
+  Option       "Type"              "eraser"
+  Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
+EndSection
+Section "InputDevice"
+  Driver       "wacom"
+  Identifier   "Cursor"
+  Option       "Device"            "/dev/input/wacom"
+  Option       "Type"              "cursor"
+  Option       "ForceDevice"       "ISDV4"         # Tablet PC ONLY
+EndSection' >> ${xfc}
+      sed -e "s,/dev/in.*,/dev/${wacomdev}," \
+          -e '/e  \"Generic Mouse\"/a\\ \ InputDevice  "Stylus"            "SendCoreEvents"' \
+          -e '/e  \"Generic Mouse\"/a\\ \ InputDevice  "Cursor"            "SendCoreEvents"' \
+          -e '/e  \"Generic Mouse\"/a\\ \ InputDevice  "Eraser"            "SendCoreEvents"' \
+          -i ${xfc}
+    fi
 
     # some configurations produce no proper screen resolution without
     # Horizsync and Vertrefresh set (more enhancements might be needed for
@@ -302,6 +306,9 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
     # run distro specific generated stage3 script
     [ -e /mnt/opt/openslx/plugin-repo/xserver/xserver.sh ] && \
       . /mnt/opt/openslx/plugin-repo/xserver/xserver.sh
+
+    [ $DEBUGLEVEL -gt 0 ] && echo "done with 'xserver' os-plugin ..."
+
   fi
 elif [ ! -e /initramfs/plugin-conf/xserver.conf ]; then
   [ $DEBUGLEVEL -gt 2 ] && \
