@@ -641,6 +641,16 @@ sub writeClientConfigurationsForSystem
                 $externalSystemID, $buildPath, $externalClientName
             );
 
+            my $attrsOK = eval {
+                OpenSLX::AttributeRoster->checkValues(
+                    $client->{attrs}, $info->{'vendor-os'}->{name}
+                );
+                1;
+            };
+            if (!$attrsOK && $@) {
+                warn substr($@, 4);     # remove leading '*** '
+            }
+
             writeAttributesToFile($client, $attrFile);
 
             # create tar containing external system configuration
