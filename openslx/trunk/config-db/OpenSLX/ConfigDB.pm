@@ -17,6 +17,7 @@ our (@ISA, @EXPORT_OK, %EXPORT_TAGS, $VERSION);
 $VERSION = 1;    # API-version
 
 use Clone qw(clone);
+use File::Basename;
 
 use Exporter;
 @ISA = qw(Exporter);
@@ -2839,7 +2840,7 @@ sub aggregatedSystemFileInfoFor
         warn(
             _tr(
                 "setting kernel of system '%s' to '%s'!",
-                $info->{name}, $kernelFile
+                $info->{name}, basename($kernelFile)
             )
         );
     }
