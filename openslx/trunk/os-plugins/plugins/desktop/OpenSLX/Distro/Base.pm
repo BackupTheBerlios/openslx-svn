@@ -282,7 +282,6 @@ sub KDMPathInfo
     my $pathInfo = {
         config => '/etc/opt/kdm/kdmrc',
         paths => [
-            '/var/adm/kdm',
             '/var/lib/kdm',
         ],
     };
@@ -323,6 +322,22 @@ sub setupKDMScript
               /mnt$configFile
           fi
         fi
+        case "\${desktop_allowshutdown}" in
+          none)
+            sed "s|AllowShutdown.*|AllowShutdown='None'|" \\
+              -i /mnt$configFile
+          ;;
+          root)
+            sed "s|AllowShutdown.*|AllowShutdown='Root'|" \\
+              -i /mnt$configFile
+          ;;
+          users)
+            sed "s|AllowShutdown.*|AllowShutdown='All'|" \\
+              -i /mnt$configFile
+          ;;
+        esac
+        [ "\${desktop_rootlogin}" -ne 0 ] && \\
+          sed "s|AllowRootLogin.*|AllowRootLogin=true|" -i /mnt$configFile
     End-of-Here
     
     return $script;
@@ -335,6 +350,8 @@ sub KDMConfigHashForWorkstation
     return {
         'X-:0-Core' => {
             AutoLoginEnable => 'false',
+            AllowRootLogin => 'false',
+            AllowShutdown => 'All',
         },
         'X-*-Greeter' => {
             GreetString => 'OpenSLX (%h)',

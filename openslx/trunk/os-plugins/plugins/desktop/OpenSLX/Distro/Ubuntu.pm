@@ -80,7 +80,7 @@ sub setupKDMScript
     my $script = $self->SUPER::setupKDMScript($repoPath);
     
     $script .= unshiftHereDoc(<<'    End-of-Here');
-        rllinker kdm 1 1
+        rllinker kdm 1 10
         echo '/usr/bin/kdm' > /mnt/etc/X11/default-display-manager
         chroot /mnt update-alternatives --set x-window-manager /usr/bin/kwin
         chroot /mnt update-alternatives --set x-session-manager \
