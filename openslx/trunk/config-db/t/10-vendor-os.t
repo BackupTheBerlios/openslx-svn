@@ -192,25 +192,25 @@ ok(! $configDB->changeVendorOS(1, { id => 23 }), 'changing id should fail');
 
 # test adding & removing of installed plugins
 is(
-	$configDB->fetchInstalledPlugins(3), 
+	my @plugins = $configDB->fetchInstalledPlugins(3), 
 	0, 'there should be no installed plugins'
 );
 ok($configDB->addInstalledPlugin(3, 'Example'), 'adding installed plugin');
-is(
-	my @plugins = $configDB->fetchInstalledPlugins(3), 
-	1,
-	'should have 1 installed plugin'
-);
-ok(
-	!$configDB->addInstalledPlugin(3, 'Example'), 
-	'adding plugin again should fail (but do not harm)'
-);
 is(
 	@plugins = $configDB->fetchInstalledPlugins(3), 
 	1,
 	'should have 1 installed plugin'
 );
-is($plugins[0], 'Example', 'should have got plugin "Example"');
+is(
+	$configDB->addInstalledPlugin(3, 'Example'), 1, 
+	'adding plugin again should work (but do not harm, just update the attrs)'
+);
+is(
+	@plugins = $configDB->fetchInstalledPlugins(3), 
+	1,
+	'should still have 1 installed plugin'
+);
+is($plugins[0]->{plugin_name}, 'Example', 'should have got plugin "Example"');
 ok($configDB->addInstalledPlugin(3, 'Test'), 'adding a second plugin');
 is(
 	@plugins = $configDB->fetchInstalledPlugins(3), 
@@ -225,12 +225,12 @@ ok(
 	@plugins = $configDB->fetchInstalledPlugins(3, 'Example'), 
 	'fetching specific plugin'
 );
-is($plugins[0], 'Example', 'should have got plugin "Example"');
+is($plugins[0]->{plugin_name}, 'Example', 'should have got plugin "Example"');
 ok(
 	@plugins = $configDB->fetchInstalledPlugins(3, 'Test'), 
 	'fetching another specific plugin'
 );
-is($plugins[0], 'Test', 'should have got plugin "Test"');
+is($plugins[0]->{plugin_name}, 'Test', 'should have got plugin "Test"');
 is(
 	@plugins = $configDB->fetchInstalledPlugins(3, 'xxx'), 0,
 	'fetching unknown specific plugin'
