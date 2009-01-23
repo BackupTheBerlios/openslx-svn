@@ -8,7 +8,7 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# MakeInitRamFS::Base.pm
+# MakeInitRamFS::Distro::Base.pm
 #    - provides empty base of the distro-specific part of the OpenSLX
 #      MakeInitRamFS API.
 # -----------------------------------------------------------------------------

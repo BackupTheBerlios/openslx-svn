@@ -24,7 +24,7 @@ use File::Path;
 
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB;
-use OpenSLX::MakeInitRamFS::Engine;
+use OpenSLX::MakeInitRamFS::Engine::SlxBoot;
 use OpenSLX::Utils;
 
 our %initramfsMap;
@@ -154,7 +154,8 @@ sub _makeInitRamFS
         $params->{'debug-level'} = $debugLevel;
     }
 
-    my $makeInitRamFSEngine = OpenSLX::MakeInitRamFS::Engine->new($params);
+    my $makeInitRamFSEngine 
+        = OpenSLX::MakeInitRamFS::Engine::SlxBoot->new($params);
     $makeInitRamFSEngine->execute($self->{'dry-run'});
 
     # copy back kernel-params, as they might have been changed (by plugins)
