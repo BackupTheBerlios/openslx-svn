@@ -61,6 +61,7 @@ sub initDistroInfo
         - /var/cache/beagle
         - /var/cache/yum
         - /var/cache/man/*
+        - /var/cache/zypp/*
         - /var/adm/backup/rpmdb/*
         - /var/adm/mount/AP*
         - /var/adm/SuSEconfig
@@ -91,6 +92,7 @@ sub initDistroInfo
         - /opt/kde3/share/autostart/SUSEgreeter.desktop
         - /opt/kde3/share/autostart/zen-updater-auto.desktop
         - /opt/gnome/share/autostart/beagle*.desktop
+        - /opt/gnome/share/gnome/autostart/beagle*.desktop
         - /mnt/*
         - /media/*
         + /media
