@@ -176,40 +176,39 @@ sub getAttrInfo
 sub installationPhase
 {
     my $self = shift;
-    my $pluginRepositoryPath = shift;
-    my $pluginTempPath = shift;
-    my $openslxPath = shift;
+    my $info = shift;
+    
+    my $pluginRepositoryPath = $info->{'plugin-repo-path'};
+    my $pluginTempPath       = $info->{'plugin-temp-path'};
+    my $openslxBasePath      = $info->{'openslx-base-path'};
 
     # get path of files we need to install
-    my $pluginFilesPath = "$openslxPath/lib/plugins/$self->{'name'}/files";
+    my $pluginFilesPath = "$openslxBasePath/lib/plugins/$self->{'name'}/files";
 
     # copy all needed files now
     copyFile("$pluginFilesPath/x11vnc", "/etc/init.d");
     vlog(3, "install init file");
 
     if ( !-x "/usr/bin/x11vnc" ) {
-      # let's install x11vnc
-      if ( $self->{'os-plugin-engine'}->{'vendor-os-name'} =~ m/(debian|ubuntu)/i ) {
-        my $cmd = "aptitude -y install x11vnc";
-        vlog(3, "executing: $cmd");
-        if (slxsystem($cmd)) {
-          die _tr(
-            "unable to execute shell-cmd\n\t%s", $cmd
-          );
+        # let's install x11vnc
+        my $vendorOSName = $self->{'os-plugin-engine'}->{'vendor-os-name'};
+        if ( $vendorOSName =~ m/(debian|ubuntu)/i ) {
+            my $cmd = "aptitude -y install x11vnc";
+            vlog(3, "executing: $cmd");
+            if (slxsystem($cmd)) {
+                die _tr("unable to execute shell-cmd\n\t%s", $cmd);
+            }
         }
-      }
-      if ( $self->{'os-plugin-engine'}->{'vendor-os-name'} =~ m/suse/i ) {
-       # PLEASE TEST THIS!!!
-        my $cmd = "zypper -n in x11vnc";
-        vlog(3, "executing: $cmd");
-        if (slxsystem($cmd)) {
-          die _tr(
-            "unable to execute shell-cmd\n\t%s", $cmd
-          );
+        if ( $vendorOSName =~ m/suse/i ) {
+            # PLEASE TEST THIS!!!
+            my $cmd = "zypper -n in x11vnc";
+            vlog(3, "executing: $cmd");
+            if (slxsystem($cmd)) {
+                die _tr("unable to execute shell-cmd\n\t%s", $cmd);
+            }
         }
-      }
     } else {
-      vlog(3, "x11vnc is already installed");
+        vlog(3, "x11vnc is already installed");
     }
 
 }
@@ -217,8 +216,7 @@ sub installationPhase
 sub removalPhase
 {
     my $self = shift;
-    my $pluginRepositoryPath = shift;
-    my $pluginTempPath = shift;
+    my $info = shift;
 }
 
 1;

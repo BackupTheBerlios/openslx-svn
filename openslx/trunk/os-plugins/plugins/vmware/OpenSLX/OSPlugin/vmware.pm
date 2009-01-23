@@ -171,12 +171,14 @@ sub getAttrInfo
 
 sub installationPhase
 {
-    my $self                      = shift;
-
-    $self->{pluginRepositoryPath} = shift;
-    $self->{pluginTempPath}       = shift;
-    $self->{openslxPath}          = shift;
-    $self->{attrs}                = shift;
+    my $self = shift;
+    my $info = shift;
+    
+    $self->{pluginRepositoryPath} = $info->{'plugin-repo-path'};
+    $self->{pluginTempPath}       = $info->{'plugin-temp-path'};
+    $self->{openslxBasePath}      = $info->{'openslx-base-path'};
+    $self->{openslxConfigPath}    = $info->{'openslx-config-path'};
+    $self->{attrs}                = $info->{'plugin-attrs'};
     
 
     # kinds we will configure and install
@@ -194,11 +196,9 @@ sub installationPhase
 
 sub removalPhase
 {
-    my $self                 = shift;
-    my $pluginRepositoryPath = shift;
-    my $pluginTempPath       = shift;
-    
-    rmtree ( [ $pluginRepositoryPath ] );
+    my $self = shift;
+    my $info = shift;
+
     # restore old start scripts - to be discussed
     my @files = qw( vmware vmplayer );
     foreach my $file (@files) {
@@ -314,7 +314,7 @@ sub _localInstallation
     my $vmbuildversion = "";
 
     my $pluginFilesPath 
-        = "$self->{'openslxPath'}/lib/plugins/$self->{'name'}/files";
+        = "$self->{'openslxBasePath'}/lib/plugins/$self->{'name'}/files";
     my $installationPath = "$self->{'pluginRepositoryPath'}/$kind";
 
     mkpath($installationPath);
@@ -410,7 +410,7 @@ sub _vmpl2Installation {
     my $vmbuildversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage1";
 
     my $pluginFilesPath 
-        = "$self->{'openslxPath'}/lib/plugins/$self->{'name'}/files";
+        = "$self->{'openslxBasePath'}/lib/plugins/$self->{'name'}/files";
     my $installationPath = "$self->{'pluginRepositoryPath'}/$kind";
 
     mkpath($installationPath);

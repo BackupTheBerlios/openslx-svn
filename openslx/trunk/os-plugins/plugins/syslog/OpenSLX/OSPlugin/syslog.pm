@@ -108,11 +108,13 @@ sub getAttrInfo
 sub installationPhase
 {
     my $self = shift;
+    my $info = shift;
     
-    $self->{pluginRepositoryPath} = shift;
-    $self->{pluginTempPath}       = shift;
-    $self->{openslxPath}          = shift;
-    $self->{attrs}                = shift;
+    $self->{pluginRepositoryPath} = $info->{'plugin-repo-path'};
+    $self->{pluginTempPath}       = $info->{'plugin-temp-path'};
+    $self->{openslxBasePath}      = $info->{'openslx-base-path'};
+    $self->{openslxConfigPath}    = $info->{'openslx-config-path'};
+    $self->{attrs}                = $info->{'plugin-attrs'};
     
     # We are going to change some of the stage1 attributes during installation
     # (basically we are filling the ones that are not defined). Since the result
@@ -167,9 +169,8 @@ die 'sorry, support for kind "syslogd" is not implemented yet!';
 sub removalPhase
 {
     my $self = shift;
-    my $pluginRepositoryPath = shift;
-    my $pluginTempPath = shift;
-
+    my $info = shift;
+    
     return;
 }
 

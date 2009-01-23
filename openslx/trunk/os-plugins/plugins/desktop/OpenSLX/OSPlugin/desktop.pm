@@ -64,16 +64,6 @@ sub getAttrInfo
             content_descr => '1 means active - 0 means inactive',
             default => '1',
         },
-        'desktop::manager' => {
-            applies_to_systems => 1,
-            applies_to_clients => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                which display manager to start: gdm, kdm or xdm?
-            End-of-Here
-            content_regex => qr{^(gdm|kdm|xdm)$},
-            content_descr => '"gdm", "kdm" or "xdm"',
-            default => undef,
-        },
         'desktop::kind' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
@@ -82,6 +72,16 @@ sub getAttrInfo
             End-of-Here
             content_regex => qr{^(gnome|kde|xfce)$},
             content_descr => '"gnome", "kde" or "xfce"',
+            default => undef,
+        },
+        'desktop::manager' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                which display manager to start: gdm, kdm or xdm?
+            End-of-Here
+            content_regex => qr{^(gdm|kdm|xdm)$},
+            content_descr => '"gdm", "kdm" or "xdm"',
             default => undef,
         },
         'desktop::mode' => {
@@ -106,37 +106,10 @@ sub getAttrInfo
         },
 
         # stage1
-        'desktop::supported_themes' => {
-            applies_to_vendor_os => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                name of all themes that shall be installed in vendor-OS (such
-                that they can be selected via 'desktop::theme' in stage 3).
-            End-of-Here
-            content_descr => 'a comma-separated list of theme names',
-            default => 'openslx',
-        },
         'desktop::gdm' => {
             applies_to_vendor_os => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
                 should gdm be available (installed in vendor-OS)?
-            End-of-Here
-            content_regex => qr{^0|1$},
-            content_descr => '"0", "1" or "-" (for unset)',
-            default => undef,
-        },
-        'desktop::kdm' => {
-            applies_to_vendor_os => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                should kdm be available (installed in vendor-OS)?
-            End-of-Here
-            content_regex => qr{^0|1$},
-            content_descr => '"0", "1" or "-" (for unset)',
-            default => undef,
-        },
-        'desktop::xdm' => {
-            applies_to_vendor_os => 1,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                should xdm be available (installed in vendor-OS)?
             End-of-Here
             content_regex => qr{^0|1$},
             content_descr => '"0", "1" or "-" (for unset)',
@@ -155,6 +128,33 @@ sub getAttrInfo
             applies_to_vendor_os => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
                 should kde be available (installed in vendor-OS)?
+            End-of-Here
+            content_regex => qr{^0|1$},
+            content_descr => '"0", "1" or "-" (for unset)',
+            default => undef,
+        },
+        'desktop::kdm' => {
+            applies_to_vendor_os => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                should kdm be available (installed in vendor-OS)?
+            End-of-Here
+            content_regex => qr{^0|1$},
+            content_descr => '"0", "1" or "-" (for unset)',
+            default => undef,
+        },
+        'desktop::supported_themes' => {
+            applies_to_vendor_os => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                name of all themes that shall be installed in vendor-OS (such
+                that they can be selected via 'desktop::theme' in stage 3).
+            End-of-Here
+            content_descr => 'a comma-separated list of theme names',
+            default => undef,
+        },
+        'desktop::xdm' => {
+            applies_to_vendor_os => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                should xdm be available (installed in vendor-OS)?
             End-of-Here
             content_regex => qr{^0|1$},
             content_descr => '"0", "1" or "-" (for unset)',
@@ -314,11 +314,13 @@ sub checkStage3AttrValues
 sub installationPhase
 {
     my $self = shift;
+    my $info = shift;
     
-    $self->{pluginRepositoryPath} = shift;
-    $self->{pluginTempPath}       = shift;
-    $self->{openslxPath}          = shift;
-    $self->{attrs}                = shift;
+    $self->{pluginRepositoryPath} = $info->{'plugin-repo-path'};
+    $self->{pluginTempPath}       = $info->{'plugin-temp-path'};
+    $self->{openslxBasePath}      = $info->{'openslx-base-path'};
+    $self->{openslxConfigPath}    = $info->{'openslx-config-path'};
+    $self->{attrs}                = $info->{'plugin-attrs'};
     
     # We are going to change some of the stage1 attributes during installation
     # (basically we are filling the ones that are not defined). Since the result
@@ -332,6 +334,7 @@ sub installationPhase
     $self->{gnome} = $self->{attrs}->{'desktop::gnome'};
     $self->{kde}   = $self->{attrs}->{'desktop::kde'};
     $self->{xcfe}  = $self->{attrs}->{'desktop::xfce'};
+    $self->{supported_themes}  = $self->{attrs}->{'desktop::supported_themes'};
     
     $self->_installRequiredPackages();
     $self->_fillUnsetStage1Attrs();
@@ -355,9 +358,8 @@ sub installationPhase
 sub removalPhase
 {
     my $self = shift;
-    my $pluginRepositoryPath = shift;
-    my $pluginTempPath = shift;
-
+    my $info = shift;
+    
     return;
 }
 
@@ -368,40 +370,9 @@ sub copyRequiredFilesIntoInitramfs
     my $attrs               = shift;
     my $makeInitRamFSEngine = shift;
     
-    my $themeDir     = "$openslxConfig{'base-path'}/share/themes";
-    my $desktopXdmcp = $attrs->{'desktop::xdmcp'} || '';
-    my $xdmcpConfigDir 
-        = "$openslxConfig{'base-path'}/lib/plugins/desktop/files/$desktopXdmcp";
-    my $desktopTheme = $attrs->{'desktop::theme'} || '';
-    if ($desktopTheme) {
-        my $desktopThemeDir 
-            = "$themeDir/$desktopTheme/desktop/$desktopXdmcp";
-        if (-d $desktopThemeDir) {
-            $makeInitRamFSEngine->addCMD(
-                "mkdir -p $targetPath/usr/share/files"
-            );
-            $makeInitRamFSEngine->addCMD(
-                "mkdir -p $targetPath/usr/share/themes"
-            );
-            $makeInitRamFSEngine->addCMD(
-                "cp -a $desktopThemeDir $targetPath/usr/share/themes/"
-            );
-            $makeInitRamFSEngine->addCMD(
-                "cp -a $xdmcpConfigDir $targetPath/usr/share/files"
-            );
-        }
-    }
-    else {
-        $desktopTheme = '<none>';
-    }
+    my $desktopTheme = $attrs->{'desktop::theme'} || '<none>';
 
-    vlog(
-        1, 
-        _tr(
-            "desktop-plugin: desktop=%s", 
-            $desktopTheme
-        )
-    );
+    vlog(1, _tr("desktop-plugin: desktop=%s", $desktopTheme));
 
     return;
 }
@@ -456,6 +427,9 @@ sub _fillUnsetStage1Attrs
     if (!defined $self->{'xdm'}) {
         $self->{'xdm'} = $self->{distro}->isXDMInstalled();
     }
+    if (!defined $self->{'supported_themes'}) {
+#        $self->{'supported_themes'} = $self->{distro}->getSupportedThemes();
+    }
 
     return 1;
 }
@@ -474,7 +448,7 @@ sub _ensureSensibleStage3Attrs
                 "no desktop kind is possible, plugin 'desktop' wouldn't work!"
             );
         }
-        print _tr("selecting %s as desktop kind\n", $desktops[0]);
+        vlog(0, _tr("selecting %s as desktop kind\n", $desktops[0]));
         $self->{attrs}->{'desktop::kind'} = $desktops[0];
     }
 
@@ -488,8 +462,23 @@ sub _ensureSensibleStage3Attrs
                 "no desktop manager is possible, plugin 'desktop' wouldn't work!"
             );
         }
-        print _tr("selecting %s as desktop manager\n", $managers[0]);
+        vlog(0, _tr("selecting %s as desktop manager\n", $managers[0]));
         $self->{attrs}->{'desktop::manager'} = $managers[0];
+    }
+
+    # check if current theme is supported at all and select another one, if it
+    # isn't
+    my $theme = $self->{attrs}->{'desktop::theme'} || '';
+    my @supportedThemes = split ",", $self->{'supported_themes'} || '';
+    if (!grep { $_ eq $theme } @supportedThemes) {
+        if (!@supportedThemes) {
+            vlog( 0, _tr("no themes are supported, using no theme!"));
+            $self->{attrs}->{'desktop::theme'} = undef;
+        }
+        else {
+            vlog(0, _tr("selecting %s as theme\n", $supportedThemes[0]));
+            $self->{attrs}->{'desktop::theme'} = $supportedThemes[0];
+        }
     }
 
     return 1;
@@ -603,7 +592,7 @@ sub _setupSupportedThemes
     my @supportedThemes = split m{\s*,\s*}, $supportedThemes;
     return if !@supportedThemes;
 
-    my $themeBaseDir = "$self->{openslxPath}/lib/plugins/desktop/themes";
+    my $themeBaseDir = "$self->{openslxBasePath}/lib/plugins/desktop/themes";
     THEME:
     for my $theme (@supportedThemes) {
         my $themeDir = "$themeBaseDir/$theme";

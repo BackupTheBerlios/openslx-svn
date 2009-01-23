@@ -89,41 +89,45 @@ sub installationPhase
 {   # called while chrooted to the vendor-OS root in order to give the plugin
     # a chance to install required files into the vendor-OS.
     my $self = shift;
+    my $info = shift;
     
-    my $pluginRepositoryPath = shift;
+    my $pluginRepoPath = $info->{'plugin-repo-path'};
         # The folder where the stage1-plugin should store all files
         # required by the corresponding stage3 runlevel script.
         # As this method is being executed while chrooted into the vendor-OS,
         # this path is relative to that root (i.e. directly usable).
-    my $pluginTempPath = shift;
+    my $pluginTempPath = $info->{'plugin-temp-path'};
         # A temporary playground that will be cleaned up automatically.
         # As this method is being executed while chrooted into the vendor-OS,
         # this path is relative to that root (i.e. directly usable).
-    my $openslxPath = shift;
-        # the openslx base path bind-mounted into the chroot (/mnt/openslx)
+    my $openslxBasePath = $info->{'openslx-base-path'};
+        # the openslx base path (/opt/openslx) bind-mounted into the chroot
+    my $openslxConfigPath = $info->{'openslx-config-path'};
+        # the openslx config path (/etc/opt/openlsx) bind-mounted into the 
+        # chroot
+    my $attrs = $info->{'plugin-attrs'};
+        # attributes in effect for this installation
     
     # for this example plugin, we simply create two files:
-    spitFile("$pluginRepositoryPath/right", "(-;\n");
-    spitFile("$pluginRepositoryPath/left", ";-)\n");
+    spitFile("$pluginRepoPath/right", "(-;\n");
+    spitFile("$pluginRepoPath/left", ";-)\n");
 
     # Some plugins have to copy files from their plugin folder into the
-    # vendor-OS. In order to make this possible while chrooted, the host's
-    # /opt/openslx folder will be mounted to /mnt/openslx in the vendor-OS. 
-    # So each plugin could copy some files like this:
+    # vendor-OS. Here's an example for how to do that:
     #
     # # get our own name:
     # my $pluginName = $self->{'name'};
     #
     # # get our own base path:
-    # my $pluginBasePath = "/mnt/openslx/lib/plugins/$pluginName";
+    # my $pluginBasePath = "$openslxBasePath/lib/plugins/$pluginName";
     #     
     # # copy all needed files now:
     # foreach my $file ( qw( file1, file2 ) ) {
-    #     copyFile("$pluginBasePath/$file", "$pluginRepositoryPath/");
+    #     copyFile("$pluginBasePath/$file", "$pluginRepoPath/");
     # }
 
     # name of current os
-    # $self->{'os-plugin-engine'}->{'vendor-os-name'} 
+    # my $vendorOSName = $self->{'os-plugin-engine'}->{'vendor-os-name'} 
 
     return;
 }
@@ -132,10 +136,17 @@ sub removalPhase
 {   # called while chrooted to the vendor-OS root in order to give the plugin
     # a chance to uninstall no longer required files from the vendor-OS.
     my $self = shift;
-    my $pluginRepositoryPath = shift;
-        # the repository folder, relative to the vendor-OS root
-    my $pluginTempPath = shift;
-        # the temporary folder, relative to the vendor-OS root
+    my $info = shift;
+    
+    my $pluginRepoPath = $info->{'plugin-repo-path'};
+        # The folder where the stage1-plugin should store all files
+        # required by the corresponding stage3 runlevel script.
+        # As this method is being executed while chrooted into the vendor-OS,
+        # this path is relative to that root (i.e. directly usable).
+    my $pluginTempPath = $info->{'plugin-temp-path'};
+        # A temporary playground that will be cleaned up automatically.
+        # As this method is being executed while chrooted into the vendor-OS,
+        # this path is relative to that root (i.e. directly usable).
 
     return;
 }

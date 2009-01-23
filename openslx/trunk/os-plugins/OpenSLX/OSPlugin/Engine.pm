@@ -94,7 +94,8 @@ sub initialize
             = "/tmp/slx-plugin/$self->{'plugin-name'}";
         $self->{'plugin-temp-path'}
             = "$self->{'vendor-os-path'}/$self->{'chrooted-plugin-temp-path'}";
-        $self->{'chrooted-openslx-base-path'} = '/mnt/openslx';
+        $self->{'chrooted-openslx-base-path'}   = '/mnt/opt/openslx';
+        $self->{'chrooted-openslx-config-path'} = '/mnt/etc/opt/openslx';
 
         # check and store given attribute set
         my $knownAttrs = $self->{plugin}->getAttrInfo();
@@ -168,12 +169,18 @@ sub installPlugin
         $self->_callChrootedFunctionForPlugin(
             sub {
                 # invoke plugin and let it install itself into vendor-OS
-                $self->{plugin}->installationPhase(
-                    $self->{'chrooted-plugin-repo-path'}, 
-                    $self->{'chrooted-plugin-temp-path'},
-                    $self->{'chrooted-openslx-base-path'},
-                    $self->{'plugin-attrs'},
-                );
+                $self->{plugin}->installationPhase( {
+                    'plugin-repo-path' 
+                        => $self->{'chrooted-plugin-repo-path'},
+                    'plugin-temp-path' 
+                        => $self->{'chrooted-plugin-temp-path'},
+                    'openslx-base-path' 
+                        => $self->{'chrooted-openslx-base-path'},
+                    'openslx-config-path'
+                        => $self->{'chrooted-openslx-config-path'},
+                    'plugin-attrs'
+                        => $self->{'plugin-attrs'},
+                } );
 
                 # serialize possibly changed attributes (executed inside chroot)
                 store $self->{'plugin-attrs'}, $chrootedSerializedAttrsFile;
@@ -208,11 +215,18 @@ sub removePlugin
 
         $self->_callChrootedFunctionForPlugin(
             sub {
-                $self->{plugin}->removalPhase(
-                    $self->{'chrooted-plugin-repo-path'}, 
-                    $self->{'chrooted-plugin-temp-path'},
-                    $self->{'chrooted-openslx-base-path'},
-                );
+                $self->{plugin}->removalPhase( {
+                    'plugin-repo-path' 
+                        => $self->{'chrooted-plugin-repo-path'},
+                    'plugin-temp-path' 
+                        => $self->{'chrooted-plugin-temp-path'},
+                    'openslx-base-path' 
+                        => $self->{'chrooted-openslx-base-path'},
+                    'openslx-config-path'
+                        => $self->{'chrooted-openslx-config-path'},
+                    'plugin-attrs'
+                        => $self->{'plugin-attrs'},
+                } );
             }
         );
 
@@ -550,25 +564,39 @@ sub _callChrootedFunctionForPlugin
     my $function = shift;
 
     # bind-mount openslx basepath to /mnt/openslx of vendor-OS:
-    my $basePath             = $openslxConfig{'base-path'};
-    my $openslxPathInChroot = "$self->{'vendor-os-path'}/mnt/openslx";
-    mkpath($openslxPathInChroot);
+    my $basePath         = $openslxConfig{'base-path'};
+    my $basePathInChroot = "$self->{'vendor-os-path'}/mnt/opt/openslx";
+    mkpath($basePathInChroot);
+    my $configPath         = $openslxConfig{'config-path'};
+    my $configPathInChroot = "$self->{'vendor-os-path'}/mnt/etc/opt/openslx";
+    mkpath($configPathInChroot);
 
     my $pluginSession = OpenSLX::ScopedResource->new({
         name    => 'osplugin::session',
         acquire => sub { 
-            # bind mount openslx base path into vendor-OS
-            slxsystem("mount -o bind -o ro $basePath $openslxPathInChroot") == 0
+            # bind mount openslx base and config paths into vendor-OS
+            slxsystem("mount -o bind -o ro $basePath $basePathInChroot") == 0
                 or die _tr(
                     "unable to bind mount '%s' to '%s'! (%s)", 
-                    $basePath, $openslxPathInChroot, $!
+                    $basePath, $basePathInChroot, $!
+                );
+            slxsystem(
+                "mount -o bind -o ro $configPath $configPathInChroot"
+            ) == 0
+                or die _tr(
+                    "unable to bind mount '%s' to '%s'! (%s)", 
+                    $configPath, $configPathInChroot, $!
                 );
             1 
         },
         release => sub {
-            slxsystem("umount $openslxPathInChroot") == 0
+            slxsystem("umount $basePathInChroot") == 0
                 or die _tr(
-                    "unable to umount '%s'! (%s)", $openslxPathInChroot, $!
+                    "unable to umount '%s'! (%s)", $basePathInChroot, $!
+                );
+            slxsystem("umount $configPathInChroot") == 0
+                or die _tr(
+                    "unable to umount '%s'! (%s)", $configPathInChroot, $!
                 );
             1
         },

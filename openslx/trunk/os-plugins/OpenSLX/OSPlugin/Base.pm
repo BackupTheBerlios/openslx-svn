@@ -225,22 +225,47 @@ a file from the OpenSLX host installation into the vendor-OS, while others may
 need to download files from the internet and/or install packages through the
 vendor-OS' meta packager.
 
-N.B.: This method is invoked while chrooted into the vendor-OS root. In order to
-make the OpenSLX files from the host available, the OpenSLX base folder
-(normally /opt/openslx) will be mounted to /mnt/openslx. So if you have to copy
-any files from the host, fetch them from there.
+N.B.: This method is invoked while chrooted into the vendor-OS root.
+
+The hash-ref given in B<$info> contains vital information for the installation
+process:
+
+=over
+
+=item C<plugin-repo-path>
+
+The folder where the stage1-plugin should store all files required by the 
+corresponding stage3 runlevel script.
+
+=item C<plugin-temp-path>
+
+A temporary playground that will be cleaned up automatically.
+
+=item C<openslx-base-path>
+
+In order to make the OpenSLX files from the host available, the OpenSLX base 
+folder (normally /opt/openslx) will be mounted into the chroot. 
+So if you have to copy any files from the host, fetch them from this path.
+
+=item C<openslx-config-path>
+
+In order to make the OpenSLX config files from the host available, the OpenSLX 
+config folder (normally /etc/opt/openslx) will be mounted into the chroot. 
+So if you have to copy any config files from the host, fetch them from this 
+path.
+
+=item C<plugin-attrs>
+
+Contains the attributes in effect for the installation of this plugin.
+
+=back
 
 =cut
 
 sub installationPhase
 {
     my $self = shift;
-    my $pluginRepositoryPath = shift;
-        # the repository folder, relative to the vendor-OS root
-    my $pluginTempPath = shift;
-        # the temporary folder, relative to the vendor-OS root
-    my $openslxPath = shift;
-        # the openslx base path bind-mounted into the chroot (/mnt/openslx)
+    my $info = shift;
     
     return;
 }
@@ -255,17 +280,28 @@ the vendor-OS' meta packager.
 
 N.B.: This method is invoked while chrooted into the vendor-OS root.
 
+The hash-ref given in B<$info> contains vital information for the installation
+process:
+
+=over
+
+=item C<plugin-repo-path>
+
+The folder where the stage1-plugin should store all files required by the 
+corresponding stage3 runlevel script.
+
+=item C<plugin-temp-path>
+
+A temporary playground that will be cleaned up automatically.
+
+=back
+
 =cut
 
 sub removalPhase
 {
     my $self = shift;
-    my $pluginRepositoryPath = shift;
-        # the repository folder, relative to the vendor-OS root
-    my $pluginTempPath = shift;
-        # the temporary folder, relative to the vendor-OS root
-    my $openslxPath = shift;
-        # the openslx base path bind-mounted into the chroot (/mnt/openslx)
+    my $info = shift;
     
     return;
 }
