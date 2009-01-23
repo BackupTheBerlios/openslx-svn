@@ -92,7 +92,7 @@ localization "${country}"
 #############################################################################
 # setup passwd and shadow for local system users like root, bin, daemon and
 # nobody if no user/admin provided passwd exists ... fixme: see #206
-basepasswd $(sed "/+::0/d;s/root://;s/:.*//" /rootfs/etc/shadow)
+basepasswd $(sed "/+::0/d;s/root://;s/:.*//" /rootfs/etc/shadow 2>/dev/null)
 
 #############################################################################
 # dns and ip configuration
@@ -236,7 +236,7 @@ config_nfsv4
 config_samba
 
 #############################################################################
-# NIS
+# NIS (variable typically fetched via dhcp)
 # setup nis configuration if needed
 if [ "x$nis_domain" != "x" ] && [ "x$nis_servers" != "x" ] ; then
   echo $nis_domain >/mnt/etc/defaultdomain

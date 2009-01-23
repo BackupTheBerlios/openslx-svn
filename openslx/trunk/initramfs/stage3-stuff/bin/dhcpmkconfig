@@ -28,4 +28,5 @@ set | sed \
   -e "s,router,gateway,;s,hostname,host_name," \
   -e "s,domain,domain_name,;s,dns,domain_name_servers," \
   -e "s,broadcast,broadcast_address,;s,dhc.*,,;/^$/d" \
-  -e "/OPTIND.*/d" >>/tmp/confviadhcp
+  -e "s,nissrv,nis_servers,;s,nisdomain_name,nis_domain," \
+  -e "s,wins,netbios_name_servers,;/OPTIND.*/d" >>/tmp/confviadhcp
