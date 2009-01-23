@@ -211,22 +211,32 @@ sub installationPhase
             #      version of local
             if(-e "/usr/lib/vmware/bin/vmware"){
                 $vmfile = "vmware";
-                # should be replaced with perl code (grepping in a textfile
-                # shouldn't be that complicated :))
-                $vmversion =
-                    qx(strings /usr/lib/vmware/bin/vmplayer|
-                       grep -m 1 "build-"| sed "s,.*build-,,");
-                chomp($vmversion);
+                # get version. read it out of the binary
+                open(FH, "/usr/lib/vmware/bin/vmware");
+                $/ = undef;
+                my $data = <FH>;
+                close FH;
+		#TODO: add the else case, if we cant find this string
+		if ($data =~ m{(\d\.\d)\.\d build-(\d)+}) {
+		    $vmversion = $1;
+		}
+                print "DEBUG: vmware ws version: $vmversion\n";
                 rename ("/usr/bin/$vmfile", "/usr/bin/$vmfile.slx-bak");
                 linkFile("/var/X11R6/bin/$vmfile", "/usr/bin/$vmfile");
-            } elsif (-e "/usr/lib/vmware/bin/vmware") {
+            } elsif (-e "/usr/lib/vmware/bin/vmplayer") {
                 $vmfile = "vmplayer";
                 # dublicate of test for vmware - should be put into a function,
                 # e.g. in one which decides if workstation or player too ...
-                $vmversion =
-                    qx(strings /usr/lib/vmware/bin/vmplayer|
-                       grep -m 1 "build-"| sed "s,.*build-,,");
+                open(FH, "/usr/lib/vmware/bin/vmplayer");
+                $/ = undef;
+                my $data = <FH>;
+                close FH;
+		#TODO: add the else case, if we cant find this string
+		if ($data =~ m{(\d\.\d)\.\d build-(\d)+}) {
+		    $vmversion = $1;
+		}
                 chomp($vmversion);
+                print "DEBUG: vmplayer version: $vmversion\n";
                 rename ("/usr/bin/$vmfile", "/usr/bin/$vmfile.slx-bak");
                 linkFile("/var/X11R6/bin/$vmfile", "/usr/bin/$vmfile");
             }
