@@ -18,6 +18,7 @@ use warnings;
 
 use base qw(OpenSLX::OSPlugin::Base);
 
+use File::Basename;
 use File::Path;
 
 use OpenSLX::Basics;
@@ -98,7 +99,7 @@ sub getAttrInfo
                 to the ethernet the host is connected to) be enabled
             End-of-Here
             content_descr => 'Allowed values: 0 or 1',
-            default => '',
+            default => '1',
         },
         # attribute 'vmnet1' defines if the host connection network mode 
         # should be switched on and NAT should be enabled
@@ -110,7 +111,7 @@ sub getAttrInfo
                 Format ServerIP/Netprefix,NAT enables NAT/Masquerading
             End-of-Here
             content_descr => 'Allowed value: IP/Prefix[,NAT]',
-            default => '',
+            default => '192.168.101.1/24,NAT',
         },
         # attribute 'vmnet8' defines if vmware specific NATed network mode
         # should be switched on
@@ -121,7 +122,7 @@ sub getAttrInfo
                 Format ServerIP/Netprefix
             End-of-Here
             content_descr => 'Allowed value: IP/Prefix',
-            default => '',
+            default => '192.168.102.1/24',
         },
         # is to be discussed how to handle this - there is no single set of
         # vmware files!!
@@ -145,17 +146,19 @@ sub getAttrInfo
 sub installationPhase
 {
     my $self                 = shift;
-    my $pluginRepositoryPath = shift;
-    my $pluginTempPath       = shift;
-    my $openslxPath          = shift;
+    
+    $self->{pluginRepositoryPath} = shift;
+    $self->{pluginTempPath}       = shift;
+    $self->{openslxPath}          = shift;
+    $self->{attrs}                = shift;
 
     # get path of files we need to install
-    my $pluginFilesPath = "$openslxPath/lib/plugins/$self->{'name'}/files";
+    my $pluginFilesPath = "$self->{'openslxPath'}/lib/plugins/$self->{'name'}/files";
 
     # copy all needed files now
-    my @files = qw( dhcpd.conf nat.conf nvram.5.0 runvmware-v2 );
+    my @files = qw( vmware-init nvram.5.0 runvmware-v2 );
     foreach my $file (@files) {
-        copyFile("$pluginFilesPath/$file", $pluginRepositoryPath);
+        copyFile("$pluginFilesPath/$file", $self->{'pluginRepositoryPath'});
     }
 }
 
@@ -164,7 +167,6 @@ sub removalPhase
     my $self                 = shift;
     my $pluginRepositoryPath = shift;
     my $pluginTempPath       = shift;
-    my $openslxPath          = shift;
     
     rmtree ( [ $pluginRepositoryPath ] );
     

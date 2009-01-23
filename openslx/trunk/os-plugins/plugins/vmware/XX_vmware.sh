@@ -40,7 +40,11 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     . /etc/sysconfig/config
 
     # prepare all needed vmware configuration files
-    testmkd /mnt/etc/vmware
+    if [ -d /mnt/etc/vmware ] ; then
+      rm -rf /mnt/etc/vmware/*
+    else
+      mkdir -p /mnt/etc/vmware
+    fi
     # write the /etc/vmware/slxvmconfig file
     # check for the several variables and write the several files:
     #  dhcpd.conf for vmnet* interfaces
@@ -90,7 +94,12 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
 [incomingudp]" > /mnt/etc/vmware/nat.conf
       echo "00:50:56:F1:30:50" > /mnt/etc/vmware/vmnet-natd-8.mac
     fi
-    
+    # copy the runlevelscript to the proper place
+    cp /mnt/opt/openslx/plugin-repo/vmware/vmware-init \
+      /mnt/etc/${D_INITDIR}/vmware
+    rllinker "vmware" 20 2
+
+
     echo "  * vmware part 1"
     #############################################################################
     # vmware stuff first part: two scenarios
@@ -105,8 +114,8 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
     # get source of vmware image server (get type, server and path)
     if strinstr "/" "${vmware_imagesrc}" ; then
       vmimgprot=$(uri_token ${vmware_imagesrc} prot)
-        vmimgserv=$(uri_token ${vmware_imagesrc} server)
-        vmimgpath="$(uri_token ${vmware_imagesrc} path)"
+      vmimgserv=$(uri_token ${vmware_imagesrc} server)
+      vmimgpath="$(uri_token ${vmware_imagesrc} path)"
     fi
     if [ -n "${vmimgserv}" ] ; then
       testmkd /mnt/var/lib/vmware
@@ -139,8 +148,7 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
     # vmware stuff second part: setting up the environment
     
     # create needed directories and files
-    for i in /etc/vmware/vmnet1/dhcpd /etc/vmware/vmnet8/nat \
-      /etc/vmware/vmnet8/dhcpd /var/run/vmware /etc/vmware/loopimg \
+    for i in /var/run/vmware /etc/vmware/loopimg \
       /etc/vmware/fd-loop /var/X11R6/bin /etc/X11/sessions; do
       testmkd /mnt/$i
     done
@@ -183,30 +191,12 @@ device = /dev/vmnet8\nactiveFTP = 1\n[udp]\ntimeout = 60\n[incomingtcp]\n\
     # needed for VMware 5.5.3 and versions below
     echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
       >>/mnt/etc/${D_INITDIR}/boot.slx
-
-    # link /etc/init.d/vmware, so it starts uppon boot
-    if [ -f /mnt/etc/${D_INITDIR}/vmware ] ; then
-      rllinker "vmware" 20 2
-    else
-      error "df_errvmw" nonfatal
-    fi
     
     chmod 1777 /mnt/var/run/vmware
     # define a variable where gdm/kdm should look for additional sessions
     # do we really need it? looks like we can delete it...
     # export vmsessions=/var/lib/vmware/vmsessions
     
-    # we configured vmware, so we can delete the not_configured file
-    rm /mnt/etc/vmware/not_configured 2>/dev/null
-    
-    # copy dhcpd.conf and nat for vmnet8 (nat)
-    # fixme: It should be possible to start just one vmware dhcp which should
-    # listen to both interfaces vmnet1 and vmnet8 ...
-    cp /mnt/opt/openslx/plugin-repo/vmware/dhcpd.conf \
-      /mnt/etc/vmware/vmnet8/dhcpd 2>/dev/null
-    cp /mnt/opt/openslx/plugin-repo/vmware/nat.conf \
-      /mnt/etc/vmware/vmnet8/nat 2>/dev/null
-
     # TODO: perhaps we can a) kick out vmdir
     #            b) configure vmdir by plugin configuration
     # TODO: How to start it. See Wiki. Currently a) implemnted
