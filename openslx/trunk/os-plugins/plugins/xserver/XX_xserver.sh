@@ -36,8 +36,7 @@ testmkd ${glliblinks}
 if [ -e /initramfs/plugin-conf/xserver.conf -a \
    ! -f /rootfs/etc/X11/xorg.conf ]; then
   . /initramfs/plugin-conf/xserver.conf
-  # keyboard setup
-  localization "${country}"
+
   # do not start any configuration if the admin provided a preconfigured
   # xorg.conf in /rootfs/etc/X11/xorg.conf
   if [ $xserver_active -ne 0 -a ! -f /rootfs/${xfc#/mnt} ]; then
@@ -176,6 +175,8 @@ EndSection
 Section "DRI"
   Mode    0666
 EndSection' >> $xfc
+    # keyboard setup (fill XKEYBOARD)
+    localization "${country}"
     # if no module was detected, stick to vesa module
     if [ -n "$xmodule" ] ; then
       sed "s/vesa/$xmodule/;s/\"us\"/\"${XKEYBOARD}\"/" -i $xfc
