@@ -116,6 +116,14 @@ sub exportVendorOS
 {
     my $self = shift;
 
+    vlog(
+        1,
+        _tr(
+            "vendor-OS from '%s' will be exported to '%s'",
+            $self->{'vendor-os-path'},
+            $self->{'exporter'}->{'export-path'}
+        )
+    );
     if (!$self->{'exporter'}->checkRequirements($self->{'vendor-os-path'})) {
         die _tr(
             "clients wouldn't be able to access the exported root-fs!\nplease "
@@ -237,17 +245,9 @@ sub _initialize
     }
     $self->{'exporter'} = $exporter;
 
-    # setup source and target paths:
     $self->{'vendor-os-path'} =
       "$openslxConfig{'private-path'}/stage1/$vendorOSName";
-    vlog(
-        1,
-        _tr(
-            "vendor-OS from '%s' will be exported to '%s'",
-            $self->{'vendor-os-path'},
-            $exporter->{'export-path'}
-        )
-    );
+
     return;
 }
 

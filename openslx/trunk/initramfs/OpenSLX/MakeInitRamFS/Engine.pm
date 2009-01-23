@@ -89,6 +89,7 @@ sub execute
 
     $self->_collectCMDs();
 
+    vlog(1, _tr("creating initramfs '%s' ...", $self->{'initramfs'}));
     $self->_executeCMDs() unless $dryRun;
 
     return;
