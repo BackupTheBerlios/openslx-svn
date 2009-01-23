@@ -192,8 +192,8 @@ supported."; \
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
 	tar --exclude=.svn -cp -C initramfs uclib-rootfs | \
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
-  tar --exclude=.svn --exclude *.example -cp -C boot-env pxe | \
-    tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/boot-env; \
+  tar --exclude=.svn --exclude *.example --exclude OpenSLX -cp boot-env | \
+    tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/; \
   cp -p boot-env/pxe/menu-template.example \
     $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/; \
   cp -a installer/default_files/machine-setup.default \

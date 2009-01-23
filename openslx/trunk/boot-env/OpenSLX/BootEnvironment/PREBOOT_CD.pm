@@ -18,10 +18,12 @@ use warnings;
 
 use base qw(OpenSLX::BootEnvironment::Base);
 
+use Clone qw(clone);
 use File::Basename;
 use File::Path;
 
 use OpenSLX::Basics;
+use OpenSLX::MakeInitRamFS::Engine::PrebootCD;
 use OpenSLX::Utils;
 
 sub initialize
@@ -41,6 +43,183 @@ sub initialize
     }
 
     return 1;
+}
+
+sub finalize
+{
+    my $self   = shift;
+    my $delete = shift;
+
+    return if !$self->{prebootSystemInfo};
+
+    return $self->SUPER::finalize($delete);
+}
+
+sub writeBootloaderMenuFor
+{
+    my $self             = shift;
+    my $client           = shift;
+    my $externalClientID = shift;
+    my $systemInfos      = shift || [];
+
+    my $prebootSystemInfo = clone($systemInfos->[0]);
+    $self->_createImage($client, $prebootSystemInfo);
+
+#    $self->_prepareBootloaderConfigFolder() 
+#        unless $self->{preparedBootloaderConfigFolder};
+#
+#    my $pxePath       = $self->{'target-path'};
+#    my $pxeConfigPath = "$pxePath/pxelinux.cfg";
+#
+#    my $pxeConfig    = $self->_getTemplate();
+#    my $pxeFile      = "$pxeConfigPath/$externalClientID";
+#    my $clientAppend = $client->{kernel_params} || '';
+#    vlog(1, _tr("writing PXE-file %s", $pxeFile));
+#
+#    # set label for each system
+#    foreach my $info (@$systemInfos) {
+#        my $label = $info->{label} || '';
+#        if (!length($label) || $label eq $info->{name}) {
+#            if ($info->{name} =~ m{^(.+)::(.+)$}) {
+#                my $system = $1;
+#                my $exportType = $2;
+#                $label = $system . ' ' x (40-length($system)) . $exportType;
+#            } else {
+#                $label = $info->{name};
+#            }
+#        }
+#        $info->{label} = $label;
+#    }
+#    my $slxLabels = '';
+#    foreach my $info (sort { $a->{label} cmp $b->{label} } @$systemInfos) {
+#        my $vendorOSName = $info->{'vendor-os'}->{name};
+#        my $kernelName   = basename($info->{'kernel-file'});
+#        my $append       = $info->{kernel_params};
+#        $append .= " initrd=$vendorOSName/$info->{'initramfs-name'}";
+#        $append .= " $clientAppend";
+#        $slxLabels .= "LABEL openslx-$info->{'external-id'}\n";
+#        $slxLabels .= "\tMENU LABEL ^$info->{label}\n";
+#        $slxLabels .= "\tKERNEL $vendorOSName/$kernelName\n";
+#        $slxLabels .= "\tAPPEND $append\n";
+#        $slxLabels .= "\tIPAPPEND 1\n";
+#        my $helpText = $info->{description} || '';
+#        if (length($helpText)) {
+#            # make sure that text matches the given margin
+#            my $margin = $openslxConfig{'pxe-theme-menu-margin'} || 0;
+#            my $marginAsText = ' ' x $margin;
+#            $helpText =~ s{^}{$marginAsText}gms;
+#            $slxLabels .= "\tTEXT HELP\n$helpText\n\tENDTEXT\n";
+#        }
+#    }
+#    # now add the slx-labels (inline or appended) and write the config file
+#    if (!($pxeConfig =~ s{\@\@\@SLX_LABELS\@\@\@}{$slxLabels})) {
+#        $pxeConfig .= $slxLabels;
+#    }
+#
+#    # PXE uses 'cp850' (codepage 850) but our string is in utf-8, we have
+#    # to convert in order to avoid showing gibberish on the client side...
+#    spitFile($pxeFile, $pxeConfig, { 'io-layer' => 'encoding(cp850)' } );
+
+    return 1;
+}
+
+sub _createImage
+{
+    my $self   = shift;
+    my $client = shift;
+    my $info   = shift;
+    
+    vlog(
+        0, 
+        _tr(
+            "\ncreating CD-image for client %s (based on %s) ...", 
+            $client->{name}, $info->{name}
+        )
+    );
+
+    my $imageDir = "$openslxConfig{'public-path'}/images/$client->{name}";
+    mkpath($imageDir)   unless $self->{'dry-run'};
+
+    # copy static data and init script
+    my $dataDir = "$openslxConfig{'base-path'}/share/boot-env/preboot-cd";
+    slxsystem(qq{rsync -rlpt $dataDir/ "$imageDir/"})
+        unless $self->{'dry-run'};
+
+    # copy kernel (take the one from the given system info)
+    my $kernelFile = $info->{'kernel-file'};
+    my $kernelName = basename($kernelFile);
+    slxsystem(qq{cp -p "$kernelFile" "$imageDir/iso/isolinux/vmlinuz"})
+        unless $self->{'dry-run'};
+
+    # create initramfs
+    my $initramfsName = qq{"$imageDir/iso/isolinux/initramfs"};
+    $self->_makePrebootInitRamFS($info, $initramfsName);
+
+    my $mkisoCmd = unshiftHereDoc(<<"    End-of-Here");
+        mkisofs 
+            -o "$imageDir/../$client->{name}.iso"
+            -b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 
+            -r -J -l -boot-info-table -joliet-long
+            -publisher "OpenSLX Project - http://www.openslx.org" 
+            -p "OpenSLX Project - openslx-devel\@openslx.org" 
+            -V "OpenSLX BootCD"
+            -volset "OpenSLX Project - PreBoot CD for non PXE/TFTP start of a Linux Stateless Client"
+            -c isolinux/boot.cat "$imageDir/iso"
+    End-of-Here
+    $mkisoCmd =~ s{\n\s*}{ }gms;
+    my $logFile = "$imageDir/../$client->{name}.iso.log";
+    if (slxsystem(qq{$mkisoCmd 2>"$logFile"})) {
+        my $log = slurpFile($logFile);
+        die _tr("unable to create ISO-image - log follows:\n%s", $log);
+    }
+
+    rmtree($imageDir);
+
+    return 1;
+}
+
+sub _makePrebootInitRamFS
+{
+    my $self       = shift;
+    my $info       = shift;
+    my $initramfs  = shift;
+
+    my $vendorOS = $info->{'vendor-os'};
+    my $kernelFile = basename(followLink($info->{'kernel-file'}));
+
+    my $attrs = clone($info->{attrs} || {});
+
+    chomp(my $slxVersion = qx{slxversion});
+
+    my $params = {
+        'attrs'          => $attrs,
+        'export-name'    => undef,
+        'export-uri'     => undef,
+        'initramfs'      => $initramfs,
+        'kernel-params'  => [ split ' ', ($info->{kernel_params} || '') ],
+        'kernel-version' => $kernelFile =~ m[-(.+)$] ? $1 : '',
+        'plugins'        => '',
+        'root-path'
+            => "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}",
+        'slx-version'    => $slxVersion,
+        'system-name'    => $info->{name},
+    };
+
+    # TODO: make debug-level an explicit attribute, it's used in many places!
+    my $kernelParams = $info->{kernel_params} || '';
+    if ($kernelParams =~ m{debug(?:=(\d+))?}) {
+        my $debugLevel = defined $1 ? $1 : '1';
+        $params->{'debug-level'} = $debugLevel;
+    }
+
+    my $makeInitRamFSEngine 
+        = OpenSLX::MakeInitRamFS::Engine::PrebootCD->new($params);
+    $makeInitRamFSEngine->execute($self->{'dry-run'});
+
+    # copy back kernel-params, as they might have been changed (by plugins)
+    $info->{kernel_params} = join ' ', $makeInitRamFSEngine->kernelParams();
+
+    return;
 }
 
 1;

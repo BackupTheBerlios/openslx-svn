@@ -110,8 +110,6 @@ if (createConfigFolderForDefaultSystem()) {
     );
 }
 
-chomp(my $slxVersion = qx{slxversion});
-
 # protect against parallel executions of this script
 my $criticalSection = OpenSLX::ScopedResource->new({
     name    => 'osplugin::session',
@@ -575,9 +573,8 @@ sub createBootEnvironmentsForSystem
         vlog(0, _tr("creating boot environment for $bootType"));
     
         my $bootEnv = bootEnvironmentForType($bootType);
-        $initramfsCount += $bootEnv->writeFilesRequiredForBooting(
-            $info, $buildPath, $slxVersion
-        );
+        $initramfsCount 
+            += $bootEnv->writeFilesRequiredForBooting($info, $buildPath);
 
         my $systemPath 
             = "$bootEnv->{'target-path'}/client-config/$info->{'external-id'}";
@@ -686,6 +683,8 @@ sub writeConfigurations
             $systemErrCount++;
         }
     }
+    my $imageBaseDir = "$openslxConfig{'public-path'}/images";
+    rmtree($imageBaseDir)   unless $option{dryRun};
     writeBootloaderMenus(@infos);
     if (defined $option{dhcpType}) {
         writeDhcpConfig();

@@ -83,7 +83,6 @@ sub writeFilesRequiredForBooting
     my $self       = shift;
     my $info       = shift;
     my $buildPath  = shift;
-    my $slxVersion = shift;
 
     my $kernelFile = $info->{'kernel-file'};
     my $kernelName = basename($kernelFile);
@@ -112,7 +111,7 @@ sub writeFilesRequiredForBooting
     }
     else {
         vlog(1, _tr('generating initialramfs %s', $initramfsName));
-        $self->_makeInitRamFS($info, $initramfsName, $slxVersion);
+        $self->_makeInitRamFS($info, $initramfsName);
         $initramfsMap{$initramfsID} = {
             file          => $initramfsName,
             kernel_params => $info->{kernel_params},
@@ -126,12 +125,13 @@ sub _makeInitRamFS
     my $self       = shift;
     my $info       = shift;
     my $initramfs  = shift;
-    my $slxVersion = shift;
 
     my $vendorOS = $info->{'vendor-os'};
     my $kernelFile = basename(followLink($info->{'kernel-file'}));
 
     my $attrs = clone($info->{attrs} || {});
+
+    chomp(my $slxVersion = qx{slxversion});
 
     my $params = {
         'attrs'          => $attrs,
