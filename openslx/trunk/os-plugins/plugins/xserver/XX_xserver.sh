@@ -152,4 +152,7 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
     fi
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'xserver' os-plugin ...";
   fi
+  # run distro specific generated stage3 script
+  [ -e /mnt/opt/openslx/plugin-repo/xserver/xserver.sh ] && \
+    . /mnt/opt/openslx/plugin-repo/xserver/xserver.sh
 fi

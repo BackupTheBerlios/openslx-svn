@@ -72,6 +72,35 @@ sub getAttrInfo
 
         # plugin specific attributes start here ...
 
+        # stage1
+        'xserver::ati' => {
+            applies_to_vendor_os => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                should the non-gpl ATI drivers be available (installed in  vendor-OS - not implemented yet)?
+            End-of-Here
+            content_regex => qr{^0|1$},
+            content_descr => '"0", "1" or "-" (for unset)',
+            default => undef,
+        },
+        'xserver::nvidia' => {
+            applies_to_vendor_os => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                should the non-gpl NVidia drivers be available (installed in  vendor-OS - not implemented yet)?
+            End-of-Here
+            content_regex => qr{^0|1$},
+            content_descr => '"0", "1" or "-" (for unset)',
+            default => undef,
+        },
+        #'xserver::matrox' => {
+        #    applies_to_vendor_os => 1,
+        #    description => unshiftHereDoc(<<'            End-of-Here'),
+        #        should the non-gpl Matrox drivers (e.g. for the Parhelia) be 
+        #        available (installed in vendor-OS)?
+        #    End-of-Here
+        #    content_regex => qr{^0|1$},
+        #    content_descr => '"0", "1" or "-" (for unset)',
+        #    default => undef,
+        #},
     };
 }
 
@@ -97,10 +126,10 @@ sub installationPhase
         # chroot
     my $attrs = $info->{'plugin-attrs'};
         # attributes in effect for this installation
-    
-    # for this example plugin, we simply create two files:
-    spitFile("$pluginRepoPath/right", "(-;\n");
-    spitFile("$pluginRepoPath/left", ";-)\n");
+
+    # write the distro specific extension (inclusion) of XX_xserver.sh
+    my $script = $self->{distro}->setupXserverScript($pluginRepoPath);
+    spitFile("$pluginRepoPath/xserver.sh", $script);
 
     # Some plugins have to copy files from their plugin folder into the
     # vendor-OS. Here's an example for how to do that:
