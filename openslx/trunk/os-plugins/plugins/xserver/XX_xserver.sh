@@ -50,8 +50,8 @@ if [ -e /initramfs/plugin-conf/xserver.conf -a \
     ######################################################################
     # begin proprietary drivers section (xorg.conf part)
     ######################################################################
-    set -x
 
+    waitfor /etc/hwinfo.data 10000
     if [ $(grep -i -m 1 'Module: fglrx' \
         /etc/hwinfo.data | wc -l) -ge "1"  -a $xserver_prefnongpl -eq 1 ]
     then
@@ -135,7 +135,6 @@ Section "InputDevice"
   Option       "XkbRules"          "xorg"
   Option       "XkbModel"          "pc105"
   Option       "XkbLayout"         "us"
-  Option       "XkbVariant"        "nodeadkeys"
 EndSection
 Section "InputDevice"
   Identifier   "Generic Mouse"
@@ -182,6 +181,11 @@ EndSection' >> $xfc
       sed "s/vesa/$xmodule/;s/\"us\"/\"${XKEYBOARD}\"/" -i $xfc
     else
       sed "s/\"us\"/\"${XKEYBOARD}\"/" -i $xfc
+    fi
+    # set nodeadkeys for special layouts
+    if [ ${XKEYBOARD} = "de" ]; then
+      sed -e '/\"XkbLayout\"/a\\ \ Option       "XkbVariant"        "nodeadkeys"' \
+          -i $xfc
     fi
     # these directories might be distro specific
     for file in /var/lib/xkb/compiled ; do
