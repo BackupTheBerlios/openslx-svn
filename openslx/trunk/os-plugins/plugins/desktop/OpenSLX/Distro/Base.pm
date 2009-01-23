@@ -61,13 +61,6 @@ sub getDefaultDesktopKind
         : isPackInstalled('startxfce') ? 'xfce' : undef;
 }
 
-sub isGDMInstalled 		{ return isPackInstalled('gdm');}
-sub isKDMInstalled 		{ return isPackInstalled('kdm');}
-sub isXDMInstalled 		{ return isPackInstalled('xdm');}
-sub isGNOMEInstalled 	{ return isPackInstalled('gnome-session');}
-sub isKDEInstalled 		{ return isPackInstalled('startkde');}
-sub isXFCEInstalled 	{ return isPackInstalled('startxfce');}
-
 sub installGNOME
 {
     my $self = shift;

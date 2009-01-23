@@ -433,22 +433,25 @@ sub _installRequiredPackages
 
     my $engine = $self->{'os-plugin-engine'};
     
-    if ($self->{'gnome'} && !$self->{distro}->isGNOMEInstalled()) {
-        $self->{distro}->installGNOME();
+    if ($self->{'gnome'} && 
+        !$self->{distro}->isPackInstalled('gnome-session')) {
+             $self->{distro}->installGNOME();
     }
-    if ($self->{'gdm'} && !$self->{distro}->isGDMInstalled()) {
-        $self->{distro}->installGDM();
+    if ($self->{'gdm'} && !$self->{distro}->isPackInstalled('gdm')) {
+             $self->{distro}->installGDM();
     }
-    if ($self->{'kde'} && !$self->{distro}->isKDEInstalled()) {
-        $self->{distro}->installKDE();
+    if ($self->{'kde'} &&
+        !$self->{distro}->isPackInstalled('startkde')) {
+             $self->{distro}->installKDE();
     }
-    if ($self->{'kdm'} && !$self->{distro}->isKDMInstalled()) {
+    if ($self->{'kdm'} && !$self->{distro}->isPackInstalled('kdm')) {
         $self->{distro}->installKDM();
     }
-    if ($self->{'xfce'} && !$self->{distro}->isXFCEInstalled()) {
-        $self->{distro}->installXFCE();
+    if ($self->{'xfce'} && 
+        !$self->{distro}->isPackInstalled('startxfce')) {
+             $self->{distro}->installXFCE();
     }
-    if ($self->{'xdm'} && !$self->{distro}->isXDMInstalled()) {
+    if ($self->{'xdm'} && !$self->{distro}->isPackInstalled('xdm')) {
         $self->{distro}->installXDM();
     }
 
