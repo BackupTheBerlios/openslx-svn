@@ -16,23 +16,23 @@ echo
 
 if [ "${REPLY}" == "YES" ]; then
 
-	echo "   * Downloading vmplayer now. This may take a while"
-	cd /opt/openslx/plugin-repo/vmware/vmpl2.0
-	#TODO: during development we have this file and dont need to download it
-	#wget -c http://download3.vmware.com/software/vmplayer/VMware-player-2.0.2-59824.i386.tar.gz
+    echo "   * Downloading vmplayer now. This may take a while"
+    cd /opt/openslx/plugin-repo/vmware/vmpl2.0
+    #TODO: during development we have this file and dont need to download it
+    #wget -c http://download3.vmware.com/software/vmplayer/VMware-player-2.0.2-59824.i386.tar.gz
 
-	echo "   * Unpacking vmplayer"
-	#tar xfz VMware-player-2.0.2-59824.i386.tar.gz
+    echo "   * Unpacking vmplayer"
+    #tar xfz VMware-player-2.0.2-59824.i386.tar.gz
     #TODO: just for developing purpose
-	tar xfz ../../VMware-player-2.0.2-59824.i386.tar.gz
+    tar xfz ../../VMware-player-2.0.2-59824.i386.tar.gz
 
-	echo "   * copying files..."
-	mkdir root
-	mkdir -p root/lib
-	mv vmware-player-distrib/lib root/lib/vmware
-	mv vmware-player-distrib/bin root/
-	mv vmware-player-distrib/sbin root/
-	mv vmware-player-distrib/doc root/
+    echo "   * copying files..."
+    mkdir root
+    mkdir -p root/lib
+    mv vmware-player-distrib/lib root/lib/vmware
+    mv vmware-player-distrib/bin root/
+    mv vmware-player-distrib/sbin root/
+    mv vmware-player-distrib/doc root/
     rm -rf vmware-player-distrib/
 
     # I don't want to understand what vmware is doing, but without this
@@ -45,13 +45,25 @@ if [ "${REPLY}" == "YES" ]; then
     mv test/lib*/* .
     cd ../../../..
 
-    echo "   * fixing gdk config file"
+    echo "   * fixing gdk and pango config files"
     sed -i \
       's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/root/lib/vmware/libconf,' \
       root/lib/vmware/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
+    sed -i \
+      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/root/lib/vmware/libconf,' \
+      root/lib/vmware/libconf/etc/gtk-2.0/gdk-immodules
+    sed -i \
+      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/root/lib/vmware/libconf,' \
+      root/lib/vmware/libconf/etc/pango/pango.modules
+    sed -i \
+      's,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/vmpl2.0/root/lib/vmware/libconf,' \
+      root/lib/vmware/libconf/etc/pango/pangorc
+    sed -i \
+      's,/etc/pango/pango/,/etc/pango/,' \
+      root/lib/vmware/libconf/etc/pango/pangorc
 
-	echo "   * creating /etc/vmware"
-	mkdir -p /etc/vmware
+    echo "   * creating /etc/vmware"
+    mkdir -p /etc/vmware
 
     echo "   * unpacking kernel modules"
     cd root/lib/vmware/modules/source
@@ -86,8 +98,8 @@ if [ "${REPLY}" == "YES" ]; then
     echo "Press any return to process"
     read
 
-	echo "   * finishing installation"
-	
+    echo "   * finishing installation"
+
 else
-	echo "You didnt't accept the end user license. vmplayer is not installed."
+    echo "You didnt't accept the end user license. vmplayer is not installed."
 fi

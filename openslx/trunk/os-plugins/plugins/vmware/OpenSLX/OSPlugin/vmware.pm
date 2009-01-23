@@ -264,7 +264,14 @@ sub _writeWrapperScript
             #TODO: test it with local installed vmplayer!!!
             export LD_LIBRARY_PATH=$vmpath/lib
             export GTK_PIXBUF_MODULE_FILE=$vmpath/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
+            export GTK_IM_MODULE_FILE=$vmpath/libconf/etc/gtk-2.0/gtk.immodules
             export FONTCONFIG_PATH=$vmpath/libconf/etc/fonts
+            export PANGO_RC_FILE=$vmpath/libconf/etc/pango/pangorc
+            # possible needed... but what are they good for?
+            #export GTK_DATA_PREFIX=
+            #export GTK_EXE_PREFIX=
+            #export GTK_PATH=
+
             PREFIX=$vmpath # depends on the vmware location
             exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \\
                 "\$PREFIX"'/lib' \\
