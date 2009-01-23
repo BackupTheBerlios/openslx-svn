@@ -170,21 +170,6 @@ else
 fi
 }
 #############################################################################
-# definition of wlan interface name and wireless connect
-wlanlinksetup () {
-local wlanif=$(iwconfig 2>/dev/null|sed -n "/ESSID:/p"|sed "s/    .*//")
-if [ -n "$if" ] ; then
-  ip link set dev ${wlanif} up
-  if iwconfig ${wlanif} mode managed essid "${essid}"; then
-    nwif=${wlanif}
-  else
-    error "$init_nowlan"
-  fi
-else
-  error "$init_nowlan"
-fi
-}
-#############################################################################
 # replacement for which command to find executables inside stage4 rootfs
 binfinder()
 {

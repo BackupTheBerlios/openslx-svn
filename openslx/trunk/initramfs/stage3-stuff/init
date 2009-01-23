@@ -74,8 +74,8 @@ export SLXVERSION="${slxconf_slxver}"
 # do not use dnbd cache file
 nodnbdcache="yes"
 
-# set a default LAN interface, might be modified for WLAN or on machines with
-# more than one ethernet card built in
+# set a default LAN interface, might be modified for WLAN, bridge setups or
+# on machines with more than one ethernet card built in
 nwif="eth0"
 
 # load usb modules for keyboard (reenable usb keyboards, otherwise the
@@ -166,11 +166,6 @@ in $0\ncountry=\"${COUNTRY}\"" >>/etc/initramfs-setup
         #logread -f > /dev/tty3 2>/dev/null &
         #logread -f >> /var/log/messages 2>/dev/null &
       fi
-    ;;
-    # essid for WLAN boot (experimental, might be moved to a module component
-    # in later versions
-    essid=*)
-      essid=${opts#essid=}
     ;;
     # if configuration should not be gathered by dhcp client
     nodhcp)
@@ -365,16 +360,11 @@ else
   LOGFILE="/dev/null"
 fi
 
-# check for WLAN specific settings and check for multiple ethernet interfaces
-# (we have at least the mac of PXE boot in bootmac)
-if [ -n "${essid}" ] ; then
-  # WLAN setup will most probably change the network interface name stored in
-  # nwif (to wlan0 or something like that)
-  wlanlinksetup
-  #echo "Starting shell for testing of WLAN setup procedure"
-  #/bin/ash
-else
-  # check here for the active ethernet link
+runinithook '10-nw-if-config'
+# check for multiple ethernet interfaces (we have at least the mac of PXE boot 
+# device in $bootmac)
+# check here for the active ethernet link (skip non-ethN interfaces)
+if strinstr "eth" "$nwif" ; then
   for ethif in eth0 eth1 eth2 eth3 ; do
     macaddr=$(ip link show dev $ethif 2>/dev/null | \
       sed -n "/ether [0-9e-f]\{2\}:.*/p" | sed -e "s/.*ether //;s/ .*//")

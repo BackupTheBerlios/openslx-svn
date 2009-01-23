@@ -34,9 +34,6 @@ with dhcp!"
 init_errnwad="  Failed to load the network \
 adaptor modules defined via mkdxsinitrd\n  run. Please rerun and list the \
 appropriate modules (without .ko)."
-init_nowlan="  No wireless LAN capable interface found. Did you provide the \
-proper kernel\n  modules?"
-init_wlanf="  Unable to configure the WLAN interface."
 init_bootmac="  If you have more than one ethernet adaptor present in your \
 machine or using\n  a NVidia chipset then it would be advisable to switch on \
 passing of the\n  boot MAC address via kernel commandline (IPAPPEND=3) in \

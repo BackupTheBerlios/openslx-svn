@@ -33,9 +33,6 @@ Kombination mit IPAPPEND (PXE)\n  o.ae. oder DHCP!"
 init_errnwad="  Konnte die Netzwerk-Adapter, die durch den slx/mkramfs bzw. \
 mkdxsinitrd-Aufruf definiert\n  wurden, nicht laden. Bitte erneut aufrufen \
 und die passenden Module auflisten\n  (ohne Endung .ko)."
-init_nowlan="  Kein brauchbares WLAN-Interface gefunden. Wurden alle \
-notwendigen Kernel-\n  module ins InirRamFS eingebaut?"
-init_wlanf="  Das WLAN Interface konnte nicht konfiguriert werden."
 init_bootmac="  Es scheint mehr als eine Ethernet-Karte installiert und die \
 passenden\n  Kernel-Module geladen zu sein. Das kann fuer Probleme sorgen, da \
 evtl.\n  die nicht verbundene Netzwerkkarte als das erste Interface konfiguriert\
