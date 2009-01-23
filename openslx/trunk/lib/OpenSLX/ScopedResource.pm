@@ -55,7 +55,7 @@ is spread across different process and/or makes us of signal handlers.
 
 =cut
 
-# make sure that we catch any signals in order to properly released scoped
+# make sure that we catch any signals in order to properly release scoped
 # resources
 use sigtrap qw( die normal-signals error-signals );
 
@@ -151,6 +151,10 @@ sub _acquire
 sub _release
 {
     my $self = shift;
+
+    # ignore ctrl-c while we are trying to release the resource, as otherwise
+    # the resource would be leaked
+    local $SIG{INT} = 'IGNORE';
 
     # only release the resource if invoked by the owning process
     vlog(3, "process $$ tries to release resource $self->{name}");
