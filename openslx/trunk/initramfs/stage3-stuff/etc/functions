@@ -304,25 +304,28 @@ tftp_get () {
   local download_successful=0
   local countdown="$3"
 
-  [ -z "$1" -o -z "$2" ] &&  \
-    echo "[tftp_get] Usage: tftp_get <path> <server> [count]" &&
+  if [ -z "$1" -o -z "$2" ]; then
+    [ $DEBUGLEVEL -ge 1 ] && \
+      echo "[tftp_get] Usage: tftp_get <path> <server> [count]" 
     return 1;
+  fi
 
   [ "$countdown" = "" ] && countdown=3
 
-  echo "[tftp_get] trying to get \"$file\" from \"$file_server\"..."
-
   until [ $download_successful -eq 1 ]
   do
-    [ "$countdown" = "0" ] && echo "[tftp_get] ..failed!" && return 0;
+    if [ "$countdown" = "0" ]; then
+      [ $DEBUGLEVEL -ge 1 ] && \
+        echo "[tftp_get] failed to get \"$file\" from \"$file_server\" !"
+      return 0;
+    fi
     tftp -g -r $file -l /tmp/$(basename $file) $file_server
     [ -s /tmp/$(basename $file) ] && download_successful=1
     countdown=`expr $countdown - 1`
     usleep 200000
-    ! [ "$countdown" = "0" ] && [ $download_successful -eq 0 ] && \
-      echo "[tftp_get] retry.."
   done
-  echo "[tftp_get] ..successful!"
+  [ $DEBUGLEVEL -ge 1 ] && \
+    echo "[tftp_get] download of \"$file\" from \"$file_server\" successful!"
   return 0;
 }
 
