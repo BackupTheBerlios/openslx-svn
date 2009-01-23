@@ -18,7 +18,7 @@ using System.Diagnostics;
 // #####################################################################################
 // (C) 2005 - 2006 Randolph Welte randy@uni-freiburg.de#################################
 // 
-// Bearbeitung Bohdan Dulya & Marco Haustein 2006 - 2008 ###############################
+// Bearbeitung Bohdan Dulya & Marco Haustein 2006 - 2007 ###############################
 
 
 namespace AccountValue
@@ -38,15 +38,16 @@ namespace AccountValue
         private Form2 f2;
         String resolution_x = "";
         String resolution_y = "";
-         // Wenn wahr, wird später die Auflösung umgestellt, fehlen die Parameter, dann nicht!
+        // Wenn wahr, wird später die Auflösung umgestellt, fehlen die Parameter, dann nicht!
         private bool change_resolution = true;
 
         private int tempHeight = 0, tempWidth = 0;
         // private int FixHeight = 1024, FixWidth = 768;
 
+        //#####################################################################
         //Variable, die die Umgebung beschreibt
-        String env;
-        
+        private String env;
+
         //Anzahl der Drucker in der Umgebung
         private int anz;
 
@@ -54,19 +55,16 @@ namespace AccountValue
         private String shared;
         private String printer;
         private String account;
-        
-        
+
         //
         public Form1()
         {
             Screen Srn = Screen.PrimaryScreen;
             tempHeight = Srn.Bounds.Width;
             tempWidth = Srn.Bounds.Height;
-            
+
             InitializeComponent();
 
-
-            
             // XML Settings aus Laufwerk B auslesen...
 
             // Wichtig!! Gross schreiben!!
@@ -80,7 +78,6 @@ namespace AccountValue
                 MessageBox.Show(e.Message, "Error: ", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 System.Environment.Exit(0);
             }
-
 
             try
             {
@@ -103,19 +100,19 @@ namespace AccountValue
             {
                 Resolution.CResolution ChangeRes = new Resolution.CResolution(Convert.ToInt32(resolution_x), Convert.ToInt32(resolution_y));
             }
-                        
+
             try
             {
 
                 textBox1.AppendText(xml.getAttribute("/settings/eintrag/username", "param"));
-                
+
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MessageBox.Show(e.Message, "Error: **********************", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 System.Environment.Exit(0);
             }
-                                      
+
             //resolution_x = "1680"; 
             //resolution_y = "1050";  
 
@@ -123,10 +120,10 @@ namespace AccountValue
             {
                 maskedTextBox1.Focus();
             }
-            catch {}
+            catch { }
 
         }
-        
+
 
 
         private void Form1_Load(object sender, EventArgs e)
@@ -141,7 +138,7 @@ namespace AccountValue
 
         private void login_clicked()
         {
-            NetworkDrive oNetDrive = new NetworkDrive();
+            //NetworkDrive oNetDrive = new NetworkDrive();
             //#########################################################################
             // Parameter aus INI-Datei auslesen
 
@@ -150,26 +147,20 @@ namespace AccountValue
                 IniFile datei;
                 datei = new IniFile(@"C:\Programme\Login\AccValue.ini");
 
-                
                 home = datei.IniReadValue("Home", "connect");
                 shared = datei.IniReadValue("Shared", "connect");
                 printer = datei.IniReadValue("Printer", "connect");
                 account = datei.IniReadValue("Account", "show");
             }
-            catch 
+            catch
             {
- 
             }
-
-
-            //************************************************************************
-
 
 
 
             //#################################################################
             // Stehen überhaupt Login und Password drin?
-            
+
             if (textBox1.Text.Equals("") || maskedTextBox1.Text.Equals(""))
             {
                 try
@@ -182,6 +173,7 @@ namespace AccountValue
                 return;
             }
 
+            NetworkDrive oNetDrive = new NetworkDrive();
             //*****************************************************************
             //#################################################################
             //Starte das script zum installieren der Drucker
@@ -252,13 +244,11 @@ namespace AccountValue
                 else { }
 
 
-
-
                 //#################################################################
                 // Drucker verbinden...
 
-                
-            
+                //NetworkDrive oNetDrive = new NetworkDrive();
+
                 try
                 {
                     oNetDrive.LocalDrive = "";
@@ -282,15 +272,12 @@ namespace AccountValue
 
                     return;
                 }
-             
-           }
-            
+            }
             //#################################################################
             // Homedirectory mounten...
 
             if (home == "yes")
             {
-
                 try
                 {
                     oNetDrive.LocalDrive = "k:";
@@ -322,20 +309,20 @@ namespace AccountValue
                     return;
                 }
 
+
+
                 //#################################################################
 
                 createDesktopLinks("Homeverzeichnis K", "k:\\");
-
             }
-            
 
-            
+
 
             //#################################################################
             // Shared Directory mounten...
-
             if (shared == "yes")
             {
+
                 try
                 {
                     oNetDrive.LocalDrive = "l:";
@@ -371,15 +358,12 @@ namespace AccountValue
             }
 
 
-            
             //#################################################################
             // Drucker-Kontostand
 
             getAccountInformation();
         }
 
-
-        //#####################################################################
 
         //#####################################################################
         private void getAccountInformation()
@@ -572,43 +556,6 @@ namespace AccountValue
             f2.label9.Text = ((int)percet_usage).ToString() + "%";
         }
 
-        /*
-        // Suche die Datei ####################################################
-        class Program
-        {
-            static void Main(string[] args)
-            {
-                string dir = "C:\\", file = "m.htm", res = Seacher.Search(dir, file, true);
 
-                Console.WriteLine((res == null) ? "\nDie Datei " + file + " ist nicht gefunden im Verzeichnis" + dir : "\n" + res);
-                Console.ReadKey();
-            }
-        }
-
-        class Seacher
-        {
-            public static string Search(string dir, string filename, bool recursively)
-            {
-                foreach (string f in Directory.GetFiles(dir))
-                {
-                    if (f == dir + filename)
-                    {
-                        return new FileInfo(f).FullName;
-                    }
-
-                    Console.WriteLine(f);
-                }
-                if (recursively)
-                {
-                    foreach (string d in Directory.GetDirectories(dir))
-                    {
-                        Search(d, filename, recursively);
-                    }
-                }
-
-                return null;
-            }
-        }
-        */
     }
 }
