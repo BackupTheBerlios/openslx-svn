@@ -1,5 +1,5 @@
-# Copyright (c) 2003 - 2006 - RZ Uni Freiburg
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2003..2006 - RZ Uni Freiburg
+# Copyright (c) 2006..2008 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -20,13 +20,10 @@
 # info output
 . /etc/messages
 . /etc/functions
-# load distro specific configuration variables and functions. distro
-# specific functions may overwrite functions defined in /etc/functions
-. /etc/sysconfig/config
+# load distro specific configuration functions. Distro specific functions may
+# overwrite functions defined in /etc/functions
 . /etc/distro-functions
 . /etc/sysconfig/slxsystem.conf
-# get location of logfile definition
-. /mnt/etc/${D_SYSCONFDIR}/logfile
 
 # script run timer
 [ $DEBUGLEVEL -eq 8 ] && echo "** SW setup started at $(sysup)"
@@ -36,9 +33,8 @@
   set -x
 
 #############################################################################
-# copy distro specific scripts, programs, libraries and configs
-cp -a /etc/sysconfig/files/* /mnt 2>/dev/null &
-# boot.local file (different for several distros)
+# boot.local file (different for several distros, to be moved to distro-
+# functions!!)
 [ -f "/etc/boot.local" -a -n "${D_BOOTLOCAL}" ] && {
   echo "# added by $0 (initramfs from $date)" >> /mnt/etc/${D_BOOTLOCAL}
   cat /etc/boot.local >> /mnt/etc/${D_BOOTLOCAL}
@@ -92,16 +88,16 @@ echo "
 # set localization and add entries to initialize keytable and consolefont to
 # boot.slx
 DEFKEYTABLE="de-latin1-nodeadkeys"
-if [ -z "$country" ] ; then
+if [ -z "${country}" ] ; then
   error "$scfg_country" nonfatal
-  country="${D_DEFAULTCOUNTRY}"
+  country="us"
 fi
 localization "${country}"
 if [ -z "${KEYTABLE}" ] ; then
   error "$hcfg_keyb" nonfatal
-  KEYTABLE=${DEFKEYTABLE}
+  KEYTABLE="us"
 fi
-echo -e "\t# entries added by $0: $date" >> /mnt/etc/${D_INITDIR}/boot.slx
+# add this information for activation via distro specific function
 [ -n "${KEYTABLE}" ] && keytable
 [ -n "${CONSOLE_FONT}" ] && consolefont
 
@@ -147,14 +143,6 @@ test -n "$domain_name_servers" && {
 #############################################################################
 # run distro specific configuration function
 config_distro
-
-#############################################################################
-# boot.local (fixme: deprecated)
-if [ -n "$bootlocal_script" ]; then
-  echo -e "# Option is deprecated and will be removed soon. Please put the \
-file to the ConfTGZ (rootfs/etc/${D_INITDIR}/boot.local)" >> \
-  /mnt/etc/${D_INITDIR}/boot.local
-fi
 
 #############################################################################
 # basic (non network) services

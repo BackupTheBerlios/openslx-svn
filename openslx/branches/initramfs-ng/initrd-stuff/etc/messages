@@ -1,5 +1,5 @@
 # Copyright (c) 2003 - 2006 - RZ Uni Freiburg
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2006 - 2008 - OpenSLX GmbH
 #
 # This program/file is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -18,7 +18,6 @@ init_errmsg="The functions file contains a lot of slx scripts \
 functionality. Without this\ninit script will not run."
 init_mff="The main $init_errmsg"
 init_dff="The distro $init_errmsg"
-init_dscf="The distribution specific configuration file could not be found."
 init_sscf="The slx configuration variables could not be found. Please
 provide the slxconfig file."
 init_noeth="  Unable to configure the ethernet device (eth0). Please check \

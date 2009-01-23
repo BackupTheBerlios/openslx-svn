@@ -246,8 +246,6 @@ if test -n "$skipped" ; then
     echo -e  "${attn}${skipped}${norm}"
 fi
 
-
-
 ################################################################
 #
 # Check for boot cycle detection
@@ -473,6 +471,7 @@ fi
 # kbd runlevel link is set via config_distro to avoid clashes between
 # servconfig and hwautocfg settings
 keytable () {
+echo -e "\t# entries added by $0: $date" >> /mnt/etc/init.d/boot.slx
 sed -e "s,KEYTABLE=.*,KEYTABLE=\"${KEYTABLE}\"," \
   -i /mnt/etc/sysconf/keyboard
 echo -e "\tloadkeys ${KEYTABLE} >${LOGFILE} 2>&1\n" \

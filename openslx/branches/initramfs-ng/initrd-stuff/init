@@ -54,9 +54,7 @@ mdev -s
 . /etc/messages
 . /etc/functions || ( echo -e $init_mff && sleep 100 )
 . /etc/distro-functions || ( echo -e $init_dff && sleep 100 )
-# distro specific configuration settings (several file and directory
-# variables)
-. /etc/distro-config || ( echo -e $init_dscf && sleep 100 )
+
 # configuration settings for this slx system's environment
 . /etc/slxsystem.conf 2>/dev/null || ( echo -e ${init_sscf} && \
   sleep 100 )
