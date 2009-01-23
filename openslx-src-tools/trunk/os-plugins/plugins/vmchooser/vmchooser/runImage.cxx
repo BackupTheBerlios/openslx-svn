@@ -117,7 +117,9 @@ const char* writeConfXml(DataEntry& dat) {
   
   const int MAX_LENGTH = 300;
 
-  char* pname = getFolderName();
+  //char* pname = getFolderName();
+  char pname[MAX_LENGTH];
+  strcpy(pname,"/var/lib/vmware/runscripts");
   xmlNodePtr cur = 0;
   xmlNodePtr root = 0;
   
@@ -142,7 +144,8 @@ const char* writeConfXml(DataEntry& dat) {
   // add "printers" and "scanners" - XML-Nodes
   addPrinters(root, pname);
   
-  pname = getFolderName();
+  //char* pname = getFolderName();
+  strcpy(pname,"/var/lib/vmware/runscripts");
   strncat(pname, "/scanner.sh", MAX_LENGTH);
   addScanners(root, pname);
   
