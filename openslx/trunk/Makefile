@@ -73,7 +73,7 @@ $(USR_BIN_PATH)/*" \
 	cd .. >/dev/null; \
 	tar cfhj \
 		"$${svn_repo_name}/openslx-$${OPENSLX_VERSION_STRING}.tar.bz2" \
-		--exclude-from="$${svn_repo_name}/tools/tar_exclude_from" \
+		--exclude-from="$${svn_repo_name}/Make.exclude_from_tar" \
 		"openslx-$${OPENSLX_VERSION_STRING}/"; \
 	test "$${OPENSLX_SOURCEDIR_SYMLINK_CREATED}" = "yes" && \
 		rm -f "openslx-$${OPENSLX_VERSION_STRING}"; \
