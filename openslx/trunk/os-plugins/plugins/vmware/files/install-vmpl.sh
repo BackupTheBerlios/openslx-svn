@@ -31,7 +31,7 @@ if [ "${REPLY}" == "YES" ]; then
     cd /opt/openslx/plugin-repo/vmware/${vmplversion}
     wget -c ${url}
 
-    echo "   * Unpacking vmplayer $vmpl{version}"
+    echo "   * Unpacking vmplayer ${vmplversion}"
     tar xfz ${tgzfile}
 
     # reduce some errors
@@ -40,6 +40,7 @@ if [ "${REPLY}" == "YES" ]; then
 
     echo "   * copying files..."
     mkdir vmroot
+    mkdir -p vmroot/modules
     mkdir -p vmroot/lib
     mv vmware-player-distrib/lib vmroot/lib/vmware
     mv vmware-player-distrib/bin vmroot/
@@ -92,18 +93,21 @@ if [ "${REPLY}" == "YES" ]; then
     # TODO: error check if build environment isn't installed...
     sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
     make -s
+    cp vmblock.ko vmblock.o ../../../../../modules
     cd ..
 
     echo "   * building vmmon module"
     cd vmmon-only
     sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
     make -s
+    cp vmmon.ko vmmon.o ../../../../../modules
     cd ..
     
     echo "   * building vmnet module"
     cd vmnet-only
     sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
     make -s
+    cp vmnet.ko vmnet.o ../../../../../modules
     cd ../../../../../..
         
     echo "   * setting up EULA"
