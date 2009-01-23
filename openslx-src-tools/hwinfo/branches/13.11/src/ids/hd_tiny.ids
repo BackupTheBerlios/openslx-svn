@@ -1,0 +1,3929 @@
+ baseclass.id		0x001
+&subclass.id		0x06
+&progif.id		0x00
+&vendor.id		pci 0x1725
+&device.id		pci 0x7174
+|baseclass.id		0x001
+&subclass.id		0x06
+&progif.id		0x00
+&vendor.id		pci 0x8086
+&device.id		pci 0x3200
++driver.module.modprobe	sata_vsc
+
+ baseclass.id		0x00b
+&subclass.id		0x40
+&progif.id		0x00
+&vendor.id		pci 0x10a9
+&device.id		pci 0x100a
++baseclass.id		0x001
++driver.module.modprobe	sgiioc4
+
+ baseclass.id		0x00c
+&subclass.id		0x00
+&progif.id		0x10
++driver.module.modprobe	ohci1394
+
+ baseclass.id		0x00c
+&subclass.id		0x03
+&progif.id		0x00
++driver.module.modprobe	uhci-hcd
+
+ baseclass.id		0x00c
+&subclass.id		0x03
+&progif.id		0x10
++driver.module.modprobe	ohci-hcd
+
+ baseclass.id		0x00c
+&subclass.id		0x03
+&progif.id		0x20
++driver.module.modprobe	ehci-hcd
+
+ baseclass.id		0x00e
+&subclass.id		0x00
+|vendor.id		pci 0x1044
+&device.id		pci 0xa511
+|vendor.id		pci 0x8086
+&device.id		pci 0x1962
+&subvendor.id		pci 0x105a
++driver.module.modprobe	i2o_block
+
+ baseclass.id		0x106
+&vendor.id		usb 0x049f
+&device.id		usb 0x0040
++subclass.id		0x03
+
+ subclass.id		0x03
+&vendor.id		pci 0x1039
+&device.id		pci 0x7013
+|subclass.id		0x03
+&vendor.id		pci 0x1039
+&device.id		pci 0x7018
+|vendor.id		pci 0x1022
+&device.id		pci 0x7446
+|vendor.id		pci 0x1055
+&device.id		pci 0x9178
+|vendor.id		pci 0x10a5
+&device.id		pci 0x3052
+|vendor.id		pci 0x10a5
+&device.id		pci 0x5459
+|vendor.id		pci 0x10b9
+&device.id		pci 0x5457
+|vendor.id		pci 0x10b9
+&device.id		pci 0x5459+0x0002
+|vendor.id		pci 0x10de
+&device.id		pci 0x01c1
+|vendor.id		pci 0x10ec
+&device.id		pci 0x8197
+|vendor.id		pci 0x1106
+&device.id		pci 0x3068
+|vendor.id		pci 0x1131
+&device.id		pci 0x3400
+|vendor.id		pci 0x163c
+&device.id		pci 0x3052
+|vendor.id		pci 0x163c
+&device.id		pci 0x5459
+|vendor.id		pci 0x2000
+&device.id		pci 0x2800
+|vendor.id		pci 0x2003
+&device.id		pci 0x8800
+|vendor.id		pci 0x8086
+&device.id		pci 0x2416
+|vendor.id		pci 0x8086
+&device.id		pci 0x2426
+|vendor.id		pci 0x8086
+&device.id		pci 0x2446
+|vendor.id		pci 0x8086
+&device.id		pci 0x2486
+|vendor.id		pci 0x8086
+&device.id		pci 0x24c6
+|vendor.id		pci 0x8086
+&device.id		pci 0x24d6
+|vendor.id		pci 0x8086
+&device.id		pci 0x7196
++baseclass.id		0x102
++subclass.id		0x04
++driver.module.modprobe	slamr
+
+ vendor.id		pci 0x018a
+&device.id		pci 0x0106
+|vendor.id		pci 0x021b
+&device.id		pci 0x8139
+|vendor.id		pci 0x02ac
+&device.id		pci 0x1012
+|vendor.id		pci 0x10ec
+&device.id		pci 0x8129
+|vendor.id		pci 0x10ec
+&device.id		pci 0x8138
+|vendor.id		pci 0x10ec
+&device.id		pci 0x8139
+&rev.id			0x0000+0x0020
+|vendor.id		pci 0x1113
+&device.id		pci 0x1211
+|vendor.id		pci 0x1186
+&device.id		pci 0x1300
+|vendor.id		pci 0x1186
+&device.id		pci 0x1340
+|vendor.id		pci 0x11db
+&device.id		pci 0x1234
+|vendor.id		pci 0x1259
+&device.id		pci 0xa117
+|vendor.id		pci 0x1259
+&device.id		pci 0xa11e
+|vendor.id		pci 0x126c
+&device.id		pci 0x1211
+|vendor.id		pci 0x13d1
+&device.id		pci 0xab06
+|vendor.id		pci 0x1432
+&device.id		pci 0x9130
+|vendor.id		pci 0x14ea
+&device.id		pci 0xab06+0x0002
+|vendor.id		pci 0x1500
+&device.id		pci 0x1360
+|vendor.id		pci 0x1743
+&device.id		pci 0x8139
+|vendor.id		pci 0x4033
+&device.id		pci 0x1360
+|device.id		pci 0x8139
+&subvendor.id		pci 0x10ec
+&subdevice.id		pci 0x8139
+|device.id		pci 0x8139
+&subvendor.id		pci 0x1186
+&subdevice.id		pci 0x1300
+|device.id		pci 0x8139
+&subvendor.id		pci 0x13d1
+&subdevice.id		pci 0xab06
++driver.module.modprobe	8139too
+
+ vendor.id		pci 0x0e11
+&device.id		pci 0x0046
+&subvendor.id		pci 0x0e11
+&subdevice.id		pci 0x409a+0x0004
+|vendor.id		pci 0x0e11
+&device.id		pci 0xb060
+&subvendor.id		pci 0x0e11
+&subdevice.id		pci 0x4070
+|vendor.id		pci 0x0e11
+&device.id		pci 0xb178
+&subvendor.id		pci 0x0e11
+&subdevice.id		pci 0x4080
+|vendor.id		pci 0x0e11
+&device.id		pci 0xb178
+&subvendor.id		pci 0x0e11
+&subdevice.id		pci 0x4082+0x0002
++driver.module.modprobe	cciss
+
+ vendor.id		pci 0x0e11
+&device.id		pci 0xae10
+&subvendor.id		pci 0x0e11
+&subdevice.id		pci 0x4030+0x0005
+|vendor.id		pci 0x1000
+&device.id		pci 0x0010
+&subvendor.id		pci 0x0e11
+&subdevice.id		pci 0x4040
+|vendor.id		pci 0x1000
+&device.id		pci 0x0010
+&subvendor.id		pci 0x0e11
+&subdevice.id		pci 0x4048
+|vendor.id		pci 0x1011
+&device.id		pci 0x0046
+&subvendor.id		pci 0x0e11
+&subdevice.id		pci 0x4050+0x0002
+|vendor.id		pci 0x1011
+&device.id		pci 0x0046
+&subvendor.id		pci 0x0e11
+&subdevice.id		pci 0x4058
++driver.module.modprobe	cpqarray
+
+ vendor.id		pci 0x1000
+&device.id		pci 0x0001
++baseclass.id		0x001
++subclass.id		0x00
+
+ vendor.id		pci 0x1000
+&device.id		pci 0x0001+0x0006
+|vendor.id		pci 0x1000
+&device.id		pci 0x000a+0x0004
+|vendor.id		pci 0x1000
+&device.id		pci 0x000f+0x0002
+|vendor.id		pci 0x1000
+&device.id		pci 0x0012+0x0002
+|vendor.id		pci 0x1000
+&device.id		pci 0x0020+0x0002
+|vendor.id		pci 0x1000
+&device.id		pci 0x008f
++driver.module.modprobe	sym53c8xx
+
+ vendor.id		pci 0x1000
+&device.id		pci 0x0701+0x0002
++driver.module.modprobe	yellowfin
+
+ vendor.id		pci 0x100b
+&device.id		pci 0x0020
++driver.module.modprobe	natsemi
+
+ vendor.id		pci 0x100b
+&device.id		pci 0x0022
++driver.module.modprobe	ns83820
+
+ vendor.id		pci 0x1011
+&device.id		pci 0x0009
+&subvendor.id		pci 0x1379
++driver.module.modprobe	lmc
+
+ vendor.id		pci 0x1011
+&device.id		pci 0x000f
++driver.module.modprobe	defxx
+
+ vendor.id		pci 0x1011
+&device.id		pci 0x001a
+|vendor.id		pci 0x10a9
+&device.id		pci 0x0009
+|vendor.id		pci 0x10b7
+&device.id		pci 0x0001
+|vendor.id		pci 0x12ae
+&device.id		pci 0x0001+0x0002
+|vendor.id		pci 0x12ae
+&device.id		pci 0x00fa
+|vendor.id		pci 0x1385
+&device.id		pci 0x620a
+|vendor.id		pci 0x1385
+&device.id		pci 0x630a
++driver.module.modprobe	acenic
+
+ vendor.id		pci 0x1011
+&device.id		pci 0x0046
+&subvendor.id		pci 0x103c
+&subdevice.id		pci 0x10c2
+|vendor.id		pci 0x1011
+&device.id		pci 0x0046
+&subvendor.id		pci 0x9005
+&subdevice.id		pci 0x0364+0x0002
+|vendor.id		pci 0x1011
+&device.id		pci 0x0046
+&subvendor.id		pci 0x9005
+&subdevice.id		pci 0x1364
+|vendor.id		pci 0x1028
+&device.id		pci 0x0001
+&subvendor.id		pci 0x1028
+&subdevice.id		pci 0x0001
+|vendor.id		pci 0x1028
+&device.id		pci 0x0002
+&subvendor.id		pci 0x1028
+&subdevice.id		pci 0x0002
+|vendor.id		pci 0x1028
+&device.id		pci 0x0002
+&subvendor.id		pci 0x1028
+&subdevice.id		pci 0x00d1
+|vendor.id		pci 0x1028
+&device.id		pci 0x0002
+&subvendor.id		pci 0x1028
+&subdevice.id		pci 0x00d9
+|vendor.id		pci 0x1028
+&device.id		pci 0x0003
+&subvendor.id		pci 0x1028
+&subdevice.id		pci 0x0003
+|vendor.id		pci 0x1028
+&device.id		pci 0x0004
+&subvendor.id		pci 0x1028
+&subdevice.id		pci 0x00d0
+|vendor.id		pci 0x1028
+&device.id		pci 0x000a
+&subvendor.id		pci 0x1028
+&subdevice.id		pci 0x0106
+|vendor.id		pci 0x1028
+&device.id		pci 0x000a
+&subvendor.id		pci 0x1028
+&subdevice.id		pci 0x011b
+|vendor.id		pci 0x1028
+&device.id		pci 0x000a
+&subvendor.id		pci 0x1028
+&subdevice.id		pci 0x0121
+|vendor.id		pci 0x9005
+&device.id		pci 0x0283
+&subvendor.id		pci 0x9005
+&subdevice.id		pci 0x0283
+|vendor.id		pci 0x9005
+&device.id		pci 0x0284
+&subvendor.id		pci 0x9005
+&subdevice.id		pci 0x0284
+|vendor.id		pci 0x9005
+&device.id		pci 0x0285
+&subvendor.id		pci 0x1028
+&subdevice.id		pci 0x0287
+|vendor.id		pci 0x9005
+&device.id		pci 0x0285
+&subvendor.id		pci 0x9005
+&subdevice.id		pci 0x0285+0x0003
++driver.module.modprobe	aacraid
+
+ vendor.id		pci 0x1011
+&device.id		pci 0x1065
+&subvendor.id		pci 0x1069
+&subdevice.id		pci 0x0020
+|vendor.id		pci 0x1069
+&device.id		pci 0x0001+0x0002
+|vendor.id		pci 0x1069
+&device.id		pci 0x0010
+|vendor.id		pci 0x1069
+&device.id		pci 0x0050
+|vendor.id		pci 0x1069
+&device.id		pci 0xba56
++baseclass.id		0x001
++subclass.id		0x04
++driver.module.modprobe	DAC960
+
+ vendor.id		pci 0x1014
+&device.id		pci 0x0018
++driver.module.modprobe	lanstreamer
+
+ vendor.id		pci 0x1014
+&device.id		pci 0x003e
++driver.module.modprobe	olympic
+
+ vendor.id		pci 0x1014
+&device.id		pci 0x0096
++driver.module.modprobe	ibmsis
+
+ vendor.id		pci 0x101a
+&device.id		pci 0x0005
+|vendor.id		pci 0x103c
+&device.id		pci 0x1030+0x0002
+|vendor.id		pci 0x11f6
+&device.id		pci 0x0112
++driver.module.modprobe	hp100
+
+ vendor.id		pci 0x1022
+&device.id		pci 0x2000+0x0002
++driver.module.modprobe	pcnet32
+
+ vendor.id		pci 0x1022
+&device.id		pci 0x2020
++driver.module.modprobe	tmscsim
+
+ vendor.id		pci 0x1022
+&device.id		pci 0x7462
++driver.module.modprobe	amd8111e
+
+ vendor.id		pci 0x1036
+&device.id		pci 0x0000
++driver.module.modprobe	fdomain
+
+ vendor.id		pci 0x1039
+&device.id		pci 0x0180+0x0002
++driver.module.modprobe	sata_sis
+
+ vendor.id		pci 0x1039
+&device.id		pci 0x0900
+|vendor.id		pci 0x1039
+&device.id		pci 0x7016
++driver.module.modprobe	sis900
+
+ vendor.id		pci 0x1044
+&device.id		pci 0xa400
++driver.module.modprobe	eata
+
+ vendor.id		pci 0x104b
+&device.id		pci 0x0140
+|vendor.id		pci 0x104b
+&device.id		pci 0x1040
+|vendor.id		pci 0x104b
+&device.id		pci 0x8130
++driver.module.modprobe	BusLogic
+
+ vendor.id		pci 0x104c
+&device.id		pci 0x8000
++driver.module.modprobe	pcilynx
+
+ vendor.id		pci 0x1050
+&device.id		pci 0x0840
+|vendor.id		pci 0x11f6
+&device.id		pci 0x2011
++driver.module.modprobe	winbond-840
+
+ vendor.id		pci 0x1050
+&device.id		pci 0x0940
+|vendor.id		pci 0x1050
+&device.id		pci 0x5a5a
+|vendor.id		pci 0x10bd
+&device.id		pci 0x0e34
+|vendor.id		pci 0x10ec
+&device.id		pci 0x8029
+|vendor.id		pci 0x1106
+&device.id		pci 0x0926
+|vendor.id		pci 0x11f6
+&device.id		pci 0x1401
+|vendor.id		pci 0x12c3
+&device.id		pci 0x0058
+|vendor.id		pci 0x12c3
+&device.id		pci 0x5598
+|vendor.id		pci 0x4a14
+&device.id		pci 0x5000
+|vendor.id		pci 0x8e2e
+&device.id		pci 0x3000
++driver.module.modprobe	ne2k-pci
+
+ vendor.id		pci 0x105a
+&device.id		pci 0x3318+0x0002
+|vendor.id		pci 0x105a
+&device.id		pci 0x3371
+|vendor.id		pci 0x105a
+&device.id		pci 0x3373
+|vendor.id		pci 0x105a
+&device.id		pci 0x3375+0x0002
++driver.module.modprobe	sata_promise
+
+ vendor.id		pci 0x105a
+&device.id		pci 0x6622
++driver.module.modprobe	sata_sx4
+
+ vendor.id		pci 0x106b
+&device.id		pci 0x0003
++baseclass.id		0x003
++subclass.id		0x80
+
+ vendor.id		pci 0x106b
+&device.id		pci 0x0021
+|vendor.id		pci 0x106b
+&device.id		pci 0x0024
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		pci 0x106b
+&device.id		pci 0x0021
+|vendor.id		pci 0x106b
+&device.id		pci 0x0024
+|vendor.id		pci 0x108e
+&device.id		pci 0x1101
+|vendor.id		pci 0x108e
+&device.id		pci 0x2bad
++driver.module.modprobe	sungem
+
+ vendor.id		pci 0x1077
+&device.id		pci 0x1016
+|vendor.id		pci 0x1077
+&device.id		pci 0x1080
+|vendor.id		pci 0x1077
+&device.id		pci 0x1216
+|vendor.id		pci 0x1077
+&device.id		pci 0x1240
+|vendor.id		pci 0x1077
+&device.id		pci 0x1280
++driver.module.modprobe	qla1280
+
+ vendor.id		pci 0x1077
+&device.id		pci 0x1020
++driver.module.modprobe	qlogicisp
+
+ vendor.id		pci 0x1077
+&device.id		pci 0x1216
+&subvendor.id		pci 0x101e
+&subdevice.id		pci 0x8471
+|vendor.id		pci 0x1077
+&device.id		pci 0x1216
+&subvendor.id		pci 0x101e
+&subdevice.id		pci 0x8493
++driver.module.modprobe	megaraid
+
+ vendor.id		pci 0x1077
+&device.id		pci 0x2100
++driver.module.modprobe	qla2100
+
+ vendor.id		pci 0x1077
+&device.id		pci 0x2200
++driver.module.modprobe	qla2200
+
+ vendor.id		pci 0x1077
+&device.id		pci 0x2300
+|vendor.id		pci 0x1077
+&device.id		pci 0x2312
++driver.module.modprobe	qla2300
+
+ vendor.id		pci 0x1077
+&device.id		pci 0x2322
++driver.module.modprobe	qla2322
+
+ vendor.id		pci 0x1077
+&device.id		pci 0x2422
+|vendor.id		pci 0x1077
+&device.id		pci 0x2432
++driver.module.modprobe	qla2400
+
+ vendor.id		pci 0x1077
+&device.id		pci 0x4010
+|vendor.id		pci 0x1077
+&device.id		pci 0x4022
++driver.module.modprobe	qla4xxx
++hwclass		storage
+
+ vendor.id		pci 0x1077
+&device.id		pci 0x6312
+|vendor.id		pci 0x1077
+&device.id		pci 0x6322
++driver.module.modprobe	qla6312
+
+ vendor.id		pci 0x107e
+&device.id		pci 0x0004+0x0002
++driver.module.modprobe	iph5526
+
+ vendor.id		pci 0x108e
+&device.id		pci 0x1001
+|vendor.id		special 0x4001
+&device.id		special 0x3001
++driver.module.modprobe	sunhme
+
+ vendor.id		pci 0x1095
+&device.id		pci 0x0240
+|vendor.id		pci 0x1095
+&device.id		pci 0x3112
+|vendor.id		pci 0x1095
+&device.id		pci 0x3114
+|vendor.id		pci 0x1095
+&device.id		pci 0x3512
++driver.module.modprobe	sata_sil
+
+ vendor.id		pci 0x109e
+&device.id		pci 0x0350+0x0002
+|vendor.id		pci 0x109e
+&device.id		pci 0x036e+0x0002
++baseclass.id		0x112
++subclass.id		0x00
++driver.module.modprobe	bttv
+
+ vendor.id		pci 0x109e
+&device.id		pci 0x0878
++driver.module.modprobe	bt878
+
+ vendor.id		pci 0x109e
+&device.id		pci 0x0878
+&subvendor.id		pci 0x0071
+&subdevice.id		pci 0x0101
++baseclass.id		0x111
++subclass.id		0x00
+
+ vendor.id		pci 0x109e
+&device.id		pci 0x0878
+&subvendor.id		pci 0x11bd
+&subdevice.id		pci 0x001c
++baseclass.id		0x111
++subclass.id		0x00
+
+ vendor.id		pci 0x109e
+&device.id		pci 0x0878
+&subvendor.id		pci 0x11bd
+&subdevice.id		pci 0x0026
++baseclass.id		0x111
++subclass.id		0x00
+
+ vendor.id		pci 0x109e
+&device.id		pci 0x0878
+&subvendor.id		pci 0x1461
+&subdevice.id		pci 0x0761
++baseclass.id		0x111
++subclass.id		0x00
+
+ vendor.id		pci 0x109e
+&device.id		pci 0x0878
+&subvendor.id		pci 0x1461
+&subdevice.id		pci 0x0771
++baseclass.id		0x111
++subclass.id		0x00
+
+ vendor.id		pci 0x109e
+&device.id		pci 0x0878
+&subvendor.id		pci 0x1822
+&subdevice.id		pci 0x0001
++baseclass.id		0x111
++subclass.id		0x00
+
+ vendor.id		pci 0x109e
+&device.id		pci 0x0878
+&subvendor.id		pci 0x18ac
+&subdevice.id		pci 0xdb10
++baseclass.id		0x111
++subclass.id		0x00
+
+ vendor.id		pci 0x109e
+&device.id		pci 0x0878
+&subvendor.id		pci 0x270f
+&subdevice.id		pci 0xfc00
++baseclass.id		0x111
++subclass.id		0x00
+
+ vendor.id		pci 0x109e
+&device.id		pci 0x0878
+&subvendor.id		pci 0x7063
+&subdevice.id		pci 0x2000
++baseclass.id		0x111
++subclass.id		0x00
+
+ vendor.id		pci 0x10b6
+&device.id		pci 0x0002
++driver.module.modprobe	abyss
+
+ vendor.id		pci 0x10b7
+&device.id		pci 0x1700
+|vendor.id		pci 0x1148
+&device.id		pci 0x4300
+|vendor.id		pci 0x1148
+&device.id		pci 0x4320
+|vendor.id		pci 0x1186
+&device.id		pci 0x4c00
+|vendor.id		pci 0x11ab
+&device.id		pci 0x4320
+|vendor.id		pci 0x1371
+&device.id		pci 0x434e
+|vendor.id		pci 0x1737
+&device.id		pci 0x1032
+|vendor.id		pci 0x1737
+&device.id		pci 0x1064
++driver.module.modprobe	sk98lin
+
+ vendor.id		pci 0x10b7
+&device.id		pci 0x4500
+|vendor.id		pci 0x10b7
+&device.id		pci 0x5055
+|vendor.id		pci 0x10b7
+&device.id		pci 0x5057
+|vendor.id		pci 0x10b7
+&device.id		pci 0x5157
+|vendor.id		pci 0x10b7
+&device.id		pci 0x5257
+|vendor.id		pci 0x10b7
+&device.id		pci 0x5900
+|vendor.id		pci 0x10b7
+&device.id		pci 0x5920
+|vendor.id		pci 0x10b7
+&device.id		pci 0x5950+0x0003
+|vendor.id		pci 0x10b7
+&device.id		pci 0x5970
+|vendor.id		pci 0x10b7
+&device.id		pci 0x5b57
+|vendor.id		pci 0x10b7
+&device.id		pci 0x6055+0x0002
+|vendor.id		pci 0x10b7
+&device.id		pci 0x6560
+|vendor.id		pci 0x10b7
+&device.id		pci 0x6562
+|vendor.id		pci 0x10b7
+&device.id		pci 0x6564
+|vendor.id		pci 0x10b7
+&device.id		pci 0x7646
+|vendor.id		pci 0x10b7
+&device.id		pci 0x9000+0x0002
+|vendor.id		pci 0x10b7
+&device.id		pci 0x9004+0x0003
+|vendor.id		pci 0x10b7
+&device.id		pci 0x900a
+|vendor.id		pci 0x10b7
+&device.id		pci 0x9050+0x0002
+|vendor.id		pci 0x10b7
+&device.id		pci 0x9055
+|vendor.id		pci 0x10b7
+&device.id		pci 0x9058
+|vendor.id		pci 0x10b7
+&device.id		pci 0x905a
+|vendor.id		pci 0x10b7
+&device.id		pci 0x9200+0x0002
+|vendor.id		pci 0x10b7
+&device.id		pci 0x9800
+|vendor.id		pci 0x10b7
+&device.id		pci 0x9805
++driver.module.modprobe	3c59x
+
+ vendor.id		pci 0x10b8
+&device.id		pci 0x0005+0x0002
++driver.module.modprobe	epic100
+
+ vendor.id		pci 0x10de
+&device.id		pci 0x0036
+|vendor.id		pci 0x10de
+&device.id		pci 0x003e
+|vendor.id		pci 0x10de
+&device.id		pci 0x0054+0x0002
+|vendor.id		pci 0x10de
+&device.id		pci 0x008e
+|vendor.id		pci 0x10de
+&device.id		pci 0x00e3
+|vendor.id		pci 0x10de
+&device.id		pci 0x00ee
++driver.module.modprobe	sata_nv
+
+ vendor.id		pci 0x10de
+&device.id		pci 0x0037+0x0002
+|vendor.id		pci 0x10de
+&device.id		pci 0x0056+0x0002
+|vendor.id		pci 0x10de
+&device.id		pci 0x0066
+|vendor.id		pci 0x10de
+&device.id		pci 0x0086
+|vendor.id		pci 0x10de
+&device.id		pci 0x008c
+|vendor.id		pci 0x10de
+&device.id		pci 0x00d6
+|vendor.id		pci 0x10de
+&device.id		pci 0x00df
+|vendor.id		pci 0x10de
+&device.id		pci 0x00e6
+|vendor.id		pci 0x10de
+&device.id		pci 0x01c3
+|vendor.id		pci 0x10de
+&device.id		pci 0x0268+0x0002
+|vendor.id		pci 0x10de
+&device.id		pci 0x0372+0x0002
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	forcedeth
+
+ vendor.id		pci 0x10ec
+&device.id		pci 0x8139
+&rev.id			0x0020+0x00e0
++driver.module.modprobe	8139cp
+
+ vendor.id		pci 0x1101
+&device.id		pci 0x0002
+|vendor.id		pci 0x1101
+&device.id		pci 0x1060
++driver.module.modprobe	a100u2w
+
+ vendor.id		pci 0x1101
+&device.id		pci 0x9400+0x0002
+|vendor.id		pci 0x1101
+&device.id		pci 0x9500
+|vendor.id		pci 0x134a
+&device.id		pci 0x0002
++driver.module.modprobe	initio
+
+ vendor.id		pci 0x1106
+&device.id		pci 0x3043
+|vendor.id		pci 0x1106
+&device.id		pci 0x3065
+|vendor.id		pci 0x1106
+&device.id		pci 0x6100
++driver.module.modprobe	via-rhine
+
+ vendor.id		pci 0x1106
+&device.id		pci 0x3149
++driver.module.modprobe	sata_via
+
+ vendor.id		pci 0x1119
+&device.id		pci 0x0000+0x000e
+|vendor.id		pci 0x1119
+&device.id		pci 0x0100+0x0300
+|vendor.id		pci 0x8086
+&device.id		pci 0x0600
++driver.module.modprobe	gdth
+
+ vendor.id		pci 0x1131
+&device.id		pci 0x5402
+&subvendor.id		pci 0x1244
+&subdevice.id		pci 0x0f00
++driver.module.modprobe	fcdsl
+
+ vendor.id		pci 0x1131
+&device.id		pci 0x7130
+|vendor.id		pci 0x1131
+&device.id		pci 0x7133+0x0003
++baseclass.id		0x112
++subclass.id		0x00
++driver.module.modprobe	saa7134
+
+ vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x00a1
+&subdevice.id		pci 0x00a1
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x00a1
+&subdevice.id		pci 0xa1a0
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x110a
+&subdevice.id		pci 0x0000
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x110a
+&subdevice.id		pci 0xffff
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x13c2
+&subdevice.id		pci 0x0000+0x0005
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x13c2
+&subdevice.id		pci 0x0006
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x13c2
+&subdevice.id		pci 0x0008
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x13c2
+&subdevice.id		pci 0x000a
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x13c2
+&subdevice.id		pci 0x000e
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x13c2
+&subdevice.id		pci 0x1002
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x13c2
+&subdevice.id		pci 0x1102
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0xffc2
+&subdevice.id		pci 0x0000
++baseclass.id		0x111
++subclass.id		0x00
++driver.module.modprobe	dvb-ttpci
+
+ vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x1131
+&subdevice.id		pci 0x4f56
++baseclass.id		0x111
++subclass.id		0x00
++driver.module.modprobe	budget-av
+
+ vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x13c2
+&subdevice.id		pci 0x1003+0x0003
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x13c2
+&subdevice.id		pci 0x1013
++baseclass.id		0x111
++subclass.id		0x00
++driver.module.modprobe	budget
+
+ vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x13c2
+&subdevice.id		pci 0x100c
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x13c2
+&subdevice.id		pci 0x100f
+|vendor.id		pci 0x1131
+&device.id		pci 0x7146
+&subvendor.id		pci 0x13c2
+&subdevice.id		pci 0x1011
++baseclass.id		0x111
++subclass.id		0x00
++driver.module.modprobe	budget-ci
+
+ vendor.id		pci 0x1148
+&device.id		pci 0x4000
++driver.module.modprobe	skfp
+
+ vendor.id		pci 0x114f
+&device.id		pci 0x0003
++driver.module.modprobe	dgrs
+
+ vendor.id		pci 0x115d
+&device.id		pci 0x0101
+|vendor.id		pci 0x115d
+&device.id		pci 0x0440+0x001d
+|vendor.id		pci 0x11c1
+&device.id		pci 0x0440+0x001d
++baseclass.id		0x102
++subclass.id		0x03
+
+ vendor.id		pci 0x1166
+&device.id		pci 0x0240
++driver.module.modprobe	sata_svw
+
+ vendor.id		pci 0x1179
+&device.id		pci 0x0701
++driver.module.modprobe	toshoboe
+
+ vendor.id		pci 0x1186
+&device.id		pci 0x1002
+|vendor.id		pci 0x13f0
+&device.id		pci 0x0201
++driver.module.modprobe	sundance
+
+ vendor.id		pci 0x1186
+&device.id		pci 0x4000
++driver.module.modprobe	dl2k
+
+ vendor.id		pci 0x1191
+&device.id		pci 0x8002
+|vendor.id		pci 0x1191
+&device.id		pci 0x8010
+|vendor.id		pci 0x1191
+&device.id		pci 0x8020
+|vendor.id		pci 0x1191
+&device.id		pci 0x8030
+|vendor.id		pci 0x1191
+&device.id		pci 0x8040
+|vendor.id		pci 0x1191
+&device.id		pci 0x8050
+|vendor.id		pci 0x1191
+&device.id		pci 0x8060
++driver.module.modprobe	atp870u
+
+ vendor.id		pci 0x11b0
+&device.id		pci 0x0002
++driver.module.modprobe	sdladrv
+
+ vendor.id		pci 0x11de
+&device.id		pci 0x6057
++driver.module.modprobe	buz
+
+ vendor.id		pci 0x11de
+&device.id		pci 0x6120
++driver.module.modprobe	zr36120
+
+ vendor.id		pci 0x120f
+&device.id		pci 0x0001
++driver.module.modprobe	rrunner
+
+ vendor.id		pci 0x1244
+&device.id		pci 0x0a00
+|vendor.id		pci 0x1244
+&device.id		pci 0x0e00
++driver.module.modprobe	fcpci
+
+ vendor.id		pci 0x1244
+&device.id		pci 0x2700
++driver.module.modprobe	fcdslsl
+
+ vendor.id		pci 0x1244
+&device.id		pci 0x2900
++driver.module.modprobe	fcdsl2
+
+ vendor.id		pci 0x1256
+&device.id		pci 0x4401
++driver.module.modprobe	pci2220i
+
+ vendor.id		pci 0x1256
+&device.id		pci 0x5201
++driver.module.modprobe	pci2000
+
+ vendor.id		pci 0x1318
+&device.id		pci 0x0911
++driver.module.modprobe	hamachi
+
+ vendor.id		pci 0x134a
+&device.id		pci 0x0001
++driver.module.modprobe	dmx3191d
+
+ vendor.id		pci 0x1385
+&device.id		pci 0x4100
++driver.module.modprobe	prism2_plx
+
+ vendor.id		pci 0x13c1
+&device.id		pci 0x1000+0x0002
++driver.module.modprobe	3w-xxxx
+
+ vendor.id		pci 0x13d0
+&device.id		pci 0x2103
+|vendor.id		pci 0x13d0
+&device.id		pci 0x2200
++baseclass.id		0x111
++subclass.id		0x00
++driver.module.modprobe	b2c2-flexcop-pci
+
+ vendor.id		pci 0x14b9
+&device.id		pci 0x0001
+|vendor.id		pci 0x14b9
+&device.id		pci 0x4500
+|vendor.id		pci 0x14b9
+&device.id		pci 0x4800
++driver.module.modprobe	aironet4500
+
+ vendor.id		pci 0x14c1
+&device.id		pci 0x8043
++baseclass.id		0x002
++subclass.id		0x81
++driver.module.modprobe	gm
+
+ vendor.id		pci 0x14f1
+&device.id		pci 0x8800
++baseclass.id		0x112
++subclass.id		0x00
++driver.module.modprobe	cx8800
+
+ vendor.id		pci 0x14f1
+&device.id		pci 0x8802
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x9002
+|vendor.id		pci 0x14f1
+&device.id		pci 0x8802
+&subvendor.id		pci 0x14f1
+&subdevice.id		pci 0x0187
+|vendor.id		pci 0x14f1
+&device.id		pci 0x8802
+&subvendor.id		pci 0x17de
+&subdevice.id		pci 0x08a6
+|vendor.id		pci 0x14f1
+&device.id		pci 0x8802
+&subvendor.id		pci 0x18ac
+&subdevice.id		pci 0xdb00
++baseclass.id		0x111
++subclass.id		0x00
++driver.module.modprobe	cx88-dvb
+
+ vendor.id		pci 0x14f1
+&device.id		pci 0x8802
+&subvendor.id		pci 0x7063
+&subdevice.id		pci 0x3000
++baseclass.id		0x111
++subclass.id		0x00
++driver.module.modprobe	cx88-dvb
+
+ vendor.id		pci 0x1571
+&device.id		pci 0xa001+0x0013
+|vendor.id		pci 0x1571
+&device.id		pci 0xa201+0x0006
++driver.module.modprobe	om20020-pci
+
+ vendor.id		pci 0x15ad
+&device.id		pci 0x0405
+|vendor.id		pci 0x15ad
+&device.id		pci 0x0710
++baseclass.id		0x003
++subclass.id		0x00
+
+ vendor.id		pci 0x1de1
+&device.id		pci 0x0391
++driver.module.modprobe	dc395x
+
+ vendor.id		pci 0x4444
+&device.id		pci 0x0016
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x0003
+|vendor.id		pci 0x4444
+&device.id		pci 0x0016
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x4009
+|vendor.id		pci 0x4444
+&device.id		pci 0x0016
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x4801
+|vendor.id		pci 0x4444
+&device.id		pci 0x0016
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x4803
+|vendor.id		pci 0x4444
+&device.id		pci 0x0803
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x4001
+|vendor.id		pci 0x4444
+&device.id		pci 0x0803
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x4801
++baseclass.id		0x112
++subclass.id		0x00
++driver.module.modprobe	ivtv
+
+ vendor.id		pci 0x4444
+&device.id		pci 0x0016
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x0009
+|vendor.id		pci 0x4444
+&device.id		pci 0x0016
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x0801
+|vendor.id		pci 0x4444
+&device.id		pci 0x0016
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x0807
+|vendor.id		pci 0x4444
+&device.id		pci 0x0016
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x8003
+|vendor.id		pci 0x4444
+&device.id		pci 0x0016
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x8801
+|vendor.id		pci 0x4444
+&device.id		pci 0x0016
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0xc801
+|vendor.id		pci 0x4444
+&device.id		pci 0x0016
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0xe807
+|vendor.id		pci 0x4444
+&device.id		pci 0x0016
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0xe817
++baseclass.id		0x112
++subclass.id		0x00
++driver.module.modprobe	ivtv
+
+ vendor.id		pci 0x4444
+&device.id		pci 0x0803
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x4000
+|vendor.id		pci 0x4444
+&device.id		pci 0x0803
+&subvendor.id		pci 0x0070
+&subdevice.id		pci 0x4800
++baseclass.id		0x112
++subclass.id		0x00
++driver.module.modprobe	ivtv
+
+ vendor.id		pci 0x4444
+&device.id		pci 0x0803
+&subvendor.id		pci 0x12ab
+&subdevice.id		pci 0x0000
++baseclass.id		0x112
++subclass.id		0x00
++driver.module.modprobe	ivtv
+
+ vendor.id		pci 0x4444
+&device.id		pci 0x0803
+&subvendor.id		pci 0x12ab
+&subdevice.id		pci 0xfff3
+|vendor.id		pci 0x4444
+&device.id		pci 0x0803
+&subvendor.id		pci 0x12ab
+&subdevice.id		pci 0xffff
++baseclass.id		0x112
++subclass.id		0x00
++driver.module.modprobe	ivtv
+
+ vendor.id		pci 0x4444
+&device.id		pci 0x0803
+&subvendor.id		pci 0x1461
+&subdevice.id		pci 0xa3ce+0x0002
++baseclass.id		0x112
++subclass.id		0x00
++driver.module.modprobe	ivtv
+
+ vendor.id		pci 0x4444
+&device.id		pci 0x0803
+&subvendor.id		pci 0xff92
+&subdevice.id		pci 0x0070
++baseclass.id		0x112
++subclass.id		0x00
++driver.module.modprobe	ivtv
+
+ vendor.id		pci 0x4916
+&device.id		pci 0x1960
++driver.module.modprobe	rcpci45
+
+ vendor.id		pci 0x8086
+&device.id		pci 0x1000+0x0002
+|vendor.id		pci 0x8086
+&device.id		pci 0x1004
+|vendor.id		pci 0x8086
+&device.id		pci 0x1008+0x0002
+|vendor.id		pci 0x8086
+&device.id		pci 0x100c+0x000e
+|vendor.id		pci 0x8086
+&device.id		pci 0x101d+0x0002
+|vendor.id		pci 0x8086
+&device.id		pci 0x1026+0x0003
+|vendor.id		pci 0x8086
+&device.id		pci 0x1075+0x0007
++driver.module.modprobe	e1000
+
+ vendor.id		pci 0x8086
+&device.id		pci 0x1029
+|vendor.id		pci 0x8086
+&device.id		pci 0x1030+0x0005
+|vendor.id		pci 0x8086
+&device.id		pci 0x1038+0x0007
+|vendor.id		pci 0x8086
+&device.id		pci 0x1059
+|vendor.id		pci 0x8086
+&device.id		pci 0x1209
+|vendor.id		pci 0x8086
+&device.id		pci 0x1229
+|vendor.id		pci 0x8086
+&device.id		pci 0x2449
+|vendor.id		pci 0x8086
+&device.id		pci 0x2459
+|vendor.id		pci 0x8086
+&device.id		pci 0x245d
++driver.module.modprobe	e100
++driver.module.modprobe	eepro100
+
+ vendor.id		pci 0x8086
+&device.id		pci 0x1035+0x0003
+|vendor.id		pci 0x8086
+&device.id		pci 0x1227+0x0002
+|vendor.id		pci 0x8086
+&device.id		pci 0x5200+0x0002
++driver.module.modprobe	eepro100
+
+ vendor.id		pci 0x8086
+&device.id		pci 0x1040
++baseclass.id		0x102
++subclass.id		0x02
+
+ vendor.id		pci 0x8086
+&device.id		pci 0x1043
++driver.module.modprobe	ipw2100
+
+ vendor.id		pci 0x8086
+&device.id		pci 0x1043
+&subvendor.id		pci 0x103c
+&subdevice.id		pci 0x2741
+|vendor.id		pci 0x8086
+&device.id		pci 0x1043
+&subvendor.id		pci 0x8086
+&subdevice.id		pci 0x2701+0x0002
+|vendor.id		pci 0x8086
+&device.id		pci 0x1043
+&subvendor.id		pci 0x8086
+&subdevice.id		pci 0x2711+0x0002
+|vendor.id		pci 0x8086
+&device.id		pci 0x1043
+&subvendor.id		pci 0x8086
+&subdevice.id		pci 0x2721+0x0002
+|vendor.id		pci 0x8086
+&device.id		pci 0x1043
+&subvendor.id		pci 0x8086
+&subdevice.id		pci 0x2731+0x0002
+|vendor.id		pci 0x8086
+&device.id		pci 0x1043
+&subvendor.id		pci 0x8086
+&subdevice.id		pci 0x2741+0x0002
+|vendor.id		pci 0x8086
+&device.id		pci 0x1043
+&subvendor.id		pci 0x8086
+&subdevice.id		pci 0x2751+0x0004
+|vendor.id		pci 0x8086
+&device.id		pci 0x1043
+&subvendor.id		pci 0x8086
+&subdevice.id		pci 0x2761+0x0002
+|vendor.id		pci 0x8086
+&device.id		pci 0x104f
+|vendor.id		pci 0x8086
+&device.id		pci 0x4220
+|vendor.id		pci 0x8086
+&device.id		pci 0x4223
++driver.module.modprobe	ipw2200
+
+ vendor.id		pci 0x8086
+&device.id		pci 0x1050+0x0006
++driver.module.modprobe	e100
+
+ vendor.id		pci 0x9004
+&device.id		pci 0x0078
+|vendor.id		pci 0x9004
+&device.id		pci 0x1078
+|vendor.id		pci 0x9004
+&device.id		pci 0x2178
+|vendor.id		pci 0x9004
+&device.id		pci 0x3860
+|vendor.id		pci 0x9004
+&device.id		pci 0x5078
+|vendor.id		pci 0x9004
+&device.id		pci 0x5578
+|vendor.id		pci 0x9004
+&device.id		pci 0x6038
+|vendor.id		pci 0x9004
+&device.id		pci 0x6075
+|vendor.id		pci 0x9004
+&device.id		pci 0x6078
+|vendor.id		pci 0x9004
+&device.id		pci 0x6178
+|vendor.id		pci 0x9004
+&device.id		pci 0x7078
+|vendor.id		pci 0x9004
+&device.id		pci 0x7178
+&subvendor.id		pci 0x0000
+&subdevice.id		pci 0x0000
+|vendor.id		pci 0x9004
+&device.id		pci 0x7278
+&subvendor.id		pci 0x0000
+&subdevice.id		pci 0x0000
+|vendor.id		pci 0x9004
+&device.id		pci 0x7378
+&subvendor.id		pci 0x0000
+&subdevice.id		pci 0x0000
+|vendor.id		pci 0x9004
+&device.id		pci 0x7478
+&subvendor.id		pci 0x0000
+&subdevice.id		pci 0x0000
+|vendor.id		pci 0x9004
+&device.id		pci 0x7578
+&subvendor.id		pci 0x0000
+&subdevice.id		pci 0x0000
+|vendor.id		pci 0x9004
+&device.id		pci 0x7678
+&subvendor.id		pci 0x0000
+&subdevice.id		pci 0x0000
+|vendor.id		pci 0x9004
+&device.id		pci 0x7815
+|vendor.id		pci 0x9004
+&device.id		pci 0x7890+0x0010
+&subvendor.id		pci 0x9004
+&subdevice.id		pci 0x7893
+|vendor.id		pci 0x9004
+&device.id		pci 0x7895
+|vendor.id		pci 0x9004
+&device.id		pci 0x8078
+|vendor.id		pci 0x9004
+&device.id		pci 0x8178
+|vendor.id		pci 0x9004
+&device.id		pci 0x8278
+|vendor.id		pci 0x9004
+&device.id		pci 0x8378
+|vendor.id		pci 0x9004
+&device.id		pci 0x8478
+|vendor.id		pci 0x9004
+&device.id		pci 0x8578
+|vendor.id		pci 0x9004
+&device.id		pci 0x8678
+|vendor.id		pci 0x9004
+&device.id		pci 0x8778
+|vendor.id		pci 0x9004
+&device.id		pci 0x8878
+|vendor.id		pci 0x9005
+&device.id		pci 0x0010+0x0010
+|vendor.id		pci 0x9005
+&device.id		pci 0x0050+0x0010
+|vendor.id		pci 0x9005
+&device.id		pci 0x0080+0x0010
+|vendor.id		pci 0x9005
+&device.id		pci 0x00c0+0x0010
++driver.module.modprobe	aic7xxx
+
+ vendor.id		pci 0x9004
+&device.id		pci 0x6915
++driver.module.modprobe	starfire
+
+ vendor.id		pci 0x9005
+&device.id		pci 0x8000+0x0020
++driver.module.modprobe	aic79xx
+
+ vendor.id		ADP
+&device.id		eisa 0x1505
++baseclass.id		0x001
++subclass.id		0x00
++driver.module.modprobe	aha152x
++driver.module.config	options aha152x		aha152x=<io0>,<irq0>
++driver.module.insmod	aha152x aha152x=<io0>,<irq0>
+
+ vendor.id		ADS
+&device.id		eisa 0x7150
+|vendor.id		ADS
+&device.id		eisa 0x7181
+|vendor.id		ADV
+&device.id		eisa 0x550a
+|vendor.id		ADV
+&device.id		eisa 0x55ff
+|vendor.id		ALS
+&device.id		eisa 0x0001
+|vendor.id		ALS
+&device.id		eisa 0x0110
+|vendor.id		ALS
+&device.id		eisa 0x0120
+|vendor.id		ALS
+&device.id		eisa 0x0200
+|vendor.id		AZT
+&device.id		eisa 0x1008
+|vendor.id		AZT
+&device.id		eisa 0x2320
+|vendor.id		AZT
+&device.id		eisa 0x3000
+|vendor.id		AZT
+&device.id		eisa 0x3002
+|vendor.id		AZT
+&device.id		eisa 0x3005
+|vendor.id		AZT
+&device.id		eisa 0x3011
+|vendor.id		CDC
+&device.id		eisa 0x1111
+|vendor.id		CMI
+&device.id		eisa 0x0001
+|vendor.id		CSC
+&device.id		eisa 0x0000
+|vendor.id		CSC
+&device.id		eisa 0x0225
+|vendor.id		CSC
+&device.id		eisa 0x0437
+|vendor.id		CSC
+&device.id		eisa 0x0b35
+|vendor.id		CSC
+&device.id		eisa 0x0d32
+|vendor.id		CSC
+&device.id		eisa 0x1425
+|vendor.id		CSC
+&device.id		eisa 0x1525
+|vendor.id		CSC
+&device.id		eisa 0x1a32
+|vendor.id		CSC
+&device.id		eisa 0x1e37
+|vendor.id		CSC
+&device.id		eisa 0x4232
+|vendor.id		CSC
+&device.id		eisa 0x4236+0x0002
+|vendor.id		CSC
+&device.id		eisa 0x4336
+|vendor.id		CSC
+&device.id		eisa 0x4536
+|vendor.id		CSC
+&device.id		eisa 0x4637
+|vendor.id		CSC
+&device.id		eisa 0x4837
+|vendor.id		CSC
+&device.id		eisa 0x6835+0x0002
+|vendor.id		CSC
+&device.id		eisa 0x7532
+|vendor.id		CSC
+&device.id		eisa 0x7537
+|vendor.id		CSC
+&device.id		eisa 0x7632
+|vendor.id		CSC
+&device.id		eisa 0x8025
+|vendor.id		CSC
+&device.id		eisa 0x8037
+|vendor.id		CSC
+&device.id		eisa 0x9836+0x0002
+|vendor.id		CSC
+&device.id		eisa 0xa836
+|vendor.id		CSC
+&device.id		eisa 0xc835
+|vendor.id		CSC
+&device.id		eisa 0xd925
+|vendor.id		CSC
+&device.id		eisa 0xd937
+|vendor.id		CSC
+&device.id		eisa 0xe825
+|vendor.id		CSC
+&device.id		eisa 0xf032
+|vendor.id		CSC
+&device.id		eisa 0xf235
+|vendor.id		CSC
+&device.id		eisa 0xf238
+|vendor.id		CTL
+&device.id		eisa 0x002a
+|vendor.id		CTL
+&device.id		eisa 0x002c
+|vendor.id		CTL
+&device.id		eisa 0x0035
+|vendor.id		CTL
+&device.id		eisa 0x0045
+|vendor.id		CTL
+&device.id		eisa 0x009a
+|vendor.id		CTL
+&device.id		eisa 0x009f
+|vendor.id		CTL
+&device.id		eisa 0x00ed
+|vendor.id		DXP
+&device.id		eisa 0x3201
+|vendor.id		ESS
+&device.id		eisa 0x0003
+|vendor.id		ESS
+&device.id		eisa 0x0968
+|vendor.id		ESS
+&device.id		eisa 0x1868+0x0002
+|vendor.id		ESS
+&device.id		eisa 0x1878+0x0002
+|vendor.id		LWC
+&device.id		eisa 0x1060+0x0002
+|vendor.id		MDK
+&device.id		eisa 0x1605
+|vendor.id		NMX
+&device.id		eisa 0x2200
+|vendor.id		OPT
+&device.id		eisa 0x0924+0x0002
+|vendor.id		OPT
+&device.id		eisa 0x0931
+|vendor.id		RTL
+&device.id		eisa 0x3000
+|vendor.id		RWB
+&device.id		eisa 0x1688
+|vendor.id		SMM
+&device.id		eisa 0x7180
+|vendor.id		STB
+&device.id		eisa 0x011a
+|vendor.id		YMH
+&device.id		eisa 0x0020
+|vendor.id		YMH
+&device.id		eisa 0x0030
+|vendor.id		YMH
+&device.id		eisa 0x0800
++baseclass.id		0x004
++subclass.id		0x01
+
+ vendor.id		ADS
+&device.id		eisa 0x7150
+|vendor.id		ADS
+&device.id		eisa 0x7181
+|vendor.id		AZT
+&device.id		eisa 0x1022
+|vendor.id		LWC
+&device.id		eisa 0x1061
+|vendor.id		MDK
+&device.id		eisa 0x1605
+|vendor.id		SMM
+&device.id		eisa 0x7180
+|vendor.id		TER
+&device.id		eisa 0x1112
+|vendor.id		TER
+&device.id		eisa 0x1411
++driver.module.modprobe	snd-ad1816a
+
+ vendor.id		ADV
+&device.id		eisa 0x550a
++driver.module.modprobe	snd-interwave-stb
++driver.module.modprobe	snd-interwave
+
+ vendor.id		ADV
+&device.id		eisa 0x55ff
+|vendor.id		CDC
+&device.id		eisa 0x1111
+|vendor.id		DXP
+&device.id		eisa 0x3201
+|vendor.id		GRV
+&device.id		eisa 0x0001
+|vendor.id		STB
+&device.id		eisa 0x011a
++driver.module.modprobe	snd-interwave
+
+ vendor.id		ALS
+&device.id		eisa 0x0001
+|vendor.id		ALS
+&device.id		eisa 0x0110
+|vendor.id		ALS
+&device.id		eisa 0x0120
+|vendor.id		ALS
+&device.id		eisa 0x0200
+|vendor.id		RTL
+&device.id		eisa 0x3000
++driver.module.modprobe	snd-als100
+
+ vendor.id		ALS
+&device.id		eisa 0x0007
+|vendor.id		RWB
+&device.id		eisa 0x1688
++driver.module.modprobe	snd-dt019x
+
+ vendor.id		AVM
+&device.id		eisa 0x0900
++baseclass.id		0x103
++subclass.id		0x00
++driver.module.modprobe	fcpnp
+
+ vendor.id		AXE
+&device.id		eisa 0x2201
+|vendor.id		PNP
+&device.id		eisa 0x80d6
++driver.module.modprobe	ne
++driver.module.config	options ne		io=<io0> irq=<irq0>
++driver.module.insmod	8390|ne io=<io0> irq=<irq0>
+
+ vendor.id		AZT
+&device.id		eisa 0x1008
+|vendor.id		AZT
+&device.id		eisa 0x2320
+|vendor.id		AZT
+&device.id		eisa 0x3000
+|vendor.id		AZT
+&device.id		eisa 0x3002
+|vendor.id		AZT
+&device.id		eisa 0x3005
+|vendor.id		AZT
+&device.id		eisa 0x3011
++driver.module.modprobe	snd-azt2320
+
+ vendor.id		CMI
+&device.id		eisa 0x0001
++driver.module.modprobe	snd-cmi8330
+
+ vendor.id		CSC
+&device.id		eisa 0x0000
+|vendor.id		CSC
+&device.id		eisa 0x0100
+|vendor.id		GIM
+&device.id		eisa 0x0100
+|vendor.id		special 0x0402
+&device.id		special 0x0014
++driver.module.modprobe	cs4232
+
+ vendor.id		CSC
+&device.id		eisa 0x0225
+|vendor.id		CSC
+&device.id		eisa 0x0437
+|vendor.id		CSC
+&device.id		eisa 0x0735
+|vendor.id		CSC
+&device.id		eisa 0x0b35+0x0002
+|vendor.id		CSC
+&device.id		eisa 0x1335
+|vendor.id		CSC
+&device.id		eisa 0x1425
+|vendor.id		CSC
+&device.id		eisa 0x1525
+|vendor.id		CSC
+&device.id		eisa 0x1e37
+|vendor.id		CSC
+&device.id		eisa 0x4237
+|vendor.id		CSC
+&device.id		eisa 0x4336
+|vendor.id		CSC
+&device.id		eisa 0x4536
+|vendor.id		CSC
+&device.id		eisa 0x4625
+|vendor.id		CSC
+&device.id		eisa 0x4637
+|vendor.id		CSC
+&device.id		eisa 0x4837
+|vendor.id		CSC
+&device.id		eisa 0x6835+0x0002
+|vendor.id		CSC
+&device.id		eisa 0x7537
+|vendor.id		CSC
+&device.id		eisa 0x8025
+|vendor.id		CSC
+&device.id		eisa 0x8037
+|vendor.id		CSC
+&device.id		eisa 0x9836+0x0002
+|vendor.id		CSC
+&device.id		eisa 0xa836
+|vendor.id		CSC
+&device.id		eisa 0xc835
+|vendor.id		CSC
+&device.id		eisa 0xd925
+|vendor.id		CSC
+&device.id		eisa 0xd937
+|vendor.id		CSC
+&device.id		eisa 0xe825
+|vendor.id		CSC
+&device.id		eisa 0xe835+0x0002
+|vendor.id		CSC
+&device.id		eisa 0xe936
+|vendor.id		CSC
+&device.id		eisa 0xf235
+|vendor.id		CSC
+&device.id		eisa 0xf238
++driver.module.modprobe	snd-cs4236
+
+ vendor.id		CSC
+&device.id		eisa 0x0d32
+|vendor.id		CSC
+&device.id		eisa 0x1a32
+|vendor.id		CSC
+&device.id		eisa 0x4232
+|vendor.id		CSC
+&device.id		eisa 0xf032
++driver.module.modprobe	snd-cs4232
+
+ vendor.id		CSC
+&device.id		eisa 0x4236
++driver.module.modprobe	snd-cs4232
++driver.module.modprobe	snd-cs4236
+
+ vendor.id		CSC
+&device.id		eisa 0x7532
+|vendor.id		CSC
+&device.id		eisa 0x7632
++driver.module.modprobe	snd-cs4232
++driver.module.modprobe	snd-wavefront
+
+ vendor.id		CTL
+&device.id		eisa 0x0024
+|vendor.id		CTL
+&device.id		eisa 0x0026+0x0004
+|vendor.id		CTL
+&device.id		eisa 0x002b
++baseclass.id		0x004
++subclass.id		0x01
+
+ vendor.id		CTL
+&device.id		eisa 0x0024+0x0009
+|vendor.id		CTL
+&device.id		eisa 0x0051
+|vendor.id		CTL
+&device.id		eisa 0x0070
+|vendor.id		CTL
+&device.id		eisa 0x0080
+|vendor.id		CTL
+&device.id		eisa 0x0086
+|vendor.id		CTL
+&device.id		eisa 0x00f0
++driver.module.modprobe	snd-sb16
+
+ vendor.id		CTL
+&device.id		eisa 0x0035
+|vendor.id		CTL
+&device.id		eisa 0x0039
+|vendor.id		CTL
+&device.id		eisa 0x0042+0x0007
+|vendor.id		CTL
+&device.id		eisa 0x0054
+|vendor.id		CTL
+&device.id		eisa 0x009a
+|vendor.id		CTL
+&device.id		eisa 0x009c+0x0004
+|vendor.id		CTL
+&device.id		eisa 0x00b2
+|vendor.id		CTL
+&device.id		eisa 0x00c1
+|vendor.id		CTL
+&device.id		eisa 0x00c3
+|vendor.id		CTL
+&device.id		eisa 0x00c5
+|vendor.id		CTL
+&device.id		eisa 0x00c7
+|vendor.id		CTL
+&device.id		eisa 0x00e4
+|vendor.id		CTL
+&device.id		eisa 0x00e9
+|vendor.id		CTL
+&device.id		eisa 0x00ed
++driver.module.modprobe	snd-sbawe
+
+ vendor.id		CTL
+&device.id		eisa 0x0039
+|vendor.id		CTL
+&device.id		eisa 0x0042+0x0003
+|vendor.id		CTL
+&device.id		eisa 0x0047
+|vendor.id		CTL
+&device.id		eisa 0x0054
+|vendor.id		CTL
+&device.id		eisa 0x009c
++baseclass.id		0x004
++subclass.id		0x01
+
+ vendor.id		CTL
+&device.id		eisa 0x0048
++baseclass.id		0x004
++subclass.id		0x01
+
+ vendor.id		CTL
+&device.id		eisa 0x0051
++baseclass.id		0x004
++subclass.id		0x01
+
+ vendor.id		CTL
+&device.id		eisa 0x0070
++baseclass.id		0x004
++subclass.id		0x01
+
+ vendor.id		CTL
+&device.id		eisa 0x0080
++baseclass.id		0x004
++subclass.id		0x01
+
+ vendor.id		CTL
+&device.id		eisa 0x009d
+|vendor.id		CTL
+&device.id		eisa 0x00c1
+|vendor.id		CTL
+&device.id		eisa 0x00c3
+|vendor.id		CTL
+&device.id		eisa 0x00c5
+|vendor.id		CTL
+&device.id		eisa 0x00c7
+|vendor.id		CTL
+&device.id		eisa 0x00e4
++baseclass.id		0x004
++subclass.id		0x01
+
+ vendor.id		CTL
+&device.id		eisa 0x009e
+|vendor.id		CTL
+&device.id		eisa 0x00b2
++baseclass.id		0x004
++subclass.id		0x01
+
+ vendor.id		CTL
+&device.id		eisa 0x00f0
++baseclass.id		0x004
++subclass.id		0x01
+
+ vendor.id		ELS
+&device.id		eisa 0x0133
++baseclass.id		0x103
++subclass.id		0x00
+
+ vendor.id		ENS
+&device.id		eisa 0x3081
++driver.module.modprobe	snd-sscape
+
+ vendor.id		ESS
+&device.id		eisa 0x0003
+|vendor.id		ESS
+&device.id		eisa 0x1868+0x0002
+|vendor.id		ESS
+&device.id		eisa 0x1878+0x0002
++driver.module.modprobe	snd-es18xx
+
+ vendor.id		ESS
+&device.id		eisa 0x0968
++driver.module.modprobe	snd-es968
+
+ vendor.id		GRV
+&device.id		eisa 0x0001
++baseclass.id		0x004
++subclass.id		0x01
+
+ vendor.id		GWY
+&device.id		eisa 0x001c
++baseclass.id		0x102
++subclass.id		0x01
+
+ vendor.id		NMX
+&device.id		eisa 0x2200
+|vendor.id		YMH
+&device.id		eisa 0x0020
+|vendor.id		YMH
+&device.id		eisa 0x0030
+|vendor.id		YMH
+&device.id		eisa 0x0800+0x0002
++driver.module.modprobe	snd-opl3sa2
+
+ vendor.id		OPT
+&device.id		eisa 0x0924+0x0002
++driver.module.modprobe	snd-opti92x-cs4231
++driver.module.modprobe	snd-opti92x-ad1848
+
+ vendor.id		OPT
+&device.id		eisa 0x0931
++driver.module.modprobe	snd-opti93x
+
+ vendor.id		PNP
+&device.id		eisa 0x80d6
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		PNP
+&device.id		eisa 0x80f7
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		PNP
+&device.id		eisa 0x80f7+0x0002
+|vendor.id		TCM
+&device.id		eisa 0x5090+0x0002
+|vendor.id		TCM
+&device.id		eisa 0x5094+0x0002
+|vendor.id		TCM
+&device.id		eisa 0x5098
++driver.module.modprobe	3c509
+
+ vendor.id		PNP
+&device.id		eisa 0x80f8
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		TCM
+&device.id		eisa 0x5090+0x0002
+|vendor.id		TCM
+&device.id		eisa 0x5094+0x0002
+|vendor.id		TCM
+&device.id		eisa 0x5098
+|vendor.id		usb 0x066b
+&device.id		usb 0x2206
+|vendor.id		pcmcia 0x0089
+&device.id		pcmcia 0x0102+0x0002
+|vendor.id		pcmcia 0x0089
+&device.id		pcmcia 0x0113
+|vendor.id		pcmcia 0x0089
+&device.id		pcmcia 0x1103
+|vendor.id		pcmcia 0x00a4
+&device.id		pcmcia 0x0103
+|vendor.id		pcmcia 0x00a4
+&device.id		pcmcia 0x0113
+|vendor.id		pcmcia 0x0105
+&device.id		pcmcia 0x0500
+|vendor.id		pcmcia 0x0140
+&device.id		pcmcia 0x000f
+|vendor.id		pcmcia 0x0140
+&device.id		pcmcia 0x0011+0x0002
+|vendor.id		pcmcia 0x0149
+&device.id		pcmcia 0x0231
+|vendor.id		pcmcia 0x0149
+&device.id		pcmcia 0xc2ab
+|vendor.id		pcmcia 0x016c
+&device.id		pcmcia 0x0021
+|vendor.id		pcmcia 0x0186
+&device.id		pcmcia 0x0101
+|vendor.id		pcmcia 0x01bf
+&device.id		pcmcia 0x2220
+|vendor.id		pcmcia 0x01bf
+&device.id		pcmcia 0x2225
+|vendor.id		pcmcia 0x01bf
+&device.id		pcmcia 0x2227
+|vendor.id		pcmcia 0x01bf
+&device.id		pcmcia 0x8036
+|vendor.id		pcmcia 0x01da
+&device.id		pcmcia 0x0081
+|vendor.id		pcmcia 0x01da
+&device.id		pcmcia 0x0090
+|vendor.id		pcmcia 0x021b
+&device.id		pcmcia 0x0510
+|vendor.id		pcmcia 0x022d
+&device.id		pcmcia 0x2103
+|vendor.id		pcmcia 0x02ac
+&device.id		pcmcia 0x1012
+|vendor.id		pcmcia 0x13d1
+&device.id		pcmcia 0xab02+0x0002
+|vendor.id		pcmcia 0x50c7
+&device.id		pcmcia 0xcafe
+|vendor.id		pcmcia 0x9513
+&device.id		pcmcia 0x0081
+|vendor.id		pcmcia 0xe815
+&device.id		pcmcia 0x0081
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		TER
+&device.id		eisa 0x1411
++baseclass.id		0x004
++subclass.id		0x01
+
+ vendor.id		TWK
+&device.id		eisa 0x5542
++baseclass.id		0x10e
++subclass.id		0x00
+
+ vendor.id		YMH
+&device.id		eisa 0x0021
++driver.module.modprobe	opl3sa2
+
+ vendor.id		usb 0x03e8
+&device.id		usb 0x0008
+|vendor.id		usb 0x04bb
+&device.id		usb 0x0901
+|vendor.id		usb 0x0506
+&device.id		usb 0x03e8
+|vendor.id		usb 0x0506
+&device.id		usb 0x11f8
+|vendor.id		usb 0x0557
+&device.id		usb 0x2002
+|vendor.id		usb 0x0557
+&device.id		usb 0x4000
+|vendor.id		usb 0x0565
+&device.id		usb 0x0002+0x0002
+|vendor.id		usb 0x0565
+&device.id		usb 0x0005
+|vendor.id		usb 0x05e9
+&device.id		usb 0x0008+0x0002
+|vendor.id		usb 0x06e1
+&device.id		usb 0x0008+0x0002
+|vendor.id		usb 0x07b8
+&device.id		usb 0x4000
+|vendor.id		usb 0x0846
+&device.id		usb 0x1001+0x0002
+|vendor.id		usb 0x085a
+&device.id		usb 0x0008+0x0002
+|vendor.id		usb 0x087d
+&device.id		usb 0x5704
+|vendor.id		usb 0x0951
+&device.id		usb 0x0008
+|vendor.id		usb 0x095a
+&device.id		usb 0x3003
+|vendor.id		usb 0x10bd
+&device.id		usb 0x1427
+|vendor.id		usb 0x1342
+&device.id		usb 0x0204
+|vendor.id		usb 0x13d2
+&device.id		usb 0x0400
+|vendor.id		usb 0x1485
+&device.id		usb 0x0001
+|vendor.id		usb 0x1645
+&device.id		usb 0x0005
+|vendor.id		usb 0x1645
+&device.id		usb 0x0008
+|vendor.id		usb 0x1645
+&device.id		usb 0x8005
+|vendor.id		usb 0x2001
+&device.id		usb 0x4000
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	kaweth
+
+ vendor.id		usb 0x03eb
+&device.id		usb 0x4102
+|vendor.id		usb 0x03eb
+&device.id		usb 0x7605
+|vendor.id		usb 0x049f
+&device.id		usb 0x0032
+|vendor.id		usb 0x04a5
+&device.id		usb 0x9001
+|vendor.id		usb 0x0506
+&device.id		usb 0x0a01
+|vendor.id		usb 0x050d
+&device.id		usb 0x0050
+|vendor.id		usb 0x0681
+&device.id		usb 0x001b
+|vendor.id		usb 0x069a
+&device.id		usb 0x0321
+|vendor.id		usb 0x077b
+&device.id		usb 0x2219
+|vendor.id		usb 0x077b
+&device.id		usb 0x2227
+|vendor.id		usb 0x07b8
+&device.id		usb 0xb000
+|vendor.id		usb 0x0864
+&device.id		usb 0x4102
+|vendor.id		usb 0x1044
+&device.id		usb 0x8003
+|vendor.id		usb 0x1371
+&device.id		usb 0x0002
+|vendor.id		usb 0x1371
+&device.id		usb 0x5743
+|vendor.id		usb 0x1668
+&device.id		usb 0x7605
+|vendor.id		usb 0x2001
+&device.id		usb 0x3200
+|vendor.id		usb 0x2019
+&device.id		usb 0x3220
++driver.module.modprobe	at76c503-rfmd
+
+ vendor.id		usb 0x03eb
+&device.id		usb 0x7603
+|vendor.id		usb 0x03f0
+&device.id		usb 0x011c
+|vendor.id		usb 0x04a5
+&device.id		usb 0x9000
+|vendor.id		usb 0x04bb
+&device.id		usb 0x0919
+|vendor.id		usb 0x05dd
+&device.id		usb 0xff31
+|vendor.id		usb 0x066b
+&device.id		usb 0x2211
+|vendor.id		usb 0x069a
+&device.id		usb 0x0320
+|vendor.id		usb 0x069a
+&device.id		usb 0x0821
+|vendor.id		usb 0x0864
+&device.id		usb 0x4100
+|vendor.id		usb 0x0b3b
+&device.id		usb 0x1612
+|vendor.id		usb 0x0cde
+&device.id		usb 0x0001
+|vendor.id		usb 0x0d5c
+&device.id		usb 0xa001
+|vendor.id		usb 0x0d8e
+&device.id		usb 0x7100
+|vendor.id		usb 0x0d8e
+&device.id		usb 0x7110
+|vendor.id		usb 0x8086
+&device.id		usb 0x0200
++driver.module.modprobe	at76c503-i3861
+
+ vendor.id		usb 0x03eb
+&device.id		usb 0x7604
+|vendor.id		usb 0x055d
+&device.id		usb 0xa000
++driver.module.modprobe	at76c503-i3863
+
+ vendor.id		usb 0x03eb
+&device.id		usb 0x7606
++driver.module.modprobe	at76c505-rfmd
+
+ vendor.id		usb 0x03eb
+&device.id		usb 0x7613
+|vendor.id		usb 0x07aa
+&device.id		usb 0x7613
+|vendor.id		usb 0x0db0
+&device.id		usb 0x1020
+|vendor.id		usb 0x12fd
+&device.id		usb 0x1001
+|vendor.id		usb 0x1371
+&device.id		usb 0x0013+0x0002
+|vendor.id		usb 0x1915
+&device.id		usb 0x2233
++driver.module.modprobe	at76c505-rfmd2958
+
+ vendor.id		usb 0x03eb
+&device.id		usb 0x7614
+|vendor.id		usb 0x03eb
+&device.id		usb 0x7617
++driver.module.modprobe	at76c505a-rfmd2958
+
+ vendor.id		usb 0x03f0
+&device.id		usb 0x0101+0x0002
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0105
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0201
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0205
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0305
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0401
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0405
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0505
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0601
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0605
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0701
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0705
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0801
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0805
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0901
+|vendor.id		usb 0x03f0
+&device.id		usb 0x0a01
+|vendor.id		usb 0x03f0
+&device.id		usb 0x1005
+|vendor.id		usb 0x03f0
+&device.id		usb 0x1105
+|vendor.id		usb 0x03f0
+&device.id		usb 0x1205
+|vendor.id		usb 0x03f0
+&device.id		usb 0x1305
+|vendor.id		usb 0x03f0
+&device.id		usb 0x1411
+|vendor.id		usb 0x03f0
+&device.id		usb 0x2005
+|vendor.id		usb 0x03f0
+&device.id		usb 0x2205
+|vendor.id		usb 0x03f0
+&device.id		usb 0x2f11
+|vendor.id		usb 0x0400
+&device.id		usb 0x1000+0x0002
+|vendor.id		usb 0x043d
+&device.id		usb 0x002d
+|vendor.id		usb 0x043d
+&device.id		usb 0x003d
+|vendor.id		usb 0x0458
+&device.id		usb 0x2001
+|vendor.id		usb 0x0458
+&device.id		usb 0x2007+0x0003
+|vendor.id		usb 0x0458
+&device.id		usb 0x2011
+|vendor.id		usb 0x0458
+&device.id		usb 0x2013
+|vendor.id		usb 0x0458
+&device.id		usb 0x2015+0x0002
+|vendor.id		usb 0x0458
+&device.id		usb 0x2018
+|vendor.id		usb 0x0458
+&device.id		usb 0x201b
+|vendor.id		usb 0x0461
+&device.id		usb 0x0300+0x0004
+|vendor.id		usb 0x0461
+&device.id		usb 0x0340+0x0002
+|vendor.id		usb 0x0461
+&device.id		usb 0x0345+0x0003
+|vendor.id		usb 0x0461
+&device.id		usb 0x0360+0x0002
+|vendor.id		usb 0x0461
+&device.id		usb 0x0364
+|vendor.id		usb 0x0461
+&device.id		usb 0x0371
+|vendor.id		usb 0x0461
+&device.id		usb 0x0377
+|vendor.id		usb 0x0461
+&device.id		usb 0x0380+0x0004
+|vendor.id		usb 0x0475
+&device.id		usb 0x0210
+|vendor.id		usb 0x049f
+&device.id		usb 0x001a
+|vendor.id		usb 0x049f
+&device.id		usb 0x0021
+|vendor.id		usb 0x04a5
+&device.id		usb 0x1a20
+|vendor.id		usb 0x04a5
+&device.id		usb 0x1a2a
+|vendor.id		usb 0x04a5
+&device.id		usb 0x2022
+|vendor.id		usb 0x04a5
+&device.id		usb 0x2040
+|vendor.id		usb 0x04a5
+&device.id		usb 0x2060
+|vendor.id		usb 0x04a5
+&device.id		usb 0x207e
+|vendor.id		usb 0x04a5
+&device.id		usb 0x20b0
+|vendor.id		usb 0x04a5
+&device.id		usb 0x20be
+|vendor.id		usb 0x04a5
+&device.id		usb 0x20c0
+|vendor.id		usb 0x04a5
+&device.id		usb 0x20de
+|vendor.id		usb 0x04a5
+&device.id		usb 0x20fc
+|vendor.id		usb 0x04a5
+&device.id		usb 0x20fe
+|vendor.id		usb 0x04a7
+&device.id		usb 0x0211
+|vendor.id		usb 0x04a7
+&device.id		usb 0x0221
+|vendor.id		usb 0x04a7
+&device.id		usb 0x0224
+|vendor.id		usb 0x04a7
+&device.id		usb 0x0226
+|vendor.id		usb 0x04a7
+&device.id		usb 0x0229
+|vendor.id		usb 0x04a7
+&device.id		usb 0x022c
+|vendor.id		usb 0x04a7
+&device.id		usb 0x0231
+|vendor.id		usb 0x04a7
+&device.id		usb 0x0311
+|vendor.id		usb 0x04a7
+&device.id		usb 0x0321
+|vendor.id		usb 0x04a7
+&device.id		usb 0x0331
+|vendor.id		usb 0x04a9
+&device.id		usb 0x2201+0x0002
+|vendor.id		usb 0x04a9
+&device.id		usb 0x2204+0x0005
+|vendor.id		usb 0x04a9
+&device.id		usb 0x220a+0x0007
+|vendor.id		usb 0x04a9
+&device.id		usb 0x2212+0x0002
+|vendor.id		usb 0x04a9
+&device.id		usb 0x2215
+|vendor.id		usb 0x04a9
+&device.id		usb 0x3042
+|vendor.id		usb 0x04b0
+&device.id		usb 0x4000
+|vendor.id		usb 0x04b8
+&device.id		usb 0x0101+0x0007
+|vendor.id		usb 0x04b8
+&device.id		usb 0x0109+0x0004
+|vendor.id		usb 0x04b8
+&device.id		usb 0x010e+0x0003
+|vendor.id		usb 0x04b8
+&device.id		usb 0x0112
+|vendor.id		usb 0x04b8
+&device.id		usb 0x0114
+|vendor.id		usb 0x04b8
+&device.id		usb 0x011b+0x0005
+|vendor.id		usb 0x04b8
+&device.id		usb 0x0801+0x0002
+|vendor.id		usb 0x04c5
+&device.id		usb 0x1029
+|vendor.id		usb 0x04c5
+&device.id		usb 0x1041+0x0002
+|vendor.id		usb 0x04f9
+&device.id		usb 0x010f
+|vendor.id		usb 0x04f9
+&device.id		usb 0x0111
+|vendor.id		usb 0x055f
+&device.id		usb 0x0001+0x0003
+|vendor.id		usb 0x055f
+&device.id		usb 0x0006+0x0003
+|vendor.id		usb 0x055f
+&device.id		usb 0x0010
+|vendor.id		usb 0x055f
+&device.id		usb 0x0210
+|vendor.id		usb 0x055f
+&device.id		usb 0x0218+0x0002
+|vendor.id		usb 0x055f
+&device.id		usb 0x021c+0x0003
+|vendor.id		usb 0x055f
+&device.id		usb 0x0400+0x0002
+|vendor.id		usb 0x055f
+&device.id		usb 0x0409
+|vendor.id		usb 0x055f
+&device.id		usb 0x0873
+|vendor.id		usb 0x055f
+&device.id		usb 0x1000
+|vendor.id		usb 0x05cb
+&device.id		usb 0x1483
+|vendor.id		usb 0x05d8
+&device.id		usb 0x4001+0x0004
+|vendor.id		usb 0x05d8
+&device.id		usb 0x4006
+|vendor.id		usb 0x05d8
+&device.id		usb 0x4009
+|vendor.id		usb 0x05da
+&device.id		usb 0x0099+0x0002
+|vendor.id		usb 0x05da
+&device.id		usb 0x00b6
+|vendor.id		usb 0x05da
+&device.id		usb 0x20a7
+|vendor.id		usb 0x05da
+&device.id		usb 0x20c9
+|vendor.id		usb 0x05da
+&device.id		usb 0x30ce+0x0002
+|vendor.id		usb 0x05da
+&device.id		usb 0x30d4
+|vendor.id		usb 0x05da
+&device.id		usb 0x30d8
+|vendor.id		usb 0x05da
+&device.id		usb 0x40b3
+|vendor.id		usb 0x05da
+&device.id		usb 0x40b8
+|vendor.id		usb 0x05da
+&device.id		usb 0x40ca+0x0002
+|vendor.id		usb 0x05da
+&device.id		usb 0x40dd
+|vendor.id		usb 0x05da
+&device.id		usb 0x40ff
+|vendor.id		usb 0x05e3
+&device.id		usb 0x0120
+|vendor.id		usb 0x0638
+&device.id		usb 0x0268
+|vendor.id		usb 0x0638
+&device.id		usb 0x026a
+|vendor.id		usb 0x0638
+&device.id		usb 0x0a10
+|vendor.id		usb 0x0638
+&device.id		usb 0x0a13
+|vendor.id		usb 0x0638
+&device.id		usb 0x0a16
+|vendor.id		usb 0x0638
+&device.id		usb 0x0a18
+|vendor.id		usb 0x0638
+&device.id		usb 0x0a20
+|vendor.id		usb 0x0638
+&device.id		usb 0x0a23+0x0002
+|vendor.id		usb 0x0681
+&device.id		usb 0x0005
+|vendor.id		usb 0x0681
+&device.id		usb 0x0010
+|vendor.id		usb 0x0686
+&device.id		usb 0x4004
+|vendor.id		usb 0x0686
+&device.id		usb 0x400d
+|vendor.id		usb 0x06bd
+&device.id		usb 0x0001+0x0002
+|vendor.id		usb 0x06bd
+&device.id		usb 0x0100
+|vendor.id		usb 0x06bd
+&device.id		usb 0x2061
+|vendor.id		usb 0x06bd
+&device.id		usb 0x208d
+|vendor.id		usb 0x06bd
+&device.id		usb 0x208f
+|vendor.id		usb 0x06bd
+&device.id		usb 0x2091
+|vendor.id		usb 0x06bd
+&device.id		usb 0x2093
+|vendor.id		usb 0x06bd
+&device.id		usb 0x2095
+|vendor.id		usb 0x06bd
+&device.id		usb 0x2097
+|vendor.id		usb 0x06bd
+&device.id		usb 0x20fd
+|vendor.id		usb 0x06bd
+&device.id		usb 0x20ff
+|vendor.id		usb 0x06dc
+&device.id		usb 0x0014
+|vendor.id		usb 0x07b3
+&device.id		usb 0x0001
+|vendor.id		usb 0x07b3
+&device.id		usb 0x0005
+|vendor.id		usb 0x07b3
+&device.id		usb 0x0007
+|vendor.id		usb 0x07b3
+&device.id		usb 0x000f+0x0009
+|vendor.id		usb 0x07b3
+&device.id		usb 0x0400+0x0002
+|vendor.id		usb 0x07b3
+&device.id		usb 0x0403
+|vendor.id		usb 0x07b3
+&device.id		usb 0x0413
+|vendor.id		usb 0x0a82
+&device.id		usb 0x4600
+|vendor.id		usb 0x1606
+&device.id		usb 0x0010
+|vendor.id		usb 0x1606
+&device.id		usb 0x0030
+|vendor.id		usb 0x1606
+&device.id		usb 0x0060
+|vendor.id		usb 0x1606
+&device.id		usb 0x0070
+|vendor.id		usb 0x1606
+&device.id		usb 0x0130
+|vendor.id		usb 0x1606
+&device.id		usb 0x0160
+|vendor.id		usb 0x1606
+&device.id		usb 0x0230
++baseclass.id		0x10c
++subclass.id		0x00
+
+ vendor.id		usb 0x03f0
+&device.id		usb 0x4102
+|vendor.id		usb 0x03f0
+&device.id		usb 0x6302
+|vendor.id		usb 0x040a
+&device.id		usb 0x0100
+|vendor.id		usb 0x040a
+&device.id		usb 0x0110+0x0003
+|vendor.id		usb 0x041e
+&device.id		usb 0x400a+0x0002
+|vendor.id		usb 0x046d
+&device.id		usb 0x0840
+|vendor.id		usb 0x04a9
+&device.id		usb 0x3041
+|vendor.id		usb 0x04a9
+&device.id		usb 0x3043
+|vendor.id		usb 0x04a9
+&device.id		usb 0x3045
+|vendor.id		usb 0x04a9
+&device.id		usb 0x3047+0x0003
+|vendor.id		usb 0x04a9
+&device.id		usb 0x304b
+|vendor.id		usb 0x04a9
+&device.id		usb 0x304e+0x0002
+|vendor.id		usb 0x04a9
+&device.id		usb 0x3056
+|vendor.id		usb 0x04a9
+&device.id		usb 0x3058
+|vendor.id		usb 0x04b0
+&device.id		usb 0x0102+0x0003
+|vendor.id		usb 0x0553
+&device.id		usb 0x0202
+|vendor.id		usb 0x06bd
+&device.id		usb 0x0403+0x0002
+|vendor.id		usb 0x07b4
+&device.id		usb 0x0100
+|vendor.id		usb 0x07b4
+&device.id		usb 0x0105
+|vendor.id		usb 0x084d
+&device.id		usb 0x0003
+|vendor.id		usb 0x0919
+&device.id		usb 0x0100
+|vendor.id		usb 0x0d96
+&device.id		usb 0x3300
+|vendor.id		usb 0x0d96
+&device.id		usb 0x4100
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x03f0
+&device.id		usb 0x4202
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x03f0
+&device.id		usb 0x4302
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x03f0
+&device.id		usb 0x4402
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x03f0
+&device.id		usb 0x6402
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x03f0
+&device.id		usb 0x6502
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x03f0
+&device.id		usb 0x6602
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x03f0
+&device.id		usb 0x6702
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x03f0
+&device.id		usb 0x6802
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x03f0
+&device.id		usb 0x6a02
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x03f0
+&device.id		usb 0x811c
+|vendor.id		usb 0x0411
+&device.id		usb 0x0005
+|vendor.id		usb 0x0411
+&device.id		usb 0x0009
+|vendor.id		usb 0x045e
+&device.id		usb 0x007a
+|vendor.id		usb 0x049f
+&device.id		usb 0x8511
+|vendor.id		usb 0x04bb
+&device.id		usb 0x0913
+|vendor.id		usb 0x0506
+&device.id		usb 0x4601
+|vendor.id		usb 0x050d
+&device.id		usb 0x0121
+|vendor.id		usb 0x0557
+&device.id		usb 0x2007
+|vendor.id		usb 0x056e
+&device.id		usb 0x200c
+|vendor.id		usb 0x056e
+&device.id		usb 0x400b
+|vendor.id		usb 0x056e
+&device.id		usb 0xabc1
+|vendor.id		usb 0x05cc
+&device.id		usb 0x3000
+|vendor.id		usb 0x066b
+&device.id		usb 0x200c
+|vendor.id		usb 0x066b
+&device.id		usb 0x400b
+|vendor.id		usb 0x067c
+&device.id		usb 0x1001
+|vendor.id		usb 0x0707
+&device.id		usb 0x0200+0x0002
+|vendor.id		usb 0x07a6
+&device.id		usb 0x07c2
+|vendor.id		usb 0x07a6
+&device.id		usb 0x8511
+|vendor.id		usb 0x07a6
+&device.id		usb 0x8513
+|vendor.id		usb 0x07a6
+&device.id		usb 0x8515
+|vendor.id		usb 0x07aa
+&device.id		usb 0x000d
+|vendor.id		usb 0x07b8
+&device.id		usb 0x110c
+|vendor.id		usb 0x07b8
+&device.id		usb 0x200c
+|vendor.id		usb 0x07b8
+&device.id		usb 0x4004
+|vendor.id		usb 0x07b8
+&device.id		usb 0x4007
+|vendor.id		usb 0x07b8
+&device.id		usb 0x400b+0x0002
+|vendor.id		usb 0x07b8
+&device.id		usb 0x4102
+|vendor.id		usb 0x07b8
+&device.id		usb 0x4104
+|vendor.id		usb 0x07c9
+&device.id		usb 0xb100
+|vendor.id		usb 0x083a
+&device.id		usb 0x5046
+|vendor.id		usb 0x0846
+&device.id		usb 0x1020
+|vendor.id		usb 0x08d1
+&device.id		usb 0x0003
+|vendor.id		usb 0x08dd
+&device.id		usb 0x0986+0x0003
+|vendor.id		usb 0x08dd
+&device.id		usb 0x8511
+|vendor.id		usb 0x0951
+&device.id		usb 0x000a
+|vendor.id		usb 0x0b39
+&device.id		usb 0x0109
+|vendor.id		usb 0x0b39
+&device.id		usb 0x0901
+|vendor.id		usb 0x0db7
+&device.id		usb 0x0002
+|vendor.id		usb 0x0e66
+&device.id		usb 0x400c
+|vendor.id		usb 0x1044
+&device.id		usb 0x8002
+|vendor.id		usb 0x1342
+&device.id		usb 0x0304
+|vendor.id		usb 0x15e8
+&device.id		usb 0x9100
+|vendor.id		usb 0x15e8
+&device.id		usb 0x9110
+|vendor.id		usb 0x2001
+&device.id		usb 0x200c
+|vendor.id		usb 0x2001
+&device.id		usb 0x4001+0x0003
+|vendor.id		usb 0x2001
+&device.id		usb 0x400b
+|vendor.id		usb 0x2001
+&device.id		usb 0x4102
+|vendor.id		usb 0x2001
+&device.id		usb 0xabc1
+|vendor.id		usb 0x3334
+&device.id		usb 0x1701
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	pegasus
+
+ vendor.id		usb 0x0402
+&device.id		usb 0x5632
+|vendor.id		usb 0x0411
+&device.id		usb 0x003d
+|vendor.id		usb 0x049f
+&device.id		usb 0x505a
+|vendor.id		usb 0x050d
+&device.id		usb 0x0004
+|vendor.id		usb 0x0525
+&device.id		usb 0x1080
+|vendor.id		usb 0x0525
+&device.id		usb 0x2888
+|vendor.id		usb 0x0525
+&device.id		usb 0x9901
+|vendor.id		usb 0x0547
+&device.id		usb 0x2720
+|vendor.id		usb 0x0547
+&device.id		usb 0x2727
+|vendor.id		usb 0x0557
+&device.id		usb 0x2009
+|vendor.id		usb 0x056c
+&device.id		usb 0x8100
+|vendor.id		usb 0x05e3
+&device.id		usb 0x0502
+|vendor.id		usb 0x067b
+&device.id		usb 0x0000+0x0002
+|vendor.id		usb 0x06d0
+&device.id		usb 0x0622
+|vendor.id		usb 0x077b
+&device.id		usb 0x2226
+|vendor.id		usb 0x07b8
+&device.id		usb 0x420a
+|vendor.id		usb 0x0846
+&device.id		usb 0x1040
+|vendor.id		usb 0x08dd
+&device.id		usb 0x90ff
+|vendor.id		usb 0x0b95
+&device.id		usb 0x1720
+|vendor.id		usb 0x0e7e
+&device.id		usb 0x1001
+|vendor.id		usb 0x2001
+&device.id		usb 0x1a00
+|vendor.id		usb 0x6189
+&device.id		usb 0x182d
+|vendor.id		usb 0x8086
+&device.id		usb 0x07d3
++baseclass.id		0x002
++subclass.id		0x91
++driver.module.modprobe	usbnet
+
+ vendor.id		usb 0x0411
+&device.id		usb 0x0001
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		usb 0x0411
+&device.id		usb 0x0001
+|vendor.id		usb 0x04bb
+&device.id		usb 0x0904
+|vendor.id		usb 0x056e
+&device.id		usb 0x4002
+|vendor.id		usb 0x066b
+&device.id		usb 0x2203+0x0002
+|vendor.id		usb 0x066b
+&device.id		usb 0x2206
+|vendor.id		usb 0x07a6
+&device.id		usb 0x0986
+|vendor.id		usb 0x07aa
+&device.id		usb 0x0004
+|vendor.id		usb 0x07b8
+&device.id		usb 0x4002
+|vendor.id		usb 0x07b8
+&device.id		usb 0xabc1
+|vendor.id		usb 0x083a
+&device.id		usb 0x1046
++driver.module.modprobe	pegasus
+
+ vendor.id		usb 0x0411
+&device.id		usb 0x0012
+|vendor.id		usb 0x07b8
+&device.id		usb 0x401a
+|vendor.id		usb 0x0bda
+&device.id		usb 0x8150
+|vendor.id		usb 0x3980
+&device.id		usb 0x0003
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	rtl8150
+
+ vendor.id		usb 0x041e
+&device.id		usb 0x3010
+|vendor.id		usb 0x0499
+&device.id		usb 0x1000+0x000b
+|vendor.id		usb 0x0499
+&device.id		usb 0x100e+0x0008
+|vendor.id		usb 0x0499
+&device.id		usb 0x1017+0x0006
+|vendor.id		usb 0x0499
+&device.id		usb 0x101e
+|vendor.id		usb 0x0499
+&device.id		usb 0x1020+0x000c
+|vendor.id		usb 0x0499
+&device.id		usb 0x102e
+|vendor.id		usb 0x0499
+&device.id		usb 0x1030+0x000d
+|vendor.id		usb 0x0499
+&device.id		usb 0x2000+0x0003
+|vendor.id		usb 0x0499
+&device.id		usb 0x5000+0x0009
+|vendor.id		usb 0x0499
+&device.id		usb 0x500a+0x0003
+|vendor.id		usb 0x0499
+&device.id		usb 0x7000
+|vendor.id		usb 0x0499
+&device.id		usb 0x7010
+|vendor.id		usb 0x0582
+&device.id		usb 0x0000
+|vendor.id		usb 0x0582
+&device.id		usb 0x0002+0x0004
+|vendor.id		usb 0x0582
+&device.id		usb 0x0007+0x0003
+|vendor.id		usb 0x0582
+&device.id		usb 0x000b+0x0002
+|vendor.id		usb 0x0582
+&device.id		usb 0x0010
+|vendor.id		usb 0x0582
+&device.id		usb 0x0012
+|vendor.id		usb 0x0582
+&device.id		usb 0x0014
+|vendor.id		usb 0x0582
+&device.id		usb 0x0016
+|vendor.id		usb 0x0582
+&device.id		usb 0x001b
+|vendor.id		usb 0x0582
+&device.id		usb 0x001d
+|vendor.id		usb 0x0582
+&device.id		usb 0x0023
+|vendor.id		usb 0x0582
+&device.id		usb 0x0025
+|vendor.id		usb 0x0582
+&device.id		usb 0x0027
+|vendor.id		usb 0x0582
+&device.id		usb 0x0029
+|vendor.id		usb 0x0582
+&device.id		usb 0x002b
+|vendor.id		usb 0x0582
+&device.id		usb 0x002d
+|vendor.id		usb 0x0582
+&device.id		usb 0x002f
+|vendor.id		usb 0x0582
+&device.id		usb 0x0033
+|vendor.id		usb 0x0582
+&device.id		usb 0x0037
+|vendor.id		usb 0x0582
+&device.id		usb 0x003b
+|vendor.id		usb 0x0582
+&device.id		usb 0x0040
+|vendor.id		usb 0x0582
+&device.id		usb 0x0044
+|vendor.id		usb 0x0582
+&device.id		usb 0x0048
+|vendor.id		usb 0x0582
+&device.id		usb 0x004d
+|vendor.id		usb 0x0582
+&device.id		usb 0x0050
+|vendor.id		usb 0x0582
+&device.id		usb 0x0052
+|vendor.id		usb 0x0582
+&device.id		usb 0x0065
+|vendor.id		usb 0x0763
+&device.id		usb 0x1002
+|vendor.id		usb 0x0763
+&device.id		usb 0x1011
+|vendor.id		usb 0x0763
+&device.id		usb 0x1015
+|vendor.id		usb 0x0763
+&device.id		usb 0x1021
+|vendor.id		usb 0x0763
+&device.id		usb 0x1033
+|vendor.id		usb 0x0763
+&device.id		usb 0x1041
+|vendor.id		usb 0x0763
+&device.id		usb 0x2001
+|vendor.id		usb 0x0763
+&device.id		usb 0x2003
+|vendor.id		usb 0x0763
+&device.id		usb 0x2008
+|vendor.id		usb 0x0763
+&device.id		usb 0x200d
+|vendor.id		usb 0x07fd
+&device.id		usb 0x0001
+|vendor.id		usb 0x0ccd
+&device.id		usb 0x0013
++driver.module.modprobe	snd-usb-audio
+
+ vendor.id		usb 0x041e
+&device.id		usb 0x400c
+|vendor.id		usb 0x041e
+&device.id		usb 0x4011
+|vendor.id		usb 0x046d
+&device.id		usb 0x08b0+0x0009
+|vendor.id		usb 0x0471
+&device.id		usb 0x0302+0x0003
+|vendor.id		usb 0x0471
+&device.id		usb 0x0307+0x0002
+|vendor.id		usb 0x0471
+&device.id		usb 0x030c
+|vendor.id		usb 0x0471
+&device.id		usb 0x0310+0x0004
+|vendor.id		usb 0x04cc
+&device.id		usb 0x8116
+|vendor.id		usb 0x055d
+&device.id		usb 0x9000+0x0002
+|vendor.id		usb 0x05a9
+&device.id		usb 0x0511
+|vendor.id		usb 0x05a9
+&device.id		usb 0x0518
+|vendor.id		usb 0x05a9
+&device.id		usb 0xa511
+|vendor.id		usb 0x05a9
+&device.id		usb 0xa518
+|vendor.id		usb 0x069a
+&device.id		usb 0x0001
+|vendor.id		usb 0x0d81
+&device.id		usb 0x1900
+|vendor.id		usb 0x0d81
+&device.id		usb 0x1910
++baseclass.id		0x10f
++subclass.id		0x00
+
+ vendor.id		usb 0x0423
+&device.id		usb 0x000a
+|vendor.id		usb 0x0423
+&device.id		usb 0x000c
+|vendor.id		usb 0x08d1
+&device.id		usb 0x0001
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	catc
+
+ vendor.id		usb 0x0428
+&device.id		usb 0x4001
+|vendor.id		usb 0x047d
+&device.id		usb 0x4008
++baseclass.id		0x10d
++subclass.id		0x01
+
+ vendor.id		usb 0x044e
+&device.id		usb 0x3001+0x0002
+|vendor.id		usb 0x04bf
+&device.id		usb 0x030a
+|vendor.id		usb 0x057c
+&device.id		usb 0x3800
+|vendor.id		usb 0x0bdb
+&device.id		usb 0x1002
++baseclass.id		0x115
++subclass.id		0x00
++driver.module.modprobe	hci_usb
+
+ vendor.id		usb 0x0461
+&device.id		usb 0x0034
++baseclass.id		0x10c
++subclass.id		0x00
+
+ vendor.id		usb 0x0483
+&device.id		usb 0x7554
++driver.module.modprobe	slusb
+
+ vendor.id		usb 0x04a5
+&device.id		usb 0x3003
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3044
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3046
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x304c
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x304d
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3051
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3052
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3055
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3057
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3059
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3060
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3061
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3062
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3065
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3066
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x306a
+|vendor.id		usb 0x04a9
+&device.id		usb 0x306c+0x0002
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x306b
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x306e+0x0002
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3070+0x0002
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3072
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3073
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3074
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3075
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3076
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3077
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3078
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x307b
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x307f
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3081
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3083
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3084
+|vendor.id		usb 0x04a9
+&device.id		usb 0x3099
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x3085
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x309a
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04a9
+&device.id		usb 0x309b
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b0
+&device.id		usb 0x0109
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b0
+&device.id		usb 0x010b
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b0
+&device.id		usb 0x010d
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b0
+&device.id		usb 0x010f
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b0
+&device.id		usb 0x0111
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b0
+&device.id		usb 0x0112
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b0
+&device.id		usb 0x0113
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b0
+&device.id		usb 0x0115
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b0
+&device.id		usb 0x0117
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b0
+&device.id		usb 0x0119
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b0
+&device.id		usb 0x0202
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b0
+&device.id		usb 0x0302
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b0
+&device.id		usb 0x0402
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b8
+&device.id		usb 0x0403
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04b8
+&device.id		usb 0x0805
++baseclass.id		0x10c
++subclass.id		0x00
+
+ vendor.id		usb 0x04b8
+&device.id		usb 0x0806
++baseclass.id		0x10c
++subclass.id		0x00
+
+ vendor.id		usb 0x04b8
+&device.id		usb 0x0807
++baseclass.id		0x10c
++subclass.id		0x00
+
+ vendor.id		usb 0x04b8
+&device.id		usb 0x0808
++baseclass.id		0x10c
++subclass.id		0x00
+
+ vendor.id		usb 0x04bb
+&device.id		usb 0x0904
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		usb 0x04ce
+&device.id		usb 0x0300
+|vendor.id		usb 0x05da
+&device.id		usb 0x0094
+|vendor.id		usb 0x05da
+&device.id		usb 0x00a0
++baseclass.id		0x10c
++subclass.id		0x00
+
+ vendor.id		usb 0x04fc
+&device.id		usb 0x504a
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x04fc
+&device.id		usb 0x504b
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x054c
+&device.id		usb 0x004e
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x055f
+&device.id		usb 0xa350
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x055f
+&device.id		usb 0xc200
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x055f
+&device.id		usb 0xc220
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x055f
+&device.id		usb 0xc420
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x055f
+&device.id		usb 0xc520
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x056e
+&device.id		usb 0x4002
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		usb 0x057c
+&device.id		usb 0x0c00
++driver.module.modprobe	fcusb
+
+ vendor.id		usb 0x057c
+&device.id		usb 0x1000
+|vendor.id		usb 0x057c
+&device.id		usb 0x1900
++driver.module.modprobe	fcusb2
+
+ vendor.id		usb 0x057c
+&device.id		usb 0x2000
++driver.module.modprobe	fxusb
+
+ vendor.id		usb 0x057c
+&device.id		usb 0x2300
++driver.module.modprobe	fcdslusb
+
+ vendor.id		usb 0x057c
+&device.id		usb 0x2800
++driver.module.modprobe	fxusb_CZ
+
+ vendor.id		usb 0x057c
+&device.id		usb 0x2805
+|vendor.id		usb 0x057c
+&device.id		usb 0x4401
++driver.module.modprobe	e2220pc
+
+ vendor.id		usb 0x057c
+&device.id		usb 0x2806
+|vendor.id		usb 0x057c
+&device.id		usb 0x4601
++driver.module.modprobe	e5520pc
+
+ vendor.id		usb 0x057c
+&device.id		usb 0x3000
++driver.module.modprobe	fcdslusba
+
+ vendor.id		usb 0x057c
+&device.id		usb 0x3500
++driver.module.modprobe	fcdslslusb
+
+ vendor.id		usb 0x057c
+&device.id		usb 0x3600
++driver.module.modprobe	fcdslusb2
+
+ vendor.id		usb 0x05da
+&device.id		usb 0x00a3
+|vendor.id		usb 0x05da
+&device.id		usb 0x80a3
++baseclass.id		0x10c
++subclass.id		0x00
+
+ vendor.id		usb 0x05da
+&device.id		usb 0x80ac
++baseclass.id		0x10c
++subclass.id		0x00
+
+ vendor.id		usb 0x066b
+&device.id		usb 0x2202
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	pegasus
++driver.module.modprobe	kaweth
+
+ vendor.id		usb 0x066b
+&device.id		usb 0x2203+0x0002
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		usb 0x06a5
+&device.id		usb 0x0000
++baseclass.id		0x10f
++subclass.id		0x00
+
+ vendor.id		usb 0x0707
+&device.id		usb 0x0100
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		usb 0x0707
+&device.id		usb 0x0100
+|vendor.id		usb 0x07aa
+&device.id		usb 0x0001
++driver.module.modprobe	kaweth
+
+ vendor.id		usb 0x0784
+&device.id		usb 0x0784
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x0797
+&device.id		usb 0x801a
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x0797
+&device.id		usb 0x801c
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x0797
+&device.id		usb 0x8901
+|vendor.id		usb 0x0797
+&device.id		usb 0x8909
+|vendor.id		usb 0x0797
+&device.id		usb 0x8911
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x07a6
+&device.id		usb 0x0986
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		usb 0x07aa
+&device.id		usb 0x0001
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		usb 0x07aa
+&device.id		usb 0x0004
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		usb 0x07b4
+&device.id		usb 0x0114
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x07b8
+&device.id		usb 0x4002
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		usb 0x07b8
+&device.id		usb 0xabc1
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		usb 0x0813
+&device.id		usb 0x0002
++baseclass.id		0x10f
++subclass.id		0x00
+
+ vendor.id		usb 0x083a
+&device.id		usb 0x1046
++baseclass.id		0x002
++subclass.id		0x00
+
+ vendor.id		usb 0x083a
+&device.id		usb 0x3501
+|vendor.id		usb 0x0d5c
+&device.id		usb 0xa002
++driver.module.modprobe	at76c503-rfmd-acc
+
+ vendor.id		usb 0x084e
+&device.id		usb 0x0001
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x0c4b
+&device.id		usb 0x0100
++baseclass.id		0x10e
++subclass.id		0x00
++driver.module.modprobe	cyberjack
+
+ vendor.id		usb 0x0d94
+&device.id		usb 0x1001
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x0d94
+&device.id		usb 0x1021
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x0d96
+&device.id		usb 0x0000
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x0d96
+&device.id		usb 0x4102
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		usb 0x0ff5
+&device.id		usb 0x0010
++baseclass.id		0x10c
++subclass.id		0x00
+
+ vendor.id		usb 0x1604
+&device.id		usb 0x8001
+|vendor.id		usb 0x1604
+&device.id		usb 0x8005
+|vendor.id		usb 0x1604
+&device.id		usb 0x8007
++driver.module.modprobe	snd-usb-usx2y
+
+ vendor.id		usb 0x1606
+&device.id		usb 0x0002
++baseclass.id		0x10c
++subclass.id		0x00
+
+ vendor.id		usb 0x2770
+&device.id		usb 0x9120
++baseclass.id		0x10f
++subclass.id		0x01
+
+ vendor.id		special 0x0401
+&device.id		special 0x0010+0x0004
++driver.module.modprobe	snd-powermac
+
+ vendor.id		special 0x0401
+&device.id		special 0x0020
++driver.module.modprobe	mace
+
+ vendor.id		special 0x0401
+&device.id		special 0x0021+0x0002
++driver.module.modprobe	bmac
+
+ vendor.id		special 0x0401
+&device.id		special 0x0030
++driver.module.modprobe	mesh
+
+ vendor.id		special 0x0401
+&device.id		special 0x0031
++driver.module.modprobe	mac53c94
+
+ vendor.id		special 0x0401
+&device.id		special 0x0040
++driver.module.modprobe	swim3
+
+ vendor.id		special 0x1800
+&device.id		special 0x0001
++driver.module.modprobe	imm
+
+ vendor.id		special 0x1800
+&device.id		special 0x0002
++driver.module.modprobe	ppa
+
+ vendor.id		special 0x2000
+&device.id		special 0x0001
++baseclass.id		0x102
++subclass.id		0x00
+
+ vendor.id		special 0x2001
+&device.id		special 0x0001
++baseclass.id		0x102
++subclass.id		0x00
+
+ vendor.id		special 0x2002
+&device.id		special 0x0001
++baseclass.id		0x102
++subclass.id		0x00
+
+ vendor.id		special 0x2003
+&device.id		special 0x0001
++baseclass.id		0x102
++subclass.id		0x00
+
+ vendor.id		special 0x2004
+&device.id		special 0x0001
++baseclass.id		0x102
++subclass.id		0x00
+
+ vendor.id		special 0x3000
+&device.id		special 0x1000
++driver.module.modprobe	ide-generic
+
+ vendor.id		special 0x4001
+&device.id		special 0x1003+0x0002
++driver.module.modprobe	qlogicpti
+
+ vendor.id		special 0x4001
+&device.id		special 0x2001
++driver.module.modprobe	amd7930
+
+ vendor.id		special 0x4001
+&device.id		special 0x2002+0x0002
++driver.module.modprobe	cs4231
+
+ vendor.id		special 0x4001
+&device.id		special 0x2004
++driver.module.modprobe	dbri
+
+ vendor.id		special 0x4001
+&device.id		special 0x3003
++driver.module.modprobe	sunqe
+
+ vendor.id		special 0x4001
+&device.id		special 0x3004
++driver.module.modprobe	myri_sbus
+
+ vendor.id		special 0x4002
+&device.id		special 0x0001
++driver.module.modprobe	xpnet
+
+ vendor.id		special 0x6001
+&device.id		special 0x0005
++baseclass.id		0x002
++subclass.id		0x90
++driver.module.modprobe	netiucv
+
+ vendor.id		special 0x6001
+&device.id		special 0x1000
++driver.module.modprobe	iseries_veth
+
+ vendor.id		special 0x6001
+&device.id		special 0x1001
++driver.module.modprobe	ibmvscsic
+
+ vendor.id		special 0x6001
+&device.id		special 0x1002
++driver.module.modprobe	ibmveth
+
+ vendor.id		special 0x6001
+&device.id		special 0x1731
+&subdevice.id		special 0x1732
+&detail.ccw.data.cu_model	0x0001
++baseclass.id		0x002
++subclass.id		0x86
++driver.module.modprobe	qeth
+
+ vendor.id		special 0x6001
+&device.id		special 0x1731
+&subdevice.id		special 0x1732
+&detail.ccw.data.cu_model	0x0003
++baseclass.id		0x001
++subclass.id		0x00
++driver.module.modprobe	zfcp
+
+ vendor.id		special 0x6001
+&device.id		special 0x1731
+&subdevice.id		special 0x1732
+&detail.ccw.data.cu_model	0x0005
++baseclass.id		0x002
++subclass.id		0x87
++driver.module.modprobe	qeth
+
+ vendor.id		special 0x6001
+&device.id		special 0x1731
+&subdevice.id		special 0x1732
+&detail.ccw.data.cu_model	0x0006
++baseclass.id		0x002
++subclass.id		0x86
++driver.module.modprobe	qeth
+
+ vendor.id		special 0x6001
+&device.id		special 0x2105
+&subdevice.id		special 0x3390
+|vendor.id		special 0x6001
+&device.id		special 0x2107
+|vendor.id		special 0x6001
+&device.id		special 0x3880
+&subdevice.id		special 0x3390
+|vendor.id		special 0x6001
+&device.id		special 0x3990
+&subdevice.id		special 0x3390
+|vendor.id		special 0x6001
+&device.id		special 0x9343
+&subdevice.id		special 0x9345
+|device.id		special 0x1750
+|subdevice.id		special 0x3330
+|subdevice.id		special 0x3350
+|subdevice.id		special 0x3375
+|subdevice.id		special 0x3380
+|subdevice.id		special 0x3851
++baseclass.id		0x106
++subclass.id		0x00
++progif.id		0x01
++driver.module.modprobe	dasd_eckd_mod
+
+ vendor.id		special 0x6001
+&device.id		special 0x3088
+&detail.ccw.data.cu_model	0x0001
++baseclass.id		0x002
++subclass.id		0x89
++driver.module.modprobe	lcs
+
+ vendor.id		special 0x6001
+&device.id		special 0x3088
+&detail.ccw.data.cu_model	0x0008
++baseclass.id		0x002
++subclass.id		0x88
++driver.module.modprobe	ctc
+
+ vendor.id		special 0x6001
+&device.id		special 0x3088
+&detail.ccw.data.cu_model	0x001e
++baseclass.id		0x002
++subclass.id		0x8e
++driver.module.modprobe	ctc
+
+ vendor.id		special 0x6001
+&device.id		special 0x3088
+&detail.ccw.data.cu_model	0x001f
++baseclass.id		0x002
++subclass.id		0x8f
++driver.module.modprobe	ctc
+
+ vendor.id		special 0x6001
+&device.id		special 0x3088
+&detail.ccw.data.cu_model	0x0060
++baseclass.id		0x002
++subclass.id		0x89
++driver.module.modprobe	lcs
+
+ vendor.id		special 0x6001
+&device.id		special 0x3178
+|device.id		special 0x3179
+|device.id		special 0x3180
+|device.id		special 0x3190
+|device.id		special 0x3270
+|device.id		special 0x3277+0x0003
+|device.id		special 0x3290
++baseclass.id		0x108
++subclass.id		0x01
+
+ vendor.id		special 0x6001
+&device.id		special 0x3203
+|device.id		special 0x3211
+|device.id		special 0x3262
+|device.id		special 0x4245
+|device.id		special 0x4248
+|device.id		special 0x6562
++baseclass.id		0x109
+
+ vendor.id		special 0x6001
+&device.id		special 0x3215
++baseclass.id		0x108
++subclass.id		0x01
+
+ vendor.id		special 0x6001
+&device.id		special 0x3420
++baseclass.id		0x106
++subclass.id		0x01
++driver.module.modprobe	tape_34xx
+
+ vendor.id		special 0x6001
+&device.id		special 0x3422
++baseclass.id		0x106
++subclass.id		0x01
++driver.module.modprobe	tape_34xx
+
+ vendor.id		special 0x6001
+&device.id		special 0x3480
++baseclass.id		0x106
++subclass.id		0x01
++driver.module.modprobe	tape_34xx
+
+ vendor.id		special 0x6001
+&device.id		special 0x3490
++baseclass.id		0x106
++subclass.id		0x01
++driver.module.modprobe	tape_34xx
+
+ vendor.id		special 0x6001
+&device.id		special 0x3800
++baseclass.id		0x109
+
+ vendor.id		special 0x6001
+&device.id		special 0x3820
++baseclass.id		0x109
+
+ vendor.id		special 0x6001
+&device.id		special 0x3880
+&subdevice.id		special 0x3370
+|vendor.id		special 0x6001
+&device.id		special 0x6310
+&subdevice.id		special 0x9336
++baseclass.id		0x106
++subclass.id		0x00
++progif.id		0x02
++driver.module.modprobe	dasd_fba_mod
+
+ vendor.id		special 0x6012
+&device.id		special 0x0001
++driver.module.modprobe	kveth2
+
+ vendor.id		special 0xf000
+&device.id		special 0x0001
++driver.module.modprobe	usbscanner
++driver.module.modprobe	microtek
+
+ vendor.id		special 0xf001
+&device.id		special 0x0004
++driver.module.modprobe	thermal|fan
+
+ vendor.id		pcmcia 0x0004
+&device.id		pcmcia 0x0004
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	fmvj18x_cs
+
+ vendor.id		pcmcia 0x000b
+&device.id		pcmcia 0x7100
+|vendor.id		pcmcia 0x0101
+&device.id		pcmcia 0x0777
+|vendor.id		pcmcia 0x0126
+&device.id		pcmcia 0x8000
+|vendor.id		pcmcia 0x0250
+&device.id		pcmcia 0x0002
+|vendor.id		pcmcia 0x0274
+&device.id		pcmcia 0x1612
+|vendor.id		pcmcia 0x02d2
+&device.id		pcmcia 0x0001
+|vendor.id		pcmcia 0x50c2
+&device.id		pcmcia 0x0001
+|vendor.id		pcmcia 0xc00f
+&device.id		pcmcia 0x0000
++driver.module.modprobe	hostap_cs
+
+ vendor.id		pcmcia 0x000b
+&device.id		pcmcia 0x7300
+|vendor.id		pcmcia 0x0138
+&device.id		pcmcia 0x0002
+|vendor.id		pcmcia 0x0156
+&device.id		pcmcia 0x0002
+|vendor.id		pcmcia 0x0274
+&device.id		pcmcia 0x1613
+|vendor.id		pcmcia 0x028a
+&device.id		pcmcia 0x0002
+|vendor.id		pcmcia 0xc250
+&device.id		pcmcia 0x0002
+|vendor.id		pcmcia 0xd601
+&device.id		pcmcia 0x0002
+|vendor.id		pcmcia 0xd601
+&device.id		pcmcia 0x0005
++driver.module.modprobe	hostap_cs
++driver.module.modprobe	orinoco_cs
+
+ vendor.id		pcmcia 0x0032
+&device.id		pcmcia 0x0704
+|vendor.id		pcmcia 0x00a4
+&device.id		pcmcia 0x002d
+|vendor.id		pcmcia 0x2080
+&device.id		pcmcia 0x0001
++driver.module.modprobe	ide-cs
+
+ vendor.id		pcmcia 0x0057
+&device.id		pcmcia 0x1004
+|vendor.id		pcmcia 0x0104
+&device.id		pcmcia 0x000d
+|vendor.id		pcmcia 0x0104
+&device.id		pcmcia 0x0075
+|vendor.id		pcmcia 0x0104
+&device.id		pcmcia 0x0145
+|vendor.id		pcmcia 0x0149
+&device.id		pcmcia 0x0230
+|vendor.id		pcmcia 0x0149
+&device.id		pcmcia 0x4530
+|vendor.id		pcmcia 0x0175
+&device.id		pcmcia 0x0000
+|vendor.id		pcmcia 0x0186
+&device.id		pcmcia 0x0110
+|vendor.id		pcmcia 0x01bf
+&device.id		pcmcia 0x2216
+|vendor.id		pcmcia 0x01bf
+&device.id		pcmcia 0x2328
+|vendor.id		pcmcia 0x01bf
+&device.id		pcmcia 0x8041
+|vendor.id		pcmcia 0x0213
+&device.id		pcmcia 0x2452
+|vendor.id		pcmcia 0x026f
+&device.id		pcmcia 0x0300
+|vendor.id		pcmcia 0x026f
+&device.id		pcmcia 0x0307
+|vendor.id		pcmcia 0x026f
+&device.id		pcmcia 0x030a
+|vendor.id		pcmcia 0x0274
+&device.id		pcmcia 0x1103
+|vendor.id		pcmcia 0x0274
+&device.id		pcmcia 0x1121
+|vendor.id		pcmcia 0xc00f
+&device.id		pcmcia 0x0002
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	pcnet_cs
+
+ vendor.id		pcmcia 0x0089
+&device.id		pcmcia 0x0001
+|vendor.id		pcmcia 0x01eb
+&device.id		pcmcia 0x080a
+|vendor.id		pcmcia 0x0261
+&device.id		pcmcia 0x0002
+|vendor.id		pcmcia 0x0268
+&device.id		pcmcia 0x0001
+|vendor.id		pcmcia 0x026f
+&device.id		pcmcia 0x0305
+|vendor.id		pcmcia 0x028a
+&device.id		pcmcia 0x0673
+|vendor.id		pcmcia 0x02aa
+&device.id		pcmcia 0x0002
+|vendor.id		pcmcia 0x02ac
+&device.id		pcmcia 0x0002
+|vendor.id		pcmcia 0x14ea
+&device.id		pcmcia 0xb001
+|vendor.id		pcmcia 0x50c2
+&device.id		pcmcia 0x7300
+|vendor.id		pcmcia 0x9005
+&device.id		pcmcia 0x0021
++driver.module.modprobe	orinoco_cs
+
+ vendor.id		pcmcia 0x0089
+&device.id		pcmcia 0x0301
+|vendor.id		pcmcia 0x0101
+&device.id		pcmcia 0x0039
+|vendor.id		pcmcia 0x0104
+&device.id		pcmcia 0x0006
+|vendor.id		pcmcia 0x0104
+&device.id		pcmcia 0x0070
+|vendor.id		pcmcia 0x0105
+&device.id		pcmcia 0x410a
+|vendor.id		pcmcia 0x010b
+&device.id		pcmcia 0x0d50+0x0004
+|vendor.id		pcmcia 0x010b
+&device.id		pcmcia 0xd180
+|vendor.id		pcmcia 0x0137
+&device.id		pcmcia 0x000e
+|vendor.id		pcmcia 0x0137
+&device.id		pcmcia 0x001b
+|vendor.id		pcmcia 0x0137
+&device.id		pcmcia 0x0025
+|vendor.id		pcmcia 0x0137
+&device.id		pcmcia 0x0045
+|vendor.id		pcmcia 0x0137
+&device.id		pcmcia 0x0052
+|vendor.id		pcmcia 0x018a
+&device.id		pcmcia 0x0001
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	serial_cs
+
+ vendor.id		pcmcia 0x0101
+&device.id		pcmcia 0x0035
+|vendor.id		pcmcia 0x0101
+&device.id		pcmcia 0x003d
+|vendor.id		pcmcia 0x0101
+&device.id		pcmcia 0x0562
+|vendor.id		pcmcia 0x0101
+&device.id		pcmcia 0x0589
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	3c589_cs
+
+ vendor.id		pcmcia 0x0101
+&device.id		pcmcia 0x0556
+|vendor.id		pcmcia 0x0101
+&device.id		pcmcia 0x0574
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	3c574_cs
+
+ vendor.id		pcmcia 0x0101
+&device.id		pcmcia 0x0620
+|vendor.id		pcmcia 0x0101
+&device.id		pcmcia 0x0696
+|vendor.id		pcmcia 0x01bf
+&device.id		pcmcia 0x3302
+|vendor.id		pcmcia 0x01bf
+&device.id		pcmcia 0xb301
+|vendor.id		pcmcia 0xd601
+&device.id		pcmcia 0x0007
++driver.module.modprobe	atmel_cs
+
+ vendor.id		pcmcia 0x0105
+&device.id		pcmcia 0x0007
+|vendor.id		pcmcia 0x015f
+&device.id		pcmcia 0x0005
+|vendor.id		pcmcia 0x015f
+&device.id		pcmcia 0x0007
+|vendor.id		pcmcia 0x015f
+&device.id		pcmcia 0x000a
++driver.module.modprobe	airo_cs
+
+ vendor.id		pcmcia 0x0137
+&device.id		pcmcia 0x0003
++driver.module.modprobe	parport_cs
+
+ vendor.id		pcmcia 0x0149
+&device.id		pcmcia 0xc1ab
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	axnet_cs
++driver.module.modprobe	pcnet_cs
+
+ vendor.id		pcmcia 0x016c
+&device.id		pcmcia 0x0020
+|vendor.id		pcmcia 0x016c
+&device.id		pcmcia 0x0023
+|vendor.id		pcmcia 0x0186
+&device.id		pcmcia 0x0100
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	smc91c92_cs
+
+ vendor.id		pcmcia 0x018a
+&device.id		pcmcia 0x0301
+|vendor.id		pcmcia 0x026f
+&device.id		pcmcia 0x0301
+|vendor.id		pcmcia 0x026f
+&device.id		pcmcia 0x0303
+|vendor.id		pcmcia 0x026f
+&device.id		pcmcia 0x0309
+|vendor.id		pcmcia 0x0274
+&device.id		pcmcia 0x1106
+|vendor.id		pcmcia 0x8a01
+&device.id		pcmcia 0xc1ab
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	axnet_cs
+
+ vendor.id		pcmcia 0x01a6
+&device.id		pcmcia 0x0000
++driver.module.modprobe	ray_cs
+
+ vendor.id		pcmcia 0x01bf
+&device.id		pcmcia 0x010a
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	xirc2ps_cs
+
+ vendor.id		pcmcia 0x020c
+&device.id		pcmcia 0x0103
++driver.module.modprobe	sedl_cs
+
+ vendor.id		pcmcia 0x021b
+&device.id		pcmcia 0x0202
++baseclass.id		0x002
++subclass.id		0x00
++driver.module.modprobe	pcnet_cs
++driver.module.modprobe	axnet_cs
+
