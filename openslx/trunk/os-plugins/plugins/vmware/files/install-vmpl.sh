@@ -1,13 +1,14 @@
 #!/bin/sh
 
-if [ $1 = "vmpl1.0" ]; then
+if [ "$1" == "vmpl1.0" ]; then
     vmplversion="vmpl1.0"
     url=http://download3.vmware.com/software/vmplayer/VMware-player-2.0.4-93057.i386.tar.gz
     tgzfile=VMware-player-2.0.4-93057.i386.tar.gz
-else if [ $1 = "vmpl2.0" ]; then
-    vmplversion="vmpl2.0"
-    url=http://download3.vmware.com/software/vmplayer/VMware-player-2.0.4-93057.i386.tar.gz
-    tgzfile=VMware-player-2.0.4-93057.i386.tar.gz
+else if [ "$1" == "vmpl2.0" ]; then
+        vmplversion="vmpl2.0"
+        url=http://download3.vmware.com/software/vmplayer/VMware-player-2.0.4-93057.i386.tar.gz
+        tgzfile=VMware-player-2.0.4-93057.i386.tar.gz
+    fi
 fi
 
 echo "This script will download and install vmplayer from http://www.vmware.com/"
