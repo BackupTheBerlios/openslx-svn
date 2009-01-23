@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AddSharedINI", "AddSharedIN
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AddPrinterINI", "AddPrinterINI\AddPrinterINI.csproj", "{D84149BE-F27C-41C5-AE19-21AA5590E8C3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AddPrinterAccountINI", "AddPrinterAccountINI\AddPrinterAccountINI.csproj", "{E5699A56-A1BE-4982-81E4-AED31E41E77D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{D84149BE-F27C-41C5-AE19-21AA5590E8C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D84149BE-F27C-41C5-AE19-21AA5590E8C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D84149BE-F27C-41C5-AE19-21AA5590E8C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5699A56-A1BE-4982-81E4-AED31E41E77D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5699A56-A1BE-4982-81E4-AED31E41E77D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5699A56-A1BE-4982-81E4-AED31E41E77D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5699A56-A1BE-4982-81E4-AED31E41E77D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -53,6 +53,7 @@ namespace AccountValue
         private String home;
         private String shared;
         private String printer;
+        private String account;
         
         
         //
@@ -153,6 +154,7 @@ namespace AccountValue
                 home = datei.IniReadValue("Home", "connect");
                 shared = datei.IniReadValue("Shared", "connect");
                 printer = datei.IniReadValue("Printer", "connect");
+                account = datei.IniReadValue("Account", "show");
             }
             catch 
             {
@@ -256,7 +258,7 @@ namespace AccountValue
                 // Drucker verbinden...
 
                 
-
+            
                 try
                 {
                     oNetDrive.LocalDrive = "";
@@ -280,7 +282,8 @@ namespace AccountValue
 
                     return;
                 }
-            }
+             
+           }
             
             //#################################################################
             // Homedirectory mounten...
@@ -368,19 +371,7 @@ namespace AccountValue
             }
 
 
-            //#################################################################
-            //Warnung!!! Alles, was in "Eigene Dateien" gespeichert wird, wird nach dem abmelden verschwinden!
-            //Bitte, alle wichtigen Dateien in "Homeverzeichnis K" speichern
-            /*
-            try
-            {
-                MessageBox.Show("Alles, was in 'Eigene Dateien' gespeichert wird,\nwird nach dem abmelden verschwinden! \nBitte, alle wichtigen Dateien in 'Homeverzeichnis K' speichern", "Warnung", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-            catch { }
-            */
-
-
-
+            
             //#################################################################
             // Drucker-Kontostand
 
@@ -389,9 +380,11 @@ namespace AccountValue
 
 
         //#####################################################################
+
+        //#####################################################################
         private void getAccountInformation()
         {
-            
+
             if (firsttime)
             {
                 String navigateTo = "https://myaccount.uni-freiburg.de/uadmin/pa?uid=" + textBox1.Text + "&pwd=" + maskedTextBox1.Text;
@@ -404,7 +397,7 @@ namespace AccountValue
                 timer1.Enabled = true;
                 timer2.Enabled = true;
             }
-             
+
         }
 
 
@@ -426,14 +419,14 @@ namespace AccountValue
 
                 if (change_resolution)
                 {
-                     x = Convert.ToInt32(resolution_x);
-                     y = Convert.ToInt32(resolution_y);
+                    x = Convert.ToInt32(resolution_x);
+                    y = Convert.ToInt32(resolution_y);
                 }
                 else
                 {
                     Screen screen = Screen.PrimaryScreen;
-                     x = screen.Bounds.Width;
-                     y = screen.Bounds.Height;
+                    x = screen.Bounds.Width;
+                    y = screen.Bounds.Height;
 
                 }
 
@@ -543,8 +536,8 @@ namespace AccountValue
 
             double percet_usage = ((100 / disk_quota) * used_bytes);
 
-            
-            
+
+
             if ((int)percet_usage < 0)
                 percet_usage = 0;
 
@@ -558,13 +551,13 @@ namespace AccountValue
             double quota = disk_quota / 1024 / 1024;
             double usedb = used_bytes / 1024 / 1024;
             double freespace = free_bytes / 1024 / 1024;
-           
-  
+
+
             f2.label5.Text = "Quota: " + quota.ToString("N2") + " MBytes";
             f2.label8.Text = "Belegt: " + usedb.ToString("N2") + " MBytes";
             f2.label6.Text = "Frei: " + freespace.ToString("N2") + " MBytes";
 
-  
+
 
             if ((int)percet_usage >= 90)
             {

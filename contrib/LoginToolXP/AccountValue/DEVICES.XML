@@ -1,21 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <env>
 <RZ>
-  <drives param="1">
-   <drive1>
-    <path param="\\lehrpool.files.uni-freiburg.de\windows"></path>
-    <username param="lehrpool"></username>
-    <pass param="(atom)9"></pass>
-    <localdrive param="l:"></localdrive>
-    <shortcut param="Gemeinsames Laufwerk L"></shortcut>
-    <name param=""></name>
-   </drive1>
-  </drives>
-  <homedir>
-   <path param=".files.uni-freiburg.de\windows"></path>
-   <localdrive param="k:"></localdrive>
-   <shortcut param="Homeverzeichnis K"></shortcut>
-  </homedir>
   <printer param="4">
    <printer1>
     <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
@@ -36,11 +21,6 @@
   </printer>
 </RZ>
 <UB>
- <homedir>
-  <path param=".files.uni-freiburg.de\windows"></path>
-  <localdrive param="k:"></localdrive>
-  <shortcut param="Homeverzeichnis K"></shortcut>
- </homedir>
  <printer param="2">
   <printer1>
    <path param="\\pub-ps01.public.ads.uni-freiburg.de"></path>
@@ -52,6 +32,6 @@
   </printer2>
  </printer>
 </UB>
-  </env>
+</env>
 
 

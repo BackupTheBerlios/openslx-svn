@@ -1,0 +1,5 @@
+E:\AccountValue\LoginToolXP\AddPrinterAccountINI\bin\Release\AddPrinterAccountINI.exe
+E:\AccountValue\LoginToolXP\AddPrinterAccountINI\bin\Release\AddPrinterAccountINI.pdb
+E:\AccountValue\LoginToolXP\AddPrinterAccountINI\obj\Release\ResolveAssemblyReference.cache
+E:\AccountValue\LoginToolXP\AddPrinterAccountINI\obj\Release\AddPrinterAccountINI.exe
+E:\AccountValue\LoginToolXP\AddPrinterAccountINI\obj\Release\AddPrinterAccountINI.pdb
