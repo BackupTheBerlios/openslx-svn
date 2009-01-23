@@ -475,7 +475,9 @@ sub removeVendorOS
         0,
         _tr("removing vendor-OS folder '%s'...", $self->{'vendor-os-path'})
     );
-    if (system("rm -r $self->{'vendor-os-path'}")) {
+    if (system(
+        "find $self->{'vendor-os-path'} -xdev -depth -print0 | xargs -0 rm -r"
+    )) {
         vlog(
             0,
             _tr("* unable to remove vendor-OS '%s'!", $self->{'vendor-os-path'})
