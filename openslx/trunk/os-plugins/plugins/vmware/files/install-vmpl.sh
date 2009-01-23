@@ -71,6 +71,9 @@ if [ "${REPLY}" == "YES" ]; then
     mv vmware-player-distrib/doc vmroot/
     rm -rf vmware-player-distrib/
 
+    echo "    * fixing file permission"
+    chmod 04755 root/lib/vmware/bin/vmware-vmx 
+
     # I don't want to understand what vmware is doing, but without this
     # step we need to have LD_LIBRARY_PATH with 53 entrys. welcome to
     # library hell
