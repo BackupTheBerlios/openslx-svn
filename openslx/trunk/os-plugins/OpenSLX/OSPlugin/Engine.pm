@@ -473,18 +473,20 @@ sub _loadPlugin
         push @distroModules, 'Base';
         for my $distroModule (@distroModules) {
             last if eval {
+                vlog(1, "trying distro-module $distroModule...");
                 $distro = instantiateClass(
                     'OpenSLX::Distro::' . $distroModule, 
                     { pathToClass => $self->{'plugin-path'} }
                 );
+                vlog(1, "using $distroModule.");
                 1;
             };
         }
         shift @INC;
         if (!$distro) {
             die _tr(
-                'unable to load any distro module for vendor-OS %s',
-                $self->{'vendor-os-name'}
+                'unable to load any distro module for vendor-OS %s in plugin %s',
+                $self->{'vendor-os-name'}, $plugin->{name}
             );
         }
         $distro->initialize($self);
