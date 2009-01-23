@@ -137,6 +137,32 @@ sub getAttrInfo
             content_descr => 'Allowed values: local, vmpl2.0',
             default => 'local',
         },
+        ##
+        ## only stage1 setup options: different kinds to setup
+        ## TODO: write a list and check it in stage3
+        'vmware::local' => {
+            applies_to_vendor_os => 1,
+            applies_to_system => 0,
+            applies_to_clients => 0,
+            description => unshiftHereDoc(<<'           End-of-Here'),
+                Set's up stage1 configuration for a local installed
+                vmplayer or vmware workstation
+            End-of-Here
+            content_regex => qr{^(1|0)$},
+            content_descr => '1 means active - 0 means inactive',
+            default => '1',
+        },
+        'vmware::vmpl2.0' => {
+            applies_to_vendor_os => 1,
+            applies_to_system => 0,
+            applies_to_clients => 0,
+            description => unshiftHereDoc(<<'           End-of-Here'),
+                Install and configure vmplayer v2
+            End-of-Here
+            content_regex => qr{^(1|0)$},
+            content_descr => '1 means active - 0 means inactive',
+            default => '0',
+        },
         # ** set of attributes for the installation of VM Workstation/Player
         # versions. More than one package could be installed in parallel.
         # To be matched to/triggerd by 'vmware::kind'
