@@ -214,8 +214,10 @@ config_bt
 # network(ed) services
 
 if [ -n "$ntp_servers" ]; then
-  rdate -s "$ntp_servers"
-  hwclock -w
+  # rdate uses the time protocol (port 37 which is not the ntp standard port)
+  # thus not every standard ntp-server might offer this service)
+  ( rdate -s "$ntp_servers" 2>/dev/null || error "$scfg_rdate" nonfatal
+    hwclock -w ) &
 fi
 
 # network time service (ntp) configuration file
