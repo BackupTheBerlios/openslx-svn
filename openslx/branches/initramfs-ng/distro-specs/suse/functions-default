@@ -43,8 +43,12 @@ D_DIRINDXS="/var/X11R6/compose-cache \
 
 # distro specific function called from servconfig script
 config_distro () {
-# no need to run start scripts in parallel
-# enable magic sysrequest for the clients
+  # clean the runlevel directories which will be populated by the stage3 setup
+  for dir in rc0.d rc1.d rc2.d rc3.d rc4.d rc5.d rc6.d boot.d ; do
+    rm -rf /mnt/etc/init.d/${dir}/*
+  done
+  # no need to run start scripts in parallel
+  # enable magic sysrequest for the clients
   sed -e "1i# /etc/sysconf/sysctl - modified by $0 version $version" \
       -e "s,ENABLE_SYSRQ=.*,ENABLE_SYSRQ=\"yes\"," \
       -i /mnt/etc/sysconf/sysctl

@@ -39,13 +39,15 @@ D_DIRINDXS="/var/X11R6/compose-cache \
 
 # distro specific stuff to initialize
 preinit () {
-  echo "Creating dhcp user"
-  echo "dhcp:x:101:" >>/etc/group
-  echo "dhcp:x:101:101::/nonexistent:/bin/false" >>/etc/passwd
+:
 }
 
 # distro specific function called from servconfig script
 config_distro () {
+  # clean the runlevel directories which will be populated by the stage3 setup
+  for dir in rc0.d rc1.d rc2.d rc3.d rc4.d rc5.d rc6.d rcS.d ; do
+    rm -rf /mnt/etc/${dir}/*
+  done
   # add the halt link to the 0 and 6 runlevel directories
   ln -sf ../init.d/halt /mnt/etc/rc0.d/S90halt
   ln -sf ../init.d/reboot /mnt/etc/rc6.d/S90reboot
