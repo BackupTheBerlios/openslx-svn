@@ -28,30 +28,27 @@ fi
 
 
 
-
-
-
-
 ##########################################
 # saves a mesa file into MESAROOT
 # and creates a link
 ##########################################
-function linkMesa() {
+linkMesa() {
   file=$1
  
   # get path without /usr/lib/
-  l_path="${file/$(basename $file)/}"
-  l_path=${l_path/\/usr\/lib/}
+  bname=$(basename ${file})
+  l_path="$(echo ${file}|sed 's,${bname},,g')"
+  l_path="$(echo ${l_path}|sed 's,/usr/lib,,g')"
   if [ ! -d "${LINK_PATH}${l_path}" ]; then
     mkdir -p ${LINK_PATH}${l_path}
   fi
 
-  if [ -f "${file}" ]; then
-    # this is a real file
-    mv ${file} ${file/\.so/_MESA.so} 2&>1 >/dev/null # rename file
-  elif [ -h "${file}" ]; then
+  if [ -h "${file}" ]; then
     # this is a link
-    ln -sf ${LINK_PATH}${file/\/usr\/lib/} $file # link to writable dir
+    ln -sf ${LINK_PATH}$(echo $file| sed -e 's,/usr/lib,,g') $file # link to writable dir
+  elif [ -f "${file}" ]; then
+    # this is a real file
+    mv ${file} $(echo $file|sed -e 's,.so,_MESA.so,g') 2&>1 >/dev/null # rename file
   fi
 }
 
@@ -64,7 +61,7 @@ function linkMesa() {
 # and linked to /var/X11R6/lib
 #
 ########################################
-function divert() {
+divert() {
 
   # root PATH 
   # as first argument
@@ -79,7 +76,7 @@ function divert() {
     # strip leading ROOT
     cmplib="${lib#${ROOT}}"
 
-
+    echo ${cmplib} ${lib}
     if [ -e "${cmplib}" -a -e "${lib}" ]; then
       # system folder conflicts with ROOT
       linkMesa ${cmplib}
@@ -88,7 +85,8 @@ function divert() {
 
     # throwing away the basename
     # leaving the folder
-    l_path="${cmplib/$(basename $lib)/}"
+    bname=$(basename ${lib})
+    l_path="$(echo ${cmplib}|sed 's,${bname},,g')"
     l_path=${l_path#/usr/lib}
 
     # here is the hairy function
@@ -98,7 +96,7 @@ function divert() {
     if [ -n "${CMPROOT}" -a -e "${lib}" -a -e "${CMPROOT}${cmplib}" ]; then
       # two roots are conflicting
       # create a link into LINK_PATH
-      if [ -h "${LINK_PATH}${cmplib/\/usr\/lib/}" ]; then
+      if [ -h "${LINK_PATH}$( echo ${cmplib}| sed 's,/usr/lib,,g')" ]; then
         # it already exists
         continue
       fi
@@ -107,7 +105,10 @@ function divert() {
       fi
       
       # create link ladder (defaults to first called implementation)
-      ln -s ${ROOT}${cmplib} ${LINK_PATH}${cmplib}
+      #TODO: Check this part. Every 2nd time of 'linkage.sh clean;linkage.sh both'
+      #      the following error occurs:
+      #      ln: creating symbolic link `/var/X11R6/lib//libGL.so.1/libGL.so.1': File exists
+      ln -s ${ROOT}${cmplib} ${LINK_PATH}$(echo ${cmplib} | sed -e 's/\/usr\/lib//g')
     else
 
 
@@ -132,7 +133,8 @@ function divert() {
 function uninstDist() {
   # put mesa implementation back into place
   for file in $(find /usr/lib/ -name '*_MESA.so*' | xargs); do
-    mv $file ${file/_MESA\.so/.so}
+    mesafile="$(echo ${file}|sed -e 's/_MESA.so/.so/')"
+    mv ${file} ${mesafile}
   done
 
   # somehow we have to repair this - what else? 

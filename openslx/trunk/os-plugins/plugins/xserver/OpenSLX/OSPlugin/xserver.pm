@@ -223,14 +223,17 @@ sub installationPhase
     if ($attrs->{'xserver::nvidia'} == 1  || $attrs->{'xserver::ati'} == 1 ) {
         copyFile("$pluginFilesPath/ubuntu-gfx-install.sh", "$installationPath");
         copyFile("$pluginFilesPath/suse-gfx-install.sh", "$installationPath");
+        copyFile("$pluginFilesPath/linkage.sh", "$installationPath");
     }
     if ($attrs->{'xserver::ati'} == 1) {
         copyFile("$pluginFilesPath/ati-install.sh", "$installationPath");
         system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh");
+        system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh ati");
     }
     if ($attrs->{'xserver::nvidia'} == 1) {
         copyFile("$pluginFilesPath/nvidia-install.sh", "$installationPath");
         system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/nvidia-install.sh");
+        system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh nvidia");
     }
 
     # Some plugins have to copy files from their plugin folder into the

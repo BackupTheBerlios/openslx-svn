@@ -47,8 +47,8 @@ if [ -e /initramfs/plugin-conf/xserver.conf -a \
     ######################################################################
     set -x
 
-    if [ $(grep -i -m 1 'Driver Activation Cmd: "modprobe fglrx"' \
-        /etc/hwinfo.data | wc -l) -eq "1"  -a $xserver_prefnongpl -eq 1 ]
+    if [ $(grep -i -m 1 'fglrx' \
+        /etc/hwinfo.data | wc -l) -ge "1"  -a $xserver_prefnongpl -eq 1 ]
     then
       # we have an ati card here
       ATI=1
@@ -71,8 +71,8 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
       ${LINK_PATH}libGL.so.1.2
     fi
 
-    if [ $(grep -i -m 1 'Driver Activation Cmd: "modprobe nvidia"' \
-        /etc/hwinfo.data | wc -l) -eq "1"  -a $xserver_prefnongpl -eq 1 ]
+    if [ $(grep -i -m 1 'nvidia' \
+        /etc/hwinfo.data | wc -l) -ge "1"  -a $xserver_prefnongpl -eq 1 ]
     then
       # we have an ati card here
       NVIDIA=1
@@ -239,7 +239,7 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
       size="$(grep -m 1 " Size: " /etc/hwinfo.display | \
         sed 's|.*ize:\ ||;s|\ mm||;s|x|\ |')"
       modes=$(grep -i "Resolution: .*@" /etc/hwinfo.display | \
-        awk '{print $2}'| sort -unr| awk -F '@' '{print "\"" $1 "\""}'|\
+        awk '{print $2}'| awk -F '@' '{print "\"" $1 "\""}'| sort -unr| \
         tr "\n" " ")
       [ -n "$vert" -a -n "$horz" ] && \
         sed -e "s|# Horizsync.*|  Horizsync    $horz|;\
