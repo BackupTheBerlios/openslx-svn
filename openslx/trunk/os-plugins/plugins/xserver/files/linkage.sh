@@ -121,7 +121,7 @@ uninstDist() {
   ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so
 
   # delete all remaining links to /opt/openslx and /var/X11R6/lib
-  find /usr/lib -lname "${PLUGIN_PATH}*"  \
+  find /usr/lib /usr/X11R6/lib -lname "${PLUGIN_PATH}*"  \
     -o -lname "${LINK_PATH}*" |xargs rm -rf 
   # delete LINK_PATH
   rm -rf ${LINK_PATH} 
