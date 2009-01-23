@@ -249,7 +249,6 @@ END
         scsi
         sensors
         sharutils
-        smart
         smartmontools
         smpppd
         squashfs-kmp-default

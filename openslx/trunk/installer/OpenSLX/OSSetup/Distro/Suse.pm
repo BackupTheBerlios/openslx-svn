@@ -36,8 +36,19 @@ sub initialize
     my $engine = shift;
 
     $self->SUPER::initialize($engine);
-    $self->{'packager-type'}      = 'rpm';
-    $self->{'meta-packager-type'} = $ENV{SLX_META_PACKAGER} || 'smart';
+    $self->{'packager-type'} = 'rpm';
+    
+    # use 'zypper' as meta-packager from 10.2 onwards and use 'smart' for 
+    # older releases
+    my $defaultMetaPackager = 'zypper';
+    if ($self->{'engine'}->{'distro-name'} =~ m{-([^-]+)$}) {
+        my $distroVersion = 0.0 + $1;
+        if ($distroVersion < 10.2) {
+            $defaultMetaPackager = 'smart';
+        }
+    }
+    $self->{'meta-packager-type'} 
+        = $ENV{SLX_META_PACKAGER} || $defaultMetaPackager;
 
     if ($engine->{'action-type'} eq 'install') {
         # Inform SUSE RPMs that we're performing an installation - this is
