@@ -58,8 +58,8 @@ stage3 setup" > /mnt/etc/vmware/slxvmconfig
       # TODO: to be checked!!
       local dnslist=$(echo "$domain_name_servers"|sed "s/ /,/g")
       echo "# /etc/vmware/dhcpd.conf written in stage3 ..." \
-        > /mnt/etc/vmware/dhcpd.confallow 
-      echo "unknown-clients;" \
+        > /mnt/etc/vmware/dhcpd.conf
+      echo "allow unknown-clients;" \
         >> /mnt/etc/vmware/dhcpd.conf
       echo "default-lease-time 1800;" \
         >> /mnt/etc/vmware/dhcpd.conf
