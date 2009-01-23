@@ -30,6 +30,7 @@ namespace AccountValue
         private DragExtender dragExtender1;
         private String version = "0.3";
         Form1 f1;
+        private String home;
 
 
 
@@ -49,6 +50,21 @@ namespace AccountValue
             this.dragExtender1.SetDraggable(this.label1, true);
             this.dragExtender1.SetDraggable(this.label2, true);
 
+            try
+            {
+                IniFile datei;
+                datei = new IniFile(@"C:\Programme\Login\AccValue.ini");
+
+                home = datei.IniReadValue("Home", "connect");
+            }
+            catch { }
+
+            if(home != "yes")
+            {
+                pictureBox2.Visible = false;
+            }
+
+
         }
 
         private void panel1_Paint(object sender, PaintEventArgs e)
@@ -66,6 +82,11 @@ namespace AccountValue
             MessageBox.Show("Version: " + version, "Version...", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
+        private void quitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             
@@ -80,7 +101,6 @@ namespace AccountValue
 
         private void pictureBox2_Click(object sender, EventArgs e)
         {
-
             object x = null;
 
             InternetExplorer explorer = new InternetExplorer();

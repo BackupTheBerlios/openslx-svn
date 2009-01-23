@@ -506,50 +506,58 @@ namespace AccountValue
 
             // Dsik Usage anzeigen...
 
-
-            DiskFreeSpace used = GetDiskFreeSpace("k:\\");
-
-            double disk_quota = Convert.ToDouble(used.TotalBytes);
-            double used_bytes = Convert.ToDouble(used.TotalBytes) - Convert.ToDouble(used.TotalFreeBytes);
-            double free_bytes = Convert.ToDouble(used.TotalFreeBytes);
-
-            double percet_usage = ((100 / disk_quota) * used_bytes);
-
-            
-            
-            if ((int)percet_usage < 0)
-                percet_usage = 0;
-
-            if ((int)percet_usage > 100)
-                percet_usage = 100;
-
-
-
-            f2.colorProgressBar1.Value = (int)percet_usage;
-
-            double quota = disk_quota / 1024 / 1024;
-            double usedb = used_bytes / 1024 / 1024;
-            double freespace = free_bytes / 1024 / 1024;
-           
-  
-            f2.label5.Text = "Quota: " + quota.ToString("N2") + " MBytes";
-            f2.label8.Text = "Belegt: " + usedb.ToString("N2") + " MBytes";
-            f2.label6.Text = "Frei: " + freespace.ToString("N2") + " MBytes";
-
-  
-
-            if ((int)percet_usage >= 90)
+            if (home == "yes")
             {
-                f2.label9.ForeColor = Color.Red;
-                f2.colorProgressBar1.BarColor = Color.Red;
+
+                DiskFreeSpace used = GetDiskFreeSpace("k:\\");
+
+                double disk_quota = Convert.ToDouble(used.TotalBytes);
+                double used_bytes = Convert.ToDouble(used.TotalBytes) - Convert.ToDouble(used.TotalFreeBytes);
+                double free_bytes = Convert.ToDouble(used.TotalFreeBytes);
+
+                double percet_usage = ((100 / disk_quota) * used_bytes);
+
+
+
+                if ((int)percet_usage < 0)
+                    percet_usage = 0;
+
+                if ((int)percet_usage > 100)
+                    percet_usage = 100;
+
+
+
+                f2.colorProgressBar1.Value = (int)percet_usage;
+
+                double quota = disk_quota / 1024 / 1024;
+                double usedb = used_bytes / 1024 / 1024;
+                double freespace = free_bytes / 1024 / 1024;
+
+
+                f2.label5.Text = "Quota: " + quota.ToString("N2") + " MBytes";
+                f2.label8.Text = "Belegt: " + usedb.ToString("N2") + " MBytes";
+                f2.label6.Text = "Frei: " + freespace.ToString("N2") + " MBytes";
+
+
+
+                if ((int)percet_usage >= 90)
+                {
+                    f2.label9.ForeColor = Color.Red;
+                    f2.colorProgressBar1.BarColor = Color.Red;
+                }
+                else
+                {
+                    f2.label9.ForeColor = Color.Green;
+                    f2.colorProgressBar1.BarColor = Color.Green;
+                }
+                f2.label9.Text = ((int)percet_usage).ToString() + "%";
+
             }
             else
             {
-                f2.label9.ForeColor = Color.Green;
-                f2.colorProgressBar1.BarColor = Color.Green;
+                f2.label5.Text = "Homelaufwerk nicht eingebunden.";
             }
-            f2.label9.Text = ((int)percet_usage).ToString() + "%";
-        }
+            }
 
         
     }
