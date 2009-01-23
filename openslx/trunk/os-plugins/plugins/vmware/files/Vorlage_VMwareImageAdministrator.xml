@@ -29,6 +29,9 @@
     #Description: Should the current image in use? if yes value is "true"
     <active param="true">
     </active>
+    #Description: The ID of the user.
+    <username param="s8user">
+    </username>
     #Description: where should the current image be used? in the past slxgrp
     <pools param="default chemie">
     </pools>
