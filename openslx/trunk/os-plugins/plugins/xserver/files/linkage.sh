@@ -1,4 +1,4 @@
-#!/bin/bash --debugger
+#!/bin/bash
 
 #
 #
@@ -15,11 +15,7 @@ LINK_PATH="/var/X11R6/lib/"
 ATIROOT="${PLUGIN_PATH}ati"
 NVROOT="${PLUGIN_PATH}nvidia"
 
-# this is a backup folder for mesa files
-MESAROOT="${PLUGIN_PATH}mesa/"
-if [ ! -d "${MESAROOT}usr/lib/" ]; then
-  mkdir -p "${MESAROOT}usr/lib/"
-fi
+# this is the diversion path of libraries
 if [ ! -d "${LINK_PATH}" ]; then
   mkdir -p "${LINK_PATH}"
 fi
@@ -68,6 +64,11 @@ divert() {
   ROOT="$1"
   # files to compare 
   CMPROOT="$2"
+
+  if [ -e "${ROOT}/installed" ]; then
+      echo "$1 already linked!"
+      return
+  fi
 
   # go through all libs and see if they are conflicting
   for lib in $(find ${ROOT} -wholename \
@@ -121,6 +122,9 @@ divert() {
       ln -s $lib $cmplib
     fi
   done
+
+  # mark as installed - we don't want to install it twice
+  date >> ${ROOT}/installed
 }
 
 
@@ -130,7 +134,7 @@ divert() {
 #
 # just run this function to clean up system
 ###############################################
-function uninstDist() {
+uninstDist() {
   # put mesa implementation back into place
   for file in $(find /usr/lib/ -name '*_MESA.so*' | xargs); do
     mesafile="$(echo ${file}|sed -e 's/_MESA.so/.so/')"
