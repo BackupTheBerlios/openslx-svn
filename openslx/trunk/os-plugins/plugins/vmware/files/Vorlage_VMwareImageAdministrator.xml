@@ -39,5 +39,16 @@
     # should only be used by our department and noone else
     <priority param="1">
     </priority>
+    #Description: Should printers be connected ? Which ?
+    <printers param="true">
+     <printer name="" path=""></printer>
+    </printers>
+    #Description: Should the Homedrive be connected ?
+    <home param="true">
+    </home>
+    #Description: Should shared drives be connected ? Which ?
+    <shareds param="true">
+     <shared name="" path="" pass=""></shared>
+    </shareds>
   </eintrag>
 </settings>
