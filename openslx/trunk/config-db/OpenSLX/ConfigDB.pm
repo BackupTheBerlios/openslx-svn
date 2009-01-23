@@ -91,8 +91,10 @@ my @supportExports = qw(
 @EXPORT_OK   = (@supportExports);
 %EXPORT_TAGS = ('support' => [@supportExports],);
 
+use OpenSLX::AttributeRoster;
 use OpenSLX::Basics;
 use OpenSLX::DBSchema;
+use OpenSLX::OSPlugin::Roster;
 use OpenSLX::Utils;
 
 =head1 Methods
@@ -249,6 +251,176 @@ sub rollbackTransaction
     my $self = shift;
 
     $self->{'meta-db'}->rollbackTransaction();
+
+    return 1;
+}
+
+=item C<synchronizeAttributesWithDB()>
+
+Makes sure that all known attributes are referenced by the default system
+(and no unknown ones).
+
+Additionally, all systems, groups and clients can be checked and get their
+stale attributes removed, too.
+
+=cut
+
+sub synchronizeAttributesWithDB
+{
+    my $self            = shift;
+    my $removeStaleRefs = shift;
+
+    my $defaultSystem = $self->fetchSystemByID(0);
+    return if !$defaultSystem;
+
+    # fetch all known attributes from attribute roster and merge these 
+    # into the existing attributes of the default system
+    my $attrInfo = OpenSLX::AttributeRoster->getAttrInfo();
+
+    # add new attributes to default system
+    my @newAttrs 
+        = grep { !exists $defaultSystem->{attrs}->{$_} } keys %{$attrInfo};
+    foreach my $attr (@newAttrs) {
+        $defaultSystem->{attrs}->{$attr} = $attrInfo->{$attr}->{default};
+    }
+    
+    # remove unknown attributes from default system
+    my @unknownAttrs 
+        = grep { !exists $attrInfo->{$_} } keys %{$defaultSystem->{attrs}};
+    foreach my $unknownAttr (@unknownAttrs) {
+        delete $defaultSystem->{attrs}->{$unknownAttr};
+    }
+    
+    # now write back the updated default system if necessary
+    if (@newAttrs || @unknownAttrs) {
+        return if !$self->changeSystem(0, $defaultSystem);
+    }
+    
+    if ($removeStaleRefs) {
+        return if !$self->removeStaleSystemAttributes();
+        return if !$self->removeStaleGroupAttributes();
+        return if !$self->removeStaleClientAttributes();
+        return if !$self->removeStaleVendorOSAttributes();
+    }
+
+    return 1;
+}
+
+=item C<removeStaleSystemAttributes()>
+
+Removes any stale attributes from every system.
+
+=cut
+
+sub removeStaleSystemAttributes
+{
+    my $self = shift;
+
+    my $attrInfo = OpenSLX::AttributeRoster->getAttrInfo();
+
+    my @systems = $self->fetchSystemByFilter();
+    foreach my $system (@systems) {
+        my @unknownAttrs 
+            = grep { !exists $attrInfo->{$_} } keys %{$system->{attrs}};
+        if (@unknownAttrs) {
+            foreach my $unknownAttr (@unknownAttrs) {
+                delete $system->{attrs}->{$unknownAttr};
+            }
+            return if !$self->changeSystem($system->{id}, $system);
+        }
+    }
+
+    return 1;
+}
+
+=item C<removeStaleGroupAttributes()>
+
+Removes any stale attributes from every group.
+
+=cut
+
+sub removeStaleGroupAttributes
+{
+    my $self = shift;
+
+    my $attrInfo = OpenSLX::AttributeRoster->getAttrInfo();
+
+    my @groups = $self->fetchGroupByFilter();
+    foreach my $group (@groups) {
+        my @unknownAttrs 
+            = grep { !exists $attrInfo->{$_} } keys %{$group->{attrs}};
+        if (@unknownAttrs) {
+            foreach my $unknownAttr (@unknownAttrs) {
+                delete $group->{attrs}->{$unknownAttr};
+            }
+            return if !$self->changeGroup($group->{id}, $group);
+        }
+    }
+
+    return 1;
+}
+
+=item C<removeStaleClientAttributes()>
+
+Removes any stale attributes from every client.
+
+=cut
+
+sub removeStaleClientAttributes
+{
+    my $self = shift;
+
+    my $attrInfo = OpenSLX::AttributeRoster->getAttrInfo();
+
+    my @clients = $self->fetchClientByFilter();
+    foreach my $client (@clients) {
+        my @unknownAttrs 
+            = grep { !exists $attrInfo->{$_} } keys %{$client->{attrs}};
+        if (@unknownAttrs) {
+            foreach my $unknownAttr (@unknownAttrs) {
+                delete $client->{attrs}->{$unknownAttr};
+            }
+            return if !$self->changeClient($client->{id}, $client);
+        }
+    }
+
+    return 1;
+}
+
+=item C<removeStaleVendorOSAttributes()>
+
+Removes any stale attributes from every vendor-OS.
+
+=cut
+
+sub removeStaleVendorOSAttributes
+{
+    my $self = shift;
+
+    my @vendorOSes = $self->fetchVendorOSByFilter();
+    foreach my $vendorOS (@vendorOSes) {
+        my @installedPlugins = $self->fetchInstalledPlugins($vendorOS->{id});
+        foreach my $plugin (@installedPlugins) {
+            my $pluginName = $plugin->{plugin_name};
+            my $attrInfo 
+                = OpenSLX::OSPlugin::Roster->getPluginAttrInfo($pluginName);
+            if ($attrInfo) {
+                my @unknownAttrs 
+                    = grep { !exists $attrInfo->{$_} } keys %{$plugin->{attrs}};
+                if (@unknownAttrs) {
+                    foreach my $unknownAttr (@unknownAttrs) {
+                        delete $plugin->{attrs}->{$unknownAttr};
+                    }
+                    return if !$self->addInstalledPlugin(
+                        $vendorOS->{id}, $pluginName, $plugin->{attrs}
+                    );
+                }
+            }
+            else {
+                $self->removeInstalledPlugin($vendorOS->{id}, $pluginName);
+            }
+        }
+    }
 
     return 1;
 }
@@ -1099,7 +1271,7 @@ sub addInstalledPlugin
     my $pluginAttrs = shift || {};
 
     # make sure the attributes of this plugin are available via default system
-    $self->{'db-schema'}->synchronizeAttributesWithDefaultSystem($self);
+    $self->synchronizeAttributesWithDB(0);
 
     return $self->{'meta-db'}->addInstalledPlugin(
         $vendorOSID, $pluginName, $pluginAttrs

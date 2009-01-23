@@ -392,7 +392,7 @@ An hash-ref with info about all known attributes.
 sub getAttrInfo
 {
     my $class  = shift;
-    my $params = shift;
+    my $params = shift || {};
 
     $class->_init() if !%AttributeInfo;
 

@@ -726,7 +726,7 @@ sub addInstalledPlugin
     my $self        = shift;
     my $vendorOSID  = shift;
     my $pluginName  = shift;
-    my $pluginAttrs = shift;
+    my $newAttrs    = shift;
 
     return if !defined $vendorOSID || !$pluginName;
 
@@ -741,30 +741,41 @@ sub addInstalledPlugin
             = $self->fetchInstalledPlugins($vendorOSID, $pluginName, 1);
     }
     return if !$installedPlugin;
-    for my $pluginAttrName (keys %$pluginAttrs) {
-        if (exists $installedPlugin->{attrs}->{$pluginAttrName}) {
-            my $attrInfo = $installedPlugin->{attrs}->{$pluginAttrName};
-            my $currVal  
-                = defined $attrInfo->{value} ? $attrInfo->{value} : '-';
-            my $givenVal 
-                = defined $pluginAttrs->{$pluginAttrName} 
-                    ? $pluginAttrs->{$pluginAttrName}
-                    : '-';
-            next if $currVal eq $givenVal;
-            return if ! $self->_doUpdate(
-                'installed_plugin_attr', [ $attrInfo->{id} ], [ {
-                    value => $pluginAttrs->{$pluginAttrName},
-                } ] 
-            );
-        }
-        else {
-            return if ! $self->_doInsert('installed_plugin_attr', [ {
-                installed_plugin_id => $installedPlugin->{id},
-                name  => $pluginAttrName,
-                value => $pluginAttrs->{$pluginAttrName},
-            } ] );
-        }
-    }
+
+    # determine the required attribute actions ...
+    my $oldAttrs = $installedPlugin->{attrs} || {};
+    my @attrsToBeInserted
+        = grep { 
+            exists $newAttrs->{$_} && !exists $oldAttrs->{$_}
+        } keys %$newAttrs;
+    my @attrsToBeDeleted = grep { !exists $newAttrs->{$_} } keys %$oldAttrs;
+    my @attrsToBeUpdated
+        = grep { 
+            exists $newAttrs->{$_} && exists $oldAttrs->{$_}
+            && ($oldAttrs->{$_}->{value} || '-') ne ($newAttrs->{$_} || '-')
+        } keys %$newAttrs;
+
+    # ... insert the new ones ...
+    my @attrData 
+        =   map {
+                {
+                    installed_plugin_id => $installedPlugin->{id},
+                    name                => $_,
+                    value               => $newAttrs->{$_},
+                }
+            }
+            @attrsToBeInserted;
+    $self->_doInsert('installed_plugin_attr', \@attrData);
+
+    # ... delete the old ones ...
+    my @oldIDs = map { $oldAttrs->{$_}->{id} } @attrsToBeDeleted;
+    $self->_doDelete('installed_plugin_attr', \@oldIDs);
+
+    # ... and update the changed ones ...
+    my @IDs   = map { $oldAttrs->{$_}->{id} } @attrsToBeUpdated;
+    @attrData = map { { value => $newAttrs->{$_} } } @attrsToBeUpdated;
+    $self->_doUpdate('installed_plugin_attr', \@IDs, \@attrData);
+
     return 1;
 }
 
@@ -1149,8 +1160,8 @@ sub setGroupAttrs
         =   map {
                 {
                     group_id => $groupID,
-                    name      => $_,
-                    value     => $newAttrs->{$_},
+                    name     => $_,
+                    value    => $newAttrs->{$_},
                 }
             }
             @attrsToBeInserted;

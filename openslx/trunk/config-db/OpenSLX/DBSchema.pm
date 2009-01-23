@@ -16,7 +16,6 @@ package OpenSLX::DBSchema;
 use strict;
 use warnings;
 
-use OpenSLX::AttributeRoster;
 use OpenSLX::Basics;
 
 ################################################################################
@@ -35,7 +34,7 @@ use OpenSLX::Basics;
 ###         fk        => foreign key (integer)
 ################################################################################
 
-my $VERSION = 0.30;
+my $VERSION = 0.31;
 
 my $DbSchema = {
     'version' => $VERSION,
@@ -280,7 +279,8 @@ sub checkAndUpgradeDBSchemaIfNecessary
             );
         }
         $metaDB->schemaSetDBVersion($DbSchema->{version});
-        $self->synchronizeAttributesWithDefaultSystem($configDB);
+        $configDB->synchronizeAttributesWithDB(1)
+            or die _tr('unable to synchronize attributes with DB!');
         vlog(1, _tr('DB has been created successfully'));
     } elsif ($currVersion < $DbSchema->{version}) {
         vlog(
@@ -291,7 +291,8 @@ sub checkAndUpgradeDBSchemaIfNecessary
             )
         );
         $self->_schemaUpgradeDBFrom($metaDB, $currVersion);
-        $self->synchronizeAttributesWithDefaultSystem($configDB);
+        $configDB->synchronizeAttributesWithDB(1)
+            or die _tr('unable to synchronize attributes with DB!');
         vlog(1, _tr('upgrade done'));
     } else {
         vlog(1, _tr('DB matches current schema version (%s)', $currVersion));
@@ -308,33 +309,6 @@ sub getColumnsOfTable
     return    
         map { (/^(\w+)\W/) ? $1 : $_; } 
         @{$DbSchema->{tables}->{$tableName}->{cols}};
-}
-
-sub synchronizeAttributesWithDefaultSystem
-{
-    my $self     = shift;
-    my $configDB = shift;
-
-    my $defaultSystem = $configDB->fetchSystemByID(0);
-    return if !$defaultSystem;
-
-    # fetch all known attributes from attribute roster and merge these 
-    # into the existing attributes of the default system
-    my $attrInfo = OpenSLX::AttributeRoster->getAttrInfo();
-    foreach my $attr (keys %$attrInfo) {
-        next if exists $defaultSystem->{attrs}->{$attr};
-        $defaultSystem->{attrs}->{$attr} = $attrInfo->{$attr}->{default};
-    }
-    
-    # remove unknown attributes from default system
-    my @unknownAttrs 
-        = grep { !exists $attrInfo->{$_} } keys %{$defaultSystem->{attrs}};
-    foreach my $unknownAttr (@unknownAttrs) {
-        delete $defaultSystem->{attrs}->{$unknownAttr};
-    }
-    
-    # now write back the updated default system
-    return $configDB->changeSystem(0, $defaultSystem);
 }
 
 ################################################################################
@@ -730,6 +704,14 @@ sub _schemaUpgradeDBFrom
         # dummy schema change, just to trigger the attribute synchronization
         # into the default system (required since plugins have been added
         # and removed)
+    
+        return 1;
+    },
+    0.31 => sub {
+        my $metaDB = shift;
+    
+        # dummy schema change, just to trigger the attribute synchronization
+        # again, as the respective code has been extended
     
         return 1;
     },
