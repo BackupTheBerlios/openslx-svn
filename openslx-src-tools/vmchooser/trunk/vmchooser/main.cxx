@@ -25,7 +25,7 @@ using namespace fltk;
 int main(int argc, char** argv) {
   AnyOption* opt = new AnyOption();
   char* xmlpath = NULL;
-  //char* slxgroup = NULL;
+  bool version = false;
   char* lsesspath = NULL;
   int width=0, height=0;
   
@@ -36,15 +36,15 @@ int main(int argc, char** argv) {
   opt->addUsage("SessionChooser Usage:");
   opt->addUsage("\t{-p |--path=} path to vmware (.xml) files");
   opt->addUsage("\t{-l |--lpath=} path to linux session (.desktop) files");
-  opt->addUsage("\t{-g |--group=} group name");
   opt->addUsage("\t{-s |--size=} [widthxheight]");
+  opt->addUsage("\t{-v |--version} print out version");
   opt->addUsage("\t{-h |--help} prints help");
   opt->addUsage("");
   
   opt->setFlag("help",'h');
   opt->setOption("path", 'p');
   opt->setOption("lpath", 'l');
-  opt->setOption("group",'g');
+  opt->setFlag("version",'v');
   opt->setOption("size",'s');
   
   opt->processCommandArgs(argc, argv);
@@ -66,21 +66,11 @@ int main(int argc, char** argv) {
     // Default Path comes here
     xmlpath = (char *) "/var/lib/vmware/vmconfigs/";
   }
-  
-  /** SLX GROUP - OBSOLETE */
-  /** NOW THE SLX GROUP SHOULD BE SET THROUGH THE PLUGIN OPTIONS */
-  //if(opt->getValue('g')!=NULL) {
-  //  slxgroup = opt->getValue('g');
-  //}
-  //
-  //if(opt->getValue("group")!= NULL) {
-  //  slxgroup = opt->getValue("group");
-  //}
-  //if (slxgroup == NULL) {
-  //  // there should be a generic way to handle these groups
-  //  slxgroup = (char *) "default";
-  //}
-  /** OBSOLETE */
+ 
+  /* VERSION  */
+  if(opt->getFlag('v') || opt->getFlag("version")) {
+    version = true;
+  }
   
   /** LINUX SESSION PATH */
   if(opt->getValue('l')!=NULL) {
@@ -120,6 +110,12 @@ int main(int argc, char** argv) {
   
   delete opt;
   
+  cout << "virtual machine chooser 0.0.1"<< endl;
+  if(version) {
+    exit(1);
+  }
+
+
   /* read xml files */
   DataEntry** sessions = NULL;
   DataEntry** lsessions = NULL;
@@ -129,7 +125,7 @@ int main(int argc, char** argv) {
           fprintf(stderr,"Please give a path to xml directory for session images!");
           exit(1);
   }
-  lsessions = readLinSess(lsesspath);
+  lsessions = readLinSess(lsesspath);  
   
   SWindow& win = *SWindow::getInstance(width, height);
   

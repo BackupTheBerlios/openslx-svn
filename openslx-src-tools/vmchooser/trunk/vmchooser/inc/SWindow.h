@@ -82,8 +82,8 @@ public:
   void cb_return();
   void cb_select();
 
-  void set_entries(DataEntry** ent, char* slxgroup);
-  void set_lin_entries(DataEntry** ent, char* slxgroup);
+  void set_entries(DataEntry** ent);
+  void set_lin_entries(DataEntry** ent);
   
   const char** get_symbol(DataEntry* dat);
 
