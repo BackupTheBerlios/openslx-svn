@@ -1918,12 +1918,6 @@ sub addClient
 
     my ($valRows, $attrValRows) = _cloneAndUnhingeAttrs($inValRows);
 
-    foreach my $valRow (@$valRows) {
-        if (!$valRow->{boot_type}) {
-            $valRow->{boot_type} = 'pxe';
-        }
-    }
-
     my @IDs = $self->{'meta-db'}->addClient($valRows, $attrValRows);
     return wantarray() ? @IDs : $IDs[0];
 }
