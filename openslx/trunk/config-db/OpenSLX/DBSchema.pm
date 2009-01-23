@@ -700,7 +700,11 @@ sub _schemaUpgradeDBFrom
         # correct effects of implementation error last time around that caused 
         # the default vendor-OS to not have any plugins at all - so we add
         # the default plugins here:
-        $metaDB->addInstalledPlugin(0, 'theme');
+# OLTA: deactivated for good since this does not work anymore with newer
+#       implementations (as addInstalledPlugin requires the table 
+#       'installed_plugin_attr', which is going to be created in db-schema 
+#       version 0.29 (see below)
+#        $metaDB->addInstalledPlugin(0, 'theme');
     
         return 1;
     },
