@@ -62,7 +62,7 @@ DataEntry** readLinSess(char* path)
         int c = 0;
         
         for (int i=0; gResult->gl_pathv[i] != NULL; i++) {
-          if(string(gResult->gl_pathv[i]) == "default.desktop") {
+          if(string(gResult->gl_pathv[i]).find("default.desktop") != string::npos ) {
             continue;
           }
           
