@@ -261,9 +261,9 @@ mkdir /var/lib/dhcp >/dev/null 2>&1
 [ -n $vci ] && vci="-V $vci"
 testmkd /usr/share/udhcpc
 ln -sf /bin/dhcpmkconfig /usr/share/udhcpc/default.script
-# -o option gets additionally the nis* options, but described other way round
-# hopefully in some future version "-O dhcp-option" works ...
-udhcpc -t 8 -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null
+# see for options.c file in udhcp subdir of busybox for accepted "-O option"
+udhcpc -O nissrv -O nisdomain -t 8 -q $vci \
+  -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null
 }
 
 #############################################################################
