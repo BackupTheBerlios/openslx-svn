@@ -128,6 +128,18 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
       ln -s ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 \
       ${LINK_PATH}libGL.so.1.2
     fi
+
+    # link to default mesa libraries if no binary drivers are to be installed
+    if [ "${xmodule}" != "nvidia" -o "${xmodule}" != "fglrx" ]; then
+      if [ -e /usr/lib/libGL.so.1.2 ]; then
+       ln -sf /usr/lib/libGL.so.1.2 /var/X11R6/lib/libGL.so
+       ln -sf /usr/lib/libGL.so.1.2 /var/X11R6/lib/libGL.so.1
+      fi
+      if [ -e /usr/lib/libGL_MESA.1.2 ]; then
+       ln -sf /usr/lib/libGL_MESA.so.1.2 /var/X11R6/lib/libGL.so
+       ln -sf /usr/lib/libGL_MESA.so.1.2 /var/X11R6/lib/libGL.so.1
+      fi
+    fi
     set +x
     ######################################################################
     # end proprietary drivers section
