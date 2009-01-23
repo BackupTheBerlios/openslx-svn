@@ -106,7 +106,7 @@ if [ "${vmplversion}" != "vmpl2.5" ]; then
   echo "   * building vmblock module"
   if [ "${vmplversion}" != "vmpl1.0" ]; then
     cd vmblock-only/
-    sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)%" Makefile
+    sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /boot/vmlinuz* -maxdepth 0|sed 's,/boot/vmlinuz-,,g'|sort|tail -n 1)%" Makefile
     make -s
     mv vmblock.ko vmblock.o ../../../../../modules
     cd ..
@@ -114,14 +114,14 @@ if [ "${vmplversion}" != "vmpl2.5" ]; then
 
   echo "   * building vmmon module"
   cd vmmon-only
-  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)%" Makefile
+  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /boot/vmlinuz* -maxdepth 0|sed 's,/boot/vmlinuz-,,g'|sort|tail -n 1)%" Makefile
   make -s
   mv vmmon.ko vmmon.o ../../../../../modules
   cd ..
     
   echo "   * building vmnet module"
   cd vmnet-only
-  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)%" Makefile
+  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /boot/vmlinuz* -maxdepth 0|sed 's,/boot/vmlinuz-,,g'|sort|tail -n 1)%" Makefile
   make -s
   mv vmnet.ko vmnet.o ../../../../../modules
   cd ../../../../../..
@@ -162,17 +162,19 @@ else
   echo "   * copying files..."
   mkdir -p vmroot
   mkdir -p vmroot/lib
-  ##
-  ## /usr/lib/vmware
-  ##
+  mkdir -p vmroot/modules
+
   mv temp/vmware-player/lib vmroot/lib/vmware
+  mv temp/vmware-player/sbin vmroot/
   # the following shouldn't be needed, just to have it 1:1 self-created
-  # copy of /usr/lib/vmware 
+  # copy of /usr/lib/vmware
+  # Todo: clean it out when everything is running
   mv temp/vmware-installer vmroot/lib/vmware/installer
   rm -rf vmroot/lib/vmware/installer/.installer
   rm -rf vmroot/lib/vmware/installer/bootstrap
   mkdir -p vmroot/lib/vmware/setup
   mv temp/vmware-player-setup/vmware-config vmroot/lib/vmware/setup
+  mv temp/vmware-player/doc vmroot/
   # files that differ so far... yes the normal hack we know from v1َ/v2a
   # .../installer/ shouldn't be needed, too
   #vmroot/lib/vmware/installer/lib/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
@@ -187,8 +189,6 @@ else
   ##
   ## left files/dirs
   ##
-  # temp/vmware-player/sbin => /usr/sbin
-  # temp/vmware-player/doc/ => /usr/share/doc/vmware-player/ => EULA
   # temp/vmware-player/bin => /usr/bin
   # temp/vmware-player/files/index.theme ... hopefully not needed,
   # temp/vmware-player/share => /usr/share ... icons 
@@ -207,76 +207,98 @@ else
   #                 dhcpd.conf, hopefully not needed
   #   vmnet(1|8) => we know it from v1/v2
 
+  echo "   * fixing file permission"
+  chmod 04755 vmroot/lib/vmware/bin/vmware-vmx 
+  chmod 04755 vmroot/lib/vmware/bin/vmware-debug
+  chmod 04755 vmroot/lib/vmware/bin/vmware-stats
 
-#  echo "   * fixing file permission"
-#  chmod 04755 vmroot/lib/vmware/bin/vmware-vmx 
-#
-#  # I don't want to understand what vmware is doing, but without this
-#  # step we need to have LD_LIBRARY_PATH with 53 entrys. welcome to
-#  # library hell
-#  echo "   * fixing librarys..."
-#  cd vmroot/lib/vmware/lib
-#  mkdir test
-#  mv lib* test
-#  mv test/lib*/* .
-#  rm -rf test
-#  cd ../../../..
-#
-#  echo "   * fixing gdk and pango config files"
-#  sed -i \
-#    "s,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf," \
-#    vmroot/lib/vmware/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
-#  sed -i \
-#    "s,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf," \
-#    vmroot/lib/vmware/libconf/etc/gtk-2.0/gtk.immodules
-#  sed -i \
-#    "s,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf," \
-#    vmroot/lib/vmware/libconf/etc/pango/pango.modules
-#  sed -i \
-#    "s,/build/mts/.*/vmui/../libdir/libconf,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf," \
-#    vmroot/lib/vmware/libconf/etc/pango/pangorc
-#  sed -i \
-#    "s,/etc/pango/pango/,/etc/pango/," \
-#    vmroot/lib/vmware/libconf/etc/pango/pangorc
-#
-#  echo "   * creating /etc/vmware"
-#  mkdir -p /etc/vmware
-#
-#  echo "   * unpacking kernel modules"
-#  cd vmroot/lib/vmware/modules/source
-#  tar xf vmnet.tar
-#  tar xf vmmon.tar
-#  if [ "${vmplversion}" != "vmpl1.0" ]; then
-#    tar xf vmblock.tar
-#  fi
-#
-#  echo "   * building vmblock module"
-#  if [ "${vmplversion}" != "vmpl1.0" ]; then
-#    cd vmblock-only/
-#    sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)%" Makefile
-#    make -s
-#    mv vmblock.ko vmblock.o ../../../../../modules
-#    cd ..
-#  fi
-#
-#  echo "   * building vmmon module"
-#  cd vmmon-only
-#  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)%" Makefile
-#  make -s
-#  mv vmmon.ko vmmon.o ../../../../../modules
-#  cd ..
-#    
-#  echo "   * building vmnet module"
-#  cd vmnet-only
-#  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)%" Makefile
-#  make -s
-#  mv vmnet.ko vmnet.o ../../../../../modules
-#  cd ../../../../../..
-#        
-#  echo "   * setting up EULA"
-#  mv vmroot/doc/EULA vmroot/lib/vmware/share/EULA.txt
-#
-#  echo "   * finishing installation"
+  # I don't want to understand what vmware is doing, but without this
+  # step we need to have LD_LIBRARY_PATH with 53 entrys. welcome to
+  # library hell
+  # if this fact is still valid for 2.5 is unclear, but lets do it
+  echo "   * fixing librarys..."
+  cd vmroot/lib/vmware/lib
+  mkdir test
+  mv lib* test
+  mv test/lib*/* .
+  rm -rf test
+  cd ../../../..
 
+  echo "   * fixing gdk and pango config files"
+  sed -i \
+    "s,@@LIBCONF_DIR@@,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf," \
+    vmroot/lib/vmware/libconf/etc/gtk-2.0/gdk-pixbuf.loaders
+  sed -i \
+    "s,@@LIBCONF_DIR@@,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf," \
+    vmroot/lib/vmware/libconf/etc/gtk-2.0/gtk.immodules
+  sed -i \
+    "s,@@LIBCONF_DIR@@,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf," \
+    vmroot/lib/vmware/libconf/etc/pango/pango.modules
+  sed -i \
+    "s,@@LIBCONF_DIR@@,/opt/openslx/plugin-repo/vmware/${vmplversion}/vmroot/lib/vmware/libconf," \
+    vmroot/lib/vmware/libconf/etc/pango/pangorc
+  sed -i \
+    "s,/etc/pango/pango/,/etc/pango/," \
+    vmroot/lib/vmware/libconf/etc/pango/pangorc
+
+  echo "   * creating /etc/vmware"
+  mkdir -p /etc/vmware
+
+  echo "   * unpacking kernel modules"
+  cd vmroot/lib/vmware/modules/source
+  tar xf vmnet.tar
+  tar xf vmmon.tar
+  tar xf vmblock.tar
+  tar xf vmci.tar
+  tar xf vmppuser.tar
+  tar xf vsock.tar
+
+  echo "   * building vmblock module"
+  cd vmblock-only/
+  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /boot/vmlinuz* -maxdepth 0|sed 's,/boot/vmlinuz-,,g'|sort|tail -n 1)%" Makefile
+  make -s
+  mv vmblock.ko vmblock.o ../../../../../modules
+  cd ..
+
+  echo "   * building vmmon module"
+  cd vmmon-only
+  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /boot/vmlinuz* -maxdepth 0|sed 's,/boot/vmlinuz-,,g'|sort|tail -n 1)%" Makefile
+  make -s
+  mv vmmon.ko vmmon.o ../../../../../modules
+  cd ..
+    
+  echo "   * building vmnet module"
+  cd vmnet-only
+  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /boot/vmlinuz* -maxdepth 0|sed 's,/boot/vmlinuz-,,g'|sort|tail -n 1)%" Makefile
+  make -s
+  mv vmnet.ko vmnet.o ../../../../../modules
+  cd ..
+        
+  echo "   * building vmci module"
+  cd vmci-only
+  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /boot/vmlinuz* -maxdepth 0|sed 's,/boot/vmlinuz-,,g'|sort|tail -n 1)%" Makefile
+  make -s
+  mv vmci.ko vmci.o ../../../../../modules
+  cd ..
+
+  # This module is optional and compilation can become painful
+  #echo "   * building vmppuser module"
+  #cd vmppuser-only
+  #sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /boot/vmlinuz* -maxdepth 0|sed 's,/boot/vmlinuz-,,g'|sort|tail -n 1)%" Makefile
+  #make -s
+  #mv vmppuser.ko vmppuser.o ../../../../../modules
+  #cd ..
+
+  echo "   * building vmsock module"
+  cd vsock-only
+  sed -i "s%^VM_UNAME = .*%VM_UNAME = $(find /boot/vmlinuz* -maxdepth 0|sed 's,/boot/vmlinuz-,,g'|sort|tail -n 1)%" Makefile
+  make -s
+  mv vsock.ko vsock.o ../../../../../modules
+  cd ../../../../../..
+
+  echo "   * setting up EULA"
+  mv vmroot/doc/EULA vmroot/lib/vmware/share/EULA.txt
+
+  echo "   * finishing installation"
 
 fi
