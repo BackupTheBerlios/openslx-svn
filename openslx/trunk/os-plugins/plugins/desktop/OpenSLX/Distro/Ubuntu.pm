@@ -47,10 +47,11 @@ sub setupGDMScript
     
     $script .= unshiftHereDoc(<<'    End-of-Here');
         rllinker gdm 1 1
-        echo '/usr/sbin/gdm' > /mnt/etc/X11/default-display-manager
+        echo '/usr/sbin/gdm' >/mnt/etc/X11/default-display-manager
         chroot /mnt update-alternatives --set x-window-manager /usr/bin/metacity
         chroot /mnt update-alternatives --set x-session-manager \
           /usr/bin/gnome-session
+        testmkd /mnt/var/lib/gdm root:gdm 1770
     End-of-Here
 
     return $script;

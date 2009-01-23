@@ -36,6 +36,7 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     else
       testmkd /mnt/etc/vmware
     fi
+
     # write the /etc/vmware/slxvmconfig file
     # check for the several variables and write the several files:
     #  dhcpd.conf for vmnet* interfaces
