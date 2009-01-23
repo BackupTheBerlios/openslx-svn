@@ -1,5 +1,7 @@
 # configure Xen bridge xenbr0
-modprobe ${MODPRV} netloop
+# checkme/fixme: parts of the variables might be missing because of the new
+# inithook-wrapper, see ticket #259
+modprobe netloop
 local ipls
 local vifnum="0"
 local bridge="xenbr${vifnum}"
