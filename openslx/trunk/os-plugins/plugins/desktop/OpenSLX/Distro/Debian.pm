@@ -58,15 +58,7 @@ sub setupKDMScript
 
 sub setupKDEHOME
 {
-    my $self     = shift;
-    my $path     = "/etc/profile";
-
-    my $script = unshiftHereDoc(<<'    End-of-Here');
-        export KDEHOME=".kde-$(kde-config -v | grep KDE | \
-            awk {'print $2'})-debian"
-    End-of-Here
-
-    appendFile($path, $script);
+    print "Info: KDEHOME isn't set for Debian at this point.\n";
 
     return;
 }

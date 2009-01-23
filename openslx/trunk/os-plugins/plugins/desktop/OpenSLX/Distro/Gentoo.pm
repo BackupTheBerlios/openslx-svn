@@ -29,15 +29,7 @@ use OpenSLX::Basics;
 
 sub setupKDEHOME
 {
-    my $self     = shift;
-    my $path     = "/etc/profile.d/kde.sh";
-
-    my $script = unshiftHereDoc(<<'    End-of-Here');
-        export KDEHOME=".kde-$(kde-config -v | grep KDE | \
-            awk {'print $2'})-gentoo"
-    End-of-Here
-
-    appendFile($path, $script);
+    print "Info: KDEHOME isn't set for Gentoo at this point.\n";
 
     return;
 }
