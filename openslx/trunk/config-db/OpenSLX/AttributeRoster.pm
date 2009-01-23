@@ -417,6 +417,34 @@ sub getAttrInfo
 	return \%AttributeInfo;
 }
 
+=item C<getStage3Attrs()>
+
+Returns the stage3 attribute names (which apply to systems or clients).
+
+=over
+
+=item Return Value
+
+An array of attribute names.
+
+=back
+
+=cut
+
+sub getStage3Attrs
+{
+	my $class = shift;
+
+	$class->_init() if !%AttributeInfo;
+
+	return 
+		grep { 
+			$AttributeInfo{$_}->{applies_to_systems} 
+			|| $AttributeInfo{$_}->{applies_to_client} 
+		}
+		keys %AttributeInfo
+}
+
 =item C<getSystemAttrs()>
 
 Returns the attribute names that apply to systems.
