@@ -201,10 +201,10 @@ supported."; \
     $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates/; \
   tar --exclude=.svn -cp -C installer/default_files tftpboot | \
     tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
+  cp -a tools/hwinfo/{bin,lib}/*h* \
+    $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools; \
   cp -pP tools/busybox{,.x86_64,.i586} \
     $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox/; \
-  cp -pP tools/{ddcprobe,915resolution}{,.i586} \
-    $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools; \
   cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
   tar --exclude=.svn -cp -C initramfs tpm | \
     tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
