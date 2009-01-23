@@ -7,8 +7,8 @@
 #
 
 
-if [ -f /opt/openslx/plugin-repo/vmchooser/stage3.conf ]; then
-  . /opt/openslx/plugin-repo/vmchooser/stage3.conf
+if [ -f /etc/opt/openslx/vmchooser-stage3.conf ]; then
+  . /etc/opt/openslx/vmchooser-stage3.conf
 fi
 
 if [ -n ${env} ]; then

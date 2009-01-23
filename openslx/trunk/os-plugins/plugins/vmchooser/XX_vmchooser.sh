@@ -22,7 +22,8 @@ if [ -e $CONFFILE ]; then
     testmkd /mnt/etc/X11/sessions
     cp /mnt/opt/openslx/plugin-repo/vmchooser/default.desktop \
       /mnt/etc/X11/sessions/
-    cp $CONFFILE /mnt/opt/openslx/plugin-repo/vmchooser/stage3.conf
+    testmkd /mnt/etc/opt/openslx
+    cp $CONFFILE /mnt/etc/opt/openslx/vmchooser-stage3.conf
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmchooser' os-plugin ..."
   fi
 fi
