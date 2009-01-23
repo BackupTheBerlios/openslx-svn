@@ -134,19 +134,18 @@ supported."; \
 		exit 1; \
 	fi; \
 	echo "Installing OpenSLX project files"; \
-	mkdir -p $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH) \
+	mkdir -p $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/themes \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin \
+        -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/boot-env \
+        -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox \
+        -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs \
+        -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/preboot \
+        -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates \
-	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/preboot \
-	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/tpm \
-	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs \
-	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox \
-	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs \
-              -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools \
+        -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools \
 	      -p $(SLX_BUILD_PATH)$(SLX_PRIVATE_PATH)/config/default/initramfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_PRIVATE_PATH)/config/default/rootfs \
-	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/themes \
 	      -p $(SLX_BUILD_PATH)${USR_BIN_PATH};
 
 	@   # copy license
@@ -185,29 +184,30 @@ supported."; \
 	@ln -sf $(SLX_BASE_PATH)/bin/slx* $(SLX_BUILD_PATH)$(USR_BIN_PATH)/; \
 
 	@   # copy shareable data:
-	@cd initramfs/preboot;  tar --exclude=.svn -cp * | \
-	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/preboot; \
-	cd ../initrd-stuff;  tar --exclude=.svn -cp * | \
-	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs; cd ../..; \
+	@tar --exclude=.svn -cp -C initramfs preboot | \
+	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
+	tar --exclude=.svn -cp -C initramfs initrd-stuff/ | \
+	  tar -xp --strip-components 1 \
+	      -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs; \
 	tar --exclude=.svn -cp -C initramfs distro-specs | \
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
-	cp -p config-db/PXE-template.example \
-	  $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/; \
-	cp -a installer/default_files/machine-setup.default \
-	  $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates/; \
-	cp -a installer/default_files/hwdata/{pcitable.local,Cards.local} \
-	  $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates/; \
-	tar --exclude=.svn -cp -C installer/default_files tftpboot | \
-	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
-	cd theming; tar --exclude=.svn -cp * | \
-	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/themes; cd ..; \
-	cp -pP tools/busybox{,.x86_64,.i586,.uclib.i586} \
-	  $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox/; \
-        cp -pP tools/{ddcprobe,915resolution}{,.x86_64,.i586} \
-          $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools; \
-	cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
-        cd initramfs/tpm; tar --exclude=.svn -cp * | \
-	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/tpm/; \
+  tar --exclude=.svn --exclude *.example -cp -C boot-env pxe | \
+    tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/boot-env; \
+  cp -p boot-env/pxe/menu-template.example \
+    $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/; \
+  cp -a installer/default_files/machine-setup.default \
+    $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates/; \
+  cp -a installer/default_files/hwdata/{pcitable.local,Cards.local} \
+    $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates/; \
+  tar --exclude=.svn -cp -C installer/default_files tftpboot | \
+    tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
+  cp -pP tools/busybox{,.x86_64,.i586,.uclib.i586} \
+    $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox/; \
+  cp -pP tools/{ddcprobe,915resolution}{,.x86_64,.i586} \
+    $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools; \
+  cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
+  tar --exclude=.svn -cp -C initramfs tpm | \
+    tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
 
 	@   # create default config folder hierarchy:
 	@perl -Ilib -e 'use OpenSLX::ConfigFolder; createConfigFolderForDefaultSystem();'
