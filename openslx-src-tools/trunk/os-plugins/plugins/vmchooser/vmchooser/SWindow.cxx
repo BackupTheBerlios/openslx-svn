@@ -157,7 +157,7 @@ char** SWindow::get_symbol(DataEntry* dat) {
     	return kde_32_xpm;
     }
     if(dat->short_description.find("GNOME")!= string::npos) {
-    	return gnome_32_xpm;
+      return gnome_32_xpm;
     }
     if(dat->short_description.find("Xfce")!= string::npos) {
       return xfce_32_xpm;
