@@ -2,6 +2,7 @@
 #include "inc/SWindow.h"
 
 #include <iostream>
+#include <map>
 
 #include <img/gnome_32.xpm>
 #include <img/kde_32.xpm>
@@ -111,16 +112,20 @@ void SWindow::set_lin_entries(DataEntry** ent, char* slxgroup)
 {
   this->lin_ent = ent;
   lin_entgroup = (ItemGroup*) sel.add_group("LINUX DESKTOP", &sel);
-
+  map<string, DataEntry*> mapEntry;
   for (int i=0; ent[i] != NULL; i++)
-    {
-      if( ent[i]->pools.empty() || ent[i]->pools.find(slxgroup) != string::npos) {
-        Item* w= (Item*)sel.add_leaf(ent[i]->short_description.c_str() , lin_entgroup, (void*)ent[i] );
+  {
+    mapEntry.insert(make_pair(ent[i]->short_description, ent[i]));
+  }
+  map<string, DataEntry*>::iterator it= mapEntry.begin();
+  for(;it!=mapEntry.end(); it++) {
+     if( it->second->pools.empty() || it->second->pools.find(slxgroup) != string::npos) {
+        Item* w= (Item*)sel.add_leaf(it->second->short_description.c_str() , lin_entgroup, (void*)it->second );
         
-        xpmImage* xpm = new xpmImage(get_symbol(ent[i]));
+        xpmImage* xpm = new xpmImage(get_symbol(it->second));
         ((Widget*) w)->image(xpm);
-        w->tooltip(ent[i]->description.c_str());
-        w->callback(&runImage, (void*)ent[i]);
+        w->tooltip(it->second->description.c_str());
+        w->callback(&runImage, (void*)it->second);
       }
     }
   lin_entgroup->end();
