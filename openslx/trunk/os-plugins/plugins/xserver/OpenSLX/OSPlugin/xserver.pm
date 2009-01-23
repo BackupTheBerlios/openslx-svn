@@ -92,6 +92,18 @@ sub getAttrInfo
             content_descr => '0 ignore ddcinfo, 1 use ddcinfo if available',
             default => '0',
         },
+        'xserver::usexrandr' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+            should the 'xserver'-plugin use the "xrandr" extension of Xorg to
+            make use of multi-head scenarios and dynamically added displays
+            (not implemented yet)
+            End-of-Here
+            content_regex => qr{^(0|1)$},
+            content_descr => '1 xrandr extension, 0 switch off',
+            default => '1',
+        },
 
         # plugin specific attributes start here ...
 
