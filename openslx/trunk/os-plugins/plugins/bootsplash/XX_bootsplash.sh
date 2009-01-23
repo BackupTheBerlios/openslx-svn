@@ -27,8 +27,8 @@ if [ -e /initramfs/plugin-conf/bootsplash.conf ]; then
         echo -e "\t/var/lib/openslx/bin/splashy_update exit 2>/dev/null \
           \n\ttype killall >/dev/null 2>&1 && killall -9 splashy \
           \n\trm -f /var/lib/openslx/bin/splashy_update 2>/dev/null \
-          \n\trm -f /etc/${D_INITDIR}/splashy.stop 2>/dev/null" \
-            >>/mnt/etc/${D_INITDIR}/splashy.stop
+          \n\trm -f /etc/init.d/splashy.stop 2>/dev/null" \
+            >>/mnt/etc/init.d/splashy.stop
       d_mkrlscript close splashy.stop ""
     fi
   fi
