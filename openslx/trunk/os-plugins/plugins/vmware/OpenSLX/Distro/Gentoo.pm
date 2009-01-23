@@ -160,7 +160,7 @@ sub fillRunlevelScript
               vmware-tray vmnet-dhcpd 2>/dev/null
             # wait for shutting down of interfaces. vmnet needs kinda
             # long
-            sleep 5
+            sleep 1
             unload_modules
             eend $?
         }
