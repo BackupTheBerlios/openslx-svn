@@ -10,6 +10,27 @@ MODULES_FOLDER="/opt/openslx/plugin-repo/xserver/modules"
 
 #TODO: check if we still have .../xserver/nvidia folder
 
+
+
+
+cd ${PLUGIN_PATH}
+
+# Ubuntu gfx-install.sh skript
+if [ "1" -eq "$(lsb_release -i | grep 'Ubuntu' | wc -l)" ]; then
+  # we have Ubuntu - run ubuntu-gfx-install
+  echo "* Using Ubuntu packages to install modules and libs"
+  ./ubuntu-gfx-install.sh nvidia
+  exit
+fi
+# End ubuntu gfx-install.sh
+
+
+
+
+
+
+
+
 mkdir -p ${TMP_FOLDER} ${MODULES_FOLDER}
 cd ${PKG_FOLDER}
 FILE=$(ls NVIDIA-Linux-*|sort|tail -n 1)

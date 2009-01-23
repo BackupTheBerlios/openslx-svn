@@ -2,6 +2,21 @@
 
 cd /opt/openslx/plugin-repo/xserver
 
+
+
+# Ubuntu gfx-install.sh skript
+if [ "1" -eq "$(lsb_release -i | grep 'Ubuntu' | wc -l)" ]; then
+  # we have Ubuntu - run ubuntu-gfx-install
+  echo "* Using Ubuntu packages to install modules and libs"
+  ./ubuntu-gfx-install.sh ati
+  exit
+fi
+# End ubuntu gfx-install.sh
+
+
+
+
+
 # check if its already installed
 if [ -d ati ]; then
   echo "   * ati driver seems to be installed"
