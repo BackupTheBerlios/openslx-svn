@@ -55,6 +55,7 @@ case ${TARGET} in
     ld_static -d -r -o ${PLUGIN_FOLDER}/ati/modules/fglrx.ko fglrx/*
 
     #TODO: Bastian: do we really need this part in stage1?
+    # Volker: I think we could just copy it (is a unique file)
     if [ -f /usr/lib/dri/fglrx_dri.so ]; then
       mv /usr/lib/dri/fglrx_dri.so /usr/lib/dri/fglrx_dri.so.slx
     else
@@ -66,7 +67,10 @@ case ${TARGET} in
 
     # cleanup
     cd ${PLUGIN_FOLDER}/ati
-    rm -rf ./etc
+
+    #@Volker: We need /etc-files - there is a database
+    #         file for the fglrx-driver in stage3 !!!
+    #rm -rf ./etc
     #TODO: check for more cleanups when the main part works!
 
   ;;
