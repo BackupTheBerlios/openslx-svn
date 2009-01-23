@@ -91,7 +91,8 @@ void SWindow::set_lin_entries(DataEntry** ent, char* slxgroup)
 void SWindow::set_entries(DataEntry** ent, char* slxgroup)
 {
   this->ent = ent;
-
+  sort_entries();
+  
   entgroup =  (ItemGroup*)sel.add_group("VMWARE SESSIONS", &sel);
   for (int i=0; ent[i] != NULL; i++)
     {
@@ -143,20 +144,43 @@ void SWindow::unfold_entries() {
 char** SWindow::get_symbol(DataEntry* dat) {
   if(dat->imgtype == VMWARE) {
     if(dat->locked) {
-    	return xp_locked_xpm;
+    	return xp_locked;
     }
     else {
-    	return xp_xpm;
+    	return xp;
     }
   }
   if(dat->imgtype == LINUX) {
     if(dat->short_description.find("KDE")!= string::npos) {
-    	return kde_xpm;
+    	return kde;
     }
     if(dat->short_description.find("GNOME")!= string::npos) {
-    	return gnome_xpm;
+    	return gnome;
     }
     return linux_xpm;
   }
-  return xp_xpm;
+  return xp;
+}
+
+
+/******************************************************
+ * Sort entries to consider priorities
+ ******************************************************/
+void SWindow::sort_entries() {
+  if(this->ent == NULL ) {
+    return;
+  }
+  DataEntry* ptr;
+  
+  // worst case sort - but it is enough for this few entries
+  for(int i=0; ent[i] != '\0'; i++) {
+    for(int j=0; ent[j] != '\0'; j++) {
+      if(ent[j]->priority > ent[i]->priority && j>i) {
+        // swap element i with j (as i is alway larger j)
+        ptr = ent[i];
+        ent[i] = ent[j];
+        ent[j] = ptr;
+      }
+    }
+  }
 }

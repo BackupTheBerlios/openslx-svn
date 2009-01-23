@@ -108,6 +108,8 @@ public:
 
   void free_entries();
   void unfold_entries();
+  
+  void sort_entries();
 
 };
 
