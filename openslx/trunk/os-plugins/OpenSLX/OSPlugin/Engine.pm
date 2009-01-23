@@ -418,7 +418,7 @@ sub installPackages
     my $metaPackager = $self->_osSetupEngine()->metaPackager();
     return if !$metaPackager;
 
-    return $metaPackager->installPackages($packages);
+    return $metaPackager->installPackages($packages, 1);
 }
 
 =item removePackages($packages)
