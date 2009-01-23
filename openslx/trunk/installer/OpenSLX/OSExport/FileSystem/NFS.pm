@@ -52,7 +52,41 @@ sub exportVendorOS
     my $source = shift;
 
     my $target = $self->{'export-path'};
+    
+    # For development purposes, it is very desirable to be able to take a 
+    # shortcut that avoids doing the actual copying of the folders (as that
+    # takes a considerable amount of time).
+    # In order to support this, we explicitly check if the OpenSLX NFS export
+    # root folder (/srv/openslx/export/nfs) is a bind-mount of the OpenSLX 
+    # stage1 folder (/var/opt/openslx/stage1).
+    # If that is the case, we print a notice and skip the rsync step (which 
+    # wouldn't work anyway, as source and target folder are the same).
+    my $stage1Root = dirname($source);
+    my $nfsRoot    = dirname($target);
+    chomp(my $canonicalStage1Root = qx{readlink -f $stage1Root} || $stage1Root);
+    chomp(my $canonicalNFSRoot    = qx{readlink -f $nfsRoot}    || $nfsRoot);
+    my @mounts = slurpFile('/etc/mtab');
+    for my $mount (@mounts) {
+        if ($mount =~ m{
+            ^
+            $canonicalStage1Root    # mount source
+            \s+
+            $canonicalNFSRoot       # mount target
+            \s+
+            none                    # filesystem for bind mounts is 'none'
+            \s+
+            \S*\bbind\b\S*          # look for bind mounts only
+        }gmsx) {
+            warn _tr(
+                "%s is a bind-mount to vendor-OS root - rsync step is skipped!",
+                $target
+            );
+            return;
+        }
+    }
+    
     $self->_copyViaRsync($source, $target);
+
     return;
 }
 
