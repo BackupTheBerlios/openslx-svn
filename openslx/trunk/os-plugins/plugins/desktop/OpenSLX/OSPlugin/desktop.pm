@@ -111,6 +111,29 @@ sub getAttrInfo
             content_descr => 'one of the entries in "supported_themes"',
             default => 'openslx',
         },
+        'desktop::allow-shutdown' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                allow shutdown of the SLX client via gdm/kdm. "none" disables
+                this functionality, "root" allows only the sysadmin and
+                "users" means free4all.
+            End-of-Here
+            content_regex => qr{^(none|root|users)$},
+            content_descr => 'possible entries "none", "root" or "users"',
+            default => 'users',
+        },
+        'desktop::allow-rootlogin' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                allow the system administrator to logon to the graphical
+                user interface (0 disallow, 1 allow).
+            End-of-Here
+            content_descr => '1 means allowed - 0 means forbidden',
+            content_regex => qr{^(0|1)$},
+            default => 'users',
+        },
 
         # stage1
         'desktop::gdm' => {
