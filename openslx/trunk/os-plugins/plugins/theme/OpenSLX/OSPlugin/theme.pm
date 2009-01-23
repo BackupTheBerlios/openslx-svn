@@ -42,9 +42,9 @@ sub getInfo
 
     return {
         description => unshiftHereDoc(<<'        End-of-Here'),
-            Applies a graphical theme to the bootsplash and the displaymanager.
+            Applies a graphical theme to the displaymanager.
         End-of-Here
-        precedence => 30,
+        precedence => 40,
     };
 }
 
@@ -62,17 +62,6 @@ sub getAttrInfo
             content_regex => qr{^(0|1)$},
             content_descr => '1 means active - 0 means inactive',
             default => '1',
-        },
-
-        'theme::splash' => {
-            applies_to_systems => 1,
-            applies_to_clients => 0,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                name of the theme to apply to bootsplash (unset for no theme)
-            End-of-Here
-            content_regex => undef,
-            content_descr => undef,
-            default => 'openslx',
         },
         'theme::displaymanager' => {
             applies_to_systems => 1,
@@ -97,41 +86,6 @@ sub getAttrInfo
     };
 }
 
-sub suggestAdditionalKernelParams
-{
-    my $self                = shift;
-    my $makeInitRamFSEngine = shift;
-
-    my @suggestedParams;
-    
-    # add vga=0x317 unless explicit vga-mode is already set
-    if (!$makeInitRamFSEngine->haveKernelParam(qr{\bvga=})) {
-        push @suggestedParams, 'vga=0x317';
-    }
-
-    # add quiet, if not already set
-    if (!$makeInitRamFSEngine->haveKernelParam('quiet')) {
-        push @suggestedParams, 'quiet';
-    }
-
-    return @suggestedParams;
-}
-
-sub suggestAdditionalKernelModules
-{
-    my $self                = shift;
-    my $makeInitRamFSEngine = shift;
-
-    my @suggestedModules;
-    
-    # Ubuntu needs vesafb and fbcon (which drags along some others)
-    if ($makeInitRamFSEngine->{'distro-name'} =~ m{^ubuntu}i) {
-        push @suggestedModules, qw( vesafb fbcon )
-    }
-    
-    return @suggestedModules;
-}
-
 sub copyRequiredFilesIntoInitramfs
 {
     my $self                = shift;
@@ -140,25 +94,6 @@ sub copyRequiredFilesIntoInitramfs
     my $makeInitRamFSEngine = shift;
     
     my $themeDir = "$openslxConfig{'base-path'}/share/themes";
-    my $splashTheme = $attrs->{'theme::splash'} || '';
-    if ($splashTheme) {
-        my $splashThemeDir = "$themeDir/$splashTheme/bootsplash";
-        if (-d $splashThemeDir) {
-            my $splashyPath = "$openslxConfig{'base-path'}/share/splashy";
-            $makeInitRamFSEngine->addCMD(
-                "cp -p $splashyPath/* $targetPath/bin/"
-            );
-            $makeInitRamFSEngine->addCMD(
-                "mkdir -p $targetPath/etc/splashy"
-            );
-            $makeInitRamFSEngine->addCMD(
-                "cp -a $splashThemeDir/* $targetPath/etc/splashy/"
-            );
-        }
-    }
-    else {
-        $splashTheme = '<none>';
-    }
 
     my $displayManagerTheme = $attrs->{'theme::displaymanager'} || '';
     if ($displayManagerTheme) {
@@ -180,9 +115,7 @@ sub copyRequiredFilesIntoInitramfs
     vlog(
         1, 
         _tr(
-            "theme-plugin: bootsplash=%s displaymanager=%s", 
-            $splashTheme, $displayManagerTheme
-        )
+            "theme-plugin: displaymanager=%s", $displayManagerTheme)
     );
 
     return;
