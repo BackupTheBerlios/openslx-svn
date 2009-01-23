@@ -1,7 +1,14 @@
 #!/bin/sh
 
-vmplversion="vmpl1.0"
-url=http://download3.vmware.com/software/vmplayer/VMware-player-2.0.4-93057.i386.tar.gz
+if [ $1 = "vmpl1.0" ]; then
+    vmplversion="vmpl1.0"
+    url=http://download3.vmware.com/software/vmplayer/VMware-player-2.0.4-93057.i386.tar.gz
+    tgzfile=VMware-player-2.0.4-93057.i386.tar.gz
+else if [ $1 = "vmpl2.0" ]; then
+    vmplversion="vmpl2.0"
+    url=http://download3.vmware.com/software/vmplayer/VMware-player-2.0.4-93057.i386.tar.gz
+    tgzfile=VMware-player-2.0.4-93057.i386.tar.gz
+fi
 
 echo "This script will download and install vmplayer from http://www.vmware.com/"
 echo "Please go to http://vmware.com/download/player/player_reg.html"
@@ -23,8 +30,8 @@ if [ "${REPLY}" == "YES" ]; then
     cd /opt/openslx/plugin-repo/vmware/${vmplversion}
     wget -c ${url}
 
-    echo "   * Unpacking vmplayer"
-    tar xfz VMware-player-2.0.4-93057.i386.tar.gz
+    echo "   * Unpacking vmplayer $vmpl{version}"
+    tar xfz ${tgzfile}
 
     # reduce some errors
     echo "   * deleting old files if available"
@@ -32,7 +39,6 @@ if [ "${REPLY}" == "YES" ]; then
 
     echo "   * copying files..."
     mkdir vmroot
-    mkdir -p vmroot/modules
     mkdir -p vmroot/lib
     mv vmware-player-distrib/lib vmroot/lib/vmware
     mv vmware-player-distrib/bin vmroot/
@@ -49,9 +55,6 @@ if [ "${REPLY}" == "YES" ]; then
     mv lib* test
     mv test/lib*/* .
     cd ../../../..
-
-    echo "   * Fixing file permission"
-    chmod 04555 vmroot/lib/vmware/bin/vmware-vmx
 
     echo "   * fixing gdk and pango config files"
     sed -i \
@@ -88,24 +91,18 @@ if [ "${REPLY}" == "YES" ]; then
     # TODO: error check if build environment isn't installed...
     sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
     make -s
-    cp vmblock.ko ../../../../../../modules
-    cp vmblock.o ../../../../../../modules
     cd ..
 
     echo "   * building vmmon module"
     cd vmmon-only
     sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
     make -s
-    cp vmmon.ko ../../../../../../modules
-    cp vmmon.o ../../../../../../modules
     cd ..
     
     echo "   * building vmnet module"
     cd vmnet-only
     sed -i "s%^VM_UNAME = .*%VM_UNAME = $(ls /boot/vmlinuz*|grep -v -e "^/boot/vmlinuz$$"|sed 's,/boot/vmlinuz-,,'|sort|tail -n 1)%" Makefile
     make -s
-    cp vmnet.ko ../../../../../../modules
-    cp vmnet.o ../../../../../../modules
     cd ../../../../../..
         
     echo "   * setting up EULA"
