@@ -273,7 +273,30 @@ sub installationPhase
         chmod 0755, "$self->{'pluginRepositoryPath'}/$vmfile";
 
         # TODO: check how we can put the vmversion information to stage3.
-        #       more or less only needed for local installation
+        #       more or less only needed for local installation but can
+	#       also be used for quickswitch of vmware version in stage5
+	#       Perhaps we write all installed player versions in this file
+	#       which get sourced by XX_vmware.sh
+
+	#       Conflict without rewrite of this code: local installed
+	#           vmware and vmplayer
+	#       Solution:  substitude  "foreach my $type (@types) {"
+	#                  with _checkInstalled(local_vmplayer);
+	#                       _checkInstalled(local_vmwarews);
+	#                       _checkInstalled(vmplayer1);
+	#                       _checkInstalled(vmplayer2);
+	#                  and so on
+	#                  while _checkInstalled pseudocode
+	#               sub _checkInstalled($type, $path) {
+	# 			check_for_version(see above)
+	#			write information of this version to file
+	#		}
+	#		=> results in conflict of local, we just have
+	#		   local defined but would need then a
+	#		   local_ws and local_player which is less userfriendly
+	#	Dirk: see .4.2 suse-10.2-(test|main) system which includes
+	#		vmplayer and vmware ws
+
     }
 
 }

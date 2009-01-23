@@ -87,7 +87,7 @@ stage3 setup" > /mnt/etc/vmware/slxvmconfig
     if [ -n "$vmware_vmnet1" ] ; then
       local vmnet1=${vmware_vmnet1%,*} # x.x.x.x/yy,NAT => 'x.x.x.x/yy'
       local vmnat=${vmware_vmnet1#$vmnet1*} # x.x.x.x/yy,NAT => ',NAT'
-      local vmip=${vmnet1%/*} # x.x.x.x/yy => 'x.x.x.x'
+      local vmip=${vmnet1%/*} # x.x.x.x/yy => 'x.x.x.x'">
       local vmpx=${vmnet1#*/} # x.x.x.x/yy => 'yy'
       local vmsub=$(echo $vmip |sed 's,\(.*\)\..*,\1,') # x.x.x.x => x.x.x
       echo -e "vmnet1=$vmnet1" >> /mnt/etc/vmware/slxvmconfig
@@ -185,9 +185,9 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
           vmbdev=/dev/${vmimgserv}
           waitfor ${vmbdev} 20000
           echo "ext2"     > /etc/filesystems
-		  echo "reiserfs" >> /etc/filesystems
-		  echo "vfat"     >> /etc/filesystems
-		  echo "xfs"      >> /etc/filesystems
+          echo "reiserfs" >> /etc/filesystems
+          echo "vfat"     >> /etc/filesystems
+          echo "xfs"      >> /etc/filesystems
           mount -o ro ${vmbdev} /mnt/var/lib/vmware || error "$scfg_evmlm" nonfatal
           ;;
         *)
@@ -258,9 +258,30 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     #   a) we get get information and start the programm with
     #    /var/X11R6/bin/run-vmware.sh "$imagename" "$name_for_vmwindow" "$ostype_of_vm" "$kind_of_network"
     #   b) we write a wrapper and get the xml-file as attribute
-    # TODO: stage2 or stage3?
-    cp /mnt/opt/openslx/plugin-repo/vmware/runvmware-v2 \
-      /mnt/var/X11R6/bin/run-vmware.sh
+    # A) wait for answer of Bastian
+    if [ "${vmware_kind}" = "local" ]; then
+      # TODO: Pseudocode1 as notes
+      # if [vmwarekind=local]; then
+      #   source /foo/bar/baz/stage1-file-with-local-version-info
+      #   cp "based-on-this-information-runvmware"
+
+      # copy depending run-vmware.sh
+      # where should we do the check if its vmplayer or vmware?
+      # where should we do the check if its v1 or v2
+      # we only have this problem
+      cp /mnt/opt/openslx/plugin-repo/vmware/runvmware-v2 \
+        /mnt/var/X11R6/bin/run-vmware.sh
+      # TODO: Pseudocode2 as notes
+      # if [ not vmware_kind = local but vmplayer-2.0 ]; then
+      #   possibilitys:
+      #   1. copy needed files depending on the /initramfs/.../vmware.conf
+      #   information. this way we also now the version
+      #   2. copy needed files depending on the information like in
+      #   pseudocode1, there we will have then a list of all available
+      #   kinds and version. in the far future we could use this
+      #   informations to do a quickswitch in stage5
+      # fi
+    fi
 
     [ $DEBUGLEVEL -gt 0 ] && echo "  *  done with 'vmware' os-plugin ..."
 
