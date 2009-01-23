@@ -92,6 +92,7 @@ sub fillRunlevelScript
               /dev/vmnet1 vmnet1
             dhcpif="\$dhcpif vmnet1"
             ip addr add \$vmnet1 dev vmnet1
+            ip link set vmnet1 up
             if [ -n "\$vmnet1nat" ] ; then
               # needs refinement interface name for eth0 is known in stage3 already
               echo "1" > /proc/sys/net/ipv4/conf/vmnet1/forwarding 2>/dev/null
@@ -105,12 +106,13 @@ sub fillRunlevelScript
           if [ -n "\$vmnet8" ] ; then
             #test -c /dev/vmnet8 || mknod c 119 8 /dev/vmnet8
             $location/vmnet-netifup -d /var/run/vmnet-netifup-vmnet8.pid \\
-              /dev/vmnet8 vmnet8">
+              /dev/vmnet8 vmnet8
+            ip addr add \$vmnet8 dev vmnet8
+            ip link set vmnet8 up
             # /etc/vmware/vmnet-natd-8.mac simply contains a mac like 00:50:56:F1:30:50
             $location/vmnet-natd -d /var/run/vmnet-natd-8.pid \\
               -m /etc/vmware/vmnet-natd-8.mac -c /etc/vmware/nat.conf
             dhcpif="\$dhcpif vmnet8"
-            ip addr add \$vmnet8 dev vmnet8
           fi
         }
         runvmdhcpd() {
