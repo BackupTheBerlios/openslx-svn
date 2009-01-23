@@ -212,6 +212,7 @@ local target=$1
 local mntpnt=$2
 local fs
 local path
+[ -f /lib/ld-linux.so.2 ] || ln -s /mnt/lib/ld-linux.so.2 /lib/ld-linux.so.2
 for fs in xfs ext2 reiserfs ; do
   if strinfile "$fs" /proc/filesystems || modprobe ${MODPRV} $fs ; then
     unset $found
@@ -248,7 +249,7 @@ for fs in xfs ext2 reiserfs ; do
         fi
       fi
     done
-    [ -z $found ] && break
+    [ -z $found ] && continue
   else break
   fi
 done
