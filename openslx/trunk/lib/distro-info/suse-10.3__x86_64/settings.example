@@ -5,13 +5,13 @@
 
 # use local installation source
 #<repository base>
-#    local-url = /srv/ftp/pub/opensuse/distribution/10.3/repo/oss
+#    local-url = /srv/ftp/pub/opensuse/distribution/10.2/repo/oss
 #</repository>
 #<repository base_non-oss>
-#    local-url = /srv/ftp/pub/opensuse/distribution/10.3/repo/non-oss
+#    local-url = /srv/ftp/pub/opensuse/distribution/10.2/repo/non-oss
 #</repository>
 #<repository base_update>
-#    local-url = /srv/ftp/pub/suse/update/10.3
+#    local-url = /srv/ftp/pub/suse/update/10.2
 #</repository>
 
 # add a new selection:
