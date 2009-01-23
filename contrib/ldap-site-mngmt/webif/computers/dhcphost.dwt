@@ -1,0 +1,78 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	
+  	<tr>
+  		<td align='center' width='17%' style='border-color: black; border-style: solid; border-width: 0 1 0 1;'><h4>{HOSTLINK} Client </a></h4></td>
+  		<td align='center' width='17%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4><code class='font_object'>DHCP / RBS</code></h4></td>
+  		<td align='center' width='17%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{RBSLINK} PXE <!--</a>--></h4></td>
+  		<td align='center' width='17%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{HWLINK} Geo/Hardware </a></h4></td>
+  		<td>&nbsp;</td>
+  	</tr>
+  	<tr>
+  		<td height='20'></td>
+  	</tr>
+  	<!--<tr>
+  		<td colspan='5'><h4>Client <code class='font_object'> {HOSTNAME} </code> - Eintrag in Dienste DHCP, Remote Boot</h4></td>
+  	</tr>-->
+  	
+  	<tr>
+  		<td colspan='5'>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+				<form action='dhcphost_change.php' method='post'>
+			
+			<tr>
+				<td class='tab_d' colspan='4'>
+					<b>Client <code class='font_object'> {HOSTNAME} </code> - Eintrag in Dienste DHCP, Remote Boot</b>
+					<!--<b>Client <code class='font_object'> {HOSTNAME} </code> - Eintrag in Dienste DHCP, Remote Boot</b>-->&nbsp;</td>
+			</tr>
+			
+			<!--
+			<tr valign='top'>
+				<td class='tab_d_ohne' colspan='4'><b>Zentraler DNS Dienst (Nameserver): </b>&nbsp;</td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d' width='30%'>Client DNS Namenseintrag:</td>
+				<td class='tab_d' width='25%'><input type='checkbox' name='dnscont' value=''></td>
+				<td class='tab_d' width='45%'>&nbsp;</td>
+			</tr>
+			-->
+			
+			<tr valign='top'>
+				<td class='tab_d_ohne' colspan='4'><b>Zentraler DHCP Dienst: </b>&nbsp;</td>
+			</tr>
+			<tr valign='top'>
+			
+					{DHCPCONT}
+					
+			</tr>
+			
+			   {HOST_DHCPOPT}
+			   
+			<tr valign='top'>
+   			<td class='tab_d_ohne' colspan='4'><b>Remote Boot Dienst (DHCP/TFTP): </b>&nbsp;</td>
+   		</tr>
+   		
+				{RBS}
+
+		</table></td>
+  	</tr>
+  	
+   
+   <input type='hidden' name='olddhcp' value='{OLDDHCP}'>
+   <input type='hidden' name='oldfixadd' value='{OLDFIXADD}'>
+	<input type='hidden' name='oldrbs' value='{OLDRBS}'>
+	<input type='hidden' name='hostip' value='{IPADDRESS}'>
+   <input type='hidden' name='hostdn' value='{HOSTDN}'>
+   <input type='hidden' name='hostname' value='{HOSTNAME}'>
+	<input type='hidden' name='sbmnr' value='{SBMNR}'>
+  	
+  	<tr>
+		<td colspan='3'>
+			<input type='submit' name='apply' value='anwenden' class='small_loginform_button'></td>
+		<td>&nbsp;</td>
+		<td align='center'><input type='reset' name='apply' value='zur&uuml;cksetzen' class='reset_button'></td>		
+		</form>
+	</tr>
+
+  	
+</table>

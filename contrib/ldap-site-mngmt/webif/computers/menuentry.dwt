@@ -1,0 +1,249 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	<tr>
+  		<td height='20'><h4><a href='pxe.php?dn={PXEDN}&mnr={MNR}&sbmnr={SBMNR}&mcnr={MCNR}' class='headerlink'><< Zur&uuml;ck zu PXE Config &nbsp;{PXECN}</a></h4></td>
+  	</tr>
+  	<tr>
+  		<td height='20'>&nbsp;</td>
+  	</tr>
+  	<tr>
+  		<td colspan='2'><h3>Boot Men&uuml; Eintrag &nbsp;<code class='font_object'> {MECN} </code> </h3></td>
+  	</tr>
+  	<tr>
+  		<td height='20'>&nbsp;</td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+				<form action='menuentry_change.php' method='post'>
+			
+			<tr>
+				<td width='40%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='60%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+			</tr>
+			
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Eindeutiger Name (cn):</b><br>(Teil des dn, ohne Leerzeichen eingeben) &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='mecn' value='{MECN}' size='50' class='medium_form_field'>
+					<input type='hidden' name='oldmecn' value='{MECN}'> &nbsp;
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Label:</b> &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[label]' value='{LABEL}' size='50' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[label]' value='{LABEL}'> &nbsp;
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Generisches Boot Image: </b><br><br>(Angeboten von) &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<h4>{GMECN}</h4> Abteilung: {GMEOU} [Remote Boot Dienst: {GMERBS}]
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Menu Label:</b> &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[menulabel]' value='{MELABEL}' size='50' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[menulabel]' value='{MELABEL}'> &nbsp;
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Menu Default:</b> &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[menudefault]' value='{MEDEF}' size='50' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[menudefault]' value='{MEDEF}'> &nbsp;
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Menu Passwd:</b> &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[menupasswd]' value='{MEPASSWD}' size='50' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[menupasswd]' value='{MEPASSWD}'> &nbsp;
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Menu Hide:</b> &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[menuhide]' value='{MEHIDE}' size='50' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[menuhide]' value='{MEHIDE}'> &nbsp;
+				</td>
+			</tr>
+			<tr height='50'>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Localboot:</b> &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[localboot]' value='{LOCALBOOT}' size='50' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[localboot]' value='{LOCALBOOT}'> &nbsp;
+				</td>
+			</tr>
+	
+		</table></td>
+	</tr>
+	<tr>
+  		<td height='40'></td>
+  	</tr>		
+	<tr>
+  		<td colspan='2'><h4>APPEND Parameter:</h4></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+  	<tr><td>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+			<tr>
+				<td width='20%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Attribut</b></td>
+				<td width='80%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'><b>Wert</b></td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Client Konfiguration via: &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[clientconfvia]' value='{CCV}' size='30' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[clientconfvia]' value='{CCV}'> ( dhcp | file | ldap )
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>vga: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[vga]' value='{VGA}' size='30' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[vga]' value='{VGA}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>splash: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[splash]' value='{SPLASH}' size='30' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[splash]' value='{SPLASH}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>vci: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[vci]' value='{VCI}' size='30' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[vci]' value='{VCI}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>no ldsc: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[noldsc]' value='{NOLDSC}' size='30' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[noldsc]' value='{NOLDSC}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>elevator: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[elevator]' value='{ELEVATOR}' size='30' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[elevator]' value='{ELEVATOR}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>apic: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[apic]' value='{APIC}' size='30' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[apic]' value='{APIC}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Union FS: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[unionfs]' value='{UNIONFS}' size='30' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[unionfs]' value='{UNIONFS}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>cowloop: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[cowloop]' value='{COWLOOP}' size='30' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[cowloop]' value='{COWLOOP}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Debug Level: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[debug]' value='{DEBUG}' size='30' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[debug]' value='{DEBUG}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Men&uuml; Position: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='menpos' value='{MENPOS}' size='2' class='medium_form_field'>
+					<input type='hidden' name='oldmenpos' value='{MENPOS}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Submen&uuml; Verweis: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[submenulink]' value='{SUBMENULINK}' size='50' class='medium_form_field'>
+					<br>
+					Dieses Feld sollte nur bei Verweisen auf Submen&uuml;s den vollst&auml;ndigen Link zu diesen enthalten
+					<br>(d.h. &lt;TFTP-Server-IP&gt;::/&lt;TFTP-PXE-Pfad&gt;/&lt;Timerange&gt;/&lt;PXE-Dateiname&gt;). <br>
+					Bei Textzeilen und Leerzeilen muss hier <b>"self"</b> stehen. <br>
+					Bei normalen Men&uuml;eintr&auml;gen (inklusive Localboot) muss diese Feld <b>leer</b> sein.
+					<input type='hidden' name='oldattribs[submenulink]' value='{SUBMENULINK}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Kernel: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[kernel]' value='{KERNEL}' size='50' class='medium_form_field'>
+					<br>
+					Angabe hier nur sinnvoll bei Leer-, Textzeilen oder Submen&uuml;verweisen, <br> 
+					denn Eingabe wird, wenn der Men&uuml;eintrag auf ein generisches Boot Image verweist (siehe oben) <br>
+					bei der PXE Datei Generierung &uuml;berschrieben.
+					<input type='hidden' name='oldattribs[kernel]' value='{KERNEL}'> &nbsp;
+				</td>
+			</tr>
+			
+			<input type='hidden' name='medn' value='{MEDN}'>
+			<input type='hidden' name='pxedn' value='{PXEDN}'>
+			<input type='hidden' name='timespan' value='{TIMERANGE}'>
+			<input type='hidden' name='mnr' value='{MNR}'>
+			<input type='hidden' name='sbmnr' value='{SBMNR}'>
+			<input type='hidden' name='mcnr' value='{MCNR}'>		
+
+		</table></td>
+  	</tr>
+  	<tr>
+		<td><input type='Submit' name='apply' value='anwenden' class='small_loginform_button'>
+		</form></td>
+	</tr>
+	
+	
+	<tr>
+  		<td height='40'></td>
+  	</tr>
+	
+	<tr>
+  		<td colspan='2'><h4>Boot Men&uuml; Eintrag &nbsp;<code class='font_object'>{MECN}</code>&nbsp; l&ouml;schen:</h4></td>
+  	</tr>
+  	<tr>
+  		<td>
+  		<table cellpadding='7' cellspacing='0' border='0' align='left' width='90%' style='border-width: 0 0 0 0;'>
+  			<form action='delete_confirm.php' method='post'>
+  			
+  			
+  			<tr>
+  				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+  					Das generische Boot Image wird komplett gel&ouml;scht. 
+  			</tr>
+  			
+  			<input type='hidden' name='dn' value='{MEDN}'>
+  			<input type='hidden' name='name' value='{MECN}'>
+			<input type='hidden' name='pxedn' value='{PXEDN}'>
+			<input type='hidden' name='delurl' value='menuentry_delete.php'>
+  			<input type='hidden' name='successurl' value='pxe.php?dn={PXEDN}&mnr={MNR}&sbmnr={SBMNR}&mcnr={MCNR}'>
+  			<input type='hidden' name='backurl' value='menuentry.php?dn={MEDN}&mnr={MNR}&sbmnr={SBMNR}&mcnr={MCNR}'>
+  			
+  			
+  		</table></td>
+  	</tr>
+  	<tr>
+  		<td>
+			<input type='Submit' name='apply' value='l&ouml;schen' class='small_loginform_button'>
+			</form></td>
+	</tr>
+
+  	
+</table>

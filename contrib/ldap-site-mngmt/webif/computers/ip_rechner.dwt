@@ -1,0 +1,45 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	<tr>
+  		<td colspan='2'><h3>IP Adressen und Einbindung in Dienste DHCP, Remote Boot<!--, DNS-->: </h3></td>
+  	</tr>
+  	<tr>
+  		<td height='10' colspan='2'></td>
+  	</tr>
+  	<tr><td colspan='2'>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			<tr>
+				<td width='17%' class='tab_h'><b><a href='ip_rechner.php?sort=hostname' class='headerlink'>Hostname</a></b></td>
+				<td width='21%' class='tab_h'><b><a href='ip_rechner.php?sort=ipaddress' class='headerlink'>IP Adresse</a></b></td>
+				<td width='26%' class='tab_h'><b>DHCP</b></td>
+				<td width='28%' class='tab_h'><b>Remote Boot Service</b></td>
+				<td width='8%' class='tab_h'><!--<b>DNS</b>-->&nbsp;</td>
+			</tr>
+					
+				<form action='ip_rechner_change.php' method='post'>
+			
+				<!-- BEGIN DYNAMIC BLOCK: Hosts -->
+			
+			<tr valign='top'>
+				<td class='tab_d'>{HOSTNAME} &nbsp;</td>
+				<td class='tab_d'><input type='Text' name='newip[]' value='{IP}' size='13' class='medium_form_field'></td>
+				<td class='tab_d'>{DHCPCONT} &nbsp;</td>
+				<td class='tab_d'>{RBSCONT}&nbsp;</td>
+				<td class='tab_d'><!--{DNSCONT}-->&nbsp;</td>
+			</tr>
+				<input type='hidden' name='oldip[]' value='{OLDIP}'>
+				<input type='hidden' name='hostdn[]' value='{HOSTDN}'>
+				<input type='hidden' name='fixadd[]' value='{FIXADD}'>
+				<input type='hidden' name='audn[]' value='{AUDN}'>
+				
+				<!-- END DYNAMIC BLOCK: Hosts -->
+				
+				<input type='hidden' name='dhcpsrv_dn' value='{DHCPSRVDN}'>
+						
+		</table></td>
+	</tr>
+	<tr>
+		<td><input type='Submit' name='apply' value='anwenden' class='small_loginform_button'></td>
+		<td align='center'><input type='reset' name='apply' value='zur&uuml;cksetzen' class='reset_button'></td>		
+		</form>
+	</tr>
+</table> 

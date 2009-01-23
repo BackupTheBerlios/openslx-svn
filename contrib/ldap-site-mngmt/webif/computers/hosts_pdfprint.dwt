@@ -1,0 +1,261 @@
+<script language="JavaScript" type="text/javascript">
+	
+	function chkhost()
+		{
+		if (document.getElementById("hostname").value == 'false')
+		{
+		document.getElementById("hostname").checked = 'checked';
+		document.getElementById("host").style.visibility = 'visible';
+		document.getElementById("hostname").value = 'true';
+		}
+		else {
+		document.getElementById("hostname").checked = '';
+		document.getElementById("host").style.visibility = 'hidden';
+		document.getElementById("hostname").value = 'false';
+		}
+		}
+
+	function chkdomain()
+		{
+			if (document.getElementById("domainname").value == 'false')
+			{
+				document.getElementById("domainname").checked = 'checked';
+				document.getElementById("domain").style.visibility = 'visible';
+				document.getElementById("domainname").value = 'true';
+			}
+			else {
+				document.getElementById("domainname").checked = '';
+				document.getElementById("domain").style.visibility = 'hidden';
+				document.getElementById("domainname").value = 'false';
+			}
+		}
+	
+	function chkip()
+	{
+		if (document.getElementById("ipaddress").value == 'false')
+		{
+			document.getElementById("ipaddress").checked = 'checked';
+			document.getElementById("ip").style.visibility = 'visible';
+			document.getElementById("ipaddress").value = 'true';
+		}
+		else {
+			document.getElementById("ipaddress").checked = '';
+			document.getElementById("ip").style.visibility = 'hidden';
+			document.getElementById("ipaddress").value = 'false';
+		}
+	}
+	function chkmac()
+	{
+		if (document.getElementById("hwaddress").value == 'false')
+		{
+		document.getElementById("hwaddress").checked = 'checked';
+		document.getElementById("mac").style.visibility = 'visible';
+		document.getElementById("hwaddress").value = 'true';
+		}
+		else {
+		document.getElementById("hwaddress").checked = '';
+		document.getElementById("mac").style.visibility = 'hidden';
+		document.getElementById("hwaddress").value = 'false';
+		}
+	}
+	function chkadd()
+	{
+		if (document.getElementById("additional").value == 'false')
+		{
+		document.getElementById("add").innerHTML = document.getElementById("addtext").value;
+		document.getElementById("additional").checked = 'checked';
+		document.getElementById("add").style.visibility = 'visible';
+		document.getElementById("additional").value = 'true';
+		}
+		else {
+		document.getElementById("add").innerHTML = document.getElementById("addtext").value;
+		document.getElementById("additional").checked = '';
+		document.getElementById("add").style.visibility = 'hidden';
+		document.getElementById("additional").value = 'false';
+		}
+	}
+
+</script>
+
+
+
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+
+	<tr>
+		<td width='80%' colspan='5'>
+			<h3>PDF Etiketten Print Preview:</h3>
+			Sie haben folgende Clients ausgew&auml;hlt:
+		</td>
+	</tr>
+	
+  	<tr><td colspan='5'>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			<tr>
+				<td width='12%' class='tab_h'><b>Hostname</b></td>
+				<td width='20%' class='tab_h'><b>DNS Zone</b></td>
+				<td width='15%' class='tab_h'><b>IP Adresse</b></td>
+				<td width='18%' class='tab_h'><b>MAC Adresse</b></td>
+				<td width='35%' class='tab_h'><b>Beschreibung</b></td>
+			</tr>
+			
+			<!-- BEGIN DYNAMIC BLOCK: Clientauswahl -->	
+			<tr valign='top'>
+				<td class='tab_d'>{HOSTNAME} &nbsp;</td>
+				<td class='tab_d'>{DOMAINNAME} &nbsp;</td>
+				<td class='tab_d'>{IPADDRESS} &nbsp;</td>
+				<td class='tab_d'>{HWADDRESS} &nbsp;</td>
+				<td class='tab_d'>{DSC} &nbsp;</td>
+			</tr>
+			<!-- END DYNAMIC BLOCK: Clientauswahl -->
+
+		</table></td>
+  	</tr>
+	
+	<tr>
+  		<td height='50'></td>
+  	</tr>
+	
+	<tr>
+		<td width='90%' colspan='5'>
+			<h4>Zusammenstellung der Informationen auf den Etiketten:</h4>
+		</td>
+	</tr>
+	<tr valign='top'>
+		<td colspan='2'>
+			
+			(am Bsp. des letzten Clients aus obiger Liste)<br>
+
+			<div class="preview">
+			<table width="400" height="200" border="1" style='border-color: black;
+			border-style: solid;border-width: 1 1 1 1;'>
+			<tr>
+			<td class='tab_d_ohne'>
+			RZ-LOGO
+			</td>
+			</tr>
+			<tr>
+			<td align="center" class='tab_d_ohne'>
+			<b><span id="host">{HOSTNAME}</span></b>
+			</td>
+			<td rowspan="6" width="100" class='tab_d_ohne'>
+			<img src="etiketten/semacode.png" />
+			</td>
+			</tr>
+			<tr>
+			<td align="center" class='tab_d_ohne'>
+			<span id="domain">{DOMAINNAME}</span>
+			</td>
+			</tr>
+			<tr>
+			<td align="center" class='tab_d_ohne'>
+			<b><i><span id="ip">{IPADDRESS}</span></i></b>
+			</td>
+			</tr>
+			<tr>
+			<td align="center" class='tab_d_ohne'>
+			<span id="mac">{HWADDRESS}</span>
+			</td>
+			</tr>
+			<tr>
+			<td align="center" class='tab_d_ohne'>
+			<span id="add">"Zusatzinfo"</span>
+			</td>
+			</tr>
+			</table>
+			</div>
+			
+			<div>
+			<br>
+			<form action="etiketten/generatePDF.php" method="post">
+			<input type="submit" name="apply" value="PDF generieren" class='loginform_button'>
+			</div>
+			
+		</td>
+		<td align='left' valign='top' colspan='2'>
+			
+			<div class="options">
+			<input type="checkbox" id="hostname" name="hostname" onclick="chkhost()" value="true" checked="checked" />
+			Hostname
+			<br />
+			<input type="checkbox" id="domainname" name="domainname" onclick="chkdomain()" value="true" checked="checked" />
+			Domainname
+			<br />
+			<input type="checkbox" id="ipaddress" name="ipaddress" onclick="chkip()" value="true" checked="checked" />
+			IP-Adresse
+			<br />
+			<input type="checkbox" id="hwaddress" name="hwaddress" onclick="chkmac()" value="true" checked="checked" />
+			MAC-Adresse
+			<br />
+			<input type="checkbox" id="additional" name="additional" onclick="chkadd()" value="true" checked="checked" />
+			Zusatzinfo
+			<input type="text" id="addtext" name="addtext" />
+			<br>
+			Schriftgroesse Zusatztext: 
+			<select name="addsize" size="1" class='form_selectbox'>
+			<option>6</option>
+			<option>7</option>
+			<option>8</option>
+			<option>9</option>
+			<option>10</option>
+			<option>11</option>
+			<option>12</option>
+			<option>13</option>
+			<option>14</option>
+			<option>15</option>
+			<option>16</option>
+			<option>17</option>
+			<option>18</option>
+			<option>19</option>
+			<option>20</option>
+			</select>
+			</div>
+			
+			<br>
+			<div class="generate">
+			Positionen auf dem PDF:
+			<br />
+			<table width="200" bgcolor="#000000" cellpadding="1" cellspacing="1">
+			<tr>
+			<td bgcolor="#FFFFFF">Position 0</td>
+			<td bgcolor="#FFFFFF">Position 1</td>
+			</tr>
+			<tr>
+			<td bgcolor="#FFFFFF">Position 2</td>
+			<td bgcolor="#FFFFFF">Position 3</td>
+			</tr>
+			<tr>
+			<td bgcolor="#FFFFFF">Position 4</td>
+			<td bgcolor="#FFFFFF">Position 5</td>
+			</tr>
+			<tr>
+			<td bgcolor="#FFFFFF">Position 6</td>
+			<td bgcolor="#FFFFFF">Position 7</td>
+			</tr>
+			<tr>
+			<td bgcolor="#FFFFFF">Position 8</td>
+			<td bgcolor="#FFFFFF">Position 9</td>
+			</tr>
+			</table>
+			<br>
+			Ab Postition: 
+			<select name="position" size="1" class='form_selectbox'>
+			<option>0</option>
+			<option>1</option>
+			<option>2</option>
+			<option>3</option>
+			<option>4</option>
+			<option>5</option>
+			<option>6</option>
+			<option>7</option>
+			<option>8</option>
+			<option>9</option>
+			</select>
+			
+			</form>
+			
+			</div>
+			
+		</td>
+	</tr>
+
+</table>

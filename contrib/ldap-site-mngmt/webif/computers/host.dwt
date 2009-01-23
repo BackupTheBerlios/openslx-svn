@@ -1,0 +1,127 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	
+  	<tr>
+  		<td align='center' width='17%' style='border-color: black; border-style: solid; border-width: 0 1 0 1;'><h4><code class='font_object'>Client</code></h4></td>
+  		<td align='center' width='17%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{DHCPLINK} DHCP / RBS </a></h4></td>
+  		<td align='center' width='17%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{RBSLINK} PXE <!--</a>--></h4></td>
+  		<td align='center' width='17%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{HWLINK} Geo/Hardware </a></h4></td>
+  		<td>&nbsp;</td>
+  	</tr>
+  	<tr>
+  		<td height='20'></td>
+  	</tr>
+  	
+  	<tr>
+  		<td colspan='5'><h4>Administration - Client <code class='font_object'> {HOSTNAME} </code> </h4>{DNSCHECK}</td>
+  	</tr>
+  	
+  	<tr><td colspan='5'>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			
+				<form action='host_change.php' method='post'>
+			
+			<tr>
+				<td width='35%' class='tab_h'><b>Attribut</b></td>
+				<td width='65%' class='tab_h'><b>Wert</b></td>
+			</tr>
+			
+			<tr height='50'>
+				<td class='tab_d'><b>Eindeutiger Name (hostname):</b><br>(Teil des dn, ohne Leerzeichen eingeben) &nbsp;</td>
+				<td class='tab_d'>
+					<input type='Text' name='hostname' value='{HOSTNAME}' size='40'  maxlength='80' class='medium_form_field'>
+						&nbsp;&nbsp;<b>{DOMAINNAME}</b>
+					<input type='hidden' name='oldhostname' value='{HOSTNAME}'> &nbsp;
+				</td>
+			</tr>
+			<tr height='50'>
+				<td class='tab_d'><b>MAC Adresse:</b> </td>
+				<td class='tab_d'>
+					<input type='Text' name='mac' value='{HWADDRESS}' size='20' maxlength='17' class='medium_form_field'>
+					<input type='hidden' name='oldmac' value='{HWADDRESS}'> 
+					 	&nbsp;&nbsp;Colon Hexadecimal (hx:hx:hx:hx:hx:hx)&nbsp;
+				</td>
+			</tr>
+			<tr height='50'>
+				<td class='tab_d'><b>IP Adresse:</b> &nbsp;</td>
+				<td class='tab_d'>
+					<input type='Text' name='ip' value='{IPADDRESS}' size='20' maxlength='15' class='medium_form_field'>
+					<input type='hidden' name='oldip' value='{IPADDRESS}'> 
+					 	&nbsp;&nbsp;Dotted Decimal (x.x.x.x)&nbsp;
+				</td>
+			</tr>
+			<tr height='50'>
+				<td class='tab_d'><b>Client Beschreibung: &nbsp;</td>
+				<td class='tab_d'>
+					<input type='Text' name='desc' value='{DESCRIPTION}' size='50' class='medium_form_field'>
+					<input type='hidden' name='olddesc' value='{DESCRIPTION}'> 
+					&nbsp;
+				</td>
+			</tr>
+			
+			<input type='hidden' name='dhcphlpcont' value='{DHCPCONT}'>
+			<input type='hidden' name='fixadd' value='{FIXADD}'>
+			<input type='hidden' name='hostdn' value='{HOSTDN}'>
+			<input type='hidden' name='sbmnr' value='{SBMNR}'>			
+
+		</table></td>
+  	</tr>
+  	<tr>
+		<td colspan='3'><input type='submit' name='apply' value='anwenden' class='small_loginform_button'></td>
+		<td>&nbsp;</td>
+		<td align='center'><input type='reset' name='apply' value='zur&uuml;cksetzen' class='reset_button'></td>		
+		</form>
+	</tr>
+	
+	<!--<tr>
+  		<td height='40'></td>
+  	</tr>
+  	
+  	<tr>
+  		<td colspan='4'><h4>Client &nbsp;<code class='font_object'>{HOSTNAME}</code>&nbsp; kopieren:</h4>
+  		Geben Sie bitte den eindeutigen, noch nicht verwendeten Namen des neuen Rechnerobjekts an.</td>
+  	</tr>
+  	<tr>
+  		<td>
+  		<table cellpadding='7' cellspacing='0' border='0' align='left' width='90%' style='border-width: 0 0 0 0;'>
+  			<form action='host_copy.php' method='post'>
+  			
+  		</table></td>
+  		</tr><tr><td>
+			 	<input type='Submit' name='apply' value='kopieren' class='small_loginform_button'>
+			</form></td></tr> 
+	
+	<tr>-->
+	
+	<tr>
+  		<td height='50'></td>
+  	</tr>
+	
+	<tr>
+  		<td colspan='4'><h4>Client &nbsp;<code class='font_object'>{HOSTNAME}</code>&nbsp; l&ouml;schen:</h4></td>
+  	</tr>
+  	<tr>
+  		<td colspan='4'>
+  		<table cellpadding='7' cellspacing='0' border='0' align='left' width='90%' style='border-width: 0 0 0 0;'>
+  			<form action='delete_confirm.php' method='post'>
+  			
+  			<tr>
+  				<td style='border-color: black; border-style: solid; border-width: 0 0 0 0;'>
+  					Client-Objekt wird komplett gel&ouml;scht, d.h. inklusive seiner spezifischen PXE Bootmen&uuml;s.
+  			</tr>
+  			
+  			<input type='hidden' name='dn' value='{HOSTDN}'>
+  			<input type='hidden' name='name' value='{HOSTNAME}'>
+  			<input type='hidden' name='dhcphlpcont' value='{DHCPCONT}'>
+  			<input type='hidden' name='delurl' value='host_delete.php'>
+  			<input type='hidden' name='backurl' value='host.php?dn={HOSTDN}&sbmnr={SBMNR}'>
+  			
+  		</table></td>
+  	</tr>
+  	<tr>
+  		<td>
+			<input type='Submit' name='apply' value='l&ouml;schen' class='small_loginform_button'>
+			</form></td>
+	</tr>
+	
+
+</table>

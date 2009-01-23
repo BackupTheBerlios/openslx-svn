@@ -1,0 +1,97 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	<tr>
+  		<td width='80%' colspan='5'>
+			<h3>Clients &nbsp;<code class='font_object'>{AU}</code>&nbsp; </h3>
+			&Uuml;bersicht der in <b>AU {AU}</b> angelegten <b>Rechnerobjekte</b> und Informationen zu diesen:<br>
+			Rechnername, IP/MAC Adresse, Status und Art der Einbindung in die zentralen Dienste DHCP / PXE-Remote-Boot (RBS) und eine Beschreibung.<br><br>
+			Zur <b>Verwaltungsmaske</b> eines bestimmten Rechners gelangen Sie durch klicken auf entsprechenden Rechnernamen.<br>
+			Die <b>Eingabemaske</b> f&uuml;r einen <b>neuen Rechner</b>  erreichen Sie &uuml;ber den Men&uuml;punkt links: "Neuen Rechner anlegen".
+		</td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+
+<form action='hosts_action.php' method='post'>
+
+  	<tr><td colspan='5'>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+			<tr>
+				<td width='3%' class='tab_d_ohne'></td>
+				<td width='17%' class='tab_h'><b><a href='hostoverview.php?sort=hostname' class='headerlink'>Hostname</a></b></td>
+				<td width='14%' class='tab_h'><b><a href='hostoverview.php?sort=ipaddress' class='headerlink'>IP Adresse</a></b></td>
+				<td width='18%' class='tab_h'><b><a href='hostoverview.php?sort=hwaddress' class='headerlink'>MAC Adresse</a></b></td>
+				<td width='9%' class='tab_h'><b>DHCP</b></td>
+				<td width='16%' class='tab_h'><b>RBS</b></td>
+				<td width='24%' class='tab_h'><b><a href='hostoverview.php?sort=description' class='headerlink'>Beschreibung des Rechners</a></b></td>
+			</tr>
+			
+		
+			<!-- BEGIN DYNAMIC BLOCK: Rechner -->	
+			<tr valign='top'>
+				<td class='tab_d_ohne'>{CHECK}</td>
+				<td class='tab_d'>{HOSTNAME} &nbsp;</td>
+				<td class='tab_d'>{IPADDRESS} &nbsp;</td>
+				<td class='tab_d'>{HWADDRESS} &nbsp;</td>
+				<td class='tab_d'>{FIXADD} &nbsp;</td>
+				<td class='tab_d'>{RBSCONT} &nbsp;</td>
+				<td class='tab_d'>{DSC} &nbsp;</td>
+			</tr>
+			<!-- END DYNAMIC BLOCK: Rechner -->
+
+		</table></td>
+  	</tr>
+  	
+  	<!--
+  	<tr>
+  		<td height='20'></td>
+  	</tr>
+  	<tr valign='top'>
+  		<td width='2%'></td>
+  		<td width='10%'><img src="../pics/pfeil.gif" width="50" height="30" border="0" alt="&nbsp;"></td>
+  		<td width='40%'>
+  			<h4>Ausgew&auml;hlte Clients verschieben in:</h4>
+  			<b>Beachten Sie:</b><br><br>
+  			Es werden nur Clients verschoben, deren <b>Hostnamen</b> in der DNS Zone der Ziel-AU nicht vergeben sind.<br>
+  			(-> eindeutige DNS Namen)<br><br>
+  			<b>IP Adressen</b> werden <b>nicht</b> verschoben (d.h. gelöscht). Sie m&uuml;ssen dann entsprechend der IP Bereiche
+  			der Ziel-AU IP Adressen erneut vergeben.<br><br>
+  			<b>DHCP</b> Dienst Einträge bleiben erhalten, werden jedoch auf <b>dynamisch</b> gesetzt (da die IP Adresse gel&ouml;scht wird)<br><br>
+  			<b>RBS</b> Dienst bleibt ...
+  		</td>
+  		
+  		<input type='hidden' name='confirm' value=''>
+		<input type='hidden' name='action' value='host_move'>
+		  		
+  		<td width='5%'></td>
+  		<td align='leftt'>&nbsp;<b>Ziel-AUs:</b><br>{SELECT}<br><br>
+  			&nbsp;<input type='Submit' name='apply' value='verschieben' class='small_loginform_button'>
+			</form>
+		</td>
+  	</tr>
+  	-->
+
+	
+  	<tr>
+  		<td height='20'></td>
+  	</tr>
+  	<tr valign='top'>
+  		<td width='2%'></td>
+  		<td width='10%'><img src="../pics/pfeil.gif" width="50" height="30" border="0" alt="&nbsp;"></td>
+  		<td width='25%'>
+			<b>PDF Etiketten-Bogen</b> f&uuml;r ausgew&auml;hlte Clients zusammenstellen
+		</td>
+			
+  		<input type='hidden' name='action' value='pdfprint'>
+		
+		<td align='left'>
+			&nbsp;<input type='Submit' name='apply' value='weiter' class='small_loginform_button'>
+			</form>
+		</td>
+  	</tr>
+  	
+	<tr>
+  		<td height='20'></td>
+  	</tr>
+  	
+</table>

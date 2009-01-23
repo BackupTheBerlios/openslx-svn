@@ -1,0 +1,15 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+	
+	<tr>
+		<td height='50'></td>
+	</tr>
+	
+	<tr>
+		<td width='80%' colspan='5'>
+			<h4>Sie haben keine Clients ausgew&auml;hlt</h4>
+		</td>
+	</tr>
+	<tr>
+		<td>{TEXT}</td>
+	</tr>
+</table>

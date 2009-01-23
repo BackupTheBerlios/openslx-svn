@@ -1,0 +1,57 @@
+<table border='0' cellpadding='5' cellspacing='0' width='100%'> 
+  	
+  	<tr>
+  		<td height='20'><h4><a href='rbshost.php?dn={HOSTDN}&mnr=1&sbmnr={SBMNR}&mcnr=-1' class='headerlink'><< Zur&uuml;ck zu Rechner &nbsp;{HOST}</a></h4></td>
+  	</tr>
+  	<tr>
+  		<td height='20'>&nbsp;</td>
+  	</tr>
+  	
+  	<tr>
+  		<td colspan='2'><h3>Default PXE Config &nbsp;<code class='font_object'>  {PXECN} </code> </h3></td>
+  	</tr>
+  	<tr>
+  		<td height='10'></td>
+  	</tr>
+	
+	<tr>
+  		<td colspan='3'>Diese PXE Config wird vom RBS Betreiber verwaltet (Sie haben keine Schreibrechte).</td>
+  	</tr>
+  	<tr>
+  		<td>
+  		<table cellpadding='7' cellspacing='0' border='0' align='left' width='80%' style='border-color: black; border-style: solid; border-width: 2 2 2 2;'>
+  			
+  			<tr>
+  				<td width='8%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'>#</td>
+  				<td width='12%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'>Flags</td>
+  				<td width='80%' style='border-color: black; border-style: solid; border-width: 0 0 3 0;'>Menu Label&nbsp;</td>
+  			</tr>
+  			
+  			<!-- BEGIN DYNAMIC BLOCK: Bootmenu -->
+
+  			<tr>
+  				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;{BGCDEF}'>{POSITION}&nbsp;</td>
+  				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;{BGCDEF}'>{MEDEF} {MEPWD} {MEHIDE}&nbsp;</td>
+  				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;{BGCDEF}'><font size='+1'>{ANZEIGE}&nbsp;</font></td>
+  			</tr>
+  				</form>
+  			<!-- END DYNAMIC BLOCK: Bootmenu -->
+  			
+  		</table></td>
+  	</tr>
+  	<tr>
+  		<td><h4>Flags:</h4></font>
+  			<ul>
+  				<li><b>D</b> -> Default Men&uuml;eintrag</li>
+  				<li><b>P</b> -> Passwort gesch&uuml;tzt</li>
+  				<li><b>H</b> -> Hidden</li>
+  			</ul>
+  		</td>
+  	</tr>
+  	<tr>
+  		<td height='20'></td>
+  	</tr>
+	
+
+  	
+</table>
