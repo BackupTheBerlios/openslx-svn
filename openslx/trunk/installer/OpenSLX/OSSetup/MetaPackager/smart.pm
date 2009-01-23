@@ -56,7 +56,7 @@ sub setupPackageSource
 	my $repoURLs    = shift;
 
 	my $repoSubdir = '';
-	if (length($repoInfo->{'repo-subdir'})) {
+	if ($repoInfo->{'repo-subdir'}) {
 		$repoSubdir = "/$repoInfo->{'repo-subdir'}";
 	}
 	my $baseURL = shift @$repoURLs;
