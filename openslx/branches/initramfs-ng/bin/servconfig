@@ -299,6 +299,8 @@ if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
     *)
       tmpserv=$(uri_token $scratch server)
       tmppath=$(uri_token $scratch path)
+      # check that nfs is available
+      nfsmod
       # hanging mount processes might stop further setup - timeout
       # should be configured ... it is possible to mount "nolock" only
       mount -t nfs -o rw,tcp,nolock,intr,nodev,soft,timeo=2,nosuid \

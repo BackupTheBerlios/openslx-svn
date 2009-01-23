@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/ash
 # Copyright (c) 2003 - 2006 - RZ Uni Freiburg
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2006 - 2008 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -15,51 +15,20 @@
 
 #############################################################################
 # pre part, load USB modules and start hardware detection pci and monitor
-hwpre () {
+base () {
 echo "0 0 0 0" >/proc/sys/kernel/printk
-# start the knoppix hardware autodetection tool
-driverlist="parport parport_pc "
-# hack for pseudo modules (not to load) hopefully "usbcore" is present
-# as a module, might be exchanged with any other existing ...
-for i in $driverlist ; do 
-  echo -e "alias\t$i\tusbcore" >> /etc/modprobe.conf
-done
-( hwsetup -n -v > /tmp/hwsetup.info && echo "hwsetup" > /tmp/hwrun1 ) &
-( usleep 8000; xconfig ) &
-( for mod in usbcore uhci-hcd ohci-hcd usbhid; do
-  modprobe -q $mod 2>/dev/null
-  usleep 10000
-done; ) &
-return 0
-}
-
-#############################################################################
-# network module part
-nwmod () {
-[ $DEBUGLEVEL -eq 20 ] && \
-  echo "** loading all defined network adaptor modules at $(sysup)"
-for mod in ${NWMODULES}; do
-  modprobe ${MODPRV} $mod || error "$init_errnwad"
-  usleep 50000 
-done
+hwinfo --usb-ctrl --netcard | grep modprobe | grep -v ehci | \
+  sed 's/.* Cmd: "//;s/"//' | sort -u >/etc/modprobe.base
+ash /etc/modprobe.base; mdev -s
+( hwinfo --pci | grep modprobe | sed 's/.* Cmd: "//;s/"//' \
+  >/etc/modprobe.pci ) &
 return 0
 }
 
 #############################################################################
 # main part
 hwmain () {
-# "drivers" (pseudo, placeholder strings, ...) to exclude from loading
-# depending on distro more hw modules have to be excluded too. use the
-# D_HWMODTOIGNORE for that purpose
-driverlist=" disabled unknown ignore pcspkr synaptics keybdev kanotix \
-  slamr {D_HWMODTOIGNORE} "
-# driver blacklist (real modules which fail to load)
-driverlist=${driverlist}"hw_random genericwheelusb "
-# hack for pseudo modules (not to load) hopefully "usbcore" is present
-# as a module, might be exchanged with any other existing ...
-for i in $driverlist ; do 
-  echo -e "alias\t$i\tusbcore" >> /etc/modprobe.conf
-done
+ash /etc/modprobe.pci
 
 # load kernel module for ps2 mice
 [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mouse/psmouse.ko ] && \
@@ -69,72 +38,6 @@ done
 [ -f /lib/modules/${KERNEL}/kernel/drivers/input/mousedev.ko ] && \
   modprobe ${MODPRV} mousedev
 
-# wait for /tmp/hwsetup.info to appear
-waitfor /tmp/hwrun1 50000 || \
-  error "$hcfg_hwsetup"
-# in some cases the time to wait for module load is to be increased
-if [ -n "${SLOWHWSETUP}" ] ; then
-  modwaittime=${SLOWHWSETUP}
-  [ $DEBUGLEVEL -eq 21 ] && echo "** set modwaittime to ${SLOWHWSETUP}ms"
-else
-  modwaittime=5000
-fi
-[ $DEBUGLEVEL -eq 21 ] && echo "** 1st hwdetection finished at $(sysup)"
-# load ide drivers first, takes a while to initialize
-for driver in cmd64x hpt366 piix slc90e66 cs5520 it821x rz1000 \
-    ahci triflex aec62xx cs5530 cs5535 ns87415 sc1200 trm290 alim15x3 \
-    cy82c693 opti621 serverworks via82cxxx amd74xx pata_amd \
-    pdc202xx_new siimage atiixp hpt34x pdc202xx_old sis5513; do
-  strinfile " ${driver}" /tmp/hwsetup.info && {
-    ide="yes"
-    #modwaittime=$((10 + ${modwaittime}))
-    modprobe ${MODPRV} ${driver} &
-    driverlist="${driverlist} ${driver}"; usleep ${modwaittime}; }
-done
-# check for IDE/SCSI (SATA); changes in newer kernels prefix pata/sata
-for driver in ata_piix sata_via sata_mv sata_nv sata_sil sata_sis sata_svw \
-    sata_sx4 sata_uli sata_vsc sata_qstor sata_promise ahci; do
-  strinfile " ${driver}" /tmp/hwsetup.info && {
-    #SCSIIDE="yes"
-    modprobe ${MODPRV} ${driver} &
-    driverlist="${driverlist} ${driver}"; usleep ${modwaittime}; }
-done
-# check for USB2.0 and ieee1394 hardware drivers
-for driver in ehci-hcd ohci1394; do
-  strinfile " ${driver}" /tmp/hwsetup.info && {
-    USB="yes"
-    modprobe ${MODPRV} ${driver}
-    driverlist="${driverlist} ${driver}"; }
-done
-[ -x /bin/mdev ] && mdev -s &
-# check for pcmcia / cardbus stuff
-for driver in yenta_socket i82365 pd6729 tcic; do
-  strinfile " ${driver}" /tmp/hwsetup.info && {
-    modprobe ${MODPRV} ${driver}
-    driverlist="${driverlist} ${driver}"
-    pcmcia="yes"; }
-done
-# should we check for card reader modules too?
-# newer kernels support some of the major multicard readers which could
-# be found in some barebone systems like Pundits or in many laptops
-if [ -n "${pcmcia}" ] ; then
-  modprobe ${MODPRV} ds
-fi
-
-[ $DEBUGLEVEL -eq 21 ] && echo "** module loading finished at $(sysup)"
-# rerun the knoppix hardware autodetection tool for USB and ide devices
-# like dvd or harddisk - wait a few seconds so hopefully the ide driver
-# is initialized 
-[ -x /bin/mdev ] && mdev -s
-test -f /proc/bus/usb/devices || \
-  mount -n -t usbfs usbfs /proc/bus/usb 2>/dev/null
-[ $DEBUGLEVEL -eq 21 ] && echo "** started 2nd hwdetection at $(sysup)"
-# remove unneeded network card and USB 1.1 modules
-for driver in ${NWMODULES} ohci-hcd uhci-hcd ; do
-  strinfile " ${driver}" /tmp/hwsetup.info || {
-    rmmod ${driver}
-    driverlist="${driverlist} ${driver}"; }
-done
 # wait depending on time of modules to load a little bit before the next
 # round of hardware detection
 usleep ${modwaittime} && hwsetup -v > /tmp/hwsetup.info
@@ -299,7 +202,6 @@ return 0
 . /etc/messages
 # load distro specific configuration variables and functions. distro
 # specific functions may overwrite functions defined in /etc/functions
-. /etc/sysconfig/config
 . /etc/distro-functions
 
 # script run timer
@@ -311,13 +213,10 @@ return 0
   set -x
 
 case $1 in
-  # pre initializsation: loading USB base modules, starting hwsetup
-  pre)
-    hwpre
-  ;;
-  # loading network modules
-  nwmod)
-    nwmod
+  # pre initialization: loading USB base and network adaptor modules,
+  # detection of other pci bus modules
+  base)
+    base
   ;;
   # main part of hardware setup including Xorg
   main)

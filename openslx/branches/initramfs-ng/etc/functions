@@ -93,12 +93,6 @@ else
   rest="$var"
   prot=""
 fi
-# remove temporary '::' from path, since it conflicts with port specification
-if strinstr "::" "$rest" ; then
-  rest=$(echo $rest | sed -e 's,::,§§§§§,g')
-elif strinstr "\:\:" "$rest" ; then
-  rest=$(echo $rest | sed -e 's,\:\:,§§§§§,g')
-fi
 # get the server IP or name and port - URI authority
 # you get the path or other token without leading "/" - add it later if
 # needed (fixme: port might be broken)
@@ -123,31 +117,43 @@ fi
 case "$2" in
   prot) echo "$prot" ;;
   server) echo "$server" ;;
-  # add '::' again to path
-  path) echo "$path" | sed -e 's,§§§§§,\:\:,g' ;;
+  path) echo "$path" ;;
   port) echo "$port" ;;
   query) echo "$query" ;;
 esac
 }
 #############################################################################
-# compute prefix bit number from netmask
-nm2pref () {
-set $(IFS="."; echo $1)
-local n=0
-local i
-  for i in $1 $2 $3 $4 ; do
-    case $i in
-        0) break ;;
-      128) n=$(($n + 1)) ; break ;;
-      192) n=$(($n + 2)) ; break ;;
-      224) n=$(($n + 3)) ; break ;;
-      240) n=$(($n + 4)) ; break ;;
-      252) n=$(($n + 6)) ; break ;;
-      254) n=$(($n + 7)) ; break ;;
-      255) n=$(($n + 8)) ; continue ;;
-    esac
-  done
-echo $n
+# load the kernel nfs module if not compiled in
+nfsmod () {
+if cat /proc/filesystems | grep -i nfs >/dev/null 2>&1 ; then
+  modprobe ${MODPRV} 2>/dev/null || error "$error_nfsmod" nonfatal
+fi
+}
+#############################################################################
+# configure Xen bridge xenbr0
+xenbr_config () {
+modprobe ${MODPRV} netloop
+local ipls
+local vifnum="0"
+local bridge="xenbr${vifnum}"
+local netdev="eth${vifnum}"
+local pdev="p${netdev}"
+local vdev="veth${vifnum}"
+local vif0="vif0.${vifnum}"
+# fixme: that is the mac address of main ethernet device
+local mac=$macaddr
+
+brctl addbr ${bridge}
+brctl stp ${bridge} off
+brctl setfd ${bridge} 0
+brctl addif ${bridge} ${vif0}
+for ipls in "${netdev} name ${pdev}" "${vdev} name ${netdev}" \
+            "${pdev} down arp off" "${pdev} addr fe:ff:ff:ff:ff:ff" \
+            "${netdev} addr ${mac} arp on" "${netdev} addr ${mac} arp on" \
+            "${bridge} up" "${vif0} up" "${pdev} up" ; do
+  ip link set ${ipls}
+done
+brctl addif ${bridge} ${pdev}
 }
 #############################################################################
 # replace @@@serverip@@@ with real serverip. Allows the usage of a variable
@@ -244,72 +250,24 @@ for fs in xfs ext2 reiserfs ; do
   fi
 done
 }
-#############################################################################
-# create configuration file for dhclient
-mkdhclconf () {
-local vci=$1
-# provide dhclient with proper configuration
-echo -e "option bootlocal-script code 221\t= string;\n\
-option language code 222\t\t= string;\n\
-option start-x code 223\t\t\t= string;\n\
-option start-snmp code 224\t\t= string;\n\
-option start-sshd code 225\t\t= string;\n\
-option start-xdmcp code 226\t\t= string;\n\
-option start-cron code 227\t\t= string;\n\
-option crontab-entries code 228\t\t= string;\n\
-option start-rwhod code 229\t\t= string;\n\
-option start-printdaemon code 230\t= string;\n\
-option desktop-session code 231\t\t= string;\n\
-option tex-enable code 232\t\t= string;\n\
-option netbios-workgroup code 233\t= string;\n\
-option vmware code 234\t\t\t= string;\n\
-option hw-mouse code 252\t\t= string;\n\
-option hw-graphic code 253\t\t= string;\n\
-option hw-monitor code 254\t\t= string;\n\n\
-send dhcp-lease-time 86400;\nsend dhcp-max-message-size 1400;\n\
-request;\nscript \"/bin/dhclient-script\";" >> /etc/dhclient.conf
-if [ -n "$vci" ] ; then
-  echo "send vendor-class-identifier \"$vci\";" >> /etc/dhclient.conf
-fi
-}
 
 #############################################################################
-# dhcp client function (supporting dhclient and udhcp, latter is preferred)
+# dhcp client function
 rundhcp ()
 {
 local vci="$1"
-for dhcp in dhclient udhcpc none; do
-  test -e /bin/$dhcp && break;
-done
-if [ "$dhcp" = "none" ] ; then
-  error "$error_nodhcp" nonfatal
-else
-  # ensure the interface is up - might produce conflicts - nbd could
-  # fail!!
-  [ -n "$noipyet" ] && \
-    ip link set dev $nwif up
-  [ -f /lib/modules/@@@KERNVER@@@/kernel/net/packet/af_packet.ko ] && \
-    modprobe ${MODPRV} af_packet   
-  echo "Starting $dhcp for configuration"
-  mkdir /var/lib/dhcp >/dev/null 2>&1
-fi
-export client="$dhcp"
-case $dhcp in
-  dhclient)
-    mkdhclconf $vci
-    ln -s /bin/dhcpmkconfig /bin/dhclient-script
-    dhclient -cf /etc/dhclient.conf -lf /var/lib/dhcp/dhclient.leases \
-      -q $nwif >/dev/null 2>&1 || error "$error_dhclient"
-  ;;
-  # udhcpc is a busybox applet
-  udhcpc)
-    [ -n $vci ] && vci="-V $vci"
-    testmkd /usr/share/udhcpc
-    ln -s /bin/dhcpmkconfig /usr/share/udhcpc/default.script
-    # -b option is suboptimal here ...
-    udhcpc -t 8 -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null
-  ;;
-esac
+# ensure the interface is up - might produce conflicts - nbd could fail!!
+# fixme: really needed?
+#  [ -n "$noipyet" ] && ip link set dev $nwif up
+[ -f /lib/modules/${KERNEL}/kernel/net/packet/af_packet.ko ] && \
+  modprobe ${MODPRV} af_packet   
+echo "Starting udhcpc for IP configuration"
+mkdir /var/lib/dhcp >/dev/null 2>&1
+[ -n $vci ] && vci="-V $vci"
+testmkd /usr/share/udhcpc
+ln -sf /bin/dhcpmkconfig /usr/share/udhcpc/default.script
+# -b option is suboptimal here ...
+udhcpc -t 8 -q $vci -s /usr/share/udhcpc/default.script -i $nwif 2>/dev/null
 echo "dhcp finished at $(sysup)" >/tmp/dhcp-done
 }
 
@@ -339,7 +297,7 @@ fileget () {
 local cfgfile
 [ "x$fileprot" = "x" ] && fileprot=tftp
 if [ "x$filepath" != "x" ] ; then
-  cfgfile="${filepath}"
+  cfgfile=${filepath}
   [ "x$fileserv" = "x" ] && fileserv=$(checkip ${serverip})
   case "$fileprot" in
    ftp|http)
@@ -353,12 +311,12 @@ if [ "x$filepath" != "x" ] ; then
      mkdir /tmp/$ldev
      echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
      mount -o ro /dev/$ldev /tmp/$ldev || error "$init_errlfg"
-     unpack /tmp/$ldev/"$cfgfile"
+     unpack /tmp/$ldev/$cfgfile
      umount /dev/$ldev
    ;;
    *)
-     tftp -g -r "$cfgfile" -l /tmp/$(basename "$cfgfile") $fileserv  \
-       && unpack /tmp/$(basename "$cfgfile")
+     tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv  \
+       && unpack /tmp/$(basename $cfgfile)
    ;;
    esac
 else
@@ -372,16 +330,16 @@ else
   echo -e "\n## Configuration via fileget: Hierarchy is distro client \
 and as last\n# distro/default" >> /tmp/confviafile
   mac=$(echo $macaddr|sed "s/:/-/g")
-  for cfgfile in "${filepath}/${SYSTEM_NAME}/01-${mac}.tgz" \
-                 "${filepath}/${SYSTEM_NAME}/default.tgz" ; do
+  for cfgfile in ${filepath}/${SYSTEM_NAME}/01-$mac.tgz \
+                 ${filepath}/${SYSTEM_NAME}/default.tgz ; do
     case "$fileprot" in
       ftp|http)
-        wget $fileprot://$fileserv/"$cfgfile" -O /tmp/$(basename "$cfgfile") \
-          2>/dev/null && { unpack /tmp/$(basename "$cfgfile") && break; }
+        wget $fileprot://$fileserv/$cfgfile -O /tmp/$(basename $cfgfile) \
+          2>/dev/null && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
       tftp)
-        tftp -g -r "$cfgfile" -l /tmp/$(basename "$cfgfile") $fileserv \
-           && { unpack /tmp/$(basename "$cfgfile") && break; }
+        tftp -g -r $cfgfile -l /tmp/$(basename $cfgfile) $fileserv \
+           && { unpack /tmp/$(basename $cfgfile) && break; }
       ;;
     esac
   done
@@ -854,7 +812,9 @@ include_in_fsroot_union () {
     srvproto=$(uri_token $ROOTFS prot)
     case $srvproto in
           nfs)
-            # nfsroot consists now of two different parts
+            # activate kernel nfs if not present, nfsroot consists now of two
+            # different parts
+            nfsmod
             root_path=$(uri_token $ROOTFS path)
             nfsserver=$(uri_token $ROOTFS server)
             mkdir -p /mnt/tmp/${root_path}_${union_id}
