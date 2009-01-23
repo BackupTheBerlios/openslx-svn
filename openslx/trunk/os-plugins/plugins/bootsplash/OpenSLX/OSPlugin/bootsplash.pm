@@ -136,6 +136,15 @@ sub copyRequiredFilesIntoInitramfs
         }
         if (-d $splashyThemeDir) {
             my $splashyPath = "$bootsplashDir/files/bin";
+            $makeInitRamFSEngine->addCMD(
+                "cp -p $splashyPath/splashy* $targetPath/bin/"
+            );
+            $makeInitRamFSEngine->addCMD(
+                "mkdir -p $targetPath/etc/splashy/themes"
+            );
+            $makeInitRamFSEngine->addCMD(
+                "cp -a $splashyThemeDir $targetPath/etc/splashy/themes/"
+            );
             my $defSplashyTheme = "/etc/splashy/themes/$bootsplashTheme";
             my $splashyConfig = unshiftHereDoc(<<"            End-of-Here");
                 <?xml version="1.0" encoding="UTF-8"?>
@@ -151,32 +160,17 @@ sub copyRequiredFilesIntoInitramfs
                     <fifo>/dev/.initramfs/splashy.fifo</fifo>
                 </splashy>
             End-of-Here
-            spitFile("$bootsplashConfigDir/config.xml", $splashyConfig);
-            $makeInitRamFSEngine->addCMD(
-                "cp -p $splashyPath/splashy* $targetPath/bin/"
-            );
-            $makeInitRamFSEngine->addCMD(
-                "mkdir -p $targetPath/etc/splashy/themes"
-            );
-            $makeInitRamFSEngine->addCMD(
-                "cp -a $bootsplashConfigDir/config.xml $targetPath/etc/splashy/"
-            );
-            $makeInitRamFSEngine->addCMD(
-                "cp -a $splashyThemeDir $targetPath/etc/splashy/themes/"
-            );
+            $makeInitRamFSEngine->addCMD( {
+                file    => "$bootsplashConfigDir/config.xml",
+                content => $splashyConfig,
+            } );
         }
     }
     else {
         $bootsplashTheme = '<none>';
     }
 
-    vlog(
-        1, 
-        _tr(
-            "bootsplash-plugin: bootsplash=%s", 
-            $bootsplashTheme
-        )
-    );
+    vlog(1, _tr("bootsplash-plugin: bootsplash=%s", $bootsplashTheme));
 
     return;
 }
