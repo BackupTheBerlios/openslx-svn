@@ -472,15 +472,26 @@ sub _loadPlugin
         push @distroModules, $distroName;
         push @distroModules, 'Base';
         for my $distroModule (@distroModules) {
-            last if eval {
+            my $loaded = eval {
                 vlog(1, "trying distro-module $distroModule...");
                 $distro = instantiateClass(
                     'OpenSLX::Distro::' . $distroModule, 
-                    { pathToClass => $self->{'plugin-path'} }
+                    {
+                        pathToClass => $self->{'plugin-path'},
+                        acceptMissing => 1,
+                    }
                 );
+                return 0 if !$distro;
                 vlog(1, "using $distroModule.");
                 1;
             };
+            last if $loaded;
+            if (!defined $loaded) {
+                vlog(0, _tr(
+                    "Error when trying to load distro module '%s':\n%s", 
+                    $distroModule, $@
+                ));
+            }
         }
         shift @INC;
         if (!$distro) {

@@ -602,8 +602,9 @@ sub instantiateClass
     my $flags = shift || {};
 
     checkParams($flags, { 
-        'pathToClass' => '?', 
-        'version'     => '?' 
+        'acceptMissing' => '?', 
+        'pathToClass'   => '?', 
+        'version'       => '?',
     });
     my $pathToClass      = $flags->{pathToClass};
     my $requestedVersion = $flags->{version};
@@ -611,13 +612,15 @@ sub instantiateClass
     my $moduleName = defined $pathToClass ? "$pathToClass/$class" : $class;
     $moduleName =~ s[::][/]g;
     $moduleName .= '.pm';
-    unless (eval { require $moduleName } ) {
-        if ($! == 2) {
+
+    if (!eval { require $moduleName } ) {
+        # check if module does not exists anywhere in search path
+        if (!-e $moduleName) {
+            return if $flags->{acceptMissing};
             die _tr("Module '%s' not found!\n", $moduleName);
         }
-        else {
-            die _tr("Unable to load module '%s' (%s)\n", $moduleName, $@);
-        }
+        # some other error (probably compilation problems)
+        die _tr("Unable to load module '%s' (%s)\n", $moduleName, $@);
     }
     if (defined $requestedVersion) {
         my $classVersion = $class->VERSION;
