@@ -53,8 +53,7 @@ mdev -s
 #( hwinfo --bluetooth >/etc/hwinfo.bt ) &
 
 # load harddisk driver and check for harddisk
-( grep -E "IDE|SCSI" /etc/hwinfo.data >/dev/null 2>&1 && \
-    modprobe ${MODPRV} sd_mod
+( grep -q -E "IDE|SCSI" /etc/hwinfo.data && modprobe ${MODPRV} sd_mod
   hwinfo --disk | sed -n "/Device File: /p" | sed "s|.*Device File: /dev/||" \
     >/etc/hwinfo.disk; ) &
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
@@ -76,8 +75,7 @@ mdev -s
 
 # complete the audio configuration and load the dummy module if no audio
 # hardware is present in the machine
-grep -E "Audio|sound" /etc/hwinfo.data >/dev/null 2>&1 || \
-  modprobe snd-dummy
+grep -q -E "Audio|sound" /etc/hwinfo.data || modprobe snd-dummy
 modprobe ${MODPRV} snd-pcm-oss
 modprobe ${MODPRV} snd-mixer-oss
 
@@ -139,7 +137,7 @@ return 0
 finish () {
 # remove unneeded disk and mouse drivers
 [ ! -s /etc/hwinfo.disk ] && rmmod sd_mod 2>/dev/null
-grep -i "/dev/psaux" >/dev/null 2>&1 || rmmod psmouse 2>/dev/null
+grep -q -i "/dev/psaux" || rmmod psmouse 2>/dev/null
 # more sophistication possible :)
 return 0
 }

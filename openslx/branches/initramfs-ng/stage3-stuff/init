@@ -129,7 +129,7 @@ for opts in $(sed "s/#.*//" /etc/initramfs-setup) ${KCMDLINE} ; do
     # localization
     country=*)
       COUNTRY=${opts#country=}
-      grep -E "country=" /etc/initramfs-setup >/dev/null 2>&1 && \
+      grep -q -E "country=" /etc/initramfs-setup && 
         echo -e "\n# localization information gotten via kernel command line \
 in $0\ncountry=\"${COUNTRY}\"" >>/etc/initramfs-setup
     ;;
@@ -218,7 +218,7 @@ in $0\ncountry=\"${COUNTRY}\"" >>/etc/initramfs-setup
           # nfsroot consists now of two different parts
           nfspath=$(uri_token $rootfs path)
           nfsserver=$(uri_token $rootfs server)
-          grep -E "nfsserver" /etc/initramfs-setup >/dev/null 2>&1 || \
+          grep -q -E "nfsserver" /etc/initramfs-setup || \
             echo -e "# nfs root information gotten via kernel command \
 line in $0\nnfsserver=\"${nfsserver}\"\nnfspath=\"${nfspath}\"" \
               >>/etc/initramfs-setup
@@ -443,8 +443,8 @@ fi
 sed "s,@@@serverip@@@,$serverip," -i /etc/initramfs-setup
 [ $DEBUGLEVEL -eq 20 ] && echo "** finished ip config at $(sysup)"
 # on some network adaptors we need to wait for the link to come up
-dmesg | grep "link down" >/dev/null 2>&1 && for i in 1 1 1 1  ; do 
-  dmesg | grep "link up" >/dev/null 2>&1 && break
+dmesg | grep -q "link down" && for i in 1 1 1 1  ; do 
+  dmesg | grep -q "link up" && break
   [ $DEBUGLEVEL -ge 1 ] && echo "network: waited half a second for the \
 link to come up" >>$LOGFILE
   sleep $i
@@ -877,8 +877,7 @@ for ticks in 0 1 2 5 10 20 30; do
   error "$init_wait" nonfatal
 done
 
-mount 2>/dev/null | grep /lib/modules/${KERNEL} >/dev/null 2>&1 \
-  && error "$init_errumnt"
+mount 2>/dev/null | grep -q /lib/modules/${KERNEL} && error "$init_errumnt"
 # check for inittab file (might fail for new style init -> upstart)
 test -f /mnt/etc/inittab || test -d /mnt/etc/event.d || error "$init_erritab"
 # close runlevel script for stuff to execute during early bootup

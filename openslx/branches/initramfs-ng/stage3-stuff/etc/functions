@@ -121,7 +121,7 @@ esac
 #############################################################################
 # load the kernel nfs module if not compiled in
 nfsmod () {
-cat /proc/filesystems | grep -E "[[:space:]]nfs" >/dev/null 2>&1 || \
+cat /proc/filesystems | grep -q -E "[[:space:]]nfs" || \
   { modprobe ${MODPRV} nfs 2>/dev/null || error "$error_nfsmod" nonfatal; }
 }
 #############################################################################
@@ -355,10 +355,8 @@ echo "fileget via $fileprot from $fileserv/$cfgfile finished" >/tmp/file-done
 testmkd () {
   test -d $1 || mkdir -p $1 >/dev/null 2>&1
   [ $# -ge 2 ] && for i in "$2" "$3" ; do
-    echo "$i"|grep -E "^[0-9]{3,4}$" >/dev/null 2>&1 && \
-      chmod "$i" $1 >/dev/null 2>&1
-    echo "$i"|grep -E ":." >/dev/null 2>&1 && \
-      chown "$i" $1 >/dev/null 2>&1
+    echo "$i" | grep -q -E "^[0-9]{3,4}$" && chmod "$i" $1 >/dev/null 2>&1
+    echo "$i" | grep -q -E ":." && chown "$i" $1 >/dev/null 2>&1
   done
 }
 

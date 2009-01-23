@@ -32,7 +32,8 @@ D_BINDMPTS="tmp root media home"
 D_DIRINBINDMNT="/var/run /var/log /var/tmp"
 D_RODIRSINRW="/etc/opt/gnome/gconf /etc/X11/xkb /var/adm /var/lib/texmf \
 /var/lib/rpm"
-D_DIRINDXS="/var/X11R6/compose-cache /var/run/sysconfig/tmp /var/adm \ /var/lib/rpm /var/lib/nobody /var/lib/pam_devperm /var/lib/bluetooth \
+D_DIRINDXS="/var/X11R6/compose-cache /var/run/sysconfig/tmp /var/adm \
+/var/lib/rpm /var/lib/nobody /var/lib/pam_devperm /var/lib/bluetooth \
 /var/lib/texmf /var/lib/nfs/sm /var/lib/misc /var/lib/acpi /var/spool/cron \
 /var/lock/subsys/sysconfig"
 
@@ -45,7 +46,7 @@ config_distro () {
     rm -rf /mnt/etc/init.d/${dir}/*
   done
   # link the additional key setup (notbook special keys)
-  [ grep -E "otebook" /etc/hwinfo.bios >/dev/null 2>&1 -a \
+  [ grep -q -E "otebook" /etc/hwinfo.bios -a \
     -e /mnt/etc/init.d/hotkey-setup ] && rllinker "hotkey-setup" 25 25
 
   # no need to run start scripts in parallel
