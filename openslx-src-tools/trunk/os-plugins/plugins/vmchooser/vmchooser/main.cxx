@@ -60,8 +60,7 @@ int main(int argc, char** argv) {
     xmlpath = opt->getValue("path");
   }
   if (xmlpath == NULL) {
-    //xmlpath="../../../../../../../session-choosers/xml/";
-    xmlpath = "/var/lib/vmware/";
+    xmlpath = "/var/lib/vmware/vmconfigs/";
   }
   
   /** SLX GROUP */

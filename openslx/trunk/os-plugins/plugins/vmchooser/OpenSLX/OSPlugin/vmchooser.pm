@@ -79,7 +79,8 @@ sub installationPhase
         copyFile("$pluginBasePath/$file", "$pluginRepoPath/");
 	chmod 0755, "$pluginRepoPath/$file";
     }
-    copyFile("$pluginBasePath/default.desktop", "/usr/share/xsessions/");
+    
+    #copyFile("$pluginBasePath/default.desktop", "/usr/share/xsessions/");
 
     return;
 }
