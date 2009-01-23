@@ -126,10 +126,10 @@ sub copyRequiredFilesIntoInitramfs
 	my $attrs		= shift;
 	my $makeInitRamFSEngine = shift;
 	
-	my $themesDir = "$openslxConfig{'base-path'}/share/themes";
+	my $themeDir = "$openslxConfig{'base-path'}/share/themes";
 	my $bootsplashTheme = $attrs->{'bootsplash::theme'} || '';
 	if ($bootsplashTheme) {
-		my $bootsplashThemeDir = "$themesDir/$bootsplashTheme/bootsplash";
+		my $bootsplashThemeDir = "$themeDir/$bootsplashTheme/bootsplash";
 		if (-d $bootsplashThemeDir) {
 			my $splashyPath = "$openslxConfig{'base-path'}/share/splashy";
 			$makeInitRamFSEngine->addCMD(
@@ -150,7 +150,7 @@ sub copyRequiredFilesIntoInitramfs
 	vlog(
 		1, 
 		_tr(
-			"bootsplash-plugin: bootsplash=%s 
+			"bootsplash-plugin: bootsplash=%s", 
 			$bootsplashTheme
 		)
 	);

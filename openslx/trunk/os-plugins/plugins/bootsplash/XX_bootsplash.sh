@@ -10,7 +10,7 @@ if [ -e /initramfs/plugin-conf/bootsplash.conf ]; then
 	if [ $bootsplash_active -ne 0 ]; then
                 if [ ${no_bootsplash} -eq 0 ]; then
                         # make the splashy_update binary available in stage4 ...
-                        mkdir -p /mnt/var/lib/openslx/bin
+                        testmkd /mnt/var/lib/openslx/bin
                         cp -a /bin/splashy_update /mnt/var/lib/openslx/bin
 
                         # ... and create a runlevelscript that will stop splashy somewhere near
