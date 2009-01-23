@@ -20,6 +20,7 @@ xml=$1
 
 # file name of the image
 imagename=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
+imagename=~/vbox/testhdd.vdi
 
 # define name for VirtualBox window. no utf8, perhaps we don't need it any
 # more. else change the next two lines
@@ -31,8 +32,13 @@ imagename=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 # Definition of the client system
 #vmostype=$(grep -i "<os param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 
-# Definition of the client system
-#network_kind=$(grep -i "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }')
+# Definition of the network kind. we should only need: nat, hostif
+network_kind=$(grep -i "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }')
+network_kind=nat
+# compatibility to vmware xml's
+if [ ${network_kind} = "bridge" ]; then
+  network_kind="hostif"
+fi
 
 ################################################################################
 ##
@@ -75,6 +81,7 @@ if [ "${mem}" -lt "128" ] || [ "${mem}" -gt "${totalmem}" ]; then
   echo "\tMin. 128 MB for host and guest!"
   exit 1
 fi
+VBoxManage modifyvm "${ID}" -memory ${mem}
 
 
 ## look for cdrom, dvd and add them to the vm config file
@@ -84,9 +91,40 @@ for cdrs in /dev/cdrom*; do
   fi
 done
 
+# Enable hardware virtualization
+VBoxManage modifyvm "${ID}" -hwvirtex on
 
-# adjust volume
-amixer -q sset Master 28 unmute 2>/dev/null
+# HDD as boot device
+VBoxManage modifyvm "${ID}" -boot1 disk
+
+# Network settings
+VBoxManage modifyvm "${ID}" -nic1 ${network_kind}
+#VBoxManage modifyvm "${ID}" -nictype1 Am79C970a|aM79c973|82540em
+if [ ${network_kind} = "hostif"]; then
+  VBoxManage modifyvm "${ID}" -hostifdev1 eth0
+fi
+# Per default each virtual network card is assigned a random address by
+# VBox at VM creation, due of this we can be sure that every mac is
+# unique
+# else we should use
+#VBoxManage modifyvm "${ID}" -macaddress1 <mac>
+
+# enable audio
+VBoxManage modifyvm "${ID}" -audio oss
+
+#TODO
+#VBoxManage modifyvm "${ID}"
+#VBoxManage modifyvm "${ID}" ­ostype <ostype>
+#VBoxManage modifyvm "${ID}" ­vram <ram>_in_mb_of_virtual_graphic_card>
+#VBoxManage modifyvm "${ID}" ­acpi <on|off> # acpi and i/o apic support
+#VBoxManage modifyvm "${ID}" ­sata <on|off> # sata or ide
+#VBoxManage modifyvm "${ID}" ­dvdpassthrough <on|off> # burn support, unstable
+#VBoxManage modifyvm "${ID}" -floppy empty|uuid|filename # yes we need it
+#VBoxManage modifyvm "${ID}" -floppy empty|uuid|filename # yes we need it
+
+
+
+# adjust volume amixer -q sset Master 28 unmute 2>/dev/null
 amixer -q sset PCM 28 unmute 2>/dev/null
 amixer -q sset Headphone 28 unmute 2>/dev/null
 amixer -q sset Front 0 mute 2>/dev/null
