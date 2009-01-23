@@ -385,9 +385,6 @@ sub fetchInstalledPlugins
 	my $vendorOSID = shift;
 	my $pluginName = shift;
 
-	return map {
-		$_->{plugin_name}
-	}
 	$self->{'meta-db'}->fetchInstalledPlugins($vendorOSID, $pluginName);
 }
 
@@ -1096,14 +1093,17 @@ The ID of the new reference entry, C<undef> if the creation failed.
 
 sub addInstalledPlugin
 {
-	my $self       = shift;
-	my $vendorOSID = shift;
-	my $pluginName = shift;
+	my $self        = shift;
+	my $vendorOSID  = shift;
+	my $pluginName  = shift;
+	my $pluginAttrs = shift || {};
 
 	# make sure the attributes of this plugin are available via default system
 	$self->{'db-schema'}->synchronizeAttributesWithDefaultSystem($self);
 
-	return $self->{'meta-db'}->addInstalledPlugin($vendorOSID, $pluginName);
+	return $self->{'meta-db'}->addInstalledPlugin(
+		$vendorOSID, $pluginName, $pluginAttrs
+	);
 }
 
 =item C<removeInstalledPlugin($vendorOSID, $pluginName)>

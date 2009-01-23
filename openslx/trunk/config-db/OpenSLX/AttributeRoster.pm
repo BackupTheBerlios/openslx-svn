@@ -369,7 +369,7 @@ sub _init
 	);
 	
 	# and add all plugin attributes, too
-	OpenSLX::OSPlugin::Roster->addAllDefaultAttributesToHash(\%AttributeInfo);
+	OpenSLX::OSPlugin::Roster->addAllStage3AttributesToHash(\%AttributeInfo);
 }
 
 =item C<getAttrInfo()>

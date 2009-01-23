@@ -1716,10 +1716,13 @@ sub _installPlugins
 			? _tr("reinstalling plugins...\n")
 			: _tr("installing default plugins...\n")
 	);
-	for my $pluginName (@$plugins) {
+	for my $pluginInfo (@$plugins) {
+		my $pluginName = $pluginInfo->{name};
 		my $pluginEngine = OpenSLX::OSPlugin::Engine->new();
 		vlog(0, _tr("\t%s\n", $pluginName));
-		$pluginEngine->initialize($pluginName, $self->{'vendor-os-name'});
+		$pluginEngine->initialize(
+			$pluginName, $self->{'vendor-os-name'}, $pluginInfo->{attrs}
+		);
 		$pluginEngine->installPlugin();
 	}
 	vlog(0, _tr("done with plugins.\n"));

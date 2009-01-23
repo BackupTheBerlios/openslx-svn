@@ -75,7 +75,7 @@ sub getAttrInfo
 			End-of-Here
 			content_regex => qr{^\d\d$},
 			content_descr => 'allowed range is from 01-99',
-			default => 70,
+			default => '70',
 		},
 		# attribute 'imagesrc' defines where we can find vmware images
 		'vmware::imagessrc' => {
@@ -84,9 +84,21 @@ sub getAttrInfo
 			description => unshiftHereDoc(<<'			End-of-Here'),
 				Where do we store our vmware images? NFS? Filesystem?
 			End-of-Here
-			content_regex => qr{^\d\d$},
 			content_descr => 'Allowed values: path or URI',
-			default => "",
+			default => '',
+		},
+		# attribute 'binaries' defines whether or not VMware binaries shall
+		# be provided (by downloading them).
+		'vmware::binaries' => {
+			applies_to_vendor_os => 1,
+			applies_to_systems => 0,
+			applies_to_clients => 0,
+			description => unshiftHereDoc(<<'			End-of-Here'),
+				Shall VMware binaries be downloaded and installed?
+			End-of-Here
+			content_regex => qr{^(0|1)$},
+			content_descr => 'Allowed values: 0 or 1',
+			default => '1',
 		},
 
 	};

@@ -35,7 +35,7 @@ use OpenSLX::Basics;
 ### 		fk		=> foreign key (integer)
 ################################################################################
 
-my $VERSION = 0.28;
+my $VERSION = 0.29;
 
 my $DbSchema = {
 	'version' => $VERSION,
@@ -160,6 +160,15 @@ my $DbSchema = {
 									# suse-10.2-cloned-from-kiwi).
 									# This is used as the folder name for the
 									# corresponding stage1, too.
+			],
+		},
+		'installed_plugin_attr' => {
+			# (stage1-)attributes of installed plugins
+			'cols' => [
+				'id:pk',			# primary key
+				'installed_plugin_id:fk',	# foreign key to installed plugin
+				'name:s.128',		# attribute name
+				'value:s.255',		# attribute value
 			],
 		},
 		'meta' => {
@@ -567,7 +576,7 @@ sub _schemaUpgradeDBFrom
 	0.21 => sub {
 		my $metaDB = shift;
 	
-		# add new table installed_plugins
+		# add new table installed_plugin
 		$metaDB->schemaAddTable(
 			'installed_plugin', 
 			[
@@ -590,7 +599,7 @@ sub _schemaUpgradeDBFrom
 	0.23 => sub {
 		my $metaDB = shift;
 
-		# add new column system.descripion
+		# add new column system.description
 		$metaDB->schemaAddColumns(
 			'system',
 			[
@@ -692,6 +701,22 @@ sub _schemaUpgradeDBFrom
 		# the default vendor-OS to not have any plugins at all - so we add
 		# the default plugins here:
 		$metaDB->addInstalledPlugin(0, 'theme');
+	
+		return 1;
+	},
+	0.29 => sub {
+		my $metaDB = shift;
+	
+		# add new table installed_plugin_attrs
+		$metaDB->schemaAddTable(
+			'installed_plugin_attr', 
+			[
+				'id:pk',
+				'installed_plugin_id:fk',
+				'name:s.128',
+				'value:s.255',
+			],
+		);
 	
 		return 1;
 	},

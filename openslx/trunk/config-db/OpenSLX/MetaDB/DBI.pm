@@ -206,6 +206,7 @@ sub fetchInstalledPlugins
 	my $self       = shift;
 	my $vendorOSID = shift;
 	my $pluginName = shift;
+	my $fullInfo   = shift || 0;
 
 	return if !defined $vendorOSID;
 	my $nameClause 
@@ -217,7 +218,26 @@ sub fetchInstalledPlugins
 		WHERE vendor_os_id = '$vendorOSID'
 		$nameClause
 	End-of-Here
-	return $self->_doSelect($sql);
+	my @pluginInfos = $self->_doSelect($sql);
+	return if !@pluginInfos;
+	
+	@pluginInfos = map {
+		my $pluginInfo = $_;
+		my $sql = unshiftHereDoc(<<"		End-of-Here");
+			SELECT * FROM installed_plugin_attr
+			WHERE installed_plugin_id = '$pluginInfo->{id}'
+		End-of-Here
+		my @attrs = $self->_doSelect($sql);
+		$pluginInfo->{attrs} = {
+			map { 
+				( $_->{name}, $fullInfo ? $_ : $_->{value} ) 
+			} @attrs
+		};
+		$pluginInfo;
+	}
+	@pluginInfos;
+	
+	return wantarray() ? @pluginInfos : $pluginInfos[0];
 }
 
 sub fetchExportByFilter
@@ -703,17 +723,50 @@ sub changeVendorOS
 
 sub addInstalledPlugin
 {
-	my $self       = shift;
-	my $vendorOSID = shift;
-	my $pluginName = shift;
+	my $self        = shift;
+	my $vendorOSID  = shift;
+	my $pluginName  = shift;
+	my $pluginAttrs = shift;
 
 	return if !defined $vendorOSID || !$pluginName;
 
-	return if $self->fetchInstalledPlugins($vendorOSID, $pluginName);
-	return $self->_doInsert('installed_plugin', [ {
-		vendor_os_id => $vendorOSID,
-		plugin_name  => $pluginName,
-	} ] );
+	my $installedPlugin 
+		= $self->fetchInstalledPlugins($vendorOSID, $pluginName, 1);
+	if (!$installedPlugin) {
+		return if !$self->_doInsert('installed_plugin', [ {
+			vendor_os_id => $vendorOSID,
+			plugin_name  => $pluginName,
+		} ] );
+		$installedPlugin 
+			= $self->fetchInstalledPlugins($vendorOSID, $pluginName, 1);
+	}
+	return if !$installedPlugin;
+	for my $pluginAttrName (keys %$pluginAttrs) {
+		if (exists $installedPlugin->{attrs}->{$pluginAttrName}) {
+			my $attrInfo = $installedPlugin->{attrs}->{$pluginAttrName};
+			my $currVal  
+				= defined $attrInfo->{value} ? $attrInfo->{value} : '-';
+			my $givenVal 
+				= defined $pluginAttrs->{$pluginAttrName} 
+					? $pluginAttrs->{$pluginAttrName}
+					: '-';
+print "$pluginAttrName: $currVal <=> $givenVal\n";
+			next if $currVal eq $givenVal;
+			return if ! $self->_doUpdate(
+				'installed_plugin_attr', [ $attrInfo->{id} ], [ {
+					value => $pluginAttrs->{$pluginAttrName},
+				} ] 
+			);
+		}
+		else {
+			return if ! $self->_doInsert('installed_plugin_attr', [ {
+				installed_plugin_id => $installedPlugin->{id},
+				name  => $pluginAttrName,
+				value => $pluginAttrs->{$pluginAttrName},
+			} ] );
+		}
+	}
+	return 1;
 }
 
 sub removeInstalledPlugin
@@ -726,6 +779,9 @@ sub removeInstalledPlugin
 
 	my $plugin = $self->fetchInstalledPlugins($vendorOSID, $pluginName);
 	return if !$plugin;
+	return if !$self->_doDelete(
+		'installed_plugin_attr', [ $plugin->{id} ], 'installed_plugin_id' 
+	);
 	return $self->_doDelete('installed_plugin', [ $plugin->{id} ] );
 }
 

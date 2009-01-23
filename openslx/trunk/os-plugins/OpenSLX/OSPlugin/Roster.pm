@@ -78,10 +78,10 @@ sub getPluginAttrInfo
 	return $plugins{$pluginName}->getAttrInfo();
 }
 
-=item C<addAllDefaultAttributesToHash()>
+=item C<addAllStage3AttributesToHash()>
 
-Fetches attribute info from all available plugins and adds it to the given
-hash-ref.
+Fetches attribute info relevant for stage3 (i.e. system- or client-attributes) 
+from all available plugins and adds it to the given hash-ref.
 
 =over
 
@@ -93,7 +93,7 @@ hash-ref.
 
 =cut
 
-sub addAllDefaultAttributesToHash
+sub addAllStage3AttributesToHash
 {
 	my $class    = shift;
 	my $attrInfo = shift;

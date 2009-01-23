@@ -60,8 +60,6 @@ openslxInit();
 my $action = shift @ARGV || '';
 
 if ($action =~ m[^list-a]i) {
-	my @pluginFolders 
-		= grep { -d $_ } glob("$openslxConfig{'base-path'}/lib/plugins/*");
 	print _tr("List of available plugins:\n");
 	require OpenSLX::OSPlugin::Roster;
 	my $pluginInfo = OpenSLX::OSPlugin::Roster->getAvailablePlugins();
@@ -104,82 +102,154 @@ if ($action =~ m[^list-a]i) {
 	my $engine = OpenSLX::OSPlugin::Engine->new;
 	$engine->initialize(undef, $vendorOSName);
 	my @installedPlugins = $engine->getInstalledPlugins();
+
 	if (!@installedPlugins) {
-		push @installedPlugins, '<none>';
+		push @installedPlugins, { plugin_name => '<none>' };
 	}
 	print _tr("List of plugins installed in vendor-OS '$vendorOSName':\n");
-	print join('', map { "\t$_\n" } sort @installedPlugins);
+	print join(
+		'', 
+		map { 
+			if ($option{verbose}) {
+				my $attributes 
+					= _tr("The following attributes were applied:")
+						. "\n\t        ";
+				my $pluginAttrs = $_->{attrs};
+				$attributes .= join(
+					"\n\t        ", 
+					map { 
+						$_ . '=' 
+							. (
+								defined $pluginAttrs->{$_} 
+									? $pluginAttrs->{$_} 
+									: '-'
+							)  
+					}
+					sort keys %$pluginAttrs
+				);
+				"\n\t$_->{plugin_name}\n\t    $attributes\n";
+			}
+			else {
+				"\t$_->{plugin_name}\n";
+			}
+		} 
+		sort @installedPlugins
+	);
 } elsif ($action =~ m[^install]i) {
-	if (scalar(@ARGV) != 2) {
+	if (scalar(@ARGV) < 2) {
 		print STDERR _tr(
-			"You need to specify exactly one plugin-name and one vendor-OS!\n"
+			"You need to specify a vendor-OS and at least one plugin-name!\n"
 		);
 		pod2usage(2);
 	}
-	my $pluginName   = shift @ARGV;
 	my $vendorOSName = shift @ARGV;
+	my $pluginAttrs  = parsePluginAttrs(1);
 
 	# we chdir into the script's folder such that all relative paths have
 	# a known starting point:
 	chdir($FindBin::RealBin)
 		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 
-	# create OSPlugin-engine for given plugin and vendor-OS and start it:
-	my $engine = OpenSLX::OSPlugin::Engine->new;
-	$engine->initialize($pluginName, $vendorOSName);
-	if (!-e $engine->{'plugin-path'}) {
-		die _tr("plugin '%s' doesn't exist, giving up!\n",
-			$engine->{'plugin-path'});
-	}
-	if ($vendorOSName ne '<<<default>>>' && !-e $engine->{'vendor-os-path'}) {
-		die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
-			$engine->{'vendor-os-path'});
-	}
-	if ($engine->installPlugin()) {
-		print _tr(
-			"Plugin $pluginName has been installed into vendor-OS '$vendorOSName'.\n"
+	for my $pluginName (keys %$pluginAttrs) {
+		# create & start OSPlugin-engine for vendor-OS and current plugin:
+		my $engine = OpenSLX::OSPlugin::Engine->new;
+		$engine->initialize(
+			$pluginName, $vendorOSName, $pluginAttrs->{$pluginName}
 		);
+		if (!-e $engine->{'plugin-path'}) {
+			die _tr("plugin '%s' doesn't exist, giving up!\n",
+				$engine->{'plugin-path'});
+		}
+		if ($vendorOSName ne '<<<default>>>' 
+		&& !-e $engine->{'vendor-os-path'}) {
+			die _tr(
+				"vendor-OS '%s' doesn't exist, giving up!\n",
+				$engine->{'vendor-os-path'}
+			);
+		}
+		if ($engine->installPlugin()) {
+			print _tr(
+				"Plugin $pluginName has been installed into vendor-OS '$vendorOSName'.\n"
+			);
+		}
 	}
 } elsif ($action =~ m[^remove]i) {
-	if (scalar(@ARGV) != 2) {
+	if (scalar(@ARGV) < 2) {
 		print STDERR _tr(
-			"You need to specify exactly one plugin-name and one vendor-OS!\n"
+			"You need to specify a vendor-OS and at least one plugin-name!\n"
 		);
 		pod2usage(2);
 	}
-	my $pluginName   = shift @ARGV;
 	my $vendorOSName = shift @ARGV;
+	my $pluginAttrs  = parsePluginAttrs(0);
 
 	# we chdir into the script's folder such that all relative paths have
 	# a known starting point:
 	chdir($FindBin::RealBin)
 		or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
 
-	# create OSPlugin-engine for given plugin and vendor-OS and start it:
-	my $engine = OpenSLX::OSPlugin::Engine->new;
-	$engine->initialize($pluginName, $vendorOSName);
-	if (!-e $engine->{'plugin-path'}) {
-		die _tr("plugin '%s' doesn't exist, giving up!\n",
-			$engine->{'plugin-path'});
-	}
-	if ($vendorOSName ne '<<<default>>>' && !-e $engine->{'vendor-os-path'}) {
-		die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
-			$engine->{'vendor-os-path'});
-	}
-	if ($engine->removePlugin()) {
-		print _tr(
-			"Plugin $pluginName has been removed from vendor-OS '$vendorOSName'.\n"
+	for my $pluginName (keys %$pluginAttrs) {
+		# create & start OSPlugin-engine for vendor-OS and current plugin:
+		my $engine = OpenSLX::OSPlugin::Engine->new;
+		$engine->initialize(
+			$pluginName, $vendorOSName, $pluginAttrs->{$pluginName}
 		);
+		if (!-e $engine->{'plugin-path'}) {
+			die _tr("plugin '%s' doesn't exist, giving up!\n",
+				$engine->{'plugin-path'});
+		}
+		if ($vendorOSName ne '<<<default>>>' && !-e $engine->{'vendor-os-path'}) {
+			die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
+				$engine->{'vendor-os-path'});
+		}
+		if ($engine->removePlugin()) {
+			print _tr(
+				"Plugin $pluginName has been removed from vendor-OS '$vendorOSName'.\n"
+			);
+		}
 	}
 } else {
 	vlog(0, _tr(unshiftHereDoc(<<'	END-OF-HERE'), $0));
 		You need to specify exactly one action:
 			install <plugin-name> <vendor-OS-name>
+			list-attributes
 			list-available
 			list-installed
 			remove <plugin-name> <vendor-OS-name>
 		Try '%s --help' for more info.
 	END-OF-HERE
+}
+
+sub parsePluginAttrs
+{
+	my $acceptAttributes = shift;
+	
+	my (%pluginAttrs, $pluginName, @attrSpecs);
+	for my $arg (@ARGV) {
+		if ($arg =~ m{^(.+)=(.*)$}) {
+			next if !$acceptAttributes;
+			my $attr  = $1;
+			my $value = $2;
+			if ($value =~ m{^(-|undef)$}) {
+				$value = undef;
+			}
+			if ($attr =~ m{^(.+)::}) {
+				$pluginName = $1;
+			}
+			else {
+				if (!defined $pluginName) {
+					die _tr('You have to give a plugin-name before you can specify unscoped attributes!');
+				}
+				$attr = $pluginName . '::' . $attr;
+			}
+			$pluginAttrs{$pluginName}->{$attr} = $value;
+		} 
+		else {
+			$pluginName = $arg;
+			$pluginAttrs{$pluginName} = {};
+		}
+	}
+	return \%pluginAttrs;
 }
 
 =head1 NAME
@@ -202,21 +272,24 @@ slxos-plugin [options] <action>
 
 =over 8
 
-=item B<<     install <plugin-name> <vendor-OS-name> >>
+=item B<<     install <vendor-OS-name> <plugin-name> [<attr-name>=<value> ...] [<plugin-name>] ... >>
 
-installs the OS-plugin with the given name into the specified vendor-OS
+installs the OS-plugin(s) with the given name(s) into the specified 
+vendor-OS, using any attribute values as specified
 
 =item B<<     list-available >>
 
-list all available OS-plugins
+list all available OS-plugins, in verbose mode all the supported attributes
+are shown, too.
 
 =item B<<     list-installed <vendor-os-name> >>
 
-list all the plugins installed into the specified vendor-OS
+list all the plugins installed into the specified vendor-OS, in verbose mode
+all applied attributes are shown, too.
 
-=item B<<     remove <plugin-name> <vendor-OS-name> >>
+=item B<<     remove <vendor-OS-name> <plugin-name> [<plugin-name>] ... >>
 
-removes the OS-plugin with the given name from the specified vendor-OS
+removes the OS-plugin(s) with the given name(s) from the specified vendor-OS
 
 =back
 
@@ -261,9 +334,9 @@ Prints the version and exits.
 
 =head3 Installing a Plugin
 
-=item B<<     slxos-plugin install Example suse-10.2 >>
+=item B<<     slxos-plugin install suse-10.2 example >>
 
-installs the plugin named 'Example' into the installed vendor-OS 'suse-10.2'.
+installs the plugin named 'example' into the installed vendor-OS 'suse-10.2'.
 
 =back
 
@@ -271,9 +344,9 @@ installs the plugin named 'Example' into the installed vendor-OS 'suse-10.2'.
 
 =over 8
 
-=item B<<     slxos-plugin remove Example suse-10.2 >>
+=item B<<     slxos-plugin remove suse-10.2 example >>
 
-removes the plugin named 'Example' from the installed vendor-OS 'suse-10.2'.
+removes the plugin named 'example' from the installed vendor-OS 'suse-10.2'.
 
 =back
 

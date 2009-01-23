@@ -67,6 +67,7 @@ sub initialize
 	my $self         = shift;
 	my $pluginName   = shift;
 	my $vendorOSName = shift;
+	my $givenAttrs   = shift || {};
 
 	$self->{'vendor-os-name'} = $vendorOSName;
 
@@ -92,6 +93,27 @@ sub initialize
 		$self->{'plugin-temp-path'}
 			= "$self->{'vendor-os-path'}/$self->{'chrooted-plugin-temp-path'}";
 		$self->{'chrooted-openslx-base-path'} = '/mnt/openslx';
+
+		# check and store given attribute set
+		my $knownAttrs = $self->{plugin}->getAttrInfo();
+		my @unknownAttrs 
+			= grep { !exists $knownAttrs->{$_} } keys %$givenAttrs;
+		if (@unknownAttrs) {
+			die _tr(
+				"The plugin '%s' does not support these attributes:\n\t%s",
+				$pluginName, join(',', @unknownAttrs)
+			);
+		}
+		$self->{'plugin-attrs'} = $givenAttrs;
+		my $defaultAttrs = $self->{plugin}->getAttrInfo();
+		my $dbAttrs = $self->_fetchInstalledPluginAttrs($vendorOSName);
+		for my $attrName (keys %$defaultAttrs) {
+			next if exists $givenAttrs->{$attrName};
+			$self->{'plugin-attrs'}->{$attrName}
+				= exists $dbAttrs->{$attrName}
+					? $dbAttrs->{$attrName}
+					: $defaultAttrs->{$attrName}->{default};
+		}
 	}
 	
 	return 1;
@@ -124,6 +146,7 @@ sub installPlugin
 					$self->{'chrooted-plugin-repo-path'}, 
 					$self->{'chrooted-plugin-temp-path'},
 					$self->{'chrooted-openslx-base-path'},
+					$self->{'plugin-attrs'},
 				);
 			}
 		);
@@ -426,10 +449,35 @@ sub _addInstalledPluginToDB
 			'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
 		);
 	}
-	$openslxDB->addInstalledPlugin($vendorOS->{id}, $self->{'plugin-name'});
+	$openslxDB->addInstalledPlugin(
+		$vendorOS->{id}, $self->{'plugin-name'}, $self->{'plugin-attrs'}
+	);
 	$openslxDB->disconnect();
 
 	return 1;
+}
+
+sub _fetchInstalledPluginAttrs
+{
+	my $self = shift;
+	
+	my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
+	$openslxDB->connect();
+	my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
+		name => $self->{'vendor-os-name'},
+	} );
+	if (!$vendorOS) {
+		die _tr(
+			'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
+		);
+	}
+	my $installedPlugin = $openslxDB->fetchInstalledPlugins(
+		$vendorOS->{id}, $self->{'plugin-name'}
+	);
+	$openslxDB->disconnect();
+
+	return {} if !$installedPlugin;
+	return $installedPlugin->{attrs};
 }
 
 sub _removeInstalledPluginFromDB
