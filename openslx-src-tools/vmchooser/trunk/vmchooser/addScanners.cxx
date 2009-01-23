@@ -122,6 +122,7 @@ bool addScanners(xmlNode* node, char* script) {
         tindex = 0;
       }
     }
+    pclose(inp);
     return true;
   }
   fprintf(stderr, "Couldn't run \"%s\" script!", script);

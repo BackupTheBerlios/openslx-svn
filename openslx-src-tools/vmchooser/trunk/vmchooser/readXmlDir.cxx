@@ -234,59 +234,60 @@ DataEntry** readXmlDir(char* path)
   char* fpath = getFolderName();
   FILE* inp;
 
-        LIBXML_TEST_VERSION
-        if ( path== NULL) {
-                return NULL;
-        }
+  LIBXML_TEST_VERSION
+  if ( path== NULL) {
+          return NULL;
+  }
 
-        if( (inp = popen(string(fpath).append("/")
-              .append(filterscript).append(" ")
-              .append(path).c_str(), "r" )) ) {
-          while(fgets(line, MAX_LENGTH, inp ) != NULL) {
-            xmlVec.push_back(string(line).substr(0,strlen(line)-1) );
-          }
-          pclose(inp);
-        }
+  if( (inp = popen(string(fpath).append("/")
+        .append(filterscript).append(" ")
+        .append(path).c_str(), "r" )) ) {
+    while(fgets(line, MAX_LENGTH, inp ) != NULL) {
+      xmlVec.push_back(string(line).substr(0,strlen(line)-1) );
+    }
+    pclose(inp);  
+  }
+  free(fpath);
 
-        xmlDoc *doc = NULL;
-        int c = 0;
-        string::size_type loc;
+  xmlDoc *doc = NULL;
+  int c = 0;
+  string::size_type loc;
 
-        DataEntry** result = (DataEntry**) malloc(xmlVec.size() * sizeof(DataEntry*) +1);
+  DataEntry** result = (DataEntry**) malloc(xmlVec.size() * sizeof(DataEntry*) +1);
 
-        for (unsigned int i=0; i < xmlVec.size(); i++) {
-                loc = xmlVec[i].find( "Vorlage" );
-                if( loc != string::npos ) {
-                  // FOUND Vorlage
-                  continue;
-                }
-                
-                struct stat m;
-                stat(xmlVec[i].c_str(), &m);
+  for (unsigned int i=0; i < xmlVec.size(); i++) {
+    loc = xmlVec[i].find( "Vorlage" );
+    if( loc != string::npos ) {
+      // FOUND Vorlage
+      continue;
+    }
+    
+    struct stat m;
+    stat(xmlVec[i].c_str(), &m);
 
 
-                /* DEBUG */
-                //printf("File: %s, COUNT: %d\n", xmlVec[i].c_str(), xmlVec.size());
-                if ( S_ISDIR(m.st_mode) ) {
-                        continue;
-                }
+    /* DEBUG */
+    //printf("File: %s, COUNT: %d\n", xmlVec[i].c_str(), xmlVec.size());
+    if ( S_ISDIR(m.st_mode) ) {
+            continue;
+    }
 
-                doc = xmlReadFile(xmlVec[i].c_str(), NULL, XML_PARSE_RECOVER);
-                if (doc == NULL) {
-                        fprintf(stderr, "error: could not parse file %s\n", xmlVec[i].c_str());
-                        continue;
-                }
+    doc = xmlReadFile(xmlVec[i].c_str(), NULL, XML_PARSE_RECOVER);
+    if (doc == NULL) {
+            fprintf(stderr, "error: could not parse file %s\n", xmlVec[i].c_str());
+            continue;
+    }
 
-                result[c] = get_entry(doc);
-                if (result[c] != NULL) {
-                        c++;
-                }
-                /* xmlDoc still needed to write back information for VMware etc. */
-                // xmlFreeDoc(doc);
-        }
+    result[c] = get_entry(doc);
+    if (result[c] != NULL) {
+            c++;
+    }
+    /* xmlDoc still needed to write back information for VMware etc. */
+    // xmlFreeDoc(doc);
+  }
 
-        result[c] = NULL;
-        return result;
+  result[c] = NULL;
+  return result;
 
 }
 

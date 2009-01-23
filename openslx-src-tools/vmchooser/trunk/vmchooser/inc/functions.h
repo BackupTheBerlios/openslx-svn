@@ -27,6 +27,7 @@ char* getFolderName();
 /* Adds the elements into xmlNode "printers" (1. argument) */
 bool addPrinters(xmlNode* node, char* script); 
 bool addScanners(xmlNode* node, char* script); 
+void addInfo(xmlNode* node); /* This is defined in addPrinters.cxx */
 
 /* Write configuration xml */
 string writeConfXml(DataEntry& dat);

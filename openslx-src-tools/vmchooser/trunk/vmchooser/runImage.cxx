@@ -12,6 +12,9 @@
 #include <string>
 #include <boost/regex.hpp>
 
+/* define MAX_LENGTH for string in getFolderName */
+const int MAX_LENGTH = 200;
+
 
 /** *************************************************************
  * void runImage runs a (virtual machine) image using fork()
@@ -83,8 +86,7 @@ string runImage(DataEntry& dat, string confxml)
  * Helper-Function: Get folder name
  */
 char* getFolderName() {
-  const int MAX_LENGTH = 200;
-
+  
   /* Var for the folder name */
   char* pname = (char*) malloc(MAX_LENGTH);
   int result;
@@ -136,21 +138,20 @@ string writeConfXml(DataEntry& dat) {
   // add "printers" and "scanners" - XML-Nodes
   addPrinters(root, (char*)pskript.c_str());
   
-  //char* pname = getFolderName();
   pskript = pname + "/scanners.sh";
   addScanners(root, (char*)pskript.c_str());
+
+  // add hostname and username information
+  addInfo(root);
   
-  //xmlSaveFile("-", dat.xml);
+ 
   srand(time(NULL));
-  
   string xmlfile;
   ostringstream i;
   i <<  "/tmp/run" << rand() << ".xml";
   xmlfile = i.str();
-  
-  //ofstream file("/tmp/debug", ios_base::app);
-  //file << xmlfile << rand()<< endl;
-  
+
+  //xmlSaveFile("-", dat.xml);
   xmlSaveFile( (char*) xmlfile.c_str(), dat.xml);
   return xmlfile;
 }
