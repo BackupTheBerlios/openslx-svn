@@ -226,12 +226,6 @@ config_sshd
 # simple network management protocol agent
 config_snmp
 
-# setup afs client stuff
-config_afs
-
-# setup nfsv4/krb stuff
-config_nfsv4
-
 # configure samba service
 config_samba
 

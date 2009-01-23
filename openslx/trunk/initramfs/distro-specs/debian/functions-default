@@ -58,7 +58,7 @@ config_distro () {
   #rm /mnt/etc/udev/rules.d/*persistent-net.rules >/dev/null 2>&1
  
   # set default runlevel
-  sed -e "s/.*initdefault/id:${D_INITDEFAULT}:initdefault/" -i /mnt/etc/inittab
+  sed -e "s/.*initdefault/id:3:initdefault/" -i /mnt/etc/inittab
 
   # create needed auxiliary directories in (/mnt)/var,/etc,...
   testmkd /mnt/var/run/screens root:utmp 0755
