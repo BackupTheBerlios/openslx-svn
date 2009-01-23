@@ -115,8 +115,7 @@ if ($action =~ m[^import]i) {
     chdir($FindBin::RealBin)
         or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
     $engine->initialize($vendorOSName, 'install');
-    my $rootPassword = readPassword("root-password for new system> ");
-    $engine->installVendorOS({ 'root-password' => $rootPassword });
+    $engine->installVendorOS();
 } elsif ($action =~ m[^clone]i) {
     my $source = shift @ARGV;
     my $vendorOSName = shift @ARGV;
