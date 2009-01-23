@@ -124,26 +124,8 @@ for opts in $(sed "s/#.*//" /etc/initramfs-setup) ${KCMDLINE} ; do
     shutdown)
       cat <<EOL
 
-
-
-                #####
-               #     # #    # #    # ##### ##### # #    #  ####
-               #       #    # #    #   #     #   # ##   # #    #
-                #####  ###### #    #   #     #   # # #  # #
-                     # #    # #    #   #     #   # #  # # #  ###
-               #     # #    # #    #   #     #   # #   ## #    #
-                #####  #    #  ####    #     #   # #    #  ####
-
-                ######                          ######   #####
-                #     #  ####  #    # #    #    #     # #     #
-                #     # #    # #    # ##   #    #     # #
-                #     # #    # #    # # #  #    ######  #
-                #     # #    # # ## # #  # #    #       #
-                #     # #    # ##  ## #   ##    #       #     #
-                ######   ####  #    # #    #    #        #####
-
-
-
+                     SHUTTING DOWN PC!
+                     
 EOL
       echo "o" >/proc/sysrq-trigger
     ;;
@@ -173,6 +155,10 @@ in $0\ncountry=\"${COUNTRY}\"" >>/etc/initramfs-setup
         echo -e "#!/bin/ash\nash" >/bin/debugshell
         chmod u+x /bin/debugshell
         getty -i -n -l /bin/debugshell 38400 tty2 &
+        # start logging (debuglevel >=3)
+        echo "Syslog started on third console (tty3)"
+        syslogd -C2048
+        logread -f > /dev/tty3 &
       fi
     ;;
     # essid for WLAN boot (experimental, might be moved to a module component

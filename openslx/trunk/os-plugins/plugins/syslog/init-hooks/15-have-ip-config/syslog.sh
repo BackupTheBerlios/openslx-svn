@@ -4,7 +4,12 @@ if [ -e /initramfs/plugin-conf/syslog.conf ]; then
     # TODO: maybe limit the maximum log file size via rotation?
     params="-s 0"
     if [ -n "$syslog_host" ]; then
-      params="$params -R ${syslog_host}:${syslog_port}"
+      if [ -n "${syslog_port}" ]; then
+        host="${syslog_host}:${syslog_port}"
+      else
+        host="${syslog_host}"
+      fi
+      params="$params -R ${host}"
     fi
     echo "syslogd $params ..."
     syslogd $params >/dev/null 2>&1
