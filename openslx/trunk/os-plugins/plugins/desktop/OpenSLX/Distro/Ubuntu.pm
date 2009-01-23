@@ -134,6 +134,10 @@ sub setupKDEHOME
     End-of-Here
 
     spitFile($path, $script);
+    system('grep -q "mkdir -m 700 -p \$kdehome/share/apps" /usr/bin/startkde ||\
+        sed -i -e "s,mkdir -m 700 -p \$kdehome/share/config,\
+mkdir -m 700 -p \$kdehome/share/config\nmkdir -m 700 -p \$kdehome/share/apps," \
+        /usr/bin/startkde');
 
     return;
 }
