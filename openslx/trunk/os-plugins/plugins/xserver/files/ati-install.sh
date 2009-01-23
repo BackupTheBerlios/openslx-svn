@@ -42,7 +42,7 @@ cp 2.6.x/Makefile .
 uname_r=$(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)
 sed -i "s,^KVER.*$,KVER = ${uname_r}," Makefile
 # TODO: less verbose
-make -C /lib/modules/2.6.18.8-0.9-bigsmp/build M=$(pwd) GCC_VER_MAJ=${GCC_VERSION}
+make -C /lib/modules/${uname_r}/build M=$(pwd) GCC_VER_MAJ=${GCC_VERSION}
 
 cd /opt/openslx/plugin-repo/xserver/ati
 

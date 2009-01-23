@@ -19,7 +19,8 @@ cd ${TMP_FOLDER}
 ${PKG_FOLDER}/${FILE} -x > /dev/null
 #todo: check if it extracted like it should...
 
-NVPATH=${TMP_FOLDER}/${FILE/.run/}
+FILEPATH=$(echo ${FILE}|sed 's/.run//')
+NVPATH="${TMP_FOLDER}/${FILEPATH}"
 mv "${NVPATH}/usr" "${PLUGIN_PATH}/nvidia"
 
 echo "  * prepare kernel module"
