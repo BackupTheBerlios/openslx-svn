@@ -355,14 +355,21 @@ sub _copyBusybox
 		"$openslxConfig{'base-path'}/share/busybox/busybox", '/bin/busybox'
 	);
 	
-	my @busyboxApplets = qw(
-		ar arping ash bunzip2 cat chmod chown chroot cp cpio cut
-	    date dd df dmesg du echo env expr fdisk free grep gunzip hwclock
-	    insmod id ip kill killall ln ls lsmod mdev mkdir mknod mkswap 
-	    modprobe mount mv nice ping printf ps rdate rm rmmod sed sleep 
-	    sort swapoff swapon switch_root tar test tftp time touch tr 
-	    udhcpc umount uptime usleep vconfig vi vncpasswd wget zcat zcip
-	);
+	my $busyboxForHost 
+		= "$openslxConfig{'base-path'}/share/busybox/busybox"
+			. ( hostIs64Bit() ? '.x86_64' : '.i586' );
+
+	my $busyboxHelp = qx{$busyboxForHost --help};
+	if ($busyboxHelp !~ m{defined functions:(.+)\z}ims) {
+		die "unable to parse busybox --help output:\n$busyboxHelp";
+	}
+	my $rawAppletList = $1;
+	my @busyboxApplets 
+		=	map {
+				$_ =~ s{\s+}{}igms;
+				$_;
+			}
+			split m{,}, $rawAppletList;
 	foreach my $applet (@busyboxApplets) {
 		$self->addCMD("ln -sf /bin/busybox $self->{'build-path'}/bin/$applet");
 	}
