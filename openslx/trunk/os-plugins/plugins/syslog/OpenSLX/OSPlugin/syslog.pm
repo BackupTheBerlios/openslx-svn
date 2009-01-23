@@ -153,7 +153,6 @@ sub installationPhase
         $self->_setupSyslogNG();
     }
     elsif ($self->{kind} eq 'syslogd') {
-die 'sorry, support for kind "syslogd" is not implemented yet!';
         $self->_setupSyslogd();
     }
     else {
@@ -251,6 +250,31 @@ sub _setupSyslogd
         #!/bin/ash
         # written by OpenSLX-plugin 'syslog'
 
+        cat >/mnt/etc/syslog.conf <<END
+        # written by OpenSLX-plugin 'syslog'
+         *.=debug;\
+            auth,authpriv.none;\
+            news.none;mail.none     -/var/log/debug
+         *.=info;*.=notice;*.=warn;\
+            auth,authpriv.none;\
+            cron,daemon.none;\
+            mail,news.none          -/var/log/messages
+
+        END
+        
+        if [ -n "\${syslog_host}" ]; then
+        [ -z \${syslog_port} ] && syslog_port=514
+        cat >/mnt/etc/syslog.conf <<END
+         *.*                        @${syslog_host}
+        END
+        fi
+
+        if [ -n "\${syslog_file}" ]; then
+        cat >/mnt/etc/syslog.conf <<END
+         *.*                        ${syslog_file}
+        };
+        END
+        fi
 
         rllinker $rlInfo->{scriptName} $rlInfo->{startAt} $rlInfo->{stopAt}
 
