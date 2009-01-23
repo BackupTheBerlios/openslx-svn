@@ -57,6 +57,8 @@
     <shareds param="true">
      <shared name="" path="" pass=""></shared>
     </shareds>
+    # there is the ability to protect an image for a while using a
+    # password. Helpfull for courses (with special software licences).
     <locked param="true">
     </locked>
   </eintrag>
