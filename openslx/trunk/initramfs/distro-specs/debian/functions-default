@@ -14,17 +14,11 @@
 
 # distro specific configuration variables used in the setup functions
 # (formerly done via config-*, these variables are disputable ...)
-# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using 
-# bind mounts
 # D_DIRINBINDMNT - lists of directories to be created in bind mounted rw part
 # of the client filesystem
 # D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
 # TempFS usage
 # D_DIRINDXS - directories in client filesystem which should be present anyhow
-D_ETCEXCL="etc/gconf/*\n*.old\n*-\n\
-etc/autoinstall\nlogrotate*\nbootloader\n*~\n\
-pptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
-X11/xdm/pixmaps\ndhclient.script"
 D_BINDMPTS="tmp root home"
 D_DIRINBINDMNT="/var/run /var/log /var/tmp /var/lib/gdm /etc/X11"
 D_RODIRSINRW="etc/gconf etc/X11/xkb /var/lib/texmf  /var/cache/fontconfig \

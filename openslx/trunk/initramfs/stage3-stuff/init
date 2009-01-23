@@ -735,7 +735,7 @@ elif [ -z "${cowloop}" ] ; then
     echo "*$i/*" >>/tmp/etc.exclude
   done
   # add list of files to be excluded and common excludes to the filter list
-  echo -e "${D_ETCEXCL}\n*~\n*.old\n*-\nxorg.conf*" >>/tmp/etc.exclude
+  echo -e "-\ndhcp*\n*~\n*.old\n*-\nxorg.conf*" >>/tmp/etc.exclude
   # if ld.so.cache is to be generated then do not copy the file
   [ -n "${ldsc}" ] && echo -e "ld.so.cache*" >>/tmp/etc.exclude
   # for tar exclude lists might be used, more difficult for cp

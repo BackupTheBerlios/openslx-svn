@@ -16,18 +16,12 @@
 
 # settings of central variables (formerly done via config-*, these variables
 # are disputable ...)
-# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using 
-# bind mounts
 # D_DIRINBINDMNT - lists of directories to be created in bind mounted rw
 # part of the client filesystem
 # D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
 # TempFS usage
 # D_DIRINDXS - directories in client filesystem which should be present 
 # anyhow
-D_ETCEXCL="*.old\n*-\n*.rpmorig\n*.rpmnew\n\
-*.YaST2save\netc/autoinstall\nlogrotate*\nbootloader\n*~\n\
-*.SuSEconfig.saved\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
-X11/xdm/pixmaps\n*.rpmsave\ndhclient*script"
 D_BINDMPTS="tmp root media home"
 D_DIRINBINDMNT="/var/run /var/log /var/tmp"
 D_RODIRSINRW="/etc/opt/gnome/gconf /etc/X11/xkb /var/adm /var/lib/texmf \
