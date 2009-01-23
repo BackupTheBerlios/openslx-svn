@@ -41,20 +41,13 @@ sub initialize
     return 1;
 }
 
-sub getRunlevelScriptPath
-{
-    my $self = shift;
-    
-    return '/etc/init.d/vmware';
-}
-
 sub fillRunlevelScript
 {
     my $self     = shift;
     my $location = shift;
 
     my $script = unshiftHereDoc(<<"    End-of-Here");
-        #!/bin/sh
+        #! /bin/sh
         # completely generic start/stop script, generated via stage1 'vmware' plugin
         # install
         # inspiration taken from vmware start script:
