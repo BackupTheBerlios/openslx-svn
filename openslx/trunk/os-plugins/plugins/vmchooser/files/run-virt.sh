@@ -18,15 +18,18 @@
 #      fied virtualization tool.
 # -----------------------------------------------------------------------------
 
+# Sanity checks
+###############################################################################
+
 # check for running in graphical environment otherwise no much use here
 [ -z "$DISPLAY" ] && echo -e "\n\tStart only within a desktop!\n" && exit 1
 
-# The PATH...
-export PATH="${PATH}:/var/X11R6/bin:/usr/X11R6/bin"
+# test if the xml path/file is valid (gotten via commandline first parameter)
+xml=$1
+[ -e "${xml}" ] && echo -e "\n\tNo XML file given!\n" && exit 1
 
 # Read needed variables from XML file
 ###############################################################################
-xml=$1
 
 # file name of the image
 imagename=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
@@ -153,6 +156,9 @@ filecheck ()
 # setup the rest of the environment and run the virtualization tool just confi-
 # gured
 ################################################################################
+
+# The PATH...
+export PATH="${PATH}:/var/X11R6/bin:/usr/X11R6/bin"
 
 # logo for console
 cat <<EOL
