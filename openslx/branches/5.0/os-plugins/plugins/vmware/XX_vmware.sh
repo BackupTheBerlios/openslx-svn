@@ -194,6 +194,9 @@ ${vmware_imagesrc}." nonfatal
 prefvmx.useRecommendedLockedMemSize = "TRUE"' | sed -e "s/^ *//" \
       >/mnt/etc/vmware/config
 
+    # fix ubuntu keymap problems
+    echo "xkeymap.nokeycodeMap = true" >> /mnt/etc/vmware/config
+
     # copy version depending files - the vmchooser expects for every virtua-
     # lization plugin a file named after it (here run-vmware.include)
     testmkd /mnt/etc/opt/openslx
