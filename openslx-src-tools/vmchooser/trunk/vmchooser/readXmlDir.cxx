@@ -99,10 +99,6 @@ DataEntry* get_entry(xmlDoc * doc)
         char *tempc = NULL;
         DataEntry* de = new DataEntry();
         
-        if(doc->name != NULL) {
-        	de->xml_name = string(doc->name);
-        }
-
         tempc = getAttribute(doc,(char *)"short_description");
         if (tempc != NULL ) {
                 de->short_description = tempc;
@@ -282,6 +278,7 @@ DataEntry** readXmlDir(char* path)
 
     result[c] = get_entry(doc);
     if (result[c] != NULL) {
+    	    result[c]->xml_name = xmlVec[i];
             c++;
     }
     /* xmlDoc still needed to write back information for VMware etc. */

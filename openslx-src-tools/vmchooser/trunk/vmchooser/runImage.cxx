@@ -162,7 +162,7 @@ string writeConfXml(DataEntry& dat) {
   addScanners(root, (char*)pskript.c_str());
 
   // add hostname and username information
-  addInfo(root);
+  addInfo(root, &dat);
   
  
   srand(time(NULL));
