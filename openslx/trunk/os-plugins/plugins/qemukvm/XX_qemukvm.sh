@@ -62,7 +62,7 @@ if [ -e /initramfs/plugin-conf/qemukvm.conf ]; then
     # copy version depending files - the vmchooser expects for every virtua-
     # lization plugin a file named after it (here run-qemukvm.include)
     testmkd /mnt/etc/opt/openslx
-    cp /mnt/opt/openslx/plugin-repo/run-qemukvm/files/run-virt.include \
+    cp /mnt/opt/openslx/plugin-repo/run-qemukvm/run-virt.include \
       /mnt/etc/opt/openslx/run-qemukvm.include
 
   fi

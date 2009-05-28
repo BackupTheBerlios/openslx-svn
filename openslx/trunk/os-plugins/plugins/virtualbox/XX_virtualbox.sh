@@ -62,7 +62,7 @@ if [ -e /initramfs/plugin-conf/virtualbox.conf ]; then
     # copy version depending files - the vmchooser expects for every virtua-
     # lization plugin a file named after it (here run-virtualbox.include)
     testmkd /mnt/etc/opt/openslx
-    cp /mnt/opt/openslx/plugin-repo/run-virtualbox/files/run-virt.include \
+    cp /mnt/opt/openslx/plugin-repo/run-virtualbox/run-virt.include \
       /mnt/etc/opt/openslx/run-virtualbox.include
 
   fi

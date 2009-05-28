@@ -18,6 +18,15 @@
 # declaration of default variables
 ################################################################################
 
+# temporary disk space for logs, etc...
+redodir=/tmp/vmware/${USER}
+# dir for configs and vmem file
+confdir=${redodir}
+# configfile
+conffile="${confdir}/run-vmware.conf"
+# users vmware config folder
+vmhome="${HOME}/.vmware"
+
 # serial port defined (e.g. "ttyS0" or "autodetect")
 serial=$(grep -i "<serial port=\"" ${xml} | awk -F "\"" '{ print $2 }')
 case "$serial" in
@@ -71,25 +80,16 @@ ide="TRUE"
 scsi="FALSE"
 hddrv="ide"
 
+# get version info
+. /etc/vmware/config
+
 # VMplayer buildversion
-vmbuild=
+vmbuild=$buildversion
+vmversion=$version
 
 # VMware start options
 #-X = fullscreen
 vmopt="-X"
-
-# temporary disk space for logs, etc...
-# use /tmp/vmware/${USER} if /tmp sits on NFS import
-redodir=/tmp/vmware/${USER}
-
-# dir for configs and vmem file
-confdir=${redodir}
-
-# configfile
-conffile="${confdir}/run-vmware.conf"
-
-# users vmware config folder
-vmhome="${HOME}/.vmware"
 
 # config and hardware version ex. 8/6 for VMware6.5
 # will be replaced automatically during run of vmware/player
@@ -102,7 +102,7 @@ vmdir="/var/lib/virt/vmware/vmware65"
 
 # special Variables, persistence vmware?
 #TODO: do we really need it? Should be everywhere nonpersistent
-np="independent-nonpersistent"
+np=""
 
 
 #TODO: check for a faster way, perhaps we should put this into XML
@@ -123,10 +123,6 @@ fi
 
 # Should we debug? Hell yes, we should always debug!
 debug=0
-
-#TODO: Bad done... we should do this another way later
-version=$(head -n 20 $0 | grep "# Version: " | awk '{print $3}')
-
 
 filecheck ()
 {
@@ -202,7 +198,7 @@ numvcpus = \"1\"
 # ide-disks
 ide0:0.present = \"${ide}\"
 ide0:0.fileName = \"${diskfile}\"
-ide0:0.mode = \"${np}\"
+ide0:0.mode = \"independent-nonpersistent\"
 ide1:0.present = \"${cdr_1}\"
 ide1:0.autodetect = \"TRUE\"
 ide1:0.fileName = \"auto detect\"
@@ -217,7 +213,7 @@ scsi0.present = \"${scsi}\"
 scsi0:0.present = \"${scsi}\"
 scsi0:0.fileName = \"${diskfile}\"
 scsi0.virtualDev = \"lsilogic\" #\"${hddrv}\"
-scsi0:0.mode = \"${np}\"
+scsi0:0.mode = \"independent-nonpersistent\"
 
 # floppies
 floppy0.present = \"${floppya}\"
@@ -353,7 +349,7 @@ mkdir -p ${vmhome} >/dev/null 2>&1
 
 ## log script information
 writelog "# File created by $0 (v.${version})\n# on $(date)\n"
-writelog "Starting with $(echo ${np} | sed 's/i.*-//g')-mode ...\n"
+writelog "Starting with nonpersistent mode ...\n"
 
 
 ## look for cdrom, dvd and add them to the vm config file
@@ -391,7 +387,7 @@ writelog "\tVMostype:\t${vmostype}"
 writelog "\tDisplayname:\t${displayname}"
 
 # check if image exists, etc...
-filecheck
+#filecheck
 
 # VMPlayer Version.
 # strings is the fastest and most secure way, vmplayer -v takes too much time
@@ -424,4 +420,3 @@ done
 # set the variables appropriately
 VIRTCMD=vmplayer
 VIRTCMDOPTS="${vmopt} ${conffile}"
-

@@ -26,13 +26,17 @@
 
 # test if the xml path/file is valid (gotten via commandline first parameter)
 xml=$1
-[ -e "${xml}" ] && echo -e "\n\tNo XML file given!\n" && exit 1
+[ -e "${xml}" ] || { echo -e "\n\tNo XML file given!\n" && exit 1; }
+
+# path to the xml file(just take the path to the xml file)
+imagepath=${xml%/*}
 
 # Read needed variables from XML file
 ###############################################################################
 
 # file name of the image
 imagename=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
+diskfile=$imagepath/$imagename
 
 # short description of the image (as present in the vmchooser menu line)
 short_description=$(grep "short_description param=\"" ${xml} | \
@@ -102,56 +106,19 @@ diskfile="${vmdir}/${imagename}"
 # check for files
 filecheck ()
 {
-  filecheck=$(LANG=us ls -lh ${diskfile} 2>&1)
-  writelog "Filecheck:\n${filecheck}\n"
-  #TODO: don't understand the sence in it
-  noimage=$(echo ${filecheck} | grep -i "no such file or directory" | wc -l)
-  rightsfile=${diskfile}
-
-  # check if link
-  # TODO: mistake with 2nd rightsfile if its in another directory?
-  if [ -L "${diskfile}" ]; then
-    # take link target
-    rightsfile=$(ls -lh ${diskfile} 2>&1 | awk -F "-> *" '{print $2}')
-    rightsfile=${vmdir}/${rightsfile}
-    filecheck=$(LANG=us ls -lh ${rightsfile} 2>&1)
-  fi
-
-  # does file exist
-  if [ "${noimage}" -ge "1" ]; then
-    writelog "Vmware Image Problem:\c "
-    writelog "\tThe image you've specified doesn't exist."
-    writelog "Filecheck says:\c "
-    writelog "\t\t${diskfile}:\n\t\t\tNo such file or directory"
-    writelog "Hint:\c "
-    writelog "\t\t\tCompare spelling of the image with your options.\n"
-    exit 1
-  fi
-
-  # readable?
-  if ! [ -r "${diskfile}" >/dev/null 2>&1 \
-    -o -r "${diskfile}" >/dev/null 2>&1 ]; then
-    writelog "Vmware Image Problem:\c "
-    writelog "\tThe image you've specified has wrong rights."
-    writelog "Filecheck says:\t\t$(echo ${filecheck} \
-      | awk '{print $1" "$3" "$4}') ${rightsfile}"
-    writelog "Hint:\t\t\tChange rights with: chmod a+r ${rightsfile}\n"
-    exit 1
-  fi
-
-  # writable (for persistent-mode)?
-  if ! [ -w "${diskfile}" >/dev/null 2>&1 \
-    -o -w "${diskfile}" >/dev/null 2>&1 ] \
-    && [ "${np}" = "independent-persistent" ]; then
-    writelog "Vmware Image Problem:\c "
-    writelog "\tThe image you have specified has wrong rights."
-    writelog "Filecheck says:\t\t$(echo ${filecheck} \
-      | awk '{print $1" "$3" "$4}') ${rightsfile}"
-    writelog "Hint:\t\t\tUse nonpersistent-mode or change rights to rw\n"
-    exit 1
-  fi
+  #filecheck=$(LANG=us ls -lh ${diskfile} 2>&1)
+  #writelog "Filecheck:\n${filecheck}\n"
+  :
 }
+# function to write to stdout and logfile
+writelog ()
+{
+  # write to stdout
+  echo -e "$1"
 
+  # log into file
+  echo -e "$1" >>run-virt.log
+}
 
 # setup the rest of the environment and run the virtualization tool just confi-
 # gured
