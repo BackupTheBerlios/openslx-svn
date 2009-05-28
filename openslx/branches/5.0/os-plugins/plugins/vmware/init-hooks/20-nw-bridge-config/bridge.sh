@@ -19,7 +19,7 @@ local nwifmac=${macaddr}
 
 # bridge 0 already defined or some other problem
 brctl addbr ${bridge} || exit 0
-brctl stp ${bridge} off
+brctl stp ${bridge} 0
 brctl setfd ${bridge} 0.000000000001
 ip link set addr ${nwifmac} ${bridge}
 ip link set dev ${nwif} up
