@@ -63,7 +63,9 @@ sub _createImage
         LABEL OpenSLX
         SAY Now loading OpenSLX preboot environment ...
         KERNEL vmlinuz
-        APPEND initrd=initramfs
+        APPEND initrd=initramfs debug=3
+        PROMPT 0
+        TIMEOUT 100
     End-of-Here
     spitFile("$imageDir/iso/isolinux/isolinux.cfg", $isolinuxConfig);
 
