@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2008..2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -86,7 +86,7 @@ sub writeBootloaderMenuFor
         $slxLabels .= "\tMENU LABEL ^$info->{label}\n";
         $slxLabels .= "\tKERNEL $vendorOSName/$kernelName\n";
         $slxLabels .= "\tAPPEND $append\n";
-        $slxLabels .= "\tIPAPPEND 1\n";
+        $slxLabels .= "\tIPAPPEND 3\n";
         my $helpText = $info->{description} || '';
         if (length($helpText)) {
             # make sure that text matches the given margin
