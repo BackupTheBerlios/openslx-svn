@@ -36,6 +36,7 @@ sub setupXserverScript
     $script .= unshiftHereDoc(<<'    End-of-Here');
         # Ubuntu specific extension to stage3 xserver.sh
         testmkd /mnt/var/run/xauth
+        testmkd /mnt/var/lib/xkb
     End-of-Here
 
     return $script;

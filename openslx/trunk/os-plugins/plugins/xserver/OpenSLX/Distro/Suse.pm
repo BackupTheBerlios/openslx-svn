@@ -37,6 +37,7 @@ sub setupXserverScript
 
     $script .= unshiftHereDoc(<<'    End-of-Here');
         # SuSE specific extension to stage3 xserver.sh
+        testmkd /mnt/var/lib/xkb/compiled
         testmkd /mnt/var/X11R6/bin
         testmkd /mnt/var/lib/xdm/authdir/authfiles 0700
         ln -s /usr/bin/Xorg /mnt/var/X11R6/bin/X

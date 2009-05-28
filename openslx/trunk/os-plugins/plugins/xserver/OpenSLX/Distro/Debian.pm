@@ -34,7 +34,8 @@ sub setupXserverScript
     my $script = $self->SUPER::setupXserverScript($repoPath);
 
     $script .= unshiftHereDoc(<<'    End-of-Here');
-        # debian specific extension to stage3 xserver.sh
+        # Debian specific extension to stage3 xserver.sh
+        testmkd /mnt/var/lib/xkb
     End-of-Here
 
     return $script;
