@@ -48,9 +48,6 @@ sub setupGDMScript
     my $configFile = $self->GDMPathInfo->{config};
 
     $script .= unshiftHereDoc(<<'    End-of-Here');
-        # Ubuntu clones might need to get the /etc/gdm/gdm.conf copied or
-        # better to have a fully blown gdm.conf-custom
-        # cp ... /mnt/etc/gdm/gdm.conf
         # cleanup after users Xorg session
         sed 's,^#!.*,,' /mnt/etc/gdm/PostSession/Default \
           >/mnt/etc/gdm/PostSession/Default.system
