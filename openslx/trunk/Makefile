@@ -51,18 +51,14 @@ tarball:
 	echo "OPENSLX_VERSION_SVNREV=\"$${OPENSLX_VERSION_SVNREV}\"" \
 		>>REVISION; \
 	echo "Creating OpenSLX $${OPENSLX_VERSION_STRING} tar ball "; \
-	if test -e "../openslx-$${OPENSLX_VERSION_STRING}" -a \
-	! -L "../openslx-$${OPENSLX_VERSION_STRING}"; then \
-		echo "Error: ../openslx-$${OPENSLX_VERSION_STRING} exists and is not a sym link! "; \
-		exit 1; \
-	fi; \
 	svn_repo_name=$$( pwd); \
 	svn_repo_name="$${svn_repo_name##*/}"; \
-	if ! test -L "../openslx-$${OPENSLX_VERSION_STRING}"; then \
+	if ! test -d "../openslx-$${OPENSLX_VERSION_STRING}"; then \
 		cd .. >/dev/null; \
-		ln -s "$${svn_repo_name}" "openslx-$${OPENSLX_VERSION_STRING}"; \
+		mkdir "openslx-$${OPENSLX_VERSION_STRING}"; \
+                mount --bind "$${svn_repo_name}" "openslx-$${OPENSLX_VERSION_STRING}"; \
 		cd - >/dev/null; \
-		OPENSLX_SOURCEDIR_SYMLINK_CREATED="yes"; \
+		OPENSLX_SOURCEDIR_BINDMOUNT_CREATED="yes"; \
 	fi; \
 	echo -e "$(SLX_CONFIG_PATH)\n\
 $(SLX_BASE_PATH)\n\
@@ -75,8 +71,9 @@ $(USR_BIN_PATH)/*" \
 		"$${svn_repo_name}/openslx-$${OPENSLX_VERSION_STRING}.tar.bz2" \
 		--exclude-from="$${svn_repo_name}/Make.exclude_from_tar" \
 		"openslx-$${OPENSLX_VERSION_STRING}/"; \
-	test "$${OPENSLX_SOURCEDIR_SYMLINK_CREATED}" = "yes" && \
-		rm -f "openslx-$${OPENSLX_VERSION_STRING}"; \
+	test "$${OPENSLX_SOURCEDIR_BINDMOUNT_CREATED}" = "yes" && \
+                umount "openslx-$${OPENSLX_VERSION_STRING}" && \
+		rm -rf "openslx-$${OPENSLX_VERSION_STRING}"; \
 	cd - >/dev/null; \
 	rm REVISION packaging/rpm/openslx-filelist
 
