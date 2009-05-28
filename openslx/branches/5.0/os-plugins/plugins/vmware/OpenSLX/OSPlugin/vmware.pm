@@ -684,4 +684,18 @@ sub _vmpl1Installation {
         
 }
 
+# The bridge configuration needs the bridge module to be present in early
+# stage3
+sub suggestAdditionalKernelModules
+{
+    my $self                = shift;
+    my $makeInitRamFSEngine = shift;
+
+    my @suggestedModules;
+
+    push @suggestedModules, qw( bridge );
+
+    return @suggestedModules;
+}
+
 1;
