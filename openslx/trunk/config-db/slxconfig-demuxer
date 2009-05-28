@@ -56,6 +56,8 @@ my (
         # number of system configurations written
     $systemErrCount,
         # number of systems that had errors
+    $bootEnvErrCount,
+        # number of boot environments that had errors
     $clientSystemConfCount,
         # number of (system-specific) client configurations written
     $initramfsCount,
@@ -153,12 +155,18 @@ writeConfigurations();
 
 my $wr = $option{dryRun} ? 'would have written' : 'wrote';
 my $errCount = $systemErrCount ? $systemErrCount : 'no';
-my $statusString 
+my $systemStatusString 
     = $systemErrCount ? "$errCount system(s) had errors" : 'all systems ok';
+$errCount = $bootEnvErrCount ? $bootEnvErrCount : 'no';
+my $bootEnvStatusString 
+    = $bootEnvErrCount 
+        ? "$errCount boot environment(s) had errors" 
+        : 'all boot-environments ok';
 print "\n", unshiftHereDoc(<<"End-of-Here");
     $wr $systemConfCount system-specific and $clientSystemConfCount client-specific configurations
     $initramfsCount initramfs were created
-    $statusString
+    $systemStatusString
+    $bootEnvStatusString
 End-of-Here
 
 $openslxDB->disconnect();
@@ -355,7 +363,16 @@ sub writeBootloaderMenus
         # now write bootloader menu with all bootable systems for this client
         my $bootEnv = bootEnvironmentForType($client->{attrs}->{boot_type});
         my $externalID = externalIDForClient($client);
-        $bootEnv->writeBootloaderMenuFor($client, $externalID, \@systemInfos);
+        my $success = eval {
+            $bootEnv->writeBootloaderMenuFor(
+                $client, $externalID, \@systemInfos
+            );
+            1;
+        };
+        if (!$success) {
+            print STDERR $@;
+            $bootEnvErrCount++;
+        }
     }
     return;
 }
