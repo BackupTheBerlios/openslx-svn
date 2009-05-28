@@ -1,17 +1,19 @@
 #!/bin/bash
+# -----------------------------------------------------------------------------
+# Copyright (c) 2007..2009 - RZ Uni FR
+# Copyright (c) 2007..2009 - OpenSLX GmbH
 #
-# Description:  Script for preparing VMware environment Diskless
-#               X Stations and interactive session chooser (v4)
-#               Gets a xml file, reads needed information from it and
-#               orwards it into B drive of vmplayer
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
 #
-# Author(s):    see project authors file
-#               last changes mj0, 20/10/2008
-# Copyright:    (c) 2003 - 2008 - RZ Universitaet Freiburg
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
 #
-# Version:      0.19.1
-#
-################################################################################
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+# runvmware-player-v25
+#    - processed in stage3 and available in stage4 as VMplayer 2.5 start script
+# -----------------------------------------------------------------------------
 
 ################################################################################
 ##
@@ -138,8 +140,9 @@ hver=7
 # TODO: Test it commented out
 hostname="VM-${HOST}"
 
-# Folder of VirtualMachine Images
-vmdir="/var/lib/vmware"
+# Folder of VirtualMachine Images (VMDKs of that type. Compatible images might
+# be found in older version folders too ...)
+vmdir="/var/lib/virt/vmware/vmware65"
 
 # special Variables, persistence vmware?
 #TODO: do we really need it? Should be everywhere nonpersistent
@@ -178,11 +181,6 @@ if [ $(echo ${imagename} | grep -cv "\-flat.vmdk") ]; then
     scsi="TRUE"  
   fi
 fi
-
-# command line variables
-# start with this this default commmand line options + extra
-# TODO: defaults laut datei --include /var/lib/vmware/tmpl/winconfig
-#     --include <includefile> include code right before program start
 
 # Should we debug? Hell yes, we should always debug!
 debug=0
