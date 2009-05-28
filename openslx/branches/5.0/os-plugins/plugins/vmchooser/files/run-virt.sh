@@ -207,10 +207,12 @@ EOL
 
 # Adjust sound volume
 writelog "Unmuting sound...\c "
-amixer -q sset Master 28 unmute 2>/dev/null
-amixer -q sset PCM 28 unmute 2>/dev/null
-amixer -q sset Headphone 28 unmute 2>/dev/null
-amixer -q sset Front 0 mute 2>/dev/null
+amixer -q sset Master 80% unmute 2>/dev/null
+amixer -q sset PCM 80% unmute 2>/dev/null
+amixer -q sset CD 80% unmute 2>/dev/null
+amixer -q sset Headphone 80% unmute 2>/dev/null
+amixer -q sset Front 80% umute 2>/dev/null      # In SUSE 11.0 it's Headphone
+amixer -q sset Speaker 0 mute 2>/dev/null       # annoying built-in speaker
 writelog "finished\n"
 
 # Copy guest configuration (with added information) config.xml to be accessed

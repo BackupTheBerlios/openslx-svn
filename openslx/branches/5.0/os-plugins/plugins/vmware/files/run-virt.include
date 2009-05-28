@@ -212,12 +212,8 @@ vmbuild=$buildversion
 vmversion=$version
 
 # VMware start options
-#-X = fullscreen
+# "-X": start in fullscreen
 vmopt="-X"
-
-# set the variables appropriately
-VIRTCMD=vmplayer
-VIRTCMDOPTS="${vmopt} ${conffile}"
 
 
 # hardware checks
@@ -349,6 +345,8 @@ done
 # logging and stdout
 ################################################################################
 
+logfile=${vmhome}/run-vmware.`hostname`.log
+
 # remove ols logs
 rm ${vmhome}/run-vmware.* >/dev/null 2>&1
 
@@ -359,7 +357,7 @@ writelog ()
   echo -e "$1"
 
   # log in file
-  echo -e "$1" >>${vmhome}/run-vmware.$$.log
+  echo -e "$1" >>${logfile}
 }
 
 # log script information
@@ -380,7 +378,7 @@ writelog "\tConfdir:\t${confdir}"
 writelog "\tConffile:\t${conffile}"
 writelog "\tRedodir:\t${redodir}"
 writelog "\tVMhome:\t\t${vmhome}"
-writelog "\tLogfile:\t${vmhome}/run-vmware.$$.log"
+writelog "\tLogfile:\t${logfile}"
 writelog "\t/tmp info: \
      $(grep "/tmp " /proc/mounts) $(df -h | grep " /tmp$" | awk '{print $2}')"
 # HW setup
@@ -404,4 +402,11 @@ else
   writelog "\t3D Graphics:\tdisabled"
 fi
 writelog "\tDisplayname:\t${displayname}\n"
+
+
+# finally set env for run-virt.sh
+################################################################################
+
+VIRTCMD=vmplayer
+VIRTCMDOPTS="${vmopt} ${conffile}"
 
