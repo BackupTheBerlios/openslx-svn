@@ -23,7 +23,6 @@ use File::Basename;
 use File::Path;
 
 use OpenSLX::Basics;
-use OpenSLX::MakeInitRamFS::Engine::PrebootCD;
 use OpenSLX::Utils;
 
 sub initialize
@@ -41,12 +40,6 @@ sub initialize
         rmtree($self->{'target-path'});
         mkpath("$self->{'target-path'}/client-config");
     }
-
-    $self->{'initramfs-factory'} = sub {
-        my $makeInitRamFSEngine 
-            = OpenSLX::MakeInitRamFS::Engine::PrebootCD->new(shift);
-        return $makeInitRamFSEngine;
-    };
 
     return 1;
 }

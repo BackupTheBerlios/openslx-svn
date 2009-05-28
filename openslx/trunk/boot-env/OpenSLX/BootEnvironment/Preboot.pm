@@ -24,6 +24,7 @@ use File::Path;
 
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:support);
+use OpenSLX::MakeInitRamFS::Engine::Preboot;
 use OpenSLX::Utils;
 
 sub writeBootloaderMenuFor
@@ -188,7 +189,8 @@ sub _makePrebootInitRamFS
         $params->{'debug-level'} = $debugLevel;
     }
 
-    my $makeInitRamFSEngine = $self->{'initramfs-factory'}->($params);
+    my $makeInitRamFSEngine 
+        = OpenSLX::MakeInitRamFS::Engine::Preboot->new($params);
     $makeInitRamFSEngine->execute($self->{'dry-run'});
 
     # copy back kernel-params, as they might have been changed (by plugins)

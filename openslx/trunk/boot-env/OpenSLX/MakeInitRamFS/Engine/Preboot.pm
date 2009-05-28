@@ -37,7 +37,7 @@ sub _collectCMDs
     $self->_writeSlxSystemConf();
 
     $self->_copyUclibcRootfs();
-    $self->_copyVariantSpecificFiles();
+    $self->_copyPrebootSpecificFiles();
 
     $self->{distro}->applyChanges($self);
 
@@ -124,6 +124,18 @@ sub _copyUclibcRootfs
 
     $self->addCMD("rsync $exclOpts -rlpt $uclibcRootfs/ $self->{'build-path'}");
     
+    return 1;
+}
+
+sub _copyPrebootSpecificFiles
+{
+    my $self = shift;
+
+    # write secondary rootfs-layer (including init) on top of base layer
+    my $prebootRootfs 
+        = "$openslxConfig{'base-path'}/share/boot-env/preboot/uclib-rootfs";
+    $self->addCMD("rsync -rlpt $prebootRootfs/ $self->{'build-path'}");
+
     return 1;
 }
 
