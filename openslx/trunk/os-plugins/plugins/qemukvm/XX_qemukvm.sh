@@ -8,9 +8,61 @@
 #
 # General information about OpenSLX can be found at http://openslx.org
 #
-# script is included from init via the "." load function - thus it has all
+# Script is included from init via the "." load function - thus it has all
 # variables and functions available
 
+write_udhcpd_conf ()
+{
+local cfgfile=$1
+echo "
+# udhcpd configuration file written by $0 during OpenSLX stage3 configuration
+
+# The start and end of the IP lease block
+start 		192.168.101.20
+end		192.168.101.100
+
+# The interface that udhcpd will use
+interface	NWIF
+
+# How long an offered address is reserved (leased) in seconds
+offer_time	6000
+
+# The location of the leases file
+lease_file	/var/lib/misc/udhcpd.leases
+
+# The location of the pid file
+pidfile	/var/run/udhcpd.pid
+
+opt	dns	$domain_name_servers
+option	subnet	255.255.255.0
+opt	router	192.168.10.2
+opt	wins	192.168.10.10
+option	domain	$domain_name
+
+# Currently supported options, for more info, see options.c
+#subnet
+#timezone
+#router
+#timesvr
+#namesvr
+#dns
+#logsvr
+#cookiesvr
+#lprsvr
+#bootsize
+#domain
+#swapsvr
+#rootpath
+#ipttl
+#mtu
+#broadcast
+#wins
+#lease
+#ntpsrv
+#tftp
+#bootfile
+" >$file
+}
 
 # check if the configuration file is available
 if [ -e /initramfs/plugin-conf/qemukvm.conf ]; then
@@ -64,6 +116,20 @@ ${qemukvm_imagesrc}." nonfatal
     testmkd /mnt/etc/opt/openslx
     cp /mnt/opt/openslx/plugin-repo/qemukvm/run-virt.include \
       /mnt/etc/opt/openslx/run-qemukvm.include
+    # create a template udhcpd configuration file
+    write_udhcpd_conf /mnt/etc/opt/openslx/udhcpd.qemukvm
+
+    # for the busybox dhcp server
+    testmkd /mnt/var/lib/misc
+    touch /mnt/var/lib/misc/udhcpd.leases
+
+    # copy the /etc/qemu-ifup script
+    cp /mnt/opt/openslx/plugin-repo/qemukvm/qemu-ifup /mnt/etc/qemu-ifup
+    cp /mnt/opt/openslx/plugin-repo/qemukvm/qemu-ifup.sudo \
+      /mnt/etc/opt/openslx
+    chmod u+x /mnt/etc/opt/openslx/qemu-ifup.sudo
+    echo "%users ALL=NOPASSWD: /etc/opt/openslx/qemu-ifup.sudo" \
+      >>/mnt/etc/sudoers
   fi
 else
   [ $DEBUGLEVEL -gt 0 ] && echo "  * Configuration of qemukvm plugin failed"

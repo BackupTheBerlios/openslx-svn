@@ -1,0 +1,20 @@
+#!/bin/sh
+# Copyright (c) 2009 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+# qemu-ifup
+#    - Wrapper script for running certain stuff priviledged
+# -----------------------------------------------------------------------------
+
+# Run the real action script with sudo - this script should have been added
+# during SLX stage3 to the sudoers list.
+
+sudo /etc/opt/openslx/qemu-ifup.sudo
+

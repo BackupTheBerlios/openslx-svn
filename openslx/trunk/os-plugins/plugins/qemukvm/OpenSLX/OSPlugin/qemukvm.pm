@@ -120,7 +120,12 @@ sub installationPhase
     # Copy run-virt.include to the appropriate place for inclusion in stage4
     copyFile("$self->{openslxBasePath}/lib/plugins/qemukvm/files/run-virt.include",
         "$self->{pluginRepositoryPath}/");
-
+    # Copy the later /etc/qemu-ifup
+    copyFile("$self->{openslxBasePath}/lib/plugins/qemukvm/files/qemu-ifup",
+        "$self->{pluginRepositoryPath}/");
+    # Copy the sudo stuff wrapped in /etc/qemu-ifup
+    copyFile("$self->{openslxBasePath}/lib/plugins/qemukvm/files/qemu-ifup.sudo",
+        "$self->{pluginRepositoryPath}/");
     return;
 }
 
