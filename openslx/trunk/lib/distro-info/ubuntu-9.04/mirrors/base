@@ -4,7 +4,6 @@ ftp://br.archive.ubuntu.com/ubuntu
 ftp://bw.archive.ubuntu.com/ubuntu
 http://cl.archive.ubuntu.com/ubuntu
 http://cudlug.cudenver.edu/ubuntu
-ftp://cz.archive.ubuntu.com/MIRRORS/archive.ubuntu.com/mirror/ubuntu
 http://cz.archive.ubuntu.com/ubuntu
 ftp://darkstar.ist.utl.pt/pub/ubuntu/archive
 http://darkstar.ist.utl.pt/ubuntu/archive
@@ -38,7 +37,6 @@ ftp://ftp.funet.fi/pub/mirrors/archive.ubuntu.com
 http://ftp.gil.di.uminho.pt/ubuntu
 ftp://ftp.gtlib.gatech.edu/pub/ubuntu
 http://ftp.gui.uva.es/sites/ubuntu.com/ubuntu
-http://ftp.halifax.rwth-aachen.de/ubuntu
 http://ftp.heanet.ie/pub/ubuntu
 http://ftp.hosteurope.de/mirror/archive.ubuntu.com
 ftp://ftp.iinet.net.au/pub/ubuntu
@@ -57,7 +55,6 @@ http://ftp.netspace.net.au/pub/ubuntu
 http://ftp.ntua.gr/pub/linux/ubuntu
 ftp://ftp.oleane.net/ubuntu
 ftp://ftp.otenet.gr/ubuntu
-ftp://ftp.polytechnic.edu.na/pub/ubuntu
 http://ftp.port80.se/ubuntu
 http://ftp.pwr.wroc.pl/ubuntu
 ftp://ftp.rrzn.uni-hannover.de/pub/mirror/linux/ubuntu
@@ -97,7 +94,6 @@ http://mir1.ovh.net/ubuntu
 http://mirror.anl.gov/pub/ubuntu
 http://mirror.cc.columbia.edu/pub/linux/ubuntu/archive
 http://mirror.cs.umn.edu/ubuntu
-http://mirror.etf.bg.ac.yu/distributions/ubuntu/ubuntu-archive
 http://mirror.hgkz.ch/ubuntu
 http://mirror.imbrandon.com/ubuntu
 http://mirror.lcsee.wvu.edu/ubuntu
@@ -112,7 +108,6 @@ http://mirror.switch.ch/ftp/mirror/ubuntu
 ftp://mirror.switch.ch/mirror/ubuntu
 http://mirror.uni-c.dk/ubuntu
 http://mirror.utdlug.org/linux/distributions/ubuntu/packages
-http://mirror2.etf.bg.ac.yu/distributions/ubuntu/ubuntu-archive
 http://mirrors.cat.pdx.edu/ubuntu
 http://mirrors.ccs.neu.edu/archive.ubuntu.com
 ftp://mirrors.ccs.neu.edu/net/mirrors/archive.ubuntu.com
@@ -142,7 +137,6 @@ ftp://tw.archive.ubuntu.com/ubuntu
 http://ubuntu-archive.datahop.it/ubuntu
 http://ubuntu.c3sl.ufpr.br/ubuntu
 http://ubuntu.cn99.com/ubuntu
-http://ubuntu.cs.uaf.edu/ubuntu
 http://ubuntu.cs.utah.edu/ubuntu
 http://ubuntu.csie.nctu.edu.tw/ubuntu
 http://ubuntu.eriders.ge/ubuntu
@@ -153,11 +147,9 @@ http://ubuntu.intergenia.de/ubuntu
 http://ubuntu.ipacct.com/ubuntu
 http://ubuntu.lhi.is/ubuntu
 http://ubuntu.linux-bg.org/ubuntu
-ftp://ubuntu.mirror.ac.za/ubuntu-archive
 http://ubuntu.mirror.frontiernet.net/ubuntu
 http://ubuntu.mirror.rafal.ca/ubuntu
 http://ubuntu.mirrors.skynet.be/pub/ubuntu.com/ubuntu
-http://ubuntu.org.ua/ubuntu
 http://ubuntu.snet.uz/ubuntu
 http://ubuntu.supp.name/ubuntu
 http://ubuntu.task.gda.pl/ubuntu
@@ -167,5 +159,4 @@ http://ubuntu.ynet.sk/ubuntu
 http://www.gtlib.gatech.edu/pub/ubuntu
 http://www.mirrorservice.org/sites/archive.ubuntu.com/ubuntu
 http://www.nic.funet.fi/pub/mirrors/archive.ubuntu.com
-http://wwwftp.ciril.fr/pub/linux/ubuntu/archives
 ftp://yu.archive.ubuntu.com/ubuntu
