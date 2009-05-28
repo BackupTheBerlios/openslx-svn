@@ -226,7 +226,7 @@ vmopt="-X"
 
 # use different network card
 if [ -n "${network_card}" ]; then 
-  network_virtualDev='ethernet0.virtualDev = \"e1000\"'
+  network_virtualDev='ethernet0.virtualDev = "e1000"'
 else
   network_virtualDev='# using default virtualDev for ethernet0'
 fi
@@ -352,6 +352,8 @@ esac
 mkdir -p ${redodir} >/dev/null 2>&1
 mkdir -p ${confdir} >/dev/null 2>&1
 mkdir -p ${vmhome} >/dev/null 2>&1
+# link to conffile if confdir != redodir
+ln -s ${conffile} ${redodir}/run-vmware.conf >/dev/null 2>&1
 
 # create preferences
 preferencesheader
