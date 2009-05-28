@@ -930,21 +930,6 @@ sub addSystemToConfigDB
             $systemName);
     }
 
-    # activate kdm and X if system is based on kde:
-    if ($systemName =~ m[\bkde\b]) {
-        $systemData->{attrs}->{start_xdmcp} = 'kdm'
-            unless exists $systemData->{attrs}->{start_xdmcp};
-        $systemData->{attrs}->{start_x} = 'yes'
-            unless exists $systemData->{attrs}->{start_x};
-    }
-    # activate gdm and X if system is based on GNOME:
-    if ($systemName =~ m[\bgnome\b]) {
-        $systemData->{attrs}->{start_xdmcp} = 'gdm'
-            unless exists $systemData->{attrs}->{start_xdmcp};
-        $systemData->{attrs}->{start_x} = 'yes'
-            unless exists $systemData->{attrs}->{start_x};
-    }
-
     my $systemConfigPath =
         "$openslxConfig{'private-path'}/config/$systemName/default";
     if (!-e $systemConfigPath) {
@@ -1663,14 +1648,14 @@ adds a new system named 'debian-4.0' to the config-DB that will
 use the export of the same name. No client will be associated
 with this system, yet.
 
-=item B<<     slxconfig add-system suse-10.1 export-name=suse-10.1-kde \ >>
+=item B<<     slxconfig add-system suse-11.1 export-name=suse-11.1-kde \ >>
 
 =item B<<                          clients=PC131,PC132,PC133 \ >>
 
 =item B<<                          label="Linux Desktop" >>
 
-adds a new system name 'suse-10.1' to the config-DB that will
-use the export named 'suse-10.1-kde'. The system will be labeled
+adds a new system name 'suse-11.1' to the config-DB that will
+use the export named 'suse-11.1-kde'. The system will be labeled
 'Linux Desktop' and the clients 'PC131, 'PC132' and 'PC133' are
 associated with this system (so they can boot it).
 
@@ -1688,17 +1673,16 @@ associated with this client, yet (so it can't boot anything).
 
 =item B<<     slxconfig add-client vmware-1 mac=01:02:03:04:05:06 \ >>
 
-=item B<<                          systems=suse-10.1,debian-4.0 \ >>
+=item B<<                          systems=suse-11.1,debian-4.0 \ >>
 
-=item B<<                          start_x=no >>
+=item B<<                          boot_type=pxe >>
 
 adds a new client named 'vmware-1', being identified by the MAC
-'01:02:03:04:05:06' to the config-DB. The systems 'suse-10.1' &
+'01:02:03:04:05:06' to the config-DB. The systems 'suse-11.1' &
 'Debian-4.0' will be associated with this client (so it will
 offer these systems for booting).
 
-During boot, the X-server will not be started by this client
-(so the systems will stay in console mode).
+This client will use PXE for booting (which is the default, anyway).
 
 =back
 
@@ -1706,21 +1690,20 @@ During boot, the X-server will not be started by this client
 
 =over 8
 
-=item B<<     slxconfig change-system suse-10.1 start_xdmcp=gnome vmware=- >>
+=item B<<     slxconfig change-system suse-11.1 boot_type=preboot-cd >>
 
-will change the system named 'suse-10.1' such that it will use
-the GNOME session manager. The attribute vmware is set to undefined (such that
-it will be inherited from the default system)
+will change the system named 'suse-11.1' such that it will use a preboot-CD
+environment for booting.
 
-=item B<<     slxconfig change-system suse-10.1 add-clients=vmware-1 >>
+=item B<<     slxconfig change-system suse-11.1 add-clients=vmware-1 >>
 
 will associate the client 'vmware-1' with the system named
-'suse-10.1'.
+'suse-11.1'.
 
-=item B<<     slxconfig change-system suse-10.1 remove-clients=vmware-1 >>
+=item B<<     slxconfig change-system suse-11.1 remove-clients=vmware-1 >>
 
 will remove the client 'vmware-1' from the system named
-'suse-10.1'.
+'suse-11.1'.
 
 =back
 
