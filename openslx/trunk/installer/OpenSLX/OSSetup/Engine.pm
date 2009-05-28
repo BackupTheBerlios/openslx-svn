@@ -1075,7 +1075,7 @@ sub _copyUclibcRootfs
         = "rsync -aq --delete-excluded --exclude-from=- $uclibcRootfs/ $target";
     vlog(2, "executing: $rsyncCmd\n");
     # if we're doing a fresh install we need to create /lib first
-    system("mkdir -p $targetRoot/lib");
+    slxsystem("mkdir -p $targetRoot/lib");
     # link uClibc from the uclib-rootfs to /lib to make LD_PRELOAD=... working
     my $uClibCmd = "ln -sf /opt/openslx/uclib-rootfs/lib/ld-uClibc.so.0";
     $uClibCmd .= " $targetRoot/lib/ld-uClibc.so.0";
@@ -1172,7 +1172,7 @@ try_next_url:
         foreach my $file (split '\s+', $fileVariantStr) {
             my $basefile = basename($file);
             vlog(2, "fetching <$file>...");
-            if (system("wget", "-c", "-O", "$basefile", "$url/$file") == 0) {
+            if (slxsystem("wget", "-c", "-O", "$basefile", "$url/$file") == 0) {
                 $foundFile = $basefile;
                 last;
             }
@@ -1279,9 +1279,9 @@ sub _stage1A_setupUclibcEnvironment
     $self->_copyUclibcRootfs("$self->{stage1aDir}/$self->{stage1bSubdir}");
     my $source = "$self->{stage1bSubdir}/opt/openslx/uclib-rootfs";
     my $target = "$self->{stage1aDir}";
-    system("ln -sf $source/bin $target/bin");
-    system("ln -sf $source/lib $target/lib");
-    system("ln -sf $source/usr $target/usr");
+    slxsystem("ln -sf $source/bin $target/bin");
+    slxsystem("ln -sf $source/lib $target/lib");
+    slxsystem("ln -sf $source/usr $target/usr");
     $self->_stage1A_setupResolver();
     
     return;
@@ -1543,13 +1543,12 @@ sub _stage1C_cleanupBasicVendorOS
             $self->{'vendor-os-path'}, $!
         );
     }
-    die();
-    #if (slxsystem("rm -rf $self->{stage1aDir}")) {
-    #    die _tr(
-    #        "unable to remove temporary folder '%s' (%s)\n",
-    #        $self->{stage1aDir}, $!
-    #    );
-    #}
+    if (slxsystem("rm -rf $self->{stage1aDir}")) {
+        die _tr(
+            "unable to remove temporary folder '%s' (%s)\n",
+            $self->{stage1aDir}, $!
+        );
+    }
     return;
 }
 
