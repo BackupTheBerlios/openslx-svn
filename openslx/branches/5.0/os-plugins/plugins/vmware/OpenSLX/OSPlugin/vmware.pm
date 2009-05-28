@@ -222,10 +222,10 @@ sub preInstallationPhase()
     $self->{vendorOsPath}         = $info->{'vendor-os-path'};
     
     my $pkgpath = $self->{attrs}->{'vmware::pkgpath'};
-    my $vmpl10 = $self->{attrs}->{'vmware::vmpl1.0'};
-    my $vmpl20 = $self->{attrs}->{'vmware::vmpl2.0'};
-    my $vmpl25 = $self->{attrs}->{'vmware::vmpl2.5'};
-    my $local = $self->{attrs}->{'vmware::local'};
+    my $vmpl10 = $self->{attrs}->{'vmware::vmpl1.0'} || 0;
+    my $vmpl20 = $self->{attrs}->{'vmware::vmpl2.0'} || 0;
+    my $vmpl25 = $self->{attrs}->{'vmware::vmpl2.5'} || 0;
+    my $local = $self->{attrs}->{'vmware::local'} || 0;
 
     if ($local == 0 && $vmpl10 == 0 && $vmpl20 == 0 && $vmpl25 == 0) {
         print "\n\n * At least one kind needs to get installed/activated:\n";
