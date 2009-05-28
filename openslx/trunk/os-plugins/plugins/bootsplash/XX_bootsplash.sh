@@ -20,8 +20,9 @@ if [ -e /initramfs/plugin-conf/bootsplash.conf ]; then
     if [ ${no_bootsplash} -eq 0 ]; then
       # create a runlevelscript that will stop splashy before the start of KDM
       d_mkrlscript init splashy.stop "Stopping Splashy ..."
-        echo -e "\t/opt/openslx/plugin-repo/bootsplash/bin/splashy_update.glibc\
-            exit 2>/dev/null \
+        echo -e "\tLD_LIBRARY_PATH=/opt/openslx/uclib-rootfs/lib/
+            /opt/openslx/plugin-repo/bootsplash/bin/splashy_update exit \
+            2>/dev/null \
           \n\ttype killall >/dev/null 2>&1 && killall -9 splashy \
           \n\trm -f /etc/init.d/splashy.stop 2>/dev/null" \
             >>/mnt/etc/init.d/splashy.stop

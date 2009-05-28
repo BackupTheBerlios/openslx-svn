@@ -213,6 +213,11 @@ sub _createSquashFS
     vlog(0, _tr("preparing stage1 to add uclib-rootfs..."));
     my $res = system("mkdir -p $source/opt/openslx/uclib-rootfs"); 
     $res = system("mount -o ro --bind $uclibcRootfs $source/opt/openslx/uclib-rootfs");
+    # link uClibc from the uclib-rootfs to /lib to make LD_PRELOAD=... working
+    my $uClibCmd = "ln -sf /opt/openslx/uclib-rootfs/lib/ld-uClibc.so.0";
+    $uClibCmd .= " $source/lib/ld-uClibc.so.0";
+    system("$uClibCmd");
+
     if ($res) {
         die _tr(
             "unable to prepare addition of uclib-rootfs in '%s', giving up! (%s)",
