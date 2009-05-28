@@ -9,6 +9,12 @@ Pre-Depends: perl (>= 5.8)
 Installed-Size: ##size##
 Homepage: http://openslx.org
 Maintainer: Sebastian Schmelzer <sebastian.schmelzer@rz.uni-freiburg.de> 
-Description: Stateles Linux Extensions Server Setup
- This project provides a convenient way to setup a server for stateless 
- (possibly diskless) clients.
+Description: OpenSLX Server 
+OpenSLX aims on the Linux desktop as a middleware solution to provide easy
+administration of large bunchs of computers. The project might be of interest
+in a wide field of utilization: schools , education, universities, grid
+clusters, corporations with a lot of office workplaces, ...
+
+An OpenSLX client is just a Linux workstation as you would expect, if you have
+installed just any distribution onto the local disk. The average user will not
+see any difference
