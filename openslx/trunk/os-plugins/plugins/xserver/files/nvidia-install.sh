@@ -18,7 +18,7 @@ case ${DISTRO} in
   ubuntu*)
     ./ubuntu-gfx-install.sh nvidia
   ;;
-  suse-11.X*)
+  suse-11.0*)
     ./suse-gfx-install.sh nvidia
   ;;
   # general purpose nvidia installer script
@@ -27,6 +27,8 @@ case ${DISTRO} in
    # unpack the nvidia installer; quickhack - expects just one package
    echo "  * Unpacking installer"
    sh packages/NVIDIA-Linux-*.run -a -x >>nvidia-inst.log 2>&1
+   # prefix and paths should be matched more closely to each distro
+   # just demo at the moment ...
    stdprfx=/opt/openslx/plugin-repo/xserver/nvidia
    # run the lib installer
    echo "  * Starting the library installer"
