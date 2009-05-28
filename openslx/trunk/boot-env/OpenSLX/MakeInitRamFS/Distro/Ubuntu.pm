@@ -1,4 +1,4 @@
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2006..2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -47,8 +47,12 @@ sub determineMatchingHwinfoVersion
     my $self          = shift;
     my $distroVersion = shift;
 
-    # TODO: fill this map (see Suse.pm for an example)
+    # Please check, if correct
     my %versionMap = (
+        '7.10' => '14.19',
+        '8.04' => '15.3',
+        '8.10' => '15.3',
+        '9.04' => '15.21',
     );
     return $versionMap{$distroVersion}
         || $self->SUPER::determineMatchingHwinfoVersion($distroVersion);
