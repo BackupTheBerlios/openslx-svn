@@ -243,44 +243,33 @@ sub installationPhase
     $self->removeLinks();
 
     if ($attrs->{'xserver::nvidia'} == 1  || $attrs->{'xserver::ati'} == 1 ) {
-        copyFile("$pluginFilesPath/ubuntu-gfx-install.sh", "$installationPath");
-        copyFile("$pluginFilesPath/suse-gfx-install.sh", "$installationPath");
-        copyFile("$pluginFilesPath/ubuntu-8.10-gfx-install.sh", "$installationPath");
-    
+        if($vendorOSName =~ /.*?ubuntu.*?/i) 
+        {
+            if($vendorOSName =~ /.*?8.10|9.04|9.10.*?/i) 
+            {
+                copyFile("$pluginFilesPath/ubuntu-8.10-gfx-install.sh", 
+                   "$installationPath");
+                rename("$installationPath/ubuntu-8.10-gfx-install.sh",
+                    "$installationPath/ubuntu-gfx-install.sh");
+            }
+            else
+            {
+                copyFile("$pluginFilesPath/ubuntu-gfx-install.sh", "$installationPath");
+            }
+        }
         $binDrivers = 1;
     }
-    if ($attrs->{'xserver::ati'} == 1) {
-        copyFile("$pluginFilesPath/ati-install.sh", "$installationPath");
-        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh $vendorOSName");
+    if ($attrs->{'xserver::ati'} == 1 ) {
+        $self->{distro}->installAti($pluginRepoPath,"packages");
     }
-    if ($attrs->{'xserver::nvidia'} == 1) {
-        copyFile("$pluginFilesPath/nvidia-install.sh", "$installationPath");
-        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/nvidia-install.sh $vendorOSName");
+    if ($attrs->{'xserver::nvidia'} == 1 ) {
+        $self->{distro}->installNvidia($pluginRepoPath,"packages");
     }
 
-
-    
     if ($binDrivers == 1) {
          $self->ldconf($info);
-        `chmod -R 755 $installationPath`
+        system("chmod -R 755 $installationPath");
     }
-
-    # Some plugins have to copy files from their plugin folder into the
-    # vendor-OS. Here's an example for how to do that:
-    #
-    # # get our own name:
-    # my $pluginName = $self->{'name'};
-    #
-    # # get our own base path:
-    # my $pluginBasePath = "$openslxBasePath/lib/plugins/$pluginName";
-    #     
-    # # copy all needed files now:
-    # foreach my $file ( qw( file1, file2 ) ) {
-    #     copyFile("$pluginBasePath/$file", "$pluginRepoPath/");
-    # }
-
-    # name of current os
-    # my $vendorOSName = $self->{'os-plugin-engine'}->{'vendor-os-name'} 
 
     return;
 }
@@ -321,32 +310,37 @@ sub ldconf
     my $ldincl = $info->{'plugin-repo-path'}.'/';
     my $ldpl = "/etc/ld.conf.preload";
     my $ldconf = "/etc/ld.so.conf";
+    my $ldcache = "";
 
-    ## WRITE ld.so.conf for different GL-implementations ##
+    if( -d $ldincl.'nvidia/') {
+
+        ## WRITE ld.so.conf ##
+        
+        open(IN,'>'.$ldincl.'nvidia/ld.so.conf');
+        print IN $ldincl."nvidia/usr/lib\n".$ldincl.'nvidia/usr/X11R6/lib';
+        close(IN);
     
-    open(IN,'>'.$ldincl.'nvidia/ld.so.conf');
-    print IN $ldincl."nvidia/usr/lib\n".$ldincl.'nvidia/usr/X11R6/lib';
-    close(IN);
-    open(IN,'>'.$ldincl.'ati/ld.so.conf');
-    print IN $ldincl."ati/usr/lib\n".$ldincl.'ati/usr/X11R6/lib';
-    close(IN);
+        ## CREATE DIFFERENT 'ld.so.cache' ##
+    
+        $ldcache = $ldincl.'/nvidia/ld.so.cache';
+        system('sed -e "1s,^,include '.$ldincl.'nvidia/ld.so.conf\n,g" -i '.$ldconf);
+        #print "Calling ldconfig to create $ldcache ... Please Wait\n";
+        system('ldconfig -C '.$ldcache);
+        system('sed -e "1d" -i '.$ldconf);
+    }
 
 
-
-    ## CREATE TWO DIFFERENT 'ld.so.cache's ##
-
-    my $ldcache = $ldincl.'/nvidia/ld.so.cache';
-    system('sed -e "1s,^,include '.$ldincl.'nvidia/ld.so.conf\n,g" -i '.$ldconf);
-    #print "Calling ldconfig to create $ldcache ... Please Wait\n";
-    system('ldconfig -C '.$ldcache);
-    system('sed -e "1d" -i '.$ldconf);
-
-    $ldcache = $ldincl.'/ati/ld.so.cache';
-    system('sed -e "1s,^,include '.$ldincl.'ati/ld.so.conf\n,g" -i '.$ldconf);
-    #print "Calling ldconfig to create $ldcache ... Please Wait\n";
-    system('ldconfig -C '.$ldcache);
-    system('sed -e "1d" -i '.$ldconf);
-
+    if( -d $ldincl.'ati/') {
+        open(IN,'>'.$ldincl.'ati/ld.so.conf');
+        print IN $ldincl."ati/usr/lib\n".$ldincl.'ati/usr/X11R6/lib';
+        close(IN);
+    
+        $ldcache = $ldincl.'/ati/ld.so.cache';
+        system('sed -e "1s,^,include '.$ldincl.'ati/ld.so.conf\n,g" -i '.$ldconf);
+        #print "Calling ldconfig to create $ldcache ... Please Wait\n";
+        system('ldconfig -C '.$ldcache);
+        system('sed -e "1d" -i '.$ldconf);
+    }
 }
 
 
@@ -354,7 +348,10 @@ sub ldconf
 # removes linked libraries from /usr/lib/
 sub removeLinks
 {
-    my $instFolders = "/usr/lib /usr/X11R6/lib";
+    my $instFolders = "/usr/lib";
+    if(-d "/usr/X11R6/lib") {
+        $instFolders .= "/usr/X11R6/lib";
+    }
     my $divertFolder = "/var/X11R6/lib";
     my $pluginFolder = "/opt/openslx/plugin-repo/xserver";
 

@@ -42,4 +42,29 @@ sub setupXserverScript
     return $script;
 }
 
+
+sub installNvidia
+{
+    my $self = shift;
+    my $repopath = shift || "/opt/openslx/plugin-repo/xserver/";
+    my $pkgpath = shift || "packages";
+
+    my $distroName = $self->{engine}->distroName();
+
+    system($repopath."/ubuntu-gfx-install.sh nvidia $distroName");
+   
+}
+
+sub installAti
+{
+    my $self = shift;
+    my $repopath = shift || "/opt/openslx/plugin-repo/xserver/";
+    my $pkgpath = shift || "packages";
+
+    my $distroName = $self->{engine}->distroName();
+
+    system($repopath."/ubuntu-gfx-install.sh ati $distroName");
+ 
+}
+
 1;
