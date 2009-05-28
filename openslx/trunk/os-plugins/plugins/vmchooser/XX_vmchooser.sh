@@ -54,14 +54,14 @@ if [ -e $CONFFILE ]; then
     waitfor /etc/hwinfo.cdrom
     j=0
     for i in $(cat /etc/hwinfo.cdrom); do
-      echo "cdrom$j=$i" >> /mnt/etc/opt/openslx/run-virt.include
+      echo "cdrom_$j=$i" >> /mnt/etc/opt/openslx/run-virt.include
       j=$(expr $j + 1)
     done
 
     waitfor /etc/hwinfo.floppy
     j=0
     for i in $(cat /etc/hwinfo.floppy); do
-      echo "floppy$j=$i" >> /mnt/etc/opt/openslx/run-virt.include
+      echo "floppy_$j=$i" >> /mnt/etc/opt/openslx/run-virt.include
       j=$(expr $j + 1)
     done
 
