@@ -832,40 +832,40 @@ include_in_fsroot_union () {
     union_id=$(($union_id + 1))
     srvproto=$(uri_token $ROOTFS prot)
     case $srvproto in
-          nfs)
-            # activate kernel nfs if not present, nfsroot consists now of two
-            # different parts
-            root_path=$(uri_token $ROOTFS path)
-            nfsserver=$(uri_token $ROOTFS server)
-            mkdir -p /mnt/tmp/${root_path}_${union_id}
-            for proto in tcp udp fail; do
-              [ $proto = "fail" ] && { error "$scfg_nfs"; break; }
-              mount -n -t nfs -o ro,nolock,$proto $nfsserver:$root_path \
-                /mnt/tmp/${root_path}_${union_id} && break
-            done
-          ;;
-          *nbd)
-	    echo "Not working yet"
-            nbdmod=$srvproto
-            # get settings for nbd-client, filesystem equals to path in URI
-            # notation
-            nbdhost=$(uri_token $ROOTFS server)
-            nbdport=$(uri_token $ROOTFS port)
-            nbdrfst=$(uri_token $ROOTFS path)
-            echo -e "(D)NBD $ROOTFS parsed to $srvproto - $nbdhost - \
-              $nbdport - $nbdrfst" >> /tmp/felixtestlog
-            #FIXME: mount durchführen
-          ;;
-          aoe)
-            echo "Not implemented yet"
-          ;;
-          iscsi)
-            echo "Not implemented yet"
-            #iscsiserver=$(uri_token $ROOTFS server)
-            #iscsiport=$(uri_token $ROOTFS port)
-            #iscsitarget=$(uri_token $ROOTFS path)
-          ;;
-        esac
+      nfs)
+        # activate kernel nfs if not present, nfsroot consists now of two
+        # different parts
+        root_path=$(uri_token $ROOTFS path)
+        nfsserver=$(uri_token $ROOTFS server)
+        mkdir -p /mnt/tmp/${root_path}_${union_id}
+        for proto in tcp udp fail; do
+          [ $proto = "fail" ] && { error "$scfg_nfs"; break; }
+          mount -n -t nfs -o ro,nolock,$proto $nfsserver:$root_path \
+            /mnt/tmp/${root_path}_${union_id} && break
+        done
+      ;;
+      *nbd)
+	echo "Not working yet"
+        nbdmod=$srvproto
+        # get settings for nbd-client, filesystem equals to path in URI
+        # notation
+        nbdhost=$(uri_token $ROOTFS server)
+        nbdport=$(uri_token $ROOTFS port)
+        nbdrfst=$(uri_token $ROOTFS path)
+        echo -e "(D)NBD $ROOTFS parsed to $srvproto - $nbdhost - \
+        $nbdport - $nbdrfst" >> /tmp/felixtestlog
+        #FIXME: do mount
+      ;;
+      aoe)
+        echo "Not implemented yet"
+      ;;
+      iscsi)
+        echo "Not implemented yet"
+        #iscsiserver=$(uri_token $ROOTFS server)
+        #iscsiport=$(uri_token $ROOTFS port)
+        #iscsitarget=$(uri_token $ROOTFS path)
+      ;;
+    esac
     if [ "X$union_type" == "XUnionFS" ]; then
       [ "$DEBUGLEVEL" -gt 2 -a "$DEBUGLEVEL" != 8 ] && \
         echo "Using unionctl to mount ${root_path}_${union_id} (type: \
@@ -880,7 +880,7 @@ include_in_fsroot_union () {
     else
       error ${init_loadunions} nonfatal
     fi
- done
+  done
 }
 
 #############################################################################
