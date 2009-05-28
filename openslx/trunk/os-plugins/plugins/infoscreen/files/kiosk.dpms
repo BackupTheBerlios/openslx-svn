@@ -1,0 +1,27 @@
+#!/bin/bash
+
+case "$1" in
+ "sleep")
+   xset -display :0 dpms force off
+   xset -display :0 dpms 0 0 0
+   exit 0
+   ;;
+ "wakeup")
+   xset -display :0 dpms force on
+   xset -display :0 dpms 0 0 0
+   xset -display :0 s reset
+   xset -display :0 s noblank
+   xset -display :0 s noexpose
+   xset -display :0 s 0 0 
+   xset -display :0 s off
+   xset -display :0 -dpms
+   exit 0
+   ;;
+ *)
+   echo "Usage: kiosk.dpms <command>"
+   echo "Commands"
+   echo " sleep   : shut monitor down"
+   echo " wakeup  : wake monitor up"
+   exit 0
+   ;;
+esac
