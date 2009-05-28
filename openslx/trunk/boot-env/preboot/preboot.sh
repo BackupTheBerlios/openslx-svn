@@ -22,8 +22,13 @@ dialog --file bootmenu.dialog 2>result
 sysname=$(cat result)
 . ./$sysname
 
+# if wget
+
+# bring the mac address into the standard format 01-<MAC>
+client=$(echo 01-$macaddr|sed "s/:/-/g")
 chvt 4
-w3m -o confirm_qq=no $boot_uri/user_settings.pl?system=$sysname
+w3m -o confirm_qq=no \
+  $boot_uri/cgi-bin/user_settings.pl?system=${sysname}&preboot_id=${preboot_id}&client=${client}
 chvt 1
 
 # fetch kernel and initramfs of selected system 
@@ -36,5 +41,5 @@ wget -O /tmp/initramfs $boot_uri/$initramfs
 # start the new kernel with initialramfs and composed cmdline
 echo "Booting OpenSLX client $label ..."
 kexec -l /tmp/kernel --initrd=/tmp/initramfs \
-  --append="ip=$ip:$siaddr:$router:$subnet:$dnssrv $append file=$boot_uri $quiet"
+  --append="$append file=$boot_uri/preboot/${preboot_id}/${sysname}/${client}.tgz $quiet ip=$ip:$siaddr:$router:$subnet:$dnssrv"
 kexec -e
