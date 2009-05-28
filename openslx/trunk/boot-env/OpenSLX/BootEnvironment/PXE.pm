@@ -59,6 +59,7 @@ sub writeBootloaderMenuFor
     my $pxeConfig    = $self->_getTemplate();
     my $pxeFile      = "$pxeConfigPath/$externalClientID";
     my $clientAppend = $client->{attrs}->{kernel_params_client} || '';
+    my $bootURI      = $client->{attrs}->{boot_uri} || '';
     vlog(1, _tr("writing PXE-file %s", $pxeFile));
 
     # set label for each system
@@ -73,7 +74,7 @@ sub writeBootloaderMenuFor
                 $label = $info->{name};
             }
         }
-        $info->{label} = $label;
+        $info->{pxeLabel} = $label;
     }
     my $slxLabels = '';
     foreach my $info (sort { $a->{label} cmp $b->{label} } @$systemInfos) {
@@ -81,9 +82,10 @@ sub writeBootloaderMenuFor
         my $kernelName   = basename($info->{'kernel-file'});
         my $append       = $info->{attrs}->{kernel_params};
         $append .= " initrd=$vendorOSName/$info->{'initramfs-name'}";
+        $append .= " file=$bootURI"     if length($bootURI);
         $append .= " $clientAppend";
         $slxLabels .= "LABEL openslx-$info->{'external-id'}\n";
-        $slxLabels .= "\tMENU LABEL ^$info->{label}\n";
+        $slxLabels .= "\tMENU LABEL ^$info->{pxeLabel}\n";
         $slxLabels .= "\tKERNEL $vendorOSName/$kernelName\n";
         $slxLabels .= "\tAPPEND $append\n";
         $slxLabels .= "\tIPAPPEND 3\n";
@@ -103,7 +105,8 @@ sub writeBootloaderMenuFor
 
     # PXE uses 'cp850' (codepage 850) but our string is in utf-8, we have
     # to convert in order to avoid showing gibberish on the client side...
-    spitFile($pxeFile, $pxeConfig, { 'io-layer' => 'encoding(cp850)' } );
+    spitFile($pxeFile, $pxeConfig, { 'io-layer' => 'encoding(cp850)' } )
+        unless $self->{'dry-run'};
 
     return 1;
 }

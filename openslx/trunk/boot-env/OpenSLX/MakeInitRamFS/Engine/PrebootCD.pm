@@ -29,7 +29,7 @@ sub _copyVariantSpecificFiles
 {
     my $self = shift;
 
-    my $dataDir = "$openslxConfig{'base-path'}/share/boot-env/preboot-cd";
+    my $dataDir = "$openslxConfig{'base-path'}/share/boot-env/preboot";
     $self->addCMD("cp $dataDir/init $self->{'build-path'}/");
     
     return 1;

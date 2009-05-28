@@ -44,6 +44,8 @@ sub new
         'root-path'      => '!',
         'slx-version'    => '!',
         'system-name'    => '!',
+        'preboot-id'     => '?',
+        'boot-uri'       => '?',
     } );
 
     my $self = $params;
@@ -285,7 +287,7 @@ sub _writeInitramfsSetup
     # generate initramfs-setup file containing attributes that are
     # relevant for the initramfs only (before there's a root-FS):
     my $initramfsAttrs = {
-        'host_name'         => 'slx-client', # just to have something at all
+        'host_name'      => 'slx-client', # just to have something at all
         'ramfs_fsmods'   => $self->{attrs}->{ramfs_fsmods} || '',
         'ramfs_miscmods' => $self->{attrs}->{ramfs_miscmods} || '',
         'ramfs_nicmods'  => $self->{attrs}->{ramfs_nicmods} || '',

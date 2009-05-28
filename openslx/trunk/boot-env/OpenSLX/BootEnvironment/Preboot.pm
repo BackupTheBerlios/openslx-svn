@@ -23,6 +23,7 @@ use File::Basename;
 use File::Path;
 
 use OpenSLX::Basics;
+use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::Utils;
 
 sub writeBootloaderMenuFor
@@ -39,57 +40,65 @@ sub writeBootloaderMenuFor
         = clone($self->_pickSystemWithNewestKernel($systemInfos));
     $self->_createImage($client, $prebootSystemInfo);
 
-#    my $pxePath       = $self->{'target-path'};
-#    my $pxeConfigPath = "$pxePath/pxelinux.cfg";
-#
-#    my $pxeConfig    = $self->_getTemplate();
-#    my $pxeFile      = "$pxeConfigPath/$externalClientID";
-#    my $clientAppend = $client->{attrs}->{kernel_params_client} || '';
-#    vlog(1, _tr("writing PXE-file %s", $pxeFile));
-#
-#    # set label for each system
-#    foreach my $info (@$systemInfos) {
-#        my $label = $info->{label} || '';
-#        if (!length($label) || $label eq $info->{name}) {
-#            if ($info->{name} =~ m{^(.+)::(.+)$}) {
-#                my $system = $1;
-#                my $exportType = $2;
-#                $label = $system . ' ' x (40-length($system)) . $exportType;
-#            } else {
-#                $label = $info->{name};
-#            }
-#        }
-#        $info->{label} = $label;
-#    }
-#    my $slxLabels = '';
-#    foreach my $info (sort { $a->{label} cmp $b->{label} } @$systemInfos) {
-#        my $vendorOSName = $info->{'vendor-os'}->{name};
-#        my $kernelName   = basename($info->{'kernel-file'});
-#        my $append       = $info->{attrs}->{kernel_params};
-#        $append .= " initrd=$vendorOSName/$info->{'initramfs-name'}";
-#        $append .= " $clientAppend";
-#        $slxLabels .= "LABEL openslx-$info->{'external-id'}\n";
-#        $slxLabels .= "\tMENU LABEL ^$info->{label}\n";
-#        $slxLabels .= "\tKERNEL $vendorOSName/$kernelName\n";
-#        $slxLabels .= "\tAPPEND $append\n";
-#        $slxLabels .= "\tIPAPPEND 1\n";
-#        my $helpText = $info->{description} || '';
-#        if (length($helpText)) {
-#            # make sure that text matches the given margin
-#            my $margin = $openslxConfig{'pxe-theme-menu-margin'} || 0;
-#            my $marginAsText = ' ' x $margin;
-#            $helpText =~ s{^}{$marginAsText}gms;
-#            $slxLabels .= "\tTEXT HELP\n$helpText\n\tENDTEXT\n";
-#        }
-#    }
-#    # now add the slx-labels (inline or appended) and write the config file
-#    if (!($pxeConfig =~ s{\@\@\@SLX_LABELS\@\@\@}{$slxLabels})) {
-#        $pxeConfig .= $slxLabels;
-#    }
-#
-#    # PXE uses 'cp850' (codepage 850) but our string is in utf-8, we have
-#    # to convert in order to avoid showing gibberish on the client side...
-#    spitFile($pxeFile, $pxeConfig, { 'io-layer' => 'encoding(cp850)' } );
+    my $externalClientName   = externalConfigNameForClient($client);
+    my $bootloaderPath       = "$self->{'target-path'}/bootloader";
+    my $bootloaderConfigPath = "$bootloaderPath/$externalClientName";
+    mkpath($bootloaderConfigPath)   unless $self->{'dry-run'};
+    my $menuFile = "$bootloaderConfigPath/bootmenu.dialog";
+    
+    my $clientAppend = $client->{attrs}->{kernel_params_client} || '';
+    vlog(1, _tr("writing bootmenu %s", $menuFile));
+
+    # set label for each system
+    foreach my $info (@$systemInfos) {
+        my $label = $info->{label} || '';
+        if (!length($label) || $label eq $info->{name}) {
+            $label = $info->{name};
+        }
+        $info->{label} = $label;
+    }
+    my $bootmenuEntries = '';
+    foreach my $info (sort { $a->{label} cmp $b->{label} } @$systemInfos) {
+        my $vendorOSName = $info->{'vendor-os'}->{name};
+        my $kernelName   = basename($info->{'kernel-file'});
+        my $append       = $info->{attrs}->{kernel_params} || '';
+        $append .= " $clientAppend";
+        $bootmenuEntries .= qq{ "$info->{label}" "" 1};
+
+        # create a file containing the boot-configuration for this system
+        my $systemDescr = unshiftHereDoc(<<"        End-of-Here");
+            label="$info->{label}"
+            kernel="$vendorOSName/$kernelName"
+            initramfs="$vendorOSName/$info->{'initramfs-name'}"
+            append="$append"
+        End-of-Here
+        my $systemFile = "$bootloaderConfigPath/$info->{label}";
+        spitFile(
+            $systemFile, $systemDescr, { 'io-layer' => 'encoding(iso8859-1)' } 
+        )    unless $self->{'dry-run'};
+    }
+
+    my $entryCount = @$systemInfos;
+    my $bootmenu = unshiftHereDoc(<<"    End-of-Here");
+        --radiolist "OpenSLX Boot Menu" 20 65 $entryCount $bootmenuEntries
+    End-of-Here
+    
+    if (!$self->{'dry-run'}) {
+        # default to iso encoding, let's see how uclibc copes with it ...
+        spitFile($menuFile, $bootmenu, { 'io-layer' => 'encoding(iso8859-1)' });
+
+        # copy the preboot script into the folder to be tared
+        my $prebootBasePath 
+            = "$openslxConfig{'base-path'}/share/boot-env/preboot";
+        slxsystem(qq{cp -p $prebootBasePath/preboot.sh $bootloaderConfigPath/});
+        slxsystem(qq{chmod a+x $bootloaderConfigPath/preboot.sh});
+
+        # create a tar which can/will be downloaded by prebooting clients
+        my $tarCMD 
+            = qq{cd $bootloaderConfigPath; tar -czf "${bootloaderConfigPath}.env" *};
+        slxsystem($tarCMD);
+        rmtree($bootloaderConfigPath);
+    }
 
     return 1;
 }
@@ -139,11 +148,17 @@ sub _makePrebootInitRamFS
     my $self       = shift;
     my $info       = shift;
     my $initramfs  = shift;
+    my $client     = shift;
 
     my $vendorOS = $info->{'vendor-os'};
     my $kernelFile = basename(followLink($info->{'kernel-file'}));
 
     my $attrs = clone($info->{attrs} || {});
+
+    my $bootURI = $client->{attrs}->{boot_uri};
+    if (!$bootURI) {
+        die _tr("client $client->{name} needs an URI in attribute 'boot_uri' to be used for preboot!");
+    }
 
     chomp(my $slxVersion = qx{slxversion});
 
@@ -160,6 +175,8 @@ sub _makePrebootInitRamFS
             => "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}",
         'slx-version'    => $slxVersion,
         'system-name'    => $info->{name},
+        'preboot-id'     => $client->{name},
+        'boot-uri'       => $bootURI,
     };
 
     # TODO: make debug-level an explicit attribute, it's used in many places!

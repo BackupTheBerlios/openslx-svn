@@ -78,6 +78,34 @@ sub _setupBuildPath
     return;
 }
     
+sub _writeInitramfsSetup
+{
+    my $self = shift;
+    
+    # generate initramfs-setup file containing attributes that are
+    # relevant for the initramfs only (before there's a root-FS) -
+    # this override adds the name of the client such that the booting
+    # system has an ID to use for accessing the corresponding boot environment
+    # on the server
+    my $initramfsAttrs = {
+        'host_name'      => 'slx-client', # just to have something at all
+        'ramfs_miscmods' => $self->{attrs}->{ramfs_miscmods} || '',
+        'ramfs_nicmods'  => $self->{attrs}->{ramfs_nicmods} || '',
+        'preboot_id'     => $self->{'preboot-id'} || '',
+        'boot_uri'       => $self->{'boot-uri'} || '',
+    };
+    my $content = "# attributes set by slxconfig-demuxer:\n";
+    foreach my $attr (keys %$initramfsAttrs) {
+        $content .= qq[$attr="$initramfsAttrs->{$attr}"\n];
+    }
+    $self->addCMD( {
+        file    => "$self->{'build-path'}/etc/initramfs-setup", 
+        content => $content
+    } );
+    
+    return;
+}
+
 sub _copyUclibcRootfs
 {
     my $self = shift;

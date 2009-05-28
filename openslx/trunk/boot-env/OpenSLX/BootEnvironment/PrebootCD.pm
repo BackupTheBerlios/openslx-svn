@@ -33,8 +33,8 @@ sub initialize
     
     return if !$self->SUPER::initialize($params);
 
-    $self->{'original-path'} = "$openslxConfig{'public-path'}/preboot-cd";
-    $self->{'target-path'}   = "$openslxConfig{'public-path'}/preboot-cd.new";
+    $self->{'original-path'} = "$openslxConfig{'public-path'}/preboot";
+    $self->{'target-path'}   = "$openslxConfig{'public-path'}/preboot.new";
 
     if (!$self->{'dry-run'}) {
         mkpath([$self->{'original-path'}]);
@@ -68,8 +68,8 @@ sub _createImage
     my $imageDir = "$openslxConfig{'public-path'}/images/$client->{name}";
     mkpath($imageDir)   unless $self->{'dry-run'};
 
-    # copy static data and init script
-    my $dataDir = "$openslxConfig{'base-path'}/share/boot-env/preboot-cd";
+    # copy static data
+    my $dataDir = "$openslxConfig{'base-path'}/share/boot-env/preboot/cd";
     slxsystem(qq{rsync -rlpt $dataDir/iso "$imageDir/"})
         unless $self->{'dry-run'};
 
@@ -81,7 +81,7 @@ sub _createImage
 
     # create initramfs
     my $initramfsName = qq{"$imageDir/iso/isolinux/initramfs"};
-    $self->_makePrebootInitRamFS($info, $initramfsName);
+    $self->_makePrebootInitRamFS($info, $initramfsName, $client);
 
     # write trivial isolinux config
     my $isolinuxConfig = unshiftHereDoc(<<"    End-of-Here");
