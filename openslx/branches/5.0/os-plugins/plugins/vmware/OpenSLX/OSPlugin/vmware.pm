@@ -448,9 +448,9 @@ sub _writeWrapperScript
         $script .= unshiftHereDoc(<<"        End-of-Here");
             PREFIX=$vmpath # depends on the vmware location
             exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \\
-                 "\$PREFIX"'/lib' \\
-                 "\$PREFIX"'/bin/$file' \\
-                 "\$PREFIX"'/libconf' "\$@"
+                "\$PREFIX"'/lib' \\
+                "\$PREFIX"'/bin/$file' \\
+                "\$PREFIX"'/libconf' "\$@"
         End-of-Here
 
         # TODO: check if these will be overwritten if we have more as
