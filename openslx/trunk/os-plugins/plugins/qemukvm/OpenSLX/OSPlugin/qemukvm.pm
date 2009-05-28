@@ -123,9 +123,6 @@ sub installationPhase
     # Copy the later /etc/qemu-ifup
     copyFile("$self->{openslxBasePath}/lib/plugins/qemukvm/files/qemu-ifup",
         "$self->{pluginRepositoryPath}/");
-    # Copy the sudo stuff wrapped in /etc/qemu-ifup
-    copyFile("$self->{openslxBasePath}/lib/plugins/qemukvm/files/qemu-ifup.sudo",
-        "$self->{pluginRepositoryPath}/");
     return;
 }
 

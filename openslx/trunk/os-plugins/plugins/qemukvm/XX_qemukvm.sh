@@ -33,35 +33,25 @@ lease_file	/var/lib/misc/udhcpd.leases
 # The location of the pid file
 pidfile	/var/run/udhcpd.pid
 
-opt	dns	$domain_name_servers
+opt	dns	${domain_name_servers}
 option	subnet	255.255.255.0
 opt	router	192.168.10.2
 opt	wins	192.168.10.10
-option	domain	$domain_name
+option	domain	virtual.site ${domain_name}
 
-# Currently supported options, for more info, see options.c
-#subnet
-#timezone
-#router
-#timesvr
-#namesvr
-#dns
-#logsvr
-#cookiesvr
-#lprsvr
-#bootsize
-#domain
-#swapsvr
-#rootpath
-#ipttl
-#mtu
-#broadcast
-#wins
-#lease
-#ntpsrv
-#tftp
+# Additional options known to udhcpd
+#subnet			#timezone
+#router			#timesvr
+#namesvr		#dns
+#logsvr			#cookiesvr
+#lprsvr			#bootsize
+#domain			#swapsvr
+#rootpath		#ipttl
+#mtu			#broadcast
+#wins			#lease
+#ntpsrv			#tftp
 #bootfile
-" >$file
+" >${cfgfile}
 }
 
 # check if the configuration file is available
@@ -84,6 +74,8 @@ was either\n  not found or couldn't be loaded for other reasons. Thus using \
 qemu(-kvm)\n  makes not much sense."
     exit 1
   fi
+  # load the tunnel device module
+  modprobe tun 2>/dev/null
     
   # load needed variables
   . /initramfs/plugin-conf/qemukvm.conf
@@ -123,13 +115,11 @@ ${qemukvm_imagesrc}." nonfatal
     testmkd /mnt/var/lib/misc
     touch /mnt/var/lib/misc/udhcpd.leases
 
-    # copy the /etc/qemu-ifup script
+    # copy the /etc/qemu-ifup script and enable extended rights for running
+    # the emulator via sudo
     cp /mnt/opt/openslx/plugin-repo/qemukvm/qemu-ifup /mnt/etc/qemu-ifup
-    cp /mnt/opt/openslx/plugin-repo/qemukvm/qemu-ifup.sudo \
-      /mnt/etc/opt/openslx
-    chmod u+x /mnt/etc/opt/openslx/qemu-ifup.sudo
-    echo "%users ALL=NOPASSWD: /etc/opt/openslx/qemu-ifup.sudo" \
-      >>/mnt/etc/sudoers
+    chmod u+x /mnt/etc/qemu-ifup
+    echo "ALL ALL=NOPASSWD: $fptoqemu" >>/mnt/etc/sudoers
   fi
 else
   [ $DEBUGLEVEL -gt 0 ] && echo "  * Configuration of qemukvm plugin failed"
