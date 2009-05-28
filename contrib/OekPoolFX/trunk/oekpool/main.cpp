@@ -39,6 +39,7 @@ int main(int argc, char** argv) {
                   conf.getString("ldap_password"));
 
     obj.getClients("");
+    obj.getNetworks();
 
 
     return 0;

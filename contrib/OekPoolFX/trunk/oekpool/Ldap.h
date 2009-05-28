@@ -10,10 +10,13 @@
 
 #include "Client.h"
 #include "types.h"
+#include "Network.h"
+
 #include <ldap.h>
 #include <string>
 #include <vector>
 #include <map>
+
 #include "LDAPConnection.h"
 #include "LDAPConstraints.h"
 
@@ -92,6 +95,11 @@ public:
 	 * @returns Clients from "pool", if empty -> return global Clients
 	 */
 	Client** getClients(std::string pool);
+
+	/**
+	 * Get network information (broadcast address,subnet mask and network address)
+	 */
+	std::vector<networkInfo> getNetworks();
 };
 
 #endif /* LDAP_H_ */

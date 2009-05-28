@@ -7,6 +7,7 @@
 
 #include "Client.h"
 #include "ClientStates.h"
+#include "Utility.h"
 #include <iostream>
 
 using namespace std;
@@ -19,8 +20,11 @@ Client::Client(AttributeMap al) {
 
     _attributes = al;
 
-    cout << "Client object with name " << al["HostName"] <<" created!" << endl << endl;
+    cout << "Client object with name " << al["HostName"] <<" created!" << endl;
+    cout << "IPAddress: " << al["IPAddress"] << endl;
 
+    IPAddress ip = Utility::ipFromString(al["IPAddress"]);
+    cout << "IPAddress converted: " << ip << endl;
 
 }
 

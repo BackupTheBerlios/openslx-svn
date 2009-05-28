@@ -7,6 +7,9 @@
 
 #include "Ldap.h"
 #include "Client.h"
+#include "Network.h"
+#include "Utility.h"
+
 #include <string>
 #include <vector>
 #include <ldap.h>
@@ -75,6 +78,7 @@ vector<AttributeMap> Ldap::search(string base, int scope, string filter, const S
     const LDAPAttribute* la;
     StringList s;
     vector<AttributeMap> result;
+	AttributeMap temp;
 
     while( (le = lr->getNext()) ) {
 
@@ -87,7 +91,6 @@ vector<AttributeMap> Ldap::search(string base, int scope, string filter, const S
     		la = le->getAttributeByName(*it);
     		if(la == NULL) continue;
 			s = la->getValues();
-			AttributeMap temp;
 			for(StringList::const_iterator
 					st = s.begin();
 					st != s.end();
@@ -96,11 +99,13 @@ vector<AttributeMap> Ldap::search(string base, int scope, string filter, const S
 			    //cout << "Value: " << *st;
 				temp[*it] = *st;
 			}
-			if(temp.size() > 0) {
-			    result.push_back(temp);
-			}
     	}
     	//cout << endl;
+
+    	if(temp.size() > 0) {
+			result.push_back(temp);
+	    	temp.clear();
+		}
 
     }
 
@@ -136,6 +141,9 @@ vector<string> Ldap::getPools() {
 }
 
 
+/**
+ * ATTENTION: Free return memory (pointers and data)
+ */
 Client** Ldap::getClients(string pool) {
 
 	string base;
@@ -162,10 +170,44 @@ Client** Ldap::getClients(string pool) {
 	{
 		if(!vec[i]["HostName"].empty() && !vec[i]["IPAddress"].empty())
 		{
+			if(!vec[i]["IPAddress"].empty()) {
+				string::size_type cutAt;
+				cout << "IPAddress before cut: " << vec[i]["IPAddress"] << endl;
+				if((cutAt = vec[i]["IPAddress"].find_first_of('_')) != string::npos) {
+					vec[i]["IPAddress"] = vec[i]["IPAddress"].substr(0,cutAt);
+					cout << "IPAddress after cut: " << vec[i]["IPAddress"] << endl;
+				}
+			}
 			result[i] = new Client(vec[i]);
 		}
 	}
 	result[vec.size()] = '\0';
+
+	return result;
+}
+
+
+vector<networkInfo> Ldap::getNetworks()
+{
+	string base = "cn=dhcp,ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
+	string filter="(dhcpoptNetmask=*)";
+
+	const char* attrs[] = { "cn", "dhcpoptNetmask", "dhcpoptBroadcast-address", 0 };
+	StringList attribs((char**)attrs);
+	vector<AttributeMap> vec;
+	vector<networkInfo> result;
+	networkInfo temp;
+
+	vec = search(base, LDAP_SCOPE_SUBTREE, filter,attribs);
+
+	for(uint i=0;i < vec.size();i++)
+	{
+		temp.subnetMask = Utility::ipFromString(vec[i]["dhcpoptNetmask"]);
+		temp.broadcastAddress = Utility::ipFromString(vec[i]["dhcpoptBroadcast-address"]);
+		temp.networkAddress = Utility::ipFromString(vec[i]["cn"]);
+
+		result.push_back(temp);
+	}
 
 	return result;
 }

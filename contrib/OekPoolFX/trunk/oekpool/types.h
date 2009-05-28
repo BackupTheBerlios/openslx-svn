@@ -13,7 +13,7 @@
 #define TYPES_H_
 
 typedef std::map<std::string,std::string> AttributeMap;
-typedef std::vector<char> IPAddress;
+typedef unsigned long IPAddress;
 
 struct networkInfo{
 	IPAddress networkAddress;
