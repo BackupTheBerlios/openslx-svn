@@ -174,6 +174,7 @@ sub GDMConfigHashForWorkstation
             AutomaticLoginEnable => 'false',
             Group => 'gdm',
             User => 'gdm',
+            DefaultSession => 'default.desktop',
         },
         'debug' => {
             Enable => 'false',

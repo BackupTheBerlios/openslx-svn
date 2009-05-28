@@ -73,6 +73,7 @@ sub GDMConfigHashForWorkstation
     my $configHash = $self->SUPER::GDMConfigHashForWorkstation();
     $configHash->{'daemon'}->{SessionDesktopDir} =
         '/etc/X11/sessions/:/usr/share/xsessions/';
+    $configHash->{'daemon'}->{DefaultSession} = 'default.desktop';
     $configHash->{'daemon'}->{Greeter} =
         '/usr/lib/gdm/gdmgreeter';
 
