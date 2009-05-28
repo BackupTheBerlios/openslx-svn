@@ -83,12 +83,23 @@ sub writeBootloaderMenuFor
         my $vendorOSName = $info->{'vendor-os'}->{name};
         my $kernelName   = basename($info->{'kernel-file'});
         my $append       = $info->{attrs}->{kernel_params};
-        $append .= " initrd=$vendorOSName/$info->{'initramfs-name'}";
+        my $pxePrefix    = '';
+        my $tftpPrefix   = '';
+        $info->{'pxe_prefix_ip'} ||= '';
+        
+        # pxe_prefix_ip set and looks like a ip
+        if ($info->{'pxe_prefix_ip'} =~ m/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/) {
+        	$pxePrefix = "$info->{'pxe_prefix_ip'}::";
+        	$tftpPrefix = "tftp://$info->{'pxe_prefix_ip'}" if ! length($bootURI);
+        }
+        
+        $append .= " initrd=$pxePrefix$vendorOSName/$info->{'initramfs-name'}";
         $append .= " file=$bootURI"     if length($bootURI);
+        $append .= " file=$tftpPrefix"  if length($tftpPrefix);
         $append .= " $clientAppend";
         $slxLabels .= "LABEL openslx-$info->{'external-id'}\n";
         $slxLabels .= "\tMENU LABEL ^$info->{pxeLabel}\n";
-        $slxLabels .= "\tKERNEL $vendorOSName/$kernelName\n";
+        $slxLabels .= "\tKERNEL $pxePrefix$vendorOSName/$kernelName\n";
         $slxLabels .= "\tAPPEND $append\n";
         $slxLabels .= "\tIPAPPEND 3\n";
         my $helpText = $info->{description} || '';

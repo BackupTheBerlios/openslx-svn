@@ -11,5 +11,38 @@
 # Configuration script for Scientific Linux (5.1) to setup linux stateless
 # clients (executed within initial ramfs)
 
-# place all changed functions differing from default here
-
+# initial (boot time) runlevel scripts
+initial_boot () {
+# delete all classical disk base rootfs stuff from rc.sysinit
+sed -e "6i# Script modified by $0 during stage3 bootup." \
+    -e "/relabel_se/,/^}/d" \
+    -e "/# Start up swap/,/# Set up bin/d" \
+    -e "/# Remount/,/-o remount/d" -e "/^# Clean out/,/in_sysinit/d" \
+    -e "/# Mount all o/,/# Start the g/d" \
+    -e "/# Boot time/,/# let's/d" \
+    -e "s,/sbin/start_udev$,/etc/init.d/udevd," -i /mnt/etc/rc.d/rc.sysinit
+# write a custom udev script (to be checked!!)
+echo -e "#!/bin/sh\n# Simple udev starter script created as a replacement \
+during OpenSLX stage3\n# bootup." >/mnt/etc/init.d/udevd
+echo -e ". /etc/init.d/functions\nSTRING=\$\"Starting udev: \" \
+\necho -n \"\$STRING \"\n/sbin/udevstart </dev/null >/dev/null 2>&1 \
+\n[ \$? -eq 0 ] && success \$\"\$STRING\" || failure \$\"\$STRING\" \
+\nexit 0" >>/mnt/etc/init.d/udevd
+chmod u+x /mnt/etc/init.d/udevd
+# delete all classical disk base rootfs stuff from halt
+sed -e "7i#                Modified by $0 during stage3 bootup." \
+    -e "/# Save mixer/,/Saving random/d" -e "/quotaoff/,/^# Now halt/d" \
+    -i /mnt/etc/init.d/halt
+# boot.slx is a special runlevel script generated within initialramfs which
+# should be executed before the normal runlevel scripts.
+echo -e "# Run OpenSLX init runlevel script\n/etc/init.d/boot.slx" \
+  >>/mnt/etc/rc.d/rc.sysinit
+# switch off SElinux enforcing
+sed -e "1i# Configuration modified by $0 during stage3 bootup." \
+    -e "s/SELINUX=.*/SELINUX=permissive/" -i /mnt/etc/selinux/config
+# link halt and reboot scripts
+ln -s ../init.d/killall /mnt/etc/rc.d/rc0.d/S00killall
+ln -s ../init.d/halt /mnt/etc/rc.d/rc0.d/S01halt
+ln -s ../init.d/killall /mnt/etc/rc.d/rc6.d/S00killall
+ln -s ../init.d/halt /mnt/etc/rc.d/rc6.d/S01reboot
+}

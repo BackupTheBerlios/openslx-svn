@@ -68,7 +68,7 @@ sub getAttrInfo
             description => unshiftHereDoc(<<'            End-of-Here'),
                 kind of syslog to use \(syslogd-ng or old-style syslog\)
             End-of-Here
-            content_regex => undef,
+            content_regex => qr{^(syslog-ng|syslog)$},
             content_descr => 'allowed: syslogd-ng, syslog',
             default => 'syslog-ng',
         },

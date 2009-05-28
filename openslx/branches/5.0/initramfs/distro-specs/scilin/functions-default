@@ -231,6 +231,7 @@ local stop=18
 if [ "x$start_dreshal" = "xyes" ]; then
   testmkd /mnt/var/run/dbus 
   if [ -f /mnt/etc/init.d/messagebus ] ; then
+    testmkd /mnt/var/lib/dbus
     strinfile "dbus:" /mnt/etc/passwd || \
       echo "dbus:x:81:81:System Message Bus:/var/run/dbus:/sbin/nologin" \
         >> /mnt/etc/passwd
@@ -238,6 +239,7 @@ if [ "x$start_dreshal" = "xyes" ]; then
     rllinker "messagebus" $start $stop
   fi
   if [ -f /mnt/etc/init.d/haldaemon ] ; then
+    testmkd /mnt/var/lib/hal
     strinfile "haldaemon:" /mnt/etc/passwd || \
       echo "haldaemon:x:68:68:User for haldaemon:/var/run/hal:/sbin/nologin" \
         >> /mnt/etc/passwd
