@@ -290,9 +290,11 @@ vmopt="-X"
 # check if ide/scsi and hwver of image
 # *-flat.vmdk images are started via the vmdk file, so there's no need to
 # exclude these flat files, we do it anyway 
+# read the first 22 lines otherwise it takes too much time (see #400)
 if [ $(echo ${imagename} | grep -cv "\-flat.vmdk") ]; then
-  hddrv=$(grep -m1 -ia "ddb.adapterType" ${diskfile} | awk -F '"' '{print $2}')
-  hwver=$(grep -m1 -ia "ddb.virtualHWVersion" ${diskfile} | \
+  hddrv=$(head -22 ${diskfile} | grep -m1 -ia "ddb.adapterType" |\
+    awk -F '"' '{print $2}')
+  hwver=$(head -22 ${diskfile} | grep -m1 -ia "ddb.virtualHWVersion" |\
     awk -F '"' '{print $2}')
   if [ "${hddrv}" = "ide" ]; then
     ide="TRUE"

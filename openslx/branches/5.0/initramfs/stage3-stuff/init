@@ -663,21 +663,9 @@ runinithook '35-have-network-root'
 
 # get the complete collection of kernel modules available
 mount -n --bind /mnt/lib/modules /lib/modules || error "$init_moddir"
-# start hardware configuration as background process if not a special
-# debuglevel (21) is used for the option of manual hwautocfg start
-if [ ${DEBUGLEVEL} = 21 ] ; then
-  echo "You can run 'hwautocfg main &' manually now ..."
-  /bin/ash
-else
-  [ $DEBUGLEVEL -eq 20 ] && echo "** started hwautocfg in background at \
-$(sysup)"
-  hwautocfg main &
-fi
-
-runinithook '40-started-hw-config'
-
+# unionfs/aufs modules visible by now if installed, try to use aufs for rw
+# access if available
 union_type=""
-# try to use aufs for rw access if available
 if [ ${aufs} -eq 1 ] && \
    modprobe ${MODPRV} aufs 2>/dev/null && \
    lsmod | grep -qe "^aufs" ; then union_type="AUFS"
@@ -692,6 +680,22 @@ else
   unset aufs unionfs
 fi
 
+# start hardware configuration as background process if not a special
+# debuglevel (21) is used for the option of manual hwautocfg start
+if [ ${DEBUGLEVEL} = 21 ] ; then
+  echo "You can run 'hwautocfg main &' manually now ..."
+  /bin/ash
+else
+  [ $DEBUGLEVEL -eq 20 ] && echo "** started hwautocfg in background at \
+$(sysup)"
+  hwautocfg main &
+fi
+
+runinithook '40-started-hw-config'
+
+# runtimer
+[ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
+  echo "** Filesystem setup started at $(sysup)"
 # setup of client root filesystem dependent on the availability of UnionFS
 if [ -n "${union_type}" ] ; then
   echo "Using ${union_type} for rw access"
@@ -764,6 +768,9 @@ runinithook '50-have-layered-fs'
 # script for stuff to execute during early bootup
 d_mkrlscript init boot.slx "Running configuration postponed from InitRamFS"
 echo "fs complete at $(sysup)" >/tmp/fscmpl
+# runtimer
+[ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
+  echo "** Filesystem setup completed at $(sysup)"
 
 # write debug file information after filesystem setup completed
 echo -e "# /etc${D_SYSCONFDIR}/logfile - file created by $0 (initramfs \
@@ -846,6 +853,9 @@ if [ -n "$uniondirs" ]; then
 fi
 
 runinithook '70-before-plugins'
+# runtimer
+[ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
+  echo "** Plugin configuration started at $(sysup)"
 
 # check for any plugin-specific runlevel scripts and run them, if found:
 if [ ${DEBUGLEVEL} = 25 ] ; then
@@ -874,6 +884,9 @@ else
 fi
 
 runinithook '80-after-plugins'
+# runtimer
+[ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
+  echo "** Plugin configuration finished at $(sysup)"
 
 # create links for initial stage4 boot scripts
 initial_boot
