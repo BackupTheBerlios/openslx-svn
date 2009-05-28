@@ -62,15 +62,16 @@ sub _createImage
         PROMPT 0
         TIMEOUT 100
         DEFAULT menu.c32
-        MENU TITLE Welcome to OpenSLX PreBoot CD
+        MENU TITLE Welcome to OpenSLX PreBoot ISO/CD
 
         LABEL OpenSLX
-          MENU LABEL OpenSLX PreBoot
+          MENU LABEL OpenSLX PreBoot Environment (Mini Linux/Kexec)
           SAY Now loading OpenSLX preboot environment ...
           KERNEL vmlinuz
           APPEND initrd=initramfs debug=3 vga=0x317
           TEXT HELP
-                 Your chance to edit the kernel commandline ...
+                 Your chance to edit the kernel commandline by hitting the
+                 TAB key (e.g. for adding debug=3 to it for bug hunting) ...
           ENDTEXT
     End-of-Here
     spitFile("$imageDir/iso/isolinux/isolinux.cfg", $isolinuxConfig);
@@ -82,8 +83,8 @@ sub _createImage
             -r -J -l -boot-info-table -joliet-long
             -publisher "OpenSLX Project - http://www.openslx.org" 
             -p "OpenSLX Project - openslx-devel\@openslx.org" 
-            -V "OpenSLX BootCD"
-            -volset "OpenSLX Project - PreBoot CD for non PXE/TFTP start of a Linux Stateless Client"
+            -V "OpenSLX BootISO"
+            -volset "OpenSLX Project - PreBoot ISO/CD for non PXE/TFTP start of a Linux Stateless Client"
             -c isolinux/boot.cat "$imageDir/iso"
     End-of-Here
     $mkisoCmd =~ s{\n\s*}{ }gms;

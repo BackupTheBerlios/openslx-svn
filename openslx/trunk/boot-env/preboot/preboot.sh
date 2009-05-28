@@ -10,7 +10,7 @@
 # General information about OpenSLX can be found at http://openslx.org
 #
 # preboot script for user interaction with OpenSLX preloading environment for
-# Linux stateless clients
+# Linux stateless clients (fetched by Preboot init over the net)
 
 # get configuration
 . /etc/initramfs-setup
@@ -25,10 +25,11 @@ sysname=$(cat result)
 . ./$sysname
 sysname=$(readlink $sysname)
 
+# ask for desired debug level in stage3 if debug!=0 in preboot
 echo "0" >result
-dialog --no-cancel --menu "Choose Debug Level:" 20 65 10 \
-   "0" "no debug output"  \
-   "3" "standard debug output" 2>result
+[ x$debuglevel != x0 ] && dialog --no-cancel --menu "Choose Debug Level:" \
+   20 65 10 "0" "no debug output"  \
+            "3" "standard debug output" 2>result
    
 debuglevel=$(cat result)
 if [ x$debuglevel != x0 ]; then
@@ -45,18 +46,17 @@ w3m -o confirm_qq=no \
 chvt 1
 
 # fetch kernel and initramfs of selected system 
-wget -O /tmp/kernel $boot_uri/$kernel
-wget -O /tmp/initramfs $boot_uri/$initramfs
+wget -O /tmp/kernel $boot_uri/$kernel | dialog --progressbox 3 65
+wget -O /tmp/initramfs $boot_uri/$initramfs | dialog --progressbox 3 65
 
 # read primary IP configuration to pass it on (behaviour like IPAPPEND=1 of
 # PXElinux)
 . /tmp/ipstuff
 
-clear
-ash
+[ "x$debuglevel" != x0 ] && { clear; ash; }
 
 # start the new kernel with initialramfs and composed cmdline
-echo "Booting OpenSLX client $label ..."
+dialog --infobox "Booting OpenSLX client $label ..." 3 65
 kexec -l /tmp/kernel --initrd=/tmp/initramfs \
-  --append="$append file=$boot_uri/${preboot_id}/client-config/${sysname}/${client}.tgz $quiet ip=$ip:$siaddr:$router:$subnet:$dnssrv $debug"
+  --append="$append file=$boot_uri/${preboot_id}/client-config/${sysname}/${client}.tgz $quiet ip=$ip:$siaddr:$router:$subnet:$dnssrv $debug" 2>/dev/null
 kexec -e
