@@ -142,6 +142,7 @@ mkdir /preboot
 tar -xzf /tmp/preboot.env -C /preboot
 # start a debug shell if needed, else set quiet kernel parameter
 if [ "${DEBUGLEVEL}" -gt 0 ] ; then
+  echo "Starting shell, leaving it would continue init."
   /bin/ash
 else
   # no debugging output for stage3 run
@@ -149,7 +150,10 @@ else
 fi
 # run the preboot interactive part which finally will execute kexec
 cd /preboot
-exec ./preboot.sh || sh
-# we will never return from that one ...
-
+exec ./preboot.sh
+# we should never return from that one ...
+echo "The execution of the main preboot environment failed. Please check"
+echo "network access of your box. Is $boot_uri reachable!?"
+# ping -c 1 $boot_uri
+sleep 20 && echo "o" > /proc/sysrq-trigger
 

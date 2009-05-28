@@ -15,18 +15,15 @@
 # get configuration
 . /etc/initramfs-setup
 
-ash
-
 # we expect to have a system selection dialog file in /preboot/bootmenu.dialog
-dialog --file bootmenu.dialog 2>result
+while [ "x$(cat result)" = "x" ] ; do
+  dialog --file bootmenu.dialog 2>result
+done
 # source the system to boot configuration ($kernel, $initramfs, $append,
 # $label)
 sysname=$(cat result)
 . ./$sysname
-
 sysname=$(readlink $sysname)
-
-# if wget
 
 ash
 
