@@ -35,6 +35,7 @@ config_dreshal () {
 local start=1
 local stop=10
 if [ "x$start_dreshal" = "xyes" ]; then
+  testmkd /mnt/var/lib/misc
   testmkd /mnt/var/run/PolicyKit polkituser:polkituser 
   testmkd /mnt/var/lib/PolicyKit polkituser:polkituser
   testmkd /mnt/var/run/dbus/at_console/pool
@@ -55,7 +56,8 @@ if [ "x$start_dreshal" = "xyes" ]; then
         >> /mnt/etc/passwd
     strinfile "haldaemon:" /mnt/etc/group || \
       echo "haldaemon:!:107:" >> /mnt/etc/group
-    echo -n "" > /mnt/var/lib/PolicyKit.reload
+    echo -n "" > /mnt/var/lib/misc/PolicyKit.reload
+    chmod a+x /mnt/var/lib/misc/PolicyKit.reload
     # create directories and set permissions with user and group id
     for dir in /var/run/hald /var/run/hald/hald-local \
                 /var/run/hald/hald-runner /var/cache/hald; do
