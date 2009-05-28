@@ -15,4 +15,10 @@
 typedef std::map<std::string,std::string> AttributeMap;
 typedef std::vector<char> IPAddress;
 
+struct networkInfo{
+	IPAddress networkAddress;
+	IPAddress subnetMask;
+	IPAddress broadcastAddress;
+};
+
 #endif /* TYPES_H_ */

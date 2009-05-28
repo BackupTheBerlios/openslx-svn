@@ -2,13 +2,13 @@ TARGET  := oekpool
 SRCS    := main.cpp ClientStates.cpp Client.cpp Network.cpp Ssh.cpp Ldap.cpp Configuration.cpp
 OBJS    := ${SRCS:.cpp=.o}
 DEPS    := ${SRCS:.cpp=.dep} 
-XDEPS   := $(wildcard ${DEPS}) 
+XDEPS   := $(wildcard ${DEPS})
 
 CC	= g++
-DEBUG_CCFLAGS = -O0 -Wall -I/usr/include -I. -I/usr/include/ldap -Ilib/ldapc++ -I/usr/include/libxml2 -ggdb #-ggdb #-Werror
-CCFLAGS = -O2 -Wall -I/usr/include -I. -Ilib/ldapc++ -I/usr/include/libxml2
+DEBUG_CCFLAGS = -O0 -Wall -I/usr/include -I. -I/usr/include/ldap -Ilib/ldapc++ -Ilib/libSockets -I/usr/include/libxml2 -ggdb #-ggdb #-Werror
+CCFLAGS = -O2 -Wall -I/usr/include -I. -Ilib/ldapc++ -Ilib/libSockets -I/usr/include/libxml2
 LDFLAGS = -L/usr/lib -lldap -lxml2
-LIBS    = #-lboost_statechart
+LIBS    = lib/libldapcpp.a lib/libSockets.a #-lboost_statechart
 
 .PHONY: all clean distclean 
 all:: ${TARGET} 
@@ -22,7 +22,7 @@ ${TARGET}: $(OBJS)
 	strip $@
 
 debug: $(OBJS)
-	${CC} ${LDFLAGS} -o ${TARGET}_dbg $^ ${LIBS} lib/libldapcpp.a 
+	${CC} ${LDFLAGS} -o ${TARGET}_dbg $^ ${LIBS} 
 
 #${DBG_OBJS}: %.o: %.cpp %.dep
 #	${CC} ${DEBUG_CCFLAGS} -o $@ -c $<
@@ -33,7 +33,10 @@ ${OBJS}: %.o: %.cpp %.dep
 	${CC} ${DEBUG_CCFLAGS} -o $@ -c $< 
 
 ${DEPS}: %.dep: %.cpp Makefile 
-	${CC} ${CCFLAGS} -MM $< > $@ 
+	${CC} ${CCFLAGS} -MM $< > $@
+
+test: debug
+	make -C Test
 
 clean::
 	rm -f *~ *.o ${TARGET}

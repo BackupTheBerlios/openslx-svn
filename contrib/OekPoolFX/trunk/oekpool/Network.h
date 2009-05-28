@@ -12,36 +12,48 @@
 #include <iostream>
 #include <vector>
 
+#include <TcpSocket.h>
+#include <UdpSocket.h>
+#include <ISocketHandler.h>
+#include "types.h"
+
+
 using namespace std;
-
-struct networkInfo{
-	vector<char> networkAddress;
-	vector<char> subnetMask;
-	vector<char> broadcastAddress;
-};
-
 
 class Network {
 public:
 	virtual ~Network();
 	static Network * getInstance();
 
-	bool sendWolPacket(std::string ipAddress, std::string macAddress);
+	bool sendWolPacket(IPAddress ipAddress, std::string macAddress);
+	void pingHost(bool& flag, const char* host);
+	void setNetworks(vector<networkInfo>);
 
 private:
 	Network();
 	Network(const Network& cc);
 	void createWolSequ(std::string macAddress, 	// MAC Address of the client
-			char(&sequence) [102]			// Char array where sequence is
+			char* sequence			// Char array where sequence is
 												// written to
 			);
-	std::string createBroadcast(std::string ipAddress);
+	IPAddress createBroadcast(IPAddress ipAddress);
 	std::vector<char> splitAddress(std::string address,
 			std::string format,
 			std::string delimiter
 			);
+	bool createPing(const char* host);
 
 	vector<networkInfo> availableNetworks;
+};
+
+
+// Socket for the network ping
+
+class pingSocket : public TcpSocket {
+
+public:
+	pingSocket(ISocketHandler& );
+
 };
 
 #endif /* NETWORK_H_ */

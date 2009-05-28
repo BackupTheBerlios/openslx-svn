@@ -8,11 +8,11 @@
 #include <string.h>
 #include <iostream>
 #include <vector>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <limits>
 #include <stdlib.h>
+#include <SocketHandler.h>
+
+
 
 #include "Network.h"
 
@@ -31,7 +31,7 @@ Network * Network::getInstance() {
 	return &instance;
 }
 
-void Network::createWolSequ(std::string macAddress, char(&sequence)[102]) {
+void Network::createWolSequ(std::string macAddress, char* sequence) {
 	std::vector<char> macComponent (splitAddress(macAddress, "%x", ":"));
 	int i;
 
@@ -44,16 +44,14 @@ void Network::createWolSequ(std::string macAddress, char(&sequence)[102]) {
 	}
 }
 
-std::string Network::createBroadcast(std::string ipAddress) {
-	vector<char> ip (splitAddress(ipAddress, "%d", "."));
+IPAddress Network::createBroadcast(IPAddress ipAddress) {
 	bool networkFound = false;
-	char buffer [16];
 	unsigned int i;
 
 	for(i = 0; i < availableNetworks.size(); i++) {
 		for(int z = 0; z < 4; z++ ) {
 			networkFound = true;
-			if( ( ip[z] & availableNetworks[i].networkAddress[z] ) !=
+			if( ( ipAddress[z] & availableNetworks[i].networkAddress[z] ) !=
 				availableNetworks[i].networkAddress[z] )
 			{
 				networkFound = false;
@@ -65,14 +63,7 @@ std::string Network::createBroadcast(std::string ipAddress) {
 			break;
 	}
 
-	sprintf(buffer, "%d.%d.%d.%d",
-			availableNetworks[i].broadcastAddress[0],
-			availableNetworks[i].broadcastAddress[1],
-			availableNetworks[i].broadcastAddress[2],
-			availableNetworks[i].broadcastAddress[3]
-			);
-	string bcString (buffer);
-	return bcString;
+	return availableNetworks[i].broadcastAddress;
 }
 
 std::vector<char> Network::splitAddress(std::string address, std::string format, string delimiter) {
@@ -88,7 +79,7 @@ std::vector<char> Network::splitAddress(std::string address, std::string format,
 	while(segment != NULL){
 		sscanf(segment, cformat, &charByte);
 		component.push_back((char)charByte);
-		strtok(NULL, delimiter.c_str());
+		segment = strtok(NULL, delimiter.c_str());
 	}
 
 
@@ -106,4 +97,44 @@ std::vector<char> Network::splitAddress(std::string address, std::string format,
 
     free(str);
 	return component;
+}
+
+void Network::pingHost(bool& flag, const char* host) {
+	SocketHandler h;
+	pingSocket* p = new pingSocket(h);
+	if (p->Open(host, 80))
+		p->Close();
+}
+
+void Network::setNetworks(std::vector<networkInfo> networks) {
+	availableNetworks = networks;
+}
+
+bool Network::sendWolPacket(IPAddress ip, std::string mac) {
+
+	IPAddress broadcats = createBroadcast(ip);
+	char packet[102];
+
+	createWolSequ(mac, packet);
+	const std::string pack(packet);
+
+	SocketHandler h;
+	UdpSocket p(h);
+	p.SetBroadcast(true);
+
+	char buffer[16];
+	snprintf(buffer, 16, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+	const std::string ip_addr(buffer);
+
+	p.SendTo(ip_addr, 99, packet);
+	p.SendTo(ip_addr, 99, packet);
+	p.SendTo(ip_addr, 99, packet);
+
+	return true;
+}
+
+//=================================================================================
+
+pingSocket::pingSocket(ISocketHandler& h) : TcpSocket(h) {
+
 }

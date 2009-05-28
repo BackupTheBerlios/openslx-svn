@@ -1,0 +1,8 @@
+NetworkTests.o: NetworkTests.cpp NetworkTests.h ../Network.h \
+  ../lib/libSockets/TcpSocket.h ../lib/libSockets/sockets-config.h \
+  ../lib/libSockets/StreamSocket.h ../lib/libSockets/Socket.h \
+  ../lib/libSockets/socket_include.h ../lib/libSockets/SocketAddress.h \
+  ../lib/libSockets/Thread.h ../lib/libSockets/Mutex.h \
+  ../lib/libSockets/IMutex.h ../lib/libSockets/UdpSocket.h \
+  ../lib/libSockets/ISocketHandler.h ../lib/libSockets/StdLog.h \
+  ../types.h
