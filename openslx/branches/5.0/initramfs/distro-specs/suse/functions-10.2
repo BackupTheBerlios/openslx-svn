@@ -35,7 +35,7 @@ local start=5
 local stop=18
 if [ "x$start_dreshal" = "xyes" ]; then
   for dir in /var/run/dbus /var/run/resmgr/classes /var/run/hal \
-             /var/cache/hald /var/lib/PolicyKit; do
+             /var/cache/hald /var/lib/PolicyKit /var/lib/misc ; do
     testmkd /mnt/$dir
   done
   if [ -f /mnt/etc/init.d/dbus ] ; then

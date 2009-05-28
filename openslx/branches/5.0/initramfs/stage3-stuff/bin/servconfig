@@ -282,12 +282,11 @@ if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
     *)
       tmpserv=$(uri_token $scratch server)
       tmppath=$(uri_token $scratch path)
-      # check that nfs is available
-      nfsmod
       # hanging mount processes might stop further setup - timeout
-      # should be configured ... it is possible to mount "nolock" only
-      mount -t nfs -o rw,tcp,nolock,intr,nodev,soft,timeo=2,nosuid \
-        ${tmpserv}:${tmppath} /tmp/scratch >/dev/null 2>&1 && {
+      # should be configured ...
+      # fsmount proto server path target options
+      fsmount nfs ${tmpserv} ${tmppath} /tmp/scratch \
+        "rw,intr,soft,timeo=2,nosuid" && {
         if [ -d /tmp/scratch/${clientip} ] ; then
           mv /tmp/scratch/${clientip} /tmp/scratch/${clientip}.totrash
           rm -rf /tmp/scratch/${clientip}.totrash 2>/dev/null &
@@ -295,8 +294,8 @@ if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
         testmkd /tmp/scratch/${clientip}
         # no need for tempfs there ...
         umount /mnt/tmp >/dev/null 2>&1
-        mount -t nfs -o rw,tcp,nolock,intr,nodev,soft,timeo=2,nosuid \
-          ${tmpserv}:${tmppath}/${clientip} /mnt/tmp >/dev/null 2>&1 
+        fsmount nfs ${tmpserv} ${tmppath} /mnt/tmp \
+          "rw,intr,soft,timeo=2,nosuid"
 	# somehow we need to move it to the vmware plugin. Any ideas
 	# how to handle the dependencies?
         # create an empty container file for vmware *.vmem, it does not

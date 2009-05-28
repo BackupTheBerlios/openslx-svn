@@ -57,7 +57,8 @@ mdev -s
 #( hwinfo --bluetooth >/etc/hwinfo.bt ) &
 
 # load harddisk driver and check for harddisk
-( grep -q -E "IDE|SCSI" /etc/hwinfo.data && modprobe ${MODPRV} sd_mod
+( grep -q -E "SCSI|SATA" /etc/hwinfo.data && modprobe ${MODPRV} sd_mod
+  grep -q -E  "IDE" /etc/hwinfo.data && modprobe ${MODPRV} ide-disk
   hwinfo --disk | sed -n "/Device File: /p" | \
     sed -e "s|.*Device File: /dev/||;s| .*||" >/etc/hwinfo.disk
   echo "disk detection finished at $(sysup)" >/tmp/diskready; ) &

@@ -120,17 +120,50 @@ fi
 case "$2" in
   prot) echo "$prot" ;;
   server) echo "$server" ;;
-  # add '::' again to path, ticket #232
-  path) echo "$path" | sed -e 's,§§§§§,\:\:,g' ;;
+  # add '::' again to path, remove duplicate "//"
+  path) echo "$path" | sed -e 's,§§§§§,\:\:,g;s,//,/,' ;;
   port) echo "$port" ;;
   query) echo "$query" ;;
 esac
 }
 #############################################################################
-# load the kernel nfs module if not compiled in
-nfsmod () {
-cat /proc/filesystems | grep -q -E "[[:space:]]nfs" || \
-  { modprobe ${MODPRV} nfs 2>/dev/null || error "$error_nfsmod" nonfatal; }
+# mounter for different file sources
+fsmount () {
+local proto=$1
+local server=$2
+local srcpath=$3
+local target=$4
+local mntopt=$5
+local transport
+testmkd ${target}
+case "${proto}" in
+  *nbd)
+    # TODO: to be filled in ...
+  ;;
+  lbdev)
+    # we expect the stuff on toplevel directory, filesystem type should be
+    # autodetected here ... (vmimgserv is blockdev here)
+    vmbdev=/dev/${server}
+    waitfor ${vmbdev} 20000
+    echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
+    mount -o ro ${vmbdev} ${target} || error "$scfg_evmlm" nonfatal
+  ;;
+  nfs)
+    # we expect nfs mounts here ... check that nfs module is loaded before
+    cat /proc/filesystems | grep -q -E "[[:space:]]nfs" || \
+      { modprobe ${MODPRV} nfs 2>/dev/null || error "$error_nfsmod" nonfatal; }
+    for transport in tcp udp fail; do
+      [ $transport = "fail" ] && { error "$init_nfs" nonfatal;
+         noimg=yes; break;}
+       mount -n -t nfs -o ${mntopt},nolock,${transport} \
+         ${server}:${srcpath} ${target} && break
+    done
+  ;;
+  smb|cifs)
+    mount -n -o ${mntopt},user=guest,guest,file_mode=0755,dir_mode=0755 \
+      -t ${proto} //${server}${srcpath} ${target}
+  ;;
+esac
 }
 #############################################################################
 # configure Xen bridge xenbr0
@@ -198,7 +231,7 @@ local mntpnt=$2
 local fs
 local path
 [ -f /lib/ld-linux.so.2 ] || ln -s /mnt/lib/ld-linux.so.2 /lib/ld-linux.so.2
-for fs in xfs ext2 reiserfs ; do
+for fs in xfs reiserfs ext2 ; do
   if strinfile "$fs" /proc/filesystems || modprobe ${MODPRV} $fs ; then
     unset $found
     for path in /sbin /bin /usr/sbin /usr/bin ; do
@@ -829,7 +862,6 @@ include_in_fsroot_union () {
           nfs)
             # activate kernel nfs if not present, nfsroot consists now of two
             # different parts
-            nfsmod
             root_path=$(uri_token $ROOTFS path)
             nfsserver=$(uri_token $ROOTFS server)
             mkdir -p /mnt/tmp/${root_path}_${union_id}
