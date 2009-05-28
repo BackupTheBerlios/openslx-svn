@@ -1,5 +1,5 @@
-# Copyright (c) 2007..2008 - RZ Uni Freiburg
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2007..2009 - RZ Uni Freiburg
+# Copyright (c) 2008..2009 - OpenSLX GmbH
 #
 # This program/file is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -199,28 +199,8 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     done
 
     chmod 0700 /dev/vmnet*
-    chmod 1777 /mnt/etc/vmware/fd-loop
     chmod 1777 /mnt/var/run/vmware
 
-    # loop file for exchanging information between linux and vmware guest
-    if modprobe ${MODPRV} loop; then
-      mdev -s
-    else
-      : #|| error "" nonfatal
-    fi
-    # mount a clean tempfs (bug in UnionFS prevents loopmount to work)
-    strinfile "unionfs" /proc/mounts && \
-      mount -n -o size=1500k -t tmpfs vm-loopimg /mnt/etc/vmware/loopimg
-    # create an empty floppy image of 1.4MByte size
-    dd if=/dev/zero of=/mnt/etc/vmware/loopimg/fd.img \
-      count=2880 bs=512 2>/dev/null
-    chmod 0777 /mnt/etc/vmware/loopimg/fd.img
-    # use dos formatter from rootfs (later stage4)
-    ln -sf /mnt/lib/ld-linux.so.2 /lib/ld-linux.so
-    LD_LIBRARY_PATH=/mnt/lib /mnt/sbin/mkfs.msdos \
-      /mnt/etc/vmware/loopimg/fd.img >/dev/null 2>&1 #|| error
-    mount -n -t msdos -o loop,umask=000 /mnt/etc/vmware/loopimg/fd.img \
-      /mnt/etc/vmware/fd-loop
     echo -e "usbfs\t\t/proc/bus/usb\tusbfs\t\tauto\t\t 0 0" >> /mnt/etc/fstab
     # needed for VMware 5.5.4 and versions below
     echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
@@ -233,7 +213,12 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       sed -e "s/^ *//" \
       >/mnt/etc/vmware/config
 
-    ## Copy version depending files
+    # copy version depending files - the vmchooser expects for every virtua-
+    # lization plugin a file named after it (here run-vmware.include)
+    testmkd /mnt/etc/opt/openslx
+    cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/run-virt.include \
+      /mnt/etc/opt/openslx/run-vmware.include
+    # copy version depending files (old style)
     cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/runvmware \
         /mnt/var/X11R6/bin/run-vmware.sh
     chmod 755 /mnt/var/X11R6/bin/run-vmware.sh
