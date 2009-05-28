@@ -25,9 +25,11 @@ if [ -e $CONFFILE ]; then
     testmkd /mnt/etc/opt/openslx
     cp $CONFFILE /mnt/etc/opt/openslx/vmchooser-stage3.conf
 
-	testmkd /mnt/var/X11R6/bin
-    cp /mnt/opt/openslx/plugin-repo/vmchooser/run-virt.sh \
-	  /mnt/var/X11R6/bin
+    testmkd /mnt/var/X11R6/bin
+    ln -s /opt/openslx/plugin-repo/vmchooser/run-virt.sh \
+      /mnt/var/X11R6/bin/run-virt.sh
+    ln -s /opt/openslx/plugin-repo/vmchooser/vmchooser \
+      /mnt/var/X11R6/bin/vmchooser
 
     # setup all generic virtualization / starting stuff like the floppy image
     testmkd /mnt/var/lib/virt/vmchooser/fd-loop 1777
