@@ -122,19 +122,14 @@ sub installationPhase
     $self->{openslxBasePath}      = $info->{'openslx-base-path'};
     my $splashyBinPath =
         "$self->{openslxBasePath}/lib/plugins/bootsplash/files/bin";
-    my $uClibcPath = "$self->{openslxBasePath}/share/uclib-rootfs/lib";
     my $pluginRepoPath = "$self->{pluginRepositoryPath}";
 
-    # copy splashy_update into plugin-repo folder
+    # copy splashy(_update) into plugin-repo folder
     mkpath("$pluginRepoPath/bin");
     mkpath("$pluginRepoPath/lib");
     slxsystem("cp -a $splashyBinPath/* $pluginRepoPath/bin") == 0
         or die _tr(
                 "unable to copy splashy to $pluginRepoPath/bin"
-        );
-    slxsystem("cp -a $uClibcPath/libuClibc* $pluginRepoPath/lib") == 0
-        or die _tr(
-                "unable to copy libuClibc to $pluginRepoPath/lib"
         );
 
     return;

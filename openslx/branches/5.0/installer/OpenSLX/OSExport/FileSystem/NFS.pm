@@ -238,6 +238,7 @@ sub _copyUclibEnv
 {
     my $self         = shift;
     my $target       = shift;
+    my $targetRoot   = $target;
 
     $target .= "/opt/openslx/uclib-rootfs";
 
@@ -262,6 +263,11 @@ sub _copyUclibEnv
     my $rsyncCmd
         = "rsync -av --delete-excluded --exclude-from=-" . " $uclibcRootfs/ $target";
     vlog(2, "executing: $rsyncCmd\n");
+    # link uClibc from the uclib-rootfs to /lib to make LD_PRELOAD=... working
+    my $uClibCmd = "ln -sf /opt/openslx/uclib-rootfs/lib/ld-uClibc.so.0";
+    $uClibCmd .= " $targetRoot/lib/ld-uClibc.so.0";
+    system("$uClibCmd");
+
     open($rsyncFH, '|-', $rsyncCmd)
         or die _tr("unable to start rsync for source '%s', giving up! (%s)",
                    $uclibcRootfs, $!);
