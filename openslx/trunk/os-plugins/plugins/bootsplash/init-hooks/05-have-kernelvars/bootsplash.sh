@@ -12,6 +12,6 @@ fi
 
 if [ ${no_bootsplash} -eq 0 ]; then
   /bin/splashy boot 2>/dev/null
-  # add splashy.stop runlevel script
-  export D_SPLASHY=splashy.stop
+  # add splashy.boot runlevel script
+  export D_SPLASHY=splashy.boot
 fi
