@@ -10,6 +10,7 @@
 # General information about OpenSLX can be found at http://openslx.org
 #
 # Init hook to create a bridge on the active network interface
+# (should be kept identical to the files of virtualbox and qemukvm plugins)
 #############################################################################
 
 local bridge=br0

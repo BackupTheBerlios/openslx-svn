@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # virtualbox.pm
-#    - declares necessary information for the virtualbox plugin
+#    - Declares necessary information for the virtualbox plugin
 # -----------------------------------------------------------------------------
 package OpenSLX::OSPlugin::virtualbox;
 
@@ -50,7 +50,7 @@ sub getInfo
 
 sub getAttrInfo
 {
-    # returns a hash-ref with information about all attributes supported
+    # Returns a hash-ref with information about all attributes supported
     # by this specific plugin
     my $self = shift;
 
@@ -111,13 +111,13 @@ sub installationPhase
 
     my $engine = $self->{'os-plugin-engine'};
     
-    # different names of the tool (should be unified somehow!?)
+    # Different names of the tool (should be unified somehow!?)
     if (!isInPath('VirtualBox')) {
         $engine->installPackages(
             $engine->getInstallablePackagesForSelection('virtualbox-ose')
         );
     }
-    # copy run-virt.include to the appropriate place for inclusion in stage4
+    # Copy run-virt.include to the appropriate place for inclusion in stage4
     copyFile("$self->{openslxBasePath}/lib/plugins/virtualbox/files/run-virt.include",
         "$self->{pluginRepositoryPath}/");
 
@@ -144,7 +144,7 @@ sub checkStage3AttrValues
     return;
 }
 
-# write the runlevelscript
+# Write the runlevelscript
 sub _writeRunlevelScript
 {
     my $self     = shift;
@@ -155,6 +155,20 @@ sub _writeRunlevelScript
     my $runlevelScript = $self->{distro}->fillRunlevelScript($location, $kind);
 
     spitFile($file, $runlevelScript);
+}
+
+# The bridge configuration needs the bridge module to be present in early
+# stage3
+sub suggestAdditionalKernelModules
+{
+    my $self                = shift;
+    my $makeInitRamFSEngine = shift;
+
+    my @suggestedModules;
+
+    push @suggestedModules, qw( bridge );
+
+    return @suggestedModules;
 }
 
 1;

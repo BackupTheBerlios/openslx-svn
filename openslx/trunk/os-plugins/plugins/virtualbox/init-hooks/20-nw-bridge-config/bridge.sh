@@ -10,9 +10,8 @@
 # General information about OpenSLX can be found at http://openslx.org
 #
 # Init hook to create a bridge on the active network interface
+# (should be kept identical to the files of vmware and qemukvm plugins)
 #############################################################################
-
-set -x
 
 local bridge=br0
 local brnwif=${nwif}
@@ -22,9 +21,10 @@ local nwifmac=${macaddr}
 brctl addbr ${bridge} || exit 0
 brctl stp ${bridge} off
 brctl setfd ${bridge} 0.000000000001
-ip link set addr ${nwifmac} br0
+ip link set addr ${nwifmac} ${bridge}
 ip link set dev ${nwif} up
 brctl addif ${bridge} ${nwif}
 
-# fixme: sending back the variable to init does not work properly at the moment
+# fixme: sending back the variable to init does not work properly at the
+# moment
 nwif=${bridge}
