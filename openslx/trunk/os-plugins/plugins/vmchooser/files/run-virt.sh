@@ -217,6 +217,17 @@ filecheck
 # Get all virtual machine specific stuff from the respective include file
 if [ -e /etc/opt/openslx/run-${virt_mach}.include ] ; then
   . /etc/opt/openslx/run-${virt_mach}.include
+  # start fvwm for player 2+
+  # problems with windows opening in background
+  if [ "${virt_mach}" = "vmware" ]; then
+    case "$vmversion" in
+      2.0|6.0|2.5|6.5)
+        which fvwm2 >/dev/null 2>&1 && \
+        ( echo "EdgeScroll 0 0" > ${redodir}/fvwm
+        fvwm2 -f ${redodir}/fvwm >/dev/null 2>&1 & )
+      ;;
+    esac
+  fi
   ${VIRTCMD} ${VIRTCMDOPTS}
   writelog "Bye.\n"
   exit 0
