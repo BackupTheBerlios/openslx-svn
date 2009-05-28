@@ -45,19 +45,8 @@ if [ "x$start_dreshal" = "xyes" ]; then
     strinfile "messagebus:" /mnt/etc/group || \
       echo "messagebus:!:101:" >> /mnt/etc/group
     # set permissions with userid
-    echo -e "\tchown messagebus:messagebus /var/run/dbus 2>/dev/null" \
-      >>/mnt/etc/init.d/boot.slx
+    testmkd /mnt/var/run/dbus messagebus:messagebus
     rllinker "dbus" $start $stop
-  fi
-  if [ -f /mnt/etc/init.d/consolekit ] ; then
-    strinfile "polkituser:" /mnt/etc/passwd || \
-      echo "polkituser:x:104:106:PolicyKit:/var/run/PolicyKit:/bin/false" \
-        >> /mnt/etc/passwd
-    start=$(($start + 1))
-    stop=$(($stop - 1))
-    rllinker "consolekit" $start $stop
-    echo -n > /mnt/var/lib/misc/PolicyKit.reload
-    chmod a+x /mnt/var/lib/misc/PolicyKit.reload
   fi
   if [ -f /mnt/etc/init.d/resmgr ] ; then
     start=$(($start + 1))
@@ -74,12 +63,20 @@ if [ "x$start_dreshal" = "xyes" ]; then
     # set permissions with userid
     echo -e "\tchown haldaemon:haldaemon /var/run/hal /var/cache/hald \
       2>/dev/null" >>/mnt/etc/init.d/boot.slx
-
-    # this seems important for suse-10.2
-    rllinker "policykitd" $start $stop
     start=$(($start + 1))
     stop=$(($stop - 1))
     rllinker "haldaemon" $start $stop
+  fi
+  if [ -f /mnt/etc/init.d/policykitd ] ; then
+    strinfile "polkituser:" /mnt/etc/passwd || \
+      echo "polkituser:x:104:106:PolicyKit:/var/run/PolicyKit:/bin/false" \
+        >> /mnt/etc/passwd
+    testmkd /mnt/var/run/polkit polkit:polkit 
+    start=$(($start + 10))
+    stop=$(($stop - 1))
+    rllinker "policykitd" $start $stop
+    echo -n > /mnt/var/lib/misc/PolicyKit.reload
+    chmod a+x /mnt/var/lib/misc/PolicyKit.reload
   fi
 fi
 }
