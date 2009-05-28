@@ -1,7 +1,7 @@
 ##########################################
 #                                        #
-#  Dieses System wird in ca. 10 Minuten  #
+   Dieses System wird in ca. ___time___ Minuten  
 #  heruntergefahren. Bitte sichern Sie   #
-#  alle Daten und loggen sich dann aus.  #
+   alle Daten und loggen sich dann aus.  
 #                                        #
 ##########################################

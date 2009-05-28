@@ -21,18 +21,21 @@ require 'shutdownthread.rb'
 require 'errorthread.rb'
 require 'warnthread.rb'
 
-# Read the config file
-config = ParseConfig.new("oekpool.conf")
+# Initialize Utility Class
+$utility = Utility.new
+
+# create the config variables
+$utility.initializeConfiguration()
 
 # if debugging is enabled log is written to stdout with info level
-if config.get_value("DEBUG") == "yes"
+if $DEBUG == true
   $Log = Logger.new(STDOUT)
   $Log.level = Logger::INFO
 # else log level is set according to config file
 else
   $Log = Logger.new("debug.log")
 #  $Log = Logger.new(STDOUT)
-  case config.get_value("LOG_LEVEL").downcase
+  case $LOG_LEVEL
     when "debug" then
       $Log.level = Logger::DEBUG
     when "info" then
@@ -48,36 +51,9 @@ else
   end
 end
 
-# Read the content of the config file and store it in global variables
-$PING_TIMEOUT = config.get_value("PING_TIMEOUT").to_i
-$BOOT_TIMEOUT = config.get_value("BOOT_TIMEOUT").to_i
-$SSH_TIMEOUT = config.get_value("SSH_TIMEOUT").to_i
-$SSH_CHECK_INTERVAL = config.get_value("SSH_CHECK_INTERVAL").to_i
-$SHUTDOWN_TIME  = config.get_value("SHUTDOWN_TIME").to_i
-$WARN_TIME = config.get_value("WARN_TIME").to_i
-$NUM_WAKE_ATTEMPTS = config.get_value("NUM_WAKE_ATTEMPTS").to_i
-$TFTP_ROOT_DIR = config.get_value("TFTP_ROOT_DIR")
-$LOG_FILE = config.get_value("LOG_FILE")
-$SSH_USER = config.get_value("SSH_USER")
-$WARN_TEXT_FILE = config.get_value("WARN_TEXT_FILE")
-$LDAP_SERVER = config.get_value("LDAP_SERVER")
-$LDAP_PORT = config.get_value("LDAP_PORT").to_i
-$LDAP_USER = config.get_value("LDAP_USER")
-$LDAP_PASSWORD = config.get_value("LDAP_PASSWORD")
-$WARN_TEXT = ""
-
-f = File.new($WARN_TEXT_FILE, "r")
-tmp_arr = f.readlines()
-f.close()
-
-tmp_arr.each do |tmp|
-	$WARN_TEXT = $WARN_TEXT + tmp
-end
-
-
 # Define struct used for storing client information
 $Host = Struct.new(:IP, :MAC, :BC, :Name, :wakeAttempt , :PXE, :shutDownTime,
-:warnTime ,:changePXE, :ReadyForWakeUp, :isWake, :wakeSSH,
+:warnTime , :changePXE, :ReadyForWakeUp, :isWake, :wakeSSH,
 :shutDown, :pingErr, :sshErr, :isDown, :toBeDeleted, :pingThread, :sshThread,
 :warnThread, :shutDownThread)
 
@@ -89,13 +65,10 @@ $exit_flag = false
 # Initialize object which changes host states
 $state = ListState.new($hostList)
 
-# Initialize Utility Class
-$utility = Utility.new
-
 # start the threads
 
 # if debugging is enabled start debug thread
-if config.get_value("DEBUG") == "yes"
+if $DEBUG == true
   dbThread = getDbThread(true)
   sleep(2)
   debugThread = getDebugThread()

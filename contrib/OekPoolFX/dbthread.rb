@@ -45,20 +45,11 @@ def getDbThread(debug_)
               # Host in list
               if $hostList.include?(host_info[:MAC])
               
-              # PXE image will change
-              # applies if there exists a wake time in future which is different from the current wake time
-                if(wakeTimeInFuture != nil) and (($hostList[host_info[:MAC]][:PXE][:menu] != wakeTimeInFuture[:menu]) or ($hostList[host_info[:MAC]][:PXE][:time] != wakeTimeInFuture[:time]))
-                
-                  if($hostList[host_info[:MAC]][:shutDown] == false)
-                  
-                    if(wakeTimeInFuture[:start] == nil)
-                  
-                      $Log.info "DB: Config change for \"#{host_info[:HostName]}\" in approx. #{(($WARN_TIME + $SHUTDOWN_TIME).to_i)/60} minutes."
-                      $hostList[host_info[:MAC]][:warnTime] = actual_time
-                      $hostList[host_info[:MAC]][:shutDownTime] = actual_time + $WARN_TIME
-                      $hostList[host_info[:MAC]][:shutDown] = true
-                  
-                    else
+                # PXE image will change
+                # applies if there exists a wake time in future which is different from the current wake time
+                if(wakeTimeInFuture != nil) 
+                  if($hostList[host_info[:MAC]][:PXE][:menu] != wakeTimeInFuture[:menu]) or ($hostList[host_info[:MAC]][:PXE][:time] != wakeTimeInFuture[:time])
+                    if($hostList[host_info[:MAC]][:shutDown] == false)
                   
                       $Log.info "DB: Config change for \"#{host_info[:HostName]}\" in approx. #{((wakeTimeInFuture[:start] - $SHUTDOWN_TIME - actual_time).to_i)/60} minutes."
                       $hostList[host_info[:MAC]][:warnTime] = wakeTimeInFuture[:start] - $WARN_TIME - $SHUTDOWN_TIME
@@ -72,35 +63,40 @@ def getDbThread(debug_)
                 # no PXE image defined in future
                 # applies if there exists no wake time in future
                 # if host is already marked as "to be deleted" nothing needs to be done
-                elsif(wakeTimeInFuture == nil) and ($hostList[host_info[:MAC]][:toBeDeleted] == false)
+                else
                 
-                  $Log.info "DB: Removing host #{$hostList[host_info[:MAC]][:Name]} on #{(actual_time + $WARN_TIME).to_s}."
-                  $hostList[host_info[:MAC]][:warnTime] = actual_time
-                  $hostList[host_info[:MAC]][:shutDownTime] = actual_time + $WARN_TIME
-                  $hostList[host_info[:MAC]][:shutDown] = true
-                  $hostList[host_info[:MAC]][:toBeDeleted] = true
+                  if ($hostList[host_info[:MAC]][:toBeDeleted] == false)
+                    $Log.info "DB: Removing host #{$hostList[host_info[:MAC]][:Name]} on #{(actual_time + $WARN_TIME).to_s}."
+                    $hostList[host_info[:MAC]][:warnTime] = actual_time
+                    $hostList[host_info[:MAC]][:shutDownTime] = actual_time + $WARN_TIME
+                    $hostList[host_info[:MAC]][:shutDown] = true
+                    $hostList[host_info[:MAC]][:toBeDeleted] = true
+                  end
+                
                 end
               
               
                 # pxe image change for current time is scheduled
                 # applies is there exists a current wake time and the wake time stored
                 # in DB is different from the wake time stored in the host object
-                if(wakeTime != nil) and (($hostList[host_info[:MAC]][:PXE][:menu] != wakeTime[:menu]) or ($hostList[host_info[:MAC]][:PXE][:time] != wakeTime[:time]))
-                  
-                  # processing cannot be done if host is not marked as "down"
-                  if($hostList[host_info[:MAC]][:isDown] == true)
+                if(wakeTime != nil)
+                  if($hostList[host_info[:MAC]][:PXE][:menu] != wakeTime[:menu]) or ($hostList[host_info[:MAC]][:PXE][:time] != wakeTime[:time])
                     
-                    $Log.info "DB: Changing image for \"#{host_info[:HostName]}\""
-                    $hostList[host_info[:MAC]][:PXE] = wakeTime
-                    $state.change(host_info[:MAC],$state.changePXE)
+                    # processing cannot be done if host is not marked as "down"
+                    if($hostList[host_info[:MAC]][:isDown] == true)
+                      
+                      $Log.info "DB: Changing image for \"#{host_info[:HostName]}\""
+                      $hostList[host_info[:MAC]][:PXE] = wakeTime
+                      $state.change(host_info[:MAC],$state.changePXE)
+                    end
+                    
                   end
-                #elsif(wakeTime == nil)
                   
                 end
               
               # Host is not in list
               else
-            
+              
                 # PXE image is defined for current time
                 # applies if there is a current wake time
                 if(wakeTime != nil)
@@ -152,7 +148,7 @@ def timeApplicable(timeArray, actual_time)
 	endTime   = timeArray[2].split(":")
 	
 	# check whether it's the right week day
-	if (timeArray[0] != actual_time.wday) and (timeArray[0] != "x")
+	if (timeArray[0].to_i != actual_time.wday) and (timeArray[0] != "x")
 		return false
   end
 
@@ -243,7 +239,7 @@ def determineWakeTime(pxe, actual_time)
           startArray = timeArray[1].split(":")
           pxeConfig[:start] = Time.local(actual_time.year, actual_time.month, actual_time.day, startArray[0].to_i, startArray[1].to_i * 10, 0)
         else
-          pxeConfig[:start] = nil
+          pxeConfig[:start] = Time.local(actual_time.year, actual_time.month, actual_time.day, actual_time.hour, actual_time.min)
         end
         
         unless timeArray[2].downcase() == "x"

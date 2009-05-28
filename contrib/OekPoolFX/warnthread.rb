@@ -1,9 +1,4 @@
-# IMPORTANT:
-# This file contains code with improper functionality.
-# I added this file because the application is already
-# in need of it. The code is not to be considered as
-# working.
-
+# Implements warnings to users
 def getWarnThread()
   return Thread.new(){
   
@@ -19,7 +14,8 @@ def getWarnThread()
     
       $hostList.each do |key,host|
         
-        if(host[:isDown] == false) and (host[:shutDown] == true) and ($hostList[key][:warnThread] == nil) and (host[:warnTime] <= currentTime )
+        if(host[:isDown] == false) and (host[:shutDown] == true) and
+        	($hostList[key][:warnThread] == nil) and (host[:warnTime] <= currentTime )
           
           if(host[:wakeSSH] == true)
             $Log.info "WARN: Warning host #{host[:Name]}"

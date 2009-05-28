@@ -30,27 +30,47 @@ def getShutdownThread()
               # invoke shutdown sequence
               $hostList[key][:shutDownThread] = getHostShutdownThread(key, host)
               
-            # if ssh connection cannot be established we assume that host is shut down
-            else
-              $Log.info "SHUTDOWN: Shutting down host #{host[:Name]}"
+            # if ssh connection cannot be established and host has not been forced
+            # to boot, we have to distinguish to cases
+            elsif(host[:wakeSSH] == false) and (host[:PXE][:wake] == false)
               
-              # kill ssh thread if running
-              if($hostList[key][:sshThread] != nil)
-                $hostList[key][:sshThread].kill()
-                $hostList[key][:sshThread] = nil
+              # 1st case: host has been started
+              # then we wait until ssh connection is possible
+              if(host[:isWake] == true)
+                
+                next
+                
+              # 2nd case: host has not been started
+              # then we just tidy up and mark it as down
+              else
+                
+                $Log.info "SHUTDOWN: Shutting down host #{host[:Name]}"
+                
+                # kill ssh thread if running
+                if($hostList[key][:sshThread] != nil)
+                  $hostList[key][:sshThread].kill()
+                  $hostList[key][:sshThread] = nil
+                end
+                
+                # kill ping thread if running
+                if($hostList[key][:pingThread] != nil)
+                  $hostList[key][:pingThread].kill()
+                  $hostList[key][:pingThread] = nil
+                end
+                
+                # change state to "isDown"
+                $state.change(key,$state.isDown)
+              
               end
               
-              # kill ping thread if running
-              if($hostList[key][:pingThread] != nil)
-                $hostList[key][:pingThread].kill()
-                $hostList[key][:pingThread] = nil
-              end
-              
-              # change state to "isDown"
-              $state.change(key,$state.isDown)
+            # # if ssh connection cannot be established and host has been forced
+            # to boot, something is wrong and we raise an error
+            elsif(host[:wakeSSH] == false) and (host[:PXE][:wake] == true)
+              $Log.error "SHUTDOWN: Shutdown error for host #{host[:Name]} (SSH connection not possible but supposed to)"
+              host[:sshErr] = Time.now
             end
             
-            # delete the Boot-Menü after shutdown
+            # delete the Boot-Menu after shutdown
             pxeBootFile = $TFTP_ROOT_DIR + "/pxelinux.cfg/" + $utility.getHostFile(host[:MAC])
             if File.exists?(pxeBootFile)
               File.delete(pxeBootFile)
@@ -104,7 +124,7 @@ def getHostShutdownThread(key, host)
     # an error is written to the log
     rescue
     
-    $Log.error "SHUTDOWN: Shutdown error for host #{host[:Name]}"
+    $Log.error "SHUTDOWN: Shutdown error for host #{host[:Name]} (unexpected error during SSH session)"
     
     end
   $Log.debug "SHUTDOWN: Thread is shutting down..."
