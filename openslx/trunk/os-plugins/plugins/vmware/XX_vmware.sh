@@ -156,7 +156,7 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       vmimgpath="$(uri_token ${vmware_imagesrc} path)"
     fi
     if [ -n "${vmimgserv}" ] ; then
-      testmkd /mnt/var/lib/vmware
+      testmkd /mnt/var/lib/virt/vmware
       case "${vmimgprot}" in
         *nbd)
           # TODO: to be filled in ...
@@ -167,7 +167,7 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
           vmbdev=/dev/${vmimgserv}
           waitfor ${vmbdev} 20000
           echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
-          mount -o ro ${vmbdev} /mnt/var/lib/vmware || \
+          mount -o ro ${vmbdev} /mnt/var/lib/virt/vmware || \
             error "$scfg_evmlm" nonfatal
           ;;
         *)
@@ -176,7 +176,7 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
             [ $proto = "fail" ] && { error "$scfg_nfs" nonfatal;
             noimg=yes; break;}
           mount -n -t nfs -o ro,nolock,$proto ${vmimgserv}:${vmimgpath} \
-            /mnt/var/lib/vmware && break
+            /mnt/var/lib/virt/vmware && break
           done
           ;;
       esac

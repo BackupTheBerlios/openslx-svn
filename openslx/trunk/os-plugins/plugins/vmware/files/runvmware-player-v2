@@ -124,7 +124,7 @@ hver=4
 hostname="VM-${HOST}"
 
 # Folder of VirtualMachine Images
-vmdir="/var/lib/vmware"
+vmdir="/var/lib/virt/vmware"
 
 # special Variables, persistence vmware?
 #TODO: do we really need it? Should be everywhere nonpersistent
@@ -171,7 +171,7 @@ diskfile="${vmdir}/${imagename}"
 
 # command line variables
 # start with this this default commmand line options + extra
-# TODO: defaults laut datei --include /var/lib/vmware/tmpl/winconfig
+# TODO: defaults laut datei --include /var/lib/virt/vmware/tmpl/winconfig
 #     --include <includefile> include code right before program start
 
 # Should we debug? Hell yes, we should always debug!
