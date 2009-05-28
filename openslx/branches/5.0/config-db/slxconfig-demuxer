@@ -623,6 +623,21 @@ sub writeSystemConfiguration
         )
     );
 
+    # check if uclibc-rootfs in corresponding vendor-OS matches the current
+    # version and add a warning if it does not:
+    my $uclibcVersionPath 
+        = "$openslxConfig{'private-path'}/stage1/$info->{'vendor-os'}->{name}/opt/openslx/uclib-rootfs.version";
+    chomp(my $uclibcVersion 
+        = slurpFile($uclibcVersionPath, { failIfMissing => 0 } ));
+    chomp(my $currVersion = qx{slxversion});
+    if ($uclibcVersion ne $currVersion) {
+        warn _tr(
+            "uclibc-rootfs for system '%s' may not be up-to-date - consider updating the vendor-OS!",
+            $info->{name}, $uclibcVersion, $currVersion
+        );
+    }
+    
+
     my $attrProblems = OpenSLX::AttributeRoster->findProblematicValues(
         $info->{attrs}, $info->{'vendor-os'}->{name}, 
         $info->{'installed-plugins'}
