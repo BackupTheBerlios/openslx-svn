@@ -19,7 +19,12 @@
 dialog --file bootmenu.dialog 2>result
 # source the system to boot configuration ($kernel, $initramfs, $append,
 # $label)
-. ./$(cat result)
+sysname=$(cat result)
+. ./$sysname
+
+chvt 4
+w3m -o confirm_qq=no $boot_uri/user_settings.pl?system=$sysname
+chvt 1
 
 # fetch kernel and initramfs of selected system 
 wget -O /tmp/kernel $boot_uri/$kernel
