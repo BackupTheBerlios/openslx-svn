@@ -52,30 +52,13 @@ qemu(-kvm)\n  makes not much sense."
     fi
     if [ -n "${qkimgserv}" ] ; then
       # directory where qemu images are expected in
-      testmkd /mnt/var/lib/virt/qemukvm
-      case "${qkimgprot}" in
-        *nbd)
-          # TODO: to be filled in ...
-          ;;
-        lbdev)
-          # we expect the stuff on toplevel directory, filesystem type should
-          # be autodetected here ... (qkimgserv is blockdev here)
-          qkbdev=/dev/${qkimgserv}
-          waitfor ${qkbdev} 20000
-          echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
-          mount -o ro ${qkbdev} /mnt/var/lib/virt/qemukvm || \
-            error "$scfg_evmlm" nonfatal
-          ;;
-        *)
-          # we expect nfs mounts here ...
-          for proto in tcp udp fail; do
-            [ $proto = "fail" ] && { error "$scfg_nfs" nonfatal;
-            noimg=yes; break;}
-          mount -n -t nfs -o ro,nolock,$proto ${qkimgserv}:${qkimgpath} \
-            /mnt/var/lib/virt/qemukvm && break
-          done
-          ;;
-      esac
+      mnttarget=/mnt/var/lib/virt/qemukvm
+      # mount the qemukvm image source readonly (ro)
+      fsmount ${qkimgprot} ${qkimgserv} ${qkimgpath} ${mnttarget} ro
+    else
+      [ $DEBUGLEVEL -gt 1 ] && error "  * Incomplete information in variable \
+${qemukvm_imagesrc}." nonfatal
+    fi
     fi
     # copy version depending files - the vmchooser expects for every virtua-
     # lization plugin a file named after it (here run-qemukvm.include)

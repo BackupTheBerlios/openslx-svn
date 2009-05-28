@@ -152,31 +152,13 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       vmimgserv=$(uri_token ${vmware_imagesrc} server)
       vmimgpath="$(uri_token ${vmware_imagesrc} path)"
     fi
-    if [ -n "${vmimgserv}" ] ; then
-      testmkd /mnt/var/lib/virt/vmware
-      case "${vmimgprot}" in
-        *nbd)
-          # TODO: to be filled in ...
-          ;;
-        lbdev)
-          # we expect the stuff on toplevel directory, filesystem type should be
-          # autodetected here ... (vmimgserv is blockdev here)
-          vmbdev=/dev/${vmimgserv}
-          waitfor ${vmbdev} 20000
-          echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
-          mount -o ro ${vmbdev} /mnt/var/lib/virt/vmware || \
-            error "$scfg_evmlm" nonfatal
-          ;;
-        *)
-          # we expect nfs mounts here ...
-          for proto in tcp udp fail; do
-            [ $proto = "fail" ] && { error "$scfg_nfs" nonfatal;
-            noimg=yes; break;}
-          mount -n -t nfs -o ro,nolock,$proto ${vmimgserv}:${vmimgpath} \
-            /mnt/var/lib/virt/vmware && break
-          done
-          ;;
-      esac
+    if [ -n "${vmimgserv}" -a -n ${vmimgpath} -a -n ${vmimgprot} ] ; then
+      mnttarget=/mnt/var/lib/virt/vmware
+      # mount the vmware image source readonly (ro)
+      fsmount ${vmimgprot} ${vmimgserv} ${vmimgpath} ${mnttarget} ro
+    else
+      [ $DEBUGLEVEL -gt 1 ] && error "  * Incomplete information in variable \
+${vmware_imagesrc}." nonfatal
     fi
     
     #############################################################################

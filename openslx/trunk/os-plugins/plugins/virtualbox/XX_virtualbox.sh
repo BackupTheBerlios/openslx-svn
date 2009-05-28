@@ -34,30 +34,12 @@ if [ -e /initramfs/plugin-conf/virtualbox.conf ]; then
     fi
     if [ -n "${vbimgserv}" ] ; then
       # directory where qemu images are expected in
-      testmkd /mnt/var/lib/virt/virtualbox
-      case "${vbimgprot}" in
-        *nbd)
-          # TODO: to be filled in ...
-          ;;
-        lbdev)
-          # we expect the stuff on toplevel directory, filesystem type should be
-          # autodetected here ... (vbimgserv is blockdev here)
-          vbbdev=/dev/${vbimgserv}
-          waitfor ${vbbdev} 20000
-          echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
-          mount -o ro ${vbbdev} /mnt/var/lib/virt/virtualbox || \
-            error "$scfg_evmlm" nonfatal
-          ;;
-        *)
-          # we expect nfs mounts here ...
-          for proto in tcp udp fail; do
-            [ $proto = "fail" ] && { error "$scfg_nfs" nonfatal;
-            noimg=yes; break;}
-          mount -n -t nfs -o ro,nolock,$proto ${vbimgserv}:${vbimgpath} \
-            /mnt/var/lib/virt/virtualbox && break
-          done
-          ;;
-      esac
+      mnttarget=/mnt/var/lib/virt/virtualbox
+      # mount the virtualbox image source readonly (ro)
+      fsmount ${vbimgprot} ${vbimgserv} ${vbimgpath} ${mnttarget} ro
+    else
+      [ $DEBUGLEVEL -gt 1 ] && error "  * Incomplete information in variable \
+${virtualbox_imagesrc}." nonfatal
     fi
     # copy version depending files - the vmchooser expects for every virtua-
     # lization plugin a file named after it (here run-virtualbox.include)

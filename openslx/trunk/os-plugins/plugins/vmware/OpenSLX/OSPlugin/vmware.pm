@@ -481,26 +481,27 @@ sub _getVersion {
     my %versioninfo = (vmversion => "", vmbuildversion => "");
 
     # get version information about installed vmplayer
-    open(FH, "$vmpath/bin/vmplayer");
-    $/ = undef;
-    my $data = <FH>;
-    close FH;
-    # depending on the installation it could differ and has multiple build
-    # strings
-    if ($data =~ m{[^\d\.](\d\.\d) build-(\d+)}) {
-        $vmversion = $1;
-        $vmbuildversion = $2;
-    }
-    if ($data =~ m{\0(2\.[05])\.[0-9]}) {
-        $vmversion = $1;
-    }
-    # else { TODO: errorhandling if file or string doesn't exist }
-    chomp($vmversion);
-    chomp($vmbuildversion);
+    if (open(FH, "$vmpath/bin/vmplayer")) {
+        $/ = undef;
+        my $data = <FH>;
+        close FH;
+        # depending on the installation it could differ and has multiple build
+        # strings
+        if ($data =~ m{[^\d\.](\d\.\d) build-(\d+)}) {
+            $vmversion = $1;
+            $vmbuildversion = $2;
+        }
+        if ($data =~ m{\0(2\.[05])\.[0-9]}) {
+            $vmversion = $1;
+        }
+        # else { TODO: errorhandling if file or string doesn't exist }
+        chomp($vmversion);
+        chomp($vmbuildversion);
 
-    $versioninfo{vmversion} = $vmversion;
-    $versioninfo{vmbuildversion} = $vmbuildversion;
-    return %versioninfo;
+        $versioninfo{vmversion} = $vmversion;
+        $versioninfo{vmbuildversion} = $vmbuildversion;
+     }
+     return %versioninfo;
 }
 
 ########################################################################
