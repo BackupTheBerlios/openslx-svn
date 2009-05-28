@@ -33,7 +33,7 @@ beware - ldap works only in combination of either\n  ipappend or similar or \
 with dhcp!"
 init_errnwad="  Failed to load the network adaptor modules added via \
 slxconfig-demuxer\n  run. Please reconfigure the module list and add the \
-appropriate modules (without .ko)."
+appropriate modules\n  without *.ko suffix."
 init_bootmac="  If you have more than one ethernet adaptor present in your \
 machine or using\n  a NVidia chipset then it would be advisable to switch on \
 passing of the\n  boot MAC address via kernel commandline (IPAPPEND=3) in \
