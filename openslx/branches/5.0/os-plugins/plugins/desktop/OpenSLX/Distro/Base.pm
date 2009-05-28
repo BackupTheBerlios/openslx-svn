@@ -125,8 +125,10 @@ sub setupGDMScript
         );
     my $script = unshiftHereDoc(<<"    End-of-Here");
         # written by OpenSLX-plugin 'desktop'
-
-        mkdir -p $paths 2>/dev/null
+        
+        for i in $paths; do
+          testmkd \$i
+        done
 
         cp /mnt$repoPath/gdm/\$desktop_mode/gdm.conf /mnt$configFile
 
@@ -174,6 +176,7 @@ sub GDMConfigHashForWorkstation
             AutomaticLoginEnable => 'false',
             Group => 'gdm',
             User => 'gdm',
+            DefaultSession => 'default.desktop',
         },
         'debug' => {
             Enable => 'false',
@@ -289,7 +292,9 @@ sub setupKDMScript
         #!/bin/ash
         # written by OpenSLX-plugin 'desktop'
 
-        mkdir -p $paths 2>/dev/null
+        for i in $paths; do
+          testmkd \$i
+        done
 
         cp /mnt$repoPath/kdm/\$desktop_mode/kdmrc /mnt$configFile
 

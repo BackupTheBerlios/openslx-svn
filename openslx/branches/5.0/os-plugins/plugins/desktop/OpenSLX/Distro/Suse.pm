@@ -1,4 +1,4 @@
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2006..2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -53,13 +53,14 @@ sub setupGDMScript
     $script = _setupCommonDmScript($script);
 
     $script .= unshiftHereDoc(<<'    End-of-Here');
-        sed -i 's/DISPLAYMANAGER=.*/DISPLAYMANAGER="gdm"/' \
-            /mnt/etc/sysconfig/displaymanager
-        [ $(grep -q DISPLAYMANAGER /mnt/etc/sysconfig/displaymanager) ] && \
-            echo "DISPLAYMANAGER=\"gdm\"" >> /mnt/etc/sysconfig/displaymanager
+        echo -e '# changed by $0 during stage3 setup\nDISPLAYMANAGER="gdm"' \
+          >/mnt/etc/sysconfig/displaymanager
         sed -i "s/DEFAULT_WM=.*/DEFAULT_WM=\"$desktop_kind\"/" \
             /mnt/etc/sysconfig/windowmanager
         #sed "s|XSESSION|/etc/xdm/Xsession|" -i /mnt$configFile
+        testmkd /mnt/var/lib/gdm gdm:gdm 1775
+        # no use for this configuration info file
+        rm /mnt/etc/gdm/gdm_sysconfig.* 2>/dev/null
     End-of-Here
 
     return $script;
@@ -72,6 +73,7 @@ sub GDMConfigHashForWorkstation
     my $configHash = $self->SUPER::GDMConfigHashForWorkstation();
     $configHash->{'daemon'}->{SessionDesktopDir} =
         '/etc/X11/sessions/:/usr/share/xsessions/';
+    $configHash->{'daemon'}->{DefaultSession} = 'default.desktop';
     $configHash->{'daemon'}->{Greeter} =
         '/usr/lib/gdm/gdmgreeter';
 
