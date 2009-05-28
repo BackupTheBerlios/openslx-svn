@@ -77,7 +77,7 @@ sub _writeKdehomeEnv
         # For more information have a look at
         # http://lab.openslx.org/wiki/openslx/profile
         
-        KDEHOME=%s
+        export KDEHOME=${HOME}/%s
     End-of-Here
     
     $profileFile = sprintf(
