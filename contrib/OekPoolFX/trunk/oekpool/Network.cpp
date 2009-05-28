@@ -106,5 +106,6 @@ std::vector<char> Network::splitAddress(std::string address, std::string format,
 
 
 
+    free(str);
 	return component;
 }
