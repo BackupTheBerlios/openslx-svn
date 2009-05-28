@@ -56,12 +56,20 @@ sub initDistroInfo
         - /etc/cron.*/*
         - /boot/initrd*
         - /boot/grub
+        - /etc/xdg/compiz
+        - /etc/xdg/autostart/
         - /etc/xdg/autostart/adept_notifier_auto.desktop
-        - /etc/xdg/autostart/evolution*alarm*notify
+        - /etc/xdg/autostart/evolution*alarm*notify*
         - /etc/xdg/autostart/knetworkmanager*
         - /etc/xdg/autostart/nm-applet.desktop
         - /etc/xdg/autostart/system-config-printer-applet-kde.desktop
         - /etc/xdg/autostart/tracker*
+        - /etc/xdg/autostart/jockey-*
+        - /etc/xdg/autostart/ica*
+        - /etc/xdg/autostart/hplip*
+        - /etc/xdg/autostart/redhat*
+        - /etc/xdg/autostart/gnome-power-manager*
+        - /etc/xdg/autostart/update*
         - /etc/xdg/update-notifier.desktop
         - /etc/xdg/user-dirs-update-gtk.desktop
     ";
