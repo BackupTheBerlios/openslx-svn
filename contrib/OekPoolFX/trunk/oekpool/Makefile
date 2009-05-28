@@ -1,5 +1,5 @@
 TARGET  := oekpool
-SRCS    := main.cpp Client.cpp 
+SRCS    := main.cpp Client.cpp Network.cpp Ssh.cpp Ldap.cpp
 OBJS    := ${SRCS:.cpp=.o}
 DEPS    := ${SRCS:.cpp=.dep} 
 XDEPS   := $(wildcard ${DEPS}) 
