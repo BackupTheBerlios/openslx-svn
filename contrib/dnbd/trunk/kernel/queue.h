@@ -2,7 +2,7 @@
 #define LINUX_DNBD_QUEUE_H	1
 
 #include <linux/spinlock.h>
-#include <asm/semaphore.h>
+#include <linux/semaphore.h>
 #include <linux/list.h>
 #include <linux/wait.h>
 

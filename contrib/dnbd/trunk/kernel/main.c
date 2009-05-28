@@ -67,16 +67,26 @@ static int dnbd_end_request(dnbd_device_t * dnbd, struct request *req,
 			    int success, int size)
 {
 	unsigned long flags;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+	struct request_queue *q = req->q;
+#else
 	request_queue_t *q = req->q;
+#endif
 
 	int result = 0;
 
 	spin_lock_irqsave(q->queue_lock, flags);
-	if (!(result = end_that_request_first(req, success, size))) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
-		end_that_request_last(req,success);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+	if (!(result = __blk_end_request(req, success, size))) {
 #else
+	if (!(result = end_that_request_first(req, success, size))) {
+#endif
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
+  #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
+		end_that_request_last(req,success);
+  #else
 		end_that_request_last(req);
+  #endif
 #endif
 
 	}
@@ -239,9 +249,9 @@ static int inline dnbd_recv_reply(dnbd_device_t * dnbd)
 	if (!skb)
 		goto out_nofree;
 
-	/* 
-	   some NICs can verify checksums themselves and then is 
-	   unnecessary for us 
+	/*
+	   some NICs can verify checksums themselves and then is
+	   unnecessary for us
 	 */
 	offset = sizeof(struct udphdr);
 	if (skb->ip_summed != CHECKSUM_UNNECESSARY && (unsigned short)
@@ -529,11 +539,17 @@ static int dnbd_tx_loop(void *data)
 		cached = dnbd->cache.search(&dnbd->cache, req);
 
 		if (cached) {
-			if (!end_that_request_first(req, 1, cached)) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
-				end_that_request_last(req,1);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+			if (!__blk_end_request(req, 1, cached)) {
 #else
+			if (!end_that_request_first(req, 1, cached)) {
+#endif
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
+  #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
+				end_that_request_last(req,1);
+  #else
 				end_that_request_last(req);
+  #endif
 #endif
 			} else {
 				dnbd_enq_request(&dnbd->tx_queue, req, 1);
@@ -748,7 +764,11 @@ static int dnbd_stop(dnbd_device_t * dnbd)
 }
 
 /* function called by the kernel to make DNBD process a request */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+static void dnbd_do_request(struct request_queue * q)
+#else
 static void dnbd_do_request(request_queue_t * q)
+#endif
 {
 	dnbd_device_t *dnbd = NULL;
 	int minor;
@@ -779,9 +799,9 @@ static void dnbd_do_request(request_queue_t * q)
 			goto error_out;
 		}
 
-		/* 
+		/*
 		   enqueue request to tx_queue, where it will be fetched
-		   by the tx_loop 
+		   by the tx_loop
 		 */
 		spin_unlock_irq(q->queue_lock);
 		dnbd_enq_request(&dnbd->tx_queue, req, 1);
@@ -871,7 +891,7 @@ static int dnbd_clear_sock(dnbd_device_t * dnbd)
 		result = -EINVAL;
 		goto out;
 	}
-	/* 
+	/*
 	 * space for operations when socket has to be cleared,
 	 * which is done from user space (client/client.c)
 	 */
@@ -903,9 +923,9 @@ static int dnbd_do_it(dnbd_device_t * dnbd)
 	if (result < 0)
 		goto out;
 
-	/* 
-	 * will return when session ends (disconnect), which is 
-	 * invoked from user space 
+	/*
+	 * will return when session ends (disconnect), which is
+	 * invoked from user space
 	 */
 	dnbd_wait_threads_finished(dnbd);
 
@@ -1066,7 +1086,7 @@ static int dnbd_release(struct inode *inode, struct file *file)
 		return -ENODEV;
 
 	down(&dnbd->semalock);
-	
+
 	/* decrement reference counter */
 	atomic_dec(&dnbd->refcnt);
 
@@ -1135,7 +1155,7 @@ static int __init dnbd_init(void)
 
 
 	for (i = 0; i < MAX_DNBD; i++) {
-		/* 
+		/*
 		 * get pre initialized structure for block device minor
 		 */
 		struct gendisk *disk = alloc_disk(1);
@@ -1144,8 +1164,8 @@ static int __init dnbd_init(void)
 			goto out;
 		}
 		dnbd_dev[i].disk = disk;
-		/* 
-		 * initizialisation of request queue 
+		/*
+		 * initizialisation of request queue
 		 * dnbd_do_request() is our function to handle the requests
 		 */
 		disk->queue =

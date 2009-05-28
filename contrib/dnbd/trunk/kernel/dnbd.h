@@ -3,7 +3,7 @@
 
 #include <linux/completion.h>
 #include <linux/in.h>
-#include <asm/semaphore.h>
+#include <linux/semaphore.h>
 #include <linux/blkdev.h>
 #include <linux/rbtree.h>
 #include <linux/jiffies.h>
@@ -30,16 +30,16 @@ struct dnbd_device {
 	int state;
 	struct socket *sock;		/* network socket */
 	struct sockaddr_in mcast;
-	struct file *file;		
+	struct file *file;
 	spinlock_t thread_lock;		/* locks */
 	spinlock_t queue_lock;
-	spinlock_t timer_lock;	
+	spinlock_t timer_lock;
 	struct semaphore semalock;
 	struct gendisk *disk;		/* general disk interface */
 	int blksize;
 	u64 bytesize;
 	atomic_t refcnt;		/* reference counter for module */
-	dnbd_thread_t rx_thread;	
+	dnbd_thread_t rx_thread;
 	dnbd_thread_t tx_thread;
 	dnbd_thread_t ss_thread;
 	atomic_t num_io_threads;
@@ -52,6 +52,6 @@ struct dnbd_device {
 };
 
 typedef struct dnbd_device dnbd_device_t;
-	
+
 
 #endif				/* LINUX_DNBD_H */
