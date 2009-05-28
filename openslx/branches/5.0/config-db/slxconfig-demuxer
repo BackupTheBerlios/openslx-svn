@@ -630,7 +630,7 @@ sub writeSystemConfiguration
     chomp(my $uclibcVersion 
         = slurpFile($uclibcVersionPath, { failIfMissing => 0 } ));
     chomp(my $currVersion = qx{slxversion});
-    if ($uclibcVersion ne $currVersion) {
+    if ($currVersion !~ m{M$} && $uclibcVersion ne $currVersion) {
         warn _tr(
             "uclibc-rootfs for system '%s' may not be up-to-date - consider updating the vendor-OS!",
             $info->{name}, $uclibcVersion, $currVersion

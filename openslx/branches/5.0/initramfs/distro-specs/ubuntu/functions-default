@@ -1,5 +1,5 @@
 # Copyright (c) 2003..2006 - RZ Uni Freiburg
-# Copyright (c) 2006..2008 - OpenSLX GmbH
+# Copyright (c) 2006..2009 - OpenSLX GmbH
 #
 # This program/file is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -70,6 +70,15 @@ config_distro () {
 
   # for screen sessions
   testmkd /mnt/var/run/screen root:utmp 0775
+
+  # no additional /dev/shm mount needed as it is always used
+  sed -e "/Mount a tmpfs on/,/domount tmpfs /d" \
+    -i /mnt/etc/init.d/mountdevsubfs.sh
+
+  # clean up the udev script as much is handled already in stage3
+  sed -e "3i# Script modified during SLX stage3 bootup (config_distro)" \
+      -e "/# We need the uevent/,/# It's all over/d" \
+      -e "/# Log things that/,/kill \$UDEV/d" -i /mnt/etc/init.d/udev
 }
 
 # initial (boot time) runlevel scripts
@@ -78,8 +87,8 @@ local count=10
 # boot.slx is a special runlevel script generated within initialramfs which
 # should be executed before the normal runlevel scripts. Proper shutdown is
 # not needed!?
-for i in mountkernfs.sh mountdevsubfs.sh boot.slx keyboard-setup procps \
-bootlogd hwclock.sh sudo console-setup $D_SPLASHY; do
+for i in mountkernfs.sh mountdevsubfs.sh keyboard-setup procps bootlogd \
+hwclock.sh sudo console-setup boot.slx $D_SPLASHY; do
   count=$(($count + 1))
   [ $DEBUGLEVEL -ge 2 ] && echo "boot-runlevelscript $i"
   ln -sf /etc/init.d/$i /mnt/etc/rcS.d/S${count}$i

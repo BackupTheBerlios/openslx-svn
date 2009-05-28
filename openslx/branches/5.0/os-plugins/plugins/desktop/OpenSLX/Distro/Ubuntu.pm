@@ -63,7 +63,10 @@ sub setupGDMScript
         chroot /mnt update-alternatives --set x-window-manager /usr/bin/metacity
         chroot /mnt update-alternatives --set x-session-manager \
           /usr/bin/gnome-session
-        testmkd /mnt/var/lib/gdm root:gdm 1770
+        # gdm does not like AUFS/UnionFS on its var directory
+        rm -rf /mnt/var/lib/gdm
+        mkdir -m 1770 /mnt/var/lib/gdm
+        chown root:gdm /mnt/var/lib/gdm
         sed '/^\\[daemon\\]/ a\\BaseXsession=/etc/gdm/Xsession' \
           -i /mnt$configFile
     End-of-Here

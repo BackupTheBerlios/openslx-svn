@@ -170,7 +170,7 @@ EndSection
 Section "Device"
   Identifier   "Generic Video Card"
   Driver       "vesa"
-#  BusID     "PCI:xx" #especially needed for fglrx
+# BusID        "PCI:xx" #especially needed for fglrx
 EndSection
 Section "Monitor"
   Identifier   "Generic Display"
