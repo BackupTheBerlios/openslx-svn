@@ -26,9 +26,16 @@
 # start portmapper (needed at least for nfs and nis services)
 config_portmap () {
   # portmap is provided via rpcbind in suse 11.1
+  testmkd /mnt/var/lib/rpcbind
   rllinker "rpcbind" 4 5
 }
-
+# acpi and powersave daemons, required e.g. to shutdown the machine via
+# power button, no need for early start
+config_acpi () {
+rllinker acpid 22 12
+# dbus is required to run acpid and powersaved
+start_dreshal="yes"
+}
 # configure dbus (inter application communication for kde and gnome), hal
 # (hardware abstraction layer - used e.g. by powersaved)
 config_dreshal () {
