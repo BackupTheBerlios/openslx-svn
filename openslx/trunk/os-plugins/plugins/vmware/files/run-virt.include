@@ -352,14 +352,14 @@ esac
 mkdir -p ${redodir} >/dev/null 2>&1
 mkdir -p ${confdir} >/dev/null 2>&1
 mkdir -p ${vmhome} >/dev/null 2>&1
-# link to conffile if confdir != redodir
-ln -s ${conffile} ${redodir}/run-vmware.conf >/dev/null 2>&1
 
 # create preferences
 preferencesheader
 
 # create VMware startup file
 runvmwareconfheader
+# link to conffile if confdir != redodir
+ln -s ${conffile} ${redodir}/run-vmware.conf >/dev/null 2>&1
 
 # sync is needed to ensure that data is really written to virtual disk
 sync
