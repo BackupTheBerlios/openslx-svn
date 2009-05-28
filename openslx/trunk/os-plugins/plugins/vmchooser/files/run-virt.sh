@@ -29,32 +29,29 @@
 xml=$1
 [ -e "${xml}" ] || { echo -e "\n\tNo XML file given!\n"; exit 1; }
 
-# path to the xml file(just take the path to the xml file)
-imagepath=${xml%/*}
-
 # Read needed variables from XML file
 ###############################################################################
 
 # file name of the image
-imagename=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
-diskfile=$imagepath/$imagename
+imagename=$(grep -io "<image_name param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
+diskfile=$imagename
 [ -e $diskfile ] || { echo -e "\n\tImage file $diskfile not found!"; exit 1; }
 
 # short description of the image (as present in the vmchooser menu line)
-short_description=$(grep "short_description param=\"" ${xml} | \
+short_description=$(grep -o "short_description param=.*\"" ${xml} | \
   sed -e "s/&.*;/; /g" | awk -F "\"" '{print $2}')
 # if ${short_description} not defined use ${image_name}
 short_description=${short_description:-"${image_name}"}
 displayname=${short_description}
 
 # type of virtual machine to run
-virt_mach=$(grep "virtualmachine param=\"" ${xml} | \
+virt_mach=$(grep -o "virtualmachine param=.*\"" ${xml} | \
   sed -e "s/&.*;/; /g" | awk -F "\"" '{print $2}')
 
 # make a guess from the filename extension if ${virt_mach} is empty (not set
 # within the xml file)
 if [ -z ${virt_mach} ] ; then
-  case "${imagename#*.}" in
+  case "${imagename##*.}" in
     vmdk|VMDK)
       virt_mach="vmware"
     ;;
@@ -68,13 +65,13 @@ if [ -z ${virt_mach} ] ; then
 fi
 
 # definition of the client system
-vmostype=$(grep -i "<os param=\"" ${xml} | awk -F "\"" '{ print $2 }')
+vmostype=$(grep -io "<os param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 
 # definition of the networking the client system is connected to
-network_kind=$(grep -i "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }')
+network_kind=$(grep -io "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 
 # serial port defined (e.g. "ttyS0" or "autodetect")
-serial=$(grep -i "<serial port=\"" ${xml} | awk -F "\"" '{ print $2 }')
+serial=$(grep -io "<serial port=\"" ${xml} | awk -F "\"" '{ print $2 }')
 
 
 # declaration of default variables

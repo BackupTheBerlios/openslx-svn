@@ -245,6 +245,7 @@ if [ "$1" = "ati" ]; then
     cd ..
     rm -rf ${PKG}
 
+
     buildfglrx ${KVERS}
 
   ;;
@@ -295,6 +296,18 @@ if [ "$1" = "ati" ]; then
   ;;
   esac
   cd ..
+
+  # OpenGl implementation (libGL?) expect fglrx_dri.so in /usr/X11R6/lib/dri/
+  if [ ! -f /usr/X11R6/lib/modules/dri/fglrx_dri.so -a \
+   ! -f usr/X11R6/lib/modules/dri/fglrx_dri.so ]; then
+    if [ ! -d /usr/X11R6/lib/modules/dri ]; then
+	  mkdir -p /usr/X11R6/lib/modules/dri
+	fi
+	if [ -f usr/lib/dri/fglrx_dri.so ]; then
+	  ln -s ${BASE}/ati/usr/lib/dri/fglrx_dri.so \
+	  /usr/X11R6/lib/modules/dri/fglrx_dri.so
+	fi
+  fi
 
   rm -rf temp/
 fi

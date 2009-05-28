@@ -69,7 +69,7 @@ if [ -e /initramfs/plugin-conf/xserver.conf -a \
 	      cp -r ${PLUGIN_PATH}/etc/* /mnt/etc
 	
 	      # if fglrx_dri.so is linked wrong -> we have to link it here
-	      if [ "1" -eq "$( ls -l /usr/lib/dri/fglrx_dri.so \
+	      if [ "1" -eq "$( ls -l /mnt/usr/lib/dri/fglrx_dri.so \
 	        | grep -o "/var/X11R6.*so$" | wc -l )" ]; then
 	          ln -s ${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so \
 	            ${glliblinks}dri/fglrx_dri.so
