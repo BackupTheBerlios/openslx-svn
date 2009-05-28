@@ -29,3 +29,41 @@ config_portmap () {
   rllinker "rpcbind" 4 5
 }
 
+# configure dbus (inter application communication for kde and gnome), hal
+# (hardware abstraction layer - used e.g. by powersaved)
+config_dreshal () {
+local start=1
+local stop=10
+if [ "x$start_dreshal" = "xyes" ]; then
+  testmkd /mnt/var/run/PolicyKit polkituser:polkituser 
+  testmkd /mnt/var/lib/PolicyKit polkituser:polkituser
+  testmkd /mnt/var/run/dbus/at_console/pool
+  if [ -f /mnt/etc/init.d/dbus ] ; then
+    strinfile "messagebus:" /mnt/etc/passwd || \
+      echo "messagebus:x:102:103:User for D-BUS:/var/run/dbus:/bin/false" \
+        >> /mnt/etc/passwd
+    strinfile "messagebus:" /mnt/etc/group || \
+      echo "messagebus:!:103:" >> /mnt/etc/group
+	# create directories and set permissions with user and group id
+    testmkd /mnt/var/run/dbus messagebus:messagebus
+    testmkd /mnt/var/lib/dbus
+    rllinker "dbus" $start $stop
+  fi
+  if [ -f /mnt/etc/init.d/haldaemon ] ; then
+    strinfile "haldaemon:" /mnt/etc/passwd || \
+      echo "haldaemon:x:106:107:User for haldaemon:/var/run/hal:/bin/false" \
+        >> /mnt/etc/passwd
+    strinfile "haldaemon:" /mnt/etc/group || \
+      echo "haldaemon:!:107:" >> /mnt/etc/group
+    echo -n "" > /mnt/var/lib/PolicyKit.reload
+    # create directories and set permissions with user and group id
+    for dir in /var/run/hald /var/run/hald/hald-local \
+                /var/run/hald/hald-runner /var/cache/hald; do
+      testmkd /mnt/${dir} haldaemon:haldaemon
+    done
+    start=$(($start + 1))
+    stop=$(($stop - 1))
+    rllinker "haldaemon" $start $stop
+  fi
+fi
+}
