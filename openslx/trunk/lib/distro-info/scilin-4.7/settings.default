@@ -1,0 +1,30 @@
+bootstrap-packages = <<END
+    to-be-filled-in (List of base RPMs)
+END
+<metapackager yum>
+    packages = <<END
+        to-be-filled-in (List of RPMs for the YUM packager)
+    END
+</metapackager>
+package-subdir = ???
+prereq-packages = <<END
+    to-be-filled-in (List of needed RPMs)
+END
+<repository base>
+    name = Scientific Linux 4.7
+    repo-subdir = ?
+    file-for-speedtest = ?
+</repository>
+<selection minimal>
+    packages = <<END
+        glibc-locale
+    END
+</selection>
+<selection kde>
+    base = minimal
+    packages = <<END
+    END
+</selection>
+<selection default>
+    base = minimal
+</selection>
