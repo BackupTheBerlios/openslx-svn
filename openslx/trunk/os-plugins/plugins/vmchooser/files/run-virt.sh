@@ -91,7 +91,6 @@ network_kind=$(grep -io "<network param=.*\"" ${xml} | awk -F "\"" '{ print $2 }
 serial=$(grep -io "<serialport param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
 parallel=$(grep -io "<parport param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
 
-
 # Declaration of default variables
 ###############################################################################
 

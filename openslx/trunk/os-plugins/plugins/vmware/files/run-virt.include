@@ -237,7 +237,6 @@ case "$enable3d" in
 esac
 
 # serial/parallel port defined (e.g. "ttyS0, lp0" or "autodetect")
-serial=$(grep -i '<serialport param="' ${xml} | awk -F '"' '{ print $2 }')
 case "$serial" in
   tty*)
     serialdev="serial0.filename = \"/dev/${serial}\""
@@ -252,7 +251,6 @@ case "$serial" in
     serial="FALSE"
     ;;
 esac
-parallel=$(grep -i '<parport param="' ${xml} | awk -F '"' '{ print $2 }')
 case "$parallel" in
   lp*)
     paraldev="parallel0.filename = \"/dev/${parallel}\""
