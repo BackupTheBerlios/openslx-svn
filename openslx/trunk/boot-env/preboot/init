@@ -129,7 +129,7 @@ ip route add default via $router
 # at this point a little selection script could be downloaded, which lets the
 # user choose what kind of SLX client he wants to get
 echo "Fetching preboot interactive part and configuration from the net ..."
-wget -q -c -O $boot_uri/${prebootid}.env /tmp/
+wget -q -c -O $boot_uri/bootloader/${prebootid}.env /tmp/
 mkdir /preboot
 tar -xzf /tmp/${prebootid}.env -C /preboot
 # start a debug shell if needed, else set quiet kernel parameter
