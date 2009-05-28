@@ -17,6 +17,10 @@ if [ -e /initramfs/plugin-conf/wlanboot.conf ]; then
   . /initramfs/plugin-conf/wlanboot.conf
   if [ $wlanboot_active -ne 0 ]; then
     [ $DEBUGLEVEL -gt 0 ] && echo "executing the 'wlanboot' os-plugin ...";
+	#iwconfig wlan0 essid "wlanboottest"
+	#ip link set wlan0 up
+	#udhcpc -i wlan0
+	
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'wlanboot' os-plugin ...";
 
   fi
