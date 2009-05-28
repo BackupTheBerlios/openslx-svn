@@ -85,7 +85,7 @@ namespace AccountValue
                 bool disk = di.Exists;
                 while (disk == false)
                 {
-                    System.Threading.Thread.Sleep(500 * 2);
+                    System.Threading.Thread.Sleep(1000);
                     disk = di.Exists;
                     i++;
                     if (i == 60)
@@ -97,41 +97,21 @@ namespace AccountValue
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message, "Error: ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(e.Message, "Fehler: das Laufwerk B: nicht vervügbar", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 System.Environment.Exit(0);
             }
-            
-            // TODO: ändern xml...
-            /*try
-            {
-                resolution_x = xml.getAttribute("/settings/eintrag/resolution_x", "param");
-                resolution_y = xml.getAttribute("/settings/eintrag/resolution_y", "param");
-            }
-            catch (Exception e)
-            {
-                change_resolution = false;
-            }
-            
-
-            if (change_resolution)
-            {
-                Resolution.CResolution ChangeRes = new Resolution.CResolution(Convert.ToInt32(resolution_x), Convert.ToInt32(resolution_y));
-            }*/
-
+                        
             try
             {
                 XmlNode xnUser = doc.SelectSingleNode("/settings/eintrag/username");
                 textBox1.AppendText(xnUser.Attributes["param"].InnerText); 
                 //xml.getAttribute("/settings/eintrag/username", "param"));               
             }
-            catch (Exception e)
+            catch /*(Exception e)*/
             {
-                MessageBox.Show(e.Message, "Error: **********************", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, "Eintrag \"Benutzername\" nicht vorhanden!", "Fehler: CONFIG.XML", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 System.Environment.Exit(0);
             }
-
-            //resolution_x = "1680"; 
-            //resolution_y = "1050";  
 
             try
             {
@@ -177,7 +157,7 @@ namespace AccountValue
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message, "Error: ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(e.Message, "Fehler: ", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 System.Environment.Exit(0);
             }
 
@@ -239,9 +219,9 @@ namespace AccountValue
                     System.Threading.Thread.Sleep(500 * 1);
                 }
 
-                catch //Exception err)
+                catch
                 {
-                    //MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Drucker\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(this, "Fehler: CONFIG.XML", "Verbindung zum \"Drucker\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     //maskedTextBox1.Text = "";
 
                     //try
@@ -253,6 +233,79 @@ namespace AccountValue
                     //return;
                 }
             }
+
+            /*
+             * Wenn kein Druckereintrag in CONFIG.XML vorhanden ist,
+             * installiere Drucker des RZ und der UB2
+             */
+            else
+            {
+                try
+                {
+                    System.Diagnostics.ProcessStartInfo sendInfo;
+                    sendInfo = new System.Diagnostics.ProcessStartInfo("cscript");
+                    sendInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                    sendInfo.Arguments = "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p " + "\\\\pub-ps01.public.ads.uni-freiburg.de\\rzps1";
+                    System.Diagnostics.Process.Start(sendInfo);
+                    sendInfo = null;
+
+                    sendInfo = new System.Diagnostics.ProcessStartInfo("cscript");
+                    sendInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                    sendInfo.Arguments = "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p " + "\\\\pub-ps01.public.ads.uni-freiburg.de\\rzps2";
+                    System.Diagnostics.Process.Start(sendInfo);
+                    sendInfo = null;
+
+                    sendInfo = new System.Diagnostics.ProcessStartInfo("cscript");
+                    sendInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                    sendInfo.Arguments = "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p " + "\\\\pub-ps01.public.ads.uni-freiburg.de\\ubps1";
+                    System.Diagnostics.Process.Start(sendInfo);
+                    sendInfo = null;
+
+                    sendInfo = new System.Diagnostics.ProcessStartInfo("cscript");
+                    sendInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                    sendInfo.Arguments = "C:\\WINDOWS\\system32\\prnmngr.vbs -ac -p " + "\\\\pub-ps01.public.ads.uni-freiburg.de\\ubps2";
+                    System.Diagnostics.Process.Start(sendInfo);
+                    sendInfo = null;
+                }
+
+                catch
+                {
+                    MessageBox.Show(this, "Fehler: CONFIG.XML", "Installieren der Drucker nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+
+                //#################################################################
+                // Drucker verbinden...
+
+                //NetworkDrive oNetDrive = new NetworkDrive();
+
+                try
+                {
+                    oNetDrive.LocalDrive = "";
+                    oNetDrive.ShareName = "\\\\pub-ps01.public.ads.uni-freiburg.de";
+                    oNetDrive.MapDrive("PUBLIC\\" + textBox1.Text, maskedTextBox1.Text);
+
+                    //Warte bis das Netz da ist
+                    System.Threading.Thread.Sleep(500 * 1);
+                }
+
+                catch
+                {
+                    MessageBox.Show(this, "Fehler: CONFIG.XML", "Verbindung zum \"Drucker\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    //maskedTextBox1.Text = "";
+
+                    //try
+                    //{
+                    //    maskedTextBox1.Focus();
+                    //}
+                    //catch { }
+
+                    //return;
+                }
+            }
+            //Ender der Druckerinstallation ###################################
+            //#################################################################
+
 
             //#################################################################
             // Homedirectory mounten...
@@ -317,17 +370,45 @@ namespace AccountValue
                         oNetDrive.ShareName = shared.Attributes["path"].InnerText;
                         oNetDrive.MapDrive(shared.Attributes["name"].InnerText, shared.Attributes["pass"].InnerText);
 
-                        createDesktopLinks("Gemeinsames Laufwerk "+ dl, dl+":\\");
+                        createDesktopLinks("Gemeinsames Laufwerk " + dl, dl + ":\\");
                         dl = Convert.ToChar(Convert.ToInt16(dl) - 1);
 
                     }
 
-                        
+                    /*
+                     * Installiere auch das gemeinsame Laufwerk der Lehrpools
+                     */
+                    try
+                    {
+                        oNetDrive.LocalDrive = "l:";
+                        try
+                        {
+                            oNetDrive.UnMapDrive();
+                        }
+                        catch { }
+                        oNetDrive.ShareName = "\\\\lehrpool.files.uni-freiburg.de\\lehrpool";
+                        oNetDrive.MapDrive("PUBLIC\\lehrpool", "(atom)9");
+                    }
+
+                    catch (Exception err)
+                    {
+                        MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Gemeinsamen Laufwerk L\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        maskedTextBox1.Text = "";
+
+                        try
+                        {
+                            maskedTextBox1.Focus();
+                        }
+                        catch { }
+
+                        return;
+                    }
+                    createDesktopLinks("Gemeinsames Laufwerk L", "l:\\");
                 }
 
                 catch (Exception err)
                 {
-                    
+
                     MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Gemeinsamen Laufwerk \" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     maskedTextBox1.Text = "";
 
@@ -338,11 +419,49 @@ namespace AccountValue
                     catch { }
 
                     return;
-                    
+
                 }
 
                 //#################################################################
                 //createDesktopLinks("Gemeinsames Laufwerk L", "l:\\");
+            }
+            /*
+             * Bei default oder wenn in CONFIG.XML kein Eintrag shareds existiert,
+             * wird standardes gemeinsames Laufwerk L verbunden
+             */
+            else {
+                try
+                {
+                    oNetDrive.LocalDrive = "l:";
+
+
+                    try
+                    {
+                        oNetDrive.UnMapDrive();
+                    }
+                    catch { }
+
+
+                    oNetDrive.ShareName = "\\\\lehrpool.files.uni-freiburg.de\\lehrpool";
+                    oNetDrive.MapDrive("PUBLIC\\lehrpool", "(atom)9");
+                }
+
+                catch (Exception err)
+                {
+                    MessageBox.Show(this, "Fehler: " + err.Message, "Verbindung zum \"Gemeinsamen Laufwerk L\" nicht möglich!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    maskedTextBox1.Text = "";
+
+                    try
+                    {
+                        maskedTextBox1.Focus();
+                    }
+                    catch { }
+
+                    return;
+                }
+
+                //#################################################################
+                createDesktopLinks("Gemeinsames Laufwerk L", "l:\\");
             }
 
 

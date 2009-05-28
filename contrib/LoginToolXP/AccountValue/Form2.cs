@@ -29,7 +29,10 @@ namespace AccountValue
     public partial class Form2 : Form
     {
         private DragExtender dragExtender1;
-        private String version = "0.4";
+        private String version = "0.4.1";
+        /*
+         * 
+         */
         Form1 f1;
         private String home;
         XmlDocument doc = new XmlDocument();
