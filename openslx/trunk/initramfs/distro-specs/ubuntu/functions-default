@@ -89,7 +89,7 @@ local count=10
 # should be executed before the normal runlevel scripts. Proper shutdown is
 # not needed!?
 for i in mountkernfs.sh mountdevsubfs.sh keyboard-setup procps bootlogd \
-hwclock.sh sudo console-setup boot.slx $D_SPLASHY; do
+hwclock.sh sudo console-setup udev boot.slx $D_SPLASHY; do
   count=$(($count + 1))
   [ $DEBUGLEVEL -ge 2 ] && echo "boot-runlevelscript $i"
   ln -sf /etc/init.d/$i /mnt/etc/rcS.d/S${count}$i
@@ -133,9 +133,7 @@ sed "s/LANG.*/LANG=\"${LANG}\"/" -i /mnt/etc/default/locale
 
 # configure udev
 config_udev () {
-    if [ -f /mnt/etc/init.d/udev ] ; then
-       rllinker "udev" 7 14
-    fi
+    [ -c /dev/pktcdvd ] && { rm -rf /dev/pktcdvd; mkdir /dev/pktcdvd; }
     if [ -f /mnt/etc/init.d/udev-finish ] ; then
        rllinker "udev-finish" 24 2
     fi
@@ -199,7 +197,7 @@ if [ "x$start_snmp" = "xyes" ] ; then
 }
 # acpi and powersave
 config_acpi () {
-  rllinker "acpid" 10 19
+  rllinker "acpid" 8 16
   #Commented out since battery checking is only useful for Notebooks
   #rllinker "acpi-support" 99 2
 }
