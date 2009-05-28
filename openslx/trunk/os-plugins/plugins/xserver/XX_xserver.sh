@@ -251,6 +251,10 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
 
       # just in case somebody needs to run ldconfig - insert GL-Libs at the beginning
       sed -e "1s,^,include ${PLUGIN_ROOTFS}/ld.so.conf\n,g" -i /mnt/etc/ld.so.conf 
+
+      if [ "${xmodule}" = "nvidia" ]; then
+        sed -i "s,\(Driver.*\"nvidia\"\),\1\n  Option \"NoLogo\" \"True\"," $xfc
+      fi
     fi
  
     # check if tablet hardware available, read device information from file

@@ -34,7 +34,7 @@ if [ -n ${vmchooser_env} ]; then
   for FILE in $1/*.xml
   do
     # filter all xmls with pool-param not equal to slxgroup
-    if [ $(grep "<pools param=\".*${vmchooser_env}.*\"" ${FILE} | wc -l) -eq 1 ]; then
+    if [ $(grep "<pools param=\"${vmchooser_env}\"" ${FILE} | wc -l) -eq 1 ]; then
       echo ${FILE};
     fi
   done
