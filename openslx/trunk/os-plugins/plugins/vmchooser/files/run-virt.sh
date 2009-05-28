@@ -65,13 +65,13 @@ if [ -z ${virt_mach} ] ; then
 fi
 
 # definition of the client system
-vmostype=$(grep -io "<os param=\"" ${xml} | awk -F "\"" '{ print $2 }')
+vmostype=$(grep -io "<os param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
 
 # definition of the networking the client system is connected to
-network_kind=$(grep -io "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }')
+network_kind=$(grep -io "<network param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
 
 # serial port defined (e.g. "ttyS0" or "autodetect")
-serial=$(grep -io "<serial port=\"" ${xml} | awk -F "\"" '{ print $2 }')
+serial=$(grep -io "<serial port=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
 
 
 # declaration of default variables
