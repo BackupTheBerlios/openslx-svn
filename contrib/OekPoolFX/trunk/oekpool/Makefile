@@ -1,13 +1,13 @@
 TARGET  := oekpool
-SRCS    := main.cpp ClientStates.cpp Client.cpp Network.cpp Ssh.cpp Ldap.cpp
+SRCS    := main.cpp ClientStates.cpp Client.cpp Network.cpp Ssh.cpp Ldap.cpp Configuration.cpp
 OBJS    := ${SRCS:.cpp=.o}
 DEPS    := ${SRCS:.cpp=.dep} 
 XDEPS   := $(wildcard ${DEPS}) 
 
 CC	= g++
-DEBUG_CCFLAGS = -O0 -Wall -I/usr/include -I. -I/usr/include/ldap -Ilib/ldapc++ -ggdb #-ggdb #-Werror
-CCFLAGS = -O2 -Wall -I/usr/include -I. -Ilib/ldapc++
-LDFLAGS = -L/usr/lib -lldap
+DEBUG_CCFLAGS = -O0 -Wall -I/usr/include -I. -I/usr/include/ldap -Ilib/ldapc++ -I/usr/include/libxml2 -ggdb #-ggdb #-Werror
+CCFLAGS = -O2 -Wall -I/usr/include -I. -Ilib/ldapc++ -I/usr/include/libxml2
+LDFLAGS = -L/usr/lib -lldap -lxml2
 LIBS    = #-lboost_statechart
 
 .PHONY: all clean distclean 

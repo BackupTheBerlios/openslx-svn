@@ -25,6 +25,7 @@
 <option id="org.eclipse.cdt.build.core.settings.holder.incpaths.226520863" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
 <listOptionValue builtIn="false" value="/usr/lib/gcc/i686-pc-linux-gnu/4.3.2/include/g++-v4/"/>
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/oekpool/lib/ldapc++}&quot;"/>
+<listOptionValue builtIn="false" value="/usr/include/libxml2"/>
 </option>
 <inputType id="org.eclipse.cdt.build.core.settings.holder.inType.263324835" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 </tool>
@@ -33,6 +34,9 @@
 </tool>
 </toolChain>
 </folderInfo>
+<sourceEntries>
+<entry excluding="lib" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+</sourceEntries>
 </configuration>
 </storageModule>
 <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="preference.org.eclipse.cdt.managedbuilder.core.configurationDataProvider.455301212" moduleId="org.eclipse.cdt.core.settings" name="Preference Configuration">
@@ -505,6 +509,9 @@
 </tool>
 </toolChain>
 </folderInfo>
+<sourceEntries>
+<entry excluding="lib" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+</sourceEntries>
 </configuration>
 </storageModule>
 <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="preference.org.eclipse.cdt.managedbuilder.core.configurationDataProvider.455301212.572088255" moduleId="org.eclipse.cdt.core.settings" name="Debug">

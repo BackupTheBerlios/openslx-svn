@@ -69,7 +69,7 @@ vector<AttributeMap> Ldap::search(string base, int scope, string filter, const S
         return vector<AttributeMap>();
     }
 
-    LDAPSearchResults* lr = lc->search(base, scope, filter,attribs, true);
+    LDAPSearchResults* lr = lc->search(base, scope, filter,attribs, false);
 
     LDAPEntry* le;
     const LDAPAttribute* la;
@@ -83,6 +83,7 @@ vector<AttributeMap> Ldap::search(string base, int scope, string filter, const S
 				it!=attribs.end();
 				it++)
     	{
+    	    //cout << endl << "Name: " << *it << " |";
     		la = le->getAttributeByName(*it);
     		if(la == NULL) continue;
 			s = la->getValues();
@@ -92,11 +93,14 @@ vector<AttributeMap> Ldap::search(string base, int scope, string filter, const S
 					st != s.end();
 					st ++)
 			{
-				// TODO: Check for values with more than one item
+			    //cout << "Value: " << *st;
 				temp[*it] = *st;
 			}
-			result.push_back(temp);
+			if(temp.size() > 0) {
+			    result.push_back(temp);
+			}
     	}
+    	//cout << endl;
 
     }
 
@@ -137,13 +141,13 @@ Client** Ldap::getClients(string pool) {
 	string base;
 	string filter="(HostName=*)";
 
-	const char* attrs[] = { "HostName", "HWaddress", "IPAdress", 0 };
+	const char* attrs[] = { "HostName", "HWaddress", "IPAddress", 0 };
 	StringList attribs((char**)attrs);
 	vector<AttributeMap> vec;
 
 
 	if (pool.empty()) {
-		base = "ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
+		base = "cn=computers,ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
 	}
 	else {
 		base = "ou="+ pool + ",ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
@@ -156,6 +160,7 @@ Client** Ldap::getClients(string pool) {
 	for(std::size_t i=0;i< vec.size();i++ )
 	{
 		if(!vec[i]["HostName"].empty()) {
+		    //cout << vec[i]["HostName"] << endl;
 			result[i] = new Client(vec[i]);
 		}
 	}

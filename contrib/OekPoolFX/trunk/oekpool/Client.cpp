@@ -17,6 +17,8 @@ using namespace std;
 Client::Client(AttributeMap al) {
     initiate();
 
+    _attributes = al;
+
     cout << "Client object with name " << al["HostName"] <<" created!" << endl << endl;
 
 

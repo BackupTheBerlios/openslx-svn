@@ -27,6 +27,9 @@ namespace ClientStates {
 
 // a Client object is a boost::statechart::state_machine
 struct Client : sc::state_machine< Client, ClientStates::Offline > {
+
+    AttributeMap _attributes;
+
     Client(AttributeMap);
     ~Client();
 };

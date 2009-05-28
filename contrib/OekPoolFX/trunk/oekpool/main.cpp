@@ -6,6 +6,7 @@
 
 #include "Client.h"
 #include "Ldap.h"
+#include "Configuration.h"
 #include "events.h"
 
 using namespace std;
@@ -29,10 +30,16 @@ int main(int argc, char** argv) {
 //
 //    client.process_event(EvtWakeCommand() );
 
-    Ldap& obj = Ldap::getInstance("132.230.4.xx",389,
-                        "user", "pass");
+    Configuration& conf = Configuration::getInstance();
 
-    obj.getClients("LSfKS");
+    Ldap& obj = Ldap::getInstance(
+                  conf.getString("ldap_server"),
+                  conf.getInt("ldap_port"),
+                  conf.getString("ldap_user"),
+                  conf.getString("ldap_password"));
+
+    obj.getClients("");
+
 
     return 0;
 }

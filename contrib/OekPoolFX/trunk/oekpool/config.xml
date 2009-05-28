@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <ldap_server>132.230.4.xx</ldap_server>
+  <ldap_port>9009</ldap_port>
+  <ldap_user>cn=admin</ldap_user>
+  <ldap_password>*******</ldap_password>
+</configuration>
