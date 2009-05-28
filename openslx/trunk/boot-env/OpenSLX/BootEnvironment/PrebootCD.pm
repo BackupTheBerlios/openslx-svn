@@ -59,13 +59,14 @@ sub _createImage
 
     # write trivial isolinux config
     my $isolinuxConfig = unshiftHereDoc(<<"    End-of-Here");
-        DEFAULT OpenSLX
-        LABEL OpenSLX
-        SAY Now loading OpenSLX preboot environment ...
-        KERNEL vmlinuz
-        APPEND initrd=initramfs debug=3
         PROMPT 0
         TIMEOUT 100
+        DEFAULT OpenSLX
+
+        LABEL OpenSLX
+          SAY Now loading OpenSLX preboot environment ...
+          KERNEL vmlinuz
+          APPEND initrd=initramfs debug=3
     End-of-Here
     spitFile("$imageDir/iso/isolinux/isolinux.cfg", $isolinuxConfig);
 
