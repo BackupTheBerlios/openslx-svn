@@ -295,7 +295,7 @@ sub installationPhase
     }
     # the same with vmware, if ws is installed
     if (-e "/usr/bin/vmware" && ! -e "/usr/bin/vmware.slx-bak") {
-        linkFile("/var/X11R6/bin/vmwarer", "/usr/bin/vmwarer");
+        linkFile("/var/X11R6/bin/vmware", "/usr/bin/vmware");
         rename("/usr/bin/vmware", "/usr/bin/vmware.slx-bak");
     }
     # this kinda sucks. what if we have local installed vmplayer but
@@ -540,13 +540,13 @@ sub _localInstallation
             copyFile("$pluginFilesPath/$file", "$installationPath");
         }
         # copy depends on version and rename it to runvmware, saves one check in stage3
-        if ($vmversion eq "1.0") {
+        if ($vmversion eq "1.0" || $vmversion eq "5.5") {
             print "\n\nDEBUG: player version $vmversion, we use -v1\n\n";
             copyFile("$pluginFilesPath/runvmware-player-v1", "$installationPath", "runvmware");
-        } elsif ($vmversion eq "2.0") {
+        } elsif ($vmversion eq "2.0" || $vmversion eq "6.0") {
             print "\n\nDEBUG: player version $vmversion, we use -v2\n\n";
             copyFile("$pluginFilesPath/runvmware-player-v2", "$installationPath", "runvmware");
-        } elsif ($vmversion eq "2.5") {
+        } elsif ($vmversion eq "2.5" || $vmversion eq "6.5") {
             print "\n\nDEBUG: player version $vmversion, we use -v25\n\n";
             copyFile("$pluginFilesPath/runvmware-player-v25", "$installationPath", "runvmware");
         }

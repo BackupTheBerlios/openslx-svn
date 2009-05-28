@@ -41,9 +41,6 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     # should contain (seems to be an average one)
     echo -e "# configuration file for vmware background services written in \
 stage3 setup" > /mnt/etc/vmware/slxvmconfig
-    # fixme: sollte unnötig sein, das hier zu tun. "vmware-env" kann hier voll
-    # determiniert werden, siehe Ticket 240
-    echo "vmware_kind=${vmware_kind}" >> /mnt/etc/vmware/slxvmconfig
     if [ "$vmware_bridge" = 1 ] ; then
       echo "vmnet0=true" >> /mnt/etc/vmware/slxvmconfig
     fi
@@ -137,7 +134,7 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       echo "00:50:56:F1:30:50" > /mnt/etc/vmware/vmnet-natd-8.mac
       mknod /dev/vmnet8 c 119 8
     fi
-    # copy the runlevelscript to the proper place and activate it
+    # copy the runlevel script to the proper place and activate it
     cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmware.init \
       /mnt/etc/init.d/vmware-env \
       || echo "  * Error copying runlevel script. Shouldn't happen."
