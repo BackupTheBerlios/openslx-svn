@@ -87,6 +87,7 @@ sub initialize
         - /mnt/*
         + /mnt
         + /lib64
+        - /lib/ld-uClibc*
         + /lib
         - /home/*
         + /home
