@@ -114,9 +114,9 @@ sub getAttrInfo
 
         # stage1
         # Currently not needed in scenarios where distro specific packages are
-        # available
+        # available, but in Suse-10.2 for example we use this method
+		# -> provide downloaded packages here.
         'xserver::pkgpath' => {
-            applies_to_vendor_os => 0,
             applies_to_vendor_os => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
                 Path to downloaded ATI or Nvidia package
@@ -175,13 +175,14 @@ sub preInstallationPhase()
     my $installAti = $self->{attrs}->{'xserver::ati'};
     my $installNvidia = $self->{attrs}->{'xserver::nvidia'};
 
-    #if (! -d $pkgpath && ($installAti == 1 || $installNvidia == 1)) {
-    #    print "\n\n * xserver::pkgpath: no such directory!\n";
-    #    print " * xserver plugin can't install ATI or Nvidia driver!\n\n";
-    #    # exit 1 => xserver plugin is not getting installed because ati
-    #    # or nvidia where selected but are not installable!
-    #    exit 1;
-    #}
+    if (! -d $pkgpath && ($installAti == 1 || $installNvidia == 1)) {
+        print "\n\n * xserver::pkgpath: no such directory!\n";
+        print " * xserver plugin can only install ATI or Nvidia driver\n";
+		print "   via operating system packaging (e.g. != SuSE-10.2)!\n";
+        # exit 1 => xserver plugin is not getting installed because ati
+        # or nvidia where selected but are not installable!
+		# exit 1;
+    }
 
     if (-d $pkgpath && ($installNvidia == 1 || $installAti == 1)) {
         # Todo: use a openslx copy function!
@@ -226,24 +227,28 @@ sub installationPhase
         "$openslxBasePath/lib/plugins/$self->{'name'}/files";
     my $installationPath = "$pluginRepoPath/";
     my $binDrivers = 0;
+    my $engine = $self->{'os-plugin-engine'};
 
-    # TODO: handle it better. We know the distribution in stage1
+    # removeLinks is to remove Links to the files
+    # otherwise some wrong files are created
+    # this can happed here
+    $self->removeLinks();
+
     if ($attrs->{'xserver::nvidia'} == 1  || $attrs->{'xserver::ati'} == 1 ) {
         copyFile("$pluginFilesPath/ubuntu-gfx-install.sh", "$installationPath");
         copyFile("$pluginFilesPath/suse-gfx-install.sh", "$installationPath");
         copyFile("$pluginFilesPath/ubuntu-8.10-gfx-install.sh", "$installationPath");
-        #copyFile("$pluginFilesPath/linkage.sh", "$installationPath");
-        # be on the safe side (BASH) - Ubuntu sets some crazy stupid 'dash' shell otherwise
-        #system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh clean");
-
-        # removeLinks is to remove Links to the files
-        # otherwise some wrong files are created
-        $self->removeLinks();
+    
         $binDrivers = 1;
     }
     if ($attrs->{'xserver::ati'} == 1) {
+		#TODO: if ($vendorOSName contains 'suse-11.1')
+		$engine->installPackages(
+            $engine->getInstallablePackagesForSelection('libstdc++33')
+        );
+
         copyFile("$pluginFilesPath/ati-install.sh", "$installationPath");
-        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh");
+        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh $vendorOSName");
         #system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh ati");
     }
     if ($attrs->{'xserver::nvidia'} == 1) {
@@ -411,7 +416,23 @@ sub removeLinks
     symlink "/usr/lib/libGL.so.1.2", "/usr/lib/libGL.so.1";
     symlink "/usr/lib/libGL.so.1.2", "/usr/lib/libGL.so";
 
-    my $number = unlink @linkedFiles;
+	
+    foreach my $file (@linkedFiles) {
+		chomp($file);
+		unlink $file;
+	}
+
+	# this should not print any file at all ;-(
+    my @files = `find $instFolders -lname "$divertFolder*" -o -lname "$pluginFolder*" `;
+	if ( $#files > 0 ) {
+		print "Links were not removed properly! Exiting!\n";
+		my $bla;
+		foreach (@files) {
+			chomp($bla = $_);
+			print $bla;
+		}
+		exit(1);
+	}
     return;
 }
 

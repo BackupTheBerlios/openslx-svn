@@ -128,7 +128,7 @@ case ${TARGET} in
   nvidia)
     mkdir -p ${PLUGIN_FOLDER}/nvidia/modules
     
-    NVIDIA_DRIVER_VERSION=177
+    NVIDIA_DRIVER_VERSION=173
 
     echo -n "  * downloading nvidia xorg package... "
     aptitude download nvidia-glx-${NVIDIA_DRIVER_VERSION} > /dev/null 2>&1
