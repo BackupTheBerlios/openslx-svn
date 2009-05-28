@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2008, 2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -9,7 +9,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # vmchooser.pm
-#    - allows user to pick from a list of virtual machin images
+#    - allows user to pick from a list of virtual machine images
 # -----------------------------------------------------------------------------
 package OpenSLX::OSPlugin::vmchooser;
 
@@ -79,13 +79,11 @@ sub getAttrInfo
                  location of XML configuration for virtual images
             End-of-Here
             content_descr => 'path to xml files',
-            # workaround till we wiped out vmconfigs/ folder
-            default => '/var/lib/virt/vmware/vmconfigs/',
+            default => '/var/lib/virt',
         },
 
     };
 }
-
 
 sub installationPhase
 {
@@ -98,13 +96,12 @@ sub installationPhase
     # copy all needed files now:
     my $pluginName = $self->{'name'};
     my $pluginBasePath = "$openslxBasePath/lib/plugins/$pluginName/files";
-    foreach my $file ( qw( vmchooser printer.sh scanner.sh xmlfilter.sh default.desktop vmchooser.sh mesgdisp ) ) {
+    foreach my $file ( qw( vmchooser printer.sh scanner.sh xmlfilter.sh 
+        default.desktop vmchooser.sh mesgdisp run-virt.sh ) ) {
         copyFile("$pluginBasePath/$file", "$pluginRepoPath/");
     chmod 0755, "$pluginRepoPath/$file";
     }
     
-    #copyFile("$pluginBasePath/default.desktop", "/usr/share/xsessions/");
-
     return;
 }
 
@@ -112,6 +109,23 @@ sub removalPhase
 {
     my $self = shift;
     my $info = shift;
+
+    return;
+}
+
+sub copyRequiredFilesIntoInitramfs
+{
+    my $self                = shift;
+    my $targetPath         = shift;
+    my $attrs               = shift;
+    my $makeInitRamFSEngine = shift;
+    my $pluginRepoPath = "$openslxConfig{'base-path'}/lib/plugins/vmchooser";
+    
+    $makeInitRamFSEngine->addCMD(
+       "cp -p $pluginRepoPath/files/mkdosfs $targetPath/bin"
+    );
+
+    vlog(1, _tr("vmchooser-plugin: ..."));
 
     return;
 }
