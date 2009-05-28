@@ -526,7 +526,7 @@ sub createBootEnvironmentsForSystem
 
     my %bootTypes;
     foreach my $client (@$clients) {
-        my $type = $client->{boot_type} || 'pxe';
+        my $type = $client->{attrs}->{boot_type} || 'pxe';
         $bootTypes{$type}++;
     }
     foreach my $bootType (sort keys %bootTypes) {
