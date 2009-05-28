@@ -58,7 +58,7 @@ sub setupGDMScript
         . /etc/gdm/PostSession/Default.system' >/mnt/etc/gdm/PostSession/Default
         chmod a+x /mnt/etc/gdm/PostSession/Default*
         # gdm should be started after dbus/hal
-        rllinker gdm 4 10
+        rllinker gdm 5 10
         echo '/usr/sbin/gdm' >/mnt/etc/X11/default-display-manager
         chroot /mnt update-alternatives --set x-window-manager /usr/bin/metacity
         chroot /mnt update-alternatives --set x-session-manager \

@@ -150,8 +150,8 @@ finish () {
 mdev -s
 # remove unneeded disk and mouse drivers
 [ ! -s /etc/hwinfo.disk ] && rmmod sd_mod 2>/dev/null
-grep -q -i " PS/2 " /etc/hwinfo.mouse || \
-  { rmmod psmouse 2>/dev/null; rm /dev/psaux 2>/dev/null; }
+#grep -q " PS/2 " /etc/hwinfo.mouse || \
+#  { rmmod psmouse 2>/dev/null; rm /dev/psaux 2>/dev/null; }
 # more sophistication possible :)
 # remove /sbin/mdev as not available in stage4
 echo >/proc/sys/kernel/hotplug
