@@ -4,6 +4,7 @@
 #include <string>
 
 #include "Client.h"
+#include "events.h"
 
 using namespace std;
 

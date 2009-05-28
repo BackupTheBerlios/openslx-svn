@@ -6,6 +6,7 @@
  */
 
 #include "Client.h"
+#include "ClientStates.h"
 #include <iostream>
 
 using namespace std;
@@ -25,25 +26,4 @@ Client::Client() {
 Client::~Client() {
     terminate();
     cout << "Client object destroyed!" << endl << endl;
-}
-
-/**
- * "Offline"-state enter function
- */
-Offline::Offline() {
-    //cout << "Entered Offline state!" << endl;
-}
-
-/**
- * "PXEConfig"-state enter function
- */
-PXEConfig::PXEConfig() {
-    //cout << "Entered PXEConfig state!" << endl;
-}
-
-/**
- * "Wake"-state enter function
- */
-Wake::Wake() {
-    //cout << "Entered Wake state!" << endl;
 }
