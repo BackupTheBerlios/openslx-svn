@@ -79,7 +79,8 @@ sub getAttrInfo
                  location of XML configuration for virtual images
             End-of-Here
             content_descr => 'path to xml files',
-            default => '/var/lib/vmware/vmconfigs/',
+            # workaround till we wiped out vmconfigs/ folder
+            default => '/var/lib/virt/vmware/vmconfigs/',
         },
 
     };

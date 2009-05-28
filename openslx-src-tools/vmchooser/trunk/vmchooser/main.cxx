@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 
   if (xmlpath == NULL) {
     // Default Path comes here
-    xmlpath = (char *) "/var/lib/vmware/vmconfigs/";
+    xmlpath = (char *) "/var/lib/virt/vmware/vmconfigs/";
   }
  
   /* VERSION  */

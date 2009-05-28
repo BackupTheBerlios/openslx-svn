@@ -144,7 +144,7 @@ char* getFolderName() {
 string writeConfXml(DataEntry& dat) {
 
   //char* pname = getFolderName();
-  string pname = string().append("/var/lib/vmware/runscripts");
+  string pname = string().append("/var/lib/virt/vmware/runscripts");
   xmlNodePtr cur = 0;
   xmlNodePtr root = 0;
   
