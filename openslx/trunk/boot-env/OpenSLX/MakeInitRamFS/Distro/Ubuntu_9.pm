@@ -28,7 +28,9 @@ sub applyChanges
     my $self   = shift;
     my $engine = shift;
 
-    $engine->_addFilteredKernelModules( qw( af_packet unix hid ));
+    $engine->_addFilteredKernelModules( 
+        qw( af_packet unix hid uhci-hcd ohci-hcd )
+    );
 
     return;
 }
