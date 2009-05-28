@@ -137,11 +137,12 @@ supported."; \
 	mkdir -p $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/themes \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin \
-        -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/boot-env \
-        -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs \
-        -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs \
+	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/boot-env \
+	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox \
+	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs \
+	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates \
-        -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools \
+	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools \
 	      -p $(SLX_BUILD_PATH)${USR_BIN_PATH};
 
 	@   # copy license
@@ -181,8 +182,8 @@ supported."; \
 	@tar --exclude=.svn -cp -C initramfs stage3-stuff/ | \
 	  tar -xp --strip-components 1 \
 	      -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs; \
-  tar --exclude=.svn -cp -C initramfs tools | \
-    tar -xp --strip-components 1 \
+	  tar --exclude=.svn -cp -C initramfs tools | \
+	    tar -xp --strip-components 1 \
         -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools; \
 	tar --exclude=.svn -cp -C initramfs distro-specs | \
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
