@@ -1,6 +1,6 @@
 WILLKOMMEN
 ----------
-OpenSLX - Open StateLess eXtensions Version 4.9
+OpenSLX - Open StateLess eXtensions Version 5.0.0Pre2
 
 OpenSLX ist ein Softwarepaket zum Einrichten, Verwalten und Booten von 
 "Stateless Client Systems" (a.k.a. "diskless X stations").
@@ -10,28 +10,12 @@ Unterverzeichnis doc/ (insbesondere einstieg.txt), weiterführende Informationen
 gibt es auf den Webseiten:
 
 --> http://www.openslx.org                                (Projektseiten)
+--> http://lab.openslx.org/wiki/openslx                   (Entwicklung)
 --> http://www.openslx.org/projects/show/openslx-doc      (Dokumentation)
 --> http://lists.openslx.org                              (Mailinglisten)
 
 
-SVN-RELEASES
------------------
-Die SVN-Releases von OpenSLX sollen dazu dienen, die Software einer 
-größeren Nutzergemeinde zugänglich zu machen, um so mehr Feedback über die
-Funktionsfähigkeit und evtl. noch auftretende Probleme zu bekommen.
-
-Neue Snapshots werden in recht kurzen Abständen - mindestens einmal pro Monat - 
-erscheinen, um direkt auf Feedback reagieren zu können. Ziel der Snapshot-Phase
-ist die Stabilisierung der Software im Hinblick auf einen bevorstehenden 
-Beta-Release.
-
-Das Upgraden von einem zum anderen Snapshot sollte ohne Probleme möglich sein,
-d.h. eventuelle Änderungen am DB-Schema und an den Konfigurationseinstellungen
-werden automatisch angepasst. Nur bei einem *Downgrade* ist evtl. Handarbeit
-nötig.
-
-
-HINWEISE ZU DIESER SVN-VERSION
+HINWEISE ZU DIESER VORSCHAU-VERSION
 ---------------------------
 * Das Klonen eines Vendor-OS ist derzeit die einzige Installationsform für
   ein für den Betrieb vorgesehenes Vendor-OS.
