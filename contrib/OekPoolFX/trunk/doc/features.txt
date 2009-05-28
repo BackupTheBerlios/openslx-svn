@@ -1,0 +1,11 @@
+Grundfunktionalitäten:
+ - Steuerung der Clients (SSH)
+ - Konfiguration via LDAP
+ - Zeitsteuerung via LDAP
+   - Batch-Verteilung
+   - WakeOnLan 
+   - Netzwerkboot / Menü-Erstellung aus LDAP
+ - Logging-Output
+ - Monitoring-Komponente
+   - Erstellung / Ausgabe von Statistik-Daten (MySQL/SQLite)
+ - Energiesparkomponente
