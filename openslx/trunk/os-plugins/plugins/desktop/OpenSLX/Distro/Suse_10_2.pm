@@ -1,4 +1,4 @@
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2006..2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -45,6 +45,8 @@ sub GDMConfigHashForWorkstation
     my $configHash = $self->SUPER::GDMConfigHashForWorkstation();
     $configHash->{'daemon'}->{SessionDesktopDir} =
         '/etc/X11/sessions/:/usr/share/xsessions/';
+    $configHash->{'daemon'}->{Greeter} =
+        '/opt/gnome/lib/gdm/gdmgreeter';
 
     return $configHash;
 }
