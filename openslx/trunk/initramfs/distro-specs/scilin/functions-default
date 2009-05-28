@@ -42,7 +42,7 @@ config_distro () {
   echo -e "SLX VERSION = $SLXVERSION\nINITRAMFS GENERATION DATE = $date" \
     >>/mnt/etc/redhat-release
   # simple bash configuration for root
-  echo ". /etc/bashrc" >/mnt/root/.bashrc
+  echo ". /etc/bashrc" >/mnt/root/.profile
   # enable sysrq
   sed -e "s/kernel.sysrq =.*/kernel.sysrq = 1/" -i /mnt/etc/sysctl.conf
   # set some networking stuff if needed
@@ -57,12 +57,20 @@ initial_boot () {
 sed -e "/# Initialize ha/,/success/d" -e "/^ROOTFSTYPE/,/Remounting root/d" \
     -e "/# Check f/,/Mounting l/d" -e "/^# Configure mach/,/-f \/fastboot/d" \
 	-i /mnt/etc/rc.d/rc.sysinit
+# delete all classical disk base rootfs stuff from halt
+sed -e "/# Save mixer/,/Saving random/d" -e "/quotaoff/,/^# Now halt/d" \
+    -i /mnt/etc/init.d/halt
 # boot.slx is a special runlevel script generated within initialramfs which
 # should be executed before the normal runlevel scripts. Proper shutdown is
 # not needed!?
 echo "/etc/init.d/boot.slx" >>/mnt/etc/rc.d/rc.sysinit
 # switch off SElinux enforcing
 sed -e "s/SELINUX=.*/SELINUX=permissive/" -i /mnt/etc/selinux/config
+# link halt and reboot scripts
+ln -s ../init.d/killall /mnt/etc/rc.d/rc0.d/S00killall
+ln -s ../init.d/halt /mnt/etc/rc.d/rc0.d/S01halt
+ln -s ../init.d/killall /mnt/etc/rc.d/rc6.d/S00killall
+ln -s ../init.d/halt /mnt/etc/rc.d/rc0.d/S01reboot
 }
 
 # linking runlevel scripts
@@ -277,7 +285,7 @@ case "$1" in
     echo -e "#!/bin/sh\n# skeleton of /etc/init.d/${name} created \
 by $0\n# after you applied changes to the creation scripts you have to \
 rerun\n# the mkdxsinitrd script to get them applied\n\
-. /etc/rc.d/init.d/functions\n. /etc/sysconfig/logfile\ncase \
+. /etc/rc.d/init.d/functions\n#. /etc/sysconfig/logfile\ncase \
 \"\$1\" in\n    start)\n\techo -n \"$info\"" >>/mnt/etc/init.d/${name}
     chmod u+x /mnt/etc/init.d/${name}
   ;;
