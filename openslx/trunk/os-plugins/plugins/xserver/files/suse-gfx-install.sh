@@ -63,10 +63,6 @@ if [ "$1" = "nvidia" ]; then
   fi
   cd nvidia/temp
 
-  ############################################################
-  ##                 SUSE 11.0 Section                      ##
-  ############################################################
-
   case ${DISTRO} in
     suse-10.2*)
 	  echo "* Running general NVidia installer (expected in xserver::pkgpath)"
@@ -152,10 +148,6 @@ if [ "$1" = "nvidia" ]; then
 	  if [ -f ${bkpprfx}/../../../libGL.so.1.2 ]; then
 	   cp ${bkpprfx}/../../../libGL.so.1.2  /usr/lib
 	   ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so.1
-	   ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so
-	  elif [ -f ${bkpprfx}/../../../X11R6 ]; then
-	  	cp  ${bkpprfx}/../../../libGL.so.1.2  /usr/X11R6/lib/
-	  	ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so.1
 	   ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so
 	  fi
 	;;
