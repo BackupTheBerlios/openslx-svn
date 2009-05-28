@@ -78,6 +78,8 @@ sub getAttrInfo
             description => unshiftHereDoc(<<'            End-of-Here'),
                  location of XML configuration for virtual images
             End-of-Here
+            #TODO:
+            #content_regex => qr{^(0|1)$},
             content_descr => 'path to xml files',
             default => '/var/lib/virt',
         },
