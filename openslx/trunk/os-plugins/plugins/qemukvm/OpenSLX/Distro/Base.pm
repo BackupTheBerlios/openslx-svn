@@ -46,7 +46,7 @@ sub fillRunlevelScript
     my $location = shift;
     my $kind     = shift;
 
-    my $script = unshiftHereDoc(<<"    End-of-Here");
+    my $script = unshiftHereDoc(<<'    End-of-Here');
 
     # cpuvirt=$(grep -e "vmx|svm" /proc/cpuinfo)
     # modprobe $cpuvirt
