@@ -104,27 +104,11 @@ sub writeFilesRequiredForBooting
             unless $self->{'dry-run'};
     }
     
-    # reuse initramfs if it has already been created for another boot 
-    # environment, create it otherwise:
+    # create initramfs:
     my $initramfsName = "$vendorOSPath/$info->{'initramfs-name'}";
-    my $initramfsID = $info->{'initramfs-name'};
-    my $cached = $initramfsMap{$initramfsID};
-    if ($cached) {
-        my $file = $cached->{file};
-        vlog(1, _tr('copying initialramfs %s from %s', $initramfsName, $file));
-        slxsystem("cp -a $file $initramfsName") unless $self->{'dry-run'};
-        $info->{attrs}->{kernel_params} = $cached->{attrs}->{kernel_params};
-        return 0;
-    }
-    else {
-        vlog(1, _tr('generating initialramfs %s', $initramfsName));
-        $self->_makeInitRamFS($info, $initramfsName);
-        $initramfsMap{$initramfsID} = {
-            file          => $initramfsName,
-            kernel_params => $info->{attrs}->{kernel_params},
-        };
-        return 1;
-    }
+    vlog(1, _tr('generating initialramfs %s', $initramfsName));
+    $self->_makeInitRamFS($info, $initramfsName);
+    return 1;
 }
 
 sub _makeInitRamFS
