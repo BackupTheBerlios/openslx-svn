@@ -154,6 +154,7 @@ plain-install:
 	cp config-db/slx* $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/; \
 	cp installer/slx* $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/; \
 	cp os-plugins/slx* $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/; \
+	cp tools/uclibc-wrapper $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/; \
 	tar --exclude=.svn -cp -C lib OpenSLX \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
   tar --exclude=.svn -cp -C boot-env OpenSLX \
