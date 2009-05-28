@@ -2,18 +2,20 @@
 VirtualMachine Chooser - plugin
 ===============================
 
-This Plugin uses an external program to show 
-a list of sessions, from which a user can choose.
+This Plugin uses an additionally provided program to display a list of virtual
+machine sessions (vm's provided by other plugins), from which a user can choose.
 
-This Programm is included in binary format. You
-can look into the sources at 
+This Programm is included in binary format. You can look into the sources at 
 svn://svn.openslx.org/srv/svn/openslx/openslx-src-tools/os-plugins/plugins/vmchooser/
 
-There you can change the program to your needs 
-and compile it with the included Makefile.
+There you can change the program to your needs and compile it with the included 
+Makefile.
 
+Additionally the plugin provides a script to start a specific virtual machine
+preconfigured. Parts of the configuration are taken from an xml file which 
+should be provided with each container file. You will find additional infor-
+mation online at: http://lab.openslx.org/wiki/openslx/Vmchooser
 
-Use at your own risk! 
-No warranty is given by the author 
-of this software for any purposes!
+Use at your own risk! No warranty is given by the author of this software for 
+any purposes!
 

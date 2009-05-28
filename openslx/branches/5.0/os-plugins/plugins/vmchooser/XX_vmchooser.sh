@@ -40,7 +40,7 @@ if [ -e $CONFFILE ]; then
       : #|| error "" nonfatal
     fi
     # mount a clean tempfs (bug in UnionFS prevents loopmount to work)
-    strinfile "unionfs" /proc/mounts && \
+    grep -qE "unionfs |aufs " /proc/mounts && \
       mount -n -o size=1500k -t tmpfs vm-loopimg /mnt/var/lib/virt/vmchooser/loopimg
     # create an empty floppy image of 1.4MByte size
     dd if=/dev/zero of=/mnt/var/lib/virt/vmchooser/loopimg/fd.img \
@@ -50,6 +50,20 @@ if [ -e $CONFFILE ]; then
     mkdosfs /mnt/var/lib/virt/vmchooser/loopimg/fd.img >/dev/null 2>&1 #|| error
     mount -n -t msdos -o loop,umask=000 /mnt/var/lib/virt/vmchooser/loopimg/fd.img \
       /mnt/var/lib/virt/vmchooser/fd-loop
+
+    waitfor /etc/hwinfo.cdrom
+    j=0
+    for i in $(cat /etc/hwinfo.cdrom); do
+      echo "cdrom_$j=$i" >> /mnt/etc/opt/openslx/run-virt.include
+      j=$(expr $j + 1)
+    done
+
+    waitfor /etc/hwinfo.floppy
+    j=0
+    for i in $(cat /etc/hwinfo.floppy); do
+      echo "floppy_$j=$i" >> /mnt/etc/opt/openslx/run-virt.include
+      j=$(expr $j + 1)
+    done
 
     # finished ...
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmchooser' os-plugin ..."

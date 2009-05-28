@@ -21,11 +21,11 @@
 # Sanity checks
 ###############################################################################
 
-# check for running in graphical environment otherwise no much use here
+# Theck for running in graphical environment otherwise no much use here
 [ -z "$DISPLAY" ] && echo -e "\n\tStart only within a graphical desktop!\n" \
   && exit 1
 
-# test if the xml path/file is valid (gotten via commandline first parameter)
+# Test if the xml path/file is valid (gotten via commandline first parameter)
 xml=$1
 [ -e "${xml}" ] || { echo -e "\n\tNo XML file given!\n"; exit 1; }
 
@@ -34,7 +34,21 @@ xml=$1
 
 # File name of the image
 imagename=$(grep -io "<image_name param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
-diskfile=$imagename
+
+case ${xml} in 
+  /tmp/*)
+    # we do not need folder name as it is already included by vmchooser
+    diskfile=$imagename
+  ;;
+  *)
+    # Path to the image (readlink produces the absolute path if called relatively)
+    [ -z $imgpath ] && \
+    { imgpath=$(readlink -f $xml); imgpath=${imgpath%/*.xml}; }
+    # Diskfile is file including absolute path to it 
+    diskfile=$imgpath/$imagename
+  ;;
+esac
+
 [ -e $diskfile ] || { echo -e "\n\tImage file $diskfile not found!"; exit 1; }
 
 # Short description of the image (as present in the vmchooser menu line)
@@ -89,8 +103,6 @@ totalmem=$(expr $(grep -i "memtotal" /proc/meminfo | awk '{print $2}') / 1024)
 mac=$(/sbin/ifconfig eth0 | grep eth0 | sed -e "s/ //g" \
   | awk -F ":" '{print $(NF-1)":"$NF}')
 
-echo "$totalmem, $mac"
-
 # Virtual fd/cd/dvd and drive devices, floppy b: for configuration file (xml)
 floppya="FALSE"
 floppyb="TRUE"
@@ -122,7 +134,7 @@ filecheck ()
   noimage=$(echo ${filecheck} | grep -i "no such file or directory" | wc -l)
   rightsfile=${diskfile}
 
-  # check if link
+  # Check if link
   if [ -L "${diskfile}" ]; then
     # take link target
     rightsfile=$(ls -lh ${diskfile} 2>&1 | awk -F "-> *" '{print $2}')
@@ -130,7 +142,7 @@ filecheck ()
     filecheck=$(LANG=us ls -lh ${rightsfile} 2>&1)
   fi
 
-  # does file exist
+  # Does file exist
   if [ "${noimage}" -ge "1" ]; then
     writelog "Virtual Machine Image Problem:\c "
     writelog "\tThe image you've specified doesn't exist."
@@ -141,7 +153,7 @@ filecheck ()
     exit 1
   fi
 
-  # readable by calling user
+  # Readable by calling user
   if ! [ -r "${diskfile}" >/dev/null 2>&1 \
     -o -r "${diskfile}" >/dev/null 2>&1 ]; then
     writelog "Vmware Image Problem:\c "
@@ -152,7 +164,7 @@ filecheck ()
     exit 1
   fi
 
-  # writable (for persistent-mode)?
+  # Writable (for persistent-mode)?
   if ! [ -w "${diskfile}" >/dev/null 2>&1 \
     -o -w "${diskfile}" >/dev/null 2>&1 ] \
     && [ "${np}" = "independent-persistent" ]; then
@@ -203,6 +215,8 @@ writelog "finished\n"
 
 # Copy guest configuration (with added information) config.xml to be accessed
 # via virtual floppy
+# fixme -> to be changed (vmchooser adapts the file content!?)
+echo "Please fix the config.xml generation"
 cp ${xml} /var/lib/virt/vmchooser/fd-loop/config.xml
 
 # Check if virtual machine container file exists
@@ -211,6 +225,17 @@ filecheck
 # Get all virtual machine specific stuff from the respective include file
 if [ -e /etc/opt/openslx/run-${virt_mach}.include ] ; then
   . /etc/opt/openslx/run-${virt_mach}.include
+  # start fvwm for player 2+
+  # problems with windows opening in background
+  if [ "${virt_mach}" = "vmware" ]; then
+    case "$vmversion" in
+      2.0|6.0|2.5|6.5)
+        which fvwm2 >/dev/null 2>&1 && \
+        ( echo "EdgeScroll 0 0" > ${redodir}/fvwm
+        fvwm2 -f ${redodir}/fvwm >/dev/null 2>&1 & )
+      ;;
+    esac
+  fi
   ${VIRTCMD} ${VIRTCMDOPTS}
   writelog "Bye.\n"
   exit 0
