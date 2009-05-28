@@ -12,18 +12,19 @@
 # preboot script for user interaction with OpenSLX preloading environment for
 # Linux stateless clients
 
-# we expect to have a system selection dialog file in /preboot/syssel.dialog
-dialog --file syssel.dialog 2>result
+# get configuration
+. /etc/initramfs-setup
+
+# we expect to have a system selection dialog file in /preboot/bootmenu.dialog
+dialog --file bootmenu.dialog 2>result
 # source the system to boot configuration ($kernel, $initramfs, $append,
 # $label)
-. $(cat result)
+. ./$(cat result)
 
 echo $kernel
 
-wget ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/$kernel \
-  -o /tmp/kernel
-wget ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/$initramfs \
-  -o initramfs
+wget -O /tmp/kernel $boot_uri/$kernel
+wget -O /tmp/initramfs $boot_uri/$initramfs
 
 # read primary IP configuration to pass it on
 . /tmp/ipstuff
@@ -31,5 +32,5 @@ wget ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/$initramfs \
 # start the new kernel with initialramfs and cmdline
 echo "Booting OpenSLX client $label ..."
 kexec -l /tmp/kernel --initrd=/tmp/initramfs \
-  --append="ip=$ip:$siaddr:$router:$subnet $append $quiet"
+  --append="$append file=$boot_uri debug=3"
 kexec -e
