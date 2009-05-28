@@ -96,7 +96,7 @@ case ${TARGET} in
       echo "ok"
     else
       if $(cat /tmp/dkms.log | grep -q "has already"); then
-        echo -n "--- fglrx module already built ---"
+        echo "--- fglrx module already built ---"
       else
         echo "fail"
         echo "------ dkms.log -----"
@@ -196,7 +196,7 @@ case ${TARGET} in
       echo "ok"
     else
       if $(cat /tmp/dkms.log | grep -q "has already"); then
-        echo -n "--- nvidia module already built ---"
+        echo "--- nvidia module already built ---"
       else
         echo "fail"
         echo "------ dkms.log -----"
