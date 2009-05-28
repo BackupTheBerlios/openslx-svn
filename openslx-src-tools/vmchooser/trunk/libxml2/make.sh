@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./configure --enable-static --disable-shared --without-c14n --without-catalog --without-debug --without-docbook --without-ftp --without-history --without-html --without-http --without-legacy --without-mem-debug --with-minimum --without-output --without-pattern --without-push --without-python --without-reader --without-readline --without-regexps --without-run-debug --without-sax1 --without-schemas --without-schematron --without-threads --without-thread-alloc --with-tree --without-valid --with-writer --without-xinclude --with-xpath --without-xptr --without-modules --without-zlib && make

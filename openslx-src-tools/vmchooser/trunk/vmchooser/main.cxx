@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
   /* VERSION  */
   if(opt->getFlag('v') || opt->getFlag("version")) {
     // just print out version information - helps testing
-    cout << "virtual machine chooser 0.0.8"<< endl;
+    cout << "virtual machine chooser 0.0.9"<< endl;
     delete opt;
     return 0;
 
@@ -150,18 +150,19 @@ int main(int argc, char** argv) {
   
   SWindow& win = *SWindow::getInstance(width, height);
   mainwin = &win;
+  bool lin_entries=false;
+  bool vm_entries=false;
   
-  if(lsessions[0] != NULL) {
+  if(lsessions != NULL) {
     win.set_lin_entries(lsessions);
+    lin_entries = true;
   }
-  if (sessions[0] != NULL) {
-          win.set_entries(sessions);
+  if (sessions != NULL) {
+    win.set_entries(sessions);
+    vm_entries = true;
   }
   
-  //cout << win.pname << endl;
-
-  
-  win.unfold_entries();
+  win.unfold_entries(lin_entries, vm_entries);
   win.show(); // argc,argv
   win.border(false);
 

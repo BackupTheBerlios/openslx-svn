@@ -129,7 +129,7 @@ void SWindow::set_lin_entries(DataEntry** ent)
   this->lin_ent = ent;
   lin_entgroup = (ItemGroup*) sel.add_group("LINUX DESKTOP", &sel);
   map<string, DataEntry*> mapEntry;
-  for (int i=0; ent[i] != NULL; i++)
+  for (int i=0; ent[i] != '\0'; i++)
   {
     mapEntry.insert(make_pair(ent[i]->short_description, ent[i]));
   }
@@ -156,7 +156,7 @@ void SWindow::set_entries(DataEntry** ent)
   sort_entries();
   
   entgroup =  (ItemGroup*)sel.add_group("VMWARE SESSIONS", &sel);
-  for (int i=0; ent[i] != NULL; i++)
+  for (int i=0; ent[i] != '\0'; i++)
   {
     Item* w= (Item*)sel.add_leaf(ent[i]->short_description.c_str(), entgroup, (void*)ent[i] );
         
@@ -175,7 +175,7 @@ void SWindow::set_entries(DataEntry** ent)
  **************************************************************/
 void SWindow::free_entries()
 {
-  for (int i=0; ent[i] != NULL; i++)
+  for (int i=0; ent[i] != '\0'; i++)
     {
       free(ent[i]);
     }
@@ -189,27 +189,37 @@ void SWindow::free_entries()
  *
  * ADDED: Now reads session from ~/.vmchooser via helper
  ******************************************************/
-void SWindow::unfold_entries() {
-  sel.goto_index(0);
-  if(sel.item_is_parent() ) {
-    sel.set_item_opened(true);
+void SWindow::unfold_entries(bool lin_entries, bool vm_entries) {
+  int ind = 0;
+  if(lin_entries) {
+    sel.goto_index(ind);
+    if(sel.item_is_parent() ) {
+      sel.set_item_opened(true);
+    }
+    ind++;
   }
-  sel.goto_index(1);
-  if(sel.item_is_parent() ) {
-    sel.set_item_opened(true);
+  if(vm_entries) {
+    sel.goto_index(ind);
+    if(sel.item_is_parent() ) {
+      sel.set_item_opened(true);
+    }
+  }
+
+  if(! (lin_entries || vm_entries) ) {
+    return;
   }
   sel.next_visible();
-  sel.select_only_this(1);
+  sel.select_only_this(ind);
   curr = (Item*) sel.item();
   //sel.set_focus();
   //sel.set_item_selected(true,1);
   //sel.indented(false);
 
   char* prename = readSession();
-  if ( prename == NULL ) {
+  if ( prename == '\0' ) {
     return;
   } else {
-    cout << "readSession returned:" << prename << endl;
+    //cout << "readSession returned:" << prename << endl;
     sel.goto_index(0);
     Item* it = (Item*) sel.next();
     
@@ -259,7 +269,7 @@ const char** SWindow::get_symbol(DataEntry* dat) {
  * -> puts smallest priority number on top
  ******************************************************/
 void SWindow::sort_entries() {
-  if(this->ent == NULL ) {
+  if(ent == '\0' ) {
     return;
   }
   DataEntry* ptr;

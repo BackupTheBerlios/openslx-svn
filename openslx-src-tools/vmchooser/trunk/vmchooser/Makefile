@@ -5,10 +5,10 @@ DEPS    := ${SRCS:.cxx=.dep}
 XDEPS   := $(wildcard ${DEPS}) 
 
 CC	= g++
-DEBUG_CCFLAGS = -O0 -Wall -I/usr/include -I../fltk-2/include/ -I. `xml2-config --cflags` -ggdb #-ggdb #-Werror
-CCFLAGS = -O2 -Wall -I/usr/include -I../fltk-2/include/ -I. `xml2-config --cflags`
-LDFLAGS = -L../fltk-2/lib/ -L/usr/lib 
-LIBS    = -lpng ../fltk-2/lib/libfltk2_images.a -ljpeg -lz -lXi -lXinerama -lpthread -lm -lXext -lsupc++ -lXrender -lfontconfig -lxml2 -lXft -lXdmcp -lXau -ldl -lz -lfreetype -lX11 ../fltk-2/lib/libfltk2.a /usr/lib/libboost_regex-s.a /usr/lib/libboost_filesystem-s.a
+DEBUG_CCFLAGS = -O0 -Wall -I/usr/include -I../fltk/ -I. -I../libxml2/include -ggdb #-ggdb #-Werror
+CCFLAGS = -O2 -Wall -I/usr/include -I../fltk/ -I../libxml2/include/
+LDFLAGS = -L/usr/lib 
+LIBS    = -lpng ../fltk/lib/libfltk2_images.a -ljpeg -lz -lXi -lXinerama -lpthread -lm -lXext -lsupc++ -lXrender -lfontconfig -lXft -lXdmcp -lXau -ldl -lz -lfreetype -lX11 ../libxml2/libs/libxml2.a ../fltk/lib/libfltk2.a /usr/lib/libboost_regex-s.a /usr/lib/libboost_filesystem-s.a
 
 .PHONY: all clean distclean 
 all:: ${TARGET} 
@@ -25,7 +25,7 @@ debug: ${OBJS}
 	${CC} ${LDFLAGS} -o vmchooserdbg $^ ${LIBS}
 
 ${OBJS}: %.o: %.cxx %.dep
-	${CC} ${CCFLAGS} -o $@ -c $< 
+	${CC} ${DEBUG_CCFLAGS} -o $@ -c $< 
 
 ${DEPS}: %.dep: %.cxx Makefile 
 	${CC} ${CCFLAGS} -MM $< > $@ 

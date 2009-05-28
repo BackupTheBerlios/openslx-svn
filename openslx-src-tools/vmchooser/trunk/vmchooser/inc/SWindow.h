@@ -89,7 +89,7 @@ public:
   const char** get_symbol(DataEntry* dat);
 
   void free_entries();
-  void unfold_entries();
+  void unfold_entries(bool,bool);
   
   void sort_entries();
 

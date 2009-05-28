@@ -28,12 +28,12 @@ static int errorfunc(const char* errpath, int errno)
 static glob_t* globber(char* path, const char* filetype)
 {
         glob_t* gResult = (glob_t*) malloc(sizeof(glob_t));
-        char* temp = (char*) malloc(strlen(path)+strlen(filetype)-1);
+        char* temp = (char*) malloc(strlen(path)+strlen(filetype)+1);
         strcpy(temp, path);
         strcat(temp, filetype);
 
         if (glob(temp, GLOB_NOSORT, &errorfunc, gResult)) {
-                fprintf(stderr, "Fehler beim Öffnen des Ordners!\n");
+                fprintf(stderr, "Fehler beim Ã–ffnen des Ordners!\n");
                 return NULL;
         }
         return gResult;
@@ -49,16 +49,20 @@ DataEntry** readLinSess(char* path)
 	char* val;
 	
 	if ( path== NULL) {
-                return NULL;
-        }
-	glob_t *gResult = globber(path, "*.desktop");
+      return NULL;
+    }
+
+    glob_t *gResult = (glob_t*) malloc(sizeof(glob_t));
+    gResult = globber(path, "*.desktop");
+    
 	if ( gResult== NULL) {
                 return NULL;
         }
         if ( gResult->gl_pathc == 0 ) {
                 return NULL;
         }
-        DataEntry** result = (DataEntry**) malloc(gResult->gl_pathc * sizeof(DataEntry*) +1);
+        DataEntry** result =
+        (DataEntry**) malloc(gResult->gl_pathc *( sizeof(DataEntry*) +1));
         
         int c = 0;
         

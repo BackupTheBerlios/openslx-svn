@@ -247,11 +247,15 @@ DataEntry** readXmlDir(char* path)
   }
   free(fpath);
 
-  xmlDoc *doc = NULL;
+  xmlDoc *doc = '\0';
   int c = 0;
   string::size_type loc;
 
-  DataEntry** result = (DataEntry**) malloc(xmlVec.size() * sizeof(DataEntry*) +1);
+  // We need to reserve the memory for all the pointers here
+  if(xmlVec.size() == 0) {
+    return new DataEntry*;
+  }
+  DataEntry** result = (DataEntry**) malloc(xmlVec.size() * (sizeof(DataEntry*) +1));
 
   for (unsigned int i=0; i < xmlVec.size(); i++) {
     loc = xmlVec[i].find( "Vorlage" );
@@ -277,7 +281,7 @@ DataEntry** readXmlDir(char* path)
     }
 
     result[c] = get_entry(doc);
-    if (result[c] != NULL) {
+    if (result[c] != '\0') {
     	    result[c]->xml_name = xmlVec[i];
             c++;
     }
@@ -285,7 +289,8 @@ DataEntry** readXmlDir(char* path)
     // xmlFreeDoc(doc);
   }
 
-  result[c] = NULL;
+  result[c] = (DataEntry*) malloc(sizeof(DataEntry*));
+  result[c] = '\0';
   return result;
 
 }

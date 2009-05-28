@@ -50,7 +50,7 @@ void saveSession(DataEntry* dat) {
 /**
  * @function readSession: Read predefined session from users home folder
  * 
- * @return: if not found, return null, else filename for Image XML/ Linux .desktop file
+ * @return: if not found, return null, else description for Image XML/ Linux .desktop file
  */
 char* readSession() {
 
@@ -77,12 +77,12 @@ char* readSession() {
 
     string sessname;
     getline(fin,sessname);
-    char* blub = (char*) malloc(sessname.size());
+    char* blub = (char*) malloc(sessname.size()+1);
     strncpy(blub,sessname.c_str(),sessname.size()+1);
 
     if(!sessname.empty()) {
         // blub has to be freed ;-) 
-        // but this is not very important here
+        // but this is not very important here - or is it?
         return blub;
     }
     else {
