@@ -31,8 +31,8 @@ init_errldap="  Unable to setup at \
 least basic functionality, because no IP configuration\n  available. Please \
 beware - ldap works only in combination of either\n  ipappend or similar or \
 with dhcp!"
-init_errnwad="  Failed to load the network \
-adaptor modules defined via mkdxsinitrd\n  run. Please rerun and list the \
+init_errnwad="  Failed to load the network adaptor modules added via \
+slxconfig-demuxer\n  run. Please reconfigure the module list and add the \
 appropriate modules (without .ko)."
 init_bootmac="  If you have more than one ethernet adaptor present in your \
 machine or using\n  a NVidia chipset then it would be advisable to switch on \
@@ -57,7 +57,7 @@ init_dnbd2s="  After 100 retries, it was not possible to start the dnbd2 \
 service. Please\n  check that at least one server is available. You might \
 use the\n  /sys/block/vnbd0 interface for this."
 init_moddir="  The requested modules directory does not exist. That could \
-mean:\n  * The kernel was updated but mkdxsinitrd was not run afterwards.\n\
+mean:\n  * The kernel was updated but the demuxer was not run afterwards.\n\
   * The mounted filesystem does not contain the modules directory at all.\n\
   You might want to check the list of mounted filesystems and if /mnt is\n\
   not empty run 'ls /mnt/lib/modules' to check."

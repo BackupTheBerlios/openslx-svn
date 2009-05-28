@@ -25,9 +25,9 @@ D_BINDMPTS="tmp root media home"
 D_DIRINBINDMNT="/var/run /var/log /var/tmp"
 D_RODIRSINRW="/etc/bootsplash /etc/gconf /var/adm /var/lib/texmf /var/lib/rpm \
 /var/cache/fontconfig"
-D_DIRINDXS="/var/lib/rpm /var/lib/nobody /var/lib/alternatives/ \
-/var/db/nscd /var/lib/bluetooth /var/lib/scrollkeeper /var/lib/nfs/sm \
-/var/lib/nfs/sm.bak /var/lib/misc /var/spool/cron"
+D_DIRINDXS="/var/lib/rpm /var/lib/nobody /var/lib/alternatives/ /var/db/nscd \
+/var/lib/bluetooth /var/lib/scrollkeeper /var/lib/nfs/sm /var/lib/nfs/sm.bak \
+/var/lib/misc /var/spool/cron"
 
 # empty functions are defined at the beginning of /etc/functions
 
@@ -41,9 +41,10 @@ config_distro () {
   echo -e "SLX VERSION = $SLXVERSION\nINITRAMFS GENERATION DATE = $date" \
     >>/mnt/etc/redhat-release
   # simple bash configuration for root
-  echo ". /etc/bashrc" >/mnt/root/.profile
+  echo -e "# Generated in OpenSLX stage3\n. /etc/bashrc" >/mnt/root/.profile
   # enable sysrq
-  sed -e "s/kernel.sysrq =.*/kernel.sysrq = 1/" -i /mnt/etc/sysctl.conf
+  sed -e "1i# Configuration modified by $0 during stage3 bootup." \
+      -e "s/kernel.sysrq =.*/kernel.sysrq = 1/" -i /mnt/etc/sysctl.conf
   # set some networking stuff if needed
   [ -e /mnt/etc/sysconfig/network ] && \
     sed -e "s/HOSTNAME=.*/HOSTNAME=$host_name/" \
@@ -53,23 +54,34 @@ config_distro () {
 # initial (boot time) runlevel scripts
 initial_boot () {
 # delete all classical disk base rootfs stuff from rc.sysinit
-sed -e "/# Initialize ha/,/success/d" -e "/^ROOTFSTYPE/,/Remounting root/d" \
+sed -e "6i# Script modified by $0 during stage3 bootup." \
+    -e "/# Initialize ha/,/success/d" -e "/^ROOTFSTYPE/,/Remounting root/d" \
     -e "/# Check f/,/Mounting l/d" -e "/^# Configure mach/,/-f \/fastboot/d" \
-	-i /mnt/etc/rc.d/rc.sysinit
+    -e "s,/sbin/start_udev$,/etc/init.d/udevd," -i /mnt/etc/rc.d/rc.sysinit
+# write a custom udev script (to be checked!!)
+echo -e "#!/bin/sh\n# Simple udev starter script created as a replacement \
+during OpenSLX stage3\n# bootup." >/mnt/etc/init.d/udevd
+echo -e '. /etc/init.d/functions\nSTRING=$"Starting udev: "
+echo -n "$STRING "\n/sbin/udevstart </dev/null >/dev/null 2>&1
+\n[ $? -eq 0 ] && success $"$STRING" || failure $"$STRING"
+\necho\nexit 0' >>/mnt/etc/init.d/udevd
+chmod u+x /mnt/etc/init.d/udevd
 # delete all classical disk base rootfs stuff from halt
-sed -e "/# Save mixer/,/Saving random/d" -e "/quotaoff/,/^# Now halt/d" \
+sed -e "7i#                Modified by $0 during stage3 bootup." \
+    -e "/# Save mixer/,/Saving random/d" -e "/quotaoff/,/^# Now halt/d" \
     -i /mnt/etc/init.d/halt
 # boot.slx is a special runlevel script generated within initialramfs which
-# should be executed before the normal runlevel scripts. Proper shutdown is
-# not needed!?
-echo "/etc/init.d/boot.slx" >>/mnt/etc/rc.d/rc.sysinit
+# should be executed before the normal runlevel scripts.
+echo -e "# Run OpenSLX init runlevel script\n/etc/init.d/boot.slx" \
+  >>/mnt/etc/rc.d/rc.sysinit
 # switch off SElinux enforcing
-sed -e "s/SELINUX=.*/SELINUX=permissive/" -i /mnt/etc/selinux/config
+sed -e "1i# Configuration modified by $0 during stage3 bootup." \
+    -e "s/SELINUX=.*/SELINUX=permissive/" -i /mnt/etc/selinux/config
 # link halt and reboot scripts
 ln -s ../init.d/killall /mnt/etc/rc.d/rc0.d/S00killall
 ln -s ../init.d/halt /mnt/etc/rc.d/rc0.d/S01halt
 ln -s ../init.d/killall /mnt/etc/rc.d/rc6.d/S00killall
-ln -s ../init.d/halt /mnt/etc/rc.d/rc0.d/S01reboot
+ln -s ../init.d/halt /mnt/etc/rc.d/rc6.d/S01reboot
 }
 
 # linking runlevel scripts
