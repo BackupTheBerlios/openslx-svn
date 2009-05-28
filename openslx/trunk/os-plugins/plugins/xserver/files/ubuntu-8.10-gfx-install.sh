@@ -19,6 +19,17 @@ else
   KVER=$(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)
 fi
 
+if [ ! -e "/usr/sbin/dkms" ]; then
+  echo -n "  * DKMS not found: installing .."
+  aptitude install dkms > /dev/null 2>&1
+    if [ $? -eq 1 ]; then
+      echo "fail"
+      echo "  * Didn't get package dkms! Exit now!"
+      exit 1
+    else
+      echo "ok"
+    fi
+fi
 
 case ${TARGET} in
   ati)
@@ -55,7 +66,7 @@ case ${TARGET} in
     FGLRX_FULL_VERSION=$(echo ${FGLRX_SOURCE_DIR} | \
       sed -e 's/\/usr\/src\/fglrx-//')
 
-    FGLRX_DKMS_DIR="/var/lib/dkms/fglrx/${FGLRX_FULL_VERSION}/"
+    FGLRX_DKMS_DIR="/var/lib/dkms/fglrx/${FGLRX_FULL_VERSION}"
 
     if [ -d /var/lib/dkms/fglrx/${FGLRX_FULL_VERSION} ]; then
       if [ ! -L ${FGLRX_DKMS_DIR}/source ]; then
@@ -151,7 +162,7 @@ case ${TARGET} in
     NVIDIA_FULL_VERSION=$(echo ${NVIDIA_SOURCE_DIR} | \
       sed -e 's/\/usr\/src\/nvidia-//')
 
-    NVIDIA_DKMS_DIR="/var/lib/dkms/nvidia/${NVIDIA_FULL_VERSION}/"
+    NVIDIA_DKMS_DIR="/var/lib/dkms/nvidia/${NVIDIA_FULL_VERSION}"
 
     if [ -d /var/lib/dkms/nvidia/${NVIDIA_FULL_VERSION} ]; then
       if [ ! -L ${NVIDIA_DKMS_DIR}/source ]; then
