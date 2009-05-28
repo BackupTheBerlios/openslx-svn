@@ -184,7 +184,9 @@ if [ "$1" = "nvidia" ]; then
           rpm2cpio ${RNAME} | cpio -id > /dev/null 2>&1
         fi
       done
-      mv ./usr/X11R6/lib/* ./usr/lib/
+      if [ -d ./usr/X11R6/lib ]; then
+          mv ./usr/X11R6/lib/* ./usr/lib/
+      fi
       if [ $(find ./usr/ -name *.so* 2>/dev/null | wc -l ) -eq 0 ]; then
         echo "  NVIDIA files failed to install via zypper!!"
         exit
@@ -238,10 +240,12 @@ if [ "$1" = "ati" ]; then
     rpm2cpio ${RPM} 2>/dev/null | cpio -id >/dev/null 2>&1 
 
 
-    mv ./usr/X11R6/lib/* ./usr/lib/
-	if [ -d etc ]; then
-		cp -r etc/* /etc/
-	fi
+    if [ -d ./usr/X11R6/lib ]; then
+        mv ./usr/X11R6/lib/* ./usr/lib/
+    fi
+    if [ -d etc ]; then
+        cp -r etc/* /etc/
+    fi
 
     # cleanup
     rm -rf ${RPM}
@@ -289,7 +293,9 @@ if [ "$1" = "ati" ]; then
       fi
     done
 
-    mv ./usr/X11R6/lib/* ./usr/lib/ > /dev/null 2>&1
+    if [ -d ./usr/X11R6/lib ]; then
+        mv ./usr/X11R6/lib/* ./usr/lib/ > /dev/null 2>&1
+    fi
     if [ $(find ./usr/ -name *.so* 2>/dev/null | wc -l ) -eq 0 ]; then
       echo "  ATI files failed to install via zypper!!"
       exit
