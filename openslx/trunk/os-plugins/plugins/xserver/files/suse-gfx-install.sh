@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # supported:
 # nvidia: 
 # 	* 10.2 (pkg-installer)
 #	* 11.0 (zypper rpm packages)
-# 	* not yet - soon - 11.1 
+# 	* 11.1 (zypper rpm packages)
 # 
 # ati:
 #	* 10.2 (pkg-installer)
@@ -34,9 +34,6 @@ if [ -z "${KSUFFIX}" ]; then
     echo "Could not determine proper local kernel suffix!"
     echo "This is needed to install kernel modules for graphics drivers!"
     exit 1
-#else
-#	echo -e "Kernel-Suffix: ${KSUFFIX}"
-#	echo -e "Kernel-version:${KVERS}"
 fi
 
 
@@ -58,31 +55,123 @@ buildfglrx() {
 # NVidia section
 ##########################################################################
 if [ "$1" = "nvidia" ]; then
+  if [ -e nvidia/usr/lib/libGL.so.1 ]; then
+    exit
+  fi
   if [ ! -d nvidia ]; then
   	mkdir -p nvidia/{modules,usr,temp}
   fi
   cd nvidia/temp
-  if [ -e nvidia/usr/lib/libGL.so.1 ]; then
-    exit
-  fi
 
   ############################################################
   ##                 SUSE 11.0 Section                      ##
   ############################################################
 
   case ${DISTRO} in
+    suse-10.2*)
+	  echo "* Running general NVidia installer (expected in xserver::pkgpath)"
+	  # unpack the nvidia installer; quickhack - expects just one package
+	  echo "  * Unpacking installer"
+	  sh ../../packages/NVIDIA-Linux-*.run -a -x >>nvidia-inst.log 2>&1
+	  # prefix and paths should be matched more closely to each distro
+	  # just demo at the moment ... but working at the moment
+	  # without the kernel module
+	  stdprfx=/opt/openslx/plugin-repo/xserver/nvidia
+	
+	  # backing up libglx.so and libGLcore.so
+	  bkpprfx=${stdprfx}/../mesa/lib/xorg/modules/extensions
+	  mkdir -p ${bkpprfx}
+	  if [ -f /usr/lib/xorg/modules/extensions/libglx.so ]; then
+	  	cp /usr/lib/xorg/modules/extensions/libGLcore.so ${bkpprfx}
+	  	cp /usr/lib/xorg/modules/extensions/libglx.so ${bkpprfx}
+	  elif [ -f /usr/X11R6/lib/xorg/modules/extensions/libglx.so ]; then
+	  	cp /usr/X11R6/lib/xorg/modules/extensions/libglx.so ${bkpprfx}
+	   cp /usr/X11R6/lib/xorg/modules/extensions/libGLcore.so ${bkpprfx}
+	   touch ${bkpprfx}/../../../../X11R6
+	  fi
+	  if [ -f /usr/lib/libGL.so.1.2 ]; then
+	   cp /usr/lib/libGL.so.1.2 ${bkpprfx}/../../..
+	  elif [ -f /usr/X11R6/lib/libGL.so.1.2 ]; then
+	   cp /usr/X11R6/lib/libGL.so.1.2 ${bkpprfx}/../../..
+	   touch ${bkpprfx}/../../../X11R6
+	  fi
+	
+	
+	  # run the lib installer
+	  echo "  * Starting the library installer"
+	  echo "Starting the lib installer" >>nvidia-inst.log
+	  $(ls -d NVIDIA-Linux-*)/nvidia-installer -s -q -N --no-abi-note \
+	    --x-prefix=${stdprfx}/usr --x-library-path=${stdprfx}/usr/lib \
+	    --x-module-path=${stdprfx}/usr/lib/xorg/modules \
+	    --opengl-prefix=${stdprfx}/usr --utility-prefix=${stdprfx}/usr \
+	    --documentation-prefix=${stdprfx}/usr --no-runlevel-check  \
+	    --no-rpms --no-x-check --no-kernel-module \
+	    --log-file-name=nvidia-lib.log >>nvidia-inst.log 2>&1
+	  # how to get an idea of the installed kernel?
+	  # run the kernel module creator (should be done for every kernel!?)
+	  kernel=${KVERS}
+	  echo "  * Trying to compile a kernel module for $kernel"
+	  echo "Starting the kernel module installer for $kernel" >>nvidia-inst.log
+	  # we need the .config file in /usr/src/linux or where ever!
+	  # we need scripts/genksyms/genksyms compiled via make scripts in /usr/src/linux
+	  # option available in newer nvidia packages
+	  cd /usr/src/linux-${kernel%-*}
+	  # in suse we have the config file lying there
+	  cp /boot/config-${kernel} .config
+	  ARCH=$(cat .config| grep -o CONFIG_M.86=y |tail -n1|grep -o "[0-9]86")
+	  SUFFIX=${kernel##*-}
+	  cp -r /usr/src/linux-${kernel%-*}-obj/i${ARCH}/${SUFFIX}/ \
+	  		/usr/src/linux-${kernel%-*}
+	  make scripts >/dev/null 2>&1
+	  make prepare >/dev/null 2>&1
+	  cd - >/dev/null 2>&1
+	  #/usr/src/linux-${kernel%-*}
+	  addopts="--no-cc-version-check"
+	  $(ls -d NVIDIA-Linux-*)/nvidia-installer -s -q -N -K --no-abi-note \
+	    --kernel-source-path=/usr/src/linux-${kernel%-*} \
+	    -k ${kernel} \
+	    --kernel-install-path=/opt/openslx/plugin-repo/xserver/nvidia/modules \
+	    --no-runlevel-check --no-abi-note --no-rpms ${addopts} \
+	    --log-file-name=nvidia-kernel.log >>nvidia-inst.log 2>&1
+	  if [ $? -gt 0 ];then
+	  	echo "* kernel module built failed!"
+  	    echo "* Have a look into the several log files in "
+  	    echo "  stage1/${DISTRO}/plugin-repo/xserver"
+	  fi
+	
+	
+	  # redo some unwanted changes of nvidia-installer
+	  if [ -f ${bkpprfx}/libglx.so ]; then
+	  	cp ${bkpprfx}/libGLcore.so /usr/lib/xorg/modules/extensions
+	  	cp ${bkpprfx}/libglx.so /usr/lib/xorg/modules/extensions
+	   if [ -f ${bkpprfx}/X11R6 ]; then
+	      	cp ${bkpprfx}/libGLcore.so /usr/X11R6/lib/xorg/modules/extensions
+	      	cp ${bkpprfx}/libglx.so /usr/X11R6/lib/xorg/modules/extensions
+	   fi
+	  fi
+	  if [ -f ${bkpprfx}/../../../libGL.so.1.2 ]; then
+	   cp ${bkpprfx}/../../../libGL.so.1.2  /usr/lib
+	   ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so.1
+	   ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so
+	  elif [ -f ${bkpprfx}/../../../X11R6 ]; then
+	  	cp  ${bkpprfx}/../../../libGL.so.1.2  /usr/X11R6/lib/
+	  	ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so.1
+	   ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so
+	  fi
+	;;
     suse-11.*)
       echo "* Downloading nvidia rpm packages... this could take some time..."
       # add repository for nvidia drivers
 	  case ${DISTRO} in
 	  suse-11.0*)
-      zypper --no-gpg-checks addrepo http://download.nvidia.com/opensuse/11.0/ NVIDIA > /dev/null 2>&1
+	  REPO=http://download.nvidia.com/opensuse/11.0/
 	  ;;
 	  suse-11.1*)
-      zypper --no-gpg-checks addrepo http://download.nvidia.com/opensuse/11.1/ NVIDIA > /dev/null 2>&1
+	  REPO=http://download.nvidia.com/opensuse/11.1/
 	  ;;
 	  esac
-      # get URLs by virtually installing nvidia-OpenGL driver
+	  zypper --no-gpg-checks addrepo ${REPO} NVIDIA > /dev/null 2>&1
+	  # get URLs by virtually installing nvidia-OpenGL driver
       zypper --no-gpg-checks -n -vv install -D \
 	  	nvidia-gfxG01-kmp${KSUFFIX}  > logfile 2>&1 
   
@@ -147,6 +236,9 @@ if [ "$1" = "ati" ]; then
 
 
     mv ./usr/X11R6/lib/* ./usr/lib/
+	if [ -d etc ]; then
+		cp -r etc/* /etc/
+	fi
 
     # cleanup
     rm -rf ${RPM}
@@ -197,7 +289,7 @@ if [ "$1" = "ati" ]; then
 
     find lib/ -name "*.ko" -exec mv {} ../modules \; >/dev/null 2>&1
     if [ $? -ne 0 ]; then
-        echo "Could not find kernel module nvidia.ko!";
+        echo "Could not find kernel module fglrx.ko!";
     fi
 
   ;;

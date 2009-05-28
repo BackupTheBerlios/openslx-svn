@@ -28,7 +28,7 @@ case ${DISTRO} in
   ubuntu*)
     ./ubuntu-gfx-install.sh nvidia ${DISTRO}
   ;;
-  suse-11.*)
+  suse-1*)
     ./suse-gfx-install.sh nvidia ${DISTRO}
   ;;
   # general purpose nvidia installer script

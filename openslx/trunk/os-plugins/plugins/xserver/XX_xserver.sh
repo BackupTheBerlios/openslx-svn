@@ -52,27 +52,30 @@ if [ -e /initramfs/plugin-conf/xserver.conf -a \
 
     waitfor /etc/hwinfo.data 10000
     if [ $(grep -i -m 1 'Module: fglrx' \
-        /etc/hwinfo.data | wc -l) -ge "1"  -a $xserver_prefnongpl -eq 1 ]
+        /etc/hwinfo.gfxcard | wc -l) -ge "1"  -a $xserver_prefnongpl -eq 1 ]
     then
       # we have an ati card here
-      ATI=1
       PLUGIN_ROOTFS="/opt/openslx/plugin-repo/xserver/ati"
+	  if [  -f /mnt${PLUGIN_ROOTFS}/usr/X11R6/lib/dri/fglrx_dri.so -o \
+		   -f /mnt${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so ]; then
 
-      # this will be written before standard module path into xorg.conf
-      MODULE_PATH="${PLUGIN_ROOTFS}/usr/lib/xorg/modules/\,\
-${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
-      xmodule="fglrx"
-      PLUGIN_PATH="/mnt/${PLUGIN_ROOTFS}"
-
-      # we need some database for driver initialization
-      cp -r ${PLUGIN_PATH}/etc/* /mnt/etc
-
-      # if fglrx_dri.so is linked wrong -> we have to link it here
-      if [ "1" -eq "$( ls -l /usr/lib/dri/fglrx_dri.so \
-        | grep -o "/var/X11R6.*so$" | wc -l )" ]; then
-          ln -s ${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so \
-            ${glliblinks}dri/fglrx_dri.so
-      fi
+	      # this will be written before standard module path into xorg.conf
+	      MODULE_PATH="${PLUGIN_ROOTFS}/usr/lib/xorg/modules/\,\
+	${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
+	      xmodule="fglrx"
+	      PLUGIN_PATH="/mnt/${PLUGIN_ROOTFS}"
+	
+	      # we need some database for driver initialization
+	      cp -r ${PLUGIN_PATH}/etc/* /mnt/etc
+	
+	      # if fglrx_dri.so is linked wrong -> we have to link it here
+	      if [ "1" -eq "$( ls -l /usr/lib/dri/fglrx_dri.so \
+	        | grep -o "/var/X11R6.*so$" | wc -l )" ]; then
+	          ln -s ${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so \
+	            ${glliblinks}dri/fglrx_dri.so
+	      fi
+	      ATI=1
+	  fi
     elif [ $(grep -i -m 1 'Module: nvidia' \
         /etc/hwinfo.gfxcard | wc -l) -ge "1"  -a $xserver_prefnongpl -eq 1 ]
     then
