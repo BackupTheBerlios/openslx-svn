@@ -149,10 +149,6 @@ if [ "$1" = "nvidia" ]; then
 	   cp ${bkpprfx}/../../../libGL.so.1.2  /usr/lib
 	   ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so.1
 	   ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so
-	  elif [ -f ${bkpprfx}/../../../X11R6 ]; then
-	  	cp  ${bkpprfx}/../../../libGL.so.1.2  /usr/X11R6/lib/
-	  	ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so.1
-	   ln -sf /usr/lib/libGL.so.1.2 /usr/lib/libGL.so
 	  fi
 	;;
     suse-11.*)
@@ -195,17 +191,6 @@ if [ "$1" = "nvidia" ]; then
       cd .. 
     ;;
   esac
-
-
-  # nvidia provides libGLcore with it's own libs
-  # we want to preserve at least the link to
-  # also support intel graphics cards
-  if [ ! -L /usr/lib/libGLcore.so ]; then
-    ln -s /var/X11R6/lib/libGLcore.so /usr/lib/libGLcore.so
-  fi
-  if [ ! -L /usr/lib/libGLcore.so.1 ]; then
-    ln -s /var/X11R6/lib/libGLcore.so /usr/lib/libGLcore.so.1
-  fi
 
   rm -rf temp/
   cd ..
