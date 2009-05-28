@@ -928,8 +928,8 @@ chmod 1777 /mnt/dev/shm /mnt/tmp 2>/dev/null
 runinithook '95-cleanup'
 
 # kill hwautocfg, servconfig, hwinfo, syslogd, etc.
-killall -9 hwautocfg servconfig debugshell hwinfo \
-	syslogd logread 2>/mnt/dev/null
+killall -9 hwautocfg servconfig debugshell hwinfo syslogd logread 2>/dev/null
+
 # runtimer
 [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
   echo "** SLX init ended near $(sysup)"
