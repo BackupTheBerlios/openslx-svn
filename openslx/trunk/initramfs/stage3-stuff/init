@@ -393,10 +393,7 @@ if strinstr "eth" "$nwif" ; then
   done
 fi
 # hook to setup bridging (several virtualization tools ...)
-# xenbr_config
 runinithook '20-nw-bridge-config'
-# fixme: hack for non-returning nwif variable
-ip link show dev br0 >/dev/null 2&>1 && nwif=br0
 
 # set up loopback networking
 [ $DEBUGLEVEL -eq 20 ] && echo "** starting ip config at $(sysup)"

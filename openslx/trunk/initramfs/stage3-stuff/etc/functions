@@ -536,6 +536,7 @@ if [ -d /etc/init-hooks/$hook ]; then
   for hook_script in /etc/init-hooks/$hook/*.sh; do
     if [ -e $hook_script ]; then
       /bin/init-wrapper $hook_script $DEBUGLEVEL
+      . /tmp/env/wrapper.env
     fi
   done
 fi
