@@ -10,8 +10,7 @@
 #
 # General information about OpenSLX can be found at http://openslx.org
 #
-# Main script for new type of initial ramdisk for OpenSLX linux stateless
-# clients version 4
+# Main script for initial ramdisk for OpenSLX linux stateless clients
 #############################################################################
 
 # fixme: the primary init script should never fail, so move all critical code
@@ -76,7 +75,7 @@ nodnbdcache="yes"
 
 # set a default LAN interface, might be modified for WLAN, bridge setups or
 # on machines with more than one ethernet card built in
-nwif="eth0"
+export nwif="eth0"
 
 # load usb modules for keyboard (reenable usb keyboards, otherwise the
 # admin has to wait until second run of hwsetup late in stage3) and the
@@ -368,7 +367,7 @@ runinithook '10-nw-if-config'
 # check here for the active ethernet link (skip non-ethN interfaces)
 if strinstr "eth" "$nwif" ; then
   for ethif in eth0 eth1 eth2 eth3 ; do
-    macaddr=$(ip link show dev $ethif 2>/dev/null | \
+    export macaddr=$(ip link show dev $ethif 2>/dev/null | \
       sed -n "/ether [0-9e-f]\{2\}:.*/p" | sed -e "s/.*ether //;s/ .*//")
     # if there is no bootmac present in kernel commandline any checks are
     # useless
@@ -396,6 +395,8 @@ fi
 # hook to setup bridging (several virtualization tools ...)
 # xenbr_config
 runinithook '20-nw-bridge-config'
+# fixme: hack for non-returning nwif variable
+ip link show dev br0 >/dev/null 2&>1 && nwif=br0
 
 # set up loopback networking
 [ $DEBUGLEVEL -eq 20 ] && echo "** starting ip config at $(sysup)"
@@ -954,7 +955,8 @@ killall klogd 2>/dev/null
 # variables
 mount -n --move /dev /mnt/dev
 umount -n /proc
-unset client debug date initrd ip bldroot nfsroot rootfs ticks vci vga
+unset client debug date initrd ip bldroot macaddr nwif nfsroot rootfs ticks \
+  vci vga
 unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
   SLXVERSION UDEVD_EXPECTED_SEQNUM PATH
 

@@ -198,9 +198,11 @@ plain-install:
     $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/; \
   cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
   tar --exclude=.svn -cp -C initramfs tpm | \
-    tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share;
+    tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
 
-
+	@   # link the library loader for the uclibc (to use the uclibc busybox)
+	@ ln -sf ${SLX_BASE_PATH}/share/uclib-rootfs/lib/ld-uClibc.so.0 \
+	  /lib/ld-uClibc.so.0
 
 postinstall:
 	@   # create default config folder hierarchy:
@@ -234,7 +236,7 @@ postinstall:
 		unset OPENSLX_SVN_SNAPSHOT || \
 		OPENSLX_SVN_SNAPSHOT="1"; \
 	. ./VERSIONS; \
-	  echo -e "#! /bin/sh\n\necho $${OPENSLX_VERSION_STRING}" \
+	echo -e "#! /bin/sh\n\necho $${OPENSLX_VERSION_STRING}" \
 	    > $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/slxversion; \
 	chmod a+x $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/slxversion; \
 	ln -sf $(SLX_BASE_PATH)/bin/slxversion $(SLX_BUILD_PATH)$(USR_BIN_PATH)/; \
@@ -267,6 +269,7 @@ and stage1"
 	@echo "keeping files in $(SLX_PRIVATE_PATH)"
 	@rm -rf $(SLX_PUBLIC_PATH)
 	@rm -f $(USR_BIN_PATH)/slx*
+	@rm -f /lib/ld-uClibc.so.0
 
 mrproper:
 	@echo "Wiping all!"

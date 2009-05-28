@@ -1,5 +1,5 @@
 # Copyright (c) 2003..2006 - RZ Uni Freiburg
-# Copyright (c) 2006..2008 - OpenSLX GmbH
+# Copyright (c) 2006..2009 - OpenSLX GmbH
 #
 # This program/file is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -164,32 +164,6 @@ case "${proto}" in
       -t ${proto} //${server}${srcpath} ${target}
   ;;
 esac
-}
-#############################################################################
-# configure Xen bridge xenbr0
-xenbr_config () {
-modprobe ${MODPRV} netloop
-local ipls
-local vifnum="0"
-local bridge="xenbr${vifnum}"
-local netdev="eth${vifnum}"
-local pdev="p${netdev}"
-local vdev="veth${vifnum}"
-local vif0="vif0.${vifnum}"
-# fixme: that is the mac address of main ethernet device
-local mac=$macaddr
-
-brctl addbr ${bridge}
-brctl stp ${bridge} off
-brctl setfd ${bridge} 0
-brctl addif ${bridge} ${vif0}
-for ipls in "${netdev} name ${pdev}" "${vdev} name ${netdev}" \
-            "${pdev} down arp off" "${pdev} addr fe:ff:ff:ff:ff:ff" \
-            "${netdev} addr ${mac} arp on" "${netdev} addr ${mac} arp on" \
-            "${bridge} up" "${vif0} up" "${pdev} up" ; do
-  ip link set ${ipls}
-done
-brctl addif ${bridge} ${pdev}
 }
 #############################################################################
 # replace @@@serverip@@@ with real serverip. Allows the usage of a variable
