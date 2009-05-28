@@ -41,12 +41,11 @@ sub initialize
 
 sub runlevelInfo
 {
-    my $self  = shift;
-    my $attrs = shift;
+    my $self = shift;
+    my $kind = shift;
     
     # most distros (well: Debian & Ubuntu) use a different initscript depending
     # on which version of syslog is installed ('syslogd' or 'syslog-ng')
-    my $kind = lc($attrs->{'syslog::kind'});
     my %nameMap = (
         'syslogd'   => 'sysklogd',
         'syslog-ng' => 'syslog-ng',

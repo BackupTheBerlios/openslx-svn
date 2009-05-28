@@ -115,7 +115,7 @@ sub installationPhase
     $self->{openslxBasePath}      = $info->{'openslx-base-path'};
     $self->{openslxConfigPath}    = $info->{'openslx-config-path'};
     $self->{attrs}                = $info->{'plugin-attrs'};
-    
+
     # We are going to change some of the stage1 attributes during installation
     # (basically we are filling the ones that are not defined). Since the result
     # of these changes might change between invocations, we do not want to store
@@ -155,10 +155,10 @@ sub installationPhase
 
     # start to actually do something - according to current stage1 attributes
     if ($self->{kind} eq 'syslog-ng') {
-        $self->_setupSyslogNG();
+        $self->_setupSyslogNG($self->{attrs});
     }
     elsif ($self->{kind} eq 'syslogd') {
-        $self->_setupSyslogd();
+        $self->_setupSyslogd($self->{attrs});
     }
     else {
         die _tr(
@@ -185,7 +185,8 @@ sub _setupSyslogNG
     
     my $repoPath = $self->{pluginRepositoryPath};
 
-    my $rlInfo = $self->{distro}->runlevelInfo($attrs);
+    my $kind = lc($attrs->{'syslog::kind'});
+    my $rlInfo = $self->{distro}->runlevelInfo($kind);
 
     my $conf = unshiftHereDoc(<<"    End-of-Here");
         #!/bin/ash
@@ -247,9 +248,8 @@ sub _setupSyslogd
     
     my $repoPath = $self->{pluginRepositoryPath};
 
-    my $rlInfo = $self->{distro}->runlevelInfo($attrs);
-
-    # TODO: implement!
+    my $kind = lc($attrs->{'syslog::kind'});
+    my $rlInfo = $self->{distro}->runlevelInfo($kind);
 
     my $conf = unshiftHereDoc(<<'    End-of-Here');
         #!/bin/ash
