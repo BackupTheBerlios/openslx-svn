@@ -22,7 +22,7 @@ if [ -e /initramfs/plugin-conf/infoscreen.conf ]; then
   	if [ $infoscreen_active -ne 0 ]; then
     	[ $DEBUGLEVEL -gt 0 ] && echo "executing the 'infoscreen' os-plugin ...";
 		
-		ln -sf /opt/openslx/plugin-repro/infoscreen/kiosk.dkms \
+		ln -sf /opt/openslx/plugin-repo/infoscreen/kiosk.dpms \
 		       /mnt/bin/kiosk.dpms
 		
 		# prepare xsession

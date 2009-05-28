@@ -44,7 +44,7 @@ sub getInfo
         description => unshiftHereDoc(<<'        End-of-Here'),
             infoscreen plugin ..
         End-of-Here
-        precedence => 52,
+        precedence => 82, 
     };
 }
 
