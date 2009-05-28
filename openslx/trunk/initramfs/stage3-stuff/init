@@ -897,13 +897,13 @@ postinit
   chmod u+x /bin/postinit.local; }
 [ -f /bin/postinit.local ] && {
   [ $DEBUGLEVEL -gt 0 ] && \
-    echo "Running /bin/postinit.local ..."
+    echo -n "Running script /bin/postinit.local ... "
     /bin/postinit.local
-    echo "done"; }
+    echo "ok"; }
 
 # start a debug shell in higher debug levels
 [ $DEBUGLEVEL -gt 2 -a $DEBUGLEVEL != 8 ] \
-  && echo "Debuglevel > 2: starting debug-shell, exit with ctrl+d" && /bin/ash
+  && echo "DEBUGLEVEL>2: starting debug-shell, exit with CTRL+D" && /bin/ash
 
 runinithook '90-postinit-done'
 
