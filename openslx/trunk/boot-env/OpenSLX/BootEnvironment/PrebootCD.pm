@@ -61,7 +61,7 @@ sub _createImage
     my $isolinuxConfig = unshiftHereDoc(<<"    End-of-Here");
         PROMPT 0
         TIMEOUT 100
-        DEFAULT OpenSLX
+        DEFAULT menu.c32
         MENU TITLE Welcome to OpenSLX PreBoot CD
 
         LABEL OpenSLX
