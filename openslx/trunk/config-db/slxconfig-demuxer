@@ -444,8 +444,26 @@ sub writeClientConfigurationsForSystem
                 $externalSystemID, $buildPath, $externalClientName
             );
 
-            # add plugin configuration
-            writePluginConfigurationsForSystem($info, $buildPath);
+            # add plugin configuration and note if the client adds any active
+            # plugin (as opposed to current state)
+            my $activeClientPlugins = writePluginConfigurations(
+                $info, $buildPath, $client->{attrs}
+            );
+            my @additionalActivePlugins = grep {
+                my $activeClientPlugin = $_;
+                ! grep { 
+                    $activeClientPlugin eq $_
+                } @{$info->{'active-plugins'}};
+            } @$activeClientPlugins;
+            if (@additionalActivePlugins) {
+                push @{$info->{'active-plugins'}}, @additionalActivePlugins;
+                my $additionalActivePluginStr
+                    = join ',', @additionalActivePlugins;
+                vlog(0, _tr(
+                    "client '%s' activates additional plugins: %s", 
+                    $client->{name}, $additionalActivePluginStr
+                ));
+            }
             
             # check attributes against illegal values and write them into
             # a file if they're ok:
@@ -476,14 +494,13 @@ sub writeClientConfigurationsForSystem
     return;
 }
 
-sub writePluginConfigurationsForSystem
+sub writePluginConfigurations
 {
     my $info      = shift || confess 'need to pass in info-hash!';
     my $buildPath = shift || confess 'need to pass in build-path!';
+    my $attrs     = shift || {};
 
     my $pluginConfPath  = "$buildPath/initramfs/plugin-conf";
-
-    my $attrs = $info->{attrs} || {};
 
     my @activePlugins;
     foreach my $pluginInfo (@{$info->{'installed-plugins'}}) {
@@ -535,10 +552,7 @@ sub writePluginConfigurationsForSystem
             vlog(0, "--- END OF $fileName --- ");
         }
     }
-    $info->{'active-plugins'} = \@activePlugins;
-    my $activePluginStr = @activePlugins ? join ',', @activePlugins : '<none>';
-    vlog(0, _tr("active plugins: %s", $activePluginStr));
-    return;
+    return \@activePlugins;
 }
 
 sub createBootEnvironmentsForSystem
@@ -557,8 +571,6 @@ sub createBootEnvironmentsForSystem
         vlog(0, _tr("creating boot environment for $bootType"));
     
         my $bootEnv = bootEnvironmentForType($bootType);
-        $initramfsCount 
-            += $bootEnv->writeFilesRequiredForBooting($info, $buildPath);
 
         # only create a default.tgz if required by boot environment
         if ($bootEnv->requiresDefaultClientConfig()) {
@@ -572,6 +584,10 @@ sub createBootEnvironmentsForSystem
         writeClientConfigurationsForSystem(
             $info, $buildPath, $attrFile, $bootType, $clients
         );
+
+        # let boot environment copy the kernel and create the initramfs
+        $initramfsCount 
+            += $bootEnv->writeFilesRequiredForBooting($info, $buildPath);
     }
 
     return;
@@ -617,7 +633,12 @@ sub writeSystemConfiguration
         warn $complaint;
     }
 
-    writePluginConfigurationsForSystem($info, $buildPath);
+    my $activePlugins 
+        = writePluginConfigurations($info, $buildPath, $info->{attrs});
+    $info->{'active-plugins'} = $activePlugins;
+    my $activePluginStr 
+        = @$activePlugins ? join ',', @$activePlugins : '<none>';
+    vlog(0, _tr("active plugins: %s", $activePluginStr));
 
     # create all required (pre-)boot-environments (PXE, CD, ...)
     my $attrFile  = "$buildPath/initramfs/machine-setup";
