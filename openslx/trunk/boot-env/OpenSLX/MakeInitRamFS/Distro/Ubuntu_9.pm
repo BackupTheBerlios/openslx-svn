@@ -1,4 +1,4 @@
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -8,53 +8,29 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# MakeInitRamFS::Distro::Debian.pm
-#    - provides Debian-specific overrides of the MakeInitRamFS::Distro API.
+# MakeInitRamFS::Distro::Ubuntu_9.pm
+#    - provides Ubuntu-9.X-specific overrides of the MakeInitRamFS::Distro API.
 # -----------------------------------------------------------------------------
-package OpenSLX::MakeInitRamFS::Distro::Debian;
+package OpenSLX::MakeInitRamFS::Distro::Ubuntu_9;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::MakeInitRamFS::Distro::Base);
+use base qw(OpenSLX::MakeInitRamFS::Distro::Ubuntu);
 
 use OpenSLX::Basics;
 
 ################################################################################
 ### implementation
 ################################################################################
-sub new
-{
-    my $class = shift;
-    my $self = {
-        'base-name' => 'debian',
-    };
-    return bless $self, $class;
-}
-
 sub applyChanges
 {
     my $self   = shift;
     my $engine = shift;
 
-    $engine->_addFilteredKernelModules( qw( af_packet hid unix ));
+    $engine->_addFilteredKernelModules( qw( af_packet unix hid ));
 
     return;
-}
-
-sub determineMatchingHwinfoVersion
-{
-    my $self          = shift;
-    my $distroVersion = shift;
-
-    # to be checked
-    my %versionMap = (
-       '3.0' => '13.11',
-       '4.0' => '14.19',
-       '5.0' => '15.3',
-    );
-    return $versionMap{$distroVersion}
-        || $self->SUPER::determineMatchingHwinfoVersion($distroVersion);
 }
 
 1;
