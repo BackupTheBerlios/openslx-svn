@@ -92,10 +92,10 @@ dep-check:
 
 	@   # many of the following modules are part of core perl, but we check
 	@   # for them just to be sure...
-	@for m in Carp Clone Config::General Cwd DBI Digest::MD5 Encode Fcntl \
-	          File::Basename File::Find File::Glob File::Path FindBin \
-	          Getopt::Long List::Util Pod::Usage POSIX Socket Storable \
-	          Sys::Hostname Term::ReadLine ; do \
+	@for m in Carp Clone Config::General Cwd DBI Digest::MD5 Digest::SHA1 \
+	          Encode Fcntl File::Basename File::Find File::Glob File::Path \
+		  FindBin Getopt::Long List::Util MIME::Base64 Pod::Usage \
+		  POSIX Socket Storable Sys::Hostname Term::ReadLine ; do \
 		if ! perl -e "use $$m" 2>>${SLX_INSTALL_LOG} ; then \
 			echo "  The perl module '$$m' is required, please install it."; \
 			exit 1; \

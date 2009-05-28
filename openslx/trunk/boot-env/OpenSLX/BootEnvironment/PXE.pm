@@ -20,6 +20,9 @@ use base qw(OpenSLX::BootEnvironment::Base);
 
 use File::Basename;
 use File::Path;
+# for sha1 passwd encryption
+use Digest::SHA1;
+use MIME::Base64;
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
@@ -202,7 +205,8 @@ sub _getTemplate
     $pxeTemplate .= "\n# slxsettings configuration\n";
     $pxeTemplate .= "TIMEOUT $openslxConfig{'pxe-timeout'}\n" || "";
     $pxeTemplate .= "TOTALTIMEOUT $openslxConfig{'pxe-totaltimeout'}\n" || "";
-    $pxeTemplate .= "MENU MASTER PASSWD $openslxConfig{'pxe-passwd'}\n" || "";
+    my $sha1pass  = $self->_sha1pass($openslxConfig{'pxe-passwd'});
+    $pxeTemplate .= "MENU MASTER PASSWD $sha1pass\n" || "";
     $pxeTemplate .= "MENU TITLE $openslxConfig{'pxe-title'}\n" || "";
 
     # fetch PXE-include, if exists (overwrite existing definitions)
@@ -244,6 +248,33 @@ sub _prepareBootloaderConfigFolder
     $self->{preparedBootloaderConfigFolder} = 1;
 
     return 1;
+}
+
+# from syslinux 3.73: http://syslinux.zytor.co
+sub _random_bytes
+{
+    my $self = shift;
+    my $n = shift;
+    my($v, $i);
+
+    # using perl rand because of problems with encoding(cp850) and 'bytes'
+    srand($$ ^ time);
+    $v = '';
+    for ( $i = 0 ; $i < $n ; $i++ ) {
+        $v .= ord(int(rand() * 256));
+    }
+    
+    return $v;
+}
+
+sub _sha1pass
+{
+    my $self = shift;
+    my $pass = shift;
+    my $salt = shift || MIME::Base64::encode($self->_random_bytes(6), '');
+    $pass = Digest::SHA1::sha1_base64($salt, $pass);
+
+    return sprintf('$4$%s$%s$', $salt, $pass);
 }
 
 1;
