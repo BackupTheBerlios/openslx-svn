@@ -190,6 +190,8 @@ supported."; \
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
   tar --exclude=.svn --exclude *.example --exclude OpenSLX -cp boot-env | \
     tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/; \
+  cp -pP tools/busybox{,.x86_64,.i586} \
+    $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox/; \
   cp -p boot-env/pxe/menu-template.example \
     $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/; \
   cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
