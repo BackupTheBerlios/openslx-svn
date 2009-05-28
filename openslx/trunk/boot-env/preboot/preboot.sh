@@ -28,12 +28,12 @@ sysname=$(cat result)
 client=$(echo 01-$macaddr|sed "s/:/-/g")
 chvt 4
 w3m -o confirm_qq=no \
-  $boot_uri/cgi-bin/user_settings.pl?system=${sysname}&preboot_id=${preboot_id}&client=${client}
+  $boot_uri/cgi-bin/user_settings.pl?system=${sysname}\&preboot_id=${preboot_id}\&client=${client}
 chvt 1
 
 # fetch kernel and initramfs of selected system 
-wget -O /tmp/kernel $boot_uri/$kernel
-wget -O /tmp/initramfs $boot_uri/$initramfs
+wget -O /tmp/kernel $boot_uri/system/$kernel
+wget -O /tmp/initramfs $boot_uri/system/$initramfs
 
 # read primary IP configuration to pass it on
 . /tmp/ipstuff

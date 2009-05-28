@@ -129,6 +129,11 @@ fetchip
 ip addr add $ip/$(ipcalc -s -p $ip $subnet|sed s/.*=//) dev $nwif
 ip route add default via $router  
 
+# get the mac address of the boot network adaptor
+macaddr=$(ip link show dev $nwif 2>/dev/null | \
+      sed -n "/ether [0-9e-f]\{2\}:.*/p" | sed -e "s/.*ether //;s/ .*//")
+echo "macaddr=$macaddr" >>/etc/initramfs-setup
+
 # at this point a little selection script could be downloaded, which lets the
 # user choose what kind of SLX client he wants to get
 echo "Fetching preboot interactive part and configuration from the net ..."
