@@ -296,8 +296,6 @@ in $0\n# deprecated: please use rootfs=nfs://...\nnfsserver=\"${nfsserver}\"\
     # be distinguished from other (dhcp) clients
     vci=*)
       vci=${opts#vci=};;
-    xenbr)
-      xenbr=1;;
   esac
 done
 
@@ -395,16 +393,15 @@ if strinstr "eth" "$nwif" ; then
     fi
   done
 fi
+# hook to setup bridging (several virtualization tools ...)
+# xenbr_config
+runinithook '20-nw-bridge-config'
 
 # set up loopback networking
 [ $DEBUGLEVEL -eq 20 ] && echo "** starting ip config at $(sysup)"
 ip link set dev lo up 2>/dev/null
 ip addr add 127.0.0.1/8 dev lo 2>/dev/null
 ip link set dev $nwif up  2>/dev/null || error "$init_noeth"
-
-# XEN bridge config (fixme: should be moved to plugin a special hook might be 
-# needed at this point)
-[ -n "$xenbr" ] && xenbr_config
 
 # analyze ip information from the kernel command line and put parts
 # of it into several variables
@@ -476,7 +473,7 @@ done
 # ... or via (t)ftp/http file get (in background)
 [ -n "$file" ] && fileget &
 
-runinithook '15-have-ip-config'
+runinithook '25-have-ip-config'
 
 # if root filesystem should be imported via local or a network block device
 if [ -n "${bldmod}" ] ; then
@@ -662,7 +659,7 @@ if [ -z "${bldmod}" -a -z "${bldserver}" ] ; then
   [ $DEBUGLEVEL -eq 20 ] && echo "** finished nfs mount at $(sysup)"
 fi
 
-runinithook '20-have-network-root'
+runinithook '35-have-network-root'
 
 # get the complete collection of kernel modules available
 mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
@@ -678,7 +675,7 @@ $(sysup)"
   hwautocfg main &
 fi
 
-runinithook '25-started-hw-config'
+runinithook '40-started-hw-config'
 
 union_type=""
 # try to use unionfs for rw access if available

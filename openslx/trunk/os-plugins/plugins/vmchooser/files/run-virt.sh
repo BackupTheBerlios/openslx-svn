@@ -21,11 +21,11 @@
 # Sanity checks
 ###############################################################################
 
-# check for running in graphical environment otherwise no much use here
+# Theck for running in graphical environment otherwise no much use here
 [ -z "$DISPLAY" ] && echo -e "\n\tStart only within a graphical desktop!\n" \
   && exit 1
 
-# test if the xml path/file is valid (gotten via commandline first parameter)
+# Test if the xml path/file is valid (gotten via commandline first parameter)
 xml=$1
 [ -e "${xml}" ] || { echo -e "\n\tNo XML file given!\n"; exit 1; }
 
@@ -122,7 +122,7 @@ filecheck ()
   noimage=$(echo ${filecheck} | grep -i "no such file or directory" | wc -l)
   rightsfile=${diskfile}
 
-  # check if link
+  # Check if link
   if [ -L "${diskfile}" ]; then
     # take link target
     rightsfile=$(ls -lh ${diskfile} 2>&1 | awk -F "-> *" '{print $2}')
@@ -130,7 +130,7 @@ filecheck ()
     filecheck=$(LANG=us ls -lh ${rightsfile} 2>&1)
   fi
 
-  # does file exist
+  # Does file exist
   if [ "${noimage}" -ge "1" ]; then
     writelog "Virtual Machine Image Problem:\c "
     writelog "\tThe image you've specified doesn't exist."
@@ -141,7 +141,7 @@ filecheck ()
     exit 1
   fi
 
-  # readable by calling user
+  # Readable by calling user
   if ! [ -r "${diskfile}" >/dev/null 2>&1 \
     -o -r "${diskfile}" >/dev/null 2>&1 ]; then
     writelog "Vmware Image Problem:\c "
@@ -152,7 +152,7 @@ filecheck ()
     exit 1
   fi
 
-  # writable (for persistent-mode)?
+  # Writable (for persistent-mode)?
   if ! [ -w "${diskfile}" >/dev/null 2>&1 \
     -o -w "${diskfile}" >/dev/null 2>&1 ] \
     && [ "${np}" = "independent-persistent" ]; then
