@@ -19,12 +19,11 @@
 using namespace std;
 
 Network::Network() {
-	// TODO Auto-generated constructor stub
 
 }
 
 Network::~Network() {
-	// TODO Auto-generated destructor stub
+
 }
 
 Network * Network::getInstance() {
@@ -36,9 +35,7 @@ void Network::createWolSequ(std::string macAddress, char(&sequence)[102]) {
 	std::vector<char> macComponent (splitAddress(macAddress, "%x", ":"));
 	int i;
 
-
-
-		for(i = 0; i < 6; i++){
+	for(i = 0; i < 6; i++){
 		sequence[i] = 255;
 	}
 

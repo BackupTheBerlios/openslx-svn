@@ -39,6 +39,7 @@ Configuration::Configuration() {
     }
 
     xmlNode* root = doc->children;
+    xmlChar* tval = NULL;
 
     if(!root) {
         cerr << "Could not get parent node!" << endl;
@@ -55,16 +56,19 @@ Configuration::Configuration() {
         child = child->next)
     {
         if(child->type != XML_ELEMENT_NODE) continue;
-        for(xmlNode*
-           conts = child->children;
-           conts!= NULL;
-           conts = conts->next)
-        {
-            if(string((const char*)conts->content) != "\n")
-            {
-                vals[(const char*)child->name] = (const char*)conts->content;
-            }
-        }
+        tval = xmlNodeGetContent(child);
+//        for(xmlNode*
+//           conts = child->children;
+//           conts!= NULL;
+//           conts = conts->next)
+//        {
+//            if(string((const char*)conts->content) != "\n")
+//            {
+//                vals[(const char*)child->name] = (const char*)conts->content;
+//            }
+//        }
+        vals[(char*)child->name] = (char*) tval;
+        xmlFree(tval);
     }
 
     xmlFreeDoc(doc);
@@ -86,6 +90,10 @@ int Configuration::getInt(string name) {
 
     // if key not found, return -1
     if(vals.find(name)== vals.end()) {
+        return -1;
+    }
+    // if value is empty
+    if(vals[name].empty()) {
         return -1;
     }
 

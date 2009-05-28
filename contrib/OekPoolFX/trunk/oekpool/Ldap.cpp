@@ -141,7 +141,8 @@ Client** Ldap::getClients(string pool) {
 	string base;
 	string filter="(HostName=*)";
 
-	const char* attrs[] = { "HostName", "HWaddress", "IPAddress", 0 };
+	const char* attrs[] = { "HostName", "HWaddress", "IPAddress",
+	        "description", "DomainName", "dhcpHlpCont", 0 };
 	StringList attribs((char**)attrs);
 	vector<AttributeMap> vec;
 
@@ -159,8 +160,8 @@ Client** Ldap::getClients(string pool) {
 
 	for(std::size_t i=0;i< vec.size();i++ )
 	{
-		if(!vec[i]["HostName"].empty()) {
-		    //cout << vec[i]["HostName"] << endl;
+		if(!vec[i]["HostName"].empty() && !vec[i]["IPAddress"].empty())
+		{
 			result[i] = new Client(vec[i]);
 		}
 	}
