@@ -22,7 +22,7 @@ ${TARGET}: $(OBJS)
 	${CC} ${LDFLAGS} -o $@ $^ ${LIBS} 
 	strip $@
 
-test: $(OBJS) $(OBJ_BASE)
+test: $(OBJS)
 	${CC} ${LDFLAGS} -o ${TARGET}_dbg $^ ${LIBS} 
 
 #${DBG_OBJS}: %.o: %.cpp %.dep

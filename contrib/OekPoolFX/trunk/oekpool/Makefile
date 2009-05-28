@@ -36,7 +36,7 @@ ${DEPS}: %.dep: %.cpp Makefile
 	${CC} ${CCFLAGS} -MM $< > $@
 
 test: debug
-	make -C Test
+	make -C Test test
 
 clean::
 	rm -f *~ *.o ${TARGET}

@@ -25,7 +25,7 @@ public:
 	virtual ~Network();
 	static Network * getInstance();
 
-	bool sendWolPacket(IPAddress ipAddress, std::string macAddress);
+	bool sendWolPacket(ipaddr_t ipAddress, std::string macAddress);
 	void pingHost(bool& flag, const char* host);
 	void setNetworks(vector<networkInfo>);
 
@@ -36,7 +36,7 @@ private:
 			char* sequence			// Char array where sequence is
 												// written to
 			);
-	IPAddress createBroadcast(IPAddress ipAddress);
+	ipaddr_t createBroadcast(ipaddr_t ipAddress);
 	std::vector<char> splitAddress(std::string address,
 			std::string format,
 			std::string delimiter

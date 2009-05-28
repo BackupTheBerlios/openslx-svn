@@ -39,31 +39,22 @@ void Network::createWolSequ(std::string macAddress, char* sequence) {
 		sequence[i] = 255;
 	}
 
-	for(i = 0; i < 92; i++){
+	for(i = 0; i < 96; i++){
 		sequence[i+6] = macComponent[i%6];
+		//printf("%x\n", sequence[i+6]);
 	}
 }
 
-IPAddress Network::createBroadcast(IPAddress ipAddress) {
-	bool networkFound = false;
+ipaddr_t Network::createBroadcast(ipaddr_t ipAddress) {
 	unsigned int i;
 
 	for(i = 0; i < availableNetworks.size(); i++) {
-		for(int z = 0; z < 4; z++ ) {
-			networkFound = true;
-			if( ( ipAddress[z] & availableNetworks[i].networkAddress[z] ) !=
-				availableNetworks[i].networkAddress[z] )
-			{
-				networkFound = false;
-				break;
-			}
-		}
 
-		if(networkFound == true)
+		if((availableNetworks[i].subnetMask & ipAddress) == availableNetworks[i].networkAddress)
 			break;
 	}
 
-	return availableNetworks[i].broadcastAddress;
+	return (ipaddr_t)availableNetworks[i-1].broadcastAddress;
 }
 
 std::vector<char> Network::splitAddress(std::string address, std::string format, string delimiter) {
@@ -110,25 +101,24 @@ void Network::setNetworks(std::vector<networkInfo> networks) {
 	availableNetworks = networks;
 }
 
-bool Network::sendWolPacket(IPAddress ip, std::string mac) {
+bool Network::sendWolPacket(ipaddr_t ip, std::string mac) {
 
-	IPAddress broadcats = createBroadcast(ip);
+	ipaddr_t broadcast = createBroadcast(ip);
+	cout << broadcast << "\n";
 	char packet[102];
 
 	createWolSequ(mac, packet);
-	const std::string pack(packet);
+	std::string pack;
+
+	pack.assign(packet, 102);
 
 	SocketHandler h;
 	UdpSocket p(h);
 	p.SetBroadcast(true);
 
-	char buffer[16];
-	snprintf(buffer, 16, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
-	const std::string ip_addr(buffer);
-
-	p.SendTo(ip_addr, 99, packet);
-	p.SendTo(ip_addr, 99, packet);
-	p.SendTo(ip_addr, 99, packet);
+	p.SendTo(broadcast, 99, pack);
+	p.SendTo(broadcast, 99, pack);
+	p.SendTo(broadcast, 99, pack);
 
 	return true;
 }

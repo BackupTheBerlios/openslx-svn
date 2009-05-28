@@ -15,6 +15,9 @@ public:
 	NetworkTests();
 	virtual ~NetworkTests();
 	void runTests(void);
+private:
+	void wolTests(void);
+	void pingTests(void);
 };
 
 #endif /* NETWORKTESTS_H_ */
