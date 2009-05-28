@@ -288,25 +288,22 @@ vmversion=$version
 vmopt="-X"
 
 # check if ide/scsi and hwver of image
-# *-flat.vmdk images are started via the vmdk file, so there's no need to
-# exclude these flat files, we do it anyway 
-# read the first 22 lines otherwise it takes too much time (see #400)
-if [ $(echo ${imagename} | grep -cv "\-flat.vmdk") ]; then
-  hddrv=$(head -22 ${diskfile} | grep -m1 -ia "ddb.adapterType" |\
-    awk -F '"' '{print $2}')
-  hwver=$(head -22 ${diskfile} | grep -m1 -ia "ddb.virtualHWVersion" |\
-    awk -F '"' '{print $2}')
-  if [ "${hddrv}" = "ide" ]; then
+# read only the first 30 lines to be shure
+imghead=$(head -30 ${diskfile})
+hddrv=$(echo "${imghead}" | grep -m1 -ia "ddb.adapterType" |\
+  awk -F '"' '{print $2}')
+hwver=$(echo "${imghead}" | grep -m1 -ia "ddb.virtualHWVersion" |\
+  awk -F '"' '{print $2}')
+case "${hddrv}" in
+  ide)
     ide="TRUE"
     scsi="FALSE"
-  elif [ "${hddrv}" = "lsilogic" ]; then
+    ;;
+  lsilogic|buslogic)
     ide="FALSE"
-    scsi="TRUE"  
-  elif [ "${hddrv}" = "buslogic" ]; then
-    ide="FALSE"
-    scsi="TRUE"  
-  fi
-fi
+    scsi="TRUE"
+    ;;
+esac
 
 ### log function ###############################################################
 # function to write to stdout and logfile

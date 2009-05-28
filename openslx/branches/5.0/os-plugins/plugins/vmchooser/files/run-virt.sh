@@ -236,7 +236,7 @@ if [ -e /etc/opt/openslx/run-${virt_mach}.include ] ; then
               echo "EdgeScroll 0 0" > ${redodir}/fvwm
               fvwm2 -f ${redodir}/fvwm >/dev/null 2>&1 &
             else
-              $dm &
+              $dm >/dev/null 2>&1 &
             fi
             break
           fi
