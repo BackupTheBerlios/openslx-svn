@@ -237,8 +237,8 @@ sub writeAttributesToFile
         $content .= qq[$attr="$attrVal"\n];
     }
     # Overwrite attribute file even if it exists, to make sure that our users
-    # will never again try to fiddle with machine-setup directly the
-    # file-system. From now on the DB is the keeper of that info.
+    # will never try to fiddle with machine-setup directly in the file-system. 
+    # The config-DB is the keeper of that info!
     spitFile($fileName, $content);
     if ($openslxConfig{'log-level'} > 2) {
         vlog(0, "--- START OF $fileName ---");
@@ -557,17 +557,18 @@ sub createBootEnvironmentsForSystem
         $initramfsCount 
             += $bootEnv->writeFilesRequiredForBooting($info, $buildPath);
 
-        # TODO: use different paths for other boot environments
-        # QUICK FIX: only write something for pxe at the moment
-        if ($bootType eq 'pxe') {
-	        my $systemPath 
-	            = "$bootEnv->{'target-path'}/client-config/$info->{'external-id'}";
-	        createTarOfPath($buildPath, "default.tgz", $systemPath);
-	
-	        writeClientConfigurationsForSystem(
-	            $info, $buildPath, $attrFile, $bootType, $clients
-	        );
-    	}
+        # only create a default.tgz if required by boot environment
+        if ($bootEnv->requiresDefaultClientConfig()) {
+            writeAttributesToFile($info, $attrFile);
+    
+            my $systemPath
+                = "$bootEnv->{'target-path'}/client-config/$info->{'external-id'}";
+            createTarOfPath($buildPath, "default.tgz", $systemPath);
+        }
+
+        writeClientConfigurationsForSystem(
+            $info, $buildPath, $attrFile, $bootType, $clients
+        );
     }
 
     return;
@@ -614,8 +615,7 @@ sub writeSystemConfiguration
     }
 
     my $attrFile = "$buildPath/initramfs/machine-setup";
-    writeAttributesToFile($info, $attrFile);
-    
+
     writePluginConfigurationsForSystem($info, $buildPath);
 
     # create all required (pre-)boot-environments (PXE, CD, ...)
