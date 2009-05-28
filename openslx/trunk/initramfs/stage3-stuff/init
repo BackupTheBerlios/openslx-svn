@@ -701,6 +701,8 @@ fi
 if [ -n "${union_type}" ] ; then
   echo "Using ${union_type} for rw access"
   mkdir -p ${rwdir}/union ${rwdir}/uniontmp /rorootfs
+  # adapting tempfs size of the device directory (takes /tmp in stage4)
+  mount -o remount,size=${tmpfssize} ${devdir} 
   mount -n -t tmpfs -o size=${tmpfssize} none ${rwdir}/uniontmp
   # hack for handling unionfs with patched run-init
   mount -n --move /mnt /rorootfs
