@@ -115,6 +115,7 @@ void addInfo(xmlNode* node, DataEntry* dat) {
   if(dat->xml_name.empty()) return;
   bfs::path path(dat->xml_name);
   std::string folder = path.branch_path().string();
+  folder.append("/");
 
   cout << "XML folder name: " << folder << endl;
 
@@ -130,25 +131,17 @@ void addInfo(xmlNode* node, DataEntry* dat) {
     cur = cur->next;
   }
   if(! filenamenode) {
-    //filenamenode = xmlNewNode(NULL, (const xmlChar*) "xmlpath");
-    //if(filenamenode != NULL ) {
-    //  xmlNewProp(filenamenode, (const xmlChar*) "param", (const xmlChar*) folder.c_str());
-    //  xmlAddChild(node, filenamenode);
-    //}
-    //else {
-    //  cerr << "<xmlpath> node could not be created!" << endl;
-    //}
     cerr << "There is no node called 'image_name'. " << endl;
   }
   else {
-    // add param value to existant hostname-nodea
-    xmlChar* bla = xmlGetProp(filenamenode, "param");
+    // add param value to existant hostname-node
+    xmlChar* bla = xmlGetProp(filenamenode, (const xmlChar*) "param");
     if(!bla) {
       cerr << "Could not read Attribute 'param' in 'image_name' node." << endl;
       return;
     }
     else {
-      xmlSetProp(filenamenode, (const xmlChar*) "param", (xmlChar*) folder.append(bla).c_str());
+      xmlSetProp(filenamenode, (const xmlChar*)"param", (const xmlChar*)folder.append((char*)bla).c_str());
     }
   }
 

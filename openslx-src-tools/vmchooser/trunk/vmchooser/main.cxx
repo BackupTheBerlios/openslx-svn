@@ -8,8 +8,15 @@
 #include "inc/functions.h"
 #include "inc/anyoption.h"
 
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+#include <libxml/xpath.h>
+
 using namespace std;
 using namespace fltk;
+
+// defined in readXmlDir.h
+extern DataEntry* get_entry(xmlDoc * doc);
 
 SWindow* mainwin;
 /**
@@ -25,22 +32,22 @@ SWindow* mainwin;
 int main(int argc, char** argv) {
   AnyOption* opt = new AnyOption();
   char* xmlpath = NULL;
-  bool version = false;
   char* lsesspath = NULL;
   int width=0, height=0;
   
-  opt->setVerbose();
-  opt->autoUsagePrint(true);
+  //opt->setVerbose();
+  opt->autoUsagePrint(false);
   
   opt->addUsage("");
-  opt->addUsage("SessionChooser Usage:");
+  opt->addUsage("SessionChooser Usage: vmchooser [OPTS|image.xml]");
   opt->addUsage("\t{-p |--path=} path to vmware (.xml) files");
   opt->addUsage("\t{-l |--lpath=} path to linux session (.desktop) files");
   opt->addUsage("\t{-s |--size=} [widthxheight]");
   opt->addUsage("\t{-v |--version} print out version");
   opt->addUsage("\t{-h |--help} prints help");
   opt->addUsage("");
-  
+  opt->addUsage("Run with xml-file as additional argument to start image at once.");
+ 
   opt->setFlag("help",'h');
   opt->setFlag("version",'v');
   opt->setOption("path", 'p');
@@ -70,7 +77,11 @@ int main(int argc, char** argv) {
  
   /* VERSION  */
   if(opt->getFlag('v') || opt->getFlag("version")) {
-    version = true;
+    // just print out version information - helps testing
+    cout << "virtual machine chooser 0.0.7"<< endl;
+    delete opt;
+    return 0;
+
   }
   
   /** LINUX SESSION PATH */
@@ -108,14 +119,22 @@ int main(int argc, char** argv) {
     height = atoi(size.substr(i+1).c_str());
     width = atoi(size.substr(0, size.size()-i).c_str());
   }
+
+
+  // additional xml argument -> start image directly
+  if(opt->getArgc() > 0) {
+    // read xml image
+    xmlDoc* doc = xmlReadFile(opt->getArgv(0), NULL, XML_PARSE_RECOVER);
+    if (doc == NULL) {
+      fprintf(stderr, "error: could not parse file %s\n", opt->getArgv(0));
+      return 1;
+    }
+
+    DataEntry* result = get_entry(doc);
+    runImage(*result, opt->getArgv(0));
+  }
   
   delete opt;
- 
-  // just print out version information - helps testing
-  cout << "virtual machine chooser 0.0.7"<< endl;
-  if(version) {
-    exit(1);
-  }
 
 
   /* read xml files */

@@ -83,7 +83,7 @@ void runImage(fltk::Widget*, void* p)
  * Helper-function for runImage(Widget, void) 
  * - runs the chosen virtualizer image
  **/
-string runImage(DataEntry& dat, string confxml)
+void runImage(DataEntry& dat, string confxml)
 {
   if(! dat.command.empty() ) {
     char* arg[] = { (char*) dat.command.c_str(), '\0' };
@@ -94,9 +94,6 @@ string runImage(DataEntry& dat, string confxml)
             NULL };
     
   execvp("/var/X11R6/bin/run-virt.sh",  arg);
-
-  // not reachable - but for compiling issues
-  return string();
 }
 
 

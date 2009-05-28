@@ -15,7 +15,7 @@ DataEntry** readLinSess(char* path);
 void runImage(fltk::Widget* , void* p);
 
 /* building & executing command for different Virtualizer */
-string runImage(DataEntry&, string confxml);
+void runImage(DataEntry&, string confxml);
 
 /* Globs for a specific filetype (2. argument) */
 glob_t* globber(char* path, char* filetype);
