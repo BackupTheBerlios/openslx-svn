@@ -131,8 +131,7 @@ sub getAttrInfo
             description => unshiftHereDoc(<<'            End-of-Here'),
                 Path to downloaded ATI or Nvidia package
             End-of-Here
-            # TODO:
-            #content_regex => qr{^0|1$},
+            content_regex => qr{^.+$}, # not empty
             content_descr => 'Path to Nvidia or ATI packages',
             default => '/root/xserver-pkgs',
         },
@@ -196,7 +195,6 @@ sub preInstallationPhase()
     }
 
     if (-d $pkgpath && ($installNvidia == 1 || $installAti == 1)) {
-        # Todo: use a openslx copy function!
         system("cp -r $pkgpath $self->{pluginRepositoryPath}/packages");
     }
 
@@ -241,8 +239,7 @@ sub installationPhase
     my $engine = $self->{'os-plugin-engine'};
 
     # removeLinks is to remove Links to the files
-    # otherwise some wrong files are created
-    # this can happed here
+    # TODO: In future versions this call can be removed - deprecated version
     $self->removeLinks();
 
     if ($attrs->{'xserver::nvidia'} == 1  || $attrs->{'xserver::ati'} == 1 ) {
@@ -253,23 +250,18 @@ sub installationPhase
         $binDrivers = 1;
     }
     if ($attrs->{'xserver::ati'} == 1) {
-		#TODO: if ($vendorOSName contains 'suse-11.1')
-		$engine->installPackages(
-            $engine->getInstallablePackagesForSelection('libstdc++33')
-        );
-
         copyFile("$pluginFilesPath/ati-install.sh", "$installationPath");
         system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh $vendorOSName");
-        #system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh ati");
     }
     if ($attrs->{'xserver::nvidia'} == 1) {
         copyFile("$pluginFilesPath/nvidia-install.sh", "$installationPath");
         system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/nvidia-install.sh $vendorOSName");
-        #system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh nvidia");
     }
 
+
+    
     if ($binDrivers == 1) {
-        $self->linkLibs($info);
+         $self->ldconf($info);
         `chmod -R 755 $installationPath`
     }
 
@@ -309,100 +301,57 @@ sub removalPhase
         # As this method is being executed while chrooted into the vendor-OS,
         # this path is relative to that root (i.e. directly usable).
 
-    
+   
+    # TODO (in far future): Remove - linking is deprecated
+    # Make sure nobody has installed the old plugin version
     $self->removeLinks();
 
     return;
 }
 
 
-sub linkLibs
+
+# Create ld.so.conf for the binary drivers 
+sub ldconf
 {
     my $self = shift;
     my $info = shift;
 
-    my $pluginRepoPath = $info->{'plugin-repo-path'};
-    my $divertFolder = "/var/X11R6/lib/";
     my $attrs = $info->{'plugin-attrs'};
+    my $ldincl = $info->{'plugin-repo-path'}.'/';
+    my $ldpl = "/etc/ld.conf.preload";
+    my $ldconf = "/etc/ld.so.conf";
 
-    my @libList;
-    unless( $attrs->{'xserver::nvidia'} == 1 ||
-            $attrs->{'xserver::ati'} == 1    )
-    {
-       return;
-    }
-
-    my $command;
-    if( $attrs->{'xserver::nvidia'} == 1 ) {
-        $command = "find $pluginRepoPath\/nvidia ".
-                   "-wholename \"*/xorg/modules\" -prune ".
-                   "-a '!' -type d -o -name '*so*'";
-        @libList = `$command`;
-    }
-    if( $attrs->{'xserver::ati'} == 1 ) {
-        $command = "find $pluginRepoPath/ati -wholename ".
-                    "\"*/xorg/modules\" -prune ".
-                    "-a '!' -type d -o -name '*so*'";
-        push @libList, `$command` ;
-    }
+    ## WRITE ld.so.conf for different GL-implementations ##
     
-    my $libname= '';
-    my $divname= '';
-    my $oldlib = '';
-    my $dirname = '';
-    for my $lib (@libList) {
-        chomp($lib);
-        if($lib =~ /.*(\/usr\/.*?lib\/.*?)$/) {
-            # oldlib is the MESA lib
-            $oldlib = $1;
-            $dirname = dirname($oldlib);
-            if( -e $oldlib ) {
-                $oldlib =~ /\/usr\/.*?lib\/(.*)/;
-                # libname is the Name of MESA lib
-                $libname = $1;
+    open(IN,'>'.$ldincl.'nvidia/ld.so.conf');
+    print IN $ldincl."nvidia/usr/lib\n".$ldincl.'nvidia/usr/X11R6/lib';
+    close(IN);
+    open(IN,'>'.$ldincl.'ati/ld.so.conf');
+    print IN $ldincl."ati/usr/lib\n".$ldincl.'ati/usr/X11R6/lib';
+    close(IN);
 
-                # we have to move the original (MESA) file
-                # and symlink to a diversion folder
-                $divname = $libname;
 
-                $divname =~ s/\.so/_MESA.so/;
-                
-                # move only if both are real files !!
-                if( -f $oldlib && ! -l $oldlib && ! -l $lib )
-                {
-                    rename($oldlib, $dirname."/".$divname);
-                    symlink($divertFolder.$libname, $oldlib);
-                    #print "DEBUG: symlink 1 $divertFolder.$libname, $oldlib\n";
-                } 
-                elsif( -l $oldlib && -l $lib ) 
-                {
-                    my $tmp1 = readlink $oldlib;
-                    my $tmp2 = readlink $lib;
-                    if( $tmp1 ne $tmp2 )
-                    { 
-                        # here the links are pointing to different files -
-                        # as in libGLcore.so.1 in nvidia drivers
-                        unlink($oldlib);
-                        symlink($divertFolder.$libname, $oldlib);
-                    }
-                }
-            }
-            else {
-                # this file does not exist
-                # check for not existing folders
-                unless( -d $dirname ) {
-                   `mkdir -p $dirname`;
-                }
-                # just link
-                symlink( $lib,  $oldlib );
-                #print "DEBUG: symlink 2 $lib, $oldlib\n";
-            }
-        }
-    }
+
+    ## CREATE TWO DIFFERENT 'ld.so.cache's ##
+
+    my $ldcache = $ldincl.'/nvidia/ld.so.cache';
+    system('sed -e "1s,^,include '.$ldincl.'nvidia/ld.so.conf\n,g" -i '.$ldconf);
+    #print "Calling ldconfig to create $ldcache ... Please Wait\n";
+    system('ldconfig -C '.$ldcache);
+    system('sed -e "1d" -i '.$ldconf);
+
+    $ldcache = $ldincl.'/ati/ld.so.cache';
+    system('sed -e "1s,^,include '.$ldincl.'ati/ld.so.conf\n,g" -i '.$ldconf);
+    #print "Calling ldconfig to create $ldcache ... Please Wait\n";
+    system('ldconfig -C '.$ldcache);
+    system('sed -e "1d" -i '.$ldconf);
 
 }
 
 
+# deprecated
+# removes linked libraries from /usr/lib/
 sub removeLinks
 {
     my $instFolders = "/usr/lib /usr/X11R6/lib";

@@ -78,12 +78,15 @@ if [ -e /initramfs/plugin-conf/xserver.conf -a \
 
 	      # this will be written before standard module path into xorg.conf
 	      MODULE_PATH="${PLUGIN_ROOTFS}/usr/lib/xorg/modules/\,\
-	${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
+${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
 	      xmodule="fglrx"
 	      PLUGIN_PATH="/mnt/${PLUGIN_ROOTFS}"
-	
+
+          # impossible to load it directly via stage3 insmod - yes, somehow this is too big
+          chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/fglrx.ko
+
 	      # we need some database for driver initialization
-	      cp -r ${PLUGIN_PATH}/etc/* /mnt/etc
+	      cp -r "${PLUGIN_PATH}/etc/ati" /mnt/etc
 	
 	      # if fglrx_dri.so is linked wrong -> we have to link it here
 	      if [ "1" -eq "$( ls -l /mnt/usr/lib/dri/fglrx_dri.so \
@@ -240,37 +243,14 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
           -i $xfc
     fi
 
-    # setup the matching OpenGL, DRI libraries depending on choosen driver
-    # type (mesa/gpl, fglrx, nvidia, (matrox)). We should not see nvidia,
-    # fglrx here if xserver_prefnongpl is set to "0"
-    if [ "${xmodule}" = "fglrx" ]; then
-      DRILPATH=/mnt/var/X11R6/lib/usr/X11R6/lib/modules/dri/
-      testmkd "${DRILPATH}"
-      ln -fs ${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so ${DRILPATH}/fglrx_dri.so
-      ln -fs ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 ${glliblinks}/libGL.so
-      ln -fs ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 ${glliblinks}/libGL.so.1
-      ln -fs ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1.2 ${glliblinks}/libGL.so.1.2
-      # impossible to load it directly via stage3 insmod - yes, somehow this is too big
-      chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/fglrx.ko
-      # we need some pci.ids for fglrx driver
-      cp -r "${PLUGIN_PATH}/etc/ati" /mnt/etc
-    elif [ "${xmodule}" = "nvidia" ]; then
-      # create all relevant libGL links
-      # this is the most important thing
-      ln -sf ${PLUGIN_ROOTFS}/usr/lib/libGLcore.so.1 \
-        ${glliblinks}/libGLcore.so.1
+    ############################################
+    # Copy the appropriate ld.so.cache file
+    ############################################
+    if [ "${xmodule}" = "fglrx" -o  "${xmodule}" = "nvidia" ]; then
+      cp ${PLUGIN_PATH}/ld.so.cache /mnt/etc/ld.so.cache
 
-      # create all relevant libGL links
-      # libGL.so.1 for NVidia is a link to libGL.so.1.somebignumber
-      ln -sf ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 ${glliblinks}/libGL.so
-      ln -sf ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 ${glliblinks}/libGL.so.1
-      ln -sf ${PLUGIN_ROOTFS}/usr/lib/libGL.so.1 ${glliblinks}/libGL.so.1.2
-    else
-      if [ -e /mnt/usr/lib/libGL_MESA.so.1.2 ]; then
-        ln -sf /usr/lib/libGL_MESA.so.1.2 /mnt/var/X11R6/lib/libGL.so
-        ln -sf /usr/lib/libGL_MESA.so.1.2 /mnt/var/X11R6/lib/libGL.so.1
-        ln -sf /usr/lib/libGL_MESA.so.1.2 /mnt/var/X11R6/lib/libGL.so.1.2
-      fi
+      # just in case somebody needs to run ldconfig - insert GL-Libs at the beginning
+      sed -e "1s,^,include ${PLUGIN_ROOTFS}/ld.so.conf\n,g" -i /mnt/etc/ld.so.conf 
     fi
  
     # check if tablet hardware available, read device information from file
