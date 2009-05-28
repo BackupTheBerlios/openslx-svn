@@ -112,9 +112,9 @@ sub installationPhase
     my $engine = $self->{'os-plugin-engine'};
     
     # different names of the tool (should be unified somehow!?)
-    if (!isInPath('???')) {
+    if (!isInPath('VirtualBox')) {
         $engine->installPackages(
-            $engine->getInstallablePackagesForSelection('???')
+            $engine->getInstallablePackagesForSelection('virtualbox-ose')
         );
     }
     # copy run-virt.include to the appropriate place for inclusion in stage4
