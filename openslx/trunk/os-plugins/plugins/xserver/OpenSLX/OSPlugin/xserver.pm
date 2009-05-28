@@ -227,7 +227,7 @@ sub installationPhase
     if ($attrs->{'xserver::nvidia'} == 1  || $attrs->{'xserver::ati'} == 1 ) {
         copyFile("$pluginFilesPath/ubuntu-gfx-install.sh", "$installationPath");
         copyFile("$pluginFilesPath/suse-gfx-install.sh", "$installationPath");
-        copyFile("$pluginFilesPath/suse-gfx-8.10-install.sh", "$installationPath");
+        copyFile("$pluginFilesPath/ubuntu-8.10-gfx-install.sh", "$installationPath");
         copyFile("$pluginFilesPath/linkage.sh", "$installationPath");
         # be on the safe side (BASH) - Ubuntu sets some crazy stupid 'dash' shell otherwise
         system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh clean");
