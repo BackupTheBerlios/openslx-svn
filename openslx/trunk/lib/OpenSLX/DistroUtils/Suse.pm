@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2008, 2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -53,7 +53,7 @@ sub _renderHighlevelConfig {
                 $tpl  = "echo -n \"Starting %s \"\n";
                 $tpl .= "startproc -f -p \$%s_PIDFILE \$%s_BIN \$%s_OPTS\n";
                 $tpl .= "rc_status -v";
-                $initFile->addToBlock('start',
+                $initFile->addToCase('start',
                     sprintf(
                         $tpl,
                         $element->{desc},
@@ -66,7 +66,7 @@ sub _renderHighlevelConfig {
                 $tpl  = "echo -n \"Shutting down %s\" \n";
                 $tpl .= "killproc -p \$%s_PIDFILE -TERM \$%s_BIN\n";
                 $tpl .= "rc_status -v";
-                $initFile->addToBlock('stop',
+                $initFile->addToCase('stop',
                     sprintf(
                         $tpl,
                         $element->{desc},
@@ -80,7 +80,7 @@ sub _renderHighlevelConfig {
                 $tpl .= "\$0 status >/dev/null &&  \$0 restart\n\n";
                 $tpl .= "# Remember status and be quiet\n";
                 $tpl .= "rc_status";
-                $initFile->addToBlock('try-restart',
+                $initFile->addToCase('try-restart',
                     $tpl
                 );
 
@@ -90,14 +90,14 @@ sub _renderHighlevelConfig {
                 $tpl .= "\$0 start\n\n";
                 $tpl .= "# Remember status and be quiet\n";
                 $tpl .= "rc_status";
-                $initFile->addToBlock('restart',
+                $initFile->addToCase('restart',
                     $tpl
                 );
                 
                 $tpl  = "echo -n \"Reload service %s\"\n";
                 $tpl .= "killproc -p \$%s_PIDFILE -HUP \$%s_BIN\n";
                 $tpl .= "rc_status -v";
-                $initFile->addToBlock('reload',
+                $initFile->addToCase('reload',
                     sprintf(
                         $tpl,
                         $element->{desc},
@@ -110,7 +110,7 @@ sub _renderHighlevelConfig {
                 $tpl  = "echo -n \"Checking for service %s\"\n";
                 $tpl .= "checkproc -p \$%s_PIDFILE \$%s_BIN\n";
                 $tpl .= "rc_status -v";
-                $initFile->addToBlock('status',
+                $initFile->addToCase('status',
                     sprintf(
                         $tpl,
                         $element->{desc},
@@ -126,90 +126,19 @@ sub _renderHighlevelConfig {
     
 }
 
-sub generateInitFile
+sub _getInitsystemIncludes
 {
-    my $self = shift;
-    my $initFile = shift;
-    my $block;
+	return ". /etc/rc.status\n\n";
+}
 
-    $self->_renderHighlevelConfig($initFile);
-    
-    my $config = $initFile->{'configHash'};
-    my $output;
-    
-    $output = "#!/bin/sh\n\n";
-    $output .= $self->_renderInfoBlock($config);
-    $output .= ". /etc/rc.status \n\n";
-    if (keys(%{$config->{'head'}->{'content'}}) > 0) {
-        $output .= $self->_combineBlock($config->{'head'});
-    }
-    if (keys(%{$config->{'functions'}->{'content'}}) > 0) {
-        $output .= $self->_combineBlock($config->{'functions'});
-    }
-    $output .= "rc.reset \n\n";
-    $output .= "case \"\$1\" in \n";
-    if (keys(%{$config->{'start'}->{'content'}}) > 0) {
-        $output .= "  start)\n";
-        $block .= $self->_combineBlock($config->{'start'});
-        $block =~ s/^/    /mg;
-        $output .= $block;
-        $output .= "  ;;\n";
-    } else {
-        # trigger error
-        # start is essential
-    }
-    if (keys(%{$config->{'stop'}->{'content'}}) > 0) {
-        $output .= "  stop)\n";
-        $block = $self->_combineBlock($config->{'stop'});
-        $block =~ s/^/    /mg;
-        $output .= $block;
-        $output .= "  ;;\n";
-    } else {
-        # trigger error
-        # stop is essential
-    }
-    if (keys(%{$config->{'reload'}->{'content'}}) > 0) {
-        $output .= "  reload)\n";
-        $block = $self->_combineBlock($config->{'reload'});
-        $block =~ s/^/    /mg;
-        $output .= $block;
-        $output .= "  ;;\n";
-    }
-    if (keys(%{$config->{'restart'}->{'content'}}) > 0) {
-        $output .= "  restart)\n";
-        $block = $self->_combineBlock($config->{'restart'});
-        $block =~ s/^/    /mg;
-        $output .= $block;
-        $output .= "  ;;\n";
-    }
-    if (keys(%{$config->{'try-restart'}->{'content'}}) > 0) {
-        $output .= "  try-restart)\n";
-        $block = $self->_combineBlock($config->{'try-restart'});
-        $block =~ s/^/    /mg;
-        $output .= $block;
-        $output .= "  ;;\n";
-    }
-    if (keys(%{$config->{'status'}->{'content'}}) > 0) {
-        $output .= "  status)\n";
-        $block = $self->_combineBlock($config->{'status'});
-        $block =~ s/^/    /mg;
-        $output .= $block;
-        $output .= "  ;;\n";
-    }
-    if (keys(%{$config->{'usage'}->{'content'}}) > 0) {
-        $output .= "  *)\n";
-        $block = $self->_combineBlock($config->{'usage'});
-        $block =~ s/^/    /mg;
-        $output .= $block;
-        $output .= "  exit 1\n";
-    } else {
-        # try to generate usage
-        # $this->_generateUsage();
-    }
-    $output .= "esac\n\n";
-    $output .= "rc_exit\n";
-    return $output;
-    
+sub _renderCasePrefix
+{
+	return "rc_reset\n";
+}
+
+sub _renderFooter
+{
+	return "rc_exit\n";
 }
 
 1;

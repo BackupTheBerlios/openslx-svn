@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2008, 2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -38,48 +38,80 @@ sub _initialConfigHash() {
         'defaultStart' => "2 3 4 5",
         'defaultStop' => "1",
         'shortDesc' => "",
-        
-        'head'      => {
-            'blockDesc' => "head: file existing checks, etc.",
-            'content'   => {}
+        'blocks' => {
+            'head'      => {
+                'blockDesc' => "head: file existing checks, etc.",
+                'content'   => {}
+            },
+            'functions' => {
+                'blockDesc' => "functions: helper functions",
+                'content'   => {}
+            }
         },
-        'functions' => {
-            'blockDesc' => "functions: helper functions",
-            'content'   => {}
-        },
-        'start'     => {
-            'blockDesc' => "start: defines start function for initscript",
-            'content'   => {}
-        },
-        'stop'      => {
-            'blockDesc' => "stop: defines stop function for initscript",
-            'content'   => {}
-        },
-        'reload'    => {
-            'blockDesc' => "reload: defines reload function for initscript",
-            'content'   => {}
-        },
-        'force-reload'    => {
-            'blockDesc' => "force-reload: defines force-reload function for initscript",
-            'content'   => {}
-        },
-        'restart'   => {
-            'blockDesc' => "restart: defines restart function for initscript",
-            'content'   => {}
-        },
-        'try-restart'   => {
-            'blockDesc' => "restart: defines restart function for initscript",
-            'content'   => {}
-        },
-        'status'    => {
-            'blockDesc' => "status: defines status function for initscript",
-            'content'   => {}
-        },
-        'usage'     => {
-            'blockDesc' => "usage: defines usage function for initscript",
-            'content'   => {}
+        'caseBlocks' => {
+	        'start'     => {
+	            'blockDesc' => "start: defines start function for initscript",
+	            'content'   => {},
+	            'order'     => 1,
+	            'required'  => 1
+	        },
+	        'stop'      => {
+	            'blockDesc' => "stop: defines stop function for initscript",
+	            'content'   => {},
+                'order'     => 2,
+                'required'  => 1
+	        },
+	        'reload'    => {
+	            'blockDesc' => "reload: defines reload function for initscript",
+	            'content'   => {},
+                'order'     => 3,
+                'required'  => 0
+	        },
+	        'force-reload'    => {
+	            'blockDesc' => "force-reload: defines force-reload function for initscript",
+	            'content'   => {},
+                'order'     => 4,
+                'required'  => 0
+	        },
+	        'restart'   => {
+	            'blockDesc' => "restart: defines restart function for initscript",
+	            'content'   => {},
+                'order'     => 5,
+                'required'  => 1
+	        },
+	        'try-restart'   => {
+	            'blockDesc' => "restart: defines restart function for initscript",
+	            'content'   => {},
+                'order'     => 6,
+                'required'  => 0
+	        },
+	        'status'    => {
+	            'blockDesc' => "status: defines status function for initscript",
+	            'content'   => {},
+                'order'     => 7,
+                'required'  => 0
+	        },
+	        'usage'     => {
+	            'blockDesc' => "usage: defines usage function for initscript",
+	            'content'   => {},
+                'order'     => 8,
+                'required'  => 0
+	        }
         }
     };
+}
+
+sub addToCase {
+    my $self = shift;
+    my $blockName = shift;
+    my $content = shift;
+    my $priority = shift || 5;
+    
+    #check if block is valid..
+    
+    push(@{$self->{'configHash'}->{'caseBlocks'}->{$blockName}->{'content'}->{$priority}}, $content);
+    
+    return $self;
 }
 
 sub addToBlock {
@@ -90,7 +122,7 @@ sub addToBlock {
     
     #check if block is valid..
     
-    push(@{$self->{'configHash'}->{$blockName}->{'content'}->{$priority}}, $content);
+    push(@{$self->{'configHash'}->{'blocks'}->{$blockName}->{'content'}->{$priority}}, $content);
     
     return $self;
 }

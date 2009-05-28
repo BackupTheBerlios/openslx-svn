@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2008, 2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -19,6 +19,22 @@ use Switch;
     
 use base qw(OpenSLX::DistroUtils::Base);
 
+sub _getInitsystemIncludes
+{
+    return ". /lib/lsb/init-functions\n\n";
+}
+
+sub _renderCasePrefix
+{
+    return "";
+}
+
+sub _renderFooter
+{
+    return "exit 0\n";
+}
+
+
 sub _renderHighlevelConfig {
     my $self = shift;
     my $initFile = shift;
@@ -32,7 +48,7 @@ sub _renderHighlevelConfig {
                 $element->{binary} =~ m/\/([^\/]*)$/;
                 my $shortname = $1;
                 my $tpl  = "export %s_PARAMS=\"%s\" \n";
-                $tpl .= "[ -f /etc/default/%s ] . /etc/default/%s \n";
+                $tpl .= "if [ -f /etc/default/%s ]; then . /etc/default/%s; fi \n";
                 $initFile->addToBlock('head',
                     sprintf(
                         $tpl,
@@ -44,12 +60,15 @@ sub _renderHighlevelConfig {
                 );
                 
                 
-                $tpl  = "start-stop-daemon --start --quiet --oknodo ";
+                $tpl  = "log_daemon_msg \"Starting %s\" \"%s\" \n";
+                $tpl .= "start-stop-daemon --start --quiet --oknodo ";
                 $tpl .= "--pidfile /var/run/%s.pid --exec %s -- \$%s_PARAMS \n";
                 $tpl .= "log_end_msg \$?";
-                $initFile->addToBlock('start',
+                $initFile->addToCase('start',
                     sprintf(
                         $tpl,
+                        $element->{description},
+                        $shortname,
                         $shortname,
                         $element->{binary},
                         uc($shortname)
@@ -59,7 +78,7 @@ sub _renderHighlevelConfig {
                 $tpl  = "start-stop-daemon --stop --quiet --oknodo ";
                 $tpl .= "--pidfile /var/run/%s.pid \n";
                 $tpl .= "log_end_msg \$?";
-                $initFile->addToBlock('stop',
+                $initFile->addToCase('stop',
                     sprintf(
                         $tpl,
                         $shortname
@@ -71,18 +90,6 @@ sub _renderHighlevelConfig {
         }
     }
     
-}
-
-sub generateInitFile
-{
-    my $self = shift;
-    my $initFile = shift;
-    
-    $initFile->addToBlock('head', '#ubuntu test');
-    
-    $self->_renderHighlevelConfig($initFile);
-
-    return $self->SUPER::generateInitFile($initFile);
 }
 
 1;

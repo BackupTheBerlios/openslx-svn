@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2008, 2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -54,10 +54,17 @@ sub simpleInitFile {
 sub getInitFileForDistro {
     my $initFile = shift;
     my $distroName = shift;
+    my $distro;
     
     my $engine = OpenSLX::DistroUtils::Engine->new();
-    my $distro = $engine->loadDistro($distroName);
     
+    if ($distroName) {
+        $distro = $engine->loadDistro($distroName);
+    } else {
+    	$distro = $engine->loadDistro('Base');
+    }
+    
+    #return $distro->dumpInit($initFile);
     return $distro->generateInitFile($initFile);
 }
 
