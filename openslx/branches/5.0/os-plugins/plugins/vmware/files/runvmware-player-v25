@@ -28,7 +28,8 @@ imagename=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 # define name for VMware window. no utf8, perhaps we don't need it any
 # more. else change the next two lines
 #iconv -c -f utf-8 -t utf-8 < ${xml} > ${xml}.utf
-short_description=$(grep "short_description param=\"" ${xml} | sed -e "s%&.*;%; %g" | awk -F "\"" '{print $2}')
+short_description=$(grep "short_description param=\"" ${xml} | \
+  sed -e "s%&.*;%; %g" | awk -F "\"" '{print $2}')
 # if ${short_description} not defined use ${image_name}
 short_description=${short_description:-"${image_name}"}
 displayname=${short_description}
@@ -55,22 +56,6 @@ case "$serial" in
     serial="FALSE"
     ;;
 esac
-
-################################################################################
-##
-## Put $HOME to another location
-##
-################################################################################
-
-# We need to change $HOME so it saves everything to /tmp
-#export HOME="/tmp/${USER}"
-# following mkdir we have now twice in this script... but better twice
-# as not seperated. Now its no problem to delete this
-# "Put $HOME to another location" section later
-#mkdir /tmp/${USER}
-#ln -s /home/${USER}/.Xauthority /tmp/${USER}/.Xauthority
-
-
 
 ### VARIABLES SECTION ##########################################################
 ##

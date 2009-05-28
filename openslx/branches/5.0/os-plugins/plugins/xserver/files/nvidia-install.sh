@@ -45,10 +45,14 @@ case ${DISTRO} in
    kernel=2.6.25.18-0.2-pae
    echo "  * Trying to compile a kernel module for $kernel"
    echo "Starting the kernel $kernel installer" >>nvidia-inst.log
+   # we need the .config file in /usr/src/linux or where ever!
+   # we need scripts/genksyms/genksyms compiled via make scripts in /usr/src/linux
+   # option available in newer nvidia packages
+   addopts="--no-cc-version-check"
    $(ls -d NVIDIA-Linux-*)/nvidia-installer -s -q -N -K --no-abi-note \
      --kernel-source-path=/lib/modules/${kernel}/build -k ${kernel} \
      --kernel-install-path=/opt/openslx/plugin-repo/xserver/nvidia/modules \
-     --no-runlevel-check  --no-abi-note --no-rpms --no-cc-version-check \
+     --no-runlevel-check --no-abi-note --no-rpms ${addopts} \
      --log-file-name=nvidia-kernel.log >>nvidia-inst.log 2>&1
    echo "  * Have a look into the several *.log files in "
    echo "    stage1/${DISTRO}/plugin-repo/xserver"

@@ -41,9 +41,6 @@ if [ -e /initramfs/plugin-conf/vmware.conf ]; then
     # should contain (seems to be an average one)
     echo -e "# configuration file for vmware background services written in \
 stage3 setup" > /mnt/etc/vmware/slxvmconfig
-    # fixme: sollte unnötig sein, das hier zu tun. "vmware-env" kann hier voll
-    # determiniert werden, siehe Ticket 240
-    echo "vmware_kind=${vmware_kind}" >> /mnt/etc/vmware/slxvmconfig
     if [ "$vmware_bridge" = 1 ] ; then
       echo "vmnet0=true" >> /mnt/etc/vmware/slxvmconfig
     fi
@@ -137,7 +134,7 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       echo "00:50:56:F1:30:50" > /mnt/etc/vmware/vmnet-natd-8.mac
       mknod /dev/vmnet8 c 119 8
     fi
-    # copy the runlevelscript to the proper place and activate it
+    # copy the runlevel script to the proper place and activate it
     cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmware.init \
       /mnt/etc/init.d/vmware-env \
       || echo "  * Error copying runlevel script. Shouldn't happen."
@@ -219,13 +216,13 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       count=2880 bs=512 2>/dev/null
     chmod 0777 /mnt/etc/vmware/loopimg/fd.img
     # use dos formatter from rootfs (later stage4)
+    ln -sf /mnt/lib/ld-linux.so.2 /lib/ld-linux.so
     LD_LIBRARY_PATH=/mnt/lib /mnt/sbin/mkfs.msdos \
       /mnt/etc/vmware/loopimg/fd.img >/dev/null 2>&1 #|| error
     mount -n -t msdos -o loop,umask=000 /mnt/etc/vmware/loopimg/fd.img \
       /mnt/etc/vmware/fd-loop
     echo -e "usbfs\t\t/proc/bus/usb\tusbfs\t\tauto\t\t 0 0" >> /mnt/etc/fstab
     # needed for VMware 5.5.4 and versions below
-    # TODO: isn't boot.slx dead/not functional due of missing ";; esac"?
     echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
       >>/mnt/etc/init.d/boot.slx
 
