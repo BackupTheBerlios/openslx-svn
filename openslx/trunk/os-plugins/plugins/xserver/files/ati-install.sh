@@ -9,7 +9,7 @@ RELEASE=$(lsb_release -r)
 if [ "1" -eq "$(echo ${DISTRO} | grep 'Ubuntu' | wc -l)" ]; then
   # we have Ubuntu - run ubuntu-gfx-install
   echo "* Using Ubuntu packages to install modules and libs"
-  if [ "8.10" -eq "$(echo ${DISTRO} | awk '{print $2}' )" ]; then
+  if [ "8.10" = $(echo ${DISTRO} | awk '{print $2}' ) ]; then
     ./ubuntu-8.10-gfx-install.sh ati
   else
     ./ubuntu-gfx-install.sh ati
