@@ -16,14 +16,14 @@
 
 
 permem=66
-mem=expr(${totalmem} * ${permem})
+mem=$(expr{totalmem} * ${permem})
 
 # virtual fd/cd/dvd and drive devices, floppy b: for configuration
 #floppya is always false, if we have a floppy device or not isn't
 #important.
 floppya="FALSE"
 floppyb="TRUE"
-floppybname="/etc/vmware/loopimg/fd.img"
+floppybname="/var/lib/virt/vmchooser/loopimg/fd.img"
 cdr_1="FALSE"
 cdr_2="FALSE"
 # ide is expected default, test for the virtual disk image type should
@@ -32,12 +32,6 @@ ide="TRUE"
 hddrv="ide"
 
 
-# folder of virtual machine images
-vmdir="/var/lib/virt/virtualbox"
-
-# image file
-diskfile="${vmdir}/${imagename}"
-
-# set the variables appropriately
-VIRTCMD=$(which vbox???)
+# set the variables appropriately (several interfaces with different names)
+VIRTCMD=$(which virtualbox 2>/dev/null)
 

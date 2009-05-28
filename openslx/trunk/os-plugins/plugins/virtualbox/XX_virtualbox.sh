@@ -41,7 +41,7 @@ if [ -e /initramfs/plugin-conf/virtualbox.conf ]; then
           ;;
         lbdev)
           # we expect the stuff on toplevel directory, filesystem type should be
-          # autodetected here ... (vmimgserv is blockdev here)
+          # autodetected here ... (vbimgserv is blockdev here)
           vbbdev=/dev/${vbimgserv}
           waitfor ${vbbdev} 20000
           echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
