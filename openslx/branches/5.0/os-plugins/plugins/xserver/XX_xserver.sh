@@ -91,6 +91,9 @@ if [ -e /initramfs/plugin-conf/xserver.conf -a \
 	          ln -s ${PLUGIN_ROOTFS}/usr/lib/dri/fglrx_dri.so \
 	            ${glliblinks}dri/fglrx_dri.so
 	      fi
+              BUSID=$(grep -m1 -i " SysFS BusID: .*" /etc/hwinfo.gfxcard | \
+                awk -F':' '{print "PCI:"$3":"$4}' | sed -e 's,\.,:,g')
+	      echo "${PLUGIN_ROOTFS}/usr/bin/aticonfig --initial" >> /mnt/etc/init.d/boot.slx
 	      ATI=1
 	  fi
     elif $(grep -iq -m 1 'Module: nvidia' /etc/hwinfo.gfxcard) && \
@@ -167,6 +170,7 @@ EndSection
 Section "Device"
   Identifier   "Generic Video Card"
   Driver       "vesa"
+#  BusID     "PCI:xx" #especially needed for fglrx
 EndSection
 Section "Monitor"
   Identifier   "Generic Display"
@@ -203,6 +207,11 @@ EndSection' >> $xfc
     else
       sed "s/\"us\"/\"${XKEYBOARD}\"/" -i $xfc
     fi
+
+    if [ -n "${BUSID}" ]; then
+      sed -e "s,^#  BusID .*, BusID \"${BUSID}\",g" -i ${xfc}
+    fi
+
     # set nodeadkeys for special layouts
     if [ ${XKEYBOARD} = "de" ]; then
       sed -e '/\"XkbLayout\"/a\\ \ Option       "XkbVariant"        "nodeadkeys"' \
