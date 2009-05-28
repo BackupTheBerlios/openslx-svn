@@ -86,6 +86,16 @@ sub getAttrInfo
             content_descr => '0 ignore ddcinfo, 1 use ddcinfo if available',
             default => '0',
         },
+        'xserver::driver' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+            force to use defined driver
+            End-of-Here
+            content_regex => undef,
+            content_descr => 'force to use defined driver',
+            default => undef,
+        },
         'xserver::prefnongpl' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
@@ -94,7 +104,7 @@ sub getAttrInfo
             adaptors if available (0 prefer gpl, 1 use the nongpl)
             End-of-Here
             content_regex => qr{^(0|1)$},
-            content_descr => '0 ignore ddcinfo, 1 use ddcinfo if available',
+            content_descr => '0 prefer gpl, 1 use the nongpl',
             default => '0',
         },
         'xserver::usexrandr' => {
@@ -114,7 +124,7 @@ sub getAttrInfo
 
         # stage1
         # Currently not needed in scenarios where distro specific packages are
-        # available, but in Suse-10.2 for example we use this method
+        # available, but for example in SUSE 10.2 we use this method
 		# -> provide downloaded packages here.
         'xserver::pkgpath' => {
             applies_to_vendor_os => 1,

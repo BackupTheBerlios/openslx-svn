@@ -37,6 +37,7 @@ sub setupXserverScript
 
     $script .= unshiftHereDoc(<<'    End-of-Here');
         # suse specific extension to stage3 xserver.sh
+        testmkd /mnt/var/lib/xkb/compiled
         testmkd /mnt/var/X11R6/bin
         ln -s /usr/bin/Xorg /mnt/var/X11R6/bin/X
         rm /mnt/etc/X11/xdm/SuSEconfig.xdm
