@@ -17,7 +17,7 @@ SWindow* mainwin;
  *
  * ----------------------
  *
- *  main procedure of vmchooser
+ *  main function of vmchooser
  *
  *
  *
@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
   delete opt;
  
   // just print out version information - helps testing
-  cout << "virtual machine chooser 0.0.6"<< endl;
+  cout << "virtual machine chooser 0.0.7"<< endl;
   if(version) {
     exit(1);
   }

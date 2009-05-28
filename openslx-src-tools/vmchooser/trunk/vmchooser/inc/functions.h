@@ -33,5 +33,11 @@ void addInfo(xmlNode* node); /* This is defined in addPrinters.cxx */
 string writeConfXml(DataEntry& dat);
 
 
+
+/** Extra functions - defined in userSession.cxx */
+void saveSession(DataEntry* dat);
+char* readSession(void);
+
+
 #endif /* _FUNCTIONS_H_ */
 

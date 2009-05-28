@@ -73,6 +73,7 @@ void runImage(fltk::Widget*, void* p)
       //  fltk::alert("Failed to create child thread!");
       //  return;
       //}
+      saveSession((DataEntry*)p);
       runImage(dat, confxml);
       break;
   }

@@ -1,6 +1,7 @@
 
 #include "inc/SWindow.h"
 
+#include "inc/functions.h"
 #include <iostream>
 #include <map>
 
@@ -183,6 +184,8 @@ void SWindow::free_entries()
 
 /******************************************************
  * Small helper function to unfold the 2 parent groups
+ *
+ * ADDED: Now reads session from ~/.vmchooser via helper
  ******************************************************/
 void SWindow::unfold_entries() {
   sel.goto_index(0);
@@ -199,6 +202,19 @@ void SWindow::unfold_entries() {
   //sel.set_focus();
   //sel.set_item_selected(true,1);
   //sel.indented(false);
+
+  char* prename = readSession();
+  sel.goto_index(0);
+  Item* it = (Item*) sel.next();
+  
+  while( it  ) {
+    if(! strcmp(prename,it->label()) ) {
+        sel.select_only_this(0);
+        curr = it;
+        return;
+    }
+    it = (Item*) sel.next();
+  }
 }
 
 
