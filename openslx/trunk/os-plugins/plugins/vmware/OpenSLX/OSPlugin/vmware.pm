@@ -464,7 +464,7 @@ sub _writeVmwareConfigs {
     %versionhash = _getVersion($vmpath);
 
     $config .= "version=\"".$versionhash{vmversion}."\"\n";
-    $config .= "buildversion=\"".$versionhash{vmbuildversion}."\"";
+    $config .= "buildversion=\"".$versionhash{vmbuildversion}."\"\n";
     spitFile("$self->{'pluginRepositoryPath'}/$kind/slxvmconfig", $config);
     chmod 0755, "$self->{'pluginRepositoryPath'}/$kind/slxvmconfig";
 
@@ -542,19 +542,8 @@ sub _localInstallation
         foreach my $file (@files) {
             copyFile("$pluginFilesPath/$file", "$installationPath");
         }
-        # copy depends on version and rename it to runvmware, saves one check in stage3
-        if ($vmversion eq "1.0" || $vmversion eq "5.5") {
-            print "\n\nDEBUG: player version $vmversion, we use -v1\n\n";
-            copyFile("$pluginFilesPath/runvmware-player-v1", "$installationPath", "runvmware");
-        } elsif ($vmversion eq "2.0" || $vmversion eq "6.0") {
-            print "\n\nDEBUG: player version $vmversion, we use -v2\n\n";
-            copyFile("$pluginFilesPath/runvmware-player-v2", "$installationPath", "runvmware");
-        } elsif ($vmversion eq "2.5" || $vmversion eq "6.5") {
-            print "\n\nDEBUG: player version $vmversion, we use -v25\n\n";
-            copyFile("$pluginFilesPath/runvmware-player-v25", "$installationPath", "runvmware");
-        }
 
-        ## Create runlevel script -> to be fixed!!
+        # Create runlevel script -> to be fixed!!
         my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
         if ($vmversion eq "2.5") {
             $self->_writeRunlevelScript($vmbin, $runlevelScript, "local25");
@@ -562,7 +551,7 @@ sub _localInstallation
             $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
         }
 
-        ## Create wrapperscripts
+        # Create wrapper scripts
         if (-e "/usr/bin/vmware") {
             $self->_writeWrapperScript("$vmpath", "$kind", "ws")
         } else {
@@ -632,9 +621,6 @@ sub _vmpl25Installation {
 
     mkpath($installationPath);
 
-    ##
-    ## Copy needed files
-
     # copy 'normal' needed files
     my @files = qw( nvram.5.0 install-vmpl.sh );
     foreach my $file (@files) {
@@ -644,21 +630,17 @@ sub _vmpl25Installation {
     # copy on depending runvmware file
     copyFile("$pluginFilesPath/runvmware-player-v25", "$installationPath", "runvmware");
 
-    ##
-    ## Install the binarys from given pkgpath
+    # Install the binarys from given pkgpath
     system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-vmpl.sh $kind");
 
-    ##
-    ## Create runlevel script
+    # Create runlevel script
     my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
     $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
 
-    ##
-    ## Create wrapperscripts
+    # Create wrapperscripts
     $self->_writeWrapperScript("$vmpath", "$kind", "player");
 
-    ##
-    ## Creating needed config /etc/vmware/config
+    # Creating needed config /etc/vmware/config
     $self->_writeVmwareConfigs("$kind", "$vmpath");
         
 }
@@ -678,9 +660,6 @@ sub _vmpl1Installation {
 
     mkpath($installationPath);
 
-    ##
-    ## Copy needed files
-
     # copy 'normal' needed files
     my @files = qw( nvram.5.0 install-vmpl.sh );
     foreach my $file (@files) {
@@ -689,20 +668,17 @@ sub _vmpl1Installation {
     # copy on depending runvmware file
     copyFile("$pluginFilesPath/runvmware-player-v1", "$installationPath", "runvmware");
 
-    ##
-    ## Download and install the binarys
+    # Download and install the binarys
     system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-vmpl.sh $kind");
 
-    ##
-    ## Create runlevel script
+    # Create runlevel script
     my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
     $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
 
-    ##
-    ## Create wrapperscripts
+    # create wrapper scripts
     $self->_writeWrapperScript("$vmpath", "$kind", "player");
 
-    ## Creating needed config /etc/vmware/config
+    # creating needed config /etc/vmware/config
     $self->_writeVmwareConfigs("$kind", "$vmpath");
         
 }

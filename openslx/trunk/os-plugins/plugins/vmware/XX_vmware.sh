@@ -226,11 +226,12 @@ prefvmx.useRecommendedLockedMemSize = "TRUE"' | sed -e "s/^ *//" \
 
     # affects only kernel and config depending configuration of not
     # local installed versions
-    cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/config \
-      /mnt/etc/vmware/config
+    cat /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/config \
+      >>/mnt/etc/vmware/config
     chmod 644 /mnt/etc/vmware/config
-    echo "# stage1 variables" >>/mnt/etc/vmware/slxvmconfig
-    cat /mnt/opt/openslx/plugin-repo/vmware/slxvmconfig \
+    echo "# stage1 variables produced during plugin install" \
+      >>/mnt/etc/vmware/slxvmconfig
+    cat /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/slxvmconfig \
       >>/mnt/etc/vmware/slxvmconfig
 
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmware' os-plugin ..."
