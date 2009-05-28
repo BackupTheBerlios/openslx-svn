@@ -15,6 +15,8 @@
 # get configuration
 . /etc/initramfs-setup
 
+ash
+
 # we expect to have a system selection dialog file in /preboot/bootmenu.dialog
 dialog --file bootmenu.dialog 2>result
 # source the system to boot configuration ($kernel, $initramfs, $append,

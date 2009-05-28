@@ -149,7 +149,7 @@ else
 fi
 # run the preboot interactive part which finally will execute kexec
 cd /preboot
-exec ./preboot.sh
+exec ./preboot.sh || sh
 # we will never return from that one ...
 
 
