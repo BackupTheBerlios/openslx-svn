@@ -17,6 +17,7 @@
 # include general configuration from vmchooser
 . /etc/opt/openslx/run-virt.include
 
+# most of the following does not make much sense yet ...
 permem=66
 mem=$(expr{totalmem} * ${permem})
 
@@ -43,7 +44,12 @@ cdrom1=${cdtest:-"FALSE"}
 ide="TRUE"
 hddrv="ide"
 
+# finally set env for run-virt.sh
+################################################################################
 
 # set the variables appropriately (several interfaces with different names)
 VIRTCMD=$(which virtualbox 2>/dev/null)
+# VIRTCMDOPTS="${vmopt} ${conffile}"
+
+
 

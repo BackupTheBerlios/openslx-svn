@@ -153,7 +153,9 @@ sub _writeRunlevelScript
     my $location = shift;
     my $file     = shift;
     my $kind     = shift;
-    
+   
+    # should use the abstract write runlevel script way, see
+    # http://lab.openslx.org/repositories/revision/openslx/2405 ff.
     my $runlevelScript = $self->{distro}->fillRunlevelScript($location, $kind);
 
     spitFile($file, $runlevelScript);
