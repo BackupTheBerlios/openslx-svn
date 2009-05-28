@@ -374,6 +374,10 @@ preferencesheader ()
   # DEBUG: some versions accept it only upper or lowercase... which one?
   # The following 4 could also be uppercase
   hints.hideAll = \"true\"
+  # if vmplayer is still to noisy try the following:
+  #msg.noOK = \"true\"
+  # Suppress messages from USB Devices
+  #hint.vmui.showAllUSBDevs = \"FALSE\"
   pref.exchangeSelections = \"true\"
   pref.hotkey.shift = \"true\"
   pref.tip.startup = \"false\"
