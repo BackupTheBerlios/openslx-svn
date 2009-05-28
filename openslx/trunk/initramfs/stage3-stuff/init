@@ -92,8 +92,8 @@ fi
 
 # set defaults for some important variables, might be overwritten via
 # kernel commandline
-tmpfssize=$(expr $(grep -i "memtotal" /proc/meminfo | awk '{print $2}') \
-  \* 1024 / 100 \* 75 - 128000000) # in byte
+tmpfssize="$(expr $(grep -i "memtotal" /proc/meminfo | awk '{print $2}') \
+  / 100 \* 75 - 128000)k" # in kbyte
 cowsize="50%"
 rwdir=/dev/shm
 nfsro="nfs"
