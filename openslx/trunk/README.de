@@ -10,13 +10,13 @@ Unterverzeichnis doc/ (insbesondere einstieg.txt), weiterführende Informationen
 gibt es auf den Webseiten:
 
 --> http://www.openslx.org                                (Projektseiten)
---> http://www.openslx.org/de/doc/Linux_Stateless_Clients (Dokumentation)
+--> http://www.openslx.org/projects/show/openslx-doc      (Dokumentation)
 --> http://lists.openslx.org                              (Mailinglisten)
 
 
-SNAPSHOT-RELEASES
+SVN-RELEASES
 -----------------
-Die Snapshot-Releases von OpenSLX sollen dazu dienen, die Software einer 
+Die SVN-Releases von OpenSLX sollen dazu dienen, die Software einer 
 größeren Nutzergemeinde zugänglich zu machen, um so mehr Feedback über die
 Funktionsfähigkeit und evtl. noch auftretende Probleme zu bekommen.
 
@@ -31,7 +31,7 @@ werden automatisch angepasst. Nur bei einem *Downgrade* ist evtl. Handarbeit
 nötig.
 
 
-HINWEISE ZU DIESEM SNAPSHOT
+HINWEISE ZU DIESER SVN-VERSION
 ---------------------------
 * Das Klonen eines Vendor-OS ist derzeit die einzige Installationsform für
   ein für den Betrieb vorgesehenes Vendor-OS.

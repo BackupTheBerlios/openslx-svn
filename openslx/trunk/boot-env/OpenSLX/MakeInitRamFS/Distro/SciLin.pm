@@ -28,7 +28,7 @@ sub new
 {
     my $class = shift;
     my $self = {
-        'base-name' => 'SciLin',
+        'base-name' => 'scilin',
     };
     return bless $self, $class;
 }
