@@ -1,10 +1,26 @@
 #!/bin/bash
-# Copyright (c) 2008 - Rechenzentrum Uni Freiburg, OpenSLX GmbH
+# -----------------------------------------------------------------------------
+# Copyright (c) 2007..2009 - RZ Uni FR
+# Copyright (c) 2007..2009 - OpenSLX GmbH
 #
-# This script simply filters xml-files (taking the path to these files in $1). # You might modify it in any way to match your needs, e.g. ask some database
-# instead. You can re-implement it in any other programming language too. You
-# simply have to return a list of proper xml files to be interpreted by the
-# vmchooser binary).
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+# xmlfilter.sh
+#    - This script is invoked by the vmchooser tool. It simply filters xml-
+#      files (taking the path to these files in $1). You might modify it in any
+#      way to match your needs, e.g. ask some database instead. You can re-
+#      implement it in any other programming language too. You simply have to
+#      return a list of proper xml files to be interpreted by the vmchooser
+#      binary). Please check for vmchooser.sh too ...
+# -----------------------------------------------------------------------------
+
+# This script .
 #
 # currently:
 #     - filter for slxgrp (which comes from /etc/machine-setup)
