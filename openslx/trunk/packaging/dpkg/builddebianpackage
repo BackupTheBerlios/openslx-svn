@@ -9,6 +9,9 @@ if [ -z "$dpkg_deb" ];then
     exit
 fi
 
+# import default paths for debian installation
+ . ./debianpaths
+
 # change into folder where we expect the Makefile:
 cd $(dirname $(readlink -f $0))/../..
 if [ ! -e ./Makefile ]; then
@@ -29,6 +32,12 @@ if make plain-install; then
 
   . ./VERSIONS
 
+  OPENSLX_VERSION_SVNREV=$(svnversion .)
+
+
+  sed -i -e "4r./packaging/dpkg/debianpaths" \
+         $SLX_BUILD_PATH/DEBIAN/postinst
+
   #update control file
   sed -i -e "s/##version##/$OPENSLX_VERSION_STRING/" \
          -e "s/##size##/$(du -s $SLX_BUILD_PATH | awk '{print $1}')/" \
@@ -45,4 +54,4 @@ if make plain-install; then
   ls -lh openslx_$OPENSLX_VERSION_STRING.deb
 fi
 #Clean up
-rm -rf $SLX_BUILD_PATH
+#rm -rf $SLX_BUILD_PATH

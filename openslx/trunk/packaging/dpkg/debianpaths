@@ -1,0 +1,6 @@
+export SLX_CONFIG_PATH=/etc/opt/openslx
+export SLX_BASE_PATH=/opt/openslx
+export SLX_PRIVATE_PATH=/var/opt/openslx
+export SLX_PUBLIC_PATH=/srv/openslx
+export SLX_TEMP_PATH=/tmp
+export USR_BIN_PATH=/usr/bin
