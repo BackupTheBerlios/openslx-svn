@@ -1,6 +1,8 @@
-http://distro.ibiblio.org/pub/linux/distributions/suse/suse/update/11.0
-http://lisa.gov.pt/ftp/suse/update/11.0
-http://mirrors.kernel.org/suse/update/11.0
-http://suse.cs.utah.edu/suse/update/11.0
-http://suse.mirrors.tds.net/pub/suse/update/11.0
-http://www.mirrorservice.org/sites/ftp.suse.com/pub/suse/update/11.0
+http://gd.tuwien.ac.at/opsys/linux/opensuse/update/11.0
+http://suse.inode.at/opensuse/update/11.0
+ftp://suse.inode.at/opensuse/update/11.0
+http://mirror.switch.ch/ftp/mirror/opensuse/update/11.0
+ftp://mirror.switch.ch/mirror/opensuse/update/11.0
+http://ftp.halifax.rwth-aachen.de/opensuse/update/11.0
+http://ftp5.gwdg.de/pub/opensuse/update/11.0
+ftp://ftp5.gwdg.de/pub/opensuse/update/11.0

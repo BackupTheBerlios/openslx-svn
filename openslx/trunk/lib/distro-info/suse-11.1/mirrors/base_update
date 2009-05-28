@@ -1,6 +1,4 @@
-http://distro.ibiblio.org/pub/linux/distributions/suse/suse/update/11.1
-http://lisa.gov.pt/ftp/suse/update/11.1
-http://mirrors.kernel.org/suse/update/11.1
-http://suse.cs.utah.edu/suse/update/11.1
-http://suse.mirrors.tds.net/pub/suse/update/11.1
-http://www.mirrorservice.org/sites/ftp.suse.com/pub/suse/update/11.1
+http://gd.tuwien.ac.at/opsys/linux/opensuse/update/11.1
+ftp://suse.inode.at/opensuse/update/11.1
+ftp://mirror.switch.ch/mirror/opensuse/update/11.1
+ftp://ftp5.gwdg.de/pub/opensuse/update/11.1
