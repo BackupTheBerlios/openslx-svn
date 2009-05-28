@@ -211,8 +211,8 @@ if [ "x$start_dreshal" = "xyes" ]; then
       -e "s/@@return@@/        <return result=\"yes\"\/>/"
   sed -i /mnt/etc/dbus-1/system.d/hal.conf \
       -e "s/^\([^d]*\)deny\(.*Volume.*\)/\1allow\2/"
-  rllinker "dbus" 17 20
-  rllinker "hal" 18 15
+  rllinker "dbus" 2 20
+  rllinker "hal" 3 18
   if [ ! -e /mnt/etc/init.d/policykit ] ; then
     testmkd /mnt/var/lib/PolicyKit root:polkituser 1770
     testmkd /mnt/var/lib/PolicyKit-public root:polkituser

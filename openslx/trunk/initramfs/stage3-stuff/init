@@ -34,7 +34,7 @@ for i in "/dev/mem c 1 1" "/dev/null c 1 3" "/dev/zero c 1 5" \
          "/dev/tty7 c 4 7" "/dev/tty8 c 4 8" "/dev/tty9 c 4 9" \
          "/dev/tty10 c 4 10" "/dev/tty c 5 0" "/dev/console c 5 1" \
          "/dev/ptmx c 5 2" "/dev/psaux c 10 1" "/dev/agpgart c 10 175" \
-         "/dev/fb0 c 29 0" "/dev/rtc0 c 10 135" "/dev/xconsole p"; do
+         "/dev/fb0 c 29 0" "/dev/xconsole p"; do
   mknod $i
 done
 mkdir -p ${devdir}/pts ${devdir}/shm ${devdir}/.udevdb ${devdir}/.udev \
@@ -233,7 +233,7 @@ in $0\ncountry=\"${COUNTRY}\"" >>/etc/initramfs-setup
       srvproto=$(uri_token $rootfs prot)
       case $srvproto in
         nfs)
-          # nfsroot consists now of two different parts
+          # nfsroot consists of two components
           nfspath=$(uri_token $rootfs path)
           nfsserver=$(uri_token $rootfs server)
           grep -q -E "nfsserver" /etc/initramfs-setup || \
@@ -277,12 +277,16 @@ line in $0\nnfsserver=\"${nfsserver}\"\nnfspath=\"${nfspath}\"" \
     # ip configuration client-ip:server-ip:gateway:netmask
     ip=*)
       ipinfo=${opts#ip=};;
-    # deprecated: nfs server and path (will be removed soon)
+    # deprecated: nfs server and path (rewritten to standard style)
     nfsroot=*)
+      srvproto=nfs
       nfsroot=${opts#nfsroot=}
-      echo -e "\n# nfs root information gotten via kernel command line in \n\
-$0\n# deprecated: please use rootfs=nfs://...\nnfsroot=\"${nfsroot}\"\n" \
->> /etc/initramfs-setup
+      nfspath=${nfsroot#*:}
+      nfsserver=${nfsroot%:/*}
+      grep -q -E "nfsserver" /etc/initramfs-setup || \
+        echo -e "\n# nfs root information gotten via kernel command line \n\
+in $0\n# deprecated: please use rootfs=nfs://...\nnfsserver=\"${nfsserver}\"\
+\nnfspath=\"${nfspath}\"">> /etc/initramfs-setup
     ;;
     # size of tempfs if not max. 50% of RAM should be used
     tmpfssize=*)
@@ -640,21 +644,20 @@ if [ -z "${bldmod}" -a -z "${bldserver}" ] ; then
   # prefer nfsserver and nfspath from kernel commandline over the information
   # gotten from dhcp server
   if [ -n "${nfsserver}" -a -n "${nfspath}" ] ; then
-    # load the nfs module if needed
-    nfsmod
     # check if nfsserver is set as variable @@@serverip@@@
     nfsserver=$(checkip $nfsserver)
-    nfsroot=${nfsserver}:${nfspath}
   else
     # we got a problem here
     error "$init_nfssp" fatal
   fi
   # interface might not be properly up - check reachability
   ping -c 1 -w 15 ${nfsserver} >/dev/null 2>&1
-  for proto in tcp udp fail; do
-    [ $proto = "fail" ] && { error "$init_nfs"; break; }
-    mount -n -t nfs -o ro,nolock,${proto} ${nfsroot} /mnt && break
-  done
+  # mount the rootfs via nfs readonly (ro)
+  fsmount nfs ${nfsserver} ${nfspath} /mnt ro
+  #for transport in tcp udp fail; do
+  #  [ $proto = "fail" ] && { error "$init_nfs"; break; }
+  #  mount -n -t nfs -o ro,nolock,${transport} ${nfsroot} /mnt && break
+  #done
   [ $DEBUGLEVEL -eq 20 ] && echo "** finished nfs mount at $(sysup)"
 fi
 
