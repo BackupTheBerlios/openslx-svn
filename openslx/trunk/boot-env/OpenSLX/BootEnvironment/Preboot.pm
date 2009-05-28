@@ -82,12 +82,13 @@ sub writeBootloaderMenuFor
     }
     my $bootmenuEntries = '';
     my $entryState = 'on';
+    my $counter = 1;
     foreach my $info (sort { $a->{label} cmp $b->{label} } @$systemInfos) {
         my $vendorOSName = $info->{'vendor-os'}->{name};
         my $kernelName   = basename($info->{'kernel-file'});
         my $append       = $info->{attrs}->{kernel_params} || '';
         $append .= " $clientAppend";
-        $bootmenuEntries .= qq{ "$info->{label}" "" $entryState};
+        $bootmenuEntries .= qq{ "$counter" "$info->{label}" };
         $entryState = 'off';
 
         # create a file containing the boot-configuration for this system
@@ -97,15 +98,17 @@ sub writeBootloaderMenuFor
             initramfs="$vendorOSName/$info->{'initramfs-name'}"
             append="$append"
         End-of-Here
-        my $systemFile = "$bootloaderConfigPath/$info->{label}";
+        my $systemFile = "$bootloaderConfigPath/$info->{name}";
         spitFile(
             $systemFile, $systemDescr, { 'io-layer' => 'encoding(iso8859-1)' } 
         )    unless $self->{'dry-run'};
+        slxsystem(qq{ln -sf $info->{name} $bootloaderConfigPath/$counter});
+        $counter++;
     }
 
     my $entryCount = @$systemInfos;
     my $bootmenu = unshiftHereDoc(<<"    End-of-Here");
-        --radiolist "OpenSLX Boot Menu" 20 65 $entryCount $bootmenuEntries
+        --no-cancel --menu "OpenSLX Boot Menu" 20 65 $entryCount $bootmenuEntries
     End-of-Here
     
     if (!$self->{'dry-run'}) {

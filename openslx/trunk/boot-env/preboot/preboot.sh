@@ -24,6 +24,8 @@ dialog --file bootmenu.dialog 2>result
 sysname=$(cat result)
 . ./$sysname
 
+sysname=$(readlink $sysname)
+
 # if wget
 
 ash
