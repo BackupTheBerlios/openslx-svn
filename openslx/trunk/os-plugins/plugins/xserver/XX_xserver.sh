@@ -93,7 +93,8 @@ if [ -e /initramfs/plugin-conf/xserver.conf -a \
 	      fi
               BUSID=$(grep -m1 -i " SysFS BusID: .*" /etc/hwinfo.gfxcard | \
                 awk -F':' '{print "PCI:"$3":"$4}' | sed -e 's,\.,:,g')
-	      echo "${PLUGIN_ROOTFS}/usr/bin/aticonfig --initial" >> /mnt/etc/init.d/boot.slx
+	      echo -e "\t${PLUGIN_ROOTFS}/usr/bin/aticonfig --initial &>/dev/null"\
+                >> /mnt/etc/init.d/boot.slx
 	      ATI=1
 	  fi
     elif $(grep -iq -m 1 'Module: nvidia' /etc/hwinfo.gfxcard) && \
@@ -209,7 +210,7 @@ EndSection' >> $xfc
     fi
 
     if [ -n "${BUSID}" ]; then
-      sed -e "s,^#  BusID .*, BusID \"${BUSID}\",g" -i ${xfc}
+      sed -e "s,^#.*BusID .*,  BusID \"${BUSID}\",g" -i ${xfc}
     fi
 
     # set nodeadkeys for special layouts
