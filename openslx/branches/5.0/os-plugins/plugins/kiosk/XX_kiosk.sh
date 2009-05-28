@@ -28,10 +28,11 @@ if [ -e /initramfs/plugin-conf/kiosk.conf ]; then
 		
 		# setup custom rungetty
 		mkdir -p /mnt/root/bin
-		ln -sf /opt/openslx/plugin-repo/kiosk/rungetty /mnt/root/bin/mygetty
+		ln -sf /opt/openslx/plugin-repo/kiosk/kgetty /mnt/root/bin/kgetty
         
-        sed -i /mnt/etc/event.d/tty1 \
-            -e 's#exec.*#exec /root/bin/mygetty --autologin kiosk tty1#'
+        kgettycmd="/root/bin/kgetty --autologin kiosk tty1"
+        
+        /mnt/opt/openslx/plugin-repo/kiosk/setup.kgetty "$kgettycmd"
 		
     	[ $DEBUGLEVEL -gt 0 ] && echo "done with 'kiosk' os-plugin ...";
 

@@ -81,7 +81,13 @@ sub installationPhase
     my $filesDir = "$openslxBasePath/lib/plugins/kiosk/files";
 
 	copyFile("$filesDir/bashrc","$pluginRepoPath");
-	copyFile("$filesDir/rungetty","$pluginRepoPath");
+	copyFile("$filesDir/kgetty","$pluginRepoPath");
+	
+    my $scriptpath = "$pluginRepoPath/setup.kgetty";
+	my $script = $self->{distro}->getKgettySetupScript();
+
+    spitFile($scriptpath, $script);
+    chmod (0744, "$scriptpath");
 
     return;
 }
