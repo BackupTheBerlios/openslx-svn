@@ -5,9 +5,9 @@ DEPS    := ${SRCS:.cpp=.dep}
 XDEPS   := $(wildcard ${DEPS}) 
 
 CC	= g++
-DEBUG_CCFLAGS = -O0 -Wall -I/usr/include -I. -ggdb #-ggdb #-Werror
-CCFLAGS = -O2 -Wall -I/usr/include -I.
-LDFLAGS = -L/usr/lib 
+DEBUG_CCFLAGS = -O0 -Wall -I/usr/include -I. -I/usr/include/ldap -Ilib/ldapc++ -ggdb #-ggdb #-Werror
+CCFLAGS = -O2 -Wall -I/usr/include -I. -Ilib/ldapc++
+LDFLAGS = -L/usr/lib -lldap
 LIBS    = #-lboost_statechart
 
 .PHONY: all clean distclean 
@@ -22,7 +22,7 @@ ${TARGET}: $(OBJS)
 	strip $@
 
 debug: $(OBJS)
-	${CC} ${LDFLAGS} -o ${TARGET}_dbg $^ ${LIBS}
+	${CC} ${LDFLAGS} -o ${TARGET}_dbg $^ ${LIBS} lib/libldapcpp.a 
 
 #${DBG_OBJS}: %.o: %.cpp %.dep
 #	${CC} ${DEBUG_CCFLAGS} -o $@ -c $<

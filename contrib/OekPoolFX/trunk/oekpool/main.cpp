@@ -4,6 +4,7 @@
 #include <string>
 
 #include "Client.h"
+#include "Ldap.h"
 #include "events.h"
 
 using namespace std;
@@ -21,11 +22,20 @@ using namespace std;
  */
 int main(int argc, char** argv) {
 
-    Client client;
+//    Client client;
+//
+//    client.process_event(EvtHostlistInsert() );
+//
+//    client.process_event(EvtWakeCommand() );
 
-    client.process_event(EvtHostlistInsert() );
+    Ldap* obj = new Ldap((char*)"ldap://132.230.4.73",9009,
+                        (char*)"lsmdummy",
+                        (char*)"slxos123");
 
-    client.process_event(EvtWakeCommand() );
+    obj->search(string("ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de"),
+                LDAP_SCOPE_SUBTREE,
+                string("(&(!(ou=Rechenzentrum))(ou=*))")
+               );
 
     return true;
 }

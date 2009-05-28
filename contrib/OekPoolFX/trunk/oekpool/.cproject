@@ -13,13 +13,18 @@
 <toolChain id="org.eclipse.cdt.build.core.prefbase.toolchain.837320241" name="No ToolChain" resourceTypeBasedDiscovery="false" superClass="org.eclipse.cdt.build.core.prefbase.toolchain">
 <targetPlatform id="org.eclipse.cdt.build.core.prefbase.toolchain.837320241.1548937415" name=""/>
 <builder enableAutoBuild="false" id="org.eclipse.cdt.build.core.settings.default.builder.239050703" incrementalBuildTarget="debug" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
-<tool id="org.eclipse.cdt.build.core.settings.holder.libs.711091920" name="holder for library settings" superClass="org.eclipse.cdt.build.core.settings.holder.libs"/>
+<tool id="org.eclipse.cdt.build.core.settings.holder.libs.711091920" name="holder for library settings" superClass="org.eclipse.cdt.build.core.settings.holder.libs">
+<option id="org.eclipse.cdt.build.core.settings.holder.libfiles.892903724" name="Library Files" superClass="org.eclipse.cdt.build.core.settings.holder.libfiles" valueType="libFiles">
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/oekpool/lib/libldapcpp.a}&quot;"/>
+</option>
+</tool>
 <tool id="org.eclipse.cdt.build.core.settings.holder.1244913079" name="Assembly" superClass="org.eclipse.cdt.build.core.settings.holder">
 <inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1114350878" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 </tool>
 <tool id="org.eclipse.cdt.build.core.settings.holder.632148571" name="GNU C++" superClass="org.eclipse.cdt.build.core.settings.holder">
 <option id="org.eclipse.cdt.build.core.settings.holder.incpaths.226520863" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
 <listOptionValue builtIn="false" value="/usr/lib/gcc/i686-pc-linux-gnu/4.3.2/include/g++-v4/"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/oekpool/lib/ldapc++}&quot;"/>
 </option>
 <inputType id="org.eclipse.cdt.build.core.settings.holder.inType.263324835" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 </tool>

@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <limits>
+#include <stdlib.h>
 
 #include "Network.h"
 
