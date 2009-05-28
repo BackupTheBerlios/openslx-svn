@@ -10,8 +10,8 @@
 # General information about OpenSLX can be found at http://openslx.org
 #
 # Messages file for all error and info messages generated during client
-# bootup (within initialramfs) for OpenSLX linux diskless clients version 5
-# this file could be used for localization of error messages 
+# bootup (within initialramfs) for OpenSLX linux diskless clients version 5.
+# Fhis file contains the standard set of error messages.
 
 # messages from (slx) init
 init_errmsg="The functions file contains a lot of slx scripts \
@@ -142,9 +142,8 @@ error_errlcfg="  Did not get any configuration data via ldap until now ..."
 unpack_ConfTGZ="  Error during unpacking of the ConfTGZ archive.\nAre you sure \
 it is in proper format?"
 nomachsetup="  No machine-setup file found. You might not have gotten any \
-configuration\n  from your server. Your slx client will not work properly. \
-Please check that /initramfs and /rootfs are present!"
-
+configuration\n  from your server. You could find that out by checking if \
+/initramfs and\n  /rootfs are present!"
 
 # messages from distro functions
 df_errumod="    Failed to load the \"unix\" module. Problems with Hardware \

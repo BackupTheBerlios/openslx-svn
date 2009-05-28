@@ -48,7 +48,8 @@ chvt 1
 wget -O /tmp/kernel $boot_uri/$kernel
 wget -O /tmp/initramfs $boot_uri/$initramfs
 
-# read primary IP configuration to pass it on
+# read primary IP configuration to pass it on (behaviour like IPAPPEND=1 of
+# PXElinux)
 . /tmp/ipstuff
 
 clear

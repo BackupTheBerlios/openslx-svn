@@ -59,14 +59,19 @@ sub _createImage
 
     # write trivial isolinux config
     my $isolinuxConfig = unshiftHereDoc(<<"    End-of-Here");
-        PROMPT 1
+        PROMPT 0
         TIMEOUT 100
         DEFAULT OpenSLX
+        MENU TITLE Welcome to OpenSLX PreBoot CD
 
         LABEL OpenSLX
+          MENU LABEL OpenSLX PreBoot
           SAY Now loading OpenSLX preboot environment ...
           KERNEL vmlinuz
           APPEND initrd=initramfs debug=3 vga=0x317
+          TEXT HELP
+                 Your chance to edit the kernel commandline ...
+          ENDTEXT
     End-of-Here
     spitFile("$imageDir/iso/isolinux/isolinux.cfg", $isolinuxConfig);
 
