@@ -61,10 +61,10 @@ sed -e "6i# Script modified by $0 during stage3 bootup." \
 # write a custom udev script (to be checked!!)
 echo -e "#!/bin/sh\n# Simple udev starter script created as a replacement \
 during OpenSLX stage3\n# bootup." >/mnt/etc/init.d/udevd
-echo -e '. /etc/init.d/functions\nSTRING=$"Starting udev: "
-echo -n "$STRING "\n/sbin/udevstart </dev/null >/dev/null 2>&1
-\n[ $? -eq 0 ] && success $"$STRING" || failure $"$STRING"
-\necho\nexit 0' >>/mnt/etc/init.d/udevd
+echo -e ". /etc/init.d/functions\nSTRING=\$\"Starting udev: \" \
+\necho -n \"\$STRING \"\n/sbin/udevstart </dev/null >/dev/null 2>&1 \
+\n[ \$? -eq 0 ] && success \$\"\$STRING\" || failure \$\"\$STRING\" \
+\nexit 0" >>/mnt/etc/init.d/udevd
 chmod u+x /mnt/etc/init.d/udevd
 # delete all classical disk base rootfs stuff from halt
 sed -e "7i#                Modified by $0 during stage3 bootup." \
