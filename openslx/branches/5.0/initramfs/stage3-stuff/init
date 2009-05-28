@@ -700,10 +700,8 @@ fi
 # setup of client root filesystem dependent on the availability of UnionFS
 if [ -n "${union_type}" ] ; then
   echo "Using ${union_type} for rw access"
-  # adapting the size of tempfs usable
-  mount -o remount,size=${tmpfssize} ${devdir}
   mkdir -p ${rwdir}/union ${rwdir}/uniontmp /rorootfs
-  mount -n -t tmpfs none ${rwdir}/uniontmp
+  mount -n -t tmpfs -o size=${tmpfssize} none ${rwdir}/uniontmp
   # hack for handling unionfs with patched run-init
   mount -n --move /mnt /rorootfs
   if [ "$union_type" == "UnionFS" ]; then
