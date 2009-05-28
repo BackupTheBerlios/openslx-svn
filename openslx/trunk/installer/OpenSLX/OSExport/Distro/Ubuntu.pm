@@ -43,6 +43,7 @@ sub initDistroInfo
         - /var/log/*
         - /var/lib/xdm
         - /var/cache/man/*
+	- /var/cache/nscd/*
         - /usr/share/vmware/*
         - /usr/share/autostart/trackerd.desktop
         - /usr/share/autostart/knetworkmanager.desktop
@@ -51,7 +52,7 @@ sub initDistroInfo
         - /proc/*
         - /mnt/*
         - /media/*
-        - /lib/klibc/events/*
+	- /lib/udev/devices
         - /initrd*
         - /etc/cron.*/*
         - /boot/initrd*

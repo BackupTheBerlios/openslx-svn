@@ -99,6 +99,8 @@ sub initialize
         - /etc/resolv.conf.*
         - /etc/opt/openslx
         - /etc/exports*
+        - /etc/X11/xorg.c*
+	- /etc/X11/XF86*
         + /etc
         - /dev/*
         + /dev

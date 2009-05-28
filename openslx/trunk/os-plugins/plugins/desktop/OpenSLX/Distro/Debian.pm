@@ -1,4 +1,4 @@
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2006..2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -36,6 +36,10 @@ sub setupGDMScript
     $script .= unshiftHereDoc(<<'    End-of-Here');
         rllinker gdm 1 1
         echo '/usr/bin/gdm' > /mnt/etc/X11/default-display-manager
+        # gdm does not like AUFS/UnionFS on its var directory
+        rm -rf /mnt/var/lib/gdm
+        mkdir -m 1770 /mnt/var/lib/gdm
+        chown root:gdm /mnt/var/lib/gdm
     End-of-Here
 
     return $script;

@@ -55,7 +55,9 @@ sub setupGDMScript
     $script .= unshiftHereDoc(<<'    End-of-Here');
         echo "DISPLAYMANAGER=GNOME" \
             >/mnt/etc/sysconfig/desktop
-        testmkd /mnt/var/gdm root:gdm 1770
+        # gdm does not like AUFS/UnionFS on its var directory
+        mkdir -m 1770 /mnt/var/lib/gdm
+        chown root:gdm /mnt/var/lib/gdm
     End-of-Here
 
     return $script;

@@ -58,7 +58,10 @@ sub setupGDMScript
         sed -i "s/DEFAULT_WM=.*/DEFAULT_WM=\"$desktop_kind\"/" \
             /mnt/etc/sysconfig/windowmanager
         #sed "s|XSESSION|/etc/xdm/Xsession|" -i /mnt$configFile
-        testmkd /mnt/var/lib/gdm gdm:gdm 1775
+        # gdm does not like AUFS/UnionFS on its var directory
+        rm -rf /mnt/var/lib/gdm
+        mkdir -m 1770 /mnt/var/lib/gdm
+        chown root:gdm /mnt/var/lib/gdm
         # no use for this configuration info file
         rm /mnt/etc/gdm/gdm_sysconfig.* 2>/dev/null
     End-of-Here
