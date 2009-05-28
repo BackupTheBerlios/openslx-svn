@@ -290,7 +290,7 @@ if [ "$1" = "ati" ]; then
     done
 
     mv ./usr/X11R6/lib/* ./usr/lib/ > /dev/null 2>&1
-    if [ ! -f ./usr/lib/libGL.so* ]; then
+    if [ ! -f ./usr/lib/libGL.so ]; then
       echo "  ATI files failed to install via zypper!!"
       exit
     fi
