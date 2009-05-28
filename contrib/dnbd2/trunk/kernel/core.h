@@ -30,7 +30,12 @@ extern int dnbd2_major;
  * 2. Enqueues the request into the send-queue.
  * 3. Wakes up dnbd2_tx_loop.
  */
-void dnbd2_request(request_queue_t *q);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+	void dnbd2_request(struct request_queue *q);
+#else
+	void dnbd2_request(request_queue_t *q);
+#endif
+
 
 /*
  * This thread sleeps until there are requests in the send-queue.

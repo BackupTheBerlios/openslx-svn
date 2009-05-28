@@ -13,8 +13,8 @@
 #define RW 0644
 #define RO 0444
 
-#define kobj_to_dev(kp) container_of(kp, dnbd2_device_t, kobj)
-#define kobj_to_srv(kp) container_of(kp, struct srv_info, kobj)
+#define kobject_to_dev(kp) container_of(kp, dnbd2_device_t, kobj)
+#define kobject_to_srv(kp) container_of(kp, struct srv_info, kobj)
 
 #define attr_to_srvattr(ap) container_of(ap, struct server_attr, attr)
 #define attr_to_devattr(ap) container_of(ap, struct device_attr, attr)
@@ -119,7 +119,7 @@ ssize_t device_show(struct kobject *kobj, struct attribute *attr,
 			   char *buf)
 {
 	struct device_attr *device_attr = attr_to_devattr(attr);
-	dnbd2_device_t *dev = kobj_to_dev(kobj);
+	dnbd2_device_t *dev = kobject_to_dev(kobj);
 	return device_attr->show(buf, dev);
 }
 
@@ -128,7 +128,7 @@ ssize_t device_store(struct kobject *kobj, struct attribute *attr,
 {
 	int ret;
 	struct device_attr *device_attr = attr_to_devattr(attr);
-	dnbd2_device_t *dev = kobj_to_dev(kobj);
+	dnbd2_device_t *dev = kobject_to_dev(kobj);
 	down(&dev->config_mutex);
 	ret = device_attr->store(buf, count, dev);
 	up(&dev->config_mutex);
@@ -139,7 +139,7 @@ ssize_t server_show(struct kobject *kobj, struct attribute *attr,
 			   char *buf)
 {
 	struct server_attr *server_attr = attr_to_srvattr(attr);
-	struct srv_info *srv_info = kobj_to_srv(kobj);
+	struct srv_info *srv_info = kobject_to_srv(kobj);
 	return server_attr->show(buf, srv_info);
 }
 
@@ -148,7 +148,7 @@ ssize_t server_store(struct kobject *kobj, struct attribute *attr,
 {
 	int ret;
 	struct server_attr *server_attr = attr_to_srvattr(attr);
-	struct srv_info *srv_info = kobj_to_srv(kobj);
+	struct srv_info *srv_info = kobject_to_srv(kobj);
 	down(&srv_info->dev->config_mutex);
 	ret = server_attr->store(buf, count, srv_info);
 	up(&srv_info->dev->config_mutex);
@@ -418,10 +418,16 @@ int setup_kobj(struct kobject *kobj, char *name, struct kobject *parent,
 	memset(kobj, 0, sizeof(struct kobject));
 	kobj->parent = parent;
 	kobj->ktype = ktype;
-	if (kobject_set_name(kobj, name))
+	
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+	if (kobject_init_and_add(kobj, ktype, parent, name))
 		return -1;
+#else
+	if (kobject_set_name(kobj, name))
+		return -1;   
 	if (kobject_register(kobj))
 		return -1;
+#endif
 	return 0;
 }
 
@@ -434,20 +440,24 @@ int start_sysfs(dnbd2_device_t *dev)
 	int i;
 	char name[] = "server99";
 
-	if (setup_kobj(&dev->kobj, "config", &dev->disk->kobj, &device_ktype))
+	if (setup_kobj(&dev->kobj, "config", &dev->disk->dev.kobj, &device_ktype))
 		return -1;
 
 	for_each_server(i) {
 		sprintf(name, "server%d", i);
 		if (setup_kobj(&dev->servers[i].kobj, name,
-			       &dev->disk->kobj, &server_ktype))
+			       &dev->disk->dev.kobj, &server_ktype))
 			goto out;
 	}
 	return 0;
 
  out:
 	while (i--)
-		kobject_unregister(&dev->servers[i].kobj);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+		kobject_put(&dev->servers[i].kobj);
+#else
+                kobject_unregister(&dev->servers[i].kobj);
+#endif
 	return -1;
 }
 
@@ -455,6 +465,12 @@ void stop_sysfs(dnbd2_device_t *dev)
 {
 	int i;
 	for_each_server(i)
-		kobject_unregister(&dev->servers[i].kobj);
-	kobject_unregister(&dev->kobj);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+		kobject_put(&dev->servers[i].kobj);
+	kobject_put(&dev->kobj);
+#else
+                kobject_unregister(&dev->servers[i].kobj);
+        kobject_unregister(&dev->kobj);
+
+#endif
 }

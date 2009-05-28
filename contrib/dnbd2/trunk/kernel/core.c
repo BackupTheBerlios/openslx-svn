@@ -15,8 +15,11 @@
 int dnbd2_major;
 static dnbd2_device_t dev[DNBD2_DEVICES];
 
-
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+void dnbd2_request(struct request_queue *q)
+#else
 void dnbd2_request(request_queue_t *q)
+#endif
 {
 	int i;
 	struct request *req;
@@ -311,8 +314,12 @@ void dnbd2_end_request(struct request *req, int success)
 		dev = req->rq_disk->private_data;
 		spin_lock_irqsave(&dev->blk_lock, flags);
 		list_del_init(&req->queuelist);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+		if(!__blk_end_request(req, success, req->nr_sectors)) {
+#else
 		if (!end_that_request_first(req, success, req->nr_sectors)) {
 			end_that_request_last(req, success);
+#endif
 		}
 		dev->pending_reqs--;
 		spin_unlock_irqrestore(&dev->blk_lock, flags);
