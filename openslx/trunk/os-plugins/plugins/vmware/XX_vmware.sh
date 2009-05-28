@@ -216,12 +216,9 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     # copy version depending files - the vmchooser expects for every virtua-
     # lization plugin a file named after it (here run-vmware.include)
     testmkd /mnt/etc/opt/openslx
-    cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/run-virt.include \
+    cp /mnt/opt/openslx/plugin-repo/vmware/run-virt.include \
       /mnt/etc/opt/openslx/run-vmware.include
-    # copy version depending files (old style)
-    cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/runvmware \
-        /mnt/var/X11R6/bin/run-vmware.sh
-    chmod 755 /mnt/var/X11R6/bin/run-vmware.sh
+    # copy version depending files
     cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmplayer \
         /mnt/var/X11R6/bin/vmplayer
     if [ -e /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmware ]; then
