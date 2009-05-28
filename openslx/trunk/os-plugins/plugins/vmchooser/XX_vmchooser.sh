@@ -51,6 +51,20 @@ if [ -e $CONFFILE ]; then
     mount -n -t msdos -o loop,umask=000 /mnt/var/lib/virt/vmchooser/loopimg/fd.img \
       /mnt/var/lib/virt/vmchooser/fd-loop
 
+    waitfor /etc/hwinfo.cdrom
+    j=0
+    for i in $(cat /etc/hwinfo.cdrom); do
+      echo "cdrom$j=$i" >> /mnt/etc/opt/openslx/run-virt.include
+      j=$(expr $j + 1)
+    done
+
+    waitfor /etc/hwinfo.floppy
+    j=0
+    for i in $(cat /etc/hwinfo.floppy); do
+      echo "floppy$j=$i" >> /mnt/etc/opt/openslx/run-virt.include
+      j=$(expr $j + 1)
+    done
+
     # finished ...
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmchooser' os-plugin ..."
   fi

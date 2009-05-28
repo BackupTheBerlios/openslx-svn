@@ -11,7 +11,6 @@
 # script is included from init via the "." load function - thus it has all
 # variables and functions available
 
-
 # check if the configuration file is available
 if [ -e /initramfs/plugin-conf/virtualbox.conf ]; then
 

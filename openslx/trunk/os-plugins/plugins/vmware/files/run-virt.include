@@ -15,6 +15,9 @@
 #    - component for vmware/player of the vmchooser plugin run-virt.sh
 # -----------------------------------------------------------------------------
 
+# include general configuration from vmchooser
+. /etc/opt/openslx/run-virt.include
+
 # configuration writer functions
 ################################################################################
 
@@ -36,11 +39,11 @@ numvcpus = \"1\"
 ide0:0.present = \"${ide}\"
 ide0:0.fileName = \"${diskfile}\"
 ide0:0.mode = \"independent-nonpersistent\"
-ide1:0.present = \"${cdr_1}\"
+ide1:0.present = \"${cdrom0}\"
 ide1:0.autodetect = \"TRUE\"
 ide1:0.fileName = \"auto detect\"
 ide1:0.deviceType = \"cdrom-raw\"
-ide1:1.present = \"${cdr_2}\"
+ide1:1.present = \"${cdrom1}\"
 ide1:1.autodetect = \"TRUE\"
 ide1:1.fileName = \"auto detect\"
 ide1:1.deviceType = \"cdrom-raw\"
@@ -53,15 +56,15 @@ scsi0.virtualDev = \"lsilogic\" #\"${hddrv}\"
 scsi0:0.mode = \"independent-nonpersistent\"
 
 # floppies
-floppy0.present = \"${floppya}\"
+floppy0.present = \"${floppy0}\"
 floppy0.startConnected = \"FALSE\"
 floppy0.autodetect = \"TRUE\"
 floppy0.fileName = \"auto detect\"
 # we need floppy b: for our windows client configuration
-floppy1.present = \"${floppyb}\"
+floppy1.present = \"${floppy1}\"
 floppy1.startConnected = \"TRUE\"
 floppy1.fileType = \"file\"
-floppy1.fileName = \"${floppybname}\"
+floppy1.fileName = \"${floppy1name}\"
 
 # nics
 ethernet0.present = \"TRUE\"
@@ -76,10 +79,20 @@ sound.present = \"TRUE\"
 sound.fileName = \"-1\"
 sound.autodetect = \"TRUE\"
 
+# svga
+svga.autodetect = \"TRUE\"
+
+# usb
+usb.present = \"TRUE\"
+usb.generic.autoconnect = \"TRUE\"
+
+# serial port
+serial0.present = \"${serial}\"
+${serialdev}" >${conffile}
+
 # shared folders
-sharedFolder.option = \"alwaysEnabled\"
 sharedFolder0.present = \"TRUE\"
-sharedFolder0.enabled = \"TRUE\"
+sharedFolder0.enabled = \"${shared_folder}\"
 sharedFolder0.expiration = \"never\"
 sharedFolder0.guestName = \"Home\"
 sharedFolder0.hostPath = \"${HOME}\"
@@ -93,43 +106,37 @@ redoLogDir = \"${redodir}\"
 mainMem.useNamedFile = \"TRUE\"
 snapshot.disabled = \"TRUE\"
 tools.syncTime = \"TRUE\"
-hints.hideAll = \"TRUE\"
-hint.vmui.showAllUSBDevs = \"FALSE\"
 isolation.tools.hgfs.disable = \"FALSE\"
 hgfs.mapRootShare = \"TRUE\"
 isolation.tools.dnd.disable = \"FALSE\"
 isolation.tools.copy.enable = \"TRUE\"
 isolation.tools.paste.enabled = \"TRUE\"
-gui.restricted = \"TRUE\"
-
-# serial port
-serial0.present = \"${serial}\"
-${serialdev}" >${conffile}
 
 case "$vmversion" in
-  1.0|5.5|2.0|6.0)
+  1.0|5.5)
+    shared_folder="FALSE"
     echo "
 # version specific stuff
 config.version = \"8\"
-virtualHW.version = \"4\"
-usb.present = \"TRUE\"
-usb.generic.autoconnect = \"TRUE\"
-svga.maxWidth = \"${xres}\"
-svga.maxHeight = \"${yres}\"
-svga.autodetect = \"TRUE\"
-pref.hotkey.shift = \"TRUE\"
-pref.hotkey.control = \"TRUE\"
-pref.hotkey.alt = \"TRUE\"" >>${conffile}
+virtualHW.version = \"4\"" >>${conffile}
+  ;;
+  2.0|6.0)
+    shared_folder="TRUE"
+    echo "
+# version specific stuff
+config.version = \"8\"
+virtualHW.version = \"6\"
+sharedFolder.option = \"alwaysEnabled\"" >>${conffile}
   ;;
   2.5|6.5)
+    shared_folder="TRUE"
     echo "
 # version specific stuff
 config.version = \"8\"
 virtualHW.version = \"7\"
-usb.present = \"TRUE\"
 ehci.present= \"TRUE\"
-svga.autodetect = \"TRUE\"
-mks.enable3d = \"TRUE\"" >>${conffile}    
+sharedFolder.option = \"alwaysEnabled\"
+mks.enable3d = \"FALSE\"" >>${conffile}    
   ;;
 esac
 
@@ -146,14 +153,19 @@ preferencesheader ()
 webUpdate.enabled = \"FALSE\"
 pref.vmplayer.webUpdateOnStartup = \"FALSE\"
 pref.tip.startup = \"FALSE\"
+hints.hideAll = \"TRUE\"
+hint.vmui.showAllUSBDevs = \"FALSE\"
 
 # configs
 prefvmx.defaultVMPath = \"${vmhome}\"
 prefvmx.mru.config = \"${conffile}:\"
 
 # hot keys
-pref.hotkey.shift = \"true\"
-pref.hotkey.gui = \"true\"
+pref.hotkey.control = \"TRUE\"
+pref.hotkey.alt = \"TRUE\"
+pref.hotkey.shift = \"TRUE\"
+pref.hotkey.gui = \"TRUE\"
+gui.restricted = \"TRUE\"
 
 # fullscreen/mouse/keyboard
 pref.fullscreen.toolbarPixels = \"0\"
@@ -243,13 +255,17 @@ if [ "${mem}" -lt "256" ] || [ "${memhost}" -lt "256" ]; then
 fi
 
 # virtual fd/cd/dvd and drive devices, floppy b: for configuration
-#floppya is always false, if we have a floppy device or not isn't
-#important.
-floppya="FALSE"
-floppyb="TRUE"
-floppybname="/var/lib/virt/vmchooser/loopimg/fd.img"
-cdr_1="FALSE"
-cdr_2="FALSE"
+floppy0="FALSE"
+# if $floppy_0 from run-virt.include set then floppy0="TRUE"
+[ -n "$floppy_0" ] && floppy0="TRUE"
+floppy1="TRUE"
+floppy1name="/var/lib/virt/vmchooser/loopimg/fd.img"
+cdrom0="FALSE"
+# if $cdrom_0 from run-virt.include set then cdrom0="TRUE"
+[ -n "$cdrom_0" ] && cdrom0="TRUE"
+cdrom1="FALSE"
+# if $cdrom_1 from run-virt.include set then cdrom1="TRUE"
+[ -n "$cdrom_1" ] && cdrom1="TRUE"
 # ide is expected default, test for the virtual disk image type should
 # be done while creating the runscripts ...
 ide="TRUE"
@@ -295,7 +311,6 @@ writelog ()
   echo -e "$1" >>${redodir}/run-vmware.${USER}.log
 }
 
-
 # Delete the LOCK file. its insecure, but ...
 rm -f ${confdir}/*LOCK >/dev/null 2>&1
 
@@ -304,25 +319,12 @@ mkdir -p ${redodir} >/dev/null 2>&1
 mkdir -p ${confdir} >/dev/null 2>&1
 mkdir -p ${vmhome} >/dev/null 2>&1
 
-
-## log script information
+# log script information
 writelog "# File created by $0 (v.${version})\n# on $(date)\n"
-writelog "Starting with nonpersistent mode ...\n"
+writelog "Starting with non-persistent mode ...\n"
 
-
-## look for cdrom, dvd and add them to the vm config file
-(( cdri=1 ))
-for cdrs in /dev/cdrom*; do
-  if [ -L $cdrs ]; then
-     declare cdr_${cdri}="TRUE"
-     (( cdri=${cdri}+1 ))
-  fi
-done
-
-
-## Write all results to logfile
-writelog "finished"
-## log disksetup
+# Write all results to logfile
+# log disksetup
 writelog "Directories:"
 writelog "\tConfdir:\t${confdir}"
 writelog "\tConffile:\t${conffile}"
@@ -336,8 +338,9 @@ writelog "\tMAC:\t\t00:50:56:0D:${mac}"
 writelog "\tMem:\t\t${mem} MB"
 writelog "\tHostmem:\t${memhost} MB"
 writelog "\tMax. res.:\t${xres}x${yres}"
-writelog "\tCD-ROM_1:\t${cdr_1}"
-writelog "\tCD-ROM_2:\t${cdr_2}"
+writelog "\tCD-ROM1:\t${cdrom0}"
+writelog "\tCD-ROM2:\t${cdrom1}"
+writelog "\tFloppy_A:\t${floppy0}"
 # Image
 writelog "Diskimage:"
 writelog "\tDiskfile:\t${diskfile}"

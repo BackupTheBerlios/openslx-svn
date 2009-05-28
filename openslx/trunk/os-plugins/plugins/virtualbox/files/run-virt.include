@@ -14,18 +14,24 @@
 # run-virt.sh. The stuff is copied to /etc/opt/openslx/run-virtualbox.include
 # during stage3.
 
+# include general configuration from vmchooser
+. /etc/opt/openslx/run-virt.include
 
 permem=66
 mem=$(expr{totalmem} * ${permem})
 
 # virtual fd/cd/dvd and drive devices, floppy b: for configuration
-#floppya is always false, if we have a floppy device or not isn't
-#important.
-floppya="FALSE"
-floppyb="TRUE"
-floppybname="/var/lib/virt/vmchooser/loopimg/fd.img"
-cdr_1="FALSE"
-cdr_2="FALSE"
+floppy0="FALSE"
+# if $floppy_0 from run-virt.include set then floppy0="TRUE"
+[ -n "$floppy_0" ] && floppy0="TRUE"
+floppy1="TRUE"
+floppy1name="/var/lib/virt/vmchooser/loopimg/fd.img"
+cdrom0="FALSE"
+# if $cdrom_0 from run-virt.include set then cdrom0="TRUE"
+[ -n "$cdrom_0" ] && cdrom0="TRUE"
+cdrom1="FALSE"
+# if $cdrom_1 from run-virt.include set then cdrom1="TRUE"
+[ -n "$cdrom_1" ] && cdrom1="TRUE"
 # ide is expected default, test for the virtual disk image type should
 # be done while creating the runscripts ...
 ide="TRUE"
