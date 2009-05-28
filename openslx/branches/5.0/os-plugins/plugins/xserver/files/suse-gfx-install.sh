@@ -169,7 +169,7 @@ if [ "$1" = "nvidia" ]; then
   
       # zypper refresh is requested if something is not found
       if [ "1" -le "$(cat logfile | grep -o "zypper refresh"| wc -l)" ]; then 
-          zypper refresh >/dev/null 2>&1 
+          zypper --no-gpg-checks refresh >/dev/null 2>&1 
       fi
   
       # take unique urls from logfile
@@ -273,7 +273,7 @@ if [ "$1" = "ati" ]; then
 
     # zypper refresh is requested if something is not found
     if [ "1" -le "$(cat logfile | grep -o "zypper refresh" | wc -l)" ]; then
-        zypper refresh >/dev/null 2>&1
+        zypper --no-gpg-check refresh >/dev/null 2>&1
     fi
 
     # take unique urls from logfile
