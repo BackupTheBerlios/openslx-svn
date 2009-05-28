@@ -8,11 +8,11 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# MakeInitRamFS::Distro::SciLin.pm
+# MakeInitRamFS::Distro::Scilin.pm
 #    - provides Scientific Linux specific overrides of the 
 #      MakeInitRamFS::Distro API.
 # -----------------------------------------------------------------------------
-package OpenSLX::MakeInitRamFS::Distro::SciLin;
+package OpenSLX::MakeInitRamFS::Distro::Scilin;
 
 use strict;
 use warnings;

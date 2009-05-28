@@ -8,10 +8,10 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# OSSetup/Distro/SciLin.pm
+# OSSetup/Distro/Scilin.pm
 #    - provides Scientific Linux specific overrides of the OSSetup Distro API.
 # -----------------------------------------------------------------------------
-package OpenSLX::OSSetup::Distro::SciLin;
+package OpenSLX::OSSetup::Distro::Scilin;
 
 use strict;
 use warnings;
