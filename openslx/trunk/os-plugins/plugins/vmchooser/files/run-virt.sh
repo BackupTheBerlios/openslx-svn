@@ -18,11 +18,14 @@
 #      fied virtualization tool.
 # -----------------------------------------------------------------------------
 
+# check for running in graphical environment otherwise no much use here
+[ -z "$DISPLAY" ] && echo -e "\n\tStart only within a desktop!\n" && exit 1
+
 # The PATH...
 export PATH="${PATH}:/var/X11R6/bin:/usr/X11R6/bin"
 
 # Read needed variables from XML file
-################################################################################
+###############################################################################
 xml=$1
 
 # file name of the image
@@ -50,12 +53,18 @@ serial=$(grep -i "<serial port=\"" ${xml} | awk -F "\"" '{ print $2 }')
 
 
 # declaration of default variables
-################################################################################
+###############################################################################
 
 # standard variables
 
 # get total amount of memory installed in your machine
 totalmem=$(expr $(grep -i "memtotal" /proc/meminfo | awk '{print $2}') / 1024)
+
+# configuring ethernet mac address: first four bytes are fixed (00:50:56:0D) 
+# the last two bytes are taken from the first local network adaptor of the host
+# system
+mac=$(/sbin/ifconfig eth0 | grep eth0 | sed -e "s/ //g" \
+  | awk -F ":" '{print $(NF-1)":"$NF}')
 
 
 # virtual fd/cd/dvd and drive devices, floppy b: for configuration
@@ -85,7 +94,7 @@ diskfile="${vmdir}/${imagename}"
 
 
 # functions used throughout the script
-################################################################################
+###############################################################################
 
 # check for files
 filecheck ()
@@ -144,6 +153,17 @@ filecheck ()
 # setup the rest of the environment and run the virtualization tool just confi-
 # gured
 ################################################################################
+
+# logo for console
+cat <<EOL
+
+     .----.--.--.-----.--.--.--------.--.--.--.---.-.----.-----.
+     |   _|  |  |     |  |  |        |  |  |  |  _  |   _|  -__|
+     |__| |_____|__|__|\___/|__|__|__|________|___._|__| |_____|
+         Script for preparing virtual machine environment ...
+
+EOL
+
 
 # adjust volume
 writelog "Unmuting sound...\c "

@@ -47,6 +47,7 @@ sub fillRunlevelScript
     my $kind     = shift;
 
     my $script = unshiftHereDoc(<<'    End-of-Here');
+    # put something here ...
 
     End-of-Here
 
