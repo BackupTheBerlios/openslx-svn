@@ -108,7 +108,6 @@ I<slxsettings>-script, so please look there if you'd like to know more.
     'pxe-timeout'                        => '100',
     'pxe-title'                          => 'Welcome to OpenSLX',
     'pxe-totaltimeout'                   => '600',
-    'tftp-server-ip'                     => undef,
 );
 chomp($openslxConfig{'locale-charmap'});
 

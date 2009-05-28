@@ -1,30 +1,16 @@
-# this include file will be loaded at the end of theme and slxsettings
-# configuration but right before the system labels
-# it will overwrite existing defs
+# this include file will be loaded at the bottom of the menu after the system
+# labels, please define only further menus and systems
 # for theme configuration use theme.conf in your theme directory
 # general settings can be set via slxsettings
-# please copy to menu-include if needed
-
-## example german help:
-#MENU PASSPROMPT Gesicherter Bereich, bitte Passwort eingeben:
-#MENU AUTOBOOT Auswahl startet in # Sekunden
-
-## example: shutdown on timeout
-#ONTIMEOUT shutdown
-#LABEL shutdown
-#       MENU HIDE
-#       KERNEL kernel-shutdown
-#       APPEND initrd=initramfs-shutdown quiet
+# please copy to menu-bottom if needed
 
 ## example: shutdown label in menu
-#LABEL shutdown2
+#LABEL shutdown
 #       MENU LABEL ^Shutdown PC
 #       KERNEL kernel-shutdown
 #       APPEND initrd=initramfs-shutdown quiet
 
-## help/... text on F1 keypress
-#F1 help_01.txt
-## optionally with info
+## help label not selectable
 #LABEL help
 #       MENU LABEL Press 'F1' for help
 #       MENU DISABLE
@@ -41,11 +27,6 @@
 #       MENU PASSWD test
 #       KERNEL pxechain.com
 #       APPEND 192.168.101.102::pxelinux.0
-
-## example non-selectable line
-#LABEL -
-#       MENU LABEL ________________________________________________________
-#       MENU DISABLE
 
 ## example blank line / menu separator
 #MENU SEPARATOR
