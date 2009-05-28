@@ -1,0 +1,8 @@
+# /etc/opt/openslx/boot-env/pxe/menu-include
+# this include file will be loaded at the end and will overwrite existing defs
+# for theme configuration use theme.conf in your theme directory
+# general settings can be set via slxsettings
+
+# example german help:
+# MENU PASSPROMPT Gesicherter Bereich, bitte Passwort eingeben:
+# MENU AUTOBOOT Auswahl startet in # Sekunden

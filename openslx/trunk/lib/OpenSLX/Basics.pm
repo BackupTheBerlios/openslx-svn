@@ -103,8 +103,12 @@ I<slxsettings>-script, so please look there if you'd like to know more.
     'mirrors-to-try-count'               => '20',
     'mirrors-to-use-count'               => '5',
     'ossetup-max-try-count'              => '5',
-    'pxe-theme'                          => undef,
-    'pxe-theme-menu-margin'              => '9',
+    'pxe-passwd'                         => 'secret',
+    'pxe-theme'                          => 'openslx',
+    'pxe-timeout'                        => '100',
+    'pxe-title'                          => 'Welcome to OpenSLX',
+    'pxe-totaltimeout'                   => '600',
+    'tftp-server-ip'                     => undef,
 );
 chomp($openslxConfig{'locale-charmap'});
 
