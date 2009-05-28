@@ -213,7 +213,6 @@ cp ${xml} /var/lib/virt/vmchooser/fd-loop/config.xml
 # check if virtual machine container file exists
 filecheck
 
-echo ${virt_mach}
 
 # get all virtual machine specific stuff from the respective include file
 if [ -e /etc/opt/openslx/run-${virt_mach}.include ] ; then
