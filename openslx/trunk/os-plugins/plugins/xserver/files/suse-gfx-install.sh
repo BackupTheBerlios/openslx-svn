@@ -180,14 +180,25 @@ if [ "$1" = "nvidia" ]; then
           wget ${RPM} > /dev/null 2>&1
         fi
         # We use rpm2cpio from suse to extract
-        rpm2cpio ${RNAME} | cpio -id > /dev/null 2>&1
+        if [ -f ${RNAME} ]; then
+          rpm2cpio ${RNAME} | cpio -id > /dev/null 2>&1
+        fi
       done
       mv ./usr/X11R6/lib/* ./usr/lib/
+      if [ ! -f ./usr/lib/libGLcore.so.1 ]; then
+        echo "  NVIDIA files failed to install via zypper!!"
+        exit
+      fi
   
       rm -rf ../usr
-      mv ./usr ..
-      find lib/ -name "*.ko" -exec mv '{}' ../modules \;
-  
+      if [ -d ./usr ]; then      
+        mv ./usr ..
+      fi
+      find lib/ -name "*.ko" -exec mv '{}' ../modules \; > /dev/null 2>&1
+      if [ $? -ne 0 ]; then
+        echo "  Could not find kernel module nvidia.ko!";
+      fi
+ 
       cd .. 
     ;;
   esac
@@ -273,8 +284,14 @@ if [ "$1" = "ati" ]; then
         wget ${RPM} > /dev/null 2>&1 
       fi
       # We use rpm2cpio from suse to extract -> propably new rpm version
-      rpm2cpio ${RNAME} | cpio -id > /dev/null 2>&1
+      if [ -f ${RNAME} ]; then
+        rpm2cpio ${RNAME} | cpio -id > /dev/null 2>&1
+      fi
     done
+    if [ ! -f ./usr/lib/libGLcore.so.1 ]; then
+      echo "  ATI files failed to install via zypper!!"
+      exit
+    fi
 
     mv ./usr/X11R6/lib/* ./usr/lib/
     mv ./usr ..
@@ -282,7 +299,7 @@ if [ "$1" = "ati" ]; then
 
     find lib/ -name "*.ko" -exec mv {} ../modules \; >/dev/null 2>&1
     if [ $? -ne 0 ]; then
-        echo "Could not find kernel module fglrx.ko!";
+        echo "  Could not find kernel module fglrx.ko!";
     fi
 
   ;;
