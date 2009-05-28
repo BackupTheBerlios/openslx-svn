@@ -142,10 +142,11 @@ sub _getTemplate
     my $tftpServer = $openslxConfig{'tftp-server-ip'};
     my $pxeTheme   = $openslxConfig{'pxe-theme'};
     if (defined $tftpServer) {
-        $tftpServer .= "::"
+        $tftpServer .= "::";
     }
     else {
         $tftpServer = "";
+    }
 
     my ($sec, $min, $hour, $day, $mon, $year) = (localtime);
     $mon++;
@@ -236,7 +237,7 @@ sub _prepareBootloaderConfigFolder
         rmtree($pxeConfigPath);
         mkpath($pxeConfigPath);
 
-        for my $file ('pxelinux.0', 'menu.c32', 'vesamenu.c32') {
+        for my $file ('pxelinux.0', 'vesamenu.c32') {
             if (!-e "$pxePath/$file") {
                 slxsystem(
                     qq[cp -p "$basePath/share/boot-env/pxe/$file" $pxePath/]
