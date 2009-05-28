@@ -400,8 +400,6 @@ sub installationPhase
     }
     $self->_setupSupportedThemes();
 
-    $self->{distro}->setupKDEHOME();
-    
     return;
 }
 

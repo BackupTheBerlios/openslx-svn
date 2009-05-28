@@ -104,11 +104,6 @@ sub setupKDMScript
     return $script;
 }
 
-sub setupKDEHOME
-{
-    return;
-}
-
 sub _setupCommonDmScript
 {
     my $script = shift;

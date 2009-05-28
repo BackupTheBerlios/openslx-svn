@@ -57,7 +57,7 @@ sub setupGDMScript
           echo "$USER files removed by $0" >/tmp/files.removed 2>/dev/null ) &
         . /etc/gdm/PostSession/Default.system' >/mnt/etc/gdm/PostSession/Default
         chmod a+x /mnt/etc/gdm/PostSession/Default*
-        # gdm should be started after dbus
+        # gdm should be started after dbus/hal
         rllinker gdm 4 10
         echo '/usr/sbin/gdm' >/mnt/etc/X11/default-display-manager
         chroot /mnt update-alternatives --set x-window-manager /usr/bin/metacity
@@ -142,29 +142,6 @@ sub setupKDMScript
     End-of-Here
 
     return $script;
-}
-
-sub setupKDEHOME
-{
-    my $self     = shift;
-    my $path     = "/etc/profile.d/kde.sh";
-
-    my $script = unshiftHereDoc(<<'    End-of-Here');
-        export KDEHOME=".kde$(kde-config -v | grep KDE | \
-            sed -e "s,KDE: \([0-9]\).*,\1,")-ubuntu"
-    End-of-Here
-
-    appendFile($path, $script);
-    # TODO: a nicer solution to this hack
-    # ensures, that .kde-.../share/apps directory exists
-    # otherwise KDE progs will complain every time with a warning window
-    system('! [ -e /usr/bin/startkde ] || \
-        grep -q "mkdir -m 700 -p \$kdehome/share/apps" /usr/bin/startkde ||\
-        sed -i -e "s,mkdir -m 700 -p \$kdehome/share/config,\
-mkdir -m 700 -p \$kdehome/share/config\nmkdir -m 700 -p \$kdehome/share/apps," \
-        /usr/bin/startkde');
-
-    return;
 }
 
 1;

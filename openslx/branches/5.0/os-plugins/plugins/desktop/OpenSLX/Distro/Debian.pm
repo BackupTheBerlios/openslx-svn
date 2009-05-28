@@ -56,11 +56,4 @@ sub setupKDMScript
     return $script;
 }
 
-sub setupKDEHOME
-{
-    print "Info: KDEHOME isn't set for Debian at this point.\n";
-
-    return;
-}
-
 1;

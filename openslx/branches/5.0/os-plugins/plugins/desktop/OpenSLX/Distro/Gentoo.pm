@@ -27,11 +27,4 @@ use OpenSLX::Basics;
 
 # TODO: implement!
 
-sub setupKDEHOME
-{
-    print "Info: KDEHOME isn't set for Gentoo at this point.\n";
-
-    return;
-}
-
 1;

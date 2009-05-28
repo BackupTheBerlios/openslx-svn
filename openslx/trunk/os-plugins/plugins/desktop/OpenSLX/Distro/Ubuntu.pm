@@ -144,27 +144,4 @@ sub setupKDMScript
     return $script;
 }
 
-sub setupKDEHOME
-{
-    my $self     = shift;
-    my $path     = "/etc/profile.d/kde.sh";
-
-    my $script = unshiftHereDoc(<<'    End-of-Here');
-        export KDEHOME=".kde$(kde-config -v | grep KDE | \
-            sed -e "s,KDE: \([0-9]\).*,\1,")-ubuntu"
-    End-of-Here
-
-    appendFile($path, $script);
-    # TODO: a nicer solution to this hack
-    # ensures, that .kde-.../share/apps directory exists
-    # otherwise KDE progs will complain every time with a warning window
-    system('! [ -e /usr/bin/startkde ] || \
-        grep -q "mkdir -m 700 -p \$kdehome/share/apps" /usr/bin/startkde ||\
-        sed -i -e "s,mkdir -m 700 -p \$kdehome/share/config,\
-mkdir -m 700 -p \$kdehome/share/config\nmkdir -m 700 -p \$kdehome/share/apps," \
-        /usr/bin/startkde');
-
-    return;
-}
-
 1;
