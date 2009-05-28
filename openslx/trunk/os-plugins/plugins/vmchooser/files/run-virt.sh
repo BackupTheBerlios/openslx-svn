@@ -22,7 +22,8 @@
 ###############################################################################
 
 # check for running in graphical environment otherwise no much use here
-[ -z "$DISPLAY" ] && echo -e "\n\tStart only within a desktop!\n" && exit 1
+[ -z "$DISPLAY" ] && echo -e "\n\tStart only within a graphical desktop!\n" \
+  && exit 1
 
 # test if the xml path/file is valid (gotten via commandline first parameter)
 xml=$1
@@ -37,7 +38,7 @@ imagepath=${xml%/*}
 # file name of the image
 imagename=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 diskfile=$imagepath/$imagename
-[ -e $diskfile ] && { echo -e "\n\tImage file $diskfile not found!"; exit 1; }
+[ -e $diskfile ] || { echo -e "\n\tImage file $diskfile not found!"; exit 1; }
 
 # short description of the image (as present in the vmchooser menu line)
 short_description=$(grep "short_description param=\"" ${xml} | \
@@ -154,8 +155,13 @@ cp ${xml} /var/lib/virt/vmchooser/fd-loop/config.xml
 filecheck
 
 # get all virtual machine specific stuff from the respective include file
-. /etc/opt/openslx/run-${virt_mach}.include
-${VIRTCMD} ${VIRTCMDOPTS} 
+if [ -e /etc/opt/openslx/run-${virt_mach}.include ] ; then
+  . /etc/opt/openslx/run-${virt_mach}.include
+  ${VIRTCMD} ${VIRTCMDOPTS}
+  writelog "Bye.\n"
+  exit 0
+else
+  writelog "Failed because of missing ${virt_mach} plugin."
+  exit 1
+fi
 
-writelog "Bye.\n"
-exit 0
