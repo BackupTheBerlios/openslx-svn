@@ -1,0 +1,4 @@
+if [ "x$(tty)" == "x/dev/tty1" ]; then
+  startx
+  exit
+fi
