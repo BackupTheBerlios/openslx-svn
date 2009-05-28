@@ -19,7 +19,7 @@
 if [ -e /initramfs/plugin-conf/kiosk.conf ]; then
 	. /initramfs/plugin-conf/kiosk.conf
 
-  	if [ $dropbear_active -ne 0 ]; then
+  	if [ $kiosk_active -ne 0 ]; then
     	[ $DEBUGLEVEL -gt 0 ] && echo "executing the 'kiosk' os-plugin ...";
 		
 		# create new user
@@ -28,7 +28,7 @@ if [ -e /initramfs/plugin-conf/kiosk.conf ]; then
 		
 		# setup custom rungetty
 		mkdir -p /mnt/root/bin
-		ln -sf /mnt/opt/openslx/plugin-repo/kiosk/rungetty /mnt/root/bin/mygetty
+		ln -sf /opt/openslx/plugin-repo/kiosk/rungetty /mnt/root/bin/mygetty
         
         sed -i /mnt/etc/event.d/tty1 \
             -e 's#exec.*#exec /root/bin/mygetty --autologin kiosk tty1#'
