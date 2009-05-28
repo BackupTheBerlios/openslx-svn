@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2008, 2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -267,6 +267,10 @@ sub installationPhase
     $self->{openslxConfigPath}    = $info->{'openslx-config-path'};
     $self->{attrs}                = $info->{'plugin-attrs'};
     
+    # copy common part of run-virt.include to the appropriate place for
+    # inclusion in stage4
+    copyFile("$self->{openslxBasePath}/lib/plugins/vmware/files/run-virt.include",
+        "$self->{pluginRepositoryPath}/");        
 
     # kinds we will configure and install
     # TODO: write a list of installed/setted up and check it in stage3
@@ -298,15 +302,6 @@ sub installationPhase
         linkFile("/var/X11R6/bin/vmware", "/usr/bin/vmware");
         rename("/usr/bin/vmware", "/usr/bin/vmware.slx-bak");
     }
-    # this kinda sucks. what if we have local installed vmplayer but
-    # plugin installed vmware workstation? what if we have a local
-    # installed vmware workstation but run plugin installed vmplayer
-    # without workstation. Link will go to nowhere... kinda ugly that
-    # /usr/ is ro.
-    # TODO: need to find a solution (if there is one possible with ro
-    # mounted /usr ...)
-    linkFile("/var/X11R6/bin/vmware", "/usr/bin/vmware");
-            
 }
 
 sub removalPhase
@@ -393,10 +388,6 @@ sub _writeRunlevelScript
     # call the distrospecific fillup
     my $runlevelScript = $self->{distro}->fillRunlevelScript($location, $kind);
 
-    # OLTA: this backup strategy is useless if invoked twice, so I have
-    #       deactivated it
-    # rename($file, "${file}.slx-bak") if -e $file;
-
     spitFile($file, $runlevelScript);
 }
 
@@ -448,9 +439,9 @@ sub _writeWrapperScript
         $script .= unshiftHereDoc(<<"        End-of-Here");
             PREFIX=$vmpath # depends on the vmware location
             exec "\$PREFIX"'/lib/wrapper-gtk24.sh' \\
-                "\$PREFIX"'/lib' \\
-                "\$PREFIX"'/bin/$file' \\
-                "\$PREFIX"'/libconf' "\$@"
+                 "\$PREFIX"'/lib' \\
+                 "\$PREFIX"'/bin/$file' \\
+                 "\$PREFIX"'/libconf' "\$@"
         End-of-Here
 
         # TODO: check if these will be overwritten if we have more as
@@ -461,15 +452,56 @@ sub _writeWrapperScript
     }
 }
 
-sub _writeVmwareConfig {
+sub _writeVmwareConfigs {
     my $self   = shift;
     my $kind   = shift;
     my $vmpath = shift;
+    my %versionhash = (vmversion => "", vmbuildversion => "");
+    my $vmversion = "";
+    my $vmbuildversion = "";
+    my $config = "";
 
-    my $config = "libdir = \"$vmpath\"\n";
+    %versionhash = _getVersion($vmpath);
 
+    $config .= "version=\"".$versionhash{vmversion}."\"\n";
+    $config .= "buildversion=\"".$versionhash{vmbuildversion}."\"\n";
+    spitFile("$self->{'pluginRepositoryPath'}/$kind/slxvmconfig", $config);
+    chmod 0755, "$self->{'pluginRepositoryPath'}/$kind/slxvmconfig";
+
+    $config = "libdir = \"$vmpath\"\n";
     spitFile("$self->{'pluginRepositoryPath'}/$kind/config", $config);
     chmod 0755, "$self->{'pluginRepositoryPath'}/$kind/config";
+}
+
+sub _getVersion {
+
+    my $vmpath       = shift;
+    my $vmversion = "";
+    my $vmbuildversion = "";
+    my %versioninfo = (vmversion => "", vmbuildversion => "");
+
+    # get version information about installed vmplayer
+    if (open(FH, "$vmpath/bin/vmplayer")) {
+        $/ = undef;
+        my $data = <FH>;
+        close FH;
+        # depending on the installation it could differ and has multiple build
+        # strings
+        if ($data =~ m{[^\d\.](\d\.\d) build-(\d+)}) {
+            $vmversion = $1;
+            $vmbuildversion = $2;
+        }
+        if ($data =~ m{\0(2\.[05])\.[0-9]}) {
+            $vmversion = $1;
+        }
+        # else { TODO: errorhandling if file or string doesn't exist }
+        chomp($vmversion);
+        chomp($vmbuildversion);
+
+        $versioninfo{vmversion} = $vmversion;
+        $versioninfo{vmbuildversion} = $vmbuildversion;
+     }
+     return %versioninfo;
 }
 
 ########################################################################
@@ -487,6 +519,7 @@ sub _localInstallation
     my $kind   = "local";
     my $vmpath = "/usr/lib/vmware";
     my $vmbin  = "/usr/bin";
+    my %versionhash = (vmversion => "", vmbuildversion => "");
     my $vmversion = "";
     my $vmbuildversion = "";
 
@@ -500,59 +533,18 @@ sub _localInstallation
     # we will only use vmplayer
     if (-e "/usr/lib/vmware/bin/vmplayer") {
 
-        ##
         ## Get and write version information
+        %versionhash = _getVersion($vmpath);
+        $vmversion = $versionhash{vmversion};
+        $vmbuildversion = $versionhash{vmbuildversion};
 
-        # get version information about installed vmplayer
-        open(FH, "/usr/lib/vmware/bin/vmplayer");
-        $/ = undef;
-        my $data = <FH>;
-        close FH;
-        # perhaps we need to recheck the following check. depending
-        # on the installation it could differ and has multiple build-
-        # strings
-        if ($data =~ m{[^\d\.](\d\.\d) build-(\d+)}) {
-            $vmversion = $1;
-            $vmbuildversion = $2;
-        }
-        if ($data =~ m{\0(2\.[05])\.[0-9]}) {
-            $vmversion = $1;
-        }
-        # else { TODO: errorhandling if file or string doesn't exist }
-        chomp($vmversion);
-        chomp($vmbuildversion);
-
-        # write informations about local installed vmplayer in file
-        # TODO: perhaps we don't need this file.
-        # TODO2: write vmbuildversion and stuff in runvmware in stage1
-        open FILE, ">$self->{'pluginRepositoryPath'}/$kind/versioninfo.txt"
-            or die $!;
-        print FILE "vmversion=\"$vmversion\"\n";
-        print FILE "vmbuildversion=\"$vmbuildversion\"\n";
-        close FILE;
-
-        ##
         ## Copy needed files
-
-        # copy 'normal' needed files
         my @files = qw(nvram.5.0);
         foreach my $file (@files) {
             copyFile("$pluginFilesPath/$file", "$installationPath");
         }
-        # copy depends on version and rename it to runvmware, saves one check in stage3
-        if ($vmversion eq "1.0" || $vmversion eq "5.5") {
-            print "\n\nDEBUG: player version $vmversion, we use -v1\n\n";
-            copyFile("$pluginFilesPath/runvmware-player-v1", "$installationPath", "runvmware");
-        } elsif ($vmversion eq "2.0" || $vmversion eq "6.0") {
-            print "\n\nDEBUG: player version $vmversion, we use -v2\n\n";
-            copyFile("$pluginFilesPath/runvmware-player-v2", "$installationPath", "runvmware");
-        } elsif ($vmversion eq "2.5" || $vmversion eq "6.5") {
-            print "\n\nDEBUG: player version $vmversion, we use -v25\n\n";
-            copyFile("$pluginFilesPath/runvmware-player-v25", "$installationPath", "runvmware");
-        }
 
-        ##
-        ## Create runlevel script
+        # Create runlevel script -> to be fixed!!
         my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
         if ($vmversion eq "2.5") {
             $self->_writeRunlevelScript($vmbin, $runlevelScript, "local25");
@@ -560,8 +552,7 @@ sub _localInstallation
             $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
         }
 
-        ##
-        ## Create wrapperscripts
+        # Create wrapper scripts
         if (-e "/usr/bin/vmware") {
             $self->_writeWrapperScript("$vmpath", "$kind", "ws")
         } else {
@@ -570,6 +561,9 @@ sub _localInstallation
         
     }
     # else { TODO: errorhandling }
+    
+    ## Creating needed config /etc/vmware/config
+    $self->_writeVmwareConfigs("$kind", "$vmpath");
 }
 
 
@@ -579,8 +573,6 @@ sub _vmpl2Installation {
     my $kind   = "vmpl2.0";
     my $vmpath = "/opt/openslx/plugin-repo/vmware/$kind/vmroot/lib/vmware";
     my $vmbin  = "/opt/openslx/plugin-repo/vmware/$kind/vmroot/bin";
-    my $vmversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage?";
-    my $vmbuildversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage1";
 
     my $pluginFilesPath 
         = "$self->{'openslxBasePath'}/lib/plugins/$self->{'name'}/files";
@@ -600,22 +592,18 @@ sub _vmpl2Installation {
     # copy on depending runvmware file
     copyFile("$pluginFilesPath/runvmware-player-v2", "$installationPath", "runvmware");
 
-    ##
-    ## Install the binarys from given pkgpath
+    # Install the binarys from given pkgpath
     system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-vmpl.sh $kind");
 
-    ##
-    ## Create runlevel script
+    # Create runlevel script
     my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
     $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
 
-    ##
-    ## Create wrapperscripts
+    # Create wrapperscripts
     $self->_writeWrapperScript("$vmpath", "$kind", "player");
 
-    ##
-    ## Creating needed config /etc/vmware/config
-    $self->_writeVmwareConfig("$kind", "$vmpath");
+    # Creating needed config /etc/vmware/config
+    $self->_writeVmwareConfigs("$kind", "$vmpath");
         
 }
 
@@ -625,7 +613,7 @@ sub _vmpl25Installation {
     my $kind   = "vmpl2.5";
     my $vmpath = "/opt/openslx/plugin-repo/vmware/$kind/vmroot/lib/vmware";
     my $vmbin  = "/opt/openslx/plugin-repo/vmware/$kind/vmroot/bin";
-    my $vmversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage?";
+    my $vmversion = "6.5";
     my $vmbuildversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage1";
 
     my $pluginFilesPath 
@@ -633,9 +621,6 @@ sub _vmpl25Installation {
     my $installationPath = "$self->{'pluginRepositoryPath'}/$kind";
 
     mkpath($installationPath);
-
-    ##
-    ## Copy needed files
 
     # copy 'normal' needed files
     my @files = qw( nvram.5.0 install-vmpl.sh );
@@ -646,25 +631,20 @@ sub _vmpl25Installation {
     # copy on depending runvmware file
     copyFile("$pluginFilesPath/runvmware-player-v25", "$installationPath", "runvmware");
 
-    ##
-    ## Install the binarys from given pkgpath
+    # Install the binarys from given pkgpath
     system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-vmpl.sh $kind");
 
-    ##
-    ## Create runlevel script
+    # Create runlevel script
     my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
     $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
 
-    ##
-    ## Create wrapperscripts
+    # Create wrapperscripts
     $self->_writeWrapperScript("$vmpath", "$kind", "player");
 
-    ##
-    ## Creating needed config /etc/vmware/config
-    $self->_writeVmwareConfig("$kind", "$vmpath");
+    # Creating needed config /etc/vmware/config
+    $self->_writeVmwareConfigs("$kind", "$vmpath");
         
 }
-
 
 sub _vmpl1Installation {
     my $self     = shift;
@@ -672,7 +652,7 @@ sub _vmpl1Installation {
     my $kind   = "vmpl1.0";
     my $vmpath = "/opt/openslx/plugin-repo/vmware/$kind/vmroot/lib/vmware";
     my $vmbin  = "/opt/openslx/plugin-repo/vmware/$kind/vmroot/bin";
-    my $vmversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage?";
+    my $vmversion = "5.5";
     my $vmbuildversion = "TODO_we_need_it_for_enhanced_runvmware_config_in_stage1";
 
     my $pluginFilesPath 
@@ -680,9 +660,6 @@ sub _vmpl1Installation {
     my $installationPath = "$self->{'pluginRepositoryPath'}/$kind";
 
     mkpath($installationPath);
-
-    ##
-    ## Copy needed files
 
     # copy 'normal' needed files
     my @files = qw( nvram.5.0 install-vmpl.sh );
@@ -692,22 +669,18 @@ sub _vmpl1Installation {
     # copy on depending runvmware file
     copyFile("$pluginFilesPath/runvmware-player-v1", "$installationPath", "runvmware");
 
-    ##
-    ## Download and install the binarys
+    # Download and install the binarys
     system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-vmpl.sh $kind");
 
-    ##
-    ## Create runlevel script
+    # Create runlevel script
     my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
     $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
 
-    ##
-    ## Create wrapperscripts
+    # create wrapper scripts
     $self->_writeWrapperScript("$vmpath", "$kind", "player");
 
-    ##
-    ## Creating needed config /etc/vmware/config
-    $self->_writeVmwareConfig("$kind", "$vmpath");
+    # creating needed config /etc/vmware/config
+    $self->_writeVmwareConfigs("$kind", "$vmpath");
         
 }
 
