@@ -25,6 +25,17 @@ sysname=$(cat result)
 . ./$sysname
 sysname=$(readlink $sysname)
 
+echo "0" >result
+dialog --no-cancel --menu "Choose Debug Level:" 20 65 10 \
+   "0" "no debug output"  \
+   "3" "standard debug output" 2>result
+   
+debuglevel=$(cat result)
+if [ x$debuglevel != x0 ]; then
+	debug="debug=$debuglevel"
+else
+    debug=""
+fi 
 ash
 
 # bring the mac address into the standard format 01-<MAC>
@@ -44,5 +55,5 @@ wget -O /tmp/initramfs $boot_uri/$initramfs
 # start the new kernel with initialramfs and composed cmdline
 echo "Booting OpenSLX client $label ..."
 kexec -l /tmp/kernel --initrd=/tmp/initramfs \
-  --append="$append file=$boot_uri/${preboot_id}/client-config/${sysname}/${client}.tgz $quiet ip=$ip:$siaddr:$router:$subnet:$dnssrv debug=3"
+  --append="$append file=$boot_uri/${preboot_id}/client-config/${sysname}/${client}.tgz $quiet ip=$ip:$siaddr:$router:$subnet:$dnssrv $debug"
 kexec -e
