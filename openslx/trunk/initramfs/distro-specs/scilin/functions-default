@@ -42,7 +42,7 @@ config_distro () {
   echo -e "SLX VERSION = $SLXVERSION\nINITRAMFS GENERATION DATE = $date" \
     >>/mnt/etc/redhat-release
   # simple bash configuration for root
-  echo ". /etc/bashrc" >/root/.bashrc
+  echo ". /etc/bashrc" >/mnt/root/.bashrc
   # enable sysrq
   sed -e "s/kernel.sysrq =.*/kernel.sysrq = 1/" -i /mnt/etc/sysctl.conf
   # set some networking stuff if needed
@@ -120,6 +120,7 @@ fi
 # name service caching daemon (useful in most cases)
 config_nscd () {
   if [ -f /mnt/etc/init.d/nscd ] ; then
+	testmkd /mnt/var/db/nscd
     rllinker "nscd" 20 5
   fi
 }
@@ -210,7 +211,7 @@ local start=0
 local stop=18
 if [ "x$start_dreshal" = "xyes" ]; then
   testmkd /mnt/var/run/dbus 
-  if [ -f /mnt/etc/init.d/dbus ] ; then
+  if [ -f /mnt/etc/init.d/messagebus ] ; then
     strinfile "dbus:" /mnt/etc/passwd || \
       echo "dbus:x:81:81:System Message Bus:/var/run/dbus:/sbin/nologin" \
         >> /mnt/etc/passwd
