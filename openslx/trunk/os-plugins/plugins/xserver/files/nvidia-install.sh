@@ -4,37 +4,54 @@
 # Installs NVIDIA binary drivers into openslx plugin-repo
 ##########################################################
 PLUGIN_PATH="/opt/openslx/plugin-repo/xserver"
-TMP_FOLDER="/opt/openslx/plugin-repo/xserver/nvidia/temp"
-PKG_FOLDER="/opt/openslx/plugin-repo/xserver/packages"
-MODULES_FOLDER="/opt/openslx/plugin-repo/xserver/modules"
 
-#TODO: check if we still have .../xserver/nvidia folder
-
-DISTRO=$(lsb_release -i)
-RELEASE=$(lsb_release -r)
-
+# we could easily pass this information via calling stage1 script and do not
+# need to find it our here ...
+DISTRO=$1
 
 cd ${PLUGIN_PATH}
 
-# Ubuntu gfx-install.sh skript
-if [ "1" -eq "$(echo ${DISTRO} | grep 'Ubuntu' | wc -l)" ]; then
-  # we have Ubuntu - run ubuntu-gfx-install
-  echo "* Using Ubuntu packages to install nvidia modules and libs"
-  if [ "8.10" = "$(echo ${RELEASE}| awk '{print $2}')" ]; then
+case ${DISTRO} in
+  ubuntu-8.10*)
     ./ubuntu-8.10-gfx-install.sh nvidia
-  else
+  ;;
+  ubuntu*)
     ./ubuntu-gfx-install.sh nvidia
-  fi
-  exit
-fi
-# End ubuntu gfx-install.sh
+  ;;
+  suse-11.X*)
+    ./suse-gfx-install.sh nvidia
+  ;;
+  # general purpose nvidia installer script
+  *)
+   echo "  * Running general NVidia installer (expected in ~/xserver-pkgs)"
+   # unpack the nvidia installer; quickhack - expects just one package
+   echo "  * Unpacking installer"
+   sh packages/NVIDIA-Linux-*.run -a -x >>nvidia-inst.log 2>&1
+   stdprfx=/opt/openslx/plugin-repo/xserver/nvidia
+   # run the lib installer
+   echo "  * Starting the library installer"
+   echo "Starting the lib installer" >>nvidia-inst.log
+   $(ls -d NVIDIA-Linux-*)/nvidia-installer -s -q -N --no-abi-note \
+     --x-prefix=${stdprfx}/usr --x-library-path=${stdprfx}/usr/lib \
+     --x-module-path=${stdprfx}/usr/lib/xorg/modules \
+     --opengl-prefix=${stdprfx}/usr --utility-prefix=${stdprfx}/usr \
+     --documentation-prefix=${stdprfx}/usr --no-runlevel-check  \
+     --no-rpms --no-x-check --no-kernel-module \
+     --log-file-name=nvidia-lib.log >>nvidia-inst.log 2>&1
+   # how to get an idea of the installed kernel?
+   # run the kernel module creator (should be done for every kernel!?)
+   kernel=2.6.25.18-0.2-pae
+   echo "  * Trying to compile a kernel module for $kernel"
+   echo "Starting the kernel $kernel installer" >>nvidia-inst.log
+   $(ls -d NVIDIA-Linux-*)/nvidia-installer -s -q -N -K --no-abi-note \
+     --kernel-source-path=/lib/modules/${kernel}/build -k ${kernel} \
+     --kernel-install-path=/opt/openslx/plugin-repo/xserver/nvidia/modules \
+     --no-runlevel-check  --no-abi-note --no-rpms --no-cc-version-check \
+     --log-file-name=nvidia-kernel.log >>nvidia-inst.log 2>&1
+   echo "  * Have a look into the several *.log files in "
+   echo "    stage1/${DISTRO}/plugin-repo/xserver"
+  ;;
+esac
 
-
-# SUSE gfx-install.sh skript
-if [ "1" -eq "$(lsb_release -i | grep 'SUSE' | wc -l)" ]; then
-  # we have SUSE - run ubuntu-gfx-install
-  echo "* Using SuSE packages to install nvidia modules and libs"
-  ./suse-gfx-install.sh nvidia
-  exit
-fi
-# End suse gfx-install.sh
+# set a proper return value to evaluate it in the calling script
+exit 0

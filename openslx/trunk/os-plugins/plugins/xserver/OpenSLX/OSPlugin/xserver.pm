@@ -47,8 +47,8 @@ sub getInfo
         This plugin tries to configure the local Xorg-Server and 
 	integrates binary graphics drivers (closed sourced) into the system.
         Notice that you need to have kernel-headers installed to work properly.
-	You need to download the driver packages yourself and write the 
-	download folder into the right option.
+        in some cases. You need to download the driver packages yourself and 
+        supply the download folder into the pkgpath option.
         End-of-Here
         precedence => 80,
     };
@@ -113,19 +113,19 @@ sub getAttrInfo
         # plugin specific attributes start here ...
 
         # stage1
-# Currently we don't need it anymore. Perhaps in the future, thats
-# why it's just commented out
-#        'xserver::pkgpath' => {
-#            applies_to_vendor_os => 0,
-#            applies_to_vendor_os => 1,
-#            description => unshiftHereDoc(<<'            End-of-Here'),
-#                Path to downloaded ATI or Nvidia package
-#            End-of-Here
-#            # TODO:
-#            #content_regex => qr{^0|1$},
-#            content_descr => 'Path to Nvidia or ATI packages',
-#            default => '/root/xserver-pkgs',
-#        },
+        # Currently not needed in scenarios where distro specific packages are
+        # available
+        'xserver::pkgpath' => {
+            applies_to_vendor_os => 0,
+            applies_to_vendor_os => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                Path to downloaded ATI or Nvidia package
+            End-of-Here
+            # TODO:
+            #content_regex => qr{^0|1$},
+            content_descr => 'Path to Nvidia or ATI packages',
+            default => '/root/xserver-pkgs',
+        },
         'xserver::ati' => {
             applies_to_vendor_os => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
@@ -170,24 +170,23 @@ sub preInstallationPhase()
     $self->{attrs}                = $info->{'plugin-attrs'};
     $self->{vendorOsPath}         = $info->{'vendor-os-path'};
                                         
-## Due of the fact that we download now our files we don't need this
-## part anymore. Maybe in the future. Thats why it's just commented out
-#    my $pkgpath = $self->{attrs}->{'xserver::pkgpath'};
-#    my $installAti = $self->{attrs}->{'xserver::ati'};
-#    my $installNvidia = $self->{attrs}->{'xserver::nvidia'};
 
-#    if (! -d $pkgpath && ($installAti == 1 || $installNvidia == 1)) {
-#        print "\n\n * xserver::pkgpath: no such directory!\n";
-#        print " * xserver plugin can't install ATI or Nvidia driver!\n\n";
-#        # exit 1 => xserver plugin is not getting installed because ati
-#        # or nvidia where selected but are not installable!
-#        exit 1;
-#    }
-#
-#    if (-d $pkgpath && ($installNvidia == 1 || $installAti == 1)) {
-#        # Todo: use a openslx copy function!
-#        system("cp -r $pkgpath $self->{pluginRepositoryPath}/packages");
-#    }
+    my $pkgpath = $self->{attrs}->{'xserver::pkgpath'};
+    my $installAti = $self->{attrs}->{'xserver::ati'};
+    my $installNvidia = $self->{attrs}->{'xserver::nvidia'};
+
+    #if (! -d $pkgpath && ($installAti == 1 || $installNvidia == 1)) {
+    #    print "\n\n * xserver::pkgpath: no such directory!\n";
+    #    print " * xserver plugin can't install ATI or Nvidia driver!\n\n";
+    #    # exit 1 => xserver plugin is not getting installed because ati
+    #    # or nvidia where selected but are not installable!
+    #    exit 1;
+    #}
+
+    if (-d $pkgpath && ($installNvidia == 1 || $installAti == 1)) {
+        # Todo: use a openslx copy function!
+        system("cp -r $pkgpath $self->{pluginRepositoryPath}/packages");
+    }
 
 }
 
@@ -216,6 +215,7 @@ sub installationPhase
         # chroot
     my $attrs = $info->{'plugin-attrs'};
         # attributes in effect for this installation
+    my $vendorOSName = $self->{'os-plugin-engine'}->{'vendor-os-name'};
 
     # write the distro specific extension (inclusion) of XX_xserver.sh
     my $script = $self->{distro}->setupXserverScript($pluginRepoPath);
@@ -248,7 +248,7 @@ sub installationPhase
     }
     if ($attrs->{'xserver::nvidia'} == 1) {
         copyFile("$pluginFilesPath/nvidia-install.sh", "$installationPath");
-        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/nvidia-install.sh");
+        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/nvidia-install.sh $vendorOSName");
         #system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh nvidia");
     }
 
