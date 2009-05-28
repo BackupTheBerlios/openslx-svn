@@ -15,6 +15,8 @@
 # -----------------------------------------------------------------------------
 use strict;
 use warnings;
+use Switch;
+
 
 my $abstract = q[
 slxconfig-demuxer
@@ -485,10 +487,22 @@ sub writeClientConfigurationsForSystem
             # name it is referred to in the openslx-config-DB:
             my $externalClientID = externalIDForClient($client);
             my $bootEnv = bootEnvironmentForType($bootType);
-            createTarOfPath(
-                $buildPath, "${externalClientID}.tgz",
-                "$bootEnv->{'target-path'}/client-config/$externalSystemID"
-            );
+            switch ($bootType) {
+            	case 'pxe' {
+	                createTarOfPath(
+		                $buildPath, "${externalClientID}.tgz",
+		                "$bootEnv->{'target-path'}/client-config/$externalSystemID"
+		            );
+    	        } 
+    	        case 'preboot-cd' {
+		        	# for preboot types
+		        	$cname = $client->{name};
+		            createTarOfPath(
+		                $buildPath, "${cname}.tgz",
+		                "$bootEnv->{'target-path'}/client-config/$externalSystemID"
+		            );
+    	        }
+            }
         }
     }
     return;
