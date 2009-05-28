@@ -89,6 +89,18 @@ modprobe ${MODPRV} snd-mixer-oss
 
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished most of module loading at $(sysup)"
 
+# scanner setup (fixme: to be checked)
+hwinfo --scanner >/etc/hwinfo.scanner
+[ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
+  >>/mnt/etc/udev/rules.d/04-scanner.rules
+
+# if any new device appeared up to now
+mdev -s
+return 0
+}
+#############################################################################
+# harddisk partition setup part
+disk () {
 # get idea of availabe harddisk partitions, put swap partitions into
 # (/mnt)/etc/fstab and format and mount partitions of type 44 (unknown)
 [ $DEBUGLEVEL -eq 21 ] && echo "** starting hdd stuff at $(sysup)"
@@ -129,14 +141,6 @@ else
   echo "no harddisk found ( $(sysup) )" >/tmp/tmpready
 fi
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished hdd stuff at $(sysup)"
-# scanner setup (fixme: to be checked)
-hwinfo --scanner >/etc/hwinfo.scanner
-[ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
-  >>/mnt/etc/udev/rules.d/04-scanner.rules
-
-# if any new device appeared up to now
-mdev -s
-return 0
 }
 
 #############################################################################
@@ -180,13 +184,17 @@ case $1 in
   base)
     base
   ;;
-  # main part of hardware setup including Xorg
+  # main part of hardware setup of pci stuff
   main)
     hwmain
     # main script run timer or debug information
     [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 21 ] && \
-      echo "** HW setup finished at $(sysup)"
-    echo "hwsetup finished at $(sysup)" >/tmp/hwcfg
+      echo "** HW main setup finished at $(sysup)"
+    echo "hwsetup main part finished at $(sysup)" >/tmp/hwcfg
+  ;;
+  # disk setup part (detecting, formatting, mounting)
+  disk)
+    disk
   ;;
   # remove unneeded kernel modules
   finish)
