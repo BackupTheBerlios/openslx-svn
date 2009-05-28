@@ -16,14 +16,20 @@
 if [ -e /initramfs/plugin-conf/qemukvm.conf ]; then
 
   # check for the virtualization CPU features
-  if grep -q "svm" /proc/cpuinfo ; then
-    modprobe -q kvm_amd || error "  * Loading of kvm_amd failed"
-  elif grep -q "vmx" /proc/cpuinfo ; then
-    modprobe -q kvm_intel || error "  * Loading of kvm_intel failed"
+  if grep -q "svm" /proc/cpuinfo && modprobe ${MODPRV} kvm_amd ; then
+    [ $DEBUGLEVEL -gt 0 ] && echo "  * Loaded kvm_amd module"
+  elif grep -q "vmx" /proc/cpuinfo &&  modprobe  ${MODPRV} kvm_intel ; then
+    [ $DEBUGLEVEL -gt 0 ] && echo "  * Loaded kvm_intel module"
+  elif modprobe ${MODPRV} kqemu ; then
+    [ $DEBUGLEVEL -gt 0 ] && \
+    error "  * Successfully loaded the kqemu module, but loading of kvm_amd \
+or kvm_intel\n  failed, because no virtualization extenstion found in this \
+CPU. Please\n  enable the extension within your machines BIOS or get another \
+CPU." nonfatal
   else
-    error "  * No virtualization extenstion found in this CPU. Thus using \
-qemu-kvm\n  makes not much sense. Please enable the extension within your \
-machines\n  BIOS or get another CPU." nonfatal
+    error "  * All module loading failed including the kqemu module, which \
+was either\n  not found or couldn't be loaded for other reasons. Thus using \
+qemu(-kvm)\n  makes not much sense."
     exit 1
   fi
     
