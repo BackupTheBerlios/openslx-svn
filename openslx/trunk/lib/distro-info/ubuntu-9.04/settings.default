@@ -1,32 +1,38 @@
 arch = i386
 package-subdir = pool
-prereq-packages = main/d/debootstrap/debootstrap_0.3.3.2ubuntu3_all.deb
-release-name = gutsy
+prereq-packages = main/d/debootstrap/debootstrap_1.0.12_all.deb
+release-name = jaunty
 <repository base>
     components = main restricted
-    distribution = gutsy
-    name = Ubuntu 7.10
+    distribution = jaunty
+    name = Ubuntu 9.04
     repo-subdir = dists
-    file-for-speedtest = dists/gutsy/main/binary-i386/Packages.bz2
+    file-for-speedtest = dists/jaunty/main/binary-i386/Packages.bz2
 </repository>
 <repository base_security>
     components = main restricted
-    distribution = gutsy-security
-    name = Ubuntu 7.10 Security
+    distribution = jaunty-security
+    name = Ubuntu 9.04 Security
     repo-subdir = dists
-    file-for-speedtest = dists/gutsy-security/main/binary-i386/Packages.bz2
+    file-for-speedtest = dists/jaunty-security/main/binary-i386/Packages.bz2
 </repository>
 <repository base_updates>
     components = main restricted
-    distribution = gutsy-updates
-    name = Ubuntu 7.10 Updates
+    distribution = jaunty-updates
+    name = Ubuntu 9.04 Updates
     repo-subdir = dists
-    file-for-speedtest = dists/gutsy-updates/main/binary-i386/Packages.bz2
+    file-for-speedtest = dists/jaunty-updates/main/binary-i386/Packages.bz2
 </repository>
 <selection minimal>
     packages = <<END
         language-pack-de
         linux-image-generic
+    END
+</selection>
+<selection standard>
+    base = minimal
+    packages = <<END
+        ubuntu-standard
     END
 </selection>
 <selection gnome>
@@ -45,6 +51,24 @@ release-name = gutsy
     base = minimal
     packages = <<END
         xubuntu-desktop
+    END
+</selection>
+<selection edubuntu-server>
+    base = minimal
+    packages = <<END
+        edubuntu-server
+    END
+</selection>
+<selection edubuntu-gnome>
+    base = minimal
+    packages = <<END
+        edubuntu-desktop-gnome
+    END
+</selection>
+<selection edubuntu-kde>
+    base = minimal
+    packages = <<END
+        edubuntu-desktop-kde
     END
 </selection>
 <selection default>
