@@ -209,7 +209,7 @@ void SWindow::unfold_entries() {
   if ( prename == NULL ) {
     return;
   } else {
-    printf("readsesseion returned: %s", prename);
+    cout << "readSession returned:" << prename << endl;
     sel.goto_index(0);
     Item* it = (Item*) sel.next();
     
