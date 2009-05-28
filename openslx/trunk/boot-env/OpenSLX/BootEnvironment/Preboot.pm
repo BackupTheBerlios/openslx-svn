@@ -58,12 +58,14 @@ sub writeBootloaderMenuFor
         $info->{label} = $label;
     }
     my $bootmenuEntries = '';
+    my $entryState = 'on';
     foreach my $info (sort { $a->{label} cmp $b->{label} } @$systemInfos) {
         my $vendorOSName = $info->{'vendor-os'}->{name};
         my $kernelName   = basename($info->{'kernel-file'});
         my $append       = $info->{attrs}->{kernel_params} || '';
         $append .= " $clientAppend";
-        $bootmenuEntries .= qq{ "$info->{label}" "" 1};
+        $bootmenuEntries .= qq{ "$info->{label}" "" $entryState};
+        $entryState = 'off';
 
         # create a file containing the boot-configuration for this system
         my $systemDescr = unshiftHereDoc(<<"        End-of-Here");
@@ -90,7 +92,7 @@ sub writeBootloaderMenuFor
         # copy the preboot script into the folder to be tared
         my $prebootBasePath 
             = "$openslxConfig{'base-path'}/share/boot-env/preboot";
-        slxsystem(qq{cp -p $prebootBasePath/preboot.sh $bootloaderConfigPath/});
+        slxsystem(qq{cp $prebootBasePath/preboot.sh $bootloaderConfigPath/});
         slxsystem(qq{chmod a+x $bootloaderConfigPath/preboot.sh});
 
         # create a tar which can/will be downloaded by prebooting clients
