@@ -39,10 +39,12 @@ sub getInfo
     return {
         description => unshiftHereDoc(<<'        End-of-Here'),
             allows user to pick from a list of different virtual machine images
-            based on xml-files, which tell about available images.
+            based on xml-files, which tell about available images. One of the
+            virtualization tools like vmware*, virtualbox or qemu/kvm is
+            required.
         End-of-Here
         precedence => 50,
-        required => [ qw( vmware ) ],
+        required => [ qw( desktop ) ],
     };
 }
 

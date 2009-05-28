@@ -26,7 +26,7 @@
 
 # test if the xml path/file is valid (gotten via commandline first parameter)
 xml=$1
-[ -e "${xml}" ] || { echo -e "\n\tNo XML file given!\n" && exit 1; }
+[ -e "${xml}" ] || { echo -e "\n\tNo XML file given!\n"; exit 1; }
 
 # path to the xml file(just take the path to the xml file)
 imagepath=${xml%/*}
@@ -37,6 +37,7 @@ imagepath=${xml%/*}
 # file name of the image
 imagename=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 diskfile=$imagepath/$imagename
+[ -e $diskfile ] && { echo -e "\n\tImage file $diskfile not found!"; exit 1; }
 
 # short description of the image (as present in the vmchooser menu line)
 short_description=$(grep "short_description param=\"" ${xml} | \
