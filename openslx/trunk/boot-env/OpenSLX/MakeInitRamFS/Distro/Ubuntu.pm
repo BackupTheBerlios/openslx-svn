@@ -51,7 +51,7 @@ sub determineMatchingHwinfoVersion
     my %versionMap = (
         '7.10' => '14.19',
         '8.04' => '15.3',
-        '8.10' => '15.3',
+        '8.10' => '15.21',
         '9.04' => '15.21',
     );
     return $versionMap{$distroVersion}

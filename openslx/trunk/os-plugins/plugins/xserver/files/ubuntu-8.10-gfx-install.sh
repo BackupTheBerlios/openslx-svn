@@ -20,40 +20,39 @@ else
 fi
 
 
-echo "  * downloading restricted modules... this may take a while"
-# TODO: remove commented out "> /dev/null ..." later... multiple times
-#       in this script! check all comments!
-aptitude download linux-restricted-modules-${KVER} > /dev/null 2>&1
-if [ $? -eq 1 ]; then
-  echo "  * Didn't get restricted modules. Exit now!"
-  #TODO: remove sh when development is finished
-  sh
-  exit
-fi
-MODULE_DEB=$(ls linux-restricted-modules-*.deb | tail -n1)
-dpkg-deb -x ${MODULE_DEB} ${TMP_FOLDER}/modules
-
 case ${TARGET} in
   ati)
-    mkdir -p ${PLUGIN_FOLDER}/ati
     mkdir -p ${PLUGIN_FOLDER}/ati/modules
 
-    echo "  * downloading fglrx xorg package...this may take a while"
+    echo -n "  * downloading fglrx xorg package... "
     aptitude download xorg-driver-fglrx > /dev/null 2>&1
     if [ $? -eq 1 ]; then
+      echo "fail"
       echo "  * Didn't get package xorg-driver-fglrx! Exit now!"
       #TODO: remove sh when development is finished
       sh
       exit
+    else
+      echo "ok"
     fi
     FGLRX_DEB=$(ls xorg-driver-fglrx_*.deb | tail -n1)
     # extract $DEB
     dpkg-deb -x ${FGLRX_DEB} ${PLUGIN_FOLDER}/ati
 
-    # assemble module
-    cd modules/lib/linux-restricted-modules/${KVER}/
-    #bash
-#ld_static -d -r -o ${PLUGIN_FOLDER}/ati/modules/fglrx.ko fglrx/*
+    echo -n "  * downloading fglrx kernel package..."
+    aptitude download fglrx-kernel-source >/dev/null 2>&1
+    if [ $? -eq 1 ]; then
+      echo "fail"
+      echo "  * Didn't get package fglrx-kernel-source!"
+      exit
+    else
+      echo "ok"
+    fi
+
+    FGLRX_KERNEL_DEB=$(ls fglrx-kernel-sources*.deb | tail -n1)
+    dpkg-deb -x ${FGLRX_KERNEL_DEB} /
+
+    bash
 
     if [ -f /usr/lib/dri/fglrx_dri.so ]; then
       mv /usr/lib/dri/fglrx_dri.so /usr/lib/dri/fglrx_dri.so.slx
@@ -73,7 +72,7 @@ case ${TARGET} in
   nvidia)
     mkdir -p ${PLUGIN_FOLDER}/nvidia/modules
     
-    NVIDIA_DRIVER_VERSION=180
+    NVIDIA_DRIVER_VERSION=177
 
     echo -n "  * downloading nvidia xorg package... "
     aptitude download nvidia-glx-${NVIDIA_DRIVER_VERSION} > /dev/null 2>&1
@@ -102,14 +101,23 @@ case ${TARGET} in
     # extract the sources deb to root
     dpkg-deb -x ${NVIDIA_KERNEL_DEB} /
     
-    NVIDIA_DKMS_DIR=$(find /var/lib/dkms/nvidia/${NVIDIA_DRIVER_VERSION}* \
-      -maxdepth 0 -type d)
     NVIDIA_SOURCE_DIR=$(find  /usr/src/nvidia-${NVIDIA_DRIVER_VERSION}* \
       -maxdepth 0 -type d)
-    ln -sf ${NVIDIA_SOURCE_DIR} ${NVIDIA_DKMS_DIR}/source
-    
-    NVIDIA_FULL_VERSION=$(echo ${NVIDIA_DKMS_DIR} | \
-      sed -e 's/\/var\/lib\/dkms\/nvidia\///')
+    NVIDIA_FULL_VERSION=$(echo ${NVIDIA_SOURCE_DIR} | \
+      sed -e 's/\/usr\/src\/nvidia-//')
+
+    NVIDIA_DKMS_DIR="/var/lib/dkms/nvidia/${NVIDIA_FULL_VERSION}/"
+
+    if [ -d /var/lib/dkms/nvidia/${NVIDIA_FULL_VERSION} ]; then
+      if [ ! -L ${NVIDI_DKMS_DIR}/source ]; then
+        ln -sf ${NVIDIA_SOURCE_DIR} ${NVIDIA_DKMS_DIR}/source
+      fi
+    else
+      dkms add -m nvidia -v ${NVIDIA_FULL_VERSION} >/dev/null 2>&1
+    fi
+
+    bash 
+
     
     ######    build kernel module   ######
     echo -n "  * Building nvidia Kernel Module for Kernel ${KVER} .. "
@@ -117,8 +125,8 @@ case ${TARGET} in
          -k ${KVER} \
          --kernelsourcedir /usr/src/linux-headers-${KVER}/ \
          --no-prepare-kernel \
-         build 
-#> /dev/null 2>&1
+         build \
+    > /dev/null 2>&1
     if [ $? -eq 0 ]; then
       echo "ok"
     else
