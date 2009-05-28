@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2008, 2009 - OpenSLX GmbH
 #
 # This program/file is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -59,13 +59,11 @@ qemu(-kvm)\n  makes not much sense."
       [ $DEBUGLEVEL -gt 1 ] && error "  * Incomplete information in variable \
 ${qemukvm_imagesrc}." nonfatal
     fi
-    fi
     # copy version depending files - the vmchooser expects for every virtua-
     # lization plugin a file named after it (here run-qemukvm.include)
     testmkd /mnt/etc/opt/openslx
     cp /mnt/opt/openslx/plugin-repo/qemukvm/run-virt.include \
       /mnt/etc/opt/openslx/run-qemukvm.include
-
   fi
 else
   [ $DEBUGLEVEL -gt 0 ] && echo "  * Configuration of qemukvm plugin failed"
