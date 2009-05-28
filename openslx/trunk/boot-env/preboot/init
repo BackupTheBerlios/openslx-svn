@@ -20,8 +20,11 @@ for i in 1 2 ; do
   if grep "ip=" /tmp/ipstuff >/dev/null 2>&1 ; then
     . /tmp/ipstuff
     for i in $dns ; do
-      echo "nameserver $i" >> /etc/resolv.conf
+      echo "nameserver $i" >>/etc/resolv.conf
     done
+    # simply add a single dns server for passing via kernel cmdline to stage3
+    # (quickhack, just the last, list of dns might be better ...)
+    echo "dnssrv=$i" >>/tmp/ipstuff
     return
   else
     if [ $i -eq 1 ] ; then
@@ -136,8 +139,8 @@ tar -xzf /tmp/preboot.env -C /preboot
 if [ "${DEBUGLEVEL}" -gt 0 ] ; then
   /bin/ash
 else
-  quiet=quiet
-  echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+  # no debugging output for stage3 run
+  echo "quiet=quiet" >>/etc/initramfs-setup
 fi
 # run the preboot interactive part which finally will execute kexec
 cd /preboot

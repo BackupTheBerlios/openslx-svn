@@ -21,16 +21,15 @@ dialog --file bootmenu.dialog 2>result
 # $label)
 . ./$(cat result)
 
-echo $kernel
-
+# fetch kernel and initramfs of selected system 
 wget -O /tmp/kernel $boot_uri/$kernel
 wget -O /tmp/initramfs $boot_uri/$initramfs
 
 # read primary IP configuration to pass it on
 . /tmp/ipstuff
 
-# start the new kernel with initialramfs and cmdline
+# start the new kernel with initialramfs and composed cmdline
 echo "Booting OpenSLX client $label ..."
 kexec -l /tmp/kernel --initrd=/tmp/initramfs \
-  --append="$append file=$boot_uri debug=3"
+  --append="ip=$ip:$siaddr:$router:$subnet:$dnssrv $append file=$boot_uri $quiet"
 kexec -e
