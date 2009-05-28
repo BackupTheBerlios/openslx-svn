@@ -168,14 +168,7 @@ sub initialize
             );
         }
         $self->{'config-distro-info-dir'} = $configDistroInfoDir;
-
-        my $busyboxName =
-            $self->_hostIs64Bit()
-                ? 'busybox.x86_64'
-                : 'busybox.i586';
-        $self->{'busybox-binary'} 
-            = "$openslxConfig{'base-path'}/share/busybox/$busyboxName";
-    
+   
         my $setupMirrorsIfNecessary = $actionType eq 'install';
         $self->_readDistroInfo($setupMirrorsIfNecessary);
     }
@@ -672,8 +665,14 @@ sub getInstallablePackagesForSelection
 sub busyboxBinary
 {
     my $self = shift;
+    
+    my $uclibdir = "$openslxConfig{'base-path'}/share/uclib-rootfs";
 
-    return $self->{'busybox-binary'};
+    return sprintf(
+        "LD_LIBRARY_PATH=%s/lib %s/bin/busybox",
+        $uclibdir,
+        $uclibdir
+    );
 }
 
 ################################################################################
@@ -964,8 +963,8 @@ sub _speedTestMirror
     }
 
     # now measure the time it takes to download the file
-    my $wgetCmd 
-        = "$self->{'busybox-binary'} wget -q -O - $mirror/$file >/dev/null";
+    my $wgetCmd  = $self->busyboxBinary();
+       $wgetCmd .= " wget -q -O - $mirror/$file >/dev/null";
     my $start = time();
     if (slxsystem($wgetCmd)) {
         # just return any large number that is unlikely to be selected
@@ -1216,7 +1215,7 @@ sub _startLocalURLServersAsNeeded
         if (!exists $localHttpServers{$localURL}) {
             my $pid 
                 = executeInSubprocess(
-                    $self->{'busybox-binary'}, "httpd", '-p', $port, '-h', '/', '-f'
+                    $self->busyboxBinary(), "httpd", '-p', $port, '-h', '/', '-f'
                 );
             vlog(1, 
                 _tr(
@@ -1265,7 +1264,6 @@ sub _setupStage1A
             $stage1cDir, $!);
     }
 
-    #$self->_stage1A_createBusyboxEnvironment();
     $self->_stage1A_setupUclibcEnvironment();
     $self->_stage1A_copyPrerequiredFiles();
     $self->_stage1A_copyTrustedPackageKeys();
@@ -1288,54 +1286,15 @@ sub _stage1A_setupUclibcEnvironment
 }
 
 
-sub _stage1A_createBusyboxEnvironment
-{
-    my $self = shift;
-
-    # copy busybox and all required binaries into stage1a-dir:
-    vlog(1, "creating busybox-environment...");
-    my $requiredLibs = copyBinaryWithRequiredLibs({
-        'binary'          => $self->{'busybox-binary'},
-        'targetFolder'    => "$self->{stage1aDir}/bin",
-        'libTargetFolder' => $self->{stage1aDir},
-        'targetName'      => 'busybox',
-    });
-    my $libcFolder;
-    foreach my $lib (split "\n", $requiredLibs) {
-        if ($lib =~ m[/libc.so.\d\s*$]) {
-            # note target folder of libc, as we need to copy the resolver libs
-            # into the same place:
-            $libcFolder = dirname($lib);
-        }
-    }
-
-    # create all needed links to busybox:
-    my @busyboxApplets = getAvailableBusyboxApplets($self->{'busybox-binary'});
-    foreach my $linkTarget (@busyboxApplets) {
-        linkFile('/bin/busybox', "$self->{stage1aDir}/$linkTarget");
-    }
-    if ($self->_hostIs64Bit()) { 
-        if (!-e "$self->{stage1aDir}/lib64") {
-            linkFile('/lib', "$self->{stage1aDir}/lib64");
-        }
-        if (!-e "$self->{stage1aDir}/usr/lib64") {
-            linkFile('/usr/lib', "$self->{stage1aDir}/usr/lib64");
-        }
-    }
-
-    $self->_stage1A_setupResolver($libcFolder);
-    return;
-}
-
 sub _stage1A_setupResolver
 {
     my $self       = shift;
     my $libcFolder = shift;
 
-    if (!defined $libcFolder) {
-        warn _tr("unable to determine libc-target-folder, will use /lib!");
-        $libcFolder = '/lib';
-    }
+    #if (!defined $libcFolder) {
+    #    warn _tr("unable to determine libc-target-folder, will use /lib!");
+    #    $libcFolder = '/lib';
+    #}
 
     copyFile('/etc/resolv.conf', "$self->{stage1aDir}/etc");
     copyFile('/etc/nsswitch.conf', "$self->{stage1aDir}/etc");

@@ -292,7 +292,7 @@ sub hashPassword
     my $self = shift;
     my $password = shift;
     
-    my $busyboxBin = $self->{engine}->{'busybox-binary'};
+    my $busyboxBin = $self->{engine}->busyboxBinary();
     my $hashedPassword = qx{$busyboxBin cryptpw -a md5 $password};
     chomp $hashedPassword;
 
