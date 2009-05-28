@@ -61,7 +61,7 @@ sub getAttrInfo
         # attribute 'active' is mandatory for all plugins
         'dropbear::active' => {
             applies_to_systems => 1,
-            applies_to_clients => 0,
+            applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
                 should the 'dropbear'-plugin be executed during boot?
             End-of-Here

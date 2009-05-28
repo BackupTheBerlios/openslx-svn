@@ -49,7 +49,7 @@ sub getAttrInfo
     return {
         'x11vnc::active' => {
             applies_to_systems => 1,
-            applies_to_clients => 0,
+            applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
                 should the 'x11vnc' plugin be executed during boot?
             End-of-Here

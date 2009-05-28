@@ -61,7 +61,7 @@ sub getAttrInfo
         # attribute 'active' is mandatory for all plugins
         'example::active' => {
             applies_to_systems => 1,
-            applies_to_clients => 0,
+            applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
                 should the 'example'-plugin be executed during boot?
             End-of-Here
@@ -73,7 +73,7 @@ sub getAttrInfo
         # plugin specific attributes start here ...
         'example::preferred_side' => {
             applies_to_systems => 1,
-            applies_to_clients => 0,
+            applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
                 determines to which side you have to tilt your head in order
                 to read the smiley
