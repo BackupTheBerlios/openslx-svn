@@ -114,9 +114,9 @@ sub getAttrInfo
 
         # stage1
         # Currently not needed in scenarios where distro specific packages are
-        # available
+        # available, but in Suse-10.2 for example we use this method
+		# -> provide downloaded packages here.
         'xserver::pkgpath' => {
-            applies_to_vendor_os => 0,
             applies_to_vendor_os => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
                 Path to downloaded ATI or Nvidia package
@@ -175,13 +175,14 @@ sub preInstallationPhase()
     my $installAti = $self->{attrs}->{'xserver::ati'};
     my $installNvidia = $self->{attrs}->{'xserver::nvidia'};
 
-    #if (! -d $pkgpath && ($installAti == 1 || $installNvidia == 1)) {
-    #    print "\n\n * xserver::pkgpath: no such directory!\n";
-    #    print " * xserver plugin can't install ATI or Nvidia driver!\n\n";
-    #    # exit 1 => xserver plugin is not getting installed because ati
-    #    # or nvidia where selected but are not installable!
-    #    exit 1;
-    #}
+    if (! -d $pkgpath && ($installAti == 1 || $installNvidia == 1)) {
+        print "\n\n * xserver::pkgpath: no such directory!\n";
+        print " * xserver plugin can only install ATI or Nvidia driver\n";
+		print "   via operating system packaging (e.g. != SuSE-10.2)!\n";
+        # exit 1 => xserver plugin is not getting installed because ati
+        # or nvidia where selected but are not installable!
+		# exit 1;
+    }
 
     if (-d $pkgpath && ($installNvidia == 1 || $installAti == 1)) {
         # Todo: use a openslx copy function!
@@ -243,7 +244,7 @@ sub installationPhase
     }
     if ($attrs->{'xserver::ati'} == 1) {
         copyFile("$pluginFilesPath/ati-install.sh", "$installationPath");
-        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh");
+        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh $vendorOSName");
         #system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh ati");
     }
     if ($attrs->{'xserver::nvidia'} == 1) {
