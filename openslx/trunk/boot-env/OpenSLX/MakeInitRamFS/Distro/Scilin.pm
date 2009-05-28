@@ -50,7 +50,7 @@ sub determineMatchingHwinfoVersion
 
     my %versionMap = (
         '4.7' => '13.11',
-        '5.0' => '15.3',
+        '5.1' => '15.3',
     );
     return $versionMap{$distroVersion}
         || $self->SUPER::determineMatchingHwinfoVersion($distroVersion);
