@@ -1,0 +1,327 @@
+#!/usr/bin/perl
+# Copyright (c) 2009 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org
+#
+
+use strict;
+use warnings;
+
+use threads ('yield',
+             'stack_size' => 64*4096,
+             'exit' => 'threads_only',
+             'stringify');
+use Time::HiRes qw(sleep);
+use Switch;
+use Net::HTTP;
+use Net::FTP;
+#use Data::Dumper;
+
+
+# Configuration ###############################################################
+
+my @supportedVersions = (
+    {
+        ver => 
+            '10.3',
+        source => 
+            'http://mirrors.opensuse.org/list/all.html',
+        supporedArch => 
+            'i586 x86_64',
+        packageKeysLocation => 
+            'http://download.opensuse.org/distribution/10.3/repo/oss/'
+    },
+    {
+        ver => 
+            '11.0',
+        source => 
+            'http://mirrors.opensuse.org/list/11.0.html',
+        supporedArch => 
+            'i586 x86_64',
+        packageKeysLocation => 
+            'http://download.opensuse.org/distribution/11.0/repo/oss/'
+    },
+    {
+        ver => 
+            '11.1',
+        source => 
+            'http://mirrors.opensuse.org/list/11.1.html',
+        supporedArch => 
+            'i586 x86_64',
+        packageKeysLocation => 
+            'http://download.opensuse.org/distribution/11.1/repo/oss/'
+    }
+);
+
+my %sourceLists = (
+    'base' =>
+         {
+             path => 'distribution/#ver#/repo/oss',
+             archpath => 'distribution/#ver#/repo/oss/suse/#arch#'
+         },
+    'base_non-oss' =>
+         {
+             path => 'distribution/#ver#/repo/non-oss',
+             archpath => 'distribution/#ver#/repo/oss/suse/#arch#'
+         },
+    'base_update' =>
+         {
+             path => 'update/#ver#',
+             archpath => 'update/#ver#/rpm/#arch#'
+         },
+);
+
+###############################################################################
+
+my $cmd; 
+my $out = {};
+my $statistics = {};
+
+# set autoflush
+$| = 1;
+
+sub checkHttpMirror {
+    my $checkurl = shift;
+    my $mirrorurl = shift;
+    my $outfile = shift;
+
+    $SIG{'KILL'} = sub { threads->exit(); };
+
+    $checkurl = m/http:\/\/([^\/]*)(\/.*)/;
+    my $s = Net::HTTP->new(Host => $1, Timeout => 10, Debug => 0) or return ( "status:1" );
+    $s->write_request(GET => $2, 'User-Agent' => "Mozilla/5.0");
+
+    my($code, $mess, %h) = $s->read_response_headers;
+
+    if ($code == 200) {
+        return ( "status:0", "mirror:$mirrorurl", "outfile:$outfile" );
+    } else {
+        return ( "status:2" );
+    }
+}
+
+sub checkFtpMirror {
+    my $checkurl = shift;
+    my $mirrorurl = shift;
+    my $outfile = shift;
+
+    $SIG{'KILL'} = sub { threads->exit(); };
+
+    $checkurl = m/ftp:\/\/([^\/]*)(\/.*)/;
+    my $ftp = Net::FTP->new(Host => $1, Timeout => 10, Debug => 0) or return ( "status:1" );
+    $ftp->login("anonymous",'-anonymous@') or return ( "status:2" );
+    $ftp->cwd($2) or return ( "status:3" );
+    $ftp->quit;
+
+    return ( "status:0", "mirror:$mirrorurl", "outfile:$outfile" );
+}
+
+sub cleanupThreads {
+
+    my @joinable = threads->list(threads::joinable);
+    while (@joinable) {
+        my @ret = shift(@joinable)->join();
+        my $response = {};
+
+        while (my $param = shift(@ret)) {
+            $param =~ m/^([^:]*):(.*)$/;
+            $response->{$1} = $2;
+        }
+
+        switch ($response->{status}) {
+            case 0 {
+                 push(@{$out->{$response->{outfile}}},
+                 $response->{mirror});
+                 print "o"
+            }
+            else { 
+                 print "x";
+                 $statistics->{errors}++;
+            }
+         }
+         #print "j";
+    }
+
+    my $running = threads->list(threads::running);
+    return $running;
+}
+
+my $startTime = time();
+my $endTime;
+
+my $oldtime;
+if ( -e "$ENV{'HOME'}/.update-suse-distro-info" ) {
+   $oldtime = qx(cat $ENV{'HOME'}/.update-suse-distro-info);
+}
+
+# cleanup
+system ("rm -rf out");
+
+print "\n              ** OpenSLX distro-info Updater - OpenSUSE **\n\n";
+print "Notice: running the checks takes some time, so it's enough time for a coffee\n        break ;)";
+
+if ($oldtime) {
+    my ($min, $sec) = split(/:/, $oldtime);
+    printf (" - last run took %i min %i sec ..\n", $min, $sec);
+} else {
+    print "\n";
+}
+
+while (my $version = shift(@supportedVersions)) {
+    print "\nopenSUSE $version->{ver} \n";
+
+    print "fetching mirror list..\n";
+    system("wget -q -O suse-$version->{ver} $version->{source}");
+
+    print "extracting mirrors.. \n";
+    $cmd  = "grep -P -e \"<a href=.*>(HT|F)TP</a>\" suse-$version->{ver} | ";
+    $cmd .= "sed -e \"s/^[^\\\"]*\\\"//\" -e \"s/\\\".*\$//\" >";
+    $cmd .= "suse-$version->{ver}-mirrors && rm suse-$version->{ver}";
+    system $cmd;
+
+    my @sa = split(/ /,$version->{supporedArch});
+    
+    # empty out
+    $out = {};
+    $statistics = {};
+
+
+    while (my $arch = shift(@sa)) {
+        $arch = "_$arch";
+        # if we have ix86 arch name is not used..
+        $arch =~ s/_i.?86//; 
+        $cmd  = "mkdir -p out/suse-$version->{ver}$arch/mirrors";
+        $cmd .= "         out/suse-$version->{ver}$arch/trusted-package-keys";
+        system ($cmd);
+    }
+
+    print "check mirrors .. \n";
+    my $running;
+    $statistics->{numMirrors} = qx(cat suse-$version->{ver}-mirrors | wc -l);
+    open FILE, "< suse-$version->{ver}-mirrors", or die "couldn't open file: $!";
+    while (<FILE>) {
+        chomp;
+        my $mirror = $_;
+        my $skipmirror = 0;
+        @sa = split(/ /,$version->{supporedArch});
+        while (my $arch = shift(@sa)) {
+             while (my($type, $parameters) = each %sourceLists) {
+                 my $checkpath = $parameters->{archpath};
+                    $checkpath =~ s/#ver#/$version->{ver}/;
+                    $checkpath =~ s/#arch#/$arch/;
+
+                 my $mirrorpath = $parameters->{path};
+                    $mirrorpath =~ s/#ver#/$version->{ver}/;
+
+                 my $local_arch = "_$arch";
+                 # if we have ix86 arch name is not used..
+                 $local_arch =~ s/_i.?86//;
+
+                 my @running = threads->list(threads::running);
+                 my $numRunning = scalar @running;
+                 $running = cleanupThreads();
+
+                 while( $running > 50 ) { sleep 0.1; $running = cleanupThreads();}
+                 if ($mirror =~ m/^http:/) {
+                     threads->create({context => 'list'},
+                                     'checkHttpMirror', 
+                                     "$mirror$checkpath", 
+                                     "$mirror$mirrorpath", 
+                                     "suse-$version->{ver}$local_arch/mirrors/$type"
+                                    );
+                 }
+                 if ($mirror =~ m/^ftp:/) {
+                     threads->create({context => 'list'},
+                                     'checkFtpMirror', 
+                                     "$mirror$checkpath", 
+                                     "$mirror$mirrorpath", 
+                                     "suse-$version->{ver}$local_arch/mirrors/$type"
+                                    );
+                 }
+             }
+        }
+        #print "$mirror \n";
+    }
+    close FILE;
+    system ("rm suse-$version->{ver}-mirrors");
+
+    $running = cleanupThreads();
+    printf ("\n-- waiting for %i unfinished check(s) ..\n", $running);
+    my $counter = 120;
+    my $exit = 0;
+    while( $exit == 0 ) { 
+        sleep 0.5; 
+        $running = cleanupThreads();
+        $counter--;
+        if ( $counter < 1 && $running > 0 ) {
+            printf ("\n-- %i check(s) still running.. \n", $running);
+            print ("\n-- cleanup remaining check(s)..");
+            my @runningthreads = threads->list();
+            while (@runningthreads) {
+                shift(@runningthreads)->kill('KILL')->detach();
+            }
+            $exit = 1;
+        }
+    }
+    
+    print "\nfinished.\n\n";
+    print "writing active mirrors to file.\n";
+
+    while (my($file, $mirrorlist) = each %{$out}) {
+        open(OUTFILE, ">>", "out/$file") or die ("something went wrong");
+        while (@$mirrorlist) {
+            #print Dumper($mirrorlist);
+            $statistics->{files}->{$file}++;
+            print OUTFILE shift(@$mirrorlist);
+            print OUTFILE "\n";
+        }
+        close(OUTFILE);
+    }
+
+    print "\nStatistics:\n";
+    printf ("-- checked %i mirrors \n", $statistics->{numMirrors});
+    while (my($f, $num) = each(%{$statistics->{files}})) {
+        printf ("-- found %i entries for: %s \n", $num, $f);
+    }
+
+    print "\nGet package keys\n";
+    system("wget -q -O index http://download.opensuse.org/distribution/$version->{ver}/repo/oss/");
+    my @files = qx(cat index | grep -P -e "(gpg-pubkey|pubring)");
+    while (@files) {
+        my $file = shift(@files);
+        $file =~ m/href=\"([^\"]*)\"/;
+        my $cmd  = "wget -q -O out/suse-$version->{ver}/trusted-package-keys/$1 ";
+           $cmd .= "http://download.opensuse.org/distribution/$version->{ver}/repo/oss/$1";
+        system ("sh", "-c", $cmd);
+    }
+    system ("rm index");
+
+    @sa = split(/ /,$version->{supporedArch});
+    while (@sa) {
+        my $arch = shift(@sa);
+        my $cmd  = "cp out/suse-$version->{ver}/trusted-package-keys/* ";
+           $cmd .= "   out/suse-$version->{ver}_$arch/trusted-package-keys/";
+        $arch =~ m/i.?86/ or system ($cmd);
+    }
+}
+
+$endTime = time();
+my $totalTime = $endTime - $startTime;
+
+system("cd out && tar cf ../distro-info.suse.tar * && cd ..");
+system("rm -rf out");
+
+printf ("\nUpdated distro info in %i min %i sec \n", $totalTime/60, $totalTime%60);
+printf ("Data written to distro-info.suse.tar, go to <oslx-source>/lib/distro-info \n and extract it.");
+
+open(FH, ">", "$ENV{'HOME'}/.update-suse-distro-info") or die ($!);
+printf FH ("%i:%i", $totalTime/60, $totalTime%60);
+close(FH);
+
+exit 1;
