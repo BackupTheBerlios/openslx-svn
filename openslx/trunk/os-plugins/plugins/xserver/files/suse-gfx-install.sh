@@ -288,12 +288,13 @@ if [ "$1" = "ati" ]; then
         rpm2cpio ${RNAME} | cpio -id > /dev/null 2>&1
       fi
     done
-    if [ ! -f ./usr/lib/libGLcore.so.1 ]; then
+
+    mv ./usr/X11R6/lib/* ./usr/lib/ > /dev/null 2>&1
+    if [ ! -f ./usr/lib/libGL.so* ]; then
       echo "  ATI files failed to install via zypper!!"
       exit
     fi
 
-    mv ./usr/X11R6/lib/* ./usr/lib/
     mv ./usr ..
     mv ./etc ..
 
