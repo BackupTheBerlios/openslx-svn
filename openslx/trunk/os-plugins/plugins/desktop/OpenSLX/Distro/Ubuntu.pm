@@ -1,4 +1,4 @@
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2006..2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -48,7 +48,9 @@ sub setupGDMScript
     my $configFile = $self->GDMPathInfo->{config};
 
     $script .= unshiftHereDoc(<<'    End-of-Here');
-
+        # Ubuntu clones might need to get the /etc/gdm/gdm.conf copied or
+        # better to have a fully blown gdm.conf-custom
+        # cp ... /mnt/etc/gdm/gdm.conf
         # cleanup after users Xorg session
         sed 's,^#!.*,,' /mnt/etc/gdm/PostSession/Default \
           >/mnt/etc/gdm/PostSession/Default.system
@@ -58,8 +60,8 @@ sub setupGDMScript
           echo "$USER files removed by $0" >/tmp/files.removed 2>/dev/null ) &
         . /etc/gdm/PostSession/Default.system' >/mnt/etc/gdm/PostSession/Default
         chmod a+x /mnt/etc/gdm/PostSession/Default*
-
-        rllinker gdm 1 10
+        # gdm should be started after dbus
+        rllinker gdm 4 10
         echo '/usr/sbin/gdm' >/mnt/etc/X11/default-display-manager
         chroot /mnt update-alternatives --set x-window-manager /usr/bin/metacity
         chroot /mnt update-alternatives --set x-session-manager \
