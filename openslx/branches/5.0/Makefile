@@ -71,7 +71,7 @@ $(SLX_PUBLIC_PATH)\n\
 $(USR_BIN_PATH)/*" \
 		>packaging/rpm/openslx-filelist; \
 	cd .. >/dev/null; \
-	tar cfhj \
+	tar cfj \
 		"$${svn_repo_name}/openslx-$${OPENSLX_VERSION_STRING}.tar.bz2" \
 		--exclude-from="$${svn_repo_name}/Make.exclude_from_tar" \
 		"openslx-$${OPENSLX_VERSION_STRING}/"; \
