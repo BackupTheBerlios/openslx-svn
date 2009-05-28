@@ -66,7 +66,7 @@ sub _createImage
         LABEL OpenSLX
           SAY Now loading OpenSLX preboot environment ...
           KERNEL vmlinuz
-          APPEND initrd=initramfs debug=3
+          APPEND initrd=initramfs debug=3 vga=0x317
     End-of-Here
     spitFile("$imageDir/iso/isolinux/isolinux.cfg", $isolinuxConfig);
 

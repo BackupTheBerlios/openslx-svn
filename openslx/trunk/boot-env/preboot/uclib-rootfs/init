@@ -71,7 +71,7 @@ nwif="eth0"
 [ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
 
 # load network adaptor modules
-for mod in ${ramfs_nicmods} af_packet unix hid usbhid uhci-hcd ohci-hcd; do
+for mod in ${ramfs_nicmods} af_packet unix hid usbhid uhci-hcd ohci-hcd vesafb fbcon; do
   if [ x != x$(find /lib/modules -name ${mod}.ko) ]; then
     modprobe $mod || echo "module $mod did not load for some reason"
     usleep 10000
