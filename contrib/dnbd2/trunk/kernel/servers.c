@@ -160,7 +160,11 @@ void stop_rx_loop(struct srv_info *srv_info)
 {
 	if (!srv_info->rx_id)
 		return;
-	kill_proc(srv_info->rx_id, SIGKILL, 1);
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27)
+		kill_proc_info(SIGKILL, 1, srv_info->rx_id);
+	#else
+		kill_proc(srv_info->rx_id, SIGKILL, 1);
+	#endif
 	wait_for_completion(&srv_info->rx_stop);
 	srv_info->rx_id = 0;
 }

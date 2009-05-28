@@ -76,7 +76,11 @@ void stop_device(dnbd2_device_t *dev)
 	/* Stop request processing. */
 	del_timer(&dev->requeue_timer);
 	dev->tx_signal = 1;
-	kill_proc(dev->tx_id, SIGKILL, 1);
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27)
+		kill_proc_info(SIGKILL, 1, dev->tx_id);
+	#else
+		kill_proc(dev->tx_id, SIGKILL, 1);
+	#endif
 	wait_for_completion(&dev->tx_stop);
 
 	/* Empty pending-queue. */
