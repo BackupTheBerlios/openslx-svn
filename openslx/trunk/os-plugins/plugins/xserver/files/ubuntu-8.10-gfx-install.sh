@@ -52,10 +52,9 @@ case ${TARGET} in
 
     # assemble module
     cd modules/lib/linux-restricted-modules/${KVER}/
+    bash
     ld_static -d -r -o ${PLUGIN_FOLDER}/ati/modules/fglrx.ko fglrx/*
 
-    #TODO: Bastian: do we really need this part in stage1?
-    # Volker: I think we could just copy it (is a unique file)
     if [ -f /usr/lib/dri/fglrx_dri.so ]; then
       mv /usr/lib/dri/fglrx_dri.so /usr/lib/dri/fglrx_dri.so.slx
     else
@@ -68,32 +67,53 @@ case ${TARGET} in
     # cleanup
     cd ${PLUGIN_FOLDER}/ati
 
-    #@Volker: We need /etc-files - there is a database
-    #         file for the fglrx-driver in stage3 !!!
-    #rm -rf ./etc
-    #TODO: check for more cleanups when the main part works!
-
   ;;
 
 
   nvidia)
     mkdir -p ${PLUGIN_FOLDER}/nvidia
-    mkdir -p ${PLUGIN_FOLDER}/nvidia/modules
+    
+    NVIDIA_DRIVER_VERSION=180
 
-    echo "  * downloading fglrx xorg package... this may take a while"
-    aptitude download nvidia-glx > /dev/null 2&>1
+    echo "  * downloading nvidia xorg package... this may take a while"
+    aptitude download nvidia-glx-${NVIDIA_DRIVER_VERSION} > /dev/null 2>&1
     if [ $? -eq 1 ]; then
-      echo "  * Didn't get package nvidia-glx!"
+      echo "  * Didn't get package nvidia-glx-${NVIDIA_DRIVER_VERSION}!"
+      exit
+    fi
+
+    echo "  * downloading nvidia kernel package... this may take a while"
+    aptitude download nvidia-${NVIDIA_DRIVER_VERSION}-kernel-source > /dev/null 2>&1
+    if [ $? -eq 1 ]; then
+      echo "  * Didn't get package nvidia-${NVIDIA_DRIVER_VERSION}-kernel-source!"
       exit
     fi
     NVIDIA_DEB=$(ls -1 nvidia-glx*.deb | tail -n1)
+    NVIDIA_KERNEL_DEB=$(ls -1 nvidia-${NVIDIA_DRIVER_VERSION}-kernel-source*.deb | tail -n1)
     # extract $DEB
     dpkg-deb -x ${NVIDIA_DEB} ${PLUGIN_FOLDER}/nvidia
+    # extract the sources deb to root
+    dpkg-deb -x ${NVIDIA_KERNEL_DEB} /
+    
+    NVIDIA_DKMS_DIR=$(find  /var/lib/dkms/nvidia/${NVIDIA_DRIVER_VERSION}* -maxdepth 0 -type d)
+    NVIDIA_SOURCE_DIR=$(find  /usr/src/nvidia-${NVIDIA_DRIVER_VERSION}* -maxdepth 0 -type d)
+    ln -sf ${NVIDIA_SOURCE_DIR} ${NVIDIA_DKMS_DIR}/source
+    
+    #build kernel module
+    dkms -m nvidia -v 180.11 \
+         -k ${KVER} \
+         --kernelsourcedir /usr/src/linux-headers-${KVER}/ \
+         --no-prepare-kernel \
+         build
+    bash
+
+    #module is now under /var/lib/dkms/nvidia/${NVIDIA_DRIVER_VERSION}.<subversion>/${KVER}/iX86/module/nvidia.ko
+    # TODO: rest & cleanup :)
 
     # assemble module - we just need the new one here
     # TODO: modules for older graphics hardware can be found here
-    cd modules/lib/linux-restricted-modules/${KVER}/
-    ld_static -d -r -o ${PLUGIN_FOLDER}/nvidia/modules/nvidia.ko nvidia_new/*
+    #cd modules/lib/linux-restricted-modules/${KVER}/
+    #ld_static -d -r -o ${PLUGIN_FOLDER}/nvidia/modules/nvidia.ko nvidia_new/*
 
     #TODO: if we use this part, we need to copy the check from ati, too!
     #if [ -f /usr/lib/dri/fglrx_dri.so ]; then
