@@ -38,21 +38,21 @@ attributetype ( 1.3.6.1.4.1.7579.1005.2.4
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
 
 attributetype ( 1.3.6.1.4.1.7579.1005.2.5
-	NAME 'TftpClientconfPath'
+	NAME 'RbsMode'
 	EQUALITY caseIgnoreIA5Match
-	DESC 'Directory Path to Client-Configuration-Files on the TFTP Server (e.g. ../tftpboot/client-conf/)'
+	DESC 'Modus of Remote Boot Service'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
 attributetype ( 1.3.6.1.4.1.7579.1005.2.6
 	NAME 'TftpKernelPath' 
 	EQUALITY caseIgnoreIA5Match
-	DESC 'Directory Path to Kernels on the TFTP Server (e.g. ../tftpboot/kernel/)' 
+	DESC 'Directory Path to Kernels on the TFTP Server (e.g. /tftproot/kernel/)' 
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
 attributetype ( 1.3.6.1.4.1.7579.1005.2.7
 	NAME 'TftpPxePath'
 	EQUALITY caseIgnoreIA5Match
-	DESC 'Directory Path to PXE Files on the TFTP Server (e.g. ../tftpboot/pxe/pxelinux.cfg/)'
+	DESC 'Directory Path to PXE Files on the TFTP Server (e.g. /tftproot/pxelinux.cfg/)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
 attributetype ( 1.3.6.1.4.1.7579.1005.2.8
@@ -68,135 +68,135 @@ attributetype ( 1.3.6.1.4.1.7579.1005.2.9
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
 attributetype ( 1.3.6.1.4.1.7579.1005.2.10
-        NAME 'TftpRoot'
-        EQUALITY caseIgnoreIA5Match
-        DESC 'DN TFTP Server'
-        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.11
-        NAME 'FileserverURI'
-        EQUALITY caseIgnoreIA5Match
-        DESC 'DN TFTP Server'
-        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26)
+	NAME 'TftpRoot'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'DN TFTP Server'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
 
 # ---------------------------------------------------------
 # PXEConfig Objects
 # ---------------------------------------------------------
 
+attributetype ( 1.3.6.1.4.1.7579.1005.2.11
+	NAME 'RBServiceDN'
+	EQUALITY distinguishedNameMatch
+	DESC 'DN of the corresponding Remote Boot Service '
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE)
+
 attributetype ( 1.3.6.1.4.1.7579.1005.2.12
+	NAME 'DefaultMenuDN'
+	EQUALITY distinguishedNameMatch
+	DESC 'DN of DEFAULT Menu Entry of PXEConfig. If not defined the first MenuEntry is default'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.13
 	NAME 'pxeAllowOptions'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (ALLOWOPTIONS flag -> allow/ignore options added on the command line)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.13
+attributetype ( 1.3.6.1.4.1.7579.1005.2.14
 	NAME 'pxeConsole'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (CONSOLE flag -> enable/disable output to the normal video console'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.14
+attributetype ( 1.3.6.1.4.1.7579.1005.2.15
 	NAME 'pxeDefault'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (DEFAULT kernel options -> sets the default command line)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.15
+attributetype ( 1.3.6.1.4.1.7579.1005.2.16
 	NAME 'pxeDisplay'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (DISPLAY filename -> Displays indicated file on screen at boot time)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.16
+attributetype ( 1.3.6.1.4.1.7579.1005.2.17
 	NAME 'pxeFont'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (FONT filename -> Load a font in .psf format before displaying any output)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.17
+attributetype ( 1.3.6.1.4.1.7579.1005.2.18
 	NAME 'pxeImplicit'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (IMPLICIT Flag -> load/not load a kernel image not explicitly named in LABEL statement'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.18
+attributetype ( 1.3.6.1.4.1.7579.1005.2.19
 	NAME 'pxeKBDMap'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (KBDMAP keymap -> Install a simple keyboard map)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.19
+attributetype ( 1.3.6.1.4.1.7579.1005.2.20
 	NAME 'LdapURI'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'LDAP URI and Searchbase where to get Client Configuration (MachineConfig), when via ldap'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.20
+attributetype ( 1.3.6.1.4.1.7579.1005.2.21
 	NAME 'pxeMenuTitle'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (MENU TITLE title -> PXE bootmenu title presented at the top of the menu)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.21
+attributetype ( 1.3.6.1.4.1.7579.1005.2.22
 	NAME 'pxeMenuMasterPasswd'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (MENU MASTER PASSWD passwd -> Master password to boot any menu entry)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.22
+attributetype ( 1.3.6.1.4.1.7579.1005.2.23
 	NAME 'pxeMenuPassprompt'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (MENU )'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.23
+attributetype ( 1.3.6.1.4.1.7579.1005.2.24
 	NAME 'pxeMenuBackground'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (MENU BACKGROUND ->)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.24
+attributetype ( 1.3.6.1.4.1.7579.1005.2.25
 	NAME 'pxeMenuAutoboot'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (MENU AUTOBOOT ->)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 	
-attributetype ( 1.3.6.1.4.1.7579.1005.2.25
+attributetype ( 1.3.6.1.4.1.7579.1005.2.26
 	NAME 'pxeMenuHidden'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (MENU HIDDEN ->)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.26
+attributetype ( 1.3.6.1.4.1.7579.1005.2.27
 	NAME 'pxeNoEscape'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (NOESCAPE flag -> ignore/or not the Shift/Alt/Caps Lock/Scroll Lock escapes)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.27
+attributetype ( 1.3.6.1.4.1.7579.1005.2.28
 	NAME 'pxeOnError'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (ONERROR kernel options -> run specified command if a kernel image is not found)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.28
+attributetype ( 1.3.6.1.4.1.7579.1005.2.29
 	NAME 'pxeOnTimeout'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (ONTIMEOUT kernel options ->  sets the command line invoked on a timeout)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.29
+attributetype ( 1.3.6.1.4.1.7579.1005.2.30
 	NAME 'pxePrompt'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Global PXE Parameter (PROMPT flag -> always display the boot: prompt, or only after pressing certain keys)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.30
-	NAME 'RBServiceDN'
-	EQUALITY distinguishedNameMatch
-	DESC 'DN of the corresponding Remote Boot Service '
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
 
 attributetype ( 1.3.6.1.4.1.7579.1005.2.31
 	NAME 'pxeSay'
@@ -256,192 +256,198 @@ attributetype ( 1.3.6.1.4.1.7579.1005.2.38
 # ---------------------------------------------------------
 
 attributetype ( 1.3.6.1.4.1.7579.1005.2.39
-	NAME 'appendAufs'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline (switches on UnionFS for the Rootfilesystem)'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.40
-	NAME 'appendCountry'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline (Which localization to set in the Shell)'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.41
-	NAME 'appendDCSize'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline (Defines size of cache files for dnbd)'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.42
-	NAME 'appendDebug'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline (Debug Level, default is 1)'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.43
-	NAME 'appendFile'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.44
-	NAME 'appendInitrd'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'Initial Ram Disk to boot (can also be other PXE Filename -> link to a Submenu)'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.45
-	NAME 'appendIP'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.46
-	NAME 'appendLdap'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.47
-	NAME 'appendLdsc'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.48
-	NAME 'appendMisc'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'Miscellaneous APPEND Options added to the others ... by specific Attributes.'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.49
-	NAME 'appendNodhcp'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.50
-	NAME 'appendQuiet'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.51
-	NAME 'appendRootfs'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'URI of Root Filesystem to be used -> nfs, (d)nbd'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.52
-	NAME 'appendTmpfsSize'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline (Maximum size of temporary FS in the RAM)'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.53
-	NAME 'appendUnionfs'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline (specifies a UnionFS)'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.54
-	NAME 'appendVci'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline (Vendor Code Identifier, when dhcp is used for Client Configuration)'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.55
-	NAME 'appendVga'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'APPEND Option added to Kernel Cmdline (VGA settings)'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.56
 	NAME 'GenericMenuEntryDN'
 	EQUALITY distinguishedNameMatch
 	DESC 'DN of the RBServer specific, generic part of the Menu Entry'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.57
-	NAME 'IPappend'
+attributetype ( 1.3.6.1.4.1.7579.1005.2.40
+	NAME 'rbsAuthClass'
 	EQUALITY caseIgnoreIA5Match
-	DESC 'PXE Parameter, IPAPPEND option-format -> input from the DHCP/BOOTP or PXE boot server added to Cmdline'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+	DESC 'RemoteBoot Service Authorization Classes. in GENERIC Menu Entry objects'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.58
-	NAME 'Kernel'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'Kernel to boot (can also be menu.c32 -> (Sub)Menu)'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.59
-	NAME 'Label'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'LABEL label -> Label displayed for that Menu Entry, used in commandline (short, unique)'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.60
-	NAME 'Localboot'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'LOCALBOOT type -> local disk boot instead of booting a kernel'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.61
-	NAME 'pxeMenuDefault'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'MENU DEFAULT -> sets a menu entry as default, otherwise the first one is default'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.62
-	NAME 'pxeMenuDisable'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'MENU DISABLE -> '
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.63
-	NAME 'pxeMenuGoto'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'MENU GOTO -> '
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.64
-	NAME 'pxeMenuHide'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'MENU HIDE -> suppresses a particular LABEL entry from the menu'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.65
-	NAME 'pxeMenuInclude'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'MENU INCLUDE -> '
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.66
-	NAME 'pxeMenuLabel'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'MENU LABEL label -> Changes Label displayed for a specific entry (allows Labels not suited for cmdline)'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.67
-	NAME 'pxeMenuPasswd'
-	EQUALITY caseIgnoreIA5Match
-	DESC 'MENU PASSWD passwd -> sets a Password for the entry (cleartext/SHA-1)'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
-
-attributetype ( 1.3.6.1.4.1.7579.1005.2.68
+attributetype ( 1.3.6.1.4.1.7579.1005.2.41
 	NAME 'MenuPosition'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Position of the Menu Entry in the Bootmenu'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
+attributetype ( 1.3.6.1.4.1.7579.1005.2.42
+	NAME 'Label'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'LABEL label -> Label displayed for that Menu Entry, used in commandline (short, unique)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.43
+	NAME 'Kernel'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Kernel to boot (can also be menu.c32 -> (Sub)Menu)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.44
+	NAME 'Localboot'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'LOCALBOOT type -> local disk boot instead of booting a kernel'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.45
+	NAME 'appendAufs'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline (switches on UnionFS for the Rootfilesystem)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.46
+	NAME 'appendCountry'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline (Which localization to set in the Shell)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.47
+	NAME 'appendDCSize'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline (Defines size of cache files for dnbd)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.48
+	NAME 'appendDebug'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline (Debug Level, default is 1)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.49
+	NAME 'appendFile'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.50
+	NAME 'appendInitrd'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Initial Ram Disk to boot (can also be other PXE Filename -> link to a Submenu)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.51
+	NAME 'appendIP'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.52
+	NAME 'appendLdap'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.53
+	NAME 'appendLdsc'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.54
+	NAME 'appendMisc'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'Miscellaneous APPEND Options added to the others ... by specific Attributes.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.55
+	NAME 'appendNodhcp'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.56
+	NAME 'appendQuiet'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.57
+	NAME 'appendRootfs'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'URI of Root Filesystem to be used -> nfs, (d)nbd'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.58
+	NAME 'appendTmpfsSize'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline (Maximum size of temporary FS in the RAM)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.59
+	NAME 'appendUnionfs'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline (specifies a UnionFS)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.60
+	NAME 'appendVci'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline (Vendor Code Identifier, when dhcp is used for Client Configuration)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.61
+	NAME 'appendVga'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'APPEND Option added to Kernel Cmdline (VGA settings)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.62
+	NAME 'IPappend'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'PXE Parameter, IPAPPEND option-format -> input from the DHCP/BOOTP or PXE boot server added to Cmdline'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.63
+	NAME 'pxeMenuDefault'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'MENU DEFAULT -> sets a menu entry as default, otherwise the first one is default'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.64
+	NAME 'pxeMenuDisable'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'MENU DISABLE -> '
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.65
+	NAME 'pxeMenuGoto'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'MENU GOTO -> '
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.66
+	NAME 'pxeMenuHide'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'MENU HIDE -> suppresses a particular LABEL entry from the menu'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.67
+	NAME 'pxeMenuInclude'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'MENU INCLUDE -> '
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.68
+	NAME 'pxeMenuLabel'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'MENU LABEL label -> Changes Label displayed for a specific entry (allows Labels not suited for cmdline)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
 attributetype ( 1.3.6.1.4.1.7579.1005.2.69
+	NAME 'pxeMenuPasswd'
+	EQUALITY caseIgnoreIA5Match
+	DESC 'MENU PASSWD passwd -> sets a Password for the entry (cleartext/SHA-1)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.7579.1005.2.70
 	NAME 'pxeMenuSeparator'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'MENU HIDE -> suppresses a particular LABEL entry from the menu'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
 
-attributetype ( 1.3.6.1.4.1.7579.1005.2.70
+attributetype ( 1.3.6.1.4.1.7579.1005.2.71
 	NAME 'pxeMenuTexthelp'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'MENU HIDE -> suppresses a particular LABEL entry from the menu'
@@ -459,8 +465,8 @@ objectclass ( 1.3.6.1.4.1.7579.1005.3.1
 	DESC 'Remote Boot Service object (Bootserver).'
 	SUP top
 	MUST ( cn )
-	MAY ( RbsOfferDN $ TftpRoot $ TftpServerIP $ TftpKernelPath $ TftpClientconfPath $ TftpPxePath $ 
-		InitBootFile $ NFSServerIP $ ExportPath $ NBDServerIP $ FileserverURI ) )
+	MAY ( RbsOfferDN $ TftpRoot $ TftpServerIP $ TftpKernelPath $ RbsMode $ TftpPxePath $ 
+		InitBootFile $ description $rbsMTime $ RBServiceDN ) )
 
 objectclass ( 1.3.6.1.4.1.7579.1005.3.2
 	NAME 'PXEConfig' 
@@ -471,7 +477,7 @@ objectclass ( 1.3.6.1.4.1.7579.1005.3.2
 		IncludeMenuLayout $ IncludeMenuColor $ IncludeMenuFKeys $ pxeKBDMap $ LdapURI $ pxeMenuTitle $ 
 		pxeMenuMasterPasswd $ pxeMenuPassprompt $ pxeMenuBackground $ pxeMenuAutoboot $ pxeMenuHidden $ 
 		 pxeNoEscape $ pxeOnError $ pxeOnTimeout $ pxePrompt $pxeSay $ pxeSerial $ pxeTimeout $ 
-		pxeTotalTimeout ) )
+		pxeTotalTimeout $ description $ DefaultMenuDN ) )
 
 objectclass ( 1.3.6.1.4.1.7579.1005.3.3
 	NAME 'MenuEntry' 
@@ -483,4 +489,10 @@ objectclass ( 1.3.6.1.4.1.7579.1005.3.3
 		$ appendTmpfsSize $ appendUnionfs $ appendVci $ appendVga $ GenericMenuEntryDN $ IPappend $ 
 		Kernel $ Label $ Localboot $ pxeMenuDefault $ pxeMenuDisable $ pxeMenuGoto $ pxeMenuHide 
 		$ pxeMenuInclude $ pxeMenuLabel $ pxeMenuPasswd $ MenuPosition $ pxeMenuSeparator $ 
-		pxeMenuTextHelp ) )
+		pxeMenuTextHelp $ rbsAuthClass $ description ) )
+		
+objectclass ( 1.3.6.1.4.1.7579.1005.3.4
+	NAME 'HostRBServiceDN' 
+	DESC 'The DN of the Remote Boot Service object (Bootserver).'
+	SUP top
+	MUST ( cn $ RBServiceDN ) )

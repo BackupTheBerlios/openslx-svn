@@ -86,34 +86,34 @@ attributetype ( 1.3.6.1.4.1.7579.1005.4.11
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
 
 attributetype ( 1.3.6.1.4.1.7579.1005.4.12
-	NAME 'HlpRBService'
-	EQUALITY distinguishedNameMatch
-	DESC 'Remote Boot Service of Host.'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE )
-
-attributetype ( 1.3.6.1.4.1.7579.1005.4.13
 	NAME 'InventarNr'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Inventarisierungs-Nummer.'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
 
-attributetype ( 1.3.6.1.4.1.7579.1005.4.14
+attributetype ( 1.3.6.1.4.1.7579.1005.4.13
 	NAME 'hwInventarNr'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Hardware Inventarisierungs-Nummer.'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
 
-attributetype ( 1.3.6.1.4.1.7579.1005.4.15
+attributetype ( 1.3.6.1.4.1.7579.1005.4.14
 	NAME 'geoLocation'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Location (geographic) of Host, e.g. Site, Room Nr, etc..'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
 
-attributetype ( 1.3.6.1.4.1.7579.1005.4.16
+attributetype ( 1.3.6.1.4.1.7579.1005.4.15
 	NAME 'geoAttribut'
 	EQUALITY caseIgnoreIA5Match
 	DESC 'Geographic Coordinates.'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.7579.1005.4.16
+	NAME 'HlpRBService'
+	EQUALITY distinguishedNameMatch
+	DESC 'Remote Boot Service of Host.'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE )
 
 attributetype ( 1.3.6.1.4.1.7579.1005.4.17
 	NAME 'PXEConfigDN'
@@ -190,7 +190,7 @@ objectclass ( 1.3.6.1.4.1.7579.1005.5.3
 	SUP top
 	MUST ( HostName $ DomainName )
 	MAY ( IPAddress $ HWAddress $ description $ geoLocation $ geoAttribut $ slxConfigDBID $ 
-	  InventarNr $ hwInventarNr $ $ HlpRBService PXEConfigDN $ Hw-mouse $ Hw-graphic $ Hw-monitor ) )
+	  InventarNr $ hwInventarNr $ HlpRBService $ PXEConfigDN $ Hw-mouse $ Hw-graphic $ Hw-monitor ) )
 
 objectclass ( 1.3.6.1.4.1.7579.1005.5.4
 	NAME 'ActivePXEConfig'

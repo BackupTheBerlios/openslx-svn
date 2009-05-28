@@ -1,0 +1,94 @@
+dn: cn={x}lsm
+objectClass: olcSchemaConfig
+cn: {x}lsm
+olcAttributeTypes: {0}( 1.3.6.1.4.1.7579.1005.4.1 NAME 'FreeIPBlock' DESC 'Ran
+ ge of free IP addresses' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.
+ 115.121.1.26 )
+olcAttributeTypes: {1}( 1.3.6.1.4.1.7579.1005.4.2 NAME 'MaxIPBlock' DESC 'Full
+  range of obtained IP addresses' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4
+ .1.1466.115.121.1.26 )
+olcAttributeTypes: {2}( 1.3.6.1.4.1.7579.1005.4.3 NAME 'dhcpMTime' DESC 'Las
+ t modification in DHCP object of AU (Unix time).' EQUALITY integerMatch SYNTA
+ X 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )
+olcAttributeTypes: {3}( 1.3.6.1.4.1.7579.1005.4.4 NAME 'dnsMTime' DESC 'Last
+  modification in DNS object of AU (Unix time).' EQUALITY integerMatch SYNTAX 
+ 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )
+olcAttributeTypes: {4}( 1.3.6.1.4.1.7579.1005.4.5 NAME 'rbsMTime' DESC 'Last
+  modification in RBS object of AU (Unix time).' EQUALITY integerMatch SYNTAX 
+ 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )
+olcAttributeTypes: {5}( 1.3.6.1.4.1.7579.1005.4.6 NAME 'slxGroup' DESC 'SLX 
+ Group in OpenSLX Config DB of the AU' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.
+ 6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+olcAttributeTypes: {6}( 1.3.6.1.4.1.7579.1005.4.7 NAME 'dhcpDynamicPools' DE
+ SC 'Boolean Flag. True if AU has right to manage dynamic DHCP Pools' EQUALITY
+  booleanMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE )
+olcAttributeTypes: {7}( 1.3.6.1.4.1.7579.1005.4.8 NAME 'HostName' DESC 'Hostna
+ me of a Computer.' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.12
+ 1.1.26 SINGLE-VALUE )
+olcAttributeTypes: {8}( 1.3.6.1.4.1.7579.1005.4.9 NAME 'DomainName' DESC 'Doma
+ inname of a Computer.' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.11
+ 5.121.1.26 SINGLE-VALUE )
+olcAttributeTypes: {9}( 1.3.6.1.4.1.7579.1005.4.10 NAME 'IPAddress' DESC 'IPAdd
+ ress of a Computer.' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.
+ 121.1.26 )
+olcAttributeTypes: {10}( 1.3.6.1.4.1.7579.1005.4.11 NAME 'HWAddress' DESC 'Hardw
+ are Address of a Computers Network Interface.' EQUALITY caseIgnoreIA5Match SY
+ NTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: {11}( 1.3.6.1.4.1.7579.1005.4.12 NAME 'InventarNr' DESC '
+ Inventarnummer' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.11
+ 5.121.1.26 SINGLE-VALUE )
+olcAttributeTypes: {12}( 1.3.6.1.4.1.7579.1005.4.13 NAME 'hwInventarNr' DESC 'Hardware
+  Inventarnummer' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.11
+ 5.121.1.26 SINGLE-VALUE )
+olcAttributeTypes: {13}( 1.3.6.1.4.1.7579.1005.4.14 NAME 'geoLocation' DESC 'L
+ ocation (geographic) of Host, e.g. Site, Room Nr, etc..' EQUALITY caseIgnoreI
+ A5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+olcAttributeTypes: {14}( 1.3.6.1.4.1.7579.1005.4.15 NAME 'geoAttribut' DESC 'G
+ eographic Coordinates.' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.1
+ 15.121.1.26 SINGLE-VALUE )
+olcAttributeTypes: {15}( 1.3.6.1.4.1.7579.1005.4.16 NAME 'HlpRBService' DESC 'R
+ emote Boot Service of Host.' EQUALITY distinguishedNameMatch SYNTAX 1.3.6.1.4
+ .1.1466.115.121.1.12 SINGLE-VALUE )
+olcAttributeTypes: {16}( 1.3.6.1.4.1.7579.1005.4.17 NAME 'PXEConfigDN' DESC 'D
+ N Reference to PXEConfig Object of Host.' EQUALITY distinguishedNameMatch SYN
+ TAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE )
+olcAttributeTypes: {17}( 1.3.6.1.4.1.7579.1005.4.18 NAME 'TimeSlot' DESC 'Time
+  Range consisting of ' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.11
+ 5.121.1.26 )
+olcAttributeTypes: {18}( 1.3.6.1.4.1.7579.1005.4.19 NAME 'ForceBoot' DESC 'Boo
+ lean Flag. If true: Host will be forced to reboot by WOL (in given TimeSlot)'
+  EQUALITY booleanMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE )
+olcAttributeTypes: {19}( 1.3.6.1.4.1.7579.1005.4.20 NAME 'slxConfigDBID' DESC 
+ 'Client ID in OpenSLX Config Database.' EQUALITY caseIgnoreIA5Match SYNTAX 1.
+ 3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
+olcAttributeTypes: {20}( 1.3.6.1.4.1.7579.1005.4.21 NAME 'Hw-mouse' DESC 'hardwa
+ re configuration option.' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466
+ .115.121.1.26 SINGLE-VALUE )
+olcAttributeTypes: {21}( 1.3.6.1.4.1.7579.1005.4.22 NAME 'Hw-graphic' DESC 'hard
+ ware configuration option.' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.14
+ 66.115.121.1.26 SINGLE-VALUE )
+olcAttributeTypes: {22}( 1.3.6.1.4.1.7579.1005.4.23 NAME 'Hw-monitor' DESC 'har
+ dware configuration option.' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1
+ 466.115.121.1.26 SINGLE-VALUE )
+olcObjectClasses: {0}( 1.3.6.1.4.1.7579.1005.5.1 NAME 'AdministrativeUnit' DES
+ C 'Administrative Unit.' SUP organizationalUnit STRUCTURAL MAY ( cn $ FreeIPB
+ lock $ MaxIPBlock $ dhcpMTime $ dnsMTime $ rbsMTime $ slxGroup ) )
+olcObjectClasses: {1}( 1.3.6.1.4.1.7579.1005.5.2 NAME 'AUContainer' DESC 'Admi
+ nistrative Unit Container.' SUP top STRUCTURAL MUST cn )
+olcObjectClasses: {2}( 1.3.6.1.4.1.7579.1005.5.3 NAME 'Host' DESC 'Computer' S
+ UP top STRUCTURAL MUST ( HostName $ DomainName ) MAY ( IPAddress $ HWAddress 
+ $ description $ HlpRBService $ Hw-mouse $ Hw-graphic $ Hw-monitor $ geoLocati
+ on $ geoAttribut $ slxConfigDBID $ InventarNr $ hwInventarNr $ PXEConfigDN ) )
+olcObjectClasses: {3}( 1.3.6.1.4.1.7579.1005.5.5 NAME 'ActivePXEConfig' DESC '
+ Active PXEConfig of a Host.' SUP top STRUCTURAL MUST cn MAY ( TimeSlot $ Forc
+ eBoot $ PXEConfigDN ) )
+olcObjectClasses: {4}( 1.3.6.1.4.1.7579.1005.5.4 NAME 'Admins' DESC 'Group of 
+ Admins (DNs), nur member nicht must' SUP top STRUCTURAL MUST cn MAY ( member 
+ $ seeAlso $ owner $ ou $ o $ description ) )
+structuralObjectClass: olcSchemaConfig
+entryUUID: 5dd7b108-4616-102d-8e1b-bd3de9b5d722
+creatorsName: cn=config
+createTimestamp: 20081113213250Z
+entryCSN: 20081113213250.458169Z#000000#000#000000
+modifiersName: cn=config
+modifyTimestamp: 20081113213250Z
