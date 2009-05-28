@@ -21,17 +21,23 @@ permem=66
 mem=$(expr{totalmem} * ${permem})
 
 # virtual fd/cd/dvd and drive devices, floppy b: for configuration
-floppy0="FALSE"
-# if $floppy_0 from run-virt.include set then floppy0="TRUE"
-[ -n "$floppy_0" ] && floppy0="TRUE"
+# if $floppy_0 from run-virt.include set then fdtest="TRUE"
+fdtest=
+fdtest=${floppy_0:+"TRUE"}
+# if $fdtest not set floppy0="FALSE", else "TRUE"
+floppy0=${fdtest:-"FALSE"}
 floppy1="TRUE"
 floppy1name="/var/lib/virt/vmchooser/loopimg/fd.img"
-cdrom0="FALSE"
-# if $cdrom_0 from run-virt.include set then cdrom0="TRUE"
-[ -n "$cdrom_0" ] && cdrom0="TRUE"
-cdrom1="FALSE"
-# if $cdrom_1 from run-virt.include set then cdrom1="TRUE"
-[ -n "$cdrom_1" ] && cdrom1="TRUE"
+# if $cdrom_0 from run-virt.include set then cdtest="TRUE"
+cdtest=
+cdtest=${cdrom_0:+"TRUE"}
+# if $cdtest not set cdrom0="FALSE", else "TRUE"
+cdrom0=${cdtest:-"FALSE"}
+# if $cdrom_1 from run-virt.include set then cdtest="TRUE"
+cdtest=
+cdtest=${cdrom_1:+"TRUE"}
+# if $cdtest not set cdrom1="FALSE", else "TRUE"
+cdrom1=${cdtest:-"FALSE"}
 # ide is expected default, test for the virtual disk image type should
 # be done while creating the runscripts ...
 ide="TRUE"
