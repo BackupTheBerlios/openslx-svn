@@ -84,14 +84,27 @@ int rpm2cpio_main(int argc, char **argv)
 #ifdef CONFIG_FEATURE_RPM2CPIO_BZIP2
 		/* return to position before magic (eek..!) */
 		lseek(rpm_fd, -2, SEEK_CUR);
-		if (unpack_bz2_stream(rpm_fd, fileno(stdout)) != 0)
+		if (unpack_bz2_stream(rpm_fd, STDOUT_FILENO) != 0)
 			bb_error_msg("error inflating (bzip2)");
 #else
 		bb_error_msg_and_die("bzip2 not supported");
 #endif
 	}
-	else
-		bb_error_msg_and_die("not gzip or bzip2 compressed");
+    /* dirty hack: lzma does not always has a magic byte, we should parse the 
+       full rpm header in future to find out the compression type.. for now
+       we just asume it is lzma if it's not gz or bzip2 */
+	else if ( 1 == 1 ) {
+#ifdef CONFIG_FEATURE_RPM2CPIO_LZMA
+		/* return to position before magic (eek..!) */
+		lseek(rpm_fd, -2, SEEK_CUR);
+		if (unpack_lzma_stream(rpm_fd, STDOUT_FILENO) < 0)
+			bb_error_msg("error inflating (lzma)");
+#else
+		bb_error_msg_and_die("lzma not supported");
+#endif
+	}
+    else
+		bb_error_msg_and_die("compression type unknown");
 
 	close(rpm_fd);
 

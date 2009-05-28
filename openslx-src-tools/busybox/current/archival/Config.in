@@ -172,6 +172,14 @@ config FEATURE_RPM2CPIO_BZIP2
 	  If you enable this option you'll be able to extract
 	  rpms compressed with bzip2.
 
+config FEATURE_RPM2CPIO_LZMA
+	bool "  Support lzma decompression"
+	default n
+	depends on RPM2CPIO
+	help
+	  If you enable this option you'll be able to extract
+	  rpms compressed with lzma.
+
 config RPM
 	bool "rpm"
 	default n
