@@ -9,7 +9,9 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include<boost/filesystem/operations.hpp>
 
+namespace bfs=boost::filesystem;
 using namespace std;
 
 /**
@@ -30,7 +32,13 @@ void saveSession(DataEntry* dat) {
 
     // build path
     string fname = home;
-    fname.append("/.vmchooser");
+    string shome = home;
+    fname.append("/.openslx/vmchooser");
+    if(!bfs::exists(fname) ) {
+        if(!bfs::exists(shome.append("/.openslx")) ) {
+            bfs::create_directory(shome);
+        }
+    }
 
     // write file with ofstream
     ofstream fout(fname.c_str(),ios::trunc); // overwrite file
@@ -55,23 +63,30 @@ char* readSession() {
 
     // build file name
     string fname = home;
-    fname.append("/.vmchooser");
+    fname.append("/.openslx/vmchooser");
 
     // read presaved session with ifstream
+    if(!bfs::exists(fname)) {
+        return NULL;
+    }
     ifstream fin(fname.c_str());
     if (!fin) {
-      cout << ".vmchooser file not found .. continue with global default" << endl;
+      cout << "some error occured reading file!" << endl;
       return NULL;
     }
+
     string sessname;
     getline(fin,sessname);
     char* blub = (char*) malloc(sessname.size());
     strncpy(blub,sessname.c_str(),sessname.size()+1);
 
     if(!sessname.empty()) {
+        // blub has to be freed ;-) 
+        // but this is not very important here
         return blub;
     }
     else {
+        free(blub);
         return NULL;
     }
 
