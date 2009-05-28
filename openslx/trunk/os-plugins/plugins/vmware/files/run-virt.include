@@ -30,15 +30,13 @@ case "$vmversion" in
     shared_folder="FALSE"
     echo "
 # version specific stuff
-config.version = \"8\"
-virtualHW.version = \"4\"" >>${conffile}
+config.version = \"8\"" >>${conffile}
   ;;
   2.0|6.0)
     shared_folder="TRUE"
     echo "
 # version specific stuff
 config.version = \"8\"
-virtualHW.version = \"6\"
 sharedFolder.option = \"alwaysEnabled\"" >>${conffile}
   ;;
   2.5|6.5)
@@ -46,7 +44,6 @@ sharedFolder.option = \"alwaysEnabled\"" >>${conffile}
     echo "
 # version specific stuff
 config.version = \"8\"
-virtualHW.version = \"7\"
 ehci.present= \"TRUE\"
 sharedFolder.option = \"alwaysEnabled\"
 mks.enable3d = \"FALSE\"" >>${conffile}    
@@ -55,6 +52,7 @@ esac
 
 echo "
 # id
+virtualHW.version = \"${hwver}\"
 displayName = \"${displayname}\"
 guestOS = \"${vmostype}\"
 
@@ -289,10 +287,13 @@ vmversion=$version
 #-X = fullscreen
 vmopt="-X"
 
-#TODO: check for a faster way, perhaps we should put this into XML
-# the grepping under some circumstances lets wait the user for ages ...
+# check if ide/scsi and hwver of image
+# *-flat.vmdk images are started via the vmdk file, so there's no need to
+# exclude these flat files, we do it anyway 
 if [ $(echo ${imagename} | grep -cv "\-flat.vmdk") ]; then
-  hddrv=$(grep -m 1 -ia "ddb.adapterType" ${diskfile} | awk -F "\"" '{print $2}')
+  hddrv=$(grep -m1 -ia "ddb.adapterType" ${diskfile} | awk -F '"' '{print $2}')
+  hwver=$(grep -m1 -ia "ddb.virtualHWVersion" ${diskfile} | \
+    awk -F '"' '{print $2}')
   if [ "${hddrv}" = "ide" ]; then
     ide="TRUE"
     scsi="FALSE"
@@ -304,9 +305,6 @@ if [ $(echo ${imagename} | grep -cv "\-flat.vmdk") ]; then
     scsi="TRUE"  
   fi
 fi
-
-# Should we debug? Hell yes, we should always debug!
-debug=0
 
 ### log function ###############################################################
 # function to write to stdout and logfile
