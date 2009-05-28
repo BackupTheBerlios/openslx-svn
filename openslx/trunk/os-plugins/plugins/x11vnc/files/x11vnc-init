@@ -16,14 +16,17 @@ find_xauth () {
 
   [ -e "/var/lib/kdm/" ] && 
      XAUTHFILE_KDM=`find /var/lib/kdm/ -iname "A\:0-*"`
+  [ -e "/var/run/xauth/" ] && 
+     XAUTHFILE_KDM2=`find /var/run/xauth/ -iname "A\:0-*"`
   [ -e "/var/lib/xdm/authdir/authfiles/" ] && 
      XAUTHFILE_XDM=`find /var/lib/xdm/authdir/authfiles/ -iname "A\:0-*"`
   [ -e "/var/lib/gdm/" ] && 
      XAUTHFILE_GDM=`find /var/lib/gdm/ -iname *Xauth*`
   
-  [ -f "$XAUTHFILE_KDM" ] && FOUND=1 && XAUTHORITY="$XAUTHFILE_KDM"
-  [ -f "$XAUTHFILE_XDM" ] && FOUND=1 && XAUTHORITY="$XAUTHFILE_XDM"
-  [ -f "$XAUTHFILE_GDM" ] && FOUND=1 && XAUTHORITY="$XAUTHFILE_GDM"
+  [ -f "$XAUTHFILE_KDM" ]  && FOUND=1 && XAUTHORITY="$XAUTHFILE_KDM"
+  [ -f "$XAUTHFILE_KDM2" ] && FOUND=1 && XAUTHORITY="$XAUTHFILE_KDM2"
+  [ -f "$XAUTHFILE_XDM" ]  && FOUND=1 && XAUTHORITY="$XAUTHFILE_XDM"
+  [ -f "$XAUTHFILE_GDM" ]  && FOUND=1 && XAUTHORITY="$XAUTHFILE_GDM"
 
   if [ "$FOUND" -eq "0" ]; then
     if [ "$RETRIES" -gt "0" ]; then
