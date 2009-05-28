@@ -19,8 +19,8 @@ cd ${PLUGIN_PATH}
 # Ubuntu gfx-install.sh skript
 if [ "1" -eq "$(echo ${DISTRO} | grep 'Ubuntu' | wc -l)" ]; then
   # we have Ubuntu - run ubuntu-gfx-install
-  echo "* Using Ubuntu packages to install modules and libs"
-  if [ "8.10" = $(echo ${RELEASE}| awk '{print $2}') ]; then
+  echo "* Using Ubuntu packages to install nvidia modules and libs"
+  if [ "8.10" = "$(echo ${RELEASE}| awk '{print $2}')" ]; then
     ./ubuntu-8.10-gfx-install.sh nvidia
   else
     ./ubuntu-gfx-install.sh nvidia
@@ -33,7 +33,7 @@ fi
 # SUSE gfx-install.sh skript
 if [ "1" -eq "$(lsb_release -i | grep 'SUSE' | wc -l)" ]; then
   # we have SUSE - run ubuntu-gfx-install
-  echo "* Using SuSE packages to install modules and libs"
+  echo "* Using SuSE packages to install nvidia modules and libs"
   ./suse-gfx-install.sh nvidia
   exit
 fi

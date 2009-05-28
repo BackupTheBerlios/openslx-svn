@@ -29,9 +29,7 @@ case ${TARGET} in
     if [ $? -eq 1 ]; then
       echo "fail"
       echo "  * Didn't get package xorg-driver-fglrx! Exit now!"
-      #TODO: remove sh when development is finished
-      sh
-      exit
+      exit 1
     else
       echo "ok"
     fi
@@ -39,21 +37,66 @@ case ${TARGET} in
     # extract $DEB
     dpkg-deb -x ${FGLRX_DEB} ${PLUGIN_FOLDER}/ati
 
-    echo -n "  * downloading fglrx kernel package..."
+    echo -n "  * downloading fglrx kernel package... "
     aptitude download fglrx-kernel-source >/dev/null 2>&1
     if [ $? -eq 1 ]; then
       echo "fail"
       echo "  * Didn't get package fglrx-kernel-source!"
-      exit
+      exit 1
     else
       echo "ok"
     fi
 
-    FGLRX_KERNEL_DEB=$(ls fglrx-kernel-sources*.deb | tail -n1)
+    FGLRX_KERNEL_DEB=$(ls fglrx-kernel-source*.deb | tail -n1)
     dpkg-deb -x ${FGLRX_KERNEL_DEB} /
 
-    bash
+    FGLRX_SOURCE_DIR=$(find  /usr/src/fglrx-${FGLRX_DRIVER_VERSION}* \
+      -maxdepth 0 -type d)
+    FGLRX_FULL_VERSION=$(echo ${FGLRX_SOURCE_DIR} | \
+      sed -e 's/\/usr\/src\/fglrx-//')
 
+    FGLRX_DKMS_DIR="/var/lib/dkms/fglrx/${FGLRX_FULL_VERSION}/"
+
+    if [ -d /var/lib/dkms/fglrx/${FGLRX_FULL_VERSION} ]; then
+      if [ ! -L ${FGLRX_DKMS_DIR}/source ]; then
+        ln -sf ${FGLRX_SOURCE_DIR} ${FGLRX_DKMS_DIR}/source
+      fi
+    else
+      echo -n "  * Add fglrx kernel module to dkms tree... "
+      dkms add -m fglrx -v ${FGLRX_FULL_VERSION} >/dev/null 2>&1
+      if [ $? -eq 0 ]; then
+        echo "ok"
+      else
+        echo "fail"
+        exit 1
+      fi
+    fi
+
+    ######    build kernel module   ######
+    echo -n "  * Building fglrx kernel module for kernel ${KVER}... "
+    dkms -m fglrx -v ${FGLRX_FULL_VERSION} \
+         -k ${KVER} \
+         --kernelsourcedir /usr/src/linux-headers-${KVER}/ \
+         --no-prepare-kernel \
+         --no-clean-kernel \
+         build \
+    > /tmp/dkms.log 2>&1
+    if [ $? -eq 0 ]; then
+      echo "ok"
+    else
+      echo "fail"
+      echo "------ dkms.log -----"
+      cat /tmp/dkms.log
+      echo "---------------------"
+      rm /tmp/dkms.log
+      exit 1
+    fi
+
+    FGLRX_MODULE_PATH=$(find ${FGLRX_DKMS_DIR}/${KVER}/ -name fglrx.ko)
+
+    cp ${FGLRX_MODULE_PATH} ${PLUGIN_FOLDER}/ati/modules/fglrx.ko
+
+    # cleanup
     if [ -f /usr/lib/dri/fglrx_dri.so ]; then
       mv /usr/lib/dri/fglrx_dri.so /usr/lib/dri/fglrx_dri.so.slx
     else
@@ -64,6 +107,7 @@ case ${TARGET} in
         /usr/lib/dri/fglrx_dri.so
 
     # cleanup
+    rm /tmp/dkms.log
     cd ${PLUGIN_FOLDER}/ati
 
   ;;
@@ -79,17 +123,17 @@ case ${TARGET} in
     if [ $? -eq 1 ]; then
       echo "fail"
       echo "  * Didn't get package nvidia-glx-${NVIDIA_DRIVER_VERSION}!"
-      exit
+      exit 1
     else
       echo "ok"
     fi
 
-    echo -n "  * downloading nvidia kernel package..."
+    echo -n "  * downloading nvidia kernel package... "
     aptitude download nvidia-${NVIDIA_DRIVER_VERSION}-kernel-source >/dev/null 2>&1
     if [ $? -eq 1 ]; then
       echo "fail"
       echo "  * Didn't get package nvidia-${NVIDIA_DRIVER_VERSION}-kernel-source!"
-      exit
+      exit 1
     else
       echo "ok"
     fi
@@ -109,43 +153,46 @@ case ${TARGET} in
     NVIDIA_DKMS_DIR="/var/lib/dkms/nvidia/${NVIDIA_FULL_VERSION}/"
 
     if [ -d /var/lib/dkms/nvidia/${NVIDIA_FULL_VERSION} ]; then
-      if [ ! -L ${NVIDI_DKMS_DIR}/source ]; then
+      if [ ! -L ${NVIDIA_DKMS_DIR}/source ]; then
         ln -sf ${NVIDIA_SOURCE_DIR} ${NVIDIA_DKMS_DIR}/source
       fi
     else
+      echo -n "  * Add nvidia kernel module to dkms tree... "
       dkms add -m nvidia -v ${NVIDIA_FULL_VERSION} >/dev/null 2>&1
+      if [ $? -eq 0 ]; then
+        echo "ok"
+      else
+        echo "fail"
+        exit 1
+      fi
     fi
 
-    bash 
-
-    
     ######    build kernel module   ######
-    echo -n "  * Building nvidia Kernel Module for Kernel ${KVER} .. "
+    echo -n "  * Building nvidia kernel module for kernel ${KVER}... "
     dkms -m nvidia -v ${NVIDIA_FULL_VERSION} \
          -k ${KVER} \
          --kernelsourcedir /usr/src/linux-headers-${KVER}/ \
          --no-prepare-kernel \
+         --no-clean-kernel \
          build \
-    > /dev/null 2>&1
+    > /tmp/dkms.log 2>&1
     if [ $? -eq 0 ]; then
       echo "ok"
     else
       echo "fail"
-      exit
+      echo "------ dkms.log -----"
+      cat /tmp/dkms.log
+      echo "---------------------"
+      rm /tmp/dkms.log
+      exit 1
     fi
 
     NVIDIA_MODULE_PATH=$(find ${NVIDIA_DKMS_DIR}/${KVER}/ -name nvidia.ko)
 
-    #module is now under /var/lib/dkms/nvidia/${NVIDIA_DRIVER_VERSION}.<subversion>/${KVER}/iX86/module/nvidia.ko
-    # TODO: rest & cleanup :)
-    ln -sf ${NVIDIA_MODULE_PATH} ${PLUGIN_FOLDER}/nvidia/modules/nvidia.ko
-
-    # assemble module - we just need the new one here
-    # TODO: modules for older graphics hardware can be found here
-    #cd modules/lib/linux-restricted-modules/${KVER}/
-    #ld_static -d -r -o ${PLUGIN_FOLDER}/nvidia/modules/nvidia.ko nvidia_new/*
+    cp ${NVIDIA_MODULE_PATH} ${PLUGIN_FOLDER}/nvidia/modules/nvidia.ko
 
     # cleanup
+    rm /tmp/dkms.log
     cd ${PLUGIN_FOLDER}/nvidia
     rm -rf ./etc
     #TODO: check for more cleanups when the main part works!
