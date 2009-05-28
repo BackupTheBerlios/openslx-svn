@@ -175,9 +175,10 @@ slxos-export [options] <action>
 
 =head3 Options
 
-    --help          brief help message
-    --man           show full documentation
-    --version       show version
+    --help             brief help message
+    --log-level=<int>  level of logging verbosity (0-3)
+    --man              show full documentation
+    --version          show version
 
 =head3 Actions
 
