@@ -349,7 +349,7 @@ sub writeBootloaderMenus
         my @systemInfos = grep { exists $systemIDs{$_->{id}} } @infos;
 
         # now write bootloader menu with all bootable systems for this client
-        my $bootEnv = bootEnvironmentForType($client->{boot_type});
+        my $bootEnv = bootEnvironmentForType($client->{attrs}->{boot_type});
         my $externalID = externalIDForClient($client);
         $bootEnv->writeBootloaderMenuFor($client, $externalID, \@systemInfos);
     }
@@ -382,7 +382,7 @@ sub writeClientConfigurationsForSystem
         next if $client->{name} eq '<<<default>>>';
             # skip default client, as it doesn't need any config-tgz
             
-        next if ($client->{boot_type} || 'pxe') ne $bootType;
+        next if ($client->{attrs}->{boot_type} || 'pxe') ne $bootType;
             # skip clients with non-matching boot type
 
         my $externalSystemID   = $info->{'external-id'};
