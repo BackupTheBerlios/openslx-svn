@@ -691,6 +691,9 @@ else
   error "$init_loadaufs" nonfatal
   unset aufs unionfs
 fi
+# runtimer
+[ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
+  echo "** Filesystem setup started at $(sysup)"
 
 # setup of client root filesystem dependent on the availability of UnionFS
 if [ -n "${union_type}" ] ; then
@@ -764,6 +767,9 @@ runinithook '50-have-layered-fs'
 # script for stuff to execute during early bootup
 d_mkrlscript init boot.slx "Running configuration postponed from InitRamFS"
 echo "fs complete at $(sysup)" >/tmp/fscmpl
+# runtimer
+[ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
+  echo "** Filesystem setup completed at $(sysup)"
 
 # write debug file information after filesystem setup completed
 echo -e "# /etc${D_SYSCONFDIR}/logfile - file created by $0 (initramfs \
@@ -846,6 +852,9 @@ if [ -n "$uniondirs" ]; then
 fi
 
 runinithook '70-before-plugins'
+# runtimer
+[ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
+  echo "** Plugin configuration started at $(sysup)"
 
 # check for any plugin-specific runlevel scripts and run them, if found:
 if [ ${DEBUGLEVEL} = 25 ] ; then
@@ -874,6 +883,9 @@ else
 fi
 
 runinithook '80-after-plugins'
+# runtimer
+[ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
+  echo "** Plugin configuration finished at $(sysup)"
 
 # create links for initial stage4 boot scripts
 initial_boot
