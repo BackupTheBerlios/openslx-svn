@@ -20,4 +20,5 @@ use warnings;
 # inherit everything from Debian (as Ubuntu is based on it anyway)
 use base qw(qemukvm::OpenSLX::Distro::Debian);
 
+
 1;

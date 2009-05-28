@@ -32,8 +32,10 @@ sub fillRunlevelScript
     my $location = shift;
     my $kind     = shift;
 
-    my $script = bla;
+    my $script = unshiftHereDoc(<<'    End-of-Here');
+    # put something into here ... 
 
+    End-of-Here
     return $script;
 }
 
