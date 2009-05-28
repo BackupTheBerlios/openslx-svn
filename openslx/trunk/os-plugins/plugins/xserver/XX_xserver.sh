@@ -230,7 +230,7 @@ a\ \ InputDevice\ \ "Synaptics TP"\ \ \ \ \ \ "SendCoreEvents"
 
     # ModulePath for proprietary drivers
     if [ -n "$xserver_driver" -o "$xserver_prefnongpl" -eq "1" ]; then
-      sed -e "s,ModulePath \",ModulePath \"${MODULE_PATH},g" \
+      sed -e "s,^#  ModulePath \",ModulePath \"${MODULE_PATH},g" \
           -i $xfc
     fi
 
