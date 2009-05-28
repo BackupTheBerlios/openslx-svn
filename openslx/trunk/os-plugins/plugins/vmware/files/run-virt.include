@@ -191,9 +191,6 @@ conffile="${confdir}/run-vmware.conf"
 # users vmware config folder
 vmhome="${HOME}/.vmware"
 
-# percentage of memory to use for vmwares in standard case
-permem=60
-
 # serial port defined (e.g. "ttyS0" or "autodetect")
 serial=$(grep -i "<serial port=\"" ${xml} | awk -F "\"" '{ print $2 }')
 case "$serial" in
@@ -211,26 +208,37 @@ case "$serial" in
     ;;
 esac
 
-# Hack, if more than 2,5G RAM use 40% of Ram and write vmem into Ram as well
-# (40% vmware | 40% confdir(vmem...) | 20% host
-if [ "${totalmem}" -ge "2500" ]; then
+# percentage of memory to use for vmwares in standard case
+permem=30
+if [ "${totalmem}" -ge "1600" ]; then
   permem=40
-  confdir=/dev/shm/vmware/$USER
-  conffile=${confdir}/run-vmware.conf
-  mkdir -p /dev/shm/vmware/$USER
-# if there is no scratch space on disk you have to waste your mem
-elif grep -qe "ramfs /tmp " /proc/mounts ; then
-  permem=30
+fi
+# check if /tmp is on harddisk
+if grep -qe "/dev/.* /tmp " /proc/mounts ; then
+  permem=60
+  id44="1"
+  # Hack, if more than 2,5G RAM use 40% of Ram and write vmem into Ram as well
+  # (40% vmware | 40% confdir(vmem...) | 20% host
+  # VMplayer 2+ issue
+  if [ "${totalmem}" -ge "2500" ]; then
+    permem=40
+    confdir=/dev/shm/vmware/$USER
+    conffile=${confdir}/run-vmware.conf
+    mkdir -p /dev/shm/vmware/$USER
+  fi
 fi
 mem=$(expr ${totalmem} / 100 \* ${permem} / 4 \* 4)
+if [ "${id44}" = "1" ]; then
+  memhost=$(expr ${totalmem} - ${mem})
+else
+  memhost=$(expr ${totalmem} - ${mem} - ${mem})
+fi
 
 # check memory range
-memtest=${totalmem}-128
-if [ "${mem}" -lt "128" ] || [ "${mem}" -gt "${totalmem}" ]; then
+if [ "${mem}" -lt "256" ] || [ "${memhost}" -lt "256" ]; then
   writelog "\n\n"
   writelog "\tYour memory is out of range: ${mem} MB."
-  writelog "\tMin. 128 MB for host and guest!"
-  writelog "tTry --mem option."
+  writelog "\tMin. 256 MB for host and guest!"
   exit 1
 fi
 
@@ -326,6 +334,7 @@ writelog "\t/tmp info: \
 writelog "Hardware:"
 writelog "\tMAC:\t\t00:50:56:0D:${mac}"
 writelog "\tMem:\t\t${mem} MB"
+writelog "\tHostmem:\t${memhost} MB"
 writelog "\tMax. res.:\t${xres}x${yres}"
 writelog "\tCD-ROM_1:\t${cdr_1}"
 writelog "\tCD-ROM_2:\t${cdr_2}"
