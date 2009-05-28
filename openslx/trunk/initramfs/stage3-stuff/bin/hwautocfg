@@ -95,6 +95,9 @@ hwinfo --scanner >/etc/hwinfo.scanner
 [ -f /tmp/scanner-udev ] && cat /tmp/scanner-udev \
   >>/mnt/etc/udev/rules.d/04-scanner.rules
 
+# parallel port setup
+modprobe ${MODPRV} parport_pc && modprobe ${MODPRV} ppdev
+
 # if any new device appeared up to now
 mdev -s
 return 0

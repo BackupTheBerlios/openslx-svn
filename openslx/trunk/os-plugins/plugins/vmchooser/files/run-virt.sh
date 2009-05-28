@@ -184,7 +184,7 @@ writelog ()
   echo -e "$1"
 
   # Log into file
-  echo -e "$1" >>run-virt.log
+  echo -e "$1" >>/tmp/run-virt.$$.log
 }
 
 # Setup the rest of the environment and run the virtualization tool just confi-

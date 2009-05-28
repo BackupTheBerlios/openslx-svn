@@ -252,7 +252,7 @@ case "$serial" in
     ;;
 esac
 case "$parallel" in
-  lp*)
+  lp*|parport*)
     paraldev="parallel0.filename = \"/dev/${parallel}\""
     paralbidi="TRUE"
     parallel="TRUE"
