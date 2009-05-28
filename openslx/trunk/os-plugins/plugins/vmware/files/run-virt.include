@@ -141,7 +141,12 @@ isolation.tools.paste.enabled = \"TRUE\"
 
 # serial port
 serial0.present = \"${serial}\"
-${serialdev}" >>${conffile}
+${serialdev}
+
+# parallel port
+parallel0.present = \"${parallel}\"
+parallel0.bidirectional = \"${paralbidi}\"
+${paraldev}" >>${conffile}
 
 # set the appropriate permissions for the vmware config file
 chmod u+rwx ${conffile} >/dev/null 2>&1
@@ -231,20 +236,36 @@ case "$enable3d" in
     ;;
 esac
 
-# serial port defined (e.g. "ttyS0" or "autodetect")
-serial=$(grep -i "<serial port=\"" ${xml} | awk -F "\"" '{ print $2 }')
+# serial/parallel port defined (e.g. "ttyS0, lp0" or "autodetect")
 case "$serial" in
   tty*)
     serialdev="serial0.filename = \"/dev/${serial}\""
     serial="TRUE"
     ;;
-  autodetect)
+  auto*)
     serialdev="serial0.autodetect = \"TRUE\""
     serial="TRUE"
     ;;
   *)
     serialdev=""
     serial="FALSE"
+    ;;
+esac
+case "$parallel" in
+  lp*)
+    paraldev="parallel0.filename = \"/dev/${parallel}\""
+    paralbidi="TRUE"
+    parallel="TRUE"
+    ;;
+  auto*)
+    paraldev="parallel0.autodetect = \"TRUE\""
+    paralbidi="TRUE"
+    parallel="TRUE"
+    ;;
+  *)
+    paraldev=""
+    paralbidi="FALSE"
+    parallel="FALSE"
     ;;
 esac
 
