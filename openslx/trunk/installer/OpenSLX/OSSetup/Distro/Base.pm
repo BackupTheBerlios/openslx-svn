@@ -68,6 +68,8 @@ sub initialize
         - /var/opt/openslx
         - /var/lib/vmware
         - /var/lib/ntp/*
+        - /var/run/*
+        - /var/log/*
         + /var
         - /usr/lib/vmware/modules/*
         + /usr
