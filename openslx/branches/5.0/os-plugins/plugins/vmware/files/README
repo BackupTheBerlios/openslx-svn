@@ -1,5 +1,5 @@
 Files
-- nvram.5.0
+- nvram (version from VMware5)
   This nvram supports a second Floppy drive. Helpfull if you want to
   get some data from linux to your Windows VirtualMachine (like
   Scanner-IP or Userinformation)

@@ -539,7 +539,7 @@ sub _localInstallation
         $vmbuildversion = $versionhash{vmbuildversion};
 
         ## Copy needed files
-        my @files = qw(nvram.5.0);
+        my @files = qw(nvram);
         foreach my $file (@files) {
             copyFile("$pluginFilesPath/$file", "$installationPath");
         }
@@ -584,13 +584,10 @@ sub _vmpl2Installation {
     ## Copy needed files
 
     # copy 'normal' needed files
-    my @files = qw( nvram.5.0 install-vmpl.sh );
+    my @files = qw( nvram install-vmpl.sh );
     foreach my $file (@files) {
         copyFile("$pluginFilesPath/$file", "$installationPath");
     }
-
-    # copy on depending runvmware file
-    copyFile("$pluginFilesPath/runvmware-player-v2", "$installationPath", "runvmware");
 
     # Install the binarys from given pkgpath
     system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-vmpl.sh $kind");
@@ -623,13 +620,10 @@ sub _vmpl25Installation {
     mkpath($installationPath);
 
     # copy 'normal' needed files
-    my @files = qw( nvram.5.0 install-vmpl.sh );
+    my @files = qw( nvram install-vmpl.sh );
     foreach my $file (@files) {
         copyFile("$pluginFilesPath/$file", "$installationPath");
     }
-
-    # copy on depending runvmware file
-    copyFile("$pluginFilesPath/runvmware-player-v25", "$installationPath", "runvmware");
 
     # Install the binarys from given pkgpath
     system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-vmpl.sh $kind");
@@ -662,12 +656,10 @@ sub _vmpl1Installation {
     mkpath($installationPath);
 
     # copy 'normal' needed files
-    my @files = qw( nvram.5.0 install-vmpl.sh );
+    my @files = qw( nvram install-vmpl.sh );
     foreach my $file (@files) {
         copyFile("$pluginFilesPath/$file", "$installationPath");
     }
-    # copy on depending runvmware file
-    copyFile("$pluginFilesPath/runvmware-player-v1", "$installationPath", "runvmware");
 
     # Download and install the binarys
     system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-vmpl.sh $kind");
