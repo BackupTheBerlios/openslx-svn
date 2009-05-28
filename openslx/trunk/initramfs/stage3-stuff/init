@@ -663,6 +663,19 @@ runinithook '35-have-network-root'
 
 # get the complete collection of kernel modules available
 mount -n --bind /mnt/lib/modules /lib/modules || error "$init_moddir"
+# start hardware configuration as background process if not a special
+# debuglevel (21) is used for the option of manual hwautocfg start
+if [ ${DEBUGLEVEL} = 21 ] ; then
+  echo "You can run 'hwautocfg main &' manually now ..."
+  /bin/ash
+else
+  [ $DEBUGLEVEL -eq 20 ] && echo "** started hwautocfg in background at \
+$(sysup)"
+  hwautocfg main &
+fi
+
+runinithook '40-started-hw-config'
+
 # unionfs/aufs modules visible by now if installed, try to use aufs for rw
 # access if available
 union_type=""
@@ -680,18 +693,6 @@ else
   unset aufs unionfs
 fi
 
-# start hardware configuration as background process if not a special
-# debuglevel (21) is used for the option of manual hwautocfg start
-if [ ${DEBUGLEVEL} = 21 ] ; then
-  echo "You can run 'hwautocfg main &' manually now ..."
-  /bin/ash
-else
-  [ $DEBUGLEVEL -eq 20 ] && echo "** started hwautocfg in background at \
-$(sysup)"
-  hwautocfg main &
-fi
-
-runinithook '40-started-hw-config'
 
 # runtimer
 [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
@@ -712,10 +713,14 @@ if [ -n "${union_type}" ] ; then
   mkdir -p /mnt/uniontmp
   mount -n --move ${rwdir}/uniontmp /mnt/uniontmp
   chmod 0755 /mnt/uniontmp /mnt
+  # running hardware disk/tmp setup now
+  hwautocfg disk &
   # run ldconfig if switched on via kernel command line (token ldsc) or
   # triggered by unionized root filesystem
   ldcfg
 elif [ -z "${cowloop}" ] ; then
+  # fire up hardware disk/tmp setup first
+  hwautocfg disk &
   echo "Using bind mounts to ramdisk for rw access"
   mount -n -t tmpfs -o size=${tmpfssize} ramfs ${rwdir}
   for path in ${D_BINDMPTS} ; do
