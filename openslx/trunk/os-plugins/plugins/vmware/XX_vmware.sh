@@ -135,8 +135,9 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       mknod /dev/vmnet8 c 119 8
     fi
     # copy the runlevel script to the proper place and activate it
-    cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmware.init \
-      /mnt/etc/init.d/vmware-env \
+    sed "s/eth0/$nwif/g" \
+      /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmware.init \
+      > /mnt/etc/init.d/vmware-env \
       || echo "  * Error copying runlevel script. Shouldn't happen."
     chmod a+x /mnt/etc/init.d/vmware-env
     rllinker "vmware-env" 20 2
