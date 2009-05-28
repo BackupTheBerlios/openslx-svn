@@ -38,8 +38,8 @@ w3m -o confirm_qq=no \
 chvt 1
 
 # fetch kernel and initramfs of selected system 
-wget -O /tmp/kernel $boot_uri/system/$kernel
-wget -O /tmp/initramfs $boot_uri/system/$initramfs
+wget -O /tmp/kernel $boot_uri/$kernel
+wget -O /tmp/initramfs $boot_uri/$initramfs
 
 # read primary IP configuration to pass it on
 . /tmp/ipstuff
@@ -47,5 +47,5 @@ wget -O /tmp/initramfs $boot_uri/system/$initramfs
 # start the new kernel with initialramfs and composed cmdline
 echo "Booting OpenSLX client $label ..."
 kexec -l /tmp/kernel --initrd=/tmp/initramfs \
-  --append="$append file=$boot_uri/preboot/${preboot_id}/client-config/${sysname}/${client}.tgz $quiet ip=$ip:$siaddr:$router:$subnet:$dnssrv debug=3"
+  --append="$append file=$boot_uri/${preboot_id}/client-config/${sysname}/${client}.tgz $quiet ip=$ip:$siaddr:$router:$subnet:$dnssrv debug=3"
 kexec -e

@@ -19,6 +19,15 @@ use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use File::Path;
 
+# add openslx stuff to @INC
+use FindBin;
+use lib "$FindBin::RealBin/../../../../lib";
+use lib "$FindBin::RealBin";
+
+# read default config
+use OpenSLX::Basics;
+openslxInit();
+
 #    die "*** Taint mode must be active! ***" unless ${^TAINT};
 
 my $cgi = CGI->new;
@@ -30,8 +39,9 @@ my $prebootID = $cgi->param('preboot_id') || '';
 die "must give 'system' ($system), 'client' ($client) and 'preboot_id' ($prebootID)!\n"
     unless $system && $client && $prebootID;
 
-my $src = "/srv/openslx/preboot/client-config/$system/default.tgz";
-my $destPath = "/srv/www/openslx/preboot/$prebootID/client-config/$system";
+my $webPath = "$openslxConfig{'public-path'}/preboot";
+my $src = "$webPath/client-config/$system/$prebootID.tgz";
+my $destPath = "$webPath/$prebootID/client-config/$system";
 mkpath($destPath);
 system(qq{cp $src $destPath/$client.tgz});
 
