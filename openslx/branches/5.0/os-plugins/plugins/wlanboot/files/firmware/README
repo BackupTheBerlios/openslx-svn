@@ -1,8 +1,0 @@
-Put all the required firmwares of WLAN adapters you would like to use in
-your setup here into this subdirectory. They are copied into the InitRamFS 
-to be present for device configuration via modprobe/mdev in stage3.
-
-For more information on the "wlanboot" plugin have a look at the project
-page!
-
-The OpenSLX Team
