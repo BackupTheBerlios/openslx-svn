@@ -557,13 +557,17 @@ sub createBootEnvironmentsForSystem
         $initramfsCount 
             += $bootEnv->writeFilesRequiredForBooting($info, $buildPath);
 
-        my $systemPath 
-            = "$bootEnv->{'target-path'}/client-config/$info->{'external-id'}";
-        createTarOfPath($buildPath, "default.tgz", $systemPath);
-
-        writeClientConfigurationsForSystem(
-            $info, $buildPath, $attrFile, $bootType, $clients
-        );
+        # TODO: use different paths for other boot environments
+        # QUICK FIX: only write something for pxe at the moment
+        if ($bootType eq 'pxe') {
+	        my $systemPath 
+	            = "$bootEnv->{'target-path'}/client-config/$info->{'external-id'}";
+	        createTarOfPath($buildPath, "default.tgz", $systemPath);
+	
+	        writeClientConfigurationsForSystem(
+	            $info, $buildPath, $attrFile, $bootType, $clients
+	        );
+    	}
     }
 
     return;
