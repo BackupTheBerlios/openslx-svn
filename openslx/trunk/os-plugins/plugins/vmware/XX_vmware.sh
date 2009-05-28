@@ -216,13 +216,13 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       count=2880 bs=512 2>/dev/null
     chmod 0777 /mnt/etc/vmware/loopimg/fd.img
     # use dos formatter from rootfs (later stage4)
+    ln -sf /mnt/lib/ld-linux.so.2 /lib/ld-linux.so
     LD_LIBRARY_PATH=/mnt/lib /mnt/sbin/mkfs.msdos \
       /mnt/etc/vmware/loopimg/fd.img >/dev/null 2>&1 #|| error
     mount -n -t msdos -o loop,umask=000 /mnt/etc/vmware/loopimg/fd.img \
       /mnt/etc/vmware/fd-loop
     echo -e "usbfs\t\t/proc/bus/usb\tusbfs\t\tauto\t\t 0 0" >> /mnt/etc/fstab
     # needed for VMware 5.5.4 and versions below
-    # TODO: isn't boot.slx dead/not functional due of missing ";; esac"?
     echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
       >>/mnt/etc/init.d/boot.slx
 
