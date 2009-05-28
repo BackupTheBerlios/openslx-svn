@@ -68,6 +68,13 @@ sub finalize
     return 1;
 }
 
+sub requiresDefaultClientConfig
+{
+    my $self = shift;
+    
+    return $self->{'requires-default-client-config'};
+}
+
 sub writeBootloaderMenuFor
 {
     my $self             = shift;

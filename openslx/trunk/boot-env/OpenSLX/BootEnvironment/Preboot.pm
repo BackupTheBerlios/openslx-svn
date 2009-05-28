@@ -27,6 +27,28 @@ use OpenSLX::ConfigDB qw(:support);
 use OpenSLX::MakeInitRamFS::Engine::Preboot;
 use OpenSLX::Utils;
 
+sub initialize
+{
+    my $self   = shift;
+    my $params = shift;
+    
+    return if !$self->SUPER::initialize($params);
+
+    $self->{'original-path'} = "$openslxConfig{'public-path'}/preboot";
+    $self->{'target-path'}   = "$openslxConfig{'public-path'}/preboot.new";
+
+    $self->{'requires-default-client-config'} = 0;
+        # we do not need a default.tgz since there's always an explicit client
+    
+    if (!$self->{'dry-run'}) {
+        mkpath([$self->{'original-path'}]);
+        rmtree($self->{'target-path'});
+        mkpath("$self->{'target-path'}/client-config");
+    }
+
+    return 1;
+}
+
 sub writeBootloaderMenuFor
 {
     my $self             = shift;

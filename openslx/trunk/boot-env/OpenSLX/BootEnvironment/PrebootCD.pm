@@ -25,25 +25,6 @@ use File::Path;
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
-sub initialize
-{
-    my $self   = shift;
-    my $params = shift;
-    
-    return if !$self->SUPER::initialize($params);
-
-    $self->{'original-path'} = "$openslxConfig{'public-path'}/preboot";
-    $self->{'target-path'}   = "$openslxConfig{'public-path'}/preboot.new";
-
-    if (!$self->{'dry-run'}) {
-        mkpath([$self->{'original-path'}]);
-        rmtree($self->{'target-path'});
-        mkpath("$self->{'target-path'}/client-config");
-    }
-
-    return 1;
-}
-
 sub _createImage
 {
     my $self   = shift;

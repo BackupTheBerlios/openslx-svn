@@ -34,6 +34,8 @@ sub initialize
     $self->{'original-path'} = "$openslxConfig{'public-path'}/tftpboot";
     $self->{'target-path'}   = "$openslxConfig{'public-path'}/tftpboot.new";
 
+    $self->{'requires-default-client-config'} = 1;
+
     if (!$self->{'dry-run'}) {
         mkpath([$self->{'original-path'}]);
         rmtree($self->{'target-path'});
