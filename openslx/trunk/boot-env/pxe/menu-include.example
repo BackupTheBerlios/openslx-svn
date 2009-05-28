@@ -1,0 +1,23 @@
+# this include file will be loaded at the end and will overwrite existing defs
+# for theme configuration use theme.conf in your theme directory
+# general settings can be set via slxsettings
+# please copy to menu-include if needed
+
+## example german help:
+# MENU PASSPROMPT Gesicherter Bereich, bitte Passwort eingeben:
+# MENU AUTOBOOT Auswahl startet in # Sekunden
+
+## example non-selectable line
+# LABEL -
+#     MENU LABEL ________________________________________________________
+#     MENU DISABLE
+
+## example blank line / menu separator
+# MENU SEPARATOR
+
+## example localboot with passwd
+# LABEL local
+#     MENU LABEL Boot from local ^Harddisk
+#     MENU PASSWD local
+#     localboot 0
+

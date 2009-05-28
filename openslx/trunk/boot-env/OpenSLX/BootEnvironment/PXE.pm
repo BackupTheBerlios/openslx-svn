@@ -205,7 +205,7 @@ sub _getTemplate
     }
 
     # include defaults
-    $pxeTemplate .= "\n# general configuration\n";
+    $pxeTemplate .= "\n# static configuration\n";
     $pxeTemplate .= "NOESCAPE 0\n";
     $pxeTemplate .= "PROMPT 0\n";
 
