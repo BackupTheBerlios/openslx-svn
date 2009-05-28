@@ -15,6 +15,18 @@
 # check if the configuration file is available
 if [ -e /initramfs/plugin-conf/qemukvm.conf ]; then
 
+  # check for the virtualization CPU features
+  if grep -q "svm" /proc/cpuinfo ; then
+    modprobe -q kvm_amd || error "  * Loading of kvm_amd failed"
+  elif grep -q "vmx" /proc/cpuinfo ; then
+    modprobe -q kvm_intel || error "  * Loading of kvm_intel failed"
+  else
+    error "  * No virtualization extenstion found in this CPU. Thus using \
+qemu-kvm\n  makes not much sense. Please enable the extension within your \
+machines\n  BIOS or get another CPU." nonfatal
+    exit 1
+  fi
+    
   # load needed variables
   . /initramfs/plugin-conf/qemukvm.conf
 
@@ -34,7 +46,7 @@ if [ -e /initramfs/plugin-conf/qemukvm.conf ]; then
     fi
     if [ -n "${qkimgserv}" ] ; then
       # directory where qemu images are expected in
-      testmkd /mnt/var/lib/qemukvm
+      testmkd /mnt/var/lib/virt/qemukvm
       case "${qkimgprot}" in
         *nbd)
           # TODO: to be filled in ...
@@ -45,7 +57,7 @@ if [ -e /initramfs/plugin-conf/qemukvm.conf ]; then
           qkbdev=/dev/${qkimgserv}
           waitfor ${qkbdev} 20000
           echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
-          mount -o ro ${qkbdev} /mnt/var/lib/qemukvm || \
+          mount -o ro ${qkbdev} /mnt/var/lib/virt/qemukvm || \
             error "$scfg_evmlm" nonfatal
           ;;
         *)
@@ -54,7 +66,7 @@ if [ -e /initramfs/plugin-conf/qemukvm.conf ]; then
             [ $proto = "fail" ] && { error "$scfg_nfs" nonfatal;
             noimg=yes; break;}
           mount -n -t nfs -o ro,nolock,$proto ${qkimgserv}:${qkimgpath} \
-            /mnt/var/lib/qemukvm && break
+            /mnt/var/lib/virt/qemukvm && break
           done
           ;;
       esac

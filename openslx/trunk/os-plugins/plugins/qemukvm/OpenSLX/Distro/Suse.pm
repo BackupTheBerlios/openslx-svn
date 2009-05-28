@@ -34,9 +34,6 @@ sub fillRunlevelScript
 
     my $script = unshiftHereDoc(<<'    End-of-Here');
 
-    # cpuvirt=$(grep -e "vmx|svm" /proc/cpuinfo)
-    # modprobe $cpuvirt
-
     End-of-Here
 
     return $script;

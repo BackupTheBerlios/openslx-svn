@@ -16,15 +16,14 @@
 
 
 permem=66
-mem=expr(${totalmem} * ${permem})
+mem=$(expr ${totalmem} * ${permem})
 VIRTCMDOPTS="${VIRTCMDOPTS} -m ${mem}"
 
 # virtual fd/cd/dvd and drive devices, floppy b: for configuration
 #floppya is always false, if we have a floppy device or not isn't
 #important.
-floppya="FALSE"
-floppyb="TRUE"
-floppybname="/etc/vmware/loopimg/fd.img"
+#VIRTCMDOPTS="${VIRTCMDOPTS} -fda /dev/fd0"
+VIRTCMDOPTS="${VIRTCMDOPTS} -fdb /var/lib/virt/vmchooser/loopimg/fd.img"
 cdr_1="FALSE"
 cdr_2="FALSE"
 # ide is expected default, test for the virtual disk image type should
@@ -32,14 +31,17 @@ cdr_2="FALSE"
 ide="TRUE"
 hddrv="ide"
 
+# audio
+VIRTCMDOPTS="${VIRTCMDOPTS} -soundhw es1370"
 
-# Folder of VirtualMachine images
-vmdir="/var/lib/virt/qemukvm"
-
-# vmware image file
-diskfile="${vmdir}/${imagename}"
+# serial
+#VIRTCMDOPTS="${VIRTCMDOPTS} -serial /dev/ttyS0"
 
 # set the variables appropriately
-VIRTCMD=$(which kvm)
-VIRTCMDOPTS="${VIRTCMDOPTS} ${imagename}"
+for i in kvm qemu-kvm qemu; do
+  VIRTCMD=$(which kvm 2>/dev/null)
+  [ -n $VIRTCMD ] && break
+done
+[ -n $VIRTCMD ] && { writelog "No qemu/kvm tool found."; exit 1; }
+VIRTCMDOPTS="${VIRTCMDOPTS} -boot c -alt-grab ${diskfile}"
 
