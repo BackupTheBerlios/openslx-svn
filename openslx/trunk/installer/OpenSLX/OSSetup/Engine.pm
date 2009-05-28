@@ -1,4 +1,4 @@
-# Copyright (c) 2006..2008 - OpenSLX GmbH
+# Copyright (c) 2006..2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -55,8 +55,8 @@ use vars qw(%supportedDistros);
     'suse-11.0_x86_64'  => 'clone,update,shell',
     'suse-11.1'         => 'clone,update,shell',
     'suse-11.1_x86_64'  => 'clone,update,shell',
-    'ubuntu-7.04'       => 'clone,install,update,shell',
-    'ubuntu-7.04_amd64' => 'clone,install,update,shell',
+    'scilin-4.7'        => 'clone,update,shell',
+    'scilin-5.X'        => 'clone,update,shell',
     'ubuntu-7.10'       => 'clone,update,shell',
     'ubuntu-7.10_amd64' => 'clone,update,shell',
     'ubuntu-8.04'       => 'clone,update,shell',

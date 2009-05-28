@@ -490,8 +490,7 @@ config_dreshal () {
 local start=0
 local stop=18
 if [ "x$start_dreshal" = "xyes" ]; then
-  for dir in /var/run/dbus /var/run/resmgr/classes /var/run/hal \
-             /var/cache/hald /var/lib/PolicyKit; do
+  for dir in /var/run/resmgr/classes /var/lib/PolicyKit; do
     testmkd /mnt/$dir
   done
   if [ -f /mnt/etc/init.d/dbus ] ; then
@@ -500,9 +499,8 @@ if [ "x$start_dreshal" = "xyes" ]; then
         >> /mnt/etc/passwd
     strinfile "messagebus:" /mnt/etc/group || \
       echo "messagebus:!:101:" >> /mnt/etc/group
-    # set permissions with userid
-    echo -e "\tchown messagebus:messagebus /var/run/dbus 2>/dev/null" \
-      >>/mnt/etc/init.d/boot.slx
+	# create directories and set permissions with user and group id
+    testmkd /mnt/var/run/dbus messagebus:messagebus
     rllinker "dbus" $start $stop
   fi
   if [ -f /mnt/etc/init.d/consolekit ] ; then
@@ -527,9 +525,9 @@ if [ "x$start_dreshal" = "xyes" ]; then
     strinfile "haldaemon:" /mnt/etc/group || \
       echo "haldaemon:!:103:" >> /mnt/etc/group
     echo -n "" > /mnt/var/lib/PolicyKit/reload
-    # set permissions with userid
-    echo -e "\tchown haldaemon:haldaemon /var/run/hal /var/cache/hald \
-      2>/dev/null" >>/mnt/etc/init.d/boot.slx
+    # create directories and set permissions with user and group id
+    testmkd /mnt/var/run/hal haldaemon:haldaemon
+	testmkd /mnt/var/cache/hald haldaemon:haldaemon
     start=$(($start + 1))
     stop=$(($stop - 1))
     rllinker "haldaemon" $start $stop
@@ -539,7 +537,7 @@ fi
 # configure automounter (fixme: to be moved into plugin)
 config_automount () {
 if [ -e /mnt/etc/sysconfig/autofs ] ; then
-  testmkd /var/lock/subsys
+  testmkd /mnt/var/lock/subsys
   sed -e "1i# /etc/sysconfig/autofs - file modified by\n#\t$0:\n#" \
       -e "s,AUTOFS_OPTIONS.*,AUTOFS_OPTIONS=\"--timeout 3\"," \
       -i /mnt/etc/sysconfig/autofs
