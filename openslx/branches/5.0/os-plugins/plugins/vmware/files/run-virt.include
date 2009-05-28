@@ -371,7 +371,7 @@ sync
 # TODO: optimize, currently kinda inefficient, too much copys, but we
 # don't know which one is installed...
 for i in /opt/openslx/plugin-repo/vmware/*; do
-  cp ${i}/nvram.5.0 ${confdir}/nvram 2>/dev/null
+  cp ${i}/nvram ${confdir}/nvram 2>/dev/null
 done
 
 # set the variables appropriately
