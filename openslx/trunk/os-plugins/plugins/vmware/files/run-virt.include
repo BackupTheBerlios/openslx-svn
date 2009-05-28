@@ -98,7 +98,7 @@ floppy1.fileName = \"${floppy1name}\"
 # nics
 ethernet0.present = \"TRUE\"
 ethernet0.addressType = \"static\"
-#ethernet0.virtualDev = \"e1000\"
+${network_virtualDev}
 ethernet0.connectionType = \"${network_kind}\"
 #ethernet1.connectionType = \"custom\"
 #ethernet1.vnet = \"/dev/vmnet2\"
@@ -224,6 +224,13 @@ vmopt="-X"
 # hardware checks
 ################################################################################
 
+# use different network card
+if [ -n "${network_card}" ]; then 
+  network_virtualDev='ethernet0.virtualDev = \"e1000\"'
+else
+  network_virtualDev='# using default virtualDev for ethernet0'
+fi
+
 # enable 3D
 enable3d=$(grep -i "<enable3d param=.*" ${xml} 2>/dev/null | \
   awk -F '=' {'print $2'})
@@ -247,7 +254,7 @@ case "$serial" in
     serial="TRUE"
     ;;
   *)
-    serialdev=""
+    serialdev="# no serial port configured"
     serial="FALSE"
     ;;
 esac
@@ -263,7 +270,7 @@ case "$parallel" in
     parallel="TRUE"
     ;;
   *)
-    paraldev=""
+    paraldev="# no parallel port configured"
     paralbidi="FALSE"
     parallel="FALSE"
     ;;
@@ -392,7 +399,7 @@ if [ "${mem}" -lt "256" ] || [ "${memhost}" -lt "256" ]; then
   exit 1
 fi
 
-# Write all results to logfile
+# write all results to logfile
 # log disksetup
 writelog "Directories:"
 writelog "\tConfdir:\t${confdir}"
@@ -402,27 +409,38 @@ writelog "\tVMhome:\t\t${vmhome}"
 writelog "\tLogfile:\t${logfile}"
 writelog "\t/tmp info: \
      $(grep "/tmp " /proc/mounts) $(df -h | grep " /tmp$" | awk '{print $2}')"
-# HW setup
+# hw setup
 writelog "Hardware:"
 writelog "\tMAC:\t\t00:50:56:0D:${mac}"
+if [ -n "${network_card}" ]; then
+  writelog "\tNet Adaptor:\t${network_card}"
+fi
 writelog "\tMem:\t\t${mem} MB"
 writelog "\tHostmem:\t${memhost} MB"
 writelog "\tMax. res.:\t${xres}x${yres}"
 writelog "\tCD-ROM1:\t${cdrom0}"
 writelog "\tCD-ROM2:\t${cdrom1}"
 writelog "\tFloppy_A:\t${floppy0}"
-# Image
+if [ "${serial}" = "TRUE" ]; then
+  writelog "\tSerial Port:\t${serialdev}"
+fi
+if [ "${parallel}" = "TRUE" ]; then
+  writelog "\tParallel Port:\t${paraldev}"
+fi
+# image
 writelog "Diskimage:"
 writelog "\tDiskfile:\t${diskfile}"
 writelog "\tDisktype:\t${hddrv}"
 writelog "\tHWVersion:\t${hwver}"
 writelog "\tVMostype:\t${vmostype}"
+# misc
+writelog "Misc:"
+writelog "\tDisplayname:\t${displayname}"
 if [ "${cap3d}" = "TRUE" -a "${enable3d}" = "TRUE" ]; then
   writelog "\t3D Graphics:\tenabled"
-else
-  writelog "\t3D Graphics:\tdisabled"
 fi
-writelog "\tDisplayname:\t${displayname}\n"
+# empty line at end
+writelog ""
 
 
 # finally set env for run-virt.sh

@@ -86,6 +86,7 @@ vmostype=$(grep -io "<os param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
 
 # Definition of the networking the client system is connected to
 network_kind=$(grep -io "<network param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
+network_card=$(grep -io "<netcard param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
 
 # Serial/parallel ports defined (e.g. "ttyS0" or "autodetect")
 serial=$(grep -io "<serialport param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
