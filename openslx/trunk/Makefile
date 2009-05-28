@@ -138,7 +138,6 @@ supported."; \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin \
         -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/boot-env \
-        -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox \
         -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs \
         -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates \
@@ -193,8 +192,6 @@ supported."; \
     tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/; \
   cp -p boot-env/pxe/menu-template.example \
     $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/; \
-  cp -pP tools/busybox{,.x86_64,.i586} \
-    $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox/; \
   cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
   tar --exclude=.svn -cp -C initramfs tpm | \
     tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
