@@ -3,10 +3,11 @@
 SLX_PATH=/opt/openslx/share
 SLX_UCLIB_PATH=$SLX_PATH/uclib-rootfs
 
-[ -f $SLX_PATH ] || echo "Can't find OpenSLX Installation.." && exit 1
+if [ -f $SLX_PATH ]; then
+  echo "Can't find OpenSLX Installation.." && exit 1
+fi
 
 [ -f /lib/ld-uClibc.so.0 ] && ln -sf $SLX_PATH/uclib-rootfs/lib/ld-uClibc.so.0
-
 
 PATH=$SLX_UCLIB_PATH/bin:$SLX_UCLIB_PATH/usr/bin:$SLX_UCLIB_PATH/sbin:$SLX_UCLIB_PATH/usr/sbin
 LD_LIBRARY_PATH=$SLX_UCLIB_PATH/lib:$SLX_UCLIB_PATH/usr/lib 
