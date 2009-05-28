@@ -82,21 +82,19 @@ sub initDistroInfo
         - /sys/*
         - /proc/*
         - /opt/kde3/share/apps/kdm/read_sysconfig.sh
-        - /opt/kde3/share/autostart/suseplugger.desktop
-        - /opt/kde3/share/autostart/susewatcher.desktop
-        - /opt/kde3/share/autostart/runupdater.desktop
-        - /opt/kde3/share/autostart/profile_chooser-autostart.desktop
-        - /opt/kde3/share/autostart/opensuseupdater.desktop
-        - /opt/kde3/share/autostart/knetworkmanager-autostart.desktop
-        - /opt/kde3/share/autostart/kerry.autostart.desktop
-        - /opt/kde3/share/autostart/kinternet.desktop
-        - /opt/kde3/share/autostart/beagled.desktop
-        - /opt/kde3/share/autostart/SUSEgreeter.desktop
-        - /opt/kde3/share/autostart/zen-updater-auto.desktop
-        - /opt/gnome/share/autostart/beagle*.desktop
-        - /opt/gnome/share/gnome/autostart/beagle*.desktop
-        - /usr/share/gnome/autostart/gpk-update-icon*.desktop
-        - */kupdateapplet.desktop
+        - */autostart/suseplugger.desktop
+        - */autostart/susewatcher.desktop
+        - */autostart/runupdater.desktop
+        - */autostart/profile_chooser-autostart.desktop
+        - */autostart/opensuseupdater.desktop
+        - */autostart/knetworkmanager-autostart.desktop
+        - */autostart/kerry.autostart.desktop
+        - */autostart/kinternet.desktop
+        - */autostart/SUSEgreeter.desktop
+        - */autostart/zen-updater-auto.desktop
+        - */autostart/beagle*.desktop
+        - */autostart/gpk-update-icon*.desktop
+        - */autostart/kupdateapplet.desktop
         - /mnt/*
         - /media/*
         + /media
