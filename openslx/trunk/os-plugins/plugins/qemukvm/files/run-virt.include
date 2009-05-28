@@ -1,0 +1,45 @@
+# qemukvm.include
+#
+# Copyright (c) 2009 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org
+#
+# Include script for running the QEMU/Linux KVM virtual machine on an OpenSLX
+# client via the run-virt.sh. The stuff is copied to /etc/opt/openslx/run-
+# qemukvm.include during stage3.
+
+
+permem=66
+mem=expr(${totalmem} * ${permem})
+VIRTCMDOPTS="${VIRTCMDOPTS} -m ${mem}"
+
+# virtual fd/cd/dvd and drive devices, floppy b: for configuration
+#floppya is always false, if we have a floppy device or not isn't
+#important.
+floppya="FALSE"
+floppyb="TRUE"
+floppybname="/etc/vmware/loopimg/fd.img"
+cdr_1="FALSE"
+cdr_2="FALSE"
+# ide is expected default, test for the virtual disk image type should
+# be done while creating the runscripts ...
+ide="TRUE"
+hddrv="ide"
+
+
+# Folder of VirtualMachine images
+vmdir="/var/lib/virt/qemukvm"
+
+# vmware image file
+diskfile="${vmdir}/${imagename}"
+
+# set the variables appropriately
+VIRTCMD=$(which kvm)
+VIRTCMDOPTS="${VIRTCMDOPTS} ${imagename}"
+

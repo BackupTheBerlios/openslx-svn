@@ -23,7 +23,7 @@ if [ -e /initramfs/plugin-conf/qemukvm.conf ]; then
   if [ $qemukvm_active -ne 0 ]; then
 
     [ $DEBUGLEVEL -gt 0 ] && echo "executing the 'qemukvm' os-plugin ...";
-    # Load general configuration
+    # load general configuration
     . /initramfs/machine-setup
 
     # get source of qemukvm image server (get type, server and path)
@@ -40,8 +40,8 @@ if [ -e /initramfs/plugin-conf/qemukvm.conf ]; then
           # TODO: to be filled in ...
           ;;
         lbdev)
-          # we expect the stuff on toplevel directory, filesystem type should be
-          # autodetected here ... (vmimgserv is blockdev here)
+          # we expect the stuff on toplevel directory, filesystem type should
+          # be autodetected here ... (qkimgserv is blockdev here)
           qkbdev=/dev/${qkimgserv}
           waitfor ${qkbdev} 20000
           echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
@@ -59,6 +59,11 @@ if [ -e /initramfs/plugin-conf/qemukvm.conf ]; then
           ;;
       esac
     fi
+    # copy version depending files - the vmchooser expects for every virtua-
+    # lization plugin a file named after it (here run-qemukvm.include)
+    testmkd /mnt/etc/opt/openslx
+    cp /mnt/opt/openslx/plugin-repo/run-qemukvm/files/run-virt.include \
+      /mnt/etc/opt/openslx/run-qemukvm.include
 
   fi
 else
