@@ -1,0 +1,17 @@
+# rename this file to 'settings' and edit it as you please
+# 
+# for a list of all options, have a look at the corresponding 
+# settings.default in /opt/openslx/share/distro-info
+
+# use local installation source
+#<repository base>
+#    local-url = /srv/ftp/pub/some-distribution/inst-source
+#</repository>
+
+# add a new selection:
+#<selection my_number_crunsher>
+#    base = minimal
+#    packages = <<END
+#        crunsher_app
+#    END
+#</selection>

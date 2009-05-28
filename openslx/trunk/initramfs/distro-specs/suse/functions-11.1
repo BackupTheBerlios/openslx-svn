@@ -9,7 +9,7 @@
 #
 # General information about OpenSLX can be found under http://openslx.org
 #
-# configuration script for OpenSuSE 10.3 to configure linux stateless clients
+# configuration script for OpenSuSE 11.1 to configure linux stateless clients
 # (included by init, hwautocfg, servconfig within InitialRamFS after 
 # inclusion of the main functions file). This file is the main base for the
 # several SuSE distro versions
@@ -23,15 +23,9 @@
 # D_DIRINDXS - directories in client filesystem which should be present 
 # anyhow
 
-config_rpcbind () {
-  rllinker "rpcbind" 4 5 
-}
-
 # start portmapper (needed at least for nfs and nis services)
 config_portmap () {
   # portmap is provided via rpcbind in suse 11.1
-  config_rpcbind
+  rllinker "rpcbind" 4 5
 }
 
-
-# no changes from functions-default by now

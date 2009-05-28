@@ -56,7 +56,7 @@ use vars qw(%supportedDistros);
     'suse-11.1'         => 'clone,update,shell',
     'suse-11.1_x86_64'  => 'clone,update,shell',
     'scilin-4.7'        => 'clone,update,shell',
-    'scilin-5.X'        => 'clone,update,shell',
+    'scilin-5.1'        => 'clone,update,shell',
     'ubuntu-7.10'       => 'clone,update,shell',
     'ubuntu-7.10_amd64' => 'clone,update,shell',
     'ubuntu-8.04'       => 'clone,update,shell',
