@@ -1,5 +1,5 @@
-# Copyright (c) 2007..2008 - RZ Uni Freiburg
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2007..2009 - RZ Uni Freiburg
+# Copyright (c) 2008..2009 - OpenSLX GmbH
 #
 # This program/file is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -152,31 +152,13 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       vmimgserv=$(uri_token ${vmware_imagesrc} server)
       vmimgpath="$(uri_token ${vmware_imagesrc} path)"
     fi
-    if [ -n "${vmimgserv}" ] ; then
-      testmkd /mnt/var/lib/virt/vmware
-      case "${vmimgprot}" in
-        *nbd)
-          # TODO: to be filled in ...
-          ;;
-        lbdev)
-          # we expect the stuff on toplevel directory, filesystem type should be
-          # autodetected here ... (vmimgserv is blockdev here)
-          vmbdev=/dev/${vmimgserv}
-          waitfor ${vmbdev} 20000
-          echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
-          mount -o ro ${vmbdev} /mnt/var/lib/virt/vmware || \
-            error "$scfg_evmlm" nonfatal
-          ;;
-        *)
-          # we expect nfs mounts here ...
-          for proto in tcp udp fail; do
-            [ $proto = "fail" ] && { error "$scfg_nfs" nonfatal;
-            noimg=yes; break;}
-          mount -n -t nfs -o ro,nolock,$proto ${vmimgserv}:${vmimgpath} \
-            /mnt/var/lib/virt/vmware && break
-          done
-          ;;
-      esac
+    if [ -n "${vmimgserv}" -a -n ${vmimgpath} -a -n ${vmimgprot} ] ; then
+      mnttarget=/mnt/var/lib/virt/vmware
+      # mount the vmware image source readonly (ro)
+      fsmount ${vmimgprot} ${vmimgserv} ${vmimgpath} ${mnttarget} ro
+    else
+      [ $DEBUGLEVEL -gt 1 ] && error "  * Incomplete information in variable \
+${vmware_imagesrc}." nonfatal
     fi
     
     #############################################################################
@@ -199,44 +181,24 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
     done
 
     chmod 0700 /dev/vmnet*
-    chmod 1777 /mnt/etc/vmware/fd-loop
     chmod 1777 /mnt/var/run/vmware
 
-    # loop file for exchanging information between linux and vmware guest
-    if modprobe ${MODPRV} loop; then
-      mdev -s
-    else
-      : #|| error "" nonfatal
-    fi
-    # mount a clean tempfs (bug in UnionFS prevents loopmount to work)
-    strinfile "unionfs" /proc/mounts && \
-      mount -n -o size=1500k -t tmpfs vm-loopimg /mnt/etc/vmware/loopimg
-    # create an empty floppy image of 1.4MByte size
-    dd if=/dev/zero of=/mnt/etc/vmware/loopimg/fd.img \
-      count=2880 bs=512 2>/dev/null
-    chmod 0777 /mnt/etc/vmware/loopimg/fd.img
-    # use dos formatter from rootfs (later stage4)
-    ln -sf /mnt/lib/ld-linux.so.2 /lib/ld-linux.so
-    LD_LIBRARY_PATH=/mnt/lib /mnt/sbin/mkfs.msdos \
-      /mnt/etc/vmware/loopimg/fd.img >/dev/null 2>&1 #|| error
-    mount -n -t msdos -o loop,umask=000 /mnt/etc/vmware/loopimg/fd.img \
-      /mnt/etc/vmware/fd-loop
     echo -e "usbfs\t\t/proc/bus/usb\tusbfs\t\tauto\t\t 0 0" >> /mnt/etc/fstab
     # needed for VMware 5.5.4 and versions below
     echo -e "\tmount -t usbfs usbfs /proc/bus/usb 2>/dev/null" \
       >>/mnt/etc/init.d/boot.slx
 
     # disable VMware swapping 
-    echo '.encoding = "UTF-8"
-      prefvmx.useRecommendedLockedMemSize = "TRUE"
-      prefvmx.minVmMemPct = "100"' | \
-      sed -e "s/^ *//" \
+    echo -e '.encoding = "UTF-8"\nprefvmx.minVmMemPct = "100"
+prefvmx.useRecommendedLockedMemSize = "TRUE"' | sed -e "s/^ *//" \
       >/mnt/etc/vmware/config
 
-    ## Copy version depending files
-    cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/runvmware \
-        /mnt/var/X11R6/bin/run-vmware.sh
-    chmod 755 /mnt/var/X11R6/bin/run-vmware.sh
+    # copy version depending files - the vmchooser expects for every virtua-
+    # lization plugin a file named after it (here run-vmware.include)
+    testmkd /mnt/etc/opt/openslx
+    cp /mnt/opt/openslx/plugin-repo/vmware/run-virt.include \
+      /mnt/etc/opt/openslx/run-vmware.include
+    # copy version depending files
     cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmplayer \
         /mnt/var/X11R6/bin/vmplayer
     if [ -e /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/vmware ]; then
@@ -244,32 +206,15 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
           /mnt/var/X11R6/bin/vmware
     fi
 
-
     # affects only kernel and config depending configuration of not
     # local installed versions
-    if [ "${vmware_kind}" != "local" ]; then
-      cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/config \
-        /mnt/etc/vmware
-      chmod 644 /mnt/etc/vmware/config
-    fi
-
-    # write version information for image problem (v2 images don't run
-    # on v1 players)
-    case ${vmware_kind} in
-      "vmpl1.0")
-        echo "vmplversion=1" >/mnt/etc/vmware/version
-      ;;
-      "vmpl2.0")
-        echo "vmplversion=2.0" >/mnt/etc/vmware/version
-      ;;
-      "vmpl2.5")
-        echo "vmplversion=2.5" >/mnt/etc/vmware/version
-      ;;
-      "local*")
-        . /mnt/opt/openslx/plugin-repo/vmware/local/versioninfo.txt
-        echo "vmplversion=${vmversion}" > /mnt/etc/vmware/version
-      ;;
-    esac
+    cat /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/config \
+      >>/mnt/etc/vmware/config
+    chmod 644 /mnt/etc/vmware/config
+    echo "# stage1 variables produced during plugin install" \
+      >>/mnt/etc/vmware/slxvmconfig
+    cat /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/slxvmconfig \
+      >>/mnt/etc/vmware/slxvmconfig
 
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmware' os-plugin ..."
 
