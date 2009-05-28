@@ -2,6 +2,7 @@
 #include "main.h"
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "Client.h"
 #include "Ldap.h"
@@ -28,15 +29,10 @@ int main(int argc, char** argv) {
 //
 //    client.process_event(EvtWakeCommand() );
 
-    Ldap& obj = Ldap::getInstance("132.230.4.21",389,
-                        "uid=admin01,ou=people,dc=uni-freiburg,dc=de",
-                        "1234");
+    Ldap& obj = Ldap::getInstance("132.230.4.xx",389,
+                        "user", "pass");
 
-    obj.search(string("ou=Rechenzentrum,ou=UniFreiburg,")
-                .append("ou=RIPM,dc=uni-freiburg,dc=de"),
-                LDAP_SCOPE_SUBTREE,
-                string("(&(!(ou=Rechenzentrum))(ou=*))")
-               );
+    obj.getClients("LSfKS");
 
-    return true;
+    return 0;
 }

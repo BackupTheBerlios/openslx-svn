@@ -6,6 +6,7 @@
  */
 
 #include "Ldap.h"
+#include "Client.h"
 #include <string>
 #include <vector>
 #include <ldap.h>
@@ -62,38 +63,103 @@ Ldap& Ldap::getInstance(string host, int port,string who,string cred) {
     return instance;
 }
 
-vector<string> Ldap::search(string base, int scope, string filter) {
+vector<AttributeMap> Ldap::search(string base, int scope, string filter, const StringList& attribs) {
 
     if(bound == false) {
-        return vector<string>();
+        return vector<AttributeMap>();
     }
 
-    LDAPSearchResults* lr = lc->search(base, scope, filter);
+    LDAPSearchResults* lr = lc->search(base, scope, filter,attribs, true);
 
     LDAPEntry* le;
-    const LDAPAttributeList* la;
+    const LDAPAttribute* la;
     StringList s;
+    vector<AttributeMap> result;
 
-    do {
-        le = lr->getNext();
-        la = le->getAttributes();
-        for(LDAPAttributeList::const_iterator
-                it = la->begin();
-                it != la->end();
-                it++) {
-            s = it->getValues();
-            cout << "Attribut " << it->getName() << ": ";
-            for(StringList::const_iterator
-                    st = s.begin();
-                    st != s.end();
-                    st ++)
-            {
-                cout << *st << ", ";
-            }
-            cout << endl;
-        }
+    while( (le = lr->getNext()) ) {
+
+    	for(StringList::const_iterator
+    			it =attribs.begin();
+				it!=attribs.end();
+				it++)
+    	{
+    		la = le->getAttributeByName(*it);
+    		if(la == NULL) continue;
+			s = la->getValues();
+			AttributeMap temp;
+			for(StringList::const_iterator
+					st = s.begin();
+					st != s.end();
+					st ++)
+			{
+				// TODO: Check for values with more than one item
+				temp[*it] = *st;
+			}
+			result.push_back(temp);
+    	}
+
     }
-    while ( (le = lr->getNext()) );
 
-    return vector<string>();
+    return result;
+}
+
+
+vector<string> Ldap::getPools() {
+	vector<string> result;
+
+	StringList attribs;
+    attribs.add("ou");
+
+    vector<AttributeMap> ous = search(string("ou=Rechenzentrum,ou=UniFreiburg,")
+                .append("ou=RIPM,dc=uni-freiburg,dc=de"),
+                LDAP_SCOPE_SUBTREE,
+                string("(&(!(ou=Rechenzentrum))(ou=*))"),
+                attribs
+               );
+
+    for(vector<AttributeMap>::iterator
+    		it= ous.begin();
+			it!=ous.end();
+			it++)
+    {
+    	if(! (*it)["ou"].empty())
+    	{
+    		result.push_back( (*it)["ou"] );
+    	}
+    }
+
+    return result;
+}
+
+
+Client** Ldap::getClients(string pool) {
+
+	string base;
+	string filter="(HostName=*)";
+
+	const char* attrs[] = { "HostName", "HWaddress", "IPAdress", 0 };
+	StringList attribs((char**)attrs);
+	vector<AttributeMap> vec;
+
+
+	if (pool.empty()) {
+		base = "ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
+	}
+	else {
+		base = "ou="+ pool + ",ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
+	}
+
+	vec = search(base, LDAP_SCOPE_SUBTREE, filter, attribs);
+
+	Client** result = new Client*[vec.size()+1];
+
+	for(std::size_t i=0;i< vec.size();i++ )
+	{
+		if(!vec[i]["HostName"].empty()) {
+			result[i] = new Client(vec[i]);
+		}
+	}
+	result[vec.size()] = '\0';
+
+	return result;
 }

@@ -8,11 +8,16 @@
 #ifndef LDAP_H_
 #define LDAP_H_
 
+#include "Client.h"
+#include "types.h"
 #include <ldap.h>
 #include <string>
 #include <vector>
+#include <map>
 #include "LDAPConnection.h"
 #include "LDAPConstraints.h"
+
+
 
 class Ldap {
 
@@ -73,7 +78,20 @@ public:
 	 * @param scope int to give the scope of the search
 	 * @param filter string which filters objects
 	 */
-	std::vector<std::string> search(std::string base,int,std::string filter);
+	std::vector<AttributeMap> search(std::string base,int,std::string filter, const StringList& attribs);
+
+	/**
+	 * Get pool names out of LDAP server
+	 * @returns List of pools (vector of strings)
+	 */
+	std::vector<std::string> getPools();
+
+	/**
+	 * Get client data from LDAP and create them (null-terminated array)
+	 * @param pool Pool to get Clients from
+	 * @returns Clients from "pool", if empty -> return global Clients
+	 */
+	Client** getClients(std::string pool);
 };
 
 #endif /* LDAP_H_ */

@@ -14,9 +14,11 @@ using namespace std;
 /**
  * Client default constructor
  */
-Client::Client() {
+Client::Client(AttributeMap al) {
     initiate();
-    cout << "Client object created!" << endl << endl;
+
+    cout << "Client object with name " << al["HostName"] <<" created!" << endl << endl;
+
 
 }
 

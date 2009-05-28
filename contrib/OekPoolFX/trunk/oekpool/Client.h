@@ -15,6 +15,7 @@
 #include <boost/mpl/list.hpp>
 
 #include "events.h"
+#include "types.h"
 
 namespace mpl = boost::mpl;
 namespace sc = boost::statechart;
@@ -26,7 +27,7 @@ namespace ClientStates {
 
 // a Client object is a boost::statechart::state_machine
 struct Client : sc::state_machine< Client, ClientStates::Offline > {
-    Client();
+    Client(AttributeMap);
     ~Client();
 };
 
