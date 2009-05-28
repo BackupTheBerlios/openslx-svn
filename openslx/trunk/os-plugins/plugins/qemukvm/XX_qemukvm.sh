@@ -117,9 +117,13 @@ ${qemukvm_imagesrc}." nonfatal
 
     # copy the /etc/qemu-ifup script and enable extended rights for running
     # the emulator via sudo
-    cp /mnt/opt/openslx/plugin-repo/qemukvm/qemu-ifup /mnt/etc/qemu-ifup
+    cp /mnt/opt/openslx/plugin-repo/qemukvm/qemu-if* /mnt/etc
     chmod u+x /mnt/etc/qemu-ifup
-    echo "ALL ALL=NOPASSWD: $fptoqemu" >>/mnt/etc/sudoers
+    for qemubin in qemu kvm ; do
+      qemu="$(binfinder ${qemubin})"
+      [ -n "${qemu}" ] && \
+        echo "ALL ALL=NOPASSWD: ${qemu}" >>/mnt/etc/sudoers
+    done
   fi
 else
   [ $DEBUGLEVEL -gt 0 ] && echo "  * Configuration of qemukvm plugin failed"

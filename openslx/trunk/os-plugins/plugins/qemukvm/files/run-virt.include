@@ -58,5 +58,6 @@ for i in kvm qemu-kvm qemu; do
   [ -n $VIRTCMD ] && break
 done
 [ -n $VIRTCMD ] && { writelog "No qemu/kvm tool found."; exit 1; }
+VIRTCMD="sudo $VIRTCMD"
 VIRTCMDOPTS="${VIRTCMDOPTS} -boot c -alt-grab ${diskfile}"
 
