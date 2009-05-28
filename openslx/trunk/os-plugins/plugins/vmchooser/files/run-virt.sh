@@ -34,7 +34,13 @@ xml=$1
 
 # File name of the image
 imagename=$(grep -io "<image_name param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
-diskfile=$imagename
+
+# Path to the image (readlink produces the absolute path if called relatively)
+# imgpath=$(grep -io "<path_to param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
+[ -z $imgpath ] && { imgpath=$(readlink -f $xml); imgpath=${imgpath%/*.xml}; }
+
+# Diskfile is file including absolute path to it 
+diskfile=$imgpath/$imagename
 [ -e $diskfile ] || { echo -e "\n\tImage file $diskfile not found!"; exit 1; }
 
 # Short description of the image (as present in the vmchooser menu line)
@@ -88,8 +94,6 @@ totalmem=$(expr $(grep -i "memtotal" /proc/meminfo | awk '{print $2}') / 1024)
 # system
 mac=$(/sbin/ifconfig eth0 | grep eth0 | sed -e "s/ //g" \
   | awk -F ":" '{print $(NF-1)":"$NF}')
-
-echo "$totalmem, $mac"
 
 # Virtual fd/cd/dvd and drive devices, floppy b: for configuration file (xml)
 floppya="FALSE"
@@ -203,6 +207,8 @@ writelog "finished\n"
 
 # Copy guest configuration (with added information) config.xml to be accessed
 # via virtual floppy
+# fixme -> to be changed (vmchooser adapts the file content!?)
+echo "Please fix the config.xml generation"
 cp ${xml} /var/lib/virt/vmchooser/fd-loop/config.xml
 
 # Check if virtual machine container file exists
