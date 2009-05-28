@@ -185,6 +185,10 @@ DataEntry* get_entry(xmlDoc * doc)
         tempc = getAttribute(doc,(char *) "active");
         if (tempc != NULL ) {
                 de->active = (strstr(tempc,"true")!= NULL?true:false);
+                if(de->active == false) {
+                    delete de;
+                    return NULL;
+                }
         }
         tempc = NULL;
         
