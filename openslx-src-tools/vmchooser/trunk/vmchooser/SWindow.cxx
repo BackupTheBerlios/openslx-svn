@@ -5,6 +5,8 @@
 #include <iostream>
 #include <map>
 
+#include <string.h>
+
 #include <img/gnome_32.xpm>
 #include <img/kde_32.xpm>
 #include <img/linux_32.xpm>
@@ -204,16 +206,21 @@ void SWindow::unfold_entries() {
   //sel.indented(false);
 
   char* prename = readSession();
-  sel.goto_index(0);
-  Item* it = (Item*) sel.next();
-  
-  while( it  ) {
-    if(! strcmp(prename,it->label()) ) {
-        sel.select_only_this(0);
-        curr = it;
-        return;
+  if ( prename == NULL ) {
+    return;
+  } else {
+    printf("readsesseion returned: %s", prename);
+    sel.goto_index(0);
+    Item* it = (Item*) sel.next();
+    
+    while( it ) {
+      if(! strcmp(prename,it->label()) ) {
+          sel.select_only_this(0);
+          curr = it;
+          return;
+      }
+      it = (Item*) sel.next();
     }
-    it = (Item*) sel.next();
   }
 }
 

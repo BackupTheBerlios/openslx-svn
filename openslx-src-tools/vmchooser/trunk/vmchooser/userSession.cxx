@@ -59,6 +59,10 @@ char* readSession() {
 
     // read presaved session with ifstream
     ifstream fin(fname.c_str());
+    if (!fin) {
+      cout << ".vmchooser file not found .. continue with global default" << endl;
+      return NULL;
+    }
     string sessname;
     getline(fin,sessname);
     char* blub = (char*) malloc(sessname.size());
