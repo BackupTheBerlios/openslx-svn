@@ -229,15 +229,16 @@ sub installationPhase
     my $binDrivers = 0;
     my $engine = $self->{'os-plugin-engine'};
 
+    # removeLinks is to remove Links to the files
+    # otherwise some wrong files are created
+    # this can happed here
+    $self->removeLinks();
 
     if ($attrs->{'xserver::nvidia'} == 1  || $attrs->{'xserver::ati'} == 1 ) {
         copyFile("$pluginFilesPath/ubuntu-gfx-install.sh", "$installationPath");
         copyFile("$pluginFilesPath/suse-gfx-install.sh", "$installationPath");
         copyFile("$pluginFilesPath/ubuntu-8.10-gfx-install.sh", "$installationPath");
     
-        # removeLinks is to remove Links to the files
-        # otherwise some wrong files are created
-        $self->removeLinks();
         $binDrivers = 1;
     }
     if ($attrs->{'xserver::ati'} == 1) {
@@ -415,7 +416,23 @@ sub removeLinks
     symlink "/usr/lib/libGL.so.1.2", "/usr/lib/libGL.so.1";
     symlink "/usr/lib/libGL.so.1.2", "/usr/lib/libGL.so";
 
-    my $number = unlink @linkedFiles;
+	
+    foreach my $file (@linkedFiles) {
+		chomp($file);
+		unlink $file;
+	}
+
+	# this should not print any file at all ;-(
+    my @files = `find $instFolders -lname "$divertFolder*" -o -lname "$pluginFolder*" `;
+	if ( $#files > 0 ) {
+		print "Links were not removed properly! Exiting!\n";
+		my $bla;
+		foreach (@files) {
+			chomp($bla = $_);
+			print $bla;
+		}
+		exit(1);
+	}
     return;
 }
 
