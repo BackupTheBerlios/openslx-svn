@@ -199,12 +199,27 @@ sub _copyKernelModules
     foreach my $modulesDep (@modulesDep) { 
         next if $modulesDep !~ m{^(.+?)/([^/]+)\.ko:\s*(.*?)\s*$};
         my $path = $1;
+        if (substr($path, 0, 5) ne '/lib/') {
+            # some distros (e.g. ubuntu-9) use a local path instead of an
+            # absolute path, we need to make it absolute:
+            $path = "/lib/modules/$self->{'kernel-version'}/$path";
+        }
         my $module = $2;
         my $dependentsList = $3;
         my $fullModulePath = "$path/$module.ko";
         $modulePath{$module} = [] if !exists $modulePath{$module};
         push @{$modulePath{$module}}, $fullModulePath;
-        $dependentModules{$fullModulePath} = [ split ' ', $dependentsList ];
+        $dependentModules{$fullModulePath} = [
+            map {
+                if (substr($_, 0, 5) ne '/lib/') {
+                    # some distros (e.g. ubuntu-9) use a local path instead of an
+                    # absolute path, we need to make it absolute:
+                    $_ = "/lib/modules/$self->{'kernel-version'}/$_";
+                }
+                $_;
+            }
+            split ' ', $dependentsList
+        ];
     }
 
     my $targetPath 
