@@ -187,7 +187,10 @@ void SWindow::free_entries()
 /******************************************************
  * Small helper function to unfold the 2 parent groups
  *
- * ADDED: Now reads session from ~/.vmchooser via helper
+ * ADDED: Now reads session from ~/.openslx/vmchooser via helper
+ *
+ * WARNING: this->ent and/or this->lin_ent
+ *          has to assigned before         WARNING
  ******************************************************/
 void SWindow::unfold_entries(bool lin_entries, bool vm_entries) {
   int ind = 0;
@@ -219,7 +222,6 @@ void SWindow::unfold_entries(bool lin_entries, bool vm_entries) {
   if ( prename == '\0' ) {
     return;
   } else {
-    //cout << "readSession returned:" << prename << endl;
     sel.goto_index(0);
     Item* it = (Item*) sel.next();
     

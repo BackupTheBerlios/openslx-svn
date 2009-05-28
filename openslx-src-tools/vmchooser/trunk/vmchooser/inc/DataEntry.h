@@ -28,7 +28,6 @@ struct DataEntry {
 	
 	bool active;
 	bool locked;
-	string password;
 	string pools;
 	string xdm;
 	int priority;

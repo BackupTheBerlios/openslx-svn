@@ -62,7 +62,7 @@ DataEntry** readLinSess(char* path)
                 return NULL;
         }
         DataEntry** result =
-        (DataEntry**) malloc(gResult->gl_pathc *( sizeof(DataEntry*) +1));
+        (DataEntry**) malloc(gResult->gl_pathc * sizeof(DataEntry*) +1);
         
         int c = 0;
         

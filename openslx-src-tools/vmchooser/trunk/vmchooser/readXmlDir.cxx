@@ -253,9 +253,9 @@ DataEntry** readXmlDir(char* path)
 
   // We need to reserve the memory for all the pointers here
   if(xmlVec.size() == 0) {
-    return new DataEntry*;
+    return NULL;
   }
-  DataEntry** result = (DataEntry**) malloc(xmlVec.size() * (sizeof(DataEntry*) +1));
+  DataEntry** result = (DataEntry**) malloc(xmlVec.size() * sizeof(DataEntry*) +1);
 
   for (unsigned int i=0; i < xmlVec.size(); i++) {
     loc = xmlVec[i].find( "Vorlage" );
@@ -289,9 +289,13 @@ DataEntry** readXmlDir(char* path)
     // xmlFreeDoc(doc);
   }
 
-  result[c] = (DataEntry*) malloc(sizeof(DataEntry*));
   result[c] = '\0';
-  return result;
+  if(c!= 0) {
+    return result;
+  }
+  else {
+    return NULL;
+  }
 
 }
 

@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
 
   if (xmlpath == NULL) {
     // Default Path comes here
-    xmlpath = (char *) "/var/lib/virt/vmware/vmconfigs/";
+    xmlpath = (char *) "/var/lib/virt/vmware/";
   }
  
   /* VERSION  */
@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
     // read xml image
     xmlDoc* doc = xmlReadFile(opt->getArgv(0), NULL, XML_PARSE_RECOVER);
     if (doc == NULL) {
-      fprintf(stderr, "error: could not parse file %s\n", opt->getArgv(0));
+      fprintf(stderr, "Error: could not parse file %s\n", opt->getArgv(0));
       return 1;
     }
 
@@ -140,19 +140,14 @@ int main(int argc, char** argv) {
   /* read xml files */
   DataEntry** sessions = NULL;
   DataEntry** lsessions = NULL;
-  if (xmlpath != NULL) {
-          sessions = readXmlDir(xmlpath);
-  } else {
-          fprintf(stderr,"Please give a path to xml directory for session images!");
-          exit(1);
-  }
+  sessions = readXmlDir(xmlpath);
   lsessions = readLinSess(lsesspath);  
   
   SWindow& win = *SWindow::getInstance(width, height);
   mainwin = &win;
   bool lin_entries=false;
   bool vm_entries=false;
-  
+
   if(lsessions != NULL) {
     win.set_lin_entries(lsessions);
     lin_entries = true;
