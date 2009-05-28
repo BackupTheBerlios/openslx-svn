@@ -34,7 +34,7 @@ use OpenSLX::Basics;
 ###         fk        => foreign key (integer)
 ################################################################################
 
-my $VERSION = 0.34;
+my $VERSION = 0.35;
 
 my $DbSchema = {
     'version' => $VERSION,
@@ -187,17 +187,18 @@ my $DbSchema = {
             # represents a selectable line in the PXE boot menu of all the
             # clients associated with this system
             'cols' => [
-                'id:pk',            # primary key
-                'export_id:fk',     # foreign key
-                'name:s.64',        # unique name of system, is automatically
-                                    # constructed like this:
-                                    #   <vendor-os-name>-<export-type>-<kernel>
-                'label:s.64',       # name visible to user (pxe-label)
-                                    # if empty, this will be autocreated from
-                                    # the name
-                'kernel:s.128',     # path to kernel file, relative to /boot
-                'description:s.512',# visible description (for PXE TEXT)
-                'comment:s.1024',   # internal comment (optional, for admins)
+                'id:pk',              # primary key
+                'export_id:fk',       # foreign key
+                'name:s.64',          # unique name of system, is automatically
+                                      # constructed like this:
+                                      #   <vendor-os-name>-<export-type>-<kernel>
+                'label:s.64',         # name visible to user (pxe-label)
+                                      # if empty, this will be autocreated from
+                                      # the name
+                'kernel:s.128',       # path to kernel file, relative to /boot
+                'description:s.512',  # visible description (for PXE TEXT)
+                'pxe_prefix_ip:s.16', # ip prefix for PXE Menu entry
+                'comment:s.1024',     # internal comment (optional, for admins)
             ],
             'vals' => [
                 {   # add default system
@@ -788,6 +789,20 @@ sub _schemaUpgradeDBFrom
                 'description:s.512',
                 'comment:s.1024',
             ]
+        );
+    
+        return 1;
+    },
+    0.35 => sub {
+        my $metaDB = shift;
+
+        # add new column system.pxe_prefix_ip
+        $metaDB->schemaAddColumns(
+            'system',
+            [
+                'pxe_prefix_ip:s.16',
+            ],
+            undef
         );
     
         return 1;
