@@ -1,5 +1,5 @@
 # Copyright (c) 2003..2006 - RZ Uni Freiburg
-# Copyright (c) 2006..2008 - OpenSLX GmbH
+# Copyright (c) 2006..2009 - OpenSLX GmbH
 #
 # This program/file is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -164,32 +164,6 @@ case "${proto}" in
       -t ${proto} //${server}${srcpath} ${target}
   ;;
 esac
-}
-#############################################################################
-# configure Xen bridge xenbr0
-xenbr_config () {
-modprobe ${MODPRV} netloop
-local ipls
-local vifnum="0"
-local bridge="xenbr${vifnum}"
-local netdev="eth${vifnum}"
-local pdev="p${netdev}"
-local vdev="veth${vifnum}"
-local vif0="vif0.${vifnum}"
-# fixme: that is the mac address of main ethernet device
-local mac=$macaddr
-
-brctl addbr ${bridge}
-brctl stp ${bridge} off
-brctl setfd ${bridge} 0
-brctl addif ${bridge} ${vif0}
-for ipls in "${netdev} name ${pdev}" "${vdev} name ${netdev}" \
-            "${pdev} down arp off" "${pdev} addr fe:ff:ff:ff:ff:ff" \
-            "${netdev} addr ${mac} arp on" "${netdev} addr ${mac} arp on" \
-            "${bridge} up" "${vif0} up" "${pdev} up" ; do
-  ip link set ${ipls}
-done
-brctl addif ${bridge} ${pdev}
 }
 #############################################################################
 # replace @@@serverip@@@ with real serverip. Allows the usage of a variable
@@ -562,6 +536,7 @@ if [ -d /etc/init-hooks/$hook ]; then
   for hook_script in /etc/init-hooks/$hook/*.sh; do
     if [ -e $hook_script ]; then
       /bin/init-wrapper $hook_script $DEBUGLEVEL
+      . /tmp/env/wrapper.env
     fi
   done
 fi
@@ -577,7 +552,7 @@ case "$country" in
   # German version
   de*)
     COUNTRY="de"
-    LANG="de_DE.UTF8"
+    LANG="de_DE.UTF-8"
     KEYTABLE="de-latin1-nodeadkeys"
     XKEYBOARD="de"
     KDEKEYBOARD="de"
@@ -635,7 +610,7 @@ case "$country" in
   cs|cz)
     LANGUAGE="cs"
     COUNTRY="cs"
-    LANG="cs_CZ"
+    LANG="cs_CZ.UTF-8"
     KEYTABLE="cz-lat2"
     XKEYBOARD="cs"
     KDEKEYBOARD="cz"
@@ -647,7 +622,7 @@ case "$country" in
   # Denmark
   dk|da)
     COUNTRY="dk"
-    LANG="da_DK"
+    LANG="da_DK.UTF-8"
     # Workaround: "dk" broken in gettext, use da:da_DK
     LANGUAGE="da:da_DK"
     KEYTABLE="dk"
@@ -659,8 +634,8 @@ case "$country" in
   ;;
   es)
   # Spain
-    COUNTRY="es"
-    LANG="es_ES@euro"
+    COUNTRY="es.UTF-8"
+    LANG="es_ES"
     KEYTABLE="es"
     XKEYBOARD="es"
     KDEKEYBOARD="es"
@@ -671,7 +646,7 @@ case "$country" in
   # Finland
   fi)
     COUNTRY="fi"
-    LANG="fi_FI@euro"
+    LANG="fi_FI.UTF-8"
     KEYTABLE="fi"
     XKEYBOARD="fi"
     KDEKEYBOARD="fi"
@@ -682,7 +657,7 @@ case "$country" in
   # France
   fr*)
     COUNTRY="fr"
-    LANG="fr_FR@euro"
+    LANG="fr_FR.UTF-8"
     KEYTABLE="fr"
     XKEYBOARD="fr"
     KDEKEYBOARD="fr"
@@ -694,7 +669,7 @@ case "$country" in
   # Hebrew version
     LANGUAGE="he"
     COUNTRY="il"
-    LANG="he_IL"
+    LANG="he_IL.UTF-8"
     KEYTABLE="us"
     XKEYBOARD="us"
     KDEKEYBOARD="il"
@@ -705,7 +680,7 @@ case "$country" in
   # Ireland
   ie)
     COUNTRY="ie"
-    LANG="en_IE@euro"
+    LANG="en_IE.UTF-8"
     KEYTABLE="uk"
     XKEYBOARD="uk"
     KDEKEYBOARD="gb"
@@ -716,7 +691,7 @@ case "$country" in
   # Italy
   it)
     COUNTRY="it"
-    LANG="it_IT@euro"
+    LANG="it_IT.UTF-8"
     KEYTABLE="it"
     XKEYBOARD="it"
     KDEKEYBOARD="it"
@@ -727,7 +702,7 @@ case "$country" in
   # Japan
   ja)
     COUNTRY="jp"
-    LANG="ja_JP"
+    LANG="ja_JP.UTF-8"
     LANGUAGE="ja"
     KEYTABLE="us"
     XKEYBOARD="us"
@@ -739,7 +714,7 @@ case "$country" in
   # The Netherlands
   nl)
     COUNTRY="nl"
-    LANG="nl_NL@euro"
+    LANG="nl_NL.UTF-8"
     KEYTABLE="us"
     XKEYBOARD="us"
     KDEKEYBOARD="en_US"
@@ -750,7 +725,7 @@ case "$country" in
   # Poland
   pl)
     COUNTRY="pl"
-    LANG="pl_PL"
+    LANG="pl_PL.UTF-8"
     KEYTABLE="pl"
     XKEYBOARD="pl"
     KDEKEYBOARD="pl"
@@ -762,7 +737,7 @@ case "$country" in
   # Russia
   ru)
     COUNTRY="ru"
-    LANG="ru_RU.KOI8-R"
+    LANG="ru_RU.UTF-8"
     KEYTABLE="ru"
     XKEYBOARD="ru"
     KDEKEYBOARD="ru"
@@ -774,7 +749,7 @@ case "$country" in
   # Slovakia
   sk)
     COUNTRY="sk"
-    LANG="sk"
+    LANG="sk_SK.UTF-8"
     KEYTABLE="sk-qwerty"
     XKEYBOARD="sk"
     KDEKEYBOARD="sk"
@@ -787,7 +762,7 @@ case "$country" in
   sl)
     LANGUAGE="sl"
     COUNTRY="si"
-    LANG="sl_SI"
+    LANG="sl_SI.UTF-8"
     KEYTABLE="slovene"
     XKEYBOARD="sl"
     KDEKEYBOARD="si"
@@ -799,7 +774,7 @@ case "$country" in
   tr)
 # Turkish version (guessed)
     COUNTRY="tr"
-    LANG="tr_TR"
+    LANG="tr_TR.UTF-8"
     KEYTABLE="tr_q-latin5"
     XKEYBOARD="tr"
     KDEKEYBOARD="tr"
@@ -810,7 +785,7 @@ case "$country" in
   # Taiwan - Traditional Chinese version
   tw)
     COUNTRY="tw"
-    LANG="zh_TW.Big5"
+    LANG="zh_TW.UTF-8"
     LANGUAGE="zh_TW.Big5"
     KEYTABLE="us"
     XKEYBOARD="us"
@@ -823,7 +798,7 @@ case "$country" in
   # Great Britian
   uk)
     COUNTRY="uk"
-    LANG="en_GB"
+    LANG="en_GB.UTF-8"
     LANGUAGE="en"
     KEYTABLE="uk"
     XKEYBOARD="uk"
@@ -845,8 +820,6 @@ case "$country" in
     TZ="America/New_York"
   ;;
 esac
-# start distrospecific localization
-dlocale
 }
 
 #############################################################################

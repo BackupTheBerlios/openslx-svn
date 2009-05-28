@@ -10,8 +10,7 @@
 #
 # General information about OpenSLX can be found at http://openslx.org
 #
-# Main script for new type of initial ramdisk for OpenSLX linux stateless
-# clients version 4
+# Main script for initial ramdisk for OpenSLX linux stateless clients
 #############################################################################
 
 # fixme: the primary init script should never fail, so move all critical code
@@ -76,7 +75,7 @@ nodnbdcache="yes"
 
 # set a default LAN interface, might be modified for WLAN, bridge setups or
 # on machines with more than one ethernet card built in
-nwif="eth0"
+export nwif="eth0"
 
 # load usb modules for keyboard (reenable usb keyboards, otherwise the
 # admin has to wait until second run of hwsetup late in stage3) and the
@@ -97,6 +96,8 @@ tmpfssize="$(expr $(grep -i "memtotal" /proc/meminfo | awk '{print $2}') \
 cowsize="50%"
 rwdir=/dev/shm
 nfsro="nfs"
+aufs=1
+unionfs=1
 
 runinithook '00-started'
 
@@ -199,8 +200,8 @@ in $0\ncountry=\"${COUNTRY}\"" >>/etc/initramfs-setup
     ldsc)
       ldsc="yes";;
     # simple union of base ro rootdir with tempfs on top
-    unionfs)
-      unionfs=1;;
+    nounionfs)
+      unionfs=0;;
     # additional source to unify root filesystem with; the top layer will be
     # the tempfs
     unionfs=*)
@@ -210,8 +211,8 @@ in $0\ncountry=\"${COUNTRY}\"" >>/etc/initramfs-setup
       ldsc="yes"
     ;;
     # same for AUFS; alternative to unionfs
-    aufs)
-      aufs=1;;
+    noaufs)
+      aufs=0;;
     aufs=*)
       aufs=1
       uniondirs=${opts#aufs=}
@@ -296,8 +297,6 @@ in $0\n# deprecated: please use rootfs=nfs://...\nnfsserver=\"${nfsserver}\"\
     # be distinguished from other (dhcp) clients
     vci=*)
       vci=${opts#vci=};;
-    xenbr)
-      xenbr=1;;
   esac
 done
 
@@ -370,7 +369,7 @@ runinithook '10-nw-if-config'
 # check here for the active ethernet link (skip non-ethN interfaces)
 if strinstr "eth" "$nwif" ; then
   for ethif in eth0 eth1 eth2 eth3 ; do
-    macaddr=$(ip link show dev $ethif 2>/dev/null | \
+    export macaddr=$(ip link show dev $ethif 2>/dev/null | \
       sed -n "/ether [0-9e-f]\{2\}:.*/p" | sed -e "s/.*ether //;s/ .*//")
     # if there is no bootmac present in kernel commandline any checks are
     # useless
@@ -395,16 +394,14 @@ if strinstr "eth" "$nwif" ; then
     fi
   done
 fi
+# hook to setup bridging (several virtualization tools ...)
+runinithook '20-nw-bridge-config'
 
 # set up loopback networking
 [ $DEBUGLEVEL -eq 20 ] && echo "** starting ip config at $(sysup)"
 ip link set dev lo up 2>/dev/null
 ip addr add 127.0.0.1/8 dev lo 2>/dev/null
 ip link set dev $nwif up  2>/dev/null || error "$init_noeth"
-
-# XEN bridge config (fixme: should be moved to plugin a special hook might be 
-# needed at this point)
-[ -n "$xenbr" ] && xenbr_config
 
 # analyze ip information from the kernel command line and put parts
 # of it into several variables
@@ -476,7 +473,7 @@ done
 # ... or via (t)ftp/http file get (in background)
 [ -n "$file" ] && fileget &
 
-runinithook '15-have-ip-config'
+runinithook '25-have-ip-config'
 
 # if root filesystem should be imported via local or a network block device
 if [ -n "${bldmod}" ] ; then
@@ -662,11 +659,10 @@ if [ -z "${bldmod}" -a -z "${bldserver}" ] ; then
   [ $DEBUGLEVEL -eq 20 ] && echo "** finished nfs mount at $(sysup)"
 fi
 
-runinithook '20-have-network-root'
+runinithook '35-have-network-root'
 
 # get the complete collection of kernel modules available
-mount -n --bind /mnt/lib/modules/${KERNEL} /lib/modules/${KERNEL} || \
-  error "$init_moddir"
+mount -n --bind /mnt/lib/modules /lib/modules || error "$init_moddir"
 # start hardware configuration as background process if not a special
 # debuglevel (21) is used for the option of manual hwautocfg start
 if [ ${DEBUGLEVEL} = 21 ] ; then
@@ -678,32 +674,26 @@ $(sysup)"
   hwautocfg main &
 fi
 
-runinithook '25-started-hw-config'
+runinithook '40-started-hw-config'
 
 union_type=""
-# try to use unionfs for rw access if available
-if [ -n "${unionfs}" ]; then
-  modprobe ${MODPRV} unionfs  && union_type="UnionFS"
-  if [ -z "$union_type" ]; then
-    error "$init_loadufs" nonfatal
-    unset unionfs
-    # if unionfs is not available, check for aufs and inform user
-    modprobe ${MODPRV} -n aufs && error $init_noufs_butaufs
-  fi
-fi
 # try to use aufs for rw access if available
-if [ -n "${aufs}" ]; then
-  modprobe ${MODPRV} aufs   && union_type="AUFS"
-  if [ -z "$union_type" ]; then
-    error "$init_loadaufs" nonfatal
-    unset aufs
-    # if aufs is not available, check for unionfs and inform user
-    modprobe ${MODPRV} -n unionfs && error $init_noaufs_butufs
-  fi
+if [ ${aufs} -eq 1 ] && \
+   modprobe ${MODPRV} aufs 2>/dev/null && \
+   lsmod | grep -qe "^aufs" ; then union_type="AUFS"
+elif [ ${unionfs} -eq 1 ] && \
+     modprobe ${MODPRV} unionfs 2>/dev/null && \
+     lsmod | grep -qe "^unionfs" ; then union_type="UnionFS"
+elif [ ${aufs} -eq 0 -a ${unionfs} -eq 0 -a -z "${cowloop}" ] ; then
+  error "$init_deselau" nonfatal
+  unset aufs unionfs
+else
+  error "$init_loadaufs" nonfatal
+  unset aufs unionfs
 fi
 
 # setup of client root filesystem dependent on the availability of UnionFS
-if [ -n "${unionfs}" -o -n "${aufs}" ] ; then
+if [ -n "${union_type}" ] ; then
   echo "Using ${union_type} for rw access"
   mkdir -p ${rwdir}/union ${rwdir}/uniontmp /rorootfs
   mount -n -t tmpfs none ${rwdir}/uniontmp
@@ -820,7 +810,7 @@ if [ -n "${ldsc}" ] ; then
     error "$init_errldcfg"
   fi
 else
-  error "$init_infldcfg" nonfatal
+  [ $DEBUGLEVEL -gt 2 ] && error "$init_infldcfg" nonfatal
 fi
 
 runinithook '60-have-servconfig'
@@ -890,16 +880,15 @@ initial_boot
 
 runinithook '85-have-initial-boot'
 
-# post init for some distro specific
+# post init for some distro specific stuff to run
 postinit
-[ -s /initramfs/postinit.local ] && {
-  mv /initramfs/postinit.local /bin/postinit.local;
-  chmod u+x /bin/postinit.local; }
-[ -f /bin/postinit.local ] && {
+# general postinit.local configurable by the admin via openslx/config/<system>
+[ -f /initramfs/postinit.local ] && {
   [ $DEBUGLEVEL -gt 0 ] && \
     echo -n "Running script /bin/postinit.local ... "
-    /bin/postinit.local
-    echo "ok"; }
+  chmod u+x /initramfs/postinit.local
+  /initramfs/postinit.local
+  [ $DEBUGLEVEL -gt 0 ] && echo "ok"; }
 
 # start a debug shell in higher debug levels
 [ $DEBUGLEVEL -gt 2 -a $DEBUGLEVEL != 8 ] \
@@ -910,7 +899,7 @@ runinithook '90-postinit-done'
 # unmount the bind mounted modules directory and nfs /tmp/scratch (if present)
 export ticks
 for ticks in 0 1 2 5 10 20 30; do
-  sleep $ticks && umount -n /lib/modules/${KERNEL} 2>/dev/null && break
+  sleep $ticks && umount -n /lib/modules 2>/dev/null && break
   error "$init_wait" nonfatal
 done
 mount 2>/dev/null | grep -q "/tmp/scratch type nfs" && \
@@ -918,7 +907,7 @@ mount 2>/dev/null | grep -q "/tmp/scratch type nfs" && \
     sleep $ticks && umount -n /tmp/scratch 2>/dev/null && break
   done
 
-mount 2>/dev/null | grep -q /lib/modules/${KERNEL} && error "$init_errumnt"
+mount 2>/dev/null | grep -q /lib/modules && error "$init_errumnt"
 # check for inittab file (might fail for new style init -> upstart)
 test -f /mnt/etc/inittab || test -d /mnt/etc/event.d || error "$init_erritab"
 # close runlevel script for stuff to execute during early bootup
@@ -957,7 +946,8 @@ killall klogd 2>/dev/null
 # variables
 mount -n --move /dev /mnt/dev
 umount -n /proc
-unset client debug date initrd ip bldroot nfsroot rootfs ticks vci vga
+unset client debug date initrd ip bldroot macaddr nwif nfsroot rootfs ticks \
+  vci vga
 unset BOOT_IMAGE KCMDLINE KERNEL MODPRV NWMODULES OLDPWD UDEVD_EVENT_TIMEOUT \
   SLXVERSION UDEVD_EXPECTED_SEQNUM PATH
 

@@ -1,5 +1,5 @@
 # Copyright (c) 2003 - 2006 - RZ Uni Freiburg
-# Copyright (c) 2006 - 2008 - OpenSLX GmbH
+# Copyright (c) 2006 - 2009 - OpenSLX GmbH
 #
 # This program/file is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -10,7 +10,7 @@
 # General information about OpenSLX can be found at http://openslx.org
 #
 # Messages file for all error and info messages generated during client
-# bootup (within initialramfs) for OpenSLX linux diskless clients version 4
+# bootup (within initialramfs) for OpenSLX linux diskless clients version 5
 # this file could be used for localization of error messages 
 
 # messages from (slx) init
@@ -39,7 +39,8 @@ machine or using\n  a NVidia chipset then it would be advisable to switch on \
 passing of the\n  boot MAC address via kernel commandline (IPAPPEND=3) in \
 your PXElinux\n  configuration."
 init_nveth="  Your system uses a NVidia ethernet chip which might to fail to \
-get the\n  original MAC address assigned. Use IPAPPEND=3 in your PXElinux \  configuration\n  to get the boot MAC address passed on."
+get the\n  original MAC address assigned. Use IPAPPEND=3 in your PXElinux \
+configuration\n  to get the boot MAC address passed on."
 init_errdhcp="  Did not get complete IP \
 configuration via DHCP. You may want to add\n  a vendor code identifier \
 via kernel commandline (vci=VCI)."
@@ -61,20 +62,14 @@ mean:\n  * The kernel was updated but the demuxer was not run afterwards.\n\
   * The mounted filesystem does not contain the modules directory at all.\n\
   You might want to check the list of mounted filesystems and if /mnt is\n\
   not empty run 'ls /mnt/lib/modules' to check."
-init_loadaufs="  Loading of AUFS failed - Either the module is not present or \
-does \n  not match the running kernel. If you do not want to see this \
-\n  message remove the token 'aufs' from kernel command line."
-init_noaufs_butufs=" AUFS was chosen as Unification FS but is not available. \
-However UnionFS seems to be available. To put it to use append 'unionfs' to the \
-kernel command line."
-init_noufs_butaufs=" UnionFS was chosen as Unification FS but is not available. \
-However\n  AUFS seems to be available. To put it to use append 'aufs' to the\n  \
-kernel command line."
-init_loadufs="  Loading of UnionFS failed - Either the module is not present or \
-does \n  not match the running kernel. If you do not want to see this message\
-\n  remove the token 'unionfs' from kernel command line."
+init_loadaufs="  Loading of AUFS and/or UnionFS failed - Either the module(s) \
+are not\n  present or do not match the running kernel. If you do not want to \
+see\n  this message add the token(s) 'noaufs'/'nounionfs' to your kernel \
+command\n  line or remove the modules from your kernel module directory."
 init_loadunions="  Stacking of directories failed, because UnionFS/AUFS is not \
 loaded."
+init_deselau="  You switched off AUFS and UnionFS via kernel commandline, thus \
+no module\n  was loaded, using traditional bind mounts."
 init_loadcow="  Loading of Copy On Write (COW - special block device) module \
 failed -\n  Either module is not present or module does not match the \
 running\n  kernel. If you do not want to see this message remove the token \
