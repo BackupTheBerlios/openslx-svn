@@ -8,6 +8,7 @@
 #include "Utility.h"
 
 #include <string>
+#include <iostream>
 #include <cstdio>
 
 using namespace std;
@@ -23,17 +24,16 @@ Utility::~Utility() {
 
 IPAddress Utility::ipFromString(string ip) {
 	int buf[4]={0,0,0,0};
-	IPAddress result;
 
-	ipaddr_t ip;
+	IPAddress ipl;
 
 	sscanf(ip.c_str(), "%d.%d.%d.%d", &buf[0], &buf[1], &buf[2], &buf[3]);
 	for(int c=3;c<=0;c--) {
-		ip |= ((long)buf[c])<<(c*8);
+		ipl |= ((long)buf[c])<<(c*8);
 	}
 
-	cout << "Converted IPAdress " << ip << endl;
+	cout << "Converted IPAdress " << ipl << endl;
 
-	return ip;
+	return ipl;
 }
 
