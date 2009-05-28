@@ -51,9 +51,9 @@ use vars qw(%supportedDistros);
     'suse-10.2_x86_64'  => 'clone,install,update,shell',
     'suse-10.3'         => 'clone,update,shell',
     'suse-10.3_x86_64'  => 'clone,update,shell',
-    'suse-11.0'         => 'clone,update,shell',
+    'suse-11.0'         => 'clone,update,shell,install',
     'suse-11.0_x86_64'  => 'clone,update,shell',
-    'suse-11.1'         => 'clone,update,shell',
+    'suse-11.1'         => 'clone,update,shell,install',
     'suse-11.1_x86_64'  => 'clone,update,shell',
     'scilin-4.7'        => 'clone,update,shell',
     'scilin-5.1'        => 'clone,update,shell',
@@ -270,6 +270,7 @@ sub installVendorOS
         )
     );
 
+    $self->_copyUclibcRootfs();
     $self->_touchVendorOS();
     $self->addInstalledVendorOSToConfigDB();
     return;
@@ -353,6 +354,7 @@ sub cloneVendorOS
         );
     }
 
+    $self->_copyUclibcRootfs();
     $self->_touchVendorOS();
     $self->addInstalledVendorOSToConfigDB();
     return;
@@ -380,6 +382,7 @@ sub updateVendorOS
         }
     );
 
+    $self->_copyUclibcRootfs();
     $self->_touchVendorOS();
     vlog(
         0,
@@ -1041,6 +1044,58 @@ sub _touchVendorOS
     return;
 }
 
+sub _copyUclibcRootfs
+{
+    my $self = shift;
+    my $targetRoot = shift || $self->{'vendor-os-path'};
+
+    vlog(0, _tr("copying uclibc-rootfs into vendor-OS ...\n"));
+
+    # my $targetRoot = $self->{'vendor-os-path'};
+    my $target     = "$targetRoot/opt/openslx/uclib-rootfs";
+
+    if (system("mkdir -p $target")) {
+        die _tr("unable to create directory '%s', giving up! (%s)\n",
+                $target, $!);
+    }
+
+    my $uclibcRootfs = "$openslxConfig{'base-path'}/share/uclib-rootfs";
+    my @excludes = qw(
+        dialog
+        kexec
+        libcurses.so*
+        libncurses.so*
+        mconf
+        strace
+    );
+    my $exclOpts = join ' ', map { "--exclude $_" } @excludes;
+    vlog(3, _tr("using exclude-filter:\n%s\n", $exclOpts));
+    my $rsyncFH;
+    my $rsyncCmd
+        = "rsync -aq --delete-excluded --exclude-from=- $uclibcRootfs/ $target";
+    vlog(2, "executing: $rsyncCmd\n");
+    # if we're doing a fresh install we need to create /lib first
+    slxsystem("mkdir -p $targetRoot/lib");
+    # link uClibc from the uclib-rootfs to /lib to make LD_PRELOAD=... working
+    my $uClibCmd = "ln -sf /opt/openslx/uclib-rootfs/lib/ld-uClibc.so.0";
+    $uClibCmd .= " $targetRoot/lib/ld-uClibc.so.0";
+    system($uClibCmd);
+
+    open($rsyncFH, '|-', $rsyncCmd)
+        or die _tr("unable to start rsync for source '%s', giving up! (%s)",
+                   $uclibcRootfs, $!);
+    print $rsyncFH $exclOpts;
+    close($rsyncFH)
+        or die _tr("unable to copy to target '%s', giving up! (%s)",
+                   $target, $!);
+
+    # write version of uclibc-rootfs original into a file in order to be
+    # able to check the up-to-date state later (in the config-demuxer)
+    slxsystem("slxversion >${target}.version");
+
+    return;
+}
+
 sub _createPackager
 {
     my $self = shift;
@@ -1210,12 +1265,28 @@ sub _setupStage1A
             $stage1cDir, $!);
     }
 
-    $self->_stage1A_createBusyboxEnvironment();
+    #$self->_stage1A_createBusyboxEnvironment();
+    $self->_stage1A_setupUclibcEnvironment();
     $self->_stage1A_copyPrerequiredFiles();
     $self->_stage1A_copyTrustedPackageKeys();
     $self->_stage1A_createRequiredFiles();
     return;
 }
+
+sub _stage1A_setupUclibcEnvironment
+{
+    my $self = shift;
+    $self->_copyUclibcRootfs("$self->{stage1aDir}/$self->{stage1bSubdir}");
+    my $source = "$self->{stage1bSubdir}/opt/openslx/uclib-rootfs";
+    my $target = "$self->{stage1aDir}";
+    slxsystem("ln -sf $source/bin $target/bin");
+    slxsystem("ln -sf $source/lib $target/lib");
+    slxsystem("ln -sf $source/usr $target/usr");
+    $self->_stage1A_setupResolver();
+    
+    return;
+}
+
 
 sub _stage1A_createBusyboxEnvironment
 {
@@ -1269,9 +1340,9 @@ sub _stage1A_setupResolver
     copyFile('/etc/resolv.conf', "$self->{stage1aDir}/etc");
     copyFile('/etc/nsswitch.conf', "$self->{stage1aDir}/etc");
     spitFile("$self->{stage1aDir}/etc/hosts", "127.0.0.1 localhost\n");
-    copyFile("$libcFolder/libresolv*",    "$self->{stage1aDir}$libcFolder");
-    copyFile("$libcFolder/libnss_dns*",   "$self->{stage1aDir}$libcFolder");
-    copyFile("$libcFolder/libnss_files*", "$self->{stage1aDir}$libcFolder");
+    #copyFile("$libcFolder/libresolv*",    "$self->{stage1aDir}$libcFolder");
+    #copyFile("$libcFolder/libnss_dns*",   "$self->{stage1aDir}$libcFolder");
+    #copyFile("$libcFolder/libnss_files*", "$self->{stage1aDir}$libcFolder");
 
     my $stage1cDir 
         = "$self->{'stage1aDir'}/$self->{'stage1bSubdir'}/$self->{'stage1cSubdir'}";
@@ -1298,6 +1369,7 @@ sub _stage1A_copyPrerequiredFiles
             $stage1cDir, $!
         );
     }
+    vlog(2, "fix pre-required files...");
     $self->{distro}->fixPrerequiredFiles($stage1cDir);
     return;
 }

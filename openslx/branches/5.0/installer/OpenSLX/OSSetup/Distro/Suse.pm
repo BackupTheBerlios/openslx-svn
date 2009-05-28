@@ -43,7 +43,7 @@ sub initialize
     my $defaultMetaPackager = 'zypper';
     if ($self->{'engine'}->{'distro-name'} =~ m{-([^-]+)$}) {
         my $distroVersion = 0.0 + $1;
-        if ($distroVersion < 10.2) {
+        if ($distroVersion <= 10.2) {
             $defaultMetaPackager = 'smart';
         }
     }
