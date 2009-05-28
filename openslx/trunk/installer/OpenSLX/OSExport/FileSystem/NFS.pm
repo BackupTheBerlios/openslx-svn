@@ -61,7 +61,7 @@ sub exportVendorOS
     }
     
     $self->_copyViaRsync($source, $target);
-    $self->_copyUclibEnv($target);
+
     return;
 }
 
@@ -232,50 +232,6 @@ sub _isTargetBindMounted
         }
     }
     return 0;
-}
-
-sub _copyUclibEnv
-{
-    my $self         = shift;
-    my $target       = shift;
-    my $targetRoot   = $target;
-
-    $target .= "/opt/openslx/uclib-rootfs";
-
-    if (system("mkdir -p $target")) {
-        die _tr("unable to create directory '%s', giving up! (%s)\n",
-                $target, $!);
-    }
-
-    my $uclibcRootfs = "$openslxConfig{'base-path'}/share/uclib-rootfs";
-    my @excludes = qw(
-        dialog
-        kexec
-        libcurses.so*
-        libncurses.so*
-        mconf
-        strace
-    );
-    my $exclOpts = join ' ', map { "--exclude $_" } @excludes;
-    my $includeExcludeList = $self->_determineIncludeExcludeList();
-    vlog(1, _tr("using exclude-filter:\n%s\n", $exclOpts));
-    my $rsyncFH;
-    my $rsyncCmd
-        = "rsync -av --delete-excluded --exclude-from=-" . " $uclibcRootfs/ $target";
-    vlog(2, "executing: $rsyncCmd\n");
-    # link uClibc from the uclib-rootfs to /lib to make LD_PRELOAD=... working
-    my $uClibCmd = "ln -sf /opt/openslx/uclib-rootfs/lib/ld-uClibc.so.0";
-    $uClibCmd .= " $targetRoot/lib/ld-uClibc.so.0";
-    system("$uClibCmd");
-
-    open($rsyncFH, '|-', $rsyncCmd)
-        or die _tr("unable to start rsync for source '%s', giving up! (%s)",
-                   $uclibcRootfs, $!);
-    print $rsyncFH $exclOpts;
-    close($rsyncFH)
-        or die _tr("unable to copy to target '%s', giving up! (%s)",
-                   $target, $!);
-    return;
 }
 
 1;

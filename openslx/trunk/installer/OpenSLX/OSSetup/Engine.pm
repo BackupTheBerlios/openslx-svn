@@ -270,6 +270,7 @@ sub installVendorOS
         )
     );
 
+    $self->_copyUclibcRootfs();
     $self->_touchVendorOS();
     $self->addInstalledVendorOSToConfigDB();
     return;
@@ -353,6 +354,7 @@ sub cloneVendorOS
         );
     }
 
+    $self->_copyUclibcRootfs();
     $self->_touchVendorOS();
     $self->addInstalledVendorOSToConfigDB();
     return;
@@ -380,6 +382,7 @@ sub updateVendorOS
         }
     );
 
+    $self->_copyUclibcRootfs();
     $self->_touchVendorOS();
     vlog(
         0,
@@ -1038,6 +1041,55 @@ sub _touchVendorOS
     # 'age' of the vendor-OS when trying to determine whether or not we
     # need to re-export this vendor-OS:
     slxsystem("touch $self->{'vendor-os-path'}");
+    return;
+}
+
+sub _copyUclibcRootfs
+{
+    my $self = shift;
+
+    vlog(0, _tr("copying uclibc-rootfs into vendor-OS ...\n"));
+
+    my $targetRoot = $self->{'vendor-os-path'};
+    my $target     = "$targetRoot/opt/openslx/uclib-rootfs";
+
+    if (system("mkdir -p $target")) {
+        die _tr("unable to create directory '%s', giving up! (%s)\n",
+                $target, $!);
+    }
+
+    my $uclibcRootfs = "$openslxConfig{'base-path'}/share/uclib-rootfs";
+    my @excludes = qw(
+        dialog
+        kexec
+        libcurses.so*
+        libncurses.so*
+        mconf
+        strace
+    );
+    my $exclOpts = join ' ', map { "--exclude $_" } @excludes;
+    vlog(3, _tr("using exclude-filter:\n%s\n", $exclOpts));
+    my $rsyncFH;
+    my $rsyncCmd
+        = "rsync -aq --delete-excluded --exclude-from=- $uclibcRootfs/ $target";
+    vlog(2, "executing: $rsyncCmd\n");
+    # link uClibc from the uclib-rootfs to /lib to make LD_PRELOAD=... working
+    my $uClibCmd = "ln -sf /opt/openslx/uclib-rootfs/lib/ld-uClibc.so.0";
+    $uClibCmd .= " $targetRoot/lib/ld-uClibc.so.0";
+    system($uClibCmd);
+
+    open($rsyncFH, '|-', $rsyncCmd)
+        or die _tr("unable to start rsync for source '%s', giving up! (%s)",
+                   $uclibcRootfs, $!);
+    print $rsyncFH $exclOpts;
+    close($rsyncFH)
+        or die _tr("unable to copy to target '%s', giving up! (%s)",
+                   $target, $!);
+
+    # write version of uclibc-rootfs original into a file in order to be
+    # able to check the up-to-date state later (in the config-demuxer)
+    slxsystem("slxversion >${target}.version");
+
     return;
 }
 
