@@ -18,6 +18,7 @@ use warnings;
 
 our $VERSION = 1.01;    # API-version . implementation-version
 
+use Config;
 use File::Basename;
 use File::Path;
 use Storable;
@@ -631,13 +632,18 @@ sub _callChrootedFunctionForPlugin
     # via other processes (which could cause problems)
     my $osSetupEngine = $self->_osSetupEngine();
 
-    # bind-mount openslx basepath to /mnt/openslx of vendor-OS:
+    # prepare bind-mount of openslx base and config paths to /mnt of 
+    # vendor-OS:
     my $basePath         = $openslxConfig{'base-path'};
     my $basePathInChroot = "$self->{'vendor-os-path'}/mnt/opt/openslx";
     mkpath($basePathInChroot);
     my $configPath         = $openslxConfig{'config-path'};
     my $configPathInChroot = "$self->{'vendor-os-path'}/mnt/etc/opt/openslx";
     mkpath($configPathInChroot);
+    # prepare bind-mount of host's perl corelib path to /mnt of  vendor-OS:
+    my $hostPerlCorePath         = $Config{privlibexp};
+    my $hostPerlCorePathInChroot = "$self->{'vendor-os-path'}/mnt/host-perl";
+    mkpath($hostPerlCorePathInChroot);
 
     my $pluginSession = OpenSLX::ScopedResource->new({
         name    => 'osplugin::session',
@@ -655,16 +661,37 @@ sub _callChrootedFunctionForPlugin
                     "unable to bind mount '%s' to '%s'! (%s)", 
                     $configPath, $configPathInChroot, $!
                 );
+            # Bind mount hosts perl core path into vendor-OS and add it to
+            # perl's search paths, in order to let dynamic loading of perl
+            # modules/scripts work. Currently, we hope that only the perl core
+            # path (privlibexp) is required for that, but we might have to 
+            # mount the architecture dependent path (archlibexp) or the
+            # vendor perl paths (vendorlibexp and vendorarchexp), too.
+            slxsystem(
+                "mount -o bind -o ro $hostPerlCorePath $hostPerlCorePathInChroot"
+            ) == 0
+                or die _tr(
+                    "unable to bind mount '%s' to '%s'! (%s)", 
+                    $hostPerlCorePath, $hostPerlCorePathInChroot, $!
+                );
+            unshift @INC, '/mnt/host-perl';
             1 
         },
         release => sub {
-            slxsystem("umount $basePathInChroot") == 0
+            if ($INC[0] eq '/mnt/host-perl') {
+                shift @INC;
+            }
+            slxsystem("umount $hostPerlCorePathInChroot") == 0
                 or die _tr(
-                    "unable to umount '%s'! (%s)", $basePathInChroot, $!
+                    "unable to umount '%s'! (%s)", $hostPerlCorePathInChroot, $!
                 );
             slxsystem("umount $configPathInChroot") == 0
                 or die _tr(
                     "unable to umount '%s'! (%s)", $configPathInChroot, $!
+                );
+            slxsystem("umount $basePathInChroot") == 0
+                or die _tr(
+                    "unable to umount '%s'! (%s)", $basePathInChroot, $!
                 );
             1
         },

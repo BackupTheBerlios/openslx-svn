@@ -48,14 +48,8 @@ use open ':utf8';
 
 require Carp;       # do not import anything as we are going to overload carp
                     # and croak!
-use Carp::Heavy;    # use it here to have it loaded immediately, not at
-                    # the time when carp() is being invoked (which might
-                    # be at a point in time where the script executes in
-                    # a chrooted environment, such that the module can't
-                    # be loaded anymore).
 use Config::General;
 use Encode;
-require File::Glob;
 use FindBin;
 use Getopt::Long;
 use POSIX qw(locale_h);
