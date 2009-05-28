@@ -5,6 +5,7 @@
 PLUGIN_FOLDER="/opt/openslx/plugin-repo/xserver"
 TMP_FOLDER="/tmp/slx-plugin/xserver"
 TARGET="$1"
+DISTRO="$2"
 
 if [ ! -d "${PLUGIN_FOLDER}" ]; then
   mkdir -p "${PLUGIN_FOLDER}/modules"

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ##########################################################
 # Installs NVIDIA binary drivers into openslx plugin-repo
@@ -18,18 +18,18 @@ else
 fi
 
 
-
+#change to plugin path
 cd ${PLUGIN_PATH}
 
 case ${DISTRO} in
   ubuntu-8.10*)
-    ./ubuntu-8.10-gfx-install.sh nvidia
+    ./ubuntu-8.10-gfx-install.sh nvidia ${DISTRO}
   ;;
   ubuntu*)
-    ./ubuntu-gfx-install.sh nvidia
+    ./ubuntu-gfx-install.sh nvidia ${DISTRO}
   ;;
-  suse-11.0*)
-    ./suse-gfx-install.sh nvidia
+  suse-11.*)
+    ./suse-gfx-install.sh nvidia ${DISTRO}
   ;;
   # general purpose nvidia installer script
   *)
@@ -79,24 +79,28 @@ case ${DISTRO} in
    # we need the .config file in /usr/src/linux or where ever!
    # we need scripts/genksyms/genksyms compiled via make scripts in /usr/src/linux
    # option available in newer nvidia packages
-   if [ ! -f /usr/src/linux-${kernel}/include/linux/kernel.h ]; then
-   		cd /usr/src/linux-${kernel%-*}
-		if [ ! -f .config ]; then
-		  if [ -f /boot/config-${kernel} ]; then
-		  	  # in suse we have the config file lying there
-			  cp /boot/config-${kernel} .config
-		  fi
-		fi
-		make scripts >/dev/null 2>&1
-		make prepare >/dev/null 2>&1
-		cd - >/dev/null 2>&1
-   fi
+	cd /usr/src/linux-${kernel%-*}
+    # in suse we have the config file lying there
+	cp /boot/config-${kernel} .config
+	ARCH=$(cat .config| grep -o CONFIG_M.86=y |tail -n1|grep -o "[0-9]86")
+	SUFFIX=${kernel##*-}
+	#cp -r /usr/src/linux-${kernel%-*}-obj/i${ARCH}/${SUFFIX}/ \
+	#		/usr/src/linux-${kernel%-*}
+	make oldconfig >/dev/null 2>&1
+	make prepare >/dev/null 2>&1
+	cd - >/dev/null 2>&1
+	#/usr/src/linux-${kernel%-*}
    addopts="--no-cc-version-check"
    $(ls -d NVIDIA-Linux-*)/nvidia-installer -s -q -N -K --no-abi-note \
-     --kernel-source-path=/usr/src/linux-${kernel%-*} -k ${kernel} \
+	 --kernel-source-path=/usr/src/linux-${kernel%-*} \
+     --kernel-include-path=/usr/src/linux-${kernel%-*}-obj/i${ARCH}/${SUFFIX}/include \
+	 -k ${kernel} \
      --kernel-install-path=/opt/openslx/plugin-repo/xserver/nvidia/modules \
      --no-runlevel-check --no-abi-note --no-rpms ${addopts} \
      --log-file-name=nvidia-kernel.log >>nvidia-inst.log 2>&1
+   if [ $? -gt 0 ];then
+   	echo "* kernel module built failed!"
+   fi
    echo "  * Have a look into the several *.log files in "
    echo "    stage1/${DISTRO}/plugin-repo/xserver"
 

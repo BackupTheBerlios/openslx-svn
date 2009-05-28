@@ -1,9 +1,16 @@
 #!/bin/sh
 
 #
-# Currently 11.0 is supported!
-#
-# Working on 10.2 with pgk-installer
+# supported:
+# nvidia: 
+# 	* 10.2 (pkg-installer)
+#	* 11.0 (zypper rpm packages)
+# 	* not yet - soon - 11.1 
+# 
+# ati:
+#	* 10.2 (pkg-installer)
+#	* 11.0 (zypper rpm packages)
+#	* 11.1 (zypper rpm packages)
 #
 
 # not right any more - removed from script
@@ -11,6 +18,7 @@
 #BUSYBOX="/mnt/opt/openslx//busybox/busybox"
 
 BASE=/opt/openslx/plugin-repo/xserver
+DISTRO=$2
 cd ${BASE} 
 
 if [ -L /boot/vmlinuz ]; then 
@@ -33,17 +41,16 @@ fi
 
 
 buildfglrx() {
-	# build ATI kernel module
+    # build ATI kernel module
     cd ${BASE}/ati/usr/src/kernel-modules/fglrx
-	rm -rf fglrx.ko >/dev/null 2>&1
+    rm -rf fglrx.ko >/dev/null 2>&1
     make KVER=${1} >/dev/null 2>&1
-	if [ "$?" -eq "0" ]; then
-	    cp fglrx.ko ../../../../modules
-	else
-		echo -e "Kernel module for kernel ${1} could not be built!"
-	fi
+    if [ "$?" -eq "0" ]; then
+        cp fglrx.ko ../../../../modules
+    else
+    	echo -e "Kernel module for kernel ${1} could not be built!"
+    fi
     cd - >/dev/null 2>&1
-
 }
 
 
@@ -51,6 +58,10 @@ buildfglrx() {
 # NVidia section
 ##########################################################################
 if [ "$1" = "nvidia" ]; then
+  if [ ! -d nvidia ]; then
+  	mkdir -p nvidia/{modules,usr,temp}
+  fi
+  cd nvidia/temp
   if [ -e nvidia/usr/lib/libGL.so.1 ]; then
     exit
   fi
@@ -59,39 +70,51 @@ if [ "$1" = "nvidia" ]; then
   ##                 SUSE 11.0 Section                      ##
   ############################################################
 
-  # distro info should be passed by calling scripts as known within the
-  # plugin environment, see e.g. rev2561
-  if [ "11.0" = "`cat /etc/SuSE-release | tail -n1 | cut -d' ' -f3`" ]; then
-    echo "  * Downloading nvidia rpm packages... this could take some time..."
-    # add repository for nvidia drivers
-    zypper --no-gpg-checks addrepo http://download.nvidia.com/opensuse/11.0/ NVIDIA > /dev/null 2>&1
-    # get URLs by virtually installing nvidia-OpenGL driver
-    zypper --no-gpg-checks -n -vv install -D x11-video-nvidiaG01 > logfile 2>&1 
-
-    # zypper refresh is requested if something is not found
-    if [ "1" -le "$(cat logfile | grep -o "zypper refresh"| wc -l)" ]; then 
-        zypper refresh >/dev/null 2>&1 
-    fi
-
-    # take unique urls from logfile
-    URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | sort -u | xargs)
-    for RPM in $URLS; do
-      RNAME=$(echo ${RPM} | sed -e 's,^.*/\(.*\)$,\1,g')
-      if [ ! -e ${RNAME} ]; then
-        wget ${RPM} > /dev/null 2>&1
+  case ${DISTRO} in
+    suse-11.*)
+      echo "* Downloading nvidia rpm packages... this could take some time..."
+      # add repository for nvidia drivers
+	  case ${DISTRO} in
+	  suse-11.0*)
+      zypper --no-gpg-checks addrepo http://download.nvidia.com/opensuse/11.0/ NVIDIA > /dev/null 2>&1
+	  ;;
+	  suse-11.1*)
+      zypper --no-gpg-checks addrepo http://download.nvidia.com/opensuse/11.1/ NVIDIA > /dev/null 2>&1
+	  ;;
+	  esac
+      # get URLs by virtually installing nvidia-OpenGL driver
+      zypper --no-gpg-checks -n -vv install -D \
+	  	nvidia-gfxG01-kmp${KSUFFIX}  > logfile 2>&1 
+  
+      # zypper refresh is requested if something is not found
+      if [ "1" -le "$(cat logfile | grep -o "zypper refresh"| wc -l)" ]; then 
+          zypper refresh >/dev/null 2>&1 
       fi
-      # We use rpm2cpio from suse to extract
-      rpm2cpio ${RNAME} | cpio -id > /dev/null 2>&1
-    done
-    mv ./usr/X11R6/lib/* ./usr/lib/
-    mv ./usr ..
-    find lib/ -name "*.ko" -exec mv {} ../modules \;
+  
+      # take unique urls from logfile
+      URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | sort -u | xargs)
+      for RPM in $URLS; do
+        RNAME=$(echo ${RPM} | sed -e 's,^.*/\(.*\)$,\1,g')
+        if [ ! -e ${RNAME} ]; then
+          wget ${RPM} > /dev/null 2>&1
+        fi
+        # We use rpm2cpio from suse to extract
+        rpm2cpio ${RNAME} | cpio -id > /dev/null 2>&1
+      done
+      mv ./usr/X11R6/lib/* ./usr/lib/
+  
+      rm -rf ../usr
+      mv ./usr ..
+      find lib/ -name "*.ko" -exec mv '{}' ../modules \;
+  
+      cd .. 
+    ;;
+  esac
 
-  fi
+  rm -rf temp/
+  cd ..
 
-  cd .. 
 fi
-
 
 
 ############################################################################
@@ -104,7 +127,8 @@ if [ "$1" = "ati" ]; then
 
   mkdir -p ati/modules ati/temp
 
-  if [ "10.2" = "`cat /etc/SuSE-release | tail -n1 | awk '{print $3}'`" ]; then
+  case ${DISTRO} in
+  suse-10.2*)
     ### SUSE 10.2 section ###
     echo "* Extracting ATI package (expected in xserver::pkgpath) ... this could take some time..."
 
@@ -119,7 +143,7 @@ if [ "$1" = "ati" ]; then
     RPM=`./ati-installer.sh ${PKG_VERSION} --buildpkg SuSE/SUSE102-IA32 2>&1 | grep Package | awk '{print $2}' | tail -n1`
 
     cd ..
-    rpm2cpio ${RPM} 2>/dev/null | cpio -i --make-directories >/dev/null 2>&1 
+    rpm2cpio ${RPM} 2>/dev/null | cpio -id >/dev/null 2>&1 
 
 
     mv ./usr/X11R6/lib/* ./usr/lib/
@@ -129,18 +153,24 @@ if [ "$1" = "ati" ]; then
     cd ..
     rm -rf ${PKG}
 
-	buildfglrx ${KVERS}
+    buildfglrx ${KVERS}
 
-  fi
-
-  if [ "11.0" = "`cat /etc/SuSE-release | tail -n1 | awk '{print $3}'`" ]; then
+  ;;
+  suse-11.*)
     ### SUSE 11.0 Section ###
 
     echo "* Downloading ati rpm packages... this could take some time..."
-	cd ati/temp
+    cd ati/temp
 
-     # add repository for nvidia drivers
+    # add repository for ATI drivers
+	case ${DISTRO} in
+	suse-11.0*)
     zypper --no-gpg-checks addrepo http://www2.ati.com/suse/11.0/ ATI > /dev/null 2>&1 
+	;;
+	suse-11.1*)
+    zypper --no-gpg-checks addrepo http://www2.ati.com/suse/11.1/ ATI > /dev/null 2>&1 
+	;;
+	esac
     # get URLs by virtually installing fglrx-OpenGL driver
     zypper --no-gpg-checks -n -vv install -D ati-fglrxG01-kmp${KSUFFIX} \
     x11-video-fglrxG01 > logfile 2>&1
@@ -165,9 +195,13 @@ if [ "$1" = "ati" ]; then
     mv ./usr ..
     mv ./etc ..
 
-    find lib/ -name "*.ko" -exec mv {} ../modules \;
+    find lib/ -name "*.ko" -exec mv {} ../modules \; >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Could not find kernel module nvidia.ko!";
+    fi
 
-  fi
+  ;;
+  esac
   cd ..
 
   rm -rf temp/
