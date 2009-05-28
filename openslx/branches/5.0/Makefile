@@ -139,7 +139,6 @@ plain-install:
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/boot-env \
-	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/templates \
@@ -193,8 +192,6 @@ plain-install:
 	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
   tar --exclude=.svn --exclude *.example --exclude OpenSLX -cp boot-env | \
     tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/; \
-  cp -pP tools/busybox{,.x86_64,.i586} \
-    $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/busybox/; \
   cp -p boot-env/pxe/menu-*.example boot-env/pxe/Readme.pxe \
     $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/; \
   cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \

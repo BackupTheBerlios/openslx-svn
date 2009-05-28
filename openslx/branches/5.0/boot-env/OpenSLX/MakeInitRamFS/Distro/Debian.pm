@@ -47,8 +47,11 @@ sub determineMatchingHwinfoVersion
     my $self          = shift;
     my $distroVersion = shift;
 
-    # TODO: fill this map (see Suse.pm for an example)
+    # to be checked
     my %versionMap = (
+       '3.0' => '13.11',
+       '4.0' => '14.19',
+       '5.0' => '15.3',
     );
     return $versionMap{$distroVersion}
         || $self->SUPER::determineMatchingHwinfoVersion($distroVersion);

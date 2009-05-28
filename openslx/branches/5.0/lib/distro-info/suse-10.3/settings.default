@@ -1,25 +1,117 @@
 bootstrap-packages = <<END
+    i586/aaa_base-10.3-90.i586.rpm
+    i586/aaa_skel-2007.3.7-36.i586.rpm
+    i586/audit-libs-1.5.5-13.i586.rpm
+    i586/bash-3.2-61.i586.rpm
+    i586/blocxx-1.0.0-79.i586.rpm
+    i586/bzip2-1.0.4-42.i586.rpm
+    i586/coreutils-6.9-43.i586.rpm
+    i586/cpio-2.9-17.i586.rpm
+    i586/cracklib-2.8.10-37.i586.rpm
+    i586/cyrus-sasl-2.1.22-82.i586.rpm
+    i586/diffutils-2.8.7-80.i586.rpm
+    i586/e2fsprogs-1.40.2-20.i586.rpm
+    i586/file-4.21-7.i586.rpm
+    i586/filesystem-10.3-50.i586.rpm
+    i586/fillup-1.42-179.i586.rpm
+    i586/findutils-4.2.31-24.i586.rpm
+    i586/gawk-3.1.5g-25.i586.rpm
+    i586/gdbm-1.8.3-302.i586.rpm
+    i586/gpg2-2.0.4-49.i586.rpm
+    i586/grep-2.5.2-28.i586.rpm
+    i586/gzip-1.3.12-34.i586.rpm
+    i586/info-4.9-15.i586.rpm
+    i586/insserv-1.09.0-46.i586.rpm
+    i586/irqbalance-0.55-40.i586.rpm
+    i586/kernel-default-2.6.22.5-31.i586.rpm
+    i586/libacl-2.2.34-75.i586.rpm
+    i586/libattr-2.4.28-81.i586.rpm
+    i586/libbz2-1-1.0.4-42.i586.rpm
+    i586/libcom_err2-1.40.2-20.i586.rpm
+    i586/libgcc42-4.2.1_20070724-17.i586.rpm
+    i586/libstdc++42-4.2.1_20070724-17.i586.rpm
+    i586/libvolume_id-114-19.i586.rpm
+    i586/libxcrypt-2.4-71.i586.rpm
+    i586/libzio-0.4-43.i586.rpm
+    i586/limal-1.3.2-8.i586.rpm
+    i586/limal-perl-1.3.2-8.i586.rpm
+    i586/logrotate-3.7.5-9.i586.rpm
+    i586/mingetty-1.0.7s-25.i586.rpm
+    i586/mkinitrd-2.1-36.i586.rpm
+    i586/mktemp-1.5-804.i586.rpm
+    i586/module-init-tools-3.2.99.pre11-23.i586.rpm
+    i586/ncurses-5.6-41.i586.rpm
+    i586/net-tools-1.60-650.i586.rpm
+    i586/openldap2-client-2.3.37-20.i586.rpm
+    i586/openssl-0.9.8e-45.i586.rpm
+    i586/openSUSE-release-10.3-74.i586.rpm
+    i586/pam-0.99.8.1-15.i586.rpm
+    i586/pciutils-2.2.6-17.i586.rpm
+    i586/pcre-7.2-14.i586.rpm
+    i586/perl-5.8.8-75.i586.rpm
+    i586/perl-Bootloader-0.4.32-2.i586.rpm
+    i586/perl-gettext-1.05-73.i586.rpm
+    i586/permissions-2007.8.10-11.i586.rpm
+    i586/reiserfs-3.6.19-92.i586.rpm
+    i586/rpm-4.4.2-140.i586.rpm
+    i586/sed-4.1.5-64.i586.rpm
+    i586/sysvinit-2.86-102.i586.rpm
+    i586/udev-114-19.i586.rpm
+    i586/util-linux-2.12r+2.13rc2+git20070725-24.i586.rpm
+    noarch/pciutils-ids-2007.9.22-1.noarch.rpm
+    noarch/suse-build-key-1.0-772.noarch.rpm
 END
+<metapackager zypper>
+    packages = <<END
+    i586/glib2-2.14.1-4.i586.rpm
+    i586/libzypp-3.26.2-2.i586.rpm
+    i586/zypper-0.8.23-7.i586.rpm
+    END
+</metapackager>
 <metapackager smart>
     packages = <<END
+        i586/python-2.5-19.i586.rpm
+        i586/python-xml-2.5-19.i586.rpm
+        i586/rpm-python-4.4.2-76.i586.rpm
+        i586/smart-0.42-43.i586.rpm
     END
 </metapackager>
 <metapackager yum>
     packages = <<END
+        i586/glib2-2.12.4-15.i586.rpm
+        i586/gnome-filesystem-0.1-288.i586.rpm
+        i586/libxml2-2.6.26-26.i586.rpm
+        i586/libxml2-python-2.6.26-29.i586.rpm
+        i586/python-2.5-19.i586.rpm
+        i586/python-sqlite-1.1.8-11.i586.rpm
+        i586/python-urlgrabber-3.1.0-18.i586.rpm
+        i586/python-xml-2.5-19.i586.rpm
+        i586/rpm-python-4.4.2-76.i586.rpm
+        i586/sqlite-3.3.8-14.i586.rpm
+        i586/yum-3.0.1-9.i586.rpm
+        i586/yum-metadata-parser-1.0.2-23.i586.rpm
     END
 </metapackager>
 package-subdir = suse
 prereq-packages = <<END
+    i586/bzip2-1.0.4-42.i586.rpm
+    i586/glib2-2.14.1-4.i586.rpm
+    i586/glibc-2.6.1-18.i586.rpm
+     i586/libbz2-1-1.0.4-42.i586.rpm
+     i586/perl-5.8.8-75.i586.rpm
+    i586/popt-1.7-368.i586.rpm
+    i586/rpm-4.4.2-140.i586.rpm
+    i586/zlib-1.2.3-75.i586.rpm
 END
 <repository base>
     name = openSUSE 10.3
     repo-subdir = suse
-    file-for-speedtest = suse/setup/descr/packages.en
+    file-for-speedtest = suse/setup/descr/packages.en.gz
 </repository>
 <repository base_non-oss>
     name = openSUSE 10.3 non-OSS
     repo-subdir = suse
-    file-for-speedtest = suse/setup/descr/packages.en
+    file-for-speedtest = suse/setup/descr/packages.en.gz
 </repository>
 <repository    base_update>
     name = openSUSE 10.3 updates

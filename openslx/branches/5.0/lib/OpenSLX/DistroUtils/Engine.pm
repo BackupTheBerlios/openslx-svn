@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2008, 2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -14,6 +14,9 @@
 package OpenSLX::DistroUtils::Engine;
 
 use OpenSLX::Basics;
+
+use strict;
+use warnings;
 
 sub new
 {

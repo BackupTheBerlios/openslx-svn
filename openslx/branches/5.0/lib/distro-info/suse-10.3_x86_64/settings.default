@@ -14,12 +14,12 @@ END
 <repository base>
     name = openSUSE 10.3
     repo-subdir = suse
-    file-for-speedtest = suse/setup/descr/packages.en
+    file-for-speedtest = suse/setup/descr/packages.en.gz
 </repository>
 <repository base_non-oss>
     name = openSUSE 10.3 non-OSS
     repo-subdir = suse
-    file-for-speedtest = suse/setup/descr/packages.en
+    file-for-speedtest = suse/setup/descr/packages.en.gz
 </repository>
 <repository base_update>
     name = openSUSE 10.3 updates

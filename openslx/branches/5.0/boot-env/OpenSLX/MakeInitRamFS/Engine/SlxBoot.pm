@@ -151,6 +151,9 @@ sub _copyHwinfo
         $self->{'distro-ver'}
     );
 
+    # copy db modifications
+    $self->addCMD("tar xfz $baseDir/db/hwinfo.db.tgz -C $self->{'build-path'}/");
+
     $self->addCMD("cp $baseDir/bin/hwinfo-$version $self->{'build-path'}/usr/bin/hwinfo");
     my $libHD = "libhd.so.$version";
     $self->addCMD("cp $baseDir/lib/$libHD $self->{'build-path'}/usr/lib");

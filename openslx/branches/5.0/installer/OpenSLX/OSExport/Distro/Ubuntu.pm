@@ -42,6 +42,7 @@ sub initDistroInfo
         - /var/run/*
         - /var/log/*
         - /var/lib/xdm
+        - /var/cache/apt/archives/*
         - /var/cache/man/*
         - /var/cache/nscd/*
         - /usr/share/vmware/*
@@ -52,6 +53,7 @@ sub initDistroInfo
         - /proc/*
         - /mnt/*
         - /media/*
+        - /lib/udev/devices
         - /initrd*
         - /etc/cron.*/*
         - /boot/initrd*

@@ -1,6 +1,6 @@
 arch = amd64
 package-subdir = pool
-prereq-packages = main/d/debootstrap/debootstrap_0.3.3.2ubuntu3_all.deb
+prereq-packages = main/d/debootstrap/debootstrap_1.0.10ubuntu1~hardy1_all.deb
 release-name = hardy
 <repository base>
     components = main restricted
@@ -29,6 +29,12 @@ release-name = hardy
         linux-image-generic
     END
 </selection>
+<selection standard>
+    base = minimal
+    packages = <<END
+        ubuntu-standard
+    END
+</selection>
 <selection gnome>
     base = minimal
     packages = <<END
@@ -45,6 +51,24 @@ release-name = hardy
     base = minimal
     packages = <<END
         xubuntu-desktop
+    END
+</selection>
+<selection edubuntu-server>
+    base = minimal
+    packages = <<END
+        edubuntu-server
+    END
+</selection>
+<selection edubuntu-gnome>
+    base = minimal
+    packages = <<END
+        edubuntu-desktop-gnome
+    END
+</selection>
+<selection edubuntu-kde>
+    base = minimal
+    packages = <<END
+        edubuntu-desktop-kde
     END
 </selection>
 <selection default>

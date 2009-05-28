@@ -32,6 +32,7 @@ sub new
     return bless $self, $class;
 }
 
+# filter out modules not present (e.g. because compiled into the kernel)
 sub applyChanges
 {
     my $self   = shift;

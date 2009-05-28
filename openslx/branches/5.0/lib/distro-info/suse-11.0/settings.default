@@ -1,25 +1,198 @@
 bootstrap-packages = <<END
+    i586/aaa_base-11.1-10007.5.i586.rpm
+    i586/audit-libs-1.7.7-5.1.i586.rpm
+    i586/bash-3.2-141.10.i586.rpm
+    i586/boost-license-1.36.0-9.5.i586.rpm
+    i586/bzip2-1.0.5-34.5.i586.rpm
+    i586/ConsoleKit-0.2.10-60.16.i586.rpm
+    i586/coreutils-6.12-32.10.i586.rpm
+    i586/coreutils-lang-6.12-32.10.i586.rpm
+    i586/cpio-2.9-75.35.i586.rpm
+    i586/cpio-lang-2.9-75.35.i586.rpm
+    i586/cracklib-2.8.12-55.1.i586.rpm
+    i586/cracklib-dict-small-2.8.12-55.1.i586.rpm
+    i586/cron-4.1-194.28.i586.rpm
+    i586/cyrus-sasl-2.1.22-182.1.i586.rpm
+    i586/dbus-1-1.2.4-5.1.i586.rpm
+    i586/dbus-1-glib-0.76-32.1.i586.rpm
+    i586/device-mapper-1.02.27-7.1.i586.rpm
+    i586/diffutils-2.8.7-143.9.i586.rpm
+    i586/dhcpcd-3.2.3-44.1.i586.rpm
+    i586/dirmngr-1.0.2-1.39.i586.rpm
+    i586/e2fsprogs-1.41.1-11.9.i586.rpm
+    i586/elfutils-0.137-3.11.i586.rpm
+    i586/file-4.24-43.1.i586.rpm
+    i586/filesystem-11.1-2.3.i586.rpm
+    i586/fillup-1.42-242.8.i586.rpm
+    i586/findutils-4.4.0-38.27.i586.rpm
+    i586/gawk-3.1.6-1.44.i586.rpm
+    i586/gdbm-1.8.3-371.8.i586.rpm
+    i586/glib2-2.18.2-5.1.i586.rpm
+    i586/glib2-lang-2.18.2-5.1.i586.rpm
+    i586/glib2-branding-upstream-2.18.2-5.1.i586.rpm
+    i586/glibc-2.9-2.8.i586.rpm
+    i586/gpg2-2.0.9-25.105.i586.rpm
+    i586/gpg2-lang-2.0.9-25.105.i586.rpm
+    i586/grep-2.5.2-90.28.i586.rpm
+    i586/gzip-1.3.12-68.36.i586.rpm
+    i586/hal-0.5.12-10.1.i586.rpm
+    i586/info-4.12-1.85.i586.rpm
+    i586/insserv-1.12.0-22.15.i586.rpm
+    i586/irqbalance-0.55-120.8.i586.rpm
+    i586/kernel-default-2.6.27.7-9.1.i586.rpm
+    i586/kernel-default-base-2.6.27.7-9.1.i586.rpm
+    i586/keyutils-1.2-107.4.i586.rpm
+    i586/keyutils-libs-1.2-107.4.i586.rpm
+    i586/krb5-1.6.3-132.1.i586.rpm
+    i586/libacl-2.2.47-27.5.i586.rpm
+    i586/libasm1-0.137-3.11.i586.rpm
+    i586/libasound2-1.0.18-8.7.i586.rpm
+    i586/libattr-2.4.39-67.5.i586.rpm
+    i586/libbz2-1-1.0.5-34.5.i586.rpm
+    i586/libblkid1-1.41.1-11.9.i586.rpm
+    i586/libblocxx6-2.1.0.342-120.1.i586.rpm
+    i586/libboost_signals1_36_0-1.36.0-9.5.i586.rpm
+    i586/libcom_err2-1.41.1-11.9.i586.rpm
+    i586/libcurl4-7.19.0-11.1.i586.rpm
+    i586/libdb-4_5-4.5.20-94.17.i586.rpm
+    i586/libdw1-0.137-3.11.i586.rpm
+    i586/libelf1-0.137-3.11.i586.rpm
+    i586/libext2fs2-1.41.1-11.9.i586.rpm
+    i586/libexpat1-2.0.1-88.10.i586.rpm
+    i586/libgcc43-4.3.3_20081022-9.5.i586.rpm
+    i586/libgcrypt11-1.4.1-4.1.i586.rpm
+    i586/libglib-2_0-0-2.18.2-5.1.i586.rpm
+    i586/libgobject-2_0-0-2.18.2-5.1.i586.rpm
+    i586/libgpg-error0-1.6-6.10.i586.rpm
+    i586/libgthread-2_0-0-2.18.2-5.1.i586.rpm
+    i586/libidn-1.10-2.14.i586.rpm
+    i586/libksba-1.0.4-1.17.i586.rpm
+    i586/libldap-2_4-2-2.4.12-5.3.i586.rpm
+    i586/libncurses5-5.6-89.10.i586.rpm
+    i586/libncurses6-5.6-89.10.i586.rpm
+    i586/libnscd-2.0.2-72.47.i586.rpm
+    i586/libopenssl0_9_8-0.9.8h-28.4.i586.rpm
+    i586/libpt2-2.4.2-2.19.i586.rpm
+    i586/libreadline5-5.2-141.10.i586.rpm
+    i586/libreiserfs-0.3.0.5-107.47.i586.rpm
+    i586/libselinux1-2.0.71-3.38.i586.rpm
+    i586/libsepol1-2.0.32-5.38.i586.rpm
+    i586/libsmbios2-2.0.2-10.9.i586.rpm
+    i586/libstdc++43-4.3.3_20081022-9.5.i586.rpm
+    i586/libusb-0_1-4-0.1.12-136.10.i586.rpm
+    i586/libusb-1_0-0-0.9.3-4.20.i586.rpm
+    i586/libuuid1-1.41.1-11.9.i586.rpm
+    i586/libvolume_id-126-17.25.i586.rpm
+    i586/libvolume_id1-128-9.3.i586.rpm
+    i586/libxcrypt-3.0.1-25.20.i586.rpm
+    i586/libxml2-2.7.1-9.1.i586.rpm
+    i586/libzio-0.9-4.19.i586.rpm
+    i586/limal-1.5.1-1.12.i586.rpm
+    i586/limal-perl-1.5.1-1.12.i586.rpm
+    i586/login-3.37-1.5.i586.rpm
+    i586/logrotate-3.7.7-9.11.i586.rpm
+    i586/m4-1.4.12-1.13.i586.rpm
+    i586/metamail-2.7.19-1244.29.i586.rpm
+    i586/mingetty-1.0.7s-70.41.i586.rpm
+    i586/mkinitrd-2.4-34.1.i586.rpm
+    i586/module-init-tools-3.4-56.5.i586.rpm
+    i586/ncurses-utils-5.6-89.10.i586.rpm
+    i586/net-tools-1.60-725.5.i586.rpm
+    i586/openldap2-client-2.4.12-5.3.i586.rpm
+    i586/openslp-1.2.0-168.6.i586.rpm
+    i586/openssl-0.9.8h-28.4.i586.rpm
+    i586/openSUSE-release-11.1-1.19.i586.rpm
+    i586/openSUSE-release-ftp-11.1-1.19.i586.rpm
+    i586/pam-1.0.2-13.3.i586.rpm
+    i586/pam-config-0.68-1.3.i586.rpm
+    i586/pam-modules-11.1-5.1.i586.rpm
+    i586/parted-1.8.8-91.5.i586.rpm
+    i586/pciutils-3.0.1-1.26.i586.rpm
+    i586/pcre-7.8-1.26.i586.rpm
+    i586/perl-5.10.0-62.10.i586.rpm
+    i586/perl-base-5.10.0-62.10.i586.rpm
+    i586/perl-Bootloader-0.4.81-1.1.i586.rpm
+    i586/perl-gettext-1.05-91.163.i586.rpm
+    i586/permissions-2008.11.25-1.5.i586.rpm
+    i586/pinentry-0.7.5-61.14.i586.rpm
+    i586/pm-utils-0.99.4.20071229-10.3.i586.rpm
+    i586/pmtools-20071116-44.3.i586.rpm
+    i586/PolicyKit-0.9-13.9.i586.rpm
+    i586/popt-1.7-20.1.i586.rpm
+    i586/procmail-3.22-238.15.i586.rpm
+    i586/procps-3.2.7-147.11.i586.rpm
+    i586/psmisc-22.6-61.14.i586.rpm
+    i586/pth-2.0.7-102.29.i586.rpm
+    i586/pwdutils-3.2.2-2.8.i586.rpm
+    i586/reiserfs-3.6.19-116.62.i586.rpm
+    i586/rmail-8.14.3-50.9.i586.rpm
+    i586/rpm-4.4.2.3-20.1.i586.rpm
+    i586/satsolver-tools-0.13.0-3.3.i586.rpm
+    i586/SDL-1.2.13-104.1.i586.rpm
+    i586/sed-4.1.5-85.60.i586.rpm
+    i586/sendmail-8.14.3-50.9.i586.rpm
+    i586/setserial-2.17-716.20.i586.rpm
+    i586/sharutils-4.6.3-3.100.i586.rpm
+    i586/sysvinit-2.86-186.7.i586.rpm
+    i586/tcpd-7.6-855.11.i586.rpm
+    i586/tcsh-6.15.00-93.3.i586.rpm
+    i586/terminfo-base-5.6-89.10.i586.rpm
+    i586/udev-128-9.3.i586.rpm
+    i586/util-linux-2.14.1-10.1.i586.rpm
+    i586/util-linux-lang-2.14.1-10.1.i586.rpm
+    i586/uucp-1.07-50.7.i586.rpm
+    i586/uuid-runtime-1.41.1-11.9.i586.rpm
+    i586/zlib-1.2.3-104.137.i586.rpm
+    noarch/netcfg-11.1-1.14.noarch.rpm
+    noarch/pciutils-ids-2008.11.26-2.4.noarch.rpm
+    noarch/suse-build-key-1.0-907.32.noarch.rpm
 END
+<metapackager zypper>
+    packages = <<END
+        i586/libzypp-5.24.5-1.1.i586.rpm
+        i586/zypper-1.0.2-1.5.i586.rpm
+    END
+</metapackager>
 <metapackager smart>
     packages = <<END
+        i586/python-2.6.0-2.16.i586.rpm
+        i586/python-xml-2.6.0-2.12.i586.rpm
+        i586/rpm-python-4.4.2.3-20.1.i586.rpm
     END
 </metapackager>
 <metapackager yum>
     packages = <<END
+        i586/glib2-2.18.2-4.3.i586.rpm
+        i586/libxml2-2.7.1-8.3.i586.rpm
+        i586/libxml2-python-2.7.1-9.1.i586.rpm
+        i586/python-2.6.0-2.16.i586.rpm
+        i586/python-urlgrabber-3.1.0-178.8.i586.rpm
+        i586/python-xml-2.6.0-2.12.i586.rpm
+        i586/rpm-python-4.4.2.3-20.1.i586.rpm
+        i586/sqlite3-3.6.4-1.8.i586.rpm
+        i586/yum-metadata-parser-1.1.2-107.22.i586.rpm
     END
 </metapackager>
+
 package-subdir = suse
 prereq-packages = <<END
+    i586/bzip2-1.0.5-34.5.i586.rpm
+    i586/glibc-2.9-2.8.i586.rpm
+    i586/libselinux1-2.0.71-3.38.i586.rpm
+    i586/libbz2-1-1.0.5-34.5.i586.rpm 
+    i586/popt-1.7-20.1.i586.rpm
+    i586/rpm-4.4.2.3-20.1.i586.rpm
+    i586/zlib-1.2.3-104.137.i586.rpm
 END
 <repository base>
     name = openSUSE 11.0
     repo-subdir = suse
-    file-for-speedtest = suse/setup/descr/packages.en
+    file-for-speedtest = suse/setup/descr/packages.en.gz
 </repository>
 <repository base_non-oss>
     name = openSUSE 11.0 non-OSS
     repo-subdir = suse
-    file-for-speedtest = suse/setup/descr/packages.en
+    file-for-speedtest = suse/setup/descr/packages.en.gz
 </repository>
 <repository    base_update>
     name = openSUSE 11.0 updates

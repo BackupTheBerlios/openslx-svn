@@ -58,7 +58,7 @@ sub setupPackageSource
         $repoSubdir = "/$repoInfo->{'repo-subdir'}";
     }
     my $baseURL = shift @$repoURLs;
-    if (slxsystem("zypper addrepo -n $baseURL$repoSubdir $repoName")) {
+    if (slxsystem("zypper addrepo $baseURL$repoSubdir $repoName")) {
         die _tr("unable to add repo '%s' (%s)\n", $repoName, $!);
     }
 
