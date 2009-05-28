@@ -90,7 +90,7 @@ case ${TARGET} in
          --kernelsourcedir /usr/src/linux-headers-${KVER}/ \
          --no-prepare-kernel \
          --no-clean-kernel \
-         rebuild \
+         build \
     > /tmp/dkms.log 2>&1
     if [ $? -eq 0 ]; then
       echo "ok"
@@ -186,7 +186,7 @@ case ${TARGET} in
          --kernelsourcedir /usr/src/linux-headers-${KVER}/ \
          --no-prepare-kernel \
          --no-clean-kernel \
-         rebuild \
+         build \
     > /tmp/dkms.log 2>&1
     if [ $? -eq 0 ]; then
       echo "ok"
