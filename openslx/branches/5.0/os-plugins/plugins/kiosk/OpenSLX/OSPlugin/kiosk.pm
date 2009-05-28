@@ -49,6 +49,7 @@ sub getInfo
 }
 
 sub getAttrInfo
+{
     my $self = shift;
 
     return {
