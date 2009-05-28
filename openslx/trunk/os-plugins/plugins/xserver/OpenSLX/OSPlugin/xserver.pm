@@ -182,6 +182,7 @@ sub preInstallationPhase()
                                         
 
     my $pkgpath = $self->{attrs}->{'xserver::pkgpath'};
+    $pkgpath ||= "";
     my $installAti = $self->{attrs}->{'xserver::ati'};
     my $installNvidia = $self->{attrs}->{'xserver::nvidia'};
 
