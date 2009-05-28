@@ -85,6 +85,7 @@ sub writeBootloaderMenuFor
         my $append       = $info->{attrs}->{kernel_params};
         my $pxePrefix    = '';
         my $tftpPrefix   = '';
+        $info->{'pxe_prefix_ip'} ||= '';
         
         # pxe_prefix_ip set and looks like a ip
         if ($info->{'pxe_prefix_ip'} =~ m/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/) {
