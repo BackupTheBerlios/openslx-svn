@@ -68,8 +68,8 @@ nwif="eth0"
 [ ! -d /sys/class ] && mount -n -t sysfs sysfs /sys
 
 # load network adaptor modules
-for mod in ${NWMODULES}; do
-  modprobe ${MODPRV} $mod || echo "module $mod did not load for some reason"
+for mod in ${ramfs_nicmods}; do
+  modprobe $mod || echo "module $mod did not load for some reason"
   usleep 10000 
 done
 
@@ -129,8 +129,7 @@ ip route add default via $router
 # at this point a little selection script could be downloaded, which lets the
 # user choose what kind of SLX client he wants to get
 echo "Fetching preboot interactive part and configuration from the net ..."
-wget -q -c -O /tmp/preboot.env \
-  ftp://openslx:OpenS1X@archive.ruf.uni-freiburg.de/${prebootid}.env
+wget -q -c -O $boot_uri/${prebootid}.env /tmp/
 mkdir /preboot
 tar -xzf /tmp/${prebootid}.env -C /preboot
 # start a debug shell if needed, else set quiet kernel parameter
