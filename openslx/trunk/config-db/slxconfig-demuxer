@@ -317,7 +317,11 @@ sub bootEnvironmentForType
 {
     my $bootType = shift || 'pxe';
     
-    $bootType =~ tr{[a-z]\-}{[A-Z]_};
+    my %bootTypeMap = (
+        'pxe'           => 'PXE',
+        'preboot-cd'    => 'PrebootCD',
+    );
+    $bootType = $bootTypeMap{lc($bootType)};
 
     if (!$bootEnvMap{$bootType}) {
         my $bootEnv = instantiateClass("OpenSLX::BootEnvironment::$bootType");

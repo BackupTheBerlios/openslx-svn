@@ -8,10 +8,10 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# BootEnvironment::PREBOOT_CD.pm
-#    - provides CD-specific implementation of the BootEnvironment API.
+# BootEnvironment::Preboot.pm
+#    - provides general preboot implementation of the BootEnvironment API.
 # -----------------------------------------------------------------------------
-package OpenSLX::BootEnvironment::PREBOOT_CD;
+package OpenSLX::BootEnvironment::Preboot;
 
 use strict;
 use warnings;
@@ -23,35 +23,7 @@ use File::Basename;
 use File::Path;
 
 use OpenSLX::Basics;
-use OpenSLX::MakeInitRamFS::Engine::PrebootCD;
 use OpenSLX::Utils;
-
-sub initialize
-{
-    my $self   = shift;
-    my $params = shift;
-    
-    return if !$self->SUPER::initialize($params);
-
-    $self->{'original-path'} = "$openslxConfig{'public-path'}/preboot-cd";
-    $self->{'target-path'}   = "$openslxConfig{'public-path'}/preboot-cd.new";
-
-    if (!$self->{'dry-run'}) {
-        mkpath([$self->{'original-path'}]);
-        rmtree($self->{'target-path'});
-        mkpath("$self->{'target-path'}/client-config");
-    }
-
-    return 1;
-}
-
-sub finalize
-{
-    my $self   = shift;
-    my $delete = shift;
-
-    return $self->SUPER::finalize($delete);
-}
 
 sub writeBootloaderMenuFor
 {
@@ -162,71 +134,6 @@ sub _pickSystemWithNewestKernel
     return $systemWithNewestKernel;
 }
 
-sub _createImage
-{
-    my $self   = shift;
-    my $client = shift;
-    my $info   = shift;
-    
-    vlog(
-        0, 
-        _tr(
-            "\ncreating CD-image for client %s (based on %s) ...", 
-            $client->{name}, $info->{name}
-        )
-    );
-
-    my $imageDir = "$openslxConfig{'public-path'}/images/$client->{name}";
-    mkpath($imageDir)   unless $self->{'dry-run'};
-
-    # copy static data and init script
-    my $dataDir = "$openslxConfig{'base-path'}/share/boot-env/preboot-cd";
-    slxsystem(qq{rsync -rlpt $dataDir/iso "$imageDir/"})
-        unless $self->{'dry-run'};
-
-    # copy kernel (take the one from the given system info)
-    my $kernelFile = $info->{'kernel-file'};
-    my $kernelName = basename($kernelFile);
-    slxsystem(qq{cp -p "$kernelFile" "$imageDir/iso/isolinux/vmlinuz"})
-        unless $self->{'dry-run'};
-
-    # create initramfs
-    my $initramfsName = qq{"$imageDir/iso/isolinux/initramfs"};
-    $self->_makePrebootInitRamFS($info, $initramfsName);
-
-    # write trivial isolinux config
-    my $isolinuxConfig = unshiftHereDoc(<<"    End-of-Here");
-        DEFAULT OpenSLX
-        LABEL OpenSLX
-        SAY Now loading OpenSLX preboot environment ...
-        KERNEL vmlinuz
-        APPEND initrd=initramfs
-    End-of-Here
-    spitFile("$imageDir/iso/isolinux/isolinux.cfg", $isolinuxConfig);
-
-    my $mkisoCmd = unshiftHereDoc(<<"    End-of-Here");
-        mkisofs 
-            -o "$imageDir/../$client->{name}.iso"
-            -b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 
-            -r -J -l -boot-info-table -joliet-long
-            -publisher "OpenSLX Project - http://www.openslx.org" 
-            -p "OpenSLX Project - openslx-devel\@openslx.org" 
-            -V "OpenSLX BootCD"
-            -volset "OpenSLX Project - PreBoot CD for non PXE/TFTP start of a Linux Stateless Client"
-            -c isolinux/boot.cat "$imageDir/iso"
-    End-of-Here
-    $mkisoCmd =~ s{\n\s*}{ }gms;
-    my $logFile = "$imageDir/../$client->{name}.iso.log";
-    if (slxsystem(qq{$mkisoCmd 2>"$logFile"})) {
-        my $log = slurpFile($logFile);
-        die _tr("unable to create ISO-image - log follows:\n%s", $log);
-    }
-
-#    rmtree($imageDir);
-
-    return 1;
-}
-
 sub _makePrebootInitRamFS
 {
     my $self       = shift;
@@ -262,8 +169,7 @@ sub _makePrebootInitRamFS
         $params->{'debug-level'} = $debugLevel;
     }
 
-    my $makeInitRamFSEngine 
-        = OpenSLX::MakeInitRamFS::Engine::PrebootCD->new($params);
+    my $makeInitRamFSEngine = $self->{'initramfs-factory'}->($params);
     $makeInitRamFSEngine->execute($self->{'dry-run'});
 
     # copy back kernel-params, as they might have been changed (by plugins)
