@@ -83,8 +83,8 @@ $(USR_BIN_PATH)/*" \
 release-tarball:
 	@export OPENSLX_SVN_SNAPSHOT=0; \
 	make tarball
-	
-install: check-upgrade
+
+dep-check:
 	@if test "${TRACE_INSTALLATION}" = "1"; then set -x; fi; \
 	echo "Checking installation requirements..."; \
 	echo $$(date) >${SLX_INSTALL_LOG}; \
@@ -132,7 +132,11 @@ supported."; \
 	if ! which rsync >/dev/null 2>&1; then \
 		echo "  rsync is required, please install it."; \
 		exit 1; \
-	fi; \
+	fi; 
+
+
+plain-install:
+	@if test "${TRACE_INSTALLATION}" = "1"; then set -x; fi; \
 	echo "Installing OpenSLX project files"; \
 	mkdir -p $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/themes \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib \
@@ -197,8 +201,11 @@ supported."; \
     $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/; \
   cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
   tar --exclude=.svn -cp -C initramfs tpm | \
-    tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
+    tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share;
 
+
+
+postinstall:
 	@   # create default config folder hierarchy:
 	@perl -Ilib -e 'use OpenSLX::ConfigFolder; createConfigFolderForDefaultSystem();'
 
@@ -239,6 +246,8 @@ supported."; \
 	@DEFAULT_DB_TYPE=$$(cat DEFAULT-DB-TYPE); \
 	rm DEFAULT-DB-TYPE; \
 	echo -n '  '; slxsettings set db-type="$${DEFAULT_DB_TYPE}";
+
+install: check-upgrade dep-check plain-install postinstall
 
 vmware_install:
 	@# we should read the config file here or better have a separate
