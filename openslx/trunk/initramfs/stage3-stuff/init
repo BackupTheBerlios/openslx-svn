@@ -871,7 +871,7 @@ fi
 runinithook '70-before-plugins'
 
 # ddcinfo temporary overwrite (with kernel cmdline ddcinfo=1)
-if [ "${ddcinfo}" = "1" && -f /initramfs/plugin-conf/xserver.conf ]; then
+if [ "${ddcinfo}" = "1" -a -f /initramfs/plugin-conf/xserver.conf ]; then
   echo 'xserver_ddcinfo="1"' >> /initramfs/plugin-conf/xserver.conf
 fi
 
