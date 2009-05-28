@@ -84,29 +84,17 @@ void runImage(fltk::Widget*, void* p)
  **/
 string runImage(DataEntry& dat, string confxml)
 {
-  //cout << dat.imgtype << endl << VMWARE << endl;
-  if (dat.imgtype == VMWARE) {
-    //cout << confxml << endl;
-    char* arg[] = { (char *) "/var/X11R6/bin/run-vmware.sh",
-            (char*)confxml.c_str(),
-            NULL };
-    
-    //cout << arg << endl; //"run-vmware.sh imagename os (Window-Title) network"
-    execvp("/var/X11R6/bin/run-vmware.sh",  arg);
-  }
-  if (dat.imgtype == VBOX) {
-    char* arg[] = { (char *) "/var/X11R6/bin/run-virtualbox.sh",
-            (char*)confxml.c_str(),
-            NULL };
-    
-    //cout << arg << endl; //"run-vmware.sh imagename os (Window-Title) network"
-    execvp("/var/X11R6/bin/run-virtualbox.sh",  arg);
-
-  }
   if(! dat.command.empty() ) {
     char* arg[] = { (char*) dat.command.c_str(), '\0' };
     execvp((char*) dat.command.c_str(), arg);
   }
+  char* arg[] = { (char *) "/var/X11R6/bin/run-virt.sh",
+            (char*)confxml.c_str(),
+            NULL };
+    
+  execvp("/var/X11R6/bin/run-virt.sh",  arg);
+
+  // not reachable - but for compiling issues
   return string();
 }
 

@@ -25,7 +25,7 @@ debug: ${OBJS}
 	${CC} ${LDFLAGS} -o vmchooserdbg $^ ${LIBS}
 
 ${OBJS}: %.o: %.cxx %.dep
-	${CC} ${DEBUG_CCFLAGS} -o $@ -c $< 
+	${CC} ${CCFLAGS} -o $@ -c $< 
 
 ${DEPS}: %.dep: %.cxx Makefile 
 	${CC} ${CCFLAGS} -MM $< > $@ 
