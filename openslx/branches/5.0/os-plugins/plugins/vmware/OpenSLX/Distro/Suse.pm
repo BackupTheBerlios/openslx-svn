@@ -66,14 +66,14 @@ sub fillRunlevelScript
         End-of-Here
     } elsif ($kind eq 'vmpl1.0') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-                  vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
+                  vmware_kind_path=/opt/openslx/plugin-repo/vmware/${kind}/
                   module_src_path=\${vmware_kind_path}/vmroot/modules
                   insmod \${module_src_path}/vmmon.ko
                   insmod \${module_src_path}/vmnet.ko
         End-of-Here
     } elsif ($kind eq "vmpl2.0") {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-                  vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
+                  vmware_kind_path=/opt/openslx/plugin-repo/vmware/${kind}/
                   module_src_path=\${vmware_kind_path}/vmroot/modules
                   insmod \${module_src_path}/vmmon.ko
                   insmod \${module_src_path}/vmnet.ko
@@ -81,7 +81,7 @@ sub fillRunlevelScript
         End-of-Here
     } elsif ($kind eq 'vmpl2.5') {
         $script .= unshiftHereDoc(<<"        End-of-Here");
-                  vmware_kind_path=/opt/openslx/plugin-repo/vmware/\${vmware_kind}/
+                  vmware_kind_path=/opt/openslx/plugin-repo/vmware/${kind}/
                   module_src_path=\${vmware_kind_path}/vmroot/modules
                   insmod \${module_src_path}/vmmon.ko
                   insmod \${module_src_path}/vmnet.ko
