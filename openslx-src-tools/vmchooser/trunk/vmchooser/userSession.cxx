@@ -77,12 +77,9 @@ char* readSession() {
 
     string sessname;
     getline(fin,sessname);
-    char* blub = (char*) malloc(sessname.size()+1);
-    strncpy(blub,sessname.c_str(),sessname.size()+1);
+    char* blub = strdup(sessname.c_str());
 
     if(!sessname.empty()) {
-        // blub has to be freed ;-) 
-        // but this is not very important here - or is it?
         return blub;
     }
     else {
