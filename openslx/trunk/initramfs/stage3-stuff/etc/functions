@@ -198,7 +198,7 @@ local mntpnt=$2
 local fs
 local path
 [ -f /lib/ld-linux.so.2 ] || ln -s /mnt/lib/ld-linux.so.2 /lib/ld-linux.so.2
-for fs in xfs ext2 reiserfs ; do
+for fs in xfs reiserfs ext2 ; do
   if strinfile "$fs" /proc/filesystems || modprobe ${MODPRV} $fs ; then
     unset $found
     for path in /sbin /bin /usr/sbin /usr/bin ; do

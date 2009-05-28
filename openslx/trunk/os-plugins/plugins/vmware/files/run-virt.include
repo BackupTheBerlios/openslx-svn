@@ -27,6 +27,9 @@ conffile="${confdir}/run-vmware.conf"
 # users vmware config folder
 vmhome="${HOME}/.vmware"
 
+# percentage of memory to use for vmwares in standard case
+permem=60
+
 # serial port defined (e.g. "ttyS0" or "autodetect")
 serial=$(grep -i "<serial port=\"" ${xml} | awk -F "\"" '{ print $2 }')
 case "$serial" in
@@ -56,6 +59,7 @@ elif grep -qe "ramfs /tmp " /proc/mounts ; then
   permem=30
 fi
 mem=$(expr ${totalmem} / 100 \* ${permem} / 4 \* 4)
+echo "BLa $mem, ${totalmem}, ${permem}"
 # check memory range
 memtest=${totalmem}-128
 if [ "${mem}" -lt "128" ] || [ "${mem}" -gt "${totalmem}" ]; then
@@ -81,7 +85,7 @@ scsi="FALSE"
 hddrv="ide"
 
 # get version info
-. /etc/vmware/config
+. /etc/vmware/slxvmconfig
 
 # VMplayer buildversion
 vmbuild=$buildversion

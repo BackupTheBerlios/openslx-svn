@@ -51,6 +51,23 @@ displayname=${short_description}
 virt_mach=$(grep "virtualmachine param=\"" ${xml} | \
   sed -e "s/&.*;/; /g" | awk -F "\"" '{print $2}')
 
+echo "x${virt_mach}x"
+
+# make a guess from the filename extension if ${virt_mach}
+if [ -z ${virt_mach} ] ; then
+  case "${imagename#*.}" in
+    vmdk|VMDK)
+      virt_mach="vmware"
+    ;;
+    img|IMG|qcow*|QCOW*)
+      virt_mach="qemukvm"
+    ;;
+    vbox|VBOX)
+      virt_mach="qemukvm"
+    ;;
+  esac
+fi
+
 # definition of the client system
 vmostype=$(grep -i "<os param=\"" ${xml} | awk -F "\"" '{ print $2 }')
 
@@ -75,6 +92,7 @@ totalmem=$(expr $(grep -i "memtotal" /proc/meminfo | awk '{print $2}') / 1024)
 mac=$(/sbin/ifconfig eth0 | grep eth0 | sed -e "s/ //g" \
   | awk -F ":" '{print $(NF-1)":"$NF}')
 
+echo "$totalmem, $mac"
 
 # virtual fd/cd/dvd and drive devices, floppy b: for configuration
 #floppya is always false, if we have a floppy device or not isn't
@@ -153,6 +171,8 @@ cp ${xml} /var/lib/virt/vmchooser/fd-loop/config.xml
 
 # check if virtual machine container file exists
 filecheck
+
+echo ${virt_mach}
 
 # get all virtual machine specific stuff from the respective include file
 if [ -e /etc/opt/openslx/run-${virt_mach}.include ] ; then
