@@ -286,15 +286,14 @@ sub copyExternalSystemConfig
     if (-d $defaultConfigPath) {
         slxsystem("cp -a $defaultConfigPath/* $targetPath");
     }
-    # ... now pour system-specific configuration on top (if any):
+    # ... now pour system-specific configuration on top (if any) ...
     my $systemSpecConfigPath = "$clientConfigPath/$systemName/default";
     vlog(2, "checking $systemSpecConfigPath for system config...");
     if (folderContainsFiles($systemSpecConfigPath)) {
         slxsystem("cp -a $systemSpecConfigPath/* $targetPath");
     }
     if (defined $clientName) {
-        # client has been given, so we finally pour client-specific
-        # configuration on top (if any):
+        # ... and finally pour client-specific configuration on top (if any):
         my $clientSpecConfigPath = "$clientConfigPath/$systemName/$clientName";
         vlog(2, "checking $clientSpecConfigPath for client config...");
         if (folderContainsFiles($clientSpecConfigPath)) {
@@ -411,11 +410,12 @@ sub writeClientConfigurationsForSystem
         my $clientConfigPath
             = "$clientConfigPath/$externalSystemID/$externalClientName";
 
-        # merge configurations of client, it's groups, default client and
-        # system and write the resulting attributes to a configuration file:
+        # merge configurations of groups, default client and system into the
+        # current client (overwriting only values the client does not specify)
         $openslxDB->mergeDefaultAndGroupAttributesIntoClient($client);
         mergeAttributes($client, $info);
 
+        # compute a digest value of the merged attributes ...
         my $clientAttrDigest = digestAttributes($client);
         vlog(
             2,
@@ -424,7 +424,7 @@ sub writeClientConfigurationsForSystem
                 $clientAttrDigest
             )
         );
-        # export client-specific config only if attributes are different
+        # ... and export client-specific config only if attributes are different
         # from system and/or a client-specific config-folder exists:
         if ($clientAttrDigest ne $info->{'attr-digest'}
             || -d $clientConfigPath)
@@ -444,6 +444,9 @@ sub writeClientConfigurationsForSystem
                 $externalSystemID, $buildPath, $externalClientName
             );
 
+            # add plugin configuration
+            writePluginConfigurationsForSystem($info, $buildPath);
+            
             # check attributes against illegal values and write them into
             # a file if they're ok:
             my $attrProblems = OpenSLX::AttributeRoster->findProblematicValues(
@@ -614,11 +617,10 @@ sub writeSystemConfiguration
         warn $complaint;
     }
 
-    my $attrFile = "$buildPath/initramfs/machine-setup";
-
     writePluginConfigurationsForSystem($info, $buildPath);
 
     # create all required (pre-)boot-environments (PXE, CD, ...)
+    my $attrFile  = "$buildPath/initramfs/machine-setup";
     my @clientIDs = $openslxDB->aggregatedClientIDsOfSystem($info);
     my @clients   = $openslxDB->fetchClientByID(\@clientIDs);
     createBootEnvironmentsForSystem($info, $buildPath, $attrFile, \@clients);
