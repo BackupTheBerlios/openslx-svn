@@ -35,12 +35,20 @@ xml=$1
 # File name of the image
 imagename=$(grep -io "<image_name param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
 
-# Path to the image (readlink produces the absolute path if called relatively)
-# imgpath=$(grep -io "<path_to param=.*\"" ${xml} | awk -F "\"" '{ print $2 }')
-[ -z $imgpath ] && { imgpath=$(readlink -f $xml); imgpath=${imgpath%/*.xml}; }
+case ${xml} in 
+  /tmp/*)
+    # we do not need folder name as it is already included by vmchooser
+    diskfile=$imagename
+  ;;
+  *)
+    # Path to the image (readlink produces the absolute path if called relatively)
+    [ -z $imgpath ] && \
+    { imgpath=$(readlink -f $xml); imgpath=${imgpath%/*.xml}; }
+    # Diskfile is file including absolute path to it 
+    diskfile=$imgpath/$imagename
+  ;;
+esac
 
-# Diskfile is file including absolute path to it 
-diskfile=$imgpath/$imagename
 [ -e $diskfile ] || { echo -e "\n\tImage file $diskfile not found!"; exit 1; }
 
 # Short description of the image (as present in the vmchooser menu line)
