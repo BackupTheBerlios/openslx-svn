@@ -3,10 +3,17 @@
 cd /opt/openslx/plugin-repo/xserver
 
 # Ubuntu gfx-install.sh skript
-if [ "1" -eq "$(lsb_release -i | grep 'Ubuntu' | wc -l)" ]; then
+DISTRO=$(lsb_release -i)
+RELEASE=$(lsb_release -r)
+
+if [ "1" -eq "$(echo ${DISTRO} | grep 'Ubuntu' | wc -l)" ]; then
   # we have Ubuntu - run ubuntu-gfx-install
   echo "* Using Ubuntu packages to install modules and libs"
-  ./ubuntu-gfx-install.sh ati
+  if [ "8.10" -eq "$(echo ${DISTRO} | awk '{print $2}' )" ]; then
+    ./ubuntu-8.10-gfx-install.sh ati
+  else
+    ./ubuntu-gfx-install.sh ati
+  fi
   exit
 fi
 # End ubuntu gfx-install.sh
