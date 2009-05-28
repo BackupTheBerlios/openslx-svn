@@ -1,5 +1,5 @@
 # Copyright (c) 2003 - 2006 - RZ Uni Freiburg
-# Copyright (c) 2006 - 2008 - OpenSLX GmbH
+# Copyright (c) 2006 - 2009 - OpenSLX GmbH
 #
 # This program/file is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -10,7 +10,7 @@
 # General information about OpenSLX can be found at http://openslx.org
 #
 # Messages file for all error and info messages generated during client
-# bootup (within initialramfs) for OpenSLX linux diskless clients version 4
+# bootup (within initialramfs) for OpenSLX linux diskless clients version 5
 # this file could be used for localization of error messages 
 
 # messages from (slx) init / Fehlermeldungen des SLX init
@@ -65,24 +65,18 @@ der eingehaengten Dateisysteme pruefen und wenn /mnt\n    nicht leer ist, \
 'ls /mnt/lib/modules' ausfuehren."
 init_loadunions="  Stapeln mehrerer Verzeichnisse nicht moeglich, da kein \
 UnionFS/AUFS\n  Modul geladen ist."
-init_loadaufs="  Laden von AUFS schlug fehl - entweder das Modul ist \
+init_loadaufs="  Laden von AUFS/UnionFS schlug fehl - entweder das Modul ist \
 nicht vorhanden, oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese \
-Meldung nicht sehen\n  wollen, entfernen Sie das Token 'aufs' von den Kernel \
-Start Optionen."
-init_noaufs_butufs="  AUFS wurde als Unification FS angegeben, ist jedoch nicht \
-vorhanden. UnionFS\n  steht aber scheinbar zu Verfuegung. Wenn Sie dieses nutzen \
-moechten fuegen\n  Sie bitte 'unionfs' zu den Kernel Start Optionen hinzu."
-init_noufs_butaufs="  UnionFS wurde als Unification FS angegeben, ist jedoch \
-nicht vorhanden. AUFS\n  steht aber scheinbar zu Verfuegung. Wenn Sie dieses nutzen \
-moechten fuegen Sie\n  bitte 'aufs' zu den Kernel Start Optionen hinzu."
+Meldung nicht sehen\n  wollen, fügen Sie das Token 'noaufs'/'nounionfs' den \
+Kernel Start\n  Optionen hinzu oder loeschen Sie die Module."
 init_loadcow="  Laden von Copy On Write (COW - Spezielles Block Geraet) Modul \
 schlug fehl -\n  entweder das Modul nicht praesent oder es passt nicht zum \
 laufenden\n Kernel. Wenn Sie diese Meldung nicht sehen wollen, entfernen sie \
 das Token 'cowloop' aus den Kernel Start Optionen."
 init_loadufs="  Laden von UnionFS schlug fehl - entweder das Modul ist \
-nicht vorhanden, oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese Meldung \
-nicht sehen wollen,\n  entfernen Sie das Token 'unionfs' von den Kernel Start \
-Optionen."
+nicht vorhanden, oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese \
+Meldung nicht mehr sehen\n  wollen, entfernen Sie das Token 'unionfs' von den \
+Kernel Start Optionen."
 init_cownonbd="  Laden des COW-Moduls ist sinnlos, wenn kein Netzwerk Block \
 Geraet benutzt wird oder\n  UnionFS als Lese- Schreib-Schicht spezifiziert \
 wurde. Entfernen Sie das UnionFS Token aus\n  den Kernel-Start-Optionen wenn \
