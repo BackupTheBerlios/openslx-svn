@@ -79,7 +79,7 @@ case ${TARGET} in
          --kernelsourcedir /usr/src/linux-headers-${KVER}/ \
          --no-prepare-kernel \
          --no-clean-kernel \
-         build \
+         rebuild \
     > /tmp/dkms.log 2>&1
     if [ $? -eq 0 ]; then
       echo "ok"
@@ -92,7 +92,8 @@ case ${TARGET} in
       exit 1
     fi
 
-    FGLRX_MODULE_PATH=$(find ${FGLRX_DKMS_DIR}/${KVER}/ -name fglrx.ko)
+    FGLRX_MODULE_PATH=$(find ${FGLRX_DKMS_DIR}/${KVER}/ -name fglrx.ko \
+            | tail -n1 )
 
     cp ${FGLRX_MODULE_PATH} ${PLUGIN_FOLDER}/ati/modules/fglrx.ko
 
@@ -174,7 +175,7 @@ case ${TARGET} in
          --kernelsourcedir /usr/src/linux-headers-${KVER}/ \
          --no-prepare-kernel \
          --no-clean-kernel \
-         build \
+         rebuild \
     > /tmp/dkms.log 2>&1
     if [ $? -eq 0 ]; then
       echo "ok"
@@ -187,7 +188,8 @@ case ${TARGET} in
       exit 1
     fi
 
-    NVIDIA_MODULE_PATH=$(find ${NVIDIA_DKMS_DIR}/${KVER}/ -name nvidia.ko)
+    NVIDIA_MODULE_PATH=$(find ${NVIDIA_DKMS_DIR}/${KVER}/ -name \
+            nvidia.ko | tail -n 1)
 
     cp ${NVIDIA_MODULE_PATH} ${PLUGIN_FOLDER}/nvidia/modules/nvidia.ko
 

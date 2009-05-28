@@ -4,7 +4,9 @@
 # Currently suse 10.2 and 11.0 is supported!
 #
 
-BUSYBOX="/mnt/opt/openslx/share/busybox/busybox"
+# not right any more - removed from script
+# is there any busybox in this environment
+#BUSYBOX="/mnt/opt/openslx//busybox/busybox"
 
 cd /opt/openslx/plugin-repo/xserver
 
@@ -51,7 +53,7 @@ if [ "$1" = "nvidia" ]; then
       ftp://download.nvidia.com/opensuse/10.2/i586/nvidia-gfxG01-kmp-default-173.14.12_2.6.18.8_0.10-0.1.i586.rpm \
       ftp://download.nvidia.com/opensuse/10.2/i586/x11-video-nvidiaG01-173.14.12-0.1.i586.rpm
 
-      ${BUSYBOX} rpm2cpio x11-video-nvidiaG01-173.14.12-0.1.i586.rpm | ${BUSYBOX} cpio -idv > /dev/null
+      rpm2cpio x11-video-nvidiaG01-173.14.12-0.1.i586.rpm | cpio -idv > /dev/null
 
       rm -rf ./usr/include
       # Todo: recheck after development progress, perhaps an nvidia x11 tool needs /usr/share/pixmaps
@@ -61,18 +63,26 @@ if [ "$1" = "nvidia" ]; then
       mv ./usr ..
 
       # TODO: matching kernel problem... our openslx system picks -bigsmp - unintentionally!
-      ${BUSYBOX} rpm2cpio nvidia-gfxG01-kmp-bigsmp-173.14.12_2.6.18.8_0.10-0.1.i586.rpm | ${BUSYBOX} cpio -idv > /dev/null
-      #${BUSYBOX} rpm2cpio nvidia-gfxG01-kmp-default-173.14.12_2.6.18.8_0.10-0.1.i586.rpm | ${BUSYBOX} cpio -idv
+      rpm2cpio nvidia-gfxG01-kmp-bigsmp-173.14.12_2.6.18.8_0.10-0.1.i586.rpm | cpio -idv > /dev/null
+      #rpm2cpio nvidia-gfxG01-kmp-default-173.14.12_2.6.18.8_0.10-0.1.i586.rpm | cpio -idv
       #TODO: take care about the kernel issue. Find won't work with two equal kernelmodules in lib/...
       find lib/ -name "*.ko" -exec mv {} ../modules \;
   fi
 
+  ############################################################
+  ##                 SUSE 10.2 Section                      ##
+  ############################################################
   if [ "11.0" = "`cat /etc/SuSE-release | tail -n1 | cut -d' ' -f3`" ]; then
     echo "  * Downloading nvidia rpm packages... this could take some time..."
     # add repository for nvidia drivers
     zypper --no-gpg-checks addrepo http://download.nvidia.com/opensuse/11.0/ NVIDIA > /dev/null 2>&1
     # get URLs by virtually installing nvidia-OpenGL driver
-    zypper --no-gpg-checks -n -vv install -D x11-video-nvidiaG01 2>&1 > logfile
+    zypper --no-gpg-checks -n -vv install -D x11-video-nvidiaG01 > logfile 2>&1 
+
+    # zypper refresh is requested if something is not found
+    if [ "1" -le "$(cat logfile | grep -o "zypper refresh"| wc -l)" ]; then 
+        zypper refresh >/dev/null 2>&1 
+    fi
 
     # take unique urls from logfile
     URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | sort -u | xargs)
@@ -82,11 +92,12 @@ if [ "$1" = "nvidia" ]; then
         wget ${RPM} > /dev/null 2>&1
       fi
       # We use rpm2cpio from suse to extract
-      rpm2cpio ${RNAME} | ${BUSYBOX} cpio -id > /dev/null 2>&1
+      rpm2cpio ${RNAME} | cpio -id > /dev/null 2>&1
     done
     mv ./usr/X11R6/lib/* ./usr/lib/
     mv ./usr ..
     find lib/ -name "*.ko" -exec mv {} ../modules \;
+
 #   echo "DEBUG xserver SUSE-GFX-INSTALL.SH NVIDIA"
 #   /bin/bash
 #   echo "END DEBUG"
@@ -118,7 +129,13 @@ if [ "$1" = "ati" ]; then
      # add repository for nvidia drivers
     zypper --no-gpg-checks addrepo http://www2.ati.com/suse/11.0/ ATI > /dev/null 2>&1 
     # get URLs by virtually installing fglrx-OpenGL driver
-    zypper --no-gpg-checks -n -vv install -D ati-fglrxG01-kmp${KSUFFIX} x11-video-fglrxG01 > logfile
+    zypper --no-gpg-checks -n -vv install -D ati-fglrxG01-kmp${KSUFFIX} \
+    x11-video-fglrxG01 > logfile 2>&1
+
+    # zypper refresh is requested if something is not found
+    if [ "1" -le "$(cat logfile | grep -o "zypper refresh" | wc -l)" ]; then
+        zypper refresh >/dev/null 2>&1
+    fi
 
     # take unique urls from logfile
     URLS=$(cat logfile |  grep -P -o "http://.*?rpm " | grep fglrx | sort -u | xargs)
@@ -128,22 +145,25 @@ if [ "$1" = "ati" ]; then
         wget ${RPM} > /dev/null 2>&1 
       fi
       # We use rpm2cpio from suse to extract -> propably new rpm version
-      rpm2cpio ${RNAME} | ${BUSYBOX} cpio -id > /dev/null
+      rpm2cpio ${RNAME} | cpio -id > /dev/null 2>&1
     done
+
     mv ./usr/X11R6/lib/* ./usr/lib/
-   # fix for fglrx_dri.so 
-    mkdir -p ./usr/X11R6/lib/modules/dri
-    ln -s ../../../../lib/dri/fglrx_dri.so \
-    ./usr/X11R6/lib/modules/dri/fglrx_dri.so
+   # fix for fglrx_dri.so  - TODO: Why is this in here?
+#    mkdir -p ./usr/X11R6/lib/modules/dri
+#    ln -s ../../../../lib/dri/fglrx_dri.so \
+#    ./usr/X11R6/lib/modules/dri/fglrx_dri.so
     mv ./usr ..
     mv ./etc ..
+
     find lib/ -name "*.ko" -exec mv {} ../modules \;
 #    echo "DEBUG xserver SUSE-GFX-INSTALL.SH ATI"
 #    /bin/bash
 #    echo "END DEBUG"
   else
-
-    ## SUSE 10.2 Section ##
+    ############################################################
+    ##                 SUSE 10.2 Section                      ##
+    ############################################################
   
     #TODO: licence information... even suse requires an accept
     BASEURL="http://www2.ati.com/suse/$(lsb_release -r|sed 's/^.*\t//')"
@@ -159,8 +179,7 @@ if [ "$1" = "ati" ]; then
       wget -c -q ${BASEURL}/${i}
     done
   
-    # TODO: move output to /dev/null when main development is over
-    ${BUSYBOX} rpm2cpio $(find . -name "x11*")| ${BUSYBOX} cpio -idv > /dev/null
+    rpm2cpio $(find . -name "x11*")| cpio -idv > /dev/null 2>&1
   
     rm -rf ./usr/include
     rm -rf ./usr/lib/pm-utils
@@ -172,13 +191,9 @@ if [ "$1" = "ati" ]; then
     mv ./usr ..
   
     # TODO: matching kernel problem... our openslx system picks -bigsmp - unintentionally!
-    if [ "10.2" = "$(lsb_release -r|sed 's/^.*\t//')" ]; then
-      ${BUSYBOX} rpm2cpio $(find . -name "ati-fglrx*bigsmp*") | ${BUSYBOX} cpio -idv > /dev/null
-    fi
-    if [ "11.0" = "$(lsb_release -r|sed 's/^.*\t//')" ]; then
-      ${BUSYBOX} rpm2cpio $(find . -name "ati-fglrx*default*") | ${BUSYBOX} cpio -idv > /dev/null
-    fi
-    #${BUSYBOX} rpm2cpio nvidia-gfxG01-kmp-default-173.14.12_2.6.18.8_0.10-0.1.i586.rpm | ${BUSYBOX} cpio -idv
+    rpm2cpio $(find . -name "ati-fglrx*bigsmp*") | cpio -idv > /dev/null
+
+    #rpm2cpio nvidia-gfxG01-kmp-default-173.14.12_2.6.18.8_0.10-0.1.i586.rpm | cpio -idv
     #TODO: take care about the kernel issue. Find won't work with two equal kernelmodules in lib/...
     find lib/ -name "*.ko" -exec mv {} ../modules \;
   fi

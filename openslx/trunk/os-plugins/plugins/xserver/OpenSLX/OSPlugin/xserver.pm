@@ -20,6 +20,8 @@ use base qw(OpenSLX::OSPlugin::Base);
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
+use File::Basename;
+
 ################################################################################
 # if you have any questions regarding the concept of OS-plugins and their
 # implementation, please drop a mail to: ot@openslx.com, or join the IRC-channel
@@ -223,24 +225,36 @@ sub installationPhase
     my $pluginFilesPath =
         "$openslxBasePath/lib/plugins/$self->{'name'}/files";
     my $installationPath = "$pluginRepoPath/";
+    my $binDrivers = 0;
+
     # TODO: handle it better. We know the distribution in stage1
     if ($attrs->{'xserver::nvidia'} == 1  || $attrs->{'xserver::ati'} == 1 ) {
         copyFile("$pluginFilesPath/ubuntu-gfx-install.sh", "$installationPath");
         copyFile("$pluginFilesPath/suse-gfx-install.sh", "$installationPath");
         copyFile("$pluginFilesPath/ubuntu-8.10-gfx-install.sh", "$installationPath");
-        copyFile("$pluginFilesPath/linkage.sh", "$installationPath");
+        #copyFile("$pluginFilesPath/linkage.sh", "$installationPath");
         # be on the safe side (BASH) - Ubuntu sets some crazy stupid 'dash' shell otherwise
-        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh clean");
+        #system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh clean");
+
+        # removeLinks is to remove Links to the files
+        # otherwise some wrong files are created
+        $self->removeLinks();
+        $binDrivers = 1;
     }
     if ($attrs->{'xserver::ati'} == 1) {
         copyFile("$pluginFilesPath/ati-install.sh", "$installationPath");
         system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/ati-install.sh");
-        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh ati");
+        #system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh ati");
     }
     if ($attrs->{'xserver::nvidia'} == 1) {
         copyFile("$pluginFilesPath/nvidia-install.sh", "$installationPath");
         system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/nvidia-install.sh");
-        system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh nvidia");
+        #system("/bin/bash /opt/openslx/plugin-repo/$self->{'name'}/linkage.sh nvidia");
+    }
+
+    if ($binDrivers == 1) {
+        $self->linkLibs($info);
+        `chmod -R 755 $installationPath`
     }
 
     # Some plugins have to copy files from their plugin folder into the
@@ -279,6 +293,125 @@ sub removalPhase
         # As this method is being executed while chrooted into the vendor-OS,
         # this path is relative to that root (i.e. directly usable).
 
+    
+    $self->removeLinks();
+
+    return;
+}
+
+
+sub linkLibs
+{
+    my $self = shift;
+    my $info = shift;
+
+    my $pluginRepoPath = $info->{'plugin-repo-path'};
+    my $divertFolder = "/var/X11R6/lib/";
+    my $attrs = $info->{'plugin-attrs'};
+
+    my @libList;
+    unless( $attrs->{'xserver::nvidia'} == 1 ||
+            $attrs->{'xserver::ati'} == 1    )
+    {
+       return;
+    }
+
+    my $command;
+    if( $attrs->{'xserver::nvidia'} == 1 ) {
+        $command = "find $pluginRepoPath\/nvidia ".
+                   "-wholename \"*/xorg/modules\" -prune ".
+                   "-a '!' -type d -o -name '*so*'";
+        @libList = `$command`;
+    }
+    if( $attrs->{'xserver::ati'} == 1 ) {
+        $command = "find $pluginRepoPath/ati -wholename ".
+                    "\"*/xorg/modules\" -prune ".
+                    "-a '!' -type d -o -name '*so*'";
+        push @libList, `$command` ;
+    }
+    
+    my $libname= '';
+    my $divname= '';
+    my $oldlib = '';
+    my $dirname = '';
+    for my $lib (@libList) {
+        chomp($lib);
+        if($lib =~ /.*(\/usr\/.*?lib\/.*?)$/) {
+            # oldlib is the MESA lib
+            $oldlib = $1;
+            $dirname = dirname($oldlib);
+            if( -e $oldlib ) {
+                $oldlib =~ /\/usr\/.*?lib\/(.*)/;
+                # libname is the Name of MESA lib
+                $libname = $1;
+
+                # we have to move the original (MESA) file
+                # and symlink to a diversion folder
+                $divname = $libname;
+
+                $divname =~ s/\.so/_MESA.so/;
+                
+                # move only if both are real files !!
+                if( -f $oldlib && ! -l $oldlib && ! -l $lib )
+                {
+                    rename($oldlib, $dirname."/".$divname);
+                    symlink($divertFolder.$libname, $oldlib);
+                    #print "DEBUG: symlink 1 $divertFolder.$libname, $oldlib\n";
+                } 
+                elsif( -l $oldlib && -l $lib ) 
+                {
+                    my $tmp1 = readlink $oldlib;
+                    my $tmp2 = readlink $lib;
+                    if( $tmp1 ne $tmp2 )
+                    { 
+                        # here the links are pointing to different files -
+                        # as in libGLcore.so.1 in nvidia drivers
+                        unlink($oldlib);
+                        symlink($divertFolder.$libname, $oldlib);
+                    }
+                }
+            }
+            else {
+                # this file does not exist
+                # check for not existing folders
+                unless( -d $dirname ) {
+                   `mkdir -p $dirname`;
+                }
+                # just link
+                symlink( $lib,  $oldlib );
+                #print "DEBUG: symlink 2 $lib, $oldlib\n";
+            }
+        }
+    }
+
+}
+
+
+sub removeLinks
+{
+    my $instFolders = "/usr/lib /usr/X11R6/lib";
+    my $divertFolder = "/var/X11R6/lib";
+    my $pluginFolder = "/opt/openslx/plugin-repo/xserver";
+
+    # get all previously installed links
+    my @linkedFiles = 
+        `find $instFolders -lname "$divertFolder*" -o -lname "$pluginFolder*" `;
+
+
+    # also remove _MESA backup files
+    my @backupFiles =
+        `find $instFolders -name "*_MESA.so*"`;
+    my $origfile = '';
+    for my $file (@backupFiles) {
+        $origfile = $file;
+        $file =~ s/_MESA//;
+        rename($origfile,$file);
+    }
+    unlink "/usr/lib/libGL.so", "/usr/lib/libGL.so.1";
+    symlink "/usr/lib/libGL.so.1.2", "/usr/lib/libGL.so.1";
+    symlink "/usr/lib/libGL.so.1.2", "/usr/lib/libGL.so";
+
+    my $number = unlink @linkedFiles;
     return;
 }
 
