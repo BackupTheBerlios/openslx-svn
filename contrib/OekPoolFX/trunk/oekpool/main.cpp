@@ -28,11 +28,12 @@ int main(int argc, char** argv) {
 //
 //    client.process_event(EvtWakeCommand() );
 
-    Ldap* obj = new Ldap((char*)"ldap://132.230.4.73",9009,
+    Ldap* obj = new Ldap((char*)"132.230.4.73",9009,
                         (char*)"lsmdummy",
                         (char*)"slxos123");
 
-    obj->search(string("ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de"),
+    obj->search(string("ou=Rechenzentrum,ou=UniFreiburg,")
+                .append("ou=RIPM,dc=uni-freiburg,dc=de"),
                 LDAP_SCOPE_SUBTREE,
                 string("(&(!(ou=Rechenzentrum))(ou=*))")
                );
