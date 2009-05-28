@@ -185,7 +185,7 @@ if [ "$1" = "nvidia" ]; then
         fi
       done
       mv ./usr/X11R6/lib/* ./usr/lib/
-      if [ ! -f ./usr/lib/libGLcore.so.1 ]; then
+      if [ $(find ./usr/ -name *.so* 2>/dev/null | wc -l ) -eq 0 ]; then
         echo "  NVIDIA files failed to install via zypper!!"
         exit
       fi
@@ -290,7 +290,7 @@ if [ "$1" = "ati" ]; then
     done
 
     mv ./usr/X11R6/lib/* ./usr/lib/ > /dev/null 2>&1
-    if [ ! -f ./usr/lib/libGL.so ]; then
+    if [ $(find ./usr/ -name *.so* 2>/dev/null | wc -l ) -eq 0 ]; then
       echo "  ATI files failed to install via zypper!!"
       exit
     fi
