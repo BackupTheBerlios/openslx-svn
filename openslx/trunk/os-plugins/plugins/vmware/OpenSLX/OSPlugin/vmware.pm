@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2008, 2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -298,15 +298,9 @@ sub installationPhase
         linkFile("/var/X11R6/bin/vmware", "/usr/bin/vmware");
         rename("/usr/bin/vmware", "/usr/bin/vmware.slx-bak");
     }
-    # this kinda sucks. what if we have local installed vmplayer but
-    # plugin installed vmware workstation? what if we have a local
-    # installed vmware workstation but run plugin installed vmplayer
-    # without workstation. Link will go to nowhere... kinda ugly that
-    # /usr/ is ro.
-    # TODO: need to find a solution (if there is one possible with ro
-    # mounted /usr ...)
-    linkFile("/var/X11R6/bin/vmware", "/usr/bin/vmware");
-            
+    # copy run-virt.include to the appropriate place for inclusion in stage4
+    copyFile("$self->{openslxBasePath}/lib/plugins/vmware/files/run-virt.include",
+        "$self->{pluginRepositoryPath}/");        
 }
 
 sub removalPhase

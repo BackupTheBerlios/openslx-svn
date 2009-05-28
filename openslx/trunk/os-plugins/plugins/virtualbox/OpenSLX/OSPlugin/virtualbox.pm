@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -117,6 +117,10 @@ sub installationPhase
             $engine->getInstallablePackagesForSelection('???')
         );
     }
+    # copy run-virt.include to the appropriate place for inclusion in stage4
+    copyFile("$self->{openslxBasePath}/lib/plugins/virtualbox/files/run-virt.include",
+        "$self->{pluginRepositoryPath}/");
+
     return;
 }
 
