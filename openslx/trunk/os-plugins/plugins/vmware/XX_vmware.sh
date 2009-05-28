@@ -207,10 +207,8 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
       >>/mnt/etc/init.d/boot.slx
 
     # disable VMware swapping 
-    echo '.encoding = "UTF-8"
-      prefvmx.useRecommendedLockedMemSize = "TRUE"
-      prefvmx.minVmMemPct = "100"' | \
-      sed -e "s/^ *//" \
+    echo -e '.encoding = "UTF-8"\nprefvmx.minVmMemPct = "100"
+prefvmx.useRecommendedLockedMemSize = "TRUE"' | sed -e "s/^ *//" \
       >/mnt/etc/vmware/config
 
     # copy version depending files - the vmchooser expects for every virtua-
@@ -226,32 +224,14 @@ $(ipcalc -m $vmip/$vmpx|sed s/.*=//) {" \
           /mnt/var/X11R6/bin/vmware
     fi
 
-
     # affects only kernel and config depending configuration of not
     # local installed versions
-    if [ "${vmware_kind}" != "local" ]; then
-      cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/config \
-        /mnt/etc/vmware
-      chmod 644 /mnt/etc/vmware/config
-    fi
-
-    # write version information for image problem (v2 images don't run
-    # on v1 players)
-    case ${vmware_kind} in
-      "vmpl1.0")
-        echo "vmplversion=1" >/mnt/etc/vmware/version
-      ;;
-      "vmpl2.0")
-        echo "vmplversion=2.0" >/mnt/etc/vmware/version
-      ;;
-      "vmpl2.5")
-        echo "vmplversion=2.5" >/mnt/etc/vmware/version
-      ;;
-      "local*")
-        . /mnt/opt/openslx/plugin-repo/vmware/local/versioninfo.txt
-        echo "vmplversion=${vmversion}" > /mnt/etc/vmware/version
-      ;;
-    esac
+    cp /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/config \
+      /mnt/etc/vmware/config
+    chmod 644 /mnt/etc/vmware/config
+    echo "# stage1 variables" >>/mnt/etc/vmware/slxvmconfig
+    cat /mnt/opt/openslx/plugin-repo/vmware/slxvmconfig \
+      >>/mnt/etc/vmware/slxvmconfig
 
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmware' os-plugin ..."
 

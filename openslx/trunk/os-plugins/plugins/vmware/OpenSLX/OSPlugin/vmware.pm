@@ -452,20 +452,23 @@ sub _writeWrapperScript
     }
 }
 
-sub _writeVmwareConfig {
+sub _writeVmwareConfigs {
     my $self   = shift;
     my $kind   = shift;
     my $vmpath = shift;
     my %versionhash = (vmversion => "", vmbuildversion => "");
     my $vmversion = "";
     my $vmbuildversion = "";
-    my $config = "libdir=\"$vmpath\"\n";
+    my $config = "";
 
     %versionhash = _getVersion($vmpath);
 
     $config .= "version=\"".$versionhash{vmversion}."\"\n";
     $config .= "buildversion=\"".$versionhash{vmbuildversion}."\"";
+    spitFile("$self->{'pluginRepositoryPath'}/$kind/slxvmconfig", $config);
+    chmod 0755, "$self->{'pluginRepositoryPath'}/$kind/slxvmconfig";
 
+    $config = "libdir = \"$vmpath\"\n";
     spitFile("$self->{'pluginRepositoryPath'}/$kind/config", $config);
     chmod 0755, "$self->{'pluginRepositoryPath'}/$kind/config";
 }
@@ -570,7 +573,7 @@ sub _localInstallation
     # else { TODO: errorhandling }
     
     ## Creating needed config /etc/vmware/config
-    $self->_writeVmwareConfig("$kind", "$vmpath");
+    $self->_writeVmwareConfigs("$kind", "$vmpath");
 }
 
 
@@ -599,22 +602,18 @@ sub _vmpl2Installation {
     # copy on depending runvmware file
     copyFile("$pluginFilesPath/runvmware-player-v2", "$installationPath", "runvmware");
 
-    ##
-    ## Install the binarys from given pkgpath
+    # Install the binarys from given pkgpath
     system("/bin/sh /opt/openslx/plugin-repo/$self->{'name'}/$kind/install-vmpl.sh $kind");
 
-    ##
-    ## Create runlevel script
+    # Create runlevel script
     my $runlevelScript = "$self->{'pluginRepositoryPath'}/$kind/vmware.init";
     $self->_writeRunlevelScript($vmbin, $runlevelScript, $kind);
 
-    ##
-    ## Create wrapperscripts
+    # Create wrapperscripts
     $self->_writeWrapperScript("$vmpath", "$kind", "player");
 
-    ##
-    ## Creating needed config /etc/vmware/config
-    $self->_writeVmwareConfig("$kind", "$vmpath");
+    # Creating needed config /etc/vmware/config
+    $self->_writeVmwareConfigs("$kind", "$vmpath");
         
 }
 
@@ -660,10 +659,9 @@ sub _vmpl25Installation {
 
     ##
     ## Creating needed config /etc/vmware/config
-    $self->_writeVmwareConfig("$kind", "$vmpath");
+    $self->_writeVmwareConfigs("$kind", "$vmpath");
         
 }
-
 
 sub _vmpl1Installation {
     my $self     = shift;
@@ -704,9 +702,8 @@ sub _vmpl1Installation {
     ## Create wrapperscripts
     $self->_writeWrapperScript("$vmpath", "$kind", "player");
 
-    ##
     ## Creating needed config /etc/vmware/config
-    $self->_writeVmwareConfig("$kind", "$vmpath");
+    $self->_writeVmwareConfigs("$kind", "$vmpath");
         
 }
 

@@ -100,11 +100,6 @@ hver=7
 # be found in older version folders too ...)
 vmdir="/var/lib/virt/vmware/vmware65"
 
-# special Variables, persistence vmware?
-#TODO: do we really need it? Should be everywhere nonpersistent
-np=""
-
-
 #TODO: check for a faster way, perhaps we should put this into XML
 # the grepping under some circumstances lets wait the user for ages ...
 if [ $(echo ${imagename} | grep -cv "\-flat.vmdk") ]; then
@@ -388,17 +383,6 @@ writelog "\tDisplayname:\t${displayname}"
 
 # check if image exists, etc...
 #filecheck
-
-# VMPlayer Version.
-# strings is the fastest and most secure way, vmplayer -v takes too much time
-# and resources
-# TODO: fine a faster solution with different installed vmplayer
-#       perhaps via stage1 + /etc/vmware/vmversion
-#vmbuild=$(strings /usr/lib/vmware/bin/vmplayer \
-#    | grep -m 1 "build-"|sed 's/.*build-//')
-if [ -z ${vmbuild} ]; then
-  vmbuild=$(vmplayer -v | sed 's/.*build-//')
-fi
 
 ### write configuration files ##################################################
 # create preferences
