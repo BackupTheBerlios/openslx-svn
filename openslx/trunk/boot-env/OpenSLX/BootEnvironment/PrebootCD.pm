@@ -59,7 +59,7 @@ sub _createImage
 
     # write trivial isolinux config
     my $isolinuxConfig = unshiftHereDoc(<<"    End-of-Here");
-        PROMPT 0
+        PROMPT 1
         TIMEOUT 100
         DEFAULT OpenSLX
 

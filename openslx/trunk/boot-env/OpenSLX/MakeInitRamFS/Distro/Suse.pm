@@ -37,7 +37,7 @@ sub applyChanges
     my $self   = shift;
     my $engine = shift;
 
-    $engine->_addFilteredKernelModules( qw( hid unix ));
+    $engine->_addFilteredKernelModules( qw( hid unix vesafb fbcon));
 
     return;
 }

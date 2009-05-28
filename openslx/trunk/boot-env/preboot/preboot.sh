@@ -36,7 +36,6 @@ if [ x$debuglevel != x0 ]; then
 else
     debug=""
 fi 
-ash
 
 # bring the mac address into the standard format 01-<MAC>
 client=$(echo 01-$macaddr|sed "s/:/-/g")
@@ -51,6 +50,9 @@ wget -O /tmp/initramfs $boot_uri/$initramfs
 
 # read primary IP configuration to pass it on
 . /tmp/ipstuff
+
+clear
+ash
 
 # start the new kernel with initialramfs and composed cmdline
 echo "Booting OpenSLX client $label ..."
