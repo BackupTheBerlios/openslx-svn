@@ -17,7 +17,7 @@ using System.Xml;
 // #####################################################################################
 // (C) 2005 - 2006 Randolph Welte randy@uni-freiburg.de#################################
 //
-// Bearbeitung Bohdan Dulya & Marco Haustein 2006 - 2007 ###############################
+// Bearbeitung Bohdan Dulya & Marco Haustein 2006 - 2009 ###############################
 
 
 
@@ -29,7 +29,7 @@ namespace AccountValue
     public partial class Form2 : Form
     {
         private DragExtender dragExtender1;
-        private String version = "0.3";
+        private String version = "0.4";
         Form1 f1;
         private String home;
         XmlDocument doc = new XmlDocument();
@@ -75,7 +75,7 @@ namespace AccountValue
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("© 2006 Randolph Welte \n 2007 Bohdan Dulya & Marco Haustein", "About...", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("© 2006 Randolph Welte \n 2007-2009 Bohdan Dulya & Marco Haustein", "About...", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void versionToolStripMenuItem_Click(object sender, EventArgs e)
@@ -92,7 +92,7 @@ namespace AccountValue
         {
             
 
-            object x = null;
+            //object x = null;
 
             Form3 f3 = new Form3();
             f3.webBrowser1.Navigate(@"https://myaccount.ruf.uni-freiburg.de/uadmin/priacc?uid=" + f1.textBox1.Text.Trim() + "&pwd=" + f1.maskedTextBox1.Text.Trim());

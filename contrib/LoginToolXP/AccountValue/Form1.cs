@@ -20,7 +20,8 @@ using System.Diagnostics;
 // #####################################################################################
 // (C) 2005 - 2006 Randolph Welte randy@uni-freiburg.de#################################
 // 
-// Bearbeitung Bohdan Dulya & Marco Haustein 2006 - 2008 ###############################
+// Bearbeitung Bohdan Dulya d_bohdan@gmx.de 2006 - 2009 ################################
+// & Marco Haustein 2008 ###############################################################
 
 
 namespace AccountValue
@@ -35,7 +36,7 @@ namespace AccountValue
 
         XmlDocument doc = new XmlDocument();
 
-        private DragExtender dragExtender1;
+        //private DragExtender dragExtender1;
         private bool firsttime = true;
         private Form2 f2;
 
@@ -80,8 +81,16 @@ namespace AccountValue
             {
                 //Prüfe ob das Laufwerk B: verbunden ist
                 DirectoryInfo di = new DirectoryInfo("B:\\");
-                if (di.Exists == false)
-                    System.Threading.Thread.Sleep(5000 * 1);
+                int i = 0;
+                bool disk = di.Exists;
+                while (disk == false)
+                {
+                    System.Threading.Thread.Sleep(500 * 2);
+                    disk = di.Exists;
+                    i++;
+                    if (i == 60)
+                        break;
+                }
                 
                 doc.Load("B:\\CONFIG.XML");
 

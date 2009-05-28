@@ -82,13 +82,13 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_347334B40DA90BCAF86A3E09399CA469"
+        "OwnerKey" = "8:_C75C109F9AA3422088FC2CC1424AE42C"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_C75C109F9AA3422088FC2CC1424AE42C"
+        "OwnerKey" = "8:_347334B40DA90BCAF86A3E09399CA469"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -345,7 +345,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:FALSE"
+            "Exclude" = "11:TRUE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -458,7 +458,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Login_Printer-Account_Value"
         "ProductCode" = "8:{EF0E290A-00F7-477B-A24A-1350A90ED398}"
-        "PackageCode" = "8:{1A4813AF-1B06-44BB-94C2-6057A06C34DC}"
+        "PackageCode" = "8:{8A627A36-7ACD-4AB6-8DE8-932E3887FB4B}"
         "UpgradeCode" = "8:{A5545C6D-BEB8-4E4A-BA31-4FD269444F73}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
