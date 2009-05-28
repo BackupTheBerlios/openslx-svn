@@ -1,0 +1,76 @@
+arch = i386
+package-subdir = pool
+prereq-packages = main/d/debootstrap/debootstrap_1.0.12_all.deb
+release-name = jaunty
+<repository base>
+    components = main restricted
+    distribution = jaunty
+    name = Ubuntu 9.04
+    repo-subdir = dists
+    file-for-speedtest = dists/jaunty/main/binary-i386/Packages.bz2
+</repository>
+<repository base_security>
+    components = main restricted
+    distribution = jaunty-security
+    name = Ubuntu 9.04 Security
+    repo-subdir = dists
+    file-for-speedtest = dists/jaunty-security/main/binary-i386/Packages.bz2
+</repository>
+<repository base_updates>
+    components = main restricted
+    distribution = jaunty-updates
+    name = Ubuntu 9.04 Updates
+    repo-subdir = dists
+    file-for-speedtest = dists/jaunty-updates/main/binary-i386/Packages.bz2
+</repository>
+<selection minimal>
+    packages = <<END
+        language-pack-de
+        linux-image-generic
+    END
+</selection>
+<selection standard>
+    base = minimal
+    packages = <<END
+        ubuntu-standard
+    END
+</selection>
+<selection gnome>
+    base = minimal
+    packages = <<END
+        ubuntu-desktop
+    END
+</selection>
+<selection kde>
+    base = minimal
+    packages = <<END
+        kubuntu-desktop
+    END
+</selection>
+<selection xfce>
+    base = minimal
+    packages = <<END
+        xubuntu-desktop
+    END
+</selection>
+<selection edubuntu-server>
+    base = minimal
+    packages = <<END
+        edubuntu-server
+    END
+</selection>
+<selection edubuntu-gnome>
+    base = minimal
+    packages = <<END
+        edubuntu-desktop-gnome
+    END
+</selection>
+<selection edubuntu-kde>
+    base = minimal
+    packages = <<END
+        edubuntu-desktop-kde
+    END
+</selection>
+<selection default>
+    base = minimal
+</selection>
