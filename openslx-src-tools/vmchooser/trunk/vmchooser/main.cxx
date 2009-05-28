@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
   /* VERSION  */
   if(opt->getFlag('v') || opt->getFlag("version")) {
     // just print out version information - helps testing
-    cout << "virtual machine chooser 0.0.7"<< endl;
+    cout << "virtual machine chooser 0.0.8"<< endl;
     delete opt;
     return 0;
 
