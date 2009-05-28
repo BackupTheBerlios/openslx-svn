@@ -27,13 +27,16 @@ sysname=$(readlink $sysname)
 
 # ask for desired debug level in stage3 if debug!=0 in preboot
 echo "0" >result
-[ x$debuglevel != x0 ] && dialog --no-cancel --menu "Choose Debug Level:" \
-   20 65 10 "0" "no debug output"  \
-            "3" "standard debug output" 2>result
-   
-debuglevel=$(cat result)
-if [ x$debuglevel != x0 ]; then
-	debug="debug=$debuglevel"
+[ x$DEBUGLEVEL != x0 ] && dialog --no-cancel --menu "Choose Debug Level:" \
+   20 65 10 "0" "no debug output (splash)"  \
+            "2" "standard debug output" 
+            "3" "debug output and shell" 2>result
+
+# change debug level here if required (adjusted for the rest of the interactive
+# part)
+DEBUGLEVEL=$(cat result)
+if [ x$DEBUGLEVEL != x0 ]; then
+	debug="debug=$DEBUGLEVEL"
 else
     debug=""
 fi 
@@ -46,14 +49,14 @@ w3m -o confirm_qq=no \
 chvt 1
 
 # fetch kernel and initramfs of selected system 
-wget -O /tmp/kernel $boot_uri/$kernel | dialog --progressbox 3 65
-wget -O /tmp/initramfs $boot_uri/$initramfs | dialog --progressbox 3 65
+wget -O /tmp/kernel $boot_uri/$kernel | dialog --progressbox 5 65
+wget -O /tmp/initramfs $boot_uri/$initramfs | dialog --progressbox 5 65
 
 # read primary IP configuration to pass it on (behaviour like IPAPPEND=1 of
 # PXElinux)
 . /tmp/ipstuff
 
-[ "x$debuglevel" != x0 ] && { clear; ash; }
+[ "x$DEBUGLEVEL" != x0 ] && { clear; ash; }
 
 # start the new kernel with initialramfs and composed cmdline
 dialog --infobox "Booting OpenSLX client $label ..." 3 65
