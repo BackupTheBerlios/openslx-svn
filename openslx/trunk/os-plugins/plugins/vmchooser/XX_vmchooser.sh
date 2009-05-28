@@ -40,7 +40,7 @@ if [ -e $CONFFILE ]; then
       : #|| error "" nonfatal
     fi
     # mount a clean tempfs (bug in UnionFS prevents loopmount to work)
-    strinfile "unionfs" /proc/mounts && \
+    grep -qE "unionfs |aufs " /proc/mounts && \
       mount -n -o size=1500k -t tmpfs vm-loopimg /mnt/var/lib/virt/vmchooser/loopimg
     # create an empty floppy image of 1.4MByte size
     dd if=/dev/zero of=/mnt/var/lib/virt/vmchooser/loopimg/fd.img \
