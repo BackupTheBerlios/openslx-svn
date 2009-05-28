@@ -22,6 +22,7 @@ createDhcpMenu($rollen, $mnr, $auDN, $sbmnr);
 
 ###################################################################################
 
+$parent_file = "dhcpsubnets.php";
 include('dhcp_class_box.php');
 
 $template->assign(array("SUBNETDN" => "",

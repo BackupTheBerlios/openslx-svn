@@ -124,7 +124,7 @@ function check_ip_zone($ip,$zone,$hostname,$au) {
 		#}elseif ( strtolower($dighost) != $hostname ) {
 		#}elseif ( $dighost != strtolower($hostname) ) {
 			#$dns_check = "Hostname <b>$host</b> stimmt nicht mit DNS Hostname <b>$dighost</b> &uuml;berein";
-			$dns_check = "DNS: $dighost";
+			$dns_check = "DNS: <b>$dighost</b>";
 		}else{
 			$dnsentry = $digfqdn;
 		}

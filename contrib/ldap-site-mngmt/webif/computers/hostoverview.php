@@ -33,15 +33,25 @@ $template->assign(array("DN" => "",
            	 			"GEOLOC" => "",
            	 			"GEOATT" => "",
            	 			"HWINV" => "",
-           	 			"UNINV" => "",
+           	 			"INV" => "",
            		       	"RBSCONT" => "",
            		       	"CHECK" => ""));
 
 $attributes = array("dn","hostname","domainname","hwaddress","ipaddress","description","dhcphlpcont","dhcpoptfixed-address","hlprbservice","dhcpoptnext-server","inventarnr","hwinventarnr","geolocation","geoattribut");
 $host_array = get_hosts($auDN,$attributes,$sort);
-#print_r($host_array);
-#natsort($host_array);
 
+# Host Array sortieren
+switch ( $sort ) {
+  case "ipaddress": $host_array = array_natsort($host_array, "ipaddress", "ipaddress"); break;
+  case "hwaddress": $host_array = array_sort($host_array, "hwaddress", "hwaddress"); break;
+  case "description": $host_array = array_natsort($host_array, "description","description"); break;
+  case "geolocation": $host_array = array_sort($host_array, "geolocation", "geolocation"); break;
+  case "inventarnr": $host_array = array_natsort($host_array, "inventarnr","inventarnr"); break;
+  default: $host_array = array_natsort($host_array, "hostname", "hostname"); break;
+}
+// print_r($host_array); echo "<br>";
+
+## SESSION Variable fuer Hosts der AU (nach der Sortierung) -> PDF Print, Clients-Kopieren
 $_SESSION['hosts_array'] = $host_array;
 // echo "<pre>";
 // var_dump($_SESSION['hosts_array']);
@@ -52,18 +62,6 @@ $_SESSION['hosts_array'] = $host_array;
 // var_dump($_POST["host"]);
 // echo "</pre>";
 
-// if ($sort == "ipaddress"){
-// 	$host_array = array_natsort($host_array, "ipaddress", "ipaddress");
-// }else{
-// 	$host_array = array_natsort($host_array, "hostname", "hostname");
-// }
-
-switch ( $sort ) {
-  case "ipaddress": $host_array = array_natsort($host_array, "ipaddress", "ipaddress"); break;
-  case "hwaddress": $host_array = array_natsort($host_array, "hwaddress", "hwaddress"); break;
-  case "description": $host_array = array_natsort($host_array, "description","description"); break;
-  default: $host_array = array_natsort($host_array, "hostname", "hostname"); break;
-}
 
 $template->define_dynamic("Rechner", "Webseite");
 
@@ -72,7 +70,13 @@ $modentry ['domainname'] = $assocdom;
 $i = 0;
 foreach ($host_array as $host){
 
-	ldap_mod_replace($ds,$host['dn'],$modentry);
+	if ( $host['domainname'] != $assocdom ) {
+// 		printf("<b>DNS Domain Adjust Host %s: </b>%s != %s (-> LDAP Modify Replace)<br>",$host['hostname'],$host['domainname'], $assocdom);
+		ldap_mod_replace($ds,$host['dn'],$modentry);
+	}
+// 	else {
+// 		printf("<b>DNS Domain Host %s: </b>%s == %s<br>",$host['hostname'],$host['domainname'], $assocdom);
+// 	}
 	
 	$hostname = "<b><a href='host.php?host=".$host['hostname']."&sbmnr=".$i."' class='headerlink'>".$host['hostname']."</a></b>";
 	#$hostname = "<a href='host.php?dn=".$host['dn']."&sbmnr=".$i."' class='headerlink'>".$host['hostname']."</a>";
@@ -86,38 +90,43 @@ foreach ($host_array as $host){
 		}
 	}
 	
-	$dhcpcont = "";
-	$dhcpfixadd = "-";
-	if ( count($host['dhcphlpcont']) != 0 ){
-	   $dhcpexpdn = ldap_explode_dn($host['dhcphlpcont'],1);
-	   #$dhcpcn = $dhcpexpdn[0];
-	   $dhcpcont = $dhcpexpdn[0]." <br>[".$dhcpexpdn[2]."]";
-	   $dhcpfixadd = "dyn";
-	   if ( $host['dhcpoptfixed-address'] == "ip" ){
-			$dhcpfixadd = "fix";
+// 	$dhcpcont = "";
+	$dhcpfixadd = "&nbsp;";
+	if ( $host['hwaddress'] ) {
+		
+		$dhcpfixadd = "<input type='checkbox' name='dhcp[$i]' value='".$DHCP_SERVICE."' disabled>";
+		if ( $host['dhcphlpcont'] != "" ){
+	// 		   $dhcpexpdn = ldap_explode_dn($host['dhcphlpcont'],1);
+	// 		   $dhcpcont = $dhcpexpdn[0]." <br>[".$dhcpexpdn[2]."]";
+	// 	   $dhcpfixadd = "dyn";
+	// 	   if ( $host['dhcpoptfixed-address'] == "ip" ){
+	// 			$dhcpfixadd = "fix";
+	// 		}
+	// 	   if ( $host['dhcpoptfixed-address'] == "hostname" ){
+	// 			//$dhcpfixadd = "fix (DNS)";
+	// 			$dhcpfixadd = "fix";
+	// 		}
+			$dhcpfixadd = "<input type='checkbox' name='dhcp[$i]' value='".$DHCP_SERVICE."' checked disabled>";
+// 				<b><code class='red_font_object'>dhcp</code></b>";
 		}
-	   if ( $host['dhcpoptfixed-address'] == "hostname" ){
-			//$dhcpfixadd = "fix (DNS)";
-			$dhcpfixadd = "fix";
-		}  
+	$dhcpfixadd .= "<input type='hidden' name='olddhcp[]' value='".$host['dhcphlpcont']."'>";
 	}
-	
 	
 	$rbscont = "-";
 	$dhcpnxtsrv = "";
-	if ( count($host['hlprbservice']) != 0 ){
-	   $rbsexpdn = ldap_explode_dn($host['hlprbservice'],1);
+	if ( $host['hlprbservice'] != "" ){
+		$rbsexpdn = ldap_explode_dn($host['hlprbservice'],1);
 		$dhcpnxtsrv = $host['dhcpoptnext-server'];
-	   $rbscont = $rbsexpdn[0]; #."<br>[".$dhcpnxtsrv."]";
-	   
-	   
+// 		$rbscont = $rbsexpdn[0]; #."<br>[".$dhcpnxtsrv."]";
+// 		$rbscont = "<b><code class='red_font_object'>pxe boot</code></b>";
+		$rbscont = "pxe boot";
 	}
 	
 	$checkbox_move  = "<input type='checkbox' name='hostsmove[]' value='$host[hostname]' disabled>";
 	$checkbox_print = "<input type='checkbox' name='choice[$i]' ";
 	
 	$template->assign(array("DN" => $host['dn'],
-							"CHECK" => $checkbox_print,
+						"CHECK" => $checkbox_print,
 						"HOSTNAME" => $hostname,
            				"DOMAINNAME" => $host['domainname'],
            				"HWADDRESS" => $host['hwaddress'],
@@ -129,7 +138,7 @@ foreach ($host_array as $host){
            	 			"GEOLOC" => $host['geolocation'],
            	 			"GEOATT" => $host['geoattribut'],
            	 			"HWINV" => $host['hwinventarnr'],
-           	 			"UNINV" => $host['inventarnr'],
+           	 			"INV" => $host['inventarnr'],
            		       	"AUDN" => $auDN ));
 	$template->parse("RECHNER_LIST", ".Rechner");
 	

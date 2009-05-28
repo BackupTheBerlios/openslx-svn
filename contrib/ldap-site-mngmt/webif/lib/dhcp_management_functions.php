@@ -22,37 +22,39 @@ $ldapError = null;
 # referenzierter Objekte (Subnetz, RBS Dhcp Optionen) aktualisieren 
 function update_dhcpmtime($audn){
 
-   global $ds, $ldapError;
+   global $ds, $ldapError, $dhcpman_pwd;
    
    $entry ['dhcpmtime'] = time();
-
+	$mesg = "";
 	if ( $audn ) {
-	   # Bind als DHCP Manager
-	   $dhcp_uid = "dhcpmanager";
-		$dhcp_userPassword = "dhcpman02";
-	   if (!($dhcp_ds = uniLdapConnect($dhcp_uid,$dhcp_userPassword))){
+		# Bind als DHCP Manager
+		$dhcp_uid = "dhcpmanager";
+		if (!($dhcp_ds = uniLdapConnect($dhcp_uid,$dhcpman_pwd))){
 			echo "Konnte nicht als <b>DHCP-Manager</b> mit LDAP Server verbinden";
 			die;
 		}else{
 			#echo "DHCP BIND erfolgreich";
-		   $results = ldap_mod_replace($dhcp_ds,$audn,$entry);
+			$results = ldap_mod_replace($dhcp_ds,$audn,$entry);
 			if ($results){
-				echo "<br><b>DHCP Config erfolgreich aktualisiert<br>&Auml;nderung ist innerhalb der n&auml;chsten 10 min aktiv!<br><br></b>";
-		      #echo "<b>dhcpMTime</b> erfolgreich in AU ".$audn." aktualisiert!<br>" ;
-				return 1;
+			echo "<br><b>DHCP Config erfolgreich aktualisiert<br>&Auml;nderung ist innerhalb der n&auml;chsten 10 min aktiv!<br><br></b>";
+			$mesg .= "<br><b>Neue DHCP Config innerhalb der n&auml;chsten 10 min aktualisiert!<br><br></b>";
+// 				return 1;
 		   }else{
 		      echo "<br>Fehler beim Aktualisieren der <b>dhcpMTime</b> in AU $audn!<br>" ;
+			  $mesg .= "<br>Fehler beim Aktualisieren der <b>dhcpMTime</b> in AU $audn!<br>";
 		   }
 	   ldap_unbind($dhcp_ds);
 	   }
    }else{
    	echo "Fehler: AU DN ist leer!<br>";
+	$mesg .= "Fehler: AU DN ist leer!<br>";
    }
+   return $mesg;
 }
 
 function update_dhcpmtime_old($au_array){
 
-   global $ds, $auDN, $ldapError;
+   global $ds, $auDN, $ldapError, $dhcpman_pwd;
    
    $entry ['dhcpmtime'] = time();
    
@@ -70,8 +72,7 @@ function update_dhcpmtime_old($au_array){
 		$au_array = array_unique($au_array);
 	   # Bind als DHCP Manager
 	   $dhcp_uid = "dhcpmanager";
-		$dhcp_userPassword = "dhcpman02";
-	   if (!($dhcp_ds = uniLdapConnect($dhcp_uid,$dhcp_userPassword))){
+	   if (!($dhcp_ds = uniLdapConnect($dhcp_uid,$dhcpman_pwd))){
 			echo "Konnte nicht als <b>DHCP-Manager</b> mit LDAP Server verbinden";
 			die;
 		}else{

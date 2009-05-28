@@ -44,7 +44,7 @@
 			</tr>
 			
 			<tr height='50'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>MAC Adresse (HWAddress) :</b> &nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>MAC Adresse:</b><br>(Hardware Ethernet Address) &nbsp;</td>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
 					<input type='Text' name='mac' value='{MAC}' size='18' maxlength='17' class='medium_form_field'>
 						Bsp.: 00:12:03:aa:54:e6 &nbsp;
@@ -56,38 +56,42 @@
 					<input type='Text' name='ip' value='{IP}' size='15' maxlength='15' class='medium_form_field'>
 				</td>
 			</tr>
-			<!--<tr>
-			   <td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>DHCP: </b>&nbsp;</td>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-				   <select name='dhcpcont' size='2' class='medium_form_selectbox'> 
-   	   	      <option selected value='none'>----------</option>
-   	   	      {DHCPSELECT}
-   	   	   </select>   
-   	   	   </td>
-			</tr>-->
 			<tr>
-			   <td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Eintrag in zentralem DHCP: </b>&nbsp;</td>
+			   <td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Eintrag in zentralem DHCP: </b>&nbsp;<br>(Nur m&ouml;glich bei Eingabe einer MAC Adresse)</td>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
 				   <input type='checkbox' name='dhcpcont' value='{DHCPSELECT}'>
    	   	   </td>
 			</tr>
 			
 			<tr height='50'>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Rechner Beschreibung: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Client Beschreibung: </b>&nbsp;</td>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
 					<input type='Text' name='hostdesc' value='{HOSTDESC}' size='40' class='medium_form_field'>
 				</td>
 			</tr>
 			<tr>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Geographic Location </b> (Geb&auml;ude, Raum, ...) <b>:</b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Institut:</b>&nbsp;</td>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[geolocation]' value='{GEOLOC}' size='30' class='medium_form_field'>
+					<input type='Text' name='attribs[inventarnr]' value='{INVNR}' size='40' class='medium_form_field'>
 				</td>
 			</tr>
 			<tr>
-				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Geo Coordinates: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Location </b> (Geb&auml;ude, Raum, ...) <b>:</b>&nbsp;</td>
 				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
-					<input type='Text' name='attribs[geoattribut]' value='{GEOATT}' size='30' class='medium_form_field'>
+					<input type='Text' name='attribs[geolocation]' value='{GEOLOC}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Hardware Inventar-Nr:</b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[hwinventarnr]' value='{HWINVNR}' size='40' class='medium_form_field'>
+				</td>
+			</tr>
+			
+			<tr>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'><b>Geo Koordinaten: </b>&nbsp;</td>
+				<td style='border-color: black; border-style: solid; border-width: 0 0 1 0;'>
+					<input type='Text' name='attribs[geoattribut]' value='{GEOATT}' size='40' class='medium_form_field'>
 				</td>
 			</tr>
 			<!--<tr>

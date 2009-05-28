@@ -24,7 +24,7 @@
 			</tr>
 			<tr valign='top'>
 				<td class='tab_d'>&nbsp;</td>
-				<td class='tab_d' colspan='2'>{CLASSSTATEMENTS}{OPTIONS}{SUBCLASSES}</td>
+				<td class='tab_d' colspan='2'>{CLASSSTATEMENTS}{OPTIONS}{SUBCLASSES}&nbsp;</td>
 			</tr>
 				
 			<input type='hidden' name='olddhcp[{CLASSDN}]' value='{DHCPCONT}'>

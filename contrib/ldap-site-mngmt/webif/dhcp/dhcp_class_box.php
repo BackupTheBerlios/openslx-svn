@@ -1,5 +1,8 @@
 <?php
 
+// $subclass_details = 0;
+$subclass_details = $_GET['scd'] || 0;
+
 #print_r($all_roles[$rootAU]['roles']);
 $classadmin = 0;
 if ($all_roles[$rootAU]['roles']) {
@@ -32,20 +35,34 @@ $classes = get_dhcpclasses($rootAU, $attributes);
 
 
 
-$template->assign(array("CLASSDN" => "",
-								"CLASSCN" => "",
-   							"DHCPCONT" => "",   								
-   							"DHCPSRV" => $DHCP_SERVICE,
-								"CLASSDESC" => "",
-								"CLASSSTATEMENTS" => "",
-   							"CLASSOPTIONS" => "",
-   							"SUBCLASSES" => "",
-   							"CHE" => "",
-   							"ACT" => "",
-   							"CFE" => "",
-   							"CLASSFORMSUBMIT" => ""));
+$template->assign(array("CLASSBOX" => ""
+// 						 "CLASSDN" => "",
+// 								"CLASSCN" => "",
+//    							"DHCPCONT" => "",   								
+//    							"DHCPSRV" => $DHCP_SERVICE,
+// 								"CLASSDESC" => "",
+// 								"CLASSSTATEMENTS" => "",
+//    							"CLASSOPTIONS" => "",
+//    							"SUBCLASSES" => "",
+//    							"CHE" => "",
+//    							"ACT" => "",
+//    							"CFE" => "",
+//    							"CLASSFORMSUBMIT" => ""
+							));
 
-$template->define_dynamic("Dhcpclasses", "Webseite");
+// $template->define_dynamic("Dhcpclasses", "Webseite");
+
+if ( count($classes) > 0 ) {
+
+$class_box = "
+<tr>
+  		<td colspan='2'>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 3 3 3 3;'>
+				<form action='dhcpclasses_change.php' method='post'>
+			<tr>
+				<td width='80%' class='tab_dgrey' colspan='3'><b>Global g&uuml;ltige DHCP Classes</b>&nbsp;&nbsp; - &nbsp; Falls <b>aktiv</b> gelten Optionen f&uuml;r alle matchenden Clients</td>
+				<td width='20%' class='tab_dgrey'>$classformsubmit</td>
+			</tr>";
 
 foreach ($classes as $class) {
 
@@ -86,6 +103,9 @@ foreach ($classes as $class) {
 	
 	
 	if ($subclasses) {
+	
+		if ( $subclass_details && $parent_file) {
+		
 		foreach ($subclasses as $subclass){	
 			$subclass_data .= "<br>subclass \"$class[cn]\" $subclass[submatchexp]";
 			if ($subclass['dhcpstatements']) {
@@ -101,26 +121,54 @@ foreach ($classes as $class) {
 				}
 			}
 			$subclass_data .= "<br>&nbsp;";
-		}	
+		}
+			$subclass_data .= "<br><b><a href='$parent_file?mnr=$mnr&scd=0' class='headerlink'>< No Subclass Details</a></b>";
+		}
+		else{
+			$subclass_data = "<br><b><a href='$parent_file?mnr=$mnr&scd=1' class='headerlink'>Subclass Details ></a></b>";
+		}
 	}else{
 		$subclass_data = "<br>&nbsp;";
 	}
 
+	$class_box .= "
+			<tr valign='top'>
+				<td width='15%' class='tab_dgrey'><input type='checkbox' name='dhcp[".$class['dn']."]' value='$DHCP_SERVICE' $checked $class_form_element>$active</td>
+				<td width='85%' class='tab_dgrey' colspan='2'><b>".$class['cn']."</b><br>$class_statements $class_options $subclass_data</td>
+				<td class='tab_dgrey'>&nbsp;</td>
+			</tr>
+			
+			
+			<input type='hidden' name='olddhcp[".$class['dn']."]' value='".$class['dhcphlpcont']."'>
+			";
 
-   $template->assign(array("CLASSDN" => $class['dn'],
-   								"CLASSCN" => $class['cn'],
-   								"DHCPCONT" => $class['dhcphlpcont'],   								
-   								"DHCPSRV" => $DHCP_SERVICE,
-   								"CLASSDESC" => $class['description'],
-   								"CLASSSTATEMENTS" => $class_statements,
-   								"CLASSOPTIONS" => $class_options,
-   								"SUBCLASSES" => $subclass_data,
-   								"CHE" => $checked,
-   								"ACT" => $active,
-   								"CFE" => $class_form_element,
-   								"CLASSFORMSUBMIT" => $classformsubmit));
-   $template->parse("DHCPCLASSES_LIST", ".Dhcpclasses");
+//   /* $template->assign(array("CLASSDN" => $class['dn'],
+//    								"CLASSCN" => $class['cn'],
+//    								"DHCPCONT" => $class['dhcphlpcont'],   								
+//    								"DHCPSRV" => $DHCP_SERVICE,
+//    								"CLASSDESC" => $class['description'],
+//    								"CLASSSTATEMENTS" => $class_statements,
+//    								"CLASSOPTIONS" => $class_options,
+//    								"SUBCLASSES" => $subclass_data,
+//    								"CHE" => $checked,
+//    								"ACT" => $active,
+//    								"CFE" => $class_form_element,
+//    								"CLASSFORMSUBMIT" => $classformsubmit));
+//    $template->parse("DHCPCLASSES_LIST", ".Dhcpclasses");*/
 
+}
+
+$class_box .= "
+			<input type='hidden' name='backurl' value='$parent_file?mnr=$mnr'>
+			   </form>
+		</table>
+		</td>
+  	</tr>
+  	<tr>
+		<td height='40' colspan='2'></td>
+	</tr>";
+
+	$template->assign(array("CLASSBOX" => $class_box));
 }
 
 ?>

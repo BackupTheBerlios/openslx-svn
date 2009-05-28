@@ -1,9 +1,9 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
   	<tr>
-  		<td align='center' width='17%' style='border-color: black; border-style: solid; border-width: 0 1 0 1;'><h4>{HOSTLINK} Client </a></h4></td>
-  		<td align='center' width='17%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{DHCPLINK} DHCP / RBS</a></h4></td>
-  		<td align='center' width='17%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4><code class='font_object'> PXE </code></h4></td>
-  		<td align='center' width='17%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{HWLINK} Geo/Hardware </a></h4></td>
+  		<td align='center' width='20%' style='border-color: black; border-style: solid; border-width: 0 1 0 1;'><h4>{HOSTLINK} Netzwerk-Setup </a></h4></td>
+  		<td align='center' width='20%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{HWLINK} Inventarisierung </a></h4></td>
+  		<!--<td align='center' width='20%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4>{DHCPLINK} DHCP / RBS</a></h4></td>-->
+  		<td align='center' width='20%' style='border-color: black; border-style: solid; border-width: 0 1 0 0;'><h4><code class='font_object'> PXE Boot Config </code></h4></td>
   		<td>&nbsp;</td>
   	</tr>
    

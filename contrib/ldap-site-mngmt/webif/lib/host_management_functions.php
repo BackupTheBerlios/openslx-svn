@@ -32,11 +32,11 @@ function modify_host_dn($hostDN, $newhostDN){
 	if (move_subtree($hostDN,$newhostDN)){
 		adjust_dn_entries($hostDN,$newhostDN);
 		
-		# Gruppen anpassen in denen Host Member ist
-		$groups = get_groups_member($auDN,array("dn","member"),$hostDN);
-		# print_r($groups); echo "<br>";
-		if (count($groups != 0)){
-			
+// 		# Gruppen anpassen in denen Host Member ist
+// 		$groups = get_groups_member($auDN,array("dn","member"),$hostDN);
+// 		# print_r($groups); echo "<br>";
+// 		if (count($groups != 0)){
+		/*	
 			foreach ($groups as $group){
 				#$entry = array("member");
 				if ( count($group['member']) > 1 ){
@@ -55,9 +55,12 @@ function modify_host_dn($hostDN, $newhostDN){
 					# print_r($entry); echo "";
 					ldap_mod_replace($ds,$group['dn'],$entry);
 				}
-			}
-		}
-		
+			}*/
+// 		}
+		return 1;
+	}
+	else {
+		return 0;
 	}
 }
 
@@ -78,14 +81,13 @@ function add_host($hostDN,$hostname,$hostdesc,$mac,$ip,$atts,$dhcp){
 	$entryhost ["domainname"] = $assocdom;
 	if ($hostdesc != ""){$entryhost ["description"] = $hostdesc;}
 	if ($mac != ""){
-		$mactest = $syntax->check_mac_syntax($mac);
-		if ($mactest) {
+		if ( $syntax->check_mac_syntax($mac) ) {
 			$entryhost ["hwaddress"] = $mac;
 			if ($dhcp != "none" && $dhcp != ""){
-		   	$entryhost ["dhcphlpcont"] = $dhcp;    
+				$entryhost ["dhcphlpcont"] = $dhcp;    
 			}
 		}else{
-			echo "MAC Adresse <b>$mac</b> wegen fehlerhafter Syntax nicht eingetragen. Kein DHCP Eintrag.<br>";
+			echo "SyntaxCheck MAC Adresse <b>$mac</b>:<br>-> ".$syntax->ERROR;
 		}
 	}else{
 		echo "Keine MAC Adresse angelegt. Kein DHCP Eintrag.<br>";
@@ -458,7 +460,42 @@ function array_natsort($aryData, $strIndex, $strSortBy, $strSortType=false){
 		$arySort[$aryRow[$strIndex]] = $aryRow[$strSortBy];
 	}
 	// apply the natural sort
-	natsort($arySort);
+	natcasesort($arySort);
+	// if the sort type is descending
+	if ($strSortType=="desc"){
+		// reverse the array
+		arsort($arySort);
+	}
+	// loop through the sorted and original data
+	foreach ($arySort as $arySortKey => $arySorted){
+		foreach ($aryData as $aryOriginal){
+			// if the key matches
+			if ($aryOriginal[$strIndex]==$arySortKey){
+				// add it to the output array
+				array_push($aryResult, $aryOriginal);
+			}
+		}
+	}
+	
+	return $aryResult;
+}
+
+function array_sort($aryData, $strIndex, $strSortBy, $strSortType=false){
+	
+	// if the parameters are invalid
+	if (!is_array($aryData) || !$strIndex || !$strSortBy){
+		// return the array
+		return $aryData;
+	}
+	// create our temporary arrays
+	$arySort = $aryResult = array();
+	// loop through the array
+	foreach ($aryData as $aryRow){
+		// set up the value in the array
+		$arySort[$aryRow[$strIndex]] = $aryRow[$strSortBy];
+	}
+	// apply the natural sort
+	sort($arySort);
 	// if the sort type is descending
 	if ($strSortType=="desc"){
 		// reverse the array

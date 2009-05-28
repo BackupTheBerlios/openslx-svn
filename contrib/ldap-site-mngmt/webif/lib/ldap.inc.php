@@ -87,18 +87,18 @@ function uniLdapConnect($userRdn = "", $userPwd = "") {
 * @author Timothy Burk
 */
 function rzLdapConnect($userRdn = "", $userPwd = "") {
-   global $ldapError, $suffix_rz;
-   if(!(defined("LDAP_HOST_RZ") && defined("LDAP_PORT_RZ"))) {
+   global $ldapError, $suffix_ext;
+   if(!(defined("LDAP_HOST_EXT") && defined("LDAP_PORT_EXT"))) {
        $ldapError = "RZ: Hostname und/oder Port des LDAP-Servers wurden nicht angegeben!";
        return FALSE;
    }
-   if($ds = ldap_connect(LDAP_HOST_RZ, LDAP_PORT_RZ)) {
+   if($ds = ldap_connect(LDAP_HOST_EXT, LDAP_PORT_EXT)) {
        # Connect zum LDAP-Server OK
        if(ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3)) {
            # Optionen gesetzt
            if($userRdn != "" && $userPwd != "") {
              # Anmeldung als User.
-             if($result = @ldap_bind($ds, "uid=".$userRdn.",ou=people,".$suffix_rz, $userPwd)) {
+             if($result = @ldap_bind($ds, "uid=".$userRdn.",ou=people,".$suffix_ext, $userPwd)) {
                # Bind erfolgreich ausgeführt
                return $ds;
              } else {
@@ -748,7 +748,7 @@ function get_rbservices($auDN,$attributes)
 {
 	global $ds, $suffix, $ldapError;
 	
-	if(!($result = uniLdapSearch($ds, "cn=rbs,".$auDN, "(objectclass=RBService)", $attributes, "", "list", 0, 0))) {
+	if(!($result = uniLdapSearch($ds, "cn=rbs,".$auDN, "(objectclass=RBService)", $attributes, "cn", "list", 0, 0))) {
  		# redirect(5, "", $ldapError, FALSE);
   		echo "no search"; 
   		die;

@@ -249,6 +249,8 @@ $template->assign(array("DHCPGENLDAP" => LDAP_HOST,
 
 
 ###################################################################################
+$parent_file = "dhcpservice.php";
+include('dhcp_class_box.php');
 
 include("dhcp_footer.inc.php");
 

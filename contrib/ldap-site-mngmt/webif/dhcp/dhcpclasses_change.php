@@ -24,9 +24,9 @@ echo "
 # DHCP Dienstzuordnung ändern
 
 foreach (array_keys($olddhcp) as $cldn){ 
-	#echo $olddhcp[$cldn];echo "<br><br>";
-	#echo $dhcp[$cldn];echo "<br><br>";
-	#echo $cldn;echo "<br><br>";
+	echo $olddhcp[$cldn];echo "<br><br>";
+	echo $dhcp[$cldn];echo "<br><br>";
+	echo $cldn;echo "<br><br>";
 	
 	$cldnexp = ldap_explode_dn($cldn, 1);
 	$classcn = $cldnexp[0];

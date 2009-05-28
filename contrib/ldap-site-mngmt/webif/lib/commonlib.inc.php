@@ -435,6 +435,35 @@ function ldapArraySauber($Array, $delEmpty = FALSE) {
     return $b;
 }
 
+# Hilfsfunktion zum Loggen von Attribut Aenderungen
+# Paramter: Array der Attribut-Aenderungen, LDAP Modify Mode
+# Rueckgabewert: Log-Message
+function ldapmod_log_output ($entry_mod_array,$mode) {
+	$mesg = "";
+	foreach (array_keys($entry_mod_array) as $mod_attr) {
+		$wert = $entry_mod_array[$mod_attr];
+		
+		switch ($mod_attr) {
+			case "hwaddress":   $attribut = "MAC Adresse"; break;
+			case "description": $attribut = "Client Beschreibung"; break;
+			case "dhcphlpcont": $attribut = "DHCP Eintrag"; $wert = "aktiviert"; break;
+			case "dhcpoptfixed-address": if ($wert == "ip") $wert = "Host IP Adresse"; $attribut = "DHCP Option Fixed-Address"; break;
+			case "hlprbservice": $attribut = "Remote Boot Service (TFTP/PXE)"; $wert_exp = ldap_explode_dn($wert,1); $wert = $wert_exp[0]; break;
+			case "dhcpoptdefault-lease-time": $attribut = "DHCP Option Default Lease Time"; break;
+			case "dhcpoptmax-lease-time": $attribut = "DHCP Option Max Lease Time"; break;
+			case "dhcpoptvendor-encapsulated-options": $attribut = "DHCP Option Vendor Encapsulated Options"; break;
+			//case preg_match("/^dhcpopt(.*)$/", $mod_attr, $treffer): $attribut = "DHCP Option ";print_r($treffer); break;
+			default: $attribut = $mod_attr; break;
+		}
+		$mesg .= "  &nbsp;&nbsp;- $attribut";
+		if ( $mode == "delete" ) { $mesg .= "<br>"; }
+		else { $mesg .= "  &nbsp;=>&nbsp; $wert<br>"; }
+	}
+	return $mesg;
+}
+
+# --------------------------------------------------------
+
 /**
 * personOptionen($rechte)
 *

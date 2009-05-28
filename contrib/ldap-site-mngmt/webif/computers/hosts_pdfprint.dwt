@@ -138,7 +138,7 @@
 			<b><span id="host">{HOSTNAME}</span></b>
 			</td>
 			<td rowspan="6" width="100" class='tab_d_ohne'>
-			<img src="etiketten/semacode.png" />
+			<img src="../pdftags/semacode.png" />
 			</td>
 			</tr>
 			<tr>
@@ -166,7 +166,7 @@
 			
 			<div>
 			<br>
-			<form action="etiketten/generatePDF.php" method="post">
+			<form action="../pdftags/generatePDF.php" method="post">
 			<input type="submit" name="apply" value="PDF generieren" class='loginform_button'>
 			</div>
 			
@@ -188,7 +188,7 @@
 			<br />
 			<input type="checkbox" id="additional" name="additional" onclick="chkadd()" value="true" checked="checked" />
 			Zusatzinfo
-			<input type="text" id="addtext" name="addtext" />
+			<input type="text" id="addtext" name="addtext"  maxlength="30"/>
 			<br>
 			Schriftgroesse Zusatztext: 
 			<select name="addsize" size="1" class='form_selectbox'>
@@ -199,14 +199,14 @@
 			<option>10</option>
 			<option>11</option>
 			<option>12</option>
-			<option>13</option>
+			<!--<option>13</option>
 			<option>14</option>
 			<option>15</option>
 			<option>16</option>
 			<option>17</option>
 			<option>18</option>
 			<option>19</option>
-			<option>20</option>
+			<option>20</option>-->
 			</select>
 			</div>
 			

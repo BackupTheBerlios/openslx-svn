@@ -15,15 +15,18 @@
 <form action='hosts_action.php' method='post'>
 
   	<tr><td colspan='5'>
-  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
+  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='95%' style='border-width: 0 0 0 0;'>
 			<tr>
 				<td width='3%' class='tab_d_ohne'></td>
-				<td width='17%' class='tab_h'><b><a href='hostoverview.php?sort=hostname' class='headerlink'>Hostname</a></b></td>
+				<td width='16%' class='tab_h'><b><a href='hostoverview.php?sort=hostname' class='headerlink'>Hostname</a></b></td>
 				<td width='14%' class='tab_h'><b><a href='hostoverview.php?sort=ipaddress' class='headerlink'>IP Adresse</a></b></td>
-				<td width='18%' class='tab_h'><b><a href='hostoverview.php?sort=hwaddress' class='headerlink'>MAC Adresse</a></b></td>
-				<td width='9%' class='tab_h'><b>DHCP</b></td>
-				<td width='16%' class='tab_h'><b>RBS</b></td>
-				<td width='24%' class='tab_h'><b><a href='hostoverview.php?sort=description' class='headerlink'>Beschreibung des Rechners</a></b></td>
+				<!--<td width='16%' class='tab_h'><b><a href='hostoverview.php?sort=hwaddress' class='headerlink'>MAC Adresse</a></b></td>-->
+				<td width='16%' class='tab_h'><b>MAC Adresse</b></td>
+				<td width='6%' class='tab_h'><b>DHCP</b></td>
+				<td width='6%' class='tab_h'><b>RBS</b></td>
+				<td width='16%' class='tab_h'><b><a href='hostoverview.php?sort=description' class='headerlink'>Beschreibung</a></b></td>
+				<td width='12%' class='tab_h'><b><a href='hostoverview.php?sort=inventarnr' class='headerlink'>Institut</a></b></td>
+				<td width='10%' class='tab_h'><b><a href='hostoverview.php?sort=geolocation' class='headerlink'>Location</a></b></td>
 			</tr>
 			
 		
@@ -36,6 +39,8 @@
 				<td class='tab_d'>{FIXADD} &nbsp;</td>
 				<td class='tab_d'>{RBSCONT} &nbsp;</td>
 				<td class='tab_d'>{DSC} &nbsp;</td>
+				<td class='tab_d'>{INV} &nbsp;</td>
+				<td class='tab_d'>{GEOLOC} &nbsp;</td>
 			</tr>
 			<!-- END DYNAMIC BLOCK: Rechner -->
 

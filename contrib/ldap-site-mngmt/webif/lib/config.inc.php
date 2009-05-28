@@ -25,9 +25,11 @@ $domsuffix    = "uni-freiburg.de";
 $rootAU       = "ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
 # -----------------------------------------------------
 $dummyUid      = "lsmdummy";
-# Bitte nachfolgende Passwoerter aendern
+# Bitte nachfolgende Passwoerter aendern entsprechend
+# Eintraegen in LDAP User Objekten
 $dummyPassword = "123_dummy";
 $standpwd      = "123_user"
+$dhcpman_pwd   = "123_dhcpman";
 
 # -----------------------------------------------------
 # DHCP Service Global Settings

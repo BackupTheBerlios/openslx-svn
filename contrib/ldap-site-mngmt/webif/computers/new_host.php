@@ -39,17 +39,15 @@ if (count($altdhcp) != 0){
 }
 
 $template->assign(array("HOSTNAME" => $hostname,
-           			      "HOSTDESC" => $hostdesc,
-           			      "MAC" => $mac,
-           			      "IP" => $ip,
-           			      #"DHCPSELECT" => $dhcp_selectbox,
-           			      "DHCPSELECT" => $DHCP_SERVICE,
-           			      "GEOLOC" => "",
-           			      "GEOATT" => "",
-           			      "MOUSE" => "",
-           			      "GRAPHIC" => "",
-           			      "MONITOR" => "",
-           		       	"AUDN" => $auDN));
+						"HOSTDESC" => $hostdesc,
+						"MAC" => $mac,
+						"IP" => $ip,
+						"DHCPSELECT" => $DHCP_SERVICE,
+						"INVNR" => "",
+						"HWINVNR" => "",
+						"GEOLOC" => "",
+						"GEOATT" => "",
+						"AUDN" => $auDN));
 
 
 ###################################################################################

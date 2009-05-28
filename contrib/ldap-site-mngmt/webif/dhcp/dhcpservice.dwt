@@ -176,6 +176,7 @@
 	<tr>
   		<td height='40'></td>
   	</tr>
+	{CLASSBOX}
 	
 	<tr>
   		<td colspan='2'><h4>Alle DHCP Objekte im LDAP Verzeichnis (Subnets, Pools, Hosts, Classes)<br>

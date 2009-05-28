@@ -23,10 +23,62 @@ $ldapError = null;
 # Funktionen zur Verwaltung von RBS Diensten
 # 
 
+function check_tftpip_in_mipb($tftpserverip) {
+
+		global $ds, $suffix, $auDN, $rootAU, $ldapError;
+// 		echo " $auDN == $rootAU <br><br>";
+		if ( $auDN == $rootAU ) {
+			return 1;
+		}
+		else {
+		
+		$mipb_array = get_maxipblocks_au($auDN);
+		if ( $mipb_array[0] != "" ) {
+			$new_tftpip = $tftpserverip.'_'.$tftpserverip;
+			for ($i=0; $i < count($mipb_array); $i++){
+				if ( split_iprange($new_tftpip,$mipb_array[$i]) != 0 ){
+					return 1;
+					break;
+				}
+			}
+		}
+		
+		}
+		
+		return 0;
+}
+
 #
 # Neues RBS Dienst-Objekt anlegen 
 #
-function add_rbs($rbsDN,$rbscn,$rbsoffer,$server,$atts){
+function add_rbs($rbsDN,$rbscn,$rbsoffer,$atts){
+	
+	global $ds, $suffix, $auDN, $ldapError;
+	
+	$rbsentry ['objectclass'][0] = "RBService";
+	$rbsentry ['objectclass'][1] = "top";
+	$rbsentry ['cn'] = $rbscn;
+	$rbsentry ['rbsofferdn'] = $rbsoffer;
+	if (count($atts) != 0){
+		foreach (array_keys($atts) as $key){
+			if ($atts[$key] != ""){
+				$rbsentry[$key] = $atts[$key];
+			}
+		}
+	}
+	
+	print_r($rbsentry); echo "<br>";
+// 	print_r($rbsDN); echo "<br>";
+	
+	if (ldap_add($ds,$rbsDN,$rbsentry)){
+		return 1;
+	}
+	else{
+		return 0;
+	}
+}
+
+function old_add_rbs($rbsDN,$rbscn,$rbsoffer,$server,$atts){
 	
 	global $ds, $suffix, $auDN, $ldapError;
 	
@@ -713,7 +765,7 @@ function alternative_rbservices($rbsDN){
       for ($i=0; $i < count($rbsarray); $i++){
          if ($rbsarray[$i] != $rbsDN){
 		      $exp = ldap_explode_dn ( $rbsarray[$i], 1 );
-   	      $alt = array ("dn" => $rbsarray[$i], "cn" => $exp[0], "au" => " / ".$exp[2]);
+   	      $alt = array ("dn" => $rbsarray[$i], "cn" => $exp[0], "au" => " &nbsp;&nbsp;[ Abt.: ".$exp[2]." ]");
    	      $alt_rbs[] = $alt; 
          }
       }

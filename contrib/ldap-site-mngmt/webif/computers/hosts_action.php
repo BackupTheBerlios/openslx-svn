@@ -6,7 +6,7 @@ include('../standard_header.inc.php');
 
 # Welche Action? PDF Print, Client Move, ...
 if ( count ($_POST['choice']) > 0 ) {
-
+// 	print_r($_POST['choice']);
 	if ($_POST["action"] == "pdfprint") {
 		include('hosts_pdfprint.php');
 	}
@@ -21,6 +21,9 @@ if ( count ($_POST['choice']) > 0 ) {
 		//zurück zu hostoverview.php
 		include("hosts_noaction.php");
 	}
+}
+elseif ( count ($_POST['dhcp']) > 0 ) {
+	include("hosts_dhcp_change.php");
 }
 else{
 	include("hosts_noaction.php");

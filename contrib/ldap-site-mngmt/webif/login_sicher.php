@@ -17,12 +17,19 @@ include("lib/commonlib.inc.php");
 
 $uid = $_POST['uid'];
 $userPassword = $_POST['userPassword'];
-# $userDn_rz = "uid=".$uid.",ou=people,".$suffix_rz;
+# $userDn_rz = "uid=".$uid.",ou=people,".$suffix_ext;
+# $userDn_external = "uid=".$uid.",ou=people,".$suffix_external;
 $userDN = "uid=".$uid.",ou=people,".$suffix;
 #echo "uid: "; print_r($uid); echo "<br>";
 #echo "pw: "; print_r($userPassword); echo "<br>";
 
-checkLogin($uid,$userPassword);
+# Welcher Login
+if ( defined("LDAP_HOST_EXT") && defined("LDAP_PORT_EXT") ) {
+	checkLoginExternalAuth($uid,$userPassword);
+}
+else {
+	checkLogin($uid,$userPassword);
+}
 
 /**
 * checkLogin($uid, $userPassword) - Authentifizierung am RZ-LDAP und LSM-LDAP
@@ -52,13 +59,40 @@ checkLogin($uid,$userPassword);
 * @author Timothy Burk
 */
 
+# Authentification nur gegen interne User-Objekte
 function checkLogin($uid = "", $userPassword = "") {
-    global $userDn_rz, $userDN, $suffix, $suffix_rz, $ldapError, $standpwd;
+    global $userDn_rz, $userDN, $suffix, $suffix_ext, $ldapError, $standpwd;
     # Abfrage, ob das Loginformular Daten enthält
     if (!(($uid == "") || ($userPassword == ""))) {
         # UID und Passwort wurden eingegeben
         # Fallunterscheidung welche Logins möglich sind
-		/*  if ( $ds_rz = rzLdapConnect($uid,$userPassword) ) {
+		if ( ($ds = uniLdapConnect($uid,$userPassword)) ) {
+            # LSM-LDAP-Login erfolgreich
+ 			# echo "RZ Bind FAILED / LSM Bind OK<br>";
+            ldap_unbind($ds);
+            userLogin($uid, $userPassword);
+        } else {
+            # In anderen Fällen waren die Zugangsdaten nicht korrekt.
+            # -> Redirect auf index.php.
+            redirect(3, "index.php", "<h3>Bitte geben Sie korrekte Zugangsdaten ein.<h3>".$ldapError, FALSE);
+            die;
+        }
+
+    } else {
+        # UID und/oder Passwort wurden NICHT eingegeben
+        redirect(3, "index.php", "<h3>Bitte geben Sie User-Id und Passwort ein.</h3>".$ldapError, FALSE);
+        die;
+    }
+}
+
+# Authentification gegen externe und interne User-Objekte
+function checkLoginExternalAuth($uid = "", $userPassword = "") {
+    global $userDn_rz, $userDN, $suffix, $suffix_ext, $ldapError, $standpwd;
+    # Abfrage, ob das Loginformular Daten enthält
+    if (!(($uid == "") || ($userPassword == ""))) {
+        # UID und Passwort wurden eingegeben
+        # Fallunterscheidung welche Logins möglich sind
+		if ( $ds_rz = rzLdapConnect($uid,$userPassword) ) {
             # RZ-LDAP-Login erfolgreich,
             # -> Mache Datenabgleich und anschließenden Login am LSM-LDAP
             datenabgleich($uid, $ds_rz);
@@ -73,11 +107,9 @@ function checkLogin($uid = "", $userPassword = "") {
 	             redirect(3, "index.php", "<h3>Benutzer lokal nicht angelegt!<h3>".$ldapError, FALSE);
             	 die;
             }
-        } 
-		else*/
-		if (!($ds_rz = rzLdapConnect($uid,$userPassword)) && ($ds = uniLdapConnect($uid,$userPassword)))  {
-            # Wenn RZ-LDAP-Login nicht erfolgreich, LSM-LDAP-Login erfolgreich,
-            # dann ist der User auf dem RZ-LDAP nicht gespeichert.
+        } elseif (!($ds_rz = rzLdapConnect($uid,$userPassword)) && ($ds = uniLdapConnect($uid,$userPassword)))  {
+            # RZ-LDAP-Login nicht erfolgreich, LSM-LDAP-Login erfolgreich,
+            # -> User nicht in RZ-LDAP gespeichert.
             # -> Login am LSM-LDAP (z.B. für lokale Spezialuser ... )
  			# echo "RZ Bind FAILED / LSM Bind OK<br>";
             ldap_unbind($ds);
@@ -140,7 +172,7 @@ function dummyUidCheck($uid) {
 * @param resource RZ-LDAP Directory Handle
 */
 function userAnlegen($uid,$userPassword,$ds_rz) {
-    global $userDN, $suffix, $suffix_rz, $ldapError, $dummyUid, $dummyPassword;
+    global $userDN, $suffix, $suffix_ext, $ldapError, $dummyUid, $dummyPassword;
     # Bei Erfolg stellen wir eine Verbindung mit unserem LDAP her. Dazu nutzen wir den Dummy:
     if(!($ds_dummy = uniLdapConnect($dummyUid, $dummyPassword))) {
         redirect(5, "index.php", "Dummy-Login fehlgeschlagen!<br>".$ldapError, FALSE);
@@ -149,7 +181,7 @@ function userAnlegen($uid,$userPassword,$ds_rz) {
     # Im nächsten Schritt wird überprüft, ob ein Eintrag mit der UID $uid schon vorliegt:
     $ruffelder = array("uid", "sn", "givenname", "userpassword");
 
-    if(!($person_daten = uniLdapSearch($ds_rz, "ou=people,".$suffix_rz, "uid=$uid", $ruffelder, "", "list", 0, 0))) {
+    if(!($person_daten = uniLdapSearch($ds_rz, "ou=people,".$suffix_ext, "uid=$uid", $ruffelder, "", "list", 0, 0))) {
         redirect(5, "index.php", $ldapError, FALSE);
         die;
     }
@@ -193,7 +225,7 @@ function userAnlegen($uid,$userPassword,$ds_rz) {
 * @param resource ds LSM-LDAP Directory Handle nach Bind mit Dummyuser
 */
 function datenabgleich($uid, $ds_rz) {
-    global $userDN, $suffix, $suffix_rz, $ldapError, $dummyUid, $dummyPassword;
+    global $userDN, $suffix, $suffix_ext, $ldapError, $dummyUid, $dummyPassword;
     
     if(!($ds_dummy = uniLdapConnect($dummyUid, $dummyPassword))) {
         redirect(5, "index.php", "Dummy-Login fehlgeschlagen!<br>".$ldapError, FALSE);
@@ -203,7 +235,7 @@ function datenabgleich($uid, $ds_rz) {
     $ruffelder = array("sn", "givenname");
 	
 	 # RZ Personendaten
-    if(!($rz_person_daten = uniLdapSearch($ds_rz, "ou=people,".$suffix_rz, "uid=$uid", $ruffelder, "", "list", 0, 0))) {
+    if(!($rz_person_daten = uniLdapSearch($ds_rz, "ou=people,".$suffix_ext, "uid=$uid", $ruffelder, "", "list", 0, 0))) {
         redirect(5, "index.php", $ldapError, FALSE);
         die;
     }
@@ -211,7 +243,7 @@ function datenabgleich($uid, $ds_rz) {
     $rz_person_daten = $rz_person_daten[0];
     #print_r($rz_person_daten); echo "<br>";
     # LSM Personendaten
-    if(!($lsm_person_daten = uniLdapSearch($ds_dummy, "ou=people,".$suffix_rz, "uid=$uid", $ruffelder, "", "list", 0, 0))) {
+    if(!($lsm_person_daten = uniLdapSearch($ds_dummy, "ou=people,".$suffix_ext, "uid=$uid", $ruffelder, "", "list", 0, 0))) {
         redirect(5, "index.php", $ldapError, FALSE);
         die;
     }

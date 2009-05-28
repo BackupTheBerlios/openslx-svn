@@ -92,16 +92,18 @@ function check_mac_syntax($MAC)
 {
 	if($this->CLEAR) { $this->clear_error();}
 	
+	$checkmac_error = "<b>Syntax Fehler</b>: MAC Adresse muss eine <b>\":\"-separierte Hexadezimal Zahl</b> sein! ( z.B. 01:a3:11:ff:04:d3 )<br>";
+	
 	$len = strlen($MAC);
 	if( $len != 17 ){
-		$this->ERROR = "check_mac_syntax: too long [$MAC][$len]";
+		$this->ERROR = $checkmac_error."<b>$MAC</b> hat die L&auml;nge $len -> muss genau 17 sein!<br><br>";
 		return false;
 	}
 		
 	$badcharacter = eregi_replace("([0-9a-fA-F\:]+)","",$MAC);
 	#echo "badcharacter: ".$badcharacter."<br>";
 	if(!empty($badcharacter)){
-		$this->ERROR = "check_mac_syntax: Bad data in MAC address [$badcharacter]";
+		$this->ERROR = $checkmac_error."<b>$MAC</b> enth&auml;t falsche Zeichen: $badcharacter!<br><br>";
 		return false;
 	}
 	
@@ -109,13 +111,13 @@ function check_mac_syntax($MAC)
 	#print_r($chunks)."<br>";
 	$count = count($chunks);
 	if ($count != 6){
-		$this->ERROR = "check_mac_syntax: not in format hx:hx:hx:hx:hx:hx [$MAC]";
+		$this->ERROR = $checkmac_error."<b>$MAC</b> besteht aus $count Chunks -> muss genau 6 sein !<br><br>";
 		return false;
 	}
 	foreach ($chunks as $chunk){
 		$chunklen = strlen($chunk);
 		if( $chunklen != 2 ){
-			$this->ERROR = "check_mac_syntax: too long [$MAC][$len]";
+			$this->ERROR = "<b>$MAC</b> hat einen Chunk mit $len Zeichen -> immer maximal 2 Zeichen!<br><br>";
 			return false;
 		}
 	}
@@ -124,6 +126,28 @@ function check_mac_syntax($MAC)
 	
 }
 
+# Hexadecimal Format (":" separiert) -> Vendor-Encapsulated-Options
+function check_vendorcode_syntax($vc) {
+	if($this->CLEAR) { $this->clear_error();}
+	
+	if ( !preg_match_all('/^[0-9a-fA-F]{2}$|^([0-9a-fA-F]{2}[\:])*[0-9a-fA-F]{2,2}$/',$vc,$array) ) {
+		$this->ERROR = "<b>Syntax Fehler</b>: DHCP Option Vendor-Encapsulated-Options muss eine <b>\":\"-separierte Hexadezimal Zahl</b> sein! (z.B. 01:a3:11:ff:...:03)<br>";
+		return false;
+	}
+	
+	return true;
+}
+
+function check_leasetime_syntax($lt) {
+	if($this->CLEAR) { $this->clear_error();}
+	
+	if ( !preg_match_all('/^[\d]{1,7}$/',$lt,$array) ) {
+		$this->ERROR = "<b>Syntax Fehler</b>: DHCP Option Lease Time muss aus <b>Dezimal-Ziffern</b> bestehen! (z.B. 86400)<br>";
+		return false;
+	}
+	
+	return true;
+}
 
 # Domainname
 

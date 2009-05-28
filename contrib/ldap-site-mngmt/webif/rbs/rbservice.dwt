@@ -1,6 +1,6 @@
 <table border='0' cellpadding='5' cellspacing='0' width='100%'> 
   	<tr>
-  		<td colspan='2'><h3>Remote Boot Service &nbsp;<code class='font_object'> {RBSCN} </code> </h3></td>
+  		<td colspan='2'><h3>Remote Boot Service &nbsp;<code class='font_object'> {RBSCN} &nbsp;-&nbsp; {RBSDESC}</code> </h3></td>
   	</tr>
   	<tr>
   		<td height='20'></td>
@@ -11,17 +11,56 @@
 				<form action='rbservice_change.php' method='post'>
 			
 			<tr>
-				<td width='40%' class='tab_h'><b>Attribut</b></td>
-				<td width='60%' class='tab_h'><b>Wert</b></td>
+				<td width='35%' class='tab_h'><b>Attribut</b></td>
+				<td width='65%' class='tab_h'><b>Wert</b></td>
 			</tr>
 			
 			<tr height='50'>
 				<td class='tab_d'><b>Eindeutiger RBS Name (cn):</b><br>(Teil des dn, ohne Leerzeichen eingeben) &nbsp;</td>
 				<td class='tab_d'>
-					<font size='+2'><b>RBS_</b></font><input type='Text' name='rbscn' value='{RBSCN}' size='40' class='medium_form_field'>
+					<font size='+2'><b>RBS_</b></font><input type='Text' name='rbscn' value='{RBSCN}' size='30' class='medium_form_field'>
 					<input type='hidden' name='oldrbscn' value='{RBSCN}'> &nbsp;
 				</td>
 			</tr>
+			<tr height='50'>
+				<td class='tab_d'><b>Beschreibung :</b><br>(erscheint bei den Nutzern) &nbsp;</td>
+				<td class='tab_d'>
+					<input type='Text' name='attribs[description]' value='{RBSDESC}' size='55' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[description]' value='{RBSDESC}'> &nbsp;
+				</td>
+			</tr>
+			<tr height='50'>
+				<td class='tab_d'><b>Modus:</b><br>(managed) &nbsp;</td>
+				<td class='tab_d'>
+					<!--<select name='attribs[rbsmode]' size='4' class='medium_form_selectbox'>-->
+					<input type='Text' name='attribs[rbsmode]' value='{RBSMODE}' size='55' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[rbsmode]' value='{RBSMODE}'> &nbsp;
+				</td>
+			</tr>
+			<tr valign='top'>
+				<td class='tab_d_ohne'><b>TFTP Settings: &nbsp;<b></td>
+				<td class='tab_d_ohne'><font size='+1'><b>{TFTPIP}::tftproot/{TFTPROOT}/{INITBOOTFILE} &nbsp;<b></font></td>
+			</tr>
+			<tr>
+				<td class='tab_d_ohne'><b>TFTP Server IP :</b><br>(DHCP Option Next-Server) &nbsp;</td>
+				<td class='tab_d_ohne'>
+					<input type='Text' name='tftpserverip' value='{TFTPIP}' size='16' maxlength='15' class='medium_form_field'>
+					<input type='hidden' name='oldtftpserverip' value='{TFTPIP}'> &nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td class='tab_d_ohne'><b>RBS Root</b><br>(Verschiebung des TFTP Root) &nbsp;</td>
+				<td class='tab_d_ohne'>
+					<input type='Text' name='attribs[tftproot]' value='{TFTPROOT}' size='20' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[tftproot]' value='{TFTPROOT}'></td>
+			</tr>
+			<tr>
+				<td class='tab_d'><b>Initial Boot File</b><br>(DHCP Option Filename) &nbsp;</td>
+				<td class='tab_d'>
+					<input type='Text' name='attribs[initbootfile]' value='{INITBOOTFILE}' size='20' class='medium_form_field'>
+					<input type='hidden' name='oldattribs[initbootfile]' value='{INITBOOTFILE}'></td>
+			</tr>
+			
 			<tr>
 				<td class='tab_d_ohne'><b>Dienst kann momentan genutzt werden von:</b><br></td>
 				<td class='tab_d_ohne'>Abteilung<b> {RBSOFFERNOW}</b> &nbsp;(und allen Unterabteilungen)
@@ -43,153 +82,19 @@
 					<input type='hidden' name='oldrbsoffer' value='{RBSOFFERNOWDN}'> &nbsp;
 				</td>
 			</tr>
-	
-		</table></td>
-	</tr>
-	<tr>
-  		<td height='40'></td>
-  	</tr>		
-	<tr>
-  		<td colspan='2'><h4>TFTP Boot Server:</h4></td>
-  	</tr>
-  	<tr><td>
-  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
-			
-			<tr valign='top'>
-				<td width='15%' class='tab_h'>&nbsp;</td>
-				<td width='35%' class='tab_h'>&nbsp;</td>
-				<td colspan='2' class='tab_h'>&nbsp;</td>
-			</tr>
-			
-			<tr valign='top'>
-				<td class='tab_d_ohne'><b>TFTP Server: &nbsp;</td>
-				<td class='tab_d_ohne'>
-					<!--<input type='Text' name='tftpserverip' value='{TFTPIP}' size='15' class='medium_form_field'>-->
-					<input type='hidden' name='oldtftpserverip' value='{TFTPIP}'><font size='+1'>Hostname: <b>{TFTP}</b> &nbsp;[IP: <b>{TFTPIP}</b>]</font></td>
-				<td width='15%' class='tab_d_ohne'>TFTP Root</td>
-				<td width='30%' class='tab_d_ohne'>
-					<input type='Text' name='attribs[tftproot]' value='{TFTPROOT}' size='20' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[tftproot]' value='{TFTPROOT}'></td>
-			</tr>
-			<tr valign='top'>
-				<td class='tab_d_ohne'>&auml;ndern:</td>
-				<td rowspan='2' class='tab_d_ohne'>
-					<select name='tftpserver' size='6' class='tftp_form_selectbox'> 
-						<option selected value='none'>----------------------------</option>
-						<!-- BEGIN DYNAMIC BLOCK: TftpHosts -->
-						<option value='{HDN}'>{HN} &nbsp;[IP: {IP}]</option>
-						<!-- END DYNAMIC BLOCK: TftpHosts -->
-					</select></td>
-				<td class='tab_d_ohne'>PXE Path</td>
-				<td class='tab_d_ohne'>{TFTPROOT}/
-					<input type='Text' name='attribs[tftppxepath]' value='{TFTPPXE}' size='20' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[tftppxepath]' value='{TFTPPXE}'></td>
-			</tr>
-			<tr valign='top'>
-				<td class='tab_d_ohne'>&nbsp;</td>
-				<td class='tab_d_ohne'>Kernel Path</td>
-				<td class='tab_d_ohne'>{TFTPROOT}/
-					<input type='Text' name='attribs[tftpkernelpath]' value='{TFTPKERNEL}' size='20' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[tftpkernelpath]' value='{TFTPKERNEL}'></td>
-			</tr>
-			<tr valign='top'>
-   			<td class='tab_d'>Initial Boot File</td>
-				<td class='tab_d'>
-				   <input type='Text' name='initbootfile' value='{INITBOOTFILE}' size='25' class='medium_form_field'>
-					<input type='hidden' name='oldinitbootfile' value='{INITBOOTFILE}'></td>
-				<td class='tab_d'>Clientconf Path</td>
-				<td class='tab_d'>{TFTPROOT}/
-					<input type='Text' name='attribs[tftpclientconfpath]' value='{TFTPCLIENTCONF}' size='20' class='medium_form_field'>
-					<input type='hidden' name='oldattribs[tftpclientconfpath]' value='{TFTPCLIENTCONF}'></td>
-					<input type='hidden' name='oldtftpserverdn' value='{TFTPDN}'>
-			</tr>
-		</table></td>
-  	</tr>
-	<tr>
-  		<td height='40'></td>
-  	</tr>		
-	<tr>
-  		<td colspan='2'><h4>File Server URIs:</h4>
-  		   Diese sind in Generischen Boot Images als RootFS verwendbar.</td>
-  	</tr>
-  	<tr><td>
-  		<table cellpadding='7' cellspacing='0' border='1' align='left' width='90%' style='border-width: 0 0 0 0;'>
-			
-			<tr valign='top'>
-				<td width='20%' class='tab_h'>&nbsp;</td>
-				<td width='15%' class='tab_h'>&nbsp;</td>
-				<td width='25%' class='tab_h'>&nbsp;</td>
-				<td width='40%' class='tab_h'>&nbsp;</td>
-			</tr>
-			
-			<tr valign='top'>
-				<td class='tab_d'><b>Vorhandene URIs zu Root-Filesystemen: </b><br>(Zum L&ouml;schen einer URI H&auml;kchen setzen)</td>
-				<td colspan='2' class='tab_d'>
-				   <!-- BEGIN DYNAMIC BLOCK: Fsuris -->
-				      <input type='checkbox' name='delfsuri[]' value='{FSURI}' size='10' class='medium_form_field'> &nbsp;&nbsp; <b>{FSURI}</b><br>
-				   <!-- END DYNAMIC BLOCK: Fsuris -->
-				<td class='tab_d'>&nbsp;</td>	
-			</tr>
-			<tr valign='top'>
-				<td class='tab_d_ohne'><b>Neue URI anlegen</b></td>
-				<td class='tab_d_ohne'>Filesystemtyp</td>
-				<td class='tab_d_ohne'>Fileserver IP</td>
-				<td class='tab_d_ohne'>NFS Export-Root bzw. (D)NBD &lt;:Port[/Filesystem]&gt;</td>
-			</tr>
-			<tr valign='top'>
-				<td class='tab_d'>&nbsp;</td>
-				<td class='tab_d'>
-					<select name='addfsuri[]' size='5' class='tiny_form_selectbox'> 
-						<option selected value='nfs'>nfs://</option>				
-						<option value='nbd'>nbd://</option>
-						<option value='dnbd'>dnbd://</option>
-						<option value='dnbd2'>dnbd2://</option>
-						<option value='afs'>afs://</option>
-					</select> </td>
-				<td class='tab_d'><input type='Text' name='addfsuri[]' value='' size='15' class='medium_form_field'></td>
-				<td class='tab_d'><input type='Text' name='addfsuri[]' value='' size='25' class='medium_form_field'></td>
-			</tr>
 			
 			<input type='hidden' name='rbsdn' value='{RBSDN}'>
-			<input type='hidden' name='mnr' value='{MNR}'>	
-			<input type='hidden' name='sbmnr' value='{SBMNR}'>			
-
+			<input type='hidden' name='mnr' value='{MNR}'>
+			<input type='hidden' name='sbmnr' value='{SBMNR}'>
+			
+			<tr>
+				<td class='tab_d_ohne'><input type='submit' name='apply' value='anwenden' class='small_loginform_button'></td>
+				<td class='tab_d_ohne' align='right'><input type='reset' name='apply' value='zur&uuml;cksetzen' class='reset_button'></td>		
+				</form>
+			</tr>
+			
 		</table></td>
-  	</tr>
-  	<tr>
-		<td><input type='Submit' name='apply' value='anwenden' class='small_loginform_button'>
-		</form></td>
 	</tr>
-	
-	
-	<tr>
-  		<td height='50'></td>
-  	</tr>
-	<tr>
-  		<td colspan='2'><h3>Config File f&uuml;r PXE Generator Script</h3></td>
-  	</tr>
-	<tr>
-  		<td colspan='2'>Speichern Sie dieses als <b>pxegen.conf.pl</b> im gleichen Verzeichnis wie ihr PXE Generator Skript <b>pxe_generator.pl</b></td>
-  	</tr>
-  	<tr>
-  		<td>
-  		<table cellpadding='20' cellspacing='0' border='0' align='left' width='80%' style='border-color: black; border-style: solid; border-width: 2 2 2 2;'>
-
-  			<tr>
-  				<td class='tab_d_ohne'>
-  					$ldaphost= "{PXEGENLDAP}"; <br>
-  					$basedn= "{PXEGENBASE}"; <br>
-  					$userdn= "{PXEGENUDN}"; <br>
-  					$passwd= "{PXEGENPW}"; <br>
-  					$rbsdn= "{PXEGENRBS}";
-  				</td>			
-  			</tr>
-  			
-  			
-  		</table></td>
-  	</tr>
-	
-	
 	
 	<tr>
   		<td height='60'></td>

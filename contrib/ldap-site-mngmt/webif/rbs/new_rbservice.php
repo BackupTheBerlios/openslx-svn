@@ -23,20 +23,9 @@ createRBSMenu($rollen, $mnr, $auDN, $sbmnr);
 
 $rbscn = str_replace ( "_", " ", $_GET['rbscn']);
 $template->assign(array("RBSCN" => $rbscn,
-								"TFTP" => "",
+								"TFTPROOT" => "",
 								"TFTPIP" => "",
 								"INITBOOTFILE" => "",
-								"TFTPKERNEL" => "",
-								"TFTPPXE" => "",
-								"TFTPCLIENTCONF" => "",
-								"NFS" => "",
-								"NFSIP" => "",
-								"NFSPATH" => "",
-								"NBD" => "",
-								"NBDIP" => "",
-								"HDN" => "",
-								"HN" => "",
-								"IP" => "",
 								"OFFERSELF" => $auDN,
 								"SELFOU" => $au_ou,
            		       	"MNR" => $mnr,
@@ -62,28 +51,6 @@ foreach ($rbsoffers as $offer){
 	$template->assign(array("RBSOFFER" => $offer['dn'],
 									"RBSOFFEROU" => $offer['ou'],));
 	$template->parse("RBSOFFERS_LIST", ".Rbsoffers");
-}
-
-### Rechner
-$hostorgroup = $exp[0];
-$hosts_array = get_hosts($auDN,array("dn","hostname","ipaddress"));
-
-$template->define_dynamic("TftpHosts", "Webseite");
-$template->define_dynamic("NfsHosts", "Webseite");
-$template->define_dynamic("NbdHosts", "Webseite");
-foreach ($hosts_array as $item){
-	$template->assign(array("HDN" => $item['dn'],
-                           "HN" => $item['hostname'],
-                           "IP" => $item['ipaddress']));
-   $template->parse("TFTPHOSTS_LIST", ".TftpHosts");
-   $template->assign(array("HDN" => $item['dn'],
-                           "HN" => $item['hostname'],
-                           "IP" => $item['ipaddress']));
-   $template->parse("NFSHOSTS_LIST", ".NfsHosts");	
-   $template->assign(array("HDN" => $item['dn'],
-                           "HN" => $item['hostname'],
-                           "IP" => $item['ipaddress']));
-   $template->parse("NBDHOSTS_LIST", ".NbdHosts");	
 }
 
 

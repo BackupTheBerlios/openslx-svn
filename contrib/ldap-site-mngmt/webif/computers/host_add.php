@@ -29,6 +29,7 @@ if (count($attribs) != 0){
 	}
 }
 
+$automatic_back = 1;
 $seconds = 2;
  
 echo "
@@ -83,17 +84,16 @@ if ( $hostname != "" ){
 		   }
    	}
 		
-		if (add_host($hostDN,$hostname,$hostdesc,$mac,$ip,$atts,$dhcp)){			
+		if ( add_host($hostDN,$hostname,$hostdesc,$mac,$ip,$atts,$dhcp) ) {
 			$mesg .= "<br>Neuer Rechner erfolgreich angelegt<br>";
 		}
 		else{
+			$automatic_back = 0;
 			$mesg .= "<br>Fehler beim anlegen des Rechners!<br>";
 		}
 		
-		
-		# DHCP
-		
 		$url = 'hostoverview.php';
+		
 	}else{
 		$seconds = 4;
 		$mesg = "In der Domain <b>$assocdom</b> existiert bereits ein Client mit Namen <b>$hostname</b>!<br><br>
@@ -115,11 +115,15 @@ else{
 }
 
 
-
-
-$mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>				
-			Falls nicht, klicken Sie hier <a href=".$url." style='publink'>back</a>";
-redirect($seconds, $url, $mesg, $addSessionId = TRUE);
+if ( $automatic_back ) {
+	$mesg .= "<br>Sie werden automatisch auf die vorherige Seite zur&uuml;ckgeleitet. <br>				
+			Falls nicht, klicken Sie hier <a href=".$url." style='publink'>zur&uuml;ck</a>";
+	redirect($seconds, $url, $mesg, $addSessionId = TRUE);
+}
+else {
+	$mesg .= "<br><br><a href=$url style='publink'><b>gelesen</b> &nbsp;&nbsp;(<< zur&uuml;ck)</a>";
+	echo $mesg;
+}
 
 echo "</td></tr></table></body>
 </html>";

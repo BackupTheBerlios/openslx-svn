@@ -791,9 +791,9 @@ function delete_ip_host($hostDN,$auDN)
 	# print_r($host_array);printf("<br>");
 	# printf($old_ip);
 	$delentry ['ipaddress'] = $old_ip;
-	if ( $host_array['dhcpoptfixed-address'] != "" ){
-	   $delentry ['dhcpoptfixed-address'] = array();
-	}
+// 	if ( $host_array['dhcpoptfixed-address'] != "" ){
+// 	   $delentry ['dhcpoptfixed-address'] = array();
+// 	}
    # print_r($delentry);printf("<br>");
 	
 	$results = ldap_mod_del($ds,$hostDN,$delentry);

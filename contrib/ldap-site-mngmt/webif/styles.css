@@ -1,6 +1,6 @@
 p {
- font-family: Arial;
- font-size: 10pt;
+ font-family: arial, helvetica, sans-serif;
+ font-size: 9pt;
  color: #000000;
 }
 a:link {
@@ -21,7 +21,7 @@ a:active {
 }
 body {
  font-family: helvetica, arial, sans-serif;
- font-size: 10pt;
+ font-size: 9pt;
  color: #000000;
  background-color: #FFFFFF;
  margin-top:0px;
@@ -29,31 +29,31 @@ body {
 }
 h1 {
  font-family: arial, helvetica, sans-serif;
- font-size: 25pt;
+ font-size: 20pt;
  font-weight: bold;
  color: #000000;
 }
 h2 {
  font-family: arial, helvetica, sans-serif;
- font-size: 15pt;
+ font-size: 13pt;
  font-weight: bold;
  color: #000000;
 }
 .h2_header {
  font-family: arial, helvetica, sans-serif;
- font-size: 15pt;
+ font-size: 13pt;
  font-weight: bold;
  color: #ffffff;
 }
 h3 {
  font-family: arial, helvetica, sans-serif;
- font-size: 12pt;
+ font-size: 11pt;
  font-weight: bold;
  color: #000000;
 }
 .h3_header {
  font-family: arial, helvetica, sans-serif;
- font-size: 12pt;
+ font-size: 11pt;
  font-weight: bold;
  color: #ffffff;
 }
@@ -94,14 +94,14 @@ h4 {
 }
 .balken {
  font-family: arial, helvetica, sans-serif;
- font-size: 12pt;
+ font-size: 11pt;
  font-weight: bold;
  color: #FFFFFF;
  background-color: #006BB6;
 }
 .balken_mit_pd {
  font-family: arial, helvetica, sans-serif;
- font-size: 12pt;
+ font-size: 11pt;
  font-weight: bold;
  color: #FFFFFF;
  background-color: #006BB6;
@@ -115,7 +115,7 @@ h4 {
 }
 .small_loginform_field {
  font-family: arial, helvetica, sans-serif;
- font-size: 10pt;
+ font-size: 9pt;
  color: #000000;
  border-style: solid;
  border-width: 1px 1px;
@@ -126,7 +126,7 @@ h4 {
 }
 .loginform_button {
  font-family: arial, helvetica, sans-serif;
- font-size: 10pt;
+ font-size: 9pt;
  color: #FFFFFF;
  border-style: solid;
  border-width: 1px 1px;
@@ -136,7 +136,7 @@ h4 {
 }
 .small_loginform_button {
  font-family: arial, helvetica, sans-serif;
- font-size: 10pt;
+ font-size: 9pt;
  width: 100px;
  color: #FFFFFF;
  border-style: solid;
@@ -404,17 +404,17 @@ h4 {
 }
 .standard_schrift {
  font-family: Arial;
- font-size: 10pt;
+ font-size: 9pt;
  color: #FFFFFF;
 }
 .menue_schrift {
  font-family: Arial;
- font-size: 11pt;
+ font-size: 10pt;
  color: #FFFFFF;
 }
 .submenue_schrift {
  font-family: Arial;
- font-size: 10pt;
+ font-size: 9pt;
  color: #FFFFFF;
 }
 .tabellenzeile_hell {
@@ -444,21 +444,25 @@ h4 {
  border-color: black;
  border-style: solid;
  border-width: 0px 0px 1px 0px;
+ margin: 5px;
 }
 .tab_d_top {
  border-color: black;
  border-style: solid;
  border-width: 3px 0px 1px 0px;
+ margin: 5px;
 }
 .tab_dgrey {
  border-color: #B0B0B0;
  border-style: solid;
  border-width: 0px 0px 1px 0px;
+ margin: 5px;
 }
 .tab_d_ohne {
  border-color: black;
  border-style: solid;
  border-width: 0px 0px 0px 0px;
+ margin: 5px;
 }
 .tab_d_1010 {
  border-color: black;
