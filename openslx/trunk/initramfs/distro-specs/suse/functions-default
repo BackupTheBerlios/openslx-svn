@@ -524,7 +524,7 @@ if [ "x$start_dreshal" = "xyes" ]; then
         >> /mnt/etc/passwd
     strinfile "haldaemon:" /mnt/etc/group || \
       echo "haldaemon:!:103:" >> /mnt/etc/group
-    echo -n "" > /mnt/var/lib/PolicyKit/reload
+    echo -n "" > /mnt/var/lib/PolicyKit.reload
     # create directories and set permissions with user and group id
     testmkd /mnt/var/run/hal haldaemon:haldaemon
 	testmkd /mnt/var/cache/hald haldaemon:haldaemon

@@ -414,6 +414,9 @@ if [ -n "$ipinfo" ] ; then
   serverip=$(getip 2)
   gateway=$(getip 3)
   subnet_mask=$(getip 4)
+  # we might have an idea of the dns server via preboot
+  dns_srv=$(getip 5)
+  [ -n "$dns_srv" ] && echo nameserver $dns_srv >/etc/resolv.conf;
   echo -e "# ip configuration written by $0 script:\nclientip=$clientip\n\
 subnet_mask=$subnet_mask\ngateway=$gateway\nserverip=$serverip" \
     >>/etc/initramfs-setup
