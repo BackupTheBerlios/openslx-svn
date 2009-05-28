@@ -18,6 +18,7 @@
 # include general configuration from vmchooser
 . /etc/opt/openslx/run-virt.include
 
+
 # configuration writer functions
 ################################################################################
 
@@ -41,12 +42,13 @@ sharedFolder.option = \"alwaysEnabled\"" >>${conffile}
   ;;
   2.5|6.5)
     shared_folder="TRUE"
+    cap3d="TRUE"
     echo "
 # version specific stuff
 config.version = \"8\"
-ehci.present= \"TRUE\"
+ehci.present = \"TRUE\"
 sharedFolder.option = \"alwaysEnabled\"
-mks.enable3d = \"FALSE\"" >>${conffile}    
+mks.enable3d = \"${enable3d}\"" >>${conffile}
   ;;
 esac
 
@@ -79,7 +81,7 @@ ide1:1.deviceType = \"cdrom-raw\"
 scsi0.present = \"${scsi}\"
 scsi0:0.present = \"${scsi}\"
 scsi0:0.fileName = \"${diskfile}\"
-scsi0.virtualDev = \"lsilogic\" #\"${hddrv}\"
+scsi0.virtualDev = \"${hddrv}\"
 scsi0:0.mode = \"independent-nonpersistent\"
 
 # floppies
@@ -191,6 +193,7 @@ pref.eula.1.appName = \"VMware Workstation\"
 pref.eula.1.buildNumber = \"${vmbuild}\"" >${vmhome}/preferences
 }
 
+
 # declaration of default variables
 ################################################################################
 
@@ -202,6 +205,35 @@ confdir=${redodir}
 conffile="${confdir}/run-vmware.conf"
 # users vmware config folder
 vmhome="${HOME}/.vmware"
+
+# get several version infos for vmware/player
+. /etc/vmware/slxvmconfig
+vmbuild=$buildversion
+vmversion=$version
+
+# VMware start options
+#-X = fullscreen
+vmopt="-X"
+
+# set the variables appropriately
+VIRTCMD=vmplayer
+VIRTCMDOPTS="${vmopt} ${conffile}"
+
+
+# hardware checks
+################################################################################
+
+# enable 3D
+enable3d=$(grep -i "<enable3d param=.*" ${xml} 2>/dev/null | \
+  awk -F '=' {'print $2'})
+case "$enable3d" in
+  *true*|*TRUE*|*yes*|*YES*)
+    enable3d="TRUE"
+    ;;
+  *)
+    enable3d="FALSE"
+    ;;
+esac
 
 # serial port defined (e.g. "ttyS0" or "autodetect")
 serial=$(grep -i "<serial port=\"" ${xml} | awk -F "\"" '{ print $2 }')
@@ -246,14 +278,6 @@ else
   memhost=$(expr ${totalmem} - ${mem} - ${mem})
 fi
 
-# check memory range
-if [ "${mem}" -lt "256" ] || [ "${memhost}" -lt "256" ]; then
-  writelog "\n\n"
-  writelog "\tYour memory is out of range: ${mem} MB."
-  writelog "\tMin. 256 MB for host and guest!"
-  exit 1
-fi
-
 # virtual fd/cd/dvd and drive devices, floppy b: for configuration
 # if $floppy_0 from run-virt.include set then fdtest="TRUE"
 fdtest=
@@ -278,15 +302,6 @@ ide="TRUE"
 scsi="FALSE"
 hddrv="ide"
 
-# get several version infos for vmware/player
-. /etc/vmware/slxvmconfig
-vmbuild=$buildversion
-vmversion=$version
-
-# VMware start options
-#-X = fullscreen
-vmopt="-X"
-
 # check if ide/scsi and hwver of image
 # read only the first 30 lines to be shure
 imghead=$(head -30 ${diskfile})
@@ -305,58 +320,15 @@ case "${hddrv}" in
     ;;
 esac
 
-### log function ###############################################################
-# function to write to stdout and logfile
-writelog ()
-{
-  # write to stdout
-  echo -e "$1"
 
-  # log in file
-  echo -e "$1" >>${redodir}/run-vmware.${USER}.log
-}
-
-# Delete the LOCK file. its insecure, but ...
-rm -f ${confdir}/*LOCK >/dev/null 2>&1
+# write configuration files
+################################################################################
 
 # create vmware directories
 mkdir -p ${redodir} >/dev/null 2>&1
 mkdir -p ${confdir} >/dev/null 2>&1
 mkdir -p ${vmhome} >/dev/null 2>&1
 
-# log script information
-writelog "# File created by $0 (v.${version})\n# on $(date)\n"
-writelog "Starting with non-persistent mode ...\n"
-
-# Write all results to logfile
-# log disksetup
-writelog "Directories:"
-writelog "\tConfdir:\t${confdir}"
-writelog "\tConffile:\t${conffile}"
-writelog "\tRedodir:\t${redodir}"
-writelog "\tVMhome:\t\t${vmhome}"
-writelog "\t/tmp info: \
-     $(grep "/tmp " /proc/mounts) $(df -h | grep " /tmp$" | awk '{print $2}')"
-# HW setup
-writelog "Hardware:"
-writelog "\tMAC:\t\t00:50:56:0D:${mac}"
-writelog "\tMem:\t\t${mem} MB"
-writelog "\tHostmem:\t${memhost} MB"
-writelog "\tMax. res.:\t${xres}x${yres}"
-writelog "\tCD-ROM1:\t${cdrom0}"
-writelog "\tCD-ROM2:\t${cdrom1}"
-writelog "\tFloppy_A:\t${floppy0}"
-# Image
-writelog "Diskimage:"
-writelog "\tDiskfile:\t${diskfile}"
-writelog "\tDisktype:\t${hddrv}"
-writelog "\tVMostype:\t${vmostype}"
-writelog "\tDisplayname:\t${displayname}"
-
-# check if image exists, etc...
-#filecheck
-
-### write configuration files ##################################################
 # create preferences
 preferencesheader
 
@@ -373,6 +345,63 @@ for i in /opt/openslx/plugin-repo/vmware/*; do
   cp ${i}/nvram ${confdir}/nvram 2>/dev/null
 done
 
-# set the variables appropriately
-VIRTCMD=vmplayer
-VIRTCMDOPTS="${vmopt} ${conffile}"
+
+# logging and stdout
+################################################################################
+
+# remove ols logs
+rm ${vmhome}/run-vmware.* >/dev/null 2>&1
+
+# function to write to stdout and logfile
+writelog ()
+{
+  # write to stdout
+  echo -e "$1"
+
+  # log in file
+  echo -e "$1" >>${vmhome}/run-vmware.$$.log
+}
+
+# log script information
+writelog "# File created by $0 (VMversion ${vmversion})\n# on $(date)\n"
+writelog "Starting with non-persistent mode ...\n"
+
+# check memory range
+if [ "${mem}" -lt "256" ] || [ "${memhost}" -lt "256" ]; then
+  writelog "\tMemory out of range: ${mem} MB (guest) / ${memhost} MB (host)!"
+  writelog "\tMin. 256 MB for host and guest!"
+  exit 1
+fi
+
+# Write all results to logfile
+# log disksetup
+writelog "Directories:"
+writelog "\tConfdir:\t${confdir}"
+writelog "\tConffile:\t${conffile}"
+writelog "\tRedodir:\t${redodir}"
+writelog "\tVMhome:\t\t${vmhome}"
+writelog "\tLogfile:\t${vmhome}/run-vmware.$$.log"
+writelog "\t/tmp info: \
+     $(grep "/tmp " /proc/mounts) $(df -h | grep " /tmp$" | awk '{print $2}')"
+# HW setup
+writelog "Hardware:"
+writelog "\tMAC:\t\t00:50:56:0D:${mac}"
+writelog "\tMem:\t\t${mem} MB"
+writelog "\tHostmem:\t${memhost} MB"
+writelog "\tMax. res.:\t${xres}x${yres}"
+writelog "\tCD-ROM1:\t${cdrom0}"
+writelog "\tCD-ROM2:\t${cdrom1}"
+writelog "\tFloppy_A:\t${floppy0}"
+# Image
+writelog "Diskimage:"
+writelog "\tDiskfile:\t${diskfile}"
+writelog "\tDisktype:\t${hddrv}"
+writelog "\tHWVersion:\t${hwver}"
+writelog "\tVMostype:\t${vmostype}"
+if [ "${cap3d}" = "TRUE" -a "${enable3d}" = "TRUE" ]; then
+  writelog "\t3D Graphics:\tenabled"
+else
+  writelog "\t3D Graphics:\tdisabled"
+fi
+writelog "\tDisplayname:\t${displayname}\n"
+

@@ -225,9 +225,9 @@ VIRTCMDOPTS="${vmopt} ${conffile}"
 
 # enable 3D
 enable3d=$(grep -i "<enable3d param=.*" ${xml} 2>/dev/null | \
-  awk -F '"' {'print $2'})
+  awk -F '=' {'print $2'})
 case "$enable3d" in
-  true|TRUE|yes|YES)
+  *true*|*TRUE*|*yes*|*YES*)
     enable3d="TRUE"
     ;;
   *)
