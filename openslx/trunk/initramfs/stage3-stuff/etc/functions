@@ -120,8 +120,8 @@ fi
 case "$2" in
   prot) echo "$prot" ;;
   server) echo "$server" ;;
-  # add '::' again to path, ticket #232
-  path) echo "$path" | sed -e 's,§§§§§,\:\:,g' ;;
+  # add '::' again to path, remove duplicate "//"
+  path) echo "$path" | sed -e 's,§§§§§,\:\:,g;s,//,/,' ;;
   port) echo "$port" ;;
   query) echo "$query" ;;
 esac
@@ -160,8 +160,8 @@ case "${proto}" in
     done
   ;;
   smb|cifs)
-    mount -n -t ${proto} -o ${mntopt},user=guest,guest \
-      //${server}/${srcpath} ${target}
+    mount -n -o ${mntopt},user=guest,guest,file_mode=0755,dir_mode=0755 \
+      -t ${proto} //${server}${srcpath} ${target}
   ;;
 esac
 }
