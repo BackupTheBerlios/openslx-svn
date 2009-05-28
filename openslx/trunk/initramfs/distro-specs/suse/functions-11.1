@@ -46,6 +46,13 @@ if [ "x$start_dreshal" = "xyes" ]; then
   testmkd /mnt/var/run/PolicyKit polkituser:polkituser 
   testmkd /mnt/var/lib/PolicyKit polkituser:polkituser
   testmkd /mnt/var/run/dbus/at_console/pool
+
+  sed -i /mnt/etc/PolicyKit/PolicyKit.conf \
+      -e "s/\(<\/config>\)/    @@new@@\n\1/" \
+      -e "s/@@new@@/<match action=\"@@action@@\">\n@@return@@\n    <\/match>/" \
+      -e "s/@@action@@/org.freedesktop.hal.storage.mount-removable/" \
+      -e "s/@@return@@/        <return result=\"yes\"\/>/"
+
   if [ -f /mnt/etc/init.d/dbus ] ; then
     strinfile "messagebus:" /mnt/etc/passwd || \
       echo "messagebus:x:102:103:User for D-BUS:/var/run/dbus:/bin/false" \
@@ -55,6 +62,11 @@ if [ "x$start_dreshal" = "xyes" ]; then
 	# create directories and set permissions with user and group id
     testmkd /mnt/var/run/dbus messagebus:messagebus
     testmkd /mnt/var/lib/dbus
+
+    rm -rf /mnt/etc/dbus-1/system.d/*etwork*anager.conf \
+           /mnt/etc/dbus-1/system.d/nm-* \
+           /mnt/etc/dbus-1/event.d/*NetworkManager*
+
     rllinker "dbus" $start $stop
   fi
   if [ -f /mnt/etc/init.d/haldaemon ] ; then
