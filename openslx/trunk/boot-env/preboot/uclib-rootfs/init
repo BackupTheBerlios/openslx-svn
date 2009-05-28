@@ -87,7 +87,7 @@ for mod in ${ramfs_nicmods} \
 done
 
 # read kernel commandline
-read KCMDLINE < /proc/cmdline
+read KCMDLINE </proc/cmdline
 # read the system wide machine-setup and then the kernel commandline
 for opts in ${KCMDLINE} ; do
   case ${opts} in
@@ -96,6 +96,9 @@ for opts in ${KCMDLINE} ; do
     # ... or a specified debug level (will be passed to next stage)
     debug=*)
       DEBUGLEVEL=${opts#debug=};;
+    # WLAN ssid (most probably passed that way, unused yet ...)
+    ssid=*)
+      SSID=${opts#SSID=};;
   esac
 done
 
@@ -103,23 +106,23 @@ done
 # preboot init does not succeed (e.g. missing kernel module/firmware for the
 # network adaptor)
 if [ "${DEBUGLEVEL}" -gt 0 ] ; then
-  cat<<EOF > /bin/watchdog
+  cat<<EOF >/bin/watchdog
 #!/bin/ash
 echo \$$ > /tmp/watchdogpid
 [ ! -f /proc/version ] && mount -n -t proc proc /proc
-sleep 120 2> /dev/null
-echo "o" > /proc/sysrq-trigger
+sleep 120 2>/dev/null
+echo "o" >/proc/sysrq-trigger
 EOF
   chmod u+x /bin/watchdog
   watchdog &
 fi
 
-if [ -n "${essid}" ] ; then
+if [ -n "${SSID}" ] ; then
   # WLAN setup will most probably change the network interface name stored in
   # nwif (to wlan0 or something like that)
   :
 else
-  # check here for the active ethernet link
+  # check here for the active Ethernet link
   ip link show dev eth1 >/dev/null 2>&1 && \
     dialog --msgbox "More than one network interface found. This could cause \
 some trouble as their activation and ordering depends on the module load \
@@ -150,7 +153,7 @@ echo "macaddr=$macaddr" >>/etc/initramfs-setup
 # at this point a little selection script could be downloaded, which lets the
 # user choose what kind of SLX client he wants to get
 dialog --infobox "Fetching preboot interactive part and configuration from \
-the net ..." 4 65
+the net ($boot_uri) ..." 4 65
 wget -q -c -O /tmp/preboot.env $boot_uri/bootloader/${preboot_id}.env
 mkdir /preboot
 tar -xzf /tmp/preboot.env -C /preboot
@@ -169,5 +172,5 @@ exec ./preboot.sh
 dialog --msgbox "The execution of the main preboot component failed. Please \
 check network access of your box. Is $boot_uri reachable!?" 6 65
 # ping -c 1 $boot_uri
-sleep 20 && echo "o" > /proc/sysrq-trigger
+sleep 20 && echo "o" >/proc/sysrq-trigger
 
