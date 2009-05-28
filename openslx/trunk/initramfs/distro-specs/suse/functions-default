@@ -39,6 +39,7 @@ config_distro () {
 for dir in rc0.d rc1.d rc2.d rc3.d rc4.d rc5.d rc6.d boot.d ; do
   rm -rf /mnt/etc/init.d/${dir}/*
 done
+
 # link the additional key setup (notbook special keys)
 grep -q -E "otebook" /etc/hwinfo.bios && \
   [ -e /mnt/etc/init.d/hotkey-setup ] && rllinker "hotkey-setup" 25 25
@@ -474,9 +475,9 @@ dlocale () {
 echo -e "\t# entries added by $0: $date" >> /mnt/etc/init.d/boot.slx
 sed -e "s,KEYTABLE=.*,KEYTABLE=\"${KEYTABLE}\"," \
   -i /mnt/etc/sysconfig/keyboard
-echo -e "\tloadkeys ${KEYTABLE} >${LOGFILE} 2>&1\n" \
+echo -e "\t#loadkeys ${KEYTABLE} >${LOGFILE} 2>&1\n" \
   >>/mnt/etc/init.d/boot.slx
-echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
+echo -e "\t#setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1\n" \
   >>/mnt/etc/init.d/boot.slx
 sed -e "s,RC_LANG=.*,RC_LANG=\"${LANG}\" # added in initrd," \
     -i /mnt/etc/sysconfig/language

@@ -91,8 +91,10 @@ if [ -z "${country}" ] ; then
   error "$scfg_country" nonfatal
   country="us"
 fi
-# do localization (this functions starts a distro specific setup)
+# do localization (this functions simply sets a list of variables)
 localization "${country}"
+# start distrospecific localization
+dlocale
 
 #############################################################################
 # setup passwd and shadow for local system users like root, bin, daemon and

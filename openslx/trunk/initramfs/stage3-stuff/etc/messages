@@ -68,6 +68,8 @@ see\n  this message add the token(s) 'noaufs'/'nounionfs' to your kernel \
 command\n  line or remove the modules from your kernel module directory."
 init_loadunions="  Stacking of directories failed, because UnionFS/AUFS is not \
 loaded."
+init_deselau="  You switched off AUFS and UnionFS via kernel commandline, thus \
+no module\n  was loaded, using traditional bind mounts."
 init_loadcow="  Loading of Copy On Write (COW - special block device) module \
 failed -\n  Either module is not present or module does not match the \
 running\n  kernel. If you do not want to see this message remove the token \

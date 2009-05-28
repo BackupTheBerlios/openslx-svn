@@ -69,6 +69,8 @@ init_loadaufs="  Laden von AUFS/UnionFS schlug fehl - entweder das Modul ist \
 nicht vorhanden, oder\n  es passt nicht zum laufenden Kernel. Wenn Sie diese \
 Meldung nicht sehen\n  wollen, fügen Sie das Token 'noaufs'/'nounionfs' den \
 Kernel Start\n  Optionen hinzu oder loeschen Sie die Module."
+init_deselau="  Sie haben AUFS und UnionFS mittels Kernel-Commandline \
+ausgeschaltet, deshalb\n  wurde kein entsprechendes Kernel-Modul geladen."
 init_loadcow="  Laden von Copy On Write (COW - Spezielles Block Geraet) Modul \
 schlug fehl -\n  entweder das Modul nicht praesent oder es passt nicht zum \
 laufenden\n Kernel. Wenn Sie diese Meldung nicht sehen wollen, entfernen sie \

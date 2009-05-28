@@ -684,6 +684,9 @@ if [ ${aufs} -eq 1 ] && \
 elif [ ${unionfs} -eq 1 ] && \
      modprobe ${MODPRV} unionfs 2>/dev/null && \
      lsmod | grep -qe "^unionfs" ; then union_type="UnionFS"
+elif [ ${aufs} -eq 0 -a ${unionfs} -eq 0 -a -z "${cowloop}" ] ; then
+  error "$init_deselau" nonfatal
+  unset aufs unionfs
 else
   error "$init_loadaufs" nonfatal
   unset aufs unionfs
