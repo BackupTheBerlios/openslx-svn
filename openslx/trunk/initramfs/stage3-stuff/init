@@ -663,21 +663,9 @@ runinithook '35-have-network-root'
 
 # get the complete collection of kernel modules available
 mount -n --bind /mnt/lib/modules /lib/modules || error "$init_moddir"
-# start hardware configuration as background process if not a special
-# debuglevel (21) is used for the option of manual hwautocfg start
-if [ ${DEBUGLEVEL} = 21 ] ; then
-  echo "You can run 'hwautocfg main &' manually now ..."
-  /bin/ash
-else
-  [ $DEBUGLEVEL -eq 20 ] && echo "** started hwautocfg in background at \
-$(sysup)"
-  hwautocfg main &
-fi
-
-runinithook '40-started-hw-config'
-
+# unionfs/aufs modules visible by now if installed, try to use aufs for rw
+# access if available
 union_type=""
-# try to use aufs for rw access if available
 if [ ${aufs} -eq 1 ] && \
    modprobe ${MODPRV} aufs 2>/dev/null && \
    lsmod | grep -qe "^aufs" ; then union_type="AUFS"
@@ -691,10 +679,23 @@ else
   error "$init_loadaufs" nonfatal
   unset aufs unionfs
 fi
+
+# start hardware configuration as background process if not a special
+# debuglevel (21) is used for the option of manual hwautocfg start
+if [ ${DEBUGLEVEL} = 21 ] ; then
+  echo "You can run 'hwautocfg main &' manually now ..."
+  /bin/ash
+else
+  [ $DEBUGLEVEL -eq 20 ] && echo "** started hwautocfg in background at \
+$(sysup)"
+  hwautocfg main &
+fi
+
+runinithook '40-started-hw-config'
+
 # runtimer
 [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
   echo "** Filesystem setup started at $(sysup)"
-
 # setup of client root filesystem dependent on the availability of UnionFS
 if [ -n "${union_type}" ] ; then
   echo "Using ${union_type} for rw access"
