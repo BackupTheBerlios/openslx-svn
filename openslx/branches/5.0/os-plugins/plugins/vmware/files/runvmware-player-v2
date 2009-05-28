@@ -1,0 +1,592 @@
+#!/bin/bash
+#
+# Description:  Script for preparing VMware environment Diskless
+#               X Stations and interactive session chooser (v4)
+#               Gets a xml file, reads needed information from it and
+#               orwards it into B drive of vmplayer
+#
+# Author(s):    see project authors file
+#               last changes mj0, 17/10/2008
+# Copyright:    (c) 2003 - 2008 - RZ Universitaet Freiburg
+#
+# Version:      0.18.1
+#
+################################################################################
+
+################################################################################
+##
+## Read needed variables from XML file
+##
+################################################################################
+xml=$1
+
+# file name of the image
+imagename=$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')
+
+# define name for VMware window. no utf8, perhaps we don't need it any
+# more. else change the next two lines
+#iconv -c -f utf-8 -t utf-8 < ${xml} > ${xml}.utf
+short_description=$(grep "short_description param=\"" ${xml} | sed -e "s%&.*;%; %g" | awk -F "\"" '{print $2}')
+# if ${short_description} not defined use ${image_name}
+short_description=${short_description:-"${image_name}"}
+displayname=${short_description}
+
+# Definition of the client system
+vmostype=$(grep -i "<os param=\"" ${xml} | awk -F "\"" '{ print $2 }')
+
+# Definition of the client system
+network_kind=$(grep -i "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }')
+
+
+
+################################################################################
+##
+## Put $HOME to another location
+##
+################################################################################
+
+# We need to change $HOME so it saves everything to /tmp
+#export HOME="/tmp/${USER}"
+# following mkdir we have now twice in this script... but better twice
+# as not seperated. Now its no problem to delete this
+# "Put $HOME to another location" section later
+#mkdir /tmp/${USER}
+#ln -s /home/${USER}/.Xauthority /tmp/${USER}/.Xauthority
+
+
+
+### VARIABLES SECTION ##########################################################
+##
+## declaration of default variables
+##
+################################################################################
+
+## "static" variables only changed within the script
+
+# The PATH...
+export PATH="${PATH}:/var/X11R6/bin:/usr/X11R6/bin"
+
+# Last two values for MAC address
+mac=
+
+# memory information. permem is value to calculate needed memory
+mem=
+totalmem=
+permem=66
+
+# virtual fd/cd/dvd and drive devices, floppy b: for configuration
+#floppya is always false, if we have a floppy device or not isn't
+#important.
+floppya="FALSE"
+floppyb="TRUE"
+floppybname="/etc/vmware/loopimg/fd.img"
+cdr_1="FALSE"
+cdr_2="FALSE"
+# ide is expected default, test for the virtual disk image type should
+# be done while creating the runscripts ...
+ide="TRUE"
+scsi="FALSE"
+hddrv="ide"
+
+# Displayresolution needed for vmware.config
+hostres=$(xvidtune -show 2>/dev/null| grep -ve "^$")
+xres=$(echo "${hostres}" | awk '{print $3}')
+yres=$(echo "${hostres}" | awk '{print $7}')
+
+# VMplayer buildversion
+vmbuild=
+
+# VMware start options
+#-X = fullscreen
+vmopt="-X"
+
+# temporary disk space for logs, etc...
+# use /tmp/vmware/${USER} if /tmp sits on NFS import
+redodir=/tmp/vmware/${USER}
+
+# dir for configs and vmem file
+confdir=${redodir}
+
+# configfile
+conffile="${confdir}/run-vmware.conf"
+
+# users vmware config folder
+vmhome="${HOME}/.vmware"
+
+# config and hardware version ex. 8/6 for VMware6.5
+# will be replaced automatically during run of vmware/player
+confver=8
+hver=4
+
+# set hostname: using original hostname and adding string "-vm"
+# variable isn't used anywhere in this script. but still works (however)
+# TODO: Test it commented out
+hostname="VM-${HOST}"
+
+# Folder of VirtualMachine Images
+vmdir="/var/lib/virt/vmware"
+
+# special Variables, persistence vmware?
+#TODO: do we really need it? Should be everywhere nonpersistent
+np="independent-nonpersistent"
+
+########
+## TODO: everything clean till here
+########
+
+# File if its a link. Stupid crap
+#TODO: perhaps we don't need it
+rightsfile=
+#TODO: don't know what it is for. check later
+noimage=0
+# image checking variable
+filecheck=
+
+
+## Image depending variables. This values will be changed by the script
+
+# vmware image file
+diskfile="${vmdir}/${imagename}"
+
+#TODO: check for a faster way, perhaps we should put this into XML
+# oh - yeah!! Why not do it on the SERVER??? It has enough power and has
+# to do it once and not during every start on a client :)
+#grepping every file could take much (network) resources. And if its
+#an IDE Image, but has somewhere the string ddb.adapterType stuff can
+#become screwed
+# NOOOOOOO - We do not check on every start on every client!!!
+# check if IDE or SCSI
+#hddrv=$(grep -m 1 -ia "ddb.adapterType" ${diskfile} | awk -F "\"" '{print $2}')
+#if [ "${hddrv}" = "ide" ]; then
+#  ide="TRUE"
+#  scsi="FALSE"
+#elif [ "${hddrv}" = "lsilogic" ]; then
+#  ide="FALSE"
+#  scsi="TRUE"  
+#elif [ "${hddrv}" = "buslogic" ]; then
+#  ide="FALSE"
+#  scsi="TRUE"  
+#fi
+
+
+# command line variables
+# start with this this default commmand line options + extra
+# TODO: defaults laut datei --include /var/lib/virt/vmware/tmpl/winconfig
+#     --include <includefile> include code right before program start
+
+# Should we debug? Hell yes, we should always debug!
+debug=0
+
+#TODO: Bad done... we should do this another way later
+version=$(head -n 20 $0 | grep "# Version: " | awk '{print $3}')
+
+#############
+## TODO: End of uncleaned area
+#############
+
+
+
+
+
+
+### FUNCTION SECTION ###########################################################
+##
+## In this script used functions
+##
+################################################################################
+
+### write run-vmware.conf #######################################################
+#TODO: only not yet checked function
+filecheck ()
+{
+  filecheck=$(LANG=us ls -lh ${diskfile} 2>&1)
+  writelog "Filecheck:\n${filecheck}\n"
+  #TODO: don't understand the sence in it
+  noimage=$(echo ${filecheck} | grep -i "no such file or directory" | wc -l)
+  rightsfile=${diskfile}
+
+  # check if link
+  # TODO: mistake with 2nd rightsfile if its in another directory?
+  if [ -L "${diskfile}" ]; then
+    # take link target
+    rightsfile=$(ls -lh ${diskfile} 2>&1 | awk -F "-> *" '{print $2}')
+    rightsfile=${vmdir}/${rightsfile}
+    filecheck=$(LANG=us ls -lh ${rightsfile} 2>&1)
+  fi
+
+  # does file exist
+  if [ "${noimage}" -ge "1" ]; then
+    writelog "Vmware Image Problem:\c "
+    writelog "\tThe image you've specified doesn't exist."
+    writelog "Filecheck says:\c "
+    writelog "\t\t${diskfile}:\n\t\t\tNo such file or directory"
+    writelog "Hint:\c "
+    writelog "\t\t\tCompare spelling of the image with your options.\n"
+    exit 1
+  fi
+
+  # readable?
+  if ! [ -r "${diskfile}" >/dev/null 2>&1 \
+    -o -r "${diskfile}" >/dev/null 2>&1 ]; then
+    writelog "Vmware Image Problem:\c "
+    writelog "\tThe image you've specified has wrong rights."
+    writelog "Filecheck says:\t\t$(echo ${filecheck} \
+      | awk '{print $1" "$3" "$4}') ${rightsfile}"
+    writelog "Hint:\t\t\tChange rights with: chmod a+r ${rightsfile}\n"
+    exit 1
+  fi
+
+  # writable (for persistent-mode)?
+  if ! [ -w "${diskfile}" >/dev/null 2>&1 \
+    -o -w "${diskfile}" >/dev/null 2>&1 ] \
+    && [ "${np}" = "independent-persistent" ]; then
+    writelog "Vmware Image Problem:\c "
+    writelog "\tThe image you have specified has wrong rights."
+    writelog "Filecheck says:\t\t$(echo ${filecheck} \
+      | awk '{print $1" "$3" "$4}') ${rightsfile}"
+    writelog "Hint:\t\t\tUse nonpersistent-mode or change rights to rw\n"
+    exit 1
+  fi
+}
+
+
+### write run-vmware.conf #######################################################
+runvmwareconfheader ()
+{
+  echo "
+  ##############################################################################
+  ###### This configuration file was generated by run-vmware.sh,          ######
+  ###### dont use it for your own configurations - it will be overwritten ######
+  ######                                                                  ######
+
+  ###### identity ##############################################################
+  displayName = \"${displayname}\"
+  guestOS = \"${vmostype}\"
+  config.version = \"${confver}\"
+  virtualHW.version = \"${hver}\"
+
+  memsize = \"${mem}\"
+  numvcpus = \"1\"
+
+  ###### ide-disks #############################################################
+  ide0:0.mode = \"${np}\"
+  ide0:0.present = \"${ide}\"
+  ide0:0.fileName = \"${diskfile}\" 
+
+  ide1:0.present = \"${cdr_1}\"
+  ide1:0.autodetect = \"TRUE\"
+  ide1:0.fileName = \"auto detect\"
+  ide1:0.deviceType = \"cdrom-raw\"
+
+  ide1:1.present = \"${cdr_2}\"
+  ide1:1.autodetect = \"TRUE\"
+  ide1:1.fileName = \"auto detect\"
+  ide1:1.deviceType = \"cdrom-raw\"
+
+  ###### scsi-disks ############################################################
+  scsi0.present = \"${scsi}\"
+  scsi0.virtualDev = \"lsilogic\"
+  scsi0:0.mode = \"${np}\"
+  scsi0:0.present = \"${scsi}\"
+  scsi0:0.fileName = \"${diskfile}\"
+
+  ###### nics ##################################################################
+  ethernet0.present = \"TRUE\"
+  ethernet0.addressType = \"static\"
+  ethernet0.connectionType = \"${network_kind}\"
+  ethernet0.address = \"00:50:56:0D:${mac}\"
+
+  ###### sound #################################################################
+  sound.present = \"TRUE\"
+  sound.virtualDev = \"es1371\"
+
+  ###### usb ###################################################################
+  usb.present = \"TRUE\"
+  ehci.present = \"TRUE\"
+  usb.generic.autoconnect = \"TRUE\"
+
+  ###### floppies ##############################################################
+  floppy0.present = \"${floppya}\"
+  floppy0.fileName = \"auto detect\"
+
+  # we need floppy b: this for our windows client configuration
+  floppy1.present = \"${floppyb}\"
+  floppy1.fileType = \"file\"
+  floppy1.fileName = \"${floppybname}\"
+  floppy1.startConnected = \"TRUE\"
+
+  ###### ports #################################################################
+  parallel0.present = \"FALSE\"
+
+  serial0.present = \"FALSE\"
+
+  ###### shared folders ########################################################
+  sharedFolder0.present = \"TRUE\"
+  sharedFolder0.enabled = \"TRUE\"
+  sharedFolder0.expiration = \"never\"
+  sharedFolder0.guestName = \"Home\"
+  sharedFolder0.hostPath = \"${HOME}\"
+  sharedFolder0.readAccess = \"TRUE\"
+  sharedFolder0.writeAccess = \"TRUE\"
+  sharedFolder.maxNum = \"1\"
+
+  ###### misc ##################################################################
+  tmpDirectory = \"${redodir}\"
+  mainMem.useNamedFile = \"TRUE\"
+  snapshot.disabled = \"TRUE\"
+  tools.syncTime = \"TRUE\"
+  redoLogDir = \"${redodir}\"
+  hints.hideAll = \"TRUE\"
+  logging = \"FALSE\"
+  isolation.tools.hgfs.disable = \"FALSE\"
+  isolation.tools.dnd.disable = \"TRUE\"
+  isolation.tools.copy.enable = \"TRUE\"
+  isolation.tools.paste.enabled = \"TRUE\"
+  gui.restricted = \"TRUE\"
+  pref.hotkey.shift = \"TRUE\"
+  pref.hotkey.control = \"TRUE\"
+  pref.hotkey.alt = \"TRUE\"
+  svga.maxWidth = \"${xres}\"
+  svga.maxHeight = \"${yres}\"
+  svga.autodetect = \"TRUE\"
+  " \
+  >${conffile}
+
+  # set the appropriate permissions for the vmware config file
+  chmod u+rwx ${conffile} >/dev/null 2>&1
+}
+
+
+### creates user configurationfile in ${vmhome} ################################
+preferencesheader ()
+{
+  echo "
+  ##############################################################################
+  ###### This configuration file was generated by run-vmware.sh,          ######
+  ###### dont use it for your own configurations - it will be overwritten ######
+  ######                                                                  ######
+  ################################## Wichtig! ##################################
+  ###### *.vmem wird immer angelegt und frisst soviel Speicher, wie fuer  ######
+  ###### den Gast vorgesehen. Sollte nicht im tempfs liegen. NFS OK, da   ######
+  ###### IO nur einmal beim Start erheblich. Wird gesteuert ueber         ######
+  ###### confdir=/nfs-viel-platz                                          ######
+
+  # DEBUG: some versions accept it only upper or lowercase... which one?
+  # The following 4 could also be uppercase
+  hints.hideAll = \"true\"
+  # if vmplayer is still to noisy try the following:
+  #msg.noOK = \"true\"
+  # Suppress messages from USB Devices
+  #hint.vmui.showAllUSBDevs = \"FALSE\"
+  pref.exchangeSelections = \"true\"
+  pref.hotkey.shift = \"true\"
+  pref.tip.startup = \"false\"
+  pref.vmplayer.exit.vmAction = \"poweroff\"
+  # DEBUG: some versions accept it only upper or lowercase... which one?
+  # The following 2 could also be uppercase
+  pref.vmplayer.fullscreen.autohide = \"true\"
+  pref.vmplayer.webUpdateOnStartup = \"false\"
+  prefvmx.defaultVMPath = \"${vmhome}\"
+  prefvmx.mru.config = \"${conffile}:\"
+  tmpDirectory = \"${redodir}\"
+  webUpdate.checkPeriod = \"manual\"
+  pref.eula.size = \"2\"
+  pref.eula.0.appName = \"VMware Player\"
+  pref.eula.0.buildNumber = \"${vmbuild}\"
+  pref.eula.1.appName = \"VMware Workstation\"
+  pref.eula.1.buildNumber = \"${vmbuild}\"
+  pref.enableAllSharedFolders = \"TRUE\"
+  sharedFolder0.enabled = \"TRUE\"
+  pref.grabOnKeyPress = \"TRUE\"
+  pref.autoFitFullScreen = \"fitHostToGuest\"
+  pref.autoFitGuestToWindow = \"TRUE\"
+  pref.grabOnMouseClick = \"TRUE\"
+  " \
+  >${vmhome}/preferences
+}
+
+
+### log function ###############################################################
+# function to write to stdout and logfile
+writelog ()
+{
+  # write to stdout
+  echo -e "$1"
+
+  # log in file
+  echo -e "$1" >>${redodir}/run-vmware.${USER}.log
+}
+
+
+
+
+
+
+### MAIN SECTION ###############################################################
+##
+## Main part of the script...
+##
+################################################################################
+
+# Delete the LOCK file. its insecure, but ...
+rm -f ${confdir}/*LOCK >/dev/null 2>&1
+
+# create vmware directories
+mkdir -p ${redodir} >/dev/null 2>&1
+mkdir -p ${confdir} >/dev/null 2>&1
+mkdir -p ${vmhome} >/dev/null 2>&1
+
+# NO X-server, no run-vmware ;)
+[ -z "$DISPLAY" ] && echo -e "\n\tStart only within a desktop!\n" && exit 1
+
+# logo for console
+cat <<EOL
+
+     .----.--.--.-----.--.--.--------.--.--.--.---.-.----.-----.
+     |   _|  |  |     |  |  |        |  |  |  |  _  |   _|  -__|
+     |__| |_____|__|__|\___/|__|__|__|________|___._|__| |_____|
+         Script for preparing VMware environment...(v${version})
+
+EOL
+
+
+### CHECK MACHINE SETUP ########################################################
+
+## log script information
+writelog "# File created by $0 (v.${version})\n# on $(date)\n"
+writelog "Starting with $(echo ${np} | sed 's/i.*-//g')-mode ...\n"
+
+## HW deteщtion start
+writelog "Starting hardware / device detection...\c "
+
+## configuring MAC address: first four bytes are fixed (00:50:56:0D) the
+## last two bytes are taken from the local network adaptor
+## Get last two MAC values for VMPlayer
+# NF = Number of Fields of found values in awk
+mac=$(/sbin/ifconfig eth0 | grep eth0 | sed -e "s/ //g" \
+  | awk -F ":" '{print $(NF-1)":"$NF}')
+
+
+## check if we have enough free memory
+
+# get memory in MB
+totalmem=$(expr $(grep -i "memtotal" /proc/meminfo | awk '{print $2}') / 1024)
+
+# TODO: Hack, ig more than 2,5G RAM use 40% of Ram and write vmem into
+# Ram as well (40% vmware | 40% confdir(vmem...) | 20% host
+if [ "${totalmem}" -ge "2500" ]; then
+  permem=40
+  confdir=/dev/shm/vmware/$USER
+  conffile=${confdir}/run-vmware.conf
+  mkdir -p /dev/shm/vmware/$USER
+fi
+
+# calculate memory for vmplayer
+# TODO: unhappy how it is calculated
+mem=$(expr ${totalmem} / 100 \* ${permem} / 4 \* 4)
+
+# check memory range
+memtest=${totalmem}-128
+if [ "${mem}" -lt "128" ] || [ "${mem}" -gt "${totalmem}" ]; then
+  writelog "\n\n"
+  writelog "\tYour memory is out of range: ${mem} MB."
+  writelog "\tMin. 128 MB for host and guest!"
+  writelog "tTry --mem option."
+  exit 1
+fi
+
+
+## look for cdrom, dvd and add them to the vm config file
+(( cdri=1 ))
+for cdrs in /dev/cdrom*; do
+  if [ -L $cdrs ]; then
+     declare cdr_${cdri}="TRUE"
+     (( cdri=${cdri}+1 ))
+  fi
+done
+
+
+## Write all results to logfile
+writelog "finished"
+## log disksetup
+writelog "Directories:"
+writelog "\tConfdir:\t${confdir}"
+writelog "\tConffile:\t${conffile}"
+writelog "\tRedodir:\t${redodir}"
+writelog "\tVMhome:\t\t${vmhome}"
+writelog "\t/tmp info: \
+     $(grep "/tmp " /proc/mounts) $(df -h | grep " /tmp$" | awk '{print $2}')"
+# HW setup
+writelog "Hardware:"
+writelog "\tMAC:\t\t00:50:56:0D:${mac}"
+writelog "\tMem:\t\t${mem} MB"
+writelog "\tMax. res.:\t${xres}x${yres}"
+writelog "\tCD-ROM_1:\t${cdr_1}"
+writelog "\tCD-ROM_2:\t${cdr_2}"
+# Image
+writelog "Diskimage:"
+writelog "\tDiskfile:\t${diskfile}"
+writelog "\tDisktype:\t${hddrv}"
+writelog "\tVMostype:\t${vmostype}"
+writelog "\tDisplayname:\t${displayname}"
+
+# check if image exists, etc...
+filecheck
+
+# VMPlayer Version.
+# strings is the fastest and most secure way, vmplayer -v takes too much time
+# and resources
+# TODO: fine a faster solution with different installed vmplayer
+#       perhaps via stage1 + /etc/vmware/vmversion
+#vmbuild=$(strings /usr/lib/vmware/bin/vmplayer \
+#    | grep -m 1 "build-"|sed 's/.*build-//')
+if [ -z ${vmbuild} ]; then
+  vmbuild=$(vmplayer -v | sed 's/.*build-//')
+fi
+
+### write configuration files ##################################################
+# create preferences
+preferencesheader
+
+# create VMware startup file
+runvmwareconfheader
+
+# poolconfiguration config.xml
+cp ${xml} /etc/vmware/fd-loop/config.xml
+
+# sync is needed to ensure that data is really written to virtual disk
+sync
+
+# own nvram. We need it for floppy drive b, default nvram has just drive a
+# TODO: optimize, currently kinda inefficient, too much copys, but we
+# don't know which one is installed...
+for i in /opt/openslx/plugin-repo/vmware/*; do
+  cp ${i}/nvram.5.0 ${confdir}/nvram 2>/dev/null
+done
+
+# adjust volume
+writelog "Unmuting sound...\c "
+amixer -q sset Master 28 unmute 2>/dev/null
+amixer -q sset PCM 28 unmute 2>/dev/null
+amixer -q sset Headphone 28 unmute 2>/dev/null
+amixer -q sset Front 0 mute 2>/dev/null
+writelog "finished\n"
+
+### run vmplayer ###############################################################
+# ...with the automatically written config file
+if [ $(which vmplayer 2>/dev/null) ]; then writelog "Starting ..."
+  # run VMplayer
+  writelog "... vmplayer ${vmopt} ${conffile}\n"
+  # start fvwm for player 2+
+  # problems with windows opening in background
+  which fvwm2 >/dev/null 2>&1 && \
+  ( echo "EdgeScroll 0 0" > ${redodir}/fvwm
+  fvwm2 -f ${redodir}/fvwm >/dev/null 2>&1 & )
+  vmplayer ${vmopt} ${conffile} >/dev/null 2>&1
+else
+  writelog "No VMware/VMPlayer found!\n"
+  exit 1
+fi
+
+writelog "Bye.\n"
+exit 0

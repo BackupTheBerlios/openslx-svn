@@ -1,0 +1,31 @@
+# Copyright (c) 2003..2006 - RZ Uni Freiburg
+# Copyright (c) 2006..2009 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# configuration script for OpenSuSE 11.1 to configure linux stateless clients
+# (included by init, hwautocfg, servconfig within InitialRamFS after 
+# inclusion of the main functions file). This file is the main base for the
+# several SuSE distro versions
+
+# settings of central variables (formerly done via config-*, these variables
+# are disputable ...)
+# D_DIRINBINDMNT - lists of directories to be created in bind mounted rw
+# part of the client filesystem
+# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# TempFS usage
+# D_DIRINDXS - directories in client filesystem which should be present 
+# anyhow
+
+# start portmapper (needed at least for nfs and nis services)
+config_portmap () {
+  # portmap is provided via rpcbind in suse 11.1
+  rllinker "rpcbind" 4 5
+}
+

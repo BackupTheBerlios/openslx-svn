@@ -1,0 +1,10 @@
+How busybox (version 1.13.1) is created:
+
+1. Get our current sources from openslx-src-tools/trunk/busybox
+2. bind mount the busybox folder to the correspoding uclibc-build-environment
+   folder (see http://www.openslx.org/wiki/openslx/GentooUclibcChroot for
+   how to create such an environment)
+3. chroot into the uclibc-build-environment
+4. cd into the bind-mounted busybox folder
+5. make oldconfig and adjust the configuration if required.
+6. build busybox (make)

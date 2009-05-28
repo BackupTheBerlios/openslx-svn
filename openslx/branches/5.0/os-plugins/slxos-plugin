@@ -1,0 +1,525 @@
+#! /usr/bin/perl
+# -----------------------------------------------------------------------------
+# Copyright (c) 2007 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+use strict;
+use warnings;
+
+my $abstract = q[
+slxos-plugin
+    OpenSLX-script to install/remove plugin modules into/from a vendor-OS.
+];
+
+# add the folder this script lives in and the lib-folder to perl's
+# search path for modules:
+use FindBin;
+use lib "$FindBin::RealBin";
+use lib "$FindBin::RealBin/../lib";
+
+use lib "$FindBin::RealBin/../config-db";
+# development path to config-db
+
+use Getopt::Long qw(:config pass_through);
+use Pod::Usage;
+
+use OpenSLX::Basics;
+use OpenSLX::OSPlugin::Engine;
+use OpenSLX::Utils;
+
+my %option;
+
+GetOptions(
+    'help|?'  => \$option{helpReq},
+    'man'     => \$option{manReq},
+    'verbose' => \$option{verbose},
+    'version' => \$option{versionReq},
+)
+  or pod2usage(2);
+pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $option{helpReq};
+if ($option{manReq}) {
+    # avoid dubious problem with perldoc in combination with UTF-8 that
+    # leads to strange dashes and single-quotes being used
+    $ENV{LC_ALL} = 'POSIX';
+    pod2usage(-verbose => 2);
+}
+if ($option{versionReq}) {
+    system('slxversion');
+    exit 1;
+}
+
+openslxInit();
+
+my $action = shift @ARGV || '';
+
+if ($action =~ m[^list-at]i) {
+    my $plugin = shift @ARGV;
+    print 
+        $plugin 
+            ? _tr("List of attributes supported by '%s' plugin:\n", $plugin)
+            : _tr("List of plugin attributes:\n");
+    my $attrs = {};
+    require OpenSLX::OSPlugin::Roster;
+    OpenSLX::OSPlugin::Roster->addAllAttributesToHash($attrs, $plugin);
+    print join(
+        '', 
+        map {
+            my $attr = $attrs->{$_};
+            my $stage 
+                = $attr->{applies_to_vendor_os} ? '[stage 1]' : '[stage 3]';
+            
+            if ($option{verbose}) {
+                my $output;
+                my $fill = ' ' x 28;
+                for my $key (qw( description content_descr )) {
+                    $output .= "\n\t    $key:" . ( ' ' x (15 - length($key)) );
+                    chomp(my $value = $attr->{$key} || '');
+                    $value =~ s{\n}{\n$fill}igms;
+                    $output .= $value;
+                }
+                "\n\t$stage:   $_$output\n";
+            }
+            else {
+                "\t$stage:   $_\n";
+            }
+        }
+        sort {
+            my $stageDiff 
+                = ($attrs->{$b}->{applies_to_vendor_os} || '') 
+                    cmp ($attrs->{$a}->{applies_to_vendor_os} || '');
+            return $stageDiff ? $stageDiff : $a cmp $b;
+        } 
+        keys %$attrs
+    );
+} elsif ($action =~ m[^list-av]i) {
+    print _tr("List of available plugins:\n");
+    require OpenSLX::OSPlugin::Roster;
+    my $pluginInfo = OpenSLX::OSPlugin::Roster->getAvailablePlugins();
+    print join(
+        '', 
+        map {
+            if ($option{verbose}) {
+                my $fill = ' ' x 12;
+                chomp(my $descr = $pluginInfo->{$_}->{description} || '');
+                $descr =~ s{\n}{\n$fill}igms;
+                my $pluginStr = "$_";
+                my $required = $pluginInfo->{$_}->{required} || [];
+                if (@$required) {
+                    $pluginStr 
+                        .= _tr('   (requires: %s)', join(',', @$required));
+                }
+                "\n\t$pluginStr\n\t    $descr\n";
+            }
+            else {
+                "\t$_\n";
+            }
+        } 
+        sort keys %$pluginInfo
+    );
+} elsif ($action =~ m[^list-i]i) {
+    if (scalar(@ARGV) != 1) {
+        print STDERR _tr(
+            "You need to specify exactly one vendor-OS!\n"
+        );
+        pod2usage(2);
+    }
+    my $vendorOSName = shift @ARGV;
+    
+    # for convenience, we alias default to <<<default>>>
+    $vendorOSName = '<<<default>>>' if $vendorOSName eq 'default';
+
+    # we chdir into the script's folder such that all relative paths have
+    # a known starting point:
+    chdir($FindBin::RealBin)
+        or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+
+    # create OSPlugin-engine for given vendor-OS and ask it for the installed
+    # plugins:
+    my $engine = OpenSLX::OSPlugin::Engine->new;
+    $engine->initialize(undef, $vendorOSName);
+    my @installedPlugins = $engine->getInstalledPlugins();
+
+    if (!@installedPlugins) {
+        push @installedPlugins, { plugin_name => '<none>' };
+    }
+    print _tr("List of plugins installed in vendor-OS '$vendorOSName':\n");
+    print join(
+        '', 
+        map { 
+            if ($option{verbose}) {
+                my $attributes 
+                    = _tr("The following attributes were applied:")
+                        . "\n\t        ";
+                my $attrs = $_->{attrs};
+                my $attrInfo = {};
+                OpenSLX::OSPlugin::Roster->addAllStage1AttributesToHash(
+                    $attrInfo, $_->{plugin_name}
+                );
+                $attributes .= join(
+                    "\n\t        ", 
+                    map {
+                        my $stage 
+                            = $attrInfo->{$_}->{applies_to_vendor_os}
+                                ? '[stage 1]'
+                                : '[stage 3]';
+                        "$stage   $_=" 
+                            . (defined $attrs->{$_} ? $attrs->{$_} : '-')
+                    }
+                    sort {
+                        (($attrInfo->{$b}->{applies_to_vendor_os} || '') 
+                            cmp ($attrInfo->{$a}->{applies_to_vendor_os} || ''))
+                        || ($a cmp $b);
+                    } 
+                    keys %$attrs
+                );
+                "\n\t$_->{plugin_name}\n\t    $attributes\n";
+            }
+            else {
+                "\t$_->{plugin_name}\n";
+            }
+        } 
+        sort @installedPlugins
+    );
+} elsif ($action =~ m[^install]i) {
+    if (scalar(@ARGV) < 2) {
+        print STDERR _tr(
+            "You need to specify a vendor-OS and at least one plugin-name!\n"
+        );
+        pod2usage(2);
+    }
+    my $vendorOSName = shift @ARGV;
+    my $pluginAttrs  = parsePluginAttrs(1);
+
+    # for convenience, we alias default to <<<default>>>
+    $vendorOSName = '<<<default>>>' if $vendorOSName eq 'default';
+
+    # we chdir into the script's folder such that all relative paths have
+    # a known starting point:
+    chdir($FindBin::RealBin)
+        or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+
+    for my $pluginName (keys %$pluginAttrs) {
+        # create & start OSPlugin-engine for vendor-OS and current plugin:
+        my $engine = OpenSLX::OSPlugin::Engine->new;
+        $engine->initialize(
+            $pluginName, $vendorOSName, $pluginAttrs->{$pluginName}
+        );
+        if (!-e $engine->{'plugin-path'}) {
+            die _tr("plugin '%s' doesn't exist, giving up!\n",
+                $engine->{'plugin-path'});
+        }
+        if ($vendorOSName ne '<<<default>>>' 
+        && !-e $engine->{'vendor-os-path'}) {
+            die _tr(
+                "vendor-OS '%s' doesn't exist, giving up!\n",
+                $engine->{'vendor-os-path'}
+            );
+        }
+        if ($engine->installPlugin()) {
+            print _tr(
+                "Plugin $pluginName has been installed into vendor-OS '$vendorOSName'.\n"
+            );
+        }
+    }
+} elsif ($action =~ m[^remove]i) {
+    if (scalar(@ARGV) < 2) {
+        print STDERR _tr(
+            "You need to specify a vendor-OS and at least one plugin-name!\n"
+        );
+        pod2usage(2);
+    }
+    my $vendorOSName = shift @ARGV;
+
+    # for convenience, we alias default to <<<default>>>
+    $vendorOSName = '<<<default>>>' if $vendorOSName eq 'default';
+    
+    my $pluginAttrs  = parsePluginAttrs(0);
+
+    # we chdir into the script's folder such that all relative paths have
+    # a known starting point:
+    chdir($FindBin::RealBin)
+        or die _tr("can't chdir to script-path <%> (%s)", $FindBin::RealBin, $!);
+
+    for my $pluginName (keys %$pluginAttrs) {
+        # create & start OSPlugin-engine for vendor-OS and current plugin:
+        my $engine = OpenSLX::OSPlugin::Engine->new;
+        $engine->initialize(
+            $pluginName, $vendorOSName, $pluginAttrs->{$pluginName}
+        );
+        if (!-e $engine->{'plugin-path'}) {
+            die _tr("plugin '%s' doesn't exist, giving up!\n",
+                $engine->{'plugin-path'});
+        }
+        if ($vendorOSName ne '<<<default>>>' && !-e $engine->{'vendor-os-path'}) {
+            die _tr("vendor-OS '%s' doesn't exist, giving up!\n",
+                $engine->{'vendor-os-path'});
+        }
+        if ($engine->removePlugin()) {
+            print _tr(
+                "Plugin $pluginName has been removed from vendor-OS '$vendorOSName'.\n"
+            );
+        }
+    }
+} else {
+    vlog(0, _tr(unshiftHereDoc(<<'    END-OF-HERE'), $0));
+        You need to specify exactly one action:
+            install <vendor-OS-name> <plugin-name> [<plugin-attr>=<value> ...]
+            list-attributes [<plugin-name>]
+            list-available
+            list-installed <vendor-OS-name>
+            remove <vendor-OS-name> <plugin-name>
+        Try '%s --help' for more info.
+    END-OF-HERE
+}
+
+sub parsePluginAttrs
+{
+    my $acceptAttributes = shift;
+    
+    my (%pluginAttrs, $pluginName, @attrSpecs);
+    for my $arg (@ARGV) {
+        if ($arg =~ m{^(.+)=(.*)$}) {
+            next if !$acceptAttributes;
+            my $attr  = $1;
+            my $value = $2;
+            if ($value =~ m{^(-|undef)$}) {
+                $value = undef;
+            }
+            if ($attr =~ m{^(.+)::}) {
+                $pluginName = $1;
+            }
+            else {
+                if (!defined $pluginName) {
+                    die _tr('You have to give a plugin-name before you can specify unscoped attributes!');
+                }
+                $attr = $pluginName . '::' . $attr;
+            }
+            $pluginAttrs{$pluginName}->{$attr} = $value;
+        } 
+        else {
+            $pluginName = $arg;
+            $pluginAttrs{$pluginName} = {};
+        }
+    }
+    return \%pluginAttrs;
+}
+
+=head1 NAME
+
+slxos-plugin - OpenSLX-script to install/remove an OS-plugin into/from an 
+installed vendor-OS.
+
+=head1 SYNOPSIS
+
+slxos-plugin [options] <action>
+
+=head3 Options
+
+    --help             brief help message
+    --log-level=<int>  level of logging verbosity (0-3)
+    --man              show full documentation
+    --verbose          show more information during execution
+    --version          show version
+
+=head3 Actions
+
+=over 8
+
+=item B<<     install <vendor-OS-name> <plugin-name> [<attr-name>=<value> ...] [<plugin-name>] ... >>
+
+Installs the OS-plugin(s) with the given name(s) into the specified 
+vendor-OS, using any attribute values as specified.
+
+In order to spare you RSI, you can leave out the plugin scope, each attribute
+will be searched in the plugin that precedes it (see examples in the manual).
+
+=item B<<     list-attributes [<plugin-name>] >>
+
+List all attributes supported by the different OS-plugins. If you specify a
+plugin name, only the attributes of that plugin will be listed.
+
+In verbose mode, more details about the individual attributes are shown.
+
+=item B<<     list-available >>
+
+List all available OS-plugins. 
+
+In verbose mode a short description of each plugin will be shown, too.
+
+=item B<<     list-installed <vendor-os-name> >>
+
+List all the plugins installed into the specified vendor-OS. 
+
+In verbose mode all applied attributes are shown, too.
+
+=item B<<     remove <vendor-OS-name> <plugin-name> [<plugin-name>] ... >>
+
+Removes the OS-plugin(s) with the given name(s) from the specified vendor-OS.
+
+If you pass in any attributes, they will be ignored.
+
+=back
+
+=head1 DESCRIPTION
+
+B<slxos-plugin> installs or removes specific functionality extensions into/from
+an installed vendor-OS. That extension can be something rather simple (like
+a boot-splash) or something rather complicated (e.g. the automatic detection,
+installation and activation of the graphics driver most appropriate for the
+booting client).
+
+Installation of any plugin will result in some files being added to the 
+vendor-OS (they will live in /opt/openslx/plugins/<plugin-name>/). These files
+can be accessed by the booting client.in order to integrate the required
+functionality into the system.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--help>
+
+Prints a brief help message and exits.
+
+=item B<--man>
+
+Prints the manual page and exits.
+
+=item B<--verbose>
+
+Prints more information during execution of any action.
+
+=item B<--version>
+
+Prints the version and exits.
+
+=back
+
+=head1 EXAMPLES
+
+=over 8
+
+=head3 Installing a Plugin
+
+=item B<<     slxos-plugin install suse-10.2 example >>
+
+Installs the plugin named 'example' into the installed vendor-OS 'suse-10.2'.
+
+=item B<<     slxos-plugin install suse-10.2 desktop gdm=1 kde=1 >>
+
+Installs the desktop plugin into suse-10.2 and specifies two attributes. These
+attributes will be stored into the vendor-OS and pulled from there by the
+config-demuxer whenever it demuxes a system based on the suse-10.2 vendor-OS.
+
+=item B<<     slxos-plugin install suse-10.2 desktop desktop::gdm=1 desktop::kde=1 >>
+
+Same as above, only this time with completely scoped attributes.
+
+=item B<<     slxos-plugin install suse-10.2 desktop gdm=1 vmware binary=1 >>
+
+Installs two plugins (desktop and vmware) into suse-10.2. The attribute gdm=1
+will be set for desktop, while binary=1 will be set for vmware.
+
+=item B<<     slxos-plugin install suse-10.2 desktop vmware binary=1 desktop::gdm=1 >>
+
+Same as above, only this time with a fully scoped attribute gdm=1, that will
+be set for the desktop plugin.
+
+=item B<<     slxos-plugin install suse-10.2 desktop vmware binary=1 gdm=1 >>
+
+Bogus example, which will install desktop and vmware, but try to set bianry=1
+and gdm=1 for the vmware plugin. This will fail, as vmware does not support
+an attribute named gdm.
+
+=back
+
+=head3 Removing a Plugin
+
+=over 8
+
+=item B<<     slxos-plugin remove suse-10.2 example >>
+
+Removes the plugin named 'example' from the installed vendor-OS 'suse-10.2'.
+
+=item B<<     slxos-plugin remove suse-10.2 desktop vmware example >>
+
+Removes the three plugins desktop, vmware and example from suse-10.2.
+
+=back
+
+=head3 Listing Available Plugins
+
+=over 8
+
+=item B<<     slxos-plugin list-available >>
+
+Gives a short list of all available plugins and their description.
+
+=item B<<     slxos-plugin --verbose list-available >>
+
+Gives a detailed list of all available plugins and their description, including
+the names of all attributes supported by the respective plugin.
+
+=back
+
+=head3 Listing Attributes Supported by Plugins
+
+=over 8
+
+=item B<<     slxos-plugin list-attributes >>
+
+Gives a short list of all supported attributes, sorted by stage and name.
+
+=item B<<     slxos-plugin --verbose list-available desktop >>
+
+Gives a detailed list of the attributes supported by the 'desktop' plugin,
+including a description of the purpose and possible content values of each
+attribute.
+
+=back
+
+=head3 Listing Installed Plugins
+
+=over 8
+
+=item B<<     slxos-plugin list-installed suse-10.2 >>
+
+Gives a short list of the plugins that were installed into suse-10.2.
+
+=item B<<     slxos-plugin --verbose list-installed suse-10.2 >>
+
+Gives a detailed list of the plugins that were installed into suse-10.2,
+including a list of all.attributes and their respective values.
+
+=back
+=head1 SEE ALSO
+
+slxsettings, slxos-setup, slxconfig, slxconfig-demuxer
+
+=head1 GENERAL OPENSLX OPTIONS
+
+Being a part of OpenSLX, this script supports several other options
+which can be used to overrule the OpenSLX settings:
+
+    --db-name=<string>         name of database
+    --db-spec=<string>         full DBI-specification of database
+    --db-type=<string>         type of database to connect to
+    --locale=<string>          locale to use for translations
+    --log-level=<int>          level of logging verbosity (0-3)
+    --logfile=<string>         file to write logging output to
+    --private-path=<string>    path to private data
+    --public-path=<string>     path to public (client-accesible) data
+    --temp-path=<string>       path to temporary data
+
+Please refer to the C<slxsettings>-manpage for a more detailed description
+of these options.
+
+=cut
+

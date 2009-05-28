@@ -1,0 +1,19 @@
+
+VirtualMachine Chooser - plugin
+===============================
+
+This Plugin uses an external program to show 
+a list of sessions, from which a user can choose.
+
+This Programm is included in binary format. You
+can look into the sources at 
+svn://svn.openslx.org/srv/svn/openslx/openslx-src-tools/os-plugins/plugins/vmchooser/
+
+There you can change the program to your needs 
+and compile it with the included Makefile.
+
+
+Use at your own risk! 
+No warranty is given by the author 
+of this software for any purposes!
+

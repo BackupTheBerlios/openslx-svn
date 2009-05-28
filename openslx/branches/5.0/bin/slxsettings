@@ -1,0 +1,381 @@
+#! /usr/bin/perl
+# -----------------------------------------------------------------------------
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+# slxsettings
+#    - OpenSLX-script to show & change local settings
+# -----------------------------------------------------------------------------
+use strict;
+use warnings;
+
+my $abstract = q[
+slxsettings
+    This script can be used to show or change the local settings for OpenSLX.
+
+    Any cmdline-argument passed to this script will change the local OpenSLX
+    settings file (usually /etc/opt/openslx/settings).
+
+    If you invoke the script without any arguments, it will print the current
+    settings and exit.
+
+    Please use the --man option in order to read the full manual.
+];
+
+# add the lib-folder and the folder this script lives in to perl's search
+# path for modules:
+use FindBin;
+use lib "$FindBin::RealBin/../lib";
+use lib "$FindBin::RealBin";
+# development path to config-db stuff
+
+use Config::General;
+use Getopt::Long qw(:config pass_through);
+use Pod::Usage;
+
+use OpenSLX::Basics;
+use OpenSLX::Utils;
+
+my (@reset, %givenSettings, %option);
+
+GetOptions(
+    'quiet'   => \$option{quiet},
+    'help|?'  => \$option{helpReq},
+    'man'     => \$option{manReq},
+    'version' => \$option{versionReq},
+);
+pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $option{helpReq};
+pod2usage(-verbose => 2) if $option{manReq};
+if ($option{versionReq}) {
+    system('slxversion');
+    exit 1;
+}
+
+if ($> != 0) {
+    die _tr("Sorry, this script can only be executed by the superuser!\n");
+}
+
+openslxInit() or pod2usage(2);
+
+# some settings must match a certain pattern:
+my %configPattern = (
+    'db-type' => '(SQLite|mysql)',
+);
+
+# the remaining cmdline arguments are set or reset actions, each followed
+# by a single argument:
+while (scalar @ARGV) {
+    my $action = shift || '';
+    my $arg    = shift || '';
+    if ($action eq 'set') {
+        if ($arg !~ m[^([-\w]+)=(.+)$]) {
+            die _tr(
+                "set-argument '%s' has unknown format, expected '<key>=<value>!'",
+                $arg
+            );
+        }
+        $givenSettings{$1} = $2;
+    }
+    elsif ($action eq 'reset') {
+        push @reset, $arg;
+    }
+    else {
+        die _tr(unshiftHereDoc(<<'        END-OF-HERE'), $arg, $0);
+            action '%s' is not understood! Known actions are:
+                set
+                reset
+            Try '%s --help' for more info.
+        END-OF-HERE
+    }
+}
+
+# fetch current content of local settings file...
+my $fileName = "$openslxConfig{'config-path'}/settings";
+if (!-e $fileName) {
+    # create empty default settings file with tight mode (root-only access)
+    # [I know this isn't *secure* as such, but it's still better than nothing]
+    slxsystem("touch $fileName && chmod 0600 $fileName");
+}
+my $configObj = Config::General->new(
+    -ConfigFile     => $fileName, 
+    -SplitDelimiter => '\s*=\s*',
+    -SplitPolicy    => 'custom',
+    -StoreDelimiter => '=',
+);
+my %settings = $configObj->getall();
+
+my %changed;
+
+# ...set new values...
+foreach my $key (keys %givenSettings) {
+    my $value = $givenSettings{$key};
+    next if !defined $value;
+    if (!exists $openslxConfig{$key}) {
+        die _tr("option '%s' is not known!", $key);
+    }
+    if ($key =~ m{^(base-path|config-path)$}) {
+        die _tr("option '%s' is fixed!", $key);
+    }
+    if (exists $configPattern{$key} && $value !~ m{$configPattern{$key}}) {
+        die _tr(
+            "option '%s' must match pattern '%s'!", $key, $configPattern{$key}
+        );
+    }
+
+    vlog(0, _tr("setting %s to '%s'", $key, $value)) unless $option{quiet};
+    my $externalKey = externalKeyFor($key);
+    if (!exists $settings{$externalKey} || $settings{$externalKey} ne $value) {
+        $settings{$externalKey} = $value;
+    }
+    $changed{$key}++;
+}
+
+# reset specified keys to fall back to default:
+foreach my $key (@reset) {
+    my $externalKey = externalKeyFor($key);
+    if (exists $settings{$externalKey}) {
+        delete $settings{$externalKey};
+        vlog(0,
+            _tr("removing option '%s' from local settings", $key))
+              unless $option{quiet};
+    } else {
+        vlog(0,
+            _tr("option '%s' didn't exist in local settings!", $key))
+              unless $option{quiet};
+    }
+    $changed{$key}++;
+}
+
+# ... and write local settings file if necessary
+if (keys %changed) {
+    $configObj->save_file($fileName, \%settings);
+
+    openslxInit();
+
+    foreach my $key (keys %changed) {
+        changedHandler($key, $openslxConfig{$key});
+    }
+}
+
+if (!keys %changed) {
+    print _tr("paths fixed at installation time:\n");
+    print qq[\tbase-path='$openslxConfig{'base-path'}'\n];
+    print qq[\tconfig-path='$openslxConfig{'config-path'}'\n];
+    my $text =
+      keys %changed
+      ? "resulting base settings (cmdline options):\n"
+      : "current base settings (cmdline options):\n";
+    print $text;
+    my @baseSettings = grep { exists $cmdlineConfig{$_} } keys %openslxConfig;
+    foreach my $key (sort @baseSettings) {
+        my $val = $openslxConfig{$key} || '';
+        print qq[\t$key='$val'\n];
+    }
+    print _tr("extended settings:\n");
+    my @extSettings = grep { !exists $cmdlineConfig{$_} } keys %openslxConfig;
+    foreach my $key (sort @extSettings) {
+        next if $key =~ m[^(base-path|config-path)$];
+        my $val = $openslxConfig{$key};
+        if (defined $val) {
+            print qq[\t$key='$val'\n];
+        }
+        else {
+            print qq[\t$key=<unset>\n];
+        }
+    }
+}
+
+sub externalKeyFor
+{
+    my $key = shift;
+
+    $key =~ tr[-][_];
+    return "SLX_" . uc($key);
+}
+
+sub changedHandler
+{
+    my $key   = shift;
+    my $value = shift;
+
+    # invoke a key-specific change handler if it exists:
+    $key =~ tr[-][_];
+
+    # we do the following function call in an eval as that function may simply
+    # not exist:
+    eval {
+        no strict 'refs';        ## no critic (ProhibitNoStrict)
+        "${key}_changed_handler"->();
+    };
+    
+    return;
+}
+
+sub private_path_changed_handler
+{
+    # create the default config folders (for default system only):
+    require OpenSLX::ConfigFolder;
+    OpenSLX::ConfigFolder::createConfigFolderForDefaultSystem();
+
+    return;
+}
+
+=head1 NAME
+
+slxsettings - OpenSLX-script to show & change local settings
+
+=head1 SYNOPSIS
+
+slxsettings [options] [action ...]
+
+=head3 Script Actions
+
+      set <option-name=value>    sets the option to the given value
+      reset <option-name>        resets the given option to its default
+
+=head3 List of Known Option Names
+
+      db-name=<string>           name of database
+      db-spec=<string>           full DBI-specification of database
+      db-type=<string>           type of database to connect to
+      locale=<string>            locale to use for translations
+      log-level=<int>            level of logging verbosity (0-3)
+      logfile=<string>           file to write logging output to
+      private-path=<string>      path to private data
+      public-path=<string>       path to public (client-accesible) data
+      temp-path=<string>         path to temporary data
+
+=head3 General Options
+
+      --help                     brief help message
+      --man                      full documentation
+      --quiet                    do not print anything
+      --version                  show version
+
+=head3 Actions
+
+=over 8
+
+=item B<<     set <openslx-option>=<value> >>
+
+sets the specified option to the given value
+
+=item B<<     reset <setting> >>
+
+removes the given setting from the local settings (resets it to its default
+value)
+
+=back
+
+=head1 DESCRIPTION
+
+B<slxsettings> can be used to show or change the local settings for OpenSLX.
+
+Any cmdline-argument passed to this script will change the local OpenSLX
+settings file (usually /etc/opt/openslx/settings).
+
+If you invoke the script without any arguments, it will print the current
+settings and exit.
+
+=head1 OPTIONS
+
+=head3 Known Option Names
+
+=over 8
+
+=item B<<     db-name=<string> >>
+
+Gives the name of the database to connect to.
+
+Default is $SLX_DB_NAME (usually C<openslx>).
+
+=item B<<     db-spec=<string> >>
+
+Gives the full DBI-specification of database to connect to. Content depends
+on the db-type.
+
+Default is $SLX_DB_SPEC (usually empty as it will be built automatically).
+
+=item B<<     db-type=<string> >>
+
+Sets the type of database to connect to (SQLite, mysql, ...).
+
+Default $SLX_DB_TYPE (usually C<SQLite>).
+
+=item B<<     locale=<string> >>
+
+Sets the locale to use for translations.
+
+Defaults to the system's standard locale.
+
+=item B<<     logfile=<string> >>
+
+Specifies a file where logging output will be written to.
+
+Default is to log to STDERR.
+
+=item B<<     private-path=<string> >>
+
+Sets path to private data, where the config-db, vendor_oses and configurational
+extensions will be stored.
+
+Default is $SLX_PRIVATE_PATH (usually F</var/opt/openslx>.
+
+=item B<<     public-path=<string> >>
+
+Sets path to public (client-accesible) data.
+
+Default is $SLX_PUBLIC_PATH (usually F</srv/openslx>.
+
+=item B<<     temp-path=<string> >>
+
+Sets path to temporary data.
+
+Default is $SLX_TEMP_PATH (usually F</tmp>.
+
+=item B<<     log-level=<int> >>
+
+Sets the level of logging verbosity (0-3).
+Prints additional output for debugging. N is a number between 0 and 3. Level
+1 provides more information than the default, while 2 provides traces. With
+level 3 you get extreme debug output, e.g. database commands are printed.
+
+Default is $SLX_VERBOSE_LEVEL (usually 0, no logging).
+
+=back
+
+=head3 General Options
+
+=over 8
+
+=item B<    --help>
+
+Prints a brief help message and exits.
+
+=item B<    --man>
+
+Prints the manual page and exits.
+
+=item B<    --quiet>
+
+Runs the script without printing anything.
+
+=item B<    --version>
+
+Prints the version and exits.
+
+=back
+
+=head1 SEE ALSO
+
+slxos-setup, slxos-export, slxconfig, slxconfig-demuxer
+
+=cut
+

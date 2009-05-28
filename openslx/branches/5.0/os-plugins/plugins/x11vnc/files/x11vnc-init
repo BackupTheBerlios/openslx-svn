@@ -1,0 +1,83 @@
+#!/bin/bash
+# --------------------------------
+# /etc/init.d/x11vnc
+# --------------------------------
+
+if [ -f /etc/x11vnc/x11vnc.conf ]
+then
+  . /etc/x11vnc/x11vnc.conf
+fi
+
+# find xauthority file
+find_xauth () {
+  FOUND=0
+  RETRIES=4
+  [ -z "$1" ] || RETRIES="$1"
+
+  [ -e "/var/lib/kdm/" ] && 
+     XAUTHFILE_KDM=`find /var/lib/kdm/ -iname "A\:0-*"`
+  [ -e "/var/run/xauth/" ] && 
+     XAUTHFILE_KDM2=`find /var/run/xauth/ -iname "A\:0-*"`
+  [ -e "/var/lib/xdm/authdir/authfiles/" ] && 
+     XAUTHFILE_XDM=`find /var/lib/xdm/authdir/authfiles/ -iname "A\:0-*"`
+  [ -e "/var/lib/gdm/" ] && 
+     XAUTHFILE_GDM=`find /var/lib/gdm/ -iname *Xauth*`
+  
+  [ -f "$XAUTHFILE_KDM" ]  && FOUND=1 && XAUTHORITY="$XAUTHFILE_KDM"
+  [ -f "$XAUTHFILE_KDM2" ] && FOUND=1 && XAUTHORITY="$XAUTHFILE_KDM2"
+  [ -f "$XAUTHFILE_XDM" ]  && FOUND=1 && XAUTHORITY="$XAUTHFILE_XDM"
+  [ -f "$XAUTHFILE_GDM" ]  && FOUND=1 && XAUTHORITY="$XAUTHFILE_GDM"
+
+  if [ "$FOUND" -eq "0" ]; then
+    if [ "$RETRIES" -gt "0" ]; then
+      let "RETRIES-=1"
+      find_xauth "$RETRIES"
+    else
+      echo "start FAILED (can't find way to authenticate myself against X)" >>/var/log/x11vnc.debug
+      exit -1
+    fi
+  else
+    echo "found authfile ($XAUTHORITY)" >>/var/log/x11vnc.debug
+  fi
+}
+
+START_COMMAND="x11vnc"
+
+case "$1" in
+  start)
+
+    if [ ! -f /etc/x11vnc/passwd ]; then
+      echo " start FAILED (/etc/x11vnc/passwd not found)" >>/var/log/x11vnc.debug
+      echo "   Create it manualy and retry starting x11vnc" >>/var/log/x11vnc.debug
+      exit -1;
+    fi
+
+    #su -c "$COMMAND" -l x11vnc &
+    if [ $X11VNC_X11 = 1 ]; then
+      find_xauth
+      START_COMMAND="$START_COMMAND -auth $XAUTHORITY $X11VNC_PARAMS"
+    else
+      START_COMMAND="$START_COMMAND $X11VNC_PARAMS"
+    fi
+    OUTPUT=`$START_COMMAND`
+    echo "$START_COMMAND" >>/var/log/x11vnc.debug
+    echo "$OUTPUT" >>/var/log/x11vnc.debug
+  ;;
+  stop)
+    pid=`pidof x11vnc`
+    if [ -z "$pid" ]
+    then
+     echo "x11vnc not running" >>/var/log/x11vnc.debug
+     exit -1;
+    else
+     kill -9 $pid
+    echo "x11vnc stopped" >>/var/log/x11vnc.debug
+    fi
+  
+  ;;
+  *)
+    echo "x11vnc startscript"
+    echo "Usage: $0 (start|stop)" 
+  ;;
+esac
+exit 0 

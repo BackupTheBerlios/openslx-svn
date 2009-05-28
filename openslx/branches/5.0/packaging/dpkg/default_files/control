@@ -1,0 +1,20 @@
+Package: openslx 
+Version: ##version##
+Section: admin
+Priority: optional
+Architecture: all
+Depends: bash (>= 3.0), coreutils (>= 5.2.1), sed (>= 4.1.4), mawk (>= 1.3.3), 
+         findutils (>= 4.2.22)
+Pre-Depends: perl (>= 5.8)
+Installed-Size: ##size##
+Homepage: http://openslx.org
+Maintainer: Sebastian Schmelzer <sebastian.schmelzer@rz.uni-freiburg.de> 
+Description: OpenSLX Server 
+  OpenSLX aims on the Linux desktop as a middleware solution to provide easy
+  administration of large bunchs of computers. The project might be of interest
+  in a wide field of utilization: schools , education, universities, grid
+  clusters, corporations with a lot of office workplaces, ...
+  
+  An OpenSLX client is just a Linux workstation as you would expect, if you have
+  installed just any distribution onto the local disk. The average user will not
+  see any difference

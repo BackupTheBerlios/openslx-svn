@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<settings>
+  <eintrag>
+    # Imagename with proper suffix
+    <image_name param="Vorlage_VMwareImageAdministrator.vmdk">
+    </image_name>
+    # Information of the image creator
+    <creator param="Your Name">
+    </creator>
+    <email param="your@email.address.tld">
+    </email>
+    <phone param="---">
+    </phone>
+    # Short description, shown in the menu
+    <short_description param="Vorlagen-Image">
+    </short_description>
+    # Define long description shown when the Image is chosen
+    <long_description param="Diese Image dient Ihnen als Vorlage für Ihre Installationen. Laden Sie es auf Ihre lokale Festplatte und installieren Sie Ihre Programme!">
+    </long_description>
+    #os running in vmware, needed for vmware config file
+    <os param="winxppro">
+    </os>
+    # Network nat or bridged?
+    <network param="nat">
+    </network>
+    # values: vmware or virtualbox
+    <virtualmachine param="vmware">
+    </virtualmachine>
+    #Description: Should the current image in use? if yes value is "true"
+    <active param="true">
+    </active>
+    #Description: The ID of the user.
+    <username param="s8user">
+    </username>
+    #Description: where should the current image be used? in the past slxgrp
+    <pools param="default chemie">
+    </pools>
+    #Description: as xdm menu? If yes "true", else "false"
+    <xdm param="false">
+    </xdm>
+    #Description: priority, use a number to get it to a special position
+    # should only be used by our department and noone else
+    <priority param="1">
+    </priority>
+    #Description: Should printers be connected ? Which ?
+    <printers>
+     <printer name="" path="">Human readable description</printer>
+    </printers>
+    #Description: Should scanners be connected ? Which ?
+    <scanners>
+     <scanner name="" path="">Description</scanner>
+    </scanners>
+    #Description: Should the Homedrive be connected ?
+    <home param="true">
+    </home>
+    #Description: Should shared drives be connected ? Which ?
+    <shareds param="true">
+     <shared name="" path="" pass=""></shared>
+    </shareds>
+    # there is the ability to protect an image for a while using a
+    # password. Helpfull for courses (with special software licences).
+    <locked param="true">
+    </locked>
+  </eintrag>
+</settings>

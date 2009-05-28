@@ -1,0 +1,32 @@
+arch = i386
+package-subdir = pool
+prereq-packages = main/d/debootstrap/debootstrap_0.3.3.2etch1_all.deb
+release-name = etch
+<repository base>
+    components = main
+    distribution = etch
+    name = Debian 4.0
+    repo-subdir = dists
+    file-for-speedtest = dists/etch/main/binary-i386/Packages.bz2
+</repository>
+<selection minimal>
+    packages = <<END
+        linux-image-486
+        locales-all
+    END
+</selection>
+<selection gnome>
+    base = minimal
+    packages = <<END
+        gnome
+    END
+</selection>
+<selection kde>
+    base = minimal
+    packages = <<END
+        kde
+    END
+</selection>
+<selection default>
+    base = minimal
+</selection>

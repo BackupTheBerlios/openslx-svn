@@ -1,0 +1,57 @@
+#!/bin/sh
+#
+# This script transforms the openslx project files to debians
+# binary package format .deb
+
+dpkg_deb=`which dpkg-deb`
+if [ -z "$dpkg_deb" ];then 
+    echo "You need the program dpkg-deb (contained in package dpkg) to build a debian package"
+    exit
+fi
+
+# import default paths for debian installation
+ . ./debianpaths
+
+# change into folder where we expect the Makefile:
+cd $(dirname $(readlink -f $0))/../..
+if [ ! -e ./Makefile ]; then
+    echo "There is no makefile in this programs directory (`pwd`)."
+    echo "Please run this script only embedded in the context of an openslx checkout."
+    exit
+fi
+
+export SLX_BUILD_PATH=/tmp/slx$$
+mkdir -p $SLX_BUILD_PATH
+# "make install" will install the slx software into $SLX_BUILD_PATH
+if make plain-install; then
+  #Create Temporary working directory
+  mkdir -p $SLX_BUILD_PATH/DEBIAN
+  cp packaging/dpkg/default_files/control  $SLX_BUILD_PATH/DEBIAN/
+  cp packaging/dpkg/default_files/pre*     $SLX_BUILD_PATH/DEBIAN/
+  cp packaging/dpkg/default_files/post*    $SLX_BUILD_PATH/DEBIAN/
+
+  . ./VERSIONS
+
+  OPENSLX_VERSION_SVNREV=$(svnversion .)
+
+
+  sed -i -e "4r./packaging/dpkg/debianpaths" \
+         $SLX_BUILD_PATH/DEBIAN/postinst
+
+  #update control file
+  sed -i -e "s/##version##/$OPENSLX_VERSION_STRING/" \
+         -e "s/##size##/$(du -s $SLX_BUILD_PATH | awk '{print $1}')/" \
+         $SLX_BUILD_PATH/DEBIAN/control
+
+  #Set permissions
+  find $SLX_BUILD_PATH -type d|xargs chmod 755
+
+  #Create the package
+  dpkg-deb --build $SLX_BUILD_PATH > /dev/null
+  cd packaging/dpkg
+  mv $SLX_BUILD_PATH.deb openslx_$OPENSLX_VERSION_STRING.deb
+  echo "Written 'openslx_$OPENSLX_VERSION_STRING.deb':"
+  ls -lh openslx_$OPENSLX_VERSION_STRING.deb
+fi
+#Clean up
+#rm -rf $SLX_BUILD_PATH

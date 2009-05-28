@@ -1,0 +1,86 @@
+#!/bin/sh
+set -e
+
+##VAR##
+
+if [ "$1" = "configure" ]; then
+        # specific database modules are optional, but we tell the user if
+        # support for a database is missing:
+        DEFAULT_DB_TYPE=""
+        if test -e ${SLX_CONFIG_PATH}/settings; then 
+                echo "Reading local settings..."
+                . ${SLX_CONFIG_PATH}/settings
+        fi
+        for m in ${SLX_DB_TYPE} SQLite mysql; do 
+                perl -I/opt/openslx/lib -Ilib -Iconfig-db -e "use OpenSLX::MetaDB::$m"
+                if [ $? -gt 0 ] ; then 
+                        echo -e "  'DBD::$m' not found (or too old), so $m-databases will not be \ 
+supported."
+                        exit 1
+                else 
+                        if test "${DEFAULT_DB_TYPE}X" = "X"; then 
+                                DEFAULT_DB_TYPE=$m; 
+                                echo "  db-type => $m"
+                        fi
+                fi
+        done
+
+        if test "${DEFAULT_DB_TYPE}X" = "X"; then 
+                echo "  None of the DB-modules is available! Please install one of them."
+                echo "  For SQLite usage:"
+                echo "   # aptitude install libdbd-sqlite3-perl"
+                echo "  For MySQL usage:"
+                echo "   # aptitude install libdbd-mysql-perl"
+                echo "  or use CPAN to install the requred perl bindings"
+        else 
+                echo ${DEFAULT_DB_TYPE} >DEFAULT-DB-TYPE; 
+        fi 
+
+        if ! which rsync >/dev/null 2>&1; then 
+                echo "  rsync is required, please install it."
+                echo "   # aptitude install rsync"
+        fi
+
+  # do Makefile:postinit stuff
+
+  # create default config folder hierarchy:
+  perl -I/opt/openslx/lib -e 'use OpenSLX::ConfigFolder; createConfigFolderForDefaultSystem();'
+
+  # create complete default settings and empty local settings file:
+  cat >  ${SLX_BASE_PATH}/share/settings.default << EOF
+# default setup for OpenSLX-installation
+
+# paths that are fixed at packaging/installation time:
+SLX_BASE_PATH=${SLX_BASE_PATH}
+SLX_CONFIG_PATH=${SLX_CONFIG_PATH}
+
+# paths which can be adjusted after installation:
+SLX_PRIVATE_PATH=${SLX_PRIVATE_PATH}
+SLX_PUBLIC_PATH=${SLX_PUBLIC_PATH}
+SLX_TEMP_PATH=${SLX_TEMP_PATH} 
+EOF
+    
+  if [ ! -e ${SLX_CONFIG_PATH}/settings ]; then
+
+cat > ${SLX_CONFIG_PATH}/settings << EOF
+# Local setup for OpenSLX (overrides default settings).
+#
+# Please look at ${SLX_BASE_PATH}/share/settings.default and the docs to learn
+# about the available options.
+EOF
+
+  fi
+
+  echo -e "#! /bin/sh\n\necho ${OPENSLX_VERSION_STRING}" > ${SLX_BASE_PATH}/bin/slxversion
+  chmod a+x ${SLX_BASE_PATH}/bin/slxversion
+  ln -sf /bin/slxversion ${USR_BIN_PATH}/
+
+  # set default db-type:
+  DEFAULT_DB_TYPE=$(cat DEFAULT-DB-TYPE)
+  rm DEFAULT-DB-TYPE
+  echo -n '  ' 
+  slxsettings set db-type="${DEFAULT_DB_TYPE}"
+
+  #
+fi
+exit 0;

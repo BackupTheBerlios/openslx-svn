@@ -1,0 +1,82 @@
+# Copyright (c) 2003..2006 - RZ Uni Freiburg
+# Copyright (c) 2006..2008 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# configuration script for OpenSuSE 10.2 to configure linux stateless clients
+# (included by init, hwautocfg, servconfig within InitialRamFS after 
+# inclusion of the main functions file). This file is the main base for the
+# several SuSE distro versions
+
+# settings of central variables (formerly done via config-*, these variables
+# are disputable ...)
+# D_DIRINBINDMNT - lists of directories to be created in bind mounted rw
+# part of the client filesystem
+# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# TempFS usage
+# D_DIRINDXS - directories in client filesystem which should be present 
+# anyhow
+
+D_RODIRSINRW="/etc/opt/gnome/gconf /etc/X11/xkb /var/adm /var/lib/texmf \
+/var/lib/rpm /var/cache/fontconfig"
+
+# configure dbus (inter application communication for kde and gnome), hal
+# (hardware abstraction layer - used e.g. by powersaved) and resmgr
+# (resource manager - the user gets permissions to devices when loggin on)
+# runlevel script for haldaemon is now haldaemon instead of hal
+config_dreshal () {
+local start=5
+local stop=18
+if [ "x$start_dreshal" = "xyes" ]; then
+  for dir in /var/run/dbus /var/run/resmgr/classes /var/run/hal \
+             /var/cache/hald /var/lib/PolicyKit; do
+    testmkd /mnt/$dir
+  done
+  if [ -f /mnt/etc/init.d/dbus ] ; then
+    strinfile "messagebus:" /mnt/etc/passwd || \
+      echo "messagebus:x:100:101:User for D-BUS:/var/run/dbus:/bin/false" \
+        >> /mnt/etc/passwd
+    strinfile "messagebus:" /mnt/etc/group || \
+      echo "messagebus:!:101:" >> /mnt/etc/group
+    # set permissions with userid
+    testmkd /mnt/var/run/dbus messagebus:messagebus
+    rllinker "dbus" $start $stop
+  fi
+  if [ -f /mnt/etc/init.d/resmgr ] ; then
+    start=$(($start + 1))
+    stop=$(($stop - 1))
+    rllinker "resmgr" $start $stop
+  fi
+  if [ -f /mnt/etc/init.d/haldaemon ] ; then
+    strinfile "haldaemon:" /mnt/etc/passwd || \
+      echo "haldaemon:x:105:103:User for haldaemon:/var/run/hal:/bin/false" \
+        >> /mnt/etc/passwd
+    strinfile "haldaemon:" /mnt/etc/group || \
+      echo "haldaemon:!:103:" >> /mnt/etc/group
+    echo -n "" > /mnt/var/lib/PolicyKit/reload
+    # set permissions with userid
+    echo -e "\tchown haldaemon:haldaemon /var/run/hal /var/cache/hald \
+      2>/dev/null" >>/mnt/etc/init.d/boot.slx
+    start=$(($start + 1))
+    stop=$(($stop - 1))
+    rllinker "haldaemon" $start $stop
+  fi
+  if [ -f /mnt/etc/init.d/policykitd ] ; then
+    strinfile "polkituser:" /mnt/etc/passwd || \
+      echo "polkituser:x:104:106:PolicyKit:/var/run/PolicyKit:/bin/false" \
+        >> /mnt/etc/passwd
+    testmkd /mnt/var/run/polkit polkit:polkit 
+    start=$(($start + 10))
+    stop=$(($stop - 1))
+    rllinker "policykitd" $start $stop
+    echo -n > /mnt/var/lib/misc/PolicyKit.reload
+    chmod a+x /mnt/var/lib/misc/PolicyKit.reload
+  fi
+fi
+}

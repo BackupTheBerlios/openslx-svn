@@ -1,0 +1,35 @@
+#!/bin/sh
+
+if [ "$1" = "install" ]; then
+  MISSING=0
+  MISSING_MODULES=""
+  
+  echo ""
+  echo "  Preparing installation of OpenSLX! \n"
+  echo "  Checking for required perl Modules:"
+  for m in Carp Clone Config::General Cwd DBI Digest::MD5 Encode Fcntl \
+    File::Basename File::Find File::Glob File::Path FindBin \
+    Getopt::Long List::Util Pod::Usage POSIX Socket Storable \
+    Sys::Hostname Term::ReadLine ; do 
+               
+    echo -n "    * $m  .. "
+    if ! perl -e "use $m" 2>>/dev/null ; then
+      echo "not found"; 
+      $MISSING=1;
+      $MISSING_MODULES="$MISSING_MODULES $m";
+    else 
+       echo "found"
+    fi; 
+  done;
+
+  if [ $MISSING -gt 0 ]; then
+    echo "  Some perl Modules couldn't be found:"; 
+    echo "   $MISSING_MODULES";
+    echo "  Install them with cpan / aptitude and try again .. \n";
+    exit 1;
+  else 
+    echo "  All checks successfull. Continue with installation."
+    exit 0;
+  fi;
+fi;
+

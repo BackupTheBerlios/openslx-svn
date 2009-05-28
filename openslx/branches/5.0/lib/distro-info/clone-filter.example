@@ -1,0 +1,14 @@
+# this file defines the filter rules used when cloning any vendor-OS
+#
+# copy this file to 'clone-filter' and add your own filters to it
+# in order to overrule the filters provided by openslx
+#
+#Examples:
+#     the following line would include anything below /var/spool/
+#+ /var/spool/*
+#
+#     this would exclude anything in /etc that starts with dhcpd.conf
+#- /etc/dhcpd.conf*
+#
+#     and this would exclude all rpmnew-files:
+#- *.rpmnew

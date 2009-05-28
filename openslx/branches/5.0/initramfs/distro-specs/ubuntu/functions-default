@@ -1,0 +1,278 @@
+# Copyright (c) 2003..2006 - RZ Uni Freiburg
+# Copyright (c) 2006..2008 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found under http://openslx.org
+#
+# Configuration script for general Ubuntu to configure OpenSLX linux
+# stateless clients (executed within initial ramdisk after genconfig) 
+
+# distro specific configuration variables used in the setup functions
+# (formerly done via config-*, these variables are disputable ...)
+# D_ETCEXCL - list of files, wildcards to be excluded from /etc when using 
+# bind mounts
+# D_DIRINBINDMNT - lists of directories to be created in bind mounted rw part
+# of the client filesystem
+# D_RODIRSINRW - ReadOnly Directories in RW part of filesystem to save on 
+# TempFS usage
+# D_DIRINDXS - directories in client filesystem which should be present anyhow
+#D_ETCEXCL="etc/gconf/*\n*.old\n*-\netc/autoinstall\nlogrotate*\nbootloader\n\
+#*~\npptp.d\nisdn\nyouservers\nhardware/hwcfg*\n\
+#X11/xdm/pixmaps\ndhclient.script"
+D_BINDMPTS="tmp root home media"
+D_DIRINBINDMNT="/var/run /var/log /var/tmp /var/lib/gdm"
+D_RODIRSINRW="/etc/X11/xkb /var/lib/gconf /var/lib/dpkg /var/lib/aspell \
+/var/lib/pango /var/lib/defoma /var/cache/fontconfig /var/lib/dkms"
+#D_RWDIRSINRO="/var/lib/gdm"
+D_DIRINDXS="/var/X11R6/compose-cache /var/run/sysconfig/tmp /var/adm \
+/var/lib/nobody /var/lib/pam_devperm /var/lib/bluetooth /var/lib/texmf \
+/var/lib/nfs/sm /var/lib/misc /var/lib/acpi /var/spool/cron /var/lib/alsa \
+/var/lock/subsys/sysconfig"
+
+# empty functions are defined at the beginning of /etc/functions
+
+# distro specific stuff to initialize
+preinit () {
+  # load unix module to provide sockets (is compiled into kernel on
+  # the live CDs!?)
+  modprobe ${MODPRV} unix 2>/dev/null || error "$df_errumod" nonfatal
+  modprobe ${MODPRV} vesafb 2>/dev/null || error "$df_errumod" nonfatal
+  modprobe ${MODPRV} fbcon 2>/dev/null || error "$df_errumod" nonfatal
+}
+
+# distro specific function called from servconfig script
+config_distro () {
+  # clean the runlevel directories which will be populated by the stage3 setup
+  for dir in rc0.d rc1.d rc2.d rc3.d rc4.d rc5.d rc6.d rcS.d ; do
+    rm -rf /mnt/etc/${dir}/*
+  done
+  # add the halt link to the 0 and 6 runlevel directories
+  ln -sf ../init.d/halt /mnt/etc/rc0.d/S90halt
+  ln -sf ../init.d/reboot /mnt/etc/rc6.d/S90reboot
+  
+  # remove annoying udev rule set for changing eth interface
+  rm /mnt/etc/udev/rules.d/*persistent-net.rules >/dev/null 2>&1
+
+  # inittab is obsolete with the change to upstart in ubuntu 7.10, but to 
+  # prevent missunderstandings with the blank inittab created by openslx init
+  # we'll write a comment.. 
+  echo "# inittab is obsolete with the change to upstart from ubuntu 7.10" \
+    > /mnt/etc/inittab
+
+  # fix getty bug
+  # (console login on tty1 is started too early)
+  sed -i "s/start on runlevel 2/start on stopped rc2/" /mnt/etc/event.d/tty1
+
+  # for screen sessions
+  testmkd /mnt/var/run/screen root:utmp 0775
+}
+
+# initial (boot time) runlevel scripts
+initial_boot () {
+local count=10
+# boot.slx is a special runlevel script generated within initialramfs which
+# should be executed before the normal runlevel scripts. Proper shutdown is
+# not needed!?
+for i in mountkernfs.sh mountdevsubfs.sh boot.slx keyboard-setup procps \
+bootlogd hwclock.sh sudo console-setup $D_SPLASHY; do
+  count=$(($count + 1))
+  [ $DEBUGLEVEL -ge 2 ] && echo "boot-runlevelscript $i"
+  ln -sf /etc/init.d/$i /mnt/etc/rcS.d/S${count}$i
+done
+}
+
+# linking runlevel scripts
+rllinker () {
+local script="$1"
+if [ $2 -lt 10 ] ; then
+  local start="0$2"; else local start="$2"
+fi
+if [ $3 -lt 10 ] ; then
+  local stop="0$3"; else local stop="$3"
+fi
+# empty runlevel links - decision on running certain services is
+# passed via configuration
+for i in rc2.d/K$stop$script rc3.d/K$stop$script \
+         rc2.d/S$start$script rc3.d/S$start$script ; do
+  if ! [ -f /mnt/etc/init.d/$script ]; then
+    echo "Target `pwd`../$script does not exist. Skipping links"
+    break
+  else 
+    ln -sf ../init.d/$script /mnt/etc/$i
+    [ "$DEBUGLEVEL" == 5 ] && echo "Linked $script"
+  fi
+done
+}
+
+# set up localization like keytable, console
+dlocale () {
+# fixme -- use keytable setup script here
+# echo -e "\t# entries added by $0: $date" >> /mnt/etc/init.d/boot.slx
+sed "s/LANG.*/LANG=\"${LANG}\"/" -i /mnt/etc/default/locale
+#echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
+#  >>/mnt/etc/init.d/boot.slx
+}
+
+# group of functions for the normal runlevels - first parameter is start
+# second stop
+
+# configure udev
+config_udev () {
+    if [ -f /mnt/etc/init.d/udev ] ; then
+       rllinker "udev" 7 14
+    fi
+    if [ -f /mnt/etc/init.d/udev-finish ] ; then
+       rllinker "udev-finish" 24 2
+    fi
+}
+
+# function for ntp configuration
+config_ntp () {
+if [ -f /mnt/etc/init.d/ntp -a "x$start_ntp" != "xno" ] ; then
+  echo -e "ntp:x:74:65534:NTP daemon:/var/lib/ntp:/bin/false" \
+    >>/mnt/etc/passwd
+  testmkd /mnt/var/lib/ntp/var/run/ntp
+  rllinker "ntp" 7 14
+fi
+}
+# function for atd
+config_atd () {
+if [ "x$start_atd" = "xyes" ]; then
+  # testmkd /mnt/var/spool/atjobs
+  # testmkd /mnt/var/spool/atspool
+  # chown 1:1 /mnt/var/spool/atjobs /mnt/var/spool/atspool
+  rllinker "atd" 14 4
+fi
+}
+# function for configuration of cron services (fixme: to be moved to a plugin?)
+config_cron () {
+if [ "x$start_cron" = "xyes" ] ; then
+  if [ -f /mnt/etc/init.d/cron ] ; then
+    rllinker "cron" 18 2
+    # fixme! check for proper permissions!
+    testmkd /mnt/var/spool/crontabs
+    echo -e "# /etc/crontab - file generated by $0:\n\
+#\t$date\nSHELL=/bin/sh\nPATH=/usr/bin:/usr/sbin:/sbin:/bin:/usr/lib/news/bin\
+\nMAILTO=\n-*/15 * * * *\troot\ttest -x /usr/lib/cron/run-crons && \
+/usr/lib/cron/run-crons >/dev/null 2>&1\n" >/mnt/etc/crontab
+  else
+    error "$df_errcron" nonfatal
+  fi 
+fi
+}
+# secure shell service
+config_sshd () {
+if [ "x$start_sshd" = "xyes" ] ; then
+  if [ -f /mnt/etc/init.d/ssh ] ; then
+    #testmkd /mnt/var/run/sshd
+    rllinker "ssh" 12 10
+  else
+    error "$df_errsshd" nonfatal
+  fi
+fi
+}
+# snmp agent for remote monitoring
+config_snmp () {
+if [ "x$start_snmp" = "xyes" ] ; then
+  if [ -f /mnt/etc/init.d/snmpd ] ; then
+    rllinker "snmpd" 24 2
+    testmkd /mnt/var/lib/net-snmp
+  fi
+    # fixme!!
+    # write service monitor depending on services started
+  fi
+}
+# acpi and powersave
+config_acpi () {
+  rllinker "acpid" 10 19
+  #Commented out since battery checking is only useful for Notebooks
+  #rllinker "acpi-support" 99 2
+}
+# configure hal, dbus, policykitd and services like that
+config_dreshal () {
+if [ "x$start_dreshal" = "xyes" ]; then
+  testmkd /mnt/var/lib/dbus
+  testmkd /mnt/var/lib/misc
+  testmkd /mnt/var/cache/hald
+  touch /mnt/var/lib/misc/PolicyKit.reload
+  chown root:polkituser /mnt/var/lib/misc/PolicyKit.reload
+  rm -rf /mnt/etc/dbus-1/system.d/*etwork*anager.conf \
+         /mnt/etc/dbus-1/system.d/nm-* \
+         /mnt/etc/dbus-1/event.d/*NetworkManager*
+  sed -i /mnt/etc/PolicyKit/PolicyKit.conf \
+      -e "s/\(<\/config>\)/    @@new@@\n\1/" \
+      -e "s/@@new@@/<match action=\"@@action@@\">\n@@return@@\n    <\/match>/" \
+      -e "s/@@action@@/org.freedesktop.hal.storage.mount-removable/" \
+      -e "s/@@return@@/        <return result=\"yes\"\/>/"
+  sed -i /mnt/etc/dbus-1/system.d/hal.conf \
+      -e "s/^\([^d]*\)deny\(.*Volume.*\)/\1allow\2/"
+  rllinker "dbus" 17 20
+  rllinker "hal" 18 15
+  if [ ! -e /mnt/etc/init.d/policykit ] ; then
+    testmkd /mnt/var/lib/PolicyKit root:polkituser 1770
+    testmkd /mnt/var/lib/PolicyKit-public root:polkituser
+  else
+    rllinker "policykit" 18 10
+  fi
+fi
+}
+
+# initialize boot.slx - skript to be executed during early system startup
+# (before most of the normal boot init scripts)
+# this script should operate like a normal runlevel script (fixme!!)
+d_mkrlscript () {
+local switch="$1"
+local name="$2"
+local info="$3"
+case "$switch" in
+  init)
+    echo -e "#!/bin/sh\n# skeleton of /etc/init.d/$name written \
+from $0\n# after you applied changes to the creation scripts you have to \
+rerun\n# the mkdxsinitrd script to get them applied\n\n\
+. /lib/lsb/init-functions\n" >/mnt/etc/init.d/$name
+    echo -e "\n\ncase \"\$1\" in\n    start)\n\tlog_begin_msg \"$info\"" \
+      >>/mnt/etc/init.d/$name
+    chmod u+x /mnt/etc/init.d/$name
+  ;;
+  close)
+    echo -e "\tlog_end_msg 0\n\t;;\n    stop)\n\t;;\nesac\nexit 0" \
+      >>/mnt/etc/init.d/$name
+  ;;
+esac
+}
+# configure automounter
+config_automount () {
+if [ -f /mnt/etc/init.d/autofs ] ; then
+  testmkd /mnt/var/lock/subsys
+  sed -e "1i# /etc/default/autofs - file modified by\n#\t$0:\n#" \
+      -e "s,TIMEOUT.*,TIMEOUT=60," -i /mnt/etc/default/autofs
+  config_portmap
+  rllinker "autofs" 12 4
+fi
+}
+# start portmapper (needed at least for nfsN and nis services)
+config_portmap () {
+  rllinker "portmap" 2 20
+}
+# start NIS (fixme - does the service is really named ypbind??)
+config_nis () {
+  if [ -f /mnt/etc/init.d/ypbind ] ; then
+    rllinker "ypbind" 6 16
+    config_portmap
+    testmkd /mnt/var/yp/nicknames
+  else
+    error "$df_erryp" nonfatal
+  fi
+}
+# name service caching daemon (useful in most cases)
+config_nscd () {
+  if [ -f /mnt/etc/init.d/nscd ] ; then
+    testmkd /mnt/var/cache/nscd
+    rllinker "nscd" 20 5
+  fi
+}

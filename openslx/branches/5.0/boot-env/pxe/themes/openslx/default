@@ -1,0 +1,15 @@
+# theme default settings (non-style settings)
+
+INCLUDE header
+
+PROMPT 0
+NOESCAPE 1
+TIMEOUT 60
+TOTALTIMEOUT 3000
+
+#MENU MASTER PASSWD secret
+MENU PASSPROMPT Gesicherter Bereich, bitte Passwort eingeben:
+MENU AUTOBOOT Auswahl startet in # Sekunden
+
+MENU TITLE OpenSLX - Hauptmenü
+

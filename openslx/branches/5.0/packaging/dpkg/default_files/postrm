@@ -1,0 +1,6 @@
+#!/bin/sh
+
+if [ "$1" = "purge" ] ; then
+	rm -rf /etc/opt/openslx >/dev/null || exit $?
+        # add if empty /etc/opt/ remove it as well ..
+fi

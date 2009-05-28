@@ -1,0 +1,128 @@
+#! /usr/bin/perl
+# -----------------------------------------------------------------------------
+# Copyright (c) 2006, 2007 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+# slxldd
+#    - OpenSLX-rewrite of ldd that works on multiple architectures.
+# -----------------------------------------------------------------------------
+use strict;
+use warnings;
+
+my $abstract = q[
+slxldd
+    This script reimplements ldd in a way that should work for all
+    binary formats supported by the binutils installed on the host system.
+
+    An example: if you have a folder containing an x86_64 system, you can
+    invoke this script on a x86_32-host in order to determine all the libraries
+    required by a binary of the x86_64 target system.
+];
+
+# add the lib-folder to perl's search path for modules:
+use FindBin;
+use lib "$FindBin::RealBin/../lib";
+
+use File::Glob ':globally';
+use Getopt::Long;
+use Pod::Usage;
+
+use OpenSLX::Basics;
+use OpenSLX::LibScanner;
+
+my %option = (
+    rootPath => '/',
+);
+GetOptions(
+    'help|?'      => \$option{helpReq},
+    'man'         => \$option{manReq},
+    'root-path=s' => \$option{rootPath},
+    'verbose'     => \$option{verbose},
+    'version'     => \$option{versionReq},
+  )
+  or pod2usage(2);
+pod2usage(-msg => $abstract, -verbose => 0, -exitval => 1) if $option{helpReq};
+pod2usage(-verbose => 2) if $option{manReq};
+if ($option{versionReq}) {
+    system('slxversion');
+    exit 1;
+}
+
+openslxInit();
+
+if (!$option{rootPath}) {
+    print STDERR _tr("You need to specify the root-path!\n");
+    pod2usage(2);
+}
+
+$option{rootPath} =~ s[/+$][];
+# remove trailing slashes
+
+if (!@ARGV) {
+    print STDERR _tr("You need to specify at least one file!\n");
+    pod2usage(2);
+}
+
+my $libScanner = OpenSLX::LibScanner->new({
+    'root-path' => $option{rootPath},
+    'verbose'   => $option{verbose},
+});
+
+my @libs = $libScanner->determineRequiredLibs(@ARGV);
+print join("\n", @libs), "\n";
+
+=head1 NAME
+
+slxldd - OpenSLX-script to determine the libraries required by any given
+binary file.
+
+=head1 SYNOPSIS
+
+slxldd [options] file [...more files]
+
+  Options:
+      --help                   brief help message
+      --man                    show full documentation
+      --root-path=<string>     path to the root folder for library search
+      --verbose                show what's going on during execution
+      --version                show version
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--help>
+
+Prints a brief help message and exits.
+
+=item B<--man>
+
+Prints the manual page and exits.
+
+=item B<--root-path=<string>>
+
+Sets the root folder that is used when searching for libraries. In order to
+collect the loader-settings, etc/ld.so.conf is read relative to this path and
+all libraries are sought relative to this path, too (a.k.a. a virtual chroot).
+
+Defaults to '/'.
+
+=item B<--verbose>
+
+Prints info about the files as they are being scanned.
+
+=item B<--version>
+
+Prints the version and exits.
+
+=back
+
+=cut
+
