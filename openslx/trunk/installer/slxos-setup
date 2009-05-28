@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # -----------------------------------------------------------------------------
-# Copyright (c) 2006, 2007 - OpenSLX GmbH
+# Copyright (c) 2006..2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -323,13 +323,13 @@ format an rsync-uri has.
 
 =over 8
 
-=item B<<     slxos-setup install suse-10.2 >>
+=item B<<     slxos-setup install suse-11.1 >>
 
-Installs the distro suse-10.2 as a new vendor-OS.
+Installs the distro suse-11.1 as a new vendor-OS.
 
-=item B<<     slxos-setup install suse-10.2-gnome >>
+=item B<<     slxos-setup install suse-11.1-gnome >>
 
-Installs the 'gnome'-selection of distro suse-10.2 as a new
+Installs the 'gnome'-selection of distro suse-11.1 as a new
 vendor-OS.
 
 =back
@@ -338,10 +338,10 @@ vendor-OS.
 
 =over 8
 
-=item B<<     slxos-setup clone my_server:/ suse-10.2-clone-my_server >>
+=item B<<     slxos-setup clone my_server:/ suse-11.1-clone-my_server >>
 
-Clones the suse-10.2 system from server 'my_server' as a new
-vendor-OS, which will be named 'suse-10.2-clone-my_server'.
+Clones the suse-11.1 system from server 'my_server' as a new
+vendor-OS, which will be named 'suse-11.1-clone-my_server'.
 
 =back
 
@@ -349,9 +349,9 @@ vendor-OS, which will be named 'suse-10.2-clone-my_server'.
 
 =over 8
 
-=item B<<     slxos-setup update suse-10.2 >>
+=item B<<     slxos-setup update suse-11.1 >>
 
-Updates the (existing) vendor-OS 'suse-10.2'.
+Updates the (existing) vendor-OS 'suse-11.1'.
 
 =back
 
@@ -359,9 +359,9 @@ Updates the (existing) vendor-OS 'suse-10.2'.
 
 =over 8
 
-=item B<<     slxos-setup import-into-db suse-10.2 >>
+=item B<<     slxos-setup import-into-db suse-11.1 >>
 
-Imports the (existing) vendor-OS 'suse-10.2' into the config-DB.
+Imports the (existing) vendor-OS 'suse-11.1' into the config-DB.
 
 =back
 
@@ -369,9 +369,9 @@ Imports the (existing) vendor-OS 'suse-10.2' into the config-DB.
 
 =over 8
 
-=item B<<     slxos-setup remove suse-10.2 >>
+=item B<<     slxos-setup remove suse-11.1 >>
 
-Wipes the (existing) vendor-OS 'suse-10.2' from disk and removes it
+Wipes the (existing) vendor-OS 'suse-11.1' from disk and removes it
 from the config-DB, too.
 
 =back
