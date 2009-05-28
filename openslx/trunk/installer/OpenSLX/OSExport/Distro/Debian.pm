@@ -43,6 +43,7 @@ sub initDistroInfo
         - /var/log/*
         - /var/lib/xdm
         - /var/cache/man/*
+        - /var/cache/apt/archives/*
         - /usr/share/vmware/*
         - /tmp/*
         - /sys/*

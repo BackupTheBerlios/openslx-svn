@@ -1,3 +1,5 @@
+The PXE stuff uses HPAs syslinux, see http://syslinux.zytor.com!
+
 Example how the PXElinux information is gathered:
 
 ############################## PXElinux-menu file ##############################
