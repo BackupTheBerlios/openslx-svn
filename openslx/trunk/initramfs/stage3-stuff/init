@@ -877,16 +877,15 @@ initial_boot
 
 runinithook '85-have-initial-boot'
 
-# post init for some distro specific
+# post init for some distro specific stuff to run
 postinit
-[ -s /initramfs/postinit.local ] && {
-  mv /initramfs/postinit.local /bin/postinit.local;
-  chmod u+x /bin/postinit.local; }
-[ -f /bin/postinit.local ] && {
+# general postinit.local configurable by the admin via openslx/config/<system>
+[ -f /initramfs/postinit.local ] && {
   [ $DEBUGLEVEL -gt 0 ] && \
     echo -n "Running script /bin/postinit.local ... "
-    /bin/postinit.local
-    echo "ok"; }
+  chmod u+x /initramfs/postinit.local
+  /initramfs/postinit.local
+  [ $DEBUGLEVEL -gt 0 ] && echo "ok"; }
 
 # start a debug shell in higher debug levels
 [ $DEBUGLEVEL -gt 2 -a $DEBUGLEVEL != 8 ] \
