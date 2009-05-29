@@ -347,7 +347,7 @@ wget_get () {
         echo "[wget_get] download of \"$file\" from \"$file_server\" ... failed"
       return 0;
     fi
-    wget $file_server$file -O /tmp/$(basename $file)
+    wget -q $file_server$file -O /tmp/$(basename $file)
     [ -s /tmp/$(basename $file) ] && download_successful=1
     countdown=$(expr $countdown - 1)
     usleep 200000
