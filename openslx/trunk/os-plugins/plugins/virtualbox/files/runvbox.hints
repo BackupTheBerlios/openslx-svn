@@ -1,112 +1,10 @@
-#!/bin/sh
-# Description:  Script for preparing VirtualBox environment Diskless
-#               Gets a xml file, reads needed information from it and
-#               forwards it into B drive of VirtualBox
-#
-# Author(s):    see project authors file
-#               last changes uhrig, 21/10/2008
-# Copyright:    (c) 2003 - 2008 - RZ Universitaet Freiburg
-#
-# Version:      0.0.1
-#
-################################################################################
-
-################################################################################
-##
-## Read needed variables from XML file
-##
-################################################################################
-xml=$1
-# todo: change it! We need to mount it like vmware, but it could be the
-# same
-imgpath="/var/lib/vmware"
-
-# file name of the image
-imagename="${imgpath}/$(grep -i "<image_name param=\"" ${xml} | awk -F "\"" '{ print $2 }')"
-imagename="${imgpath}/vbox-winxppro_20gb.vdi"
-
-# define name for VirtualBox window. no utf8, perhaps we don't need it any
-# more. else change the next two lines
-#short_description=$(grep "short_description param=\"" ${xml} | sed -e "s%&.*;%; %g" | awk -F "\"" '{print $2}')
-# if ${short_description} not defined use ${image_name}
-#short_description=${short_description:-"${image_name}"}
-#displayname=${short_description}
-
-# Definition of the client system
-#vmostype=$(grep -i "<os param=\"" ${xml} | awk -F "\"" '{ print $2 }')
-
-# Definition of the network kind. we should only need: nat, hostif
-network_kind=$(grep -i "<network param=\"" ${xml} | awk -F "\"" '{ print $2 }')
-network_kind="nat"
-# compatibility to vmware xml's
-if [ ${network_kind} = "bridge" ]; then
-  network_kind="hostif"
-else
-  # wrong configuration or nat, hostonly currently not supported, do we
-  # really need it?
-  network_kind="nat"
-fi
-
-################################################################################
-##
-## Prepare stuff and configure Image
-##
-################################################################################
-
-# Don't use $HOME/.VirtualBox!
-export VBOX_USER_HOME=/tmp/vbox-${USER}-$$
-# Current ID, to make sure it won't run into conflicts if started more
-# as once at the same time, else delete would make the trick...
-ID=$$
-
-# Bind Image to VirtualBox, which won't get changed
-VBoxManage registerimage disk ${imagename} -type immutable
-
-# Get ID of VBox Image...
-diskuid="$(VBoxManage showvdiinfo ${imagename} |grep UUID|awk '{ print $2; }')"
-
-# Create Image and register it, so we are able to modify and start it
-VBoxManage createvm -name "${ID}" -register
-
+# Description:  Old example script
 
 ################################################################################
 ##
 ## Modify VM
 ##
 ################################################################################
-
-# Add harddisk
-VBoxManage modifyvm "${ID}" -hda ${diskuid}
-
-## check if we have enough free memory
-# get memory in MB
-totalmem=$(expr $(grep -i "memtotal" /proc/meminfo | awk '{print $2}') / 1024)
-# calculate memory for virtualbox
-mem=$(expr ${totalmem} / 100 \* 66 / 4 \* 4)
-# check memory range
-memtest=${totalmem}-128
-
-if [ "${mem}" -lt "128" ] || [ "${mem}" -gt "${totalmem}" ]; then
-  echo "\n\n"
-  echo "\tYour memory is out of range: ${mem} MB."
-  echo "\tMin. 128 MB for host and guest!"
-  exit 1
-fi
-VBoxManage modifyvm "${ID}" -memory ${mem}
-
-
-## look for cdrom, dvd and add them to the vm config file
-for cdrs in /dev/cdrom*; do
-  if [ -L ${cdrs} ]; then
-    VBoxManage modifyvm "${ID}" -dvd host:${cdrs} 
-  fi
-done
-
-# Enable hardware virtualization
-VBoxManage modifyvm "${ID}" -hwvirtex on
-
-# HDD as boot device
-VBoxManage modifyvm "${ID}" -boot1 disk
 
 # Network settings
 VBoxManage modifyvm "${ID}" -nic1 ${network_kind}
@@ -120,9 +18,6 @@ fi
 # else we should use
 #VBoxManage modifyvm "${ID}" -macaddress1 <mac>
 
-# enable audio
-VBoxManage modifyvm "${ID}" -audio oss
-
 #TODO
 #VBoxManage modifyvm "${ID}"
 #VBoxManage modifyvm "${ID}" ­ostype <ostype>
@@ -132,14 +27,3 @@ VBoxManage modifyvm "${ID}" -audio oss
 #VBoxManage modifyvm "${ID}" ­dvdpassthrough <on|off> # burn support, unstable
 #VBoxManage modifyvm "${ID}" -floppy empty|uuid|filename # yes we need it
 #VBoxManage modifyvm "${ID}" -floppy empty|uuid|filename # yes we need it
-
-
-
-# adjust volume amixer -q sset Master 28 unmute 2>/dev/null
-amixer -q sset PCM 28 unmute 2>/dev/null
-amixer -q sset Headphone 28 unmute 2>/dev/null
-amixer -q sset Front 0 mute 2>/dev/null
-
-
-# start created image
-VBoxManage startvm "${ID}" -type gui
