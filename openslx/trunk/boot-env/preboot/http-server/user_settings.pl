@@ -35,6 +35,8 @@ my $cgi = CGI->new;
 my $system = $cgi->param('system') || '';
 my $client = $cgi->param('client') || '';
 my $prebootID = $cgi->param('preboot_id') || '';
+my $type = $cgi->param('type') || 'directkiosk';
+my $errormsg = 'None';
 
 die "must give 'system' ($system), 'client' ($client) and 'preboot_id' ($prebootID)!\n"
     unless $system && $client && $prebootID;
@@ -42,17 +44,47 @@ die "must give 'system' ($system), 'client' ($client) and 'preboot_id' ($preboot
 my $webPath = "$openslxConfig{'public-path'}/preboot";
 my $src = "$webPath/client-config/$system/$prebootID.tgz";
 my $destPath = "$webPath/$prebootID/client-config/$system";
-mkpath($destPath."/".$client);
-system(qq{tar -xz $src -C $destPath/$client/});
 
-# from here on the modifications of client configuration should take place
-# within $destPath/$client directory
+# if fastboot (default) is selected and a ConfTGZ exist just proceed ...
+if ($type eq "fastboot" && !-e "$destPath/$client.tgz") { $type = "slxconfig"; }
+# directkiosk/cfgkiosk/slxconfig
+if ($type ne "fastboot") { 
+    mkpath($destPath."/".$client);
+    system(qq{tar -xzf $src -C $destPath/$client/});
 
-system(qq{cd $destPath/$client; tar -czf $destPath/$client.tgz *});
-unlink("$destPath/$client");
+    # from here on the modifications of client configuration should take place
+    # within $destPath/$client directory
+    if ($type eq "slxconfig") {
+        # configuration of a WAN boot SLX client
+        print STDERR "slxconfig sub";
+    }
+    elsif ($type eq "cfgkiosk") {
+        # configuration of a WAN boot SLX kiosk
+    }
+    elsif (!$type || $type eq "directkiosk") {
+        # deactivate the desktop plugin for the kiosk mode
+        open (CFGFILE, ">$destPath/$client/initramfs/plugin-conf/desktop.conf");
+        print CFGFILE 'desktop_active="0"';
+        close (CFGFILE);
+        # activate the kiosk plugin
+        if (!-e "$destPath/$client/initramfs/plugin-conf/desktop.conf") {
+            $errormsg = "The kiosk plugin seems not to be installed";
+            print STDERR $errormsg;
+        }
+        # open (CFGFILE, ">$destPath/$client/initramfs/plugin-conf/kiosk.conf");
+    }
+    else {
+        # unknown type
+        $errormsg = "You have passed an unknown boot type $type";
+        print STDERR $errormsg;
+    }
+    system(qq{cd $destPath/$client; tar -czf $destPath/$client.tgz *});
+    rmtree($destPath."/".$client);
+}
 
 print
     $cgi->header(-charset => 'iso8859-1'),
     $cgi->start_html('Hey there ...'),
     $cgi->h1('Yo!'),
+    $cgi->p("Error: $errormsg"),
     $cgi->end_html();
