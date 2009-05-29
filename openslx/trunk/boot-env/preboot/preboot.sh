@@ -15,6 +15,13 @@
 # get configuration
 . /etc/initramfs-setup
 
+# Switch here for several boot TYPE=fastboot/directkiosk/cfgkiosk/slxconfig
+# fastboot - no interaction use system from client config
+# directkiosk - start the default slx system into kiosk (using vmchooser)
+# cfgkiosk - offer the user changes to his kiosk system (GUI environment)
+# slxconfig - offer the user set of configuration options, like setting a non-
+# priviledged user, root password, standard gui, plugins to activate ...
+
 # we expect to have a system selection dialog file in /preboot/bootmenu.dialog
 while [ "x$(cat result)" = "x" ] ; do
   dialog --file bootmenu.dialog 2>result

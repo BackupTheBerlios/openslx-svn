@@ -62,16 +62,43 @@ sub _createImage
         PROMPT 0
         TIMEOUT 100
         DEFAULT menu.c32
-        MENU TITLE Welcome to OpenSLX PreBoot ISO/CD
-
-        LABEL OpenSLX
-          MENU LABEL OpenSLX PreBoot Environment (Mini Linux/Kexec)
-          SAY Now loading OpenSLX preboot environment ...
+        MENU TITLE Welcome to OpenSLX PreBoot ISO/CD (Mini Linux/Kexec)
+        LABEL SLXSTDBOOT
+          MENU LABEL OpenSLX PreBoot - Direct Boot / Direct Start
+          MENU DEFAULT
           KERNEL vmlinuz
-          APPEND initrd=initramfs debug=3 vga=0x317
+          APPEND initrd=initramfs vga=0x317
           TEXT HELP
-                 Your chance to edit the kernel commandline by hitting the
+                 Use this (default) entry if you have configured your client.
+                 You have chance to edit the kernel commandline by hitting the
                  TAB key (e.g. for adding debug=3 to it for bug hunting) ...
+          ENDTEXT
+        LABEL SLXKIOSKBOOT
+          MENU LABEL OpenSLX PreBoot - Kiosk / Direct Start
+          KERNEL vmlinuz
+          APPEND initrd=initramfs vga=0x317 type=directkiosk
+          TEXT HELP
+                 Use this entry if you would like to start your machine into
+                 the standard SLX kiosk. At the same time you have the chance
+                 to edit the kernel commandline by hitting the TAB key ...
+          ENDTEXT
+        LABEL SLXCFGBOOT
+          MENU LABEL OpenSLX PreBoot - Client Configuration Interface
+          KERNEL vmlinuz
+          APPEND initrd=initramfs vga=0x317 type=slxconfig
+          TEXT HELP
+                 Use this entry if you would like to configure/modify your
+                 SLX client.  At the same time you have the chance to edit 
+                 the kernel commandline by hitting the TAB key ...
+          ENDTEXT
+        LABEL SLXCFGKIOSK
+          MENU LABEL OpenSLX PreBoot - Kiosk Configuration Interface
+          KERNEL vmlinuz
+          APPEND initrd=initramfs vga=0x317 type=cfgkiosk
+          TEXT HELP
+                 Use this entry if you would like to configure / modify your
+                 OpenSLX kiosk. At the same time you have the chance to edit 
+                 the kernel commandline by hitting the TAB key ...
           ENDTEXT
     End-of-Here
     spitFile("$imageDir/iso/isolinux/isolinux.cfg", $isolinuxConfig);

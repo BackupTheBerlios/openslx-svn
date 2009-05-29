@@ -42,8 +42,10 @@ die "must give 'system' ($system), 'client' ($client) and 'preboot_id' ($preboot
 my $webPath = "$openslxConfig{'public-path'}/preboot";
 my $src = "$webPath/client-config/$system/$prebootID.tgz";
 my $destPath = "$webPath/$prebootID/client-config/$system";
-mkpath($destPath);
-system(qq{cp $src $destPath/$client.tgz});
+mkpath($destPath/$client);
+system(qq{tar -xz $src -C $destPath/$client/});
+system(qq{cd $destPath/$client; tar -czf $destPath/$client.tgz *});
+unlink("$destPath/$client");
 
 print
     $cgi->header(-charset => 'iso8859-1'),

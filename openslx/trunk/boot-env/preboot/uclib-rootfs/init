@@ -86,7 +86,9 @@ for mod in ${ramfs_nicmods} \
   fi 
 done
 
-# read kernel commandline
+# set the default for boot type and read kernel commandline (for this and
+# other options)
+export TYPE=fastboot
 read KCMDLINE </proc/cmdline
 # read the system wide machine-setup and then the kernel commandline
 for opts in ${KCMDLINE} ; do
@@ -99,6 +101,9 @@ for opts in ${KCMDLINE} ; do
     # WLAN ssid (most probably passed that way, unused yet ...)
     ssid=*)
       SSID=${opts#SSID=};;
+    # Boot type (fastboot)/directkiosk/cfgkiosk/slxconfig
+    type=*)
+      TYPE=${opts#type=};;
   esac
 done
 
