@@ -180,7 +180,7 @@ sub getdkms
             system("tar -zxvf dkms-2.0.21.1.tar.gz dkms-2.0.21.1/dkms");
             die("Could not extract dkms script from tarball! Exiting!") if($? > 0 ); 
         }
-        copy("dkms-2.0.21.1/dkms","/sbin/dkms");
+        copyFile("dkms-2.0.21.1/dkms","/sbin");
         chmod 0755, "/sbin/dkms";
     }
 }

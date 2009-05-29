@@ -350,7 +350,7 @@ sub removeLinks
 {
     my $instFolders = "/usr/lib";
     if(-d "/usr/X11R6/lib") {
-        $instFolders .= "/usr/X11R6/lib";
+        $instFolders .= " /usr/X11R6/lib";
     }
     my $divertFolder = "/var/X11R6/lib";
     my $pluginFolder = "/opt/openslx/plugin-repo/xserver";

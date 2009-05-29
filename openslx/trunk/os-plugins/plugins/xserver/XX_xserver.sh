@@ -24,6 +24,10 @@ else
 slxconfig-demuxer\n  and transported via fileget) is not present" nonfatal
 fi
 
+if [ -e /etc/slxsystem.conf ]; then
+  . /etc/slxsystem.conf
+fi
+
 # Xorg configuration file location
 xfc="/mnt/etc/X11/xorg.conf"
 # directory for libGL, DRI library links to point to proper library set
@@ -87,6 +91,10 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
 
 	      # we need some database for driver initialization
 	      cp -r "${PLUGIN_PATH}/etc/ati" /mnt/etc
+
+          if [ "${slxconf_distro_name}" = "ubuntu" ]; then
+            echo "${PLUGIN_ROOTFS}/usr/lib/libGL.so.1" >> /mnt/etc/ld.so.preload
+          fi
 	
 	      # if fglrx_dri.so is linked wrong -> we have to link it here
 	      if [ "1" -eq "$( ls -l /mnt/usr/lib/dri/fglrx_dri.so \
@@ -118,6 +126,12 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
         modprobe agpgart
         # insert kernel driver
         chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/nvidia.ko
+
+
+        if [ "${slxconf_distro_name}" = "ubuntu" ]; then
+          echo "${PLUGIN_ROOTFS}/usr/lib/libGL.so.1" >> /mnt/etc/ld.so.preload
+        fi
+
       else
          xmodule="nv"
       fi
