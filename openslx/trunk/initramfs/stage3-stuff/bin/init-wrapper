@@ -31,7 +31,7 @@ DEBUGLEVEL="$2"
 [ -f /etc/initramfs-setup ] && . /etc/initramfs-setup 2>/dev/null
 
 # Initial
-[ -d /tmp/env ] || mkdir -p /tmp/env
+testmkd -p /tmp/env
 
 if [ ! -f /tmp/env/base.sed ]; then
   # Get environment and prepare as sed command
