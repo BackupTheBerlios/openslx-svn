@@ -52,6 +52,7 @@ if ($type ne "fastboot") {
     mkpath($destPath."/".$client);
     system(qq{tar -xzf $src -C $destPath/$client/});
 
+
     # from here on the modifications of client configuration should take place
     # within $destPath/$client directory
     if ($type eq "slxconfig") {
@@ -63,15 +64,18 @@ if ($type ne "fastboot") {
     }
     elsif (!$type || $type eq "directkiosk") {
         # deactivate the desktop plugin for the kiosk mode
-        open (CFGFILE, ">$destPath/$client/initramfs/plugin-conf/desktop.conf");
+        open (CFGFILE, ">>$destPath/$client/initramfs/plugin-conf/desktop.conf");
         print CFGFILE 'desktop_active="0"';
         close (CFGFILE);
         # activate the kiosk plugin
-        if (!-e "$destPath/$client/initramfs/plugin-conf/desktop.conf") {
+        if (!-e "$destPath/$client/initramfs/plugin-conf/kiosk.conf") {
             $errormsg = "The kiosk plugin seems not to be installed";
             print STDERR $errormsg;
+        } else {
+            open (CFGFILE, ">>$destPath/$client/initramfs/plugin-conf/kiosk.conf");
+            print CFGFILE 'kiosk_active="1"';
+            close (CFGFILE);
         }
-        # open (CFGFILE, ">$destPath/$client/initramfs/plugin-conf/kiosk.conf");
     }
     else {
         # unknown type
