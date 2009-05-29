@@ -22,9 +22,16 @@ if [ -e /initramfs/plugin-conf/kiosk.conf ]; then
   	if [ $kiosk_active -ne 0 ]; then
     	[ $DEBUGLEVEL -gt 0 ] && echo "executing the 'kiosk' os-plugin ...";
 		
-		# create new user
-		chroot /mnt useradd -s /bin/bash -m kiosk
-		cp /mnt/opt/openslx/plugin-repo/kiosk/bashrc /mnt/home/kiosk/.bashrc
+		
+		profile_path="/etc/opt/openslx/plugins/kiosk/profiles/"
+		
+		if [ -e /mnt/$profile_path/$kiosk_profile/ ]; then
+		  # create new user
+		  chroot /mnt useradd -s /bin/bash -k $profile_path/$kiosk_profile/ -m kiosk
+          chroot /mnt chown kiosk /home/kiosk/ -R
+        else
+          chroot /mnt useradd -s /bin/bash -k $profile_path/plain/ -m kiosk
+        fi
 		
 		# setup custom rungetty
 		mkdir -p /mnt/root/bin

@@ -17,6 +17,8 @@ use warnings;
 
 use base qw(OpenSLX::OSPlugin::Base);
 
+use File::Path;
+
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
@@ -32,7 +34,9 @@ sub new
     my $self = {
         name => 'kiosk',
     };
-
+    
+    mkpath("$openslxConfig{'config-path'}/plugins/kiosk/profiles");
+    
     return bless $self, $class;
 }
 
@@ -64,6 +68,18 @@ sub getAttrInfo
             content_descr => '1 means active - 0 means inactive',
             default => '1',
         },
+        'kiosk::profile' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                should the 'kiosk'-plugin setup a specific profile for the
+                kiosk user? (profile data should be placed in 
+                /etc/opt/openslx/plugins/kiosk/profiles/<profilename>/)
+            End-of-Here
+            #content_regex => qr{^(0|1)$},
+            content_descr => 'name of profile',
+            default => 'plain',
+        },
     };
 }
 
@@ -82,6 +98,8 @@ sub installationPhase
 
 	copyFile("$filesDir/bashrc","$pluginRepoPath");
 	copyFile("$filesDir/kgetty","$pluginRepoPath");
+	
+	system(qq{cp -r $filesDir/profiles/* $openslxConfig{'config-path'}/plugins/kiosk/profiles/});
 	
     my $scriptpath = "$pluginRepoPath/setup.kgetty";
 	my $script = $self->{distro}->getKgettySetupScript();

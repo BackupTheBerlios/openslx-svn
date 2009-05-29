@@ -1,0 +1,5 @@
+#!/bin/sh
+
+xsetroot -bg navy
+vmchooser -p /dev/null
+bash
