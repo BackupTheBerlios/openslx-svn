@@ -50,10 +50,11 @@ fi
 
 # bring the mac address into the standard format 01-<MAC>
 client=$(echo 01-$macaddr|sed "s/:/-/g")
-chvt 4
-w3m -o confirm_qq=no \
-  "$boot_uri/cgi-bin/user_settings.pl?system=${sysname}&preboot_id=${preboot_id}&client=${client}"
-chvt 1
+# to be replaced by wget --post ...
+#chvt 4
+#w3m -o confirm_qq=no \
+#  "$boot_uri/cgi-bin/user_settings.pl?system=${sysname}&preboot_id=${preboot_id}#&client=${client}"
+#chvt 1
 
 # fetch kernel and initramfs of selected system 
 wget -O /tmp/kernel $boot_uri/$kernel | dialog --progressbox 3 65

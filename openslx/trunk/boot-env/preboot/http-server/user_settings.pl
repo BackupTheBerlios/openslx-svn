@@ -86,9 +86,10 @@ if ($type ne "fastboot") {
     rmtree($destPath."/".$client);
 }
 
+# resulting page is not shown to the user (error reporting that way, or
+# completely empty reply?)
 print
     $cgi->header(-charset => 'iso8859-1'),
-    $cgi->start_html('Hey there ...'),
-    $cgi->h1('Yo!'),
+    $cgi->start_html('...'),
     $cgi->p("Error: $errormsg"),
     $cgi->end_html();
