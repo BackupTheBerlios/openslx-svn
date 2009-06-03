@@ -506,6 +506,7 @@ sub suggestAdditionalKernelModules
 {
     my $self                = shift;
     my $makeInitRamFSEngine = shift;
+    my $attrs               = shift;
     
     return;
 }
@@ -582,7 +583,7 @@ sub setupPluginInInitramfs
 
     # ... and kernel modules
     my @suggestedModules 
-        = $self->suggestAdditionalKernelModules($makeInitRamFSEngine);
+        = $self->suggestAdditionalKernelModules($makeInitRamFSEngine, $attrs);
     if (@suggestedModules) {
         my $modules = join(',', @suggestedModules);
         vlog(1, "plugin $pluginName suggests these kernel modules: $modules");

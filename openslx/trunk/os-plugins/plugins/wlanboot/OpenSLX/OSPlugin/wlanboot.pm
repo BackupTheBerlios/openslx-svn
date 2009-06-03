@@ -20,6 +20,8 @@ use base qw(OpenSLX::OSPlugin::Base);
 
 use File::Path;
 
+use Data::Dumper;
+
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
@@ -71,6 +73,16 @@ sub getAttrInfo
             content_descr => '1 means active - 0 means inactive',
             default => '1',
         },
+        'wlanboot::activenics' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                kernel modules to load ..
+            End-of-Here
+            content_regex => '',
+            content_descr => 'space seperated list of kernel modules (without .ko)',
+            default => 'iwl3945 arc4 ecb',
+        },
     };
 }
 
@@ -86,6 +98,7 @@ sub installationPhase
     my $attrs = $info->{'plugin-attrs'};
 
     my $filesDir = "$openslxBasePath/lib/plugins/wlanboot/files";
+    slxsystem("cp -r $filesDir $pluginRepoPath/");
 
     return;
 }
@@ -101,6 +114,21 @@ sub removalPhase
     return;
 }
 
+sub suggestAdditionalKernelModules
+{
+    my $self = shift;
+    my $info = shift;
+
+    my $attrs = $info->{'attrs'}; 
+
+    my @suggestedKernelModules;
+
+    print Dumper(split(/ /, $attrs->{'wlanboot::activenics'}));
+    push(@suggestedKernelModules, split(/ /, $attrs->{'wlanboot::activenics'} )); 
+
+   return @suggestedKernelModules;
+}
+
 sub copyRequiredFilesIntoInitramfs
 {
     my $self                = shift;
@@ -114,6 +142,9 @@ sub copyRequiredFilesIntoInitramfs
     );
     $makeInitRamFSEngine->addCMD(
        "cp -a $pluginRepoPath/files/firmware $targetPath/lib"
+    );
+    $makeInitRamFSEngine->addCMD(
+       "cp -a $pluginRepoPath/files/lib $targetPath/"
     );
     vlog(1, _tr("wlanboot-plugin: ..."));
 
