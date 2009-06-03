@@ -74,6 +74,7 @@ sub _createImage
                  TAB key (e.g. for adding debug=3 to it for bug hunting) ...
           ENDTEXT
         LABEL LOCALBOOT
+          MENU LABEL Boot locally (skip OpenSLX PreBoot) ...
           LOCALBOOT -1
           TEXT HELP
                  Gets you out of here by booting from next device in BIOS boot

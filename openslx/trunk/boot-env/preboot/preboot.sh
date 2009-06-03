@@ -19,8 +19,8 @@
 client=$(echo 01-$macaddr|sed "s/:/-/g")
 
 # check if already a configuration is available to decide if user interaction
-# is required 
-# wget -O /tmp/cfg-error $boot_uri/${client}
+# is required (path is to be fixed)
+wget -O /tmp/cfg-error $boot_uri/genconfig/${client}
 
 # Switch here for several boot TYPE=fastboot/directkiosk/cfgkiosk/slxconfig
 # fastboot - no interaction use system from client config
@@ -81,4 +81,4 @@ wget -q -O /tmp/initramfs $boot_uri/$initramfs
 dialog --infobox "Booting OpenSLX client $label ..." 3 65
 kexec -l /tmp/kernel --initrd=/tmp/initramfs \
   --append="$append file=$boot_uri/${preboot_id}/client-config/${sysname}/${client}.tgz $quiet ip=$ip:$siaddr:$router:$subnet:$dnssrv $debug" 2>/dev/null
-kexec -e
+kexec -e >/dev/null 2>&1

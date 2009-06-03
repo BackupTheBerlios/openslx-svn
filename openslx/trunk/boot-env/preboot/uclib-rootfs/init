@@ -174,7 +174,7 @@ echo "macaddr=$macaddr" >>/etc/initramfs-setup
 # user choose what kind of SLX client he wants to get
 dialog --infobox "Fetching preboot interactive part and configuration from \
 the net ($boot_uri) ..." 4 65
-wget -q -c -O /tmp/preboot.env $boot_uri/bootloader/${preboot_id}.env
+wget -q -O /tmp/preboot.env $boot_uri/bootloader/${preboot_id}.env
 mkdir /preboot
 tar -xzf /tmp/preboot.env -C /preboot
 # start a debug shell if needed, else set quiet kernel parameter
