@@ -227,17 +227,17 @@ sub installPlugin
 
         # cleanup temp path
         rmtree([ $self->{'plugin-temp-path'} ]);
-    }
 
-    # now update the vendorOS-attrs and let the plugin itself check the
-    # stage3 attrs    
-    $self->{'vendorOS-attrs'} = $self->{'plugin-attrs'};
-    $self->checkStage3AttrValues(
-        $self->{'plugin-attrs'}, \@attrProblems
-    );
-    if (@attrProblems) {
-        my $complaint = join "\n", @attrProblems;
-        die $complaint;
+        # now update the vendorOS-attrs and let the plugin itself check the
+        # stage3 attrs    
+        $self->{'vendorOS-attrs'} = $self->{'plugin-attrs'};
+        $self->checkStage3AttrValues(
+            $self->{'plugin-attrs'}, \@attrProblems
+        );
+        if (@attrProblems) {
+            my $complaint = join "\n", @attrProblems;
+            die $complaint;
+        }
     }
 
     $self->_addInstalledPluginToDB();
@@ -309,15 +309,8 @@ sub getInstalledPlugins
     
     my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
     $openslxDB->connect();
-    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-        name => $self->{'vendor-os-name'},
-    } );
-    if (!$vendorOS) {
-        die _tr(
-            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-        );
-    }
-    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOS->{id});
+    my $vendorOSID = $self->_fetchVendorOSID($openslxDB);
+    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOSID);
     $openslxDB->disconnect();
 
     return @installedPlugins;
@@ -601,7 +594,8 @@ sub _loadPlugin
 
     # if there's a distro folder, instantiate the most appropriate distro class
     my $distro;
-    if (-d "$self->{'plugin-path'}/OpenSLX/Distro") {
+    if ($self->{'vendor-os-name'} ne '<<<default>>>' 
+    && -d "$self->{'plugin-path'}/OpenSLX/Distro") {
         my $pluginBasePath = "$openslxConfig{'base-path'}/lib/plugins";
         my $distroScope = $plugin->{name} . '::OpenSLX::Distro';
         $distro = loadDistroModule({
@@ -709,16 +703,9 @@ sub _addInstalledPluginToDB
     
     my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
     $openslxDB->connect();
-    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-        name => $self->{'vendor-os-name'},
-    } );
-    if (!$vendorOS) {
-        die _tr(
-            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-        );
-    }
+    my $vendorOSID = $self->_fetchVendorOSID($openslxDB);
     $openslxDB->addInstalledPlugin(
-        $vendorOS->{id}, $self->{'plugin-name'}, $self->{'plugin-attrs'}
+        $vendorOSID, $self->{'plugin-name'}, $self->{'plugin-attrs'}
     );
     $openslxDB->disconnect();
 
@@ -734,15 +721,8 @@ sub _checkIfRequiredPluginsAreInstalled
 
     my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
     $openslxDB->connect();
-    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-        name => $self->{'vendor-os-name'},
-    } );
-    if (!$vendorOS) {
-        die _tr(
-            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-        );
-    }
-    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOS->{id});
+    my $vendorOSID = $self->_fetchVendorOSID($openslxDB);
+    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOSID);
     $openslxDB->disconnect();
     
     my @missingPlugins 
@@ -768,15 +748,8 @@ sub _checkIfPluginIsRequiredByOthers
     
     my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
     $openslxDB->connect();
-    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-        name => $self->{'vendor-os-name'},
-    } );
-    if (!$vendorOS) {
-        die _tr(
-            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-        );
-    }
-    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOS->{id});
+    my $vendorOSID = $self->_fetchVendorOSID($openslxDB);
+    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOSID);
     $openslxDB->disconnect();
     
     my @lockingPlugins
@@ -808,16 +781,9 @@ sub _fetchInstalledPluginAttrs
     
     my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
     $openslxDB->connect();
-    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-        name => $self->{'vendor-os-name'},
-    } );
-    if (!$vendorOS) {
-        die _tr(
-            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-        );
-    }
+    my $vendorOSID = $self->_fetchVendorOSID($openslxDB);
     my $installedPlugin = $openslxDB->fetchInstalledPlugins(
-        $vendorOS->{id}, $self->{'plugin-name'}
+        $vendorOSID, $self->{'plugin-name'}
     );
     $openslxDB->disconnect();
 
@@ -831,6 +797,22 @@ sub _removeInstalledPluginFromDB
     
     my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
     $openslxDB->connect();
+    my $vendorOSID = $self->_fetchVendorOSID($openslxDB);
+    $openslxDB->removeInstalledPlugin($vendorOSID, $self->{'plugin-name'});
+    $openslxDB->disconnect();
+
+    return 1;
+}
+
+sub _fetchVendorOSID
+{
+    my $self      = shift;
+    my $openslxDB = shift;
+
+    if ($self->{'vendor-os-name'} eq '<<<default>>>') {
+        return 0;
+    }
+
     my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
         name => $self->{'vendor-os-name'},
     } );
@@ -839,10 +821,8 @@ sub _removeInstalledPluginFromDB
             'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
         );
     }
-    $openslxDB->removeInstalledPlugin($vendorOS->{id}, $self->{'plugin-name'});
-    $openslxDB->disconnect();
 
-    return 1;
+    return $vendorOS->{id};
 }
 
 sub _osSetupEngine
