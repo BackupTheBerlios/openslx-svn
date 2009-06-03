@@ -15,6 +15,13 @@
 # get configuration
 . /etc/initramfs-setup
 
+# bring the mac address into the standard format 01-<MAC>
+client=$(echo 01-$macaddr|sed "s/:/-/g")
+
+# check if already a configuration is available to decide if user interaction
+# is required 
+# wget -O /tmp/cfg-error $boot_uri/${client}
+
 # Switch here for several boot TYPE=fastboot/directkiosk/cfgkiosk/slxconfig
 # fastboot - no interaction use system from client config
 # directkiosk - start the default slx system into kiosk (using vmchooser)
@@ -32,6 +39,9 @@ sysname=$(cat result)
 . ./$sysname
 sysname=$(readlink $sysname)
 
+# set basic post data information
+postdata="system=${sysname}&preboot_id=${preboot_id}&client=${client}"
+
 # ask for desired debug level in stage3 if debug!=0 in preboot
 echo "0" >result
 [ x$DEBUGLEVEL != x0 ] && dialog --no-cancel --menu "Choose Debug Level:" \
@@ -48,11 +58,9 @@ else
     debug=""
 fi 
 
-# bring the mac address into the standard format 01-<MAC>
-client=$(echo 01-$macaddr|sed "s/:/-/g")
-# to be replaced by wget --post ...
-wget --post-data "?system=${sysname}&preboot_id=${preboot_id}&client=${client}" \
-  $boot_uri/cgi-bin/user_settings.pl -O /tmp/cfg-error
+# send information to configuration host via http
+wget --post-data "$postdata" -O /tmp/cfg-error \
+  $boot_uri/cgi-bin/user_settings.pl
 
 [ "x$DEBUGLEVEL" != x0 -a grep -qe "Error:" /tmp/cfg-error 2>/dev/null ] && \
   dialog --msgbox "An error occured ..." # to be elaborated
