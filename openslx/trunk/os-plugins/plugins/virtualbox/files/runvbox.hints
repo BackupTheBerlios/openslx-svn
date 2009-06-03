@@ -1,29 +1,21 @@
-# Description:  Old example script
+# Description:  Old example script, more a temporary todo/note list
 
-################################################################################
-##
-## Modify VM
-##
-################################################################################
+#Network:
+#Intel PRO/1000 MT Server where added, because vista stoped supporting
+#the old ones => 4.2.5 vista networking
 
-# Network settings
-VBoxManage modifyvm "${ID}" -nic1 ${network_kind}
-#VBoxManage modifyvm "${ID}" -nictype1 Am79C970a|aM79c973|82540em
-if [ "${network_kind}" = "hostif" ]; then
-  VBoxManage modifyvm "${ID}" -hostifdev1 eth0
-fi
-# Per default each virtual network card is assigned a random address by
-# VBox at VM creation, due of this we can be sure that every mac is
-# unique
-# else we should use
-#VBoxManage modifyvm "${ID}" -macaddress1 <mac>
-
-#TODO
-#VBoxManage modifyvm "${ID}"
-#VBoxManage modifyvm "${ID}" ­ostype <ostype>
+#TODO: check if setting the following parameters will improve the plugin
 #VBoxManage modifyvm "${ID}" ­vram <ram>_in_mb_of_virtual_graphic_card>
 #VBoxManage modifyvm "${ID}" ­acpi <on|off> # acpi and i/o apic support
 #VBoxManage modifyvm "${ID}" ­sata <on|off> # sata or ide
 #VBoxManage modifyvm "${ID}" ­dvdpassthrough <on|off> # burn support, unstable
-#VBoxManage modifyvm "${ID}" -floppy empty|uuid|filename # yes we need it
-#VBoxManage modifyvm "${ID}" -floppy empty|uuid|filename # yes we need it
+#--vram, acpi, ioapic, pae, hwvirtex, nestedpaging, -vtxvpid,
+#monitorcount, accelerate3d, bioslogofadein, bioslogfadeout,
+#bioslogodisplaytime, bioslogoimagepath, biosbootmeu, biospxedebug,
+#idecontroller, sata*, scsi, floppy, nic*, cableconnected,
+#intnet, uart*, gueststatisticsinterval, kind of audio*, clipboard,
+#vrdp* (should be unimportant), usbehci
+#
+#should be more important at the beginning:
+#bridgeadapter, hostonlyadapter, floppy
+#intnet, natnet, usb

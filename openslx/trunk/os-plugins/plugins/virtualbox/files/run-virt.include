@@ -30,15 +30,13 @@ if grep -qe "/dev/.* /tmp " /proc/mounts ; then
   # Hack, if more than 2,5G RAM use 40% of Ram and write vmem into Ram as well
   # (40% vmware | 40% confdir(vmem...) | 20% host
   # VMplayer 2+ issue
-  #if [ "${totalmem}" -ge "2500" ]; then
-  #  permem=40
-  #  confdir=/dev/shm/vmware/$USER
-  #  conffile=${confdir}/run-vmware.conf
-  #  mkdir -p /dev/shm/vmware/$USER
-  #fi
+  if [ "${totalmem}" -ge "2500" ]; then
+    permem=40
+    mkdir /dev/shm/vbox/${USER}
+    snapshotdir=/dev/shm/vbox/$USER
+  fi
 fi
-#TODO: ... / 4 * 4 dont make sence
-mem=$(expr ${totalmem} / 100 \* ${permem} / 4 \* 4)
+mem=$(expr ${totalmem} / 100 \* ${permem})
 if [ "${id44}" = "1" ]; then
   memhost=$(expr ${totalmem} - ${mem})
 else
@@ -128,12 +126,45 @@ VBoxManage -q modifyvm "${ID}" -audio oss
 
 # supress License and Message
 # TODO: Not clear if we are allowed to do this
-VBoxManage setextradata global "GUI/LicenseAgreed" "7"
-VBoxManage setextradata global "GUI/SuppressMessages" ",remindAboutAutoCapture"
-VBoxManage setextradata global "GUI/RegistrationData" "triesLeft=0"
+VBoxManage -q setextradata global "GUI/LicenseAgreed" "7"
+VBoxManage -q setextradata global "GUI/SuppressMessages" ",remindAboutAutoCapture"
+VBoxManage -q setextradata global "GUI/RegistrationData" "triesLeft=0"
+
+# if we have enough memory, we can put the snapshots (changes on immutable
+# disk) there
+if [ -n ${snapshotdir} ]; then
+    VBoxManage -q modifyvm "${ID}" --snapshotfolder "${snapshotdir}"
+fi
+
+# Operating system. Possible: VBoxManage list ostypes
+# WindowsXP, WindowsVista, Windows7, Linux26 etc.
+# keep compatibility to VMware
+# Todo: maybe rewrite, to reduce checks, merge it with network option,
+# so we can have a "compatibility to vmware config" section. Or include
+# it into vmchooser?
+if [ "${vmostype}" = "winxppro" -o "${vmostype}" = "WindowsXP" ]; then
+    VBoxManage -q modifyvm "${ID}" --ostype "WindowsXP"
+elif [ "${vmostype}" = "winvista" -o "${vmostype}" = "WindowsVista" ]; then
+    VBoxManage -q modifyvm "${ID}" --ostype "WindowsVista"
+elif [ "${vmostype}" = "Windows7" ]; then
+    VBoxManage -q modifyvm "${ID}" --ostype "Windows7"
+elif [ "${vmostype}" = "linux" -o "${vmostype}" = "Linux26" ]; then
+    VBoxManage -q modifyvm "${ID}" --ostype "Linux26"
+elif [ -n "${vmostype}" ]; then
+    VBoxManage -q modifyvm "${ID}" --ostype "${vmostype}"
+fi
 
 
+# Network Configuration
+# only bridge differes to vmware
+if [ "${network_kind}" = "bridge" ]; then
+	network_kind="bridged"
+fi
+VBoxManage -q modifyvm "${ID}" --nic1 "${network_kind}"
 
+# modify macaddress
+mac=$(echo ${mac}|sed 's/://') # ${mac/:/}
+VBoxManage -q modifyvm "${ID}" --macaddress1 "0050560D${mac}"
 
 # finally set env for run-virt.sh
 ################################################################################
@@ -142,3 +173,7 @@ VBoxManage setextradata global "GUI/RegistrationData" "triesLeft=0"
 #VIRTCMD=$(which virtualbox 2>/dev/null)
 VIRTCMD=$(which VBoxManage 2>/dev/null)
 VIRTCMDOPTS="startvm ${ID} -type gui"
+
+# todo: for debugging purpose during development
+echo "\n  export VBOX_USER_HOME=\"/tmp/vbox-${USER}-${ID}\""
+echo "  VBoxManage $VIRTCMDOPTS\n\n"
