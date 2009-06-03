@@ -96,7 +96,6 @@ sub installationPhase
 
     my $filesDir = "$openslxBasePath/lib/plugins/kiosk/files";
 
-	copyFile("$filesDir/bashrc","$pluginRepoPath");
 	copyFile("$filesDir/kgetty","$pluginRepoPath");
 	
 	system(qq{cp -r $filesDir/profiles/* $openslxConfig{'config-path'}/plugins/kiosk/profiles/});
