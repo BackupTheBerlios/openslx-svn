@@ -69,7 +69,7 @@ wget --post-data "$postdata" -O /tmp/cfg-error \
 dialog --infobox "Loading kernel of ${sysname} ..." 3 65
 wget -q -O /tmp/kernel $boot_uri/$kernel
 dialog --infobox "Loading initial ramfs of ${sysname} ..." 3 65
-wget -O /tmp/initramfs $boot_uri/$initramfs
+wget -q -O /tmp/initramfs $boot_uri/$initramfs
 
 # read primary IP configuration to pass it on (behaviour like IPAPPEND=1 of
 # PXElinux)
