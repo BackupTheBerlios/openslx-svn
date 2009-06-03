@@ -1,5 +1,4 @@
 #!/bin/sh
 
 xsetroot -bg navy
-vmchooser -p /dev/null
-bash
+/opt/openslx/plugin-repo/vmchooser/vmchooser -p /dev/null
