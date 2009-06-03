@@ -62,6 +62,9 @@ done
 mkdir -p ${devdir}/pts ${devdir}/shm
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
 
+# redirect kernel messages to tty10 instead of tty1
+setlogcons 10
+
 dialog --infobox "Starting OpenSLX preboot environment ..." 3 65
 
 # initramfs-setup configuration (common settings for all clients using a
