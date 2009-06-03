@@ -34,7 +34,7 @@ use OpenSLX::Basics;
 ###         fk        => foreign key (integer)
 ################################################################################
 
-my $VERSION = 0.35;
+my $VERSION = 0.36;
 
 my $DbSchema = {
     'version' => $VERSION,
@@ -804,6 +804,23 @@ sub _schemaUpgradeDBFrom
             ],
             undef
         );
+    
+        return 1;
+    },
+    0.36 => sub {
+        my $metaDB = shift;
+
+        # value 'preboot-cd' in client-attr 'boot_type' has been changed
+        # to 'preboot', and a separate attribute 'preboot_media' has been
+        # introduced:
+        foreach my $client ($metaDB->fetchClientByFilter()) {
+            my $attrs = $metaDB->fetchClientAttrs($client->{id});
+            if ($attrs->{boot_type} eq 'preboot-cd') {
+                $attrs->{boot_type} = 'preboot';
+                $attrs->{preboot_media} = 'cd';
+                $metaDB->setClientAttrs($client->{id}, $attrs);
+            }
+        }
     
         return 1;
     },

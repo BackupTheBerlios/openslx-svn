@@ -67,12 +67,13 @@ sub _init
                 Currently the following boot types are supported:
                     pxe    (is the default)
                         uses PXE to boot client over LAN
-                    preboot-cd
-                        generates a bootable CD-image that can be used to
-                        remotely boot the systems referred to by this client
+                    preboot
+                        generates a set of images (see preboot_media) that can
+                        be used to remotely boot the systems referred to by 
+                        this client
             End-of-Here
-            content_regex => qr{^(pxe|preboot-cd)$},
-            content_descr => '"pxe" or "preboot-cd"',
+            content_regex => qr{^(pxe|preboot)$},
+            content_descr => '"pxe" or "preboot"',
             default => 'pxe',
         },
         'boot_uri' => {
@@ -124,6 +125,20 @@ sub _init
             End-of-Here
             content_regex => undef,
             content_descr => 'kernel cmdline fragment',
+            default => '',
+        },
+        'preboot_media' => {
+            applies_to_systems => 0,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                List of preboot media supported by this client.
+                Currently the following preboot media are supported:
+                    cd
+                        generates a bootable CD-image that can be used to
+                        remotely boot the systems referred to by this client
+            End-of-Here
+            content_regex => undef,
+            content_descr => undef,
             default => '',
         },
         'ramfs_fsmods' => {

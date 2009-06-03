@@ -1,4 +1,4 @@
-# Copyright (c) 2008 - OpenSLX GmbH
+# Copyright (c) 2008-2009 - OpenSLX GmbH
 #
 # This program is free software distributed under the GPL version 2.
 # See http://openslx.org/COPYING
@@ -8,24 +8,23 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# BootEnvironment::PrebootCD.pm
-#    - provides CD-specific implementation of the BootEnvironment API.
+# BootEnvironment::Preboot::CD.pm
+#    - provides CD-specific implementation of the Preboot-BootEnvironment API.
 # -----------------------------------------------------------------------------
-package OpenSLX::BootEnvironment::PrebootCD;
+package OpenSLX::BootEnvironment::Preboot::CD;
 
 use strict;
 use warnings;
 
-use base qw(OpenSLX::BootEnvironment::Preboot);
+use base qw(OpenSLX::BootEnvironment::Preboot::Base);
 
-use Clone qw(clone);
 use File::Basename;
 use File::Path;
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
-sub _createImage
+sub createImage
 {
     my $self   = shift;
     my $client = shift;
@@ -39,7 +38,7 @@ sub _createImage
         )
     );
 
-    my $imageDir = "$openslxConfig{'public-path'}/images/$client->{name}";
+    my $imageDir = "$openslxConfig{'public-path'}/images/$client->{name}/cd";
     mkpath($imageDir)   unless $self->{'dry-run'};
 
     # copy static data
@@ -55,7 +54,7 @@ sub _createImage
 
     # create initramfs
     my $initramfsName = qq{"$imageDir/iso/isolinux/initramfs"};
-    $self->_makePrebootInitRamFS($info, $initramfsName, $client);
+    $self->makePrebootInitRamFS($info, $initramfsName, $client);
 
     # write trivial isolinux config
     my $isolinuxConfig = unshiftHereDoc(<<"    End-of-Here");

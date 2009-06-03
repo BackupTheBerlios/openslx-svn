@@ -324,13 +324,17 @@ sub createTarOfPath
 
 sub bootEnvironmentForType
 {
-    my $bootType = shift || 'pxe';
+    my $bootTypeIn = shift || 'pxe';
     
     my %bootTypeMap = (
-        'pxe'           => 'PXE',
-        'preboot-cd'    => 'PrebootCD',
+        'pxe'     => 'PXE',
+        'preboot' => 'Preboot',
     );
-    $bootType = $bootTypeMap{lc($bootType)};
+    my $bootType = $bootTypeMap{lc($bootTypeIn)}
+        or die _tr(
+            "'%s' is not one of the supported boot-types (pxe,preboot)", 
+            $bootTypeIn
+        );
 
     if (!$bootEnvMap{$bootType}) {
         my $bootEnv = instantiateClass("OpenSLX::BootEnvironment::$bootType");
@@ -494,7 +498,7 @@ sub writeClientConfigurationsForSystem
 		                "$bootEnv->{'target-path'}/client-config/$externalSystemID"
 		            );
     	        } 
-    	        case 'preboot-cd' {
+    	        case 'preboot' {
 		        	# for preboot types
 		        	my $cname = $client->{name};
 		            createTarOfPath(
