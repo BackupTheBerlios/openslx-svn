@@ -40,7 +40,6 @@ sub databaseExists
     my $self = shift;
     
     my $fullDBPath = $self->_getDBPath() . "/$openslxConfig{'db-name'}";
-print "$fullDBPath\n";
     return -e $fullDBPath;
 }
 
