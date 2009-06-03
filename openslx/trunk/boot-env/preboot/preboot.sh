@@ -51,14 +51,17 @@ fi
 # bring the mac address into the standard format 01-<MAC>
 client=$(echo 01-$macaddr|sed "s/:/-/g")
 # to be replaced by wget --post ...
-#chvt 4
-#w3m -o confirm_qq=no \
-#  "$boot_uri/cgi-bin/user_settings.pl?system=${sysname}&preboot_id=${preboot_id}#&client=${client}"
-#chvt 1
+wget --post-data "?system=${sysname}&preboot_id=${preboot_id}&client=${client}" \
+  $boot_uri/cgi-bin/user_settings.pl -O /tmp/cfg-error
 
-# fetch kernel and initramfs of selected system 
-wget -O /tmp/kernel $boot_uri/$kernel | dialog --progressbox 3 65
-wget -O /tmp/initramfs $boot_uri/$initramfs | dialog --progressbox 3 65
+[ "x$DEBUGLEVEL" != x0 -a grep -qe "Error:" /tmp/cfg-error 2>/dev/null ] && \
+  dialog --msgbox "An error occured ..." # to be elaborated
+
+# fetch kernel and initramfs of selected system
+dialog --infobox "Loading kernel of ${sysname} ..." 3 65
+wget -q -O /tmp/kernel $boot_uri/$kernel
+dialog --infobox "Loading initial ramfs of ${sysname} ..." 3 65
+wget -O /tmp/initramfs $boot_uri/$initramfs
 
 # read primary IP configuration to pass it on (behaviour like IPAPPEND=1 of
 # PXElinux)

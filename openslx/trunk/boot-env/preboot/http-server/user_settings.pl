@@ -90,6 +90,8 @@ if ($type ne "fastboot") {
 # completely empty reply?)
 print
     $cgi->header(-charset => 'iso8859-1'),
-    $cgi->start_html('...'),
-    $cgi->p("Error: $errormsg"),
+    $cgi->start_html('...');
+if ($errormsg) { print $cgi->p("Error: $errormsg"); } 
+print
     $cgi->end_html();
+
