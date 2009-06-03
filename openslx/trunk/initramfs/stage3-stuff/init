@@ -45,6 +45,10 @@ ln -s /proc/self/fd/0 /dev/stdin
 ln -s /proc/self/fd/1 /dev/stdout
 ln -s /proc/self/fd/2 /dev/stderr
 
+# redirect kernel messages to tty10 instead of the standard console
+getty -i -n -l /bin/cat 38400 tty10 &
+setlogcons 10
+
 # start device auto discovery/setup service of busybox
 echo >/etc/mdev.conf
 mdev -s
