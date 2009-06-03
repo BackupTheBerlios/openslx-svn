@@ -63,6 +63,7 @@ mkdir -p ${devdir}/pts ${devdir}/shm
 export PATH=/bin:/sbin:/usr/bin/:/usr/sbin
 
 # redirect kernel messages to tty10 instead of tty1
+getty -i -n -l /bin/ash 38400 tty10 &
 setlogcons 10
 
 dialog --infobox "Starting OpenSLX preboot environment ..." 3 65
@@ -113,7 +114,7 @@ done
 # start a watchdog to ensure an automated reboot or halt of the machine if the
 # preboot init does not succeed (e.g. missing kernel module/firmware for the
 # network adaptor)
-if [ "${DEBUGLEVEL}" -gt 0 ] ; then
+if [ "${DEBUGLEVEL}" -eq 0 ] ; then
   cat<<EOF >/bin/watchdog
 #!/bin/ash
 echo \$$ > /tmp/watchdogpid
@@ -123,6 +124,8 @@ echo "o" >/proc/sysrq-trigger
 EOF
   chmod u+x /bin/watchdog
   watchdog &
+else
+  getty -i -n -l /bin/ash 38400 tty2 &
 fi
 
 if [ -n "${SSID}" ] ; then
