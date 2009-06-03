@@ -25,12 +25,24 @@ if [ -e /initramfs/plugin-conf/kiosk.conf ]; then
 		
 		profile_path="/etc/opt/openslx/plugins/kiosk/profiles/"
 		
+		# avoid ldap conflicts - part I
+		# hide nsswitch.conf
+		if [ -e /mnt/etc/nsswitch.conf ]; then
+			mv /mnt/etc/nsswitch.conf /mnt/etc/nsswitch.conf.bak
+		fi
+		
 		if [ -e /mnt/$profile_path/$kiosk_profile/ ]; then
 		  # create new user
 		  chroot /mnt useradd -s /bin/bash -k $profile_path/$kiosk_profile/ -m kiosk
           chroot /mnt chown kiosk /home/kiosk/ -R
         else
           chroot /mnt useradd -s /bin/bash -k $profile_path/plain/ -m kiosk
+        fi
+
+        # avoid ldap conflicts - part II
+        # restore old nsswitch setup
+        if [ -e /mnt/etc/nsswitch.conf.bak ]; then
+            mv /mnt/etc/nsswitch.conf.bak /mnt/etc/nsswitch.conf
         fi
 		
 		# setup custom rungetty
