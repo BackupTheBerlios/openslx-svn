@@ -176,7 +176,7 @@ GDM-OpenSLX-Theme
 										<pos anchor="e" x="100%" y="24"/>
 										<stock type="system"/>
 									</item>
-									<item type="rect" id="session_button" button="true">
+									<item type="rect" id="system_button" button="true">
 										<normal color="#000000" alpha="0.0"/>
 										<pos anchor="c" x="50%" y="50%" width="10"/>
 									</item>
@@ -195,6 +195,30 @@ GDM-OpenSLX-Theme
 			</item>
                       
                 </box>
+	</item>
+
+      	<!-- language-button -->
+	<item type="rect" id="language_button" button="true">
+	        <normal color="#000000" alpha="0.0"/>
+		<pos anchor="se" x="-10" y="-10" width="box" height="box"/>
+		<box orientation="horizontal">
+	        	<item type="label">
+				<normal color="#bbbbbb" font="Sans 11"/>
+				<prelight color="#f0f0f0" font="Sans 11"/>
+				<active color="#ff8b00" font="Sans 11"/>
+				<pos anchor="e" x="100%" y="16"/>
+				<stock type="language"/>
+			</item>
+	                <item type="rect" id="language_button" button="true">
+				<normal color="#000000" alpha="0.0"/>
+				<pos anchor="c" x="50%" y="50%" width="10"/>
+			</item>
+			<item type="pixmap" id="language_button" button="true">
+				<normal file="language-selector_inactive.png"/>
+			        <prelight file="language-selector.png"/>
+				<pos anchor="ne" x="100%" y="0%"/>
+			</item>
+		</box>
 	</item>
 
 </greeter>
