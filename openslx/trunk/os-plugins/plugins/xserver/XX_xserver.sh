@@ -89,6 +89,12 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
           # impossible to load it directly via stage3 insmod - yes, somehow this is too big
           chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/fglrx.ko
 
+          #  workaround for bug #453 (for some ati graphics cards)
+          if [ $? -gt 0 -a "${slxconf_distro_name}" = "ubuntu" ]; then
+            xmodule="radeon"
+            MODULE_PATH="/usr/lib/xorg/modules/,/usr/X11R6/lib/xorg/modules/"
+          else
+
 	      # we need some database for driver initialization
 	      cp -r "${PLUGIN_PATH}/etc/ati" /mnt/etc
 
@@ -107,6 +113,7 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
 	      echo -e "\t${PLUGIN_ROOTFS}/usr/bin/aticonfig --initial &>/dev/null"\
                 >> /mnt/etc/init.d/boot.slx
 	      ATI=1
+          fi # if kernel module not loaded properly
 	  fi
     elif $(grep -iq -m 1 'Module: nvidia' /etc/hwinfo.gfxcard) && \
       [ -n "$xserver_driver" -o "$xserver_prefnongpl" -eq 1 ]
@@ -128,7 +135,8 @@ ${PLUGIN_ROOTFS}/usr/X11R6/lib/modules/\,"
         chroot /mnt /sbin/insmod ${PLUGIN_ROOTFS}/modules/nvidia.ko
 
 
-        if [ "${slxconf_distro_name}" = "ubuntu" ]; then
+        #  workaround for bug #453 (Xorg does not start with ld.so.preload)
+        if [ "${slxconf_distro_name}" = "ubuntu" -a "${xmodule}" != "nvidia" ]; then
           echo "${PLUGIN_ROOTFS}/usr/lib/libGL.so.1" >> /mnt/etc/ld.so.preload
         fi
 
