@@ -4,9 +4,7 @@
 KDM-OpenSLX-Theme
 -->
 <greeter id="greeter">
-	<style font="Sans 11" window-text-color="#C7C7C7"
-	       base-color="#C7C7C7" alternate-base-color="#666666"
-	       text-color="#000000" disabled-text-color="#808080"/>
+        <style font="Sans 11" window-text-color="#f0f0f0" base-color="#f0f0f0" text-color="#000000"/>
 
         <!-- background -->
 	<item type="pixmap" id="backgound">

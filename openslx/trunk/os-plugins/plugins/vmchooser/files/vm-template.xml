@@ -1,70 +1,60 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <settings>
   <entry>
-    <!-- VM-name with ending .vmdk, .img, .vdi, .qcow2 -->
-    <image_name param="vm-image.vmdk">
-    </image_name>
-    <creator param="Your Name">
-    </creator>
-    <email param="your@email.address.tld">
-    </email>
-    <phone param="-">
-    </phone> 
-    <!-- sort after parameters then alphabet, values 0(top) - 9(bottom) -->
-    <priority param="5">
-    </priority>
+    <!-- "vmware", "virtualbox", "qemu" -->
+    <virtualmachine param="vmware"/>
+    <!-- VM-name with ending .vmdk, .img, .vdi, .qcow2 -->    
+    <image_name param="vm-image.vmdk"/>
+    <!-- sort after parameters then alphabet, values 0(top) - 9(bottom) -->    
+    <priority param="5"/>
     <!-- title shown in the menu -->
-    <title param="My VM Image">
-    </title>
+    <title param="My VM Image"/>
     <!-- description shown when image is chosen -->
     <description>Image for lectures with a lot of software: office, ...
     </description>
+    <!-- if active="true" the image is selectable via vmchooser -->
+    <active param="true"/>
+    <!-- in which environment this image will be selectable via vmchooser -->
+    <environment param="default"/>
+    <!-- image locked with a password? -->
+    <locked param="false"/>
+    <creator param="Your Name"/>
+    <email param="your@e-mail.add"/>
+    <phone param="0123-12345678"/>
+    <!-- when should this image be deactivated automatically -->
+    <valid_until param="DD-MM-YY"/>
     <!-- type of the OS: if you do not know use "other" -->
     <!-- vmware refer to: http://sanbarrow.com/vmx/vmx-guestos.html -->
-    <os param="winxppro">
-    </os>
+    <os param="winxppro"/>
     <!-- "nat", "bridge", "hostonly" -->
-    <network param="nat">
-    </network>
-    <!-- "vmware", "virtualbox", "qemu" -->
-    <virtualmachine param="vmware">
-    </virtualmachine>
-    <!-- when should this image be deactivated automatically -->
-    <valid_until param="DD-MM-YY">
-    </valid_until>
-    <!-- if active="true" the image is selectable via vmchooser -->
-    <active param="true">
-    </active>
-    <!-- in which environment this image will be selectable via vmchooser -->
-    <environment param="default">
-    </environment>
+    <network param="nat"/>
+    <!-- use a different virtual network card than default -->
+    <netcard param="e1000"/>
+    <!-- activate serial port: "ttyS0", "auto" (recommended) -->
+    <serialport param="false"/>
+    <!-- activate parallel port: "parport0" (recommended) -->
+    <parport param="false"/>
+    <!-- enable 3D support -->
+    <enable3d param="true"/>
+    <!-- which shared folders should be connected -->
+    <shared_folders param="true">
+      <!--  name="Home" path="/home/$USER" for internal VMware sf -->
+      <shared_folder name="" path="" pass=""></shared_folder>
+    </shared_folders>
+    <!-- which printers should be connected -->
+    <printers>
+      <printer name="" path="">Human readable description</printer>
+    </printers>
+    <!-- which scanners should be connected -->
+    <scanners>
+      <scanner name="" path="">Description</scanner>
+    </scanners>
+    <!-- added automatically through vmchooser when started
+      <username param="user-id"/>
+    -->
     <!-- obsolete, maybe for future implementations
       <xdm param="false">
       </xdm>
     -->
-    <!-- vmchooser stuff, automatically added
-      <!-- added automatically through vmchooser when started -- >
-      <username param="user-id">
-      </username>
-      <!-- which printers should be connected -- >
-      <printers>
-      <printer name="" path="">Human readable description</printer>
-      </printers>
-      <!-- which scanners should be connected -- >
-      <scanners>
-      <scanner name="" path="">Description</scanner>
-      </scanners>
-    -->
-    <!-- should the home-directory be connected -->
-    <home param="true">
-    </home>
-    <!-- which shared folders should be connected -->
-    <shared_folders param="true">
-    <shared_folder name="" path="" pass=""></shared_folder>
-    </shared_folders>
-    <!-- there is the ability to protect an image for a while using a -->
-    <!-- password. Helpfull for courses (with special software licences). -->
-    <locked param="true">
-    </locked>
   </entry>
 </settings>

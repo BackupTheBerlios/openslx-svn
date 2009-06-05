@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE greeter SYSTEM "greeter.dtd">
+<!--
+KDM3-OpenSLX-Theme
+-->-->
 <greeter>
 	<!-- main pic, login pic -->
 	<item type="pixmap">

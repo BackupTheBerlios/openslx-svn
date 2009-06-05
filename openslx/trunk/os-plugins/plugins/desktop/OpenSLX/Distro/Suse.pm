@@ -88,6 +88,20 @@ sub setupKDMScript
     my $self     = shift;
     my $repoPath = shift;
 
+    # check for kdm version
+    my $kdmVer;
+    my $kdmPath;
+    if (-e "/usr/bin/kdm") {
+        $kdmVer = "4";
+        $kdmPath = "/usr/share/kde4";
+    }
+    else {
+        $kdmVer = "";
+        $kdmPath = "/opt/kde3/share";
+        # change default theme to openslx3 if kdm3
+        print "  * Please change to openslx3 theme when using kdm3\n";
+    }
+
     # SUSE reads /var/adm/kdm/kdmrc.sysconfig, so we link that to
     # our config file
     my $pathInfo   = $self->KDMPathInfo();
@@ -97,7 +111,7 @@ sub setupKDMScript
     # maybe backup kdmrc.sysconfig sometimes
     unlink("/var/adm/kdm/kdmrc.sysconfig");
     # the config file gets overwritten if this script is present
-    unlink("/opt/kde3/share/apps/kdm/read_sysconfig.sh");
+    unlink("$kdmPath/apps/kdm/read_sysconfig.sh");
     symlink("/etc/opt/kdm/kdmrc", "/var/adm/kdm/kdmrc.sysconfig");
 
     my $script = $self->SUPER::setupKDMScript($repoPath);
@@ -105,11 +119,12 @@ sub setupKDMScript
     # include common stuff (independent of display manager used)
     $script = _setupCommonDmScript($script);
 
+    $script .= "kdmver=$kdmVer\n"; 
     $script .= unshiftHereDoc(<<'    End-of-Here');
-        sed -i 's/DISPLAYMANAGER=.*/DISPLAYMANAGER="kdm"/' \
+        sed -i "s/DISPLAYMANAGER=.*/DISPLAYMANAGER=\"kdm$kdmver\"/" \
             /mnt/etc/sysconfig/displaymanager
         [ $(grep -q DISPLAYMANAGER /mnt/etc/sysconfig/displaymanager) ] && \
-            echo "DISPLAYMANAGER=\"kdm\"" >> /mnt/etc/sysconfig/displaymanager
+        echo "DISPLAYMANAGER=\"kdm$kdmver\"" >> /mnt/et/sysconfig/displaymanager
         sed -i "s/DEFAULT_WM=.*/DEFAULT_WM=\"$desktop_kind\"/" \
             /mnt/etc/sysconfig/windowmanager
     End-of-Here

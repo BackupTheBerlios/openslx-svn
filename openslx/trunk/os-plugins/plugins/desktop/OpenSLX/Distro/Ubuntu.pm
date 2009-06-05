@@ -74,14 +74,32 @@ sub setupGDMScript
     return $script;
 }
 
+sub KDMVersion
+{
+    my $self = shift;
+    my $vendorOSName = $self->{'engine'}->{'vendor-os-name'};
+
+    my $kdmVer;
+    if ( $vendorOSName =~ /ubuntu-8.04.*/ ) {
+        $kdmVer = "3";
+    }
+    else {
+        $kdmVer = "4";
+    }
+
+    return $kdmVer;
+
+}
+
 sub KDMPathInfo
 {
     my $self = shift;
 
     my $pathInfo = $self->SUPER::KDMPathInfo();
+    my $kdmVer = $self->KDMVersion();
 
     $pathInfo = {
-        config => '/etc/kde3/kdm/kdmrc',
+        config => "/etc/kde$kdmVer/kdm/kdmrc",
         paths => [
             '/var/lib/kdm',
             '/var/run/kdm',
@@ -106,12 +124,13 @@ sub KDMConfigHashForWorkstation
 {
     my $self = shift;
     
+    my $kdmVer = $self->KDMVersion();
     my $configHash = $self->SUPER::KDMConfigHashForWorkstation();
-    $configHash->{'General'}->{PidFile} = '/var/run/kdm.pid';
-    $configHash->{'X-:0-Core'}->{Setup} = '/etc/kde3/kdm/Xsetup';
-    $configHash->{'X-:0-Core'}->{Startup} = '/etc/kde3/kdm/Xstartup';
-    $configHash->{'X-:0-Core'}->{Session} = '/etc/kde3/kdm/Xsession';
-    $configHash->{'X-:0-Core'}->{Reset} = '/etc/kde3/kdm/Xreset';
+    $configHash->{'General'}->{PidFile} = "/var/run/kdm.pid";
+    $configHash->{'X-:0-Core'}->{Setup} = "/etc/kde$kdmVer/kdm/Xsetup";
+    $configHash->{'X-:0-Core'}->{Startup} = "/etc/kde$kdmVer/kdm/Xstartup";
+    $configHash->{'X-:0-Core'}->{Session} = "/etc/kde$kdmVer/kdm/Xsession";
+    $configHash->{'X-:0-Core'}->{Reset} = "/etc/kde$kdmVer/kdm/Xreset";
     $configHash->{'X-:0-Core'}->{SessionsDirs} = 
         '/etc/X11/sessions,/usr/share/xsessions,/usr/share/apps/kdm/sessions';
 
@@ -123,19 +142,26 @@ sub setupKDMScript
     my $self     = shift;
     my $repoPath = shift;
 
+    my $kdmVer = $self->KDMVersion();
     my $script = $self->SUPER::setupKDMScript($repoPath);
 
+     # change default theme to openslx3 if kdm3
+    if ( $kdmVer == "3" ) {
+        print "  * Please change to openslx3 theme when using kdm3\n";
+    }
+
+    $script .= "kdmver=$kdmVer\n";
     $script .= unshiftHereDoc(<<'    End-of-Here');
 
         # cleanup after users Xorg session
-        sed 's,^#!.*,,' /mnt/etc/kde3/kdm/Xreset \
-          >/mnt/etc/kde3/kdm/Xreset.system
+        sed 's,^#!.*,,' /mnt/etc/kde$kdmver/kdm/Xreset \
+          >/mnt/etc/kde$kdmver/kdm/Xreset.system
         echo -e '#! /bin/sh\n#\n# modified by desktop plugin in Stage3\n#\n
         # remove safely any remaining files of the leaving user in /tmp
         ( su -c "rm -rf /tmp/*" - $USER
           echo "$USER files removed by $0" >/tmp/files.removed 2>/dev/null ) &
-        . /etc/kde3/kdm/Xreset.system' >/mnt/etc/kde3/kdm/Xreset
-        chmod a+x /mnt/etc/kde3/kdm/Xreset*
+        . /etc/kde$kdmver/kdm/Xreset.system' >/mnt/etc/kde$kdmver/kdm/Xreset
+        chmod a+x /mnt/etc/kde$kdmver/kdm/Xreset*
 
         rllinker kdm 1 10
         echo '/usr/bin/kdm' > /mnt/etc/X11/default-display-manager
