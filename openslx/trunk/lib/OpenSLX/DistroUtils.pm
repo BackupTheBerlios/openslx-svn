@@ -72,14 +72,11 @@ sub getInitFileForDistro {
 }
 
 sub getKernelVersionForDistro {
-    my $kernelPath = shift;
+	my $kernelPath = shift;
     my $distroName = shift;
-
-
-    print Dumper(@INC);    
+    my $distro;
 
     my $engine = OpenSLX::DistroUtils::Engine->new();
-    my $distro;
 
     if ($distroName) {
         $distro = $engine->loadDistro($distroName);
@@ -88,9 +85,6 @@ sub getKernelVersionForDistro {
     }
 
     return $distro->getKernelVersion($kernelPath);
-
 }
-
-
 
 1;

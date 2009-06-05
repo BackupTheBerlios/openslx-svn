@@ -65,7 +65,7 @@ sub installNvidia
         system("rm -rf $tmpdir/*");
     }
 
-    my $mykernel = $self->SUPER::getKernelVersion("/boot");
+    my $mykernel = getKernelVersionForDistro("/boot");
     my $kver = $mykernel->{'version'};
     my $ksuffix = $mykernel->{'suffix'};
 
@@ -145,7 +145,7 @@ sub installAti
         system("rm -rf $tmpdir/*");
     }
 
-    my $mykernel = $self->SUPER::getKernelVersion("/boot");
+    my $mykernel = getKernelVersionForDistro("/boot");
     my $kver = $mykernel->{'version'};
     my $kver_ati = $kver;
     $kver_ati =~ s/-/_/;
@@ -236,7 +236,7 @@ sub installAtiOldStyle
     }
 
     $self->SUPER::getdkms();
-    my $mykernel = $self->SUPER::getKernelVersion("/boot");
+    my $mykernel = getKernelVersionForDistro("/boot");
     my $kver = $mykernel->{'version'};
     my $kver_ati = $kver;
     $kver_ati =~ s/-/_/;
