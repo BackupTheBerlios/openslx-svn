@@ -16,11 +16,22 @@ package OpenSLX::BootEnvironment::Preboot::Base;
 use strict;
 use warnings;
 
+use File::Basename;
+
 use Clone qw(clone);
 
 use OpenSLX::Basics;
 use OpenSLX::MakeInitRamFS::Engine::Preboot;
 use OpenSLX::Utils;
+
+sub new
+{
+    my $class  = shift;
+
+    my $self = {};
+
+    return bless $self, $class;
+}
 
 sub initialize
 {
