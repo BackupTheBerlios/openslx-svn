@@ -35,12 +35,10 @@ sub loadDistro {
     
     my $pathToClass = "$openslxConfig{'base-path'}/lib";
     my $flags = {};
-    if ($pathToClass) {
-        $flags->{incPaths} = [ $pathToClass ];
-        # if you call this function inside a plugin's install method we have to add /mnt
-        # in front of the include path!
-        $flags->{incPaths} = [ "/mnt/$pathToClass" ];
-    }
+    $flags->{incPaths} = [ $pathToClass, "/mnt/$pathToClass" ];
+    # for the case we call this function inside the chrooted environment of a plugin's
+    # install method we add the corrected searchpath to INC
+    # TODO: fix this problem via plugin engine
     
     my $loaded = eval {
             $distro = instantiateClass("OpenSLX::DistroUtils::${distroName}", $flags);
