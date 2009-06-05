@@ -669,9 +669,13 @@ sub _callChrootedFunctionForPlugin
                     $hostPerlCorePath, $hostPerlCorePathInChroot, $!
                 );
             unshift @INC, '/mnt/host-perl';
+            unshift @INC, "/mnt$openslxConfig{'base-path'}/lib";
             1 
         },
         release => sub {
+            if ($INC[0] eq "/mnt$openslxConfig{'base-path'}/lib") {
+                shift @INC;
+            }
             if ($INC[0] eq '/mnt/host-perl') {
                 shift @INC;
             }

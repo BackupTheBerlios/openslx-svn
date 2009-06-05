@@ -356,5 +356,38 @@ sub generateInitFile
     
 }
 
+sub getKernelVersion
+{
+    my $self = shift;
+	my $kernelPath = shift;
+	
+	
+	my $newestKernelFile;
+    my $newestKernelFileSortKey = '';
+    my $kernelPattern = '{vmlinuz,kernel-genkernel-x86}-*';
+    foreach my $kernelFile (glob("$kernelPath/$kernelPattern")) {
+        next unless $kernelFile =~ m{
+            (?:vmlinuz|x86)-(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?-(\d+(?:\.\d+)?)
+        }x;
+        my $sortKey 
+            = sprintf("%02d.%02d.%02d.%02d-%2.1f", $1, $2, $3, $4||0, $5);
+        if ($newestKernelFileSortKey lt $sortKey) {
+            $newestKernelFile        = $kernelFile;
+            $newestKernelFileSortKey = $sortKey;
+        }
+    }
+
+    if (!defined $newestKernelFile) {
+        die _tr("unable to pick a kernel-file from path '%s'!", $kernelPath);
+    }
+
+    $newestKernelFile =~ /.*?-([.\-0-9]*)-([a-zA-Z]*?)$/;
+    my $kernel = {};
+    $kernel->{'version'} = $1;
+    $kernel->{'suffix'} = $2;
+    return $kernel;
+	
+}
+
 
 1;

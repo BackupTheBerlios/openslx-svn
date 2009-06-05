@@ -23,7 +23,9 @@ use File::Path;
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
+use OpenSLX::DistroUtils;
 
+use Data::Dumper;
 
 ################################################################################
 ### interface methods
@@ -63,9 +65,9 @@ sub installNvidia
         system("rm -rf $tmpdir/*");
     }
 
-    # TODO: Sort out kernel version programmatically
-    my $kver = "2.6.25.20-0.1";
-    my $ksuffix = "pae";
+    my $mykernel = $self->SUPER::getKernelVersion("/boot");
+    my $kver = $mykernel->{'version'};
+    my $ksuffix = $mykernel->{'suffix'};
 
     my $srinfo = `head -n1 /etc/SuSE-release`;
     my @data = split (/ /, $srinfo);
@@ -88,7 +90,7 @@ sub installNvidia
     my $rpm = @rpm;
 
     if($rpm == 0) {
-        print "Could not find nvidia kernel module rpm on filesystem!";
+        print "Could not download nvidia kernel module rpm!";
         return;
     }
 
@@ -143,11 +145,12 @@ sub installAti
         system("rm -rf $tmpdir/*");
     }
 
-    # TODO: Sort out kernel version programmatically
-    my $kver = "2.6.25.20-0.1";
+    my $mykernel = $self->SUPER::getKernelVersion("/boot");
+    my $kver = $mykernel->{'version'};
     my $kver_ati = $kver;
     $kver_ati =~ s/-/_/;
-    my $ksuffix = "pae";
+
+    my $ksuffix = $mykernel->{'suffix'};
 
     my $srinfo = `head -n1 /etc/SuSE-release`;
     my @data = split (/ /, $srinfo);
@@ -170,8 +173,9 @@ sub installAti
     my $rpm = @rpm;
 
     if($rpm == 0) {
-        print "Could not find ATI kernel module rpm on filesystem!\n";
-        print "Exiting!";
+        print "Could not download ATI kernel module rpm (for kernel $kver)!\n";
+        print "Consider downgrading your Kernel! \nTrying package-install!\n";
+        $self->installAtiOldStyle(@_);
         return;
     }
 
@@ -213,6 +217,90 @@ sub installAti
     symlink("$repopath/ati/usr/lib/dri/fglrx_dri.so","/usr/X11R6/lib/modules/dri/fglrx_dri.so");
 
     rmtree($tmpdir);
+}
+
+
+
+sub installAtiOldStyle 
+{
+    my $self = shift;
+    my $repopath = shift || "/opt/openslx/plugin-repo/xserver/";
+    my $pkgpath = shift || "packages";
+
+    
+    my $ret = $self->SUPER::installAti(@_);
+
+    if($ret =~ /^error$/) {
+        print "Something went wrong installing ATI files!\n";
+        return;
+    }
+
+    $self->SUPER::getdkms();
+    my $mykernel = $self->SUPER::getKernelVersion("/boot");
+    my $kver = $mykernel->{'version'};
+    my $kver_ati = $kver;
+    $kver_ati =~ s/-/_/;
+
+    my $ksuffix = $mykernel->{'suffix'};
+
+    my $srinfo = `head -n1 /etc/SuSE-release`;
+    my @data = split (/ /, $srinfo);
+    chomp(@data);
+
+    my $version = $data[1];
+    my $chost = substr($data[2],1,-1);
+
+    # here we have to compile the kernel modules for all kernels
+    #
+    my $ati_version =  `head $repopath/$pkgpath/ati-driver-installer-*.run | grep -P -o '[0-9]+\.[0-9]{3}' | tail -n1`;
+    chomp($ati_version);
+
+    system("mv $ret /usr/src/fglrx-$ati_version >/dev/null 2>&1");
+
+    open FH,">/usr/src/fglrx-$ati_version/dkms.conf";
+    print FH "DEST_MODULE_LOCATION=/updates\n";
+    print FH "PACKAGE_NAME=fglrx\n";
+    print FH "PACKAGE_VERSION=$ati_version\n";
+    close FH;
+
+    my $cmd = "#============= Executing following command =============\n".
+        "/sbin/dkms ".
+        " -m fglrx -v $ati_version ".
+        " -k $kver-$ksuffix ".
+        " --kernelsourcedir /usr/src/linux-$kver-obj/i586/$ksuffix ".
+        " --no-prepare-kernel ".
+        " --no-clean-kernel ".
+        " build >/dev/null 2>&1 \n".
+        "#==========================================================";
+
+#print $cmd;
+    if(!-f "/var/lib/dkms/fglrx/$ati_version/$kver-$ksuffix/$chost/module/fglrx.ko") {
+        system("/sbin/dkms add -m fglrx -v $ati_version >/dev/null 2>&1");
+        system($cmd);
+        #if ($? > 0) {
+        #    print "\n\nCould not compile module! Exit with Ctrl-D\n";
+        #    system("/bin/bash");
+        #}
+    }
+
+
+    if(!-d  "$repopath/ati/modules/")
+    {
+        mkdir( "$repopath/ati/modules/" );
+    }
+
+    if( -e "/var/lib/dkms/fglrx/$ati_version/$kver-$ksuffix/$chost/module/fglrx.ko") {
+        copyFile("/var/lib/dkms/fglrx/$ati_version/$kver-$ksuffix/$chost/module/fglrx.ko",
+            "$repopath/ati/modules");
+    }
+    else {
+       print "Could not install ati driver via pkg-installer!\n";
+       rmtree($repopath."/ati");
+       return;
+    }
+    rmtree("$repopath/ati/temp");
+
+
 }
 
 1;

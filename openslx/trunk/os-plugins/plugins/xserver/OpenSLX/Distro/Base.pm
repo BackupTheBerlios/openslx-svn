@@ -173,16 +173,51 @@ sub getdkms
 {
     if( !-f "/sbin/dkms") {
         if(!-f "dkms-2.0.21.1.tar.gz" ) {
-            system("wget http://linux.dell.com/dkms/permalink/dkms-2.0.21.1.tar.gz");
+            system("wget http://linux.dell.com/dkms/permalink/dkms-2.0.21.1.tar.gz >/dev/null 2>&1");
             die("Could not download dkms tarball! Exiting!") if($? > 0 );
         }
         if(!-f "dkms-2.0.21.1/dkms" ) {
-            system("tar -zxvf dkms-2.0.21.1.tar.gz dkms-2.0.21.1/dkms");
+            system("tar -zxvf dkms-2.0.21.1.tar.gz dkms-2.0.21.1/dkms >/dev/null 2>&1");
             die("Could not extract dkms script from tarball! Exiting!") if($? > 0 ); 
         }
         copyFile("dkms-2.0.21.1/dkms","/sbin");
         chmod 0755, "/sbin/dkms";
     }
+}
+
+
+sub getKernelVersion
+{
+    my $self = shift;
+    my $kernelPath = shift;
+
+    my $newestKernelFile;
+    my $newestKernelFileSortKey = '';
+    my $sortKey;
+    my $kernelPattern = '{vmlinuz,kernel-genkernel-x86}-*';
+    foreach my $kernelFile (glob("$kernelPath/$kernelPattern")) {
+        next unless $kernelFile =~ m{
+            (?:vmlinuz|x86)-(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?-(\d+(?:\.\d+)?)
+        }x;
+        $sortKey 
+            = sprintf("%02d.%02d.%02d.%02d-%2.1f", $1, $2, $3, $4||0, $5);
+        if ($newestKernelFileSortKey lt $sortKey) {
+            $newestKernelFile        = $kernelFile;
+            $newestKernelFileSortKey = $sortKey;
+        }
+    }
+
+    if (!defined $newestKernelFile) {
+        die _tr("unable to pick a kernel-file from path '%s'!", $kernelPath);
+    }
+
+    $newestKernelFile =~ /.*?-([.\-0-9]*)-([a-zA-Z]*?)$/;
+    my $kernel = {};
+    $kernel->{'version'} = $1;
+    $kernel->{'suffix'} = $2;
+    return $kernel;
+#    return $newestKernelFile;
+        
 }
 
 1;
