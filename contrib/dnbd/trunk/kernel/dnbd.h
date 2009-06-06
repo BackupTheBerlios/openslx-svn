@@ -1,14 +1,9 @@
 #ifndef LINUX_DNBD_H
 #define LINUX_DNBD_H	1
 
-#include <linux/version.h>
 #include <linux/completion.h>
 #include <linux/in.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
-	#include <asm/semaphore.h>
-#else
-	#include <linux/semaphore.h>
-#endif
+#include <linux/semaphore.h>
 #include <linux/blkdev.h>
 #include <linux/rbtree.h>
 #include <linux/jiffies.h>

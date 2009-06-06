@@ -1,13 +1,8 @@
 #ifndef LINUX_DNBD_NET_H
 #define LINUX_DNBD_NET_H	1
 
-#include <linux/version.h>
 #include <linux/spinlock.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
-	#include <asm/semaphore.h>
-#else
-	#include <linux/semaphore.h>
-#endif
+#include <linux/semaphore.h>
 #include <linux/list.h>
 #include <linux/param.h>
 #include <linux/jiffies.h>
