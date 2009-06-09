@@ -60,6 +60,8 @@ implementation, please drop a mail to: ot@openslx.com, or join the IRC-channel
 
 =cut
 
+use Scalar::Util qw( weaken );
+
 use OpenSLX::Basics;
 use OpenSLX::OSPlugin::Roster;
 
@@ -96,6 +98,9 @@ sub initialize
 
     $self->{'os-plugin-engine'} = shift;
     $self->{'distro'}           = shift;
+
+    weaken($self->{'os-plugin-engine'});
+        # avoid circular reference between plugin and its engine
     
     return;
 }

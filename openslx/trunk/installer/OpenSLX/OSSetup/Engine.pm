@@ -411,7 +411,6 @@ sub startChrootedShellForVendorOS
         }
     );
 
-    $self->_touchVendorOS();
     vlog(
         0,
         _tr(
@@ -419,6 +418,8 @@ sub startChrootedShellForVendorOS
             $self->{'vendor-os-name'}
         )
     );
+    $self->_touchVendorOS();
+
     return;
 }
 
@@ -457,7 +458,6 @@ sub callChrootedFunctionForVendorOS
         }
     );
 
-    $self->_touchVendorOS();
     vlog(
         1,
         _tr(
@@ -465,6 +465,8 @@ sub callChrootedFunctionForVendorOS
             $self->{'vendor-os-name'}
         )
     );
+    $self->_touchVendorOS();
+
     return 1;
 }
 

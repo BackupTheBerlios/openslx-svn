@@ -35,17 +35,6 @@ sub new
     return bless $self, $class;
 }
 
-sub initialize
-{
-    my $self   = shift;
-    my $engine = shift;
-    my $fs     = shift;    
-
-    $self->{'engine'} = $engine;
-    $self->{'fs'}     = $fs;
-    return;
-}
-
 sub getExportPort
 {
     my $self      = shift;

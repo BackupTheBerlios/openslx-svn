@@ -90,6 +90,10 @@ I<slxsettings>-script, so please look there if you'd like to know more.
     # options useful during development only:
     #
     'debug-confess' => '0',
+    #
+    # only settable programmatically:
+    #
+    'log-pids' => '0',
 
     #
     # extended settings follow, which are only supported by slxsettings,
@@ -271,7 +275,11 @@ sub vlog
     if (substr($str, -1, 1) ne "\n") {
         $str .= "\n";
     }
-    print $openslxLog $str;
+    if ($openslxConfig{'log-pids'}) {
+        print $openslxLog "$$: $str";
+    } else {
+        print $openslxLog $str;
+    }
     return;
 }
 

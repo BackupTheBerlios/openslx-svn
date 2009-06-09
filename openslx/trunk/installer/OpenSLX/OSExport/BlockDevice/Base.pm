@@ -18,6 +18,8 @@ use warnings;
 
 our $VERSION = 1.01;        # API-version . implementation-version
 
+use Scalar::Util qw( weaken );
+
 use OpenSLX::Basics;
 
 ################################################################################
@@ -30,6 +32,17 @@ sub new
 
 sub initialize
 {
+    my $self = shift;
+    my $engine = shift;
+    my $fs     = shift;    
+
+    $self->{'engine'} = $engine;
+    weaken($self->{'engine'});
+        # avoid circular reference between block-device and its engine
+
+    $self->{'fs'} = $fs;
+    weaken($self->{'fs'});
+        # avoid circular reference between block-device and its file-system
 }
 
 sub getExportPort

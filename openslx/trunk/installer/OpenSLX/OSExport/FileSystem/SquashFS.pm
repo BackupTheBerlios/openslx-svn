@@ -41,7 +41,8 @@ sub initialize
     my $engine      = shift;
     my $blockDevice = shift || confess('need to pass in block-device!');
 
-    $self->{'engine'}       = $engine;
+    $self->SUPER::initialize($engine);
+
     $self->{'block-device'} = $blockDevice;
     my $exportBasePath = "$openslxConfig{'public-path'}/export";
     $self->{'export-path'} = "$exportBasePath/sqfs/$engine->{'vendor-os-name'}";

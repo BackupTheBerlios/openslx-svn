@@ -21,6 +21,8 @@ our $VERSION = 1.01;        # API-version . implementation-version
 use Fcntl qw(:DEFAULT :flock);
 use File::Basename;
 use File::Path;
+use Scalar::Util qw( weaken );
+
 use OpenSLX::Basics;
 use OpenSLX::Utils;
 
@@ -38,6 +40,8 @@ sub initialize
     my $engine = shift;
 
     $self->{'engine'} = $engine;
+    weaken($self->{'engine'});
+        # avoid circular reference between distro and its engine
 
     if ($engine->{'distro-name'} =~ m[x86_64]) {
         # be careful to only try installing 64-bit systems if actually

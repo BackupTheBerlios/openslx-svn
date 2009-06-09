@@ -1,0 +1,31 @@
+
+demuxing system 1 : suse-11.1-kiwi::nfs
+!   system suse-11.1-kiwi::nfs: desktop::gdm is 0, so using GDM as desktop manager is not allowed for this vendor-OS!
+!   system suse-11.1-kiwi::nfs: GNOME is not installed in vendor-OS, so using it as desktop kind wouldn't work!
+!   system suse-11.1-kiwi::nfs: desktop::theme 'openslx' does not refer to a supported theme!
+!   system suse-11.1-kiwi::nfs: Supported themes are: 
+active plugins: xserver,desktop
+creating boot environment for preboot
+!   client cdboot: desktop::gdm is 0, so using GDM as desktop manager is not allowed for this vendor-OS!
+!   client cdboot: GNOME is not installed in vendor-OS, so using it as desktop kind wouldn't work!
+!   client cdboot: desktop::theme 'openslx' does not refer to a supported theme!
+!   client cdboot: Supported themes are: 
+creating boot environment for pxe
+client 'test1' activates additional plugins: example
+!   client test1: desktop::gdm is 0, so using GDM as desktop manager is not allowed for this vendor-OS!
+!   client test1: GNOME is not installed in vendor-OS, so using it as desktop kind wouldn't work!
+!   client test1: desktop::theme 'openslx' does not refer to a supported theme!
+!   client test1: Supported themes are: 
+
+demuxing system 2 : ubuntu-9.04-clone::nfs
+!   setting kernel of system 'ubuntu-9.04-clone::nfs' to 'vmlinuz-2.6.28-11-generic'!
+active plugins: <none>
+creating boot environment for preboot
+creating boot environment for pxe
+
+creating CD-image for client cdboot (based on ubuntu-9.04-clone::nfs) ...
+
+wrote 2 system-specific and 3 client-specific configurations
+4 initramfs were created
+all systems ok
+all boot-environments ok

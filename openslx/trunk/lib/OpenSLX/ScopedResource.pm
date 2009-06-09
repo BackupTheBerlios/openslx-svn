@@ -152,14 +152,14 @@ sub _release
 {
     my $self = shift;
 
-    # ignore ctrl-c while we are trying to release the resource, as otherwise
-    # the resource would be leaked
-    local $SIG{INT} = 'IGNORE';
-
     # only release the resource if invoked by the owning process
     vlog(3, "process $$ tries to release resource $self->{name}");
     return if $self->{owner} != $$;
     
+    # ignore ctrl-c while we are trying to release the resource, as otherwise
+    # the resource would be leaked
+    local $SIG{INT} = 'IGNORE';
+
     # release the resource and unset owner
     if ($self->{release}->()) {
         vlog(1, "process $$ released resource $self->{name}");

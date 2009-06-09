@@ -18,6 +18,8 @@ use warnings;
 
 our $VERSION = 1.01;        # API-version . implementation-version
 
+use Scalar::Util qw( weaken );
+
 use OpenSLX::Basics;
 
 ################################################################################
@@ -34,6 +36,9 @@ sub initialize
     my $engine = shift;
 
     $self->{'engine'} = $engine;
+    weaken($self->{'engine'});
+        # avoid circular reference between meta-packager and its engine
+
     return;
 }
 
