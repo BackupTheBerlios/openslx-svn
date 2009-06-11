@@ -1,0 +1,17 @@
+
+
+To build: 
+ * change to folder Debug: $ cd Debug
+ * call CMake: $ cmake ..
+ * call Make:  $ make
+
+ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION
+
+    To call the program, you have to be 
+    in a folder with config_own.xml 
+    (Derived from config.xml)!!! 
+     -> In future versions we have to find
+     a proper path for it (or a command line option).
+
+ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION 
+
