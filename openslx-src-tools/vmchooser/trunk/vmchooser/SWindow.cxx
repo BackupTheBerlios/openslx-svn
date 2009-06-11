@@ -7,12 +7,12 @@
 
 #include <string.h>
 
-#include <img/gnome_32.xpm>
-#include <img/kde_32.xpm>
-#include <img/linux_32.xpm>
-#include <img/xp_32.xpm>
-#include <img/xp_locked_32.xpm>
-#include <img/xfce_32.xpm>
+#include "img/gnome_32.xpm"
+#include "img/kde_32.xpm"
+#include "img/linux_32.xpm"
+#include "img/xp_32.xpm"
+#include "img/xp_locked_32.xpm"
+#include "img/xfce_32.xpm"
 
 
 using namespace fltk;
@@ -37,35 +37,35 @@ SWindow::SWindow(int w, int h, char* p)
   add(go);
   width = w;
   height = h;
-  
+
   border(false);
   go.callback(cb_return,this);
   sel.callback(cb_select, this);
   exit_btn.callback(cb_exit, this);
-  
+
   Style* btn_style = new Style(*fltk::ReturnButton::default_style);
   Style* sel_style = new Style(*fltk::Browser::default_style);
-  
-  
-  
+
+
+
   Font* f1 = font("sans");
   //Font* f1bold = f1->bold();
-  
+
   btn_style->textsize(16);
   btn_style->labelsize(16);
   btn_style->labelfont(f1);
   btn_style->textfont(f1);
-  
+
   sel_style->textfont(f1);
   sel_style->textsize(16);
-  
+
   exit_btn.style(btn_style);
   go.style(btn_style);
   sel.style(sel_style);
-  
+
   const int widths[]   = { -1,-1,-1,-1, 0 };
   sel.column_widths(widths);
-  
+
   end();
   sel.take_focus();
 };
@@ -80,7 +80,7 @@ void SWindow::cb_return()
 {
   //if(!sel.item()) return;
   //curr = (Item*) sel.item();
-  
+
   if(curr != 0 && curr->user_data()) {
     DataEntry* dat = (DataEntry*) curr->user_data();
     cout << dat->short_description << endl;
@@ -141,7 +141,7 @@ void SWindow::set_lin_entries(DataEntry** ent)
     ((Widget*) w)->image(xpm);
     w->tooltip(it->second->description.c_str());
     w->callback(&runImage, (void*)it->second);
-    
+
   }
   lin_entgroup->end();
 }
@@ -154,20 +154,20 @@ void SWindow::set_entries(DataEntry** ent)
 {
   this->ent = ent;
   sort_entries();
-  
+
   entgroup =  (ItemGroup*)sel.add_group("VMWARE SESSIONS", &sel);
   for (int i=0; ent[i] != '\0'; i++)
   {
     Item* w= (Item*)sel.add_leaf(ent[i]->short_description.c_str(), entgroup, (void*)ent[i] );
-        
+
     xpmImage* xpm = new xpmImage(get_symbol(ent[i]));
     ((Widget*) w)->image(xpm);
     w->tooltip(ent[i]->description.c_str());
     w->callback(&runImage, (void*)ent[i]);
-     
+
   }
   entgroup->end();
-  
+
 }
 
 /**************************************************************
@@ -224,7 +224,7 @@ void SWindow::unfold_entries(bool lin_entries, bool vm_entries) {
   } else {
     sel.goto_index(0);
     Item* it = (Item*) sel.next();
-    
+
     while( it ) {
       if(! strcmp(prename,it->label()) ) {
           sel.select_only_this(0);
@@ -275,7 +275,7 @@ void SWindow::sort_entries() {
     return;
   }
   DataEntry* ptr;
-  
+
   // worst case sort - but it is enough for this few entries
   for(int i=0; ent[i] != '\0'; i++) {
     for(int j=0; ent[j] != '\0'; j++) {

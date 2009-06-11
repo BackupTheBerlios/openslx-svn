@@ -17,10 +17,15 @@ What does it do?
  If chosen, it starts the proper virtualizer script or the linux session
  as a background process and terminates itself.
 
+How can I build it?
+ This project has been converted to cmake and can be built by
+ "cmake <Path to vmchooser source> && make". With cmake, this can be built
+ in an arbitrary directory.
+
+ UPDATE: You can build it by changing into the directory "build", calling "./make.sh"
+
 How can I install it?
- Type "make install" in the vmchooser Folder and it gets installed
- in the right folder (if you have the whole svn structure locally).
- Then you have to install the "vmchooser"-plugin to your VendorOS.
+ See below
 
 What command-line parameters are available?
  "-p|--path=" In this (abolute) path are your xml-files for the virtualizer-plugin
@@ -35,18 +40,31 @@ You just need to compile this, if you have local changes.
 The most recent svn version is also included in binary format 
 in the main folder of this openslx-distribution.
 
-Enter "make" to compile everything.
-Enter "make install" to install it to the proper path 
-of the svn distribution of openslx. Do not forget to
-enter "make install" in openslx/trunk .
+Enter "cmake <path to vmchooser source> && make" to compile everything.
+
+UPDATE: There is a script in the build-directory to simplify building.
+
+Enter "cp vmchooser ../../../../openslx/trunk/os-plugins/plugins/vmchooser/files/" 
+to install it to the proper path of the svn distribution of openslx 
+(only if the build-path is [SVN ROOT]/openslx-src-tools/vmchooser/trunk/somefolder/). 
+
+Do not forget to enter "make install" in [SVN ROOT]/openslx/trunk .
 
 Needed libraries to compile:
  - All sorts of X libs and development files
- - fltk-2 (see note *)
- - libxml2 (libxml2-dev on Ubuntu)
- - libboost-regex_s (static - 
-   a dynamic version can be enabled by changing the Makefile)
-   (libboost-dev/libboost-regex-dev on Ubuntu)
+ - fltk-2 (included - see note *)
+ - libxml2 (included - libxml2-dev on Ubuntu)
+ 
+ * Boost Libraries (static - dynamic versions can 
+ 	be enabled by changing the CMakelists.txt -
+ 	specifically commenting out the 
+ 	Boost_USE_STATIC_LIBS variable definition)
+   (libboost-dev/libboost-[regex|filesystem|system]-dev on Ubuntu) 
+ - libboost-regex_s
+ - libboost_filesystem_s
+ - libboost_system_s
+ 
+Most probably (for fltk2-includes):
  - libpng-dev (libpng12-dev on Ubuntu)
  - libjpeg-dev (libjpeg-dev on Ubuntu)
  - libxi-dev (libxi-dev on Ubuntu)
@@ -60,8 +78,8 @@ Needed libraries to run:
  - libxml2
 
 ===================================
-* Some static libraries of fltk-2 - svn version - are located 
-in fltk-2/ and could be used to link against this program.
+* Some static libraries of fltk - svn version - and libxml2 are located 
+in fltk/ and libxml2/ and are used to link against this program.
 - as images are enabled, you should have libjpeg and libpng too.
 ===================================
 

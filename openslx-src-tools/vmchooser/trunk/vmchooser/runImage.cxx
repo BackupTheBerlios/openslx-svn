@@ -45,7 +45,7 @@ void runImage(fltk::Widget*, void* p)
   strncpy(arg1, (char*) string("'\n\nStarte Image: ")
   	.append(dat.short_description)
 	.append("\n'").c_str(),MAX_LENGTH);
-  char* argv[] = { "/opt/openslx/plugin-repo/vmchooser/mesgdisp", 
+  char* argv[] = { (char*) "/opt/openslx/plugin-repo/vmchooser/mesgdisp", 
         arg1, NULL };
 
   printf("%s", arg1);
