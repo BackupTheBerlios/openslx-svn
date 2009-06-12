@@ -153,7 +153,7 @@ sub fillRunlevelScript
               -m /etc/vmware/vmnet-natd-8.mac -c /etc/vmware/nat.conf 2>/dev/null # or logfile 
             $location/vmnet-dhcpd -cf /etc/vmware/dhcpd-vmnet8.conf \\
               -lf /var/run/vmware/dhcpd-vmnet8.leases \\
-              -pf /var/run/vmnet-dhcpd-vmnet1.pid vmnet8 2>/dev/null # or logfile 
+              -pf /var/run/vmnet-dhcpd-vmnet8.pid vmnet8 2>/dev/null # or logfile 
           fi
         }
         # initialize the lsb status messages
@@ -164,6 +164,9 @@ sub fillRunlevelScript
             log_daemon_msg "Starting vmware background services ..." "vmware"
             # load the configuration file
             . /etc/vmware/slxvmconfig
+            mkdir -p /var/run/vmware
+            touch /var/run/vmware/dhcpd-vmnet1.leases
+            touch /var/run/vmware/dhcpd-vmnet8.leases
             load_modules || log_warning_msg "The loading of vmware modules failed"
             setup_vmnet0 || log_warning_msg "Problems setting up vmnet0 interface"
             setup_vmnet1 || log_warning_msg "Problems setting up vmnet1 interface"
