@@ -25,6 +25,6 @@ include_directories("lib/ldapc++" "lib/libSockets")
 
 add_executable(oekpool ${OEKPOOL_SOURCES})
 
-message(STATUS "LibXml2_LIBRARIES=${LIBXML2_LIBRARIES}")
+#message(STATUS "LibXml2_LIBRARIES=${LIBXML2_LIBRARIES}")
 target_link_libraries(oekpool sockets ldapcpp ${LIBXML2_LIBRARIES} ldap)
 

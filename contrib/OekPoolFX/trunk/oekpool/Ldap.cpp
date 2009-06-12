@@ -171,12 +171,8 @@ Client** Ldap::getClients(string pool) {
 		if(!vec[i]["HostName"].empty() && !vec[i]["IPAddress"].empty())
 		{
 			if(!vec[i]["IPAddress"].empty()) {
-				string::size_type cutAt;
-				cout << "IPAddress before cut: " << vec[i]["IPAddress"] << endl;
-				if((cutAt = vec[i]["IPAddress"].find_first_of('_')) != string::npos) {
-					vec[i]["IPAddress"] = vec[i]["IPAddress"].substr(0,cutAt);
-					cout << "IPAddress after cut: " << vec[i]["IPAddress"] << endl;
-				}
+			    pair<string, string> p = Utility::splitIPRange(vec[i]["IPAddress"]);
+			    vec[i]["IPAddress"] = p.first;
 			}
 			result[i] = new Client(vec[i]);
 		}

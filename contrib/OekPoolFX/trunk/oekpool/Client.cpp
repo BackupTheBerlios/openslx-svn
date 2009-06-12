@@ -20,11 +20,10 @@ Client::Client(AttributeMap al) {
 
     _attributes = al;
 
-    cout << "Client object with name " << al["HostName"] <<" created!" << endl;
+    cout << "Client with name \"" << al["HostName"] <<"\" created!" << endl;
     cout << "IPAddress: " << al["IPAddress"] << endl;
 
     IPAddress ip = Utility::ipFromString(al["IPAddress"]);
-    cout << "IPAddress converted: " << ip << endl;
 
 }
 
@@ -33,5 +32,5 @@ Client::Client(AttributeMap al) {
  */
 Client::~Client() {
     terminate();
-    cout << "Client object destroyed!" << endl << endl;
+    cout << "Client \""<< _attributes["HostName"] << "\" destroyed!" << endl << endl;
 }

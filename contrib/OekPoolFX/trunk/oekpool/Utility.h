@@ -7,6 +7,7 @@
 
 
 #include "types.h"
+#include <string>
 
 #ifndef UTILITY_H_
 #define UTILITY_H_
@@ -18,6 +19,12 @@ public:
 
 	static
 	IPAddress ipFromString(std::string ip);
+
+	/**
+	 * function to split ip ranges from ldap ipaddress datatype
+	 */
+	static
+	std::pair<std::string, std::string> splitIPRange(std::string range);
 };
 
 #endif /* UTILITY_H_ */

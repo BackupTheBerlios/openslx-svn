@@ -57,16 +57,6 @@ Configuration::Configuration() {
     {
         if(child->type != XML_ELEMENT_NODE) continue;
         tval = xmlNodeGetContent(child);
-//        for(xmlNode*
-//           conts = child->children;
-//           conts!= NULL;
-//           conts = conts->next)
-//        {
-//            if(string((const char*)conts->content) != "\n")
-//            {
-//                vals[(const char*)child->name] = (const char*)conts->content;
-//            }
-//        }
         vals[(char*)child->name] = (char*) tval;
         xmlFree(tval);
     }
