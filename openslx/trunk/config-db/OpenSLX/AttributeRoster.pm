@@ -459,7 +459,9 @@ sub findProblematicValues
     if ($vendorOSName && $installedPlugins) {
         # now give each installed plugin a chance to check it's own attributes
         # by itself
-        foreach my $pluginInfo (sort @$installedPlugins) {
+        foreach my $pluginInfo (
+            sort { $a->{plugin_name} cmp $b->{plugin_name} } @$installedPlugins
+        ) {
             my $pluginName = $pluginInfo->{plugin_name};
             vlog 2, "checking attrs of plugin: $pluginName\n";
             # create & start OSPlugin-engine for vendor-OS and current plugin
