@@ -585,8 +585,9 @@ sub createBootEnvironmentsForSystem
         my $type = $client->{attrs}->{boot_type} || 'pxe';
         $bootTypes{$type}++;
     }
+
     foreach my $bootType (sort keys %bootTypes) {
-        vlog(0, _tr("creating boot environment for $bootType"));
+        vlog(0, _tr("creating boot environment (system part) for $bootType"));
     
         my $bootEnv = bootEnvironmentForType($bootType);
 
@@ -598,6 +599,12 @@ sub createBootEnvironmentsForSystem
                 = "$bootEnv->{'target-path'}/client-config/$info->{'external-id'}";
             createTarOfPath($buildPath, "default.tgz", $systemPath);
         }
+    }
+
+    foreach my $bootType (sort keys %bootTypes) {
+        vlog(0, _tr("creating boot environment (client part) for $bootType"));
+    
+        my $bootEnv = bootEnvironmentForType($bootType);
 
         writeClientConfigurationsForSystem(
             $info, $buildPath, $attrFile, $bootType, $clients
