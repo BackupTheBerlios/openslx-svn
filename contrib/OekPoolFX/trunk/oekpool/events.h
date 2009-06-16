@@ -13,16 +13,16 @@ namespace sc = boost::statechart;
 #define EVENT_H_
 
 struct EvtHostlistInsert : sc::event< EvtHostlistInsert > { };
-struct EvtChangePXE : sc::event< EvtChangePXE > { };
-struct EvtWakeCommand : sc::event< EvtWakeCommand > { };
-struct EvtAfterWakeCommand: sc::event< EvtAfterWakeCommand > {};
+struct EvtStart : sc::event< EvtStart > { };
+struct EvtWakeCommand : sc::event<EvtWakeCommand> {};
 struct EvtPingSuccess: sc::event< EvtPingSuccess > {};
-struct EvtOnError: sc::event< EvtOnError > {};
+struct EvtPingFailure: sc::event< EvtPingFailure > {};
+struct EvtPingError: sc::event< EvtPingError > {};
+struct EvtSshSuccess : sc::event<EvtSshSuccess> {};
+struct EvtSshFailure : sc::event<EvtSshFailure> {};
+struct EvtSshError : sc::event<EvtSshError> {};
 struct EvtShutdown: sc::event< EvtShutdown > {};
-struct EvtErrorResolved: sc::event<EvtErrorResolved> {};
-struct EvtHostlistDelete : sc::event<EvtHostlistDelete> {};
-struct EvtSSHError : sc::event<EvtSSHError> {};
-struct EvtWarnTimeout : sc::event<EvtWarnTimeout> {};
+struct EvtOffline : sc::event<EvtOffline> {};
 
 // permanent mode of a client
 struct EvtPermanentSSHError : sc::event<EvtPermanentSSHError> {};

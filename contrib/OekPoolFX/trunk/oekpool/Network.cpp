@@ -12,8 +12,6 @@
 #include <stdlib.h>
 #include <SocketHandler.h>
 
-
-
 #include "Network.h"
 
 using namespace std;
@@ -93,8 +91,17 @@ std::vector<char> Network::splitAddress(std::string address, std::string format,
 void Network::pingHost(bool& flag, const char* host) {
 	SocketHandler h;
 	pingSocket* p = new pingSocket(h);
-	if (p->Open(host, 80))
-		p->Close();
+	errorLog log;
+	log.setFlag(flag);
+	h.RegStdLog(&log);
+
+	p->Open(host, 22);
+	h.Add(p);
+	h.Select(1,0);
+	while (h.GetCount())
+	{
+		h.Select(1,0);
+	}
 }
 
 void Network::setNetworks(std::vector<networkInfo> networks) {
@@ -123,8 +130,26 @@ bool Network::sendWolPacket(ipaddr_t ip, std::string mac) {
 	return true;
 }
 
-//=================================================================================
+//==============================================================================
 
 pingSocket::pingSocket(ISocketHandler& h) : TcpSocket(h) {
 
+}
+
+void pingSocket::OnConnect(void) {
+	SetCloseAndDelete(true);
+}
+
+//==============================================================================
+
+void errorLog::setFlag(bool& bFlag) {
+	flag = &bFlag;
+}
+
+void errorLog::error(ISocketHandler *, Socket *, const std::string &call, int err, const std::string &sys_err, loglevel_t) {
+
+	if((err == 113) or (err == -1))
+		*flag = false;
+	else
+		*flag = true;
 }

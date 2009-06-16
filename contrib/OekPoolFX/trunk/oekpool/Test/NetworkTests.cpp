@@ -17,8 +17,8 @@ NetworkTests::~NetworkTests() {
 	// TODO Auto-generated destructor stub
 }
 
-void NetworkTests::runTests() {
-	pingTests();
+void NetworkTests::runTests(char* ip) {
+	pingTests(ip);
 }
 
 void NetworkTests::wolTests() {
@@ -34,8 +34,12 @@ void NetworkTests::wolTests() {
 	net->sendWolPacket(ip, "00:23:54:c6:1c:ae");
 }
 
-void NetworkTests::pingTests() {
+void NetworkTests::pingTests(char* ip) {
 	Network* net = Network::getInstance();
 	bool flag;
-	net->pingHost(flag, "132.230.4.26");
+	net->pingHost(flag, ip);
+	if(flag)
+		cout << "Host " << ip << " responding\n";
+	else
+		cout << "Host " << ip << " not responding\n";
 }

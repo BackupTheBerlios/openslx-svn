@@ -7,8 +7,11 @@
 
 #include "main.h"
 
-int main(void) {
+int main(int argc, char** argv) {
 	NetworkTests* nt = new NetworkTests();
-	nt->runTests();
+	if(argc > 1)
+		nt->runTests(argv[1]);
+	else
+		nt->runTests("127.0.0.1");
 	delete nt;
 }

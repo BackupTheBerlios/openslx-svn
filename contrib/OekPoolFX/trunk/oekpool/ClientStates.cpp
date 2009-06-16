@@ -17,7 +17,7 @@ ClientStates::Offline::Offline() {
 /**
  * "PXEConfig"-state enter function
  */
-ClientStates::PXEConfig::PXEConfig() {
+ClientStates::PXE::PXE() {
     //cout << "Entered PXEConfig state!" << endl;
 }
 

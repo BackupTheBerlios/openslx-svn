@@ -21,74 +21,95 @@ namespace mpl = boost::mpl;
 namespace ClientStates {
 
 // forward declaration to enable variable transitions
-struct PXEConfig;
+struct Offline;
+struct PXE;
 struct Wake;
-struct PingCheck;
+struct PingWake;
+struct PingOffline;
+struct SshWake;
+struct SshOffline;
 struct Error;
-struct SSHCheck;
-struct Warn;
 struct Shutdown;
 
 
 
 struct Offline : sc::simple_state<Offline, Client> {
-    typedef sc::transition< EvtHostlistInsert, PXEConfig > reactions;
+    typedef sc::transition< EvtHostlistInsert, PXE > reactions;
     Offline();
     ~Offline() {}
 };
 
-struct PXEConfig : sc::simple_state<PXEConfig, Client> {
+struct PXE : sc::simple_state<PXE, Client> {
     typedef mpl::list <
         sc::transition< EvtWakeCommand, Wake >,
-        sc::transition< EvtPermanentWake, PingCheck > > reactions;
+        sc::transition< EvtPingFailure, PXE >,
+        sc::transition< EvtPingSuccess, PingOffline > > reactions;
 
-    PXEConfig();
-    ~PXEConfig() {};
+    PXE();
+    ~PXE() {};
 };
 
 struct Wake : sc::simple_state<Wake, Client> {
-    typedef sc::transition< EvtAfterWakeCommand, PingCheck > reactions;
+    typedef mpl::list <
+		sc::transition< EvtPingSuccess, PingWake >,
+		sc::transition< EvtPingFailure, Wake >,
+		sc::transition< EvtPingError, Error > > reactions;
 
     Wake();
     ~Wake() {};
 };
 
-struct PingCheck : sc::simple_state<PingCheck, Client> {
+struct PingWake : sc::simple_state<PingWake, Client> {
     typedef mpl::list<
-        sc::transition< EvtOnError, Error >,
-        sc::transition<EvtPingSuccess, SSHCheck >,
-        sc::transition< EvtShutdown, Offline > >  reactions;
+        sc::transition< EvtSshError, Error >,
+        sc::transition< EvtSshSuccess, SshWake >,
+        sc::transition< EvtSshFailure, PingWake > >  reactions;
 
-    PingCheck() {};
-    ~PingCheck() {};
+    PingWake() {};
+    ~PingWake() {};
+};
+
+struct PingOffline : sc::simple_state<PingOffline, Client> {
+    typedef mpl::list<
+		sc::transition< EvtSshError, PXE >,
+        sc::transition< EvtSshSuccess, SshOffline >,
+        sc::transition< EvtSshFailure, PingOffline > >  reactions;
+
+    PingOffline() {};
+    ~PingOffline() {};
 };
 
 struct Error : sc::simple_state<Error, Client> {
-    typedef sc::transition< EvtErrorResolved, Offline > reactions;
+    typedef sc::transition< EvtOffline, Offline > reactions;
 
     Error() {};
     ~Error() {};
 };
 
-struct SSHCheck: sc::simple_state<SSHCheck, Client>  {
+struct SshWake: sc::simple_state<SshWake, Client>  {
     typedef mpl::list <
-        sc::transition< EvtShutdown, Warn >,
-        sc::transition< EvtPermanentSSHError, PingCheck >,
-        sc::transition< EvtSSHError, PingCheck > > reactions;
+        sc::transition< EvtShutdown, Shutdown >,
+        sc::transition< EvtSshFailure, PingWake >,
+        sc::transition< EvtSshSuccess, SshWake > > reactions;
 
-    SSHCheck() {};
-    ~SSHCheck() {};
+    SshWake() {};
+    ~SshWake() {};
 };
 
-struct Warn : sc::simple_state<Warn, Client>  {
-    typedef sc::transition< EvtWarnTimeout, Shutdown > reactions;
+struct SshOffline: sc::simple_state<SshOffline, Client>  {
+    typedef mpl::list <
+        sc::transition< EvtShutdown, Shutdown >,
+        sc::transition< EvtSshFailure, PingOffline >,
+        sc::transition< EvtSshSuccess, SshOffline > > reactions;
 
-    Warn() {};
-    ~Warn() {};
+    SshOffline() {};
+    ~SshOffline() {};
 };
 
 struct Shutdown : sc::simple_state<Shutdown, Client>  {
-    typedef sc::transition< EvtHostlistDelete, Offline > reactions;
+    typedef mpl::list <
+		sc::transition< EvtOffline, Offline >,
+		sc::transition< EvtStart, PXE > > reactions;
 
     Shutdown() {};
     ~Shutdown() {};

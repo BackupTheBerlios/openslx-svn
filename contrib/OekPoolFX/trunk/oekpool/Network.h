@@ -16,6 +16,7 @@
 #include <UdpSocket.h>
 #include <ISocketHandler.h>
 #include "types.h"
+#include <StdoutLog.h>
 
 
 using namespace std;
@@ -41,11 +42,12 @@ private:
 			std::string format,
 			std::string delimiter
 			);
-	bool createPing(const char* host);
+	// bool createPing(const char* host);
 
 	vector<networkInfo> availableNetworks;
 };
 
+//==============================================================================
 
 // Socket for the network ping
 
@@ -53,7 +55,20 @@ class pingSocket : public TcpSocket {
 
 public:
 	pingSocket(ISocketHandler& );
+	void OnConnect(void);
 
+};
+
+//==============================================================================
+
+class errorLog : public StdoutLog {
+
+public:
+	void setFlag(bool&);
+	void error(ISocketHandler *, Socket *, const std::string &call, int err, const std::string &sys_err, loglevel_t);
+
+private:
+	bool* flag;
 };
 
 #endif /* NETWORK_H_ */

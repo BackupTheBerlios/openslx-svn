@@ -12,12 +12,12 @@
 
 class NetworkTests {
 public:
-	NetworkTests();
+	NetworkTests(void);
 	virtual ~NetworkTests();
-	void runTests(void);
+	void runTests(char*);
 private:
 	void wolTests(void);
-	void pingTests(void);
+	void pingTests(char*);
 };
 
 #endif /* NETWORKTESTS_H_ */
