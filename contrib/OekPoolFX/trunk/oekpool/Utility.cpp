@@ -11,6 +11,10 @@
 #include <iostream>
 #include <cstdio>
 
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+
 using namespace std;
 
 Utility::Utility() {
@@ -23,22 +27,7 @@ Utility::~Utility() {
 
 
 IPAddress Utility::ipFromString(string ip) {
-	int buf[4]={0,0,0,0};
-
-	IPAddress ipl = 0;
-	long ltemp = 0L;
-
-	sscanf(ip.c_str(), "%d.%d.%d.%d", &buf[0], &buf[1], &buf[2], &buf[3]);
-//	cout << "Integer Buffer: " << buf[0] << "." << buf[1] << "." << buf[2] << "." << buf[3] << endl;
-	for(int c=3;c>=0;c--) {
-	    ltemp = buf[c];
-		ipl += (ltemp<<(c*8));
-	}
-
-//	cout << "IPAddress to convert: " << ip << endl;
-//	cout << "IPAddress converted:  " << ipl << endl;
-
-	return ipl;
+	return inet_addr(ip.c_str());
 }
 
 pair<string,string>

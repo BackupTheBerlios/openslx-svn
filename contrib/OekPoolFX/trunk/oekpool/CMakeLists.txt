@@ -19,12 +19,16 @@ set_property(TARGET sockets PROPERTY
 add_library(ldapcpp STATIC IMPORTED)
 set_property(TARGET ldapcpp PROPERTY 
     IMPORTED_LOCATION  "${CMAKE_HOME_DIRECTORY}/lib/libldapcpp.a")
+add_library(ssh2 STATIC IMPORTED)
+set_property(TARGET ssh2 PROPERTY 
+    IMPORTED_LOCATION  "${CMAKE_HOME_DIRECTORY}/lib/libssh2.a")
 
-include_directories("lib/ldapc++" "lib/libSockets")
+
+include_directories("lib/ldapc++" "lib/libSockets" "lib/libssh2")
 
 
 add_executable(oekpool ${OEKPOOL_SOURCES})
 
 #message(STATUS "LibXml2_LIBRARIES=${LIBXML2_LIBRARIES}")
-target_link_libraries(oekpool sockets ldapcpp ${LIBXML2_LIBRARIES} ldap)
+target_link_libraries(oekpool sockets ldapcpp ssh2 ${LIBXML2_LIBRARIES} ldap crypto)
 
