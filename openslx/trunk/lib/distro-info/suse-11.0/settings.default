@@ -1140,12 +1140,6 @@ END
     packages = <<END
     END
 </selection>
-<selection virtualbox-ose>
-    base = minimal
-    packages = <<END
-        virtualbox-ose
-    END
-</selection>
 <selection default>
     base = minimal
 </selection>
