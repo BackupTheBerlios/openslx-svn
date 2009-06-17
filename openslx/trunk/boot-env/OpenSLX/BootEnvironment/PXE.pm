@@ -117,8 +117,48 @@ sub writeBootloaderMenuFor
                     ? "$menuMargin"
                     : "0";
             my $marginAsText = ' ' x $margin;
+
+            my $menuWidth;
+            while ($pxeConfig =~ m{^\s*MENU WIDTH (\S+?)\s*$}gims) {
+                chomp($menuWidth = $1);
+            }
+            my $width
+                = defined $menuWidth
+                    ? "$menuWidth"
+                    : "80";
+               $width = $width - 2* $margin + 2;
+
+            my @atomicHelpText = split(/ /, $helpText);
+            my $lineCounter = 0;
+
+            $helpText = "";
+
+            foreach my $word (@atomicHelpText){
+                if ($lineCounter + length($word) + 1 < $width) {
+                     $helpText .= "$word ";
+                     $lineCounter += length($word) + 1;
+                } else {
+                     my $nobreak = 1;
+                     while ($nobreak == 1) {
+                        my $pos = index($word,"-");
+                        $nobreak = 0;
+                        if ($pos != -1) {
+                            if ($lineCounter + $pos + 1 < $width) {
+                                $helpText .= substr($word, 0, $pos+1);
+                                $word = substr($word, $pos + 1, length($word));
+                                $nobreak = 1;
+                            }
+                        }
+                     }
+                     $helpText .= "\n$word ";
+                     $lineCounter = length($word);
+                }
+            } 
+
             $helpText =~ s{^}{$marginAsText}gms;
-            $slxLabels .= "\tTEXT HELP\n$helpText\n\tENDTEXT\n";
+            $slxLabels .= "\tTEXT HELP\n";
+            $slxLabels .= "$helpText\n";
+            $slxLabels .= "\tENDTEXT\n";
         }
     }
     # now add the slx-labels (inline or appended) and write the config file
