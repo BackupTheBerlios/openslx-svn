@@ -20,7 +20,7 @@ client=$(echo 01-$macaddr|sed "s/:/-/g")
 
 # check if already a configuration is available to decide if user interaction
 # is required (path is to be fixed)
-wget -O /tmp/cfg-error $boot_uri/genconfig/${client}
+wget -q -O /tmp/cfg-error $boot_uri/genconfig/${client}
 
 # Switch here for several boot TYPE=fastboot/directkiosk/cfgkiosk/slxconfig
 # fastboot - no interaction use system from client config

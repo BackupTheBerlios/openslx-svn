@@ -711,7 +711,7 @@ fi
 [ $DEBUGLEVEL -eq 8 -o $DEBUGLEVEL -eq 20 ] && \
   echo "** Filesystem setup started at $(sysup)"
 # setup of client root filesystem dependent on the availability of UnionFS
-if [ -n "${union_type}" ] ; then
+if [ "x${union_type}" != "x" ] ; then
   echo "Using ${union_type} for rw access"
   mkdir -p ${rwdir}/union ${rwdir}/uniontmp /rorootfs
   # adapting tempfs size of the device directory (takes /tmp in stage4)
