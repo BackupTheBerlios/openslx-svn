@@ -25,6 +25,12 @@ public:
 	 */
 	static
 	std::pair<std::string, std::string> splitIPRange(std::string range);
+
+	/**
+	 * function to convert various types to string
+	 */
+	static
+	std::string toString(int);
 };
 
 #endif /* UTILITY_H_ */

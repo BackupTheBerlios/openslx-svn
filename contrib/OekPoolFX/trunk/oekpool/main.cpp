@@ -3,13 +3,18 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
 
 #include "Client.h"
 #include "Ldap.h"
 #include "Configuration.h"
 #include "events.h"
+#include "Utility.h"
+#include "Logger.h"
 
 #include <boost/foreach.hpp>
+
+#include <StdLog.h>
 
 using namespace std;
 
@@ -35,17 +40,29 @@ int main(int argc, char** argv) {
 	// call the various singleton to initialize
     Configuration* conf = Configuration::getInstance();
 
-    Ldap* obj = Ldap::getInstance();
+    Ldap* ldap = Ldap::getInstance();
 
-    Network::getInstance()->setNetworks(obj->getNetworks());
+    Network::getInstance()->setNetworks(ldap->getNetworks());
 
-    vector<string> bla = obj->getPools();
+    vector<string> vecpools = ldap->getPools();
 
-    BOOST_FOREACH(string pool, bla) {
-    	cout << pool << endl;
+    // this is the client list
+    map<string, Client*> clist;
+
+    BOOST_FOREACH(string pool, vecpools) {
+    	ldap->getClients(pool,clist);
     }
 
+    Logger::getInstance()->log(
+    		Utility::toString(clist.size())+
+    		" client objects created ",
+    		LOG_LEVEL_INFO
+    );
 
+
+    while(sleep(60)) {
+
+    }
 
     return 0;
 }

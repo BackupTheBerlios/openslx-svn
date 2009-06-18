@@ -9,7 +9,7 @@ file(GLOB OEKPOOL_SOURCES ./*.cpp)
 
 
 FIND_PACKAGE(LibXml2)
-FIND_PACKAGE(Boost COMPONENTS foreach system)
+FIND_PACKAGE(Boost COMPONENTS "filesystem")
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIR})

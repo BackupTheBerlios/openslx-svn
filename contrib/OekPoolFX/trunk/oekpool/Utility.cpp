@@ -9,6 +9,7 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <cstdio>
 
 #include <netinet/in.h>
@@ -41,4 +42,11 @@ Utility::splitIPRange(string range) {
     }
 
     return result;
+}
+
+string Utility::toString(int bla) {
+	ostringstream o;
+	o.clear();
+	o << bla;
+	return o.str();
 }

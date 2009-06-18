@@ -176,7 +176,7 @@ void Ldap::getClients(string pool, map<string,Client*>& clist) {
 		base = "cn=computers,ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
 	}
 	else {
-		base = "ou="+ pool + ",ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
+		base = "cn=computers,ou="+ pool + ",ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
 	}
 
 	vec = search(base, LDAP_SCOPE_ONELEVEL, filter, attribs);
@@ -191,8 +191,9 @@ void Ldap::getClients(string pool, map<string,Client*>& clist) {
 
 
 			// Get PXE Timeslot Information
-			vecpxe = search(string("HostName=")+vec[i]["Hostname"]+","+base,
-					LDAP_SCOPE_ONELEVEL, filterpxe, attribspxe);
+			string basepxe = string("HostName=")+vec[i]["HostName"]+","+base;
+			cout << " BASE FOR PXE: " << basepxe << endl;
+			vecpxe = search(basepxe,LDAP_SCOPE_ONELEVEL, filterpxe, attribspxe);
 
 			BOOST_FOREACH(AttributeMap am, vecpxe) {
 				cout << am["ForceBoot"] << endl;
@@ -205,7 +206,7 @@ void Ldap::getClients(string pool, map<string,Client*>& clist) {
 
 			// if client object not already exists - create it
 			// otherwise call method "updateFromLdap";
-			if(clist.find(vec[i]["HWaddress"]) != clist.end()) {
+			if(clist.find(vec[i]["HWaddress"]) == clist.end()) {
 				clist[vec[i]["HWaddress"]] = new Client(vec[i], vecslots);
 			}
 			else {
