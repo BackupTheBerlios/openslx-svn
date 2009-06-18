@@ -62,7 +62,8 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  /** XML - PATH
+  /**
+   * 	XML - PATH
    *
    *	1. read from stage3.conf
    *	2. option -p
@@ -80,8 +81,7 @@ int main(int argc, char** argv) {
 		  ifs.getline(buf, n);
 		  s = buf;
 		  if(s.substr(0,17) == "vmchooser_xmlpath") {
-			  xmlpath = new char[strlen(buf)];
-			  xmlpath = (char*)s.substr(19,s.length()-20).append("/").c_str();
+			  xmlpath = (char*)strdup(s.substr(19,s.length()-20).append("/").c_str());
 		  }
 	  }
 
@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
   /* VERSION  */
   if(opt->getFlag('v') || opt->getFlag("version")) {
     // just print out version information - helps testing
-    cout << "virtual machine chooser 0.0.9"<< endl;
+    cout << "virtual machine chooser 0.0.10"<< endl;
     delete opt;
     return 0;
 
@@ -185,6 +185,7 @@ int main(int argc, char** argv) {
   win.unfold_entries(lin_entries, vm_entries);
   win.show(); // argc,argv
   win.border(false);
+  free(xmlpath);
 
   bool retval = run();
 

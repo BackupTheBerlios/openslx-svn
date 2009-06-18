@@ -83,7 +83,7 @@ void SWindow::cb_return()
 
   if(curr != 0 && curr->user_data()) {
     DataEntry* dat = (DataEntry*) curr->user_data();
-    cout << dat->short_description << endl;
+    //cout << dat->short_description << endl;
     if(dat) {
       runImage(curr, dat);
     }
@@ -112,7 +112,7 @@ void SWindow::cb_select()
   if( curr == oldcurr ) {
     // start image if it has data associated
     // -> double click
-    cout << ((DataEntry*)curr->user_data())->short_description << endl;
+    //cout << ((DataEntry*)curr->user_data())->short_description << endl;
     if(curr->user_data()) {
       runImage(curr, (DataEntry*) curr->user_data() );
     }

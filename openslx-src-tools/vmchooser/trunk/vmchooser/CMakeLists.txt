@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(vmchooser)
 
-set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Debug)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 set(OPENSLX_ROOT "../../../..")

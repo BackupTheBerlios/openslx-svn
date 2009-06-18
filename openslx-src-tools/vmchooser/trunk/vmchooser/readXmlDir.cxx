@@ -13,51 +13,71 @@
 #include <libxml/xpath.h>
 
 #include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
 
 #include <cstring>
 #include <vector>
 #include <iostream>
+#include <fstream>
 
 #include "inc/constants.h"
 #include "inc/DataEntry.h"
 #include "inc/functions.h"
 
+namespace bfs=boost::filesystem;
 
 #ifdef LIBXML_TREE_ENABLED
 
-
+string env;
 vector<string> xmlVec;
 
-char* getAttribute(xmlDoc *doc, char* name)
-{
-        xmlNode* temp;
+xmlXPathObjectPtr evalXPath(xmlDocPtr doc, const char* path) {
 	xmlXPathContextPtr xp = xmlXPathNewContext(doc);
-	string bla = string("/settings/eintrag/")+ string(name)+ string("/@param");
+	string bla = string(path);
 	if(xp == NULL) {
 		fprintf(stderr,"Error: unable to create new XPath context\n");
 		xmlFreeDoc(doc);
 		return NULL;
 	}
-	xmlXPathObjectPtr xpp = xmlXPathEvalExpression((const xmlChar*)bla.c_str(), xp);
-	if(xpp == NULL) {
+	xmlXPathObjectPtr result = xmlXPathEvalExpression((const xmlChar*)bla.c_str(), xp);
+	if(result == NULL) {
 		fprintf(stderr,"Error: unable to evaluate xpath expression \"%s\"\n", bla.c_str());
-		xmlXPathFreeContext(xp); 
-		xmlFreeDoc(doc); 
+		xmlXPathFreeContext(xp);
+		xmlFreeDoc(doc);
 		return NULL;
 	}
+	xmlXPathFreeContext(xp);
+	return result;
+}
+
+char* getAttribute(xmlDoc *doc, char* name)
+{
+	xmlNode* temp;
+	string path = string("/settings/eintrag/")+ string(name)+ string("/@param");
+	char* cpath = strdup(path.c_str());
 
 	//print_xpath_nodes(xpp->nodesetval, stdout);
+
+	// Get Attribute via XPath
+	xmlXPathObjectPtr xpp = evalXPath(
+			doc,
+			(const char*)cpath
+		);
+	free(cpath);
+
 	int size;
 	size = (xpp->nodesetval) ? xpp->nodesetval->nodeNr: 0;
-        for (int i= 0; i < size; i++) {
-		temp = xpp->nodesetval->nodeTab[i];
-                if (temp->type == XML_ATTRIBUTE_NODE ) {
-                        return (char*) temp->children->content;
-                } else {
-                        continue;
-                }
-        }
-        return NULL;
+	for (int i= 0; i < size; i++) {
+	temp = xpp->nodesetval->nodeTab[i];
+			if (temp->type == XML_ATTRIBUTE_NODE ) {
+
+					return (char*) temp->children->content;
+			} else {
+					continue;
+			}
+	}
+
+	return NULL;
 }
 
 char* getNodeValue(xmlDoc *doc, char* name)
@@ -73,8 +93,8 @@ char* getNodeValue(xmlDoc *doc, char* name)
 	xmlXPathObjectPtr xpp = xmlXPathEvalExpression((const xmlChar*)bla.c_str(), xp);
 	if(xpp == NULL) {
 		fprintf(stderr,"Error: unable to evaluate xpath expression \"%s\"\n", bla.c_str());
-		xmlXPathFreeContext(xp); 
-		xmlFreeDoc(doc); 
+		xmlXPathFreeContext(xp);
+		xmlFreeDoc(doc);
 		return NULL;
 	}
 
@@ -98,11 +118,11 @@ DataEntry* get_entry(xmlDoc * doc)
 {
         char *tempc = NULL;
         DataEntry* de = new DataEntry();
-        
+
         tempc = getAttribute(doc,(char *)"short_description");
         if (tempc != NULL ) {
                 de->short_description = tempc;
-		//printf("%s\n",de->short_description.c_str());
+
 		// replace a substring
                 std::string dest_string, dest1_string;
                 boost::regex re("\n|\r");
@@ -161,7 +181,7 @@ DataEntry* get_entry(xmlDoc * doc)
                 de->network = tempc;
         }
         tempc = NULL;
-        
+
 
         tempc = getAttribute(doc,(char *) "virtualmachine");
         if (tempc != NULL ) {
@@ -174,11 +194,10 @@ DataEntry* get_entry(xmlDoc * doc)
                 }
         }
         else {
-        
-        
-          /* TODO: DEFAULTS TO VMWARE HERE */
+
+          // Defaults to vmware - if the attribute is unknown
           de->imgtype = VMWARE;
-        
+
         }
         tempc = NULL;
 
@@ -191,7 +210,7 @@ DataEntry* get_entry(xmlDoc * doc)
                 }
         }
         tempc = NULL;
-        
+
         tempc = getAttribute(doc,(char *) "locked");
         if (tempc != NULL ) {
                 de->locked = (strstr(tempc,"true")!= NULL?true:false);
@@ -221,14 +240,20 @@ DataEntry* get_entry(xmlDoc * doc)
                 de->priority = 5;
         }
         tempc = NULL;
-        
+
         de->xml = doc;
 
         return de;
 }
 
 
-
+/**
+ * The main function of this file:
+ *
+ * - calls xmlfilter.sh to glob a folder for xmls
+ *   -> if no xmlfilter.sh is available, it globs for available xmls
+ * - reads all xml files and creates for each its own DataEntry-struct
+ */
 DataEntry** readXmlDir(char* path)
 {
   const int MAX_LENGTH = 256;
@@ -241,17 +266,69 @@ DataEntry** readXmlDir(char* path)
           return NULL;
   }
 
-  if( (inp = popen(string(fpath).append("/")
-        .append(filterscript).append(" ")
-        .append(path).c_str(), "r" )) ) {
-    while(fgets(line, MAX_LENGTH, inp ) != NULL) {
-      xmlVec.push_back(string(line).substr(0,strlen(line)-1) );
-    }
-    pclose(inp);  
+  bfs::path filter(string(fpath).append("/").append(filterscript));
+
+
+  if(bfs::is_regular_file(filter)) {
+	  if( (inp = popen(string(fpath).append("/")
+	          .append(filterscript).append(" ")
+	          .append(path).c_str(), "r" )) && bfs::is_regular_file(filter) ) {
+	      while(fgets(line, MAX_LENGTH, inp ) != NULL) {
+	        xmlVec.push_back(string(line).substr(0,strlen(line)-1) );
+	      }
+	      pclose(inp);
+	  }
   }
+  else
+  {
+	  ifstream conffile("/etc/opt/openslx/vmchooser-stage3.conf");
+	  if(conffile) {
+		  int n = 255;
+		  char buf[n];
+		  string s = "";
+		  while(!conffile.eof()) {
+			  conffile.getline(buf, n);
+			  s = buf;
+			  if(s.substr(0,13) == "vmchooser_env") {
+				  env = s.substr(15,s.length()-16);
+			  }
+		  }
+	  }
+
+	  glob_t globbuf;
+	  glob(string(path).append("*.xml").c_str(), NULL, NULL, &globbuf);
+
+	  xmlDocPtr tdoc = 0;
+	  char* tstr = 0;
+
+	  for(int c=0; c<globbuf.gl_pathc; c++) {
+		  tdoc = xmlReadFile(globbuf.gl_pathv[c],NULL,XML_PARSE_RECOVER|XML_PARSE_NOERROR);
+
+		  if(!tdoc) {
+			  cerr << "Error opening xml file " << globbuf.gl_pathv[c] << "!" << endl;
+			  return 0;
+		  }
+
+		  tstr = getAttribute(tdoc, (char*)"pools");
+
+		  if(tstr == 0) {
+			  xmlFreeDoc(tdoc);
+			  continue;
+		  }
+
+		  if(env == tstr) {
+			  xmlVec.push_back(string(globbuf.gl_pathv[c]) );
+		  }
+
+		  xmlFreeDoc(tdoc);
+		  tdoc = 0; tstr = 0;
+	  }
+
+  }
+
   free(fpath);
 
-  xmlDoc *doc = '\0';
+  xmlDoc *doc = 0;
   int c = 0;
   string::size_type loc;
 
@@ -267,7 +344,7 @@ DataEntry** readXmlDir(char* path)
       // FOUND Vorlage
       continue;
     }
-    
+
     struct stat m;
     stat(xmlVec[i].c_str(), &m);
 
@@ -278,14 +355,14 @@ DataEntry** readXmlDir(char* path)
             continue;
     }
 
-    doc = xmlReadFile(xmlVec[i].c_str(), NULL, XML_PARSE_RECOVER);
+    doc = xmlReadFile(xmlVec[i].c_str(), NULL, XML_PARSE_RECOVER|XML_PARSE_NOERROR);
     if (doc == NULL) {
             fprintf(stderr, "error: could not parse file %s\n", xmlVec[i].c_str());
             continue;
     }
 
     result[c] = get_entry(doc);
-    if (result[c] != '\0') {
+    if (result[c] != 0) {
     	    result[c]->xml_name = xmlVec[i];
             c++;
     }

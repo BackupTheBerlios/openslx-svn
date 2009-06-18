@@ -18,6 +18,7 @@
 /* define MAX_LENGTH for string in getFolderName */
 const int MAX_LENGTH = 200;
 extern SWindow* mainwin;
+extern string env;
 
 /** *************************************************************
  * void runImage runs a (virtual machine) image using fork()
@@ -26,18 +27,18 @@ extern SWindow* mainwin;
 void runImage(fltk::Widget*, void* p)
 {
   string confxml;
-  
+
   /* printf("runImage called\n"); */
   if ( p == NULL ) {
     return;
   }
-  
+
   DataEntry& dat = *((DataEntry*) p);
-  
+
   if(dat.imgtype == VMWARE || dat.imgtype == VBOX ) {
     confxml = writeConfXml(dat);
   }
-  
+
   pid_t pid;
   // in case you want to wait hours on your thread
   //int status;
@@ -45,10 +46,10 @@ void runImage(fltk::Widget*, void* p)
   strncpy(arg1, (char*) string("'\n\nStarte Image: ")
   	.append(dat.short_description)
 	.append("\n'").c_str(),MAX_LENGTH);
-  char* argv[] = { (char*) "/opt/openslx/plugin-repo/vmchooser/mesgdisp", 
+  char* argv[] = { (char*) "/opt/openslx/plugin-repo/vmchooser/mesgdisp",
         arg1, NULL };
 
-  printf("%s", arg1);
+  //printf("%s", arg1);
   pid = fork();
 
   switch( pid )  {
@@ -60,7 +61,7 @@ void runImage(fltk::Widget*, void* p)
       mainwin->destroy();
       fltk::wait();
       if(dat.imgtype == VMWARE || dat.imgtype == VBOX) {
-        cout << "calling " << argv[1] << endl;
+        //cout << "calling " << argv[1] << endl;
         execvp(argv[0], argv);
       }
       break;
@@ -80,7 +81,7 @@ void runImage(fltk::Widget*, void* p)
 }
 
 /**
- * Helper-function for runImage(Widget, void) 
+ * Helper-function for runImage(Widget, void)
  * - runs the chosen virtualizer image
  **/
 void runImage(DataEntry& dat, string confxml)
@@ -92,7 +93,7 @@ void runImage(DataEntry& dat, string confxml)
   char* arg[] = { (char *) "/var/X11R6/bin/run-virt.sh",
             (char*)confxml.c_str(),
             NULL };
-    
+
   execvp("/var/X11R6/bin/run-virt.sh",  arg);
 }
 
@@ -103,7 +104,7 @@ void runImage(DataEntry& dat, string confxml)
  * Helper-Function: Get folder name
  */
 char* getFolderName() {
-  
+
   /* Var for the folder name */
   char* pname = (char*) malloc(MAX_LENGTH);
   int result;
@@ -133,15 +134,15 @@ string writeConfXml(DataEntry& dat) {
   string pname = "/etc/opt/openslx/";
   xmlNodePtr cur = 0;
   xmlNodePtr root = 0;
-  
+
   string pskript = pname  +"/printer.sh";
-  
+
   cur = xmlDocGetRootElement(dat.xml);
   if(cur == NULL) {
     printf("Empty XML Document %s!", dat.xml_name.c_str());
     return dat.xml_name.c_str();
   }
-  
+
   // xmlNode "eintrag"
   root = cur->children;
   while(xmlStrcmp(root->name, (const xmlChar*)"eintrag") != 0) {
@@ -151,17 +152,21 @@ string writeConfXml(DataEntry& dat) {
     fprintf(stderr, "%s is not a valid xml file!", dat.xml_name.c_str());
     return dat.xml_name.c_str();
   }
-  
+
   // add "printers" and "scanners" - XML-Nodes
   addPrinters(root, (char*)pskript.c_str());
-  
+
   pskript = pname + "/scanner.sh";
   addScanners(root, (char*)pskript.c_str());
 
   // add hostname and username information
   addInfo(root, &dat);
-  
- 
+
+
+  // read the group configuration XML
+  readGroupXml(&dat, env);
+
+
   srand(time(NULL));
   string xmlfile;
   ostringstream i;
