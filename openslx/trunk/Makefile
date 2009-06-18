@@ -156,8 +156,8 @@ plain-install:
 	cp tools/uclibc-wrapper $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin/; \
 	tar --exclude=.svn -cp -C lib OpenSLX \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
-  tar --exclude=.svn -cp -C boot-env OpenSLX \
-    | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
+    tar --exclude=.svn -cp -C boot-env OpenSLX \
+      | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
 	tar --exclude=.svn -cp -C config-db OpenSLX \
 	  | tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib; \
 	tar --exclude=.svn -cp -C installer OpenSLX \
@@ -181,22 +181,22 @@ plain-install:
 
 	@   # copy shareable data:
 	@tar --exclude=.svn -cp -C initramfs stage3-stuff/ | \
-	  tar -xp --strip-components 1 \
-	      -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs; \
-	  tar --exclude=.svn -cp -C initramfs tools | \
-	    tar -xp --strip-components 1 \
-        -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools; \
-	tar --exclude=.svn -cp -C initramfs distro-specs | \
-	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
-	tar --exclude=.svn -cp -C initramfs uclib-rootfs | \
-	  tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
-  tar --exclude=.svn --exclude *.example --exclude OpenSLX -cp boot-env | \
-    tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/; \
-  cp -p boot-env/pxe/menu-*.example boot-env/pxe/Readme.pxe \
-    $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/; \
-  cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
-  tar --exclude=.svn -cp -C initramfs tpm | \
-    tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
+     tar -xp --strip-components 1 \
+	     -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/initramfs; \
+	 tar --exclude=.svn -cp -C initramfs tools | \
+	     tar -xp --strip-components 1 \
+             -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/ramfstools; \
+	 tar --exclude=.svn -cp -C initramfs distro-specs | \
+	     tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
+     tar --exclude=.svn -cp -C initramfs uclib-rootfs | \
+	     tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
+     tar --exclude=.svn --exclude *.example --exclude OpenSLX -cp boot-env | \
+         tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/; \
+     cp -p boot-env/pxe/menu-*.example boot-env/pxe/Readme.pxe \
+           $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/; \
+     cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
+     tar --exclude=.svn -cp -C initramfs tpm | \
+         tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
 
 	@   # link the library loader for the uclibc (to use the uclibc busybox)
 	@ ln -sf ${SLX_BASE_PATH}/share/uclib-rootfs/lib/ld-uClibc.so.0 \

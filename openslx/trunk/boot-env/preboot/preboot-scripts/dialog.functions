@@ -79,3 +79,27 @@ ddownload () {
     echo 100 | dialog  --gauge "$dl_title" $DIALOG_HEIGHT $DIALOG_WIDTH;
     
 }
+
+
+
+menu_firststart () {
+    while [ "x$(cat result)" = "x" ] ; do
+        dialog --menu "OpenSLX" 30 60 22 \
+        01 "Kiosk" \
+        02 "Kiosk Setup" \
+        03 "Custom System" \
+        2>result
+    done
+}
+
+menu_oldconfig () {
+    oldconf=$1;
+    while [ "x$(cat result)" = "x" ] ; do
+        dialog --menu "OpenSLX" 30 60 22 \
+        01 "Kiosk" \
+        02 "Kiosk Setup" \
+        03 "Custom System" \
+        04 "Custom System"
+        2>result
+    done
+}

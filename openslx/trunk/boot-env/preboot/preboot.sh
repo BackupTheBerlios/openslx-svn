@@ -14,13 +14,24 @@
 
 # get configuration
 . /etc/initramfs-setup
+. ./preboot-scripts/dialog.functions
 
 # bring the mac address into the standard format 01-<MAC>
 client=$(echo 01-$macaddr|sed "s/:/-/g")
 
 # check if already a configuration is available to decide if user interaction
 # is required (path is to be fixed)
-wget -q -O /tmp/cfg-error $boot_uri/genconfig/${client}
+wget -q -O /tmp/have-user-config "$boot_uri/users.pl?user=${client}"
+have_user_config=$(cat /tmp/have-user-config);
+
+if [ "x1" == "x$have_user_config" ]; then
+    wget -q -O /tmp/oldconfig "$boot_uri/users.pl?user=${client}&action=read"
+    . /tmp/oldconfig
+    menu_oldconfig $oldconfig  
+else
+    menu_firststart
+fi
+rm result;
 
 # Switch here for several boot TYPE=fastboot/directkiosk/cfgkiosk/slxconfig
 # fastboot - no interaction use system from client config

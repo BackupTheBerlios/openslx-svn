@@ -119,6 +119,7 @@ sub writeBootloaderMenuFor
         my $prebootBasePath 
             = "$openslxConfig{'base-path'}/share/boot-env/preboot";
         slxsystem(qq{cp $prebootBasePath/preboot.sh $bootloaderConfigPath/});
+        slxsystem(qq{cp -r $prebootBasePath/preboot-scripts $bootloaderConfigPath/});
         slxsystem(qq{chmod a+x $bootloaderConfigPath/preboot.sh});
 
         # create a tar which can/will be downloaded by prebooting clients
