@@ -1,7 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
+
+  <!-- This is the ldap section -->
   <ldap_server>132.230.4.xx</ldap_server>
+  
   <ldap_port>9009</ldap_port>
+  
   <ldap_user>cn=admin</ldap_user>
-  <ldap_password>*******</ldap_password>
+  
+  <ldap_password>hackme</ldap_password>
+  
+  
+  
+  <!-- This is the ssh section -->
+  
+  <!-- here you have the choice between public key and password authentication --> 
+  <ssh_auth_method>pubkey|passwd</ssh_auth_method>
+  
+  <ssh_private_key>/home/user/.ssh/id_rsa</ssh_private_key>
+  
+  <ssh_public_key>/home/usr/.ssh/id_rsa.pub</ssh_public_key>
+  
+  <ssh_username>root</ssh_username>
+  
+  <ssh_password>hackme</ssh_password>
+  
 </configuration>

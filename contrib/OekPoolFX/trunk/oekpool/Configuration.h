@@ -21,7 +21,7 @@ public:
     /**
      * Singleton wrapper for this class
      */
-    static Configuration& getInstance();
+    static Configuration* getInstance();
     virtual ~Configuration();
     std::string getString(std::string name);
     int getInt(std::string name);

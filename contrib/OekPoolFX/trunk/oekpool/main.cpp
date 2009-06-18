@@ -30,16 +30,16 @@ int main(int argc, char** argv) {
 //
 //    client.process_event(EvtWakeCommand() );
 
-    Configuration& conf = Configuration::getInstance();
+	// call the various singleton to initialize
+    Configuration* conf = Configuration::getInstance();
 
-    Ldap& obj = Ldap::getInstance(
-                  conf.getString("ldap_server"),
-                  conf.getInt("ldap_port"),
-                  conf.getString("ldap_user"),
-                  conf.getString("ldap_password"));
+    Ldap* obj = Ldap::getInstance();
 
-    obj.getClients("");
-    obj.getNetworks();
+    Network::getInstance()->setNetworks(obj->getNetworks());
+
+    vector<string> bla = obj->getPools();
+
+    obj->getClients("");
 
 
     return 0;

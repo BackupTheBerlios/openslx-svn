@@ -20,13 +20,19 @@ SshThread::SshThread() {
 }
 
 SshThread::~SshThread() {
-	// TODO Auto-generated destructor stub
+
 }
 
-void SshThread::_connect(std::string hostname) {
-	// TODO: connect by hostname - not very important
-	if(hostname.length() > 1) {
-		_connect(inet_addr(hostname.c_str()) );
+SshThread *SshThread::getInstance() {
+	static SshThread instance;
+
+	return &instance;
+
+}
+
+void SshThread::_connect(std::string ipaddress) {
+	if(ipaddress.length() > 1) {
+		_connect(inet_addr(ipaddress.c_str()) );
 	}
 }
 

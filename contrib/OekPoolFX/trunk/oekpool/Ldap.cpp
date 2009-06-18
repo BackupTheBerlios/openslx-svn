@@ -9,6 +9,7 @@
 #include "Client.h"
 #include "Network.h"
 #include "Utility.h"
+#include "Configuration.h"
 
 #include <string>
 #include <vector>
@@ -29,7 +30,13 @@
 
 using namespace std;
 
-Ldap::Ldap(string host, int port,string who,string cred) {
+Ldap::Ldap() {
+	Configuration* conf = Configuration::getInstance();
+
+	string host = conf->getString("ldap_server");
+	int port = conf->getInt("ldap_port");
+	string who = conf->getString("ldap_user");
+	string cred = conf->getString("ldap_password");
 
     cons=new LDAPConstraints;
     ctrls=new LDAPControlSet;
@@ -61,9 +68,9 @@ Ldap::~Ldap() {
 
 }
 
-Ldap& Ldap::getInstance(string host, int port,string who,string cred) {
-    static Ldap instance(host, port,who,cred);
-    return instance;
+Ldap* Ldap::getInstance() {
+    static Ldap instance;
+    return &instance;
 }
 
 vector<AttributeMap> Ldap::search(string base, int scope, string filter, const StringList& attribs) {

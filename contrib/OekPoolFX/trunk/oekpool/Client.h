@@ -22,7 +22,6 @@ namespace sc = boost::statechart;
 
 namespace ClientStates {
     struct Offline;
-    // struct PXEConfig; - forward-declaration not allowed here ;-(
 }
 
 // a Client object is a boost::statechart::state_machine

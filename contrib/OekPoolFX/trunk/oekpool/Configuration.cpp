@@ -21,9 +21,9 @@
 using namespace std;
 
 
-Configuration& Configuration::getInstance() {
-    static Configuration instance = Configuration();
-    return instance;
+Configuration* Configuration::getInstance() {
+    static Configuration instance;
+    return &instance;
 }
 
 Configuration::~Configuration() {
@@ -50,7 +50,7 @@ Configuration::Configuration() {
         return;
     }
 
-    for(xmlNode*
+    for(xmlNodePtr
         child = root->children;
         child!= NULL;
         child = child->next)

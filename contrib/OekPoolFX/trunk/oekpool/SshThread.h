@@ -22,9 +22,13 @@ private:
 
 	void _connect(std::string hostname);
 	void _connect(IPAddress ip);
-public:
+
 	SshThread();
 	virtual ~SshThread();
+
+public:
+	static SshThread* getInstance();
+
 
 	static void addClient(Client* );
 	static void delClient(Client* );

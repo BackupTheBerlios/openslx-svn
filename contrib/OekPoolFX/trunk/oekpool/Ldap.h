@@ -58,17 +58,13 @@ class Ldap {
 
     /**
      * default constructor for the Ldap class
-     * @param host host to connect to
-     * @param port connection port
-     * @param who username
-     * @param cred credentials - password
      */
-    Ldap(std::string host,int port,std::string who,std::string cred);
+    Ldap();
 public:
     /**
      * Singleton wrapper for this class
      */
-    static Ldap& getInstance(std::string host,int port,std::string who,std::string cred);
+    static Ldap* getInstance();
 
     /**
      * Ldap destructor
