@@ -9,7 +9,7 @@ file(GLOB OEKPOOL_SOURCES ./*.cpp)
 
 
 FIND_PACKAGE(LibXml2)
-FIND_PACKAGE(Boost COMPONENTS foreach)
+FIND_PACKAGE(Boost COMPONENTS foreach system)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIR})
@@ -36,5 +36,13 @@ include_directories("lib/ldapc++" "lib/libSockets" "lib/libssh2")
 add_executable(oekpool ${OEKPOOL_SOURCES})
 
 #message(STATUS "LibXml2_LIBRARIES=${LIBXML2_LIBRARIES}")
-target_link_libraries(oekpool sockets ldapcpp ssh2 ${LIBXML2_LIBRARIES} ldap crypto)
+target_link_libraries(oekpool 
+    sockets 
+    ldapcpp 
+    ssh2 
+    ${LIBXML2_LIBRARIES}
+    ${Boost_LIBRARIES} 
+    ldap 
+    crypto
+ )
 
