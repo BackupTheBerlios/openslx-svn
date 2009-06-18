@@ -21,4 +21,10 @@ struct networkInfo{
 	IPAddress broadcastAddress;
 };
 
+struct PXESlots {
+	std::string cn;
+	std::string TimeSlot;
+	bool ForceBoot;
+};
+
 #endif /* TYPES_H_ */

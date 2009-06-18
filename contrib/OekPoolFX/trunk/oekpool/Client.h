@@ -26,11 +26,17 @@ namespace ClientStates {
 
 // a Client object is a boost::statechart::state_machine
 struct Client : sc::state_machine< Client, ClientStates::Offline > {
+private:
+    AttributeMap attributes;
 
-    AttributeMap _attributes;
-
+    bool exists_in_ldap;
+public:
     Client(AttributeMap);
     ~Client();
+
+    void updateFromLdap(AttributeMap);
+
+    bool operator==(Client&);
 };
 
 

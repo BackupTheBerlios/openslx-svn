@@ -87,10 +87,10 @@ public:
 
 	/**
 	 * Get client data from LDAP and create them (null-terminated array)
-	 * @param pool Pool to get Clients from
-	 * @returns Clients from "pool", if empty -> return global Clients
+	 * @param pool - Pool to get Clients from
+	 * @param clist - reference to clients-pointer-map (ordered by HWadress)
 	 */
-	Client** getClients(std::string pool);
+	void getClients(std::string , std::map<string,Client*>&);
 
 	/**
 	 * Get network information (broadcast address,subnet mask and network address)

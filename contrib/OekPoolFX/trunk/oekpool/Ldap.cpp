@@ -149,16 +149,21 @@ vector<string> Ldap::getPools() {
 
 
 /**
- * ATTENTION: Free return memory (pointers and data)
+ * ATTENTION: Free client objects...
  */
-Client** Ldap::getClients(string pool) {
+void Ldap::getClients(string pool, map<string,Client*>& clist) {
 
 	string base;
 	string filter="(HostName=*)";
+	string filterpxe="(objectClass=ActivePXEConfig)";
 
 	const char* attrs[] = { "HostName", "HWaddress", "IPAddress",
-	        "description", "DomainName", "dhcpHlpCont", 0 };
+	        "description", 0 };
+	const char* attrspxe[] = { "cn","ForceBoot","TimeSlot",0};
+
 	StringList attribs((char**)attrs);
+	StringList attribspxe((char**)attrspxe);
+
 	vector<AttributeMap> vec;
 
 
@@ -169,24 +174,25 @@ Client** Ldap::getClients(string pool) {
 		base = "ou="+ pool + ",ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de";
 	}
 
-	vec = search(base, LDAP_SCOPE_SUBTREE, filter, attribs);
-
-	Client** result = new Client*[vec.size()+1];
+	vec = search(base, LDAP_SCOPE_ONELEVEL, filter, attribs);
 
 	for(std::size_t i=0;i< vec.size();i++ )
 	{
 		if(!vec[i]["HostName"].empty() && !vec[i]["IPAddress"].empty())
 		{
-			if(!vec[i]["IPAddress"].empty()) {
-			    pair<string, string> p = Utility::splitIPRange(vec[i]["IPAddress"]);
-			    vec[i]["IPAddress"] = p.first;
+			pair<string, string> p = Utility::splitIPRange(vec[i]["IPAddress"]);
+			vec[i]["IPAddress"] = p.first;
+
+			if(clist.find(vec[i]["HWaddress"]) != clist.end()) {
+				clist[vec[i]["HWaddress"]] = new Client(vec[i]);
 			}
-			result[i] = new Client(vec[i]);
+			else {
+				clist[vec[i]["HWaddress"]]->updateFromLdap(vec[i]);
+			}
 		}
 	}
-	result[vec.size()] = '\0';
 
-	return result;
+	return;
 }
 
 
@@ -201,7 +207,7 @@ vector<networkInfo> Ldap::getNetworks()
 	vector<networkInfo> result;
 	networkInfo temp;
 
-	vec = search(base, LDAP_SCOPE_SUBTREE, filter,attribs);
+	vec = search(base, LDAP_SCOPE_ONELEVEL, filter,attribs);
 
 	for(uint i=0;i < vec.size();i++)
 	{

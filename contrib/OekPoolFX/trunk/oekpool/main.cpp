@@ -9,6 +9,8 @@
 #include "Configuration.h"
 #include "events.h"
 
+#include <boost/foreach.hpp>
+
 using namespace std;
 
 
@@ -39,7 +41,10 @@ int main(int argc, char** argv) {
 
     vector<string> bla = obj->getPools();
 
-    obj->getClients("");
+    BOOST_FOREACH(string pool, bla) {
+    	cout << pool << endl;
+    }
+
 
 
     return 0;

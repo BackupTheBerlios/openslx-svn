@@ -15,10 +15,13 @@ using namespace std;
 /**
  * Client default constructor
  */
-Client::Client(AttributeMap al) {
-    initiate();
+Client::Client(AttributeMap al)
+{
+	exists_in_ldap = true;
 
-    _attributes = al;
+    initiate(); // Statemachine
+
+    attributes = al;
 
     cout << "Client with name \"" << al["HostName"] <<"\" created!" << endl;
     cout << "IPAddress: " << al["IPAddress"] << endl;
@@ -31,6 +34,11 @@ Client::Client(AttributeMap al) {
  * Client default destructor
  */
 Client::~Client() {
-    terminate();
-    cout << "Client \""<< _attributes["HostName"] << "\" destroyed!" << endl << endl;
+    terminate(); // Statemachine
+
+    cout << "Client \""<< attributes["HostName"] << "\" destroyed!" << endl << endl;
+}
+
+void Client::updateFromLdap(AttributeMap attr) {
+
 }
