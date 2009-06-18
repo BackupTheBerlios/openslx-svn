@@ -9,6 +9,7 @@
 #include "Configuration.h"
 
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -37,8 +38,12 @@ Logger::~Logger() {
 
 }
 
+Logger* Logger::getInstance() {
+	static Logger instance;
+	return &instance;
+}
 
-void Logger::log(std::string msg, LogLevel lvl) {
+void Logger::log(std::string msg, loglevel_t lvl) {
 
 	if(loglevel < lvl ) return;
 

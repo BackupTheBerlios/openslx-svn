@@ -15,9 +15,12 @@
 class Logger {
 private:
 	loglevel_t loglevel;
-public:
+
 	Logger();
 	virtual ~Logger();
+
+public:
+	static Logger* getInstance();
 
 	void log(std::string, loglevel_t);
 };
