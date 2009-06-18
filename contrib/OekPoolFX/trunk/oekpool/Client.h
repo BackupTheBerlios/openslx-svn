@@ -28,15 +28,14 @@ namespace ClientStates {
 struct Client : sc::state_machine< Client, ClientStates::Offline > {
 private:
     AttributeMap attributes;
+    std::vector<PXESlot> pxeslots;
 
     bool exists_in_ldap;
 public:
-    Client(AttributeMap);
+    Client(AttributeMap, std::vector<PXESlot>);
     ~Client();
 
-    void updateFromLdap(AttributeMap);
-
-    bool operator==(Client&);
+    void updateFromLdap(AttributeMap,std::vector<PXESlot>);
 };
 
 

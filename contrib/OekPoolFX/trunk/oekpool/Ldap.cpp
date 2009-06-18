@@ -17,6 +17,8 @@
 #include <stdlib.h>
 #include <iostream>
 
+#include <boost/foreach.hpp>
+
 // from ldapc++
 #include "LDAPConnection.h"
 #include "LDAPConstraints.h"
@@ -165,6 +167,9 @@ void Ldap::getClients(string pool, map<string,Client*>& clist) {
 	StringList attribspxe((char**)attrspxe);
 
 	vector<AttributeMap> vec;
+	vector<AttributeMap> vecpxe;
+	vector<PXESlot> vecslots;
+	PXESlot pxeslot;
 
 
 	if (pool.empty()) {
@@ -183,11 +188,28 @@ void Ldap::getClients(string pool, map<string,Client*>& clist) {
 			pair<string, string> p = Utility::splitIPRange(vec[i]["IPAddress"]);
 			vec[i]["IPAddress"] = p.first;
 
+
+
+			// Get PXE Timeslot Information
+			vecpxe = search(string("HostName=")+vec[i]["Hostname"]+","+base,
+					LDAP_SCOPE_ONELEVEL, filterpxe, attribspxe);
+
+			BOOST_FOREACH(AttributeMap am, vecpxe) {
+				cout << am["ForceBoot"] << endl;
+				pxeslot.ForceBoot = (am["ForceBoot"]=="Wahr"?true:false);
+				pxeslot.TimeSlot = am["TimeSlot"];
+				pxeslot.cn = am["cn"];
+
+				vecslots.push_back(pxeslot);
+			}
+
+			// if client object not already exists - create it
+			// otherwise call method "updateFromLdap";
 			if(clist.find(vec[i]["HWaddress"]) != clist.end()) {
-				clist[vec[i]["HWaddress"]] = new Client(vec[i]);
+				clist[vec[i]["HWaddress"]] = new Client(vec[i], vecslots);
 			}
 			else {
-				clist[vec[i]["HWaddress"]]->updateFromLdap(vec[i]);
+				clist[vec[i]["HWaddress"]]->updateFromLdap(vec[i], vecslots);
 			}
 		}
 	}
