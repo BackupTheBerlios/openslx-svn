@@ -18,14 +18,6 @@
 
 using namespace std;
 
-Utility::Utility() {
-	// Nothing to write here, since this class should only contain static functions
-}
-
-Utility::~Utility() {
-	// Nothing to write here, since this class should only contain static functions
-}
-
 
 IPAddress Utility::ipFromString(string ip) {
 	return inet_addr(ip.c_str());
@@ -49,4 +41,13 @@ string Utility::toString(int bla) {
 	o.clear();
 	o << bla;
 	return o.str();
+}
+
+int Utility::toInt(string bla) {
+	istringstream i;
+	i.str(bla);
+	int result = 0;
+	i >> result;
+
+	return result;
 }

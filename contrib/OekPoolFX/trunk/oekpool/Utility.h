@@ -13,9 +13,9 @@
 #define UTILITY_H_
 
 class Utility {
-public:
 	Utility();
 	virtual ~Utility();
+public:
 
 	static
 	IPAddress ipFromString(std::string ip);
@@ -31,6 +31,12 @@ public:
 	 */
 	static
 	std::string toString(int);
+
+	/**
+	 * function to convert various types to int
+	 */
+	static
+	int toInt(std::string);
 };
 
 #endif /* UTILITY_H_ */

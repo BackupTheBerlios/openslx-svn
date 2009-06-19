@@ -29,6 +29,7 @@ Configuration* Configuration::getInstance() {
 Configuration::~Configuration() {
 
 }
+
 Configuration::Configuration() {
     const char* filename = "config_own.xml";
     xmlDoc* doc =  xmlParseFile(filename);

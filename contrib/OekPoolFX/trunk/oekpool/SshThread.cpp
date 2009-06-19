@@ -10,8 +10,11 @@
 
 #include "include/libssh2.h"
 
+#include <algorithm>
+
 #include <arpa/inet.h>
 
+using namespace std;
 
 SshThread::SshThread() {
 
@@ -103,5 +106,12 @@ void SshThread::addClient(Client* client) {
 }
 
 void SshThread::delClient(Client* client) {
-	// TODO: stub
+	pthread_mutex_lock(&clientmutex);
+	vector<Client*>::iterator pos =
+	std::find(sshClients.begin(),sshClients.end(),client);
+
+	if(pos != sshClients.end()) {
+		sshClients.erase(pos);
+	}
+	pthread_mutex_unlock(&clientmutex);
 }
