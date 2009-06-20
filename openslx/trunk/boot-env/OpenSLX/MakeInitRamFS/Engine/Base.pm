@@ -231,7 +231,7 @@ sub _copyKernelModules
     # (some of these modules do not exist on all distros, so they will be
     # filtered out again by the respective distro object):
     my @kernelModules = qw(
-        af_packet unix hid hid_bright usbhid uhci-hcd ohci-hcd vesafb fbcon
+        af_packet unix hid hid-bright usbhid uhci-hcd ohci-hcd vesafb fbcon
     );
     push @kernelModules, @{ $self->{'suggested-kernel-modules'} };
 

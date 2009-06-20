@@ -37,7 +37,7 @@ sub applyChanges
     my $self   = shift;
     my $engine = shift;
 
-    $engine->_addFilteredKernelModules( qw( af_packet hid hid_bright unix ));
+    $engine->_addFilteredKernelModules( qw( af_packet hid hid-bright unix ));
 
     return;
 }

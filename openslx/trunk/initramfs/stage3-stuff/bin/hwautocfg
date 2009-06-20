@@ -27,7 +27,7 @@ done
 # no kernel messages, switch on hotplug via /sbin/mdev
 echo "0 0 0 0" >/proc/sys/kernel/printk
 echo "/sbin/mdev" >/proc/sys/kernel/hotplug
-modprobe -a ${MODPRV} usbhid hid_bright &
+modprobe -a ${MODPRV} usbhid hid-bright &
 nwcardlist=$(echo ${slxconf_listnwmod}|sed "s/\ /|/g")
 hwinfo --netcard --usb-ctrl | grep modprobe | grep -E "$nwcardlist|hcd" | \
   grep -v ehci | sed 's/.* Cmd: "//;s/"//' | sort -u >/etc/modprobe.base
