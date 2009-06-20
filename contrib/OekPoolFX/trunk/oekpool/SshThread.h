@@ -20,9 +20,18 @@ private:
 	static pthread_mutex_t clientmutex;
 	static std::vector<Client*> sshClients;
 
-	void _connect(std::string hostname);
-	void _connect(IPAddress ip);
+	pthread_t sshWorkerThread;
+public:
+	void _connect(std::string, SSHInfo*);
+	void _connect(IPAddress, SSHInfo*);
 
+	// expects a running ssh session !!
+	void _runCmd(SSHInfo*,std::string);
+
+	void* threadUpdateClients(void*);
+
+	void _disconnect(SSHInfo*);
+private:
 	SshThread();
 	virtual ~SshThread();
 
@@ -33,8 +42,5 @@ public:
 	static void addClient(Client* );
 	static void delClient(Client* );
 };
-
-pthread_mutex_t SshThread::clientmutex;
-std::vector<Client*> SshThread::sshClients;
 
 #endif /* SSH_H_ */

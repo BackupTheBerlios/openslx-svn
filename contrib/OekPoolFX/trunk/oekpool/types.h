@@ -8,6 +8,9 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "include/libssh2.h"
+#include <netinet/in.h>
+#include <sys/socket.h>
 
 #ifndef TYPES_H_
 #define TYPES_H_
@@ -19,6 +22,15 @@ struct networkInfo{
 	IPAddress networkAddress;
 	IPAddress subnetMask;
 	IPAddress broadcastAddress;
+};
+
+struct SSHInfo {
+    struct sockaddr_in sin;
+    const char *fingerprint;
+    char *userauthlist;
+    int sock; // Socket
+    LIBSSH2_SESSION *session;
+    LIBSSH2_CHANNEL *channel;
 };
 
 struct PXESlot {

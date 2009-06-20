@@ -8,9 +8,11 @@
 #include "Client.h"
 #include "Ldap.h"
 #include "Configuration.h"
+#include "SshThread.h"
 #include "events.h"
 #include "Utility.h"
 #include "Logger.h"
+#include "types.h"
 
 #include <boost/foreach.hpp>
 
@@ -59,6 +61,14 @@ int main(int argc, char** argv) {
     		LOG_LEVEL_INFO
     );
 
+    SshThread* ssh = SshThread::getInstance();
+    SSHInfo sshinfo;
+
+    ssh->_connect("132.230.4.13",&sshinfo);
+
+    ssh->_runCmd(&sshinfo, "ls /tmp");
+
+    ssh->_disconnect(&sshinfo);
 
     while(sleep(60)) {
 

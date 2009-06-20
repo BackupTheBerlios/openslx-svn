@@ -15,7 +15,7 @@
   <!-- This is the ssh section -->
   
   <!-- here you have the choice between public key and password authentication --> 
-  <ssh_auth_method>pubkey|passwd</ssh_auth_method>
+  <ssh_auth_method>publickey|password</ssh_auth_method>
   
   <ssh_private_key>/home/user/.ssh/id_rsa</ssh_private_key>
   

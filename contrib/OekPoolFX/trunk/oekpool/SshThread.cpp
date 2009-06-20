@@ -7,6 +7,9 @@
 
 #include "SshThread.h"
 #include "Client.h"
+#include "Utility.h"
+#include "Configuration.h"
+#include "Logger.h"
 
 #include "include/libssh2.h"
 
@@ -15,6 +18,11 @@
 #include <arpa/inet.h>
 
 using namespace std;
+
+
+
+pthread_mutex_t SshThread::clientmutex;
+std::vector<Client*> SshThread::sshClients;
 
 SshThread::SshThread() {
 
@@ -33,26 +41,28 @@ SshThread *SshThread::getInstance() {
 
 }
 
-void SshThread::_connect(std::string ipaddress) {
+void SshThread::_connect(std::string ipaddress, SSHInfo* sshinfo) {
 	if(ipaddress.length() > 1) {
-		_connect(inet_addr(ipaddress.c_str()) );
+		_connect(Utility::ipFromString(ipaddress.c_str()), sshinfo );
 	}
 }
 
-void SshThread::_connect(IPAddress ip) {
-	const char* username = "root";
-	const char* password = "2009..p00l";
-	const char* pubkeyfile = "~/.ssh/id_rsa.pub";
-	const char* privkeyfile = "~/.ssh/id_rsa";
+void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
+	Configuration* conf = Configuration::getInstance();
+	Logger* logger = Logger::getInstance();
 
+
+	string username = conf->getString("ssh_username");
+	string authmethod = conf->getString("ssh_auth_method");
+	string password = conf->getString("ssh_password");
+	string pubkeyfile = conf->getString("ssh_public_key");
+	string privkeyfile = conf->getString("ssh_private_key");
+
+	sshinfo->sock = 0;
 
     unsigned long hostaddr;
-    int sock, i, auth_pw = 0;
-    struct sockaddr_in sin;
-    const char *fingerprint;
-    char *userauthlist;
-    LIBSSH2_SESSION *session;
-    LIBSSH2_CHANNEL *channel;
+    int i, auth_pw = 0;
+
 
     if (ip != 0) {
         hostaddr = ip;
@@ -60,44 +70,138 @@ void SshThread::_connect(IPAddress ip) {
         hostaddr = htonl(0x7F000001);
     }
 
-    sock = socket(AF_INET, SOCK_STREAM, 0);
+    sshinfo->sock = socket(AF_INET, SOCK_STREAM, 0);
 
-    sin.sin_family = AF_INET;
-    sin.sin_port = htons(22);
-    sin.sin_addr.s_addr = hostaddr;
-    if (connect(sock, (struct sockaddr*)(&sin),
+    sshinfo->sin.sin_family = AF_INET;
+    sshinfo->sin.sin_port = htons(22);
+    sshinfo->sin.sin_addr.s_addr = hostaddr;
+    if (connect(sshinfo->sock, (struct sockaddr*)(&sshinfo->sin),
 				sizeof(struct sockaddr_in)) != 0) {
-		fprintf(stderr, "failed to connect!\n");
+    	logger->log("failed to connect!",LOG_LEVEL_ERROR);
 		return;
 	}
 
     // Initialize session
-    session = libssh2_session_init();
-    if (libssh2_session_startup(session, sock)) {
-        fprintf(stderr, "Failure establishing SSH session\n");
+    sshinfo->session = libssh2_session_init();
+    if (libssh2_session_startup(sshinfo->session, sshinfo->sock)) {
+    	logger->log("Failure establishing SSH session", LOG_LEVEL_ERROR);
         return;
     }
 
     // Authenticate
-    fingerprint = libssh2_hostkey_hash(session, LIBSSH2_HOSTKEY_HASH_MD5);
+    //fingerprint = libssh2_hostkey_hash(session, LIBSSH2_HOSTKEY_HASH_MD5);
+
 	//libssh2_session_startup(session, sock);
-    userauthlist = libssh2_userauth_list(session, username, strlen(username));
+    sshinfo->userauthlist = libssh2_userauth_list(sshinfo->session, username.c_str(), username.size());
 
-    printf("Authentication methods: %s\n", userauthlist);
+    logger->log(string("Authentication methods: ")+ sshinfo->userauthlist, LOG_LEVEL_INFO);
 
-    if (strstr(userauthlist, "publickey") != NULL) {
+
+    if (strstr(sshinfo->userauthlist, "password") != NULL) {
+        auth_pw |= 1;
+    }
+    if (strstr(sshinfo->userauthlist, "publickey") != NULL) {
 		auth_pw |= 4;
 	}
-    if (auth_pw & 4) {
-		// Authenticate by public key
-		if (libssh2_userauth_publickey_fromfile(session, username, pubkeyfile, privkeyfile, password)) {
-			printf("\tAuthentication by public key failed!\n");
+
+    if ((auth_pw & 1) && authmethod == "password") {
+		/* We could authenticate via password */
+		if (libssh2_userauth_password(sshinfo->session, username.c_str(), password.c_str())) {
+			logger->log("\tAuthentication by password failed!",LOG_LEVEL_ERROR);
 			return;
 		} else {
-			printf("\tAuthentication by public key succeeded.\n");
+			logger->log("\tAuthentication by password succeeded.",LOG_LEVEL_INFO);
 		}
+	} else if ( (auth_pw & 4) && authmethod == "publickey") {
+		// Authenticate by public key
+		if (libssh2_userauth_publickey_fromfile(sshinfo->session, username.c_str(),
+				pubkeyfile.c_str(), privkeyfile.c_str(), password.c_str()))
+		{
+			logger->log("\tAuthentication by public key failed!", LOG_LEVEL_ERROR);
+			return;
+		} else {
+			logger->log("\tAuthentication by public key succeeded.", LOG_LEVEL_INFO);
+		}
+	} else {
+		logger->log("\tAuthentication method "+authmethod
+				+" not available!\nAvailable are: "+sshinfo->userauthlist,
+				LOG_LEVEL_ERROR);
+		libssh2_session_disconnect(sshinfo->session,
+				"Did not find suitable authentication method!");
+		return;
 	}
+
+    /* Request a shell */
+	if (!(sshinfo->channel = libssh2_channel_open_session(sshinfo->session))) {
+		logger->log("Unable to open a session", LOG_LEVEL_ERROR);
+		return;
+	}
+
+	/* Some environment variables may be set,
+	 * It's up to the server which ones it'll allow though
+	 */
+	//libssh2_channel_setenv(channel, "FOO", "bar");
+
+	/* Request a terminal with 'vanilla' terminal emulation
+	 * See /etc/termcap for more options
+	 */
+	if (libssh2_channel_request_pty(sshinfo->channel, "vanilla")) {
+		logger->log("Failed requesting pty", LOG_LEVEL_ERROR);
+		this->_disconnect(sshinfo);
+		return;
+	}
+
+	libssh2_channel_handle_extended_data(sshinfo->channel,
+			LIBSSH2_CHANNEL_EXTENDED_DATA_IGNORE);
+
+	/* Open a SHELL on that pty */
+	if (libssh2_channel_shell(sshinfo->channel)) {
+		logger->log("Unable to request shell on allocated pty", LOG_LEVEL_ERROR);
+		this->_disconnect(sshinfo);
+		return;
+	}
+
+	sleep(1);
+
 }
+
+void SshThread::_disconnect(SSHInfo* sshinfo) {
+    if (sshinfo->channel) {
+        libssh2_channel_free(sshinfo->channel);
+        sshinfo->channel = NULL;
+    }
+    libssh2_session_disconnect(sshinfo->session, "Normal Shutdown, Thank you for playing");
+    libssh2_session_free(sshinfo->session);
+    sleep(1);
+    close(sshinfo->sock);
+}
+
+void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
+
+	cmd.append("\n");
+
+	Logger* log = Logger::getInstance();
+
+	int MAXLEN = 255;
+	char buf[MAXLEN];
+
+	libssh2_channel_write(sshinfo->channel, cmd.c_str(), cmd.size() );
+	log->log("Running command: "+cmd,LOG_LEVEL_INFO);
+
+	libssh2_channel_flush(sshinfo->channel);
+
+
+	int bufferlength= 0;
+
+	while(!libssh2_channel_eof(sshinfo->channel)) {
+		bufferlength = libssh2_channel_read(sshinfo->channel, buf, MAXLEN );
+
+		log->log(string("Returning output: ")+string(buf,bufferlength),LOG_LEVEL_INFO);
+		*buf = 0;
+	}
+
+}
+
 
 void SshThread::addClient(Client* client) {
 	pthread_mutex_lock(&clientmutex);
@@ -108,10 +212,15 @@ void SshThread::addClient(Client* client) {
 void SshThread::delClient(Client* client) {
 	pthread_mutex_lock(&clientmutex);
 	vector<Client*>::iterator pos =
-	std::find(sshClients.begin(),sshClients.end(),client);
+		find(sshClients.begin(),sshClients.end(),client);
 
 	if(pos != sshClients.end()) {
 		sshClients.erase(pos);
 	}
 	pthread_mutex_unlock(&clientmutex);
+
+
+	Logger* log = Logger::getInstance();
+	log->log("SSH connection disconnected!", LOG_LEVEL_INFO);
 }
+

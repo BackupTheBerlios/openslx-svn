@@ -192,12 +192,10 @@ void Ldap::getClients(string pool, map<string,Client*>& clist) {
 
 			// Get PXE Timeslot Information
 			string basepxe = string("HostName=")+vec[i]["HostName"]+","+base;
-			cout << " BASE FOR PXE: " << basepxe << endl;
 			vecpxe = search(basepxe,LDAP_SCOPE_ONELEVEL, filterpxe, attribspxe);
 
 			BOOST_FOREACH(AttributeMap am, vecpxe) {
-				cout << am["ForceBoot"] << endl;
-				pxeslot.ForceBoot = (am["ForceBoot"]=="Wahr"?true:false);
+				pxeslot.ForceBoot = (am["ForceBoot"]=="TRUE"?true:false);
 				pxeslot.TimeSlot = am["TimeSlot"];
 				pxeslot.cn = am["cn"];
 

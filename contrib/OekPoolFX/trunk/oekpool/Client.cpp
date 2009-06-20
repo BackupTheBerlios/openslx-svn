@@ -8,6 +8,7 @@
 #include "Client.h"
 #include "ClientStates.h"
 #include "Utility.h"
+#include "Logger.h"
 #include <iostream>
 
 using namespace std;
@@ -24,8 +25,9 @@ Client::Client(AttributeMap al, std::vector<PXESlot> slots)
     attributes = al;
     pxeslots = slots;
 
-    cout << "Client with name \"" << al["HostName"] <<"\" created!" << endl;
-    cout << "IPAddress: " << al["IPAddress"] << endl;
+    Logger* log = Logger::getInstance();
+
+    log->log("Client with name \"" + al["HostName"]+"\" created!",LOG_LEVEL_INFO);
 
     IPAddress ip = Utility::ipFromString(al["IPAddress"]);
 
@@ -36,8 +38,6 @@ Client::Client(AttributeMap al, std::vector<PXESlot> slots)
  */
 Client::~Client() {
     terminate(); // Statemachine
-
-    cout << "Client \""<< attributes["HostName"] << "\" destroyed!" << endl << endl;
 }
 
 void Client::updateFromLdap(AttributeMap attr, std::vector<PXESlot> slots) {
