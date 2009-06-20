@@ -38,7 +38,7 @@ sub applyChanges
     my $self   = shift;
     my $engine = shift;
 
-    $engine->_addFilteredKernelModules( qw( unix ));
+    $engine->_addFilteredKernelModules( qw( unix hid_bright ));
 
     return;
 }
