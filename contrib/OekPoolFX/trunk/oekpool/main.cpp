@@ -33,6 +33,7 @@ using namespace std;
  */
 int main(int argc, char** argv) {
 
+	typedef pair<string,Client*> clientPair;
 //    Client client;
 //
 //    client.process_event(EvtHostlistInsert() );
@@ -64,13 +65,18 @@ int main(int argc, char** argv) {
     SshThread* ssh = SshThread::getInstance();
     SSHInfo sshinfo;
 
-    ssh->_connect("132.230.4.13",&sshinfo);
-
-    ssh->_runCmd(&sshinfo, "ls /tmp");
-
-    ssh->_disconnect(&sshinfo);
+//    ssh->_connect("132.230.4.13",&sshinfo);
+//
+//    ssh->_runCmd(&sshinfo, "ls /tmp");
+//
+//    ssh->_disconnect(&sshinfo);
+	BOOST_FOREACH(clientPair p, clist) {
+//		cout << p.second->getIP() << p.second->getHostName() <<
+//			((p.second->isActive()==true)?"true":"false") << endl;
+	}
 
     while(sleep(60)) {
+
 
     }
 

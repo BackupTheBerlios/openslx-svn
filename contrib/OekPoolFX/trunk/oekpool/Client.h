@@ -39,11 +39,13 @@ public:
     ~Client();
 
     void updateFromLdap(AttributeMap,std::vector<PXESlot>);
+
     bool isActive();
 
     PXEInfo* getActiveSlot();
     std::string getHWAddress();
     std::string getIP();
+    std::string getHostName();
 
     pthread_mutex_t pingMutex, sshMutex;
     bool host_responding;

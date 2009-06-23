@@ -210,6 +210,7 @@ void Ldap::getClients(string pool, map<string,Client*>& clist) {
 			else {
 				clist[vec[i]["HWaddress"]]->updateFromLdap(vec[i], vecslots);
 			}
+			vecslots.clear();
 		}
 	}
 

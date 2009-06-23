@@ -77,6 +77,7 @@ std::vector<PXEInfo> Client::setPXEInfo(std::vector<PXESlot> timeslots) {
 			splitTimeString.push_back(temp.substr(0, found));
 			temp = temp.substr(found+1);
 		}
+		splitTimeString.push_back(temp);
 
 		// split start time into hour and minute/10
 		found = splitTimeString[1].find_first_of(":");
@@ -122,13 +123,14 @@ bool Client::isActive() {
 	struct tm * futureTm = localtime(&futureTime);
 
 
-	for(int i; i < pxeslots.size(); i++) {
+	for(int i=0; i < pxeslots.size(); i++) {
 		if(currentTm->tm_wday != pxeslots[i].StartTime.tm_wday)
 			continue;
 		if((currentTm->tm_hour < pxeslots[i].StartTime.tm_hour) || (futureTm->tm_hour > pxeslots[i].ShutdownTime.tm_hour))
 				continue;
 		if((currentTm->tm_min < pxeslots[i].StartTime.tm_min) && (futureTm->tm_min > pxeslots[i].ShutdownTime.tm_min))
 				continue;
+
 		return true;
 	}
 
@@ -163,4 +165,8 @@ std::string Client::getHWAddress() {
 
 std::string Client::getIP() {
 	return attributes["IPAddress"];
+}
+
+std::string Client::getHostName() {
+	return attributes["HostName"];
 }

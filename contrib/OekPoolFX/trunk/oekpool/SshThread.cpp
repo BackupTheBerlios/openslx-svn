@@ -14,15 +14,20 @@
 #include "include/libssh2.h"
 
 #include <algorithm>
+#include <map>
 
 #include <arpa/inet.h>
+
+#include <boost/foreach.hpp>
 
 using namespace std;
 
 
 
 pthread_mutex_t SshThread::clientmutex;
+
 std::vector<Client*> SshThread::sshClients;
+std::map<Client*,SSHInfo > SshThread::sshInfos;
 
 SshThread::SshThread() {
 
@@ -140,7 +145,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 	/* Some environment variables may be set,
 	 * It's up to the server which ones it'll allow though
 	 */
-	//libssh2_channel_setenv(channel, "FOO", "bar");
+	libssh2_channel_setenv(sshinfo->channel, "PROMPT", "$");
 
 	/* Request a terminal with 'vanilla' terminal emulation
 	 * See /etc/termcap for more options
@@ -160,8 +165,6 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 		this->_disconnect(sshinfo);
 		return;
 	}
-
-	sleep(1);
 
 }
 
@@ -203,10 +206,24 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 }
 
 
+void* SshThread::_main() {
+	pthread_mutex_lock(&clientmutex);
+	BOOST_FOREACH(Client* client, sshClients) {
+		//client->context();
+	}
+	pthread_mutex_unlock(&clientmutex);
+}
+
+
 void SshThread::addClient(Client* client) {
 	pthread_mutex_lock(&clientmutex);
 	sshClients.push_back(client);
 	pthread_mutex_unlock(&clientmutex);
+
+
+	_connect(client->getIP(), &sshInfos[client]);
+	_runCmd(&sshInfos[client], "ls -ahl");
+	_disconnect(&sshInfos[client]);
 }
 
 void SshThread::delClient(Client* client) {
@@ -224,3 +241,20 @@ void SshThread::delClient(Client* client) {
 	log->log("SSH connection disconnected!", LOG_LEVEL_INFO);
 }
 
+
+void SshThread::addCmd(Client* client, vector<string> cmdTable) {
+//	pthread_mutex_lock(&cmdtablemutex);
+//	cmdTable[client].push_back(cmd);
+//	pthread_mutex_unlock(&cmdtablemutex);
+}
+
+void SshThread::delCmd(Client* client) {
+//	pthread_mutex_lock(&cmdtablemutex);
+//	vector<string>::iterator
+//	pos = find(cmdTable[client].begin(),cmdTable[client].end(),cmd);
+//
+//	if(pos != cmdTable[client].end()) {
+//		cmdTable[client].erase(pos);
+//	}
+//	pthread_mutex_unlock(&cmdtablemutex);
+}

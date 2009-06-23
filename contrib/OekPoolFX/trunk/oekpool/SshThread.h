@@ -9,6 +9,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include "types.h"
 #include "Client.h"
@@ -18,20 +19,25 @@ class SshThread {
 
 private:
 	static pthread_mutex_t clientmutex;
+
 	static std::vector<Client*> sshClients;
+	static std::map<Client*,SSHInfo > sshInfos;
 
 	pthread_t sshWorkerThread;
-public:
+
 	void _connect(std::string, SSHInfo*);
 	void _connect(IPAddress, SSHInfo*);
 
 	// expects a running ssh session !!
 	void _runCmd(SSHInfo*,std::string);
 
+	void _disconnect(SSHInfo*);
+
+	void* _main();
+
 	void* threadUpdateClients(void*);
 
-	void _disconnect(SSHInfo*);
-private:
+
 	SshThread();
 	virtual ~SshThread();
 
@@ -39,8 +45,11 @@ public:
 	static SshThread* getInstance();
 
 
-	static void addClient(Client* );
-	static void delClient(Client* );
+	void addClient(Client* );
+	void delClient(Client* );
+
+	void addCmd(Client*, std::vector<std::string>);
+	void delCmd(Client*);
 };
 
 #endif /* SSH_H_ */
