@@ -13,6 +13,8 @@
 #include <boost/statechart/event.hpp>
 #include <boost/statechart/transition.hpp>
 #include <boost/mpl/list.hpp>
+#include <time.h>
+#include <pthread.h>
 
 #include "events.h"
 #include "types.h"
@@ -28,14 +30,24 @@ namespace ClientStates {
 struct Client : sc::state_machine< Client, ClientStates::Offline > {
 private:
     AttributeMap attributes;
-    std::vector<PXESlot> pxeslots;
-
+    std::vector<PXEInfo> pxeslots;
     bool exists_in_ldap;
+
+    std::vector<PXEInfo> setPXEInfo(std::vector<PXESlot>);
 public:
     Client(AttributeMap, std::vector<PXESlot>);
     ~Client();
 
     void updateFromLdap(AttributeMap,std::vector<PXESlot>);
+    bool isActive();
+
+    PXEInfo* getActiveSlot();
+    std::string getHWAddress();
+    std::string getIP();
+
+    pthread_mutex_t pingMutex, sshMutex;
+    bool host_responding;
+    int ping_attempts;
 };
 
 

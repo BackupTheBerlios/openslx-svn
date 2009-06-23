@@ -11,6 +11,7 @@
 #include <limits>
 #include <stdlib.h>
 #include <SocketHandler.h>
+#include <pthread.h>
 
 #include "Network.h"
 
@@ -88,20 +89,35 @@ std::vector<char> Network::splitAddress(std::string address, std::string format,
 	return component;
 }
 
-void Network::pingHost(bool& flag, const char* host) {
+void* Network::pingHost(void* pingArgs) {
+	pingStruct* str = (pingStruct*) pingArgs;
 	SocketHandler h;
 	pingSocket* p = new pingSocket(h);
 	errorLog log;
-	log.setFlag(flag);
+	log.setFlag(*str->alive);
+	log.setMutex(str->mutex);
 	h.RegStdLog(&log);
 
-	p->Open(host, 22);
+	p->Open(str->ipAddress, 22);
 	h.Add(p);
 	h.Select(1,0);
 	while (h.GetCount())
 	{
 		h.Select(1,0);
 	}
+
+	delete str;
+}
+
+void Network::hostAlive(bool& flag, string host, pthread_mutex_t* mutex) {
+	pthread_t thread;
+
+	pingStruct* ps = new pingStruct;
+	ps->alive = &flag;
+	ps->ipAddress = host;
+	ps->mutex = mutex;
+
+	pthread_create(&thread, NULL, Network::pingHost, (void*) &ps);
 }
 
 void Network::setNetworks(std::vector<networkInfo> networks) {
@@ -146,10 +162,16 @@ void errorLog::setFlag(bool& bFlag) {
 	flag = &bFlag;
 }
 
+void errorLog::setMutex(pthread_mutex_t* mutexp){
+	mutex = mutexp;
+}
+
 void errorLog::error(ISocketHandler *, Socket *, const std::string &call, int err, const std::string &sys_err, loglevel_t) {
 
+	pthread_mutex_lock(mutex);
 	if((err == 113) or (err == -1))
 		*flag = false;
 	else
 		*flag = true;
+	pthread_mutex_unlock(mutex);
 }

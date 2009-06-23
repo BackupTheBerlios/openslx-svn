@@ -26,6 +26,9 @@ public:
 	static
 	std::pair<std::string, std::string> splitIPRange(std::string range);
 
+	static
+	std::string getPXEFilename(std::string mac);
+
 	/**
 	 * function to convert various types to string
 	 */

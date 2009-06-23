@@ -27,12 +27,12 @@ public:
 	static Network * getInstance();
 
 	bool sendWolPacket(ipaddr_t ipAddress, std::string macAddress);
-	void pingHost(bool& flag, const char* host);
 	void setNetworks(vector<networkInfo>);
-
+	void hostAlive(bool& flag, string host, pthread_mutex_t* mutex);
 private:
 	Network();
 	Network(const Network& cc);
+	static void* pingHost(void* pingArgs);
 	void createWolSequ(std::string macAddress, 	// MAC Address of the client
 			char* sequence			// Char array where sequence is
 												// written to
@@ -65,10 +65,12 @@ class errorLog : public StdoutLog {
 
 public:
 	void setFlag(bool&);
+	void setMutex(pthread_mutex_t*);
 	void error(ISocketHandler *, Socket *, const std::string &call, int err, const std::string &sys_err, loglevel_t);
 
 private:
 	bool* flag;
+	pthread_mutex_t* mutex;
 };
 
 #endif /* NETWORK_H_ */

@@ -8,9 +8,11 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <pthread.h>
 #include "include/libssh2.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
+
 
 #ifndef TYPES_H_
 #define TYPES_H_
@@ -39,4 +41,17 @@ struct PXESlot {
 	bool ForceBoot;
 };
 
+struct PXEInfo {
+	std::string MenuName;
+	std::string TimeString;
+	tm StartTime;
+	tm ShutdownTime;
+	bool ForceBoot;
+};
+
+struct pingStruct {
+	bool* alive;
+	pthread_mutex_t * mutex;
+	std::string ipAddress;
+};
 #endif /* TYPES_H_ */

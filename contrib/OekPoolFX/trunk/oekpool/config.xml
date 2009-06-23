@@ -25,6 +25,11 @@
   
   <ssh_password>hackme</ssh_password>
   
+  <!-- This is the TFTP section -->
+  
+  <tftp_root_dir>/var/lib/tftpboot/</tftp_root_dir>
+  
   
   <log_level>info</log_level>
+  
 </configuration>

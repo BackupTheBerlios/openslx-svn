@@ -36,6 +36,19 @@ Utility::splitIPRange(string range) {
     return result;
 }
 
+string Utility::getPXEFilename(string mac){
+	size_t found = mac.find_first_of(":");
+
+	while(found != string::npos) {
+		mac[found] = '-';
+		found = mac.find_first_of(":", found + 1);
+	}
+
+	string str("01-");
+
+	return str.append(mac);
+}
+
 string Utility::toString(int bla) {
 	ostringstream o;
 	o.clear();
@@ -51,3 +64,4 @@ int Utility::toInt(string bla) {
 
 	return result;
 }
+
