@@ -44,18 +44,18 @@ sub initialize
     return 1;
 }
 
-sub fillRunlevelScript
+sub installVbox
 {
     my $self     = shift;
-    my $location = shift;
-    my $kind     = shift;
 
-    my $script = unshiftHereDoc(<<'    End-of-Here');
-    # put something here ...
+    my $engine = $self->{'os-plugin-engine'};
 
-    End-of-Here
+    # lets try it... we can't loose anything :)
+	$engine->installPackages(
+         $engine->getInstallablePackagesForSelection('virtualbox-ose')
+	);
 
-    return $script;
+    return;
 }
 
 1;

@@ -20,4 +20,35 @@ use warnings;
 # inherit everything from Debian (as Ubuntu is based on it anyway)
 use base qw(virtualbox::OpenSLX::Distro::Debian);
 
+use base qw(virtualbox::OpenSLX::Distro::Base);
+
+use OpenSLX::Basics;
+use OpenSLX::Utils;
+
+################################################################################
+#### interface methods
+################################################################################
+
+sub installVbox
+{
+    my $self     = shift;
+
+    my $engine = $self->{'os-plugin-engine'};
+    my $release = `lsb_release -rs`;
+
+    # hardy (8.04LTS): only version VBox v1.5
+    if ( $release eq "8.10" || $release eq "9.04") {
+        $engine->installPackages(
+            $engine->getInstallablePackagesForSelection('virtualbox-ose')
+        
+        );
+    } else {
+        print "Couldn't install VirtualBox, no package from distribution!\n";
+        exit;
+    }
+
+
+    return;
+}
+
 1;

@@ -26,17 +26,24 @@ use OpenSLX::Utils;
 ### interface methods
 ################################################################################
 
-sub fillRunlevelScript
+sub installVbox
 {
     my $self     = shift;
-    my $location = shift;
-    my $kind     = shift;
 
-    my $script = unshiftHereDoc(<<'    End-of-Here');
-    # put something into here ... 
+    my $engine = $self->{'os-plugin-engine'};
+    my $release = `lsb_release -rs`;
+    
+    if ( $release eq "11.1" || $release eq "11.0" || $release eq "10.3") {
+        $engine->installPackages(
+            $engine->getInstallablePackagesForSelection('virtualbox-ose')
+        
+        );
+    } else {
+        print "Couldn't install VirtualBox, no package from distribution\n";
+        exit;
+    }
 
-    End-of-Here
-    return $script;
+    return;
 }
 
 1;

@@ -26,17 +26,26 @@ use OpenSLX::Utils;
 ### interface methods
 ################################################################################
 
-sub fillRunlevelScript
+sub installVbox
 {
     my $self     = shift;
-    my $location = shift;
-    my $kind     = shift;
 
-    my $script = unshiftHereDoc(<<'    End-of-Here');
-    # put something into here ... 
+    my $engine = $self->{'os-plugin-engine'};
+    my $release = `lsb_release -rs`;
 
-    End-of-Here
-    return $script;
+    # lenny(5.0) has v1.6
+    # testing is ok. but no clue which lsb_release -rs it has...
+    if ( $release eq "999999.0") {
+        $engine->installPackages(
+            $engine->getInstallablePackagesForSelection('virtualbox-ose')
+        
+        );
+    } else {
+        print "Couldn't install VirtualBox, no package from distribution\n";
+        exit;
+    }
+
+    return;
 }
 
 1;

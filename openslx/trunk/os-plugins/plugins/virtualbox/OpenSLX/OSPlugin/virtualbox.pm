@@ -113,10 +113,12 @@ sub installationPhase
     
     # Different names of the tool (should be unified somehow!?)
     if (!isInPath('VirtualBox')) {
-        $engine->installPackages(
-            $engine->getInstallablePackagesForSelection('virtualbox-ose')
-        );
+		$self->{distro}->installVbox();
     }
+    if (!isInPath('VirtualBox')) {
+		print "VirtualBox is not installed. VirtualBox Plugin won't be installed!\n";
+        exit
+	}	
     # Copy run-virt.include to the appropriate place for inclusion in stage4
     copyFile("$self->{openslxBasePath}/lib/plugins/virtualbox/files/run-virt.include",
         "$self->{pluginRepositoryPath}/");
@@ -158,6 +160,36 @@ sub _writeRunlevelScript
 
 
     spitFile($file, $runlevelScript);
+    # function:
+    #     running() {
+    #         lsmod | grep -q "$1[^_-]"
+    #     }
+    #     vmstatus() {
+    #        if running vboxdrv; then
+    #          if running vboxnetflt; then
+    #            echo "VirtualBox kernel modules (vboxdrv and vboxnetflt) are loaded."
+    #          else
+    #            echo "VirtualBox kernel module is loaded."
+    #          fi
+    #          #TODO: check it: ignore user check. handling our own way:
+    #          for i in /tmp/.vbox-*-ipc; do
+    #            echo "Running: "
+    #            $(VBoxManage --nologo list runningvms | sed -e 's/^".*"//' 2>/dev/null)
+    #          done
+    #        else
+    #          echo "VirtualBox kernel module is not loaded."
+    #        fi
+    #     }
+    #      start() {
+    #        modprobe vboxdrv && modprobe vboxnetflt
+	#      }
+	#     stop() {
+	#       rmmod vboxnetflt && rmmod vboxdrv
+    #     }
+	# case start: start
+    # case stop: stop
+    # case status: vmstatus
+    # case restart: stop && start
 }
 
 # The bridge configuration needs the bridge module to be present in early
