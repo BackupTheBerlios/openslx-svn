@@ -29,11 +29,32 @@ namespace ClientStates {
 // a Client object is a boost::statechart::state_machine
 struct Client : sc::state_machine< Client, ClientStates::Offline > {
 private:
+
+	/**
+	 *  attributes read from LDAP
+	 */
     AttributeMap attributes;
+
+    /**
+     * pxeslots for this client
+     */
     std::vector<PXEInfo> pxeslots;
+
+    /**
+     * bool, wether it is still in LDAP
+     */
     bool exists_in_ldap;
 
+    /**
+     * private table to hold commands { ONLY ACCESSED THROUGH THREAD }
+     */
+    std::map<std::string,bool> cmdTable;
+
+    /**
+     * private function to reset pxe-informations
+     */
     std::vector<PXEInfo> setPXEInfo(std::vector<PXESlot>);
+
 public:
     Client(AttributeMap, std::vector<PXESlot>);
     ~Client();
@@ -47,8 +68,24 @@ public:
     std::string getIP();
     std::string getHostName();
 
-    pthread_mutex_t pingMutex, sshMutex;
+    std::map<std::string,bool> getCmdTable();
+    void setCmdTable(std::map<std::string,bool>);
+
+    /**
+     * public mutexes
+     */
+    pthread_mutex_t pingMutex, // mutex for pings
+					sshMutex;  // mutex for ssh
+
+    /**
+     * wether host is responding (used by ping)
+     */
     bool host_responding;
+
+    /**
+     * number of times the client has pinged
+     * (used by states pxeconfig and wake)
+     */
     int ping_attempts;
 };
 

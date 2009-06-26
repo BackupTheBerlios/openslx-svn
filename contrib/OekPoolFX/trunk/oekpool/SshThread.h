@@ -22,6 +22,8 @@ private:
 
 	static std::vector<Client*> sshClients;
 	static std::map<Client*,SSHInfo > sshInfos;
+	static std::map<Client*,std::vector<std::string,bool> >
+	sshCmds;
 
 	pthread_t sshWorkerThread;
 
@@ -48,8 +50,8 @@ public:
 	void addClient(Client* );
 	void delClient(Client* );
 
-	void addCmd(Client*, std::vector<std::string>);
-	void delCmd(Client*);
+//	void addCmd(Client*, std::vector<std::string>);
+//	void delCmd(Client*);
 };
 
 #endif /* SSH_H_ */

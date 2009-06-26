@@ -28,6 +28,7 @@ pthread_mutex_t SshThread::clientmutex;
 
 std::vector<Client*> SshThread::sshClients;
 std::map<Client*,SSHInfo > SshThread::sshInfos;
+std::map<Client*,std::vector<std::string,bool> > SshThread::sshCmds;
 
 SshThread::SshThread() {
 
@@ -206,10 +207,13 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 }
 
 
+/**
+ * This is the thread main function (and returns a void* - very important)
+ */
 void* SshThread::_main() {
 	pthread_mutex_lock(&clientmutex);
 	BOOST_FOREACH(Client* client, sshClients) {
-		//client->context();
+		sshCmds[client] = client->getCmdTable();
 	}
 	pthread_mutex_unlock(&clientmutex);
 }
@@ -219,11 +223,6 @@ void SshThread::addClient(Client* client) {
 	pthread_mutex_lock(&clientmutex);
 	sshClients.push_back(client);
 	pthread_mutex_unlock(&clientmutex);
-
-
-	_connect(client->getIP(), &sshInfos[client]);
-	_runCmd(&sshInfos[client], "ls -ahl");
-	_disconnect(&sshInfos[client]);
 }
 
 void SshThread::delClient(Client* client) {
@@ -242,13 +241,13 @@ void SshThread::delClient(Client* client) {
 }
 
 
-void SshThread::addCmd(Client* client, vector<string> cmdTable) {
+//void SshThread::addCmd(Client* client, vector<string> cmdTable) {
 //	pthread_mutex_lock(&cmdtablemutex);
 //	cmdTable[client].push_back(cmd);
 //	pthread_mutex_unlock(&cmdtablemutex);
-}
+//}
 
-void SshThread::delCmd(Client* client) {
+//void SshThread::delCmd(Client* client) {
 //	pthread_mutex_lock(&cmdtablemutex);
 //	vector<string>::iterator
 //	pos = find(cmdTable[client].begin(),cmdTable[client].end(),cmd);
@@ -257,4 +256,4 @@ void SshThread::delCmd(Client* client) {
 //		cmdTable[client].erase(pos);
 //	}
 //	pthread_mutex_unlock(&cmdtablemutex);
-}
+//}

@@ -170,3 +170,18 @@ std::string Client::getIP() {
 std::string Client::getHostName() {
 	return attributes["HostName"];
 }
+
+std::map<std::string,bool> Client::getCmdTable() {
+	pthread_mutex_lock(&sshMutex);
+	map<string,bool> result(cmdTable);
+	pthread_mutex_unlock(&sshMutex);
+
+	return result;
+}
+
+void Client::setCmdTable(std::map<std::string,bool> cmds) {
+	pthread_mutex_lock(&sshMutex);
+	cmdTable = cmds;
+	pthread_mutex_unlock(&sshMutex);
+}
+
