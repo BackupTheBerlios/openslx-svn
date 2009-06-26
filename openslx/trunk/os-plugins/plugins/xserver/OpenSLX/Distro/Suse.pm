@@ -100,6 +100,17 @@ sub installNvidia
     {
         mkdir("$repopath/nvidia/modules/");
     }
+
+
+    # since kernel 2.6.25.20-0.1 there has to be a call to ld
+    # ld -r -m elf_i386 -o ../modules/nvidia.ko  lib/modules/2.6.25.20-0.4-pae/updates/{nv-kernel,nv-linux}.o
+
+
+    if ( -f "$tmpdir/lib/modules/$kver-$ksuffix/updates/nv-kernel.o" ) {
+        # we have to build our kernel module here
+        system("ld -r -m elf_i386 -o $tmpdir/lib/modules/$kver-$ksuffix/updates/nvidia.ko $tmpdir/lib/modules/$kver-$ksuffix/updates/{nv-kernel,nv-linux}.o");
+    }
+
     copyFile("$tmpdir/lib/modules/$kver-$ksuffix/updates/nvidia.ko",
         "$repopath/nvidia/modules");
 
@@ -115,7 +126,7 @@ sub installNvidia
 
     if($rpm == 0) 
     {
-        print "Could not download x11-video-nvidia-$nv_version*.rpm!\n";
+        print "Could not download x11-video-nvidiaG01-$nv_version*.rpm!\n";
         print "Exiting nvidia driver installation!\n";
         return;
     }
