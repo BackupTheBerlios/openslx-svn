@@ -28,11 +28,15 @@ pthread_mutex_t SshThread::clientmutex;
 
 std::vector<Client*> SshThread::sshClients;
 std::map<Client*,SSHInfo > SshThread::sshInfos;
-std::map<Client*,std::vector<std::string,bool> > SshThread::sshCmds;
+//std::map<Client*,std::vector<std::string,bool> > SshThread::sshCmds;
 
 SshThread::SshThread() {
 
 	pthread_mutex_init(&clientmutex, NULL);
+
+	// TODO: start thread with SshThread::_main
+	// method and suitable arguments
+	// (maybe pointer to command tables)
 
 }
 
@@ -213,7 +217,8 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 void* SshThread::_main() {
 	pthread_mutex_lock(&clientmutex);
 	BOOST_FOREACH(Client* client, sshClients) {
-		sshCmds[client] = client->getCmdTable();
+//		sshCmds[client] = client->getCmdTable();
+		// TODO: Handle commands from clients (maybe with a bool to synchronise)
 	}
 	pthread_mutex_unlock(&clientmutex);
 }
@@ -240,20 +245,3 @@ void SshThread::delClient(Client* client) {
 	log->log("SSH connection disconnected!", LOG_LEVEL_INFO);
 }
 
-
-//void SshThread::addCmd(Client* client, vector<string> cmdTable) {
-//	pthread_mutex_lock(&cmdtablemutex);
-//	cmdTable[client].push_back(cmd);
-//	pthread_mutex_unlock(&cmdtablemutex);
-//}
-
-//void SshThread::delCmd(Client* client) {
-//	pthread_mutex_lock(&cmdtablemutex);
-//	vector<string>::iterator
-//	pos = find(cmdTable[client].begin(),cmdTable[client].end(),cmd);
-//
-//	if(pos != cmdTable[client].end()) {
-//		cmdTable[client].erase(pos);
-//	}
-//	pthread_mutex_unlock(&cmdtablemutex);
-//}
