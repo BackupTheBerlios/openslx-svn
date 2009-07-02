@@ -11,18 +11,24 @@
 
 #include <StdLog.h> // from libSocket
 #include <string>
+#include <vector>
 
-class Logger {
+#include "ILogger.h"
+#include "types.h"
+
+class Logger : ILogger {
 private:
 	loglevel_t loglevel;
+	std::vector<ILogger*> vecLogger;
 
+public:
 	Logger();
 	virtual ~Logger();
 
-public:
-	static Logger* getInstance();
+	void registerLogger(const ILogger*);
+	void removeLogger(const ILogger*);
 
-	void log(std::string, loglevel_t);
+	void log(loglevel_t, std::string, const Client*);
 };
 
 #endif /* LOGGER_H_ */

@@ -11,7 +11,7 @@
 #include "SshThread.h"
 #include "events.h"
 #include "Utility.h"
-#include "Logger.h"
+#include "StdLogger.h"
 #include "types.h"
 
 #include <boost/foreach.hpp>
@@ -19,7 +19,6 @@
 #include <StdLog.h>
 
 using namespace std;
-
 
 /**
  * This program is the administrative program for ordinary computer pools
@@ -31,6 +30,15 @@ using namespace std;
  *  - Execute arbitrary SSH commands
  *  - etc. pp.
  */
+
+// global variables
+
+// this is the client list
+map<string, Client*> clientList;
+// this is the vector containing pools
+vector<string> vecPools;
+
+
 int main(int argc, char** argv) {
 
 	typedef pair<string,Client*> clientPair;
@@ -42,19 +50,17 @@ int main(int argc, char** argv) {
 
     Network::getInstance()->setNetworks(ldap->getNetworks());
 
-    vector<string> vecpools = ldap->getPools();
+    vecPools = ldap->getPools();
 
-    // this is the client list
-    map<string, Client*> clist;
-
-    BOOST_FOREACH(string pool, vecpools) {
-    	ldap->getClients(pool,clist);
+    BOOST_FOREACH(string pool, vecPools) {
+    	ldap->getClients(pool,clientList);
     }
 
-    Logger::getInstance()->log(
-    		Utility::toString(clist.size())+
-    		" client objects created ",
-    		LOG_LEVEL_INFO
+    (new StdLogger())->log(
+    		LOG_LEVEL_INFO,
+    		Utility::toString(clientList.size())+
+				" client objects created ",
+			NULL
     );
 
     SshThread* ssh = SshThread::getInstance();

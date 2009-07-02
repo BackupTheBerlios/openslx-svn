@@ -9,7 +9,7 @@
 #include "Client.h"
 #include "Utility.h"
 #include "Configuration.h"
-#include "Logger.h"
+#include "StdLogger.h"
 
 #include "include/libssh2.h"
 
@@ -59,7 +59,7 @@ void SshThread::_connect(std::string ipaddress, SSHInfo* sshinfo) {
 
 void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 	Configuration* conf = Configuration::getInstance();
-	Logger* logger = Logger::getInstance();
+	StdLogger* logger = new StdLogger();
 
 
 	string username = conf->getString("ssh_username");
@@ -87,14 +87,14 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
     sshinfo->sin.sin_addr.s_addr = hostaddr;
     if (connect(sshinfo->sock, (struct sockaddr*)(&sshinfo->sin),
 				sizeof(struct sockaddr_in)) != 0) {
-    	logger->log("failed to connect!",LOG_LEVEL_ERROR);
+    	logger->log(LOG_LEVEL_ERROR,"failed to connect!",sshinfo->client);
 		return;
 	}
 
     // Initialize session
     sshinfo->session = libssh2_session_init();
     if (libssh2_session_startup(sshinfo->session, sshinfo->sock)) {
-    	logger->log("Failure establishing SSH session", LOG_LEVEL_ERROR);
+    	logger->log(LOG_LEVEL_ERROR,"Failure establishing SSH session",sshinfo->client);
         return;
     }
 
@@ -104,7 +104,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 	//libssh2_session_startup(session, sock);
     sshinfo->userauthlist = libssh2_userauth_list(sshinfo->session, username.c_str(), username.size());
 
-    logger->log(string("Authentication methods: ")+ sshinfo->userauthlist, LOG_LEVEL_INFO);
+    logger->log(LOG_LEVEL_INFO,string("Authentication methods: ")+ sshinfo->userauthlist,sshinfo->client);
 
 
     if (strstr(sshinfo->userauthlist, "password") != NULL) {
@@ -117,25 +117,25 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
     if ((auth_pw & 1) && authmethod == "password") {
 		/* We could authenticate via password */
 		if (libssh2_userauth_password(sshinfo->session, username.c_str(), password.c_str())) {
-			logger->log("\tAuthentication by password failed!",LOG_LEVEL_ERROR);
+			logger->log(LOG_LEVEL_ERROR,"\tAuthentication by password failed!",sshinfo->client);
 			return;
 		} else {
-			logger->log("\tAuthentication by password succeeded.",LOG_LEVEL_INFO);
+			logger->log(LOG_LEVEL_INFO,"\tAuthentication by password succeeded.",sshinfo->client);
 		}
 	} else if ( (auth_pw & 4) && authmethod == "publickey") {
 		// Authenticate by public key
 		if (libssh2_userauth_publickey_fromfile(sshinfo->session, username.c_str(),
 				pubkeyfile.c_str(), privkeyfile.c_str(), password.c_str()))
 		{
-			logger->log("\tAuthentication by public key failed!", LOG_LEVEL_ERROR);
+			logger->log(LOG_LEVEL_ERROR,"\tAuthentication by public key failed!", sshinfo->client);
 			return;
 		} else {
-			logger->log("\tAuthentication by public key succeeded.", LOG_LEVEL_INFO);
+			logger->log( LOG_LEVEL_INFO,"\tAuthentication by public key succeeded.",sshinfo->client);
 		}
 	} else {
-		logger->log("\tAuthentication method "+authmethod
-				+" not available!\nAvailable are: "+sshinfo->userauthlist,
-				LOG_LEVEL_ERROR);
+		logger->log(
+				LOG_LEVEL_ERROR,"\tAuthentication method "+authmethod
+				+" not available!\nAvailable are: "+sshinfo->userauthlist,sshinfo->client);
 		libssh2_session_disconnect(sshinfo->session,
 				"Did not find suitable authentication method!");
 		return;
@@ -143,7 +143,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 
     /* Request a shell */
 	if (!(sshinfo->channel = libssh2_channel_open_session(sshinfo->session))) {
-		logger->log("Unable to open a session", LOG_LEVEL_ERROR);
+		logger->log(LOG_LEVEL_ERROR,"Unable to open a session",sshinfo->client);
 		return;
 	}
 
@@ -156,7 +156,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 	 * See /etc/termcap for more options
 	 */
 	if (libssh2_channel_request_pty(sshinfo->channel, "vanilla")) {
-		logger->log("Failed requesting pty", LOG_LEVEL_ERROR);
+		logger->log(LOG_LEVEL_ERROR,"Failed requesting pty", sshinfo->client);
 		this->_disconnect(sshinfo);
 		return;
 	}
@@ -166,7 +166,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 
 	/* Open a SHELL on that pty */
 	if (libssh2_channel_shell(sshinfo->channel)) {
-		logger->log("Unable to request shell on allocated pty", LOG_LEVEL_ERROR);
+		logger->log( LOG_LEVEL_ERROR,"Unable to request shell on allocated pty", sshinfo->client);
 		this->_disconnect(sshinfo);
 		return;
 	}
@@ -188,13 +188,13 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 
 	cmd.append("\n");
 
-	Logger* log = Logger::getInstance();
+	StdLogger* log = new StdLogger();
 
 	int MAXLEN = 255;
 	char buf[MAXLEN];
 
 	libssh2_channel_write(sshinfo->channel, cmd.c_str(), cmd.size() );
-	log->log("Running command: "+cmd,LOG_LEVEL_INFO);
+	log->log(LOG_LEVEL_INFO,"Running command: "+cmd,sshinfo->client);
 
 	libssh2_channel_flush(sshinfo->channel);
 
@@ -204,7 +204,7 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 	while(!libssh2_channel_eof(sshinfo->channel)) {
 		bufferlength = libssh2_channel_read(sshinfo->channel, buf, MAXLEN );
 
-		log->log(string("Returning output: ")+string(buf,bufferlength),LOG_LEVEL_INFO);
+		log->log(LOG_LEVEL_INFO,string("Returning output: ")+string(buf,bufferlength),sshinfo->client);
 		*buf = 0;
 	}
 
@@ -241,7 +241,7 @@ void SshThread::delClient(Client* client) {
 	pthread_mutex_unlock(&clientmutex);
 
 
-	Logger* log = Logger::getInstance();
-	log->log("SSH connection disconnected!", LOG_LEVEL_INFO);
+	StdLogger* log = new StdLogger();
+	log->log(LOG_LEVEL_INFO,"SSH connection disconnected!",  client);
 }
 

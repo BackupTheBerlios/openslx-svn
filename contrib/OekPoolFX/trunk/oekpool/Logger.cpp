@@ -9,58 +9,31 @@
 #include "Configuration.h"
 
 #include <string>
-#include <iostream>
 
 using namespace std;
 
 Logger::Logger() {
-	Configuration* conf = Configuration::getInstance();
-	string llvl = conf->getString("log_level");
-	if(llvl == "fatal") {
-		loglevel = LOG_LEVEL_FATAL;
-	}
-	else if(llvl == "error")
-	{
-		loglevel = LOG_LEVEL_ERROR;
-	}
-	else if(llvl == "warning") {
-		loglevel = LOG_LEVEL_WARNING;
-	}
-	else if(llvl == "info") {
-		loglevel = LOG_LEVEL_INFO;
-	}
-	else {
-		loglevel = LOG_LEVEL_ERROR;
-	}
+
 }
 
 Logger::~Logger() {
 
 }
 
-Logger* Logger::getInstance() {
-	static Logger instance;
-	return &instance;
+void Logger::log(loglevel_t lvl, std::string msg, const Client* client) {
+
 }
 
-void Logger::log(std::string msg, loglevel_t lvl) {
+void Logger::registerLogger(const ILogger* logger) {
+	vecLogger.push_back((ILogger*)logger);
+}
 
-	if(loglevel < lvl ) return;
+void Logger::removeLogger(const ILogger* logger) {
 
-	switch(lvl) {
-	case LOG_LEVEL_FATAL:
-		clog << "[FF] ";
-		break;
-	case LOG_LEVEL_ERROR:
-		clog << "[EE] ";
-		break;
-	case LOG_LEVEL_WARNING:
-		clog << "[WW] ";
-		break;
-	case LOG_LEVEL_INFO:
-		clog << "[II] ";
-		break;
+	vector<ILogger*>::iterator
+	it = std::find(vecLogger.begin(), vecLogger.end(), logger);
+
+	if (it != vecLogger.end()) {
+		vecLogger.erase(it);
 	}
-
-	clog << msg << endl;
 }

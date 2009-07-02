@@ -12,6 +12,8 @@
 #include "include/libssh2.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include "StdLog.h"
+#include "Client.h"
 
 
 #ifndef TYPES_H_
@@ -26,7 +28,9 @@ struct networkInfo{
 	IPAddress broadcastAddress;
 };
 
+struct Client; // forward declaration for Clientstates
 struct SSHInfo {
+	Client* client;
     struct sockaddr_in sin;
     const char *fingerprint;
     char *userauthlist;

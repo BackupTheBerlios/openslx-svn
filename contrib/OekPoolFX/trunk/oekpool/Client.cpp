@@ -8,7 +8,7 @@
 #include "Client.h"
 #include "ClientStates.h"
 #include "Utility.h"
-#include "Logger.h"
+#include "StdLogger.h"
 #include "Configuration.h"
 #include <iostream>
 
@@ -33,9 +33,9 @@ Client::Client(AttributeMap al, std::vector<PXESlot> slots)
     pxeslots = setPXEInfo(slots);
 
 
-    Logger* log = Logger::getInstance();
+    StdLogger* log = new StdLogger();
 
-    log->log("Client with name \"" + al["HostName"]+"\" created!",LOG_LEVEL_INFO);
+    log->log(LOG_LEVEL_INFO,"Client with name \"" + al["HostName"]+"\" created!",this);
 
     IPAddress ip = Utility::ipFromString(al["IPAddress"]);
 
@@ -228,56 +228,56 @@ void Client::processClient() {
 	// checking whether client is in PXE state
 	// and applying specific checks
 	try {
-		state_cast<const PXE &>();
+		state_cast<const ClientStates::PXE &>();
 		checkPXE();
 	}
 	catch(const std::bad_cast &Ex) {}
 
 	// checking "Wake"
 	try {
-		state_cast<const Wake &>();
+		state_cast<const ClientStates::Wake &>();
 		checkWake();
 	}
 	catch(const std::bad_cast &Ex) {}
 
 	// checking "PingWake"
 	try {
-		state_cast<const PingWake &>();
+		state_cast<const ClientStates::PingWake &>();
 		checkPingWake();
 	}
 	catch(const std::bad_cast &Ex) {}
 
 	// checking Error
 	try {
-		state_cast<const Error &>();
+		state_cast<const ClientStates::Error &>();
 		checkError();
 	}
 	catch(const std::bad_cast &Ex) {}
 
 	// checking "SshWake"
 	try {
-		state_cast<const SshWake &>();
+		state_cast<const ClientStates::SshWake &>();
 		checkSSHWake();
 	}
 	catch(const std::bad_cast &Ex) {}
 
 	// checking "PingOffline"
 	try {
-		state_cast<const PingOffline &>();
+		state_cast<const ClientStates::PingOffline &>();
 		checkPingOffline();
 	}
 	catch(const std::bad_cast &Ex) {}
 
 	// checking "SshOffline"
 	try {
-		state_cast<const SshOffline &>();
+		state_cast<const ClientStates::SshOffline &>();
 		checkSSHOffline();
 	}
 	catch(const std::bad_cast &Ex) {}
 
 	// checking "Shutdown"
 	try {
-		state_cast<const Shutdown &>();
+		state_cast<const ClientStates::Shutdown &>();
 		checkShutdown();
 	}
 	catch(const std::bad_cast &Ex) {}
