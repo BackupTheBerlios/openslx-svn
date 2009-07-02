@@ -90,11 +90,20 @@ std::vector<char> Network::splitAddress(std::string address, std::string format,
 }
 
 void* Network::pingHost(void* pingArgs) {
+
+	bool alive;
 	pingStruct* str = (pingStruct*) pingArgs;
+
+	// TODO
+	// Insert the ping interval defined in config file
+	if( (*str->alive & (char)0x20) != (char)0) {
+		sleep(30);
+	}
+
 	SocketHandler h;
 	pingSocket* p = new pingSocket(h);
 	errorLog log;
-	log.setFlag(*str->alive);
+	log.setFlag(alive);
 	log.setMutex(str->mutex);
 	h.RegStdLog(&log);
 
@@ -106,10 +115,17 @@ void* Network::pingHost(void* pingArgs) {
 		h.Select(1,0);
 	}
 
+	if(alive) {
+		*str->alive = 0xC0;
+	}
+	else {
+		*str->alive = 0x80;
+	}
+
 	delete str;
 }
 
-void Network::hostAlive(bool& flag, string host, pthread_mutex_t* mutex) {
+void Network::hostAlive(char& flag, string host, pthread_mutex_t* mutex) {
 	pthread_t thread;
 
 	pingStruct* ps = new pingStruct;

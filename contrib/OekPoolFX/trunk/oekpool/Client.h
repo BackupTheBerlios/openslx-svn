@@ -55,21 +55,38 @@ private:
      */
     std::vector<PXEInfo> setPXEInfo(std::vector<PXESlot>);
 
+    /**
+     * Series of checks for every state of the client
+     * Every check can trigger some state transition
+     */
+    void checkOffline(void);
+    void checkPXE(void);
+    void checkWake(void);
+    void checkPingWake(void);
+    void checkError(void);
+    void checkSSHWake(void);
+    void checkPingOffline(void);
+    void checkSSHOffline(void);
+    void checkShutdown(void);
+
 public:
     Client(AttributeMap, std::vector<PXESlot>);
     ~Client();
 
     void updateFromLdap(AttributeMap,std::vector<PXESlot>);
+    void processClient(void);
 
-    bool isActive();
+    bool isActive(bool shutdown = false);
 
-    PXEInfo* getActiveSlot();
+    PXEInfo* getActiveSlot(bool shutdown = false);
     std::string getHWAddress();
     std::string getIP();
     std::string getHostName();
 
     std::map<std::string,bool> getCmdTable();
     void setCmdTable(std::map<std::string,bool>);
+    void resetCmdTable(void);
+    void insertCmd(std::string);
 
     /**
      * public mutexes
@@ -80,13 +97,14 @@ public:
     /**
      * wether host is responding (used by ping)
      */
-    bool host_responding;
+    char host_responding;
+    char ssh_responding;
 
     /**
      * number of times the client has pinged
      * (used by states pxeconfig and wake)
      */
-    int ping_attempts;
+    int ping_attempts, ssh_attempts;
 };
 
 

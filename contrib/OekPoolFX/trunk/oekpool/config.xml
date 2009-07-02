@@ -32,4 +32,13 @@
   
   <log_level>info</log_level>
   
+  
+  <!-- This section contains various times and timeouts -->
+  
+  <ssh_init_time>60</ssh_init_time>
+  <wakeup_time>60</wakeup_time>
+  <ping_timeout>15</ping_timeout>
+  <shutdown_time>60</shutdown_time>
+  <warn_time>600</warn_time>
+  
 </configuration>

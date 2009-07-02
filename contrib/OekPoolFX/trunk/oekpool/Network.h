@@ -28,7 +28,7 @@ public:
 
 	bool sendWolPacket(ipaddr_t ipAddress, std::string macAddress);
 	void setNetworks(vector<networkInfo>);
-	void hostAlive(bool& flag, string host, pthread_mutex_t* mutex);
+	void hostAlive(char& flag, string host, pthread_mutex_t* mutex);
 private:
 	Network();
 	Network(const Network& cc);

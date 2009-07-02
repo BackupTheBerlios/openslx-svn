@@ -50,7 +50,7 @@ struct PXEInfo {
 };
 
 struct pingStruct {
-	bool* alive;
+	char* alive;
 	pthread_mutex_t * mutex;
 	std::string ipAddress;
 };

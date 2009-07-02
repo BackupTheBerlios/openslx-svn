@@ -9,6 +9,7 @@
 #include "ClientStates.h"
 #include "Utility.h"
 #include "Logger.h"
+#include "Configuration.h"
 #include <iostream>
 
 using namespace std;
@@ -48,7 +49,11 @@ Client::~Client() {
 }
 
 void Client::updateFromLdap(AttributeMap attr, std::vector<PXESlot> slots) {
+	attributes = attr;
 
+	// TODO
+	// Verhalten muss definiert werden für den Fall, dass der aktuell laufende PXESlot ersetzt wird.
+	pxeslots = setPXEInfo(slots);
 }
 
 std::vector<PXEInfo> Client::setPXEInfo(std::vector<PXESlot> timeslots) {
@@ -114,21 +119,35 @@ std::vector<PXEInfo> Client::setPXEInfo(std::vector<PXESlot> timeslots) {
 	return pxeinfoVector;
 }
 
-bool Client::isActive() {
+bool Client::isActive(bool shutdown) {
 	time_t currentTime;
 	time_t futureTime;
 	time(&currentTime);
-	futureTime = currentTime + 600;
+
+	if(shutdown)
+		futureTime = currentTime + Configuration::getInstance()->getInt("shutdown_time");
+	else
+		futureTime = currentTime + Configuration::getInstance()->getInt("warn_time");
+
 	struct tm * currentTm = localtime(&currentTime);
 	struct tm * futureTm = localtime(&futureTime);
 
 
 	for(int i=0; i < pxeslots.size(); i++) {
+		// checking the right week day
 		if(currentTm->tm_wday != pxeslots[i].StartTime.tm_wday)
 			continue;
+
+		// checking the interval with precision of full hours
 		if((currentTm->tm_hour < pxeslots[i].StartTime.tm_hour) || (futureTm->tm_hour > pxeslots[i].ShutdownTime.tm_hour))
 				continue;
-		if((currentTm->tm_min < pxeslots[i].StartTime.tm_min) && (futureTm->tm_min > pxeslots[i].ShutdownTime.tm_min))
+
+		// checking whether it's in start hour but before start minute
+		if((currentTm->tm_hour == pxeslots[i].StartTime.tm_hour) && (currentTm->tm_min < pxeslots[i].StartTime.tm_min))
+				continue;
+
+		// checking whether it's in finish hour but after finish minute
+		if((futureTm->tm_hour == pxeslots[i].ShutdownTime.tm_hour) && (futureTm->tm_min > pxeslots[i].ShutdownTime.tm_min))
 				continue;
 
 		return true;
@@ -137,11 +156,16 @@ bool Client::isActive() {
 	return false;
 }
 
-PXEInfo* Client::getActiveSlot() {
+PXEInfo* Client::getActiveSlot(bool shutdown) {
 	time_t currentTime;
 	time_t futureTime;
 	time(&currentTime);
-	futureTime = currentTime + 600;
+
+	if(shutdown)
+		futureTime = currentTime + Configuration::getInstance()->getInt("shutdown_time");
+	else
+		futureTime = currentTime + Configuration::getInstance()->getInt("warn_time");
+
 	struct tm * currentTm = localtime(&currentTime);
 	struct tm * futureTm = localtime(&futureTime);
 
@@ -151,7 +175,9 @@ PXEInfo* Client::getActiveSlot() {
 			continue;
 		if((currentTm->tm_hour < pxeslots[i].StartTime.tm_hour) || (futureTm->tm_hour > pxeslots[i].ShutdownTime.tm_hour))
 				continue;
-		if((currentTm->tm_min < pxeslots[i].StartTime.tm_min) && (futureTm->tm_min > pxeslots[i].ShutdownTime.tm_min))
+		if((currentTm->tm_hour == pxeslots[i].StartTime.tm_hour) && (currentTm->tm_min < pxeslots[i].StartTime.tm_min))
+				continue;
+		if((futureTm->tm_hour == pxeslots[i].ShutdownTime.tm_hour) && (futureTm->tm_min > pxeslots[i].ShutdownTime.tm_min))
 				continue;
 		return &pxeslots[i];
 	}
@@ -181,7 +207,219 @@ std::map<std::string,bool> Client::getCmdTable() {
 
 void Client::setCmdTable(std::map<std::string,bool> cmds) {
 	pthread_mutex_lock(&sshMutex);
+
+	// TODO
+	// Hier wäre ein abgleich der Daten wünschenswert, da u.U. schon neue Daten
+	// eingefügt worden sind, die hiermit überschrieben werden.
 	cmdTable = cmds;
 	pthread_mutex_unlock(&sshMutex);
 }
 
+void Client::insertCmd(std::string cmd) {
+	cmdTable.insert(std::pair<std::string, bool>(cmd, false));
+}
+
+void Client::resetCmdTable() {
+	cmdTable.clear();
+}
+
+void Client::processClient() {
+
+	// checking whether client is in PXE state
+	// and applying specific checks
+	try {
+		state_cast<const PXE &>();
+		checkPXE();
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking "Wake"
+	try {
+		state_cast<const Wake &>();
+		checkWake();
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking "PingWake"
+	try {
+		state_cast<const PingWake &>();
+		checkPingWake();
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking Error
+	try {
+		state_cast<const Error &>();
+		checkError();
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking "SshWake"
+	try {
+		state_cast<const SshWake &>();
+		checkSSHWake();
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking "PingOffline"
+	try {
+		state_cast<const PingOffline &>();
+		checkPingOffline();
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking "SshOffline"
+	try {
+		state_cast<const SshOffline &>();
+		checkSSHOffline();
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking "Shutdown"
+	try {
+		state_cast<const Shutdown &>();
+		checkShutdown();
+	}
+	catch(const std::bad_cast &Ex) {}
+}
+
+void Client::checkOffline() {
+	if(isActive())
+		process_event(EvtStart());
+}
+
+void Client::checkPXE() {
+
+	if(isActive(true) == false) {
+		process_event(EvtShutdown());
+		return;
+	}
+
+	// TODO
+	// Hier sollten noch Timing-Bedingungen eingefügt werden
+	pthread_mutex_lock(&pingMutex);
+	if( (host_responding & (char)0xC0) == (char)0xC0 ) {
+		ping_attempts = 0;
+		process_event(EvtPingSuccess());
+	}
+	pthread_mutex_unlock(&pingMutex);
+
+	pthread_mutex_lock(&pingMutex);
+	if( (host_responding & (char)0xC0) == (char)0x80 ) {
+		process_event(EvtPingFailure());
+	}
+	pthread_mutex_unlock(&pingMutex);
+}
+
+void Client::checkWake() {
+
+	pthread_mutex_lock(&pingMutex);
+	if( (host_responding & (char)0xC0) == (char)0xC0 ) {
+			ping_attempts = 0;
+			process_event(EvtPingSuccess());
+		}
+	pthread_mutex_unlock(&pingMutex);
+
+	pthread_mutex_lock(&pingMutex);
+	if( (host_responding & (char)0xC0) == (char)0x80 ) {
+		ping_attempts++;
+		if(ping_attempts > 5)
+			process_event(EvtPingError());
+		else
+			process_event(EvtPingFailure());
+	}
+	pthread_mutex_unlock(&pingMutex);
+}
+
+void Client::checkPingWake() {
+
+	pthread_mutex_lock(&sshMutex);
+	if( (ssh_responding & (char)0xC0) == (char)0xC0 ) {
+		ssh_attempts = 0;
+		process_event(EvtSshSuccess());
+	}
+	pthread_mutex_unlock(&sshMutex);
+
+	pthread_mutex_lock(&sshMutex);
+	if( (ssh_responding & (char)0xC0) == (char)0x80 ) {
+		ssh_attempts ++;
+		if(ssh_attempts > 5)
+			process_event(EvtSshError());
+		else
+			process_event(EvtPingFailure());
+	}
+	pthread_mutex_unlock(&sshMutex);
+}
+
+void Client::checkError() {
+	// TODO
+	// Specify error handling or
+	// remove if it's done inside the state
+}
+
+void Client::checkSSHWake() {
+
+	if(isActive(true) == false) {
+		process_event(EvtShutdown());
+		return;
+	}
+
+	pthread_mutex_lock(&sshMutex);
+	if( (ssh_responding & (char)0xC0) == (char)0xC0 ) {
+		ssh_attempts = 0;
+		process_event(EvtSshSuccess());
+	}
+	pthread_mutex_unlock(&sshMutex);
+
+	pthread_mutex_lock(&sshMutex);
+	if( (ssh_responding & (char)0xC0) == (char)0x80 ) {
+		ssh_attempts ++;
+		process_event(EvtPingFailure());
+	}
+	pthread_mutex_unlock(&sshMutex);
+}
+
+void Client::checkPingOffline() {
+
+	pthread_mutex_lock(&sshMutex);
+	if( (ssh_responding & (char)0xC0) == (char)0xC0 ) {
+		ssh_attempts = 0;
+		process_event(EvtSshSuccess());
+	}
+	pthread_mutex_unlock(&sshMutex);
+
+	pthread_mutex_lock(&sshMutex);
+	if( (ssh_responding & (char)0xC0) == (char)0x80 ) {
+		ssh_attempts ++;
+		if(ssh_attempts > 5)
+			process_event(EvtSshError());
+		else
+			process_event(EvtPingFailure());
+	}
+	pthread_mutex_unlock(&sshMutex);
+}
+
+void Client::checkSSHOffline() {
+	if(isActive(true) == false) {
+		process_event(EvtShutdown());
+		return;
+	}
+
+	pthread_mutex_lock(&sshMutex);
+	if( (ssh_responding & (char)0xC0) == (char)0xC0 ) {
+		ssh_attempts = 0;
+		process_event(EvtSshSuccess());
+	}
+	pthread_mutex_unlock(&sshMutex);
+
+	pthread_mutex_lock(&sshMutex);
+	if( (ssh_responding & (char)0xC0) == (char)0x80 ) {
+		ssh_attempts ++;
+		process_event(EvtPingFailure());
+	}
+	pthread_mutex_unlock(&sshMutex);
+}
+
+void Client::checkShutdown() {
+	// nothing todo here
+}

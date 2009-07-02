@@ -18,6 +18,8 @@ namespace bfs = boost::filesystem;
  */
 ClientStates::Offline::Offline() {
     //cout << "Entered Offline state!" << endl;
+	Client& client = context<Client>();
+	client.resetCmdTable();
 }
 
 ClientStates::Offline::~Offline() {
@@ -50,6 +52,7 @@ ClientStates::PXE::PXE() {
 		client.process_event(EvtWakeCommand());
 	}
 	else {
+		client.host_responding = 0;
 		Network::getInstance()->hostAlive(client.host_responding, client.getIP(), &client.pingMutex);
 	}
 }
@@ -65,5 +68,43 @@ ClientStates::Wake::Wake() {
 
 	Network::getInstance()->sendWolPacket(Utility::ipFromString(client.getIP()), client.getHWAddress());
 
+	// indicates that client is in "wake mode"
+	client.host_responding = 0x20;
+
 	Network::getInstance()->hostAlive(client.host_responding, client.getIP(), &client.pingMutex);
+}
+
+ClientStates::PingWake::PingWake() {
+	// TODO
+	// evtl. Timer setzen
+	Client& client = context<Client>();
+	client.insertCmd("echo \"ping?\"");
+}
+
+ClientStates::SshWake::SshWake() {
+	// TODO
+	// evtl Timer setzen
+	Client& client = context<Client>();
+	client.insertCmd("echo \"ping?\"");
+}
+
+ClientStates::SshOffline::SshOffline() {
+	// TODO
+	// evtl Timer setzen
+	Client& client = context<Client>();
+	client.insertCmd("echo \"ping?\"");
+}
+
+ClientStates::PingOffline::PingOffline() {
+	// TODO
+	// evtl Timer setzen
+	Client& client = context<Client>();
+	client.insertCmd("echo \"ping?\"");
+}
+
+ClientStates::Shutdown::Shutdown() {
+	Client& client = context<Client>();
+	client.insertCmd("shutdown -h now");
+
+	client.process_event(EvtOffline());
 }
