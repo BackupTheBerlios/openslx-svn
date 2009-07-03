@@ -98,8 +98,8 @@ sub setupKDMScript
     else {
         $kdmVer = "";
         $kdmPath = "/opt/kde3/share";
-        # change default theme to openslx3 if kdm3
-        print "  * Please change to openslx3 theme when using kdm3\n";
+        # change default theme to openslx-legacy if kdm3
+        print "  * Please change to openslx-legacy theme when using kdm3\n";
     }
 
     # SUSE reads /var/adm/kdm/kdmrc.sysconfig, so we link that to

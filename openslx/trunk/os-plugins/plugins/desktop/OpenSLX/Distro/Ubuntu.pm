@@ -145,9 +145,9 @@ sub setupKDMScript
     my $kdmVer = $self->KDMVersion();
     my $script = $self->SUPER::setupKDMScript($repoPath);
 
-     # change default theme to openslx3 if kdm3
+     # change default theme to openslx-legacy if kdm3
     if ( $kdmVer == "3" ) {
-        print "  * Please change to openslx3 theme when using kdm3\n";
+        print "  * Please change to openslx-legacy theme when using kdm3\n";
     }
 
     $script .= "kdmver=$kdmVer\n";
