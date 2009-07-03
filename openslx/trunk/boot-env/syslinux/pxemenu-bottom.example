@@ -2,7 +2,7 @@
 # labels, please define only further menus and systems
 # for theme configuration use theme.conf in your theme directory
 # general settings can be set via slxsettings
-# please copy to menu-bottom if needed
+# please copy to pxemenu-bottom if needed
 
 ## example: shutdown label in menu
 #LABEL shutdown

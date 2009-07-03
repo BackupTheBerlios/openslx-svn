@@ -166,7 +166,7 @@ sub writeBootloaderMenuFor
         $pxeConfig .= $slxLabels;
         # fetch PXE-bottom iclude, if exists (overwrite existing definitions)
         my $pxeBottomFile
-            = "$openslxConfig{'config-path'}/boot-env/pxe/menu-bottom";
+            = "$openslxConfig{'config-path'}/boot-env/syslinux/pxemenu-bottom";
         if (-e $pxeBottomFile) {
             $pxeConfig .= "\n# configuration from include $pxeBottomFile\n";
             $pxeConfig .= slurpFile($pxeBottomFile);
@@ -189,7 +189,7 @@ sub _getTemplate
 
     my $basePath   = $openslxConfig{'base-path'};
     my $configPath = $openslxConfig{'config-path'};
-    my $pxeTheme   = $openslxConfig{'pxe-theme'};
+    my $pxeTheme   = $openslxConfig{'syslinux-theme'};
 
     my ($sec, $min, $hour, $day, $mon, $year) = (localtime);
     $mon++;
@@ -210,9 +210,9 @@ sub _getTemplate
     # let user stuff in config path win over our stuff in base path
     my $pxeThemePath;
     my $pxeThemeInConfig
-        = "$configPath/boot-env/pxe/themes/${pxeTheme}";
+        = "$configPath/boot-env/syslinux/themes/${pxeTheme}";
     my $pxeThemeInBase
-        = "$basePath/share/boot-env/pxe/themes/${pxeTheme}";
+        = "$basePath/share/boot-env/syslinux/themes/${pxeTheme}";
     if (-e "$pxeThemeInConfig/theme.conf") {
         $pxeThemePath = $pxeThemeInConfig;
     }
@@ -251,7 +251,7 @@ sub _getTemplate
 
     # fetch PXE-include, if exists (overwrite existing definitions)
     my $pxeIncludeFile
-        = "$openslxConfig{'config-path'}/boot-env/pxe/menu-include";
+        = "$openslxConfig{'config-path'}/boot-env/syslinux/pxemenu-include";
     if (-e $pxeIncludeFile) {
         $pxeTemplate .= "\n# configuration from include $pxeIncludeFile\n";
         $pxeTemplate .= slurpFile($pxeIncludeFile);
@@ -279,7 +279,7 @@ sub _prepareBootloaderConfigFolder
             'mboot.c32', 'kernel-shutdown', 'initramfs-shutdown') {
             if (!-e "$pxePath/$file") {
                 slxsystem(
-                    qq[cp -p "$basePath/share/boot-env/pxe/$file" $pxePath/]
+                    qq[cp -p "$basePath/share/boot-env/syslinux/$file" $pxePath/]
                 );
             }
         }

@@ -3,7 +3,7 @@
 # it will overwrite existing defs
 # for theme configuration use theme.conf in your theme directory
 # general settings can be set via slxsettings
-# please copy to menu-include if needed
+# please copy to pxemenu-include if needed
 
 ## example german help:
 #MENU PASSPROMPT Gesicherter Bereich, bitte Passwort eingeben:

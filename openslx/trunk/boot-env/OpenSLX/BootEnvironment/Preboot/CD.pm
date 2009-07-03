@@ -29,7 +29,7 @@ sub createImage
     my $self   = shift;
     my $client = shift;
     my $info   = shift;
-    
+
     vlog(
         0, 
         _tr(
@@ -39,48 +39,95 @@ sub createImage
     );
 
     my $imageDir = "$openslxConfig{'public-path'}/images/$client->{name}/cd";
-    mkpath($imageDir)   unless $self->{'dry-run'};
+    my $isoDir = "$imageDir/iso/isolinux";
+    mkpath($isoDir)     unless $self->{'dry-run'};
 
     # copy static data
-    my $dataDir = "$openslxConfig{'base-path'}/share/boot-env/preboot/cd";
-    slxsystem(qq{rsync -rlpt $dataDir/iso "$imageDir/"})
-        unless $self->{'dry-run'};
+    my $dataDir = "$openslxConfig{'base-path'}/share/boot-env/syslinux";
+    for my $file ('LICENSE', 'README.iso', 'vesamenu.c32', 'isolinux.bin') {
+        if (!-e "$isoDir/$file") {
+            slxsystem(
+                qq[cp -p "$dataDir/$file" "$isoDir/"]
+            )
+                unless $self->{'dry-run'};
+        }
+    }
 
     # copy kernel (take the one from the given system info)
     my $kernelFile = $info->{'kernel-file'};
     my $kernelName = basename($kernelFile);
-    slxsystem(qq{cp -p "$kernelFile" "$imageDir/iso/isolinux/vmlinuz"})
+    slxsystem(qq{cp -p "$kernelFile" "$isoDir/vmlinuz"})
         unless $self->{'dry-run'};
 
     # create initramfs
-    my $initramfsName = qq{"$imageDir/iso/isolinux/initramfs"};
+    my $initramfsName = qq{"$isoDir/initramfs"};
     $self->makePrebootInitRamFS($info, $initramfsName, $client);
 
     # write trivial isolinux config
-    my $isolinuxConfig = unshiftHereDoc(<<"    End-of-Here");
-        PROMPT 0
-        TIMEOUT 100
-        DEFAULT menu.c32
+    # include static defaults
+    my $isolinuxConfig = "DEFAULT vesamenu.c32\n";
+    $isolinuxConfig .= "PROMPT 0\n";
+    $isolinuxConfig .= "TIMEOUT 100\n";
+
+    # theme stuff
+    my $basePath   = $openslxConfig{'base-path'};
+    my $configPath = $openslxConfig{'config-path'};
+    my $isoTheme   = $openslxConfig{'syslinux-theme'};
+
+    my $isoThemePath;
+    my $isoThemeInConfig
+        = "$configPath/boot-env/syslinux/themes/${isoTheme}";
+    my $isoThemeInBase
+        = "$basePath/share/boot-env/syslinux/themes/${isoTheme}";
+    if (-e "$isoThemeInConfig/theme.conf") {
+        $isoThemePath = $isoThemeInConfig;
+    }
+    else {
+        if (-e "$isoThemeInBase/theme.conf") {
+            $isoThemePath = $isoThemeInBase;
+        }
+    }
+    # include theme specific stuff
+    if (defined $isoThemePath) {
+        $isolinuxConfig .= slurpFile("$isoThemePath/theme.conf");
+    }
+
+    # copy background picture if exists
+    my $pic;
+    if (defined $isoTheme) {
+        while ($isolinuxConfig =~ m{^\s*MENU BACKGROUND (\S+?)\s*$}gims) {
+            chomp($pic = $1);
+        }
+    }
+    if (defined $pic) {
+        my $isoBackground = "$isoThemePath/$pic";
+        if (-e $isoBackground && !$self->{'dry-run'}) {
+            slxsystem(qq[cp "$isoBackground" "$isoDir/"]);
+        }
+    }
+
+    # write trivial isolinux config
+    $isolinuxConfig .= unshiftHereDoc(<<"    End-of-Here");
         MENU TITLE Welcome to OpenSLX PreBoot ISO/CD (Mini Linux/Kexec)
         LABEL SLXSTDBOOT
-          MENU LABEL OpenSLX PreBoot - Stateless Netboot Linux ...
-          MENU DEFAULT
-          KERNEL vmlinuz
-          APPEND initrd=initramfs vga=0x317
-          TEXT HELP
+            MENU LABEL OpenSLX PreBoot - Stateless Netboot Linux ...
+            MENU DEFAULT
+            KERNEL vmlinuz
+            APPEND initrd=initramfs vga=0x317
+            TEXT HELP
                  Use this (default) entry if you have configured your client.
-                 You have chance to edit the kernel commandline by hitting the
-                 TAB key (e.g. for adding debug=3 to it for bug hunting) ...
-          ENDTEXT
+                 You have chance to edit the kernel commandline by hitting
+                 the TAB key (e.g. for adding debug=3 to it for bug hunting).
+            ENDTEXT
         LABEL LOCALBOOT
-          MENU LABEL Boot locally (skip OpenSLX PreBoot) ...
-          LOCALBOOT -1
-          TEXT HELP
-                 Gets you out of here by booting from next device in BIOS boot
-                 order.
-          ENDTEXT
+            MENU LABEL Boot locally (skip OpenSLX PreBoot) ...
+            LOCALBOOT -1
+            TEXT HELP
+                 Gets you out of here by booting from next device in BIOS
+                 boot order.
+            ENDTEXT
     End-of-Here
-    spitFile("$imageDir/iso/isolinux/isolinux.cfg", $isolinuxConfig);
+    spitFile("$isoDir/isolinux.cfg", $isolinuxConfig);
 
     my $mkisoCmd = unshiftHereDoc(<<"    End-of-Here");
         mkisofs 

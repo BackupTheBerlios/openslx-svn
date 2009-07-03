@@ -135,7 +135,7 @@ supported."; \
 plain-install:
 	@if test "${TRACE_INSTALLATION}" = "1"; then set -x; fi; \
 	echo "Installing OpenSLX project files"; \
-	mkdir -p $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/themes \
+	mkdir -p $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/syslinux/themes \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/lib \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/bin \
 	      -p $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/boot-env \
@@ -192,8 +192,8 @@ plain-install:
 	     tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \
      tar --exclude=.svn --exclude *.example --exclude OpenSLX -cp boot-env | \
          tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/; \
-     cp -p boot-env/pxe/menu-*.example boot-env/pxe/Readme.pxe \
-           $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/pxe/; \
+     cp -p boot-env/syslinux/pxemenu-*.example boot-env/syslinux/README.pxe \
+           $(SLX_BUILD_PATH)$(SLX_CONFIG_PATH)/boot-env/syslinux/; \
      cp -p tools/mksquashfs $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share/squashfs/; \
      tar --exclude=.svn -cp -C initramfs tpm | \
          tar -xp -C $(SLX_BUILD_PATH)$(SLX_BASE_PATH)/share; \

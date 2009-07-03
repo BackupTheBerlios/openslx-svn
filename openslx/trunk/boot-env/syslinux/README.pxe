@@ -26,12 +26,12 @@ Example how the PXElinux information is gathered:
 #####                                                                      #####
 #                                                                              #
 # TIMEOUT 100                                                                  #
-# TOTALTIMEOUT 600                                                            #
+# TOTALTIMEOUT 600                                                             #
 # MENU MASTER PASSWD secret                                                    #
 # MENU TITLE Welcome to OpenSLX                                                #
 #                                                                              #
-##### after this /etc/opt/openslx/boot-env/pxe/menu-include is included    #####
-##### if it is existing, overriding above statements                       #####
+##### after this /etc/opt/openslx/boot-env/syslinux/pxemenu-include is     #####
+##### included if it is existing, overriding above statements              #####
 #                                                                              #
 # MENU PASSPROMPT Gesicherter Bereich, bitte Passwort eingeben:                #
 # MENU AUTOBOOT Auswahl startet in # Sekunden                                  #
@@ -54,8 +54,9 @@ Example how the PXElinux information is gathered:
 # .                                                                            #
 # .                                                                            #
 #                                                                              #
-##### at the end /etc/opt/openslx/boot-env/pxe/menu-bottom is being incl.  #####
-##### if existing, please specify only systems and further menus           #####
+##### at the end /etc/opt/openslx/boot-env/syslinux/pxemenu-bottom is      #####
+##### being incl. if existing                                              #####
+##### please specify only systems and further menus                        #####
 #                                                                              #
 # MENU SEPARATOR                                                               #
 # LABEL test                                                                   #
