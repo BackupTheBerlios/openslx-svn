@@ -19,12 +19,14 @@
 #include <arpa/inet.h>
 
 #include <boost/foreach.hpp>
+#include <pthread.h>
 
 using namespace std;
 
 
 
 pthread_mutex_t SshThread::clientmutex;
+pthread_t SshThread::thread;
 
 std::vector<Client*> SshThread::sshClients;
 std::map<Client*,SSHInfo > SshThread::sshInfos;
@@ -36,9 +38,7 @@ SshThread::SshThread() {
 
 	pthread_mutex_init(&clientmutex, NULL);
 
-	// TODO: start thread with SshThread::_main
-	// method and suitable arguments
-	// (maybe pointer to command tables)
+	pthread_create(&thread, NULL, SshThread::_main, NULL);
 
 }
 
@@ -159,7 +159,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 	 */
 	if (libssh2_channel_request_pty(sshinfo->channel, "vanilla")) {
 		logger->log(LOG_LEVEL_ERROR,"Failed requesting pty", sshinfo->client);
-		this->_disconnect(sshinfo);
+		_disconnect(sshinfo);
 		return;
 	}
 
@@ -169,7 +169,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 	/* Open a SHELL on that pty */
 	if (libssh2_channel_shell(sshinfo->channel)) {
 		logger->log( LOG_LEVEL_ERROR,"Unable to request shell on allocated pty", sshinfo->client);
-		this->_disconnect(sshinfo);
+		_disconnect(sshinfo);
 		return;
 	}
 
@@ -218,7 +218,7 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 /**
  * This is the thread main function (and returns a void* - very important)
  */
-void* SshThread::_main() {
+void* SshThread::_main(void*) {
 	SSHInfo sshinfo;
 	int i;
 	vector<string> sshCmd;
