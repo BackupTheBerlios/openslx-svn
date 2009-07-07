@@ -48,7 +48,7 @@ private:
     /**
      * private table to hold commands { ONLY ACCESSED THROUGH THREAD }
      */
-    std::map<std::string,bool> cmdTable;
+    std::vector<std::string> cmdTable;
 
     /**
      * private function to reset pxe-informations
@@ -83,8 +83,7 @@ public:
     std::string getIP();
     std::string getHostName();
 
-    std::map<std::string,bool> getCmdTable();
-    void setCmdTable(std::map<std::string,bool>);
+    std::vector<std::string> getCmdTable();
     void resetCmdTable(void);
     void insertCmd(std::string);
 

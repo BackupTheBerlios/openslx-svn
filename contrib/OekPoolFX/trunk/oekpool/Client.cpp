@@ -197,26 +197,17 @@ std::string Client::getHostName() {
 	return attributes["HostName"];
 }
 
-std::map<std::string,bool> Client::getCmdTable() {
+std::vector<std::string> Client::getCmdTable() {
 	pthread_mutex_lock(&sshMutex);
-	map<string,bool> result(cmdTable);
+	vector<string> result(cmdTable);
+	resetCmdTable();
 	pthread_mutex_unlock(&sshMutex);
 
 	return result;
 }
 
-void Client::setCmdTable(std::map<std::string,bool> cmds) {
-	pthread_mutex_lock(&sshMutex);
-
-	// TODO
-	// Hier wäre ein abgleich der Daten wünschenswert, da u.U. schon neue Daten
-	// eingefügt worden sind, die hiermit überschrieben werden.
-	cmdTable = cmds;
-	pthread_mutex_unlock(&sshMutex);
-}
-
 void Client::insertCmd(std::string cmd) {
-	cmdTable.insert(std::pair<std::string, bool>(cmd, false));
+	cmdTable.push_back(cmd);
 }
 
 void Client::resetCmdTable() {

@@ -30,6 +30,8 @@ std::vector<Client*> SshThread::sshClients;
 std::map<Client*,SSHInfo > SshThread::sshInfos;
 //std::map<Client*,std::vector<std::string,bool> > SshThread::sshCmds;
 
+extern bool exitFlag;
+
 SshThread::SshThread() {
 
 	pthread_mutex_init(&clientmutex, NULL);
@@ -88,7 +90,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
     if (connect(sshinfo->sock, (struct sockaddr*)(&sshinfo->sin),
 				sizeof(struct sockaddr_in)) != 0) {
     	logger->log(LOG_LEVEL_ERROR,"failed to connect!",sshinfo->client);
-		return;
+    	throw exception();
 	}
 
     // Initialize session
@@ -190,10 +192,11 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 
 	StdLogger* log = new StdLogger();
 
-	int MAXLEN = 255;
+	int MAXLEN = 255, written = 0;
 	char buf[MAXLEN];
 
-	libssh2_channel_write(sshinfo->channel, cmd.c_str(), cmd.size() );
+	written = libssh2_channel_write(sshinfo->channel, cmd.c_str(), cmd.size() );
+	if(written == 0) { throw exception(); }
 	log->log(LOG_LEVEL_INFO,"Running command: "+cmd,sshinfo->client);
 
 	libssh2_channel_flush(sshinfo->channel);
@@ -202,6 +205,7 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 	int bufferlength= 0;
 
 	while(!libssh2_channel_eof(sshinfo->channel)) {
+		sleep(1);
 		bufferlength = libssh2_channel_read(sshinfo->channel, buf, MAXLEN );
 
 		log->log(LOG_LEVEL_INFO,string("Returning output: ")+string(buf,bufferlength),sshinfo->client);
@@ -215,18 +219,71 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
  * This is the thread main function (and returns a void* - very important)
  */
 void* SshThread::_main() {
+	SSHInfo sshinfo;
+	int i;
+	vector<string> sshCmd;
+
+	while(!exitFlag) {
+
+	// copy the clients into a seperate vector
 	pthread_mutex_lock(&clientmutex);
-	BOOST_FOREACH(Client* client, sshClients) {
-//		sshCmds[client] = client->getCmdTable();
-		// TODO: Handle commands from clients (maybe with a bool to synchronise)
-	}
+	vector<Client*> vecClients = sshClients;
 	pthread_mutex_unlock(&clientmutex);
+
+	BOOST_FOREACH(Client* client, vecClients) {
+		sshinfo.client = client;
+		sshCmd.clear();
+		i = 0;
+
+		if(sshInfos.find(client) != sshInfos.end()) {
+			sshinfo = sshInfos[client];
+		}
+		else
+		{
+			try {
+				_connect(client->getIP(),&sshinfo);
+				sshInfos[client] = sshinfo;
+			}
+			catch (exception e) {
+				_disconnect(&sshinfo);
+				pthread_mutex_lock(&client->sshMutex);
+				client->ssh_responding = (1 << 6);
+				pthread_mutex_unlock(&client->sshMutex);
+				break;
+			}
+		}
+
+		sshCmd = client->getCmdTable();
+
+		BOOST_FOREACH(string cmd, sshCmd) {
+			try {
+				_runCmd(&sshinfo, cmd);
+				++i;
+				if(i == sshCmd.size()) {
+					pthread_mutex_lock(&client->sshMutex);
+					client->ssh_responding = (1 << 7) | (1 << 6);
+					pthread_mutex_unlock(&client->sshMutex);
+				}
+			}
+			catch(exception e) {
+				_disconnect(&sshinfo);
+				pthread_mutex_lock(&client->sshMutex);
+				client->ssh_responding = (1 << 6);
+				pthread_mutex_unlock(&client->sshMutex);
+				break;
+			}
+		}
+	}
+
+	}
 }
 
 
 void SshThread::addClient(Client* client) {
 	pthread_mutex_lock(&clientmutex);
-	sshClients.push_back(client);
+	if(find(sshClients.begin(), sshClients.end(),client) == sshClients.end()) {
+		sshClients.push_back(client);
+	}
 	pthread_mutex_unlock(&clientmutex);
 }
 
