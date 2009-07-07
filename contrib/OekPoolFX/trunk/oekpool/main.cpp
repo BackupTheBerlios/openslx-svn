@@ -71,8 +71,10 @@ int main(int argc, char** argv) {
     SshThread* ssh = SshThread::getInstance();
     SSHInfo sshinfo;
 
+    int i = 0;
 	while(exitFlag == false) {
-
+		sleep(1);
+		cout << "Seconds: " << ++i;
     }
 
     return 0;

@@ -112,7 +112,7 @@ struct Shutdown : sc::simple_state<Shutdown, Client>  {
 		sc::transition< EvtStart, PXE > > reactions;
 
     Shutdown();
-    ~Shutdown() {};
+    ~Shutdown();
 };
 
 }

@@ -19,8 +19,6 @@ namespace bfs = boost::filesystem;
  */
 ClientStates::Offline::Offline() {
     //cout << "Entered Offline state!" << endl;
-	Client& client = context<Client>();
-	client.resetCmdTable();
 }
 
 ClientStates::Offline::~Offline() {
@@ -120,4 +118,9 @@ ClientStates::Shutdown::Shutdown() {
 	client.insertCmd("shutdown -h now");
 
 	client.process_event(EvtOffline());
+}
+
+ClientStates::Shutdown::~Shutdown() {
+	Client& client = context<Client>();
+	client.resetCmdTable();
 }
