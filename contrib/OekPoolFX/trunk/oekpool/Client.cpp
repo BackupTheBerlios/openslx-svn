@@ -372,6 +372,8 @@ void Client::checkSSHWake() {
 
 void Client::checkPingOffline() {
 
+	// TODO
+	// Hier sollten noch Timing-Bedingungen eingefügt werden
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0xC0 ) {
 		ssh_attempts = 0;
@@ -396,6 +398,8 @@ void Client::checkSSHOffline() {
 		return;
 	}
 
+	// TODO
+	// Hier sollten noch Timing-Bedingungen eingefügt werden
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0xC0 ) {
 		ssh_attempts = 0;

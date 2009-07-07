@@ -10,6 +10,7 @@
 #include "boost/filesystem.hpp"
 #include "Utility.h"
 #include "Network.h"
+#include "SshThread.h"
 
 namespace bfs = boost::filesystem;
 
@@ -85,14 +86,26 @@ ClientStates::SshWake::SshWake() {
 	// TODO
 	// evtl Timer setzen
 	Client& client = context<Client>();
+	SshThread::getInstance()->addClient(&client);
 	client.insertCmd("echo \"ping?\"");
+}
+
+ClientStates::SshWake::~SshWake() {
+	Client& client = context<Client>();
+	SshThread::getInstance()->delClient(&client);
 }
 
 ClientStates::SshOffline::SshOffline() {
 	// TODO
 	// evtl Timer setzen
 	Client& client = context<Client>();
+	SshThread::getInstance()->addClient(&client);
 	client.insertCmd("echo \"ping?\"");
+}
+
+ClientStates::SshOffline::~SshOffline() {
+	Client& client = context<Client>();
+	SshThread::getInstance()->delClient(&client);
 }
 
 ClientStates::PingOffline::PingOffline() {

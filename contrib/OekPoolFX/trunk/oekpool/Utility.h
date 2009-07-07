@@ -40,6 +40,9 @@ public:
 	 */
 	static
 	int toInt(std::string);
+
+	static
+	std::vector<std::string> stringSplit(std::string, std::string, std::vector<std::string>);
 };
 
 #endif /* UTILITY_H_ */

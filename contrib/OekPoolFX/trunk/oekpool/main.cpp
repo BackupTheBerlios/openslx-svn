@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <signal.h>
 
 #include "Client.h"
 #include "Ldap.h"
@@ -33,13 +34,17 @@ using namespace std;
 
 // global variables
 
+bool exitFlag = false;
+void setExitFlag(int);
+
 // this is the client list
 map<string, Client*> clientList;
 // this is the vector containing pools
 vector<string> vecPools;
 
-
 int main(int argc, char** argv) {
+
+	signal(SIGTERM, setExitFlag);
 
 	typedef pair<string,Client*> clientPair;
 
@@ -66,9 +71,13 @@ int main(int argc, char** argv) {
     SshThread* ssh = SshThread::getInstance();
     SSHInfo sshinfo;
 
-	while(sleep(60)) {
+	while(exitFlag == false) {
 
     }
 
     return 0;
+}
+
+void setExitFlag(int i) {
+	exitFlag = true;
 }

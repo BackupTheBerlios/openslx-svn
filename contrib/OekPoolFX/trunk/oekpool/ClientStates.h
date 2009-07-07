@@ -93,7 +93,7 @@ struct SshWake: sc::simple_state<SshWake, Client>  {
         sc::transition< EvtSshSuccess, SshWake > > reactions;
 
     SshWake();
-    ~SshWake() {};
+    ~SshWake();
 };
 
 struct SshOffline: sc::simple_state<SshOffline, Client>  {
@@ -103,7 +103,7 @@ struct SshOffline: sc::simple_state<SshOffline, Client>  {
         sc::transition< EvtSshSuccess, SshOffline > > reactions;
 
     SshOffline();
-    ~SshOffline() {};
+    ~SshOffline();
 };
 
 struct Shutdown : sc::simple_state<Shutdown, Client>  {
