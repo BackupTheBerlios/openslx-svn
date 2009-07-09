@@ -32,6 +32,9 @@
 
 using namespace std;
 
+/**
+ * This is the main LDAP-Connection and handling class
+ */
 Ldap::Ldap() {
 	Configuration* conf = Configuration::getInstance();
 
@@ -59,7 +62,7 @@ Ldap::Ldap() {
 
     this->host = host;
     this->port = port;
-    this->who = who;
+    this->who  = who;
     this->cred = cred;
 
 }

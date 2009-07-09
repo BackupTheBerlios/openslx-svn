@@ -17,6 +17,8 @@
 #include <vector>
 #include <map>
 
+#include <time.h>
+
 #include "LDAPConnection.h"
 #include "LDAPConstraints.h"
 

@@ -267,6 +267,7 @@ void* SshThread::_main(void*) {
 			}
 			catch(exception e) {
 				_disconnect(&sshinfo);
+				sshInfos.erase(sshInfos.find(client) );
 				pthread_mutex_lock(&client->sshMutex);
 				client->ssh_responding = (1 << 6);
 				pthread_mutex_unlock(&client->sshMutex);

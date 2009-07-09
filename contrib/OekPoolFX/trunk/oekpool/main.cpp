@@ -50,10 +50,10 @@ int main(int argc, char** argv) {
 
 	// call the various singleton to initialize
     Configuration* conf = Configuration::getInstance();
-
+    Network* network = Network::getInstance();
     Ldap* ldap = Ldap::getInstance();
 
-    Network::getInstance()->setNetworks(ldap->getNetworks());
+    network->setNetworks(ldap->getNetworks());
 
     vecPools = ldap->getPools();
 
@@ -61,7 +61,9 @@ int main(int argc, char** argv) {
     	ldap->getClients(pool,clientList);
     }
 
-    (new StdLogger())->log(
+    StdLogger* logger = new StdLogger();
+
+    logger->log(
     		LOG_LEVEL_INFO,
     		Utility::toString(clientList.size())+
 				" client objects created ",
@@ -71,10 +73,11 @@ int main(int argc, char** argv) {
     SshThread* ssh = SshThread::getInstance();
     SSHInfo sshinfo;
 
+
     int i = 0;
-	while(exitFlag == false) {
+	while(!exitFlag) {
 		sleep(1);
-		cout << "Seconds: " << ++i;
+		cout << "Seconds: " << ++i << endl;
     }
 
     return 0;

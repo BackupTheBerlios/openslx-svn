@@ -34,7 +34,7 @@ struct Shutdown;
 
 
 struct Offline : sc::simple_state<Offline, Client> {
-    typedef sc::transition< EvtHostlistInsert, PXE > reactions;
+    typedef sc::transition< EvtStart, PXE > reactions;
     Offline();
     virtual ~Offline();
 };

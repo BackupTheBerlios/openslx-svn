@@ -115,6 +115,7 @@ ClientStates::PingOffline::PingOffline() {
 
 ClientStates::Shutdown::Shutdown() {
 	Client& client = context<Client>();
+
 	client.insertCmd("shutdown -h now");
 
 	client.process_event(EvtOffline());

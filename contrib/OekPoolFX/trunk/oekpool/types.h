@@ -12,6 +12,7 @@
 #include "include/libssh2.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <iostream>
 #include "StdLog.h"
 #include "Client.h"
 
@@ -26,6 +27,13 @@ struct networkInfo{
 	IPAddress networkAddress;
 	IPAddress subnetMask;
 	IPAddress broadcastAddress;
+
+	std::ostream& operator<<(std::ostream& os) {
+		os << "networkAdress: " << std::hex << networkAddress << std::endl;
+		os << "subnetMask: " << std::hex << subnetMask << std::endl;
+		os << "broadcastAddress: " << std::hex << broadcastAddress << std::endl;
+		return os;
+	}
 };
 
 struct Client; // forward declaration for Clientstates
