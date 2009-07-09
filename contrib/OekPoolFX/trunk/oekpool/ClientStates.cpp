@@ -17,7 +17,7 @@ namespace bfs = boost::filesystem;
 /**
  * "Offline"-state enter function
  */
-ClientStates::Offline::Offline() {
+ClientStates::Offline::Offline(my_context ctx): sc::state<Offline, Client>(ctx) {
     //cout << "Entered Offline state!" << endl;
 }
 
@@ -28,14 +28,16 @@ ClientStates::Offline::~Offline() {
 /**
  * "PXEConfig"-state enter function
  */
-ClientStates::PXE::PXE() {
-   // cout << "Entered PXEConfig state!" << endl;
-	Client& client = context<Client>();
+ClientStates::PXE::PXE(my_context ctx): sc::state<PXE, Client>(ctx) {
+
+    clog << "Entered PXEConfig state!" << endl;
+	Client& client = outermost_context();
 	PXEInfo* pxe = client.getActiveSlot();
 
 	std::string tftp = Configuration::getInstance()->getString("tftp_root_dir");
 	std::string dir = pxe->TimeString;
 	std::string file = Utility::getPXEFilename(client.getHWAddress());
+
 	bfs::path link(tftp + file);
 	bfs::path source(dir + "/" + file);
 
@@ -44,13 +46,10 @@ ClientStates::PXE::PXE() {
 		bfs::create_symlink(link,source);
 	}
 	else {
-		bfs::create_symlink(link,source);
+		//bfs::create_symlink(link,source);
 	}
 
-	if(pxe->ForceBoot) {
-		client.process_event(EvtWakeCommand());
-	}
-	else {
+	if(!pxe->ForceBoot) {
 		client.host_responding = 0;
 		Network::getInstance()->hostAlive(client.host_responding, client.getIP(), &client.pingMutex);
 	}
@@ -61,8 +60,8 @@ ClientStates::PXE::~PXE(){}
 /**
  * "Wake"-state enter function
  */
-ClientStates::Wake::Wake() {
-    //cout << "Entered Wake state!" << endl;
+ClientStates::Wake::Wake(my_context ctx): sc::state<Wake, Client>(ctx) {
+    clog << "Entered Wake state!" << endl;
 	Client& client = context<Client>();
 
 	Network::getInstance()->sendWolPacket(Utility::ipFromString(client.getIP()), client.getHWAddress());
@@ -73,19 +72,20 @@ ClientStates::Wake::Wake() {
 	Network::getInstance()->hostAlive(client.host_responding, client.getIP(), &client.pingMutex);
 }
 
-ClientStates::PingWake::PingWake() {
+ClientStates::PingWake::PingWake(my_context ctx): sc::state<PingWake, Client>(ctx) {
 	// TODO
 	// evtl. Timer setzen
 	Client& client = context<Client>();
 	client.insertCmd("echo \"ping?\"");
 }
 
-ClientStates::SshWake::SshWake() {
+ClientStates::SshWake::SshWake(my_context ctx): sc::state<SshWake, Client>(ctx) {
 	// TODO
 	// evtl Timer setzen
 	Client& client = context<Client>();
 	SshThread::getInstance()->addClient(&client);
 	client.insertCmd("echo \"ping?\"");
+
 }
 
 ClientStates::SshWake::~SshWake() {
@@ -93,7 +93,7 @@ ClientStates::SshWake::~SshWake() {
 	SshThread::getInstance()->delClient(&client);
 }
 
-ClientStates::SshOffline::SshOffline() {
+ClientStates::SshOffline::SshOffline(my_context ctx): sc::state<SshOffline, Client>(ctx) {
 	// TODO
 	// evtl Timer setzen
 	Client& client = context<Client>();
@@ -106,14 +106,14 @@ ClientStates::SshOffline::~SshOffline() {
 	SshThread::getInstance()->delClient(&client);
 }
 
-ClientStates::PingOffline::PingOffline() {
+ClientStates::PingOffline::PingOffline(my_context ctx): sc::state<PingOffline, Client>(ctx) {
 	// TODO
 	// evtl Timer setzen
 	Client& client = context<Client>();
 	client.insertCmd("echo \"ping?\"");
 }
 
-ClientStates::Shutdown::Shutdown() {
+ClientStates::Shutdown::Shutdown(my_context ctx): sc::state<Shutdown, Client>(ctx) {
 	Client& client = context<Client>();
 
 	client.insertCmd("shutdown -h now");

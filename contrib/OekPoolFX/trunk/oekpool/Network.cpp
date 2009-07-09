@@ -46,14 +46,17 @@ void Network::createWolSequ(std::string macAddress, char* sequence) {
 
 ipaddr_t Network::createBroadcast(ipaddr_t ipAddress) {
 	unsigned int i;
+	ipaddr_t tempIp, netIp;
 
 	for(i = 0; i < availableNetworks.size(); i++) {
 
-		if((availableNetworks[i].subnetMask & ipAddress) == availableNetworks[i].networkAddress)
+		tempIp = (((ipaddr_t)availableNetworks[i].subnetMask) & ipAddress);
+		netIp = ((ipaddr_t)availableNetworks[i].networkAddress);
+		if( tempIp == netIp)
 			break;
 	}
 
-	return (ipaddr_t)availableNetworks[i-1].broadcastAddress;
+	return (ipaddr_t)availableNetworks[i].broadcastAddress;
 }
 
 std::vector<char> Network::splitAddress(std::string address, std::string format, string delimiter) {
@@ -96,7 +99,7 @@ void* Network::pingHost(void* pingArgs) {
 
 	// TODO
 	// Insert the ping interval defined in config file
-	if( (*str->alive & (char)0x20) != (char)0) {
+	if( (*(str->alive) & (char)0x20) != (char)0) {
 		sleep(30);
 	}
 
@@ -116,10 +119,10 @@ void* Network::pingHost(void* pingArgs) {
 	}
 
 	if(alive) {
-		*str->alive = 0xC0;
+		*(str->alive) = 0xC0;
 	}
 	else {
-		*str->alive = 0x80;
+		*(str->alive) = 0x80;
 	}
 
 	delete str;
@@ -138,6 +141,12 @@ void Network::hostAlive(char& flag, string host, pthread_mutex_t* mutex) {
 
 void Network::setNetworks(std::vector<networkInfo> networks) {
 	availableNetworks = networks;
+	for(int i = 0; i < availableNetworks.size(); i++) {
+		cout << hex << availableNetworks[i].broadcastAddress << endl;
+		cout << hex << availableNetworks[i].networkAddress << endl;
+		cout << hex << availableNetworks[i].subnetMask << endl;
+		cout << endl;
+	}
 }
 
 bool Network::sendWolPacket(ipaddr_t ip, std::string mac) {

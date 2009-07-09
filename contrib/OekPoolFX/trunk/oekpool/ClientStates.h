@@ -8,7 +8,7 @@
 #define CLIENTSTATES_H_
 
 
-#include <boost/statechart/simple_state.hpp>
+#include <boost/statechart/state.hpp>
 #include <boost/mpl/list.hpp>
 
 #include "events.h"
@@ -31,87 +31,84 @@ struct SshOffline;
 struct Error;
 struct Shutdown;
 
-
-
-struct Offline : sc::simple_state<Offline, Client> {
+struct Offline : sc::state<Offline, Client> {
     typedef sc::transition< EvtStart, PXE > reactions;
-    Offline();
+    Offline(my_context ctx);
     virtual ~Offline();
 };
 
-struct PXE : sc::simple_state<PXE, Client> {
+struct PXE : sc::state<PXE, Client> {
     typedef mpl::list <
         sc::transition< EvtWakeCommand, Wake >,
         sc::transition< EvtPingFailure, PXE >,
         sc::transition< EvtPingSuccess, PingOffline > > reactions;
-
-    PXE();
+	PXE(my_context ctx);
     ~PXE();
 };
 
-struct Wake : sc::simple_state<Wake, Client> {
+struct Wake : sc::state<Wake, Client> {
     typedef mpl::list <
 		sc::transition< EvtPingSuccess, PingWake >,
 		sc::transition< EvtPingFailure, Wake >,
 		sc::transition< EvtPingError, Error > > reactions;
 
-    Wake();
+    Wake(my_context ctx);
     ~Wake() {};
 };
 
-struct PingWake : sc::simple_state<PingWake, Client> {
+struct PingWake : sc::state<PingWake, Client> {
     typedef mpl::list<
         sc::transition< EvtSshError, Error >,
         sc::transition< EvtSshSuccess, SshWake >,
         sc::transition< EvtSshFailure, PingWake > >  reactions;
 
-    PingWake();
+    PingWake(my_context ctx);
     ~PingWake() {};
 };
 
-struct PingOffline : sc::simple_state<PingOffline, Client> {
+struct PingOffline : sc::state<PingOffline, Client> {
     typedef mpl::list<
 		sc::transition< EvtSshError, PXE >,
         sc::transition< EvtSshSuccess, SshOffline >,
         sc::transition< EvtSshFailure, PingOffline > >  reactions;
 
-    PingOffline();
+    PingOffline(my_context ctx);
     ~PingOffline() {};
 };
 
-struct Error : sc::simple_state<Error, Client> {
+struct Error : sc::state<Error, Client> {
     typedef sc::transition< EvtOffline, Offline > reactions;
 
-    Error() {};
+    Error(my_context ctx): sc::state<Error, Client>(ctx) {};
     ~Error() {};
 };
 
-struct SshWake: sc::simple_state<SshWake, Client>  {
+struct SshWake: sc::state<SshWake, Client>  {
     typedef mpl::list <
         sc::transition< EvtShutdown, Shutdown >,
         sc::transition< EvtSshFailure, PingWake >,
         sc::transition< EvtSshSuccess, SshWake > > reactions;
 
-    SshWake();
+    SshWake(my_context ctx);
     ~SshWake();
 };
 
-struct SshOffline: sc::simple_state<SshOffline, Client>  {
+struct SshOffline: sc::state<SshOffline, Client>  {
     typedef mpl::list <
         sc::transition< EvtShutdown, Shutdown >,
         sc::transition< EvtSshFailure, PingOffline >,
         sc::transition< EvtSshSuccess, SshOffline > > reactions;
 
-    SshOffline();
+    SshOffline(my_context ctx);
     ~SshOffline();
 };
 
-struct Shutdown : sc::simple_state<Shutdown, Client>  {
+struct Shutdown : sc::state<Shutdown, Client>  {
     typedef mpl::list <
 		sc::transition< EvtOffline, Offline >,
 		sc::transition< EvtStart, PXE > > reactions;
 
-    Shutdown();
+    Shutdown(my_context ctx);
     ~Shutdown();
 };
 

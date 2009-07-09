@@ -26,8 +26,6 @@ Client::Client(AttributeMap al, std::vector<PXESlot> slots)
 	pthread_mutex_init(&sshMutex, NULL);
 	pthread_mutex_init(&pingMutex, NULL);
 
-    initiate(); // Statemachine
-
     attributes = al;
 
     pxeslots = setPXEInfo(slots);
@@ -38,7 +36,7 @@ Client::Client(AttributeMap al, std::vector<PXESlot> slots)
     log->log(LOG_LEVEL_INFO,"Client with name \"" + al["HostName"]+"\" created!",this);
 
     IPAddress ip = Utility::ipFromString(al["IPAddress"]);
-
+    initiate(); // Statemachine
 }
 
 /**
@@ -49,6 +47,7 @@ Client::~Client() {
 }
 
 void Client::updateFromLdap(AttributeMap attr, std::vector<PXESlot> slots) {
+	// clog << "Updating client" << getHWAddress() << endl;
 	attributes = attr;
 
 	// TODO
@@ -170,7 +169,7 @@ PXEInfo* Client::getActiveSlot(bool shutdown) {
 	struct tm * futureTm = localtime(&futureTime);
 
 
-	for(int i; i < pxeslots.size(); i++) {
+	for(int i=0; i < pxeslots.size(); i++) {
 		if(currentTm->tm_wday != pxeslots[i].StartTime.tm_wday)
 			continue;
 		if((currentTm->tm_hour < pxeslots[i].StartTime.tm_hour) || (futureTm->tm_hour > pxeslots[i].ShutdownTime.tm_hour))
@@ -216,8 +215,16 @@ void Client::resetCmdTable() {
 
 void Client::processClient() {
 
+	// clog << "Processing client" << getHostName() << endl;
+
 	// checking whether client is in PXE state
 	// and applying specific checks
+	try {
+		state_cast<const ClientStates::Offline &>();
+		checkOffline();
+	}
+	catch(const std::bad_cast &Ex) {}
+
 	try {
 		state_cast<const ClientStates::PXE &>();
 		checkPXE();
@@ -275,14 +282,20 @@ void Client::processClient() {
 }
 
 void Client::checkOffline() {
-	if(isActive())
+	if(isActive()) {
 		process_event(EvtStart());
+	}
 }
 
 void Client::checkPXE() {
-
-	if(isActive(true) == false) {
+	clog << "CheckPXE" << endl;
+	if(!isActive()) {
 		process_event(EvtShutdown());
+		return;
+	}
+
+	if(getActiveSlot()->ForceBoot) {
+		process_event(EvtWakeCommand());
 		return;
 	}
 
@@ -303,7 +316,7 @@ void Client::checkPXE() {
 }
 
 void Client::checkWake() {
-
+	clog << "CheckWake" << endl;
 	pthread_mutex_lock(&pingMutex);
 	if( (host_responding & (char)0xC0) == (char)0xC0 ) {
 			ping_attempts = 0;
@@ -355,6 +368,10 @@ void Client::checkSSHWake() {
 		return;
 	}
 
+	if(isActive() == false) {
+		insertCmd("xmessage \"Dieser Rechner wird demnächst heruntergefahren.\nBitte speichern Sie alle Daten.\" &");
+	}
+
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0xC0 ) {
 		ssh_attempts = 0;
@@ -396,6 +413,10 @@ void Client::checkSSHOffline() {
 	if(isActive(true) == false) {
 		process_event(EvtShutdown());
 		return;
+	}
+
+	if(isActive() == false) {
+		insertCmd("xmessage \"Dieser Rechner wird demnächst heruntergefahren.\nBitte speichern Sie alle Daten.\" &");
 	}
 
 	// TODO

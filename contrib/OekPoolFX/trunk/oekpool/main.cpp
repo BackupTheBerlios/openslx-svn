@@ -14,6 +14,7 @@
 #include "Utility.h"
 #include "StdLogger.h"
 #include "types.h"
+#include <time.h>
 
 #include <boost/foreach.hpp>
 
@@ -55,12 +56,6 @@ int main(int argc, char** argv) {
 
     network->setNetworks(ldap->getNetworks());
 
-    vecPools = ldap->getPools();
-
-    BOOST_FOREACH(string pool, vecPools) {
-    	ldap->getClients(pool,clientList);
-    }
-
     StdLogger* logger = new StdLogger();
 
     logger->log(
@@ -75,9 +70,33 @@ int main(int argc, char** argv) {
 
 
     int i = 0;
+    clock_t timeStamp;
+    clock_t wait;
+
 	while(!exitFlag) {
-		sleep(1);
-		cout << "Seconds: " << ++i << endl;
+		timeStamp = clock();
+
+
+		if(i == 0) {
+			clog << "Aktualisiere LDAP-Info\n";
+			vecPools = ldap->getPools();
+
+			BOOST_FOREACH(string pool, vecPools) {
+				ldap->getClients(pool,clientList);
+			}
+		}
+
+		typedef pair< string, Client* > mpair;
+		BOOST_FOREACH(mpair p, clientList) {
+			p.second->processClient();
+		}
+
+	    i = (i + 1) % 6;
+		wait = 5L * 1000000L - (long)( ((double)(clock() - timeStamp)/ (double)CLOCKS_PER_SEC ) * 1000000L );
+		clog << "Warte " << wait << " usec\n";
+
+		// TODO Nanosleep
+		usleep(wait);
     }
 
     return 0;
