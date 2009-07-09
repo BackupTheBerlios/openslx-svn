@@ -353,10 +353,16 @@ void Client::checkPingWake() {
 	if( (ssh_responding & (char)0xC0) == (char)0x80 ) {
 		ssh_attempts ++;
 		ssh_responding = 0;
-		if(ssh_attempts > 5)
+		if(ssh_attempts > 5){
+			clog << "SSH Error" << endl;
 			process_event(EvtSshError());
-		else
+			insertCmd("echo \"ping?\"");
+		}
+		else{
+			clog << "SSH Failure" << endl;
 			process_event(EvtPingFailure());
+			insertCmd("echo \"ping?\"");
+		}
 	}
 	pthread_mutex_unlock(&sshMutex);
 }

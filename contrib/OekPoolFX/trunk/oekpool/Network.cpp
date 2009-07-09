@@ -100,7 +100,7 @@ void* Network::pingHost(void* pingArgs) {
 	// TODO
 	// Insert the ping interval defined in config file
 	if( (*(str->alive) & (char)0x20) != (char)0) {
-		sleep(30);
+		sleep(2);
 	}
 
 	SocketHandler h;

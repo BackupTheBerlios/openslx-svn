@@ -194,6 +194,7 @@ void SshThread::_disconnect(SSHInfo* sshinfo) {
 
 void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 
+	if(cmd.size() == 0) return;
 	cmd.append("\n");
 
 	StdLogger* log = new StdLogger();
@@ -214,7 +215,12 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 		sleep(1);
 		bufferlength = libssh2_channel_read(sshinfo->channel, buf, MAXLEN );
 
-		log->log(LOG_LEVEL_INFO,string("Returning output: ")+string(buf,bufferlength),sshinfo->client);
+		if(bufferlength > 0) {
+			log->log(LOG_LEVEL_INFO,string("Returning output: ")+string(buf,bufferlength),sshinfo->client);
+		}
+		else {
+			break;
+		}
 		*buf = 0;
 	}
 
@@ -244,6 +250,10 @@ void* SshThread::_main(void*) {
 	BOOST_FOREACH(Client* client, vecClients) {
 		sshinfo.client = client;
 		sshCmd.clear();
+		sshCmd = client->getCmdTable();
+
+		if(sshCmd.size() == 0) continue;
+
 		i = 0;
 
 		if(sshInfos.find(client) != sshInfos.end()) {
@@ -263,8 +273,6 @@ void* SshThread::_main(void*) {
 				break;
 			}
 		}
-
-		sshCmd = client->getCmdTable();
 
 		BOOST_FOREACH(string cmd, sshCmd) {
 			commandFlag = false;
