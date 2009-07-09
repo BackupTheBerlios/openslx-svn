@@ -156,15 +156,28 @@ fi
 
 
 # Network Configuration
-# only bridge differes to vmware
+# only bridge differes to vmware. Compatibility option
 if [ "${network_kind}" = "bridge" ]; then
 	network_kind="bridged"
 fi
 VBoxManage -q modifyvm "${ID}" --nic1 "${network_kind}"
+if [ "${network_kind}" = "bridged" ]; then
+    VBoxManage -q modifyvm "${ID}" --bridgeadapter1 "eth1"
+fi
+if [ "${network_kind}" = "hostonly" ]; then
+    VBoxManage -q modifyvm "${ID}" --hostonlyadapter1 "vboxnet0"
+fi
 
 # modify macaddress
 mac=$(echo ${mac}|sed 's/://') # ${mac/:/}
 VBoxManage -q modifyvm "${ID}" --macaddress1 "0050560D${mac}"
+
+
+# usb configuration
+# not available in free -ose version
+#VBoxManage -q modifyvm "${ID}" --usb on
+#VBoxManage -q modifyvm "${ID}" --usbehci on
+
 
 # finally set env for run-virt.sh
 ################################################################################
