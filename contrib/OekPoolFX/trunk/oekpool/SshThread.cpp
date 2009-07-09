@@ -173,10 +173,16 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 		return;
 	}
 
+	libssh2_channel_set_blocking(sshinfo->channel, 0);
+
 }
 
 void SshThread::_disconnect(SSHInfo* sshinfo) {
     if (sshinfo->channel) {
+    	libssh2_channel_close(sshinfo->channel);
+    	if(libssh2_channel_wait_closed(sshinfo->channel) == -1) {
+    		clog << "Error closing channel!" << endl;
+    	}
         libssh2_channel_free(sshinfo->channel);
         sshinfo->channel = NULL;
     }
@@ -221,6 +227,7 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 void* SshThread::_main(void*) {
 	SSHInfo sshinfo;
 	int i;
+	bool commandFlag = true;
 	vector<string> sshCmd;
 
 	while(!exitFlag) {
@@ -229,6 +236,10 @@ void* SshThread::_main(void*) {
 	pthread_mutex_lock(&clientmutex);
 	vector<Client*> vecClients = sshClients;
 	pthread_mutex_unlock(&clientmutex);
+
+	if(vecClients.size() == 0) {
+		sleep(1);
+	}
 
 	BOOST_FOREACH(Client* client, vecClients) {
 		sshinfo.client = client;
@@ -256,6 +267,7 @@ void* SshThread::_main(void*) {
 		sshCmd = client->getCmdTable();
 
 		BOOST_FOREACH(string cmd, sshCmd) {
+			commandFlag = false;
 			try {
 				_runCmd(&sshinfo, cmd);
 				++i;
@@ -275,6 +287,8 @@ void* SshThread::_main(void*) {
 			}
 		}
 	}
+
+	if(commandFlag) sleep(1);
 
 	}
 }

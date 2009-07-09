@@ -110,7 +110,7 @@ void* Network::pingHost(void* pingArgs) {
 	log.setMutex(str->mutex);
 	h.RegStdLog(&log);
 
-	p->Open(str->ipAddress, 22);
+	p->Open(str->ipAddress, 4567);
 	h.Add(p);
 	h.Select(1,0);
 	while (h.GetCount())
@@ -136,7 +136,7 @@ void Network::hostAlive(char& flag, string host, pthread_mutex_t* mutex) {
 	ps->ipAddress = host;
 	ps->mutex = mutex;
 
-	pthread_create(&thread, NULL, Network::pingHost, (void*) &ps);
+	pthread_create(&thread, NULL, Network::pingHost, (void*) ps);
 }
 
 void Network::setNetworks(std::vector<networkInfo> networks) {

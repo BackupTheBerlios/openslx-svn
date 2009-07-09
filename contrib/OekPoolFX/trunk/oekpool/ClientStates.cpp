@@ -75,13 +75,16 @@ ClientStates::Wake::Wake(my_context ctx): sc::state<Wake, Client>(ctx) {
 ClientStates::PingWake::PingWake(my_context ctx): sc::state<PingWake, Client>(ctx) {
 	// TODO
 	// evtl. Timer setzen
+	clog << "Entered PingWake" << endl;
 	Client& client = context<Client>();
 	client.insertCmd("echo \"ping?\"");
+	SshThread::getInstance()->addClient(&client);
 }
 
 ClientStates::SshWake::SshWake(my_context ctx): sc::state<SshWake, Client>(ctx) {
 	// TODO
 	// evtl Timer setzen
+	clog << "Entered SshWake" << endl;
 	Client& client = context<Client>();
 	SshThread::getInstance()->addClient(&client);
 	client.insertCmd("echo \"ping?\"");
@@ -96,6 +99,7 @@ ClientStates::SshWake::~SshWake() {
 ClientStates::SshOffline::SshOffline(my_context ctx): sc::state<SshOffline, Client>(ctx) {
 	// TODO
 	// evtl Timer setzen
+	clog << "Entered SshOffline" << endl;
 	Client& client = context<Client>();
 	SshThread::getInstance()->addClient(&client);
 	client.insertCmd("echo \"ping?\"");
@@ -110,6 +114,7 @@ ClientStates::PingOffline::PingOffline(my_context ctx): sc::state<PingOffline, C
 	// TODO
 	// evtl Timer setzen
 	Client& client = context<Client>();
+	SshThread::getInstance()->addClient(&client);
 	client.insertCmd("echo \"ping?\"");
 }
 

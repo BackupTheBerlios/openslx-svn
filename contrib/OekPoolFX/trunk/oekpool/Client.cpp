@@ -304,12 +304,14 @@ void Client::checkPXE() {
 	pthread_mutex_lock(&pingMutex);
 	if( (host_responding & (char)0xC0) == (char)0xC0 ) {
 		ping_attempts = 0;
+		host_responding = 0;
 		process_event(EvtPingSuccess());
 	}
 	pthread_mutex_unlock(&pingMutex);
 
 	pthread_mutex_lock(&pingMutex);
 	if( (host_responding & (char)0xC0) == (char)0x80 ) {
+		host_responding = 0;
 		process_event(EvtPingFailure());
 	}
 	pthread_mutex_unlock(&pingMutex);
@@ -320,6 +322,7 @@ void Client::checkWake() {
 	pthread_mutex_lock(&pingMutex);
 	if( (host_responding & (char)0xC0) == (char)0xC0 ) {
 			ping_attempts = 0;
+			host_responding = 0;
 			process_event(EvtPingSuccess());
 		}
 	pthread_mutex_unlock(&pingMutex);
@@ -327,6 +330,7 @@ void Client::checkWake() {
 	pthread_mutex_lock(&pingMutex);
 	if( (host_responding & (char)0xC0) == (char)0x80 ) {
 		ping_attempts++;
+		host_responding = 0;
 		if(ping_attempts > 5)
 			process_event(EvtPingError());
 		else
@@ -340,6 +344,7 @@ void Client::checkPingWake() {
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0xC0 ) {
 		ssh_attempts = 0;
+		ssh_responding = 0;
 		process_event(EvtSshSuccess());
 	}
 	pthread_mutex_unlock(&sshMutex);
@@ -347,6 +352,7 @@ void Client::checkPingWake() {
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0x80 ) {
 		ssh_attempts ++;
+		ssh_responding = 0;
 		if(ssh_attempts > 5)
 			process_event(EvtSshError());
 		else
@@ -375,6 +381,7 @@ void Client::checkSSHWake() {
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0xC0 ) {
 		ssh_attempts = 0;
+		ssh_responding = 0;
 		process_event(EvtSshSuccess());
 	}
 	pthread_mutex_unlock(&sshMutex);
@@ -382,6 +389,7 @@ void Client::checkSSHWake() {
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0x80 ) {
 		ssh_attempts ++;
+		ssh_responding = 0;
 		process_event(EvtPingFailure());
 	}
 	pthread_mutex_unlock(&sshMutex);
@@ -394,6 +402,7 @@ void Client::checkPingOffline() {
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0xC0 ) {
 		ssh_attempts = 0;
+		ssh_responding = 0;
 		process_event(EvtSshSuccess());
 	}
 	pthread_mutex_unlock(&sshMutex);
@@ -401,6 +410,7 @@ void Client::checkPingOffline() {
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0x80 ) {
 		ssh_attempts ++;
+		ssh_responding = 0;
 		if(ssh_attempts > 5)
 			process_event(EvtSshError());
 		else
@@ -424,6 +434,7 @@ void Client::checkSSHOffline() {
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0xC0 ) {
 		ssh_attempts = 0;
+		ssh_responding = 0;
 		process_event(EvtSshSuccess());
 	}
 	pthread_mutex_unlock(&sshMutex);
@@ -431,6 +442,7 @@ void Client::checkSSHOffline() {
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0x80 ) {
 		ssh_attempts ++;
+		ssh_responding = 0;
 		process_event(EvtPingFailure());
 	}
 	pthread_mutex_unlock(&sshMutex);
