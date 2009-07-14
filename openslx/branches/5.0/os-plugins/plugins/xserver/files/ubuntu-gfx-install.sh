@@ -55,8 +55,6 @@ case ${TARGET} in
     cd modules/lib/linux-restricted-modules/${KVER}/
     ld_static -d -r -o ${PLUGIN_FOLDER}/ati/modules/fglrx.ko fglrx/*
 
-    #TODO: Bastian: do we really need this part in stage1?
-    # Volker: I think we could just copy it (is a unique file)
     if [ -f /usr/lib/dri/fglrx_dri.so ]; then
       mv /usr/lib/dri/fglrx_dri.so /usr/lib/dri/fglrx_dri.so.slx
     else
@@ -65,6 +63,13 @@ case ${TARGET} in
     fi
     ln -s ${PLUGIN_FOLDER}/ati/usr/lib/dri/fglrx_dri.so \
         /usr/lib/dri/fglrx_dri.so
+
+    # Recent ATI drivers expect the driver link in /xyz
+    if [ ! -d /usr/X11R6/lib/modules/dri ]; then
+      mkdir -p /usr/X11R6/lib/modules/dri
+    fi
+    ln -s ${PLUGIN_FOLDER}/ati/usr/lib/dri/fglrx_dri.so \
+        /usr/X11R6/lib/modules/dri/fglrx_dri.so
 
     # cleanup
     cd ${PLUGIN_FOLDER}/ati

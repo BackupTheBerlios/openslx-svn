@@ -8,11 +8,11 @@
 #
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
-# xserver/OpenSLX/Distro/Ubuntu.pm
-#    - provides Ubuntu-specific overrides of the distro API for the xserver
+# xserver/OpenSLX/Distro/Debian.pm
+#    - provides Debian-specific overrides of the distro API for the xserver
 #      plugin.
 # -----------------------------------------------------------------------------
-package xserver::OpenSLX::Distro::Ubuntu;
+package xserver::OpenSLX::Distro::Debian;
 
 use strict;
 use warnings;

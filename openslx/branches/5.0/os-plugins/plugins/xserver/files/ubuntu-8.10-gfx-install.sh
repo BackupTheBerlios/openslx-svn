@@ -95,12 +95,16 @@ case ${TARGET} in
     if [ $? -eq 0 ]; then
       echo "ok"
     else
-      echo "fail"
-      echo "------ dkms.log -----"
-      cat /tmp/dkms.log
-      echo "---------------------"
-      rm /tmp/dkms.log
-      exit 1
+      if $(cat /tmp/dkms.log | grep -q "has already"); then
+        echo "--- fglrx module already built ---"
+      else
+        echo "fail"
+        echo "------ dkms.log -----"
+        cat /tmp/dkms.log
+        echo "---------------------"
+        rm /tmp/dkms.log
+        exit 1
+      fi
     fi
 
     FGLRX_MODULE_PATH=$(find ${FGLRX_DKMS_DIR}/${KVER}/ -name fglrx.ko \
@@ -191,12 +195,16 @@ case ${TARGET} in
     if [ $? -eq 0 ]; then
       echo "ok"
     else
-      echo "fail"
-      echo "------ dkms.log -----"
-      cat /tmp/dkms.log
-      echo "---------------------"
-      rm /tmp/dkms.log
-      exit 1
+      if $(cat /tmp/dkms.log | grep -q "has already"); then
+        echo "--- nvidia module already built ---"
+      else
+        echo "fail"
+        echo "------ dkms.log -----"
+        cat /tmp/dkms.log
+        echo "---------------------"
+        rm /tmp/dkms.log
+        exit 1
+      fi
     fi
 
     NVIDIA_MODULE_PATH=$(find ${NVIDIA_DKMS_DIR}/${KVER}/ -name \
