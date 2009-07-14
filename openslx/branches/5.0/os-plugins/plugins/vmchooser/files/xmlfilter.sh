@@ -30,15 +30,17 @@ if [ -f /etc/opt/openslx/vmchooser-stage3.conf ]; then
   . /etc/opt/openslx/vmchooser-stage3.conf
 fi
 
-if [ -n ${vmchooser_env} ]; then
-  for FILE in $1/*.xml
-  do
-    # filter all xmls with pool-param not equal to slxgroup
-    if [ $(grep "<pools param=\".*${vmchooser_env}.*\"" ${FILE} | wc -l) -eq 1 ]; then
-      echo ${FILE};
+for FILE in $1/*.xml; do
+  # filter all xmls which aren't set active
+  if [ $(grep "<active param=.*true.*" ${FILE} | wc -l) -eq 1 ]; then
+    if [ -n ${vmchooser_env} ]; then
+      # filter all xmls with pool-param not equal to vmchooser::env
+      if [ $(grep "<pools param=\"${vmchooser_env}\"" ${FILE} | wc -l) -eq 1 ]; then
+        echo ${FILE};
+      fi
+    else
+      # if there is no pool set, just take all available xmls
+      echo -e ${active}
     fi
-  done
-else
-  # if there is no pool set, just take all available xmls
-  ls -1 $1/*.xml
-fi
+  fi
+done

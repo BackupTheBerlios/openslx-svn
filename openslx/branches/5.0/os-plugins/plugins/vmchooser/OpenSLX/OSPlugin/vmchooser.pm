@@ -10,6 +10,8 @@
 # -----------------------------------------------------------------------------
 # vmchooser.pm
 #    - allows user to pick from a list of virtual machine images
+# 
+#    - serves as base for virtualizer plugins / and requires one of these
 # -----------------------------------------------------------------------------
 package OpenSLX::OSPlugin::vmchooser;
 
@@ -101,10 +103,13 @@ sub installationPhase
     my $pluginName = $self->{'name'};
     my $pluginBasePath = "$openslxBasePath/lib/plugins/$pluginName/files";
     foreach my $file ( qw( vmchooser printer.sh scanner.sh xmlfilter.sh 
-        default.desktop vmchooser.sh mesgdisp run-virt.sh ) ) {
+        default.desktop mesgdisp run-virt.sh ) ) {
         copyFile("$pluginBasePath/$file", "$pluginRepoPath/");
-    chmod 0755, "$pluginRepoPath/$file";
+        chmod 0755, "$pluginRepoPath/$file";
     }
+    
+    # set ditro-specific default session
+    $self->{distro}->copyDefaultSession($pluginRepoPath);
     
     return;
 }
