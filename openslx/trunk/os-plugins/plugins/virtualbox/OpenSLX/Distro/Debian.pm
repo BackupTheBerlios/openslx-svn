@@ -32,14 +32,14 @@ sub installVbox
 
     my $engine = $self->{'os-plugin-engine'};
     my $release = `lsb_release -rs`;
+    chomp($release);
 
     # lenny(5.0) has v1.6
     # testing is ok. but no clue which lsb_release -rs it has...
     if ( $release eq "999999.0") {
-        $engine->installPackages(
-            $engine->getInstallablePackagesForSelection('virtualbox-ose')
-        
-        );
+        #$engine->installPackages(
+        #    $engine->getInstallablePackagesForSelection('virtualbox-ose')
+        #);
     } else {
         print "Couldn't install VirtualBox, no package from distribution\n";
         exit;

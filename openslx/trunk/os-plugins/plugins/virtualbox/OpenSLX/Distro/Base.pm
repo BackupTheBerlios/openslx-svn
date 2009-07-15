@@ -51,9 +51,9 @@ sub installVbox
     my $engine = $self->{'os-plugin-engine'};
 
     # lets try it... we can't loose anything :)
-	$engine->installPackages(
-         $engine->getInstallablePackagesForSelection('virtualbox-ose')
-	);
+	#$engine->installPackages(
+    #     $engine->getInstallablePackagesForSelection('virtualbox-ose')
+	#);
 
     return;
 }

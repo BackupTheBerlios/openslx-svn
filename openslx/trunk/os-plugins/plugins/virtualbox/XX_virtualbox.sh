@@ -46,10 +46,16 @@ ${virtualbox_imagesrc}." nonfatal
     cp /mnt/opt/openslx/plugin-repo/virtualbox/run-virt.include \
       /mnt/etc/opt/openslx/run-virtualbox.include
 
-	 modprobe vboxdrv
-	 modprobe vboxnetflt
-	 mknod -m 0660 /dev/vboxdrv c 10 59
-	 chown root:vboxusers /dev/vboxdrv
+    # copy and activate init file
+    cp /mnt/opt/openslx/plugin-repo/virtualbox/vbox-slx \
+      /mnt/etc/init.d
+    chmod 755 /etc/init.d/vbox-slx
+    rllinker "vbox-slx" 20 2
+
+    modprobe vboxdrv
+    modprobe vboxnetflt
+    mknod -m 0660 /dev/vboxdrv c 10 59
+    chown root:vboxusers /dev/vboxdrv
   fi
 else
   [ $DEBUGLEVEL -gt 0 ] && echo "  * Configuration of virtualbox plugin failed"
