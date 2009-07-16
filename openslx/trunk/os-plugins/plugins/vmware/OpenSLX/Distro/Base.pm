@@ -49,29 +49,28 @@ sub fillRunlevelScript
     my $self     = shift;
     my $location = shift;
     my $kind     = shift;
-/*
-    my $initfile = newInitFile();
-    $initfile->addFunction(
-	'load_modules',
-        '
-         # to be filled in via the stage1 configuration script
-         insmod /lib/modules/\$(uname -r)/misc/vmmon.ko || return 1
-         insmod /lib/modules/\$(uname -r)/misc/vmnet.ko || return 1
-         insmod /lib/modules/\$(uname -r)/misc/vmblock.ko 2>/dev/null || return 0
-        '
-        {param => "value"}
-    );
 
-    $initfile->addFunctionCall(
-	'functionName',
-        'start', # name of block
-        {priority => 5, }
-    );
-
-    $initfile->addDaemon("/bin/mydaemon");
-
-    my $runlevelscript = getInitFileForDistro($initfile, "ubuntu");
-*/
+#    my $initfile = newInitFile();
+#    $initfile->addFunction(
+#	'load_modules',
+#        '
+#         # to be filled in via the stage1 configuration script
+#         insmod /lib/modules/\$(uname -r)/misc/vmmon.ko || return 1
+#         insmod /lib/modules/\$(uname -r)/misc/vmnet.ko || return 1
+#         insmod /lib/modules/\$(uname -r)/misc/vmblock.ko 2>/dev/null || return 0
+#        '
+#        {param => "value"}
+#    );
+#
+#    $initfile->addFunctionCall(
+#	'functionName',
+#        'start', # name of block
+#        {priority => 5, }
+#    );
+#
+#    $initfile->addDaemon("/bin/mydaemon");
+#
+#    my $runlevelscript = getInitFileForDistro($initfile, "ubuntu");
 
     my $script = unshiftHereDoc(<<"    End-of-Here");
         #!/bin/sh

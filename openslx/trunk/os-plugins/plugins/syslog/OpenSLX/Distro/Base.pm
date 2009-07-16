@@ -72,7 +72,7 @@ sub getPackageName
         'syslogd'   => 'sysklogd',
         'syslog-ng' => 'syslog-ng',
     );
-    return $nameMap($name);
+    return $nameMap{$name};
 }
 
 1;
