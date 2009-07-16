@@ -131,13 +131,26 @@ if [ -s /etc/hwinfo.disk ] ; then
       part44=yes
       break
     done
-    # put detected linux partitions into /etc/fstab with "noauto"
-    for hdpartnr in $(cat /etc/disk.partition | \
-        sed -n -e "/ 83 /p"|sed -e "s/[[:space:]].*//") ; do
-      mkdir -p /mnt/media/${hdpartnr#/dev/*} 2>/dev/null
-      echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
+    # put detected linux partitions (83) into /etc/fstab with "noauto", 
+    # special partition 45 (persistent scratch) to /var/scratch and 46
+    # to /var/openslx
+    for partid in 83 45 46 ; do
+      for hdpartnr in $(cat /etc/disk.partition | \
+          sed -n -e "/ ${partid} /p"|sed -e "s/[[:space:]].*//") ; do
+        mkdir -p /mnt/media/${hdpartnr#/dev/*} 2>/dev/null
+        if [ ${partid} -eq 83 ] ; then
+          echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
 noexec\t 0 0" >>/tmp/fstab
-    done 
+        elif [ ${partid} -eq 45 ] ; then
+          # if more than one id45 present, the latter ones are simply mounted
+          # over the previous
+          ln -sf /mnt/media/${hdpartnr#/dev/*} /mnt/var/scratch
+        elif [ ${partid} -eq 46 ] ; then
+          # mount a home directory to (/mnt)/var/home
+          ln -sf /mnt/media/${hdpartnr#/dev/*} /mnt/var/home
+        fi
+      done
+    done
   done
   # determine if tmp preparation should wait for format/mount or not
   [ -z "$part44" ] && echo "finished at $(sysup)" >/tmp/tmpready
