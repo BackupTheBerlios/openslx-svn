@@ -18,7 +18,7 @@ namespace bfs = boost::filesystem;
  * "Offline"-state enter function
  */
 ClientStates::Offline::Offline(my_context ctx): sc::state<Offline, Client>(ctx) {
-    //cout << "Entered Offline state!" << endl;
+    cout << "Entered Offline state!" << endl;
 }
 
 ClientStates::Offline::~Offline() {
@@ -113,12 +113,14 @@ ClientStates::SshOffline::~SshOffline() {
 ClientStates::PingOffline::PingOffline(my_context ctx): sc::state<PingOffline, Client>(ctx) {
 	// TODO
 	// evtl Timer setzen
+	clog << "Entered PingOffline state!" << endl;
 	Client& client = context<Client>();
 	SshThread::getInstance()->addClient(&client);
 	client.insertCmd("echo \"ping?\"");
 }
 
 ClientStates::Shutdown::Shutdown(my_context ctx): sc::state<Shutdown, Client>(ctx) {
+	clog << "Entered Shutdown state!" << endl;
 	Client& client = context<Client>();
 
 	client.insertCmd("shutdown -h now");
@@ -127,6 +129,7 @@ ClientStates::Shutdown::Shutdown(my_context ctx): sc::state<Shutdown, Client>(ct
 }
 
 ClientStates::Shutdown::~Shutdown() {
+	clog << "Left Shutdown state!" << endl;
 	Client& client = context<Client>();
 	client.resetCmdTable();
 }

@@ -354,7 +354,8 @@ void Client::checkPingWake() {
 
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0x80 ) {
-		ssh_attempts ++;
+		clog << "SSH Error!" << endl;
+		ssh_attempts++;
 		ssh_responding = 0;
 		if(ssh_attempts > 5){
 			clog << "SSH Error" << endl;
@@ -404,6 +405,7 @@ void Client::checkSSHWake() {
 
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0x80 ) {
+		clog << "SSH Error!" << endl;
 		ssh_attempts ++;
 		ssh_responding = 0;
 		process_event(EvtPingFailure());
@@ -425,6 +427,7 @@ void Client::checkPingOffline() {
 
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0x80 ) {
+		clog << "SSH Error!" << endl;
 		ssh_attempts ++;
 		ssh_responding = 0;
 		if(ssh_attempts > 5)
@@ -463,6 +466,7 @@ void Client::checkSSHOffline() {
 
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0x80 ) {
+		clog << "SSH Error!" << endl;
 		ssh_attempts ++;
 		ssh_responding = 0;
 		process_event(EvtPingFailure());
