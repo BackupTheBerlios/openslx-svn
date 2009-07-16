@@ -37,7 +37,9 @@ namespace AccountValue
         XmlDocument doc = new XmlDocument();
 
         //private DragExtender dragExtender1;
+        private String last_stand = null;
         private bool firsttime = true;
+        private bool firstclick = true;
         private Form2 f2;
 
         String resolution_x = "";
@@ -88,16 +90,18 @@ namespace AccountValue
                     System.Threading.Thread.Sleep(1000);
                     disk = di.Exists;
                     i++;
+                    //if (i == 10)
                     if (i == 60)
                         break;
                 }
                 
                 doc.Load("B:\\CONFIG.XML");
+                //doc.Load("C:\\CONFIG.XML");
 
             }
-            catch (Exception e)
+            catch //(Exception e)
             {
-                MessageBox.Show(e.Message, "Fehler: das Laufwerk B: nicht vervügbar", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Das Laufwerk B: oder CONFIG.XML auf dem Laufwerk B: ist nicht vorhanden!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 System.Environment.Exit(0);
             }
                         
@@ -109,12 +113,13 @@ namespace AccountValue
             }
             catch /*(Exception e)*/
             {
-                MessageBox.Show(this, "Eintrag \"Benutzername\" nicht vorhanden!", "Fehler: CONFIG.XML", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, "Eintrag \"Benutzername\" ist in B:\\CONFIG.XML nicht vorhanden!", "Fehler: CONFIG.XML", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 System.Environment.Exit(0);
             }
 
             try
             {
+                MessageBox.Show("Wenn Sie die Drucker benutzen und Daten in Ihrem Verzeichnis speichern möchten,\nmelden Sie sich bitte im Fenster, das gleich angezeigt wird, an!", "Information!");
                 maskedTextBox1.Focus();
             }
             catch { }
@@ -128,12 +133,17 @@ namespace AccountValue
         //############## Wenn der Knopf "Anmelden" angecklickt wird ###########
         private void button1_Click(object sender, EventArgs e)
         {
-            login_clicked();
+            //Verbot von doppeltem Click auf "Anmelden"
+            if (firstclick)
+            {
+                login_clicked();
+                firstclick = false;
+            }
         }
-
 
         private void login_clicked()
         {
+            firstclick = true;
             //NetworkDrive oNetDrive = new NetworkDrive();
 
             //############### Parameter aus CONFIG.XML auslesen ################
@@ -504,6 +514,7 @@ namespace AccountValue
                 }
                 catch { }
             }
+            MessageBox.Show("Bitte speichern Sie Ihre Dateien im Homeverzeichnis K: oder unter \"Eigenen Dateien\"!\nAlles, was in anderen Ordner gespeichert wird, wird nach dem Logout verschwinden!", "Wichtige Information!");
         }
 
 
@@ -513,7 +524,7 @@ namespace AccountValue
 
             if (firsttime)
             {
-                String navigateTo = "https://myaccount.uni-freiburg.de/uadmin/pa?uid=" + textBox1.Text + "&pwd=" + maskedTextBox1.Text;
+                String navigateTo = "https://myaccount.uni-freiburg.de/uadmin/pa?uid=" + textBox1.Text + "&pwd=" + maskedTextBox1.Text.Replace("%", "%25");
 
                 webBrowser1.Navigate(navigateTo);
 
@@ -580,12 +591,24 @@ namespace AccountValue
             f2.label1.Text = "Benutzer: " + textBox1.Text;
 
             String value = webBrowser1.Document.Body.InnerText.Trim();
-
+            
+            if (value.IndexOf("ERROR") != -1)
+            {
+                //value = "ERROR";
+                value = last_stand;
+            }
+            else
+            {
+                value += "€";
+                last_stand = value;
+            }
+            
+            /*
             if (value.IndexOf("ERROR") != -1)
                 value = "ERROR";
             else
                 value += "€";
-
+            */
 
 
             f2.label2.Text = value;
@@ -601,7 +624,7 @@ namespace AccountValue
         private void timer1_Tick(object sender, EventArgs e)
         {
 
-            String navigateTo = "https://myaccount.uni-freiburg.de/uadmin/pa?uid=" + textBox1.Text + "&pwd=" + maskedTextBox1.Text;
+            String navigateTo = "https://myaccount.uni-freiburg.de/uadmin/pa?uid=" + textBox1.Text + "&pwd=" + maskedTextBox1.Text.Replace("%", "%25");
 
             webBrowser1.Navigate(navigateTo);
         }
@@ -658,50 +681,53 @@ namespace AccountValue
 
             if (home == "true")
             {
-
-                DiskFreeSpace used = GetDiskFreeSpace("k:\\");
-
-                double disk_quota = Convert.ToDouble(used.TotalBytes);
-                double used_bytes = Convert.ToDouble(used.TotalBytes) - Convert.ToDouble(used.TotalFreeBytes);
-                double free_bytes = Convert.ToDouble(used.TotalFreeBytes);
-
-                double percet_usage = ((100 / disk_quota) * used_bytes);
-
-
-
-                if ((int)percet_usage < 0)
-                    percet_usage = 0;
-
-                if ((int)percet_usage > 100)
-                    percet_usage = 100;
-
-
-
-                f2.colorProgressBar1.Value = (int)percet_usage;
-
-                double quota = disk_quota / 1024 / 1024;
-                double usedb = used_bytes / 1024 / 1024;
-                double freespace = free_bytes / 1024 / 1024;
-
-
-                f2.label5.Text = "Quota: " + quota.ToString("N2") + " MBytes";
-                f2.label8.Text = "Belegt: " + usedb.ToString("N2") + " MBytes";
-                f2.label6.Text = "Frei: " + freespace.ToString("N2") + " MBytes";
-
-
-
-                if ((int)percet_usage >= 90)
+                try
                 {
-                    f2.label9.ForeColor = Color.Red;
-                    f2.colorProgressBar1.BarColor = Color.Red;
-                }
-                else
-                {
-                    f2.label9.ForeColor = Color.Green;
-                    f2.colorProgressBar1.BarColor = Color.Green;
-                }
-                f2.label9.Text = ((int)percet_usage).ToString() + "%";
+                    DiskFreeSpace used = GetDiskFreeSpace("k:\\");
 
+                    double disk_quota = Convert.ToDouble(used.TotalBytes);
+                    double used_bytes = Convert.ToDouble(used.TotalBytes) - Convert.ToDouble(used.TotalFreeBytes);
+                    double free_bytes = Convert.ToDouble(used.TotalFreeBytes);
+
+                    double percet_usage = ((100 / disk_quota) * used_bytes);
+
+
+
+                    if ((int)percet_usage < 0)
+                        percet_usage = 0;
+
+                    if ((int)percet_usage > 100)
+                        percet_usage = 100;
+
+
+
+                    f2.colorProgressBar1.Value = (int)percet_usage;
+
+                    double quota = disk_quota / 1024 / 1024;
+                    double usedb = used_bytes / 1024 / 1024;
+                    double freespace = free_bytes / 1024 / 1024;
+
+
+                    f2.label5.Text = "Quota: " + quota.ToString("N2") + " MBytes";
+                    f2.label8.Text = "Belegt: " + usedb.ToString("N2") + " MBytes";
+                    f2.label6.Text = "Frei: " + freespace.ToString("N2") + " MBytes";
+
+
+
+                    if ((int)percet_usage >= 90)
+                    {
+                        f2.label9.ForeColor = Color.Red;
+                        f2.colorProgressBar1.BarColor = Color.Red;
+                    }
+                    else
+                    {
+                        f2.label9.ForeColor = Color.Green;
+                        f2.colorProgressBar1.BarColor = Color.Green;
+                    }
+                    f2.label9.Text = ((int)percet_usage).ToString() + "%";
+
+                }
+                catch {}
             }
             else
             {
@@ -709,6 +735,8 @@ namespace AccountValue
             }
         }
 
-
+        public static bool CheckProcessIsRun(string sProcessName){
+			return (System.Diagnostics.Process.GetProcessesByName(sProcessName).Length > 0);
+        }
     }
 }

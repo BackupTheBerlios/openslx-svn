@@ -29,7 +29,7 @@ namespace AccountValue
     public partial class Form2 : Form
     {
         private DragExtender dragExtender1;
-        private String version = "0.4.1";
+        private String version = "0.4.2";
         /*
          * 
          */
@@ -98,7 +98,7 @@ namespace AccountValue
             //object x = null;
 
             Form3 f3 = new Form3();
-            f3.webBrowser1.Navigate(@"https://myaccount.ruf.uni-freiburg.de/uadmin/priacc?uid=" + f1.textBox1.Text.Trim() + "&pwd=" + f1.maskedTextBox1.Text.Trim());
+            f3.webBrowser1.Navigate(@"https://myaccount.ruf.uni-freiburg.de/uadmin/priacc?uid=" + f1.textBox1.Text.Trim() + "&pwd=" + f1.maskedTextBox1.Text.Replace("%", "%25").Trim());
             f3.Show();
 
         }
