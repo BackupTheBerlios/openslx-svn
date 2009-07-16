@@ -144,10 +144,13 @@ noexec\t 0 0" >>/tmp/fstab
         elif [ ${partid} -eq 45 ] ; then
           # if more than one id45 present, the latter ones are simply mounted
           # over the previous
-          ln -sf /mnt/media/${hdpartnr#/dev/*} /mnt/var/scratch
+          mount -t auto ${hdpartnr} /mnt/media/${hdpartnr#/dev/*} &
+          ln -sf /media/${hdpartnr#/dev/*} /mnt/var/scratch
         elif [ ${partid} -eq 46 ] ; then
           # mount a home directory to (/mnt)/var/home
-          ln -sf /mnt/media/${hdpartnr#/dev/*} /mnt/var/home
+          mount -t auto ${hdpartnr} /mnt/media/${hdpartnr#/dev/*} &
+          test -d /mnt/media/${hdpartnr#/dev/*}/home && \
+            ln -sf /media/${hdpartnr#/dev/*} /mnt/var/home
         fi
       done
     done

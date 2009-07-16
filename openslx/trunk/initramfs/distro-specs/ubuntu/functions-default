@@ -80,6 +80,11 @@ config_distro () {
       -e "/# This next bit can/a\        /sbin/udevadm trigger" \
       -e "/# We need the uevent/,/# It's all over/d" \
       -e "/# Log things that/,/kill \$UDEV/d" -i /mnt/etc/init.d/udev
+
+  # clean the mountall.sh script as only swap activation needed
+  sed -e "3i# Script modified during SLX stage3 bootup (config_distro)" \
+      -e "/pre_mountall/,/post_mountall/d" \
+      -i /mnt/etc/init.d/mountall.sh
 }
 
 # initial (boot time) runlevel scripts
@@ -88,8 +93,8 @@ local count=10
 # boot.slx is a special runlevel script generated within initialramfs which
 # should be executed before the normal runlevel scripts. Proper shutdown is
 # not needed!?
-for i in mountkernfs.sh mountdevsubfs.sh keyboard-setup procps bootlogd \
-hwclock.sh sudo console-setup udev boot.slx $D_SPLASHY; do
+for i in mountkernfs.sh mountall.sh mountdevsubfs.sh keyboard-setup procps \
+bootlogd hwclock.sh sudo console-setup udev boot.slx $D_SPLASHY; do
   count=$(($count + 1))
   [ $DEBUGLEVEL -ge 2 ] && echo "boot-runlevelscript $i"
   ln -sf /etc/init.d/$i /mnt/etc/rcS.d/S${count}$i
