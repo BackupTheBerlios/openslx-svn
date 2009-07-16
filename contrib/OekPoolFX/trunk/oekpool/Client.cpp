@@ -11,6 +11,7 @@
 #include "StdLogger.h"
 #include "Configuration.h"
 #include <iostream>
+#include <time.h>
 
 using namespace std;
 
@@ -36,6 +37,7 @@ Client::Client(AttributeMap al, std::vector<PXESlot> slots)
     log->log(LOG_LEVEL_INFO,"Client with name \"" + al["HostName"]+"\" created!",this);
 
     IPAddress ip = Utility::ipFromString(al["IPAddress"]);
+    time(&nextWarnTime);
     initiate(); // Statemachine
 }
 
@@ -51,7 +53,8 @@ void Client::updateFromLdap(AttributeMap attr, std::vector<PXESlot> slots) {
 	attributes = attr;
 
 	// TODO
-	// Verhalten muss definiert werden für den Fall, dass der aktuell laufende PXESlot ersetzt wird.
+	// (Verhalten muss definiert werden für den Fall, dass der aktuell laufende PXESlot ersetzt wird.)
+	// Evtl. wird der Zugriff im Web-Interface gesperrt, sodass diesr Fall nicht auftritt.
 	pxeslots = setPXEInfo(slots);
 }
 
@@ -380,8 +383,15 @@ void Client::checkSSHWake() {
 		return;
 	}
 
+
 	if(isActive() == false) {
-		insertCmd("xmessage \"Dieser Rechner wird demnächst heruntergefahren.\nBitte speichern Sie alle Daten.\" &");
+		time_t currentTime;
+		time(&currentTime);
+		if(currentTime > nextWarnTime)
+		{
+			insertCmd("xmessage \"Dieser Rechner wird demnächst heruntergefahren.\nBitte speichern Sie alle Daten.\" &");
+			nextWarnTime = currentTime + Configuration::getInstance()->getInt("warn_interval");
+		}
 	}
 
 	pthread_mutex_lock(&sshMutex);
@@ -432,7 +442,13 @@ void Client::checkSSHOffline() {
 	}
 
 	if(isActive() == false) {
-		insertCmd("xmessage \"Dieser Rechner wird demnächst heruntergefahren.\nBitte speichern Sie alle Daten.\" &");
+		time_t currentTime;
+		time(&currentTime);
+		if(currentTime > nextWarnTime)
+		{
+			insertCmd("xmessage \"Dieser Rechner wird demnächst heruntergefahren.\nBitte speichern Sie alle Daten.\" &");
+			nextWarnTime = currentTime + Configuration::getInstance()->getInt("warn_interval");
+		}
 	}
 
 	// TODO

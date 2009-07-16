@@ -56,6 +56,11 @@ private:
     std::vector<PXEInfo> setPXEInfo(std::vector<PXESlot>);
 
     /**
+     * Indicates when to warn the user about shutdown next
+     */
+    time_t nextWarnTime;
+
+    /**
      * Series of checks for every state of the client
      * Every check can trigger some state transition
      */
