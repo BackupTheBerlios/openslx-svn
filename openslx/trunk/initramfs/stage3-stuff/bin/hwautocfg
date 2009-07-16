@@ -27,7 +27,7 @@ done
 # no kernel messages, switch on hotplug via /sbin/mdev
 echo "0 0 0 0" >/proc/sys/kernel/printk
 echo "/sbin/mdev" >/proc/sys/kernel/hotplug
-modprobe -a ${MODPRV} usbhid hid-bright &
+modprobe -a ${MODPRV} usbhid hid-bright 2>/dev/null &
 nwcardlist=$(echo ${slxconf_listnwmod}|sed "s/\ /|/g")
 hwinfo --netcard --usb-ctrl | grep modprobe | grep -E "$nwcardlist|hcd" | \
   grep -v ehci | sed 's/.* Cmd: "//;s/"//' | sort -u >/etc/modprobe.base
@@ -67,9 +67,9 @@ mdev -s
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
 
 # load disk/optical high level drivers
-modprobe ${MODPRV} ide-cd
-modprobe ${MODPRV} sr_mod
-modprobe ${MODPRV} ide-floppy
+modprobe ${MODPRV} ide-cd 2>/dev/null
+modprobe ${MODPRV} sr_mod 2>/dev/null
+modprobe ${MODPRV} ide-floppy 2>/dev/null
 mdev -s
 
 # load kernel module for ps2 mice and map the mousehandler to /dev/input/mice
