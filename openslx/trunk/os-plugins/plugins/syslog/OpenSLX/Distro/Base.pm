@@ -63,4 +63,16 @@ sub runlevelInfo
     return $rlInfo;
 }
 
+sub getPackageName
+{
+    my $self = shift;
+    my $name = shift;
+
+    my %nameMap = (
+        'syslogd'   => 'sysklogd',
+        'syslog-ng' => 'syslog-ng',
+    );
+    return $nameMap($name);
+}
+
 1;
