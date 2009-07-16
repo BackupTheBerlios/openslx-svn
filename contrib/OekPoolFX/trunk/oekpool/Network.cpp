@@ -14,6 +14,7 @@
 #include <pthread.h>
 
 #include "Network.h"
+#include "Configuration.h"
 
 using namespace std;
 
@@ -94,13 +95,12 @@ std::vector<char> Network::splitAddress(std::string address, std::string format,
 
 void* Network::pingHost(void* pingArgs) {
 
+	Configuration* conf = Configuration::getInstance();
 	bool alive;
 	pingStruct* str = (pingStruct*) pingArgs;
 
-	// TODO
-	// Insert the ping interval defined in config file
 	if( (*(str->alive) & (char)0x20) != (char)0) {
-		sleep(2);
+		sleep(conf->getInt("ping_interval"));
 	}
 
 	SocketHandler h;

@@ -390,7 +390,7 @@ void Client::checkSSHWake() {
 		time(&currentTime);
 		if(currentTime > nextWarnTime)
 		{
-			insertCmd("xmessage \"Dieser Rechner wird demnächst heruntergefahren.\nBitte speichern Sie alle Daten.\" &");
+			insertCmd("xmessage -display :0 \"Dieser Rechner wird demnächst heruntergefahren.\nBitte speichern Sie alle Daten.\" &");
 			nextWarnTime = currentTime + Configuration::getInstance()->getInt("warn_interval");
 		}
 	}
@@ -449,7 +449,7 @@ void Client::checkSSHOffline() {
 		time(&currentTime);
 		if(currentTime > nextWarnTime)
 		{
-			insertCmd("xmessage \"Dieser Rechner wird demnächst heruntergefahren.\nBitte speichern Sie alle Daten.\" &");
+			insertCmd("xmessage -display :0 \"Dieser Rechner wird demnächst heruntergefahren.\nBitte speichern Sie alle Daten.\" &");
 			nextWarnTime = currentTime + Configuration::getInstance()->getInt("warn_interval");
 		}
 	}

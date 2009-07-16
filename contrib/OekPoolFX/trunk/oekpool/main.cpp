@@ -92,10 +92,10 @@ int main(int argc, char** argv) {
 		}
 
 	    i = (i + 1) % 6;
-		wait = 5L * 1000000L - (long)( ((double)(clock() - timeStamp)/ (double)CLOCKS_PER_SEC ) * 1000000L );
-		clog << "Warte " << wait << " usec\n";
+		wait = 5000000L -  ((1000000L*(clock() - timeStamp)) / CLOCKS_PER_SEC);
+		clog << "Warte " << wait << " usec" << endl;
 
-		// TODO Nanosleep
+		// TODO use nanosleep to work with interrupts
 		usleep(wait);
     }
 

@@ -18,7 +18,9 @@ namespace bfs = boost::filesystem;
  * "Offline"-state enter function
  */
 ClientStates::Offline::Offline(my_context ctx): sc::state<Offline, Client>(ctx) {
-    cout << "Entered Offline state!" << endl;
+
+	cout << "Entered Offline state: " << context<Client>().getHostName() << endl;
+
 }
 
 ClientStates::Offline::~Offline() {
@@ -124,6 +126,7 @@ ClientStates::Shutdown::Shutdown(my_context ctx): sc::state<Shutdown, Client>(ct
 	Client& client = context<Client>();
 
 	client.insertCmd("shutdown -h now");
+	SshThread::getInstance()->addClient(&client);
 
 	client.process_event(EvtOffline());
 }

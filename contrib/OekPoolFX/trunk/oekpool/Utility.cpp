@@ -65,7 +65,7 @@ int Utility::toInt(string bla) {
 	return result;
 }
 
-std::vector<std::string> Utility::stringSplit(std::string str, std::string delim, std::vector<std::string> results) {
+void Utility::stringSplit(std::string str, std::string delim, std::vector<std::string>& results) {
 
 	int cutAt;
 

@@ -152,7 +152,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 	/* Some environment variables may be set,
 	 * It's up to the server which ones it'll allow though
 	 */
-	libssh2_channel_setenv(sshinfo->channel, "PROMPT", "$");
+	libssh2_channel_setenv(sshinfo->channel, "PS1", "$");
 
 	/* Request a terminal with 'vanilla' terminal emulation
 	 * See /etc/termcap for more options
@@ -180,9 +180,9 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 void SshThread::_disconnect(SSHInfo* sshinfo) {
     if (sshinfo->channel) {
     	libssh2_channel_close(sshinfo->channel);
-    	if(libssh2_channel_wait_closed(sshinfo->channel) == -1) {
-    		clog << "Error closing channel!" << endl;
-    	}
+//    	if(libssh2_channel_wait_closed(sshinfo->channel) == -1) {
+//    		clog << "Error closing channel!" << endl;
+//    	}
         libssh2_channel_free(sshinfo->channel);
         sshinfo->channel = NULL;
     }
@@ -196,15 +196,17 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 
 	if(cmd.size() == 0) return;
 	cmd.append("\n");
+	string output, result;
 
 	StdLogger* log = new StdLogger();
 
 	int MAXLEN = 255, written = 0;
 	char buf[MAXLEN];
+	vector<string> lines;
 
 	written = libssh2_channel_write(sshinfo->channel, cmd.c_str(), cmd.size() );
 	if(written == 0) { throw exception(); }
-	log->log(LOG_LEVEL_INFO,"Running command: "+cmd,sshinfo->client);
+	log->log(LOG_LEVEL_INFO,"Running command: "+cmd.substr(0,cmd.size()-1),sshinfo->client);
 
 	libssh2_channel_flush(sshinfo->channel);
 
@@ -214,9 +216,25 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 	while(!libssh2_channel_eof(sshinfo->channel)) {
 		sleep(1);
 		bufferlength = libssh2_channel_read(sshinfo->channel, buf, MAXLEN );
+		if(bufferlength < 0) {
+			clog << cmd;
+			return;
+		}
+		output = string(buf,bufferlength);
+		Utility::stringSplit(output,"\n", lines);
+
+		for(vector<string>::iterator
+				it = lines.begin();
+				it!= lines.end();
+				it++)
+		{
+			if((*it) == " ") continue;
+			if(it->find_first_of('$')==0) continue;
+			result += (*it).append("\n");
+		}
 
 		if(bufferlength > 0) {
-			log->log(LOG_LEVEL_INFO,string("Returning output: ")+string(buf,bufferlength),sshinfo->client);
+			log->log(LOG_LEVEL_INFO,string("Returning output: ")+result,sshinfo->client);
 		}
 		else {
 			break;
@@ -231,6 +249,7 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
  * This is the thread main function (and returns a void* - very important)
  */
 void* SshThread::_main(void*) {
+	Configuration* conf = Configuration::getInstance();
 	SSHInfo sshinfo;
 	int i;
 	bool commandFlag = true;
@@ -244,7 +263,7 @@ void* SshThread::_main(void*) {
 	pthread_mutex_unlock(&clientmutex);
 
 	if(vecClients.size() == 0) {
-		sleep(1);
+		sleep(conf->getInt("ssh_init_time"));
 	}
 
 	BOOST_FOREACH(Client* client, vecClients) {
@@ -266,9 +285,11 @@ void* SshThread::_main(void*) {
 				sshInfos[client] = sshinfo;
 			}
 			catch (exception e) {
-				_disconnect(&sshinfo);
+				// TODO: This has to be corrected
+				//       (different derivatives of std::exception())
+				// _disconnect(&sshinfo);
 				pthread_mutex_lock(&client->sshMutex);
-				client->ssh_responding = (1 << 6);
+				client->ssh_responding |= (1 << 6);
 				pthread_mutex_unlock(&client->sshMutex);
 				break;
 			}
@@ -281,7 +302,7 @@ void* SshThread::_main(void*) {
 				++i;
 				if(i == sshCmd.size()) {
 					pthread_mutex_lock(&client->sshMutex);
-					client->ssh_responding = (1 << 7) | (1 << 6);
+					client->ssh_responding |= (1 << 7) | (1 << 6);
 					pthread_mutex_unlock(&client->sshMutex);
 				}
 			}
@@ -289,7 +310,7 @@ void* SshThread::_main(void*) {
 				_disconnect(&sshinfo);
 				sshInfos.erase(sshInfos.find(client) );
 				pthread_mutex_lock(&client->sshMutex);
-				client->ssh_responding = (1 << 6);
+				client->ssh_responding |= (1 << 6);
 				pthread_mutex_unlock(&client->sshMutex);
 				break;
 			}
@@ -297,6 +318,8 @@ void* SshThread::_main(void*) {
 	}
 
 	if(commandFlag) sleep(1);
+
+	sleep(2);
 
 	}
 }

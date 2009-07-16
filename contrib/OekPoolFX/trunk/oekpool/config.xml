@@ -40,5 +40,8 @@
   <ping_timeout>15</ping_timeout>
   <shutdown_time>60</shutdown_time>
   <warn_time>600</warn_time>
+  <warn_interval>60</warn_interval>
+  <ping_interval>30</ping_interval>
+  <ssh_interval>30</ssh_interval>
   
 </configuration>
