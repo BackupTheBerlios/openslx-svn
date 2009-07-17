@@ -146,11 +146,17 @@ noexec\t 0 0" >>/tmp/fstab
           # over the previous
           mount -t auto ${hdpartnr} /mnt/media/${hdpartnr#/dev/*} &
           ln -sf /media/${hdpartnr#/dev/*} /mnt/var/scratch
+          mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*} && \
+            echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
+\t 0 0" >>/tmp/fstab
         elif [ ${partid} -eq 46 ] ; then
           # mount a home directory to (/mnt)/var/home
           mount -t auto ${hdpartnr} /mnt/media/${hdpartnr#/dev/*} &
           test -d /mnt/media/${hdpartnr#/dev/*}/home && \
             ln -sf /media/${hdpartnr#/dev/*} /mnt/var/home
+          mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*} && \
+            echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
+\t 0 0" >>/tmp/fstab
         fi
       done
     done
@@ -213,8 +219,10 @@ case $1 in
       echo "** HW main setup finished at $(sysup)"
     echo "hwsetup main part finished at $(sysup)" >/tmp/hwcfg
   ;;
-  # disk setup part (detecting, formatting, mounting)
+  # disk setup part (detecting general id82,83 and slx id44,45,46, formatting 
+  # if required and mounting)
   disk)
+    # if disk action is not disabled (see #470)
     disk
   ;;
   # remove unneeded kernel modules
