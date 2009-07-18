@@ -514,7 +514,7 @@ if [ -n "${bldmod}" ] ; then
       RDEV=/dev/nbd0
       waitfor "${RDEV}" 20000 || error "$init_nbddev"
       i=0
-      while ! nbd-client $bldhost $bldport ${RDEV} ; do
+      while ! nbd-client $bldhost $bldport ${RDEV} -persist ; do
         usleep 100000
         i=$(($i + 1))
         if [ $i -ge 1000 ] ; then

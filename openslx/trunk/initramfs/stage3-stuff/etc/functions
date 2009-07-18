@@ -889,7 +889,7 @@ include_in_fsroot_union () {
         nbdport=$(uri_token $ROOTFS port)
         nbdrfst=$(uri_token $ROOTFS path)
         echo -e "(D)NBD $ROOTFS parsed to $srvproto - $nbdhost - \
-        $nbdport - $nbdrfst" >> /tmp/felixtestlog
+          $nbdport - $nbdrfst" >> /tmp/testlog
         #FIXME: do mount
       ;;
       aoe)
