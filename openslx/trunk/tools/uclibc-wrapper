@@ -11,12 +11,9 @@
 #
 # Wrapper script for OpenSLX environments used with server and client stage4 
 
-SLX_PATH=/opt/openslx/share
-SLX_UCLIB_PATH=$SLX_PATH/uclib-rootfs
-
-if [ -f /opt/openslx/share/uclib-rootfs ]; then
+if [ -d /opt/openslx/share/uclib-rootfs ]; then
   SLX_UCLIB_PATH=/opt/openslx/share/uclib-rootfs
-elif [ -f /opt/openslx/uclib-rootfs ]; then
+elif [ -d /opt/openslx/uclib-rootfs ]; then
   SLX_UCLIB_PATH=/opt/openslx/uclib-rootfs
 else
   echo "Can't find OpenSLX Environment." && exit 1
