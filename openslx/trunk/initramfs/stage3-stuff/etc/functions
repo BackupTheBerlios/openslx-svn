@@ -145,7 +145,6 @@ case "${proto}" in
     # autodetected here ... (vmimgserv is blockdev here)
     vmbdev=/dev/${server}
     waitfor ${vmbdev} 20000
-    echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
     mount -o ro ${vmbdev} ${target} || error "$scfg_evmlm" nonfatal
   ;;
   nfs)
@@ -160,8 +159,12 @@ case "${proto}" in
     done
   ;;
   smb|cifs)
-    mount -n -o ${mntopt},user=guest,guest,file_mode=0755,dir_mode=0755 \
-      -t ${proto} //${server}${srcpath} ${target}
+    # for some reason cifs mounts cannot be pivoted :(
+    #mount -n -o ${mntopt},user=guest,guest,file_mode=0755,dir_mode=0755 \
+    #  -t ${proto} //${server}${srcpath} ${target}
+    d_mkrlscript entry boot.slx "uclibc-wrapper mount -n -o ${mntopt},guest,\
+user=guest,file_mode=0755,dir_mode=0755 -t ${proto} //${server}${srcpath} \
+${target#/mnt}"
   ;;
 esac
 }
@@ -985,7 +988,7 @@ config_printer () {
 config_bt () {
 :
 }
-# create a compliant runlevel script, needed for boot.slx and vmware-prep
+# create a compliant runlevel script, needed for boot.slx
 d_mkrlscript () {
 :
 }

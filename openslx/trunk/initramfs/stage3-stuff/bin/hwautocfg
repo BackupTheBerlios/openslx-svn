@@ -37,6 +37,8 @@ ash /etc/modprobe.base; mdev -s
 ( hwinfo --pci >/etc/hwinfo.data; echo "read pci device list at $(sysup)" \
     >/tmp/hwdataready ) &
 ( usleep 100000 ; hwinfo --bios >/etc/hwinfo.bios ) &
+# for mounting partitions/devices with the "auto" option
+echo -e "ext3\next2\nreiserfs\nxfs\njfs\next4\nvfat" >/etc/filesystems
 return 0
 }
 
@@ -143,19 +145,18 @@ if [ -s /etc/hwinfo.disk ] ; then
 noexec\t 0 0" >>/tmp/fstab
         elif [ ${partid} -eq 45 ] ; then
           # if more than one id45 present, the latter ones are simply mounted
-          # over the previous
-          mount -t auto ${hdpartnr} /mnt/media/${hdpartnr#/dev/*} &
-          ln -sf /media/${hdpartnr#/dev/*} /mnt/var/scratch
-          mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*} && \
-            echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
-\t 0 0" >>/tmp/fstab
+          # over the previous (the mounts are postponed a bit via do_mnt to
+          # have the filesystem completely prepared) 
+          echo -e "mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*}\n\
+            ln -sf /media/${hdpartnr#/dev/*} /mnt/var/scratch" >>/etc/do_mnt
+          echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto\
+\t\t 0 0" >>/tmp/fstab
         elif [ ${partid} -eq 46 ] ; then
           # mount a home directory to (/mnt)/var/home
-          mount -t auto ${hdpartnr} /mnt/media/${hdpartnr#/dev/*} &
-          test -d /mnt/media/${hdpartnr#/dev/*}/home && \
-            ln -sf /media/${hdpartnr#/dev/*} /mnt/var/home
-          mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*} && \
-            echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
+          echo -e "mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*} \n\
+            test -d /mnt/media/${hdpartnr#/dev/*}/home && \
+              ln -sf /media/${hdpartnr#/dev/*} /mnt/var/home" >>/etc/do_mnt
+          echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
 \t 0 0" >>/tmp/fstab
         fi
       done
@@ -173,6 +174,8 @@ fi
 # cleanup/finishing part
 finish () {
 mdev -s
+# mount filesystem parts requested in disk setup
+ash /etc/do_mnt
 # remove unneeded disk and mouse drivers
 [ ! -s /etc/hwinfo.disk ] && rmmod sd_mod 2>/dev/null
 #grep -q " PS/2 " /etc/hwinfo.mouse || \
