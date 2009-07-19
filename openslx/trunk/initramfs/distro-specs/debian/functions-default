@@ -184,8 +184,7 @@ config_snmp () {
 # localization like consolefont and language
 dlocale () {
   # console font setting program not available in Debian 4!?
-  echo -e "\t#setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
-    >>/mnt/etc/init.d/boot.slx
+  d_mkrlscript entry boot.slx "#setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1"
   # fixme!! check for proper operation
   # sed -e "s,LANGUAGE=.*,LANGUAGE=\"${LANG}\" # set within initramfs," \
   #     -e "s,LANG=.*,LANG=\"${LANG}\" # set within initramfs," \

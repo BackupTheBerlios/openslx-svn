@@ -413,8 +413,8 @@ if [ "x$start_sshd" = "xyes" ] ; then
       echo -e "sshd:!:13099:0:99999:7:::" >>/mnt/etc/shadow
     fi
     # set permissions with userid
-    #echo -e "\tchown sshd:nogroup /var/run/sshd /var/lib/empty 2>/dev/null" \
-    #  >>/mnt/etc/init.d/boot.slx 
+    #d_mkrlscript entry boot.slx "chown sshd:nogroup /var/run/sshd \
+    # /var/lib/empty 2>/dev/null"
     rllinker "sshd" 25 10
   else
     error "$df_errsshd" nonfatal
@@ -472,7 +472,7 @@ fi
 }
 # set up localization like keytable and consolefont
 dlocale () {
-echo -e "\t# entries added by $0: $date" >> /mnt/etc/init.d/boot.slx
+d_mkrlscript entry boot.slx "# entries added by $0: $date"
 sed -e "s,KEYTABLE=.*,KEYTABLE=\"${KEYTABLE}\"," \
   -i /mnt/etc/sysconfig/keyboard
 d_mkrlscript entry boot.slx "#loadkeys ${KEYTABLE} >${LOGFILE} 2>&1"

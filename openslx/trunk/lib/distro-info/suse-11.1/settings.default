@@ -173,7 +173,6 @@ END
         i586/yum-metadata-parser-1.1.2-107.22.i586.rpm
     END
 </metapackager>
-
 package-subdir = suse
 prereq-packages = <<END
     i586/bzip2-1.0.5-34.5.i586.rpm
