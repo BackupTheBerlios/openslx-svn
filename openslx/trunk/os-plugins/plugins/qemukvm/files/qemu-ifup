@@ -10,29 +10,25 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # qemu-ifup
-#    - Script used for network setup of qemukvm in Stage4
+#    - Script used for network setup of qemukvm in stage4
 # -----------------------------------------------------------------------------
 
 # Use the udhcpcd as DHCP server and brctl as provided by default in OpenSLX
-# environments.
-brctlcmd="LD_LIBRARY_PATH=/opt/openslx/uclib-rootfs/lib\
-          /opt/openslx/uclib-rootfs/usr/sbin/brctl"
-dhcpdcmd="LD_LIBRARY_PATH=/opt/openslx/uclib-rootfs/lib\
-          /opt/openslx/uclib-rootfs/usr/sbin/udhcpd"
+# environments via uclibc-wrapper.
 
 # Just decide by the virtual network device used which kind of connection
 # should be set up (passed in $1): tap0 = bridge, tap1 = nat, tap2 = hostonly.
 case "$1" in
   tap0)
     # Adding the tap0 interface to the existing bridge configured in stage3
-    eval ${brctlcmd} addif br0 tap0
+    uclibc-wrapper brctl addif br0 tap0
   ;;
   tap1)
     # Configuring DHCP on host tap1 interface and enable IP masquerading
     mkdir /var/lib/qemu
     sed "s,NWIF,tap1,;s,/misc/,/qemu/," /etc/opt/openslx/udhcpd.qemukvm \
       >/var/lib/qemu/udhcpd.conf
-    eval ${dhcpdcmd} /var/lib/qemu/udhcpd.conf
+    uclibc-wrapper udhcpd /var/lib/qemu/udhcpd.conf
     echo "1" >/proc/sys/net/ipv4/conf/br0/forwarding
     echo "1" >/proc/sys/net/ipv4/conf/tap1/forwarding
     iptables -t nat -A POSTROUTING -o br0 -j MASQUERADE

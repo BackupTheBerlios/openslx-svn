@@ -10,7 +10,7 @@
 # General information about OpenSLX can be found at http://openslx.org/
 # -----------------------------------------------------------------------------
 # qemu-ifup
-#    - Script used for network cleanup of qemukvm in Stage4
+#    - Script used for network cleanup of qemukvm in stage4
 # -----------------------------------------------------------------------------
 
 # Clean up script
