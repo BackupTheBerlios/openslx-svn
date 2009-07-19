@@ -102,12 +102,15 @@ d_mkrlscript () {
 by $0\n# after you applied changes to the creation scripts you have to \
 rerun\n# the mkdxsinitrd script to get them applied\n\
 . /lib/lsb/init-functions\ncase \"\$1\" in\n    start)\n\
-\tlog_begin_msg \"$info\"" >>/mnt/etc/init.d/$name
-      chmod u+x /mnt/etc/init.d/$name
+\tlog_begin_msg \"${info}\"" >>/mnt/etc/init.d/${name}
+      chmod u+x /mnt/etc/init.d/${name}
     ;;
+  entry)
+    echo -e "\t${info}" >>/mnt/etc/init.d/${name}
+  ;;
     close)
       echo -e "\tlog_end_msg \$?\n\t;;\n    stop)\n\tlog_end_msg \$?\n\t;;\
-        \nesac\nexit 0" >>/mnt/etc/init.d/$name
+        \nesac\nexit 0" >>/mnt/etc/init.d/${name}
     ;;
   esac
 }

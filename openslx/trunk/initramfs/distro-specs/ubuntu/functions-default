@@ -129,8 +129,7 @@ dlocale () {
 # fixme -- use keytable setup script here
 # echo -e "\t# entries added by $0: $date" >> /mnt/etc/init.d/boot.slx
 sed "s/LANG.*/LANG=\"${LANG}\"/" -i /mnt/etc/default/locale
-#echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
-#  >>/mnt/etc/init.d/boot.slx
+#d_mkrlscript entry boot.slx "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1"
 }
 
 # group of functions for the normal runlevels - first parameter is start
@@ -251,6 +250,9 @@ rerun\n# the mkdxsinitrd script to get them applied\n\n\
     echo -e "\n\ncase \"\$1\" in\n    start)\n\tlog_begin_msg \"$info\"" \
       >>/mnt/etc/init.d/$name
     chmod u+x /mnt/etc/init.d/$name
+  ;;
+  entry)
+    echo -e "\t${info}" >>/mnt/etc/init.d/${name}
   ;;
   close)
     echo -e "\tlog_end_msg 0\n\t;;\n    stop)\n\t;;\nesac\nexit 0" \
