@@ -35,9 +35,7 @@ sub installVbox
     chomp($release);
     
     if ( $release eq "11.1" || $release eq "11.0" || $release eq "10.3") {
-        #$engine->installPackages(
-        #    $engine->getInstallablePackagesForSelection('virtualbox-ose')
-        #);
+        $engine->installPackages('virtualbox-ose');
     } else {
         print "Couldn't install VirtualBox, no package from distribution\n";
         exit;
