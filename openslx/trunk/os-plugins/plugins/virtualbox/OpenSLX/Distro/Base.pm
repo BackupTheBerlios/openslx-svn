@@ -37,7 +37,7 @@ sub new
 sub initialize
 {
     my $self = shift;
-    my $engine = shift;
+    $self->{engine} = shift;
     weaken($self->{engine});
         # avoid circular reference between plugin and its engine
 
@@ -48,7 +48,7 @@ sub installVbox
 {
     my $self     = shift;
 
-    my $engine = $self->{'os-plugin-engine'};
+    my $engine = $self->{'engine'};
 
     # lets try it... we can't loose anything :)
     $engine->installPackages('virtualbox-ose');

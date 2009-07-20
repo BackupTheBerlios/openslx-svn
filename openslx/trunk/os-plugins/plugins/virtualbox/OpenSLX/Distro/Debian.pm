@@ -30,7 +30,7 @@ sub installVbox
 {
     my $self     = shift;
 
-    my $engine = $self->{'os-plugin-engine'};
+    my $engine = $self->{'engine'};
     my $release = `lsb_release -rs`;
     chomp($release);
 

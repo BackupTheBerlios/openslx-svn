@@ -32,19 +32,13 @@ sub installVbox
 {
     my $self     = shift;
 
-    my $engine = $self->{'os-plugin-engine'};
+    my $engine = $self->{'engine'};
     my $release = `lsb_release -rs`;
     chomp($release);
 
     # hardy (8.04LTS): only version VBox v1.5
     if ( $release eq "8.10" || $release eq "9.04") {
-        #$engine->installPackages("virtualbox-ose");
-        for my $key ( keys %$self ) {
-            # we don't into this routine
-            print "DEBUG: $key\n";
-       }
-       my $size = scalar(keys %$self);
-       print "Size: $size\n";
+       $engine->installPackages("virtualbox-ose");
     } else {
         print "Couldn't install VirtualBox, no package from distribution!\n";
         exit;
