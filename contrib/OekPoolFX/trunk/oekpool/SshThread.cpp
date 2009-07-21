@@ -71,6 +71,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 	string privkeyfile = conf->getString("ssh_private_key");
 
 	sshinfo->sock = 0;
+	sshinfo->closed = false;
 
     unsigned long hostaddr;
     int i, auth_pw = 0;
@@ -155,9 +156,9 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 		throw exception();
 		return;
 	}
-	libssh2_channel_handle_extended_data(sshinfo->channel,
-			LIBSSH2_CHANNEL_EXTENDED_DATA_IGNORE);
-	libssh2_channel_set_blocking(sshinfo->channel, 0);
+	//libssh2_channel_handle_extended_data(sshinfo->channel,
+	//		LIBSSH2_CHANNEL_EXTENDED_DATA_IGNORE);
+	//libssh2_channel_set_blocking(sshinfo->channel, 0);
 
 }
 
@@ -180,15 +181,27 @@ void SshThread::_disconnect(SSHInfo* sshinfo) {
 void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 
 	if(cmd.size() == 0) return;
-	string output, result;
+	//cmd.append("\n");
+	string output;
 
     Logger* log = LoggerFactory::getInstance()->getGlobalLogger();
 
-	int MAXLEN = 255, ret = 0, error=0;
+	int MAXLEN = 255, ret = 0, retprog=0, error=0;
 	char buf[MAXLEN];
 	vector<string> lines;
 
+	if(!libssh2_channel_wait_closed(sshinfo->channel)) {
+		sshinfo->channel = libssh2_channel_open_session(sshinfo->session);
+		if(!sshinfo->channel) {
+			log->log(LOG_LEVEL_ERROR,"Could not re-open channel", sshinfo->client);
+		}
+//
+//		sshinfo->closed = false;
+	}
+
 	ret = libssh2_channel_exec(sshinfo->channel, cmd.c_str() );
+//	libssh2_channel_wait_closed(sshinfo->channel);
+//	retprog = libssh2_channel_get_exit_status(sshinfo->channel);
 	if(ret == -1) {
 		error = libssh2_session_last_error(sshinfo->session,0,0,0);
 		if(error == LIBSSH2_ERROR_SOCKET_SEND ) {
@@ -199,40 +212,43 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 			log->log(LOG_LEVEL_ERROR, "Could not allocate memory for SSH", sshinfo->client);
 			throw exception();
 		}
+		else {
+			log->log(LOG_LEVEL_ERROR, "Some error occurred running SSH command: "+cmd, sshinfo->client);
+			log->log(LOG_LEVEL_ERROR, "libssh2 error code: "+Utility::toString(error), sshinfo->client);
+			throw exception();
+		}
 	}
-	log->log(LOG_LEVEL_INFO,"Running command: "+cmd.substr(0,cmd.size()-1),sshinfo->client);
+	log->log(LOG_LEVEL_INFO,"Running command: "+cmd,sshinfo->client); //.substr(0,cmd.size()-1)
+//	if(retprog == 0) {
+//		log->log(LOG_LEVEL_ERROR, "ssh command exit status not available: "+cmd, sshinfo->client);
+//	}
 
-	libssh2_channel_flush(sshinfo->channel);
+//	libssh2_channel_flush(sshinfo->channel);
 
 
 	int bufferlength= 0;
-
-	while(!libssh2_poll_channel_read(sshinfo->channel,0)) {
+//	bool b = false;
+//
+//	while(!b) { //libssh2_poll_channel_read(sshinfo->channel,0)
 		bufferlength = libssh2_channel_read(sshinfo->channel, buf, MAXLEN );
 		if(bufferlength < 0) {
 			//clog << cmd;
 			return;
 		}
 		output = string(buf,bufferlength);
-		Utility::stringSplit(output,"\n", lines);
-
-		for(vector<string>::iterator
-				it = lines.begin();
-				it!= lines.end();
-				it++)
-		{
-			if((*it) == " ") continue;
-			if(it->find_first_of('$')==0) continue;
-			result += (*it).append("\n");
-		}
 
 		if(bufferlength > 0) {
-			log->log(LOG_LEVEL_INFO,string("Returning output: ")+result,sshinfo->client);
+			log->log(LOG_LEVEL_INFO,string("Returning output: ")+output,sshinfo->client);
+//			b = true;
 		}
-		else {
-			break;
-		}
-		*buf = 0;
+//		else {
+//			break;
+//		}
+//		*buf = 0;
+//	}
+	ret = libssh2_channel_close(sshinfo->channel);
+	if(!ret) {
+		sshinfo->closed = true;
 	}
 
 }
@@ -255,9 +271,9 @@ void* SshThread::_main(void*) {
 	vector<Client*> vecClients = sshClients;
 	pthread_mutex_unlock(&clientmutex);
 
-	if(vecClients.size() == 0) {
-		sleep(conf->getInt("ssh_init_time"));
-	}
+//	if(vecClients.size() == 0) {
+//		sleep(conf->getInt("ssh_init_time"));
+//	}
 
 	// FOREACH client do
 	BOOST_FOREACH(Client* client, vecClients) {
