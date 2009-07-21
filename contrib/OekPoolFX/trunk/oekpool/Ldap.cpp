@@ -91,6 +91,7 @@ vector<AttributeMap> Ldap::search(string base, int scope, string filter, const S
     StringList s;
     vector<AttributeMap> result;
 	AttributeMap temp;
+	int i = 0;
 
     while( (le = lr->getNext()) ) {
 
@@ -108,9 +109,11 @@ vector<AttributeMap> Ldap::search(string base, int scope, string filter, const S
 					st != s.end();
 					st ++)
 			{
-			    //cout << "Value: " << *st;
-				temp[*it] = *st;
+			    // concatenates multivalues with |
+				temp[*it] += (i>0?"|"+*st:*st);
+				i++;
 			}
+			i=0;
     	}
     	//cout << endl;
 
@@ -199,10 +202,11 @@ void Ldap::getClients(string pool, map<string,Client*>& clist) {
 
 			BOOST_FOREACH(AttributeMap am, vecpxe) {
 				pxeslot.ForceBoot = (am["ForceBoot"]=="TRUE"?true:false);
-				pxeslot.TimeSlot = am["TimeSlot"];
+				Utility::stringSplit(am["TimeSlot"],"|",pxeslot.TimeSlot);
 				pxeslot.cn = am["cn"];
 
 				vecslots.push_back(pxeslot);
+				pxeslot.TimeSlot.clear();
 			}
 
 			// if client object not already exists - create it

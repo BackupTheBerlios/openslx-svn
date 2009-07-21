@@ -49,7 +49,7 @@ struct SSHInfo {
 
 struct PXESlot {
 	std::string cn;
-	std::string TimeSlot;
+	std::vector<std::string> TimeSlot;
 	bool ForceBoot;
 };
 
