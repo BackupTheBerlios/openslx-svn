@@ -9,7 +9,7 @@
 #include "Client.h"
 #include "Utility.h"
 #include "Configuration.h"
-#include "StdLogger.h"
+#include "LoggerFactory.h"
 
 #include "include/libssh2.h"
 
@@ -61,7 +61,7 @@ void SshThread::_connect(std::string ipaddress, SSHInfo* sshinfo) {
 
 void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 	Configuration* conf = Configuration::getInstance();
-	StdLogger* logger = new StdLogger();
+	Logger* logger = LoggerFactory::getInstance()->getGlobalLogger();
 
 
 	string username = conf->getString("ssh_username");
@@ -97,6 +97,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
     sshinfo->session = libssh2_session_init();
     if (libssh2_session_startup(sshinfo->session, sshinfo->sock)) {
     	logger->log(LOG_LEVEL_ERROR,"Failure establishing SSH session",sshinfo->client);
+    	throw exception();
         return;
     }
 
@@ -120,6 +121,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 		/* We could authenticate via password */
 		if (libssh2_userauth_password(sshinfo->session, username.c_str(), password.c_str())) {
 			logger->log(LOG_LEVEL_ERROR,"\tAuthentication by password failed!",sshinfo->client);
+			throw exception();
 			return;
 		} else {
 			logger->log(LOG_LEVEL_INFO,"\tAuthentication by password succeeded.",sshinfo->client);
@@ -130,6 +132,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 				pubkeyfile.c_str(), privkeyfile.c_str(), password.c_str()))
 		{
 			logger->log(LOG_LEVEL_ERROR,"\tAuthentication by public key failed!", sshinfo->client);
+			throw exception();
 			return;
 		} else {
 			logger->log( LOG_LEVEL_INFO,"\tAuthentication by public key succeeded.",sshinfo->client);
@@ -139,43 +142,25 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 				LOG_LEVEL_ERROR,"\tAuthentication method "+authmethod
 				+" not available!\nAvailable are: "+sshinfo->userauthlist,sshinfo->client);
 		libssh2_session_disconnect(sshinfo->session,
-				"Did not find suitable authentication method!");
+				"Did not find suitable authentication method (password)!");
+		throw exception();
 		return;
 	}
 
-    /* Request a shell */
+	/* Request a shell */
 	if (!(sshinfo->channel = libssh2_channel_open_session(sshinfo->session))) {
 		logger->log(LOG_LEVEL_ERROR,"Unable to open a session",sshinfo->client);
+		libssh2_session_disconnect(sshinfo->session,
+						"Could not allocate channel!");
+		throw exception();
 		return;
 	}
-
-	/* Some environment variables may be set,
-	 * It's up to the server which ones it'll allow though
-	 */
-	libssh2_channel_setenv(sshinfo->channel, "PS1", "$");
-
-	/* Request a terminal with 'vanilla' terminal emulation
-	 * See /etc/termcap for more options
-	 */
-	if (libssh2_channel_request_pty(sshinfo->channel, "vanilla")) {
-		logger->log(LOG_LEVEL_ERROR,"Failed requesting pty", sshinfo->client);
-		_disconnect(sshinfo);
-		return;
-	}
-
 	libssh2_channel_handle_extended_data(sshinfo->channel,
 			LIBSSH2_CHANNEL_EXTENDED_DATA_IGNORE);
-
-	/* Open a SHELL on that pty */
-	if (libssh2_channel_shell(sshinfo->channel)) {
-		logger->log( LOG_LEVEL_ERROR,"Unable to request shell on allocated pty", sshinfo->client);
-		_disconnect(sshinfo);
-		return;
-	}
-
 	libssh2_channel_set_blocking(sshinfo->channel, 0);
 
 }
+
 
 void SshThread::_disconnect(SSHInfo* sshinfo) {
     if (sshinfo->channel) {
@@ -195,17 +180,26 @@ void SshThread::_disconnect(SSHInfo* sshinfo) {
 void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 
 	if(cmd.size() == 0) return;
-	cmd.append("\n");
 	string output, result;
 
-	StdLogger* log = new StdLogger();
+    Logger* log = LoggerFactory::getInstance()->getGlobalLogger();
 
-	int MAXLEN = 255, written = 0;
+	int MAXLEN = 255, ret = 0, error=0;
 	char buf[MAXLEN];
 	vector<string> lines;
 
-	written = libssh2_channel_write(sshinfo->channel, cmd.c_str(), cmd.size() );
-	if(written == 0) { throw exception(); }
+	ret = libssh2_channel_exec(sshinfo->channel, cmd.c_str() );
+	if(ret == -1) {
+		error = libssh2_session_last_error(sshinfo->session,0,0,0);
+		if(error == LIBSSH2_ERROR_SOCKET_SEND ) {
+			log->log(LOG_LEVEL_ERROR, "Could not send data via SSH",sshinfo->client);
+			throw exception();
+		}
+		else if( error == LIBSSH2_ERROR_ALLOC) {
+			log->log(LOG_LEVEL_ERROR, "Could not allocate memory for SSH", sshinfo->client);
+			throw exception();
+		}
+	}
 	log->log(LOG_LEVEL_INFO,"Running command: "+cmd.substr(0,cmd.size()-1),sshinfo->client);
 
 	libssh2_channel_flush(sshinfo->channel);
@@ -213,8 +207,7 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 
 	int bufferlength= 0;
 
-	while(!libssh2_channel_eof(sshinfo->channel)) {
-		sleep(1);
+	while(!libssh2_poll_channel_read(sshinfo->channel,0)) {
 		bufferlength = libssh2_channel_read(sshinfo->channel, buf, MAXLEN );
 		if(bufferlength < 0) {
 			//clog << cmd;
@@ -266,6 +259,7 @@ void* SshThread::_main(void*) {
 		sleep(conf->getInt("ssh_init_time"));
 	}
 
+	// FOREACH client do
 	BOOST_FOREACH(Client* client, vecClients) {
 		sshinfo.client = client;
 		sshCmd.clear();
@@ -285,9 +279,6 @@ void* SshThread::_main(void*) {
 				sshInfos[client] = sshinfo;
 			}
 			catch (exception e) {
-				// TODO: This has to be corrected
-				//       (different derivatives of std::exception())
-				// _disconnect(&sshinfo);
 				pthread_mutex_lock(&client->sshMutex);
 				client->ssh_responding |= (1 << 6);
 				pthread_mutex_unlock(&client->sshMutex);
@@ -295,6 +286,7 @@ void* SshThread::_main(void*) {
 			}
 		}
 
+		// FOREACH command do
 		BOOST_FOREACH(string cmd, sshCmd) {
 			commandFlag = false;
 			try {
@@ -314,8 +306,8 @@ void* SshThread::_main(void*) {
 				pthread_mutex_unlock(&client->sshMutex);
 				break;
 			}
-		}
-	}
+		} // od
+	} // od
 
 	if(commandFlag) sleep(1);
 
@@ -350,7 +342,8 @@ void SshThread::delClient(Client* client) {
 	pthread_mutex_unlock(&clientmutex);
 
 
-	StdLogger* log = new StdLogger();
+
+    Logger* log = LoggerFactory::getInstance()->getGlobalLogger();
 	log->log(LOG_LEVEL_INFO,"SSH connection disconnected!",  client);
 }
 

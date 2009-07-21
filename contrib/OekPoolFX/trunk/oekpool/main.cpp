@@ -14,11 +14,10 @@
 #include "Utility.h"
 #include "StdLogger.h"
 #include "types.h"
+#include "LoggerFactory.h"
 #include <time.h>
 
 #include <boost/foreach.hpp>
-
-#include <StdLog.h>
 
 using namespace std;
 
@@ -56,7 +55,7 @@ int main(int argc, char** argv) {
 
     network->setNetworks(ldap->getNetworks());
 
-    StdLogger* logger = new StdLogger();
+    Logger* logger = LoggerFactory::getInstance()->getGlobalLogger();
 
     logger->log(
     		LOG_LEVEL_INFO,

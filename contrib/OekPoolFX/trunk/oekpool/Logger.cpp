@@ -9,6 +9,7 @@
 #include "Configuration.h"
 
 #include <string>
+#include <boost/foreach.hpp>
 
 using namespace std;
 
@@ -21,7 +22,9 @@ Logger::~Logger() {
 }
 
 void Logger::log(loglevel_t lvl, std::string msg, const Client* client) {
-
+	BOOST_FOREACH(ILogger* lg, vecLogger) {
+		lg->log(lvl, msg, client);
+	}
 }
 
 void Logger::registerLogger(const ILogger* logger) {

@@ -9,11 +9,17 @@
 #define FILELOGGER_H_
 
 #include "ILogger.h"
+#include <string>
+#include <fstream>
 
 class FileLogger : ILogger {
+	std::string filename;
+	std::ofstream file;
 public:
-	FileLogger();
+	FileLogger(std::string);
 	~FileLogger();
+
+	void log(loglevel_t lvl, std::string msg, const Client* client);
 };
 
 #endif /* FILELOGGER_H_ */
