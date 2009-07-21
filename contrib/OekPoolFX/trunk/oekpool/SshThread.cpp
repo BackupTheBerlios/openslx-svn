@@ -217,7 +217,7 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 		sleep(1);
 		bufferlength = libssh2_channel_read(sshinfo->channel, buf, MAXLEN );
 		if(bufferlength < 0) {
-			clog << cmd;
+			//clog << cmd;
 			return;
 		}
 		output = string(buf,bufferlength);
@@ -322,6 +322,7 @@ void* SshThread::_main(void*) {
 	sleep(2);
 
 	}
+	clog << "SSH Thread terminated" << endl;
 }
 
 
@@ -337,9 +338,14 @@ void SshThread::delClient(Client* client) {
 	pthread_mutex_lock(&clientmutex);
 	vector<Client*>::iterator pos =
 		find(sshClients.begin(),sshClients.end(),client);
+	std::map<Client*,SSHInfo>::iterator mPos = sshInfos.find(client);
 
 	if(pos != sshClients.end()) {
 		sshClients.erase(pos);
+		if(mPos != sshInfos.end()) {
+			_disconnect(&sshInfos[client]);
+			sshInfos.erase(mPos);
+		}
 	}
 	pthread_mutex_unlock(&clientmutex);
 

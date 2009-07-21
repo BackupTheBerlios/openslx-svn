@@ -5,6 +5,7 @@
  *      Author: bastian
  */
 
+#include <time.h>
 #include "Configuration.h"
 #include "ClientStates.h"
 #include "boost/filesystem.hpp"
@@ -20,6 +21,9 @@ namespace bfs = boost::filesystem;
 ClientStates::Offline::Offline(my_context ctx): sc::state<Offline, Client>(ctx) {
 
 	cout << "Entered Offline state: " << context<Client>().getHostName() << endl;
+	context<Client>().ssh_responding = 0;
+	context<Client>().host_responding = 0;
+	context<Client>().ping_attempts = 0;
 
 }
 
@@ -88,14 +92,14 @@ ClientStates::SshWake::SshWake(my_context ctx): sc::state<SshWake, Client>(ctx) 
 	// evtl Timer setzen
 	clog << "Entered SshWake" << endl;
 	Client& client = context<Client>();
-	SshThread::getInstance()->addClient(&client);
+	//SshThread::getInstance()->addClient(&client);
 	client.insertCmd("echo \"ping?\"");
 
 }
 
 ClientStates::SshWake::~SshWake() {
-	Client& client = context<Client>();
-	SshThread::getInstance()->delClient(&client);
+	//Client& client = context<Client>();
+	//SshThread::getInstance()->delClient(&client);
 }
 
 ClientStates::SshOffline::SshOffline(my_context ctx): sc::state<SshOffline, Client>(ctx) {
@@ -103,13 +107,13 @@ ClientStates::SshOffline::SshOffline(my_context ctx): sc::state<SshOffline, Clie
 	// evtl Timer setzen
 	clog << "Entered SshOffline" << endl;
 	Client& client = context<Client>();
-	SshThread::getInstance()->addClient(&client);
+	//SshThread::getInstance()->addClient(&client);
 	client.insertCmd("echo \"ping?\"");
 }
 
 ClientStates::SshOffline::~SshOffline() {
-	Client& client = context<Client>();
-	SshThread::getInstance()->delClient(&client);
+	//Client& client = context<Client>();
+	//SshThread::getInstance()->delClient(&client);
 }
 
 ClientStates::PingOffline::PingOffline(my_context ctx): sc::state<PingOffline, Client>(ctx) {
@@ -127,12 +131,12 @@ ClientStates::Shutdown::Shutdown(my_context ctx): sc::state<Shutdown, Client>(ct
 
 	client.insertCmd("shutdown -h now");
 	SshThread::getInstance()->addClient(&client);
-
-	client.process_event(EvtOffline());
+	time(&(client.shutdown));
 }
 
 ClientStates::Shutdown::~Shutdown() {
 	clog << "Left Shutdown state!" << endl;
 	Client& client = context<Client>();
+	SshThread::getInstance()->delClient(&client);
 	client.resetCmdTable();
 }

@@ -38,6 +38,7 @@ Client::Client(AttributeMap al, std::vector<PXESlot> slots)
 
     IPAddress ip = Utility::ipFromString(al["IPAddress"]);
     time(&nextWarnTime);
+    time(&shutdown);
     initiate(); // Statemachine
 }
 
@@ -321,7 +322,7 @@ void Client::checkPXE() {
 }
 
 void Client::checkWake() {
-	clog << "CheckWake" << endl;
+
 	pthread_mutex_lock(&pingMutex);
 	if( (host_responding & (char)0xC0) == (char)0xC0 ) {
 			ping_attempts = 0;
@@ -475,5 +476,10 @@ void Client::checkSSHOffline() {
 }
 
 void Client::checkShutdown() {
-	// nothing todo here
+	time_t currentTime;
+	time(&currentTime);
+	if(shutdown + 10 < currentTime) {
+		process_event(EvtOffline());
+		shutdown = false;
+	}
 }

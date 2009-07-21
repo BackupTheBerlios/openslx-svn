@@ -99,10 +99,15 @@ public:
 					sshMutex;  // mutex for ssh
 
     /**
-     * wether host is responding (used by ping)
+     * wether host is responding (used by ping and ssh)
      */
     char host_responding;
     char ssh_responding;
+
+    /**
+     * Indicates when shutdown state is finished
+     */
+    time_t shutdown;
 
     /**
      * number of times the client has pinged
