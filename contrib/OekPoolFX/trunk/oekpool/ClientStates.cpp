@@ -41,7 +41,7 @@ ClientStates::PXE::PXE(my_context ctx): sc::state<PXE, Client>(ctx) {
 	PXEInfo* pxe = client.getActiveSlot();
 
 	std::string tftp = Configuration::getInstance()->getString("tftp_root_dir");
-	std::string dir = pxe->TimeString;
+	std::string dir = pxe->MenuName;
 	std::string file = Utility::getPXEFilename(client.getHWAddress());
 
 	bfs::path link(tftp + file);

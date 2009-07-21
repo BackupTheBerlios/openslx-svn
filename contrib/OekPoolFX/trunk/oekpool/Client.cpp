@@ -67,55 +67,62 @@ std::vector<PXEInfo> Client::setPXEInfo(std::vector<PXESlot> timeslots) {
 	std::vector<string> splitEndString;
 	std::vector<PXEInfo> pxeinfoVector;
 	PXEInfo tempInfo;
+	tm tempStart, tempShutdown;
 
-	int i;
+	int i,z;
 
 	// iteration over alls pxe slots
 	for(i = 0; i < timeslots.size(); i++) {
 
-
-		temp = timeslots[i].TimeSlot;
-
-		tempInfo.TimeString = temp;
 		tempInfo.MenuName = timeslots[i].cn;
 		tempInfo.ForceBoot = timeslots[i].ForceBoot;
 
-		// split the time code into day of week, start time and end time
-		while( (found=temp.find_first_of("_")) != std::string::npos) {
-			splitTimeString.push_back(temp.substr(0, found));
-			temp = temp.substr(found+1);
+		// iteration over all time slots
+		for(z = 0; z < timeslots[i].TimeSlot.size(); z++){
+			temp = timeslots[i].TimeSlot[z];
+
+			tempInfo.TimeString.push_back(temp);
+
+			// split the time code into day of week, start time and end time
+			while( (found=temp.find_first_of("_")) != std::string::npos) {
+				splitTimeString.push_back(temp.substr(0, found));
+				temp = temp.substr(found+1);
+			}
+			splitTimeString.push_back(temp);
+
+			// split start time into hour and minute/10
+			found = splitTimeString[1].find_first_of(":");
+			splitStartString.push_back(splitTimeString[1].substr(0,found));
+			splitStartString.push_back(splitTimeString[1].substr(found+1));
+
+			// split end time into hour and minute/10
+			found = splitTimeString[2].find_first_of(":");
+			splitEndString.push_back(splitTimeString[2].substr(0,found));
+			splitEndString.push_back(splitTimeString[2].substr(found+1));
+
+			// assign the corresponding times
+			tempStart.tm_sec = 0;
+			tempShutdown.tm_sec = 0;
+
+			tempStart.tm_hour = Utility::toInt(splitStartString[0]);
+			tempShutdown.tm_hour = Utility::toInt(splitEndString[0]);
+
+			tempStart.tm_min = Utility::toInt(splitStartString[1]);
+			tempStart.tm_min *= 10;
+			tempShutdown.tm_min = Utility::toInt(splitEndString[1]);
+			tempShutdown.tm_min *= 10;
+
+			tempStart.tm_wday = tempShutdown.tm_wday = Utility::toInt(splitTimeString[0]);
+
+			// put the times into the time vectors
+			tempInfo.StartTime.push_back(tempStart);
+			tempInfo.ShutdownTime.push_back(tempShutdown);
+
+			// clear the temporary vectors
+			splitStartString.clear();
+			splitEndString.clear();
+			splitTimeString.clear();
 		}
-		splitTimeString.push_back(temp);
-
-		// split start time into hour and minute/10
-		found = splitTimeString[1].find_first_of(":");
-		splitStartString.push_back(splitTimeString[1].substr(0,found));
-		splitStartString.push_back(splitTimeString[1].substr(found+1));
-
-		// split end time into hour and minute/10
-		found = splitTimeString[2].find_first_of(":");
-		splitEndString.push_back(splitTimeString[2].substr(0,found));
-		splitEndString.push_back(splitTimeString[2].substr(found+1));
-
-		// assign the corresponding times
-		tempInfo.StartTime.tm_sec = 0;
-		tempInfo.ShutdownTime.tm_sec = 0;
-
-		tempInfo.StartTime.tm_hour = Utility::toInt(splitStartString[0]);
-		tempInfo.ShutdownTime.tm_hour = Utility::toInt(splitEndString[0]);
-
-		tempInfo.StartTime.tm_min = Utility::toInt(splitStartString[1]);
-		tempInfo.StartTime.tm_min *= 10;
-		tempInfo.ShutdownTime.tm_min = Utility::toInt(splitEndString[1]);
-		tempInfo.ShutdownTime.tm_min *= 10;
-
-		tempInfo.StartTime.tm_wday = tempInfo.ShutdownTime.tm_wday = Utility::toInt(splitTimeString[0]);
-
-		// clear the temporary vectors
-		splitStartString.clear();
-		splitEndString.clear();
-		splitTimeString.clear();
-
 		pxeinfoVector.push_back(tempInfo);
 	}
 
@@ -137,23 +144,21 @@ bool Client::isActive(bool shutdown) {
 
 
 	for(int i=0; i < pxeslots.size(); i++) {
-		// checking the right week day
-		if(currentTm->tm_wday != pxeslots[i].StartTime.tm_wday)
-			continue;
-
-		// checking the interval with precision of full hours
-		if((currentTm->tm_hour < pxeslots[i].StartTime.tm_hour) || (futureTm->tm_hour > pxeslots[i].ShutdownTime.tm_hour))
+		for(int z=0; z < pxeslots[i].StartTime.size(); z++) {
+			// checking the right week day
+			if(currentTm->tm_wday != pxeslots[i].StartTime[z].tm_wday)
 				continue;
-
-		// checking whether it's in start hour but before start minute
-		if((currentTm->tm_hour == pxeslots[i].StartTime.tm_hour) && (currentTm->tm_min < pxeslots[i].StartTime.tm_min))
-				continue;
-
-		// checking whether it's in finish hour but after finish minute
-		if((futureTm->tm_hour == pxeslots[i].ShutdownTime.tm_hour) && (futureTm->tm_min > pxeslots[i].ShutdownTime.tm_min))
-				continue;
-
-		return true;
+			// checking the interval with precision of full hours
+			if((currentTm->tm_hour < pxeslots[i].StartTime[z].tm_hour) || (futureTm->tm_hour > pxeslots[i].ShutdownTime[z].tm_hour))
+					continue;
+			// checking whether it's in start hour but before start minute
+			if((currentTm->tm_hour == pxeslots[i].StartTime[z].tm_hour) && (currentTm->tm_min < pxeslots[i].StartTime[z].tm_min))
+					continue;
+			// checking whether it's in finish hour but after finish minute
+			if((futureTm->tm_hour == pxeslots[i].ShutdownTime[z].tm_hour) && (futureTm->tm_min > pxeslots[i].ShutdownTime[z].tm_min))
+					continue;
+			return true;
+		}
 	}
 
 	return false;
@@ -174,15 +179,17 @@ PXEInfo* Client::getActiveSlot(bool shutdown) {
 
 
 	for(int i=0; i < pxeslots.size(); i++) {
-		if(currentTm->tm_wday != pxeslots[i].StartTime.tm_wday)
-			continue;
-		if((currentTm->tm_hour < pxeslots[i].StartTime.tm_hour) || (futureTm->tm_hour > pxeslots[i].ShutdownTime.tm_hour))
+		for(int z=0; z < pxeslots[i].StartTime.size(); z++) {
+			if(currentTm->tm_wday != pxeslots[i].StartTime[z].tm_wday)
 				continue;
-		if((currentTm->tm_hour == pxeslots[i].StartTime.tm_hour) && (currentTm->tm_min < pxeslots[i].StartTime.tm_min))
+			if((currentTm->tm_hour < pxeslots[i].StartTime[z].tm_hour) || (futureTm->tm_hour > pxeslots[i].ShutdownTime[z].tm_hour))
 				continue;
-		if((futureTm->tm_hour == pxeslots[i].ShutdownTime.tm_hour) && (futureTm->tm_min > pxeslots[i].ShutdownTime.tm_min))
+			if((currentTm->tm_hour == pxeslots[i].StartTime[z].tm_hour) && (currentTm->tm_min < pxeslots[i].StartTime[z].tm_min))
 				continue;
-		return &pxeslots[i];
+			if((futureTm->tm_hour == pxeslots[i].ShutdownTime[z].tm_hour) && (futureTm->tm_min > pxeslots[i].ShutdownTime[z].tm_min))
+				continue;
+			return &pxeslots[i];
+		}
 	}
 
 	return NULL;

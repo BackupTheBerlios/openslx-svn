@@ -55,9 +55,9 @@ struct PXESlot {
 
 struct PXEInfo {
 	std::string MenuName;
-	std::string TimeString;
-	tm StartTime;
-	tm ShutdownTime;
+	std::vector<std::string> TimeString;
+	std::vector<tm> StartTime;
+	std::vector<tm> ShutdownTime;
 	bool ForceBoot;
 };
 
