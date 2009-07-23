@@ -13,6 +13,13 @@
 #include "img/xp_32.xpm"
 #include "img/xp_locked_32.xpm"
 #include "img/xfce_32.xpm"
+/* Added to support default icons */
+#include "img/vmware_32.xpm"
+#include "img/macos_32.xpm"
+#include "img/bsd_32.xpm"
+#include "img/gentoo_32.xpm"
+#include "img/suse_32.xpm"
+#include "img/ubuntu_32.xpm"
 
 
 using namespace fltk;
@@ -242,12 +249,38 @@ void SWindow::unfold_entries(bool lin_entries, bool vm_entries) {
  ******************************************************/
 const char** SWindow::get_symbol(DataEntry* dat) {
   if(dat->imgtype == VMWARE) {
-    if(dat->locked) {
-    	return xp_locked_32_xpm;
-    }
-    else {
-    	return xp_32_xpm;
-    }
+	if(dat->os.find("win") != string::npos || dat->os.find("Win") == string::npos) {
+		if(dat->locked) {
+			return xp_locked_32_xpm;
+		}
+		else {
+			return xp_32_xpm;
+		}
+	}
+	if(dat->os.find("linux") != string::npos) {
+		if(dat->icon.find("gentoo") != string::npos || dat->icon.find("Gentoo") != string::npos ) {
+			return gentoo_32_xpm;
+		}
+		if(dat->icon.find("suse") != string::npos || dat->icon.find("Suse") != string::npos ) {
+			return suse_32_xpm;
+		}
+		if(dat->icon.find("ubuntu") != string::npos || dat->icon.find("Ubuntu") != string::npos ) {
+			return ubuntu_32_xpm;
+		}
+	}
+
+	if(dat->icon.find("bsd") != string::npos
+			|| dat->icon.find("BSD") != string::npos
+			|| dat->icon.find("Bsd") != string::npos) {
+		return bsd_32_xpm;
+	}
+	if(dat->icon.find("mac") != string::npos
+			|| dat->icon.find("Mac") != string::npos
+			|| dat->icon.find("apple") != string::npos) {
+		return macos_32_xpm;
+	}
+
+	return vmware_32_xpm;
   }
   if(dat->imgtype == LINUX) {
     if(dat->short_description.find("KDE")!= string::npos) {

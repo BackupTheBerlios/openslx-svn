@@ -20,22 +20,23 @@ struct DataEntry {
 	string creator;
 	string email;
 	string phone;
-	
-	string imgname;	
+
+	string imgname;
 	ImgType imgtype;
 	string os;
-	string network;	
-	
+	string icon;
+	string network;
+
 	bool active;
 	bool locked;
 	string pools;
 	string xdm;
 	int priority;
-	
+
 	string command;
 	string xml_name;
 	xmlDoc* xml;
-	
+
 };
 
 #endif /*DATAENTRY_H_*/

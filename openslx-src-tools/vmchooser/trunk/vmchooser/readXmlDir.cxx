@@ -241,6 +241,15 @@ DataEntry* get_entry(xmlDoc * doc)
         }
         tempc = NULL;
 
+        tempc = getAttribute(doc,(char *) "icon");
+        if (tempc != NULL ) {
+                de->icon = tempc;
+        }
+        else {
+                de->icon = "vmware";
+        }
+        tempc = NULL;
+
         de->xml = doc;
 
         return de;
