@@ -35,7 +35,11 @@ SWindow::SWindow(int w, int h, char* p)
 : fltk::Window(w,h,p),
   go(w/3 + 10, h-40, (2*w)/3 - 20 , 30, "START"),
   exit_btn(10, h-40, w/3 -10, 30, "EXIT"),
-  sel(10,10, w-20, h-50)
+  sel(10,10, w-20, h-50),
+  ent(NULL),
+  entgroup(NULL),
+  lin_entgroup(NULL),
+  lin_ent(NULL)
 {
 //  sel.indented(1);
   begin();
@@ -199,7 +203,7 @@ void SWindow::free_entries()
  * WARNING: this->ent and/or this->lin_ent
  *          has to assigned before         WARNING
  ******************************************************/
-void SWindow::unfold_entries(bool lin_entries, bool vm_entries) {
+void SWindow::unfold_entries(bool lin_entries, bool vm_entries, char* defsession) {
   int ind = 0;
   if(lin_entries) {
     sel.goto_index(ind);
@@ -226,6 +230,10 @@ void SWindow::unfold_entries(bool lin_entries, bool vm_entries) {
   //sel.indented(false);
 
   char* prename = readSession();
+  DataEntry* dp = NULL;
+  if(defsession) {
+	  prename = defsession;
+  }
   if ( prename == '\0' ) {
     return;
   } else {
@@ -233,7 +241,12 @@ void SWindow::unfold_entries(bool lin_entries, bool vm_entries) {
     Item* it = (Item*) sel.next();
 
     while( it ) {
-      if(! strcmp(prename,it->label()) ) {
+	  dp = (DataEntry*) it->user_data();
+	  if(!dp) {
+		  it = (Item*) sel.next();
+		  continue;
+	  }
+      if( dp->short_description.find(prename) != string::npos ) {
           sel.select_only_this(0);
           curr = it;
           return;
@@ -294,7 +307,8 @@ const char** SWindow::get_symbol(DataEntry* dat) {
     }
     return linux_32_xpm;
   }
-  return xp_32_xpm;
+
+  return linux_32_xpm;
 }
 
 

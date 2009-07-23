@@ -33,6 +33,7 @@ int main(int argc, char** argv) {
   AnyOption* opt = new AnyOption();
   char* xmlpath = NULL;
   char* lsesspath = NULL;
+  char* dsession = NULL;
   int width=0, height=0;
 
   //opt->setVerbose();
@@ -40,6 +41,7 @@ int main(int argc, char** argv) {
 
   opt->addUsage("");
   opt->addUsage("SessionChooser Usage: vmchooser [OPTS|image.xml]");
+  opt->addUsage("\t{-d |--default=} name of session to select (part of)");
   opt->addUsage("\t{-p |--path=} path to vmware (.xml) files");
   opt->addUsage("\t{-l |--lpath=} path to linux session (.desktop) files");
   opt->addUsage("\t{-s |--size=} [widthxheight]");
@@ -50,6 +52,7 @@ int main(int argc, char** argv) {
 
   opt->setFlag("help",'h');
   opt->setFlag("version",'v');
+  opt->setOption("default", 'd');
   opt->setOption("path", 'p');
   opt->setOption("lpath", 'l');
   opt->setOption("size",'s');
@@ -87,6 +90,14 @@ int main(int argc, char** argv) {
 
   }
 
+  if(opt->getValue('d')!=NULL) {
+    dsession = opt->getValue('d');
+  }
+
+  if(opt->getValue("default")!= NULL) {
+	dsession = opt->getValue("default");
+  }
+
   if(opt->getValue('p')!=NULL) {
     xmlpath = opt->getValue('p');
   }
@@ -103,7 +114,7 @@ int main(int argc, char** argv) {
   /* VERSION  */
   if(opt->getFlag('v') || opt->getFlag("version")) {
     // just print out version information - helps testing
-    cout << "virtual machine chooser 0.0.10"<< endl;
+    cout << "virtual machine chooser 0.0.11"<< endl;
     delete opt;
     return 0;
 
@@ -182,7 +193,12 @@ int main(int argc, char** argv) {
     vm_entries = true;
   }
 
-  win.unfold_entries(lin_entries, vm_entries);
+  if(dsession) {
+	  win.unfold_entries(lin_entries, vm_entries, dsession);
+  }
+  else {
+	  win.unfold_entries(lin_entries, vm_entries);
+  }
   win.show(); // argc,argv
   win.border(false);
   free(xmlpath);

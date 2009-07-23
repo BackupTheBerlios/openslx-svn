@@ -25,7 +25,7 @@ class SWindow : public fltk::Window {
 private:
   // ReturnButton to start the session
   fltk::ReturnButton go;
-  
+
   // Button to exit
   fltk::Button exit_btn;
 
@@ -43,13 +43,13 @@ private:
   // Arrays with data from .xml and .desktop files
   DataEntry** ent;
   DataEntry** lin_ent;
-  
-  
+
+
   int width;
   int height;
-  
-  
-  
+
+
+
 
   /**
    * ctor with some reasonable default values
@@ -62,8 +62,8 @@ public:
     static SWindow instance(w,h);
     return &instance;
   }
-  
-  
+
+
   int pathsize;
   char* pname; /* Holds the current absolute path */
 
@@ -75,7 +75,7 @@ public:
   static void cb_select(fltk::Widget*, void* w) {
     ((SWindow*)w)->cb_select();
   };
-  
+
   static void cb_exit(fltk::Widget*, void* w) {
     exit(0);
   }
@@ -85,12 +85,12 @@ public:
 
   void set_entries(DataEntry** ent);
   void set_lin_entries(DataEntry** ent);
-  
+
   const char** get_symbol(DataEntry* dat);
 
   void free_entries();
-  void unfold_entries(bool,bool);
-  
+  void unfold_entries(bool,bool,char* defsession=0);
+
   void sort_entries();
 
 };
