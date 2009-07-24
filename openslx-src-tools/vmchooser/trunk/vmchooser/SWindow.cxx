@@ -270,18 +270,19 @@ const char** SWindow::get_symbol(DataEntry* dat) {
 			return xp_32_xpm;
 		}
 	}
-	if(dat->os.find("linux") != string::npos) {
-		if(dat->icon.find("gentoo") != string::npos || dat->icon.find("Gentoo") != string::npos ) {
-			return gentoo_32_xpm;
-		}
-		if(dat->icon.find("suse") != string::npos || dat->icon.find("Suse") != string::npos ) {
-			return suse_32_xpm;
-		}
-		if(dat->icon.find("ubuntu") != string::npos || dat->icon.find("Ubuntu") != string::npos ) {
-			return ubuntu_32_xpm;
-		}
-	}
 
+	if(dat->icon.find("gentoo") != string::npos || dat->icon.find("Gentoo") != string::npos ) {
+		return gentoo_32_xpm;
+	}
+	if(dat->icon.find("suse") != string::npos || dat->icon.find("Suse") != string::npos ) {
+		return suse_32_xpm;
+	}
+	if(dat->icon.find("ubuntu") != string::npos || dat->icon.find("Ubuntu") != string::npos ) {
+		return ubuntu_32_xpm;
+	}
+	if(dat->os.find("linux") != string::npos) {
+		return linux_32_xpm;
+	}
 	if(dat->icon.find("bsd") != string::npos
 			|| dat->icon.find("BSD") != string::npos
 			|| dat->icon.find("Bsd") != string::npos) {
