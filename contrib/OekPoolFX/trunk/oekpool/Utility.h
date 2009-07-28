@@ -41,8 +41,12 @@ public:
 	static
 	int toInt(std::string);
 
+	/**
+	 * function to split a string by a delimiter
+	 */
 	static
 	void stringSplit(std::string, std::string, std::vector<std::string>&);
+
 };
 
 #endif /* UTILITY_H_ */

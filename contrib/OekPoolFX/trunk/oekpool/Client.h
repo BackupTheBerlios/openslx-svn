@@ -48,7 +48,7 @@ private:
     /**
      * private table to hold commands { ONLY ACCESSED THROUGH THREAD }
      */
-    std::vector<std::string> cmdTable;
+    std::vector<sshStruct> cmdTable;
 
     /**
      * private function to reset pxe-informations
@@ -88,9 +88,11 @@ public:
     std::string getIP();
     std::string getHostName();
 
-    std::vector<std::string> getCmdTable();
+    std::vector<sshStruct> getCmdTable();
     void resetCmdTable(void);
-    void insertCmd(std::string);
+    void insertCmd(std::string, time_t ssh = 0);
+
+    void sshPing(void);
 
     /**
      * public mutexes
@@ -103,6 +105,10 @@ public:
      */
     char host_responding;
     char ssh_responding;
+    /**
+     * Indicates when to check ssh connection next
+     */
+    time_t sshTime;
 
     /**
      * Indicates when shutdown state is finished

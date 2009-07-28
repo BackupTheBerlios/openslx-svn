@@ -10,6 +10,7 @@
 #include "Utility.h"
 #include "StdLogger.h"
 #include "Configuration.h"
+#include "types.h"
 #include <iostream>
 #include <time.h>
 
@@ -209,19 +210,26 @@ std::string Client::getHostName() {
 
 std::vector<std::string> Client::getCmdTable() {
 	pthread_mutex_lock(&sshMutex);
-	vector<string> result(cmdTable);
+	vector<sshStruct> result(cmdTable);
 	resetCmdTable();
 	pthread_mutex_unlock(&sshMutex);
 
 	return result;
 }
 
-void Client::insertCmd(std::string cmd) {
-	cmdTable.push_back(cmd);
+void Client::insertCmd(std::string cmd, time_t ssh) {
+	sshStruct sshstr;
+	sshstr.cmd = cmd;
+	sshstr.cmdTime = ssh;
+	pthread_mutex_lock(&sshMutex);
+	cmdTable.push_back(sshstr);
+	pthread_mutex_unlock(&sshMutex);
 }
 
 void Client::resetCmdTable() {
+	pthread_mutex_unlock(&sshMutex);
 	cmdTable.clear();
+	pthread_mutex_unlock(&sshMutex);
 }
 
 void Client::processClient() {
@@ -310,8 +318,6 @@ void Client::checkPXE() {
 		return;
 	}
 
-	// TODO
-	// Hier sollten noch Timing-Bedingungen eingefügt werden
 	pthread_mutex_lock(&pingMutex);
 	if( (host_responding & (char)0xC0) == (char)0xC0 ) {
 		ping_attempts = 0;
@@ -372,7 +378,7 @@ void Client::checkPingWake() {
 		}
 		else{
 			clog << "SSH Failure" << endl;
-			process_event(EvtPingFailure());
+			process_event(EvtSshFailure());
 			insertCmd("echo \"ping?\"");
 		}
 	}
@@ -417,15 +423,13 @@ void Client::checkSSHWake() {
 		clog << "SSH Error!" << endl;
 		ssh_attempts ++;
 		ssh_responding = 0;
-		process_event(EvtPingFailure());
+		process_event(EvtSshFailure());
 	}
 	pthread_mutex_unlock(&sshMutex);
 }
 
 void Client::checkPingOffline() {
 
-	// TODO
-	// Hier sollten noch Timing-Bedingungen eingefügt werden
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0xC0 ) {
 		ssh_attempts = 0;
@@ -442,7 +446,7 @@ void Client::checkPingOffline() {
 		if(ssh_attempts > 5)
 			process_event(EvtSshError());
 		else
-			process_event(EvtPingFailure());
+			process_event(EvtSshFailure());
 	}
 	pthread_mutex_unlock(&sshMutex);
 }
@@ -463,8 +467,6 @@ void Client::checkSSHOffline() {
 		}
 	}
 
-	// TODO
-	// Hier sollten noch Timing-Bedingungen eingefügt werden
 	pthread_mutex_lock(&sshMutex);
 	if( (ssh_responding & (char)0xC0) == (char)0xC0 ) {
 		ssh_attempts = 0;
@@ -478,7 +480,7 @@ void Client::checkSSHOffline() {
 		clog << "SSH Error!" << endl;
 		ssh_attempts ++;
 		ssh_responding = 0;
-		process_event(EvtPingFailure());
+		process_event(EvtSshFailure());
 	}
 	pthread_mutex_unlock(&sshMutex);
 }
@@ -490,4 +492,14 @@ void Client::checkShutdown() {
 		process_event(EvtOffline());
 		shutdown = false;
 	}
+}
+
+void Client::sshPing() {
+	if(sshTime == 0){
+		time(&sshTime);
+	}
+	else{
+		sshTime += Configuration::getInstance()->getInt("ssh_interval");
+	}
+	insertCmd("echo \"ping?\"", sshTime);
 }

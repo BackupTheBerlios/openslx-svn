@@ -24,6 +24,7 @@ ClientStates::Offline::Offline(my_context ctx): sc::state<Offline, Client>(ctx) 
 	context<Client>().ssh_responding = 0;
 	context<Client>().host_responding = 0;
 	context<Client>().ping_attempts = 0;
+	context<Client>().sshTime = 0;
 
 }
 
@@ -79,22 +80,17 @@ ClientStates::Wake::Wake(my_context ctx): sc::state<Wake, Client>(ctx) {
 }
 
 ClientStates::PingWake::PingWake(my_context ctx): sc::state<PingWake, Client>(ctx) {
-	// TODO
-	// evtl. Timer setzen
 	clog << "Entered PingWake" << endl;
 	Client& client = context<Client>();
-	client.insertCmd("echo \"ping?\"");
+	client.sshPing();
 	SshThread::getInstance()->addClient(&client);
 }
 
 ClientStates::SshWake::SshWake(my_context ctx): sc::state<SshWake, Client>(ctx) {
-	// TODO
-	// evtl Timer setzen
 	clog << "Entered SshWake" << endl;
 	Client& client = context<Client>();
-	//SshThread::getInstance()->addClient(&client);
-	client.insertCmd("echo \"ping?\"");
 
+	client.sshPing();
 }
 
 ClientStates::SshWake::~SshWake() {
@@ -103,12 +99,10 @@ ClientStates::SshWake::~SshWake() {
 }
 
 ClientStates::SshOffline::SshOffline(my_context ctx): sc::state<SshOffline, Client>(ctx) {
-	// TODO
-	// evtl Timer setzen
 	clog << "Entered SshOffline" << endl;
 	Client& client = context<Client>();
 	//SshThread::getInstance()->addClient(&client);
-	client.insertCmd("echo \"ping?\"");
+	client.sshPing();
 }
 
 ClientStates::SshOffline::~SshOffline() {
@@ -117,12 +111,10 @@ ClientStates::SshOffline::~SshOffline() {
 }
 
 ClientStates::PingOffline::PingOffline(my_context ctx): sc::state<PingOffline, Client>(ctx) {
-	// TODO
-	// evtl Timer setzen
 	clog << "Entered PingOffline state!" << endl;
 	Client& client = context<Client>();
 	SshThread::getInstance()->addClient(&client);
-	client.insertCmd("echo \"ping?\"");
+	client.sshPing();
 }
 
 ClientStates::Shutdown::Shutdown(my_context ctx): sc::state<Shutdown, Client>(ctx) {

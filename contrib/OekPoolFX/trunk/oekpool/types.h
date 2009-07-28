@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <iostream>
+#include <time.h>
 #include "StdLog.h"
 #include "Client.h"
 
@@ -65,5 +66,10 @@ struct pingStruct {
 	char* alive;
 	pthread_mutex_t * mutex;
 	std::string ipAddress;
+};
+
+struct sshStruct {
+	time_t 		cmdTime;
+	std::string cmd;
 };
 #endif /* TYPES_H_ */
