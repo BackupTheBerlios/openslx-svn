@@ -15,7 +15,9 @@
 #include "StdLogger.h"
 #include "types.h"
 #include "LoggerFactory.h"
-#include <time.h>
+
+#include <sys/time.h>
+
 
 #include <boost/foreach.hpp>
 
@@ -69,12 +71,16 @@ int main(int argc, char** argv) {
 
 
     int i = 0;
-    clock_t timeStamp;
-    clock_t wait;
+    timespec timeStamp, timeStamp2;
+    timeval timev;
+    timespec wait;
+    time_t diff = 0;
+    //clock_t wait;
 
 	while(!exitFlag) {
-		timeStamp = clock();
-
+		// Get nanosecond time
+		gettimeofday(&timev, NULL);
+		TIMEVAL_TO_TIMESPEC(&timev, &timeStamp);
 
 		if(i == 0) {
 			clog << "Aktualisiere LDAP-Info\n";
@@ -91,11 +97,17 @@ int main(int argc, char** argv) {
 		}
 
 	    i = (i + 1) % 6;
-		wait = 5000000L -  ((1000000L*(clock() - timeStamp)) / CLOCKS_PER_SEC);
-		clog << "Warte " << wait << " usec" << endl;
 
-		// TODO use nanosleep to work with interrupts
-		usleep(wait);
+	    gettimeofday(&timev, NULL);
+		TIMEVAL_TO_TIMESPEC(&timev, &timeStamp2);
+		diff = (timeStamp2.tv_nsec - timeStamp.tv_nsec);
+		if(diff < 0) diff = 1e9 + diff;
+		wait.tv_sec = 5L -  ((timeStamp2.tv_sec - timeStamp.tv_sec)+diff/1e9);
+		wait.tv_nsec =  1e9 - diff;
+
+		clog << "Warte " << wait.tv_sec << " sec und " << wait.tv_nsec << " nsec " << endl;
+
+		nanosleep(&wait, NULL);
     }
 
     return 0;

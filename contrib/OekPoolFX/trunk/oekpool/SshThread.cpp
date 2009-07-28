@@ -166,6 +166,7 @@ void SshThread::_disconnect(SSHInfo* sshinfo) {
 
 	Logger* logger = LoggerFactory::getInstance()->getGlobalLogger();
     if (sshinfo->channel) {
+    	libssh2_channel_set_blocking(sshinfo->channel, 0);
     	libssh2_channel_close(sshinfo->channel);
     	if(libssh2_channel_wait_closed(sshinfo->channel) == -1) {
     		logger->log(LOG_LEVEL_ERROR, "Error closing channel!", sshinfo->client);
