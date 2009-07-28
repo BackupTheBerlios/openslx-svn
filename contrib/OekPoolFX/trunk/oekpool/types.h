@@ -71,5 +71,9 @@ struct pingStruct {
 struct sshStruct {
 	time_t 		cmdTime;
 	std::string cmd;
+
+	int operator==(sshStruct cmp){
+		return((cmp.cmdTime == cmdTime) && (cmp.cmd == cmd));
+	}
 };
 #endif /* TYPES_H_ */

@@ -27,6 +27,7 @@ Client::Client(AttributeMap al, std::vector<PXESlot> slots)
 
 	pthread_mutex_init(&sshMutex, NULL);
 	pthread_mutex_init(&pingMutex, NULL);
+	pthread_mutex_init(&cmdTableMutex, NULL);
 
     attributes = al;
 
@@ -209,11 +210,21 @@ std::string Client::getHostName() {
 }
 
 std::vector<sshStruct> Client::getCmdTable() {
-	pthread_mutex_lock(&sshMutex);
-	vector<sshStruct> result(cmdTable);
-	resetCmdTable();
-	pthread_mutex_unlock(&sshMutex);
+	time_t currentTime;
+	time(&currentTime);
 
+	pthread_mutex_lock(&cmdTableMutex);
+	std::list<sshStruct> tempList = cmdTable;
+	std::list<sshStruct>::iterator it;
+	vector<sshStruct> result;
+
+	for(it=tempList.begin(); it != tempList.end(); ++it) {
+		if(it->cmdTime < currentTime) {
+			result.push_back(*it);
+			cmdTable.remove(*it);
+		}
+	}
+	pthread_mutex_unlock(&cmdTableMutex);
 	return result;
 }
 
@@ -221,15 +232,15 @@ void Client::insertCmd(std::string cmd, time_t ssh) {
 	sshStruct sshstr;
 	sshstr.cmd = cmd;
 	sshstr.cmdTime = ssh;
-	pthread_mutex_lock(&sshMutex);
+	pthread_mutex_lock(&cmdTableMutex);
 	cmdTable.push_back(sshstr);
-	pthread_mutex_unlock(&sshMutex);
+	pthread_mutex_unlock(&cmdTableMutex);
 }
 
 void Client::resetCmdTable() {
-	pthread_mutex_unlock(&sshMutex);
+	pthread_mutex_lock(&cmdTableMutex);
 	cmdTable.clear();
-	pthread_mutex_unlock(&sshMutex);
+	pthread_mutex_unlock(&cmdTableMutex);
 }
 
 void Client::processClient() {
@@ -372,14 +383,10 @@ void Client::checkPingWake() {
 		ssh_attempts++;
 		ssh_responding = 0;
 		if(ssh_attempts > 5){
-			clog << "SSH Error" << endl;
 			process_event(EvtSshError());
-			insertCmd("echo \"ping?\"");
 		}
 		else{
-			clog << "SSH Failure" << endl;
 			process_event(EvtSshFailure());
-			insertCmd("echo \"ping?\"");
 		}
 	}
 	pthread_mutex_unlock(&sshMutex);
@@ -497,9 +504,15 @@ void Client::checkShutdown() {
 void Client::sshPing() {
 	if(sshTime == 0){
 		time(&sshTime);
+		sshTime += Configuration::getInstance()->getInt("ssh_init_time");
+		insertCmd("echo \"ping?\"", sshTime);
 	}
 	else{
-		sshTime += Configuration::getInstance()->getInt("ssh_interval");
+		time_t currentTime;
+		time(&currentTime);
+		if(sshTime < currentTime){
+			sshTime += Configuration::getInstance()->getInt("ssh_interval");
+			insertCmd("echo \"ping?\"", sshTime);
+		}
 	}
-	insertCmd("echo \"ping?\"", sshTime);
 }

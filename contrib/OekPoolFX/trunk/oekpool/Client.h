@@ -48,7 +48,7 @@ private:
     /**
      * private table to hold commands { ONLY ACCESSED THROUGH THREAD }
      */
-    std::vector<sshStruct> cmdTable;
+    std::list<sshStruct> cmdTable;
 
     /**
      * private function to reset pxe-informations
@@ -97,8 +97,9 @@ public:
     /**
      * public mutexes
      */
-    pthread_mutex_t pingMutex, // mutex for pings
-					sshMutex;  // mutex for ssh
+    pthread_mutex_t pingMutex, 		// mutex for ping flag
+					sshMutex,  		// mutex for ssh flag
+					cmdTableMutex;	// mutex for ssh cmd table
 
     /**
      * wether host is responding (used by ping and ssh)

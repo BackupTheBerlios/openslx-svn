@@ -129,6 +129,7 @@ ClientStates::Shutdown::Shutdown(my_context ctx): sc::state<Shutdown, Client>(ct
 ClientStates::Shutdown::~Shutdown() {
 	clog << "Left Shutdown state!" << endl;
 	Client& client = context<Client>();
-	SshThread::getInstance()->delClient(&client);
+	SshThread* ssht = SshThread::getInstance();
+	ssht->delClient(&client);
 	client.resetCmdTable();
 }
