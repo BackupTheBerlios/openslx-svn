@@ -208,7 +208,7 @@ std::string Client::getHostName() {
 	return attributes["HostName"];
 }
 
-std::vector<std::string> Client::getCmdTable() {
+std::vector<sshStruct> Client::getCmdTable() {
 	pthread_mutex_lock(&sshMutex);
 	vector<sshStruct> result(cmdTable);
 	resetCmdTable();

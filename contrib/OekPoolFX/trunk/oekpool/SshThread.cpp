@@ -71,6 +71,7 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 	string privkeyfile = conf->getString("ssh_private_key");
 
 	sshinfo->sock = 0;
+	sshinfo->channel = NULL;
 
     unsigned long hostaddr;
     int i, auth_pw = 0;
@@ -157,7 +158,6 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 	}
 	//libssh2_channel_handle_extended_data(sshinfo->channel,
 	//		LIBSSH2_CHANNEL_EXTENDED_DATA_IGNORE);
-	//libssh2_channel_set_blocking(sshinfo->channel, 0);
 
 }
 
@@ -183,70 +183,53 @@ void SshThread::_disconnect(SSHInfo* sshinfo) {
 void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 
 	if(cmd.size() == 0) return;
-	string output;
+	int retval = 0, bsize = 0, MAX_LENGTH=255, error = 0;
+	char buf[MAX_LENGTH];
 
     Logger* log = LoggerFactory::getInstance()->getGlobalLogger();
 
-	int MAXLEN = 255, ret = 0, retprog=0, error=0;
-	int bufferlength= 0;
-	char buf[MAXLEN];
-	vector<string> lines;
-
+    sshinfo->channel = libssh2_channel_open_session(sshinfo->session);
 	if(!sshinfo->channel) {
-		sshinfo->channel = libssh2_channel_open_session(sshinfo->session);
-		if(!sshinfo->channel) {
-			log->log(LOG_LEVEL_ERROR,"Could not re-open channel", sshinfo->client);
-		}
+		log->log(LOG_LEVEL_ERROR,"Could not open channel!",sshinfo->client);
+		throw exception();
 	}
 
-	ret = libssh2_channel_exec(sshinfo->channel, cmd.c_str() );
-
-//	retprog = libssh2_channel_get_exit_status(sshinfo->channel);
-	if(ret == -1) {
+	log->log(LOG_LEVEL_INFO,"Running command: "+cmd,sshinfo->client);
+	retval = libssh2_channel_exec(sshinfo->channel, cmd.c_str() );
+	if(retval == -1) {
 		error = libssh2_session_last_error(sshinfo->session,0,0,0);
-		if(error == LIBSSH2_ERROR_SOCKET_SEND ) {
-			log->log(LOG_LEVEL_ERROR, "Could not send data via SSH",sshinfo->client);
-			throw exception();
+		switch(error) {
+		case LIBSSH2_ERROR_SOCKET_SEND:
+			log->log(LOG_LEVEL_ERROR,"Could not send command!",sshinfo->client);
+			break;
+		case LIBSSH2_ERROR_ALLOC:
+			log->log(LOG_LEVEL_ERROR,"Some memory problem!",sshinfo->client);
+			break;
+		default:
+			log->log(LOG_LEVEL_ERROR,"Some unknown error occurred running the SSH command!",sshinfo->client);
+			log->log(LOG_LEVEL_ERROR,"Error code is "+Utility::toString(error),sshinfo->client);
+			break;
 		}
-		else if( error == LIBSSH2_ERROR_ALLOC) {
-			log->log(LOG_LEVEL_ERROR, "Could not allocate memory for SSH", sshinfo->client);
-			throw exception();
-		}
-		else {
-			log->log(LOG_LEVEL_ERROR, "Some error occurred running SSH command: "+cmd, sshinfo->client);
-			log->log(LOG_LEVEL_ERROR, "libssh2 error code: "+Utility::toString(error), sshinfo->client);
-			throw exception();
-		}
+		throw exception();
 	}
-	log->log(LOG_LEVEL_INFO,"Running command: "+cmd,sshinfo->client); //.substr(0,cmd.size()-1)
-//	if(retprog == 0) {
-//		log->log(LOG_LEVEL_ERROR, "ssh command exit status not available: "+cmd, sshinfo->client);
-//	}
 
-	do {
-		bufferlength = libssh2_channel_read(sshinfo->channel, buf, MAXLEN );
-		if(bufferlength < 0) {
-			return;
+	bsize = libssh2_channel_read(sshinfo->channel, buf, MAX_LENGTH);
+	log->log(LOG_LEVEL_INFO,"Returning output (following lines):",sshinfo->client);
+	while( bsize != 0 ) {
+		if(bsize < 0) {
+			log->log(LOG_LEVEL_ERROR,"ERROR running command!",sshinfo->client);
+			throw exception();
 		}
-		if(bufferlength != 0) {
-			output.append(string(buf,bufferlength));
+		log->log(LOG_LEVEL_INFO,string(buf,bsize),sshinfo->client);
+		bsize = libssh2_channel_read(sshinfo->channel, buf, MAX_LENGTH);
+	}
 
-			if(bufferlength > 0) {
-				log->log(LOG_LEVEL_INFO,string("Returning output: ")+output,sshinfo->client);
-			}
-		}
-	} while (bufferlength != 0);
-
-	// close the channel - we don't need it in the next 5 seconds
 	libssh2_channel_close(sshinfo->channel);
 	if(!libssh2_channel_wait_closed(sshinfo->channel)) {
 		libssh2_channel_free(sshinfo->channel);
 		sshinfo->channel = NULL;
-	}
-	else {
-		log->log(LOG_LEVEL_ERROR,"Not able to close current channel!",sshinfo->client);
-	}
 
+	}
 }
 
 
@@ -255,10 +238,12 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
  */
 void* SshThread::_main(void*) {
 	Configuration* conf = Configuration::getInstance();
+	Logger* log = LoggerFactory::getInstance()->getGlobalLogger();
+
 	SSHInfo sshinfo;
 	int i;
 	bool commandFlag = true;
-	vector<string> sshCmd;
+	vector<sshStruct> sshCmd;
 
 	while(!exitFlag) {
 
@@ -267,9 +252,6 @@ void* SshThread::_main(void*) {
 	vector<Client*> vecClients = sshClients;
 	pthread_mutex_unlock(&clientmutex);
 
-//	if(vecClients.size() == 0) {
-//		sleep(conf->getInt("ssh_init_time"));
-//	}
 
 	// FOREACH client do
 	BOOST_FOREACH(Client* client, vecClients) {
@@ -299,10 +281,10 @@ void* SshThread::_main(void*) {
 		}
 
 		// FOREACH command do
-		BOOST_FOREACH(string cmd, sshCmd) {
+		BOOST_FOREACH(sshStruct cmd, sshCmd) {
 			commandFlag = false;
 			try {
-				_runCmd(&sshinfo, cmd);
+				_runCmd(&sshinfo, cmd.cmd);
 				++i;
 				if(i == sshCmd.size()) {
 					pthread_mutex_lock(&client->sshMutex);
@@ -326,7 +308,8 @@ void* SshThread::_main(void*) {
 	sleep(2);
 
 	}
-	clog << "SSH Thread terminated" << endl;
+
+	log->log(LOG_LEVEL_INFO,"SSH Thread terminated", NULL);
 }
 
 
