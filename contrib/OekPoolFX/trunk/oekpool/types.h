@@ -45,7 +45,6 @@ struct SSHInfo {
     int sock; // Socket
     LIBSSH2_SESSION *session;
     LIBSSH2_CHANNEL *channel;
-    bool closed;
 };
 
 struct PXESlot {

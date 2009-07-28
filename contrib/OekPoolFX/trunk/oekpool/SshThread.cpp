@@ -71,7 +71,6 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 	string privkeyfile = conf->getString("ssh_private_key");
 
 	sshinfo->sock = 0;
-	sshinfo->closed = false;
 
     unsigned long hostaddr;
     int i, auth_pw = 0;
@@ -164,11 +163,14 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 
 
 void SshThread::_disconnect(SSHInfo* sshinfo) {
+
+	Logger* logger = LoggerFactory::getInstance()->getGlobalLogger();
     if (sshinfo->channel) {
     	libssh2_channel_close(sshinfo->channel);
-//    	if(libssh2_channel_wait_closed(sshinfo->channel) == -1) {
-//    		clog << "Error closing channel!" << endl;
-//    	}
+    	if(libssh2_channel_wait_closed(sshinfo->channel) == -1) {
+    		logger->log(LOG_LEVEL_ERROR, "Error closing channel!", sshinfo->client);
+    		return;
+    	}
         libssh2_channel_free(sshinfo->channel);
         sshinfo->channel = NULL;
     }
@@ -181,26 +183,24 @@ void SshThread::_disconnect(SSHInfo* sshinfo) {
 void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 
 	if(cmd.size() == 0) return;
-	//cmd.append("\n");
 	string output;
 
     Logger* log = LoggerFactory::getInstance()->getGlobalLogger();
 
 	int MAXLEN = 255, ret = 0, retprog=0, error=0;
+	int bufferlength= 0;
 	char buf[MAXLEN];
 	vector<string> lines;
 
-	if(!libssh2_channel_wait_closed(sshinfo->channel)) {
+	if(!sshinfo->channel) {
 		sshinfo->channel = libssh2_channel_open_session(sshinfo->session);
 		if(!sshinfo->channel) {
 			log->log(LOG_LEVEL_ERROR,"Could not re-open channel", sshinfo->client);
 		}
-//
-//		sshinfo->closed = false;
 	}
 
 	ret = libssh2_channel_exec(sshinfo->channel, cmd.c_str() );
-//	libssh2_channel_wait_closed(sshinfo->channel);
+
 //	retprog = libssh2_channel_get_exit_status(sshinfo->channel);
 	if(ret == -1) {
 		error = libssh2_session_last_error(sshinfo->session,0,0,0);
@@ -223,32 +223,28 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 //		log->log(LOG_LEVEL_ERROR, "ssh command exit status not available: "+cmd, sshinfo->client);
 //	}
 
-//	libssh2_channel_flush(sshinfo->channel);
-
-
-	int bufferlength= 0;
-//	bool b = false;
-//
-//	while(!b) { //libssh2_poll_channel_read(sshinfo->channel,0)
+	do {
 		bufferlength = libssh2_channel_read(sshinfo->channel, buf, MAXLEN );
 		if(bufferlength < 0) {
-			//clog << cmd;
 			return;
 		}
-		output = string(buf,bufferlength);
+		if(bufferlength != 0) {
+			output.append(string(buf,bufferlength));
 
-		if(bufferlength > 0) {
-			log->log(LOG_LEVEL_INFO,string("Returning output: ")+output,sshinfo->client);
-//			b = true;
+			if(bufferlength > 0) {
+				log->log(LOG_LEVEL_INFO,string("Returning output: ")+output,sshinfo->client);
+			}
 		}
-//		else {
-//			break;
-//		}
-//		*buf = 0;
-//	}
-	ret = libssh2_channel_close(sshinfo->channel);
-	if(!ret) {
-		sshinfo->closed = true;
+	} while (bufferlength != 0);
+
+	// close the channel - we don't need it in the next 5 seconds
+	libssh2_channel_close(sshinfo->channel);
+	if(!libssh2_channel_wait_closed(sshinfo->channel)) {
+		libssh2_channel_free(sshinfo->channel);
+		sshinfo->channel = NULL;
+	}
+	else {
+		log->log(LOG_LEVEL_ERROR,"Not able to close current channel!",sshinfo->client);
 	}
 
 }
