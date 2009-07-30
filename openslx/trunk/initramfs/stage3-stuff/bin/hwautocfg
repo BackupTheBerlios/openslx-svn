@@ -147,13 +147,15 @@ noexec\t 0 0" >>/tmp/fstab
           # if more than one id45 present, the latter ones are simply mounted
           # over the previous (the mounts are postponed a bit via do_mnt to
           # have the filesystem completely prepared) 
-          echo -e "mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*}\n\
+          echo -e "waitfor $hdpartnr 4000\n\
+            mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*}\n\
             ln -sf /media/${hdpartnr#/dev/*} /mnt/var/scratch" >>/etc/do_mnt
           echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto\
 \t\t 0 0" >>/tmp/fstab
         elif [ ${partid} -eq 46 ] ; then
           # mount a home directory to (/mnt)/var/home
-          echo -e "mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*} \n\
+          echo -e "waitfor $hdpartnr 4000\n\
+            mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*} \n\
             test -d /mnt/media/${hdpartnr#/dev/*}/home && \
               ln -sf /media/${hdpartnr#/dev/*} /mnt/var/home" >>/etc/do_mnt
           echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
@@ -161,6 +163,8 @@ noexec\t 0 0" >>/tmp/fstab
         fi
       done
     done
+    # add 
+    [ -f /etc/do_mnt ] && sed -e "1i. /etc/functions" -i /etc/do_mnt
   done
   # determine if tmp preparation should wait for format/mount or not
   [ -z "$part44" ] && echo "finished at $(sysup)" >/tmp/tmpready
@@ -175,7 +179,7 @@ fi
 finish () {
 mdev -s
 # mount filesystem parts requested in disk setup
-ash /etc/do_mnt
+ash /etc/do_mnt &
 # remove unneeded disk and mouse drivers
 [ ! -s /etc/hwinfo.disk ] && rmmod sd_mod 2>/dev/null
 #grep -q " PS/2 " /etc/hwinfo.mouse || \
