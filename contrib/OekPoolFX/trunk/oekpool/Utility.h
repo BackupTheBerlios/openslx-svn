@@ -32,8 +32,9 @@ public:
 	/**
 	 * function to convert various types to string
 	 */
+	template<typename T>
 	static
-	std::string toString(int);
+	std::string toString(T);
 
 	/**
 	 * function to convert various types to int

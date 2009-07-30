@@ -1,4 +1,5 @@
-/* Copyright (c) 2004-2008, Sara Golemon <sarag@libssh2.org>
+/* Copyright (c) 2004-2009, Sara Golemon <sarag@libssh2.org>
+ * Copyright (c) 2009 by Daniel Stenberg
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms,
@@ -87,13 +88,13 @@ typedef long long libssh2_int64_t;
    to make the BANNER define (used by src/session.c) be a valid SSH
    banner. Release versions have no appended strings and may of course not
    have dashes either. */
-#define LIBSSH2_VERSION "1.1"
+#define LIBSSH2_VERSION "1.1.1-20090730"
 
 /* The numeric version number is also available "in parts" by using these
    defines: */
 #define LIBSSH2_VERSION_MAJOR 1
 #define LIBSSH2_VERSION_MINOR 1
-#define LIBSSH2_VERSION_PATCH 
+#define LIBSSH2_VERSION_PATCH 1
 
 /* This is the numeric version of the libssh2 version number, meant for easier
    parsing and comparions by programs. The LIBSSH2_VERSION_NUM define will
@@ -110,7 +111,7 @@ typedef long long libssh2_int64_t;
    and it is always a greater number in a more recent release. It makes
    comparisons with greater than and less than work.
 */
-#define LIBSSH2_VERSION_NUM 0x010100
+#define LIBSSH2_VERSION_NUM 0x010101
 
 /*
  * This is the date and time when the full source package was created. The
@@ -121,7 +122,7 @@ typedef long long libssh2_int64_t;
  *
  * "Mon Feb 12 11:35:33 UTC 2007"
  */
-#define LIBSSH2_TIMESTAMP "Thu Apr  2 08:49:40 UTC 2009"
+#define LIBSSH2_TIMESTAMP "Thu Jul 30 02:02:19 UTC 2009"
 
 /* Part of every banner, user specified or not */
 #define LIBSSH2_SSH_BANNER                  "SSH-2.0-libssh2_" LIBSSH2_VERSION
@@ -240,6 +241,7 @@ typedef struct _LIBSSH2_USERAUTH_KBDINT_RESPONSE
 typedef struct _LIBSSH2_SESSION                     LIBSSH2_SESSION;
 typedef struct _LIBSSH2_CHANNEL                     LIBSSH2_CHANNEL;
 typedef struct _LIBSSH2_LISTENER                    LIBSSH2_LISTENER;
+typedef struct _LIBSSH2_KNOWNHOSTS                  LIBSSH2_KNOWNHOSTS;
 
 typedef struct _LIBSSH2_POLLFD {
     unsigned char type; /* LIBSSH2_POLLFD_* below */
@@ -291,6 +293,11 @@ typedef struct _LIBSSH2_POLLFD {
 /* Hash Types */
 #define LIBSSH2_HOSTKEY_HASH_MD5                            1
 #define LIBSSH2_HOSTKEY_HASH_SHA1                           2
+
+/* Hostkey Types */
+#define LIBSSH2_HOSTKEY_TYPE_UNKNOWN			    0
+#define LIBSSH2_HOSTKEY_TYPE_RSA			    1
+#define LIBSSH2_HOSTKEY_TYPE_DSS			    2
 
 /* Disconnect Codes (defined by SSH protocol) */
 #define SSH_DISCONNECT_HOST_NOT_ALLOWED_TO_CONNECT          1
@@ -348,6 +355,7 @@ typedef struct _LIBSSH2_POLLFD {
 #define LIBSSH2_ERROR_INVALID_POLL_TYPE         -35
 #define LIBSSH2_ERROR_PUBLICKEY_PROTOCOL        -36
 #define LIBSSH2_ERROR_EAGAIN                    -37
+#define LIBSSH2_ERROR_BUFFER_TOO_SMALL          -38
 
 /* Session API */
 LIBSSH2_API LIBSSH2_SESSION *
@@ -376,6 +384,9 @@ LIBSSH2_API int libssh2_session_free(LIBSSH2_SESSION *session);
 
 LIBSSH2_API const char *libssh2_hostkey_hash(LIBSSH2_SESSION *session,
                                              int hash_type);
+
+LIBSSH2_API const char *libssh2_session_hostkey(LIBSSH2_SESSION *session,
+                                                size_t *len, int *type);
 
 LIBSSH2_API int libssh2_session_method_pref(LIBSSH2_SESSION *session,
                                             int method_type,
@@ -663,6 +674,197 @@ LIBSSH2_API int libssh2_base64_decode(LIBSSH2_SESSION *session, char **dest,
 LIBSSH2_API
 const char *libssh2_version(int req_version_num);
 
+#define HAVE_LIBSSH2_KNOWNHOST_API 0x010101 /* since 1.1.1 */
+
+struct libssh2_knownhost {
+    unsigned int magic;  /* magic stored by the library */
+    void *node; /* handle to the internal representation of this host */
+    char *name; /* this is NULL if no plain text host name exists */
+    char *key;  /* key in base64/printable format */
+    int typemask;
+};
+
+/*
+ * libssh2_knownhost_init
+ *
+ * Init a collection of known hosts. Returns the pointer to a collection.
+ *
+ */
+LIBSSH2_API LIBSSH2_KNOWNHOSTS *
+libssh2_knownhost_init(LIBSSH2_SESSION *session);
+
+/*
+ * libssh2_knownhost_add
+ *
+ * Add a host and its associated key to the collection of known hosts.
+ *
+ * The 'type' argument specifies on what format the given host is:
+ *
+ * plain  - ascii "hostname.domain.tld"
+ * sha1   - SHA1(<salt> <host>) base64-encoded!
+ * custom - another hash
+ *
+ * If 'sha1' is selected as type, the salt must be provided to the salt
+ * argument. This too base64 encoded.
+ *
+ * The SHA-1 hash is what OpenSSH can be told to use in known_hosts files.  If
+ * a custom type is used, salt is ignored and you must provide the host
+ * pre-hashed when checking for it in the libssh2_knownhost_check() function.
+ *
+ */
+
+/* host format (2 bits) */
+#define LIBSSH2_KNOWNHOST_TYPE_MASK    0xffff
+#define LIBSSH2_KNOWNHOST_TYPE_PLAIN   1
+#define LIBSSH2_KNOWNHOST_TYPE_SHA1    2 /* always base64 encoded */
+#define LIBSSH2_KNOWNHOST_TYPE_CUSTOM  3
+
+/* key format (2 bits) */
+#define LIBSSH2_KNOWNHOST_KEYENC_MASK     (3<<16)
+#define LIBSSH2_KNOWNHOST_KEYENC_RAW      (1<<16)
+#define LIBSSH2_KNOWNHOST_KEYENC_BASE64   (2<<16)
+
+/* type of key (2 bits) */
+#define LIBSSH2_KNOWNHOST_KEY_MASK     (3<<18)
+#define LIBSSH2_KNOWNHOST_KEY_SHIFT    18
+#define LIBSSH2_KNOWNHOST_KEY_RSA1     (1<<18)
+#define LIBSSH2_KNOWNHOST_KEY_SSHRSA   (2<<18)
+#define LIBSSH2_KNOWNHOST_KEY_SSHDSS   (3<<18)
+
+LIBSSH2_API int
+libssh2_knownhost_add(LIBSSH2_KNOWNHOSTS *hosts,
+                      const char *host,
+                      const char *salt,
+                      const char *key, size_t keylen, int typemask,
+                      struct libssh2_knownhost **store);
+
+/*
+ * libssh2_knownhost_check
+ *
+ * Check a host and its associated key against the collection of known hosts.
+ *
+ * The type is the type/format of the given host name.
+ *
+ * plain  - ascii "hostname.domain.tld"
+ * custom - prehashed base64 encoded. Note that this cannot use any salts.
+ *
+ *
+ * 'knownhost' may be set to NULL if you don't care about that info.
+ *
+ * Returns:
+ *
+ * LIBSSH2_KNOWNHOST_CHECK_* values, see below
+ *
+ */
+
+#define LIBSSH2_KNOWNHOST_CHECK_MATCH    0
+#define LIBSSH2_KNOWNHOST_CHECK_MISMATCH 1
+#define LIBSSH2_KNOWNHOST_CHECK_NOTFOUND 2
+#define LIBSSH2_KNOWNHOST_CHECK_FAILURE  3
+
+LIBSSH2_API int
+libssh2_knownhost_check(LIBSSH2_KNOWNHOSTS *hosts,
+                        const char *host, const char *key, size_t keylen,
+                        int typemask,
+                        struct libssh2_knownhost **knownhost);
+
+/*
+ * libssh2_knownhost_del
+ *
+ * Remove a host from the collection of known hosts. The 'entry' struct is
+ * retrieved by a call to libssh2_knownhost_check().
+ *
+ */
+LIBSSH2_API int
+libssh2_knownhost_del(LIBSSH2_KNOWNHOSTS *hosts,
+                      struct libssh2_knownhost *entry);
+
+/*
+ * libssh2_knownhost_free
+ *
+ * Free an entire collection of known hosts.
+ *
+ */
+LIBSSH2_API void
+libssh2_knownhost_free(LIBSSH2_KNOWNHOSTS *hosts);
+
+/*
+ * libssh2_knownhost_readline()
+ *
+ * Pass in a line of a file of 'type'. It makes libssh2 read this line.
+ *
+ * LIBSSH2_KNOWNHOST_FILE_OPENSSH is the only supported type.
+ *
+ */
+LIBSSH2_API int
+libssh2_knownhost_readline(LIBSSH2_KNOWNHOSTS *hosts,
+                           const char *line, size_t len, int type);
+
+/*
+ * libssh2_knownhost_readfile
+ *
+ * Add hosts+key pairs from a given file.
+ *
+ * Returns a negative value for error or number of successfully added hosts.
+ *
+ * This implementation currently only knows one 'type' (openssh), all others
+ * are reserved for future use.
+ */
+
+#define LIBSSH2_KNOWNHOST_FILE_OPENSSH 1
+
+LIBSSH2_API int
+libssh2_knownhost_readfile(LIBSSH2_KNOWNHOSTS *hosts,
+                           const char *filename, int type);
+
+/*
+ * libssh2_knownhost_writeline()
+ *
+ * Ask libssh2 to convert a known host to an output line for storage.
+ *
+ * Note that this function returns LIBSSH2_ERROR_BUFFER_TOO_SMALL if the given
+ * output buffer is too small to hold the desired output.
+ *
+ * This implementation currently only knows one 'type' (openssh), all others
+ * are reserved for future use.
+ *
+ */
+LIBSSH2_API int
+libssh2_knownhost_writeline(LIBSSH2_KNOWNHOSTS *hosts,
+                            struct libssh2_knownhost *known,
+                            char *buffer, size_t buflen,
+                            size_t *outlen, /* the amount of written data */
+                            int type);
+
+/*
+ * libssh2_knownhost_writefile
+ *
+ * Write hosts+key pairs to a given file.
+ *
+ * This implementation currently only knows one 'type' (openssh), all others
+ * are reserved for future use.
+ */
+
+LIBSSH2_API int
+libssh2_knownhost_writefile(LIBSSH2_KNOWNHOSTS *hosts,
+                            const char *filename, int type);
+
+/*
+ * libssh2_knownhost_get()
+ *
+ * Traverse the internal list of known hosts. Pass NULL to 'prev' to get
+ * the first one. Or pass a poiner to the previously returned one to get the
+ * next.
+ *
+ * Returns:
+ * 0 if a fine host was stored in 'store'
+ * 1 if end of hosts
+ * [negative] on errors
+ */
+LIBSSH2_API int
+libssh2_knownhost_get(LIBSSH2_KNOWNHOSTS *hosts,
+                      struct libssh2_knownhost **store,
+                      struct libssh2_knownhost *prev);
 
 /* NOTE NOTE NOTE
    libssh2_trace() has no function in builds that aren't built with debug

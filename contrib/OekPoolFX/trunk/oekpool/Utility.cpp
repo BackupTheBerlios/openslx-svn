@@ -18,6 +18,10 @@
 
 using namespace std;
 
+template string Utility::toString<int>(int);
+template string Utility::toString<unsigned int>(unsigned int);
+template string Utility::toString<long>(long);
+
 
 IPAddress Utility::ipFromString(string ip) {
 	return inet_addr(ip.c_str());
@@ -49,7 +53,8 @@ string Utility::getPXEFilename(string mac){
 	return str.append(mac);
 }
 
-string Utility::toString(int bla) {
+template<typename T>
+string Utility::toString(T bla) {
 	ostringstream o;
 	o.clear();
 	o << bla;

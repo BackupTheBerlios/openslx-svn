@@ -20,26 +20,50 @@
 
 #include <boost/foreach.hpp>
 #include <pthread.h>
+#include <signal.h>
 
 using namespace std;
 
 
 
 pthread_mutex_t SshThread::clientmutex;
+pthread_mutex_t SshThread::timeoutmutex;
 pthread_t SshThread::thread;
+pthread_t SshThread::timeoutthread;
 
 std::vector<Client*> SshThread::sshClients;
 std::map<Client*,SSHInfo > SshThread::sshInfos;
-//std::map<Client*,std::vector<std::string,bool> > SshThread::sshCmds;
+std::pair<Client*, time_t > SshThread::sshTimeout;
+std::map<Client*,std::vector<sshStruct> > SshThread::sshCmds;
+
+bool SshThread::started;
 
 extern bool exitFlag;
 
+
 SshThread::SshThread() {
 
+	sshTimeout.first = NULL;
+	sshTimeout.second = 0;
+
 	pthread_mutex_init(&clientmutex, NULL);
+	pthread_mutex_init(&timeoutmutex, NULL);
+
+	started = true;
 
 	pthread_create(&thread, NULL, SshThread::_main, NULL);
+	pthread_create(&timeoutthread, NULL, SshThread::_main_timer, NULL);
+	pthread_detach(timeoutthread);
+}
 
+void SshThread::update() {
+	pthread_mutex_lock(&timeoutmutex);
+	if(!started) {
+		pthread_create(&thread,NULL, SshThread::_main, NULL);
+		pthread_detach(timeoutthread);
+		started = true;
+	}
+	pthread_mutex_unlock(&timeoutmutex);
 }
 
 SshThread::~SshThread() {
@@ -148,17 +172,8 @@ void SshThread::_connect(IPAddress ip, SSHInfo* sshinfo) {
 		return;
 	}
 
-	/* Request a shell */
-	if (!(sshinfo->channel = libssh2_channel_open_session(sshinfo->session))) {
-		logger->log(LOG_LEVEL_ERROR,"Unable to open a session",sshinfo->client);
-		libssh2_session_disconnect(sshinfo->session,
-						"Could not allocate channel!");
-		throw exception();
-		return;
-	}
 	//libssh2_channel_handle_extended_data(sshinfo->channel,
 	//		LIBSSH2_CHANNEL_EXTENDED_DATA_IGNORE);
-
 }
 
 
@@ -189,11 +204,14 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 
     Logger* log = LoggerFactory::getInstance()->getGlobalLogger();
 
-    sshinfo->channel = libssh2_channel_open_session(sshinfo->session);
-	if(!sshinfo->channel) {
-		log->log(LOG_LEVEL_ERROR,"Could not open channel!",sshinfo->client);
+    if(!sshinfo->channel) {
+	if (!(sshinfo->channel = libssh2_channel_open_session(sshinfo->session))) {
+		log->log(LOG_LEVEL_ERROR,"Unable to open a session",sshinfo->client);
+		libssh2_session_disconnect(sshinfo->session,
+						"Could not allocate channel!");
 		throw exception();
-	}
+		return;
+	}}
 
 	log->log(LOG_LEVEL_INFO,"Running command: "+cmd,sshinfo->client);
 	retval = libssh2_channel_exec(sshinfo->channel, cmd.c_str() );
@@ -229,7 +247,6 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 	if(!libssh2_channel_wait_closed(sshinfo->channel)) {
 		libssh2_channel_free(sshinfo->channel);
 		sshinfo->channel = NULL;
-
 	}
 }
 
@@ -237,7 +254,8 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 /**
  * This is the thread main function (and returns a void* - very important)
  */
-void* SshThread::_main(void*) {
+void* SshThread::_main(void* p) {
+	signal(SIGHUP,&SshThread::_quit_thread);
 	Configuration* conf = Configuration::getInstance();
 	Logger* log = LoggerFactory::getInstance()->getGlobalLogger();
 
@@ -259,8 +277,14 @@ void* SshThread::_main(void*) {
 		sshinfo.client = client;
 		sshCmd.clear();
 		sshCmd = client->getCmdTable();
-
-		if(sshCmd.size() == 0) continue;
+		if(sshCmd.size() > 0) {
+			log->log(LOG_LEVEL_INFO,"Vector sshCmd size: "+Utility::toString(sshCmd.size()), client);
+		}
+		sshCmds[client].insert(sshCmds[client].end(),sshCmd.begin(),sshCmd.end());
+		if(sshCmds[client].size() > 0) {
+			log->log(LOG_LEVEL_INFO,"Vector sshCmds[client] size: "+Utility::toString(sshCmds[client].size()), client);
+		}
+		if(sshCmds[client].size() == 0) continue;
 
 		i = 0;
 
@@ -270,6 +294,7 @@ void* SshThread::_main(void*) {
 		else
 		{
 			try {
+				_set_timeout(client,5);
 				_connect(client->getIP(),&sshinfo);
 				sshInfos[client] = sshinfo;
 			}
@@ -282,12 +307,13 @@ void* SshThread::_main(void*) {
 		}
 
 		// FOREACH command do
-		BOOST_FOREACH(sshStruct cmd, sshCmd) {
+		BOOST_FOREACH(sshStruct cmd, sshCmds[client]) {
 			commandFlag = false;
 			try {
+				_set_timeout(client,5);
 				_runCmd(&sshinfo, cmd.cmd);
 				++i;
-				if(i == sshCmd.size()) {
+				if(i == sshCmds[client].size()) {
 					pthread_mutex_lock(&client->sshMutex);
 					client->ssh_responding |= (1 << 7) | (1 << 6);
 					pthread_mutex_unlock(&client->sshMutex);
@@ -302,6 +328,10 @@ void* SshThread::_main(void*) {
 				break;
 			}
 		} // od
+
+		_reset_timeout();
+		sshCmds[client].clear();
+
 	} // od
 
 	if(commandFlag) sleep(1);
@@ -313,6 +343,68 @@ void* SshThread::_main(void*) {
 	log->log(LOG_LEVEL_INFO,"SSH Thread terminated", NULL);
 }
 
+
+/**
+ * This is for the special case of blocking connections
+ */
+void* SshThread::_main_timer(void*) {
+	Logger* log = LoggerFactory::getInstance()->getGlobalLogger();
+
+	time_t t = 0;
+	int ret = 0;
+
+	while(!exitFlag) {
+		sleep(1);
+
+		pthread_mutex_lock(&timeoutmutex);
+		if(sshTimeout.second == 0) {
+			pthread_mutex_unlock(&timeoutmutex);
+			continue;
+		}
+		pthread_mutex_unlock(&timeoutmutex);
+		//sshTimeout.first is a client
+		//sshTimeout.second is timeout time
+
+		pthread_mutex_lock(&timeoutmutex);
+		time(&t);
+		if(t > sshTimeout.second && sshTimeout.second != 0) {
+			log->log(LOG_LEVEL_ERROR, "Detected timeout in SSH worker thread!", sshTimeout.first);
+			ret = pthread_kill(thread,SIGHUP);
+			if(ret) {
+				log->log(LOG_LEVEL_FATAL, "Could not kill SSH worker thread!", sshTimeout.first);
+			}
+			pthread_mutex_lock(&clientmutex);
+			sshCmds[sshTimeout.first].clear();
+			SshThread::getInstance()->delClient(sshTimeout.first);
+			pthread_mutex_unlock(&clientmutex);
+			started = false;
+			//pthread_create(&thread, NULL, SshThread::_main, NULL);
+		}
+		pthread_mutex_unlock(&timeoutmutex);
+	}
+}
+
+
+void SshThread::_set_timeout(Client* client, time_t timeout) {
+	time_t t = 0;
+	pthread_mutex_lock(&timeoutmutex);
+	time(&t);
+	sshTimeout.first = client;
+	sshTimeout.second = t+timeout;
+	pthread_mutex_unlock(&timeoutmutex);
+}
+
+void SshThread::_reset_timeout() {
+	pthread_mutex_lock(&timeoutmutex);
+	sshTimeout.first = NULL;
+	sshTimeout.second = 0;
+	pthread_mutex_unlock(&timeoutmutex);
+}
+
+void SshThread::_quit_thread(int sig) {
+	_reset_timeout();
+	pthread_exit(NULL);
+}
 
 void SshThread::addClient(Client* client) {
 	pthread_mutex_lock(&clientmutex);

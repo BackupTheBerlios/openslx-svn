@@ -96,6 +96,9 @@ int main(int argc, char** argv) {
 			p.second->processClient();
 		}
 
+		// check if the worker thread needs to be restarted
+		SshThread::getInstance()->update();
+
 	    i = (i + 1) % 6;
 
 	    gettimeofday(&timev, NULL);
@@ -105,7 +108,9 @@ int main(int argc, char** argv) {
 		wait.tv_sec = 5L -  ((timeStamp2.tv_sec - timeStamp.tv_sec)+diff/1e9);
 		wait.tv_nsec =  1e9 - diff;
 
-		clog << "Warte " << wait.tv_sec << " sec und " << wait.tv_nsec << " nsec " << endl;
+		/** logger->log(LOG_LEVEL_INFO,"Warte "+Utility::toString(wait.tv_sec)+
+		 *		" sec und "+Utility::toString(wait.tv_nsec)+" nsec",NULL);
+		 */
 
 		nanosleep(&wait, NULL);
     }

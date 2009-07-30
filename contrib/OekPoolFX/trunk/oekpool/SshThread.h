@@ -19,14 +19,16 @@ class SshThread {
 
 private:
 	static pthread_mutex_t clientmutex;
+	static pthread_mutex_t timeoutmutex;
 	static pthread_t thread;
+	static pthread_t timeoutthread;
 
 	static std::vector<Client*> sshClients;
 	static std::map<Client*,SSHInfo > sshInfos;
-	//static std::map<Client*,std::vector<std::string,bool> >
-	//sshCmds;
+	static std::pair<Client*, time_t > sshTimeout;
+	static std::map<Client*,std::vector<sshStruct> > sshCmds;
 
-	pthread_t sshWorkerThread;
+	static bool started;
 
 	static void _connect(std::string, SSHInfo*);
 	static void _connect(IPAddress, SSHInfo*);
@@ -37,12 +39,18 @@ private:
 	static void _disconnect(SSHInfo*);
 
 	static void* _main(void*);
+	static void* _main_timer(void*);
+
+	static void _set_timeout(Client*, time_t = 0);
+	static void _reset_timeout();
+	static void _quit_thread(int);
 
 	SshThread();
 	virtual ~SshThread();
 
 public:
 	static SshThread* getInstance();
+	void update();
 
 
 	void addClient(Client* );
