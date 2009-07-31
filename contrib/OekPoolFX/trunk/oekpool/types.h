@@ -61,6 +61,7 @@ struct PXEInfo {
 	std::vector<tm> StartTime;
 	std::vector<tm> ShutdownTime;
 	bool ForceBoot;
+	bool pxeconfig; // special override value
 };
 
 struct pingStruct {

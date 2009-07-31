@@ -339,10 +339,6 @@ void* SshThread::_main(void* p) {
 	log->log(LOG_LEVEL_INFO,"SSH Thread terminated", NULL);
 }
 
-
-/**
- * This is for the special case of blocking connections
- */
 void* SshThread::_main_timer(void*) {
 	Logger* log = LoggerFactory::getInstance()->getGlobalLogger();
 
