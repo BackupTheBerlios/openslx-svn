@@ -262,7 +262,7 @@ void SWindow::unfold_entries(bool lin_entries, bool vm_entries, char* defsession
  ******************************************************/
 const char** SWindow::get_symbol(DataEntry* dat) {
   if(dat->imgtype == VMWARE) {
-	if(dat->os.find("win") != string::npos || dat->os.find("Win") == string::npos) {
+	if(dat->os.find("win") != string::npos || dat->os.find("Win") != string::npos) {
 		if(dat->locked) {
 			return xp_locked_32_xpm;
 		}
