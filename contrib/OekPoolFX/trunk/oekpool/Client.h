@@ -18,6 +18,7 @@
 
 #include "events.h"
 #include "types.h"
+#include "CommandListener.h"
 
 namespace mpl = boost::mpl;
 namespace sc = boost::statechart;
@@ -61,6 +62,17 @@ private:
     time_t nextWarnTime;
 
     /**
+     * CommandListener object which has taken control over client
+     */
+    CommandListener* control;
+
+    /**
+     * PXE information for remote control
+     */
+    PXEInfo remote_activeSlotObj;
+    PXEInfo* remote_activeSlot;
+
+    /**
      * Series of checks for every state of the client
      * Every check can trigger some state transition
      */
@@ -88,18 +100,38 @@ public:
     std::string getIP();
     std::string getHostName();
 
+    /**
+     * methods for querying and modfying the command table
+     */
     std::vector<sshStruct> getCmdTable();
     void resetCmdTable(void);
     void insertCmd(std::string, time_t ssh = 0);
 
+    /**
+     * inserts a query command into cmd table
+     * to determine ssh status
+     */
     void sshPing(void);
+
+    /**
+     * methods for remote control of the client
+     */
+    bool remote_takeOver(CommandListener*);
+    void remote_release(void);
+    bool remote_start(int,bool);
+    void remote_shutdown(void);
+    std::string remote_queryState(void);
+    std::vector<std::string> remote_getInfo(int);
+    bool remote_isOwner(CommandListener*);
+    std::vector<PXEInfo> remote_getPXEInfo(void);
 
     /**
      * public mutexes
      */
     pthread_mutex_t pingMutex, 		// mutex for ping flag
 					sshMutex,  		// mutex for ssh flag
-					cmdTableMutex;	// mutex for ssh cmd table
+					cmdTableMutex,	// mutex for ssh cmd table
+					controlMutex;	// mutex for socket control
 
     /**
      * wether host is responding (used by ping and ssh)
@@ -121,6 +153,11 @@ public:
      * (used by states pxeconfig and wake)
      */
     int ping_attempts, ssh_attempts;
+
+    enum {	INFO_IP = 0,
+			INFO_MAC,
+			INFO_HOSTNAME,
+			INFO_PXE_MENUS};
 };
 
 

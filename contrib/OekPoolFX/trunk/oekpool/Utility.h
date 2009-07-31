@@ -48,6 +48,13 @@ public:
 	static
 	void stringSplit(std::string, std::string, std::vector<std::string>&);
 
+	/**
+	 * function which finds a substring enclosed by inverted commas
+	 */
+
+	static
+	bool stringFindCmd(std::string, std::string&, std::string&);
+
 };
 
 #endif /* UTILITY_H_ */

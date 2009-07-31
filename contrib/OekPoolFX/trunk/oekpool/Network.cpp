@@ -102,6 +102,10 @@ void* Network::pingHost(void* pingArgs) {
 	if( (*(str->alive) & (char)0x20) != (char)0) {
 		sleep(conf->getInt("ping_interval"));
 	}
+	else {
+		// TODO: xml blubb
+		sleep(conf->getInt("ping_interval"));
+	}
 
 	SocketHandler h;
 	pingSocket* p = new pingSocket(h);

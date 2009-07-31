@@ -22,12 +22,17 @@ using namespace std;
 Client::Client(AttributeMap al, std::vector<PXESlot> slots)
 {
 	exists_in_ldap = true;
-	host_responding = false;
+	host_responding = 0;
 	ping_attempts = 0;
+	ssh_responding = 0;
+	ssh_attempts = 0;
+	control = NULL;
+	remote_activeSlot = NULL;
 
 	pthread_mutex_init(&sshMutex, NULL);
 	pthread_mutex_init(&pingMutex, NULL);
 	pthread_mutex_init(&cmdTableMutex, NULL);
+	pthread_mutex_init(&controlMutex, NULL);
 
     attributes = al;
 
@@ -52,7 +57,13 @@ Client::~Client() {
 }
 
 void Client::updateFromLdap(AttributeMap attr, std::vector<PXESlot> slots) {
-	// clog << "Updating client" << getHWAddress() << endl;
+
+	// if socket has taken control
+	// LDAP updates are not applied
+	if(control != NULL){
+		return;
+	}
+
 	attributes = attr;
 
 	// TODO
@@ -132,6 +143,24 @@ std::vector<PXEInfo> Client::setPXEInfo(std::vector<PXESlot> timeslots) {
 }
 
 bool Client::isActive(bool shutdown) {
+	// if socket has taken control
+	// false is returned if no slot is active
+	// otherwise ture is returned
+
+	pthread_mutex_lock(&controlMutex);
+	CommandListener* cl = control;
+	PXEInfo* ras = remote_activeSlot;
+	pthread_mutex_unlock(&controlMutex);
+
+	if(cl != NULL){
+		if(ras == NULL){
+			return false;
+		}
+		else{
+			return true;
+		}
+	}
+
 	time_t currentTime;
 	time_t futureTime;
 	time(&currentTime);
@@ -167,6 +196,18 @@ bool Client::isActive(bool shutdown) {
 }
 
 PXEInfo* Client::getActiveSlot(bool shutdown) {
+
+	// if socket has taken control the chosen
+	// slot is returned
+	pthread_mutex_lock(&controlMutex);
+	CommandListener* cl = control;
+	PXEInfo* ras = remote_activeSlot;
+	pthread_mutex_unlock(&controlMutex);
+
+	if(cl != NULL){
+		return ras;
+	}
+
 	time_t currentTime;
 	time_t futureTime;
 	time(&currentTime);
@@ -318,7 +359,7 @@ void Client::checkOffline() {
 }
 
 void Client::checkPXE() {
-	//clog << "CheckPXE" << endl;
+
 	if(!isActive()) {
 		process_event(EvtShutdown());
 		return;
@@ -515,4 +556,159 @@ void Client::sshPing() {
 			insertCmd("echo \"ping?\"", sshTime);
 		}
 	}
+}
+
+bool Client::remote_takeOver(CommandListener* cl){
+
+	if(control == cl){
+		return true;
+	}
+
+	if(control != NULL){
+		return false;
+	}
+
+	try {
+		state_cast<const ClientStates::Offline &>();
+		control = cl;
+		return true;
+	}
+	catch(const std::bad_cast &Ex) {}
+	return false;
+}
+
+void Client::remote_release(){
+	control = NULL;
+}
+
+bool Client::remote_start(int menu, bool forceBoot){
+	if(menu >= pxeslots.size()){
+		return false;
+	}
+	remote_activeSlotObj = pxeslots[menu];
+	remote_activeSlotObj.ForceBoot = forceBoot;
+
+	pthread_mutex_lock(&controlMutex);
+	remote_activeSlot = &remote_activeSlotObj;
+	pthread_mutex_unlock(&controlMutex);
+
+	return true;
+}
+
+void Client::remote_shutdown(){
+	pthread_mutex_lock(&controlMutex);
+	remote_activeSlot = NULL;
+	pthread_mutex_unlock(&controlMutex);
+}
+
+std::vector<std::string> Client::remote_getInfo(int object){
+	std::vector<std::string> v;
+	std::string temp;
+	std::string boot;
+
+	if(object == Client::INFO_HOSTNAME){
+		v.push_back(getHostName());
+	}
+
+	if(object == Client::INFO_IP){
+		v.push_back(getIP());
+	}
+
+	if(object == Client::INFO_MAC){
+		v.push_back(getHWAddress());
+	}
+
+	if(object == Client::INFO_PXE_MENUS){
+
+		for(int i = 0; i < pxeslots.size(); i++){
+			if(pxeslots[i].ForceBoot){
+				boot = "auto wake";
+			}
+			else{
+				boot = "no wake";
+			}
+			temp = Utility::toString(i);
+			temp = temp + ": " + pxeslots[i].MenuName + " (" + temp + ")" + "\n";
+			v.push_back(temp);
+		}
+	}
+
+	return v;
+}
+
+std::string Client::remote_queryState(){
+	std::string status;
+
+	// checking "Offline"
+	try {
+		state_cast<const ClientStates::Offline &>();
+		status = "Offline";
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking "PXE"
+	try {
+		state_cast<const ClientStates::PXE &>();
+		status = "PXE changed";
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking "Wake"
+	try {
+		state_cast<const ClientStates::Wake &>();
+		status = "Wake signal sent";
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking "PingWake"
+	try {
+		state_cast<const ClientStates::PingWake &>();
+		status = "Responded to ping (auto wake)";
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking Error
+	try {
+		state_cast<const ClientStates::Error &>();
+		status = "Error occured";
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking "SshWake"
+	try {
+		state_cast<const ClientStates::SshWake &>();
+		status = "SSH connection possible (auto wake)";
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking "PingOffline"
+	try {
+		state_cast<const ClientStates::PingOffline &>();
+		status = "Responded to ping (no wake)";
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking "SshOffline"
+	try {
+		state_cast<const ClientStates::SshOffline &>();
+		status = "SSH connection possible (no wake)";
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	// checking "Shutdown"
+	try {
+		state_cast<const ClientStates::Shutdown &>();
+		status = "Shutdown in progress";
+	}
+	catch(const std::bad_cast &Ex) {}
+
+	return status;
+}
+
+bool Client::remote_isOwner(CommandListener* cl){
+	return (cl == control);
+}
+
+std::vector<PXEInfo> Client::remote_getPXEInfo(){
+	return pxeslots;
 }

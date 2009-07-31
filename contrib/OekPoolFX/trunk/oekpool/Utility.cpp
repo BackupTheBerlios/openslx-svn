@@ -84,3 +84,24 @@ void Utility::stringSplit(std::string str, std::string delim, std::vector<std::s
 		results.push_back(str);
 	}
 }
+
+bool Utility::stringFindCmd(std::string input, std::string& extract, std::string& output){
+	size_t found,length;
+	std::vector<size_t> quoteVec;
+
+	found = input.find("\"", 0);
+
+	while(found != input.npos){
+		quoteVec.push_back(found);
+		found = input.find("\"", found);
+	}
+
+	if(quoteVec.size() != 0){
+		return false;
+	}
+
+	length = quoteVec[1] - quoteVec[0] - 1;
+	extract = input.substr(quoteVec[0]+1, length);
+	output = input.replace(quoteVec[0], length + 2,"");
+	return true;
+}
