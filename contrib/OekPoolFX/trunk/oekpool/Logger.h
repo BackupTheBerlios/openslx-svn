@@ -18,6 +18,8 @@
 
 class Logger : ILogger {
 private:
+	void deleteAllLogger();
+
 	loglevel_t loglevel;
 	std::vector<ILogger*> vecLogger;
 

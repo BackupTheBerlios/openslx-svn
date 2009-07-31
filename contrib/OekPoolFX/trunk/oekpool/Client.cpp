@@ -318,7 +318,7 @@ void Client::checkOffline() {
 }
 
 void Client::checkPXE() {
-	clog << "CheckPXE" << endl;
+	//clog << "CheckPXE" << endl;
 	if(!isActive()) {
 		process_event(EvtShutdown());
 		return;

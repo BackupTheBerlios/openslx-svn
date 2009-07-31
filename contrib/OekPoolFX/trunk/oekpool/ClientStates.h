@@ -41,7 +41,8 @@ struct PXE : sc::state<PXE, Client> {
     typedef mpl::list <
         sc::transition< EvtWakeCommand, Wake >,
         sc::transition< EvtPingFailure, PXE >,
-        sc::transition< EvtPingSuccess, PingOffline > > reactions;
+        sc::transition< EvtPingSuccess, PingOffline >,
+        sc::transition< EvtShutdown, Offline > > reactions;
 	PXE(my_context ctx);
     ~PXE();
 };
@@ -79,7 +80,7 @@ struct PingOffline : sc::state<PingOffline, Client> {
 struct Error : sc::state<Error, Client> {
     typedef sc::transition< EvtOffline, Offline > reactions;
 
-    Error(my_context ctx): sc::state<Error, Client>(ctx) {};
+    Error(my_context ctx);
     ~Error() {};
 };
 

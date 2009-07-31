@@ -18,7 +18,7 @@ Logger::Logger() {
 }
 
 Logger::~Logger() {
-
+	deleteAllLogger();
 }
 
 void Logger::log(loglevel_t lvl, std::string msg, const Client* client) {
@@ -38,5 +38,14 @@ void Logger::removeLogger(const ILogger* logger) {
 
 	if (it != vecLogger.end()) {
 		vecLogger.erase(it);
+	}
+}
+
+void Logger::deleteAllLogger() {
+	for(vector<ILogger*>::iterator
+			it = vecLogger.begin();
+			it!= vecLogger.end();
+			it++) {
+		delete *it;
 	}
 }

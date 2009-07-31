@@ -4,6 +4,8 @@
  *  Created on: 19.05.2009
  *      Author: bw21
  */
+#ifndef TYPES_H_
+#define TYPES_H_
 
 #include <string>
 #include <vector>
@@ -15,13 +17,12 @@
 #include <iostream>
 #include <time.h>
 #include "StdLog.h"
-#include "Client.h"
 
-
-#ifndef TYPES_H_
-#define TYPES_H_
+//forward declaration of Client - otherwise cyclic dependency
+struct Client;
 
 typedef std::map<std::string,std::string> AttributeMap;
+typedef std::pair<std::string,Client*> clientPair;
 typedef unsigned long IPAddress;
 
 struct networkInfo{

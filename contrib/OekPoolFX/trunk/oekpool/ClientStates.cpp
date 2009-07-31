@@ -5,13 +5,15 @@
  *      Author: bastian
  */
 
+
+#include "ClientStates.h"
 #include <time.h>
 #include "Configuration.h"
-#include "ClientStates.h"
 #include "boost/filesystem.hpp"
 #include "Utility.h"
 #include "Network.h"
 #include "SshThread.h"
+#include "types.h"
 
 namespace bfs = boost::filesystem;
 
@@ -132,4 +134,10 @@ ClientStates::Shutdown::~Shutdown() {
 	SshThread* ssht = SshThread::getInstance();
 	ssht->delClient(&client);
 	client.resetCmdTable();
+}
+
+
+ClientStates::Error::Error(my_context ctx): sc::state<Error, Client>(ctx) {
+	Client& client = context<Client>();
+	SshThread::getInstance()->delClient(&client);
 }

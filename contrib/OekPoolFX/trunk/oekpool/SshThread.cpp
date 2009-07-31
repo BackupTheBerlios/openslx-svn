@@ -277,13 +277,7 @@ void* SshThread::_main(void* p) {
 		sshinfo.client = client;
 		sshCmd.clear();
 		sshCmd = client->getCmdTable();
-		if(sshCmd.size() > 0) {
-			log->log(LOG_LEVEL_INFO,"Vector sshCmd size: "+Utility::toString(sshCmd.size()), client);
-		}
 		sshCmds[client].insert(sshCmds[client].end(),sshCmd.begin(),sshCmd.end());
-		if(sshCmds[client].size() > 0) {
-			log->log(LOG_LEVEL_INFO,"Vector sshCmds[client] size: "+Utility::toString(sshCmds[client].size()), client);
-		}
 		if(sshCmds[client].size() == 0) continue;
 
 		i = 0;
@@ -299,6 +293,7 @@ void* SshThread::_main(void* p) {
 				sshInfos[client] = sshinfo;
 			}
 			catch (exception e) {
+				_reset_timeout();
 				pthread_mutex_lock(&client->sshMutex);
 				client->ssh_responding |= (1 << 6);
 				pthread_mutex_unlock(&client->sshMutex);
@@ -321,6 +316,7 @@ void* SshThread::_main(void* p) {
 			}
 			catch(exception e) {
 				_disconnect(&sshinfo);
+				_reset_timeout();
 				sshInfos.erase(sshInfos.find(client) );
 				pthread_mutex_lock(&client->sshMutex);
 				client->ssh_responding |= (1 << 6);
@@ -369,14 +365,14 @@ void* SshThread::_main_timer(void*) {
 		time(&t);
 		if(t > sshTimeout.second && sshTimeout.second != 0) {
 			log->log(LOG_LEVEL_ERROR, "Detected timeout in SSH worker thread!", sshTimeout.first);
+			pthread_mutex_lock(&sshTimeout.first->sshMutex);
+			sshTimeout.first->ssh_responding |= (1 << 6);
+			pthread_mutex_unlock(&sshTimeout.first->sshMutex);
 			ret = pthread_kill(thread,SIGHUP);
 			if(ret) {
 				log->log(LOG_LEVEL_FATAL, "Could not kill SSH worker thread!", sshTimeout.first);
 			}
-			pthread_mutex_lock(&clientmutex);
-			sshCmds[sshTimeout.first].clear();
-			SshThread::getInstance()->delClient(sshTimeout.first);
-			pthread_mutex_unlock(&clientmutex);
+			SshThread::getInstance()->delClient(sshTimeout.first, true);
 			started = false;
 			//pthread_create(&thread, NULL, SshThread::_main, NULL);
 		}
@@ -414,7 +410,7 @@ void SshThread::addClient(Client* client) {
 	pthread_mutex_unlock(&clientmutex);
 }
 
-void SshThread::delClient(Client* client) {
+void SshThread::delClient(Client* client, bool timeout) {
 	pthread_mutex_lock(&clientmutex);
 	vector<Client*>::iterator pos =
 		find(sshClients.begin(),sshClients.end(),client);
@@ -423,10 +419,12 @@ void SshThread::delClient(Client* client) {
 	if(pos != sshClients.end()) {
 		sshClients.erase(pos);
 		if(mPos != sshInfos.end()) {
-			_disconnect(&sshInfos[client]);
+			if(!timeout)
+				_disconnect(&sshInfos[client]);
 			sshInfos.erase(mPos);
 		}
 	}
+	sshCmds.erase(client);
 	pthread_mutex_unlock(&clientmutex);
 
 

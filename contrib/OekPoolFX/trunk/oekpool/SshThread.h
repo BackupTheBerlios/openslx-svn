@@ -11,7 +11,6 @@
 #include <vector>
 #include <map>
 
-#include "types.h"
 #include "Client.h"
 #include "pthread.h"
 
@@ -54,7 +53,7 @@ public:
 
 
 	void addClient(Client* );
-	void delClient(Client* );
+	void delClient(Client* ,bool timeout = false);
 
 };
 

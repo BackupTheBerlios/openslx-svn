@@ -17,7 +17,6 @@ LoggerFactory::LoggerFactory() : _global(*(new Logger())) {
 }
 
 LoggerFactory::~LoggerFactory() {
-	// TODO: Delete all Loggers from _global (maybe via function deleteAllLoggers)
 	delete &_global;
 }
 

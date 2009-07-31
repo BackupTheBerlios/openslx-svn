@@ -48,8 +48,6 @@ int main(int argc, char** argv) {
 
 	signal(SIGTERM, setExitFlag);
 
-	typedef pair<string,Client*> clientPair;
-
 	// call the various singleton to initialize
     Configuration* conf = Configuration::getInstance();
     Network* network = Network::getInstance();
@@ -91,8 +89,7 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		typedef pair< string, Client* > mpair;
-		BOOST_FOREACH(mpair p, clientList) {
+		BOOST_FOREACH(clientPair p, clientList) {
 			p.second->processClient();
 		}
 
