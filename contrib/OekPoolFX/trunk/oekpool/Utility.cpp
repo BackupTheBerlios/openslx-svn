@@ -93,7 +93,10 @@ bool Utils::stringFindCmd(std::string input, std::string& extract, std::string& 
 
 	while(found != string::npos){
 		if(input[found-1] == '\\') {
-			found = input.find("\"", found+1);
+			// remove the escaping backslash
+			input = input.substr(0,found-2)+input.substr(found);
+			// find next double quote
+			found = input.find("\"", found);
 			continue;
 		}
 		quoteVec.push_back(found);

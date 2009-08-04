@@ -21,7 +21,7 @@ CommandListener::CommandListener(ISocketHandler& h) : TcpSocket(h) {
 }
 
 CommandListener::~CommandListener() {
-
+	delete logger;
 }
 
 void CommandListener::OnAccept() {
@@ -198,7 +198,10 @@ bool CommandListener::cmd_takeover(std::vector<std::string> params, std::string&
 		return false;
 	}
 
+	logger->addClient(clientObj);
+
 	error = "Client \"" + params[1] + "\" has been taken successfully. You may now change PXE settings.";
+
 	return true;
 }
 
