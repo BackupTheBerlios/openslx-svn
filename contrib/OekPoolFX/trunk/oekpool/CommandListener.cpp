@@ -29,38 +29,52 @@ void CommandListener::OnAccept() {
 void CommandListener::OnLine(const std::string& line) {
 
 	std::vector<std::string> cmd;
+	std::string error;
+	bool success;
 
 	Utility::stringSplit(line, " ", cmd);
 
-	if(cmd[0] == "query"){
+	if(cmd.size() >= 1){
 
-	}
-	else if(cmd[0] == "list"){
+		if(cmd[0] == "query"){
+			success = cmd_query(cmd, error);
+		}
+		else if(cmd[0] == "list"){
+			success = cmd_list(cmd, error);
+		}
+		else if(cmd[0] == "takeover"){
+			success = cmd_takeover(cmd, error);
+		}
+		else if(cmd[0] == "release"){
+			success = cmd_release(cmd, error);
+		}
+		else if(cmd[0] == "start"){
+			success = cmd_start(cmd, error);
+		}
+		else if(cmd[0] == "shutdown"){
+			success = cmd_shutdown(cmd, error);
+		}
+		else if(cmd[0] == "execute"){
+			success = cmd_execute(line, error);
+		}
+		else{
+			success = false;
+			Send("Command \"" + cmd[0] + "\" not recognized.");
+		}
 
+		if(success){
+			Send(error + "\n");
+		}
+		else{
+			Send("ERROR: " + error + "\n");
+		}
 	}
-	else if(cmd[0] == "takeover"){
 
-	}
-	else if(cmd[0] == "release"){
-
-	}
-	else if(cmd[0] == "start"){
-
-	}
-	else if(cmd[0] == "shutdown"){
-
-	}
-	else if(cmd[0] == "execute"){
-
-	}
-	else{
-		Send("Command \"" + cmd[0] + "\" not recognized.");
-	}
 	SendPrompt();
 }
 
 void CommandListener::SendPrompt(){
-	Send("> ");
+	Send("> \n");
 }
 
 bool CommandListener::cmd_execute(std::string line, std::string& error){
