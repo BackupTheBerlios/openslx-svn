@@ -139,5 +139,10 @@ ClientStates::Shutdown::~Shutdown() {
 
 ClientStates::Error::Error(my_context ctx): sc::state<Error, Client>(ctx) {
 	Client& client = context<Client>();
+	client.ssh_attempts = 0;
+	client.ssh_responding = 0;
+	client.host_responding = 0;
+	client.ping_attempts = 0;
+
 	SshThread::getInstance()->delClient(&client);
 }
