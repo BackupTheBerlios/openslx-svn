@@ -193,7 +193,7 @@ void Ldap::getClients(string pool, map<string,Client*>& clist) {
 		{
 			pair<string, string> p = Utils::splitIPRange(vec[i]["IPAddress"]);
 			vec[i]["IPAddress"] = p.first;
-
+			vec[i]["Pool"] = pool;
 
 
 			// Get PXE Timeslot Information

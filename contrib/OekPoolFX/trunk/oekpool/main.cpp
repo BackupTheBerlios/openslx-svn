@@ -92,6 +92,7 @@ int main(int argc, char** argv) {
     }
     h.Add(&cmdlisten);
 
+    // create socket to add communication via port 4440
     pthread_create(&socketThread,NULL,_main_socket,(void*)&h);
 
     int i = 0;

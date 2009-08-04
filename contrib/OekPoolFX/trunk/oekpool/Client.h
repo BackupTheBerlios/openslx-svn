@@ -42,7 +42,7 @@ private:
     std::vector<PXEInfo> pxeslots;
 
     /**
-     * bool, wether it is still in LDAP
+     * bool, whether it is still in LDAP
      */
     bool exists_in_ldap;
 
@@ -103,7 +103,7 @@ public:
     std::string getHostName();
 
     /**
-     * methods for querying and modfying the command table
+     * methods for querying and modifying the command table
      */
     std::vector<sshStruct> getCmdTable();
     void resetCmdTable(void);
@@ -136,7 +136,7 @@ public:
 					controlMutex;	// mutex for socket control
 
     /**
-     * wether host is responding (used by ping and ssh)
+     * Whether host is responding (used by ping and ssh)
      */
     char host_responding;
     char ssh_responding;

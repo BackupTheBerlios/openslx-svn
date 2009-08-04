@@ -33,15 +33,16 @@ public:
 
 private:
 
-	bool cmd_query	 (std::vector<std::string>, std::string&);
-	bool cmd_list	 (std::vector<std::string>, std::string&);
-	bool cmd_takeover(std::vector<std::string>, std::string&);
-	bool cmd_release (std::vector<std::string>, std::string&);
-	bool cmd_start	 (std::vector<std::string>, std::string&);
-	bool cmd_shutdown(std::vector<std::string>, std::string&);
-	bool cmd_execute (std::string, std::string&);
+	bool cmd_query	 (std::vector<std::string>, std::vector<Client*>, std::string&);
+	bool cmd_list	 (std::vector<std::string>, std::vector<Client*>, std::string&);
+	bool cmd_takeover(std::vector<std::string>, std::vector<Client*>, std::string&);
+	bool cmd_release (std::vector<std::string>, std::vector<Client*>, std::string&);
+	bool cmd_start	 (std::vector<std::string>, std::vector<Client*>, std::string&);
+	bool cmd_shutdown(std::vector<std::string>, std::vector<Client*>, std::string&);
+	bool cmd_execute (std::string, std::vector<Client*>, std::string&);
 
 	Client* getClient(std::string);
+	void getClientList(std::string clist, std::vector<Client*>& result, std::string&);
 
 	static std::map<std::string, Client*>* clientList;
 	static pthread_mutex_t* clientListMutex;
