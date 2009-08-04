@@ -13,6 +13,7 @@
 #include "types.h"
 #include <iostream>
 #include <time.h>
+#include "SshThread.h"
 
 using namespace std;
 
@@ -731,4 +732,13 @@ bool Client::remote_isOwner(CommandListener* cl){
 
 std::vector<PXEInfo> Client::remote_getPXEInfo(){
 	return pxeslots;
+}
+
+void Client::delClient(const EvtSshFailure& event) {
+	SshThread::getInstance()->delClient(this);
+
+	ssh_attempts = 0;
+	ssh_responding = 0;
+	host_responding = 0;
+	ping_attempts = 0;
 }

@@ -24,14 +24,14 @@ public:
 	void OnLine(const std::string&);
 
 
+	void SendPrompt();
+
 
 	// call these before use (in main)
 	static void setClientList(std::map<std::string, Client*>*);
 	static void setClientListMutex(pthread_mutex_t*);
 
 private:
-
-	void SendPrompt();
 
 	bool cmd_query	 (std::vector<std::string>, std::string&);
 	bool cmd_list	 (std::vector<std::string>, std::string&);

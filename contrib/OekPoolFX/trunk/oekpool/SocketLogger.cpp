@@ -21,12 +21,16 @@ SocketLogger::~SocketLogger() {
 }
 
 void SocketLogger::addClient(Client* c) {
-	logClients.push_back(c);
+	vector<Client*>::iterator
+		it = find(logClients.begin(),logClients.end(),c);
+	if(it == logClients.end()) {
+		logClients.push_back(c);
+	}
 }
 
 void SocketLogger::delClient(Client* c) {
 	vector<Client*>::iterator
-	it = find(logClients.begin(),logClients.end(),c);
+		it = find(logClients.begin(),logClients.end(),c);
 	if(it != logClients.end()) {
 		logClients.erase(it);
 	}
@@ -35,39 +39,27 @@ void SocketLogger::delClient(Client* c) {
 void SocketLogger::log(loglevel_t lvl, std::string msg,const Client* client) {
 	if(loglevel < lvl ) return;
 
-	// TODO: replace clog with e.g. cmd->write(string)
-
-	if(client != NULL) {
+	vector<Client*>::iterator it = std::find(logClients.begin(),logClients.end(),client);
+	if(it != logClients.end()) {
 		switch(lvl) {
 		case LOG_LEVEL_FATAL:
-			clog << "[FF] " + ((Client*)client)->getHostName() + ": " + msg + "\n";
+			cmd->Send("[FF] " + (*it)->getHostName() + ": " + msg + "\n");
 			break;
 		case LOG_LEVEL_ERROR:
-			clog << "[EE] " + ((Client*)client)->getHostName() + ": " + msg + "\n";
+			cmd->Send("[EE] " + (*it)->getHostName() + ": " + msg + "\n");
 			break;
 		case LOG_LEVEL_WARNING:
-			clog << "[WW] " + ((Client*)client)->getHostName() + ": " + msg + "\n";
+			cmd->Send("[WW] " + (*it)->getHostName() + ": " + msg + "\n");
 			break;
 		case LOG_LEVEL_INFO:
-			clog << "[II] " + ((Client*)client)->getHostName() + ": " + msg + "\n";
+			cmd->Send("[II] " + (*it)->getHostName() + ": " + msg + "\n");
+			break;
+		default:
+			return;
 			break;
 		}
-	}
 
-	BOOST_FOREACH(Client* cl, logClients) {
-		switch(lvl) {
-		case LOG_LEVEL_FATAL:
-			clog << "[FF] " + cl->getHostName() + ": " + msg + "\n";
-			break;
-		case LOG_LEVEL_ERROR:
-			clog << "[EE] " + cl->getHostName() + ": " + msg + "\n";
-			break;
-		case LOG_LEVEL_WARNING:
-			clog << "[WW] " + cl->getHostName() + ": " + msg + "\n";
-			break;
-		case LOG_LEVEL_INFO:
-			clog << "[II] " + cl->getHostName() + ": " + msg + "\n";
-			break;
-		}
+
+		cmd->SendPrompt();
 	}
 }

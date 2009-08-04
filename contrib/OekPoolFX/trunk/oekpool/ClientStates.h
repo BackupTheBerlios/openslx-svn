@@ -71,7 +71,7 @@ struct PingOffline : sc::state<PingOffline, Client> {
     typedef mpl::list<
 		sc::transition< EvtSshError, PXE >,
         sc::transition< EvtSshSuccess, SshOffline >,
-        sc::transition< EvtSshFailure, PingOffline > >  reactions;
+        sc::transition< EvtSshFailure, PingOffline, Client, &Client::delClient > >  reactions;
 
     PingOffline(my_context ctx);
     ~PingOffline() {};

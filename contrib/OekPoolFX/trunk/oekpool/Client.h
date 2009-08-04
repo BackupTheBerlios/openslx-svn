@@ -93,6 +93,8 @@ public:
     void updateFromLdap(AttributeMap,std::vector<PXESlot>);
     void processClient(void);
 
+    void delClient(const EvtSshFailure&);
+
     bool isActive(bool shutdown = false);
 
     PXEInfo* getActiveSlot(bool shutdown = false);

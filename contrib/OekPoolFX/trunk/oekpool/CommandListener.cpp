@@ -7,10 +7,11 @@
 
 #include "CommandListener.h"
 #include <SocketHandler.h>
+#include "ILogger.h"
 #include "SocketLogger.h"
 #include "Utility.h"
 #include "Client.h"
-
+#include "LoggerFactory.h"
 
 std::map<std::string, Client*>* CommandListener::clientList;
 pthread_mutex_t* CommandListener::clientListMutex;
@@ -21,7 +22,10 @@ CommandListener::CommandListener(ISocketHandler& h) : TcpSocket(h) {
 }
 
 CommandListener::~CommandListener() {
-	delete logger;
+	if(logger!=NULL) {
+		LoggerFactory::getInstance()->getGlobalLogger()->removeLogger(logger);
+		delete logger;
+	}
 }
 
 void CommandListener::OnAccept() {
@@ -32,6 +36,7 @@ void CommandListener::OnAccept() {
 	}
 
 	logger = new SocketLogger(this);
+	LoggerFactory::getInstance()->getGlobalLogger()->registerLogger((ILogger*)logger);
 	Send("Connection established\n");
 }
 
@@ -110,6 +115,7 @@ bool CommandListener::cmd_execute(std::string line, std::string& error){
 	}
 
 	clientObj->insertCmd(cmd, 0);
+	logger->addClient(clientObj);
 
 	return true;
 }

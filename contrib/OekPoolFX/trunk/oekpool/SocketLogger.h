@@ -42,6 +42,9 @@ public:
 	/**
 	 * Clients can be added/removed here to choose which
 	 * one's output needs to be shown on the socket
+	 *
+	 * EDIT: make sure client is only once added
+	 * (needed for some crazy input into CommandListener)
 	 */
 	void addClient(Client* c);
 	void delClient(Client* c);

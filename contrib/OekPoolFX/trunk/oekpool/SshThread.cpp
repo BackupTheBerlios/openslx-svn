@@ -201,6 +201,7 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 	if(cmd.size() == 0) return;
 	int retval = 0, bsize = 0, MAX_LENGTH=255, error = 0;
 	char buf[MAX_LENGTH];
+	string output;
 
     Logger* log = LoggerFactory::getInstance()->getGlobalLogger();
 
@@ -235,13 +236,16 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 	bsize = libssh2_channel_read(sshinfo->channel, buf, MAX_LENGTH);
 	log->log(LOG_LEVEL_INFO,"Returning output (following lines):",sshinfo->client);
 	while( bsize != 0 ) {
+		output += string(buf,bsize);
 		if(bsize < 0) {
 			log->log(LOG_LEVEL_ERROR,"ERROR running command!",sshinfo->client);
 			throw exception();
 		}
-		log->log(LOG_LEVEL_INFO,string(buf,bsize),sshinfo->client);
 		bsize = libssh2_channel_read(sshinfo->channel, buf, MAX_LENGTH);
 	}
+
+
+	log->log(LOG_LEVEL_INFO,output,sshinfo->client);
 
 	libssh2_channel_close(sshinfo->channel);
 	if(!libssh2_channel_wait_closed(sshinfo->channel)) {
