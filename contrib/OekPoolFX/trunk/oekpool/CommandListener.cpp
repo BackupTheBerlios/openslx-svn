@@ -23,7 +23,7 @@ CommandListener::CommandListener(ISocketHandler& h) : TcpSocket(h) {
 
 CommandListener::~CommandListener() {
 	if(logger!=NULL) {
-		LoggerFactory::getInstance()->getGlobalLogger()->removeLogger(logger);
+		LoggerFactory::getInstance()->getGlobalLogger()->removeLogger((ILogger*)logger);
 		delete logger;
 	}
 }
