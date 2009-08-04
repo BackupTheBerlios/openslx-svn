@@ -26,6 +26,9 @@ CommandListener::~CommandListener() {
 		LoggerFactory::getInstance()->getGlobalLogger()->removeLogger((ILogger*)logger);
 		delete logger;
 	}
+	for(int i; i < takenClients.size(); i++){
+		takenClients[i]->remote_release(this);
+	}
 }
 
 void CommandListener::OnAccept() {
@@ -204,6 +207,7 @@ bool CommandListener::cmd_takeover(std::vector<std::string> params, std::string&
 		return false;
 	}
 
+	takenClients.push_back(clientObj);
 	logger->addClient(clientObj);
 
 	error = "Client \"" + params[1] + "\" has been taken successfully. You may now change PXE settings.";
@@ -229,6 +233,11 @@ bool CommandListener::cmd_release(std::vector<std::string> params, std::string& 
 	if(!clientObj->remote_release(this)){
 		error = "Client \"" + params[1] + "\" has not been taken.";
 		return false;
+	}
+
+	std::vector<Client*>::iterator pos = std::find(takenClients.begin(), takenClients.end(), clientObj);
+	if(pos != takenClients.end()){
+		takenClients.erase(pos);
 	}
 
 	error = "Client \"" + params[1] + "\" has been released.";

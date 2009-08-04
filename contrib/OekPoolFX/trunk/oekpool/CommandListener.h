@@ -46,6 +46,8 @@ private:
 	static std::map<std::string, Client*>* clientList;
 	static pthread_mutex_t* clientListMutex;
 
+	std::vector<Client*> takenClients;
+
 	SocketLogger* logger;
 };
 
