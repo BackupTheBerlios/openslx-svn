@@ -66,7 +66,6 @@ void CommandListener::SendPrompt(){
 bool CommandListener::cmd_execute(std::string line, std::string& error){
 	std::string temp, cmd, client;
 	std::vector<std::string> params;
-	std::map<std::string, Client*>::iterator it;
 	Client* clientObj = NULL;
 
 	if(!Utility::stringFindCmd(line, cmd, temp)){
@@ -80,15 +79,7 @@ bool CommandListener::cmd_execute(std::string line, std::string& error){
 		return false;
 	}
 
-	for(it = clientList->begin(); it != clientList->end(); it++){
-
-		if((params[1] == it->second->getIP()) ||
-				(params[1] == it->second->getHWAddress()) ||
-				(params[1] == it->second->getHostName())){
-			clientObj = it->second;
-			break;
-		}
-	}
+	clientObj = getClient(params[1]);
 
 	if(clientObj == NULL){
 		error = "Client \"" + params[1] + "\" not found.";
@@ -123,18 +114,10 @@ bool CommandListener::cmd_list(std::vector<std::string> params, std::string& err
 			return false;
 		}
 
-		for(it = clientList->begin(); it != clientList->end(); it++){
-			if((params[2] == it->second->getIP()) ||
-					(params[2] == it->second->getHWAddress()) ||
-					(params[2] == it->second->getHostName()))
-			{
-				clientObj = it->second;
-				break;
-			}
-		}
+		clientObj = getClient(params[2]);
 
 		if(clientObj == NULL){
-			error = "Client \"" + params[1] + "\" not found.";
+			error = "Client \"" + params[2] + "\" not found.";
 			return false;
 		}
 
@@ -151,4 +134,154 @@ bool CommandListener::cmd_list(std::vector<std::string> params, std::string& err
 		error = "Usage: list clients\n       list pxe [ip address | mac address | hostname]";
 		return false;
 	}
+}
+
+bool CommandListener::cmd_query(std::vector<std::string> params, std::string& error){
+
+	if(params.size() < 2){
+		error = "Please supply more arguments.\nUsage: query [ip address | mac address | hostname]";
+		return false;
+	}
+
+	Client* clientObj = NULL;
+
+	clientObj = getClient(params[1]);
+
+	if(clientObj == NULL){
+		error = "Client \"" + params[1] + "\" not found.";
+		return false;
+	}
+
+	error = clientObj->remote_queryState();
+	return true;
+}
+
+bool CommandListener::cmd_takeover(std::vector<std::string> params, std::string& error){
+	if(params.size() < 2){
+		error = "Please supply more arguments.\nUsage: takeover [ip address | mac address | hostname]";
+		return false;
+	}
+	Client* clientObj;
+
+	clientObj = getClient(params[1]);
+
+	if(clientObj == NULL){
+		error = "Client \"" + params[1] + "\" not found.";
+		return false;
+	}
+
+	if(!clientObj->remote_takeOver(this)){
+		error = "Client \"" + params[1] + "\" could not be taken. It might not be in offline state or has been taken by somebody else.";
+		return false;
+	}
+
+	error = "Client \"" + params[1] + "\" has been taken successfully. You may now change PXE settings.";
+	return true;
+}
+
+bool CommandListener::cmd_release(std::vector<std::string> params, std::string& error){
+	if(params.size() < 2){
+		error = "Please supply more arguments.\nUsage: takeover [ip address | mac address | hostname]";
+		return false;
+	}
+
+	Client* clientObj;
+
+	clientObj = getClient(params[1]);
+
+	if(clientObj == NULL){
+		error = "Client \"" + params[1] + "\" not found.";
+		return false;
+	}
+
+	if(!clientObj->remote_release(this)){
+		error = "Client \"" + params[1] + "\" has not been taken.";
+		return false;
+	}
+
+	error = "Client \"" + params[1] + "\" has been released.";
+	return true;
+}
+
+bool CommandListener::cmd_start(std::vector<std::string> params, std::string& error){
+	if(params.size() < 3){
+		error = "Please supply more arguments.\nUsage: takeover [ip address | mac address | hostname]";
+		return false;
+	}
+
+	Client* clientObj;
+
+	clientObj = getClient(params[1]);
+
+	if(clientObj == NULL){
+		error = "Client \"" + params[1] + "\" not found.";
+		return false;
+	}
+
+	if(!clientObj->remote_isOwner(this)){
+		error = "Client \"" + params[1] + "\" has not been taken.";
+		return false;
+	}
+
+	bool wake;
+	int pxeNo = Utility::toInt(params[2]);
+
+	if(params.size() == 3){
+		wake = false;
+	}
+	else{
+		if(params[3] == "wake")
+			wake = true;
+	}
+
+
+	if(!clientObj->remote_start(pxeNo, wake)){
+		error = "Client \"" + params[1] + "\" could not be set up. PXE menu does not exist.";
+		return false;
+	}
+
+	error = "Client \"" + params[1] + "\" has been set up successfully.";
+	return true;
+}
+
+bool CommandListener::cmd_shutdown(std::vector<std::string> params, std::string& error){
+	if(params.size() < 2){
+		error = "Please supply more arguments.\nUsage: takeover [ip address | mac address | hostname]";
+		return false;
+	}
+
+	Client* clientObj;
+
+	clientObj = getClient(params[1]);
+
+	if(clientObj == NULL){
+		error = "Client \"" + params[1] + "\" not found.";
+		return false;
+	}
+
+	if(!clientObj->remote_isOwner(this)){
+		error = "Client \"" + params[1] + "\" has not been taken.";
+		return false;
+	}
+
+	clientObj->remote_shutdown();
+	return true;
+}
+
+Client* CommandListener::getClient(std::string client){
+	Client* clientObj = NULL;
+	std::map<std::string, Client*>::iterator it;
+
+	pthread_mutex_lock(clientListMutex);
+	for(it = clientList->begin(); it != clientList->end(); it++){
+		if((client == it->second->getIP()) ||
+				(client == it->second->getHWAddress()) ||
+				(client == it->second->getHostName()))
+		{
+			clientObj = it->second;
+			break;
+		}
+	}
+	pthread_mutex_unlock(clientListMutex);
+	return clientObj;
 }

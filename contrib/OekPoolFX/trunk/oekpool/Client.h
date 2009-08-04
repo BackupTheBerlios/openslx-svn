@@ -117,7 +117,7 @@ public:
      * methods for remote control of the client
      */
     bool remote_takeOver(CommandListener*);
-    void remote_release(void);
+    bool remote_release(CommandListener*);
     bool remote_start(int,bool);
     void remote_shutdown(void);
     std::string remote_queryState(void);

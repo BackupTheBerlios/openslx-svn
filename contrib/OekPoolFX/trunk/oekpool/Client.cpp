@@ -570,6 +570,9 @@ bool Client::remote_takeOver(CommandListener* cl){
 
 	try {
 		state_cast<const ClientStates::Offline &>();
+		pthread_mutex_lock(&controlMutex);
+		remote_activeSlot = NULL;
+		pthread_mutex_unlock(&controlMutex);
 		control = cl;
 		return true;
 	}
@@ -577,8 +580,14 @@ bool Client::remote_takeOver(CommandListener* cl){
 	return false;
 }
 
-void Client::remote_release(){
-	control = NULL;
+bool Client::remote_release(CommandListener* cl){
+	if(remote_isOwner(cl)){
+		control = NULL;
+		return true;
+	}
+	else{
+		return false;
+	}
 }
 
 bool Client::remote_start(int menu, bool forceBoot){

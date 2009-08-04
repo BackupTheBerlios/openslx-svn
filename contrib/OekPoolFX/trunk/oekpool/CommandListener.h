@@ -32,6 +32,8 @@ private:
 	bool cmd_shutdown(std::vector<std::string>, std::string&);
 	bool cmd_execute (std::string, std::string&);
 
+	Client* getClient(std::string);
+
 	static void setClientList(std::map<std::string, Client*>*);
 	static void setClientListMutex(pthread_mutex_t*);
 
