@@ -83,7 +83,7 @@ void CommandListener::OnLine(const std::string& line) {
 }
 
 void CommandListener::SendPrompt(){
-	Send("> \n");
+	Send("> ");
 }
 
 bool CommandListener::cmd_execute(std::string line, std::string& error){
@@ -127,7 +127,7 @@ bool CommandListener::cmd_list(std::vector<std::string> params, std::string& err
 	if(params[1] == "clients"){
 		error = "";
 		for(it = clientList->begin(); it != clientList->end(); it++){
-			error = error + it->first + ": " + it->second->getHWAddress() + " (" + it->second->getIP() + ")\n";
+			error = error + it->second->getHWAddress() + ": " + it->second->getHostName() + " (" + it->second->getIP() + ")\n";
 		}
 		return true;
 	}

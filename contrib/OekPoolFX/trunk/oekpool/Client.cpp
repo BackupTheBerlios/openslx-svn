@@ -577,6 +577,17 @@ bool Client::remote_takeOver(CommandListener* cl){
 		return true;
 	}
 	catch(const std::bad_cast &Ex) {}
+
+	try {
+		state_cast<const ClientStates::PXE &>();
+		pthread_mutex_lock(&controlMutex);
+		remote_activeSlot = NULL;
+		pthread_mutex_unlock(&controlMutex);
+		control = cl;
+		return true;
+	}
+	catch(const std::bad_cast &Ex) {}
+
 	return false;
 }
 
