@@ -45,7 +45,7 @@ ClientStates::PXE::PXE(my_context ctx): sc::state<PXE, Client>(ctx) {
 
 	std::string tftp = Configuration::getInstance()->getString("tftp_root_dir");
 	std::string dir = pxe->MenuName;
-	std::string file = Utility::getPXEFilename(client.getHWAddress());
+	std::string file = Utils::getPXEFilename(client.getHWAddress());
 
 	bfs::path link(tftp + file);
 	bfs::path source(dir + "/" + file);
@@ -73,7 +73,7 @@ ClientStates::Wake::Wake(my_context ctx): sc::state<Wake, Client>(ctx) {
     clog << "Entered Wake state!" << endl;
 	Client& client = context<Client>();
 
-	Network::getInstance()->sendWolPacket(Utility::ipFromString(client.getIP()), client.getHWAddress());
+	Network::getInstance()->sendWolPacket(Utils::ipFromString(client.getIP()), client.getHWAddress());
 
 	// indicates that client is in "wake mode"
 	client.host_responding = 0x20;

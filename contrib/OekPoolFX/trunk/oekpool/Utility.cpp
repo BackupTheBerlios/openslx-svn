@@ -1,5 +1,5 @@
 /*
- * Utility.cpp
+ * Utils.cpp
  *
  *  Created on: 28.05.2009
  *      Author: bw21
@@ -18,17 +18,17 @@
 
 using namespace std;
 
-template string Utility::toString<int>(int);
-template string Utility::toString<unsigned int>(unsigned int);
-template string Utility::toString<long>(long);
+template string Utils::toString<int>(int);
+template string Utils::toString<unsigned int>(unsigned int);
+template string Utils::toString<long>(long);
 
 
-IPAddress Utility::ipFromString(string ip) {
+IPAddress Utils::ipFromString(string ip) {
 	return inet_addr(ip.c_str());
 }
 
 pair<string,string>
-Utility::splitIPRange(string range) {
+Utils::splitIPRange(string range) {
 
     pair<string,string> result;
     string::size_type cutAt;
@@ -40,7 +40,7 @@ Utility::splitIPRange(string range) {
     return result;
 }
 
-string Utility::getPXEFilename(string mac){
+string Utils::getPXEFilename(string mac){
 	size_t found = mac.find_first_of(":");
 
 	while(found != string::npos) {
@@ -54,14 +54,14 @@ string Utility::getPXEFilename(string mac){
 }
 
 template<typename T>
-string Utility::toString(T bla) {
+string Utils::toString(T bla) {
 	ostringstream o;
 	o.clear();
 	o << bla;
 	return o.str();
 }
 
-int Utility::toInt(string bla) {
+int Utils::toInt(string bla) {
 	istringstream i;
 	i.str(bla);
 	int result = 0;
@@ -70,7 +70,7 @@ int Utility::toInt(string bla) {
 	return result;
 }
 
-void Utility::stringSplit(std::string str, std::string delim, std::vector<std::string>& results) {
+void Utils::stringSplit(std::string str, std::string delim, std::vector<std::string>& results) {
 
 	int cutAt;
 
@@ -85,18 +85,22 @@ void Utility::stringSplit(std::string str, std::string delim, std::vector<std::s
 	}
 }
 
-bool Utility::stringFindCmd(std::string input, std::string& extract, std::string& output){
+bool Utils::stringFindCmd(std::string input, std::string& extract, std::string& output){
 	size_t found,length;
 	std::vector<size_t> quoteVec;
 
 	found = input.find("\"", 0);
 
-	while(found != input.npos){
+	while(found != string::npos){
+		if(input[found-1] == '\\') {
+			found = input.find("\"", found+1);
+			continue;
+		}
 		quoteVec.push_back(found);
-		found = input.find("\"", found);
+		found = input.find("\"", found+1);
 	}
 
-	if(quoteVec.size() != 0){
+	if(quoteVec.size() != 2) {
 		return false;
 	}
 

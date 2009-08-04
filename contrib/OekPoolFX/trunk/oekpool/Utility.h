@@ -1,5 +1,5 @@
 /*
- * Utility.h
+ * Utils.h
  *
  *  Created on: 28.05.2009
  *      Author: bw21
@@ -12,9 +12,9 @@
 #ifndef UTILITY_H_
 #define UTILITY_H_
 
-class Utility {
-	Utility();
-	virtual ~Utility();
+class Utils {
+	Utils();
+	virtual ~Utils();
 public:
 
 	static

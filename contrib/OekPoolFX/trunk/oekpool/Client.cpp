@@ -43,7 +43,7 @@ Client::Client(AttributeMap al, std::vector<PXESlot> slots)
 
     log->log(LOG_LEVEL_INFO,"Client with name \"" + al["HostName"]+"\" created!",this);
 
-    IPAddress ip = Utility::ipFromString(al["IPAddress"]);
+    IPAddress ip = Utils::ipFromString(al["IPAddress"]);
     time(&nextWarnTime);
     time(&shutdown);
     initiate(); // Statemachine
@@ -117,15 +117,15 @@ std::vector<PXEInfo> Client::setPXEInfo(std::vector<PXESlot> timeslots) {
 			tempStart.tm_sec = 0;
 			tempShutdown.tm_sec = 0;
 
-			tempStart.tm_hour = Utility::toInt(splitStartString[0]);
-			tempShutdown.tm_hour = Utility::toInt(splitEndString[0]);
+			tempStart.tm_hour = Utils::toInt(splitStartString[0]);
+			tempShutdown.tm_hour = Utils::toInt(splitEndString[0]);
 
-			tempStart.tm_min = Utility::toInt(splitStartString[1]);
+			tempStart.tm_min = Utils::toInt(splitStartString[1]);
 			tempStart.tm_min *= 10;
-			tempShutdown.tm_min = Utility::toInt(splitEndString[1]);
+			tempShutdown.tm_min = Utils::toInt(splitEndString[1]);
 			tempShutdown.tm_min *= 10;
 
-			tempStart.tm_wday = tempShutdown.tm_wday = Utility::toInt(splitTimeString[0]);
+			tempStart.tm_wday = tempShutdown.tm_wday = Utils::toInt(splitTimeString[0]);
 
 			// put the times into the time vectors
 			tempInfo.StartTime.push_back(tempStart);
@@ -636,7 +636,7 @@ std::vector<std::string> Client::remote_getInfo(int object){
 			else{
 				boot = "no wake";
 			}
-			temp = Utility::toString(i);
+			temp = Utils::toString(i);
 			temp = temp + ": " + pxeslots[i].MenuName + " (" + temp + ")" + "\n";
 			v.push_back(temp);
 		}

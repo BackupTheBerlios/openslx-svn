@@ -23,7 +23,11 @@
 #include "LDAPConstraints.h"
 
 
-
+/**
+ * LDAP: handles connection to ldap and contains
+ *  general functions to search for
+ *  and get Clients/PXEInfos
+ */
 class Ldap {
 
     /**

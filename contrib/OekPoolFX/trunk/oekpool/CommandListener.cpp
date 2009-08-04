@@ -7,6 +7,7 @@
 
 #include "CommandListener.h"
 #include <SocketHandler.h>
+#include "SocketLogger.h"
 #include "Utility.h"
 #include "Client.h"
 
@@ -15,14 +16,22 @@ std::map<std::string, Client*>* CommandListener::clientList;
 pthread_mutex_t* CommandListener::clientListMutex;
 
 CommandListener::CommandListener(ISocketHandler& h) : TcpSocket(h) {
+	logger = NULL;
 	SetLineProtocol();
 }
 
 CommandListener::~CommandListener() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void CommandListener::OnAccept() {
+	if(GetRemoteAddress() != "127.0.0.1") {
+		Send("Remote access denied!\n");
+		SetCloseAndDelete();
+		return;
+	}
+
+	logger = new SocketLogger(this);
 	Send("Connection established\n");
 }
 
@@ -32,7 +41,7 @@ void CommandListener::OnLine(const std::string& line) {
 	std::string error;
 	bool success;
 
-	Utility::stringSplit(line, " ", cmd);
+	Utils::stringSplit(line, " ", cmd);
 
 	if(cmd.size() >= 1){
 
@@ -82,12 +91,12 @@ bool CommandListener::cmd_execute(std::string line, std::string& error){
 	std::vector<std::string> params;
 	Client* clientObj = NULL;
 
-	if(!Utility::stringFindCmd(line, cmd, temp)){
+	if(!Utils::stringFindCmd(line, cmd, temp)){
 		error = "Bad syntax: Please check your \"'s";
 		return false;
 	}
 
-	Utility::stringSplit(temp, " ", params);
+	Utils::stringSplit(temp, " ", params);
 	if(params.size() != 2){
 		error = "Wrong number of arguments.\nUsage: execute [ip address | mac address | hostname] \"command\"";
 		return false;
@@ -139,7 +148,7 @@ bool CommandListener::cmd_list(std::vector<std::string> params, std::string& err
 
 		error = "";
 		for(int i = 0; i < pxeslots.size(); i++){
-			error = error + Utility::toString(i) + ". " + pxeslots[i].MenuName +"\n";
+			error = error + Utils::toString(i) + ". " + pxeslots[i].MenuName +"\n";
 		}
 
 		return true;
@@ -238,7 +247,7 @@ bool CommandListener::cmd_start(std::vector<std::string> params, std::string& er
 	}
 
 	bool wake;
-	int pxeNo = Utility::toInt(params[2]);
+	int pxeNo = Utils::toInt(params[2]);
 
 	if(params.size() == 3){
 		wake = false;
@@ -298,4 +307,12 @@ Client* CommandListener::getClient(std::string client){
 	}
 	pthread_mutex_unlock(clientListMutex);
 	return clientObj;
+}
+
+void CommandListener::setClientList(std::map<std::string, Client*>* clist) {
+	clientList = clist;
+}
+
+void CommandListener::setClientListMutex(pthread_mutex_t* clist_mutex) {
+	clientListMutex = clist_mutex;
 }

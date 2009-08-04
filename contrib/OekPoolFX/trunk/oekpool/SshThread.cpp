@@ -79,7 +79,7 @@ SshThread *SshThread::getInstance() {
 
 void SshThread::_connect(std::string ipaddress, SSHInfo* sshinfo) {
 	if(ipaddress.length() > 1) {
-		_connect(Utility::ipFromString(ipaddress.c_str()), sshinfo );
+		_connect(Utils::ipFromString(ipaddress.c_str()), sshinfo );
 	}
 }
 
@@ -226,7 +226,7 @@ void SshThread::_runCmd(SSHInfo* sshinfo, string cmd) {
 			break;
 		default:
 			log->log(LOG_LEVEL_ERROR,"Some unknown error occurred running the SSH command!",sshinfo->client);
-			log->log(LOG_LEVEL_ERROR,"Error code is "+Utility::toString(error),sshinfo->client);
+			log->log(LOG_LEVEL_ERROR,"Error code is "+Utils::toString(error),sshinfo->client);
 			break;
 		}
 		throw exception();

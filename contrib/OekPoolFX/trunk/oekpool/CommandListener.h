@@ -12,6 +12,9 @@
 #include "types.h"
 #include "pthread.h"
 
+// forward decl
+class SocketLogger;
+
 class CommandListener : public TcpSocket {
 public:
 	CommandListener(ISocketHandler&);
@@ -19,6 +22,12 @@ public:
 
 	void OnAccept(void);
 	void OnLine(const std::string&);
+
+
+
+	// call these before use (in main)
+	static void setClientList(std::map<std::string, Client*>*);
+	static void setClientListMutex(pthread_mutex_t*);
 
 private:
 
@@ -34,12 +43,10 @@ private:
 
 	Client* getClient(std::string);
 
-	static void setClientList(std::map<std::string, Client*>*);
-	static void setClientListMutex(pthread_mutex_t*);
-
 	static std::map<std::string, Client*>* clientList;
 	static pthread_mutex_t* clientListMutex;
 
+	SocketLogger* logger;
 };
 
 #endif /* COMMANDLISTENER_H_ */

@@ -33,7 +33,7 @@
 using namespace std;
 
 /**
- * This is the main LDAP-Connection and handling class
+ * This is the LDAP-Connection and handling class
  */
 Ldap::Ldap() {
 	Configuration* conf = Configuration::getInstance();
@@ -191,7 +191,7 @@ void Ldap::getClients(string pool, map<string,Client*>& clist) {
 	{
 		if(!vec[i]["HostName"].empty() && !vec[i]["IPAddress"].empty())
 		{
-			pair<string, string> p = Utility::splitIPRange(vec[i]["IPAddress"]);
+			pair<string, string> p = Utils::splitIPRange(vec[i]["IPAddress"]);
 			vec[i]["IPAddress"] = p.first;
 
 
@@ -202,7 +202,7 @@ void Ldap::getClients(string pool, map<string,Client*>& clist) {
 
 			BOOST_FOREACH(AttributeMap am, vecpxe) {
 				pxeslot.ForceBoot = (am["ForceBoot"]=="TRUE"?true:false);
-				Utility::stringSplit(am["TimeSlot"],"|",pxeslot.TimeSlot);
+				Utils::stringSplit(am["TimeSlot"],"|",pxeslot.TimeSlot);
 				pxeslot.cn = am["cn"];
 
 				vecslots.push_back(pxeslot);
@@ -240,9 +240,9 @@ vector<networkInfo> Ldap::getNetworks()
 
 	for(uint i=0;i < vec.size();i++)
 	{
-		temp.subnetMask = Utility::ipFromString(vec[i]["dhcpoptNetmask"]);
-		temp.broadcastAddress = Utility::ipFromString(vec[i]["dhcpoptBroadcast-address"]);
-		temp.networkAddress = Utility::ipFromString(vec[i]["cn"]);
+		temp.subnetMask = Utils::ipFromString(vec[i]["dhcpoptNetmask"]);
+		temp.broadcastAddress = Utils::ipFromString(vec[i]["dhcpoptBroadcast-address"]);
+		temp.networkAddress = Utils::ipFromString(vec[i]["cn"]);
 
 		result.push_back(temp);
 	}

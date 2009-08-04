@@ -10,10 +10,12 @@
 
 
 #include "ILogger.h"
-#include "CommandListener.h"
 #include "Client.h"
 #include <string>
 #include <vector>
+
+// forward decl
+class CommandListener;
 
 /**
  * @class SocketListener Support Logging through sockets

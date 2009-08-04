@@ -6,6 +6,7 @@
  */
 
 #include "SocketLogger.h"
+#include "CommandListener.h"
 #include <algorithm>
 #include <boost/foreach.hpp>
 
@@ -39,16 +40,16 @@ void SocketLogger::log(loglevel_t lvl, std::string msg,const Client* client) {
 	if(client != NULL) {
 		switch(lvl) {
 		case LOG_LEVEL_FATAL:
-			clog << "[FF] " + client->getHostName() + ": " + msg + "\n";
+			clog << "[FF] " + ((Client*)client)->getHostName() + ": " + msg + "\n";
 			break;
 		case LOG_LEVEL_ERROR:
-			clog << "[EE] " + client->getHostName() + ": " + msg + "\n";
+			clog << "[EE] " + ((Client*)client)->getHostName() + ": " + msg + "\n";
 			break;
 		case LOG_LEVEL_WARNING:
-			clog << "[WW] " + client->getHostName() + ": " + msg + "\n";
+			clog << "[WW] " + ((Client*)client)->getHostName() + ": " + msg + "\n";
 			break;
 		case LOG_LEVEL_INFO:
-			clog << "[II] " + client->getHostName() + ": " + msg + "\n";
+			clog << "[II] " + ((Client*)client)->getHostName() + ": " + msg + "\n";
 			break;
 		}
 	}
