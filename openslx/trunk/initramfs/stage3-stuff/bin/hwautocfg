@@ -178,8 +178,8 @@ fi
 # cleanup/finishing part
 finish () {
 mdev -s
-# mount filesystem parts requested in disk setup
-ash /etc/do_mnt &
+# mount filesystem parts (if any) requested in disk setup
+[ -f /etc/do_mnt ]] && ash /etc/do_mnt &
 # remove unneeded disk and mouse drivers
 [ ! -s /etc/hwinfo.disk ] && rmmod sd_mod 2>/dev/null
 #grep -q " PS/2 " /etc/hwinfo.mouse || \
