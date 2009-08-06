@@ -21,7 +21,8 @@
   set -x
 
 echo -e "# network configuration written by $0:" >/tmp/confviadhcp
-unset infomsg HOME IFS mask lease interface cfgmsg cfgfile DEBUGLEVEL
+unset HOME IFS KCMDLINE DEBUGLEVEL MODPRV TERM BOOTIF BOOT_IMAGE \
+       infomsg mask lease interface cfgmsg cfgfile boot_file no_bootsplash
 set | sed \
   -e "s,^P.*,,;s,ntpsrv,ntp_servers,;s,ip,clientip," \
   -e "s,serverid,serverip,;s,subnet,subnet_mask," \

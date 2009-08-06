@@ -27,7 +27,7 @@ done
 # no kernel messages, switch on hotplug via /sbin/mdev
 echo "0 0 0 0" >/proc/sys/kernel/printk
 echo "/sbin/mdev" >/proc/sys/kernel/hotplug
-modprobe ${MODPRV} usbhid &
+modprobe -a ${MODPRV} usbhid hid-bright 2>/dev/null &
 nwcardlist=$(echo ${slxconf_listnwmod}|sed "s/\ /|/g")
 hwinfo --netcard --usb-ctrl | grep modprobe | grep -E "$nwcardlist|hcd" | \
   grep -v ehci | sed 's/.* Cmd: "//;s/"//' | sort -u >/etc/modprobe.base
@@ -37,6 +37,8 @@ ash /etc/modprobe.base; mdev -s
 ( hwinfo --pci >/etc/hwinfo.data; echo "read pci device list at $(sysup)" \
     >/tmp/hwdataready ) &
 ( usleep 100000 ; hwinfo --bios >/etc/hwinfo.bios ) &
+# for mounting partitions/devices with the "auto" option
+echo -e "ext3\next2\nreiserfs\nxfs\njfs\next4\nvfat" >/etc/filesystems
 return 0
 }
 
@@ -67,9 +69,9 @@ mdev -s
 [ $DEBUGLEVEL -eq 21 ] && echo "** finished 2nd hwdetection at $(sysup)"
 
 # load disk/optical high level drivers
-modprobe ${MODPRV} ide-cd
-modprobe ${MODPRV} sr_mod
-modprobe ${MODPRV} ide-floppy
+modprobe ${MODPRV} ide-cd 2>/dev/null
+modprobe ${MODPRV} sr_mod 2>/dev/null
+modprobe ${MODPRV} ide-floppy 2>/dev/null
 mdev -s
 
 # load kernel module for ps2 mice and map the mousehandler to /dev/input/mice
@@ -131,13 +133,38 @@ if [ -s /etc/hwinfo.disk ] ; then
       part44=yes
       break
     done
-    # put detected linux partitions into /etc/fstab with "noauto"
-    for hdpartnr in $(cat /etc/disk.partition | \
-        sed -n -e "/ 83 /p"|sed -e "s/[[:space:]].*//") ; do
-      mkdir -p /mnt/media/${hdpartnr#/dev/*} 2>/dev/null
-      echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
+    # put detected linux partitions (83) into /etc/fstab with "noauto", 
+    # special partition 45 (persistent scratch) to /var/scratch and 46
+    # to /var/openslx
+    for partid in 83 45 46 ; do
+      for hdpartnr in $(cat /etc/disk.partition | \
+          sed -n -e "/ ${partid} /p"|sed -e "s/[[:space:]].*//") ; do
+        mkdir -p /mnt/media/${hdpartnr#/dev/*} 2>/dev/null
+        if [ ${partid} -eq 83 ] ; then
+          echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
 noexec\t 0 0" >>/tmp/fstab
-    done 
+        elif [ ${partid} -eq 45 ] ; then
+          # if more than one id45 present, the latter ones are simply mounted
+          # over the previous (the mounts are postponed a bit via do_mnt to
+          # have the filesystem completely prepared) 
+          echo -e "waitfor $hdpartnr 4000\n\
+            mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*}\n\
+            ln -sf /media/${hdpartnr#/dev/*} /mnt/var/scratch" >>/etc/do_mnt
+          echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto\
+\t\t 0 0" >>/tmp/fstab
+        elif [ ${partid} -eq 46 ] ; then
+          # mount a home directory to (/mnt)/var/home
+          echo -e "waitfor $hdpartnr 4000\n\
+            mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*} \n\
+            test -d /mnt/media/${hdpartnr#/dev/*}/home && \
+              ln -sf /media/${hdpartnr#/dev/*} /mnt/var/home" >>/etc/do_mnt
+          echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
+\t 0 0" >>/tmp/fstab
+        fi
+      done
+    done
+    # add 
+    [ -f /etc/do_mnt ] && sed -e "1i. /etc/functions" -i /etc/do_mnt
   done
   # determine if tmp preparation should wait for format/mount or not
   [ -z "$part44" ] && echo "finished at $(sysup)" >/tmp/tmpready
@@ -151,6 +178,8 @@ fi
 # cleanup/finishing part
 finish () {
 mdev -s
+# mount filesystem parts (if any) requested in disk setup
+[ -f /etc/do_mnt ]] && ash /etc/do_mnt &
 # remove unneeded disk and mouse drivers
 [ ! -s /etc/hwinfo.disk ] && rmmod sd_mod 2>/dev/null
 #grep -q " PS/2 " /etc/hwinfo.mouse || \
@@ -197,8 +226,10 @@ case $1 in
       echo "** HW main setup finished at $(sysup)"
     echo "hwsetup main part finished at $(sysup)" >/tmp/hwcfg
   ;;
-  # disk setup part (detecting, formatting, mounting)
+  # disk setup part (detecting general id82,83 and slx id44,45,46, formatting 
+  # if required and mounting)
   disk)
+    # if disk action is not disabled (see #470)
     disk
   ;;
   # remove unneeded kernel modules

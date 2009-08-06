@@ -11,7 +11,7 @@
 #
 # Messages file for all error and info messages generated during client
 # bootup (within initialramfs) for OpenSLX linux diskless clients version 5
-# this file could be used for localization of error messages 
+# this file could be used for localization of error messages.
 
 # messages from (slx) init / Fehlermeldungen des SLX init
 init_errmsg="  ,,functions''-Datei beinhaltet viele Funktionen \
@@ -150,8 +150,9 @@ error_errlcfg="  Bis jetzt noch keine Konfigurationsdaten bekommen via ldap ..."
 unpack_ConfTGZ="  Fehler beim entpacken des ConfTGZ.\nSind Sie sicher, dass es im \
 richtigen Format ist?"
 nomachsetup="  Die Datei machine-setup nicht gefunden. Es koennte sein, dass das \
-Konfigurations-\n  paket nicht erfolgreich vom Server beschafft wurde. Ihr \
-OpenSLX Client\n  wird deshalb nicht wie erwartet funktionieren."
+Konfigurations-\n  paket nicht erfolgreich vom Server beschafft wurde. Das \
+erkennen Sie daran,\n  dass die Verzeichnisse /initramfs, /rootfs angelegt \
+wurden. Ihr\n  OpenSLX Client wird deshalb nicht wie erwartet funktionieren."
 
 # messages from distro functions
 df_errumod="    Das Laden des \"unix\" Moduls schlug fehl. \nWahrscheinlich \

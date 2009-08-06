@@ -297,16 +297,7 @@ if [ -n "$scratch" -a -z "$tmpisdisk" ] ; then
         # no need for tempfs there ...
         umount /mnt/tmp >/dev/null 2>&1
         fsmount nfs ${tmpserv} ${tmppath} /mnt/tmp \
-          "rw,intr,soft,timeo=2,nosuid"
-	# somehow we need to move it to the vmware plugin. Any ideas
-	# how to handle the dependencies?
-        # create an empty container file for vmware *.vmem, it does not
-        # like to live on NFS exports
-        if [ "x$vmware" != "x" -a "x$vmware" != "xno" ] ; then
-          dd if=/dev/zero of=/mnt/tmp/vm-container count=1 seek=2048000
-          diskfm /mnt/tmp/vm-container /mnt/tmp/vmware
-          chmod a+rwxt /mnt/tmp/vmware
-        fi; }
+          "rw,intr,soft,timeo=2,nosuid"; }
     ;;
   esac
 fi

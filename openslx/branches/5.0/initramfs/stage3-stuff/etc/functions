@@ -145,7 +145,6 @@ case "${proto}" in
     # autodetected here ... (vmimgserv is blockdev here)
     vmbdev=/dev/${server}
     waitfor ${vmbdev} 20000
-    echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
     mount -o ro ${vmbdev} ${target} || error "$scfg_evmlm" nonfatal
   ;;
   nfs)
@@ -160,8 +159,12 @@ case "${proto}" in
     done
   ;;
   smb|cifs)
-    mount -n -o ${mntopt},user=guest,guest,file_mode=0755,dir_mode=0755 \
-      -t ${proto} //${server}${srcpath} ${target}
+    # for some reason cifs mounts cannot be pivoted :(
+    #mount -n -o ${mntopt},user=guest,guest,file_mode=0755,dir_mode=0755 \
+    #  -t ${proto} //${server}${srcpath} ${target}
+    d_mkrlscript entry boot.slx "uclibc-wrapper mount -n -o ${mntopt},guest,\
+user=guest,file_mode=0755,dir_mode=0755 -t ${proto} //${server}${srcpath} \
+${target#/mnt}"
   ;;
 esac
 }
@@ -322,6 +325,42 @@ tftp_get () {
   return 0;
 }
 
+
+# wget wrapper
+# usage wget_get <path> <ftp/httpserver> [count]
+# count is optional - default is 3 - use -1 for indefinit 
+wget_get () {
+  local file="$1"
+  local file_server="$2"
+  local download_successful=0
+  local countdown="$3"
+
+  if [ -z "$1" -o -z "$2" ]; then
+    [ $DEBUGLEVEL -ge 1 ] && \
+      echo "[wget_get] Usage: wget_get <path> <server> [count]" 
+    return 1;
+  fi
+
+  [ "$countdown" = "" ] && countdown=3
+
+  until [ $download_successful -eq 1 ]
+  do
+    if [ "$countdown" = "0" ]; then
+      [ $DEBUGLEVEL -ge 1 ] && \
+        echo "[wget_get] download of \"$file\" from \"$file_server\" ... failed"
+      return 0;
+    fi
+    wget -q $file_server$file -O /tmp/$(basename $file)
+    [ -s /tmp/$(basename $file) ] && download_successful=1
+    countdown=$(expr $countdown - 1)
+    usleep 200000
+  done
+  [ $DEBUGLEVEL -ge 1 ] && \
+    echo "[wget_get] download of \"$file\" from \"$file_server\" ... successful"
+  return 0;
+}
+
+
 fileget () {
 # normally tftp would be used, alternatively use wget for ftp or http
 # if local device file is specified - mount and unmount after copying
@@ -336,8 +375,8 @@ if [ "x$filepath" != "x" ] ; then
 $filepath, fileserv:$fileserv" >>$LOGFILE
   case "$fileprot" in
    ftp|http)
-     wget $fileprot://$fileserv/$cfgfile -O /tmp/$(basename $cfgfile) \
-       2>>$LOGFILE && { unpack /tmp/$(basename $cfgfile) && break; }
+     wget_get $cfgfile $fileprot://$fileserv \
+      && { unpack /tmp/$(basename $cfgfile) && break; } 2>>$LOGFILE 
    ;;
    file)
      local ldev=$fileserv
@@ -853,7 +892,7 @@ include_in_fsroot_union () {
         nbdport=$(uri_token $ROOTFS port)
         nbdrfst=$(uri_token $ROOTFS path)
         echo -e "(D)NBD $ROOTFS parsed to $srvproto - $nbdhost - \
-        $nbdport - $nbdrfst" >> /tmp/felixtestlog
+          $nbdport - $nbdrfst" >> /tmp/testlog
         #FIXME: do mount
       ;;
       aoe)
@@ -949,7 +988,7 @@ config_printer () {
 config_bt () {
 :
 }
-# create a compliant runlevel script, needed for boot.slx and vmware-prep
+# create a compliant runlevel script, needed for boot.slx
 d_mkrlscript () {
 :
 }
