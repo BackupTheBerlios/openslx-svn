@@ -61,8 +61,8 @@ if [ "x$start_dreshal" = "xyes" ]; then
       echo "haldaemon:!:103:" >> /mnt/etc/group
     echo -n "" > /mnt/var/lib/PolicyKit/reload
     # set permissions with userid
-    echo -e "\tchown haldaemon:haldaemon /var/run/hal /var/cache/hald \
-      2>/dev/null" >>/mnt/etc/init.d/boot.slx
+    d_mkrlscript entry boot.slx "chown haldaemon:haldaemon /var/run/hal\
+      /var/cache/hald 2>/dev/null"
     start=$(($start + 1))
     stop=$(($stop - 1))
     rllinker "haldaemon" $start $stop

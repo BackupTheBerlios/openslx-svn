@@ -80,6 +80,11 @@ config_distro () {
       -e "/# This next bit can/a\        /sbin/udevadm trigger" \
       -e "/# We need the uevent/,/# It's all over/d" \
       -e "/# Log things that/,/kill \$UDEV/d" -i /mnt/etc/init.d/udev
+
+  # clean the mountall.sh script as only swap activation needed
+  sed -e "3i# Script modified during SLX stage3 bootup (config_distro)" \
+      -e "/pre_mountall/,/post_mountall/d" \
+      -i /mnt/etc/init.d/mountall.sh
 }
 
 # initial (boot time) runlevel scripts
@@ -88,8 +93,8 @@ local count=10
 # boot.slx is a special runlevel script generated within initialramfs which
 # should be executed before the normal runlevel scripts. Proper shutdown is
 # not needed!?
-for i in mountkernfs.sh mountdevsubfs.sh keyboard-setup procps bootlogd \
-hwclock.sh sudo console-setup udev boot.slx $D_SPLASHY; do
+for i in mountkernfs.sh mountall.sh mountdevsubfs.sh keyboard-setup procps \
+bootlogd hwclock.sh sudo console-setup udev boot.slx $D_SPLASHY; do
   count=$(($count + 1))
   [ $DEBUGLEVEL -ge 2 ] && echo "boot-runlevelscript $i"
   ln -sf /etc/init.d/$i /mnt/etc/rcS.d/S${count}$i
@@ -124,8 +129,7 @@ dlocale () {
 # fixme -- use keytable setup script here
 # echo -e "\t# entries added by $0: $date" >> /mnt/etc/init.d/boot.slx
 sed "s/LANG.*/LANG=\"${LANG}\"/" -i /mnt/etc/default/locale
-#echo -e "\tsetfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
-#  >>/mnt/etc/init.d/boot.slx
+#d_mkrlscript entry boot.slx "setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1"
 }
 
 # group of functions for the normal runlevels - first parameter is start
@@ -246,6 +250,9 @@ rerun\n# the mkdxsinitrd script to get them applied\n\n\
     echo -e "\n\ncase \"\$1\" in\n    start)\n\tlog_begin_msg \"$info\"" \
       >>/mnt/etc/init.d/$name
     chmod u+x /mnt/etc/init.d/$name
+  ;;
+  entry)
+    echo -e "\t${info}" >>/mnt/etc/init.d/${name}
   ;;
   close)
     echo -e "\tlog_end_msg 0\n\t;;\n    stop)\n\t;;\nesac\nexit 0" \

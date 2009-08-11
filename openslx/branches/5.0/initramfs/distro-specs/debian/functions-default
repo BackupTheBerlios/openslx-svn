@@ -102,12 +102,15 @@ d_mkrlscript () {
 by $0\n# after you applied changes to the creation scripts you have to \
 rerun\n# the mkdxsinitrd script to get them applied\n\
 . /lib/lsb/init-functions\ncase \"\$1\" in\n    start)\n\
-\tlog_begin_msg \"$info\"" >>/mnt/etc/init.d/$name
-      chmod u+x /mnt/etc/init.d/$name
+\tlog_begin_msg \"${info}\"" >>/mnt/etc/init.d/${name}
+      chmod u+x /mnt/etc/init.d/${name}
     ;;
+  entry)
+    echo -e "\t${info}" >>/mnt/etc/init.d/${name}
+  ;;
     close)
       echo -e "\tlog_end_msg \$?\n\t;;\n    stop)\n\tlog_end_msg \$?\n\t;;\
-        \nesac\nexit 0" >>/mnt/etc/init.d/$name
+        \nesac\nexit 0" >>/mnt/etc/init.d/${name}
     ;;
   esac
 }
@@ -181,8 +184,7 @@ config_snmp () {
 # localization like consolefont and language
 dlocale () {
   # console font setting program not available in Debian 4!?
-  echo -e "\t#setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1" \
-    >>/mnt/etc/init.d/boot.slx
+  d_mkrlscript entry boot.slx "#setfont ${CONSOLE_FONT} >${LOGFILE} 2>&1"
   # fixme!! check for proper operation
   # sed -e "s,LANGUAGE=.*,LANGUAGE=\"${LANG}\" # set within initramfs," \
   #     -e "s,LANG=.*,LANG=\"${LANG}\" # set within initramfs," \
