@@ -49,17 +49,22 @@ if [ -e $CONFFILE ]; then
     mount -n -t msdos -o loop,umask=000 /mnt/var/lib/virt/vmchooser/loopimg/fd.img \
       /mnt/var/lib/virt/vmchooser/fd-loop
 
+    # create run-virt.include header (and fill in information on removable
+    # devices if present
+    echo -n "# run-virt.include created by $0 during stage3 plugin setup" \
+      >/mnt/etc/opt/openslx/run-virt.include
+
     waitfor /etc/hwinfo.cdrom
     j=0
     for i in $(cat /etc/hwinfo.cdrom); do
-      echo "cdrom_$j=$i" >> /mnt/etc/opt/openslx/run-virt.include
+      echo "cdrom_$j=$i" >>/mnt/etc/opt/openslx/run-virt.include
       j=$(expr $j + 1)
     done
 
     waitfor /etc/hwinfo.floppy
     j=0
     for i in $(cat /etc/hwinfo.floppy); do
-      echo "floppy_$j=$i" >> /mnt/etc/opt/openslx/run-virt.include
+      echo "floppy_$j=$i" >>/mnt/etc/opt/openslx/run-virt.include
       j=$(expr $j + 1)
     done
 
