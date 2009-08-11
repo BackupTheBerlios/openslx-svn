@@ -131,7 +131,7 @@ sub copyRequiredFilesIntoInitramfs
     my $pluginRepoPath = "$openslxConfig{'base-path'}/lib/plugins/vmchooser";
     
     $makeInitRamFSEngine->addCMD(
-       "cp -p $pluginRepoPath/files/mkdosfs $targetPath/bin"
+       "cp -a $pluginRepoPath/files/mkdosfs $targetPath/bin"
     );
 
     vlog(1, _tr("vmchooser-plugin: ..."));
