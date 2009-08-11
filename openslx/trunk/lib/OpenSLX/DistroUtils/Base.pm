@@ -139,7 +139,8 @@ sub _renderHighlevelConfig
                         $element->{shortname},
                         uc($element->{shortname}),
                         $element->{shortname}
-                    )
+                    ),
+                    $element->{priority}
                 );
                 
                 $tpl  = "echo -n \"Starting %s \"\n";
@@ -152,7 +153,8 @@ sub _renderHighlevelConfig
                         uc($element->{shortname}),
                         uc($element->{shortname}),
                         uc($element->{shortname})
-                    )
+                    ),
+                    $element->{priority}
                 );
 
                 $tpl  = "echo -n \"Shutting down %s\" \n";
@@ -164,7 +166,8 @@ sub _renderHighlevelConfig
                         $element->{desc},
                         uc($element->{shortname}),
                         uc($element->{shortname})
-                    )
+                    ),
+                    10 - $element->{priority}
                 );
                 
                 $tpl  = "## Stop the service and if this succeeds (i.e. the \n";
@@ -173,7 +176,8 @@ sub _renderHighlevelConfig
                 $tpl .= "# Remember status and be quiet\n";
                 $tpl .= "rc_status";
                 $initFile->addToCase('try-restart',
-                    $tpl
+                    $tpl,
+                    $element->{priority}
                 );
 
                 $tpl  = "## Stop the service and regardless of whether it was \n";
@@ -183,7 +187,8 @@ sub _renderHighlevelConfig
                 $tpl .= "# Remember status and be quiet\n";
                 $tpl .= "rc_status";
                 $initFile->addToCase('restart',
-                    $tpl
+                    $tpl,
+                    $element->{priority}
                 );
                 
                 $tpl  = "echo -n \"Reload service %s\"\n";
@@ -196,7 +201,8 @@ sub _renderHighlevelConfig
                         uc($element->{shortname}),
                         uc($element->{shortname}),
                         uc($element->{shortname})
-                    )
+                    ),
+                    $element->{priority}
                 );
 
                 $tpl  = "echo -n \"Checking for service %s\"\n";
@@ -208,10 +214,40 @@ sub _renderHighlevelConfig
                         $element->{desc},
                         uc($element->{shortname}),
                         uc($element->{shortname})
-                    )
+                    ),
+                    $element->{priority}
                 );
 
                 
+            }
+            case 'function' {
+                my $tpl;
+                $tpl  = "%s () { \n";
+                $tpl .= "%s";
+                $tpl .= "\n}\n";
+                $initFile->addToBlock('functions',
+                    sprintf(
+                        $tpl,
+                        $element->{name},
+                        $element->{script}
+                    )
+                );
+                    
+            }
+            case 'functionCall' {
+                my $tpl;
+                $tpl  = "%s %s\n";
+                #$tpl .= "%s\n ";
+                $initFile->addToCase($element->{block},
+                    sprintf(
+                        $tpl,
+                        $element->{function},
+                        $element->{parameters},
+                        ""
+                    ),
+                    $element->{priority}
+                );
+                    
             }
         }
     }
@@ -378,7 +414,7 @@ sub getKernelVersion
     }
 
     if (!defined $newestKernelFile) {
-        die _tr("unable to pick a kernel-file from path '%s'!", $kernelPath);
+        die; #_tr("unable to pick a kernel-file from path '%s'!", $kernelPath);
     }
 
     $newestKernelFile =~ /.*?-([.\-0-9]*)-([a-zA-Z]*?)$/;

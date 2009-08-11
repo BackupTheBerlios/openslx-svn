@@ -143,11 +143,47 @@ sub setDesc {
     return $self;
 }
 
+sub addFunction {
+	my $self   = shift;
+	my $name   = shift;
+	my $script = shift;
+	my $flags  = shift || {};
+    my $priority    = $flags->{priority} || 5;
+
+    push(@{$self->{'configHash'}->{'highlevelConfig'}},
+    {
+        name => $name,
+        script => $script,
+        priority => $priority,
+        type => 'function'
+    });
+    return 1;
+}
+
+sub addFunctionCall {
+	my $self       = shift;
+	my $function   = shift;
+	my $block      = shift;
+	my $flags      = shift;
+	my $priority   = $flags->{priority} || 5;
+	my $parameters = $flags->{parameters} || "";
+
+    push(@{$self->{'configHash'}->{'highlevelConfig'}},
+    {
+        function => $function,
+        block => $block,
+        parameters => $parameters,
+        priority => $priority,
+        type => 'functionCall'
+    });
+    return 1;
+}
+
 sub addScript {
-    my $self = shift;
-    my $name = shift;
-    my $script = shift;
-    my $flags = shift || {};
+    my $self    = shift;
+    my $name    = shift;
+    my $script  = shift;
+    my $flags   = shift || {};
     my $block       = $flags->{block} || 'start';
     my $required    = $flags->{required} || 1;
     my $errormsg    = $flags->{errormsg} || "$name failed!";

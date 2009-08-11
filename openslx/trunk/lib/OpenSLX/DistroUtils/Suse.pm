@@ -19,6 +19,18 @@ use Switch;
 
 use base qw(OpenSLX::DistroUtils::Base);
 
+
+sub _renderCasePrefix
+{
+    return "rc_reset\n";
+}
+
+sub _renderFooter
+{
+    return "rc_exit\n";
+}
+
+
 sub _renderHighlevelConfig {
     my $self = shift;
     my $initFile = shift;
@@ -121,24 +133,42 @@ sub _renderHighlevelConfig {
 
                 
             }
+            case 'function' {
+                my $tpl;
+                $tpl  = "%s () { \n";
+                $tpl .= "%s";
+                $tpl .= "\n}\n";
+                $initFile->addToBlock('functions',
+                    sprintf(
+                        $tpl,
+                        $element->{name},
+                        $element->{script}
+                    )
+                );
+                    
+            }
+            case 'functionCall' {
+                my $tpl;
+                $tpl  = "%s %s\n";
+                #$tpl .= "%s\n ";
+                $initFile->addToCase($element->{block},
+                    sprintf(
+                        $tpl,
+                        $element->{function},
+                        $element->{parameters},
+                        ""
+                    ),
+                    $element->{priority}
+                );
+                    
+            }
         }
     }
-    
 }
 
 sub _getInitsystemIncludes
 {
 	return ". /etc/rc.status\n\n";
-}
-
-sub _renderCasePrefix
-{
-	return "rc_reset\n";
-}
-
-sub _renderFooter
-{
-	return "rc_exit\n";
 }
 
 1;
