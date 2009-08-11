@@ -131,6 +131,11 @@ sub installationPhase
         or die _tr(
                 "unable to copy splashy to $pluginRepoPath/bin"
         );
+    # create a proper (distro specific) runlevel script for halt
+    #my $initfile = newInitFile();
+    #$initfile->addDaemon("");
+    #
+    #my $runlevelscript = getInitFileForDistro($initfile, "ubuntu");
 
     return;
 }
