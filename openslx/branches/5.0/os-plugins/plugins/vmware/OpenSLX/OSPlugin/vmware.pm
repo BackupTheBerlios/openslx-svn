@@ -386,6 +386,8 @@ sub _writeRunlevelScript
     
     # $location points to the path where vmware helpers are installed
     # call the distrospecific fillup
+    # should use the abstract write runlevel script way, see
+    # http://lab.openslx.org/repositories/revision/openslx/2405 ff.
     my $runlevelScript = $self->{distro}->fillRunlevelScript($location, $kind);
 
     spitFile($file, $runlevelScript);

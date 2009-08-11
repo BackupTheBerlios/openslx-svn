@@ -217,6 +217,13 @@ prefvmx.useRecommendedLockedMemSize = "TRUE"' | sed -e "s/^ *//" \
     cat /mnt/opt/openslx/plugin-repo/vmware/${vmware_kind}/slxvmconfig \
       >>/mnt/etc/vmware/slxvmconfig
 
+    # if /tmp resides on nfs: create an empty container file for vmware *.vmem
+    # it does not like to live on NFS exports (still needed??)
+    #if [ cat /proc/mounts|grep -qe "^/tmp "|grep -qe "nfs" ] ; then
+    #  dd if=/dev/zero of=/mnt/tmp/vm-container count=1 seek=2048000
+    #  diskfm /mnt/tmp/vm-container /mnt/tmp/vmware
+    #  chmod a+rwxt /mnt/tmp/vmware
+    #fi
     [ $DEBUGLEVEL -gt 0 ] && echo "done with 'vmware' os-plugin ..."
 
   fi
