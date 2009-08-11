@@ -27,6 +27,7 @@ if [ -e /initramfs/plugin-conf/bootsplash.conf ]; then
         >>/mnt/etc/init.d/splashy.boot
       d_mkrlscript close splashy.boot ""
       # create a runlevelscript that will start splashy on halt/reboot
+      # fixme: should be done distro specific (in bootsplash.pm, see #474)
       echo '#!/bin/sh' >>/mnt/etc/init.d/splashy.halt
       echo -e ". /etc/rc.status \
         \n. /etc/sysconfig/logfile \
