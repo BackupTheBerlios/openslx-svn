@@ -227,17 +227,17 @@ sub installPlugin
 
         # cleanup temp path
         rmtree([ $self->{'plugin-temp-path'} ]);
-    }
 
-    # now update the vendorOS-attrs and let the plugin itself check the
-    # stage3 attrs    
-    $self->{'vendorOS-attrs'} = $self->{'plugin-attrs'};
-    $self->checkStage3AttrValues(
-        $self->{'plugin-attrs'}, \@attrProblems
-    );
-    if (@attrProblems) {
-        my $complaint = join "\n", @attrProblems;
-        die $complaint;
+        # now update the vendorOS-attrs and let the plugin itself check the
+        # stage3 attrs    
+        $self->{'vendorOS-attrs'} = $self->{'plugin-attrs'};
+        $self->checkStage3AttrValues(
+            $self->{'plugin-attrs'}, \@attrProblems
+        );
+        if (@attrProblems) {
+            my $complaint = join "\n", @attrProblems;
+            die $complaint;
+        }
     }
 
     $self->_addInstalledPluginToDB();
@@ -309,15 +309,8 @@ sub getInstalledPlugins
     
     my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
     $openslxDB->connect();
-    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-        name => $self->{'vendor-os-name'},
-    } );
-    if (!$vendorOS) {
-        die _tr(
-            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-        );
-    }
-    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOS->{id});
+    my $vendorOSID = $self->_fetchVendorOSID($openslxDB);
+    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOSID);
     $openslxDB->disconnect();
 
     return @installedPlugins;
@@ -601,7 +594,8 @@ sub _loadPlugin
 
     # if there's a distro folder, instantiate the most appropriate distro class
     my $distro;
-    if (-d "$self->{'plugin-path'}/OpenSLX/Distro") {
+    if ($self->{'vendor-os-name'} ne '<<<default>>>' 
+    && -d "$self->{'plugin-path'}/OpenSLX/Distro") {
         my $pluginBasePath = "$openslxConfig{'base-path'}/lib/plugins";
         my $distroScope = $plugin->{name} . '::OpenSLX::Distro';
         $distro = loadDistroModule({
@@ -631,68 +625,83 @@ sub _callChrootedFunctionForPlugin
     # create os-setup engine here in order to block access to the vendor-OS
     # via other processes (which could cause problems)
     my $osSetupEngine = $self->_osSetupEngine();
-
-    # prepare bind-mount of openslx base and config paths to /mnt of 
-    # vendor-OS:
-    my $basePath         = $openslxConfig{'base-path'};
-    my $basePathInChroot = "$self->{'vendor-os-path'}/mnt/opt/openslx";
-    mkpath($basePathInChroot);
-    my $configPath         = $openslxConfig{'config-path'};
-    my $configPathInChroot = "$self->{'vendor-os-path'}/mnt/etc/opt/openslx";
-    mkpath($configPathInChroot);
-    # prepare bind-mount of host's perl corelib path to /mnt of  vendor-OS:
-    my $hostPerlCorePath         = $Config{privlibexp};
-    my $hostPerlCorePathInChroot = "$self->{'vendor-os-path'}/mnt/host-perl";
-    mkpath($hostPerlCorePathInChroot);
+    
+    my @bindmounts;
+    my @chrootPerlIncludes;
+    
+    # setup list of perl modules we want to bind into chroot
+    push @chrootPerlIncludes, "/mnt/opt/openslx/lib";
+    
+    push @bindmounts, { 
+        'source' => $Config{privlibexp}, 
+        'target' => "$self->{'vendor-os-path'}/mnt/perl/privlibexp"
+    };
+    push @chrootPerlIncludes, "/mnt/perl/privlibexp";
+    push @bindmounts, { 
+        'source' => $Config{archlibexp}, 
+        'target' => "$self->{'vendor-os-path'}/mnt/perl/archlibexp"
+    };
+    push @chrootPerlIncludes, "/mnt/perl/archlibexp";
+    push @bindmounts, { 
+        'source' => $Config{vendorlibexp}, 
+        'target' => "$self->{'vendor-os-path'}/mnt/perl/vendorlibexp"
+    };
+    push @chrootPerlIncludes, "/mnt/perl/vendorlibexp";
+    push @bindmounts, { 
+        'source' => $Config{vendorarchexp}, 
+        'target' => "$self->{'vendor-os-path'}/mnt/perl/vendorarchexp"
+    };
+    push @chrootPerlIncludes, "/mnt/perl/vendorarchexp";
+    
+    # prepare openslx bind mounts
+    push @bindmounts, { 
+        'source' => $openslxConfig{'base-path'}, 
+        'target' => "$self->{'vendor-os-path'}/mnt/opt/openslx"
+    };
+    push @bindmounts, { 
+        'source' => $openslxConfig{'config-path'}, 
+        'target' => "$self->{'vendor-os-path'}/mnt/etc/opt/openslx"
+    };
+    
+    # create mountpoints
+    foreach (@bindmounts) {
+    	mkpath($_->{'target'});
+    }
 
     my $pluginSession = OpenSLX::ScopedResource->new({
         name    => 'osplugin::session',
         acquire => sub { 
-            # bind mount openslx base and config paths into vendor-OS
-            slxsystem("mount -o bind -o ro $basePath $basePathInChroot") == 0
-                or die _tr(
-                    "unable to bind mount '%s' to '%s'! (%s)", 
-                    $basePath, $basePathInChroot, $!
-                );
-            slxsystem(
-                "mount -o bind -o ro $configPath $configPathInChroot"
-            ) == 0
-                or die _tr(
-                    "unable to bind mount '%s' to '%s'! (%s)", 
-                    $configPath, $configPathInChroot, $!
-                );
-            # Bind mount hosts perl core path into vendor-OS and add it to
-            # perl's search paths, in order to let dynamic loading of perl
-            # modules/scripts work. Currently, we hope that only the perl core
-            # path (privlibexp) is required for that, but we might have to 
-            # mount the architecture dependent path (archlibexp) or the
-            # vendor perl paths (vendorlibexp and vendorarchexp), too.
-            slxsystem(
-                "mount -o bind -o ro $hostPerlCorePath $hostPerlCorePathInChroot"
-            ) == 0
-                or die _tr(
-                    "unable to bind mount '%s' to '%s'! (%s)", 
-                    $hostPerlCorePath, $hostPerlCorePathInChroot, $!
-                );
-            unshift @INC, '/mnt/host-perl';
+            # bind mount perl includes, openslx base and config paths into vendor-OS
+            foreach (@bindmounts) {
+	            slxsystem("mount -o bind -o ro $_->{'source'} $_->{'target'}") == 0
+	                or die _tr(
+	                    "unable to bind mount '%s' to '%s'! (%s)", 
+	                    $_->{'source'}, $_->{'target'}, $!
+	                );
+            }
+            
+            # add mounted perl includes to @INC
+            foreach (@chrootPerlIncludes) {
+            	unshift @INC, $_;
+            }
             1 
         },
         release => sub {
-            if ($INC[0] eq '/mnt/host-perl') {
-                shift @INC;
+        	# cleanup @INC again
+            while (my $perlinc = pop(@chrootPerlIncludes)) {
+	            if ($INC[0] eq $perlinc) {
+	                shift @INC;
+	            }
             }
-            slxsystem("umount $hostPerlCorePathInChroot") == 0
-                or die _tr(
-                    "unable to umount '%s'! (%s)", $hostPerlCorePathInChroot, $!
-                );
-            slxsystem("umount $configPathInChroot") == 0
-                or die _tr(
-                    "unable to umount '%s'! (%s)", $configPathInChroot, $!
-                );
-            slxsystem("umount $basePathInChroot") == 0
-                or die _tr(
-                    "unable to umount '%s'! (%s)", $basePathInChroot, $!
-                );
+            
+            # unmount bindmounts
+            foreach (@bindmounts) {
+                slxsystem("umount $_->{'target'}") == 0
+                    or die _tr(
+                        "unable to umount '%s'! (%s)", 
+                        $_->{'target'}, $!
+                    );
+            }
             1
         },
     });
@@ -709,16 +718,9 @@ sub _addInstalledPluginToDB
     
     my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
     $openslxDB->connect();
-    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-        name => $self->{'vendor-os-name'},
-    } );
-    if (!$vendorOS) {
-        die _tr(
-            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-        );
-    }
+    my $vendorOSID = $self->_fetchVendorOSID($openslxDB);
     $openslxDB->addInstalledPlugin(
-        $vendorOS->{id}, $self->{'plugin-name'}, $self->{'plugin-attrs'}
+        $vendorOSID, $self->{'plugin-name'}, $self->{'plugin-attrs'}
     );
     $openslxDB->disconnect();
 
@@ -734,15 +736,8 @@ sub _checkIfRequiredPluginsAreInstalled
 
     my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
     $openslxDB->connect();
-    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-        name => $self->{'vendor-os-name'},
-    } );
-    if (!$vendorOS) {
-        die _tr(
-            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-        );
-    }
-    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOS->{id});
+    my $vendorOSID = $self->_fetchVendorOSID($openslxDB);
+    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOSID);
     $openslxDB->disconnect();
     
     my @missingPlugins 
@@ -768,15 +763,8 @@ sub _checkIfPluginIsRequiredByOthers
     
     my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
     $openslxDB->connect();
-    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-        name => $self->{'vendor-os-name'},
-    } );
-    if (!$vendorOS) {
-        die _tr(
-            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-        );
-    }
-    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOS->{id});
+    my $vendorOSID = $self->_fetchVendorOSID($openslxDB);
+    my @installedPlugins = $openslxDB->fetchInstalledPlugins($vendorOSID);
     $openslxDB->disconnect();
     
     my @lockingPlugins
@@ -808,16 +796,9 @@ sub _fetchInstalledPluginAttrs
     
     my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
     $openslxDB->connect();
-    my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
-        name => $self->{'vendor-os-name'},
-    } );
-    if (!$vendorOS) {
-        die _tr(
-            'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
-        );
-    }
+    my $vendorOSID = $self->_fetchVendorOSID($openslxDB);
     my $installedPlugin = $openslxDB->fetchInstalledPlugins(
-        $vendorOS->{id}, $self->{'plugin-name'}
+        $vendorOSID, $self->{'plugin-name'}
     );
     $openslxDB->disconnect();
 
@@ -831,6 +812,22 @@ sub _removeInstalledPluginFromDB
     
     my $openslxDB = instantiateClass("OpenSLX::ConfigDB");
     $openslxDB->connect();
+    my $vendorOSID = $self->_fetchVendorOSID($openslxDB);
+    $openslxDB->removeInstalledPlugin($vendorOSID, $self->{'plugin-name'});
+    $openslxDB->disconnect();
+
+    return 1;
+}
+
+sub _fetchVendorOSID
+{
+    my $self      = shift;
+    my $openslxDB = shift;
+
+    if ($self->{'vendor-os-name'} eq '<<<default>>>') {
+        return 0;
+    }
+
     my $vendorOS = $openslxDB->fetchVendorOSByFilter( { 
         name => $self->{'vendor-os-name'},
     } );
@@ -839,10 +836,8 @@ sub _removeInstalledPluginFromDB
             'unable to find vendor-OS "%s" in DB!', $self->{'vendor-os-name'}
         );
     }
-    $openslxDB->removeInstalledPlugin($vendorOS->{id}, $self->{'plugin-name'});
-    $openslxDB->disconnect();
 
-    return 1;
+    return $vendorOS->{id};
 }
 
 sub _osSetupEngine

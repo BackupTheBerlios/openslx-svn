@@ -60,6 +60,8 @@ implementation, please drop a mail to: ot@openslx.com, or join the IRC-channel
 
 =cut
 
+use Scalar::Util qw( weaken );
+
 use OpenSLX::Basics;
 use OpenSLX::OSPlugin::Roster;
 
@@ -96,6 +98,9 @@ sub initialize
 
     $self->{'os-plugin-engine'} = shift;
     $self->{'distro'}           = shift;
+
+    weaken($self->{'os-plugin-engine'});
+        # avoid circular reference between plugin and its engine
     
     return;
 }
@@ -506,6 +511,7 @@ sub suggestAdditionalKernelModules
 {
     my $self                = shift;
     my $makeInitRamFSEngine = shift;
+    my $attrs               = shift;
     
     return;
 }
@@ -582,7 +588,7 @@ sub setupPluginInInitramfs
 
     # ... and kernel modules
     my @suggestedModules 
-        = $self->suggestAdditionalKernelModules($makeInitRamFSEngine);
+        = $self->suggestAdditionalKernelModules($makeInitRamFSEngine, $attrs);
     if (@suggestedModules) {
         my $modules = join(',', @suggestedModules);
         vlog(1, "plugin $pluginName suggests these kernel modules: $modules");
