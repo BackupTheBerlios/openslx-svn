@@ -175,10 +175,10 @@ sub _init
             applies_to_systems => 1,
             applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
-                how to handle local disk deploament - no/slx-only/all
+                how to handle local disk deploament - no/slxonly/all
             End-of-Here
             content_regex => undef,
-            content_descr => 'how to handle local disk (no/slx-only/all)',
+            content_descr => 'how to handle local disk (no/slxonly/all)',
             default => 'all',
         },
         'scratch' => {
