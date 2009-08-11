@@ -171,6 +171,16 @@ sub _init
             content_descr => 'a space-separated list of NIC modules',
             default => 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
         },
+        'hw_local_disk' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                how to handle local disk deploament - no/slx-only/all
+            End-of-Here
+            content_regex => undef,
+            content_descr => 'how to handle local disk (no/slx-only/all)',
+            default => 'all',
+        },
         'scratch' => {
             applies_to_systems => 1,
             applies_to_clients => 1,

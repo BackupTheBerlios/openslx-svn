@@ -147,18 +147,18 @@ noexec\t 0 0" >>/tmp/fstab
           # if more than one id45 present, the latter ones are simply mounted
           # over the previous (the mounts are postponed a bit via do_mnt to
           # have the filesystem completely prepared) 
-          echo -e "waitfor $hdpartnr 4000\n\
-            mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*}\n\
+          echo -e "waitfor ${hdpartnr} 4000\n\
+            mount -t auto ${hdpartnr} /mnt/media/${hdpartnr#/dev/*}\n\
             ln -sf /media/${hdpartnr#/dev/*} /mnt/var/scratch" >>/etc/do_mnt
-          echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto\
+          echo -e "${hdpartnr}\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto\
 \t\t 0 0" >>/tmp/fstab
         elif [ ${partid} -eq 46 ] ; then
           # mount a home directory to (/mnt)/var/home
-          echo -e "waitfor $hdpartnr 4000\n\
-            mount -t auto $hdpartnr /mnt/media/${hdpartnr#/dev/*} \n\
+          echo -e "waitfor ${hdpartnr} 4000\n\
+            mount -t auto ${hdpartnr} /mnt/media/${hdpartnr#/dev/*} \n\
             test -d /mnt/media/${hdpartnr#/dev/*}/home && \
               ln -sf /media/${hdpartnr#/dev/*} /mnt/var/home" >>/etc/do_mnt
-          echo -e "$hdpartnr\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
+          echo -e "${hdpartnr}\t/media/${hdpartnr#/dev/*}\tauto\t\tnoauto,\
 \t 0 0" >>/tmp/fstab
         fi
       done
@@ -179,7 +179,7 @@ fi
 finish () {
 mdev -s
 # mount filesystem parts (if any) requested in disk setup
-[ -f /etc/do_mnt ]] && ash /etc/do_mnt &
+[ -f /etc/do_mnt ] && ash /etc/do_mnt &
 # remove unneeded disk and mouse drivers
 [ ! -s /etc/hwinfo.disk ] && rmmod sd_mod 2>/dev/null
 #grep -q " PS/2 " /etc/hwinfo.mouse || \
@@ -230,7 +230,7 @@ case $1 in
   # if required and mounting)
   disk)
     # if disk action is not disabled (see #470)
-    disk
+    [ "x${hw_local_disk}" != "xno" ] && disk
   ;;
   # remove unneeded kernel modules
   finish)
