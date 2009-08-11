@@ -664,11 +664,15 @@ sub _setupSupportedThemes
             vlog(1, "installing theme '$theme'...");
             my $gdmThemeTargetPath = "$self->{pluginRepositoryPath}/themes/gdm";
             mkpath($gdmThemeTargetPath);
-            slxsystem("cp -a $gdmThemeDir $gdmThemeTargetPath/$theme") == 0
+            slxsystem(
+                "cp -a $gdmThemeDir $gdmThemeTargetPath/$theme 2>/dev/null"
+            ) == 0
                 or die _tr('unable to copy GDM-theme %s (%s)', $theme, $!);
             my $kdmThemeTargetPath = "$self->{pluginRepositoryPath}/themes/kdm";
             mkpath($kdmThemeTargetPath);
-            slxsystem("cp -a $kdmThemeDir $kdmThemeTargetPath/$theme") == 0
+            slxsystem(
+                "cp -a $kdmThemeDir $kdmThemeTargetPath/$theme 2>/dev/null"
+            ) == 0
                 or die _tr('unable to copy KDM-theme %s (%s)', $theme, $!);
             next THEME;
         }
