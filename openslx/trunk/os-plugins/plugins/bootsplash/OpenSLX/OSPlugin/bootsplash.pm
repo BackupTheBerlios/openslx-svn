@@ -23,6 +23,7 @@ use File::Path;
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
+use OpenSLX::DistroUtils;
 
 sub new
 {
@@ -120,9 +121,37 @@ sub installationPhase
 
     $self->{pluginRepositoryPath} = $info->{'plugin-repo-path'};
     $self->{openslxBasePath}      = $info->{'openslx-base-path'};
+    
     my $splashyBinPath =
         "$self->{openslxBasePath}/lib/plugins/bootsplash/files/bin";
     my $pluginRepoPath = "$self->{pluginRepositoryPath}";
+    
+    my $initFile = newInitFile();
+    my $do_stop = unshiftHereDoc(<<"    End-of-Here");
+        /opt/openslx/plugin-repo/bootsplash/bin/splashy shutdown 
+        sleep 1
+        /opt/openslx/plugin-repo/bootsplash/bin/splashy_update \\
+        "progress 100\" 2>/dev/null
+    End-of-Here
+   
+    # add helper function to initfile
+    # first parameter name of the function
+    # second parameter content of the function
+    $initFile->addFunction('do_stop', $do_stop);
+    
+    # place a call of the helper function in the stop block
+    # of the init file
+    # first parameter name of the function
+    # second parameter name of the block
+    $initFile->addFunctionCall('do_stop', 'stop');
+    
+    my $distro = (split('-',$self->{'os-plugin-engine'}->distroName()))[0];
+    
+    # write initfile to filesystem
+    spitFile(
+        "$pluginRepoPath/bootsplash.halt",
+        getInitFileForDistro($initFile, ucfirst($distro))
+    );
 
     # copy splashy(_update) into plugin-repo folder
     mkpath("$pluginRepoPath/bin");
@@ -147,6 +176,7 @@ sub removalPhase
 
     return;
 }
+
 
 sub copyRequiredFilesIntoInitramfs
 {
