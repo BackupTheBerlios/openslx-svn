@@ -130,11 +130,11 @@ sub installationPhase
     my $do_stop = unshiftHereDoc(<<'    End-of-Here');
         /opt/openslx/plugin-repo/bootsplash/bin/splashy shutdown 
         sleep 1
-        /opt/openslx/plugin-repo/bootsplash/bin/splashy_update \
+        uclibc-wrapper /opt/openslx/plugin-repo/bootsplash/bin/splashy_update \
           "progress 100" 2>/dev/null
     End-of-Here
    
-    # add helper function to initfile
+    # add helper functions to initfile
     # first parameter name of the function
     # second parameter content of the function
     $initFile->addFunction('do_start', "  : # do nothing here");

@@ -210,9 +210,11 @@ sub _writeRunlevelScript
         'stop && start'
     );
         
-     # get distro version (does not work)
-     my $workaround_distro = qx(lsb_release -si);
+     # get distro version (does not work and makes no sense to call an external
+     # function which is not available in all distros)
+     # my $workaround_distro = qx(lsb_release -si);
      # alternative from bootsplash.pm
+     my $workaround_distro = (split('-',$self->{'os-plugin-engine'}->distroName()))[0];
      my $runlevelscript = getInitFileForDistro($initfile, $workaround_distro);
 
      $workaround .=  $runlevelscript;
