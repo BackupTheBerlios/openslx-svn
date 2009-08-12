@@ -2,7 +2,7 @@
 <!DOCTYPE greeter SYSTEM "greeter.dtd">
 <!--
 KDM3-OpenSLX-Theme
--->-->
+-->
 <greeter>
 	<!-- main pic, login pic -->
 	<item type="pixmap">
