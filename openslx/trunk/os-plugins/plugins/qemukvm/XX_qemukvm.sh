@@ -28,7 +28,7 @@ interface	NWIF
 offer_time	6000
 
 # The location of the leases file
-lease_file	/var/lib/misc/udhcpd.leases
+lease_file	/var/lib/qemu/udhcpd.leases
 
 # The location of the pid file
 pidfile	/var/run/udhcpd.pid
@@ -112,8 +112,8 @@ ${qemukvm_imagesrc}." nonfatal
     write_udhcpd_conf /mnt/etc/opt/openslx/udhcpd.qemukvm
 
     # for the busybox dhcp server
-    testmkd /mnt/var/lib/misc
-    touch /mnt/var/lib/misc/udhcpd.leases
+    testmkd /mnt/var/lib/qemu
+    touch /mnt/var/lib/qemu/udhcpd.leases
 
     # copy the /etc/qemu-ifup script and enable extended rights for running
     # the emulator via sudo

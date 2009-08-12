@@ -63,6 +63,8 @@ use vars qw(%supportedDistros);
     'ubuntu-8.10_amd64' => 'clone,update,shell',
     'ubuntu-9.04'       => 'clone,install,update,shell',
     'ubuntu-9.04_amd64' => 'clone,update,shell',
+    'ubuntu-9.10'       => 'clone,update,shell',
+    'ubuntu-9.10_amd64' => 'clone,update,shell',
 );
 
 my %localHttpServers;
