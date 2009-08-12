@@ -127,7 +127,7 @@ sub installationPhase
     my $pluginRepoPath = "$self->{pluginRepositoryPath}";
     
     my $initFile = newInitFile();
-    my $do_stop = unshiftHereDoc(<<"    End-of-Here");
+    my $do_stop = unshiftHereDoc(<<"  End-of-Here");
         /opt/openslx/plugin-repo/bootsplash/bin/splashy shutdown 
         sleep 1
         /opt/openslx/plugin-repo/bootsplash/bin/splashy_update \\
@@ -137,6 +137,7 @@ sub installationPhase
     # add helper function to initfile
     # first parameter name of the function
     # second parameter content of the function
+    $initFile->addFunction('do_start', '# do nothing here');
     $initFile->addFunction('do_stop', $do_stop);
     
     # place a call of the helper function in the stop block

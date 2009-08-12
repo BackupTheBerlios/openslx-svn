@@ -210,8 +210,9 @@ sub _writeRunlevelScript
         'stop && start'
     );
         
-     # get distro version
+     # get distro version (does not work)
      my $workaround_distro = qx(lsb_release -si);
+     # alternative from bootsplash.pm
      my $runlevelscript = getInitFileForDistro($initfile, $workaround_distro);
 
      $workaround .=  $runlevelscript;
