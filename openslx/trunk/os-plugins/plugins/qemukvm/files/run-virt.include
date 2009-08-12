@@ -17,9 +17,23 @@
 # include general configuration from vmchooser
 . /etc/opt/openslx/run-virt.include
 
-permem=66
-mem=$(expr ${totalmem} * ${permem})
+permem=50
+mem=$(expr ${totalmem} / 100 \* ${permem})
 VIRTCMDOPTS="${VIRTCMDOPTS} -m ${mem}"
+
+VIRTCMDOPTS="${VIRTCMDOPTS} -net nic,model=pcnet"
+
+case "${network_kind}" in
+  bridge*)
+    VIRTCMDOPTS="${VIRTCMDOPTS} -net tap,ifname=tap0"
+  ;;
+  nat|NAT)
+    VIRTCMDOPTS="${VIRTCMDOPTS} -net tap,ifname=tap1"
+  ;;
+  hostonly)
+    VIRTCMDOPTS="${VIRTCMDOPTS} -net tap,ifname=tap2"
+  ;;
+esac
 
 # virtual fd/cd/dvd and drive devices, floppy b: for configuration
 #VIRTCMDOPTS="${VIRTCMDOPTS} -fda /dev/fd0"
@@ -47,17 +61,16 @@ ide="TRUE"
 hddrv="ide"
 
 # audio
-VIRTCMDOPTS="${VIRTCMDOPTS} -soundhw es1370"
+VIRTCMDOPTS="${VIRTCMDOPTS} -soundhw all"
 
 # serial
 #VIRTCMDOPTS="${VIRTCMDOPTS} -serial /dev/ttyS0"
 
 # set the variables appropriately
-for i in kvm qemu-kvm qemu; do
-  VIRTCMD=$(which kvm 2>/dev/null)
-  [ -n $VIRTCMD ] && break
+for tool in kvm qemu-kvm qemu; do
+  VIRTCMD=$(which ${tool} 2>/dev/null)
+  [ "x$VIRTCMD" != "x" ] && break
 done
-[ -n $VIRTCMD ] && { writelog "No qemu/kvm tool found."; exit 1; }
+[ -z $VIRTCMD ] && { writelog "No qemu/kvm tool found."; exit 1; }
 VIRTCMD="sudo $VIRTCMD"
 VIRTCMDOPTS="${VIRTCMDOPTS} -boot c -alt-grab ${diskfile}"
-

@@ -35,8 +35,8 @@ pidfile	/var/run/udhcpd.pid
 
 opt	dns	${domain_name_servers}
 option	subnet	255.255.255.0
-opt	router	192.168.10.2
-opt	wins	192.168.10.10
+opt	router	192.168.101.254
+opt	wins	192.168.101.10
 option	domain	virtual.site ${domain_name}
 
 # Additional options known to udhcpd
@@ -118,7 +118,7 @@ ${qemukvm_imagesrc}." nonfatal
     # copy the /etc/qemu-ifup script and enable extended rights for running
     # the emulator via sudo
     cp /mnt/opt/openslx/plugin-repo/qemukvm/qemu-if* /mnt/etc
-    chmod u+x /mnt/etc/qemu-ifup
+    chmod u+x /mnt/etc/qemu-if*
     for qemubin in qemu kvm ; do
       qemu="$(binfinder ${qemubin})"
       [ -n "${qemu}" ] && \
