@@ -127,24 +127,27 @@ sub installationPhase
     my $pluginRepoPath = "$self->{pluginRepositoryPath}";
     
     my $initFile = newInitFile();
-    my $do_stop = unshiftHereDoc(<<"  End-of-Here");
+    my $do_stop = unshiftHereDoc(<<'    End-of-Here');
         /opt/openslx/plugin-repo/bootsplash/bin/splashy shutdown 
         sleep 1
-        /opt/openslx/plugin-repo/bootsplash/bin/splashy_update \\
-        "progress 100\" 2>/dev/null
+        /opt/openslx/plugin-repo/bootsplash/bin/splashy_update \
+          "progress 100" 2>/dev/null
     End-of-Here
    
     # add helper function to initfile
     # first parameter name of the function
     # second parameter content of the function
-    $initFile->addFunction('do_start', '# do nothing here');
+    $initFile->addFunction('do_start', "  : # do nothing here");
     $initFile->addFunction('do_stop', $do_stop);
+    $initFile->addFunction('do_restart', "  : # do nothing here");
     
     # place a call of the helper function in the stop block
     # of the init file
     # first parameter name of the function
     # second parameter name of the block
+    $initFile->addFunctionCall('do_start', 'start');
     $initFile->addFunctionCall('do_stop', 'stop');
+    $initFile->addFunctionCall('do_restart', 'restart');
     
     my $distro = (split('-',$self->{'os-plugin-engine'}->distroName()))[0];
     
