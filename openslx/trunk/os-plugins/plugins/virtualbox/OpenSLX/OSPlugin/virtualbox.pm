@@ -187,12 +187,15 @@ sub _writeRunlevelScript
     #    'start',
     #    'modprobe vboxdrv && modprobe vboxnetflt',
     #);
-    $workaround .= "start() { modprobe vboxdrv && modprobe vboxnetflt }\n";
+    # why to load the modules already loaded in stage3??
+    $workaround .= "start() { modprobe vboxdrv && modprobe vboxnetflt; }\n";
     #$initfile->addScript(
 	#    'stop',
     #    'rmmod vboxnetflt && rmmod vboxdrv',
     #);
-    $workaround .= "stop() { rmmod vboxnetflt && rmmod vboxdrv }\n";
+    $workaround .= "stop() { rmmod vboxnetflt && rmmod vboxdrv; }\n";
+    
+    # please check for the new type of runlevel script writing (r3079)
     $initfile->addToCase(
         'start',
         'start'

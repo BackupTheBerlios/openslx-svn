@@ -49,9 +49,10 @@ ${virtualbox_imagesrc}." nonfatal
     # copy and activate init file
     cp /mnt/opt/openslx/plugin-repo/virtualbox/vbox-slx \
       /mnt/etc/init.d
-    chmod 755 /etc/init.d/vbox-slx
+    chmod 755 /mnt/etc/init.d/vbox-slx
     rllinker "vbox-slx" 20 2
 
+    # loading of the required kernel modules
     modprobe vboxdrv
     modprobe vboxnetflt
     mknod -m 0660 /dev/vboxdrv c 10 59

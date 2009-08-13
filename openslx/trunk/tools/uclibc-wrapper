@@ -19,7 +19,8 @@ else
   echo "Can't find OpenSLX Environment." && exit 1
 fi
 
-[ -f /lib/ld-uClibc.so.0 ] && ln -sf $SLX_PATH/uclib-rootfs/lib/ld-uClibc.so.0
+[ -f /lib/ld-uClibc.so.0 ] || \
+  ln -sf $SLX_PATH/uclib-rootfs/lib/ld-uClibc.so.0 /lib/ld-uClibc.so.0
 
 PATH=$SLX_UCLIB_PATH/bin:$SLX_UCLIB_PATH/usr/bin:$SLX_UCLIB_PATH/sbin:\
 $SLX_UCLIB_PATH/usr/sbin
