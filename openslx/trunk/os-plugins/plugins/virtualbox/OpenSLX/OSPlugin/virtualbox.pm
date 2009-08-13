@@ -157,45 +157,40 @@ sub _writeRunlevelScript
     my $self     = shift;
     
     my $initfile = newInitFile();
-    my $workaround = "# Workaround till DistroUtils support functions\n";
 
     $initfile->setName("virtualbox.slx");
     $initfile->setDesc("Setup environment for virtualbox. Part of OpenSLX virtualbox plugin.");
 
-    #$initfile->addScript(
-    #    'running',
-    #    'lsmod | grep -q "$1[^_-]"'
-    #);
-    #$initfile->addScript(
-    #    'vmstatus',
-    #    'if running vboxdrv; then
-    #       if running vboxnetflt; then
-    #         echo "VirtualBox kernel modules (vboxdrv and vboxnetflt) are loaded."
-    #       else
-    #         echo "VirtualBox kernel module is loaded."
-    #       fi
-    #       #TODO: check it: ignore user check. handling our own way:
-    #       for i in /tmp/.vbox-*-ipc; do
-    #          echo "Running: "
-    #          $(VBoxManage --nologo list runningvms | sed -e \'s/^".*"//\' 2>/dev/null)
-    #       done
-    #     else
-    #       echo "VirtualBox kernel module is not loaded."
-    #     fi'
-    #);
-    #$initfile->addScript(
-    #    'start',
-    #    'modprobe vboxdrv && modprobe vboxnetflt',
-    #);
-    # why to load the modules already loaded in stage3??
-    $workaround .= "start() { modprobe vboxdrv && modprobe vboxnetflt; }\n";
-    #$initfile->addScript(
-	#    'stop',
-    #    'rmmod vboxnetflt && rmmod vboxdrv',
-    #);
-    $workaround .= "stop() { rmmod vboxnetflt && rmmod vboxdrv; }\n";
-    
-    # please check for the new type of runlevel script writing (r3079)
+    # todo: Function need to be formated proper... not important right now
+    $initfile->addFunction(
+        'running',
+        'lsmod | grep -q "$1[^_-]"'
+    );
+    $initfile->addFunction(
+        'vmstatus',
+        '  if running vboxdrv; then
+             if running vboxnetflt; then
+               echo "VirtualBox kernel modules (vboxdrv and vboxnetflt) are loaded."
+             else
+               echo "VirtualBox kernel module is loaded."
+             fi
+             #TODO: check it: ignore user check. handling our own way:
+             for i in /tmp/.vbox-*-ipc; do
+                echo "Running: "
+                $(VBoxManage --nologo list runningvms | sed -e \'s/^".*"//\' 2>/dev/null)
+             done
+           else
+             echo "VirtualBox kernel module is not loaded."
+           fi'
+    );
+    $initfile->addFunction(
+        'start',
+        '  modprobe vboxdrv && modprobe vboxnetflt',
+    );
+    $initfile->addFunction(
+	    'stop',
+        '  rmmod vboxnetflt && rmmod vboxdrv',
+    );
     $initfile->addToCase(
         'start',
         'start'
@@ -220,11 +215,9 @@ sub _writeRunlevelScript
      my $workaround_distro = (split('-',$self->{'os-plugin-engine'}->distroName()))[0];
      my $runlevelscript = getInitFileForDistro($initfile, $workaround_distro);
 
-     $workaround .=  $runlevelscript;
-
      # todo: because we dont have distribution or version dependend
      #       init scripts we could put it directly into /etc/init.d...
-     spitFile("$self->{'pluginRepositoryPath'}/vbox-slx", $workaround);
+     spitFile("$self->{'pluginRepositoryPath'}/vbox-slx", $runlevelscript);
 }
 
 # The bridge configuration needs the bridge module to be present in early

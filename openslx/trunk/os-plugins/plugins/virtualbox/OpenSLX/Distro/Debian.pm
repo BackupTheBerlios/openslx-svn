@@ -37,7 +37,10 @@ sub installVbox
     # lenny(5.0) has v1.6
     # testing is ok. but no clue which lsb_release -rs it has...
     if ( $release eq "999999.0") {
-        $engine->installPackages('virtualbox-ose');
+        #the usual "in stage1 chroot we get another kernel vers. problem"
+        #   kernel modules need to be installed from the cloned system
+        #$engine->installPackages('virtualbox-ose');
+        #system('/etc/init.d/virtualbox-ose setup');
     } else {
         print "Couldn't install VirtualBox, no package from distribution\n";
         exit;

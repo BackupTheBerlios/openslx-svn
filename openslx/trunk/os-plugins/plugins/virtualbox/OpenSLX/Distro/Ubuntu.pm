@@ -38,7 +38,10 @@ sub installVbox
 
     # hardy (8.04LTS): only version VBox v1.5
     if ( $release eq "8.10" || $release eq "9.04") {
-       $engine->installPackages("virtualbox-ose");
+        #the usual "in stage1 chroot we get another kernel vers. problem"
+        #   kernel modules need to be installed from the cloned system
+        #$engine->installPackages("virtualbox-ose");
+        #system('/etc/init.d/virtualbox-ose setup');
     } else {
         print "Couldn't install VirtualBox, no package from distribution!\n";
         exit;
