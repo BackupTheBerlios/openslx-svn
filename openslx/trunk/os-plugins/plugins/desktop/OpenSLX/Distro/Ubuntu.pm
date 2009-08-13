@@ -133,6 +133,7 @@ sub KDMConfigHashForWorkstation
     $configHash->{'X-:0-Core'}->{Reset} = "/etc/kde$kdmVer/kdm/Xreset";
     $configHash->{'X-:0-Core'}->{SessionsDirs} = 
         '/etc/X11/sessions,/usr/share/xsessions,/usr/share/apps/kdm/sessions';
+    $configHash->{'X-:0-Core'}->{ServerAttempts} = "2";   
 
     return $configHash;
 }
