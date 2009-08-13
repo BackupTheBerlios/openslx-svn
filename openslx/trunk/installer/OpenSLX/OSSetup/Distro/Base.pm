@@ -173,6 +173,12 @@ sub startSession
         if (slxsystem("mount -t proc proc '/proc'")) {
             warn _tr("unable to mount '%s' (%s)\n", "$osDir/proc", $!);
         }
+        if (!-e '/dev/pts' && !mkpath('/dev/pts')) {
+            die _tr("unable to create folder '%s' (%s)\n", "$osDir/dev/pts", $!);
+        }
+        if (slxsystem("mount -t devpts devpts '/dev/pts'")) {
+            warn _tr("unable to mount '%s' (%s)\n", "$osDir/dev/pts", $!);
+        }
     }
 
     return 1;
@@ -182,10 +188,13 @@ sub finishSession
 {
     my $self = shift;
     
-    # umount /proc (if we have 'umount' available)
+    # umount /proc, /dev/pts (if we have 'umount' available)
     if (qx{which umount 2>/dev/null}) {
         if (slxsystem("umount /proc")) {
             warn _tr("unable to umount '%s' (%s)\n", "/proc", $!);
+        }
+        if (slxsystem("umount /dev/pts")) {
+            warn _tr("unable to umount '%s' (%s)\n", "/dev/pts", $!);
         }
     }
 
