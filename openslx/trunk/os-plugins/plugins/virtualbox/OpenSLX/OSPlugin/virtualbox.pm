@@ -158,7 +158,7 @@ sub _writeRunlevelScript
     
     my $initfile = newInitFile();
 
-    $initfile->setName("virtualbox.slx");
+    $initfile->setName("vbox-slx");
     $initfile->setDesc("Setup environment for virtualbox. Part of OpenSLX virtualbox plugin.");
 
     # todo: Function need to be formated proper... not important right now

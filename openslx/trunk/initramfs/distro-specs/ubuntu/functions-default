@@ -64,9 +64,9 @@ config_distro () {
   echo "# inittab is obsolete with the change to upstart from ubuntu 7.10" \
     > /mnt/etc/inittab
 
-  # fix getty bug
-  # (console login on tty1 is started too early)
-  sed -i "s/start on runlevel 2/start on stopped rc2/" /mnt/etc/event.d/tty1
+  # fix getty bug (console login on tty1 is started too early)
+  [ -f /mnt/etc/event.d/tty1 ] && \
+    sed -i "s/start on runlevel 2/start on stopped rc2/" /mnt/etc/event.d/tty1
 
   # for screen sessions
   testmkd /mnt/var/run/screen root:utmp 0775
