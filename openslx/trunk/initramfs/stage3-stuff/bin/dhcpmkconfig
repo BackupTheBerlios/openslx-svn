@@ -23,6 +23,9 @@
 echo -e "# network configuration written by $0:" >/tmp/confviadhcp
 unset HOME IFS KCMDLINE DEBUGLEVEL MODPRV TERM BOOTIF BOOT_IMAGE \
        infomsg mask lease interface cfgmsg cfgfile boot_file no_bootsplash
+# set the broadcast address if not delivered by dhcp
+[ -z "$broadcast" ] && \
+  broadcast=$(ipcalc -b $ip/$subnet|sed s/.*=//)
 set | sed \
   -e "s,^P.*,,;s,ntpsrv,ntp_servers,;s,ip,clientip," \
   -e "s,serverid,serverip,;s,subnet,subnet_mask," \

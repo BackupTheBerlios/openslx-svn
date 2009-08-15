@@ -10,7 +10,7 @@
 #
 # General information about OpenSLX can be found at http://openslx.org
 #
-# Main script for initial ramdisk for OpenSLX linux stateless clients
+# Main script for initial ramfs for OpenSLX linux stateless clients
 #############################################################################
 
 # fixme: the primary init script should never fail, so move all critical code
@@ -273,10 +273,12 @@ line in $0\nnfsserver=\"${nfsserver}\"\nnfspath=\"${nfspath}\"" \
           #iscsiport=$(uri_token $rootfs port)
           #iscsitarget=$(uri_token $rootfs path)
         ;;
-        lbdev)
+        lbd)
           # use a local device for mounting root block device with given
-          # filesystem, e.g. rootfs=lbdev://sda2/squashfs
-          bldmod="sata_sil sd_mod"
+          # filesystem directly or a root filesystem container from another
+          # filesystem, e.g. rootfs=lbd://sda1/squashfs (bldmod cannot be
+          # empty, use loop or the real device stuff)
+          bldmod=loop
           blddev=$(uri_token $rootfs server)
           bldfst=$(uri_token $rootfs path)
           bldfst=${bldfst#/*}
@@ -331,7 +333,7 @@ EOF
 fi
 
 # check if at least one type of IP configuration is availabe
-if [ -n "$nodhcp" -a -z "$ldap" -a -z "$ipinfo" -a $srvproto != "lbdev" ]
+if [ -n "$nodhcp" -a -z "$ldap" -a -z "$ipinfo" -a $srvproto != "lbd" ]
   then echo -e "# You did not specify any advanced configuration mode for \
 your clients. You\n# might want to add the token 'dhcp' for DHCP config, \
 'file(=source)'\n# for config file get via TFTP or 'ldap(=source)' for LDAP \
@@ -462,7 +464,7 @@ if [ -z "$nodhcp" ] ; then
     fi
     # fixme: to be checked!!
     #  else
-    #    if [ -n "$file" -a "$srvproto" = "lbdev" ] ; then
+    #    if [ -n "$file" -a "$srvproto" = "lbd" ] ; then
     #      error "$init_erripcfg" nonfatal
     #    else
     #      error "$init_erripcfg"
@@ -585,9 +587,15 @@ if [ -n "${bldmod}" ] ; then
       echo noop > /sys/block/dnbd0/queue/scheduler
       echo 0 > /sys/block/dnbd0/queue/read_ahead_kb
       ;;
-    lbdev)
+    lbd)
       # using clients local block device (disk partition is to be specified)
+      set -x
       RDEV=/dev/$blddev
+      echo "$bldrfst" >>/etc/filesystems
+      realbldrfst=$bldrfst
+      # we might need to mount the base layer filesystem first before accessing
+      # e.g. a squashfs container file on it
+      bldrfst=auto
       ;;
   esac
   RWRO="ro"
@@ -623,6 +631,14 @@ if [ -n "${bldmod}" ] ; then
     usleep $i
     mount -n -t $bldrfst -o $RWRO $RDEV /mnt 2>/dev/null && break
   done
+  # check if we got the rootfilesystem directly or need to mount a container
+  # file from the mounted block device
+  if [ "${srvproto}" = "lbd" -a -f /mnt/boot/${slxconf_system_name} ]; then
+    mkdir /dev/bootdisk
+    mount --move /mnt /dev/bootdisk
+    mount -t ${realbldrfst} -o loop \
+      /dev/bootdisk/boot/${slxconf_system_name} /mnt
+  fi
   [ $DEBUGLEVEL -eq 20 ] && echo "** finished blockdev setup stuff at $(sysup)"
 elif [ -n ${iscsiserver} ] ; then
   [ $DEBUGLEVEL -eq 20 ] && echo "** started setting up iSCSI initiator at \
