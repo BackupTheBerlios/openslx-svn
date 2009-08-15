@@ -41,7 +41,7 @@ ash /etc/modprobe.base; mdev -s
 echo -e "ext3\next2\nreiserfs\nxfs\njfs\next4\nvfat" >/etc/filesystems
 # request a local block device for config and root filesystem (lbd://)
 if grep -iq '"lbd://' /proc/cmdline /etc/initramfs-setup; then
-  modprobe -a ${MODPRV} usb-storage sd_mod
+  modprobe -a ${MODPRV} ehci_hcd usb-storage sd_mod
   mdev -s
 fi
 return 0

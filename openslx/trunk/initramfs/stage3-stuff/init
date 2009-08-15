@@ -588,8 +588,7 @@ if [ -n "${bldmod}" ] ; then
       echo 0 > /sys/block/dnbd0/queue/read_ahead_kb
       ;;
     lbd)
-      # using clients local block device (disk partition is to be specified)
-      set -x
+      # using clients local block device (disk partition is to be specified
       RDEV=/dev/$blddev
       echo "$bldrfst" >>/etc/filesystems
       realbldrfst=$bldrfst
@@ -637,7 +636,7 @@ if [ -n "${bldmod}" ] ; then
     mkdir /dev/bootdisk
     mount --move /mnt /dev/bootdisk
     mount -t ${realbldrfst} -o loop \
-      /dev/bootdisk/boot/${slxconf_system_name} /mnt
+      /dev/bootdisk/boot/${slxconf_system_name} /mnt || error "$init_errloop"
   fi
   [ $DEBUGLEVEL -eq 20 ] && echo "** finished blockdev setup stuff at $(sysup)"
 elif [ -n ${iscsiserver} ] ; then

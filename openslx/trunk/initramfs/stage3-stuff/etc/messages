@@ -99,6 +99,9 @@ after this file was created on server."
 init_errlfg="  The ConfTGZ filesource was some local device which was not \
 mounted successfully.\n  Either the wrong device was given or the filesystem \
 is not known to the kernel."
+init_errloop="  The loopback mounting of the rootfs container failed. Either \
+the file is\n  not available, unreadable or problems with the filesystem \
+modules."
 init_errcfg="of this client did not finish in\n  time. You might check the \
 process list and list the modules loaded until\n  now."
 init_errhw="  For some reason the hardware autoconfig $init_errcfg"

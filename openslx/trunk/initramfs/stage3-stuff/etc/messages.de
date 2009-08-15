@@ -108,6 +108,9 @@ werden nachdem diese Datei auf dem Server erstellt wurde."
 init_errlfg="  Die ConfTGZ Quelle war ein lokales Device, welches nicht korrekt \
 eingebunden werden\n  konnte. Entweder wurde das falsche Device/Partition \
 angegeben oder das\n  Dateisystem ist dem Kernel nicht bekannt."
+init_errloop="  Der Loopback-Mounting des Rootfilesystem-Containers schlug \
+fehl. Entweder\n  die Datei existiert nicht, ist unlesbar oder es gibt \
+Probleme mit\n  den Filesystem-Modulen."
 init_errcfg="des Clients nicht rechtzeitig beendet\n  Sie sollten die Prozess \
 Liste pruefen und die Module, die bis zum jetzigen Zeitpunkt geladen wurden."
 init_errhw="  Aus irgendeinem Grund wurde die Hardware Auto-Konfiguration \
