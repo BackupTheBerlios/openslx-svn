@@ -91,10 +91,10 @@ ID=$$
 export VBOX_USER_HOME="/tmp/vbox-${USER}-${ID}"
 
 # Import Image to VirtualBox, which won't get changed
-VBoxManage -q registerimage disk ${diskfile} -type immutable
+VBoxManage registerimage disk ${diskfile} -type immutable
 
 # Get ID of VBox Image...
-diskuid="$(VBoxManage -q showvdiinfo ${diskfile} |grep UUID|awk '{ print $2; }')"
+diskuid="$(VBoxManage showvdiinfo ${diskfile} |grep UUID|awk '{ print $2; }')"
 # Create Image and register it, so we are able to modify and start it
 VBoxManage createvm -name "${ID}" -register
 
@@ -105,35 +105,35 @@ VBoxManage createvm -name "${ID}" -register
 ################################################################################
 
 ## Add harddisk
-VBoxManage -q modifyvm "${ID}" -hda ${diskuid}
+VBoxManage modifyvm "${ID}" -hda ${diskuid}
 
 ## Configure VM memory
-VBoxManage -q modifyvm "${ID}" -memory ${mem}
+VBoxManage modifyvm "${ID}" -memory ${mem}
 
 ## Add cddrives
 ## TODO: merge to new version, where run-virt.include has our drives
-#VBoxManage -q modifyvm "${ID}" -dvd host:${cdrs}
+#VBoxManage modifyvm "${ID}" -dvd host:${cdrs}
 
 # Enable hardware virtualization
 # TODO: check if CPU supports hw virtualization
-#VBoxManage -q modifyvm "${ID}" -hwvirtex on
+#VBoxManage modifyvm "${ID}" -hwvirtex on
 
 # HDD as boot device
-VBoxManage -q modifyvm "${ID}" -boot1 disk
+VBoxManage modifyvm "${ID}" -boot1 disk
 
 # enable audio (oss|null|none|alsa|pulse). OSS is backwardcompatible to v2.0
-VBoxManage -q modifyvm "${ID}" -audio oss
+VBoxManage modifyvm "${ID}" -audio oss
 
 # supress License and Message
 # TODO: Not clear if we are allowed to do this
-VBoxManage -q setextradata global "GUI/LicenseAgreed" "7"
-VBoxManage -q setextradata global "GUI/SuppressMessages" ",remindAboutAutoCapture"
-VBoxManage -q setextradata global "GUI/RegistrationData" "triesLeft=0"
+VBoxManage setextradata global "GUI/LicenseAgreed" "7"
+VBoxManage setextradata global "GUI/SuppressMessages" ",remindAboutAutoCapture"
+VBoxManage setextradata global "GUI/RegistrationData" "triesLeft=0"
 
 # if we have enough memory, we can put the snapshots (changes on immutable
 # disk) there
 if [ -n ${snapshotdir} ]; then
-    VBoxManage -q modifyvm "${ID}" --snapshotfolder "${snapshotdir}"
+    VBoxManage modifyvm "${ID}" -snapshotfolder "${snapshotdir}"
 fi
 
 # Operating system. Possible: VBoxManage list ostypes
@@ -143,15 +143,15 @@ fi
 # so we can have a "compatibility to vmware config" section. Or include
 # it into vmchooser?
 if [ "${vmostype}" = "winxppro" -o "${vmostype}" = "WindowsXP" ]; then
-    VBoxManage -q modifyvm "${ID}" --ostype "WindowsXP"
+    VBoxManage modifyvm "${ID}" -ostype "WindowsXP"
 elif [ "${vmostype}" = "winvista" -o "${vmostype}" = "WindowsVista" ]; then
-    VBoxManage -q modifyvm "${ID}" --ostype "WindowsVista"
+    VBoxManage modifyvm "${ID}" -ostype "WindowsVista"
 elif [ "${vmostype}" = "Windows7" ]; then
-    VBoxManage -q modifyvm "${ID}" --ostype "Windows7"
+    VBoxManage modifyvm "${ID}" -ostype "Windows7"
 elif [ "${vmostype}" = "linux" -o "${vmostype}" = "Linux26" ]; then
-    VBoxManage -q modifyvm "${ID}" --ostype "Linux26"
+    VBoxManage modifyvm "${ID}" -ostype "Linux26"
 elif [ -n "${vmostype}" ]; then
-    VBoxManage -q modifyvm "${ID}" --ostype "${vmostype}"
+    VBoxManage modifyvm "${ID}" -ostype "${vmostype}"
 fi
 
 
@@ -160,23 +160,23 @@ fi
 if [ "${network_kind}" = "bridge" ]; then
 	network_kind="bridged"
 fi
-VBoxManage -q modifyvm "${ID}" --nic1 "${network_kind}"
+VBoxManage modifyvm "${ID}" -nic1 "${network_kind}"
 if [ "${network_kind}" = "bridged" ]; then
-    VBoxManage -q modifyvm "${ID}" --bridgeadapter1 "eth1"
+    VBoxManage modifyvm "${ID}" -bridgeadapter1 "eth1"
 fi
 if [ "${network_kind}" = "hostonly" ]; then
-    VBoxManage -q modifyvm "${ID}" --hostonlyadapter1 "vboxnet0"
+    VBoxManage modifyvm "${ID}" -hostonlyadapter1 "vboxnet0"
 fi
 
 # modify macaddress
 mac=$(echo ${mac}|sed 's/://') # ${mac/:/}
-VBoxManage -q modifyvm "${ID}" --macaddress1 "0050560D${mac}"
+VBoxManage modifyvm "${ID}" -macaddress1 "0050560D${mac}"
 
 
 # usb configuration
 # not available in free -ose version
-#VBoxManage -q modifyvm "${ID}" --usb on
-#VBoxManage -q modifyvm "${ID}" --usbehci on
+#VBoxManage modifyvm "${ID}" -usb on
+#VBoxManage modifyvm "${ID}" -usbehci on
 
 
 # finally set env for run-virt.sh
