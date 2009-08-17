@@ -220,6 +220,18 @@ sub getDefaultPathList
     ) ];
 }
 
+sub addUclibLdconfig
+{
+    my $self       = shift;
+    my $ldpath     = shift;
+
+    open(OUTFILE, ">", "$ldpath/etc/ld.so.conf.d/uclib.conf") 
+      or die ("something went wrong");
+    print OUTFILE "/opt/openslx/uclib-rootfs/lib\n";
+    print OUTFILE "/opt/openslx/uclib-rootfs/usr/lib\n";
+    close(OUTFILE);
+}
+
 sub updateDistroConfig
 {
     if (slxsystem("ldconfig")) {

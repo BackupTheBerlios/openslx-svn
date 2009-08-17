@@ -266,6 +266,7 @@ sub installVendorOS
     );
 
     $self->_copyUclibcRootfs();
+    $self->{distro}->updateDistroConfig();
     $self->_touchVendorOS();
     $self->addInstalledVendorOSToConfigDB();
     return;
@@ -1051,10 +1052,10 @@ sub _copyUclibcRootfs
 {
     my $self = shift;
     my $targetRoot = shift || $self->{'vendor-os-path'};
+    my $distro = $self->{distro};
 
     vlog(0, _tr("copying uclibc-rootfs into vendor-OS ...\n"));
 
-    # my $targetRoot = $self->{'vendor-os-path'};
     my $target     = "$targetRoot/opt/openslx/uclib-rootfs";
 
     if (system("mkdir -p $target")) {
@@ -1097,6 +1098,7 @@ sub _copyUclibcRootfs
         or die _tr("unable to copy to target '%s', giving up! (%s)",
                    $target, $!);
     # add the uclibs to the ld.so.conf
+    $distro->addUclibLdconfig($targetRoot);
 
     # write version of uclibc-rootfs original into a file in order to be
     # able to check the up-to-date state later (in the config-demuxer)
