@@ -265,8 +265,19 @@ sub installVendorOS
         )
     );
 
+    # add the uclibs and tools to the stage1 and add them to library search
+    # path
     $self->_copyUclibcRootfs();
-    $self->{distro}->updateDistroConfig();
+    callInSubprocess(
+        sub {
+            $self->_callChrootedFunction({
+            chrootDir    => $self->{'vendor-os-path'},
+            function     => sub {
+                $self->{'distro'}->addUclibLdconfig();
+        },
+        updateConfig => 1,
+        });
+    });
     $self->_touchVendorOS();
     $self->addInstalledVendorOSToConfigDB();
     return;
@@ -349,9 +360,19 @@ sub cloneVendorOS
             )
         );
     }
-
+    # add the uclibs and tools to the stage1 and add them to library search
+    # path
     $self->_copyUclibcRootfs();
-    $self->{distro}->updateDistroConfig();
+    callInSubprocess(
+        sub {
+            $self->_callChrootedFunction({
+            chrootDir    => $self->{'vendor-os-path'},
+            function     => sub {
+                $self->{'distro'}->addUclibLdconfig();
+        },
+        updateConfig => 1,
+        });
+    });
     $self->_touchVendorOS();
     $self->addInstalledVendorOSToConfigDB();
     return;
@@ -1098,8 +1119,6 @@ sub _copyUclibcRootfs
     close($rsyncFH)
         or die _tr("unable to copy to target '%s', giving up! (%s)",
                    $target, $!);
-    # add the uclibs to the ld.so.conf
-    $distro->addUclibLdconfig($targetRoot);
 
     # write version of uclibc-rootfs original into a file in order to be
     # able to check the up-to-date state later (in the config-demuxer)
