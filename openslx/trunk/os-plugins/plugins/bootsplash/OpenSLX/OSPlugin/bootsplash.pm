@@ -130,7 +130,7 @@ sub installationPhase
     my $do_stop = unshiftHereDoc(<<'    End-of-Here');
         /opt/openslx/plugin-repo/bootsplash/bin/splashy shutdown 
         sleep 1
-        uclibc-wrapper /opt/openslx/plugin-repo/bootsplash/bin/splashy_update \
+        /opt/openslx/plugin-repo/bootsplash/bin/splashy_update \
           "progress 100" 2>/dev/null
     End-of-Here
    
