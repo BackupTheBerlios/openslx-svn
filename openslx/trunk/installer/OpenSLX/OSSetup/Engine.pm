@@ -351,6 +351,7 @@ sub cloneVendorOS
     }
 
     $self->_copyUclibcRootfs();
+    $self->{distro}->updateDistroConfig();
     $self->_touchVendorOS();
     $self->addInstalledVendorOSToConfigDB();
     return;
