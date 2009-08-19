@@ -1,0 +1,192 @@
+# run-virtualbox.include
+#
+# Copyright (c) 2009 - OpenSLX GmbH
+#
+# This program/file is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org
+#
+# Include script for running the Virtual Box on an OpenSLX client via the
+# run-virt.sh. The stuff is copied to /etc/opt/openslx/run-virtualbox.include
+# during stage3.
+
+# include general configuration from vmchooser
+. /etc/opt/openslx/run-virt.include
+
+# memory part equal to vmware plugin
+# percentage of memory to use for virtualbox in standard case
+permem=30
+if [ "${totalmem}" -ge "1600" ]; then
+  permem=40
+fi
+# check if /tmp is on harddisk
+if grep -qe "/dev/.* /tmp " /proc/mounts ; then
+  permem=60
+  id44="1"
+  # Hack, if more than 2,5G RAM use 40% of Ram and write vmem into Ram as well
+  # (40% vmware | 40% confdir(vmem...) | 20% host
+  # VMplayer 2+ issue
+  if [ "${totalmem}" -ge "2500" ]; then
+    permem=40
+    mkdir /dev/shm/vbox/${USER}
+    snapshotdir=/dev/shm/vbox/$USER
+  fi
+fi
+mem=$(expr ${totalmem} / 100 \* ${permem})
+if [ "${id44}" = "1" ]; then
+  memhost=$(expr ${totalmem} - ${mem})
+else
+  memhost=$(expr ${totalmem} - ${mem} - ${mem})
+fi
+
+#permem=40
+#mem=$(expr ${totalmem} * ${permem})
+
+if [ "${mem}" -lt "256" ] || [ "${memhost}" -lt "256" ]; then
+  writelog "\tMemory out of range: ${mem} MB (guest) / ${memhost} MB (host)!"
+  writelog "\tMin. 256 MB for host and guest!"
+  exit 1
+fi
+
+
+
+# most of the following does not make much sense yet ...
+#
+# virtual fd/cd/dvd and drive devices, floppy b: for configuration
+# if $floppy_0 from run-virt.include set then fdtest="TRUE"
+fdtest=
+fdtest=${floppy_0:+"TRUE"}
+# if $fdtest not set floppy0="FALSE", else "TRUE"
+floppy0=${fdtest:-"FALSE"}
+floppy1="TRUE"
+floppy1name="/var/lib/virt/vmchooser/loopimg/fd.img"
+# if $cdrom_0 from run-virt.include set then cdtest="TRUE"
+cdtest=
+cdtest=${cdrom_0:+"TRUE"}
+# if $cdtest not set cdrom0="FALSE", else "TRUE"
+cdrom0=${cdtest:-"FALSE"}
+# if $cdrom_1 from run-virt.include set then cdtest="TRUE"
+cdtest=
+cdtest=${cdrom_1:+"TRUE"}
+# if $cdtest not set cdrom1="FALSE", else "TRUE"
+cdrom1=${cdtest:-"FALSE"}
+# ide is expected default, test for the virtual disk image type should
+# be done while creating the runscripts ...
+ide="TRUE"
+hddrv="ide"
+
+
+################################################################################
+### Pepare env and and configure Image
+################################################################################
+
+# Current ID, to make sure it won't run into conflicts if started more
+# as once at the same time, else delete would make the trick...
+ID=$$
+# Don't use $HOME/.VirtualBox!
+export VBOX_USER_HOME="/tmp/vbox-${USER}-${ID}"
+
+# Import Image to VirtualBox, which won't get changed
+VBoxManage -nologo registerimage disk ${diskfile} -type immutable
+
+# Get ID of VBox Image...
+diskuid="$(VBoxManage -nologo showvdiinfo ${diskfile} |grep UUID|awk '{ print $2; }')"
+# Create Image and register it, so we are able to modify and start it
+VBoxManage -nologo createvm -name "${ID}" -register
+
+################################################################################
+###
+### Modify VM
+###
+################################################################################
+
+## Add harddisk
+VBoxManage -nologo modifyvm "${ID}" -hda ${diskuid}
+
+## Configure VM memory
+VBoxManage -nologo modifyvm "${ID}" -memory ${mem}
+
+## Add cddrives
+## TODO: merge to new version, where run-virt.include has our drives
+#VBoxManage -nologo modifyvm "${ID}" -dvd host:${cdrs}
+
+# Enable hardware virtualization
+# TODO: check if CPU supports hw virtualization
+#VBoxManage -nologo modifyvm "${ID}" -hwvirtex on
+
+# HDD as boot device
+VBoxManage -nologo modifyvm "${ID}" -boot1 disk
+
+# enable audio (oss|null|none|alsa|pulse). OSS is backwardcompatible to v2.0
+VBoxManage -nologo modifyvm "${ID}" -audio oss
+
+# supress License and Message
+# TODO: Not clear if we are allowed to do this
+VBoxManage -nologo setextradata global "GUI/LicenseAgreed" "7"
+VBoxManage -nologo setextradata global "GUI/SuppressMessages" ",remindAboutAutoCapture"
+VBoxManage -nologo setextradata global "GUI/RegistrationData" "triesLeft=0"
+
+# if we have enough memory, we can put the snapshots (changes on immutable
+# disk) there
+if [ -n ${snapshotdir} ]; then
+    VBoxManage -nologo modifyvm "${ID}" -snapshotfolder "${snapshotdir}"
+fi
+
+# Operating system. Possible: VBoxManage -nologo list ostypes
+# WindowsXP, WindowsVista, Windows7, Linux26 etc.
+# keep compatibility to VMware
+# Todo: maybe rewrite, to reduce checks, merge it with network option,
+# so we can have a "compatibility to vmware config" section. Or include
+# it into vmchooser?
+if [ "${vmostype}" = "winxppro" -o "${vmostype}" = "WindowsXP" ]; then
+    VBoxManage -nologo modifyvm "${ID}" -ostype "WindowsXP"
+elif [ "${vmostype}" = "winvista" -o "${vmostype}" = "WindowsVista" ]; then
+    VBoxManage -nologo modifyvm "${ID}" -ostype "WindowsVista"
+elif [ "${vmostype}" = "Windows7" ]; then
+    VBoxManage -nologo modifyvm "${ID}" -ostype "Windows7"
+elif [ "${vmostype}" = "linux" -o "${vmostype}" = "Linux26" ]; then
+    VBoxManage -nologo modifyvm "${ID}" -ostype "Linux26"
+elif [ -n "${vmostype}" ]; then
+    VBoxManage -nologo modifyvm "${ID}" -ostype "${vmostype}"
+fi
+
+
+# Network Configuration
+# only bridge differes to vmware. Compatibility option
+if [ "${network_kind}" = "bridge" ]; then
+	network_kind="bridged"
+fi
+VBoxManage -nologo modifyvm "${ID}" -nic1 "${network_kind}"
+if [ "${network_kind}" = "bridged" ]; then
+    VBoxManage -nologo modifyvm "${ID}" -bridgeadapter1 "eth1"
+fi
+if [ "${network_kind}" = "hostonly" ]; then
+    VBoxManage -nologo modifyvm "${ID}" -hostonlyadapter1 "vboxnet0"
+fi
+
+# modify macaddress
+mac=$(echo ${mac}|sed 's/://') # ${mac/:/}
+VBoxManage -nologo modifyvm "${ID}" -macaddress1 "0050560D${mac}"
+
+
+# usb configuration
+# not available in free -ose version
+#VBoxManage -nologo modifyvm "${ID}" -usb on
+#VBoxManage -nologo modifyvm "${ID}" -usbehci on
+
+
+# finally set env for run-virt.sh
+################################################################################
+
+# set the variables appropriately (several interfaces with different names)
+#VIRTCMD=$(which virtualbox 2>/dev/null)
+VIRTCMD=$(which VBoxManage -nologo 2>/dev/null)
+VIRTCMDOPTS="startvm ${ID} -type gui"
+
+# todo: for debugging purpose during development
+echo "\n  export VBOX_USER_HOME=\"/tmp/vbox-${USER}-${ID}\""
+echo "  VBoxManage -nologo $VIRTCMDOPTS\n\n"
