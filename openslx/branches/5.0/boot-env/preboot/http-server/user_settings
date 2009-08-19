@@ -1,0 +1,101 @@
+#!/usr/bin/perl -w
+# Copyright (c) 2009 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your feedback to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org
+#
+# cgi-bin script that accepts user settings and stores them in a special
+# folder on the openslx server
+
+use strict;
+use warnings;
+
+use CGI;
+use CGI::Carp qw(fatalsToBrowser);
+use File::Path;
+
+# add openslx stuff to @INC
+use FindBin;
+use lib "$FindBin::RealBin/../../../../lib";
+use lib "$FindBin::RealBin";
+
+# read default config
+use OpenSLX::Basics;
+openslxInit();
+
+#    die "*** Taint mode must be active! ***" unless ${^TAINT};
+
+my $cgi = CGI->new;
+
+my $system = $cgi->param('system') || '';
+my $client = $cgi->param('client') || '';
+my $prebootID = $cgi->param('preboot_id') || '';
+my @Feldnamen = $cgi->param();
+
+die "must give 'system' ($system), 'client' ($client) and 'preboot_id' ($prebootID)!\n"
+    unless $system && $client && $prebootID;
+
+my $webPath = "$openslxConfig{'public-path'}/preboot";
+my $src = "$webPath/client-config/$system/$prebootID.tgz";
+my $destPath = "$webPath/$prebootID/client-config/$system";
+mkpath($destPath);
+system(qq{cp $src $destPath/$client.tgz});
+
+print
+    $cgi->header(-charset => 'iso8859-1', 
+                 -expires => '+1h'),
+    $cgi->start_html(-title =>'OpenSLX Client Online Configuration',
+                     -meta   =>{'keywords'   =>'OpenSLX, Online, Configuration',
+                                'description'=>'OpenSLX Client Online Configuration'},
+                     -BGCOLOR =>'blue',
+                     -TEXT    =>'white',
+                     -LINK    =>'red',
+                     -VLINK   =>'gray',
+                     -ALINK   =>'black'),
+    $cgi->h1('OpenSLX Client Online Configuration'),
+    $cgi->br();
+if ($cgi->param('absenden')) {
+    print $cgi->h2("Auswertung");
+    display($cgi);
+    }
+else {
+    print $cgi->h2("Eingabe");
+    form($cgi);
+    }
+print
+    $cgi->end_html();
+
+sub form{
+    print
+        $cgi->p("Configuration for Client $client using System $system"),
+        $cgi->start_form().
+          $cgi->table({-border => 1},
+             $cgi->Tr([
+                $cgi->td([
+                   $cgi->strong('Name : ').
+                   $cgi->textfield(-name =>'name', -size => 40)
+                ]),
+                $cgi->td([
+                   'E-Mail : '.
+                   $cgi->textfield(-name =>'mail', -size => 40)
+                ]),
+                $cgi->td([
+                   $cgi->strong('Text : ').
+                   $cgi->textarea({-name =>'text', -columns =>50, -rows
+                   =>5})
+                ]),
+                $cgi->td([
+                   $cgi->submit(-name => 'absenden', -value =>'absenden').
+                   $cgi->reset(-value =>'verwerfen')
+                ])
+             ])
+           ).
+          $cgi->end_form();
+      print
+          $cgi->p("Ende");
+}

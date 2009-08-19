@@ -24,7 +24,6 @@ use File::Path;
 
 use OpenSLX::Basics;
 use OpenSLX::ConfigDB qw(:support);
-use OpenSLX::MakeInitRamFS::Engine::Preboot;
 use OpenSLX::Utils;
 
 sub initialize
@@ -61,7 +60,8 @@ sub writeBootloaderMenuFor
 
     my $prebootSystemInfo
         = clone($self->_pickSystemWithNewestKernel($systemInfos));
-    $self->_createImage($client, $prebootSystemInfo);
+
+    $self->_createImages($client, $prebootSystemInfo);
 
     my $externalClientName   = externalConfigNameForClient($client);
     my $bootloaderPath       = "$self->{'target-path'}/bootloader";
@@ -82,12 +82,13 @@ sub writeBootloaderMenuFor
     }
     my $bootmenuEntries = '';
     my $entryState = 'on';
+    my $counter = 1;
     foreach my $info (sort { $a->{label} cmp $b->{label} } @$systemInfos) {
         my $vendorOSName = $info->{'vendor-os'}->{name};
         my $kernelName   = basename($info->{'kernel-file'});
         my $append       = $info->{attrs}->{kernel_params} || '';
         $append .= " $clientAppend";
-        $bootmenuEntries .= qq{ "$info->{label}" "" $entryState};
+        $bootmenuEntries .= qq{ "$counter" "$info->{label}" };
         $entryState = 'off';
 
         # create a file containing the boot-configuration for this system
@@ -97,15 +98,17 @@ sub writeBootloaderMenuFor
             initramfs="$vendorOSName/$info->{'initramfs-name'}"
             append="$append"
         End-of-Here
-        my $systemFile = "$bootloaderConfigPath/$info->{label}";
+        my $systemFile = "$bootloaderConfigPath/$info->{name}";
         spitFile(
             $systemFile, $systemDescr, { 'io-layer' => 'encoding(iso8859-1)' } 
         )    unless $self->{'dry-run'};
+        slxsystem(qq{ln -sf $info->{name} $bootloaderConfigPath/$counter});
+        $counter++;
     }
 
     my $entryCount = @$systemInfos;
     my $bootmenu = unshiftHereDoc(<<"    End-of-Here");
-        --radiolist "OpenSLX Boot Menu" 20 65 $entryCount $bootmenuEntries
+        --no-cancel --menu "OpenSLX Boot Menu" 20 65 $entryCount $bootmenuEntries
     End-of-Here
     
     if (!$self->{'dry-run'}) {
@@ -116,6 +119,7 @@ sub writeBootloaderMenuFor
         my $prebootBasePath 
             = "$openslxConfig{'base-path'}/share/boot-env/preboot";
         slxsystem(qq{cp $prebootBasePath/preboot.sh $bootloaderConfigPath/});
+        slxsystem(qq{cp -r $prebootBasePath/preboot-scripts $bootloaderConfigPath/});
         slxsystem(qq{chmod a+x $bootloaderConfigPath/preboot.sh});
 
         # create a tar which can/will be downloaded by prebooting clients
@@ -125,6 +129,40 @@ sub writeBootloaderMenuFor
         rmtree($bootloaderConfigPath);
     }
 
+    return 1;
+}
+
+sub _createImages
+{
+    my $self   = shift;
+    my $client = shift;
+    my $info   = shift;
+
+    my %mediaMap = (
+        'cd'     => 'CD',
+    );
+    my $prebootMedia = $client->{attrs}->{preboot_media} || '';
+    if (!$prebootMedia) {
+        warn _tr(
+            "no preboot-media defined for client %s, no images will be generated!",
+            $client->{name}
+        );
+        return 0;
+    }
+    foreach my $mediumName (split m{, }, $prebootMedia) {
+        my $moduleName = $mediaMap{$mediumName}
+            or die _tr(
+                "'%s' is not one of the supported preboot-medias (cd)", 
+                $mediumName
+            );
+
+        my $prebootMedium = instantiateClass(
+            "OpenSLX::BootEnvironment::Preboot::$moduleName"
+        );
+        $prebootMedium->initialize($self);
+        $prebootMedium->createImage($client, $info);
+    }
+    
     return 1;
 }
 
@@ -166,60 +204,6 @@ sub _pickSystemWithNewestKernel
         die _tr("unable to pick a system to be used for preboot!");
     }
     return $systemWithNewestKernel;
-}
-
-sub _makePrebootInitRamFS
-{
-    my $self       = shift;
-    my $info       = shift;
-    my $initramfs  = shift;
-    my $client     = shift;
-
-    my $vendorOS = $info->{'vendor-os'};
-    my $kernelFile = basename(followLink($info->{'kernel-file'}));
-
-    my $attrs = clone($info->{attrs} || {});
-
-    my $bootURI = $client->{attrs}->{boot_uri};
-    if (!$bootURI) {
-        die _tr("client $client->{name} needs an URI in attribute 'boot_uri' to be used for preboot!");
-    }
-
-    chomp(my $slxVersion = qx{slxversion});
-
-    my $params = {
-        'attrs'          => $attrs,
-        'export-name'    => undef,
-        'export-uri'     => undef,
-        'initramfs'      => $initramfs,
-        'kernel-params'  
-            => [ split ' ', ($info->{attrs}->{kernel_params} || '') ],
-        'kernel-version' => $kernelFile =~ m[-(.+)$] ? $1 : '',
-        'plugins'        => '',
-        'root-path'
-            => "$openslxConfig{'private-path'}/stage1/$vendorOS->{name}",
-        'slx-version'    => $slxVersion,
-        'system-name'    => $info->{name},
-        'preboot-id'     => $client->{name},
-        'boot-uri'       => $bootURI,
-    };
-
-    # TODO: make debug-level an explicit attribute, it's used in many places!
-    my $kernelParams = $info->{attrs}->{kernel_params} || '';
-    if ($kernelParams =~ m{debug(?:=(\d+))?}) {
-        my $debugLevel = defined $1 ? $1 : '1';
-        $params->{'debug-level'} = $debugLevel;
-    }
-
-    my $makeInitRamFSEngine 
-        = OpenSLX::MakeInitRamFS::Engine::Preboot->new($params);
-    $makeInitRamFSEngine->execute($self->{'dry-run'});
-
-    # copy back kernel-params, as they might have been changed (by plugins)
-    $info->{attrs}->{kernel_params} 
-        = join ' ', $makeInitRamFSEngine->kernelParams();
-
-    return;
 }
 
 1;

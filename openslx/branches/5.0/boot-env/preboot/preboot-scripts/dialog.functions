@@ -1,0 +1,105 @@
+# Copyright (c) 2009 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+# dialog.functions
+#   provides shell scripts for dialog handling
+# -----------------------------------------------------------------------------
+
+# set -x
+
+if [ "x" == "x$DIALOG_HEIGHT" ]; then
+    DIALOG_HEIGHT="10"
+fi
+
+if [ "x" == "x$DIALOG_WIDTH" ]; then
+   DIALOG_WIDTH="40"
+fi
+
+_ddownload_checkpercentage () {
+  local lf=$1
+  percentage=$(tail -n 5 $lf | sed 's/\.//g' | awk '{print $2}'| sed -n "s/%//p"| tail -n 1)
+  return $percentage
+}
+
+ddownload () {
+    local dl_url=$1
+    local dl_titel=$2
+    local dl_outfile=$3
+    local dl_logfile=$4
+
+    local dl_server=$(dirname $dl_url)
+    local dl_file=$(basename $dl_url)
+
+    local dl_count
+
+    if [ "x" == "x$dl_logfile" ]; then
+        dl_logfile="/tmp/logfile.$$"
+    fi
+
+    if [ "x" == "x$dl_outfile" ]; then
+        dl_outfile="$dl_file"
+    fi
+
+    if [ "x" == "x$dl_title" ]; then
+        dl_title="Downloading $dl_file .."
+    fi
+    
+    if [ -f "$dl_logfile" ]; then
+        rm $dl_logfile
+    fi
+
+    # start wget in background
+    wget -v -b $dl_url -o "$dl_logfile" -O $dl_outfile
+    
+    sleep 0.1;
+    _ddownload_checkpercentage "$dl_logfile"
+    
+    dl_count=$?
+
+    while [ $dl_count -le 99 ];
+    do
+        echo $dl_count |dialog --gauge "$dl_title" $DIALOG_HEIGHT $DIALOG_WIDTH
+        sleep 0.5
+        _ddownload_checkpercentage "$dl_logfile"
+        dl_count=$?
+    done
+    
+    local finished=0
+    while [ ! $finished ]; do
+        finished=$(tail -n 4 $dl_logfile | grep -c "$dl_file");
+    done
+ 
+    echo 100 | dialog  --gauge "$dl_title" $DIALOG_HEIGHT $DIALOG_WIDTH;
+    
+}
+
+
+
+menu_firststart () {
+    while [ "x$(cat result)" = "x" ] ; do
+        dialog --menu "OpenSLX" 30 60 22 \
+        01 "Kiosk" \
+        02 "Kiosk Setup" \
+        03 "Custom System" \
+        2>result
+    done
+}
+
+menu_oldconfig () {
+    oldconf=$1;
+    while [ "x$(cat result)" = "x" ] ; do
+        dialog --menu "OpenSLX" 30 60 22 \
+        01 "Kiosk" \
+        02 "Kiosk Setup" \
+        03 "Custom System" \
+        04 "Custom System"
+        2>result
+    done
+}

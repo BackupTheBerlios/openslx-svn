@@ -38,7 +38,7 @@ sub applyChanges
     my $self   = shift;
     my $engine = shift;
     # filter modules which are part of the main kernel already
-    $engine->_addFilteredKernelModules( qw( af_packet hid usbhid unix ));
+    $engine->_addFilteredKernelModules( qw( af_packet hid hid-bright usbhid unix vesafb fbcon ));
 
     return;
 }

@@ -1,0 +1,39 @@
+# this include file will be loaded at the bottom of the menu after the system
+# labels, please define only further menus and systems
+# for theme configuration use theme.conf in your theme directory
+# general settings can be set via slxsettings
+# please copy to pxemenu-bottom if needed
+
+## example: shutdown label in menu
+#LABEL shutdown
+#       MENU LABEL ^Shutdown PC
+#       KERNEL kernel-shutdown
+#       APPEND initrd=initramfs-shutdown quiet
+
+## help label not selectable
+#LABEL help
+#       MENU LABEL Press 'F1' for help
+#       MENU DISABLE
+
+## example: add an additional menu on the same tftp server
+#LABEL test
+#       MENU LABEL ^Testmeu
+#       KERNEL vesamenu.c32
+#       APPEND testmenu
+
+## example: add an additional menu on a different tftp server, with passwd
+#LABEL test2
+#       MENU LABEL ^Testmeu
+#       MENU PASSWD test
+#       KERNEL pxechain.com
+#       APPEND 192.168.101.102::pxelinux.0
+
+## example blank line / menu separator
+#MENU SEPARATOR
+
+## example localboot with passwd
+#LABEL local
+#       MENU LABEL Boot from local ^Harddisk
+#       MENU PASSWD local
+#       localboot 0
+

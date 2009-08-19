@@ -117,8 +117,48 @@ sub writeBootloaderMenuFor
                     ? "$menuMargin"
                     : "0";
             my $marginAsText = ' ' x $margin;
+
+            my $menuWidth;
+            while ($pxeConfig =~ m{^\s*MENU WIDTH (\S+?)\s*$}gims) {
+                chomp($menuWidth = $1);
+            }
+            my $width
+                = defined $menuWidth
+                    ? "$menuWidth"
+                    : "80";
+               $width = $width - 2* $margin + 2;
+
+            my @atomicHelpText = split(/ /, $helpText);
+            my $lineCounter = 0;
+
+            $helpText = "";
+
+            foreach my $word (@atomicHelpText){
+                if ($lineCounter + length($word) + 1 < $width) {
+                     $helpText .= "$word ";
+                     $lineCounter += length($word) + 1;
+                } else {
+                     my $nobreak = 1;
+                     while ($nobreak == 1) {
+                        my $pos = index($word,"-");
+                        $nobreak = 0;
+                        if ($pos != -1) {
+                            if ($lineCounter + $pos + 1 < $width) {
+                                $helpText .= substr($word, 0, $pos+1);
+                                $word = substr($word, $pos + 1, length($word));
+                                $nobreak = 1;
+                            }
+                        }
+                     }
+                     $helpText .= "\n$word ";
+                     $lineCounter = length($word);
+                }
+            } 
+
             $helpText =~ s{^}{$marginAsText}gms;
-            $slxLabels .= "\tTEXT HELP\n$helpText\n\tENDTEXT\n";
+            $slxLabels .= "\tTEXT HELP\n";
+            $slxLabels .= "$helpText\n";
+            $slxLabels .= "\tENDTEXT\n";
         }
     }
     # now add the slx-labels (inline or appended) and write the config file
@@ -126,7 +166,7 @@ sub writeBootloaderMenuFor
         $pxeConfig .= $slxLabels;
         # fetch PXE-bottom iclude, if exists (overwrite existing definitions)
         my $pxeBottomFile
-            = "$openslxConfig{'config-path'}/boot-env/pxe/menu-bottom";
+            = "$openslxConfig{'config-path'}/boot-env/syslinux/pxemenu-bottom";
         if (-e $pxeBottomFile) {
             $pxeConfig .= "\n# configuration from include $pxeBottomFile\n";
             $pxeConfig .= slurpFile($pxeBottomFile);
@@ -149,7 +189,7 @@ sub _getTemplate
 
     my $basePath   = $openslxConfig{'base-path'};
     my $configPath = $openslxConfig{'config-path'};
-    my $pxeTheme   = $openslxConfig{'pxe-theme'};
+    my $pxeTheme   = $openslxConfig{'syslinux-theme'};
 
     my ($sec, $min, $hour, $day, $mon, $year) = (localtime);
     $mon++;
@@ -170,9 +210,9 @@ sub _getTemplate
     # let user stuff in config path win over our stuff in base path
     my $pxeThemePath;
     my $pxeThemeInConfig
-        = "$configPath/boot-env/pxe/themes/${pxeTheme}";
+        = "$configPath/boot-env/syslinux/themes/${pxeTheme}";
     my $pxeThemeInBase
-        = "$basePath/share/boot-env/pxe/themes/${pxeTheme}";
+        = "$basePath/share/boot-env/syslinux/themes/${pxeTheme}";
     if (-e "$pxeThemeInConfig/theme.conf") {
         $pxeThemePath = $pxeThemeInConfig;
     }
@@ -211,7 +251,7 @@ sub _getTemplate
 
     # fetch PXE-include, if exists (overwrite existing definitions)
     my $pxeIncludeFile
-        = "$openslxConfig{'config-path'}/boot-env/pxe/menu-include";
+        = "$openslxConfig{'config-path'}/boot-env/syslinux/pxemenu-include";
     if (-e $pxeIncludeFile) {
         $pxeTemplate .= "\n# configuration from include $pxeIncludeFile\n";
         $pxeTemplate .= slurpFile($pxeIncludeFile);
@@ -239,7 +279,7 @@ sub _prepareBootloaderConfigFolder
             'mboot.c32', 'kernel-shutdown', 'initramfs-shutdown') {
             if (!-e "$pxePath/$file") {
                 slxsystem(
-                    qq[cp -p "$basePath/share/boot-env/pxe/$file" $pxePath/]
+                    qq[cp -p "$basePath/share/boot-env/syslinux/$file" $pxePath/]
                 );
             }
         }
