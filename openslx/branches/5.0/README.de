@@ -1,9 +1,12 @@
 WILLKOMMEN
 ----------
-OpenSLX - Open StateLess eXtensions Version 5.0.0Pre2
+OpenSLX - Open StateLess eXtensions Version 5.0.0Pre6
 
 OpenSLX ist ein Softwarepaket zum Einrichten, Verwalten und Booten von 
 "Stateless Client Systems" (a.k.a. "diskless X stations").
+
+Es gab einige wesentliche Erneuerungen, wie beispielsweise PreBoot, die
+nun Bestandteil des stabilen Zweigs wurden ... 
 
 Informationen zur Installation und benötigten Paketen finden sich im
 Unterverzeichnis doc/ (insbesondere einstieg.txt), weiterführende Informationen
