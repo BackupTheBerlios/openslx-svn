@@ -90,6 +90,10 @@ I<slxsettings>-script, so please look there if you'd like to know more.
     # options useful during development only:
     #
     'debug-confess' => '0',
+    #
+    # only settable programmatically:
+    #
+    'log-pids' => '0',
 
     #
     # extended settings follow, which are only supported by slxsettings,
@@ -104,10 +108,10 @@ I<slxsettings>-script, so please look there if you'd like to know more.
     'mirrors-to-use-count'               => '5',
     'ossetup-max-try-count'              => '5',
     'pxe-passwd'                         => 'secret',
-    'pxe-theme'                          => 'openslx',
     'pxe-timeout'                        => '100',
     'pxe-title'                          => 'Welcome to OpenSLX',
     'pxe-totaltimeout'                   => '600',
+    'syslinux-theme'                     => 'openslx',
 );
 chomp($openslxConfig{'locale-charmap'});
 
@@ -271,7 +275,11 @@ sub vlog
     if (substr($str, -1, 1) ne "\n") {
         $str .= "\n";
     }
-    print $openslxLog $str;
+    if ($openslxConfig{'log-pids'}) {
+        print $openslxLog "$$: $str";
+    } else {
+        print $openslxLog $str;
+    }
     return;
 }
 

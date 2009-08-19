@@ -624,7 +624,7 @@ sub grabLock
             local $| = 1;
             my $waiting;
             while(!(sysopen($lockFH, $lockFile, O_RDWR | O_CREAT | O_EXCL)
-                && print $lockFH getpgrp() . "\n")) {
+                && syswrite($lockFH, getpgrp() . "\n"))) {
                 if ($! == 13) {
                     die _tr(
                         qq[Unable to create lock "%s", giving up!], $lockFile

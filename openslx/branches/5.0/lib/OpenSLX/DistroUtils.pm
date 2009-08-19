@@ -19,6 +19,8 @@ use warnings;
 use OpenSLX::Utils;
 use OpenSLX::Basics;
 
+use Data::Dumper;
+
 use OpenSLX::DistroUtils::Engine;
 use OpenSLX::DistroUtils::InitFile;
 
@@ -34,6 +36,7 @@ $VERSION = 1.01;
   newInitFile
   getInitFileForDistro
   simpleInitFile
+  getKernelVersionForDistro
 );
 
 
@@ -68,7 +71,20 @@ sub getInitFileForDistro {
     return $distro->generateInitFile($initFile);
 }
 
+sub getKernelVersionForDistro {
+	my $kernelPath = shift;
+    my $distroName = shift;
+    my $distro;
 
+    my $engine = OpenSLX::DistroUtils::Engine->new();
 
+    if ($distroName) {
+        $distro = $engine->loadDistro($distroName);
+    } else {
+        $distro = $engine->loadDistro('Base');
+    }
+
+    return $distro->getKernelVersion($kernelPath);
+}
 
 1;
