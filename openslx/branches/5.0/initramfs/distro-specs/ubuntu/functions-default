@@ -64,9 +64,9 @@ config_distro () {
   echo "# inittab is obsolete with the change to upstart from ubuntu 7.10" \
     > /mnt/etc/inittab
 
-  # fix getty bug
-  # (console login on tty1 is started too early)
-  sed -i "s/start on runlevel 2/start on stopped rc2/" /mnt/etc/event.d/tty1
+  # fix getty bug (console login on tty1 is started too early)
+  [ -f /mnt/etc/event.d/tty1 ] && \
+    sed -i "s/start on runlevel 2/start on stopped rc2/" /mnt/etc/event.d/tty1
 
   # for screen sessions
   testmkd /mnt/var/run/screen root:utmp 0775
@@ -268,6 +268,7 @@ if [ -f /mnt/etc/init.d/autofs ] ; then
       -e "s,TIMEOUT.*,TIMEOUT=60," -i /mnt/etc/default/autofs
   config_portmap
   rllinker "autofs" 12 4
+  rllinker "nfs-common" 11 5
 fi
 }
 # start portmapper (needed at least for nfsN and nis services)

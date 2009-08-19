@@ -162,9 +162,9 @@ case "${proto}" in
     # for some reason cifs mounts cannot be pivoted :(
     #mount -n -o ${mntopt},user=guest,guest,file_mode=0755,dir_mode=0755 \
     #  -t ${proto} //${server}${srcpath} ${target}
-    d_mkrlscript entry boot.slx "uclibc-wrapper mount -n -o ${mntopt},guest,\
-user=guest,file_mode=0755,dir_mode=0755 -t ${proto} //${server}${srcpath} \
-${target#/mnt}"
+    d_mkrlscript entry boot.slx "/opt/openslx/uclib-rootfs/bin/mount -n \
+-o ${mntopt},guest,user=guest,file_mode=0755,dir_mode=0755 -t ${proto} \
+//${server}${srcpath} ${target#/mnt}"
   ;;
 esac
 }
@@ -369,8 +369,9 @@ local cfgfile
 if [ "x$filepath" != "x" ] ; then
   cfgfile=${filepath}
   [ "x$fileserv" = "x" ] && fileserv=$(checkip ${serverip})
-  # waiting for dns if fireserv is a name
-  echo ${fileserv} | grep -qi [a-z] && waitfor /tmp/dhcp-done 10000
+  # wait for dns if "fileserv" is a name and not lbd device
+  [ "$fileprot" != "lbd" ] && \
+    echo ${fileserv} | grep -qi [a-z] && waitfor /tmp/dhcp-done 10000
   [ $DEBUGLEVEL -ge 1 ] && echo "fileget -  fileprot:$fileprot, filepath:\
 $filepath, fileserv:$fileserv" >>$LOGFILE
   case "$fileprot" in
@@ -378,15 +379,17 @@ $filepath, fileserv:$fileserv" >>$LOGFILE
      wget_get $cfgfile $fileprot://$fileserv \
       && { unpack /tmp/$(basename $cfgfile) && break; } 2>>$LOGFILE 
    ;;
-   file)
+   lbd)
      local ldev=$fileserv
-     echo "Waiting for /mnt/etc ...."
-     waitfor /mnt/etc 10000
-     mkdir /tmp/$ldev
-     echo -e "ext2\nreiserfs\nvfat\nxfs" >/etc/filesystems
-     mount -o ro /dev/$ldev /tmp/$ldev || error "$init_errlfg"
-     unpack /tmp/$ldev/$cfgfile
-     umount /dev/$ldev
+     echo "Waiting for configuration file ${cfgfile} ...."
+     [ $DEBUGLEVEL -ge 1 ] && echo "fileget -  fileprot:$fileprot, filepath:\
+$filepath, fileserv:$fileserv" >>$LOGFILE
+     waitfor /mnt/${cfgfile} 10000
+     if [ -f /mnt/${cfgfile} ]; then
+       unpack /mnt/$cfgfile
+     else
+       error "$init_errlfg"
+     fi
    ;;
    *)
      tftp_get $cfgfile $fileserv  \

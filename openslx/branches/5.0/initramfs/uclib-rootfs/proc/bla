@@ -1,0 +1,5 @@
+#!/bin/ash
+echo $1
+
+return 0
+
