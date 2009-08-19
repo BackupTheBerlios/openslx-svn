@@ -133,6 +133,7 @@ sub KDMConfigHashForWorkstation
     $configHash->{'X-:0-Core'}->{Reset} = "/etc/kde$kdmVer/kdm/Xreset";
     $configHash->{'X-:0-Core'}->{SessionsDirs} = 
         '/etc/X11/sessions,/usr/share/xsessions,/usr/share/apps/kdm/sessions';
+    $configHash->{'X-:0-Core'}->{ServerAttempts} = "2";   
 
     return $configHash;
 }
@@ -159,7 +160,8 @@ sub setupKDMScript
         echo -e '#! /bin/sh\n#\n# modified by desktop plugin in Stage3\n#\n
         # remove safely any remaining files of the leaving user in /tmp
         ( su -c "rm -rf /tmp/*" - $USER
-          echo "$USER files removed by $0" >/tmp/files.removed 2>/dev/null ) &
+          echo "$USER files removed by $0" >/tmp/files.removed 2>/dev/null
+          chmod 0400 /tmp/files.removed ) &
         . /etc/kde$kdmver/kdm/Xreset.system' >/mnt/etc/kde$kdmver/kdm/Xreset
         chmod a+x /mnt/etc/kde$kdmver/kdm/Xreset*
 
