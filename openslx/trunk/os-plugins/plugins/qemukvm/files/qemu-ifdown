@@ -17,12 +17,12 @@
 
 case "$1" in
   tap1)
-      # Bringing down the tap1 interface
+      # Bringing down the dhcp server
       killall udhcpd 2>/dev/null
-      iptables -t nat -D POSTROUTING -o br0 -j MASQUERADE 2>/dev/null
+      #iptables -t nat -D POSTROUTING -o br0 -j MASQUERADE 2>/dev/null
   ;;
   tap2)
-      # Bringing down the tap1 interface
+      # Bringing down the dhcp server
       killall udhcpd 2>/dev/null
   ;;
 esac

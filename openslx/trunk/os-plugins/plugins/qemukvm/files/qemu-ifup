@@ -21,30 +21,30 @@
 case "$1" in
   tap0)
     # Adding the tap0 interface to the existing bridge configured in stage3
-    uclibc-wrapper brctl addif br0 tap0
+    # brctl addif br0 tap0
   ;;
   tap1)
     # Configuring DHCP on host tap1 interface and enable IP masquerading
-    [ -d /var/lib/qemu ] || mkdir -p /var/lib/qemu
-    sed "s,NWIF,tap1,;s,/misc/,/qemu/," /etc/opt/openslx/udhcpd.qemukvm \
-      >/var/lib/qemu/udhcpd.conf
-    touch /var/lib/qemu/udhcpd.leases
-    uclibc-wrapper ip link set tap1 up
-    uclibc-wrapper ip addr add 192.168.101.254/24 dev tap1
-    uclibc-wrapper udhcpd -S /var/lib/qemu/udhcpd.conf
-    echo "1" >/proc/sys/net/ipv4/conf/br0/forwarding
-    echo "1" >/proc/sys/net/ipv4/conf/tap1/forwarding
-    iptables -t nat -A POSTROUTING -o br0 -j MASQUERADE
+    [ -d /tmp/qemu-$USER ] || mkdir -p /tmp/qemu-$USER
+    sed "s,NWIF,tap1,;s,/misc/,/qemu/,;s,USER,$USER," \
+      /etc/opt/openslx/udhcpd.qemukvm >/tmp/qemu-$USER/udhcpd.conf
+    touch /tmp/qemu-$USER/qemu/udhcpd.leases
+    # ip link set tap1 up
+    # ip addr add 192.168.101.254/24 dev tap1
+    sudo /opt/openslx/uclib-rootfs/usr/sbin/udhcpd \
+      -S /tmp/qemu-$USER/qemu/udhcpd.conf
+    # iptables -t nat -A POSTROUTING -o br0 -j MASQUERADE
   ;;
   tap2)
     # Configuring DHCP on host tap2 interface
-    [ -d /var/lib/qemu ] || mkdir -p /var/lib/qemu
-    sed "s,NWIF,tap1,;s,/misc/,/qemu/," /etc/opt/openslx/udhcpd.qemukvm \
-      >/var/lib/qemu/udhcpd.conf
-    touch /var/lib/qemu/udhcpd.leases
-    uclibc-wrapper ip link set tap2 up
-    uclibc-wrapper ip addr add 192.168.101.254/24 dev tap2
-    uclibc-wrapper udhcpd -S /var/lib/qemu/udhcpd.conf
+    [ -d /tmp/qemu-$USER ] || mkdir -p /tmp/qemu-$USER
+    sed "s,NWIF,tap2,;s,/misc/,/qemu/,;s,USER,$USER," \
+      /etc/opt/openslx/udhcpd.qemukvm >/tmp/qemu-$USER/udhcpd.conf
+    touch /tmp/qemu-$USER/qemu/udhcpd.leases
+    # ip link set tap2 up
+    # ip addr add 192.168.101.254/24 dev tap2
+    sudo /opt/openslx/uclib-rootfs/usr/sbin/udhcpd \
+      -S /tmp/qemu-$USER/qemu/udhcpd.conf
   ;;
 esac
 

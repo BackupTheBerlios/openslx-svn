@@ -28,10 +28,10 @@ interface	NWIF
 offer_time	6000
 
 # The location of the leases file
-lease_file	/var/lib/qemu/udhcpd.leases
+lease_file	/tmp/qemu-USER/udhcpd.leases
 
 # The location of the pid file
-pidfile	/var/run/udhcpd.pid
+pidfile		/tmp/qemu-USER/udhcpd.pid
 
 opt	dns	${domain_name_servers}
 option	subnet	255.255.255.0
@@ -111,19 +111,24 @@ ${qemukvm_imagesrc}." nonfatal
     # create a template udhcpd configuration file
     write_udhcpd_conf /mnt/etc/opt/openslx/udhcpd.qemukvm
 
-    # for the busybox dhcp server
-    testmkd /mnt/var/lib/qemu
-    touch /mnt/var/lib/qemu/udhcpd.leases
+    # copy the runlevel script (proper place for all distros??)
+    cp /mnt/opt/openslx/plugin-repo/qemukvm/qemukvm /mnt/etc/init.d
+    rllinker "qemukvm" 22 2
 
     # copy the /etc/qemu-ifup script and enable extended rights for running
-    # the emulator via sudo
+    # the emulator and certain network commands via sudo
     cp /mnt/opt/openslx/plugin-repo/qemukvm/qemu-if* /mnt/etc
-    chmod u+x /mnt/etc/qemu-if*
+    chmod 0755 /mnt/etc/qemu-if* /mnt/etc/init.d/qemukvm
     for qemubin in qemu kvm ; do
       qemu="$(binfinder ${qemubin})"
       [ -n "${qemu}" ] && \
         echo "ALL ALL=NOPASSWD: ${qemu}" >>/mnt/etc/sudoers
     done
+    echo -e "#ALL ALL=NOPASSWD: /opt/openslx/uclib-rootfs/sbin/tunctl -t tap*\n\
+#ALL ALL=NOPASSWD: /opt/openslx/uclib-rootfs/sbin/ip addr add * dev tap*\n\
+#ALL ALL=NOPASSWD: /opt/openslx/uclib-rootfs/usr/sbin/brctl addif br0 tap*\n\
+ALL ALL=NOPASSWD: /opt/openslx/uclib-rootfs/usr/sbin/udhcpd -S /tmp/qemu*" \
+      >>/mnt/etc/sudoers
   fi
 else
   [ $DEBUGLEVEL -gt 0 ] && echo "  * Configuration of qemukvm plugin failed"

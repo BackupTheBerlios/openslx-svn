@@ -23,6 +23,7 @@ use File::Path;
 
 use OpenSLX::Basics;
 use OpenSLX::Utils;
+use OpenSLX::DistroUtils;
 
 sub new
 {
@@ -110,6 +111,7 @@ sub installationPhase
     $self->{attrs}                = $info->{'plugin-attrs'};
 
     my $engine = $self->{'os-plugin-engine'};
+    my $pluginRepoPath = "$self->{pluginRepositoryPath}";
     
     # Different names of the tool (should be unified somehow!?)
     if (!isInPath('qemu-kvm') || !isInPath('kvm')) {
@@ -117,12 +119,56 @@ sub installationPhase
             $engine->getInstallablePackagesForSelection('qemu-kvm')
         );
     }
+    # Sudo is needed to get access to certain system network commands
+    if (!isInPath('sudo')) {
+        $engine->installPackages($self->{distro}->getPackageName('sudo'));
+    }
     # Copy run-virt.include to the appropriate place for inclusion in stage4
     copyFile("$self->{openslxBasePath}/lib/plugins/qemukvm/files/run-virt.include",
         "$self->{pluginRepositoryPath}/");
-    # Copy the later /etc/qemu-ifup
+    # Copy the later /etc/qemu-ifup,down
     copyFile("$self->{openslxBasePath}/lib/plugins/qemukvm/files/qemu-if*",
         "$self->{pluginRepositoryPath}/");
+
+    my $initFile = newInitFile();
+    $initfile->setDesc("Setup environment for QEMU/KVM");
+    my $do_start = unshiftHereDoc(<<'    End-of-Here');
+          # Adding the tap0 interface to the existing bridge configured in stage3
+          for i in 0 1 2; do
+            /opt/openslx/uclib-rootfs/sbin/tunctl -t tap${i} >/dev/null 2>&1
+            ip link set dev tap${i} up
+          done
+          /opt/openslx/uclib-rootfs/usr/sbin/brctl addif br0 tap0
+          echo "1" >/proc/sys/net/ipv4/conf/br0/forwarding
+          echo "1" >/proc/sys/net/ipv4/conf/tap0/forwarding
+    End-of-Here
+    my $do_stop = unshiftHereDoc(<<'    End-of-Here');
+          /opt/openslx/uclib-rootfs/usr/sbin/brctl delif br0 tap0
+          echo "0" >/proc/sys/net/ipv4/conf/br0/forwarding
+          echo "0" >/proc/sys/net/ipv4/conf/tap0/forwarding
+    End-of-Here
+   
+    # add helper functions to initfile
+    # first parameter name of the function
+    # second parameter content of the function
+    $initFile->addFunction('do_start', $do_start);
+    $initFile->addFunction('do_stop', $do_stop);
+    $initFile->addFunction('do_restart', "  : # do nothing here");
+    
+    # place a call of the helper function in the stop block of the init file
+    # first parameter name of the function
+    # second parameter name of the block
+    $initFile->addFunctionCall('do_start', 'start');
+    $initFile->addFunctionCall('do_stop', 'stop');
+    $initFile->addFunctionCall('do_restart', 'restart');
+    
+    my $distro = (split('-',$self->{'os-plugin-engine'}->distroName()))[0];
+    
+    # write qemukvm initfile to plugin path
+    spitFile(
+        "$pluginRepoPath/qemukvm",
+        getInitFileForDistro($initFile, ucfirst($distro))
+    );
     return;
 }
 
@@ -144,21 +190,6 @@ sub checkStage3AttrValues
     #my $vmimg = $stage3Attrs->{'qemukvm::imagesrc'} || '';
 
     return;
-}
-
-# Write the runlevelscript
-sub _writeRunlevelScript
-{
-    my $self     = shift;
-    my $location = shift;
-    my $file     = shift;
-    my $kind     = shift;
-   
-    # should use the abstract write runlevel script way, see
-    # http://lab.openslx.org/repositories/revision/openslx/2405 ff.
-    my $runlevelScript = $self->{distro}->fillRunlevelScript($location, $kind);
-
-    spitFile($file, $runlevelScript);
 }
 
 # The bridge configuration needs the bridge module to be present in early
