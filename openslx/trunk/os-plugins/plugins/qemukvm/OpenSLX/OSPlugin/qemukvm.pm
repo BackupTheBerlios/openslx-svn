@@ -129,21 +129,29 @@ sub installationPhase
     # Copy the later /etc/qemu-ifup,down
     copyFile("$self->{openslxBasePath}/lib/plugins/qemukvm/files/qemu-if*",
         "$self->{pluginRepositoryPath}/");
+    chmod 0755, "$self->{pluginRepositoryPath}/qemu-ifup";
+    chmod 0755, "$self->{pluginRepositoryPath}/qemu-ifdown";
 
     my $initFile = newInitFile();
-    $initfile->setDesc("Setup environment for QEMU/KVM");
+    $initFile->setDesc("Setup environment for QEMU/KVM");
     my $do_start = unshiftHereDoc(<<'    End-of-Here');
+          . /etc/opt/openslx/network.qemukvm
           # Adding the tap0 interface to the existing bridge configured in stage3
           for i in 0 1 2; do
             /opt/openslx/uclib-rootfs/sbin/tunctl -t tap${i} >/dev/null 2>&1
             ip link set dev tap${i} up
           done
           /opt/openslx/uclib-rootfs/usr/sbin/brctl addif br0 tap0
+          ip addr add ${nataddress} dev tap1
+          ip addr add ${hoaddress} dev tap2
           echo "1" >/proc/sys/net/ipv4/conf/br0/forwarding
           echo "1" >/proc/sys/net/ipv4/conf/tap0/forwarding
     End-of-Here
     my $do_stop = unshiftHereDoc(<<'    End-of-Here');
+          . /etc/opt/openslx/network.qemukvm
           /opt/openslx/uclib-rootfs/usr/sbin/brctl delif br0 tap0
+          ip addr del ${nataddress} dev tap1
+          ip addr del ${hoaddress} dev tap2         
           echo "0" >/proc/sys/net/ipv4/conf/br0/forwarding
           echo "0" >/proc/sys/net/ipv4/conf/tap0/forwarding
     End-of-Here

@@ -11,15 +11,16 @@
 # Script is included from init via the "." load function - thus it has all
 # variables and functions available
 
-write_udhcpd_conf ()
+write_networking_conf ()
 {
-local cfgfile=$1
+local natnetwork="192.168.101"
+local honetwork="192.168.102"
 echo "
 # udhcpd configuration file written by $0 during OpenSLX stage3 configuration
 
 # The start and end of the IP lease block
-start 		192.168.101.20
-end		192.168.101.100
+start 		CNETWORK.20
+end		CNETWORK.100
 
 # The interface that udhcpd will use
 interface	NWIF
@@ -35,8 +36,8 @@ pidfile		/tmp/qemu-USER/udhcpd.pid
 
 opt	dns	${domain_name_servers}
 option	subnet	255.255.255.0
-opt	router	192.168.101.254
-opt	wins	192.168.101.10
+opt	router	CNETWORK.254
+opt	wins	CNETWORK.10
 option	domain	virtual.site ${domain_name}
 
 # Additional options known to udhcpd
@@ -51,7 +52,9 @@ option	domain	virtual.site ${domain_name}
 #wins			#lease
 #ntpsrv			#tftp
 #bootfile
-" >${cfgfile}
+" >/mnt/etc/opt/openslx/udhcpd.qemukvm
+echo -e "nataddress=${natnetwork}.254/24\nhoaddress=${honetwork}.254/24" \
+  >/mnt/etc/opt/openslx/network.qemukvm
 }
 
 # check if the configuration file is available
@@ -109,16 +112,20 @@ ${qemukvm_imagesrc}." nonfatal
     cp /mnt/opt/openslx/plugin-repo/qemukvm/run-virt.include \
       /mnt/etc/opt/openslx/run-qemukvm.include
     # create a template udhcpd configuration file
-    write_udhcpd_conf /mnt/etc/opt/openslx/udhcpd.qemukvm
+    write_networking_conf
 
     # copy the runlevel script (proper place for all distros??)
     cp /mnt/opt/openslx/plugin-repo/qemukvm/qemukvm /mnt/etc/init.d
+    chmod 0755 /mnt/etc/init.d/qemukvm
     rllinker "qemukvm" 22 2
 
     # copy the /etc/qemu-ifup script and enable extended rights for running
     # the emulator and certain network commands via sudo
-    cp /mnt/opt/openslx/plugin-repo/qemukvm/qemu-if* /mnt/etc
-    chmod 0755 /mnt/etc/qemu-if* /mnt/etc/init.d/qemukvm
+    ln -sf /opt/openslx/plugin-repo/qemukvm/qemu-ifup /mnt/etc/qemu-ifup
+    ln -sf /opt/openslx/plugin-repo/qemukvm/qemu-ifdown /mnt/etc/qemu-ifdown
+    ln -sf /opt/openslx/plugin-repo/qemukvm/qemu-ifup /mnt/etc/kvm-ifup
+    ln -sf /opt/openslx/plugin-repo/qemukvm/qemu-ifdown /mnt/etc/kvm-ifdown
+
     for qemubin in qemu kvm ; do
       qemu="$(binfinder ${qemubin})"
       [ -n "${qemu}" ] && \
@@ -127,8 +134,8 @@ ${qemukvm_imagesrc}." nonfatal
     echo -e "#ALL ALL=NOPASSWD: /opt/openslx/uclib-rootfs/sbin/tunctl -t tap*\n\
 #ALL ALL=NOPASSWD: /opt/openslx/uclib-rootfs/sbin/ip addr add * dev tap*\n\
 #ALL ALL=NOPASSWD: /opt/openslx/uclib-rootfs/usr/sbin/brctl addif br0 tap*\n\
-ALL ALL=NOPASSWD: /opt/openslx/uclib-rootfs/usr/sbin/udhcpd -S /tmp/qemu*" \
-      >>/mnt/etc/sudoers
+ALL ALL=NOPASSWD: /opt/openslx/uclib-rootfs/usr/sbin/udhcpd -S /tmp/qemu*\n\
+ALL ALL=NOPASSWD: killall udhcpd" >>/mnt/etc/sudoers
   fi
 else
   [ $DEBUGLEVEL -gt 0 ] && echo "  * Configuration of qemukvm plugin failed"

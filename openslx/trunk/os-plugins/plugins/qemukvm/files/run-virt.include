@@ -21,6 +21,7 @@ permem=50
 mem=$(expr ${totalmem} / 100 \* ${permem})
 VIRTCMDOPTS="${VIRTCMDOPTS} -m ${mem}"
 
+# network adaptor alternatives: rtl8139, pcnet, e1000
 VIRTCMDOPTS="${VIRTCMDOPTS} -net nic,model=pcnet"
 
 case "${network_kind}" in
