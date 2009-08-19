@@ -29,17 +29,29 @@ sub new
 sub loadDistro {
     my $self = shift;
     my $distroName = shift;
+       $distroName = ucfirst($distroName);
     
     my $distro;
+    
     my $loaded = eval {
             $distro = instantiateClass("OpenSLX::DistroUtils::${distroName}");
             return 0 if !$distro;   # module does not exist, try next
             1;
         };
+        
     if (!$loaded) {
-        $distro = instantiateClass("OpenSLX::DistroUtils::Base");
-        print ('couldnt load distro class');
+    	vlog(1, "can't find distro specific class, try base class..");
+        $loaded = eval {
+            $distro = instantiateClass("OpenSLX::DistroUtils::Base");
+            return 0 if !$distro;   # module does not exist, try next
+            1;
+        };
     }
+    
+    if (!$loaded) {
+        vlog(1, "failed to load DistroUtils!");
+    }
+
     return $distro;
 }
 
