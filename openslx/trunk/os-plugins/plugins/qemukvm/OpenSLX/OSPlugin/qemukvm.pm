@@ -134,8 +134,9 @@ sub installationPhase
 
     my $initFile = newInitFile();
     $initFile->setDesc("Setup environment for QEMU/KVM");
+
+    $initFile->addToBlock('head','. /etc/opt/openslx/network.qemukvm');
     my $do_start = unshiftHereDoc(<<'    End-of-Here');
-          . /etc/opt/openslx/network.qemukvm
           # Adding the tap0 interface to the existing bridge configured in stage3
           for i in 0 1 2; do
             /opt/openslx/uclib-rootfs/sbin/tunctl -t tap${i} >/dev/null 2>&1
@@ -148,7 +149,6 @@ sub installationPhase
           echo "1" >/proc/sys/net/ipv4/conf/tap0/forwarding
     End-of-Here
     my $do_stop = unshiftHereDoc(<<'    End-of-Here');
-          . /etc/opt/openslx/network.qemukvm
           /opt/openslx/uclib-rootfs/usr/sbin/brctl delif br0 tap0
           ip addr del ${nataddress} dev tap1
           ip addr del ${hoaddress} dev tap2         

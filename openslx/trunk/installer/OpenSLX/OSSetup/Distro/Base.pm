@@ -226,7 +226,7 @@ sub addUclibLdconfig
     #my $ldpath     = shift;
 
     open(OUTFILE, ">", "/etc/ld.so.conf.d/uclib.conf") 
-      or die ("something went wrong");
+      or die ("unable to create the uclib.conf within ld.so.conf.d");
     print OUTFILE "/opt/openslx/uclib-rootfs/lib\n";
     print OUTFILE "/opt/openslx/uclib-rootfs/usr/lib\n";
     close(OUTFILE);
