@@ -83,7 +83,7 @@ int rpm2cpio_main(int argc, char **argv)
 	else if ((magic[0] == 'B') && (magic[1] == 'Z')) {
 #ifdef CONFIG_FEATURE_RPM2CPIO_BZIP2
 		/* return to position before magic (eek..!) */
-		lseek(rpm_fd, -2, SEEK_CUR);
+		/* lseek(rpm_fd, -2, SEEK_CUR); */
 		if (unpack_bz2_stream(rpm_fd, STDOUT_FILENO) != 0)
 			bb_error_msg("error inflating (bzip2)");
 #else
