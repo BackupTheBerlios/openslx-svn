@@ -15,6 +15,8 @@
 # -----------------------------------------------------------------------------
 use strict;
 use warnings;
+use Switch;
+
 
 my $abstract = q[
 slxconfig-demuxer
@@ -322,13 +324,17 @@ sub createTarOfPath
 
 sub bootEnvironmentForType
 {
-    my $bootType = shift || 'pxe';
+    my $bootTypeIn = shift || 'pxe';
     
     my %bootTypeMap = (
-        'pxe'           => 'PXE',
-        'preboot-cd'    => 'PrebootCD',
+        'pxe'     => 'PXE',
+        'preboot' => 'Preboot',
     );
-    $bootType = $bootTypeMap{lc($bootType)};
+    my $bootType = $bootTypeMap{lc($bootTypeIn)}
+        or die _tr(
+            "'%s' is not one of the supported boot-types (pxe,preboot)", 
+            $bootTypeIn
+        );
 
     if (!$bootEnvMap{$bootType}) {
         my $bootEnv = instantiateClass("OpenSLX::BootEnvironment::$bootType");
@@ -485,10 +491,22 @@ sub writeClientConfigurationsForSystem
             # name it is referred to in the openslx-config-DB:
             my $externalClientID = externalIDForClient($client);
             my $bootEnv = bootEnvironmentForType($bootType);
-            createTarOfPath(
-                $buildPath, "${externalClientID}.tgz",
-                "$bootEnv->{'target-path'}/client-config/$externalSystemID"
-            );
+            switch ($bootType) {
+            	case 'pxe' {
+	                createTarOfPath(
+		                $buildPath, "${externalClientID}.tgz",
+		                "$bootEnv->{'target-path'}/client-config/$externalSystemID"
+		            );
+    	        } 
+    	        case 'preboot' {
+		        	# for preboot types
+		        	my $cname = $client->{name};
+		            createTarOfPath(
+		                $buildPath, "${cname}.tgz",
+		                "$bootEnv->{'target-path'}/client-config/$externalSystemID"
+		            );
+    	        }
+            }
         }
     }
     return;
@@ -567,8 +585,9 @@ sub createBootEnvironmentsForSystem
         my $type = $client->{attrs}->{boot_type} || 'pxe';
         $bootTypes{$type}++;
     }
+
     foreach my $bootType (sort keys %bootTypes) {
-        vlog(0, _tr("creating boot environment for $bootType"));
+        vlog(0, _tr("creating boot environment (system part) for $bootType"));
     
         my $bootEnv = bootEnvironmentForType($bootType);
 
@@ -580,6 +599,12 @@ sub createBootEnvironmentsForSystem
                 = "$bootEnv->{'target-path'}/client-config/$info->{'external-id'}";
             createTarOfPath($buildPath, "default.tgz", $systemPath);
         }
+    }
+
+    foreach my $bootType (sort keys %bootTypes) {
+        vlog(0, _tr("creating boot environment (client part) for $bootType"));
+    
+        my $bootEnv = bootEnvironmentForType($bootType);
 
         writeClientConfigurationsForSystem(
             $info, $buildPath, $attrFile, $bootType, $clients

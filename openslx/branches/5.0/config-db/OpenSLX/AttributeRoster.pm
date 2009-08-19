@@ -67,12 +67,13 @@ sub _init
                 Currently the following boot types are supported:
                     pxe    (is the default)
                         uses PXE to boot client over LAN
-                    preboot-cd
-                        generates a bootable CD-image that can be used to
-                        remotely boot the systems referred to by this client
+                    preboot
+                        generates a set of images (see preboot_media) that can
+                        be used to remotely boot the systems referred to by 
+                        this client
             End-of-Here
-            content_regex => qr{^(pxe|preboot-cd)$},
-            content_descr => '"pxe" or "preboot-cd"',
+            content_regex => qr{^(pxe|preboot)$},
+            content_descr => '"pxe" or "preboot"',
             default => 'pxe',
         },
         'boot_uri' => {
@@ -126,6 +127,20 @@ sub _init
             content_descr => 'kernel cmdline fragment',
             default => '',
         },
+        'preboot_media' => {
+            applies_to_systems => 0,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                List of preboot media supported by this client.
+                Currently the following preboot media are supported:
+                    cd
+                        generates a bootable CD-image that can be used to
+                        remotely boot the systems referred to by this client
+            End-of-Here
+            content_regex => undef,
+            content_descr => undef,
+            default => '',
+        },
         'ramfs_fsmods' => {
             applies_to_systems => 1,
             applies_to_clients => 0,
@@ -155,6 +170,16 @@ sub _init
             content_regex => qr{^\s*([-\w]+\s*)*$},
             content_descr => 'a space-separated list of NIC modules',
             default => 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
+        },
+        'hw_local_disk' => {
+            applies_to_systems => 1,
+            applies_to_clients => 1,
+            description => unshiftHereDoc(<<'            End-of-Here'),
+                how to handle local disk deploament - no/slxonly/all
+            End-of-Here
+            content_regex => undef,
+            content_descr => 'how to handle local disk (no/slxonly/all)',
+            default => 'all',
         },
         'scratch' => {
             applies_to_systems => 1,
@@ -444,7 +469,9 @@ sub findProblematicValues
     if ($vendorOSName && $installedPlugins) {
         # now give each installed plugin a chance to check it's own attributes
         # by itself
-        foreach my $pluginInfo (sort @$installedPlugins) {
+        foreach my $pluginInfo (
+            sort { $a->{plugin_name} cmp $b->{plugin_name} } @$installedPlugins
+        ) {
             my $pluginName = $pluginInfo->{plugin_name};
             vlog 2, "checking attrs of plugin: $pluginName\n";
             # create & start OSPlugin-engine for vendor-OS and current plugin
