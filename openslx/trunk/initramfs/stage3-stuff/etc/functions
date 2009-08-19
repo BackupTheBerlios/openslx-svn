@@ -162,9 +162,9 @@ case "${proto}" in
     # for some reason cifs mounts cannot be pivoted :(
     #mount -n -o ${mntopt},user=guest,guest,file_mode=0755,dir_mode=0755 \
     #  -t ${proto} //${server}${srcpath} ${target}
-    d_mkrlscript entry boot.slx "uclibc-wrapper mount -n -o ${mntopt},guest,\
-user=guest,file_mode=0755,dir_mode=0755 -t ${proto} //${server}${srcpath} \
-${target#/mnt}"
+    d_mkrlscript entry boot.slx "/opt/openslx/uclib-rootfs/bin/mount -n \
+-o ${mntopt},guest,user=guest,file_mode=0755,dir_mode=0755 -t ${proto} \
+//${server}${srcpath} ${target#/mnt}"
   ;;
 esac
 }

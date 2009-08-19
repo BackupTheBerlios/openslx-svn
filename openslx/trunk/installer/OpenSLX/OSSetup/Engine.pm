@@ -1103,12 +1103,8 @@ sub _copyUclibcRootfs
     # if we're doing a fresh install we need to create /lib, /bin first
     mkdir "$targetRoot/lib";
     mkdir "$targetRoot/bin";
-    # copy uclibc-wrapper into the standard bin directory of the vendor os
-    my $uClibCmd = "cp $openslxConfig{'base-path'}/bin/uclibc-wrapper";
-    $uClibCmd .= " $targetRoot/bin";
-    system($uClibCmd);
-    # link uClibc from the uclib-rootfs to /lib to make LD_PRELOAD=... working
-    $uClibCmd = "ln -sf /opt/openslx/uclib-rootfs/lib/ld-uClibc.so.0";
+    # link uClibc from the uclib-rootfs to /lib to make tools working
+    my $uClibCmd = "ln -sf /opt/openslx/uclib-rootfs/lib/ld-uClibc.so.0";
     $uClibCmd .= " $targetRoot/lib/ld-uClibc.so.0";
     system($uClibCmd);
 
