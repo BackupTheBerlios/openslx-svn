@@ -51,7 +51,7 @@ if [ -e $CONFFILE ]; then
 
     # create run-virt.include header (and fill in information on removable
     # devices if present
-    echo -n "# run-virt.include created by $0 during stage3 plugin setup" \
+    echo -e "# run-virt.include created by $0 during stage3 plugin setup" \
       >/mnt/etc/opt/openslx/run-virt.include
 
     waitfor /etc/hwinfo.cdrom

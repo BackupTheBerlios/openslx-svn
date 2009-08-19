@@ -26,28 +26,12 @@ if [ -e /initramfs/plugin-conf/bootsplash.conf ]; then
           \n\ttype killall >/dev/null 2>&1 && killall -9 splashy" \
         >>/mnt/etc/init.d/splashy.boot
       d_mkrlscript close splashy.boot ""
-      # create a runlevelscript that will start splashy on halt/reboot
-      # fixme: should be done distro specific (in bootsplash.pm, see #474)
-      echo '#!/bin/sh' >>/mnt/etc/init.d/splashy.halt
-      echo -e ". /etc/rc.status \
-        \n. /etc/sysconfig/logfile \
-        \nrc_reset \
-        \ncase \"\$1\" in \
-        \n\tstart) \
-        \n\t\t;; \
-        \n\tstop) \
-        \n\t\t/opt/openslx/plugin-repo/bootsplash/bin/splashy shutdown \
-        \n\t\tsleep 1 \
-        \n\t\tLD_LIBRARY_PATH=/opt/openslx/uclib-rootfs/lib/ \
-        /opt/openslx/plugin-repo/bootsplash/bin/splashy_update \
-        \"progress 100\" 2>/dev/null \
-        \n\t\t;; \
-        \nesac \
-        \nrc_exit" \
-      >>/mnt/etc/init.d/splashy.halt
-      chmod 744 /mnt/etc/init.d/splashy.halt
+      
+      cp /mnt/opt/openslx/plugin-repo/bootsplash/bootsplash.halt \
+         /mnt/etc/init.d/bootsplash.halt
+      chmod 744 /mnt/etc/init.d/bootsplash.halt
       cp -a /etc/splashy /mnt/etc/
-      rllinker "splashy.halt" 1 1
+      rllinker "bootsplash.halt" 1 1
     fi
   fi
 fi
