@@ -35,17 +35,6 @@ sub new
     return bless $self, $class;
 }
 
-sub initialize
-{
-    my $self   = shift;
-    my $engine = shift;
-    my $fs     = shift;    
-
-    $self->{'engine'} = $engine;
-    $self->{'fs'}     = $fs;
-    return;
-}
-
 sub getExportPort
 {
     my $self      = shift;
@@ -92,9 +81,9 @@ sub showExportConfigInfo
         "dnbd2-server /etc/dnbd2/server.conf\n"
     ),
     "Create or modify a config file like /etc/dnbd2/server.conf, looking like:",
-    "<server>\n",
+    "\n# dnbd2 server configuration\n<server>\n",
     "$export->{port}\n",
-    "$self->{fs}->{'export-path'}\n",
+    "$self->{fs}->{'export-path'}\n\n",
     '#' x 80, "\n";
     return;
 }

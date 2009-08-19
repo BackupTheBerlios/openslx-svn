@@ -40,7 +40,8 @@ sub initialize
     my $self = shift;
     my $engine = shift;
 
-    $self->{'engine'} = $engine;
+    $self->SUPER::initialize($engine);
+    
     my $exportBasePath = "$openslxConfig{'public-path'}/export";
     $self->{'export-path'} = "$exportBasePath/nfs/$engine->{'vendor-os-name'}";
     return;

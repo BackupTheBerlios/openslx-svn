@@ -63,6 +63,8 @@ use vars qw(%supportedDistros);
     'ubuntu-8.10_amd64' => 'clone,update,shell',
     'ubuntu-9.04'       => 'clone,install,update,shell',
     'ubuntu-9.04_amd64' => 'clone,update,shell',
+    'ubuntu-9.10'       => 'clone,update,shell',
+    'ubuntu-9.10_amd64' => 'clone,update,shell',
 );
 
 my %localHttpServers;
@@ -168,14 +170,7 @@ sub initialize
             );
         }
         $self->{'config-distro-info-dir'} = $configDistroInfoDir;
-
-        my $busyboxName =
-            $self->_hostIs64Bit()
-                ? 'busybox.x86_64'
-                : 'busybox.i586';
-        $self->{'busybox-binary'} 
-            = "$openslxConfig{'base-path'}/share/busybox/$busyboxName";
-    
+   
         my $setupMirrorsIfNecessary = $actionType eq 'install';
         $self->_readDistroInfo($setupMirrorsIfNecessary);
     }
@@ -270,7 +265,19 @@ sub installVendorOS
         )
     );
 
+    # add the uclibs and tools to the stage1 and add them to library search
+    # path
     $self->_copyUclibcRootfs();
+    callInSubprocess(
+        sub {
+            $self->_callChrootedFunction({
+            chrootDir    => $self->{'vendor-os-path'},
+            function     => sub {
+                $self->{'distro'}->addUclibLdconfig();
+        },
+        updateConfig => 1,
+        });
+    });
     $self->_touchVendorOS();
     $self->addInstalledVendorOSToConfigDB();
     return;
@@ -353,8 +360,19 @@ sub cloneVendorOS
             )
         );
     }
-
+    # add the uclibs and tools to the stage1 and add them to library search
+    # path
     $self->_copyUclibcRootfs();
+    callInSubprocess(
+        sub {
+            $self->_callChrootedFunction({
+            chrootDir    => $self->{'vendor-os-path'},
+            function     => sub {
+                $self->{'distro'}->addUclibLdconfig();
+        },
+        updateConfig => 1,
+        });
+    });
     $self->_touchVendorOS();
     $self->addInstalledVendorOSToConfigDB();
     return;
@@ -418,7 +436,6 @@ sub startChrootedShellForVendorOS
         }
     );
 
-    $self->_touchVendorOS();
     vlog(
         0,
         _tr(
@@ -426,6 +443,8 @@ sub startChrootedShellForVendorOS
             $self->{'vendor-os-name'}
         )
     );
+    $self->_touchVendorOS();
+
     return;
 }
 
@@ -464,7 +483,6 @@ sub callChrootedFunctionForVendorOS
         }
     );
 
-    $self->_touchVendorOS();
     vlog(
         1,
         _tr(
@@ -472,6 +490,8 @@ sub callChrootedFunctionForVendorOS
             $self->{'vendor-os-name'}
         )
     );
+    $self->_touchVendorOS();
+
     return 1;
 }
 
@@ -672,8 +692,14 @@ sub getInstallablePackagesForSelection
 sub busyboxBinary
 {
     my $self = shift;
+    
+    my $uclibdir = "$openslxConfig{'base-path'}/share/uclib-rootfs";
 
-    return $self->{'busybox-binary'};
+    return sprintf(
+        "LD_LIBRARY_PATH=%s/lib %s/bin/busybox",
+        $uclibdir,
+        $uclibdir
+    );
 }
 
 ################################################################################
@@ -964,8 +990,8 @@ sub _speedTestMirror
     }
 
     # now measure the time it takes to download the file
-    my $wgetCmd 
-        = "$self->{'busybox-binary'} wget -q -O - $mirror/$file >/dev/null";
+    my $wgetCmd  = $self->busyboxBinary();
+       $wgetCmd .= " wget -q -O - $mirror/$file >/dev/null";
     my $start = time();
     if (slxsystem($wgetCmd)) {
         # just return any large number that is unlikely to be selected
@@ -1048,10 +1074,10 @@ sub _copyUclibcRootfs
 {
     my $self = shift;
     my $targetRoot = shift || $self->{'vendor-os-path'};
+    my $distro = $self->{distro};
 
     vlog(0, _tr("copying uclibc-rootfs into vendor-OS ...\n"));
 
-    # my $targetRoot = $self->{'vendor-os-path'};
     my $target     = "$targetRoot/opt/openslx/uclib-rootfs";
 
     if (system("mkdir -p $target")) {
@@ -1074,9 +1100,10 @@ sub _copyUclibcRootfs
     my $rsyncCmd
         = "rsync -aq --delete-excluded --exclude-from=- $uclibcRootfs/ $target";
     vlog(2, "executing: $rsyncCmd\n");
-    # if we're doing a fresh install we need to create /lib first
-    slxsystem("mkdir -p $targetRoot/lib");
-    # link uClibc from the uclib-rootfs to /lib to make LD_PRELOAD=... working
+    # if we're doing a fresh install we need to create /lib, /bin first
+    mkdir "$targetRoot/lib";
+    mkdir "$targetRoot/bin";
+    # link uClibc from the uclib-rootfs to /lib to make tools working
     my $uClibCmd = "ln -sf /opt/openslx/uclib-rootfs/lib/ld-uClibc.so.0";
     $uClibCmd .= " $targetRoot/lib/ld-uClibc.so.0";
     system($uClibCmd);
@@ -1216,7 +1243,7 @@ sub _startLocalURLServersAsNeeded
         if (!exists $localHttpServers{$localURL}) {
             my $pid 
                 = executeInSubprocess(
-                    $self->{'busybox-binary'}, "httpd", '-p', $port, '-h', '/', '-f'
+                    $self->busyboxBinary(), "httpd", '-p', $port, '-h', '/', '-f'
                 );
             vlog(1, 
                 _tr(
@@ -1265,7 +1292,6 @@ sub _setupStage1A
             $stage1cDir, $!);
     }
 
-    #$self->_stage1A_createBusyboxEnvironment();
     $self->_stage1A_setupUclibcEnvironment();
     $self->_stage1A_copyPrerequiredFiles();
     $self->_stage1A_copyTrustedPackageKeys();
@@ -1288,54 +1314,15 @@ sub _stage1A_setupUclibcEnvironment
 }
 
 
-sub _stage1A_createBusyboxEnvironment
-{
-    my $self = shift;
-
-    # copy busybox and all required binaries into stage1a-dir:
-    vlog(1, "creating busybox-environment...");
-    my $requiredLibs = copyBinaryWithRequiredLibs({
-        'binary'          => $self->{'busybox-binary'},
-        'targetFolder'    => "$self->{stage1aDir}/bin",
-        'libTargetFolder' => $self->{stage1aDir},
-        'targetName'      => 'busybox',
-    });
-    my $libcFolder;
-    foreach my $lib (split "\n", $requiredLibs) {
-        if ($lib =~ m[/libc.so.\d\s*$]) {
-            # note target folder of libc, as we need to copy the resolver libs
-            # into the same place:
-            $libcFolder = dirname($lib);
-        }
-    }
-
-    # create all needed links to busybox:
-    my @busyboxApplets = getAvailableBusyboxApplets($self->{'busybox-binary'});
-    foreach my $linkTarget (@busyboxApplets) {
-        linkFile('/bin/busybox', "$self->{stage1aDir}/$linkTarget");
-    }
-    if ($self->_hostIs64Bit()) { 
-        if (!-e "$self->{stage1aDir}/lib64") {
-            linkFile('/lib', "$self->{stage1aDir}/lib64");
-        }
-        if (!-e "$self->{stage1aDir}/usr/lib64") {
-            linkFile('/usr/lib', "$self->{stage1aDir}/usr/lib64");
-        }
-    }
-
-    $self->_stage1A_setupResolver($libcFolder);
-    return;
-}
-
 sub _stage1A_setupResolver
 {
     my $self       = shift;
     my $libcFolder = shift;
 
-    if (!defined $libcFolder) {
-        warn _tr("unable to determine libc-target-folder, will use /lib!");
-        $libcFolder = '/lib';
-    }
+    #if (!defined $libcFolder) {
+    #    warn _tr("unable to determine libc-target-folder, will use /lib!");
+    #    $libcFolder = '/lib';
+    #}
 
     copyFile('/etc/resolv.conf', "$self->{stage1aDir}/etc");
     copyFile('/etc/nsswitch.conf', "$self->{stage1aDir}/etc");

@@ -54,10 +54,19 @@ sub setupPackageSource
     my $repoURLs    = shift;
 
     my $repoSubdir = '';
-    if (length($repoInfo->{'repo-subdir'})) {
+    if (defined $repoInfo->{'repo-subdir'} && 
+        length($repoInfo->{'repo-subdir'})) {
         $repoSubdir = "/$repoInfo->{'repo-subdir'}";
     }
     my $baseURL = shift @$repoURLs;
+    
+    if ($baseURL =~ m/non-oss/) {
+    	# skip non-oss repositories, cause zypper can't realy handle them
+    	# correctly; zypper is deacting them with following message:
+    	# "Repository type can't be determined."
+    	return 1;
+    }
+    
     if (slxsystem("zypper addrepo $baseURL$repoSubdir $repoName")) {
         die _tr("unable to add repo '%s' (%s)\n", $repoName, $!);
     }

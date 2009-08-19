@@ -41,7 +41,8 @@ sub initDistroInfo
         - /var/spool/*
         - /var/run/*
         - /var/log/*
-        - /var/lib/xdm
+        - /var/lib/*dm/*
+        - /var/lib/libnss-ldap/*
         - /var/cache/apt/archives/*
         - /var/cache/man/*
         - /var/cache/nscd/*
