@@ -1,0 +1,31 @@
+#!/bin/sh
+# Copyright (c) 2009 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+# qemu-ifup
+#    - Script used for network cleanup of qemukvm in stage4
+# -----------------------------------------------------------------------------
+
+# Clean up script
+
+case "$1" in
+  tap1)
+      # Bringing down the dhcp server
+      killall udhcpd 2>/dev/null
+      #iptables -t nat -D POSTROUTING -o br0 -j MASQUERADE 2>/dev/null
+  ;;
+  tap2)
+      # Bringing down the dhcp server
+      killall udhcpd 2>/dev/null
+  ;;
+esac
+
+# Produce a clean exit status
+exit 0

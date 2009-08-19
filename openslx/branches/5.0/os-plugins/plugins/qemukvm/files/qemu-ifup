@@ -1,0 +1,55 @@
+#!/bin/sh
+# Copyright (c) 2009 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+# qemu-ifup
+#    - Script used for network setup of qemukvm in stage4
+# -----------------------------------------------------------------------------
+
+# Use the udhcpcd as DHCP server and brctl as provided by default in OpenSLX
+# environments via uclibc-wrapper.
+
+. /etc/opt/openslx/network.qemukvm
+
+# Just decide by the virtual network device used which kind of connection
+# should be set up (passed in $1): tap0 = bridge, tap1 = nat, tap2 = hostonly.
+case "$1" in
+  tap0)
+    # Adding the tap0 interface to the existing bridge configured in stage3
+    # brctl addif br0 tap0
+  ;;
+  tap1)
+    # Configuring DHCP on host tap1 interface and enable IP masquerading
+    [ -d /tmp/qemu-$USER ] || mkdir -p /tmp/qemu-$USER
+    sed "s,NWIF,tap1,;s,/misc/,/qemu/,;s,USER,$USER,;s,CNETWORK,$nataddress," \
+      /etc/opt/openslx/udhcpd.qemukvm >/tmp/qemu-$USER/udhcpd.conf
+    touch /tmp/qemu-$USER/udhcpd.leases
+    # ip link set tap1 up
+    # ip addr add 192.168.101.254/24 dev tap1
+    sudo /opt/openslx/uclib-rootfs/usr/sbin/udhcpd \
+      -S /tmp/qemu-$USER/udhcpd.conf
+    # iptables -t nat -A POSTROUTING -o br0 -j MASQUERADE
+  ;;
+  tap2)
+    # Configuring DHCP on host tap2 interface
+    [ -d /tmp/qemu-$USER ] || mkdir -p /tmp/qemu-$USER
+    sed "s,NWIF,tap2,;s,/misc/,/qemu/,;s,USER,$USER,;s,CNETWORK,$hoaddress," \
+      /etc/opt/openslx/udhcpd.qemukvm >/tmp/qemu-$USER/udhcpd.conf
+    touch /tmp/qemu-$USER/udhcpd.leases
+    # ip link set tap2 up
+    # ip addr add 192.168.101.254/24 dev tap2
+    sudo /opt/openslx/uclib-rootfs/usr/sbin/udhcpd \
+      -S /tmp/qemu-$USER/udhcpd.conf
+  ;;
+esac
+
+# Produce a clean exit status
+exit 0
+
