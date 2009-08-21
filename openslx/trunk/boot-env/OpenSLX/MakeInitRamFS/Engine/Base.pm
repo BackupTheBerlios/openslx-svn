@@ -307,6 +307,7 @@ sub _writeInitramfsSetup
         'ramfs_miscmods' => $self->{attrs}->{ramfs_miscmods} || '',
         'ramfs_nicmods'  => $self->{attrs}->{ramfs_nicmods} || '',
         'rootfs'         => $self->{'export-uri'} || '',
+        'hw_local_disk'  => $self->{attrs}->{hw_local_disk} || '',
     };
     my $content = "# attributes set by slxconfig-demuxer:\n";
     foreach my $attr (keys %$initramfsAttrs) {
