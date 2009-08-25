@@ -68,7 +68,10 @@ sub initialize
     ];
 
     $self->{'clone-filter'} = "
-        - /var/cache/apt/archives/*
+        - /var/cache/apt/archives/*.deb
+        - /var/cache/apt/archives/lock
+        - /var/cache/apt/archives/partial/*
+        + /var/cache/apt/archives/partial
         - /var/tmp/*
         - /var/opt/openslx
         - /var/lib/vmware
@@ -105,7 +108,7 @@ sub initialize
         - /etc/opt/openslx
         - /etc/exports*
         - /etc/X11/xorg.c*
-	- /etc/X11/XF86*
+	    - /etc/X11/XF86*
         + /etc
         - /dev/*
         + /dev
