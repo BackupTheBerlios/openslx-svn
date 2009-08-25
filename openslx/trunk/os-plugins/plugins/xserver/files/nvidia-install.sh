@@ -22,11 +22,14 @@ fi
 cd ${PLUGIN_PATH}
 
 case ${DISTRO} in
+  ubuntu-9.10*)
+    ./ubuntu-ng-gfx-install.sh nvidia ${DISTRO}
+  ;;
   ubuntu-9.04*)
-    ./ubuntu-8.10-gfx-install.sh nvidia ${DISTRO}
+    ./ubuntu-ng-gfx-install.sh nvidia ${DISTRO}
   ;;
   ubuntu-8.10*)
-    ./ubuntu-8.10-gfx-install.sh nvidia ${DISTRO}
+    ./ubuntu-ng-gfx-install.sh nvidia ${DISTRO}
   ;;
   ubuntu*)
     ./ubuntu-gfx-install.sh nvidia ${DISTRO}
