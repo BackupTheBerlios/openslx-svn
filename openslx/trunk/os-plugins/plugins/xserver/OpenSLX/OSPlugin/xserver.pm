@@ -247,9 +247,9 @@ sub installationPhase
         {
             if($vendorOSName =~ /.*?8.10|9.04|9.10.*?/i) 
             {
-                copyFile("$pluginFilesPath/ubuntu-8.10-gfx-install.sh", 
+                copyFile("$pluginFilesPath/ubuntu-ng-gfx-install.sh", 
                    "$installationPath");
-                rename("$installationPath/ubuntu-8.10-gfx-install.sh",
+                rename("$installationPath/ubuntu-ng-gfx-install.sh",
                     "$installationPath/ubuntu-gfx-install.sh");
             }
             else
