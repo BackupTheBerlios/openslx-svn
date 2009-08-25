@@ -440,14 +440,23 @@ int start_sysfs(dnbd2_device_t *dev)
 	int i;
 	char name[] = "server99";
 
-	if (setup_kobj(&dev->kobj, "config", &dev->disk->dev.kobj, &device_ktype))
-		return -1;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+	if (setup_kobj(&dev->kobj, "config", get_disk(dev->disk), &device_ktype))
+#else
+        if (setup_kobj(&dev->kobj, "config", &dev->disk->dev.kobj, &device_ktype))
+#endif
+            return -1;
 
 	for_each_server(i) {
 		sprintf(name, "server%d", i);
-		if (setup_kobj(&dev->servers[i].kobj, name,
-			       &dev->disk->dev.kobj, &server_ktype))
-			goto out;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+        	if (setup_kobj(&dev->servers[i].kobj, name,
+                               get_disk(dev->disk), &server_ktype))
+#else
+                if(setup_kobj(&dev-servers[i].kobj, name,
+                              &dev->disk->dev.kobj, &server_ktype))
+#endif
+                goto out;
 	}
 	return 0;
 

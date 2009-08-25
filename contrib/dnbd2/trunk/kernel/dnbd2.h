@@ -12,7 +12,11 @@
 #include <linux/inet.h>
 #include <linux/in.h>
 #include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,26)
+#include <linux/semaphore.h>
+#else
 #include <asm/semaphore.h>
+#endif
 #include <net/sock.h>
 #include "../include/dnbd2.h"
 
