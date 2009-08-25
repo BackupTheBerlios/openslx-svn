@@ -178,6 +178,18 @@ sub installAti
 
     my $url2 = `zcat $tmpdir/primary.xml.gz | grep -P -o "$chost/ati-fglrxG01-kmp-$ksuffix.*?$kver_ati.*?$chost.rpm"`;
     chomp($url2);
+
+    if($url2 eq '') {
+        # Taking more general kernel version (minus local suse version)
+        my $newkernvers = substr $kver_ati, 0, -4;
+        print "RPM name is empty - taking kernel version $newkernvers!\n";
+        $url2 = `zcat $tmpdir/primary.xml.gz | grep -P -o "$chost/ati-fglrxG01-kmp-$ksuffix.*?$newkernvers.*?$chost.rpm"`;
+        chomp($url2);
+        if(! $url2 eq '') {
+            $kver = $newkernvers;
+        }
+    }
+
     system("wget -P $tmpdir -t2 -T2 $url/$url2 >/dev/null 2>&1");
 
     my @rpm = glob "$tmpdir/ati-fglrxG01-kmp-$ksuffix*$chost.rpm";
@@ -196,7 +208,7 @@ sub installAti
     {
         mkdir("$repopath/ati/modules/");
     }
-    copyFile("$tmpdir/lib/modules/$kver-$ksuffix/updates/fglrx.ko",
+    copyFile("$tmpdir/lib/modules/$kver*-$ksuffix/updates/fglrx.ko",
         "$repopath/ati/modules");
 
     my @versions = split(/-/, $rpm[0]);
