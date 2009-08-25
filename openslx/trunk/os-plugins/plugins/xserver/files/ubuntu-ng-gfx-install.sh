@@ -19,9 +19,11 @@ else
   KVER=$(find /lib/modules/2.6* -maxdepth 0|sed 's,/lib/modules/,,g'|sort|tail -n1)
 fi
 
+# TODO: check for build-essential !!
+
 if [ ! -e "/usr/sbin/dkms" ]; then
   echo -n "  * DKMS not found: installing .."
-  aptitude install dkms > /dev/null 2>&1
+  aptitude -y install dkms > /dev/null 2>&1
     if [ $? -eq 1 ]; then
       echo "fail"
       echo "  * Didn't get package dkms! Exit now!"
