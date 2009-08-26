@@ -204,10 +204,11 @@ DataEntry* get_entry(xmlDoc * doc)
         tempc = getAttribute(doc,(char *) "active");
         if (tempc != NULL ) {
                 de->active = (strstr(tempc,"true")!= NULL?true:false);
-                if(de->active == false) {
-                    delete de;
-                    return NULL;
-                }
+                // This has to be considered elsewhere
+                //if(de->active == false) {
+                //    delete de;
+                //    return NULL;
+                //}
         }
         tempc = NULL;
 
@@ -278,10 +279,10 @@ DataEntry** readXmlDir(char* path)
   bfs::path filter(string(fpath).append("/").append(filterscript));
 
 
-  if(bfs::is_regular_file(filter)) {
+  if(bfs::is_regular(filter)) {
 	  if( (inp = popen(string(fpath).append("/")
 	          .append(filterscript).append(" ")
-	          .append(path).c_str(), "r" )) && bfs::is_regular_file(filter) ) {
+	          .append(path).c_str(), "r" )) ) {
 	      while(fgets(line, MAX_LENGTH, inp ) != NULL) {
 	        xmlVec.push_back(string(line).substr(0,strlen(line)-1) );
 	      }

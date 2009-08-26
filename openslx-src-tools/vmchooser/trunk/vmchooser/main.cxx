@@ -12,6 +12,10 @@
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 
+#include <boost/filesystem.hpp>
+
+namespace bfs=boost::filesystem;
+
 using namespace std;
 using namespace fltk;
 
@@ -30,6 +34,7 @@ SWindow* mainwin;
  *
  */
 int main(int argc, char** argv) {
+  string version = "0.0.12";
   AnyOption* opt = new AnyOption();
   char* xmlpath = NULL;
   char* lsesspath = NULL;
@@ -114,7 +119,7 @@ int main(int argc, char** argv) {
   /* VERSION  */
   if(opt->getFlag('v') || opt->getFlag("version")) {
     // just print out version information - helps testing
-    cout << "virtual machine chooser 0.0.11"<< endl;
+    cout << "virtual machine chooser " << version << endl;
     delete opt;
     return 0;
 
@@ -159,15 +164,26 @@ int main(int argc, char** argv) {
 
   // additional xml argument -> start image directly
   if(opt->getArgc() > 0) {
+    string single_arg = opt->getArgv(0);
+    if(bfs::is_directory(single_arg)) {
+        fprintf(stderr, "Only argument is a folder, should be a valid xml file!\n");
+        return 1;
+    }
     // read xml image
-    xmlDoc* doc = xmlReadFile(opt->getArgv(0), NULL, XML_PARSE_RECOVER);
+    xmlDoc* doc = xmlReadFile(single_arg.c_str(), NULL, XML_PARSE_RECOVER);
     if (doc == NULL) {
-      fprintf(stderr, "Error: could not parse file %s\n", opt->getArgv(0));
+      fprintf(stderr, "Error: could not parse file %s\n", single_arg.c_str());
       return 1;
     }
 
     DataEntry* result = get_entry(doc);
-    runImage(*result, opt->getArgv(0));
+    if(result) {
+        runImage(*result, single_arg );
+    }
+    else {
+        fprintf(stderr, "Error: can not start image from xml\n\tcheck your <active> setting!\n");
+        return 1;
+    }
   }
 
   delete opt;
@@ -201,7 +217,8 @@ int main(int argc, char** argv) {
   }
   win.show(); // argc,argv
   win.border(false);
-  free(xmlpath);
+
+//  free(xmlpath);
 
   bool retval = run();
 

@@ -169,6 +169,7 @@ void SWindow::set_entries(DataEntry** ent)
   entgroup =  (ItemGroup*)sel.add_group("VMWARE SESSIONS", &sel);
   for (int i=0; ent[i] != '\0'; i++)
   {
+    if(!ent[i]->active) continue;
     Item* w= (Item*)sel.add_leaf(ent[i]->short_description.c_str(), entgroup, (void*)ent[i] );
 
     xpmImage* xpm = new xpmImage(get_symbol(ent[i]));

@@ -71,7 +71,7 @@ bool addScanners(xmlNode* node, char* script) {
 
   // Parse input of scanner-Skript (called by "char* script")
   // and write into <scanner> nodes
-  if( bfs::is_regular_file(bfs::path(script)) )
+  if( bfs::is_regular(bfs::path(script)) )
   if( (inp = popen(script, "r" )) ) {
     while(fgets(line, MAX_LENGTH, inp ) != NULL) {
       strline = string(line);
