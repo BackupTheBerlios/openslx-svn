@@ -43,6 +43,8 @@ sub _collectCMDs
 
     $self->_copyKernelModules();
     
+    $self->_copyFirmware();
+    
     $self->_createInitRamFS();
 
     return;
@@ -91,6 +93,7 @@ sub _writeInitramfsSetup
         'host_name'      => 'slx-client', # just to have something at all
         'ramfs_miscmods' => $self->{attrs}->{ramfs_miscmods} || '',
         'ramfs_nicmods'  => $self->{attrs}->{ramfs_nicmods} || '',
+        'ramfs_firmmods'  => $self->{attrs}->{ramfs_firmmods} || '',
         'preboot_id'     => $self->{'preboot-id'} || '',
         'boot_uri'       => $self->{'boot-uri'} || '',
     };

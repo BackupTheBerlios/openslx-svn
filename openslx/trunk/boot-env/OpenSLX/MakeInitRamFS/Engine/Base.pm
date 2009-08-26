@@ -187,6 +187,36 @@ sub _addFilteredKernelModules
     return;
 }
 
+sub _copyFirmware
+{
+    my $self = shift;
+    
+    my $sourcePath = "$self->{'root-path'}/lib/firmware/$self->{'kernel-version'}";
+    vlog(3,"sourcePath: $sourcePath");
+    
+    my $targetPath
+        = "$self->{'build-path'}/lib/firmware";
+    vlog(3,"targetPath: $targetPath");
+    $self->addCMD("mkdir -p $targetPath");
+        
+    # add a couple of kernel modules that we expect to be used in stage3
+    # (some of these modules do not exist on all distros, so they will be
+    # filtered out again by the respective distro object):
+    my @firmwareModules; 
+    vlog(3,"ramfs_firmmods: $self->{attrs}->{ramfs_firmmods}");
+    push @firmwareModules, split ' ', $self->{attrs}->{ramfs_firmmods};
+    # copy all the modules that we think are required
+    foreach my $moduleToBeCopied (@firmwareModules) {
+        my $source = followLink(
+            "$self->{'root-path'}/lib/firmware/$self->{'kernel-version'}/$moduleToBeCopied", $self->{'root-path'}
+        );
+        my $target = "$targetPath/$moduleToBeCopied";
+        $self->addCMD("cp -pa --dereference $source $target");
+        
+    }
+    return;
+}
+
 sub _copyKernelModules
 {
     my $self = shift;
@@ -306,6 +336,7 @@ sub _writeInitramfsSetup
         'ramfs_fsmods'   => $self->{attrs}->{ramfs_fsmods} || '',
         'ramfs_miscmods' => $self->{attrs}->{ramfs_miscmods} || '',
         'ramfs_nicmods'  => $self->{attrs}->{ramfs_nicmods} || '',
+        'ramfs_firmmods'  => $self->{attrs}->{ramfs_firmmods} || '',
         'rootfs'         => $self->{'export-uri'} || '',
         'hw_local_disk'  => $self->{attrs}->{hw_local_disk} || '',
     };
