@@ -159,12 +159,12 @@ case "${proto}" in
     done
   ;;
   smb|cifs)
-    # for some reason cifs mounts cannot be pivoted :(
-    #mount -n -o ${mntopt},user=guest,guest,file_mode=0755,dir_mode=0755 \
-    #  -t ${proto} //${server}${srcpath} ${target}
-    d_mkrlscript entry boot.slx "/opt/openslx/uclib-rootfs/bin/mount -n \
--o ${mntopt},guest,user=guest,file_mode=0755,dir_mode=0755 -t ${proto} \
-//${server}${srcpath} ${target#/mnt}"
+    # cifs mounts might be problematic if accessed with superuser id
+    mount -n -o ${mntopt},user=guest,guest,file_mode=0755,dir_mode=0755 \
+      -t ${proto} //${server}${srcpath} ${target}
+    #d_mkrlscript entry boot.slx "/opt/openslx/uclib-rootfs/bin/mount -n \
+    #-o ${mntopt},guest,user=guest,file_mode=0755,dir_mode=0755 -t ${proto} \
+    #//${server}${srcpath} ${target#/mnt}"
   ;;
 esac
 }
@@ -535,9 +535,9 @@ sed '/^[a-zA-Z0-9]*:[a-zA-Z0-9]*:[1-9][0-9]\{3,4\}:/d;/^+:*/d;/^+$/d;
   /^[a-zA-Z0-9]*:[a-zA-Z0-9]*:[5-9][0-9]\{2\}:/d' /mnt/etc/passwd \
   >/tmp/newpasswd
 # and add user nobody again (is there a more elegant way?)
-sed -n -e '/nobody/p' /mnt/etc/passwd >> /tmp/newpasswd
+sed -n -e '/nobody/p' /mnt/etc/passwd >>/tmp/newpasswd
 # create the shadow from passwd file
-echo -e "root:"${root_pw}":12958:0:10000::::" > /mnt/etc/shadow
+echo -e "root:"${root_pw}":12958:0:10000::::" >/mnt/etc/shadow
 sed 's/:.*/:!:13078:0:99999:7:::/;/^root.*/d' /tmp/newpasswd \
   >>/mnt/etc/shadow
 mv /tmp/newpasswd /mnt/etc/passwd
