@@ -88,6 +88,10 @@ sub installNvidia
 
     my @rpm = glob "$tmpdir/nvidia-gfxG01*.rpm";
     my $rpm = @rpm;
+    $rpm[0] =~ /nvidia-gfxG01-kmp-$ksuffix-(.*?)_(.*?)-.*?\.$chost.rpm/;
+    
+    my $nv_kver = $2;
+    $nv_kver =~ s/_/-/g;
 
     if($rpm == 0) {
         print "Could not download nvidia kernel module rpm!";
@@ -106,12 +110,12 @@ sub installNvidia
     # ld -r -m elf_i386 -o ../modules/nvidia.ko  lib/modules/2.6.25.20-0.4-pae/updates/{nv-kernel,nv-linux}.o
 
 
-    if ( -f "$tmpdir/lib/modules/$kver-$ksuffix/updates/nv-kernel.o" ) {
+    if ( -f "$tmpdir/lib/modules/$nv_kver-$ksuffix/updates/nv-kernel.o" ) {
         # we have to build our kernel module here
-        system("ld -r -m elf_i386 -o $tmpdir/lib/modules/$kver-$ksuffix/updates/nvidia.ko $tmpdir/lib/modules/$kver-$ksuffix/updates/{nv-kernel,nv-linux}.o");
+        system("ld -r -m elf_i386 -o $tmpdir/lib/modules/$nv_kver-$ksuffix/updates/nvidia.ko $tmpdir/lib/modules/$nv_kver-$ksuffix/updates/{nv-kernel,nv-linux}.o");
     }
 
-    copyFile("$tmpdir/lib/modules/$kver-$ksuffix/updates/nvidia.ko",
+    copyFile("$tmpdir/lib/modules/$nv_kver-$ksuffix/updates/nvidia.ko",
         "$repopath/nvidia/modules");
 
     
@@ -182,14 +186,30 @@ sub installAti
     if($url2 eq '') {
         # Taking more general kernel version (minus local suse version)
         my $newkernvers = substr $kver_ati, 0, -4;
-        print "RPM name is empty - taking kernel version $newkernvers!\n";
         $url2 = `zcat $tmpdir/primary.xml.gz | grep -P -o "$chost/ati-fglrxG01-kmp-$ksuffix.*?$newkernvers.*?$chost.rpm"`;
         chomp($url2);
         if(! $url2 eq '') {
             $kver = $newkernvers;
         }
+        else {
+            # Minus local Suse version number - hoping, there was no ABI change
+            $newkernvers = substr $kver_ati, 0, -7;
+            $url2 = `zcat $tmpdir/primary.xml.gz | grep -P -o "$chost/ati-fglrxG01-kmp-$ksuffix.*?$newkernvers.*?$chost.rpm"`;
+            chomp($url2);
+            if(! $url2 eq '') {
+                $kver = $newkernvers;
+            }
+
+        }
     }
 
+#    print "KVER = $kver; CHOST = $chost; ksuffix=$ksuffix\n";
+#    system("bash");
+
+    if($url2 eq '') {
+        print "No ATI module rpm for the chosen kernel version ($kver) found! Exiting!\n";
+	return;
+    }
     system("wget -P $tmpdir -t2 -T2 $url/$url2 >/dev/null 2>&1");
 
     my @rpm = glob "$tmpdir/ati-fglrxG01-kmp-$ksuffix*$chost.rpm";
