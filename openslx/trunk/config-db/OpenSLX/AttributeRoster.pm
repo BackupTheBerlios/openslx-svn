@@ -179,7 +179,7 @@ sub _init
             End-of-Here
             content_regex => qr{^\s*([-\w]+\s*)*$},
             content_descr => 'a space-separated list of firmware modules',
-            default => 'tigon e100',
+            default => '',
         },
         'hw_local_disk' => {
             applies_to_systems => 1,
