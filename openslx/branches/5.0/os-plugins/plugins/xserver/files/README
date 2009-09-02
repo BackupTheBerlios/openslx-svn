@@ -1,7 +1,5 @@
-ati-install.sh: Installer for ATI drivers
-nvidia-install.sh: Installer for NVIDIA drivers
-
-Currently in development and not useable!
+Some development notes
+======================
 
 
 Infos about ati-packages:
