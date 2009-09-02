@@ -107,16 +107,16 @@ sub getAttrInfo
             content_descr => '0 prefer gpl, 1 use the nongpl',
             default => '0',
         },
-        'xserver::usexrandr' => {
+        'xserver::multihead' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
             description => unshiftHereDoc(<<'            End-of-Here'),
-            should the 'xserver'-plugin use the "xrandr" extension of Xorg to
-            make use of multi-head scenarios and dynamically added displays
+            should the 'xserver'-plugin configure multi-head setups of Xorg
+            for different scenarios and dynamically added displays
             (not implemented yet)
             End-of-Here
-            content_regex => qr{^(0|1)$},
-            content_descr => '1 xrandr extension, 0 switch off',
+            content_regex => undef,
+            content_descr => '',
             default => '1',
         },
 
@@ -247,9 +247,9 @@ sub installationPhase
         {
             if($vendorOSName =~ /.*?8.10|9.04|9.10.*?/i) 
             {
-                copyFile("$pluginFilesPath/ubuntu-8.10-gfx-install.sh", 
+                copyFile("$pluginFilesPath/ubuntu-ng-gfx-install.sh", 
                    "$installationPath");
-                rename("$installationPath/ubuntu-8.10-gfx-install.sh",
+                rename("$installationPath/ubuntu-ng-gfx-install.sh",
                     "$installationPath/ubuntu-gfx-install.sh");
             }
             else
