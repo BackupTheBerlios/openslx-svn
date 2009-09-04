@@ -380,7 +380,6 @@ sub _schemaUpgradeDBFrom
                 'attr_ramfs_fsmods',
                 'attr_ramfs_miscmods',
                 'attr_ramfs_nicmods',
-                'attr_ramfs_firmmods',
                 'attr_ramfs_screen',
                 'attr_sane_scanner',
                 'attr_scratch',

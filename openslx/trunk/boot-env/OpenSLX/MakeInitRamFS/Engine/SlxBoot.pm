@@ -53,8 +53,6 @@ sub _collectCMDs
 
     $self->_copyKernelModules();
     
-    $self->_copyFirmware();
-    
     $self->_createInitRamFS();
 
     return;

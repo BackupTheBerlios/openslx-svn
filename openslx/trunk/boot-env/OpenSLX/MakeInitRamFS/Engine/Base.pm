@@ -15,6 +15,7 @@ package OpenSLX::MakeInitRamFS::Engine::Base;
 
 use strict;
 use warnings;
+use Switch;
 
 use File::Basename;
 use POSIX qw(strftime);
@@ -187,36 +188,6 @@ sub _addFilteredKernelModules
     return;
 }
 
-sub _copyFirmware
-{
-    my $self = shift;
-    
-    my $sourcePath = "$self->{'root-path'}/lib/firmware/$self->{'kernel-version'}";
-    vlog(3,"sourcePath: $sourcePath");
-    
-    my $targetPath
-        = "$self->{'build-path'}/lib/firmware";
-    vlog(3,"targetPath: $targetPath");
-    $self->addCMD("mkdir -p $targetPath");
-        
-    # add a couple of kernel modules that we expect to be used in stage3
-    # (some of these modules do not exist on all distros, so they will be
-    # filtered out again by the respective distro object):
-    my @firmwareModules; 
-    vlog(3,"ramfs_firmmods: $self->{attrs}->{ramfs_firmmods}");
-    push @firmwareModules, split ' ', $self->{attrs}->{ramfs_firmmods};
-    # copy all the modules that we think are required
-    foreach my $moduleToBeCopied (@firmwareModules) {
-        my $source = followLink(
-            "$self->{'root-path'}/lib/firmware/$self->{'kernel-version'}/$moduleToBeCopied", $self->{'root-path'}
-        );
-        my $target = "$targetPath/$moduleToBeCopied";
-        $self->addCMD("cp -pa --dereference $source $target");
-        
-    }
-    return;
-}
-
 sub _copyKernelModules
 {
     my $self = shift;
@@ -300,10 +271,37 @@ sub _copyKernelModules
         }
     }
     
+    # build a list of required firmwares out of the list of modules
+    my @firmwares;
+    $self->addCMD("mkdir -p $self->{'root-path'}/lib/firmware/$self->{'kernel-version'}");
+    foreach my $moduleToBeCopied(%modulesToBeCopied) {
+    	$moduleToBeCopied =~ /.*\/(.*?)$/;
+        # implies usage of Switch
+        vlog(1,$1);
+        switch ($1){
+            case "e100.ko" {push @firmwares, split ' ', "e100"}
+            case "tg3.ko" {push @firmwares, split ' ', "tigon/"}
+            
+        }
+    }
+    # copy all the firmwares that we think are required
+    foreach my $firmwareToBeCopied (@firmwares) {
+        my $source = followLink(
+            "$self->{'root-path'}/lib/firmware/$self->{'kernel-version'}/$firmwareToBeCopied", $self->{'root-path'}
+        );
+        if (-e $source){
+        	my $target = "$self->{'build-path'}/lib/firmware/$firmwareToBeCopied";
+        	(-d $target) or $self->addCMD("mkdir -p $target");
+        	$self->addCMD("cp -pa --dereference $source $target");
+        } else {
+            vlog(3,"unable to find $source for copying purposes");
+        }
+    }	
+    
     # copy all the modules that we think are required
     foreach my $moduleToBeCopied (sort keys %modulesToBeCopied) {
         my $targetDir = "$self->{'build-path'}" . dirname($moduleToBeCopied);
-        $self->addCMD("mkdir -p $targetDir");
+        (-d $targetDir) or $self->addCMD("mkdir -p $targetDir");
         my $source = followLink(
             "$self->{'root-path'}$moduleToBeCopied", $self->{'root-path'}
         );

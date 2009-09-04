@@ -171,16 +171,6 @@ sub _init
             content_descr => 'a space-separated list of NIC modules',
             default => 'forcedeth e1000 e100 tg3 via-rhine r8169 pcnet32',
         },
-        'ramfs_firmmods' => {
-            applies_to_systems => 1,
-            applies_to_clients => 0,
-            description => unshiftHereDoc(<<'            End-of-Here'),
-                list of wifi network card modules to load
-            End-of-Here
-            content_regex => qr{^\s*([-\w]+\s*)*$},
-            content_descr => 'a space-separated list of firmware modules',
-            default => '',
-        },
         'hw_local_disk' => {
             applies_to_systems => 1,
             applies_to_clients => 1,
