@@ -109,14 +109,13 @@ sub installNvidia
     # since kernel 2.6.25.20-0.1 there has to be a call to ld
     # ld -r -m elf_i386 -o ../modules/nvidia.ko  lib/modules/2.6.25.20-0.4-pae/updates/{nv-kernel,nv-linux}.o
 
-
-    if ( -f "$tmpdir/lib/modules/$nv_kver-$ksuffix/updates/nv-kernel.o" ) {
-        # we have to build our kernel module here
-        system("ld -r -m elf_i386 -o $tmpdir/lib/modules/$nv_kver-$ksuffix/updates/nvidia.ko $tmpdir/lib/modules/$nv_kver-$ksuffix/updates/{nv-kernel,nv-linux}.o");
+    my $nv_path = glob "$tmpdir/lib/modules/*-$ksuffix/updates/";
+    if ( -f "$nv_path/nv-kernel.o" ) {
+        # we have to link our kernel module here
+        system("ld -r -m elf_i386 -o $nv_path/nvidia.ko $nv_path/{nv-kernel,nv-linux}.o");
     }
 
-    copyFile("$tmpdir/lib/modules/$nv_kver-$ksuffix/updates/nvidia.ko",
-        "$repopath/nvidia/modules");
+    copyFile("$nv_path/nvidia.ko", "$repopath/nvidia/modules");
 
     
     my @versions = split(/-/, $rpm[0]);
@@ -185,7 +184,15 @@ sub installAti
 
     if($url2 eq '') {
         # Taking more general kernel version (minus local suse version)
-        my $newkernvers = substr $kver_ati, 0, -4;
+        my $newkernvers = '';
+        if($kver_ati =~ /(.*)_(.*?)$/) {
+            # if we have a match here
+            $newkernvers = $1;
+        }
+        else {
+            # just try the old method
+            $newkernvers = substr $kver_ati, 0, -4;
+        }
         $url2 = `zcat $tmpdir/primary.xml.gz | grep -P -o "$chost/ati-fglrxG01-kmp-$ksuffix.*?$newkernvers.*?$chost.rpm"`;
         chomp($url2);
         if(! $url2 eq '') {
@@ -193,7 +200,13 @@ sub installAti
         }
         else {
             # Minus local Suse version number - hoping, there was no ABI change
-            $newkernvers = substr $kver_ati, 0, -7;
+            if($newkernvers =~ /(.*).(.*?)$/) {
+                # here we try with yet another older kernel version
+                $newkernvers = $1;
+            }
+            else {
+                $newkernvers = substr $kver_ati, 0, -7;
+            }
             $url2 = `zcat $tmpdir/primary.xml.gz | grep -P -o "$chost/ati-fglrxG01-kmp-$ksuffix.*?$newkernvers.*?$chost.rpm"`;
             chomp($url2);
             if(! $url2 eq '') {
