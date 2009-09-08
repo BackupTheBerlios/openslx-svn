@@ -78,14 +78,45 @@ Für Verwaltungs- und Identifikationszwecke benötigt die Anwendung clientbezoge
 Um eine Zeitsteuerung zu ermöglichen werden für jeden Client Informationen bzgl. assoziierter PXE-Konfigurationen verwendet.
 Damit die Wake-on-LAN auch in anderen IP-Netzen möglich ist, sind Informationen über die vom DHCP-Server verwalteten Netzwerke eforderlich.
 
-\subsection{Clientbezogene Eigenschaften}
+\subsection{Klientbezogene Eigenschaften}
+Die verschiedenen benötigten Informationen vom LDAP für einen Klienten werden hier kurz aufgelistet. Der Suchpräfix zu den Information sieht wie folgt aus: \\ \textit{cn=computers,ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de} \\
+oder \\
+\textit{cn=computers,ou=$<$Pool$>$,ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de} \\ \\
+Der Filter auf die Ergebnissmenge ist gegeben durch: \textit{(HostName=*)} - also alle Objekte mit einem beliebigen Wert als Hostnamen. Verschiedene Attribute werden hieraus gelesen und für die Verwendung in \textit{OekpoolFX} verwendet::
+\begin{description}
+\item[HostName] Dieses Attribut wird als String ausgelesen und als Filter eingesetzt.
+\item[IPAddress] Bei diesem Filter wird das Format \textit{255.255.255.255\_255.255.255.255} für ein Adressbereich vorrausgesetzt, wobei \textit{255.255.255.255} eine beliebige IP-Adresse darstellt. Da es noch keine sinnvolle Verwendung für den Adressbereich gibt, wird hier einfach der erste Teil als IP-Adresse gespeichert.
+\item[Pool] Wir je nach Pool zu jedem Klienten gespeichert. Taucht in der Basis der obigen Abfrage auf (als \textit{ou}).
+\end{description}
+
 \subsection{Zeit- und PXE-Konfiguration}
+Zusätzlich wird für jeden Klienten eine Such-Anfrage für die aktuellen PXE-Einstellungen abgesetzt.
+Die Such-Basis ist gleiche wie oben mit dem zusätzlichen Präfix \textit{HostName=<Hostname>}.
+Gefiltert wird dabei nach \textit{(objectClass=ActivePXEConfig)}. Hierbei wird für jeden Klienten eine Liste an Objekten mit folgenden Eigenschaften angelegt:
+\begin{description}
+\item[ForceBoot] Falls dieses Attribut gesetzt ist, wird geprüft, ob es auf \textit{wahr} gesetzt ist (Wert \textit{TRUE}). Wird als Boolescher Wert gespeichert.
+\item[TimeSlot] Hier können mehrere Werte eingetragen werden. Die Syntax ist \textit{x\_yy:z\_aa:b}, wobei \textit{x} den Wochentag angibt, Sonntag ist 0, Montag ist 1, und so weiter bis 6 wie Samstag. Danach wird mit dem ersten Unterstrich die Startuhrzeit in 10 minütiger Auflösung angegeben (\textit{yy:z}), nach dem zweiten Unterstrich die Endzeit mit \textit{aa:b}, wieder mit 10 Minuten Genauigkeit (\textit{b} kann dabei Werte von 0 bis 5 annehmen, aa von 00 bis 23).
+\end{description}
+
 \subsection{DHCP-Informationen}
+Die DHCP-Informationen werden verwendet um zum Beispiel das \textit{Wake-On-Lan}-Paket zu versenden. Dabei werden verschiedene Netzwerk-Informationen benötigt. Die Informationen werden unter folgender Such-Position im LDAP erwartet: \\
+\textit{cn=dhcp,ou=Rechenzentrum,ou=UniFreiburg,ou=RIPM,dc=uni-freiburg,dc=de} \\
+Als Filter kommt \textit{(dhcpoptNetmask=*)} zum Einsatz. Dabei wird von \textit{dhcpoptNetmask} erwartet, einen beliebigen Wert eingetragen zu haben.
+Hier werden wieder verschiedene Attribute gelesen und gespeichert:
+\begin{description}
+\item[dhcpoptNetmask] Die Netzmaske des Netzwerks ist hier als String gespeichert.
+\item[dhcpoptBroadcast-address] Wird als Zieladresse des \textit{Wake-On-Lan}-Pakets verwendet.
+\item[cn] Der \textit{Common Name} wird verwendet, um den Netzwerk-Teil der IP-Adressen zu bekommen und vergleichen zu können.
+\end{description}
 
 \section{TFTP}
 Auf dem TFTP-Server befinden sich, der Client-Konfiguration entsprechend, zwei Ausprägungen von PXE-Menüs.
 Für alle Clients, die nicht über die Anwendung verwaltet werden bzw. nicht immer Zeitslots zugewiesen bekommen, muss ein \textit{Default}-Menü vorhanden sein.
 Sämtliche Menüs, die im LDAP definiert sind müssen einmal auf dem TFTP-Server abgelegt werden, damit sie bei Bedarf (überlagernde Steuerung) verlinkt werden können.
+
+% Design von Architektur:
+%	 - Warum haben wir uns so und so entschieden?
+%	 - einen Haupt-TFTP-Server und ein anderer dynamischer TFTP-Server
 
 \subsection{Default-Menü}
 Damit die Clients, die (momentan) nicht über die Anwendung verwaltet werden, das \textit{Default}-Menü booten können, muss es unter der Datei \verb+default+ im Verzeichnis \verb+pxelinux.cfg+ im TFTP-Wurzelverzeichnis abgelegt werden.
@@ -108,6 +139,15 @@ In diesen Verzeichnissen sollte dann für jedes Menü eines Clients eine Datei a
 Der Vorteil dieser Methode ist zum einen, dass es keine Synchronisationsprobleme gibt, da OekPool vor dem Rechnerstart das PXE-Menü selbst verlinkt.
 Des weiteren ist es dadurch auch möglich die Zeitsteuerung dynamisch durch ein spezielles Menü, z.B. für administrative Zwecke, zu überlagern.
 Der Nachteil dieses Ansatzes ist, dass die OekPool Anwenung Zugriff auf den TFTP-Server (direkt oder per NFS) benötigt um die Verlinkung zu übernehmen.
+
+% \subsection{Web Frontend} % ?!??
+
 \section{SSH}
+Die zentrale SSH-Klasse beginnt nach der \textit{ssh\_init\_time} Wartezeit jede \textit{ssh\_interval} Sekunden die aktuellen Befehle abzusetzen und bei Fehlerfall ein Fehlerstatus zu setzen. Damit diese Funktion korrekt arbeitet, muss in der Konfigurations-Datei die Authentifizierungsmethode \textit{ssh\_auth\_method} auf \textit{password} oder \textit{publickey} gesetzt sein. 
+Bei der \textit{password}-Authentifizierung sollte die Option \textit{ssh\_username} und \textit{ssh\_password} gesetzt sein, wohingegen die 
+
+\textit{publickey}-Authentifizierung es erlaubt, sich mit dem öffentlichen Schlüssel zu authentifizieren. Die verwendbaren Schlüssel sollten in \textit{ssh\_private\_key} und \textit{ssh\_public\_key} eingetragen werden. Bei der letzteren Methode hat man den Vorteil, dass kein Passwort als Klartext über das Netzwerk übertragen wird. Es besteht jedoch die genauso die Gefahr, dass ein Angreifer sich mit dem in Besitz gebrachten gleichen öffentlich Schlüssel authentifizieren kann. Eine interaktive Authentifizierung war aus Sicht der Entwickler nicht praktikabel genug.
+
+Auf den Klients sollte natürlich ein System arbeiten, dass auf dem Port 22 einen SSH-Server gestartet hat.
 
 \end{document}
