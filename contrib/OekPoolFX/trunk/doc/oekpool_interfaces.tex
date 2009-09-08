@@ -1,0 +1,96 @@
+\documentclass[	
+				a4paper, 
+				twoside,
+				11pt,
+				DIV11,
+				BCOR12mm,
+				bibtotoc, 
+				halfparskip, 
+				headsepline, 
+				pointlessnumbers]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2cm, includehead]{geometry}
+\usepackage{bibgerm}
+%\usepackage[numbers]{natbib}
+\usepackage[dvips]{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{pstricks}
+\usepackage{pst-math}
+\usepackage{pstricks-add}
+\usepackage{pst-plot}
+\usepackage{pst-tree}
+\usepackage{rotating}
+\usepackage{fancybox}
+\usepackage{fancyhdr}
+\usepackage{colortbl}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{graphics}
+%\usepackage{graphicx}
+% Define user colors using the RGB model
+\definecolor{dunkelgrau}{rgb}{0.8,0.8,0.8}
+\definecolor{hellgrau}{rgb}{0.95,0.95,0.95}
+\definecolor{rot}{rgb}{1,0,0}
+\definecolor{hellrot}{rgb}{1,0.7,0.7}
+\definecolor{hellgruen}{rgb}{0.7,1,0.7}
+\definecolor{hellgelb}{rgb}{1,1,0.5}
+
+%============================================================================
+\title{Schnittstellen für die OekPool-Anwendung}
+\author{Julian Bader und Bastian Wißler}
+\date{\today}
+%============================================================================
+
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyhead[R]{\rightmark}
+\renewcommand{\headrulewidth}{0.2pt}
+\fancyfoot[C]{\thepage}
+
+\makeindex
+
+%==============================================================================================================
+
+\begin{document}
+
+\maketitle
+\indent
+\begin{abstract}
+\section*{Abstract}
+In diesem Dokument werden alle externen Schnittstellen von und zur OekPool-Anwendung definiert.
+Hierbei werden sowohl die Serverapplikation als auch das Webinterface betrachtet.
+Als Dienst zur Speicherung anwendungsrelevanter Daten kommt LDAP zum Einsatz.
+Zur Konfiguration der Clients wird TFTP und PXELinux verwendet.
+Die Clients an sich werden per SSH gesteuert.
+\end{abstract}
+\newpage
+
+\section{LDAP}
+Im LDAP-Verzeichnis müssen drei Arten von Informationen enthalten sein.
+Für Verwaltungs- und Identifikationszwecke benötigt die Anwendung clientbezogene Eigenschaften.
+Um eine Zeitsteuerung zu ermöglichen werden für jeden Client Informationen bzgl. assoziierter PXE-Konfigurationen verwendet.
+Damit die Wake-on-LAN auch in anderen IP-Netzen möglich ist, sind Informationen über die vom DHCP-Server verwalteten Netzwerke eforderlich.
+
+\subsection{Clientbezogene Eigenschaften}
+\subsection{Zeit- und PXE-Konfiguration}
+\subsection{DHCP-Informationen}
+
+\section{TFTP}
+Auf dem TFTP-Server befinden sich, der Client-Konfiguration entsprechend, zwei Ausprägungen von PXE-Menüs.
+Für alle Clients, die nicht über die Anwendung verwaltet werden bzw. nicht immer Zeitslots zugewiesen bekommen, muss ein Default-Menü vorhanden sein.
+Sämtliche Menüs, die im LDAP definiert sind müssen einmal auf dem TFTP-Server abgelegt werden, damit sie bei Bedarf (überlagernde Steuerung) verlinkt werden können.
+
+\subsection{Default-Menü}
+
+\subsection{Spezifische PXE-Menüs}
+
+\section{SSH}
+
+\end{document}
