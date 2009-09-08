@@ -84,13 +84,30 @@ Damit die Wake-on-LAN auch in anderen IP-Netzen möglich ist, sind Informationen
 
 \section{TFTP}
 Auf dem TFTP-Server befinden sich, der Client-Konfiguration entsprechend, zwei Ausprägungen von PXE-Menüs.
-Für alle Clients, die nicht über die Anwendung verwaltet werden bzw. nicht immer Zeitslots zugewiesen bekommen, muss ein Default-Menü vorhanden sein.
+Für alle Clients, die nicht über die Anwendung verwaltet werden bzw. nicht immer Zeitslots zugewiesen bekommen, muss ein \textit{Default}-Menü vorhanden sein.
 Sämtliche Menüs, die im LDAP definiert sind müssen einmal auf dem TFTP-Server abgelegt werden, damit sie bei Bedarf (überlagernde Steuerung) verlinkt werden können.
 
 \subsection{Default-Menü}
-
+Damit die Clients, die (momentan) nicht über die Anwendung verwaltet werden, das \textit{Default}-Menü booten können, muss es unter der Datei \verb+default+ im Verzeichnis \verb+pxelinux.cfg+ im TFTP-Wurzelverzeichnis abgelegt werden.
+Alle Clients die nicht anderweitig verlinkt sind laden automatisch diese Datei.
 \subsection{Spezifische PXE-Menüs}
+Um die spezifischen zeitgesteuerten Menüs zu erstellen und zu verlinken gibt es generell zwei Möglichkeiten.
+Zum einen ist es möglich die Arbeit komplett durch das \textit{PXEGenerate}-Skript zu erledigen.
+Andererseits kann man auch \textit{PXEGenerate} nur die Menüs erstellen lassen und die Anwendung verlinkt die entsprechenden Menüs, sobald sie benötigt werden.
 
+Übernimmt \textit{PXEGenerate} die komplette Arbeit, werden die PXE-Menüs aus den Daten im LDAP erzeugt.
+Bei Bedarf werden die erstellten Menüs im Verzeichnis \verb+pxelinux.cfg+ in der Form \verb+01-MAC+ (z.B. 01-00-01-a5-f8-68-1f) verlinkt, damit die Clients sie entsprechend der Zeitsteuerung laden.
+Der Vorteil dieser Methode ist, dass es nur eine Komponente gibt, die auf den TFTP-Server zugreift. Die OekPool-Anwendung benötigt dann keinen Zugriff und kann auf einer dedizierten Maschine laufen.
+Ein Nachteil dieser Methode ist, dass es bei schlechter Synchronisation der Systemuhren von TFTP- und OekPool-Server dazu kommen kann, dass Clients ein Menü vom TFTP-Server laden, bevor \textit{PXEGenerate} die Verlinkung aktualisiert hat.
+Ein weiterer Nachtei ist, dass es nicht möglich ist PXE-Menüs dynamisch außerhalb der Zeitsteuerung, z.B. für administrative Zwecke, zu laden.
+
+Soll die OekPool-Anwendung die Verlinkung übernehmen, so ist \textit{PXEGenerate} nur für die Erstellung der Menüs zuständig.
+Die Verlinkung geschieht zeitnah direkt aus OekPool. Hierbei erwartet die Anwendung ein Unterverzeichnis \verb+configs+ unterhalb von \verb+pxelinux.cfg+.
+Unterhalb des \verb+config+-Verzeichnisses sollte für jeden Client im LDAP ein Verzeichnis mit der entsprechenden MAC-Adresse als Name (in der Form 00-01-5e-34-ad-e3) angelegt werden.
+In diesen Verzeichnissen sollte dann für jedes Menü eines Clients eine Datei angelegt werden. Der Name dieser Datei muss mit dem \textit{CommonName} (cn) des \textit{ActivePXEConfig}-Objektes korrespondieren, welches dem Menü entspricht.
+Der Vorteil dieser Methode ist zum einen, dass es keine Synchronisationsprobleme gibt, da OekPool vor dem Rechnerstart das PXE-Menü selbst verlinkt.
+Des weiteren ist es dadurch auch möglich die Zeitsteuerung dynamisch durch ein spezielles Menü, z.B. für administrative Zwecke, zu überlagern.
+Der Nachteil dieses Ansatzes ist, dass die OekPool Anwenung Zugriff auf den TFTP-Server (direkt oder per NFS) benötigt um die Verlinkung zu übernehmen.
 \section{SSH}
 
 \end{document}
