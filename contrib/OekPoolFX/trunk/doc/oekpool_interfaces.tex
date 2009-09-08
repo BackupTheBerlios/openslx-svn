@@ -87,6 +87,8 @@ Der Filter auf die Ergebnissmenge ist gegeben durch: \textit{(HostName=*)} - als
 \item[HostName] Dieses Attribut wird als String ausgelesen und als Filter eingesetzt.
 \item[IPAddress] Bei diesem Filter wird das Format \textit{255.255.255.255\_255.255.255.255} für ein Adressbereich vorrausgesetzt, wobei \textit{255.255.255.255} eine beliebige IP-Adresse darstellt. Da es noch keine sinnvolle Verwendung für den Adressbereich gibt, wird hier einfach der erste Teil als IP-Adresse gespeichert.
 \item[Pool] Wir je nach Pool zu jedem Klienten gespeichert. Taucht in der Basis der obigen Abfrage auf (als \textit{ou}).
+\item[PXEConfig] Ist dieses Attribut gesetzt, wird die Zeitsteuerung ausgeschaltet. Der Wert dieses Attributs ist ein String, der dem Namen des zu ladenden PXE-Menüs entsprechen muss.
+\item[ForceBoot] Dieses Attribut arbeitet zusammen mit \textit{PXEConfig} und zeigt an, dass der Rechner bei der Überlagerung der Zeitsteuerung automatisch hochfahren soll.
 \end{description}
 
 \subsection{Zeit- und PXE-Konfiguration}
@@ -97,6 +99,7 @@ Gefiltert wird dabei nach \textit{(objectClass=ActivePXEConfig)}. Hierbei wird f
 \item[ForceBoot] Falls dieses Attribut gesetzt ist, wird geprüft, ob es auf \textit{wahr} gesetzt ist (Wert \textit{TRUE}). Wird als Boolescher Wert gespeichert.
 \item[TimeSlot] Hier können mehrere Werte eingetragen werden. Die Syntax ist \textit{x\_yy:z\_aa:b}, wobei \textit{x} den Wochentag angibt, Sonntag ist 0, Montag ist 1, und so weiter bis 6 wie Samstag. Danach wird mit dem ersten Unterstrich die Startuhrzeit in 10 minütiger Auflösung angegeben (\textit{yy:z}), nach dem zweiten Unterstrich die Endzeit mit \textit{aa:b}, wieder mit 10 Minuten Genauigkeit (\textit{b} kann dabei Werte von 0 bis 5 annehmen, aa von 00 bis 23).
 \end{description}
+
 
 \subsection{DHCP-Informationen}
 Die DHCP-Informationen werden verwendet um zum Beispiel das \textit{Wake-On-Lan}-Paket zu versenden. Dabei werden verschiedene Netzwerk-Informationen benötigt. Die Informationen werden unter folgender Such-Position im LDAP erwartet: \\
@@ -135,7 +138,9 @@ Ein weiterer Nachtei ist, dass es nicht möglich ist PXE-Menüs dynamisch außer
 Soll die OekPool-Anwendung die Verlinkung übernehmen, so ist \textit{PXEGenerate} nur für die Erstellung der Menüs zuständig.
 Die Verlinkung geschieht zeitnah direkt aus OekPool. Hierbei erwartet die Anwendung ein Unterverzeichnis \verb+configs+ unterhalb von \verb+pxelinux.cfg+.
 Unterhalb des \verb+config+-Verzeichnisses sollte für jeden Client im LDAP ein Verzeichnis mit der entsprechenden MAC-Adresse als Name (in der Form 00-01-5e-34-ad-e3) angelegt werden.
-In diesen Verzeichnissen sollte dann für jedes Menü eines Clients eine Datei angelegt werden. Der Name dieser Datei muss mit dem \textit{CommonName} (cn) des \textit{ActivePXEConfig}-Objektes korrespondieren, welches dem Menü entspricht.
+In diesen Verzeichnissen sollte dann für jedes Menü eines Clients eine Datei angelegt werden.
+Der Name dieser Datei muss mit dem \textit{CommonName} (cn) des \textit{ActivePXEConfig}-Objektes korrespondieren, welches dem Menü entspricht.
+Damit die Anwendung bei der Überlagerung der Zeitsteuerung die Menüs verlinken kann, müssen diese mit ihrem jeweiligen Namen direkt im \verb+configs+-Verzeichnis liegen.
 Der Vorteil dieser Methode ist zum einen, dass es keine Synchronisationsprobleme gibt, da OekPool vor dem Rechnerstart das PXE-Menü selbst verlinkt.
 Des weiteren ist es dadurch auch möglich die Zeitsteuerung dynamisch durch ein spezielles Menü, z.B. für administrative Zwecke, zu überlagern.
 Der Nachteil dieses Ansatzes ist, dass die OekPool Anwenung Zugriff auf den TFTP-Server (direkt oder per NFS) benötigt um die Verlinkung zu übernehmen.
