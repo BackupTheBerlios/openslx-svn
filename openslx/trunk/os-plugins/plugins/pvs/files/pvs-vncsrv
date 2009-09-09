@@ -1,0 +1,104 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+# Copyright (c) 2009 - RZ Uni FR
+# Copyright (c) 2009 - OpenSLX GmbH
+#
+# This program is free software distributed under the GPL version 2.
+# See http://openslx.org/COPYING
+#
+# If you have any feedback please consult http://openslx.org/feedback and
+# send your suggestions, praise, or complaints to feedback@openslx.org
+#
+# General information about OpenSLX can be found at http://openslx.org/
+# -----------------------------------------------------------------------------
+# pvs-vncsrv
+#    - This is a generic wrapper script for starting any userspace VNC server
+#      to offer connectivity from the pvs contol console. The script expects
+#      start/stop in $1, the port to start on in $2 and the password in $3. The
+#      latter one should be changed to piping for security reasons ...
+# -----------------------------------------------------------------------------
+
+# parameters for x11vnc
+X11VNC_PARAMS="-bg -forever -display :0 -passwdfile rm:~/.pvs/vncpasswd -o /var/log/x11vnc.log -shared"
+X11VNC_X11="1"
+
+# at the moment the poolVSClient is expected to use the ~/.pvs directory
+[ -d ~/.pvs ] || mkdir ~/.pvs
+
+# write the password file
+echo -e "$3\n__BEGIN_VIEWONLY__\n$3" > ~/.pvs/vncpasswd
+
+# find xauthority file
+find_xauth () {
+  FOUND=0
+  RETRIES=4
+  [ -z "$1" ] || RETRIES="$1"
+
+  [ -e "/var/lib/kdm/" ] && 
+     XAUTHFILE_KDM=`find /var/lib/kdm/ -iname "A\:0-*"`
+  [ -e "/var/run/xauth/" ] && 
+     XAUTHFILE_KDM2=$(find /var/run/xauth/ -iname "A\:0-*")
+  [ -e "/var/lib/xdm/authdir/authfiles/" ] && 
+     XAUTHFILE_XDM=$(find /var/lib/xdm/authdir/authfiles/ -iname "A\:0-*")
+  [ -e "/var/lib/gdm/" ] && 
+     XAUTHFILE_GDM=$(find /var/lib/gdm/ -iname *Xauth*)
+  
+  [ -f "$XAUTHFILE_KDM" ]  && FOUND=1 && XAUTHORITY="$XAUTHFILE_KDM"
+  [ -f "$XAUTHFILE_KDM2" ] && FOUND=1 && XAUTHORITY="$XAUTHFILE_KDM2"
+  [ -f "$XAUTHFILE_XDM" ]  && FOUND=1 && XAUTHORITY="$XAUTHFILE_XDM"
+  [ -f "$XAUTHFILE_GDM" ]  && FOUND=1 && XAUTHORITY="$XAUTHFILE_GDM"
+
+  if [ "$FOUND" -eq "0" ]; then
+    if [ "$RETRIES" -gt "0" ]; then
+      let "RETRIES-=1"
+      find_xauth "$RETRIES"
+    else
+      echo "start FAILED (can't find way to authenticate myself against X)" \
+        >>~/.pvs/log.vncsrv
+      exit -1
+    fi
+  else
+    echo "found authfile ($XAUTHORITY)" >>~/.pvs/log.vncsrv
+  fi
+}
+
+START_COMMAND="x11vnc"
+
+case "$1" in
+  start)
+    [ -z "$2" -o -z "$3" ] && echo " Port and/or Password not set" \
+      >>~/.pvs/log.vncsrv
+    if [ ! -f ~/.pvs/vncpasswd ]; then
+      echo " Start FAILED (~/.pvs/vncpasswd not found)" >>~/.pvs/log.vncsrv
+      echo " Create it manualy and retry starting x11vnc" >>~/.pvs/log.vncsrv
+      exit -1;
+    fi
+
+    if [ $X11VNC_X11 = 1 ]; then
+      find_xauth
+      START_COMMAND="$START_COMMAND -auth $XAUTHORITY $X11VNC_PARAMS"
+    else
+      START_COMMAND="$START_COMMAND $X11VNC_PARAMS"
+    fi
+    OUTPUT=$($START_COMMAND)
+    echo "$START_COMMAND" >>~/.pvs/log.vncsrv
+    echo "$OUTPUT" >>~/.pvs/log.vncsrv
+  ;;
+  stop)
+    pid=$(pidof x11vnc)
+    if [ -z "$pid" ]
+    then
+     echo "x11vnc not running" >>~/.pvs/log.vncsrv
+     exit -1;
+    else
+     kill -9 $pid
+    echo "x11vnc stopped" >>~/.pvs/log.vncsrv
+    fi
+  ;;
+  *)
+    echo "x11vnc startscript"
+    echo "Usage: $0 (start|stop)" 
+  ;;
+esac
+exit 0
+
